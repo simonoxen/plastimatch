@@ -127,7 +127,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 SET(POINT_PATH_SRC
 	point_path.cxx
 	)
-SET(RAD_REGISTRATION_SRC
+SET(PLASTIMATCH_SRC
 	rad_registration_main.cxx 
 	)
 SET(RESAMPLE_MHA_SRC
@@ -155,7 +155,7 @@ CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
-    SET(RAD_REGISTRATION_SRC ${RAD_REGISTRATION_SRC} getopt_long.c getopt.h)
+    SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
     SET(XFORM_TO_VF_SRC ${XFORM_TO_VF_SRC} getopt_long.c getopt.h)
@@ -188,7 +188,12 @@ ENDIF(GPUIT_FOUND)
 ######################################################
 ##  TARGETS
 ######################################################
-ADD_LIBRARY(plastimatch ${PLASTIMATCH_LIBRARY_SRC})
+
+## Despite claims to the contrary, you are not allowed to have a library
+## with the same name as the executable.  What happens is the executable 
+## tries to create a temporary library with the same name.  [MSVC 2005]
+ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
+## SET_TARGET_PROPERTIES(plastimatch-lib PROPERTIES OUTPUT_NAME plastimatch)
 
 ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
 ADD_EXECUTABLE(compose_vector_fields ${COMPOSE_VECTOR_FIELDS_SRC})
@@ -207,10 +212,7 @@ ADD_EXECUTABLE(mha_to_vox mha_to_vox.c)
 ADD_EXECUTABLE(point_path ${POINT_PATH_SRC})
 ADD_EXECUTABLE(patient_mask ${PATIENT_MASK_SRC})
 ADD_EXECUTABLE(raw_to_mha raw_to_mha.c)
-ADD_EXECUTABLE(rad_registration ${RAD_REGISTRATION_SRC})
-## ADD_EXECUTABLE(plastimatch-bin ${RAD_REGISTRATION_SRC})
-## SET_TARGET_PROPERTIES(plastimatch-bin
-##   PROPERTIES OUTPUT_NAME plastimatch)
+ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
 ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
 ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
 ADD_EXECUTABLE(tps_update tps_update.c)
@@ -229,31 +231,30 @@ SET(ITK_LIBS ITKCommon ITKIO ITKNumerics)
 
 TARGET_LINK_LIBRARIES(analyze_to_mha)
 #TARGET_LINK_LIBRARIES(cms_to_mha ${ITK_LIBS})
-TARGET_LINK_LIBRARIES(compose_vector_fields plastimatch ${ITK_LIBS})
-TARGET_LINK_LIBRARIES(dicom_to_mha plastimatch ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(compose_vector_fields plastimatch1 ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(dicom_to_mha plastimatch1 ${ITK_LIBS})
 IF(BUILD_EXTRACT_CONTOUR)
-TARGET_LINK_LIBRARIES(extract_contour plastimatch ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(extract_contour plastimatch1 ${ITK_LIBS})
 ENDIF(BUILD_EXTRACT_CONTOUR)
-TARGET_LINK_LIBRARIES(mask_mha plastimatch ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(mask_mha plastimatch1 ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(merge_vfs ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(merge2 ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(mha_to_analyze)
 TARGET_LINK_LIBRARIES(mha_to_rtog_dose ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(point_path plastimatch ${ITK_LIBS} ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(patient_mask plastimatch ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(point_path plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(patient_mask plastimatch1 ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(raw_to_mha)
-TARGET_LINK_LIBRARIES(rad_registration plastimatch ${ITK_LIBS} ITKStatistics ${GPUIT_LIBRARIES})
-## TARGET_LINK_LIBRARIES(plastimatch-bin plastimatch ${ITK_LIBS} ITKStatistics ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(resample_mha plastimatch ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(plastimatch plastimatch1 ${ITK_LIBS} ITKStatistics ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(resample_mha plastimatch1 ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
 TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(vf3d_to_mha)
 TARGET_LINK_LIBRARIES(vox_to_mha)
-TARGET_LINK_LIBRARIES(xform_to_vf plastimatch ${ITK_LIBS} ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(warp_dij plastimatch ${ITK_LIBS})
-TARGET_LINK_LIBRARIES(warp_mha plastimatch ${ITK_LIBS} ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(xform_to_vf plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(warp_dij plastimatch1 ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(warp_mha plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
 
 ######################################################
 ##  INSTALL
@@ -275,8 +276,7 @@ INSTALL(TARGETS mha_to_vox DESTINATION bin)
 INSTALL(TARGETS point_path DESTINATION bin)
 INSTALL(TARGETS patient_mask DESTINATION bin)
 INSTALL(TARGETS raw_to_mha DESTINATION bin)
-INSTALL(TARGETS rad_registration DESTINATION bin)
-## INSTALL(TARGETS plastimatch-bin DESTINATION bin)
+INSTALL(TARGETS plastimatch DESTINATION bin)
 INSTALL(TARGETS resample_mha DESTINATION bin)
 INSTALL(TARGETS rtog_to_mha DESTINATION bin)
 INSTALL(TARGETS tps_update DESTINATION bin)

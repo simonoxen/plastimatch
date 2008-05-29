@@ -5,6 +5,7 @@
 
 
 //===========================================================
+#include "config.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkContourExtractor2DImageFilter.h"
