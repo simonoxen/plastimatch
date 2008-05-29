@@ -1,4 +1,4 @@
-PROJECT(registration)
+PROJECT(plastimatch)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
