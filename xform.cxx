@@ -596,86 +596,28 @@ init_itk_bsp_region (BsplineTransformType::Pointer bsp,
 		      const ImageRegionType& img_region,
 		      float* grid_spac)
 {
-    BsplineTransformType::OriginType origin = img_origin;
-    BsplineTransformType::SpacingType spacing = img_spacing;
-    BsplineTransformType::RegionType region;
-    BsplineTransformType::RegionType::SizeType grid_size;
+    BsplineTransformType::OriginType bsp_origin;
+    BsplineTransformType::SpacingType bsp_spacing;
+    BsplineTransformType::RegionType bsp_region;
+    BsplineTransformType::RegionType::SizeType bsp_size;
 
     ImageRegionType::SizeType img_size = img_region.GetSize();
     ImageRegionType::IndexType img_index = img_region.GetIndex();
 
-    /* grid_method == 0 doesn't work any more.  This will need to be 
-       rewritten if needed. */
-#if defined (commentout)
-    if (stage->grid_method == 0) {
-	/* User requested specific number of control points */
-	for (int i=0; i<3; i++) grid_size[i] = stage->num_grid[i];
-	/* There should be 3 extra grid points for an 
-	   order 3 bspline: 1 lower & 2 upper.  */
-	for (int i=0; i<3; i++) grid_size[i] += 3;
-	region.SetSize (grid_size);
-
-	for (unsigned int r=0; r<Dimension; r++) {
-	    origin[r] += img_index[r] * spacing[r];
-	    spacing[r] *= static_cast<double>(img_size[r] - 1) / 
-		    static_cast<double>(grid_size[r] - 1);
-	    origin[r] -= spacing[r];
-	}
-	bsp->SetGridSpacing (spacing);
-	bsp->SetGridOrigin (origin);
-	bsp->SetGridRegion (region);
+    for (int d=0; d<3; d++) {
+	float img_ext = (img_size[d] - 1) * img_spacing[d];
+	bsp_origin[d] = img_origin[d] - grid_spac[d];
+	bsp_spacing[d] = grid_spac[d];
+	bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
     }
-#endif
 
-    /* User requested grid spacing in mm */
-
-    /* GCS Mar 27, 2008.  This is the old algorithm, which would  
-       request too large of a grid, causing things to slow down. */
-#if (USE_OLD_ITK_BSPLINES)
-    BsplineTransformType::OriginType fraction_size;
-    for (int i=0; i<3; i++) {
-	grid_size[i] = (int) (img_size[i]*spacing[i]/stage->grid_spac[i]);
-	fraction_size[i] = img_size[i]*spacing[i] - grid_size[i]*stage->grid_spac[i];
-	grid_size[i] = grid_size[i] + 2;
-    }
-    for (int i=0; i<3; i++) grid_size[i] += 3;
-
-#else
-
-    /* GCS Mar 27, 2008.  This is the new algorithm. */
-    BsplineTransformType::OriginType fraction_size;
-    for (int i=0; i<3; i++) {
-	double i1 = (img_size[i]-1)*spacing[i];
-	double i2 = img_size[i]*spacing[i];
-	grid_size[i] = 1 + (int) floor (i1/grid_spac[i]);
-	grid_size[i] = grid_size[i] + 2;
-
-	/* The above grid size is correct (I checked with Excel).
-	   But it crashes on Linux unless I add one more CP.
-	   Probably it's a bug in ITK. */
-	grid_size[i] = grid_size[i] + 1;
-    }
-#endif
-
-    region.SetSize (grid_size);
-
-#if (USE_OLD_ITK_BSPLINES)
-    /* fraction_size no longer used */
-    for (unsigned int r=0; r<Dimension; r++)
-	origin[r] += img_index[r]*spacing[r]-fraction_size[r]/2-grid_spac[r];
-#else
-    for (unsigned int r=0; r<Dimension; r++)
-	origin[r] += img_index[r] * spacing[r] - grid_spac[r];
-#endif
-    for (unsigned int r=0; r<Dimension; r++)
-	spacing[r] = grid_spac[r];
-
-    bsp->SetGridSpacing (spacing);
-    bsp->SetGridOrigin (origin);
-    bsp->SetGridRegion (region);
+    bsp_region.SetSize (bsp_size);
+    bsp->SetGridSpacing (bsp_spacing);
+    bsp->SetGridOrigin (bsp_origin);
+    bsp->SetGridRegion (bsp_region);
 
     std::cout << "BSpline Region = "
-	      << region;
+	      << bsp_region;
     std::cout << "BSpline Grid Origin = "
 	      << bsp->GetGridOrigin()
 	      << std::endl;
@@ -780,6 +722,7 @@ xform_itk_bsp_extend_to_region (Xform* xf,
 	float new_roi_corner = new_roi_origin + (img_region.GetSize()[d] - 1) * img_spacing[d];
 	printf ("BSP_EXTEND[%d]: (%g,%g) -> (%g,%g)\n", d,
 		old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
+	printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
     }
 }
 
@@ -790,7 +733,6 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const ImageRegionType& img_region,
 		      float* grid_spac)
 {
-    int d;
     BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
     BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
 

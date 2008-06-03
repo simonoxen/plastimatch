@@ -8,12 +8,10 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 
-
-class RadImage;
-
 /* -----------------------------------------------------------------------
    RadImage class
    ----------------------------------------------------------------------- */
+class RadImage;
 class RadImage {
 
 public:
