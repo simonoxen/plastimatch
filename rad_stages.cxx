@@ -16,6 +16,113 @@
 #include "gpuit_demons.h"
 #include "xform.h"
 
+#define FIXME_BACKGROUND_MAX (-1200)
+
+/* This helps speed up the registration, by setting the bounding box to the 
+   smallest size needed.  To find the bounding box, either use the extent 
+   of the fixed_mask (if one is used), or by eliminating excess air by thresholding
+*/
+static void
+set_fixed_image_region_global (Registration_Data* regd)
+{
+    int use_magic_value = 1;
+
+    regd->fixed_region_origin = regd->fixed_image->itk_float()->GetOrigin();
+    regd->fixed_region_spacing = regd->fixed_image->itk_float()->GetSpacing();
+
+    if (regd->fixed_mask) {
+	FloatImageType::RegionType::IndexType valid_index;
+	FloatImageType::RegionType::SizeType valid_size;
+
+	/* Search for bounding box of fixed mask */
+	typedef itk::ImageRegionConstIteratorWithIndex< UCharImageType > IteratorType;
+	UCharImageType::RegionType region = regd->fixed_mask->GetLargestPossibleRegion();
+	IteratorType it (regd->fixed_mask, region);
+
+	int first = 1;
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    unsigned char c = it.Get();
+	    if (c) {
+		UCharImageType::RegionType::IndexType idx = it.GetIndex();
+		if (first) {
+		    first = 0;
+		    valid_index = idx;
+		    valid_size[0] = 1;
+		    valid_size[1] = 1;
+		    valid_size[2] = 1;
+		} else {
+		    int updated = 0;
+		    for (int i = 0; i < 3; i++) {
+			if (valid_index[i] > idx[i]) {
+			    valid_size[i] += valid_index[i] - idx[i];
+			    valid_index[i] = idx[i];
+			    updated = 1;
+			}
+			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			    valid_size[i] = idx[i] - valid_index[i] + 1;
+			    updated = 1;
+			}
+		    }
+		}
+	    }
+	}
+	regd->fixed_region.SetIndex(valid_index);
+	regd->fixed_region.SetSize(valid_size);
+    } else if (use_magic_value) {
+	FloatImageType::RegionType::IndexType valid_index;
+	FloatImageType::RegionType::SizeType valid_size;
+
+	/* Make sure the image is ITK float */
+	FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();
+
+	/* Search for bounding box of patient */
+	typedef itk::ImageRegionConstIteratorWithIndex<FloatImageType> IteratorType;
+	FloatImageType::RegionType region = fixed_image->GetLargestPossibleRegion();
+	IteratorType it (fixed_image, region);
+
+	int first = 1;
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float c = it.Get();
+	    if (c > FIXME_BACKGROUND_MAX) {
+		FloatImageType::RegionType::IndexType idx = it.GetIndex();
+		if (first) {
+		    first = 0;
+		    valid_index = idx;
+		    valid_size[0] = 1;
+		    valid_size[1] = 1;
+		    valid_size[2] = 1;
+		} else {
+		    int updated = 0;
+		    for (int i = 0; i < 3; i++) {
+			if (valid_index[i] > idx[i]) {
+			    valid_size[i] += valid_index[i] - idx[i];
+			    valid_index[i] = idx[i];
+			    updated = 1;
+			}
+			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			    valid_size[i] = idx[i] - valid_index[i] + 1;
+			    updated = 1;
+			}
+		    }
+		}
+	    }
+	}
+	/* Try to include a margin of at least one air pixel everywhere */
+	for (int i = 0; i < 3; i++) {
+	    if (valid_index[i] > 0) {
+		valid_index[i]--;
+		valid_size[i]++;
+	    }
+	    if (valid_size[i] + valid_index[i] < fixed_image->GetLargestPossibleRegion().GetSize()[i]) {
+		valid_size[i]++;
+	    }
+	}
+	regd->fixed_region.SetIndex(valid_index);
+	regd->fixed_region.SetSize(valid_size);
+    } else {
+	regd->fixed_region = regd->fixed_image->itk_float()->GetBufferedRegion();
+    }
+}
 
 static RadImage::RadImageType
 choose_image_type (int xform_type, int optim_type, int impl_type)
@@ -142,11 +249,14 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 {
     RadImage::RadImageType image_type = RadImage::TYPE_ITK_FLOAT;
 
+#if defined (commentout)
     /* Load the appropriate image type for the first stage */
     if (regp->num_stages > 0) {
 	image_type = choose_image_type (regp->stages[0]->xform_type,
 	    regp->stages[0]->optim_type, regp->stages[0]->impl_type);
     }
+#endif
+    /* GCS Jun 2, 2008.  Always load as ITK so we can find the ROI */
 
     printf ("fixed image=%s\n", regp->fixed_fn);
     printf ("Loading fixed image...");
@@ -195,6 +305,9 @@ do_registration (Registration_Parms* regp)
     if (regp->xf_in_fn[0]) {
 	load_xform (xf_out, regp->xf_in_fn);
     }
+
+    /* Set fixed image region */
+    set_fixed_image_region_global (&regd);
 
     for (i = 0; i < regp->num_stages; i++) {
 	/* Swap xf_in and xf_out */

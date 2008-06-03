@@ -170,10 +170,16 @@ public:
 
 class Registration_Data {
 public:
+    /* Input images */
     RadImage *fixed_image;
     RadImage *moving_image;
     UCharImageType::Pointer fixed_mask;
     UCharImageType::Pointer moving_mask;
+
+    /* Region of interest */
+    FloatImageType::RegionType fixed_region;
+    FloatImageType::PointType fixed_region_origin;
+    FloatImageType::SpacingType fixed_region_spacing;
 };
 
 void not_implemented (void);

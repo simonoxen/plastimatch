@@ -9,41 +9,6 @@
 
 #include "itk_image.h"
 
-static void
-compute_origin_and_size (DoublePointType& new_origin,
-			 SizeType& new_size,
-			 const DoubleVectorType& new_spacing,
-			 const DoublePointType& old_origin,
-			 const DoubleVectorType& old_spacing,
-			 const SizeType& old_size)
-{
-    float old_coverage[3];
-
-    for (int i = 0; i < 3; i++) {
-	old_coverage[i] = old_size[i] * old_spacing[i];
-    }
-
-    for (int i = 0; i < 3; i++) {
-	/* We want to allow a little extension into undefined area, but not 
-	   too much.  Thus, the 0.25 below means usually round down, unless you 
-	   are close.  */
-	new_size[i] = (int) (old_coverage[i] / new_spacing[i] + 0.25);
-	if (new_size[i] <= 0) new_size[i] = 1;
-    }
-
-    float new_coverage[3];
-    for (int i = 0; i < 3; i++) {
-	new_coverage[i] = new_size[i] * new_spacing[i];
-    }
-
-    for (int i = 0; i < 3; i++) {
-	new_origin[i] =  old_origin[i] 
-			- (old_spacing[i]/2.0) 
-			+ (new_spacing[i]/2.0)
-			+ ((old_coverage[i]-new_coverage[i])/2.0);
-    }
-}
-
 template <class T>
 T
 vector_resample_image (T& vf_image, DoublePointType origin, 
@@ -253,13 +218,15 @@ subsample_image (T& image, int x_sampling_rate,
     const typename ImageType::SizeType size1 = image->GetLargestPossibleRegion().GetSize();
 
     typename ImageType::SpacingType spacing;
-    for (int i = 0; i < 3; i++) {
-	spacing[i] = spacing1[i] * sampling_rate[i];
-    }
-
     typename ImageType::SizeType size;
     typename ImageType::PointType origin;
-    compute_origin_and_size (origin, size, spacing, origin1, spacing1, size1);
+    for (int i = 0; i < 3; i++) {
+	spacing[i] = spacing1[i] * sampling_rate[i];
+	origin[i] = origin1[i] + 0.5 * (sampling_rate[i]-1) * spacing1[i];
+	size[i] = (size1[i] + 1) / 2;
+    }
+
+    //compute_origin_and_size (origin, size, spacing, origin1, spacing1, size1);
 
     filter->SetOutputOrigin (origin);
     filter->SetOutputSpacing (spacing);

@@ -759,6 +759,30 @@ xform_aff_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_aff());
 }
 
+/* GCS Jun 3, 2008.  When going from a lower image resolution to a 
+    higher image resolution, the origin pixel moves outside of the 
+    valid region defined by the bspline grid.  To fix this, we re-form 
+    the b-spline with extra coefficients such that all pixels fall 
+    within the valid region. */
+static void
+xform_itk_bsp_extend_to_region (Xform* xf,
+		      const OriginType& img_origin,
+		      const SpacingType& img_spacing,
+		      const ImageRegionType& img_region)
+{
+    int d;
+    BsplineTransformType::Pointer bsp = xf->get_bsp();
+
+    for (d = 0; d < 3; d++) {
+	float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
+	float old_roi_corner = old_roi_origin + (bsp->GetGridRegion().GetSize()[d] - 3) * bsp->GetGridSpacing()[d];
+	float new_roi_origin = img_origin[d] + img_region.GetIndex()[d] * img_spacing[d];
+	float new_roi_corner = new_roi_origin + (img_region.GetSize()[d] - 1) * img_spacing[d];
+	printf ("BSP_EXTEND[%d]: (%g,%g) -> (%g,%g)\n", d,
+		old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
+    }
+}
+
 static void
 xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const OriginType& img_origin,
@@ -766,11 +790,13 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const ImageRegionType& img_region,
 		      float* grid_spac)
 {
+    int d;
     BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
+    BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
+
     printf ("Initializing **bsp_new**\n");
     init_itk_bsp_region (bsp_new, img_origin, img_spacing, img_region, grid_spac);
     alloc_itk_bsp_parms (xf_out, bsp_new);
-    BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
 
     /* Need to copy the bulk transform */
     bsp_new->SetBulkTransform (bsp_old->GetBulkTransform());
@@ -1358,6 +1384,8 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 	vf = xform_any_to_itk_vf (xf_in->get_aff(), image);
 	break;
     case XFORM_ITK_BSPLINE:
+	xform_itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
+			image->GetSpacing(), image->GetBufferedRegion());
 	vf = xform_any_to_itk_vf (xf_in->get_bsp(), image);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
