@@ -47,7 +47,7 @@ warp_image_main (Warp_Parms* parms)
 	    vf = load_float_field (parms->vf_in_fn);
 			
 	    printf ("Warping...\n");
-	    im_warped = itk_warp_image (im, im, vf, parms->default_val);
+	    im_warped = itk_warp_image (im, im, vf, parms->interp_lin, parms->default_val);
 	} else { /* need to convert the deformation parameters into vector fields */
 	    printf ("Loading deformation parameters...\n");
 	    Xform xform, xform_tmp;
@@ -67,7 +67,7 @@ warp_image_main (Warp_Parms* parms)
 		vf = xform_tmp.get_itk_vf();
 
 		printf ("Warping...\n");
-		im_warped = itk_warp_image (im, fixed, vf, parms->default_val);
+		im_warped = itk_warp_image (im, fixed, vf, parms->interp_lin, parms->default_val);
 	    } else {
 		caster->SetInput(im);
 		caster->Update();
@@ -75,7 +75,7 @@ warp_image_main (Warp_Parms* parms)
 		vf = xform_tmp.get_itk_vf();
 
 		printf ("Warping...\n");
-		im_warped = itk_warp_image (im, im, vf, parms->default_val);
+		im_warped = itk_warp_image (im, im, vf, parms->interp_lin, parms->default_val);
 	    }
 	}
 
@@ -93,7 +93,7 @@ warp_image_main (Warp_Parms* parms)
 	    printf ("Loading vf...\n");
 	    vf = load_float_field (parms->vf_in_fn);
 	    printf ("Warping...\n");
-	    im_warped = itk_warp_image (im, im, vf, parms->default_val);
+	    im_warped = itk_warp_image (im, im, vf, parms->interp_lin, parms->default_val);
 	} else { /* need to convert the deformation parameters into vector fields */
 	    printf ("Loading deformation parameters...\n");
 	    Xform xform, xform_tmp;
@@ -107,12 +107,12 @@ warp_image_main (Warp_Parms* parms)
 		xform_to_itk_vf(&xform_tmp, &xform, fixed);
 		vf = xform_tmp.get_itk_vf();
 		printf ("Warping...\n");
-		im_warped = itk_warp_image (im, fixed, vf, parms->default_val);
+		im_warped = itk_warp_image (im, fixed, vf, parms->interp_lin, parms->default_val);
 	    } else {
 		xform_to_itk_vf(&xform_tmp, &xform, im);
 		vf = xform_tmp.get_itk_vf();
 		printf ("Warping...\n");
-		im_warped = itk_warp_image (im, im, vf, parms->default_val);
+		im_warped = itk_warp_image (im, im, vf, parms->interp_lin, parms->default_val);
 	    }
 	}
 
@@ -129,8 +129,8 @@ warp_image_main (Warp_Parms* parms)
 void
 print_usage (void)
 {
-    printf ("Usage: warp_mha --input=image_in --vf=vf_in --output=image_out --output_type=type\n");
-    printf ("   or: warp_mha --input=image_in --deform_parm=xf_in (--fixed=fixed_im_fn) --output=image_out --output_type=type\n");
+    printf ("Usage: warp_mha --input=image_in --vf=vf_in --output=image_out --output_type=type [--interpolation nn]\n");
+    printf ("   or: warp_mha --input=image_in --deform_parm=xf_in (--fixed=fixed_im_fn) --output=image_out --output_type=type [--interpolation nn]\n");
     exit (-1);
 }
 
@@ -145,9 +145,10 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "vf",             required_argument,      NULL,           4 },
 	{ "default_val",    required_argument,      NULL,           5 },
 	{ "deform_parm",    required_argument,      NULL,           6 },
-	{ "fixed",	        required_argument,      NULL,           7 },
+	{ "fixed",	    required_argument,      NULL,           7 },
 	{ "output_vf",      required_argument,      NULL,           8 },
-	{ NULL,            0,                      NULL,           0 }
+	{ "interpolation",  required_argument,      NULL,           9 },
+	{ NULL,             0,                      NULL,           0 }
     };
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
@@ -195,6 +196,16 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    break;
 	case 8:
 	    strncpy (parms->vf_out_fn, optarg, _MAX_PATH);
+	    break;
+	case 9:
+	    if (!strcmp (optarg, "nn")) {
+		parms->interp_lin = 0;
+	    } else if (!strcmp (optarg, "linear")) {
+		parms->interp_lin = 1;
+	    } else {
+		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
+		print_usage ();
+	    }
 	    break;
 	default:
 	    break;

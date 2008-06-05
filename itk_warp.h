@@ -7,6 +7,6 @@
 #include "itk_image.h"
 
 template<class T> T itk_warp_image (T im_in, T im_sz, DeformationFieldType::Pointer vf, 
-				    float default_val);
+				    int linear_interp, float default_val);
 
 #endif

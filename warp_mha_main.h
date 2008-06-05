@@ -18,6 +18,7 @@ public:
     char vf_out_fn[_MAX_PATH];
     int output_type;
     float default_val;
+    int interp_lin;
 public:
     Warp_Parms () {
 	*mha_in_fn = 0;
@@ -28,6 +29,7 @@ public:
 	*vf_out_fn = 0;
 	output_type = TYPE_UNSPECIFIED;
 	default_val = 0.0;
+	interp_lin = 1;
     }
 };
 
