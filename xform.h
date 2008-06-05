@@ -71,14 +71,18 @@ public:
     TranslationTransformType::Pointer m_trn;
     VersorTransformType::Pointer m_vrs;
     AffineTransformType::Pointer m_aff;
-    BsplineTransformType::Pointer m_itk_bsp;
-    BsplineTransformType::ParametersType m_itk_bsp_parms;
     DeformationFieldType::Pointer m_itk_vf;
+    BsplineTransformType::Pointer m_itk_bsp;
     void* m_gpuit;
+
+    /* ITK goop for managing b-spline parameters. */
+    BsplineTransformType::ParametersType m_itk_bsp_parms;
+    double* m_itk_bsp_data;
 
 public:
     Xform () {
 	m_gpuit = 0;
+	m_itk_bsp_data = 0;
 	clear ();
     }
     Xform (Xform& xf) {
@@ -94,7 +98,8 @@ public:
 	m_aff = xf.m_aff;
 	m_itk_vf = xf.m_itk_vf;
 	m_itk_bsp = xf.m_itk_bsp;
-	m_gpuit = xf.m_gpuit;  /* Shallow copy */
+	m_gpuit = xf.m_gpuit;                  /* Shallow copy */
+	m_itk_bsp_data = xf.m_itk_bsp_data;    /* Shallow copy */
 	return *this;
     }
     void clear () {
@@ -105,6 +110,10 @@ public:
 		bspline_free ((BSPLINE_Parms*) m_gpuit);
 	    }
 	    m_gpuit = 0;
+	}
+	if (m_itk_bsp_data) {
+	    free (m_itk_bsp_data);
+	    m_itk_bsp_data = 0;
 	}
 	m_type = XFORM_NONE;
 	m_trn = 0;

@@ -196,8 +196,7 @@ load_xform (Xform *xf, char* fn)
 	/* Allocate memory, and bind to bspline struct to xform struct */
 	alloc_itk_bsp_parms (xf, bsp);
 
-	/* Read bspline coefficients */
-	/* GCS WARNING: I'm assuming this is OK after SetParameters() */
+	/* Read bspline coefficients from file */
 	const unsigned int num_parms = bsp->GetNumberOfParameters();
 	for (int i = 0; i < num_parms; i++) {
 	    float d;
@@ -212,6 +211,7 @@ load_xform (Xform *xf, char* fn)
 	fclose (fp);
 
 	/* Linux version seems to require this... */
+	/* GCS: Is this still true? */
 	bsp->SetParameters (xf->m_itk_bsp_parms);
 
     } else {
@@ -642,15 +642,15 @@ static void
 alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp)
 {
     const unsigned int num_parms = bsp->GetNumberOfParameters();
-    if (num_parms != xf->m_itk_bsp_parms.GetSize()) {
-	xf->m_itk_bsp_parms.SetSize (num_parms);
-	xf->m_itk_bsp_parms.Fill (0.0);
-	bsp->SetParameters (xf->m_itk_bsp_parms);
-    }
+    if (xf->m_itk_bsp_data) free (xf->m_itk_bsp_data);
+    xf->m_itk_bsp_data = (double*) malloc (sizeof(double) * num_parms);
+    xf->m_itk_bsp_parms.SetData (xf->m_itk_bsp_data, num_parms, 0);
+    xf->m_itk_bsp_parms.Fill (0.0);
+    bsp->SetParameters (xf->m_itk_bsp_parms);
+    xf->set_itk_bsp (bsp);
 #if defined (commentout)
     printf ("Bspline transform has %d free parameters\n", num_parms);
 #endif
-    xf->set_itk_bsp (bsp);
 }
 
 static void
@@ -712,8 +712,21 @@ xform_itk_bsp_extend_to_region (Xform* xf,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
 {
-    int d;
+    int d, i, j, k, old_idx;
+    int extend_needed = 0;
     BsplineTransformType::Pointer bsp = xf->get_bsp();
+    BsplineTransformType::OriginType bsp_origin = bsp->GetGridOrigin();
+    BsplineTransformType::RegionType bsp_region = bsp->GetGridRegion();
+    BsplineTransformType::RegionType::SizeType bsp_size = bsp->GetGridRegion().GetSize();
+    int eb[3], ea[3];  /* # of control points to add before and after grid */
+
+    printf ("#param = %d\n", bsp->GetNumberOfParameters());
+    printf ("bsp_parms size = %d\n", xf->m_itk_bsp_parms.GetSize());
+    printf ("#size = %d, %d, %d\n", 
+	bsp->GetGridRegion().GetSize()[0],
+	bsp->GetGridRegion().GetSize()[1],
+	bsp->GetGridRegion().GetSize()[2]
+	);
 
     for (d = 0; d < 3; d++) {
 	float old_roi_origin = bsp->GetGridOrigin()[d] + bsp->GetGridSpacing()[d];
@@ -723,6 +736,49 @@ xform_itk_bsp_extend_to_region (Xform* xf,
 	printf ("BSP_EXTEND[%d]: (%g,%g) -> (%g,%g)\n", d,
 		old_roi_origin, old_roi_corner, new_roi_origin, new_roi_corner);
 	printf ("img_siz = %d, img_spac = %g\n", img_region.GetSize()[d], img_spacing[d]);
+	ea[d] = eb[d] = 0;
+	if (old_roi_origin > new_roi_origin) {
+	    float diff = old_roi_origin - new_roi_origin;
+	    eb[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
+	    bsp_origin[d] -= eb[d] * bsp->GetGridSpacing()[d];
+	    bsp_size[d] += eb[d];
+	    extend_needed = 1;
+	}
+	if (old_roi_corner < new_roi_corner) {
+	    float diff = new_roi_origin - old_roi_origin;
+	    ea[d] = (int) ceil (diff / bsp->GetGridSpacing()[d]);
+	    bsp_size[d] += ea[d];
+	    extend_needed = 1;
+	}
+    }
+
+    if (extend_needed) {
+
+	/* Save current parameters to tmp */
+	double* tmp = xf->m_itk_bsp_data;
+	xf->m_itk_bsp_data = 0;
+
+	/* Allocate new parameter array */
+	printf ("EXTEND!  Setting parameters\n");
+	bsp_region.SetSize (bsp_size);
+	bsp->SetGridOrigin (bsp_origin);
+	bsp->SetGridRegion (bsp_region);
+	alloc_itk_bsp_parms (xf, bsp);
+
+	/* Copy current parameters in... */
+	printf ("Copying tmp -> new\n");
+	for (old_idx = 0, k = 0; k < bsp->GetGridRegion().GetSize()[2]; k++) {
+	    for (j = 0; j < bsp->GetGridRegion().GetSize()[1]; j++) {
+		for (i = 0; i < bsp->GetGridRegion().GetSize()[0]; i++, old_idx++) {
+		    int new_idx = (((k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
+		    xf->m_itk_bsp_parms[new_idx] = tmp[old_idx];
+		}
+	    }
+	}
+	printf ("Done\n");
+
+	/* Free old parameters */
+	free (tmp);
     }
 }
 
@@ -1238,6 +1294,7 @@ xform_to_itk_bsp (Xform *xf_out,
 
     switch (xf_in->m_type) {
     case XFORM_NONE:
+	printf ("Converting xform_none -> bsp\n");
 	init_itk_bsp_default (xf_out, xf_in, stage, 
 				img_origin, img_spacing, img_region);
 	break;

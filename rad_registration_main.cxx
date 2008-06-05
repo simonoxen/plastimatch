@@ -23,8 +23,8 @@
 static void
 print_usage (void)
 {
-    printf ("rad_registration version %s\n", RAD_VERSION_STRING);
-    printf ("Usage: rad_registration options_file\n");
+    printf ("plastimatch version %s\n", RAD_VERSION_STRING);
+    printf ("Usage: plastimatch options_file\n");
     exit (-1);
 }
 

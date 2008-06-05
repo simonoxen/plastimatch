@@ -483,6 +483,7 @@ set_transform (RegistrationType::Pointer registration,
 		Xform *xf_stage,
 		Stage_Parms* stage)
 {
+    xf_stage->clear();
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
 	set_transform_translation (registration, xf_in, xf_stage, stage);
@@ -579,7 +580,6 @@ void
 do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
 {
     RegistrationType::Pointer registration = RegistrationType::New();
-    Xform xf_stage;     /* This is the same as xf_in, but xform type is converted */
 
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss
@@ -602,7 +602,9 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
     set_mask_images (registration, regd, stage);         // must be after set_metric
     set_fixed_image_region (registration, regd, stage);  // must be after set_mask_images
     show_stats (registration);
-    set_transform (registration, xf_in, &xf_stage, stage); // must be after set_fixed_image_region
+    set_transform (registration, xf_in, xf_out, stage);  // must be after set_fixed_image_region
+    printf ("[[[itk_stage: bsp_parms size xf_in   ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize());
+    printf ("[[[itk_stage: bsp_parms size xf_out  ]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize());
     set_optimization (registration, stage);
 
     InterpolatorType::Pointer interpolator = InterpolatorType::New();

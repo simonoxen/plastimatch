@@ -150,7 +150,7 @@ save_warped_img (Registration_Data* regd,
 
     printf ("Warping image...\n");
     im_warped = itk_warp_image (regd->moving_image->itk_float(), 
-		    regd->fixed_image->itk_float(), vf, 0.0);
+		    regd->fixed_image->itk_float(), vf, 1, 0.0);
     printf ("Saving image...\n");
     save_short (im_warped, fn);
 }
@@ -314,6 +314,8 @@ do_registration (Registration_Parms* regp)
 	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 	/* Run registation, results are stored in xf_out */
 	do_registration_stage (&regd, xf_out, xf_in, regp->stages[i]);
+	printf ("[[[bsp_parms size xf_in ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize());
+	printf ("[[[bsp_parms size xf_out]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize());
     }
 
     /* RMK: If no stages, we still generate output (same as input) */
