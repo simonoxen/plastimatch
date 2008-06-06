@@ -314,8 +314,10 @@ do_registration (Registration_Parms* regp)
 	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 	/* Run registation, results are stored in xf_out */
 	do_registration_stage (&regd, xf_out, xf_in, regp->stages[i]);
-	printf ("[[[bsp_parms size xf_in ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize());
-	printf ("[[[bsp_parms size xf_out]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize());
+	printf ("[[[do_reg: bsp_parms size xf_in ]]] = %d %p\n", xf_in->m_itk_bsp_parms.GetSize(),
+		xf_in->m_itk_bsp_data);
+	printf ("[[[do_reg: bsp_parms size xf_out]]] = %d %p\n", xf_out->m_itk_bsp_parms.GetSize(),
+		xf_out->m_itk_bsp_data);
     }
 
     /* RMK: If no stages, we still generate output (same as input) */

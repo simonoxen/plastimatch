@@ -427,75 +427,76 @@ show_stats(RegistrationType::Pointer registration)
 
 void
 set_transform_translation (RegistrationType::Pointer registration,
+			Xform *xf_out,
 			Xform *xf_in,
-			Xform *xf_stage,
 			Stage_Parms* stage)
 {
-    xform_to_trn (xf_stage, xf_in, stage, 
+    xform_to_trn (xf_out, xf_in, stage, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
-    registration->SetTransform (xf_stage->get_trn());
+    registration->SetTransform (xf_out->get_trn());
 }
 
 void
 set_transform_versor (RegistrationType::Pointer registration,
+			Xform *xf_out,
 			Xform *xf_in,
-			Xform *xf_stage,
 			Stage_Parms* stage)
 {
-    xform_to_vrs (xf_stage, xf_in, stage, 
+    xform_to_vrs (xf_out, xf_in, stage, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
-    registration->SetTransform (xf_stage->get_vrs());
+    registration->SetTransform (xf_out->get_vrs());
 }
 
 void
 set_transform_affine (RegistrationType::Pointer registration,
+			Xform *xf_out,
 			Xform *xf_in,
-			Xform *xf_stage,
 			Stage_Parms* stage)
 {
-    xform_to_aff (xf_stage, xf_in, stage, 
+    xform_to_aff (xf_out, xf_in, stage, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
-    registration->SetTransform (xf_stage->get_aff());
+    registration->SetTransform (xf_out->get_aff());
 }
 
 void
 set_transform_bspline (RegistrationType::Pointer registration,
+			Xform *xf_out,
 			Xform *xf_in,
-			Xform *xf_stage,
 			Stage_Parms* stage)
 {
-    xform_to_itk_bsp (xf_stage, xf_in, stage, 
+    xform_to_itk_bsp (xf_out, xf_in, stage, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
-    registration->SetTransform (xf_stage->get_bsp());
+    registration->SetTransform (xf_out->get_bsp());
 }
 
 void
 set_transform (RegistrationType::Pointer registration,
+		Xform *xf_out,
 		Xform *xf_in,
-		Xform *xf_stage,
 		Stage_Parms* stage)
 {
-    xf_stage->clear();
+    printf ("Clearing xf_out\n");
+    xf_out->clear();
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
-	set_transform_translation (registration, xf_in, xf_stage, stage);
+	set_transform_translation (registration, xf_out, xf_in, stage);
 	break;
     case STAGE_TRANSFORM_VERSOR:
-	set_transform_versor (registration, xf_in, xf_stage, stage);
+	set_transform_versor (registration, xf_out, xf_in, stage);
 	break;
     case STAGE_TRANSFORM_AFFINE:
-	set_transform_affine (registration, xf_in, xf_stage, stage);
+	set_transform_affine (registration, xf_out, xf_in, stage);
 	break;
     case STAGE_TRANSFORM_BSPLINE:
-	set_transform_bspline (registration, xf_in, xf_stage, stage);
+	set_transform_bspline (registration, xf_out, xf_in, stage);
 	break;
     }
     registration->SetInitialTransformParameters(registration->GetTransform()->GetParameters());
@@ -602,9 +603,12 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
     set_mask_images (registration, regd, stage);         // must be after set_metric
     set_fixed_image_region (registration, regd, stage);  // must be after set_mask_images
     show_stats (registration);
-    set_transform (registration, xf_in, xf_out, stage);  // must be after set_fixed_image_region
-    printf ("[[[itk_stage: bsp_parms size xf_in   ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize());
-    printf ("[[[itk_stage: bsp_parms size xf_out  ]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize());
+    printf ("Calling set_transform\n");
+    set_transform (registration, xf_out, xf_in, stage);  // must be after set_fixed_image_region
+    printf ("[[[itk_stage: bsp_parms size xf_in   ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize(),
+	    xf_in->m_itk_bsp_data);
+    printf ("[[[itk_stage: bsp_parms size xf_out  ]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize(),
+	    xf_out->m_itk_bsp_data);
     set_optimization (registration, stage);
 
     InterpolatorType::Pointer interpolator = InterpolatorType::New();
@@ -624,5 +628,7 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
 	exit (-1);
     }
 
+    printf ("calling set_xf_out\n");
     set_xf_out (xf_out, registration, stage);
+    printf ("done\n");
 }

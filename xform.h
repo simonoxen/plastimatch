@@ -112,6 +112,7 @@ public:
 	    m_gpuit = 0;
 	}
 	if (m_itk_bsp_data) {
+	    printf ("__FREE %p\n", m_itk_bsp_data);
 	    free (m_itk_bsp_data);
 	    m_itk_bsp_data = 0;
 	}
@@ -181,7 +182,7 @@ public:
 	m_aff = aff;
     }
     void set_itk_bsp (BsplineTransformType::Pointer bsp) {
-	clear ();
+	/* Do not clear */
 	m_type = XFORM_ITK_BSPLINE;
 	m_itk_bsp = bsp;
     }

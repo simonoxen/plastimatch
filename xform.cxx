@@ -19,8 +19,6 @@
 static void alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp);
 static DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (Volume* vf, FloatImageType::Pointer image);
 
-//#define USE_OLD_ITK_BSPLINES 1
-
 int
 strcmp_alt (const char* s1, const char* s2)
 {
@@ -644,6 +642,7 @@ alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp)
     const unsigned int num_parms = bsp->GetNumberOfParameters();
     if (xf->m_itk_bsp_data) free (xf->m_itk_bsp_data);
     xf->m_itk_bsp_data = (double*) malloc (sizeof(double) * num_parms);
+    printf ("__MALLOC %p [%d]\n", xf->m_itk_bsp_data, num_parms);
     xf->m_itk_bsp_parms.SetData (xf->m_itk_bsp_data, num_parms, 0);
     xf->m_itk_bsp_parms.Fill (0.0);
     bsp->SetParameters (xf->m_itk_bsp_parms);
@@ -660,9 +659,11 @@ init_itk_bsp_default (Xform *xf_out, Xform* xf_in,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
 {
+    printf ("init_itk_bsp_default (enter)\n");
     BsplineTransformType::Pointer bsp = BsplineTransformType::New();
     init_itk_bsp_region (bsp, img_origin, img_spacing, img_region, stage->grid_spac);
     alloc_itk_bsp_parms (xf_out, bsp);
+    printf ("init_itk_bsp_default (exit)\n");
 }
 
 static void
@@ -753,13 +754,17 @@ xform_itk_bsp_extend_to_region (Xform* xf,
     }
 
     if (extend_needed) {
+	float old_size[3];
 
-	/* Save current parameters to tmp */
+	/* Keep track of old size */
+	BsplineTransformType::RegionType old_region = bsp->GetGridRegion();
+
+        /* Save current parameters to tmp */
 	double* tmp = xf->m_itk_bsp_data;
 	xf->m_itk_bsp_data = 0;
 
 	/* Allocate new parameter array */
-	printf ("EXTEND!  Setting parameters\n");
+	printf ("EXTEND!\n");
 	bsp_region.SetSize (bsp_size);
 	bsp->SetGridOrigin (bsp_origin);
 	bsp->SetGridRegion (bsp_region);
@@ -767,17 +772,20 @@ xform_itk_bsp_extend_to_region (Xform* xf,
 
 	/* Copy current parameters in... */
 	printf ("Copying tmp -> new\n");
-	for (old_idx = 0, k = 0; k < bsp->GetGridRegion().GetSize()[2]; k++) {
-	    for (j = 0; j < bsp->GetGridRegion().GetSize()[1]; j++) {
-		for (i = 0; i < bsp->GetGridRegion().GetSize()[0]; i++, old_idx++) {
-		    int new_idx = (((k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
-		    xf->m_itk_bsp_parms[new_idx] = tmp[old_idx];
+	for (old_idx = 0, d = 0; d < 3; d++) {
+	    for (k = 0; k < old_region.GetSize()[2]; k++) {
+		for (j = 0; j < old_region.GetSize()[1]; j++) {
+		    for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {
+			int new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
+			xf->m_itk_bsp_parms[new_idx] = tmp[old_idx];
+		    }
 		}
 	    }
 	}
 	printf ("Done\n");
 
 	/* Free old parameters */
+	printf ("__FREE %p\n", tmp);
 	free (tmp);
     }
 }
