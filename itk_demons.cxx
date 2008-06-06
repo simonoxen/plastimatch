@@ -55,7 +55,7 @@ static void
 deformation_stats (DeformationFieldType::Pointer vf)
 {
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (vf, vf->GetBufferedRegion());
+    FieldIterator fi (vf, vf->GetLargestPossibleRegion());
     //DeformationFieldType::IndexType index;
     const DeformationFieldType::SizeType vf_size = vf->GetLargestPossibleRegion().GetSize();
     double max_sq_len = 0.0;
@@ -256,13 +256,13 @@ set_transform_demons (RegistrationType::Pointer registration,
 		v->SetParameters(at);
 		std::cout << "Initial affine parms = " << v << std::endl;
 
-		vf_in->SetRegions (registration->GetFixedImage()->GetBufferedRegion());
+		vf_in->SetRegions (registration->GetFixedImage()->GetLargestPossibleRegion());
 		vf_in->SetOrigin (registration->GetFixedImage()->GetOrigin());
 		vf_in->SetSpacing (registration->GetFixedImage()->GetSpacing());
 		vf_in->Allocate();
 
 		typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-		FieldIterator fi (vf_in, registration->GetFixedImage()->GetBufferedRegion());
+		FieldIterator fi (vf_in, registration->GetFixedImage()->GetLargestPossibleRegion());
 
 		fi.GoToBegin();
 	    
@@ -560,7 +560,7 @@ static void
 deformation_stats (DeformationFieldType::Pointer vf)
 {
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (vf, vf->GetBufferedRegion());
+    FieldIterator fi (vf, vf->GetLargestPossibleRegion());
     //DeformationFieldType::IndexType index;
     const DeformationFieldType::SizeType vf_size = vf->GetLargestPossibleRegion().GetSize();
     double max_sq_len = 0.0;

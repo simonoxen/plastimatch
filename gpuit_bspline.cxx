@@ -22,8 +22,11 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     int d;
     Xform_GPUIT_Bspline *xgb;
     BSPLINE_Parms *parms;
+    printf ("Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
+    printf ("Converting fixed\n");
     Volume *moving = regd->moving_image->gpuit_float();
+    printf ("Done.\n");
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
     Volume *vf_out = 0;
@@ -66,6 +69,9 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 		    stage->grid_spac[d], fixed_ss->pix_spacing[d]);
 	    parms->vox_per_rgn[d] = 4;
 	}
+	parms->img_origin[d] = fixed_ss->offset[d];
+	parms->img_spacing[d] = fixed_ss->pix_spacing[d];
+	parms->img_dim[d] = fixed_ss->dim[d];
 	parms->roi_offset[d] = 0;
 	parms->roi_dim[d] = fixed_ss->dim[d];
 	//parms->grid_spac[d] = stage->grid_spac[d];

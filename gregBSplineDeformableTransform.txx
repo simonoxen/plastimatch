@@ -319,7 +319,7 @@ gregBSplineDeformableTransform<TScalarType, NDimensions,VSplineOrder>
 {
   if ( images[0] )
     {
-    this->SetGridRegion( images[0]->GetBufferedRegion() );
+    this->SetGridRegion( images[0]->GetLargestPossibleRegion() );
     this->SetGridSpacing( images[0]->GetSpacing() );
     this->SetGridOrigin( images[0]->GetOrigin() );
 

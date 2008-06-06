@@ -92,7 +92,40 @@ RadImage::convert_gpuit_float ()
 {
     switch (this->m_type) {
     case RadImage::TYPE_ITK_FLOAT:
-	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	{
+	    int i, d;
+	    FloatImageType::RegionType rg = this->m_itk_float->GetLargestPossibleRegion ();
+	    FloatImageType::PointType og = this->m_itk_float->GetOrigin();
+	    FloatImageType::SpacingType sp = this->m_itk_float->GetSpacing();
+	    FloatImageType::SizeType sz = rg.GetSize();
+
+	    /* Copy header & allocate data for gpuit float */
+	    int dim[3];
+	    float offset[3];
+	    float pix_spacing[3];
+	    for (d = 0; d < 3; d++) {
+		dim[d] = sz[d];
+		offset[d] = og[d];
+		pix_spacing[d] = sp[d];
+	    }
+	    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 0);
+	    float* img = (float*) vol->img;
+
+	    /* Copy data into gpuit */
+	    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
+	    FloatIteratorType it (this->m_itk_float, rg);
+	    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+		img[i] = it.Get();
+	    }
+	    printf ("written = %d, img_size = %d\n", i, vol->npix);
+
+	    /* Free itk data */
+	    this->m_itk_float = 0;
+
+	    /* Set data type */
+	    this->m_gpuit = vol;
+	    this->m_type = RadImage::TYPE_GPUIT_FLOAT;
+	}
 	return;
     case RadImage::TYPE_GPUIT_FLOAT:
 	return;

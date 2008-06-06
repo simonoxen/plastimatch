@@ -15,6 +15,7 @@
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "xform.h"
+#include "readmha.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
@@ -120,7 +121,7 @@ set_fixed_image_region_global (Registration_Data* regd)
 	regd->fixed_region.SetIndex(valid_index);
 	regd->fixed_region.SetSize(valid_size);
     } else {
-	regd->fixed_region = regd->fixed_image->itk_float()->GetBufferedRegion();
+	regd->fixed_region = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
     }
 }
 
@@ -187,6 +188,11 @@ save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* re
 {
     Xform xf_tmp;
 
+    if (regp->xf_out_fn[0]) {
+	printf ("Writing transformation ...\n");
+	save_xform (xf_out, regp->xf_out_fn);
+    }
+
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
 	/* Convert xform to vf */
 	printf ("Converting xf to vector field ...\n");
@@ -199,14 +205,39 @@ save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* re
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
 	    printf ("Writing vector field ...\n");
+
+#if defined (USE_BUGGY_ITK)
 	    save_image (xf_tmp.get_itk_vf(), regp->vf_out_fn);
+#else
+	    {
+		Xform xf2;
+		int d;
+		int dim[3];
+		float offset[3];
+		float spacing[3];
+
+	        DeformationFieldType::Pointer itk_vf = xf_tmp.get_itk_vf();
+		DeformationFieldType::RegionType rg = itk_vf->GetLargestPossibleRegion();
+		DeformationFieldType::PointType og = itk_vf->GetOrigin();
+		DeformationFieldType::SpacingType sp = itk_vf->GetSpacing();
+		DeformationFieldType::SizeType sz = rg.GetSize();
+
+	        /* Copy header & allocate data for itk */
+		for (d = 0; d < 3; d++) {
+		    dim[d] = sz[d];
+		    offset[d] = og[d];
+		    spacing[d] = sp[d];
+		}
+		xform_to_gpuit_vf (&xf2, &xf_tmp, dim, offset, spacing);
+
+		Volume* vf = xf2.get_gpuit_vf();
+		write_mha ("foo_vf.mha", vf);
+	    }
+#endif
 	}
     }
-
-    if (regp->xf_out_fn[0]) {
-	printf ("Writing deformation parameters ...\n");
-	save_xform (xf_out, regp->xf_out_fn);
-    }
+    printf ("Writing transform again ...\n");
+    save_xform (xf_out, "foo.txt");
 }
 
 void
@@ -236,7 +267,6 @@ do_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
     else {
 	do_itk_stage (regd, xf_out, xf_in, stage);
     }
-
 
     printf ("xf_out->m_type = %d, xf_in->m_type = %d\n", xf_out->m_type, xf_in->m_type);
 
@@ -314,10 +344,6 @@ do_registration (Registration_Parms* regp)
 	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 	/* Run registation, results are stored in xf_out */
 	do_registration_stage (&regd, xf_out, xf_in, regp->stages[i]);
-	printf ("[[[do_reg: bsp_parms size xf_in ]]] = %d %p\n", xf_in->m_itk_bsp_parms.GetSize(),
-		xf_in->m_itk_bsp_data);
-	printf ("[[[do_reg: bsp_parms size xf_out]]] = %d %p\n", xf_out->m_itk_bsp_parms.GetSize(),
-		xf_out->m_itk_bsp_data);
     }
 
     /* RMK: If no stages, we still generate output (same as input) */

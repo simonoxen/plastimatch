@@ -353,29 +353,6 @@ save_xform (Xform *xf, char* fn)
 
 #if defined (GCS_REARRANGING_STUFF)
 void
-init_versor_moments_old (RegistrationType::Pointer registration)
-{
-    typedef itk::CenteredTransformInitializer < VersorTransformType,
-	FloatImageType, FloatImageType > TransformInitializerType;
-    TransformInitializerType::Pointer initializer =
-	TransformInitializerType::New();
-    
-    typedef VersorTransformType* VTPointer;
-    VTPointer transform = static_cast<VTPointer>(registration->GetTransform());
-
-    initializer->SetTransform(transform);
-    initializer->SetFixedImage(registration->GetFixedImage());
-    initializer->SetMovingImage(registration->GetMovingImage());
-
-    initializer->GeometryOn();
-
-    printf ("Calling Initialize Transform\n");
-    initializer->InitializeTransform();
-
-    std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
-}
-
-void
 init_versor_moments (RegistrationType::Pointer registration,
 		       VersorTransformType* versor)
 {
@@ -394,132 +371,6 @@ init_versor_moments (RegistrationType::Pointer registration,
     initializer->InitializeTransform();
 
     std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
-}
-
-void
-set_transform_translation (RegistrationType::Pointer registration,
-			Registration_Parms* regp)
-{
-    TranslationTransformType::Pointer transform = TranslationTransformType::New();
-    TranslationTransformType::ParametersType vt(3);
-    registration->SetTransform (transform);
-
-    switch (regp->init_type) {
-    case XFORM_NONE:
-		{
-			VersorTransformType::Pointer v = VersorTransformType::New();
-			FloatVectorType dis;
-			init_versor_moments (registration, v);
-			dis = v->GetOffset();
-			vt[0] = dis[0]; vt[1] = dis[1]; vt[2] = dis[2];
-			transform->SetParameters(vt);
-			std::cout << "Initial translation parms = " << transform << std::endl;
-		}
-		break;
-    case XFORM_TRANSLATION:
-		vt[0] = regp->init[0];
-		vt[1] = regp->init[1];
-		vt[2] = regp->init[2];
-		transform->SetParameters(vt);
-		break;
-    case XFORM_VERSOR:
-    case XFORM_AFFINE:
-    case XFORM_BSPLINE:
-    case XFORM_BSPLINE_ALIGNED:
-    case XFORM_FROM_FILE:
-    default:
-		not_implemented();
-		break;
-    }
-}
-
-void
-set_transform_versor (RegistrationType::Pointer registration,
-			Registration_Parms* regp)
-{
-    VersorTransformType::Pointer transform = VersorTransformType::New();
-    VersorTransformType::ParametersType vt(6);
-    registration->SetTransform (transform);
-    switch (regp->init_type) {
-    case XFORM_NONE:
-	init_versor_moments (registration, transform);
-	break;
-    case XFORM_TRANSLATION:
-	not_implemented();
-	break;
-    case XFORM_VERSOR:
-	vt[0] = regp->init[0];
-	vt[1] = regp->init[1];
-	vt[2] = regp->init[2];
-	vt[3] = regp->init[3];
-	vt[4] = regp->init[4];
-	vt[5] = regp->init[5];
-	transform->SetParameters(vt);
-	break;
-    case XFORM_AFFINE:
-    case XFORM_BSPLINE:
-    case XFORM_BSPLINE_ALIGNED:
-    case XFORM_FROM_FILE:
-    default:
-	not_implemented();
-	break;
-    }
-}
-
-void
-set_transform_affine (RegistrationType::Pointer registration,
-		      Registration_Parms* regp)
-{
-    AffineTransformType::Pointer transform = AffineTransformType::New();
-    AffineTransformType::ParametersType vt(12);
-    registration->SetTransform (transform);
-    switch (regp->init_type) {
-    case XFORM_NONE:
-	{
-	    VersorTransformType::Pointer v = VersorTransformType::New();
-	    init_versor_moments (registration, v);
-	    transform->SetMatrix(v->GetRotationMatrix());
-	    transform->SetOffset(v->GetOffset());
-	    std::cout << "Initial affine parms = " << transform << std::endl;
-	}
-	break;
-    case XFORM_TRANSLATION:
-	not_implemented();
-	break;
-    case XFORM_VERSOR:
-	{
-	    VersorTransformType::Pointer v = VersorTransformType::New();
-	    VersorTransformType::ParametersType vt(6);
-	    vt[0] = regp->init[0];
-	    vt[1] = regp->init[1];
-	    vt[2] = regp->init[2];
-	    vt[3] = regp->init[3];
-	    vt[4] = regp->init[4];
-	    vt[5] = regp->init[5];
-	    v->SetParameters(vt);
-	    std::cout << "Initial versor parms = " << v << std::endl;
-	    transform->SetMatrix(v->GetRotationMatrix());
-	    transform->SetOffset(v->GetOffset());
-	    std::cout << "Initial affine parms = " << transform << std::endl;
-	}
-	break;
-    case XFORM_AFFINE:
-	{
-	    AffineTransformType::ParametersType at(12);
-	    for (int i=0; i<12; i++) {
-		at[i] = regp->init[i];
-	    }
-	    transform->SetParameters(at);
-	    std::cout << "Initial affine parms = " << transform << std::endl;
-	}
-	break;
-    case XFORM_BSPLINE:
-    case XFORM_BSPLINE_ALIGNED:
-    case XFORM_FROM_FILE:
-    default:
-	not_implemented();
-	break;
-    }
 }
 #endif /* GCS_REARRANGING_STUFF */
 
@@ -640,10 +491,11 @@ static void
 alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp)
 {
     const unsigned int num_parms = bsp->GetNumberOfParameters();
-    if (xf->m_itk_bsp_data) free (xf->m_itk_bsp_data);
-    xf->m_itk_bsp_data = (double*) malloc (sizeof(double) * num_parms);
-    printf ("__MALLOC %p [%d]\n", xf->m_itk_bsp_data, num_parms);
-    xf->m_itk_bsp_parms.SetData (xf->m_itk_bsp_data, num_parms, 0);
+//    if (xf->m_itk_bsp_data) free (xf->m_itk_bsp_data);
+//    xf->m_itk_bsp_data = (double*) malloc (sizeof(double) * num_parms);
+//    printf ("__MALLOC %p [%d]\n", xf->m_itk_bsp_data, num_parms);
+//    xf->m_itk_bsp_parms.SetData (xf->m_itk_bsp_data, num_parms, 0);
+    xf->m_itk_bsp_parms.SetSize (num_parms);
     xf->m_itk_bsp_parms.Fill (0.0);
     bsp->SetParameters (xf->m_itk_bsp_parms);
     xf->set_itk_bsp (bsp);
@@ -754,39 +606,57 @@ xform_itk_bsp_extend_to_region (Xform* xf,
     }
 
     if (extend_needed) {
-	float old_size[3];
-
-	/* Keep track of old size */
+	BsplineTransformType::Pointer bsp_new = BsplineTransformType::New();
 	BsplineTransformType::RegionType old_region = bsp->GetGridRegion();
 
         /* Save current parameters to tmp */
-	double* tmp = xf->m_itk_bsp_data;
-	xf->m_itk_bsp_data = 0;
+	//double* tmp = xf->m_itk_bsp_data;
+	//xf->m_itk_bsp_data = 0;
 
 	/* Allocate new parameter array */
 	printf ("EXTEND!\n");
 	bsp_region.SetSize (bsp_size);
-	bsp->SetGridOrigin (bsp_origin);
-	bsp->SetGridRegion (bsp_region);
-	alloc_itk_bsp_parms (xf, bsp);
+	bsp_new->SetGridOrigin (bsp_origin);
+	bsp_new->SetGridRegion (bsp_region);
+	bsp_new->SetGridSpacing (bsp->GetGridSpacing());
+	alloc_itk_bsp_parms (xf, bsp_new);
+
+	std::cout << "BSpline Region = "
+		  << bsp_new->GetGridRegion();
+	std::cout << "BSpline Grid Origin = "
+		  << bsp_new->GetGridOrigin()
+		  << std::endl;
+	std::cout << "BSpline Grid Spacing = "
+		  << bsp_new->GetGridSpacing()
+		  << std::endl;
 
 	/* Copy current parameters in... */
 	printf ("Copying tmp -> new\n");
+	int new_idx;
 	for (old_idx = 0, d = 0; d < 3; d++) {
 	    for (k = 0; k < old_region.GetSize()[2]; k++) {
 		for (j = 0; j < old_region.GetSize()[1]; j++) {
 		    for (i = 0; i < old_region.GetSize()[0]; i++, old_idx++) {
-			int new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
-			xf->m_itk_bsp_parms[new_idx] = tmp[old_idx];
+			new_idx = ((((d * bsp_size[2]) + k + eb[2]) * bsp_size[1] + (j + eb[1])) * bsp_size[0]) + (i + eb[0]);
+			xf->m_itk_bsp_parms[new_idx] = bsp->GetParameters()[old_idx];
+			if (old_idx == 15) {
+			    printf ("idx %d <- %d\n", new_idx, old_idx);
+			    printf ("OldParm[%d] = %g\n", old_idx, bsp->GetParameters()[old_idx]);
+			    printf ("Parm[%d] = %g\n", new_idx, bsp_new->GetParameters()[new_idx]);
+			}
 		    }
 		}
 	    }
 	}
 	printf ("Done\n");
 
+	/* Linux version seems to require this... */
+	/* GCS: Is this still true? */
+	//bsp_new->SetParameters (xf->m_itk_bsp_parms);
+
 	/* Free old parameters */
-	printf ("__FREE %p\n", tmp);
-	free (tmp);
+	//printf ("__FREE %p\n", tmp);
+	//free (tmp);
     }
 }
 
@@ -917,7 +787,11 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     int k = 0;
     for (int d = 0; d < Dimension; d++) {
 	for (int i = 0; i < bspd->num_knots; i++) {
+#if defined (commentout)
+	    /* GPUIT BSP used to use pixel coordinate, now uses mm coordinates */
 	    xf_tmp.m_itk_bsp_parms[k] = bspd->coeff[3*i+d] * img_spacing[d];
+#endif
+	    xf_tmp.m_itk_bsp_parms[k] = bspd->coeff[3*i+d];
 	    k++;
 	}
     }
@@ -958,7 +832,7 @@ xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->Allocate ();
 
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (itk_vf, itk_vf->GetBufferedRegion());
+    FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     fi.GoToBegin();
 
@@ -988,15 +862,13 @@ xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 		 FloatImageType::Pointer image)
 {
     DeformationFieldType::Pointer field = DeformationFieldType::New();
-    field->SetRegions (image->GetBufferedRegion());
+    field->SetRegions (image->GetLargestPossibleRegion());
     field->SetOrigin (image->GetOrigin());
     field->SetSpacing (image->GetSpacing());
     field->Allocate();
 
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (field, image->GetBufferedRegion());
-
-    fi.GoToBegin();
+    FieldIterator fi (field, image->GetLargestPossibleRegion());
 
     DoublePointType fixed_point;
     DoublePointType moving_point;
@@ -1004,6 +876,8 @@ xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 
     FloatVectorType displacement;
 
+    int once = 1;
+    fi.GoToBegin();
     while (!fi.IsAtEnd()) {
 	index = fi.GetIndex();
 	field->TransformIndexToPhysicalPoint (index, fixed_point);
@@ -1012,8 +886,20 @@ xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 	    displacement[r] = moving_point[r] - fixed_point[r];
 	}
 	fi.Set (displacement);
+	if (once) {
+	    printf ("[%d %d %d] %g %g %g -> %g %g %g\n", 
+		index[0], index[1], index[2], 
+		fixed_point[0], fixed_point[1], fixed_point[2],
+		moving_point[0], moving_point[1], moving_point[2]);
+	    once = 0;
+	}
 	++fi;
     }
+    DeformationFieldType::IndexType tmp;
+    tmp[0] = tmp[1] = tmp[2] = 0;
+    printf ("<<%g %g %g>>\n", field->GetPixel(tmp)[0], field->GetPixel(tmp)[1], field->GetPixel(tmp)[2]);
+    tmp[0] = tmp[1] = tmp[2] = 2;
+    printf ("<<%g %g %g>>\n", field->GetPixel(tmp)[0], field->GetPixel(tmp)[1], field->GetPixel(tmp)[2]);
     return field;
 }
 
@@ -1056,7 +942,6 @@ static DeformationFieldType::Pointer
 xform_gpuit_bsp_to_itk_vf (Xform_GPUIT_Bspline *xgb, 
 			    FloatImageType::Pointer image)
 {
-    int i;
     Volume *vf;
     float* img;
     DeformationFieldType::Pointer itk_vf;
@@ -1069,11 +954,15 @@ xform_gpuit_bsp_to_itk_vf (Xform_GPUIT_Bspline *xgb,
     /* Convert from GPUIT_BSP voxel-based to GPUIT_VF mm-based */
     img = (float*) vf->img;
     printf ("Interpolated vfx at 0,0,0 = %g\n", img[0]);
+#if defined (commentout)
+    /* GPUIT BSP used to use pixel coordinate, now uses mm coordinates */
+    int i;
     for (i = 0; i < vf->npix; i++) {
 	img[3*i  ] *= xgb->img_spacing[0];
 	img[3*i+1] *= xgb->img_spacing[1];
 	img[3*i+2] *= xgb->img_spacing[2];
     }
+#endif
 
     itk_vf = xform_gpuit_vf_to_itk_vf (vf, image);
 
@@ -1114,7 +1003,7 @@ xform_gpuit_vf_to_itk_vf (Volume* vf,
 
     /* Copy data into itk */
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
-    FieldIterator fi (itk_vf, itk_vf->GetBufferedRegion());
+    FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     if (vf->pix_type == PT_VF_FLOAT_INTERLEAVED) {
 	float* img = (float*) vf->img;
@@ -1173,7 +1062,11 @@ xform_gpuit_bsp_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* 
     int k = 0;
     for (int d = 0; d < Dimension; d++) {
 	for (int i = 0; i < bspd_new->num_knots; i++) {
+#if defined (commentout)
+	    /* GPUIT BSP used to use pixel coordinate, now uses mm coordinates */
 	    bspd_new->coeff[3*i+d] = xf_tmp.m_itk_bsp_parms[k] / img_spacing[d];
+#endif
+	    bspd_new->coeff[3*i+d] = xf_tmp.m_itk_bsp_parms[k];
 	    k++;
 	}
     }
@@ -1188,6 +1081,25 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* pix_s
 {
     Volume* vf_out;
     vf_out = volume_resample (vf_in, dim, offset, pix_spacing);
+    return vf_out;
+}
+
+Volume*
+xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* pix_spacing)
+{
+    Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    float* img = (float*) vf_out->img;
+    FloatVectorType displacement;
+
+    int i = 0;
+    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
+    FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
+    for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
+	displacement = fi.Get ();
+	for (int r = 0; r < Dimension; r++) {
+	    img[i++] = displacement[r];
+	}
+    }
     return vf_out;
 }
 
@@ -1392,7 +1304,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 	break;
     case XFORM_ITK_BSPLINE:
 	xform_itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
-			image->GetSpacing(), image->GetBufferedRegion());
+			image->GetSpacing(), image->GetLargestPossibleRegion());
 	vf = xform_any_to_itk_vf (xf_in->get_bsp(), image);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
@@ -1462,7 +1374,7 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 	print_and_exit ("Sorry, itk_bspline to gpuit_vf not implemented\n");
 	break;
     case XFORM_ITK_VECTOR_FIELD:
-	print_and_exit ("Sorry, itk_vf to gpuit_vf not implemented\n");
+	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, pix_spacing);
 	break;
     case XFORM_GPUIT_BSPLINE:
 	print_and_exit ("Sorry, gpuit_bspline to gpuit_vf not implemented\n");

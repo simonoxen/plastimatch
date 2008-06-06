@@ -77,12 +77,12 @@ public:
 
     /* ITK goop for managing b-spline parameters. */
     BsplineTransformType::ParametersType m_itk_bsp_parms;
-    double* m_itk_bsp_data;
+    //double* m_itk_bsp_data;
 
 public:
     Xform () {
 	m_gpuit = 0;
-	m_itk_bsp_data = 0;
+	//m_itk_bsp_data = 0;
 	clear ();
     }
     Xform (Xform& xf) {
@@ -99,7 +99,7 @@ public:
 	m_itk_vf = xf.m_itk_vf;
 	m_itk_bsp = xf.m_itk_bsp;
 	m_gpuit = xf.m_gpuit;                  /* Shallow copy */
-	m_itk_bsp_data = xf.m_itk_bsp_data;    /* Shallow copy */
+	//m_itk_bsp_data = xf.m_itk_bsp_data;    /* Shallow copy */
 	return *this;
     }
     void clear () {
@@ -111,11 +111,13 @@ public:
 	    }
 	    m_gpuit = 0;
 	}
+#if (0)
 	if (m_itk_bsp_data) {
 	    printf ("__FREE %p\n", m_itk_bsp_data);
 	    free (m_itk_bsp_data);
 	    m_itk_bsp_data = 0;
 	}
+#endif
 	m_type = XFORM_NONE;
 	m_trn = 0;
 	m_vrs = 0;

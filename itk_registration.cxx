@@ -397,7 +397,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 	valid_region.SetSize(valid_size);
 	registration->SetFixedImageRegion(valid_region);
     } else {
-	registration->SetFixedImageRegion(registration->GetFixedImage()->GetBufferedRegion());
+	registration->SetFixedImageRegion(registration->GetFixedImage()->GetLargestPossibleRegion());
     }
 }
 
@@ -605,10 +605,6 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
     show_stats (registration);
     printf ("Calling set_transform\n");
     set_transform (registration, xf_out, xf_in, stage);  // must be after set_fixed_image_region
-    printf ("[[[itk_stage: bsp_parms size xf_in   ]]] = %d\n", xf_in->m_itk_bsp_parms.GetSize(),
-	    xf_in->m_itk_bsp_data);
-    printf ("[[[itk_stage: bsp_parms size xf_out  ]]] = %d\n", xf_out->m_itk_bsp_parms.GetSize(),
-	    xf_out->m_itk_bsp_data);
     set_optimization (registration, stage);
 
     InterpolatorType::Pointer interpolator = InterpolatorType::New();
