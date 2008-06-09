@@ -231,13 +231,11 @@ save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* re
 		xform_to_gpuit_vf (&xf2, &xf_tmp, dim, offset, spacing);
 
 		Volume* vf = xf2.get_gpuit_vf();
-		write_mha ("foo_vf.mha", vf);
+		write_mha (regp->vf_out_fn, vf);
 	    }
 #endif
 	}
     }
-    printf ("Writing transform again ...\n");
-    save_xform (xf_out, "foo.txt");
 }
 
 void
