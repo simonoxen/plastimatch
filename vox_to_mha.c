@@ -4,7 +4,7 @@
 /* Convert's Vlad's vox format to ITK mha format */
 #include <stdio.h>
 #include <stdlib.h>
-#include "config.h"
+#include "plm_config.h"
 
 #define BUFLEN 1024
 

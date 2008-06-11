@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include "itkImage.h"
-#include "config.h"
+#include "plm_config.h"
 
 #ifndef _MAX_PATH
 #ifdef FILENAME_MAX

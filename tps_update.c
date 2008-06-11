@@ -17,7 +17,7 @@
         x y z dx dy dz a
         
     ----------------------------------------------------------------------- */
-#include "config.h"
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

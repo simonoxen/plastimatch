@@ -1,11 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/* code to convert a MHA fiel to an Analyze IMG/HDR set */
+/* code to convert a MHA file to an Analyze IMG/HDR set */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
+#include "plm_config.h"
 #include "dbh.h"
 
 void swap_long(unsigned char *pntr)

@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include "config.h"
+#include "plm_config.h"
 #include "debug.h"
 
 #if WIN32

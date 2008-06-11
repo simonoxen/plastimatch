@@ -15,7 +15,7 @@
 #include "itk_image.h"
 #include "rad_registration.h"
 #include "print_and_exit.h"
-#include "config.h"
+#include "plm_config.h"
 
 class Xform;
 

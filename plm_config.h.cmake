@@ -1,5 +1,5 @@
-#ifndef __config_h__
-#define __config_h__
+#ifndef __plm_config_h__
+#define __plm_config_h__
 
 #cmakedefine HAVE_GETOPT_LONG 1
 
