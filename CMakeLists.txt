@@ -1,14 +1,18 @@
 PROJECT(plastimatch)
 
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(SET CMP0003 NEW)
-
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
 
 INCLUDE(GPUIT.cmake)
 
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
+
+SET(PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch")
+IF(PLASTIMATCH_SLICER)
+  cmake_minimum_required(VERSION 2.6)
+  cmake_policy(SET CMP0003 NEW)
+ENDIF(PLASTIMATCH_SLICER)
+
 
 ######################################################
 ##  By default, brook builts /MT.  We need to match this.
@@ -89,7 +93,6 @@ ENDIF(UNIX)
 ######################################################
 ##  SLICER FRONT-END
 ######################################################
-SET(PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch")
 IF(PLASTIMATCH_SLICER)
 
 find_package(Slicer3 REQUIRED)
