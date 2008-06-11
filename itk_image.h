@@ -44,9 +44,9 @@ typedef itk::Point < double, Dimension >  OriginType;
 typedef itk::Vector < double, Dimension > SpacingType;
 typedef itk::ImageRegion < Dimension > ImageRegionType;
 
-ShortImageType::Pointer load_short (char* fname);
-UCharImageType::Pointer load_uchar (char* fname);
-FloatImageType::Pointer load_float (char* fname);
+plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
+plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname);
+plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
 
 template<class T> void save_image (T img_ptr, char* fname);

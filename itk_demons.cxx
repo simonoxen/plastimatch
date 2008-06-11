@@ -21,6 +21,7 @@
 #include "itk_image.h"
 #include "resample_mha.h"
 #include "xform.h"
+#include "plm_config.h"
 
 #if defined (GCS_REARRANGING_STUFF)
 

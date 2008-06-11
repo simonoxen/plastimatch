@@ -4,6 +4,8 @@
 #ifndef _resample_image_h_
 #define _resample_image_h_
 
+#include "plm_config.h"
+
 template <class T, class U>
 T
 vector_resample_image (T& vf_image, U& ref_image);
@@ -15,13 +17,12 @@ template <class T>
 T
 vector_resample_image (T& vf_image, float* origin, float* spacing, int* size);
 
-
 template <class T>
 T
 resample_image (T& image, float* origin, float* spacing, int* size, float default_val);
 
 template <class T>
-plastimatch1_EXPORT T
+T
 subsample_image (T& image, int x_sampling_rate,
 	        int y_sampling_rate, int z_sampling_rate,
 		float default_val);

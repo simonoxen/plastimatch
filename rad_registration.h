@@ -6,10 +6,8 @@
 
 #include <stdlib.h>
 #include "itkDemonsRegistrationFilter.h"
-#if defined (commentout)
-#include "itkMultiResolutionImageRegistrationMethod.h"
-#endif
 #include "itkImageRegistrationMethod.h"
+#include "plm_config.h"
 #include "rad_image.h"
 
 /* Registration typedefs */
@@ -183,6 +181,6 @@ public:
 };
 
 void not_implemented (void);
-void do_registration (Registration_Parms* regp);
+plastimatch1_EXPORT void do_registration (Registration_Parms* regp);
 
 #endif

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include "print_and_exit.h"
 
 #if WIN32
 	#define vsnprintf _vsnprintf

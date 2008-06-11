@@ -8,6 +8,7 @@
 #include "itkVectorResampleImageFilter.h"
 
 #include "itk_image.h"
+#include "resample_mha.h"
 
 template <class T>
 T
@@ -275,14 +276,14 @@ subsample_image (T& image, int x_sampling_rate,
 }
 
 /* Explicit instantiations */
-template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
+template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
-template UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val);
-template ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val);
+template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val);
+template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val);
 template UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val);
-template FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val);
-template UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
-template ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
-template UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
-template FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);
+template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val);
+template plastimatch1_EXPORT UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
+template plastimatch1_EXPORT ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
+template plastimatch1_EXPORT UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
+template plastimatch1_EXPORT FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);

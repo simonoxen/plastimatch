@@ -221,7 +221,7 @@ void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Stage_Parms* stage,
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const int* dim, float* offset, float* spacing);
-void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
+plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* xgb_new);
 void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* pix_spacing);
 

@@ -4,7 +4,9 @@
 #ifndef _print_and_exit_h_
 #define _print_and_exit_h_
 
+#include "plm_config.h"
+
 void print_and_wait (char* prompt_fmt, ...);
-void print_and_exit (char* prompt_fmt, ...);
+plastimatch1_EXPORT void print_and_exit (char* prompt_fmt, ...);
 
 #endif
