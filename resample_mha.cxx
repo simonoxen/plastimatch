@@ -37,7 +37,15 @@ vector_resample_image (T& vf_image, DoublePointType origin,
     filter->SetDefaultPixelValue (v);
 
     filter->SetInput (vf_image);
-    filter->Update();
+    try {
+	filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("Exception running vector resample filter!\n");
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
 
     T out_image = filter->GetOutput();
     return out_image;
@@ -135,7 +143,15 @@ vector_resample_image (T& image, float x_spacing,
     //filter->SetDefaultPixelValue (VectorType::Zero);
 
     filter->SetInput (image);
-    filter->Update();
+    try {
+	filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("Exception running vector resample filter!\n");
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
 
     T out_image = filter->GetOutput();
     return out_image;
@@ -168,7 +184,15 @@ resample_image (T& image, DoublePointType origin,
     filter->SetDefaultPixelValue ((PixelType) default_val);
 
     filter->SetInput (image);
-    filter->Update();
+    try {
+	filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("Exception running image resample filter!\n");
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
 
     T out_image = filter->GetOutput();
     return out_image;
@@ -236,7 +260,15 @@ subsample_image (T& image, int x_sampling_rate,
     TransformType::Pointer transform = TransformType::New();
     filter->SetTransform( transform );
     filter->SetInput( image ); 
-    filter->Update();
+    try {
+	filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("Exception running image subsample filter!\n");
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
 
     T out_image = filter->GetOutput();
     return out_image;

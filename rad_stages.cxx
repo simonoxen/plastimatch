@@ -196,10 +196,15 @@ save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* re
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
 	/* Convert xform to vf */
 	printf ("Converting xf to vector field ...\n");
+
+	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
+	printf ("IM Size[sro] is %d %d %d\n", img_size[0], img_size[1], img_size[2]);
+
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
+	    printf ("Saving warped image ...\n");
 	    save_warped_img (regd, xf_tmp.get_itk_vf(), regp->img_out_fn);
 	}
 	/* Save deformation field */
