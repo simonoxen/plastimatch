@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkArray.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"

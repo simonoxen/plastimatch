@@ -10,7 +10,7 @@
 #else
 #include <dirent.h>
 #endif
-#include "config.h"
+#include "plm_config.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

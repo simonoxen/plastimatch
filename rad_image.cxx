@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
+#include "plm_config.h"
 #include "rad_image.h"
 #include "itkImageRegionIterator.h"
 #include "readmha.h"

@@ -2,6 +2,7 @@
 #define __plm_config_h__
 
 #cmakedefine HAVE_GETOPT_LONG 1
+#cmakedefine BUILD_SHARED_LIBS 1
 
 #if _MSC_VER >= 1400
 /* 4996 warnings are generated when using C library functions */
@@ -22,7 +23,7 @@
 #endif
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (defined(_WIN32) || defined(WIN32))
+#if (defined(_WIN32) || defined(WIN32)) && defined (BUILD_SHARED_LIBS)
 # ifdef plastimatch1_EXPORTS
 #  define plastimatch1_EXPORT __declspec(dllexport)
 # else
@@ -30,7 +31,7 @@
 # endif
 #else
 /* unix needs nothing */
-#define ITKCommon_EXPORT 
+#define plastimatch1_EXPORT 
 #endif
 
 #endif /* __config_h__ */

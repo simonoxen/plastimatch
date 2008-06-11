@@ -4,7 +4,7 @@
 /*  Warp one or more dij matrices based on a vector field */
 #include <time.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkImage.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkInterpolateImagePointsFilter.h"

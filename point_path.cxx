@@ -16,7 +16,7 @@
  * =======================================================================*/
 #include <stdio.h>
 #include <string.h>
-#include "config.h"
+#include "plm_config.h"
 #include "xform.h"
 
 int input_phase;

@@ -3,7 +3,7 @@
    ----------------------------------------------------------------------- */
 /* This program is used to convert from dicom to mha */
 #include <time.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

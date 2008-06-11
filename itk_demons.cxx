@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>   // Note: gcc prefers c++-style includes
-#include "config.h"
+#include "plm_config.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"

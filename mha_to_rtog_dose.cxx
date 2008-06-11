@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #if defined (WIN32)
 #include <direct.h>
 #define mkdir(a,b) _mkdir(a)

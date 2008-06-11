@@ -5,7 +5,7 @@
     on the vector field. It takes 3 inputs: floating image, vector
     field, and an output image file names */
 #include <time.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkImage.h"
 #include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"

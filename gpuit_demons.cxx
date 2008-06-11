@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "rad_registration.h"
 #include "xform.h"
 #include "readmha.h"

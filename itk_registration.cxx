@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkImageRegistrationMethod.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkImage.h"

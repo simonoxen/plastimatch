@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "config.h"
+#include "plm_config.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +10,6 @@
 #else
 #include "getopt.h"
 #endif
-#include "config.h"
 #include "rad_registration.h"
 #include "itk_image.h"
 #include "itk_optim.h"

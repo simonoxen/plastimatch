@@ -5,7 +5,7 @@
     Modified by Ziji Wu, 3/2006, to do the vector field as well
 */
 #include <time.h>
-#include "config.h"
+#include "plm_config.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"

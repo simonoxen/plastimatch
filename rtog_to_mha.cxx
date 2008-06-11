@@ -40,7 +40,7 @@
       < RMK: This works for (x,y), but not for (z) - NEED TO FIX >
       For MASK, need to flip Y
  */
-#include "config.h"
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
