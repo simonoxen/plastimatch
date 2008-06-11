@@ -21,7 +21,7 @@ T
 resample_image (T& image, float* origin, float* spacing, int* size, float default_val);
 
 template <class T>
-T
+plastimatch1_EXPORT T
 subsample_image (T& image, int x_sampling_rate,
 	        int y_sampling_rate, int z_sampling_rate,
 		float default_val);

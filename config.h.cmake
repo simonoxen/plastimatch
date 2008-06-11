@@ -21,4 +21,16 @@
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #endif
 
+/* This code is for exporting symbols when building DLLs on windows */
+#if (defined(_WIN32) || defined(WIN32))
+# ifdef plastimatch1_EXPORTS
+#  define plastimatch1_EXPORT __declspec(dllexport)
+# else
+#  define plastimatch1_EXPORT __declspec(dllimport)
+# endif
+#else
+/* unix needs nothing */
+#define ITKCommon_EXPORT 
+#endif
+
 #endif /* __config_h__ */

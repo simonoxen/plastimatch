@@ -15,6 +15,7 @@
 #include "itk_image.h"
 #include "rad_registration.h"
 #include "print_and_exit.h"
+#include "config.h"
 
 class Xform;
 
@@ -205,8 +206,8 @@ public:
     }
 };
 
-void load_xform (Xform *xf, char* fn);
-void save_xform (Xform *xf, char* fn);
+plastimatch1_EXPORT void load_xform (Xform *xf, char* fn);
+plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
 void xform_to_trn (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
@@ -219,7 +220,7 @@ void xform_to_aff (Xform *xf_out, Xform *xf_in, Stage_Parms* stage,
 void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
-void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const int* dim, float* offset, float* spacing);
+plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const int* dim, float* offset, float* spacing);
 void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* xgb_new);
 void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* pix_spacing);

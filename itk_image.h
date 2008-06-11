@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "itkImage.h"
+#include "config.h"
 
 #ifndef _MAX_PATH
 #ifdef FILENAME_MAX
@@ -46,7 +47,7 @@ typedef itk::ImageRegion < Dimension > ImageRegionType;
 ShortImageType::Pointer load_short (char* fname);
 UCharImageType::Pointer load_uchar (char* fname);
 FloatImageType::Pointer load_float (char* fname);
-DeformationFieldType::Pointer load_float_field (char* fname);
+plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
 
 template<class T> void save_image (T img_ptr, char* fname);
 template<class T> void save_short (T img_ptr, char* fname);
