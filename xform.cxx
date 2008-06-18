@@ -1085,6 +1085,17 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* pix_s
 }
 
 Volume*
+xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* pix_spacing)
+{
+    BSPLINE_Parms* bsp = &xf_in->get_gpuit_bsp()->parms;
+    Volume* vf_out;
+
+    vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    bspline_interpolate_vf (vf_out, bsp);
+    return vf_out;
+}
+
+Volume*
 xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* pix_spacing)
 {
     Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
@@ -1377,7 +1388,7 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, pix_spacing);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	print_and_exit ("Sorry, gpuit_bspline to gpuit_vf not implemented\n");
+	vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, pix_spacing);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), dim, offset, pix_spacing);

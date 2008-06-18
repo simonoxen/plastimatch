@@ -138,7 +138,7 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 }
 
 void
-save_warped_img (Registration_Data* regd,
+save_warped_img_itk (Registration_Data* regd,
 		 DeformationFieldType::Pointer vf,
 		 char* fn)
 {
@@ -157,6 +157,32 @@ save_warped_img (Registration_Data* regd,
 }
 
 void
+save_warped_img_gpuit (Registration_Data* regd,
+			Volume* vf, char* fn)
+{
+    Volume *vin, *vout;
+
+    printf ("Converting image itk->gpuit (was %d)\n",
+	    regd->moving_image->m_type);
+    vin = regd->moving_image->gpuit_float();
+
+    printf ("Warping image...\n");
+
+    vout = volume_create (vf->dim, vf->offset, vf->pix_spacing, PT_FLOAT, 0);
+    volume_warp (vout, vin, vf);
+
+    printf ("Output image: npix = %d\n", vout->npix);
+
+    printf ("Saving image...\n");
+    //volume_convert_to_short (vout);
+    write_mha (fn, vout);
+
+    //write_mha (fn, vin);
+
+    volume_free (vout);
+}
+
+void
 save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 {
     Xform xf_tmp;
@@ -168,7 +194,7 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 	/* Save warped image */
 	if (stage->img_out_fn[0]) {
 	    printf ("Saving warped image ...\n");
-	    save_warped_img (regd, xf_tmp.get_itk_vf(), stage->img_out_fn);
+	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), stage->img_out_fn);
 	}
 	/* Save deformation field */
 	if (stage->vf_out_fn[0]) {
@@ -184,7 +210,54 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 }
 
 void
-save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
+save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
+{
+    if (regp->xf_out_fn[0]) {
+	printf ("Writing transformation ...\n");
+	save_xform (xf_out, regp->xf_out_fn);
+    }
+
+    if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
+	Xform xf_gpuit_vf;
+	int d;
+	int dim[3];
+	float offset[3];
+	float spacing[3];
+
+	/* Convert xform to vf */
+	printf ("Converting xf to vector field ...\n");
+
+	const FloatImageType::Pointer fixed = regd->fixed_image->itk_float();
+	FloatImageType::SizeType img_sz = fixed->GetLargestPossibleRegion().GetSize();
+	FloatImageType::PointType img_og = fixed->GetOrigin();
+	FloatImageType::SpacingType img_sp = fixed->GetSpacing();
+
+	/* Copy header & allocate data for itk */
+	for (d = 0; d < 3; d++) {
+	    dim[d] = img_sz[d];
+	    offset[d] = img_og[d];
+	    spacing[d] = img_sp[d];
+	}
+	xform_to_gpuit_vf (&xf_gpuit_vf, xf_out, dim, offset, spacing);
+
+	vf_print_stats (xf_gpuit_vf.get_gpuit_vf());
+
+	/* Save deformation field */
+	if (regp->vf_out_fn[0]) {
+	    Volume* vf = xf_gpuit_vf.get_gpuit_vf();
+	    printf ("Writing vector field ...\n");
+	    write_mha (regp->vf_out_fn, vf);
+	}
+
+	/* Save warped image */
+	if (regp->img_out_fn[0]) {
+	    save_warped_img_gpuit (regd, xf_gpuit_vf.get_gpuit_vf(), regp->img_out_fn);
+	}
+    }
+}
+
+void
+save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     Xform xf_tmp;
 
@@ -205,7 +278,7 @@ save_regp_output (Registration_Data* regd, Xform *xf_out, Registration_Parms* re
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
 	    printf ("Saving warped image ...\n");
-	    save_warped_img (regd, xf_tmp.get_itk_vf(), regp->img_out_fn);
+	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fn);
 	}
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
@@ -352,5 +425,5 @@ do_registration (Registration_Parms* regp)
     /* RMK: If no stages, we still generate output (same as input) */
 
     printf("writing final output...\n");
-    save_regp_output (&regd, xf_out, regp);
+    save_regp_output_gpuit (&regd, xf_out, regp);
 }

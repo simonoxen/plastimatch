@@ -24,7 +24,7 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     BSPLINE_Parms *parms;
     printf ("Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
-    printf ("Converting fixed\n");
+    printf ("Converting moving\n");
     Volume *moving = regd->moving_image->gpuit_float();
     printf ("Done.\n");
     Volume *moving_ss, *fixed_ss;
