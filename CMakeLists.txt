@@ -7,13 +7,6 @@ INCLUDE(GPUIT.cmake)
 
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 
-SET(PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch")
-IF(PLASTIMATCH_SLICER)
-  cmake_minimum_required(VERSION 2.6)
-  cmake_policy(SET CMP0003 NEW)
-ENDIF(PLASTIMATCH_SLICER)
-
-
 ######################################################
 ##  By default, brook builts /MT.  We need to match this.
 ######################################################
@@ -65,8 +58,8 @@ SET(GPUIT_LIBRARIES
 ENDIF(BROOK_FOUND)
 IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARIES
-	${F2C_LIBRARY}
 	${GPUIT_LIBRARIES}
+	${F2C_LIBRARY}
 	)
 ENDIF(F2C_LIBRARY)
 
@@ -81,6 +74,7 @@ ELSE(ITK_FOUND)
           "Cannot build without ITK.  Please set ITK_DIR.")
 ENDIF(ITK_FOUND)
 
+
 ######################################################
 ##  MATH LIBRARY
 ######################################################
@@ -91,45 +85,13 @@ ELSE(UNIX)
 ENDIF(UNIX)
 
 ######################################################
-##  SLICER FRONT-END
-######################################################
-IF(PLASTIMATCH_SLICER)
-
-find_package(Slicer3 REQUIRED)
-include(${Slicer3_USE_FILE})
-
-# Set reasonable default install prefix and output paths
-# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-slicer3_set_default_install_prefix_for_external_projects()
-
-# The Command Line Module
-set(CLP plastimatch-slicer)
-set(${CLP}_SOURCE ${CLP}.cxx)
-generateclp(${CLP}_SOURCE ${CLP}.xml)
-
-# Build it
-add_executable(${CLP} ${${CLP}_SOURCE})
-slicer3_set_plugins_output_path(${CLP})
-target_link_libraries(${CLP} ${ITK_LIBRARIES})
-
-# Install it
-slicer3_install_plugins(${CLP})
-
-# Test it
-#enable_testing()
-#include(CTest)
-#set(UPDATE_TYPE svn)
-
-# ?
-#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
-
-ENDIF(PLASTIMATCH_SLICER)
-
-######################################################
 ##  SOURCE FILES
 ######################################################
 SET(COMPOSE_VECTOR_FIELDS_SRC
 	compose_vector_fields.cxx
+	)
+SET(CXT_TO_MHA_SRC
+	cxt_to_mha.cxx
 	)
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
@@ -208,7 +170,7 @@ ENDIF(NOT HAVE_GETOPT_LONG)
 ######################################################
 ##  CONFIGURATION
 ######################################################
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 
 
 ######################################################
@@ -239,6 +201,7 @@ ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
 ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
 ADD_EXECUTABLE(compose_vector_fields ${COMPOSE_VECTOR_FIELDS_SRC})
 #ADD_EXECUTABLE(cms_to_mha cms_to_mha.cxx)
+ADD_EXECUTABLE(cxt_to_mha cxt_to_mha.cxx)
 ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
 IF(BUILD_EXTRACT_CONTOUR)
 ADD_EXECUTABLE(extract_contour ${EXTRACT_CONTOUR_SRC})
@@ -268,13 +231,12 @@ ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
 ######################################################
 ##  LINK
 ######################################################
-SET(ITK_LIBS ITKCommon ITKIO ITKNumerics itksys)
-
-TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
+SET(ITK_LIBS ITKCommon ITKIO ITKNumerics)
 
 TARGET_LINK_LIBRARIES(analyze_to_mha)
 #TARGET_LINK_LIBRARIES(cms_to_mha ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(compose_vector_fields plastimatch1 ${ITK_LIBS})
+TARGET_LINK_LIBRARIES(cxt_to_mha plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(dicom_to_mha plastimatch1 ${ITK_LIBS})
 IF(BUILD_EXTRACT_CONTOUR)
 TARGET_LINK_LIBRARIES(extract_contour plastimatch1 ${ITK_LIBS})
@@ -305,6 +267,7 @@ TARGET_LINK_LIBRARIES(warp_mha plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
 INSTALL(TARGETS analyze_to_mha DESTINATION bin)
 INSTALL(TARGETS compose_vector_fields DESTINATION bin)
 #INSTALL(TARGETS cms_to_mha DESTINATION bin)
+INSTALL(TARGETS cxt_to_mha DESTINATION bin)
 INSTALL(TARGETS dicom_to_mha DESTINATION bin)
 IF(BUILD_EXTRACT_CONTOUR)
 INSTALL(TARGETS extract_contour DESTINATION bin)
