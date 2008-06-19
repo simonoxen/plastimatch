@@ -6,9 +6,6 @@
 
 //===========================================================
 
-#include "render_polyline.h"
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -24,7 +21,17 @@
 #include <sys/types.h>
 #endif
 
+#include "render_polyline.h"
+#include "getopt.h"
+
 #define BUFLEN 2048
+
+typedef struct program_parms Program_Parms;
+struct program_parms {
+    char* file_txt;
+    char* file_dicom;
+	char* outdir;
+};
 
 typedef struct ct_header CT_Header;
 struct ct_header {
@@ -41,27 +48,27 @@ struct ct_header {
 };
 
 
-typedef struct polyline POLYLINE;
-struct polyline {
-    int num_vertices;
+typedef struct vertices VERTICES;
+struct vertices {
+   /* int num_vertices;*/
     float* x;
     float* y;
     float* z;
 };
 
-typedef struct polyline_slice POLYLINE_Slice;
-struct polyline_slice {
+typedef struct polyline POLYLINE;
+struct polyline{
     int slice_no;
-    int num_polyline;
-    POLYLINE* pllist;
+    int num_vertices;
+    VERTICES* vertlist;
 };
 
 typedef struct structure STRUCTURE;
 struct structure {
-    int imno;
+    //int imno;
     char name[BUFLEN];
 	int num_contours;
-    POLYLINE_Slice* pslist;
+    POLYLINE* pslist;
 };
 typedef struct structure_list STRUCTURE_List;
 struct structure_list {
@@ -76,21 +83,136 @@ struct data_header {
     STRUCTURE_List structures;
 };
 
-//typedef struct cxt_header CXT_header;
-//struct cxt_header {
-//
-//}
-
-load_ct()
+void print_usage (void)
 {
+	//std::cerr << "Usage: " << std::endl;
+	//std::cerr << argv[0] << " input text file with contours " << " input dicom slice (need the header)" << " output directory" << std::endl;
+	exit (-1);
+	printf ("Usage: rtog_to_mha \n");
+	printf ("  input text file with contours\t");
+	printf ("  input dicom slice (need the header)\t");
+	printf ("  output directory\n");
 }
 
-load_structure(){
+
+void load_ct(DATA_Header* data_header, Program_Parms* parms)
+{
+    //uhm...trovare modo per leggere header ct...uhm
+}
+
+void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
+
+	FILE* fp;
+	//char buf[BUFLEN];
+	STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE*));
+	POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE*));
+	VERTICES* curr_vert=(VERTICES*)malloc(sizeof(VERTICES*));
+	
+	int ord=0;
+	int num_pt=0;
+	int num_cn=0;
+	char name_str[BUFLEN];
+	int pos=0;
+	char dumm;
+	int a=0;
+	
+	fp=fopen(parms->file_txt,"r");
+	
+
+	if (!fp) { 
+		printf ("Could not open contour file\n");
+		exit(-1);
+	}
+
+	while (feof(fp)==0) {
+		try{
+		if(fscanf(fp,"%n%s",&ord,name_str)==2){
+			system("PAUSE");
+			structures->num_structures++;
+			structures->slist=(STRUCTURE*) realloc (structures->slist, 
+				structures->num_structures*sizeof(STRUCTURE));
+			curr_structure=&structures->slist[structures->num_structures];
+			strcpy(curr_structure->name,name_str);
+		}else if(fscanf(fp,"%s",name_str)==1){
+			//printf("sto per caricare i punti");
+			a=a+1;
+			printf("%n",a);
+			system("PAUSE");
+		}else if(fscanf(fp,"%n%n%n",&ord,&num_pt,&num_cn)==3){
+			curr_structure=&structures->slist[ord];
+			curr_structure->num_contours=num_cn;
+			curr_structure->pslist=(POLYLINE*)realloc(curr_structure->pslist,
+				curr_structure->num_contours*sizeof(POLYLINE));
+			curr_contour=&curr_structure->pslist[curr_structure->num_contours];
+			curr_contour->num_vertices=num_pt;
+			curr_contour->vertlist=(VERTICES*)realloc(curr_contour->vertlist, 
+				(num_pt/3)*sizeof(VERTICES));
+			printf("salvo");
+			printf("%n",num_pt);
+			printf(" vertici");
+			for(int k=1; k<(num_pt/3); k=k+3)
+			{
+				pos++;
+				curr_vert=&curr_contour->vertlist[pos];
+				fscanf(fp,"%f%c%f%c%f%c",curr_vert->x,&dumm,curr_vert->y,&dumm,curr_vert->z,&dumm);
+			}
+		}
+		}
+		  catch( char * str ) {
+			  printf("Exception raised: " ,"%s",str);
+		  }
+
+
+
+
+	}
+
 }
 
 int main(int argc, char* argv[])
 {
-	load_ct();
+	
+
+	 if (argc<4)
+		 print_usage();
+	 else
+	 {
+		  printf("Ho abbastanza argomenti");
+		  system("PAUSE");
+		  Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms*));
+		  STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List*));
+		 
+		 
+		 system("PAUSE");
+		 parms->file_txt=argv[1];
+		 parms->file_dicom=argv[2];
+		 parms->outdir=argv[3];
+
+		 printf("%s %s %s", parms->file_txt, parms->file_dicom, parms->outdir);
+		  try{
+
+			 system("PAUSE");
+			 load_structures(parms,structures);
+			   
+		  }
+		  catch( char * str ) {
+			  printf("Exception raised: " ,"%s",str);
+		  }
+
+		
+		 
+		 
+	 }
+
+	 
+
+
+	 /*STRUCTURE_List* str;
+	 str->num_structures=3;
+	 str->slist[1]->num_contours=5;
+	 str->slist[1]->pslist[1]->*/
+    /*parse_args (&parms, argc, argv);*/
+	/*load_ct();
 		load_structure();
-		render_structure();
+		render_structure();*/
 }
