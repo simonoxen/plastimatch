@@ -92,6 +92,8 @@ SET(COMPOSE_VECTOR_FIELDS_SRC
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
+	render_structure.cxx
+	render_structure.h
 	)
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
@@ -201,7 +203,7 @@ ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
 ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
 ADD_EXECUTABLE(compose_vector_fields ${COMPOSE_VECTOR_FIELDS_SRC})
 #ADD_EXECUTABLE(cms_to_mha cms_to_mha.cxx)
-ADD_EXECUTABLE(cxt_to_mha cxt_to_mha.cxx)
+ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
 ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
 IF(BUILD_EXTRACT_CONTOUR)
 ADD_EXECUTABLE(extract_contour ${EXTRACT_CONTOUR_SRC})
