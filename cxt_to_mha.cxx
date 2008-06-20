@@ -107,14 +107,22 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE*));
 	POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE*));
 	VERTICES* curr_vert=(VERTICES*)malloc(sizeof(VERTICES*));
-	
+	curr_structure->num_contours=0;
+	curr_contour->num_vertices=0;
+
 	int ord=0;
 	int num_pt=0;
 	int num_cn=0;
 	char name_str[BUFLEN];
+	char inter[BUFLEN];
 	int pos=0;
 	char dumm;
-	int a=0;
+	int flag=0;
+	int res=0;
+	float x=0;
+	float y=0;
+	float z=0;
+	//int a=0;
 	
 	fp=fopen(parms->file_txt,"r");
 	
@@ -123,22 +131,47 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		printf ("Could not open contour file\n");
 		exit(-1);
 	}
-
-	while (feof(fp)==0) {
-		try{
-		if(fscanf(fp,"%n%s",&ord,name_str)==2){
-			system("PAUSE");
-			structures->num_structures++;
-			structures->slist=(STRUCTURE*) realloc (structures->slist, 
-				structures->num_structures*sizeof(STRUCTURE));
-			curr_structure=&structures->slist[structures->num_structures];
-			strcpy(curr_structure->name,name_str);
-		}else if(fscanf(fp,"%s",name_str)==1){
-			//printf("sto per caricare i punti");
-			a=a+1;
-			printf("%n",a);
-			system("PAUSE");
-		}else if(fscanf(fp,"%n%n%n",&ord,&num_pt,&num_cn)==3){
+	
+	while(feof(fp)==0) {
+	/*	printf("Inizio a leggere\n");
+		try{*/
+		//printf("fp pre if: %d\n",*fp);
+		if(flag==0)
+		{
+			fscanf(fp,"%s",name_str);
+			//fgets(name_str,BUFLEN,fp);
+			res=strcmp("HEADER",name_str);
+						
+			if(res==0)
+			{	
+				//printf("ora ho letto(sono nel primo if): %s\n",name_str);
+				while (fscanf(fp,"%d %s",&ord,inter)==2)
+				{
+					//printf("ora ho letto: %s\n",inter);
+					structures->num_structures++;
+					//printf("num_structures: %d\n",structures->num_structures);
+					structures->slist=(STRUCTURE*) realloc (structures->slist, 
+					structures->num_structures*sizeof(STRUCTURE));
+					curr_structure=&structures->slist[structures->num_structures];
+					strcpy(curr_structure->name,inter);
+					//printf("nome structures: %s\n",curr_structure->name);
+				}	
+				fscanf(fp,"%s",name_str);
+				flag=1;
+				printf("num_structures: %d\n",structures->num_structures);
+			}
+			/*printf("%d %s\n",ord,name_str); strcmp("END_OF_ROI_NAMES",name_str)==0*/
+			/*}else
+			{
+						
+				printf("flag: %d\n",flag);
+				
+				printf("flag: %d\n",flag);
+			}*/
+			
+		}else if(flag==1){
+			fscanf(fp,"%d %d %d",&ord,&num_pt,&num_cn);
+			printf("ord: %d %d %d\n",ord,num_pt,num_cn);
 			curr_structure=&structures->slist[ord];
 			curr_structure->num_contours=num_cn;
 			curr_structure->pslist=(POLYLINE*)realloc(curr_structure->pslist,
@@ -147,20 +180,33 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 			curr_contour->num_vertices=num_pt;
 			curr_contour->vertlist=(VERTICES*)realloc(curr_contour->vertlist, 
 				(num_pt/3)*sizeof(VERTICES));
-			printf("salvo");
-			printf("%n",num_pt);
-			printf(" vertici");
-			for(int k=1; k<(num_pt/3); k=k+3)
+			printf("salvo ");
+			printf("%d",num_pt);
+			printf(" vertici \n");
+			for(int k=1; k<(curr_contour->num_vertices)/3; k=k+3)
 			{
-				pos++;
+				printf("K: %d\n", k);
+				/*curr_contour->vertlist=(VERTICES*)realloc(curr_contour->vertlist, 
+					k*sizeof(VERTICES));*/
+				/*printf("Ho allocato!");*/
 				curr_vert=&curr_contour->vertlist[pos];
-				fscanf(fp,"%f%c%f%c%f%c",curr_vert->x,&dumm,curr_vert->y,&dumm,curr_vert->z,&dumm);
+				
+				curr_vert->x=(float*)realloc(curr_vert->x,k*sizeof(float));
+				curr_vert->y=(float*)realloc(curr_vert->y,k*sizeof(float));
+				curr_vert->y=(float*)realloc(curr_vert->y,k*sizeof(float));
+				printf("Ho un nuovo vertice!\n");
+				fscanf(fp,"%d%c%d%c%d%c",&x,&dumm,&y,&dumm,&z,&dumm);
+				curr_vert->x[pos]=x;
+				curr_vert->y[pos]=y;
+				curr_vert->z[pos]=z;
+				printf("Ho un nuovo vertice!");
+				pos++;
 			}
 		}
-		}
+		/*}
 		  catch( char * str ) {
 			  printf("Exception raised: " ,"%s",str);
-		  }
+		  }*/
 
 
 
@@ -177,21 +223,18 @@ int main(int argc, char* argv[])
 		 print_usage();
 	 else
 	 {
-		  printf("Ho abbastanza argomenti");
+		  printf("Ho abbastanza argomenti\n");
 		  system("PAUSE");
 		  Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms*));
 		  STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List*));
+		  structures->num_structures=0;
 		 
-		 
-		 system("PAUSE");
 		 parms->file_txt=argv[1];
 		 parms->file_dicom=argv[2];
 		 parms->outdir=argv[3];
 
-		 printf("%s %s %s", parms->file_txt, parms->file_dicom, parms->outdir);
+		 printf("%s %s %s\n", parms->file_txt, parms->file_dicom, parms->outdir);
 		  try{
-
-			 system("PAUSE");
 			 load_structures(parms,structures);
 			   
 		  }
