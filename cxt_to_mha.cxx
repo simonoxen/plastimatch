@@ -154,7 +154,7 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 				flag=1;
 			}
 		}else if(flag==1){
-			fscanf(fp,"%d %d %d",&ord,&num_pt,&num_cn);
+			fscanf(fp,"%i %i %i",&ord,&num_pt,&num_cn);
 			printf("ORD: %d\n NUM PT: %d\n NUM CONTORNO: %d\n",ord,num_pt,num_cn);
 			curr_structure=&structures->slist[ord];
 			curr_structure->num_contours=num_cn;
@@ -165,14 +165,15 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 			curr_contour->x=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->y=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->z=(float*)malloc(num_pt*sizeof(float));
-			pos=0;
-			for(int k=1; k<=curr_contour->num_vertices; k++)
+			//pos=0;
+			for(int k=0; k<=(curr_contour->num_vertices)-1; k++)
 			{
 				fscanf(fp,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm,&z,&dumm);
-				curr_contour->x[pos]=x;
-				curr_contour->y[pos]=y;
-				curr_contour->z[pos]=z;
-				pos++;
+				printf("nome structure: %s num vert: %d point: %f %f %f\n",curr_structure->name,curr_contour->num_vertices,x,y,z);
+				curr_contour->x[k]=x;
+				curr_contour->y[k]=y;
+				curr_contour->z[k]=z;
+				//pos++;
 			}
 			/*ord=0;
 			num_pt=0;
@@ -180,7 +181,7 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 			x=0;
 			y=0;
 			z=0;*/
-			printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);
+			/*printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);*/
 			flag=1;
 		}
 		
