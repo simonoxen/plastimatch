@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>
+    Registration</category>
+  <title>
+    (MGH) Plastimatch</title>
+  <description>
+    Plastimatch deformable registration software</description>
+  <version>
+    0.0</version>
+  <documentation-url></documentation-url>
+  <license>BSD-style</license>
+  <contributor>
+    Gregory C. Sharp and others</contributor>
+  <acknowledgements>
+    </acknowledgements>
+ <parameters>
+    <label>Input/Output</label>
+    <description>Input/output parameters</description>
+    <image>
+      <name>plmslc_fixed_volume</name>
+      <label>Fixed Volume</label>
+      <channel>input</channel>
+      <index>0</index>
+      <default>None</default>
+      <description>Reference volume</description>
+    </image>
+    <image>
+      <name>plmslc_moving_volume</name>
+      <label>Moving Volume</label>
+      <channel>input</channel>
+      <index>1</index>
+      <default>None</default>
+      <description>Volume to warp</description>
+    </image>
+    <image>
+      <name>plmslc_warped_volume</name>
+      <label>Output Volume</label>
+      <channel>output</channel>
+      <index>2</index>
+      <default>None</default>
+      <description>Warped output image</description>
+    </image>
+</parameters>
+
+</executable>
