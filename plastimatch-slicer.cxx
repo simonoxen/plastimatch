@@ -1,5 +1,6 @@
 #include <iostream>
 #include "plastimatch-slicerCLP.h"
+#include "rad_registration.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -20,12 +21,13 @@
 </parameters>
 */
 
+const char* parms_fn = "C:/tmp/plmslc-tmp.parms";
 
 int main(int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    FILE* fp = fopen ("C:/tmp/plmslc-tmp.parms", "w");
+    FILE* fp = fopen (parms_fn, "w");
     fprintf (fp,
 	     "[GLOBAL]\n"
 	     "fixed=%s\n"
@@ -58,8 +60,15 @@ int main(int argc, char * argv [])
 	     plmslc_warped_volume.c_str());
     fclose (fp);
 
-    return EXIT_FAILURE;
-    
+    Registration_Parms regp;
+    if (parse_command_file (&regp, parms_fn) < 0) {
+	return EXIT_FAILURE;
+    }
+    do_registration (&regp);
+    return EXIT_SUCCESS;
+}
+
+
 #if defined (commentout)
     std::cout << "Hello Slicer!" << std::endl;
     typedef itk::Image< short, 3 > ImageType;
@@ -89,4 +98,3 @@ int main(int argc, char * argv [])
 
     return EXIT_SUCCESS;
 #endif
-}

@@ -331,7 +331,7 @@ generateclp(${CLP}_SOURCE ${CLP}.xml)
 # Build it 	 
 add_executable(${CLP} ${${CLP}_SOURCE}) 	 
 slicer3_set_plugins_output_path(${CLP}) 	 
-target_link_libraries(${CLP} ${ITK_LIBRARIES}) 	 
+target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
 
 # Install it 	 
 slicer3_install_plugins(${CLP}) 	 
