@@ -92,41 +92,6 @@ ELSE(UNIX)
 ENDIF(UNIX)
 
 ######################################################
-##  SLICER FRONT-END 	 
-###################################################### 	 
-IF(PLASTIMATCH_SLICER) 	 
-
-find_package(Slicer3 REQUIRED) 	 
-include(${Slicer3_USE_FILE}) 	 
-
-# Set reasonable default install prefix and output paths 	 
-# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure) 	 
-slicer3_set_default_install_prefix_for_external_projects() 	 
-
-# The Command Line Module 	 
-set(CLP plastimatch-slicer) 	 
-set(${CLP}_SOURCE ${CLP}.cxx) 	 
-generateclp(${CLP}_SOURCE ${CLP}.xml) 	 
-
-# Build it 	 
-add_executable(${CLP} ${${CLP}_SOURCE}) 	 
-slicer3_set_plugins_output_path(${CLP}) 	 
-target_link_libraries(${CLP} ${ITK_LIBRARIES}) 	 
-
-# Install it 	 
-slicer3_install_plugins(${CLP}) 	 
-
-# Test it 	 
-#enable_testing() 	 
-#include(CTest) 	 
-#set(UPDATE_TYPE svn) 	 
-
-# ? 	 
-#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help) 	 
-
-ENDIF(PLASTIMATCH_SLICER) 	 
-
-######################################################
 ##  SOURCE FILES
 ######################################################
 SET(COMPOSE_VECTOR_FIELDS_SRC
@@ -236,10 +201,14 @@ ENDIF(GPUIT_FOUND)
 ##  TARGETS
 ######################################################
 
+#SET(ITK_LIBS ITKCommon ITKIO ITKNumerics itksys)
+SET(ITK_LIBS ITKCommon ITKIO ITKNumerics)
+
 ## Despite claims to the contrary, you are not allowed to have a library
 ## with the same name as the executable.  What happens is the executable 
 ## tries to create a temporary library with the same name.  [MSVC 2005]
 ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
+TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
 ## SET_TARGET_PROPERTIES(plastimatch-lib PROPERTIES OUTPUT_NAME plastimatch)
 
 ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
@@ -275,7 +244,6 @@ ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
 ######################################################
 ##  LINK
 ######################################################
-SET(ITK_LIBS ITKCommon ITKIO ITKNumerics itksys)
 
 TARGET_LINK_LIBRARIES(analyze_to_mha)
 #TARGET_LINK_LIBRARIES(cms_to_mha ${ITK_LIBS})
@@ -341,3 +309,39 @@ INSTALL(TARGETS warp_mha DESTINATION bin)
 # This is just a test, don't install it
 # ADD_EXECUTABLE(testme testme.cxx)
 # TARGET_LINK_LIBRARIES(testme ITKCommon ITKIO ITKNumerics)
+
+######################################################
+##  SLICER FRONT-END 	 
+###################################################### 	 
+IF(PLASTIMATCH_SLICER) 	 
+
+find_package(Slicer3 REQUIRED) 	 
+include(${Slicer3_USE_FILE}) 	 
+
+# Set reasonable default install prefix and output paths 	 
+# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure) 	 
+slicer3_set_default_install_prefix_for_external_projects() 	 
+
+# The Command Line Module 	 
+set(CLP plastimatch-slicer) 	 
+set(${CLP}_SOURCE ${CLP}.cxx) 	 
+generateclp(${CLP}_SOURCE ${CLP}.xml) 	 
+
+# Build it 	 
+add_executable(${CLP} ${${CLP}_SOURCE}) 	 
+slicer3_set_plugins_output_path(${CLP}) 	 
+target_link_libraries(${CLP} ${ITK_LIBRARIES}) 	 
+
+# Install it 	 
+slicer3_install_plugins(${CLP}) 	 
+
+# Test it 	 
+#enable_testing() 	 
+#include(CTest) 	 
+#set(UPDATE_TYPE svn) 	 
+
+# ? 	 
+#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help) 	 
+
+ENDIF(PLASTIMATCH_SLICER) 	 
+
