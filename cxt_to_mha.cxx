@@ -61,6 +61,7 @@ struct ct_header {
 typedef struct polyline POLYLINE;
 struct polyline{
     int slice_no;
+	char UID_slice[65];
     int num_vertices;
     //VERTICES* vertlist;
 	float* x;
@@ -78,15 +79,16 @@ struct structure {
 typedef struct structure_list STRUCTURE_List;
 struct structure_list {
     int num_structures;
+	char study_ID[65];
     STRUCTURE* slist;
    /* int skin_no;
     unsigned char* skin_image;*/
 };
-typedef struct data_header DATA_Header;
-struct data_header {
-    CT_Header ct;
-    STRUCTURE_List structures;
-};
+//typedef struct data_header DATA_Header;
+//struct data_header {
+//    CT_Header ct;
+//    STRUCTURE_List structures;
+//};
 
 void print_usage (void)
 {
@@ -100,12 +102,8 @@ void print_usage (void)
 }
 
 
-void load_ct(DATA_Header* data_header, Program_Parms* parms)
-{
-    //uhm...trovare modo per leggere header ct...uhm
-}
-
-void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
+void 
+load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 
 	FILE* fp;
 	//char buf[BUFLEN];
@@ -117,8 +115,12 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	int num_cn=0;
 	char name_str[BUFLEN];
 	char inter[BUFLEN];
+	char study_ID[65];
 	int pos=0;
 	char dumm;
+	char junk[25];
+	//int foo=0;
+	float thick=0;
 	
 	int flag=0;
 	int res=0;
@@ -126,7 +128,7 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	float y=0;
 	float z=0;
 	
-	char buf[BUF];
+	//char buf[BUF];
 	//int a=0;
 	memset(curr_structure,0,sizeof(STRUCTURE));
 	memset(curr_contour,0,sizeof(POLYLINE));
@@ -144,27 +146,29 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	while(feof(fp)==0) {
 		if(flag==0)
 		{
+			//fscanf(fp,"%s %s",name_str,study_ID);
 			fscanf(fp,"%s",name_str);
-			//fgets(buf,BUF,fp);
-			//sscanf(buf,"%s",name_str);
 			res=strcmp("HEADER",name_str);		
 			if(res==0)
 			{	
-				while (fscanf(fp,"%d %s",&ord,inter)==2)
-				//while(fgets(buf,BUF,fp) && sscanf(buf,"%d %s",&ord,inter)==2)
+				fscanf(fp,"%s",study_ID);
+				printf("STUDY ID is: %s\n",study_ID);
+				
+				while (fscanf(fp,"%d %s %s",&ord,junk,inter)==3)
 				{
 					
 					structures->num_structures++;
 					structures->slist=(STRUCTURE*) realloc (structures->slist, 
 					structures->num_structures*sizeof(STRUCTURE));
+					strcpy(structures->study_ID,study_ID);
 					curr_structure=&structures->slist[structures->num_structures-1];
 					strcpy(curr_structure->name,inter);
 					curr_structure->num_contours=0;
-					//curr_structure->pslist=0;
-					//printf("structure: %s\n",curr_structure->name);
-				}	
-				//printf("NUMERO STRUTTURE: %d\n",structures->num_structures);
-				//fscanf_s(fp,"%s",name_str);
+					printf("STRUCTURE: %s\n",curr_structure->name);
+				}
+				printf("\n");
+				strcpy(structures->study_ID,study_ID);
+				printf("STUDY_ID: %s\n",structures->study_ID);
 				fgets(name_str, BUFLEN,fp);
 				flag=1;
 			}
@@ -174,35 +178,34 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 				exit(-1);
 			}
 		}else if(flag==1){
-			//fgets(buf,BUF,fp);
-			/*printf("%s\n",buf);
-			system("PAUSE");*/
-			//sscanf(buf,"%d %d %d",&ord,&num_pt,&num_cn);
-			if(fscanf(fp,"%d %d %d",&ord,&num_pt,&num_cn)!=3)
+			if(fscanf(fp,"%d %f %d %d %s",&ord,&thick,&num_pt,&num_cn,junk)!=5)
+			{
 				break;
-			//printf("ORD: %d\n NUM PT: %d\n NUM CONTORNO: %d\n",ord,num_pt,num_cn);
+			}
 			curr_structure=&structures->slist[ord-1];
 			curr_structure->num_contours=num_cn;
 			curr_structure->pslist=(POLYLINE*)realloc(curr_structure->pslist,
-				(num_cn+1)*sizeof(POLYLINE));
-			
-			curr_contour=&curr_structure->pslist[curr_structure->num_contours];
-				
+				(num_cn+1)*sizeof(POLYLINE));			
+			curr_contour=&curr_structure->pslist[curr_structure->num_contours];				
 			curr_contour->num_vertices=num_pt;
 			
+			fscanf(fp,"%s",inter);
+			strcpy(curr_contour->UID_slice,inter);
+			printf("UID: %s STRUCTURE: %d NUM_PT: %d JUNK: %s\n",curr_contour->UID_slice,ord,num_pt,junk);
+
 			curr_contour->x=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->y=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->z=(float*)malloc(num_pt*sizeof(float));
+			printf ("malloc finished!\n");
 			if(curr_contour->y==0 || curr_contour->x==0 ||curr_contour->z==0 )
 			{
 				fprintf(stderr,"Error allocating memory");
 				exit(-1);
 			}
-			printf("ho passato il try-catch\n");
-			//pos=0;
 			for(int k=0; k<num_pt; k++)
 			{				
 				//sscanf(buf,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm2,&z,&dumm3);
+				
 				fscanf(fp,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm,&z,&dumm);
 				//printf("num vert: %d point: %f %f %f\n",k,x,y,z);
 				curr_contour->x[k]=x;
@@ -226,15 +229,20 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		fclose(fp);
 }
 
+void
+load_dicom_info(Program_Parms* parms, STRUCTURE_List* structures){
+}
+
+
 int main(int argc, char* argv[])
 {
 	
-	printf("argc= %d\n", argc);
+	//printf("argc= %d\n", argc);
 	 if (argc<4)
 		 print_usage();
 	 else
 	 {
-		 Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms*));
+		 Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms));
 		 STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List));
 		 memset(structures,0,sizeof(STRUCTURE_List));
 		 structures->num_structures=0;
@@ -245,6 +253,7 @@ int main(int argc, char* argv[])
 
 		  try{
 			 load_structures(parms,structures);
+			 load_dicom_info(parms,structures);
 			   
 		  }
 		  catch( char * str ) {
