@@ -362,6 +362,7 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 	    regp->stages[0]->optim_type, regp->stages[0]->impl_type);
     }
 #endif
+
     /* GCS Jun 2, 2008.  Always load as ITK so we can find the ROI */
 
     printf ("fixed image=%s\n", regp->fixed_fn);

@@ -19,6 +19,8 @@
 #include "itkDICOMSeriesFileNames.h"
 #include "itkCastImageFilter.h"
 #include "itk_image.h"
+#include "itkPluginUtilities.h"
+#include "itkImageIOBase.h"
 
 /* =======================================================================*
     Definitions
@@ -58,9 +60,33 @@ is_directory (char *dir)
     return 1;
 }
 
+int
+extension_is (char* fname, char* ext)
+{
+    return (strlen (fname) > strlen(ext)) 
+	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);
+}
+
+// This function is copied from Slicer3 (itkPluginUtilities.h)
+//   so it's available in case Slicer3 is not installed.
+// Get the PixelType and ComponentType from fileName
+void itk__GetImageType (std::string fileName,
+			itk::ImageIOBase::IOPixelType &pixelType,
+			itk::ImageIOBase::IOComponentType &componentType)
+{
+    typedef itk::Image<unsigned char, 3> ImageType;
+    itk::ImageFileReader<ImageType>::Pointer imageReader =
+	itk::ImageFileReader<ImageType>::New();
+    imageReader->SetFileName(fileName.c_str());
+    imageReader->UpdateOutputInformation();
+
+    pixelType = imageReader->GetImageIO()->GetPixelType();
+    componentType = imageReader->GetImageIO()->GetComponentType();
+}
+
 template<class RdrT>
 void
-load_mha_rdr(RdrT reader, char *fn)
+load_itk_rdr(RdrT reader, char *fn)
 {
     reader->SetFileName(fn);
     try {
@@ -171,14 +197,14 @@ get_mha_type (char* mha_fname)
 
 template<class T>
 FloatImageType::Pointer
-load_mha_float_2 (T rdr, char* mha_fname)
+load_mha_float_2_old (T rdr, char* mha_fname)
 {
     typedef typename T::ObjectType::OutputImagePixelType PixelType;
     typedef typename itk::Image < PixelType, 3 > InputImageType;
     typedef typename itk::CastImageFilter < 
 		InputImageType, FloatImageType > CastFilterType;
 
-    load_mha_rdr (rdr, mha_fname);
+    load_itk_rdr (rdr, mha_fname);
     typename InputImageType::Pointer input_image = rdr->GetOutput();
 
     /* Convert images to float */
@@ -191,20 +217,161 @@ load_mha_float_2 (T rdr, char* mha_fname)
 }
 
 FloatImageType::Pointer
-load_mha_float (char* mha_fname)
+load_mha_float_old (char* mha_fname)
 {
     int file_type = get_mha_type (mha_fname);
     if (file_type == TYPE_SHORT) {
 	MhaShortReaderType::Pointer rdr = MhaShortReaderType::New();
-	return load_mha_float_2(rdr, mha_fname);
+	return load_mha_float_2_old(rdr, mha_fname);
     } else if (file_type == TYPE_USHORT) {
 	MhaUShortReaderType::Pointer rdr = MhaUShortReaderType::New();
-	return load_mha_float_2(rdr, mha_fname);
+	return load_mha_float_2_old(rdr, mha_fname);
     } else if (file_type == TYPE_FLOAT) {
 	MhaFloatReaderType::Pointer rdr = MhaFloatReaderType::New();
-	return load_mha_float_2(rdr, mha_fname);
+	return load_mha_float_2_old(rdr, mha_fname);
     } else {
 	printf ("Load conversion failure (unsupported).\n");
+	exit (-1);
+    }
+}
+
+template<class T>
+FloatImageType::Pointer
+load_float_2 (char* fname, T)
+{
+    typedef typename itk::Image < T, 3 > TImageType;
+    typedef itk::ImageFileReader < TImageType > TReaderType;
+    typedef typename itk::CastImageFilter < 
+		TImageType, FloatImageType > CastFilterType;
+
+    /* Load image as native type */
+    TReaderType::Pointer rdr = TReaderType::New();
+    load_itk_rdr (rdr, fname);
+    typename TImageType::Pointer input_image = rdr->GetOutput();
+
+    /* Convert images to float */
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput (input_image);
+    typename FloatImageType::Pointer image = caster->GetOutput();
+    image->Update();
+    return image;
+}
+
+template<class T, class U>
+typename itk::Image< U, 3 >::Pointer
+load_any_2 (char* fname, T, U)
+{
+    typedef typename itk::Image < T, 3 > TImageType;
+    typedef typename itk::Image < U, 3 > UImageType;
+    typedef itk::ImageFileReader < TImageType > TReaderType;
+    typedef typename itk::CastImageFilter < 
+		TImageType, UImageType > CastFilterType;
+
+    /* Load image as type T */
+    TReaderType::Pointer rdr = TReaderType::New();
+    load_itk_rdr (rdr, fname);
+    typename TImageType::Pointer input_image = rdr->GetOutput();
+
+    /* Convert images to type U */
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput (input_image);
+    typename UImageType::Pointer image = caster->GetOutput();
+    image->Update();
+
+    /* Return type U */
+    return image;
+}
+
+template<class U>
+typename itk::Image< U, 3 >::Pointer
+load_any (char* fname, U otype)
+{
+    itk::ImageIOBase::IOPixelType pixelType;
+    itk::ImageIOBase::IOComponentType componentType;
+    try {
+	itk__GetImageType (fname, pixelType, componentType);
+	switch (componentType) {
+        case itk::ImageIOBase::UCHAR:
+	    return load_any_2 (fname, static_cast<unsigned char>(0), otype);
+	case itk::ImageIOBase::CHAR:
+	    return load_any_2 (fname, static_cast<char>(0), otype);
+	case itk::ImageIOBase::USHORT:
+	    return load_any_2 (fname, static_cast<unsigned short>(0), otype);
+	case itk::ImageIOBase::SHORT:
+	    return load_any_2 (fname, static_cast<short>(0), otype);
+	case itk::ImageIOBase::UINT:
+	    return load_any_2 (fname, static_cast<unsigned int>(0), otype);
+	case itk::ImageIOBase::INT:
+	    return load_any_2 (fname, static_cast<int>(0), otype);
+	case itk::ImageIOBase::ULONG:
+	    return load_any_2 (fname, static_cast<unsigned long>(0), otype);
+	case itk::ImageIOBase::LONG:
+	    return load_any_2 (fname, static_cast<long>(0), otype);
+	case itk::ImageIOBase::FLOAT:
+	    return load_any_2 (fname, static_cast<float>(0), otype);
+	case itk::ImageIOBase::DOUBLE:
+	    return load_any_2 (fname, static_cast<double>(0), otype);
+	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
+	default:
+	    fprintf (stderr, 
+		     "Error: unhandled file type for loading image %s\n",
+		     fname);
+	    exit (-1);
+	    break;
+	}
+    }
+    catch (itk::ExceptionObject &excep) {
+	std::cerr << "Exception loading image: " << fname << std::endl;
+	std::cerr << excep << std::endl;
+	exit (-1);
+    }
+}
+
+FloatImageType::Pointer
+load_float (char* fname)
+{
+    return load_any (fname, static_cast<float>(0));
+}
+
+FloatImageType::Pointer
+load_float_alt (char* fname)
+{
+    printf ("LOAD_FLOAT\n");
+    itk::ImageIOBase::IOPixelType pixelType;
+    itk::ImageIOBase::IOComponentType componentType;
+    try {
+	itk__GetImageType (fname, pixelType, componentType);
+	switch (componentType) {
+        case itk::ImageIOBase::UCHAR:
+	    return load_float_2 (fname, static_cast<unsigned char>(0));
+	case itk::ImageIOBase::CHAR:
+	    return load_float_2 (fname, static_cast<char>(0));
+	case itk::ImageIOBase::USHORT:
+	    return load_float_2 (fname, static_cast<unsigned short>(0));
+	case itk::ImageIOBase::SHORT:
+	    return load_float_2 (fname, static_cast<short>(0));
+	case itk::ImageIOBase::UINT:
+	    return load_float_2 (fname, static_cast<unsigned int>(0));
+	case itk::ImageIOBase::INT:
+	    return load_float_2 (fname, static_cast<int>(0));
+	case itk::ImageIOBase::ULONG:
+	    return load_float_2 (fname, static_cast<unsigned long>(0));
+	case itk::ImageIOBase::LONG:
+	    return load_float_2 (fname, static_cast<long>(0));
+	case itk::ImageIOBase::FLOAT:
+	    return load_float_2 (fname, static_cast<float>(0));
+	case itk::ImageIOBase::DOUBLE:
+	    return load_float_2 (fname, static_cast<double>(0));
+	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
+	default:
+	    fprintf (stderr, "Error: unhandled file type for loading float\n");
+	    exit (-1);
+	    break;
+	}
+    }
+    catch (itk::ExceptionObject &excep) {
+	std::cerr << "Exception getting image type: " << fname << std::endl;
+	std::cerr << excep << std::endl;
 	exit (-1);
     }
 }
@@ -218,7 +385,7 @@ load_mha_short_2 (T rdr, char* mha_fname)
     typedef typename itk::CastImageFilter < 
 		InputImageType, ShortImageType > CastFilterType;
 
-    load_mha_rdr (rdr, mha_fname);
+    load_itk_rdr (rdr, mha_fname);
     typename InputImageType::Pointer input_image = rdr->GetOutput();
 
     /* Convert images to float */
@@ -263,7 +430,7 @@ load_mha_uchar_2 (T rdr, char* mha_fname)
     typedef typename itk::CastImageFilter < 
 		InputImageType, UCharImageType > CastFilterType;
 
-    load_mha_rdr (rdr, mha_fname);
+    load_itk_rdr (rdr, mha_fname);
     typename InputImageType::Pointer input_image = rdr->GetOutput();
 
     /* Convert images to uchar */
@@ -294,19 +461,6 @@ load_uchar (char* fname)
 {
     /* Dicom not yet supported */
     return load_mha_uchar (fname);
-}
-
-FloatImageType::Pointer
-load_float (char* fname)
-{
-    /* If it is directory, then must be dicom */
-    if (is_directory(fname)) {
-	/* Not yet implemented */
-	printf ("Sorry, cannot load dicom as float\n");
-	exit (-1);
-    } else {
-	return load_mha_float (fname);
-    }
 }
 
 DeformationFieldType::Pointer
@@ -398,7 +552,7 @@ save_float (T image, char* fname)
 
 
 /* Explicit instantiations */
-template void load_mha_rdr (MhaUCharReaderType::Pointer reader, char *fn);
+template void load_itk_rdr (MhaUCharReaderType::Pointer reader, char *fn);
 template void load_dicom_dir_rdr(DicomShortReaderType::Pointer rdr, char *dicom_dir);
 template void load_dicom_dir_rdr(DicomUShortReaderType::Pointer rdr, char *dicom_dir);
 template void load_dicom_dir_rdr(DicomFloatReaderType::Pointer rdr, char *dicom_dir);
