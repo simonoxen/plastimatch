@@ -126,6 +126,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	itk_optim.cxx itk_optim.h 
 	itk_registration.cxx itk_registration.h 
 	itk_warp.cxx itk_warp.h 
+	plastimatch_parms.cxx
 	print_and_exit.cxx print_and_exit.h 
 	rad_image.cxx rad_image.h 
 	rad_stages.cxx 
@@ -140,7 +141,7 @@ SET(POINT_PATH_SRC
 	point_path.cxx
 	)
 SET(PLASTIMATCH_SRC
-	rad_registration_main.cxx 
+	plastimatch_main.cxx 
 	)
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
