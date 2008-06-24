@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
+#include "plm_config.h"
 
 #if defined (WIN32)
 #include <direct.h>
@@ -25,6 +26,7 @@
 #include "getopt.h"
 
 #define BUFLEN 2048
+#define BUF (128*1024)
 
 typedef struct program_parms Program_Parms;
 struct program_parms {
@@ -107,12 +109,9 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 
 	FILE* fp;
 	//char buf[BUFLEN];
-	STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE*));
-	POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE*));
-	//VERTICES* curr_vert=(VERTICES*)malloc(sizeof(VERTICES*));
-	curr_structure->num_contours=0;
-	curr_contour->num_vertices=0;
-
+	STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE));
+	POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE));
+	
 	int ord=0;
 	int num_pt=0;
 	int num_cn=0;
@@ -120,15 +119,22 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	char inter[BUFLEN];
 	int pos=0;
 	char dumm;
+	
 	int flag=0;
 	int res=0;
 	float x=0;
 	float y=0;
 	float z=0;
+	
+	char buf[BUF];
 	//int a=0;
-	
+	memset(curr_structure,0,sizeof(STRUCTURE));
+	memset(curr_contour,0,sizeof(POLYLINE));
+	curr_structure->num_contours=0;
+	curr_contour->num_vertices=0;
+
 	fp=fopen(parms->file_txt,"r");
-	
+	//fp=fopen(parms->file_txt,"r");
 
 	if (!fp) { 
 		printf ("Could not open contour file\n");
@@ -139,69 +145,98 @@ void load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		if(flag==0)
 		{
 			fscanf(fp,"%s",name_str);
+			//fgets(buf,BUF,fp);
+			//sscanf(buf,"%s",name_str);
 			res=strcmp("HEADER",name_str);		
 			if(res==0)
 			{	
 				while (fscanf(fp,"%d %s",&ord,inter)==2)
+				//while(fgets(buf,BUF,fp) && sscanf(buf,"%d %s",&ord,inter)==2)
 				{
+					
 					structures->num_structures++;
 					structures->slist=(STRUCTURE*) realloc (structures->slist, 
 					structures->num_structures*sizeof(STRUCTURE));
-					curr_structure=&structures->slist[structures->num_structures];
+					curr_structure=&structures->slist[structures->num_structures-1];
 					strcpy(curr_structure->name,inter);
+					curr_structure->num_contours=0;
+					//curr_structure->pslist=0;
+					//printf("structure: %s\n",curr_structure->name);
 				}	
-				fscanf(fp,"%s",name_str);
+				//printf("NUMERO STRUTTURE: %d\n",structures->num_structures);
+				//fscanf_s(fp,"%s",name_str);
+				fgets(name_str, BUFLEN,fp);
 				flag=1;
 			}
+			else
+			{
+				fprintf(stderr,"ERROR: Your file is not formatted correctly!");
+				exit(-1);
+			}
 		}else if(flag==1){
-			fscanf(fp,"%i %i %i",&ord,&num_pt,&num_cn);
-			printf("ORD: %d\n NUM PT: %d\n NUM CONTORNO: %d\n",ord,num_pt,num_cn);
-			curr_structure=&structures->slist[ord];
+			//fgets(buf,BUF,fp);
+			/*printf("%s\n",buf);
+			system("PAUSE");*/
+			//sscanf(buf,"%d %d %d",&ord,&num_pt,&num_cn);
+			if(fscanf(fp,"%d %d %d",&ord,&num_pt,&num_cn)!=3)
+				break;
+			//printf("ORD: %d\n NUM PT: %d\n NUM CONTORNO: %d\n",ord,num_pt,num_cn);
+			curr_structure=&structures->slist[ord-1];
 			curr_structure->num_contours=num_cn;
 			curr_structure->pslist=(POLYLINE*)realloc(curr_structure->pslist,
-				(curr_structure->num_contours +1)*sizeof(POLYLINE));
+				(num_cn+1)*sizeof(POLYLINE));
+			
 			curr_contour=&curr_structure->pslist[curr_structure->num_contours];
+				
 			curr_contour->num_vertices=num_pt;
+			
 			curr_contour->x=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->y=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->z=(float*)malloc(num_pt*sizeof(float));
-			//pos=0;
-			for(int k=0; k<=(curr_contour->num_vertices)-1; k++)
+			if(curr_contour->y==0 || curr_contour->x==0 ||curr_contour->z==0 )
 			{
+				fprintf(stderr,"Error allocating memory");
+				exit(-1);
+			}
+			printf("ho passato il try-catch\n");
+			//pos=0;
+			for(int k=0; k<num_pt; k++)
+			{				
+				//sscanf(buf,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm2,&z,&dumm3);
 				fscanf(fp,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm,&z,&dumm);
-				printf("nome structure: %s num vert: %d point: %f %f %f\n",curr_structure->name,curr_contour->num_vertices,x,y,z);
+				//printf("num vert: %d point: %f %f %f\n",k,x,y,z);
 				curr_contour->x[k]=x;
 				curr_contour->y[k]=y;
 				curr_contour->z[k]=z;
+				x=0;
+				y=0;
+				z=0;
 				//pos++;
 			}
-			/*ord=0;
+			ord=0;
 			num_pt=0;
 			num_cn=0;
-			x=0;
-			y=0;
-			z=0;*/
-			/*printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);*/
 			flag=1;
 		}
 		
 	}
-printf("NUM STRUCTURES: %d\n",structures->num_structures);
-		printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);
-		printf("gratulations, we made it!");
+//printf("NUM STRUCTURES: %d\n",structures->num_structures);
+//		printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);
+//		printf("gratulations, we made it!");
 		fclose(fp);
 }
 
 int main(int argc, char* argv[])
 {
 	
-
+	printf("argc= %d\n", argc);
 	 if (argc<4)
 		 print_usage();
 	 else
 	 {
 		 Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms*));
-		 STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List*));
+		 STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List));
+		 memset(structures,0,sizeof(STRUCTURE_List));
 		 structures->num_structures=0;
 		 
 		 parms->file_txt=argv[1];
