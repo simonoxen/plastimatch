@@ -74,6 +74,17 @@ int main(int argc, char * argv [])
     }
     fclose (fp);
 
+    fp = fopen (mf_fn, "w");
+    fprintf (fp, "Moving fiducials:\n");
+    for (int i = 0; i < plmslc_moving_fiducials.size(); i++) {
+      fprintf (fp, "%g %g %g\n", 
+	       plmslc_moving_fiducials[i][0],
+	       plmslc_moving_fiducials[i][1],
+	       plmslc_moving_fiducials[i][2]
+	       );
+    }
+    fclose (fp);
+
     Registration_Parms regp;
     if (parse_command_file (&regp, parms_fn) < 0) {
 	return EXIT_FAILURE;
