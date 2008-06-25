@@ -61,12 +61,12 @@ struct ct_header {
 typedef struct polyline POLYLINE;
 struct polyline{
     int slice_no;
-	char UID_slice[65];
+	//char UID_slice[65];
     int num_vertices;
     //VERTICES* vertlist;
 	float* x;
     float* y;
-    float* z;
+    //float* z;
 };
 
 typedef struct structure STRUCTURE;
@@ -78,11 +78,12 @@ struct structure {
 };
 typedef struct structure_list STRUCTURE_List;
 struct structure_list {
+	int dim[3];
+	float spacing[3];
+	float offset[3];
     int num_structures;
-	char study_ID[65];
+	//char study_ID[65];
     STRUCTURE* slist;
-   /* int skin_no;
-    unsigned char* skin_image;*/
 };
 //typedef struct data_header DATA_Header;
 //struct data_header {
@@ -115,7 +116,7 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	int num_cn=0;
 	char name_str[BUFLEN];
 	char inter[BUFLEN];
-	char study_ID[65];
+	//char study_ID[65];
 	int pos=0;
 	char dumm;
 	char junk[25];
@@ -130,6 +131,7 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	
 	//char buf[BUF];
 	//int a=0;
+	
 	memset(curr_structure,0,sizeof(STRUCTURE));
 	memset(curr_contour,0,sizeof(POLYLINE));
 	curr_structure->num_contours=0;
@@ -142,7 +144,7 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		printf ("Could not open contour file\n");
 		exit(-1);
 	}
-	
+
 	while(feof(fp)==0) {
 		if(flag==0)
 		{
@@ -229,9 +231,9 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		fclose(fp);
 }
 
-void
-load_dicom_info(Program_Parms* parms, STRUCTURE_List* structures){
-}
+//void
+//load_dicom_info(Program_Parms* parms, STRUCTURE_List* structures){
+//}
 
 
 int main(int argc, char* argv[])
@@ -252,8 +254,8 @@ int main(int argc, char* argv[])
 		 parms->outdir=argv[3];
 
 		  try{
-			 load_structures(parms,structures);
-			 load_dicom_info(parms,structures);
+			 load_structures(parms,structures);/*
+			 load_dicom_info(parms,structures);*/
 			   
 		  }
 		  catch( char * str ) {
