@@ -33,6 +33,22 @@
       <default>None</default>
       <description>Volume to warp</description>
     </image>
+    <point coordinateSystem="ras" multiple="true">
+      <name>plmslc_fixed_fiducials</name>
+      <label>Fixed Fiducials</label>
+      <description>Fiducials in fixed volume</description>
+      <default>0,0,0</default>
+      <longflag>--fixedfiducials</longflag>
+    </point>
+    <point coordinateSystem="ras" multiple="true">
+      <name>plmslc_moving_fiducials</name>
+      <label>Moving Fiducials</label>
+      <description>Fiducials in moving volume</description>
+      <default>0,0,0</default>
+      <longflag>--movingfiducials</longflag>
+    </point>
+    <!--
+    -->
     <image>
       <name>plmslc_warped_volume</name>
       <label>Output Volume</label>
