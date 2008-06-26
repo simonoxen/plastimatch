@@ -1,0 +1,525 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include <stdio.h>
+#include <math.h>
+
+/* AUTHOR: Naga Kandasamy, 04/23 /2007, revison 4 */
+
+/* This kernel computes nabla_x */
+kernel void k_epdx(float4 vol_st1[][], // The input steam containing the volume
+					  float size, // Size of the texture memory which is 2D square of size x size
+					  float3 dim, // x, y, and z dimensions of the volume
+					  float spacing, // Size of the voxels in the x direction
+					  out float4 der_st<>) // Output stream containing nabla_x
+{
+	float2 temp = indexof(der_st); // Get index of the element being operated upon by the kernel in texture memory
+	float my_index = (size*temp.y + temp.x)*4.0; //  Index of the element in a 1D stream
+	
+	if(my_index > dim.x*dim.y*dim.z){ // The stream element is outside the volume of interest
+		der_st = 0.0;
+	}
+	else{
+		float z_index = floor(my_index/(dim.x*dim.y)); // Calculate the z index of the voxel
+		float y_index = floor((my_index - z_index*(dim.x*dim.y))/dim.x); // Calculate the y index of the voxel
+		float x_index = my_index - z_index*dim.x*dim.y - y_index*dim.x; // Calculate the x index of the voxel
+	
+		float4 current = vol_st1[temp.y][temp.x]; // Index of current element in 2D texture
+	
+		float right_index = (my_index + 4)/4; // Index of left neighbor in the 1D stream
+		float y_right = floor(right_index/size); // Get corresponding x and y location in the texture memory
+		float x_right = right_index - y_right*size;
+		float4 right; // Right neighbor
+	
+		float left_index = (my_index - 4)/4; // Index of neighbor below our voxel in the 1D stream
+		float y_left = floor(left_index/size); // Get corresponding x and y location in the texture memory
+		float x_left = left_index - y_left*size;
+		float4 left; // Left neighbor
+	
+		if (x_index == 0.0){ // Voxel is on the left edge of the volume with no left neighbor in the X direction
+			der_st.x = ((current.y - current.x))/(2.0*spacing);
+			der_st.y = ((current.z - current.x))/(2.0*2.0*spacing);
+			der_st.z = ((current.w - current.y))/(2.0*2.0*spacing);
+			right = vol_st1[y_right][x_right];
+			der_st.w = ((right.x - current.z))/(2.0*2.0*spacing);
+		}
+		else if (x_index == dim.x - 4){ // Voxel is on the right edge of volume and no right neighbor in the X direction
+			left = vol_st1[y_left][x_left];
+			der_st.x = ((current.y - left.w))/(2.0*2.0*spacing);
+			der_st.y = ((current.z - current.x))/(2.0*2.0*spacing);
+			der_st.z = ((current.w - current.y))/(2.0*2.0*spacing);
+			der_st.w = ((current.w - current.z))/(2.0*spacing);
+		}
+		else{ // Voxel in 3D space has both left and right neighbors in the X direction
+			left = vol_st1[y_left][x_left];
+			right = vol_st1[y_right][x_right];
+			der_st.x = ((current.y - left.w))/(2.0*2.0*spacing);
+			der_st.y = ((current.z - current.x))/(2.0*2.0*spacing);
+			der_st.z = ((current.w - current.y))/(2.0*2.0*spacing);
+			der_st.w = ((right.x - current.z))/(2.0*2.0*spacing);	
+		}
+	}
+}
+
+/* This kernel computes nabla_y */
+kernel void k_epdy(float4 vol_st1[][], 
+					  float size, 
+					  float3 dim, 
+					  float spacing, 
+					  out float4 der_st<>)
+{
+	float2 temp = indexof(der_st); // Get X, Y index of our stream element in texture memory
+	float my_index = (size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
+	
+	if(my_index > dim.x*dim.y*dim.z){
+		der_st = 0.0;
+	}
+	else{
+		// Convert the 1D index into the corresponding x, y, and z position of voxel in the volume
+		float z_index = floor(my_index/(dim.x*dim.y)); // Calculate the z index of the voxel
+		float y_index = floor((my_index - z_index*(dim.x*dim.y))/dim.x); // Calculate the y index of the voxel
+		float x_index = my_index - z_index*dim.x*dim.y - y_index*dim.x; // Calculate the x index of the voxel
+	
+		float4 current = vol_st1[temp.y][temp.x]; // Index of our voxel in 2D texture
+		float4 up; // Above neighbor
+		float4 down; // Below neighbor
+	
+		float up_index = (my_index + dim.x)/4; // Index of neighbor above our voxel in the 1D stream
+		float y_up = floor(up_index/size); // Get corresponding x and y location in the texture memory
+		float x_up = up_index - y_up*size;
+	
+		float down_index = (my_index - dim.x)/4; // Index of neighbor below our voxel in the 1D stream
+		float y_down = floor(down_index/size); // Get corresponding x and y location in the texture memory
+		float x_down = down_index - y_down*size;
+	
+		if (y_index == 0){ // Our voxel has no neighbor below it		
+			up = vol_st1[y_up][x_up]; // Get the neighboring voxel 
+			der_st.x = (up.x - current.x)/(2.0*spacing);
+			der_st.y = (up.y - current.y)/(2.0*spacing);
+			der_st.z = (up.z - current.z)/(2.0*spacing);
+			der_st.w = (up.w - current.w)/(2.0*spacing);	 
+		}
+		else if (y_index == (dim.y - 1)){ // Our voxel has no neighbor above it
+			down = vol_st1[y_down][x_down]; // Get the neighboring voxel
+			der_st.x = (current.x - down.x)/(2.0*spacing);
+			der_st.y = (current.y - down.y)/(2.0*spacing);
+			der_st.z = (current.z - down.z)/(2.0*spacing);
+			der_st.w = (current.w - down.w)/(2.0*spacing);
+		
+		}
+		else{ // Our voxel has neighbors above and below it
+			up = vol_st1[y_up][x_up]; // Get the neighboring voxel
+			down = vol_st1[y_down][x_down]; // Get the neighboring voxel
+			der_st.x = (up.x - down.x)/(2.0*2.0*spacing);
+			der_st.y = (up.y - down.y)/(2.0*2.0*spacing);
+			der_st.z = (up.z - down.z)/(2.0*2.0*spacing);
+			der_st.w = (up.w - down.w)/(2.0*2.0*spacing);
+		}
+	}
+}
+
+/* This kernel computes nabla_z. */
+kernel void k_epdz(float4 vol_st1[][], 
+			          float size, 
+			          float3 dim, 
+			          float spacing, 
+			          out float4 der_st<>)
+{
+	float2 temp = indexof(der_st); // Get X, Y index of our stream element in texture memory
+	float my_index = (size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
+	
+	if(my_index > dim.x*dim.y*dim.z){ // Stream element lies outside the volume of interest
+		der_st = 0.0;
+	}
+	else{
+		// Convert the 1D index into the corresponding x, y, and z position of voxel in the volume
+		float z_index = floor(my_index/(dim.x*dim.y)); // Calculate the z index of the voxel
+		float y_index = floor((my_index - z_index*(dim.x*dim.y))/dim.x); // Calculate the y index of the voxel
+		float x_index = my_index - z_index*dim.x*dim.y - y_index*dim.x; // Calculate the x index of the voxel
+	
+		float4 current = vol_st1[temp.y][temp.x]; // Index of our voxel in 2D texture
+		float4 left; // Inside neighbor
+		float4 right; // Outside neighbor
+	
+		float right_index = (my_index + dim.x*dim.y)/4; // Index of neighbor above our voxel in the 1D stream
+		float y_right = floor(right_index/size); // Get corresponding x and y location in the texture memory
+		float x_right = right_index - y_right*size;
+	
+		float left_index = (my_index - dim.x*dim.y)/4; // Index of neighbor below our voxel in the 1D stream
+		float y_left = floor(left_index/size); // Get corresponding x and y location in the texture memory
+		float x_left = left_index - y_left*size;
+		
+		if(z_index == 0){ // Our voxel has no left neighbor along the z direction
+			right = vol_st1[y_right][x_right];
+			der_st.x = (right.x - current.x)/(2.0*spacing);
+			der_st.y = (right.y - current.y)/(2.0*spacing);
+			der_st.z = (right.z - current.z)/(2.0*spacing);
+			der_st.w = (right.w - current.w)/(2.0*spacing);
+		}
+		else if(z_index == dim.z-1){// Our voxel has no right neighbor along the z direction
+			left = vol_st1[y_left][x_left];
+			der_st.x = (current.x - left.x)/(2.0*spacing);
+			der_st.y = (current.y - left.y)/(2.0*spacing);
+			der_st.z = (current.z - left.z)/(2.0*spacing);
+			der_st.w = (current.w - left.w)/(2.0*spacing);
+		}
+		else{ // Our voxel has both left and right neighbors
+			left = vol_st1[y_left][x_left];
+			right = vol_st1[y_right][x_right];
+			der_st.x = (right.x - left.x)/(2.0*2.0*spacing);
+			der_st.y = (right.y - left.y)/(2.0*2.0*spacing);
+			der_st.z = (right.z - left.z)/(2.0*2.0*spacing);
+			der_st.w = (right.w - left.w)/(2.0*2.0*spacing);
+		}		
+	}
+}
+
+/* This kernel initializes the input stream */
+kernel void k_initial_vectors4(out float4 pre_vec_st<>)
+{
+	pre_vec_st = 0.0;
+}
+
+kernel void k_initial_vectors1(out float pre_vec_st<>)
+{
+	pre_vec_st = 0.0;
+}
+
+/* Kernel converts a vector in mm to a corresponding voxel displacement */
+kernel void k_convert(float4 vec<>, float spacing, out float4 pre_vec<>)
+{
+	pre_vec.x = ceil(vec.x/spacing);
+	pre_vec.y = ceil(vec.y/spacing);
+	pre_vec.z = ceil(vec.z/spacing);
+	pre_vec.w = ceil(vec.w/spacing); 
+}
+					   										  
+reduce void k_ssd (float4 diff<>,
+		   reduce float4 result<>)
+{
+    result += diff.x + diff.y + diff.z + diff.w;
+    // result.y += diff.x + diff.y + diff.z + diff.w;
+}
+
+/* Return an image with diff^2 at each voxel, or -1 if voxels don't overlap */
+kernel void k_volume_difference (float4 x_displacement[][],	// Input:  x displacement in voxels
+		       float4 y_displacement[][],		// Input:  y displacement in voxels
+		       float4 z_displacement[][],		// Input:  z displacement in voxels
+		       float4 static_image[][],			// Input:  static image
+		       float4 moving_image[][],			// Input:  moving image
+		       float3 dim,				// Input:  volume dimensions
+		       float size,				// Input:  texture memory dimensions
+		       out float4 result<>)			// Output: intensity difference
+{
+    float2 f_tex = indexof(result);		    // (x,y) index of fixed image pixel in 2D texture memory
+    float2 m_tex;				    // (x,y) index of moving image pixel in 2D texture memory
+    float f_lin_base = (size*f_tex.y + f_tex.x)*4;  // 1D index of first fixed image voxel within this texture pixel
+    float f_lin;				    // 1D index of fixed image voxel
+    float m_lin;				    // 1D index of moving image voxel
+    float m_lin_tex;				    // 1D index of moving image voxel within 2D texture memory
+    float3 f_xyz;				    // 3D index of fixed image voxel
+    float3 m_xyz;				    // 3D index of moving image voxel
+    float f_ele;				    // offset of fixed voxel within RGBA texture pixel
+    float m_ele;				    // offset of moving voxel within RGBA texture pixel
+    float diff;
+    float3 displacement;
+
+    if (f_lin_base > dim.x*dim.y*dim.z) {
+	result = -1.0;
+    } else {
+	for (f_ele = 0.0; f_ele < 4.0; f_ele=f_ele+1.0) { // Iterate through four voxels
+	    f_lin = f_lin_base + f_ele;
+	    f_xyz.z = floor(f_lin/(dim.x*dim.y));                     // Calculate the z index of the fixed image voxel
+	    f_xyz.y = floor((f_lin - f_xyz.z*(dim.x*dim.y))/dim.x);   // Calculate the y index of the fixed image voxel
+	    f_xyz.x = f_lin - f_xyz.z*dim.x*dim.y - f_xyz.y*dim.x;    // Calculate the x index of the fixed image voxel
+
+	    // Compute the target location m_xyz in 3D
+	    if (f_ele == 0.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].x, y_displacement[f_tex.y][f_tex.x].x, z_displacement[f_tex.y][f_tex.x].x);
+	    }
+	    if (f_ele == 1.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].y, y_displacement[f_tex.y][f_tex.x].y, z_displacement[f_tex.y][f_tex.x].y);
+	    }
+	    if (f_ele == 2.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].z, y_displacement[f_tex.y][f_tex.x].z, z_displacement[f_tex.y][f_tex.x].z);
+	    }
+	    if (f_ele == 3.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].w, y_displacement[f_tex.y][f_tex.x].w, z_displacement[f_tex.y][f_tex.x].w);
+	    }
+	    m_xyz = f_xyz + displacement;
+
+	    // Convert to integer (nearest neighbor interpolation)
+	    m_xyz = round(m_xyz);
+
+	    // Check if the target voxel is outside the volume of the moving image. If so, no change in deformation.
+	    if (m_xyz.x < 0 || m_xyz.y < 0 || m_xyz.z < 0 || m_xyz.x >= dim.x || m_xyz.y >= dim.y || m_xyz.z >= dim.z) {
+		if (f_ele == 0.0) {
+		    result.x = -1.0;
+		}
+		else if (f_ele == 1.0) {
+		    result.y = -1.0;
+		}
+		else if (f_ele == 2.0) {
+		    result.z = -1.0;
+		}
+		else if (f_ele == 3.0) {
+		    result.w = -1.0;
+		}
+	    } else {
+		/* Step 3: Find the target voxel in the 2D texture array */
+		m_lin = (m_xyz.z*dim.x*dim.y + m_xyz.y*dim.x + m_xyz.x);
+		m_lin_tex = floor(m_lin / 4);
+		m_tex.y = floor(m_lin_tex/size);
+		m_tex.x = m_lin_tex - m_tex.y*size;
+		m_ele = m_lin - 4*m_lin_tex;
+    	
+		/* Step 4: Calculate SSD */
+		if (f_ele == 0){
+		    if (m_ele == 0) {
+			diff = static_image[f_tex.y][f_tex.x].x - moving_image[m_tex.y][m_tex.x].x;
+		    } 
+		    else if (m_ele == 1) {
+			diff = static_image[f_tex.y][f_tex.x].x - moving_image[m_tex.y][m_tex.x].y;
+		    }
+		    else if (m_ele == 2) {
+			diff = static_image[f_tex.y][f_tex.x].x - moving_image[m_tex.y][m_tex.x].z;
+		    }
+		    else if (m_ele == 3) {
+			diff = static_image[f_tex.y][f_tex.x].x - moving_image[m_tex.y][m_tex.x].w;
+		    }
+		    result.x = diff * diff;
+		}
+		else if (f_ele == 1){
+		    if (m_ele == 0) {
+			diff = static_image[f_tex.y][f_tex.x].y - moving_image[m_tex.y][m_tex.x].x;
+		    } 
+		    else if (m_ele == 1) {
+			diff = static_image[f_tex.y][f_tex.x].y - moving_image[m_tex.y][m_tex.x].y;
+		    }
+		    else if (m_ele == 2) {
+			diff = static_image[f_tex.y][f_tex.x].y - moving_image[m_tex.y][m_tex.x].z;
+		    }
+		    else if (m_ele == 3) {
+			diff = static_image[f_tex.y][f_tex.x].y - moving_image[m_tex.y][m_tex.x].w;
+		    }
+		    result.y = diff * diff;
+		}
+		else if (f_ele == 2){
+		    if (m_ele == 0){
+			diff = static_image[f_tex.y][f_tex.x].z - moving_image[m_tex.y][m_tex.x].x;
+		    } 
+		    else if (m_ele == 1){
+			diff = static_image[f_tex.y][f_tex.x].z - moving_image[m_tex.y][m_tex.x].y;
+		    }
+		    else if (m_ele == 2){
+			diff = static_image[f_tex.y][f_tex.x].z - moving_image[m_tex.y][m_tex.x].z;
+		    }
+		    else if (m_ele == 3){
+			diff = static_image[f_tex.y][f_tex.x].z - moving_image[m_tex.y][m_tex.x].w;
+		    }
+		    result.z = diff * diff;
+		}
+		else if (f_ele == 3){
+		    if (m_ele == 0){
+			diff = static_image[f_tex.y][f_tex.x].w - moving_image[m_tex.y][m_tex.x].x;
+		    } 
+		    else if (m_ele == 1){
+			diff = static_image[f_tex.y][f_tex.x].w - moving_image[m_tex.y][m_tex.x].y;
+		    }
+		    else if (m_ele == 2){
+			diff = static_image[f_tex.y][f_tex.x].w - moving_image[m_tex.y][m_tex.x].z;
+		    }
+		    else if (m_ele == 3){
+			diff = static_image[f_tex.y][f_tex.x].w - moving_image[m_tex.y][m_tex.x].w;
+		    }
+		    result.w = diff * diff;
+		}
+	    }
+	}
+    }
+}
+
+/* Kernel updates the displacement or vector field in the x, y, or z directions */
+kernel void k_evf_gcs (float4 current_displacement[][],		// Input:  displacement of (x, y, or z)
+		       float4 x_displacement[][],		// Input:  x displacement in voxels
+		       float4 y_displacement[][],		// Input:  y displacement in voxels
+		       float4 z_displacement[][],		// Input:  z displacement in voxels
+		       float4 current_nabla[][],		// Input:  nabla of (x, y, or z)
+		       float4 nabla_x[][],			// Input:  nabla_x
+		       float4 nabla_y[][],			// Input:  nabla_y
+		       float4 nabla_z[][],			// Input:  nabla_z
+		       float4 static_image[][],			// Input:  static image
+		       float4 moving_image[][],			// Input:  moving image
+		       float homog,				// Input:  homogeneity factor
+		       float accel,				// Input:  accleration
+		       float denominator_eps,			// Input:  denominator epsilon
+		       float f_size,				// Input:  fixed image texture dimensions
+		       float m_size,				// Input:  moving image texture dimensions
+		       float3 f_dim,				// Input:  fixed image volume dimensions
+		       float3 m_dim,				// Input:  moving image volume dimensions
+		       float3 f_offset,				// Input:  origin of fixed image (in mm)
+		       float3 m_offset,				// Input:  origin of moving image (in mm)
+		       float3 f_pix_spacing,			// Input:  pixel size of fixed image (in mm)
+		       float3 m_pix_spacing,			// Input:  pixel size of moving image (in mm)
+		       out float4 result<>)			// Output: updated displacement of (x, y, or z) in mm
+{
+    float2 f_tex = indexof(result);		    // (x,y) index of fixed image pixel in 2D texture memory
+    float2 m_tex;				    // (x,y) index of moving image pixel in 2D texture memory
+    float f_lin_base = (f_size*f_tex.y + f_tex.x)*4;  // 1D index of first fixed image voxel within this texture pixel
+    float f_lin;				    // 1D index of fixed image voxel
+    float m_lin;				    // 1D index of moving image voxel
+    float m_lin_tex;				    // 1D index of moving image voxel within 2D texture memory
+    float3 f_xyz;				    // 3D index of fixed image voxel
+    float3 m_xyz;				    // 3D index of moving image voxel
+    float f_ele;				    // xyzw element of texture pixel for fixed voxel
+    float m_ele;				    // xyzw element of texture pixel for moving voxel
+
+    float diff;
+    float m_nab_sq, m_val, m_cnab;
+    float nabla_square;
+    float denom;
+    float3 displacement;
+
+    float3 invmps = 1.0 / m_pix_spacing;
+    float3 f2mo = (f_offset - m_offset) / m_pix_spacing;
+    float3 f2ms = f_pix_spacing / m_pix_spacing;
+
+    if (f_lin_base > f_dim.x*f_dim.y*f_dim.z) {
+	result = 0.0;
+    } else {
+	/* Iterate through four voxels within texture pixel */
+	for (f_ele = 0.0; f_ele < 4.0; f_ele=f_ele+1.0) {
+	    /* Find linear index of current voxel */
+	    f_lin = f_lin_base + f_ele;
+	    
+	    /* Find f_xyz index of current voxel */
+	    f_xyz.z = floor(f_lin/(f_dim.x*f_dim.y));
+	    f_xyz.y = floor((f_lin - f_xyz.z*(f_dim.x*f_dim.y))/f_dim.x);
+	    f_xyz.x = f_lin - f_xyz.z*f_dim.x*f_dim.y - f_xyz.y*f_dim.x;
+
+	    /* Get 3d displacement for current voxel */
+	    if (f_ele == 0.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].x, y_displacement[f_tex.y][f_tex.x].x, z_displacement[f_tex.y][f_tex.x].x);
+	    }
+	    if (f_ele == 1.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].y, y_displacement[f_tex.y][f_tex.x].y, z_displacement[f_tex.y][f_tex.x].y);
+	    }
+	    if (f_ele == 2.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].z, y_displacement[f_tex.y][f_tex.x].z, z_displacement[f_tex.y][f_tex.x].z);
+	    }
+	    if (f_ele == 3.0) {
+		displacement = float3(x_displacement[f_tex.y][f_tex.x].w, y_displacement[f_tex.y][f_tex.x].w, z_displacement[f_tex.y][f_tex.x].w);
+	    }
+
+	    /* Convert f_xyz from vox to mm */
+	    f_xyz = f_offset + f_xyz * f_pix_spacing;
+	    
+	    /* Find m_xyz in mm */
+	    m_xyz = f_xyz + displacement;
+	    
+	    /* Find m_xyz in voxels */
+	    m_xyz = (m_xyz - m_offset) / m_pix_spacing;
+
+	    /* Convert to m_xyz to integer (nearest neighbor interpolation) */
+	    m_xyz = round(m_xyz);
+
+	    /* Check if the target voxel is outside the volume of the moving image. If so, no change in deformation. */
+	    if (m_xyz.x < 0 || m_xyz.y < 0 || m_xyz.z < 0 || m_xyz.x >= m_dim.x || m_xyz.y >= m_dim.y || m_xyz.z >= m_dim.z) {
+		if (f_ele == 0.0) {
+		    result.x = current_displacement[f_tex.y][f_tex.x].x;
+		}
+		else if (f_ele == 1.0) {
+		    result.y = current_displacement[f_tex.y][f_tex.x].y;
+		}
+		else if (f_ele == 2.0) {
+		    result.z = current_displacement[f_tex.y][f_tex.x].z;
+		}
+		else if (f_ele == 3.0) {
+		    result.w = current_displacement[f_tex.y][f_tex.x].w;
+		}
+	    } else {
+		/* Find the target voxel in the 2D texture array */
+		m_lin = (m_xyz.z*m_dim.x*m_dim.y + m_xyz.y*m_dim.x + m_xyz.x);
+		m_lin_tex = floor(m_lin / 4);
+		m_tex.y = floor(m_lin_tex/m_size);
+		m_tex.x = m_lin_tex - m_tex.y*m_size;
+		m_ele = m_lin - 4*m_lin_tex;
+    	
+		/* Calculate demons equation */
+		if (m_ele == 0) {
+		    m_nab_sq =
+			    nabla_x[m_tex.y][m_tex.x].x*nabla_x[m_tex.y][m_tex.x].x +	
+			    nabla_y[m_tex.y][m_tex.x].x*nabla_y[m_tex.y][m_tex.x].x +
+			    nabla_z[m_tex.y][m_tex.x].x*nabla_z[m_tex.y][m_tex.x].x;
+		    m_val = moving_image[m_tex.y][m_tex.x].x;
+		    m_cnab = current_nabla[m_tex.y][m_tex.x].x;
+		} 
+		else if (m_ele == 1) {
+		    m_nab_sq =
+			    nabla_x[m_tex.y][m_tex.x].y*nabla_x[m_tex.y][m_tex.x].y +	
+			    nabla_y[m_tex.y][m_tex.x].y*nabla_y[m_tex.y][m_tex.x].y +
+			    nabla_z[m_tex.y][m_tex.x].y*nabla_z[m_tex.y][m_tex.x].y;
+		    m_val = moving_image[m_tex.y][m_tex.x].y;
+		    m_cnab = current_nabla[m_tex.y][m_tex.x].y;
+		}
+		else if (m_ele == 2) {
+		    m_nab_sq =
+			    nabla_x[m_tex.y][m_tex.x].z*nabla_x[m_tex.y][m_tex.x].z +	
+			    nabla_y[m_tex.y][m_tex.x].z*nabla_y[m_tex.y][m_tex.x].z +
+			    nabla_z[m_tex.y][m_tex.x].z*nabla_z[m_tex.y][m_tex.x].z;
+		    m_val = moving_image[m_tex.y][m_tex.x].z;
+		    m_cnab = current_nabla[m_tex.y][m_tex.x].z;
+		}
+		else if (m_ele == 3) {
+		    m_nab_sq =
+			    nabla_x[m_tex.y][m_tex.x].w*nabla_x[m_tex.y][m_tex.x].w +	
+			    nabla_y[m_tex.y][m_tex.x].w*nabla_y[m_tex.y][m_tex.x].w +
+			    nabla_z[m_tex.y][m_tex.x].w*nabla_z[m_tex.y][m_tex.x].w;
+		    m_val = moving_image[m_tex.y][m_tex.x].w;
+		    m_cnab = current_nabla[m_tex.y][m_tex.x].w;
+		}
+		
+		if (f_ele == 0){
+		    diff = static_image[f_tex.y][f_tex.x].x - m_val;
+		    denom = m_nab_sq + homog*diff*diff;
+		    if (denom < denominator_eps) {
+			result.x = current_displacement[f_tex.y][f_tex.x].x;
+		    } else {
+			result.x = current_displacement[f_tex.y][f_tex.x].x + 
+				accel*diff*m_cnab/denom; 
+		    }
+		}
+		else if (f_ele == 1){
+		    diff = static_image[f_tex.y][f_tex.x].y - m_val;
+		    denom = m_nab_sq + homog*diff*diff;
+		    if (denom < denominator_eps) {
+			result.y = current_displacement[f_tex.y][f_tex.x].y;
+		    } else {
+			result.y = current_displacement[f_tex.y][f_tex.x].y + 
+				accel*diff*m_cnab/denom; 
+		    }
+		}
+		else if (f_ele == 2){
+		    diff = static_image[f_tex.y][f_tex.x].z - m_val;
+		    denom = m_nab_sq + homog*diff*diff;
+		    if (denom < denominator_eps) {
+			result.z = current_displacement[f_tex.y][f_tex.x].z;
+		    } else {
+			result.z = current_displacement[f_tex.y][f_tex.x].z + 
+				accel*diff*m_cnab/denom; 
+		    }
+		}
+		else if (f_ele == 3){
+		    diff = static_image[f_tex.y][f_tex.x].w - m_val;
+		    denom = m_nab_sq + homog*diff*diff;
+		    if (denom < denominator_eps) {
+			result.w = current_displacement[f_tex.y][f_tex.x].w;
+		    } else {
+			result.w = current_displacement[f_tex.y][f_tex.x].w + 
+				accel*diff*m_cnab/denom; 
+		    }
+		}
+	    }
+	} // End for loop
+    } // Else 
+} // End kernel

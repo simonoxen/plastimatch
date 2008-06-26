@@ -1,0 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "demons.h"
+Volume*
+demons (Volume* fixed, Volume* moving, Volume* moving_grad, 
+	Volume* vf_init, DEMONS_Parms* parms)
+{
+    return demons_brook (fixed, moving, moving_grad, vf_init, parms);
+}

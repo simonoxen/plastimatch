@@ -1,0 +1,533 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include <stdio.h>
+
+kernel void
+k_get_pixel(float3 xip[], float3 yip[],float3 zip[], float3 wip,
+		float size, float vol_dim, float vol_dim2, float vol_dim3, float2 ic,
+		float2 img_dim, float img_s[][], float moreIndex, float sad2, float x[], float y[], float z[], out float4 imgGPU<>)
+/***************************************************************
+Purpose: This function computes the pixel value contributions
+		 from each image
+Input:   xip, yip, zip, image pixels
+Output:  imgGPU: the volume pixels from one image
+Remarks: The output is float4, copmpute four pixels each cycle
+***************************************************************/
+{
+		/*********************
+		Variable Declaration
+		*********************/
+		float4 index;
+		float n;
+		float4 m;
+		
+
+		float x_index1;
+		float y_index1;
+		float z_index1;
+
+		float x_index2;
+		float y_index2;
+		float z_index2;
+
+		float x_index3;
+		float y_index3;
+		float z_index3;
+
+		float x_index4;
+		float y_index4;
+		float z_index4;
+
+		float2 acc1;
+		float2 acc2;
+		float2 acc3;
+		float2 acc4;
+		
+		float4 rr;
+		float4 cc;
+
+		float loc1;
+		float loc1_x;
+		float loc1_y;
+
+		float loc2;
+		float loc2_x;
+		float loc2_y;
+
+		float loc3;
+		float loc3_x;
+		float loc3_y;
+
+		float loc4;
+		float loc4_x;
+		float loc4_y;
+		
+		float dw1;
+		float dw2;
+		float dw3;
+		float dw4;
+
+		/*********************
+		Variable Assignment
+		*********************/
+
+		index = indexof(imgGPU);
+		n = (size*index.y + index.x + moreIndex)*4;
+
+		if(n > vol_dim*vol_dim2*vol_dim3){
+			imgGPU = 1200;
+		}
+		else{
+			m.x = n;
+			m.y = m.x+1;
+			m.z = m.x+2;
+			m.w = m.x+3;
+
+			rr = float4(-1, -1, -1, -1);
+			cc = float4(-1, -1, -1, -1);
+
+			/* get the correct x,y,z indices for xip, yip, and zip */
+			x_index1 = m.x - floor(m.x/vol_dim)*vol_dim;
+			z_index1 = floor( m.x/(vol_dim*vol_dim2));
+			y_index1 = floor( (m.x - z_index1*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index2 = m.y - floor(m.y/vol_dim)*vol_dim;
+			z_index2 = floor( m.y/(vol_dim*vol_dim2));
+			y_index2 = floor( (m.y - z_index2*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index3 = m.z - floor(m.z/vol_dim)*vol_dim;
+			z_index3 = floor( m.z/(vol_dim*vol_dim2));
+			y_index3 = floor( (m.z - z_index3*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index4 = m.w - floor(m.w/vol_dim)*vol_dim;
+			z_index4 = floor( m.w/(vol_dim*vol_dim2));
+			y_index4 = floor( (m.w- z_index4*(vol_dim*vol_dim2))/vol_dim2);
+
+			dw1 = 1/(xip[x_index1].z + yip[y_index1].z + zip[z_index1].z + wip.z);
+			acc1.x = ic.x + (xip[x_index1].x + yip[y_index1].x + zip[z_index1].x + wip.x) * dw1;
+			acc1.y = ic.y + (xip[x_index1].y + yip[y_index1].y + zip[z_index1].y + wip.y) * dw1;
+
+			dw2 = 1/(xip[x_index2].z + yip[y_index2].z + zip[z_index2].z + wip.z);
+			acc2.x = ic.x + (xip[x_index2].x + yip[y_index2].x + zip[z_index2].x + wip.x) * dw2;
+			acc2.y = ic.y + (xip[x_index2].y + yip[y_index2].y + zip[z_index2].y + wip.y) * dw2;
+
+			dw3 = 1/(xip[x_index3].z + yip[y_index3].z + zip[z_index3].z + wip.z);
+			acc3.x = ic.x + (xip[x_index3].x + yip[y_index3].x + zip[z_index4].x + wip.x) * dw3;
+			acc3.y = ic.y + (xip[x_index3].y + yip[y_index3].y + zip[z_index4].y + wip.y) * dw3;		
+		
+			dw4 = 1/(xip[x_index4].z + yip[y_index4].z + zip[z_index4].z + wip.z);
+			acc4.x = ic.x + (xip[x_index4].x + yip[y_index4].x + zip[z_index4].x + wip.x) * dw4;
+			acc4.y = ic.y + (xip[x_index4].y + yip[y_index4].y + zip[z_index4].y + wip.y) * dw4;
+
+			/* First pixel value */
+			if (acc1.x > 0 ){
+				rr.x = floor(acc1.x + 0.5);
+			}
+			else{
+				rr.x = ceil(acc1.x - 0.5);
+			}
+			if (acc1.y > 0 ){
+				cc.x = floor(acc1.y + 0.5);
+			}
+			else{
+				cc.x = ceil(acc1.y - 0.5);
+			}
+
+			if (rr.x < 0 || rr.x >=img_dim.x){
+				imgGPU.x = 0;
+			}
+			else if (cc.x < 0 || cc.x >=img_dim.y){
+				imgGPU.x = 0;
+			}
+			else{
+				loc1 = rr.x*img_dim.y + cc.x;
+				loc1_y = floor(loc1/img_dim.y);
+				loc1_x = loc1 - (loc1_y) * img_dim.y;
+				imgGPU.x = dw1*dw1*img_s[loc1_y][loc1_x];
+			}
+
+
+			/* Second pixel value */
+			if (acc2.x > 0 ){
+			rr.y = floor(acc2.x + 0.5);
+			}
+			else{
+				rr.y = ceil(acc2.x - 0.5);
+			}
+			if (acc2.y > 0 ){
+			cc.y = floor(acc2.y + 0.5);
+			}
+			else{
+				cc.y = ceil(acc2.y - 0.5);
+			}
+
+			if (rr.y < 0 || rr.y >=img_dim.x){
+			imgGPU.y = 0;
+			}
+			else if (cc.y < 0 || cc.y >=img_dim.y){
+				imgGPU.y = 0;
+			}
+			else{
+				loc2 = rr.y*img_dim.y + cc.y;
+				loc2_y = floor(loc2/img_dim.y);
+				loc2_x = loc2 - (loc2_y)* img_dim.y;
+				imgGPU.y = dw2*dw2*img_s[loc2_y][loc2_x];
+			}
+
+			/* Third pixel value */
+			if (acc3.x > 0 ){
+				rr.z = floor(acc3.x + 0.5);
+			}
+			else{
+				rr.z = ceil(acc3.x - 0.5);
+			}
+			if (acc3.y > 0 ){
+				cc.z = floor(acc3.y + 0.5);
+			}
+			else{
+				cc.z = ceil(acc3.y - 0.5);
+			}
+
+			if (rr.z < 0 || rr.z >=img_dim.x){
+				imgGPU.z = 0;
+			}
+			else if (cc.z < 0 || cc.z >=img_dim.y){
+				imgGPU.z = 0;
+			}
+			else{
+				loc3 = rr.z*img_dim.y + cc.z;
+				loc3_y = floor(loc3/img_dim.y);
+				loc3_x = loc3 - (loc3_y) * img_dim.y;
+				imgGPU.z = dw3*dw3*img_s[loc3_y][loc3_x];
+			}
+
+			/* Fourth pixel value */
+			if (acc4.x > 0 ){
+				rr.w = floor(acc4.x + 0.5);
+			}
+			else{
+				rr.w = ceil(acc4.x - 0.5);
+			}
+			if (acc4.y > 0 ){
+				cc.w = floor(acc4.y + 0.5);
+			}
+			else{
+				cc.w = ceil(acc4.y - 0.5);
+			}
+
+			if (rr.w < 0 || rr.w >=img_dim.x){
+				imgGPU.w = 0;
+			}
+			else if (cc.w < 0 || cc.w >=img_dim.y){
+				imgGPU.w = 0;
+			}
+			else{
+				loc4 = rr.w*img_dim.y + cc.w;
+				loc4_y = floor(loc4/img_dim.y);
+				loc4_x = loc4 - loc4_y * img_dim.y;
+				imgGPU.w = dw4*dw4*img_s[loc4_y][loc4_x];
+			}
+	}
+}
+
+kernel void
+k_get_pixel_optimized(float3 xip[], float3 yip[],float3 zip[],
+		float size, float vol_dim, float vol_dim2, float vol_dim3,
+		float2 img_dim, float img_s[][], out float4 imgGPU<>)
+/***************************************************************
+Purpose: This function computes the pixel value contributions
+		 from each image
+Input:   xip, yip, zip, image pixels
+Output:  imgGPU: the volume pixels from one image
+Remarks: The output is float4, copmpute four pixels each cycle
+***************************************************************/
+{
+		/*********************
+		Variable Declaration
+		*********************/
+		float4 index;
+		float n;
+		float4 m;
+		
+
+		float x_index1;
+		float y_index1;
+		float z_index1;
+
+		float x_index2;
+		float y_index2;
+		float z_index2;
+
+		float x_index3;
+		float y_index3;
+		float z_index3;
+
+		float x_index4;
+		float y_index4;
+		float z_index4;
+
+		float2 acc1;
+		float2 acc2;
+		float2 acc3;
+		float2 acc4;
+		
+		float4 rr;
+		float4 cc;
+
+		float loc1;
+		float loc1_x;
+		float loc1_y;
+
+		float loc2;
+		float loc2_x;
+		float loc2_y;
+
+		float loc3;
+		float loc3_x;
+		float loc3_y;
+
+		float loc4;
+		float loc4_x;
+		float loc4_y;
+		
+		float dw1;
+		float dw2;
+		float dw3;
+		float dw4;
+
+		/*********************
+		Variable Assignment
+		*********************/
+
+		index = indexof(imgGPU);
+		n = (size*index.y + index.x)*4;
+
+		if(n > vol_dim*vol_dim2*vol_dim3){
+			imgGPU = 1200;
+		}
+		else{
+			m.x = n;
+			m.y = m.x+1;
+			m.z = m.x+2;
+			m.w = m.x+3;
+
+			rr = float4(-1, -1, -1, -1);
+			cc = float4(-1, -1, -1, -1);
+
+			/* get the correct x,y,z indices for xip, yip, and zip */
+			x_index1 = m.x - floor(m.x/vol_dim)*vol_dim;
+			z_index1 = floor( m.x/(vol_dim*vol_dim2));
+			y_index1 = floor( (m.x - z_index1*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index2 = m.y - floor(m.y/vol_dim)*vol_dim;
+			z_index2 = floor( m.y/(vol_dim*vol_dim2));
+			y_index2 = floor( (m.y - z_index2*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index3 = m.z - floor(m.z/vol_dim)*vol_dim;
+			z_index3 = floor( m.z/(vol_dim*vol_dim2));
+			y_index3 = floor( (m.z - z_index3*(vol_dim*vol_dim2))/vol_dim2);
+
+			x_index4 = m.w - floor(m.w/vol_dim)*vol_dim;
+			z_index4 = floor( m.w/(vol_dim*vol_dim2));
+			y_index4 = floor( (m.w- z_index4*(vol_dim*vol_dim2))/vol_dim2);
+
+			dw1 = 1/(xip[x_index1].z + yip[y_index1].z + zip[z_index1].z);
+			acc1.x = (xip[x_index1].x + yip[y_index1].x + zip[z_index1].x) * dw1;
+			acc1.y = (xip[x_index1].y + yip[y_index1].y + zip[z_index1].y) * dw1;
+
+			dw2 = 1/(xip[x_index2].z + yip[y_index2].z + zip[z_index2].z);
+			acc2.x = (xip[x_index2].x + yip[y_index2].x + zip[z_index2].x) * dw2;
+			acc2.y = (xip[x_index2].y + yip[y_index2].y + zip[z_index2].y) * dw2;
+
+			dw3 = 1/(xip[x_index3].z + yip[y_index3].z + zip[z_index3].z);
+			acc3.x = (xip[x_index3].x + yip[y_index3].x + zip[z_index4].x) * dw3;
+			acc3.y = (xip[x_index3].y + yip[y_index3].y + zip[z_index4].y) * dw3;		
+		
+			dw4 = 1/(xip[x_index4].z + yip[y_index4].z + zip[z_index4].z);
+			acc4.x = (xip[x_index4].x + yip[y_index4].x + zip[z_index4].x) * dw4;
+			acc4.y = (xip[x_index4].y + yip[y_index4].y + zip[z_index4].y) * dw4;
+
+			/* First pixel value */
+			if (acc1.x > 0 ){
+				rr.x = floor(acc1.x + 0.5);
+			}
+			else{
+				rr.x = ceil(acc1.x - 0.5);
+			}
+			if (acc1.y > 0 ){
+				cc.x = floor(acc1.y + 0.5);
+			}
+			else{
+				cc.x = ceil(acc1.y - 0.5);
+			}
+
+			if (rr.x < 0 || rr.x >=img_dim.x){
+				imgGPU.x = 0;
+			}
+			else if (cc.x < 0 || cc.x >=img_dim.y){
+				imgGPU.x = 0;
+			}
+			else{
+				loc1 = rr.x*img_dim.y + cc.x;
+				loc1_y = floor(loc1/img_dim.y);
+				loc1_x = loc1 - (loc1_y) * img_dim.y;
+				imgGPU.x = dw1*dw1*img_s[loc1_y][loc1_x];
+			}
+
+
+			/* Second pixel value */
+			if (acc2.x > 0 ){
+			rr.y = floor(acc2.x + 0.5);
+			}
+			else{
+				rr.y = ceil(acc2.x - 0.5);
+			}
+			if (acc2.y > 0 ){
+			cc.y = floor(acc2.y + 0.5);
+			}
+			else{
+				cc.y = ceil(acc2.y - 0.5);
+			}
+
+			if (rr.y < 0 || rr.y >=img_dim.x){
+			imgGPU.y = 0;
+			}
+			else if (cc.y < 0 || cc.y >=img_dim.y){
+				imgGPU.y = 0;
+			}
+			else{
+				loc2 = rr.y*img_dim.y + cc.y;
+				loc2_y = floor(loc2/img_dim.y);
+				loc2_x = loc2 - (loc2_y)* img_dim.y;
+				imgGPU.y = dw2*dw2*img_s[loc2_y][loc2_x];
+			}
+
+			/* Third pixel value */
+			if (acc3.x > 0 ){
+				rr.z = floor(acc3.x + 0.5);
+			}
+			else{
+				rr.z = ceil(acc3.x - 0.5);
+			}
+			if (acc3.y > 0 ){
+				cc.z = floor(acc3.y + 0.5);
+			}
+			else{
+				cc.z = ceil(acc3.y - 0.5);
+			}
+
+			if (rr.z < 0 || rr.z >=img_dim.x){
+				imgGPU.z = 0;
+			}
+			else if (cc.z < 0 || cc.z >=img_dim.y){
+				imgGPU.z = 0;
+			}
+			else{
+				loc3 = rr.z*img_dim.y + cc.z;
+				loc3_y = floor(loc3/img_dim.y);
+				loc3_x = loc3 - (loc3_y) * img_dim.y;
+				imgGPU.z = dw3*dw3*img_s[loc3_y][loc3_x];
+			}
+
+			/* Fourth pixel value */
+			if (acc4.x > 0 ){
+				rr.w = floor(acc4.x + 0.5);
+			}
+			else{
+				rr.w = ceil(acc4.x - 0.5);
+			}
+			if (acc4.y > 0 ){
+				cc.w = floor(acc4.y + 0.5);
+			}
+			else{
+				cc.w = ceil(acc4.y - 0.5);
+			}
+
+			if (rr.w < 0 || rr.w >=img_dim.x){
+				imgGPU.w = 0;
+			}
+			else if (cc.w < 0 || cc.w >=img_dim.y){
+				imgGPU.w = 0;
+			}
+			else{
+				loc4 = rr.w*img_dim.y + cc.w;
+				loc4_y = floor(loc4/img_dim.y);
+				loc4_x = loc4 - loc4_y * img_dim.y;
+				imgGPU.w = dw4*dw4*img_s[loc4_y][loc4_x];
+			}
+	}
+}
+
+
+kernel void
+k_comp_xyz(float3 x, float space, 
+           float offset, float nrm, float flag, float sad, 
+           out float3 xip_o<>, out float xo<>)
+/********************************************************************
+Purpose: This function computes the xip, yip, zip
+Input:   x, y, z image projection matrix, volume  spacing and offset
+Output:  xip, yip, zip
+Remarks: The output is float3
+********************************************************************/
+{
+	float3 i = indexof(xip_o);
+	float temp;
+	xip_o = (offset + i.x * space) * x;
+	temp = nrm*(offset + i.x * space);
+	if(flag == 1.0) {xo = sad - temp;}
+	else {xo = temp;}
+}
+
+kernel void
+k_comp_xy(float3 x, float space, float offset, out float3 xip_o<>){
+	float2 i = indexof(xip_o);
+	xip_o = (offset + i.x * space) * x;
+}
+
+kernel void
+k_comp_z(float3 z, float space, float offset, float3 val, out float3 zip_o<>){
+	float2 i = indexof(zip_o);
+	zip_o = (offset + i.x * space) * z + val;
+}
+
+kernel void
+k_sum_volume(float4 volumeGPU<>, float4 imgGPU<>, out float4 volumeGPU_result<>)
+/********************************************************************
+Purpose: This function sum the volume contribution of each image
+Input:   volume, img
+Output:  volume
+Remarks: The output is float4
+********************************************************************/
+
+{
+	volumeGPU_result = imgGPU + volumeGPU;
+}
+
+kernel void
+k_assign(out float4 a<>)
+{                                                            
+	a = 0.0;
+}
+
+
+kernel void k_init_img(float input_image<>, out float image_on_gpu<>){
+	image_on_gpu = input_image;
+}
+
+kernel void
+k_scale(float a<>, float scale, float sad_sid_2, out float b<>)
+/********************************************************************
+Purpose: This function destructively scales images
+Input:   img
+Output:  scaled img
+********************************************************************/
+{
+	b = sad_sid_2 * scale * a;
+}
+
+kernel void k_convert_hu(float4 volume<>, out float4 out_volume<>)
+{
+	float diameter = 40.0;
+	out_volume = 1000 * ((volume / diameter) - .167) / .167; 
+}
