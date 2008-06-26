@@ -31,7 +31,6 @@
 typedef struct program_parms Program_Parms;
 struct program_parms {
     char* file_txt;
-    char* file_dicom;
 	char* outdir;
 };
 
@@ -85,20 +84,11 @@ struct structure_list {
 	//char study_ID[65];
     STRUCTURE* slist;
 };
-//typedef struct data_header DATA_Header;
-//struct data_header {
-//    CT_Header ct;
-//    STRUCTURE_List structures;
-//};
-
 void print_usage (void)
 {
-	//std::cerr << "Usage: " << std::endl;
-	//std::cerr << argv[0] << " input text file with contours " << " input dicom slice (need the header)" << " output directory" << std::endl;
 	exit (-1);
-	printf ("Usage: rtog_to_mha \n");
+	printf ("Usage: cxt_to_mha \n");
 	printf ("  input text file with contours\t");
-	printf ("  input dicom slice (need the header)\t");
 	printf ("  output directory\n");
 }
 
@@ -107,81 +97,95 @@ void
 load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 
 	FILE* fp;
-	//char buf[BUFLEN];
 	STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE));
 	POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE));
-	
+
+	float val_x=0;
+	float val_y=0;
+	float val_z=0;
+
 	int ord=0;
 	int num_pt=0;
 	int num_cn=0;
+	int num_slice=-1;
 	char name_str[BUFLEN];
 	char inter[BUFLEN];
-	//char study_ID[65];
-	int pos=0;
+	char tag[BUFLEN];
+
 	char dumm;
-	char junk[25];
-	//int foo=0;
-	float thick=0;
-	
 	int flag=0;
 	int res=0;
 	float x=0;
 	float y=0;
-	float z=0;
 	
-	//char buf[BUF];
-	//int a=0;
-	
+
 	memset(curr_structure,0,sizeof(STRUCTURE));
 	memset(curr_contour,0,sizeof(POLYLINE));
 	curr_structure->num_contours=0;
 	curr_contour->num_vertices=0;
 
 	fp=fopen(parms->file_txt,"r");
-	//fp=fopen(parms->file_txt,"r");
 
 	if (!fp) { 
 		printf ("Could not open contour file\n");
 		exit(-1);
 	}
 
+	printf("Loading...");
 	while(feof(fp)==0) {
 		if(flag==0)
 		{
-			//fscanf(fp,"%s %s",name_str,study_ID);
 			fscanf(fp,"%s",name_str);
 			res=strcmp("HEADER",name_str);		
 			if(res==0)
 			{	
-				fscanf(fp,"%s",study_ID);
-				printf("STUDY ID is: %s\n",study_ID);
-				
-				while (fscanf(fp,"%d %s %s",&ord,junk,inter)==3)
+				while(fscanf(fp,"%s %f %f %f",tag,&val_x,&val_y,&val_z)==4){
+					if(strcmp("OFFSET",tag)==0){
+						structures->offset[0]=val_x;
+						structures->offset[1]=val_y;
+						structures->offset[2]=val_z;
+						//printf("%s\n",tag);
+					}else if (strcmp("DIMENSION",tag)==0){
+						structures->dim[0]=val_x;
+						structures->dim[1]=val_y;
+						structures->dim[2]=val_z;
+						//printf("%s\n",tag);
+					}else if (strcmp("SPACING",tag)==0){
+						structures->spacing[0]=val_x;
+						structures->spacing[1]=val_y;
+						structures->spacing[2]=val_z;
+						//printf("%s\n",tag);
+						break;
+					}else{
+						fprintf(stderr,"ERROR: Your file is not formatted correctly!");
+					}
+				}
+				fscanf(fp,"%s",name_str);
+				if (strcmp("ROI_NAMES",name_str)!=0)
+					fprintf(stderr,"ERROR: the file parsing went wrong...can't file the tag ROI_NAMES. Please check the format!");
+				while (fscanf(fp,"%d %s",&ord,inter)==2)
 				{
-					
 					structures->num_structures++;
 					structures->slist=(STRUCTURE*) realloc (structures->slist, 
 					structures->num_structures*sizeof(STRUCTURE));
-					strcpy(structures->study_ID,study_ID);
 					curr_structure=&structures->slist[structures->num_structures-1];
 					strcpy(curr_structure->name,inter);
 					curr_structure->num_contours=0;
-					printf("STRUCTURE: %s\n",curr_structure->name);
+					//printf("STRUCTURE: %s\n",curr_structure->name);
 				}
-				printf("\n");
-				strcpy(structures->study_ID,study_ID);
-				printf("STUDY_ID: %s\n",structures->study_ID);
-				fgets(name_str, BUFLEN,fp);
+				//fgets(name_str, BUFLEN,fp);
+				fscanf(fp,"%s",name_str);
+				if (strcmp("END_OF_ROI_NAMES",name_str)!=0)
+					fprintf(stderr,"ERROR: the file parsing went wrong...can't file the tag END_OF_ROI_NAMES. Please check the format!");
 				flag=1;
 			}
 			else
 			{
-				fprintf(stderr,"ERROR: Your file is not formatted correctly!");
+				fprintf(stderr,"ERROR: Your file is not formatted correctly!Can't file the HEADER string");
 				exit(-1);
 			}
 		}else if(flag==1){
-			if(fscanf(fp,"%d %f %d %d %s",&ord,&thick,&num_pt,&num_cn,junk)!=5)
-			{
+			if(fscanf(fp,"%d %d %d %d",&ord,&num_pt,&num_cn,&num_slice)!=4){
 				break;
 			}
 			curr_structure=&structures->slist[ord-1];
@@ -190,33 +194,23 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 				(num_cn+1)*sizeof(POLYLINE));			
 			curr_contour=&curr_structure->pslist[curr_structure->num_contours];				
 			curr_contour->num_vertices=num_pt;
-			
-			fscanf(fp,"%s",inter);
-			strcpy(curr_contour->UID_slice,inter);
-			printf("UID: %s STRUCTURE: %d NUM_PT: %d JUNK: %s\n",curr_contour->UID_slice,ord,num_pt,junk);
+			curr_contour->slice_no=num_slice;
+			//printf("STRUCTURE: %d NUM_PT: %d SLICE_NO: %d\n",ord,num_pt,curr_contour->slice_no);
 
 			curr_contour->x=(float*)malloc(num_pt*sizeof(float));
 			curr_contour->y=(float*)malloc(num_pt*sizeof(float));
-			curr_contour->z=(float*)malloc(num_pt*sizeof(float));
-			printf ("malloc finished!\n");
-			if(curr_contour->y==0 || curr_contour->x==0 ||curr_contour->z==0 )
-			{
+			if(curr_contour->y==0 || curr_contour->x==0){
 				fprintf(stderr,"Error allocating memory");
 				exit(-1);
 			}
-			for(int k=0; k<num_pt; k++)
-			{				
-				//sscanf(buf,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm2,&z,&dumm3);
-				
-				fscanf(fp,"%f%c%f%c%f%c",&x,&dumm,&y,&dumm,&z,&dumm);
-				//printf("num vert: %d point: %f %f %f\n",k,x,y,z);
+			for(int k=0; k<num_pt; k++){								
+				if(fscanf(fp,"%f %f %f",&x,&y,&dumm)!=3){
+					break;
+				}
 				curr_contour->x[k]=x;
 				curr_contour->y[k]=y;
-				curr_contour->z[k]=z;
 				x=0;
 				y=0;
-				z=0;
-				//pos++;
 			}
 			ord=0;
 			num_pt=0;
@@ -225,22 +219,15 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		}
 		
 	}
-//printf("NUM STRUCTURES: %d\n",structures->num_structures);
-//		printf("LAST CONTOUR HAD %d VERTICES\n",curr_contour->num_vertices);
-//		printf("gratulations, we made it!");
-		fclose(fp);
+	printf("successful!");
+	fclose(fp);
 }
-
-//void
-//load_dicom_info(Program_Parms* parms, STRUCTURE_List* structures){
-//}
-
 
 int main(int argc, char* argv[])
 {
 	
 	//printf("argc= %d\n", argc);
-	 if (argc<4)
+	 if (argc<3)
 		 print_usage();
 	 else
 	 {
@@ -250,8 +237,7 @@ int main(int argc, char* argv[])
 		 structures->num_structures=0;
 		 
 		 parms->file_txt=argv[1];
-		 parms->file_dicom=argv[2];
-		 parms->outdir=argv[3];
+		 parms->outdir=argv[2];
 
 		  try{
 			 load_structures(parms,structures);/*

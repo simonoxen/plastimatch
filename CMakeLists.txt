@@ -98,8 +98,8 @@ SET(COMPOSE_VECTOR_FIELDS_SRC
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
-	render_structure.cxx
-	render_structure.h
+	render_polyline.cxx
+	render_polyline.h
 	)
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
@@ -248,7 +248,7 @@ ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
 TARGET_LINK_LIBRARIES(analyze_to_mha)
 #TARGET_LINK_LIBRARIES(cms_to_mha ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(compose_vector_fields plastimatch1 ${ITK_LIBS})
-TARGET_LINK_LIBRARIES(cxt_to_mha plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(cxt_to_mha plastimatch1 ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(dicom_to_mha plastimatch1 ${ITK_LIBS})
 IF(BUILD_EXTRACT_CONTOUR)
 TARGET_LINK_LIBRARIES(extract_contour plastimatch1 ${ITK_LIBS})
