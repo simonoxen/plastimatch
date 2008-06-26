@@ -12,6 +12,8 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+#include "volume.h"
+#include "readmha.h"
 
 #if defined (WIN32)
 #include <direct.h>
@@ -32,30 +34,8 @@ typedef struct program_parms Program_Parms;
 struct program_parms {
     char* file_txt;
 	char* outdir;
+	char* pat_number;
 };
-
-typedef struct ct_header CT_Header;
-struct ct_header {
-    //int first_image;
-    //int last_image;
-    int x_spacing;
-    int y_spacing;
-	float z_spacing;
-    float x_offset;
-    float y_offset;
-    float z_offset;
-	int num_slices;
-
-};
-
-
-//typedef struct vertices VERTICES;
-//struct vertices {
-//   /* int num_vertices;*/
-//    float x;
-//    float y;
-//    float z;
-//};
 
 typedef struct polyline POLYLINE;
 struct polyline{
@@ -89,7 +69,8 @@ void print_usage (void)
 	exit (-1);
 	printf ("Usage: cxt_to_mha \n");
 	printf ("  input text file with contours\t");
-	printf ("  output directory\n");
+	//printf ("  output directory\n");
+	printf ("  patient_number (4 digits)\n");
 }
 
 
@@ -171,7 +152,7 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 					curr_structure=&structures->slist[structures->num_structures-1];
 					strcpy(curr_structure->name,inter);
 					curr_structure->num_contours=0;
-					//printf("STRUCTURE: %s\n",curr_structure->name);
+					printf("STRUCTURE: %s\n",curr_structure->name);
 				}
 				//fgets(name_str, BUFLEN,fp);
 				fscanf(fp,"%s",name_str);
@@ -219,7 +200,7 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 		}
 		
 	}
-	printf("successful!");
+	printf("successful!\n");
 	fclose(fp);
 }
 
@@ -233,23 +214,75 @@ int main(int argc, char* argv[])
 	 {
 		 Program_Parms* parms=(Program_Parms*)malloc(sizeof(Program_Parms));
 		 STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List));
+		 STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE));
+		 POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE));
+		 Volume* vol;
+		 unsigned char* img;
+		 unsigned char* acc_img ;
+		 int dim[2];
+		 float offset[2];
+		 float spacing[2];
+		 int slice_voxels=0;
+		 
+
+
 		 memset(structures,0,sizeof(STRUCTURE_List));
+		 printf("Allocated Structure LIST\n");
 		 structures->num_structures=0;
+
+		 memset(curr_structure,0,sizeof(STRUCTURE));
+		  printf("Allocated Structure\n");
+		 memset(curr_contour,0,sizeof(POLYLINE));
+		  printf("Allocated Polyline\n");
+		 curr_structure->num_contours=0;
+		 curr_contour->num_vertices=0;
 		 
 		 parms->file_txt=argv[1];
-		 parms->outdir=argv[2];
-
-		  try{
-			 load_structures(parms,structures);/*
-			 load_dicom_info(parms,structures);*/
-			   
-		  }
-		  catch( char * str ) {
-			  printf("Exception raised: " ,"%s",str);
-		  }
-
-		
+		 //parms->outdir=argv[2];
+		 parms->pat_number=argv[2];
+		 //strcat(fn,parms->outdir);
+		 //strcat(fn,"/");
 		 
-		 
+
+		 load_structures(parms,structures);
+		 dim[0]=structures->dim[0];
+		 dim[1]=structures->dim[1];
+		 offset[0]=structures->offset[0];
+		 offset[1]=structures->offset[1];
+		 spacing[0]=structures->spacing[0];
+		 spacing[1]=structures->spacing[1];
+		 slice_voxels=dim[0]*dim[1];
+		 acc_img = (unsigned char*)malloc(slice_voxels*sizeof(unsigned char));
+		 vol=volume_create(structures->dim, structures->offset, structures->spacing, PT_UCHAR, 0);
+		  printf("Allocated Volume");
+		 if(vol==0){
+			 fprintf(stderr,"ERROR: failed in allocating the volume"); 
+		 }
+		 img=(unsigned char*)vol->img;
+		 for (int j=0; j < structures->num_structures; j++){
+			 curr_structure=&structures->slist[j];
+			 char fn[BUFLEN]="";
+			 strcat(fn,parms->pat_number);
+			 strcat(fn,"_");
+			 strcat(fn,curr_structure->name);
+			 strcat(fn,".mha");
+			 printf("output filename: %s\n", fn);
+			 //system("PAUSE");
+			 memset (img, 0, structures->dim[0]*structures->dim[1]*structures->dim[2]*sizeof(unsigned char));
+			 printf("Allocated IMG\n");
+			 for (int i = 0; i < curr_structure->num_contours; i++) {
+				 curr_contour=&curr_structure->pslist[i];
+				 unsigned char* slice_img = &img[curr_contour->slice_no*dim[0]*dim[1]];
+				 memset (acc_img, 0, dim[0]*dim[1]*sizeof(unsigned char));
+				 render_slice_polyline (acc_img, dim, spacing, offset, 
+					 curr_contour->num_vertices, curr_contour->x, curr_contour->y);
+				 for (int k = 0; k < slice_voxels; k++) {
+					 slice_img[k] ^= acc_img[k];
+				 }
+			 }
+			 write_mha (fn, vol);
+			 //break;
+		 }
+		 volume_free(vol);
 	 }
 }
