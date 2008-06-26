@@ -13,7 +13,6 @@ IF(PLASTIMATCH_SLICER)
    cmake_policy(SET CMP0003 NEW) 	 
 ENDIF(PLASTIMATCH_SLICER) 	 
 	 
-
 ######################################################
 ##  By default, brook builts /MT.  We need to match this.
 ######################################################
@@ -346,3 +345,9 @@ slicer3_install_plugins(${CLP})
 
 ENDIF(PLASTIMATCH_SLICER) 	 
 
+######################################################
+##  SLICER FRONT-END 	 
+###################################################### 	 
+ENABLE_TESTING()
+ADD_TEST(TEST1 PLASTIMATCH)
+#add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)

@@ -31,6 +31,7 @@ void
 parse_args (Registration_Parms* regp, int argc, char* argv[])
 {
     if (argc != 2) {
+	exit (0);
 	print_usage ();
     }
     if (parse_command_file (regp, argv[1]) < 0) {
