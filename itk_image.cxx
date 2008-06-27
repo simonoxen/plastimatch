@@ -19,7 +19,6 @@
 #include "itkDICOMSeriesFileNames.h"
 #include "itkCastImageFilter.h"
 #include "itk_image.h"
-#include "itkPluginUtilities.h"
 #include "itkImageIOBase.h"
 
 /* =======================================================================*

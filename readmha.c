@@ -78,12 +78,13 @@ write_mha (char* filename, Volume* vol)
 	     vol->dim[0], vol->dim[1], vol->dim[2],
 	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
 	     ? "ElementNumberOfChannels = 3\n" : "",
-	     (vol->pix_type == PT_SHORT) ? "MET_SHORT" : "MET_FLOAT");
+		 (vol->pix_type == PT_SHORT) ? "MET_SHORT" : (vol->pix_type == PT_UCHAR ? "MET_UCHAR" : "MET_FLOAT"));
     fflush (fp);
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
 
     switch (vol->pix_type) {
+	case PT_UCHAR:
 	case PT_SHORT:
 	case PT_FLOAT:
 	case PT_VF_FLOAT_INTERLEAVED:
@@ -175,6 +176,11 @@ read_mha (char* filename)
 	if (strcmp (linebuf, "ElementType = MET_SHORT\n") == 0) {
 	    vol->pix_type = PT_SHORT;
 	    vol->pix_size = sizeof(short);
+	    continue;
+	}
+	if (strcmp (linebuf, "ElementType = MET_UCHAR\n") == 0) {
+	    vol->pix_type = PT_UCHAR;
+	    vol->pix_size = sizeof(unsigned char);
 	    continue;
 	}
     }
