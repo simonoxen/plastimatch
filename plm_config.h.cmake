@@ -3,6 +3,9 @@
 
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine BUILD_SHARED_LIBS 1
+#cmakedefine HAVE_F2C_LIBRARY 1
+#cmakedefine HAVE_BROOK_LIBRARY 1
+#cmakedefine BUILD_BSPLINE_BROOK 1
 
 #if _MSC_VER >= 1400
 /* 4996 warnings are generated when using C library functions */
@@ -34,4 +37,4 @@
 #define plastimatch1_EXPORT 
 #endif
 
-#endif /* __config_h__ */
+#endif /* __plm_config_h__ */

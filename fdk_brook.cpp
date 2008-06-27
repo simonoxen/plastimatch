@@ -8,7 +8,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "config.h"
+#include "plm_config.h"
 #include "mathutil.h"
 #include "volume.h"
 #include "readmha.h"

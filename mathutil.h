@@ -4,7 +4,7 @@
 #ifndef __mathutil_h__
 #define __mathutil_h__
 
-#include "config.h"
+#include "plm_config.h"
 #include <string.h>
 
 #ifndef M_PI

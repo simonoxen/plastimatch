@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "demons.h"
 
 /* GCS FIX: ITK uses sum_d(pix_spacing[d]^2) / (#dim) for homog */

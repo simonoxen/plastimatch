@@ -7,12 +7,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include "config.h"
-#include "demon_opts.h"
+#include "plm_config.h"
+#include "demons_opts.h"
 #include "demons_misc.h"
 #include "volume.h"
 #include "readmha.h"
-#include "demon_brook_kernel.h"
+#include "demons_brook_kernel.h"
 #include "convolution_brook_kernel.h"
 
 

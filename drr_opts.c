@@ -133,7 +133,7 @@ parse_args (MGHDRR_Options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-t")) {
 	    i++;
-	    rc = sscanf (argv[i], "%s" , &options->output_format);
+	    rc = sscanf (argv[i], "%s" , options->output_format);
 	    if (rc != 1) {
 		print_usage ();
 	    }

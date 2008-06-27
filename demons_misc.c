@@ -6,7 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "demons.h"
 
 /* This function creates the smoothing kernel */

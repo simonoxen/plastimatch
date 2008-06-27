@@ -6,13 +6,22 @@ INCLUDE(FindOpenGL)
 INCLUDE(GPUIT.cmake)
 
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
+SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
+SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
+SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 
-SET(PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
-IF(PLASTIMATCH_SLICER) 	 
-   cmake_minimum_required(VERSION 2.6) 	 
-   cmake_policy(SET CMP0003 NEW) 	 
-ENDIF(PLASTIMATCH_SLICER) 	 
-	 
+IF(PLASTIMATCH_SLICER)
+   cmake_minimum_required(VERSION 2.6)
+ENDIF(PLASTIMATCH_SLICER)
+
+# if cmake version >= 2.6, cmake_policy...
+
+## Tell CMake to be quiet
+IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+   cmake_policy(SET CMP0003 NEW)
+ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+
+
 ######################################################
 ##  By default, brook builts /MT.  We need to match this.
 ######################################################
@@ -46,12 +55,12 @@ ENDIF(NOT GPUIT_LINK_MSVCRT)
 ######################################################
 ##  GPUIT LIBRARY
 ######################################################
-FIND_PACKAGE(GPUIT)
-IF(NOT GPUIT_FOUND)
-  MESSAGE(FATAL_ERROR
-          "Cannot build without GPUIT.  Please set GPUIT_DIR.")
-ENDIF(NOT GPUIT_FOUND)
-LINK_DIRECTORIES(${GPUIT_LIBRARY_DIRS})
+# FIND_PACKAGE(GPUIT)
+# IF(NOT GPUIT_FOUND)
+#   MESSAGE(FATAL_ERROR
+#           "Cannot build without GPUIT.  Please set GPUIT_DIR.")
+# ENDIF(NOT GPUIT_FOUND)
+# LINK_DIRECTORIES(${GPUIT_LIBRARY_DIRS})
 
 SET(GPUIT_LIBRARIES gpuit)
 IF(BROOK_FOUND)
@@ -68,6 +77,14 @@ SET(GPUIT_LIBRARIES
 	${F2C_LIBRARY}
 	)
 ENDIF(F2C_LIBRARY)
+
+######################################################
+##  BROOK LIBRARY
+######################################################
+SET(HAVE_BROOK_LIBRARY FALSE)
+IF(BROOK_FOUND)
+  SET(HAVE_BROOK_LIBRARY TRUE)
+ENDIF(BROOK_FOUND)
 
 ######################################################
 ##  ITK LIBRARY
@@ -91,7 +108,89 @@ ELSE(UNIX)
 ENDIF(UNIX)
 
 ######################################################
-##  SOURCE FILES
+##  SOURCE FILES (From GPUIT)
+######################################################
+SET(BSPLINE_SRC
+	bspline_main.c 
+	)
+SET(DEMONS_SRC
+	demons_main.c
+	demons_opts.c demons_opts.h
+	)
+IF(BUILD_DEMONS_CUDA)
+SET(DEMONS_CUDA_SRC
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+ENDIF(BUILD_DEMONS_CUDA)
+SET(DRR_C_SRC
+	drr_c.c
+	drr_opts.c drr_opts.h
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+SET(FDK_C_SRC
+	fdk_c.c fdk.h
+	fdk_opts.c fdk_opts.h
+	mathutil.h
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+SET(FDK_BROOK_SRC
+	fdk_brook.cpp fdk.h
+	fdk_opts.c fdk_opts.h
+	mathutil.h
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+
+SET(GPUIT_LIBRARY_SRC
+	bspline.c bspline.h
+	bspline_opts.c bspline_opts.h
+	demons.c demons.h
+	demons_cpu.c
+	demons_misc.c demons_misc.h
+	mathutil.h
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+IF(BROOK_FOUND)
+SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	demons_brook.cpp
+	demons_brook_kernel_wrap.cpp
+#	demons_brook_kernel.br
+#	demons_brook_kernel.cpp
+	demons_brook_kernel.h
+#	convolution_brook_kernel.br
+#	convolution_brook_kernel.cpp
+	convolution_brook_kernel_wrap.cpp
+	convolution_brook_kernel.h
+	)
+ENDIF(BROOK_FOUND)
+IF(F2C_LIBRARY)
+SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
+	lbfgsb_2_1.c f2c.h
+	main__.c
+	)
+ENDIF(F2C_LIBRARY)
+IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+    	bspline_brook_kernel.br
+	bspline_brook_kernel.cpp
+	toy_kernels.br
+	toy_kernels.cpp
+	bspline_brook.cpp 
+	bspline_brook.h
+	)
+ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+
+
+######################################################
+##  SOURCE FILES (From Plastimatch)
 ######################################################
 SET(COMPOSE_VECTOR_FIELDS_SRC
 	compose_vector_fields.cxx
@@ -186,21 +285,61 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BI
 ##  INCLUDE DIRECTORIES
 ######################################################
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-IF(GPUIT_FOUND)
-  INCLUDE_DIRECTORIES(AFTER ${GPUIT_INCLUDE_DIRS})
+#IF(GPUIT_FOUND)
+#  INCLUDE_DIRECTORIES(AFTER ${GPUIT_INCLUDE_DIRS})
   IF(BROOK_FOUND)
     INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
   ENDIF(BROOK_FOUND)
   IF(CUDA_FOUND)
-    INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
+    # Not sure.  GPUIT had both includes.
+    # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
+    INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
   ENDIF(CUDA_FOUND)
-ENDIF(GPUIT_FOUND)
+#ENDIF(GPUIT_FOUND)
 
 
 ######################################################
-##  TARGETS
+##  TARGETS (from GPUIT)
 ######################################################
 
+IF(BROOK_FOUND)
+  BRCC_FILE(fdk_brook_kernel.br)
+  SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
+    OBJECT_DEPENDS "fdk_brook_kernel.cpp")
+  ADD_EXECUTABLE(fdk_brook ${FDK_BROOK_SRC} fdk_brook_kernel.br)
+
+  BRCC_FILE(convolution_brook_kernel.br)
+  BRCC_FILE(demons_brook_kernel.br)
+  SET_SOURCE_FILES_PROPERTIES(demons_brook_kernel_wrap.cpp PROPERTIES
+    OBJECT_DEPENDS "demons_brook_kernel.cpp")
+  SET_SOURCE_FILES_PROPERTIES(convolution_brook_kernel_wrap.cpp PROPERTIES
+    OBJECT_DEPENDS "convolution_brook_kernel.cpp")
+
+  BRCC_FILE(bspline_brook_kernel.br)
+  BRCC_FILE(toy_kernels.br)
+  SET_SOURCE_FILES_PROPERTIES(bspline_brook.cpp PROPERTIES
+    OBJECT_DEPENDS "bspline_brook_kernel.cpp")
+  SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
+    OBJECT_DEPENDS "toy_kernels.cpp")
+ENDIF(BROOK_FOUND)
+
+IF(BUILD_DEMONS_CUDA)
+  NVCC_FILE(demons_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu PROPERTIES
+    OBJECT_DEPENDS "demons_cuda_kernel.cu")
+  ADD_EXECUTABLE(demons_cuda ${DEMONS_CUDA_SRC} demons_cuda.obj)
+ENDIF(BUILD_DEMONS_CUDA)
+
+ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
+ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
+ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
+ADD_EXECUTABLE(demons ${DEMONS_SRC})
+ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
+
+
+######################################################
+##  TARGETS (from plastimatch)
+######################################################
 #SET(ITK_LIBS ITKCommon ITKIO ITKNumerics itksys)
 SET(ITK_LIBS ITKCommon ITKIO ITKNumerics)
 
@@ -242,7 +381,54 @@ ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
 ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
 
 ######################################################
-##  LINK
+##  LINKING (from GPUIT)
+######################################################
+
+# B-Spline
+SET(BSPLINE_LIBRARIES gpuit ${MY_MATH_LIB})
+IF(F2C_LIBRARY)
+  SET(BSPLINE_LIBRARIES ${F2C_LIBRARY} ${BSPLINE_LIBRARIES})
+ENDIF(F2C_LIBRARY)
+IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+  SET(BSPLINE_LIBRARIES ${BSPLINE_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
+ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+TARGET_LINK_LIBRARIES(bspline ${BSPLINE_LIBRARIES})
+
+# Demon
+SET(DEMONS_LIBRARIES gpuit ${MY_MATH_LIB})
+IF(BROOK_FOUND)
+  SET(DEMONS_LIBRARIES ${DEMONS_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
+ENDIF(BROOK_FOUND)
+TARGET_LINK_LIBRARIES(demons ${DEMONS_LIBRARIES})
+
+# Demon cuda
+IF(BUILD_DEMONS_CUDA)
+IF(CUDA_FOUND)
+    TARGET_LINK_LIBRARIES(demons_cuda ${MY_MATH_LIB} ${CUDA_LIBRARIES})
+ENDIF(CUDA_FOUND)
+ENDIF(BUILD_DEMONS_CUDA)
+
+# DRR
+TARGET_LINK_LIBRARIES(drr_c ${MY_MATH_LIB})
+
+# FDK
+TARGET_LINK_LIBRARIES(fdk_c ${MY_MATH_LIB})
+IF(BROOK_FOUND)
+  TARGET_LINK_LIBRARIES(fdk_brook ${MY_MATH_LIB} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
+ENDIF(BROOK_FOUND)
+
+
+###### There is no way to get debug gpuit to link with release brook
+###### on MSVC 2005.
+#  IF(WIN32)
+#    SET_TARGET_PROPERTIES(fdk_brook PROPERTIES
+#    LINK_FLAGS_DEBUG "/NODEFAULTLIB:LIBCMT.LIB")
+#    LINK_FLAGS_DEBUG "/NODEFAULTLIB:LIBCMT.LIB /NODEFAULTLIB:LIBCPMT.LIB"
+#    LINK_FLAGS_RELEASE "/NODEFAULTLIB:LIBCMT.LIB /NODEFAULTLIB:LIBCPMT.LIB")
+#ENDIF(WIN32)
+
+######################################################
+##  LINKING (from plastimatch)
 ######################################################
 
 TARGET_LINK_LIBRARIES(analyze_to_mha)
@@ -274,7 +460,20 @@ TARGET_LINK_LIBRARIES(warp_dij plastimatch1 ${ITK_LIBS})
 TARGET_LINK_LIBRARIES(warp_mha plastimatch1 ${ITK_LIBS} ${GPUIT_LIBRARIES})
 
 ######################################################
-##  INSTALL
+##  INSTALL (GPUIT)
+######################################################
+INSTALL(TARGETS bspline DESTINATION bin)
+INSTALL(TARGETS demons DESTINATION bin)
+INSTALL(TARGETS drr_c DESTINATION bin)
+INSTALL(TARGETS fdk_c DESTINATION bin)
+IF(BROOK_FOUND)
+  INSTALL(TARGETS fdk_brook DESTINATION bin)
+ENDIF(BROOK_FOUND)
+INSTALL(TARGETS gpuit DESTINATION lib)
+INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
+
+######################################################
+##  INSTALL (PLASTIMATCH)
 ######################################################
 INSTALL(TARGETS analyze_to_mha DESTINATION bin)
 INSTALL(TARGETS compose_vector_fields DESTINATION bin)
@@ -346,7 +545,7 @@ slicer3_install_plugins(${CLP})
 ENDIF(PLASTIMATCH_SLICER) 	 
 
 ######################################################
-##  SLICER FRONT-END 	 
+##  REGRESSION TESTING
 ###################################################### 	 
 ENABLE_TESTING()
 ADD_TEST(TEST1 PLASTIMATCH)

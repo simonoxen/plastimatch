@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <io.h>        // windows //
-#include "config.h"
+#include "plm_config.h"
 #include "volume.h"
 
 #define LINELEN 128

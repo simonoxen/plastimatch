@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "mathutil.h"
 #include "drr_opts.h"
 #include "readmha.h"
@@ -1437,14 +1437,14 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 	msd_fp = 0;
     }
 
-    if (!strcmp(&options->output_format,"pgm")) {
+    if (!strcmp(options->output_format,"pgm")) {
 	fprintf (pgm_fp, 
 		 "P2\n"
 		 "# Created by mghdrr\n"
 		 "%d %d\n"
 		 "65536\n",
 		 res_c, res_r);
-    } else if (!strcmp(&options->output_format,"pfm")){
+    } else if (!strcmp(options->output_format,"pfm")){
 	fprintf (pgm_fp, 
 		 "Pf\n"
 		 "%d %d\n"
@@ -1481,7 +1481,7 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		value = exp(-value);
 	    }
 	    value = value * options->scale;   /* User requested scaling */
-	    if (!strcmp(&options->output_format,"pgm")){
+	    if (!strcmp(options->output_format,"pgm")){
 		if (options->exponential_mapping) {
 		    value = value * 65536;
 		} else {
@@ -1493,7 +1493,7 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		    value = 0;
 		}
 		fprintf (pgm_fp,"%d ", ROUND_INT(value));
-	    } else if (!strcmp(&options->output_format,"pfm")){
+	    } else if (!strcmp(options->output_format,"pfm")){
 		float fv = (float) value;
 		fwrite (&fv, sizeof(float), 1, pgm_fp);
 		//fprintf (pgm_fp,"%g ",value);
@@ -1502,7 +1502,7 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		fwrite (&fv, sizeof(short), 1, pgm_fp);
 	    }
         }
-	if (!strcmp(&options->output_format,"pgm")) {
+	if (!strcmp(options->output_format,"pgm")) {
 	    fprintf (pgm_fp,"\n");
 	}
     }
@@ -1583,12 +1583,12 @@ drr_render_volumes (Volume* vol, MGHDRR_Options* options)
 	sprintf (out_fn, "%s%04d.txt", options->output_prefix, a);
 	drr_write_projection_matrix (vol, cam, tgt, vup, 
 				     sid, ic, ps, ires, out_fn);
-	printf ("output format %s\n", &options->output_format);
-	if (!strcmp(&options->output_format,"pgm")) {
+	printf ("output format %s\n", options->output_format);
+	if (!strcmp(options->output_format,"pgm")) {
 	    sprintf (out_fn, "%s%04d.pgm", options->output_prefix, a);
-	} else if (!strcmp(&options->output_format,"pfm")){
+	} else if (!strcmp(options->output_format,"pfm")){
 	    sprintf (out_fn, "%s%04d.pfm", options->output_prefix, a);
-	} else if (!strcmp(&options->output_format,"raw")){
+	} else if (!strcmp(options->output_format,"raw")){
 	    sprintf(out_fn, "%s%04d.raw", options->output_prefix, a);
 	} else{
 	    printf("Error: Undefined output format");

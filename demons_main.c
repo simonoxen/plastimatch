@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "config.h"
+#include "plm_config.h"
 #include "readmha.h"
 #include "volume.h"
 #include "demons.h"
-#include "demon_opts.h"
+#include "demons_opts.h"
 
 int
 main (int argc, char* argv[])

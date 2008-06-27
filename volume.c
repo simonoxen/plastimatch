@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "volume.h"
 #include "readmha.h"
 
@@ -477,7 +477,7 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
 	dim[d] = vol_in->dim[d] / sampling_rate[d];
 	if (dim[d] < 1) dim[d] = 1;
 	pix_spacing[d] = in_size / dim[d];
-	offset[d] = vol_in->offset[d] - 0.5 * vol_in->pix_spacing[d] + 0.5 * pix_spacing[d];
+	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->pix_spacing[d] + 0.5 * pix_spacing[d]);
     }
     return volume_resample (vol_in, dim, offset, pix_spacing);
 }
@@ -570,13 +570,13 @@ volume_calc_grad (Volume* vout, Volume* vref)
 		
 		idx_p = volume_index (vref->dim, i_p, j, k);
 		idx_n = volume_index (vref->dim, i_n, j, k);
-		out_img[gi] = (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[0];
+		out_img[gi] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[0];
 		idx_p = volume_index (vref->dim, i, j_p, k);
 		idx_n = volume_index (vref->dim, i, j_n, k);
-		out_img[gj] = (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[1];
+		out_img[gj] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[1];
 		idx_p = volume_index (vref->dim, i, j, k_p);
 		idx_n = volume_index (vref->dim, i, j, k_n);
-		out_img[gk] = (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[2];
+		out_img[gk] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[2];
 	    }
 	}
     }

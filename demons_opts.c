@@ -6,8 +6,8 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "config.h"
-#include "demon_opts.h"
+#include "plm_config.h"
+#include "demons_opts.h"
 
 void
 print_usage (void)

@@ -6,10 +6,10 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
-#include "config.h"
+#include "plm_config.h"
 #include "readmha.h"
 #include "volume.h"
-#include "demon_opts.h"
+#include "demons_opts.h"
 #include "demons_misc.h"
 
 int
