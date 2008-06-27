@@ -14,8 +14,6 @@ IF(PLASTIMATCH_SLICER)
    cmake_minimum_required(VERSION 2.6)
 ENDIF(PLASTIMATCH_SLICER)
 
-# if cmake version >= 2.6, cmake_policy...
-
 ## Tell CMake to be quiet
 IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
    cmake_policy(SET CMP0003 NEW)
@@ -159,11 +157,9 @@ SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	demons_brook.cpp
 	demons_brook_kernel_wrap.cpp
-#	demons_brook_kernel.br
-#	demons_brook_kernel.cpp
+	demons_brook_kernel.br
 	demons_brook_kernel.h
-#	convolution_brook_kernel.br
-#	convolution_brook_kernel.cpp
+	convolution_brook_kernel.br
 	convolution_brook_kernel_wrap.cpp
 	convolution_brook_kernel.h
 	)
