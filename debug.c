@@ -8,7 +8,7 @@
 #include "plm_config.h"
 #include "debug.h"
 
-#if WIN32
+#if (defined(_WIN32) || defined(WIN32))
 	#define vsnprintf _vsnprintf
 #endif
 

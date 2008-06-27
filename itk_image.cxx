@@ -4,7 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined (WIN32)
+#if (defined(_WIN32) || defined(WIN32))
 #include <direct.h>
 #include <io.h>
 #else
@@ -40,7 +40,7 @@ typedef itk::ImageFileReader < FloatImageType > MhaFloatReaderType;
 int
 is_directory (char *dir)
 {
-#if defined (WIN32)
+#if (defined(_WIN32) || defined(WIN32))
     char pwd[_MAX_PATH];
     if (!_getcwd (pwd, _MAX_PATH)) {
         return 0;
@@ -244,7 +244,7 @@ load_float_2 (char* fname, T)
 		TImageType, FloatImageType > CastFilterType;
 
     /* Load image as native type */
-    TReaderType::Pointer rdr = TReaderType::New();
+    typename TReaderType::Pointer rdr = TReaderType::New();
     load_itk_rdr (rdr, fname);
     typename TImageType::Pointer input_image = rdr->GetOutput();
 
@@ -267,7 +267,7 @@ load_any_2 (char* fname, T, U)
 		TImageType, UImageType > CastFilterType;
 
     /* Load image as type T */
-    TReaderType::Pointer rdr = TReaderType::New();
+    typename TReaderType::Pointer rdr = TReaderType::New();
     load_itk_rdr (rdr, fname);
     typename TImageType::Pointer input_image = rdr->GetOutput();
 

@@ -47,7 +47,7 @@
 #include <string.h>
 #include <math.h>
 
-#if defined (WIN32)
+#if (defined(_WIN32) || defined(WIN32))
 #include <direct.h>
 #define snprintf _snprintf
 #define mkdir(a,b) _mkdir(a)

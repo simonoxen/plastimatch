@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
+#endif
 #include "plm_config.h"
 #include "volume.h"
 

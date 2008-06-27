@@ -6,7 +6,7 @@
 #include <stdarg.h>
 #include "print_and_exit.h"
 
-#if WIN32
+#if (defined(_WIN32) || defined(WIN32))
 	#define vsnprintf _vsnprintf
 #endif
 
