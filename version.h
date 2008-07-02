@@ -4,8 +4,9 @@
 #ifndef _version_h_
 #define _version_h_
 
-#define RAD_VERSION "0.0"
-#define RAD_BUILD "XXX"
-#define RAD_VERSION_STRING  RAD_VERSION " (" RAD_BUILD ")"
+#include "plm_config.h"
+
+#define PLASTIMATCH_VERSION "1.4-beta"
+#define PLASTIMATCH_VERSION_STRING  PLASTIMATCH_VERSION " (" PLASTIMATCH_BUILD_NUMBER ")"
 
 #endif

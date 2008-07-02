@@ -9,6 +9,7 @@ SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
+SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
 IF(PLASTIMATCH_SLICER)
    cmake_minimum_required(VERSION 2.6)
@@ -49,6 +50,26 @@ IF(NOT GPUIT_LINK_MSVCRT)
 	     CMAKE_C_FLAGS_RELWITHDEBINFO 
 	     "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 ENDIF(NOT GPUIT_LINK_MSVCRT)
+
+
+######################################################
+##  GPUIT LIBRARY
+######################################################
+include(FindSubversion)
+
+IF(Subversion_FOUND)
+	MESSAGE(STATUS "Looking for Subversion - found")
+	Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
+	EXECUTE_PROCESS(
+		COMMAND "svnversion" "--no-newline" ${CMAKE_SOURCE_DIR}
+		OUTPUT_VARIABLE svn_version
+		ERROR_VARIABLE svn_version
+	)
+#	message(${svn_version})
+	SET(PLASTIMATCH_SVN_VERSION ${svn_version})
+ELSE(Subversion_FOUND)
+	MESSAGE(STATUS "Looking for Subversion - not found")
+ENDIF(Subversion_FOUND)
 
 ######################################################
 ##  GPUIT LIBRARY
