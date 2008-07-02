@@ -14,7 +14,7 @@
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "xform.h"
-#include "version.h"
+#include "plm_version.h"
 
 #define BUFLEN 2048
 
@@ -22,7 +22,7 @@
 static void
 print_usage (void)
 {
-    printf ("plastimatch version %s\n", RAD_VERSION_STRING);
+    printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
     printf ("Usage: plastimatch options_file\n");
     exit (-1);
 }

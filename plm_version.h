@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _version_h_
-#define _version_h_
+#ifndef _plm_version_h_
+#define _plm_version_h_
 
 #include "plm_config.h"
 
