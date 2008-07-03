@@ -85,6 +85,7 @@ write_mha (char* filename, Volume* vol)
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
 
+#if defined (commentout)
     switch (vol->pix_type) {
 	case PT_UCHAR:
 	case PT_SHORT:
@@ -99,6 +100,7 @@ write_mha (char* filename, Volume* vol)
 	    fprintf (stderr, "Error: unknown pix_type.\n");
 	    break;
     }
+#endif
 
 #if defined (commentout)
     if (vol->pix_type == PT_SHORT) {

@@ -241,12 +241,12 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	itk_registration.cxx itk_registration.h 
 	itk_warp.cxx itk_warp.h 
 	plastimatch_parms.cxx
+	plm_version.h 
 	print_and_exit.cxx print_and_exit.h 
 	rad_image.cxx rad_image.h 
 	rad_stages.cxx 
 	rad_registration.h 
 	resample_mha.cxx resample_mha.h 
-	version.h 
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
