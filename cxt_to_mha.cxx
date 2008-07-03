@@ -66,11 +66,12 @@ struct structure_list {
 };
 void print_usage (void)
 {
-	exit (-1);
+	
 	printf ("Usage: cxt_to_mha \n");
 	printf ("  input text file with contours\t");
 	//printf ("  output directory\n");
 	printf ("  patient_number (4 digits)\n");
+	exit (-1);
 }
 
 
@@ -176,9 +177,9 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 	    curr_contour=&curr_structure->pslist[curr_structure->num_contours];				
 	    curr_contour->num_vertices=num_pt;
 	    curr_contour->slice_no=num_slice;
-	    if (ord == 5) {
+	    /*if (ord == 5) {
 		printf("STRUCTURE: %d NUM_PT: %d NUM_CN: %d SLICE_NO: %d\n",ord,num_pt,num_cn,curr_contour->slice_no);
-	    }
+	    }*/
 	    curr_structure->num_contours++;
 
 	    curr_contour->x=(float*)malloc(num_pt*sizeof(float));
@@ -295,8 +296,7 @@ int main(int argc, char* argv[])
 	    fprintf(stderr,"ERROR: failed in allocating the volume"); 
 	}
 	img=(unsigned char*)vol->img;
-	//for (int j=0; j < structures->num_structures; j++){
-	for (int j=4; j <= 4; j++){
+	for (int j=0; j < structures->num_structures; j++){
 	    curr_structure=&structures->slist[j];
 	    char fn[BUFLEN]="";
 	    strcat(fn,parms->pat_number);
