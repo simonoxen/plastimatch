@@ -72,8 +72,8 @@ int main(int argc, char ** argv)
 	while(!itSlice.IsAtEnd())
 	{
 		k=itSlice.GetIndex();
-		/*printf("%2d", k[2]);
-		system("PAUSE");*/
+		//printf("%2d\n", k[2]);
+		
 		outImgType::Pointer slice;
 		slice = slice_extraction(volume, k[2]);
 
@@ -85,6 +85,7 @@ int main(int argc, char ** argv)
 		try
 		{
 			contour->Update();
+			//std::cout << "Cerco il contorno!\n" << std::endl;
 		}
 		catch ( itk::ExceptionObject &err)
 		{
@@ -93,7 +94,8 @@ int main(int argc, char ** argv)
 			return -1;   
 		}
 		
-
+		//std::cout << "NR OUTPUTS:"<<contour->GetNumberOfOutputs() << std::endl; 
+		//system("PAUSE");
 		  for(unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++)
 			{
 				ContourType::VertexListConstPointer vertices =contour->GetOutput(i)->GetVertexList();
@@ -110,7 +112,7 @@ int main(int argc, char ** argv)
 					
 
 				}
-		      
+		      //system("PAUSE");
 			}
 		  itSlice.NextSlice();
 	}

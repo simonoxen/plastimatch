@@ -216,13 +216,17 @@ int main(int argc, char* argv[])
 		 STRUCTURE_List* structures=(STRUCTURE_List*)malloc(sizeof(STRUCTURE_List));
 		 STRUCTURE* curr_structure=(STRUCTURE*)malloc(sizeof(STRUCTURE));
 		 POLYLINE* curr_contour=(POLYLINE*)malloc(sizeof(POLYLINE));
+		 STRUCTURE* curr_structure_2=(STRUCTURE*)malloc(sizeof(STRUCTURE));
+		 POLYLINE* curr_contour_2=(POLYLINE*)malloc(sizeof(POLYLINE));
 		 Volume* vol;
+		 FILE* fp;
 		 unsigned char* img;
 		 unsigned char* acc_img ;
 		 int dim[2];
 		 float offset[2];
 		 float spacing[2];
 		 int slice_voxels=0;
+		 
 		 
 
 
@@ -231,9 +235,9 @@ int main(int argc, char* argv[])
 		 structures->num_structures=0;
 
 		 memset(curr_structure,0,sizeof(STRUCTURE));
-		  printf("Allocated Structure\n");
+		 printf("Allocated Structure\n");
 		 memset(curr_contour,0,sizeof(POLYLINE));
-		  printf("Allocated Polyline\n");
+		 printf("Allocated Polyline\n");
 		 curr_structure->num_contours=0;
 		 curr_contour->num_vertices=0;
 		 
@@ -245,6 +249,36 @@ int main(int argc, char* argv[])
 		 
 
 		 load_structures(parms,structures);
+
+		 
+		 /*strcat(filename,"vertix");
+		 strcat(filename,"_");*/
+
+		 for (int p=0; p < structures->num_structures; p++){
+			 curr_structure_2=&structures->slist[p];
+			 char filename[BUFLEN]="";
+			 strcat(filename,"vertix");
+			 strcat(filename,"_");
+			 strcat(filename,curr_structure_2->name);
+			 strcat(filename,".txt");
+			 fp=fopen(filename,"w");
+			 printf("FILENAME: %s\n",filename);
+			 if (!fp) { 
+				 printf ("Could not open for writing contour file\n");
+				 exit(-1);
+			 }
+			 /*fprintf(fp,"NaN NaN NaN \n");*/
+			 for (int r = curr_structure_2->num_contours; r>0 ; r--) {
+				 fprintf(fp,"NaN NaN NaN \n");
+				 curr_contour_2=&curr_structure_2->pslist[r];
+				 for (int q=0; q<curr_contour_2->num_vertices; q++){
+					 fprintf(fp,"%f %f %d\n",curr_contour_2->x[q],curr_contour_2->y[q],curr_contour_2->slice_no);
+				 }
+			 }
+		 }
+
+
+
 		 dim[0]=structures->dim[0];
 		 dim[1]=structures->dim[1];
 		 offset[0]=structures->offset[0];
@@ -254,7 +288,7 @@ int main(int argc, char* argv[])
 		 slice_voxels=dim[0]*dim[1];
 		 acc_img = (unsigned char*)malloc(slice_voxels*sizeof(unsigned char));
 		 vol=volume_create(structures->dim, structures->offset, structures->spacing, PT_UCHAR, 0);
-		  printf("Allocated Volume");
+		  printf("Allocated Volume\n");
 		 if(vol==0){
 			 fprintf(stderr,"ERROR: failed in allocating the volume"); 
 		 }
