@@ -248,7 +248,7 @@ subsample_image (T& image, int x_sampling_rate,
     for (int i = 0; i < 3; i++) {
 	spacing[i] = spacing1[i] * sampling_rate[i];
 	origin[i] = origin1[i] + 0.5 * (sampling_rate[i]-1) * spacing1[i];
-	size[i] = (size1[i] + 1) / sampling_rate[i];
+	size[i] = (int) ceil(((float) size1[i] / sampling_rate[i]) - 0.5);
     }
 
     //compute_origin_and_size (origin, size, spacing, origin1, spacing1, size1);
