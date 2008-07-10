@@ -213,6 +213,7 @@ SET(COMPOSE_VECTOR_FIELDS_SRC
 	)
 SET(CONTOUR_STATISTICS_SRC
 	contour_statistics.cxx
+	slice_extraction.cxx slice_extraction.h
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx

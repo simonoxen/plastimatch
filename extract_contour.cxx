@@ -47,6 +47,7 @@ int main(int argc, char ** argv)
     {
 		std::cerr << "Usage: " << std::endl;
 		std::cerr << argv[0] << " inputImageFile " << std::endl;
+		std::cerr << argv[1] << " outputFileName (optional) " << std::endl;
 		return EXIT_FAILURE;
     }
 
