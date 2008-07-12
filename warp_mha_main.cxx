@@ -32,7 +32,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 	im_warped = itk_warp_image (im_in, vf, parms->interp_lin, (U) parms->default_val);
 
     } else {
-	/* need to convert the deformation parameters into vector fields */
+	/* convert xform into vector field, then warp */
 	int dim[3];
 	float offset[3];
 	float spacing[3];
@@ -41,10 +41,12 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 	Xform xform, xform_tmp;
 	load_xform (&xform, parms->xf_in_fn);
 
-	if (parms->fixed_im_fn[0]) { /* if given, use the grid spacing of the fixed image */
+	if (parms->fixed_im_fn[0]) {
+	    /* if given, use the grid spacing of user-supplied fixed image */
 	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn);
 	    get_image_header (dim, offset, spacing, fixed);
 	} else {
+	    /* otherwise, use the grid spacing of the input image */
 	    get_image_header (dim, offset, spacing, im_in);
 	}
 	printf ("converting to vf...\n");
@@ -57,8 +59,9 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 
     printf ("Saving...\n");
     save_image (im_warped, parms->mha_out_fn);
-    if (parms->vf_out_fn[0])
+    if (parms->vf_out_fn[0]) {
 	save_image(vf, parms->vf_out_fn);
+    }
 }
 
 void
