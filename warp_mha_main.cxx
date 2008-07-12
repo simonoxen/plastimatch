@@ -101,9 +101,9 @@ warp_image_main (Warp_Parms* parms)
 void
 print_usage (void)
 {
-    printf ("Usage: warp_mha --input=image_in --vf=vf_in --output=image_out\n");
-    printf ("   or: warp_mha --input=image_in --xf=xf_in --output=image_out\n");
-    printf ("Options:   --interpolation nn]\n"
+    printf ("Usage: warp_mha --input=image_in --vf=vf_in --output=image_out [options]\n");
+    printf ("   or: warp_mha --input=image_in --xf=xf_in --output=image_out [options]\n");
+    printf ("Options:   --interpolation nn\n"
 	    "           --fixed=im_fn\n"
 	    "           --output_vf=vf_fn\n"
 	    "           --default_val=val\n");
@@ -167,8 +167,8 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	}
     }
     if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0] || !(parms->vf_in_fn[0] || parms->xf_in_fn[0])) {
-		printf ("Error: must specify --input and --output and --vf or --deform_parm\n");
-		print_usage();
+	printf ("Error: must specify --input, --output, and --vf or --xf\n");
+	print_usage();
     }
 }
 
