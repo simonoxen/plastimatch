@@ -67,10 +67,10 @@ struct structure_list {
 void print_usage (void)
 {
 	
-	printf ("Usage: cxt_to_mha \n");
-	printf ("  input text file with contours\t");
+	printf ("Usage: cxt_to_mha merged_txt prefix\n");
+	printf ("  The merged_txt file contains the contours\n");
 	//printf ("  output directory\n");
-	printf ("  patient_number (4 digits)\n");
+	printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
 	exit (-1);
 }
 

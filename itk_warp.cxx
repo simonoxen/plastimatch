@@ -10,14 +10,13 @@
 
 /* Warp the image.  
     im_in:	    the image which is warped
-    im_sz:	    used to set the size and resolution
-    vf:		    the vector field
+    vf:		    the vector field.  output size = vf size.
     default_val:    the value to use for pixels outside the volume
 */
-template<class T>
+template<class T, class U>
 T
-itk_warp_image (T im_in, T im_sz, DeformationFieldType::Pointer vf, int linear_interp,
-		float default_val)
+itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
+			U default_val)
 {
     typedef typename T::ObjectType TBase;
     typedef typename T::ObjectType::PixelType PixelType;
@@ -59,7 +58,6 @@ itk_warp_image (T im_in, T im_sz, DeformationFieldType::Pointer vf, int linear_i
 }
 
 /* Explicit instantiations */
-template UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, UCharImageType::Pointer im_sz, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-template UShortImageType::Pointer itk_warp_image (UShortImageType::Pointer im_in, UShortImageType::Pointer im_sz, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-template plastimatch1_EXPORT ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, ShortImageType::Pointer im_sz, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-template plastimatch1_EXPORT FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, FloatImageType::Pointer im_sz, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
+template UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
+template ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
+template FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);

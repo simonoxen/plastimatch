@@ -16,7 +16,6 @@ public:
     char xf_in_fn[_MAX_PATH];
     char fixed_im_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
-    int output_type;
     float default_val;
     int interp_lin;
 public:
@@ -27,7 +26,6 @@ public:
 	*xf_in_fn = 0;
 	*fixed_im_fn = 0;
 	*vf_out_fn = 0;
-	output_type = TYPE_UNSPECIFIED;
 	default_val = 0.0;
 	interp_lin = 1;
     }

@@ -19,7 +19,6 @@
 #include "itkDICOMSeriesFileNames.h"
 #include "itkCastImageFilter.h"
 #include "itk_image.h"
-#include "itkImageIOBase.h"
 
 /* =======================================================================*
     Definitions
@@ -192,6 +191,23 @@ get_mha_type (char* mha_fname)
     printf ("No ElementType in mha file\n");
     exit (-1);
     return 0;  /* Get rid of warning */
+}
+
+template<class T>
+void
+get_image_header (int dim[3], float offset[3], float spacing[3], T image)
+{
+    T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
+    T::ObjectType::PointType og = image->GetOrigin();
+    T::ObjectType::SpacingType sp = image->GetSpacing();
+    T::ObjectType::SizeType sz = rg.GetSize();
+
+    /* Copy header & allocate data for gpuit float */
+    for (int d = 0; d < 3; d++) {
+	dim[d] = sz[d];
+	offset[d] = og[d];
+	spacing[d] = sp[d];
+    }
 }
 
 template<class T>
@@ -555,9 +571,12 @@ template void load_itk_rdr (MhaUCharReaderType::Pointer reader, char *fn);
 template void load_dicom_dir_rdr(DicomShortReaderType::Pointer rdr, char *dicom_dir);
 template void load_dicom_dir_rdr(DicomUShortReaderType::Pointer rdr, char *dicom_dir);
 template void load_dicom_dir_rdr(DicomFloatReaderType::Pointer rdr, char *dicom_dir);
-template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
-template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(UCharImageType::Pointer, char*);
+template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
+template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
 template void save_short(FloatImageType::Pointer, char*);
 template void save_float(FloatImageType::Pointer, char*);
+template void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
+template void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
+template void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);

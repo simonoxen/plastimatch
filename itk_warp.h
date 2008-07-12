@@ -6,7 +6,7 @@
 
 #include "itk_image.h"
 
-template<class T> T itk_warp_image (T im_in, T im_sz, DeformationFieldType::Pointer vf, 
-				    int linear_interp, float default_val);
+plastimatch1_EXPORT template<class T, class U> T itk_warp_image (T im_in, DeformationFieldType::Pointer vf, 
+				    int linear_interp, U default_val);
 
 #endif

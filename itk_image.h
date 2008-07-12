@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include "itkImage.h"
+#include "itkImageIOBase.h"
 #include "plm_config.h"
 
 #ifndef _MAX_PATH
@@ -44,10 +45,24 @@ typedef itk::Point < double, Dimension >  OriginType;
 typedef itk::Vector < double, Dimension > SpacingType;
 typedef itk::ImageRegion < Dimension > ImageRegionType;
 
-plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
+/* -----------------------------------------------------------------------
+   Function prototypes
+   ----------------------------------------------------------------------- */
 plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname);
+plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
 plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
+
+plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
+			itk::ImageIOBase::IOPixelType &pixelType,
+			itk::ImageIOBase::IOComponentType &componentType);
+
+#if defined (commentout)
+plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
+plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
+plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
+#endif
+template<class T> void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 
 template<class T> void save_image (T img_ptr, char* fname);
 template<class T> void save_short (T img_ptr, char* fname);
