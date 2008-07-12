@@ -1,9 +1,6 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/*  Warp the moving image into the space of the fixed image based 
-    on the vector field. It takes 3 inputs: floating image, vector
-    field, and an output image file names */
 #include <time.h>
 #include "plm_config.h"
 #include "itkImage.h"
@@ -19,7 +16,6 @@
 #include "xform.h"
 #include "readmha.h"
 #include "volume.h"
-
 
 template<class T, class U>
 void warp_any (Warp_Parms* parms, T im_in, U)
