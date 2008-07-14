@@ -39,85 +39,83 @@ typedef itk::ImageSliceConstIteratorWithIndex<inImgType> IteratorType;
 
 int main(int argc, char ** argv)
 {
-	FILE* fp;
-	inImgType::IndexType k;
-	k[0]=0;
+    FILE* fp;
+    inImgType::IndexType k;
+    k[0]=0;
 
-	if( argc < 2 )
+    if( argc < 2 )
     {
-		std::cerr << "Usage: " << std::endl;
-		std::cerr << argv[0] << " inputImageFile " << std::endl;
-		std::cerr << argv[1] << " outputFileName (optional) " << std::endl;
-		return EXIT_FAILURE;
+	std::cerr << "Usage: extract_contour input_img [output_file]" << std::endl;
+	return EXIT_FAILURE;
     }
 
-	inImgType::Pointer volume=load_float(argv[1]);
+    inImgType::Pointer volume=load_float(argv[1]);
 
-	//std::cout<< "Preparing to load..." << std::endl;
+    //std::cout<< "Preparing to load..." << std::endl;
 
-	IteratorType itSlice(volume, volume->GetLargestPossibleRegion());
-	itSlice.SetFirstDirection(0);
-	itSlice.SetSecondDirection(1);
+    IteratorType itSlice(volume, volume->GetLargestPossibleRegion());
+    itSlice.SetFirstDirection(0);
+    itSlice.SetSecondDirection(1);
 	
-	if(argc <3)
-		fp = fopen ("vertices.txt", "w");
-	else
-		fp= fopen(argv[2],"w");
+    if(argc <3)
+	fp = fopen ("vertices.txt", "w");
+    else
+	fp= fopen(argv[2],"w");
 
-	if (!fp) { 
-		printf ("Could not open vertices file for writing\n");
-		return -1;
-	}
+    if (!fp) { 
+	printf ("Could not open vertices file for writing\n");
+	return -1;
+    }
 	
 
-	while(!itSlice.IsAtEnd())
+    while(!itSlice.IsAtEnd())
+    {
+	k=itSlice.GetIndex();
+	//printf("%2d\n", k[2]);
+		
+	outImgType::Pointer slice;
+	slice = slice_extraction(volume, k[2]);
+
+	ContourType::Pointer contour=ContourType::New();
+
+	contour->SetContourValue(0.5);
+	contour->SetInput(slice);
+		
+	try
 	{
-		k=itSlice.GetIndex();
-		//printf("%2d\n", k[2]);
-		
-		outImgType::Pointer slice;
-		slice = slice_extraction(volume, k[2]);
-
-		ContourType::Pointer contour=ContourType::New();
-
-		contour->SetContourValue(0.5);
-		contour->SetInput(slice);
-		
-		try
-		{
-			contour->Update();
-			//std::cout << "Cerco il contorno!\n" << std::endl;
-		}
-		catch ( itk::ExceptionObject &err)
-		{
-			std::cout << "ExceptionObject caught !" << std::endl; 
-			std::cout << err << std::endl; 
-			return -1;   
-		}
-		
-		//std::cout << "NR OUTPUTS:"<<contour->GetNumberOfOutputs() << std::endl; 
-		//system("PAUSE");
-		  for(unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++)
-			{
-				ContourType::VertexListConstPointer vertices =contour->GetOutput(i)->GetVertexList();
-				/*fprintf(fp,"%s %d%s%d\n","Contour",k[2],".",i);*/
-				/*fprintf(fp,"%d%s%d\n",k[2],".",i);*/
-				//fprintf(fp,"\n");
-				fprintf(fp,"%s %s %s\n","NaN","NaN","NaN");
-				for(unsigned int j = 0; j < vertices->Size(); j++)
-				{
-					const VertexType& vertex = vertices->ElementAt(j);
-					
-					fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]);
-					//std::cout << vertex[0] <<" "<<vertex[1]<<" "<<k[2]<<std::endl;
-					
-
-				}
-		      //system("PAUSE");
-			}
-		  itSlice.NextSlice();
+	    contour->Update();
+	    //std::cout << "Cerco il contorno!\n" << std::endl;
 	}
-	fclose(fp);
+	catch ( itk::ExceptionObject &err)
+	{
+	    std::cout << "ExceptionObject caught !" << std::endl; 
+	    std::cout << err << std::endl; 
+	    return -1;   
+	}
+		
+	//std::cout << "NR OUTPUTS:"<<contour->GetNumberOfOutputs() << std::endl; 
+	//system("PAUSE");
+	for(unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++)
+	{
+	    ContourType::VertexListConstPointer vertices =contour->GetOutput(i)->GetVertexList();
+	    /*fprintf(fp,"%s %d%s%d\n","Contour",k[2],".",i);*/
+	    /*fprintf(fp,"%d%s%d\n",k[2],".",i);*/
+	    //fprintf(fp,"\n");
+	    fprintf(fp,"%s %s %s\n","NaN","NaN","NaN");
+	    for(unsigned int j = 0; j < vertices->Size(); j++)
+	    {
+		const VertexType& vertex = vertices->ElementAt(j);
+					
+		fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]);
+		//std::cout << vertex[0] <<" "<<vertex[1]<<" "<<k[2]<<std::endl;
+					
+
+	    }
+	    //system("PAUSE");
+	}
+	itSlice.NextSlice();
+    }
+    fclose(fp);
 
 }
 
