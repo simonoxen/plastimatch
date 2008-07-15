@@ -45,8 +45,8 @@ int main(int argc, char ** argv)
 
     if( argc < 2 )
     {
-	std::cerr << "Usage: extract_contour input_img [output_file]" << std::endl;
-	return EXIT_FAILURE;
+		printf("Usage: extract_contour input_img [output_file]");
+		exit(-1);
     }
 
     inImgType::Pointer volume=load_float(argv[1]);

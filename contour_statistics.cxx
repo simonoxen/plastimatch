@@ -54,6 +54,12 @@ int main(int argc, char* argv[])
 	int size=0;
 	//int num_sl;
 	int index=0;
+	//float dim[3];
+	float volRef;
+	float volOver;
+	float percVolOver;
+	int volSize=0;
+	int volOverlap=0;
 	SLICEDICE* slice_dice=(SLICEDICE*)malloc(sizeof(SLICEDICE));
 	memset(slice_dice,0,sizeof(SLICEDICE));
 	slice_dice->num_slice=0;
@@ -69,6 +75,7 @@ int main(int argc, char* argv[])
 				fprintf(stderr,"ERROR: The 2 volumes have different sizes. \n");
 				fprintf(stderr, "Size Reference: %d %d %d \n ",reference->GetLargestPossibleRegion().GetSize());
 				fprintf(stderr, "Size Warped: %d %d %d \n ",warped->GetLargestPossibleRegion().GetSize());
+				exit(-1);
 	}
 	
 	if(strcmp("global",argv[3])==0){
@@ -92,6 +99,16 @@ int main(int argc, char* argv[])
 			printf("# of white pixels in the reference image: %d\n",size);
 			dice=(2*overlap)/(2*size);
 			printf("DICE COEFFICIENT: %f\n",dice);
+			//dim=reference->GetSpacing();
+			//volume=size*(dim[0]*dim[1]*dim[2]);
+			volRef=size*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+			volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+			percVolOver=(volOver/volRef)*100;
+			//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
+			printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
+			printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
+			printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+
 	}else if(strcmp("slice",argv[3])==0){
 
 		printf("You've chosen to compute Dice coefficient for each slice\n");		
@@ -105,6 +122,7 @@ int main(int argc, char* argv[])
 
 		while(!itSlice.IsAtEnd())
 		{
+			
 			overlap=0;
 			size=0;
 			k=itSlice.GetIndex();
@@ -135,9 +153,11 @@ int main(int argc, char* argv[])
 				//system("PAUSE");
 				//slice_dice->dice_list[index]=0;
 			}else if(overlap!=0 && size==0){
-				fprintf(stderr,"Something is wrong:you found overlapping region on a non-existant region\n");
+				fprintf(stderr,"Something is wrong: you found overlapping region on a non-existant region\n");
 				exit(-1);
 			}else{
+				volSize=volSize+size;
+				volOverlap=volOverlap+overlap;
 				if(slice_dice->first_slice==0){
 					slice_dice->first_slice=index;
 					printf("First contour is on slice %d\n", slice_dice->first_slice);
@@ -151,7 +171,13 @@ int main(int argc, char* argv[])
 
 			itSlice.NextSlice();
 		}
-		
+		volRef=volSize*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+		volOver=volOverlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+		percVolOver=(volOver/volRef)*100;
+		//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
+		printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
+		printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
+		printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
 		//for(int j=0; j<slice_dice->num_slice; j++)
 			//printf("DICE COEFFICIENT in slice %d: %f\n",j,slice_dice->dice_list[j]);
 		//printf("first slice: %d",slice_dice->first_slice);
