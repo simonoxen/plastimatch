@@ -197,10 +197,10 @@ template<class T>
 void
 get_image_header (int dim[3], float offset[3], float spacing[3], T image)
 {
-    T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
-    T::ObjectType::PointType og = image->GetOrigin();
-    T::ObjectType::SpacingType sp = image->GetSpacing();
-    T::ObjectType::SizeType sz = rg.GetSize();
+    typename T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
+    typename T::ObjectType::PointType og = image->GetOrigin();
+    typename T::ObjectType::SpacingType sp = image->GetSpacing();
+    typename T::ObjectType::SizeType sz = rg.GetSize();
 
     /* Copy header & allocate data for gpuit float */
     for (int d = 0; d < 3; d++) {
