@@ -45,7 +45,7 @@ struct polyline{
     //VERTICES* vertlist;
 	float* x;
     float* y;
-    //float* z;
+    float* z;
 };
 
 typedef struct structure STRUCTURE;
@@ -94,11 +94,12 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
     char inter[BUFLEN];
     char tag[BUFLEN];
 
-    char dumm;
+    //char dumm;
     int flag=0;
     int res=0;
     float x=0;
     float y=0;
+	float z=0;
 	
 
     memset(curr_structure,0,sizeof(STRUCTURE));
@@ -184,18 +185,21 @@ load_structures(Program_Parms* parms, STRUCTURE_List* structures){
 
 	    curr_contour->x=(float*)malloc(num_pt*sizeof(float));
 	    curr_contour->y=(float*)malloc(num_pt*sizeof(float));
+		curr_contour->z=(float*)malloc(num_pt*sizeof(float));
 	    if(curr_contour->y==0 || curr_contour->x==0){
 		fprintf(stderr,"Error allocating memory");
 		exit(-1);
 	    }
 	    for(int k=0; k<num_pt; k++){								
-		if(fscanf(fp,"%f %f %f",&x,&y,&dumm)!=3){
+		if(fscanf(fp,"%f %f %f",&x,&y,&z)!=3){
 		    break;
 		}
 		curr_contour->x[k]=x;
 		curr_contour->y[k]=y;
+		curr_contour->z[k]=z;
 		x=0;
 		y=0;
+		z=0;
 	    }
 	    ord=0;
 	    num_pt=0;
@@ -276,11 +280,15 @@ int main(int argc, char* argv[])
 		fprintf(fp,"NaN NaN NaN \n");
 		curr_contour_2=&curr_structure_2->pslist[r];
 		for (int q=0; q<curr_contour_2->num_vertices; q++){
-		    fprintf(fp,"%f %f %d\n",curr_contour_2->x[q],curr_contour_2->y[q],
-			    curr_contour_2->slice_no);
+		    /*fprintf(fp,"%f %f %d\n",curr_contour_2->x[q],curr_contour_2->y[q],
+			    curr_contour_2->slice_no);*/
+			fprintf(fp,"%f %f %f\n",curr_contour_2->x[q],curr_contour_2->y[q],
+			    curr_contour_2->z[q]);
 		}
 	    }
+		fclose(fp);
 	}
+	
 
 	dim[0]=structures->dim[0];
 	dim[1]=structures->dim[1];
@@ -323,4 +331,5 @@ int main(int argc, char* argv[])
 	}
 	volume_free(vol);
     }
+	
 }

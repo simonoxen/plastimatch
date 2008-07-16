@@ -40,6 +40,7 @@ typedef itk::ImageSliceConstIteratorWithIndex<inImgType> IteratorType;
 int main(int argc, char ** argv)
 {
     FILE* fp;
+	FILE* file;
     inImgType::IndexType k;
     k[0]=0;
 
@@ -50,6 +51,7 @@ int main(int argc, char ** argv)
     }
 
     inImgType::Pointer volume=load_float(argv[1]);
+	printf("OFFSET:%f %f %f",volume->GetSpacing()[3],volume->GetSpacing()[4],volume->GetSpacing()[5]);
 
     //std::cout<< "Preparing to load..." << std::endl;
 
@@ -57,12 +59,22 @@ int main(int argc, char ** argv)
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
 	
-    if(argc <3)
-	fp = fopen ("vertices.txt", "w");
-    else
-	fp= fopen(argv[2],"w");
+	if(argc <3){
+	fp = fopen ("vertices_pixelcoord.txt", "w");
+	file = fopen ("vertices_physcoord.txt", "w");
+	}else{
+		 char filename[50]="";
+		 char filename2[50]="";
+		 strcpy(filename,argv[2]);
+		 strcat(filename,"_pixelcoord.txt");
+		 strcpy(filename2,argv[2]);
+		 strcat(filename2,"_physcoord.txt");
+		 fp= fopen(filename,"w");
+		 file=fopen(filename2,"w");
 
-    if (!fp) { 
+	}
+
+    if (!fp || !file) { 
 	printf ("Could not open vertices file for writing\n");
 	return -1;
     }
@@ -107,6 +119,9 @@ int main(int argc, char ** argv)
 		const VertexType& vertex = vertices->ElementAt(j);
 					
 		fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]);
+		fprintf(file,"%.3f %.3f %.3f \n",vertex[0]*volume->GetSpacing()[0]+volume->GetSpacing()[3],vertex[1]*volume->GetSpacing()[1]+volume->GetSpacing()[4],k[2]*volume->GetSpacing()[2]+volume->GetSpacing()[5]);
+		
+		//fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]*volume->GetSpacing()[2]);
 		//std::cout << vertex[0] <<" "<<vertex[1]<<" "<<k[2]<<std::endl;
 					
 
@@ -116,6 +131,7 @@ int main(int argc, char ** argv)
 	itSlice.NextSlice();
     }
     fclose(fp);
+	fclose(file);
 
 }
 

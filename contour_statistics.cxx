@@ -70,7 +70,6 @@ int main(int argc, char* argv[])
 	ImgType::Pointer reference=load_float(argv[1]);
 	ImgType::Pointer warped=load_float(argv[2]);
 	
-
 	if(reference->GetLargestPossibleRegion().GetSize() != warped->GetLargestPossibleRegion().GetSize()){
 				fprintf(stderr,"ERROR: The 2 volumes have different sizes. \n");
 				fprintf(stderr, "Size Reference: %d %d %d \n ",reference->GetLargestPossibleRegion().GetSize());
