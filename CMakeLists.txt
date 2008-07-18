@@ -6,7 +6,7 @@ INCLUDE(FindOpenGL)
 INCLUDE(GPUIT.cmake)
 
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
-SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
+SET(BUILD_BSPLINE_BROOK ON CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -100,9 +100,9 @@ ENDIF(F2C_LIBRARY)
 ######################################################
 ##  BROOK LIBRARY
 ######################################################
-SET(HAVE_BROOK_LIBRARY FALSE)
+SET(HAVE_BROOK FALSE)
 IF(BROOK_FOUND)
-  SET(HAVE_BROOK_LIBRARY TRUE)
+SET(HAVE_BROOK TRUE)
 ENDIF(BROOK_FOUND)
 
 ######################################################
