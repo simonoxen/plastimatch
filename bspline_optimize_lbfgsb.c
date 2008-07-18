@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "plm_config.h"
 #include "f2c.h"
 #include "volume.h"
 #include "bspline_opts.h"
@@ -195,9 +196,11 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     */
 
     /* Fill the GPU data structure  */
+#if (HAVE_BROOK)
     printf("Initializing GPU data structures. \n");
     bspline_initialize_streams_on_gpu(fixed, moving, parms);
     printf("Done. \n");
+#endif
 
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,

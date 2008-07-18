@@ -26,7 +26,7 @@ demons_default_parms (DEMONS_Parms* parms)
 Volume*
 demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, char* method, DEMONS_Parms* parms)
 {
-#if HAVE_BROOK_LIBRARY
+#if HAVE_BROOK
     if (!strcmp (method, "BROOK") || !strcmp (method, "brook")) {
 	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
     }

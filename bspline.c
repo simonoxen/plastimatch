@@ -1033,7 +1033,7 @@ void
 bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 	       Volume *moving_grad)
 {
-#if HAVE_BROOK_LIBRARY
+#if HAVE_BROOK
 #if BUILD_BSPLINE_BROOK
     if (parms->method == BM_BROOK) {
 	printf("Using GPU. \n");
