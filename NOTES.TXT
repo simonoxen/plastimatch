@@ -1,0 +1,62 @@
+***** Consistency of indices *****
+
+By convention:
+
+   k, z = slowest moving index (usually IS)
+   j, y = middle moving index (usually AP)
+   i, x = fastest moving index (usually RL)
+
+Arrays which hold things like the dimensions are indexed as follows:
+
+   dim[0] = dimensions of fastest moving index
+   dim[1] = dimensions of middle moving index
+   dim[2] = dimensions of slowest moving index
+
+Loops should be nested from slowest index to fastest index.  
+Therefore, the correct nesting is:
+
+    for (k = 0; k < fixed->dim[2]; k++) {
+	for (j = 0; j < fixed->dim[1]; j++) {
+	    for (i = 0; i < fixed->dim[0]; i++) { ... } } }
+
+Embedded indices, such as (x,y,z) coordinates of the vector 
+field at a voxel, should be in the order of x, then y, then z.
+
+When you pass indices into a function it should be 
+in order x, then y, then z.  For example:
+
+    int volume_index (int* dims, int i, int j, int k);
+
+***** How to compile libf2c *****
+
+Edit libf2c/makefile.vc, and change:
+  CFLAGS = -DUSE_CLOCK -DMSDOS -DNO_ONEXIT -Ot1
+
+To:
+  CFLAGS = -DUSE_CLOCK -DMSDOS -DNO_ONEXIT -Ot1 -MD
+
+Edit libf2c/fio.h, and comment out:
+  extern int isatty(int);
+
+
+
+***** How to compile the .br into .cpp *****
+
+The default compile is simply: 
+   brcc -o outfile.cpp infile.br
+
+The FDK code doesn't work for PS20 & ARB targets.
+
+We can use -p flag to set the platform.
+   brcc -o outfile.cpp
+
+***** How to compile brook on cygwin/g++ *****
+
+1) The config/DetectOS thing always gets Windows_NT because 
+the $OS environment variable is standard in Windows.
+
+2) Need to create a new *.mk file  (To be done)
+
+3) It seems to build OK, but doesn't completely solve the 
+problem.  fxc still requires windows style paths, maybe cgc does too.
+

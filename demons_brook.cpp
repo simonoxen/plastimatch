@@ -172,8 +172,9 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 
     /* Allocate the debug volume */
     debug_vol = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_FLOAT, 0);
+    printf ("Creating streams\n");
     ::brook::stream s_debug(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
-
+ 
     /* Allocate memory for the various streams.  At the beginning and end 
 	of each loop, the current estimate is in s_vf_smooth_x, s_vf_smooth_y and s_vf_smooth_z.  */
     ::brook::stream s_vf_smooth_x(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
@@ -195,14 +196,18 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 
     /* Uncomment this code for display of SSD each iteration (below) */
     ::brook::stream st_vol_diff(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
+    printf ("Done creating stream\n");
 
     /* Initialize the vector streams with zeros */
+    printf ("Running kernels\n");
     k_initial_vectors4(st_vf_temp_x);
     k_initial_vectors4(st_vf_temp_y);
     k_initial_vectors4(st_vf_temp_z);
+    printf ("Done running kernels\n");
 
     /* Initialize input vf stream to initial guess */
     vf_img = (float**) vf->img;
+    printf ("Running streamRead\n");
     streamRead (s_vf_smooth_x, vf_img[0]);
     streamRead (s_vf_smooth_y, vf_img[1]);
     streamRead (s_vf_smooth_z, vf_img[2]);
@@ -226,6 +231,7 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     streamRead (st_kerx, kerx);
     streamRead (st_kery, kery);
     streamRead (st_kerz, kerz);
+    printf ("Done running streamRead\n");
 
     QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
@@ -237,6 +243,7 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     for (it = 0; it < parms->max_its; it++) {
 
 	// Update x component of the displacement field 
+	printf ("Running k_evf_gcs\n");
 	k_evf_gcs (
 	    s_vf_smooth_x,	    // input stream
 	    s_vf_smooth_x,	    // x displacement in voxels
@@ -310,6 +317,7 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	    f_pix_spacing,  // fixed image voxel size
 	    m_pix_spacing,  // moving image voxel size
 	    st_vf_temp_z);  // output stream
+	printf ("Done running k_evf_gcs\n");
 
 	/* GCS Wed Dec 26 16:36:41 EST 2007 
 	    I haven't been able to get reduce to work on the GPU.  But the image difference 

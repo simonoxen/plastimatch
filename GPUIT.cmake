@@ -62,8 +62,8 @@ IF(BROOK_FOUND)
     ADD_CUSTOM_COMMAND(
         OUTPUT "${OUTFILE}"
         COMMAND "${BRCC_EXECUTABLE}"
-#        ARGS "-o" "${OUTFILE_BASE}" "-k" "-p" "fp40" "-p" "ps30" 
-        ARGS "-o" "${OUTFILE_BASE}" "-k" "-p" "ps30"
+        ARGS "-o" "${OUTFILE_BASE}" "-k" "-p" "fp40" "-p" "ps30" 
+#        ARGS "-o" "${OUTFILE_BASE}" "-k" "-p" "ps30"
         "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")
     SET_SOURCE_FILES_PROPERTIES("${OUTFILE}" PROPERTIES GENERATED TRUE)

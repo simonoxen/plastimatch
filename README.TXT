@@ -10,10 +10,18 @@ The main features include:
   4) Demons registration
   5) Image warping
 
+In addition, plastimatch includes routines for:
+
+  1) FDK cone-beam 
+  2) DRR generation
+
+
 Plastimatch is open source software, and be used, modified, and 
 distributed, without cost, under a BSD-style license.  This software is 
-intended for research use only, and is not approved by the FDA for 
-clinical use.  Please see LICENSE.TXT for details.
+intended for research use only, and is not approved by the Food and
+Drug Administration (FDA) for clinical use.  Please see LICENSE.TXT 
+for details.
+
 
 Questions, comments, bug reports?  Please send to:
   Greg Sharp, MGH Radiation Oncology
