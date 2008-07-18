@@ -48,6 +48,7 @@ struct BSPLINE_Parms_struct {
     int vox_per_rgn[3];		 /* Knot spacing (in vox) */
     BSPLINE_Data bspd;           /* Coefficients and lookup data */
     BSPLINE_Score ssd;           /* Score and Gradient */
+    void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
 };
 
 #if defined __cplusplus
@@ -75,6 +76,15 @@ bspline_score_reference (BSPLINE_Score *ssd,
 void
 bspline_interpolate_vf (Volume* interp, 
 			BSPLINE_Parms* parms);
+
+void
+bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx);
+
+void
+clamp_and_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
+
+void
+bspline_update_grad_b (BSPLINE_Parms* parms, int pidx, int qidx, float dc_dv[3]);
 
 #if defined __cplusplus
 }

@@ -23,8 +23,11 @@
 #include "readmha.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
-#include "bspline_brook.h"
 #include "bspline.h"
+
+extern void 
+bspline_score_on_gpu_reference(BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+			       Volume *moving_grad);
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
@@ -447,6 +450,29 @@ bspline_interp_pix (float out[3], BSPLINE_Data* bspd, int p[3], int qidx)
 }
 
 inline void
+bspline_interp_pix_b_inline (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
+{
+    int i, j, k, m;
+    int cidx;
+    float* q_lut = &bspd->q_lut[qidx*64];
+    int* c_lut = &bspd->c_lut[pidx*64];
+
+    out[0] = out[1] = out[2] = 0;
+    m = 0;
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = 3 * c_lut[m];
+		out[0] += q_lut[m] * bspd->coeff[cidx+0];
+		out[1] += q_lut[m] * bspd->coeff[cidx+1];
+		out[2] += q_lut[m] * bspd->coeff[cidx+2];
+		m ++;
+	    }
+	}
+    }
+}
+
+void
 bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
 {
     int i, j, k, m;
@@ -529,6 +555,31 @@ bspline_update_grad (BSPLINE_Parms* parms, int p[3], int qidx, float dc_dv[3])
 }
 
 inline void
+bspline_update_grad_b_inline (BSPLINE_Parms* parms,  
+		     int pidx, int qidx, float dc_dv[3])
+{
+    BSPLINE_Data* bspd = &parms->bspd;
+    BSPLINE_Score* ssd = &parms->ssd;
+    int i, j, k, m;
+    int cidx;
+    float* q_lut = &bspd->q_lut[qidx*64];
+    int* c_lut = &bspd->c_lut[pidx*64];
+
+    m = 0;
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = 3 * c_lut[m];
+		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
+		ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
+		ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
+		m ++;
+	    }
+	}
+    }
+}
+
+void
 bspline_update_grad_b (BSPLINE_Parms* parms,  
 		     int pidx, int qidx, float dc_dv[3])
 {
@@ -587,6 +638,32 @@ clip_and_interpolate_obsolete (
 /* Clipping is done using clamping.  You should have "air" as the outside
    voxel so pixels can be clamped to air.  */
 inline void
+clamp_and_interpolate_inline (
+    float ma,           /* (Unrounded) pixel coordinate (in vox) */
+    int dmax,		/* Maximum coordinate in this dimension */
+    int* maf,		/* x, y, or z coord of "floor" pixel in moving img */
+    int* mar,		/* x, y, or z coord of "round" pixel in moving img */
+    float* fa1,		/* Fraction of interpolant for lower index voxel */
+    float* fa2		/* Fraction of interpolant for upper index voxel */
+)
+{
+    float maff = floor(ma);
+    *maf = (int) maff;
+    *mar = round_int (ma);
+    *fa2 = ma - maff;
+    if (*maf < 0) {
+	*maf = 0;
+	*mar = 0;
+	*fa2 = 0.0f;
+    } else if (*maf >= dmax) {
+	*maf = dmax - 1;
+	*mar = dmax;
+	*fa2 = 1.0f;
+    }
+    *fa1 = 1.0f - *fa2;
+}
+
+void
 clamp_and_interpolate (
     float ma,           /* (Unrounded) pixel coordinate (in vox) */
     int dmax,		/* Maximum coordinate in this dimension */
@@ -667,7 +744,7 @@ bspline_score_c (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		/* Get B-spline deformation vector */
 		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
 		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
-		bspline_interp_pix_b (dxyz, bspd, pidx, qidx);
+		bspline_interp_pix_b_inline (dxyz, bspd, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -686,9 +763,9 @@ bspline_score_c (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
 
 		/* Compute interpolation fractions */
-		clamp_and_interpolate (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
-		clamp_and_interpolate (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
-		clamp_and_interpolate (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+		clamp_and_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+		clamp_and_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+		clamp_and_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
 
 		/* Compute moving image intensity using linear interpolation */
 		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
@@ -711,7 +788,7 @@ bspline_score_c (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b (parms, pidx, qidx, dc_dv);
+		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 		
 		ssd->score += diff * diff;
 		num_vox ++;
@@ -959,12 +1036,13 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 #if HAVE_BROOK_LIBRARY
 #if BUILD_BSPLINE_BROOK
     if (parms->method == BM_BROOK) {
-	bspline_score_on_gpu_reference (ssd, fixed, moving, 
-					moving_grad, bspd, parms);
+	printf("Using GPU. \n");
+	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;
     }
 #endif
 #endif
+    printf("Using CPU. \n");
     bspline_score_c (parms, fixed, moving, moving_grad);
 //    bspline_score_b (parms, fixed, moving, moving_grad);
 //    bspline_score_a (parms, fixed, moving, moving_grad);

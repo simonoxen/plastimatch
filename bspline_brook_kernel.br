@@ -4,19 +4,19 @@
 #include <stdio.h>
 #include <math.h>
 
-/* AUTHOR: Naga Kandasamy, 11/19/2007, revison 1 */
+/* AUTHOR: Naga Kandasamy, 08/15/2008, revison 1 */
 
 /* Kernel computes the displacement value in the X, Y, or Z directions */
-kernel void compute_dxyz_b(float q_lut[][],
-					     float c_lut[][],
-					     float coeff_lut[][],
-					     float3 dim, // X, Y, Z dimensions of the volume
-					     float3 rdims, 
-					     float3 int_spacing, // Spacing between control knots in terms of voxels
+kernel void compute_dxyz(float c_lut[][],
+					     float q_lut[][],
+					     float coeff[][],
+					     float3 volume_dim, // X, Y, Z dimensions of the volume
+					     float3 vox_per_rgn, // Number of voxels per region
+					     float3 rdims, // The X, Y, Z dimensions of the control knot grid
 					     float volume_texture_size, 
-					     float q_lut_texture_size,
 					     float c_lut_texture_size,
-					     float coeff_lut_texture_size,
+					     float q_lut_texture_size,
+					     float coeff_texture_size,
 					     float xyz, // xyz = 0 for x, 1 for y and 2 for z
 					     float sixty_four,	    // Pass 64 as a parameter to work around fxc bug
 					     out float4 result<>)
@@ -26,7 +26,7 @@ kernel void compute_dxyz_b(float q_lut[][],
 	
 	float voxel_number;
 	float curr_index;
-	float3 coordinate; // X, Y, Z coordinates for this voxel
+	float3 vox_coordinate; // X, Y, Z coordinates for this voxel
 	float3 p, q; // Region index 
 	float pidx, qidx;
 	float k;
@@ -36,133 +36,60 @@ kernel void compute_dxyz_b(float q_lut[][],
 	float x_index_of_coeff, y_index_of_coeff;
 	float my_out;
 	
-	if(my_index > dim.x*dim.y*dim.z){ // Voxel lies outside the volume
+	if (my_index > volume_dim.x*volume_dim.y*volume_dim.x) // Voxel lies outside the volume
+	{ 
 		result = 0.0;
 	}
-	else{
-		for (voxel_number = 0.0; voxel_number < 4.0; voxel_number = voxel_number + 1.0){ // Iterate through four voxels
-			/* Step 1: Get the X, Y, Z position of the voxel */
+	else
+	{
+		for (voxel_number = 0.0; voxel_number < 4.0; voxel_number = voxel_number + 1.0) // Iterate through the four voxels
+		{ 
+			/* Get the X, Y, Z position of the voxel */
 			curr_index = my_index + voxel_number; // Get correct index of the voxel
-			coordinate.z = floor(curr_index/(dim.x*dim.y)); // Calculate the z index
-			coordinate.y = floor((curr_index - coordinate.z*(dim.x*dim.y))/dim.x); // Calculate the y index
-			coordinate.x = curr_index - coordinate.z*dim.x*dim.y - coordinate.y*dim.x; // Calculate the x index
+			vox_coordinate.z = floor(curr_index/(volume_dim.x*volume_dim.y)); // Calculate the z index
+			vox_coordinate.y = floor((curr_index - vox_coordinate.z*(volume_dim.x*volume_dim.y))/volume_dim.x); // Calculate the y index
+			vox_coordinate.x = curr_index - vox_coordinate.z*volume_dim.x*volume_dim.y - vox_coordinate.y*volume_dim.x; // Calculate the x index
+		
+			/* Get the tile location of the voxel */
+			p.x = floor(vox_coordinate.x/vox_per_rgn.x);
+			p.y = floor(vox_coordinate.y/vox_per_rgn.y);
+			p.z = floor(vox_coordinate.z/vox_per_rgn.z);
 			
-			/* Step 2: Get the region index and offset of this voxel relative to the control points. 
-			   Use it to compute pidx and qidx */
-			p.x = floor(coordinate.x/int_spacing.x);
-			q.x = coordinate.x - p.x*int_spacing.x;
+			/* Get the offset of the voxel within the tile */
+			q.x = vox_coordinate.x - p.x * vox_per_rgn.x;
+			q.y = vox_coordinate.y - p.y * vox_per_rgn.y;
+			q.z = vox_coordinate.z - p.z * vox_per_rgn.z;
 			
-			p.y = floor(coordinate.y/int_spacing.y);
-			q.y = coordinate.y - p.y*int_spacing.y;
-			
-			p.z = floor(coordinate.z/int_spacing.z);
-			q.z = coordinate.z - p.z*int_spacing.z;
-			
+			/* Use the tile location of the voxel to compute the index into the c_lut */
 			pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
-			qidx = q.z * int_spacing.y * int_spacing.x + q.y * int_spacing.x + q.x; // Compute linear index into LUT
 			
-			/* Step 3: Index into the q_lut and c_lut and compute the displacement of each voxel */
-			y_index_of_q_lut = floor(qidx*64/q_lut_texture_size); // Index into the q_lut
-			x_index_of_q_lut = qidx*64 - y_index_of_q_lut*q_lut_texture_size;
-
-			y_index_of_c_lut = floor(pidx*64/c_lut_texture_size); // Index into the c_lut
-			x_index_of_c_lut = pidx*64 - y_index_of_c_lut*c_lut_texture_size;
+			/* Use the offset if the voxel to compute the index into the multiplier LUT or q_lut */
+			qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
 			
 			my_out = 0.0;
-			
-			for (k = 0.0; k < sixty_four; k = k + 1.0){
-				cidx =  c_lut[y_index_of_c_lut][x_index_of_c_lut]* 3 + xyz;
-				y_index_of_coeff = floor(cidx/coeff_lut_texture_size); // Index into the coeff_lut
-				x_index_of_coeff = cidx - y_index_of_coeff*coeff_lut_texture_size;
-				my_out = my_out + q_lut[y_index_of_q_lut][x_index_of_q_lut] * coeff_lut[y_index_of_coeff][x_index_of_coeff]; // Displacement of voxel in xyz direction
-				x_index_of_c_lut = x_index_of_c_lut + 1;
-				x_index_of_q_lut = x_index_of_q_lut + 1;
-			} // k loop
-			
-			if(voxel_number == 0.0) result.x = my_out;
-			if(voxel_number == 1.0) result.y = my_out;
-			if(voxel_number == 2.0) result.z = my_out;
-			if(voxel_number == 3.0) result.w = my_out;
-		}//For loop
-	}//Else
-}
-
-/* Kernel computes the displacement value in the X, Y, or Z directions. 
-   This is the reference implementation */
-kernel void compute_dxyz_reference(float lut[][],
-							float coeff[][],
-							float3 dim, // X, Y, Z dimensions of the volume
-							float3 cdims, // X, Y, Z dimensions of the control knots
-							float3 int_spacing, // Spacing between control knots in terms of voxels
-							float volume_texture_size, 
-							float lut_texture_size,
-							float coeff_texture_size,
-							float xyz, // xyz = 0 for x, 1 for y and 2 for z
-							float four,	    // Pass 4 as a parameter to work around fxc bug
-							out float4 result<>)
-{
-	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
-	float my_index = (volume_texture_size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
-	
-	float voxel_number;
-	float curr_index;
-	float3 coordinate; // X, Y, Z coordinates for this voxel
-	float3 p, q; // Region index 
-	float qidx;
-	float m;
-	float i, j, k;
-	float cidx;
-	float x_index_of_lut, y_index_of_lut;
-	float x_index_of_coeff, y_index_of_coeff;
-	float my_out;
-	
-	if(my_index > dim.x*dim.y*dim.z){ // Voxel lies outside the volume
-		result = 0.0;
-	}
-	else{
-		for (voxel_number = 0.0; voxel_number < 4.0; voxel_number = voxel_number + 1.0){ // Iterate through four voxels
+			for (k = 0.0; k < sixty_four; k = k + 1.0)
+			{
+				/* Index into the c_lut texture */
+				y_index_of_c_lut = floor((pidx*64 + k)/c_lut_texture_size);
+				x_index_of_c_lut = (pidx*64 + k) - y_index_of_c_lut*c_lut_texture_size;
+				
+				/* Index into the q_lut texture */
+				y_index_of_q_lut = floor((qidx*64 + k)/q_lut_texture_size);
+				x_index_of_q_lut = (qidx*64 + k) - y_index_of_q_lut*q_lut_texture_size;
+				
+				/* Index into the texture of control-knot coefficients */
+				cidx =  c_lut[y_index_of_c_lut][x_index_of_c_lut]* 3 + xyz; 
+				y_index_of_coeff = floor(cidx/coeff_texture_size);
+				x_index_of_coeff = cidx - y_index_of_coeff*coeff_texture_size;
+				
+				/* Compute influence of the voxel in the x, y, or z direction */
+				my_out += q_lut[y_index_of_q_lut][x_index_of_q_lut] * coeff[y_index_of_coeff][x_index_of_coeff]; 
+			} // k loop 	
 		
-			/* Step 1: Get the X, Y, Z position of the voxel */
-			curr_index = my_index + voxel_number; // Get correct index of the voxel
-			coordinate.z = floor(curr_index/(dim.x*dim.y)); // Calculate the z index
-			coordinate.y = floor((curr_index - coordinate.z*(dim.x*dim.y))/dim.x); // Calculate the y index
-			coordinate.x = curr_index - coordinate.z*dim.x*dim.y - coordinate.y*dim.x; // Calculate the x index
-			
-			/* Step 2: Get the region index and offset of this voxel relative to the control points */
-			p.x = floor(coordinate.x/int_spacing.x); // TODO: Check if p = floor(coordinate/int_spacing)
-			q.x = coordinate.x - p.x*int_spacing.x;
-			
-			p.y = floor(coordinate.y/int_spacing.y);
-			q.y = coordinate.y - p.y*int_spacing.y;
-			
-			p.z = floor(coordinate.z/int_spacing.z);
-			q.z = coordinate.z - p.z*int_spacing.z;
-			
-			qidx = q.z * int_spacing.y * int_spacing.x + q.y * int_spacing.x + q.x; // Compute linear index into LUT
-			
-			/* Step 3: Index into the lut and compute the displacement of each voxel */
-			m = qidx*64; // 1D index into the lut based on the voxel position
-			my_out = 0;
-			
-			for (k = 0.0; k < four; k = k + 1.0){
-				for (j = 0.0; j < four; j = j + 1.0){
-					for (i = 0.0; i < four; i = i + 1.0){
-						cidx = (p.z + k) * cdims.y * cdims.x + (p.y + j) * cdims.x + (p.x + i);
-						cidx = cidx * 3 + xyz;
-						y_index_of_coeff = floor(cidx/coeff_texture_size);
-						x_index_of_coeff = cidx - y_index_of_coeff*coeff_texture_size;
-						y_index_of_lut = floor(m/lut_texture_size); // Get x and y location in the lut texture memory
-						x_index_of_lut = m - y_index_of_lut*lut_texture_size;
-						my_out = my_out + lut[y_index_of_lut][x_index_of_lut] * coeff[y_index_of_coeff][x_index_of_coeff]; // Displacement of voxel in xyz direction
-						m = m + 1;
-					} // i loop
-				} // j loop
-			} // k loop
-			
 			if(voxel_number == 0.0) result.x = my_out;
 			if(voxel_number == 1.0) result.y = my_out;
 			if(voxel_number == 2.0) result.z = my_out;
 			if(voxel_number == 3.0) result.w = my_out;
-		}//For loop
-	}//Else
+		} //Voxel loop
+	}
 }

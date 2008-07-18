@@ -7,6 +7,9 @@
 #include "bspline_opts.h"
 #include "bspline.h"
 
+extern void 
+bspline_initialize_streams_on_gpu(Volume* fixed, Volume* moving, BSPLINE_Parms *parms);
+
 void
 setulb_ (integer*       n,
 	 integer*       m,
@@ -187,6 +190,15 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	    task[0], task[1], task[2], task[3], task[4], 
 	    task[5], task[6], task[7], task[8], task[9]);
 
+    /* run_toy_kernel();
+    getchar();
+    */
+
+    /* Fill the GPU data structure  */
+    printf("Initializing GPU data structures. \n");
+    bspline_initialize_streams_on_gpu(fixed, moving, parms);
+    printf("Done. \n");
+
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
 		csave,lsave,isave,dsave,60,60);
@@ -201,7 +213,6 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
 	    /* Compute cost and gradient */
 	    bspline_score (parms, fixed, moving, moving_grad);
-
 	    /* Give a little feedback to the user */
 	    bspline_display_coeff_stats (parms);
 
