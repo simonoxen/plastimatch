@@ -6,6 +6,7 @@ GPUIT is developed and has been tested under Windows 2000 and
 Windows XP using MSVC 2005.
 
 ***** How to compile BROOK with MSVC 2005 *****
+******* (Last tested Fri, Jun 18, 2008) *******
 
 1)  Download and install Microsoft DirectX SDK and NVIDIA CG compiler
 
@@ -32,6 +33,9 @@ Windows XP using MSVC 2005.
 
     Remove:
       CFLAGS           += /WX
+    Add:
+      CFLAGS += /DYY_NO_UNISTD_H
+      CFLAGS += /Disatty=_isatty
 
 8b) If you wish to link with MSVCRT instead of LIBCMT, you need to change
     another line.  
@@ -41,6 +45,11 @@ Windows XP using MSVC 2005.
 
     To this:
        C_RELEASE_FLAG   := /MD /O2 /arch:SSE2 /EHsc /DNDEBUG /Fd$(OBJDIR)\\
+
+8c) Edit brcc/ps2arb_lexer.cpp
+
+    Add:
+       #include <io.h>
 
 9)  Run make in release mode:
       RELEASE=1 make
