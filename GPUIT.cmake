@@ -174,6 +174,7 @@ SET(DIRECTX_FOUND FALSE)
 IF(WIN32)
   FIND_PATH(DIRECTX_ROOT_DIR "Include/dinput.h"
             $ENV{DXSDK_DIR}
+            "C:/Program Files/Microsoft DirectX SDK (June 2007)"
             "C:/Program Files/Microsoft DirectX SDK (August 2006)"
             "C:/Program Files/Microsoft DirectX 9.0 SDK (June 2005)"
             "C:/Program Files/Microsoft DirectX 9.0 SDK (Summer 2004)"

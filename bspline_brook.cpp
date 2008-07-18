@@ -59,8 +59,11 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, BSPLINE_Parms *
     /* Copy the moving image */
     memset(temp_moving_image, 0, sizeof(float)*volume_texture_size*volume_texture_size*4); 
     memcpy(temp_moving_image, moving->img, sizeof(float)*moving->npix);
-    
+
     printf("Transferrring the static and moving images to the GPU. \n");
+
+    data_on_gpu->fixed_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+#if defined (commentout)
     data_on_gpu->fixed_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
     data_on_gpu->moving_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
     streamRead(*(data_on_gpu->fixed_image_stream), temp_fixed_image);
@@ -126,6 +129,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, BSPLINE_Parms *
     data_on_gpu->coeff_stream = new ::brook::stream(::brook::getStreamType((float3 *)0), coeff_texture_size, coeff_texture_size, -1);
     streamRead(*(data_on_gpu->coeff_stream), temp_memory);
     free((void *)temp_memory);
+#endif
 }
 
 void 

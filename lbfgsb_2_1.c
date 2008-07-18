@@ -11,6 +11,7 @@
 */
 
 #include "f2c.h"
+#include <stdio.h>
 
 /* Table of constant values */
 
@@ -4947,8 +4948,11 @@ doublereal dpmeps_(void)
     b = one;
 L10:
     a += a;
+    printf ("a = %g ", a);
     temp = a + one;
+    printf ("temp = %g ", temp);
     temp1 = temp - a;
+    printf ("temp1 = %g\n", temp1);
     if (temp1 - one == zero) {
 	goto L10;
     }

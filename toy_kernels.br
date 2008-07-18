@@ -29,7 +29,9 @@ kernel void toy_b(float4 in_stream<>, float loop_index, out float4 result<>)
 	result = 1 + in_stream;
 }
 
+#if defined (commentout)
 reduce void my_sum(float4 in_stream<>, reduce float4 result<>){
 	result = result + in_stream;
 	// result = result + 1.0;
 }
+#endif
