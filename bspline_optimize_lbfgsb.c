@@ -196,7 +196,7 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     */
 
     /* Fill the GPU data structure  */
-#if (HAVE_BROOK)
+#if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     printf("Initializing GPU data structures. \n");
     bspline_initialize_streams_on_gpu(fixed, moving, parms);
     printf("Done. \n");
