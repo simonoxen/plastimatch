@@ -212,8 +212,11 @@ SET(COMPOSE_VECTOR_FIELDS_SRC
 	compose_vector_fields.cxx
 	)
 SET(CONTOUR_STATISTICS_SRC
-	contour_statistics.cxx
+	contour_statistics.cxx contour_statistics.h
 	slice_extraction.cxx slice_extraction.h
+	dice_statistics.cxx 
+	closest_point.cxx 
+	read_obj.cxx
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx

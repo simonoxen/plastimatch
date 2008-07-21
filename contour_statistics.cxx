@@ -5,181 +5,108 @@
 
 
 //===========================================================
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include "contour_statistics.h"
 
-#include "plm_config.h"
-#include "itkImageFileReader.h"
-#include "itkImage.h"
-#include "itk_image.h"
-#include "itkImageRegionIteratorWithIndex.h"
-#include "itkImageSliceConstIteratorWithIndex.h"
-#include "slice_extraction.h"
-
-
-typedef float	PixelType;
-typedef itk::Image<PixelType, 3>	ImgType;
-typedef itk::Image<PixelType, 2>	intImgType;
-typedef itk::ImageRegionIteratorWithIndex<ImgType> ItTypeVolPixel;
-typedef itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
-typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
-
-
-typedef struct sliceDice SLICEDICE;
-struct sliceDice {
-    int num_slice;
-	int first_slice;
-    float* dice_list;
-};
 void print_usage (void)
 {
-	printf ("This executable computes the DICE coefficient for 2 give binary volumes \n");
+	/*printf ("This executable computes the DICE coefficient for 2 give binary volumes \n");*/
 	printf ("Usage: contour_statistics \n");
-	printf ("  reference volume\t");
-	printf ("  warped volume\t");
-	printf ("  mode (options: slice, global)\n");
+	printf ("  file1\t");
+	printf ("  file2\t");
+	printf ("  mode (options: slice, global, cp)\t");
+	printf ("  [filename]\n");
+	printf ("  OPTIONS EXPLANATION: \n");
+	printf ("  case Dice's coeff computation: the user can choose between calculating it for the whole volume (mode=global) or slice per slice (mode=slice).\n NB: in this case file1=reference volume, file2=warped volume\n\n");
+	printf ("  case Closest Point computation: mode should be set to 'cp' , file1 should be your *.obj file and file2 should be your *.txt file with the points from the physician\n\n");
+	printf ("  filename: the user can specify (optional) a filename for the output file in which the program should write the outputs (either the Dice's coeff values and volume ovelap % or the distances from the mesh for the cp calculation.\n");
 	exit (-1);
 }
 
 int main(int argc, char* argv[])
 {
-	ImgType::IndexType k;
-	intImgType::IndexType p;
-	k[0]=0;
-	p[0]=0;
-	int overlap=0;
-	float dice=0;
-	int size=0;
-	//int num_sl;
-	int index=0;
-	//float dim[3];
-	float volRef;
-	float volOver;
-	float percVolOver;
-	int volSize=0;
-	int volOverlap=0;
-	SLICEDICE* slice_dice=(SLICEDICE*)malloc(sizeof(SLICEDICE));
-	memset(slice_dice,0,sizeof(SLICEDICE));
-	slice_dice->num_slice=0;
-	slice_dice->first_slice=0;
+	ImgType::Pointer reference=ImgType::New();
+	ImgType::Pointer warped=ImgType::New();
+	FILE* mesh;
+	FILE* MDpoints;
+	FILE* output;
 
 	if (argc<4)
 		print_usage();
-	ImgType::Pointer reference=load_float(argv[1]);
-	ImgType::Pointer warped=load_float(argv[2]);
-	
-	if(reference->GetLargestPossibleRegion().GetSize() != warped->GetLargestPossibleRegion().GetSize()){
-				fprintf(stderr,"ERROR: The 2 volumes have different sizes. \n");
-				fprintf(stderr, "Size Reference: %d %d %d \n ",reference->GetLargestPossibleRegion().GetSize());
-				fprintf(stderr, "Size Warped: %d %d %d \n ",warped->GetLargestPossibleRegion().GetSize());
-				exit(-1);
-	}
-	
-	if(strcmp("global",argv[3])==0){
-			overlap=0;
-			size=0;
-						
-			ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
-		
-			while(!it.IsAtEnd())
-			{
-				k=it.GetIndex();
-				if(reference->GetPixel(k)==1){
-					size++;
-					if(warped->GetPixel(k)==reference->GetPixel(k)){
-						overlap++;
-					}
-				}
-				it.operator ++();
-			}
-			printf("overlap: %d\n",overlap);
-			printf("# of white pixels in the reference image: %d\n",size);
-			dice=(2*overlap)/(2*size);
-			printf("DICE COEFFICIENT: %f\n",dice);
-			//dim=reference->GetSpacing();
-			//volume=size*(dim[0]*dim[1]*dim[2]);
-			volRef=size*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
-			volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
-			percVolOver=(volOver/volRef)*100;
-			//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
-			printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-			printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-			printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
-
-	}else if(strcmp("slice",argv[3])==0){
-
-		printf("You've chosen to compute Dice coefficient for each slice\n");		
-		//num_sl=(int)reference->GetLargestPossibleRegion().GetSize()[2];		
-		//slice_dice->num_slice=num_sl;
-		//printf("num_slices: %d\n",slice_dice->num_slice);
-		ItSliceType itSlice(reference, reference->GetLargestPossibleRegion());
-		itSlice.SetFirstDirection(0);
-		itSlice.SetSecondDirection(1);
-		/*slice_dice->dice_list=(float*)malloc(num_sl*sizeof(float));*/
-
-		while(!itSlice.IsAtEnd())
-		{
-			
-			overlap=0;
-			size=0;
-			k=itSlice.GetIndex();
-			index=k[2];
-			intImgType::Pointer sRef;
-			sRef = slice_extraction(reference, index);
-			intImgType::Pointer sWarp;
-			sWarp = slice_extraction(warped, index);
-
-			ItTypeSlicePixel iter(sRef, sRef->GetLargestPossibleRegion());
-			while(!iter.IsAtEnd())
-			{
-				p=iter.GetIndex();
-				if(sRef->GetPixel(p)==1){
-					size++;
-					if(sWarp->GetPixel(p)==sRef->GetPixel(p)){
-						overlap++;
-					}
-				}
-				iter.operator ++();
-				//printf("overlap: %d\n",overlap);
-			}
-			//printf("overlap: %d\n",overlap);
-			//printf("# of white pixels in the reference image: %d\n",size);
-			
-			if(overlap==0 && size==0){
-				//printf("slice %d is full of air. No dice coefficient computed\n", index);
-				//system("PAUSE");
-				//slice_dice->dice_list[index]=0;
-			}else if(overlap!=0 && size==0){
-				fprintf(stderr,"Something is wrong: you found overlapping region on a non-existant region\n");
-				exit(-1);
-			}else{
-				volSize=volSize+size;
-				volOverlap=volOverlap+overlap;
-				if(slice_dice->first_slice==0){
-					slice_dice->first_slice=index;
-					printf("First contour is on slice %d\n", slice_dice->first_slice);
-				}
-				slice_dice->num_slice++;
-				//printf("SLICE: %d ELEM: %d\n", index, slice_dice->num_slice);
-				slice_dice->dice_list=(float*)realloc(slice_dice->dice_list,2*sizeof(float));
-				slice_dice->dice_list[slice_dice->num_slice-1]=(2*overlap)/(2*size);
-				//printf("coeff: %f\n",slice_dice->dice_list[slice_dice->num_slice-1]);
-			}
-
-			itSlice.NextSlice();
+	if(strcmp("global",argv[3])==0 || strcmp("slice",argv[3])==0){
+		reference=load_float(argv[1]);
+		warped=load_float(argv[2]);
+	}else if(strcmp("cp",argv[3])==0){
+		mesh=fopen(argv[1],"r");
+		MDpoints=fopen(argv[2],"r");
+		if(!mesh || !MDpoints){
+			fprintf(stderr,"Error: could not open the files for the cp calculation for reading!\n");
+			if(!mesh)
+				fprintf(stderr,"This file could not be opened: %s\n",argv[1]);
+			else
+				fprintf(stderr,"This file could not be opened: %s\n",argv[2]);
+			exit(-1);
 		}
-		volRef=volSize*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
-		volOver=volOverlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
-		percVolOver=(volOver/volRef)*100;
-		//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
-		printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-		printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-		printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
-		//for(int j=0; j<slice_dice->num_slice; j++)
-			//printf("DICE COEFFICIENT in slice %d: %f\n",j,slice_dice->dice_list[j]);
-		//printf("first slice: %d",slice_dice->first_slice);
+	}else{
+		fprintf(stderr,"Sorry! you typed in the wrong mode");
+		exit(-1);
+	}
+
+	if (argc<5){
+		if(strcmp("cp",argv[3])==0){
+			output=fopen("cp_dist.txt","w");
+		}else if(strcmp("slice",argv[3])==0){
+			output=fopen("dice_slice.txt","w");
+		}else if(strcmp("global",argv[3])==0){
+			output=fopen("dice_global.txt","w");
+		}
+	}else if(argc==5){
+		output=fopen(argv[4],"w");
+	}
+
+	if(!output){
+		fprintf(stderr, "An error occurred while opening the file for writing the outputs!");
+	}
+
+	if(strcmp("global",argv[3])==0){
+		do_dice_global(reference, warped, output);
+	}else if(strcmp("slice",argv[3])==0){
+		do_dice_slice(reference, warped, output);
+	}else if(strcmp("cp",argv[3])==0){
+
+		SURFACE* surface=(SURFACE*)malloc(sizeof(SURFACE));
+		memset(surface,0,sizeof(SURFACE));
+		printf("Allocated Surface\n");
+
+		do_cp(mesh,MDpoints,surface,output);
+
+
+
+
+		//TRIANGLE_LIST* triangles=(TRIANGLE_LIST*)malloc(sizeof(TRIANGLE_LIST));
+		//memset(triangles,0,sizeof(TRIANGLE_LIST));
+		//triangles->num_triangles=0;
+		//triangles=&surface->triangles;
+		//printf("LAST: %d %d %d\n",triangles->first[triangles->num_triangles-1],
+		//	triangles->second[triangles->num_triangles-1], triangles->third[triangles->num_triangles-1]);
+
+		//MASS* center_mass=(MASS*)malloc(sizeof(MASS));
+		//memset(center_mass,0,sizeof(MASS));
+		//center_mass->num_triangles=0;
+		//center_mass->x=(float*)malloc(sizeof(float));
+		//memset(center_mass->x,0,sizeof(float));
+		//center_mass->y=(float*)malloc(sizeof(float));
+		//memset(center_mass->y,0,sizeof(float));
+		//center_mass->z=(float*)malloc(sizeof(float));
+		//memset(center_mass->z,0,sizeof(float));
+		//center_mass->corrpoint_index=(int*)malloc(sizeof(int));
+		//memset(center_mass->corrpoint_index,0,sizeof(int));
+
+		//for(int r=0; r<center_mass->num_triangles; r++)
+		//	printf("CORR: %d\n",center_mass->corrpoint_index[r]);
+
+
+
+		//fclose(mesh);
 	}
 
 }
