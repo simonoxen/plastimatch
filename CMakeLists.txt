@@ -11,9 +11,9 @@ SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
-IF(PLASTIMATCH_SLICER)
+IF(BUILD_PLASTIMATCH_SLICER)
    cmake_minimum_required(VERSION 2.6)
-ENDIF(PLASTIMATCH_SLICER)
+ENDIF(BUILD_PLASTIMATCH_SLICER)
 
 ## Tell CMake to be quiet
 IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
@@ -540,10 +540,10 @@ ENDIF(ITK_FOUND)
 ######################################################
 ##  SLICER FRONT-END 	 
 ###################################################### 	 
-IF(PLASTIMATCH_SLICER) 	 
+IF(BUILD_PLASTIMATCH_SLICER) 	 
 
-find_package(Slicer3 REQUIRED) 	 
-include(${Slicer3_USE_FILE}) 	 
+find_package(Slicer3 REQUIRED)
+include(${Slicer3_USE_FILE})
 
 # Set reasonable default install prefix and output paths 	 
 # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure) 	 
@@ -570,7 +570,7 @@ slicer3_install_plugins(${CLP})
 # ? 	 
 #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help) 	 
 
-ENDIF(PLASTIMATCH_SLICER) 	 
+ENDIF(BUILD_PLASTIMATCH_SLICER) 	 
 
 ######################################################
 ##  REGRESSION TESTING

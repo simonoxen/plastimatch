@@ -68,11 +68,12 @@ extension_is (char* fname, char* ext)
 // This function is copied from Slicer3 (itkPluginUtilities.h)
 //   so it's available in case Slicer3 is not installed.
 // Get the PixelType and ComponentType from fileName
-void itk__GetImageType (std::string fileName,
-			itk::ImageIOBase::IOPixelType &pixelType,
-			itk::ImageIOBase::IOComponentType &componentType)
+void
+itk__GetImageType (std::string fileName,
+		    itk::ImageIOBase::IOPixelType &pixelType,
+		    itk::ImageIOBase::IOComponentType &componentType)
 {
-    typedef itk::Image<unsigned char, 3> ImageType;
+    typedef itk::Image<short, 3> ImageType;
     itk::ImageFileReader<ImageType>::Pointer imageReader =
 	itk::ImageFileReader<ImageType>::New();
     imageReader->SetFileName(fileName.c_str());

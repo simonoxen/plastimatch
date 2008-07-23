@@ -72,7 +72,7 @@ warp_image_main (Warp_Parms* parms)
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
     itk__GetImageType (parms->mha_in_fn, pixelType, componentType);
-    switch (pixelType) {
+    switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    {
 		UCharImageType::Pointer mha_in = load_uchar (parms->mha_in_fn);
