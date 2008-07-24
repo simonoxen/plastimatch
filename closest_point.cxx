@@ -343,7 +343,8 @@ void do_cp(FILE* mesh,FILE* MDpoints, SURFACE* surface, FILE* output){
 		coeff[3]=plane->a3[i];
 
 		d=abs((coeff[1]*pt[0]+coeff[2]*pt[1]+coeff[3]*pt[2]-coeff[0])/sqrt(coeff[1]*coeff[1]+coeff[2]*coeff[2]+coeff[3]*coeff[3]));
-		fprintf(output,"%f %f %f %f %f\n",plane->a0[i],plane->a1[i],plane->a2[i],plane->a3[i],d);
+		//fprintf(output,"%f %f %f %f %f\n",plane->a0[i],plane->a1[i],plane->a2[i],plane->a3[i],d);
+		fprintf(output,"%f\n",d);
 		//exit(-1);
 
 	}
