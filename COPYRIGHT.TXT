@@ -515,12 +515,26 @@ Analyze format routines (analyze2mha.c, dbh.h)
   Biomedical Imaging Resource
   Mayo Foundation
 
+  These sources were adapted from "The Analyze 7.5 File Format", 
+  which states:
+
+  The image database is the system of files that the ANALYZETM package
+  uses to organize and access image data on the disk. Facilities are
+  provided for converting data from a number of sources for use with
+  the package. A description of the database format is provided to aid
+  developers in porting images from other sources for use with the
+  ANALYZETM system.
+
+  http://www.mayo.edu/bir/PDF/ANALYZE75.pdf
+
 ------------------------------------------------------------------------
 RTOG format routines (exchkeys.h)
 
-  (c) Copyright, 1986-1995
-  Biomedical Imaging Resource
-  Mayo Foundation
+  These routines were developed by John Matthews of the RTOG.  They 
+  were developed using NCI funding, and are meant to be used by 
+  vendors for converting to and from RTOG format.
+
+  http://itc.wustl.edu/Exchcode.html
 
 ------------------------------------------------------------------------
 F2C output (vcf2c_libcmt.lib, vcf2c_libcmt.lib)
