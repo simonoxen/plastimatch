@@ -16,7 +16,7 @@ In addition, plastimatch includes routines for:
   2) DRR generation
 
 
-Plastimatch is open source software, and be used, modified, and 
+Plastimatch is open source software, and can be used, modified, and 
 distributed, without cost, under a BSD-style license.  This software is 
 intended for research use only, and is not approved by the Food and
 Drug Administration (FDA) for clinical use.  Please see LICENSE.TXT 
