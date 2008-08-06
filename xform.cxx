@@ -560,7 +560,7 @@ xform_aff_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     the b-spline with extra coefficients such that all pixels fall 
     within the valid region. */
 static void
-xform_itk_bsp_extend_to_region (Xform* xf,
+itk_bsp_extend_to_region (Xform* xf,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
@@ -752,6 +752,42 @@ gpuit_bsp_region_to_itk_bsp_region (OriginType& img_origin,
     img_region.SetIndex (img_index);
 }
 
+static void
+gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
+{
+    typedef BsplineTransformType::ImageType ParametersImageType;
+    typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
+    Xform_GPUIT_Bspline* xgb = xf_in->get_gpuit_bsp();
+    BSPLINE_Parms* parms = &xgb->parms;
+    BSPLINE_Data* bspd = &parms->bspd;
+    OriginType img_origin_old;
+    SpacingType img_spacing_old;
+    ImageRegionType img_region_old;
+
+    /* Convert geometry info from C arrays to ITK classes */
+    gpuit_bsp_region_to_itk_bsp_region (img_origin_old, img_spacing_old, img_region_old,
+	    parms->roi_offset, parms->roi_dim, xgb->img_origin, xgb->img_spacing);
+
+    /* First, create an ITK image to hold the deformation values at 
+	new resolution of control point grid */
+    BsplineTransformType::Pointer bsp_old = BsplineTransformType::New();
+    printf ("Initializing **bsp_old**\n");
+    init_itk_bsp_region (bsp_old, img_origin_old, img_spacing_old, 
+			img_region_old, xgb->grid_spac);
+    alloc_itk_bsp_parms (xf_in, bsp_old);
+
+    /* RMK: bulk transform is Identity (not supported by GPUIT) */
+
+    /* Copy from GPUIT coefficient array to ITK coefficient array */
+    int k = 0;
+    for (int d = 0; d < Dimension; d++) {
+	for (int i = 0; i < bspd->num_knots; i++) {
+	    xf_in->m_itk_bsp_parms[k] = bspd->coeff[3*i+d];
+	    k++;
+	}
+    }
+}
+
 void
 xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const OriginType& img_origin,
@@ -769,6 +805,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     SpacingType img_spacing_old;
     ImageRegionType img_region_old;
 
+#if defined (commentout)
     /* Convert geometry info from C arrays to ITK classes */
     gpuit_bsp_region_to_itk_bsp_region (img_origin_old, img_spacing_old, img_region_old,
 	    parms->roi_offset, parms->roi_dim, xgb->img_origin, xgb->img_spacing);
@@ -795,6 +832,10 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	    k++;
 	}
     }
+#endif
+
+    /* Convert to itk data structure */
+    gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in);
 
     /* Then, resample the xform to the desired grid spacing */
     xform_itk_bsp_to_itk_bsp (xf_out, &xf_tmp,
@@ -960,10 +1001,10 @@ xform_gpuit_bsp_to_itk_vf (//Xform_GPUIT_Bspline *xgb,
     SpacingType img_spacing;
     ImageRegionType img_region;
 
-    xform_gpuit_bsp_to_itk_bsp (&xf_tmp, xf_in, img_origin, img_spacing, 
-		img_region, xgb_new->grid_spac);
-    xform_itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
+    gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in);
+    itk_bsp_extend_to_region (&xf_tmp, image->GetOrigin(),
 	    image->GetSpacing(), image->GetLargestPossibleRegion());
+    itk_vf = xform_any_to_itk_vf (xf_tmp.get_bsp(), image);
 
 
 #if defined (commentout)
@@ -1337,7 +1378,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 	vf = xform_any_to_itk_vf (xf_in->get_aff(), image);
 	break;
     case XFORM_ITK_BSPLINE:
-	xform_itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
+	itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
 			image->GetSpacing(), image->GetLargestPossibleRegion());
 	vf = xform_any_to_itk_vf (xf_in->get_bsp(), image);
 	break;
