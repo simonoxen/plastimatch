@@ -937,15 +937,36 @@ xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf,
 }
 
 /* Here what we're going to do is use GPUIT library to interpolate the 
-    B-Spline at its native resolution, then convert gpuit_vf -> itk_vf. */
+    B-Spline at its native resolution, then convert gpuit_vf -> itk_vf. 
+
+    GCS: Aug 6, 2008.  The above idea doesn't work, because the native 
+    resolution might not encompass the image.  Here is what we will do:
+    1) Convert to ITK B-Spline
+    2) Extend ITK B-Spline to encompass image
+    3) Render vf.
+    */
 static DeformationFieldType::Pointer
-xform_gpuit_bsp_to_itk_vf (Xform_GPUIT_Bspline *xgb, 
+xform_gpuit_bsp_to_itk_vf (//Xform_GPUIT_Bspline *xgb, 
+			    Xform* xf_in,
 			    FloatImageType::Pointer image)
 {
     Volume *vf;
     float* img;
     DeformationFieldType::Pointer itk_vf;
 
+    Xform xf_tmp;
+    Xform_GPUIT_Bspline* xgb_old = xf_in->get_gpuit_bsp();
+    OriginType img_origin;
+    SpacingType img_spacing;
+    ImageRegionType img_region;
+
+    xform_gpuit_bsp_to_itk_bsp (&xf_tmp, xf_in, img_origin, img_spacing, 
+		img_region, xgb_new->grid_spac);
+    xform_itk_bsp_extend_to_region (xf_in, image->GetOrigin(),
+	    image->GetSpacing(), image->GetLargestPossibleRegion());
+
+
+#if defined (commentout)
     /* GCS FIX: This won't work if roi_offset is not 0 */
     vf = volume_create (xgb->parms.roi_dim, xgb->img_origin, xgb->img_spacing,
 			PT_VF_FLOAT_INTERLEAVED, 0);
@@ -967,6 +988,8 @@ xform_gpuit_bsp_to_itk_vf (Xform_GPUIT_Bspline *xgb,
     itk_vf = xform_gpuit_vf_to_itk_vf (vf, image);
 
     volume_free (vf);
+#endif
+
     return itk_vf;
 }
 
@@ -1322,7 +1345,8 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 	vf = xform_itk_vf_to_itk_vf (xf_in->get_itk_vf(), image);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	vf = xform_gpuit_bsp_to_itk_vf (xf_in->get_gpuit_bsp(), image);
+	//vf = xform_gpuit_bsp_to_itk_vf (xf_in->get_gpuit_bsp(), image);
+	vf = xform_gpuit_bsp_to_itk_vf (xf_in, image);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), image);
