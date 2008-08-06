@@ -424,6 +424,5 @@ do_registration (Registration_Parms* regp)
 
     /* RMK: If no stages, we still generate output (same as input) */
 
-    printf("writing final output...\n");
     save_regp_output_itk (&regd, xf_out, regp);
 }
