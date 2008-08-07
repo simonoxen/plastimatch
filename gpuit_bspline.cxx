@@ -75,9 +75,10 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 	parms->roi_offset[d] = 0;
 	parms->roi_dim[d] = fixed_ss->dim[d];
 	//parms->grid_spac[d] = stage->grid_spac[d];
-	xgb->grid_spac[d] = parms->vox_per_rgn[d] * fixed_ss->pix_spacing[d];
-	xgb->img_origin[d] = fixed_ss->offset[d];
-	xgb->img_spacing[d] = fixed_ss->pix_spacing[d];
+//	xgb->grid_spac[d] = parms->vox_per_rgn[d] * fixed_ss->pix_spacing[d];
+	parms->grid_spac[d] = parms->vox_per_rgn[d] * parms->img_spacing[d];
+//	xgb->img_origin[d] = fixed_ss->offset[d];
+//	xgb->img_spacing[d] = fixed_ss->pix_spacing[d];
     }
 
     /* Allocate memory and build LUTs */

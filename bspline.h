@@ -46,6 +46,7 @@ struct BSPLINE_Parms_struct {
     int roi_offset[3];		 /* Position of first vox in ROI (in vox) */
     int roi_dim[3];		 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3];		 /* Knot spacing (in vox) */
+    float grid_spac[3];          /* Knot spacing (in mm) */
     BSPLINE_Data bspd;           /* Coefficients and lookup data */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */

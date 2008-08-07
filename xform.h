@@ -59,9 +59,8 @@ typedef struct Xform_GPUIT_Bspline_struct Xform_GPUIT_Bspline;
 struct Xform_GPUIT_Bspline_struct {
 public:
     BSPLINE_Parms parms;
-    float grid_spac[3];          /* Knot spacing (in mm) */
-    float img_origin[3];         /* Position of first vox in ROI (in mm) */
-    float img_spacing[3];    /* Size of voxels (in mm) */
+//    float img_origin[3];         /* Position of first vox in ROI (in mm) */
+//    float img_spacing[3];    /* Size of voxels (in mm) */
 };
 
 class Xform {

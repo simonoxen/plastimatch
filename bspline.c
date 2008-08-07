@@ -34,19 +34,22 @@ bspline_score_on_gpu_reference(BSPLINE_Parms *parms, Volume *fixed, Volume *movi
 void
 bspline_default_parms (BSPLINE_Parms* parms)
 {
+    int d;
+
     memset (parms, 0, sizeof(BSPLINE_Parms));
-    parms->algorithm = BA_LBFGSB;
     parms->method = BM_CPU;
-    parms->vox_per_rgn[0] = 30;
-    parms->vox_per_rgn[1] = 30;
-    parms->vox_per_rgn[2] = 30;
-    parms->roi_dim[0] = 0;
-    parms->roi_dim[1] = 0;
-    parms->roi_dim[2] = 0;
-    parms->roi_offset[0] = 0;
-    parms->roi_offset[1] = 0;
-    parms->roi_offset[2] = 0;
+    parms->algorithm = BA_LBFGSB;
     parms->max_its = 10;
+
+    for (d = 0; d < 3; d++) {
+	parms->img_origin[d] = 0.0f;
+	parms->img_spacing[d] = 1.0f;
+	parms->img_dim[d] = 0;
+	parms->roi_offset[d] = 0;
+	parms->roi_dim[d] = 0;
+	parms->vox_per_rgn[d] = 30;
+	parms->grid_spac[d] = 30.0f;
+    }
 }
 
 void
@@ -59,13 +62,13 @@ write_bspd (char* filename, BSPLINE_Parms* parms)
     if (!fp) return;
 
     fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
-    fprintf (fp, "vox_per_rgn = %d %d %d\n", parms->vox_per_rgn[0], parms->vox_per_rgn[1], parms->vox_per_rgn[2]);
+    fprintf (fp, "img_origin = %f %f %f\n", parms->img_origin[0], parms->img_origin[1], parms->img_origin[2]);
+    fprintf (fp, "img_spacing = %f %f %f\n", parms->img_spacing[0], parms->img_spacing[1], parms->img_spacing[2]);
+    fprintf (fp, "img_dim = %d %d %d\n", parms->img_dim[0], parms->img_dim[1], parms->img_dim[2]);
     fprintf (fp, "roi_offset = %d %d %d\n", parms->roi_offset[0], parms->roi_offset[1], parms->roi_offset[2]);
     fprintf (fp, "roi_dim = %d %d %d\n", parms->roi_dim[0], parms->roi_dim[1], parms->roi_dim[2]);
-
-    fprintf (fp, "rdims = %d %d %d\n", bspd->rdims[0], bspd->rdims[1], bspd->rdims[2]);
-    fprintf (fp, "cdims = %d %d %d\n", bspd->cdims[0], bspd->cdims[1], bspd->cdims[2]);
-    fprintf (fp, "num_coeff = %d\n", bspd->num_coeff);
+    fprintf (fp, "vox_per_rgn = %d %d %d\n", parms->vox_per_rgn[0], parms->vox_per_rgn[1], parms->vox_per_rgn[2]);
+    /* No need to save grid_spac */
 
 #if defined (commentout)
     {
@@ -81,7 +84,8 @@ write_bspd (char* filename, BSPLINE_Parms* parms)
 	int i, j;
 	for (i = 0; i < 3; i++) {
 	    for (j = 0; j < bspd->num_coeff / 3; j++) {
-		fprintf (fp, "%6.3f\n", bspd->coeff[j*3 + i]);
+		//fprintf (fp, "%6.3f\n", bspd->coeff[j*3 + i]);
+		fprintf (fp, "%f\n", bspd->coeff[j*3 + i]);
 	    }
 	}
     }		

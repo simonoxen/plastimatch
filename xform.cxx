@@ -18,14 +18,18 @@
 
 static void alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp);
 static DeformationFieldType::Pointer xform_gpuit_vf_to_itk_vf (Volume* vf, FloatImageType::Pointer image);
+static void load_gpuit_bsp (Xform *xf, char* fn);
 
-int
+/* -----------------------------------------------------------------------
+   Utility functions
+   ----------------------------------------------------------------------- */
+static int
 strcmp_alt (const char* s1, const char* s2)
 {
   return strncmp (s1, s2, strlen(s2));
 }
 
-int
+static int
 get_parms (FILE* fp, itk::Array<double>* parms, int num_parms)
 {
     float f;
@@ -40,6 +44,9 @@ get_parms (FILE* fp, itk::Array<double>* parms, int num_parms)
     return s;
 }
 
+/* -----------------------------------------------------------------------
+   Load/save functions
+   ----------------------------------------------------------------------- */
 void
 load_xform (Xform *xf, char* fn)
 {
@@ -212,6 +219,9 @@ load_xform (Xform *xf, char* fn)
 	/* GCS: Is this still true? */
 	bsp->SetParameters (xf->m_itk_bsp_parms);
 
+    } else if (strcmp_alt(buf,"MGH_GPUIT_BSP <experimental>")==0) {
+	fclose (fp);
+	load_gpuit_bsp (xf, fn);
     } else {
 	/* Close the file and try again, it is probably a vector field */
 	fclose (fp);
@@ -222,6 +232,81 @@ load_xform (Xform *xf, char* fn)
 	}
 	xf->set_itk_vf (vf);
     }
+}
+
+static void
+load_gpuit_bsp (Xform *xf, char* fn)
+{
+    Xform_GPUIT_Bspline* xgb;
+    BSPLINE_Parms* parms;
+    BSPLINE_Data* bspd;
+    char buf[1024];
+    FILE* fp;
+    int d, rc;
+
+    fp = fopen (fn, "r");
+    if (!fp) return;
+
+    /* Initialize parms */
+    xgb = (Xform_GPUIT_Bspline*) malloc (sizeof(Xform_GPUIT_Bspline));
+    parms = &xgb->parms;
+    bspd = &parms->bspd;
+    bspline_default_parms (parms);
+
+    /* Skip first line */
+    fgets (buf, 1024, fp);
+
+    /* Read header */
+    rc = fscanf (fp, "img_origin = %f %f %f\n", &parms->img_origin[0], &parms->img_origin[1], &parms->img_origin[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (img_origin): %s\n", fn);
+    }
+    rc = fscanf (fp, "img_spacing = %f %f %f\n", &parms->img_spacing[0], &parms->img_spacing[1], &parms->img_spacing[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (img_spacing): %s\n", fn);
+    }
+    rc = fscanf (fp, "img_dim = %d %d %d\n", &parms->img_dim[0], &parms->img_dim[1], &parms->img_dim[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (img_dim): %s\n", fn);
+    }
+    rc = fscanf (fp, "roi_offset = %d %d %d\n", &parms->roi_offset[0], &parms->roi_offset[1], &parms->roi_offset[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (roi_offset): %s\n", fn);
+    }
+    rc = fscanf (fp, "roi_dim = %d %d %d\n", &parms->roi_dim[0], &parms->roi_dim[1], &parms->roi_dim[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (roi_dim): %s\n", fn);
+    }
+    rc = fscanf (fp, "vox_per_rgn = %d %d %d\n", &parms->vox_per_rgn[0], &parms->vox_per_rgn[1], &parms->vox_per_rgn[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing input xform (vox_per_rgn): %s\n", fn);
+    }
+
+    /* Recompute grid_spac */
+    for (d = 0; d < 3; d++) {
+	parms->grid_spac[d] = parms->vox_per_rgn[d] * parms->img_spacing[d];
+    }
+
+    /* Allocate memory and build LUTs */
+    bspline_initialize (parms);
+
+    /* This loads from itk-like planar format */
+    {
+	int i, j;
+	for (i = 0; i < 3; i++) {
+	    for (j = 0; j < bspd->num_coeff / 3; j++) {
+		rc = fscanf (fp, "%f\n", &bspd->coeff[j*3 + i]);
+		if (rc != 1) {
+		    print_and_exit ("Error parsing input xform (idx = %d,%d): %s\n", i, j, fn);
+		}
+	    }
+	}
+    }
+
+    fclose (fp);
+
+    /* Tell Xform that it is gpuit_bsp */
+    xf->set_gpuit_bsp (xgb);
 }
 
 void
@@ -763,14 +848,14 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
 
     /* Convert geometry info from C arrays to ITK classes */
     gpuit_bsp_region_to_itk_bsp_region (img_origin_old, img_spacing_old, img_region_old,
-	    parms->roi_offset, parms->roi_dim, xgb->img_origin, xgb->img_spacing);
+	    parms->roi_offset, parms->roi_dim, parms->img_origin, parms->img_spacing);
 
     /* First, create an ITK image to hold the deformation values at 
 	new resolution of control point grid */
     BsplineTransformType::Pointer bsp_old = BsplineTransformType::New();
     printf ("Initializing **bsp_old**\n");
     init_itk_bsp_region (bsp_old, img_origin_old, img_spacing_old, 
-			img_region_old, xgb->grid_spac);
+			img_region_old, parms->grid_spac);
     alloc_itk_bsp_parms (xf_out, bsp_old);
 
     /* RMK: bulk transform is Identity (not supported by GPUIT) */
@@ -801,35 +886,6 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     OriginType img_origin_old;
     SpacingType img_spacing_old;
     ImageRegionType img_region_old;
-
-#if defined (commentout)
-    /* Convert geometry info from C arrays to ITK classes */
-    gpuit_bsp_region_to_itk_bsp_region (img_origin_old, img_spacing_old, img_region_old,
-	    parms->roi_offset, parms->roi_dim, xgb->img_origin, xgb->img_spacing);
-
-    /* First, create an ITK image to hold the deformation values at 
-	new resolution of control point grid */
-    BsplineTransformType::Pointer bsp_old = BsplineTransformType::New();
-    printf ("Initializing **bsp_old**\n");
-    init_itk_bsp_region (bsp_old, img_origin_old, img_spacing_old, 
-			img_region_old, xgb->grid_spac);
-    alloc_itk_bsp_parms (&xf_tmp, bsp_old);
-
-    /* RMK: bulk transform is Identity (not supported by GPUIT) */
-
-    /* Copy from GPUIT coefficient array to ITK coefficient array */
-    int k = 0;
-    for (int d = 0; d < Dimension; d++) {
-	for (int i = 0; i < bspd->num_knots; i++) {
-#if defined (commentout)
-	    /* GPUIT BSP used to use pixel coordinate, now uses mm coordinates */
-	    xf_tmp.m_itk_bsp_parms[k] = bspd->coeff[3*i+d] * img_spacing[d];
-#endif
-	    xf_tmp.m_itk_bsp_parms[k] = bspd->coeff[3*i+d];
-	    k++;
-	}
-    }
-#endif
 
     /* Convert to itk data structure */
     printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
@@ -1083,19 +1139,15 @@ xform_gpuit_bsp_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* 
     gpuit_bsp_region_to_itk_bsp_region (img_origin, 
 	    img_spacing, img_region, 
 	    parms_new->roi_offset, parms_new->roi_dim, 
-	    xgb_new->img_origin, xgb_new->img_spacing);
+	    parms_new->img_origin, parms_new->img_spacing);
 
     xform_gpuit_bsp_to_itk_bsp (&xf_tmp, xf_in, img_origin, img_spacing, 
-		img_region, xgb_new->grid_spac);
+		img_region, parms_new->grid_spac);
 
     /* Copy from ITK coefficient array to gpuit coefficient array */
     int k = 0;
     for (int d = 0; d < Dimension; d++) {
 	for (int i = 0; i < bspd_new->num_knots; i++) {
-#if defined (commentout)
-	    /* GPUIT BSP used to use pixel coordinate, now uses mm coordinates */
-	    bspd_new->coeff[3*i+d] = xf_tmp.m_itk_bsp_parms[k] / img_spacing[d];
-#endif
 	    bspd_new->coeff[3*i+d] = xf_tmp.m_itk_bsp_parms[k];
 	    k++;
 	}
