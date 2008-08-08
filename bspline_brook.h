@@ -27,7 +27,7 @@ struct BSPLINE_data_on_gpu_struct {
 	::brook::stream *dz_stream; // Stream to store voxel displacement values in the Z direction
 
 	/* Data returned from the GPU */
-	float *my_dxyz[3];
+	float *dxyz[3];
     };
 
 #if defined __cplusplus
