@@ -9,6 +9,7 @@
 
     ----------------------------------------------------------------------- */
 /* #include <brook/brook.hpp> */
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -61,9 +62,6 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, BSPLINE_Parms *
     memcpy(temp_moving_image, moving->img, sizeof(float)*moving->npix);
 
     printf("Transferrring the static and moving images to the GPU. \n");
-
-    data_on_gpu->fixed_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-#if defined (commentout)
     data_on_gpu->fixed_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
     data_on_gpu->moving_image_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
     streamRead(*(data_on_gpu->fixed_image_stream), temp_fixed_image);
@@ -111,25 +109,27 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, BSPLINE_Parms *
     data_on_gpu->q_lut_stream = new ::brook::stream(::brook::getStreamType((float *)0), q_lut_texture_size, q_lut_texture_size, -1);
     streamRead(*(data_on_gpu->q_lut_stream), temp_memory);
     free((void *)temp_memory);
-    
-    // Allocate GPU stream to hold the coeff_lut
-    int coeff_texture_size = (int)ceil(sqrt((double)bspd->num_knots));
+
+	/* Allocate memory for the coefficient values */
+    int coeff_texture_size = (int)ceil(sqrt((double)bspd->num_knots*3));
     printf("Allocating 2D texture of size %d x %d to store coefficient information. \n", coeff_texture_size, coeff_texture_size);
-    data_on_gpu->coeff_texture_size = coeff_texture_size;
+	data_on_gpu->coeff_texture_size = coeff_texture_size;
+	data_on_gpu->coeff_stream = new ::brook::stream(::brook::getStreamType((float *)0), coeff_texture_size, coeff_texture_size, -1);
 
-    temp_memory = (float*)malloc(sizeof(float)*coeff_texture_size*coeff_texture_size*3);
-    if(!temp_memory){
-	printf("Couldn't allocate memory for coefficient texture...Exiting\n");
-	exit(-1);
+	/* Allocate memory for the dx, dy, and dz streams */
+	data_on_gpu->dx_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+	data_on_gpu->dy_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+	data_on_gpu->dz_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+
+	/* Allocate memory on the CPU to store the dxyz values read back from the GPU */
+	for(int i = 0; i < 3; i++){
+	data_on_gpu->my_dxyz[i] = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
+	if(!data_on_gpu->my_dxyz){
+	    printf("Couldn't allocate texture memory for dxyz result. Exiting. \n");
+	    exit(-1);
+	}
+	memset(data_on_gpu->my_dxyz[i], 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
     }
-    memset(temp_memory, 0, sizeof(float)*coeff_texture_size*coeff_texture_size*3);
-    memcpy(temp_memory, bspd->coeff, sizeof(float)*bspd->num_knots*3); // Copy bspd->coeff values to temp memory
-
-    printf("Transferrring the coeff_lut to the GPU. \n");
-    data_on_gpu->coeff_stream = new ::brook::stream(::brook::getStreamType((float3 *)0), coeff_texture_size, coeff_texture_size, -1);
-    streamRead(*(data_on_gpu->coeff_stream), temp_memory);
-    free((void *)temp_memory);
-#endif
 }
 
 void 
@@ -160,7 +160,10 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     int num_vox;
     int pidx, qidx;
     float ssd_grad_norm, ssd_grad_mean;
-    clock_t start_clock, end_clock;
+    
+	/* Some variables for timing */
+	clock_t start_clock, end_clock;
+	
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
@@ -188,25 +191,22 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     vox_per_rgn.y = (float)parms->vox_per_rgn[1];
     vox_per_rgn.z = (float)parms->vox_per_rgn[2];
 
-     /* Allocate and initialize memory to store the dxyz results from the GPU */
-    float* my_dxyz[3];
-    int volume_texture_size = data_on_gpu->volume_texture_size; 
 
-    for(i = 0; i < 3; i++){
-	my_dxyz[i] = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-	if(!my_dxyz){
-	    printf("Couldn't allocate texture memory for dxyz result. Exiting. \n");
-	    exit(-1);
-	}
-	memset(my_dxyz[i], 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
-    }
-    /* Allocate memory for dxyz streams on the GPU */
-    printf("Allocating memory for dxyz streams. \n");
-    ::brook::stream dx_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-    ::brook::stream dy_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-    ::brook::stream dz_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+	/* Transfer the new coefficient values to the GPU */
+	streamRead(*(data_on_gpu->coeff_stream), bspd->coeff);
 
     /* Invoke kernel on the GPU to compute dxyz, xyz = 0 for x, 1 for y and 2 for z */
+	// printf("Calling kernels. \n");
+	LARGE_INTEGER clock_count;
+    LARGE_INTEGER clock_frequency;
+    double clock_start, clock_end;
+    double kernel_cycles = 0.0;
+	double cpu_cycles = 0.0;
+
+    QueryPerformanceFrequency(&clock_frequency); // Get CPU frequency
+    QueryPerformanceCounter(&clock_count); // Get CPU cycle counter
+    clock_start = (double)clock_count.QuadPart;
+
     compute_dxyz(*(data_on_gpu->c_lut_stream), 
 		 *(data_on_gpu->q_lut_stream), 
 		 *(data_on_gpu->coeff_stream), 
@@ -219,7 +219,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 (float)data_on_gpu->coeff_texture_size,
 		 0.0, // Compute influence in the X direction
 		 64.0,
-		 dx_stream);
+		 *(data_on_gpu->dx_stream));
 
     compute_dxyz(*(data_on_gpu->c_lut_stream), 
 		 *(data_on_gpu->q_lut_stream), 
@@ -233,7 +233,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 (float)data_on_gpu->coeff_texture_size,
 		 1.0, // Compute influence in the Y direction
 		 64.0,
-		 dy_stream);
+		 *(data_on_gpu->dy_stream));
 
     compute_dxyz(*(data_on_gpu->c_lut_stream), 
 		 *(data_on_gpu->q_lut_stream), 
@@ -247,12 +247,18 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 (float)data_on_gpu->coeff_texture_size,
 		 2.0,	// Compute influence in the Z direction
 		 64.0,
-		 dz_stream);
+		 *(data_on_gpu->dz_stream));
+	// printf("Done calling kernels. \n");
 
-    /* Read dx, dy, and dz streams back from the GPU. Note that streamWrite also deallocates the memory in the GPU. */
-    streamWrite(dx_stream, my_dxyz[0]);
-    streamWrite(dy_stream, my_dxyz[1]);
-    streamWrite(dz_stream, my_dxyz[2]);
+    /* Read dx, dy, and dz streams back from the GPU. */
+    streamWrite(*(data_on_gpu->dx_stream), data_on_gpu->my_dxyz[0]);
+    streamWrite(*(data_on_gpu->dy_stream), data_on_gpu->my_dxyz[1]);
+    streamWrite(*(data_on_gpu->dz_stream), data_on_gpu->my_dxyz[2]);
+	// printf("Done read back from GPU. \n");
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+    kernel_cycles +=  (clock_end - clock_start);
+	printf("Time on GPU to execute the interpolate function = %f\n", kernel_cycles/(double)clock_frequency.QuadPart);
 
     ssd->score = 0;
     memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
@@ -273,23 +279,37 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		/* Get B-spline deformation vector */
 		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
 		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
+
+#if defined (commentout)
+		/* Uncomment to compare the dxyz values generated by the CPU and GPU */
+		QueryPerformanceCounter(&clock_count);
+		clock_start = (double)clock_count.QuadPart;
 		bspline_interp_pix_b (dxyz, bspd, pidx, qidx);
-		if(iter == 5)
-		    check_values(dxyz[0], my_dxyz[0][num_vox]); /* Check the GPU result for correctness */
+		
+		if(iter == 15){
+		    check_values(dxyz[0], my_dxyz[0][num_vox]);
+			check_values(dxyz[1], my_dxyz[1][num_vox]);
+			check_values(dxyz[2], my_dxyz[2][num_vox]);
+		}
+		
+		QueryPerformanceCounter(&clock_count);
+		clock_end = (double)clock_count.QuadPart;
+		cpu_cycles +=  (clock_end - clock_start);
+#endif 
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
 		/* Find correspondence in moving image */
-		mx = fx + dxyz[0];
+		mx = fx + data_on_gpu->my_dxyz[0][num_vox];
 		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
 		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
 
-		my = fy + dxyz[1];
+		my = fy + data_on_gpu->my_dxyz[1][num_vox];
 		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
 		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
 
-		mz = fz + dxyz[2];
+		mz = fz + data_on_gpu->my_dxyz[2][num_vox];
 		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
 		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
 
@@ -324,7 +344,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		ssd->score += diff * diff;
 		num_vox ++;
 	    }
-	}
+		}
     }
 
     //dump_coeff (bspd, "coeff.txt");
@@ -351,205 +371,10 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
-}
 
-
-/*
-void 
-bspline_score_on_gpu_reference (BSPLINE_Score *ssd, 
-				Volume *fixed, Volume *moving, Volume *moving_grad, 
-				BSPLINE_Data *bspd, BSPLINE_Parms *parms)
-{
-    int i, j, k;
-    int v, mv;
-    int mx, my, mz;
-    int p[3];
-    int q[3];
-    float diff;
-    float dc_dv[3];
-    float* f_img = (float*) fixed->img;
-    float* m_img = (float*) moving->img;
-    float* m_grad = (float*) moving_grad->img;
-    int num_vox;
-    int qidx;
-    float ssd_grad_norm, ssd_grad_mean;
-    clock_t start_clock, end_clock;
-
-
-    ssd->score = 0;
-    num_vox = 0;
-    memset (ssd->grad, 0, bspd->num_knots * sizeof(float));
-
-    // Read in volume dimensions
-    float3 dim; 
-    dim.x = (float)fixed->dim[0];
-    dim.y = (float)fixed->dim[1];
-    dim.z = (float)fixed->dim[2];
-
-    // Read in knot dimensions
-    float3 cdims;
-    cdims.x = bspd->cdims[0];
-    cdims.y = bspd->cdims[1];
-    cdims.z = bspd->cdims[2];
-
-    // Read in spacing between the control knots
-    float3 int_spacing;
-    int_spacing.x = parms->int_spacing[0];
-    int_spacing.y = parms->int_spacing[1];
-    int_spacing.z = parms->int_spacing[2];
-
-    // Compute the size of the texture to hold the x, y, z coefficients of each knot and allocate memory
-    int coeff_texture_size = (int)ceil(sqrt((double)bspd->num_knots));
-    printf("Allocating 2D texture of size %d to store coefficient information \n", coeff_texture_size);
-    float* temp_coeff = (float*)malloc(sizeof(float)*coeff_texture_size*coeff_texture_size);
-    if(!temp_coeff){
-	printf("Couldn't allocate memory for coefficient texture...Exiting\n");
-	exit(-1);
-    }
-    memset(temp_coeff, 0, sizeof(float)*coeff_texture_size*coeff_texture_size);
-    memcpy(temp_coeff, bspd->coeff, sizeof(float)*bspd->num_knots); // Copy bspd->coeff values
-    
-    // Compute the size of the texture to hold the lut
-    int lut_texture_size = 
-	(int)ceil(sqrt((double)(parms->int_spacing[0]*parms->int_spacing[1]*parms->int_spacing[2]*64)));
-    printf("Allocating 2D texture of size %d to store lut information \n", lut_texture_size);
-    float* temp_lut = (float*)malloc(sizeof(float)*lut_texture_size*lut_texture_size);
-    if(!temp_lut){
-	printf("Couldn't allocate memory for lut texture...Exiting\n");
-	exit(-1);
-    }
-    memset(temp_lut, 0, sizeof(float)*lut_texture_size*lut_texture_size); // Initialize memory 
-    memcpy(temp_lut, 
-	bspd->q_lut, 
-	sizeof(float)*parms->int_spacing[0]*parms->int_spacing[1]*parms->int_spacing[2]*64); // Copy lut
-
-    // Compute the size of the texture to hold the moving and static images
-    int volume_texture_size = (int)ceil(sqrt((double)fixed->npix/4)); // Size of the texture to allocate
-    printf("Allocating 2D texture of size %d to store volume information \n", volume_texture_size);
-    float* temp_fixed_image = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-    float* temp_moving_image = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-    if(!temp_fixed_image || !temp_moving_image){
-	printf("Couldn't allocate texture memory for volume...Exiting\n");
-	exit(-1);
-    }
-    memset(temp_fixed_image, 0, sizeof(float)*volume_texture_size*volume_texture_size*4); // Initialize memory 
-    memcpy(temp_fixed_image, fixed->img, sizeof(float)*fixed->npix); // Copy fixed image
-    memset(temp_moving_image, 0, sizeof(float)*volume_texture_size*volume_texture_size*4); // Initialize memory 
-    memcpy(temp_moving_image, moving->img, sizeof(float)*moving->npix); // Copy moving image
-
-    // Allocate memory to store the result from the GPU
-    float* my_dxyz[3]; // Data structure to store the x, y, z displacment vectors
-    for(i = 0; i < 3; i++){
-	my_dxyz[i] = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-	if(!my_dxyz){
-	    printf("Couldn't allocate texture memory for dxyz result...Exiting\n");
-	    exit(-1);
-	}
-	memset(my_dxyz[i], 0, sizeof(float)*volume_texture_size*volume_texture_size*4); // Initialize memory
-    }
-
-    // Allocate memory for GPU streams
-    printf("Allocating memory for GPU streams. \n");
-    ::brook::stream coeff_stream(::brook::getStreamType((float *)0), coeff_texture_size, coeff_texture_size, -1);
-    ::brook::stream lut_stream(::brook::getStreamType((float *)0), lut_texture_size, lut_texture_size, -1);
-    ::brook::stream dx_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-    ::brook::stream dy_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-    ::brook::stream dz_stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
-
-    // Copy streams to the GPU 
-    printf("copying streams to the GPU. \n");
-    streamRead(coeff_stream, temp_coeff); // Copy coefficient stream
-    streamRead(lut_stream, temp_lut); // Copy lut stream
-
-    printf("Executing kernels on the GPU. \n");
-    start_clock = clock();
-
-#if defined (commentout)
-    // Invoke kernel on the GPU to compute dxyz, xyz = 0 for x, 1 for y and 2 for z
-    compute_dxyz_reference(lut_stream, coeff_stream, dim, cdims, int_spacing, volume_texture_size, lut_texture_size, 
-	coeff_texture_size, 0, dx_stream);
-
-    compute_dxyz_reference(lut_stream, coeff_stream, dim, cdims, int_spacing, volume_texture_size, lut_texture_size, 
-	coeff_texture_size, 1, dy_stream);
-
-    compute_dxyz_reference(lut_stream, coeff_stream, dim, cdims, int_spacing, volume_texture_size, lut_texture_size, 
-	coeff_texture_size, 2, dz_stream);
-#endif
-
-    end_clock = clock();
-    printf("Interpolation time on the GPU = %f\n", (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
-
-    // Read dx, dy, and dz streams back from the GPU 
-    streamWrite(dx_stream, my_dxyz[0]);
-    streamWrite(dy_stream, my_dxyz[1]);
-    streamWrite(dz_stream, my_dxyz[2]);
-
-    // Copy streams to dxyz structure 
-    float *dxyz = (float *) malloc (3*sizeof(float)*fixed->npix);
-    for(i = 0; i < fixed->npix; i++){
-	dxyz[3*i] = my_dxyz[0][i];
-	dxyz[3*i+1] = my_dxyz[1][i];
-	dxyz[3*i+2] = my_dxyz[2][i];
-    }
-*/
-
-void run_toy_kernel_b(float i, ::brook::stream in_stream, ::brook::stream out_stream, ::brook::stream this_element){
-    // toy_a(i, out_stream);
-    toy_b(out_stream, 20, out_stream);
-}
-
-void run_toy_kernel_c(TEST_STRUCT *this_test_struct){
-    toy_b(*(this_test_struct->out_stream), 20, *(this_test_struct->out_stream)); 
-}
-
-void run_toy_kernel(void){
-    float out[40000];
-    float in[40000];
-    int i;
-    float4 this_sum;
-    
-    TEST_STRUCT *test_struct = (TEST_STRUCT *)malloc(sizeof(TEST_STRUCT));
-
-    for(i = 0; i < 40000; i++){
-	out[i] = 0.0;
-	in[i] = 10.0;
-    }
-
-    printf("Allocating stream memory \n");
-    /* ::brook::stream out_stream(::brook::getStreamType((float4 *)0), 10, 10, -1);
-    ::brook::stream this_element(::brook::getStreamType((float4 *)0), 1, 1, -1);
-    ::brook::stream in_stream(::brook::getStreamType((float4 *)0), 10, 10, -1); */
-
-
-    /* ::brook::stream *out_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), 10, 10, -1);
-    ::brook::stream this_element(::brook::getStreamType((float4 *)0), 1, 1, -1);
-    ::brook::stream *in_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), 10, 10, -1); */
-    test_struct->out_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), 100, 100, -1);
-    test_struct->in_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), 100, 100, -1);
-    ::brook::stream this_element(::brook::getStreamType((float4 *)0), 1, 1, -1);
-
-    printf("Transferring stream to GPU \n");
-    // streamRead(test_stream, in);
-    streamRead(*(test_struct->in_stream), in);
-    printf("Done \n");
-    init(*(test_struct->out_stream));
-    for(i = 0; i < 1000; i++){
-	printf("Kernel iteration %d \n", i);
-	run_toy_kernel_b(1, *(test_struct->in_stream), *(test_struct->out_stream), this_element);
-	// run_toy_kernel_c(test_struct);
-    }
-
-    streamWrite(*(test_struct->out_stream), out);
-    // streamWrite(this_element, &this_sum);
-
-    for(i = 0; i < 40000; i++)
-	printf("%f ", out[i]);
-    printf("\n");
-
-    getchar();
+	printf("Time on CPU to execute the interpolate function = %f\n", cpu_cycles/(double)clock_frequency.QuadPart);
+    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f \n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm);
 }
 
 } /* extern "C" */

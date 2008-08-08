@@ -163,8 +163,6 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     g = (doublereal*) malloc (sizeof(doublereal)*NMAX);
     wa = (doublereal*) malloc (sizeof(doublereal)*(2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX));
 
-    printf ("Hello world\n");
-
     n=NMAX;
     m=MMAX;
 

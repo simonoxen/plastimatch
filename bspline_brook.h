@@ -22,6 +22,12 @@ struct BSPLINE_data_on_gpu_struct {
     ::brook::stream *c_lut_stream; // The c_lut indicating which control knots affect voxels within a region
     ::brook::stream *q_lut_stream; // The q_lut indicating the distance of a voxel to each of the 64 control knots
     ::brook::stream *coeff_stream; // The coefficient stream indicating the x, y, z coefficients of each control knot
+	::brook::stream *dx_stream; // Stream to store voxel displacement values in the X direction 
+	::brook::stream *dy_stream; // Stream to store voxel displacement values in the Y direction
+	::brook::stream *dz_stream; // Stream to store voxel displacement values in the Z direction
+
+	/* Data returned from the GPU */
+	float *my_dxyz[3];
     };
 
 #if defined __cplusplus
