@@ -47,6 +47,7 @@ void toy_b(::brook::stream in_stream, float loop_index, ::brook::stream result);
 void my_sum(::brook::stream foo, ::brook::stream bar);
 void init(::brook::stream result);
 void compute_dxyz(::brook::stream, ::brook::stream, ::brook::stream, float3, float3, float3, float, float, float, float, float, float, ::brook::stream);
+void compute_dxyz_optimized(::brook::stream, ::brook::stream, ::brook::stream, float3, float3, float3, float, float, float, float, float, float, ::brook::stream);
 
 #if defined __cplusplus
 }

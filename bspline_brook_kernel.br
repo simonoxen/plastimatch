@@ -93,3 +93,113 @@ kernel void compute_dxyz(float c_lut[][],
 		} //Voxel loop
 	}
 }
+
+/* Kernel computes the displacement value in the X, Y, or Z directions. In this optimized version, the loop has been unrolled twice. */
+kernel void compute_dxyz_optimized(float c_lut[][],
+					     float q_lut[][],
+					     float coeff[][],
+					     float3 volume_dim, // X, Y, Z dimensions of the volume
+					     float3 vox_per_rgn, // Number of voxels per region
+					     float3 rdims, // The X, Y, Z dimensions of the control knot grid
+					     float volume_texture_size, 
+					     float c_lut_texture_size,
+					     float q_lut_texture_size,
+					     float coeff_texture_size,
+					     float xyz, // xyz = 0 for x, 1 for y and 2 for z
+					     float sixty_four,	    // Pass 64 as a parameter to work around fxc bug
+					     out float4 result<>)
+{
+	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
+	float my_index = (volume_texture_size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
+	
+	float voxel_number;
+	float curr_index;
+	float3 vox_coordinate; // X, Y, Z coordinates for this voxel
+	float3 p, q; // Region index 
+	float pidx, qidx;
+	float k;
+	float cidx_1 = 0;
+	float cidx_2 = 0;
+	float x_index_of_q_lut_1, y_index_of_q_lut_1, x_index_of_q_lut_2, y_index_of_q_lut_2;
+	float x_index_of_c_lut_1, y_index_of_c_lut_1, x_index_of_c_lut_2, y_index_of_c_lut_2;
+	float x_index_of_coeff_1, y_index_of_coeff_1, x_index_of_coeff_2, y_index_of_coeff_2;
+	float q_lut_entry_1, q_lut_entry_2;
+	float coeff_1, coeff_2;
+	float my_out;
+	
+	if (my_index > volume_dim.x*volume_dim.y*volume_dim.x) // Voxel lies outside the volume
+	{ 
+		result = 0.0;
+	}
+	else
+	{
+		for (voxel_number = 0.0; voxel_number < 4.0; voxel_number = voxel_number + 1.0) // Iterate through the four voxels
+		{ 
+			/* Get the X, Y, Z position of the voxel */
+			curr_index = my_index + voxel_number; // Get correct index of the voxel
+			vox_coordinate.z = floor(curr_index/(volume_dim.x*volume_dim.y)); // Calculate the z index
+			vox_coordinate.y = floor((curr_index - vox_coordinate.z*(volume_dim.x*volume_dim.y))/volume_dim.x); // Calculate the y index
+			vox_coordinate.x = curr_index - vox_coordinate.z*volume_dim.x*volume_dim.y - vox_coordinate.y*volume_dim.x; // Calculate the x index
+		
+			/* Get the tile location of the voxel */
+			p.x = floor(vox_coordinate.x/vox_per_rgn.x);
+			p.y = floor(vox_coordinate.y/vox_per_rgn.y);
+			p.z = floor(vox_coordinate.z/vox_per_rgn.z);
+			
+			/* Get the offset of the voxel within the tile */
+			q.x = vox_coordinate.x - p.x * vox_per_rgn.x;
+			q.y = vox_coordinate.y - p.y * vox_per_rgn.y;
+			q.z = vox_coordinate.z - p.z * vox_per_rgn.z;
+			
+			/* Use the tile location of the voxel to compute the index into the c_lut */
+			pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
+			
+			/* Use the offset if the voxel to compute the index into the multiplier LUT or q_lut */
+			qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
+			
+			my_out = 0.0;
+			for (k = 0.0; k < sixty_four; k = k + 2.0)
+			{
+				/* Index into the c_lut texture */
+				y_index_of_c_lut_1 = floor((pidx*64 + k)/c_lut_texture_size);
+				x_index_of_c_lut_1 = (pidx*64 + k) - y_index_of_c_lut_1*c_lut_texture_size;
+				
+				/* Index into the q_lut texture */
+				y_index_of_q_lut_1 = floor((qidx*64 + k)/q_lut_texture_size);
+				x_index_of_q_lut_1 = (qidx*64 + k) - y_index_of_q_lut_1*q_lut_texture_size;
+				
+				/* Index into the texture of control-knot coefficients */
+				cidx_1 =  c_lut[y_index_of_c_lut_1][x_index_of_c_lut_1]* 3 + xyz; 
+				
+				/* Index into the c_lut texture */
+				y_index_of_c_lut_2 = floor((pidx*64 + k + 1)/c_lut_texture_size);
+				x_index_of_c_lut_2 = (pidx*64 + k +1) - y_index_of_c_lut_2*c_lut_texture_size;
+				
+				/* Index into the q_lut texture */
+				y_index_of_q_lut_2 = floor((qidx*64 + k + 1)/q_lut_texture_size);
+				x_index_of_q_lut_2 = (qidx*64 + k + 1) - y_index_of_q_lut_2*q_lut_texture_size;
+				
+				/* Index into the texture of control-knot coefficients */
+				cidx_2 =  c_lut[y_index_of_c_lut_2][x_index_of_c_lut_2]* 3 + xyz; 
+				
+				y_index_of_coeff_1 = floor(cidx_1/coeff_texture_size);
+				x_index_of_coeff_1 = cidx_1 - y_index_of_coeff_1*coeff_texture_size;
+				y_index_of_coeff_2 = floor(cidx_2/coeff_texture_size);
+				x_index_of_coeff_2 = cidx_2 - y_index_of_coeff_2*coeff_texture_size;
+				
+				q_lut_entry_1 = q_lut[y_index_of_q_lut_1][x_index_of_q_lut_1];
+				q_lut_entry_2 = q_lut[y_index_of_q_lut_2][x_index_of_q_lut_2];
+				coeff_1 = coeff[y_index_of_coeff_1][x_index_of_coeff_1];
+				coeff_2 = coeff[y_index_of_coeff_2][x_index_of_coeff_2];
+				
+				/* Compute influence of the voxel in the x, y, or z direction */
+				my_out += q_lut_entry_1 * coeff_1 + q_lut_entry_2 * coeff_2; 
+			} // k loop 	
+		
+			if(voxel_number == 0.0) result.x = my_out;
+			if(voxel_number == 1.0) result.y = my_out;
+			if(voxel_number == 2.0) result.z = my_out;
+			if(voxel_number == 3.0) result.w = my_out;
+		} //Voxel loop
+	}
+}

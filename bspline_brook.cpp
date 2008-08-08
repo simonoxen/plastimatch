@@ -295,8 +295,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		QueryPerformanceCounter(&clock_count);
 		clock_end = (double)clock_count.QuadPart;
 		cpu_cycles +=  (clock_end - clock_start);
-#endif 
-
+#endif
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
