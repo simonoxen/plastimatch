@@ -1,0 +1,173 @@
+                        *** Welcome to Plastimatch ***
+
+DOWNLOAD INSTRUCTIONS
+---------------------
+The recommended method for downloading plastimatch is using subversion.
+The command line instructions are:
+
+  $ svn co http://forge.abcd.harvard.edu/svn/plastimatch/plastimatch/trunk plastimatch
+
+You will need to supply the user name and password:
+
+  User: anonymous
+  Password: <empty>
+
+To update to the latest version, issue the following command from 
+within the plastimatch source directory:
+
+  $ svn update
+
+
+EXTERNAL DEPENDENCIES
+---------------------
+Plastimatch uses cmake, so you must download and install cmake 
+before you can build plastimatch.  Download from here:
+
+  http://cmake.org/
+
+In addition, you will need a C/C++ compiler.  If you are running 
+Windows, we recommend Microsoft Visual Studio (Express or Full, 
+2005 or 2008).  If you are running unix, we recommend gcc.
+You can download the Microsoft Visual Studio Express compiler 
+from here:
+
+  http://www.microsoft.com/Express/
+
+For the Express version, you need the platform SDK as well.
+
+ITK is required for the main plastimatch program.  But if you only 
+want the DRR and FDK programs, you don't need it.  Get ITK from here:
+
+  http://itk.org/
+
+We are using ITK 3.6.  When you build ITK, the following settings are 
+recommended:
+  BUILD_EXAMPLES         OFF
+  BUILD_SHARED_LIBS      (EITHER)
+  BUILD_TESTING          OFF
+  ITK_USE_REVIEW         ON
+Also, you probably want make sure the build type is "Release" when 
+you compile.
+
+F2C is required if you want to run B-Spline registration with 
+LBFGSB optimization.  For windows, the library is included in the 
+download.  For unix, get from here:
+
+  http://www.netlib.org/f2c/
+
+Brook is needed if you want to run with GPU acceleration.  This is 
+only tested on Windows.  Detailed instructions on building brook 
+are available in a separate file: README.BROOK.TXT.
+Download Brook from here:
+
+  http://graphics.stanford.edu/projects/brookgpu/
+
+If using brook, you also need to install the DirectX SDK and 
+the NVIDIA CG compiler.
+
+Slicer is needed if you want to build the Slicer plugin.  This is still
+experimental.  Download Slicer from here:
+
+  http://slicer.org/
+
+If you want the slicer plugin, you should link with Slicer's ITK 
+rather than linking with a separate one.
+
+
+BUILDING PLASTIMATCH
+--------------------
+*) These instructions assume you have built ITK, brook (optional), 
+   and Slicer (optional).
+
+*) If using brook, make sure the plastimatch source directory doesn't 
+   have any spaces in the path (brook/fxc has problems with these).
+
+*) If using brook, make sure that the fxc compiler is in your PATH so 
+   that brcc can find it.
+
+*) Windows instructions for running cmake
+
+     Select source directory and binary directory
+       Don't use any spaces in the path
+     Click configure
+     On windows, select makefile format (e.g. MS VC 2005)
+       <CMake configures>
+     Set ITK directory (might be found automatically)
+     If using brook, set brook directory
+     If using slicer, set Slicer3_DIR
+     If desired, set BUILD_EXTRACT_CONTOUR to ON
+       (this requires ITK_USE_REVIEW to be ON for ITK 3.6)
+     Click configure
+       <CMake configures>
+     Click OK
+       <CMake generates>
+
+*) Unix instructions for running cmake
+
+     mkdir /path/to/build/files; cd /path/to/build/files
+     ccmake /path/to/source/files
+     Type "c" to configure
+       <CMake configures>
+     Set ITK directory (might be found automatically)
+     If using slicer, set Slicer3_DIR
+     If desired, set BUILD_EXTRACT_CONTOUR to ON
+       (this requires ITK_USE_REVIEW to be ON for ITK 3.6)
+     You probably want to change the build type to "Release" (type it in)
+     Type "c" to configure
+       <CMake configures>
+     Type "g" to generate
+       <CMake generates>
+
+*) Special instructions for running cmake with MSYS/gcc on Windows
+
+   There is a trick to this: you need to run the win32 cmake from 
+   the command line instead of the GUI.
+
+   mkdir /path/to/build/files; cd /path/to/build/files
+   /c/Program\ Files/CMake\ 2.4/bin/cmake -G"MSYS Makefiles" /path/to/gpuit
+
+   Then continue as per the unix instructions.
+
+*) Special instructions for MSVC express:
+
+   You might have to add the Windows SDK to your build path.
+   Fire up the MSVC express GUI, and do the following:
+
+   1) Tools -> Options -> Projects and Solutions -> VC++ Directories
+
+   2) Add e.g. C:\Program Files\Microsoft Platform SDK for Windows Server 
+      2003 R2\Lib to "Library files
+
+   3) Add e.g. C:\Program Files\Microsoft Platform SDK for Windows Server 
+      2003 R2\Include to "Include files"
+
+   4) Click OK to save the settings
+
+*) General windows instructions:
+
+   1) Navigate to your binary directory
+
+   2) Open the project file plastimatch.sln into MSVC.  
+
+   3) Change the build type (e.g. release, debug) to match ITK and brook.  
+      You probably want release.
+
+   4) Click "Build Solution".  Let the project build.
+
+   5) If using brook, you might need to click "Build Solution" a second time.  
+      This is needed because brcc returns an error code for ARB & PS20 targets 
+      which stops the build, even though the .cpp is generated correctly.
+
+*) General unix instructions:
+
+   1) Navigate to the plastimatch binaries directory, and then type "make".
+
+
+USING GPU ACCELERATION
+----------------------
+You need to set the brook runtime variables to get GPU acceleration.
+Only the DirectX9 backend works.  Using the %COMSPEC% shell, this 
+is done like this:
+
+   set BRT_RUNTIME=dx9
+
