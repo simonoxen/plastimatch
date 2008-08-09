@@ -76,9 +76,6 @@ rather than linking with a separate one.
 
 BUILDING PLASTIMATCH
 --------------------
-*) These instructions assume you have built ITK, brook (optional), 
-   and Slicer (optional).
-
 *) If using brook, make sure the plastimatch source directory doesn't 
    have any spaces in the path (brook/fxc has problems with these).
 
