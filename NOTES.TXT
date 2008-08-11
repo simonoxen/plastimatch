@@ -38,8 +38,6 @@ To:
 Edit libf2c/fio.h, and comment out:
   extern int isatty(int);
 
-
-
 ***** How to compile the .br into .cpp *****
 
 The default compile is simply: 
@@ -59,4 +57,20 @@ the $OS environment variable is standard in Windows.
 
 3) It seems to build OK, but doesn't completely solve the 
 problem.  fxc still requires windows style paths, maybe cgc does too.
+
+***** Threads vs OpenMP *****
+
+http://www.intel.com/cd/ids/developer/asmo-na/eng/technologies/threading/hyperthreading/53797.htm
+
+https://computing.llnl.gov/tutorials/openMP/
+
+On GCC:
+  gcc -fopenmp openmp_test.c
+
+Visual studio 2005 supports OpenMP 2.0
+  cl /openmp
+Express version does not support OpenMP (except as described below)
+  http://blog.codekills.net/archives/25-OpenMP-and-Visual-C++-the-free-way-sorta.html
+
+There is some form of gcc 4.2 MinGW with openmp support.
 
