@@ -20,9 +20,12 @@
  * =======================================================================*/
 
 
-typedef float	PixelType;
-typedef itk::Image<PixelType, 3>	ImgType;
-typedef itk::Image<PixelType, 2>	intImgType;
+//typedef unsigned char UCharPixelType;
+//typedef itk::Image<UCharPixelType, 3>	ImgType;
+//typedef itk::Image<PixelType, 2>	intImgType;
+
+typedef UCharImageType ImgType;
+typedef itk::Image<unsigned char, 2>	intImgType;
 
 typedef struct sliceDice SLICEDICE;
 struct sliceDice {

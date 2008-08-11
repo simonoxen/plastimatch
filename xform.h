@@ -9,6 +9,7 @@
 #include "itkAffineTransform.h"
 #include "itkBSplineDeformableTransform.h"
 #include "gregBSplineDeformableTransform.h"
+#include "itkThinPlateSplineKernelTransform.h"
 
 #include "bspline.h"
 #include "volume.h"
@@ -25,6 +26,7 @@ enum XFormInternalType {
     XFORM_ITK_VERSOR,
     XFORM_ITK_AFFINE,
     XFORM_ITK_BSPLINE,
+    XFORM_ITK_TPS,
     XFORM_ITK_VECTOR_FIELD,
     XFORM_GPUIT_BSPLINE,
     XFORM_GPUIT_VECTOR_FIELD
@@ -35,7 +37,6 @@ enum XFormInternalType {
 typedef itk::TranslationTransform < double, Dimension > TranslationTransformType;
 typedef itk::VersorRigid3DTransform < double > VersorTransformType;
 typedef itk::AffineTransform < double, Dimension > AffineTransformType;
-
 
 /* itk B-spline transforms */
 //#define USE_GCS_BSPLINES 1
@@ -54,6 +55,7 @@ typedef itk::BSplineDeformableTransform <
 		    SplineOrder > BsplineTransformType;
 #endif
 
+typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, Dimension> TPSTransformType;
 
 typedef struct Xform_GPUIT_Bspline_struct Xform_GPUIT_Bspline;
 struct Xform_GPUIT_Bspline_struct {
@@ -73,16 +75,15 @@ public:
     AffineTransformType::Pointer m_aff;
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
+    TPSTransformType::Pointer m_itk_tps;
     void* m_gpuit;
 
     /* ITK goop for managing b-spline parameters. */
     BsplineTransformType::ParametersType m_itk_bsp_parms;
-    //double* m_itk_bsp_data;
 
 public:
     Xform () {
 	m_gpuit = 0;
-	//m_itk_bsp_data = 0;
 	clear ();
     }
     Xform (Xform& xf) {
@@ -98,8 +99,8 @@ public:
 	m_aff = xf.m_aff;
 	m_itk_vf = xf.m_itk_vf;
 	m_itk_bsp = xf.m_itk_bsp;
+	m_itk_tps = xf.m_itk_tps;
 	m_gpuit = xf.m_gpuit;                  /* Shallow copy */
-	//m_itk_bsp_data = xf.m_itk_bsp_data;    /* Shallow copy */
 	return *this;
     }
     void clear () {
@@ -123,6 +124,7 @@ public:
 	m_vrs = 0;
 	m_aff = 0;
 	m_itk_bsp = 0;
+	m_itk_tps = 0;
 	m_itk_vf = 0;
     }
     TranslationTransformType::Pointer get_trn () {
@@ -149,6 +151,12 @@ public:
 	    print_and_exit ("Typecast error in get_bsp()\n");
 	}
 	return m_itk_bsp;
+    }
+    TPSTransformType::Pointer get_itk_tps () {
+	if (m_type != XFORM_ITK_TPS) {
+	    print_and_exit ("Typecast error in get_tps()\n");
+	}
+	return m_itk_tps;
     }
     DeformationFieldType::Pointer get_itk_vf () {
 	if (m_type != XFORM_ITK_VECTOR_FIELD) {
@@ -187,6 +195,11 @@ public:
 	/* Do not clear */
 	m_type = XFORM_ITK_BSPLINE;
 	m_itk_bsp = bsp;
+    }
+    void set_itk_tps (TPSTransformType::Pointer tps) {
+	clear ();
+	m_type = XFORM_ITK_TPS;
+	m_itk_tps = tps;
     }
     void set_itk_vf (DeformationFieldType::Pointer vf) {
 	clear ();

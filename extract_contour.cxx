@@ -86,7 +86,7 @@ int main(int argc, char ** argv)
 	//printf("%2d\n", k[2]);
 		
 	outImgType::Pointer slice;
-	slice = slice_extraction(volume, k[2]);
+	slice = slice_extraction(volume, k[2], (float) 0.0);
 
 	ContourType::Pointer contour=ContourType::New();
 

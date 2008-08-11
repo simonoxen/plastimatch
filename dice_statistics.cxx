@@ -128,9 +128,9 @@ void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* ou
 			k=itSlice.GetIndex();
 			index=k[2];
 			intImgType::Pointer sRef;
-			sRef = slice_extraction(reference, index);
+			sRef = slice_extraction(reference, index, (unsigned char) 0);
 			intImgType::Pointer sWarp;
-			sWarp = slice_extraction(warped, index);
+			sWarp = slice_extraction(warped, index, (unsigned char) 0);
 
 			ItTypeSlicePixel iter(sRef, sRef->GetLargestPossibleRegion());
 			while(!iter.IsAtEnd())

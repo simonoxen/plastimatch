@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
 	if (argc<4)
 		print_usage();
 	if(strcmp("global",argv[3])==0 || strcmp("slice",argv[3])==0){
-		reference=load_float(argv[1]);
-		warped=load_float(argv[2]);
+		reference=load_uchar(argv[1]);
+		warped=load_uchar(argv[2]);
 	}else if(strcmp("cp",argv[3])==0){
 		mesh=fopen(argv[1],"r");
 		MDpoints=fopen(argv[2],"r");

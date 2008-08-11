@@ -10,14 +10,14 @@
     Definitions
  * =======================================================================*/
 
-
 typedef float	PixelType;
 typedef itk::Image<PixelType, 3>	inImgType;
 typedef itk::Image<PixelType, 2>	outImgType;
 
-
 //outImgType::Pointer slice_extraction(inImgType::Pointer fname);
 //void slice_extraction(inImgType::Pointer fname1, outImgType::Pointer fname2);
-outImgType::Pointer slice_extraction(inImgType::Pointer fname, int fInd);
+//outImgType::Pointer slice_extraction(inImgType::Pointer fname, int fInd);
+template<class T>
+typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Pointer reader, int index, T);
 
 #endif

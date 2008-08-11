@@ -1219,12 +1219,16 @@ xform_to_trn (Xform *xf_out,
     case XFORM_ITK_VERSOR:
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert to trn\n");
 	break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
 }
@@ -1250,12 +1254,16 @@ xform_to_vrs (Xform *xf_out,
 	break;
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert to vrs\n");
 	break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
 }
@@ -1285,12 +1293,16 @@ xform_to_aff (Xform *xf_out,
 	*xf_out = *xf_in;
 	break;
     case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert to aff\n");
 	break;
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
 }
@@ -1328,6 +1340,9 @@ xform_to_itk_bsp (Xform *xf_out,
 				img_origin, img_spacing, img_region, 
 				stage->grid_spac);
 	break;
+    case XFORM_ITK_TPS:
+	print_and_exit ("Sorry, couldn't convert itk_tps to itk_bsp\n");
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert itk_vf to itk_bsp\n");
 	break;
@@ -1338,6 +1353,9 @@ xform_to_itk_bsp (Xform *xf_out,
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
 }
@@ -1363,6 +1381,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const int* dim, float* offset, flo
     case XFORM_ITK_BSPLINE:
 	vf = xform_any_to_itk_vf (xf_in->get_bsp(), dim, offset, spacing);
 	break;
+    case XFORM_ITK_TPS:
+	vf = xform_any_to_itk_vf (xf_in->get_itk_tps(), dim, offset, spacing);
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, itk_vf to itk_vf not implemented\n");
 	break;
@@ -1371,6 +1392,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, const int* dim, float* offset, flo
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit_vf to itk_vf not implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
     xf_out->set_itk_vf (vf);
@@ -1400,6 +1424,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 			image->GetSpacing(), image->GetLargestPossibleRegion());
 	vf = xform_any_to_itk_vf (xf_in->get_bsp(), image);
 	break;
+    case XFORM_ITK_TPS:
+	vf = xform_any_to_itk_vf (xf_in->get_itk_tps(), image);
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	vf = xform_itk_vf_to_itk_vf (xf_in->get_itk_vf(), image);
 	break;
@@ -1408,6 +1435,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), image);
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
     xf_out->set_itk_vf (vf);
@@ -1432,6 +1462,9 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* xgb_new)
     case XFORM_ITK_BSPLINE:
 	print_and_exit ("Sorry, itk_bsp to gpuit_bsp not implemented\n");
 	break;
+    case XFORM_ITK_TPS:
+	print_and_exit ("Sorry, itk_tps to gpuit_bsp not implemented\n");
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	print_and_exit ("Sorry, itk_vf to gpuit_bsp not implemented\n");
 	break;
@@ -1440,6 +1473,9 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* xgb_new)
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit_vf to gpuit_bsp not implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
     xf_out->set_gpuit_bsp (xgb_new);
@@ -1466,6 +1502,9 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
     case XFORM_ITK_BSPLINE:
 	print_and_exit ("Sorry, itk_bspline to gpuit_vf not implemented\n");
 	break;
+    case XFORM_ITK_TPS:
+	print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, pix_spacing);
 	break;
@@ -1474,6 +1513,9 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), dim, offset, pix_spacing);
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
 
