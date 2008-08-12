@@ -4,7 +4,8 @@
 1)  Download and install Microsoft DirectX SDK and NVIDIA CG compiler
 
     The November 2007 version of the DirectX SDK should not be used, 
-    since it has a bug in fxc.  The June 2007 version is recommded.
+    since it has a bug in fxc.  The June 2007 version is currently
+    recommded.
 
 2)  Download brook:
       C:\gsharp\build>svn co https://brook.svn.sourceforge.net/svnroot/brook/trunk brook
@@ -39,10 +40,20 @@
     To this:
        C_RELEASE_FLAG   := /MD /O2 /arch:SSE2 /EHsc /DNDEBUG /Fd$(OBJDIR)\\
 
-8c) Edit brcc/ps2arb_lexer.cpp
+8c) Edit brcc/ps2arb_lexer.l
 
     Add:
        #include <io.h>
+
+8d) Edit runtime/gpu/dx9/dx9runtime.cpp
+
+    Change this:
+      result = _direct3D->CreateDevice( which_adapter, D3DDEVTYPE_HAL, windowHandle,
+                                        D3DCREATE_HARDWARE_VERTEXPROCESSING, &deviceDesc, &_device );
+
+    To this:
+      result = _direct3D->CreateDevice( which_adapter, D3DDEVTYPE_HAL, windowHandle,
+                                        D3DCREATE_FPU_PRESERVE | D3DCREATE_HARDWARE_VERTEXPROCESSING, &deviceDesc, &_device );
 
 9)  Run make in release mode:
       RELEASE=1 make
