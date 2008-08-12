@@ -637,11 +637,13 @@ volume_warp (Volume *vout, Volume *vin, Volume *vf)
 		if (mi < 0 || mi >= vin->dim[0]) continue;
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
+#if defined (commentout)
 		if (k == 45 && j == 46 && (i == 58 || i == 59)) {
 		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
 			i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
 			mx, my, mz, mi, mj, mk);
 		}
+#endif
 		vout_img[v] = vin_img[mv];
 	    }
 	}

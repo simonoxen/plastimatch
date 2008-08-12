@@ -166,7 +166,10 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     n=NMAX;
     m=MMAX;
 
+    /* If iprint is 1, the file iterate.dat will be created */
     iprint = 1;
+    iprint = 0;
+
     factr=1.0e+7;
     pgtol=1.0e-5;
 
