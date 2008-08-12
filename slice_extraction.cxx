@@ -47,9 +47,7 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 	inImgType::RegionType inputRegion=reader->GetLargestPossibleRegion();
 	inImgType::SizeType size = inputRegion.GetSize();
 	size[2] = 0;
-
-	/*inImgType::SizeType slices = reader->GetLargestPossibleRegion().GetSize();
-	std::cout<< slices << std::endl;*/
+	
 	inImgType::IndexType start = inputRegion.GetIndex(); 
 	start[2]=index;
 
@@ -60,8 +58,6 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 	extraction->SetExtractionRegion(desiredRegion);
 	extraction->SetInput(reader);
 
-
-	//	outImgType::ConstPointer outImg = outImgType::New();
 	outImgType::Pointer outImg = outImgType::New();
 	
 	try
@@ -76,136 +72,9 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 		//return -1;
 	}
 
-	//ConstIteratorType inputIt(outImg,outImg->GetRequestedRegion());
-	
-	//inputIt.SetDirection(0);
-	
-
-	/*for ( inputIt.GoToBegin(); !inputIt.IsAtEnd(); inputIt.NextLine())
-	{	
-		inputIt.GoToBeginOfLine();
-	
-
-		while ( ! inputIt.IsAtEndOfLine() )
-		{
-			printf("%1.0f",inputIt.Get() );
-			++inputIt;
-		}
-		printf ("\n");
-	}*/
-	//save_image(outImg, name);
-	
-	//WriterType::Pointer writer = WriterType::New();
-	//writer->SetFileName("goofy.mha");
-	//std::cout << writer->GetFileName() << std::endl;
-
-	//writer->SetInput(outImg);
-	//std::cout << "Set input of writer" << std::endl;
-	//std::cout << writer->GetInput() << std::endl;
-	//try
-	//{
-	//	writer->Update();
-	//}
-	//catch ( itk::ExceptionObject &err)
-	//{
-	//	std::cout << "ExceptionObject caught !" << std::endl; 
-	//	std::cout << err << std::endl; 
-	//	//return -1;   
-	//}
 
 	return outImg;
 }
-
-#if defined (commentout)
-outImgType::Pointer slice_extraction(inImgType::Pointer reader, int index)
-{
-
-	FilterType::Pointer extraction=FilterType::New();
-	
-	try
-	{
-		reader->Update(); 
-		//std::cout << "Ho letto!" << std::endl;
-	}
-	catch ( itk::ExceptionObject &err)
-	{
-		std::cout << "ExceptionObject caught a !" << std::endl; 
-		std::cout << err << std::endl; 
-		//return -1;
-	}
-	
-	inImgType::RegionType inputRegion=reader->GetLargestPossibleRegion();
-	inImgType::SizeType size = inputRegion.GetSize();
-	size[2] = 0;
-
-	/*inImgType::SizeType slices = reader->GetLargestPossibleRegion().GetSize();
-	std::cout<< slices << std::endl;*/
-	inImgType::IndexType start = inputRegion.GetIndex(); 
-	start[2]=index;
-
-	inImgType::RegionType desiredRegion; 
-	desiredRegion.SetSize(size);
-	desiredRegion.SetIndex(start);
-
-	extraction->SetExtractionRegion(desiredRegion);
-	extraction->SetInput(reader);
-
-
-	//	outImgType::ConstPointer outImg = outImgType::New();
-	outImgType::Pointer outImg = outImgType::New();
-	
-	try
-	{
-		extraction->Update();
-		outImg = extraction->GetOutput();
-	}
-	catch ( itk::ExceptionObject &err)
-	{
-		std::cout << "ExceptionObject caught a !" << std::endl; 
-		std::cout << err << std::endl; 
-		//return -1;
-	}
-
-	//ConstIteratorType inputIt(outImg,outImg->GetRequestedRegion());
-	
-	//inputIt.SetDirection(0);
-	
-
-	/*for ( inputIt.GoToBegin(); !inputIt.IsAtEnd(); inputIt.NextLine())
-	{	
-		inputIt.GoToBeginOfLine();
-	
-
-		while ( ! inputIt.IsAtEndOfLine() )
-		{
-			printf("%1.0f",inputIt.Get() );
-			++inputIt;
-		}
-		printf ("\n");
-	}*/
-	//save_image(outImg, name);
-	
-	//WriterType::Pointer writer = WriterType::New();
-	//writer->SetFileName("goofy.mha");
-	//std::cout << writer->GetFileName() << std::endl;
-
-	//writer->SetInput(outImg);
-	//std::cout << "Set input of writer" << std::endl;
-	//std::cout << writer->GetInput() << std::endl;
-	//try
-	//{
-	//	writer->Update();
-	//}
-	//catch ( itk::ExceptionObject &err)
-	//{
-	//	std::cout << "ExceptionObject caught !" << std::endl; 
-	//	std::cout << err << std::endl; 
-	//	//return -1;   
-	//}
-
-	return outImg;
-}
-#endif
 
 /* Explicit instantiations */
 template itk::Image<float,2>::Pointer slice_extraction (itk::Image<float,3>::Pointer reader, int index, float);

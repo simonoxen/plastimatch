@@ -20,6 +20,7 @@
  * =======================================================================*/
 
 
+
 //typedef unsigned char UCharPixelType;
 //typedef itk::Image<UCharPixelType, 3>	ImgType;
 //typedef itk::Image<PixelType, 2>	intImgType;
@@ -87,6 +88,7 @@ struct surface{
 
 void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output);
 void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output);
+void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Pointer ex_3, FILE* output);
 void do_cp(FILE* mesh,FILE* MDpoints, SURFACE* surface, FILE* output);
 void read_obj(FILE* mesh, SURFACE* surface);
 void read_MDcontours(FILE* MDpoints, SURFACE* surface);
