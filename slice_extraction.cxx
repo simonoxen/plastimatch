@@ -77,5 +77,5 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 }
 
 /* Explicit instantiations */
-template itk::Image<float,2>::Pointer slice_extraction (itk::Image<float,3>::Pointer reader, int index, float);
-template itk::Image<unsigned char,2>::Pointer slice_extraction (itk::Image<unsigned char,3>::Pointer reader, int index, unsigned char);
+template itk::Image<float,2>::Pointer slice_extraction<float> (itk::Image<float,3>::Pointer reader, int index, float);
+template itk::Image<unsigned char,2>::Pointer slice_extraction<unsigned char> (itk::Image<unsigned char,3>::Pointer reader, int index, unsigned char);
