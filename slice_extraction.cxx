@@ -27,10 +27,10 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 {
 	typedef typename itk::Image<T,3> inImgType;
 	typedef typename itk::Image<T,2> outImgType;
-	typedef itk::ExtractImageFilter<inImgType,outImgType> FilterType;
+	typedef typename itk::ExtractImageFilter<inImgType,outImgType> FilterType;
 	//typedef itk::ImageFileWriter<outImgType> WriterType;
 
-	FilterType::Pointer extraction=FilterType::New();
+	typename FilterType::Pointer extraction=FilterType::New();
 	
 	try
 	{
@@ -44,21 +44,21 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 		//return -1;
 	}
 	
-	inImgType::RegionType inputRegion=reader->GetLargestPossibleRegion();
-	inImgType::SizeType size = inputRegion.GetSize();
+	typename inImgType::RegionType inputRegion=reader->GetLargestPossibleRegion();
+	typename inImgType::SizeType size = inputRegion.GetSize();
 	size[2] = 0;
 	
-	inImgType::IndexType start = inputRegion.GetIndex(); 
+	typename inImgType::IndexType start = inputRegion.GetIndex(); 
 	start[2]=index;
 
-	inImgType::RegionType desiredRegion; 
+	typename inImgType::RegionType desiredRegion; 
 	desiredRegion.SetSize(size);
 	desiredRegion.SetIndex(start);
 
 	extraction->SetExtractionRegion(desiredRegion);
 	extraction->SetInput(reader);
 
-	outImgType::Pointer outImg = outImgType::New();
+	typename outImgType::Pointer outImg = outImgType::New();
 	
 	try
 	{
@@ -77,5 +77,8 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 }
 
 /* Explicit instantiations */
+/* RMK: Visual studio 2005 without service pack requires <float> specifier
+   on the explicit extantiations.  The current hypothesis is that this 
+   is because the template is nested. */
 template itk::Image<float,2>::Pointer slice_extraction<float> (itk::Image<float,3>::Pointer reader, int index, float);
 template itk::Image<unsigned char,2>::Pointer slice_extraction<unsigned char> (itk::Image<unsigned char,3>::Pointer reader, int index, unsigned char);
