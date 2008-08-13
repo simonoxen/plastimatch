@@ -118,12 +118,13 @@ BUILDING PLASTIMATCH
 *) Special instructions for running cmake with MSYS/gcc on Windows
 
    There is a trick to this: you need to run the win32 cmake from 
-   the command line instead of the GUI.
+   the MSYS command line instead of the GUI.
 
    mkdir /path/to/build/files; cd /path/to/build/files
-   /c/Program\ Files/CMake\ 2.4/bin/cmake -G"MSYS Makefiles" /path/to/gpuit
+   /c/Program\ Files/CMake\ 2.4/bin/cmake -G"MSYS Makefiles" /path/to/source
 
-   Then continue as per the unix instructions.
+   Then, edit CMakeCache.txt to set your options.  Re-run cmake 
+   to create the MSYS Makefile.
 
 *) Special instructions for MSVC express:
 

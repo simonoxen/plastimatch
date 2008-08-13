@@ -69,8 +69,9 @@ On GCC:
 
 Visual studio 2005 supports OpenMP 2.0
   cl /openmp
+
 Express version does not support OpenMP (except as described below)
   http://blog.codekills.net/archives/25-OpenMP-and-Visual-C++-the-free-way-sorta.html
-
-There is some form of gcc 4.2 MinGW with openmp support.
+MinGW gcc OpenMP is still not fully supported
+  http://www.nabble.com/OpenMP-and-shared-libgcc-td17516165.html
 
