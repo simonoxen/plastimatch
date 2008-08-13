@@ -178,7 +178,7 @@ dump_luts (BSPLINE_Parms* parms)
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
-			    fprintf (fp, " %f", bspd->c_lut[p++]);
+			    fprintf (fp, " %d", bspd->c_lut[p++]);
 			}
 		    }
 		}
