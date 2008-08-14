@@ -1,9 +1,5 @@
 //===========================================================
 
-
-
-
-
 //===========================================================
 
 #include "itkImageFileReader.h"
@@ -19,8 +15,6 @@
     Definitions
  * =======================================================================*/
 
-//typedef itk::ImageFileReader<inImgType>	ReaderType;
-//typedef itk::ImageLinearConstIteratorWithIndex<outImgType>	ConstIteratorType;
 
 template<class T>
 typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Pointer reader, int index, T)

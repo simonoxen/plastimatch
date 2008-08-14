@@ -272,6 +272,11 @@ SET(RTOG_TO_MHA_SRC
 	render_polyline.cxx render_polyline.h
 	exchkeys.cxx exchkeys.h
 	)
+SET(TPS_INTERP_SRC
+	tps_interp.cxx tps_interp.h
+	tps_interp_main.cxx 
+	xform.h xform.cxx
+	)
 SET(VF_STATS_SRC
 	vf_stats.c
 	)
@@ -396,6 +401,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
   ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
   ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
+  ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
   ADD_EXECUTABLE(tps_update tps_update.c)
   ADD_EXECUTABLE(union_mask union_mask.cxx)
   ADD_EXECUTABLE(vf_stats ${VF_STATS_SRC})
@@ -477,6 +483,7 @@ TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
 TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
 TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
+TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
 TARGET_LINK_LIBRARIES(vf_stats ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(vf3d_to_mha)
@@ -524,6 +531,7 @@ INSTALL(TARGETS raw_to_mha DESTINATION bin)
 INSTALL(TARGETS plastimatch DESTINATION bin)
 INSTALL(TARGETS resample_mha DESTINATION bin)
 INSTALL(TARGETS rtog_to_mha DESTINATION bin)
+INSTALL(TARGETS tps_interp DESTINATION bin)
 INSTALL(TARGETS tps_update DESTINATION bin)
 INSTALL(TARGETS union_mask DESTINATION bin)
 INSTALL(TARGETS vf_stats DESTINATION bin)

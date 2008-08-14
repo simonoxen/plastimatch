@@ -77,6 +77,7 @@ int main(int argc, char* argv[])
 
 	if(!output){
 		fprintf(stderr, "An error occurred while opening the file for writing the outputs!");
+		exit(-1);
 	}
 
 	if(strcmp("global",argv[1])==0){
@@ -122,5 +123,5 @@ int main(int argc, char* argv[])
 
 		//fclose(mesh);
 	}
-
+	return 0;
 }
