@@ -56,22 +56,22 @@ void tps_interp_main(TPS_parms* parms){
 	case itk::ImageIOBase::UCHAR:
 	    {
 		UCharImageType::Pointer img_in = load_uchar (parms->original);
-		unsigned char foo;
-		foo=do_tps(parms,img_in,(unsigned char)0);
+		//unsigned char foo;
+		do_tps(parms,img_in,(unsigned char)0);
 	    }
 	    break;
         case itk::ImageIOBase::SHORT:
 	    {
 		ShortImageType::Pointer img_in = load_short (parms->original);
-		short foo;
+		//short foo;
 		do_tps(parms,img_in,(short)0);
 	    }
 	    break;
         case itk::ImageIOBase::FLOAT:
 	    {
 		FloatImageType::Pointer img_in = load_float (parms->original);
-		float foo;
-		do_tps(parms,img_in,(float)0);
+		//float foo;
+		do_tps(parms,img_in,(float)0.0);
 	    }
 	    break;
 	default:
@@ -95,8 +95,8 @@ int main(int argc, char* argv[]){
 		memset(parms,0,sizeof(TPS_parms));
 		//parms->reference=argv[1];
 		//parms->target=argv[2];
-		parms->reference=fopen(argv[1],"r");
-		parms->target=fopen(argv[2],"r");
+		parms->reference=argv[1];
+		parms->target=argv[2];
 		parms->original=argv[3];
 		parms->warped=argv[4];
 		parms->vf=argv[5];
