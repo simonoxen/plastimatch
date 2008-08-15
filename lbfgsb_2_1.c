@@ -685,7 +685,7 @@ static integer c__5 = 5;
 	timer_(&time1);
 /*        Generate the current machine precision. */
 	// epsmch = dpmeps_();
-	epsmch = 2.2e-16; /* KANDASAMY: Hack to get around the loss of FPU precision due to directx calls */
+	epsmch = 2.2e-16; 
 /*        Initialize counters and scalars when task='START'. */
 /*           for the limited memory BFGS matrices: */
 	col = 0;

@@ -30,9 +30,12 @@ int iter = 0;
 extern "C" {
 
 void 
-check_values(FILE *fp, float cpu_value, float gpu_value){
+check_values(FILE *fp, float cpu_value, float gpu_value, int vox_on_cpu, int vox_on_gpu){
     // fprintf(fp, "%f, %f, %f \n", cpu_value, gpu_value, abs(cpu_value - gpu_value));
-	fprintf(fp, "%f, %f \n", cpu_value, gpu_value);
+	// fprintf(fp, "%6.3f, %6.3f \n", cpu_value, gpu_value);
+	
+	if(fabs(cpu_value - gpu_value) > 0)
+		fprintf(fp, "%f %f \n", cpu_value, gpu_value);
     }
 
 void 
@@ -131,6 +134,16 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, BSPLINE_Parms *
 	}
 	memset(data_on_gpu->dxyz[i], 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
     }
+
+	/* Allocate memory for the mvf stream */
+	data_on_gpu->diff_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
+	/* Allocate memory on the CPU to store the mvf values read back from the GPU */
+	data_on_gpu->diff = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
+	if(!data_on_gpu->diff){
+	    printf("Couldn't allocate texture memory for dxyz result. Exiting. \n");
+	    exit(-1);
+	}
+	memset(data_on_gpu->diff, 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
 }
 
 void 
@@ -161,53 +174,53 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     int num_vox;
     int pidx, qidx;
     float ssd_grad_norm, ssd_grad_mean;
+	float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     
 	/* Some variables for timing */
 	clock_t start_clock, end_clock;
-	
-    float m_val;
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 
-    start_clock = clock();
     iter++;
 
-    /* Prepare the GPU to execute the dxyz kernel */
+	start_clock = clock();
 
-    /* Read in the dimensions of the fixed and moving volumes */
+    /* Prepare the GPU to execute the dxyz kernel */
     float3 volume_dim; 
-    volume_dim.x = (float)fixed->dim[0];
+    volume_dim.x = (float)fixed->dim[0]; /* Read in the dimensions of the volume */
     volume_dim.y = (float)fixed->dim[1];
     volume_dim.z = (float)fixed->dim[2];
 
-    /* Read in the dimensions of the region */
     float3 rdims;
-    rdims.x = (float)bspd->rdims[0];
+    rdims.x = (float)bspd->rdims[0]; /* Read in the dimensions of the region */
     rdims.y = (float)bspd->rdims[1];
     rdims.z = (float)bspd->rdims[2];
 
-    // Read in spacing between the control knots
     float3 vox_per_rgn;
-    vox_per_rgn.x = (float)parms->vox_per_rgn[0];
+    vox_per_rgn.x = (float)parms->vox_per_rgn[0]; /* Read in spacing between the control knots */
     vox_per_rgn.y = (float)parms->vox_per_rgn[1];
     vox_per_rgn.z = (float)parms->vox_per_rgn[2];
 
+	float3 img_origin;
+	img_origin.x = (float)parms->img_origin[0]; /* Read in the coordinates of the image origin */
+	img_origin.y = (float)parms->img_origin[1];
+	img_origin.z = (float)parms->img_origin[2];
 
-	/* Transfer the new coefficient values to the GPU */
+	float3 img_offset;
+	img_offset.x = (float)moving->offset[0]; /* Read in image offset */
+	img_offset.y = (float)moving->offset[1];
+	img_offset.z = (float)moving->offset[2];
+
+	float3 pix_spacing;
+	pix_spacing.x = (float)moving->pix_spacing[0]; /* Read in the voxel dimensions */
+	pix_spacing.y = (float)moving->pix_spacing[1];
+	pix_spacing.z = (float)moving->pix_spacing[2];
+
+
+	/* Transfer the new coefficient values provided by the optimizer to the GPU */
 	streamRead(*(data_on_gpu->coeff_stream), bspd->coeff);
 
     /* Invoke kernel on the GPU to compute dxyz, xyz = 0 for x, 1 for y and 2 for z */
-	// printf("Calling kernels. \n");
-	LARGE_INTEGER clock_count;
-    LARGE_INTEGER clock_frequency;
-    double clock_start, clock_end;
-    double kernel_cycles = 0.0;
-	double cpu_cycles = 0.0;
-
-    QueryPerformanceFrequency(&clock_frequency); // Get CPU frequency
-    QueryPerformanceCounter(&clock_count); // Get CPU cycle counter
-    clock_start = (double)clock_count.QuadPart;
-
     compute_dxyz(*(data_on_gpu->c_lut_stream), 
 		 *(data_on_gpu->q_lut_stream), 
 		 *(data_on_gpu->coeff_stream), 
@@ -249,18 +262,32 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 2.0,	// Compute influence in the Z direction
 		 64.0,
 		 *(data_on_gpu->dz_stream));
-	// printf("Done calling kernels. \n");
+    
+	/* Compute the correspondences between the static and moving images */
+	compute_diff(*(data_on_gpu->fixed_image_stream), 
+				*(data_on_gpu->moving_image_stream), 
+				*(data_on_gpu->dx_stream),
+				*(data_on_gpu->dy_stream),
+				*(data_on_gpu->dz_stream),
+				volume_dim, // X, Y, Z dimensions of the volume
+				img_origin, // X, Y, Z coordinates for the image origin 
+				pix_spacing, // Dimensions of a single voxel
+				img_offset, // Offset corresponding to the region of interest
+				(float)data_on_gpu->volume_texture_size,
+				8.0,
+				4.0,
+				*(data_on_gpu->diff_stream));
 
-	QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    kernel_cycles +=  (clock_end - clock_start);
-	printf("Time on GPU to execute the interpolate function = %f \n", kernel_cycles/(double)clock_frequency.QuadPart);
-    /* Read dx, dy, and dz streams back from the GPU. */
-
+	/* Read dx, dy, and dz streams back from the GPU. */
     streamWrite(*(data_on_gpu->dx_stream), data_on_gpu->dxyz[0]);
     streamWrite(*(data_on_gpu->dy_stream), data_on_gpu->dxyz[1]);
     streamWrite(*(data_on_gpu->dz_stream), data_on_gpu->dxyz[2]);
-	// printf("Done read back from GPU. \n");
+	
+	/* Read the diff stream back from the GPU. */
+    streamWrite(*(data_on_gpu->diff_stream), data_on_gpu->diff);
+
+	end_clock = clock();
+	printf("Time on GPU to compute intensity differences = %f \n", (end_clock - start_clock)/(float)CLOCKS_PER_SEC);
 
 	int vox = -1; 
     ssd->score = 0;
@@ -269,60 +296,53 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
 		p[2] = rk / parms->vox_per_rgn[2];
 		q[2] = rk % parms->vox_per_rgn[2];
-		fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
+		fz = parms->img_origin[2] + moving->pix_spacing[2] * fk;
 		for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
 			p[1] = rj / parms->vox_per_rgn[1];
 			q[1] = rj % parms->vox_per_rgn[1];
-			fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
+			fy = parms->img_origin[1] + moving->pix_spacing[1] * fj;
 			for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
 				vox++;
 				p[0] = ri / parms->vox_per_rgn[0];
 				q[0] = ri % parms->vox_per_rgn[0];
-				fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+				fx = parms->img_origin[0] + moving->pix_spacing[0] * fi;
 
 				/* Get B-spline deformation vector */
 				pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
 				qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
 
-			#if defined (commentout)
 				/* Uncomment to compare the dxyz values generated by the CPU and GPU */
-				QueryPerformanceCounter(&clock_count);
-				clock_start = (double)clock_count.QuadPart;
-				bspline_interp_pix_b (dxyz, bspd, pidx, qidx);
-		
-				if(iter == 50){
-				check_values(fp, dxyz[0], data_on_gpu->dxyz[0][vox]);
-				// check_values(fp, dxyz[1], data_on_gpu->my_dxyz[1][num_vox]);
-				// check_values(fp, dxyz[2], data_on_gpu->my_dxyz[2][num_vox]);
-				}
-				QueryPerformanceCounter(&clock_count);
-				clock_end = (double)clock_count.QuadPart;
-				cpu_cycles +=  (clock_end - clock_start);
-			#endif
-
+				// bspline_interp_pix_b (dxyz, bspd, pidx, qidx);
+				
 				/* Compute coordinate of fixed image voxel */
 				fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
 				/* Find correspondence in moving image */
+				
 				mx = fx + data_on_gpu->dxyz[0][vox];
+				// mx = fx + dxyz[0];
 				mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
 				if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
-
+				
 				my = fy + data_on_gpu->dxyz[1][vox];
+				// my = fy + dxyz[1];
 				mj = (my - moving->offset[1]) / moving->pix_spacing[1];
 				if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
 
 				mz = fz + data_on_gpu->dxyz[2][vox];
+				// mz = fz + dxyz[2];
 				mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
 				if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
-
+				
 				/* Compute interpolation fractions */
 				clamp_and_interpolate (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
 				clamp_and_interpolate (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
 				clamp_and_interpolate (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
-
+				
 				/* Compute moving image intensity using linear interpolation */
 				mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+				// mvf = (int)data_on_gpu->mvf[vox];
+				
 				m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
 				m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
 				m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
@@ -332,10 +352,12 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 				m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
 				m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
 				m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
-
+				
 				/* Compute intensity difference */
-				diff = f_img[fv] - m_val;
+				// diff = f_img[fv] - m_val;
+				// diff = f_img[fv] - data_on_gpu->mvf[vox];
 
+				diff = data_on_gpu->diff[vox];
 				/* Compute spatial gradient using nearest neighbors */
 				mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
 				dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
@@ -343,6 +365,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 				dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
 				bspline_update_grad_b (parms, pidx, qidx, dc_dv);
 		
+				
 				ssd->score += diff * diff;
 				num_vox ++;
 			}
@@ -364,7 +387,6 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
 
-    end_clock = clock();
 #if defined (commentout)
     printf ("Single iteration CPU [b] = %f seconds\n", 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
@@ -374,9 +396,19 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
 
-	printf("Time on CPU to execute the interpolate function = %f\n", cpu_cycles/(double)clock_frequency.QuadPart);
+	// printf("Time on CPU to execute the interpolate function = %f\n", cpu_cycles/(double)clock_frequency.QuadPart);
     printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f \n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm);
+
+	/*
+	if(iter == 5){
+		fclose(fp);
+		exit(0);
+	}
+	else
+		fclose(fp);
+		*/
+	
 }
 
 } /* extern "C" */

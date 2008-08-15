@@ -25,9 +25,11 @@ struct BSPLINE_data_on_gpu_struct {
 	::brook::stream *dx_stream; // Stream to store voxel displacement values in the X direction 
 	::brook::stream *dy_stream; // Stream to store voxel displacement values in the Y direction
 	::brook::stream *dz_stream; // Stream to store voxel displacement values in the Z direction
+	::brook::stream *diff_stream; // Stream to store the correspondence values in the moving image---for debug purposes only
 
 	/* Data returned from the GPU */
 	float *dxyz[3];
+	float *diff;
     };
 
 #if defined __cplusplus
@@ -47,7 +49,9 @@ void toy_b(::brook::stream in_stream, float loop_index, ::brook::stream result);
 void my_sum(::brook::stream foo, ::brook::stream bar);
 void init(::brook::stream result);
 void compute_dxyz(::brook::stream, ::brook::stream, ::brook::stream, float3, float3, float3, float, float, float, float, float, float, ::brook::stream);
-void compute_dxyz_optimized(::brook::stream, ::brook::stream, ::brook::stream, float3, float3, float3, float, float, float, float, float, float, ::brook::stream);
+void compute_mvf(::brook::stream, ::brook::stream, ::brook::stream, ::brook::stream, ::brook::stream, float3, float3, float3, float3, float, ::brook::stream);
+void compute_diff(::brook::stream, ::brook::stream, ::brook::stream, ::brook::stream, ::brook::stream, 
+				   float3, float3, float3, float3, float, float, float, ::brook::stream);
 
 #if defined __cplusplus
 }
