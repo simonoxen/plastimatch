@@ -66,11 +66,11 @@ void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_in,T){
 		//printf("LINEA: %s\n", line);
 		float foo[3];
 		foo[0]=foo[1]=foo[2]=0;
-		if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
-			p1[0]=(double)foo[0];
-			p1[1]=(double)foo[1];
-			p1[2]=(double)foo[2];
-		//if(sscanf(line,"%f %f %f",&p1[0],&p1[1],&p1[2])==3){
+		//if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
+		//	p1[0]=(double)foo[0];
+		//	p1[1]=(double)foo[1];
+		//	p1[2]=(double)foo[2];
+		if(sscanf(line,"%lf %lf %lf",&p1[0],&p1[1],&p1[2])==3){
 			sourceLandMarkContainer->InsertElement( id++, p1 );
 			printf("reference Landmark: %f %f %f\n",p1[0],p1[1],p1[2]);
 			//system("PAUSE");
@@ -83,13 +83,13 @@ void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_in,T){
 	id = itk::NumericTraits< PointIdType >::Zero;
 	while(fgets(line, BUFLEN,target)){
 		//printf("LINEA: %s\n", line);
-		float foo[3];
-		foo[0]=foo[1]=foo[2]=0;
-		//if(sscanf(line,"%f %f %f",&p2[0],&p2[1],&p2[2])==3){
-		if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
-			p2[0]=(double)foo[0];
-			p2[1]=(double)foo[1];
-			p2[2]=(double)foo[2];
+		//float foo[3];
+		//foo[0]=foo[1]=foo[2]=0;
+		if(sscanf(line,"%lf %lf %lf",&p2[0],&p2[1],&p2[2])==3){
+		//if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
+		//	p2[0]=(double)foo[0];
+		//	p2[1]=(double)foo[1];
+		//	p2[2]=(double)foo[2];
 			targetLandMarkContainer->InsertElement( id2++, p2 );
 			printf("target Landmark: %f %f %f \n",p2[0],p2[1],p2[2]);
 		}else{
@@ -116,10 +116,10 @@ void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_in,T){
 	printf ("Warping...\n");
 	//InterpolatorType::Pointer interpolator = InterpolatorType::New();
 	
-	//typename ImgType::Pointer im_warped=itk_warp_image (img_in, vf, 1, -1200);
+	typename ImgType::Pointer im_warped=itk_warp_image (img_in, vf, 1, -1200);
 
 	printf ("Saving...\n");
-    //save_image (im_warped, parms->warped);
+    save_image (im_warped, parms->warped);
     save_image(vf, parms->vf);
 
 	//return U;

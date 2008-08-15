@@ -275,7 +275,7 @@ SET(RTOG_TO_MHA_SRC
 SET(TPS_INTERP_SRC
 	tps_interp.cxx tps_interp.h
 	tps_interp_main.cxx 
-	xform.h xform.cxx
+	#xform.h xform.cxx
 	)
 SET(VF_STATS_SRC
 	vf_stats.c
