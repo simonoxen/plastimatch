@@ -94,6 +94,7 @@ IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARIES
 	${GPUIT_LIBRARIES}
 	${F2C_LIBRARY}
+	f2c_helper
 	)
 ENDIF(F2C_LIBRARY)
 SET(GPUIT_LIBRARIES ${GPUIT_LIBRARIES} ${MY_MATH_LIB})
@@ -190,7 +191,7 @@ SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
 	lbfgsb_2_1.c f2c.h
-	main__.c
+#	main__.c
 	)
 ENDIF(F2C_LIBRARY)
 IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
@@ -205,6 +206,11 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 
+IF(F2C_LIBRARY)
+SET(F2C_HELPER_LIBRARY_SRC
+	main__.c
+	)
+ENDIF(F2C_LIBRARY)
 
 ######################################################
 ##  SOURCE FILES (From Plastimatch)
@@ -364,6 +370,10 @@ ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
 ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
 ADD_EXECUTABLE(demons ${DEMONS_SRC})
 ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
+
+IF(F2C_LIBRARY)
+ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
+ENDIF(F2C_LIBRARY)
 
 
 ######################################################
