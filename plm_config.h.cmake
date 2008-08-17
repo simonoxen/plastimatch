@@ -5,6 +5,7 @@
 #cmakedefine BUILD_SHARED_LIBS 1
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_BROOK 1
+#cmakedefine OPENMP_FOUND 1
 #cmakedefine BUILD_BSPLINE_BROOK 1
 
 #define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"

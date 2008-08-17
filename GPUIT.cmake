@@ -202,6 +202,62 @@ MARK_AS_ADVANCED(
   D3D9_LIBRARY)
 
 ######################################################
+##  OpenMP
+######################################################
+INCLUDE(CheckFunctionExists)
+MESSAGE(STATUS "Check for compiler OpenMP support...")
+SET(OPENMP_FLAGS)
+SET(OPENMP_LIBRARIES)
+SET(OPENMP_FOUND FALSE)
+
+SET(
+  OPENMP_FLAGS_AND_LIBRARIES
+  "-fopenmp#"              # gcc
+  "-fopenmp#gomp"          # gcc
+  "-fopenmp#gomp pthread"  # gcc
+  "-openmp#"               # icc
+  "-openmp -parallel#"     # icc
+  "-mp#"                   # SGI & PGI
+  "-xopenmp#"              # Sun
+  "-omp#"                  # Tru64
+  "-qsmp=omp#"             # AIX
+  "/openmp#"               # MSVC
+)
+
+LIST(LENGTH OPENMP_FLAGS_AND_LIBRARIES NUM_FLAGS)
+MATH(EXPR NUM_FLAGS "${NUM_FLAGS} - 1")
+FOREACH(I RANGE 0 ${NUM_FLAGS})
+  IF(NOT OPENMP_FOUND)
+    LIST(GET OPENMP_FLAGS_AND_LIBRARIES ${I} TMP)
+    STRING(REGEX MATCH "([^#]*)" OPENMP_FLAGS ${TMP})
+    STRING(REPLACE "${OPENMP_FLAGS}#" "" OPENMP_LIBRARIES ${TMP})
+    IF(OPENMP_LIBRARIES MATCHES " ")
+      STRING(REPLACE " " ";" OPENMP_LIBRARIES ${OPENMP_LIBRARIES})
+    ENDIF(OPENMP_LIBRARIES MATCHES " ")
+    SET(CMAKE_REQUIRED_FLAGS ${OPENMP_FLAGS})
+    SET(CMAKE_REQUIRED_LIBRARIES ${OPENMP_LIBRARIES})
+    CHECK_FUNCTION_EXISTS(omp_get_thread_num OPENMP_FOUND${I})
+    IF(OPENMP_FOUND${I})
+      SET(OPENMP_FOUND TRUE)
+    ENDIF(OPENMP_FOUND${I})
+  ENDIF(NOT OPENMP_FOUND)
+ENDFOREACH(I RANGE 0 ${NUM_FLAGS})
+
+IF(OPENMP_FOUND)
+  MESSAGE(STATUS "OpenMP flags \"${OPENMP_FLAGS}\", OpenMP libraries \"${OPENMP_LIBRARIES}\"")
+ELSE(OPENMP_FOUND)
+  MESSAGE(STATUS "Given compiler does not support OpenMP.")
+ENDIF(OPENMP_FOUND)
+
+
+#MESSAGE(STATUS "Check for compiler OpenMP support: yes")
+#SET_TARGET_PROPERTIES(
+#  my-executable PROPERTIES
+#  COMPILE_FLAGS ${OPENMP_FLAG}
+#  LINK_FLAGS ${OPENMP_FLAG}
+#)
+
+######################################################
 ##  F2C LIBRARY
 ######################################################
 SET(HAVE_F2C_LIBRARY FALSE)

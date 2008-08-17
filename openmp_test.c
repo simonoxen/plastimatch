@@ -1,9 +1,14 @@
+#include "plm_config.h"
+#if (OPENMP_FOUND)
 #include <omp.h>
-
+#endif
 
 void
 speedtest_ref (void)
 {
+    int nthreads, tid;
+#if (OPENMP_FOUND)
+
     /* Run a simple speed test, to see how fast things run */
 #pragma omp parallel private(tid)
     {
@@ -20,7 +25,7 @@ speedtest_ref (void)
 	}
 
     }  /* All threads join master thread and terminate */
-
+#endif
 }
 
 void
@@ -32,7 +37,7 @@ int
 main (int argc, char* argv)
 {
     int nthreads, tid;
-
+#if (OPENMP_FOUND)
     /* Fork a team of threads giving them their own copies of variables */
 #pragma omp parallel private(tid)
     {
@@ -49,7 +54,7 @@ main (int argc, char* argv)
 	}
 
     }  /* All threads join master thread and terminate */
-
+#endif
 
     return 0;
 }

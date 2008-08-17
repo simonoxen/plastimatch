@@ -543,8 +543,10 @@ INSTALL(TARGETS warp_mha DESTINATION bin)
 ENDIF(ITK_FOUND)
 
 # This is just a test, don't install it
-# ADD_EXECUTABLE(testme testme.cxx)
-# TARGET_LINK_LIBRARIES(testme ITKCommon ITKIO ITKNumerics)
+ADD_DEFINITIONS(${OPENMP_FLAGS})
+ADD_EXECUTABLE(openmp_test openmp_test.c)
+REMOVE_DEFINITIONS(${OPENMP_FLAGS})
+TARGET_LINK_LIBRARIES(openmp_test ${OPENMP_LIBRARIES})
 
 ######################################################
 ##  SLICER FRONT-END 	 
