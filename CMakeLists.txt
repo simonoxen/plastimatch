@@ -74,13 +74,6 @@ ENDIF(Subversion_FOUND)
 ######################################################
 ##  GPUIT LIBRARY
 ######################################################
-# FIND_PACKAGE(GPUIT)
-# IF(NOT GPUIT_FOUND)
-#   MESSAGE(FATAL_ERROR
-#           "Cannot build without GPUIT.  Please set GPUIT_DIR.")
-# ENDIF(NOT GPUIT_FOUND)
-# LINK_DIRECTORIES(${GPUIT_LIBRARY_DIRS})
-
 SET(GPUIT_LIBRARIES gpuit)
 IF(BROOK_FOUND)
 SET(GPUIT_LIBRARIES
@@ -113,9 +106,6 @@ ENDIF(BROOK_FOUND)
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
   INCLUDE(${ITK_USE_FILE})
-#ELSE(ITK_FOUND)
-#  MESSAGE(FATAL_ERROR
-#          "Cannot build without ITK.  Please set ITK_DIR.")
 ENDIF(ITK_FOUND)
 
 ######################################################
@@ -320,23 +310,19 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BI
 ##  INCLUDE DIRECTORIES
 ######################################################
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-#IF(GPUIT_FOUND)
-#  INCLUDE_DIRECTORIES(AFTER ${GPUIT_INCLUDE_DIRS})
-  IF(BROOK_FOUND)
-    INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
-  ENDIF(BROOK_FOUND)
-  IF(CUDA_FOUND)
-    # Not sure.  GPUIT had both includes.
-    # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
-    INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
-  ENDIF(CUDA_FOUND)
-#ENDIF(GPUIT_FOUND)
+IF(BROOK_FOUND)
+  INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
+ENDIF(BROOK_FOUND)
+IF(CUDA_FOUND)
+  # Not sure.  GPUIT had both includes.
+  # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
+ENDIF(CUDA_FOUND)
 
 
 ######################################################
 ##  TARGETS (from GPUIT)
 ######################################################
-
 IF(BROOK_FOUND)
   BRCC_FILE(fdk_brook_kernel.br)
   SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
@@ -372,22 +358,18 @@ ADD_EXECUTABLE(demons ${DEMONS_SRC})
 ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
 
 IF(F2C_LIBRARY)
-ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
+  ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
 ENDIF(F2C_LIBRARY)
 
 
 ######################################################
 ##  TARGETS (from plastimatch)
 ######################################################
-#SET(ITK_LIBS ITKCommon ITKIO ITKNumerics itksys)
-#SET(ITK_LIBS ITKCommon ITKIO ITKNumerics)
-#SET(ITK_LIBS ${ITK_LIBRARIES})
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
 ## Despite claims to the contrary, you are not allowed to have a library
 ## with the same name as the executable.  What happens is the executable 
 ## tries to create a temporary library with the same name.  [MSVC 2005]
-
 IF(ITK_FOUND)
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
@@ -428,22 +410,9 @@ ENDIF(ITK_FOUND)
 ######################################################
 
 # B-Spline
-#SET(BSPLINE_LIBRARIES gpuit ${MY_MATH_LIB})
-#IF(F2C_LIBRARY)
-#  SET(BSPLINE_LIBRARIES ${F2C_LIBRARY} ${BSPLINE_LIBRARIES})
-#ENDIF(F2C_LIBRARY)
-#IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
-#  SET(BSPLINE_LIBRARIES ${BSPLINE_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
-#ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
-#TARGET_LINK_LIBRARIES(bspline ${BSPLINE_LIBRARIES})
 TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
 
 # Demon
-#SET(DEMONS_LIBRARIES gpuit ${MY_MATH_LIB})
-#IF(BROOK_FOUND)
-#  SET(DEMONS_LIBRARIES ${DEMONS_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
-#ENDIF(BROOK_FOUND)
-#TARGET_LINK_LIBRARIES(demons ${DEMONS_LIBRARIES})
 TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
 
 # Demon cuda
