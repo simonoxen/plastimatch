@@ -250,13 +250,6 @@ ELSE(OPENMP_FOUND)
 ENDIF(OPENMP_FOUND)
 
 
-#MESSAGE(STATUS "Check for compiler OpenMP support: yes")
-#SET_TARGET_PROPERTIES(
-#  my-executable PROPERTIES
-#  COMPILE_FLAGS ${OPENMP_FLAG}
-#  LINK_FLAGS ${OPENMP_FLAG}
-#)
-
 ######################################################
 ##  F2C LIBRARY
 ######################################################
