@@ -64,14 +64,14 @@ void tps_interp_main(TPS_parms* parms){
 	    {
 		ShortImageType::Pointer img_in = load_short (parms->original);
 		//short foo;
-		do_tps(parms,img_in,(short)0);
+		do_tps(parms,img_in,(short)-1200);
 	    }
 	    break;
         case itk::ImageIOBase::FLOAT:
 	    {
 		FloatImageType::Pointer img_in = load_float (parms->original);
 		//float foo;
-		do_tps(parms,img_in,(float)0.0);
+		do_tps(parms,img_in,(float)-1200.0);
 	    }
 	    break;
 	default:

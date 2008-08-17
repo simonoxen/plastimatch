@@ -78,7 +78,7 @@ main (int argc, char *argv[])
 
     if (vol->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an interleaved float vector field.\n", vf_fn);
-	fprintf (stderr, "Type = %d\n");
+	fprintf (stderr, "Type = %d\n", vol->pix_type);
 	exit (-1);
     }
 

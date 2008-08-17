@@ -260,6 +260,7 @@ ENDIF(OPENMP_FOUND)
 ######################################################
 ##  F2C LIBRARY
 ######################################################
+## http://readlist.com/lists/lists.sourceforge.net/mingw-users/0/3794.html
 SET(HAVE_F2C_LIBRARY FALSE)
 IF(GPUIT_LINK_MSVCRT)
   SET(LIBF2C_INCLUDED "vcf2c_msvcrt")

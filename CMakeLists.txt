@@ -92,10 +92,11 @@ SET(GPUIT_LIBRARIES
 ENDIF(BROOK_FOUND)
 IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARIES
-	${F2C_LIBRARY}
 	${GPUIT_LIBRARIES}
+	${F2C_LIBRARY}
 	)
 ENDIF(F2C_LIBRARY)
+SET(GPUIT_LIBRARIES ${GPUIT_LIBRARIES} ${MY_MATH_LIB})
 
 ######################################################
 ##  BROOK LIBRARY
@@ -417,14 +418,15 @@ ENDIF(ITK_FOUND)
 ######################################################
 
 # B-Spline
-SET(BSPLINE_LIBRARIES gpuit ${MY_MATH_LIB})
-IF(F2C_LIBRARY)
-  SET(BSPLINE_LIBRARIES ${F2C_LIBRARY} ${BSPLINE_LIBRARIES})
-ENDIF(F2C_LIBRARY)
-IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
-  SET(BSPLINE_LIBRARIES ${BSPLINE_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
-ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
-TARGET_LINK_LIBRARIES(bspline ${BSPLINE_LIBRARIES})
+#SET(BSPLINE_LIBRARIES gpuit ${MY_MATH_LIB})
+#IF(F2C_LIBRARY)
+#  SET(BSPLINE_LIBRARIES ${F2C_LIBRARY} ${BSPLINE_LIBRARIES})
+#ENDIF(F2C_LIBRARY)
+#IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+#  SET(BSPLINE_LIBRARIES ${BSPLINE_LIBRARIES} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
+#ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+#TARGET_LINK_LIBRARIES(bspline ${BSPLINE_LIBRARIES})
+TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
 
 # Demon
 SET(DEMONS_LIBRARIES gpuit ${MY_MATH_LIB})
@@ -545,43 +547,43 @@ ENDIF(ITK_FOUND)
 # This is just a test, don't install it
 ADD_DEFINITIONS(${OPENMP_FLAGS})
 ADD_EXECUTABLE(openmp_test openmp_test.c)
-REMOVE_DEFINITIONS(${OPENMP_FLAGS})
+#REMOVE_DEFINITIONS(${OPENMP_FLAGS})
 TARGET_LINK_LIBRARIES(openmp_test ${OPENMP_LIBRARIES})
 
 ######################################################
 ##  SLICER FRONT-END 	 
 ###################################################### 	 
-IF(BUILD_PLASTIMATCH_SLICER) 	 
+IF(BUILD_PLASTIMATCH_SLICER)
 
 find_package(Slicer3 REQUIRED)
 include(${Slicer3_USE_FILE})
 
-# Set reasonable default install prefix and output paths 	 
-# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure) 	 
-slicer3_set_default_install_prefix_for_external_projects() 	 
+# Set reasonable default install prefix and output paths
+# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
+slicer3_set_default_install_prefix_for_external_projects()
 
-# The Command Line Module 	 
-set(CLP plastimatch-slicer) 	 
-set(${CLP}_SOURCE ${CLP}.cxx) 	 
-generateclp(${CLP}_SOURCE ${CLP}.xml) 	 
+# The Command Line Module
+set(CLP plastimatch-slicer)
+set(${CLP}_SOURCE ${CLP}.cxx)
+generateclp(${CLP}_SOURCE ${CLP}.xml)
 
-# Build it 	 
-add_executable(${CLP} ${${CLP}_SOURCE}) 	 
-slicer3_set_plugins_output_path(${CLP}) 	 
+# Build it
+add_executable(${CLP} ${${CLP}_SOURCE})
+slicer3_set_plugins_output_path(${CLP})
 target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
 
-# Install it 	 
-slicer3_install_plugins(${CLP}) 	 
+# Install it
+slicer3_install_plugins(${CLP})
 
-# Test it 	 
-#enable_testing() 	 
-#include(CTest) 	 
-#set(UPDATE_TYPE svn) 	 
+# Test it
+#enable_testing()
+#include(CTest)
+#set(UPDATE_TYPE svn)
 
 # ? 	 
-#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help) 	 
+#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 
-ENDIF(BUILD_PLASTIMATCH_SLICER) 	 
+ENDIF(BUILD_PLASTIMATCH_SLICER)
 
 ######################################################
 ##  REGRESSION TESTING
