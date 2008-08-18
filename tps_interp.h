@@ -10,8 +10,6 @@
 #include "itkImage.h"
 #include "itk_image.h"
 #include "itk_warp.h"
-//#include "itkImageLinearIteratorWithIndex.h"
-//#include "itkImageSliceConstIteratorWithIndex.h"
 #include "itkThinPlateSplineKernelTransform.h"
 #include "itkPoint.h"
 #include "itkPointSet.h"

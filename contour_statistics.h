@@ -1,3 +1,6 @@
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
 #ifndef _contour_statistics_h
 #define _contour_statistics_h
 

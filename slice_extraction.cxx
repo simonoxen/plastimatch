@@ -1,6 +1,6 @@
-//===========================================================
-
-//===========================================================
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
 
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -8,7 +8,6 @@
 #include "itkImage.h"
 #include "itk_image.h"
 #include "slice_extraction.h"
-//#include "itkImageLinearIteratorWithIndex.h"
 
 
 /* =======================================================================*
@@ -22,7 +21,6 @@ typename itk::Image<T,2>::Pointer slice_extraction(typename itk::Image<T,3>::Poi
 	typedef typename itk::Image<T,3> inImgType;
 	typedef typename itk::Image<T,2> outImgType;
 	typedef typename itk::ExtractImageFilter<inImgType,outImgType> FilterType;
-	//typedef itk::ImageFileWriter<outImgType> WriterType;
 
 	typename FilterType::Pointer extraction=FilterType::New();
 	

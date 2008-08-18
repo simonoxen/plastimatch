@@ -1,27 +1,14 @@
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
+
 #include "tps_interp.h"
 #include "itk_warp.h"
-
-//typedef   itk::Vector< float, 3 >  FieldVectorType;
-//typedef   itk::Image< FieldVectorType,  3 >   DeformationFieldType;
-//typedef   itk::ImageFileWriter< DeformationFieldType >  FieldWriterType;
-//typedef double CoordinateRepType;
-//typedef itk::ThinPlateSplineKernelTransform<CoordinateRepType,3> TransformType;
-//typedef itk::Point<CoordinateRepType,3 > PointType;
-//typedef std::vector<PointType > PointArrayType;
-//typedef TransformType::PointSetType PointSetType;
-//typedef PointSetType::Pointer PointSetPointer;
-//typedef PointSetType::PointIdentifier PointIdType;
-//typedef itk::ResampleImageFilter<InputImageType,InputImageType> ResamplerType;
-//typedef itk::LinearInterpolateImageFunction<ImgType, float >  InterpolatorType;
-//typedef itk::LinearInterpolateImageFunction<FloatImageType, float >  FloatInterpolatorType;
-//typedef itk::LinearInterpolateImageFunction<UCharImageType, unsigned char >  UCharInterpolatorType;
-//typedef itk::LinearInterpolateImageFunction<ShortImageType, short >  ShortInterpolatorType;
 
 template<class T>
 void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T default_val)
 {
     typedef typename itk::Image<T,3> ImgType;
-    //typedef double CoordinateRepType;
     typedef double CoordinateRepType;
     typedef typename itk::ThinPlateSplineKernelTransform<CoordinateRepType,3> TransformType;
     typedef typename itk::Point<CoordinateRepType,3 > PointType;
@@ -33,8 +20,7 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
 
     PointType p1;
     PointType p2;
-    //float p1[3];
-    int dim[3];
+	int dim[3];
     float offset[3];
     float spacing[3];
     char line[BUFLEN];
@@ -44,7 +30,6 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
 
     get_image_header(dim, offset, spacing, img_in);
 
-    // Define container for landmarks
     typename PointSetType::Pointer sourceLandMarks = PointSetType::New();
     typename PointSetType::Pointer targetLandMarks = PointSetType::New();
 
@@ -63,39 +48,23 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
     }
 
     while(fgets(line, BUFLEN,reference)){
-	//printf("LINEA: %s\n", line);
-	float foo[3];
-	foo[0]=foo[1]=foo[2]=0;
-	//if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
-	//	p1[0]=(double)foo[0];
-	//	p1[1]=(double)foo[1];
-	//	p1[2]=(double)foo[2];
-	if(sscanf(line,"%lf %lf %lf",&p1[0],&p1[1],&p1[2])==3){
-	    sourceLandMarkContainer->InsertElement( id++, p1 );
-	    printf("reference Landmark: %f %f %f\n",p1[0],p1[1],p1[2]);
-	    //system("PAUSE");
-	}else{
-	    //printf("PUNTO: %d %d %d \n",&p1[0],&p1[1],&p1[2]);
-	    printf("Error! can't read the reference landmarks file");
-	    exit(-1);
-	}
+		if(sscanf(line,"%lf %lf %lf",&p1[0],&p1[1],&p1[2])==3){
+			sourceLandMarkContainer->InsertElement( id++, p1 );
+			printf("reference Landmark: %f %f %f\n",p1[0],p1[1],p1[2]);
+		}else{
+			printf("Error! can't read the reference landmarks file");
+			exit(-1);
+		}
     }
     id = itk::NumericTraits< PointIdType >::Zero;
     while(fgets(line, BUFLEN,target)){
-	//printf("LINEA: %s\n", line);
-	//float foo[3];
-	//foo[0]=foo[1]=foo[2]=0;
-	if(sscanf(line,"%lf %lf %lf",&p2[0],&p2[1],&p2[2])==3){
-	    //if(sscanf(line,"%f %f %f",&foo[0],&foo[1],&foo[2])==3){
-	    //	p2[0]=(double)foo[0];
-	    //	p2[1]=(double)foo[1];
-	    //	p2[2]=(double)foo[2];
-	    targetLandMarkContainer->InsertElement( id2++, p2 );
-	    printf("target Landmark: %f %f %f \n",p2[0],p2[1],p2[2]);
-	}else{
-	    printf("Error! can't read the target landmarks file");
-	    exit(-1);
-	}
+		if(sscanf(line,"%lf %lf %lf",&p2[0],&p2[1],&p2[2])==3){
+			targetLandMarkContainer->InsertElement( id2++, p2 );
+			printf("target Landmark: %f %f %f \n",p2[0],p2[1],p2[2]);
+		}else{
+			printf("Error! can't read the target landmarks file");
+			exit(-1);
+		}
     }
 
     fclose(reference);
@@ -114,15 +83,12 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
     vf = xform_tmp.get_itk_vf();
 
     printf ("Warping...\n");
-    //InterpolatorType::Pointer interpolator = InterpolatorType::New();
 	
     typename ImgType::Pointer im_warped = itk_warp_image (img_in, vf, 1, default_val);
 
     printf ("Saving...\n");
     save_image (im_warped, parms->warped);
     save_image(vf, parms->vf);
-
-    //return U;
 }
 
 /* Explicit instantiations */

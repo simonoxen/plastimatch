@@ -1,10 +1,6 @@
-//===========================================================
-
-
-
-
-
-//===========================================================
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
 #include "plm_config.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
@@ -14,8 +10,6 @@
 #include "itkImageLinearIteratorWithIndex.h"
 #include "slice_extraction.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-//#include "itkMetaDataDictionary.h"
-//#include "itkMetaDataObject.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,12 +18,6 @@
     Definitions
  * =======================================================================*/
 
-//typedef float	PixelType;
-//typedef itk::Image<PixelType, 3>	inImgType;
-//typedef itk::Image<PixelType, 2>	outImgType;
-//typedef itk::ImageFileWriter<inImgType>	WriterType;
-//typedef itk::MetaDataDictionary DictionaryType;
-//typedef itk::MetaDataObject< std::string > MetaDataStringType;
 typedef itk::ImageFileReader<inImgType>	ReaderType;
 typedef itk::ContourExtractor2DImageFilter<outImgType> ContourType;
 typedef ContourType::VertexType VertexType;
@@ -134,59 +122,3 @@ int main(int argc, char ** argv)
 	fclose(file);
 
 }
-
-
-
-
-
-//FILE* fp;
-//char buffer[1024];
-//float x,y;
-//int i=0;
-//
-//try
-//{
-//
-//	fp = fopen ("goofy.mha", "r");
-//	if (!fp) { 
-//		printf ("Could not open slice file for read\n");
-//		return -1;
-//	}
-//	for (i=0; i<30; i++) 
-//	{ 
-//		fgets(buffer,1024,fp);
-//		if (strstr(buffer, "ElementSpacing")!=NULL) 
-//			sscanf(&(buffer[16]), "%f%f", x, y);
-//		printf("%f%f", x, y);
-//	}
-//}
-//catch ( itk::ExceptionObject &err)
-//{
-//	std::cout << "ExceptionObject caught !" << std::endl; 
-//	std::cout << err << std::endl; 
-//	return -1;   
-//}
-
-//const DictionaryType & dictionary=contour->GetMetaDataDictionary();
-//
-//	DictionaryType::ConstIterator itr = dictionary.Begin();
-//	DictionaryType::ConstIterator end = dictionary.End();
-//
-//	MetaDataStringType::Pointer value; 
-//	while( itr != end )
-//	{
-//		itk::MetaDataObjectBase::Pointer entry = itr->second;	
-//		value= dynamic_cast<MetaDataStringType *>(entry.GetPointer());
-//		std::string tag = value->GetMetaDataObjectValue();
-//		std::cout<< tag << std::endl;
-//		std::string goofy="ElementSpacing";
-//		if(tag==goofy)
-//		{
-//			printf("%s", tag);
-//			entry=itr->second;
-//			value= dynamic_cast<MetaDataStringType *>(entry.GetPointer());
-//			tag=value->GetMetaDataObjectValue();
-//			printf("%s", tag);
-//			itr=dictionary.End();
-//		}
-//	}

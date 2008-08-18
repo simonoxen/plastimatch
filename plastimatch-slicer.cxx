@@ -64,7 +64,7 @@ int main(int argc, char * argv [])
 
 
     fp = fopen (ff_fn, "w");
-    fprintf (fp, "Fixed fiducials:\n");
+    //fprintf (fp, "Fixed fiducials:\n");
     for (int i = 0; i < plmslc_fixed_fiducials.size(); i++) {
       fprintf (fp, "%g %g %g\n", 
 	       plmslc_fixed_fiducials[i][0],
@@ -75,7 +75,7 @@ int main(int argc, char * argv [])
     fclose (fp);
 
     fp = fopen (mf_fn, "w");
-    fprintf (fp, "Moving fiducials:\n");
+    //fprintf (fp, "Moving fiducials:\n");
     for (int i = 0; i < plmslc_moving_fiducials.size(); i++) {
       fprintf (fp, "%g %g %g\n", 
 	       plmslc_moving_fiducials[i][0],
@@ -89,7 +89,7 @@ int main(int argc, char * argv [])
     if (parse_command_file (&regp, parms_fn) < 0) {
 	return EXIT_FAILURE;
     }
-    do_registration (&regp);
+    //do_registration (&regp);
     return EXIT_SUCCESS;
 }
 

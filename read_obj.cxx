@@ -1,3 +1,6 @@
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
 #include "contour_statistics.h"
 #define BUFLEN 2048
 

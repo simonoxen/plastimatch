@@ -1,10 +1,6 @@
-//===========================================================
-
-
-
-
-
-//===========================================================
+/*===========================================================
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+===========================================================*/
 #include "contour_statistics.h"
 
 void print_usage (void)
@@ -14,8 +10,8 @@ void print_usage (void)
 	printf ("  mode (options: slice, global, experts,  cp)\t");
 	printf ("  file1\t");
 	printf ("  file2\t");
-	printf ("  [file3]\t");
-	//printf ("  [filename]\n");
+	printf ("  [file3] or [filename]\t");
+	printf ("  [filename]\n");
 	printf ("  OPTIONS EXPLANATION: \n");
 	printf ("  case Dice's coeff computation: the user can choose between calculating it for the whole volume (mode=global) or slice per slice (mode=slice).\n NB: in this case file1=reference volume, file2=warped volume\n\n");
 	printf ("  case Experts: this is designed to compute the inter-raters variability. It will compute the overlapping region between the three volumes and divide it by the union.\n");
@@ -38,16 +34,16 @@ int main(int argc, char* argv[])
 	if (argc<4)
 		print_usage();
 
-	if(strcmp("global",argv[3])==0 || strcmp("slice",argv[3])==0){
-		reference=load_uchar(argv[1]);
-		warped=load_uchar(argv[2]);
+	if(strcmp("global",argv[1])==0 || strcmp("slice",argv[1])==0){
+		reference=load_uchar(argv[2]);
+		warped=load_uchar(argv[3]);
 	}else if(strcmp("experts",argv[1])==0){
 		ex_1=load_uchar(argv[2]);
 		ex_2=load_uchar(argv[3]);
 		ex_3=load_uchar(argv[4]);
-	}else if(strcmp("cp",argv[3])==0){
-		mesh=fopen(argv[1],"r");
-		MDpoints=fopen(argv[2],"r");
+	}else if(strcmp("cp",argv[1])==0){
+		mesh=fopen(argv[2],"r");
+		MDpoints=fopen(argv[3],"r");
 		if(!mesh || !MDpoints){
 			fprintf(stderr,"Error: could not open the files for the cp calculation for reading!\n");
 			if(!mesh)
@@ -61,7 +57,7 @@ int main(int argc, char* argv[])
 		exit(-1);
 	}
 
-	//if (argc<5){
+	if (argc<5){
 		if(strcmp("cp",argv[1])==0){
 			output=fopen("cp_dist.txt","w");
 		}else if(strcmp("slice",argv[1])==0){
@@ -71,9 +67,11 @@ int main(int argc, char* argv[])
 		}else if(strcmp("experts",argv[1])==0){
 			output=fopen("interrater.txt","w");
 		}
-	/*}else if(argc==5){
+	}else if (argc==5){
+		output=fopen(argv[4],"w");
+	}else if(argc==6){
 		output=fopen(argv[5],"w");
-	}*/
+	}
 
 	if(!output){
 		fprintf(stderr, "An error occurred while opening the file for writing the outputs!");
