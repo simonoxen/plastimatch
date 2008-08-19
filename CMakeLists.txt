@@ -61,19 +61,24 @@ ENDIF(NOT GPUIT_LINK_MSVCRT)
 ######################################################
 include(FindSubversion)
 
-IF(Subversion_FOUND)
-	MESSAGE(STATUS "Looking for Subversion - found")
-	Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
-	EXECUTE_PROCESS(
+IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  IF(Subversion_FOUND)
+    SET(PLASTIMATCH_EXPERIMENTAL TRUE)
+    MESSAGE(STATUS "Looking for Subversion - found")
+    Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
+    EXECUTE_PROCESS(
 		COMMAND "svnversion" "--no-newline" ${CMAKE_SOURCE_DIR}
 		OUTPUT_VARIABLE svn_version
 		ERROR_VARIABLE svn_version
-	)
-#	message(${svn_version})
-	SET(PLASTIMATCH_SVN_VERSION ${svn_version})
-ELSE(Subversion_FOUND)
-	MESSAGE(STATUS "Looking for Subversion - not found")
-ENDIF(Subversion_FOUND)
+    )
+    SET(PLASTIMATCH_SVN_VERSION ${svn_version})
+  ELSE(Subversion_FOUND)
+    MESSAGE(STATUS "Looking for Subversion - not found")
+  ENDIF(Subversion_FOUND)
+ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  SET(PLASTIMATCH_EXPERIMENTAL FALSE)
+ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+
 
 ######################################################
 ##  GPUIT LIBRARY
