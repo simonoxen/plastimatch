@@ -1,5 +1,7 @@
 PROJECT(plastimatch)
 
+INCLUDE(CPack)
+
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
 
