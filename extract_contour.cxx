@@ -102,6 +102,7 @@ int main(int argc, char ** argv)
 	    /*fprintf(fp,"%d%s%d\n",k[2],".",i);*/
 	    //fprintf(fp,"\n");
 	    fprintf(fp,"%s %s %s\n","NaN","NaN","NaN");
+		fprintf(file,"%s %s %s\n","NaN","NaN","NaN");
 	    for(unsigned int j = 0; j < vertices->Size(); j++)
 	    {
 		const VertexType& vertex = vertices->ElementAt(j);

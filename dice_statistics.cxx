@@ -20,6 +20,7 @@ typedef itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
 typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
 
 
+
 //typedef struct sliceDice SLICEDICE;
 //struct sliceDice {
 //    int num_slice;
@@ -30,22 +31,21 @@ typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
 void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output)
 {
 	ImgType::IndexType k;
-	//intImgType::IndexType p;
 	k[0]=0;
-	//p[0]=0;
 	int overlap=0;
 	float dice=0;
 	int size=0;
-	//int index=0;
 	float volRef;
 	float volOver;
 	float percVolOver;
-	//int volSize=0;
-	//int volOverlap=0;
-	//SLICEDICE* slice_dice=(SLICEDICE*)malloc(sizeof(SLICEDICE));
-	//memset(slice_dice,0,sizeof(SLICEDICE));
-	//slice_dice->num_slice=0;
-	//slice_dice->first_slice=0;
+	float x=0;
+	float y=0;
+	float z=0;
+	int dim[3];
+	float offset[3];
+	float spacing[3];
+	int i=0;
+
 
 	
 
@@ -56,43 +56,64 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 				exit(-1);
 	}
 
-	//if(strcmp("global",argv[3])==0){
-			overlap=0;
-			size=0;
-						
-			ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
-		
-			while(!it.IsAtEnd())
-			{
-				k=it.GetIndex();
-				if(reference->GetPixel(k)==1){
-					size++;
-					if(warped->GetPixel(k)==reference->GetPixel(k)){
-						overlap++;
-					}
-				}
-				it.operator ++();
+	overlap=0;
+	size=0;
+	get_image_header(dim, offset, spacing, reference);
+
+	//printf("SPACING:%f %f %f\n",spacing[0],spacing[1],spacing[2]);
+	//printf("OFFSET: %f %f %f\n",offset[0],offset[1],offset[2]);
+	//printf("DIM: %d %d %d\n",dim[0],dim[1],dim[2]);
+
+	ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
+
+	while(!it.IsAtEnd())
+	{
+		k=it.GetIndex();
+		//printf("INDICE: %d %d %d",k);
+		if(reference->GetPixel(k)==1){
+			size++;
+			x=x+k[0]*spacing[0];
+			y=y+k[1]*spacing[1];
+			z=z+k[2]*spacing[2];	
+			//printf("COORD: %f %f %f \n",x,y,z);
+			if(warped->GetPixel(k)==reference->GetPixel(k)){
+				overlap++;
 			}
-			printf("overlap: %d\n",overlap);
-			printf("# of white pixels in the reference image: %d\n",size);
-			dice=(2*overlap)/(2*size);
-			printf("DICE COEFFICIENT: %f\n",dice);
-			fprintf(output,"DICE COEFFICIENT: %f\n",dice);
-			//dim=reference->GetSpacing();
-			//volume=size*(dim[0]*dim[1]*dim[2]);
-			volRef=size*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
-			volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
-			percVolOver=(volOver/volRef)*100;
-			//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
-			printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-			printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-			printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+		}
+		it.operator ++();
+		i++;
+		//printf("K: %d %d %d\n",k[0],k[1],k[2]);
+		//printf("SPACING: %lf %lf %lf\n",spacing[0],spacing[1],spacing[2]);
+	
+		//if(i==10000)
+		//	exit(-1);
+	}
+	x=(x/size)+offset[0];
+	y=(y/size)+offset[1];
+	z=(z/size)+offset[2];
 
-			fprintf(output,"VOLUME GLOBAL REFERENCE: %f\n", volRef);
-			fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
-			fprintf(output,"VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+	printf("overlap: %d\n",overlap);
+	printf("# of white pixels in the reference image: %d\n",size);
+	dice=(2*overlap)/(2*size);
+	printf("DICE COEFFICIENT: %f\n",dice);
+	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
 
-	//}else if(strcmp("slice",argv[3])==0){
+	volRef=size*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+	percVolOver=(volOver/volRef)*100;
+
+	printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
+	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
+	printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+
+	fprintf(output,"VOLUME GLOBAL REFERENCE: %f\n", volRef);
+	fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
+	fprintf(output,"VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+	
+	printf("CENTER OF MASS: %f %f %f\n",x,y,z);
+
+	fprintf(output,"CENTER OF MASS: %f %f %f\n",x,y,z);
+
 }
 
 void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output)
