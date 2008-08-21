@@ -14,11 +14,12 @@
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include "slice_extraction.h"
 #include "contour_statistics.h"
+#include "itkImageMomentsCalculator.h"
 
 typedef itk::ImageRegionIteratorWithIndex<ImgType> ItTypeVolPixel;
 typedef itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
 typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
-
+typedef itk::ImageMomentsCalculator<ImgType> MomentCalculatorType;
 
 
 //typedef struct sliceDice SLICEDICE;
@@ -35,16 +36,20 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	int overlap=0;
 	float dice=0;
 	int size=0;
-	float volRef;
 	float volOver;
 	float percVolOver;
-	float x=0;
-	float y=0;
-	float z=0;
 	int dim[3];
 	float offset[3];
 	float spacing[3];
 	int i=0;
+
+	DoubleVectorType c_ref;
+	DoubleVectorType c_warp;
+	DoubleVectorType mean_center;
+	double vol_ref;
+	double vol_warp;
+	double mean_vol;
+	MomentCalculatorType::Pointer moment= MomentCalculatorType::New();
 
 
 	
@@ -70,11 +75,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	{
 		k=it.GetIndex();
 		//printf("INDICE: %d %d %d",k);
-		if(reference->GetPixel(k)==1){
+		if(reference->GetPixel(k)==1 || warped->GetPixel(k)==1){
 			size++;
-			x=x+k[0]*spacing[0];
-			y=y+k[1]*spacing[1];
-			z=z+k[2]*spacing[2];	
 			//printf("COORD: %f %f %f \n",x,y,z);
 			if(warped->GetPixel(k)==reference->GetPixel(k)){
 				overlap++;
@@ -82,42 +84,82 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 		}
 		it.operator ++();
 		i++;
-		//printf("K: %d %d %d\n",k[0],k[1],k[2]);
-		//printf("SPACING: %lf %lf %lf\n",spacing[0],spacing[1],spacing[2]);
-	
-		//if(i==10000)
-		//	exit(-1);
 	}
-	x=(x/size)+offset[0];
-	y=(y/size)+offset[1];
-	z=(z/size)+offset[2];
+
 
 	printf("overlap: %d\n",overlap);
 	printf("# of white pixels in the reference image: %d\n",size);
-	dice=(2*overlap)/(2*size);
+	dice=((float)2*overlap)/((float)2*size);
 	printf("DICE COEFFICIENT: %f\n",dice);
 	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
 
-	volRef=size*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
 	volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
-	percVolOver=(volOver/volRef)*100;
 
-	printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-	printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+	//computes moments for reference image
+	moment->SetImage(reference);
+	moment->Compute();
+	c_ref=moment->GetCenterOfGravity();
+	vol_ref=moment->GetTotalMass();
+	vol_ref=vol_ref*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	percVolOver=(volOver/vol_ref)*100;
 
-	fprintf(output,"VOLUME GLOBAL REFERENCE: %f\n", volRef);
-	fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
-	fprintf(output,"VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+	printf("VOLUME ex_1: %f\n", vol_ref);
+	printf("VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
+	printf("CENTER ex_1: %g %g %g\n",c_ref[0],c_ref[1],c_ref[2]);
 	
-	printf("CENTER OF MASS: %f %f %f\n",x,y,z);
+	fprintf(output,"VOLUME ex_1: %f\n", vol_ref);	
+	fprintf(output,"VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
+	fprintf(output,"CENTER OF MASS ex_1: %g %g %g",c_ref[0],c_ref[1],c_ref[2]);
 
-	fprintf(output,"CENTER OF MASS: %f %f %f\n",x,y,z);
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
+	//computes moments for warped image
+	moment->SetImage(warped);
+	moment->Compute();
+	c_warp=moment->GetCenterOfGravity();
+	vol_warp=moment->GetTotalMass();
+	vol_warp=vol_warp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+	percVolOver=(volOver/vol_warp)*100;
+
+	printf("VOLUME ex_2: %f\n", vol_warp);
+	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
+	printf("CENTER ex_2: %g %g %g\n",c_warp[0],c_warp[1],c_warp[2]);
+	
+	fprintf(output,"VOLUME ex_2: %f\n", vol_warp);	
+	fprintf(output,"VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
+	fprintf(output,"CENTER OF MASS ex_2: %g %g %g",c_warp[0],c_warp[1],c_warp[2]);
+	
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
+	//Writes the overlap volume
+	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
+	fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
+
+	mean_vol=(vol_ref+vol_warp)/2;
+	mean_center[0]=(c_ref[0]+c_warp[0])/2;
+	mean_center[1]=(c_ref[1]+c_warp[1])/2;
+	mean_center[2]=(c_ref[2]+c_warp[2])/2;
+
+	printf("MEAN VOLUME: %f\n", mean_vol);
+	fprintf(output,"MEAN VOLUME: %f\n", mean_vol);
+
+	percVolOver=(volOver/mean_vol)*100;
+	printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
+	fprintf(output,"MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
+
+	printf("MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
+	fprintf(output,"MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
 
 void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output)
 {
+	//this is very buggy...and old!
 	ImgType::IndexType k;
 	intImgType::IndexType p;
 	k[0]=0;
@@ -190,7 +232,7 @@ void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* ou
 				slice_dice->num_slice++;
 				//printf("SLICE: %d ELEM: %d\n", index, slice_dice->num_slice);
 				slice_dice->dice_list=(float*)realloc(slice_dice->dice_list,2*sizeof(float));
-				slice_dice->dice_list[slice_dice->num_slice-1]=(2*overlap)/(2*size);
+				slice_dice->dice_list[slice_dice->num_slice-1]=((float)2*overlap)/((float)2*size);
 				//printf("coeff: %f\n",slice_dice->dice_list[slice_dice->num_slice-1]);
 			}
 
@@ -217,23 +259,24 @@ void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* ou
 void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Pointer ex_3, FILE* output)
 {
 	ImgType::IndexType k;
-	//intImgType::IndexType p;
 	k[0]=0;
-	//p[0]=0;
 	int overlap=0;
 	float dice=0;
 	int size=0;
-	//int index=0;
-	float volRef=0;
-	float volOver=0;
-	float percVolOver=0;
-	//int volSize=0;
-	//int volOverlap=0;
-	//SLICEDICE* slice_dice=(SLICEDICE*)malloc(sizeof(SLICEDICE));
-	//memset(slice_dice,0,sizeof(SLICEDICE));
-	//slice_dice->num_slice=0;
-	//slice_dice->first_slice=0;
-
+	double volOver=0;
+	double percVolOver=0;
+	int dim[3];
+	float offset[3];
+	float spacing[3];
+	DoubleVectorType c_ex1;
+	DoubleVectorType c_ex2;
+	DoubleVectorType c_ex3;
+	DoubleVectorType mean_center;
+	double vol_ex1;
+	double vol_ex2;
+	double vol_ex3;
+	double mean_vol;
+	MomentCalculatorType::Pointer moment= MomentCalculatorType::New();
 	
 
 	if(ex_1->GetLargestPossibleRegion().GetSize() != ex_2->GetLargestPossibleRegion().GetSize() && ex_1->GetLargestPossibleRegion().GetSize() != ex_3->GetLargestPossibleRegion().GetSize()){
@@ -244,40 +287,114 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 				exit(-1);
 	}
 
-	//if(strcmp("global",argv[3])==0){
-			overlap=0;
-			size=0;
-						
-			ItTypeVolPixel it(ex_1, ex_1->GetLargestPossibleRegion());
-		
-			while(!it.IsAtEnd())
-			{
-				k=it.GetIndex();
-				if(ex_1->GetPixel(k)==1 || ex_2->GetPixel(k)==1 || ex_3->GetPixel(k)==1){
-					size++;
-					if(ex_1->GetPixel(k)==ex_2->GetPixel(k) && ex_1->GetPixel(k)==ex_3->GetPixel(k)){
-						overlap++;
-					}
-				}
-				it.operator ++();
-				//printf("K: %d",k);
+	get_image_header(dim, offset, spacing, ex_1);
+
+	overlap=0;
+	size=0;
+				
+	ItTypeVolPixel it(ex_1, ex_1->GetLargestPossibleRegion());
+
+	while(!it.IsAtEnd())
+	{
+		k=it.GetIndex();
+		if(ex_1->GetPixel(k)==1 || ex_2->GetPixel(k)==1 || ex_3->GetPixel(k)==1){
+			size++;
+			if(ex_1->GetPixel(k) && ex_2->GetPixel(k) && ex_3->GetPixel(k)){
+				overlap++;
 			}
-			printf("overlap: %d\n",overlap);
-			printf("# of white pixels in the 3 images: %d\n",size);
-			dice=overlap/size;
-			printf("DICE COEFFICIENT: %f\n",dice);
-			fprintf(output,"DICE COEFFICIENT: %f\n",dice);
-			//dim=reference->GetSpacing();
-			//volume=size*(dim[0]*dim[1]*dim[2]);
-			volRef=size*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
-			volOver=overlap*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
-			percVolOver=(volOver/volRef)*100;
-			//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
-			printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-			printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-			printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
-			
-			fprintf(output,"VOLUME GLOBAL REFERENCE: %f\n", volRef);
-			fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
-			fprintf(output,"VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
+		}
+		it.operator ++();
+		//printf("K: %d",k);
+	}
+
+	
+	printf("overlap: %d\n",overlap);
+	printf("# of white pixels in the 3 images: %d\n",size);
+	dice=((float)overlap)/((float)size);
+	printf("DICE COEFFICIENT: %f\n",dice);
+	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
+	printf("\n\n");
+	fprintf(output,"\n\n");
+	//dim=reference->GetSpacing();
+	//volume=size*(dim[0]*dim[1]*dim[2]);
+
+	volOver=overlap*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
+
+	//computes moments for first expert
+	moment->SetImage(ex_1);
+	moment->Compute();
+	c_ex1=moment->GetCenterOfGravity();
+	vol_ex1=moment->GetTotalMass();
+	vol_ex1=vol_ex1*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
+	percVolOver=(volOver/vol_ex1)*100;
+
+	printf("VOLUME ex_1: %f\n", vol_ex1);
+	printf("VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
+	printf("CENTER ex_1: %g %g %g\n",c_ex1[0],c_ex1[1],c_ex1[2]);
+	
+	fprintf(output,"VOLUME ex_1: %f\n", vol_ex1);	
+	fprintf(output,"VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
+	fprintf(output,"CENTER OF MASS ex_1: %g %g %g",c_ex1[0],c_ex1[1],c_ex1[2]);
+
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
+	//computes moments for second expert
+	moment->SetImage(ex_2);
+	moment->Compute();
+	c_ex2=moment->GetCenterOfGravity();
+	vol_ex2=moment->GetTotalMass();
+	vol_ex2=vol_ex2*(ex_2->GetSpacing()[0]*ex_2->GetSpacing()[1]*ex_2->GetSpacing()[2]);
+	percVolOver=(volOver/vol_ex2)*100;
+
+	printf("VOLUME ex_2: %f\n", vol_ex2);
+	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
+	printf("CENTER ex_2: %g %g %g\n",c_ex2[0],c_ex2[1],c_ex2[2]);
+	
+	fprintf(output,"VOLUME ex_2: %f\n", vol_ex2);	
+	fprintf(output,"VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
+	fprintf(output,"CENTER OF MASS ex_2: %g %g %g",c_ex2[0],c_ex2[1],c_ex2[2]);
+
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
+	//computes moments for third expert
+	moment->SetImage(ex_3);
+	moment->Compute();
+	c_ex3=moment->GetCenterOfGravity();
+	vol_ex3=moment->GetTotalMass();
+	vol_ex3=vol_ex3*(ex_3->GetSpacing()[0]*ex_3->GetSpacing()[1]*ex_3->GetSpacing()[2]);
+	percVolOver=(volOver/vol_ex3)*100;
+
+	printf("VOLUME ex_3: %f\n", vol_ex3);
+	printf("VOLUME OVERLAP PERC ex_3: %f \n",percVolOver);
+	printf("CENTER ex_3: %g %g %g\n",c_ex3[0],c_ex3[1],c_ex3[2]);
+	
+	fprintf(output,"VOLUME ex_3: %f\n", vol_ex3);	
+	fprintf(output,"VOLUME OVERLAP PERC ex_3: %f \n",percVolOver);
+	fprintf(output,"CENTER OF MASS ex_3: %g %g %g",c_ex3[0],c_ex3[1],c_ex3[2]);
+	
+	printf("\n\n");
+	fprintf(output,"\n\n");
+
+	//Writes the overlap volume
+	
+	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
+	fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
+
+	mean_vol=(vol_ex1+vol_ex2+vol_ex3)/3;
+	mean_center[0]=(c_ex1[0]+c_ex2[0]+c_ex3[0])/3;
+	mean_center[1]=(c_ex1[1]+c_ex2[1]+c_ex3[1])/3;
+	mean_center[2]=(c_ex1[2]+c_ex2[2]+c_ex3[2])/3;
+
+	printf("MEAN VOLUME: %f\n", mean_vol);
+	fprintf(output,"MEAN VOLUME: %f\n", mean_vol);
+
+	percVolOver=(volOver/mean_vol)*100;
+	printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
+	fprintf(output,"MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
+
+	printf("MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
+	fprintf(output,"MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
+
 }

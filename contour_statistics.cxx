@@ -7,13 +7,13 @@ void print_usage (void)
 {
 	/*printf ("This executable computes the DICE coefficient for 2 give binary volumes \n");*/
 	printf ("Usage: contour_statistics \n");
-	printf ("  mode (options: slice, global, experts,  cp)\t");
+	printf ("  mode (options: global, experts,  cp)\t");
 	printf ("  file1\t");
 	printf ("  file2\t");
 	printf ("  [file3] or [filename]\t");
 	printf ("  [filename]\n");
 	printf ("  OPTIONS EXPLANATION: \n");
-	printf ("  case Dice's coeff computation: the user can choose between calculating it for the whole volume (mode=global) or slice per slice (mode=slice).\n NB: in this case file1=reference volume, file2=warped volume\n\n");
+	printf ("  case Dice's coeff computation: the user can choose between calculating it for the whole volume (mode=global).\n NB: in this case file1=reference volume, file2=warped volume\n\n");
 	printf ("  case Experts: this is designed to compute the inter-raters variability. It will compute the overlapping region between the three volumes and divide it by the union.\n");
 	printf ("  case Closest Point computation: mode should be set to 'cp' , file1 should be your *.obj file and file2 should be your *.txt file with the points from the physician\n\n");
 	//printf ("  filename: the user can specify (optional) a filename for the output file in which the program should write the outputs (either the Dice's coeff values and volume ovelap % or the distances from the mesh for the cp calculation.\n");
@@ -34,7 +34,8 @@ int main(int argc, char* argv[])
 	if (argc<4)
 		print_usage();
 
-	if(strcmp("global",argv[1])==0 || strcmp("slice",argv[1])==0){
+	//if(strcmp("global",argv[1])==0 || strcmp("slice",argv[1])==0){
+	if(strcmp("global",argv[1])==0){
 		reference=load_uchar(argv[2]);
 		warped=load_uchar(argv[3]);
 	}else if(strcmp("experts",argv[1])==0){
@@ -60,8 +61,8 @@ int main(int argc, char* argv[])
 	if (argc<5){
 		if(strcmp("cp",argv[1])==0){
 			output=fopen("cp_dist.txt","w");
-		}else if(strcmp("slice",argv[1])==0){
-			output=fopen("dice_slice.txt","w");
+		//}else if(strcmp("slice",argv[1])==0){
+		//	output=fopen("dice_slice.txt","w");
 		}else if(strcmp("global",argv[1])==0){
 			output=fopen("dice_global.txt","w");
 		}else if(strcmp("experts",argv[1])==0){
@@ -80,8 +81,8 @@ int main(int argc, char* argv[])
 
 	if(strcmp("global",argv[1])==0){
 		do_dice_global(reference, warped, output);
-	}else if(strcmp("slice",argv[1])==0){
-		do_dice_slice(reference, warped, output);
+	//}else if(strcmp("slice",argv[1])==0){
+	//	do_dice_slice(reference, warped, output);
 	}else if(strcmp("experts",argv[1])==0){
 		do_dice_expert(ex_1, ex_2, ex_3, output);
 	}else if(strcmp("cp",argv[1])==0){
