@@ -7,11 +7,12 @@
 void print_usage (void)
 {
 	printf ("Usage: tps_interp\n");
-	printf ("  original landmarks\t");
-	printf ("  target landmarks\t");
-	printf ("  OriginalImage\t");
-	printf ("  WarpedImage\t");
-	printf ("  VectorField\t");
+	printf ("  reference landmarks ");
+	printf ("  target landmarks ");
+	printf ("  fixed image ");
+	printf ("  movingImage ");
+	printf ("  output Image ");
+	printf ("  output VectorField\n");
 	exit (-1);
 }
 
@@ -22,24 +23,27 @@ void tps_interp_main(TPS_parms* parms){
 
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
-    itk__GetImageType (parms->original, pixelType, componentType);
+    itk__GetImageType (parms->moving, pixelType, componentType);
     switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    {
-		UCharImageType::Pointer img_in = load_uchar (parms->original);
-		do_tps(parms,img_in,(unsigned char)0);
+		UCharImageType::Pointer img_moving = load_uchar (parms->moving);
+		UCharImageType::Pointer img_fixed = load_uchar (parms->fixed);
+		do_tps(parms,img_fixed,img_moving,(unsigned char)0);
 	    }
 	    break;
         case itk::ImageIOBase::SHORT:
 	    {
-		ShortImageType::Pointer img_in = load_short (parms->original);
-		do_tps(parms,img_in,(short)-1200);
+		ShortImageType::Pointer img_moving = load_short (parms->moving);
+		ShortImageType::Pointer img_fixed = load_short (parms->fixed);
+		do_tps(parms,img_fixed,img_moving,(short)-1200);
 	    }
 	    break;
         case itk::ImageIOBase::FLOAT:
 	    {
-		FloatImageType::Pointer img_in = load_float (parms->original);
-		do_tps(parms,img_in,(float)-1200.0);
+		FloatImageType::Pointer img_moving = load_float (parms->moving);
+		FloatImageType::Pointer img_fixed = load_float (parms->fixed);
+		do_tps(parms,img_fixed,img_moving,(float)-1200.0);
 	    }
 	    break;
 	default:
@@ -60,9 +64,10 @@ int main(int argc, char* argv[]){
 		memset(parms,0,sizeof(TPS_parms));
 		parms->reference=argv[1];
 		parms->target=argv[2];
-		parms->original=argv[3];
-		parms->warped=argv[4];
-		parms->vf=argv[5];
+		parms->fixed=argv[3];
+		parms->moving=argv[4];
+		parms->warped=argv[5];
+		parms->vf=argv[6];
 		tps_interp_main(parms);
 	}
 

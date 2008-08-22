@@ -6,7 +6,7 @@
 #include "itk_warp.h"
 
 template<class T>
-void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T default_val)
+void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typename itk::Image<T,3>::Pointer img_moving, T default_val)
 {
     typedef typename itk::Image<T,3> ImgType;
     typedef double CoordinateRepType;
@@ -28,7 +28,7 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
     FILE* reference;
     FILE* target;
 
-    get_image_header(dim, offset, spacing, img_in);
+    get_image_header(dim, offset, spacing, img_fixed);
 
     typename PointSetType::Pointer sourceLandMarks = PointSetType::New();
     typename PointSetType::Pointer targetLandMarks = PointSetType::New();
@@ -84,7 +84,7 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
 
     printf ("Warping...\n");
 	
-    typename ImgType::Pointer im_warped = itk_warp_image (img_in, vf, 1, default_val);
+    typename ImgType::Pointer im_warped = itk_warp_image (img_moving, vf, 1, default_val);
 
     printf ("Saving...\n");
     save_image (im_warped, parms->warped);
@@ -95,6 +95,6 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_in, T defaul
 /* RMK: Visual studio 2005 without service pack requires <float> specifier
    on the explicit extantiations.  The current hypothesis is that this 
    is because the template is nested. */
-template void do_tps<unsigned char>(TPS_parms* parms,itk::Image<unsigned char,3>::Pointer img_in, unsigned char);
-template void do_tps<float>(TPS_parms* parms,itk::Image<float,3>::Pointer img_in, float);
-template void do_tps<short>(TPS_parms* parms,itk::Image<short,3>::Pointer img_in, short);
+template void do_tps<unsigned char>(TPS_parms* parms,itk::Image<unsigned char,3>::Pointer img_fixed,itk::Image<unsigned char,3>::Pointer img_moving, unsigned char);
+template void do_tps<float>(TPS_parms* parms,itk::Image<float,3>::Pointer img_fixed,itk::Image<float,3>::Pointer img_moving, float);
+template void do_tps<short>(TPS_parms* parms,itk::Image<short,3>::Pointer img_fixed,itk::Image<short,3>::Pointer img_moving, short);

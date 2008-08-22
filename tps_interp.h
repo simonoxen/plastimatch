@@ -26,11 +26,12 @@ typedef struct tps_parms TPS_parms;
 struct tps_parms {
     char* reference;
 	char* target;
-	char* original;
+	char* fixed;
+	char* moving;
 	char* warped;
 	char* vf;
 };
 
 template<class T>
-void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_in,T);
+void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
 #endif

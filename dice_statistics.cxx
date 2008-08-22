@@ -35,7 +35,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	k[0]=0;
 	int overlap=0;
 	float dice=0;
-	int size=0;
+	int sizeRef=0;
+	int sizeWarp=0;
 	float volOver;
 	float percVolOver;
 	int dim[3];
@@ -62,7 +63,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	}
 
 	overlap=0;
-	size=0;
+	sizeRef=0;
+	sizeWarp=0;
 	get_image_header(dim, offset, spacing, reference);
 
 	//printf("SPACING:%f %f %f\n",spacing[0],spacing[1],spacing[2]);
@@ -75,8 +77,14 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	{
 		k=it.GetIndex();
 		//printf("INDICE: %d %d %d",k);
-		if(reference->GetPixel(k)==1 || warped->GetPixel(k)==1){
-			size++;
+		if(reference->GetPixel(k)){
+			sizeRef++;
+		}
+		if(warped->GetPixel(k)){
+			sizeWarp++;
+		}
+		if(reference->GetPixel(k)|| warped->GetPixel(k)){
+			//size++;
 			//printf("COORD: %f %f %f \n",x,y,z);
 			if(warped->GetPixel(k)==reference->GetPixel(k)){
 				overlap++;
@@ -88,8 +96,9 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 
 
 	printf("overlap: %d\n",overlap);
-	printf("# of white pixels in the reference image: %d\n",size);
-	dice=((float)2*overlap)/((float)2*size);
+	printf("# of white pixels in the 2 images: %d\n",sizeRef+sizeWarp);
+
+	dice=((float)2*overlap)/((float)(sizeRef+sizeWarp));
 	printf("DICE COEFFICIENT: %f\n",dice);
 	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
 
@@ -260,9 +269,17 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 {
 	ImgType::IndexType k;
 	k[0]=0;
+	int overlapE12=0;
+	int overlapE13=0;
+	int overlapE23=0;
 	int overlap=0;
+	float diceE12=0;
+	float diceE13=0;
+	float diceE23=0;
 	float dice=0;
-	int size=0;
+	int sizeEx_1=0;
+	int sizeEx_2=0;
+	int sizeEx_3=0;
 	double volOver=0;
 	double percVolOver=0;
 	int dim[3];
@@ -289,17 +306,39 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 
 	get_image_header(dim, offset, spacing, ex_1);
 
-	overlap=0;
-	size=0;
+	overlapE12=0;
+	overlapE13=0;
+	overlapE23=0;
+	sizeEx_1=0;
+	sizeEx_2=0;
+	sizeEx_3=0;
 				
 	ItTypeVolPixel it(ex_1, ex_1->GetLargestPossibleRegion());
 
 	while(!it.IsAtEnd())
 	{
 		k=it.GetIndex();
-		if(ex_1->GetPixel(k)==1 || ex_2->GetPixel(k)==1 || ex_3->GetPixel(k)==1){
-			size++;
-			if(ex_1->GetPixel(k) && ex_2->GetPixel(k) && ex_3->GetPixel(k)){
+		if(ex_1->GetPixel(k)){
+			sizeEx_1++;
+		}
+		if(ex_2->GetPixel(k)){
+			sizeEx_2++;
+		}
+		if(ex_3->GetPixel(k)){
+			sizeEx_3++;
+		}
+		if(ex_1->GetPixel(k) || ex_2->GetPixel(k) || ex_3->GetPixel(k)){
+			//size++;
+			if(ex_1->GetPixel(k) && ex_2->GetPixel(k)){
+				overlapE12++;
+			}
+			if(ex_1->GetPixel(k)&& ex_3->GetPixel(k)){
+				overlapE13++;
+			}
+			if(ex_2->GetPixel(k)&& ex_3->GetPixel(k)){
+				overlapE23++;
+			}
+			if(ex_2->GetPixel(k)&& ex_3->GetPixel(k) && ex_1->GetPixel(k)){
 				overlap++;
 			}
 		}
@@ -308,11 +347,18 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	}
 
 	
-	printf("overlap: %d\n",overlap);
-	printf("# of white pixels in the 3 images: %d\n",size);
-	dice=((float)overlap)/((float)size);
-	printf("DICE COEFFICIENT: %f\n",dice);
-	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
+	printf("overlap E12: %d\n",overlapE12);
+	printf("overlap E13: %d\n",overlapE13);
+	printf("overlap E23: %d\n",overlapE23);
+	printf("# of white pixels in the ex_1 image: %d\n",sizeEx_1);
+	printf("# of white pixels in the ex_2 image: %d\n",sizeEx_2);
+	printf("# of white pixels in the ex_3 image: %d\n",sizeEx_3);
+	diceE12=((float)2*overlapE12)/((float)(sizeEx_1+sizeEx_2));
+	diceE13=((float)2*overlapE13)/((float)(sizeEx_1+sizeEx_3));
+	diceE23=((float)2*overlapE23)/((float)(sizeEx_2+sizeEx_3));
+	dice=(diceE12+diceE13+diceE23)/3;
+	printf("MEAN DICE COEFFICIENT: %f\n",dice);
+	fprintf(output,"MEAN DICE COEFFICIENT: %f\n",dice);
 	printf("\n\n");
 	fprintf(output,"\n\n");
 	//dim=reference->GetSpacing();
