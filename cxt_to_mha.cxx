@@ -258,7 +258,8 @@ int main (int argc, char* argv[])
     for (int p=0; p < structures->num_structures; p++){
 	curr_structure_2=&structures->slist[p];
 	char filename[BUFLEN]="";
-	strcat(filename,"vertix");
+	strcat(filename,parms->pat_number);
+	strcat(filename,"MD");
 	strcat(filename,"_");
 	strcat(filename,curr_structure_2->name);
 	strcat(filename,".txt");
