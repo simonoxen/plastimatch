@@ -50,6 +50,7 @@ struct BSPLINE_Parms_struct {
     BSPLINE_Data bspd;           /* Coefficients and lookup data */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
+	void *data_from_gpu;	/* Pointer to structure that stores the data returned from the GPU */
 };
 
 #if defined __cplusplus
