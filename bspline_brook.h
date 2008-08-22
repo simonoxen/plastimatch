@@ -32,6 +32,7 @@ struct BSPLINE_data_on_gpu_struct {
 	::brook::stream *diff_stream; // Stream to store the correspondence values in the moving image---for debug purposes only
 	::brook::stream *valid_voxel_stream; // Stream to indicate if a voxel should take part in the score computation or not
 	::brook::stream *score; // Single element stream to store the score
+	::brook::stream *num_valid_voxels; // Single element stream to store the number of valid voxels
 
 	float *dxyz[3];
 	float *diff;
@@ -129,6 +130,10 @@ void compute_diff_squared_kernel(::brook::stream,
 								 ::brook::stream);
 
 void compute_score_kernel(::brook::stream, 
+						  ::brook::stream);
+
+
+void compute_num_valid_voxels_kernel(::brook::stream, 
 						  ::brook::stream);
 
 #if defined __cplusplus

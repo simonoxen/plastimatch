@@ -165,8 +165,9 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
 	data_on_gpu->valid_voxel_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
 	data_on_gpu->mvr_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
 
-	/* Allocate memory on GPU to store the score as a single float4 element. */
+	/* Allocate memory on GPU to store the score and the number of valid voxels as single float4 elements. */
 	data_on_gpu->score = new ::brook::stream(::brook::getStreamType((float4 *)0), 1, 1, -1);
+	data_on_gpu->num_valid_voxels = new ::brook::stream(::brook::getStreamType((float4 *)0), 1, 1, -1);
 
 	/* Allocate memory on the CPU to store the diff values read back from the GPU */
 	data_on_gpu->diff = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
@@ -247,7 +248,6 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     int fi, fj, fk;
     int p[3];
     int q[3];
-    float diff;
     float dc_dv[3];
     int num_vox;
     int pidx, qidx;
@@ -257,9 +257,6 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     
-	/* Some variables for timing */
-	clock_t start_clock, end_clock;
-
     iter++;
 
     /* Prepare the GPU to execute the dxyz kernel */
@@ -293,14 +290,19 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 	pix_spacing.y = (float)moving->pix_spacing[1];
 	pix_spacing.z = (float)moving->pix_spacing[2];
 
-	float4 score;
+	float4 score, num_valid_voxels;
+
+	LARGE_INTEGER clock_count, clock_frequency;
+    double clock_start, clock_end;
+
+	QueryPerformanceFrequency(&clock_frequency); // Get CPU frequency
+    QueryPerformanceCounter(&clock_count); // Get CPU cycle counter
+    clock_start = (double)clock_count.QuadPart;
 
 	/* Transfer the new coefficient values provided by the optimizer to the GPU */
 	streamRead(*(data_on_gpu->coeff_stream), bspd->coeff);
 
     /* Invoke kernel on the GPU to compute dxyz, that determines the influence of the control knots on voxels in the X, Y, and Z directions */
-	printf("Executing xyz kernels...");
-	start_clock = clock();
     compute_dxyz_kernel(*(data_on_gpu->c_lut_stream), 
 		 *(data_on_gpu->q_lut_stream), 
 		 *(data_on_gpu->coeff_stream), 
@@ -342,11 +344,6 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 2.0,	// Compute influence in the Z direction
 		 64.0,
 		 *(data_on_gpu->dz_stream));
-
-	end_clock = clock();
-	printf(" done. \n");
-	printf("Time needed to compute the dxyz kernels on the GPU = %f \n", double(end_clock - start_clock)/CLOCKS_PER_SEC);
-
 
 	/* Determine the voxels that will contribute to the score computation */
 	compute_valid_voxels_kernel( *(data_on_gpu->dx_stream),
@@ -420,15 +417,18 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 	compute_diff_squared_kernel(*(data_on_gpu->diff_stream), *(data_on_gpu->diff_stream));
 	compute_score_kernel(*(data_on_gpu->diff_stream), *(data_on_gpu->score));
 	
-	// printf(". \n");
-	end_clock = clock();
-	// printf("Time needed to compute the kernels on the GPU = %f \n", double(end_clock - start_clock)/CLOCKS_PER_SEC);
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("Time needed to compute the kernels on the GPU = %f \n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
 	/* Read the diff_squared and valid voxel streams back from the GPU. */
 	// streamWrite(*(data_on_gpu->diff_stream), data_on_gpu->diff);
 	streamWrite(*(data_on_gpu->valid_voxel_stream), data_on_gpu->valid_voxels);
-	streamWrite(*(data_on_gpu->score), &score);
+	compute_num_valid_voxels_kernel(*(data_on_gpu->valid_voxel_stream), *(data_on_gpu->num_valid_voxels));
 
+	streamWrite(*(data_on_gpu->score), &score);
+	streamWrite(*(data_on_gpu->num_valid_voxels), &num_valid_voxels);
+	
 	/* Read back the dc_dv values from the GPU */
 	streamWrite(*(data_on_gpu->dx_stream), data_on_gpu->dxyz[0]);
     streamWrite(*(data_on_gpu->dy_stream), data_on_gpu->dxyz[1]);
@@ -454,17 +454,11 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 
 				if(data_on_gpu->valid_voxels[vox] == 0.0) continue;
 				else{
-					/*
-					diff = data_on_gpu->diff[vox]; // Intensity difference between the voxel in the moving and static image
-					*/
-
 					dc_dv[0] = data_on_gpu->dxyz[0][vox];
 					dc_dv[1] = data_on_gpu->dxyz[1][vox];
 					dc_dv[2] = data_on_gpu->dxyz[2][vox];
 					
 					bspline_update_grad_b (parms, pidx, qidx, dc_dv);
-					// ssd->score += data_on_gpu->diff[vox];
-					// ssd->score += diff * diff;
 					num_vox ++;
 				}
 			}
@@ -475,16 +469,17 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 
     /* Normalize score for MSE */
     // ssd->score = ssd->score / num_vox;
-	ssd->score = (score.x + score.y + score.z + score.w)/num_vox;
+	ssd->score = (score.x + score.y + score.z + score.w)/(num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
     for (i = 0; i < bspd->num_coeff; i++) {
-	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+	// ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+		ssd->grad[i] = 2 * ssd->grad[i] / (num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
     }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bspd->num_coeff; i++) {
-	ssd_grad_mean += ssd->grad[i];
-	ssd_grad_norm += fabs (ssd->grad[i]);
+		ssd_grad_mean += ssd->grad[i];
+		ssd_grad_norm += fabs (ssd->grad[i]);
     }
 
 #if defined (commentout)

@@ -611,6 +611,12 @@ reduce void compute_score_kernel(float4 diff_squared<>, reduce float4 result<>){
 	result = result + diff_squared;
 }  		  
 
+/* This kernel counts the number of valid voxels */
+reduce void compute_num_valid_voxels_kernel(float4 valid_voxels<>, reduce float4 result<>){
+	result = result + valid_voxels;
+}
+
+/* Test kernel */
 kernel void test_kernel(float4 image<>, out float4 result<>)
 {
 	result = image + 1;
