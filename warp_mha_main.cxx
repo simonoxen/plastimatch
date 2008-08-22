@@ -114,6 +114,10 @@ void
 parse_args (Warp_Parms* parms, int argc, char* argv[])
 {
     int ch;
+    int rc;
+    int have_offset = 0;
+    int have_spacing = 0;
+    int have_dims = 0;
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
@@ -123,6 +127,9 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "fixed",	    required_argument,      NULL,           7 },
 	{ "output_vf",      required_argument,      NULL,           8 },
 	{ "interpolation",  required_argument,      NULL,           9 },
+	{ "offset",         required_argument,      NULL,           10 },
+	{ "spacing",        required_argument,      NULL,           11 },
+	{ "dims",           required_argument,      NULL,           12 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -161,6 +168,22 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
 		print_usage ();
 	    }
+	    break;
+	case 10:
+	    rc = sscanf (optarg, "%f %f %f", &parms->offset[0], &parms->offset[1], &parms->offset[2]);
+	    if (rc != 3) {
+		fprintf (stderr, "Error.  --offset requires 3 values.");
+		print_usage ();
+	    }
+	    have_offset = 1;
+	    break;
+	case 11:
+	    rc = sscanf (optarg, "%f %f %f", &parms->spacing[0], &parms->spacing[1], &parms->spacing[2]);
+	    if (rc != 3) {
+		fprintf (stderr, "Error.  --spacing requires 3 values.");
+		print_usage ();
+	    }
+	    have_spacing = 1;
 	    break;
 	default:
 	    break;

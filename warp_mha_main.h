@@ -18,15 +18,12 @@ public:
     char vf_out_fn[_MAX_PATH];
     float default_val;
     int interp_lin;
+    float offset[3];
+    float spacing[3];
+    int dims[3];
 public:
     Warp_Parms () {
-	*mha_in_fn = 0;
-	*mha_out_fn = 0;
-	*vf_in_fn = 0;
-	*xf_in_fn = 0;
-	*fixed_im_fn = 0;
-	*vf_out_fn = 0;
-	default_val = 0.0;
+	memset (this, 0, sizeof(Warp_Parms));
 	interp_lin = 1;
     }
 };
