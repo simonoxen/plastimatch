@@ -491,9 +491,15 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
 
+    QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+    printf("Time needed to compute the kernels on the GPU = %f \n", 
+
 	// printf("Time on CPU to execute the interpolate function = %f\n", cpu_cycles/(double)clock_frequency.QuadPart);
-    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f \n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm);
+    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm,
+	    double(clock_end - clock_start)/(double)clock_frequency.QuadPart)
+	    );
 
 }
 
