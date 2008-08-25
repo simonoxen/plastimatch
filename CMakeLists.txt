@@ -196,8 +196,9 @@ ENDIF(F2C_LIBRARY)
 IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
+	bspline_brook_kernel_wrap.cpp
     	bspline_brook_kernel.br
-	bspline_brook_kernel.cpp
+#	bspline_brook_kernel.cpp
 	toy_kernels.br
 	toy_kernels.cpp
 	bspline_brook.cpp 

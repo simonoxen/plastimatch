@@ -171,6 +171,7 @@ volume_convert_to_float (Volume* ref)
     case PT_VF_FLOAT_PLANAR:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, can't convert VF to FLOAT\n");
+	exit (-1);
 	break;
     }
 }
@@ -210,7 +211,8 @@ volume_convert_to_short (Volume* ref)
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
 	/* Can't convert this */
-	fprintf (stderr, "Sorry, can't convert VF to FLOAT\n");
+	fprintf (stderr, "Sorry, can't convert VF to SHORT\n");
+	exit (-1);
 	break;
     }
 }
@@ -224,6 +226,7 @@ vf_convert_to_interleaved (Volume* vf)
     case PT_FLOAT:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, can't convert SHORT/FLOAT to VF\n");
+	exit (-1);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
 	/* Nothing to do */
@@ -264,6 +267,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
     case PT_FLOAT:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, can't convert SHORT/FLOAT to VF\n");
+	exit (-1);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
 	{

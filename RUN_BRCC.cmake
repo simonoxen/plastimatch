@@ -1,0 +1,21 @@
+set(ENV{PATH} "$ENV{PATH};c:/Program Files/Microsoft DirectX SDK (June 2007)/Utilities/Bin/x86" )
+
+#MESSAGE("PATH is $ENV{PATH}")
+#MESSAGE("BRCC_EXECUTABLE is ${BRCC_EXECUTABLE}")
+#MESSAGE("OUTFILE_BASE is ${OUTFILE_BASE}")
+#MESSAGE("INFILE is ${INFILE}")
+
+EXECUTE_PROCESS(
+    COMMAND 
+   	"${BRCC_EXECUTABLE}"
+#        "-o" "${OUTFILE_BASE}" "-k" "-p" "fp40" "-p" "ps30" 
+        "-o" "${OUTFILE_BASE}" "-k" "-p" "ps30" "${INFILE}"
+    RESULT_VARIABLE RESULT
+    OUTPUT_VARIABLE STDOUT
+    ERROR_VARIABLE STDERR
+)
+
+#MESSAGE("RETVAL: ${RESULT}")
+#MESSAGE("STDOUT: ${STDOUT}")
+#MESSAGE("STDERR: ${STDERR}")
+

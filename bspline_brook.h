@@ -66,6 +66,9 @@ bspline_initialize_streams_on_gpu(Volume* fixed,
 void 
 bspline_initialize_structure_to_store_data_from_gpu(Volume* fixed, 
 													BSPLINE_Parms *parms);
+#if defined __cplusplus
+}
+#endif
 
 void compute_dxyz_kernel(::brook::stream, 
 						 ::brook::stream, 
@@ -108,7 +111,6 @@ void compute_valid_voxels_kernel(::brook::stream,
 void compute_dc_dv_kernel(::brook::stream, 
 						  ::brook::stream, 
 						  ::brook::stream, 
-						  ::brook::stream, 
 						  float3, 
 						  float3, 
 						  float3, 
@@ -136,8 +138,5 @@ void compute_score_kernel(::brook::stream,
 void compute_num_valid_voxels_kernel(::brook::stream, 
 						  ::brook::stream);
 
-#if defined __cplusplus
-}
-#endif
 
 #endif

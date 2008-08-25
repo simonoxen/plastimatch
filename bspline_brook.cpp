@@ -20,8 +20,8 @@
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "bspline_brook.h"
-#include "toy_kernels.cpp"
-#include "bspline_brook_kernel.cpp"
+//#include "toy_kernels.cpp"
+//#include "bspline_brook_kernel.cpp"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
