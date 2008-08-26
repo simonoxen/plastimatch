@@ -40,8 +40,8 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We are using ITK 3.6.  When you build ITK, the following settings are 
-recommended:
+We are using ITK 3.6 and ITK 3.8.  When you build ITK, the following 
+settings are recommended:
   BUILD_EXAMPLES         OFF
   BUILD_SHARED_LIBS      (EITHER)
   BUILD_TESTING          OFF
@@ -51,7 +51,7 @@ you compile.
 
 F2C is required if you want to run B-Spline registration with 
 LBFGSB optimization.  For windows, the library is included in the 
-download.  For unix, get from here:
+download.  For unix, including MSYS, get from here:
 
   http://www.netlib.org/f2c/
 
@@ -63,7 +63,7 @@ Download Brook from here:
   http://graphics.stanford.edu/projects/brookgpu/
 
 If using brook, you also need to install the DirectX SDK and 
-the NVIDIA CG compiler.
+the NVIDIA CG compiler.  Please refer to README.BROOK.TXT.
 
 Slicer is needed if you want to build the Slicer plugin.  This is still
 experimental.  Download Slicer from here:
@@ -78,9 +78,6 @@ BUILDING PLASTIMATCH
 --------------------
 *) If using brook, make sure the plastimatch source directory doesn't 
    have any spaces in the path (brook/fxc has problems with these).
-
-*) If using brook, make sure that the fxc compiler is in your PATH so 
-   that brcc can find it.
 
 *) Windows instructions for running cmake
 
