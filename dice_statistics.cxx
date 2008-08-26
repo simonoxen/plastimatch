@@ -100,10 +100,11 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 
 	dice=((float)2*overlap)/((float)(sizeRef+sizeWarp));
 	printf("DICE COEFFICIENT: %f\n",dice);
-	fprintf(output,"DICE COEFFICIENT: %f\n",dice);
+	fprintf(output,"DICE: %f\n",dice);
+	//fprintf(output,"%f\n",dice);
 
 	printf("\n\n");
-	fprintf(output,"\n\n");
+	fprintf(output,"\n");
 
 	volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 
@@ -123,10 +124,11 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//fprintf(output,"VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
 	//fprintf(output,"CENTER OF MASS ex_1: %g %g %g",c_ref[0],c_ref[1],c_ref[2]);
 
-	fprintf(output,"\t\t");
+	fprintf(output,"EXPERT\t");
 	fprintf(output,"VOLUME\t");
 	fprintf(output,"VOL over perc \n");
 	fprintf(output,"ref\t %f\t %f\n", vol_ref,percVolOver);
+	//fprintf(output,"%f\t %f\n", vol_ref,percVolOver);
 
 	printf("\n\n");
 	//fprintf(output,"\n\n");
@@ -142,13 +144,10 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	printf("VOLUME warp: %f\n", vol_warp);
 	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
 	printf("CENTER warp: %g %g %g\n",c_warp[0],c_warp[1],c_warp[2]);
-	//
-	//fprintf(output,"VOLUME ex_2: %f\n", vol_warp);	
-	//fprintf(output,"VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
-	//fprintf(output,"CENTER OF MASS ex_2: %g %g %g",c_warp[0],c_warp[1],c_warp[2]);
 	fprintf(output,"warp\t %f\t %f\n", vol_warp, percVolOver);
-	printf("\n\n");
-	//fprintf(output,"\n");
+	//fprintf(output,"%f\t %f\n", vol_warp, percVolOver);
+	printf("\n");
+	
 
 	//Writes the overlap volume
 	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
@@ -166,17 +165,20 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	//fprintf(output,"MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	fprintf(output,"mean\t %f\t %f\n",  mean_vol, percVolOver);
+	//fprintf(output,"%f\t %f\n",  mean_vol, percVolOver);
 
 	printf("MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
 	//fprintf(output,"MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 	fprintf(output,"\n");
-	fprintf(output,"CENTER OF MASS \n \t\t");
+	fprintf(output,"CENTER_OF_MASS\n EXPERT\t");
 	fprintf(output, "x\t\t y\t\t z\n");
 	fprintf(output,"ref\t %g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
 	fprintf(output,"warp\t %g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
 	fprintf(output,"mean \t %g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
-
+	//fprintf(output,"%g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
+	//fprintf(output,"%g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
+	//fprintf(output,"%g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
 
@@ -372,11 +374,12 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	diceE23=((float)2*overlapE23)/((float)(sizeEx_2+sizeEx_3));
 	dice=(diceE12+diceE13+diceE23)/3;
 	printf("MEAN DICE COEFFICIENT: %f\n",dice);
-	fprintf(output,"MEAN DICE COEFFICIENT: %f\n",dice);
+	fprintf(output,"DICE: %f\n",dice);
+	//fprintf(output,"%f\n",dice);
+	fprintf(output,"DICE E1-E2: %f\n",diceE12);
+	fprintf(output,"DICE E1-E3: %f\n",diceE13);
+	fprintf(output,"DICE E2-E3: %f\n",diceE23);
 	printf("\n\n");
-	fprintf(output,"\n");
-	//dim=reference->GetSpacing();
-	//volume=size*(dim[0]*dim[1]*dim[2]);
 
 	volOver=overlap*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
 
@@ -391,15 +394,15 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	printf("VOLUME ex_1: %f\n", vol_ex1);
 	printf("VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
 	printf("CENTER ex_1: %g %g %g\n",c_ex1[0],c_ex1[1],c_ex1[2]);
-	fprintf(output,"\t\t");
+	fprintf(output,"EXPERT\t");
 	fprintf(output,"VOLUME\t");
 	fprintf(output,"VOL over perc\n");
-	fprintf(output,"ex_1\t %f\t %f\n", vol_ex1,percVolOver);	
-	//fprintf(output,"VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
-	//fprintf(output,"CENTER OF MASS ex_1: %g %g %g",c_ex1[0],c_ex1[1],c_ex1[2]);
+	fprintf(output,"ex_1\t %f\t %f\n", vol_ex1,percVolOver);
+	//fprintf(output,"%f\t %f\n", vol_ex1,percVolOver);	
+
 
 	printf("\n\n");
-	//fprintf(output,"\n");
+	fprintf(output,"\n");
 
 	//computes moments for second expert
 	moment->SetImage(ex_2);
@@ -412,14 +415,11 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	printf("VOLUME ex_2: %f\n", vol_ex2);
 	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
 	printf("CENTER ex_2: %g %g %g\n",c_ex2[0],c_ex2[1],c_ex2[2]);
-	
-	//fprintf(output,"VOLUME ex_2: %f\n", vol_ex2);	
-	//fprintf(output,"VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
-	//fprintf(output,"CENTER OF MASS ex_2: %g %g %g",c_ex2[0],c_ex2[1],c_ex2[2]);
+
 	fprintf(output,"ex_2\t %f\t %f\n", vol_ex2, percVolOver);
+	//fprintf(output,"%f\t %f\n", vol_ex2, percVolOver);
 
 	printf("\n\n");
-	//fprintf(output,"\n\n");
 
 	//computes moments for third expert
 	moment->SetImage(ex_3);
@@ -433,13 +433,10 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	printf("VOLUME OVERLAP PERC ex_3: %f \n",percVolOver);
 	printf("CENTER ex_3: %g %g %g\n",c_ex3[0],c_ex3[1],c_ex3[2]);
 	
-	//fprintf(output,"VOLUME ex_3: %f\n", vol_ex3);	
-	//fprintf(output,"VOLUME OVERLAP PERC ex_3: %f \n",percVolOver);
-	//fprintf(output,"CENTER OF MASS ex_3: %g %g %g",c_ex3[0],c_ex3[1],c_ex3[2]);
 	fprintf(output,"ex_3\t %f\t %f\n", vol_ex3, percVolOver);
+	//fprintf(output,"%f\t %f\n", vol_ex3, percVolOver);
 	
 	printf("\n\n");
-	//fprintf(output,"\n\n");
 
 	//Writes the overlap volume
 	
@@ -452,21 +449,26 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	mean_center[2]=(c_ex1[2]+c_ex2[2]+c_ex3[2])/3;
 
 	printf("MEAN VOLUME: %f\n", mean_vol);
-	//fprintf(output,"MEAN VOLUME: %f\n", mean_vol);
 
 	percVolOver=(volOver/mean_vol)*100;
 	//printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	//fprintf(output,"MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	fprintf(output,"mean\t %f\t %f\n",mean_vol,percVolOver);
+	//fprintf(output,"%f\t %f\n",mean_vol,percVolOver);
+
 	printf("MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
 	
-	fprintf(output,"\n");
+
 	
-	fprintf(output,"CENTER OF MASS \n \t\t");
+	fprintf(output,"CENTER_OF_MASS\n EXPERT\t");
 	fprintf(output, "x\t\t y\t\t z\n");
 	fprintf(output,"ex_1\t %g\t %g\t %g\n",c_ex1[0],c_ex1[1],c_ex1[2]);
 	fprintf(output,"ex_2\t %g\t %g\t %g\n",c_ex2[0],c_ex2[1],c_ex2[2]);
 	fprintf(output,"ex_3\t %g\t %g\t %g\n",c_ex3[0],c_ex3[1],c_ex3[2]);
 	fprintf(output,"mean \t %g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
+	//fprintf(output,"%g\t %g\t %g\n",c_ex1[0],c_ex1[1],c_ex1[2]);
+	//fprintf(output,"%g\t %g\t %g\n",c_ex2[0],c_ex2[1],c_ex2[2]);
+	//fprintf(output,"%g\t %g\t %g\n",c_ex3[0],c_ex3[1],c_ex3[2]);
+	//fprintf(output,"%g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
