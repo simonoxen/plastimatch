@@ -207,6 +207,18 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
+    else if (!strcmp (key, "mattes_histogram_bins")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%d", &stage->mattes_histogram_bins) != 1) {
+	    goto error_exit;
+	}
+    }
+    else if (!strcmp (key, "mattes_num_spatial_samples")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%d", &stage->mattes_num_spatial_samples) != 1) {
+	    goto error_exit;
+	}
+    }
     else if (!strcmp (key, "demons_std")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%g", &stage->demons_std) != 1) {
