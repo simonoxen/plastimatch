@@ -55,65 +55,24 @@ typedef itk::ImageMaskSpatialObject< 3 > Mask_SOType;
 typedef itk::LinearInterpolateImageFunction <
     FloatImageType, double >InterpolatorType;
 
-template <typename TRegistration>
-class Registration_Observer : public itk::Command 
-{
-public:
-  typedef  Registration_Observer	  Self;
-  typedef  itk::Command                   Superclass;
-  typedef  itk::SmartPointer<Self>        Pointer;
-  itkNewMacro (Self);
-protected:
-  Registration_Observer() {
-      m_stage = 0;
-  };
-public:
-  typedef   TRegistration                  RegistrationType;
-  typedef   RegistrationType *             RegistrationPointer;
-  //typedef   OptimizerType *                OptimizerPointer;
-  Stage_Parms* m_stage;
-
-  void Set_Stage_Parms (Stage_Parms* stage) {
-      m_stage = stage;
-  }
-
-  void Execute(itk::Object * object, const itk::EventObject & event)
-  {
-    if (typeid (event) != typeid (itk::IterationEvent)) {
-      return;
-    }
-    RegistrationPointer registration =
-                            dynamic_cast<RegistrationPointer> (object);
-
-    /* GCS: Not sure if this is still needed... */
-    if (m_stage) {
-	printf ("Updating optimizer settings...\n");
-	optimizer_update_settings (registration, m_stage);
-    }
-  }
-
-  void Execute(const itk::Object * , const itk::EventObject &)
-    { printf ("Const registration_observer callback!!\n"); }
-};
-
 class Optimization_Observer : public itk::Command
 {
-  public:
+public:
     typedef Optimization_Observer Self;
     typedef itk::Command Superclass;
     typedef itk::SmartPointer < Self > Pointer;
     itkNewMacro(Self);
-  protected:
+protected:
     Optimization_Observer() {
 	m_stage = 0;
     };
-  public:
+public:
     Stage_Parms* m_stage;
     RegistrationType::Pointer m_registration;
     double last_value;
 
     void Set_Stage_Parms (RegistrationType::Pointer registration,
-			Stage_Parms* stage) {
+			  Stage_Parms* stage) {
 	m_registration = registration;
 	m_stage = stage;
     }
@@ -136,7 +95,7 @@ class Optimization_Observer : public itk::Command
 	    std::cout << "End: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
-	    std::cout << std::endl;
+		std::cout << std::endl;
 	    }
 	    std::cout << std::endl;
 	}
@@ -155,17 +114,17 @@ class Optimization_Observer : public itk::Command
 		double diff = fabs(last_value - val);
 		if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
 		    printf (" %10.2f (tol)", diff);
-			/* this doesn't seem to always stop rsg. 
-		    optimizer_set_max_iterations (m_registration, m_stage, 1); */
+		    /* this doesn't seem to always stop rsg. 
+		       optimizer_set_max_iterations (m_registration, m_stage, 1); */
 
-			if (m_stage->optim_type == OPTIMIZATION_RSG) {
-				typedef itk::RegularStepGradientDescentOptimizer * OptimizerPointer;
-				OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-					m_registration->GetOptimizer());
-				optimizer->StopOptimization();
-			} else {
-				optimizer_set_max_iterations (m_registration, m_stage, 1);
-			}
+		    if (m_stage->optim_type == OPTIMIZATION_RSG) {
+			typedef itk::RegularStepGradientDescentOptimizer * OptimizerPointer;
+			OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+										      m_registration->GetOptimizer());
+			optimizer->StopOptimization();
+		    } else {
+			optimizer_set_max_iterations (m_registration, m_stage, 1);
+		    }
 		} else {
 		    printf (" %10.2f", diff);
 		}
@@ -179,6 +138,10 @@ class Optimization_Observer : public itk::Command
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
+	}
+	else {
+	    std::cout << "Unknown event type." << std::endl;
+	    event.Print(std::cout);
 	}
     }
 };
@@ -619,7 +582,7 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
 	}
     }
     catch(itk::ExceptionObject & err) {
-	std::cerr << "ExceptionObject caught !" << std::endl;
+	std::cerr << "Exception caught in itk registration." << std::endl;
 	std::cerr << err << std::endl;
 	exit (-1);
     }
