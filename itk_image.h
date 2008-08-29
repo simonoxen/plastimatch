@@ -33,6 +33,8 @@ typedef itk::Image < short, Dimension > ShortImageType;
 typedef itk::Image < unsigned short, Dimension > UShortImageType;
 typedef itk::Image < float, Dimension > FloatImageType;
 
+typedef itk::Image < short, 2 > ShortImage2DType;
+
 typedef itk::Point < float, Dimension > FloatPointType;
 typedef itk::Vector < float, Dimension > FloatVectorType;
 typedef itk::Image < FloatVectorType, Dimension > DeformationFieldType;
@@ -65,6 +67,7 @@ plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float sp
 template<class T> void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 
 template<class T> void save_image (T img_ptr, char* fname);
+template<class T> void save_short_dicom (T image, char* dir_name);
 template<class T> void save_short (T img_ptr, char* fname);
 template<class T> void save_float (T img_ptr, char* fname);
 

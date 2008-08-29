@@ -140,6 +140,7 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 void
 save_warped_img_itk (Registration_Data* regd,
 		 DeformationFieldType::Pointer vf,
+		 int img_out_fmt, 
 		 char* fn)
 {
     FloatImageType::Pointer im_warped = FloatImageType::New();
@@ -152,7 +153,13 @@ save_warped_img_itk (Registration_Data* regd,
     printf ("Warping image...\n");
     im_warped = itk_warp_image (regd->moving_image->itk_float(), vf, 1, 0.0f);
     printf ("Saving image...\n");
-    save_short (im_warped, fn);
+    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
+	save_short (im_warped, fn);
+    } else if (img_out_fmt == IMG_OUT_FMT_DICOM) {
+	save_short_dicom (im_warped, fn);
+    } else {
+	print_and_exit ("Program error.  Unknown output file type.\n");
+    }
 }
 
 void
@@ -193,7 +200,8 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 	/* Save warped image */
 	if (stage->img_out_fn[0]) {
 	    printf ("Saving warped image ...\n");
-	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), stage->img_out_fn);
+	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), stage->img_out_fmt, 
+		    stage->img_out_fn);
 	}
 	/* Save deformation field */
 	if (stage->vf_out_fn[0]) {
@@ -277,7 +285,8 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
 	    printf ("Saving warped image ...\n");
-	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fn);
+	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fmt, 
+		    regp->img_out_fn);
 	}
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {

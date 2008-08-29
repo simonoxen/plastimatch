@@ -26,7 +26,6 @@ typedef itk::DemonsRegistrationFilter<
 #define STAGE_TRANSFORM_BSPLINE		    4
 #define STAGE_TRANSFORM_VECTOR_FIELD	    5
 
-
 #define OPTIMIZATION_NO_REGISTRATION	    0
 #define OPTIMIZATION_AMOEBA		    1
 #define OPTIMIZATION_RSG		    2
@@ -36,18 +35,18 @@ typedef itk::DemonsRegistrationFilter<
 #define OPTIMIZATION_DEMONS		    6
 #define OPTIMIZATION_STEEPEST		    7
 
-
 #define IMPLEMENTATION_NONE		    0
 #define IMPLEMENTATION_ITK		    1
 #define IMPLEMENTATION_GPUIT_CPU	    2
 #define IMPLEMENTATION_GPUIT_BROOK	    3
-
 
 #define METRIC_NONE			    0
 #define METRIC_MSE			    1
 #define METRIC_MI			    2
 #define METRIC_MI_MATTES		    3
 
+#define IMG_OUT_FMT_AUTO		    0
+#define IMG_OUT_FMT_DICOM		    1
 
 class Stage_Parms {
 public:
@@ -74,6 +73,8 @@ public:
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     int grid_method;     // which grid method used, numbers (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
+
+    int img_out_fmt;
     char img_out_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
@@ -120,6 +121,7 @@ public:
 	grid_method = 1;     // by default goes to the absolute spacing
 	histoeq = 0;         // by default, don't do it
 	/* Output files */
+	img_out_fmt = IMG_OUT_FMT_AUTO;
 	*img_out_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
@@ -127,6 +129,7 @@ public:
     Stage_Parms (Stage_Parms& s) {
 	/* Copy all the parameters except the file names */
 	*this = s;
+	img_out_fmt = IMG_OUT_FMT_AUTO;
 	*img_out_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
@@ -139,6 +142,7 @@ public:
     char fixed_fn[_MAX_PATH];
     char moving_mask_fn[_MAX_PATH];
     char fixed_mask_fn[_MAX_PATH];
+    int img_out_fmt;
     char img_out_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
@@ -155,6 +159,7 @@ public:
 	*fixed_fn = 0;
 	*moving_mask_fn = 0;
 	*fixed_mask_fn = 0;
+	img_out_fmt = IMG_OUT_FMT_AUTO;
 	*img_out_fn = 0;
 	*xf_in_fn = 0;
 	*xf_out_fn = 0;

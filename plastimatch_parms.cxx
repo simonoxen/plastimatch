@@ -52,6 +52,19 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     }
 
     /* The following keywords are allowed either globally or in stages */
+    else if (!strcmp (key, "img_out_fmt")) {
+	int fmt = IMG_OUT_FMT_AUTO;
+	if (!strcmp (val, "dicom")) {
+	    fmt = IMG_OUT_FMT_DICOM;
+	} else {
+	    goto error_exit;
+	}
+	if (section == 0) {
+	    regp->img_out_fmt = fmt;
+	} else {
+	    stage->img_out_fmt = fmt;
+	}
+    }
     else if (!strcmp (key, "img_out")) {
 	if (section == 0) {
 	    strncpy (regp->img_out_fn, val, _MAX_PATH);

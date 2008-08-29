@@ -15,10 +15,24 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkDICOMImageIO2.h"
-#include "itkImageSeriesReader.h"
 #include "itkDICOMSeriesFileNames.h"
+#include "itkGDCMImageIO.h"
+#include "itkGDCMSeriesFileNames.h"
+#include "itkNumericSeriesFileNames.h"
+#include "itkImageSeriesReader.h"
+#include "itkImageSeriesWriter.h"
 #include "itkCastImageFilter.h"
 #include "itk_image.h"
+
+
+#if defined (WIN32)
+#include <direct.h>
+#define snprintf _snprintf
+#define mkdir(a,b) _mkdir(a)
+#else
+#include <sys/stat.h>
+#include <sys/types.h>
+#endif
 
 /* =======================================================================*
     Definitions
@@ -26,7 +40,7 @@
 typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
 typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
-
+typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
 typedef itk::ImageFileReader < ShortImageType > MhaShortReaderType;
 typedef itk::ImageFileReader < UShortImageType > MhaUShortReaderType;
 typedef itk::ImageFileReader < UCharImageType > MhaUCharReaderType;
@@ -522,6 +536,62 @@ save_image (T image, char* fname)
     }
 }
 
+void
+save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
+{
+    typedef itk::GDCMImageIO                        ImageIOType;
+    //typedef itk::GDCMSeriesFileNames                NamesGeneratorType;
+    typedef itk::NumericSeriesFileNames             NamesGeneratorType;
+
+    printf ("Output dir = %s\n", dir_name);
+
+    itksys::SystemTools::MakeDirectory (dir_name);
+
+    ImageIOType::Pointer gdcmIO = ImageIOType::New();
+    DicomShortWriterType::Pointer seriesWriter = DicomShortWriterType::New();
+    NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
+
+    itk::MetaDataDictionary & dict = gdcmIO->GetMetaDataDictionary();
+    std::string tagkey, value;
+    tagkey = "0008|0060"; // Modality
+    value = "CT";
+    itk::EncapsulateMetaData<std::string>(dict, tagkey, value );
+    tagkey = "0008|0008"; // Image Type
+    value = "DERIVED\\SECONDARY";
+    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
+    tagkey = "0008|0064"; // Conversion Type
+    value = "DV";
+    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
+
+    /* Create file names */
+    ShortImageType::RegionType region = short_img->GetLargestPossibleRegion();
+    ShortImageType::IndexType start = region.GetIndex();
+    ShortImageType::SizeType  size  = region.GetSize();
+    std::string format = dir_name;
+    format += "/image%03d.dcm";
+    namesGenerator->SetSeriesFormat( format.c_str() );
+    namesGenerator->SetStartIndex( start[2] );
+    namesGenerator->SetEndIndex( start[2] + size[2] - 1 );
+    namesGenerator->SetIncrementIndex( 1 );
+
+    seriesWriter->SetInput (short_img);
+    seriesWriter->SetImageIO (gdcmIO);
+    seriesWriter->SetFileNames (namesGenerator->GetFileNames());
+
+#if defined (commentout)
+    seriesWriter->SetMetaDataDictionaryArray (
+                        reader->GetMetaDataDictionaryArray() );
+#endif
+
+    try {
+	seriesWriter->Update();
+    } catch (itk::ExceptionObject & excp) {
+	std::cerr << "Exception thrown while writing the series " << std::endl;
+	std::cerr << excp << std::endl;
+	exit (-1);
+    }
+}
+
 template<class T> 
 ShortImageType::Pointer
 cast_short (T image)
@@ -542,6 +612,14 @@ save_short (T image, char* fname)
 {
     ShortImageType::Pointer short_img = cast_short(image);
     save_image (short_img, fname);
+}
+
+template<class T> 
+void
+save_short_dicom (T image, char* dir_name)
+{
+    ShortImageType::Pointer short_img = cast_short(image);
+    save_image_dicom (short_img, dir_name);
 }
 
 template<class T> 
@@ -576,8 +654,9 @@ template plastimatch1_EXPORT void save_image(UCharImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
-template void save_short(FloatImageType::Pointer, char*);
-template void save_float(FloatImageType::Pointer, char*);
+template void save_short (FloatImageType::Pointer, char*);
+template void save_short_dicom (FloatImageType::Pointer, char*);
+template void save_float (FloatImageType::Pointer, char*);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
