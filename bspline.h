@@ -6,14 +6,19 @@
 
 #include "volume.h"
 
-enum BsplineAlgorithm {
-    BA_LBFGSB,
-    BA_STEEPEST
+enum BsplineOptimization {
+    BOPT_LBFGSB,
+    BOPT_STEEPEST
 };
 
-enum BsplineMethod {
-    BM_CPU,
-    BM_BROOK
+enum BsplineImplementation {
+    BIMPL_CPU,
+    BIMPL_BROOK
+};
+
+enum BsplineMetric {
+    BMET_MSE,
+    BMET_MI
 };
 
 typedef struct BSPLINE_Data_struct BSPLINE_Data;
@@ -37,8 +42,9 @@ struct BSPLINE_Score_struct {
 
 typedef struct BSPLINE_Parms_struct BSPLINE_Parms;
 struct BSPLINE_Parms_struct {
-    enum BsplineMethod method;
-    enum BsplineAlgorithm algorithm;
+    enum BsplineImplementation implementation;
+    enum BsplineOptimization optimization;
+    enum BsplineMetric metric;
     int max_its;
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
@@ -50,7 +56,7 @@ struct BSPLINE_Parms_struct {
     BSPLINE_Data bspd;           /* Coefficients and lookup data */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
-	void *data_from_gpu;	/* Pointer to structure that stores the data returned from the GPU */
+    void *data_from_gpu;	 /* Pointer to structure that stores the data returned from the GPU */
 };
 
 #if defined __cplusplus

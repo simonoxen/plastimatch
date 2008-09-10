@@ -45,9 +45,9 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
-		parms->method = BM_BROOK;
+		parms->implementation = BIMPL_BROOK;
 	    } else {
-		parms->method = BM_CPU;
+		parms->implementation = BIMPL_CPU;
 	    }
 	}
         else if (!strcmp (argv[i], "-a")) {
@@ -57,9 +57,9 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "steepest")) {
-		parms->algorithm = BA_STEEPEST;
+		parms->optimization = BOPT_STEEPEST;
 	    } else if (!strcmp(argv[i], "lbfgsb")) {
-		parms->algorithm = BA_LBFGSB;
+		parms->optimization = BOPT_LBFGSB;
 	    } else {
 		print_usage ();
 	    }
@@ -72,6 +72,20 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    rc = sscanf (argv[i], "%d" , &parms->max_its);
 	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-M")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "mse")) {
+		parms->metric = BMET_MSE;
+	    } else if (!strcmp(argv[i], "mi")) {
+		parms->metric = BMET_MI;
+	    } else {
 		print_usage ();
 	    }
 	}

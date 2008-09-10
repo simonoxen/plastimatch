@@ -57,9 +57,9 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     parms = &xgb->parms;
     bspline_default_parms (parms);
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
-	parms->algorithm = BA_STEEPEST;
+	parms->optimization = BOPT_STEEPEST;
     } else {
-	parms->algorithm = BA_LBFGSB;
+	parms->optimization = BOPT_LBFGSB;
     }
     parms->max_its = stage->max_its;
     for (d = 0; d < 3; d++) {
@@ -95,10 +95,10 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 
     /* Run bspline optimization */
     if (stage->impl_type == IMPLEMENTATION_GPUIT_CPU) {
-	parms->method = BM_CPU;
+	parms->implementation = BIMPL_CPU;
 	bspline_optimize (parms, fixed_ss, moving_ss, moving_grad);
     } else {
-	parms->method = BM_BROOK;
+	parms->implementation = BIMPL_BROOK;
 	bspline_optimize (parms, fixed_ss, moving_ss, moving_grad);
     }
 
