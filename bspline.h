@@ -40,6 +40,22 @@ struct BSPLINE_Score_struct {
     float* grad;
 };
 
+typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
+struct BSPLINE_MI_Hist_Parms_struct {
+    int bins;
+    float offset;
+    float delta;
+};
+
+typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
+struct BSPLINE_MI_Hist_struct {
+    BSPLINE_MI_Hist_Parms moving;
+    BSPLINE_MI_Hist_Parms fixed;
+    float* m_hist;
+    float* f_hist;
+    float* j_hist;
+};
+
 typedef struct BSPLINE_Parms_struct BSPLINE_Parms;
 struct BSPLINE_Parms_struct {
     enum BsplineImplementation implementation;
@@ -54,6 +70,7 @@ struct BSPLINE_Parms_struct {
     int vox_per_rgn[3];		 /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
     BSPLINE_Data bspd;           /* Coefficients and lookup data */
+    BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
     void *data_from_gpu;	 /* Pointer to structure that stores the data returned from the GPU */

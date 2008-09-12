@@ -51,6 +51,12 @@ bspline_default_parms (BSPLINE_Parms* parms)
 	parms->vox_per_rgn[d] = 30;
 	parms->grid_spac[d] = 30.0f;
     }
+
+    parms->mi_hist.f_hist = 0;
+    parms->mi_hist.m_hist = 0;
+    parms->mi_hist.j_hist = 0;
+    parms->mi_hist.fixed.bins = 20;
+    parms->mi_hist.moving.bins = 20;
 }
 
 void
@@ -190,6 +196,31 @@ dump_luts (BSPLINE_Parms* parms)
     fclose (fp);
 }
 
+void
+dump_hist (BSPLINE_MI_Hist* mi_hist)
+{
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+    int i, j, v;
+
+    printf ("Fixed hist\n");
+    for (i = 0; i < mi_hist->fixed.bins; i++) {
+	printf ("[%2d] %20.3g\n", i, f_hist[i]);
+    }
+    printf ("Moving hist\n");
+    for (i = 0; i < mi_hist->moving.bins; i++) {
+	printf ("[%2d] %20.3g\n", i, m_hist[i]);
+    }
+    printf ("Joint hist\n");
+    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
+	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+	    if (j_hist[v] > 0) {
+		printf ("[%2d, %2d] %20.3g\n", i, j, j_hist[v]);
+	    }
+	}
+    }
+}
 
 /* -----------------------------------------------------------------------
    Reference code for alternate GPU-based data structure
@@ -419,6 +450,43 @@ bspline_initialize (BSPLINE_Parms* parms)
 	    bspd->cdims[2]);
 }
 
+static void
+bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+{
+    int i;
+    float min_vox, max_vox;
+    float* img = (float*) vol->img;
+
+    if (!img) {
+	printf ("Error trying to create histogram from empty image\n");
+	exit (-1);
+    }
+    min_vox = max_vox = img[0];
+    for (i = 0; i < vol->npix; i++) {
+	if (img[i] < min_vox) {
+	    min_vox = img[i];
+	} else if (img[i] > max_vox) {
+	    max_vox = img[i];
+	}
+    }
+
+    /* To avoid rounding issues, top and bottom bin are only half full */
+    hparms->delta = (max_vox - min_vox) / (hparms->bins - 1);
+    hparms->offset = min_vox - 0.5 * hparms->delta;
+}
+
+static void
+bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
+{
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    mi_hist->m_hist = (float*) malloc (sizeof (float) * mi_hist->moving.bins);
+    mi_hist->f_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins);
+    mi_hist->j_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins * mi_hist->moving.bins);
+    bspline_initialize_mi_vol (&mi_hist->moving, moving);
+    bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
+}
+
+
 void
 bspline_free (BSPLINE_Parms* parms)
 {
@@ -427,6 +495,111 @@ bspline_free (BSPLINE_Parms* parms)
     free (bspd->q_lut);
     free (bspd->c_lut);
     free (parms->ssd.grad);
+    if (parms->mi_hist.j_hist) {
+	free (parms->mi_hist.f_hist);
+	free (parms->mi_hist.m_hist);
+	free (parms->mi_hist.j_hist);
+    }
+}
+
+inline void
+bspline_mi_hist_add (BSPLINE_MI_Hist* mi_hist,
+		float f_val, float m_val)
+{
+    long fl;
+    float midx, midx_trunc;
+    long ml_1, ml_2;		/* 1-d index of bin 1, bin 2 */
+    float mf_1, mf_2;		/* fraction to bin 1, bin 2 */
+    long f_idx, idx1, idx2;	/* Index into 2-d histogram */
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+
+    /* Fixed image is binned */
+    fl = (long) floor ((f_val - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+    f_idx = fl * mi_hist->moving.bins;
+
+    /* This had better not happen! */
+    if (fl < 0 || fl >= mi_hist->fixed.bins) {
+	fprintf (stderr, "Error: fixed image binning problem.\n"
+	    "Bin %d from val %g parms [off=%g, delt=%g, (%d bins)]\n",
+	    fl, f_val, mi_hist->fixed.offset, mi_hist->fixed.delta,
+	    mi_hist->fixed.bins);
+	exit (-1);
+    }
+    
+    /* Moving image binning is interpolated (linear, not b-spline) */
+    midx = ((m_val - mi_hist->moving.offset) / mi_hist->moving.delta);
+    midx_trunc = floorf (midx);
+    ml_1 = (long) midx_trunc;
+    mf_1 = (midx - midx_trunc) / mi_hist->moving.delta;
+    ml_2 = ml_1 + 1;
+    mf_2 = 1.0 - mf_1;
+
+    if (ml_1 < 0) {
+	/* This had better not happen! */
+	fprintf (stderr, "Error: moving image binning problem\n");
+	exit (-1);
+    } else if (ml_2 >= mi_hist->moving.bins) {
+	/* This could happen due to rounding */
+	ml_1 = mi_hist->moving.bins - 2;
+	ml_2 = mi_hist->moving.bins - 1;
+	mf_1 = 0.0;
+	mf_2 = 1.0;
+    }
+
+    if (mf_1 < 0.0 || mf_1 > 1.0 || mf_2 < 0.0 || mf_2 > 1.0) {
+	fprintf (stderr, "Error: MI interpolation problem\n");
+	exit (-1);
+    }
+
+    idx1 = f_idx + ml_1;
+    idx2 = f_idx + ml_2;
+
+    f_hist[fl] += 1.0;
+    m_hist[ml_1] += mf_1;
+    m_hist[ml_2] += mf_2;
+    j_hist[idx1] += mf_1;
+    j_hist[idx2] += mf_2;
+}
+
+static float
+mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
+{
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+
+    int i, j, v;
+    int hist_size = mi_hist->fixed.bins * mi_hist->moving.bins;
+    float mult = 1 / (float) num_vox;
+    float score = 0;
+    double hist_thresh = 0.001 / mi_hist->moving.bins / mi_hist->fixed.bins;
+
+    /* Normalize histogram */
+    for (i = 0; i < mi_hist->fixed.bins; i++) {
+	f_hist[i] *= mult;
+    }
+    for (i = 0; i < mi_hist->moving.bins; i++) {
+	m_hist[i] *= mult;
+    }	
+    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
+	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+	    j_hist[v] *= mult;
+	}	
+    }
+
+    //dump_hist (mi_hist);
+
+    /* Compute cost */
+    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
+	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+	    if (j_hist[v] > hist_thresh) {
+		score -= j_hist[v] * logf (j_hist[v] / (m_hist[j] * f_hist[i]));
+	    }
+	}	
+    }
+    return score;
 }
 
 inline void
@@ -477,7 +650,7 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Data* bspd, int pidx, int qid
     }
 }
 
-void
+static void
 bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
 {
     int i, j, k, m;
@@ -703,6 +876,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 {
     BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int i;
     int ri, rj, rk;
     int fi, fj, fk, fv;
@@ -727,11 +901,14 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float mse_score = 0.0f;
 
     start_clock = clock();
 
-    ssd->score = 0;
     memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (mi_hist->f_hist, 0, mi_hist->fixed.bins * sizeof(float));
+    memset (mi_hist->m_hist, 0, mi_hist->moving.bins * sizeof(float));
+    memset (mi_hist->j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
     num_vox = 0;
     for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / parms->vox_per_rgn[2];
@@ -785,6 +962,9 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
 			+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
+		/* Add to histogram */
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_val);
+
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
 
@@ -795,16 +975,18 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
 		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 		
-		ssd->score += diff * diff;
+		mse_score += diff * diff;
 		num_vox ++;
 	    }
 	}
     }
 
-    //dump_coeff (bspd, "coeff.txt");
+    //dump_hist (bspd, "hist.txt");
 
-    /* Normalize score for MSE */
-    ssd->score = ssd->score / num_vox;
+    /* (This also normalizes the histogram) */
+    ssd->score = 1000 * mi_hist_score (mi_hist, num_vox);
+
+    mse_score = mse_score / num_vox;
     for (i = 0; i < bspd->num_coeff; i++) {
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
@@ -825,8 +1007,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+    printf ("GET VALUE+DERIVATIVE: MI %6.3f MSE %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
+	    ssd->score, mse_score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
@@ -1272,6 +1454,11 @@ bspline_optimize (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		  Volume *moving_grad)
 {
     dump_parms (parms);
+
+    if (parms->metric == BMET_MI) {
+	bspline_initialize_mi (parms, fixed, moving);
+    }
+
     if (parms->optimization == BOPT_LBFGSB) {
 #if defined (HAVE_F2C_LIBRARY)
 	bspline_optimize_lbfgsb (parms, fixed, moving, moving_grad);

@@ -17,8 +17,9 @@ print_usage (void)
 {
     printf ("Usage: bspline [options] fixed moving\n"
 	    "Options:\n"
-	    " -A algorithm               Either \"cpu\" or \"brook\" (default=cpu)\n"
-	    " -a { steepest | lbfgsb }   Choose algorithm\n"
+	    " -A implementation          Either \"cpu\" or \"brook\" (default=cpu)\n"
+	    " -a { steepest | lbfgsb }   Choose optimization algorithm\n"
+	    " -M { mse | mi }            Registration metric (default is mse)\n"
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
 	    " -O outfile                 The output file\n"
