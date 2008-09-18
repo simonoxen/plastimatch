@@ -502,9 +502,15 @@ bspline_free (BSPLINE_Parms* parms)
     }
 }
 
+/* This function will split the amout to add between two bins (linear interp) 
+    based on m_val, but one bin based on f_val. */
 inline void
-bspline_mi_hist_add (BSPLINE_MI_Hist* mi_hist,
-		float f_val, float m_val)
+bspline_mi_hist_add (
+	BSPLINE_MI_Hist* mi_hist,   /* The histogram */
+	float f_val,		    /* Intensity of fixed image */
+	float m_val,		    /* Intensity of moving image */
+	float amt		    /* How much to add to histogram */
+)
 {
     long fl;
     float midx, midx_trunc;
@@ -552,6 +558,9 @@ bspline_mi_hist_add (BSPLINE_MI_Hist* mi_hist,
 	fprintf (stderr, "Error: MI interpolation problem\n");
 	exit (-1);
     }
+
+    mf_1 *= amt;
+    mf_2 *= amt;
 
     idx1 = f_idx + ml_1;
     idx2 = f_idx + ml_2;
@@ -949,21 +958,37 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		clamp_and_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
 		clamp_and_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
 
-		/* Compute moving image intensity using linear interpolation */
 		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
-		m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
-		m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
-		m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
-		m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
-		m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
-		m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-		m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-		m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
-		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
-			+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+		m_x1y1z1 = fx1 * fy1 * fz1;
+		m_x2y1z1 = fx2 * fy1 * fz1;
+		m_x1y2z1 = fx1 * fy2 * fz1;
+		m_x2y2z1 = fx2 * fy2 * fz1;
+		m_x1y1z2 = fx1 * fy1 * fz2;
+		m_x2y1z2 = fx2 * fy1 * fz2;
+		m_x1y2z2 = fx1 * fy2 * fz2;
+		m_x2y2z2 = fx2 * fy2 * fz2;
+		m_val = m_x1y1z1 * m_img[mvf]
+		    + m_x2y1z1 * m_img[mvf+1]
+		    + m_x1y2z1 * m_img[mvf+moving->dim[0]]
+		    + m_x2y2z1 * m_img[mvf+moving->dim[0]+1]
+		    + m_x1y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]] 
+		    + m_x2y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]
+		    + m_x1y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]
+		    + m_x2y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+#if defined (commentout)
+		/* LINEAR INTERPOLATION */
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_val, 1.0);
+#endif
 
-		/* Add to histogram */
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_val);
+		/* PARTIAL VALUE INTERPOLATION */
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], m_x1y1z1);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+1], m_x2y1z1);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]], m_x1y2z1);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1], m_x2y2z1);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]], m_x1y1z2);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1], m_x2y1z2);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]], m_x1y2z2);
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1], m_x2y2z2);
 
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
