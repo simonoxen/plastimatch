@@ -975,6 +975,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    + m_x2y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]
 		    + m_x1y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]
 		    + m_x2y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+
 #if defined (commentout)
 		/* LINEAR INTERPOLATION */
 		bspline_mi_hist_add (mi_hist, f_img[fv], m_val, 1.0);
@@ -993,13 +994,17 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
 
+#if defined (commentout)
 		/* Compute spatial gradient using nearest neighbors */
 		mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
 		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
 		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
-		
+#endif
+
+//		xxx;
+
 		mse_score += diff * diff;
 		num_vox ++;
 	    }
