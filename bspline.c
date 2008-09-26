@@ -197,29 +197,34 @@ dump_luts (BSPLINE_Parms* parms)
 }
 
 void
-dump_hist (BSPLINE_MI_Hist* mi_hist)
+dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn)
 {
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
     int i, j, v;
+    FILE* fp;
 
-    printf ("Fixed hist\n");
+    fp = fopen (fn, "wb");
+    if (!fp) return;
+
+    fprintf (fp, "Fixed hist\n");
     for (i = 0; i < mi_hist->fixed.bins; i++) {
-	printf ("[%2d] %20.3g\n", i, f_hist[i]);
+	fprintf (fp, "[%2d] %20.3g\n", i, f_hist[i]);
     }
-    printf ("Moving hist\n");
+    fprintf (fp, "Moving hist\n");
     for (i = 0; i < mi_hist->moving.bins; i++) {
-	printf ("[%2d] %20.3g\n", i, m_hist[i]);
+	fprintf (fp, "[%2d] %20.3g\n", i, m_hist[i]);
     }
-    printf ("Joint hist\n");
+    fprintf (fp, "Joint hist\n");
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
 	    if (j_hist[v] > 0) {
-		printf ("[%2d, %2d] %20.3g\n", i, j, j_hist[v]);
+		fprintf (fp, "[%2d, %2d, %3d] %20.3g\n", i, j, v, j_hist[v]);
 	    }
 	}
     }
+    fclose (fp);
 }
 
 /* -----------------------------------------------------------------------
@@ -505,18 +510,21 @@ bspline_free (BSPLINE_Parms* parms)
 /* This function will split the amout to add between two bins (linear interp) 
     based on m_val, but one bin based on f_val. */
 inline void
-bspline_mi_hist_add (
-	BSPLINE_MI_Hist* mi_hist,   /* The histogram */
-	float f_val,		    /* Intensity of fixed image */
-	float m_val,		    /* Intensity of moving image */
-	float amt		    /* How much to add to histogram */
+bspline_mi_hist_lookup (
+	long j_idxs[2],		    /* Output: Joint histogram indices */
+	long m_idxs[2],		    /* Output: Moving marginal indices */
+	long f_idxs[1],		    /* Output: Fixed marginal indices */
+	float fxs[2],		    /* Output: Fraction contribution at indices */
+	BSPLINE_MI_Hist* mi_hist,   /* Input:  The histogram */
+	float f_val,		    /* Input:  Intensity of fixed image */
+	float m_val		    /* Input:  Intensity of moving image */
 )
 {
     long fl;
     float midx, midx_trunc;
     long ml_1, ml_2;		/* 1-d index of bin 1, bin 2 */
     float mf_1, mf_2;		/* fraction to bin 1, bin 2 */
-    long f_idx, idx1, idx2;	/* Index into 2-d histogram */
+    long f_idx;	/* Index into 2-d histogram */
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
@@ -559,19 +567,47 @@ bspline_mi_hist_add (
 	exit (-1);
     }
 
-    mf_1 *= amt;
-    mf_2 *= amt;
-
-    idx1 = f_idx + ml_1;
-    idx2 = f_idx + ml_2;
-
-    f_hist[fl] += 1.0;
-    m_hist[ml_1] += mf_1;
-    m_hist[ml_2] += mf_2;
-    j_hist[idx1] += mf_1;
-    j_hist[idx2] += mf_2;
+    j_idxs[0] = f_idx + ml_1;
+    j_idxs[1] = f_idx + ml_2;
+    fxs[0] = mf_1;
+    fxs[1] = mf_2;
+    f_idxs[0] = fl;
+    m_idxs[0] = ml_1;
+    m_idxs[1] = ml_2;
 }
 
+/* This function will split the amout to add between two bins (linear interp) 
+    based on m_val, but one bin based on f_val. */
+inline void
+bspline_mi_hist_add (
+	BSPLINE_MI_Hist* mi_hist,   /* The histogram */
+	float f_val,		    /* Intensity of fixed image */
+	float m_val,		    /* Intensity of moving image */
+	float amt		    /* How much to add to histogram */
+)
+{
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+    long j_idxs[2];
+    long m_idxs[2];
+    long f_idxs[1];
+    float fxs[2];
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_val, m_val);
+
+    fxs[0] *= amt;
+    fxs[1] *= amt;
+
+    f_hist[f_idxs[0]] += 1.0;
+    m_hist[m_idxs[0]] += fxs[0];
+    m_hist[m_idxs[1]] += fxs[1];
+    j_hist[j_idxs[0]] += fxs[0];
+    j_hist[j_idxs[1]] += fxs[1];
+}
+
+#if defined (commentout)
+/* This algorithm uses a normalized score. */
 static float
 mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 {
@@ -608,6 +644,34 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 	    }
 	}	
     }
+    return score;
+}
+#endif
+
+/* This algorithm uses a un-normalized score. */
+static float
+mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
+{
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+
+    int i, j, v;
+    int hist_size = mi_hist->fixed.bins * mi_hist->moving.bins;
+    float fnv = (float) num_vox;
+    float score = 0;
+    float hist_thresh = 0.001 / mi_hist->moving.bins / mi_hist->fixed.bins;
+
+    /* Compute cost */
+    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
+	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
+	    if (j_hist[v] > hist_thresh) {
+		score -= j_hist[v] * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
+	    }
+	}	
+    }
+
+    score = score / fnv;
     return score;
 }
 
@@ -876,6 +940,39 @@ clamp_and_interpolate (
     *fa1 = 1.0f - *fa2;
 }
 
+inline float
+compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* f_idxs, long* m_idxs, float num_vox_f, float* fxs, float score)
+{
+    float dS_dP_0, dS_dP_1, dS_dP;
+    const float j_hist_thresh = 0.0001f;
+
+#if defined (commentout)
+    if (j_hist[j_idxs[0]] <= 0.0f || f_hist[f_idxs[0]] <= 0.0f || m_hist[m_idxs[0]] <= 0.0f || 
+	j_hist[j_idxs[1]] <= 0.0f || m_hist[m_idxs[1]] <= 0.0f) {
+	fprintf (stderr, "Error.\n");
+	fprintf (stderr, "j=[%d %d] (%g %g), f=[%d] (%g), m=[%d %d] (%g %g), fxs = (%g %g)\n",
+	    j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
+	    f_idxs[0], f_hist[f_idxs[0]],
+	    m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
+	    fxs[0], fxs[1]);
+	exit (-1);
+    }
+#endif
+    if (j_hist[j_idxs[0]] < j_hist_thresh) {
+	dS_dP_0 = 0.0f;
+    } else {
+	dS_dP_0 = fxs[0] * (logf((num_vox_f * j_hist[j_idxs[0]]) / (f_hist[f_idxs[0]] * m_hist[m_idxs[0]])) - score);
+    }
+    if (j_hist[j_idxs[1]] < j_hist_thresh) {
+	dS_dP_1 = 0.0f;
+    } else {
+	dS_dP_1 = fxs[1] * (logf((num_vox_f * j_hist[j_idxs[1]]) / (f_hist[f_idxs[0]] * m_hist[m_idxs[1]])) - score);
+    }
+
+    dS_dP = dS_dP_0 + dS_dP_1;
+    return dS_dP;
+}
+
 /* Mutual information version of implementation "C" */
 void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
@@ -893,7 +990,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float fx, fy, fz;
     float mx, my, mz;
     int mif, mjf, mkf, mvf;  /* Floor */
-    int mir, mjr, mkr, mvr;  /* Round */
+    int mir, mjr, mkr;       /* Round */
     int p[3];
     int q[3];
     float diff;
@@ -904,6 +1001,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     int num_vox;
+    float num_vox_f;
     int pidx, qidx;
     float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock, end_clock;
@@ -911,14 +1009,19 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     float mse_score = 0.0f;
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
 
     start_clock = clock();
 
     memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
-    memset (mi_hist->f_hist, 0, mi_hist->fixed.bins * sizeof(float));
-    memset (mi_hist->m_hist, 0, mi_hist->moving.bins * sizeof(float));
-    memset (mi_hist->j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(float));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(float));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
     num_vox = 0;
+
+    /* PASS 1 - Accumulate histogram */
     for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / parms->vox_per_rgn[2];
 	q[2] = rk % parms->vox_per_rgn[2];
@@ -993,6 +1096,165 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
+		mse_score += diff * diff;
+		num_vox ++;
+	    }
+	}
+    }
+
+    dump_hist (mi_hist, "hist.txt");
+
+    /* Compute score */
+    ssd->score = mi_hist_score (mi_hist, num_vox);
+    num_vox_f = (float) num_vox;
+
+    /* PASS 2 - Compute gradient */
+    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / parms->vox_per_rgn[2];
+	q[2] = rk % parms->vox_per_rgn[2];
+	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
+	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / parms->vox_per_rgn[1];
+	    q[1] = rj % parms->vox_per_rgn[1];
+	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
+	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
+		long j_idxs[2];
+		long m_idxs[2];
+		long f_idxs[1];
+		float fxs[2];
+		float dS_dP;
+
+		p[0] = ri / parms->vox_per_rgn[0];
+		q[0] = ri % parms->vox_per_rgn[0];
+		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+
+		/* Get B-spline deformation vector */
+		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
+		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bspd, pidx, qidx);
+
+		/* Compute coordinate of fixed image voxel */
+		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+		/* Find correspondence in moving image */
+		mx = fx + dxyz[0];
+		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+		my = fy + dxyz[1];
+		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+		mz = fz + dxyz[2];
+		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+		/* Compute interpolation fractions */
+		clamp_and_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+		clamp_and_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+		clamp_and_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+		m_x1y1z1 = fx1 * fy1 * fz1;
+		m_x2y1z1 = fx2 * fy1 * fz1;
+		m_x1y2z1 = fx1 * fy2 * fz1;
+		m_x2y2z1 = fx2 * fy2 * fz1;
+		m_x1y1z2 = fx1 * fy1 * fz2;
+		m_x2y1z2 = fx2 * fy1 * fz2;
+		m_x1y2z2 = fx1 * fy2 * fz2;
+		m_x2y2z2 = fx2 * fy2 * fz2;
+
+		/* Compute pixel contribution to gradient based on histogram change
+
+		   There are eight correspondences between fixed and moving.  
+		   Each of these eight correspondences will update 2 histogram bins
+		     (other options are possible, but this is my current strategy).
+
+		   First, figure out which histogram bins this correspondence influences
+		   by calling bspline_mi_hist_lookup().
+
+		   Next, compute dS/dP * dP/dx. 
+		    dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
+		    dS/dP is 1/N (ln (N P / Pf Pm) - I)
+		    dS/dP is weighted by the relative contribution of the 2 histogram bins.
+
+		   dS_dx and dc_dv are really the same thing.  Just different notation.
+
+		   For dc_dv:
+		   We do -= instead of += because our optimizer wants to minimize 
+		    instead of maximize.
+		   The right hand side is - for "left" voxels, and + for "right" voxels.
+
+		   Use a hard threshold on j_hist[j_idxs] to prevent overflow.  This test 
+		    should be reconsidered, because it is theoretically unsound.
+
+		   Some trivial speedups for the future:
+		    The pixel size component is constant, so we can post-multiply.
+		    1/N is constant, so post-multiply.
+		*/
+		dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= - dS_dP;
+		dc_dv[1] -= - dS_dP;
+		dc_dv[2] -= - dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+1]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= + dS_dP;
+		dc_dv[1] -= - dS_dP;
+		dc_dv[2] -= - dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= - dS_dP;
+		dc_dv[1] -= + dS_dP;
+		dc_dv[2] -= - dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= + dS_dP;
+		dc_dv[1] -= + dS_dP;
+		dc_dv[2] -= - dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= - dS_dP;
+		dc_dv[1] -= - dS_dP;
+		dc_dv[2] -= + dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= + dS_dP;
+		dc_dv[1] -= - dS_dP;
+		dc_dv[2] -= + dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= - dS_dP;
+		dc_dv[1] -= + dS_dP;
+		dc_dv[2] -= + dS_dP;
+
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dc_dv[0] -= + dS_dP;
+		dc_dv[1] -= + dS_dP;
+		dc_dv[2] -= + dS_dP;
+
+		dc_dv[0] = dc_dv[0] * moving->pix_spacing[0] / num_vox_f;
+		dc_dv[1] = dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
+		dc_dv[2] = dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
+
+		/* Testing hack */
+		{
+		    float hack = 1000.0f;
+		    dc_dv[0] *= hack;
+		    dc_dv[1] *= hack;
+		    dc_dv[2] *= hack;
+		}
+
+		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 
 #if defined (commentout)
 		/* Compute spatial gradient using nearest neighbors */
@@ -1001,25 +1263,20 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
 		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
-#endif
-
-//		xxx;
+		/* PVI-based gradient.  This is dp/ds * ds/dx */
+		dc_dv[0] = (1 / moving->pix_spacing[0]) * kkk
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], m_x1y1z1);
+		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 
 		mse_score += diff * diff;
 		num_vox ++;
+#endif
+
 	    }
 	}
     }
 
-    //dump_hist (bspd, "hist.txt");
-
-    /* (This also normalizes the histogram) */
-    ssd->score = 1000 * mi_hist_score (mi_hist, num_vox);
-
     mse_score = mse_score / num_vox;
-    for (i = 0; i < bspd->num_coeff; i++) {
-	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
-    }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
@@ -1037,7 +1294,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("GET VALUE+DERIVATIVE: MI %6.3f MSE %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
+    printf ("                      SCORE                   [num_vox] grad_mean grad_norm [time]\n");
+    printf ("GET VALUE+DERIVATIVE: MI %10.8f MSE %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
 	    ssd->score, mse_score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
