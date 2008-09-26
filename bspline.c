@@ -1196,48 +1196,56 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x1y1z1;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+1]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x2y1z1;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x1y2z1;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x2y2z1;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x1y1z2;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x2y1z2;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x1y2z2;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]);
 		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
+		dS_dP *= m_x2y2z2;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= + dS_dP;
@@ -1246,6 +1254,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[1] = dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
 		dc_dv[2] = dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
 
+#if defined (commentout)
 		/* Testing hack */
 		{
 		    float hack = 1000.0f;
@@ -1253,25 +1262,9 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    dc_dv[1] *= hack;
 		    dc_dv[2] *= hack;
 		}
-
-		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
-
-#if defined (commentout)
-		/* Compute spatial gradient using nearest neighbors */
-		mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
-		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
-		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
-		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
-		/* PVI-based gradient.  This is dp/ds * ds/dx */
-		dc_dv[0] = (1 / moving->pix_spacing[0]) * kkk
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], m_x1y1z1);
-		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
-
-		mse_score += diff * diff;
-		num_vox ++;
 #endif
 
+		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 	    }
 	}
     }
@@ -1294,8 +1287,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("                      SCORE                   [num_vox] grad_mean grad_norm [time]\n");
-    printf ("GET VALUE+DERIVATIVE: MI %10.8f MSE %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
+    printf ("SCORE: MI %10.8f MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, mse_score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
@@ -1432,7 +1424,7 @@ bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("GET VALUE+DERIVATIVE: %6.3f [%6d] %6.3f %6.3f [%6.3f secs]\n", 
+    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
@@ -1659,6 +1651,7 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, fixed, moving, moving_grad);
+	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
 //    bspline_score_b (parms, fixed, moving, moving_grad);
