@@ -103,9 +103,6 @@ bspline_interpolate_vf (Volume* interp,
 			BSPLINE_Parms* parms);
 
 void
-bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx);
-
-void
 clamp_and_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
 
 void
