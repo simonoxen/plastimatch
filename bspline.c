@@ -599,7 +599,7 @@ bspline_mi_hist_add (
     fxs[0] *= amt;
     fxs[1] *= amt;
 
-    f_hist[f_idxs[0]] += 1.0;
+    f_hist[f_idxs[0]] += amt;	    /* This is inefficient */
     m_hist[m_idxs[0]] += fxs[0];
     m_hist[m_idxs[1]] += fxs[1];
     j_hist[j_idxs[0]] += fxs[0];
@@ -974,6 +974,13 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
 
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int dd = 0;
+
+    sprintf (debug_fn, "dump_%02d.txt", it++);
+
     start_clock = clock();
 
     memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
@@ -1067,6 +1074,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     ssd->score = mi_hist_score (mi_hist, num_vox);
     num_vox_f = (float) num_vox;
 
+    //fp = fopen (debug_fn, "w");
+
     /* PASS 2 - Compute gradient */
     for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / parms->vox_per_rgn[2];
@@ -1089,6 +1098,9 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    //debug = 1;
 		}
 		if (ri == 25 && rj == 25 && rk == 25) {
+		    //debug = 1;
+		}
+		if (++dd == 45922) {
 		    //debug = 1;
 		}
 
@@ -1224,9 +1236,12 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= + dS_dP;
 
-		dc_dv[0] = - dc_dv[0] * moving->pix_spacing[0] / num_vox_f;
-		dc_dv[1] = - dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
-		dc_dv[2] = - dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
+		dc_dv[0] = dc_dv[0] * moving->pix_spacing[0] / num_vox_f;
+		dc_dv[1] = dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
+		dc_dv[2] = dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
+
+		//fprintf (fp, "%g %g %g\n", dc_dv[0], dc_dv[1], dc_dv[2]);
+
 
 		if (debug) {
 		    printf ("dc_dv = %g %g %g\n", dc_dv[0], dc_dv[1], dc_dv[2]);
@@ -1236,6 +1251,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	    }
 	}
     }
+
+    //fclose (fp);
 
     mse_score = mse_score / num_vox;
 
@@ -1247,14 +1264,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     }
 
     end_clock = clock();
-#if defined (commentout)
-    printf ("Single iteration CPU [b] = %f seconds\n", 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
-    printf ("NUM_VOX = %d\n", num_vox);
-    printf ("MSE = %g\n", ssd->score);
-    printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
-    printf ("GRAD_NORM = %g\n", ssd_grad_norm);
-#endif
+
     printf ("SCORE: MI %10.8f MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, mse_score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
@@ -1619,7 +1629,7 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, fixed, moving, moving_grad);
-	//bspline_score_c_mse (parms, fixed, moving, moving_grad);
+//	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
 //    bspline_score_b (parms, fixed, moving, moving_grad);
@@ -1647,7 +1657,7 @@ bspline_optimize_steepest (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     for (i = 0; i < bspd->num_coeff; i++) {
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
-    a = 0.01f / ssd_grad_norm;
+    a = 1.0f / ssd_grad_norm;
     printf ("Initial a is %g\n", a);
 
     /* Give a little feedback to the user */
