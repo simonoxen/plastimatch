@@ -10,6 +10,9 @@ if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
   SET ITK_PATH=%HOME%\build\itk-vse2005\bin\Release
   SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-vse2005\Release
   SET DXSDK_UTILS_DIR="C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
+) else if "%COMPUTERNAME%"=="SLUMBER" (
+  SET ITK_PATH=%HOME%\build\itk-3.6.0\bin\Release
+  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
   echo Setting for ROFOVIA
   SET ITK_PATH=C:\deform\build\InsightToolkit-3.6.0-build\bin\Release

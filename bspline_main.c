@@ -33,7 +33,9 @@ main (int argc, char* argv[])
     parse_args (&options, argc, argv);
 
     fixed = read_mha (options.fixed_fn);
+    if (!fixed) exit (-1);
     moving = read_mha (options.moving_fn);
+    if (!moving) exit (-1);
 
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);

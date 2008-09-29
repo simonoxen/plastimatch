@@ -606,48 +606,6 @@ bspline_mi_hist_add (
     j_hist[j_idxs[1]] += fxs[1];
 }
 
-#if defined (commentout)
-/* This algorithm uses a normalized score. */
-static float
-mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
-{
-    float* f_hist = mi_hist->f_hist;
-    float* m_hist = mi_hist->m_hist;
-    float* j_hist = mi_hist->j_hist;
-
-    int i, j, v;
-    int hist_size = mi_hist->fixed.bins * mi_hist->moving.bins;
-    float mult = 1 / (float) num_vox;
-    float score = 0;
-    double hist_thresh = 0.001 / mi_hist->moving.bins / mi_hist->fixed.bins;
-
-    /* Normalize histogram */
-    for (i = 0; i < mi_hist->fixed.bins; i++) {
-	f_hist[i] *= mult;
-    }
-    for (i = 0; i < mi_hist->moving.bins; i++) {
-	m_hist[i] *= mult;
-    }	
-    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-	    j_hist[v] *= mult;
-	}	
-    }
-
-    //dump_hist (mi_hist);
-
-    /* Compute cost */
-    for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
-	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-	    if (j_hist[v] > hist_thresh) {
-		score -= j_hist[v] * logf (j_hist[v] / (m_hist[j] * f_hist[i]));
-	    }
-	}	
-    }
-    return score;
-}
-#endif
-
 /* This algorithm uses a un-normalized score. */
 static float
 mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
@@ -941,23 +899,22 @@ clamp_and_interpolate (
 }
 
 inline float
-compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* f_idxs, long* m_idxs, float num_vox_f, float* fxs, float score)
+compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* f_idxs, long* m_idxs, float num_vox_f, float* fxs, float score, int debug)
 {
     float dS_dP_0, dS_dP_1, dS_dP;
     const float j_hist_thresh = 0.0001f;
 
 #if defined (commentout)
-    if (j_hist[j_idxs[0]] <= 0.0f || f_hist[f_idxs[0]] <= 0.0f || m_hist[m_idxs[0]] <= 0.0f || 
-	j_hist[j_idxs[1]] <= 0.0f || m_hist[m_idxs[1]] <= 0.0f) {
-	fprintf (stderr, "Error.\n");
+#endif
+	
+    if (debug) {
 	fprintf (stderr, "j=[%d %d] (%g %g), f=[%d] (%g), m=[%d %d] (%g %g), fxs = (%g %g)\n",
 	    j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
 	    f_idxs[0], f_hist[f_idxs[0]],
 	    m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
 	    fxs[0], fxs[1]);
-	exit (-1);
     }
-#endif
+
     if (j_hist[j_idxs[0]] < j_hist_thresh) {
 	dS_dP_0 = 0.0f;
     } else {
@@ -970,6 +927,10 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
     }
 
     dS_dP = dS_dP_0 + dS_dP_1;
+    if (debug) {
+	fprintf (stderr, "dS_dP %g = %g %g\n", dS_dP, dS_dP_0, dS_dP_1);
+    }
+
     return dS_dP;
 }
 
@@ -1102,8 +1063,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	}
     }
 
-    dump_hist (mi_hist, "hist.txt");
-
     /* Compute score */
     ssd->score = mi_hist_score (mi_hist, num_vox);
     num_vox_f = (float) num_vox;
@@ -1123,6 +1082,15 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		long f_idxs[1];
 		float fxs[2];
 		float dS_dP;
+		int debug;
+
+		debug = 0;
+		if (ri == 20 && rj == 20 && rk == 20) {
+		    //debug = 1;
+		}
+		if (ri == 25 && rj == 25 && rk == 25) {
+		    //debug = 1;
+		}
 
 		p[0] = ri / parms->vox_per_rgn[0];
 		q[0] = ri % parms->vox_per_rgn[0];
@@ -1164,6 +1132,12 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		m_x1y2z2 = fx1 * fy2 * fz2;
 		m_x2y2z2 = fx2 * fy2 * fz2;
 
+		if (debug) {
+		    printf ("m_xyz %g %g %g %g %g %g %g %g\n",
+			m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, 
+			m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2);
+		}
+
 		/* Compute pixel contribution to gradient based on histogram change
 
 		   There are eight correspondences between fixed and moving.  
@@ -1195,74 +1169,68 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x1y1z1;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x1y1z1;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x2y1z1;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x2y1z1;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x1y2z1;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x1y2z1;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x2y2z1;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x2y2z1;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= - dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x1y1z2;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x1y1z2;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x2y1z2;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x2y1z2;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= - dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x1y2z2;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x1y2z2;
 		dc_dv[0] -= - dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= + dS_dP;
 
 		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score);
-		dS_dP *= m_x2y2z2;
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+//		dS_dP *= m_x2y2z2;
 		dc_dv[0] -= + dS_dP;
 		dc_dv[1] -= + dS_dP;
 		dc_dv[2] -= + dS_dP;
 
-		dc_dv[0] = dc_dv[0] * moving->pix_spacing[0] / num_vox_f;
-		dc_dv[1] = dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
-		dc_dv[2] = dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
+		dc_dv[0] = - dc_dv[0] * moving->pix_spacing[0] / num_vox_f;
+		dc_dv[1] = - dc_dv[1] * moving->pix_spacing[1] / num_vox_f;
+		dc_dv[2] = - dc_dv[2] * moving->pix_spacing[2] / num_vox_f;
 
-#if defined (commentout)
-		/* Testing hack */
-		{
-		    float hack = 1000.0f;
-		    dc_dv[0] *= hack;
-		    dc_dv[1] *= hack;
-		    dc_dv[2] *= hack;
+		if (debug) {
+		    printf ("dc_dv = %g %g %g\n", dc_dv[0], dc_dv[1], dc_dv[2]);
 		}
-#endif
 
 		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
 	    }
@@ -1651,7 +1619,7 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, fixed, moving, moving_grad);
-	bspline_score_c_mse (parms, fixed, moving, moving_grad);
+	//bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
 //    bspline_score_b (parms, fixed, moving, moving_grad);
@@ -1667,18 +1635,36 @@ bspline_optimize_steepest (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     int i, it;
     float a = 0.003f;
     float alpha = 0.5f, A = 10.0f;
+    float ssd_grad_norm;
 
     bspline_set_coefficients (parms, 0.0);
 
     /* Get score and gradient */
     bspline_score (parms, fixed, moving, moving_grad);
+
+    /* Set alpha based on norm gradient */
+    ssd_grad_norm = 0;
+    for (i = 0; i < bspd->num_coeff; i++) {
+	ssd_grad_norm += fabs (ssd->grad[i]);
+    }
+    a = 0.01f / ssd_grad_norm;
+    printf ("Initial a is %g\n", a);
+
     /* Give a little feedback to the user */
     bspline_display_coeff_stats (parms);
 
     for (it = 0; it < parms->max_its; it++) {
+	char fn[128];
 	float gamma;
 
 	printf ("Beginning iteration %d\n", it);
+
+	sprintf (fn, "grad_%02d.txt", it);
+	dump_gradient (bspd, ssd, fn);
+	if (parms->metric == BMET_MI) {
+	    sprintf (fn, "hist_%02d.txt", it);
+	    dump_hist (&parms->mi_hist, fn);
+	}
 
 	/* Update coefficients */
 	gamma = a / pow(it + A, alpha);
