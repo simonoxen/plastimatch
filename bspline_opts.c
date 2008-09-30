@@ -23,6 +23,7 @@ print_usage (void)
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
 	    " -O outfile                 The output file\n"
+	    " --debug                    Create various debug files\n"
 	    );
     exit (1);
 }
@@ -114,6 +115,9 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    options->output_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "--debug")) {
+	    parms->debug = 1;
 	}
 	else {
 	    print_usage ();

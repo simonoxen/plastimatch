@@ -62,6 +62,7 @@ struct BSPLINE_Parms_struct {
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
     int max_its;
+    int debug;			 /* Create grad & histogram files */
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
@@ -103,7 +104,7 @@ bspline_interpolate_vf (Volume* interp,
 			BSPLINE_Parms* parms);
 
 void
-clamp_and_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
+clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
 
 void
 bspline_update_grad_b (BSPLINE_Parms* parms, int pidx, int qidx, float dc_dv[3]);
