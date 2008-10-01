@@ -61,6 +61,17 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     } else {
 	parms->optimization = BOPT_LBFGSB;
     }
+    switch (stage->metric_type) {
+    case METRIC_MSE:
+	parms->metric = BMET_MSE;
+	break;
+    case METRIC_MI:
+    case METRIC_MI_MATTES:
+	parms->metric = BMET_MI;
+	break;
+    default:
+	print_and_exit ("Undefined metric type in gpuit_bspline\n");
+    }
     parms->max_its = stage->max_its;
     for (d = 0; d < 3; d++) {
 	parms->vox_per_rgn[d] = ROUND_INT (stage->grid_spac[d] / fixed_ss->pix_spacing[d]);
