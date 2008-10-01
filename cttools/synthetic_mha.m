@@ -2,12 +2,13 @@ function synthetic_mha(fn,type,options)
 % function synthetic_mha(fn,type,options)
 %
 % Type: either rect, gaussian, or sphere
-% Options:
-%
-%  size      size of volume in mm
-%  nvox      number of voxels in volume
-%  spacing   pixel spacing in mm
-%  value     foreground pixel value
+% 
+%  General Options
+%    size      size of volume in mm
+%    nvox      number of voxels in volume
+%    spacing   pixel spacing in mm
+%    fg        foreground pixel value
+%    bg        background pixel value
 %
 %  Rect options
 %    extent  size of foreground rectangle in voxels
@@ -80,8 +81,18 @@ end
 if (length(offset)==1)
   offset = [offset, offset, offset];
 end
+if (isfield(options,'fg'))
+  fg = options.fg;
+else
+  fg = 1000;
+end
+if (isfield(options,'bg'))
+  bg = options.bg;
+else
+  bg = -1000;
+end
 
-A = -1000 * ones(nvox(1),nvox(2),nvox(3));
+A = bg * ones(nvox(1),nvox(2),nvox(3));
 
 switch lower(type)
  case 'rect'
@@ -90,12 +101,7 @@ switch lower(type)
   else
     ext = [10,nvox-10;10,nvox-10;10,nvox-10];
   end
-  if (isfield(options,'value'))
-    value = options.value;
-  else
-    value = 1000;
-  end
-  A(ext(1,1):ext(1,2),ext(2,1):ext(2,2),ext(3,1):ext(3,2)) = value;
+  A(ext(1,1):ext(1,2),ext(2,1):ext(2,2),ext(3,1):ext(3,2)) = fg;
 
  case 'sphere'
   if (isfield(options,'center'))
@@ -108,27 +114,17 @@ switch lower(type)
   else
     rad = 10;
   end
-  if (isfield(options,'value'))
-    value = options.value;
-  else
-    value = 1000;
-  end
   [ax,ay,az] = ndgrid(1-ctr(1):nvox-ctr(1),...
 		      1-ctr(2):nvox-ctr(2),...
 		      1-ctr(3):nvox-ctr(3));
   d = ax.^2 + ay.^2 + az.^2;
-  A(d<rad^2) = value;
+  A(d<rad^2) = fg;
 
  case 'gaussian'
   if (isfield(options,'center'))
     ctr = options.center;
   else
     ctr = [nvox/2,nvox/2,nvox/2] + 0.5;
-  end
-  if (isfield(options,'value'))
-    value = options.value;
-  else
-    value = 1000;
   end
   if (isfield(options,'std'))
     coeff = options.std;
@@ -142,7 +138,7 @@ switch lower(type)
   d = ax.^2 + ay.^2 + az.^2;
   v = exp(-d/(2*coeff^2));
   v = v / max(v(:));
-  A = -1000 + (value+1000) * v;
+  A = -1000 + (fg+1000) * v;
 end
 
 writemha (fn, A, offset, spacing, 'short');
