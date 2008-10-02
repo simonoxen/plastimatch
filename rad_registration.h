@@ -63,8 +63,8 @@ public:
     float convergence_tol;
     float max_step;
     float min_step;
-    int mattes_histogram_bins;
-    int mattes_num_spatial_samples;
+    int mi_histogram_bins;
+    int mi_num_spatial_samples;
     float demons_std;
     float demons_acceleration;
     float demons_homogenization;
@@ -101,8 +101,8 @@ public:
 	max_step = 10.0;
 	min_step = 0.5;
 	/* Mattes mutual information */
-	mattes_histogram_bins = 20;
-	mattes_num_spatial_samples = 10000;
+	mi_histogram_bins = 20;
+	mi_num_spatial_samples = 10000;
 	/* ITK & GPUIT demons */
 	demons_std = 6.0;
 	/* GPUIT demons */

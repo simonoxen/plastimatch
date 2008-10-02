@@ -73,6 +73,8 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
     parms->max_its = stage->max_its;
+    parms->mi_hist.fixed.bins = stage->mi_histogram_bins;
+    parms->mi_hist.moving.bins = stage->mi_histogram_bins;
     for (d = 0; d < 3; d++) {
 	parms->vox_per_rgn[d] = ROUND_INT (stage->grid_spac[d] / fixed_ss->pix_spacing[d]);
 	if (parms->vox_per_rgn[d] < 4) {
