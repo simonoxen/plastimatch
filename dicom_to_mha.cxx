@@ -169,12 +169,10 @@ int
 main(int argc, char *argv[])
 {
   
-    if (argc != 4 && ( argc != 7 ) ) 
-    {
-	std::cerr << "Missing Parameters " << std::endl;
-	std::cerr << "Usage: " << argv[0] <<",arc="<<argc;
-	std::cerr << " InputFileName OutPutFileName typeConvertOption retioX retioY retioZ "<< std::endl;
-	std::cerr << " typeConvertOption can be: -u2s, -s2u, -s2s, -u2u, -f2s, -s2uNoAdjust"<< std::endl;
+    if (argc != 3 && argc != 4 && argc != 7) {
+	std::cerr << "Usage: " << argv[0];
+	std::cerr << " input_dir output_filename [cvt_opt [ratioX ratioY ratioZ]]" << std::endl;
+	std::cerr << " cvt_opt can be: -u2s, -s2u, -s2s, -u2u, -f2s, -s2uNoAdjust" << std::endl;
 	return 1;
     }
   
@@ -200,30 +198,35 @@ main(int argc, char *argv[])
     int noadjust = 0;
     int input_type = 0;
     int output_type = 0;
-    if (0 == strcmp(argv[3], "-u2s")) {
-	input_type = TYPE_UNSIGNED;
-	output_type = TYPE_SIGNED;
-    } else if (0 == strcmp(argv[3], "-u2u")) {
-	input_type = TYPE_UNSIGNED;
-	output_type = TYPE_UNSIGNED;
-    } else if (0 == strcmp(argv[3] , "-s2s")) {
-	input_type = TYPE_SIGNED;
-	output_type = TYPE_SIGNED;
-    } else if (0 == strcmp(argv[3], "-s2u")) {
-	input_type = TYPE_SIGNED;
-	output_type = TYPE_UNSIGNED;
-    } else if (0 == strcmp(argv[3] , "-f2s")) {
-	input_type = TYPE_FLOAT;
-	output_type = TYPE_SIGNED;
-    } else if (0 == strcmp(argv[3] , "-s2uNoAdjust")) {
-	input_type = TYPE_SIGNED;
-	output_type = TYPE_UNSIGNED;
-	noadjust = 1;
+    if (argc > 4) {
+	if (0 == strcmp(argv[3], "-u2s")) {
+	    input_type = TYPE_UNSIGNED;
+	    output_type = TYPE_SIGNED;
+	} else if (0 == strcmp(argv[3], "-u2u")) {
+	    input_type = TYPE_UNSIGNED;
+	    output_type = TYPE_UNSIGNED;
+	} else if (0 == strcmp(argv[3] , "-s2s")) {
+	    input_type = TYPE_SIGNED;
+	    output_type = TYPE_SIGNED;
+	} else if (0 == strcmp(argv[3], "-s2u")) {
+	    input_type = TYPE_SIGNED;
+	    output_type = TYPE_UNSIGNED;
+	} else if (0 == strcmp(argv[3] , "-f2s")) {
+	    input_type = TYPE_FLOAT;
+	    output_type = TYPE_SIGNED;
+	} else if (0 == strcmp(argv[3] , "-s2uNoAdjust")) {
+	    input_type = TYPE_SIGNED;
+	    output_type = TYPE_UNSIGNED;
+	    noadjust = 1;
+	} else {
+	    printf ("Error.  Wrong command line parameters.\n");
+	    printf ("Hit any key to continue.\n");
+	    getchar ();
+	    exit (1);
+	}
     } else {
-	printf ("Error.  Wrong command line parameters.\n");
-	printf ("Hit any key to continue.\n");
-	getchar ();
-	exit (1);
+	input_type = TYPE_SIGNED;
+	output_type = TYPE_SIGNED;
     }
 
     if (input_type == TYPE_UNSIGNED) {
