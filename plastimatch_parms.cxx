@@ -258,6 +258,12 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
+    else if (!strcmp (key, "amoeba_parameter_tol")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%g", &(stage->amoeba_parameter_tol)) != 1) {
+	    goto error_exit;
+	}
+    }
     else if (!strcmp (key, "res")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", &(stage->resolution[0]), &(stage->resolution[1]), &(stage->resolution[2])) != 3) {

@@ -69,6 +69,7 @@ public:
     float demons_acceleration;
     float demons_homogenization;
     int demons_filter_width[3];
+    float amoeba_parameter_tol;
     int num_grid[3];     // number of grid points in x,y,z directions
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     int grid_method;     // which grid method used, numbers (0) or absolute spacing (1)
@@ -111,6 +112,8 @@ public:
 	demons_filter_width[0] = 3;
 	demons_filter_width[1] = 3;
 	demons_filter_width[2] = 3;
+	/* ITK amoeba */
+	amoeba_parameter_tol = 1.0;
 	/* Bspline parms */
 	num_grid[0] = 10;
 	num_grid[1] = 10;

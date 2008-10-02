@@ -128,7 +128,7 @@ GCSMetric<TFixedImage,TMovingImage>
 	<< std::endl;
 #endif
 
-    this->InvokeEvent(IterationEvent());
+//    this->InvokeEvent(IterationEvent());
     return measure;
 }
 

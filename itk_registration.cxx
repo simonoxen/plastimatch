@@ -85,25 +85,27 @@ public:
 		 const itk::EventObject & event) {
 	if (typeid(event) == typeid(itk::StartEvent)) {
 	    last_value = -1.0;
-	    std::cout << "Start: ";
+	    std::cout << "StartEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
 	}
 	else if (typeid(event) == typeid(itk::EndEvent)) {
-	    std::cout << "End: ";
+	    std::cout << "EndEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 		std::cout << std::endl;
 	    }
 	    std::cout << std::endl;
 	}
-	else if (typeid(event) == typeid(itk::IterationEvent)) {
+	else if (typeid(event) == typeid(itk::IterationEvent)
+		|| typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
+	    std::cout << "IterationEvent: ";
 	    int it = optimizer_get_current_iteration(m_registration, m_stage);
 	    double val = optimizer_get_value(m_registration, m_stage);
 	    double ss = optimizer_get_step_length(m_registration, m_stage);
-
+	    
 	    printf ("%3d %10.2f %5.2f ", it, val, ss);
 
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
@@ -119,8 +121,7 @@ public:
 
 		    if (m_stage->optim_type == OPTIMIZATION_RSG) {
 			typedef itk::RegularStepGradientDescentOptimizer * OptimizerPointer;
-			OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-										      m_registration->GetOptimizer());
+			OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(m_registration->GetOptimizer());
 			optimizer->StopOptimization();
 		    } else {
 			optimizer_set_max_iterations (m_registration, m_stage, 1);
@@ -133,7 +134,7 @@ public:
 	    std::cout << std::endl;
 	}
 	else if (typeid(event) == typeid(itk::ProgressEvent)) {
-	    std::cout << "Progress: ";
+	    std::cout << "ProgressEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 	    }
@@ -487,6 +488,7 @@ set_observer (RegistrationType::Pointer registration,
 	OOType::Pointer observer = OOType::New();
 	observer->Set_Stage_Parms (registration, stage);
 	registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);
+	registration->GetOptimizer()->AddObserver(itk::FunctionEvaluationIterationEvent(), observer);
 	registration->GetOptimizer()->AddObserver(itk::ProgressEvent(), observer);
 	registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
 	registration->GetOptimizer()->AddObserver(itk::EndEvent(), observer);

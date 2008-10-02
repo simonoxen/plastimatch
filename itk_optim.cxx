@@ -36,7 +36,7 @@ optimizer_update_settings (RegistrationType::Pointer registration,
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
         optimizer->SetMaximumNumberOfIterations(stage->max_its);
-	double val = optimizer->GetValue();
+	double val = optimizer->GetCachedValue();
 	printf ("VAL = %10.2f\n", val);
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
@@ -125,7 +125,7 @@ optimizer_get_value (RegistrationType::Pointer registration,
 	typedef AmoebaOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
-	return optimizer->GetValue();
+	return optimizer->GetCachedValue();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
@@ -143,13 +143,13 @@ optimizer_get_value (RegistrationType::Pointer registration,
 	typedef LBFGSOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
-	return optimizer->GetValue();
+	return optimizer->GetCachedValue();
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGSB) {
 	typedef LBFGSBOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
-	return optimizer->GetValue();
+	return optimizer->GetCachedValue();
     } else {
         print_and_exit ("Error: Unknown optimizer value.\n");
     }
@@ -242,7 +242,7 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
 	typedef AmoebaOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
-	return optimizer->GetCurrentPosition();
+	return optimizer->GetCachedCurrentPosition();
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
 	typedef RSGOptimizerType * OptimizerPointer;
@@ -277,8 +277,8 @@ set_optimization_amoeba (RegistrationType::Pointer registration,
 		         Stage_Parms* stage)
 {
     AmoebaOptimizerType::Pointer optimizer = AmoebaOptimizerType::New();
-    optimizer->SetParametersConvergenceTolerance(1.0);
-    optimizer->SetFunctionConvergenceTolerance(10000);
+    optimizer->SetParametersConvergenceTolerance(stage->amoeba_parameter_tol);
+    optimizer->SetFunctionConvergenceTolerance(stage->convergence_tol);  // Was 10000
     optimizer->SetMaximumNumberOfIterations(stage->max_its);
     registration->SetOptimizer(optimizer);
 }
@@ -370,7 +370,7 @@ set_optimization_scales_translation (RegistrationType::Pointer registration,
 {
     itk::Array<double> optimizerScales(3);
 
-    const double translationScale = 1.0;
+    const double translationScale = 1.0 / 100000.0;
     optimizerScales[0] = translationScale;
     optimizerScales[1] = translationScale;
     optimizerScales[2] = translationScale;
