@@ -1799,7 +1799,7 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 {
 #if HAVE_BROOK
 #if BUILD_BSPLINE_BROOK
-    if (parms->method == BM_BROOK) {
+    if (parms->implementation == BIMPL_BROOK) {
 	printf("Using GPU. \n");
 	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;

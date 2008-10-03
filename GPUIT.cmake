@@ -88,6 +88,7 @@ ENDIF(BROOK_FOUND)
 ##    CUDA_SDK_INCLUDE_DIR
 ##    CUDA_LIBRARIES
 ##    NVCC_EXECUTABLE
+##  This is only working for CUDA 2.0...
 ######################################################
 SET(CUDA_FOUND FOOBAR)
 
@@ -147,7 +148,8 @@ IF(CUDA_FOUND)
       FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${PATH}")
     ENDIF(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/${PATH}")
     SET(OUTFILE_BASE "${CMAKE_CURRENT_BINARY_DIR}/${PATH}/${HEAD}")
-    SET(OUTFILE "${OUTFILE_BASE}.obj")
+##    SET(OUTFILE "${OUTFILE_BASE}.obj")
+    SET(OUTFILE "${OUTFILE_BASE}.cu.cpp")
     IF(GPUIT_LINK_MSVCRT)
       SET(XCOMPILER_OPTIONS "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD")
     ELSE(GPUIT_LINK_MSVCRT)
@@ -158,14 +160,15 @@ IF(CUDA_FOUND)
         OUTPUT "${OUTFILE}"
         COMMAND "${NVCC_EXECUTABLE}"
         ARGS
+	"-cuda"
 ##	"-ccbin" clbin xxxxxx
-	"-c"
-	"-DWIN32" "-D_CONSOLE" "-D_MBCS"
+##	"-c"
+##	"-DWIN32" "-D_CONSOLE" "-D_MBCS"
 ##	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MT"
 ##	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD"
-	"-Xcompiler" ${XCOMPILER_OPTIONS}
+##	"-Xcompiler" ${XCOMPILER_OPTIONS}
 	"-I" ${CMAKE_CURRENT_SOURCE_DIR}
-	"-I" ${CUDA_SDK_INCLUDE_DIR}
+##	"-I" ${CUDA_SDK_INCLUDE_DIR}
 	"-o" "${OUTFILE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")

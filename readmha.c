@@ -61,8 +61,6 @@ write_mha (char* filename, Volume* vol)
 	    "%s"
 	    "ElementType = %s\n"
 	    "ElementDataFile = LOCAL\n";
-    int i;
-    char* img;
 
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
@@ -84,35 +82,6 @@ write_mha (char* filename, Volume* vol)
     fflush (fp);
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
-
-#if defined (commentout)
-    switch (vol->pix_type) {
-	case PT_UCHAR:
-	case PT_SHORT:
-	case PT_FLOAT:
-	case PT_VF_FLOAT_INTERLEAVED:
-	    img = (char*) vol->img;
-	    for (i = 0; i < vol->npix*vol->pix_size; i++) {
-		fwrite (&img[i], 1, 1, fp);
-	    }
-	    break;
-	default:
-	    fprintf (stderr, "Error: unknown pix_type.\n");
-	    break;
-    }
-#endif
-
-#if defined (commentout)
-    if (vol->pix_type == PT_SHORT) {
-	fwrite (vol->img, sizeof(short), vol->npix, fp);
-    }
-    else if (vol->pix_type == PT_FLOAT) {
-	fwrite (vol->img, sizeof(float), vol->npix, fp);
-    }
-    else if (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) {
-	fwrite (vol->img, 3 * sizeof(float), vol->npix, fp);
-    }
-#endif
 
     fclose (fp);
 }
