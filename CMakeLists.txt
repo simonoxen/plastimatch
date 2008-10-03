@@ -7,11 +7,11 @@ INCLUDE(FindOpenGL)
 
 INCLUDE(GPUIT.cmake)
 
-SET(BUILD_OPENMP_TEST OFF)
-SET(BUILD_CUDA_TEST ON)
+SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
+SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
-SET(BUILD_BSPLINE_BROOK ON CACHE BOOL "Build brook version of B-splines")
+SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
