@@ -100,7 +100,10 @@ public:
 	    std::cout << std::endl;
 	}
 	else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
-	    std::cout << "FunctionEvaluationIterationEvent: ";
+	    //std::cout << "FunctionEvaluationIterationEvent: ";
+	}
+	else if (typeid(event) == typeid(itk::FunctionAndGradientEvaluationIterationEvent)) {
+	    //std::cout << "FunctionAndGradientEvaluationIterationEvent: ";
 	}
 	else if (typeid(event) == typeid(itk::IterationEvent)) {
 	    std::cout << "IterationEvent: ";

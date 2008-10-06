@@ -18,15 +18,48 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
     Xform xf_in, xf_out;
 
     load_xform (&xf_in, parms->xf_in_fn);
-    xform_to_itk_vf (&xf_out, &xf_in, parms->dim, parms->offset, parms->spacing);
-    save_xform (&xf_out, parms->vf_out_fn);
+    switch (parms->xf_type) {
+    case XFORM_NONE:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_ITK_TRANSLATION:
+	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_TRANSLATION\n");
+	break;
+    case XFORM_ITK_VERSOR:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_ITK_AFFINE:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_ITK_BSPLINE:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_ITK_TPS:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_ITK_VECTOR_FIELD:
+	printf ("Converting to (itk) vector field\n");
+	xform_to_itk_vf (&xf_out, &xf_in, parms->dim, parms->offset, parms->spacing);
+	break;
+    case XFORM_GPUIT_BSPLINE:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    case XFORM_GPUIT_VECTOR_FIELD:
+	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
+	break;
+    }
+    save_xform (&xf_out, parms->xf_out_fn);
 }
 
 void
 print_usage (void)
 {
-    printf ("Usage: xf_to_xf --input=xform_in --output=vf_out --dims=\"x y z\"\n");
+    printf ("Usage: xf_to_xf --type=type --input=xform_in --output=vf_out --dims=\"x y z\"\n");
     printf ("          --offset=\"x y z\" --spacing=\"x y z\"\n");
+    printf ("       Supported types: vf, itk_bsp.\n");
     exit (-1);
 }
 
@@ -40,6 +73,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	{ "dims",           required_argument,      NULL,           3 },
 	{ "offset",         required_argument,      NULL,           4 },
 	{ "spacing",        required_argument,      NULL,           5 },
+	{ "type",           required_argument,      NULL,           6 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -49,7 +83,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    strncpy (parms->xf_in_fn, optarg, _MAX_PATH);
 	    break;
 	case 2:
-	    strncpy (parms->vf_out_fn, optarg, _MAX_PATH);
+	    strncpy (parms->xf_out_fn, optarg, _MAX_PATH);
 	    break;
 	case 3:
 	    rc = sscanf (optarg, "%d %d %d", &(parms->dim[0]), 
@@ -72,13 +106,23 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 		print_usage();
 	    }
 	    break;
+	case 6:
+	    if (!strcmp (optarg, "vf")) {
+		parms->xf_type = XFORM_ITK_VECTOR_FIELD;
+	    } else if (!strcmp (optarg, "itk_bsp")) {
+		parms->xf_type = XFORM_ITK_BSPLINE;
+	    } else {
+		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
+		print_usage();
+	    }
+	    break;
 	default:
 	    break;
 	}
     }
-    if (!parms->xf_in_fn[0] || !parms->vf_out_fn[0] || !parms->dim[0] || parms->spacing[0] == 0.0 || parms->offset[0] == 0.0) {
-		printf ("Error: must specify all options\n");
-		print_usage();
+    if (!parms->xf_in_fn[0] || !parms->xf_out_fn[0] || !parms->xf_type || !parms->dim[0] || parms->spacing[0] == 0.0 || parms->offset[0] == 0.0) {
+	printf ("Error: must specify all options\n");
+	print_usage();
     }
 }
 

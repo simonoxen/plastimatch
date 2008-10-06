@@ -5,12 +5,13 @@
 #define _xf_to_xf_main_h_
 
 #include <stdlib.h>
-#include "itk_image.h"
+#include "xform.h"
 
 class Xf_To_Xf_Parms {
 public:
     char xf_in_fn[_MAX_PATH];
-    char vf_out_fn[_MAX_PATH];
+    char xf_out_fn[_MAX_PATH];
+    XFormInternalType xf_type;
     int dim[3];
     float spacing[3];
     float offset[3];
