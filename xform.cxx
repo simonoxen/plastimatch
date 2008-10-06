@@ -464,7 +464,6 @@ init_versor_moments (RegistrationType::Pointer registration,
    ----------------------------------------------------------------------- */
 void
 init_translation_default (Xform *xf_out, Xform* xf_in, 
-		      Stage_Parms* stage,
 		      const OriginType& img_origin, 
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
@@ -475,7 +474,6 @@ init_translation_default (Xform *xf_out, Xform* xf_in,
 
 void
 init_versor_default (Xform *xf_out, Xform* xf_in, 
-		      Stage_Parms* stage,
 		      const OriginType& img_origin, 
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
@@ -486,7 +484,6 @@ init_versor_default (Xform *xf_out, Xform* xf_in,
 
 void
 init_affine_default (Xform *xf_out, Xform* xf_in, 
-		      Stage_Parms* stage,
 		      const OriginType& img_origin, 
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
@@ -497,25 +494,21 @@ init_affine_default (Xform *xf_out, Xform* xf_in,
 
 void
 xform_trn_to_aff (Xform *xf_out, Xform* xf_in,
-		      Stage_Parms* stage,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
 {
-    init_affine_default (xf_out, xf_in, stage, 
-			    img_origin, img_spacing, img_region);
+    init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
 void
 xform_vrs_to_aff (Xform *xf_out, Xform* xf_in,
-		      Stage_Parms* stage,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region)
 {
-    init_affine_default (xf_out, xf_in, stage, 
-			    img_origin, img_spacing, img_region);
+    init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
     xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
     xf_out->get_aff()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
@@ -1198,15 +1191,13 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
 void
 xform_to_trn (Xform *xf_out, 
 	      Xform *xf_in, 
-	      Stage_Parms* stage, 
 	      const OriginType& img_origin, 
 	      const SpacingType& img_spacing,
 	      const ImageRegionType& img_region)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_translation_default (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	init_translation_default (xf_out, xf_in, img_origin, img_spacing, img_region);
 	break;
     case XFORM_ITK_TRANSLATION:
 	*xf_out = *xf_in;
@@ -1231,15 +1222,13 @@ xform_to_trn (Xform *xf_out,
 void
 xform_to_vrs (Xform *xf_out, 
 	      Xform *xf_in, 
-	      Stage_Parms* stage, 
 	      const OriginType& img_origin, 
 	      const SpacingType& img_spacing,
 	      const ImageRegionType& img_region)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_versor_default (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	init_versor_default (xf_out, xf_in, img_origin, img_spacing, img_region);
 	break;
     case XFORM_ITK_TRANSLATION:
 	print_and_exit ("Sorry, couldn't convert to vrs\n");
@@ -1266,23 +1255,19 @@ xform_to_vrs (Xform *xf_out,
 void
 xform_to_aff (Xform *xf_out, 
 	      Xform *xf_in, 
-	      Stage_Parms* stage, 
 	      const OriginType& img_origin, 
 	      const SpacingType& img_spacing,
 	      const ImageRegionType& img_region)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_affine_default (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
 	break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_aff (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	xform_trn_to_aff (xf_out, xf_in, img_origin, img_spacing, img_region);
 	break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_aff (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	xform_vrs_to_aff (xf_out, xf_in, img_origin, img_spacing, img_region);
 	break;
     case XFORM_ITK_AFFINE:
 	*xf_out = *xf_in;

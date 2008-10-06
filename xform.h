@@ -220,13 +220,13 @@ public:
 
 plastimatch1_EXPORT void load_xform (Xform *xf, char* fn);
 plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
-void xform_to_trn (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 
+void xform_to_trn (Xform *xf_out, Xform *xf_in, 
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
-void xform_to_vrs (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 
+void xform_to_vrs (Xform *xf_out, Xform *xf_in, 
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
-void xform_to_aff (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 
+void xform_to_aff (Xform *xf_out, Xform *xf_in, 
 	      const OriginType& img_origin, const SpacingType& img_spacing,
 	      const ImageRegionType& img_region);
 void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, Stage_Parms* stage, 

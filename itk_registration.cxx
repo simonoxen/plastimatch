@@ -400,7 +400,7 @@ set_transform_translation (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_trn (xf_out, xf_in, stage, 
+    xform_to_trn (xf_out, xf_in, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
@@ -413,7 +413,7 @@ set_transform_versor (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_vrs (xf_out, xf_in, stage, 
+    xform_to_vrs (xf_out, xf_in, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
@@ -426,7 +426,7 @@ set_transform_affine (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_aff (xf_out, xf_in, stage, 
+    xform_to_aff (xf_out, xf_in, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
 		    registration->GetFixedImageRegion());
