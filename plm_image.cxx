@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
-#include "rad_image.h"
+#include "plm_image.h"
 #include "itkImageRegionIterator.h"
 #include "readmha.h"
 #include "volume.h"
