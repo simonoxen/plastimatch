@@ -4,7 +4,7 @@
  * =======================================================================*/
 #ifndef _itk_optim_h_
 #define _itk_optim_h_
-#include "rad_registration.h"
+#include "plm_registration.h"
 
 void
 set_optimization (RegistrationType::Pointer registration,

@@ -28,7 +28,7 @@
 #include "itkMattesMutualInformationImageToImageMetric.h"
 
 #include "gcs_metric.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "resample_mha.h"

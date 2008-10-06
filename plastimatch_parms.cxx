@@ -10,7 +10,7 @@
 #else
 #include "getopt.h"
 #endif
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "xform.h"

@@ -17,7 +17,7 @@
 #include "itkHistogramMatchingImageFilter.h"
 
 #include "getopt.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "itk_image.h"
 #include "resample_mha.h"
 #include "xform.h"

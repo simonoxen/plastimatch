@@ -6,7 +6,7 @@
 #include <time.h>
 #include <math.h>
 #include "plm_config.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "xform.h"
 #include "readmha.h"
 #include "volume.h"

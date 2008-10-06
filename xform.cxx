@@ -9,7 +9,7 @@
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"
 #include "xform.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "resample_mha.h"
 #include "print_and_exit.h"
 #include "volume.h"

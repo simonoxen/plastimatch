@@ -14,7 +14,7 @@
 #include "bspline.h"
 #include "volume.h"
 #include "itk_image.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "print_and_exit.h"
 #include "plm_config.h"
 

@@ -258,9 +258,9 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	plastimatch_parms.cxx
 	plm_version.h 
 	print_and_exit.cxx print_and_exit.h 
-	rad_image.cxx rad_image.h 
-	rad_stages.cxx 
-	rad_registration.h 
+	plm_image.cxx plm_image.h 
+	plm_stages.cxx 
+	plm_registration.h 
 	resample_mha.cxx resample_mha.h 
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 

@@ -17,7 +17,7 @@
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
 
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "print_and_exit.h"
 
 /* Types of optimizers */
