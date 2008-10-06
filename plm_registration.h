@@ -8,7 +8,7 @@
 #include "itkDemonsRegistrationFilter.h"
 #include "itkImageRegistrationMethod.h"
 #include "plm_config.h"
-#include "rad_image.h"
+#include "plm_image.h"
 
 /* Registration typedefs */
 typedef itk::ImageRegistrationMethod < 

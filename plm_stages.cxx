@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
-#include "rad_registration.h"
-#include "rad_image.h"
+#include "plm_registration.h"
+#include "plm_image.h"
 #include "itk_registration.h"
 #include "itk_optim.h"
 #include "resample_mha.h"
