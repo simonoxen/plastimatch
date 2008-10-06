@@ -283,13 +283,15 @@ SET(RTOG_TO_MHA_SRC
 SET(TPS_INTERP_SRC
 	tps_interp.cxx tps_interp.h
 	tps_interp_main.cxx 
-	#xform.h xform.cxx
 	)
 SET(VF_STATS_SRC
 	vf_stats.c
 	)
 SET(XFORM_TO_VF_SRC
 	xform_to_vf_main.cxx xform_to_vf_main.h
+	)
+SET(XF_TO_XF_SRC
+	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
 SET(WARP_DIJ_SRC
 	warp_dij.cxx
@@ -306,6 +308,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
     SET(XFORM_TO_VF_SRC ${XFORM_TO_VF_SRC} getopt_long.c getopt.h)
+    SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
     SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
@@ -412,6 +415,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c)
   ADD_EXECUTABLE(vox_to_mha vox_to_mha.c)
   ADD_EXECUTABLE(xform_to_vf ${XFORM_TO_VF_SRC})
+  ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
   ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
   ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
 ENDIF(ITK_FOUND)
@@ -482,6 +486,7 @@ TARGET_LINK_LIBRARIES(vf_stats ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(vf3d_to_mha)
 TARGET_LINK_LIBRARIES(vox_to_mha)
 TARGET_LINK_LIBRARIES(xform_to_vf ${PLASTIMATCH_LIBS})
+TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
 TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
 ENDIF(ITK_FOUND)
@@ -531,6 +536,7 @@ INSTALL(TARGETS vf_stats DESTINATION bin)
 INSTALL(TARGETS vf3d_to_mha DESTINATION bin)
 INSTALL(TARGETS vox_to_mha DESTINATION bin)
 INSTALL(TARGETS xform_to_vf DESTINATION bin)
+INSTALL(TARGETS xf_to_xf DESTINATION bin)
 INSTALL(TARGETS warp_dij DESTINATION bin)
 INSTALL(TARGETS warp_mha DESTINATION bin)
 ENDIF(ITK_FOUND)

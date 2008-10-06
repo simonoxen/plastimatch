@@ -99,8 +99,10 @@ public:
 	    }
 	    std::cout << std::endl;
 	}
-	else if (typeid(event) == typeid(itk::IterationEvent)
-		|| typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
+	else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
+	    std::cout << "FunctionEvaluationIterationEvent: ";
+	}
+	else if (typeid(event) == typeid(itk::IterationEvent)) {
 	    std::cout << "IterationEvent: ";
 	    int it = optimizer_get_current_iteration(m_registration, m_stage);
 	    double val = optimizer_get_value(m_registration, m_stage);

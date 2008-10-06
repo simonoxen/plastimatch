@@ -774,16 +774,13 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     unsigned int counter = 0;
     for (unsigned int k = 0; k < Dimension; k++) {
 	typedef BsplineTransformType::ImageType ParametersImageType;
-	typedef itk::ResampleImageFilter<ParametersImageType,
-		ParametersImageType> ResamplerType;
+	typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
 	ResamplerType::Pointer upsampler = ResamplerType::New();
 
-	typedef itk::BSplineResampleImageFunction<ParametersImageType,
-		double> FunctionType;
+	typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
 	FunctionType::Pointer fptr = FunctionType::New();
 
-	typedef itk::IdentityTransform<double,
-		Dimension> IdentityTransformType;
+	typedef itk::IdentityTransform<double, Dimension> IdentityTransformType;
 	IdentityTransformType::Pointer identity = IdentityTransformType::New();
 
 	upsampler->SetInput (bsp_old->GetCoefficientImage()[k]);
@@ -793,16 +790,14 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	upsampler->SetOutputSpacing (bsp_new->GetGridSpacing());
 	upsampler->SetOutputOrigin (bsp_new->GetGridOrigin());
 
-	typedef itk::BSplineDecompositionImageFilter<ParametersImageType,
-		ParametersImageType> DecompositionType;
+	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
 	DecompositionType::Pointer decomposition = DecompositionType::New();
 
 	decomposition->SetSplineOrder (SplineOrder);
 	decomposition->SetInput (upsampler->GetOutput());
 	decomposition->Update();
 
-	ParametersImageType::Pointer newCoefficients 
-		= decomposition->GetOutput();
+	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
 
 	// copy the coefficients into the parameter array
 	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
