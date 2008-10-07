@@ -584,51 +584,51 @@ alloc_itk_bsp_parms (Xform *xf, BsplineTransformType::Pointer bsp)
 
 static void
 init_itk_bsp_default (Xform *xf_out, Xform* xf_in, 
-		      Stage_Parms* stage,
 		      const OriginType& img_origin, 
 		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+		      const ImageRegionType& img_region,
+		      float* grid_spac)
 {
     printf ("init_itk_bsp_default (enter)\n");
     BsplineTransformType::Pointer bsp = BsplineTransformType::New();
-    init_itk_bsp_region (bsp, img_origin, img_spacing, img_region, stage->grid_spac);
+    init_itk_bsp_region (bsp, img_origin, img_spacing, img_region, grid_spac);
     alloc_itk_bsp_parms (xf_out, bsp);
     printf ("init_itk_bsp_default (exit)\n");
 }
 
 static void
 xform_trn_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      Stage_Parms* stage,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+		      const ImageRegionType& img_region,
+		      float* grid_spac)
 {
-    init_itk_bsp_default (xf_out, xf_in, stage, 
-			    img_origin, img_spacing, img_region);
+    init_itk_bsp_default (xf_out, xf_in, 
+			    img_origin, img_spacing, img_region, grid_spac);
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_trn());
 }
 
 static void
 xform_vrs_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      Stage_Parms* stage,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+		      const ImageRegionType& img_region,
+		      float* grid_spac)
 {
-    init_itk_bsp_default (xf_out, xf_in, stage, 
-			    img_origin, img_spacing, img_region);
+    init_itk_bsp_default (xf_out, xf_in, 
+			    img_origin, img_spacing, img_region, grid_spac);
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_vrs());
 }
 
 static void
 xform_aff_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      Stage_Parms* stage,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+		      const ImageRegionType& img_region,
+		      float* grid_spac)
 {
-    init_itk_bsp_default (xf_out, xf_in, stage, 
-			    img_origin, img_spacing, img_region);
+    init_itk_bsp_default (xf_out, xf_in, 
+			    img_origin, img_spacing, img_region, grid_spac);
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_aff());
 }
 
@@ -1290,35 +1290,35 @@ xform_to_aff (Xform *xf_out,
 void
 xform_to_itk_bsp (Xform *xf_out, 
 		  Xform *xf_in, 
-		  Stage_Parms* stage, 
 		  const OriginType& img_origin, 
 		  const SpacingType& img_spacing,
-		  const ImageRegionType& img_region)
+		  const ImageRegionType& img_region,
+		  float* grid_spac)
 {
     BsplineTransformType::Pointer bsp;
 
     switch (xf_in->m_type) {
     case XFORM_NONE:
 	printf ("Converting xform_none -> bsp\n");
-	init_itk_bsp_default (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	init_itk_bsp_default (xf_out, xf_in, 
+				img_origin, img_spacing, img_region, grid_spac);
 	break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_itk_bsp (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	xform_trn_to_itk_bsp (xf_out, xf_in, 
+				img_origin, img_spacing, img_region, grid_spac);
 	break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_itk_bsp (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	xform_vrs_to_itk_bsp (xf_out, xf_in, 
+				img_origin, img_spacing, img_region, grid_spac);
 	break;
     case XFORM_ITK_AFFINE:
-	xform_aff_to_itk_bsp (xf_out, xf_in, stage, 
-				img_origin, img_spacing, img_region);
+	xform_aff_to_itk_bsp (xf_out, xf_in, 
+				img_origin, img_spacing, img_region, grid_spac);
 	break;
     case XFORM_ITK_BSPLINE:
 	xform_itk_bsp_to_itk_bsp (xf_out, xf_in, 
 				img_origin, img_spacing, img_region, 
-				stage->grid_spac);
+				grid_spac);
 	break;
     case XFORM_ITK_TPS:
 	print_and_exit ("Sorry, couldn't convert itk_tps to itk_bsp\n");
@@ -1329,7 +1329,7 @@ xform_to_itk_bsp (Xform *xf_out,
     case XFORM_GPUIT_BSPLINE:
 	xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, 
 				    img_origin, img_spacing, img_region,
-				    stage->grid_spac);
+				    grid_spac);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");

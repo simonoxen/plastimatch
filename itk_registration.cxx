@@ -439,10 +439,11 @@ set_transform_bspline (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_itk_bsp (xf_out, xf_in, stage, 
+    xform_to_itk_bsp (xf_out, xf_in, 
 		    registration->GetFixedImage()->GetOrigin(),
 		    registration->GetFixedImage()->GetSpacing(),
-		    registration->GetFixedImageRegion());
+		    registration->GetFixedImageRegion(),
+		    stage->grid_spac);
     registration->SetTransform (xf_out->get_bsp());
 }
 
