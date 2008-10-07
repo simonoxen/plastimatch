@@ -30,6 +30,20 @@ int iter = 0;
 extern "C" {
 
 void 
+dump_values(char *fileName, float *values, int num_values){
+	FILE *fp = fopen(fileName, "wt");
+	int j = 0;
+	for(int i = 0; i < num_values-1; i++){
+		if(values[i] == 0){
+			fprintf(fp, "%d, %f \n", i, values[i]);
+			j++;
+		}
+	}
+	fprintf(fp, "Total number of voxels = %d \n", j);
+	fclose(fp);
+}
+
+void 
 check_values(FILE *fp, float cpu_value, float gpu_value, int vox_on_cpu, int vox_on_gpu){
     // fprintf(fp, "%f, %f, %f \n", cpu_value, gpu_value, abs(cpu_value - gpu_value));
 	// fprintf(fp, "%6.3f, %6.3f \n", cpu_value, gpu_value);
@@ -37,6 +51,15 @@ check_values(FILE *fp, float cpu_value, float gpu_value, int vox_on_cpu, int vox
 	if(fabs(cpu_value - gpu_value) > 0)
 		fprintf(fp, "%f %f \n", cpu_value, gpu_value);
     }
+
+float get_sum(float *partial_sum, int size)
+{
+	float sum = 0;
+	for(int i = 0; i < size; i++)
+		sum = sum + partial_sum[i];
+
+	return sum;
+}
 
 void 
 bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_grad, BSPLINE_Parms *parms){
@@ -166,8 +189,8 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
 	data_on_gpu->mvr_stream = new ::brook::stream(::brook::getStreamType((float4 *)0), volume_texture_size, volume_texture_size, -1);
 
 	/* Allocate memory on GPU to store the score and the number of valid voxels as single float4 elements. */
-	data_on_gpu->score = new ::brook::stream(::brook::getStreamType((float4 *)0), 1, 1, -1);
-	data_on_gpu->num_valid_voxels = new ::brook::stream(::brook::getStreamType((float4 *)0), 1, 1, -1);
+	data_on_gpu->partial_sum_stream = new ::brook::stream(::brook::getStreamType((float *)0), volume_texture_size, volume_texture_size, -1);
+	data_on_gpu->sum_element = new ::brook::stream(::brook::getStreamType((float *)0), 1, 1, -1);
 
 	/* Allocate memory on the CPU to store the diff values read back from the GPU */
 	data_on_gpu->diff = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
@@ -232,6 +255,20 @@ bspline_initialize_structure_to_store_data_from_gpu(Volume* fixed, BSPLINE_Parms
 	memset(data_from_gpu->valid_voxels, 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
 }
 
+void test_routine_1(void)
+{
+	float result = 0;
+
+	::brook::stream test_stream(::brook::getStreamType((float *)0), 10, 10, -1);
+	// ::brook::stream reduced_stream(::brook::getStreamType((float *)0), 10, 1, -1);
+
+	init_stream_to_one(test_stream); // Initialize stream elements to one 
+	// reduce_stream_in_y_direction(test_stream, (float)10, (float)100, reduced_stream);
+	compute_sum_kernel(test_stream, result);
+
+	printf("Sum of the stream elements = %f \n", result);
+}
+
 
 /* Compute score on the GPU */
 void 
@@ -290,10 +327,14 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 	pix_spacing.y = (float)moving->pix_spacing[1];
 	pix_spacing.z = (float)moving->pix_spacing[2];
 
-	float4 score, num_valid_voxels;
+	float score = 0;
+	float num_valid_voxels = 0;
 
 	LARGE_INTEGER clock_count, clock_frequency;
     double clock_start, clock_end;
+
+	// test_routine_1();
+	// getchar();
 
 	QueryPerformanceFrequency(&clock_frequency); // Get CPU frequency
     QueryPerformanceCounter(&clock_count); // Get CPU cycle counter
@@ -345,8 +386,8 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		 64.0,
 		 *(data_on_gpu->dz_stream));
 
-	/* Determine the voxels that will contribute to the score computation */
-	compute_valid_voxels_kernel( *(data_on_gpu->dx_stream),
+	/* Determine the voxels that will contribute to the score computation. */
+	compute_valid_voxels_kernel(*(data_on_gpu->dx_stream),
 				*(data_on_gpu->dy_stream),
 				*(data_on_gpu->dz_stream),
 				volume_dim, // X, Y, Z dimensions of the volume
@@ -415,20 +456,14 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 
 	/* Compute diff*diff on the GPU and reduce it to a single value to compute the score */
 	compute_diff_squared_kernel(*(data_on_gpu->diff_stream), *(data_on_gpu->diff_stream));
-	compute_score_kernel(*(data_on_gpu->diff_stream), *(data_on_gpu->score));
 	
+	streamWrite(*(data_on_gpu->diff_stream), data_on_gpu->diff);
+	streamWrite(*(data_on_gpu->valid_voxel_stream), data_on_gpu->valid_voxels);
+
 	QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
 	printf("Time needed to compute the kernels on the GPU = %f \n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
-	/* Read the diff_squared and valid voxel streams back from the GPU. */
-	// streamWrite(*(data_on_gpu->diff_stream), data_on_gpu->diff);
-	streamWrite(*(data_on_gpu->valid_voxel_stream), data_on_gpu->valid_voxels);
-	compute_num_valid_voxels_kernel(*(data_on_gpu->valid_voxel_stream), *(data_on_gpu->num_valid_voxels));
-
-	streamWrite(*(data_on_gpu->score), &score);
-	streamWrite(*(data_on_gpu->num_valid_voxels), &num_valid_voxels);
-	
 	/* Read back the dc_dv values from the GPU */
 	streamWrite(*(data_on_gpu->dx_stream), data_on_gpu->dxyz[0]);
     streamWrite(*(data_on_gpu->dy_stream), data_on_gpu->dxyz[1]);
@@ -438,13 +473,13 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     ssd->score = 0;
     memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
     num_vox = 0;
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
+    for(rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
 		p[2] = rk / parms->vox_per_rgn[2];
 		q[2] = rk % parms->vox_per_rgn[2];
-		for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
+		for(rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
 			p[1] = rj / parms->vox_per_rgn[1];
 			q[1] = rj % parms->vox_per_rgn[1];
-			for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
+			for(ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
 				vox++;
 				p[0] = ri / parms->vox_per_rgn[0];
 				q[0] = ri % parms->vox_per_rgn[0];
@@ -453,7 +488,9 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 				qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
 
 				if(data_on_gpu->valid_voxels[vox] == 0.0) continue;
-				else{
+				else if(data_on_gpu->valid_voxels[vox] == 1){
+
+					ssd->score += data_on_gpu->diff[vox];
 					dc_dv[0] = data_on_gpu->dxyz[0][vox];
 					dc_dv[1] = data_on_gpu->dxyz[1][vox];
 					dc_dv[2] = data_on_gpu->dxyz[2][vox];
@@ -465,14 +502,11 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 		}
     }
 
-    //dump_coeff (bspd, "coeff.txt");
-
     /* Normalize score for MSE */
-    // ssd->score = ssd->score / num_vox;
-	ssd->score = (score.x + score.y + score.z + score.w)/(num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
+    ssd->score = ssd->score / num_vox;
     for (i = 0; i < bspd->num_coeff; i++) {
-	// ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
-		ssd->grad[i] = 2 * ssd->grad[i] / (num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
+		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+	// ssd->grad[i] = 2 * ssd->grad[i] / (num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
     }
 
     ssd_grad_norm = 0;

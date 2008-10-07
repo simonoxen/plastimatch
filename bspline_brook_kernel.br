@@ -316,14 +316,14 @@ kernel void compute_diff_kernel(float4 fixed_image[][],
 
 /* Kernel computes the number of valid voxels */
 kernel void compute_valid_voxels_kernel(float4 dx[][],
-						  float4 dy[][],
-						  float4 dz[][],
-						  float3 volume_dim, // X, Y, Z dimensions of the volume
-						  float3 img_origin, // X, Y, Z coordinates for the image origin 
-						  float3 pix_spacing, // Dimensions of a single voxel
-						  float3 img_offset, // Offset corresponding to the region of interest
-						  float volume_texture_size,
-						  out float4 result<>)
+										float4 dy[][],
+										float4 dz[][],
+										float3 volume_dim, // X, Y, Z dimensions of the volume
+										float3 img_origin, // X, Y, Z coordinates for the image origin 
+										float3 pix_spacing, // Dimensions of a single voxel
+										float3 img_offset, // Offset corresponding to the region of interest
+										float volume_texture_size,
+										out float4 result<>)
 {
 	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
 	float my_index = (volume_texture_size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
@@ -337,7 +337,10 @@ kernel void compute_valid_voxels_kernel(float4 dx[][],
 	
 	if (my_index > volume_dim.x*volume_dim.y*volume_dim.x) // Voxel lies outside the volume
 	{ 
-		result = 0.0;
+		result.x = 0.0; // These voxels dont count
+		result.y = 0.0;
+		result.z = 0.0;
+		result.w = 0.0;
 	}
 	else
 	{
@@ -396,6 +399,82 @@ kernel void compute_valid_voxels_kernel(float4 dx[][],
 		} // For loop
 	} // Else
 }				
+
+/* Kernel computes the number of valid voxels */
+kernel void compute_valid_voxels_kernel_revised(float4 dx[][],
+										float4 dy[][],
+										float4 dz[][],
+										float3 volume_dim, // X, Y, Z dimensions of the volume
+										float3 img_origin, // X, Y, Z coordinates for the image origin 
+										float3 pix_spacing, // Dimensions of a single voxel
+										float3 img_offset, // Offset corresponding to the region of interest
+										float volume_texture_size,
+										out float result<>)
+{
+	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
+	float my_index = (volume_texture_size*temp.y + temp.x)*4; // Get the index of corresponding voxel in the 1D array
+	
+	float voxel_number;
+	float curr_index;
+	
+	float3 vox_coordinate;
+	float3 distance_from_image_origin, displacement_in_mm, displacement_in_vox;
+	
+	
+	if (my_index > volume_dim.x*volume_dim.y*volume_dim.x) // Voxel lies outside the volume
+	{ 
+		result = 0.0; // These voxels dont count
+	}
+	else
+	{
+		result = 0.0;
+		for (voxel_number = 0.0; voxel_number < 4; voxel_number = voxel_number + 1.0) // Iterate through the four voxels
+		{ 
+			/* Get the X, Y, Z position of the voxel */
+			curr_index = my_index + voxel_number; // Get correct index of the voxel
+			vox_coordinate.z = floor(curr_index/(volume_dim.x*volume_dim.y)); // Calculate the z index
+			vox_coordinate.y = floor((curr_index - vox_coordinate.z*(volume_dim.x*volume_dim.y))/volume_dim.x); // Calculate the y index
+			vox_coordinate.x = curr_index - vox_coordinate.z*volume_dim.x*volume_dim.y - vox_coordinate.y*volume_dim.x; // Calculate the x index
+			
+			distance_from_image_origin.x = img_origin.x + pix_spacing.x*vox_coordinate.x; // Distance of voxel in mm from the origin along the X axis
+			distance_from_image_origin.y = img_origin.y + pix_spacing.y*vox_coordinate.y; // Distance of voxel in mm from the origin along the Y axis
+			distance_from_image_origin.z = img_origin.z + pix_spacing.z*vox_coordinate.z; // Distance of voxel in mm from the origin along the Z axis
+			
+			if(voxel_number == 0.0) {
+				displacement_in_mm.x = distance_from_image_origin.x + dx[temp.y][temp.x].x; // Displacement of voxel in mm in the X direction
+				displacement_in_mm.y = distance_from_image_origin.y + dy[temp.y][temp.x].x; // Displacement of voxel in mm in the Y direction
+				displacement_in_mm.z = distance_from_image_origin.z + dz[temp.y][temp.x].x; // Displacement of voxel in mm in the Z direction
+			}
+			else if(voxel_number == 1.0){
+				displacement_in_mm.x = distance_from_image_origin.x + dx[temp.y][temp.x].y; // Displacement of voxel in mm in the X direction
+				displacement_in_mm.y = distance_from_image_origin.y + dy[temp.y][temp.x].y; // Displacement of voxel in mm in the Y direction
+				displacement_in_mm.z = distance_from_image_origin.z + dz[temp.y][temp.x].y; // Displacement of voxel in mm in the Z direction
+			}
+			else if(voxel_number == 2.0){
+				displacement_in_mm.x = distance_from_image_origin.x + dx[temp.y][temp.x].z; // Displacement of voxel in mm in the X direction
+				displacement_in_mm.y = distance_from_image_origin.y + dy[temp.y][temp.x].z; // Displacement of voxel in mm in the Y direction
+				displacement_in_mm.z = distance_from_image_origin.z + dz[temp.y][temp.x].z; // Displacement of voxel in mm in the Z direction
+			}
+			else if(voxel_number == 3.0) {
+				displacement_in_mm.x = distance_from_image_origin.x + dx[temp.y][temp.x].w; // Displacement of voxel in mm in the X direction
+				displacement_in_mm.y = distance_from_image_origin.y + dy[temp.y][temp.x].w; // Displacement of voxel in mm in the Y direction
+				displacement_in_mm.z = distance_from_image_origin.z + dz[temp.y][temp.x].w; // Displacement of voxel in mm in the Z direction
+			}
+			
+			displacement_in_vox.x = (displacement_in_mm.x - img_offset.x)/pix_spacing.x; // Convert the displacement value in terms of voxels
+			displacement_in_vox.y = (displacement_in_mm.y - img_offset.y)/pix_spacing.y;
+			displacement_in_vox.z = (displacement_in_mm.z - img_offset.z)/pix_spacing.z;
+			
+			/* Check if the displaced voxel lies outside the region of interest */
+			if ((displacement_in_vox.x >= -0.5) && (displacement_in_vox.x <= (volume_dim.x - 0.5)) && 
+				(displacement_in_vox.y >= -0.5) && (displacement_in_vox.y <= (volume_dim.y - 0.5)) && 
+				(displacement_in_vox.z >= -0.5) && (displacement_in_vox.z <= (volume_dim.z - 0.5))){
+					result = result + 1;
+				}
+		} // For loop
+	} // Else
+}				
+
 
 
 /* Kernel computes the dc_dv values used to update the control-knot coefficients */
@@ -602,22 +681,101 @@ kernel void compute_mvr_kernel(float4 dx[][],
 }		
 
 /* This kernel squares the diff values */
-kernel void compute_diff_squared_kernel(float4 diff<>, out float4 result<>){
-	result = diff*diff;
+kernel void compute_diff_squared_kernel(float4 diff<>, out float4 result<>)
+{
+	result.x = diff.x*diff.x;
+	result.y = diff.y*diff.y;
+	result.z = diff.z*diff.z;
+	result.w = diff.w*diff.w;
 }	
 
 /* This kernel reduces the diff_squared values into a single float4 value */
-reduce void compute_score_kernel(float4 diff_squared<>, reduce float4 result<>){
-	result = result + diff_squared;
+reduce void compute_score_kernel(float4 diff_squared<>, reduce float4 result){
+	result.x = result.x + diff_squared.x;
+	result.y = result.y + diff_squared.y;
+	result.z = result.z + diff_squared.z;
+	result.w = result.w + diff_squared.w;
 }  		  
 
+kernel void accumulate_values_into_float_struct(float4 input_stream[][], out float4 result<>)
+{
+	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
+	
+	result.x = input_stream[temp.y][temp.x].x + 
+		     input_stream[temp.y][temp.x].y + 
+		     input_stream[temp.y][temp.x].z + 
+		     input_stream[temp.y][temp.x].w;
+	result.y = 0;
+	result.z = 0;
+	result.w = 0;
+}
+
 /* This kernel counts the number of valid voxels */
-reduce void compute_num_valid_voxels_kernel(float4 valid_voxels<>, reduce float4 result<>){
-	result = result + valid_voxels;
+reduce void compute_sum_kernel(float input_stream<>, reduce float result){
+	result = result + input_stream;
 }
 
 /* Test kernel */
 kernel void test_kernel(float4 image<>, out float4 result<>)
 {
 	result = image + 1;
+}
+
+/* Kernel to initialize a stream with zeros */
+kernel void init_stream(out float4 result<>)
+{
+	result = 0.0;
+}
+
+/* Initialize kernel values to one */
+kernel void init_stream_to_one(out float4 result<>)
+{
+	result = 2;
+}
+
+
+/* Kernel reduces the elements of a 2D stream in the Y direction by summing them */
+kernel void reduce_stream_in_y_direction(float4 input_stream[][], 
+										 float stream_dimension,
+										 float inner_loop_bound,
+										 out float result<>)
+{
+	float2 temp = indexof(result); // Get (X, Y) index of our stream element in texture memory
+	
+	float outer_loop_bound;
+	float left_over;
+	float sum;
+	float m; 
+	float i, j;
+	
+	outer_loop_bound = floor(stream_dimension/inner_loop_bound);
+	left_over = stream_dimension - outer_loop_bound*inner_loop_bound;
+
+	m = 0;
+	sum = 0;
+	// Sum the elements along the Y dimension of the texture
+	for(i = 0.0; i < outer_loop_bound; i = i + 1.0)
+	{
+		for(j = 0.0; j < inner_loop_bound; j = j + 1.0)
+		{
+			sum = sum + 
+				  input_stream[temp.y + m][temp.x].x + 
+				  input_stream[temp.y + m][temp.x].y + 
+				  input_stream[temp.y + m][temp.x].z + 
+				  input_stream[temp.y + m][temp.x].w;
+			m = m + 1.0;
+		}
+	}
+	
+	// Sum up any left over elements
+	for(i = 0.0; i < left_over; i = i + 1.0)
+	{
+		sum = sum + 
+			input_stream[temp.y + m][temp.x].x + 
+			input_stream[temp.y + m][temp.x].y + 
+			input_stream[temp.y + m][temp.x].z + 
+			input_stream[temp.y + m][temp.x].w;
+		m = m + 1.0;
+	}
+	result = sum;
 }
