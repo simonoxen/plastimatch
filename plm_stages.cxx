@@ -292,6 +292,7 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 	if (regp->vf_out_fn[0]) {
 	    printf ("Writing vector field ...\n");
 
+#define USE_BUGGY_ITK 1
 #if defined (USE_BUGGY_ITK)
 	    save_image (xf_tmp.get_itk_vf(), regp->vf_out_fn);
 #else

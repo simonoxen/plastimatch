@@ -1,7 +1,6 @@
 PROJECT(plastimatch)
 
 INCLUDE(CPack)
-
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
 
@@ -9,11 +8,11 @@ INCLUDE(GPUIT.cmake)
 
 SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
-
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
+
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
 IF(BUILD_PLASTIMATCH_SLICER)
@@ -284,6 +283,9 @@ SET(TPS_INTERP_SRC
 	tps_interp.cxx tps_interp.h
 	tps_interp_main.cxx 
 	)
+SET(VF_COMPARE_SRC
+	vf_compare.c
+	)
 SET(VF_STATS_SRC
 	vf_stats.c
 	)
@@ -331,8 +333,20 @@ ENDIF(CUDA_FOUND)
 
 
 ######################################################
-##  TARGETS (from GPUIT)
+##  MAKEFILE TARGETS
 ######################################################
+SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+
+# Always built
+ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
+ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
+ADD_EXECUTABLE(demons ${DEMONS_SRC})
+ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
+ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
+ADD_EXECUTABLE(vf_compare ${VF_COMPARE_SRC})
+ADD_EXECUTABLE(vf_stats ${VF_STATS_SRC})
+
+# Require brook
 IF(BROOK_FOUND)
   BRCC_FILE(fdk_brook_kernel.br)
   SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
@@ -354,6 +368,7 @@ IF(BROOK_FOUND)
     OBJECT_DEPENDS "toy_kernels.cpp")
 ENDIF(BROOK_FOUND)
 
+# Require cuda
 IF(BUILD_DEMONS_CUDA)
   NVCC_FILE(demons_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu PROPERTIES
@@ -361,28 +376,21 @@ IF(BUILD_DEMONS_CUDA)
   ADD_EXECUTABLE(demons_cuda ${DEMONS_CUDA_SRC} demons_cuda.obj)
 ENDIF(BUILD_DEMONS_CUDA)
 
-ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
-ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
-ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
-ADD_EXECUTABLE(demons ${DEMONS_SRC})
-ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
-
+# Require f2c
 IF(F2C_LIBRARY)
   ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
 ENDIF(F2C_LIBRARY)
 
-
-######################################################
-##  TARGETS (from plastimatch)
-######################################################
-SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-
-## Despite claims to the contrary, you are not allowed to have a library
-## with the same name as the executable.  What happens is the executable 
-## tries to create a temporary library with the same name.  [MSVC 2005]
+# Require itk
 IF(ITK_FOUND)
+
+  ## Despite claims to the contrary, you are not allowed to have a library
+  ## with the same name as the executable.  What happens is the executable 
+  ## tries to create a temporary library with the same name.  [MSVC 2005]
+  ## That is why the library is called plastimatch1 instead of plastimatch.
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+
   ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
   ADD_EXECUTABLE(compose_vector_fields ${COMPOSE_VECTOR_FIELDS_SRC})
   ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
@@ -407,7 +415,6 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
   ADD_EXECUTABLE(tps_update tps_update.c)
   ADD_EXECUTABLE(union_mask union_mask.cxx)
-  ADD_EXECUTABLE(vf_stats ${VF_STATS_SRC})
   ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c)
   ADD_EXECUTABLE(vox_to_mha vox_to_mha.c)
   ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
@@ -416,31 +423,28 @@ IF(ITK_FOUND)
 ENDIF(ITK_FOUND)
 
 ######################################################
-##  LINKING (from GPUIT)
+##  LINKING INSTRUCTIONS
 ######################################################
 
-# B-Spline
+# Always built
 TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
-
-# Demon
 TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
-
-# Demon cuda
-IF(BUILD_DEMONS_CUDA)
-IF(CUDA_FOUND)
-    TARGET_LINK_LIBRARIES(demons_cuda ${MY_MATH_LIB} ${CUDA_LIBRARIES})
-ENDIF(CUDA_FOUND)
-ENDIF(BUILD_DEMONS_CUDA)
-
-# DRR
 TARGET_LINK_LIBRARIES(drr_c ${MY_MATH_LIB})
-
-# FDK
 TARGET_LINK_LIBRARIES(fdk_c ${MY_MATH_LIB})
+TARGET_LINK_LIBRARIES(vf_compare ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
+
+# Require brook
 IF(BROOK_FOUND)
   TARGET_LINK_LIBRARIES(fdk_brook ${MY_MATH_LIB} ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
 ENDIF(BROOK_FOUND)
 
+# Require cuda
+IF(BUILD_DEMONS_CUDA)
+  IF(CUDA_FOUND)
+    TARGET_LINK_LIBRARIES(demons_cuda ${MY_MATH_LIB} ${CUDA_LIBRARIES})
+  ENDIF(CUDA_FOUND)
+ENDIF(BUILD_DEMONS_CUDA)
 
 ###### There is no way to get debug gpuit to link with release brook
 ###### on MSVC 2005.
@@ -451,89 +455,92 @@ ENDIF(BROOK_FOUND)
 #    LINK_FLAGS_RELEASE "/NODEFAULTLIB:LIBCMT.LIB /NODEFAULTLIB:LIBCPMT.LIB")
 #ENDIF(WIN32)
 
-######################################################
-##  LINKING (from plastimatch)
-######################################################
+# Require itk
 IF(ITK_FOUND)
-TARGET_LINK_LIBRARIES(analyze_to_mha)
-TARGET_LINK_LIBRARIES(compose_vector_fields ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
-IF(BUILD_EXTRACT_CONTOUR)
-TARGET_LINK_LIBRARIES(extract_contour ${PLASTIMATCH_LIBS})
-ENDIF(BUILD_EXTRACT_CONTOUR)
-TARGET_LINK_LIBRARIES(mask_mha ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(merge_vfs ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(merge2 ${ITK_LIBRARIES})
-TARGET_LINK_LIBRARIES(mha_to_analyze)
-TARGET_LINK_LIBRARIES(mha_to_rtog_dose ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(point_path ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(patient_mask ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(raw_to_mha)
-TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
-TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
-TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
-TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
-TARGET_LINK_LIBRARIES(vf_stats ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(vf3d_to_mha)
-TARGET_LINK_LIBRARIES(vox_to_mha)
-TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
-TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(analyze_to_mha)
+  TARGET_LINK_LIBRARIES(compose_vector_fields ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
+  IF(BUILD_EXTRACT_CONTOUR)
+    TARGET_LINK_LIBRARIES(extract_contour ${PLASTIMATCH_LIBS})
+  ENDIF(BUILD_EXTRACT_CONTOUR)
+  TARGET_LINK_LIBRARIES(mask_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(merge_vfs ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(merge2 ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(mha_to_analyze)
+  TARGET_LINK_LIBRARIES(mha_to_rtog_dose ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(point_path ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(patient_mask ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(raw_to_mha)
+  TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
+  TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
+  TARGET_LINK_LIBRARIES(vf3d_to_mha)
+  TARGET_LINK_LIBRARIES(vox_to_mha)
+  TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
 ENDIF(ITK_FOUND)
 
 ######################################################
-##  INSTALL (GPUIT)
+##  INSTALL
 ######################################################
+
+# Always built
+INSTALL(TARGETS gpuit DESTINATION lib)
 INSTALL(TARGETS bspline DESTINATION bin)
 INSTALL(TARGETS demons DESTINATION bin)
 INSTALL(TARGETS drr_c DESTINATION bin)
 INSTALL(TARGETS fdk_c DESTINATION bin)
+INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
+
+# Require brook
 IF(BROOK_FOUND)
   INSTALL(TARGETS fdk_brook DESTINATION bin)
 ENDIF(BROOK_FOUND)
-INSTALL(TARGETS gpuit DESTINATION lib)
-INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 
-######################################################
-##  INSTALL (PLASTIMATCH)
-######################################################
+# Require itk
 IF(ITK_FOUND)
-INSTALL(TARGETS analyze_to_mha DESTINATION bin)
-INSTALL(TARGETS compose_vector_fields DESTINATION bin)
-INSTALL(TARGETS contour_statistics DESTINATION bin)
-INSTALL(TARGETS cxt_to_mha DESTINATION bin)
-INSTALL(TARGETS dicom_to_mha DESTINATION bin)
-IF(BUILD_EXTRACT_CONTOUR)
-INSTALL(TARGETS extract_contour DESTINATION bin)
-ENDIF(BUILD_EXTRACT_CONTOUR)
-INSTALL(TARGETS mask_mha DESTINATION bin)
-INSTALL(TARGETS merge_vfs DESTINATION bin)
-INSTALL(TARGETS merge2 DESTINATION bin)
-INSTALL(TARGETS mha_to_analyze DESTINATION bin)
-INSTALL(TARGETS mha_to_raw DESTINATION bin)
-INSTALL(TARGETS mha_to_rtog_dose DESTINATION bin)
-INSTALL(TARGETS mha_to_vox DESTINATION bin)
-INSTALL(TARGETS point_path DESTINATION bin)
-INSTALL(TARGETS patient_mask DESTINATION bin)
-INSTALL(TARGETS raw_to_mha DESTINATION bin)
-INSTALL(TARGETS plastimatch DESTINATION bin)
-INSTALL(TARGETS resample_mha DESTINATION bin)
-INSTALL(TARGETS rtog_to_mha DESTINATION bin)
-INSTALL(TARGETS tps_interp DESTINATION bin)
-INSTALL(TARGETS tps_update DESTINATION bin)
-INSTALL(TARGETS union_mask DESTINATION bin)
-INSTALL(TARGETS vf_stats DESTINATION bin)
-INSTALL(TARGETS vf3d_to_mha DESTINATION bin)
-INSTALL(TARGETS vox_to_mha DESTINATION bin)
-INSTALL(TARGETS xf_to_xf DESTINATION bin)
-INSTALL(TARGETS warp_dij DESTINATION bin)
-INSTALL(TARGETS warp_mha DESTINATION bin)
+  INSTALL(TARGETS analyze_to_mha DESTINATION bin)
+  INSTALL(TARGETS compose_vector_fields DESTINATION bin)
+  INSTALL(TARGETS contour_statistics DESTINATION bin)
+  INSTALL(TARGETS cxt_to_mha DESTINATION bin)
+  INSTALL(TARGETS dicom_to_mha DESTINATION bin)
+  IF(BUILD_EXTRACT_CONTOUR)
+    INSTALL(TARGETS extract_contour DESTINATION bin)
+  ENDIF(BUILD_EXTRACT_CONTOUR)
+  INSTALL(TARGETS mask_mha DESTINATION bin)
+  INSTALL(TARGETS merge_vfs DESTINATION bin)
+  INSTALL(TARGETS merge2 DESTINATION bin)
+  INSTALL(TARGETS mha_to_analyze DESTINATION bin)
+  INSTALL(TARGETS mha_to_raw DESTINATION bin)
+  INSTALL(TARGETS mha_to_rtog_dose DESTINATION bin)
+  INSTALL(TARGETS mha_to_vox DESTINATION bin)
+  INSTALL(TARGETS point_path DESTINATION bin)
+  INSTALL(TARGETS patient_mask DESTINATION bin)
+  INSTALL(TARGETS raw_to_mha DESTINATION bin)
+  INSTALL(TARGETS plastimatch DESTINATION bin)
+  INSTALL(TARGETS resample_mha DESTINATION bin)
+  INSTALL(TARGETS rtog_to_mha DESTINATION bin)
+  INSTALL(TARGETS tps_interp DESTINATION bin)
+  INSTALL(TARGETS tps_update DESTINATION bin)
+  INSTALL(TARGETS union_mask DESTINATION bin)
+  INSTALL(TARGETS vf_compare DESTINATION bin)
+  INSTALL(TARGETS vf_stats DESTINATION bin)
+  INSTALL(TARGETS vf3d_to_mha DESTINATION bin)
+  INSTALL(TARGETS vox_to_mha DESTINATION bin)
+  INSTALL(TARGETS xf_to_xf DESTINATION bin)
+  INSTALL(TARGETS warp_dij DESTINATION bin)
+  INSTALL(TARGETS warp_mha DESTINATION bin)
 ENDIF(ITK_FOUND)
 
+######################################################
+##  Test executables
+###################################################### 	 
 # Test executable -- openmp
 IF(BUILD_OPENMP_TEST)
 IF(OPENMP_FOUND)
@@ -598,10 +605,10 @@ slicer3_install_plugins(${CLP})
 ENDIF(BUILD_PLASTIMATCH_SLICER)
 
 ######################################################
-##  REGRESSION TESTING
+##  REGRESSION TESTING (Doesn't work)
 ###################################################### 	 
-IF(ITK_FOUND)
+#IF(ITK_FOUND)
 #ENABLE_TESTING()
 #$ADD_TEST(TEST1 PLASTIMATCH)
 #add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)
-ENDIF(ITK_FOUND)
+#ENDIF(ITK_FOUND)

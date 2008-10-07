@@ -106,14 +106,12 @@ read_mha (char* filename)
     vol->pix_type = PT_UNDEFINED;
     while (fgets(linebuf,LINELEN,fp)) {
 	if (strcmp (linebuf, "ElementDataFile = LOCAL\n") == 0) {
-	    printf ("Got end of header\n");
 	    break;
 	}
 	if (sscanf (linebuf, "DimSize = %d %d %d",
 		    &vol->dim[0],
 		    &vol->dim[1],
 		    &vol->dim[2]) == 3) {
-	    printf ("Parsed dimensions\n");
 	    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
 	    continue;
 	}
@@ -121,18 +119,15 @@ read_mha (char* filename)
 		    &vol->offset[0],
 		    &vol->offset[1],
 		    &vol->offset[2]) == 3) {
-	    printf ("Parsed offset\n");
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementSpacing = %g %g %g",
 		    &vol->pix_spacing[0],
 		    &vol->pix_spacing[1],
 		    &vol->pix_spacing[2]) == 3) {
-	    printf ("Parsed pix spacing\n");
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementNumberOfChannels = %d", &tmp) == 1) {
-	    printf ("Parsed ElementNumberOfChannels\n");
 	    if (vol->pix_type == PT_UNDEFINED || vol->pix_type == PT_FLOAT) {
 		vol->pix_type = PT_VF_FLOAT_INTERLEAVED;
 		vol->pix_size = 3*sizeof(float);
