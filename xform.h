@@ -78,8 +78,10 @@ public:
     TPSTransformType::Pointer m_itk_tps;
     void* m_gpuit;
 
+#if defined (commentout)
     /* ITK goop for managing b-spline parameters. */
     BsplineTransformType::ParametersType m_itk_bsp_parms;
+#endif
 
 public:
     Xform () {

@@ -145,15 +145,10 @@ ENDIF(BUILD_DEMONS_CUDA)
 SET(DRR_C_SRC
 	drr_c.c
 	drr_opts.c drr_opts.h
-	readmha.c readmha.h
-	volume.c volume.h
 	)
 SET(FDK_C_SRC
 	fdk_c.c fdk.h
 	fdk_opts.c fdk_opts.h
-	mathutil.h
-	readmha.c readmha.h
-	volume.c volume.h
 	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
@@ -429,8 +424,8 @@ ENDIF(ITK_FOUND)
 # Always built
 TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(drr_c ${MY_MATH_LIB})
-TARGET_LINK_LIBRARIES(fdk_c ${MY_MATH_LIB})
+TARGET_LINK_LIBRARIES(drr_c ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(fdk_c ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(vf_compare ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
 

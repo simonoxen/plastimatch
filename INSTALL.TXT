@@ -40,8 +40,8 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-We are using ITK 3.6 and ITK 3.8.  When you build ITK, the following 
-settings are recommended:
+ITK must be version 3.6 or newer.  We are using ITK 3.6 and 3.8.  
+When you build ITK, the following settings are recommended:
   BUILD_EXAMPLES         OFF
   BUILD_SHARED_LIBS      (EITHER)
   BUILD_TESTING          OFF

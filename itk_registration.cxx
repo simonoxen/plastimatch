@@ -275,10 +275,6 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 
 	/* Search for bounding box of fixed mask */
 	typedef Mask_SOType* Mask_SOPointer;
-#if defined (changed_from_itk18)
-	Mask_SOPointer so = dynamic_cast<Mask_SOPointer>(
-	    registration->GetMetric()->GetFixedImageMask());
-#endif
 	Mask_SOPointer so = (Mask_SOPointer) registration->GetMetric()->GetFixedImageMask();
 
 	typedef itk::ImageRegionConstIteratorWithIndex< UCharImageType > IteratorType;
@@ -453,7 +449,6 @@ set_transform (RegistrationType::Pointer registration,
 		Xform *xf_in,
 		Stage_Parms* stage)
 {
-    printf ("Clearing xf_out\n");
     xf_out->clear();
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
@@ -499,16 +494,6 @@ set_observer (RegistrationType::Pointer registration,
 	registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
 	registration->GetOptimizer()->AddObserver(itk::EndEvent(), observer);
     }
-
-#if defined (commentout)
-    typedef Metric_Observer MOType;
-    MOType::Pointer mo = MOType::New();
-    mo->Set_Stage_Parms (registration, stage);
-    registration->GetMetric()->AddObserver (itk::IterationEvent(), mo);
-    registration->GetMetric()->AddObserver (itk::ProgressEvent(), mo);
-    registration->GetMetric()->AddObserver (itk::StartEvent(), mo);
-    registration->GetMetric()->AddObserver (itk::EndEvent(), mo);
-#endif
 }
 
 void
@@ -574,7 +559,6 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
     set_mask_images (registration, regd, stage);         // must be after set_metric
     set_fixed_image_region (registration, regd, stage);  // must be after set_mask_images
     show_stats (registration);
-    printf ("Calling set_transform\n");
     set_transform (registration, xf_out, xf_in, stage);  // must be after set_fixed_image_region
     set_optimization (registration, stage);
 
@@ -595,7 +579,5 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
 	exit (-1);
     }
 
-    printf ("calling set_xf_out\n");
     set_xf_out (xf_out, registration, stage);
-    printf ("done\n");
 }
