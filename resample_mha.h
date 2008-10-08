@@ -5,6 +5,7 @@
 #define _resample_image_h_
 
 #include "plm_config.h"
+#include "plm_image.h"
 
 template <class T, class U>
 T
@@ -16,6 +17,9 @@ vector_resample_image (T& image, float x_spacing,
 template <class T>
 T
 vector_resample_image (T& vf_image, float* origin, float* spacing, int* size);
+template <class T>
+T
+vector_resample_image (T& vf_image, PlmImageHeader* pih);
 
 template <class T>
 T

@@ -59,11 +59,6 @@ plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
 			itk::ImageIOBase::IOPixelType &pixelType,
 			itk::ImageIOBase::IOComponentType &componentType);
 
-#if defined (commentout)
-plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
-plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
-plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
-#endif
 template<class T> void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 
 template<class T> void save_image (T img_ptr, char* fname);

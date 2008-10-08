@@ -33,9 +33,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 
     } else {
 	/* convert xform into vector field, then warp */
-	int dim[3];
-	float offset[3];
-	float spacing[3];
+	PlmImageHeader pih;
 
 	printf ("Loading xform...\n");
 	Xform xform, xform_tmp;
@@ -44,13 +42,13 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 	if (parms->fixed_im_fn[0]) {
 	    /* if given, use the grid spacing of user-supplied fixed image */
 	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn);
-	    get_image_header (dim, offset, spacing, fixed);
+	    pih.set_from_itk_image (fixed);
 	} else {
 	    /* otherwise, use the grid spacing of the input image */
-	    get_image_header (dim, offset, spacing, im_in);
+	    pih.set_from_itk_image (im_in);
 	}
 	printf ("converting to vf...\n");
- 	xform_to_itk_vf(&xform_tmp, &xform, dim, offset, spacing);
+ 	xform_to_itk_vf (&xform_tmp, &xform, &pih);
 	vf = xform_tmp.get_itk_vf();
 
 	printf ("Warping...\n");

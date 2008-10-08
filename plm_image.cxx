@@ -11,6 +11,58 @@
 #include "volume.h"
 #include "print_and_exit.h"
 
+
+/* -----------------------------------------------------------------------
+   Image header conversion
+   ----------------------------------------------------------------------- */
+void
+PlmImageHeader::set_from_itk (const OriginType& itk_origin,
+			 const SpacingType& itk_spacing,
+			 const ImageRegionType& itk_region)
+{
+    m_origin = itk_origin;
+    m_spacing = itk_spacing;
+    m_region = itk_region;
+}
+
+void
+PlmImageHeader::set_from_gpuit (float gpuit_origin[3],
+			 float gpuit_spacing[3],
+			 int gpuit_dim[3])
+{
+    ImageRegionType::SizeType itk_size;
+    ImageRegionType::IndexType itk_index;
+
+    for (int d = 0; d < Dimension; d++) {
+	m_origin[d] = gpuit_origin[d];
+	m_spacing[d] = gpuit_spacing[d];
+	itk_index[d] = 0;
+	itk_size[d] = gpuit_dim[d];
+    }
+    m_region.SetSize (itk_size);
+    m_region.SetIndex (itk_index);
+}
+
+void
+itk_roi_from_gpuit (
+    ImageRegionType* roi,
+    int roi_offset[3], int roi_dim[3])
+{
+    ImageRegionType::SizeType itk_size;
+    ImageRegionType::IndexType itk_index;
+
+    for (int d = 0; d < Dimension; d++) {
+	itk_index[d] = roi_offset[d];
+	itk_size[d] = roi_dim[d];
+    }
+    (*roi).SetSize (itk_size);
+    (*roi).SetIndex (itk_index);
+}
+
+
+/* -----------------------------------------------------------------------
+   Image conversion
+   ----------------------------------------------------------------------- */
 RadImage*
 rad_image_load (char* fname, RadImage::RadImageType type)
 {

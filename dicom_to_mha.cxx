@@ -13,22 +13,19 @@
 #include "itkImageSeriesReader.h"
 #include "itkDICOMSeriesFileNames.h"
 #include "resample_mha.h"
+#include "itk_image.h"
 
 /* We only deal with these kinds of images... */
-const unsigned int Dimension = 3;
 typedef short InputPixelType;
 typedef float InternalPixelType;
 
 typedef itk::Image < InputPixelType, Dimension > InputImageType;
 typedef itk::Image < InternalPixelType, Dimension > InternalImageType;
-typedef itk::Image < signed short, Dimension > SignedImageType;
-typedef itk::Image < unsigned short, Dimension > UnsignedImageType;
-typedef itk::Image < float, Dimension > FloatImageType;
 
 typedef itk::ImageSeriesReader < InputImageType > DicomReaderType;
 typedef itk::ImageFileReader < InputImageType > MhaReaderType;
-typedef itk::ImageSeriesReader < SignedImageType > SignedDicomReaderType;
-typedef itk::ImageSeriesReader < UnsignedImageType > UnsignedDicomReaderType;
+typedef itk::ImageSeriesReader < ShortImageType > SignedDicomReaderType;
+typedef itk::ImageSeriesReader < UShortImageType > UnsignedDicomReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > FloatDicomReaderType;
 
 
@@ -37,8 +34,8 @@ typedef itk::CastImageFilter<
 typedef itk::CastImageFilter< 
                     InputImageType, InternalImageType > MovingCastFilterType;
 
-typedef itk::CastImageFilter<InputImageType, UnsignedImageType> UnsignedCastFilterType;
-typedef itk::CastImageFilter<InputImageType, SignedImageType> SignedCastFilterType;
+typedef itk::CastImageFilter<InputImageType, UShortImageType> UnsignedCastFilterType;
+typedef itk::CastImageFilter<InputImageType, ShortImageType> SignedCastFilterType;
 
 MhaReaderType::Pointer
 load_mha_rdr(char *fn)
@@ -135,7 +132,7 @@ shift_pet_values (FloatImageType::Pointer image)
 }
 
 void
-fix_invalid_pixels_with_shift(SignedImageType::Pointer image)
+fix_invalid_pixels_with_shift (ShortImageType::Pointer image)
 {
     typedef itk::ImageRegionIterator< InputImageType > IteratorType;
     InputImageType::RegionType region = image->GetLargestPossibleRegion();
@@ -150,7 +147,7 @@ fix_invalid_pixels_with_shift(SignedImageType::Pointer image)
 }
 
 void
-fix_invalid_pixels(SignedImageType::Pointer image)
+fix_invalid_pixels (ShortImageType::Pointer image)
 {
   typedef itk::ImageRegionIterator< InputImageType > IteratorType;
   InputImageType::RegionType region = image->GetLargestPossibleRegion();
@@ -182,8 +179,8 @@ main(int argc, char *argv[])
       fixed_input_rdr = load_dicom_dir_rdr(argv[1]);
       fixed_input_rdr->Update();
     */
-    typedef itk::ImageFileWriter < SignedImageType > SignedWriterType;
-    typedef itk::ImageFileWriter < UnsignedImageType > UnsignedWriterType;
+    typedef itk::ImageFileWriter < ShortImageType > SignedWriterType;
+    typedef itk::ImageFileWriter < UShortImageType > UnsignedWriterType;
     typedef itk::ImageFileWriter < FloatImageType > FloatWriterType;
 
     int has_resample = 0;
@@ -235,7 +232,7 @@ main(int argc, char *argv[])
 		= UnsignedDicomReaderType::New();
 	load_dicom_dir_rdr(fixed_input_rdr, argv[1]);
 	
-	UnsignedImageType::Pointer input_image 
+	UShortImageType::Pointer input_image 
 		= fixed_input_rdr->GetOutput();
 	if (has_resample) {
 	    subsample_image (input_image, atoi(argv[4]),
@@ -248,8 +245,8 @@ main(int argc, char *argv[])
 	    writer->Update();
 	}
 	else if (output_type == TYPE_SIGNED) {
-	    typedef itk::CastImageFilter <UnsignedImageType,
-		    SignedImageType > CastFilterType;
+	    typedef itk::CastImageFilter <UShortImageType,
+		    ShortImageType > CastFilterType;
 	    CastFilterType::Pointer caster = CastFilterType::New();
 	    caster->SetInput(input_image);
         
@@ -268,7 +265,7 @@ main(int argc, char *argv[])
 	load_dicom_dir_rdr(fixed_input_rdr, argv[1]);
 
 	fixed_input_rdr->Update();
-	SignedImageType::Pointer input_image = fixed_input_rdr->GetOutput();
+	ShortImageType::Pointer input_image = fixed_input_rdr->GetOutput();
 
 	if (has_resample) {
 	    subsample_image (input_image, atoi(argv[4]),
@@ -289,8 +286,8 @@ main(int argc, char *argv[])
 		fix_invalid_pixels_with_shift (input_image);
 	    }
 
-	    typedef itk::CastImageFilter <SignedImageType,
-		    UnsignedImageType > CastFilterType;
+	    typedef itk::CastImageFilter <ShortImageType,
+		    UShortImageType > CastFilterType;
 	    CastFilterType::Pointer caster = CastFilterType::New();
 	    caster->SetInput(input_image);
         
@@ -318,7 +315,7 @@ main(int argc, char *argv[])
 	    shift_pet_values (input_image);
 	    
 	    typedef itk::CastImageFilter <FloatImageType,
-		    SignedImageType > CastFilterType;
+		    ShortImageType > CastFilterType;
 	    CastFilterType::Pointer caster = CastFilterType::New();
 	    caster->SetInput(input_image);
         

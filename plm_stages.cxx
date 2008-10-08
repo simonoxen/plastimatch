@@ -268,12 +268,13 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 {
     Xform xf_tmp;
 
+#if defined (commentout)
 void
 itk_bsp_extend_to_region (Xform* xf,
 		      const OriginType& img_origin,
 		      const SpacingType& img_spacing,
 		      const ImageRegionType& img_region);
-
+#endif
 
     if (regp->xf_out_fn[0]) {
 	printf ("Writing transformation ...\n");
@@ -281,12 +282,14 @@ itk_bsp_extend_to_region (Xform* xf,
     }
 
     /* GCS DEBUGGING... */
-    
+#if defined (commentout)
+    printf ("Trying to extend region...\n");
     itk_bsp_extend_to_region (xf_out, 
 				regd->fixed_image->itk_float()->GetOrigin(), 
 				regd->fixed_image->itk_float()->GetSpacing(), 
 				regd->fixed_image->itk_float()->GetLargestPossibleRegion());
     save_xform (xf_out, "extended.txt");
+#endif
 
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
 	/* Convert xform to vf */

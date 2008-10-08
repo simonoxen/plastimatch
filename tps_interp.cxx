@@ -17,18 +17,15 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typena
     typedef typename PointSetType::Pointer PointSetPointer;
     typedef typename PointSetType::PointIdentifier PointIdType;
 
-
+    PlmImageHeader pih;
     PointType p1;
     PointType p2;
-	int dim[3];
-    float offset[3];
-    float spacing[3];
     char line[BUFLEN];
     Xform xform_tmp, xform;
     FILE* reference;
     FILE* target;
 
-    get_image_header(dim, offset, spacing, img_fixed);
+    pih.set_from_itk_image (img_fixed);
 
     typename PointSetType::Pointer sourceLandMarks = PointSetType::New();
     typename PointSetType::Pointer targetLandMarks = PointSetType::New();
@@ -77,7 +74,7 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typena
     tps->ComputeWMatrix();
 
     xform.set_itk_tps(tps);
-    xform_to_itk_vf (&xform_tmp,&xform, dim, offset, spacing);
+    xform_to_itk_vf (&xform_tmp, &xform, &pih);
 
     typename DeformationFieldType::Pointer vf = DeformationFieldType::New();
     vf = xform_tmp.get_itk_vf();

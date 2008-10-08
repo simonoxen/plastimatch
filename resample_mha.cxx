@@ -12,6 +12,47 @@
 
 template <class T>
 T
+vector_resample_image (T& vf_image, PlmImageHeader* pih)
+{
+    typedef typename T::ObjectType VFImageType;
+    typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
+    typedef itk::VectorLinearInterpolateImageFunction< 
+	    VFImageType, double >  InterpolatorType;
+
+    typename FilterType::Pointer filter = FilterType::New();
+
+    filter->SetOutputOrigin (pih->m_origin);
+    filter->SetOutputSpacing (pih->m_spacing);
+    filter->SetSize (pih->m_region.GetSize());
+
+    typedef itk::AffineTransform< double, 3 > TransformType;
+    TransformType::Pointer transform = TransformType::New();
+    filter->SetTransform (transform);
+
+    typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    filter->SetInterpolator (interpolator);
+
+    FloatVectorType v;
+    v[0] = v[1] = v[2] = 0;
+    filter->SetDefaultPixelValue (v);
+
+    filter->SetInput (vf_image);
+    try {
+	filter->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("Exception running vector resample filter!\n");
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
+
+    T out_image = filter->GetOutput();
+    return out_image;
+}
+
+template <class T>
+T
 vector_resample_image (T& vf_image, DoublePointType origin, 
 		       DoubleVectorType spacing, SizeType size)
 {
@@ -276,6 +317,7 @@ subsample_image (T& image, int x_sampling_rate,
 }
 
 /* Explicit instantiations */
+template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, PlmImageHeader*);
 template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);

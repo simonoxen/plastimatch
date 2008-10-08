@@ -435,11 +435,11 @@ set_transform_bspline (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_itk_bsp (xf_out, xf_in, 
-		    registration->GetFixedImage()->GetOrigin(),
-		    registration->GetFixedImage()->GetSpacing(),
-		    registration->GetFixedImageRegion(),
-		    stage->grid_spac);
+    PlmImageHeader pih;
+    pih.set_from_itk_image (registration->GetFixedImage());		    
+
+    /* GCS FIX: Need to set ROI from registration->GetFixedImageRegion(), */
+    xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
     registration->SetTransform (xf_out->get_bsp());
 }
 

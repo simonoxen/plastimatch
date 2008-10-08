@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rad_image_h_
-#define _rad_image_h_
+#ifndef _plm_image_h_
+#define _plm_image_h_
 
 #include "volume.h"
 #include "itk_image.h"
@@ -11,6 +11,29 @@
 /* -----------------------------------------------------------------------
    RadImage class
    ----------------------------------------------------------------------- */
+class PlmImageHeader;
+class PlmImageHeader {
+public:
+    OriginType m_origin;
+    SpacingType m_spacing;
+    ImageRegionType m_region;
+public:
+    int Size (int d) const { return m_region.GetSize()[d]; }
+public:
+    void set_from_itk (const OriginType& itk_origin,
+			 const SpacingType& itk_spacing,
+			 const ImageRegionType& itk_region);
+    void set_from_gpuit (float gpuit_origin[3],
+			 float gpuit_spacing[3],
+			 int gpuit_dim[3]);
+    template<class T> 
+    void set_from_itk_image (T image) {
+	m_origin = image->GetOrigin();
+	m_spacing = image->GetSpacing();
+	m_region = image->GetLargestPossibleRegion ();
+    }
+};
+
 class RadImage;
 class RadImage {
 
@@ -78,6 +101,6 @@ public:
    Public functions
    ----------------------------------------------------------------------- */
 RadImage* rad_image_load (char* fname, RadImage::RadImageType type);
-
+void itk_roi_from_gpuit (ImageRegionType* roi, int roi_offset[3], int roi_dim[3]);
 
 #endif

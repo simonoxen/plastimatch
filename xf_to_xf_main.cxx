@@ -16,8 +16,11 @@ void
 xf_to_xf_main (Xf_To_Xf_Parms* parms)
 {
     Xform xf_in, xf_out;
+    PlmImageHeader pih;
 
     load_xform (&xf_in, parms->xf_in_fn);
+    pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim);
+
     switch (parms->xf_type) {
     case XFORM_NONE:
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
@@ -32,14 +35,23 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
 	break;
     case XFORM_ITK_BSPLINE:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	if (parms->grid_spac[0] <=0.0f) {
+	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE) {
+		/* Use grid spacing of gpuit bspline */
+		xform_to_itk_bsp (&xf_out, &xf_in, &pih, 0);
+	    } else {
+		print_and_exit ("Sorry, grid spacing cannot be zero for conversion to itk_bsp\n");
+	    }
+	} else {
+	    xform_to_itk_bsp (&xf_out, &xf_in, &pih, parms->grid_spac);
+	}
 	break;
     case XFORM_ITK_TPS:
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	printf ("Converting to (itk) vector field\n");
-	xform_to_itk_vf (&xf_out, &xf_in, parms->dim, parms->offset, parms->spacing);
+	xform_to_itk_vf (&xf_out, &xf_in, &pih);
 	break;
     case XFORM_GPUIT_BSPLINE:
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
@@ -58,7 +70,7 @@ void
 print_usage (void)
 {
     printf ("Usage: xf_to_xf --type=type --input=xform_in --output=vf_out --dims=\"x y z\"\n");
-    printf ("          --offset=\"x y z\" --spacing=\"x y z\"\n");
+    printf ("          --origin=\"x y z\" --spacing=\"x y z\" --grid-spacing=\"x y z\"\n");
     printf ("       Supported types: vf, itk_bsp.\n");
     exit (-1);
 }
@@ -70,10 +82,11 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           1 },
 	{ "output",         required_argument,      NULL,           2 },
-	{ "dims",           required_argument,      NULL,           3 },
-	{ "offset",         required_argument,      NULL,           4 },
-	{ "spacing",        required_argument,      NULL,           5 },
-	{ "type",           required_argument,      NULL,           6 },
+	{ "type",           required_argument,      NULL,           3 },
+	{ "dims",           required_argument,      NULL,           4 },
+	{ "origin",         required_argument,      NULL,           5 },
+	{ "spacing",        required_argument,      NULL,           6 },
+	{ "grid-spacing",   required_argument,      NULL,           7 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -86,33 +99,42 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    strncpy (parms->xf_out_fn, optarg, _MAX_PATH);
 	    break;
 	case 3:
-	    rc = sscanf (optarg, "%d %d %d", &(parms->dim[0]), 
-		    &(parms->dim[1]), &(parms->dim[2]));
-	    if (rc != 3) {
+	    if (!strcmp (optarg, "vf")) {
+		parms->xf_type = XFORM_ITK_VECTOR_FIELD;
+	    } else if (!strcmp (optarg, "itk_bsp")) {
+		printf ("CVT to itk_bsp\n");
+		parms->xf_type = XFORM_ITK_BSPLINE;
+	    } else {
+		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
 		print_usage();
 	    }
 	    break;
-	case 4:
-	    rc = sscanf (optarg, "%g %g %g", &(parms->offset[0]), 
-		    &(parms->offset[1]), &(parms->offset[2]));
-	    if (rc != 3) {
-		print_usage();
+	case 4: {
+		rc = sscanf (optarg, "%d %d %d", &(parms->dim[0]), 
+			&(parms->dim[1]), &(parms->dim[2]));
+		if (rc != 3) {
+		    print_usage();
+		}
 	    }
 	    break;
 	case 5:
+	    rc = sscanf (optarg, "%g %g %g", &(parms->origin[0]), 
+		    &(parms->origin[1]), &(parms->origin[2]));
+	    if (rc != 3) {
+		print_usage();
+	    }
+	    break;
+	case 6:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->spacing[0]), 
 		    &(parms->spacing[1]), &(parms->spacing[2]));
 	    if (rc != 3) {
 		print_usage();
 	    }
 	    break;
-	case 6:
-	    if (!strcmp (optarg, "vf")) {
-		parms->xf_type = XFORM_ITK_VECTOR_FIELD;
-	    } else if (!strcmp (optarg, "itk_bsp")) {
-		parms->xf_type = XFORM_ITK_BSPLINE;
-	    } else {
-		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
+	case 7:
+	    rc = sscanf (optarg, "%g %g %g", &(parms->grid_spac[0]), 
+		    &(parms->grid_spac[1]), &(parms->grid_spac[2]));
+	    if (rc != 3) {
 		print_usage();
 	    }
 	    break;
@@ -120,7 +142,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->xf_in_fn[0] || !parms->xf_out_fn[0] || !parms->xf_type || !parms->dim[0] || parms->spacing[0] == 0.0 || parms->offset[0] == 0.0) {
+    if (!parms->xf_in_fn[0] || !parms->xf_out_fn[0] || !parms->xf_type || !parms->dim[0] || parms->spacing[0] == 0.0) {
 	printf ("Error: must specify all options\n");
 	print_usage();
     }
