@@ -292,12 +292,10 @@ itk_bsp_extend_to_region (Xform* xf,
 #endif
 
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
+
 	/* Convert xform to vf */
 	printf ("Converting xf to vector field ...\n");
-
 	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
-	printf ("IM Size[sro] is %d %d %d\n", img_size[0], img_size[1], img_size[2]);
-
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */

@@ -542,13 +542,13 @@ itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::SpacingType bsp_spacing,
 	    const BsplineTransformType::RegionType bsp_region)
 {
+#if defined (commentout)
     printf ("Setting bsp_spacing\n");
     std::cout << bsp_spacing << std::endl;
     printf ("Setting bsp_origin\n");
     std::cout << bsp_origin << std::endl;
     printf ("Setting bsp_region\n");
     std::cout << bsp_region;
-#if defined (commentout)
 #endif
 
     /* Set grid specifications to bsp struct */
@@ -574,7 +574,9 @@ itk_bsp_set_grid_img (Xform *xf,
     /* Convert image specifications to grid specifications */
     for (int d=0; d<3; d++) {
 	float img_ext = (pih->Size(d) - 1) * pih->m_spacing[d];
+#if defined (commentout)
 	printf ("img_ext[%d] %g <- (%d - 1) * %g\n", d, img_ext, pih->Size(d), pih->m_spacing[d]);
+#endif
 	bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
 	bsp_spacing[d] = grid_spac[d];
 	bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
@@ -720,17 +722,10 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const PlmImageHeader* pih,
 		      float* grid_spac)
 {
-    printf ("Checkpoint 0.1\n");
-
     BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
 
-    printf ("Checkpoint 0.2\n");
-
     init_itk_bsp_default (xf_out);
-    printf ("Checkpoint 0.3\n");
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-
-    printf ("Checkpoint 1\n");
 
     /* Need to copy the bulk transform */
     BsplineTransformType::Pointer bsp_new = xf_out->get_bsp();
@@ -740,8 +735,6 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     const unsigned int num_parms = xf_out->get_bsp()->GetNumberOfParameters();
     BsplineTransformType::ParametersType bsp_coeff;
     bsp_coeff.SetSize (num_parms);
-
-    printf ("Checkpoint 2\n");
 
     /* GCS May 12, 2008.  I feel like the below algorithm suggested 
 	by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
@@ -779,7 +772,6 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 
 	decomposition->SetSplineOrder (SplineOrder);
 	decomposition->SetInput (resampler->GetOutput());
-        printf ("Checkpoint 3\n");
 	decomposition->Update();
 
 	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
@@ -794,7 +786,6 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     }
 
     /* Finally fixate coefficients into recently created bsp structure */
-    printf ("Checkpoint 4\n");
     bsp_new->SetParametersByValue (bsp_coeff);
 }
 
@@ -810,7 +801,7 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 
     for (int d = 0; d < Dimension; d++) {
 	bsp_size[d] = xgb->parms.bspd.cdims[d];
-	bsp_origin[d] = xgb->parms.img_origin[d] + xgb->parms.roi_offset[d] * xgb->parms.img_spacing[d] - 2 * xgb->parms.grid_spac[d];
+	bsp_origin[d] = xgb->parms.img_origin[d] + xgb->parms.roi_offset[d] * xgb->parms.img_spacing[d] - xgb->parms.grid_spac[d];
 	bsp_spacing[d] = xgb->parms.grid_spac[d];
     }
     bsp_region.SetSize (bsp_size);
@@ -939,7 +930,29 @@ xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     return itk_vf;
 }
 
-DeformationFieldType::Pointer 
+/* ITK bsp is different from itk_any, because additional control points might be 
+    needed */
+static DeformationFieldType::Pointer 
+xform_itk_bsp_to_itk_vf (Xform* xf_in, const PlmImageHeader* pih)
+{
+    int d;
+    Xform xf_tmp;
+    float grid_spac[3];
+
+    /* Deep copy of itk_bsp */
+    for (d = 0; d < 3; d++) {
+	grid_spac[d] = xf_in->get_bsp()->GetGridSpacing()[d];
+    }
+    xform_itk_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, grid_spac);
+
+    /* Extend bsp control point grid */
+    itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
+
+    /* Convert extended bsp to vf */
+    return xform_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+}
+
+static DeformationFieldType::Pointer 
 xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, PlmImageHeader* pih)
 {
     const DeformationFieldType::SpacingType& vf_spacing = vf->GetSpacing();
@@ -959,8 +972,7 @@ xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, PlmImageHeader* pih)
     3) Render vf.
     */
 static DeformationFieldType::Pointer
-xform_gpuit_bsp_to_itk_vf (Xform* xf_in,
-			    PlmImageHeader* pih)
+xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
 {
     DeformationFieldType::Pointer itk_vf;
 
@@ -982,9 +994,8 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in,
     return itk_vf;
 }
 
-/* This is really dumb.  But what we're going to do is 
-   to convert gpuit -> itk at the native resolution, 
-   then itk -> itk to change resolution.  */
+/* 1) convert gpuit -> itk at the native resolution, 
+   2) convert itk -> itk to change resolution.  */
 static DeformationFieldType::Pointer 
 xform_gpuit_vf_to_itk_vf (Volume* vf, PlmImageHeader* pih)
 {
@@ -1286,7 +1297,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih)
 	vf = xform_any_to_itk_vf (xf_in->get_aff(), pih);
 	break;
     case XFORM_ITK_BSPLINE:
-	vf = xform_any_to_itk_vf (xf_in->get_bsp(), pih);
+	vf = xform_itk_bsp_to_itk_vf (xf_in, pih);
 	break;
     case XFORM_ITK_TPS:
 	vf = xform_any_to_itk_vf (xf_in->get_itk_tps(), pih);
