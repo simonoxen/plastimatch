@@ -396,10 +396,9 @@ set_transform_translation (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_trn (xf_out, xf_in, 
-		    registration->GetFixedImage()->GetOrigin(),
-		    registration->GetFixedImage()->GetSpacing(),
-		    registration->GetFixedImageRegion());
+    PlmImageHeader pih;
+    pih.set_from_itk_image (registration->GetFixedImage());
+    xform_to_trn (xf_out, xf_in, &pih);
     registration->SetTransform (xf_out->get_trn());
 }
 
@@ -409,10 +408,9 @@ set_transform_versor (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_vrs (xf_out, xf_in, 
-		    registration->GetFixedImage()->GetOrigin(),
-		    registration->GetFixedImage()->GetSpacing(),
-		    registration->GetFixedImageRegion());
+    PlmImageHeader pih;
+    pih.set_from_itk_image (registration->GetFixedImage());
+    xform_to_vrs (xf_out, xf_in, &pih);
     registration->SetTransform (xf_out->get_vrs());
 }
 
@@ -422,10 +420,9 @@ set_transform_affine (RegistrationType::Pointer registration,
 			Xform *xf_in,
 			Stage_Parms* stage)
 {
-    xform_to_aff (xf_out, xf_in, 
-		    registration->GetFixedImage()->GetOrigin(),
-		    registration->GetFixedImage()->GetSpacing(),
-		    registration->GetFixedImageRegion());
+    PlmImageHeader pih;
+    pih.set_from_itk_image (registration->GetFixedImage());
+    xform_to_aff (xf_out, xf_in, &pih);
     registration->SetTransform (xf_out->get_aff());
 }
 

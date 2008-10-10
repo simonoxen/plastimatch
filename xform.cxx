@@ -472,30 +472,21 @@ init_versor_moments (RegistrationType::Pointer registration,
    Defaults
    ----------------------------------------------------------------------- */
 void
-init_translation_default (Xform *xf_out, Xform* xf_in, 
-		      const OriginType& img_origin, 
-		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+init_translation_default (Xform *xf_out, Xform* xf_in)
 {
     TranslationTransformType::Pointer trn = TranslationTransformType::New();
     xf_out->set_trn (trn);
 }
 
 void
-init_versor_default (Xform *xf_out, Xform* xf_in, 
-		      const OriginType& img_origin, 
-		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+init_versor_default (Xform *xf_out, Xform* xf_in)
 {
     VersorTransformType::Pointer vrs = VersorTransformType::New();
     xf_out->set_vrs (vrs);
 }
 
 void
-init_affine_default (Xform *xf_out, Xform* xf_in, 
-		      const OriginType& img_origin, 
-		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+init_affine_default (Xform *xf_out, Xform* xf_in)
 {
     AffineTransformType::Pointer aff = AffineTransformType::New();
     xf_out->set_aff (aff);
@@ -512,22 +503,16 @@ init_itk_bsp_default (Xform *xf)
    Conversion to itk_aff
    ----------------------------------------------------------------------- */
 void
-xform_trn_to_aff (Xform *xf_out, Xform* xf_in,
-		      const OriginType& img_origin,
-		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+xform_trn_to_aff (Xform *xf_out, Xform* xf_in)
 {
-    init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
+    init_affine_default (xf_out, xf_in);
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
 void
-xform_vrs_to_aff (Xform *xf_out, Xform* xf_in,
-		      const OriginType& img_origin,
-		      const SpacingType& img_spacing,
-		      const ImageRegionType& img_region)
+xform_vrs_to_aff (Xform *xf_out, Xform* xf_in)
 {
-    init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
+    init_affine_default (xf_out, xf_in);
     xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
     xf_out->get_aff()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
@@ -896,7 +881,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
    Conversion to itk_vf
    ----------------------------------------------------------------------- */
 static DeformationFieldType::Pointer
-xform_any_to_itk_vf (itk::Transform<double,3,3>* xf,
+xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 		     const PlmImageHeader* pih)
 {
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
@@ -949,7 +934,7 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const PlmImageHeader* pih)
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Convert extended bsp to vf */
-    return xform_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+    return xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
 }
 
 static DeformationFieldType::Pointer 
@@ -989,7 +974,7 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Render to vector field */
-    itk_vf = xform_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+    itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
 
     return itk_vf;
 }
@@ -1139,13 +1124,11 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
 void
 xform_to_trn (Xform *xf_out, 
 	      Xform *xf_in, 
-	      const OriginType& img_origin, 
-	      const SpacingType& img_spacing,
-	      const ImageRegionType& img_region)
+	      PlmImageHeader *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_translation_default (xf_out, xf_in, img_origin, img_spacing, img_region);
+	init_translation_default (xf_out, xf_in);
 	break;
     case XFORM_ITK_TRANSLATION:
 	*xf_out = *xf_in;
@@ -1170,13 +1153,11 @@ xform_to_trn (Xform *xf_out,
 void
 xform_to_vrs (Xform *xf_out, 
 	      Xform *xf_in, 
-	      const OriginType& img_origin, 
-	      const SpacingType& img_spacing,
-	      const ImageRegionType& img_region)
+	      PlmImageHeader *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_versor_default (xf_out, xf_in, img_origin, img_spacing, img_region);
+	init_versor_default (xf_out, xf_in);
 	break;
     case XFORM_ITK_TRANSLATION:
 	print_and_exit ("Sorry, couldn't convert to vrs\n");
@@ -1203,19 +1184,17 @@ xform_to_vrs (Xform *xf_out,
 void
 xform_to_aff (Xform *xf_out, 
 	      Xform *xf_in, 
-	      const OriginType& img_origin, 
-	      const SpacingType& img_spacing,
-	      const ImageRegionType& img_region)
+	      PlmImageHeader *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_affine_default (xf_out, xf_in, img_origin, img_spacing, img_region);
+	init_affine_default (xf_out, xf_in);
 	break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_aff (xf_out, xf_in, img_origin, img_spacing, img_region);
+	xform_trn_to_aff (xf_out, xf_in);
 	break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_aff (xf_out, xf_in, img_origin, img_spacing, img_region);
+	xform_vrs_to_aff (xf_out, xf_in);
 	break;
     case XFORM_ITK_AFFINE:
 	*xf_out = *xf_in;
@@ -1288,19 +1267,19 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih)
 	print_and_exit ("Sorry, couldn't convert to vf\n");
 	break;
     case XFORM_ITK_TRANSLATION:
-	vf = xform_any_to_itk_vf (xf_in->get_trn(), pih);
+	vf = xform_itk_any_to_itk_vf (xf_in->get_trn(), pih);
 	break;
     case XFORM_ITK_VERSOR:
-	vf = xform_any_to_itk_vf (xf_in->get_vrs(), pih);
+	vf = xform_itk_any_to_itk_vf (xf_in->get_vrs(), pih);
 	break;
     case XFORM_ITK_AFFINE:
-	vf = xform_any_to_itk_vf (xf_in->get_aff(), pih);
+	vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
 	break;
     case XFORM_ITK_BSPLINE:
 	vf = xform_itk_bsp_to_itk_vf (xf_in, pih);
 	break;
     case XFORM_ITK_TPS:
-	vf = xform_any_to_itk_vf (xf_in->get_itk_tps(), pih);
+	vf = xform_itk_any_to_itk_vf (xf_in->get_itk_tps(), pih);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	vf = xform_itk_vf_to_itk_vf (xf_in->get_itk_vf(), pih);
