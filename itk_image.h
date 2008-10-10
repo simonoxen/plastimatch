@@ -32,6 +32,7 @@ typedef itk::Image < unsigned char, Dimension > UCharImageType;
 typedef itk::Image < short, Dimension > ShortImageType;
 typedef itk::Image < unsigned short, Dimension > UShortImageType;
 typedef itk::Image < float, Dimension > FloatImageType;
+typedef itk::Image < double, Dimension > DoubleImageType;
 
 typedef itk::Image < short, 2 > ShortImage2DType;
 

@@ -616,20 +616,30 @@ xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_aff());
 }
 
-/* kkk */
+/* Convert xf to vector field to bspline */
 static void
 xform_any_to_itk_bsp_nonbulk (Xform *xf_out, Xform* xf_in,
 			    const PlmImageHeader* pih,
 			    float* grid_spac)
 {
+    int d;
     Xform xf_tmp;
     PlmImageHeader pih_bsp;
 
+    /* Set bsp grid parameters in xf_out */
+    init_itk_bsp_default (xf_out);
+    itk_bsp_set_grid_img (xf_out, pih, grid_spac);
+    BsplineTransformType::Pointer bsp_out = xf_out->get_bsp();
+
+    /* Create temporary array for output coefficients */
+    const unsigned int num_parms = bsp_out->GetNumberOfParameters();
+    BsplineTransformType::ParametersType bsp_coeff;
+    bsp_coeff.SetSize (num_parms);
+
+    /* Compute bspline grid specifications */
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
-
-    /* Compute bspline grid specifications */
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
 
     /* Make a vector field at bspline grid spacing */
@@ -638,52 +648,46 @@ xform_any_to_itk_bsp_nonbulk (Xform *xf_out, Xform* xf_in,
     pih_bsp.m_region = bsp_region;
     xform_to_itk_vf (&xf_tmp, xf_in, &pih_bsp);
 
-    /* GCS -- RMK -- above code gives interleaved vf.  We need planar for decomposition. */
+    /* Vector field is interleaved.  We need planar for decomposition. */
+    FloatImageType::Pointer img = FloatImageType::New();
+    img->SetOrigin (pih_bsp.m_origin);
+    img->SetSpacing (pih_bsp.m_spacing);
+    img->SetRegions (pih_bsp.m_region);
+    img->Allocate ();
 
-    /* Decompose vf into bspline */
-#if defined (commentout)
+    /* Loop through planes */
     unsigned int counter = 0;
-    for (unsigned int k = 0; k < Dimension; k++) {
-	typedef BsplineTransformType::ImageType ParametersImageType;
-	typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
-	ResamplerType::Pointer resampler = ResamplerType::New();
+    for (d = 0; d < 3; d++) {
+	/* Copy a single VF plane into img */
+	typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
+	typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
+	FloatIteratorType img_it (img, pih_bsp.m_region);
+	VFIteratorType vf_it (xf_tmp.get_itk_vf(), pih_bsp.m_region);
+	for (img_it.GoToBegin(), vf_it.GoToBegin(); !img_it.IsAtEnd(); ++img_it, ++vf_it) {
+	    img_it.Set(vf_it.Get()[d]);
+	}
 
-	typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
-	FunctionType::Pointer fptr = FunctionType::New();
-
-	typedef itk::IdentityTransform<double, Dimension> IdentityTransformType;
-	IdentityTransformType::Pointer identity = IdentityTransformType::New();
-
-	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
-	resampler->SetInterpolator (fptr);
-	resampler->SetTransform (identity);
-	resampler->SetSize (bsp_out->GetGridRegion().GetSize());
-	resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
-	resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
-
-	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
+	/* Decompose into bpline coefficient image */
+	typedef itk::BSplineDecompositionImageFilter <FloatImageType, DoubleImageType> DecompositionType;
 	DecompositionType::Pointer decomposition = DecompositionType::New();
-
 	decomposition->SetSplineOrder (SplineOrder);
-	decomposition->SetInput (resampler->GetOutput());
-	decomposition->Update();
+	decomposition->SetInput (img);
+	decomposition->Update ();
 
+	/* Copy the coefficients into a temporary parameter array */
+	typedef BsplineTransformType::ImageType ParametersImageType;
 	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
-
-	// copy the coefficients into a temporary parameter array
 	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-	Iterator it (newCoefficients, bsp_out->GetGridRegion());
-	while (!it.IsAtEnd()) {
-	    bsp_coeff[counter++] = it.Get();
-	    ++it;
+	Iterator co_it (newCoefficients, bsp_out->GetGridRegion());
+	co_it.GoToBegin();
+	while (!co_it.IsAtEnd()) {
+	    bsp_coeff[counter++] = co_it.Get();
+	    ++co_it;
 	}
     }
-#endif
 
-
-    //init_itk_bsp_default (xf_out);
-    //itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-
+    /* Finally fixate coefficients into recently created bsp structure */
+    bsp_out->SetParametersByValue (bsp_coeff);
 }
 
 /* GCS Jun 3, 2008.  When going from a lower image resolution to a 
