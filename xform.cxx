@@ -547,13 +547,13 @@ itk_bsp_set_grid (Xform *xf,
 
 /* Initialize using image spacing */
 static void
-itk_bsp_set_grid_img (Xform *xf,
-	      const PlmImageHeader* pih,
-	      float* grid_spac)
+bsp_grid_from_img_grid (
+    BsplineTransformType::OriginType& bsp_origin,    /* Output */
+    BsplineTransformType::SpacingType& bsp_spacing,  /* Output */
+    BsplineTransformType::RegionType& bsp_region,    /* Output */
+    const PlmImageHeader* pih,			     /* Input */
+    float* grid_spac)				     /* Input */
 {
-    BsplineTransformType::OriginType bsp_origin;
-    BsplineTransformType::SpacingType bsp_spacing;
-    BsplineTransformType::RegionType bsp_region;
     BsplineTransformType::RegionType::SizeType bsp_size;
 
     /* Convert image specifications to grid specifications */
@@ -567,15 +567,29 @@ itk_bsp_set_grid_img (Xform *xf,
 	bsp_size[d] = 4 + (int) floor (img_ext / grid_spac[d]);
     }
     bsp_region.SetSize (bsp_size);
+}
 
-    /* Finish initialization using grid specifications */
+/* Initialize using image spacing */
+static void
+itk_bsp_set_grid_img (Xform *xf,
+	      const PlmImageHeader* pih,
+	      float* grid_spac)
+{
+    BsplineTransformType::OriginType bsp_origin;
+    BsplineTransformType::SpacingType bsp_spacing;
+    BsplineTransformType::RegionType bsp_region;
+
+    /* Compute bspline grid specifications */
+    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
+
+    /* Set grid specifications into xf structure */
     itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region);
 }
 
 static void
-xform_trn_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const PlmImageHeader* pih,
-		      float* grid_spac)
+xform_trn_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
+			    const PlmImageHeader* pih,
+			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -583,9 +597,9 @@ xform_trn_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 }
 
 static void
-xform_vrs_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const PlmImageHeader* pih,
-		      float* grid_spac)
+xform_vrs_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
+			    const PlmImageHeader* pih,
+			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
@@ -593,13 +607,83 @@ xform_vrs_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 }
 
 static void
-xform_aff_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const PlmImageHeader* pih,
-		      float* grid_spac)
+xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
+			    const PlmImageHeader* pih,
+			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_aff());
+}
+
+/* kkk */
+static void
+xform_any_to_itk_bsp_nonbulk (Xform *xf_out, Xform* xf_in,
+			    const PlmImageHeader* pih,
+			    float* grid_spac)
+{
+    Xform xf_tmp;
+    PlmImageHeader pih_bsp;
+
+    BsplineTransformType::OriginType bsp_origin;
+    BsplineTransformType::SpacingType bsp_spacing;
+    BsplineTransformType::RegionType bsp_region;
+
+    /* Compute bspline grid specifications */
+    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
+
+    /* Make a vector field at bspline grid spacing */
+    pih_bsp.m_origin = bsp_origin;
+    pih_bsp.m_spacing = bsp_spacing;
+    pih_bsp.m_region = bsp_region;
+    xform_to_itk_vf (&xf_tmp, xf_in, &pih_bsp);
+
+    /* GCS -- RMK -- above code gives interleaved vf.  We need planar for decomposition. */
+
+    /* Decompose vf into bspline */
+#if defined (commentout)
+    unsigned int counter = 0;
+    for (unsigned int k = 0; k < Dimension; k++) {
+	typedef BsplineTransformType::ImageType ParametersImageType;
+	typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
+	ResamplerType::Pointer resampler = ResamplerType::New();
+
+	typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
+	FunctionType::Pointer fptr = FunctionType::New();
+
+	typedef itk::IdentityTransform<double, Dimension> IdentityTransformType;
+	IdentityTransformType::Pointer identity = IdentityTransformType::New();
+
+	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
+	resampler->SetInterpolator (fptr);
+	resampler->SetTransform (identity);
+	resampler->SetSize (bsp_out->GetGridRegion().GetSize());
+	resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
+	resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
+
+	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
+	DecompositionType::Pointer decomposition = DecompositionType::New();
+
+	decomposition->SetSplineOrder (SplineOrder);
+	decomposition->SetInput (resampler->GetOutput());
+	decomposition->Update();
+
+	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
+
+	// copy the coefficients into a temporary parameter array
+	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
+	Iterator it (newCoefficients, bsp_out->GetGridRegion());
+	while (!it.IsAtEnd()) {
+	    bsp_coeff[counter++] = it.Get();
+	    ++it;
+	}
+    }
+#endif
+
+
+    //init_itk_bsp_default (xf_out);
+    //itk_bsp_set_grid_img (xf_out, pih, grid_spac);
+
 }
 
 /* GCS Jun 3, 2008.  When going from a lower image resolution to a 
@@ -713,8 +797,8 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
 
     /* Need to copy the bulk transform */
-    BsplineTransformType::Pointer bsp_new = xf_out->get_bsp();
-    bsp_new->SetBulkTransform (bsp_old->GetBulkTransform());
+    BsplineTransformType::Pointer bsp_out = xf_out->get_bsp();
+    bsp_out->SetBulkTransform (bsp_old->GetBulkTransform());
 
     /* Create temporary array for output coefficients */
     const unsigned int num_parms = xf_out->get_bsp()->GetNumberOfParameters();
@@ -725,14 +809,20 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	by ITK is wrong.  If BSplineResampleImageFunction interpolates the 
 	coefficient image, the resulting resampled B-spline will be smoother 
 	than the original.  But maybe the algorithm is OK, just a problem with 
-	the lack of proper ITK documentation.  Need to test this. */
+	the lack of proper ITK documentation.  Need to test this.
 
-    // Now we need to initialize the BSpline coefficients of the higher 
-    // resolution transform. This is done by first computing the actual 
-    // deformation field at the higher resolution from the lower 
-    // resolution BSpline coefficients. Then a BSpline decomposition 
-    // is done to obtain the BSpline coefficient of the higher 
-    // resolution transform.
+       What this code does is this:
+         1) Resample coefficient image using B-Spline interpolator
+	 2) Pass resampled image to decomposition filter
+	 3) Copy decomposition filter output into new coefficient image
+
+       This is the original comment from the ITK code:
+	 Now we need to initialize the BSpline coefficients of the higher 
+	 resolution transform. This is done by first computing the actual 
+	 deformation field at the higher resolution from the lower 
+	 resolution BSpline coefficients. Then a BSpline decomposition 
+	 is done to obtain the BSpline coefficient of the higher 
+	 resolution transform. */
     unsigned int counter = 0;
     for (unsigned int k = 0; k < Dimension; k++) {
 	typedef BsplineTransformType::ImageType ParametersImageType;
@@ -748,9 +838,9 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);
 	resampler->SetInterpolator (fptr);
 	resampler->SetTransform (identity);
-	resampler->SetSize (bsp_new->GetGridRegion().GetSize());
-	resampler->SetOutputSpacing (bsp_new->GetGridSpacing());
-	resampler->SetOutputOrigin (bsp_new->GetGridOrigin());
+	resampler->SetSize (bsp_out->GetGridRegion().GetSize());
+	resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
+	resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
 
 	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
 	DecompositionType::Pointer decomposition = DecompositionType::New();
@@ -763,7 +853,7 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 
 	// copy the coefficients into a temporary parameter array
 	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-	Iterator it (newCoefficients, bsp_new->GetGridRegion());
+	Iterator it (newCoefficients, bsp_out->GetGridRegion());
 	while (!it.IsAtEnd()) {
 	    bsp_coeff[counter++] = it.Get();
 	    ++it;
@@ -771,7 +861,7 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     }
 
     /* Finally fixate coefficients into recently created bsp structure */
-    bsp_new->SetParametersByValue (bsp_coeff);
+    bsp_out->SetParametersByValue (bsp_coeff);
 }
 
 /* Compute itk_bsp grid specifications from gpuit specifications */
@@ -857,8 +947,6 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     printf ("Region\n");
     std::cout << pih->m_region;
 //    printf ("grid_spac = %g %g %g\n", grid_spac[0], grid_spac[1], grid_spac[2]);
-
-
 
     if (grid_spac) {
 	/* Convert to itk data structure */
@@ -1228,13 +1316,13 @@ xform_to_itk_bsp (Xform *xf_out,
 	itk_bsp_set_grid_img (xf_out, pih, grid_spac);
 	break;
     case XFORM_ITK_TRANSLATION:
-	xform_trn_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
+	xform_trn_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_VERSOR:
-	xform_vrs_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
+	xform_vrs_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_AFFINE:
-	xform_aff_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
+	xform_aff_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_BSPLINE:
 	xform_itk_bsp_to_itk_bsp (xf_out, xf_in, pih, grid_spac);
