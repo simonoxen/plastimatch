@@ -10,46 +10,8 @@
 #include "fdk.h"
 #include "readmha.h"
 #include "fdk_opts.h"
-//#include "utils.h"
 
 #define READ_PFM
-
-Volume*
-create_volume (int* dim, float* offset, float* pix_spacing, 
-	       enum Pixel_Type pix_type)
-{
-    int i;
-    Volume* vol = (Volume*) malloc (sizeof(Volume));
-
-    for (i = 0; i < 3; i++) {
-	vol->dim[i] = dim[i];
-	vol->offset[i] = offset[i];
-	vol->pix_spacing[i] = pix_spacing[i];
-    }
-    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
-    vol->pix_type = pix_type;
-
-    switch (pix_type) {
-    case PT_SHORT:
-	vol->img = (void*) malloc (sizeof(short) * vol->npix);
-	memset (vol->img, 0, sizeof(short) * vol->npix);
-	break;
-    case PT_FLOAT:
-	vol->img = malloc (sizeof(float) * vol->npix);
-	memset (vol->img, 0, sizeof(float) * vol->npix);
-	break;
-    }
-
-    /* Compute some auxiliary variables */
-    vol->xmin = vol->offset[0] - vol->pix_spacing[0] / 2;
-    vol->xmax = vol->xmin + vol->pix_spacing[0] * vol->dim[0];
-    vol->ymin = vol->offset[1] - vol->pix_spacing[1] / 2;
-    vol->ymax = vol->ymin + vol->pix_spacing[1] * vol->dim[1];
-    vol->zmin = vol->offset[2] - vol->pix_spacing[2] / 2;
-    vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
-
-    return vol;
-}
 
 Volume*
 my_create_volume (MGHCBCT_Options* options)
@@ -67,7 +29,7 @@ my_create_volume (MGHCBCT_Options* options)
     offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
     offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
 
-    return create_volume (resolution, offset, spacing, PT_FLOAT);
+    return volume_create (resolution, offset, spacing, PT_FLOAT, 0);
 }
 
 CB_Image* 
@@ -186,13 +148,13 @@ load_cb_image (char* img_filename, char* mat_filename)
     }
     /* Load sad */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n");
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
     cbi->sad = (double) f;
     /* Load sid */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n");
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
     cbi->sid = (double) f;

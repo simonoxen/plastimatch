@@ -1037,7 +1037,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float mx, my, mz;
     int mif, mjf, mkf, mvf;  /* Floor */
     int mir, mjr, mkr;       /* Round */
-    int miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
+    long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
     float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
     int p[3];
     int q[3];

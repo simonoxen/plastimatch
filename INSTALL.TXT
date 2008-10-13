@@ -123,6 +123,13 @@ BUILDING PLASTIMATCH
    Then, edit CMakeCache.txt to set your options.  Re-run cmake 
    to create the MSYS Makefile.
 
+   Note, you can't use the included f2c binary libraries (vcf2c_libcmt.lib
+   and vcf2c_msvcrt.lib).  You have to compile a separate version.
+
+   Also, some versions of cmake seem to have a bug where they do not 
+   correctly set the options for CMAKE_C_FLAGS_DEBUG, CMAKE_C_FLAGS_RELEASE, 
+   and so on.  If this happens, you can copy these values from the CXX options.
+
 *) Special instructions for MSVC express:
 
    You might have to add the Windows SDK to your build path.

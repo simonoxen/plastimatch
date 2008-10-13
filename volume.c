@@ -52,6 +52,9 @@ volume_create (int* dim, float* offset, float* pix_spacing,
     case PT_VF_FLOAT_PLANAR:
 	vol->pix_size = sizeof(float);
 	break;
+    default:
+	fprintf (stderr, "Unhandled type in volume_create().\n");
+	exit (-1);
     }
 
     /* Compute some auxiliary variables */
@@ -115,6 +118,7 @@ volume_clone (Volume* ref)
 	memcpy (vout->img, ref->img, ref->npix * ref->pix_size);
 	break;
     case PT_VF_FLOAT_PLANAR:
+    default:
 	fprintf (stderr, "Unsupported clone\n");
 	exit (-1);
 	break;
@@ -169,8 +173,9 @@ volume_convert_to_float (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    default:
 	/* Can't convert this */
-	fprintf (stderr, "Sorry, can't convert VF to FLOAT\n");
+	fprintf (stderr, "Sorry, unsupported conversion to FLOAT\n");
 	exit (-1);
 	break;
     }
@@ -210,8 +215,9 @@ volume_convert_to_short (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    default:
 	/* Can't convert this */
-	fprintf (stderr, "Sorry, can't convert VF to SHORT\n");
+	fprintf (stderr, "Sorry, unsupported conversion to SHORT\n");
 	exit (-1);
 	break;
     }
@@ -221,13 +227,6 @@ void
 vf_convert_to_interleaved (Volume* vf)
 {
     switch (vf->pix_type) {
-    case PT_UCHAR:
-    case PT_SHORT:
-    case PT_FLOAT:
-	/* Can't convert this */
-	fprintf (stderr, "Sorry, can't convert SHORT/FLOAT to VF\n");
-	exit (-1);
-	break;
     case PT_VF_FLOAT_INTERLEAVED:
 	/* Nothing to do */
 	break;
@@ -254,6 +253,14 @@ vf_convert_to_interleaved (Volume* vf)
 	    vf->pix_size = 3*sizeof(float);
 	}
 	break;
+    case PT_UCHAR:
+    case PT_SHORT:
+    case PT_FLOAT:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to VF\n");
+	exit (-1);
+	break;
     }
 }
 
@@ -262,13 +269,6 @@ void
 vf_convert_to_planar (Volume* ref, int min_size)
 {
     switch (ref->pix_type) {
-    case PT_UCHAR:
-    case PT_SHORT:
-    case PT_FLOAT:
-	/* Can't convert this */
-	fprintf (stderr, "Sorry, can't convert SHORT/FLOAT to VF\n");
-	exit (-1);
-	break;
     case PT_VF_FLOAT_INTERLEAVED:
 	{
 	    int i;
@@ -301,6 +301,14 @@ vf_convert_to_planar (Volume* ref, int min_size)
         break;
     case PT_VF_FLOAT_PLANAR:
 	/* Nothing to do */
+	break;
+    case PT_UCHAR:
+    case PT_SHORT:
+    case PT_FLOAT:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupportd conversion to VF\n");
+	exit (-1);
 	break;
     }
 }
