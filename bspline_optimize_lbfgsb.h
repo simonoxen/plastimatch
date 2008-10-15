@@ -7,7 +7,7 @@
 #include "bspline.h"
 
 void
-bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_optimize_lbfgsb (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad);
 
 #endif

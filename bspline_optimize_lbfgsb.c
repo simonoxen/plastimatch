@@ -136,10 +136,10 @@ SAVEME ()
 #endif
 
 void
-bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad)
+bspline_optimize_lbfgsb (BSPLINE_Xform* bxf, 
+		BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+		Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     char task[60], csave[60];
     logical lsave[4];
@@ -149,8 +149,8 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     int it = 0;
     int NMAX, MMAX;
 
-    NMAX = bspd->num_coeff;
-    MMAX = (int) floor (bspd->num_coeff / 100);
+    NMAX = bxf->num_coeff;
+    MMAX = (int) floor (bxf->num_coeff / 100);
     if (MMAX < 20) MMAX = 20;
 
     printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
@@ -182,7 +182,7 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
     /* Initial guess */
     for (i=0; i < n; i++) {
-	x[i] = bspd->coeff[i];
+	x[i] = bxf->coeff[i];
     }
 
     /* Remember: Fortran expects strings to be padded with blanks */
@@ -215,13 +215,13 @@ bspline_optimize_lbfgsb (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
 	    /* Copy from fortran variables (double -> float) */
 	    for (i = 0; i < NMAX; i++) {
-		bspd->coeff[i] = (float) x[i];
+		bxf->coeff[i] = (float) x[i];
 	    }
 
 	    /* Compute cost and gradient */
-	    bspline_score (parms, fixed, moving, moving_grad);
+	    bspline_score (parms, bxf, fixed, moving, moving_grad);
 	    /* Give a little feedback to the user */
-	    bspline_display_coeff_stats (parms);
+	    bspline_display_coeff_stats (bxf);
 
 	    /* Copy to fortran variables (float -> double) */
 	    f = ssd->score;

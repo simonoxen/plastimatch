@@ -29,35 +29,56 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_TRANSLATION\n");
 	break;
     case XFORM_ITK_VERSOR:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_VERSOR\n");
 	break;
     case XFORM_ITK_AFFINE:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_AFFINE\n");
 	break;
     case XFORM_ITK_BSPLINE:
 	if (parms->grid_spac[0] <=0.0f) {
-	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE) {
-		/* Use grid spacing of gpuit bspline */
-		xform_to_itk_bsp (&xf_out, &xf_in, &pih, 0);
+	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE || xf_in.m_type == XFORM_ITK_BSPLINE) {
+		/* Use grid spacing of input bspline */
+		if (parms->nobulk) {
+		    xform_to_itk_bsp_nobulk (&xf_out, &xf_in, &pih, 0);
+		} else {
+		    xform_to_itk_bsp (&xf_out, &xf_in, &pih, 0);
+		}
 	    } else {
 		print_and_exit ("Sorry, grid spacing cannot be zero for conversion to itk_bsp\n");
 	    }
 	} else {
-	    xform_to_itk_bsp (&xf_out, &xf_in, &pih, parms->grid_spac);
+	    if (parms->nobulk) {
+		xform_to_itk_bsp_nobulk (&xf_out, &xf_in, &pih, parms->grid_spac);
+	    } else {
+		xform_to_itk_bsp (&xf_out, &xf_in, &pih, parms->grid_spac);
+	    }
 	}
 	break;
     case XFORM_ITK_TPS:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	print_and_exit ("Sorry, couldn't convert to XFORM_ITK_TPS\n");
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	printf ("Converting to (itk) vector field\n");
 	xform_to_itk_vf (&xf_out, &xf_in, &pih);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+#if defined (commentout)
+	if (parms->grid_spac[0] <=0.0f) {
+	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE || xf_in.m_type == XFORM_ITK_BSPLINE) {
+		xform_to_gpuit_bsp (&xf_out, &xf_in, &pih, 0);
+	    } else {
+		print_and_exit ("Sorry, grid spacing cannot be zero for conversion to gpuit_bsp\n");
+	    }
+	} else {
+	    xform_to_gpuit_bsp (&xf_out, &xf_in, &pih, parms->grid_spac);
+	}
+#endif
+	/* GPUIT_BSPLINE still requires separate bookkeeping for aux data. */
+	print_and_exit ("Sorry, couldn't convert to XFORM_GPUIT_BSPLINE\n");
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
+	/* There would be no point of this, I think. */
+	print_and_exit ("Sorry, couldn't convert to XFORM_GPUIT_VECTOR_FIELD\n");
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");
@@ -87,6 +108,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	{ "origin",         required_argument,      NULL,           5 },
 	{ "spacing",        required_argument,      NULL,           6 },
 	{ "grid-spacing",   required_argument,      NULL,           7 },
+	{ "nobulk",         no_argument,            NULL,           8 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -104,6 +126,9 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    } else if (!strcmp (optarg, "itk_bsp")) {
 		printf ("CVT to itk_bsp\n");
 		parms->xf_type = XFORM_ITK_BSPLINE;
+	    } else if (!strcmp (optarg, "gpuit_bsp")) {
+		printf ("CVT to itk_bsp\n");
+		parms->xf_type = XFORM_GPUIT_BSPLINE;
 	    } else {
 		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
 		print_usage();
@@ -137,6 +162,9 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    if (rc != 3) {
 		print_usage();
 	    }
+	    break;
+	case 8:
+	    parms->nobulk = 1;
 	    break;
 	default:
 	    break;

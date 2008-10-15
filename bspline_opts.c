@@ -35,7 +35,7 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
     BSPLINE_Parms* parms = &options->parms;
 
     options->output_fn = "output.mha";
-    bspline_default_parms (parms);
+    bspline_parms_set_default (parms);
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
@@ -98,12 +98,12 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%d %d %d", 
-			 &parms->vox_per_rgn[0],
-			 &parms->vox_per_rgn[1],
-			 &parms->vox_per_rgn[2]);
+			 &options->vox_per_rgn[0],
+			 &options->vox_per_rgn[1],
+			 &options->vox_per_rgn[2]);
 	    if (rc == 1) {
-		parms->vox_per_rgn[1] = parms->vox_per_rgn[0];
-		parms->vox_per_rgn[2] = parms->vox_per_rgn[0];
+		options->vox_per_rgn[1] = options->vox_per_rgn[0];
+		options->vox_per_rgn[2] = options->vox_per_rgn[0];
 	    } else if (rc != 3) {
 		print_usage ();
 	    }

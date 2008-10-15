@@ -19,9 +19,8 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 				    Xform *xf_in, 
 				    Stage_Parms* stage)
 {
-    int d;
-    Xform_GPUIT_Bspline *xgb;
-    BSPLINE_Parms *parms;
+    BSPLINE_Parms parms;
+    PlmImageHeader pih;
     printf ("Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
     printf ("Converting moving\n");
@@ -53,72 +52,44 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     moving_grad = volume_make_gradient (moving_ss);
 
     /* Initialize parms */
-    xgb = (Xform_GPUIT_Bspline*) malloc (sizeof(Xform_GPUIT_Bspline));
-    parms = &xgb->parms;
-    bspline_default_parms (parms);
+    bspline_parms_set_default (&parms);
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
-	parms->optimization = BOPT_STEEPEST;
+	parms.optimization = BOPT_STEEPEST;
     } else {
-	parms->optimization = BOPT_LBFGSB;
+	parms.optimization = BOPT_LBFGSB;
     }
     switch (stage->metric_type) {
     case METRIC_MSE:
-	parms->metric = BMET_MSE;
+	parms.metric = BMET_MSE;
 	break;
     case METRIC_MI:
     case METRIC_MI_MATTES:
-	parms->metric = BMET_MI;
+	parms.metric = BMET_MI;
 	break;
     default:
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
-    parms->max_its = stage->max_its;
-    parms->mi_hist.fixed.bins = stage->mi_histogram_bins;
-    parms->mi_hist.moving.bins = stage->mi_histogram_bins;
-    for (d = 0; d < 3; d++) {
-	parms->vox_per_rgn[d] = ROUND_INT (stage->grid_spac[d] / fixed_ss->pix_spacing[d]);
-	if (parms->vox_per_rgn[d] < 4) {
-	    printf ("Warning: grid spacing too fine (%g mm) relative to pixel size (%g mm)\n",
-		    stage->grid_spac[d], fixed_ss->pix_spacing[d]);
-	    parms->vox_per_rgn[d] = 4;
-	}
-	parms->img_origin[d] = fixed_ss->offset[d];
-	parms->img_spacing[d] = fixed_ss->pix_spacing[d];
-	parms->img_dim[d] = fixed_ss->dim[d];
-	parms->roi_offset[d] = 0;
-	parms->roi_dim[d] = fixed_ss->dim[d];
-	//parms->grid_spac[d] = stage->grid_spac[d];
-//	xgb->grid_spac[d] = parms->vox_per_rgn[d] * fixed_ss->pix_spacing[d];
-	parms->grid_spac[d] = parms->vox_per_rgn[d] * parms->img_spacing[d];
-//	xgb->img_origin[d] = fixed_ss->offset[d];
-//	xgb->img_spacing[d] = fixed_ss->pix_spacing[d];
+    if (stage->impl_type == IMPLEMENTATION_GPUIT_CPU) {
+	parms.implementation = BIMPL_CPU;
+    } else {
+	parms.implementation = BIMPL_BROOK;
     }
-
-    /* Allocate memory and build LUTs */
-    bspline_initialize (parms);
-
-    /* Print out some stuff for user */
-    printf ("GPUIT SPACING: %d %d %d\n", parms->vox_per_rgn[0], parms->vox_per_rgn[1], 
-	    parms->vox_per_rgn[2]);
-    printf ("FIXED IMG PIX SPACING: %g %g %g\n", fixed_ss->pix_spacing[0], fixed_ss->pix_spacing[1],
-	 fixed_ss->pix_spacing[2]);
+    parms.max_its = stage->max_its;
+    parms.mi_hist.fixed.bins = stage->mi_histogram_bins;
+    parms.mi_hist.moving.bins = stage->mi_histogram_bins;
 
     /* Transform input xform to gpuit vector field */
-    xform_to_gpuit_bsp (xf_out, xf_in, xgb);
+    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim);
+    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */
-    if (stage->impl_type == IMPLEMENTATION_GPUIT_CPU) {
-	parms->implementation = BIMPL_CPU;
-	bspline_optimize (parms, fixed_ss, moving_ss, moving_grad);
-    } else {
-	parms->implementation = BIMPL_BROOK;
-	bspline_optimize (parms, fixed_ss, moving_ss, moving_grad);
-    }
+    bspline_optimize (xf_out->get_gpuit_bsp(), &parms, fixed_ss, moving_ss, moving_grad);
 
     /* Free up temporary memory */
     volume_free (fixed_ss);
     volume_free (moving_ss);
     volume_free (moving_grad);
+    bspline_parms_free (&parms);
 }
 
 void

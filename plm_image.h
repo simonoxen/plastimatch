@@ -26,6 +26,9 @@ public:
     void set_from_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
 			 int gpuit_dim[3]);
+    void cvt_to_gpuit (float gpuit_origin[3],
+			 float gpuit_spacing[3],
+			 int gpuit_dim[3]);
     template<class T> 
     void set_from_itk_image (T image) {
 	m_origin = image->GetOrigin();

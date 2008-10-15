@@ -32,26 +32,14 @@ bspline_score_on_gpu_reference(BSPLINE_Parms *parms, Volume *fixed, Volume *movi
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 void
-bspline_default_parms (BSPLINE_Parms* parms)
+bspline_parms_set_default (BSPLINE_Parms* parms)
 {
-    int d;
-
     memset (parms, 0, sizeof(BSPLINE_Parms));
     parms->implementation = BIMPL_CPU;
     parms->optimization = BOPT_LBFGSB;
     parms->metric = BMET_MSE;
     parms->max_its = 10;
     parms->debug = 0;
-
-    for (d = 0; d < 3; d++) {
-	parms->img_origin[d] = 0.0f;
-	parms->img_spacing[d] = 1.0f;
-	parms->img_dim[d] = 0;
-	parms->roi_offset[d] = 0;
-	parms->roi_dim[d] = 0;
-	parms->vox_per_rgn[d] = 30;
-	parms->grid_spac[d] = 30.0f;
-    }
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
@@ -61,28 +49,45 @@ bspline_default_parms (BSPLINE_Parms* parms)
 }
 
 void
-write_bspd (char* filename, BSPLINE_Parms* parms)
+bspline_xform_set_default (BSPLINE_Xform* bxf)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
+    int d;
+
+    memset (bxf, 0, sizeof(BSPLINE_Xform));
+
+    for (d = 0; d < 3; d++) {
+	bxf->img_origin[d] = 0.0f;
+	bxf->img_spacing[d] = 1.0f;
+	bxf->img_dim[d] = 0;
+	bxf->roi_offset[d] = 0;
+	bxf->roi_dim[d] = 0;
+	bxf->vox_per_rgn[d] = 30;
+	bxf->grid_spac[d] = 30.0f;
+    }
+}
+
+void
+write_bxf (char* filename, BSPLINE_Xform* bxf)
+{
     FILE* fp;
 	
     fp = fopen (filename, "wb");
     if (!fp) return;
 
     fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
-    fprintf (fp, "img_origin = %f %f %f\n", parms->img_origin[0], parms->img_origin[1], parms->img_origin[2]);
-    fprintf (fp, "img_spacing = %f %f %f\n", parms->img_spacing[0], parms->img_spacing[1], parms->img_spacing[2]);
-    fprintf (fp, "img_dim = %d %d %d\n", parms->img_dim[0], parms->img_dim[1], parms->img_dim[2]);
-    fprintf (fp, "roi_offset = %d %d %d\n", parms->roi_offset[0], parms->roi_offset[1], parms->roi_offset[2]);
-    fprintf (fp, "roi_dim = %d %d %d\n", parms->roi_dim[0], parms->roi_dim[1], parms->roi_dim[2]);
-    fprintf (fp, "vox_per_rgn = %d %d %d\n", parms->vox_per_rgn[0], parms->vox_per_rgn[1], parms->vox_per_rgn[2]);
+    fprintf (fp, "img_origin = %f %f %f\n", bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
+    fprintf (fp, "img_spacing = %f %f %f\n", bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
+    fprintf (fp, "img_dim = %d %d %d\n", bxf->img_dim[0], bxf->img_dim[1], bxf->img_dim[2]);
+    fprintf (fp, "roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    fprintf (fp, "roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+    fprintf (fp, "vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     /* No need to save grid_spac */
 
 #if defined (commentout)
     {
 	/* This dumps in native, interleaved format */
-	for (i = 0; i < bspd->num_coeff; i++) {
-	    fprintf (fp, "%6.3f\n", bspd->coeff[i]);
+	for (i = 0; i < bxf->num_coeff; i++) {
+	    fprintf (fp, "%6.3f\n", bxf->coeff[i]);
 	}
     }
 #endif
@@ -91,9 +96,9 @@ write_bspd (char* filename, BSPLINE_Parms* parms)
     {
 	int i, j;
 	for (i = 0; i < 3; i++) {
-	    for (j = 0; j < bspd->num_coeff / 3; j++) {
-		//fprintf (fp, "%6.3f\n", bspd->coeff[j*3 + i]);
-		fprintf (fp, "%f\n", bspd->coeff[j*3 + i]);
+	    for (j = 0; j < bxf->num_coeff / 3; j++) {
+		//fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
+		fprintf (fp, "%f\n", bxf->coeff[j*3 + i]);
 	    }
 	}
     }		
@@ -109,48 +114,53 @@ dump_parms (BSPLINE_Parms* parms)
 {
     printf ("BSPLINE PARMS\n");
     printf ("max_its = %d\n", parms->max_its);
-    printf ("vox_per_rgn = %d %d %d\n", parms->vox_per_rgn[0], parms->vox_per_rgn[1], parms->vox_per_rgn[2]);
-    printf ("roi_offset = %d %d %d\n", parms->roi_offset[0], parms->roi_offset[1], parms->roi_offset[2]);
-    printf ("roi_dim = %d %d %d\n", parms->roi_dim[0], parms->roi_dim[1], parms->roi_dim[2]);
 }
 
-void dump_gradient (BSPLINE_Data* bspd, BSPLINE_Score* ssd, char* fn)
+static void
+dump_bxf_header (BSPLINE_Xform* bxf)
+{
+    printf ("BSPLINE XFORM HEADER\n");
+    printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    printf ("roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+}
+
+void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	fprintf (fp, "%f\n", ssd->grad[i]);
     }
     fclose (fp);
 }
 
-void dump_coeff (BSPLINE_Data* bspd, char* fn)
+void dump_coeff (BSPLINE_Xform* bxf, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
-    for (i = 0; i < bspd->num_coeff; i++) {
-	fprintf (fp, "%f\n", bspd->coeff[i]);
+    for (i = 0; i < bxf->num_coeff; i++) {
+	fprintf (fp, "%f\n", bxf->coeff[i]);
     }
     fclose (fp);
 }
 
 static void
-dump_luts (BSPLINE_Parms* parms)
+dump_luts (BSPLINE_Xform* bxf)
 {
     int i, j, k, p;
     int tx, ty, tz;
-    BSPLINE_Data* bspd = &parms->bspd;
     FILE* fp = fopen ("qlut.txt","wb");
 
     /* Dump q_lut */
-    for (k = 0, p = 0; k < parms->vox_per_rgn[2]; k++) {
-	for (j = 0; j < parms->vox_per_rgn[1]; j++) {
-	    for (i = 0; i < parms->vox_per_rgn[0]; i++) {
+    for (k = 0, p = 0; k < bxf->vox_per_rgn[2]; k++) {
+	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 		fprintf (fp, "%3d %3d %3d\n", k, j, i);
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
-			    fprintf (fp, " %f", bspd->q_lut[p++]);
+			    fprintf (fp, " %f", bxf->q_lut[p++]);
 			}
 		    }
 		}
@@ -163,12 +173,12 @@ dump_luts (BSPLINE_Parms* parms)
     /* Test q_lut */
 #if defined (commentout)
     printf ("Testing q_lut\n");
-    for (j = 0; j < parms->vox_per_rgn[2] 
-		 * parms->vox_per_rgn[1] 
-		 * parms->vox_per_rgn[0]; j++) {
+    for (j = 0; j < bxf->vox_per_rgn[2] 
+		 * bxf->vox_per_rgn[1] 
+		 * bxf->vox_per_rgn[0]; j++) {
 	float sum = 0.0;
 	for (i = j*64; i < (j+1)*64; i++) {
-	    sum += bspd->q_lut[i];
+	    sum += bxf->q_lut[i];
 	}
 	if (fabs(sum-1.0) > 1.e-7) {
 	    printf ("%g ", fabs(sum-1.0));
@@ -179,14 +189,14 @@ dump_luts (BSPLINE_Parms* parms)
 
     fp = fopen ("clut.txt","wb");
     p = 0;
-    for (k = 0; k < bspd->rdims[2]; k++) {
-	for (j = 0; j < bspd->rdims[1]; j++) {
-	    for (i = 0; i < bspd->rdims[0]; i++) {
+    for (k = 0; k < bxf->rdims[2]; k++) {
+	for (j = 0; j < bxf->rdims[1]; j++) {
+	    for (i = 0; i < bxf->rdims[0]; i++) {
 		fprintf (fp, "%3d %3d %3d\n", k, j, i);
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
-			    fprintf (fp, " %d", bspd->c_lut[p++]);
+			    fprintf (fp, " %d", bxf->c_lut[p++]);
 			}
 		    }
 		}
@@ -232,7 +242,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn)
    Reference code for alternate GPU-based data structure
    ----------------------------------------------------------------------- */
 void
-control_poimg_loop (BSPLINE_Data* bspd, Volume* fixed, BSPLINE_Parms* parms)
+control_poimg_loop (BSPLINE_Xform* bxf, Volume* fixed)
 {
     int i, j, k;
     int rx, ry, rz;
@@ -243,13 +253,13 @@ control_poimg_loop (BSPLINE_Data* bspd, Volume* fixed, BSPLINE_Parms* parms)
     img = (float*) fixed->img;
 
     /* Loop through cdim^3 control points */
-    for (k = 0; k < bspd->cdims[2]; k++) {
-	for (j = 0; j < bspd->cdims[1]; j++) {
-	    for (i = 0; i < bspd->cdims[0]; i++) {
+    for (k = 0; k < bxf->cdims[2]; k++) {
+	for (j = 0; j < bxf->cdims[1]; j++) {
+	    for (i = 0; i < bxf->cdims[0]; i++) {
 
 		/* Linear index of control point */
-		cidx = k * bspd->cdims[1] * bspd->cdims[0]
-		    + j * bspd->cdims[0] + i;
+		cidx = k * bxf->cdims[1] * bxf->cdims[0]
+		    + j * bxf->cdims[0] + i;
 
 		/* Each control point has 64 regions */
 		for (rz = 0; rz < 4; rz ++) {
@@ -258,23 +268,23 @@ control_poimg_loop (BSPLINE_Data* bspd, Volume* fixed, BSPLINE_Parms* parms)
 
 			    /* Some of the 64 regions are invalid. */
 			    if (k + rz - 2 < 0) continue;
-			    if (k + rz - 2 >= bspd->rdims[2]) continue;
+			    if (k + rz - 2 >= bxf->rdims[2]) continue;
 			    if (j + ry - 2 < 0) continue;
-			    if (j + ry - 2 >= bspd->rdims[1]) continue;
+			    if (j + ry - 2 >= bxf->rdims[1]) continue;
 			    if (i + rx - 2 < 0) continue;
-			    if (i + rx - 2 >= bspd->rdims[0]) continue;
+			    if (i + rx - 2 >= bxf->rdims[0]) continue;
 
 			    /* Each region has vox_per_rgn^3 voxels */
-			    for (vz = 0; vz < parms->vox_per_rgn[2]; vz ++) {
-				for (vy = 0; vy < parms->vox_per_rgn[1]; vy ++) {
-				    for (vx = 0; vx < parms->vox_per_rgn[0]; vx ++) {
+			    for (vz = 0; vz < bxf->vox_per_rgn[2]; vz ++) {
+				for (vy = 0; vy < bxf->vox_per_rgn[1]; vy ++) {
+				    for (vx = 0; vx < bxf->vox_per_rgn[0]; vx ++) {
 					int img_idx[3], p;
 					float img_val, coeff_val;
 
 					/* Get (i,j,k) index of the voxel */
-					img_idx[0] = parms->roi_offset[0] + (i + rx - 2) * parms->vox_per_rgn[0] + vx;
-					img_idx[1] = parms->roi_offset[1] + (j + ry - 2) * parms->vox_per_rgn[1] + vy;
-					img_idx[2] = parms->roi_offset[2] + (k + rz - 2) * parms->vox_per_rgn[2] + vz;
+					img_idx[0] = bxf->roi_offset[0] + (i + rx - 2) * bxf->vox_per_rgn[0] + vx;
+					img_idx[1] = bxf->roi_offset[1] + (j + ry - 2) * bxf->vox_per_rgn[1] + vy;
+					img_idx[2] = bxf->roi_offset[2] + (k + rz - 2) * bxf->vox_per_rgn[2] + vz;
 
 					/* Some of the pixels are invalid. */
 					if (img_idx[0] > fixed->dim[0]) continue;
@@ -287,9 +297,9 @@ control_poimg_loop (BSPLINE_Data* bspd, Volume* fixed, BSPLINE_Parms* parms)
 					img_val = img[p];
 
 					/* Get coefficient multiplier */
-					p = vz * parms->vox_per_rgn[0] * parms->vox_per_rgn[1]
-					    + vy * parms->vox_per_rgn[0] + vx;
-					coeff_val = bspd->coeff[p];
+					p = vz * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1]
+					    + vy * bxf->vox_per_rgn[0] + vx;
+					coeff_val = bxf->coeff[p];
 
 					/* Here you would update the gradient: 
 					    grad[cidx] += (fixed_val - moving_val) * coeff_val;
@@ -306,79 +316,91 @@ control_poimg_loop (BSPLINE_Data* bspd, Volume* fixed, BSPLINE_Parms* parms)
 }
 
 void
-bspline_display_coeff_stats (BSPLINE_Parms* parms)
+bspline_display_coeff_stats (BSPLINE_Xform* bxf)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     float cf_min, cf_avg, cf_max;
     int i;
 
     cf_avg = 0.0;
-    cf_min = cf_max = bspd->coeff[0];
-    for (i = 0; i < bspd->num_coeff; i++) {
-	cf_avg += bspd->coeff[i];
-	if (cf_min > bspd->coeff[i]) cf_min = bspd->coeff[i];
-	if (cf_max < bspd->coeff[i]) cf_max = bspd->coeff[i];
+    cf_min = cf_max = bxf->coeff[0];
+    for (i = 0; i < bxf->num_coeff; i++) {
+	cf_avg += bxf->coeff[i];
+	if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
+	if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
     }
     printf ("CF (MIN,AVG,MAX) = %g %g %g\n", 
-	    cf_min, cf_avg / bspd->num_coeff, cf_max);
+	    cf_min, cf_avg / bxf->num_coeff, cf_max);
 }
 
 void
-bspline_set_coefficients (BSPLINE_Parms* parms, float val)
+bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     int i;
 
-    for (i = 0; i < bspd->num_coeff; i++) {
-	bspd->coeff[i] = val;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	bxf->coeff[i] = val;
     }
 }
 
 /* -----------------------------------------------------------------------
     qlut = Multiplier LUT
     clut = Index LUT
+
+    Inputs: roi_dim, vox_per_rgn.
    ----------------------------------------------------------------------- */
 void
-bspline_initialize (BSPLINE_Parms* parms)
+bspline_xform_initialize (BSPLINE_Xform* bxf, 
+		    float img_origin[3],         /* Image origin (in mm) */
+		    float img_spacing[3],        /* Image spacing (in mm) */
+		    int img_dim[3],              /* Image size (in vox) */
+		    int roi_offset[3],		 /* Position of first vox in ROI (in vox) */
+		    int roi_dim[3],		 /* Dimension of ROI (in vox) */
+		    int vox_per_rgn[3])		 /* Knot spacing (in vox) */
 {
-    BSPLINE_Data* bspd = &parms->bspd;
+    int d;
     int i, j, k, p;
     int tx, ty, tz;
     float *A, *B, *C;
 
-    /* rdims is the number of regions */
-    bspd->rdims[0] = 1 + (parms->roi_dim[0] - 1) / parms->vox_per_rgn[0];
-    bspd->rdims[1] = 1 + (parms->roi_dim[1] - 1) / parms->vox_per_rgn[1];
-    bspd->rdims[2] = 1 + (parms->roi_dim[2] - 1) / parms->vox_per_rgn[2];
+    for (d = 0; d < 3; d++) {
+	/* copy input parameters over */
+	bxf->img_origin[d] = img_origin[d];
+	bxf->img_spacing[d] = img_spacing[d];
+	bxf->img_dim[d] = img_dim[d];
+	bxf->roi_offset[d] = roi_offset[d];
+	bxf->roi_dim[d] = roi_dim[d];
+	bxf->vox_per_rgn[d] = vox_per_rgn[d];
 
-    /* cdims is the number of control points */
-    bspd->cdims[0] = 3 + bspd->rdims[0];
-    bspd->cdims[1] = 3 + bspd->rdims[1];
-    bspd->cdims[2] = 3 + bspd->rdims[2];
+	/* grid spacing is in mm */
+	bxf->grid_spac[d] = bxf->vox_per_rgn[d] * bxf->img_spacing[d];
+
+	/* rdims is the number of regions */
+	bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
+
+	/* cdims is the number of control points */
+	bxf->cdims[d] = 3 + bxf->rdims[d];
+    }
 
     /* total number of control points & coefficients */
-    bspd->num_knots = bspd->cdims[0] * bspd->cdims[1] * bspd->cdims[2];
-    bspd->num_coeff = bspd->cdims[0] * bspd->cdims[1] * bspd->cdims[2] * 3;
+    bxf->num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
+    bxf->num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
 
     /* Allocate coefficients */
-    bspd->coeff = (float*) malloc (sizeof(float) * bspd->num_coeff);
-    memset (bspd->coeff, 0, sizeof(float) * bspd->num_coeff);
-
-    /* Allocate gradient */
-    parms->ssd.grad = (float*) malloc (bspd->num_coeff * sizeof(float));
+    bxf->coeff = (float*) malloc (sizeof(float) * bxf->num_coeff);
+    memset (bxf->coeff, 0, sizeof(float) * bxf->num_coeff);
 
     /* Create q_lut */
-    bspd->q_lut = (float*) malloc (sizeof(float) 
-				 * parms->vox_per_rgn[0] 
-				 * parms->vox_per_rgn[1] 
-				 * parms->vox_per_rgn[2] 
+    bxf->q_lut = (float*) malloc (sizeof(float) 
+				 * bxf->vox_per_rgn[0] 
+				 * bxf->vox_per_rgn[1] 
+				 * bxf->vox_per_rgn[2] 
 				 * 64);
-    A = (float*) malloc (sizeof(float) * parms->vox_per_rgn[0] * 4);
-    B = (float*) malloc (sizeof(float) * parms->vox_per_rgn[1] * 4);
-    C = (float*) malloc (sizeof(float) * parms->vox_per_rgn[2] * 4);
+    A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
+    B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
+    C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
 
-    for (i = 0; i < parms->vox_per_rgn[0]; i++) {
-	float ii = ((float) i) / parms->vox_per_rgn[0];
+    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+	float ii = ((float) i) / bxf->vox_per_rgn[0];
 	float t3 = ii*ii*ii;
 	float t2 = ii*ii;
 	float t1 = ii;
@@ -387,8 +409,8 @@ bspline_initialize (BSPLINE_Parms* parms)
 	A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
 	A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
-    for (j = 0; j < parms->vox_per_rgn[1]; j++) {
-	float jj = ((float) j) / parms->vox_per_rgn[1];
+    for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+	float jj = ((float) j) / bxf->vox_per_rgn[1];
 	float t3 = jj*jj*jj;
 	float t2 = jj*jj;
 	float t1 = jj;
@@ -397,8 +419,8 @@ bspline_initialize (BSPLINE_Parms* parms)
 	B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
 	B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
-    for (k = 0; k < parms->vox_per_rgn[2]; k++) {
-	float kk = ((float) k) / parms->vox_per_rgn[2];
+    for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
+	float kk = ((float) k) / bxf->vox_per_rgn[2];
 	float t3 = kk*kk*kk;
 	float t2 = kk*kk;
 	float t1 = kk;
@@ -409,13 +431,13 @@ bspline_initialize (BSPLINE_Parms* parms)
     }
 
     p = 0;
-    for (k = 0; k < parms->vox_per_rgn[2]; k++) {
-	for (j = 0; j < parms->vox_per_rgn[1]; j++) {
-	    for (i = 0; i < parms->vox_per_rgn[0]; i++) {
+    for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
+	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
-			    bspd->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
+			    bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
 			}
 		    }
 		}
@@ -427,21 +449,21 @@ bspline_initialize (BSPLINE_Parms* parms)
     free (A);
 
     /* Create c_lut */
-    bspd->c_lut = (int*) malloc (sizeof(int) 
-				 * bspd->rdims[0] 
-				 * bspd->rdims[1] 
-				 * bspd->rdims[2] 
+    bxf->c_lut = (int*) malloc (sizeof(int) 
+				 * bxf->rdims[0] 
+				 * bxf->rdims[1] 
+				 * bxf->rdims[2] 
 				 * 64);
     p = 0;
-    for (k = 0; k < bspd->rdims[2]; k++) {
-	for (j = 0; j < bspd->rdims[1]; j++) {
-	    for (i = 0; i < bspd->rdims[0]; i++) {
+    for (k = 0; k < bxf->rdims[2]; k++) {
+	for (j = 0; j < bxf->rdims[1]; j++) {
+	    for (i = 0; i < bxf->rdims[0]; i++) {
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
-			    bspd->c_lut[p++] = 
-				    + (k + tz) * bspd->cdims[0] * bspd->cdims[1]
-				    + (j + ty) * bspd->cdims[0] 
+			    bxf->c_lut[p++] = 
+				    + (k + tz) * bxf->cdims[0] * bxf->cdims[1]
+				    + (j + ty) * bxf->cdims[0] 
 				    + (i + tx);
 			}
 		    }
@@ -450,10 +472,10 @@ bspline_initialize (BSPLINE_Parms* parms)
 	}
     }
 
-    //dump_luts (bspd);
+    //dump_luts (bxf);
 
-    printf ("CDims = (%d %d %d)\n", bspd->cdims[0], bspd->cdims[1], 
-	    bspd->cdims[2]);
+    printf ("CDims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], 
+	    bxf->cdims[2]);
 }
 
 static void
@@ -492,15 +514,20 @@ bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
     bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
 }
 
+void
+bspline_xform_free (BSPLINE_Xform* bxf)
+{
+    free (bxf->coeff);
+    free (bxf->q_lut);
+    free (bxf->c_lut);
+}
 
 void
-bspline_free (BSPLINE_Parms* parms)
+bspline_parms_free (BSPLINE_Parms* parms)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
-    free (bspd->coeff);
-    free (bspd->q_lut);
-    free (bspd->c_lut);
-    free (parms->ssd.grad);
+    if (parms->ssd.grad) {
+	free (parms->ssd.grad);
+    }
     if (parms->mi_hist.j_hist) {
 	free (parms->mi_hist.f_hist);
 	free (parms->mi_hist.m_hist);
@@ -635,24 +662,24 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 }
 
 inline void
-bspline_interp_pix (float out[3], BSPLINE_Data* bspd, int p[3], int qidx)
+bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
 {
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
     for (k = 0; k < 4; k++) {
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
-		cidx = (p[2] + k) * bspd->cdims[1] * bspd->cdims[0]
-			+ (p[1] + j) * bspd->cdims[0]
+		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+			+ (p[1] + j) * bxf->cdims[0]
 			+ (p[0] + i);
 		cidx = cidx * 3;
-		out[0] += q_lut[m] * bspd->coeff[cidx+0];
-		out[1] += q_lut[m] * bspd->coeff[cidx+1];
-		out[2] += q_lut[m] * bspd->coeff[cidx+2];
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
 		m ++;
 	    }
 	}
@@ -660,12 +687,12 @@ bspline_interp_pix (float out[3], BSPLINE_Data* bspd, int p[3], int qidx)
 }
 
 inline void
-bspline_interp_pix_b_inline (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
+bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
 {
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
-    int* c_lut = &bspd->c_lut[pidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
+    int* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -673,9 +700,9 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Data* bspd, int pidx, int qid
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
 		cidx = 3 * c_lut[m];
-		out[0] += q_lut[m] * bspd->coeff[cidx+0];
-		out[1] += q_lut[m] * bspd->coeff[cidx+1];
-		out[2] += q_lut[m] * bspd->coeff[cidx+2];
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
 		m ++;
 	    }
 	}
@@ -683,12 +710,12 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Data* bspd, int pidx, int qid
 }
 
 static void
-bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
+bspline_interp_pix_b (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
 {
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
-    int* c_lut = &bspd->c_lut[pidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
+    int* c_lut = &bxf->c_lut[pidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -696,9 +723,9 @@ bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
 		cidx = 3 * c_lut[m];
-		out[0] += q_lut[m] * bspd->coeff[cidx+0];
-		out[1] += q_lut[m] * bspd->coeff[cidx+1];
-		out[2] += q_lut[m] * bspd->coeff[cidx+2];
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
 		m ++;
 	    }
 	}
@@ -707,9 +734,8 @@ bspline_interp_pix_b (float out[3], BSPLINE_Data* bspd, int pidx, int qidx)
 
 void
 bspline_interpolate_vf (Volume* interp, 
-			BSPLINE_Parms* parms)
+			BSPLINE_Xform* bxf)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     int i, j, k, v;
     int p[3];
     int q[3];
@@ -718,41 +744,40 @@ bspline_interpolate_vf (Volume* interp,
     int qidx;
 
     memset (img, 0, interp->npix*3*sizeof(float));
-    for (k = 0; k < parms->roi_dim[2]; k++) {
-	p[2] = k / parms->vox_per_rgn[2];
-	q[2] = k % parms->vox_per_rgn[2];
-	for (j = 0; j < parms->roi_dim[1]; j++) {
-	    p[1] = j / parms->vox_per_rgn[1];
-	    q[1] = j % parms->vox_per_rgn[1];
-	    for (i = 0; i < parms->roi_dim[0]; i++) {
-		p[0] = i / parms->vox_per_rgn[0];
-		q[0] = i % parms->vox_per_rgn[0];
-		qidx = q[2] * parms->vox_per_rgn[1] * parms->vox_per_rgn[0]
-			+ q[1] * parms->vox_per_rgn[0] + q[0];
-		v = (k+parms->roi_offset[2]) * interp->dim[0] * interp->dim[1]
-			+ (j+parms->roi_offset[1]) * interp->dim[0] + (i+parms->roi_offset[0]);
+    for (k = 0; k < bxf->roi_dim[2]; k++) {
+	p[2] = k / bxf->vox_per_rgn[2];
+	q[2] = k % bxf->vox_per_rgn[2];
+	for (j = 0; j < bxf->roi_dim[1]; j++) {
+	    p[1] = j / bxf->vox_per_rgn[1];
+	    q[1] = j % bxf->vox_per_rgn[1];
+	    for (i = 0; i < bxf->roi_dim[0]; i++) {
+		p[0] = i / bxf->vox_per_rgn[0];
+		q[0] = i % bxf->vox_per_rgn[0];
+		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
+			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		v = (k+bxf->roi_offset[2]) * interp->dim[0] * interp->dim[1]
+			+ (j+bxf->roi_offset[1]) * interp->dim[0] + (i+bxf->roi_offset[0]);
 		out = &img[3*v];
-		bspline_interp_pix (out, bspd, p, qidx);
+		bspline_interp_pix (out, bxf, p, qidx);
 	    }
 	}
     }
 }
 
 inline void
-bspline_update_grad (BSPLINE_Parms* parms, int p[3], int qidx, float dc_dv[3])
+bspline_update_grad (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int p[3], int qidx, float dc_dv[3])
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
-		cidx = (p[2] + k) * bspd->cdims[1] * bspd->cdims[0]
-			+ (p[1] + j) * bspd->cdims[0]
+		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+			+ (p[1] + j) * bxf->cdims[0]
 			+ (p[0] + i);
 		cidx = cidx * 3;
 		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
@@ -765,15 +790,14 @@ bspline_update_grad (BSPLINE_Parms* parms, int p[3], int qidx, float dc_dv[3])
 }
 
 inline void
-bspline_update_grad_b_inline (BSPLINE_Parms* parms,  
+bspline_update_grad_b_inline (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
-    int* c_lut = &bspd->c_lut[pidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
+    int* c_lut = &bxf->c_lut[pidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
@@ -790,15 +814,14 @@ bspline_update_grad_b_inline (BSPLINE_Parms* parms,
 }
 
 void
-bspline_update_grad_b (BSPLINE_Parms* parms,  
+bspline_update_grad_b (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i, j, k, m;
     int cidx;
-    float* q_lut = &bspd->q_lut[qidx*64];
-    int* c_lut = &bspd->c_lut[pidx*64];
+    float* q_lut = &bxf->q_lut[qidx*64];
+    int* c_lut = &bxf->c_lut[pidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
@@ -1022,11 +1045,11 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 /* Mutual information version of implementation "C" */
 void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
+		    BSPLINE_Xform *bxf, 
 		    Volume *fixed, 
 		    Volume *moving, 
 		    Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int i;
@@ -1074,30 +1097,30 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     start_clock = clock();
 
-    memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(float));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(float));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
     num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / parms->vox_per_rgn[2];
-	q[2] = rk % parms->vox_per_rgn[2];
-	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
-	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / parms->vox_per_rgn[1];
-	    q[1] = rj % parms->vox_per_rgn[1];
-	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
-	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
-		p[0] = ri / parms->vox_per_rgn[0];
-		q[0] = ri % parms->vox_per_rgn[0];
-		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
-		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
-		bspline_interp_pix_b_inline (dxyz, bspd, pidx, qidx);
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -1199,15 +1222,15 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     num_vox_f = (float) num_vox;
 
     /* PASS 2 - Compute gradient */
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / parms->vox_per_rgn[2];
-	q[2] = rk % parms->vox_per_rgn[2];
-	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
-	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / parms->vox_per_rgn[1];
-	    q[1] = rj % parms->vox_per_rgn[1];
-	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
-	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
 		long j_idxs[2];
 		long m_idxs[2];
 		long f_idxs[1];
@@ -1226,14 +1249,14 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    //debug = 1;
 		}
 
-		p[0] = ri / parms->vox_per_rgn[0];
-		q[0] = ri % parms->vox_per_rgn[0];
-		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
-		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
-		bspline_interp_pix_b_inline (dxyz, bspd, pidx, qidx);
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -1409,7 +1432,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 			fxqs[0], fxqs[1], fxqs[2]);
 		}
 
-		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
+		bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
 	    }
 	}
     }
@@ -1422,7 +1445,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd_grad_mean += ssd->grad[i];
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
@@ -1439,10 +1462,10 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
    for use by L-BFGS-B.  It uses linear interpolation of moving image, 
    and nearest neighbor interpolation of gradient */
 void
-bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_score_c_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, 
+		 Volume *fixed, Volume *moving, 
 		 Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
     int ri, rj, rk;
@@ -1482,25 +1505,25 @@ bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     start_clock = clock();
 
     ssd->score = 0;
-    memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / parms->vox_per_rgn[2];
-	q[2] = rk % parms->vox_per_rgn[2];
-	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
-	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / parms->vox_per_rgn[1];
-	    q[1] = rj % parms->vox_per_rgn[1];
-	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
-	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
-		p[0] = ri / parms->vox_per_rgn[0];
-		q[0] = ri % parms->vox_per_rgn[0];
-		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
-		qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
-		bspline_interp_pix_b_inline (dxyz, bspd, pidx, qidx);
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -1544,7 +1567,7 @@ bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b_inline (parms, pidx, qidx, dc_dv);
+		bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
 		
 		if (parms->debug) {
 		    fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, dc_dv[0], dc_dv[1], dc_dv[2]);
@@ -1560,17 +1583,17 @@ bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	fclose (fp);
     }
 
-    //dump_coeff (bspd, "coeff.txt");
+    //dump_coeff (bxf, "coeff.txt");
 
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd_grad_mean += ssd->grad[i];
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
@@ -1593,10 +1616,9 @@ bspline_score_c_mse (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
    interpolation of both moving image and gradient which doesn't 
    work with stock L-BFGS-B optimizer. */
 void
-bspline_score_b (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_score_b (BSPLINE_Parms *parms, BSPLINE_Xform *bxf, Volume *fixed, Volume *moving, 
 		 Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
     int ri, rj, rk;
@@ -1620,26 +1642,26 @@ bspline_score_b (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     start_clock = clock();
 
     ssd->score = 0;
-    memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / parms->vox_per_rgn[2];
-	q[2] = rk % parms->vox_per_rgn[2];
-	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
-	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / parms->vox_per_rgn[1];
-	    q[1] = rj % parms->vox_per_rgn[1];
-	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
-	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
-		p[0] = ri / parms->vox_per_rgn[0];
-		q[0] = ri % parms->vox_per_rgn[0];
-		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
-		qidx = q[2] * parms->vox_per_rgn[1] * parms->vox_per_rgn[0]
-			+ q[1] * parms->vox_per_rgn[0] + q[0];
-		bspline_interp_pix_b (dxyz, bspd, pidx, qidx);
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
+			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -1664,7 +1686,7 @@ bspline_score_b (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		dc_dv[1] = diff * m_grad[3*mv+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mv+2];  /* z component */
 
-		bspline_update_grad_b (parms, pidx, qidx, dc_dv);
+		bspline_update_grad_b (parms, bxf, pidx, qidx, dc_dv);
 		
 		ssd->score += diff * diff;
 		num_vox ++;
@@ -1674,13 +1696,13 @@ bspline_score_b (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
     /* Normalize score for MSE */
     ssd->score /= num_vox;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] = ssd->grad[i] / num_vox;
     }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd_grad_mean += ssd->grad[i];
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
@@ -1695,10 +1717,9 @@ bspline_score_b (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 }
 
 void
-bspline_score_a (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_score_a (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
 		 Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
     int ri, rj, rk;
@@ -1722,25 +1743,25 @@ bspline_score_a (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
     start_clock = clock();
 
     ssd->score = 0;
-    memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
-    for (rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / parms->vox_per_rgn[2];
-	q[2] = rk % parms->vox_per_rgn[2];
-	fz = parms->img_origin[2] + parms->img_spacing[2] * fk;
-	for (rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / parms->vox_per_rgn[1];
-	    q[1] = rj % parms->vox_per_rgn[1];
-	    fy = parms->img_origin[1] + parms->img_spacing[1] * fj;
-	    for (ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
-		p[0] = ri / parms->vox_per_rgn[0];
-		q[0] = ri % parms->vox_per_rgn[0];
-		fx = parms->img_origin[0] + parms->img_spacing[0] * fi;
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		qidx = q[2] * parms->vox_per_rgn[1] * parms->vox_per_rgn[0]
-			+ q[1] * parms->vox_per_rgn[0] + q[0];
-		bspline_interp_pix (dxyz, bspd, p, qidx);
+		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
+			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		bspline_interp_pix (dxyz, bxf, p, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -1764,7 +1785,7 @@ bspline_score_a (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 		dc_dv[0] = diff * m_grad[3*mv+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mv+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mv+2];  /* z component */
-		bspline_update_grad (parms, p, qidx, dc_dv);
+		bspline_update_grad (parms, bxf, p, qidx, dc_dv);
 		
 		ssd->score += diff * diff;
 		num_vox ++;
@@ -1774,13 +1795,13 @@ bspline_score_a (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
     /* Normalize score for MSE */
     ssd->score /= num_vox;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] /= num_vox;
     }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd_grad_mean += ssd->grad[i];
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
@@ -1794,7 +1815,7 @@ bspline_score_a (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 }
 
 void
-bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
 	       Volume *moving_grad)
 {
 #if HAVE_BROOK
@@ -1808,9 +1829,9 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 #endif
     printf("Using CPU. \n");
     if (parms->metric == BMET_MSE) {
-	bspline_score_c_mse (parms, fixed, moving, moving_grad);
+	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
     } else {
-	bspline_score_c_mi (parms, fixed, moving, moving_grad);
+	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
 //	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
@@ -1819,31 +1840,31 @@ bspline_score (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 }
 
 void
-bspline_optimize_steepest (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad)
+bspline_optimize_steepest (BSPLINE_Xform *bxf, 
+		BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+		Volume *moving_grad)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i, it;
     float a = 0.003f;
     float alpha = 0.5f, A = 10.0f;
     float ssd_grad_norm;
 
-    bspline_set_coefficients (parms, 0.0);
+    bspline_set_coefficients (bxf, 0.0);
 
     /* Get score and gradient */
-    bspline_score (parms, fixed, moving, moving_grad);
+    bspline_score (parms, bxf, fixed, moving, moving_grad);
 
     /* Set alpha based on norm gradient */
     ssd_grad_norm = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
     a = 1.0f / ssd_grad_norm;
     printf ("Initial a is %g\n", a);
 
     /* Give a little feedback to the user */
-    bspline_display_coeff_stats (parms);
+    bspline_display_coeff_stats (bxf);
 
     for (it = 0; it < parms->max_its; it++) {
 	char fn[128];
@@ -1858,7 +1879,7 @@ bspline_optimize_steepest (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 	    } else {
 		sprintf (fn, "grad_mse_%02d.txt", it);
 	    }
-	    dump_gradient (bspd, ssd, fn);
+	    dump_gradient (bxf, ssd, fn);
 	    if (parms->metric == BMET_MI) {
 		sprintf (fn, "hist_%02d.txt", it);
 		dump_hist (&parms->mi_hist, fn);
@@ -1867,59 +1888,68 @@ bspline_optimize_steepest (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
 	/* Update coefficients */
 	gamma = a / pow(it + A, alpha);
-	for (i = 0; i < bspd->num_coeff; i++) {
-	    bspd->coeff[i] = bspd->coeff[i] + gamma * ssd->grad[i];
+	for (i = 0; i < bxf->num_coeff; i++) {
+	    bxf->coeff[i] = bxf->coeff[i] + gamma * ssd->grad[i];
 	}
 
 	/* Get score and gradient */
-	bspline_score (parms, fixed, moving, moving_grad);
+	bspline_score (parms, bxf, fixed, moving, moving_grad);
 
 	/* Give a little feedback to the user */
-	bspline_display_coeff_stats (parms);
+	bspline_display_coeff_stats (bxf);
     }
 }
 
 void
-bspline_optimize_debug (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_optimize_debug (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad, char* method)
 {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     int i, it;
     float step = 0.001f;
 
-    bspline_set_coefficients (parms, 0.0);
+    bspline_set_coefficients (bxf, 0.0);
 
     /* Get score and gradient */
-    bspline_score (parms, fixed, moving, moving_grad);
-    //dump_gradient (bspd, &ssd_fixed, "grad.txt");
+    bspline_score (parms, bxf, fixed, moving, moving_grad);
+    //dump_gradient (bxf, &ssd_fixed, "grad.txt");
 
     /* Give a little feedback to the user */
-    bspline_display_coeff_stats (parms);
+    bspline_display_coeff_stats (bxf);
 
     for (it = 0; it < parms->max_its; it++) {
 	printf ("Beginning iteration %d\n", it);
 
 	/* Update coefficients */
-	for (i = 0; i < bspd->num_coeff; i++) {
-	    bspd->coeff[i] = bspd->coeff[i] + step * ssd->grad[i];
+	for (i = 0; i < bxf->num_coeff; i++) {
+	    bxf->coeff[i] = bxf->coeff[i] + step * ssd->grad[i];
 	}
-	//dump_coeff (bspd, "coeff.txt");
+	//dump_coeff (bxf, "coeff.txt");
 
 	/* Get score and gradient */
-	bspline_score (parms, fixed, moving, moving_grad);
+	bspline_score (parms, bxf, fixed, moving, moving_grad);
 
 	/* Give a little feedback to the user */
-	bspline_display_coeff_stats (parms);
+	bspline_display_coeff_stats (bxf);
 	//exit (0);
     }
 }
 
 void
-bspline_optimize (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad)
 {
+    /* GCS FIX: This is a terrible way to handle gradient.  Should be separated 
+	from parms?  */
+    /* Make sure gradient is allocated */
+    if (parms->ssd.grad) {
+	free (parms->ssd.grad);
+    }
+    parms->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
+    memset (parms->ssd.grad, 0, bxf->num_coeff * sizeof(float));
+
     dump_parms (parms);
+    dump_bxf_header (bxf);
 
     if (parms->metric == BMET_MI) {
 	bspline_initialize_mi (parms, fixed, moving);
@@ -1927,18 +1957,18 @@ bspline_optimize (BSPLINE_Parms *parms, Volume *fixed, Volume *moving,
 
     if (parms->optimization == BOPT_LBFGSB) {
 #if defined (HAVE_F2C_LIBRARY)
-	bspline_optimize_lbfgsb (parms, fixed, moving, moving_grad);
+	bspline_optimize_lbfgsb (bxf, parms, fixed, moving, moving_grad);
 #else
 	fprintf (stderr, 
 	    "Sorry, LBFGSB not compiled for this platform (f2c library missing).\n"
 	    "Reverting to steepest descent.\n"
 	    );
-	bspline_optimize_steepest (parms, fixed, moving, moving_grad);
+	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
 #endif
     } else {
-	bspline_optimize_steepest (parms, fixed, moving, moving_grad);
+	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
 #if defined (commentout)
-	bspline_optimize_debug (parms, fixed, moving, moving_grad);
+	bspline_optimize_debug (bxf, parms, fixed, moving, moving_grad);
 #endif
     }
 }

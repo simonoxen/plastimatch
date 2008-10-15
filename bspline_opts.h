@@ -20,6 +20,7 @@ struct BSPLINE_Options_struct {
     char* moving_fn;
     char* output_fn;
     char* method;
+    int vox_per_rgn[3];
     BSPLINE_Parms parms;
 };
 

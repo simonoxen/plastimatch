@@ -44,6 +44,21 @@ PlmImageHeader::set_from_gpuit (float gpuit_origin[3],
 }
 
 void
+PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
+			    float gpuit_spacing[3],
+			    int gpuit_dim[3])
+{
+    ImageRegionType::SizeType itk_size;
+    itk_size = m_region.GetSize ();
+
+    for (int d = 0; d < Dimension; d++) {
+	gpuit_origin[d] = m_origin[d];
+	gpuit_spacing[d] = m_spacing[d];
+	gpuit_dim[d] = itk_size[d];
+    }
+}
+
+void
 itk_roi_from_gpuit (
     ImageRegionType* roi,
     int roi_offset[3], int roi_dim[3])

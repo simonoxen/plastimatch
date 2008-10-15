@@ -57,6 +57,7 @@ typedef itk::BSplineDeformableTransform <
 
 typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, Dimension> TPSTransformType;
 
+#if defined (commentout)
 typedef struct Xform_GPUIT_Bspline_struct Xform_GPUIT_Bspline;
 struct Xform_GPUIT_Bspline_struct {
 public:
@@ -64,6 +65,7 @@ public:
 //    float img_origin[3];         /* Position of first vox in ROI (in mm) */
 //    float img_spacing[3];    /* Size of voxels (in mm) */
 };
+#endif
 
 class Xform {
 public:
@@ -77,11 +79,6 @@ public:
     BsplineTransformType::Pointer m_itk_bsp;
     TPSTransformType::Pointer m_itk_tps;
     void* m_gpuit;
-
-#if defined (commentout)
-    /* ITK goop for managing b-spline parameters. */
-    BsplineTransformType::ParametersType m_itk_bsp_parms;
-#endif
 
 public:
     Xform () {
@@ -110,17 +107,10 @@ public:
 	    if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
 		volume_free ((Volume*) m_gpuit);
 	    } else {
-		bspline_free ((BSPLINE_Parms*) m_gpuit);
+		bspline_xform_free ((BSPLINE_Xform*) m_gpuit);
 	    }
 	    m_gpuit = 0;
 	}
-#if (0)
-	if (m_itk_bsp_data) {
-	    printf ("__FREE %p\n", m_itk_bsp_data);
-	    free (m_itk_bsp_data);
-	    m_itk_bsp_data = 0;
-	}
-#endif
 	m_type = XFORM_NONE;
 	m_trn = 0;
 	m_vrs = 0;
@@ -166,11 +156,11 @@ public:
 	}
 	return m_itk_vf;
     }
-    Xform_GPUIT_Bspline* get_gpuit_bsp () {
+    BSPLINE_Xform* get_gpuit_bsp () {
 	if (m_type != XFORM_GPUIT_BSPLINE) {
 	    print_and_exit ("Typecast error in get_gpuit_bsp()\n");
 	}
-	return (Xform_GPUIT_Bspline*) m_gpuit;
+	return (BSPLINE_Xform*) m_gpuit;
     }
     Volume* get_gpuit_vf () {
 	if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
@@ -208,7 +198,7 @@ public:
 	m_type = XFORM_ITK_VECTOR_FIELD;
 	m_itk_vf = vf;
     }
-    void set_gpuit_bsp (Xform_GPUIT_Bspline* xgb) {
+    void set_gpuit_bsp (BSPLINE_Xform* xgb) {
 	clear ();
 	m_type = XFORM_GPUIT_BSPLINE;
 	m_gpuit = (void*) xgb;
@@ -226,9 +216,10 @@ void xform_to_trn (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_aff (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih, float* grid_spac);
+void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih, float* grid_spac);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
-void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Xform_GPUIT_Bspline* xgb_new);
+void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* grid_spac);
 void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* pix_spacing);
 
 #endif

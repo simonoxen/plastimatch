@@ -21,8 +21,15 @@ enum BsplineMetric {
     BMET_MI
 };
 
-typedef struct BSPLINE_Data_struct BSPLINE_Data;
-struct BSPLINE_Data_struct {
+typedef struct BSPLINE_Xform_struct BSPLINE_Xform;
+struct BSPLINE_Xform_struct {
+    float img_origin[3];         /* Image origin (in mm) */
+    float img_spacing[3];        /* Image spacing (in mm) */
+    int img_dim[3];              /* Image size (in vox) */
+    int roi_offset[3];		 /* Position of first vox in ROI (in vox) */
+    int roi_dim[3];		 /* Dimension of ROI (in vox) */
+    int vox_per_rgn[3];		 /* Knot spacing (in vox) */
+    float grid_spac[3];          /* Knot spacing (in mm) */
     int rdims[3];                /* # of regions in (x,y,z) */
     int cdims[3];                /* # of knots in (x,y,z) */
     int num_knots;               /* Total number of knots (= product(cdims)) */
@@ -63,6 +70,7 @@ struct BSPLINE_Parms_struct {
     enum BsplineMetric metric;
     int max_its;
     int debug;			 /* Create grad & histogram files */
+#if defined (commentout)
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
@@ -70,7 +78,7 @@ struct BSPLINE_Parms_struct {
     int roi_dim[3];		 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3];		 /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
-    BSPLINE_Data bspd;           /* Coefficients and lookup data */
+#endif
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
@@ -80,20 +88,28 @@ struct BSPLINE_Parms_struct {
 #if defined __cplusplus
 extern "C" {
 #endif
-void bspline_default_parms (BSPLINE_Parms* parms);
-void bspline_initialize (BSPLINE_Parms* parms);
-void bspline_free (BSPLINE_Parms* parms);
-void bspline_optimize (BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
+void bspline_parms_set_default (BSPLINE_Parms* parms);
+void bspline_xform_set_default (BSPLINE_Xform* bxf);
+void bspline_xform_initialize (BSPLINE_Xform* bxf, 
+		    float img_origin[3],         /* Image origin (in mm) */
+		    float img_spacing[3],        /* Image spacing (in mm) */
+		    int img_dim[3],              /* Image size (in vox) */
+		    int roi_offset[3],		 /* Position of first vox in ROI (in vox) */
+		    int roi_dim[3],		 /* Dimension of ROI (in vox) */
+		    int vox_per_rgn[3]);	 /* Knot spacing (in vox) */
+void bspline_xform_free (BSPLINE_Xform* bxf);
+void bspline_parms_free (BSPLINE_Parms* parms);
+void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad);
-void write_bspd (char* filename, BSPLINE_Parms* parms);
+void write_bxf (char* filename, BSPLINE_Xform* bxf);
 
 /* Used internally */
 void
-bspline_set_coefficients (BSPLINE_Parms* parms, float val);
+bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
 void
-bspline_display_coeff_stats (BSPLINE_Parms* parms);
+bspline_display_coeff_stats (BSPLINE_Xform* bxf);
 void
-bspline_score (BSPLINE_Parms* parms, Volume *fixed, Volume *moving, 
+bspline_score (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
 	       Volume *moving_grad);
 void
 bspline_score_reference (BSPLINE_Score *ssd, 
@@ -101,13 +117,13 @@ bspline_score_reference (BSPLINE_Score *ssd,
 			 BSPLINE_Parms *parms);
 void
 bspline_interpolate_vf (Volume* interp, 
-			BSPLINE_Parms* parms);
+			BSPLINE_Xform* bxf);
 
 void
 clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
 
 void
-bspline_update_grad_b (BSPLINE_Parms* parms, int pidx, int qidx, float dc_dv[3]);
+bspline_update_grad_b (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int pidx, int qidx, float dc_dv[3]);
 
 #if defined __cplusplus
 }

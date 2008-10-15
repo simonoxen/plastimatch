@@ -17,6 +17,7 @@ public:
     float spacing[3];
     int dim[3];
     float grid_spac[3];
+    int nobulk;
 public:
     Xf_To_Xf_Parms () {
 	memset (this, 0, sizeof(Xf_To_Xf_Parms));
