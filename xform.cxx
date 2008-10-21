@@ -1169,18 +1169,20 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float*
     /* Initialize gpuit bspline data structure */
     BSPLINE_Xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
-    /* Output ROI is going to be whole image */
-    roi = pih->m_region;
+    if (xf_in->m_type != XFORM_NONE) {
+	/* Output ROI is going to be whole image */
+	roi = pih->m_region;
 
-    /* Create itk_bsp xf using image specifications */
-    xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
+	/* Create itk_bsp xf using image specifications */
+	xform_any_to_itk_bsp_nobulk (&xf_tmp, xf_in, pih, bxf_new->grid_spac);
 
-    /* Copy from ITK coefficient array to gpuit coefficient array */
-    int k = 0;
-    for (int d = 0; d < Dimension; d++) {
-	for (int i = 0; i < bxf_new->num_knots; i++) {
-	    bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
-	    k++;
+	/* Copy from ITK coefficient array to gpuit coefficient array */
+	int k = 0;
+	for (int d = 0; d < Dimension; d++) {
+	    for (int i = 0; i < bxf_new->num_knots; i++) {
+		bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
+		k++;
+	    }
 	}
     }
 
@@ -1493,7 +1495,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* gri
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	/* Do nothing */
+	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_TRANSLATION:
 	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
