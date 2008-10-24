@@ -17,50 +17,45 @@
 /* =======================================================================*
     Definitions
  * =======================================================================*/
-typedef float	PixelType;
-typedef itk::Image<PixelType, 3>	inImgType;
-typedef itk::Image<PixelType, 2>	outImgType;
-typedef itk::ImageFileReader<inImgType>	ReaderType;
-typedef itk::ContourExtractor2DImageFilter<outImgType> ContourType;
+typedef itk::ContourExtractor2DImageFilter<FloatImage2DType> ContourType;
 typedef ContourType::VertexType VertexType;
-typedef itk::ImageSliceConstIteratorWithIndex<inImgType> IteratorType;
+typedef itk::ImageSliceConstIteratorWithIndex<FloatImageType> IteratorType;
 
 int main(int argc, char ** argv)
 {
     FILE* fp;
-	FILE* file;
-    inImgType::IndexType k;
+    FILE* file;
+    FloatImageType::IndexType k;
     k[0]=0;
 
-    if( argc < 2 )
-    {
-		printf("Usage: extract_contour input_img [output_file]");
-		exit(-1);
+    if( argc < 2 ) {
+	printf("Usage: extract_contour input_img [output_file]");
+	exit(-1);
     }
 
-    inImgType::Pointer volume=load_float(argv[1]);
-	printf("OFFSET:%f %f %f",volume->GetSpacing()[3],volume->GetSpacing()[4],volume->GetSpacing()[5]);
+    FloatImageType::Pointer volume = load_float(argv[1]);
+    printf("OFFSET:%f %f %f",volume->GetSpacing()[3],volume->GetSpacing()[4],volume->GetSpacing()[5]);
 
     //std::cout<< "Preparing to load..." << std::endl;
 
-    IteratorType itSlice(volume, volume->GetLargestPossibleRegion());
+    IteratorType itSlice (volume, volume->GetLargestPossibleRegion());
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
 	
-	if(argc <3){
+    if(argc <3){
 	fp = fopen ("vertices_pixelcoord.txt", "w");
 	file = fopen ("vertices_physcoord.txt", "w");
-	}else{
-		 char filename[50]="";
-		 char filename2[50]="";
-		 strcpy(filename,argv[2]);
-		 strcat(filename,"_pixelcoord.txt");
-		 strcpy(filename2,argv[2]);
-		 strcat(filename2,"_physcoord.txt");
-		 fp= fopen(filename,"w");
-		 file=fopen(filename2,"w");
+    }else{
+	char filename[50]="";
+	char filename2[50]="";
+	strcpy(filename,argv[2]);
+	strcat(filename,"_pixelcoord.txt");
+	strcpy(filename2,argv[2]);
+	strcat(filename2,"_physcoord.txt");
+	fp= fopen(filename,"w");
+	file=fopen(filename2,"w");
 
-	}
+    }
 
     if (!fp || !file) { 
 	printf ("Could not open vertices file for writing\n");
@@ -73,7 +68,7 @@ int main(int argc, char ** argv)
 	k=itSlice.GetIndex();
 	//printf("%2d\n", k[2]);
 		
-	outImgType::Pointer slice;
+	FloatImage2DType::Pointer slice;
 	slice = slice_extract (volume, k[2], (float) 0.0);
 
 	ContourType::Pointer contour=ContourType::New();
@@ -86,7 +81,7 @@ int main(int argc, char ** argv)
 	    contour->Update();
 	    //std::cout << "Cerco il contorno!\n" << std::endl;
 	}
-	catch ( itk::ExceptionObject &err)
+	catch (itk::ExceptionObject &err)
 	{
 	    std::cout << "ExceptionObject caught !" << std::endl; 
 	    std::cout << err << std::endl; 
@@ -102,7 +97,7 @@ int main(int argc, char ** argv)
 	    /*fprintf(fp,"%d%s%d\n",k[2],".",i);*/
 	    //fprintf(fp,"\n");
 	    fprintf(fp,"%s %s %s\n","NaN","NaN","NaN");
-		fprintf(file,"%s %s %s\n","NaN","NaN","NaN");
+	    fprintf(file,"%s %s %s\n","NaN","NaN","NaN");
 	    for(unsigned int j = 0; j < vertices->Size(); j++)
 	    {
 		const VertexType& vertex = vertices->ElementAt(j);
@@ -120,6 +115,6 @@ int main(int argc, char ** argv)
 	itSlice.NextSlice();
     }
     fclose(fp);
-	fclose(file);
+    fclose(file);
 
 }
