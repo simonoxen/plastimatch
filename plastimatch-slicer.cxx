@@ -1,6 +1,6 @@
 #include <iostream>
 #include "plastimatch-slicerCLP.h"
-#include "rad_registration.h"
+#include "plm_registration.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

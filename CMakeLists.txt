@@ -215,7 +215,6 @@ SET(COMPOSE_VECTOR_FIELDS_SRC
 	)
 SET(CONTOUR_STATISTICS_SRC
 	contour_statistics.cxx contour_statistics.h
-	slice_extraction.cxx slice_extraction.h
 	dice_statistics.cxx 
 	closest_point.cxx 
 	read_obj.cxx
@@ -227,8 +226,6 @@ SET(CXT_TO_MHA_SRC
 	)
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
-	slice_extraction.cxx slice_extraction.h
-	#itkContourExtractor2DImageFilter.h
 	)
 SET(MASK_MHA_SRC
 	mask_mha.cxx
@@ -256,6 +253,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	plm_stages.cxx 
 	plm_registration.h 
 	resample_mha.cxx resample_mha.h 
+	slice_extract.cxx slice_extract.h
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
@@ -273,6 +271,9 @@ SET(RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	render_polyline.cxx render_polyline.h
 	exchkeys.cxx exchkeys.h
+	)
+SET(SHUFFLE_MHA_SRC
+	shuffle_mha_main.cxx
 	)
 SET(TPS_INTERP_SRC
 	tps_interp.cxx tps_interp.h
@@ -334,12 +335,18 @@ SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
 # Always built
 ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
+
+ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
 ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
 ADD_EXECUTABLE(demons ${DEMONS_SRC})
 ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
 ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
+ADD_EXECUTABLE(raw_to_mha raw_to_mha.c)
+ADD_EXECUTABLE(tps_update tps_update.c)
 ADD_EXECUTABLE(vf_compare ${VF_COMPARE_SRC})
 ADD_EXECUTABLE(vf_stats ${VF_STATS_SRC})
+ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c)
+ADD_EXECUTABLE(vox_to_mha vox_to_mha.c)
 
 # Require brook
 IF(BROOK_FOUND)
@@ -386,7 +393,6 @@ IF(ITK_FOUND)
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
-  ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
   ADD_EXECUTABLE(compose_vector_fields ${COMPOSE_VECTOR_FIELDS_SRC})
   ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
@@ -403,15 +409,12 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(mha_to_vox mha_to_vox.c)
   ADD_EXECUTABLE(point_path ${POINT_PATH_SRC})
   ADD_EXECUTABLE(patient_mask ${PATIENT_MASK_SRC})
-  ADD_EXECUTABLE(raw_to_mha raw_to_mha.c)
   ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
   ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
   ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
   ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
-  ADD_EXECUTABLE(tps_update tps_update.c)
+  ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
   ADD_EXECUTABLE(union_mask union_mask.cxx)
-  ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c)
-  ADD_EXECUTABLE(vox_to_mha vox_to_mha.c)
   ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
   ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
   ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
@@ -422,12 +425,18 @@ ENDIF(ITK_FOUND)
 ######################################################
 
 # Always built
+TARGET_LINK_LIBRARIES(analyze_to_mha)
 TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(drr_c ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(fdk_c ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(mha_to_analyze)
+TARGET_LINK_LIBRARIES(raw_to_mha)
+TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
 TARGET_LINK_LIBRARIES(vf_compare ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
+TARGET_LINK_LIBRARIES(vf3d_to_mha)
+TARGET_LINK_LIBRARIES(vox_to_mha)
 
 # Require brook
 IF(BROOK_FOUND)
@@ -441,18 +450,8 @@ IF(BUILD_DEMONS_CUDA)
   ENDIF(CUDA_FOUND)
 ENDIF(BUILD_DEMONS_CUDA)
 
-###### There is no way to get debug gpuit to link with release brook
-###### on MSVC 2005.
-#  IF(WIN32)
-#    SET_TARGET_PROPERTIES(fdk_brook PROPERTIES
-#    LINK_FLAGS_DEBUG "/NODEFAULTLIB:LIBCMT.LIB")
-#    LINK_FLAGS_DEBUG "/NODEFAULTLIB:LIBCMT.LIB /NODEFAULTLIB:LIBCPMT.LIB"
-#    LINK_FLAGS_RELEASE "/NODEFAULTLIB:LIBCMT.LIB /NODEFAULTLIB:LIBCPMT.LIB")
-#ENDIF(WIN32)
-
 # Require itk
 IF(ITK_FOUND)
-  TARGET_LINK_LIBRARIES(analyze_to_mha)
   TARGET_LINK_LIBRARIES(compose_vector_fields ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
@@ -463,19 +462,15 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(mask_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(merge_vfs ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(merge2 ${ITK_LIBRARIES})
-  TARGET_LINK_LIBRARIES(mha_to_analyze)
   TARGET_LINK_LIBRARIES(mha_to_rtog_dose ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(point_path ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(patient_mask ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(raw_to_mha)
   TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
   TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(shuffle_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
   TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(tps_update ${MY_MATH_LIB})
-  TARGET_LINK_LIBRARIES(vf3d_to_mha)
-  TARGET_LINK_LIBRARIES(vox_to_mha)
   TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
@@ -491,6 +486,7 @@ INSTALL(TARGETS bspline DESTINATION bin)
 INSTALL(TARGETS demons DESTINATION bin)
 INSTALL(TARGETS drr_c DESTINATION bin)
 INSTALL(TARGETS fdk_c DESTINATION bin)
+INSTALL(TARGETS mha_to_raw DESTINATION bin)
 INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 
 # Require brook
@@ -512,7 +508,6 @@ IF(ITK_FOUND)
   INSTALL(TARGETS merge_vfs DESTINATION bin)
   INSTALL(TARGETS merge2 DESTINATION bin)
   INSTALL(TARGETS mha_to_analyze DESTINATION bin)
-  INSTALL(TARGETS mha_to_raw DESTINATION bin)
   INSTALL(TARGETS mha_to_rtog_dose DESTINATION bin)
   INSTALL(TARGETS mha_to_vox DESTINATION bin)
   INSTALL(TARGETS point_path DESTINATION bin)
@@ -521,6 +516,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS plastimatch DESTINATION bin)
   INSTALL(TARGETS resample_mha DESTINATION bin)
   INSTALL(TARGETS rtog_to_mha DESTINATION bin)
+  INSTALL(TARGETS shuffle_mha DESTINATION bin)
   INSTALL(TARGETS tps_interp DESTINATION bin)
   INSTALL(TARGETS tps_update DESTINATION bin)
   INSTALL(TARGETS union_mask DESTINATION bin)

@@ -15,7 +15,7 @@
 #include "itk_image.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "slice_extraction.h"
+#include "slice_extract.h"
 
 
 /* =======================================================================*

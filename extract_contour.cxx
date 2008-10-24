@@ -8,7 +8,7 @@
 #include "itkImage.h"
 #include "itk_image.h"
 #include "itkImageLinearIteratorWithIndex.h"
-#include "slice_extraction.h"
+#include "slice_extract.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,13 +17,13 @@
 /* =======================================================================*
     Definitions
  * =======================================================================*/
-
+typedef float	PixelType;
+typedef itk::Image<PixelType, 3>	inImgType;
+typedef itk::Image<PixelType, 2>	outImgType;
 typedef itk::ImageFileReader<inImgType>	ReaderType;
 typedef itk::ContourExtractor2DImageFilter<outImgType> ContourType;
 typedef ContourType::VertexType VertexType;
 typedef itk::ImageSliceConstIteratorWithIndex<inImgType> IteratorType;
-
-
 
 int main(int argc, char ** argv)
 {
@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 	//printf("%2d\n", k[2]);
 		
 	outImgType::Pointer slice;
-	slice = slice_extraction(volume, k[2], (float) 0.0);
+	slice = slice_extract (volume, k[2], (float) 0.0);
 
 	ContourType::Pointer contour=ContourType::New();
 

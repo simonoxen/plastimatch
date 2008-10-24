@@ -12,7 +12,7 @@
 #include "itk_image.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "slice_extraction.h"
+#include "slice_extract.h"
 #include "contour_statistics.h"
 #include "itkImageMomentsCalculator.h"
 
@@ -220,9 +220,9 @@ void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* ou
 			k=itSlice.GetIndex();
 			index=k[2];
 			intImgType::Pointer sRef;
-			sRef = slice_extraction(reference, index, (unsigned char) 0);
+			sRef = slice_extract (reference, index, (unsigned char) 0);
 			intImgType::Pointer sWarp;
-			sWarp = slice_extraction(warped, index, (unsigned char) 0);
+			sWarp = slice_extract (warped, index, (unsigned char) 0);
 
 			ItTypeSlicePixel iter(sRef, sRef->GetLargestPossibleRegion());
 			while(!iter.IsAtEnd())

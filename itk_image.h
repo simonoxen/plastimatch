@@ -34,14 +34,19 @@ typedef itk::Image < unsigned short, Dimension > UShortImageType;
 typedef itk::Image < float, Dimension > FloatImageType;
 typedef itk::Image < double, Dimension > DoubleImageType;
 
+typedef itk::Image < unsigned char, 2 > UCharImage2DType;
 typedef itk::Image < short, 2 > ShortImage2DType;
+typedef itk::Image < unsigned short, 2 > UShortImage2DType;
+typedef itk::Image < float, 2 > FloatImage2DType;
+typedef itk::Image < double, 2 > DoubleImage2DType;
 
 typedef itk::Point < float, Dimension > FloatPointType;
-typedef itk::Vector < float, Dimension > FloatVectorType;
-typedef itk::Image < FloatVectorType, Dimension > DeformationFieldType;
-
 typedef itk::Point < double, Dimension > DoublePointType;
+
+typedef itk::Vector < float, Dimension > FloatVectorType;
 typedef itk::Vector < double, Dimension > DoubleVectorType;
+
+typedef itk::Image < FloatVectorType, Dimension > DeformationFieldType;
 
 typedef itk::Size < Dimension > SizeType;
 typedef itk::Point < double, Dimension >  OriginType;
