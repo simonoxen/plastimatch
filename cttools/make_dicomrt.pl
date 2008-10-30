@@ -1,13 +1,120 @@
-do "make_dicomrt_inc.pl";
 die "Usage: make_dicomrt.pl uid_file.txt point_file [point_file ...]\n" 
   unless $#ARGV >= 1;
 
 use POSIX;
+use File::Basename;
+
+## -----------------------------------------------------------------
+##  Global settings
+## -----------------------------------------------------------------
+
+## Dicomrt header strings
+use lib dirname($0);
+do "make_dicomrt_inc.pl" || die "Can't load include file: make_dicom_inc.pl";
 
 $plastimatch_uid_prefix = "1.2.826.0.1.3680043.8.274.1";
 $dump_in_fn = "dump_in.txt";
 $dcm_out_file = "dump.dcm";
 $dump_out_fn = "dump_out.txt";
+
+## -----------------------------------------------------------------
+##  Structure file parsing routines
+## -----------------------------------------------------------------
+sub parse_marta_format {
+    my ($fn, $structures, $structure_names) = @_;
+    open CF, "<$fn";
+    while (<CF>) {
+	chomp;
+	if (/^NaN/) {
+	    if ($pts) {
+		push @{$contours}, $pts;
+		undef $pts;
+	    }
+	    next;
+	}
+	push @{$pts}, $_;
+    }
+    close CF;
+
+    if ($pts) {
+	push @{$contours}, $pts;
+	undef $pts;
+    }
+    push @$structures, $contours;
+    undef $contours;
+    
+    $structure_name = $fn;
+    if ($fn =~ m/[^_]*_([^\.]*)_warped.txt$/) {
+	$structure_name = $1;
+    } else {
+	$structure_name = "Structure $i";
+	$i ++;
+    }
+    push @$structure_names, $structure_name;
+}
+
+sub parse_greg_format {
+    my ($fn, $structures, $structure_names) = @_;
+
+    ## This code was copied and edited from dcm_for_contour_propagation.pl
+    ## it needs to be re-engineered into a common subroutine for both
+    ## scripts.  
+
+    $series_CT_UID = "Unknown";  # For future work
+    $same_study_set = 1;
+
+    ## Read header
+    open CF, "<$fn";
+    while (<CF>) {
+	chomp;
+	if (/SERIES_CT_UID/) {
+	    ($junk, $series_CT_contour) = split;
+	    if ($series_CT_contour ne $series_CT_UID) {
+		print "SERIES_CT_UID_CT: $series_CT_UID\n";
+		print "SERIES_CT_UID_CN: $series_CT_contour\n";
+		warn "Warning: contours and ct are from different study sets\n";
+		$same_study_set = 0;
+	    }
+	} else {
+	    if (!/END_OF_ROI_NAMES/) {
+		($structure,$junk,$name) = split;
+		$structure_names_hash{$structure} = $name;
+	    }
+	}
+	last if /END_OF_ROI_NAMES/;
+    }
+
+    @roi_names = sort { $a <=> $b } keys %structure_names_hash;
+
+    $old_struct = -1;
+    while (<CF>) {
+	($structure_no, $junk, $num_points, $uid_contour, $points) = split /\|/;
+	$points=~ s/\\/ /g;
+	$rest = $points;
+	while ($rest) {
+	    ($x, $y, $z, $rest) = split ' ', $rest, 4;
+	    push @{$pts}, "$x $y $z";
+	}
+	if ($old_struct != $structure_no) {
+	    if ($contours) {
+		push @$structures, $contours;
+		undef $contours;
+	    }
+	}
+	if ($pts) {
+	    push @{$contours}, $pts;
+	    undef $pts;
+	}
+    }
+    close CF;
+    if ($contours) {
+	push @$structures, $contours;
+	undef $contours;
+    }
+
+    push @$structures, $contours;
+    push @$structure_names, @roi_names;
+}
 
 ## -----------------------------------------------------------------
 ##  Load UID file
@@ -31,39 +138,16 @@ close UIF;
 @structure_name = ( );
 $i = 1;
 while ($fn = shift) {
-    ## Load contour file
+    ## Test contour file.  It could be contour in Greg's format 
+    ## or in Marta's format.
     open CF, "<$fn";
-    print "Loading $fn\n";
-##    $pts = [ ];
-##    $contours = [ ];
-    while (<CF>) {
-	chomp;
-	if (/^NaN/) {
-	    if ($pts) {
-		push @{$contours}, $pts;
-		undef $pts;
-	    }
-	    next;
-	}
-	push @{$pts}, $_;
-    }
+    $_ = (<CF>);
     close CF;
-    if ($pts) {
-	push @{$contours}, $pts;
-	undef $pts;
-    }
-    print "Pushing $contours\n";
-    push @structures, $contours;
-    undef $contours;
-    
-    $structure_name = $fn;
-    if ($fn =~ m/[^_]*_([^\.]*)_warped.txt$/) {
-	$structure_name = $1;
+    if (/^NaN/) {
+	parse_marta_format ($fn, \@structures, \@structure_name);
     } else {
-	$structure_name = "Structure $i";
-	$i ++;
+	parse_greg_format ($fn, \@structures, \@structure_name);
     }
-    push @structure_name, $structure_name;
 }
 
 if (0) {
@@ -160,7 +244,7 @@ for $i (0..$#structures) {
 	for $pt (@{$contour}) {
 	    ($x, $y, $z) = split ' ', $pt;
  	    if ($z < 0 || $z > $#slices) {
-		print "Warning: skipping contour with index %d\n", $z;
+		printf "Warning: skipping contour with index %d ($i)\n", $z;
 		last;
 	    }
 	    $x = ($x * $pixel_x) + $off_x;
