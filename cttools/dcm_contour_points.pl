@@ -12,7 +12,7 @@ sub grab_value () {
 }
 
 ## First pass: find contour set ordering within file
-$cmd = "dcmdump +L $infile";
+$cmd = "dcmdump +L +R 512 $infile";
 open D1, "$cmd|";
 open DO, ">$outfile";
 
@@ -78,8 +78,7 @@ while (<D1>) {
     }
 }
 
-#########  GCS Aug 20, 2008
-#########  GE no longer includes contour number and attached contour.
+## Create CXT file
 $roi_no = -1;
 while (<D1>) {
     if (/\(3006,0080/) {
@@ -94,7 +93,7 @@ while (<D1>) {
 	$np = &grab_value($_);
     } elsif (/\(3006,0050/) {   # Contour data
 	$cp = &grab_value($_);
-	push @contours, "$ct|$np|$UID|$cp";
+	push @contours, "$ct|$np||$UID|$cp";
     } elsif (/\(3006,0084/) {   # Referenced ROI number
 	$roi_no = &grab_value($_);
 	$roi_order_no = $roi_order{$roi_no};

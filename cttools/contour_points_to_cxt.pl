@@ -4,14 +4,14 @@
 # spacing, and offset are added to the header, and 
 # contours are labeled with the matching slice number.
 #######################################################
-$contour = shift;
-$dicom = shift;
+$contour_fn = shift;
+$uid_fn = shift;
 $outfile= shift;
-$outfile || die "Usage: dcm_for_contour_propagation.pl infile_contour infile_dicom outfile\n";
-(-f $contour) || die "Error: input file not found\n";
-(-f $dicom) || die "Error: input file not found\n";
+$outfile || die "Usage: contour_points_to_cxt.pl contours.txt uids.txt outfile\n";
+(-f $contour_fn) || die "Error: input file not found ($contour_fn)\n";
+(-f $uid_fn) || die "Error: input file not found ($uid_fn)\n";
 
-open FN2, "<$dicom";
+open FN2, "<$uid_fn";
 
 while (<FN2>)
 {
@@ -33,8 +33,10 @@ while (<FN2>)
 for $i (0..$#slices-1) {
     $difference[$i]=$slices[$i+1]-$slices[$i];
     if ($i !=0){
-	if($difference[$i-1]!=$difference[$i]){
-	    print "test failed..";
+	$d = abs ($difference[$i-1] - $difference[0]);
+	if ($d > 0.001) {
+	    printf "Uneven slice separation: [%d] %g [%d] %g\n", 
+	      $i-1, $difference[$i-1], 0, $difference[0];
 	}
     }
 }
@@ -44,7 +46,7 @@ for $k (0..$#slices) {
     #print "$slice_no{$slice_UIDs{$slices[$k]}}\n";
 }
 
-open FN1, "<$contour";
+open FN1, "<$contour_fn";
 open GO, ">$outfile";
 
 $same_study_set = 1;
@@ -62,8 +64,9 @@ while (<FN1>)
 	}
     } else {
 	if (!/END_OF_ROI_NAMES/) {
-	    ($structure,$junk,$name)=split;
-	    $structure_names{$structure}=$name;
+	    ($structure,$color,$name) = split ' ', $_, 3;
+	    $structure_names{$structure} = $name;
+	    $structure_colors{$structure} = $color;
 	}
     }
     last if /END_OF_ROI_NAMES/;
@@ -81,9 +84,7 @@ for $i (1..$#slices) {
 $no_slices=$#slices+1;
 @roi_names = sort { $a <=> $b } keys %structure_names;
 
-#print GO "SERIES_CT_UID $series_CT_contour\n";
-print GO "HEADER\n";
-#print GO "OFFSET $off_X $off_Y $slices[$#slices]\n";
+print GO "SERIES_CT_UID $series_CT_contour\n";
 print GO "OFFSET $off_X $off_Y $min_z\n";
 print GO "DIMENSION $nr_X $nr_Y $no_slices\n";
 print GO "SPACING $pixel_X $pixel_Y $difference[0]\n";
@@ -91,7 +92,7 @@ print GO "ROI_NAMES\n";
 
 for $r (0..$#roi_names) {
     $num=$r+1;
-    print GO "$num $structure_names{$roi_names[$r]}\n";
+    print GO "$num $structure_colors{$roi_names[$r]} $structure_names{$roi_names[$r]}\n";
 }
 
 #for $key (keys %structure_names) {
@@ -104,16 +105,22 @@ print GO "END_OF_ROI_NAMES\n";
 #print "DIMENSION: $nr_X $nr_Y $no_slices\n";
 #print "SPACING: $pixel_X $pixel_Y $difference[0]\n";
 
-#open FN1, "<$contour";
+#open FN1, "<$contour_fn";
 
 while (<FN1>) {
-    ($structure_no, $junk, $num_points, $uid_contour, $points) = split;
-    $points=~ s/\\/ /g;
+    ($structure_no, 
+     $contour_thickness, 
+     $num_points, 
+     $slice_index_to_be_replaced, 
+     $uid_contour, 
+     $points) = split /\|/;
 
     ## If matching with same study set, index by UID
     if ($same_study_set) {
 	if (!exists $slice_no{$uid_contour}) {
-	    die "Error! no matching image found!";
+	    print "Error. No matching image UID found.";
+	    print "UID=$uid_contour\n";
+	    die;
 	}
 	$sno = $slice_no{$uid_contour};
     }
@@ -121,8 +128,8 @@ while (<FN1>) {
     ## If matching with different study set, index by Z location
     else {
 	$contour_z_loc = $points;
-	$contour_z_loc =~ s/^[^ ]* [^ ]* //;
-	$contour_z_loc =~ s/ .*//;
+	$contour_z_loc =~ s/^[^\\]*\\[^\\]*\\//;
+	$contour_z_loc =~ s/\\.*//;
 	$best_dist = abs($slices[0]-$contour_z_loc);
 	$best_slice = 0;
 	for $i (0..$#slices) {
@@ -134,11 +141,9 @@ while (<FN1>) {
 	}
 	$sno = $best_slice;
     }
-
-    #print GO "$structure_no $num_points $contour_no $slice_no{$uid_contour} $points\n";
-    print GO "$structure_no $num_points $sno $points\n";
+    print GO "$structure_no|$contour_thickness|$num_points|$sno|$uid_contour|$points";
 }
 
 close FN1;
 close FN2;
-close G0;
+close GO;

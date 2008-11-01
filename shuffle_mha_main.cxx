@@ -60,10 +60,6 @@ int main (int argc, char* argv[])
     /* For each slice of input, copy to output */
     while (!it_in.IsAtEnd()) {
 	while (!it_in.IsAtEndOfSlice()) {
-	    //FloatImageType::IndexType k_in, k_out;
-	    //k_in = it_in.GetIndex ();
-	    //k_out = it_out.GetIndex ();
-	    //std::cout << "Copying " << k_in << " -> " << k_out << std::endl;
 	    while (!it_in.IsAtEndOfLine()) {
 		it_out.Set (it_in.Get());
 		++it_in;

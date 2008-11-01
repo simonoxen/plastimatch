@@ -26,27 +26,13 @@ $head_103_part1 = <<EODATA
 (0008,1090) LO [Plastimatch]                          #  ManufacturersModelName
 (0010,0010) PN [%s]                              #  10, 1 PatientsName
 (0010,0020) LO [%s]                                   #   4, 1 PatientID
-(0010,0030) DA [20000101]                               #   8, 1 PatientsBirthDate
-(0010,0040) CS [O]                                      #   2, 1 PatientsSex
-(0010,0050) SQ (Sequence with explicit length #=0)      #   0, 1 PatientsInsurancePlanCodeSequence
-(fffe,e0dd) na (SequenceDelimitationItem for re-encod.) #   0, 0 SequenceDelimitationItem
-(0010,1000) LO (no value available)                     #   0, 0 OtherPatientIDs
-(0010,1001) PN []                                       #   2, 1 OtherPatientNames
-(0010,1005) PN []                                       #   2, 1 PatientsBirthName
-(0010,1010) AS [000Y]                                   #   4, 1 PatientsAge
-(0010,1040) LO (no value available)                     #   0, 0 PatientsAddress
-(0010,1060) PN []                                       #   2, 1 PatientsMothersBirthName
-(0010,1090) LO (no value available)                     #   0, 0 MedicalRecordLocator
-(0010,2154) SH (no value available)                     #   0, 0 PatientsTelephoneNumbers
-(0018,0000) UL 32                                       #   4, 1 AcquisitionGroupLength
-(0018,1000) LO [6100c33e]                               #   8, 1 DeviceSerialNumber
-(0018,1020) LO [6.0.102]                                #   8, 1 SoftwareVersions
-(0020,0000) UL 160                                      #   4, 1 ImageGroupLength
-(0020,000d) UI [%s] #  52, 1 StudyInstanceUID
-(0020,000e) UI [%s] #  56, 1 SeriesInstanceUID
-(0020,0010) SH [%s]                                   #   4, 1 StudyID
-(0020,0011) IS [%s]                                    #   4, 1 SeriesNumber
-(0020,0013) IS [%s]                                    #   4, 1 InstanceNumber
+(0010,0030) DA (no value available)                     #   0, 0 PatientsBirthDate
+(0010,0040) CS [%s]                                      #   2, 1 PatientsSex
+(0020,000d) UI [%s] #  StudyInstanceUID
+(0020,000e) UI [%s] #  SeriesInstanceUID
+(0020,0010) SH [%s] #  StudyID
+(0020,0011) IS [%s] #  SeriesNumber
+(0020,0013) IS [%s] #  InstanceNumber
 EODATA
   ;
 

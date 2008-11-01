@@ -34,18 +34,15 @@ int main(int argc, char ** argv)
     }
 
     FloatImageType::Pointer volume = load_float(argv[1]);
-    printf("OFFSET:%f %f %f",volume->GetSpacing()[3],volume->GetSpacing()[4],volume->GetSpacing()[5]);
-
-    //std::cout<< "Preparing to load..." << std::endl;
 
     IteratorType itSlice (volume, volume->GetLargestPossibleRegion());
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
 	
-    if(argc <3){
+    if (argc < 3) {
 	fp = fopen ("vertices_pixelcoord.txt", "w");
 	file = fopen ("vertices_physcoord.txt", "w");
-    }else{
+    } else {
 	char filename[50]="";
 	char filename2[50]="";
 	strcpy(filename,argv[2]);
@@ -54,7 +51,6 @@ int main(int argc, char ** argv)
 	strcat(filename2,"_physcoord.txt");
 	fp= fopen(filename,"w");
 	file=fopen(filename2,"w");
-
     }
 
     if (!fp || !file) { 
