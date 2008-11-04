@@ -238,20 +238,21 @@ SET(PATIENT_MASK_SRC
 	)
 SET(PLASTIMATCH_LIBRARY_SRC
 	debug.c debug.h 
+	gcs_metric.h gcs_metric.hxx 
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
 	itk_demons.cxx itk_demons.h 
 	itk_image.cxx itk_image.h 
-	gcs_metric.h gcs_metric.hxx 
+	itk_pointset.cxx itk_pointset.h
 	itk_optim.cxx itk_optim.h 
 	itk_registration.cxx itk_registration.h 
 	itk_warp.cxx itk_warp.h 
 	plastimatch_parms.cxx
 	plm_version.h 
-	print_and_exit.cxx print_and_exit.h 
 	plm_image.cxx plm_image.h 
 	plm_stages.cxx 
 	plm_registration.h 
+	print_and_exit.cxx print_and_exit.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	xform.cxx xform.h 
@@ -294,6 +295,9 @@ SET(WARP_DIJ_SRC
 SET(WARP_MHA_SRC
 	warp_mha_main.cxx warp_mha_main.h
 	)
+SET(WARP_POINTSET_SRC
+	warp_pointset_main.cxx warp_pointset_main.h
+	)
 
 CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
@@ -305,6 +309,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
     SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
+    SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
 
@@ -416,8 +421,9 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
   ADD_EXECUTABLE(union_mask union_mask.cxx)
   ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
-  ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
   ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
+  ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
+  ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
 ENDIF(ITK_FOUND)
 
 ######################################################
@@ -474,6 +480,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(warp_pointset ${PLASTIMATCH_LIBS})
 ENDIF(ITK_FOUND)
 
 ######################################################
@@ -527,6 +534,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS xf_to_xf DESTINATION bin)
   INSTALL(TARGETS warp_dij DESTINATION bin)
   INSTALL(TARGETS warp_mha DESTINATION bin)
+  INSTALL(TARGETS warp_pointset DESTINATION bin)
 ENDIF(ITK_FOUND)
 
 ######################################################

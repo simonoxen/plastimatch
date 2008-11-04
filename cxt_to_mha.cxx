@@ -1,7 +1,6 @@
-/*===========================================================
+/* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
-===========================================================*/
-
+   ----------------------------------------------------------------------- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -29,17 +28,17 @@
 typedef struct program_parms Program_Parms;
 struct program_parms {
     char* file_txt;
-	char* outdir;
-	char* pat_number;
+    char* outdir;
+    char* pat_number;
 };
 
 typedef struct polyline POLYLINE;
 struct polyline{
     int slice_no;
-	//char UID_slice[65];
+    //char UID_slice[65];
     int num_vertices;
     //VERTICES* vertlist;
-	float* x;
+    float* x;
     float* y;
     float* z;
 };
@@ -48,26 +47,25 @@ typedef struct structure STRUCTURE;
 struct structure {
     //int imno;
     char name[BUFLEN];
-	int num_contours;
+    int num_contours;
     POLYLINE* pslist;
 };
 typedef struct structure_list STRUCTURE_List;
 struct structure_list {
-	int dim[3];
-	float spacing[3];
-	float offset[3];
+    int dim[3];
+    float spacing[3];
+    float offset[3];
     int num_structures;
-	//char study_ID[65];
+    //char study_ID[65];
     STRUCTURE* slist;
 };
 void print_usage (void)
 {
-	
-	printf ("Usage: cxt_to_mha merged_txt prefix\n");
-	printf ("  The merged_txt file contains the contours\n");
-	//printf ("  output directory\n");
-	printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
-	exit (-1);
+    printf ("Usage: cxt_to_mha merged_txt prefix\n");
+    printf ("  The merged_txt file contains the contours\n");
+    //printf ("  output directory\n");
+    printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
+    exit (-1);
 }
 
 
