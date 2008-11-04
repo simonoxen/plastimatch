@@ -174,3 +174,5 @@ $foot_103_part5 = <<EODATA
 EODATA
   ;
 
+
+1;   ## Successfully included file

@@ -92,7 +92,7 @@ print GO "ROI_NAMES\n";
 
 for $r (0..$#roi_names) {
     $num=$r+1;
-    print GO "$num $structure_colors{$roi_names[$r]} $structure_names{$roi_names[$r]}\n";
+    print GO "$num|$structure_colors{$roi_names[$r]}|$structure_names{$roi_names[$r]}\n";
 }
 
 #for $key (keys %structure_names) {

@@ -69,7 +69,7 @@ print DO "SERIES_CT_UID $ct_series_uid\n";
 for $key (sort {$a <=> $b} keys %ordered_rois) {
     $val = $ordered_rois{$key};
     ($roi_color,$roi_name) = split (/\|/,$val);
-    print DO "$key $roi_color $roi_name\n";
+    print DO "$key|$roi_color|$roi_name\n";
 }
 print DO "END_OF_ROI_NAMES\n";
 while (<D1>) {

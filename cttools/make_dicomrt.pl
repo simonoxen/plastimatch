@@ -12,22 +12,21 @@ use File::Basename;
 use lib dirname($0);
 do "make_dicomrt_inc.pl" || die "Can't load include file: make_dicom_inc.pl";
 
-$plastimatch_uid_prefix = "1.2.826.0.1.3680043.8.274.1";
-$uids_fn = shift;
-$cxt_fn = shift;
-$dump_in_fn = "dump_in.txt";
-$dcm_out_file = "dump.dcm";
-$dump_out_fn = "dump_out.txt";
-
 ## -----------------------------------------------------------------
 ##  Structure file parsing routines
 ## -----------------------------------------------------------------
 sub parse_cxt_format {
-    my ($fn, $structures, $structure_names) = @_;
+    my ($fn) = @_;
+
+    ## This is the structure we will fill in
+    $structure_set = { };
+    $structure_set->{header} = { };
+    $structure_set->{structures} = [ ];
+    $ss_structures = $structure_set->{structures};
 
     ## This code was copied and edited from contour_points_to_cxt.pl.  
     ## It needs to be re-engineered into a common subroutine for both scripts.
-    $series_CT_UID = "Unknown";  # For future work
+    $series_ct_uid = "Unknown";  # For future work
     $same_study_set = 1;
     $have_roi_names = 0;
 
@@ -36,32 +35,41 @@ sub parse_cxt_format {
     while (<CF>) {
 	chomp;
 	if (/SERIES_CT_UID/) {
-	    ($junk, $series_CT_contour) = split;
-	    if ($series_CT_contour ne $series_CT_UID) {
-		print "SERIES_CT_UID_CT: $series_CT_UID\n";
-		print "SERIES_CT_UID_CN: $series_CT_contour\n";
+	    ($junk, $series_ct_contour) = split;
+	    if ($series_ct_contour ne $series_ct_uid) {
+		print "SERIES_CT_UID_CT: $series_ct_uid\n";
+		print "SERIES_CT_UID_CN: $series_ct_contour\n";
 		warn "Warning: contours and ct are from different study sets\n";
 		$same_study_set = 0;
 	    }
+	    $structure_set->{header}->{ct_series_uid} = $series_ct_contour;
 	} else {
 	    if (/ROI_NAMES/) {
 		$have_roi_names = 1;
 	    } elsif ($have_roi_names) {
 		if (!/END_OF_ROI_NAMES/) {
-		    ($structure,$color,$name) = split;
-		    $structure_color_hash{$structure} = $color;
-		    $structure_names_hash{$structure} = $name;
+		    ($structure_no,$color,$name) = split /\|/;
+		    $ss_structures->[$structure_no]->{color} = $color;
+		    $ss_structures->[$structure_no]->{name} = $name;
+		    $ss_structures->[$structure_no]->{contours} = [ ];
+
+		    ## $structure_color_hash{$structure} = $color;
+		    ## GE must replace spaces with underscores (?)
+		    ## $name =~ s/ /_/g;
+		    ## $structure_names_hash{$structure} = $name;
 		}
 	    }
 	}
 	last if /END_OF_ROI_NAMES/;
     }
 
-    @roi_sort = sort { $a <=> $b } keys %structure_names_hash;
-    while ($i = shift @roi_sort) {
-	push @roi_names, $structure_names_hash{$i};
-    }
-    push @$structure_names, @roi_names;
+#    @roi_sort = sort { $a <=> $b } keys %structure_names_hash;
+#    while ($i = shift @roi_sort) {
+#	push @roi_names, $structure_names_hash{$i};
+#	push @roi_colors, $structure_colors_hash{$i};
+#    }
+#    push @$structure_names, @roi_names;
+#    push @$structure_colors, @roi_colors;
 
     $old_struct = -1;
     while (<CF>) {
@@ -72,21 +80,20 @@ sub parse_cxt_format {
 	 $uid_contour, 
 	 $points) = split /\|/;
 
-	if ($old_struct != $structure_no) {
-	    if ($contours) {
-		push @$structures, $contours;
-		undef $contours;
-	    }
-	}
-	$old_struct = $structure_no;
-	push @{$contours}, $_;
+        push @{ $ss_structures->[$structure_no]->{contours} }, $_;
     }
     close CF;
-    if ($contours) {
-	push @$structures, $contours;
-	undef $contours;
-    }
+    return $structure_set;
 }
+
+
+## Hard coded to .1 sub-range for software development
+$plastimatch_uid_prefix = "1.2.826.0.1.3680043.8.274.1.1";
+$uids_fn = shift;
+$cxt_fn = shift;
+$dump_in_fn = "dump_in.txt";
+$dcm_out_file = "dump.dcm";
+$dump_out_fn = "dump_out.txt";
 
 ## -----------------------------------------------------------------
 ##  Load UID file
@@ -107,17 +114,17 @@ close UIF;
 ## -----------------------------------------------------------------
 @structures = ( );
 @structure_names = ( );
-parse_cxt_format ($cxt_fn, \@structures, \@structure_names);
+@structure_colors = ( );
+#parse_cxt_format ($cxt_fn, \@structures, \@structure_names, 
+#		  \@structure_colors);
 
-if (0) {
-for $structure (@structures) {
-    for $contour (@{$structure}) {
-	print "$contour\n";
-	for $pt (@{$contour}) {
- 	    print "  $pt\n";
- 	}
-    }
-}
+$structure_set = parse_cxt_format ($cxt_fn);
+$ss_structures = $structure_set->{structures};
+
+for $i (0..$#{$ss_structures}) {
+    $s = $ss_structures->[$i];
+    next if not $s->{name};
+    print ">> $i $s->{name} $#{$s->{contours}}\n";
 }
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
@@ -148,9 +155,12 @@ $patient_id = "ANON42627";
 $study_id = "ANON26726";
 $patient_sex = "M";
 
+## Create Dicom unique identifiers
 $instance_creator_uid = $plastimatch_uid_prefix;
-$sop_instance_uid = $plastimatch_uid_prefix . ".1.3026719";
-$series_instance_uid = $plastimatch_uid_prefix . ".2.3026719";
+$sop_instance_uid = `dicom_uid $plastimatch_uid_prefix`;
+chomp($sop_instance_uid);
+$series_instance_uid = `dicom_uid $plastimatch_uid_prefix`;
+chomp($series_instance_uid);
 
 $study_instance_uid = $study_img_uid;
 $series_number = "103";
@@ -195,23 +205,31 @@ print OUT $foot_103_part2;
 
 ## Write dicomrt part 3 from contour file
 print OUT $head_103_part3;
-for $i (0..$#structures) {
+for $i (0..$#{$ss_structures}) {
+  $s = $ss_structures->[$i];
+  next if not $s->{name};
+
   printf OUT $item_103_part3, 
-    $i + 1, 
+    $i, 
     $for_img_uid, 
-    $structure_names[$i];
+    $s->{name};
   ;
 }
 print OUT $foot_103_part3;
 
 ## Rebuild part 4 from contour file
 print OUT $head_103_part4;
-for $i (0..$#structures) {
-    $structure = $structures[$i];
-    $color = "255\\0\\0";
-    printf OUT $subhead_103_part4, $color, $i + 1;
+for $i (0..$#{$ss_structures}) {
+    $s = $ss_structures->[$i];
+    next if not $s->{name};
+
+#    $structure = $structures[$i];
+#    $color = "255\\0\\0";
+#    $color = $structure_colors[$i];
+    $color = $s->{color};
+    printf OUT $subhead_103_part4, $color, $i;
     $j = 1;
-    for $contour (@{$structure}) {
+    for $contour (@{$s->{contours}}) {
 	# Convert points to a string
 #	$pts = "";
 #	for $pt (@{$contour}) {
@@ -245,17 +263,20 @@ for $i (0..$#structures) {
 
         $j = $j + 1;
     }
-    printf OUT $subfoot_103_part4, $i + 1;
+    printf OUT $subfoot_103_part4, $i;
 }
 print OUT $foot_103_part4;
 
 ## Rebuild part 5 from contour file
 print OUT $head_103_part5;
-for $i (0..$#structures) {
+for $i (0..$#{$ss_structures}) {
+    $s = $ss_structures->[$i];
+    next if not $s->{name};
+
     printf OUT $item_103_part5, 
-      $i + 1,
-      $i + 1,
-      $structure_names[$i];
+      $i, 
+      $i, 
+      $s->{name};
 }
 print OUT $foot_103_part5;
 close OUT;
