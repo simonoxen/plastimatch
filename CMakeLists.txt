@@ -3,6 +3,7 @@ PROJECT(plastimatch)
 INCLUDE(CPack)
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
+INCLUDE(PLM_FindDCMTK.cmake)
 
 INCLUDE(GPUIT.cmake)
 
@@ -127,37 +128,8 @@ ELSE(UNIX)
 ENDIF(UNIX)
 
 ######################################################
-##  SOURCE FILES (From GPUIT)
+##  SOURCE FILES (LIBRARIES)
 ######################################################
-SET(BSPLINE_SRC
-	bspline_main.c 
-	)
-SET(DEMONS_SRC
-	demons_main.c
-	demons_opts.c demons_opts.h
-	)
-IF(BUILD_DEMONS_CUDA)
-SET(DEMONS_CUDA_SRC
-	readmha.c readmha.h
-	volume.c volume.h
-	)
-ENDIF(BUILD_DEMONS_CUDA)
-SET(DRR_C_SRC
-	drr_c.c
-	drr_opts.c drr_opts.h
-	)
-SET(FDK_C_SRC
-	fdk_c.c fdk.h
-	fdk_opts.c fdk_opts.h
-	)
-SET(FDK_BROOK_SRC
-	fdk_brook.cpp fdk.h
-	fdk_opts.c fdk_opts.h
-	mathutil.h
-	readmha.c readmha.h
-	volume.c volume.h
-	)
-
 SET(GPUIT_LIBRARY_SRC
 	bspline.c bspline.h
 	bspline_opts.c bspline_opts.h
@@ -201,41 +173,14 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 
+
 IF(F2C_LIBRARY)
 SET(F2C_HELPER_LIBRARY_SRC
 	main__.c
 	)
 ENDIF(F2C_LIBRARY)
 
-######################################################
-##  SOURCE FILES (From Plastimatch)
-######################################################
-SET(COMPOSE_VECTOR_FIELDS_SRC
-	compose_vector_fields.cxx
-	)
-SET(CONTOUR_STATISTICS_SRC
-	contour_statistics.cxx contour_statistics.h
-	dice_statistics.cxx 
-	closest_point.cxx 
-	read_obj.cxx
-	)
-SET(CXT_TO_MHA_SRC
-	cxt_to_mha.cxx
-	render_polyline.cxx
-	render_polyline.h
-	)
-SET(EXTRACT_CONTOUR_SRC
-	extract_contour.cxx
-	)
-SET(MASK_MHA_SRC
-	mask_mha.cxx
-	)
-SET(MHA_TO_RTOG_DOSE_SRC
-	mha_to_rtog_dose.cxx
-	)
-SET(PATIENT_MASK_SRC
-	patient_mask.cxx
-	)
+
 SET(PLASTIMATCH_LIBRARY_SRC
 	debug.c debug.h 
 	gcs_metric.h gcs_metric.hxx 
@@ -258,6 +203,68 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
+	)
+
+
+######################################################
+##  SOURCE FILES (EXECUTABLES)
+######################################################
+SET(BSPLINE_SRC
+	bspline_main.c 
+	)
+SET(COMPOSE_VECTOR_FIELDS_SRC
+	compose_vector_fields.cxx
+	)
+SET(CONTOUR_STATISTICS_SRC
+	contour_statistics.cxx contour_statistics.h
+	dice_statistics.cxx 
+	closest_point.cxx 
+	read_obj.cxx
+	)
+SET(CXT_TO_MHA_SRC
+	cxt_to_mha.cxx
+	render_polyline.cxx
+	render_polyline.h
+	)
+SET(DEMONS_SRC
+	demons_main.c
+	demons_opts.c demons_opts.h
+	)
+IF(BUILD_DEMONS_CUDA)
+SET(DEMONS_CUDA_SRC
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+ENDIF(BUILD_DEMONS_CUDA)
+SET(DICOM_UID_SRC
+	dicom_uid_main.cxx
+	)
+SET(DRR_C_SRC
+	drr_c.c
+	drr_opts.c drr_opts.h
+	)
+SET(EXTRACT_CONTOUR_SRC
+	extract_contour.cxx
+	)
+SET(FDK_C_SRC
+	fdk_c.c fdk.h
+	fdk_opts.c fdk_opts.h
+	)
+SET(FDK_BROOK_SRC
+	fdk_brook.cpp fdk.h
+	fdk_opts.c fdk_opts.h
+	mathutil.h
+	readmha.c readmha.h
+	volume.c volume.h
+	)
+SET(MASK_MHA_SRC
+	mask_mha.cxx
+	)
+SET(MHA_TO_RTOG_DOSE_SRC
+	mha_to_rtog_dose.cxx
+	)
+SET(PATIENT_MASK_SRC
+	patient_mask.cxx
 	)
 SET(POINT_PATH_SRC
 	point_path.cxx
@@ -323,14 +330,20 @@ CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BI
 ##  INCLUDE DIRECTORIES
 ######################################################
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+
 IF(BROOK_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
 ENDIF(BROOK_FOUND)
+
 IF(CUDA_FOUND)
   # Not sure.  GPUIT had both includes.
   # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
   INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
 ENDIF(CUDA_FOUND)
+
+IF(DCMTK_FOUND)
+  INCLUDE_DIRECTORIES(AFTER ${DCMTK_INCLUDE_DIR})
+ENDIF(DCMTK_FOUND)
 
 
 ######################################################
@@ -382,6 +395,11 @@ IF(BUILD_DEMONS_CUDA)
     OBJECT_DEPENDS "demons_cuda_kernel.cu")
   ADD_EXECUTABLE(demons_cuda ${DEMONS_CUDA_SRC} demons_cuda.obj)
 ENDIF(BUILD_DEMONS_CUDA)
+
+# Require dcmtk
+IF(DCMTK_FOUND)
+  ADD_EXECUTABLE(dicom_uid ${DICOM_UID_SRC})
+ENDIF(DCMTK_FOUND)
 
 # Require f2c
 IF(F2C_LIBRARY)
@@ -456,6 +474,11 @@ IF(BUILD_DEMONS_CUDA)
   ENDIF(CUDA_FOUND)
 ENDIF(BUILD_DEMONS_CUDA)
 
+# Require dcmtk
+IF(DCMTK_FOUND)
+  TARGET_LINK_LIBRARIES(dicom_uid ${DCMTK_LIBRARIES})
+ENDIF(DCMTK_FOUND)
+
 # Require itk
 IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(compose_vector_fields ${PLASTIMATCH_LIBS})
@@ -500,6 +523,11 @@ INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 IF(BROOK_FOUND)
   INSTALL(TARGETS fdk_brook DESTINATION bin)
 ENDIF(BROOK_FOUND)
+
+# Require dcmtk
+IF(DCMTK_FOUND)
+  INSTALL(TARGETS dicom_uid DESTINATION bin)
+ENDIF(DCMTK_FOUND)
 
 # Require itk
 IF(ITK_FOUND)

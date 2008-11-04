@@ -138,14 +138,13 @@ $software_version = "<EXPERIMENTAL>";
 ## structures with the CT.
 ##########################################################################
 ## $patient_name = "Anonymous";
-$patient_name = "NPC_panel";
-$patient_id = "ANON42627";
 ## $patient_id = "0028";
-$study_instance_uid = $study_img_uid;
 ## $series_instance_uid = "1.2.840.113619.2.55.1.1762853477.1996.1155908038.536.103";
-$series_instance_uid = "2.16.840.1.114362.1.90609.1196125526343.847.103";
+## $series_instance_uid = "2.16.840.1.114362.1.90609.1196125526343.847.103";
 ## $study_instance_uid = "1.2.840.113619.2.55.1.1762853477.1996.1155908038.536";
 ## $study_id = "9400";
+$patient_name = "NPC_panel";
+$patient_id = "ANON42627";
 $study_id = "ANON26726";
 $patient_sex = "M";
 
@@ -153,6 +152,7 @@ $instance_creator_uid = $plastimatch_uid_prefix;
 $sop_instance_uid = $plastimatch_uid_prefix . ".1.3026719";
 $series_instance_uid = $plastimatch_uid_prefix . ".2.3026719";
 
+$study_instance_uid = $study_img_uid;
 $series_number = "103";
 $instance_number = "1";
 $structure_set_label = "Test";
