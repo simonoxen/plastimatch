@@ -1,91 +1,16 @@
 die "Usage: make_dicomrt.pl uids.txt contours.cxt\n" 
   unless $#ARGV >= 1;
 
-use POSIX;
-use File::Basename;
-
 ## -----------------------------------------------------------------
 ##  Global settings
 ## -----------------------------------------------------------------
 
-## Dicomrt header strings
+## Load include files
+use POSIX;
+use File::Basename;
 use lib dirname($0);
+do "parse_cxt.pl" || die "Can't load include file: parse_cxt.pl";
 do "make_dicomrt_inc.pl" || die "Can't load include file: make_dicom_inc.pl";
-
-## -----------------------------------------------------------------
-##  Structure file parsing routines
-## -----------------------------------------------------------------
-sub parse_cxt_format {
-    my ($fn) = @_;
-
-    ## This is the structure we will fill in
-    $structure_set = { };
-    $structure_set->{header} = { };
-    $structure_set->{structures} = [ ];
-    $ss_structures = $structure_set->{structures};
-
-    ## This code was copied and edited from contour_points_to_cxt.pl.  
-    ## It needs to be re-engineered into a common subroutine for both scripts.
-    $series_ct_uid = "Unknown";  # For future work
-    $same_study_set = 1;
-    $have_roi_names = 0;
-
-    ## Read header
-    open CF, "<$fn" || die "CXT file not found: $fn\n";
-    while (<CF>) {
-	chomp;
-	if (/SERIES_CT_UID/) {
-	    ($junk, $series_ct_contour) = split;
-	    if ($series_ct_contour ne $series_ct_uid) {
-		print "SERIES_CT_UID_CT: $series_ct_uid\n";
-		print "SERIES_CT_UID_CN: $series_ct_contour\n";
-		warn "Warning: contours and ct are from different study sets\n";
-		$same_study_set = 0;
-	    }
-	    $structure_set->{header}->{ct_series_uid} = $series_ct_contour;
-	} else {
-	    if (/ROI_NAMES/) {
-		$have_roi_names = 1;
-	    } elsif ($have_roi_names) {
-		if (!/END_OF_ROI_NAMES/) {
-		    ($structure_no,$color,$name) = split /\|/;
-		    $ss_structures->[$structure_no]->{color} = $color;
-		    $ss_structures->[$structure_no]->{name} = $name;
-		    $ss_structures->[$structure_no]->{contours} = [ ];
-
-		    ## $structure_color_hash{$structure} = $color;
-		    ## GE must replace spaces with underscores (?)
-		    ## $name =~ s/ /_/g;
-		    ## $structure_names_hash{$structure} = $name;
-		}
-	    }
-	}
-	last if /END_OF_ROI_NAMES/;
-    }
-
-#    @roi_sort = sort { $a <=> $b } keys %structure_names_hash;
-#    while ($i = shift @roi_sort) {
-#	push @roi_names, $structure_names_hash{$i};
-#	push @roi_colors, $structure_colors_hash{$i};
-#    }
-#    push @$structure_names, @roi_names;
-#    push @$structure_colors, @roi_colors;
-
-    $old_struct = -1;
-    while (<CF>) {
-	($structure_no, 
-	 $contour_thickness, 
-	 $num_points, 
-	 $slice_index, 
-	 $uid_contour, 
-	 $points) = split /\|/;
-
-        push @{ $ss_structures->[$structure_no]->{contours} }, $_;
-    }
-    close CF;
-    return $structure_set;
-}
-
 
 ## Hard coded to .1 sub-range for software development
 $plastimatch_uid_prefix = "1.2.826.0.1.3680043.8.274.1.1";
@@ -115,9 +40,8 @@ close UIF;
 @structures = ( );
 @structure_names = ( );
 @structure_colors = ( );
-#parse_cxt_format ($cxt_fn, \@structures, \@structure_names, 
-#		  \@structure_colors);
 
+## Load CXT file
 $structure_set = parse_cxt_format ($cxt_fn);
 $ss_structures = $structure_set->{structures};
 
@@ -126,6 +50,18 @@ for $i (0..$#{$ss_structures}) {
     next if not $s->{name};
     print ">> $i $s->{name} $#{$s->{contours}}\n";
 }
+
+## -----------------------------------------------------------------
+##  Convert undesirable characters in structure names for GE
+## -----------------------------------------------------------------
+for $i (0..$#{$ss_structures}) {
+  $s = $ss_structures->[$i];
+  next if not $s->{name};
+
+  $s->{name} =~ s/ /_/g;
+  $s->{name} =~ s/\+/x/g;
+}
+
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
   = localtime(time);
@@ -140,18 +76,21 @@ $instance_creation_time = $time;
 $station_name = $nodename;
 $software_version = "<EXPERIMENTAL>";
 
-##########################################################################
-## All of the following must be correct for GE AdvW to associate the 
-## structures with the CT.
-##########################################################################
-## $patient_name = "Anonymous";
-## $patient_id = "0028";
-## $series_instance_uid = "1.2.840.113619.2.55.1.1762853477.1996.1155908038.536.103";
-## $series_instance_uid = "2.16.840.1.114362.1.90609.1196125526343.847.103";
-## $study_instance_uid = "1.2.840.113619.2.55.1.1762853477.1996.1155908038.536";
-## $study_id = "9400";
+#####################################
+## These have to be filled in manually
+#####################################
 $patient_name = "NPC_panel";
 $patient_id = "ANON42627";
+$study_id = "ANON26726";
+$patient_sex = "M";
+
+$patient_name = "OP_panel";
+$patient_id = "ANON65526";
+$study_id = "ANON26726";
+$patient_sex = "M";
+
+$patient_name = "Glot_panel";
+$patient_id = "ANON74245";
 $study_id = "ANON26726";
 $patient_sex = "M";
 
@@ -223,33 +162,10 @@ for $i (0..$#{$ss_structures}) {
     $s = $ss_structures->[$i];
     next if not $s->{name};
 
-#    $structure = $structures[$i];
-#    $color = "255\\0\\0";
-#    $color = $structure_colors[$i];
     $color = $s->{color};
     printf OUT $subhead_103_part4, $color, $i;
     $j = 1;
     for $contour (@{$s->{contours}}) {
-	# Convert points to a string
-#	$pts = "";
-#	for $pt (@{$contour}) {
-#	    ($x, $y, $z) = split ' ', $pt;
-# 	    if ($z < 0 || $z > $#slices) {
-#		printf "Warning: skipping contour with index %d ($i)\n", $z;
-#		last;
-#	    }
-#	    $x = ($x * $pixel_x) + $off_x;
-#	    $y = ($y * $pixel_y) + $off_y;
-#	    $z_loc = $slices[$z];
-#	    if ($pts) {
-#		$pts = $pts . "\\$x\\$y\\$z_loc";
-#	    } else {
-#		$pts = "$x\\$y\\$z_loc";
-#	    }
-#	}
-#	printf OUT $item_103_part4_without_ac, 
-#	  $slice_UIDs{$z_loc}, $#{$contour}+1, $j, $pts;
-
 	($structure_no, 
 	 $contour_thickness, 
 	 $num_points, 

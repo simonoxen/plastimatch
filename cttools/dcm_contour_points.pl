@@ -66,6 +66,7 @@ close D1;
 open D1, "$cmd|";
 open DO, ">$outfile";
 print DO "SERIES_CT_UID $ct_series_uid\n";
+print DO "ROI_NAMES\n";
 for $key (sort {$a <=> $b} keys %ordered_rois) {
     $val = $ordered_rois{$key};
     ($roi_color,$roi_name) = split (/\|/,$val);

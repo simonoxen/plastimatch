@@ -4,15 +4,14 @@
 sub parse_cxt_format {
     my ($fn) = @_;
 
-    ## This is the structure we will fill in
+    ## This is the data structure
     $structure_set = { };
     $structure_set->{header} = { };
     $structure_set->{structures} = [ ];
-    $structure_set->{contours} = [ ];
+    $ss_structures = $structure_set->{structures};
 
-    ## This code was copied and edited from contour_points_to_cxt.pl.  
-    ## It needs to be re-engineered into a common subroutine for both scripts.
-    $series_CT_UID = "Unknown";  # For future work
+    ## The series_ct_uid should be passed as an input argument for checking
+    $series_ct_uid = "Unknown";  # For future work
     $same_study_set = 1;
     $have_roi_names = 0;
 
@@ -21,10 +20,10 @@ sub parse_cxt_format {
     while (<CF>) {
 	chomp;
 	if (/SERIES_CT_UID/) {
-	    ($junk, $series_CT_contour) = split;
-	    if ($series_CT_contour ne $series_CT_UID) {
-		print "SERIES_CT_UID_CT: $series_CT_UID\n";
-		print "SERIES_CT_UID_CN: $series_CT_contour\n";
+	    ($junk, $series_ct_contour) = split;
+	    if ($series_ct_contour ne $series_ct_uid) {
+		print "SERIES_CT_UID_CT: $series_ct_uid\n";
+		print "SERIES_CT_UID_CN: $series_ct_contour\n";
 		warn "Warning: contours and ct are from different study sets\n";
 		$same_study_set = 0;
 	    }
@@ -35,27 +34,16 @@ sub parse_cxt_format {
 	    } elsif ($have_roi_names) {
 		if (!/END_OF_ROI_NAMES/) {
 		    ($structure_no,$color,$name) = split /\|/;
-		    $structure_set->{structures}->[$structure_no]->{color} = $color;
-		    $structure_set->{structures}->[$structure_no]->{name} = $name;
-		    ## $structure_color_hash{$structure} = $color;
-		    ## GE must replace spaces with underscores (?)
-		    ## $name =~ s/ /_/g;
-		    ## $structure_names_hash{$structure} = $name;
+		    $ss_structures->[$structure_no]->{color} = $color;
+		    $ss_structures->[$structure_no]->{name} = $name;
+		    $ss_structures->[$structure_no]->{contours} = [ ];
 		}
 	    }
 	}
 	last if /END_OF_ROI_NAMES/;
     }
 
-#    @roi_sort = sort { $a <=> $b } keys %structure_names_hash;
-#    while ($i = shift @roi_sort) {
-#	push @roi_names, $structure_names_hash{$i};
-#	push @roi_colors, $structure_colors_hash{$i};
-#    }
-#    push @$structure_names, @roi_names;
-#    push @$structure_colors, @roi_colors;
-
-    $old_struct = -1;
+    ## Read contour points
     while (<CF>) {
 	($structure_no, 
 	 $contour_thickness, 
@@ -64,24 +52,12 @@ sub parse_cxt_format {
 	 $uid_contour, 
 	 $points) = split /\|/;
 
-	if ($old_struct != $structure_no) {
-	    if ($contours) {
-		#push @$structures, $contours;
-		push $structure_set->{contours}->[$old_struct], $contours;
-		undef $contours;
-	    }
-	}
-	$old_struct = $structure_no;
-	push @{$contours}, $_;
+        push @{ $ss_structures->[$structure_no]->{contours} }, $_;
     }
     close CF;
-    if ($contours) {
-	#push @$structures, $contours;
-	push $structure_set->{contours}->[$old_struct], $contours;
-	undef $contours;
-    }
+
+    ## Return results
+    return $structure_set;
 }
 
 1;   ## Successfully included file
-
-1;
