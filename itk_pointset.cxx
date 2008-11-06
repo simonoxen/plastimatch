@@ -13,9 +13,9 @@ template<class T>
 void
 pointset_load (T pointset, char* fn)
 {
-    typedef T::ObjectType PointSetType;
-    typedef PointSetType::PointType PointType;
-    typedef PointSetType::PointsContainer PointsContainerType;
+    typedef typename T::ObjectType PointSetType;
+    typedef typename PointSetType::PointType PointType;
+    typedef typename PointSetType::PointsContainer PointsContainerType;
 
     FILE* fp;
     const int MAX_LINE = 2048;
@@ -28,7 +28,7 @@ pointset_load (T pointset, char* fn)
 	print_and_exit ("Error loading pointset file: %s\n", fn);
     }
 
-    PointsContainerType::Pointer points = PointsContainerType::New();
+    typename PointsContainerType::Pointer points = PointsContainerType::New();
 
     unsigned int i = 0;
     while (fgets (line, MAX_LINE, fp)) {
@@ -50,15 +50,15 @@ template<class T>
 T
 pointset_warp (T ps_in, Xform* xf)
 {
-    typedef T::ObjectType PointSetType;
-    typedef PointSetType::PointType PointType;
-    typedef PointSetType::PixelType PixelType;
-    typedef PointSetType::PointsContainer PointsContainerType;
-    typedef PointsContainerType::Iterator PointsIteratorType;
+    typedef typename T::ObjectType PointSetType;
+    typedef typename PointSetType::PointType PointType;
+    typedef typename PointSetType::PixelType PixelType;
+    typedef typename PointSetType::PointsContainer PointsContainerType;
+    typedef typename PointsContainerType::Iterator PointsIteratorType;
 
-    PointSetType::Pointer ps_out = PointSetType::New();
-    PointsContainerType::Pointer points_out = PointsContainerType::New();
-    PointsContainerType::Pointer points_in = ps_in->GetPoints ();
+    typename PointSetType::Pointer ps_out = PointSetType::New();
+    typename PointsContainerType::Pointer points_out = PointsContainerType::New();
+    typename PointsContainerType::Pointer points_in = ps_in->GetPoints ();
     PointType tp;
 
     PointsIteratorType it = points_in->Begin();
@@ -79,12 +79,12 @@ template<class T>
 void
 pointset_debug (T pointset)
 {
-    typedef T::ObjectType PointSetType;
-    typedef PointSetType::PointType PointType;
-    typedef PointSetType::PointsContainer PointsContainerType;
-    typedef PointsContainerType::Iterator PointsIteratorType;
+    typedef typename T::ObjectType PointSetType;
+    typedef typename PointSetType::PointType PointType;
+    typedef typename PointSetType::PointsContainer PointsContainerType;
+    typedef typename PointsContainerType::Iterator PointsIteratorType;
 
-    PointsContainerType::Pointer points = pointset->GetPoints ();
+    typename PointsContainerType::Pointer points = pointset->GetPoints ();
 
     PointsIteratorType it = points->Begin();
     PointsIteratorType end = points->End();
