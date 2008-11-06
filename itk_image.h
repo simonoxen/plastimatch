@@ -71,5 +71,4 @@ template<class T> void save_image (T img_ptr, char* fname);
 template<class T> void save_short_dicom (T image, char* dir_name);
 template<class T> void save_short (T img_ptr, char* fname);
 template<class T> void save_float (T img_ptr, char* fname);
-
 #endif

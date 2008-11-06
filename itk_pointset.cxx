@@ -1,64 +1,101 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "itkPointSet.h"
-//#include "itkWarpImageFilter.h"
-//#include "itkLinearInterpolateImageFunction.h"
-//#include "itkNearestNeighborInterpolateImageFunction.h"
-//#include "itk_image.h"
+#include <stdio.h>
+#include "itk_pointset.h"
+#include "print_and_exit.h"
 
-#if defined (commentout)
-/* Warp the image.  
-    im_in:	    the image which is warped
-    vf:		    the vector field.  output size = vf size.
-    default_val:    the value to use for pixels outside the volume
-*/
-template<class T, class U>
-T
-itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
-			U default_val)
+/* Don't get confused by the parameterization of the itk pointset.  The 
+   PixelType is the "color" of the point, whereas the PointType is the 
+   type used to represent the coordinate location */
+
+template<class T>
+void
+pointset_load (T pointset, char* fn)
 {
-    typedef typename T::ObjectType TBase;
-    typedef typename T::ObjectType::PixelType PixelType;
-    typedef itk::WarpImageFilter < TBase, TBase, DeformationFieldType > T_FilterType;
-    typedef itk::LinearInterpolateImageFunction < TBase, double >  T_LinInterpType;
-    typedef itk::NearestNeighborInterpolateImageFunction < TBase, double >  T_NNInterpType;
+    typedef T::ObjectType PointSetType;
+    typedef PointSetType::PointType PointType;
+    typedef PointSetType::PointsContainer PointsContainerType;
 
-    T im_out = TBase::New();
+    FILE* fp;
+    const int MAX_LINE = 2048;
+    char line[MAX_LINE];
+    float p[3];
+    PointType tp;
 
-    typename T_FilterType::Pointer filter = T_FilterType::New();
-    typename T_LinInterpType::Pointer l_interpolator = T_LinInterpType::New();
-    typename T_NNInterpType::Pointer nn_interpolator = T_NNInterpType::New();
-
-    const typename TBase::PointType& og = vf->GetOrigin();
-    const typename TBase::SpacingType& sp = vf->GetSpacing();
-
-    if (linear_interp) {
-	filter->SetInterpolator (l_interpolator);
-    } else {
-	filter->SetInterpolator (nn_interpolator);
-    }
-    filter->SetOutputSpacing (sp);
-    filter->SetOutputOrigin (og);
-    filter->SetDeformationField (vf);
-    filter->SetInput (im_in);
-
-    filter->SetEdgePaddingValue ((PixelType) default_val);
-    
-    try {
-	filter->Update();
-    } catch( itk::ExceptionObject & excp ) {
-	std::cerr << "Exception thrown " << std::endl;
-	std::cerr << excp << std::endl;
+    fp = fopen (fn, "r");
+    if (!fp) {
+	print_and_exit ("Error loading pointset file: %s\n", fn);
     }
 
-    im_out = filter->GetOutput();
-    im_out->Update();
-    return im_out;
+    PointsContainerType::Pointer points = PointsContainerType::New();
+
+    unsigned int i = 0;
+    while (fgets (line, MAX_LINE, fp)) {
+	if (sscanf (line, "%g %g %g", &p[0], &p[1], &p[2]) != 3) {
+	    print_and_exit ("Warning: bogus line in pointset file \"%s\"\n", fn);
+	}
+	tp[0] = p[0];
+	tp[1] = p[1];
+	tp[2] = p[2];
+	printf ("Loading: %g %g %g\n", p[0], p[1], p[2]);
+	points->InsertElement (i++, tp);
+    }
+    pointset->SetPoints (points);
+
+    fclose (fp);
+}
+
+template<class T>
+T
+pointset_warp (T ps_in, Xform* xf)
+{
+    typedef T::ObjectType PointSetType;
+    typedef PointSetType::PointType PointType;
+    typedef PointSetType::PixelType PixelType;
+    typedef PointSetType::PointsContainer PointsContainerType;
+    typedef PointsContainerType::Iterator PointsIteratorType;
+
+    PointSetType::Pointer ps_out = PointSetType::New();
+    PointsContainerType::Pointer points_out = PointsContainerType::New();
+    PointsContainerType::Pointer points_in = ps_in->GetPoints ();
+    PointType tp;
+
+    PointsIteratorType it = points_in->Begin();
+    PointsIteratorType end = points_in->End();
+    unsigned int i = 0;
+    while (it != end) {
+	PointType p = it.Value();
+        xform_transform_point (&tp, xf, p);
+	points_out->InsertElement (i, tp);
+	++it;
+	++i;
+    }
+    ps_out->SetPoints (points_out);
+    return ps_out;
+}
+
+template<class T>
+void
+pointset_debug (T pointset)
+{
+    typedef T::ObjectType PointSetType;
+    typedef PointSetType::PointType PointType;
+    typedef PointSetType::PointsContainer PointsContainerType;
+    typedef PointsContainerType::Iterator PointsIteratorType;
+
+    PointsContainerType::Pointer points = pointset->GetPoints ();
+
+    PointsIteratorType it = points->Begin();
+    PointsIteratorType end = points->End();
+    while (it != end) {
+	PointType p = it.Value();
+	printf ("%g %g %g\n", p[0], p[1], p[2]);
+	++it;
+    }
 }
 
 /* Explicit instantiations */
-template UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
-template ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
-template FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-#endif
+template void pointset_debug (PointSetType::Pointer pointset);
+template void pointset_load (PointSetType::Pointer pointset, char* fn);
+template PointSetType::Pointer pointset_warp (PointSetType::Pointer ps_in, Xform* xf);

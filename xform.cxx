@@ -468,6 +468,31 @@ init_versor_moments (RegistrationType::Pointer registration,
 #endif /* GCS_REARRANGING_STUFF */
 
 /* -----------------------------------------------------------------------
+   Transform points
+   ----------------------------------------------------------------------- */
+plastimatch1_EXPORT 
+void
+xform_transform_point (FloatPointType* point_out, Xform* xf_in, FloatPointType point_in)
+{
+    DeformationFieldType::Pointer vf = xf_in->get_itk_vf ();
+    DeformationFieldType::IndexType idx;
+
+    bool isInside = vf->TransformPhysicalPointToIndex (point_in, idx);
+    if (isInside) {
+	DeformationFieldType::PixelType pixelValue = vf->GetPixel (idx);
+	printf ("pi [%g %g %g]\n", point_in[0], point_in[1], point_in[2]);
+	printf ("idx [%d %d %d]\n", idx[0], idx[1], idx[2]);
+	printf ("vf [%g %g %g]\n", pixelValue[0], pixelValue[1], pixelValue[2]);
+	for (int d = 0; d < 3; d++) {
+	    (*point_out)[d] = point_in[d] + pixelValue[d];
+	}
+	printf ("po [%g %g %g]\n", (*point_out)[0], (*point_out)[1], (*point_out)[2]);
+    } else {
+	(*point_out) = point_in;
+    }
+}
+
+/* -----------------------------------------------------------------------
    Defaults
    ----------------------------------------------------------------------- */
 void
@@ -1567,3 +1592,4 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 
     xf_out->set_gpuit_vf (vf);
 }
+
