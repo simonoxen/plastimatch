@@ -2,23 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-
-#include "getopt.h"
 #include "warp_pointset_main.h"
-#if defined (commentout)
-#include "itkImage.h"
-#include "itkWarpImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkCastImageFilter.h"
-
-#include "warp_mha_main.h"
-#include "itk_image.h"
-#include "itk_warp.h"
-#include "print_and_exit.h"
-#include "xform.h"
-#include "readmha.h"
-#include "volume.h"
-#endif
+#include "getopt.h"
 
 #if defined (commentout)
 template<class T, class U>
