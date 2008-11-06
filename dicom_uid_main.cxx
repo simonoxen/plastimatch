@@ -1,6 +1,8 @@
-
-//#define HAVE_CONFIG_H 1                 /* Debian OS install is broken */
-#include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include "dcmtk_config.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
 

@@ -82,6 +82,15 @@ ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
 
 ######################################################
+##  MATH LIBRARY
+######################################################
+IF(UNIX)
+   SET(MY_MATH_LIB -lm)
+ELSE(UNIX)
+   SET(MY_MATH_LIB)
+ENDIF(UNIX)
+
+######################################################
 ##  GPUIT LIBRARY
 ######################################################
 SET(GPUIT_LIBRARIES gpuit)
@@ -117,15 +126,6 @@ FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
   INCLUDE(${ITK_USE_FILE})
 ENDIF(ITK_FOUND)
-
-######################################################
-##  MATH LIBRARY
-######################################################
-IF(UNIX)
-   SET(MY_MATH_LIB -lm)
-ELSE(UNIX)
-   SET(MY_MATH_LIB)
-ENDIF(UNIX)
 
 ######################################################
 ##  SOURCE FILES (LIBRARIES)
@@ -319,6 +319,14 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
+
+######################################################
+##  DCMTK CONFIGURATION
+######################################################
+SET(DCMTK_HAVE_CONFIG_H FALSE)
+IF(UNIX)
+   SET(DCMTK_HAVE_CONFIG_H TRUE)
+ENDIF(UNIX)
 
 ######################################################
 ##  CONFIGURATION

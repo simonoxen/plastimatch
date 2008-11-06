@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef __plm_config_h__
 #define __plm_config_h__
 
@@ -7,6 +10,7 @@
 #cmakedefine HAVE_BROOK 1
 #cmakedefine OPENMP_FOUND 1
 #cmakedefine BUILD_BSPLINE_BROOK 1
+#cmakedefine DCMTK_HAVE_CONFIG_H 1
 
 #cmakedefine PLASTIMATCH_EXPERIMENTAL 1
 
