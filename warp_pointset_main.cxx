@@ -4,6 +4,8 @@
 #include "plm_config.h"
 #include "warp_pointset_main.h"
 #include "getopt.h"
+#include "itk_pointset.h"
+#include "xform.h"
 
 void
 warp_pointset_main (Warp_Pointset_Parms* parms)
