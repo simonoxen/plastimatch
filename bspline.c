@@ -1846,14 +1846,16 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i, it;
-    float a = 0.003f;
-    float alpha = 0.5f, A = 10.0f;
+//    float a = 0.003f;
+//    float alpha = 0.5f, A = 10.0f;
+    float a, gamma;
+    float gain = 1.5;
     float ssd_grad_norm;
-
-    bspline_set_coefficients (bxf, 0.0);
+    float old_score;
 
     /* Get score and gradient */
     bspline_score (parms, bxf, fixed, moving, moving_grad);
+    old_score = parms->ssd.score;
 
     /* Set alpha based on norm gradient */
     ssd_grad_norm = 0;
@@ -1861,7 +1863,8 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
     a = 1.0f / ssd_grad_norm;
-    printf ("Initial a is %g\n", a);
+    gamma = a;
+    printf ("Initial gamma is %g\n", gamma);
 
     /* Give a little feedback to the user */
     bspline_display_coeff_stats (bxf);
@@ -1870,7 +1873,7 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 	char fn[128];
 	float gamma;
 
-	printf ("Beginning iteration %d\n", it);
+	printf ("Beginning iteration %d, gamma = %g\n", it, gamma);
 
 	/* Save some debugging information */
 	if (parms->debug) {
@@ -1887,13 +1890,21 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 	}
 
 	/* Update coefficients */
-	gamma = a / pow(it + A, alpha);
+	//gamma = a / pow(it + A, alpha);
 	for (i = 0; i < bxf->num_coeff; i++) {
 	    bxf->coeff[i] = bxf->coeff[i] + gamma * ssd->grad[i];
 	}
 
 	/* Get score and gradient */
 	bspline_score (parms, bxf, fixed, moving, moving_grad);
+
+	/* Update gamma */
+	if (parms->ssd.score < old_score) {
+	    gamma *= gain;
+	} else {
+	    gamma /= gain;
+	}
+	old_score = parms->ssd.score;
 
 	/* Give a little feedback to the user */
 	bspline_display_coeff_stats (bxf);
