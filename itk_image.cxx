@@ -14,8 +14,6 @@
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itkDICOMImageIO2.h"
-#include "itkDICOMSeriesFileNames.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
@@ -23,10 +21,9 @@
 #include "itkImageSeriesWriter.h"
 #include "itkCastImageFilter.h"
 #include "itk_image.h"
+#include "print_and_exit.h"
 
-
-#if defined (WIN32)
-#include <direct.h>
+#if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
 #define mkdir(a,b) _mkdir(a)
 #else
@@ -37,13 +34,14 @@
 /* =======================================================================*
     Definitions
  * =======================================================================*/
+typedef itk::ImageSeriesReader < UCharImageType > DicomUCharReaderType;
 typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
 typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
 typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
+typedef itk::ImageFileReader < UCharImageType > MhaUCharReaderType;
 typedef itk::ImageFileReader < ShortImageType > MhaShortReaderType;
 typedef itk::ImageFileReader < UShortImageType > MhaUShortReaderType;
-typedef itk::ImageFileReader < UCharImageType > MhaUCharReaderType;
 typedef itk::ImageFileReader < FloatImageType > MhaFloatReaderType;
 
 
@@ -113,51 +111,74 @@ load_itk_rdr(RdrT reader, char *fn)
     }
 }
 
+/* -----------------------------------------------------------------------
+   Reading Dicom
+   ----------------------------------------------------------------------- */
 template<class T>
 void
 load_dicom_dir_rdr(T rdr, char *dicom_dir)
 {
-    itk::DICOMImageIO2::Pointer dicomIO = itk::DICOMImageIO2::New();
+    typedef itk::GDCMImageIO ImageIOType;
+    ImageIOType::Pointer dicomIO = ImageIOType::New();
+    rdr->SetImageIO( dicomIO );
 
-    // Get the DICOM filenames from the directory
-    itk::DICOMSeriesFileNames::Pointer nameGenerator =
-	    itk::DICOMSeriesFileNames::New();
-    nameGenerator->SetDirectory(dicom_dir);
-
-    typedef std::vector < std::string > seriesIdContainer;
-    const seriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
-    seriesIdContainer::const_iterator seriesItr = seriesUID.begin();
-    seriesIdContainer::const_iterator seriesEnd = seriesUID.end();
-    std::cout << std::endl << "The directory: " << std::endl;
-    std::cout << std::endl << dicom_dir << std::endl << std::endl;
-    std::cout << "Contains the following DICOM Series: ";
-    std::cout << std::endl << std::endl;
-
-    while (seriesItr != seriesEnd) {
-	std::cout << seriesItr->c_str() << std::endl;
-	seriesItr++;
-    }
-
-    std::cout << std::endl << std::endl;
-    std::cout << "Now reading series: " << std::endl << std::endl;
-
-    typedef std::vector < std::string > fileNamesContainer;
-    fileNamesContainer fileNames;
-
-    std::cout << seriesUID.begin()->c_str() << std::endl;
-    fileNames = nameGenerator->GetFileNames();
-
-    rdr->SetFileNames(fileNames);
-    rdr->SetImageIO(dicomIO);
+    /* Read the filenames from the directory */
+    typedef itk::GDCMSeriesFileNames NamesGeneratorType;
+    NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
+    nameGenerator->SetUseSeriesDetails (true);
+    /* GCS: The following is optional.  Do we need it? */
+    //    nameGenerator->AddSeriesRestriction("0008|0021" );
+    nameGenerator->SetDirectory (dicom_dir);
 
     try {
-	rdr->Update();
-    }
-    catch(itk::ExceptionObject & ex) {
-	printf ("Exception reading dicom directory: %s!\n",dicom_dir);
+	std::cout << std::endl << "The directory: " << std::endl;
+	std::cout << std::endl << dicom_dir << std::endl << std::endl;
+	std::cout << "Contains the following DICOM Series: ";
+	std::cout << std::endl << std::endl;
+
+	typedef std::vector< std::string > SeriesIdContainer;
+	const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
+	SeriesIdContainer::const_iterator seriesItr = seriesUID.begin();
+	SeriesIdContainer::const_iterator seriesEnd = seriesUID.end();
+	while (seriesItr != seriesEnd) {
+	    std::cout << seriesItr->c_str() << std::endl;
+	    seriesItr++;
+	}
+
+	/* Assumes series is first one found */
+	std::string seriesIdentifier;
+	seriesIdentifier = seriesUID.begin()->c_str();
+
+	std::cout << std::endl << std::endl;
+	std::cout << "Now reading series: " << std::endl << std::endl;
+	std::cout << seriesIdentifier << std::endl;
+	std::cout << std::endl << std::endl;
+
+	/* Read the files */
+	typedef std::vector< std::string >   FileNamesContainer;
+	FileNamesContainer fileNames;
+	fileNames = nameGenerator->GetFileNames( seriesIdentifier );
+	rdr->SetFileNames( fileNames );
+	try {
+	    rdr->Update();
+	} catch (itk::ExceptionObject &ex) {
+	    std::cout << ex << std::endl;
+	    print_and_exit ("Error loading dicom series.\n");
+	}	
+    } catch (itk::ExceptionObject &ex) {
 	std::cout << ex << std::endl;
-	exit(1);
+	print_and_exit ("Error loading dicom series.\n");
     }
+}
+
+UCharImageType::Pointer
+load_dicom_uchar (char *dicom_dir)
+{
+    DicomUCharReaderType::Pointer fixed_input_rdr
+		= DicomUCharReaderType::New();
+    load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
+    fixed_input_rdr->Update();
+    return fixed_input_rdr->GetOutput();
 }
 
 ShortImageType::Pointer
@@ -165,7 +186,7 @@ load_dicom_short (char *dicom_dir)
 {
     DicomShortReaderType::Pointer fixed_input_rdr
 		= DicomShortReaderType::New();
-    load_dicom_dir_rdr(fixed_input_rdr, dicom_dir);
+    load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
 }
@@ -175,11 +196,24 @@ load_dicom_ushort (char *dicom_dir)
 {
     DicomUShortReaderType::Pointer fixed_input_rdr
 		= DicomUShortReaderType::New();
-    load_dicom_dir_rdr(fixed_input_rdr, dicom_dir);
+    load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();
 }
 
+FloatImageType::Pointer
+load_dicom_float (char *dicom_dir)
+{
+    DicomFloatReaderType::Pointer fixed_input_rdr
+		= DicomFloatReaderType::New();
+    load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
+    fixed_input_rdr->Update();
+    return fixed_input_rdr->GetOutput();
+}
+
+/* -----------------------------------------------------------------------
+   Reading Image Headers
+   ----------------------------------------------------------------------- */
 int
 get_mha_type (char* mha_fname)
 {
@@ -225,68 +259,9 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
     }
 }
 
-template<class T>
-FloatImageType::Pointer
-load_mha_float_2_old (T rdr, char* mha_fname)
-{
-    typedef typename T::ObjectType::OutputImagePixelType PixelType;
-    typedef typename itk::Image < PixelType, 3 > InputImageType;
-    typedef typename itk::CastImageFilter < 
-		InputImageType, FloatImageType > CastFilterType;
-
-    load_itk_rdr (rdr, mha_fname);
-    typename InputImageType::Pointer input_image = rdr->GetOutput();
-
-    /* Convert images to float */
-    typename CastFilterType::Pointer caster = CastFilterType::New();
-    caster->SetInput (input_image);
-
-    typename FloatImageType::Pointer image = caster->GetOutput();
-    image->Update();
-    return image;
-}
-
-FloatImageType::Pointer
-load_mha_float_old (char* mha_fname)
-{
-    int file_type = get_mha_type (mha_fname);
-    if (file_type == TYPE_SHORT) {
-	MhaShortReaderType::Pointer rdr = MhaShortReaderType::New();
-	return load_mha_float_2_old(rdr, mha_fname);
-    } else if (file_type == TYPE_USHORT) {
-	MhaUShortReaderType::Pointer rdr = MhaUShortReaderType::New();
-	return load_mha_float_2_old(rdr, mha_fname);
-    } else if (file_type == TYPE_FLOAT) {
-	MhaFloatReaderType::Pointer rdr = MhaFloatReaderType::New();
-	return load_mha_float_2_old(rdr, mha_fname);
-    } else {
-	printf ("Load conversion failure (unsupported).\n");
-	exit (-1);
-    }
-}
-
-template<class T>
-FloatImageType::Pointer
-load_float_2 (char* fname, T)
-{
-    typedef typename itk::Image < T, 3 > TImageType;
-    typedef itk::ImageFileReader < TImageType > TReaderType;
-    typedef typename itk::CastImageFilter < 
-		TImageType, FloatImageType > CastFilterType;
-
-    /* Load image as native type */
-    typename TReaderType::Pointer rdr = TReaderType::New();
-    load_itk_rdr (rdr, fname);
-    typename TImageType::Pointer input_image = rdr->GetOutput();
-
-    /* Convert images to float */
-    typename CastFilterType::Pointer caster = CastFilterType::New();
-    caster->SetInput (input_image);
-    typename FloatImageType::Pointer image = caster->GetOutput();
-    image->Update();
-    return image;
-}
-
+/* -----------------------------------------------------------------------
+   Reading image files
+   ----------------------------------------------------------------------- */
 template<class T, class U>
 typename itk::Image< U, 3 >::Pointer
 load_any_2 (char* fname, T, U)
@@ -357,86 +332,14 @@ load_any (char* fname, U otype)
     }
 }
 
-FloatImageType::Pointer
-load_float (char* fname)
+UCharImageType::Pointer
+load_uchar (char* fname)
 {
-    return load_any (fname, static_cast<float>(0));
-}
-
-FloatImageType::Pointer
-load_float_alt (char* fname)
-{
-    printf ("LOAD_FLOAT\n");
-    itk::ImageIOBase::IOPixelType pixelType;
-    itk::ImageIOBase::IOComponentType componentType;
-    try {
-	itk__GetImageType (fname, pixelType, componentType);
-	switch (componentType) {
-        case itk::ImageIOBase::UCHAR:
-	    return load_float_2 (fname, static_cast<unsigned char>(0));
-	case itk::ImageIOBase::CHAR:
-	    return load_float_2 (fname, static_cast<char>(0));
-	case itk::ImageIOBase::USHORT:
-	    return load_float_2 (fname, static_cast<unsigned short>(0));
-	case itk::ImageIOBase::SHORT:
-	    return load_float_2 (fname, static_cast<short>(0));
-	case itk::ImageIOBase::UINT:
-	    return load_float_2 (fname, static_cast<unsigned int>(0));
-	case itk::ImageIOBase::INT:
-	    return load_float_2 (fname, static_cast<int>(0));
-	case itk::ImageIOBase::ULONG:
-	    return load_float_2 (fname, static_cast<unsigned long>(0));
-	case itk::ImageIOBase::LONG:
-	    return load_float_2 (fname, static_cast<long>(0));
-	case itk::ImageIOBase::FLOAT:
-	    return load_float_2 (fname, static_cast<float>(0));
-	case itk::ImageIOBase::DOUBLE:
-	    return load_float_2 (fname, static_cast<double>(0));
-	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
-	default:
-	    fprintf (stderr, "Error: unhandled file type for loading float\n");
-	    exit (-1);
-	    break;
-	}
-    }
-    catch (itk::ExceptionObject &excep) {
-	std::cerr << "Exception getting image type: " << fname << std::endl;
-	std::cerr << excep << std::endl;
-	exit (-1);
-    }
-}
-
-template<class T>
-ShortImageType::Pointer
-load_mha_short_2 (T rdr, char* mha_fname)
-{
-    typedef typename T::ObjectType::OutputImagePixelType PixelType;
-    typedef typename itk::Image < PixelType, 3 > InputImageType;
-    typedef typename itk::CastImageFilter < 
-		InputImageType, ShortImageType > CastFilterType;
-
-    load_itk_rdr (rdr, mha_fname);
-    typename InputImageType::Pointer input_image = rdr->GetOutput();
-
-    /* Convert images to float */
-    typename CastFilterType::Pointer caster = CastFilterType::New();
-    caster->SetInput (input_image);
-
-    typename ShortImageType::Pointer image = caster->GetOutput();
-    image->Update();
-    return image;
-}
-
-ShortImageType::Pointer
-load_mha_short (char* mha_fname)
-{
-    int file_type = get_mha_type (mha_fname);
-    if (file_type == 1) {
-	MhaShortReaderType::Pointer rdr = MhaShortReaderType::New();
-	return load_mha_short_2(rdr, mha_fname);
+    /* If it is directory, then must be dicom */
+    if (is_directory(fname)) {
+	return load_dicom_uchar (fname);
     } else {
-	MhaUShortReaderType::Pointer rdr = MhaUShortReaderType::New();
-	return load_mha_short_2(rdr, mha_fname);
+	return load_any (fname, static_cast<unsigned char>(0));
     }
 }
 
@@ -447,50 +350,30 @@ load_short (char* fname)
     if (is_directory(fname)) {
 	return load_dicom_short (fname);
     } else {
-	return load_mha_short (fname);
+	return load_any (fname, static_cast<short>(0));
     }
 }
 
-template<class T>
-UCharImageType::Pointer
-load_mha_uchar_2 (T rdr, char* mha_fname)
+UShortImageType::Pointer
+load_ushort (char* fname)
 {
-    typedef typename T::ObjectType::OutputImagePixelType PixelType;
-    typedef typename itk::Image < PixelType, 3 > InputImageType;
-    typedef typename itk::CastImageFilter < 
-		InputImageType, UCharImageType > CastFilterType;
-
-    load_itk_rdr (rdr, mha_fname);
-    typename InputImageType::Pointer input_image = rdr->GetOutput();
-
-    /* Convert images to uchar */
-    typename CastFilterType::Pointer caster = CastFilterType::New();
-    caster->SetInput (input_image);
-
-    UCharImageType::Pointer image = caster->GetOutput();
-    image->Update();
-    return image;
-}
-
-UCharImageType::Pointer
-load_mha_uchar (char* mha_fname)
-{
-    int file_type = get_mha_type (mha_fname);
-    if (file_type == 3) {
-	MhaUCharReaderType::Pointer rdr = MhaUCharReaderType::New();
-	return load_mha_uchar_2(rdr, mha_fname);
+    /* If it is directory, then must be dicom */
+    if (is_directory(fname)) {
+	return load_dicom_ushort (fname);
     } else {
-	/* This won't work */
-	MhaUCharReaderType::Pointer rdr = MhaUCharReaderType::New();
-	return load_mha_uchar_2(rdr, mha_fname);
+	return load_any (fname, static_cast<unsigned short>(0));
     }
 }
 
-UCharImageType::Pointer
-load_uchar (char* fname)
+FloatImageType::Pointer
+load_float (char* fname)
 {
-    /* Dicom not yet supported */
-    return load_mha_uchar (fname);
+    /* If it is directory, then must be dicom */
+    if (is_directory(fname)) {
+	return load_dicom_float (fname);
+    } else {
+	return load_any (fname, static_cast<float>(0));
+    }
 }
 
 DeformationFieldType::Pointer
@@ -515,6 +398,9 @@ load_float_field (char* fname)
     return deform_field;
 }
 
+/* -----------------------------------------------------------------------
+   Writing image files
+   ----------------------------------------------------------------------- */
 template<class T> 
 void
 save_image (T image, char* fname)
@@ -593,20 +479,6 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 }
 
 template<class T> 
-ShortImageType::Pointer
-cast_short (T image)
-{
-    typedef typename T::ObjectType ImageType;
-    typedef itk::CastImageFilter <
-	ImageType, ShortImageType > CastFilterType;
-
-    typename CastFilterType::Pointer caster = CastFilterType::New();
-    caster->SetInput(image);
-    caster->Update();
-    return caster->GetOutput();
-}
-
-template<class T> 
 void
 save_short (T image, char* fname)
 {
@@ -623,6 +495,31 @@ save_short_dicom (T image, char* dir_name)
 }
 
 template<class T> 
+void
+save_float (T image, char* fname)
+{
+    FloatImageType::Pointer float_img = cast_float(image);
+    save_image (float_img, fname);
+}
+
+/* -----------------------------------------------------------------------
+   Casting image types
+   ----------------------------------------------------------------------- */
+template<class T> 
+ShortImageType::Pointer
+cast_short (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, ShortImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    caster->Update();
+    return caster->GetOutput();
+}
+
+template<class T> 
 FloatImageType::Pointer
 cast_float (T image)
 {
@@ -636,15 +533,6 @@ cast_float (T image)
     return caster->GetOutput();
 }
 
-template<class T> 
-void
-save_float (T image, char* fname)
-{
-    FloatImageType::Pointer float_img = cast_float(image);
-    save_image (float_img, fname);
-}
-
-
 /* Explicit instantiations */
 template void load_itk_rdr (MhaUCharReaderType::Pointer reader, char *fn);
 template void load_dicom_dir_rdr(DicomShortReaderType::Pointer rdr, char *dicom_dir);
@@ -652,6 +540,7 @@ template void load_dicom_dir_rdr(DicomUShortReaderType::Pointer rdr, char *dicom
 template void load_dicom_dir_rdr(DicomFloatReaderType::Pointer rdr, char *dicom_dir);
 template plastimatch1_EXPORT void save_image(UCharImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
+template plastimatch1_EXPORT void save_image(UShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
 template void save_short (FloatImageType::Pointer, char*);
@@ -659,4 +548,5 @@ template void save_short_dicom (FloatImageType::Pointer, char*);
 template void save_float (FloatImageType::Pointer, char*);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
+template void get_image_header (int dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
 template void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
