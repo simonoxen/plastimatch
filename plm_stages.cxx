@@ -125,15 +125,15 @@ set_fixed_image_region_global (Registration_Data* regd)
     }
 }
 
-static RadImage::RadImageType
+static PlmImageType
 choose_image_type (int xform_type, int optim_type, int impl_type)
 {
     switch (impl_type) {
 	case IMPLEMENTATION_GPUIT_CPU:
 	case IMPLEMENTATION_GPUIT_BROOK:
-	    return RadImage::TYPE_GPUIT_FLOAT;
+	    return PLM_IMG_TYPE_GPUIT_FLOAT;
 	default:
-	    return RadImage::TYPE_ITK_FLOAT;
+	    return PLM_IMG_TYPE_ITK_FLOAT;
     }
 }
 
@@ -346,7 +346,7 @@ do_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
 		       Stage_Parms* stage)
 {
     /* Convert image types */
-    RadImage::RadImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
+    PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
 
     printf ("xf_in->m_type = %d, xf_out->m_type = %d\n", xf_in->m_type, xf_out->m_type);
 
@@ -378,7 +378,7 @@ do_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
 void
 load_input_files (Registration_Data* regd, Registration_Parms* regp)
 {
-    RadImage::RadImageType image_type = RadImage::TYPE_ITK_FLOAT;
+    PlmImageType image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
 #if defined (commentout)
     /* Load the appropriate image type for the first stage */

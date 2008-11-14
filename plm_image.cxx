@@ -79,17 +79,17 @@ itk_roi_from_gpuit (
    Image conversion
    ----------------------------------------------------------------------- */
 RadImage*
-rad_image_load (char* fname, RadImage::RadImageType type)
+rad_image_load (char* fname, PlmImageType type)
 {
     RadImage *ri = new RadImage;
     if (!ri) return 0;
 
     switch (type) {
-	case RadImage::TYPE_GPUIT_FLOAT:
+	case PLM_IMG_TYPE_GPUIT_FLOAT:
 	    ri->m_type = type;
 	    ri->m_gpuit = read_mha (fname);
 	    break;
-	case RadImage::TYPE_ITK_FLOAT:
+	case PLM_IMG_TYPE_ITK_FLOAT:
 	    ri->m_type = type;
 	    ri->m_itk_float = load_float (fname);
 	    break;
@@ -104,9 +104,9 @@ void
 RadImage::convert_itk_float ()
 {
     switch (this->m_type) {
-    case RadImage::TYPE_ITK_FLOAT:
+    case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
-    case RadImage::TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
 	{
 	    int i;
 	    Volume* vol = (Volume*) m_gpuit;
@@ -145,7 +145,7 @@ RadImage::convert_itk_float ()
 	    this->m_gpuit = 0;
 
 	    /* Set data type */
-	    this->m_type = RadImage::TYPE_ITK_FLOAT;
+	    this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 	}
 	return;
     default:
@@ -158,7 +158,7 @@ void
 RadImage::convert_gpuit_float ()
 {
     switch (this->m_type) {
-    case RadImage::TYPE_ITK_FLOAT:
+    case PLM_IMG_TYPE_ITK_FLOAT:
 	{
 	    int i, d;
 	    FloatImageType::RegionType rg = this->m_itk_float->GetLargestPossibleRegion ();
@@ -191,10 +191,10 @@ RadImage::convert_gpuit_float ()
 
 	    /* Set data type */
 	    this->m_gpuit = vol;
-	    this->m_type = RadImage::TYPE_GPUIT_FLOAT;
+	    this->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	}
 	return;
-    case RadImage::TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return;
     default:
 	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");

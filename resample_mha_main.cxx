@@ -118,19 +118,19 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	switch (ch) {
 	case 1:
 	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		resp->input_type = TYPE_USHORT;
+		resp->input_type = PLM_IMG_TYPE_ITK_USHORT;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		resp->input_type = TYPE_SHORT;
+		resp->input_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
 	    else if (!strcmp(optarg,"float")) {
-		resp->input_type = TYPE_FLOAT;
+		resp->input_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
 	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		resp->input_type = TYPE_UCHAR;
+		resp->input_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 	    else if (!strcmp(optarg,"vf")) {
-		resp->input_type = TYPE_FLOAT_FIELD;
+		resp->input_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 	    }
 	    else {
 		print_usage();
@@ -138,19 +138,19 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	    break;
 	case 2:
 	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		resp->output_type = TYPE_USHORT;
+		resp->output_type = PLM_IMG_TYPE_ITK_USHORT;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		resp->output_type = TYPE_SHORT;
+		resp->output_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
 	    else if (!strcmp(optarg,"float")) {
-		resp->output_type = TYPE_FLOAT;
+		resp->output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
 	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		resp->output_type = TYPE_UCHAR;
+		resp->output_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 	    else if (!strcmp(optarg,"vf")) {
-		resp->output_type = TYPE_FLOAT_FIELD;
+		resp->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 	    }
 	    else {
 		print_usage();
@@ -210,7 +210,7 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	printf ("Error: must specify --input and --output\n");
 	print_usage();
     }
-    if (resp->input_type == TYPE_UNSPECIFIED || resp->output_type == TYPE_UNSPECIFIED) {
+    if (resp->input_type == PLM_IMG_TYPE_UNDEFINED || resp->output_type == PLM_IMG_TYPE_UNDEFINED) {
 	printf ("Error: must specify --input_type and --output_type\n");
 	print_usage();
     }
@@ -224,11 +224,11 @@ do_resampling (Resample_Parms* resp)
     typedef itk::ImageFileWriter < UShortImageType > UShortWriterType;
     typedef itk::ImageFileWriter < FloatImageType > FloatWriterType;
 
-    if (resp->input_type == TYPE_USHORT) {
+    if (resp->input_type == PLM_IMG_TYPE_ITK_USHORT) {
 	/* Do nothing for now */
 	printf ("Unsigned short not yet supported.\n");
     }
-    else if (resp->input_type == TYPE_SHORT) {
+    else if (resp->input_type == PLM_IMG_TYPE_ITK_SHORT) {
 
 	ShortImageType::Pointer input_image = load_short (resp->mha_in_fn);
 
@@ -239,7 +239,7 @@ do_resampling (Resample_Parms* resp)
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
 	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
 	}
-	if (resp->output_type == TYPE_SHORT) {
+	if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 	    //just output
 	    fix_invalid_pixels (input_image);
 
@@ -249,7 +249,7 @@ do_resampling (Resample_Parms* resp)
 	    writer->Update();
 
 	}
-	else if (resp->output_type == TYPE_USHORT) {
+	else if (resp->output_type == PLM_IMG_TYPE_ITK_USHORT) {
 	    if (resp->adjust == 0) {
 		fix_invalid_pixels_with_shift (input_image);
 	    }
@@ -271,7 +271,7 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == TYPE_FLOAT) {
+    else if (resp->input_type == PLM_IMG_TYPE_ITK_FLOAT) {
 
 	FloatImageType::Pointer input_image = load_float (resp->mha_in_fn);
 
@@ -282,12 +282,12 @@ do_resampling (Resample_Parms* resp)
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
 	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
 	}
-	if (resp->output_type == TYPE_FLOAT) {
+	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
 	    FloatWriterType::Pointer writer = FloatWriterType::New();
 	    writer->SetFileName (resp->mha_out_fn);
 	    writer->SetInput (input_image);
 	    writer->Update();
-	} else if (resp->output_type == TYPE_SHORT) {
+	} else if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 
 	    typedef itk::CastImageFilter <FloatImageType,
 		    ShortImageType > CastFilterType;
@@ -305,8 +305,8 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == TYPE_UCHAR) {
-	if (resp->output_type == TYPE_UCHAR) {
+    else if (resp->input_type == PLM_IMG_TYPE_ITK_UCHAR) {
+	if (resp->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
 	    UCharImageType::Pointer input_image = load_uchar (resp->mha_in_fn);
 
 	    if (resp->have_subsample) {
@@ -326,8 +326,8 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == TYPE_FLOAT_FIELD) {
-	if (resp->output_type == TYPE_FLOAT_FIELD) {
+    else if (resp->input_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
+	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
 	    DeformationFieldType::Pointer input_field = load_float_field (resp->mha_in_fn);
 	    if (resp->have_subsample) {
 		/* Do nothing for now */

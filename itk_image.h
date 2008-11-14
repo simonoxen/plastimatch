@@ -18,12 +18,25 @@
 #endif
 
 /* We only deal with these kinds of images. */
-#define TYPE_UNSPECIFIED      0
-#define TYPE_USHORT           1
-#define TYPE_SHORT            2
-#define TYPE_FLOAT            3
-#define TYPE_UCHAR            4
-#define TYPE_FLOAT_FIELD      5
+enum PlmImageType {
+    PLM_IMG_TYPE_UNDEFINED   = 0, 
+    PLM_IMG_TYPE_ITK_UCHAR   = 1, 
+    PLM_IMG_TYPE_ITK_SHORT   = 2, 
+    PLM_IMG_TYPE_ITK_USHORT  = 3, 
+    PLM_IMG_TYPE_ITK_FLOAT   = 4, 
+    PLM_IMG_TYPE_ITK_FLOAT_FIELD = 5, 
+    PLM_IMG_TYPE_GPUIT_FLOAT = 6, 
+    PLM_IMG_TYPE_GPUIT_FLOAT_FIELD = 7, 
+};
+
+#if defined (commentout)
+    #define TYPE_UNSPECIFIED      0
+    #define TYPE_UCHAR            1
+    #define TYPE_SHORT            2
+    #define TYPE_USHORT           3
+    #define TYPE_FLOAT            4
+    #define TYPE_FLOAT_FIELD      5
+#endif
 
 /* We only deal with 3D images. */
 const unsigned int Dimension = 3;
@@ -61,6 +74,7 @@ plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
 plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname);
 plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
+plastimatch1_EXPORT 
 
 plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
 			itk::ImageIOBase::IOPixelType &pixelType,

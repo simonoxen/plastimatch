@@ -29,8 +29,8 @@ public:
     Resample_Parms () {
 	*mha_in_fn = 0;
 	*mha_out_fn = 0;
-	input_type = TYPE_UNSPECIFIED;
-	output_type = TYPE_UNSPECIFIED;
+	input_type = PLM_IMG_TYPE_UNDEFINED;
+	output_type = PLM_IMG_TYPE_UNDEFINED;
 	for (int i = 0; i < 3; i++) {
 	    origin[i] = 0.0;
 	    spacing[i] = 0.0;

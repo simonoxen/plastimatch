@@ -41,19 +41,8 @@ class RadImage;
 class RadImage {
 
 public:
-    enum RadImageType {
-	TYPE_UNDEFINED   = 0, 
-	TYPE_ITK_FLOAT   = 1, 
-	TYPE_ITK_SHORT   = 2, 
-	TYPE_ITK_UCHAR   = 3, 
-	TYPE_ITK_USHORT  = 4, 
-	TYPE_GPUIT_FLOAT = 5, 
-    };
 
-
-public:
-
-    RadImageType m_type;
+    PlmImageType m_type;
 
     /* The actual image is one of the following. */
     FloatImageType::Pointer m_itk_float;
@@ -82,11 +71,11 @@ public:
     }
 
     void clear () {
-	m_type = RadImage::TYPE_UNDEFINED;
+	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
     }
     void free () {
-	m_type = RadImage::TYPE_UNDEFINED;
+	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
     }
 
@@ -103,7 +92,7 @@ public:
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-RadImage* rad_image_load (char* fname, RadImage::RadImageType type);
+RadImage* rad_image_load (char* fname, PlmImageType type);
 void itk_roi_from_gpuit (ImageRegionType* roi, int roi_offset[3], int roi_dim[3]);
 
 #endif
