@@ -365,13 +365,28 @@ load_ushort (char* fname)
     }
 }
 
+void
+load_float (FloatImageType::Pointer* img,  PlmImageType* original_type, char* fname)
+{
+    /* If it is directory, then must be dicom */
+    if (is_directory(fname)) {
+	*img = load_dicom_float (fname);
+	//return load_dicom_float (fname);
+    } else {
+	*img = load_any (fname, static_cast<float>(0));
+	//return load_any (fname, static_cast<float>(0));
+    }
+}
+
 FloatImageType::Pointer
 load_float (char* fname)
 {
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
+	//img = load_dicom_float (fname);
 	return load_dicom_float (fname);
     } else {
+	//img = load_any (fname, static_cast<float>(0));
 	return load_any (fname, static_cast<float>(0));
     }
 }

@@ -87,11 +87,13 @@ rad_image_load (char* fname, PlmImageType type)
     switch (type) {
 	case PLM_IMG_TYPE_GPUIT_FLOAT:
 	    ri->m_type = type;
+	    ri->m_original_type = type;
 	    ri->m_gpuit = read_mha (fname);
 	    break;
 	case PLM_IMG_TYPE_ITK_FLOAT:
 	    ri->m_type = type;
-	    ri->m_itk_float = load_float (fname);
+	    //ri->m_itk_float = load_float (fname);
+	    load_float (&ri->m_itk_float, &ri->m_original_type, fname);
 	    break;
 	default:
 	    print_and_exit ("Unhandled image load in rad_image_load\n");

@@ -42,6 +42,7 @@ class RadImage {
 
 public:
 
+    PlmImageType m_original_type;
     PlmImageType m_type;
 
     /* The actual image is one of the following. */
@@ -72,10 +73,13 @@ public:
 
     void clear () {
 	m_type = PLM_IMG_TYPE_UNDEFINED;
+	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
     }
     void free () {
+	/* GCS FIX: This doesn't actually free anything. */
 	m_type = PLM_IMG_TYPE_UNDEFINED;
+	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
     }
 
