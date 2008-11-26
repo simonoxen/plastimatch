@@ -31,10 +31,7 @@ int
 main (int argc, char *argv[])
 {
     if (argc!=4) {
-	std::cerr << "Wrong Parameters " << std::endl;
-	std::cerr << "Usage: " << argv[0];
-	std::cerr << " vector_field1 vector_field2";
-	std::cerr << " outputVectorFieldFile" << std::endl;
+	fprintf (stderr, "Usage: vf_compose vf_1 vf_2 vf_out\n");
 	return 1;
     }
 
