@@ -203,8 +203,6 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
-	plmInverseDeformationFieldImageFilter.h
-	plmInverseDeformationFieldImageFilter.hxx
 	)
 
 
