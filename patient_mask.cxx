@@ -25,17 +25,19 @@ class Patient_Mask_Parms {
 public:
     char mha_in_fn[_MAX_PATH];
     char mha_out_fn[_MAX_PATH];
+    int pt_bot;
 public:
     Patient_Mask_Parms () {
 	*mha_in_fn = 0;
 	*mha_out_fn = 0;
+	pt_bot = -1;
     }
 };
 
 void
 print_usage (void)
 {
-    printf ("Usage: patient_mask input_mha output_mha\n");
+    printf ("Usage: patient_mask input_mha output_mha [pt_bot]\n");
     exit (1);
 }
 
@@ -73,7 +75,7 @@ find_patient_bottom (FloatImageType::Pointer i1)
     FloatImageType::Pointer i3 = gas_filter->GetOutput ();
 
     /* i3max = max value along each row of i3 */
-    /* v1 = top of patient, v2 = bottom of couch */
+    /* pt_top = top of patient, couch_bot = bottom of couch */
 
     float* i3max = (float*) malloc (sz[1]*sizeof(float));
     for (int i = 0; i < sz[1]; i++) {
@@ -87,28 +89,28 @@ find_patient_bottom (FloatImageType::Pointer i1)
 	if (i3max[idx[1]] > pix_value) continue;
 	i3max[idx[1]] = pix_value;
     }
-    int v1 = -1, v2 = -1;
+    int pt_top = -1, couch_bot = -1;
     for (int i = 0; i < sz[1]; i++) {
 	if (i3max[i] > T1) {
-	    if (v1 == -1) {
-		v1 = i;
+	    if (pt_top == -1) {
+		pt_top = i;
 	    }
-	    v2 = i;
+	    couch_bot = i;
 	}
     }
 
-    /* u1 = bottom of patient */
-    int u1 = v2;
-    for (int i = v1+1; i < v2; i++) {
+    /* pt_bot = bottom of patient */
+    int pt_bot = couch_bot;
+    for (int i = pt_top+1; i < couch_bot; i++) {
 	if (i3max[i] < T2) {
-	    u1 = i;
+	    pt_bot = i;
 	    break;
 	}
     }
     free (i3max);
 
-    printf ("v1 = %d, u1 = %d, v2 = %d\n", v1, u1, v2);
-    return u1;
+    printf ("pt_top = %d, pt_bot = %d, couch_bot = %d\n", pt_top, pt_bot, couch_bot);
+    return pt_bot;
 }
 
 UCharImageType::Pointer
@@ -262,7 +264,10 @@ do_patient_mask (Patient_Mask_Parms* opts)
     UCharImageType::Pointer i2 = UCharImageType::New ();
 
     /* Find patient */
-    int patient_bottom = find_patient_bottom (i1);
+    int patient_bottom = opts->pt_bot;
+    if (patient_bottom == -1) {
+	patient_bottom = find_patient_bottom (i1);
+    }
 
     /* Threshold image */
     i2 = threshold_patient (i1);
@@ -296,11 +301,14 @@ do_patient_mask (Patient_Mask_Parms* opts)
 void
 parse_args (Patient_Mask_Parms* opts, int argc, char* argv[])
 {
-    if (argc != 3) {
+    if (argc != 3 && argc != 4) {
 	print_usage();
     }
     strncpy (opts->mha_in_fn, argv[1], _MAX_PATH);
     strncpy (opts->mha_out_fn, argv[2], _MAX_PATH);
+    if (argc == 4) {
+	sscanf (argv[3], "%d", &opts->pt_bot);
+    }
 }
 
 int

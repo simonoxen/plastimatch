@@ -203,6 +203,8 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
+	plmInverseDeformationFieldImageFilter.h
+	plmInverseDeformationFieldImageFilter.hxx
 	)
 
 
@@ -290,6 +292,9 @@ SET(TPS_INTERP_SRC
 SET(VF_COMPARE_SRC
 	vf_compare.c
 	)
+SET(VF_INVERT_SRC
+	vf_invert.cxx
+	)
 SET(VF_TO_VVF_SRC
 	vf_to_vvf.cxx
 	)
@@ -316,6 +321,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
     SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
@@ -450,6 +456,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
   ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
   ADD_EXECUTABLE(union_mask union_mask.cxx)
+  ADD_EXECUTABLE(vf_invert ${VF_INVERT_SRC})
   ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
   ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
   ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
@@ -513,6 +520,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(shuffle_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
   TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(vf_invert ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
@@ -573,6 +581,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS vf_stats DESTINATION bin)
   INSTALL(TARGETS vf3d_to_mha DESTINATION bin)
   INSTALL(TARGETS vox_to_mha DESTINATION bin)
+  INSTALL(TARGETS vf_invert DESTINATION bin)
   INSTALL(TARGETS xf_to_xf DESTINATION bin)
   INSTALL(TARGETS warp_dij DESTINATION bin)
   INSTALL(TARGETS warp_mha DESTINATION bin)
