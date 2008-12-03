@@ -12,6 +12,7 @@ SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
+SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
 SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -109,6 +110,12 @@ SET(GPUIT_LIBRARIES
 	f2c_helper
 	)
 ENDIF(F2C_LIBRARY)
+IF(CUDA_FOUND)
+SET(GPUIT_LIBRARIES
+	${GPUIT_LIBRARIES}
+	${CUDA_LIBRARIES}
+	)
+ENDIF(CUDA_FOUND)
 SET(GPUIT_LIBRARIES ${GPUIT_LIBRARIES} ${MY_MATH_LIB})
 
 ######################################################
@@ -152,6 +159,16 @@ SET(GPUIT_LIBRARY_SRC
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
+IF(CUDA_FOUND)
+SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	bspline_cuda.cpp
+	bspline_cuda_wrap.cpp
+	bspline_cuda.cu
+	bspline_cuda_kernels.cu
+	bspline_cuda.h
+	)
+ENDIF(CUDA_FOUND)
 IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
@@ -616,6 +633,21 @@ IF(CUDA_FOUND)
 #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
 ENDIF(CUDA_FOUND)
 ENDIF(BUILD_CUDA_TEST)
+
+# CUDA B-Spline
+IF(BUILD_BSPLINE_CUDA)
+IF(CUDA_FOUND)
+  NVCC_FILE(bspline_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
+  ADD_EXECUTABLE(bspline_cuda bspline_cuda_wrap.cpp)
+  TARGET_LINK_LIBRARIES(bspline_cuda ${CUDA_LIBRARIES})
+#  MESSAGE(STATUS "CUDA_LDFLAGS = ${CUDA_LDFLAGS}")
+#  IF(NOT ${CUDA_LDFLAGS} STREQUAL "")
+#    SET_TARGET_PROPERTIES(bspline_cuda PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})
+#  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
+ENDIF(CUDA_FOUND)
+ENDIF(BUILD_BSPLINE_CUDA)
 
 ######################################################
 ##  SLICER FRONT-END 	 

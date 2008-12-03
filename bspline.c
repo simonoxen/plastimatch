@@ -26,8 +26,19 @@
 #include "bspline.h"
 
 extern void 
-bspline_score_on_gpu_reference(BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-			       Volume *moving_grad);
+bspline_score_on_gpu_reference(
+	BSPLINE_Parms *parms, 
+	Volume *fixed, 
+	Volume *moving,		       
+	Volume *moving_grad);
+
+extern void 
+bspline_cuda_score_mse(
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad);
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
@@ -1821,18 +1832,25 @@ bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *
 #if HAVE_BROOK
 #if BUILD_BSPLINE_BROOK
     if (parms->implementation == BIMPL_BROOK) {
-	printf("Using GPU. \n");
-	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
+		printf("Using Brook GPU. \n");
+		bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;
     }
 #endif
 #endif
-    printf("Using CPU. \n");
+
+	if (parms->implementation == BIMPL_CUDA) {
+		printf("Using CUDA.\n");
+		bspline_cuda_score_mse(parms, bxf, fixed, moving, moving_grad);
+		return;
+	}
+
     if (parms->metric == BMET_MSE) {
-	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+		printf("Using CPU. \n");
+		bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
     } else {
-	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
-//	bspline_score_c_mse (parms, fixed, moving, moving_grad);
+		bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
+	//	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
 //    bspline_score_b (parms, fixed, moving, moving_grad);

@@ -62,10 +62,12 @@ float get_sum(float *partial_sum, int size)
 }
 
 void 
-bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_grad, BSPLINE_Parms *parms){
-    BSPLINE_Data* bspd = &parms->bspd;
-
-    /* Allocate memory for GPU-specific data structure within the parms data structure */
+bspline_initialize_streams_on_gpu(Volume *fixed, 
+								  Volume *moving, 
+								  Volume *moving_grad, 
+								  BSPLINE_Xform* bxf,
+								  BSPLINE_Parms *parms){
+    /* Allocate memory for GPU-specific data structure within the bxf data structure */
     parms->data_on_gpu = (BSPLINE_DATA_ON_GPU *)malloc(sizeof(BSPLINE_DATA_ON_GPU));
     BSPLINE_DATA_ON_GPU *data_on_gpu = (BSPLINE_DATA_ON_GPU *)&parms->data_on_gpu;
 
@@ -133,7 +135,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
 		free((void *)temp_moving_grad[i]);
 
     /* Allocate GPU stream to hold the c_lut data structure */
-    int num_regions = bspd->rdims[0]*bspd->rdims[1]*bspd->rdims[2];
+    int num_regions = bxf->rdims[0]*bxf->rdims[1]*bxf->rdims[2];
     int c_lut_texture_size = (int)ceil(sqrt((double)num_regions*64));
     printf("Allocating 2D texture of size %d x %d to store c_lut information. \n", c_lut_texture_size, c_lut_texture_size);
     data_on_gpu->c_lut_texture_size = c_lut_texture_size;
@@ -146,7 +148,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
     memset(temp_memory, 0, sizeof(float)*c_lut_texture_size*c_lut_texture_size); 
     /* Note: c_lut entries are integers whereas we need floats for the GPU */
     for(int i = 0; i < num_regions*64; i++) 
-		temp_memory[i] = (float)bspd->c_lut[i];
+		temp_memory[i] = (float)bxf->c_lut[i];
 
     printf("Transferrring the c_lut texture to the GPU. \n");
     data_on_gpu->c_lut_stream = new ::brook::stream(::brook::getStreamType((float *)0), c_lut_texture_size, c_lut_texture_size, -1);
@@ -154,7 +156,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
     free((void *)temp_memory);
 
     /* Allocate GPU stream to hold the q_lut data structure */
-    int num_voxels_per_region = parms->vox_per_rgn[0]*parms->vox_per_rgn[1]*parms->vox_per_rgn[2]; 
+    int num_voxels_per_region = bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]; 
     int q_lut_texture_size = (int)ceil(sqrt((double)num_voxels_per_region*64));
     printf("Allocating 2D texture of size %d x %d to store q_lut information. \n", q_lut_texture_size, q_lut_texture_size);
     data_on_gpu->q_lut_texture_size = q_lut_texture_size;
@@ -165,7 +167,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
 		exit(-1);
     }
     memset(temp_memory, 0, sizeof(float)*q_lut_texture_size*q_lut_texture_size); 
-    memcpy(temp_memory, bspd->q_lut, sizeof(float)*num_voxels_per_region*64);
+    memcpy(temp_memory, bxf->q_lut, sizeof(float)*num_voxels_per_region*64);
 
     printf("Transferrring the q_lut to the GPU. \n");
     data_on_gpu->q_lut_stream = new ::brook::stream(::brook::getStreamType((float *)0), q_lut_texture_size, q_lut_texture_size, -1);
@@ -173,7 +175,7 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
     free((void *)temp_memory);
 
 	/* Allocate memory for the coefficient values */
-    int coeff_texture_size = (int)ceil(sqrt((double)bspd->num_knots*3));
+    int coeff_texture_size = (int)ceil(sqrt((double)bxf->num_knots*3));
     printf("Allocating 2D texture of size %d x %d to store coefficient information. \n", coeff_texture_size, coeff_texture_size);
 	data_on_gpu->coeff_texture_size = coeff_texture_size;
 	data_on_gpu->coeff_stream = new ::brook::stream(::brook::getStreamType((float *)0), coeff_texture_size, coeff_texture_size, -1);
@@ -219,66 +221,13 @@ bspline_initialize_streams_on_gpu(Volume *fixed, Volume *moving, Volume *moving_
 	memset(data_on_gpu->valid_voxels, 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
 }
 
-void 
-bspline_initialize_structure_to_store_data_from_gpu(Volume* fixed, BSPLINE_Parms *parms)
-{
-    /* Allocate memory for GPU-specific data structure within the parms data structure */
-    parms->data_from_gpu = (BSPLINE_DATA_FROM_GPU *)malloc(sizeof(BSPLINE_DATA_FROM_GPU));
-    BSPLINE_DATA_FROM_GPU *data_from_gpu = (BSPLINE_DATA_FROM_GPU *)&parms->data_from_gpu;
-
-	int volume_texture_size = (int)ceil(sqrt((double)fixed->npix/4)); // Size of the texture to allocate
-
-	/* Allocate memory on the CPU to store the diff values read back from the GPU */
-	data_from_gpu->diff = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-	if(!data_from_gpu->diff){
-	    printf("Couldn't allocate memory on CPU for diff result. Exiting. \n");
-	    exit(-1);
-	}
-	memset(data_from_gpu->diff, 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
-
-	/* Allocate memory on CPU to store the dxyz stream */
-	for(int i = 0; i < 3; i++){
-		data_from_gpu->dxyz[i] = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-		if(!data_from_gpu->dxyz[i]){
-			printf("Couldn't allocate memory on CPU for dxyz result. Exiting. \n");
-			exit(-1);
-		}
-		memset(data_from_gpu->dxyz[i], 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
-	}
-
-	/* Allocate memory on the CPU to store the valid voxel values read back from the GPU */
-	data_from_gpu->valid_voxels = (float*)malloc(sizeof(float)*volume_texture_size*volume_texture_size*4);
-	if(!data_from_gpu->valid_voxels){
-	    printf("Couldn't allocate memory on CPU for valid voxel result. Exiting. \n");
-	    exit(-1);
-	}
-	memset(data_from_gpu->valid_voxels, 0, sizeof(float)*volume_texture_size*volume_texture_size*4);
-}
-
-void test_routine_1(void)
-{
-	float result = 0;
-
-	::brook::stream test_stream(::brook::getStreamType((float *)0), 10, 10, -1);
-	// ::brook::stream reduced_stream(::brook::getStreamType((float *)0), 10, 1, -1);
-
-	init_stream_to_one(test_stream); // Initialize stream elements to one 
-	// reduce_stream_in_y_direction(test_stream, (float)10, (float)100, reduced_stream);
-	compute_sum_kernel(test_stream, result);
-
-	printf("Sum of the stream elements = %f \n", result);
-}
-
-
 /* Compute score on the GPU */
 void 
-bspline_score_on_gpu_reference (BSPLINE_Parms *parms, 
+bspline_score_on_gpu_reference (BSPLINE_Parms *parms, BSPLINE_Xform *bxf, 
 				Volume *fixed, Volume *moving, Volume *moving_grad)
     {
-    BSPLINE_Data* bspd = &parms->bspd;
     BSPLINE_Score* ssd = &parms->ssd;
     BSPLINE_DATA_ON_GPU* data_on_gpu = (BSPLINE_DATA_ON_GPU *)&parms->data_on_gpu; 
-	BSPLINE_DATA_FROM_GPU* data_from_gpu = (BSPLINE_DATA_FROM_GPU *)&parms->data_from_gpu;
 
     int i;
     int ri, rj, rk;
@@ -303,19 +252,19 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     volume_dim.z = (float)fixed->dim[2];
 
     float3 rdims;
-    rdims.x = (float)bspd->rdims[0]; /* Read in the dimensions of the region */
-    rdims.y = (float)bspd->rdims[1];
-    rdims.z = (float)bspd->rdims[2];
+    rdims.x = (float)bxf->rdims[0]; /* Read in the dimensions of the region */
+    rdims.y = (float)bxf->rdims[1];
+    rdims.z = (float)bxf->rdims[2];
 
     float3 vox_per_rgn;
-    vox_per_rgn.x = (float)parms->vox_per_rgn[0]; /* Read in spacing between the control knots */
-    vox_per_rgn.y = (float)parms->vox_per_rgn[1];
-    vox_per_rgn.z = (float)parms->vox_per_rgn[2];
+    vox_per_rgn.x = (float)bxf->vox_per_rgn[0]; /* Read in spacing between the control knots */
+    vox_per_rgn.y = (float)bxf->vox_per_rgn[1];
+    vox_per_rgn.z = (float)bxf->vox_per_rgn[2];
 
 	float3 img_origin;
-	img_origin.x = (float)parms->img_origin[0]; /* Read in the coordinates of the image origin */
-	img_origin.y = (float)parms->img_origin[1];
-	img_origin.z = (float)parms->img_origin[2];
+	img_origin.x = (float)bxf->img_origin[0]; /* Read in the coordinates of the image origin */
+	img_origin.y = (float)bxf->img_origin[1];
+	img_origin.z = (float)bxf->img_origin[2];
 
 	float3 img_offset;
 	img_offset.x = (float)moving->offset[0]; /* Read in image offset */
@@ -341,7 +290,7 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
     clock_start = (double)clock_count.QuadPart;
 
 	/* Transfer the new coefficient values provided by the optimizer to the GPU */
-	streamRead(*(data_on_gpu->coeff_stream), bspd->coeff);
+	streamRead(*(data_on_gpu->coeff_stream), bxf->coeff);
 
     /* Invoke kernel on the GPU to compute dxyz, that determines the influence of the control knots on voxels in the X, Y, and Z directions */
     compute_dxyz_kernel(*(data_on_gpu->c_lut_stream), 
@@ -468,24 +417,24 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 	streamWrite(*(data_on_gpu->dx_stream), data_on_gpu->dxyz[0]);
     streamWrite(*(data_on_gpu->dy_stream), data_on_gpu->dxyz[1]);
     streamWrite(*(data_on_gpu->dz_stream), data_on_gpu->dxyz[2]);
-	
+
 	int vox = -1; 
     ssd->score = 0;
-    memset (ssd->grad, 0, bspd->num_coeff * sizeof(float));
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
-    for(rk = 0, fk = parms->roi_offset[2]; rk < parms->roi_dim[2]; rk++, fk++) {
-		p[2] = rk / parms->vox_per_rgn[2];
-		q[2] = rk % parms->vox_per_rgn[2];
-		for(rj = 0, fj = parms->roi_offset[1]; rj < parms->roi_dim[1]; rj++, fj++) {
-			p[1] = rj / parms->vox_per_rgn[1];
-			q[1] = rj % parms->vox_per_rgn[1];
-			for(ri = 0, fi = parms->roi_offset[0]; ri < parms->roi_dim[0]; ri++, fi++) {
+    for(rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+		p[2] = rk / bxf->vox_per_rgn[2];
+		q[2] = rk % bxf->vox_per_rgn[2];
+		for(rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+			p[1] = rj / bxf->vox_per_rgn[1];
+			q[1] = rj % bxf->vox_per_rgn[1];
+			for(ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
 				vox++;
-				p[0] = ri / parms->vox_per_rgn[0];
-				q[0] = ri % parms->vox_per_rgn[0];
+				p[0] = ri / bxf->vox_per_rgn[0];
+				q[0] = ri % bxf->vox_per_rgn[0];
 
-				pidx = ((p[2] * bspd->rdims[1] + p[1]) * bspd->rdims[0]) + p[0];
-				qidx = ((q[2] * parms->vox_per_rgn[1] + q[1]) * parms->vox_per_rgn[0]) + q[0];
+				pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+				qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
 
 				if(data_on_gpu->valid_voxels[vox] == 0.0) continue;
 				else if(data_on_gpu->valid_voxels[vox] == 1){
@@ -494,24 +443,23 @@ bspline_score_on_gpu_reference (BSPLINE_Parms *parms,
 					dc_dv[0] = data_on_gpu->dxyz[0][vox];
 					dc_dv[1] = data_on_gpu->dxyz[1][vox];
 					dc_dv[2] = data_on_gpu->dxyz[2][vox];
-					
-					bspline_update_grad_b (parms, pidx, qidx, dc_dv);
+					bspline_update_grad_b (parms, bxf, pidx, qidx, dc_dv);
 					num_vox ++;
-				}
-			}
-		}
-    }
-
+				}// if
+			} // for ri, x axis
+		} // for rj, y axis
+    } // for rk, z axis
+	printf("Got here \n");
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
 	// ssd->grad[i] = 2 * ssd->grad[i] / (num_valid_voxels.x + num_valid_voxels.y + num_valid_voxels.z + num_valid_voxels.w);
     }
 
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
-    for (i = 0; i < bspd->num_coeff; i++) {
+    for (i = 0; i < bxf->num_coeff; i++) {
 		ssd_grad_mean += ssd->grad[i];
 		ssd_grad_norm += fabs (ssd->grad[i]);
     }

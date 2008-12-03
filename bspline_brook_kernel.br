@@ -36,7 +36,7 @@ kernel void compute_dxyz_kernel(float c_lut[][],
 	float x_index_of_coeff, y_index_of_coeff;
 	float my_out;
 	
-	if (my_index > volume_dim.x*volume_dim.y*volume_dim.x) // Voxel lies outside the volume
+	if (my_index > volume_dim.x * volume_dim.y * volume_dim.z) // Voxel lies outside the volume
 	{ 
 		result = 0.0;
 	}

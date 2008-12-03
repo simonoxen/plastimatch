@@ -32,9 +32,9 @@ main (int argc, char* argv[])
     Volume *moving_warped;
     int roi_offset[3];
 
-    parse_args (&options, argc, argv);
+	parse_args (&options, argc, argv);
 
-    fixed = read_mha (options.fixed_fn);
+	fixed = read_mha (options.fixed_fn);
     if (!fixed) exit (-1);
     moving = read_mha (options.moving_fn);
     if (!moving) exit (-1);
@@ -56,6 +56,7 @@ main (int argc, char* argv[])
 				roi_offset,
 				fixed->dim,
 				options.vox_per_rgn);
+
 
     /* Run the optimization */
     bspline_optimize (&bxf, parms, fixed, moving, moving_grad);

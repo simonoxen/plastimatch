@@ -54,14 +54,17 @@ extern "C" {
 #endif
 void 
 bspline_score_on_gpu_reference(BSPLINE_Parms *parms, 
-			       Volume *fixed, Volume *moving, 
-			       Volume *moving_grad);
+							   BSPLINE_Xform *bxf,
+								Volume *fixed, 
+								Volume *moving, 
+								Volume *moving_grad);
 
 
 void 
 bspline_initialize_streams_on_gpu(Volume* fixed, 
 								  Volume* moving, 
 								  Volume* moving_grad, 
+								  BSPLINE_Xform* bxf,
 								  BSPLINE_Parms *parms);
 
 void 
