@@ -665,7 +665,7 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 	    if (j_hist[v] > hist_thresh) {
 		score -= j_hist[v] * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
 	    }
-	}	
+	}
     }
 
     score = score / fnv;
@@ -1889,7 +1889,6 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 
     for (it = 0; it < parms->max_its; it++) {
 	char fn[128];
-	float gamma;
 
 	printf ("Beginning iteration %d, gamma = %g\n", it, gamma);
 

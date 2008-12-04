@@ -11,7 +11,14 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "xform.h"
+#include "volume.h"
+#include "readmha.h"
 
+#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+
+#define MAX_ITS 20
+
+#if defined (commentout)
 void
 vf_invert_main (Vf_Invert_Parms* parms)
 {
@@ -39,7 +46,114 @@ vf_invert_main (Vf_Invert_Parms* parms)
     DeformationFieldType::Pointer vf_out = filter->GetOutput();
     save_image (vf_out, parms->vf_out_fn);
 }
+#endif
 
+void
+vf_invert_main (Vf_Invert_Parms* parms)
+{
+    int i, j, k, v;
+    int its;
+    float x, y, z;
+    PlmImageHeader pih;
+    Volume *mask, *vf_in, *vf_inv, *vf_smooth, *vf_out;
+    float *img_in, *img_inv, *img_smooth, *img_out;
+    unsigned char *img_mask;
+    float ker[3] = { 0.3, 0.4, 0.3 };
+
+    if (parms->fixed_img_fn[0]) {
+	/* if given, use the parameters from user-supplied fixed image */
+	FloatImageType::Pointer fixed = load_float (parms->fixed_img_fn);
+	pih.set_from_itk_image (fixed);
+
+	pih.cvt_to_gpuit (parms->origin, parms->spacing, parms->dim);
+	pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim);
+    }
+
+    /* Create mask volume */
+    mask = volume_create (parms->dim, parms->origin, parms->spacing, PT_UCHAR, 0);
+
+    /* Create tmp volume */
+    vf_inv = volume_create (parms->dim, parms->origin, parms->spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+
+    /* Load input vf */
+    vf_in = read_mha (parms->vf_in_fn);
+    vf_convert_to_interleaved (vf_in);
+
+    /* Populate mask & tmp volume */
+    img_mask = (unsigned char*) mask->img;
+    img_in = (float*) vf_in->img;
+    img_inv = (float*) vf_inv->img;
+    for (z = vf_in->offset[2], k = 0, v = 0; k < vf_in->dim[2]; k++, z+=vf_in->pix_spacing[2]) {
+	for (y = vf_in->offset[1], j = 0; j < vf_in->dim[1]; j++, y+=vf_in->pix_spacing[1]) {
+	    for (x = vf_in->offset[0], i = 0; i < vf_in->dim[0]; v++, i++, x+=vf_in->pix_spacing[0]) {
+		int mijk[3], midx;
+		float mxyz[3];
+		mxyz[0] = x + img_in[3*v+0];
+		mijk[0] = round_int ((mxyz[0] - vf_inv->offset[0]) / vf_inv->pix_spacing[0]);
+		mxyz[1] = y + img_in[3*v+1];
+		mijk[1] = (mxyz[1] - vf_inv->offset[1]) / vf_inv->pix_spacing[1];
+		mxyz[2] = z + img_in[3*v+2];
+		mijk[2] = (mxyz[2] - vf_inv->offset[2]) / vf_inv->pix_spacing[2];
+
+		if (mijk[0] < 0 || mijk[0] >= vf_inv->dim[0]) continue;
+		if (mijk[1] < 0 || mijk[1] >= vf_inv->dim[1]) continue;
+		if (mijk[2] < 0 || mijk[2] >= vf_inv->dim[2]) continue;
+
+		midx = (mijk[2] * vf_inv->dim[1] + mijk[1]) * vf_inv->dim[0] + mijk[0];
+		img_inv[3*midx+0] = -img_in[3*v+0];
+		img_inv[3*midx+1] = -img_in[3*v+1];
+		img_inv[3*midx+2] = -img_in[3*v+2];
+		img_mask[midx] ++;
+	    }
+	}
+    }
+
+    /* We're done with input volume now. */
+    volume_free (vf_in);
+
+    /* Create tmp & output volumes */
+    vf_out = volume_create (parms->dim, parms->origin, parms->spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    img_out = (float*) vf_out->img;
+    vf_smooth = volume_create (parms->dim, parms->origin, parms->spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    img_smooth = (float*) vf_smooth->img;
+
+    /* Iterate, pasting and smoothing */
+    printf ("Paste and smooth loop\n");
+    for (its = 0; its < MAX_ITS; its++) {
+	printf ("Iteration %d/%d\n", its, MAX_ITS);
+	/* Paste */
+	for (v = 0, k = 0; k < vf_out->dim[2]; k++) {
+	    for (j = 0; j < vf_out->dim[1]; j++) {
+		for (i = 0; i < vf_out->dim[0]; i++, v++) {
+		    if (img_mask[v]) {
+			img_smooth[3*v+0] = img_inv[3*v+0];
+			img_smooth[3*v+1] = img_inv[3*v+1];
+			img_smooth[3*v+2] = img_inv[3*v+2];
+		    } else {
+			img_smooth[3*v+0] = img_out[3*v+0];
+			img_smooth[3*v+1] = img_out[3*v+1];
+			img_smooth[3*v+2] = img_out[3*v+2];
+		    }
+		}
+	    }
+	}
+
+	/* Smooth the estimate into vf_out.  The volumes are ping-ponged. */
+	printf ("Convolving\n");
+	vf_convolve_x (vf_out, vf_smooth, ker, 3);
+	vf_convolve_y (vf_smooth, vf_out, ker, 3);
+	vf_convolve_z (vf_out, vf_smooth, ker, 3);
+    }
+    printf ("Done.\n");
+
+    /* We're done with the mask & smooth image. */
+    volume_free (mask);
+    volume_free (vf_smooth);
+
+    /* Write the output */
+    write_mha (parms->vf_out_fn, vf_out);
+    volume_free (vf_out);
+}
 
 void
 print_usage (void)
