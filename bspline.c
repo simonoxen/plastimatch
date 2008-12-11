@@ -1829,17 +1829,15 @@ void
 bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
 	       Volume *moving_grad)
 {
-#if HAVE_BROOK
-#if BUILD_BSPLINE_BROOK
+#if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     if (parms->implementation == BIMPL_BROOK) {
 	printf("Using Brook GPU. \n");
 	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;
     }
 #endif
-#endif
 
-#if (BUILD_BSPLINE_CUDA)
+#if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
     if (parms->implementation == BIMPL_CUDA) {
 	printf("Using CUDA.\n");
 	bspline_cuda_score_mse(parms, bxf, fixed, moving, moving_grad);

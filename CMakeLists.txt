@@ -127,6 +127,14 @@ SET(HAVE_BROOK TRUE)
 ENDIF(BROOK_FOUND)
 
 ######################################################
+##  BROOK LIBRARY
+######################################################
+SET(HAVE_CUDA FALSE)
+IF(CUDA_FOUND)
+SET(HAVE_CUDA TRUE)
+ENDIF(CUDA_FOUND)
+
+######################################################
 ##  ITK LIBRARY
 ######################################################
 FIND_PACKAGE(ITK)
@@ -159,7 +167,7 @@ SET(GPUIT_LIBRARY_SRC
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
-IF(CUDA_FOUND)
+IF(CUDA_FOUND AND BUILD_BSPLINE_CUDA)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
@@ -168,7 +176,7 @@ SET(GPUIT_LIBRARY_SRC
 	bspline_cuda_kernels.cu
 	bspline_cuda.h
 	)
-ENDIF(CUDA_FOUND)
+ENDIF(CUDA_FOUND AND BUILD_BSPLINE_CUDA)
 IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
@@ -459,7 +467,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(merge_vfs merge_vector_fields.cxx)
   ADD_EXECUTABLE(merge2 merge2.cxx)
   ADD_EXECUTABLE(mha_to_analyze mha2analyze.c)
-  #ADD_EXECUTABLE(mha_to_raw mha_to_raw.c)
+  ADD_EXECUTABLE(mha_to_raw mha_to_raw.c)
   ADD_EXECUTABLE(mha_to_rtog_dose ${MHA_TO_RTOG_DOSE_SRC})
   ADD_EXECUTABLE(mha_to_vox mha_to_vox.c)
   ADD_EXECUTABLE(point_path ${POINT_PATH_SRC})
@@ -552,7 +560,7 @@ INSTALL(TARGETS bspline DESTINATION bin)
 INSTALL(TARGETS demons DESTINATION bin)
 INSTALL(TARGETS drr_c DESTINATION bin)
 INSTALL(TARGETS fdk_c DESTINATION bin)
-#INSTALL(TARGETS mha_to_raw DESTINATION bin)
+INSTALL(TARGETS mha_to_raw DESTINATION bin)
 INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 
 # Require brook
