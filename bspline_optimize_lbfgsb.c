@@ -206,9 +206,11 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     }
 #endif
 
+#if (BUILD_BSPLINE_CUDA)
 	if(parms->implementation == BIMPL_CUDA) {
 		bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
 	}
+#endif
 
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
@@ -242,9 +244,11 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 	}
     }
 
+#if (BUILD_BSPLINE_CUDA)
 	if(parms->implementation == BIMPL_CUDA) {
 		bspline_cuda_clean_up();
 	}
+#endif
 
     free (nbd);
     free (iwa);
