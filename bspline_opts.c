@@ -31,10 +31,13 @@ print_usage (void)
 void
 parse_args (BSPLINE_Options* options, int argc, char* argv[])
 {
-    int i, rc;
+    int d, i, rc;
     BSPLINE_Parms* parms = &options->parms;
 
     options->output_fn = "output.mha";
+    for (d = 0; d < 3; d++) {
+	options->vox_per_rgn[d] = 15;
+    }
     bspline_parms_set_default (parms);
 
     for (i = 1; i < argc; i++) {
@@ -46,14 +49,14 @@ parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
-			|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
-			parms->implementation = BIMPL_BROOK;
+		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		parms->implementation = BIMPL_BROOK;
 	    } 
-		else if(!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
-			parms->implementation = BIMPL_CUDA;
-		}
-		else {
-			parms->implementation = BIMPL_CPU;
+	    else if(!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
+		parms->implementation = BIMPL_CUDA;
+	    }
+	    else {
+		parms->implementation = BIMPL_CPU;
 	    }
 	}
         else if (!strcmp (argv[i], "-a")) {

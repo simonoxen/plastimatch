@@ -648,8 +648,6 @@ IF(CUDA_FOUND)
   NVCC_FILE(bspline_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
-  ADD_EXECUTABLE(bspline_cuda bspline_cuda_wrap.cpp)
-  TARGET_LINK_LIBRARIES(bspline_cuda ${CUDA_LIBRARIES})
 #  MESSAGE(STATUS "CUDA_LDFLAGS = ${CUDA_LDFLAGS}")
 #  IF(NOT ${CUDA_LDFLAGS} STREQUAL "")
 #    SET_TARGET_PROPERTIES(bspline_cuda PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})

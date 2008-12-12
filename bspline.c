@@ -373,6 +373,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     int tx, ty, tz;
     float *A, *B, *C;
 
+    printf ("1.\n");
     for (d = 0; d < 3; d++) {
 	/* copy input parameters over */
 	bxf->img_origin[d] = img_origin[d];
@@ -401,6 +402,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     memset (bxf->coeff, 0, sizeof(float) * bxf->num_coeff);
 
     /* Create q_lut */
+    printf ("2. (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     bxf->q_lut = (float*) malloc (sizeof(float) 
 				 * bxf->vox_per_rgn[0] 
 				 * bxf->vox_per_rgn[1] 
@@ -409,6 +411,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
+    printf ("%p %p %p %p\n", bxf->q_lut, A, B, C);
 
     for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 	float ii = ((float) i) / bxf->vox_per_rgn[0];
@@ -441,6 +444,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
 	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
+    printf ("3.\n");
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
@@ -460,6 +464,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     free (A);
 
     /* Create c_lut */
+    printf ("4.\n");
     bxf->c_lut = (int*) malloc (sizeof(int) 
 				 * bxf->rdims[0] 
 				 * bxf->rdims[1] 

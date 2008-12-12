@@ -32,9 +32,9 @@ main (int argc, char* argv[])
     Volume *moving_warped;
     int roi_offset[3];
 
-	parse_args (&options, argc, argv);
+    parse_args (&options, argc, argv);
 
-	fixed = read_mha (options.fixed_fn);
+    fixed = read_mha (options.fixed_fn);
     if (!fixed) exit (-1);
     moving = read_mha (options.moving_fn);
     if (!moving) exit (-1);
@@ -42,28 +42,31 @@ main (int argc, char* argv[])
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
 
+    printf ("Making gradient\n");
     moving_grad = volume_make_gradient (moving);
 
     /* Debug */
     //write_mha ("moving_grad.mha", moving_grad);
 
     /* Allocate memory and build lookup tables */
+    printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(int));
     bspline_xform_initialize (&bxf,
-				fixed->offset,
-				fixed->pix_spacing,
-				fixed->dim,
-				roi_offset,
-				fixed->dim,
-				options.vox_per_rgn);
+			      fixed->offset,
+			      fixed->pix_spacing,
+			      fixed->dim,
+			      roi_offset,
+			      fixed->dim,
+			      options.vox_per_rgn);
 
 
     /* Run the optimization */
+    printf ("Running optimization.\n");
     bspline_optimize (&bxf, parms, fixed, moving, moving_grad);
 
     /* Create vector field from bspline coefficients and save */
     vector_field = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing,
-			    PT_VF_FLOAT_INTERLEAVED, 0);
+				  PT_VF_FLOAT_INTERLEAVED, 0);
     bspline_interpolate_vf (vector_field, &bxf);
     write_mha (options.output_fn, vector_field);
 
