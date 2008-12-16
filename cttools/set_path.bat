@@ -13,6 +13,7 @@ if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
   SET ITK_PATH=%HOME%\build\itk-3.8.0-vse2005\bin\Release
   SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-vse2005\Release
   SET DXSDK_UTILS_DIR="C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
+  PATH="%PATH%;%DXSDK_UTILS_DIR%"
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
   SET ITK_PATH=%HOME%\build\itk-3.6.0\bin\Release
@@ -28,7 +29,7 @@ if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
 
 SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 
-if NOT %DXSDK_UTILS_DIR%=="" PATH=%PATH%;%DXSDK_UTILS_DIR%
+@rem if NOT %DXSDK_UTILS_DIR%=="" PATH="%PATH%;%DXSDK_UTILS_DIR%"
 @rem if NOT "%DXSDK_UTILS_DIR%"=="" PATH=%PATH%;%DXSDK_UTILS_DIR%
 
 PATH=%PATH%;%ITK_PATH%
