@@ -460,6 +460,9 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     tagkey = "0008|0008"; // Image Type
     value = "DERIVED\\SECONDARY";
     itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
+    tagkey = "0008|0016"; // Image Type
+    value = "1.2.840.10008.5.1.4.1.1.2";
+    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
     tagkey = "0008|0064"; // Conversion Type
     value = "DV";
     itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
