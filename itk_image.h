@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _load_mha_h_
-#define _load_mha_h_
+#ifndef _itk_image_h_
+#define _itk_image_h_
 
 #include <stdio.h>
 #include "itkImage.h"
