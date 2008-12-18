@@ -27,23 +27,9 @@
 #include <sys/types.h>
 #endif
 
-/* =======================================================================*
-    Definitions
- * =======================================================================*/
-//typedef itk::ImageSeriesReader < UCharImageType > DicomUCharReaderType;
-//typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
-//typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
-//typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
-//typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
-typedef itk::ImageFileReader < UCharImageType > MhaUCharReaderType;
-typedef itk::ImageFileReader < ShortImageType > MhaShortReaderType;
-typedef itk::ImageFileReader < UShortImageType > MhaUShortReaderType;
-typedef itk::ImageFileReader < FloatImageType > MhaFloatReaderType;
-
-
-/* =======================================================================*
+/* -----------------------------------------------------------------------
     Functions
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 int
 is_directory (char *dir)
 {
@@ -267,10 +253,8 @@ load_float (FloatImageType::Pointer* img,  PlmImageType* original_type, char* fn
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
 	*img = load_dicom_float (fname);
-	//return load_dicom_float (fname);
     } else {
 	*img = load_any (fname, static_cast<float>(0));
-	//return load_any (fname, static_cast<float>(0));
     }
 }
 
@@ -279,10 +263,8 @@ load_float (char* fname)
 {
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	//img = load_dicom_float (fname);
 	return load_dicom_float (fname);
     } else {
-	//img = load_any (fname, static_cast<float>(0));
 	return load_any (fname, static_cast<float>(0));
     }
 }
@@ -389,7 +371,6 @@ cast_float (T image)
 }
 
 /* Explicit instantiations */
-template void load_itk_rdr (MhaUCharReaderType::Pointer reader, char *fn);
 template plastimatch1_EXPORT void save_image(UCharImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(UShortImageType::Pointer, char*);

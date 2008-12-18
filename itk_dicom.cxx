@@ -1,6 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+//#include <iomanip>
+#include <iostream>
+#include <sstream>
 #include "plm_config.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
@@ -9,6 +12,9 @@
 #include "itkImageSeriesWriter.h"
 #include "itk_dicom.h"
 #include "print_and_exit.h"
+
+#include "gdcm/src/gdcmFile.h"
+#include "gdcm/src/gdcmUtil.h" 
 
 /* -----------------------------------------------------------------------
     Definitions
@@ -119,6 +125,14 @@ load_dicom_float (char *dicom_dir)
     return fixed_input_rdr->GetOutput();
 }
 
+template <typename T>
+static std::string to_string (T t)
+{
+   std::stringstream ss;
+   ss << t;
+   return ss.str();
+}
+
 static void
 encapsulate (itk::MetaDataDictionary& dict, std::string tagkey, std::string value)
 {
@@ -126,58 +140,229 @@ encapsulate (itk::MetaDataDictionary& dict, std::string tagkey, std::string valu
 }
 
 void
+CopyDictionary (itk::MetaDataDictionary &fromDict, itk::MetaDataDictionary &toDict)
+{
+  typedef itk::MetaDataDictionary DictionaryType;
+
+  DictionaryType::ConstIterator itr = fromDict.Begin();
+  DictionaryType::ConstIterator end = fromDict.End();
+  typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+  while( itr != end )
+    {
+    itk::MetaDataObjectBase::Pointer  entry = itr->second;
+
+    MetaDataStringType::Pointer entryvalue =
+      dynamic_cast<MetaDataStringType *>( entry.GetPointer() ) ;
+    if( entryvalue )
+      {
+      std::string tagkey   = itr->first;
+      std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+      itk::EncapsulateMetaData<std::string>(toDict, tagkey, tagvalue);
+      }
+    ++itr;
+    }
+}
+
+void
 save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 {
-    typedef itk::GDCMImageIO                        ImageIOType;
-    //typedef itk::GDCMSeriesFileNames                NamesGeneratorType;
-    typedef itk::NumericSeriesFileNames             NamesGeneratorType;
+    typedef itk::GDCMImageIO ImageIOType;
+    typedef itk::NumericSeriesFileNames NamesGeneratorType;
+    const int export_as_ct = 1;
 
     printf ("Output dir = %s\n", dir_name);
 
     itksys::SystemTools::MakeDirectory (dir_name);
 
+
     ImageIOType::Pointer gdcmIO = ImageIOType::New();
+    gdcmIO->SetUIDPrefix ("1.2.826.0.1.3680043.8.274.1.2"); 
+
+    std::string tagkey, value;
+    itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
+    if (export_as_ct) {
+	/* Image Type */
+	encapsulate (dict, "0008|0008", "AXIAL");
+	/* SOP Class UID */
+	encapsulate (dict, "0008|0016", "1.2.840.10008.5.1.4.1.1.2");
+	/* Modality */
+	encapsulate (dict, "0008|0060", "CT");
+    } else { /* export as secondary capture */
+	/* Image Type */
+	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY");
+	/* Conversion Type */
+	encapsulate (dict, "0008|0064", "DV");
+    }
+
+    /* Patient name */
+    encapsulate (dict, "0010|0010", "PLASTIMATCH^ANONYMOUS");
+    /* Patient id */
+    encapsulate (dict, "0010|0020", "anon");
+
+    /* Frame of Reference UID */
+    encapsulate (dict, "0020|0052", gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix()));
+    /* Position Reference Indicator */
+    encapsulate (dict, "0020|1040", "");
+
+    /* Slice thickness */
+    value = to_string ((double) (short_img->GetSpacing()[2]));
+    printf ("value = %g\n", short_img->GetSpacing()[2]);
+    printf ("value = %s\n", value.c_str());
+    encapsulate (dict, "0018|0050", value);
+
+    /* 0008,2112 is "Source Image Sequence", defined as "A Sequence that 
+	identifies the set of Image SOP Class/Instance pairs of the
+	Images that were used to derive this Image. Zero or more Items may be
+	included in this Sequence." 
+       Ideally, this would be used to refer to the original image before 
+        warping.
+    */
+
+    /* Can the series writer set Slice Location "0020,1041"? 
+	Yes it can.  The below code is adapted from:
+	http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
+    */
+
+
+    DicomShortWriterType::DictionaryArrayType dict_array;
+    for (unsigned int f = 0; f < short_img->GetLargestPossibleRegion().GetSize()[2]; f++) {
+	DicomShortWriterType::DictionaryRawPointer slice_dict = new DicomShortWriterType::DictionaryType;
+	CopyDictionary (dict, *slice_dict);
+
+	/* Image Number */
+	value = to_string ((int) f);
+	encapsulate (*slice_dict, "0020|0013", value);
+
+	/* Image Position Patient */
+	ShortImageType::PointType position;
+	ShortImageType::IndexType index;
+	index[0] = 0;
+	index[1] = 0;
+	index[2] = f;
+	short_img->TransformIndexToPhysicalPoint (index, position);
+	value = to_string (position[0]) + "\\" + to_string (position[1]) + "\\" + to_string (position[2]);
+	encapsulate (*slice_dict, "0020|0032", value);
+
+	/* Slice Location */
+	value = to_string ((float) position[2]);
+	encapsulate (*slice_dict, "0020|1041", value);      
+
+	dict_array.push_back (slice_dict);
+    }
+
+#if defined (commentout)
+    // Copy the dictionary from the first slice
+    CopyDictionary (*inputDict, *dict);
+
+    // Set the UID's for the study, series, SOP  and frame of reference
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|000d", studyUID);
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|000e", seriesUID);
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|0052", frameOfReferenceUID);
+
+    std::string sopInstanceUID = gdcm::Util::CreateUniqueUID( gdcmIO->GetUIDPrefix());
+    itk::EncapsulateMetaData<std::string>(*dict,"0008|0018", sopInstanceUID);
+    itk::EncapsulateMetaData<std::string>(*dict,"0002|0003", sopInstanceUID);
+
+    // Change fields that are slice specific
+    itksys_ios::ostringstream value;
+    value.str("");
+    value << f + 1;
+
+    // Image Number
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|0013", value.str());
+
+    // Series Description - Append new description to current series
+    // description
+    std::string oldSeriesDesc;
+    itk::ExposeMetaData<std::string>(*inputDict, "0008|103e", oldSeriesDesc);
+
+    value.str("");
+    value << oldSeriesDesc
+          << ": Resampled with pixel spacing "
+          << outputSpacing[0] << ", "
+          << outputSpacing[1] << ", "
+          << outputSpacing[2];
+    // This is an long string and there is a 64 character limit in the
+    // standard
+    unsigned lengthDesc = value.str().length();
+   
+    std::string seriesDesc( value.str(), 0,
+                            lengthDesc > 64 ? 64
+                            : lengthDesc);
+    itk::EncapsulateMetaData<std::string>(*dict,"0008|103e", seriesDesc);
+
+    // Series Number
+    value.str("");
+    value << 1001;
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|0011", value.str());
+
+    // Derivation Description - How this image was derived
+    value.str("");
+    for (unsigned int i = 0; i < argc; i++)
+      {
+      value << argv[i] << " ";
+      }
+    value << ": " << ITK_SOURCE_VERSION;
+
+    lengthDesc = value.str().length();
+    std::string derivationDesc( value.str(), 0,
+                                lengthDesc > 1024 ? 1024
+                                : lengthDesc);
+    itk::EncapsulateMetaData<std::string>(*dict,"0008|2111", derivationDesc);
+   
+    // Image Position Patient: This is calculated by computing the
+    // physical coordinate of the first pixel in each slice.
+    InputImageType::PointType position;
+    InputImageType::IndexType index;
+    index[0] = 0;
+    index[1] = 0;
+    index[2] = f;
+    resampler->GetOutput()->TransformIndexToPhysicalPoint(index, position);
+
+    value.str("");
+    value << position[0] << "\\" << position[1] << "\\" << position[2];
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|0032", value.str());      
+    // Slice Location: For now, we store the z component of the Image
+    // Position Patient.
+    value.str("");
+    value << position[2];
+    itk::EncapsulateMetaData<std::string>(*dict,"0020|1041", value.str());      
+
+    if (changeInSpacing)
+      {
+      // Slice Thickness: For now, we store the z spacing
+      value.str("");
+      value << outputSpacing[2];
+      itk::EncapsulateMetaData<std::string>(*dict,"0018|0050",
+                                            value.str());
+      // Spacing Between Slices
+      itk::EncapsulateMetaData<std::string>(*dict,"0018|0088",
+                                            value.str());
+      }
+     
+    // Save the dictionary
+    outputArray.push_back(dict);
+#endif
+
+    /* Create file names */
     DicomShortWriterType::Pointer seriesWriter = DicomShortWriterType::New();
     NamesGeneratorType::Pointer namesGenerator = NamesGeneratorType::New();
 
-    itk::MetaDataDictionary & dict = gdcmIO->GetMetaDataDictionary();
-    std::string tagkey, value;
-
-    encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY");
-
-//    tagkey = "0008|0008"; // Image Type
-//    value = "DERIVED\\SECONDARY";
-//    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
-    tagkey = "0008|0016"; // SOPClassUID
-    value = "1.2.840.10008.5.1.4.1.1.2";
-    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
-    tagkey = "0008|0060"; // Modality
-    value = "CT";
-    itk::EncapsulateMetaData<std::string>(dict, tagkey, value );
-
-//    tagkey = "0008|0064"; // Conversion Type
-//    value = "DV";
-//    itk::EncapsulateMetaData<std::string>(dict, tagkey, value);
-
-    /* Create file names */
     ShortImageType::RegionType region = short_img->GetLargestPossibleRegion();
     ShortImageType::IndexType start = region.GetIndex();
     ShortImageType::SizeType  size  = region.GetSize();
     std::string format = dir_name;
     format += "/image%03d.dcm";
-    namesGenerator->SetSeriesFormat( format.c_str() );
-    namesGenerator->SetStartIndex( start[2] );
-    namesGenerator->SetEndIndex( start[2] + size[2] - 1 );
-    namesGenerator->SetIncrementIndex( 1 );
+    namesGenerator->SetSeriesFormat (format.c_str());
+    namesGenerator->SetStartIndex (start[2]);
+    namesGenerator->SetEndIndex (start[2] + size[2] - 1);
+    namesGenerator->SetIncrementIndex (1);
 
     seriesWriter->SetInput (short_img);
     seriesWriter->SetImageIO (gdcmIO);
     seriesWriter->SetFileNames (namesGenerator->GetFileNames());
-
-#if defined (commentout)
-    seriesWriter->SetMetaDataDictionaryArray (
-                        reader->GetMetaDataDictionaryArray() );
-#endif
+    seriesWriter->SetMetaDataDictionaryArray (&dict_array);
 
     try {
 	seriesWriter->Update();
