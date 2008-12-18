@@ -132,11 +132,11 @@ switch lower(type)
     coeff = nvox/4;
   end
   
-  [ax,ay,az] = ndgrid(1-ctr(1):nvox-ctr(1),...
-		      1-ctr(2):nvox-ctr(2),...
-		      1-ctr(3):nvox-ctr(3));
+  [ax,ay,az] = ndgrid((1-ctr(1):nvox-ctr(1))/coeff(1),...
+		      (1-ctr(2):nvox-ctr(2))/coeff(2),...
+		      (1-ctr(3):nvox-ctr(3))/coeff(3));
   d = ax.^2 + ay.^2 + az.^2;
-  v = exp(-d/(2*coeff^2));
+  v = [exp(-d/2)];
   v = v / max(v(:));
   A = -1000 + (fg+1000) * v;
 end
