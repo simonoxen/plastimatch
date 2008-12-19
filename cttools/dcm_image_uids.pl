@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 use File::Spec::Functions;
 use File::Path;
 
