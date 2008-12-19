@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include "itkTimeProbe.h"
 #include "plm_config.h"
 #include "plm_registration.h"
 #include "plm_image.h"
@@ -426,29 +427,48 @@ do_registration (Registration_Parms* regp)
     Registration_Data regd;
     Xform xf1, xf2;
     Xform *xf_in, *xf_out, *xf_tmp;
+    itk::TimeProbe timer1, timer2, timer3;
 
     xf_in = &xf1;
     xf_out = &xf2;
 
+
     /* Load images */
+    timer1.Start();
     load_input_files (&regd, regp);
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
 	load_xform (xf_out, regp->xf_in_fn);
     }
+    timer1.Stop();
 
     /* Set fixed image region */
     set_fixed_image_region_global (&regd);
 
+    timer2.Start();
     for (i = 0; i < regp->num_stages; i++) {
 	/* Swap xf_in and xf_out */
 	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 	/* Run registation, results are stored in xf_out */
 	do_registration_stage (&regd, xf_out, xf_in, regp->stages[i]);
     }
+    timer2.Stop();
 
     /* RMK: If no stages, we still generate output (same as input) */
 
+    timer3.Start();
     save_regp_output_itk (&regd, xf_out, regp);
+    timer3.Stop();
+
+    printf ("Load:   %g\n"
+	    "Run:    %g\n"
+	    "Save:   %g\n"
+	    "Total:  %g\n",
+	    (double) timer1.GetMeanTime(),
+	    (double) timer2.GetMeanTime(),
+	    (double) timer3.GetMeanTime(),
+	    (double) timer1.GetMeanTime() + 
+	    (double) timer2.GetMeanTime() +
+	    (double) timer3.GetMeanTime());
 }

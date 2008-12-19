@@ -71,15 +71,8 @@ struct BSPLINE_Parms_struct {
     enum BsplineMetric metric;
     int max_its;
     int debug;			 /* Create grad & histogram files */
-#if defined (commentout)
-    float img_origin[3];         /* Image origin (in mm) */
-    float img_spacing[3];        /* Image spacing (in mm) */
-    int img_dim[3];              /* Image size (in vox) */
-    int roi_offset[3];		 /* Position of first vox in ROI (in vox) */
-    int roi_dim[3];		 /* Dimension of ROI (in vox) */
-    int vox_per_rgn[3];		 /* Knot spacing (in vox) */
-    float grid_spac[3];          /* Knot spacing (in mm) */
-#endif
+    double convergence_tol;      /* When to stop iterations based on score */
+    int convergence_tol_its;     /* How many iterations to check for convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
     BSPLINE_Score ssd;           /* Score and Gradient */
     void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */

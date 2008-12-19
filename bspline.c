@@ -50,6 +50,8 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->optimization = BOPT_LBFGSB;
     parms->metric = BMET_MSE;
     parms->max_its = 10;
+    parms->convergence_tol = 0.1;
+    parms->convergence_tol_its = 4;
     parms->debug = 0;
 
     parms->mi_hist.f_hist = 0;

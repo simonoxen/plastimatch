@@ -146,8 +146,11 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     integer n, m, iprint, *nbd, *iwa, isave[44];
     doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
     integer i;
-    int it = 0;
+    int it = 0;		/* # iterations */
+    int fnev = 0;	/* # function evaluations */
     int NMAX, MMAX;
+    double best_score;
+    int num_to_check;
 
     NMAX = bxf->num_coeff;
     MMAX = (int) floor (bxf->num_coeff / 100);
@@ -235,10 +238,28 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 		g[i] = - ssd->grad[i];
 	    }
 
-	    if (++it == parms->max_its) break;
+	    /* Check # iterations */
+	    if (++fnev == parms->max_its) break;
 
 	} else if (s_cmp(task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
-	    /* continue */
+	    /* Optimizer has completed an iteration */
+	    /* Check convergence tolerance */
+	    if (it == 0) {
+		best_score = ssd->score;
+		num_to_check = parms->convergence_tol_its;
+	    } else {
+		if (ssd->score < best_score - parms->convergence_tol) {
+		    best_score = ssd->score;
+		    num_to_check = parms->convergence_tol_its;
+		} else {
+		    num_to_check --;
+		}
+	    }
+	    printf ("Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
+	    if (num_to_check <= 0) {
+		break;
+	    }
+	    /* else continue */
 	} else {
 	    break;
 	}
