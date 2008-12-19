@@ -472,3 +472,4 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	//fprintf(output,"%g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
+
