@@ -235,6 +235,9 @@ SET(PLASTIMATCH_LIBRARY_SRC
 ######################################################
 ##  SOURCE FILES (EXECUTABLES)
 ######################################################
+SET(ADJUST_MHA_SRC
+	adjust_mha.cxx
+	)
 SET(BSPLINE_SRC
 	bspline_main.c 
 	)
@@ -459,6 +462,7 @@ IF(ITK_FOUND)
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
+  ADD_EXECUTABLE(adjust_mha ${ADJUST_MHA_SRC})
   ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
   ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
@@ -525,6 +529,7 @@ ENDIF(DCMTK_FOUND)
 
 # Require itk
 IF(ITK_FOUND)
+  TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
@@ -576,6 +581,7 @@ ENDIF(DCMTK_FOUND)
 
 # Require itk
 IF(ITK_FOUND)
+  INSTALL(TARGETS adjust_mha DESTINATION bin)
   INSTALL(TARGETS analyze_to_mha DESTINATION bin)
   INSTALL(TARGETS contour_statistics DESTINATION bin)
   INSTALL(TARGETS cxt_to_mha DESTINATION bin)
