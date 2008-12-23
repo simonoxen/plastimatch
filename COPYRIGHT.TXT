@@ -5,7 +5,7 @@ Plastimatch
 
   Contributors:
   MGH: Greg Sharp, Ziji Wu, Marta Peroni
-  Drexel: Nagarajan Kandasamy, Harman Singh, others
+  Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy, others
 
   See LICENSE.TXT for details
 

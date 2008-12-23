@@ -432,3 +432,197 @@ __global__ void bspline_cuda_compute_dc_dv_kernel (
 		}
 	}
 }
+
+// This reduce function will work for any size array, and also checks a flag for each voxel
+// to determine whether or not it is valid before adding it to the final sum.
+__global__ void bspline_cuda_compute_score_kernel(
+  float *idata, 
+  float *odata, 
+  int   *valid_voxels, 
+  int   num_elems)
+{
+  // Shared memory is allocated on a per block basis.  Therefore, only allocate 
+  // (sizeof(data) * blocksize) memory when calling the kernel.
+  extern __shared__ float sdata[]; 
+  
+  // Calculate the index of the thread block in the grid.
+  int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+  
+  // Calculate the total number of threads in each thread block.
+  int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+  
+  // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+  int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+  
+  // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+  int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+  // Load data into shared memory.
+  if(threadIdxInGrid >= num_elems || valid_voxels[threadIdxInGrid] == 0)
+    sdata[threadIdxInBlock] = 0.0;
+  else 
+    sdata[threadIdxInBlock] = idata[threadIdxInGrid] * idata[threadIdxInGrid];
+
+  // Wait for all threads in the block to reach this point.
+  __syncthreads();
+  
+  // Perform the reduction in shared memory.  Stride over the block and reduce
+  // parts until it is down to a single value (stored in sdata[0]).
+  for(unsigned int s = threadsPerBlock / 2; s > 0; s >>= 1) {
+    if (threadIdxInBlock < s) {
+      sdata[threadIdxInBlock] += sdata[threadIdxInBlock + s];
+    }
+
+    // Wait for all threads to complete this stride.
+    __syncthreads();
+  }
+  
+  // Write the result for this block back to global memory.
+  if(threadIdxInBlock == 0) {
+	  odata[threadIdxInGrid] = sdata[0];
+  }
+}
+
+__global__ void sum_reduction_last_step_kernel(
+	float *idata,
+	float *odata,
+	int   num_elems)
+{
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	if(threadIdxInGrid == 0) {
+	
+		float sum = 0.0;
+		
+		for(int i = 0; i < num_elems; i += threadsPerBlock) {
+			sum += idata[i];
+		}
+
+		odata[0] = sum;
+	}
+}
+
+__global__ void bspline_cuda_update_grad_kernel(
+	float *grad,
+	int num_vox,
+	int num_elems)
+{
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	if(threadIdxInGrid < num_elems)
+		grad[threadIdxInGrid] = 2 * grad[threadIdxInGrid] / num_vox;
+}
+
+__global__ void bspline_cuda_compute_grad_mean_kernel(
+	float *idata,
+	float *odata,
+	int num_elems)
+{
+	// Shared memory is allocated on a per block basis.  Therefore, only allocate 
+	// (sizeof(data) * blocksize) memory when calling the kernel.
+	extern __shared__ float sdata[]; 
+
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// Load data into shared memory.
+	if(threadIdxInGrid >= num_elems)
+		sdata[threadIdxInBlock] = 0.0;
+	else 
+		sdata[threadIdxInBlock] = idata[threadIdxInGrid];
+
+	// Wait for all threads in the block to reach this point.
+	__syncthreads();
+
+	// Perform the reduction in shared memory.  Stride over the block and reduce
+	// parts until it is down to a single value (stored in sdata[0]).
+	for(unsigned int s = threadsPerBlock / 2; s > 0; s >>= 1) {
+		if (threadIdxInBlock < s) {
+			sdata[threadIdxInBlock] += sdata[threadIdxInBlock + s];
+		}
+
+		// Wait for all threads to complete this stride.
+		__syncthreads();
+	}
+
+	// Write the result for this block back to global memory.
+	if(threadIdxInBlock == 0) {
+		odata[threadIdxInGrid] = sdata[0];
+	}
+}
+
+__global__ void bspline_cuda_compute_grad_norm_kernel(
+	float *idata,
+	float *odata,
+	int num_elems)
+{
+	// Shared memory is allocated on a per block basis.  Therefore, only allocate 
+	// (sizeof(data) * blocksize) memory when calling the kernel.
+	extern __shared__ float sdata[]; 
+
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// Load data into shared memory.
+	if(threadIdxInGrid >= num_elems)
+		sdata[threadIdxInBlock] = 0.0;
+	else 
+		sdata[threadIdxInBlock] = fabs(idata[threadIdxInGrid]);
+
+	// Wait for all threads in the block to reach this point.
+	__syncthreads();
+
+	// Perform the reduction in shared memory.  Stride over the block and reduce
+	// parts until it is down to a single value (stored in sdata[0]).
+	for(unsigned int s = threadsPerBlock / 2; s > 0; s >>= 1) {
+		if (threadIdxInBlock < s) {
+			sdata[threadIdxInBlock] += sdata[threadIdxInBlock + s];
+		}
+
+		// Wait for all threads to complete this stride.
+		__syncthreads();
+	}
+
+	// Write the result for this block back to global memory.
+	if(threadIdxInBlock == 0) {
+		odata[threadIdxInGrid] = sdata[0];
+	}
+}

@@ -11,6 +11,28 @@ __global__ void myFirstKernel(int *d_a)
     d_a[idx] = idx;  
 }
 
+__global__ void reduce(float *idata, float *odata) {
+	
+	extern __shared__ float sdata[];
+
+	unsigned int tid = threadIdx.x;
+	unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+	sdata[tid] = idata[i];
+
+	__syncthreads();
+
+	for(unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+		if(tid < s) {
+			sdata[tid] += sdata[tid + s];
+		}
+		__syncthreads();
+	}
+
+	if(tid == 0) {
+		odata[blockIdx.x] = sdata[0];
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Program main
 ////////////////////////////////////////////////////////////////////////////////

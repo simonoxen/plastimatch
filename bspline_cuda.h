@@ -64,7 +64,15 @@ extern "C" {
 		float *host_diff,
 		float *host_dc_dv_x,
 		float *host_dc_dv_y,
-		float *host_dc_dv_z);
+		float *host_dc_dv_z,
+		float *host_score);
+
+	void bspline_cuda_calculate_gradient(
+		BSPLINE_Parms* parms, 
+		BSPLINE_Xform* bxf,
+		Volume *fixed,
+		float *host_grad_norm,
+		float *host_grad_mean);
 
 	void bspline_cuda_clean_up();
 

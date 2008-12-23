@@ -84,6 +84,9 @@ void bspline_cuda_score_mse(
 	float *host_dc_dv_x;
 	float *host_dc_dv_y;
 	float *host_dc_dv_z;
+	float *host_score;
+	float *host_grad_norm;
+	float *host_grad_mean;
 	int diff_errors = 0;
 	int dc_dv_errors = 0;
 	/* END CUDA VARIBLES */
@@ -101,6 +104,9 @@ void bspline_cuda_score_mse(
 	host_dc_dv_x = (float*)malloc(fixed->npix * sizeof(float));
 	host_dc_dv_y = (float*)malloc(fixed->npix * sizeof(float));
 	host_dc_dv_z = (float*)malloc(fixed->npix * sizeof(float));
+	host_score   = (float*)malloc(sizeof(float));
+	host_grad_norm = (float*)malloc(sizeof(float));
+	host_grad_mean = (float*)malloc(sizeof(float));
 
 	bspline_cuda_run_kernels(
 		fixed,
@@ -111,7 +117,8 @@ void bspline_cuda_score_mse(
 		host_diff,
 		host_dc_dv_x,
 		host_dc_dv_y,
-		host_dc_dv_z);
+		host_dc_dv_z,
+		host_score);
 	/* END CUDA CALLS */
 
     ssd->score = 0;
@@ -238,8 +245,8 @@ void bspline_cuda_score_mse(
 				
 				bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
 				
-				ssd->score += diff * diff;
-				num_vox ++;
+				// ssd->score += diff * diff;
+				// num_vox ++;
 			}
 		}
     }
@@ -250,8 +257,21 @@ void bspline_cuda_score_mse(
 
     //dump_coeff (bxf, "coeff.txt");
 
-    /* Normalize score for MSE */
-    ssd->score = ssd->score / num_vox;
+    
+	bspline_cuda_calculate_gradient(
+		parms,
+		bxf,
+		fixed,
+		host_grad_norm,
+		host_grad_mean);
+
+	ssd->score = *host_score;
+	ssd_grad_norm = *host_grad_norm;
+	ssd_grad_mean = *host_grad_mean;
+
+	/* Normalize score for MSE */
+	/*
+	ssd->score = ssd->score / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
 		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
@@ -259,9 +279,10 @@ void bspline_cuda_score_mse(
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-	ssd_grad_mean += ssd->grad[i];
-	ssd_grad_norm += fabs (ssd->grad[i]);
+		ssd_grad_mean += ssd->grad[i];
+		ssd_grad_norm += fabs (ssd->grad[i]);
     }
+	*/
 
     end_clock = clock();
 
@@ -275,6 +296,9 @@ void bspline_cuda_score_mse(
 	free(host_dc_dv_x);
 	free(host_dc_dv_y);
 	free(host_dc_dv_z);
+	free(host_score);
+	free(host_grad_norm);
+	free(host_grad_mean);
 
     printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 

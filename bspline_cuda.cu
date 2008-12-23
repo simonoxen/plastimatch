@@ -30,6 +30,9 @@ float *gpu_dc_dv_z;
 int   *gpu_valid_voxels;
 size_t coeff_mem_size;
 
+float *gpu_grad;
+float *gpu_grad_temp;
+
 void bspline_cuda_initialize(
 	Volume *fixed,
 	Volume *moving,
@@ -40,6 +43,8 @@ void bspline_cuda_initialize(
 	printf("Initializing CUDA... ");
 	fflush(stdout);
 
+	unsigned int total_bytes = 0;
+
 	// Copy the fixed image to the GPU.
 	if(cudaMalloc((void**)&gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for fixed image");
@@ -47,6 +52,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to copy fixed image to GPU");
 	if(cudaBindTexture(0, tex_fixed_image, gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_fixed_image to linear memory");
+	total_bytes += fixed->npix * fixed->pix_size;
 
 	// Copy the moving image to the GPU.
 	if(cudaMalloc((void**)&gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
@@ -55,6 +61,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to copy moving image to GPU");
 	if(cudaBindTexture(0, tex_moving_image, gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_moving_image to linear memory");
+	total_bytes += moving->npix * moving->pix_size;
 
 	// Copy the moving gradient to the GPU.
 	if(cudaMalloc((void**)&gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
@@ -63,6 +70,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to copy moving gradient to GPU");
 	if(cudaBindTexture(0, tex_moving_grad, gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_moving_grad to linear memory");
+	total_bytes += moving_grad->npix * moving_grad->pix_size;
 
 	// Allocate memory for the coefficient LUT on the GPU.  The LUT will be copied to the
 	// GPU each time bspline_cuda_run_kernels is called.
@@ -71,6 +79,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to allocate memory for coefficient LUT");
 	if(cudaBindTexture(0, tex_coeff, gpu_coeff, coeff_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_coeff to linear memory");
+	total_bytes += coeff_mem_size;
 
 	// Copy the multiplier LUT to the GPU.
 	size_t q_lut_mem_size = sizeof(float)
@@ -84,6 +93,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to copy multiplier LUT to GPU");
 	if(cudaBindTexture(0, tex_q_lut, gpu_q_lut, q_lut_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_q_lut to linear memory");
+	total_bytes += q_lut_mem_size;
 
 	// Copy the index LUT to the GPU.
 	size_t c_lut_mem_size = sizeof(int) 
@@ -97,6 +107,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to copy index LUT to GPU");
 	if(cudaBindTexture(0, tex_c_lut, gpu_c_lut, c_lut_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_c_lut to linear memory");
+	total_bytes += c_lut_mem_size;
 
 	// Allocate memory to hold the voxel displacement values.
 	size_t volume_mem_size = fixed->npix * fixed->pix_size;
@@ -106,6 +117,7 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to allocate memory for dx stream on GPU");
 	if(cudaMalloc((void**)&gpu_dz, volume_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for dz stream on GPU");
+	total_bytes += volume_mem_size * 3;
 
 	if(cudaBindTexture(0, tex_dx, gpu_dx, volume_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_dx to linear memory");
@@ -117,10 +129,12 @@ void bspline_cuda_initialize(
 	// Allocate memory to hold the calculated intensity difference values.
 	if(cudaMalloc((void**)&gpu_diff, volume_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for the diff stream on GPU");
+	total_bytes += volume_mem_size;
 
 	// Allocate memory to hold the array of valid voxels;
 	if(cudaMalloc((void**)&gpu_valid_voxels, volume_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for the valid_voxel stream on GPU");
+	total_bytes += volume_mem_size;
 
 	// Allocate memory to hold the calculated dc_dv values.
 	if(cudaMalloc((void**)&gpu_dc_dv_x, volume_mem_size) != cudaSuccess)
@@ -129,8 +143,16 @@ void bspline_cuda_initialize(
 		checkCUDAError("Failed to allocate memory for the dc_dv_x stream on GPU");
 	if(cudaMalloc((void**)&gpu_dc_dv_z, volume_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for the dc_dv_x stream on GPU");
+	total_bytes += 3 * volume_mem_size;
+
+	if(cudaMalloc((void**)&gpu_grad, coeff_mem_size) != cudaSuccess)
+		checkCUDAError("Failed to allocate memory for the grad stream on GPU");
+	if(cudaMalloc((void**)&gpu_grad_temp, coeff_mem_size) != cudaSuccess)
+		checkCUDAError("Failed to allocate memory for the grad_temp stream on GPU");
+	total_bytes += 2 * coeff_mem_size;
 
 	printf("DONE!\n");
+	printf("Total Memory Allocated on GPU: %d MB\n", total_bytes / (1024 * 1024));
 	fflush(stdout);
 }
 
@@ -143,7 +165,8 @@ void bspline_cuda_run_kernels(
 	float *host_diff,
 	float *host_dc_dv_x,
 	float *host_dc_dv_y,
-	float *host_dc_dv_z)
+	float *host_dc_dv_z,
+	float *host_score)
 {
 	// Read in the dimensions of the volume.
     int3 volume_dim;
@@ -186,9 +209,11 @@ void bspline_cuda_run_kernels(
 		checkCUDAError("Failed to copy coefficient LUT to GPU");
 
 	// Configure the grid.
-	int num_blocks = (int)ceil((volume_dim.x * volume_dim.y * volume_dim.z) / 512.0);
+	int num_elems = volume_dim.x * volume_dim.y * volume_dim.z;
+	int num_blocks = (int)ceil(num_elems / 512.0);
 	dim3 dimGrid(num_blocks, 1, 1);
 	dim3 dimBlock(128, 2, 2);
+	int smemSize = 512 * sizeof(float);
 	printf("%d thread blocks will be created for each kernel.\n", num_blocks);
 	fflush(stdout);
 
@@ -271,6 +296,33 @@ void bspline_cuda_run_kernels(
 	else
 		printf("DONE!\n");
 
+	printf("Launching bspline_cuda_compute_score_kernel... ");
+	fflush(stdout);
+	bspline_cuda_compute_score_kernel<<<dimGrid, dimBlock, smemSize>>>(
+		gpu_diff,
+		gpu_diff,
+		gpu_valid_voxels,
+		num_elems
+	);
+
+	if(cudaThreadSynchronize() != cudaSuccess)
+		checkCUDAError("bspline_cuda_compute_score_kernel failed");
+	else
+		printf("DONE!\n");
+
+	sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+		gpu_diff,
+		gpu_diff,
+		num_elems
+	);
+
+	cudaThreadSynchronize();
+
+	if(cudaMemcpy(host_score, gpu_diff,  sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+		checkCUDAError("Failed to copy score from GPU to host");
+
+	*host_score = *host_score / num_elems;
+
 	// Stop the clock.
 	QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
@@ -285,6 +337,99 @@ void bspline_cuda_run_kernels(
 	if(cudaMemcpy(host_dc_dv_z, gpu_dc_dv_z, fixed->npix * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 		checkCUDAError("Failed to copy dc_dv stream from GPU to host");
 
+}
+
+void bspline_cuda_calculate_gradient(
+	BSPLINE_Parms* parms, 
+	BSPLINE_Xform* bxf,
+	Volume *fixed,
+	float *host_grad_norm,
+	float *host_grad_mean) 
+{
+	BSPLINE_Score* ssd = &parms->ssd;
+	
+	// This copy is temporary until the gradient information is calculated on the GPU.
+	// As soon as that is done, all the code in this function can be moved into the 
+	// previous function.
+	if(cudaMemcpy(gpu_grad, ssd->grad, coeff_mem_size, cudaMemcpyHostToDevice) != cudaSuccess)
+		checkCUDAError("Failed to copy ssd->grad to GPU");
+
+	// Configure the grid.
+	int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
+	int num_elems = bxf->num_coeff;
+	int num_blocks = (int)ceil(num_elems / 512.0);
+	dim3 dimGrid(num_blocks, 1, 1);
+	dim3 dimBlock(128, 2, 2);
+	int smemSize = 512 * sizeof(float);
+
+	// Start the clock.
+	LARGE_INTEGER clock_count, clock_frequency;
+    double clock_start, clock_end;
+	QueryPerformanceFrequency(&clock_frequency);
+    QueryPerformanceCounter(&clock_count);
+    clock_start = (double)clock_count.QuadPart;
+
+	printf("Launching bspline_cuda_update_grad_kernel... ");
+	bspline_cuda_update_grad_kernel<<<dimGrid, dimBlock>>>(
+		gpu_grad,
+		num_vox,
+		num_elems);
+
+	if(cudaThreadSynchronize() != cudaSuccess)
+		checkCUDAError("bspline_cuda_update_grad_kernel failed");
+	else
+		printf("DONE!\n");
+
+	if(cudaMemcpy(ssd->grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
+		checkCUDAError("Failed to copy gpu_grad to CPU");
+
+	printf("Launching bspline_cuda_compute_grad_mean_kernel... ");
+	bspline_cuda_compute_grad_mean_kernel<<<dimGrid, dimBlock, smemSize>>>(
+		gpu_grad,
+		gpu_grad_temp,
+		num_elems);
+
+	cudaThreadSynchronize();
+
+	sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+		gpu_grad_temp,
+		gpu_grad_temp,
+		num_elems);
+
+	if(cudaThreadSynchronize() != cudaSuccess)
+		checkCUDAError("bspline_cuda_compute_grad_mean_kernel failed");
+	else
+		printf("DONE!\n");
+
+	if(cudaMemcpy(host_grad_mean, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+		checkCUDAError("Failed to copy grad_mean from GPU to host");
+
+	printf("Launching bspline_cuda_compute_grad_norm_kernel... ");
+	bspline_cuda_compute_grad_norm_kernel<<<dimGrid, dimBlock, smemSize>>>(
+		gpu_grad,
+		gpu_grad_temp,
+		num_elems);
+
+	cudaThreadSynchronize();
+
+	sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+		gpu_grad_temp,
+		gpu_grad_temp,
+		num_elems);
+
+	if(cudaThreadSynchronize() != cudaSuccess)
+		checkCUDAError("bspline_cuda_compute_grad_norm_kernel failed");
+	else
+		printf("DONE!\n");
+
+	if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+		checkCUDAError("Failed to copy grad_norm from GPU to host");
+
+	// Stop the clock.
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("CUDA kernels completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+	fflush(stdout);
 }
 
 void bspline_cuda_clean_up() {
@@ -318,6 +463,10 @@ void bspline_cuda_clean_up() {
 		checkCUDAError("Failed to free memory for dc_dv_z");
 	if(cudaFree(gpu_valid_voxels) != cudaSuccess)
 		checkCUDAError("Failed to free memory for valid_voxels");
+	if(cudaFree(gpu_grad) != cudaSuccess)
+		checkCUDAError("Failed to free memory for grad");
+	if(cudaFree(gpu_grad_temp) != cudaSuccess)
+		checkCUDAError("Failed to free memory for grad_temp");
 
 	fflush(stdout);
 }
