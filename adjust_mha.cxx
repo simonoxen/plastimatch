@@ -1,148 +1,119 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/*  Modify the input image, setting the pixel values within the mask. 
-    Modified by Ziji Wu, 3/2006, to do the vector field as well
-*/
-#include <time.h>
 #include "plm_config.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkCastImageFilter.h"
+#include <time.h>
+#include "getopt.h"
+#include "adjust_mha.h"
+#include "itk_image.h"
 #include "itkImageRegionIterator.h"
 
-#include "itk_image.h"
-
-typedef UCharImageType MaskImageType;
-typedef ShortImageType RealImageType;
-
 void
-merge_pixels(ShortImageType::Pointer im_out, ShortImageType::Pointer im_1, 
-	     UCharImageType::Pointer im_2, int mask_value)
+adjust_mha_main (Adjust_Mha_Parms* parms)
 {
-    typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
-    typedef itk::ImageRegionIterator< ShortImageType > ShortIteratorType;
-    ShortImageType::RegionType r_1 = im_1->GetLargestPossibleRegion();
-    UCharImageType::RegionType r_2 = im_2->GetLargestPossibleRegion();
+    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    const ShortImageType::IndexType& st = r_1.GetIndex();
-    const ShortImageType::SizeType& sz = r_1.GetSize();
-    //const InputImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
-    const ShortImageType::PointType& og = im_1->GetOrigin();
-    const ShortImageType::SpacingType& sp = im_1->GetSpacing();
-    
-    im_out->SetRegions(r_1);
-    im_out->SetOrigin(og);
-    im_out->SetSpacing(sp);
-    im_out->Allocate();
+    FloatImageType::Pointer img = load_float (parms->mha_in_fn);
+    FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    FloatIteratorType it (img, rg);
 
-    ShortIteratorType it_1 (im_1, r_1);
-    UCharIteratorType it_2 (im_2, r_2);
-    ShortIteratorType it_out (im_out, r_1);
-
-    for (it_1.GoToBegin(); !it_1.IsAtEnd(); ++it_1,++it_2,++it_out) {
-	short p1 = it_1.Get();
-	unsigned char p2 = it_2.Get();
-	if (p2 > 0) {
-	    it_out.Set (p1);
-	} else {
-	    it_out.Set (mask_value);
+    if (parms->have_upper_trunc) {
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    if (v > parms->upper_trunc) {
+		it.Set (parms->upper_trunc);
+	    }
 	}
     }
+
+    if (parms->have_stretch) {
+	float vmin, vmax;
+	it.GoToBegin();
+	vmin = it.Get();
+	vmax = it.Get();
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    if (v > vmax) {
+		vmax = v;
+	    } else if (v < vmin) {
+		vmin = v;
+	    }
+	}
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    v = (v - vmin) / (vmax - vmin);
+	    v = (v + parms->stretch[0]) * (parms->stretch[1] - parms->stretch[0]);
+	    it.Set (v);
+	}
+    }
+
+    save_float (img, parms->mha_out_fn);
 }
 
 void
-mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf, 
-	     UCharImageType::Pointer mask, float mask_value[3])
+print_usage (void)
 {
-    typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
-    typedef itk::ImageRegionIterator< DeformationFieldType > DeformationFieldIteratorType;
-    DeformationFieldType::RegionType r_1 = vf->GetLargestPossibleRegion();
-    UCharImageType::RegionType r_2 = mask->GetLargestPossibleRegion();
+    printf ("Usage: adjust_mha --input=image_in --output=image_out [options]\n");
+    printf ("Opts:    --upper_trunc=value\n");
+    printf ("Opts:    --stretch=\"min max\"\n");
+    exit (-1);
+}
 
-    const DeformationFieldType::IndexType& st = r_1.GetIndex();
-    const DeformationFieldType::SizeType& sz = r_1.GetSize();
-    const DeformationFieldType::PointType& og = vf->GetOrigin();
-    const DeformationFieldType::SpacingType& sp = vf->GetSpacing();
-    
-    vf_out->SetRegions(r_1);
-    vf_out->SetOrigin(og);
-    vf_out->SetSpacing(sp);
-    vf_out->Allocate();
+void
+parse_args (Adjust_Mha_Parms* parms, int argc, char* argv[])
+{
+    int ch;
+    int have_offset = 0;
+    int have_spacing = 0;
+    int have_dims = 0;
+    static struct option longopts[] = {
+	{ "input",          required_argument,      NULL,           2 },
+	{ "output",         required_argument,      NULL,           3 },
+	{ "upper_trunc",    required_argument,      NULL,           4 },
+	{ "stretch",        required_argument,      NULL,           5 },
+	{ NULL,             0,                      NULL,           0 }
+    };
 
-    DeformationFieldIteratorType it_1 (vf, r_1);
-    UCharIteratorType it_2 (mask, r_2);
-    DeformationFieldIteratorType it_out (vf_out, r_1);
-
-    for (it_1.GoToBegin(); !it_1.IsAtEnd(); ++it_1,++it_2,++it_out) {
-	itk::Vector<float,3> p1 = it_1.Get();
-	unsigned char p2 = it_2.Get();
-	if (p2 > 0) {
-	    it_out.Set (p1);
-	} else {
-	    it_out.Set (mask_value);
+    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+	switch (ch) {
+	case 2:
+	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    break;
+	case 3:
+	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
+	    break;
+	case 4:
+	    if (sscanf (optarg, "%f", &parms->upper_trunc) != 1) {
+		printf ("Error: upper_trunc takes an argument\n");
+		print_usage();
+	    }
+	    parms->have_upper_trunc = 1;
+	    break;
+	case 5:
+	    if (sscanf (optarg, "%f %f", &parms->stretch[0], &parms->stretch[1]) != 1) {
+		printf ("Error: stretch takes two arguments\n");
+		print_usage();
+	    }
+	    parms->have_stretch = 1;
+	    break;
+	default:
+	    break;
 	}
+    }
+    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
+	printf ("Error: must specify --input and --output\n");
+	print_usage();
     }
 }
 
 int
 main(int argc, char *argv[])
 {
-    if ((argc != 5) && (argc != 7)) {
-	std::cerr << "Wrong Parameters " << std::endl;
-	std::cerr << "Usage: ";
-	std::cerr << "input_image mask_image mask_value output"<< std::endl;
-	return 1;
-    }
+    Adjust_Mha_Parms parms;
+    
+    parse_args (&parms, argc, argv);
 
-    if (argc == 5) { // masking an image volume
-	int mask_value;
-	typedef itk::ImageFileWriter < ShortImageType > WriterType;
-
-	ShortImageType::Pointer im_1 = RealImageType::New();
-	UCharImageType::Pointer im_2 = MaskImageType::New();
-	ShortImageType::Pointer im_out = ShortImageType::New();
-
-	printf ("Loading...\n");
-	im_1 = load_short (argv[1]);
-	im_2 = load_uchar (argv[2]);
-
-	sscanf (argv[3], "%d", &mask_value);
-	printf ("Setting mask value to %d\n", mask_value);
-	merge_pixels (im_out, im_1, im_2, mask_value);
-
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetFileName(argv[4]);
-	writer->SetInput(im_out);
-	writer->Update();
-    } else { // masking a vector field
-	float mask_value[3];
-
-	typedef itk::ImageFileWriter < DeformationFieldType > WriterType;
-
-	DeformationFieldType::Pointer vf = DeformationFieldType::New();
-	UCharImageType::Pointer mask = MaskImageType::New();
-	DeformationFieldType::Pointer vf_out = DeformationFieldType::New();
-
-	printf ("Loading...\n");
-	vf = load_float_field (argv[1]);
-	mask = load_uchar (argv[2]);
-
-	printf ("Masking...\n");
-
-	sscanf (argv[3], "%f", &(mask_value[0]));
-	sscanf (argv[4], "%f", &(mask_value[1]));
-	sscanf (argv[5], "%f", &(mask_value[2]));
-
-	mask_vf(vf_out, vf, mask, mask_value);
-
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetFileName(argv[6]);
-	writer->SetInput(vf_out);
-	writer->Update();
-    }
+    adjust_mha_main (&parms);
 
     printf ("Finished!\n");
     return 0;
