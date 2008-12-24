@@ -1153,7 +1153,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
 		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
-
+// 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
@@ -1540,6 +1540,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
     int q[3];
     float diff;
     float* dc_dv;
+    int* dc_dv_val;
     float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1567,7 +1568,8 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 
     start_clock = clock();
 
-    dc_dv = (float*) malloc (3*64*bxf->rdims[0]*bxf->rdims[1]*bxf->rdims[2]*sizeof(float));
+    dc_dv = (float*) malloc (3*bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(float));
+    dc_dv_val = (int*) malloc (bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(int));
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
@@ -1583,10 +1585,18 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 		/* Find c_lut row for this tile */
 		c_lut = &bxf->c_lut[pidx*64];
 
+		//printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
+
 		/* Parallel across offsets */
 		for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
 		    for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
 			for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+
+			    /* Compute linear index for this offset */
+			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+
+			    /* Tentatively mark this pixel as invalid */
+			    dc_dv_val[qidx] = 0;
 
 			    /* Get (i,j,k) index of the voxel */
 			    fi = bxf->roi_offset[0] + p[0] * bxf->vox_per_rgn[0] + q[0];
@@ -1607,7 +1617,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 			    fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
 			    /* Get B-spline deformation vector */
-			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
 			    bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 			    /* Find correspondence in moving image */
@@ -1653,12 +1662,17 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 			    mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
 
 			    /* Store dc_dv for this offset */
-			    dc_dv[qidx+0] = diff * m_grad[3*mvr+0];  /* x component */
-			    dc_dv[qidx+1] = diff * m_grad[3*mvr+1];  /* y component */
-			    dc_dv[qidx+2] = diff * m_grad[3*mvr+2];  /* z component */
+			    dc_dv[3*qidx+0] = diff * m_grad[3*mvr+0];  /* x component */
+			    dc_dv[3*qidx+1] = diff * m_grad[3*mvr+1];  /* y component */
+			    dc_dv[3*qidx+2] = diff * m_grad[3*mvr+2];  /* z component */
+
+			    /* Mark this pixel as valid */
+			    dc_dv_val[qidx] = 1;
 			}
 		    }
 		}
+
+		//printf ("Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across 64 control points */
 		for (k = 0; k < 4; k++) {
@@ -1681,9 +1695,13 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 
 					/* Accumulate update to gradient for this 
 					    control point */
-					ssd->grad[cidx+0] += dc_dv[qidx+0] * q_lut[m];
-					ssd->grad[cidx+1] += dc_dv[qidx+1] * q_lut[m];
-					ssd->grad[cidx+2] += dc_dv[qidx+2] * q_lut[m];
+					//printf ("cidx = %d, qidx = %d, m = %d\n", cidx, qidx, m);
+					if (dc_dv_val[qidx]) {
+					    ssd->grad[cidx+0] += dc_dv[3*qidx+0] * q_lut[m];
+					    ssd->grad[cidx+1] += dc_dv[3*qidx+1] * q_lut[m];
+					    ssd->grad[cidx+2] += dc_dv[3*qidx+2] * q_lut[m];
+					}
+					//printf ("Done.\n");
 				    }
 				}
 			    }
@@ -1695,6 +1713,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 	}
     }
     free (dc_dv);
+    free (dc_dv_val);
 
     if (parms->debug) {
 	fclose (fp);
@@ -2102,14 +2121,14 @@ bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *
 
     if (parms->metric == BMET_MSE) {
 	printf("Using CPU. \n");
-	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_b (parms, fixed, moving, moving_grad);
+	//bspline_score_a (parms, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
-	//	bspline_score_c_mse (parms, fixed, moving, moving_grad);
     }
 
-    //    bspline_score_b (parms, fixed, moving, moving_grad);
-    //    bspline_score_a (parms, fixed, moving, moving_grad);
 }
 
 void
