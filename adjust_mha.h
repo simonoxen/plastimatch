@@ -4,8 +4,10 @@
 #ifndef _adjust_mha_h_
 #define _adjust_mha_h_
 
+#include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
+#include "itk_image.h"
 
 class Adjust_Mha_Parms {
 public:

@@ -3,10 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <time.h>
+#include "itkImageRegionIterator.h"
 #include "getopt.h"
 #include "adjust_mha.h"
 #include "itk_image.h"
-#include "itkImageRegionIterator.h"
 
 void
 adjust_mha_main (Adjust_Mha_Parms* parms)
