@@ -1540,7 +1540,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
     int q[3];
     float diff;
     float* dc_dv;
-    int* dc_dv_val;
     float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -1569,7 +1568,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
     start_clock = clock();
 
     dc_dv = (float*) malloc (3*bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(float));
-    dc_dv_val = (int*) malloc (bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(int));
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     num_vox = 0;
@@ -1595,8 +1593,10 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 			    /* Compute linear index for this offset */
 			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
 
-			    /* Tentatively mark this pixel as invalid */
-			    dc_dv_val[qidx] = 0;
+			    /* Tentatively mark this pixel as no contribution */
+			    dc_dv[3*qidx+0] = 0.f;
+			    dc_dv[3*qidx+1] = 0.f;
+			    dc_dv[3*qidx+2] = 0.f;
 
 			    /* Get (i,j,k) index of the voxel */
 			    fi = bxf->roi_offset[0] + p[0] * bxf->vox_per_rgn[0] + q[0];
@@ -1665,9 +1665,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 			    dc_dv[3*qidx+0] = diff * m_grad[3*mvr+0];  /* x component */
 			    dc_dv[3*qidx+1] = diff * m_grad[3*mvr+1];  /* y component */
 			    dc_dv[3*qidx+2] = diff * m_grad[3*mvr+2];  /* z component */
-
-			    /* Mark this pixel as valid */
-			    dc_dv_val[qidx] = 1;
 			}
 		    }
 		}
@@ -1695,13 +1692,9 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 
 					/* Accumulate update to gradient for this 
 					    control point */
-					//printf ("cidx = %d, qidx = %d, m = %d\n", cidx, qidx, m);
-					if (dc_dv_val[qidx]) {
-					    ssd->grad[cidx+0] += dc_dv[3*qidx+0] * q_lut[m];
-					    ssd->grad[cidx+1] += dc_dv[3*qidx+1] * q_lut[m];
-					    ssd->grad[cidx+2] += dc_dv[3*qidx+2] * q_lut[m];
-					}
-					//printf ("Done.\n");
+					ssd->grad[cidx+0] += dc_dv[3*qidx+0] * q_lut[m];
+					ssd->grad[cidx+1] += dc_dv[3*qidx+1] * q_lut[m];
+					ssd->grad[cidx+2] += dc_dv[3*qidx+2] * q_lut[m];
 				    }
 				}
 			    }
@@ -1713,7 +1706,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 	}
     }
     free (dc_dv);
-    free (dc_dv_val);
 
     if (parms->debug) {
 	fclose (fp);
