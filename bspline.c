@@ -2121,8 +2121,8 @@ bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *
 
     if (parms->metric == BMET_MSE) {
 	printf("Using CPU. \n");
-	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
 	//bspline_score_b (parms, fixed, moving, moving_grad);
 	//bspline_score_a (parms, fixed, moving, moving_grad);
     } else {
