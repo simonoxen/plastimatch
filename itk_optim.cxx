@@ -465,7 +465,7 @@ set_optimization (RegistrationType::Pointer registration,
 	set_optimization_scales_affine (registration, stage);
 	break;
     case STAGE_TRANSFORM_BSPLINE:
-	/* LBFGS only. No optimizer scales. */
+	/* LBFGS/LBFGSB only. No optimizer scales. */
 	break;
     }
 }
