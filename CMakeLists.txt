@@ -24,7 +24,10 @@ ENDIF(BUILD_PLASTIMATCH_SLICER)
 ######################################################
 ##  SLICER FRONT-END 	 
 ###################################################### 	 
-IF(BUILD_PLASTIMATCH_SLICER)
+
+IF(Slicer3_DIR)
+
+  MESSAGE ("Using " ${Slicer3_DIR})
 
 find_package(Slicer3 REQUIRED)
 include(${Slicer3_USE_FILE})
@@ -54,7 +57,9 @@ slicer3_install_plugins(${CLP})
 # ? 	 
 #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 
-ENDIF(BUILD_PLASTIMATCH_SLICER)
+ELSE(Slicer3_DIR)
+  MESSAGE ("NOT Using " ${Slicer3_DIR})
+ENDIF(Slicer3_DIR)
 
 
 ## Tell CMake to be quiet
