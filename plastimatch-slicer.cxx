@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <iostream>
 #include "plastimatch-slicerCLP.h"
 #include "plm_registration.h"
@@ -21,15 +22,21 @@
 </parameters>
 */
 
+#if defined (commentout)
 const char* parms_fn = "C:/tmp/plmslc-parms.txt";
 const char* ff_fn = "C:/tmp/plmslc-ff.txt";
 const char* mf_fn = "C:/tmp/plmslc-mf.txt";
+#endif
 
 int main(int argc, char * argv [])
 {
     PARSE_ARGS;
+    char buf1[L_tmpnam+1];
 
+    char* parms_fn = tmpnam (buf1);
     FILE* fp = fopen (parms_fn, "w");
+
+    printf ("Temp filename is %s\n");
     fprintf (fp,
 	     "[GLOBAL]\n"
 	     "fixed=%s\n"
@@ -62,7 +69,7 @@ int main(int argc, char * argv [])
 	     plmslc_warped_volume.c_str());
     fclose (fp);
 
-
+#if defined (commentout)
     fp = fopen (ff_fn, "w");
     //fprintf (fp, "Fixed fiducials:\n");
     for (int i = 0; i < plmslc_fixed_fiducials.size(); i++) {
@@ -84,6 +91,7 @@ int main(int argc, char * argv [])
 	       );
     }
     fclose (fp);
+#endif
 
     Registration_Parms regp;
     if (parse_command_file (&regp, parms_fn) < 0) {

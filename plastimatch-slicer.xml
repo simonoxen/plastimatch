@@ -14,7 +14,7 @@
     Gregory C. Sharp and others</contributor>
   <acknowledgements>
     </acknowledgements>
- <parameters>
+  <parameters>
     <label>Input/Output</label>
     <description>Input/output parameters</description>
     <image>
@@ -57,6 +57,15 @@
       <default>None</default>
       <description>Warped output image</description>
     </image>
-</parameters>
-
+  </parameters>
+  <parameters>
+    <label>Algorithm Options</label>
+    <description>Algorithm Options</description>
+    <boolean>
+      <name>stage_1_grid_size</name>
+      <label>Stage 1 Grid Size (mm)</label>
+      <default>200</default>
+      <description>B-Spline Grid Spacing</description>
+    </boolean>
+  </parameters>
 </executable>
