@@ -58,7 +58,7 @@ IF(Slicer3_DIR)
   #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 
 ELSE(Slicer3_DIR)
-  MESSAGE (STATUS "NOT Using " ${Slicer3_DIR})
+  MESSAGE (STATUS "NOT Using Slicer3")
 ENDIF(Slicer3_DIR)
 
 
@@ -662,6 +662,7 @@ IF(ITK_FOUND)
 
   if (Slicer3_DIR)
     slicer3_install_plugins(plastimatch1)
+    slicer3_install_plugins(gpuit)
   endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
 
