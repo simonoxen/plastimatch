@@ -14,7 +14,7 @@
     default_val:    the value to use for pixels outside the volume
 */
 template<class T, class U>
-T
+T 
 itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
 			U default_val)
 {
@@ -57,7 +57,22 @@ itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
     return im_out;
 }
 
+#if defined (commentout)
+UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val)
+{
+    return itk_warp_image_template (im_in, vf, linear_interp, default_val);
+}
+ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val)
+{
+    return itk_warp_image_template (im_in, vf, linear_interp, default_val);
+}
+FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val)
+{
+    return itk_warp_image_template (im_in, vf, linear_interp, default_val);
+}
+#endif
+
 /* Explicit instantiations */
-template UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
-template ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
-template FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
+template plastimatch1_EXPORT UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
+template plastimatch1_EXPORT ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
+template plastimatch1_EXPORT FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);

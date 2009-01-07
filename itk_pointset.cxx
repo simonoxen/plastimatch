@@ -96,6 +96,6 @@ pointset_debug (T pointset)
 }
 
 /* Explicit instantiations */
-template void pointset_debug (PointSetType::Pointer pointset);
-template void pointset_load (PointSetType::Pointer pointset, char* fn);
-template PointSetType::Pointer pointset_warp (PointSetType::Pointer ps_in, Xform* xf);
+template plastimatch1_EXPORT void pointset_debug (PointSetType::Pointer pointset);
+template plastimatch1_EXPORT void pointset_load (PointSetType::Pointer pointset, char* fn);
+template plastimatch1_EXPORT PointSetType::Pointer pointset_warp (PointSetType::Pointer ps_in, Xform* xf);

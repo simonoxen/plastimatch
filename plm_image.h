@@ -23,10 +23,10 @@ public:
     void set_from_itk (const OriginType& itk_origin,
 			 const SpacingType& itk_spacing,
 			 const ImageRegionType& itk_region);
-    void set_from_gpuit (float gpuit_origin[3],
+    void plastimatch1_EXPORT set_from_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
 			 int gpuit_dim[3]);
-    void cvt_to_gpuit (float gpuit_origin[3],
+    void plastimatch1_EXPORT cvt_to_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
 			 int gpuit_dim[3]);
     template<class T> 
