@@ -27,39 +27,38 @@ ENDIF(BUILD_PLASTIMATCH_SLICER)
 
 IF(Slicer3_DIR)
 
-  MESSAGE ("Using " ${Slicer3_DIR})
+  MESSAGE (STATUS "Using " ${Slicer3_DIR})
 
-find_package(Slicer3 REQUIRED)
-include(${Slicer3_USE_FILE})
+  find_package(Slicer3 REQUIRED)
+  include(${Slicer3_USE_FILE})
 
-# Set reasonable default install prefix and output paths
-# (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-slicer3_set_default_install_prefix_for_external_projects()
+  # Set reasonable default install prefix and output paths
+  # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
+  slicer3_set_default_install_prefix_for_external_projects()
 
-# The Command Line Module
-set(CLP plastimatch-slicer)
-set(${CLP}_SOURCE ${CLP}.cxx)
-generateclp(${CLP}_SOURCE ${CLP}.xml)
+  # The Command Line Module
+  set(CLP plastimatch-slicer)
+  set(${CLP}_SOURCE ${CLP}.cxx)
+  generateclp(${CLP}_SOURCE ${CLP}.xml)
 
-# Build it
-add_executable(${CLP} ${${CLP}_SOURCE})
-slicer3_set_plugins_output_path(${CLP})
-target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
+  # Build it
+  add_executable(${CLP} ${${CLP}_SOURCE})
+  slicer3_set_plugins_output_path(${CLP})
+  target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
 
-# Install it
-slicer3_install_plugins(${CLP})
-slicer3_install_plugins(plastimatch1)
+  # Install it
+  slicer3_install_plugins(${CLP})
 
-# Test it
-#enable_testing()
-#include(CTest)
-#set(UPDATE_TYPE svn)
+  # Test it
+  #enable_testing()
+  #include(CTest)
+  #set(UPDATE_TYPE svn)
 
-# ? 	 
-#slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
+  # ? 	 
+  #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 
 ELSE(Slicer3_DIR)
-  MESSAGE ("NOT Using " ${Slicer3_DIR})
+  MESSAGE (STATUS "NOT Using " ${Slicer3_DIR})
 ENDIF(Slicer3_DIR)
 
 
@@ -660,6 +659,10 @@ IF(ITK_FOUND)
   INSTALL(TARGETS warp_dij DESTINATION bin)
   INSTALL(TARGETS warp_mha DESTINATION bin)
   INSTALL(TARGETS warp_pointset DESTINATION bin)
+
+  if (Slicer3_DIR)
+    slicer3_install_plugins(plastimatch1)
+  endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
 
 ######################################################
