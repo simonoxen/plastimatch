@@ -48,6 +48,7 @@ target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
 
 # Install it
 slicer3_install_plugins(${CLP})
+slicer3_install_plugins(plastimatch1)
 
 # Test it
 #enable_testing()
@@ -641,6 +642,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS patient_mask DESTINATION bin)
   INSTALL(TARGETS raw_to_mha DESTINATION bin)
   INSTALL(TARGETS plastimatch DESTINATION bin)
+  INSTALL(TARGETS plastimatch1 DESTINATION lib)
   INSTALL(TARGETS resample_mha DESTINATION bin)
   INSTALL(TARGETS rtog_to_mha DESTINATION bin)
   INSTALL(TARGETS shuffle_mha DESTINATION bin)
