@@ -159,10 +159,10 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     }
     else if (!strcmp (key, "metric")) {
 	if (section == 0) goto error_not_global;
-	if (!strcmp(val,"mse")) {
+	if (!strcmp(val,"mse") || !strcmp(val,"MSE")) {
 	    stage->metric_type = METRIC_MSE;
 	}
-	else if (!strcmp(val,"mi")) {
+	else if (!strcmp(val,"mi") || !strcmp(val,"MI")) {
 	    stage->metric_type = METRIC_MI;
 	}
 	else if (!strcmp(val,"mattes")) {

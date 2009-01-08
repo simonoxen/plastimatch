@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <iostream>
+#include <vector>
 #include "plastimatch-slicerCLP.h"
 #include "plm_registration.h"
 #include "itkImage.h"
@@ -7,66 +8,71 @@
 #include "itkImageFileWriter.h"
 #include "itkDiscreteGaussianImageFilter.h"
 
-/* These are the parameters I deleted from the xml file.
-   Just in case I need them later...
-<parameters>
-  <label>Discrete Gaussian Parameters</label>
-  <description>Parameters of the Discrete Gaussian Filter</description>
-  <double>
-      <name>variance</name>
-      <longflag>--variance</longflag>
-      <description>Variance ( width of the filter kernel) </description>
-      <label>Variance</label>
-      <default>0.5</default>
-  </double>
-</parameters>
-*/
 
-#if defined (commentout)
-const char* parms_fn = "C:/tmp/plmslc-parms.txt";
-const char* ff_fn = "C:/tmp/plmslc-ff.txt";
-const char* mf_fn = "C:/tmp/plmslc-mf.txt";
-#endif
-
-int main(int argc, char * argv [])
+int 
+main (int argc, char * argv [])
 {
     PARSE_ARGS;
-    char buf1[L_tmpnam+1];
 
+    char buf1[L_tmpnam+1];
     char* parms_fn = tmpnam (buf1);
+    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
     FILE* fp = fopen (parms_fn, "w");
 
-    printf ("Temp filename is %s\n");
     fprintf (fp,
 	     "[GLOBAL]\n"
 	     "fixed=%s\n"
 	     "moving=%s\n"
-	     "xf_out=%s\n"
+//	     "xf_out=%s\n"
 //	     "vf_out=%s\n"
 	     "img_out=%s\n\n"
 	     "[STAGE]\n"
+	     "metric=%s\n"
 	     "xform=bspline\n"	
 	     "optim=lbfgsb\n"
 	     "impl=gpuit_cpu\n"
-	     "max_its=100\n"
+	     "max_its=%d\n"
 	     "convergence_tol=5\n"
 	     "grad_tol=1.5\n"
-	     "grid_spac=100 100 100\n"
-	     "res=5 5 5\n"
+	     "res=%d %d %d\n"
+	     "grid_spac=%g %g %g\n",
+	     /* Global */
+	     plmslc_fixed_volume.c_str(),
+	     plmslc_moving_volume.c_str(),
+//	     "C:/tmp/plmslc-xf.txt",
+//	     "C:/tmp/plmslc-vf.mha",
+	     plmslc_warped_volume.c_str(),
+	     /* Stage 1 */
+	     metric.c_str(),
+	     stage_1_its,
+	     stage_1_resolution[0],
+	     stage_1_resolution[1],
+	     stage_1_resolution[2],
+	     stage_1_grid_size,
+	     stage_1_grid_size,
+	     stage_1_grid_size
+	     );
+    if (enable_stage_2) {
+	fprintf (fp, 
 	     "[STAGE]\n"
 	     "xform=bspline\n"
 	     "optim=lbfgsb\n"
 	     "impl=gpuit_cpu\n"
-	     "max_its=100\n"
+	     "max_its=%d\n"
 	     "convergence_tol=5\n"
 	     "grad_tol=1.5\n"
-	     "grid_spac=100 100 100\n"
-	     "res=4 4 3\n",
-	     plmslc_fixed_volume.c_str(),
-	     plmslc_moving_volume.c_str(),
-	     "C:/tmp/plmslc-xf.txt",
-//	     "C:/tmp/plmslc-vf.mha",
-	     plmslc_warped_volume.c_str());
+	     "res=%d %d %d\n"
+	     "grid_spac=%g %g %g\n",
+	     /* Stage 2 */
+	     stage_2_its,
+	     stage_2_resolution[0],
+	     stage_2_resolution[1],
+	     stage_2_resolution[2],
+	     stage_2_grid_size,
+	     stage_2_grid_size,
+	     stage_2_grid_size
+	     );
+    }
     fclose (fp);
 
 #if defined (commentout)
@@ -97,37 +103,6 @@ int main(int argc, char * argv [])
     if (parse_command_file (&regp, parms_fn) < 0) {
 	return EXIT_FAILURE;
     }
-    //do_registration (&regp);
+    do_registration (&regp);
     return EXIT_SUCCESS;
 }
-
-
-#if defined (commentout)
-    std::cout << "Hello Slicer!" << std::endl;
-    typedef itk::Image< short, 3 > ImageType;
-    typedef itk::ImageFileReader< ImageType >  ReaderType;
-    typedef itk::ImageFileWriter< ImageType >  WriterType;
-    ReaderType::Pointer reader = ReaderType::New();
-    WriterType::Pointer writer = WriterType::New();
-
-    reader->SetFileName (helloSlicerInputVolume.c_str());
-    writer->SetFileName (helloSlicerOutputVolume.c_str());
-
-    typedef itk::DiscreteGaussianImageFilter <ImageType, ImageType> FilterType;
-    FilterType::Pointer filter = FilterType::New();
-
-    try {  
-	filter->SetInput(reader->GetOutput());
-	filter->SetVariance(variance);
-	writer->SetInput(filter->GetOutput());
-	writer->Update();
-    }
-
-    catch (itk::ExceptionObject &excep)
-    {
-	std::cerr << argv[0] << ": exception caught !" << std::endl;
-	return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-#endif

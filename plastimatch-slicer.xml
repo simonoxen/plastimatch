@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>
-    Registration</category>
-  <title>
-    (MGH) Plastimatch</title>
-  <description>
-    Plastimatch deformable registration software</description>
-  <version>
-    0.0</version>
+  <category>Registration</category>
+  <title>(MGH) Plastimatch</title>
+  <description>Plastimatch deformable registration software</description>
+  <version>0.0</version>
   <documentation-url></documentation-url>
   <license>BSD-style</license>
-  <contributor>
-    Gregory C. Sharp and others</contributor>
-  <acknowledgements>
-    </acknowledgements>
+  <contributor>Gregory C. Sharp and others</contributor>
+  <acknowledgements></acknowledgements>
   <parameters>
     <label>Input/Output</label>
     <description>Input/output parameters</description>
@@ -33,21 +27,21 @@
       <default>None</default>
       <description>Volume to warp</description>
     </image>
+    <!--
     <point coordinateSystem="ras" multiple="true">
       <name>plmslc_fixed_fiducials</name>
       <label>Fixed Fiducials</label>
       <description>Fiducials in fixed volume</description>
       <default>0,0,0</default>
-      <longflag>--fixedfiducials</longflag>
+      <longflag>fixedfiducials</longflag>
     </point>
     <point coordinateSystem="ras" multiple="true">
       <name>plmslc_moving_fiducials</name>
       <label>Moving Fiducials</label>
       <description>Fiducials in moving volume</description>
       <default>0,0,0</default>
-      <longflag>--movingfiducials</longflag>
+      <longflag>movingfiducials</longflag>
     </point>
-    <!--
     -->
     <image>
       <name>plmslc_warped_volume</name>
@@ -59,13 +53,75 @@
     </image>
   </parameters>
   <parameters>
-    <label>Algorithm Options</label>
-    <description>Algorithm Options</description>
+    <label>Registration Options</label>
+    <description></description>
     <boolean>
+      <name>enable_stage_2</name>
+      <label>Enable Stage 2?</label>
+      <default>true</default>
+      <longflag>--enablestage2</longflag>
+      <description>Check this box if you want to run two registration stages</description>
+    </boolean>
+    <string-enumeration>
+      <name>metric</name>
+      <longflag>--metric</longflag>
+      <description>Cost function: MSE = mean squared error, MI = mutual information</description>
+      <label>Cost function</label>
+      <default>MSE</default>
+      <element>MSE</element>
+      <element>MI</element>
+    </string-enumeration>
+  </parameters>
+  <parameters>
+    <label>Stage 1 Options</label>
+    <description></description>
+    <integer-vector>
+      <name>stage_1_resolution</name>
+      <label>Stage 1 Image Subsampling rate (vox)</label>
+      <default>4,4,2</default>
+      <longflag>--stage1res</longflag>
+      <description>This defines the image subsampling for the first registration.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
+    </integer-vector>
+    <!--
+    -->
+    <double>
       <name>stage_1_grid_size</name>
       <label>Stage 1 Grid Size (mm)</label>
       <default>200</default>
-      <description>B-Spline Grid Spacing</description>
-    </boolean>
+      <longflag>--stage1gridsize</longflag>
+      <description>Approximate B-Spline Grid Spacing (isotropic)</description>
+    </double>
+    <integer>
+      <name>stage_1_its</name>
+      <label>Stage 1 iterations</label>
+      <default>50</default>
+      <longflag>--stage1its</longflag>
+      <description>Maximum number of iterations</description>
+    </integer>
+  </parameters>
+  <parameters>
+    <label>Stage 2 Options</label>
+    <description></description>
+    <integer-vector>
+      <name>stage_2_resolution</name>
+      <label>Stage 2 Image Subsampling rate (vox)</label>
+      <default>2,2,1</default>
+      <longflag>--stage2res</longflag>
+      <description>This defines the image subsampling for the second registration.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
+    </integer-vector>
+    <double>
+      <name>stage_2_grid_size</name>
+      <label>Stage 2 Grid Size (mm)</label>
+      <default>50</default>
+      <longflag>--stage2gridsize</longflag>
+      <description>Approximate B-Spline Grid Spacing (isotropic)</description>
+    </double>
+    <integer>
+      <name>stage_2_its</name>
+      <label>Stage 2 iterations</label>
+      <default>50</default>
+      <longflag>--stage2its</longflag>
+      <description>Maximum number of iterations</description>
+    </integer>
   </parameters>
 </executable>
