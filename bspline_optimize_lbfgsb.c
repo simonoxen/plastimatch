@@ -211,7 +211,8 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
 	if(parms->implementation == BIMPL_CUDA) {
-		bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
+		bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
+		// bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
 	}
 #endif
 
@@ -267,7 +268,8 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
 	if(parms->implementation == BIMPL_CUDA) {
-		bspline_cuda_clean_up();
+		bspline_cuda_clean_up_d();
+		// bspline_cuda_clean_up();
 	}
 #endif
 

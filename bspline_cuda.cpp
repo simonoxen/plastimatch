@@ -14,6 +14,8 @@
 #include "bspline.h"
 #include "bspline_cuda.h"
 
+#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+
 inline void bspline_update_grad_b_inline (
 	BSPLINE_Parms* parms, 
 	BSPLINE_Xform* bxf, 
@@ -41,7 +43,375 @@ inline void bspline_update_grad_b_inline (
     }
 }
 
-void bspline_cuda_score_mse(
+/* Clipping is done using clamping.  You should have "air" as the outside
+   voxel so pixels can be clamped to air.  */
+inline void
+clamp_linear_interpolate_inline (
+    float ma,           /* (Unrounded) pixel coordinate (in vox) */
+    int dmax,		/* Maximum coordinate in this dimension */
+    int* maf,		/* x, y, or z coord of "floor" pixel in moving img */
+    int* mar,		/* x, y, or z coord of "round" pixel in moving img */
+    float* fa1,		/* Fraction of interpolant for lower index voxel */
+    float* fa2		/* Fraction of interpolant for upper index voxel */
+)
+{
+    float maff = floor(ma);
+    *maf = (int) maff;
+    *mar = round_int (ma);
+    *fa2 = ma - maff;
+    if (*maf < 0) {
+	*maf = 0;
+	*mar = 0;
+	*fa2 = 0.0f;
+    } else if (*maf >= dmax) {
+	*maf = dmax - 1;
+	*mar = dmax;
+	*fa2 = 1.0f;
+    }
+    *fa1 = 1.0f - *fa2;
+}
+
+inline void
+bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
+{
+    int i, j, k, m;
+    int cidx;
+    float* q_lut = &bxf->q_lut[qidx*64];
+    int* c_lut = &bxf->c_lut[pidx*64];
+
+    out[0] = out[1] = out[2] = 0;
+    m = 0;
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = 3 * c_lut[m];
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
+		m ++;
+	    }
+	}
+    }
+}
+
+// Corresponds to version "D" on the CPU.
+void bspline_cuda_score_d_mse(
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &parms->ssd;
+    int i, j, k, m;
+    int fi, fj, fk, fv;
+    float mi, mj, mk;
+    float fx, fy, fz;
+    float mx, my, mz;
+    int mif, mjf, mkf, mvf;  /* Floor */
+    int mir, mjr, mkr, mvr;  /* Round */
+    int p[3];
+    int q[3];
+    float diff;
+    float* dc_dv;
+    float fx1, fx2, fy1, fy2, fz1, fz2;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float* m_grad = (float*) moving_grad->img;
+    float dxyz[3];
+    int num_vox;
+    int pidx, qidx;
+    int cidx;
+    float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+    float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    int* c_lut;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int dd = 0;
+
+	/* BEGIN CUDA VARIABLES */
+	float *host_dc_dv;
+	float *host_grad;
+	float *host_score;
+	float *host_grad_norm;
+	float *host_grad_mean;
+	int dc_dv_errors = 0;
+	int errors = 0;
+	/* END CUDA VARIBLES */
+
+    if (parms->debug) {
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+    // dc_dv = (float*)malloc(3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * sizeof(float));
+    // ssd->score = 0;
+    // memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
+
+	// host_dc_dv = (float*)malloc(3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * sizeof(float));
+	// host_grad  = (float*)malloc(bxf->num_coeff * sizeof(float));
+	host_score = (float*)malloc(sizeof(float));
+	host_grad_norm = (float*)malloc(sizeof(float));
+	host_grad_mean = (float*)malloc(sizeof(float));
+
+	bspline_cuda_copy_coeff_lut(bxf);
+	bspline_cuda_clear_score();
+	bspline_cuda_clear_grad();
+
+    /* Serial across tiles */
+    for (p[2] = 0; p[2] < bxf->rdims[2]; p[2]++) {
+		for (p[1] = 0; p[1] < bxf->rdims[1]; p[1]++) {
+			for (p[0] = 0; p[0] < bxf->rdims[0]; p[0]++) {
+
+				/* Compute linear index for tile */
+				pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+
+				/* Find c_lut row for this tile */
+				c_lut = &bxf->c_lut[pidx*64];
+
+				// printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
+
+				bspline_cuda_run_kernels_d(
+					fixed,
+					moving,
+					moving_grad,
+					bxf,
+					parms,
+					p[0],
+					p[1],
+					p[2]);
+				
+				/* ORIGINAL CPU CODE
+
+				// Parallel across offsets
+				for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+					for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+						for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+							
+							// Compute linear index for this offset
+							qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];					
+
+							// Tentatively mark this pixel as no contribution
+							dc_dv[3*qidx+0] = 0.f;
+							dc_dv[3*qidx+1] = 0.f;
+							dc_dv[3*qidx+2] = 0.f;
+
+							// Get (i,j,k) index of the voxel
+							fi = bxf->roi_offset[0] + p[0] * bxf->vox_per_rgn[0] + q[0];
+							fj = bxf->roi_offset[1] + p[1] * bxf->vox_per_rgn[1] + q[1];
+							fk = bxf->roi_offset[2] + p[2] * bxf->vox_per_rgn[2] + q[2];
+
+							// Some of the pixels are outside image
+							if (fi > bxf->roi_offset[0] + bxf->roi_dim[0]) continue;
+							if (fj > bxf->roi_offset[1] + bxf->roi_dim[1]) continue;
+							if (fk > bxf->roi_offset[2] + bxf->roi_dim[2]) continue;
+
+							// Compute physical coordinates of fixed image voxel
+							fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+							fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+							fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+
+							// Compute linear index of fixed image voxel
+							fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+							// Get B-spline deformation vector
+							bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+
+							// Find correspondence in moving image
+							mx = fx + dxyz[0];
+							mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+							if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+							my = fy + dxyz[1];
+							mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+							if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+							mz = fz + dxyz[2];
+							mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+							if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+							// Compute interpolation fractions
+							clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+							clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+							clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+							// Compute moving image intensity using linear interpolation
+							mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+							m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+							m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+							m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+							m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+							m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+							m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+							m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+							m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+							m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+								+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+							// Compute intensity difference
+							diff = f_img[fv] - m_val;
+
+							// We'll go ahead and accumulate the score here, but you would 
+							// have to reduce somewhere else instead
+							ssd->score += diff * diff;
+							num_vox ++;
+
+							// Compute spatial gradient using nearest neighbors
+							mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
+							
+							// Store dc_dv for this offset
+							dc_dv[3*qidx+0] = diff * m_grad[3*mvr+0];  // x component
+							dc_dv[3*qidx+1] = diff * m_grad[3*mvr+1];  // y component
+							dc_dv[3*qidx+2] = diff * m_grad[3*mvr+2];  // z component
+
+							// Compare to CUDA results.
+							if((dc_dv[3*qidx+0] < (host_dc_dv[3*qidx+0] - 5.0) || dc_dv[3*qidx+0] > (host_dc_dv[3*qidx+0] + 5.0)) ||
+								(dc_dv[3*qidx+1] < (host_dc_dv[3*qidx+1] - 5.0) || dc_dv[3*qidx+1] > (host_dc_dv[3*qidx+1] + 5.0)) ||
+								(dc_dv[3*qidx+2] < (host_dc_dv[3*qidx+2] - 5.0) || dc_dv[3*qidx+2] > (host_dc_dv[3*qidx+2] + 5.0))) {
+									printf("%d\tCPU: (%f, %f, %f) \t GPU: (%f, %f, %f) \n", 
+									3*qidx+0, 
+									dc_dv[3*qidx+0],
+									dc_dv[3*qidx+1], 
+									dc_dv[3*qidx+2], 
+									host_dc_dv[3*qidx+0],
+									host_dc_dv[3*qidx+1],
+									host_dc_dv[3*qidx+2]);
+									
+									dc_dv_errors++;
+							}							
+						}
+					}
+				}
+				
+				//printf("dc_dv_errors = %d\n", dc_dv_errors);
+				dc_dv_errors = 0;
+				
+				//printf ("Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
+
+				// Parallel across 64 control points
+				for (k = 0; k < 4; k++) {
+					for (j = 0; j < 4; j++) {
+						for (i = 0; i < 4; i++) {
+
+							// Compute linear index of control point
+							m = k*16 + j*4 + i;
+
+							// Find index of control point within coefficient array
+							cidx = c_lut[m] * 3;
+							
+							// Serial across offsets within kernel 
+							for (qidx = 0, q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+								for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+									for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++, qidx++) {
+										
+										// Find q_lut row for this offset
+										float *q_lut = &bxf->q_lut[qidx*64];
+
+										// Accumulate update to gradient for this control point
+										ssd->grad[cidx+0] += dc_dv[3*qidx+0] * q_lut[m];
+										ssd->grad[cidx+1] += dc_dv[3*qidx+1] * q_lut[m];
+										ssd->grad[cidx+2] += dc_dv[3*qidx+2] * q_lut[m];	
+									}
+								}
+							}				
+
+							
+							if((host_grad[cidx+0] < (ssd->grad[cidx+0] - 1) || host_grad[cidx+0] > (ssd->grad[cidx+0] + 1)) ||
+								(host_grad[cidx+1] < (ssd->grad[cidx+1] - 1) || host_grad[cidx+1] > (ssd->grad[cidx+1] + 1)) ||
+								(host_grad[cidx+2] < (ssd->grad[cidx+2] - 1) || host_grad[cidx+2] > (ssd->grad[cidx+2] + 1))) {
+									printf("%d\tCPU: (%.4f, %.4f, %.4f)\tGPU: (%.4f, %.4f, %.4f) \n", 
+									cidx, 
+									ssd->grad[cidx+0],
+									ssd->grad[cidx+1], 
+									ssd->grad[cidx+2], 
+									host_grad[cidx+0],
+									host_grad[cidx+1],
+									host_grad[cidx+2]);
+									errors++;
+							}
+						}
+					}
+				}
+				*/
+			}
+		}
+    }
+
+    if (parms->debug) {
+		fclose (fp);
+    }
+
+    //dump_coeff (bxf, "coeff.txt");
+
+	// Compute the score.
+	bspline_cuda_final_steps_d(
+		parms,
+		bxf,
+		fixed,
+		bxf->vox_per_rgn,
+		fixed->dim,
+		host_score,
+		ssd->grad,
+		host_grad_mean,
+		host_grad_norm);
+	
+	ssd->score = *host_score;
+	ssd_grad_mean = *host_grad_mean;
+	ssd_grad_norm = *host_grad_norm;
+
+	/*
+	bspline_cuda_compute_score_d(
+		bxf->vox_per_rgn,
+		fixed->dim,
+		&ssd->score);
+
+	// Calculate gradient values
+	bspline_cuda_calculate_gradient(
+		parms,
+		bxf,
+		fixed,
+		&ssd_grad_mean,
+		&ssd_grad_norm);
+	*/
+
+	/*
+    // Normalize score for MSE 
+    ssd->score = ssd->score / num_vox;
+    for (i = 0; i < bxf->num_coeff; i++) {
+		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+    }
+
+    // Normalize gradient
+    ssd_grad_norm = 0;
+    ssd_grad_mean = 0;
+    for (i = 0; i < bxf->num_coeff; i++) {
+		ssd_grad_mean += ssd->grad[i];
+		ssd_grad_norm += fabs (ssd->grad[i]);
+    }
+	*/
+
+	free(dc_dv);
+	//free(host_dc_dv);
+	//free(host_grad);
+	//free(host_score);
+
+    end_clock = clock();
+
+    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+// Corresponds to version "C" on the CPU.
+void bspline_cuda_score_c_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
 	Volume *fixed, 

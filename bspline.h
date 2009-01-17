@@ -28,7 +28,7 @@ struct BSPLINE_Xform_struct {
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
     int roi_offset[3];	         /* Position of first vox in ROI (in vox) */
-    int roi_dim[3];	         /* Dimension of ROI (in vox) */
+    int roi_dim[3];				 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3];	         /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
     int rdims[3];                /* # of regions in (x,y,z) */
