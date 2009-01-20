@@ -310,6 +310,8 @@ __global__ void bspline_cuda_score_d_mse_kernel2 (
 		int cidx;
 		int qidx;
 		float result = 0.0;
+		float temp0, temp1, temp2, temp3;
+		float temp4, temp5, temp6, temp7;
 
 		int q[3];
 
@@ -325,11 +327,27 @@ __global__ void bspline_cuda_score_d_mse_kernel2 (
 		// Calculate index into coefficient texture.
 		cidx = tex1Dfetch(tex_c_lut, 64*pidx + m) * 3;
 
+		/*
 		// Serial across offsets.
 		for(int qidx = 0; qidx < (vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z); qidx++) {
 			result += tex1Dfetch(tex_dc_dv, 3*qidx + offset) * tex1Dfetch(tex_q_lut, 64*qidx + m);
 		}
-
+		*/
+		// NAGA: Unrolling the loop 8 times; 4 seems to work as well as 8
+		// FOR_CHRIS: FIX to make sure the unrolling works with an arbitrary loop index
+		for(int qidx = 0; qidx < (vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z); qidx = qidx + 8) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*qidx + offset) * tex1Dfetch(tex_q_lut, 64*qidx + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + offset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
+			result += temp0 + temp1 + temp2 + temp3;
+			result += temp4 + temp5 + temp6 + temp7;
+		}
+		
 		grad[cidx + offset] = tex1Dfetch(tex_grad, cidx + offset) + result;
 	}
 }

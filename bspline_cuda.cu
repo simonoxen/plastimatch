@@ -363,11 +363,21 @@ void bspline_cuda_run_kernels_d(
     QueryPerformanceCounter(&clock_count);
     clock_start = (double)clock_count.QuadPart;
 
+	/*
 	// Configure the grid.
 	int num_elems = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
 	int num_blocks = (int)ceil(num_elems / 32.0);
 	dim3 dimGrid(num_blocks, 1, 1);
 	dim3 dimBlock(8, 2, 2);
+	int smemSize = 32 * sizeof(float);
+	// printf("%d thread blocks will be created for each kernel.\n", num_blocks);
+	*/
+	
+	// NAGA: Trying different thread-block sizes
+	int num_elems = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+	int num_blocks = (int)ceil(num_elems / 32.0);
+	dim3 dimGrid(num_blocks, 1, 1);
+	dim3 dimBlock(32, 1, 1);
 	int smemSize = 32 * sizeof(float);
 	// printf("%d thread blocks will be created for each kernel.\n", num_blocks);
 
@@ -498,8 +508,10 @@ void bspline_cuda_final_steps_d(
 	else
 		// printf("DONE!\n");
 
+
 	if(cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
 		checkCUDAError("Failed to copy gpu_grad to CPU");
+		
 
 	// printf("Launching bspline_cuda_compute_grad_mean_kernel... ");
 	bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
@@ -546,7 +558,7 @@ void bspline_cuda_final_steps_d(
 	// Stop the clock.
 	QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
-	// printf("CUDA kernels for score completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+	printf("CUDA kernels for score completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 	fflush(stdout);
 }
 
