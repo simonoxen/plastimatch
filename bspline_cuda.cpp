@@ -103,14 +103,15 @@ void bspline_cuda_score_d_mse(
 	Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
+
+	/*
     int i, j, k, m;
     int fi, fj, fk, fv;
     float mi, mj, mk;
     float fx, fy, fz;
     float mx, my, mz;
-    int mif, mjf, mkf, mvf;  /* Floor */
-    int mir, mjr, mkr, mvr;  /* Round */
-    int p[3];
+    int mif, mjf, mkf, mvf;  // Floor
+    int mir, mjr, mkr, mvr;  // Round    
     int q[3];
     float diff;
     float* dc_dv;
@@ -119,15 +120,18 @@ void bspline_cuda_score_d_mse(
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
-    int num_vox;
     int pidx, qidx;
     int cidx;
-    float ssd_grad_norm, ssd_grad_mean;
-    clock_t start_clock, end_clock;
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
     int* c_lut;
+	*/
+	
+	int num_vox;
+	int p[3];
+	float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
 
     static int it = 0;
     char debug_fn[1024];
@@ -171,12 +175,6 @@ void bspline_cuda_score_d_mse(
 		for (p[1] = 0; p[1] < bxf->rdims[1]; p[1]++) {
 			for (p[0] = 0; p[0] < bxf->rdims[0]; p[0]++) {
 
-				/* Compute linear index for tile */
-				pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-
-				/* Find c_lut row for this tile */
-				c_lut = &bxf->c_lut[pidx*64];
-
 				// printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
 
 				bspline_cuda_run_kernels_d(
@@ -190,6 +188,12 @@ void bspline_cuda_score_d_mse(
 					p[2]);
 				
 				/* ORIGINAL CPU CODE
+
+				// Compute linear index for tile.
+				pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+
+				// Find c_lut row for this tile
+				c_lut = &bxf->c_lut[pidx*64];
 
 				// Parallel across offsets
 				for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
@@ -366,7 +370,7 @@ void bspline_cuda_score_d_mse(
 	ssd->score = *host_score;
 	ssd_grad_mean = *host_grad_mean;
 	ssd_grad_norm = *host_grad_norm;
-
+	
 	/*
 	bspline_cuda_compute_score_d(
 		bxf->vox_per_rgn,
@@ -398,10 +402,12 @@ void bspline_cuda_score_d_mse(
     }
 	*/
 
-	free(dc_dv);
+	//free(dc_dv);
 	//free(host_dc_dv);
 	//free(host_grad);
-	//free(host_score);
+	free(host_score);
+	free(host_grad_norm);
+	free(host_grad_mean);
 
     end_clock = clock();
 
