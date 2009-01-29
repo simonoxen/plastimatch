@@ -1,3 +1,7 @@
+#######################################################
+# This program converts a dicomrt structure set 
+# into the CXT format.
+#######################################################
 $infile = shift;
 $outfile = shift;
 $outfile || die "Usage: dcm_contour_points.pl infile_contour outfile\n";

@@ -1,8 +1,8 @@
 #######################################################
-# This function merges information from the CT and 
-# the contours.  Specifically, slice locations, pixel 
-# spacing, and offset are added to the header, and 
-# contours are labeled with the matching slice number.
+# This function merges information from a UIDS file 
+# into a CXT file.  Specifically, slice locations, pixel 
+# spacing, and offset are added to the CXT header, and 
+# CXT contours are labeled with the matching slice number.
 #######################################################
 $cxt_in_fn = shift;
 $uid_fn = shift;
@@ -58,31 +58,26 @@ $no_slices=$#slices+1;
 $structure_set = parse_cxt_format ($cxt_in_fn);
 $ss_structures = $structure_set->{structures};
 
-## Write output CXT file
+
+## Write CXT header
 open GO, ">$outfile";
-print GO "SERIES_CT_UID $series_CT_contour\n";
+print GO "SERIES_CT_UID $series_CT_UID\n";
 print GO "OFFSET $off_X $off_Y $min_z\n";
 print GO "DIMENSION $nr_X $nr_Y $no_slices\n";
 print GO "SPACING $pixel_X $pixel_Y $difference[0]\n";
-print GO "ROI_NAMES\n";
 
+
+## Write list of structures
+print GO "ROI_NAMES\n";
 for $i (0..$#{$ss_structures}) {
     $s = $ss_structures->[$i];
     next if not $s->{name};
     print GO "$i|$s->{color}|$s->{name}\n";
 }
-
-#for $key (keys %structure_names) {
-#   print GO "$key $structure_names{$key}\n";
-#}
 print GO "END_OF_ROI_NAMES\n";
 
 
-#print "SERIES_CT_UID: $series_CT_contour\n";
-#print "OFFSET: $off_X $off_Y $slices[$#slices]\n";
-#print "DIMENSION: $nr_X $nr_Y $no_slices\n";
-#print "SPACING: $pixel_X $pixel_Y $difference[0]\n";
-
+## Write list of polylines
 for $i (0..$#{$ss_structures}) {
     $s = $ss_structures->[$i];
     next if not $s->{name};
@@ -95,8 +90,8 @@ for $i (0..$#{$ss_structures}) {
 	 $uid_contour, 
 	 $points) = split /\|/, $contour;
 
-	## If matching with same study set, index by UID
-	$same_study_set = 1;
+	## If matching with same study set, find slice number 
+	## by matching the UID
 	if ($same_study_set) {
 	    if (!exists $slice_no{$uid_contour}) {
 		print "Error. No matching image UID found.";
@@ -106,7 +101,8 @@ for $i (0..$#{$ss_structures}) {
 	    $sno = $slice_no{$uid_contour};
 	}
 
-	## If matching with different study set, index by Z location
+	## If matching with same study set, find slice number 
+	## by matching the Z location, and change the UID
 	else {
 	    $contour_z_loc = $points;
 	    $contour_z_loc =~ s/^[^\\]*\\[^\\]*\\//;
@@ -118,6 +114,7 @@ for $i (0..$#{$ss_structures}) {
 		if ($dist < $best_dist) {
 		    $best_dist = $dist;
 		    $best_slice = $i;
+		    $uid_contour = $slice_UIDs{$slices[$i]};
 		}
 	    }
 	    $sno = $best_slice;

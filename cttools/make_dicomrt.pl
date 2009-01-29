@@ -1,3 +1,9 @@
+#######################################################
+# This function creates a DicomRT structure set from 
+# a UIDS file and a CXT file.  The UIDS file is used 
+# only for creating the complete list of slices.  
+# All other UIDS come from the CXT file.
+#######################################################
 die "Usage: make_dicomrt.pl uids.txt contours.cxt\n" 
   unless $#ARGV >= 1;
 
@@ -92,6 +98,11 @@ $patient_sex = "M";
 $patient_name = "Glot_panel";
 $patient_id = "ANON74245";
 $study_id = "ANON26726";
+$patient_sex = "M";
+
+$patient_name = "BUCKLEY^JOHN";
+$patient_id = "4352161";
+$study_id = "8280";
 $patient_sex = "M";
 
 ## Create Dicom unique identifiers
