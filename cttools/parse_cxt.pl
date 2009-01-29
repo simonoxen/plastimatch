@@ -19,7 +19,7 @@ sub parse_cxt_format {
     open CF, "<$fn" || die "CXT file not found: $fn\n";
     while (<CF>) {
 	chomp;
-	if (/SERIES_CT_UID/) {
+	if (/^SERIES_CT_UID/) {
 	    ($junk, $series_ct_contour) = split;
 	    if ($series_ct_contour ne $series_ct_uid) {
 		print "SERIES_CT_UID_CT: $series_ct_uid\n";
@@ -28,8 +28,21 @@ sub parse_cxt_format {
 		$same_study_set = 0;
 	    }
 	    $structure_set->{header}->{ct_series_uid} = $series_ct_contour;
-	} else {
-	    if (/ROI_NAMES/) {
+	} 
+	elsif (/^PATIENT_NAME/) {
+	    ($junk, $structure_set->{header}->{patient_name}) = split;
+	}
+	elsif (/^PATIENT_ID/) {
+	    ($junk, $structure_set->{header}->{patient_id}) = split;
+	}
+	elsif (/^STUDY_ID/) {
+	    ($junk, $structure_set->{header}->{study_id}) = split;
+	}
+	elsif (/^PATIENT_SEX/) {
+	    ($junk, $structure_set->{header}->{patient_sex}) = split;
+	}
+	else {
+	    if (/^ROI_NAMES/) {
 		$have_roi_names = 1;
 	    } elsif ($have_roi_names) {
 		if (!/END_OF_ROI_NAMES/) {

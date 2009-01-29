@@ -49,6 +49,7 @@ close UIF;
 
 ## Load CXT file
 $structure_set = parse_cxt_format ($cxt_fn);
+$ss_header = $structure_set->{header};
 $ss_structures = $structure_set->{structures};
 
 for $i (0..$#{$ss_structures}) {
@@ -85,25 +86,27 @@ $software_version = "<EXPERIMENTAL>";
 #####################################
 ## These have to be filled in manually
 #####################################
-$patient_name = "NPC_panel";
-$patient_id = "ANON42627";
-$study_id = "ANON26726";
-$patient_sex = "M";
+# $patient_name = "NPC_panel";
+# $patient_id = "ANON42627";
+# $study_id = "ANON26726";
+# $patient_sex = "M";
 
-$patient_name = "OP_panel";
-$patient_id = "ANON65526";
-$study_id = "ANON26726";
-$patient_sex = "M";
+# $patient_name = "OP_panel";
+# $patient_id = "ANON65526";
+# $study_id = "ANON26726";
+# $patient_sex = "M";
 
-$patient_name = "Glot_panel";
-$patient_id = "ANON74245";
-$study_id = "ANON26726";
-$patient_sex = "M";
+# $patient_name = "Glot_panel";
+# $patient_id = "ANON74245";
+# $study_id = "ANON26726";
+# $patient_sex = "M";
 
-$patient_name = "BUCKLEY^JOHN";
-$patient_id = "4352161";
-$study_id = "8280";
-$patient_sex = "M";
+# $patient_name = "BUCKLEY^JOHN";
+# $patient_id = "4352161";
+# $study_id = "8280";
+# $patient_sex = "M";
+
+
 
 ## Create Dicom unique identifiers
 $instance_creator_uid = $plastimatch_uid_prefix;
@@ -128,13 +131,13 @@ printf OUT $head_103_part1,
   $instance_creator_uid,
   $sop_instance_uid,
   $station_name,
-  $patient_name,
-  $patient_id,
-  $patient_sex,
+  $ss_header->{patient_name},
+  $ss_header->{patient_id},
+  $ss_header->{patient_sex},
 ##  $software_version,
   $study_instance_uid,
   $series_instance_uid,
-  $study_id,
+  $ss_header->{study_id},
   $series_number,
   $instance_number
   ;

@@ -20,14 +20,31 @@ $cmd = "dcmdump +L +R 512 $infile";
 open D1, "$cmd|";
 open DO, ">$outfile";
 
-#gets the Series Instance UID
+$patient_name = "Unknown";
+$patient_id = "Unknown";
+$study_id = "Unknown";
+$patient_sex = "O";
+
+# Get data for CXT header
 while(<D1>){
-    if(/\(3006,0010/){
+    if (/\(0010,0010/) {
+	$patient_name = &grab_value($_);
+    }
+    elsif (/\(0010,0020/) {
+	$patient_id = &grab_value($_);
+    }
+    elsif (/\(0020,0010/) {
+	$study_id = &grab_value($_);
+    }
+    elsif (/\(0010,0040/) {
+	$patient_sex = &grab_value($_);
+    }
+    elsif (/\(3006,0010/){
 	last;
     }
 }
 while(<D1>){
-    if(/\(0020,000e/){
+    if (/\(0020,000e/){
 	$ct_series_uid = &grab_value($_);
 	last;
     }
@@ -66,10 +83,15 @@ while (<D1>) {
 }
 close D1;
 
-## Second pass: write contours
+## Write CXT file
 open D1, "$cmd|";
 open DO, ">$outfile";
 print DO "SERIES_CT_UID $ct_series_uid\n";
+print DO "PATIENT_NAME $patient_name\n";
+print DO "PATIENT_ID $patient_id\n";
+print DO "STUDY_ID $study_id\n";
+print DO "PATIENT_SEX $patient_sex\n";
+
 print DO "ROI_NAMES\n";
 for $key (sort {$a <=> $b} keys %ordered_rois) {
     $val = $ordered_rois{$key};
@@ -83,7 +105,6 @@ while (<D1>) {
     }
 }
 
-## Create CXT file
 $roi_no = -1;
 while (<D1>) {
     if (/\(3006,0080/) {

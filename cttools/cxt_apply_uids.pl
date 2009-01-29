@@ -56,6 +56,7 @@ $no_slices=$#slices+1;
 
 ## Load input CXT file
 $structure_set = parse_cxt_format ($cxt_in_fn);
+$ss_header = $structure_set->{header};
 $ss_structures = $structure_set->{structures};
 
 
@@ -66,6 +67,12 @@ print GO "OFFSET $off_X $off_Y $min_z\n";
 print GO "DIMENSION $nr_X $nr_Y $no_slices\n";
 print GO "SPACING $pixel_X $pixel_Y $difference[0]\n";
 
+## GCS FIX: These should come from the UIDS file, but this is 
+## not yet implemented
+print GO "PATIENT_NAME $ss_header->{patient_name}\n";
+print GO "PATIENT_ID $ss_header->{patient_id}\n";
+print GO "STUDY_ID $ss_header->{study_id}\n";
+print GO "PATIENT_SEX $ss_header->{patient_sex}\n";
 
 ## Write list of structures
 print GO "ROI_NAMES\n";
