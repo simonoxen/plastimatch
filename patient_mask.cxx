@@ -16,6 +16,8 @@
 #include "itk_image.h"
 #include "getopt.h"
 
+
+
 /* Thresholds for finding patient & couch */
 const short T1 = -300;
 const short T2 = -500;

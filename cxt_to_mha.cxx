@@ -80,14 +80,13 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
     float val_y=0;
     float val_z=0;
 
-    int ord=0;
+    int struct_no = 0;
     int num_pt=0;
-    //int num_cn=0;
     int old_ord = -1;
     int contour_no = 0;
     int num_slice=-1;
-    char name_str[BUFLEN];
     char inter[BUFLEN];
+    char junk[BUFLEN];
     char tag[BUFLEN];
 
     int flag=0;
@@ -109,66 +108,56 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
     }
 
     printf("Loading...");
-    while (feof(fp)==0) {
-	if(flag==0)
-	{
-	    fscanf(fp,"%s",name_str);
-	    res=strcmp("HEADER",name_str);		
-	    if (res==0) {	
-		while (1) {
-		    char buf[1024];
-		    char *p;
+    while (1) {
+	char buf[1024];
+	char *p;
 
-		    p = fgets (buf, 1024, fp);
-		    if (!p) {
-			fprintf(stderr,"ERROR: Your file is not formatted correctly!\n");
-			exit (-1);
-		    }
-		    if (!strncmp (buf, "ROI_NAMES", strlen ("ROI_NAMES"))) {
-			break;
-		    }
-		    if (4 == sscanf (buf,"%s %f %f %f",tag,&val_x,&val_y,&val_z)) {
-			if(strcmp("OFFSET",tag)==0){
-			    structures->offset[0]=val_x;
-			    structures->offset[1]=val_y;
-			    structures->offset[2]=val_z;
-			    //printf("%s\n",tag);
-			}else if (strcmp("DIMENSION",tag)==0){
-			    structures->dim[0]=val_x;
-			    structures->dim[1]=val_y;
-			    structures->dim[2]=val_z;
-			    //printf("%s\n",tag);
-			}else if (strcmp("SPACING",tag)==0){
-			    structures->spacing[0]=val_x;
-			    structures->spacing[1]=val_y;
-			    structures->spacing[2]=val_z;
-			    //printf("%s\n",tag);
-			}
-		    }
-		}
-		while (fscanf(fp,"%d %s",&ord,inter)==2)
-		{
-		    structures->num_structures++;
-		    structures->slist=(STRUCTURE*) realloc (structures->slist, 
-							    structures->num_structures*sizeof(STRUCTURE));
-		    curr_structure=&structures->slist[structures->num_structures-1];
-		    strcpy(curr_structure->name,inter);
-		    curr_structure->num_contours=0;
-		    printf("STRUCTURE: %s\n",curr_structure->name);
-		}
-		//fgets(name_str, BUFLEN,fp);
-		fscanf(fp,"%s",name_str);
-		if (strcmp("END_OF_ROI_NAMES",name_str)!=0)
-		    fprintf(stderr,"ERROR: the file parsing went wrong...can't file the tag END_OF_ROI_NAMES. Please check the format!");
-		flag=1;
+	p = fgets (buf, 1024, fp);
+	if (!p) {
+	    fprintf(stderr,"ERROR: Your file is not formatted correctly!\n");
+	    exit (-1);
+	}
+	if (!strncmp (buf, "ROI_NAMES", strlen ("ROI_NAMES"))) {
+	    break;
+	}
+	if (4 == sscanf (buf,"%s %f %f %f",tag,&val_x,&val_y,&val_z)) {
+	    if(strcmp("OFFSET",tag)==0){
+		structures->offset[0]=val_x;
+		structures->offset[1]=val_y;
+		structures->offset[2]=val_z;
+		//printf("%s\n",tag);
+	    }else if (strcmp("DIMENSION",tag)==0){
+		structures->dim[0]=val_x;
+		structures->dim[1]=val_y;
+		structures->dim[2]=val_z;
+		//printf("%s\n",tag);
+	    }else if (strcmp("SPACING",tag)==0){
+		structures->spacing[0]=val_x;
+		structures->spacing[1]=val_y;
+		structures->spacing[2]=val_z;
+		//printf("%s\n",tag);
 	    }
-	    else
-	    {
-		fprintf(stderr,"ERROR: Your file is not formatted correctly!Can't file the HEADER string");
-		exit(-1);
-	    }
-	} else if (flag==1) {
-	    if (fscanf (fp, "%d %d %d", &ord,&num_pt,&num_slice) != 3) {
+	}
+    }
+    while (fscanf(fp, "%d|%s|%s", &struct_no, junk, inter) == 3) {
+	structures->num_structures++;
+	structures->slist=(STRUCTURE*) realloc (structures->slist, 
+						structures->num_structures*sizeof(STRUCTURE));
+	curr_structure=&structures->slist[structures->num_structures-1];
+	strcpy(curr_structure->name,inter);
+	curr_structure->num_contours=0;
+	printf("STRUCTURE: %s\n",curr_structure->name);
+    }
+
+    while (1) {
+        if (1 != fscanf (fp, "%d", &struct_no)) {
+	    break;
+	}
+	fgetc (fp);
+        if (1 != fscanf (fp, "%d", uid)) {
+	    break;
+	}
+        if (fscanf (fp, "%d %d %d", &ord,&num_pt,&num_slice) != 3) {
 		break;
 	    }
 	    if (ord != old_ord) {
