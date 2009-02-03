@@ -114,32 +114,38 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 	{
 	    fscanf(fp,"%s",name_str);
 	    res=strcmp("HEADER",name_str);		
-	    if(res==0)
-	    {	
-		while(fscanf(fp,"%s %f %f %f",tag,&val_x,&val_y,&val_z)==4){
-		    if(strcmp("OFFSET",tag)==0){
-			structures->offset[0]=val_x;
-			structures->offset[1]=val_y;
-			structures->offset[2]=val_z;
-			//printf("%s\n",tag);
-		    }else if (strcmp("DIMENSION",tag)==0){
-			structures->dim[0]=val_x;
-			structures->dim[1]=val_y;
-			structures->dim[2]=val_z;
-			//printf("%s\n",tag);
-		    }else if (strcmp("SPACING",tag)==0){
-			structures->spacing[0]=val_x;
-			structures->spacing[1]=val_y;
-			structures->spacing[2]=val_z;
-			//printf("%s\n",tag);
+	    if (res==0) {	
+		while (1) {
+		    char buf[1024];
+		    char *p;
+
+		    p = fgets (buf, 1024, fp);
+		    if (!p) {
+			fprintf(stderr,"ERROR: Your file is not formatted correctly!\n");
+			exit (-1);
+		    }
+		    if (!strncmp (buf, "ROI_NAMES", strlen ("ROI_NAMES"))) {
 			break;
-		    }else{
-			fprintf(stderr,"ERROR: Your file is not formatted correctly!");
+		    }
+		    if (4 == sscanf (buf,"%s %f %f %f",tag,&val_x,&val_y,&val_z)) {
+			if(strcmp("OFFSET",tag)==0){
+			    structures->offset[0]=val_x;
+			    structures->offset[1]=val_y;
+			    structures->offset[2]=val_z;
+			    //printf("%s\n",tag);
+			}else if (strcmp("DIMENSION",tag)==0){
+			    structures->dim[0]=val_x;
+			    structures->dim[1]=val_y;
+			    structures->dim[2]=val_z;
+			    //printf("%s\n",tag);
+			}else if (strcmp("SPACING",tag)==0){
+			    structures->spacing[0]=val_x;
+			    structures->spacing[1]=val_y;
+			    structures->spacing[2]=val_z;
+			    //printf("%s\n",tag);
+			}
 		    }
 		}
-		fscanf(fp,"%s",name_str);
-		if (strcmp("ROI_NAMES",name_str)!=0)
-		    fprintf(stderr,"ERROR: the file parsing went wrong...can't file the tag ROI_NAMES. Please check the format!");
 		while (fscanf(fp,"%d %s",&ord,inter)==2)
 		{
 		    structures->num_structures++;
