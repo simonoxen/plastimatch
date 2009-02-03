@@ -29,7 +29,7 @@ typedef struct program_parms Program_Parms;
 struct program_parms {
     char* file_txt;
     char* outdir;
-    char* pat_number;
+    char* fn_prefix;
 };
 
 typedef struct polyline POLYLINE;
@@ -61,9 +61,8 @@ struct structure_list {
 };
 void print_usage (void)
 {
-    printf ("Usage: cxt_to_mha merged_txt prefix\n");
-    printf ("  The merged_txt file contains the contours\n");
-    //printf ("  output directory\n");
+    printf ("Usage: cxt_to_mha cxt_file prefix\n");
+    printf ("  The cxt_file is an ASCII file with the contours\n");
     printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
     exit (-1);
 }
@@ -82,14 +81,11 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 
     int struct_no = 0;
     int num_pt=0;
-    int old_ord = -1;
+    int old_struct_no = -1;
     int contour_no = 0;
-    int num_slice=-1;
-    char inter[BUFLEN];
-    char junk[BUFLEN];
+    int slice_idx=-1;
     char tag[BUFLEN];
 
-    int flag=0;
     int res=0;
     float x=0;
     float y=0;
@@ -107,12 +103,12 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 	exit(-1);
     }
 
-    printf("Loading...");
+    printf("Loading...\n");
     while (1) {
-	char buf[1024];
+	char buf[BUFLEN];
 	char *p;
 
-	p = fgets (buf, 1024, fp);
+	p = fgets (buf, BUFLEN, fp);
 	if (!p) {
 	    fprintf(stderr,"ERROR: Your file is not formatted correctly!\n");
 	    exit (-1);
@@ -121,17 +117,17 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 	    break;
 	}
 	if (4 == sscanf (buf,"%s %f %f %f",tag,&val_x,&val_y,&val_z)) {
-	    if(strcmp("OFFSET",tag)==0){
+	    if (strcmp("OFFSET",tag)==0) {
 		structures->offset[0]=val_x;
 		structures->offset[1]=val_y;
 		structures->offset[2]=val_z;
 		//printf("%s\n",tag);
-	    }else if (strcmp("DIMENSION",tag)==0){
+	    } else if (strcmp("DIMENSION",tag)==0) {
 		structures->dim[0]=val_x;
 		structures->dim[1]=val_y;
 		structures->dim[2]=val_z;
 		//printf("%s\n",tag);
-	    }else if (strcmp("SPACING",tag)==0){
+	    } else if (strcmp("SPACING",tag)==0) {
 		structures->spacing[0]=val_x;
 		structures->spacing[1]=val_y;
 		structures->spacing[2]=val_z;
@@ -139,66 +135,100 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 	    }
 	}
     }
-    while (fscanf(fp, "%d|%s|%s", &struct_no, junk, inter) == 3) {
-	structures->num_structures++;
-	structures->slist=(STRUCTURE*) realloc (structures->slist, 
-						structures->num_structures*sizeof(STRUCTURE));
-	curr_structure=&structures->slist[structures->num_structures-1];
-	strcpy(curr_structure->name,inter);
-	curr_structure->num_contours=0;
+    while (1) {
+	char color[BUFLEN];
+	char name[BUFLEN];
+	char buf[BUFLEN];
+	char *p;
+	int rc;
+
+	p = fgets (buf, BUFLEN, fp);
+	if (!p) {
+	    fprintf(stderr,"ERROR: Your file is not formatted correctly!\n");
+	    exit (-1);
+	}
+	rc = sscanf(buf, "%d|%[^|]|%[^\r\n]", &struct_no, color, name);
+	if (rc != 3) {
+	    break;
+	}
+
+	structures->num_structures ++;
+	structures->slist = (STRUCTURE*) realloc (structures->slist, 
+						    structures->num_structures*sizeof(STRUCTURE));
+	curr_structure = &structures->slist[structures->num_structures-1];
+	strcpy (curr_structure->name, name);
+	curr_structure->num_contours = 0;
+	curr_structure->pslist = 0;
 	printf("STRUCTURE: %s\n",curr_structure->name);
     }
 
     while (1) {
-        if (1 != fscanf (fp, "%d", &struct_no)) {
+
+	if (1 != fscanf (fp, "%d", &struct_no)) {
 	    break;
 	}
 	fgetc (fp);
-        if (1 != fscanf (fp, "%d", uid)) {
+
+	/* Skip contour thickness */
+	while (fgetc (fp) != '|');
+
+        if (1 != fscanf (fp, "%d", &num_pt)) {
 	    break;
 	}
-        if (fscanf (fp, "%d %d %d", &ord,&num_pt,&num_slice) != 3) {
-		break;
-	    }
-	    if (ord != old_ord) {
-		old_ord = ord;
-		contour_no = 0;
-	    }
-	    curr_structure=&structures->slist[ord-1];
-	    curr_structure->pslist = (POLYLINE*) realloc (curr_structure->pslist,
-						          (contour_no+1)*sizeof(POLYLINE));
-	    curr_contour=&curr_structure->pslist[contour_no];
-	    curr_contour->num_vertices=num_pt;
-	    curr_contour->slice_no=num_slice;
-	    contour_no ++;
-	    curr_structure->num_contours = contour_no;
+	fgetc (fp);
 
-	    curr_contour->x=(float*)malloc(num_pt*sizeof(float));
-	    curr_contour->y=(float*)malloc(num_pt*sizeof(float));
-	    curr_contour->z=(float*)malloc(num_pt*sizeof(float));
-	    if(curr_contour->y==0 || curr_contour->x==0){
-		fprintf(stderr,"Error allocating memory");
-		exit(-1);
-	    }
-	    for(int k=0; k<num_pt; k++){								
-		if(fscanf(fp,"%f %f %f",&x,&y,&z)!=3){
+        if (1 != fscanf (fp, "%d", &slice_idx)) {
+	    break;
+	}
+	fgetc (fp);
+
+	/* Skip uid */
+	while (fgetc (fp) != '|');
+
+	//printf ("%d %d %d\n", struct_no, num_pt, slice_idx);
+
+	if (struct_no != old_struct_no) {
+	    old_struct_no = struct_no;
+	    contour_no = 0;
+	}
+	curr_structure = &structures->slist[struct_no-1];
+	//printf ("Gonna realloc %p, %d\n", curr_structure->pslist, contour_no);
+	curr_structure->pslist = (POLYLINE*) realloc (curr_structure->pslist,
+						      (contour_no+1)*sizeof(POLYLINE));
+	//printf ("Gonna dereference pslist\n");
+	curr_contour = &curr_structure->pslist[contour_no];
+	curr_contour->num_vertices = num_pt;
+	curr_contour->slice_no = slice_idx;
+	contour_no ++;
+	curr_structure->num_contours = contour_no;
+
+	//printf ("Gonna dereference curr_contour->x\n");
+	curr_contour->x = (float*) malloc (num_pt*sizeof(float));
+	curr_contour->y = (float*) malloc (num_pt*sizeof(float));
+	curr_contour->z = (float*) malloc (num_pt*sizeof(float));
+	if (curr_contour->y==0 || curr_contour->x==0) {
+	    fprintf (stderr,"Error allocating memory");
+	    exit (-1);
+	}
+	for (int k=0; k<num_pt; k++) {
+	    //printf (" --> %5d\n", k);
+	    if (fscanf (fp,"%f\\%f\\%f",&x,&y,&z) != 3) {
+		if (fscanf (fp,"\\%f\\%f\\%f",&x,&y,&z) != 3) {
 		    break;
 		}
-		curr_contour->x[k]=x;
-		curr_contour->y[k]=y;
-		curr_contour->z[k]=z;
-		x=0;
-		y=0;
-		z=0;
 	    }
-	    ord=0;
-	    num_pt=0;
-	    flag=1;
+	    curr_contour->x[k] = x;
+	    curr_contour->y[k] = y;
+	    curr_contour->z[k] = z;
+	    x = 0;
+	    y = 0;
+	    z = 0;
 	}
-		
+	slice_idx = 0;
+	num_pt = 0;
     }
-    printf("successful!\n");
-    fclose(fp);
+    printf ("successful!\n");
+    fclose (fp);
 }
 
 int main (int argc, char* argv[])
@@ -223,35 +253,24 @@ int main (int argc, char* argv[])
     float spacing[2];
     int slice_voxels=0;
 
-
     memset(structures,0,sizeof(STRUCTURE_List));
-    printf("Allocated Structure LIST\n");
     structures->num_structures=0;
-
     memset(curr_structure,0,sizeof(STRUCTURE));
-    printf("Allocated Structure\n");
     memset(curr_contour,0,sizeof(POLYLINE));
-    printf("Allocated Polyline\n");
     curr_structure->num_contours=0;
     curr_contour->num_vertices=0;
-		 
+
     parms->file_txt=argv[1];
-    //parms->outdir=argv[2];
-    parms->pat_number=argv[2];
-    //strcat(fn,parms->outdir);
-    //strcat(fn,"/");
+    parms->fn_prefix=argv[2];
 		 
+    load_structures (parms, structures);
 
-    load_structures(parms,structures);
-
-		 
-    /*strcat(filename,"vertix");
-      strcat(filename,"_");*/
-
+#if defined (commentout)
+    /* This section makes a different ASCII file that Marta used to use */
     for (int p=0; p < structures->num_structures; p++){
 	curr_structure_2=&structures->slist[p];
 	char filename[BUFLEN]="";
-	strcat(filename,parms->pat_number);
+	strcat(filename,parms->fn_prefix);
 	strcat(filename,"MD");
 	strcat(filename,"_");
 	strcat(filename,curr_structure_2->name);
@@ -275,7 +294,7 @@ int main (int argc, char* argv[])
 	}
 	fclose(fp);
     }
-	
+#endif
 
     dim[0]=structures->dim[0];
     dim[1]=structures->dim[1];
@@ -286,7 +305,6 @@ int main (int argc, char* argv[])
     slice_voxels=dim[0]*dim[1];
     acc_img = (unsigned char*)malloc(slice_voxels*sizeof(unsigned char));
     vol=volume_create(structures->dim, structures->offset, structures->spacing, PT_UCHAR, 0);
-    printf("Allocated Volume\n");
     if(vol==0){
 	fprintf(stderr,"ERROR: failed in allocating the volume"); 
     }
@@ -294,14 +312,14 @@ int main (int argc, char* argv[])
     for (int j=0; j < structures->num_structures; j++){
 	curr_structure=&structures->slist[j];
 	char fn[BUFLEN]="";
-	strcat(fn,parms->pat_number);
+	strcat(fn,parms->fn_prefix);
 	strcat(fn,"_");
 	strcat(fn,curr_structure->name);
 	strcat(fn,".mha");
 	printf("output filename: %s\n", fn);
 	//system("PAUSE");
 	memset (img, 0, structures->dim[0]*structures->dim[1]*structures->dim[2]*sizeof(unsigned char));
-	printf("Allocated IMG, num_contours=%d\n", curr_structure->num_contours);
+	printf("Writing image %s, num_contours=%d\n", fn, curr_structure->num_contours);
 	for (int i = 0; i < curr_structure->num_contours; i++) {
 	    curr_contour=&curr_structure->pslist[i];
 	    unsigned char* slice_img = &img[curr_contour->slice_no*dim[0]*dim[1]];
