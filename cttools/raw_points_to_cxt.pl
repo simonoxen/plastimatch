@@ -1,10 +1,8 @@
-die "Usage: raw_points_to_cxt.pl uids.txt point_file [point_file ...]\n" 
+die "Usage: raw_points_to_cxt.pl uids.txt output.cxt point_file [point_file ...]\n" 
   unless $#ARGV >= 1;
 
 use POSIX;
 use File::Basename;
-
-die "This script is not yet implemented.\n";
 
 ## -----------------------------------------------------------------
 ##  Global settings
@@ -12,7 +10,6 @@ die "This script is not yet implemented.\n";
 
 ## Dicomrt header strings
 use lib dirname($0);
-do "make_dicomrt_inc.pl" || die "Can't load include file: make_dicom_inc.pl";
 
 $plastimatch_uid_prefix = "1.2.826.0.1.3680043.8.274.1";
 $dump_in_fn = "dump_in.txt";
@@ -46,79 +43,13 @@ sub parse_marta_format {
     undef $contours;
     
     $structure_name = $fn;
-    if ($fn =~ m/[^_]*_([^\.]*)_warped.txt$/) {
+    if ($fn =~ m/[^_]*_([^\.]*)_physcoord.txt$/) {
 	$structure_name = $1;
     } else {
 	$structure_name = "Structure $i";
 	$i ++;
     }
     push @$structure_names, $structure_name;
-}
-
-sub parse_cxt_format {
-    my ($fn, $structures, $structure_names) = @_;
-
-    ## This code was copied and edited from contour_points_to_cxt.pl.  
-    ## It needs to be re-engineered into a common subroutine for both scripts.
-    $series_CT_UID = "Unknown";  # For future work
-    $same_study_set = 1;
-    $have_roi_names = 0;
-
-    ## Read header
-    open CF, "<$fn";
-    while (<CF>) {
-	chomp;
-	if (/SERIES_CT_UID/) {
-	    ($junk, $series_CT_contour) = split;
-	    if ($series_CT_contour ne $series_CT_UID) {
-		print "SERIES_CT_UID_CT: $series_CT_UID\n";
-		print "SERIES_CT_UID_CN: $series_CT_contour\n";
-		warn "Warning: contours and ct are from different study sets\n";
-		$same_study_set = 0;
-	    }
-	} else {
-	    if (/ROI_NAMES/) {
-		$have_roi_names = 1;
-	    } else if ($have_roi_names) {
-		if (!/END_OF_ROI_NAMES/) {
-		    ($structure,$junk,$name) = split;
-		    $structure_names_hash{$structure} = $name;
-		}
-	    }
-	}
-	last if /END_OF_ROI_NAMES/;
-    }
-
-    @roi_names = sort { $a <=> $b } keys %structure_names_hash;
-
-    $old_struct = -1;
-    while (<CF>) {
-	($structure_no, $junk, $num_points, $uid_contour, $points) = split /\|/;
-	$points=~ s/\\/ /g;
-	$rest = $points;
-	while ($rest) {
-	    ($x, $y, $z, $rest) = split ' ', $rest, 4;
-	    push @{$pts}, "$x $y $z";
-	}
-	if ($old_struct != $structure_no) {
-	    if ($contours) {
-		push @$structures, $contours;
-		undef $contours;
-	    }
-	}
-	if ($pts) {
-	    push @{$contours}, $pts;
-	    undef $pts;
-	}
-    }
-    close CF;
-    if ($contours) {
-	push @$structures, $contours;
-	undef $contours;
-    }
-
-    push @$structures, $contours;
-    push @$structure_names, @roi_names;
 }
 
 ## -----------------------------------------------------------------
@@ -136,35 +67,62 @@ while (<UIF>)
 close UIF;
 @slices = sort { $a <=> $b } keys %slice_UIDs;
 
+
+## -----------------------------------------------------------------
+##  Output filename
+## -----------------------------------------------------------------
+$output_fn = shift;
+
+
 ## -----------------------------------------------------------------
 ##  Load contour files
 ## -----------------------------------------------------------------
 @structures = ( );
-@structure_name = ( );
+@structure_names = ( );
 $i = 1;
 while ($fn = shift) {
-    ## Test contour file.  It could be contour in Greg's cxt format 
-    ## or in Marta's space separated list format.
-    open CF, "<$fn";
-    $_ = (<CF>);
-    close CF;
-    if (/^NaN/) {
-	parse_marta_format ($fn, \@structures, \@structure_name);
-    } else {
-	parse_cxt_format ($fn, \@structures, \@structure_name);
-    }
+    parse_marta_format ($fn, \@structures, \@structure_names);
 }
 
-if (0) {
+
+## -----------------------------------------------------------------
+##  Write CXT
+## -----------------------------------------------------------------
+open OF, ">$output_fn";
+print OF "SERIES_CT_UID Unknown\n";
+print OF "ROI_NAMES\n";
+$i = 1;
+for $structure_name (@structure_names) {
+    print OF "$i|255\\0\\0|$structure_name\n";
+    $i++;
+}
+print OF "END_OF_ROI_NAMES\n";
+
+$i = 1;
 for $structure (@structures) {
     for $contour (@{$structure}) {
-	print "$contour\n";
-	for $pt (@{$contour}) {
- 	    print "  $pt\n";
- 	}
+	print OF "$i||$#{$contour}|||";
+	$first = 1;
+ 	for $pt (@{$contour}) {
+	    chomp($pt);
+	    $pt =~ s/^\s*//;
+	    $pt =~ s/\s*$//;
+	    $pt =~ s/\s+/\\/g;
+	    if ($first) {
+		print OF "$pt";
+	    } else {
+		print OF "\\$pt";
+	    }
+	    $first = 0;
+  	}
+	print OF "\n";
     }
+    $i++;
 }
-}
+close OF;
+
+
+exit;
 
 ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
   = localtime(time);

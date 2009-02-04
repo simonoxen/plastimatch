@@ -21,7 +21,8 @@ sub parse_cxt_format {
 	chomp;
 	if (/^SERIES_CT_UID/) {
 	    ($junk, $series_ct_contour) = split;
-	    if ($series_ct_contour ne $series_ct_uid) {
+	    if ($series_ct_contour eq "Unknown" 
+		|| $series_ct_contour ne $series_ct_uid) {
 		print "SERIES_CT_UID_CT: $series_ct_uid\n";
 		print "SERIES_CT_UID_CN: $series_ct_contour\n";
 		warn "Warning: contours and ct are from different study sets\n";
