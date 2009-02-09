@@ -19,7 +19,8 @@ if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
 @rem  SET ITK_PATH=%HOME%\build\itk-3.6.0\bin\Release
-  SET ITK_PATH=%HOME%\build\itk-3.10.1-msvc2005\bin\Release
+  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
+@rem  SET ITK_PATH=%HOME%\build\itk-3.10.1-msvc2005\bin\Release
   SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
