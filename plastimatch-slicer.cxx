@@ -15,8 +15,8 @@ main (int argc, char * argv [])
     PARSE_ARGS;
 
     char buf1[L_tmpnam+1];
-    char* parms_fn = tmpnam (buf1);
-    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    //char* parms_fn = tmpnam (buf1);
+    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
     FILE* fp = fopen (parms_fn, "w");
 
     fprintf (fp,
@@ -25,7 +25,37 @@ main (int argc, char * argv [])
 	     "moving=%s\n"
 //	     "xf_out=%s\n"
 //	     "vf_out=%s\n"
-	     "img_out=%s\n\n"
+	     "img_out=%s\n\n",
+	     /* Global */
+	     plmslc_fixed_volume.c_str(),
+	     plmslc_moving_volume.c_str(),
+//	     "C:/tmp/plmslc-xf.txt",
+//	     "C:/tmp/plmslc-vf.mha",
+	     plmslc_warped_volume.c_str());
+
+    if (enable_stage_0) {
+	fprintf (fp,
+		 "[STAGE]\n"
+		 "metric=%s\n"
+		 "xform=%s\n"
+		 "optim=%s\n"
+		 "impl=itk\n"
+		 "max_its=%d\n"
+		 "convergence_tol=5\n"
+		 "grad_tol=1.5\n"
+		 "res=%d %d %d\n",
+		 metric.c_str(),
+		 "translation",
+		 "rsg",
+		 stage_0_its,
+		 stage_0_resolution[0],
+		 stage_0_resolution[1],
+		 stage_0_resolution[2]
+		 );
+    }
+
+    /* Stage 1 */
+    fprintf (fp,
 	     "[STAGE]\n"
 	     "metric=%s\n"
 	     "xform=bspline\n"	
@@ -36,12 +66,6 @@ main (int argc, char * argv [])
 	     "grad_tol=1.5\n"
 	     "res=%d %d %d\n"
 	     "grid_spac=%g %g %g\n",
-	     /* Global */
-	     plmslc_fixed_volume.c_str(),
-	     plmslc_moving_volume.c_str(),
-//	     "C:/tmp/plmslc-xf.txt",
-//	     "C:/tmp/plmslc-vf.mha",
-	     plmslc_warped_volume.c_str(),
 	     /* Stage 1 */
 	     metric.c_str(),
 	     stage_1_its,
@@ -52,6 +76,7 @@ main (int argc, char * argv [])
 	     stage_1_grid_size,
 	     stage_1_grid_size
 	     );
+
     if (enable_stage_2) {
 	fprintf (fp, 
 	     "[STAGE]\n"
