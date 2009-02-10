@@ -148,8 +148,6 @@ save_warped_img_itk (Registration_Data* regd,
 
     printf ("Converting image 1...\n");
     FloatImageType::Pointer i1 = regd->moving_image->itk_float();
-    printf ("Converting image 2...\n");
-    FloatImageType::Pointer i2 = regd->fixed_image->itk_float();
 
     printf ("Warping image...\n");
     im_warped = itk_warp_image (regd->moving_image->itk_float(), vf, 1, 0.0f);
