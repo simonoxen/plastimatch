@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 #include "itkImage.h"
+#if (PLM_ITK_ORIENTED_IMAGES)
+#include "itkOrientedImage.h"
+#endif
 #include "itkImageIOBase.h"
 #include "plm_config.h"
 

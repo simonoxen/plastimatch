@@ -18,11 +18,11 @@ if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
   PATH="%PATH%;%DXSDK_UTILS_DIR%"
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
-@rem  SET ITK_PATH=%HOME%\build\itk-3.6.0\bin\Release
-  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
-@rem  SET ITK_PATH=%HOME%\build\itk-3.10.1-msvc2005\bin\Release
-  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
-  SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
+@rem  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
+@rem  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
+  SET ITK_PATH=%HOME%\build\itk-3.10.2\bin\Release
+  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-3.10.2\Release
+  SET CTTOOLS_PATH=%PLASTIMATCH_PATH%\cttools
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
   echo Setting for ROFOVIA
   SET ITK_PATH=c:\plastimatch\build\itk-3.8.0\bin\Release

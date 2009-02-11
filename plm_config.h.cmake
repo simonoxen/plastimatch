@@ -4,6 +4,10 @@
 #ifndef __plm_config_h__
 #define __plm_config_h__
 
+#include "itkConfigure.h"
+
+#define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
+
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_BROOK 1
@@ -17,7 +21,10 @@
 
 #cmakedefine PLASTIMATCH_EXPERIMENTAL 1
 
-#define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
+/* These are defined in itkConfigure.h */
+#if (ITK_VERSION_MAJOR >=3) && (ITK_VERSION_MINOR >= 10) && defined (ITK_USE_ORIENTED_IMAGE_DIRECTION)
+#define PLM_ITK_ORIENTED_IMAGES 1
+#endif
 
 /* Make Microsoft compiler less whiny */
 #if _MSC_VER >= 1400

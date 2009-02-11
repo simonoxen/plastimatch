@@ -40,7 +40,8 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-ITK must be version 3.6 or newer.  We are using ITK 3.6 and 3.8.  
+ITK must be either ITK version 3.6 or 3.8.  Do not use ITK 3.10, 
+because the oriented images do not work with plastimatch.
 When you build ITK, the following settings are recommended:
   BUILD_EXAMPLES         OFF
   BUILD_SHARED_LIBS      (EITHER)

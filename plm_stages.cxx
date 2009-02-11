@@ -20,6 +20,8 @@
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
+
+
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
    of the fixed_mask (if one is used), or by eliminating excess air by thresholding
