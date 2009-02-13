@@ -75,3 +75,13 @@ Express version does not support OpenMP (except as described below)
 MinGW gcc OpenMP is still not fully supported
   http://www.nabble.com/OpenMP-and-shared-libgcc-td17516165.html
 
+***** What is the deal with ITK's oriented images? *****
+
+http://www.itk.org/pipermail/insight-users/2008-August/027102.html
+
+Now, ITK 3.10.2 has two flags (earlier version are similar).
+The use of these flags are not well described.
+
+ITK_USE_ORIENTED_IMAGE_DIRECTION
+ITK_IMAGE_BEHAVES_AS_ORIENTED_IMAGE
+

@@ -1,9 +1,7 @@
 @echo off
 
-set foo=a b
-
-if "%COMPUTERNAME%"=="REALITY-IQTNB9Z" (
-  echo Setting for REALITY-IQTNB9Z
+if "%COMPUTERNAME%"=="ROSHAR" (
+  echo Setting for ROSHAR
 @rem  SET ITK_PATH=%HOME%\build\itk-3.6.0-review-vs2005\bin\Release
 @rem  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-vs2005\Release
   SET ITK_PATH=%HOME%\build\itk-3.8-vs2005\bin\Release
