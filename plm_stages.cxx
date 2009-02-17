@@ -221,7 +221,7 @@ void
 save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     if (regp->xf_out_fn[0]) {
-	printf ("Writing transformation ...\n");
+	logfile_printf (regp->log_fp, "Writing transformation ...\n");
 	save_xform (xf_out, regp->xf_out_fn);
     }
 
@@ -233,7 +233,7 @@ save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Par
 	float spacing[3];
 
 	/* Convert xform to vf */
-	printf ("Converting xf to vector field ...\n");
+	logfile_printf (regp->log_fp, "Converting xf to vector field ...\n");
 
 	const FloatImageType::Pointer fixed = regd->fixed_image->itk_float();
 	FloatImageType::SizeType img_sz = fixed->GetLargestPossibleRegion().GetSize();
@@ -253,7 +253,7 @@ save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Par
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
 	    Volume* vf = xf_gpuit_vf.get_gpuit_vf();
-	    printf ("Writing vector field ...\n");
+	    logfile_printf (regp->log_fp, "Writing vector field ...\n");
 	    write_mha (regp->vf_out_fn, vf);
 	}
 
@@ -278,13 +278,13 @@ itk_bsp_extend_to_region (Xform* xf,
 #endif
 
     if (regp->xf_out_fn[0]) {
-	printf ("Writing transformation ...\n");
+	logfile_printf (regp->log_fp, "Writing transformation ...\n");
 	save_xform (xf_out, regp->xf_out_fn);
     }
 
     /* GCS DEBUGGING... */
 #if defined (commentout)
-    printf ("Trying to extend region...\n");
+    logfile_printf (regp->log_fp, "Trying to extend region...\n");
     itk_bsp_extend_to_region (xf_out, 
 				regd->fixed_image->itk_float()->GetOrigin(), 
 				regd->fixed_image->itk_float()->GetSpacing(), 
@@ -295,19 +295,19 @@ itk_bsp_extend_to_region (Xform* xf,
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
 
 	/* Convert xform to vf */
-	printf ("Converting xf to vector field ...\n");
+	logfile_printf (regp->log_fp, "Converting xf to vector field ...\n");
 	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
-	    printf ("Saving warped image ...\n");
+	    logfile_printf (regp->log_fp, "Saving warped image ...\n");
 	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fmt, 
 		    regp->img_out_fn);
 	}
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
-	    printf ("Writing vector field ...\n");
+	    logfile_printf (regp->log_fp, "Writing vector field ...\n");
 
 #define USE_BUGGY_ITK 1
 #if defined (USE_BUGGY_ITK)
@@ -465,7 +465,8 @@ do_registration (Registration_Parms* regp)
     save_regp_output_itk (&regd, xf_out, regp);
     timer3.Stop();
 
-    printf ("Load:   %g\n"
+    logfile_printf (regp->log_fp, 
+	    "Load:   %g\n"
 	    "Run:    %g\n"
 	    "Save:   %g\n"
 	    "Total:  %g\n",

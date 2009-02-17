@@ -49,6 +49,8 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     logfile_printf (regp->log_fp, "SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
     moving_ss = volume_subsample (moving, stage->resolution);
     fixed_ss = volume_subsample (fixed, stage->resolution);
+    logfile_printf (regp->log_fp, "moving_ss size = %d %d %d\n", moving_ss->dim[0], moving_ss->dim[1], moving_ss->dim[2]);
+    logfile_printf (regp->log_fp, "fixed_ss size = %d %d %d\n", fixed_ss->dim[0], fixed_ss->dim[1], fixed_ss->dim[2]);
 
     /* Make spatial gradient image */
     moving_grad = volume_make_gradient (moving_ss);

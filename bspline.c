@@ -400,7 +400,7 @@ bspline_xform_initialize (
     int tx, ty, tz;
     float *A, *B, *C;
 
-    logfile_printf (log_fp, "1.\n");
+    logfile_printf (log_fp, "bspline_xform_initialize\n");
     for (d = 0; d < 3; d++) {
 	/* copy input parameters over */
 	bxf->img_origin[d] = img_origin[d];
@@ -429,7 +429,6 @@ bspline_xform_initialize (
     memset (bxf->coeff, 0, sizeof(float) * bxf->num_coeff);
 
     /* Create q_lut */
-    logfile_printf (log_fp, "2. (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     bxf->q_lut = (float*) malloc (sizeof(float) 
 				 * bxf->vox_per_rgn[0] 
 				 * bxf->vox_per_rgn[1] 
@@ -438,8 +437,7 @@ bspline_xform_initialize (
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
-    logfile_printf (log_fp, "%p %p %p %p\n", bxf->q_lut, A, B, C);
-
+ 
     for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 	float ii = ((float) i) / bxf->vox_per_rgn[0];
 	float t3 = ii*ii*ii;
@@ -471,7 +469,6 @@ bspline_xform_initialize (
 	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
-    logfile_printf (log_fp, "3.\n");
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
@@ -491,7 +488,6 @@ bspline_xform_initialize (
     free (A);
 
     /* Create c_lut */
-    logfile_printf (log_fp, "4.\n");
     bxf->c_lut = (int*) malloc (sizeof(int) 
 				 * bxf->rdims[0] 
 				 * bxf->rdims[1] 
@@ -517,8 +513,9 @@ bspline_xform_initialize (
 
     //dump_luts (bxf);
 
-    logfile_printf (log_fp, "CDims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], 
-	    bxf->cdims[2]);
+    logfile_printf (log_fp, "rdims = (%d,%d,%d)\n", bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
+    logfile_printf (log_fp, "vox_per_rgn = (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    logfile_printf (log_fp, "cdims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
 }
 
 static void
@@ -1599,16 +1596,12 @@ bspline_score_d_mse (
 		/* Find c_lut row for this tile */
 		c_lut = &bxf->c_lut[pidx*64];
 
-		logfile_printf (log_fp, "Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
+		//logfile_printf (log_fp, "Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across offsets */
 		for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
 		    for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
 			for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
-
-			    if (p[2] == 4) {
-		    		logfile_printf (log_fp, "Kernel 1, offset %d %d %d\n", q[0], q[1], q[2]);
-			    }
 
 			    /* Compute linear index for this offset */
 			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
@@ -1624,9 +1617,14 @@ bspline_score_d_mse (
 			    fk = bxf->roi_offset[2] + p[2] * bxf->vox_per_rgn[2] + q[2];
 
 			    /* Some of the pixels are outside image */
-			    if (fi > bxf->roi_offset[0] + bxf->roi_dim[0]) continue;
-			    if (fj > bxf->roi_offset[1] + bxf->roi_dim[1]) continue;
-			    if (fk > bxf->roi_offset[2] + bxf->roi_dim[2]) continue;
+			    if (fi >= bxf->roi_offset[0] + bxf->roi_dim[0]) continue;
+			    if (fj >= bxf->roi_offset[1] + bxf->roi_dim[1]) continue;
+			    if (fk >= bxf->roi_offset[2] + bxf->roi_dim[2]) continue;
+
+			    //if (p[2] == 4) {
+		    	//	logfile_printf (log_fp, "Kernel 1, pix %d %d %d\n", fi, fj, fk);
+		    	//	logfile_printf (log_fp, "Kernel 1, offset %d %d %d\n", q[0], q[1], q[2]);
+			    //}
 
 			    /* Compute physical coordinates of fixed image voxel */
 			    fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
@@ -1689,7 +1687,7 @@ bspline_score_d_mse (
 		    }
 		}
 
-		logfile_printf (log_fp, "Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
+		//logfile_printf (log_fp, "Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across 64 control points */
 		for (k = 0; k < 4; k++) {
@@ -2151,8 +2149,8 @@ bspline_score (BSPLINE_Parms *parms,
 
     if (parms->metric == BMET_MSE) {
 	logfile_printf (log_fp, "Using CPU. \n");
-	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
-	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
+	//bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
+	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
 	//bspline_score_b (parms, fixed, moving, moving_grad, log_fp);
 	//bspline_score_a (parms, fixed, moving, moving_grad, log_fp);
     } else {
