@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rad_registration_h_
-#define _rad_registration_h_
+#ifndef _plm_registration_h_
+#define _plm_registration_h_
 
 #include <stdlib.h>
 #include "itkDemonsRegistrationFilter.h"
@@ -169,6 +169,8 @@ public:
 	*xf_in_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
+	log_fp = 0;
+	*log_fn = 0;
 	init_type = STAGE_TRANSFORM_NONE;
 	num_stages = 0;
 	stages = 0;

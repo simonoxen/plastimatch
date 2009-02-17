@@ -8,7 +8,7 @@
 #include "itkVersorRigid3DTransform.h"
 #include "itkAffineTransform.h"
 #include "itkBSplineDeformableTransform.h"
-#include "gregBSplineDeformableTransform.h"
+//#include "gregBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
 #include "bspline.h"
@@ -21,15 +21,15 @@
 class Xform;
 
 enum XFormInternalType {
-    XFORM_NONE,
-    XFORM_ITK_TRANSLATION,
-    XFORM_ITK_VERSOR,
-    XFORM_ITK_AFFINE,
-    XFORM_ITK_BSPLINE,
-    XFORM_ITK_TPS,
-    XFORM_ITK_VECTOR_FIELD,
-    XFORM_GPUIT_BSPLINE,
-    XFORM_GPUIT_VECTOR_FIELD
+    XFORM_NONE			= 0,
+    XFORM_ITK_TRANSLATION	= 1,
+    XFORM_ITK_VERSOR		= 2,
+    XFORM_ITK_AFFINE		= 3,
+    XFORM_ITK_BSPLINE		= 4,
+    XFORM_ITK_TPS		= 5,
+    XFORM_ITK_VECTOR_FIELD	= 6,
+    XFORM_GPUIT_BSPLINE		= 7,
+    XFORM_GPUIT_VECTOR_FIELD	= 8
 };
 
 

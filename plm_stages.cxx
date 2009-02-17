@@ -344,13 +344,15 @@ itk_bsp_extend_to_region (Xform* xf,
 }
 
 void
-do_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, 
+do_registration_stage (Registration_Parms* regp, 
+		       Registration_Data* regd, Xform *xf_out, Xform *xf_in, 
 		       Stage_Parms* stage)
 {
     /* Convert image types */
     PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
 
-    printf ("xf_in->m_type = %d, xf_out->m_type = %d\n", xf_in->m_type, xf_out->m_type);
+    logfile_printf (regp->log_fp, "[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
+		    xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
@@ -371,13 +373,14 @@ do_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
 	do_itk_stage (regd, xf_out, xf_in, stage);
     }
 
-    printf ("xf_out->m_type = %d, xf_in->m_type = %d\n", xf_out->m_type, xf_in->m_type);
+    logfile_printf (regp->log_fp, "[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
+	    xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
     save_stage_output (regd, xf_out, stage);
 }
 
-void
+static void
 load_input_files (Registration_Data* regd, Registration_Parms* regp)
 {
     PlmImageType image_type = PLM_IMG_TYPE_ITK_FLOAT;
@@ -392,30 +395,28 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 
     /* GCS Jun 2, 2008.  Always load as ITK so we can find the ROI */
 
-    printf ("fixed image=%s\n", regp->fixed_fn);
-    printf ("Loading fixed image...");
+    logfile_printf (regp->log_fp, "fixed image=%s\n", regp->fixed_fn);
+    logfile_printf (regp->log_fp, "Loading fixed image...");
     //regd->fixed_image = load_float (regp->fixed_fn);
     regd->fixed_image = rad_image_load (regp->fixed_fn, image_type);
-    fflush (stdout);
-    printf ("done!\n");
+    logfile_printf (regp->log_fp, "done!\n");
 
-    printf ("moving image=%s\n", regp->moving_fn);
-    printf ("Loading moving image...");
-    fflush (stdout);
+    logfile_printf (regp->log_fp, "moving image=%s\n", regp->moving_fn);
+    logfile_printf (regp->log_fp, "Loading moving image...");
     regd->moving_image = rad_image_load (regp->moving_fn, image_type);
-    printf ("done!\n");
+    logfile_printf (regp->log_fp, "done!\n");
 
     if (regp->fixed_mask_fn[0]) {
-	printf ("Loading fixed mask...");
+	logfile_printf (regp->log_fp, "Loading fixed mask...");
 	regd->fixed_mask = load_uchar (regp->fixed_mask_fn);
-	printf ("done!\n");
+	logfile_printf (regp->log_fp, "done!\n");
     } else {
 	regd->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
-	printf ("Loading moving mask...");
+	logfile_printf (regp->log_fp, "Loading moving mask...");
 	regd->moving_mask = load_uchar (regp->moving_mask_fn);
-	printf ("done!\n");
+	logfile_printf (regp->log_fp, "done!\n");
     } else {
 	regd->moving_mask = 0;
     }
@@ -454,7 +455,7 @@ do_registration (Registration_Parms* regp)
 	/* Swap xf_in and xf_out */
 	xf_tmp = xf_out; xf_out = xf_in; xf_in = xf_tmp;
 	/* Run registation, results are stored in xf_out */
-	do_registration_stage (&regd, xf_out, xf_in, regp->stages[i]);
+	do_registration_stage (regp, &regd, xf_out, xf_in, regp->stages[i]);
     }
     timer2.Stop();
 

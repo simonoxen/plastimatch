@@ -1591,7 +1591,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 		/* Find c_lut row for this tile */
 		c_lut = &bxf->c_lut[pidx*64];
 
-		//printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
+		// printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across offsets */
 		for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {

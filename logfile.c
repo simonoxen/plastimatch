@@ -12,7 +12,7 @@
 void
 logfile_open (FILE** log_fp, char* log_fn)
 {
-    if (log_fn[0]) return;
+    if (!log_fn[0]) return;
     if (!(*log_fp)) {
 	*log_fp = fopen (log_fn, "w");
 	if (*log_fp) {
@@ -44,6 +44,7 @@ logfile_printf (FILE* log_fp, char* fmt, ...)
 
     /* Write to console */
     vprintf (fmt, argptr);
+    fflush (stdout);
 
     if (!log_fp) {
 	va_end (argptr);

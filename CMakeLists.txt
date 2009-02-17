@@ -280,7 +280,6 @@ ENDIF(F2C_LIBRARY)
 
 
 SET(PLASTIMATCH_LIBRARY_SRC
-	debug.c debug.h 
 	gcs_metric.h gcs_metric.hxx 
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
