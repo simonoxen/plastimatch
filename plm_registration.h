@@ -150,6 +150,8 @@ public:
     char xf_in_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
+    FILE* log_fp;
+    char log_fn[_MAX_PATH];
     int init_type;
     double init[12];
 

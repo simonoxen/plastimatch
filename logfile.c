@@ -1,0 +1,58 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <time.h>
+#include "plm_version.h"
+#include "logfile.h"
+
+void
+logfile_open (FILE** log_fp, char* log_fn)
+{
+    if (log_fn[0]) return;
+    if (!(*log_fp)) {
+	*log_fp = fopen (log_fn, "w");
+	if (*log_fp) {
+	    fprintf (*log_fp, "Plastimatch " 
+		     PLASTIMATCH_VERSION_STRING
+		     "\n");
+	} else {
+	    /* If failure, do nothing */	
+	}
+    } else {
+	/* Already open? */
+    }
+}
+
+void
+logfile_close (FILE** log_fp)
+{
+    if (*log_fp) {
+	fclose (*log_fp);
+	*log_fp = 0;
+    }
+}
+
+void
+logfile_printf (FILE* log_fp, char* fmt, ...)
+{
+    va_list argptr;
+    va_start (argptr, fmt);
+
+    /* Write to console */
+    vprintf (fmt, argptr);
+
+    if (!log_fp) {
+	va_end (argptr);
+	return;
+    }
+
+    /* Write to file */
+    vfprintf (log_fp, fmt, argptr);
+    fflush (log_fp);
+
+    va_end (argptr);
+}

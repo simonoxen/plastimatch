@@ -223,6 +223,7 @@ SET(GPUIT_LIBRARY_SRC
 	demons.c demons.h
 	demons_cpu.c
 	demons_misc.c demons_misc.h
+	logfile.c logfile.h
 	mathutil.h
 	readmha.c readmha.h
 	volume.c volume.h

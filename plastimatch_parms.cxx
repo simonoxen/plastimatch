@@ -14,7 +14,6 @@
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "xform.h"
-//#include "plm_version.h"
 
 #define BUFLEN 2048
 
@@ -26,8 +25,6 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     if (section != 0) {
 	stage = regp->stages[regp->num_stages-1];
     }
-
-    //printf ("Got k/v: |%s|=|%s|\n", key, val);
 
     /* The following keywords are only allowed globally */
     if (!strcmp (key, "fixed")) {
@@ -49,6 +46,10 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     else if (!strcmp (key, "xf_in") || !strcmp (key, "xform_in") || !strcmp (key, "vf_in")) {
 	if (section != 0) goto error_not_stages;
 	strncpy (regp->xf_in_fn, val, _MAX_PATH);
+    }
+    else if (!strcmp (key, "log")) {
+	if (section != 0) goto error_not_stages;
+	strncpy (regp->log_fn, val, _MAX_PATH);
     }
 
     /* The following keywords are allowed either globally or in stages */
