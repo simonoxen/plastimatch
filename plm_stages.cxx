@@ -22,7 +22,6 @@
 #define FIXME_BACKGROUND_MAX (-1200)
 
 
-
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
    of the fixed_mask (if one is used), or by eliminating excess air by thresholding
@@ -345,7 +344,8 @@ itk_bsp_extend_to_region (Xform* xf,
 
 void
 do_registration_stage (Registration_Parms* regp, 
-		       Registration_Data* regd, Xform *xf_out, Xform *xf_in, 
+		       Registration_Data* regd, 
+		       Xform *xf_out, Xform *xf_in, 
 		       Stage_Parms* stage)
 {
     /* Convert image types */
@@ -366,7 +366,7 @@ do_registration_stage (Registration_Parms* regp,
 	if (stage->impl_type == IMPLEMENTATION_ITK) {
 	    do_itk_stage (regd, xf_out, xf_in, stage);
 	} else {
-	    do_gpuit_bspline_stage (regd, xf_out, xf_in, stage);
+	    do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
 	}
     }
     else {
@@ -443,7 +443,7 @@ do_registration (Registration_Parms* regp)
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
-	load_xform (xf_out, regp->xf_in_fn);
+	load_xform (xf_out, regp->xf_in_fn, regp->log_fp);
     }
     timer1.Stop();
 

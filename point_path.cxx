@@ -136,13 +136,13 @@ compute_point_path (float pos[3], int output_phase)
     /* BSP from input to reference */
     if (input_phase != reference_phase) {
 	sprintf (fn, "%s/t_%d_%d_bsp.txt", deform_dir, input_phase, reference_phase);
-	load_xform (&xf, fn);
+	load_xform (&xf, fn, 0);
 	transform_point_bsp (&xf, pos);
     }
 
     if (output_phase != reference_phase) {
 	sprintf (fn, "%s/t_%d_%d_bsp.txt", deform_dir, reference_phase, output_phase);
-	load_xform (&xf, fn);
+	load_xform (&xf, fn, 0);
 	transform_point_bsp (&xf, pos);
     }
 

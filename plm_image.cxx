@@ -186,7 +186,6 @@ RadImage::convert_gpuit_float ()
 	    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
 		img[i] = it.Get();
 	    }
-	    printf ("written = %d, img_size = %d\n", i, vol->npix);
 
 	    /* Free itk data */
 	    this->m_itk_float = 0;

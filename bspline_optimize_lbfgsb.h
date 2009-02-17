@@ -4,10 +4,16 @@
 #ifndef _bspline_optimize_lbfgsb_h_
 #define _bspline_optimize_lbfgsb_h_
 
+#include <stdio.h>
 #include "bspline.h"
 
 void
-bspline_optimize_lbfgsb (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad);
+bspline_optimize_lbfgsb (
+		BSPLINE_Xform* bxf, 
+		BSPLINE_Parms *parms, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad,
+		FILE* log_fp);
 
 #endif

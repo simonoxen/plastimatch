@@ -16,7 +16,7 @@ warp_pointset_main (Warp_Pointset_Parms* parms)
     pointset_load (ps_in, parms->ps_in_fn);
     pointset_debug (ps_in);
 
-    load_xform (&xf, parms->xf_in_fn);
+    load_xform (&xf, parms->xf_in_fn, 0);
 
     PointSetType::Pointer ps_out = pointset_warp (ps_in, &xf);
     pointset_debug (ps_out);

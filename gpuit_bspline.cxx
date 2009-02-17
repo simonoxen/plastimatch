@@ -12,20 +12,22 @@
 #include "volume.h"
 #include "bspline.h"
 #include "mathutil.h"
+#include "logfile.h"
 
-void
-do_gpuit_bspline_stage_internal (Registration_Data* regd, 
+static void
+do_gpuit_bspline_stage_internal (Registration_Parms* regp, 
+				 Registration_Data* regd, 
 				    Xform *xf_out, 
 				    Xform *xf_in, 
 				    Stage_Parms* stage)
 {
     BSPLINE_Parms parms;
     PlmImageHeader pih;
-    printf ("Converting fixed\n");
+    logfile_printf (regp->log_fp, "Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
-    printf ("Converting moving\n");
+    logfile_printf (regp->log_fp, "Converting moving\n");
     Volume *moving = regd->moving_image->gpuit_float();
-    printf ("Done.\n");
+    logfile_printf (regp->log_fp, "Done.\n");
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
     Volume *vf_out = 0;
@@ -33,7 +35,7 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {
-	printf ("Sorry, GPUIT B-Splines must use grid method #1\n");
+	logfile_printf (regp->log_fp, "Sorry, GPUIT B-Splines must use grid method #1\n");
 	exit (-1);
     }
 
@@ -44,7 +46,7 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
     /* Subsample images */
-    printf ("SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
+    logfile_printf (regp->log_fp, "SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
     moving_ss = volume_subsample (moving, stage->resolution);
     fixed_ss = volume_subsample (fixed, stage->resolution);
 
@@ -80,10 +82,10 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim);
-    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac, regp->log_fp);
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), &parms, fixed_ss, moving_ss, moving_grad);
+    bspline_optimize (xf_out->get_gpuit_bsp(), &parms, fixed_ss, moving_ss, moving_grad, regp->log_fp);
 
     /* Free up temporary memory */
     volume_free (fixed_ss);
@@ -93,12 +95,13 @@ do_gpuit_bspline_stage_internal (Registration_Data* regd,
 }
 
 void
-do_gpuit_bspline_stage (Registration_Data* regd, 
+do_gpuit_bspline_stage (Registration_Parms* regp, 
+			Registration_Data* regd, 
 			 Xform *xf_out, 
 			 Xform *xf_in,
 			 Stage_Parms* stage)
 {
-    do_gpuit_bspline_stage_internal (regd, xf_out, xf_in, stage);
+    do_gpuit_bspline_stage_internal (regp, regd, xf_out, xf_in, stage);
 //    printf ("Deformation stats (out)\n");
 //    deformation_stats (xf_out->get_itk_vf());
 }

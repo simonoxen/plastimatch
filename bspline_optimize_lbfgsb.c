@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,6 +10,7 @@
 #include "volume.h"
 #include "bspline_opts.h"
 #include "bspline.h"
+#include "logfile.h"
 
 extern void bspline_initialize_streams_on_gpu(Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform *bxf, BSPLINE_Parms *parms);
 
@@ -136,9 +140,13 @@ SAVEME ()
 #endif
 
 void
-bspline_optimize_lbfgsb (BSPLINE_Xform* bxf, 
-		BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		Volume *moving_grad)
+bspline_optimize_lbfgsb (
+		BSPLINE_Xform* bxf, 
+		BSPLINE_Parms *parms, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad,
+		FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     char task[60], csave[60];
@@ -156,7 +164,7 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     MMAX = (int) floor (bxf->num_coeff / 100);
     if (MMAX < 20) MMAX = 20;
 
-    printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
+    logfile_printf (log_fp, "Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
 
     nbd = (integer*) malloc (sizeof(integer)*NMAX);
     iwa = (integer*) malloc (sizeof(integer)*3*NMAX);
@@ -191,7 +199,7 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     /* Remember: Fortran expects strings to be padded with blanks */
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
-    printf (">>> %c%c%c%c%c%c%c%c%c%c\n", 
+    logfile_printf (log_fp, ">>> %c%c%c%c%c%c%c%c%c%c\n", 
 	    task[0], task[1], task[2], task[3], task[4], 
 	    task[5], task[6], task[7], task[8], task[9]);
 
@@ -202,10 +210,10 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     /* Fill the GPU data structure  */
 #if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     if (parms->implementation == BIMPL_BROOK) {
-	printf("Initializing GPU data structures for Brook. \n");
+	logfile_printf (log_fp, "Initializing GPU data structures for Brook. \n");
 	    // bspline_initialize_structure_to_store_data_from_gpu(fixed, parms);
 	bspline_initialize_streams_on_gpu(fixed, moving, moving_grad, bxf, parms);
-	printf("Done. \n");
+	logfile_printf (log_fp, "Done. \n");
     }
 #endif
 
@@ -219,8 +227,11 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
 		csave,lsave,isave,dsave,60,60);
-	printf (">>> ");
-	for (i = 0; i < 60; i++) printf ("%c", task[i]); printf ("\n");
+	logfile_printf (log_fp, ">>> ");
+	for (i = 0; i < 60; i++) {
+	    logfile_printf (log_fp, "%c", task[i]);
+	}
+	logfile_printf (log_fp, "\n");
 	if (task[0] == 'F' && task[1] == 'G') {
 
 	    /* Copy from fortran variables (double -> float) */
@@ -229,9 +240,9 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 	    }
 
 	    /* Compute cost and gradient */
-	    bspline_score (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score (parms, bxf, fixed, moving, moving_grad, log_fp);
 	    /* Give a little feedback to the user */
-	    bspline_display_coeff_stats (bxf);
+	    bspline_display_coeff_stats (log_fp, bxf);
 
 	    /* Copy to fortran variables (float -> double) */
 	    f = ssd->score;
@@ -256,7 +267,7 @@ bspline_optimize_lbfgsb (BSPLINE_Xform* bxf,
 		    num_to_check --;
 		}
 	    }
-	    printf ("Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
+	    logfile_printf (log_fp, "Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
 	    if (num_to_check <= 0) {
 		break;
 	    }

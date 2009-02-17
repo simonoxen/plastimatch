@@ -210,7 +210,7 @@ public:
     }
 };
 
-plastimatch1_EXPORT void load_xform (Xform *xf, char* fn);
+plastimatch1_EXPORT void load_xform (Xform *xf, char* fn, FILE* log_fp);
 plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
 void xform_to_trn (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
@@ -219,7 +219,7 @@ plastimatch1_EXPORT void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, PlmImage
 plastimatch1_EXPORT void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih, float* grid_spac);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
-void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* grid_spac);
+void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* grid_spac, FILE* log_fp);
 void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* pix_spacing);
 //template<class T> void xform_transform_point (T point_out, Xform* xf_in, T point_in);
 plastimatch1_EXPORT void xform_transform_point (FloatPointType* point_out, Xform* xf_in, FloatPointType point_in);

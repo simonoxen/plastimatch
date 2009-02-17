@@ -38,6 +38,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "bspline.h"
+#include "logfile.h"
 
 extern void 
 bspline_score_on_gpu_reference(
@@ -145,19 +146,19 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
    Debugging routines
    ----------------------------------------------------------------------- */
 static void
-dump_parms (BSPLINE_Parms* parms)
+dump_parms (FILE* log_fp, BSPLINE_Parms* parms)
 {
-    printf ("BSPLINE PARMS\n");
-    printf ("max_its = %d\n", parms->max_its);
+    logfile_printf (log_fp, "BSPLINE PARMS\n");
+    logfile_printf (log_fp, "max_its = %d\n", parms->max_its);
 }
 
 static void
-dump_bxf_header (BSPLINE_Xform* bxf)
+dump_bxf_header (FILE* log_fp, BSPLINE_Xform* bxf)
 {
-    printf ("BSPLINE XFORM HEADER\n");
-    printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
-    printf ("roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
-    printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+    logfile_printf (log_fp, "BSPLINE XFORM HEADER\n");
+    logfile_printf (log_fp, "vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    logfile_printf (log_fp, "roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    logfile_printf (log_fp, "roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
 }
 
 void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
@@ -351,7 +352,7 @@ control_poimg_loop (BSPLINE_Xform* bxf, Volume* fixed)
 }
 
 void
-bspline_display_coeff_stats (BSPLINE_Xform* bxf)
+bspline_display_coeff_stats (FILE* log_fp, BSPLINE_Xform* bxf)
 {
     float cf_min, cf_avg, cf_max;
     int i;
@@ -363,7 +364,7 @@ bspline_display_coeff_stats (BSPLINE_Xform* bxf)
 	if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
 	if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
     }
-    printf ("CF (MIN,AVG,MAX) = %g %g %g\n", 
+    logfile_printf (log_fp, "CF (MIN,AVG,MAX) = %g %g %g\n", 
 	    cf_min, cf_avg / bxf->num_coeff, cf_max);
 }
 
@@ -384,20 +385,22 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
     Inputs: roi_dim, vox_per_rgn.
    ----------------------------------------------------------------------- */
 void
-bspline_xform_initialize (BSPLINE_Xform* bxf, 
-		    float img_origin[3],         /* Image origin (in mm) */
-		    float img_spacing[3],        /* Image spacing (in mm) */
-		    int img_dim[3],              /* Image size (in vox) */
-		    int roi_offset[3],		 /* Position of first vox in ROI (in vox) */
-		    int roi_dim[3],		 /* Dimension of ROI (in vox) */
-		    int vox_per_rgn[3])		 /* Knot spacing (in vox) */
+bspline_xform_initialize (
+	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+	float img_origin[3],         /* Image origin (in mm) */
+	float img_spacing[3],        /* Image spacing (in mm) */
+	int img_dim[3],              /* Image size (in vox) */
+	int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
+	int roi_dim[3],		     /* Dimension of ROI (in vox) */
+	int vox_per_rgn[3],	     /* Knot spacing (in vox) */
+	FILE* log_fp)		     /* Debugging information */
 {
     int d;
     int i, j, k, p;
     int tx, ty, tz;
     float *A, *B, *C;
 
-    printf ("1.\n");
+    logfile_printf (log_fp, "1.\n");
     for (d = 0; d < 3; d++) {
 	/* copy input parameters over */
 	bxf->img_origin[d] = img_origin[d];
@@ -426,7 +429,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     memset (bxf->coeff, 0, sizeof(float) * bxf->num_coeff);
 
     /* Create q_lut */
-    printf ("2. (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    logfile_printf (log_fp, "2. (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     bxf->q_lut = (float*) malloc (sizeof(float) 
 				 * bxf->vox_per_rgn[0] 
 				 * bxf->vox_per_rgn[1] 
@@ -435,7 +438,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
-    printf ("%p %p %p %p\n", bxf->q_lut, A, B, C);
+    logfile_printf (log_fp, "%p %p %p %p\n", bxf->q_lut, A, B, C);
 
     for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 	float ii = ((float) i) / bxf->vox_per_rgn[0];
@@ -468,7 +471,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
 	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
-    printf ("3.\n");
+    logfile_printf (log_fp, "3.\n");
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
@@ -488,7 +491,7 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
     free (A);
 
     /* Create c_lut */
-    printf ("4.\n");
+    logfile_printf (log_fp, "4.\n");
     bxf->c_lut = (int*) malloc (sizeof(int) 
 				 * bxf->rdims[0] 
 				 * bxf->rdims[1] 
@@ -514,19 +517,19 @@ bspline_xform_initialize (BSPLINE_Xform* bxf,
 
     //dump_luts (bxf);
 
-    printf ("CDims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], 
+    logfile_printf (log_fp, "CDims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], 
 	    bxf->cdims[2]);
 }
 
 static void
-bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol, FILE* log_fp)
 {
     int i;
     float min_vox, max_vox;
     float* img = (float*) vol->img;
 
     if (!img) {
-	printf ("Error trying to create histogram from empty image\n");
+	logfile_printf (log_fp, "Error trying to create histogram from empty image\n");
 	exit (-1);
     }
     min_vox = max_vox = img[0];
@@ -544,14 +547,14 @@ bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 }
 
 static void
-bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
+bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving, FILE* log_fp)
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     mi_hist->m_hist = (float*) malloc (sizeof (float) * mi_hist->moving.bins);
     mi_hist->f_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins);
     mi_hist->j_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins * mi_hist->moving.bins);
-    bspline_initialize_mi_vol (&mi_hist->moving, moving);
-    bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
+    bspline_initialize_mi_vol (&mi_hist->moving, moving, log_fp);
+    bspline_initialize_mi_vol (&mi_hist->fixed, fixed, log_fp);
 }
 
 void
@@ -1083,12 +1086,13 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 }
 
 /* Mutual information version of implementation "C" */
-void
+static void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
 		    BSPLINE_Xform *bxf, 
 		    Volume *fixed, 
 		    Volume *moving, 
-		    Volume *moving_grad)
+		    Volume *moving_grad,
+		    FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -1492,7 +1496,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     end_clock = clock();
 
-    printf ("SCORE: MI %10.8f MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+    logfile_printf (log_fp, "SCORE: MI %10.8f MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, mse_score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
@@ -1532,9 +1536,13 @@ end
 */
 
 void
-bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, 
-		 Volume *fixed, Volume *moving, 
-		 Volume *moving_grad)
+bspline_score_d_mse (
+		 BSPLINE_Parms *parms, 
+		 BSPLINE_Xform* bxf, 
+		 Volume *fixed, 
+		 Volume *moving, 
+		 Volume *moving_grad,
+		 FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i, j, k, m;
@@ -1591,12 +1599,16 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 		/* Find c_lut row for this tile */
 		c_lut = &bxf->c_lut[pidx*64];
 
-		// printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
+		logfile_printf (log_fp, "Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across offsets */
 		for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
 		    for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
 			for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+
+			    if (p[2] == 4) {
+		    		logfile_printf (log_fp, "Kernel 1, offset %d %d %d\n", q[0], q[1], q[2]);
+			    }
 
 			    /* Compute linear index for this offset */
 			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
@@ -1677,7 +1689,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 		    }
 		}
 
-		//printf ("Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
+		logfile_printf (log_fp, "Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across 64 control points */
 		for (k = 0; k < 4; k++) {
@@ -1737,7 +1749,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
 
     end_clock = clock();
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+    logfile_printf (log_fp, "SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
@@ -1747,9 +1759,13 @@ bspline_score_d_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
    for use by L-BFGS-B.  It uses linear interpolation of moving image, 
    and nearest neighbor interpolation of gradient */
 void
-bspline_score_c_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, 
-		 Volume *fixed, Volume *moving, 
-		 Volume *moving_grad)
+bspline_score_c_mse (
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad,
+		FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
@@ -1892,7 +1908,7 @@ bspline_score_c_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
     printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     printf ("GRAD_NORM = %g\n", ssd_grad_norm);
 #endif
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+    logfile_printf (log_fp, "SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
@@ -1901,8 +1917,12 @@ bspline_score_c_mse (BSPLINE_Parms *parms, BSPLINE_Xform* bxf,
    interpolation of both moving image and gradient which doesn't 
    work with stock L-BFGS-B optimizer. */
 void
-bspline_score_b (BSPLINE_Parms *parms, BSPLINE_Xform *bxf, Volume *fixed, Volume *moving, 
-		 Volume *moving_grad)
+bspline_score_b (BSPLINE_Parms *parms, 
+		 BSPLINE_Xform *bxf, 
+		 Volume *fixed, 
+		 Volume *moving, 
+		 Volume *moving_grad,
+		 FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
@@ -1993,17 +2013,22 @@ bspline_score_b (BSPLINE_Parms *parms, BSPLINE_Xform *bxf, Volume *fixed, Volume
     }
 
     end_clock = clock();
-    printf ("Single iteration CPU [b] = %f seconds\n", 
+    logfile_printf (log_fp, "Single iteration CPU [b] = %f seconds\n", 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
-    printf ("NUM_VOX = %d\n", num_vox);
-    printf ("MSE = %g\n", ssd->score);
-    printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
-    printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+    logfile_printf (log_fp, "NUM_VOX = %d\n", num_vox);
+    logfile_printf (log_fp, "MSE = %g\n", ssd->score);
+    logfile_printf (log_fp, "GRAD_MEAN = %g\n", ssd_grad_mean);
+    logfile_printf (log_fp, "GRAD_NORM = %g\n", ssd_grad_norm);
 }
 
 void
-bspline_score_a (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
-		 Volume *moving_grad)
+bspline_score_a (BSPLINE_Parms *parms, 
+		 BSPLINE_Xform* bxf, 
+		 Volume *fixed, 
+		 Volume *moving, 
+		 Volume *moving_grad,
+		 FILE* log_fp
+		 )
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i;
@@ -2091,17 +2116,21 @@ bspline_score_a (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
     end_clock = clock();
-    printf ("Single iteration CPU [a] = %f seconds\n", 
+    logfile_printf (log_fp, "Single iteration CPU [a] = %f seconds\n", 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 
-    printf ("MSE = %g\n", ssd->score);
-    printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
-    printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+    logfile_printf (log_fp, "MSE = %g\n", ssd->score);
+    logfile_printf (log_fp, "GRAD_MEAN = %g\n", ssd_grad_mean);
+    logfile_printf (log_fp, "GRAD_NORM = %g\n", ssd_grad_norm);
 }
 
 void
-bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
-	       Volume *moving_grad)
+bspline_score (BSPLINE_Parms *parms, 
+	       BSPLINE_Xform* bxf, 
+	       Volume *fixed, 
+	       Volume *moving, 
+	       Volume *moving_grad,
+	       FILE* log_fp)
 {
 #if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     if (parms->implementation == BIMPL_BROOK) {
@@ -2121,21 +2150,25 @@ bspline_score (BSPLINE_Parms *parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *
 #endif
 
     if (parms->metric == BMET_MSE) {
-	printf("Using CPU. \n");
-	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_b (parms, fixed, moving, moving_grad);
-	//bspline_score_a (parms, fixed, moving, moving_grad);
+	logfile_printf (log_fp, "Using CPU. \n");
+	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
+	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
+	//bspline_score_b (parms, fixed, moving, moving_grad, log_fp);
+	//bspline_score_a (parms, fixed, moving, moving_grad, log_fp);
     } else {
-	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad, log_fp);
     }
 
 }
 
 void
-bspline_optimize_steepest (BSPLINE_Xform *bxf, 
-		BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		Volume *moving_grad)
+bspline_optimize_steepest (
+		BSPLINE_Xform *bxf, 
+		BSPLINE_Parms *parms, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad, 
+		FILE* log_fp)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     int i, it;
@@ -2147,7 +2180,7 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
     float old_score;
 
     /* Get score and gradient */
-    bspline_score (parms, bxf, fixed, moving, moving_grad);
+    bspline_score (parms, bxf, fixed, moving, moving_grad, log_fp);
     old_score = parms->ssd.score;
 
     /* Set alpha based on norm gradient */
@@ -2157,15 +2190,15 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
     }
     a = 1.0f / ssd_grad_norm;
     gamma = a;
-    printf ("Initial gamma is %g\n", gamma);
+    logfile_printf (log_fp, "Initial gamma is %g\n", gamma);
 
     /* Give a little feedback to the user */
-    bspline_display_coeff_stats (bxf);
+    bspline_display_coeff_stats (log_fp, bxf);
 
     for (it = 0; it < parms->max_its; it++) {
 	char fn[128];
 
-	printf ("Beginning iteration %d, gamma = %g\n", it, gamma);
+	logfile_printf (log_fp, "Beginning iteration %d, gamma = %g\n", it, gamma);
 
 	/* Save some debugging information */
 	if (parms->debug) {
@@ -2188,7 +2221,7 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 	}
 
 	/* Get score and gradient */
-	bspline_score (parms, bxf, fixed, moving, moving_grad);
+	bspline_score (parms, bxf, fixed, moving, moving_grad, log_fp);
 
 	/* Update gamma */
 	if (parms->ssd.score < old_score) {
@@ -2199,48 +2232,17 @@ bspline_optimize_steepest (BSPLINE_Xform *bxf,
 	old_score = parms->ssd.score;
 
 	/* Give a little feedback to the user */
-	bspline_display_coeff_stats (bxf);
+	bspline_display_coeff_stats (log_fp, bxf);
     }
 }
 
 void
-bspline_optimize_debug (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad, char* method)
-{
-    BSPLINE_Score* ssd = &parms->ssd;
-    int i, it;
-    float step = 0.001f;
-
-    bspline_set_coefficients (bxf, 0.0);
-
-    /* Get score and gradient */
-    bspline_score (parms, bxf, fixed, moving, moving_grad);
-    //dump_gradient (bxf, &ssd_fixed, "grad.txt");
-
-    /* Give a little feedback to the user */
-    bspline_display_coeff_stats (bxf);
-
-    for (it = 0; it < parms->max_its; it++) {
-	printf ("Beginning iteration %d\n", it);
-
-	/* Update coefficients */
-	for (i = 0; i < bxf->num_coeff; i++) {
-	    bxf->coeff[i] = bxf->coeff[i] + step * ssd->grad[i];
-	}
-	//dump_coeff (bxf, "coeff.txt");
-
-	/* Get score and gradient */
-	bspline_score (parms, bxf, fixed, moving, moving_grad);
-
-	/* Give a little feedback to the user */
-	bspline_display_coeff_stats (bxf);
-	//exit (0);
-    }
-}
-
-void
-bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad)
+bspline_optimize (BSPLINE_Xform* bxf, 
+		  BSPLINE_Parms *parms, 
+		  Volume *fixed, 
+		  Volume *moving, 
+		  Volume *moving_grad,
+		  FILE* log_fp)
 {
     /* GCS FIX: This is a terrible way to handle gradient.  Should be separated 
 	from parms?  */
@@ -2251,27 +2253,24 @@ bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volum
     parms->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (parms->ssd.grad, 0, bxf->num_coeff * sizeof(float));
 
-    dump_parms (parms);
-    dump_bxf_header (bxf);
+    dump_parms (log_fp, parms);
+    dump_bxf_header (log_fp, bxf);
 
     if (parms->metric == BMET_MI) {
-	bspline_initialize_mi (parms, fixed, moving);
+	bspline_initialize_mi (parms, fixed, moving, log_fp);
     }
 
     if (parms->optimization == BOPT_LBFGSB) {
 #if defined (HAVE_F2C_LIBRARY)
-	bspline_optimize_lbfgsb (bxf, parms, fixed, moving, moving_grad);
+	bspline_optimize_lbfgsb (bxf, parms, fixed, moving, moving_grad, log_fp);
 #else
-	fprintf (stderr, 
-	    "Sorry, LBFGSB not compiled for this platform (f2c library missing).\n"
+	logfile_printf (log_fp, 
+	    "LBFGSB not compiled for this platform (f2c library missing).\n"
 	    "Reverting to steepest descent.\n"
 	    );
-	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
+	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad, log_fp);
 #endif
     } else {
-	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
-#if defined (commentout)
-	bspline_optimize_debug (bxf, parms, fixed, moving, moving_grad);
-#endif
+	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad, log_fp);
     }
 }

@@ -84,27 +84,34 @@ extern "C" {
 #endif
 void bspline_parms_set_default (BSPLINE_Parms* parms);
 void bspline_xform_set_default (BSPLINE_Xform* bxf);
-void bspline_xform_initialize (BSPLINE_Xform* bxf, 
-		    float img_origin[3],         /* Image origin (in mm) */
-		    float img_spacing[3],        /* Image spacing (in mm) */
-		    int img_dim[3],              /* Image size (in vox) */
-		    int roi_offset[3],		 /* Position of first vox in ROI (in vox) */
-		    int roi_dim[3],		 /* Dimension of ROI (in vox) */
-		    int vox_per_rgn[3]);	 /* Knot spacing (in vox) */
+void
+bspline_xform_initialize (
+	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+	float img_origin[3],         /* Image origin (in mm) */
+	float img_spacing[3],        /* Image spacing (in mm) */
+	int img_dim[3],              /* Image size (in vox) */
+	int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
+	int roi_dim[3],		     /* Dimension of ROI (in vox) */
+	int vox_per_rgn[3],	     /* Knot spacing (in vox) */
+	FILE* log_fp);		     /* Debugging information */
 void bspline_xform_free (BSPLINE_Xform* bxf);
 void bspline_parms_free (BSPLINE_Parms* parms);
 void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad);
+		  Volume *moving_grad, FILE* log_fp);
 void write_bxf (char* filename, BSPLINE_Xform* bxf);
 
 /* Used internally */
 void
 bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
 void
-bspline_display_coeff_stats (BSPLINE_Xform* bxf);
+bspline_display_coeff_stats (FILE* log_fp, BSPLINE_Xform* bxf);
 void
-bspline_score (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, Volume *fixed, Volume *moving, 
-	       Volume *moving_grad);
+bspline_score (BSPLINE_Parms *parms, 
+	       BSPLINE_Xform* bxf, 
+	       Volume *fixed, 
+	       Volume *moving, 
+	       Volume *moving_grad,
+	       FILE* log_fp);
 void
 bspline_score_reference (BSPLINE_Score *ssd, 
 			 Volume *fixed, Volume *moving, Volume *moving_grad, 
