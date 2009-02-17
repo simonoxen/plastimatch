@@ -17,6 +17,7 @@
 #include "gpuit_demons.h"
 #include "xform.h"
 #include "readmha.h"
+#include "logfile.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
@@ -432,6 +433,8 @@ do_registration (Registration_Parms* regp)
     xf_in = &xf1;
     xf_out = &xf2;
 
+    /* Start logging */
+    logfile_open (&regp->log_fp, regp->log_fn);
 
     /* Load images */
     timer1.Start();
@@ -471,4 +474,8 @@ do_registration (Registration_Parms* regp)
 	    (double) timer1.GetMeanTime() + 
 	    (double) timer2.GetMeanTime() +
 	    (double) timer3.GetMeanTime());
+
+    /* Done logging */
+    logfile_printf (regp->log_fp, "Finished!\n");
+    logfile_close (&regp->log_fp);
 }

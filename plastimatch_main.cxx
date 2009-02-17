@@ -45,10 +45,7 @@ main(int argc, char *argv[])
 
     parse_args (&regp, argc, argv);
 
-    //logfile_open (&regp);
     do_registration (&regp);
-    //logfile_printf ("Finished!\n");
-    //logfile_close (&regp);
 
     return 0;
 }
