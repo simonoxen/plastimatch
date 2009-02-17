@@ -1,6 +1,5 @@
 PROJECT(plastimatch)
 
-INCLUDE(CPack)
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
 INCLUDE(PLM_FindDCMTK.cmake)
@@ -749,3 +748,12 @@ ENDIF(BUILD_BSPLINE_CUDA)
 #$ADD_TEST(TEST1 PLASTIMATCH)
 #add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)
 #ENDIF(ITK_FOUND)
+
+
+######################################################
+##  CPACK stuff
+###################################################### 	 
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "4")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
+INCLUDE(CPack)
