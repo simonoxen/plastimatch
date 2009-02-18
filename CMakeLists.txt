@@ -208,8 +208,10 @@ ENDIF(CUDA_FOUND)
 ######################################################
 ##  ITK LIBRARY
 ######################################################
+SET(HAVE_ITK FALSE)
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
+  SET(HAVE_ITK TRUE)
   INCLUDE(${ITK_USE_FILE})
 ENDIF(ITK_FOUND)
 
