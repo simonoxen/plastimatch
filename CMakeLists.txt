@@ -2,10 +2,15 @@ PROJECT(plastimatch)
 
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
-INCLUDE(PLM_FindDCMTK.cmake)
+INCLUDE(FindSubversion)
 
+INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(GPUIT.cmake)
 
+######################################################
+##  Plastimatch configuration variables
+###################################################### 	 
+SET(PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
@@ -16,18 +21,13 @@ SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
+######################################################
+##  SLICER FRONT-END 	 
+###################################################### 	 
 SET(Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 
 IF(Slicer3_DIR)
   cmake_minimum_required(VERSION 2.6)
-ENDIF(Slicer3_DIR)
-
-
-######################################################
-##  SLICER FRONT-END 	 
-###################################################### 	 
-
-IF(Slicer3_DIR)
 
   MESSAGE (STATUS "Using " ${Slicer3_DIR})
 
@@ -102,23 +102,26 @@ ENDIF(NOT GPUIT_LINK_MSVCRT)
 
 
 ######################################################
-##  GPUIT LIBRARY
+##  Get plastimatch version from subversion 
 ######################################################
-include(FindSubversion)
-
 IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF(Subversion_FOUND)
     SET(PLASTIMATCH_EXPERIMENTAL TRUE)
-    MESSAGE(STATUS "Looking for Subversion - found")
-    Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
+    #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS(
-		COMMAND "svnversion" "--no-newline" ${CMAKE_SOURCE_DIR}
-		OUTPUT_VARIABLE svn_version
-		ERROR_VARIABLE svn_version
-    )
-    SET(PLASTIMATCH_SVN_VERSION ${svn_version})
+      COMMAND "svnversion" "--no-newline" ${CMAKE_SOURCE_DIR}
+      RESULT_VARIABLE svn_result
+      OUTPUT_VARIABLE svn_version
+      ERROR_VARIABLE svn_version
+      )
+    IF(${svn_result} EQUAL 0)
+      MESSAGE(STATUS "Looking for version in svn - found")
+      SET(PLASTIMATCH_SVN_VERSION ${svn_version})
+    ELSE(${svn_result} EQUAL 0)
+      MESSAGE(STATUS "Looking for version in svn - can't connect")
+    ENDIF(${svn_result} EQUAL 0)
   ELSE(Subversion_FOUND)
-    MESSAGE(STATUS "Looking for Subversion - not found")
+    MESSAGE(STATUS "Looking for version in svn - svn not found")
   ENDIF(Subversion_FOUND)
 ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   SET(PLASTIMATCH_EXPERIMENTAL FALSE)
@@ -565,6 +568,8 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
 ENDIF(ITK_FOUND)
 
+ADD_EXECUTABLE(ctest_test ctest_test.c)
+
 ######################################################
 ##  LINKING INSTRUCTIONS
 ######################################################
@@ -743,13 +748,15 @@ ENDIF(CUDA_FOUND)
 ENDIF(BUILD_BSPLINE_CUDA)
 
 ######################################################
-##  REGRESSION TESTING (Doesn't work)
+##  Regression testing
 ###################################################### 	 
-#IF(ITK_FOUND)
-#ENABLE_TESTING()
-#$ADD_TEST(TEST1 PLASTIMATCH)
-#add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)
-#ENDIF(ITK_FOUND)
+IF(PLM_BUILD_TESTING)
+  ENABLE_TESTING()
+  #ADD_TEST(TEST1 ctest_test)
+  ADD_TEST("plastimatch_usage" plastimatch)
+  ADD_TEST("plastimatch_sphere" plastimatch)
+  #add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)
+ENDIF(PLM_BUILD_TESTING)
 
 
 ######################################################

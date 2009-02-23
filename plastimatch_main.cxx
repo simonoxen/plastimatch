@@ -24,7 +24,7 @@ print_usage (void)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
     printf ("Usage: plastimatch options_file\n");
-    exit (-1);
+    exit (0);
 }
 
 void

@@ -1129,7 +1129,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
-    int dd = 0;
 
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mi_%02d.txt", it++);
@@ -1284,9 +1283,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    //debug = 1;
 		}
 		if (ri == 25 && rj == 25 && rk == 25) {
-		    //debug = 1;
-		}
-		if (++dd == 45922) {
 		    //debug = 1;
 		}
 
@@ -1571,7 +1567,6 @@ bspline_score_d_mse (
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
-    int dd = 0;
 
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
@@ -1794,7 +1789,6 @@ bspline_score_c_mse (
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
-    int dd = 0;
 
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
