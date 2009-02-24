@@ -17,6 +17,7 @@ SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
+SET(BUILD_FDK_CUDA ON CACHE BOOL "Build CUDA version of FDK")
 #SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -352,6 +353,13 @@ SET(FDK_C_SRC
 	fdk_c.c fdk.h
 	fdk_opts.c fdk_opts.h
 	)
+SET(FDK_CUDA_SRC
+	fdk_opts.c fdk_opts.h
+	volume.c volume.h
+	readmha.c readmha.h
+	fdk_cuda.h fdk.h
+	mathutil.h
+	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
 	fdk_opts.c fdk_opts.h
@@ -519,6 +527,14 @@ IF(BUILD_DEMONS_CUDA)
   ADD_EXECUTABLE(demons_cuda ${DEMONS_CUDA_SRC} demons_cuda.obj)
 ENDIF(BUILD_DEMONS_CUDA)
 
+IF(BUILD_FDK_CUDA)
+  NVCC_FILE(fdk_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
+  ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
+ENDIF(BUILD_FDK_CUDA)
+
+
 # Require dcmtk
 IF(DCMTK_FOUND)
   ADD_EXECUTABLE(dicom_uid ${DICOM_UID_SRC})
@@ -568,7 +584,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
 ENDIF(ITK_FOUND)
 
-ADD_EXECUTABLE(ctest_test ctest_test.c)
+#ADD_EXECUTABLE(ctest_test ctest_test.c)
 
 ######################################################
 ##  LINKING INSTRUCTIONS

@@ -4,17 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
+//#include "plm_config.h"
 #include "fdk_opts.h"
 
 #ifndef NULL
 #define NULL ((void*)0)
 #endif
 
-void
-print_usage (void)
+void print_usage (void)
 {
-    printf ("Usage: mghcbct [options]\n"
+    printf ("CUDA Enabled Version\n"
+	    "Usage: mghcbct [options]\n"
 	    "Options:\n"
 	    " -a \"num ((num) num)\"   Use this range of images\n"
 	    " -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
@@ -26,8 +26,7 @@ print_usage (void)
     exit (1);
 }
 
-void
-set_default_options (MGHCBCT_Options* options)
+void set_default_options (MGHCBCT_Options* options)
 {
     options->first_img = 0;
     options->last_img = 119;
@@ -42,10 +41,12 @@ set_default_options (MGHCBCT_Options* options)
     options->output_file = "output.mha";
 }
 
-void
-parse_args (MGHCBCT_Options* options, int argc, char* argv[])
+void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
 {
     int i, rc;
+	
+    if (argc < 2)
+	{ print_usage(); exit(1); }
 
     set_default_options (options);
     for (i = 1; i < argc; i++) {

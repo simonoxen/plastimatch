@@ -164,7 +164,8 @@ IF(CUDA_FOUND)
 ##	"-ccbin" clbin xxxxxx
 ##	"-c"
 ##	"-DWIN32" "-D_CONSOLE" "-D_MBCS"
-##	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MT"
+	## Commenting out the following line slows FDK_CUDA by an order of magnitude!!
+	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MT"
 ##	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD"
 ##	"-Xcompiler" ${XCOMPILER_OPTIONS}
 	"-I" ${CMAKE_CURRENT_SOURCE_DIR}

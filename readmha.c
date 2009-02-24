@@ -7,7 +7,7 @@
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-#include "plm_config.h"
+//#include "plm_config.h"
 #include "volume.h"
 
 #define LINELEN 128
@@ -20,8 +20,7 @@
     samba mount fails.  This seems to be a bug in the C runtime library.
     This function works around the problem by breaking up the large write 
     into many "medium-sized" writes. */
-void
-fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
+void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 {
     size_t left_to_write = count * size;
     size_t cur = 0;
@@ -43,8 +42,7 @@ fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
     }
 }
 
-void
-write_mha (char* filename, Volume* vol)
+void write_mha (char* filename, Volume* vol)
 {
     FILE* fp;
     char* mha_header = 
@@ -86,8 +84,7 @@ write_mha (char* filename, Volume* vol)
     fclose (fp);
 }
 
-Volume*
-read_mha (char* filename)
+Volume* read_mha (char* filename)
 {
     int rc;
     char linebuf[LINELEN];

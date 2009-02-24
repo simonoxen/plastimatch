@@ -5,9 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
+//#include "plm_config.h"
 #include "volume.h"
-#include "readmha.h"
+//kjj#include "readmha.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
@@ -313,6 +313,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
     }
 }
 
+/*
 void
 vf_pad_planar (Volume* vol, int size)
 {
@@ -328,6 +329,7 @@ vf_pad_planar (Volume* vol, int size)
 	img[i] = realloc (img[i], size);
     }
 }
+*/
 
 /* Nearest neighbor interpolation */
 static Volume*

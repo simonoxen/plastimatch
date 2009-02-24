@@ -16,22 +16,23 @@ enum Pixel_Type {
 typedef struct volume Volume;
 struct volume
 {
-    int dim[3];
-    int npix;
+    int dim[3];		// x, y, z Dims
+    int npix;		// # of pixels in volume
+			// = dim[0] * dim[1] * dim[2] 
     float offset[3];
-    float pix_spacing[3];
+    float pix_spacing[3];	// voxel spacing
 
-    enum Pixel_Type pix_type;
-    int pix_size;
-    void* img;
+    enum Pixel_Type pix_type;	// Voxel Data type
+    int pix_size;		// (Unused??)
+    void* img;			// Voxel Data
 
     /* These are used for boundary testing */
-    float xmin;
-    float xmax;
-    float ymin;
-    float ymax;
-    float zmin;
-    float zmax;
+    float xmin;	// Minimum X Value in Volume
+    float xmax; // Maximum X Value in Volume
+    float ymin; // Minimum Y Value in Volume
+    float ymax; // Maximum Y Value in Volume
+    float zmin; // Minimum Z Value in Volume
+    float zmax; // Maximum Z Value in Volume
 };
 
 #if defined __cplusplus
