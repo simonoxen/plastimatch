@@ -243,9 +243,9 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 		printf("Allocating %dMB of video memory...", vol_size_malloc/1000000);
 	#endif
 
-		cudaMalloc( (void**)&dev_vol, vol_size_malloc);
-		cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
-		checkCUDAError("Unable to allocate data volume");
+	cudaMalloc( (void**)&dev_vol, vol_size_malloc);
+	cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
+	checkCUDAError("Unable to allocate data volume");
 
 	#if defined (VERBOSE)
 		printf(" done.\n\n");
