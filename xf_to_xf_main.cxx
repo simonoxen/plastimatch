@@ -90,9 +90,9 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 void
 print_usage (void)
 {
-    printf ("Usage: xf_to_xf --type=type --input=xform_in --output=vf_out --dims=\"x y z\"\n");
+    printf ("Usage: xf_to_xf --output-type=type --input=xform_in --output=vf_out --dims=\"x y z\"\n");
     printf ("          --origin=\"x y z\" --spacing=\"x y z\" --grid-spacing=\"x y z\"\n");
-    printf ("       Supported types: vf, itk_bsp.\n");
+    printf ("       Supported output-types: vf, itk_bsp.\n");
     exit (-1);
 }
 
@@ -103,7 +103,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           1 },
 	{ "output",         required_argument,      NULL,           2 },
-	{ "type",           required_argument,      NULL,           3 },
+	{ "output-type",    required_argument,      NULL,           3 },
 	{ "dims",           required_argument,      NULL,           4 },
 	{ "origin",         required_argument,      NULL,           5 },
 	{ "spacing",        required_argument,      NULL,           6 },
@@ -127,7 +127,7 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 		printf ("CVT to itk_bsp\n");
 		parms->xf_type = XFORM_ITK_BSPLINE;
 	    } else if (!strcmp (optarg, "gpuit_bsp")) {
-		printf ("CVT to itk_bsp\n");
+		printf ("CVT to gpuit_bsp\n");
 		parms->xf_type = XFORM_GPUIT_BSPLINE;
 	    } else {
 		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
