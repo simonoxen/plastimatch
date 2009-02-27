@@ -63,7 +63,7 @@ void fwrite_block (void* buf, size_t size, size_t count, FILE* fp);
 int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options);
 void checkCUDAError(const char *msg);
 
-__global__ void kernel_fdk (float *dev_vol, float *dev_img, float *matrix, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
+__global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -80,7 +80,7 @@ texture<float, 1, cudaReadModeElementType> tex_matrix;
 //_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_( S T A R T )_
 //_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 __global__
-void kernel_fdk (float *dev_vol, float *dev_img, float *matrix, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y)
+void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y)
 {
 	// CUDA 2.0 does not allow for a 3D grid, which severely
 	// limits the manipulation of large 3D arrays of data.  The
@@ -315,10 +315,9 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 			/////////////////////////////////////////
 
 		// Invoke ze kernel  \(^_^)/
+		// Note: cbi->img AND cbi->matrix are passed via texture memory
 		//-------------------------------------
 		kernel_fdk<<< dimGrid, dimBlock >>>(dev_vol,
-						    dev_img,
-						    dev_matrix,
 						    kargs->img_dim,
 						    kargs->ic,
 						    kargs->nrm,
