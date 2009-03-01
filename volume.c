@@ -5,9 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-//#include "plm_config.h"
+#include "plm_config.h"
 #include "volume.h"
-//kjj#include "readmha.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 

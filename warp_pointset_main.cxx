@@ -33,7 +33,6 @@ void
 parse_args (Warp_Pointset_Parms* parms, int argc, char* argv[])
 {
     int ch;
-    int rc;
     int have_offset = 0;
     int have_spacing = 0;
     int have_dims = 0;
