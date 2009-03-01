@@ -94,6 +94,230 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
     }
 }
 
+void dump_coeff (BSPLINE_Xform* bxf, char* fn)
+{
+    int i;
+    FILE* fp = fopen (fn,"wb");
+    for (i = 0; i < bxf->num_coeff; i++) {
+	fprintf (fp, "%f\n", bxf->coeff[i]);
+    }
+    fclose (fp);
+}
+
+void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
+{
+    int i;
+    FILE* fp = fopen (fn,"wb");
+    for (i = 0; i < bxf->num_coeff; i++) {
+	fprintf (fp, "%f\n", ssd->grad[i]);
+    }
+    fclose (fp);
+}
+
+void bspline_cuda_score_e_mse_v2 (
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad)
+{
+	BSPLINE_Score* ssd = &parms->ssd;
+	
+	int num_vox;
+	float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int dd = 0;
+
+    if (parms->debug) {
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+    num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
+
+	bspline_cuda_copy_coeff_lut(bxf);
+	bspline_cuda_clear_score();
+	bspline_cuda_clear_grad();
+
+	// Index of the set, in the range [0, 63)
+	int sidx[3];
+  	
+	LARGE_INTEGER clock_count, clock_frequency;
+	double clock_start, clock_end;
+	QueryPerformanceFrequency(&clock_frequency);
+	QueryPerformanceCounter(&clock_count);
+	clock_start = (double)clock_count.QuadPart;
+
+	// Calculate the score for the entire volume all at once.
+	bspline_cuda_calculate_score_e(
+		fixed,
+		moving,
+		moving_grad,
+		bxf,
+		parms);
+
+	// There are 64 sets of tiles for which the score can be calculated in parallel.  Iterate through these sets.
+	for(sidx[2] = 0; sidx[2] < 4; sidx[2]++) {
+		for(sidx[1] = 0; sidx[1] < 4; sidx[1]++) {
+			for(sidx[0] = 0; sidx[0] < 4; sidx[0]++) {
+
+				// printf("Running kernels for set (%d, %d, %d)...\n", sidx[0], sidx[1], sidx[2]);
+				bspline_cuda_run_kernels_e_v2(
+					fixed,
+					moving,
+					moving_grad,
+					bxf,
+					parms,
+					sidx[0],
+					sidx[1],
+					sidx[2]);
+			}
+		}
+	}
+
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("All iterations of bspline_cuda_run_kernels_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+
+    if (parms->debug) {
+		fclose (fp);
+    }
+
+    //dump_coeff(bxf, "coeff_gpu.txt");
+
+	QueryPerformanceFrequency(&clock_frequency);
+	QueryPerformanceCounter(&clock_count);
+	clock_start = (double)clock_count.QuadPart;
+
+	// Compute the score.
+	bspline_cuda_final_steps_e_v2(
+		parms,
+		bxf,
+		fixed,
+		bxf->vox_per_rgn,
+		fixed->dim,
+		&(ssd->score),
+		ssd->grad,
+		&ssd_grad_mean,
+		&ssd_grad_norm);
+	
+	//dump_gradient(bxf, ssd, "grad_gpu.txt");
+
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+
+    end_clock = clock();
+
+    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+void bspline_cuda_score_e_mse (
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad)
+{
+	BSPLINE_Score* ssd = &parms->ssd;
+	
+	int num_vox;
+	float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int dd = 0;
+
+    if (parms->debug) {
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+    num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
+
+	bspline_cuda_copy_coeff_lut(bxf);
+	bspline_cuda_clear_score();
+	bspline_cuda_clear_grad();
+
+	// Index of the set, in the range [0, 63)
+	int sidx[3];
+  	
+	LARGE_INTEGER clock_count, clock_frequency;
+	double clock_start, clock_end;
+	QueryPerformanceFrequency(&clock_frequency);
+	QueryPerformanceCounter(&clock_count);
+	clock_start = (double)clock_count.QuadPart;
+
+	// There are 64 sets of tiles for which the score can be calculated in parallel.  Iterate through these sets.
+	for(sidx[2] = 0; sidx[2] < 4; sidx[2]++) {
+		for(sidx[1] = 0; sidx[1] < 4; sidx[1]++) {
+			for(sidx[0] = 0; sidx[0] < 4; sidx[0]++) {
+
+				// printf("Running kernels for set (%d, %d, %d)...\n", sidx[0], sidx[1], sidx[2]);
+				bspline_cuda_run_kernels_e(
+					fixed,
+					moving,
+					moving_grad,
+					bxf,
+					parms,
+					sidx[0],
+					sidx[1],
+					sidx[2]);
+			}
+		}
+	}
+
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("All iterations of bspline_cuda_run_kernels_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+
+    if (parms->debug) {
+		fclose (fp);
+    }
+
+    //dump_coeff(bxf, "coeff_gpu.txt");
+
+	QueryPerformanceFrequency(&clock_frequency);
+	QueryPerformanceCounter(&clock_count);
+	clock_start = (double)clock_count.QuadPart;
+
+	// Compute the score.
+	bspline_cuda_final_steps_e(
+		parms,
+		bxf,
+		fixed,
+		bxf->vox_per_rgn,
+		fixed->dim,
+		&(ssd->score),
+		ssd->grad,
+		&ssd_grad_mean,
+		&ssd_grad_norm);
+	
+	//dump_gradient(bxf, ssd, "grad_gpu.txt");
+
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
+
+    end_clock = clock();
+
+    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
 // Corresponds to version "D" on the CPU.
 void bspline_cuda_score_d_mse(
 	BSPLINE_Parms *parms, 

@@ -48,6 +48,14 @@ bspline_score_on_gpu_reference(
 	Volume *moving_grad);
 
 extern void 
+bspline_cuda_score_e_mse(
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad);
+
+extern void 
 bspline_cuda_score_d_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
@@ -1494,6 +1502,231 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
+
+void bspline_score_e_mse (
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad)
+{
+	BSPLINE_Score* ssd = &parms->ssd;
+	int i, j, k, m;
+	int fi, fj, fk, fv;
+	float mi, mj, mk;
+	float fx, fy, fz;
+	float mx, my, mz;
+	int mif, mjf, mkf, mvf;  /* Floor */
+	int mir, mjr, mkr, mvr;  /* Round */
+	int s[3];
+	int p[3];
+	int q[3];
+	float diff;
+	float* dc_dv;
+	float fx1, fx2, fy1, fy2, fz1, fz2;
+	float* f_img = (float*) fixed->img;
+	float* m_img = (float*) moving->img;
+	float* m_grad = (float*) moving_grad->img;
+	float dxyz[3];
+	int num_vox;
+	int pidx, qidx;
+	int cidx;
+	float ssd_grad_norm, ssd_grad_mean;
+	clock_t start_clock, end_clock;
+	float m_val;
+	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+	int* c_lut;
+
+	static int it = 0;
+	char debug_fn[1024];
+	FILE* fp;
+	int dd = 0;
+
+	if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+	}
+
+	start_clock = clock();
+
+	dc_dv = (float*) malloc (3*bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(float));
+	ssd->score = 0;
+	memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+	num_vox = 0;
+  	
+	// There are 64 sets of tiles for which the score can be calculated in parallel.  Iterate through these sets.
+	for(s[2] = 0; s[2] < 4; s[2]++) {
+		for(s[1] = 0; s[1] < 4; s[1]++) {
+			for(s[0] = 0; s[0] < 4; s[0]++) {
+	
+				// Run kernel #1 and kernel #2 here.
+
+				// Calculate the score for each of the tiles in the set in serial.
+				for(p[2] = s[2]; p[2] < bxf->rdims[2]; p[2] += 4) {
+					for(p[1] = s[1]; p[1] < bxf->rdims[1]; p[1] += 4) {
+						for(p[0] = s[0]; p[0] < bxf->rdims[0]; p[0] += 4) {
+
+							// printf("Tile: (%d, %d, %d)\n", p[0], p[1], p[2]);
+
+							// Compute linear index for tile.
+							pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+
+							// Find c_lut row for this tile.
+							c_lut = &bxf->c_lut[pidx*64];
+
+							// Parallel across the offsets within the tile.
+							for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+								for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+									for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+		    
+										// Compute the linear index for this offset.
+										qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+									    
+										// Tentatively mark this pixel as no contribution.
+										dc_dv[3*qidx+0] = 0.f;
+										dc_dv[3*qidx+1] = 0.f;
+										dc_dv[3*qidx+2] = 0.f;
+									    
+										// Get (i,j,k) index of the voxel.
+										fi = bxf->roi_offset[0] + p[0] * bxf->vox_per_rgn[0] + q[0];
+										fj = bxf->roi_offset[1] + p[1] * bxf->vox_per_rgn[1] + q[1];
+										fk = bxf->roi_offset[2] + p[2] * bxf->vox_per_rgn[2] + q[2];
+									    
+										// Some of the pixels are outside image.
+										if (fi > bxf->roi_offset[0] + bxf->roi_dim[0]) continue;
+										if (fj > bxf->roi_offset[1] + bxf->roi_dim[1]) continue;
+										if (fk > bxf->roi_offset[2] + bxf->roi_dim[2]) continue;
+									    
+										// Compute physical coordinates of fixed image voxel.
+										fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+										fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+										fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+									    
+										// Compute linear index of fixed image voxel.
+										fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+									    
+										// Get B-spline deformation vector.
+										bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+									    
+										// Find correspondence in moving image.
+										mx = fx + dxyz[0];
+										mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+										if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+									    
+										my = fy + dxyz[1];
+										mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+										if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+									    
+										mz = fz + dxyz[2];
+										mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+										if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+									    
+										// Compute interpolation fractions.
+										clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+										clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+										clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+										// Compute moving image intensity using linear interpolation.
+										mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+										m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+										m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+										m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+										m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+										m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+										m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+										m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+										m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+										m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+										  + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+										// Compute intensity difference.
+										diff = f_img[fv] - m_val;
+
+										// We'll go ahead and accumulate the score here, but you would 
+										// have to reduce somewhere else instead.
+										ssd->score += diff * diff;
+										num_vox ++;
+
+										// Compute spatial gradient using nearest neighbors.
+										mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
+
+										// Store dc_dv for this offset.
+										dc_dv[3*qidx+0] = diff * m_grad[3*mvr+0];  // x component
+										dc_dv[3*qidx+1] = diff * m_grad[3*mvr+1];  // y component
+										dc_dv[3*qidx+2] = diff * m_grad[3*mvr+2];  // z component
+									}
+								}
+							}
+
+							// Parallel across 64 control points.
+							for (k = 0; k < 4; k++) {
+								for (j = 0; j < 4; j++) {
+									for (i = 0; i < 4; i++) {
+
+										// Compute linear index of control point.
+										m = k*16 + j*4 + i;
+
+										// Find index of control point within coefficient array.
+										cidx = c_lut[m] * 3;
+
+									    // Serial across offsets within kernel.
+										for (qidx = 0, q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+											for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+												for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++, qidx++) {
+
+													// Find q_lut row for this offset.
+													float* q_lut = &bxf->q_lut[qidx*64];
+
+													// Accumulate update to gradient for this control point.
+													ssd->grad[cidx+0] += dc_dv[3*qidx+0] * q_lut[m];
+													ssd->grad[cidx+1] += dc_dv[3*qidx+1] * q_lut[m];
+													ssd->grad[cidx+2] += dc_dv[3*qidx+2] * q_lut[m];
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	free (dc_dv);
+
+	if (parms->debug) {
+		fclose (fp);
+	}
+
+	dump_coeff (bxf, "coeff_cpu.txt");
+
+	/* Normalize score for MSE */
+	ssd->score = ssd->score / num_vox;
+	for (i = 0; i < bxf->num_coeff; i++) {
+		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+	}
+
+	dump_gradient(bxf, ssd, "grad_cpu.txt");
+
+	/* Normalize gradient */
+	ssd_grad_norm = 0;
+	ssd_grad_mean = 0;
+	for (i = 0; i < bxf->num_coeff; i++) {
+		ssd_grad_mean += ssd->grad[i];
+		ssd_grad_norm += fabs (ssd->grad[i]);
+	}
+
+	end_clock = clock();
+
+	printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+		ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+		(double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+
 /* Mean-squared error version of implementation "D" */
 /* This design could be useful for a low-memory GPU implementation
 
@@ -1679,7 +1912,7 @@ bspline_score_d_mse (
 			    dc_dv[3*qidx+1] = diff * m_grad[3*mvr+1];  /* y component */
 			    dc_dv[3*qidx+2] = diff * m_grad[3*mvr+2];  /* z component */
 			}
-		    }
+		  }
 		}
 
 		//logfile_printf (log_fp, "Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
@@ -2135,7 +2368,9 @@ bspline_score (BSPLINE_Parms *parms,
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
     if (parms->implementation == BIMPL_CUDA) {
 	printf("Using CUDA.\n");
-	bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);
+	//bspline_cuda_score_e_mse_v2(parms, bxf, fixed, moving, moving_grad);
+	bspline_cuda_score_e_mse(parms, bxf, fixed, moving, moving_grad);
+	//bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);
 	//bspline_cuda_score_c_mse(parms, bxf, fixed, moving, moving_grad);
 	return;
     }
@@ -2143,10 +2378,11 @@ bspline_score (BSPLINE_Parms *parms,
 
     if (parms->metric == BMET_MSE) {
 	logfile_printf (log_fp, "Using CPU. \n");
-	//bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
-	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad, log_fp);
-	//bspline_score_b (parms, fixed, moving, moving_grad, log_fp);
-	//bspline_score_a (parms, fixed, moving, moving_grad, log_fp);
+	bspline_score_e_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_b (parms, fixed, moving, moving_grad);
+	//bspline_score_a (parms, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad, log_fp);
     }

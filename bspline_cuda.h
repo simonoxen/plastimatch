@@ -11,6 +11,7 @@
 #include <string.h>
 #include <math.h>
 #include "bspline.h"
+#include "cuda.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -37,6 +38,20 @@ extern "C" {
 		float *sum_element;
 	};
 
+	void bspline_cuda_score_e_mse_v2(
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad);
+
+	void bspline_cuda_score_e_mse(
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad);
+
 	void bspline_cuda_score_d_mse(
 		BSPLINE_Parms *parms, 
 		BSPLINE_Xform* bxf, 
@@ -53,6 +68,22 @@ extern "C" {
 
 	// Simple utility function to check for CUDA runtime errors.
 	void checkCUDAError(const char *msg);  
+
+	// Initialize the GPU to execute bspline_cuda_score_e_mse_v2().
+	void bspline_cuda_initialize_e_v2(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms);
+
+	// Initialize the GPU to execute bspline_cuda_score_e_mse().
+	void bspline_cuda_initialize_e(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms);
 
 	// Initialize the GPU to execute bspline_cuda_score_d_mse().
 	void bspline_cuda_initialize_d(
@@ -72,6 +103,36 @@ extern "C" {
 
 	void bspline_cuda_copy_coeff_lut(
 		BSPLINE_Xform *bxf);
+
+	void bspline_cuda_copy_grad_to_host(
+		float* host_grad);
+
+	void bspline_cuda_calculate_score_e(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms);
+
+	void bspline_cuda_run_kernels_e_v2(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms,
+		int sidx0,
+		int sidx1,
+		int sidx2);
+
+	void bspline_cuda_run_kernels_e(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms,
+		int sidx0,
+		int sidx1,
+		int sidx2);
 
 	void bspline_cuda_run_kernels_d(
 		Volume *fixed,
@@ -103,6 +164,28 @@ extern "C" {
 		int *vox_per_rgn,
 		int *volume_dim,
 		float *host_score);
+
+	void bspline_cuda_final_steps_e_v2(
+		BSPLINE_Parms* parms, 
+		BSPLINE_Xform* bxf,
+		Volume *fixed,
+		int   *vox_per_rgn,
+		int   *volume_dim,
+		float *host_score,
+		float *host_grad,
+		float *host_grad_mean,
+		float *host_grad_norm);
+
+	void bspline_cuda_final_steps_e(
+		BSPLINE_Parms* parms, 
+		BSPLINE_Xform* bxf,
+		Volume *fixed,
+		int   *vox_per_rgn,
+		int   *volume_dim,
+		float *host_score,
+		float *host_grad,
+		float *host_grad_mean,
+		float *host_grad_norm);
 
 	void bspline_cuda_final_steps_d(
 		BSPLINE_Parms* parms, 
