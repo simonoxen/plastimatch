@@ -312,7 +312,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
     }
 }
 
-/*
+/* Used by demons_brook */
 void
 vf_pad_planar (Volume* vol, int size)
 {
@@ -328,7 +328,6 @@ vf_pad_planar (Volume* vol, int size)
 	img[i] = realloc (img[i], size);
     }
 }
-*/
 
 /* Nearest neighbor interpolation */
 static Volume*

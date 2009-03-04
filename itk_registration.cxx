@@ -5,29 +5,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
-#include "itkImageRegistrationMethod.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkImage.h"
-#include "itkCenteredTransformInitializer.h"
-#include "itkVersorRigid3DTransformOptimizer.h"
-#include "itkResampleImageFilter.h"
-#include "itkSquaredDifferenceImageFilter.h"
-#include "itkCommand.h"
-#include "itkNearestNeighborInterpolateImageFunction.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
-#include "itkAmoebaOptimizer.h"
-#include "itkMultiResolutionImageRegistrationMethod.h"
-#include "itkImageRegionIterator.h"
 #include "itkImageMaskSpatialObject.h"
-#include "itkArray.h"
-#include "itkBSplineResampleImageFunction.h"
-#include "itkIdentityTransform.h"
 
-#include "itkMeanSquaresImageToImageMetric.h"
 #include "itkMutualInformationImageToImageMetric.h"
-#include "itkMattesMutualInformationImageToImageMetric.h"
 
-#include "gcs_metric.h"
+#include "itkMattesMutualInformationImageToImageMetric.h"
+//#include "itkOptMattesMutualInformationImageToImageMetric.h"
+
+//#include "gcs_metric.h"
+#include "itkOptMeanSquaresImageToImageMetric.h"
+
 #include "plm_registration.h"
 #include "itk_image.h"
 #include "itk_optim.h"
@@ -37,7 +25,8 @@
 #include "xform.h"
 
 
-#define USE_GCS_METRIC 1
+//#define USE_GCS_METRIC 1
+
 #if defined (USE_GCS_METRIC)
 typedef itk::GCSMetric <
     FloatImageType, FloatImageType > MSEMetricType;
@@ -70,6 +59,7 @@ public:
     Stage_Parms* m_stage;
     RegistrationType::Pointer m_registration;
     double last_value;
+    clock_t start;
 
     void Set_Stage_Parms (RegistrationType::Pointer registration,
 			  Stage_Parms* stage) {
@@ -79,6 +69,7 @@ public:
 
     void Execute(itk::Object * caller, const itk::EventObject & event) {
         Execute((const itk::Object *) caller, event);
+	start = clock ();
     }
 
     void Execute(const itk::Object * object,
@@ -90,6 +81,12 @@ public:
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
+	    start = clock ();
+	}
+	if (typeid(event) == typeid(itk::InitializeEvent)) {
+	    std::cout << "InitializeEvent: ";
+	    std::cout << std::endl;
+	    start = clock ();
 	}
 	else if (typeid(event) == typeid(itk::EndEvent)) {
 	    std::cout << "EndEvent: ";
@@ -100,10 +97,20 @@ public:
 	    std::cout << std::endl;
 	}
 	else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
-	    //std::cout << "FunctionEvaluationIterationEvent: ";
+	    std::cout << "FunctionEvaluationIterationEvent: ";
 	}
 	else if (typeid(event) == typeid(itk::FunctionAndGradientEvaluationIterationEvent)) {
-	    //std::cout << "FunctionAndGradientEvaluationIterationEvent: ";
+	    double duration;
+
+	    std::cout << "VAL+GRAD ";
+	    int it = optimizer_get_current_iteration(m_registration, m_stage);
+	    double val = optimizer_get_value(m_registration, m_stage);
+	    double ss = optimizer_get_step_length(m_registration, m_stage);
+	    
+	    duration = (double)(clock() - start) / CLOCKS_PER_SEC;
+	    printf ("%6.3f [%6.3f secs]", val, duration);
+	    std::cout << std::endl;
+	    start = clock();
 	}
 	else if (typeid(event) == typeid(itk::IterationEvent)) {
 	    std::cout << "IterationEvent: ";
@@ -480,17 +487,15 @@ set_observer (RegistrationType::Pointer registration,
     registration->AddObserver (itk::IterationEvent(), command);
 #endif
 
-    if (stage->xform_type != STAGE_TRANSFORM_BSPLINE
-	|| stage->optim_type != OPTIMIZATION_LBFGS) {
-	typedef Optimization_Observer OOType;
-	OOType::Pointer observer = OOType::New();
-	observer->Set_Stage_Parms (registration, stage);
-	registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);
-	registration->GetOptimizer()->AddObserver(itk::FunctionEvaluationIterationEvent(), observer);
-	registration->GetOptimizer()->AddObserver(itk::ProgressEvent(), observer);
-	registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
-	registration->GetOptimizer()->AddObserver(itk::EndEvent(), observer);
-    }
+    typedef Optimization_Observer OOType;
+    OOType::Pointer observer = OOType::New();
+    observer->Set_Stage_Parms (registration, stage);
+    registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
+    registration->GetOptimizer()->AddObserver(itk::InitializeEvent(), observer);
+    registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);
+    registration->GetOptimizer()->AddObserver(itk::FunctionEvaluationIterationEvent(), observer);
+    registration->GetOptimizer()->AddObserver(itk::ProgressEvent(), observer);
+    registration->GetOptimizer()->AddObserver(itk::EndEvent(), observer);
 }
 
 void
