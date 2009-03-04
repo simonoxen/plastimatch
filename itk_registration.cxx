@@ -11,7 +11,7 @@
 
 #define USE_GCS_METRIC 1
 
-#if (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+#if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 #include "itkOptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
@@ -32,7 +32,7 @@
 #include "xform.h"
 
 
-#if defined (USE_GCS_METRIC)
+#if !defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) && defined (USE_GCS_METRIC)
 typedef itk::GCSMetric <
     FloatImageType, FloatImageType > MSEMetricType;
 #else
