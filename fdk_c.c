@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "plm_config.h"
 #include "mathutil.h"
 #include "fdk.h"
@@ -550,12 +551,17 @@ int main(int argc, char* argv[])
 {
     MGHCBCT_Options options;
     Volume* vol;
+    clock_t start_run, end_run;
+    double diff_run;
     
     parse_args (&options, argc, argv);
-
     vol = my_create_volume (&options);
 
+    start_run = clock();
     reconstruct_conebeam (vol, &options);
+    end_run = clock();
+    diff_run = (double) (end_run - start_run) / CLOCKS_PER_SEC;
+    printf ("Time needed to reconstruct volume = %f\n", diff_run);
 
     convert_to_hu (vol, &options);
 

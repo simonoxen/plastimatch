@@ -843,8 +843,7 @@ int main(int argc, char* argv[])
 {
     MGHCBCT_Options options;
     Volume* vol;
-    clock_t start_run;
-    clock_t end_run;
+    clock_t start_run, end_run;
     double diff_run;
     
     parse_args (&options, argc, argv);
