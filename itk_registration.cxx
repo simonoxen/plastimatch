@@ -7,14 +7,21 @@
 #include "plm_config.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageMaskSpatialObject.h"
-
 #include "itkMutualInformationImageToImageMetric.h"
 
-#include "itkMattesMutualInformationImageToImageMetric.h"
-//#include "itkOptMattesMutualInformationImageToImageMetric.h"
+#define USE_GCS_METRIC 1
 
-//#include "gcs_metric.h"
+#if (ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
+#include "itkOptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
+#else
+#include "itkMattesMutualInformationImageToImageMetric.h"
+#if (USE_GCS_METRIC)
+#include "gcs_metric.h"
+#include "itkMeanSquaresImageToImageMetric.h"
+#else
+#endif
+#endif
 
 #include "plm_registration.h"
 #include "itk_image.h"
@@ -24,8 +31,6 @@
 #include "itk_demons.h"
 #include "xform.h"
 
-
-//#define USE_GCS_METRIC 1
 
 #if defined (USE_GCS_METRIC)
 typedef itk::GCSMetric <
