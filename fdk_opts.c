@@ -13,8 +13,7 @@
 
 void print_usage (void)
 {
-    printf ("CUDA Enabled Version\n"
-	    "Usage: mghcbct [options]\n"
+    printf ("Usage: mghcbct [options]\n"
 	    "Options:\n"
 	    " -a \"num ((num) num)\"   Use this range of images\n"
 	    " -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"

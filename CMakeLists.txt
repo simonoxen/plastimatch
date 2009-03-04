@@ -16,8 +16,8 @@ SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 #SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
-SET(BUILD_FDK_CUDA ON CACHE BOOL "Build CUDA version of FDK")
+#SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
+#SET(BUILD_FDK_CUDA ON CACHE BOOL "Build CUDA version of FDK")
 #SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -217,7 +217,7 @@ SET(GPUIT_LIBRARY_SRC
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
-IF(CUDA_FOUND AND BUILD_BSPLINE_CUDA)
+IF(CUDA_FOUND)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
@@ -226,7 +226,7 @@ SET(GPUIT_LIBRARY_SRC
 	bspline_cuda_kernels.cu
 	bspline_cuda.h
 	)
-ENDIF(CUDA_FOUND AND BUILD_BSPLINE_CUDA)
+ENDIF(CUDA_FOUND)
 IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
@@ -328,6 +328,7 @@ SET(FDK_CUDA_SRC
 	readmha.c readmha.h
 	fdk_cuda.h fdk.h
 	mathutil.h
+	fdk_cuda.cu
 	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
@@ -495,14 +496,12 @@ IF(CUDA_FOUND)
 ENDIF(CUDA_FOUND)
 ENDIF(BUILD_DEMONS_CUDA)
 
-IF(BUILD_FDK_CUDA)
 IF(CUDA_FOUND)
   NVCC_FILE(fdk_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
   ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
 ENDIF(CUDA_FOUND)
-ENDIF(BUILD_FDK_CUDA)
 
 
 # Require dcmtk
@@ -720,7 +719,6 @@ ENDIF(CUDA_FOUND)
 ENDIF(BUILD_CUDA_TEST)
 
 # CUDA B-Spline
-IF(BUILD_BSPLINE_CUDA)
 IF(CUDA_FOUND)
   NVCC_FILE(bspline_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
@@ -730,7 +728,6 @@ IF(CUDA_FOUND)
 #    SET_TARGET_PROPERTIES(bspline_cuda PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})
 #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
 ENDIF(CUDA_FOUND)
-ENDIF(BUILD_BSPLINE_CUDA)
 
 ######################################################
 ##  Regression testing
