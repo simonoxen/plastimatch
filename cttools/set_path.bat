@@ -16,10 +16,10 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   PATH="%PATH%;%DXSDK_UTILS_DIR%"
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
-@rem  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
-@rem  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
-  SET ITK_PATH=%HOME%\build\itk-3.10.2\bin\Release
-  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-3.10.2\Release
+  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
+  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch\Release
+@rem  SET ITK_PATH=%HOME%\build\itk-3.10.2\bin\Release
+@rem  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-3.10.2\Release
   SET CTTOOLS_PATH=%PLASTIMATCH_PATH%\cttools
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
   echo Setting for ROFOVIA

@@ -20,21 +20,24 @@
 
 
 static void
-print_usage (void)
+print_usage (int return_code)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
     printf ("Usage: plastimatch options_file\n");
-    exit (0);
+    exit (return_code);
 }
 
 void
 parse_args (Registration_Parms* regp, int argc, char* argv[])
 {
+    if (argc == 1) {
+	print_usage (0);
+    }
     if (argc != 2) {
-	print_usage ();
+	print_usage (1);
     }
     if (parse_command_file (regp, argv[1]) < 0) {
-	print_usage ();
+	print_usage (1);
     }
 }
 

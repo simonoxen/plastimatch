@@ -64,12 +64,10 @@ ELSE(Slicer3_DIR)
   MESSAGE (STATUS "NOT Using Slicer3")
 ENDIF(Slicer3_DIR)
 
-
 ## Tell CMake to be quiet
 IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
    cmake_policy(SET CMP0003 NEW)
 ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
-
 
 ######################################################
 ##  By default, brook builts /MT.  We need to match this.
@@ -101,7 +99,6 @@ IF(NOT GPUIT_LINK_MSVCRT)
 	     "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 ENDIF(NOT GPUIT_LINK_MSVCRT)
 
-
 ######################################################
 ##  Get plastimatch version from subversion 
 ######################################################
@@ -128,7 +125,6 @@ ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   SET(PLASTIMATCH_EXPERIMENTAL FALSE)
 ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
-
 ######################################################
 ##  MATH LIBRARY
 ######################################################
@@ -141,30 +137,6 @@ ENDIF(UNIX)
 ######################################################
 ##  GPUIT LIBRARY
 ######################################################
-# SET(GPUIT_LIBRARIES gpuit)
-# IF(BROOK_FOUND)
-# SET(GPUIT_LIBRARIES
-# 	${GPUIT_LIBRARIES}
-# 	${BROOK_LIBRARIES}
-# 	${OPENGL_LIBRARIES}
-# 	${DIRECTX_LIBRARIES}
-# 	)
-# ENDIF(BROOK_FOUND)
-# IF(F2C_LIBRARY)
-# SET(GPUIT_LIBRARIES
-# 	${GPUIT_LIBRARIES}
-# 	${F2C_LIBRARY}
-# 	f2c_helper
-# 	)
-# ENDIF(F2C_LIBRARY)
-# IF(CUDA_FOUND)
-# SET(GPUIT_LIBRARIES
-# 	${GPUIT_LIBRARIES}
-# 	${CUDA_LIBRARIES}
-# 	)
-# ENDIF(CUDA_FOUND)
-# SET(GPUIT_LIBRARIES ${GPUIT_LIBRARIES} ${MY_MATH_LIB})
-
 SET(GPUIT_LIBRARY_DEPENDENCIES "")
 IF(BROOK_FOUND)
 SET(GPUIT_LIBRARY_DEPENDENCIES
@@ -276,13 +248,11 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 
-
 IF(F2C_LIBRARY)
 SET(F2C_HELPER_LIBRARY_SRC
 	main__.c
 	)
 ENDIF(F2C_LIBRARY)
-
 
 SET(PLASTIMATCH_LIBRARY_SRC
 	gcs_metric.h gcs_metric.hxx 
@@ -307,7 +277,6 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 
 	)
-
 
 ######################################################
 ##  SOURCE FILES (EXECUTABLES)
@@ -440,7 +409,6 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
-
 ######################################################
 ##  DCMTK CONFIGURATION
 ######################################################
@@ -450,10 +418,9 @@ IF(UNIX)
 ENDIF(UNIX)
 
 ######################################################
-##  CONFIGURATION
+##  CONFIGURE INCLUDE FILE
 ######################################################
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
-
 
 ######################################################
 ##  INCLUDE DIRECTORIES
@@ -473,7 +440,6 @@ ENDIF(CUDA_FOUND)
 IF(DCMTK_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF(DCMTK_FOUND)
-
 
 ######################################################
 ##  MAKEFILE TARGETS
@@ -658,7 +624,6 @@ ENDIF(ITK_FOUND)
 ######################################################
 ##  INSTALL
 ######################################################
-
 # Always built
 #INSTALL(TARGETS gpuit DESTINATION lib)
 INSTALL(TARGETS bspline DESTINATION bin)
@@ -769,15 +734,59 @@ ENDIF(BUILD_BSPLINE_CUDA)
 
 ######################################################
 ##  Regression testing
+##  Rationale:
+##    1) Tests need to be launched from a script, because 
+##       CTest is not able to add the ITK DLL directory 
+##       to the path.
+##    2) Prefer use of CMAKE as scripting language 
+##       to avoid requirement of outside package (e.g. python)
+##  Notes/Issues:
+##    "Release" is hard coded.  There is (apparently) 
+##    no easy way to avoid this (i.e. no good suggestions 
+##    on CMake/CTest email list.
 ###################################################### 	 
+IF (WIN32 AND NOT CYGWIN)
+  SET(PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
+  SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Release)
+ELSE (WIN32 AND NOT CYGWIN)
+  SET(PLM_ITK_LIBRARY_PATH_HACK "")
+  SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR})
+ENDIF (WIN32 AND NOT CYGWIN)
+
+MACRO(PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
+  ADD_TEST (${TESTNAME} ${CMAKE_COMMAND} 
+    -DWORKING_DIR=${WORKING_DIR}
+    ${PLM_ITK_LIBRARY_PATH_HACK}
+    -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND}
+    -DPARMS=${PARMS}
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/RUN_CTEST.cmake
+    )
+ENDMACRO(PLM_ADD_TEST)
+
+# ADD_SUBDIRECTORY(Testing)
+
+# IF(PLM_BUILD_TESTING)
+#   ENABLE_TESTING()
+#   PLM_ADD_TEST ("plastimatch_usage_1" ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch)
+# ENDIF(PLM_BUILD_TESTING)
+
 IF(PLM_BUILD_TESTING)
   ENABLE_TESTING()
-  #ADD_TEST(TEST1 ctest_test)
-  ADD_TEST("plastimatch_usage" plastimatch)
-  ADD_TEST("plastimatch_sphere" plastimatch)
-  #add_test(compare ${CMAKE_COMMAND} -E compare_files file1 file2)
+  PLM_ADD_TEST (
+    "plastimatch_usage_1" 
+    ""
+    ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+    ""
+    )
+  if (0)
+  PLM_ADD_TEST (
+    "plastimatch_y1" 
+    "C:/gcs6/idata/synth_mse"
+    ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+    "parms.txt"
+    )
+  endif (0)
 ENDIF(PLM_BUILD_TESTING)
-
 
 ######################################################
 ##  CPACK stuff
