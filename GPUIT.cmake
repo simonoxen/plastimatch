@@ -169,10 +169,10 @@ IF(CUDA_FOUND)
 ##	"-Xcompiler" "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD"
 ##	"-Xcompiler" ${XCOMPILER_OPTIONS}
 	"-I" ${CMAKE_CURRENT_SOURCE_DIR}
+	"-I" ${CUDA_SDK_INCLUDE_DIR}
 	## PLM_CUDA_COMPILE tells the plastimatch config file not to 
 	## include the itk header file
 	"-DPLM_CUDA_COMPILE"
-##	"-I" ${CUDA_SDK_INCLUDE_DIR}
 	"-o" "${OUTFILE}"
         "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}"
         DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}")

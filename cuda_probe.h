@@ -1,9 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _find_cuda_h_
-#define _find_cuda_h_
+#ifndef _cuda_probe_h_
+#define _cuda_probe_h_
 
-int find_cuda (void);
+#if defined __cplusplus
+extern "C" {
+#endif
+
+int cuda_probe (void);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

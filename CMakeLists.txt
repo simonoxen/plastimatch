@@ -174,7 +174,7 @@ SET(HAVE_BROOK TRUE)
 ENDIF(BROOK_FOUND)
 
 ######################################################
-##  BROOK LIBRARY
+##  CUDA LIBRARY
 ######################################################
 SET(HAVE_CUDA FALSE)
 IF(CUDA_FOUND)
@@ -292,6 +292,11 @@ SET(CONTOUR_STATISTICS_SRC
 	dice_statistics.cxx 
 	closest_point.cxx 
 	read_obj.cxx
+	)
+SET(CUDA_PROBE_SRC
+	cuda_probe_main.c
+	cuda_probe.cu
+	cuda_probe.h
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
@@ -505,6 +510,14 @@ IF(CUDA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
   ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
+ENDIF(CUDA_FOUND)
+
+IF(CUDA_FOUND)
+  NVCC_FILE(cuda_probe.cu)
+  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
+  ADD_EXECUTABLE(cuda_probe ${CUDA_PROBE_SRC} ${CUDA_LIBRARIES} 
+  			    cuda_probe_wrap.cpp)
 ENDIF(CUDA_FOUND)
 
 
