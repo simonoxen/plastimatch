@@ -14,7 +14,7 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 @rem  SET DXSDK_UTILS_DIR="C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
 @rem  PATH="%PATH%;%DXSDK_UTILS_DIR%"
-  PATH=%PATH%;"C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
+@rem  PATH=%PATH%;"C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
   SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
