@@ -1,8 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _mghcbct_opts_h_
-#define _mghcbct_opts_h_
+#ifndef _fdk_opts_h_
+#define _fdk_opts_h_
+
+typedef struct volume Volume;
 
 #define OPTION_RESOLUTION_STRING "resolution"
 #define OPTION_RESOLUTION 'r'

@@ -60,7 +60,7 @@ void convert_to_hu (Volume* vol, MGHCBCT_Options* options);
 void write_mha (char* filename, Volume* vol);
 void fwrite_block (void* buf, size_t size, size_t count, FILE* fp);
 
-int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options);
+//extern "C" int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options);
 void checkCUDAError(const char *msg);
 
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
@@ -153,6 +153,7 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
 
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
+extern "C"
 int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 {
 	// Thead Block Dimensions
@@ -392,6 +393,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 
 	return 0;
 }
+//}
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -430,46 +432,6 @@ CB_Image* get_image (MGHCBCT_Options* options, int image_num)
 	return load_cb_image (img_file, mat_file);
 }
 ///////////////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////////////
-// FUNCTION: my_create_volume() ///////////////////////////////////////////
-Volume* my_create_volume (MGHCBCT_Options* options)
-{
-	////////////////////////////////////////////////
-	// NOTE: struct Volume is defined in volume.h // 
-	////////////////////////////////////////////////
-	float offset[3];
-	float spacing[3];
-	float* vol_size = options->vol_size;
-	int* resolution = options->resolution;
-
-	spacing[0] = vol_size[0] / resolution[0];
-	spacing[1] = vol_size[1] / resolution[1];
-	spacing[2] = vol_size[2] / resolution[2];
-
-	// Position in world coords of the upper left (first) voxel in the volume
-	offset[0] = -vol_size[0] / 2.0f + spacing[0] / 2.0f;
-	offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
-	offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
-
-	// Note: volume_create() is defined in volume.c
-	// This populates the struct Volume as follows:
-	//    vol.dim[i] 		= resolution[i]
-	//    vol.offset[i] 		= offset[i]
-	//    vol.pix_spacing[i] 	= spacing[i]
-	//    vol.pix_type 		= PT_FLOAT (enumerated type)
-	//			other options:	PT_UNDEFINED
-	//					PT_UCHAR
-	//					PT_SHORT
-	//					PT_VF_FLOAT_INTERLEAVED
-	//					PT_VF_FLOAT_PLANAR
-	return volume_create (resolution, offset, spacing, PT_FLOAT, 0);
-}
-///////////////////////////////////////////////////////////////////////////
-
-
 
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: load_cb_image() //////////////////////////////////////////////
@@ -789,7 +751,7 @@ void write_mha (char* filename, Volume* vol)
 ///////////////////////////////////////////////////////////////////////////
 
 
-
+#if defined (commentout)
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: main() ///////////////////////////////////////////////////////
 int main(int argc, char* argv[])
@@ -837,7 +799,7 @@ int main(int argc, char* argv[])
 	return 0;
 }
 ///////////////////////////////////////////////////////////////////////////
-
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////

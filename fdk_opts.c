@@ -6,10 +6,7 @@
 #include <string.h>
 #include "plm_config.h"
 #include "fdk_opts.h"
-
-#ifndef NULL
-#define NULL ((void*)0)
-#endif
+#include "volume.h"
 
 void print_usage (void)
 {

@@ -321,18 +321,22 @@ SET(EXTRACT_CONTOUR_SRC
 SET(FDK_C_SRC
 	fdk_c.c fdk.h
 	fdk_opts.c fdk_opts.h
+	fdk_utils.c fdk_utils.h
 	)
 SET(FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
+	fdk_utils.c fdk_utils.h
 	volume.c volume.h
 	readmha.c readmha.h
 	fdk_cuda.h fdk.h
 	mathutil.h
+	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
 	fdk_opts.c fdk_opts.h
+	fdk_utils.c fdk_utils.h
 	mathutil.h
 	readmha.c readmha.h
 	volume.c volume.h

@@ -14,6 +14,7 @@
 #include "readmha.h"
 #include "fdk.h"
 #include "fdk_opts.h"
+#include "fdk_utils.h"
 #include "fdk_brook_kernel.cpp"
 
 #define ROUND_INT(x) ((x > 0) ? (int)(x+0.5) : (int)(ceil(x-0.5)))
@@ -55,25 +56,6 @@ create_volume (int* dim, float* offset, float* pix_spacing,
     vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
 
     return vol;
-}
-
-Volume*
-my_create_volume (MGHCBCT_Options* options)
-{
-    float offset[3];
-    float spacing[3];
-    float* vol_size = options->vol_size;
-    int* resolution = options->resolution;
-
-    spacing[0] = vol_size[0] / resolution[0];
-    spacing[1] = vol_size[1] / resolution[1];
-    spacing[2] = vol_size[2] / resolution[2];
-
-    offset[0] = -vol_size[0] / 2.0f + spacing[0] / 2.0f;
-    offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
-    offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
-
-    return create_volume (resolution, offset, spacing, PT_FLOAT);
 }
 
 CB_Image* 
@@ -249,33 +231,6 @@ get_pixel_value_c (CB_Image* cbi, double r, double c)
 
     return cbi->img[rr*cbi->dim[0] + cc];
 }
-
-float
-convert_to_hu_pixel (float in_value)
-{
-    float hu;
-    float diameter = 40.0;  /* reconstruction diameter in cm */
-    hu = (float)(1000 * ((in_value / diameter) - .167) / .167);
-    return hu;
-}
-
-void
-convert_to_hu (Volume* vol, MGHCBCT_Options* options)
-{
-    int i, j, k, p;
-    float* img = (float*) vol->img;
-    
-    p = 0;
-    for (k = 0; k < vol->dim[2]; k++) {
-	for (j = 0; j < vol->dim[1]; j++) {
-	    for (i = 0; i < vol->dim[0]; i++) {
-		img[p] = convert_to_hu_pixel (img[p]);
-		p++;
-	    }
-	}
-    }
-}
-
 
 CB_Image*
 get_image (MGHCBCT_Options* options, int image_num)

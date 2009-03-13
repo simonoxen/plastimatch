@@ -11,27 +11,9 @@
 #include "fdk.h"
 #include "readmha.h"
 #include "fdk_opts.h"
+#include "fdk_utils.h"
 
 #define READ_PFM
-
-Volume*
-my_create_volume (MGHCBCT_Options* options)
-{
-    float offset[3];
-    float spacing[3];
-    float* vol_size = options->vol_size;
-    int* resolution = options->resolution;
-
-    spacing[0] = vol_size[0] / resolution[0];
-    spacing[1] = vol_size[1] / resolution[1];
-    spacing[2] = vol_size[2] / resolution[2];
-
-    offset[0] = -vol_size[0] / 2.0f + spacing[0] / 2.0f;
-    offset[1] = -vol_size[1] / 2.0f + spacing[1] / 2.0f;
-    offset[2] = -vol_size[2] / 2.0f + spacing[2] / 2.0f;
-
-    return volume_create (resolution, offset, spacing, PT_FLOAT, 0);
-}
 
 CB_Image* 
 load_cb_image (char* img_filename, char* mat_filename)
@@ -509,41 +491,15 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
 	sprintf (img_file, fmt, i);
 	sprintf (fmt, "%s/%s", options->input_dir, mat_file_pat);
 	sprintf (mat_file, fmt, i);
-	printf ("Loading Image %d\n", i);
+	//printf ("Loading Image %d\n", i);
 	cbi = load_cb_image (img_file, mat_file);
 
-	printf ("Projecting Image %d\n", i);
+	//printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);
 	project_volume_onto_image_c (vol, cbi, scale);
 	free_cb_image (cbi);
-    }
-}
-
-float
-convert_to_hu_pixel (float in_value)
-{
-    float hu;
-    float diameter = 40.0;  /* reconstruction diameter in cm */
-    hu = 1000 * ((in_value / diameter) - .167) / .167;
-    return hu;
-}
-
-void
-convert_to_hu (Volume* vol, MGHCBCT_Options* options)
-{
-    int i, j, k, p;
-    float* img = (float*) vol->img;
-    
-    p = 0;
-    for (k = 0; k < vol->dim[2]; k++) {
-	for (j = 0; j < vol->dim[1]; j++) {
-	    for (i = 0; i < vol->dim[0]; i++) {
-		img[p] = convert_to_hu_pixel (img[p]);
-		p++;
-	    }
-	}
     }
 }
 
