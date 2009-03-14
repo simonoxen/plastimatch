@@ -4,8 +4,6 @@
 #ifndef _fdk_opts_h_
 #define _fdk_opts_h_
 
-typedef struct volume Volume;
-
 #define OPTION_RESOLUTION_STRING "resolution"
 #define OPTION_RESOLUTION 'r'
 #define OPTION_INPUT_DIR_STRING "input-dir"

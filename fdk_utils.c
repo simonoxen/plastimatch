@@ -172,13 +172,13 @@ load_cb_image (char* img_filename, char* mat_filename)
     }
     /* Load sad */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n");
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
     cbi->sad = (double) f;
     /* Load sid */
     if (1 != fscanf (fp, "%g", &f)) {
-	fprintf (stderr, "Couldn't load sad from %s\n");
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
     cbi->sid = (double) f;
