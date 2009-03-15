@@ -128,7 +128,10 @@ load_xform (Xform *xf, char* fn, FILE* log_fp)
 	BsplineTransformType::RegionType bsp_region;
 	BsplineTransformType::SpacingType bsp_spacing;
 	BsplineTransformType::OriginType bsp_origin;
-	BsplineTransformType::DirectionType bsp_direction;  /* Default is identity */
+	BsplineTransformType::DirectionType bsp_direction;
+
+	/* Initialize direction cosines to identity */
+	bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
 
 	/* Create the bspline structure */
 	init_itk_bsp_default (xf);
@@ -560,6 +563,13 @@ itk_bsp_set_grid (Xform *xf,
     std::cout << bsp_origin << std::endl;
     printf ("Setting bsp_region\n");
     std::cout << bsp_region;
+    printf ("Setting bsp_direction = ");
+    for (int d1 = 0; d1 < 3; d1++) {
+	for (int d2 = 0; d2 < 3; d2++) {
+	    printf ("%g ", bsp_direction[d1][d2]);
+	}
+    }
+    printf ("\n");
 #if defined (commentout)
 #endif
 
@@ -611,9 +621,8 @@ itk_bsp_set_grid_img (Xform *xf,
     BsplineTransformType::DirectionType bsp_direction;
 
     /* Compute bspline grid specifications */
-    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
-
     bsp_direction = pih->m_direction;
+    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
 
     /* Set grid specifications into xf structure */
     itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
@@ -930,7 +939,10 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
-    BsplineTransformType::DirectionType bsp_direction; /* GCS FIX: Always identity */
+    BsplineTransformType::DirectionType bsp_direction;
+
+    /* Initialize direction cosines to identity */
+    bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
 
     /* Convert bspline grid geometry from gpuit to itk */
     gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, bxf);
