@@ -1,11 +1,14 @@
 PROJECT(plastimatch)
 
+######################################################
+##  Include files
+###################################################### 	 
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
-INCLUDE(FindSubversion)
-
+INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(GPUIT.cmake)
+
 
 ######################################################
 ##  Plastimatch configuration variables
@@ -107,7 +110,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     SET(PLASTIMATCH_EXPERIMENTAL TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS(
-      COMMAND "svnversion" "--no-newline" ${CMAKE_SOURCE_DIR}
+      COMMAND ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
       ERROR_VARIABLE svn_version
