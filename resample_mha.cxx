@@ -24,6 +24,7 @@ vector_resample_image (T& vf_image, PlmImageHeader* pih)
     filter->SetOutputOrigin (pih->m_origin);
     filter->SetOutputSpacing (pih->m_spacing);
     filter->SetSize (pih->m_region.GetSize());
+    filter->SetOutputDirection (pih->m_direction);
 
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();
@@ -66,6 +67,7 @@ vector_resample_image (T& vf_image, DoublePointType origin,
     filter->SetOutputOrigin (origin);
     filter->SetOutputSpacing (spacing);
     filter->SetSize (size);
+    filter->SetOutputDirection (vf_image->GetDirection());
 
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();
@@ -173,6 +175,8 @@ vector_resample_image (T& image, float x_spacing,
 		    + ((old_coverage[0]-coverage[0])/2.0);
     filter->SetOutputOrigin (origin);
 
+    filter->SetOutputDirection (image->GetDirection());
+
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();
     filter->SetTransform (transform);
@@ -215,6 +219,7 @@ resample_image (T& image, DoublePointType origin,
     filter->SetOutputOrigin (origin);
     filter->SetOutputSpacing (spacing);
     filter->SetSize (size);
+    filter->SetOutputDirection (image->GetDirection());
 
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();
@@ -296,7 +301,10 @@ subsample_image (T& image, int x_sampling_rate,
 
     filter->SetOutputOrigin (origin);
     filter->SetOutputSpacing (spacing);
-    filter->SetSize(size);
+    filter->SetSize (size);
+
+    // GCS FIX: Assume direction cosines orthogonal
+    filter->SetOutputDirection (image->GetDirection());
 
     typedef itk::AffineTransform< double, 3 > TransformType;
     TransformType::Pointer transform = TransformType::New();

@@ -16,9 +16,6 @@
 #include "xform.h"
 #include "plm_version.h"
 
-#define BUFLEN 2048
-
-
 static void
 print_usage (int return_code)
 {

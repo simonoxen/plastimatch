@@ -9,7 +9,7 @@
 #include "print_and_exit.h"
 
 /* -----------------------------------------------------------------------
-   RadImage class
+   PlmImage class
    ----------------------------------------------------------------------- */
 class PlmImageHeader;
 class PlmImageHeader {
@@ -17,8 +17,11 @@ public:
     OriginType m_origin;
     SpacingType m_spacing;
     ImageRegionType m_region;
+    DirectionType m_direction;
+
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
+
 public:
     void set_from_itk (const OriginType& itk_origin,
 			 const SpacingType& itk_spacing,
@@ -29,16 +32,18 @@ public:
     void plastimatch1_EXPORT cvt_to_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
 			 int gpuit_dim[3]);
+    void plastimatch1_EXPORT print (void);
     template<class T> 
     void set_from_itk_image (T image) {
-	m_origin = image->GetOrigin();
-	m_spacing = image->GetSpacing();
+	m_origin = image->GetOrigin ();
+	m_spacing = image->GetSpacing ();
 	m_region = image->GetLargestPossibleRegion ();
+	m_direction = image->GetDirection ();
     }
 };
 
-class RadImage;
-class RadImage {
+class PlmImage;
+class PlmImage {
 
 public:
 
@@ -54,20 +59,20 @@ public:
 
 private:
     /* Please don't use copy constructors.  They suck. */
-    RadImage (RadImage& xf) {
+    PlmImage (PlmImage& xf) {
     }
     /* Please don't use overloaded operators.  They suck. */
-    RadImage& operator= (RadImage& xf) {
+    PlmImage& operator= (PlmImage& xf) {
 	return *this;
     }
     void convert_itk_float ();
     void convert_gpuit_float ();
 
 public:
-    RadImage () {
+    PlmImage () {
 	clear ();
     }
-    ~RadImage () {
+    ~PlmImage () {
 	free ();
     }
 
@@ -96,7 +101,7 @@ public:
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-RadImage* rad_image_load (char* fname, PlmImageType type);
+PlmImage* rad_image_load (char* fname, PlmImageType type);
 void itk_roi_from_gpuit (ImageRegionType* roi, int roi_offset[3], int roi_dim[3]);
 
 #endif

@@ -186,8 +186,8 @@ public:
 class Registration_Data {
 public:
     /* Input images */
-    RadImage *fixed_image;
-    RadImage *moving_image;
+    PlmImage *fixed_image;
+    PlmImage *moving_image;
     UCharImageType::Pointer fixed_mask;
     UCharImageType::Pointer moving_mask;
 

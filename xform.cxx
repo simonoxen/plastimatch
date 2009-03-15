@@ -24,7 +24,8 @@ static void
 itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::OriginType bsp_origin,
 	    const BsplineTransformType::SpacingType bsp_spacing,
-	    const BsplineTransformType::RegionType bsp_region);
+	    const BsplineTransformType::RegionType bsp_region,
+	    const BsplineTransformType::DirectionType bsp_direction);
 static void
 itk_bsp_set_grid_img (Xform *xf,
 	      const PlmImageHeader* pih,
@@ -127,6 +128,7 @@ load_xform (Xform *xf, char* fn, FILE* log_fp)
 	BsplineTransformType::RegionType bsp_region;
 	BsplineTransformType::SpacingType bsp_spacing;
 	BsplineTransformType::OriginType bsp_origin;
+	BsplineTransformType::DirectionType bsp_direction;  /* Default is identity */
 
 	/* Create the bspline structure */
 	init_itk_bsp_default (xf);
@@ -208,7 +210,7 @@ load_xform (Xform *xf, char* fn, FILE* log_fp)
 
 	/* Set the BSpline grid to specified parameters */
 	bsp_region.SetSize (bsp_size);
-	itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region);
+	itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
 
 	/* Read bspline coefficients from file */
 	const unsigned int num_parms = xf->get_bsp()->GetNumberOfParameters();
@@ -549,7 +551,8 @@ static void
 itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::OriginType bsp_origin,
 	    const BsplineTransformType::SpacingType bsp_spacing,
-	    const BsplineTransformType::RegionType bsp_region)
+	    const BsplineTransformType::RegionType bsp_region,
+	    const BsplineTransformType::DirectionType bsp_direction)
 {
     printf ("Setting bsp_spacing\n");
     std::cout << bsp_spacing << std::endl;
@@ -565,6 +568,9 @@ itk_bsp_set_grid (Xform *xf,
     xf->get_bsp()->SetGridOrigin (bsp_origin);
     xf->get_bsp()->SetGridRegion (bsp_region);
     xf->get_bsp()->SetIdentity ();
+
+    /* GCS FIX: Assume direction cosines orthogonal */
+    xf->get_bsp()->SetGridDirection (bsp_direction);
 
     /* SetGridRegion automatically initializes internal coefficients to zero */
 }
@@ -602,12 +608,15 @@ itk_bsp_set_grid_img (Xform *xf,
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
+    BsplineTransformType::DirectionType bsp_direction;
 
     /* Compute bspline grid specifications */
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
 
+    bsp_direction = pih->m_direction;
+
     /* Set grid specifications into xf structure */
-    itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region);
+    itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
 }
 
 static void
@@ -869,6 +878,7 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	resampler->SetSize (bsp_out->GetGridRegion().GetSize());
 	resampler->SetOutputSpacing (bsp_out->GetGridSpacing());
 	resampler->SetOutputOrigin (bsp_out->GetGridOrigin());
+	resampler->SetOutputDirection (bsp_out->GetGridDirection());
 
 	typedef itk::BSplineDecompositionImageFilter<ParametersImageType, ParametersImageType> DecompositionType;
 	DecompositionType::Pointer decomposition = DecompositionType::New();
@@ -920,13 +930,14 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
+    BsplineTransformType::DirectionType bsp_direction; /* GCS FIX: Always identity */
 
     /* Convert bspline grid geometry from gpuit to itk */
     gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, bxf);
 
     /* Create itk bspline structure */
     init_itk_bsp_default (xf_out);
-    itk_bsp_set_grid (xf_out, bsp_origin, bsp_spacing, bsp_region);
+    itk_bsp_set_grid (xf_out, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
 
     /* RMK: bulk transform is Identity (not supported by GPUIT) */
 
@@ -1001,6 +1012,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->SetOrigin (pih->m_origin);
     itk_vf->SetSpacing (pih->m_spacing);
     itk_vf->SetRegions (pih->m_region);
+    itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;

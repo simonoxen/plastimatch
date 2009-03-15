@@ -4,6 +4,7 @@
 #ifndef _itk_image_h_
 #define _itk_image_h_
 
+#include "plm_config.h"
 #include <stdio.h>
 #include "itkImage.h"
 #if (PLM_ITK_ORIENTED_IMAGES)
@@ -67,6 +68,7 @@ typedef itk::Image < FloatVectorType, Dimension > DeformationFieldType;
 typedef itk::Size < Dimension > SizeType;
 typedef itk::Point < double, Dimension >  OriginType;
 typedef itk::Vector < double, Dimension > SpacingType;
+typedef itk::Matrix<double, Dimension, Dimension> DirectionType;
 typedef itk::ImageRegion < Dimension > ImageRegionType;
 
 /* -----------------------------------------------------------------------

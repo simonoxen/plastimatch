@@ -59,6 +59,33 @@ PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
 }
 
 void
+PlmImageHeader::print (void)
+{
+    ImageRegionType::SizeType itk_size;
+    itk_size = m_region.GetSize ();
+
+    printf ("Origin =");
+    for (int d = 0; d < Dimension; d++) {
+	printf (" %g", m_origin[d]);
+    }
+    printf ("\nSize =");
+    for (int d = 0; d < Dimension; d++) {
+	printf (" %g", itk_size[d]);
+    }
+    printf ("\nSpacing =");
+    for (int d = 0; d < Dimension; d++) {
+	printf (" %g", m_spacing[d]);
+    }
+    printf ("\nDirection =\n");
+    for (int d1 = 0; d1 < Dimension; d1++) {
+	for (int d2 = 0; d2 < Dimension; d2++) {
+	    printf (" %g", m_direction[d1][d2]);
+	}
+    }
+    printf ("\n");
+}
+
+void
 itk_roi_from_gpuit (
     ImageRegionType* roi,
     int roi_offset[3], int roi_dim[3])
@@ -78,10 +105,10 @@ itk_roi_from_gpuit (
 /* -----------------------------------------------------------------------
    Image conversion
    ----------------------------------------------------------------------- */
-RadImage*
+PlmImage*
 rad_image_load (char* fname, PlmImageType type)
 {
-    RadImage *ri = new RadImage;
+    PlmImage *ri = new PlmImage;
     if (!ri) return 0;
 
     switch (type) {
@@ -103,7 +130,7 @@ rad_image_load (char* fname, PlmImageType type)
 }
 
 void
-RadImage::convert_itk_float ()
+PlmImage::convert_itk_float ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_FLOAT:
@@ -157,7 +184,7 @@ RadImage::convert_itk_float ()
 }
 
 void
-RadImage::convert_gpuit_float ()
+PlmImage::convert_gpuit_float ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_FLOAT:

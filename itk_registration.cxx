@@ -384,15 +384,21 @@ show_image_stats(ImgP image)
 {
     typedef typename ImgP::ObjectType Img;
 
-    const typename Img::IndexType& st = image->GetLargestPossibleRegion().GetIndex();
     const typename Img::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
     const typename Img::PointType& ori = image->GetOrigin();
     const typename Img::SpacingType& sp = image->GetSpacing();
+    const typename Img::DirectionType& di = image->GetDirection();
 
     printf ("Origin = %g %g %g\n", ori[0], ori[1], ori[2]);
     printf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
-    std::cout << "Start = " << st[0] << " " << st[1] << " " << st[2] << std::endl;
     std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
+    printf ("Direction Cosines =\n");
+    for (int d1 = 0; d1 < Dimension; d1++) {
+	for (int d2 = 0; d2 < Dimension; d2++) {
+	    printf (" %g", di[d1][d2]);
+	}
+	printf ("\n");
+    }
 }
 
 void

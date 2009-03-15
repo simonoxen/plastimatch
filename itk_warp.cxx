@@ -32,6 +32,7 @@ itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
 
     const typename TBase::PointType& og = vf->GetOrigin();
     const typename TBase::SpacingType& sp = vf->GetSpacing();
+    const typename TBase::DirectionType& di = vf->GetDirection();
 
     if (linear_interp) {
 	filter->SetInterpolator (l_interpolator);
@@ -40,6 +41,7 @@ itk_warp_image (T im_in, DeformationFieldType::Pointer vf, int linear_interp,
     }
     filter->SetOutputSpacing (sp);
     filter->SetOutputOrigin (og);
+    filter->SetOutputDirection (di);
     filter->SetDeformationField (vf);
     filter->SetInput (im_in);
 
