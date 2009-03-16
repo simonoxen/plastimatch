@@ -302,11 +302,12 @@ int main (int argc, char* argv[])
     offset[1]=structures->offset[1];
     spacing[0]=structures->spacing[0];
     spacing[1]=structures->spacing[1];
-    slice_voxels=dim[0]*dim[1];
+    slice_voxels = dim[0]*dim[1];
     acc_img = (unsigned char*)malloc(slice_voxels*sizeof(unsigned char));
-    vol=volume_create(structures->dim, structures->offset, structures->spacing, PT_UCHAR, 0);
-    if(vol==0){
-	fprintf(stderr,"ERROR: failed in allocating the volume"); 
+    /* GCS FIX: Need direction cosines */
+    vol = volume_create(structures->dim, structures->offset, structures->spacing, PT_UCHAR, 0, 0);
+    if (vol == 0) {
+	fprintf (stderr, "ERROR: failed in allocating the volume"); 
     }
     img=(unsigned char*)vol->img;
     for (int j=0; j < structures->num_structures; j++){

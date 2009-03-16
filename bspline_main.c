@@ -64,9 +64,10 @@ main (int argc, char* argv[])
     printf ("Running optimization.\n");
     bspline_optimize (&bxf, parms, fixed, moving, moving_grad, 0);
 
+    /* GCS FIX: Need direction cosines */
     /* Create vector field from bspline coefficients and save */
     vector_field = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing,
-				  PT_VF_FLOAT_INTERLEAVED, 0);
+				  PT_VF_FLOAT_INTERLEAVED, 0, 0);
     bspline_interpolate_vf (vector_field, &bxf);
     write_mha (options.output_fn, vector_field);
 

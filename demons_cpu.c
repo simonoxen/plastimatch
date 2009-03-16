@@ -54,12 +54,12 @@ demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, D
 	vf_convert_to_interleaved (vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     }
-    vf_est = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    vf_est = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
-    m_grad_mag = volume_create (moving->dim, moving->offset, moving->pix_spacing, PT_FLOAT, 0);
+    m_grad_mag = volume_create (moving->dim, moving->offset, moving->pix_spacing, PT_FLOAT,  moving->direction_cosines, 0);
     m_grad_mag_img = (float*) m_grad_mag->img;
 
     /* Create gradient magnitude image */

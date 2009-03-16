@@ -930,7 +930,8 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 }
 
 static void
-gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
+gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in, 
+			  const PlmImageHeader* pih)
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
@@ -939,10 +940,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in)
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
-    BsplineTransformType::DirectionType bsp_direction;
-
-    /* Initialize direction cosines to identity */
-    bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
+    BsplineTransformType::DirectionType bsp_direction = pih->m_direction;
 
     /* Convert bspline grid geometry from gpuit to itk */
     gpuit_bsp_grid_to_itk_bsp_grid (bsp_origin, bsp_spacing, bsp_region, bxf);
@@ -998,7 +996,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     if (grid_spac) {
 	/* Convert to itk data structure */
 	printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
-	gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in);
+	gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
 	/* Then, resample the xform to the desired grid spacing */
 	printf ("Running: xform_itk_bsp_to_itk_bsp\n");
@@ -1006,7 +1004,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     } else {
 	/* Convert to itk data structure only */
 	printf ("Running: gpuit_bsp_to_itk_bsp_raw\n");
-	gpuit_bsp_to_itk_bsp_raw (xf_out, xf_in);
+	gpuit_bsp_to_itk_bsp_raw (xf_out, xf_in, pih);
     }
 
     printf ("Completed: xform_itk_bsp_to_itk_bsp\n");
@@ -1104,7 +1102,7 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
     ImageRegionType img_region;
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
-    gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in);
+    gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
     /* Resize itk array to span image */
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
@@ -1286,7 +1284,8 @@ xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* pix_s
     BSPLINE_Xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
 
-    vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    /* GCS FIX: Need direction cosines */
+    vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
 }
@@ -1294,7 +1293,8 @@ xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* pix_s
 Volume*
 xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* pix_spacing)
 {
-    Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    /* GCS FIX: Need direction cosines */
+    Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     float* img = (float*) vf_out->img;
     FloatVectorType displacement;
 

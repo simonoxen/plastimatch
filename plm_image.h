@@ -23,9 +23,6 @@ public:
     int Size (int d) const { return m_region.GetSize()[d]; }
 
 public:
-    void set_from_itk (const OriginType& itk_origin,
-			 const SpacingType& itk_spacing,
-			 const ImageRegionType& itk_region);
     void plastimatch1_EXPORT set_from_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
 			 int gpuit_dim[3]);

@@ -17,8 +17,12 @@ volume_index (int* dims, int i, int j, int k)
 }
 
 Volume*
-volume_create (int* dim, float* offset, float* pix_spacing, 
-	       enum Pixel_Type pix_type, int min_size)
+volume_create (int* dim, 
+	       float* offset, 
+	       float* pix_spacing, 
+	       enum Pixel_Type pix_type, 
+	       float* direction_cosines,
+	       int min_size)
 {
     int i;
     Volume* vol = (Volume*) malloc (sizeof(Volume));
@@ -27,10 +31,18 @@ volume_create (int* dim, float* offset, float* pix_spacing,
 	exit(1);
     }
 
+    memset (vol, 0, sizeof(Volume));
     for (i = 0; i < 3; i++) {
 	vol->dim[i] = dim[i];
 	vol->offset[i] = offset[i];
 	vol->pix_spacing[i] = pix_spacing[i];
+    }
+    if (direction_cosines) {
+	memcpy (vol->direction_cosines, direction_cosines, sizeof(vol->direction_cosines));
+    } else {
+	vol->direction_cosines[0] = 1.0f;
+	vol->direction_cosines[4] = 1.0f;
+	vol->direction_cosines[8] = 1.0f;
     }
     vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
     vol->pix_type = pix_type;
@@ -100,7 +112,7 @@ Volume*
 volume_clone_empty (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, 0);
+    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
     return vout;
 }
 
@@ -108,7 +120,7 @@ Volume*
 volume_clone (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, 0);
+    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
@@ -343,7 +355,7 @@ volume_resample_float (Volume* vol_in, int* dim,
     float val;
     float default_val = 0.0f;
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_FLOAT, 0);
+    vol_out = volume_create (dim, offset, pix_spacing, PT_FLOAT, vol_in->direction_cosines, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -384,7 +396,7 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, vol_in->direction_cosines, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -425,7 +437,7 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     Volume* vol_out;
     float **in_img, **out_img;
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_PLANAR, 0);
+    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_PLANAR, vol_in->direction_cosines, 0);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 
@@ -599,7 +611,7 @@ volume_make_gradient (Volume* ref)
 {
     Volume *grad;
     grad = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
-			  PT_VF_FLOAT_INTERLEAVED, 0);
+			  PT_VF_FLOAT_INTERLEAVED, ref->direction_cosines, 0);
     volume_calc_grad (grad, ref);
 
     return grad;

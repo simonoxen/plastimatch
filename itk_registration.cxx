@@ -380,7 +380,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 
 template<class ImgP>
 void
-show_image_stats(ImgP image)
+show_image_stats (ImgP image)
 {
     typedef typename ImgP::ObjectType Img;
 
@@ -402,7 +402,7 @@ show_image_stats(ImgP image)
 }
 
 void
-show_stats(RegistrationType::Pointer registration)
+show_stats (RegistrationType::Pointer registration)
 {
     show_image_stats(static_cast < FloatImageType::ConstPointer > (registration->GetFixedImage()));
     show_image_stats(static_cast < FloatImageType::ConstPointer > (registration->GetMovingImage()));

@@ -175,7 +175,8 @@ save_warped_img_gpuit (Registration_Data* regd,
 
     printf ("Warping image...\n");
 
-    vout = volume_create (vf->dim, vf->offset, vf->pix_spacing, PT_FLOAT, 0);
+    /* GCS FIX: Need direction cosines */
+    vout = volume_create (vf->dim, vf->offset, vf->pix_spacing, PT_FLOAT, 0, 0);
     volume_warp (vout, vin, vf);
 
     printf ("Output image: npix = %d\n", vout->npix);

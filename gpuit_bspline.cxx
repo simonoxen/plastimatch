@@ -17,9 +17,9 @@
 static void
 do_gpuit_bspline_stage_internal (Registration_Parms* regp, 
 				 Registration_Data* regd, 
-				    Xform *xf_out, 
-				    Xform *xf_in, 
-				    Stage_Parms* stage)
+				 Xform *xf_out, 
+				 Xform *xf_in, 
+				 Stage_Parms* stage)
 {
     BSPLINE_Parms parms;
     PlmImageHeader pih;

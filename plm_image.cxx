@@ -11,20 +11,9 @@
 #include "volume.h"
 #include "print_and_exit.h"
 
-
 /* -----------------------------------------------------------------------
    Image header conversion
    ----------------------------------------------------------------------- */
-void
-PlmImageHeader::set_from_itk (const OriginType& itk_origin,
-			 const SpacingType& itk_spacing,
-			 const ImageRegionType& itk_region)
-{
-    m_origin = itk_origin;
-    m_spacing = itk_spacing;
-    m_region = itk_region;
-}
-
 void
 PlmImageHeader::set_from_gpuit (float gpuit_origin[3],
 			 float gpuit_spacing[3],
@@ -100,7 +89,6 @@ itk_roi_from_gpuit (
     (*roi).SetSize (itk_size);
     (*roi).SetIndex (itk_index);
 }
-
 
 /* -----------------------------------------------------------------------
    Image conversion
@@ -204,7 +192,8 @@ PlmImage::convert_gpuit_float ()
 		offset[d] = og[d];
 		pix_spacing[d] = sp[d];
 	    }
-	    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 0);
+	    /* GCS FIX: Need direction cosines */
+	    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 0, 0);
 	    float* img = (float*) vol->img;
 
 	    /* Copy data into gpuit */

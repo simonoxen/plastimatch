@@ -21,6 +21,7 @@ struct volume
 			// = dim[0] * dim[1] * dim[2] 
     float offset[3];
     float pix_spacing[3];	// voxel spacing
+    float direction_cosines[9];
 
     enum Pixel_Type pix_type;	// Voxel Data type
     int pix_size;		// (Unused??)
@@ -40,7 +41,8 @@ extern "C" {
 #endif
 int volume_index (int* dims, int k, int j, int i);
 Volume* volume_create (int* dim, float* offset, float* pix_spacing, 
-		       enum Pixel_Type pix_type, int min_size);
+		       enum Pixel_Type pix_type, float* direction_cosines, 
+		       int min_size);
 void volume_free (Volume* vol);
 void volume_convert_to_float (Volume* ref);
 void volume_convert_to_short (Volume* ref);
