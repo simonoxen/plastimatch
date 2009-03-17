@@ -167,11 +167,11 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	vf = volume_clone (vf_init);
 	vf_convert_to_planar (vf, f_tex_size*4);
     } else {
-	vf = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_PLANAR, f_tex_size*4);
+	vf = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_PLANAR, fixed->direction_cosines, f_tex_size*4);
     }
 
     /* Allocate the debug volume */
-    debug_vol = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_FLOAT, 0);
+    debug_vol = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_FLOAT, fixed->direction_cosines, 0);
     ::brook::stream s_debug(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
  
     /* Allocate memory for the various streams.  At the beginning and end 
@@ -496,7 +496,7 @@ convolution_test (void)
     float* img;
     float ker[5] = { 0.1f, 0.2f, 0.4f, 0.2f, 0.1f };
 
-    vf1 = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0);
+    vf1 = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     img = (float*) vf1->img;
     printf ("Building random numbers...\n");
     for (k = 0, v = 0; k < dim[2]; k++) {

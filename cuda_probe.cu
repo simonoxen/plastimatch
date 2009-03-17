@@ -55,5 +55,6 @@ cuda_probe (void)
     }
 
     // Unless proven otherwise, we assume no CUDA.
+    printf ("No cuda information found\n");
     return 0;
 }
