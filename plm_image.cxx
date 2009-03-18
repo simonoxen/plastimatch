@@ -22,6 +22,7 @@ PlmImageHeader::set_from_gpuit (float gpuit_origin[3],
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
 
+    /* GCS FIX: Need direction cosines */
     for (int d = 0; d < Dimension; d++) {
 	m_origin[d] = gpuit_origin[d];
 	m_spacing[d] = gpuit_spacing[d];
@@ -40,6 +41,7 @@ PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
     ImageRegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
 
+    /* GCS FIX: Need direction cosines */
     for (int d = 0; d < Dimension; d++) {
 	gpuit_origin[d] = m_origin[d];
 	gpuit_spacing[d] = m_spacing[d];
@@ -125,7 +127,7 @@ PlmImage::convert_itk_float ()
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	{
-	    int i;
+	    int i, d1, d2;
 	    Volume* vol = (Volume*) m_gpuit;
 	    float* img = (float*) vol->img;
 	    FloatImageType::SizeType sz;
@@ -133,13 +135,17 @@ PlmImage::convert_itk_float ()
 	    FloatImageType::RegionType rg;
 	    FloatImageType::PointType og;
 	    FloatImageType::SpacingType sp;
+	    FloatImageType::DirectionType dc;
 
 	    /* Copy header & allocate data for itk */
-	    for (i = 0; i < 3; i++) {
-		st[i] = 0;
-		sz[i] = vol->dim[i];
-		sp[i] = vol->pix_spacing[i];
-		og[i] = vol->offset[i];
+	    for (d1 = 0; d1 < 3; d1++) {
+		st[d1] = 0;
+		sz[d1] = vol->dim[d1];
+		sp[d1] = vol->pix_spacing[d1];
+		og[d1] = vol->offset[d1];
+		for (d2 = 0; d2 < 3; d2++) {
+		    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
+		}
 	    }
 	    rg.SetSize (sz);
 	    rg.SetIndex (st);
@@ -148,6 +154,7 @@ PlmImage::convert_itk_float ()
 	    this->m_itk_float->SetRegions (rg);
 	    this->m_itk_float->SetOrigin (og);
 	    this->m_itk_float->SetSpacing (sp);
+	    this->m_itk_float->SetDirection (dc);
 	    this->m_itk_float->Allocate();
 
 	    /* Copy data into itk */
@@ -177,23 +184,28 @@ PlmImage::convert_gpuit_float ()
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_FLOAT:
 	{
-	    int i, d;
+	    int i, d1, d2;
 	    FloatImageType::RegionType rg = this->m_itk_float->GetLargestPossibleRegion ();
 	    FloatImageType::PointType og = this->m_itk_float->GetOrigin();
 	    FloatImageType::SpacingType sp = this->m_itk_float->GetSpacing();
 	    FloatImageType::SizeType sz = rg.GetSize();
+	    FloatImageType::DirectionType dc = this->m_itk_float->GetDirection();
 
 	    /* Copy header & allocate data for gpuit float */
 	    int dim[3];
 	    float offset[3];
 	    float pix_spacing[3];
-	    for (d = 0; d < 3; d++) {
-		dim[d] = sz[d];
-		offset[d] = og[d];
-		pix_spacing[d] = sp[d];
+	    float direction_cosines[9];
+	    for (d1 = 0; d1 < 3; d1++) {
+		dim[d1] = sz[d1];
+		offset[d1] = og[d1];
+		pix_spacing[d1] = sp[d1];
+		for (d2 = 0; d2 < 3; d2++) {
+		    direction_cosines[d1*3+d2] = dc[d1][d2];
+		}
 	    }
-	    /* GCS FIX: Need direction cosines */
-	    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 0, 0);
+	    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 
+		direction_cosines, 0);
 	    float* img = (float*) vol->img;
 
 	    /* Copy data into gpuit */
