@@ -1190,7 +1190,10 @@ create_gpuit_bxf (PlmImageHeader* pih, float* grid_spac, FILE* log_fp)
     int roi_dim[3];
     int vox_per_rgn[3];
 
-    pih->cvt_to_gpuit (img_origin, img_spacing, img_dim);
+    pih->get_gpuit_origin (img_origin);
+    pih->get_gpuit_dim (img_dim);
+    pih->get_gpuit_spacing (img_spacing);
+
     for (d = 0; d < 3; d++) {
 	/* Old ROI was whole image */
 	roi_offset[d] = 0;

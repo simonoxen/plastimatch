@@ -5,6 +5,7 @@ PROJECT(plastimatch)
 ###################################################### 	 
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
+##INCLUDE(FindPantheios.cmake)
 INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(GPUIT.cmake)
@@ -193,6 +194,14 @@ IF(ITK_FOUND)
   SET(HAVE_ITK TRUE)
   INCLUDE(${ITK_USE_FILE})
 ENDIF(ITK_FOUND)
+
+######################################################
+##  PANTHEIOS LIBRARY
+######################################################
+SET(HAVE_PANTHEIOS FALSE)
+IF(PANTHEIOS_FOUND)
+SET(HAVE_PANTHEIOS TRUE)
+ENDIF(PANTHEIOS_FOUND)
 
 ######################################################
 ##  SOURCE FILES (LIBRARIES)
@@ -453,6 +462,11 @@ ENDIF(CUDA_FOUND)
 IF(DCMTK_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF(DCMTK_FOUND)
+
+IF(PANTHEIOS_FOUND)
+  INCLUDE_DIRECTORIES(AFTER ${STLSOFT_INCLUDE_DIR})
+  INCLUDE_DIRECTORIES(AFTER ${PANTHEIOS_INCLUDE_DIR})
+ENDIF(PANTHEIOS_FOUND)
 
 ######################################################
 ##  MAKEFILE TARGETS

@@ -6,10 +6,11 @@
 
 #define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
 
-#cmakedefine HAVE_GETOPT_LONG 1
-#cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_BROOK 1
 #cmakedefine HAVE_CUDA 1
+#cmakedefine HAVE_F2C_LIBRARY 1
+#cmakedefine HAVE_GETOPT_LONG 1
+#cmakedefine HAVE_PANTHEIOS 1
 
 #cmakedefine BUILD_SHARED_LIBS 1
 #cmakedefine OPENMP_FOUND 1

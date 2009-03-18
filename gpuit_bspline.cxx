@@ -23,11 +23,13 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 {
     BSPLINE_Parms parms;
     PlmImageHeader pih;
+
     logfile_printf (regp->log_fp, "Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
     logfile_printf (regp->log_fp, "Converting moving\n");
     Volume *moving = regd->moving_image->gpuit_float();
     logfile_printf (regp->log_fp, "Done.\n");
+
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
     Volume *vf_out = 0;
@@ -83,7 +85,7 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     parms.mi_hist.moving.bins = stage->mi_histogram_bins;
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim);
+    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim, fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac, regp->log_fp);
 
     /* Run bspline optimization */

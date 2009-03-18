@@ -1701,7 +1701,7 @@ void bspline_score_e_mse (
 		fclose (fp);
 	}
 
-	dump_coeff (bxf, "coeff_cpu.txt");
+	//dump_coeff (bxf, "coeff_cpu.txt");
 
 	/* Normalize score for MSE */
 	ssd->score = ssd->score / num_vox;
@@ -1709,7 +1709,7 @@ void bspline_score_e_mse (
 		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
 	}
 
-	dump_gradient(bxf, ssd, "grad_cpu.txt");
+	//dump_gradient(bxf, ssd, "grad_cpu.txt");
 
 	/* Normalize gradient */
 	ssd_grad_norm = 0;

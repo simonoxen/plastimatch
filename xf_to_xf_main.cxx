@@ -19,7 +19,7 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
     PlmImageHeader pih;
 
     load_xform (&xf_in, parms->xf_in_fn, 0);
-    pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim);
+    pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);
 
     switch (parms->xf_type) {
     case XFORM_NONE:
