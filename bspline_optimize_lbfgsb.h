@@ -13,7 +13,6 @@ bspline_optimize_lbfgsb (
 		BSPLINE_Parms *parms, 
 		Volume *fixed, 
 		Volume *moving, 
-		Volume *moving_grad,
-		FILE* log_fp);
+		Volume *moving_grad);
 
 #endif

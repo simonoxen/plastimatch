@@ -145,8 +145,7 @@ bspline_optimize_lbfgsb (
 		BSPLINE_Parms *parms, 
 		Volume *fixed, 
 		Volume *moving, 
-		Volume *moving_grad,
-		FILE* log_fp)
+		Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     char task[60], csave[60];
@@ -164,7 +163,7 @@ bspline_optimize_lbfgsb (
     MMAX = (int) floor (bxf->num_coeff / 100);
     if (MMAX < 20) MMAX = 20;
 
-    logfile_printf (log_fp, "Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
+    logfile_printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
 
     nbd = (integer*) malloc (sizeof(integer)*NMAX);
     iwa = (integer*) malloc (sizeof(integer)*3*NMAX);
@@ -199,9 +198,10 @@ bspline_optimize_lbfgsb (
     /* Remember: Fortran expects strings to be padded with blanks */
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
-    logfile_printf (log_fp, ">>> %c%c%c%c%c%c%c%c%c%c\n", 
-	    task[0], task[1], task[2], task[3], task[4], 
-	    task[5], task[6], task[7], task[8], task[9]);
+    logfile_printf (
+	">>> %c%c%c%c%c%c%c%c%c%c\n", 
+	task[0], task[1], task[2], task[3], task[4], 
+	task[5], task[6], task[7], task[8], task[9]);
 
     /* run_toy_kernel();
     getchar();
@@ -229,11 +229,11 @@ bspline_optimize_lbfgsb (
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
 		csave,lsave,isave,dsave,60,60);
-	logfile_printf (log_fp, ">>> ");
+	logfile_printf (">>> ");
 	for (i = 0; i < 60; i++) {
-	    logfile_printf (log_fp, "%c", task[i]);
+	    logfile_printf ("%c", task[i]);
 	}
-	logfile_printf (log_fp, "\n");
+	logfile_printf ("\n");
 	if (task[0] == 'F' && task[1] == 'G') {
 
 	    /* Copy from fortran variables (double -> float) */
@@ -242,9 +242,9 @@ bspline_optimize_lbfgsb (
 	    }
 
 	    /* Compute cost and gradient */
-	    bspline_score (parms, bxf, fixed, moving, moving_grad, log_fp);
+	    bspline_score (parms, bxf, fixed, moving, moving_grad);
 	    /* Give a little feedback to the user */
-	    bspline_display_coeff_stats (log_fp, bxf);
+	    bspline_display_coeff_stats (bxf);
 
 	    /* Copy to fortran variables (float -> double) */
 	    f = ssd->score;
@@ -255,7 +255,7 @@ bspline_optimize_lbfgsb (
 	    /* Check # iterations */
 	    if (++fnev == parms->max_its) break;
 
-	} else if (s_cmp(task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
 	    /* Optimizer has completed an iteration */
 	    /* Check convergence tolerance */
 	    if (it == 0) {
@@ -269,7 +269,7 @@ bspline_optimize_lbfgsb (
 		    num_to_check --;
 		}
 	    }
-	    logfile_printf (log_fp, "Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
+	    logfile_printf ("Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
 	    if (num_to_check <= 0) {
 		break;
 	    }

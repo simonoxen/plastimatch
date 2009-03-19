@@ -51,34 +51,37 @@ logfile_close (FILE** log_fp, char* log_fn)
 }
 
 #else
+
+FILE* log_fp = 0;
+
 void
-logfile_open (FILE** log_fp, char* log_fn)
+logfile_open (char* log_fn)
 {
     if (!log_fn[0]) return;
-    if (!(*log_fp)) {
-	*log_fp = fopen (log_fn, "w");
-	if (!*log_fp) {
+    if (!(log_fp)) {
+	log_fp = fopen (log_fn, "w");
+	if (!log_fp) {
 	    /* If failure (e.g. bad path), do nothing */	
 	}
     } else {
 	/* Already open? */
     }
-    logfile_printf (*log_fp, "Plastimatch " 
+    logfile_printf (log_fp, "Plastimatch " 
 		     PLASTIMATCH_VERSION_STRING
 		     "\n");
 }
 
 void
-logfile_close (FILE** log_fp)
+logfile_close (void)
 {
-    if (*log_fp) {
-	fclose (*log_fp);
-	*log_fp = 0;
+    if (log_fp) {
+	fclose (log_fp);
+	log_fp = 0;
     }
 }
 
 void
-logfile_printf (FILE* log_fp, char* fmt, ...)
+logfile_printf (char* fmt, ...)
 {
     va_list argptr;
     va_start (argptr, fmt);

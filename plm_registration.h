@@ -150,7 +150,6 @@ public:
     char xf_in_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
-    FILE* log_fp;
     char log_fn[_MAX_PATH];
     int init_type;
     double init[12];
@@ -169,7 +168,6 @@ public:
 	*xf_in_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
-	log_fp = 0;
 	*log_fn = 0;
 	init_type = STAGE_TRANSFORM_NONE;
 	num_stages = 0;

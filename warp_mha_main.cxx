@@ -37,7 +37,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 
 	printf ("Loading xform...\n");
 	Xform xform, xform_tmp;
-	load_xform (&xform, parms->xf_in_fn, 0);
+	load_xform (&xform, parms->xf_in_fn);
 
 	if (parms->fixed_im_fn[0]) {
 	    /* if given, use the grid spacing of user-supplied fixed image */

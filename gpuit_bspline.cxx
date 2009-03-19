@@ -24,11 +24,11 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     BSPLINE_Parms parms;
     PlmImageHeader pih;
 
-    logfile_printf (regp->log_fp, "Converting fixed\n");
+    logfile_printf ("Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();
-    logfile_printf (regp->log_fp, "Converting moving\n");
+    logfile_printf ("Converting moving\n");
     Volume *moving = regd->moving_image->gpuit_float();
-    logfile_printf (regp->log_fp, "Done.\n");
+    logfile_printf ("Done.\n");
 
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
@@ -37,7 +37,7 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {
-	logfile_printf (regp->log_fp, "Sorry, GPUIT B-Splines must use grid method #1\n");
+	logfile_printf ("Sorry, GPUIT B-Splines must use grid method #1\n");
 	exit (-1);
     }
 
@@ -48,11 +48,11 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
     /* Subsample images */
-    logfile_printf (regp->log_fp, "SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
+    logfile_printf ("SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
     moving_ss = volume_subsample (moving, stage->resolution);
     fixed_ss = volume_subsample (fixed, stage->resolution);
-    logfile_printf (regp->log_fp, "moving_ss size = %d %d %d\n", moving_ss->dim[0], moving_ss->dim[1], moving_ss->dim[2]);
-    logfile_printf (regp->log_fp, "fixed_ss size = %d %d %d\n", fixed_ss->dim[0], fixed_ss->dim[1], fixed_ss->dim[2]);
+    logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], moving_ss->dim[1], moving_ss->dim[2]);
+    logfile_printf ("fixed_ss size = %d %d %d\n", fixed_ss->dim[0], fixed_ss->dim[1], fixed_ss->dim[2]);
 
     /* Make spatial gradient image */
     moving_grad = volume_make_gradient (moving_ss);
@@ -86,10 +86,10 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim, fixed_ss->direction_cosines);
-    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac, regp->log_fp);
+    xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), &parms, fixed_ss, moving_ss, moving_grad, regp->log_fp);
+    bspline_optimize (xf_out->get_gpuit_bsp(), &parms, fixed_ss, moving_ss, moving_grad);
 
     /* Free up temporary memory */
     volume_free (fixed_ss);

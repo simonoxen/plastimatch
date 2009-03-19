@@ -221,7 +221,7 @@ void
 save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     if (regp->xf_out_fn[0]) {
-	logfile_printf (regp->log_fp, "Writing transformation ...\n");
+	logfile_printf ("Writing transformation ...\n");
 	save_xform (xf_out, regp->xf_out_fn);
     }
 
@@ -233,7 +233,7 @@ save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Par
 	float spacing[3];
 
 	/* Convert xform to vf */
-	logfile_printf (regp->log_fp, "Converting xf to vector field ...\n");
+	logfile_printf ("Converting xf to vector field ...\n");
 
 	const FloatImageType::Pointer fixed = regd->fixed_image->itk_float();
 	FloatImageType::SizeType img_sz = fixed->GetLargestPossibleRegion().GetSize();
@@ -253,7 +253,7 @@ save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Par
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
 	    Volume* vf = xf_gpuit_vf.get_gpuit_vf();
-	    logfile_printf (regp->log_fp, "Writing vector field ...\n");
+	    logfile_printf ("Writing vector field ...\n");
 	    write_mha (regp->vf_out_fn, vf);
 	}
 
@@ -278,13 +278,13 @@ itk_bsp_extend_to_region (Xform* xf,
 #endif
 
     if (regp->xf_out_fn[0]) {
-	logfile_printf (regp->log_fp, "Writing transformation ...\n");
+	logfile_printf ("Writing transformation ...\n");
 	save_xform (xf_out, regp->xf_out_fn);
     }
 
     /* GCS DEBUGGING... */
 #if defined (commentout)
-    logfile_printf (regp->log_fp, "Trying to extend region...\n");
+    logfile_printf ("Trying to extend region...\n");
     itk_bsp_extend_to_region (xf_out, 
 				regd->fixed_image->itk_float()->GetOrigin(), 
 				regd->fixed_image->itk_float()->GetSpacing(), 
@@ -295,19 +295,19 @@ itk_bsp_extend_to_region (Xform* xf,
     if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
 
 	/* Convert xform to vf */
-	logfile_printf (regp->log_fp, "Converting xf to vector field ...\n");
+	logfile_printf ("Converting xf to vector field ...\n");
 	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
-	    logfile_printf (regp->log_fp, "Saving warped image ...\n");
+	    logfile_printf ("Saving warped image ...\n");
 	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fmt, 
 		    regp->img_out_fn);
 	}
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
-	    logfile_printf (regp->log_fp, "Writing vector field ...\n");
+	    logfile_printf ("Writing vector field ...\n");
 
 #define USE_BUGGY_ITK 1
 #if defined (USE_BUGGY_ITK)
@@ -351,7 +351,7 @@ do_registration_stage (Registration_Parms* regp,
     /* Convert image types */
     PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
 
-    logfile_printf (regp->log_fp, "[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
+    logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
 		    xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
@@ -373,7 +373,7 @@ do_registration_stage (Registration_Parms* regp,
 	do_itk_stage (regd, xf_out, xf_in, stage);
     }
 
-    logfile_printf (regp->log_fp, "[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
+    logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
 	    xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
@@ -395,28 +395,28 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 
     /* GCS Jun 2, 2008.  Always load as ITK so we can find the ROI */
 
-    logfile_printf (regp->log_fp, "fixed image=%s\n", regp->fixed_fn);
-    logfile_printf (regp->log_fp, "Loading fixed image...");
+    logfile_printf ("fixed image=%s\n", regp->fixed_fn);
+    logfile_printf ("Loading fixed image...");
     //regd->fixed_image = load_float (regp->fixed_fn);
     regd->fixed_image = rad_image_load (regp->fixed_fn, image_type);
-    logfile_printf (regp->log_fp, "done!\n");
+    logfile_printf ("done!\n");
 
-    logfile_printf (regp->log_fp, "moving image=%s\n", regp->moving_fn);
-    logfile_printf (regp->log_fp, "Loading moving image...");
+    logfile_printf ("moving image=%s\n", regp->moving_fn);
+    logfile_printf ("Loading moving image...");
     regd->moving_image = rad_image_load (regp->moving_fn, image_type);
-    logfile_printf (regp->log_fp, "done!\n");
+    logfile_printf ("done!\n");
 
     if (regp->fixed_mask_fn[0]) {
-	logfile_printf (regp->log_fp, "Loading fixed mask...");
+	logfile_printf ("Loading fixed mask...");
 	regd->fixed_mask = load_uchar (regp->fixed_mask_fn);
-	logfile_printf (regp->log_fp, "done!\n");
+	logfile_printf ("done!\n");
     } else {
 	regd->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
-	logfile_printf (regp->log_fp, "Loading moving mask...");
+	logfile_printf ("Loading moving mask...");
 	regd->moving_mask = load_uchar (regp->moving_mask_fn);
-	logfile_printf (regp->log_fp, "done!\n");
+	logfile_printf ("done!\n");
     } else {
 	regd->moving_mask = 0;
     }
@@ -435,7 +435,7 @@ do_registration (Registration_Parms* regp)
     xf_out = &xf2;
 
     /* Start logging */
-    logfile_open (&regp->log_fp, regp->log_fn);
+    logfile_open (regp->log_fn);
 
     /* Load images */
     timer1.Start();
@@ -443,7 +443,7 @@ do_registration (Registration_Parms* regp)
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
-	load_xform (xf_out, regp->xf_in_fn, regp->log_fp);
+	load_xform (xf_out, regp->xf_in_fn);
     }
     timer1.Stop();
 
@@ -465,7 +465,7 @@ do_registration (Registration_Parms* regp)
     save_regp_output_itk (&regd, xf_out, regp);
     timer3.Stop();
 
-    logfile_printf (regp->log_fp, 
+    logfile_printf (
 	    "Load:   %g\n"
 	    "Run:    %g\n"
 	    "Save:   %g\n"
@@ -478,6 +478,6 @@ do_registration (Registration_Parms* regp)
 	    (double) timer3.GetMeanTime());
 
     /* Done logging */
-    logfile_printf (regp->log_fp, "Finished!\n");
-    logfile_close (&regp->log_fp);
+    logfile_printf ("Finished!\n");
+    logfile_close ();
 }
