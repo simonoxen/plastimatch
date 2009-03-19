@@ -78,7 +78,7 @@ plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname);
 plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
 plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname);
 plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname);
-plastimatch1_EXPORT void load_float (FloatImageType::Pointer* img, PlmImageType* original_type, char* fname);
+plastimatch1_EXPORT FloatImageType::Pointer load_float (PlmImageType* original_type, char* fname);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
 
 plastimatch1_EXPORT void itk__GetImageType (std::string fileName,

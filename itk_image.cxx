@@ -15,6 +15,7 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkCastImageFilter.h"
+#include "itkOrientImageFilter.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "itk_dicom.h"
@@ -91,6 +92,24 @@ load_itk_rdr(RdrT reader, char *fn)
 	getchar();
 	exit(1);
     }
+}
+
+/* -----------------------------------------------------------------------
+   Orienting Images
+   ----------------------------------------------------------------------- */
+template<class T>
+T
+orient_image (T img)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef typename itk::OrientImageFilter<ImageType,ImageType> OrienterType;
+    
+    OrienterType::Pointer orienter = OrienterType::New();
+    orienter->UseImageDirectionOn ();
+    orienter->SetDesiredCoordinateOrientation (itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+    orienter->SetInput (img);
+    orienter->Update ();
+    return orienter->GetOutput ();
 }
 
 /* -----------------------------------------------------------------------
@@ -217,56 +236,71 @@ load_any (char* fname, U otype)
 UCharImageType::Pointer
 load_uchar (char* fname)
 {
+    UCharImageType::Pointer img;
+
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	return load_dicom_uchar (fname);
+	img = load_dicom_uchar (fname);
     } else {
-	return load_any (fname, static_cast<unsigned char>(0));
+	img = load_any (fname, static_cast<unsigned char>(0));
     }
+    return orient_image (img);
 }
 
 ShortImageType::Pointer
 load_short (char* fname)
 {
+    ShortImageType::Pointer img;
+
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	return load_dicom_short (fname);
+	img = load_dicom_short (fname);
     } else {
-	return load_any (fname, static_cast<short>(0));
+	img = load_any (fname, static_cast<short>(0));
     }
+    return orient_image (img);
 }
 
 UShortImageType::Pointer
 load_ushort (char* fname)
 {
+    UShortImageType::Pointer img;
+
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	return load_dicom_ushort (fname);
+	img load_dicom_ushort (fname);
     } else {
-	return load_any (fname, static_cast<unsigned short>(0));
+	img load_any (fname, static_cast<unsigned short>(0));
     }
+    return orient_image (img);
 }
 
-void
-load_float (FloatImageType::Pointer* img,  PlmImageType* original_type, char* fname)
+FloatImageType::Pointer
+load_float (PlmImageType* original_type, char* fname)
 {
+    FloatImageType::Pointer img;
+
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	*img = load_dicom_float (fname);
+	img = load_dicom_float (fname);
     } else {
-	*img = load_any (fname, static_cast<float>(0));
+	img = load_any (fname, static_cast<float>(0));
     }
+    return orient_image (img);
 }
 
 FloatImageType::Pointer
 load_float (char* fname)
 {
+    FloatImageType::Pointer img;
+
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
 	return load_dicom_float (fname);
     } else {
 	return load_any (fname, static_cast<float>(0));
     }
+    return orient_image (img);
 }
 
 DeformationFieldType::Pointer
