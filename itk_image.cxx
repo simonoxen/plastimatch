@@ -268,9 +268,9 @@ load_ushort (char* fname)
 
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	img load_dicom_ushort (fname);
+	img = load_dicom_ushort (fname);
     } else {
-	img load_any (fname, static_cast<unsigned short>(0));
+	img = load_any (fname, static_cast<unsigned short>(0));
     }
     return orient_image (img);
 }

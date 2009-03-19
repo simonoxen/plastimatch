@@ -159,6 +159,9 @@ bspline_optimize_lbfgsb (
     double best_score;
     int num_to_check;
 
+    /* F2C Builtin function */
+    integer s_cmp (char *, char *, ftnlen, ftnlen);
+
     NMAX = bxf->num_coeff;
     MMAX = (int) floor (bxf->num_coeff / 100);
     if (MMAX < 20) MMAX = 20;
