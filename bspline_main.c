@@ -57,12 +57,12 @@ main (int argc, char* argv[])
 			      fixed->dim,
 			      roi_offset,
 			      fixed->dim,
-			      options.vox_per_rgn,
-			      0);
+			      options.vox_per_rgn
+			      );
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_optimize (&bxf, parms, fixed, moving, moving_grad, 0);
+    bspline_optimize (&bxf, parms, fixed, moving, moving_grad);
 
     /* Create vector field from bspline coefficients and save */
     vector_field = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing,

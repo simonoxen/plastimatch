@@ -48,6 +48,11 @@ typedef itk::DemonsRegistrationFilter<
 #define IMG_OUT_FMT_AUTO		    0
 #define IMG_OUT_FMT_DICOM		    1
 
+#define IMG_OUT_TYPE_AUTO		    0
+#define IMG_OUT_TYPE_UCHAR		    1
+#define IMG_OUT_TYPE_SHORT		    2
+#define IMG_OUT_TYPE_FLOAT		    3
+
 class Stage_Parms {
 public:
     int xform_type;
@@ -76,6 +81,7 @@ public:
     int histoeq;         // histogram matching flag on (1) or off (0)
 
     int img_out_fmt;
+    int img_out_type;
     char img_out_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
@@ -146,6 +152,7 @@ public:
     char moving_mask_fn[_MAX_PATH];
     char fixed_mask_fn[_MAX_PATH];
     int img_out_fmt;
+    int img_out_type;
     char img_out_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
@@ -164,6 +171,7 @@ public:
 	*moving_mask_fn = 0;
 	*fixed_mask_fn = 0;
 	img_out_fmt = IMG_OUT_FMT_AUTO;
+	img_out_type = IMG_OUT_TYPE_AUTO;
 	*img_out_fn = 0;
 	*xf_in_fn = 0;
 	*xf_out_fn = 0;

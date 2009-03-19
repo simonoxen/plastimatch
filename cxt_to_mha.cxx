@@ -245,7 +245,7 @@ int main (int argc, char* argv[])
     STRUCTURE* curr_structure_2=(STRUCTURE*)malloc(sizeof(STRUCTURE));
     POLYLINE* curr_contour_2=(POLYLINE*)malloc(sizeof(POLYLINE));
     Volume* vol;
-    FILE* fp;
+
     unsigned char* img;
     unsigned char* acc_img ;
     int dim[2];
