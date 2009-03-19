@@ -36,12 +36,12 @@ int main(int argc, char* argv[])
 
 	//if(strcmp("global",argv[1])==0 || strcmp("slice",argv[1])==0){
 	if(strcmp("global",argv[1])==0){
-		reference=load_uchar(argv[2]);
-		warped=load_uchar(argv[3]);
+		reference=load_uchar(argv[2], 0);
+		warped=load_uchar(argv[3], 0);
 	}else if(strcmp("experts",argv[1])==0){
-		ex_1=load_uchar(argv[2]);
-		ex_2=load_uchar(argv[3]);
-		ex_3=load_uchar(argv[4]);
+		ex_1=load_uchar(argv[2], 0);
+		ex_2=load_uchar(argv[3], 0);
+		ex_3=load_uchar(argv[4], 0);
 	}else if(strcmp("cp",argv[1])==0){
 		mesh=fopen(argv[2],"r");
 		MDpoints=fopen(argv[3],"r");

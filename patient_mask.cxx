@@ -260,7 +260,7 @@ do_patient_mask (Patient_Mask_Parms* opts)
 
     /* Load input image (i1) */
     printf ("Loading image...\n");
-    FloatImageType::Pointer i1 = load_float (opts->mha_in_fn);
+    FloatImageType::Pointer i1 = load_float (opts->mha_in_fn, 0);
 
     /* Allocate output image (i2) */
     UCharImageType::Pointer i2 = UCharImageType::New ();

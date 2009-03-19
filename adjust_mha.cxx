@@ -13,7 +13,7 @@ adjust_mha_main (Adjust_Mha_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    FloatImageType::Pointer img = load_float (parms->mha_in_fn);
+    FloatImageType::Pointer img = load_float (parms->mha_in_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 

@@ -188,9 +188,20 @@ load_any_2 (char* fname, T, U)
     return image;
 }
 
+static void
+set_original_type (PlmImageType *original_type,
+		   PlmImageType t)
+{
+    if (original_type) {
+	*original_type = t;
+    }
+}
+
 template<class U>
 typename itk::Image< U, 3 >::Pointer
-load_any (char* fname, U otype)
+load_any (char* fname,
+	  PlmImageType* original_type, 
+	  U otype)
 {
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
@@ -198,24 +209,34 @@ load_any (char* fname, U otype)
 	itk__GetImageType (fname, pixelType, componentType);
 	switch (componentType) {
         case itk::ImageIOBase::UCHAR:
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_UCHAR);
 	    return load_any_2 (fname, static_cast<unsigned char>(0), otype);
 	case itk::ImageIOBase::CHAR:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_CHAR);
 	    return load_any_2 (fname, static_cast<char>(0), otype);
 	case itk::ImageIOBase::USHORT:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_USHORT);
 	    return load_any_2 (fname, static_cast<unsigned short>(0), otype);
 	case itk::ImageIOBase::SHORT:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_SHORT);
 	    return load_any_2 (fname, static_cast<short>(0), otype);
 	case itk::ImageIOBase::UINT:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_ULONG);
 	    return load_any_2 (fname, static_cast<unsigned int>(0), otype);
 	case itk::ImageIOBase::INT:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_LONG);
 	    return load_any_2 (fname, static_cast<int>(0), otype);
 	case itk::ImageIOBase::ULONG:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_ULONG);
 	    return load_any_2 (fname, static_cast<unsigned long>(0), otype);
 	case itk::ImageIOBase::LONG:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_LONG);
 	    return load_any_2 (fname, static_cast<long>(0), otype);
 	case itk::ImageIOBase::FLOAT:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_FLOAT);
 	    return load_any_2 (fname, static_cast<float>(0), otype);
 	case itk::ImageIOBase::DOUBLE:
+	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_DOUBLE);
 	    return load_any_2 (fname, static_cast<double>(0), otype);
 	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
 	default:
@@ -234,7 +255,7 @@ load_any (char* fname, U otype)
 }
 
 UCharImageType::Pointer
-load_uchar (char* fname)
+load_uchar (char* fname, PlmImageType* original_type)
 {
     UCharImageType::Pointer img;
 
@@ -242,13 +263,13 @@ load_uchar (char* fname)
     if (is_directory(fname)) {
 	img = load_dicom_uchar (fname);
     } else {
-	img = load_any (fname, static_cast<unsigned char>(0));
+	img = load_any (fname, original_type, static_cast<unsigned char>(0));
     }
     return orient_image (img);
 }
 
 ShortImageType::Pointer
-load_short (char* fname)
+load_short (char* fname, PlmImageType* original_type)
 {
     ShortImageType::Pointer img;
 
@@ -256,13 +277,13 @@ load_short (char* fname)
     if (is_directory(fname)) {
 	img = load_dicom_short (fname);
     } else {
-	img = load_any (fname, static_cast<short>(0));
+	img = load_any (fname, original_type, static_cast<short>(0));
     }
     return orient_image (img);
 }
 
 UShortImageType::Pointer
-load_ushort (char* fname)
+load_ushort (char* fname, PlmImageType* original_type)
 {
     UShortImageType::Pointer img;
 
@@ -270,13 +291,13 @@ load_ushort (char* fname)
     if (is_directory(fname)) {
 	img = load_dicom_ushort (fname);
     } else {
-	img = load_any (fname, static_cast<unsigned short>(0));
+	img = load_any (fname, original_type, static_cast<unsigned short>(0));
     }
     return orient_image (img);
 }
 
 FloatImageType::Pointer
-load_float (PlmImageType* original_type, char* fname)
+load_float (char* fname, PlmImageType* original_type)
 {
     FloatImageType::Pointer img;
 
@@ -284,21 +305,7 @@ load_float (PlmImageType* original_type, char* fname)
     if (is_directory(fname)) {
 	img = load_dicom_float (fname);
     } else {
-	img = load_any (fname, static_cast<float>(0));
-    }
-    return orient_image (img);
-}
-
-FloatImageType::Pointer
-load_float (char* fname)
-{
-    FloatImageType::Pointer img;
-
-    /* If it is directory, then must be dicom */
-    if (is_directory(fname)) {
-	return load_dicom_float (fname);
-    } else {
-	return load_any (fname, static_cast<float>(0));
+	img = load_any (fname, original_type, static_cast<float>(0));
     }
     return orient_image (img);
 }
@@ -311,12 +318,10 @@ load_float_field (char* fname)
     FieldReaderType::Pointer fieldReader = FieldReaderType::New();
     fieldReader->SetFileName (fname);
 
-    try 
-    {
+    try {
 	fieldReader->Update();
     }
-    catch (itk::ExceptionObject& excp) 
-    {
+    catch (itk::ExceptionObject& excp) {
 	std::cerr << "Exception thrown " << std::endl;
 	std::cerr << excp << std::endl;
 	return 0;

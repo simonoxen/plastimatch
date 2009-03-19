@@ -41,7 +41,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 
 	if (parms->fixed_im_fn[0]) {
 	    /* if given, use the grid spacing of user-supplied fixed image */
-	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn);
+	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
 	    pih.set_from_itk_image (fixed);
 	} else {
 	    /* otherwise, use the grid spacing of the input image */
@@ -73,19 +73,19 @@ warp_image_main (Warp_Parms* parms)
     switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    {
-		UCharImageType::Pointer mha_in = load_uchar (parms->mha_in_fn);
+		UCharImageType::Pointer mha_in = load_uchar (parms->mha_in_fn, 0);
 		warp_any (parms, mha_in, static_cast<unsigned char>(0));
 	    }
 	    break;
         case itk::ImageIOBase::SHORT:
 	    {
-		ShortImageType::Pointer mha_in = load_short (parms->mha_in_fn);
+		ShortImageType::Pointer mha_in = load_short (parms->mha_in_fn, 0);
 		warp_any (parms, mha_in, static_cast<short>(0));
 	    }
 	    break;
         case itk::ImageIOBase::FLOAT:
 	    {
-		FloatImageType::Pointer mha_in = load_float (parms->mha_in_fn);
+		FloatImageType::Pointer mha_in = load_float (parms->mha_in_fn, 0);
 		warp_any (parms, mha_in, static_cast<float>(0));
 	    }
 	    break;

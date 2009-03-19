@@ -23,14 +23,18 @@
 
 /* We only deal with these kinds of images. */
 enum PlmImageType {
-    PLM_IMG_TYPE_UNDEFINED   = 0, 
-    PLM_IMG_TYPE_ITK_UCHAR   = 1, 
-    PLM_IMG_TYPE_ITK_SHORT   = 2, 
-    PLM_IMG_TYPE_ITK_USHORT  = 3, 
-    PLM_IMG_TYPE_ITK_FLOAT   = 4, 
-    PLM_IMG_TYPE_ITK_FLOAT_FIELD = 5, 
-    PLM_IMG_TYPE_GPUIT_FLOAT = 6, 
-    PLM_IMG_TYPE_GPUIT_FLOAT_FIELD = 7, 
+    PLM_IMG_TYPE_UNDEFINED, 
+    PLM_IMG_TYPE_ITK_CHAR, 
+    PLM_IMG_TYPE_ITK_UCHAR, 
+    PLM_IMG_TYPE_ITK_SHORT, 
+    PLM_IMG_TYPE_ITK_USHORT, 
+    PLM_IMG_TYPE_ITK_LONG, 
+    PLM_IMG_TYPE_ITK_ULONG, 
+    PLM_IMG_TYPE_ITK_FLOAT, 
+    PLM_IMG_TYPE_ITK_DOUBLE, 
+    PLM_IMG_TYPE_ITK_FLOAT_FIELD, 
+    PLM_IMG_TYPE_GPUIT_FLOAT, 
+    PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
 };
 
 #if defined (commentout)
@@ -74,11 +78,10 @@ typedef itk::ImageRegion < Dimension > ImageRegionType;
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname);
-plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname);
-plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname);
-plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname);
-plastimatch1_EXPORT FloatImageType::Pointer load_float (PlmImageType* original_type, char* fname);
+plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname, PlmImageType* original_type);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
 
 plastimatch1_EXPORT void itk__GetImageType (std::string fileName,

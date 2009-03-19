@@ -33,7 +33,7 @@ int main(int argc, char ** argv)
 	exit(-1);
     }
 
-    FloatImageType::Pointer volume = load_float(argv[1]);
+    FloatImageType::Pointer volume = load_float(argv[1], 0);
 
     IteratorType itSlice (volume, volume->GetLargestPossibleRegion());
     itSlice.SetFirstDirection(0);

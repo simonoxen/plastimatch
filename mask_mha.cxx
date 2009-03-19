@@ -106,8 +106,8 @@ main(int argc, char *argv[])
 	ShortImageType::Pointer im_out = ShortImageType::New();
 
 	printf ("Loading...\n");
-	im_1 = load_short (argv[1]);
-	im_2 = load_uchar (argv[2]);
+	im_1 = load_short (argv[1], 0);
+	im_2 = load_uchar (argv[2], 0);
 
 	sscanf (argv[3], "%d", &mask_value);
 	printf ("Setting mask value to %d\n", mask_value);
@@ -128,7 +128,7 @@ main(int argc, char *argv[])
 
 	printf ("Loading...\n");
 	vf = load_float_field (argv[1]);
-	mask = load_uchar (argv[2]);
+	mask = load_uchar (argv[2], 0);
 
 	printf ("Masking...\n");
 
