@@ -104,7 +104,7 @@ orient_image (T img)
     typedef typename T::ObjectType ImageType;
     typedef typename itk::OrientImageFilter<ImageType,ImageType> OrienterType;
     
-    OrienterType::Pointer orienter = OrienterType::New();
+    typename OrienterType::Pointer orienter = OrienterType::New();
     orienter->UseImageDirectionOn ();
     orienter->SetDesiredCoordinateOrientation (itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
     orienter->SetInput (img);
@@ -212,31 +212,31 @@ load_any (char* fname,
 	    set_original_type (original_type, PLM_IMG_TYPE_ITK_UCHAR);
 	    return load_any_2 (fname, static_cast<unsigned char>(0), otype);
 	case itk::ImageIOBase::CHAR:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_CHAR);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_CHAR);
 	    return load_any_2 (fname, static_cast<char>(0), otype);
 	case itk::ImageIOBase::USHORT:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_USHORT);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_USHORT);
 	    return load_any_2 (fname, static_cast<unsigned short>(0), otype);
 	case itk::ImageIOBase::SHORT:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_SHORT);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_SHORT);
 	    return load_any_2 (fname, static_cast<short>(0), otype);
 	case itk::ImageIOBase::UINT:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_ULONG);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_ULONG);
 	    return load_any_2 (fname, static_cast<unsigned int>(0), otype);
 	case itk::ImageIOBase::INT:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_LONG);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_LONG);
 	    return load_any_2 (fname, static_cast<int>(0), otype);
 	case itk::ImageIOBase::ULONG:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_ULONG);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_ULONG);
 	    return load_any_2 (fname, static_cast<unsigned long>(0), otype);
 	case itk::ImageIOBase::LONG:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_LONG);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_LONG);
 	    return load_any_2 (fname, static_cast<long>(0), otype);
 	case itk::ImageIOBase::FLOAT:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_FLOAT);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_FLOAT);
 	    return load_any_2 (fname, static_cast<float>(0), otype);
 	case itk::ImageIOBase::DOUBLE:
-	    set_original_type, (original_type, PLM_IMG_TYPE_ITK_DOUBLE);
+	    set_original_type (original_type, PLM_IMG_TYPE_ITK_DOUBLE);
 	    return load_any_2 (fname, static_cast<double>(0), otype);
 	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
 	default:
