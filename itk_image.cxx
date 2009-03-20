@@ -437,6 +437,7 @@ template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(UShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
+template void save_uchar (FloatImageType::Pointer, char*);
 template void save_short (FloatImageType::Pointer, char*);
 template void save_short_dicom (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_float (FloatImageType::Pointer, char*);
