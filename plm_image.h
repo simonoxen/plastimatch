@@ -101,7 +101,7 @@ public:
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-PlmImage* rad_image_load (char* fname, PlmImageType type);
+PlmImage* plm_image_load (char* fname, PlmImageType type);
 void itk_roi_from_gpuit (ImageRegionType* roi, int roi_offset[3], int roi_dim[3]);
 
 #endif

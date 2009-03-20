@@ -144,6 +144,7 @@ void
 save_warped_img_itk (Registration_Data* regd,
 		 DeformationFieldType::Pointer vf,
 		 int img_out_fmt, 
+		 int img_out_type, 
 		 char* fn)
 {
     FloatImageType::Pointer im_warped = FloatImageType::New();
@@ -154,8 +155,42 @@ save_warped_img_itk (Registration_Data* regd,
     printf ("Warping image...\n");
     im_warped = itk_warp_image (regd->moving_image->itk_float(), vf, 1, 0.0f);
     printf ("Saving image...\n");
+
     if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-	save_short (im_warped, fn);
+	switch (regd->moving_image->m_original_type) {
+	case PLM_IMG_TYPE_ITK_CHAR:
+	case PLM_IMG_TYPE_ITK_UCHAR:
+	    img_out_fmt = IMG_OUT_TYPE_UCHAR;
+	    break;
+	case PLM_IMG_TYPE_ITK_SHORT:
+	case PLM_IMG_TYPE_ITK_USHORT:
+	    img_out_fmt = IMG_OUT_TYPE_SHORT;
+	    break;
+	case PLM_IMG_TYPE_ITK_LONG:
+	case PLM_IMG_TYPE_ITK_ULONG:
+	case PLM_IMG_TYPE_ITK_FLOAT:
+	case PLM_IMG_TYPE_ITK_DOUBLE:
+	case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+	case PLM_IMG_TYPE_GPUIT_FLOAT:
+	case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+	default:
+	    img_out_fmt = IMG_OUT_TYPE_FLOAT;
+	    break;
+	}
+    }
+
+    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
+	switch (img_out_fmt) {
+	    case IMG_OUT_TYPE_UCHAR:
+		save_uchar (im_warped, fn);
+		break;
+	    case IMG_OUT_TYPE_SHORT:
+		save_short (im_warped, fn);
+		break;
+	    case IMG_OUT_TYPE_FLOAT:
+		save_float (im_warped, fn);
+		break;
+	}
     } else if (img_out_fmt == IMG_OUT_FMT_DICOM) {
 	save_short_dicom (im_warped, fn);
     } else {
@@ -202,7 +237,7 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 	if (stage->img_out_fn[0]) {
 	    printf ("Saving warped image ...\n");
 	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), stage->img_out_fmt, 
-		    stage->img_out_fn);
+		    stage->img_out_type, stage->img_out_fn);
 	}
 	/* Save deformation field */
 	if (stage->vf_out_fn[0]) {
@@ -302,8 +337,8 @@ itk_bsp_extend_to_region (Xform* xf,
 	/* Save warped image */
 	if (regp->img_out_fn[0]) {
 	    logfile_printf ("Saving warped image ...\n");
-	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), regp->img_out_fmt, 
-		    regp->img_out_fn);
+	    save_warped_img_itk (regd, xf_tmp.get_itk_vf(), 
+		    regp->img_out_fmt, regp->img_out_type, regp->img_out_fn);
 	}
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
@@ -398,12 +433,12 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
     logfile_printf ("fixed image=%s\n", regp->fixed_fn);
     logfile_printf ("Loading fixed image...");
     //regd->fixed_image = load_float (regp->fixed_fn);
-    regd->fixed_image = rad_image_load (regp->fixed_fn, image_type);
+    regd->fixed_image = plm_image_load (regp->fixed_fn, image_type);
     logfile_printf ("done!\n");
 
     logfile_printf ("moving image=%s\n", regp->moving_fn);
     logfile_printf ("Loading moving image...");
-    regd->moving_image = rad_image_load (regp->moving_fn, image_type);
+    regd->moving_image = plm_image_load (regp->moving_fn, image_type);
     logfile_printf ("done!\n");
 
     if (regp->fixed_mask_fn[0]) {

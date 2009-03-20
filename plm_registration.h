@@ -131,6 +131,7 @@ public:
 	histoeq = 0;         // by default, don't do it
 	/* Output files */
 	img_out_fmt = IMG_OUT_FMT_AUTO;
+	img_out_type = IMG_OUT_TYPE_AUTO;
 	*img_out_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;

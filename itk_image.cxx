@@ -356,6 +356,14 @@ save_image (T image, char* fname)
 
 template<class T> 
 void
+save_uchar (T image, char* fname)
+{
+    UCharImageType::Pointer uchar_img = cast_uchar (image);
+    save_image (uchar_img, fname);
+}
+
+template<class T> 
+void
 save_short (T image, char* fname)
 {
     ShortImageType::Pointer short_img = cast_short(image);
@@ -381,6 +389,20 @@ save_float (T image, char* fname)
 /* -----------------------------------------------------------------------
    Casting image types
    ----------------------------------------------------------------------- */
+template<class T> 
+UCharImageType::Pointer
+cast_uchar (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, UCharImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    caster->Update();
+    return caster->GetOutput();
+}
+
 template<class T> 
 ShortImageType::Pointer
 cast_short (T image)

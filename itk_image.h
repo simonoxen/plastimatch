@@ -92,6 +92,7 @@ template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float o
 
 template<class T> void save_image (T img_ptr, char* fname);
 template<class T> void save_short_dicom (T image, char* dir_name);
-template<class T> void save_short (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void save_uchar (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void save_short (T img_ptr, char* fname);
 template<class T> plastimatch1_EXPORT void save_float (T img_ptr, char* fname);
 #endif

@@ -164,7 +164,7 @@ itk_roi_from_gpuit (
    Image conversion
    ----------------------------------------------------------------------- */
 PlmImage*
-rad_image_load (char* fname, PlmImageType type)
+plm_image_load (char* fname, PlmImageType type)
 {
     PlmImage *ri = new PlmImage;
     if (!ri) return 0;
@@ -182,7 +182,7 @@ rad_image_load (char* fname, PlmImageType type)
 	    ri->m_itk_float = load_float (fname, &ri->m_original_type);
 	    break;
 	default:
-	    print_and_exit ("Unhandled image load in rad_image_load\n");
+	    print_and_exit ("Unhandled image load in plm_image_load\n");
 	    break;
     }
     return ri;
