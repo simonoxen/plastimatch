@@ -384,6 +384,9 @@ SET(RTOG_TO_MHA_SRC
 SET(SHUFFLE_MHA_SRC
 	shuffle_mha_main.cxx
 	)
+SET(SYNTHETIC_MHA
+	synthetic_mha_main.cxx synthetic_mha_main.h
+	)
 SET(TPS_INTERP_SRC
 	tps_interp.cxx tps_interp.h
 	tps_interp_main.cxx 
@@ -424,11 +427,12 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
-    SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
     SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
     SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
+    SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
 ######################################################
@@ -576,8 +580,9 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
   ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
   ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
-  ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
   ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
+  ADD_EXECUTABLE(synthetic_mha ${SYNTHETIC_MHA_SRC})
+  ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
   ADD_EXECUTABLE(union_mask union_mask.cxx)
   ADD_EXECUTABLE(vf_compose ${VF_COMPOSE_SRC})
   ADD_EXECUTABLE(vf_invert ${VF_INVERT_SRC})
@@ -643,6 +648,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
   TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(synthetic_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(shuffle_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
   TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
@@ -699,6 +705,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS plastimatch1 DESTINATION lib)
   INSTALL(TARGETS resample_mha DESTINATION bin)
   INSTALL(TARGETS rtog_to_mha DESTINATION bin)
+  INSTALL(TARGETS synthetic_mha DESTINATION bin)
   INSTALL(TARGETS shuffle_mha DESTINATION bin)
   INSTALL(TARGETS tps_interp DESTINATION bin)
   INSTALL(TARGETS tps_update DESTINATION bin)

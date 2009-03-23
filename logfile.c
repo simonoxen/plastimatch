@@ -66,7 +66,7 @@ logfile_open (char* log_fn)
     } else {
 	/* Already open? */
     }
-    logfile_printf (log_fp, "Plastimatch " 
+    logfile_printf ("Plastimatch " 
 		     PLASTIMATCH_VERSION_STRING
 		     "\n");
 }
