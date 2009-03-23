@@ -384,7 +384,7 @@ SET(RTOG_TO_MHA_SRC
 SET(SHUFFLE_MHA_SRC
 	shuffle_mha_main.cxx
 	)
-SET(SYNTHETIC_MHA
+SET(SYNTHETIC_MHA_SRC
 	synthetic_mha_main.cxx synthetic_mha_main.h
 	)
 SET(TPS_INTERP_SRC
