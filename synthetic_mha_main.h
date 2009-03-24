@@ -9,7 +9,8 @@
 
 enum Pattern_type {
     PATTERN_GAUSS,
-    PATTERN_RECT
+    PATTERN_RECT,
+    PATTERN_SPHERE
 };
 
 class Synthetic_mha_parms {
@@ -25,6 +26,9 @@ public:
     float foreground;
     float gauss_center[3];
     float gauss_std[3];
+    float rect_size[6];
+    float sphere_center[3];
+    float sphere_radius[3];
 public:
     Synthetic_mha_parms () {
 	*output_fn = 0;
@@ -36,10 +40,15 @@ public:
 	    res[i] = 100;
 	    gauss_center[i] = 0.0f;
 	    gauss_std[i] = 100.0f;
+	    sphere_center[i] = 0.0f;
+	    sphere_radius[i] = 100.0f;
 	}
 	have_origin = 0;
 	background = -1000.0f;
 	foreground = 0.0f;
+	for (int i = 0; i < 5; i++) {
+	    rect_size[i] = 0.0f;
+	}
     }
 };
 

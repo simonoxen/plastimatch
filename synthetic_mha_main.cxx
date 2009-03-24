@@ -46,7 +46,8 @@ do_synthetic_mha (Synthetic_mha_parms* parms)
 
 	FloatImageType::IndexType idx = it_out.GetIndex ();
 	im_out->TransformIndexToPhysicalPoint (idx, phys);
-	if (parms->pattern == PATTERN_GAUSS) {
+	switch (parms->pattern) {
+	case PATTERN_GAUSS:
 	    f = 0;
 	    for (int d = 0; d < 3; d++) {
 		float f1 = phys[d] - parms->gauss_center[d];
@@ -55,7 +56,36 @@ do_synthetic_mha (Synthetic_mha_parms* parms)
 	    }
 	    f = exp (-0.5 * f);	    /* f \in (0,1] */
 	    f = (1 - f) * parms->background + f * parms->foreground;
-	}  else if (parms->pattern == PATTERN_RECT) {
+	    break;
+	case PATTERN_RECT:
+	    if (phys[0] >= parms->rect_size[0] 
+		&& phys[0] <= parms->rect_size[1] 
+		&& phys[1] >= parms->rect_size[2] 
+		&& phys[1] <= parms->rect_size[3] 
+		&& phys[2] >= parms->rect_size[4] 
+		&& phys[2] <= parms->rect_size[5])
+	    {
+		f = parms->foreground;
+	    } else {
+		f = parms->background;
+	    }
+	    break;
+	case PATTERN_SPHERE:
+	    f = 0;
+	    for (int d = 0; d < 3; d++) {
+		float f1 = phys[d] - parms->sphere_center[d];
+		f1 = f1 / parms->sphere_radius[d];
+		f += f1 * f1;
+	    }
+	    if (f > 1.0) {
+		f = parms->background;
+	    } else {
+		f = parms->foreground;
+	    }
+	    break;
+	default:
+	    f = 0.0f;
+	    break;
 	}
 	it_out.Set (f);
     }
@@ -69,13 +99,20 @@ print_usage (void)
 {
     printf ("Usage: resample_mha [options]\n");
     printf ("Required:   --output=file\n"
-	    "Optional:   --output_type={uchar,short,ushort,float}\n"
+	    "Optional:   --output-type={uchar,short,ushort,float}\n"
 	    "            --pattern={gauss,rect}\n"
 	    "            --origin=\"x y z\"\n"
-	    "            --spacing=\"x y z\"\n"
-	    "            --size=\"x y z\"\n"
+	    "            --resolution=\"x [y z]\"\n"
+	    "            --volume-size=\"x [y z]\"\n"
 	    "            --background=val\n"
-	    "            --foreground=val\n");
+	    "            --foreground=val\n"
+	    "Gaussian:   --gauss-center=\"x y z\"\n"
+	    "            --gauss-std=\"x [y z]\"\n"
+	    "Rect:       --rect-size=\"x [y z]\"\n"
+	    "            --rect-size=\"x1 x2 y1 y2 z1 z2\"\n"
+	    "Sphere:     --sphere-center=\"x y z\"\n"
+	    "            --sphere-radius=\"x [y z]\"\n"
+	    );
     exit (1);
 }
 
@@ -86,14 +123,25 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "output",         required_argument,      NULL,           1 },
 	{ "output_type",    required_argument,      NULL,           2 },
+	{ "output-type",    required_argument,      NULL,           2 },
 	{ "pattern",        required_argument,      NULL,           3 },
 	{ "origin",         required_argument,      NULL,           4 },
 	{ "volume_size",    required_argument,      NULL,           5 },
+	{ "volume-size",    required_argument,      NULL,           5 },
 	{ "res",            required_argument,      NULL,           6 },
+	{ "resolution",     required_argument,      NULL,           6 },
 	{ "background",     required_argument,      NULL,           7 },
 	{ "foreground",     required_argument,      NULL,           8 },
 	{ "gauss_center",   required_argument,      NULL,           9 },
+	{ "gauss-center",   required_argument,      NULL,           9 },
 	{ "gauss_std",      required_argument,      NULL,           10 },
+	{ "gauss-std",      required_argument,      NULL,           10 },
+	{ "rect_size",      required_argument,      NULL,           11 },
+	{ "rect-size",      required_argument,      NULL,           11 },
+	{ "sphere_center",  required_argument,      NULL,           12 },
+	{ "sphere-center",  required_argument,      NULL,           12 },
+	{ "sphere_radius",  required_argument,      NULL,           13 },
+	{ "sphere-radius",  required_argument,      NULL,           13 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -128,18 +176,24 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 3:
-	    if (!strcmp (optarg,"gauss")) {
+	    if (!strcmp (optarg, "gauss")) {
 		parms->pattern = PATTERN_GAUSS;
 	    }
-	    else if (!strcmp (optarg,"rect")) {
+	    else if (!strcmp (optarg, "rect")) {
 		parms->pattern = PATTERN_RECT;
+	    }
+	    else if (!strcmp (optarg, "sphere")) {
+		parms->pattern = PATTERN_SPHERE;
 	    }
 	    else {
 		print_usage();
 	    }
 	    break;
 	case 4:
-	    rc = sscanf (optarg, "%g %g %g", &(parms->origin[0]), &(parms->origin[1]), &(parms->origin[2]));
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->origin[0]), 
+			 &(parms->origin[1]), 
+			 &(parms->origin[2]));
 	    if (rc != 3) {
 		printf ("Origin option must have three arguments\n");
 		exit (1);
@@ -147,16 +201,28 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    parms->have_origin = 1;
 	    break;
 	case 5:
-	    rc = sscanf (optarg, "%g %g %g", &(parms->volume_size[0]), &(parms->volume_size[1]), &(parms->volume_size[2]));
-	    if (rc != 3) {
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->volume_size[0]), 
+			 &(parms->volume_size[1]), 
+			 &(parms->volume_size[2]));
+	    if (rc == 1) {
+		parms->volume_size[1] = parms->volume_size[0];
+		parms->volume_size[2] = parms->volume_size[0];
+	    } else if (rc != 3) {
 		printf ("Volume_size option must have three arguments\n");
 		exit (1);
 	    }
 	    break;
 	case 6:
-	    rc = sscanf (optarg, "%d %d %d", &(parms->res[0]), &(parms->res[1]), &(parms->res[2]));
-	    if (rc != 3) {
-		printf ("Res option must have three arguments\n");
+	    rc = sscanf (optarg, "%d %d %d", 
+			 &(parms->res[0]), 
+			 &(parms->res[1]), 
+			 &(parms->res[2]));
+	    if (rc == 1) {
+		parms->res[1] = parms->res[0];
+		parms->res[2] = parms->res[0];
+	    } else if (rc != 3) {
+		printf ("Resolution option must have three arguments\n");
 		exit (1);
 	    }
 	    break;
@@ -175,24 +241,79 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 9:
-	    rc = sscanf (optarg, "%d %d %d", &(parms->gauss_center[0]), &(parms->gauss_center[1]), &(parms->gauss_center[2]));
-	    if (rc == 1) {
-		parms->gauss_center[1] = parms->gauss_center[0];
-		parms->gauss_center[2] = parms->gauss_center[0];
-	    }
-	    else if (rc != 3) {
-		printf ("Size option must have three arguments\n");
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->gauss_center[0]), 
+			 &(parms->gauss_center[1]), 
+			 &(parms->gauss_center[2]));
+	    if (rc != 3) {
+		printf ("Gauss_center option must have three arguments\n");
 		exit (1);
 	    }
 	    break;
 	case 10:
-	    rc = sscanf (optarg, "%d %d %d", &(parms->gauss_std[0]), &(parms->gauss_std[1]), &(parms->gauss_std[2]));
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->gauss_std[0]), 
+			 &(parms->gauss_std[1]), 
+			 &(parms->gauss_std[2]));
 	    if (rc == 1) {
 		parms->gauss_std[1] = parms->gauss_std[0];
 		parms->gauss_std[2] = parms->gauss_std[0];
 	    }
 	    else if (rc != 3) {
-		printf ("Size option must have three arguments\n");
+		printf ("Gauss_std option must have one or three arguments\n");
+		exit (1);
+	    }
+	    break;
+	case 11:
+	    rc = sscanf (optarg, "%g %g %g %g %g %g", 
+			 &(parms->rect_size[0]), 
+			 &(parms->rect_size[1]), 
+			 &(parms->rect_size[2]), 
+			 &(parms->rect_size[3]), 
+			 &(parms->rect_size[4]), 
+			 &(parms->rect_size[5]));
+	    if (rc == 1) {
+		parms->rect_size[0] = - 0.5 * parms->rect_size[0];
+		parms->rect_size[1] = - parms->rect_size[0];
+		parms->rect_size[2] = + parms->rect_size[0];
+		parms->rect_size[3] = - parms->rect_size[0];
+		parms->rect_size[4] = + parms->rect_size[0];
+		parms->rect_size[5] = - parms->rect_size[0];
+	    }
+	    else if (rc == 3) {
+		parms->rect_size[0] = - 0.5 * parms->rect_size[0];
+		parms->rect_size[2] = - 0.5 * parms->rect_size[1];
+		parms->rect_size[4] = - 0.5 * parms->rect_size[2];
+		parms->rect_size[1] = - parms->rect_size[0];
+		parms->rect_size[3] = - parms->rect_size[2];
+		parms->rect_size[5] = - parms->rect_size[4];
+	    }
+	    else if (rc != 6) {
+		printf ("Rect_size option must have one, three, or six arguments\n");
+		exit (1);
+	    }
+	    break;
+	case 12:
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->sphere_center[0]), 
+			 &(parms->sphere_center[1]), 
+			 &(parms->sphere_center[2]));
+	    if (rc != 3) {
+		printf ("Sphere center option must have three arguments\n");
+		exit (1);
+	    }
+	    break;
+	case 13:
+	    rc = sscanf (optarg, "%g %g %g", 
+			 &(parms->sphere_radius[0]), 
+			 &(parms->sphere_radius[1]), 
+			 &(parms->sphere_radius[2]));
+	    if (rc == 1) {
+		parms->sphere_radius[1] = parms->sphere_radius[0];
+		parms->sphere_radius[2] = parms->sphere_radius[0];
+	    }
+	    else if (rc != 3) {
+		printf ("Sphere_radius option must have one or three arguments\n");
 		exit (1);
 	    }
 	    break;
@@ -203,6 +324,15 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
     if (!parms->output_fn[0]) {
 	printf ("Error: must specify --output\n");
 	print_usage();
+    }
+
+    /* If origin not specified, volume is centered about size */
+    if (!parms->have_origin) {
+	int d;
+	for (d = 0; d < 3; d++) {
+	    parms->origin[d] = - 0.5 * parms->volume_size[d] 
+		    + 0.5 * parms->volume_size[d] / parms->res[d];
+	}
     }
 }
 
