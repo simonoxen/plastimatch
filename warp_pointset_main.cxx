@@ -33,9 +33,6 @@ void
 parse_args (Warp_Pointset_Parms* parms, int argc, char* argv[])
 {
     int ch;
-    int have_offset = 0;
-    int have_spacing = 0;
-    int have_dims = 0;
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
@@ -60,12 +57,12 @@ parse_args (Warp_Pointset_Parms* parms, int argc, char* argv[])
     }
     if (!parms->ps_in_fn[0] || !parms->ps_out_fn[0] || !parms->xf_in_fn[0]) {
 	printf ("Error: must specify --input, --output, and --vf or --xf\n");
-	print_usage();
+	print_usage ();
     }
 }
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
     Warp_Pointset_Parms parms;
     
