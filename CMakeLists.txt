@@ -103,6 +103,12 @@ IF(NOT GPUIT_LINK_MSVCRT)
 	     "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
 ENDIF(NOT GPUIT_LINK_MSVCRT)
 
+IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+  SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+
+
 ######################################################
 ##  Get plastimatch version from subversion 
 ######################################################
