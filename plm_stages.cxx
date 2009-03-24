@@ -157,30 +157,29 @@ save_warped_img_itk (Registration_Data* regd,
     printf ("Saving image...\n");
 
     if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-	switch (regd->moving_image->m_original_type) {
-	case PLM_IMG_TYPE_ITK_CHAR:
-	case PLM_IMG_TYPE_ITK_UCHAR:
-	    img_out_fmt = IMG_OUT_TYPE_UCHAR;
-	    break;
-	case PLM_IMG_TYPE_ITK_SHORT:
-	case PLM_IMG_TYPE_ITK_USHORT:
-	    img_out_fmt = IMG_OUT_TYPE_SHORT;
-	    break;
-	case PLM_IMG_TYPE_ITK_LONG:
-	case PLM_IMG_TYPE_ITK_ULONG:
-	case PLM_IMG_TYPE_ITK_FLOAT:
-	case PLM_IMG_TYPE_ITK_DOUBLE:
-	case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
-	case PLM_IMG_TYPE_GPUIT_FLOAT:
-	case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
-	default:
-	    img_out_fmt = IMG_OUT_TYPE_FLOAT;
-	    break;
+	if (img_out_type == IMG_OUT_TYPE_AUTO) {
+	    switch (regd->moving_image->m_original_type) {
+	    case PLM_IMG_TYPE_ITK_CHAR:
+	    case PLM_IMG_TYPE_ITK_UCHAR:
+		img_out_type = IMG_OUT_TYPE_UCHAR;
+		break;
+	    case PLM_IMG_TYPE_ITK_SHORT:
+	    case PLM_IMG_TYPE_ITK_USHORT:
+		img_out_type = IMG_OUT_TYPE_SHORT;
+		break;
+	    case PLM_IMG_TYPE_ITK_LONG:
+	    case PLM_IMG_TYPE_ITK_ULONG:
+	    case PLM_IMG_TYPE_ITK_FLOAT:
+	    case PLM_IMG_TYPE_ITK_DOUBLE:
+	    case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+	    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+	    default:
+		img_out_type = IMG_OUT_TYPE_FLOAT;
+		break;
+	    }
 	}
-    }
-
-    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
-	switch (img_out_fmt) {
+	switch (img_out_type) {
 	    case IMG_OUT_TYPE_UCHAR:
 		save_uchar (im_warped, fn);
 		break;
@@ -194,7 +193,7 @@ save_warped_img_itk (Registration_Data* regd,
     } else if (img_out_fmt == IMG_OUT_FMT_DICOM) {
 	save_short_dicom (im_warped, fn);
     } else {
-	print_and_exit ("Program error.  Unknown output file type.\n");
+	print_and_exit ("Program error.  Unknown output file fmt (%d).\n", img_out_fmt);
     }
 }
 
