@@ -100,7 +100,7 @@ print_usage (void)
     printf ("Usage: resample_mha [options]\n");
     printf ("Required:   --output=file\n"
 	    "Optional:   --output-type={uchar,short,ushort,float}\n"
-	    "            --pattern={gauss,rect}\n"
+	    "            --pattern={gauss,rect,sphere}\n"
 	    "            --origin=\"x y z\"\n"
 	    "            --resolution=\"x [y z]\"\n"
 	    "            --volume-size=\"x [y z]\"\n"

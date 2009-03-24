@@ -41,14 +41,17 @@ public:
 	    gauss_center[i] = 0.0f;
 	    gauss_std[i] = 100.0f;
 	    sphere_center[i] = 0.0f;
-	    sphere_radius[i] = 100.0f;
+	    sphere_radius[i] = 50.0f;
 	}
 	have_origin = 0;
 	background = -1000.0f;
 	foreground = 0.0f;
-	for (int i = 0; i < 5; i++) {
-	    rect_size[i] = 0.0f;
-	}
+	rect_size[0] = -50.0f;
+	rect_size[1] = +50.0f;
+	rect_size[2] = -50.0f;
+	rect_size[3] = +50.0f;
+	rect_size[4] = -50.0f;
+	rect_size[5] = +50.0f;
     }
 };
 
