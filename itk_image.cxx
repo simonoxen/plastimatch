@@ -19,6 +19,7 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "itk_dicom.h"
+#include "logfile.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -87,7 +88,7 @@ load_itk_rdr(RdrT reader, char *fn)
 	reader->Update();
     }
     catch(itk::ExceptionObject & ex) {
-	printf ("Exception reading mha file: %s!\n",fn);
+	printf ("ITK exception reading image file: %s!\n",fn);
 	std::cout << ex << std::endl;
 	getchar();
 	exit(1);
@@ -248,7 +249,7 @@ load_any (char* fname,
 	}
     }
     catch (itk::ExceptionObject &excep) {
-	std::cerr << "Exception loading image: " << fname << std::endl;
+	std::cerr << "ITK xception loading image: " << fname << std::endl;
 	std::cerr << excep << std::endl;
 	exit (-1);
     }
@@ -322,7 +323,7 @@ load_float_field (char* fname)
 	fieldReader->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << "Exception thrown " << std::endl;
+	std::cerr << "ITK exception reading vf file." << std::endl;
 	std::cerr << excp << std::endl;
 	return 0;
     }
@@ -340,7 +341,7 @@ save_image (T image, char* fname)
     typedef typename T::ObjectType ImageType;
     typedef itk::ImageFileWriter< ImageType >  WriterType;
 
-    printf ("Trying to write image to %s\n", fname);
+    logfile_printf ("Trying to write image to %s\n", fname);
 
     typename WriterType::Pointer writer = WriterType::New();
     writer->SetInput (image);
@@ -349,7 +350,7 @@ save_image (T image, char* fname)
 	writer->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << "Exception thrown " << std::endl;
+	std::cerr << "ITK exception writing image file." << std::endl;
 	std::cerr << excp << std::endl;
     }
 }
@@ -399,7 +400,14 @@ cast_uchar (T image)
 
     typename CastFilterType::Pointer caster = CastFilterType::New();
     caster->SetInput(image);
-    caster->Update();
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
     return caster->GetOutput();
 }
 
@@ -413,7 +421,14 @@ cast_short (T image)
 
     typename CastFilterType::Pointer caster = CastFilterType::New();
     caster->SetInput(image);
-    caster->Update();
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
     return caster->GetOutput();
 }
 
@@ -427,7 +442,14 @@ cast_float (T image)
 
     typename CastFilterType::Pointer caster = CastFilterType::New();
     caster->SetInput(image);
-    caster->Update();
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
     return caster->GetOutput();
 }
 
