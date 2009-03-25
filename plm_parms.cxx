@@ -47,7 +47,7 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	if (section != 0) goto error_not_stages;
 	strncpy (regp->xf_in_fn, val, _MAX_PATH);
     }
-    else if (!strcmp (key, "log")) {
+    else if (!strcmp (key, "log") || !strcmp (key, "logfile")) {
 	if (section != 0) goto error_not_stages;
 	strncpy (regp->log_fn, val, _MAX_PATH);
     }
