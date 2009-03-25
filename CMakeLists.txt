@@ -110,6 +110,17 @@ IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
+######################################################
+##  Set default build type to "Release"
+######################################################
+##  Unfortunately the below doesn't work.  It gets
+##  reset by the ITK include.
+######################################################
+#IF(NOT CMAKE_BUILD_TYPE)
+#  SET(CMAKE_BUILD_TYPE Release CACHE STRING
+#      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."	
+#      FORCE)
+#ENDIF(NOT CMAKE_BUILD_TYPE)
 
 ######################################################
 ##  Get plastimatch version from subversion 

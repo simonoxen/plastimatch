@@ -525,6 +525,92 @@ bspline_xform_initialize (
     logfile_printf ("cdims = (%d %d %d)\n", bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
 }
 
+/* This extends the bspline grid.  Note, that the new roi_offset 
+    in the bxf will not be the same as the one requested, because 
+    bxf routines implicitly require that the first voxel of the 
+    ROI matches the position of the control point. */
+/* GCS -- Is there an implicit assumption that the roi_origin > 0? */
+void
+bspline_xform_extend (
+	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+	int new_roi_offset[3],	     /* Position of first vox in ROI (in vox) */
+	int new_roi_dim[3])	     /* Dimension of ROI (in vox) */
+{
+    int d;
+    int roi_offset_diff[3];
+    int roi_corner_diff[3];
+    int eb[3], ea[3];  /* # of control points to "extend before" and "extend after" existing grid */
+    int extend_needed = 0;
+    int new_rdims[3];
+    int new_cdims[3];
+    int new_num_knots;
+    int new_num_coeff;
+    float* new_coeff;
+    int old_idx;
+    int i, j, k;
+
+    for (d = 0; d < 3; d++) {
+	roi_offset_diff[d] = new_roi_offset[d] - bxf->roi_offset[d];
+	roi_corner_diff[d] = (new_roi_offset[d] + new_roi_dim[d]) 
+	    - (bxf->roi_offset[d] + bxf->roi_offset[d]);
+
+	if (roi_offset_diff[d] < 0) {
+	    eb[d] = (bxf->vox_per_rgn[d] - roi_offset_diff[d] - 1) / bxf->vox_per_rgn[d];
+	    extend_needed = 1;
+	} else {
+	    eb[d] = 0;
+	}
+	if (roi_corner_diff[d] > 0) {
+	    ea[d] = (bxf->vox_per_rgn[d] + roi_corner_diff[d] - 1) / bxf->vox_per_rgn[d];
+	    extend_needed = 1;
+	} else {
+	    ea[d] = 0;
+	}
+    }
+
+    if (extend_needed) {
+	/* Allocate new memory */
+	for (d = 0; d < 3; d++) {
+	    new_rdims[d] = bxf->rdims[d] + ea[d] + eb[d];
+	    new_cdims[d] = bxf->cdims[d] + ea[d] + eb[d];
+	}
+	new_num_knots = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2];
+	new_num_coeff = bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2] * 3;
+	new_coeff = (float*) malloc (sizeof(float) * new_num_coeff);
+	memset (new_coeff, 0, sizeof(float) * new_num_coeff);
+
+	/* Copy coefficients to new memory */
+	for (old_idx = 0, k = 0; k < bxf->cdims[2]; k++) {
+	    for (j = 0; j < bxf->cdims[1]; j++) {
+		for (i = 0; i < bxf->cdims[0]; i++) {
+		    int new_idx = 3 * (((((k + eb[2]) * new_cdims[1]) + (j + eb[1])) * new_cdims[0]) + (i + eb[0]));
+		    for (d = 0; d < 3; d++, old_idx++, new_idx++) {
+			new_coeff[new_idx] = bxf->coeff[old_idx];
+		    }
+		}
+	    }
+	}
+
+	/* Free old memory */
+	free (bxf->coeff);
+
+	/* Copy over new data into bxf */
+	for (d = 0; d < 3; d++) {
+	    bxf->rdims[d] = new_rdims[d];
+	    bxf->cdims[d] = new_cdims[d];
+	}
+	bxf->num_knots = new_num_knots;
+	bxf->num_coeff = new_num_coeff;
+	bxf->coeff = new_coeff;
+
+	/* Special consideration to ROI */
+	for (d = 0; d < 3; d++) {
+	    bxf->roi_offset[d] = bxf->roi_offset[d] - eb[d] * bxf->vox_per_rgn[d];
+	    bxf->roi_dim[d] = new_roi_dim[d] + (new_roi_offset[d] - bxf->roi_offset[d]);
+	}
+    }
+}
+
 static void
 bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {

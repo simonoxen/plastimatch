@@ -1102,13 +1102,40 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
     ImageRegionType img_region;
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
+    printf ("gpuit_bsp_to_itk_bsp_raw\n");
     gpuit_bsp_to_itk_bsp_raw (&xf_tmp, xf_in, pih);
 
     /* Resize itk array to span image */
+    printf ("itk_bsp_extend_to_region\n");
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Render to vector field */
+    printf ("xform_itk_any_to_itk_vf\n");
     itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+
+    return itk_vf;
+}
+
+/* Here what we're going to do is use GPUIT library to interpolate the 
+    B-Spline at its native resolution, then convert gpuit_vf -> itk_vf. 
+
+    GCS: Mar 25, 2009.  The itk_any_to_itk_vf is too slow.
+    1) Convert grid spacing
+    2) Create itk vf directly from gpuit_vf
+    */
+static DeformationFieldType::Pointer
+xform_gpuit_bsp_to_itk_vf_under_development (Xform* xf_in, PlmImageHeader* pih)
+{
+    DeformationFieldType::Pointer itk_vf;
+    Xform xf_tmp;
+    BSPLINE_Xform* bxf_old = xf_in->get_gpuit_bsp();
+    OriginType img_origin;
+    SpacingType img_spacing;
+    ImageRegionType img_region;
+
+    /* Extend gpuit bsp grid (native) */
+
+    /* Render to vector field */
 
     return itk_vf;
 }
@@ -1525,7 +1552,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih)
 	vf = xform_gpuit_bsp_to_itk_vf (xf_in, pih);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	vf = xform_gpuit_bsp_to_itk_vf (xf_in, pih);
+	vf = xform_gpuit_vf_to_itk_vf (xf_in->get_gpuit_vf(), pih);
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");
@@ -1620,4 +1647,3 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 
     xf_out->set_gpuit_vf (vf);
 }
-
