@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include "bspline.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
 void
 bspline_optimize_lbfgsb (
 		BSPLINE_Xform* bxf, 
@@ -14,5 +17,8 @@ bspline_optimize_lbfgsb (
 		Volume *fixed, 
 		Volume *moving, 
 		Volume *moving_grad);
+#if defined __cplusplus
+}
+#endif
 
 #endif
