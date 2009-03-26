@@ -1025,7 +1025,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 
-    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
+    typedef itk::ImageRegionIteratorWithIndex< DeformationFieldType > FieldIterator;
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     fi.GoToBegin();

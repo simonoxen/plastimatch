@@ -14,7 +14,7 @@ enum BsplineOptimization {
 enum BsplineImplementation {
     BIMPL_CPU,
     BIMPL_BROOK,
-	BIMPL_CUDA
+    BIMPL_CUDA
 };
 
 enum BsplineMetric {
