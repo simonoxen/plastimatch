@@ -73,6 +73,152 @@ bspline_cuda_score_c_mse(
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
+/* -----------------------------------------------------------------------
+   Bspline iterator - iterate through volume, computing tile coordinates
+   ----------------------------------------------------------------------- */
+class Bspline_iterator
+{
+public:
+    int r[3];     /* Index within region */
+    int fi[3];    /* Index within fixed image */
+    float fx[3];  /* Physical coordinates of fixed image voxel */
+    int p[3];     /* Tile index */
+    int pidx;     /* Tile linear index */
+    int q[3];     /* Offset index */
+    int qidx;     /* Offset linear index */
+    //int at_end;   /* Are we done? */
+
+public:
+    /* Constructor */
+    Bspline_iterator () {
+	int d;
+	//at_end = 1;
+	pidx = 0;
+	qidx = 0;
+	for (d = 0; d < 3; d++) {
+	    r[d] = 0;
+	    fi[d] = 0;
+	    fx[d] = 0.0f;
+	    p[d] = 0;
+	    q[d] = 0;
+	}
+    }
+
+    void
+    begin (BSPLINE_Xform* bxf) {
+	int d;
+	//at_end = 0;
+	for (d = 0; d < 3; d++) {
+	    reset_index (bxf, d);
+	    update_index (bxf, d);
+	}
+	update_linear_index (bxf);
+    }
+    void
+    reset_index (BSPLINE_Xform* bxf, int d) {
+	r[d] = 0;
+	fi[d] = bxf->roi_offset[d];
+    }
+    void
+    update_index (BSPLINE_Xform* bxf, int d) {
+	fx[d] = bxf->img_origin[d] + bxf->img_spacing[d] * fi[d];
+	p[d] = r[d] / bxf->vox_per_rgn[d];
+	q[d] = r[d] % bxf->vox_per_rgn[d];
+    }
+    void
+    update_linear_index (BSPLINE_Xform* bxf) {
+	pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+	qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) 
+		* bxf->vox_per_rgn[0]) + q[0];
+    }
+    int
+    at_end (BSPLINE_Xform* bxf) {
+	return r[2] >= bxf->roi_dim[2];
+    }
+    int
+    next (BSPLINE_Xform* bxf) {
+#if defined (commentout)
+	printf (">>%d %d %d (%d %d %d) <%d %d %d, %d %d %d> %g %g %g\n", 
+	    r[0], r[1], r[2], 
+	    fi[0], fi[1], fi[2],
+	    p[0], p[1], p[2], 
+	    q[0], q[1], q[2], 
+	    fx[0], fx[1], fx[2]);
+#endif
+	if (++fi[0], ++r[0] >= bxf->roi_dim[0]) {
+	    reset_index (bxf, 0);
+	    if (++fi[1], ++r[1] >= bxf->roi_dim[1]) {
+		reset_index (bxf, 1);
+		++fi[2], ++r[2];
+		//if (++fi[2], ++r[2] >= bxf->roi_dim[2]) {
+		    //return 0;
+		    //reset_index (bxf, 2);
+		    //at_end = 1;
+		//}
+		update_index (bxf, 2);
+	    }
+	    update_index (bxf, 1);
+	}
+	update_index (bxf, 0);
+	update_linear_index (bxf);
+	return 1;
+    }
+
+#if defined (commentout)
+    void
+    begin (BSPLINE_Xform* bxf) {
+	int d;
+	at_end = 0;
+	for (d = 0; d < 3; d++) {
+	    reset_index (bxf, d);
+	}
+	update_linear_index (bxf);
+    }
+    void
+    reset_index (BSPLINE_Xform* bxf, int d) {
+	r[d] = 0;
+	fi[d] = bxf->roi_offset[d];
+	fx[d] = bxf->img_origin[d] + bxf->img_spacing[d] * fi[d];
+	p[d] = r[d] / bxf->vox_per_rgn[d];
+	q[d] = r[d] % bxf->vox_per_rgn[d];
+    }
+    void
+    update_index (BSPLINE_Xform* bxf, int d) {
+	++r[d];
+	++fi[d];
+	fx[d] = bxf->img_origin[d] + bxf->img_spacing[d] * fi[d];
+	p[d] = r[d] / bxf->vox_per_rgn[d];
+	q[d] = r[d] % bxf->vox_per_rgn[d];
+    }
+    void
+    update_linear_index (BSPLINE_Xform* bxf) {
+	pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+	qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) 
+		* bxf->vox_per_rgn[0]) + q[0];
+    }
+    void
+    next (BSPLINE_Xform* bxf) {
+	update_index (bxf, 0);
+	if (r[0] > bxf->roi_dim[0]) {
+	    reset_index (bxf, 0);
+	    update_index (bxf, 1);
+	    if (r[1] > bxf->roi_dim[1]) {
+		reset_index (bxf, 1);
+		update_index (bxf, 2);
+		if (r[2] > bxf->roi_dim[2]) {
+		    reset_index (bxf, 2);
+		    at_end = 1;
+		}
+	    }
+	}
+	update_linear_index (bxf);
+    }
+#endif
+};
+
+/* -----------------------------------------------------------------------
+   Global functions
+   ----------------------------------------------------------------------- */
 void
 bspline_parms_set_default (BSPLINE_Parms* parms)
 {
@@ -2220,6 +2366,330 @@ bspline_score_c_mse (
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
+static void inline
+bspline_score_c_funcall_mse_helper (
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad,
+		float dxyz[3],
+		int pidx,
+		int qidx,
+		float fx, 
+		float fy,
+		float fz,
+		int fv,
+		int* num_vox
+)
+{
+    float mx, my, mz;
+    float mi, mj, mk;
+    int mif, mjf, mkf, mvf;  /* Floor */
+    int mir, mjr, mkr, mvr;  /* Round */
+    float fx1, fx2, fy1, fy2, fz1, fz2;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float m_val;
+    float diff;
+    float dc_dv[3];
+
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float* m_grad = (float*) moving_grad->img;
+    BSPLINE_Score* ssd = &parms->ssd;
+
+    /* Find correspondence in moving image */
+    mx = fx + dxyz[0];
+    mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+    if (mi < -0.5 || mi > moving->dim[0] - 0.5) return;
+
+    my = fy + dxyz[1];
+    mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+    if (mj < -0.5 || mj > moving->dim[1] - 0.5) return;
+
+    mz = fz + dxyz[2];
+    mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+    if (mk < -0.5 || mk > moving->dim[2] - 0.5) return;
+
+    /* Compute interpolation fractions */
+    clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+    clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+    clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+    /* Compute moving image intensity using linear interpolation */
+    mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+    m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+    m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+    m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+    /* Compute intensity difference */
+    diff = f_img[fv] - m_val;
+
+    /* Compute spatial gradient using nearest neighbors */
+    mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
+    dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
+    dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
+    dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
+    bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
+		
+    if (parms->debug) {
+	printf ("%g %g %g\n", dc_dv[0], dc_dv[1], dc_dv[2]);
+    }
+
+    ssd->score += diff * diff;
+    (*num_vox) ++;
+}
+
+/* Mean-squared error version of implementation "C" */
+/* Implementation "C" is slower than "B", but yields a smoother cost function 
+   for use by L-BFGS-B.  It uses linear interpolation of moving image, 
+   and nearest neighbor interpolation of gradient */
+void
+bspline_score_c_funcall_mse (
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &parms->ssd;
+    int i;
+    int ri, rj, rk;
+    int fi, fj, fk, fv;
+    float fx, fy, fz;
+    int p[3];
+    int q[3];
+    float dxyz[3];
+    int num_vox;
+    int pidx, qidx;
+    float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+    ssd->score = 0;
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    num_vox = 0;
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+
+		/* Get B-spline deformation vector */
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+
+		
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+
+		/* Compute coordinate of fixed image voxel */
+		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+		bspline_score_c_funcall_mse_helper 
+			(parms, bxf, fixed, moving, moving_grad,
+			 dxyz, pidx, qidx, fx, fy, fz, fv, &num_vox);
+	    }
+	}
+    }
+
+    if (parms->debug) {
+	fclose (fp);
+    }
+
+    //dump_coeff (bxf, "coeff.txt");
+
+    /* Normalize score for MSE */
+    ssd->score = ssd->score / num_vox;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+    }
+
+    ssd_grad_norm = 0;
+    ssd_grad_mean = 0;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	ssd_grad_mean += ssd->grad[i];
+	ssd_grad_norm += fabs (ssd->grad[i]);
+    }
+
+    end_clock = clock();
+#if defined (commentout)
+    printf ("Single iteration CPU [b] = %f seconds\n", 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    printf ("NUM_VOX = %d\n", num_vox);
+    printf ("MSE = %g\n", ssd->score);
+    printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
+    printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+#endif
+    logfile_printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+void
+bspline_score_c_iterator_mse (
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &parms->ssd;
+    int i;
+    int fv;
+    float mi, mj, mk;
+    float mx, my, mz;
+    int mif, mjf, mkf, mvf;  /* Floor */
+    int mir, mjr, mkr, mvr;  /* Round */
+    float diff;
+    float dc_dv[3];
+    float fx1, fx2, fy1, fy2, fz1, fz2;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float* m_grad = (float*) moving_grad->img;
+    float dxyz[3];
+    int num_vox;
+    float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+    float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    Bspline_iterator bi;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+
+	fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+    ssd->score = 0;
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    num_vox = 0;
+
+    //for (bi.begin (bxf); !bi.at_end; bi.next (bxf))
+    for (bi.begin (bxf); !bi.at_end (bxf); bi.next (bxf))
+    {
+	bspline_interp_pix_b_inline (dxyz, bxf, bi.pidx, bi.qidx);
+
+	/* Compute coordinate of fixed image voxel */
+	fv = bi.fi[2] * fixed->dim[0] * fixed->dim[1] 
+		+ bi.fi[1] * fixed->dim[0] + bi.fi[0];
+
+	/* Find correspondence in moving image */
+	mx = bi.fx[0] + dxyz[0];
+	mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+	if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+	my = bi.fx[1] + dxyz[1];
+	mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+	if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+	mz = bi.fx[2] + dxyz[2];
+	mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+	if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+	/* Compute interpolation fractions */
+	clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+	clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+	clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+	/* Compute moving image intensity using linear interpolation */
+	mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+	/* Compute intensity difference */
+	diff = f_img[fv] - m_val;
+
+	/* Compute spatial gradient using nearest neighbors */
+	mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
+	dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
+	dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
+	dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
+	bspline_update_grad_b_inline (parms, bxf, bi.pidx, bi.qidx, dc_dv);
+
+	if (parms->debug) {
+	    fprintf (fp, "%d %d %d %g %g %g\n", 
+		     bi.r[0], bi.r[1], bi.r[2], 
+		     dc_dv[0], dc_dv[1], dc_dv[2]);
+	}
+
+	ssd->score += diff * diff;
+	num_vox ++;
+    }
+
+    if (parms->debug) {
+	fclose (fp);
+    }
+
+    //dump_coeff (bxf, "coeff.txt");
+
+    /* Normalize score for MSE */
+    ssd->score = ssd->score / num_vox;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+    }
+
+    ssd_grad_norm = 0;
+    ssd_grad_mean = 0;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	ssd_grad_mean += ssd->grad[i];
+	ssd_grad_norm += fabs (ssd->grad[i]);
+    }
+
+    end_clock = clock();
+#if defined (commentout)
+    printf ("Single iteration CPU [b] = %f seconds\n", 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    printf ("NUM_VOX = %d\n", num_vox);
+    printf ("MSE = %g\n", ssd->score);
+    printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
+    printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+#endif
+    logfile_printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+		    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+		    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+
 /* This is the fastest known version.  It does nearest neighbors 
    interpolation of both moving image and gradient which doesn't 
    work with stock L-BFGS-B optimizer. */
@@ -2458,10 +2928,13 @@ bspline_score (BSPLINE_Parms *parms,
     if (parms->metric == BMET_MSE) {
 	logfile_printf ("Using CPU. \n");
 	//bspline_score_e_mse (parms, bxf, fixed, moving, moving_grad);
-	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
 	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_b (parms, fixed, moving, moving_grad);
-	//bspline_score_a (parms, fixed, moving, moving_grad);
+	bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_c_iterator_mse (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_c_funcall_mse (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_b (parms, bxf, fixed, moving, moving_grad);
+	//bspline_score_a (parms, bxf, fixed, moving, moving_grad);
     } else {
 	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
     }
