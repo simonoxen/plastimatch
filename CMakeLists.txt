@@ -313,6 +313,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	print_and_exit.cxx print_and_exit.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
+	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
 	gregBSplineDeformableTransform.h 
 	gregBSplineDeformableTransform.txx 

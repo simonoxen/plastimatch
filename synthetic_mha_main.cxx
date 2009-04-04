@@ -13,85 +13,13 @@
 #include "getopt.h"
 
 void
-do_synthetic_mha (Synthetic_mha_parms* parms)
+do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)
 {
-    /* Create ITK image */
-    FloatImageType::SizeType sz;
-    FloatImageType::IndexType st;
-    FloatImageType::RegionType rg;
-    FloatImageType::PointType og;
-    FloatImageType::SpacingType sp;
-    FloatImageType::DirectionType dc;
-    for (int d1 = 0; d1 < 3; d1++) {
-	st[d1] = 0;
-	sz[d1] = parms->res[d1];
-	sp[d1] = parms->volume_size[d1] / ((float) parms->res[d1]);
-	og[d1] = parms->origin[d1];
-    }
-    rg.SetSize (sz);
-    rg.SetIndex (st);
+    /* Create image */
+    FloatImageType::Pointer img = synthetic_mha (parms);
 
-    FloatImageType::Pointer im_out = FloatImageType::New();
-    im_out->SetRegions(rg);
-    im_out->SetOrigin(og);
-    im_out->SetSpacing(sp);
-    im_out->Allocate();
-
-    /* Iterate through image, setting values */
-    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
-    IteratorType it_out (im_out, im_out->GetRequestedRegion());
-    for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
-	FloatPointType phys;
-	float f = 0.0f;
-
-	FloatImageType::IndexType idx = it_out.GetIndex ();
-	im_out->TransformIndexToPhysicalPoint (idx, phys);
-	switch (parms->pattern) {
-	case PATTERN_GAUSS:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->gauss_center[d];
-		f1 = f1 / parms->gauss_std[d];
-		f += f1 * f1;
-	    }
-	    f = exp (-0.5 * f);	    /* f \in (0,1] */
-	    f = (1 - f) * parms->background + f * parms->foreground;
-	    break;
-	case PATTERN_RECT:
-	    if (phys[0] >= parms->rect_size[0] 
-		&& phys[0] <= parms->rect_size[1] 
-		&& phys[1] >= parms->rect_size[2] 
-		&& phys[1] <= parms->rect_size[3] 
-		&& phys[2] >= parms->rect_size[4] 
-		&& phys[2] <= parms->rect_size[5])
-	    {
-		f = parms->foreground;
-	    } else {
-		f = parms->background;
-	    }
-	    break;
-	case PATTERN_SPHERE:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->sphere_center[d];
-		f1 = f1 / parms->sphere_radius[d];
-		f += f1 * f1;
-	    }
-	    if (f > 1.0) {
-		f = parms->background;
-	    } else {
-		f = parms->foreground;
-	    }
-	    break;
-	default:
-	    f = 0.0f;
-	    break;
-	}
-	it_out.Set (f);
-    }
-
-    /* Save the file */
-    save_float (im_out, parms->output_fn);
+    /* Save to file */
+    save_float (img, fn);
 }
 
 void
@@ -117,9 +45,11 @@ print_usage (void)
 }
 
 void
-parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
+parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 {
     int ch, rc;
+    Synthetic_mha_parms *sm_parms = &parms->sm_parms;
+
     static struct option longopts[] = {
 	{ "output",         required_argument,      NULL,           1 },
 	{ "output_type",    required_argument,      NULL,           2 },
@@ -155,20 +85,20 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 2:
 	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
 	    else if (!strcmp(optarg,"float")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
 	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 #if defined (commentout)
 	    else if (!strcmp(optarg,"vf")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 	    }
 #endif
 	    else {
@@ -177,13 +107,13 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 3:
 	    if (!strcmp (optarg, "gauss")) {
-		parms->pattern = PATTERN_GAUSS;
+		sm_parms->pattern = PATTERN_GAUSS;
 	    }
 	    else if (!strcmp (optarg, "rect")) {
-		parms->pattern = PATTERN_RECT;
+		sm_parms->pattern = PATTERN_RECT;
 	    }
 	    else if (!strcmp (optarg, "sphere")) {
-		parms->pattern = PATTERN_SPHERE;
+		sm_parms->pattern = PATTERN_SPHERE;
 	    }
 	    else {
 		print_usage();
@@ -191,14 +121,14 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 4:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->origin[0]), 
-			 &(parms->origin[1]), 
-			 &(parms->origin[2]));
+			 &(sm_parms->offset[0]), 
+			 &(sm_parms->offset[1]), 
+			 &(sm_parms->offset[2]));
 	    if (rc != 3) {
 		printf ("Origin option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_origin = 1;
+	    parms->have_offset = 1;
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%g %g %g", 
@@ -215,26 +145,26 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 6:
 	    rc = sscanf (optarg, "%d %d %d", 
-			 &(parms->res[0]), 
-			 &(parms->res[1]), 
-			 &(parms->res[2]));
+			 &(sm_parms->dim[0]), 
+			 &(sm_parms->dim[1]), 
+			 &(sm_parms->dim[2]));
 	    if (rc == 1) {
-		parms->res[1] = parms->res[0];
-		parms->res[2] = parms->res[0];
+		sm_parms->dim[1] = sm_parms->dim[0];
+		sm_parms->dim[2] = sm_parms->dim[0];
 	    } else if (rc != 3) {
 		printf ("Resolution option must have three arguments\n");
 		exit (1);
 	    }
 	    break;
 	case 7:
-	    rc = sscanf (optarg, "%g", &(parms->background));
+	    rc = sscanf (optarg, "%g", &(sm_parms->background));
 	    if (rc != 1) {
 		printf ("Background option must have one arguments\n");
 		exit (1);
 	    }
 	    break;
 	case 8:
-	    rc = sscanf (optarg, "%g", &(parms->foreground));
+	    rc = sscanf (optarg, "%g", &(sm_parms->foreground));
 	    if (rc != 1) {
 		printf ("Foreground option must have one arguments\n");
 		exit (1);
@@ -242,9 +172,9 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 9:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->gauss_center[0]), 
-			 &(parms->gauss_center[1]), 
-			 &(parms->gauss_center[2]));
+			 &(sm_parms->gauss_center[0]), 
+			 &(sm_parms->gauss_center[1]), 
+			 &(sm_parms->gauss_center[2]));
 	    if (rc != 3) {
 		printf ("Gauss_center option must have three arguments\n");
 		exit (1);
@@ -252,12 +182,12 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 10:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->gauss_std[0]), 
-			 &(parms->gauss_std[1]), 
-			 &(parms->gauss_std[2]));
+			 &(sm_parms->gauss_std[0]), 
+			 &(sm_parms->gauss_std[1]), 
+			 &(sm_parms->gauss_std[2]));
 	    if (rc == 1) {
-		parms->gauss_std[1] = parms->gauss_std[0];
-		parms->gauss_std[2] = parms->gauss_std[0];
+		sm_parms->gauss_std[1] = sm_parms->gauss_std[0];
+		sm_parms->gauss_std[2] = sm_parms->gauss_std[0];
 	    }
 	    else if (rc != 3) {
 		printf ("Gauss_std option must have one or three arguments\n");
@@ -266,27 +196,27 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 11:
 	    rc = sscanf (optarg, "%g %g %g %g %g %g", 
-			 &(parms->rect_size[0]), 
-			 &(parms->rect_size[1]), 
-			 &(parms->rect_size[2]), 
-			 &(parms->rect_size[3]), 
-			 &(parms->rect_size[4]), 
-			 &(parms->rect_size[5]));
+			 &(sm_parms->rect_size[0]), 
+			 &(sm_parms->rect_size[1]), 
+			 &(sm_parms->rect_size[2]), 
+			 &(sm_parms->rect_size[3]), 
+			 &(sm_parms->rect_size[4]), 
+			 &(sm_parms->rect_size[5]));
 	    if (rc == 1) {
-		parms->rect_size[0] = - 0.5 * parms->rect_size[0];
-		parms->rect_size[1] = - parms->rect_size[0];
-		parms->rect_size[2] = + parms->rect_size[0];
-		parms->rect_size[3] = - parms->rect_size[0];
-		parms->rect_size[4] = + parms->rect_size[0];
-		parms->rect_size[5] = - parms->rect_size[0];
+		sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
+		sm_parms->rect_size[1] = - sm_parms->rect_size[0];
+		sm_parms->rect_size[2] = + sm_parms->rect_size[0];
+		sm_parms->rect_size[3] = - sm_parms->rect_size[0];
+		sm_parms->rect_size[4] = + sm_parms->rect_size[0];
+		sm_parms->rect_size[5] = - sm_parms->rect_size[0];
 	    }
 	    else if (rc == 3) {
-		parms->rect_size[0] = - 0.5 * parms->rect_size[0];
-		parms->rect_size[2] = - 0.5 * parms->rect_size[1];
-		parms->rect_size[4] = - 0.5 * parms->rect_size[2];
-		parms->rect_size[1] = - parms->rect_size[0];
-		parms->rect_size[3] = - parms->rect_size[2];
-		parms->rect_size[5] = - parms->rect_size[4];
+		sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
+		sm_parms->rect_size[2] = - 0.5 * sm_parms->rect_size[1];
+		sm_parms->rect_size[4] = - 0.5 * sm_parms->rect_size[2];
+		sm_parms->rect_size[1] = - sm_parms->rect_size[0];
+		sm_parms->rect_size[3] = - sm_parms->rect_size[2];
+		sm_parms->rect_size[5] = - sm_parms->rect_size[4];
 	    }
 	    else if (rc != 6) {
 		printf ("Rect_size option must have one, three, or six arguments\n");
@@ -295,9 +225,9 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 12:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->sphere_center[0]), 
-			 &(parms->sphere_center[1]), 
-			 &(parms->sphere_center[2]));
+			 &(sm_parms->sphere_center[0]), 
+			 &(sm_parms->sphere_center[1]), 
+			 &(sm_parms->sphere_center[2]));
 	    if (rc != 3) {
 		printf ("Sphere center option must have three arguments\n");
 		exit (1);
@@ -305,12 +235,12 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
 	    break;
 	case 13:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->sphere_radius[0]), 
-			 &(parms->sphere_radius[1]), 
-			 &(parms->sphere_radius[2]));
+			 &(sm_parms->sphere_radius[0]), 
+			 &(sm_parms->sphere_radius[1]), 
+			 &(sm_parms->sphere_radius[2]));
 	    if (rc == 1) {
-		parms->sphere_radius[1] = parms->sphere_radius[0];
-		parms->sphere_radius[2] = parms->sphere_radius[0];
+		sm_parms->sphere_radius[1] = sm_parms->sphere_radius[0];
+		sm_parms->sphere_radius[2] = sm_parms->sphere_radius[0];
 	    }
 	    else if (rc != 3) {
 		printf ("Sphere_radius option must have one or three arguments\n");
@@ -327,23 +257,28 @@ parse_args (Synthetic_mha_parms* parms, int argc, char* argv[])
     }
 
     /* If origin not specified, volume is centered about size */
-    if (!parms->have_origin) {
+    if (!parms->have_offset) {
 	int d;
 	for (d = 0; d < 3; d++) {
-	    parms->origin[d] = - 0.5 * parms->volume_size[d] 
-		    + 0.5 * parms->volume_size[d] / parms->res[d];
+	    sm_parms->offset[d] = - 0.5 * parms->volume_size[d] 
+		    + 0.5 * parms->volume_size[d] / sm_parms->dim[d];
 	}
+    }
+
+    /* Set spacing based on size and resolution */
+    for (int d1 = 0; d1 < 3; d1++) {
+	sm_parms->spacing[d1] = parms->volume_size[d1] / ((float) sm_parms->dim[d1]);
     }
 }
 
 int 
 main (int argc, char* argv[])
 {
-    Synthetic_mha_parms parms;
+    Synthetic_mha_main_parms parms;
 
     parse_args (&parms, argc, argv);
 
-    do_synthetic_mha (&parms);
+    do_synthetic_mha (parms.output_fn, &parms.sm_parms);
 
     return 0;
 }

@@ -78,5 +78,5 @@ main (int argc, char* argv[])
     volume_free (vector_field);
 #endif
 
-    return 0;
+    return -1;
 }
