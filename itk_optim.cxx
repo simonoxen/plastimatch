@@ -161,9 +161,11 @@ optimizer_get_step_length (RegistrationType::Pointer registration,
 		           Stage_Parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
+#if defined (commentout)
 	typedef AmoebaOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
+#endif
 	return -1.0;
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
@@ -179,9 +181,11 @@ optimizer_get_step_length (RegistrationType::Pointer registration,
 	return optimizer->GetCurrentStepLength();
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
+#if defined (commentout)
 	typedef LBFGSOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
+#endif
 	return -1.0;
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGSB) {
@@ -200,9 +204,11 @@ optimizer_get_current_iteration (RegistrationType::Pointer registration,
 				 Stage_Parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
+#if defined (commentout)
 	typedef AmoebaOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
+#endif
 	return -1;
     }
     else if (stage->optim_type == OPTIMIZATION_RSG) {
@@ -218,9 +224,11 @@ optimizer_get_current_iteration (RegistrationType::Pointer registration,
 	return optimizer->GetCurrentIteration();
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
+#if defined (commentout)
 	typedef LBFGSOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
+#endif
 	return -1;
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGSB) {

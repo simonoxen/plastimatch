@@ -301,6 +301,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	itk_demons.cxx itk_demons.h 
 	itk_dicom.cxx itk_dicom.h 
 	itk_image.cxx itk_image.h 
+	itk_image_cast.cxx itk_image_cast.h 
 	itk_pointset.cxx itk_pointset.h
 	itk_optim.cxx itk_optim.h 
 	itk_registration.cxx itk_registration.h 

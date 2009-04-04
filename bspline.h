@@ -50,7 +50,7 @@ struct BSPLINE_Score_struct {
 
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
 struct BSPLINE_MI_Hist_Parms_struct {
-    int bins;
+    long bins;
     float offset;
     float delta;
 };
