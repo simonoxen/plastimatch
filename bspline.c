@@ -518,7 +518,7 @@ bspline_xform_initialize (
 	}
     }
 
-    //dump_luts (bxf);
+    dump_luts (bxf);
 
     logfile_printf ("rdims = (%d,%d,%d)\n", bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
     logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
@@ -686,9 +686,6 @@ bspline_mi_hist_lookup (
     long ml_1, ml_2;		/* 1-d index of bin 1, bin 2 */
     float mf_1, mf_2;		/* fraction to bin 1, bin 2 */
     long f_idx;	/* Index into 2-d histogram */
-    float* f_hist = mi_hist->f_hist;
-    float* m_hist = mi_hist->m_hist;
-    float* j_hist = mi_hist->j_hist;
 
     /* Fixed image is binned */
     fl = (long) floor ((f_val - mi_hist->fixed.offset) / mi_hist->fixed.delta);
@@ -697,9 +694,9 @@ bspline_mi_hist_lookup (
     /* This had better not happen! */
     if (fl < 0 || fl >= mi_hist->fixed.bins) {
 	fprintf (stderr, "Error: fixed image binning problem.\n"
-	    "Bin %d from val %g parms [off=%g, delt=%g, (%d bins)]\n",
-	    fl, f_val, mi_hist->fixed.offset, mi_hist->fixed.delta,
-	    mi_hist->fixed.bins);
+		 "Bin %ld from val %g parms [off=%g, delt=%g, (%ld bins)]\n",
+		 fl, f_val, mi_hist->fixed.offset, mi_hist->fixed.delta,
+		 mi_hist->fixed.bins);
 	exit (-1);
     }
     
@@ -776,7 +773,6 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     float* j_hist = mi_hist->j_hist;
 
     int i, j, v;
-    int hist_size = mi_hist->fixed.bins * mi_hist->moving.bins;
     float fnv = (float) num_vox;
     float score = 0;
     float hist_thresh = 0.001 / mi_hist->moving.bins / mi_hist->fixed.bins;
@@ -1149,11 +1145,14 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 #endif
 	
     if (debug) {
-	fprintf (stderr, "j=[%d %d] (%g %g), f=[%d] (%g), m=[%d %d] (%g %g), fxs = (%g %g)\n",
-	    j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
-	    f_idxs[0], f_hist[f_idxs[0]],
-	    m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
-	    fxs[0], fxs[1]);
+	fprintf (stderr, "j=[%ld %ld] (%g %g), "
+		 "f=[%ld] (%g), "
+		 "m=[%ld %ld] (%g %g), "
+		 "fxs = (%g %g)\n",
+		 j_idxs[0], j_idxs[1], j_hist[j_idxs[0]], j_hist[j_idxs[1]],
+		 f_idxs[0], f_hist[f_idxs[0]],
+		 m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
+		 fxs[0], fxs[1]);
     }
 
     if (j_hist[j_idxs[0]] < j_hist_thresh) {
@@ -1202,7 +1201,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
-    float* m_grad = (float*) moving_grad->img;
     float dxyz[3];
     int num_vox;
     float num_vox_f;
@@ -1625,7 +1623,6 @@ void bspline_score_e_mse (
 	static int it = 0;
 	char debug_fn[1024];
 	FILE* fp;
-	int dd = 0;
 
 	if (parms->debug) {
 	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
