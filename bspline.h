@@ -97,6 +97,7 @@ void bspline_xform_free (BSPLINE_Xform* bxf);
 void bspline_parms_free (BSPLINE_Parms* parms);
 void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad);
+BSPLINE_Xform* read_bxf (char* filename);
 void write_bxf (char* filename, BSPLINE_Xform* bxf);
 
 /* Used internally */

@@ -150,6 +150,89 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
     fclose (fp);
 }
 
+BSPLINE_Xform* 
+read_bxf (char* filename)
+{
+    BSPLINE_Xform* bxf;
+    char buf[1024];
+    FILE* fp;
+    int rc;
+    float img_origin[3];         /* Image origin (in mm) */
+    float img_spacing[3];        /* Image spacing (in mm) */
+    int img_dim[3];              /* Image size (in vox) */
+    int roi_offset[3];		 /* Position of first vox in ROI (in vox) */
+    int roi_dim[3];		 /* Dimension of ROI (in vox) */
+    int vox_per_rgn[3];		 /* Knot spacing (in vox) */
+
+    fp = fopen (filename, "r");
+    if (!fp) return 0;
+
+    /* Initialize parms */
+    bxf = (BSPLINE_Xform*) malloc (sizeof(BSPLINE_Xform));
+    bspline_xform_set_default (bxf);
+
+    /* Skip first line */
+    fgets (buf, 1024, fp);
+
+    /* Read header */
+    rc = fscanf (fp, "img_origin = %f %f %f\n", &img_origin[0], &img_origin[1], &img_origin[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (img_origin): %s\n", filename);
+	goto free_exit;
+    }
+    rc = fscanf (fp, "img_spacing = %f %f %f\n", &img_spacing[0], &img_spacing[1], &img_spacing[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (img_spacing): %s\n", filename);
+	goto free_exit;
+    }
+    rc = fscanf (fp, "img_dim = %d %d %d\n", &img_dim[0], &img_dim[1], &img_dim[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (img_dim): %s\n", filename);
+	goto free_exit;
+    }
+    rc = fscanf (fp, "roi_offset = %d %d %d\n", &roi_offset[0], &roi_offset[1], &roi_offset[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (roi_offset): %s\n", filename);
+	goto free_exit;
+    }
+    rc = fscanf (fp, "roi_dim = %d %d %d\n", &roi_dim[0], &roi_dim[1], &roi_dim[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (roi_dim): %s\n", filename);
+	goto free_exit;
+    }
+    rc = fscanf (fp, "vox_per_rgn = %d %d %d\n", &vox_per_rgn[0], &vox_per_rgn[1], &vox_per_rgn[2]);
+    if (rc != 3) {
+	logfile_printf ("Error parsing input xform (vox_per_rgn): %s\n", filename);
+	goto free_exit;
+    }
+
+    /* Allocate memory and build LUTs */
+    bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim,
+		roi_offset, roi_dim, vox_per_rgn);
+
+    /* This loads from itk-like planar format */
+    {
+	int i, j;
+	for (i = 0; i < 3; i++) {
+	    for (j = 0; j < bxf->num_coeff / 3; j++) {
+		rc = fscanf (fp, "%f\n", &bxf->coeff[j*3 + i]);
+		if (rc != 1) {
+		    logfile_printf ("Error parsing input xform (idx = %d,%d): %s\n", i, j, filename);
+		    bspline_xform_free (bxf);
+		    goto free_exit;
+		}
+	    }
+	}
+    }
+
+    fclose (fp);
+    return bxf;
+
+free_exit:
+    free (bxf);
+    return 0;
+}
+
 /* -----------------------------------------------------------------------
    Debugging routines
    ----------------------------------------------------------------------- */
@@ -518,7 +601,7 @@ bspline_xform_initialize (
 	}
     }
 
-    dump_luts (bxf);
+    //dump_luts (bxf);
 
     logfile_printf ("rdims = (%d,%d,%d)\n", bxf->rdims[0], bxf->rdims[1], bxf->rdims[2]);
     logfile_printf ("vox_per_rgn = (%d,%d,%d)\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
