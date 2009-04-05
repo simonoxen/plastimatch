@@ -25,6 +25,12 @@ main (int argc, char* argv[])
     Volume *moving_warped;
     int roi_offset[3];
 
+    if (argc != 2) {
+	printf ("Error, no argument\n");
+	return -1;
+    }
+
+
 #if defined (commentout)
     parse_args (&options, argc, argv);
 
@@ -78,5 +84,5 @@ main (int argc, char* argv[])
     volume_free (vector_field);
 #endif
 
-    return -1;
+    return 0;
 }
