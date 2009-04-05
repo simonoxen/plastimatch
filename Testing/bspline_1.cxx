@@ -30,7 +30,6 @@ main (int argc, char* argv[])
 	return -1;
     }
 
-
 #if defined (commentout)
     parse_args (&options, argc, argv);
 

@@ -316,8 +316,6 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
-	gregBSplineDeformableTransform.h 
-	gregBSplineDeformableTransform.txx 
 	)
 
 ######################################################

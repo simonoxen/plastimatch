@@ -8,7 +8,6 @@
 #include "itkVersorRigid3DTransform.h"
 #include "itkAffineTransform.h"
 #include "itkBSplineDeformableTransform.h"
-//#include "gregBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
 
 #include "bspline.h"
@@ -39,21 +38,13 @@ typedef itk::VersorRigid3DTransform < double > VersorTransformType;
 typedef itk::AffineTransform < double, Dimension > AffineTransformType;
 
 /* itk B-spline transforms */
-//#define USE_GCS_BSPLINES 1
 const unsigned int SplineDimension = Dimension;
 const unsigned int SplineOrder = 3;
 typedef double CoordinateRepType;
-#if defined (USE_GCS_BSPLINES)
-typedef itk::gregBSplineDeformableTransform<
-		    CoordinateRepType,
-		    SplineDimension,
-		    SplineOrder > BsplineTransformType;
-#else
 typedef itk::BSplineDeformableTransform <
 		    CoordinateRepType,
 		    SplineDimension,
 		    SplineOrder > BsplineTransformType;
-#endif
 
 typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, Dimension> TPSTransformType;
 
