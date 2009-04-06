@@ -32,8 +32,6 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 
     Volume *moving_ss, *fixed_ss;
     Volume *moving_grad = 0;
-    Volume *vf_out = 0;
-    Volume *vf_in = 0;
 
     /* Confirm grid method.  This should go away? */
     if (stage->grid_method != 1) {

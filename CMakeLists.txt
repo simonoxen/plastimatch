@@ -307,6 +307,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	itk_registration.cxx itk_registration.h 
 	itk_warp.cxx itk_warp.h 
 	plm_image.cxx plm_image.h 
+	plm_int.h
 	plm_parms.cxx 
 	plm_stages.cxx 
 	plm_registration.h 

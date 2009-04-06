@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
+#include "plm_int.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageMaskSpatialObject.h"
 #include "itkMutualInformationImageToImageMetric.h"
@@ -108,10 +109,7 @@ public:
 	    double duration;
 
 	    std::cout << "VAL+GRAD ";
-	    int it = optimizer_get_current_iteration(m_registration, m_stage);
 	    double val = optimizer_get_value(m_registration, m_stage);
-	    double ss = optimizer_get_step_length(m_registration, m_stage);
-	    
 	    duration = (double)(clock() - start) / CLOCKS_PER_SEC;
 	    printf ("%6.3f [%6.3f secs]", val, duration);
 	    std::cout << std::endl;

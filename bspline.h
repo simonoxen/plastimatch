@@ -125,6 +125,16 @@ clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, flo
 void
 bspline_update_grad_b (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int pidx, int qidx, float dc_dv[3]);
 
+/* Debugging routines */
+void
+dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn);
+void
+dump_coeff (BSPLINE_Xform* bxf, char* fn);
+void
+dump_luts (BSPLINE_Xform* bxf);
+void
+dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn);
+
 #if defined __cplusplus
 }
 #endif

@@ -252,7 +252,8 @@ log_bxf_header (BSPLINE_Xform* bxf)
     logfile_printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
 }
 
-void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
+void
+dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
@@ -262,7 +263,8 @@ void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
     fclose (fp);
 }
 
-void dump_coeff (BSPLINE_Xform* bxf, char* fn)
+void
+dump_coeff (BSPLINE_Xform* bxf, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
@@ -272,7 +274,7 @@ void dump_coeff (BSPLINE_Xform* bxf, char* fn)
     fclose (fp);
 }
 
-static void
+void
 dump_luts (BSPLINE_Xform* bxf)
 {
     int i, j, k, p;
