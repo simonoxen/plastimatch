@@ -82,7 +82,6 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
     int slice_idx = -1;
     char tag[BUFLEN];
 
-    int res = 0;
     float x = 0;
     float y = 0;
     float z = 0;
@@ -238,8 +237,6 @@ main (int argc, char* argv[])
     STRUCTURE_List* structures = (STRUCTURE_List*) malloc (sizeof(STRUCTURE_List));
     STRUCTURE* curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
     POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
-    STRUCTURE* curr_structure_2 = (STRUCTURE*) malloc (sizeof(STRUCTURE));
-    POLYLINE* curr_contour_2 = (POLYLINE*) malloc (sizeof(POLYLINE));
     Volume* vol;
 
     unsigned char* img;
