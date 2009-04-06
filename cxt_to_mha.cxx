@@ -69,7 +69,8 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
 {
     FILE* fp;
     STRUCTURE* curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
-    POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
+    //POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
+    POLYLINE* curr_contour;
 
     float val_x = 0;
     float val_y = 0;
@@ -87,9 +88,9 @@ load_structures (Program_Parms* parms, STRUCTURE_List* structures)
     float z = 0;
 
     memset (curr_structure, 0, sizeof(STRUCTURE));
-    memset (curr_contour, 0, sizeof(POLYLINE));
+    //memset (curr_contour, 0, sizeof(POLYLINE));
     curr_structure->num_contours = 0;
-    curr_contour->num_vertices = 0;
+    //curr_contour->num_vertices = 0;
 
     fp = fopen (parms->file_txt, "r");
 
@@ -236,7 +237,8 @@ main (int argc, char* argv[])
     Program_Parms* parms = (Program_Parms*) malloc (sizeof(Program_Parms));
     STRUCTURE_List* structures = (STRUCTURE_List*) malloc (sizeof(STRUCTURE_List));
     STRUCTURE* curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
-    POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
+    //POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
+    POLYLINE* curr_contour;
     Volume* vol;
 
     unsigned char* img;
@@ -249,9 +251,9 @@ main (int argc, char* argv[])
     memset (structures, 0, sizeof(STRUCTURE_List));
     structures->num_structures = 0;
     memset (curr_structure, 0, sizeof(STRUCTURE));
-    memset (curr_contour, 0, sizeof(POLYLINE));
+    //memset (curr_contour, 0, sizeof(POLYLINE));
     curr_structure->num_contours = 0;
-    curr_contour->num_vertices = 0;
+    //curr_contour->num_vertices = 0;
 
     parms->file_txt = argv[1];
     parms->fn_prefix = argv[2];
