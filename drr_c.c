@@ -1507,6 +1507,9 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 	}
     }
     fclose (pgm_fp);
+    if (msd_fp) {
+	fclose (msd_fp);
+    }
     printf ("done.\n");
 }
 

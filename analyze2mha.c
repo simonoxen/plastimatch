@@ -87,64 +87,67 @@ void swap_hdr(struct dsr *pntr)
 int main(int argc, char *argv[])
 {
     struct dsr *hdr;
-	char buf[1024];
-	FILE *fp, *fp1;
+    char buf[1024];
+    FILE *fp, *fp1;
 
-	hdr = (struct dsr *) calloc(1, sizeof(struct dsr));
+    hdr = (struct dsr *) calloc(1, sizeof(struct dsr));
 
-	if (argc!=3) {
-		printf("Illegal usage of the program!\n");
-		printf("Usage: %s input_Analyze_filename_wo_extension output_MHA_filename.\n", argv[0]);
-		return -1;
-	}
+    if (argc!=3) {
+	printf("Illegal usage of the program!\n");
+	printf("Usage: %s input_Analyze_filename_wo_extension output_MHA_filename.\n", argv[0]);
+	return -1;
+    }
 
     printf ("Loading and converting ...\n");
 
-	strcpy(buf, argv[1]);
-	strcat(buf, ".hdr");
+    strcpy(buf, argv[1]);
+    strcat(buf, ".hdr");
     fp = fopen (buf, "rb");
     if (!fp) { 
-		printf ("Could not open the Analyze header file %s for read!\n", buf);
-		return -1;
+	printf ("Could not open the Analyze header file %s for read!\n", buf);
+	return -1;
     }
-	fread(hdr, sizeof(struct dsr), 1, fp);
-	fclose(fp);
+    fread(hdr, sizeof(struct dsr), 1, fp);
+    fclose(fp);
 
-	strcpy(buf, argv[1]);
-	strcat(buf, ".img");
+    strcpy(buf, argv[1]);
+    strcat(buf, ".img");
     fp = fopen (buf, "rb");
     if (!fp) { 
-		printf ("Could not open the Analyze image file %s for read!\n", buf);
-		return -1;
+	printf ("Could not open the Analyze image file %s for read!\n", buf);
+	return -1;
     }
 
     if (!(fp1 = fopen(argv[2],"wb"))) {
-		printf ("Error opening MHA file %s for write\n", argv[2]);
-		return -1;
+	printf ("Error opening MHA file %s for write\n", argv[2]);
+	fclose (fp);
+	return -1;
     }
 
-    fprintf (fp1, header_pat, hdr->dime.pixdim[1], hdr->dime.pixdim[2], hdr->dime.pixdim[3],
-		hdr->dime.dim[1], hdr->dime.dim[2], hdr->dime.dim[3]);
+    fprintf (fp1, header_pat, hdr->dime.pixdim[1], hdr->dime.pixdim[2], 
+	     hdr->dime.pixdim[3], hdr->dime.dim[1], hdr->dime.dim[2], 
+	     hdr->dime.dim[3]);
 
-	if (hdr->dime.datatype = DT_SIGNED_SHORT) {
-		while (!feof(fp)) {
-			short s;
-			fread(&s,2,1,fp);
-			fwrite(&s,2,1,fp1);
-		}
-	} else if (hdr->dime.datatype = DT_UNSIGNED_CHAR) {
-		printf("The Analyze file has data type UNSIGNED CHAR. A conversion to SHORT is being done.\n");
-		while (!feof(fp)) {
-			short s;
-			unsigned c;
-			fread(&c,1,1,fp);
-			s = c;
-			fwrite(&s,2,1,fp1);
-		}
-	} else {
-		printf("The Analyze file does not have data type SHORT or UNSIGNED CHAR! Is it really an image file?\n");
-		return -2;
+    if (hdr->dime.datatype = DT_SIGNED_SHORT) {
+	while (!feof(fp)) {
+	    short s;
+	    fread(&s,2,1,fp);
+	    fwrite(&s,2,1,fp1);
 	}
+    } else if (hdr->dime.datatype = DT_UNSIGNED_CHAR) {
+	printf("The Analyze file has data type UNSIGNED CHAR. A conversion to SHORT is being done.\n");
+	while (!feof(fp)) {
+	    short s;
+	    unsigned c;
+	    fread(&c,1,1,fp);
+	    s = c;
+	    fwrite(&s,2,1,fp1);
+	}
+    } else {
+	printf("The Analyze file does not have data type SHORT or UNSIGNED CHAR! Is it really an image file?\n");
+	fclose (fp);
+	return -2;
+    }
 
     fclose (fp);
     fclose (fp1);

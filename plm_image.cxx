@@ -129,7 +129,7 @@ PlmImageHeader::print (void)
     }
     printf ("\nSize =");
     for (int d = 0; d < Dimension; d++) {
-	printf (" %g", itk_size[d]);
+	printf (" %d", itk_size[d]);
     }
     printf ("\nSpacing =");
     for (int d = 0; d < Dimension; d++) {

@@ -128,12 +128,16 @@ get_mha_type (char* mha_fname)
     }
     while (fgets(buf,1024,fp)) {
 	if (!strcmp(buf, "ElementType = MET_SHORT\n")) {
+	    fclose (fp);
 	    return PLM_IMG_TYPE_ITK_SHORT;
 	} else if (!strcmp(buf, "ElementType = MET_USHORT\n")) {
+	    fclose (fp);
 	    return PLM_IMG_TYPE_ITK_USHORT;
 	} else if (!strcmp(buf, "ElementType = MET_UCHAR\n")) {
+	    fclose (fp);
 	    return PLM_IMG_TYPE_ITK_UCHAR;
 	} else if (!strcmp(buf, "ElementType = MET_FLOAT\n")) {
+	    fclose (fp);
 	    return PLM_IMG_TYPE_ITK_FLOAT;
 	} else if (!strncmp(buf,"ElementType",sizeof("ElementType"))) {
 	    printf ("No ElementType in mha file\n");

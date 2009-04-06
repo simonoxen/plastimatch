@@ -2,17 +2,12 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* =======================================================================*
-   Copyright (c) 2004-2007 Massachusetts General Hospital.
-   All rights reserved.
-
-
    Output file format
         0 x1 y1 z1
         1 x2 y2 z2
         2 x3 y3 z3
         ...
         9 x9 y9 z9 
-
  * =======================================================================*/
 #include <stdio.h>
 #include <string.h>
