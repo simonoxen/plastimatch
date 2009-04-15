@@ -28,7 +28,7 @@ struct BSPLINE_Xform_struct {
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
     int roi_offset[3];	         /* Position of first vox in ROI (in vox) */
-    int roi_dim[3];		 /* Dimension of ROI (in vox) */
+    int roi_dim[3];				 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3];	         /* Knot spacing (in vox) */
     float grid_spac[3];          /* Knot spacing (in mm) */
     int rdims[3];                /* # of regions in (x,y,z) */
@@ -70,13 +70,13 @@ struct BSPLINE_Parms_struct {
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
     int max_its;
-    int debug;			 /* Create grad & histogram files */
+    int debug;			         /* Create grad & histogram files */
     double convergence_tol;      /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
     BSPLINE_Score ssd;           /* Score and Gradient */
-    void *data_on_gpu;		 /* Pointer to structure encapsulating the data stored on the GPU */
-    void *data_from_gpu;	 /* Pointer to structure that stores the data returned from the GPU */
+    void *data_on_gpu;		     /* Pointer to structure encapsulating the data stored on the GPU */
+    void *data_from_gpu;	     /* Pointer to structure that stores the data returned from the GPU */
 };
 
 #if defined __cplusplus
@@ -86,12 +86,12 @@ void bspline_parms_set_default (BSPLINE_Parms* parms);
 void bspline_xform_set_default (BSPLINE_Xform* bxf);
 void
 bspline_xform_initialize (
-	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+	BSPLINE_Xform* bxf,	         /* Output: bxf is initialized */
 	float img_origin[3],         /* Image origin (in mm) */
 	float img_spacing[3],        /* Image spacing (in mm) */
 	int img_dim[3],              /* Image size (in vox) */
-	int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
-	int roi_dim[3],		     /* Dimension of ROI (in vox) */
+	int roi_offset[3],	         /* Position of first vox in ROI (in vox) */
+	int roi_dim[3],		         /* Dimension of ROI (in vox) */
 	int vox_per_rgn[3]);	     /* Knot spacing (in vox) */
 void bspline_xform_free (BSPLINE_Xform* bxf);
 void bspline_parms_free (BSPLINE_Parms* parms);

@@ -31,6 +31,7 @@ main (int argc, char* argv[])
     Volume *vector_field;
     Volume *moving_warped;
     int roi_offset[3];
+	int i;
 
     parse_args (&options, argc, argv);
 
@@ -73,6 +74,15 @@ main (int argc, char* argv[])
     /* Create warped output image and save */
     moving_warped = volume_warp (0, moving, vector_field);
     write_mha ("warped.mha", moving_warped);
+
+	/* Output the difference between the fixed and moving images after registration. */
+	/*
+	for(i = 0; i < moving_warped->npix; i++)
+	{
+		((float*)moving_warped->img)[i] -= ((float*)fixed->img)[i];
+	}
+	write_mha("difference.mha", moving_warped);
+	*/
 
     /* Free memory */
     bspline_parms_free (parms);

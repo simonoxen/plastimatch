@@ -222,8 +222,9 @@ bspline_optimize_lbfgsb (
 
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
 	if(parms->implementation == BIMPL_CUDA) {
+		bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
 		//bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
-		bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
+		//bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
 		//bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
 		//bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
 	}
