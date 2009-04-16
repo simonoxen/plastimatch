@@ -59,6 +59,7 @@ void write_mha (char* filename, Volume* vol)
 	    "%s"
 	    "ElementType = %s\n"
 	    "ElementDataFile = LOCAL\n";
+    char* element_type;
 
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
@@ -70,13 +71,34 @@ void write_mha (char* filename, Volume* vol)
 	fprintf (stderr, "Can't open file %s for write\n", filename);
 	return;
     }
+    switch (vol->pix_type) {
+    case PT_UCHAR:
+	element_type = "MET_UCHAR";
+	break;
+    case PT_SHORT:
+	element_type = "MET_SHORT";
+	break;
+    case PT_ULONG:
+	element_type = "MET_ULONG";
+	break;
+    case PT_FLOAT:
+	element_type = "MET_FLOAT";
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+	element_type = "MET_FLOAT";
+	break;
+    case PT_VF_FLOAT_PLANAR:
+    default:
+	fprintf (stderr, "Unhandled type in write_mha().\n");
+	exit (-1);
+    }
     fprintf (fp, mha_header, 
 	     vol->offset[0], vol->offset[1], vol->offset[2], 
 	     vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
 	     vol->dim[0], vol->dim[1], vol->dim[2],
 	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
-	     ? "ElementNumberOfChannels = 3\n" : "",
-		 (vol->pix_type == PT_SHORT) ? "MET_SHORT" : (vol->pix_type == PT_UCHAR ? "MET_UCHAR" : "MET_FLOAT"));
+		? "ElementNumberOfChannels = 3\n" : "",
+	     element_type);
     fflush (fp);
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
