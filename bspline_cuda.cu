@@ -126,7 +126,7 @@ void bspline_cuda_initialize_f(
 	total_bytes += dc_dv_mem_size;
 
 	// Allocate memory to hold the calculated score values.
-	score_mem_size = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * sizeof(float);
+	score_mem_size = fixed->npix * sizeof(float);
 	if(cudaMalloc((void**)&gpu_score, score_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for the score stream on GPU");
 	if(cudaBindTexture(0, tex_score, gpu_score, score_mem_size) != cudaSuccess)
@@ -620,21 +620,28 @@ void bspline_cuda_copy_grad_to_host(
 		checkCUDAError("Failed to copy gpu_grad to CPU");
 }
 
-void bspline_cuda_calculate_score_f(
+void bspline_cuda_calculate_run_kernels_f(
 	Volume *fixed,
 	Volume *moving,
 	Volume *moving_grad,
 	BSPLINE_Xform *bxf,
-	BSPLINE_Parms *parms,
-	int p0,
-	int p1,
-	int p2)
+	BSPLINE_Parms *parms)
 {
+	LARGE_INTEGER clock_count, clock_frequency;
+    double clock_start, clock_end;
+	QueryPerformanceFrequency(&clock_frequency);
+	
 	// Dimensions of the volume (in tiles)
-	float3 rdims;			
+	int3 rdims;			
 	rdims.x = (float)bxf->rdims[0];
     rdims.y = (float)bxf->rdims[1];
     rdims.z = (float)bxf->rdims[2];
+
+	// Number of knots
+	int3 cdims;
+	cdims.x = bxf->cdims[0];
+	cdims.y = bxf->cdims[1];
+	cdims.z = bxf->cdims[2];
 
 	// Dimensions of the volume (in voxels)
 	int3 volume_dim;		
@@ -684,24 +691,20 @@ void bspline_cuda_calculate_score_f(
 	roi_dim.y = bxf->roi_dim[1];
 	roi_dim.z = bxf->roi_dim[2];
 
-	// Index of the tile
-	int3 p;
-	p.x = p0;
-	p.y = p1;
-	p.z = p2;
-	
+	QueryPerformanceCounter(&clock_count);
+    clock_start = (double)clock_count.QuadPart;
+
 	// Configure the grid.
-	int threads_per_block = 256;
-	int num_threads = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+	int threads_per_block = 512;
+	int num_threads = fixed->npix;
 	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
-	dim3 dimGrid(num_blocks, 1, 1);
-	dim3 dimBlock(threads_per_block, 1, 1);
+	dim3 dimGrid1(num_blocks, 1, 1);
+	dim3 dimBlock1(threads_per_block, 1, 1);
 
 	// printf("Launching bspline_cuda_score_f_mse_kernel1...\n");
-	bspline_cuda_score_f_mse_kernel1<<<dimGrid, dimBlock>>>(
+	bspline_cuda_score_f_mse_kernel1<<<dimGrid1, dimBlock1>>>(
 		gpu_dc_dv,
 		gpu_score,
-		p,
 		volume_dim,
 		img_origin,
 		img_spacing,
@@ -714,43 +717,25 @@ void bspline_cuda_calculate_score_f(
 
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\nbspline_cuda_score_f_mse_kernel1 failed");
-}
 
-void bspline_cuda_calculate_grad_f(
-	Volume *fixed,
-	Volume *moving,
-	Volume *moving_grad,
-	BSPLINE_Xform *bxf,
-	BSPLINE_Parms *parms,
-	float *host_grad)
-{
-	// Dimensions of the volume (in tiles)
-	int3 rdims;			
-	rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("%f seconds to run bspline_cuda_score_f_mse_kernel1\n", 
+		double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
-	// Number of knots
-	int3 cdims;
-	cdims.x = bxf->cdims[0];
-	cdims.y = bxf->cdims[1];
-	cdims.z = bxf->cdims[2];
+	QueryPerformanceCounter(&clock_count);
+    clock_start = (double)clock_count.QuadPart;
 
-	// Number of voxels per region
-	int3 vox_per_rgn;		
-	vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
-	
-	// Configure the grid.
-	int threads_per_block = 256;
-	int num_threads = bxf->num_knots;
-	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
-	dim3 dimGrid(num_blocks, 1, 1);
-	dim3 dimBlock(threads_per_block, 1, 1);
+	// Reconfigure the grid.
+	threads_per_block = 128;
+	num_threads = bxf->num_knots;
+	num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+	dim3 dimGrid2(num_blocks, 1, 1);
+	dim3 dimBlock2(threads_per_block, 1, 1);
+	int smemSize = 15 * sizeof(float) * threads_per_block;
 
 	//printf("Launching bspline_cuda_score_f_mse_kernel2...");
-	bspline_cuda_score_f_mse_kernel2<<<dimGrid, dimBlock>>>(
+	bspline_cuda_score_f_mse_kernel2<<<dimGrid2, dimBlock2, smemSize>>>(
 		gpu_dc_dv,
 		gpu_grad,
 		num_threads,
@@ -760,6 +745,11 @@ void bspline_cuda_calculate_grad_f(
 
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\bspline_cuda_score_f_mse_kernel2 failed");
+
+	QueryPerformanceCounter(&clock_count);
+    clock_end = (double)clock_count.QuadPart;
+	printf("%f seconds to run bspline_cuda_score_f_mse_kernel2\n", 
+		double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 }
 
 // Computes the score on the GPU.
@@ -774,7 +764,8 @@ void bspline_cuda_final_steps_f(
 	float *host_grad_mean,
 	float *host_grad_norm)
 {
-	int num_elems = vox_per_rgn[0] * vox_per_rgn[1] * vox_per_rgn[2];
+	//int num_elems = vox_per_rgn[0] * vox_per_rgn[1] * vox_per_rgn[2];
+	int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
 	int num_blocks = (int)ceil(num_elems / 512.0);
 	dim3 dimGrid(num_blocks, 1, 1);
 	dim3 dimBlock(128, 2, 2);

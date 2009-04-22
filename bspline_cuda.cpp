@@ -144,42 +144,19 @@ void bspline_cuda_score_f_mse(
 		fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+	start_clock = clock();
 
 	// Prepare the GPU to run the kernels.
 	bspline_cuda_copy_coeff_lut(bxf);
 	bspline_cuda_clear_score();
 	bspline_cuda_clear_grad();
-	
-	// Compute the score and dc_dv values on a tile by tile basis.
-    for (p[2] = 0; p[2] < bxf->rdims[2]; p[2]++) {
-		for (p[1] = 0; p[1] < bxf->rdims[1]; p[1]++) {
-			for (p[0] = 0; p[0] < bxf->rdims[0]; p[0]++) {
 
-				//printf("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
-
-				bspline_cuda_calculate_score_f(
-					fixed,
-					moving,
-					moving_grad,
-					bxf,
-					parms,
-					p[0],
-					p[1],
-					p[2]);
-				
-			}
-		}
-    }
-
-	// Compute the gradient all at once.
-	bspline_cuda_calculate_grad_f(
+	bspline_cuda_calculate_run_kernels_f(
 		fixed,
 		moving,
 		moving_grad,
 		bxf,
-		parms,
-		ssd->grad);
+		parms);
 
     if (parms->debug) {
 		fclose (fp);

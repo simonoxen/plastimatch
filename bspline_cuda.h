@@ -122,23 +122,12 @@ extern "C" {
 	void bspline_cuda_copy_grad_to_host(
 		float* host_grad);
 
-	void bspline_cuda_calculate_score_f(
+	void bspline_cuda_calculate_run_kernels_f(
 		Volume *fixed,
 		Volume *moving,
 		Volume *moving_grad,
 		BSPLINE_Xform *bxf,
-		BSPLINE_Parms *parms,
-		int p0,
-		int p1,
-		int p2);
-
-	void bspline_cuda_calculate_grad_f(
-		Volume *fixed,
-		Volume *moving,
-		Volume *moving_grad,
-		BSPLINE_Xform *bxf,
-		BSPLINE_Parms *parms,
-		float *host_grad);
+		BSPLINE_Parms *parms);
 
 	void bspline_cuda_calculate_score_e(
 		Volume *fixed,
