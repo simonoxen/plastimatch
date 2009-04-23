@@ -9,7 +9,7 @@ INCLUDE(FindOpenGL)
 INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(GPUIT.cmake)
-
+INCLUDE(FindwxWidgets)
 
 ######################################################
 ##  Plastimatch configuration variables
@@ -393,6 +393,13 @@ SET(MASK_MHA_SRC
 SET(MHA_TO_RTOG_DOSE_SRC
 	mha_to_rtog_dose.cxx
 	)
+SET(MONDOSHOT_SRC
+        sqlite3.c
+	sqlite3.h
+	sqlite3ext.h
+	mondoshot_main.cpp
+	mondoshot_dicom.cpp
+	)
 SET(PATIENT_MASK_SRC
 	patient_mask.cxx
 	)
@@ -503,6 +510,11 @@ IF(PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${PANTHEIOS_INCLUDE_DIR})
 ENDIF(PANTHEIOS_FOUND)
 
+IF(wxWidgets_FOUND)
+  INCLUDE_DIRECTORIES(BEFORE ${wxWidgets_INCLUDE_DIRS})
+ENDIF(wxWidgets_FOUND)
+
+
 ######################################################
 ##  MAKEFILE TARGETS
 ######################################################
@@ -587,7 +599,6 @@ ENDIF(F2C_LIBRARY)
 
 # Require itk
 IF(ITK_FOUND)
-
   ## Despite claims to the contrary, you are not allowed to have a library
   ## with the same name as the executable.  What happens is the executable 
   ## tries to create a temporary library with the same name.  [MSVC 2005]
@@ -624,6 +635,10 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
   ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
 ENDIF(ITK_FOUND)
+
+IF(wxWidgets_FOUND AND DCMTK_FOUND)
+  ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
+ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
 
 #ADD_EXECUTABLE(ctest_test ctest_test.c)
 
@@ -693,6 +708,10 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(warp_pointset ${PLASTIMATCH_LIBS})
 ENDIF(ITK_FOUND)
 
+IF(wxWidgets_FOUND AND DCMTK_FOUND)
+  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
+ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+
 ######################################################
 ##  INSTALL
 ######################################################
@@ -760,6 +779,10 @@ IF(ITK_FOUND)
     #slicer3_install_plugins(gpuit)
   endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
+
+IF(wxWidgets_FOUND AND DCMTK_FOUND)
+  INSTALL(TARGETS mondoshot DESTINATION bin)
+ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
 
 ######################################################
 ##  Test executables
