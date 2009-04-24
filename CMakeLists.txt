@@ -398,6 +398,7 @@ SET(MONDOSHOT_SRC
 	sqlite3.h
 	sqlite3ext.h
 	mondoshot_main.cpp
+	mondoshot_main.h
 	mondoshot_dicom.cpp
 	)
 SET(PATIENT_MASK_SRC

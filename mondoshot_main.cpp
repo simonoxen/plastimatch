@@ -8,45 +8,15 @@
 #include <wx/wx.h>
 #include <wx/window.h>
 #include <wx/filename.h>
+#include "mondoshot_main.h"
 #include "sqlite3.h"
 
 void initialize_sqlite ();
-
-class MyFrame: public wxFrame
-{
-public:
-
-    MyFrame(const wxString& title, const wxPoint& pos, const wxSize& size);
-
-    virtual bool OnInit ();
-    void OnMenuQuit (wxCommandEvent& event);
-    void OnMenuAbout (wxCommandEvent& event);
-    void OnButtonOK (wxCommandEvent& event);
-    void OnButtonCancel (wxCommandEvent& event);
-    void OnHotKey1 (wxKeyEvent& event);
-    void OnHotKey2 (wxKeyEvent& event);
-
-    wxBitmap bitmap;
-    wxTextCtrl *editbox_patient_name;
-    wxTextCtrl *editbox_patient_id;
-
-    DECLARE_EVENT_TABLE()
-};
 
 class MyApp: public wxApp
 {
 public:
     virtual bool OnInit();
-};
-
-enum
-{
-    ID_MENU_QUIT = 1,
-    ID_MENU_ABOUT,
-    ID_BUTTON_OK,
-    ID_BUTTON_CANCEL,
-    ID_EDIT_PATIENT_NAME,
-    ID_EDIT_PATIENT_ID
 };
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
@@ -91,21 +61,21 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     this->CreateStatusBar ();
     this->SetStatusText (wxT("Welcome to wxWindows!"));
 
-    wxPanel *panel = new wxPanel (this, -1);
+    m_panel = new wxPanel (this, -1);
 
-    wxButton *ok = new wxButton (panel, ID_BUTTON_OK, wxT("Ok"));
-    wxButton *cancel = new wxButton (panel, ID_BUTTON_CANCEL, wxT("Cancel"));
+    wxButton *ok = new wxButton (m_panel, ID_BUTTON_OK, wxT("Ok"));
+    wxButton *cancel = new wxButton (m_panel, ID_BUTTON_CANCEL, wxT("Cancel"));
 
     wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
-//    wxBoxSizer *hbox1 = new wxBoxSizer (wxHORIZONTAL);
+    wxFlexGridSizer *fgs = new wxFlexGridSizer(2, 2, 9, 25);
+    wxBoxSizer *hbox1 = new wxBoxSizer (wxHORIZONTAL);
 //    wxBoxSizer *hbox2 = new wxBoxSizer (wxHORIZONTAL);
     wxBoxSizer *hbox3 = new wxBoxSizer (wxHORIZONTAL);
-    wxFlexGridSizer *fgs = new wxFlexGridSizer(2, 2, 9, 25);
 
-    wxStaticText *label_patient_name =  new wxStaticText (panel, wxID_ANY, wxT("Patient Name"));
-    wxStaticText *label_patient_id =  new wxStaticText (panel, wxID_ANY, wxT("Patient ID"));
-    this->editbox_patient_name = new wxTextCtrl (panel, ID_EDIT_PATIENT_NAME);
-    this->editbox_patient_id = new wxTextCtrl (panel, ID_EDIT_PATIENT_ID);
+    wxStaticText *label_patient_name =  new wxStaticText (m_panel, wxID_ANY, wxT("Patient Name"));
+    wxStaticText *label_patient_id =  new wxStaticText (m_panel, wxID_ANY, wxT("Patient ID"));
+    this->m_textctrl_patient_name = new wxTextCtrl (m_panel, ID_EDIT_PATIENT_NAME);
+    this->m_textctrl_patient_id = new wxTextCtrl (m_panel, ID_EDIT_PATIENT_ID);
 
 //    hbox1->Add(label1, 0, wxRIGHT, 8);
 //    hbox1->Add(patient_name, 1);
@@ -114,10 +84,19 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
 //    hbox2->Add(patient_id, 1);
 
     fgs->Add (label_patient_name);
-    fgs->Add (editbox_patient_name, 1, wxEXPAND);
+    fgs->Add (m_textctrl_patient_name, 1, wxEXPAND);
     fgs->Add (label_patient_id);
-    fgs->Add (editbox_patient_id, 1, wxEXPAND);
+    fgs->Add (m_textctrl_patient_id, 1, wxEXPAND);
     fgs->AddGrowableCol (1, 1);
+
+    this->m_listctrl_patients = new MyListCtrl (
+	this->m_panel, 
+	LIST_CTRL,
+	wxDefaultPosition, 
+	wxDefaultSize,
+	wxLC_REPORT | wxLC_SINGLE_SEL | wxSUNKEN_BORDER | wxLC_EDIT_LABELS);
+
+    hbox1->Add (this->patient_list);
 
     hbox3->Add (ok);
     hbox3->AddSpacer (20);
@@ -126,8 +105,9 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
 //    vbox->Add (hbox1, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
 //    vbox->Add (hbox2, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
     vbox->Add (fgs, 1, wxALL | wxEXPAND, 15);
+    vbox->Add (hbox1, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
     vbox->Add (hbox3, 0, wxALIGN_RIGHT | wxRIGHT | wxBOTTOM, 10);
-    panel->SetSizer (vbox);
+    this->m_panel->SetSizer (vbox);
 }
 
 void MyFrame::OnMenuQuit (wxCommandEvent& WXUNUSED(event))
@@ -145,16 +125,16 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
     wxString patient_name, patient_id;
 
     /* Save a copy */
-    this->bitmap.SaveFile (wxT("C:/tmp/tmp.jpg"), wxBITMAP_TYPE_JPEG);
+    this->m_bitmap.SaveFile (wxT("C:/tmp/tmp.jpg"), wxBITMAP_TYPE_JPEG);
 
     /* Validate input fields */
-    patient_name = this->editbox_patient_name->GetValue ();
+    patient_name = this->m_textctrl_patient_name->GetValue ();
     if (patient_name.IsEmpty ()) {
 	wxMessageBox (wxT("Please enter a patient name"),
 	    wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
 	return;
     }
-    patient_id = this->editbox_patient_id->GetValue ();
+    patient_id = this->m_textctrl_patient_id->GetValue ();
     if (patient_id.IsEmpty ()) {
 	wxMessageBox (wxT("Please enter a patient id"),
 	    wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
@@ -180,7 +160,7 @@ bool MyFrame::OnInit ()
     rc = this->RegisterHotKey (0xB001, 0, wxCharCodeWXToMSW(WXK_F12));
 
     wxSize screenSize = wxGetDisplaySize();
-    this->bitmap.Create (screenSize.x, screenSize.y);
+    this->m_bitmap.Create (screenSize.x, screenSize.y);
 
     return true;
 }
@@ -191,7 +171,7 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
     wxSize screenSize = wxGetDisplaySize();
     wxScreenDC dc;
     wxMemoryDC memDC;
-    memDC.SelectObject (this->bitmap);
+    memDC.SelectObject (this->m_bitmap);
     memDC.Blit (0, 0, screenSize.x, screenSize.y, &dc, 0, 0);
     memDC.SelectObject (wxNullBitmap);
 
@@ -200,7 +180,7 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
     /* Why don't I have PNG support??? */
     wxString fname = wxFileName::CreateTempFileName (wxT("screenshot")) + ".bmp";
     wxMessageBox (fname, wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
-    bitmap.SaveFile (fname, wxBITMAP_TYPE_BMP);
+    m_bitmap.SaveFile (fname, wxBITMAP_TYPE_BMP);
 #endif
 
 
@@ -210,6 +190,39 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
 void MyFrame::OnHotKey2 (wxKeyEvent& WXUNUSED(event))
 {
     this->Close (TRUE);
+}
+
+void
+MyFrame::populate_patient_list (void)
+{
+    switch ( flags & wxLC_MASK_TYPE )
+    {
+	case wxLC_LIST:
+	    InitWithListItems();
+	    break;
+
+	case wxLC_ICON:
+	    InitWithIconItems(withText);
+	    break;
+
+	case wxLC_SMALL_ICON:
+	    InitWithIconItems(withText, true);
+	    break;
+
+	case wxLC_REPORT:
+	    if ( flags & wxLC_VIRTUAL )
+		InitWithVirtualItems();
+	    else
+		InitWithReportItems();
+	    break;
+
+	default:
+	    wxFAIL_MSG( _T("unknown listctrl mode") );
+    }
+
+    DoSize();
+
+    m_logWindow->Clear();
 }
 
 void
