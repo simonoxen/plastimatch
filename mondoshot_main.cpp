@@ -10,14 +10,15 @@
 #include <wx/filename.h>
 #include "mondoshot_main.h"
 #include "sqlite3.h"
+#include "plm_version.h"
 
-void initialize_sqlite ();
-
-class MyApp: public wxApp
-{
-public:
-    virtual bool OnInit();
+struct sqlite_populate_cbstruct {
+    MyFrame *m_frame;
+    int m_list_index;
 };
+
+void sqlite_query_populate (MyFrame* frame);
+void sqlite_insert_record (wxString patient_id, wxString patient_name);
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_QUIT, MyFrame::OnMenuQuit)
@@ -28,7 +29,56 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_BUTTON(ID_BUTTON_CANCEL, MyFrame::OnButtonCancel)
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
+    EVT_LIST_ITEM_SELECTED(ID_LISTCTRL_PATIENTS, MyListCtrl::OnSelected)
+#if defined (commentout)
+    EVT_LIST_BEGIN_DRAG(LIST_CTRL, MyListCtrl::OnBeginDrag)
+    EVT_LIST_BEGIN_RDRAG(LIST_CTRL, MyListCtrl::OnBeginRDrag)
+    EVT_LIST_BEGIN_LABEL_EDIT(LIST_CTRL, MyListCtrl::OnBeginLabelEdit)
+    EVT_LIST_END_LABEL_EDIT(LIST_CTRL, MyListCtrl::OnEndLabelEdit)
+    EVT_LIST_DELETE_ITEM(LIST_CTRL, MyListCtrl::OnDeleteItem)
+    EVT_LIST_DELETE_ALL_ITEMS(LIST_CTRL, MyListCtrl::OnDeleteAllItems)
+#if WXWIN_COMPATIBILITY_2_4
+    EVT_LIST_GET_INFO(LIST_CTRL, MyListCtrl::OnGetInfo)
+    EVT_LIST_SET_INFO(LIST_CTRL, MyListCtrl::OnSetInfo)
+#endif
+    EVT_LIST_ITEM_DESELECTED(LIST_CTRL, MyListCtrl::OnDeselected)
+    EVT_LIST_KEY_DOWN(LIST_CTRL, MyListCtrl::OnListKeyDown)
+    EVT_LIST_ITEM_ACTIVATED(LIST_CTRL, MyListCtrl::OnActivated)
+    EVT_LIST_ITEM_FOCUSED(LIST_CTRL, MyListCtrl::OnFocused)
+
+    EVT_LIST_COL_CLICK(LIST_CTRL, MyListCtrl::OnColClick)
+    EVT_LIST_COL_RIGHT_CLICK(LIST_CTRL, MyListCtrl::OnColRightClick)
+    EVT_LIST_COL_BEGIN_DRAG(LIST_CTRL, MyListCtrl::OnColBeginDrag)
+    EVT_LIST_COL_DRAGGING(LIST_CTRL, MyListCtrl::OnColDragging)
+    EVT_LIST_COL_END_DRAG(LIST_CTRL, MyListCtrl::OnColEndDrag)
+
+    EVT_LIST_CACHE_HINT(LIST_CTRL, MyListCtrl::OnCacheHint)
+
+#if USE_CONTEXT_MENU
+    EVT_CONTEXT_MENU(MyListCtrl::OnContextMenu)
+#endif
+    EVT_CHAR(MyListCtrl::OnChar)
+
+    EVT_RIGHT_DOWN(MyListCtrl::OnRightClick)
+#endif
+END_EVENT_TABLE()
+
 IMPLEMENT_APP(MyApp)
+
+void
+popup (char* fmt, ...)
+{
+    va_list argptr;
+    va_start (argptr, fmt);
+
+    wxMessageBox (
+	wxString::FormatV (fmt, argptr), 
+	wxT("Mondoshot"), 
+	wxOK | wxICON_INFORMATION);
+
+    va_end (argptr);
+}
 
 bool MyApp::OnInit()
 {
@@ -36,12 +86,9 @@ bool MyApp::OnInit()
     ::wxInitAllImageHandlers ();
 
     /* Create and initialize main window */
-    MyFrame* frame = new MyFrame( wxT("Hello World"), wxPoint(50,50), wxSize(450,340) );
+    MyFrame* frame = new MyFrame( wxT("Mondoshot"), wxPoint(-1,-1), wxSize(600,500) );
     frame->OnInit ();
     SetTopWindow (frame);
-
-    /* Load recently used patient name/id values */
-    // initialize_sqlite ();
 
     return TRUE;
 }
@@ -58,55 +105,71 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     menuBar->Append (menuFile, wxT("&File"));
     this->SetMenuBar (menuBar);
 
-    this->CreateStatusBar ();
-    this->SetStatusText (wxT("Welcome to wxWindows!"));
-
     m_panel = new wxPanel (this, -1);
 
     wxButton *ok = new wxButton (m_panel, ID_BUTTON_OK, wxT("Ok"));
     wxButton *cancel = new wxButton (m_panel, ID_BUTTON_CANCEL, wxT("Cancel"));
 
     wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
-    wxFlexGridSizer *fgs = new wxFlexGridSizer(2, 2, 9, 25);
+    wxFlexGridSizer *fgs = new wxFlexGridSizer (2, 2, 9, 25);
     wxBoxSizer *hbox1 = new wxBoxSizer (wxHORIZONTAL);
-//    wxBoxSizer *hbox2 = new wxBoxSizer (wxHORIZONTAL);
+    wxBoxSizer *hbox2 = new wxBoxSizer (wxHORIZONTAL);
     wxBoxSizer *hbox3 = new wxBoxSizer (wxHORIZONTAL);
 
-    wxStaticText *label_patient_name =  new wxStaticText (m_panel, wxID_ANY, wxT("Patient Name"));
     wxStaticText *label_patient_id =  new wxStaticText (m_panel, wxID_ANY, wxT("Patient ID"));
-    this->m_textctrl_patient_name = new wxTextCtrl (m_panel, ID_EDIT_PATIENT_NAME);
-    this->m_textctrl_patient_id = new wxTextCtrl (m_panel, ID_EDIT_PATIENT_ID);
+    wxStaticText *label_patient_name =  new wxStaticText (m_panel, wxID_ANY, wxT("Patient Name"));
+    this->m_textctrl_patient_id = new wxTextCtrl (m_panel, ID_TEXTCTRL_PATIENT_ID);
+    this->m_textctrl_patient_name = new wxTextCtrl (m_panel, ID_TEXTCTRL_PATIENT_NAME);
 
-//    hbox1->Add(label1, 0, wxRIGHT, 8);
-//    hbox1->Add(patient_name, 1);
-
-//    hbox2->Add(label2, 0, wxRIGHT, 8);
-//    hbox2->Add(patient_id, 1);
-
-    fgs->Add (label_patient_name);
-    fgs->Add (m_textctrl_patient_name, 1, wxEXPAND);
     fgs->Add (label_patient_id);
     fgs->Add (m_textctrl_patient_id, 1, wxEXPAND);
+    fgs->Add (label_patient_name);
+    fgs->Add (m_textctrl_patient_name, 1, wxEXPAND);
     fgs->AddGrowableCol (1, 1);
+    fgs->Layout ();
 
+    /* Set up listbox */
     this->m_listctrl_patients = new MyListCtrl (
 	this->m_panel, 
-	LIST_CTRL,
+	ID_LISTCTRL_PATIENTS,
 	wxDefaultPosition, 
 	wxDefaultSize,
 	wxLC_REPORT | wxLC_SINGLE_SEL | wxSUNKEN_BORDER | wxLC_EDIT_LABELS);
+    wxListItem itemCol;
+    itemCol.SetText (_T("Patient ID"));
+    itemCol.SetAlign (wxLIST_FORMAT_LEFT);
+    this->m_listctrl_patients->InsertColumn (0, itemCol);
 
-    hbox1->Add (this->patient_list);
+    itemCol.SetText (_T("Patient Name"));
+    itemCol.SetAlign (wxLIST_FORMAT_LEFT);
+    this->m_listctrl_patients->InsertColumn (1, itemCol);
+
+    itemCol.SetText (_T("Latest Image"));
+    itemCol.SetAlign (wxLIST_FORMAT_LEFT);
+    this->m_listctrl_patients->InsertColumn (2, itemCol);
+
+    this->m_listctrl_patients->SetColumnWidth (0, 100);
+    this->m_listctrl_patients->SetColumnWidth (1, 150);
+    this->m_listctrl_patients->SetColumnWidth (2, 150);
+
+    /* Populate listbox */
+    this->listctrl_patients_populate ();
+
+    hbox1->Add (this->m_listctrl_patients, 1, wxEXPAND);
+
+    //hbox2->Add (new wxTextCtrl (m_panel, wxID_ANY), 1);
+    //hbox2->Layout ();
 
     hbox3->Add (ok);
     hbox3->AddSpacer (20);
     hbox3->Add (cancel);
 
-//    vbox->Add (hbox1, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-//    vbox->Add (hbox2, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-    vbox->Add (fgs, 1, wxALL | wxEXPAND, 15);
-    vbox->Add (hbox1, 0, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    vbox->Add (fgs, 0, wxALL | wxEXPAND, 15);
+    vbox->Add (hbox1, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    //vbox->Add (hbox2, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    vbox->Add(-1, 10);
     vbox->Add (hbox3, 0, wxALIGN_RIGHT | wxRIGHT | wxBOTTOM, 10);
+
     this->m_panel->SetSizer (vbox);
 }
 
@@ -117,6 +180,7 @@ void MyFrame::OnMenuQuit (wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
 {
+    /* Hide dialog box */
     this->Show (FALSE);
 }
 
@@ -142,14 +206,21 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
     }
 
     /* Bundle up and send dicom */
-    
 
 
+    /* Hide dialog box */
+    this->Show (FALSE);
+
+    /* Insert patient into the database */
+    sqlite_insert_record (patient_id, patient_name);
+
+    /* Refresh listbox */
+    this->listctrl_patients_populate ();
 }
 
 void MyFrame::OnMenuAbout (wxCommandEvent& WXUNUSED(event))
 {
-    wxMessageBox (wxT("This is Mondoshot!"),
+    wxMessageBox (wxT("Mondoshot Version " PLASTIMATCH_VERSION_STRING "   "),
         wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
 }
 
@@ -175,15 +246,6 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
     memDC.Blit (0, 0, screenSize.x, screenSize.y, &dc, 0, 0);
     memDC.SelectObject (wxNullBitmap);
 
-#if defined (commentout)
-    /* This is how you would save to a bmp file */
-    /* Why don't I have PNG support??? */
-    wxString fname = wxFileName::CreateTempFileName (wxT("screenshot")) + ".bmp";
-    wxMessageBox (fname, wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
-    m_bitmap.SaveFile (fname, wxBITMAP_TYPE_BMP);
-#endif
-
-
     this->Show (TRUE);
 }
 
@@ -193,61 +255,164 @@ void MyFrame::OnHotKey2 (wxKeyEvent& WXUNUSED(event))
 }
 
 void
-MyFrame::populate_patient_list (void)
+MyFrame::listctrl_patients_populate (void)
 {
-    switch ( flags & wxLC_MASK_TYPE )
-    {
-	case wxLC_LIST:
-	    InitWithListItems();
-	    break;
-
-	case wxLC_ICON:
-	    InitWithIconItems(withText);
-	    break;
-
-	case wxLC_SMALL_ICON:
-	    InitWithIconItems(withText, true);
-	    break;
-
-	case wxLC_REPORT:
-	    if ( flags & wxLC_VIRTUAL )
-		InitWithVirtualItems();
-	    else
-		InitWithReportItems();
-	    break;
-
-	default:
-	    wxFAIL_MSG( _T("unknown listctrl mode") );
+    // to speed up inserting we hide the control temporarily
+    this->m_listctrl_patients->Hide ();
+    this->m_listctrl_patients->DeleteAllItems ();
+    sqlite_query_populate (this);
+    if (this->m_listctrl_patients->GetItemCount() > 0) {
+        this->m_listctrl_patients->SetItemState (0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
     }
 
-    DoSize();
-
-    m_logWindow->Clear();
+    this->m_listctrl_patients->Show();
 }
 
 void
-initialize_sqlite ()
+MyListCtrl::OnSelected (wxListEvent& event)
+{
+    bool rc;
+    wxListItem info;
+    wxString patient_id, patient_name;
+
+    info.m_itemId = event.m_itemIndex;
+    info.m_mask = wxLIST_MASK_TEXT;
+
+    info.m_col = 0;
+    rc = this->GetItem (info);
+    if (!rc) {
+	return;
+    }
+    patient_id = info.m_text;
+
+    info.m_col = 1;
+    rc = this->GetItem (info);
+    if (!rc) {
+	return;
+    }
+    patient_name = info.m_text;
+
+    MyFrame *frame = (MyFrame*) this->GetParent()->GetParent();
+    frame->m_textctrl_patient_id->SetValue (patient_id);
+    frame->m_textctrl_patient_name->SetValue (patient_name);
+}
+
+void
+sqlite_insert_record (wxString patient_id, wxString patient_name)
+{
+    int rc;
+    sqlite3 *db;
+    wxString wx_sql;
+    const char *sql;
+    char *sqlite3_err;
+
+    /* Patient names may have apostrophes.  Escape these. */
+    patient_name.Replace ("'", "''", true);
+
+    rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    if (rc) {
+	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
+	sqlite3_close (db);
+	exit (1);
+    }
+
+    wx_sql = wxString::Format (
+	"INSERT INTO patient_screenshots (patient_id, patient_name, screenshot_timestamp)"
+	"values ('%s', '%s', julianday('now'));",
+	patient_id, patient_name);
+    sql = (const char*) wx_sql;
+    rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
+    if (rc != SQLITE_OK) {
+	popup ("SQL error: %s\n", sqlite3_err);
+	sqlite3_free (sqlite3_err);
+    }
+
+    sqlite3_close (db);
+}
+
+int
+sqlite_query_populate_callback (void* data, int argc, char** argv, char** column_names)
+{
+    int i;
+    struct sqlite_populate_cbstruct *cbstruct = (struct sqlite_populate_cbstruct *) data;
+    MyFrame *frame = cbstruct->m_frame;
+    MyListCtrl *patient_list = frame->m_listctrl_patients;
+    int patient_name_idx = -1;
+    int patient_id_idx = -1;
+    int last_image_idx = -1;
+
+    /* Check column_names */
+    for (i = 0; i < argc; i++) {
+	if (!strcmp (column_names[i], "patient_name")) {
+	    patient_name_idx = i;
+	}
+	if (!strcmp (column_names[i], "patient_id")) {
+	    patient_id_idx = i;
+	}
+	if (!strcmp (column_names[i], "datetime(MAX(screenshot_timestamp))")) {
+	    last_image_idx = i;
+	}
+    }
+    if (patient_name_idx == -1 || patient_id_idx == -1) {
+	return -1;
+    }
+
+    char* patient_name = argv[patient_name_idx];
+    char* patient_id = argv[patient_id_idx];
+    char* last_image = argv[last_image_idx];
+
+    if (patient_name && patient_id && last_image) {
+	wxString buf;
+	int list_index = cbstruct->m_list_index ++;
+
+	buf = patient_id;
+	long tmp = patient_list->InsertItem (list_index, buf, 0);
+	patient_list->SetItemData (tmp, list_index);
+
+	buf = patient_name;
+	patient_list->SetItem (tmp, 1, buf);
+
+	buf = last_image;
+	patient_list->SetItem (tmp, 2, buf);
+    }
+
+    return 0;
+}
+
+void
+sqlite_query_populate (MyFrame* frame)
 {
     int rc;
     sqlite3 *db;
     char *sql;
     char *sqlite3_err;
+    struct sqlite_populate_cbstruct cbstruct;
 
     rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
     if (rc) {
-	fprintf (stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
 	sqlite3_close (db);
 	exit (1);
     }
 
-    sql = "CREATE TABLE IF NOT EXISTS foo ( oi INTEGER PRIMARY KEY, patient_name TEXT, patient_id TEXT, last_used DATE );";
+    sql = "CREATE TABLE IF NOT EXISTS patient_screenshots ( oi INTEGER PRIMARY KEY, patient_id TEXT, patient_name TEXT, screenshot_timestamp DATE );";
     rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
     if (rc != SQLITE_OK) {
-	fprintf (stderr, "SQL error: %s\n", sqlite3_err);
+	popup ("SQL error: %s\n", sqlite3_err);
 	sqlite3_free (sqlite3_err);
     }
 
-    //sqlite> insert into foo (patient_name, patient_id, last_used) values ('foo', 'bar', julianday('now'));
+    cbstruct.m_frame = frame;
+    cbstruct.m_list_index = 0;
+    sql = 
+	"SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
+	"FROM patient_screenshots GROUP BY patient_id,patient_name "
+	"ORDER BY MAX(screenshot_timestamp) DESC;";
+    rc = sqlite3_exec (db, sql, sqlite_query_populate_callback, &cbstruct, &sqlite3_err);
+    if (rc != SQLITE_OK) {
+	popup ("SQL error: %s\n", sqlite3_err);
+	sqlite3_free (sqlite3_err);
+    }
 
     sqlite3_close (db);
 }

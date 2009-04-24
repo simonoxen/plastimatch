@@ -92,3 +92,33 @@ For "C" logging, I found 2 projects:
 - log4c (LGPL license)
 - pantheios (BSD license)
 
+***** SVN eol-goop *****
+
+Put the following in your ~/.subversion/config
+
+CMakeLists.txt = svn:eol-style=native;svn:mime-type=text/plain
+Makefile = svn:eol-style=native;svn:mime-type=text/plain
+README* = svn:mime-type=text/plain;svn:eol-style=native
+readme* = svn:mime-type=text/plain;svn:eol-style=native
+
+*.tga = svn:mime-type=image/tga
+*.bat = svn:mime-type=text/plain;svn:eol-style=CRLF
+*.br = svn:eol-style=native;svn:mime-type=text/plain
+*.c = svn:eol-style=native;svn:mime-type=text/plain
+*.cmake = svn:mime-type=text/plain;svn:eol-style=native
+*.cmd = svn:mime-type=text/plain;svn:eol-style=CRLF
+*.cpp = svn:eol-style=native;svn:mime-type=text/plain
+*.cu = svn:eol-style=native;svn:mime-type=text/plain
+*.cxx = svn:eol-style=native;svn:mime-type=text/plain
+*.dsp = svn:eol-style=CRLF;svn:mime-type=text/plain
+*.dsw = svn:eol-style=CRLF;svn:mime-type=text/plain
+*.f = svn:eol-style=native;svn:mime-type=text/plain
+*.h = svn:eol-style=native;svn:mime-type=text/plain
+*.jpg = svn:mime-type=image/jpeg
+*.m = svn:eol-style=native;svn:mime-type=text/plain
+*.pl = svn:eol-style=native;svn:mime-type=text/plain;svn:executable
+*.png = svn:mime-type=image/png
+*.pm = svn:eol-style=native;svn:mime-type=text/plain
+*.sh = svn:mime-type=text/plain;svn:eol-style=LF;svn:executable
+*.txt = svn:mime-type=text/plain;svn:eol-style=native
+*.xml = svn:mime-type=text/xml;svn:eol-style=native

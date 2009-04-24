@@ -15,6 +15,8 @@ Files
 -----
 Third-party code should be placed in separate files, and should be 
 clearly identified, so that no mistake in licensing occurs.
+Source code files should use Unix-style end-of-line characters.
+All source code should be written in 7-bit clean ASCII.
 
 Indentation
 -----------
