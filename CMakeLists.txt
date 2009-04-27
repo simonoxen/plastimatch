@@ -356,6 +356,8 @@ SET(DEMONS_CUDA_SRC
 ENDIF(BUILD_DEMONS_CUDA)
 SET(DICOM_UID_SRC
 	dicom_uid_main.cxx
+	dicom_uid.cxx
+	dicom_uid.h
 	)
 SET(DRR_C_SRC
 	drr_c.c
@@ -394,12 +396,15 @@ SET(MHA_TO_RTOG_DOSE_SRC
 	mha_to_rtog_dose.cxx
 	)
 SET(MONDOSHOT_SRC
+	dicom_uid.cxx
+	dicom_uid.h
+	mondoshot_main.cpp
+	mondoshot_main.h
+	mondoshot_dicom.cpp
+	mondoshot_dicom.h
         sqlite3.c
 	sqlite3.h
 	sqlite3ext.h
-	mondoshot_main.cpp
-	mondoshot_main.h
-#	mondoshot_dicom.cpp
 	)
 SET(PATIENT_MASK_SRC
 	patient_mask.cxx

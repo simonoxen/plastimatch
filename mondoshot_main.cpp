@@ -190,6 +190,7 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
 
     /* Save a copy */
     this->m_bitmap.SaveFile (wxT("C:/tmp/tmp.jpg"), wxBITMAP_TYPE_JPEG);
+    this->m_bitmap.SaveFile (wxT("C:/tmp/tmp.png"), wxBITMAP_TYPE_PNG);
 
     /* Validate input fields */
     patient_name = this->m_textctrl_patient_name->GetValue ();
@@ -206,7 +207,12 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
     }
 
     /* Bundle up and send dicom */
-
+#if defined (commentout)
+    mondoshot_dicom_send (this->m_bitmap,
+			    patient_id,
+			    patient_name,
+			    blah);
+#endif
 
     /* Hide dialog box */
     this->Show (FALSE);

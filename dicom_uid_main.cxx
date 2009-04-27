@@ -7,6 +7,8 @@
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
 
+char* plm_dcmGenerateUniqueIdentifier (char* uid, const char* prefix);
+
 enum UID_Type {
     STUDY,
     SERIES,
@@ -19,6 +21,9 @@ print_usage (void)
     fprintf (stderr, "Usage: dicom_uid [prefix]\n");
     exit (-1);
 }
+
+void
+plm_generate_dicom_uid (char *uid, const char *uid_root);
 
 int
 main (int argc, char* argv[])
@@ -36,7 +41,9 @@ main (int argc, char* argv[])
 	fprintf (stderr, "Sorry, uid prefix should be less than 32 characters\n");
 	exit (-1);
     }
-    dcmGenerateUniqueIdentifier (uid, uid_root);
+
+    plm_generate_dicom_uid (uid, uid_root);
+
     printf ("%s\n", uid);
     return (0);
 }
