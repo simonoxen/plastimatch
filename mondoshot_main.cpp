@@ -11,6 +11,7 @@
 #include "mondoshot_main.h"
 #include "sqlite3.h"
 #include "plm_version.h"
+#include "mondoshot_dicom.h"
 
 struct sqlite_populate_cbstruct {
     MyFrame *m_frame;
@@ -207,12 +208,17 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
     }
 
     /* Bundle up and send dicom */
-#if defined (commentout)
-    mondoshot_dicom_send (this->m_bitmap,
-			    patient_id,
-			    patient_name,
-			    blah);
-#endif
+    wxImage image = this->m_bitmap.ConvertToImage ();
+    unsigned char* bytes = image.GetData ();
+    mondoshot_dicom_send (  image.GetHeight (), 
+			    image.GetWidth (),
+			    bytes, 
+			    (const char*) patient_id,
+			    (const char*) patient_name,
+			    "SHARP",
+			    "SHARP",
+			    "127.0.0.1",
+			    "5678");
 
     /* Hide dialog box */
     this->Show (FALSE);

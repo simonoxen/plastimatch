@@ -398,10 +398,10 @@ SET(MHA_TO_RTOG_DOSE_SRC
 SET(MONDOSHOT_SRC
 	dicom_uid.cxx
 	dicom_uid.h
-	mondoshot_main.cpp
-	mondoshot_main.h
 	mondoshot_dicom.cpp
 	mondoshot_dicom.h
+	mondoshot_main.cpp
+	mondoshot_main.h
         sqlite3.c
 	sqlite3.h
 	sqlite3ext.h

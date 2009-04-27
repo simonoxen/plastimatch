@@ -4,7 +4,13 @@
 #ifndef __dicom_uid_h__
 #define __dicom_uid_h__
 
-void
-plm_generate_dicom_uid (uid, uid_root);
+#ifdef __cplusplus
+extern "C" {
+#endif
+char*
+plm_generate_dicom_uid (char *uid, const char *uid_root);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
