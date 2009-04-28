@@ -74,6 +74,7 @@ plm_generate_dicom_uid (char *uid, const char *uid_root)
     int i;
     unsigned char random_buf[100];
     bool rc;
+    int suppress_zeros = 1;
 
     dcmGenerateUniqueIdentifier (uid, uid_root);
 
@@ -84,9 +85,17 @@ plm_generate_dicom_uid (char *uid, const char *uid_root)
 
     for (i = strlen (uid_root); i < 63; i++) {
 	switch (uid[i]) {
+	case '.':
+	    suppress_zeros = 1;
+	    break;
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
-	    uid[i] = '0' + ((((long) uid[i]) + random_buf[i] - '0') % 10);
+	    if (suppress_zeros) {
+		uid[i] = '1' + ((((long) uid[i]) + random_buf[i] - '0') % 9);
+	    } else {
+		uid[i] = '0' + ((((long) uid[i]) + random_buf[i] - '0') % 10);
+	    }
+	    suppress_zeros = 0;
 	    break;
 	}
     }
