@@ -14,15 +14,18 @@
 #include "dicom_uid.h"
 
 bool 
-mondoshot_dicom_send (int height,
-		      int width,
-		      unsigned char* bytes,
-		      const char *patient_id,
-		      const char *patient_name,
-		      const char *dicom_local_ae,
-		      const char *dicom_remote_ae,
-		      const char *dicom_remote_host,
-		      const char *dicom_remote_port)
+mondoshot_dicom_create_file (
+		int height,
+		int width,
+		unsigned char* bytes,
+		bool rgb,
+		const char *patient_id,
+		const char *patient_name,
+		const char *dicom_local_ae,
+		const char *dicom_remote_ae,
+		const char *dicom_remote_host,
+		const char *dicom_remote_port,
+		const char *filename)
 {
     char uid[100];
     DcmFileFormat fileformat;
@@ -48,9 +51,15 @@ mondoshot_dicom_send (int height,
     dataset->putAndInsertString (DCM_InstanceNumber, "");
     dataset->putAndInsertString (DCM_PatientOrientation, "");
 
-    dataset->putAndInsertString (DCM_SamplesPerPixel, "3");
-    dataset->putAndInsertString (DCM_PhotometricInterpretation, "RGB");
-    dataset->putAndInsertString (DCM_PlanarConfiguration, "0");
+    if (rgb) {
+	dataset->putAndInsertString (DCM_SamplesPerPixel, "3");
+	dataset->putAndInsertString (DCM_PhotometricInterpretation, "RGB");
+	dataset->putAndInsertString (DCM_PlanarConfiguration, "0");
+    } else {
+	dataset->putAndInsertString (DCM_SamplesPerPixel, "1");
+	dataset->putAndInsertString (DCM_PhotometricInterpretation, "MONOCHROME2");
+	dataset->putAndInsertString (DCM_PlanarConfiguration, "0");
+    }
     dataset->putAndInsertUint16 (DCM_Rows, (Uint16) height);
     dataset->putAndInsertUint16 (DCM_Columns, (Uint16) width);
     dataset->putAndInsertString (DCM_BitsAllocated, "8");
@@ -65,8 +74,13 @@ mondoshot_dicom_send (int height,
     DcmTime::getCurrentTime(s);
     dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, s);
 
-    dataset->putAndInsertUint8Array (DCM_PixelData, bytes, height * width * 3);
-    OFCondition status = fileformat.saveFile ("c:/tmp/mondoshot_export.dcm", EXS_LittleEndianExplicit);
+    if (rgb) {
+	dataset->putAndInsertUint8Array (DCM_PixelData, bytes, height * width * 3);
+    } else {
+	dataset->putAndInsertUint8Array (DCM_PixelData, bytes, height * width);
+    }
+
+    OFCondition status = fileformat.saveFile (filename, EXS_LittleEndianExplicit);
     if (status.bad()) {
 	// cerr << "Error: cannot write DICOM file (" << status.text() << ")" << endl;
 	return false;

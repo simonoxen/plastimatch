@@ -1,11 +1,4 @@
 
-Here is the method for transferring to sim pc from my pc.
-
-storescu -v -aet SHARP -aec SIM2-PC0 132.183.20.77 4006 list-of-dicom-files
-
-*****************************************************************
-
-
 1) i found that running dcm_0033_analyze.bat, the resulting contours
    can still be loaded in ge.  therefore private field stripping 
    will be used (until its limitations are evident).

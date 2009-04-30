@@ -11,7 +11,7 @@ enum
 {
     ID_MENU_QUIT = 1,
     ID_MENU_ABOUT,
-    ID_BUTTON_OK,
+    ID_BUTTON_SEND,
     ID_BUTTON_CANCEL,
     ID_LISTCTRL_PATIENTS,
     ID_TEXTCTRL_PATIENT_NAME,
@@ -102,7 +102,7 @@ public:
     virtual bool OnInit ();
     void OnMenuQuit (wxCommandEvent& event);
     void OnMenuAbout (wxCommandEvent& event);
-    void OnButtonOK (wxCommandEvent& event);
+    void OnButtonSend (wxCommandEvent& event);
     void OnButtonCancel (wxCommandEvent& event);
     void OnHotKey1 (wxKeyEvent& event);
     void OnHotKey2 (wxKeyEvent& event);

@@ -26,7 +26,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_ABOUT, MyFrame::OnMenuAbout)
     EVT_HOTKEY(0xB000, MyFrame::OnHotKey1)
     EVT_HOTKEY(0xB001, MyFrame::OnHotKey2)
-    EVT_BUTTON(ID_BUTTON_OK, MyFrame::OnButtonOK)
+    EVT_BUTTON(ID_BUTTON_SEND, MyFrame::OnButtonSend)
     EVT_BUTTON(ID_BUTTON_CANCEL, MyFrame::OnButtonCancel)
 END_EVENT_TABLE()
 
@@ -108,7 +108,7 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
 
     m_panel = new wxPanel (this, -1);
 
-    wxButton *ok = new wxButton (m_panel, ID_BUTTON_OK, wxT("Ok"));
+    wxButton *send = new wxButton (m_panel, ID_BUTTON_SEND, wxT("Send"));
     wxButton *cancel = new wxButton (m_panel, ID_BUTTON_CANCEL, wxT("Cancel"));
 
     wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
@@ -161,7 +161,7 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     //hbox2->Add (new wxTextCtrl (m_panel, wxID_ANY), 1);
     //hbox2->Layout ();
 
-    hbox3->Add (ok);
+    hbox3->Add (send);
     hbox3->AddSpacer (20);
     hbox3->Add (cancel);
 
@@ -185,7 +185,7 @@ void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
     this->Show (FALSE);
 }
 
-void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
+void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 {
     wxString patient_name, patient_id;
 
@@ -209,16 +209,48 @@ void MyFrame::OnButtonOK (wxCommandEvent& WXUNUSED(event))
 
     /* Bundle up and send dicom */
     wxImage image = this->m_bitmap.ConvertToImage ();
+    image = image.ConvertToGreyscale ();
+
+    wxString filename = wxString::Format ("%s [%s] [%s].dcm",
+	    (const char*) wxDateTime::Now().Format("%Y-%m-%d-%H%M%S"),
+	    (const char*) patient_id,
+	    (const char*) patient_name
+	    );
+    for (unsigned int i = 0; i < wxFileName::GetForbiddenChars().Len(); i++) {
+	filename.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
+    }
+    filename = "C:/tmp/" + filename;
+    filename = "c:/tmp/mondoshot.dcm";
+
+    /* wxImage is a pretty bad implementation of images.  There is no way 
+       to receive a grayscale pointer.  So we make our own.  We'll scramble
+       the RGB image in-place to get the grayscale image. */
     unsigned char* bytes = image.GetData ();
-    mondoshot_dicom_send (  image.GetHeight (), 
-			    image.GetWidth (),
-			    bytes, 
-			    (const char*) patient_id,
-			    (const char*) patient_name,
-			    "SHARP",
-			    "SHARP",
-			    "127.0.0.1",
-			    "5678");
+    for (int r = 0; r < image.GetHeight (); r++) {
+	for (int c = 0; c < image.GetWidth (); c++) {
+	    int p = r * image.GetWidth() + c;
+	    bytes[p] = bytes[3 * p];
+	}
+    }
+
+    mondoshot_dicom_create_file (
+	    image.GetHeight (), 
+	    image.GetWidth (),
+	    bytes, 
+	    0, 
+	    (const char*) patient_id,
+	    (const char*) patient_name,
+	    "SHARP",
+	    "SHARP",
+	    "127.0.0.1",
+	    "5678",
+	    (const char*) filename);
+
+    wxString cmd = wxString ("storescu -v ")
+	    + wxString ("-aet SHARP -aec IMPAC_DCM_SCP ")
+	    + wxString ("132.183.12.214 104 ")
+	    + filename;
+    ::wxExecute (cmd);
 
     /* Hide dialog box */
     this->Show (FALSE);
