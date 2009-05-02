@@ -26,19 +26,14 @@ ELSE(wxWidgets_FOUND)
   MESSAGE (STATUS "Looking for wxWidgets - not found.")
 ENDIF(wxWidgets_FOUND)
 
-
 ######################################################
 ##  Plastimatch configuration variables
 ###################################################### 	 
 SET(PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
-#SET(BUILD_EXTRACT_CONTOUR OFF CACHE BOOL "Build extract contour executable")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-#SET(BUILD_BSPLINE_CUDA ON CACHE BOOL "Build cuda version of B-splines")
-#SET(BUILD_FDK_CUDA ON CACHE BOOL "Build CUDA version of FDK")
-#SET(BUILD_PLASTIMATCH_SLICER OFF CACHE BOOL "Build Slicer front-end for Plastimatch") 	 
 SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -606,7 +601,6 @@ IF(CUDA_FOUND)
   ADD_EXECUTABLE(cuda_probe ${CUDA_PROBE_SRC} ${CUDA_LIBRARIES} 
   			    cuda_probe_wrap.cpp)
 ENDIF(CUDA_FOUND)
-
 
 # Require dcmtk
 IF(DCMTK_FOUND)
