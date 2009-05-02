@@ -12,6 +12,22 @@ INCLUDE(GPUIT.cmake)
 INCLUDE(FindwxWidgets)
 
 ######################################################
+##  Help the user out on unix
+###################################################### 	 
+IF(DCMTK_FOUND)
+  MESSAGE (STATUS "Looking for dcmtk - found.")
+ELSE(DCMTK_FOUND)
+  MESSAGE (STATUS "Looking for dcmtk - not found.")
+ENDIF(DCMTK_FOUND)
+
+IF(wxWidgets_FOUND)
+  MESSAGE (STATUS "Looking for wxWidgets - found.")
+ELSE(wxWidgets_FOUND)
+  MESSAGE (STATUS "Looking for wxWidgets - not found.")
+ENDIF(wxWidgets_FOUND)
+
+
+######################################################
 ##  Plastimatch configuration variables
 ###################################################### 	 
 SET(PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
@@ -35,7 +51,7 @@ SET(Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 IF(Slicer3_DIR)
   cmake_minimum_required(VERSION 2.6)
 
-  MESSAGE (STATUS "Using " ${Slicer3_DIR})
+  MESSAGE (STATUS "Looking for Slicer3 - found " ${Slicer3_DIR})
 
   find_package(Slicer3 REQUIRED)
   include(${Slicer3_USE_FILE})
@@ -66,7 +82,7 @@ IF(Slicer3_DIR)
   #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 
 ELSE(Slicer3_DIR)
-  MESSAGE (STATUS "NOT Using Slicer3")
+  MESSAGE (STATUS "Looking for Slicer3 - not found")
 ENDIF(Slicer3_DIR)
 
 ## Tell CMake to be quiet
