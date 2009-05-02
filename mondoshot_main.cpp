@@ -18,11 +18,13 @@ struct sqlite_populate_cbstruct {
     int m_list_index;
 };
 
-void sqlite_query_populate (MyFrame* frame);
-void sqlite_insert_record (wxString patient_id, wxString patient_name);
+void sqlite_patients_query (MyFrame* frame);
+void sqlite_patients_insert_record (wxString patient_id, wxString patient_name);
+static void sqlite_config_query (MyFrame* frame);
 
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_QUIT, MyFrame::OnMenuQuit)
+    EVT_MENU(ID_MENU_SETTINGS, MyFrame::OnMenuSettings)
     EVT_MENU(ID_MENU_ABOUT, MyFrame::OnMenuAbout)
     EVT_HOTKEY(0xB000, MyFrame::OnHotKey1)
     EVT_HOTKEY(0xB001, MyFrame::OnHotKey2)
@@ -81,6 +83,9 @@ popup (char* fmt, ...)
     va_end (argptr);
 }
 
+/* -----------------------------------------------------------------------
+   MyApp
+   ----------------------------------------------------------------------- */
 bool MyApp::OnInit()
 {
     /* Initialize JPEG library */
@@ -94,12 +99,17 @@ bool MyApp::OnInit()
     return TRUE;
 }
 
+/* -----------------------------------------------------------------------
+   MyFrame
+   ----------------------------------------------------------------------- */
 MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     : wxFrame((wxFrame *)NULL, -1, title, pos, size)
 {
     wxMenuBar *menuBar = new wxMenuBar;
     wxMenu *menuFile = new wxMenu;
 
+    menuFile->Append (ID_MENU_SETTINGS, wxT("&Settings..."));
+    menuFile->AppendSeparator ();
     menuFile->Append (ID_MENU_ABOUT, wxT("&About..."));
     menuFile->AppendSeparator ();
     menuFile->Append (ID_MENU_QUIT, wxT("E&xit"));
@@ -153,6 +163,13 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     this->m_listctrl_patients->SetColumnWidth (1, 150);
     this->m_listctrl_patients->SetColumnWidth (2, 150);
 
+    /* Initialize configuration settings */
+    this->config.local_aet = "MONDOSHOT";
+    this->config.remote_aet = "IMPAC_DCM_SCP";
+    this->config.remote_ip = "132.183.12.214";
+    this->config.remote_port = "104";
+    sqlite_config_query (this);
+
     /* Populate listbox */
     this->listctrl_patients_populate ();
 
@@ -174,6 +191,18 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     this->m_panel->SetSizer (vbox);
 }
 
+void MyFrame::OnMenuAbout (wxCommandEvent& WXUNUSED(event))
+{
+    wxMessageBox (wxT("Mondoshot Version " PLASTIMATCH_VERSION_STRING "   "),
+        wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
+}
+
+void MyFrame::OnMenuSettings (wxCommandEvent& WXUNUSED(event))
+{
+    wxMessageBox (wxT("Mondoshot Version " PLASTIMATCH_VERSION_STRING "   "),
+        wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
+}
+
 void MyFrame::OnMenuQuit (wxCommandEvent& WXUNUSED(event))
 {
     this->Close (TRUE);
@@ -187,6 +216,7 @@ void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 {
+    Config_settings *config = &this->config;
     wxString patient_name, patient_id;
 
     /* Save a copy */
@@ -207,6 +237,9 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	return;
     }
 
+    /* Hide dialog box */
+    this->Show (FALSE);
+
     /* Bundle up and send dicom */
     wxImage image = this->m_bitmap.ConvertToImage ();
     image = image.ConvertToGreyscale ();
@@ -220,7 +253,6 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	filename.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
     }
     filename = "C:/tmp/" + filename;
-    filename = "c:/tmp/mondoshot.dcm";
 
     /* wxImage is a pretty bad implementation of images.  There is no way 
        to receive a grayscale pointer.  So we make our own.  We'll scramble
@@ -233,6 +265,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	}
     }
 
+    /* This creates a backup file with the date and patient id. */
     mondoshot_dicom_create_file (
 	    image.GetHeight (), 
 	    image.GetWidth (),
@@ -240,32 +273,43 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	    0, 
 	    (const char*) patient_id,
 	    (const char*) patient_name,
-	    "SHARP",
-	    "SHARP",
-	    "127.0.0.1",
-	    "5678",
 	    (const char*) filename);
 
+#if defined (commentout)
+    /* Unfortunately, the storescu program chokes on the above filename. 
+	Call again with a more mundane filename.  Normally I would rename 
+	the file instead of creating two, but wxWidgets doesn't have an 
+	API call for renaming. */
+    filename = "c:/tmp/mondoshot.dcm";
+    mondoshot_dicom_create_file (
+	    image.GetHeight (), 
+	    image.GetWidth (),
+	    bytes, 
+	    0, 
+	    (const char*) patient_id,
+	    (const char*) patient_name,
+	    (const char*) filename);
+#endif
+
+    /* Send the file, using the short filename */
     wxString cmd = wxString ("storescu -v ")
-	    + wxString ("-aet SHARP -aec IMPAC_DCM_SCP ")
-	    + wxString ("132.183.12.214 104 ")
-	    + filename;
+	    + wxString ("-aet ") + config->local_aet + " "
+	    + wxString ("-aec ") + config->remote_aet + " "
+	    + config->remote_ip + " "
+	    + config->remote_port + " "
+	    + "\"" + filename + "\"";
+    //popup ("%s", cmd);
     ::wxExecute (cmd);
 
-    /* Hide dialog box */
-    this->Show (FALSE);
+    /* I would like to rename the file, but there is no wxwidgets call.
+	So, I will call twice, once with each name. */
+    filename = "c:/tmp/mondoshot.dcm";
 
     /* Insert patient into the database */
-    sqlite_insert_record (patient_id, patient_name);
+    sqlite_patients_insert_record (patient_id, patient_name);
 
     /* Refresh listbox */
     this->listctrl_patients_populate ();
-}
-
-void MyFrame::OnMenuAbout (wxCommandEvent& WXUNUSED(event))
-{
-    wxMessageBox (wxT("Mondoshot Version " PLASTIMATCH_VERSION_STRING "   "),
-        wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
 }
 
 bool MyFrame::OnInit ()
@@ -304,7 +348,7 @@ MyFrame::listctrl_patients_populate (void)
     // to speed up inserting we hide the control temporarily
     this->m_listctrl_patients->Hide ();
     this->m_listctrl_patients->DeleteAllItems ();
-    sqlite_query_populate (this);
+    sqlite_patients_query (this);
     if (this->m_listctrl_patients->GetItemCount() > 0) {
         this->m_listctrl_patients->SetItemState (0, wxLIST_STATE_SELECTED, wxLIST_STATE_SELECTED);
     }
@@ -312,6 +356,9 @@ MyFrame::listctrl_patients_populate (void)
     this->m_listctrl_patients->Show();
 }
 
+/* -----------------------------------------------------------------------
+   MyListCtrl
+   ----------------------------------------------------------------------- */
 void
 MyListCtrl::OnSelected (wxListEvent& event)
 {
@@ -341,8 +388,11 @@ MyListCtrl::OnSelected (wxListEvent& event)
     frame->m_textctrl_patient_name->SetValue (patient_name);
 }
 
+/* -----------------------------------------------------------------------
+   sqlite stuff
+   ----------------------------------------------------------------------- */
 void
-sqlite_insert_record (wxString patient_id, wxString patient_name)
+sqlite_patients_insert_record (wxString patient_id, wxString patient_name)
 {
     int rc;
     sqlite3 *db;
@@ -375,7 +425,7 @@ sqlite_insert_record (wxString patient_id, wxString patient_name)
 }
 
 int
-sqlite_query_populate_callback (void* data, int argc, char** argv, char** column_names)
+sqlite_patients_query_callback (void* data, int argc, char** argv, char** column_names)
 {
     int i;
     struct sqlite_populate_cbstruct *cbstruct = (struct sqlite_populate_cbstruct *) data;
@@ -424,7 +474,7 @@ sqlite_query_populate_callback (void* data, int argc, char** argv, char** column
 }
 
 void
-sqlite_query_populate (MyFrame* frame)
+sqlite_patients_query (MyFrame* frame)
 {
     int rc;
     sqlite3 *db;
@@ -452,7 +502,68 @@ sqlite_query_populate (MyFrame* frame)
 	"SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
 	"FROM patient_screenshots GROUP BY patient_id,patient_name "
 	"ORDER BY MAX(screenshot_timestamp) DESC;";
-    rc = sqlite3_exec (db, sql, sqlite_query_populate_callback, &cbstruct, &sqlite3_err);
+    rc = sqlite3_exec (db, sql, sqlite_patients_query_callback, &cbstruct, &sqlite3_err);
+    if (rc != SQLITE_OK) {
+	popup ("SQL error: %s\n", sqlite3_err);
+	sqlite3_free (sqlite3_err);
+    }
+
+    sqlite3_close (db);
+}
+
+int
+sqlite_config_query_callback (void* data, int argc, char** argv, char** column_names)
+{
+    int i;
+    MyFrame *frame = (MyFrame*) data;
+    Config_settings *config = &frame->config;
+
+    /* Check column_names */
+    for (i = 0; i < argc; i++) {
+	if (!strcmp (column_names[i], "local_aet")) {
+	    config->local_aet = wxString (argv[i]);
+	}
+	else if (!strcmp (column_names[i], "remote_aet")) {
+	    config->remote_aet = wxString (argv[i]);
+	}
+	else if (!strcmp (column_names[i], "remote_ip")) {
+	    config->remote_ip = wxString (argv[i]);
+	}
+	else if (!strcmp (column_names[i], "remote_port")) {
+	    config->remote_port = wxString (argv[i]);
+	}
+    }
+    return 0;
+}
+
+static void
+sqlite_config_query (MyFrame* frame)
+{
+    int rc;
+    sqlite3 *db;
+    char *sql;
+    char *sqlite3_err;
+
+    rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    if (rc) {
+	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
+	sqlite3_close (db);
+	exit (1);
+    }
+
+    sql = "CREATE TABLE IF NOT EXISTS config ( "
+	"local_aet TEXT, "
+	"remote_aet TEXT, "
+	"remote_ip TEXT, "
+	"remote_port TEXT);";
+    rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
+    if (rc != SQLITE_OK) {
+	popup ("SQL error: %s\n", sqlite3_err);
+	sqlite3_free (sqlite3_err);
+    }
+
+    sql = "SELECT * FROM config LIMIT 1;";
+    rc = sqlite3_exec (db, sql, sqlite_config_query_callback, frame, &sqlite3_err);
     if (rc != SQLITE_OK) {
 	popup ("SQL error: %s\n", sqlite3_err);
 	sqlite3_free (sqlite3_err);

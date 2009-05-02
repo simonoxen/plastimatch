@@ -21,10 +21,6 @@ mondoshot_dicom_create_file (
 		bool rgb,
 		const char *patient_id,
 		const char *patient_name,
-		const char *dicom_local_ae,
-		const char *dicom_remote_ae,
-		const char *dicom_remote_host,
-		const char *dicom_remote_port,
 		const char *filename)
 {
     char uid[100];

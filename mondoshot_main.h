@@ -10,6 +10,7 @@
 enum
 {
     ID_MENU_QUIT = 1,
+    ID_MENU_SETTINGS,
     ID_MENU_ABOUT,
     ID_BUTTON_SEND,
     ID_BUTTON_CANCEL,
@@ -18,13 +19,13 @@ enum
     ID_TEXTCTRL_PATIENT_ID
 };
 
-class MyApp: public wxApp
+class MyApp : public wxApp
 {
 public:
     virtual bool OnInit();
 };
 
-class MyListCtrl: public wxListCtrl
+class MyListCtrl : public wxListCtrl
 {
 public:
     MyListCtrl(wxWindow *parent,
@@ -67,10 +68,6 @@ public:
 
     void OnChar(wxKeyEvent& event);
 
-#if USE_CONTEXT_MENU
-    void OnContextMenu(wxContextMenuEvent& event);
-#endif
-
     void OnRightClick(wxMouseEvent& event);
 
 private:
@@ -93,7 +90,16 @@ private:
     DECLARE_EVENT_TABLE()
 };
 
-class MyFrame: public wxFrame
+class Config_settings
+{
+public:
+    wxString local_aet;
+    wxString remote_aet;
+    wxString remote_ip;
+    wxString remote_port;
+};
+
+class MyFrame : public wxFrame
 {
 public:
 
@@ -101,6 +107,7 @@ public:
 
     virtual bool OnInit ();
     void OnMenuQuit (wxCommandEvent& event);
+    void OnMenuSettings (wxCommandEvent& event);
     void OnMenuAbout (wxCommandEvent& event);
     void OnButtonSend (wxCommandEvent& event);
     void OnButtonCancel (wxCommandEvent& event);
@@ -113,6 +120,8 @@ public:
     wxTextCtrl *m_textctrl_patient_id;
     MyListCtrl *m_listctrl_patients;
     wxPanel *m_panel;
+
+    Config_settings config;
 
     DECLARE_EVENT_TABLE()
 };
