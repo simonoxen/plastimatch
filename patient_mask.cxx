@@ -14,9 +14,8 @@
 #include "itkBinaryErodeImageFilter.h"
 
 #include "itk_image.h"
+#include "plm_path.h"
 #include "getopt.h"
-
-
 
 /* Thresholds for finding patient & couch */
 const short T1 = -300;

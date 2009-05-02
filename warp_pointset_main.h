@@ -5,6 +5,7 @@
 #define _warp_pointset_main_h_
 
 #include <stdlib.h>
+#include "plm_path.h"
 #include "itk_image.h"
 
 class Warp_Pointset_Parms {

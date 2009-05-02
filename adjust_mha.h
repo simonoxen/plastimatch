@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
+#include "plm_path.h"
 #include "itk_image.h"
 
 class Adjust_Mha_Parms {

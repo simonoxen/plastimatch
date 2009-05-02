@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+#include "plm_path.h"
 #include "volume.h"
 #include "readmha.h"
 

@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include "itk_image.h"
+#include "plm_path.h"
 #include "synthetic_mha.h"
 
 class Synthetic_mha_main_parms {

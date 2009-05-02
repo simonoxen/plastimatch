@@ -10,6 +10,7 @@
 #include "itkInterpolateImagePointsFilter.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 #include "getopt.h"
+#include "plm_path.h"
 #include "itk_image.h"
 
 typedef unsigned short ushort;

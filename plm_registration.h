@@ -8,6 +8,7 @@
 #include "itkDemonsRegistrationFilter.h"
 #include "itkImageRegistrationMethod.h"
 #include "plm_config.h"
+#include "plm_path.h"
 #include "plm_image.h"
 
 /* Registration typedefs */

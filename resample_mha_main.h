@@ -5,6 +5,7 @@
 #define _resample_mha_main_h_
 
 #include <stdlib.h>
+#include "plm_path.h"
 #include "itk_image.h"
 
 

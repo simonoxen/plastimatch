@@ -11,15 +11,6 @@
 #include "itkOrientedImage.h"
 #endif
 #include "itkImageIOBase.h"
-#include "plm_config.h"
-
-#ifndef _MAX_PATH
-#ifdef FILENAME_MAX
-#define _MAX_PATH FILENAME_MAX
-#else
-#define _MAX_PATH 256
-#endif
-#endif
 
 /* We only deal with these kinds of images. */
 enum PlmImageType {
