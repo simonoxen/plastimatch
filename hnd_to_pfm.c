@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <stdio.h>
 
 #define ROWS 768
