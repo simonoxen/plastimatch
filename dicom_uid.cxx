@@ -7,9 +7,10 @@
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/ofstd/ofstream.h"
 
+#if defined (_WIN32)
 #include <windows.h>
 #include <wincrypt.h>
-
+#endif
 
 #if defined (_WIN32)
 static bool
@@ -48,7 +49,7 @@ gen_random (unsigned char* buf, unsigned long buf_len)
 #else
 
 static bool
-gen_random (char* buf, unsigned long buf_len)
+gen_random (unsigned char* buf, unsigned long buf_len)
 {
     return false;
 }
