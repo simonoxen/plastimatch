@@ -1,7 +1,6 @@
-/* =======================================================================*
-   Copyright (c) 2005-2006 Massachusetts General Hospital.
-   All rights reserved.
- * =======================================================================*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef _MEXUTILS_H
 #define _MEXUTILS_H
 

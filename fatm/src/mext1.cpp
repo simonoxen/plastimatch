@@ -1,7 +1,9 @@
-/*
- * Test routine for data exchange b/w multiple dll's & matlab
- */
-//#include <iostream>
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
+   Test routine for data exchange b/w multiple dll's & matlab
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include "mex.h"
 #include "scorewin.h"

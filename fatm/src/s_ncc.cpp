@@ -1,9 +1,9 @@
-/* =======================================================================*
-   Copyright (c) 2005-2006 Massachusetts General Hospital.
-   All rights reserved.
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
    s_ncc:  Naive implementation of (unweighted) normalized cross correlation
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #include <string.h>
 #include <math.h>
 #include "scorewin.h"

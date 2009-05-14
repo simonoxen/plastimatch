@@ -1,8 +1,7 @@
-/* =======================================================================*
-   Copyright (c) 2005-2006 Massachusetts General Hospital.
-   All rights reserved.
- * =======================================================================*/
-/* =======================================================================*
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
    There are two basic strategies for scoring the partial overlapped 
    area of a window.
 
@@ -15,7 +14,7 @@
 
    Normally we would clip the pattern window, but for decoupled compile
    and run that isn't appropriate.
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include "match.h"
 #include "shared.h"

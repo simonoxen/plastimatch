@@ -1,10 +1,10 @@
-/* =======================================================================*
-   Copyright (c) 2005-2007 Massachusetts General Hospital.
-   All rights reserved.
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
    Assume: columns (x) are fast-moving, rows (y) are slow moving
    Assume: square pixels
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include "image.h"
 #include "clip_pat.h"

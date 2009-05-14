@@ -1,7 +1,7 @@
-/* =======================================================================*
-   Copyright (c) 2005-2006 Massachusetts General Hospital.
-   All rights reserved.
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
   Options need to set like this:
 	fopt.command	    { 'compile', 'run', 'free' }
 	fopt.alg	    { 'wncc', 'ncc', 'fncc', 'fancc' }
@@ -85,7 +85,7 @@
     dsp(cc_sco,1);dsp(score_2,1);
     figure;hold on;plot(cc_sco(end,:));plot(score_2(end,:),'r');
 
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

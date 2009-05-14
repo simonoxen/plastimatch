@@ -1,11 +1,10 @@
-/*
- * MEXWNCC.CPP
- */
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include "mex.h"
 #include "scorewin.h"
 #include "s_wncc.h"
-//#include "gpyr.h"
 #include "mexutils.h"
 
 extern void _main();

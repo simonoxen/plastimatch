@@ -1,10 +1,10 @@
-/* =======================================================================*
-   Copyright (c) 2005-2007 Massachusetts General Hospital.
-   All rights reserved.
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
    s_fancc: Fast approximate (unweighted) normalized cross correlation
             using the linescan algorithm.
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

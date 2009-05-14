@@ -1,12 +1,14 @@
-/* MEXFANCC.CPP
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
   This function is called like this:
   score = mexfancc(A,B,awin,bwin,wthresh,sthresh)
 
   Or, like this:
   pat = mexfancc('compile',A,awin)
   score = mexfancc('run',pat,B,bwin,wthresh,sthresh)
-*/
+   ----------------------------------------------------------------------- */
 #include <math.h>
 #include "mex.h"
 #include "scorewin_2.h"
@@ -160,39 +162,6 @@ void mexFunction (
 
 #if 0
     mexPrintf("Hello world\n");
-#endif
-
-    /* Fill in the Image structs.  Note that TM assumes row major order,
-       so we gotta flip the rows and cols to get the right answer for 
-       row major.  TM's instructions are:
-       Image <GrayScale, float> image (width, height, array);
-    */
-#if defined (commentout)
-    if (check_bundled_pointer_for_matlab (prhs[0])) {
-	/* Input arguments are bundled GPyr's */
-	/* Argument #9 is therefore the level */
-	int level = (int) *((double *) mxGetPr(prhs[8]));
-	Gpyr *a_g = (Gpyr*) unbundle_pointer_for_matlab (prhs[0]);
-	Gpyr *aw_g = (Gpyr*) unbundle_pointer_for_matlab (prhs[1]);
-	Gpyr *b_g = (Gpyr*) unbundle_pointer_for_matlab (prhs[2]);
-	Gpyr *bw_g = (Gpyr*) unbundle_pointer_for_matlab (prhs[3]);
-	
-	/* Note: this isn't a copy b/c of the ref counting */
-	a = (*a_g)[level];
-	aw = (*aw_g)[level];
-	b = (*b_g)[level];
-	bw = (*bw_g)[level];
-    } else {
-	/* Input arguments are MATLAB images */
-	a = Image<GrayScale,double>(mxGetM(prhs[0]),mxGetN(prhs[0]),
-				    (double*) mxGetPr(prhs[0]));
-	aw = Image<GrayScale,double>(mxGetM(prhs[1]),mxGetN(prhs[1]),
-				     (double*) mxGetPr(prhs[1]));
-	b = Image<GrayScale,double>(mxGetM(prhs[2]),mxGetN(prhs[2]),
-				    (double*) mxGetPr(prhs[2]));
-	bw = Image<GrayScale,double>(mxGetM(prhs[3]),mxGetN(prhs[3]),
-				     (double*) mxGetPr(prhs[3]));
-    }
 #endif
 
 }

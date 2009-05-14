@@ -1,6 +1,9 @@
-/*
- * Test routine for data exchange b/w multiple dll's & matlab
- */
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
+   Test routine for data exchange b/w multiple dll's & matlab
+   ----------------------------------------------------------------------- */
 #include <iostream>
 #include <math.h>
 #include "mex.h"

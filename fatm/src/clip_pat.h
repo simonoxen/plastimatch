@@ -1,7 +1,6 @@
-/* =======================================================================*
-   Copyright (c) 2005-2007 Massachusetts General Hospital.
-   All rights reserved.
- * =======================================================================*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef CLIP_PAT_H
 #define CLIP_PAT_H
 

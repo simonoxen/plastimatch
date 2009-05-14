@@ -1,12 +1,12 @@
-/* =======================================================================*
-   Copyright (c) 2005-2006 Massachusetts General Hospital.
-   All rights reserved.
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
    Apparently timing things is not easy.  See these pages:
    http://www.virtualdub.org/blog/pivot/entry.php?id=106
    http://support.microsoft.com/kb/274323
    http://support.microsoft.com/kb/895980
- * =======================================================================*/
+   ----------------------------------------------------------------------- */
 #if defined _WIN32
 #include <windows.h>
 #endif
