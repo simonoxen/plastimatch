@@ -8,6 +8,7 @@ INCLUDE(FindOpenGL)
 ##INCLUDE(FindPantheios.cmake)
 INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
+INCLUDE(PLM_FindFFTW.cmake)
 INCLUDE(GPUIT.cmake)
 INCLUDE(FindwxWidgets)
 
@@ -199,6 +200,14 @@ SET(GPUIT_LIBRARY_DEPENDENCIES
   ${MY_MATH_LIB}
   )
 SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
+
+######################################################
+##  FFTW LIBRARY
+######################################################
+SET(HAVE_FFTW FALSE)
+IF(FFTW_FOUND)
+SET(HAVE_FFTW TRUE)
+ENDIF(FFTW_FOUND)
 
 ######################################################
 ##  BROOK LIBRARY
@@ -533,6 +542,12 @@ ENDIF(PANTHEIOS_FOUND)
 IF(wxWidgets_FOUND)
   INCLUDE_DIRECTORIES(BEFORE ${wxWidgets_INCLUDE_DIRS})
 ENDIF(wxWidgets_FOUND)
+
+
+######################################################
+##  FATM LIBRARY
+######################################################
+ADD_SUBDIRECTORY(fatm/src)
 
 
 ######################################################

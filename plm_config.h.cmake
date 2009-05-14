@@ -11,6 +11,7 @@
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine HAVE_PANTHEIOS 1
+#cmakedefine HAVE_FFTW 1
 
 #cmakedefine BUILD_SHARED_LIBS 1
 #cmakedefine OPENMP_FOUND 1
