@@ -593,7 +593,7 @@ The msinttypes package (msinttypes/*)
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Dicom processing <nothing added from dcmtk yet...>
+Dicom processing (mondoshot_relay_main.cpp)
 
   Copyright (C) 2001-2008, OFFIS
 

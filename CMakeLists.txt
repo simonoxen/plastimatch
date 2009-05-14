@@ -429,6 +429,9 @@ SET(MONDOSHOT_SRC
 	sqlite3.h
 	sqlite3ext.h
 	)
+SET(MONDOSHOT_RELAY_SRC
+	mondoshot_relay_main.cpp
+	)
 SET(PATIENT_MASK_SRC
 	patient_mask.cxx
 	)
@@ -674,6 +677,9 @@ ENDIF(ITK_FOUND)
 IF(wxWidgets_FOUND AND DCMTK_FOUND)
   ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF(DCMTK_FOUND)
+  ADD_EXECUTABLE(mondoshot_relay ${MONDOSHOT_RELAY_SRC})
+ENDIF(DCMTK_FOUND)
 
 #ADD_EXECUTABLE(ctest_test ctest_test.c)
 
@@ -747,6 +753,9 @@ ENDIF(ITK_FOUND)
 IF(wxWidgets_FOUND AND DCMTK_FOUND)
   TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF(DCMTK_FOUND)
+  TARGET_LINK_LIBRARIES(mondoshot_relay ${DCMTK_LIBRARIES})
+ENDIF(DCMTK_FOUND)
 
 ######################################################
 ##  INSTALL
@@ -820,6 +829,9 @@ ENDIF(ITK_FOUND)
 IF(wxWidgets_FOUND AND DCMTK_FOUND)
   INSTALL(TARGETS mondoshot DESTINATION bin)
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF(DCMTK_FOUND)
+  INSTALL(TARGETS mondoshot_relay DESTINATION bin)
+ENDIF(DCMTK_FOUND)
 
 ######################################################
 ##  Test executables
