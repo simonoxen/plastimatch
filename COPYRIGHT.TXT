@@ -1,6 +1,6 @@
 Plastimatch
 
-  Copyright (c) 2004-2008 Massachusetts General Hospital
+  Copyright (c) 2004-2009 Massachusetts General Hospital
   All rights reserved
 
   Contributors:
@@ -627,3 +627,17 @@ Sqlite3 (sqlite3.c, sqlite3.h, sqlite3ext.h)
      May you do good and not evil.
      May you find forgiveness for yourself and forgive others.
      May you share freely, never taking more than you give.
+
+------------------------------------------------------------------------
+Nicolas Wirth's kth_smallest algorithm (fatm/src/wirth.cpp)
+
+  Algorithm from N. Wirth's book, implementation by N. Devillard.
+  This code in public domain.
+
+------------------------------------------------------------------------
+Quickselect (fatm/src/quickselect.cpp)
+
+  This Quickselect routine is based on the algorithm described in
+  "Numerical recipes in C", Second Edition,
+  Cambridge University Press, 1992, Section 8.5, ISBN 0-521-43108-5
+  This code by Nicolas Devillard - 1998. Public domain.
