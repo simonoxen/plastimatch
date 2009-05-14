@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "mex.h"
+//#include "mex.h"
 #include "fatm.h"
 #include "integral_img.h"
 #include "scorewin.h"
