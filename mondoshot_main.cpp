@@ -8,6 +8,7 @@
 #include <wx/wx.h>
 #include <wx/window.h>
 #include <wx/filename.h>
+#include <wx/config.h>
 #include "mondoshot_main.h"
 #include "sqlite3.h"
 #include "plm_version.h"
@@ -20,8 +21,17 @@ struct sqlite_populate_cbstruct {
 
 void sqlite_patients_query (MyFrame* frame);
 void sqlite_patients_insert_record (wxString patient_id, wxString patient_name);
-static void sqlite_config_query (MyFrame* frame);
+void config_initialize ();
+void config_save (void);
 
+/* -----------------------------------------------------------------------
+   Global variables
+   ----------------------------------------------------------------------- */
+Config_settings config;
+
+/* -----------------------------------------------------------------------
+   Event tables
+   ----------------------------------------------------------------------- */
 BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_QUIT, MyFrame::OnMenuQuit)
     EVT_MENU(ID_MENU_SETTINGS, MyFrame::OnMenuSettings)
@@ -67,6 +77,11 @@ BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
 #endif
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(Config_dialog, wxDialog)
+    EVT_BUTTON(wxID_ANY, Config_dialog::OnButton)
+END_EVENT_TABLE()
+
+
 IMPLEMENT_APP(MyApp)
 
 void
@@ -91,8 +106,11 @@ bool MyApp::OnInit()
     /* Initialize JPEG library */
     ::wxInitAllImageHandlers ();
 
+    /* Initialize configuration settings */
+    config_initialize ();
+
     /* Create and initialize main window */
-    MyFrame* frame = new MyFrame( wxT("Mondoshot"), wxPoint(-1,-1), wxSize(600,500) );
+    MyFrame* frame = new MyFrame( wxT("Mondoshot"), wxPoint(-1,-1), wxSize(600,500));
     frame->OnInit ();
     SetTopWindow (frame);
 
@@ -163,13 +181,6 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     this->m_listctrl_patients->SetColumnWidth (1, 150);
     this->m_listctrl_patients->SetColumnWidth (2, 150);
 
-    /* Initialize configuration settings */
-    this->config.local_aet = "MONDOSHOT";
-    this->config.remote_aet = "IMPAC_DCM_SCP";
-    this->config.remote_ip = "132.183.12.214";
-    this->config.remote_port = "104";
-    sqlite_config_query (this);
-
     /* Populate listbox */
     this->listctrl_patients_populate ();
 
@@ -199,8 +210,8 @@ void MyFrame::OnMenuAbout (wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnMenuSettings (wxCommandEvent& WXUNUSED(event))
 {
-    wxMessageBox (wxT("Mondoshot Version " PLASTIMATCH_VERSION_STRING "   "),
-        wxT("MONDOSHOT"), wxOK | wxICON_INFORMATION, this);
+    Config_dialog dlg (this);
+    dlg.ShowModal ();
 }
 
 void MyFrame::OnMenuQuit (wxCommandEvent& WXUNUSED(event))
@@ -216,12 +227,15 @@ void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 {
-    Config_settings *config = &this->config;
     wxString patient_name, patient_id;
 
     /* Save a copy */
-    this->m_bitmap.SaveFile (wxT("C:/tmp/tmp.jpg"), wxBITMAP_TYPE_JPEG);
-    this->m_bitmap.SaveFile (wxT("C:/tmp/tmp.png"), wxBITMAP_TYPE_PNG);
+    this->m_bitmap.SaveFile (
+	::config.data_directory + wxString ("/tmp.jpg"),
+	wxBITMAP_TYPE_JPEG);
+    this->m_bitmap.SaveFile (
+	::config.data_directory + wxString ("/tmp.png"),
+	wxBITMAP_TYPE_PNG);
 
     /* Validate input fields */
     patient_name = this->m_textctrl_patient_name->GetValue ();
@@ -252,7 +266,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
     for (unsigned int i = 0; i < wxFileName::GetForbiddenChars().Len(); i++) {
 	filename.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
     }
-    filename = "C:/tmp/" + filename;
+    filename = ::config.data_directory + wxString ("/") + filename;
 
     /* wxImage is a pretty bad implementation of images.  There is no way 
        to receive a grayscale pointer.  So we make our own.  We'll scramble
@@ -293,17 +307,18 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 
     /* Send the file, using the short filename */
     wxString cmd = wxString ("storescu -v ")
-	    + wxString ("-aet ") + config->local_aet + " "
-	    + wxString ("-aec ") + config->remote_aet + " "
-	    + config->remote_ip + " "
-	    + config->remote_port + " "
-	    + "\"" + filename + "\"";
+	+ wxString ("-aet ") + ::config.local_aet + " "
+	+ wxString ("-aec ") + ::config.remote_aet + " "
+	+ ::config.remote_ip + " "
+	+ ::config.remote_port + " "
+	+ "\"" + filename + "\"";
     //popup ("%s", cmd);
     ::wxExecute (cmd);
 
     /* I would like to rename the file, but there is no wxwidgets call.
 	So, I will call twice, once with each name. */
-    filename = "c:/tmp/mondoshot.dcm";
+    //filename = "c:/tmp/mondoshot.dcm";
+    filename = ::config.data_directory + wxString ("/mondoshot.dcm");
 
     /* Insert patient into the database */
     sqlite_patients_insert_record (patient_id, patient_name);
@@ -389,6 +404,114 @@ MyListCtrl::OnSelected (wxListEvent& event)
 }
 
 /* -----------------------------------------------------------------------
+   Config_dialog
+   ----------------------------------------------------------------------- */
+Config_dialog::Config_dialog (wxWindow *parent)
+             : wxDialog(parent, wxID_ANY, wxString(_T("Mondoshot Configuration")))
+{
+    wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
+    wxBoxSizer *button_sizer = new wxBoxSizer(wxHORIZONTAL);
+    wxFlexGridSizer *edit_sizer = new wxFlexGridSizer (5, 2, 9, 25);
+
+    /* Edit fields at top */
+    wxStaticText *label_remote_ip =  new wxStaticText (this, wxID_ANY, wxT("Dicom Remote IP"));
+    wxStaticText *label_remote_port =  new wxStaticText (this, wxID_ANY, wxT("Dicom Remote Port"));
+    wxStaticText *label_remote_aet =  new wxStaticText (this, wxID_ANY, wxT("Dicom Remote AET"));
+    wxStaticText *label_local_aet =  new wxStaticText (this, wxID_ANY, wxT("Dicom Local AET"));
+    wxStaticText *label_data_directory =  new wxStaticText (this, wxID_ANY, wxT("Local data directory"));
+    this->m_textctrl_remote_ip = new wxTextCtrl (this, wxID_ANY, _T(""));
+    this->m_textctrl_remote_port = new wxTextCtrl (this, wxID_ANY);
+    this->m_textctrl_remote_aet = new wxTextCtrl (this, wxID_ANY);
+    this->m_textctrl_local_aet = new wxTextCtrl (this, wxID_ANY);
+    this->m_textctrl_data_directory = new wxTextCtrl (this, wxID_ANY, _T(""), wxDefaultPosition, wxSize(200, wxDefaultCoord));
+    edit_sizer->Add (label_remote_ip);
+    edit_sizer->Add (m_textctrl_remote_ip, 1, wxEXPAND);
+    edit_sizer->Add (label_remote_port);
+    edit_sizer->Add (m_textctrl_remote_port, 1, wxEXPAND);
+    edit_sizer->Add (label_remote_aet);
+    edit_sizer->Add (m_textctrl_remote_aet, 1, wxEXPAND);
+    edit_sizer->Add (label_local_aet);
+    edit_sizer->Add (m_textctrl_local_aet, 1, wxEXPAND);
+    edit_sizer->Add (label_data_directory);
+    edit_sizer->Add (m_textctrl_data_directory, 1, wxEXPAND);
+    edit_sizer->AddGrowableCol (1, 1);
+    edit_sizer->Layout ();
+
+    /* Buttons at bottom */
+    m_button_save = new wxButton (this, wxID_ANY, _T("&Save"));
+    m_button_cancel = new wxButton (this, wxID_CANCEL, _T("&Cancel"));
+    button_sizer->Add (m_button_save, 0, wxALIGN_CENTER | wxALL, 5);
+    button_sizer->Add (m_button_cancel, 0, wxALIGN_CENTER | wxALL, 5);
+
+    /* Set values */
+    m_textctrl_remote_ip->SetValue (::config.remote_ip);
+    m_textctrl_remote_port->SetValue (::config.remote_port);
+    m_textctrl_remote_aet->SetValue (::config.remote_aet);
+    m_textctrl_local_aet->SetValue (::config.local_aet);
+    m_textctrl_data_directory->SetValue (::config.data_directory);
+
+    /* Sizer stuff */
+    vbox->Add (edit_sizer, 0, wxALL | wxEXPAND, 15);
+    vbox->Add (button_sizer, 0, wxALIGN_RIGHT | wxRIGHT | wxBOTTOM, 10);
+    this->SetSizer (vbox);
+    vbox->SetSizeHints (this);
+    vbox->Fit (this);
+
+    m_button_save->SetFocus();
+    m_button_save->SetDefault();
+}
+
+void Config_dialog::OnButton(wxCommandEvent& event)
+{
+    if (event.GetEventObject() == m_button_save) {
+
+	::config.remote_ip = m_textctrl_remote_ip->GetValue ();
+	::config.remote_port = m_textctrl_remote_port->GetValue ();
+	::config.remote_aet = m_textctrl_remote_aet->GetValue ();
+	::config.local_aet = m_textctrl_local_aet->GetValue ();
+	::config.data_directory = m_textctrl_data_directory->GetValue ();
+	config_save ();
+
+	wxMessageBox(_T("Configuration saved!"));
+
+	this->EndModal (0);
+
+    } else {
+        event.Skip();
+    }
+}
+
+/* -----------------------------------------------------------------------
+   configuration data
+   ----------------------------------------------------------------------- */
+void
+config_save (void)
+{
+    /* Load from config file */
+    wxConfig *wxconfig = new wxConfig("Mondoshot");
+    wxconfig->Write ("remote_ip", ::config.remote_ip);
+    wxconfig->Write ("remote_port", ::config.remote_port);
+    wxconfig->Write ("remote_aet", ::config.remote_aet);
+    wxconfig->Write ("local_aet", ::config.local_aet);
+    wxconfig->Write ("data_directory", ::config.data_directory);
+}
+
+void
+config_initialize (void)
+{
+    /* Load from config file */
+    wxConfig *wxconfig = new wxConfig("Mondoshot");
+    wxconfig->Read ("remote_ip", &::config.remote_ip, wxT("132.183.1.1"));
+    wxconfig->Read ("remote_port", &::config.remote_port, wxT("104"));
+    wxconfig->Read ("remote_aet", &::config.remote_aet, wxT("IMPAC_DCM_SCP"));
+    wxconfig->Read ("local_aet", &::config.local_aet, wxT("MONDOSHOT"));
+    wxconfig->Read ("data_directory", &::config.data_directory, wxT("C:/tmp"));
+
+    /* Save settings */
+    config_save ();
+}
+
+/* -----------------------------------------------------------------------
    sqlite stuff
    ----------------------------------------------------------------------- */
 void
@@ -397,13 +520,16 @@ sqlite_patients_insert_record (wxString patient_id, wxString patient_name)
     int rc;
     sqlite3 *db;
     wxString wx_sql;
+    wxString filename;
     const char *sql;
     char *sqlite3_err;
 
     /* Patient names may have apostrophes.  Escape these. */
     patient_name.Replace ("'", "''", true);
 
-    rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    filename = ::config.data_directory + wxString ("/mondoshot.sqlite");
+    //rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    rc = sqlite3_open ((const char*) filename, &db);
     if (rc) {
 	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
 	sqlite3_close (db);
@@ -480,9 +606,12 @@ sqlite_patients_query (MyFrame* frame)
     sqlite3 *db;
     char *sql;
     char *sqlite3_err;
+    wxString filename;
     struct sqlite_populate_cbstruct cbstruct;
 
-    rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    filename = ::config.data_directory + wxString ("/mondoshot.sqlite");
+    //rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
+    rc = sqlite3_open ((const char*) filename, &db);
     if (rc) {
 	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
 	sqlite3_close (db);
@@ -511,6 +640,7 @@ sqlite_patients_query (MyFrame* frame)
     sqlite3_close (db);
 }
 
+#if defined (commentout)
 int
 sqlite_config_query_callback (void* data, int argc, char** argv, char** column_names)
 {
@@ -571,3 +701,4 @@ sqlite_config_query (MyFrame* frame)
 
     sqlite3_close (db);
 }
+#endif

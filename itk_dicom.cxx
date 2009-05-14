@@ -40,8 +40,9 @@ load_dicom_dir_rdr(T rdr, char *dicom_dir)
     typedef itk::GDCMSeriesFileNames NamesGeneratorType;
     NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
     nameGenerator->SetUseSeriesDetails (true);
+    //nameGenerator->SetUseSeriesDetails (false);
     /* GCS: The following is optional.  Do we need it? */
-    //    nameGenerator->AddSeriesRestriction("0008|0021" );
+    // nameGenerator->AddSeriesRestriction("0008|0021" );
     nameGenerator->SetDirectory (dicom_dir);
 
     try {
@@ -72,6 +73,17 @@ load_dicom_dir_rdr(T rdr, char *dicom_dir)
 	typedef std::vector< std::string >   FileNamesContainer;
 	FileNamesContainer fileNames;
 	fileNames = nameGenerator->GetFileNames( seriesIdentifier );
+
+#if defined (commentout)
+	/* Print out the file names */
+	FileNamesContainer::const_iterator fn_it = fileNames.begin();
+	printf ("File names are:\n");
+	while (fn_it != fileNames.end()) {
+	    printf ("  %s\n", fn_it->c_str());
+	    fn_it ++;
+	}
+#endif
+
 	rdr->SetFileNames( fileNames );
 	try {
 	    rdr->Update();

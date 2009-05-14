@@ -19,7 +19,7 @@
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
-void init_itk_bsp_default (Xform *xf);
+static void init_itk_bsp_default (Xform *xf);
 static void
 itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::OriginType bsp_origin,
@@ -500,28 +500,28 @@ xform_transform_point (FloatPointType* point_out, Xform* xf_in, FloatPointType p
 /* -----------------------------------------------------------------------
    Defaults
    ----------------------------------------------------------------------- */
-void
-init_translation_default (Xform *xf_out, Xform* xf_in)
+static void
+init_translation_default (Xform *xf_out)
 {
     TranslationTransformType::Pointer trn = TranslationTransformType::New();
     xf_out->set_trn (trn);
 }
 
-void
-init_versor_default (Xform *xf_out, Xform* xf_in)
+static void
+init_versor_default (Xform *xf_out)
 {
     VersorTransformType::Pointer vrs = VersorTransformType::New();
     xf_out->set_vrs (vrs);
 }
 
-void
-init_affine_default (Xform *xf_out, Xform* xf_in)
+static void
+init_affine_default (Xform *xf_out)
 {
     AffineTransformType::Pointer aff = AffineTransformType::New();
     xf_out->set_aff (aff);
 }
 
-void
+static void
 init_itk_bsp_default (Xform *xf)
 {
     BsplineTransformType::Pointer bsp = BsplineTransformType::New();
@@ -529,19 +529,26 @@ init_itk_bsp_default (Xform *xf)
 }
 
 /* -----------------------------------------------------------------------
-   Conversion to itk_aff
+   Conversions for trn, vrs, aff
    ----------------------------------------------------------------------- */
+void
+xform_trn_to_vrs (Xform *xf_out, Xform* xf_in)
+{
+    init_versor_default (xf_out);
+    xf_out->get_vrs()->SetOffset(xf_in->get_trn()->GetOffset());
+}
+
 void
 xform_trn_to_aff (Xform *xf_out, Xform* xf_in)
 {
-    init_affine_default (xf_out, xf_in);
+    init_affine_default (xf_out);
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
 }
 
 void
 xform_vrs_to_aff (Xform *xf_out, Xform* xf_in)
 {
-    init_affine_default (xf_out, xf_in);
+    init_affine_default (xf_out);
     xf_out->get_aff()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
     xf_out->get_aff()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
@@ -1351,7 +1358,7 @@ xform_to_trn (Xform *xf_out,
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_translation_default (xf_out, xf_in);
+	init_translation_default (xf_out);
 	break;
     case XFORM_ITK_TRANSLATION:
 	*xf_out = *xf_in;
@@ -1380,10 +1387,10 @@ xform_to_vrs (Xform *xf_out,
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_versor_default (xf_out, xf_in);
+	init_versor_default (xf_out);
 	break;
     case XFORM_ITK_TRANSLATION:
-	print_and_exit ("Sorry, couldn't convert to vrs\n");
+	xform_trn_to_vrs (xf_out, xf_in);
 	break;
     case XFORM_ITK_VERSOR:
 	*xf_out = *xf_in;
@@ -1411,7 +1418,7 @@ xform_to_aff (Xform *xf_out,
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
-	init_affine_default (xf_out, xf_in);
+	init_affine_default (xf_out);
 	break;
     case XFORM_ITK_TRANSLATION:
 	xform_trn_to_aff (xf_out, xf_in);

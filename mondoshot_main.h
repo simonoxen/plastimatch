@@ -97,6 +97,7 @@ public:
     wxString remote_aet;
     wxString remote_ip;
     wxString remote_port;
+    wxString data_directory;
 };
 
 class MyFrame : public wxFrame
@@ -121,9 +122,28 @@ public:
     MyListCtrl *m_listctrl_patients;
     wxPanel *m_panel;
 
-    Config_settings config;
+    DECLARE_EVENT_TABLE()
+};
+
+class Config_dialog : public wxDialog
+{
+public:
+    Config_dialog (wxWindow *parent);
+
+    void OnButton (wxCommandEvent& event);
+
+    wxTextCtrl *m_textctrl_data_directory;
+    wxTextCtrl *m_textctrl_remote_ip;
+    wxTextCtrl *m_textctrl_remote_port;
+    wxTextCtrl *m_textctrl_remote_aet;
+    wxTextCtrl *m_textctrl_local_aet;
+
+private:
+    wxButton *m_button_save;
+    wxButton *m_button_cancel;
 
     DECLARE_EVENT_TABLE()
 };
+
 
 #endif /* __mondoshot_main_h__ */
