@@ -678,7 +678,7 @@ IF(wxWidgets_FOUND AND DCMTK_FOUND)
   ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
-  ADD_EXECUTABLE(mondoshot_relay ${MONDOSHOT_RELAY_SRC})
+  #ADD_EXECUTABLE(mondoshot_relay ${MONDOSHOT_RELAY_SRC})
 ENDIF(DCMTK_FOUND)
 
 #ADD_EXECUTABLE(ctest_test ctest_test.c)
@@ -754,7 +754,7 @@ IF(wxWidgets_FOUND AND DCMTK_FOUND)
   TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
-  TARGET_LINK_LIBRARIES(mondoshot_relay ${DCMTK_LIBRARIES})
+  #TARGET_LINK_LIBRARIES(mondoshot_relay ${DCMTK_LIBRARIES})
 ENDIF(DCMTK_FOUND)
 
 ######################################################
@@ -830,7 +830,7 @@ IF(wxWidgets_FOUND AND DCMTK_FOUND)
   INSTALL(TARGETS mondoshot DESTINATION bin)
 ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
-  INSTALL(TARGETS mondoshot_relay DESTINATION bin)
+  #INSTALL(TARGETS mondoshot_relay DESTINATION bin)
 ENDIF(DCMTK_FOUND)
 
 ######################################################
