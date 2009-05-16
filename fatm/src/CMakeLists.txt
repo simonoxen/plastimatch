@@ -3,6 +3,8 @@ PROJECT(fatm)
 ## --- It would be nice, but this doesn't work with UNIX MAKEFILES
 ## INCLUDE(FindMatlab)
 
+SET (PLM_BUILD_MEXFATM 0)
+
 ######################################################
 ##  RULES FOR BUILDING FATM
 ######################################################
