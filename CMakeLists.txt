@@ -354,6 +354,9 @@ SET(CONTOUR_STATISTICS_SRC
 	closest_point.cxx 
 	read_obj.cxx
 	)
+SET(CMS_TO_CXT_SRC
+	cms_to_cxt.cxx
+	)
 SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
 	cuda_probe.cu
@@ -645,6 +648,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
   ADD_EXECUTABLE(adjust_mha ${ADJUST_MHA_SRC})
+  ADD_EXECUTABLE(cms_to_cxt ${CMS_TO_CXT_SRC})
   ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
   ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
@@ -723,6 +727,7 @@ ENDIF(DCMTK_FOUND)
 # Require itk
 IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(cms_to_cxt ${ITK_LIBRARIES})
   TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
@@ -784,6 +789,7 @@ ENDIF(DCMTK_FOUND)
 IF(ITK_FOUND)
   INSTALL(TARGETS adjust_mha DESTINATION bin)
   INSTALL(TARGETS analyze_to_mha DESTINATION bin)
+  INSTALL(TARGETS cms_to_cxt DESTINATION bin)
   INSTALL(TARGETS contour_statistics DESTINATION bin)
   INSTALL(TARGETS cxt_to_mha DESTINATION bin)
   INSTALL(TARGETS dicom_to_mha DESTINATION bin)
