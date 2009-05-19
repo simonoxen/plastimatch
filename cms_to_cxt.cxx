@@ -27,14 +27,18 @@ do_cms_to_cxt (char *input_dir, char *output_fn)
 	exit (-1);
     }
 
-    /* Get file names matching pattern -- they won't be sorted properly though */
-    name_generator->SetRegularExpression ("T\\.([-0-9]*)\\.WC");
+    /* Get file names matching pattern, they won't be sorted properly though */
+    name_generator->SetRegularExpression ("T\\.([-\\.0-9]*)\\.WC");
     name_generator->SetSubMatch (0);
     name_generator->SetDirectory (input_dir);
     std::vector<std::string> input_files;
     input_files = name_generator->GetFileNames ();
 
-    
+    std::vector<std::string>::iterator it = input_files.begin();
+    while (it != input_files.end()) {
+	printf ("File: %s\n", (*it).c_str());
+	++it;
+    }
 }
 
 int 
