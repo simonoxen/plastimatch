@@ -364,6 +364,7 @@ SET(CUDA_PROBE_SRC
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
+	readcxt.c readcxt.h
 	render_polyline.cxx
 	render_polyline.h
 	)
