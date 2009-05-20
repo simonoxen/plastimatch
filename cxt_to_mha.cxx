@@ -108,7 +108,7 @@ main (int argc, char* argv[])
     memset (curr_structure, 0, sizeof(STRUCTURE));
     curr_structure->num_contours = 0;
 
-    read_cxt (structures, parms->cxt_fn);
+    cxt_read (structures, parms->cxt_fn);
 
     dim[0] = structures->dim[0];
     dim[1] = structures->dim[1];

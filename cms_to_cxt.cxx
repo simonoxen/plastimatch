@@ -13,6 +13,9 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
+#include "plm_config.h"
+#include "readcxt.h"
+
 void
 print_usage (void)
 {
@@ -97,21 +100,99 @@ get_file_names (std::vector<std::pair<std::string,std::string> > *file_names,
 }
 
 void
+add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc)
+{
+    FILE *fp;
+    char buf[1024];
+
+    fp = fopen (filename, "r");
+    if (!fp) {
+	printf ("Error opening file %s for read\n", filename);
+	exit (-1);
+    }
+
+    /* Skip first five lines */
+    fgets (buf, 1024, fp);
+    fgets (buf, 1024, fp);
+    fgets (buf, 1024, fp);
+    fgets (buf, 1024, fp);
+    fgets (buf, 1024, fp);
+
+    while (1) {
+	int rc;
+	int structure_number, num_points;
+	int remaining_points;
+
+	/* Get num points */
+	fgets (buf, 1024, fp);
+	rc = sscanf (buf, "%d", &num_points);
+	if (rc != 1) {
+	    printf ("Error parsing file %s (num_points)\n", filename);
+	    exit (-1);
+	}
+
+	/* Get structure number */
+	fgets (buf, 1024, fp);
+	rc = sscanf (buf, "%d", &structure_number);
+	if (rc != 1) {
+	    printf ("Error parsing file %s (structure_number)\n", filename);
+	    exit (-1);
+	}
+
+	if (num_points == 0) {
+	    break;
+	}
+
+	remaining_points = num_points;
+	while (remaining_points > 0) {
+	    int p, line_points, idx;
+
+	    fgets (buf, 1024, fp);
+
+	    if (remaining_points > 5) {
+		line_points = 5;
+	    } else {
+		line_points = remaining_points;
+	    }
+	    idx = 0;
+
+	    for (p = 0; p < line_points; p++) {
+		float x, y;
+		int rc, this_idx;
+
+		rc = sscanf (&buf[idx], "%f, %f,%n", &x, &y, &this_idx);
+		if (rc != 2) {
+		    printf ("Error parsing file %s (points) %s\n", filename, &buf[idx]);
+		    exit (-1);
+		}
+		idx += this_idx;
+	    }
+	    remaining_points -= line_points;
+	}
+    }
+
+    fclose (fp);
+}
+
+void
 do_cms_to_cxt (char *input_dir, char *output_fn)
 {
-    const char* filename_re = "T\\.([-\\.0-9]*)\\.WC";
+    STRUCTURE_List structures;
+    const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
 
     /* Get the list of filenames */
     std::vector<std::pair<std::string,std::string> > file_names;
     get_file_names (&file_names, input_dir, filename_re);
 
     /* Iterate through filenames, adding data to CXT */
+    cxt_initialize (&structures);
     std::vector<std::pair<std::string,std::string> >::iterator it;
     it = file_names.begin();
     while (it != file_names.end()) {
-	printf ("File: %s, Loc: %s\n", 
-		(*it).first.c_str(),
-		(*it).second.c_str());
+	const char *filename = (*it).first.c_str();
+	float z_loc = atof ((*it).second.c_str());
+	printf ("File: %s, Loc: %f\n", filename, z_loc);
+	add_cms_structure (&structures, filename, z_loc);
 	++it;
     }
 }

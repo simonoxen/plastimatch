@@ -37,9 +37,11 @@ extern "C" {
 #endif
 
 void
-read_cxt (STRUCTURE_List* structures, const char* cxt_fn);
+cxt_initialize (STRUCTURE_List* structures);
 void
-write_cxt (STRUCTURE_List* structures, const char* cxt_fn);
+cxt_read (STRUCTURE_List* structures, const char* cxt_fn);
+void
+cxt_write (STRUCTURE_List* structures, const char* cxt_fn);
 
 #if defined __cplusplus
 }

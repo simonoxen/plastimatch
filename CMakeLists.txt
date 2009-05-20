@@ -333,6 +333,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	plm_registration.h 
 	plm_version.h 
 	print_and_exit.cxx print_and_exit.h 
+	readcxt.cxx readcxt.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
@@ -364,7 +365,6 @@ SET(CUDA_PROBE_SRC
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
-	readcxt.c readcxt.h
 	render_polyline.cxx
 	render_polyline.h
 	)
@@ -728,7 +728,7 @@ ENDIF(DCMTK_FOUND)
 # Require itk
 IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(cms_to_cxt ${ITK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(cms_to_cxt ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})

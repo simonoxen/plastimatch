@@ -4,10 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "plm_config.h"
 #include "readcxt.h"
 
 void
-write_cxt (STRUCTURE_List* structures, const char* cxt_fn)
+cxt_initialize (STRUCTURE_List* structures)
+{
+    memset (structures, 0, sizeof (STRUCTURE_List*));
+}
+
+void
+cxt_write (STRUCTURE_List* structures, const char* cxt_fn)
 {
     FILE *fp;
 
@@ -23,7 +30,7 @@ write_cxt (STRUCTURE_List* structures, const char* cxt_fn)
 }
 
 void
-read_cxt (STRUCTURE_List* structures, const char* cxt_fn)
+cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
 {
     FILE* fp;
     STRUCTURE* curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
