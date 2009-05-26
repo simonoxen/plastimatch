@@ -828,6 +828,8 @@ IF(ITK_FOUND)
   INSTALL(TARGETS warp_mha DESTINATION bin)
   INSTALL(TARGETS warp_pointset DESTINATION bin)
 
+  INSTALL(FILES ${ITK_DIR}/bin/release/ITKCommon.dll DESTINATION bin)
+
   if (Slicer3_DIR)
     slicer3_install_plugins(plastimatch1)
     #slicer3_install_plugins(gpuit)
@@ -944,6 +946,8 @@ ENDIF(PLM_BUILD_TESTING)
 ######################################################
 ##  CPACK stuff
 ###################################################### 	 
+SET(CPACK_GENERATOR "ZIP")
+SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MINOR "4")
 SET(CPACK_PACKAGE_VERSION_PATCH "0")
