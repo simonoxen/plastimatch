@@ -67,10 +67,6 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	sizeWarp=0;
 	get_image_header(dim, offset, spacing, reference);
 
-	//printf("SPACING:%f %f %f\n",spacing[0],spacing[1],spacing[2]);
-	//printf("OFFSET: %f %f %f\n",offset[0],offset[1],offset[2]);
-	//printf("DIM: %d %d %d\n",dim[0],dim[1],dim[2]);
-
 	ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
 
 	while(!it.IsAtEnd())
@@ -84,8 +80,6 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 			sizeWarp++;
 		}
 		if(reference->GetPixel(k)|| warped->GetPixel(k)){
-			//size++;
-			//printf("COORD: %f %f %f \n",x,y,z);
 			if(warped->GetPixel(k)==reference->GetPixel(k)){
 				overlap++;
 			}
@@ -94,14 +88,12 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 		i++;
 	}
 
-
 	printf("overlap: %d\n",overlap);
-	printf("# of white pixels in the 2 images: %d\n",sizeRef+sizeWarp);
+	printf("# of white pixels in the 2 images: REF: %d WARP: %d\n",sizeRef,sizeWarp);
 
 	dice=((float)2*overlap)/((float)(sizeRef+sizeWarp));
 	printf("DICE COEFFICIENT: %f\n",dice);
 	fprintf(output,"DICE: %f\n",dice);
-	//fprintf(output,"%f\n",dice);
 
 	printf("\n\n");
 	fprintf(output,"\n");
@@ -112,46 +104,38 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	moment->SetImage(reference);
 	moment->Compute();
 	c_ref=moment->GetCenterOfGravity();
-	vol_ref=moment->GetTotalMass();
-	vol_ref=vol_ref*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ref)*100;
 
 	printf("VOLUME ref: %f\n", vol_ref);
 	printf("VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
 	printf("CENTER ref: %g %g %g\n",c_ref[0],c_ref[1],c_ref[2]);
-	
-	//fprintf(output,"VOLUME ex_1: %f\n", vol_ref);	
-	//fprintf(output,"VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
-	//fprintf(output,"CENTER OF MASS ex_1: %g %g %g",c_ref[0],c_ref[1],c_ref[2]);
+
 
 	fprintf(output,"EXPERT\t");
 	fprintf(output,"VOLUME\t");
 	fprintf(output,"VOL over perc \n");
 	fprintf(output,"ref\t %f\t %f\n", vol_ref,percVolOver);
-	//fprintf(output,"%f\t %f\n", vol_ref,percVolOver);
 
 	printf("\n\n");
-	//fprintf(output,"\n\n");
+
 
 	//computes moments for warped image
 	moment->SetImage(warped);
 	moment->Compute();
 	c_warp=moment->GetCenterOfGravity();
-	vol_warp=moment->GetTotalMass();
-	vol_warp=vol_warp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+	vol_ref=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 	percVolOver=(volOver/vol_warp)*100;
 
 	printf("VOLUME warp: %f\n", vol_warp);
 	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
 	printf("CENTER warp: %g %g %g\n",c_warp[0],c_warp[1],c_warp[2]);
 	fprintf(output,"warp\t %f\t %f\n", vol_warp, percVolOver);
-	//fprintf(output,"%f\t %f\n", vol_warp, percVolOver);
 	printf("\n");
 	
 
 	//Writes the overlap volume
 	printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-	//fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
 
 	mean_vol=(vol_ref+vol_warp)/2;
 	mean_center[0]=(c_ref[0]+c_warp[0])/2;
@@ -161,14 +145,10 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	percVolOver=(volOver/mean_vol)*100;	
 
 	printf("MEAN VOLUME: %f\n", mean_vol);
-	//fprintf(output,"MEAN VOLUME: %f\n", mean_vol);
 	printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
-	//fprintf(output,"MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	fprintf(output,"mean\t %f\t %f\n",  mean_vol, percVolOver);
-	//fprintf(output,"%f\t %f\n",  mean_vol, percVolOver);
 
 	printf("MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
-	//fprintf(output,"MEAN CENTER OF MASS: %g %g %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 	fprintf(output,"\n");
 	fprintf(output,"CENTER_OF_MASS\n EXPERT\t");
@@ -176,9 +156,6 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	fprintf(output,"ref\t %g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
 	fprintf(output,"warp\t %g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
 	fprintf(output,"mean \t %g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
-	//fprintf(output,"%g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
-	//fprintf(output,"%g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
-	//fprintf(output,"%g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
 
@@ -387,8 +364,7 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_1);
 	moment->Compute();
 	c_ex1=moment->GetCenterOfGravity();
-	vol_ex1=moment->GetTotalMass();
-	vol_ex1=vol_ex1*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
+	vol_ex1=sizeEx_1*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex1)*100;
 
 	printf("VOLUME ex_1: %f\n", vol_ex1);
@@ -408,8 +384,7 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_2);
 	moment->Compute();
 	c_ex2=moment->GetCenterOfGravity();
-	vol_ex2=moment->GetTotalMass();
-	vol_ex2=vol_ex2*(ex_2->GetSpacing()[0]*ex_2->GetSpacing()[1]*ex_2->GetSpacing()[2]);
+	vol_ex2=sizeEx_2*(ex_2->GetSpacing()[0]*ex_2->GetSpacing()[1]*ex_2->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex2)*100;
 
 	printf("VOLUME ex_2: %f\n", vol_ex2);
@@ -425,8 +400,7 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_3);
 	moment->Compute();
 	c_ex3=moment->GetCenterOfGravity();
-	vol_ex3=moment->GetTotalMass();
-	vol_ex3=vol_ex3*(ex_3->GetSpacing()[0]*ex_3->GetSpacing()[1]*ex_3->GetSpacing()[2]);
+	vol_ex3=sizeEx_3*(ex_3->GetSpacing()[0]*ex_3->GetSpacing()[1]*ex_3->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex3)*100;
 
 	printf("VOLUME ex_3: %f\n", vol_ex3);
