@@ -50,6 +50,7 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	double vol_ref;
 	double vol_warp;
 	double mean_vol;
+	double v_ref;
 	MomentCalculatorType::Pointer moment= MomentCalculatorType::New();
 
 
@@ -104,7 +105,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	moment->SetImage(reference);
 	moment->Compute();
 	c_ref=moment->GetCenterOfGravity();
-	vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	vol_ref=moment->GetTotalMass();
+	//vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ref)*100;
 
 	printf("VOLUME ref: %f\n", vol_ref);
@@ -124,7 +126,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	moment->SetImage(warped);
 	moment->Compute();
 	c_warp=moment->GetCenterOfGravity();
-	vol_ref=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+	vol_warp=moment->GetTotalMass();
+	//vol_warp=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 	percVolOver=(volOver/vol_warp)*100;
 
 	printf("VOLUME warp: %f\n", vol_warp);
@@ -364,7 +367,8 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_1);
 	moment->Compute();
 	c_ex1=moment->GetCenterOfGravity();
-	vol_ex1=sizeEx_1*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
+	vol_ex1=moment->GetTotalMass();
+	//vol_ex1=sizeEx_1*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex1)*100;
 
 	printf("VOLUME ex_1: %f\n", vol_ex1);
@@ -384,7 +388,8 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_2);
 	moment->Compute();
 	c_ex2=moment->GetCenterOfGravity();
-	vol_ex2=sizeEx_2*(ex_2->GetSpacing()[0]*ex_2->GetSpacing()[1]*ex_2->GetSpacing()[2]);
+	vol_ex2=moment->GetTotalMass();
+	//vol_ex2=sizeEx_2*(ex_2->GetSpacing()[0]*ex_2->GetSpacing()[1]*ex_2->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex2)*100;
 
 	printf("VOLUME ex_2: %f\n", vol_ex2);
@@ -400,7 +405,8 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	moment->SetImage(ex_3);
 	moment->Compute();
 	c_ex3=moment->GetCenterOfGravity();
-	vol_ex3=sizeEx_3*(ex_3->GetSpacing()[0]*ex_3->GetSpacing()[1]*ex_3->GetSpacing()[2]);
+	vol_ex3=moment->GetTotalMass();
+	//vol_ex3=sizeEx_3*(ex_3->GetSpacing()[0]*ex_3->GetSpacing()[1]*ex_3->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ex3)*100;
 
 	printf("VOLUME ex_3: %f\n", vol_ex3);
