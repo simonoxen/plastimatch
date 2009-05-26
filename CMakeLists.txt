@@ -828,7 +828,10 @@ IF(ITK_FOUND)
   INSTALL(TARGETS warp_mha DESTINATION bin)
   INSTALL(TARGETS warp_pointset DESTINATION bin)
 
-  INSTALL(FILES ${ITK_DIR}/bin/release/ITKCommon.dll DESTINATION bin)
+  
+  IF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+    INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
+  ENDIF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
 
   if (Slicer3_DIR)
     slicer3_install_plugins(plastimatch1)
