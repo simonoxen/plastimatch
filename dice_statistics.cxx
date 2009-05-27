@@ -22,13 +22,6 @@ typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
 typedef itk::ImageMomentsCalculator<ImgType> MomentCalculatorType;
 
 
-//typedef struct sliceDice SLICEDICE;
-//struct sliceDice {
-//    int num_slice;
-//	int first_slice;
-//    float* dice_list;
-//};
-
 void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output)
 {
 	ImgType::IndexType k;
@@ -161,106 +154,6 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	fprintf(output,"mean \t %g\t %g\t %g\n",mean_center[0],mean_center[1],mean_center[2]);
 
 }
-
-void do_dice_slice(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output)
-{
-	//this is very buggy...and old!
-	ImgType::IndexType k;
-	intImgType::IndexType p;
-	k[0]=0;
-	p[0]=0;
-	int overlap=0;
-	float dice=0;
-	int size=0;
-	int index=0;
-	float volRef;
-	float volOver;
-	float percVolOver;
-	int volSize=0;
-	int volOverlap=0;
-	SLICEDICE* slice_dice=(SLICEDICE*)malloc(sizeof(SLICEDICE));
-	memset(slice_dice,0,sizeof(SLICEDICE));
-	slice_dice->num_slice=0;
-	slice_dice->first_slice=0;
-
-		printf("You've chosen to compute Dice coefficient for each slice\n");		
-		//num_sl=(int)reference->GetLargestPossibleRegion().GetSize()[2];		
-		//slice_dice->num_slice=num_sl;
-		//printf("num_slices: %d\n",slice_dice->num_slice);
-		ItSliceType itSlice(reference, reference->GetLargestPossibleRegion());
-		itSlice.SetFirstDirection(0);
-		itSlice.SetSecondDirection(1);
-		/*slice_dice->dice_list=(float*)malloc(num_sl*sizeof(float));*/
-
-		while(!itSlice.IsAtEnd())
-		{
-			
-			overlap=0;
-			size=0;
-			k=itSlice.GetIndex();
-			index=k[2];
-			intImgType::Pointer sRef;
-			sRef = slice_extract (reference, index, (unsigned char) 0);
-			intImgType::Pointer sWarp;
-			sWarp = slice_extract (warped, index, (unsigned char) 0);
-
-			ItTypeSlicePixel iter(sRef, sRef->GetLargestPossibleRegion());
-			while(!iter.IsAtEnd())
-			{
-				p=iter.GetIndex();
-				if(sRef->GetPixel(p)==1){
-					size++;
-					if(sWarp->GetPixel(p)==sRef->GetPixel(p)){
-						overlap++;
-					}
-				}
-				iter.operator ++();
-				//printf("overlap: %d\n",overlap);
-			}
-			//printf("overlap: %d\n",overlap);
-			//printf("# of white pixels in the reference image: %d\n",size);
-			
-			if(overlap==0 && size==0){
-				//printf("slice %d is full of air. No dice coefficient computed\n", index);
-				//system("PAUSE");
-				//slice_dice->dice_list[index]=0;
-			}else if(overlap!=0 && size==0){
-				fprintf(stderr,"Something is wrong: you found overlapping region on a non-existant region\n");
-				exit(-1);
-			}else{
-				volSize=volSize+size;
-				volOverlap=volOverlap+overlap;
-				if(slice_dice->first_slice==0){
-					slice_dice->first_slice=index;
-					printf("First contour is on slice %d\n", slice_dice->first_slice);
-				}
-				slice_dice->num_slice++;
-				//printf("SLICE: %d ELEM: %d\n", index, slice_dice->num_slice);
-				slice_dice->dice_list=(float*)realloc(slice_dice->dice_list,2*sizeof(float));
-				slice_dice->dice_list[slice_dice->num_slice-1]=((float)2*overlap)/((float)2*size);
-				//printf("coeff: %f\n",slice_dice->dice_list[slice_dice->num_slice-1]);
-			}
-
-			itSlice.NextSlice();
-		}
-		volRef=volSize*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
-		volOver=volOverlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
-		percVolOver=(volOver/volRef)*100;
-		//printf("spacing: %f %f %f\n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
-		printf("VOLUME GLOBAL REFERENCE: %f\n", volRef);
-		printf("VOLUME GLOBAL OVERLAP: %f\n", volOver);
-		printf("VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
-		fprintf(output,"VOLUME GLOBAL REFERENCE: %f\n", volRef);
-		fprintf(output,"VOLUME GLOBAL OVERLAP: %f\n", volOver);
-		fprintf(output,"VOLUME GLOBAL OVERLAP PERC: %f \n",percVolOver);
-		fprintf(output,"DICE's COEFFICIENTS\n");
-
-		for(int j=0; j<slice_dice->num_slice; j++)
-			fprintf(output,"%f %d\n",slice_dice->dice_list[j],j+slice_dice->first_slice);
-		//printf("first slice: %d",slice_dice->first_slice);
-}
-
-
 void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Pointer ex_3, FILE* output)
 {
 	ImgType::IndexType k;
