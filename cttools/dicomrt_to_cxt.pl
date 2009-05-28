@@ -17,13 +17,24 @@ sub grab_value () {
 
 ## First pass: find contour set ordering within file
 $cmd = "dcmdump +L +R 512 $infile";
+print "$cmd\n";
 open D1, "$cmd|";
 open DO, ">$outfile";
+
 
 $patient_name = "Unknown";
 $patient_id = "Unknown";
 $study_id = "Unknown";
 $patient_sex = "O";
+
+$_ = <D1>;
+print $_;
+$_ = <D1>;
+print $_;
+$_ = <D1>;
+print $_;
+$_ = <D1>;
+print $_;
 
 # Get data for CXT header
 while(<D1>){
