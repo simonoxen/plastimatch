@@ -4,7 +4,7 @@ Plastimatch
   All rights reserved
 
   Contributors:
-  MGH: Greg Sharp, Ziji Wu, Marta Peroni
+  MGH: Greg Sharp, Ziji Wu, Marta Peroni, Justin Lee
   Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy, others
 
   See LICENSE.TXT for details
