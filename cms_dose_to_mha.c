@@ -1,7 +1,8 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include "plm_config.h"
+#include "plm_int.h"
 
 /* function to perform endian swaps when going from Big-Endian
  * to little-endian or vice-versa
@@ -21,7 +22,6 @@ main(int argc, char *argv[])
 	FILE *ifp; FILE *ofp;
 
 	long offset; //deleteme when done debugging.
-	char c;
 
 	char *mode = {"rc"}; /*rt vs. rc */
 	char array[200];char myarray[500];
@@ -30,7 +30,6 @@ main(int argc, char *argv[])
 	double rx; double ry; double rz; //dimension sizes
 	double ox; double oy; double oz;
 	int nx; int ny; int nz;
-	double x; double y; double z;
 	double dx; double dy; double dz; //element spacing
 	double topx; double topy; double topz; //offset (top left corner of first slice)
 
@@ -110,7 +109,7 @@ main(int argc, char *argv[])
 		}
 	printf("Target String: %s",myarray);
 	result = strtok (myarray,",");
-	printf("first number is: \%s\n", result);
+	printf("first number is: %s\n", result);
 
 	//////////////rx,ry,and rz are the "dimension size" 
 	result = strtok(NULL,",");
@@ -119,7 +118,7 @@ main(int argc, char *argv[])
 	rz = atof(result);
 	result = strtok(NULL,",");
 	ry = atof(result);
-	printf("CMS rx,ry,rz are: \%f%s%f%s%f\n", rx,",",ry,",",rz);
+	printf("CMS rx,ry,rz are: %f%s%f%s%f\n", rx,",",ry,",",rz);
 
 	result = strtok(NULL,",");
 	ox = atof(result);
@@ -127,7 +126,7 @@ main(int argc, char *argv[])
 	oz = atof(result);
 	result = strtok(NULL,",");
 	oy = atof(result);
-	printf("RgnCtrX,RgnCtrY,RgnCtrZ are: \%f%s%f%s%f\n", ox,",",oy,",",oz);
+	printf("RgnCtrX,RgnCtrY,RgnCtrZ are: %f%s%f%s%f\n", ox,",",oy,",",oz);
 
 	result = strtok(NULL,",");
 	nx = atoi(result);
@@ -135,13 +134,13 @@ main(int argc, char *argv[])
 	nz = atoi(result);
 	result = strtok(NULL,",");
 	ny = atoi(result);
-	printf("nx,ny,nz are: \%d%s%d%s%d\n", nx,",",ny,",",nz);
+	printf("nx,ny,nz are: %d%s%d%s%d\n", nx,",",ny,",",nz);
 
 	//////////////////dx,dy,and dz are the element spacings
 	dx = rx/(nx-1);
 	dy = ry/(ny-1);
 	dz = rz/(nz-1);
-	printf("dx,dy,dz are: \%f%s%f%s%f\n", dx,",",dy,",",dz);
+	printf("dx,dy,dz are: %f%s%f%s%f\n", dx,",",dy,",",dz);
 
 /////////////////////////////////
 
@@ -149,7 +148,7 @@ main(int argc, char *argv[])
 	topx = ox-(rx/2);
 	topy = oy-(ry/2);
 	topz = -oz-(rz/2);
-	printf("topx,topy,topz are: \%f%s%f%s%f\n", topx,",",topy,",",topz);
+	printf("topx,topy,topz are: %f%s%f%s%f\n", topx,",",topy,",",topz);
 
 	offset = ftell (ifp);
 	printf ("My offset is %d\n", offset);
@@ -192,7 +191,7 @@ main(int argc, char *argv[])
 		fprintf(ofp,"NDims = 3\n");
 		fprintf(ofp,"BinaryData = True\n");
 		fprintf(ofp,"BinaryDataByteOrderMSB = False\n");
-		printf("Writing topx,topy,topz...which are: \%f%s%f%s%f\n", topx,",",topy,",",topz);
+		printf("Writing topx,topy,topz...which are: %f%s%f%s%f\n", topx,",",topy,",",topz);
 		fprintf(ofp,"Offset = %f %f %f\n", topx,topz,topy);   //OFFSET
 		fprintf(ofp,"ElementSpacing = %f %f %f\n", dx,dz,dy); //ELEMENT SPACING
 		fprintf(ofp,"DimSize = %d %d %d\n", nx,nz,ny);        //DIMENSION sIZE # of voxels

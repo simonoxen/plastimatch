@@ -69,7 +69,9 @@ warp_image_main (Warp_Parms* parms)
 
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
+
     itk__GetImageType (parms->mha_in_fn, pixelType, componentType);
+
     switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    {
@@ -182,6 +184,14 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 		print_usage ();
 	    }
 	    have_spacing = 1;
+	    break;
+	case 12:
+	    rc = sscanf (optarg, "%d %d %d", &parms->dims[0], &parms->dims[1], &parms->dims[2]);
+	    if (rc != 3) {
+		fprintf (stderr, "Error.  --dims requires 3 values.");
+		print_usage ();
+	    }
+	    have_dims = 1;
 	    break;
 	default:
 	    break;

@@ -689,12 +689,17 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
+    BsplineTransformType::DirectionType bsp_direction;
     bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
+
+    /* GCS FIX: above should set m_direction */
+    bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
 
     /* Make a vector field at bspline grid spacing */
     pih_bsp.m_origin = bsp_origin;
     pih_bsp.m_spacing = bsp_spacing;
     pih_bsp.m_region = bsp_region;
+    pih_bsp.m_direction = bsp_direction;
     xform_to_itk_vf (&xf_tmp, xf_in, &pih_bsp);
 
     /* Vector field is interleaved.  We need planar for decomposition. */
@@ -702,6 +707,7 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
     img->SetOrigin (pih_bsp.m_origin);
     img->SetSpacing (pih_bsp.m_spacing);
     img->SetRegions (pih_bsp.m_region);
+    img->SetDirection (pih_bsp.m_direction);
     img->Allocate ();
 
     /* Loop through planes */
@@ -1029,6 +1035,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->SetOrigin (pih->m_origin);
     itk_vf->SetSpacing (pih->m_spacing);
     itk_vf->SetRegions (pih->m_region);
+    std::cout << pih->m_direction;
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 
@@ -1273,6 +1280,8 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih,
 
     /* Fixate gpuit bsp to xf */
     xf_out->set_gpuit_bsp (bxf_new);
+
+    printf ("xform_any_to_gpuit_bsp complete\n");
 }
 
 void

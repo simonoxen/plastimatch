@@ -98,8 +98,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	moment->SetImage(reference);
 	moment->Compute();
 	c_ref=moment->GetCenterOfGravity();
-	vol_ref=moment->GetTotalMass();
-	//vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	//vol_ref=moment->GetTotalMass();
+	vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
 	percVolOver=(volOver/vol_ref)*100;
 
 	printf("VOLUME ref: %f\n", vol_ref);
@@ -119,8 +119,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	moment->SetImage(warped);
 	moment->Compute();
 	c_warp=moment->GetCenterOfGravity();
-	vol_warp=moment->GetTotalMass();
-	//vol_warp=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
+	//vol_warp=moment->GetTotalMass();
+	vol_warp=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 	percVolOver=(volOver/vol_warp)*100;
 
 	printf("VOLUME warp: %f\n", vol_warp);

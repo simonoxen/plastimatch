@@ -359,6 +359,9 @@ SET(CONTOUR_STATISTICS_SRC
 SET(CMS_TO_CXT_SRC
 	cms_to_cxt.cxx
 	)
+SET(CMS_DOSE_TO_MHA_SRC
+	cms_dose_to_mha.c
+	)
 SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
 	cuda_probe.cu
@@ -422,6 +425,9 @@ SET(MASK_MHA_SRC
 	)
 SET(MHA_TO_RTOG_DOSE_SRC
 	mha_to_rtog_dose.cxx
+	)
+SET(MHA_TO_CMS_DOSE_SRC
+	mha_to_cms_dose.c
 	)
 SET(MONDOSHOT_SRC
 	dicom_uid.cxx
@@ -569,11 +575,13 @@ ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
 
 ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
 ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
+ADD_EXECUTABLE(cms_dose_to_mha ${CMS_DOSE_TO_MHA_SRC})
 ADD_EXECUTABLE(demons ${DEMONS_SRC})
 ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
 ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
 ADD_EXECUTABLE(hnd_to_pfm ${HND_TO_PFM_SRC})
 ADD_EXECUTABLE(mha_to_raw mha_to_raw.c)
+ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c)
 ADD_EXECUTABLE(raw_to_mha raw_to_mha.c)
 ADD_EXECUTABLE(tps_update tps_update.c)
 ADD_EXECUTABLE(vf_compare ${VF_COMPARE_SRC})
@@ -770,11 +778,13 @@ ENDIF(DCMTK_FOUND)
 # Always built
 #INSTALL(TARGETS gpuit DESTINATION lib)
 INSTALL(TARGETS bspline DESTINATION bin)
+INSTALL(TARGETS cms_dose_to_mha DESTINATION bin)
 INSTALL(TARGETS demons DESTINATION bin)
 INSTALL(TARGETS drr_c DESTINATION bin)
 INSTALL(TARGETS fdk_c DESTINATION bin)
 INSTALL(TARGETS hnd_to_pfm DESTINATION bin)
-#INSTALL(TARGETS mha_to_raw DESTINATION bin)
+INSTALL(TARGETS mha_to_cms_dose DESTINATION bin)
+INSTALL(TARGETS mha_to_raw DESTINATION bin)
 INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 
 # Require brook
@@ -828,10 +838,16 @@ IF(ITK_FOUND)
   INSTALL(TARGETS warp_mha DESTINATION bin)
   INSTALL(TARGETS warp_pointset DESTINATION bin)
 
-  
   IF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
   ENDIF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+
+  INSTALL(FILES 
+    "${CMAKE_SOURCE_DIR}/cttools/dicomrt_to_cxt.pl" 
+    "${CMAKE_SOURCE_DIR}/cttools/dcm_image_uids.pl" 
+    "${CMAKE_SOURCE_DIR}/cttools/cxt_apply_uids.pl"
+    "${CMAKE_SOURCE_DIR}/cttools/parse_cxt.pl"
+    DESTINATION bin)
 
   if (Slicer3_DIR)
     slicer3_install_plugins(plastimatch1)
@@ -952,6 +968,6 @@ ENDIF(PLM_BUILD_TESTING)
 SET(CPACK_GENERATOR "ZIP")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "4")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "4-beta")
+SET(CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
 INCLUDE(CPack)

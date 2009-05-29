@@ -1,7 +1,8 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include "plm_config.h"
+#include "plm_int.h"
 
 /* function to perform endian swaps when going from Big-Endian
  * to little-endian or vice-versa
@@ -88,7 +89,7 @@ main(int argc, char *argv[])
 			MHA_nPtsY = atoi(result);
 			result = strtok(NULL," ");
 			MHA_nPtsZ = atoi(result);
-			printf("MHA nPts (x,y,z) are: \%d%s%d%s%d\n", MHA_nPtsX,",",MHA_nPtsY,",",MHA_nPtsZ);
+			printf("MHA nPts (x,y,z) are: %d%s%d%s%d\n", MHA_nPtsX,",",MHA_nPtsY,",",MHA_nPtsZ);
 			}
 
 		result = strstr(myarray,"ElementSpacing");
@@ -101,7 +102,7 @@ main(int argc, char *argv[])
 			MHA_dy = atof(result);
 			result = strtok(NULL," ");
 			MHA_dz = atof(result);
-			printf("MHA_dimSpacings (x,y,z) are: \%f%s%f%s%f\n", MHA_dx,",",MHA_dy,",",MHA_dz);
+			printf("MHA_dimSpacings (x,y,z) are: %f%s%f%s%f\n", MHA_dx,",",MHA_dy,",",MHA_dz);
 			}
 
 		result = strstr(myarray,"Offset");
@@ -114,7 +115,7 @@ main(int argc, char *argv[])
 			MHA_startY = atof(result);
 			result = strtok(NULL," ");
 			MHA_startZ = atof(result);
-			printf("MHA_startCoords (x,y,z) is: \%f%s%f%s%f\n", MHA_startX,",",MHA_startY,",",MHA_startZ);
+			printf("MHA_startCoords (x,y,z) is: %f%s%f%s%f\n", MHA_startX,",",MHA_startY,",",MHA_startZ);
 			}
 		}
 
@@ -122,8 +123,8 @@ main(int argc, char *argv[])
 	MHA_rx = MHA_dx*(MHA_nPtsX-1); CMS_rx=MHA_rx; 
 	MHA_ry = MHA_dy*(MHA_nPtsY-1); CMS_rz=MHA_ry; 
 	MHA_rz = MHA_dz*(MHA_nPtsZ-1); CMS_ry=MHA_rz;	
-	printf("MHA_ranges (x,y,z) are: \%f%s%f%s%f\n", MHA_rx,",",MHA_ry,",",MHA_rz);
-	printf("CMS_ranges (x,y,z) are: \%f%s%f%s%f\n", CMS_rx,",",CMS_ry,",",CMS_rz);
+	printf("MHA_ranges (x,y,z) are: %f%s%f%s%f\n", MHA_rx,",",MHA_ry,",",MHA_rz);
+	printf("CMS_ranges (x,y,z) are: %f%s%f%s%f\n", CMS_rx,",",CMS_ry,",",CMS_rz);
 
 	MHA_ox = MHA_startX + MHA_rx/2;
 	MHA_oy = MHA_startY + MHA_ry/2;
@@ -133,7 +134,7 @@ main(int argc, char *argv[])
 	CMS_ox=MHA_ox; CMS_oy=MHA_oz; CMS_oz = -MHA_oy;
 
 	//KeyLine = '0,'+str(CMS_rx)+','+str(CMS_rz)+','+str(CMS_ry)+','+str(CMS_ox)+','+str(CMS_oz)+','+str(CMS_oy)+','+str(CMS_nxPts)+','+str(CMS_nzPts)+','+str(CMS_nyPts)
-	printf("Keyline is: \%s%f%s%f%s%f%s%f%s%f%s%f%s%d%s%d%s%d\n","0,",CMS_rx,",",CMS_rz,",",CMS_ry,",",CMS_ox,",",CMS_oz,",",CMS_oy,",",CMS_nPtsX,",",CMS_nPtsZ,",",CMS_nPtsY);
+	printf("Keyline is: %s%f%s%f%s%f%s%f%s%f%s%f%s%d%s%d%s%d\n","0,",CMS_rx,",",CMS_rz,",",CMS_ry,",",CMS_ox,",",CMS_oz,",",CMS_oy,",",CMS_nPtsX,",",CMS_nPtsZ,",",CMS_nPtsY);
 
 
 	offset = ftell (ifp);
