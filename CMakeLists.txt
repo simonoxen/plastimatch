@@ -11,7 +11,8 @@ INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(PLM_FindFFTW.cmake)
 INCLUDE(GPUIT.cmake)
-INCLUDE(FindwxWidgets)
+#INCLUDE(FindwxWidgets)
+FIND_PACKAGE(wxWidgets)
 
 ######################################################
 ##  Help the user out on unix
@@ -515,6 +516,22 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
+
+######################################################
+##  WXWINDOWS COMPILE FLAGS
+######################################################
+IF(wxWidgets_FOUND)
+  SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+    PROPERTIES COMPILE_FLAGS 
+    ${wxWidgets_CXX_FLAGS}
+    )
+  string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS "${wxWidgets_DEFINITIONS}")
+  SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+    PROPERTIES COMPILE_DEFINITIONS
+    "_FILE_OFFSET_BITS=64;_LARGE_FILES;__WXGTK__"
+    )
+ENDIF(wxWidgets_FOUND)
+
 ######################################################
 ##  DCMTK CONFIGURATION
 ######################################################
@@ -688,9 +705,9 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
 ENDIF(ITK_FOUND)
 
-IF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
-ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
   #ADD_EXECUTABLE(mondoshot_relay ${MONDOSHOT_RELAY_SRC})
 ENDIF(DCMTK_FOUND)
@@ -765,9 +782,10 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(warp_pointset ${PLASTIMATCH_LIBS})
 ENDIF(ITK_FOUND)
 
-IF(wxWidgets_FOUND AND DCMTK_FOUND)
-  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
-ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} 
+    ${DCMTK_LIBRARIES})
+ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
   #TARGET_LINK_LIBRARIES(mondoshot_relay ${DCMTK_LIBRARIES})
 ENDIF(DCMTK_FOUND)
@@ -864,9 +882,9 @@ INSTALL(FILES
   REGISTRATION.TXT
   DESTINATION doc)
 
-IF(wxWidgets_FOUND AND DCMTK_FOUND)
+IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   INSTALL(TARGETS mondoshot DESTINATION bin)
-ENDIF(wxWidgets_FOUND AND DCMTK_FOUND)
+ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 IF(DCMTK_FOUND)
   #INSTALL(TARGETS mondoshot_relay DESTINATION bin)
 ENDIF(DCMTK_FOUND)
