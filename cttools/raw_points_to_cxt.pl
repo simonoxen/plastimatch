@@ -43,6 +43,7 @@ sub parse_marta_format {
     undef $contours;
     
     $structure_name = $fn;
+    print "$structure_name\n";
     if ($fn =~ m/[^_]*_([^\.]*)_physcoord.txt$/) {
 	$structure_name = $1;
     } else {
