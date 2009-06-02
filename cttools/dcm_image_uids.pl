@@ -50,7 +50,7 @@ for $file (`ls $indir`) {
     while (<FI>) {
 	if (/SliceLocation/) {
 	    $sl = &grab_value($_);
-	} elsif (/SOPInstanceUID/) {
+	} elsif (/^\(0008,0018\)/) {         # SOPInstanceUID
 	    $sop = &grab_value($_);
 	} elsif (/StudyInstanceUID/) {
 	    $stu = &grab_value($_);

@@ -521,15 +521,21 @@ ENDIF(NOT HAVE_GETOPT_LONG)
 ##  WXWINDOWS COMPILE FLAGS
 ######################################################
 IF(wxWidgets_FOUND)
-  SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
-    PROPERTIES COMPILE_FLAGS 
-    ${wxWidgets_CXX_FLAGS}
-    )
-  string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS "${wxWidgets_DEFINITIONS}")
-  SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
-    PROPERTIES COMPILE_DEFINITIONS
-    "_FILE_OFFSET_BITS=64;_LARGE_FILES;__WXGTK__"
-    )
+
+#   SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+#     PROPERTIES COMPILE_DEFINITIONS
+#     "_FILE_OFFSET_BITS=64;_LARGE_FILES;__WXGTK__"
+#     )
+
+  IF(wxWidgets_CXX_FLAGS)
+    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+      "${wxWidgets_DEFINITIONS}")
+    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+      PROPERTIES COMPILE_FLAGS 
+      ${wxWidgets_CXX_FLAGS}
+      )
+  ENDIF(wxWidgets_CXX_FLAGS)
+    
 ENDIF(wxWidgets_FOUND)
 
 ######################################################

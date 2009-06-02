@@ -4,6 +4,8 @@
 sub parse_cxt_format {
     my ($fn) = @_;
 
+    print "Parsing cxt file: $fn\n";
+
     ## This is the data structure
     $structure_set = { };
     $structure_set->{header} = { };
