@@ -127,7 +127,8 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
 	int k;
 
         if (1 != fscanf (fp, "%d", &struct_no)) {
-            break;
+	    //goto not_successful;
+	    break;
         }
         fgetc (fp);
 
@@ -135,12 +136,12 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
         while (fgetc (fp) != '|') ;
 
         if (1 != fscanf (fp, "%d", &num_pt)) {
-            break;
+	    goto not_successful;
         }
         fgetc (fp);
 
         if (1 != fscanf (fp, "%d", &slice_idx)) {
-            break;
+	    goto not_successful;
         }
         fgetc (fp);
 
@@ -173,15 +174,17 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
             exit (-1);
         }
         for (k = 0; k < num_pt; k++) {
-            //printf (" --> %5d\n", k);
+            //printf (" --> (%5d)", k);
             if (fscanf (fp, "%f\\%f\\%f", &x, &y, &z) != 3) {
                 if (fscanf (fp, "\\%f\\%f\\%f", &x, &y, &z) != 3) {
+		    //printf ("\n", k);
                     break;
                 }
             }
             curr_contour->x[k] = x;
             curr_contour->y[k] = y;
             curr_contour->z[k] = z;
+	    //printf ("%g %g %g\n", x, y, z);
             x = 0;
             y = 0;
             z = 0;
@@ -189,6 +192,10 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
         slice_idx = 0;
         num_pt = 0;
     }
-    printf ("successful!\n");
     fclose (fp);
+    printf ("successful!\n");
+    return;
+not_successful:
+    fclose (fp);
+    printf ("Error parsing input file.\n");
 }

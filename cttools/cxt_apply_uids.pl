@@ -108,7 +108,7 @@ for $i (0..$#{$ss_structures}) {
 	    $sno = $slice_no{$uid_contour};
 	}
 
-	## If matching with same study set, find slice number 
+	## If matching with different study set, find slice number 
 	## by matching the Z location, and change the UID
 	else {
 	    $contour_z_loc = $points;
@@ -116,6 +116,7 @@ for $i (0..$#{$ss_structures}) {
 	    $contour_z_loc =~ s/\\.*//;
 	    $best_dist = abs($slices[0]-$contour_z_loc);
 	    $best_slice = 0;
+	    $uid_contour = $slice_UIDs{$slices[0]};
 	    for $i (0..$#slices) {
 		$dist=abs($slices[$i]-$contour_z_loc);
 		if ($dist < $best_dist) {

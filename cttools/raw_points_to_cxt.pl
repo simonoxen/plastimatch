@@ -103,6 +103,7 @@ $i = 1;
 for $structure (@structures) {
     for $contour (@{$structure}) {
 	print OF "$i||$#{$contour}|||";
+	pop @{$contour};    ## Marta has "wraparound point", not needed for cxt
 	$first = 1;
  	for $pt (@{$contour}) {
 	    chomp($pt);
