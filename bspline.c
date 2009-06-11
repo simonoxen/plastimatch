@@ -568,6 +568,7 @@ bspline_xform_initialize (
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 		for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
 			for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+
 				for (tz = 0; tz < 4; tz++) {
 					for (ty = 0; ty < 4; ty++) {
 						for (tx = 0; tx < 4; tx++) {
@@ -575,6 +576,7 @@ bspline_xform_initialize (
 						}
 					}
 				}
+
 			}
 		}
     }
@@ -2416,6 +2418,10 @@ bspline_score_d_mse (
 
     end_clock = clock();
 
+	fp = fopen("scores.txt", "a+");
+	fprintf(fp, "%f\n", ssd->score);
+	fclose(fp);
+
     logfile_printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
 	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
@@ -2805,7 +2811,8 @@ bspline_score (BSPLINE_Parms *parms,
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
     if (parms->implementation == BIMPL_CUDA) {
 	printf("Using CUDA.\n");
-	bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
+	bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
+	//bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
 	//bspline_cuda_score_e_mse_v2(parms, bxf, fixed, moving, moving_grad);
 	//bspline_cuda_score_e_mse(parms, bxf, fixed, moving, moving_grad);
 	//bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);

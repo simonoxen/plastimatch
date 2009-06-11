@@ -38,6 +38,13 @@ extern "C" {
 		float *sum_element;
 	};
 
+	void bspline_cuda_score_g_mse(
+		BSPLINE_Parms *parms, 
+		BSPLINE_Xform* bxf, 
+		Volume *fixed, 
+		Volume *moving, 
+		Volume *moving_grad);
+
 	void bspline_cuda_score_f_mse(
 		BSPLINE_Parms *parms, 
 		BSPLINE_Xform* bxf, 
@@ -75,6 +82,14 @@ extern "C" {
 
 	// Simple utility function to check for CUDA runtime errors.
 	void checkCUDAError(const char *msg);  
+
+	// Initialize the GPU to execute bspline_cuda_score_g_mse().
+	void bspline_cuda_initialize_g(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms);
 
 	// Initialize the GPU to execute bspline_cuda_score_f_mse().
 	void bspline_cuda_initialize_f(
@@ -122,6 +137,14 @@ extern "C" {
 	void bspline_cuda_copy_grad_to_host(
 		float* host_grad);
 
+	void bspline_cuda_calculate_run_kernels_g(
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		BSPLINE_Xform *bxf,
+		BSPLINE_Parms *parms,
+		bool run_low_mem_version);
+
 	void bspline_cuda_calculate_run_kernels_f(
 		Volume *fixed,
 		Volume *moving,
@@ -166,7 +189,7 @@ extern "C" {
 		int p1,
 		int p2);
 
-	void bspline_cuda_run_kernels(
+	void bspline_cuda_run_kernels_c(
 		Volume *fixed,
 		Volume *moving,
 		Volume *moving_grad,
@@ -233,12 +256,16 @@ extern "C" {
 		float *host_grad_mean,
 		float *host_grad_norm);
 
-	void bspline_cuda_calculate_gradient(
+	void bspline_cuda_calculate_gradient_c(
 		BSPLINE_Parms* parms, 
 		BSPLINE_Xform* bxf,
 		Volume *fixed,
 		float *host_grad_norm,
 		float *host_grad_mean);
+
+	void bspline_cuda_clean_up_g();
+
+	void bspline_cuda_clean_up_f();
 
 	void bspline_cuda_clean_up_d();
 

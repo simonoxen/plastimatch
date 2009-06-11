@@ -14,6 +14,11 @@
 #include "bspline.h"
 #include "bspline_cuda.h"
 
+/***********************************************************************
+ * A few of the CPU functions are reproduced here for testing purposes.
+ * Once the CPU code is removed from the functions below, these
+ * functions can be deleted.
+ ***********************************************************************/
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 inline void bspline_update_grad_b_inline (
@@ -43,8 +48,6 @@ inline void bspline_update_grad_b_inline (
     }
 }
 
-/* Clipping is done using clamping.  You should have "air" as the outside
-   voxel so pixels can be clamped to air.  */
 inline void
 clamp_linear_interpolate_inline (
     float ma,           /* (Unrounded) pixel coordinate (in vox) */
@@ -94,31 +97,23 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
     }
 }
 
-/*
-void dump_coeff (BSPLINE_Xform* bxf, char* fn)
-{
-    int i;
-    FILE* fp = fopen (fn,"wb");
-    for (i = 0; i < bxf->num_coeff; i++) {
-	fprintf (fp, "%f\n", bxf->coeff[i]);
-    }
-    fclose (fp);
-}
-
-void dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
-{
-    int i;
-    FILE* fp = fopen (fn, "wb");
-    for(i = 0; i < bxf->num_coeff; i++) {
-		if(i % 3 == 0)
-			fprintf(fp, "\n");
-		fprintf(fp, "%f\n", ssd->grad[i]);
-    }
-    fclose (fp);
-}
-*/
-
-void bspline_cuda_score_f_mse(
+/***********************************************************************
+ * bspline_cuda_score_g_mse
+ * 
+ * This implementation is identical to version "F" with the exception
+ * that the c_lut and q_lut values are computed on the fly in the
+ * kernels.  This saves memory on the GPU as well as speeds up execution
+ * by reducing the number of reads from global memory.
+ *
+ * The score and dc_dv values are calculated for the entire volume at 
+ * once (as opposed to tile by tile or set by set), so the the memory 
+ * requirements are slightly higher.  However, this does appear to
+ * improve performance dramatically.
+ *
+ * This is currently the fastest CUDA implementation of the B-spline
+ * algorithm.
+ ***********************************************************************/
+void bspline_cuda_score_g_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
 	Volume *fixed, 
@@ -126,9 +121,7 @@ void bspline_cuda_score_f_mse(
 	Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
-	
-	int num_vox;
-	int p[3];
+	int num_vox = fixed->npix;
 	float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock, end_clock;
 
@@ -136,8 +129,6 @@ void bspline_cuda_score_f_mse(
     char debug_fn[1024];
     FILE* fp;
     int dd = 0;
-
-	num_vox = fixed->npix;
 
     if (parms->debug) {
 		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
@@ -151,12 +142,14 @@ void bspline_cuda_score_f_mse(
 	bspline_cuda_clear_score();
 	bspline_cuda_clear_grad();
 
-	bspline_cuda_calculate_run_kernels_f(
+	// Run the kernels that fill the score, dc_dv, and gradient streams.
+	bspline_cuda_calculate_run_kernels_g(
 		fixed,
 		moving,
 		moving_grad,
 		bxf,
-		parms);
+		parms,
+		false);
 
     if (parms->debug) {
 		fclose (fp);
@@ -164,7 +157,7 @@ void bspline_cuda_score_f_mse(
 
     //dump_coeff (bxf, "coeff.txt");
 
-	// Compute the score.
+	// Run the kernels to calculate the score and gradient values.
 	bspline_cuda_final_steps_f(
 		parms,
 		bxf,
@@ -185,16 +178,30 @@ void bspline_cuda_score_f_mse(
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
-void bspline_cuda_score_e_mse_v2 (
+/***********************************************************************
+ * bspline_cuda_score_f_mse
+ * 
+ * The key feature of this implementation is the gradient calculation.  
+ * To increase the overall parallelism, a thread is created for each 
+ * control knot in the volume.  Each thread calculates the tiles by which
+ * it is influenced, iterates through all the voxels in those tiles, and
+ * sums up the total influence.  The total number of threads is in the
+ * tens of thousands versus only 64 (or 64 * 3 = 192).
+ *
+ * The score and dc_dv values are calculated for the entire volume at 
+ * once (as opposed to tile by tile or set by set), so the the memory 
+ * requirements are slightly higher.  However, this does appear to
+ * improve performance dramatically.
+ ***********************************************************************/
+void bspline_cuda_score_f_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
 	Volume *fixed, 
 	Volume *moving, 
 	Volume *moving_grad)
 {
-	BSPLINE_Score* ssd = &parms->ssd;
-	
-	int num_vox;
+    BSPLINE_Score* ssd = &parms->ssd;
+	int num_vox = fixed->npix;
 	float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock, end_clock;
 
@@ -208,22 +215,99 @@ void bspline_cuda_score_e_mse_v2 (
 		fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+	start_clock = clock();
 
-    num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
-
+	// Prepare the GPU to run the kernels.
 	bspline_cuda_copy_coeff_lut(bxf);
 	bspline_cuda_clear_score();
 	bspline_cuda_clear_grad();
 
-	// Index of the set, in the range [0, 63)
-	int sidx[3];
-  	
-	LARGE_INTEGER clock_count, clock_frequency;
-	double clock_start, clock_end;
-	QueryPerformanceFrequency(&clock_frequency);
-	QueryPerformanceCounter(&clock_count);
-	clock_start = (double)clock_count.QuadPart;
+	// Run the kernels that fill the score, dc_dv, and gradient streams.
+	bspline_cuda_calculate_run_kernels_f(
+		fixed,
+		moving,
+		moving_grad,
+		bxf,
+		parms);
+
+    if (parms->debug) {
+		fclose (fp);
+    }
+
+    //dump_coeff (bxf, "coeff.txt");
+
+	// Run the kernels to calculate the score and gradient values.
+	bspline_cuda_final_steps_f(
+		parms,
+		bxf,
+		fixed,
+		bxf->vox_per_rgn,
+		fixed->dim,
+		&(ssd->score),
+		ssd->grad,
+		&ssd_grad_mean,
+		&ssd_grad_norm);
+
+	//dump_gradient(bxf, ssd, "grad_gpu.txt");
+	
+    end_clock = clock();
+
+    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+}
+
+/***********************************************************************
+ * bspline_cuda_score_e_mse_v2
+ * 
+ * The key feature of version "e" is that the tiles in the volume are
+ * partitioned into "sets."  The tiles in each set are selected such
+ * that no two tiles are influenced by the same control knots.  Since
+ * tiles are influenced by a total of 4 knots in each dimension, there
+ * are a total of 64 sets.  Performing operations on a "set by set"
+ * basis rather than a "tile by tile" basis increases parallelism
+ * without causing any conflicts.
+ *
+ * As compared to bspline_cuda_score_e_mse, this version first computes
+ * the values in the score stream for the entire volume at once, and
+ * then calculates the dc_dv values on a set by set basis.
+ ***********************************************************************/
+void bspline_cuda_score_e_mse_v2 (
+	BSPLINE_Parms *parms, 
+	BSPLINE_Xform* bxf, 
+	Volume *fixed, 
+	Volume *moving, 
+	Volume *moving_grad)
+{
+	BSPLINE_Score* ssd = &parms->ssd;
+	int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];;
+	float ssd_grad_norm, ssd_grad_mean;
+    clock_t start_clock, end_clock;
+
+	int sidx[3];		// Index of the set, in the range [0, 63)
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int dd = 0;
+
+    if (parms->debug) {
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+    }
+
+    start_clock = clock();
+
+	// Prepare the GPU to run the kernels.
+	bspline_cuda_copy_coeff_lut(bxf);
+	bspline_cuda_clear_score();
+	bspline_cuda_clear_grad();
+	  	
+	//LARGE_INTEGER clock_count, clock_frequency;
+	//double clock_start, clock_end;
+	//QueryPerformanceFrequency(&clock_frequency);
+	//QueryPerformanceCounter(&clock_count);
+	//clock_start = (double)clock_count.QuadPart;
 
 	// Calculate the score for the entire volume all at once.
 	bspline_cuda_calculate_score_e(
@@ -252,8 +336,8 @@ void bspline_cuda_score_e_mse_v2 (
 		}
 	}
 
-	QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
+	//QueryPerformanceCounter(&clock_count);
+    //clock_end = (double)clock_count.QuadPart;
 	//printf("All iterations of bspline_cuda_run_kernels_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
     if (parms->debug) {
@@ -262,9 +346,9 @@ void bspline_cuda_score_e_mse_v2 (
 
     //dump_coeff(bxf, "coeff_gpu.txt");
 
-	QueryPerformanceFrequency(&clock_frequency);
-	QueryPerformanceCounter(&clock_count);
-	clock_start = (double)clock_count.QuadPart;
+	//QueryPerformanceFrequency(&clock_frequency);
+	//QueryPerformanceCounter(&clock_count);
+	//clock_start = (double)clock_count.QuadPart;
 
 	// Compute the score.
 	bspline_cuda_final_steps_e_v2(
@@ -280,8 +364,8 @@ void bspline_cuda_score_e_mse_v2 (
 	
 	//dump_gradient(bxf, ssd, "grad_gpu.txt");
 
-	QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
+	//QueryPerformanceCounter(&clock_count);
+    //clock_end = (double)clock_count.QuadPart;
 	//printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
     end_clock = clock();
@@ -291,6 +375,20 @@ void bspline_cuda_score_e_mse_v2 (
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
+/***********************************************************************
+ * bspline_cuda_score_e_mse
+ * 
+ * The key feature of version "e" is that the tiles in the volume are
+ * partitioned into "sets."  The tiles in each set are selected such
+ * that no two tiles are influenced by the same control knots.  Since
+ * tiles are influenced by a total of 4 knots in each dimension, there
+ * are a total of 64 sets.  Performing operations on a "set by set"
+ * basis rather than a "tile by tile" basis increases parallelism
+ * without causing any conflicts.
+ *
+ * In this version, the score and dc_dv values are each computed on a
+ * set by set basis.
+ ***********************************************************************/
 void bspline_cuda_score_e_mse (
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
@@ -389,7 +487,14 @@ void bspline_cuda_score_e_mse (
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
-// Corresponds to version "D" on the CPU.
+/***********************************************************************
+ * bspline_cuda_score_d_mse
+ * 
+ * The key feature of version "d" is that the score, dc_dv, and gradient
+ * values are all computed on a tile by tile basis.  This reduces the
+ * memory requirements on the GPU and allows larger images to be
+ * processed.
+ ***********************************************************************/
 void bspline_cuda_score_d_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
@@ -434,8 +539,6 @@ void bspline_cuda_score_d_mse(
     int dd = 0;
 
 	/* BEGIN CUDA VARIABLES */
-	float *host_dc_dv;
-	float *host_grad;
 	float *host_score;
 	float *host_grad_norm;
 	float *host_grad_mean;
@@ -711,7 +814,12 @@ void bspline_cuda_score_d_mse(
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
-// Corresponds to version "C" on the CPU.
+/***********************************************************************
+ * bspline_cuda_score_c_mse
+ * 
+ * This version corresponds to version "c" on the CPU.  It requires the
+ * most memory and is fairly slow in comparison to the other versions.
+ ***********************************************************************/
 void bspline_cuda_score_c_mse(
 	BSPLINE_Parms *parms, 
 	BSPLINE_Xform* bxf, 
@@ -779,7 +887,7 @@ void bspline_cuda_score_c_mse(
 	host_grad_norm = (float*)malloc(sizeof(float));
 	host_grad_mean = (float*)malloc(sizeof(float));
 
-	bspline_cuda_run_kernels(
+	bspline_cuda_run_kernels_c(
 		fixed,
 		moving,
 		moving_grad,
@@ -928,8 +1036,7 @@ void bspline_cuda_score_c_mse(
 
     //dump_coeff (bxf, "coeff.txt");
 
-    
-	bspline_cuda_calculate_gradient(
+	bspline_cuda_calculate_gradient_c(
 		parms,
 		bxf,
 		fixed,
