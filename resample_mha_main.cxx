@@ -282,6 +282,7 @@ do_resampling (Resample_Parms* resp)
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
 	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
 	}
+
 	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
 	    FloatWriterType::Pointer writer = FloatWriterType::New();
 	    writer->SetFileName (resp->mha_out_fn);
@@ -306,19 +307,31 @@ do_resampling (Resample_Parms* resp)
 	}
     }
     else if (resp->input_type == PLM_IMG_TYPE_ITK_UCHAR) {
-	if (resp->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
-	    UCharImageType::Pointer input_image = load_uchar (resp->mha_in_fn, 0);
+	UCharImageType::Pointer input_image = load_uchar (resp->mha_in_fn, 0);
+	if (resp->have_subsample) {
+	    input_image = subsample_image (input_image, resp->subsample[0],
+		    resp->subsample[1], resp->subsample[2], resp->default_val);
+	}
+	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
+	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
+	}
 
-	    if (resp->have_subsample) {
-		input_image = subsample_image (input_image, resp->subsample[0],
-			resp->subsample[1], resp->subsample[2], resp->default_val);
-	    }
-	    else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-		input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
-	    }
+	if (resp->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
+
 	    UCharWriterType::Pointer writer = UCharWriterType::New();
 	    writer->SetFileName (resp->mha_out_fn);
 	    writer->SetInput(input_image);
+	    writer->Update();
+	} else if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
+	    typedef itk::CastImageFilter <UCharImageType,
+		    ShortImageType > CastFilterType;
+	    CastFilterType::Pointer caster = CastFilterType::New();
+	    caster->SetInput(input_image);
+        
+	    ShortWriterType::Pointer writer = ShortWriterType::New();
+
+	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetInput(caster->GetOutput());
 	    writer->Update();
 	} else {
 	    /* Do nothing for now */
