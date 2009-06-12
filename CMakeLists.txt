@@ -997,10 +997,17 @@ ENDIF(PLM_BUILD_TESTING)
 
 ######################################################
 ##  CPACK stuff
+##  Note: "make package_source" to create tarball
 ###################################################### 	 
 SET(CPACK_GENERATOR "ZIP")
+SET(CPACK_SOURCE_GENERATOR "TBZ2")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
 SET(CPACK_PACKAGE_VERSION_MINOR "4-beta")
 SET(CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
+set(CPACK_SOURCE_IGNORE_FILES
+  "/Testing/"
+  "/.svn"
+  "~$"
+)
 INCLUDE(CPack)
