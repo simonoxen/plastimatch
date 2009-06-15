@@ -1,1 +1,1 @@
-#include "bspline_cuda.cu"
+#include "bspline_cuda.cu.cpp"
