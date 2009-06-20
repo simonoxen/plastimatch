@@ -101,13 +101,17 @@ ENDIF(NOT CUDA_INCLUDE_DIR)
 
 IF(NOT CUDA_SDK_INCLUDE_DIR)
   FIND_PATH(CUDA_SDK_INCLUDE_DIR cutil.h
-    PATHS $ENV{CUDA_SDK_INC_DIR} "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/inc"
+    PATHS $ENV{CUDA_SDK_INC_DIR} 
+    "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/inc"
+    "C:/ProgramData/NVIDIA Corporation/NVIDIA CUDA SDK/common/inc"
     DOC "Path to cuda sdk include files.")
 ENDIF(NOT CUDA_SDK_INCLUDE_DIR)
 
 IF(NOT CUDA_SDK_LIB_DIR)
   FIND_PATH(CUDA_SDK_LIB_DIR cutil32.lib
-    PATHS $ENV{CUDA_SDK_LIB_DIR} "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
+    PATHS $ENV{CUDA_SDK_LIB_DIR}
+    "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
+    "C:/ProgramData/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
     DOC "Path to cuda sdk library files.")
 ENDIF(NOT CUDA_SDK_LIB_DIR)
 
@@ -122,7 +126,9 @@ FIND_LIBRARY(CUDART_LIBRARY
   DOC "Path to cudart library.")
 FIND_LIBRARY(CUTIL32_LIBRARY
   NAMES cutil32
-  PATHS $ENV{CUDA_SDK_LIB_DIR} "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
+  PATHS $ENV{CUDA_SDK_LIB_DIR} 
+  "C:/Program Files/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
+    "C:/ProgramData/NVIDIA Corporation/NVIDIA CUDA SDK/common/lib"
   DOC "Path to cutil32 library.")
 SET(CUDA_LIBRARIES ${CUDA_LIBRARY} ${CUDART_LIBRARY} ${CUTIL32_LIBRARY})
 
