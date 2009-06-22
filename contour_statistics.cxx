@@ -6,16 +6,16 @@
 void print_usage (void)
 {
 	printf ("Usage: contour_statistics \n");
-	printf ("  mode (options: global, experts,  cp)\t");
+	printf ("  mode (options: global, experts,  cp, cm)\t");
 	printf ("  file1\t");
 	printf ("  file2\t");
 	printf ("  [file3] or [filename]\t");
 	printf ("  [filename]\n");
 	printf ("  OPTIONS EXPLANATION: \n");
-	printf ("  case Dice's coeff computation for the whole volume (mode=global).\n NB: in this case file1=reference volume, file2=warped volume\n\n");
-	printf ("  case Experts: this is designed to compute the inter-raters variability. It will compute the overlapping region between the three volumes and divide it by the union.\n");
-	printf ("  case Closest Point computation: mode should be set to 'cp' , file1 should be your *.obj file and file2 should be your *.txt file with the reference points\n\n");
-	printf ("  filename: the user can specify (optional) a filename for the output file in which the program should write the outputs (either the Dice's coeff values and volume ovelap % or the distances from the mesh for the cp calculation.\n");
+	printf ("  global= Dice coeff computation between 2 volumes (in this case file1=reference_volume, file2=warped or other volume, filename=output *.txt file\n\n\n");
+	printf ("  experts= Dice coeff extension to the case of three experts - inter-rater variability computation (file1=first expert, file2=second expert, file3=third expert, filename=output *.txt file\n\n\n");
+	printf ("  cp= Closest Point computation between mesh file and reference points: file1 *.obj file, file2 *.txt file with the reference points, filename output *.txt file\n\n\n");
+	printf ("  cm= Closest Mesh computation: file1 *.obj file with reference mesh, file2 *.obj file with the other mesh, filename output *.txt file\n");
 	exit (-1);
 }
 
@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 	ImgType::Pointer ex_2=ImgType::New();
 	ImgType::Pointer ex_3=ImgType::New();
 	FILE* mesh;
+	FILE* refMesh;
 	FILE* MDpoints;
 	FILE* output;
 
@@ -51,18 +52,31 @@ int main(int argc, char* argv[])
 				fprintf(stderr,"This file could not be opened: %s\n",argv[3]);
 			exit(-1);
 		}
+	}else if (strcmp("cm",argv[1])==0){
+		refMesh=fopen(argv[2],"r");
+		mesh=fopen(argv[3],"r");
+		if(!refMesh || !mesh){
+			fprintf(stderr,"Error: could not open the files for the cp calculation for reading!\n");
+			if(!refMesh)
+				fprintf(stderr,"This file could not be opened: %s\n",argv[2]);
+			else
+				fprintf(stderr,"This file could not be opened: %s\n",argv[3]);
+			exit(-1);
+		}
 	}else{
 		fprintf(stderr,"Sorry! you typed in the wrong mode");
 		exit(-1);
 	}
 
 	if (argc<5){
-		if(strcmp("cp",argv[1])==0){
-			output=fopen("cp_dist.txt","w");
-		}else if(strcmp("global",argv[1])==0){
+		if(strcmp("global",argv[1])==0){
 			output=fopen("dice_global.txt","w");
 		}else if(strcmp("experts",argv[1])==0){
 			output=fopen("interrater.txt","w");
+		}else if(strcmp("cp",argv[1])==0){
+			output=fopen("cp_dist.txt","w");
+		}else{
+			output=fopen("mesh_dist.txt","w");
 		}
 	}else if (argc==5){
 		output=fopen(argv[4],"w");
@@ -86,6 +100,13 @@ int main(int argc, char* argv[])
 		printf("Allocated Surface\n");
 
 		do_cp(mesh,MDpoints,surface,output);
+
+	}else if(strcmp("cm",argv[1])==0){
+		printf("function in development\n");
+		exit(-1);
+	}
+	return 0;
+}
 
 
 
@@ -115,7 +136,3 @@ int main(int argc, char* argv[])
 
 
 		//fclose(mesh);
-	}
-	return 0;
-}
-

@@ -24,13 +24,6 @@
 typedef UCharImageType ImgType;
 typedef itk::Image<unsigned char, 2>	intImgType;
 
-typedef struct sliceDice SLICEDICE;
-struct sliceDice {
-    int num_slice;
-	int first_slice;
-    float* dice_list;
-};
-
 typedef struct vertices VERTICES_LIST;
 struct vertices {
     int num_vertices;

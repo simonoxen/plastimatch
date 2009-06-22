@@ -5,7 +5,7 @@
 #define BUFLEN 2048
 
 void calculate_mass(SURFACE* surface){
-
+	//computes center of mass for each triangle
 	float x_sum=0;
 	float y_sum=0;
 	float z_sum=0;
