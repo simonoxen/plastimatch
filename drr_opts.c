@@ -58,7 +58,7 @@ set_default_options (MGHDRR_Options* options)
     options->input_file = 0;
     options->output_prefix = "out_";
     options->exponential_mapping = 0;
-    options->output_format= 0;
+    options->output_format= OUTPUT_FORMAT_PFM;
     options->multispectral = 0;
     options->interpolation = INTERPOLATION_NONE;
 }
@@ -133,8 +133,16 @@ parse_args (MGHDRR_Options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-t")) {
 	    i++;
-	    rc = sscanf (argv[i], "%s" , options->output_format);
-	    if (rc != 1) {
+	    if (!strcmp (argv[i], "pfm")) {
+		options->output_format = OUTPUT_FORMAT_PFM;
+	    }
+	    else if (!strcmp (argv[i], "pgm")) {
+		options->output_format = OUTPUT_FORMAT_PGM;
+	    }
+	    else if (!strcmp (argv[i], "raw")) {
+		options->output_format = OUTPUT_FORMAT_RAW;
+	    }
+	    else {
 		print_usage ();
 	    }
 	}

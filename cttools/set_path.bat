@@ -17,10 +17,8 @@ if "%COMPUTERNAME%"=="ROSHAR" (
 @rem  PATH=%PATH%;"C:\Program Files\Microsoft DirectX SDK (June 2007)\Utilities\Bin\x86"
 ) else if "%COMPUTERNAME%"=="SLUMBER" (
   echo Setting for SLUMBER
-@rem  SET ITK_PATH=%HOME%\build\itk-3.8.0\bin\Release
-@rem  SET PLASTIMATCH_PATH=%HOME%\build\plastimatch-3.8.0\Release
-  SET ITK_PATH=%HOME%\build\itk-3.10.2\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.10.2
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.14.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.14.0
   SET CTTOOLS_PATH=%PLASTIMATCH_PATH%\cttools
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
   echo Setting for ROFOVIA

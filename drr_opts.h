@@ -39,6 +39,10 @@
 #define INTERPOLATION_TRILINEAR_EXACT     1
 #define INTERPOLATION_TRILINEAR_APPROX    2
 
+#define OUTPUT_FORMAT_PFM                 0
+#define OUTPUT_FORMAT_PGM                 1
+#define OUTPUT_FORMAT_RAW                 2
+
 typedef struct MGHDRR_Options_struct MGHDRR_Options;
 struct MGHDRR_Options_struct {
     int image_resolution[2];         /* In pixels */
@@ -55,8 +59,7 @@ struct MGHDRR_Options_struct {
     float sid;			     /* In mm */
     float scale;
     int exponential_mapping;
-    //int true_pgm;
-    char* output_format;
+    int output_format;
     int multispectral;
     int interpolation;
     char* input_file;

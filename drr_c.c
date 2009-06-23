@@ -1437,24 +1437,24 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 	msd_fp = 0;
     }
 
-    if (!strcmp(options->output_format,"pgm")) {
-	fprintf (pgm_fp, 
-		 "P2\n"
-		 "# Created by mghdrr\n"
-		 "%d %d\n"
-		 "65536\n",
-		 res_c, res_r);
-    } else if (!strcmp(options->output_format,"pfm")){
+    if (options->output_format == OUTPUT_FORMAT_PFM) {
 	fprintf (pgm_fp, 
 		 "Pf\n"
 		 "%d %d\n"
 		 "-1\n",
 		 res_c, res_r);
     } 
-    //else{
-    //	fprintf(pgm_fp, "%d\n");
-    //}
-
+    else if (options->output_format == OUTPUT_FORMAT_PGM) {
+	fprintf (pgm_fp, 
+		 "P2\n"
+		 "# Created by mghdrr\n"
+		 "%d %d\n"
+		 "65536\n",
+		 res_c, res_r);
+    }
+    else {
+	/* Nothing for RAW */
+    }
 
     for (r=options->image_window[0]; r<=options->image_window[1]; r++) {
 	if (r % 50 == 0) printf ("Row: %4d/%d\n",r,res_r);
@@ -1481,7 +1481,12 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		value = exp(-value);
 	    }
 	    value = value * options->scale;   /* User requested scaling */
-	    if (!strcmp(options->output_format,"pgm")){
+	    if (options->output_format == OUTPUT_FORMAT_PFM) {
+		float fv = (float) value;
+		fwrite (&fv, sizeof(float), 1, pgm_fp);
+		//fprintf (pgm_fp,"%g ",value);
+	    }
+	    else if (options->output_format == OUTPUT_FORMAT_PGM) {
 		if (options->exponential_mapping) {
 		    value = value * 65536;
 		} else {
@@ -1493,16 +1498,14 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		    value = 0;
 		}
 		fprintf (pgm_fp,"%d ", ROUND_INT(value));
-	    } else if (!strcmp(options->output_format,"pfm")){
-		float fv = (float) value;
-		fwrite (&fv, sizeof(float), 1, pgm_fp);
-		//fprintf (pgm_fp,"%g ",value);
-	    } else {
+	    }
+	    else {
+		/* RAW */
 		short fv = (short) value;
 		fwrite (&fv, sizeof(short), 1, pgm_fp);
 	    }
-        }
-	if (!strcmp(options->output_format,"pgm")) {
+	}
+	if (options->output_format == OUTPUT_FORMAT_PGM) {
 	    fprintf (pgm_fp,"\n");
 	}
     }
@@ -1586,15 +1589,19 @@ drr_render_volumes (Volume* vol, MGHDRR_Options* options)
 	sprintf (out_fn, "%s%04d.txt", options->output_prefix, a);
 	drr_write_projection_matrix (vol, cam, tgt, vup, 
 				     sid, ic, ps, ires, out_fn);
-	printf ("output format %s\n", options->output_format);
-	if (!strcmp(options->output_format,"pgm")) {
-	    sprintf (out_fn, "%s%04d.pgm", options->output_prefix, a);
-	} else if (!strcmp(options->output_format,"pfm")){
+	if (options->output_format == OUTPUT_FORMAT_PFM) {
+	    printf ("output format pfm\n");
+	} else if (options->output_format == OUTPUT_FORMAT_PGM) {
+	    printf ("output format pgm\n");
+	} else {
+	    printf ("output format raw\n");
+	}
+	if (options->output_format == OUTPUT_FORMAT_PFM) {
 	    sprintf (out_fn, "%s%04d.pfm", options->output_prefix, a);
-	} else if (!strcmp(options->output_format,"raw")){
+	} else if (options->output_format == OUTPUT_FORMAT_PGM) {
+	    sprintf (out_fn, "%s%04d.pgm", options->output_prefix, a);
+	} else {
 	    sprintf(out_fn, "%s%04d.raw", options->output_prefix, a);
-	} else{
-	    printf("Error: Undefined output format");
 	}
 	sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
 	drr_render_volume_perspective (vol, cam, tgt, vup, 
