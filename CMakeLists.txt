@@ -42,7 +42,7 @@ SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
 ######################################################
-##  SLICER FRONT-END 	 
+##  SLICER FRONT-ENDS
 ###################################################### 	 
 SET(Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 
@@ -60,6 +60,19 @@ IF(Slicer3_DIR)
 
   # The Command Line Module
   set(CLP plastimatch-slicer)
+  set(${CLP}_SOURCE ${CLP}.cxx)
+  generateclp(${CLP}_SOURCE ${CLP}.xml)
+
+  # Build it
+  add_executable(${CLP} ${${CLP}_SOURCE})
+  slicer3_set_plugins_output_path(${CLP})
+  target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
+
+  # Install it
+  slicer3_install_plugins(${CLP})
+
+  # The Command Line Module
+  set(CLP dicomrt-import-slicer)
   set(${CLP}_SOURCE ${CLP}.cxx)
   generateclp(${CLP}_SOURCE ${CLP}.xml)
 

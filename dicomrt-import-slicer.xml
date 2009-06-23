@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Registration</category>
+  <title>DicomRT Import</title>
+  <description>DicomRT Structure Set Import Software</description>
+  <version>0.0</version>
+  <documentation-url></documentation-url>
+  <license>BSD-style</license>
+  <contributor>Gregory C. Sharp and others</contributor>
+  <acknowledgements></acknowledgements>
+  <parameters>
+    <label>Input/Output</label>
+    <description>Input/output parameters</description>
+    <file>
+      <name>input_dicomrt_ss</name>
+      <label>Input DicomRT SS</label>
+      <channel>input</channel>
+      <index>0</index>
+      <default>None</default>
+      <description>Input DicomRT Structure Set</description>
+    </file>
+    <image>
+      <name>reference_vol</name>
+      <label>Reference Volume (to set size)</label>
+      <channel>input</channel>
+      <index>1</index>
+      <default>None</default>
+      <description>Reference Volume (to set size)</description>
+    </image>
+    <image>
+      <name>output_labelmap</name>
+      <label>Output Labelmap</label>
+      <channel>output</channel>
+      <index>2</index>
+      <default>None</default>
+      <description>Output Labelmap</description>
+    </image>
+  </parameters>
+</executable>

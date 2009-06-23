@@ -15,8 +15,8 @@ main (int argc, char * argv [])
     PARSE_ARGS;
 
     char buf1[L_tmpnam+1];
-    //char* parms_fn = tmpnam (buf1);
-    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    char* parms_fn = tmpnam (buf1);
+    //    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
     FILE* fp = fopen (parms_fn, "w");
 
     fprintf (fp,
