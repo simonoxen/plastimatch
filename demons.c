@@ -10,6 +10,7 @@
 #include "demons.h"
 
 /* GCS FIX: ITK uses sum_d(pix_spacing[d]^2) / (#dim) for homog */
+gpuit_EXPORT
 void
 demons_default_parms (DEMONS_Parms* parms)
 {
@@ -23,6 +24,7 @@ demons_default_parms (DEMONS_Parms* parms)
     parms->filter_std = 5.0;
 }
 
+gpuit_EXPORT
 Volume*
 demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, char* method, DEMONS_Parms* parms)
 {

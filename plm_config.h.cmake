@@ -62,9 +62,15 @@
 # else
 #  define plastimatch1_EXPORT __declspec(dllimport)
 # endif
+# ifdef gpuit_EXPORTS
+#  define gpuit_EXPORT __declspec(dllexport)
+# else
+#  define gpuit_EXPORT __declspec(dllimport)
+# endif
 #else
 /* unix needs nothing */
 #define plastimatch1_EXPORT 
+#define gpuit_EXPORT 
 #endif
 
 #endif /* __plm_config_h__ */

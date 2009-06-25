@@ -73,6 +73,7 @@ bspline_cuda_score_c_mse(
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
+gpuit_EXPORT
 void
 bspline_parms_set_default (BSPLINE_Parms* parms)
 {
@@ -92,6 +93,7 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->mi_hist.moving.bins = 20;
 }
 
+gpuit_EXPORT
 void
 bspline_xform_set_default (BSPLINE_Xform* bxf)
 {
@@ -110,6 +112,7 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
     }
 }
 
+gpuit_EXPORT
 void
 write_bxf (char* filename, BSPLINE_Xform* bxf)
 {
@@ -480,6 +483,7 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
 
     Inputs: roi_dim, vox_per_rgn.
    ----------------------------------------------------------------------- */
+gpuit_EXPORT
 void
 bspline_xform_initialize (
 	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
@@ -737,6 +741,7 @@ bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
     bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
 }
 
+gpuit_EXPORT
 void
 bspline_xform_free (BSPLINE_Xform* bxf)
 {
@@ -745,6 +750,7 @@ bspline_xform_free (BSPLINE_Xform* bxf)
     free (bxf->c_lut);
 }
 
+gpuit_EXPORT
 void
 bspline_parms_free (BSPLINE_Parms* parms)
 {
@@ -951,6 +957,7 @@ bspline_interp_pix_b (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
     }
 }
 
+gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
 			BSPLINE_Xform* bxf)
@@ -2909,6 +2916,7 @@ bspline_optimize_steepest (
     }
 }
 
+gpuit_EXPORT
 void
 bspline_optimize (BSPLINE_Xform* bxf, 
 		  BSPLINE_Parms *parms, 

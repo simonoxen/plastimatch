@@ -19,7 +19,9 @@ struct DEMONS_Parms_struct {
 #if defined __cplusplus
 extern "C" {
 #endif
+gpuit_EXPORT
 void demons_default_parms (DEMONS_Parms* parms);
+gpuit_EXPORT
 Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, char* method, DEMONS_Parms* parms);
 Volume* demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_brook (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);

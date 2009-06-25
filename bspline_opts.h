@@ -24,7 +24,7 @@ struct BSPLINE_Options_struct {
     BSPLINE_Parms parms;
 };
 
-void parse_args (BSPLINE_Options* options, int argc, char* argv[]);
-void bspline_opts_set_default_options (BSPLINE_Options* options);
+gpuit_EXPORT
+void bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[]);
 
 #endif

@@ -82,8 +82,11 @@ struct BSPLINE_Parms_struct {
 #if defined __cplusplus
 extern "C" {
 #endif
+gpuit_EXPORT
 void bspline_parms_set_default (BSPLINE_Parms* parms);
+gpuit_EXPORT
 void bspline_xform_set_default (BSPLINE_Xform* bxf);
+gpuit_EXPORT
 void
 bspline_xform_initialize (
 	BSPLINE_Xform* bxf,	         /* Output: bxf is initialized */
@@ -93,11 +96,15 @@ bspline_xform_initialize (
 	int roi_offset[3],	         /* Position of first vox in ROI (in vox) */
 	int roi_dim[3],		         /* Dimension of ROI (in vox) */
 	int vox_per_rgn[3]);	     /* Knot spacing (in vox) */
+gpuit_EXPORT
 void bspline_xform_free (BSPLINE_Xform* bxf);
+gpuit_EXPORT
 void bspline_parms_free (BSPLINE_Parms* parms);
+gpuit_EXPORT
 void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad);
 BSPLINE_Xform* read_bxf (char* filename);
+gpuit_EXPORT
 void write_bxf (char* filename, BSPLINE_Xform* bxf);
 
 /* Used internally */
@@ -115,6 +122,7 @@ void
 bspline_score_reference (BSPLINE_Score *ssd, 
 			 Volume *fixed, Volume *moving, Volume *moving_grad, 
 			 BSPLINE_Parms *parms);
+gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
 			BSPLINE_Xform* bxf);

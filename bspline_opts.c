@@ -28,8 +28,9 @@ print_usage (void)
     exit (1);
 }
 
+gpuit_EXPORT
 void
-parse_args (BSPLINE_Options* options, int argc, char* argv[])
+bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 {
     int d, i, rc;
     BSPLINE_Parms* parms = &options->parms;

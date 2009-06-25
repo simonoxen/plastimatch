@@ -16,6 +16,7 @@ volume_index (int* dims, int i, int j, int k)
     return i + (dims[0] * (j + dims[1] * k));
 }
 
+gpuit_EXPORT
 Volume*
 volume_create (int* dim, 
 	       float* offset, 
@@ -141,6 +142,7 @@ volume_clone (Volume* ref)
     return vout;
 }
 
+gpuit_EXPORT
 void
 volume_free (Volume* vol)
 {
@@ -154,6 +156,7 @@ volume_free (Volume* vol)
     free (vol);
 }
 
+gpuit_EXPORT
 void
 volume_convert_to_float (Volume* ref)
 {
@@ -475,6 +478,7 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     return vol_out;
 }
 
+gpuit_EXPORT
 Volume*
 volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing)
 {
@@ -496,6 +500,7 @@ volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing)
     }
 }
 
+gpuit_EXPORT
 Volume*
 volume_subsample (Volume* vol_in, int* sampling_rate)
 {
@@ -515,6 +520,7 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
     return volume_resample (vol_in, dim, offset, pix_spacing);
 }
 
+gpuit_EXPORT
 void
 vf_print_stats (Volume* vol)
 {
@@ -615,6 +621,7 @@ volume_calc_grad (Volume* vout, Volume* vref)
     }
 }
 
+gpuit_EXPORT
 Volume* 
 volume_make_gradient (Volume* ref)
 {
@@ -626,6 +633,7 @@ volume_make_gradient (Volume* ref)
     return grad;
 }
 
+gpuit_EXPORT
 Volume*
 volume_warp (Volume *vout, Volume *vin, Volume *vf)
 {

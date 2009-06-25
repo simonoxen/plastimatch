@@ -42,6 +42,7 @@ void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
     }
 }
 
+gpuit_EXPORT
 void write_mha (char* filename, Volume* vol)
 {
     FILE* fp;
@@ -106,6 +107,7 @@ void write_mha (char* filename, Volume* vol)
     fclose (fp);
 }
 
+gpuit_EXPORT
 Volume* read_mha (char* filename)
 {
     int rc;

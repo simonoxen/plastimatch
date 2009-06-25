@@ -31,9 +31,9 @@ main (int argc, char* argv[])
     Volume *vector_field;
     Volume *moving_warped;
     int roi_offset[3];
-	int i;
+    int i;
 
-    parse_args (&options, argc, argv);
+    bspline_opts_parse_args (&options, argc, argv);
 
     fixed = read_mha (options. fixed_fn);
     if (!fixed) exit (-1);

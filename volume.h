@@ -4,6 +4,8 @@
 #ifndef _volume_h_
 #define _volume_h_
 
+#include "plm_config.h"
+
 enum Pixel_Type {
     PT_UNDEFINED,
     PT_UCHAR,
@@ -41,10 +43,13 @@ struct volume
 extern "C" {
 #endif
 int volume_index (int* dims, int k, int j, int i);
+gpuit_EXPORT
 Volume* volume_create (int* dim, float* offset, float* pix_spacing, 
 		       enum Pixel_Type pix_type, float* direction_cosines, 
 		       int min_size);
+gpuit_EXPORT
 void volume_free (Volume* vol);
+gpuit_EXPORT
 void volume_convert_to_float (Volume* ref);
 void volume_convert_to_short (Volume* ref);
 void vf_convert_to_interleaved (Volume* ref);
@@ -52,12 +57,17 @@ void vf_convert_to_planar (Volume* ref, int min_size);
 void vf_pad_planar (Volume* vol, int size);
 Volume* volume_clone_empty (Volume* ref);
 Volume* volume_clone (Volume* ref);
+gpuit_EXPORT
 Volume* volume_make_gradient (Volume* ref);
 Volume* warp_image (Volume* vol, float** vec);
 Volume* volume_difference (Volume* vol, Volume* warped);
+gpuit_EXPORT
 Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);
+gpuit_EXPORT
 Volume* volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing);
+gpuit_EXPORT
 Volume* volume_subsample (Volume* vol_in, int* sampling_rate);
+gpuit_EXPORT
 void vf_print_stats (Volume* vol);
 void vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width);
 void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
