@@ -56,7 +56,7 @@
 #endif
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (defined(_WIN32) || defined(WIN32)) && defined (BUILD_SHARED_LIBS)
+#if (defined(_WIN32) || defined(WIN32)) && defined (PLM_BUILD_SHARED_LIBS)
 # ifdef plastimatch1_EXPORTS
 #  define plastimatch1_EXPORT __declspec(dllexport)
 # else
