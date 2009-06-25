@@ -123,6 +123,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	else if (!strcmp (val,"vf")) {
 	    stage->xform_type = STAGE_TRANSFORM_VECTOR_FIELD;
 	}
+	else if (!strcmp (val,"align_center")) {
+	    stage->xform_type = STAGE_TRANSFORM_ALIGN_CENTER;
+	}
 	else {
 	    goto error_exit;
 	}

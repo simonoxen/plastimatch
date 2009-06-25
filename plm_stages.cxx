@@ -403,22 +403,25 @@ do_registration_stage (Registration_Parms* regp,
 
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
-	if (stage->impl_type == IMPLEMENTATION_ITK) {
-	    do_demons_stage (regd, xf_out, xf_in, stage);
-	} else {
-	    do_gpuit_demons_stage (regd, xf_out, xf_in, stage);
-	}
+		if (stage->impl_type == IMPLEMENTATION_ITK) {
+			do_demons_stage (regd, xf_out, xf_in, stage);
+		} else {
+			do_gpuit_demons_stage (regd, xf_out, xf_in, stage);
+		}
     }
     else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE) {
-	if (stage->impl_type == IMPLEMENTATION_ITK) {
-	    do_itk_stage (regd, xf_out, xf_in, stage);
-	} else {
-	    do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
+		if (stage->impl_type == IMPLEMENTATION_ITK) {
+			do_itk_registration_stage (regd, xf_out, xf_in, stage);
+		} else {
+			do_gpuit_bspline_stage (regp, regd, xf_out, xf_in, stage);
+		}
+    }else if (stage->xform_type == STAGE_TRANSFORM_ALIGN_CENTER){ 
+			
+			do_itk_center_stage (regd, xf_out, xf_in, stage);
+			std::cout << "Centering done" << std::endl;
+	}else {
+		do_itk_registration_stage (regd, xf_out, xf_in, stage);
 	}
-    }
-    else {
-	do_itk_stage (regd, xf_out, xf_in, stage);
-    }
 
     logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
 	    xf_out->m_type, xf_in->m_type);

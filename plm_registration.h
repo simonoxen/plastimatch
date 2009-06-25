@@ -26,6 +26,7 @@ typedef itk::DemonsRegistrationFilter<
 #define STAGE_TRANSFORM_AFFINE		    3
 #define STAGE_TRANSFORM_BSPLINE		    4
 #define STAGE_TRANSFORM_VECTOR_FIELD	    5
+#define STAGE_TRANSFORM_ALIGN_CENTER	6
 
 #define OPTIMIZATION_NO_REGISTRATION	    0
 #define OPTIMIZATION_AMOEBA		    1

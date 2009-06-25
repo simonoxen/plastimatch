@@ -9,6 +9,7 @@
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageMaskSpatialObject.h"
 #include "itkMutualInformationImageToImageMetric.h"
+#include "itkCenteredTransformInitializer.h"
 
 #define USE_GCS_METRIC 1
 
@@ -476,6 +477,9 @@ set_transform (RegistrationType::Pointer registration,
     case STAGE_TRANSFORM_BSPLINE:
 	set_transform_bspline (registration, xf_out, xf_in, stage);
 	break;
+	case STAGE_TRANSFORM_ALIGN_CENTER:
+	set_transform_versor(registration, xf_out, xf_in, stage);
+	break;
     }
     registration->SetInitialTransformParameters(registration->GetTransform()->GetParameters());
 
@@ -541,11 +545,18 @@ set_xf_out (Xform *xf_out,
 	    xf_out->set_itk_bsp (transform);
 	}
 	break;
+	case STAGE_TRANSFORM_ALIGN_CENTER:
+	{
+	    typedef VersorTransformType * XfPtr;
+	    XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+	    xf_out->set_vrs(transform);
+	}
+	break;
     }
 }
 
 void
-do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
+do_itk_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
 {
     RegistrationType::Pointer registration = RegistrationType::New();
 
@@ -589,6 +600,51 @@ do_itk_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms*
 	std::cerr << err << std::endl;
 	exit (-1);
     }
-
     set_xf_out (xf_out, registration, stage);
+	
+}
+
+void
+do_itk_center_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
+{
+	
+	typedef itk::CenteredTransformInitializer < VersorTransformType, FloatImageType, FloatImageType > TransformInitializerType;
+	RegistrationType::Pointer registration = RegistrationType::New();
+
+    /* Subsample fixed & moving images */
+    //FloatImageType::Pointer fixed_ss
+	   // = subsample_image (regd->fixed_image->itk_float(), 
+			 //      stage->resolution[0], 
+			 //      stage->resolution[1], 
+			 //      stage->resolution[2], 
+			 //      stage->background_val);
+    //FloatImageType::Pointer moving_ss
+	   // = subsample_image (regd->moving_image->itk_float(), 
+			 //      stage->resolution[0], 
+			 //      stage->resolution[1], 
+			 //      stage->resolution[2], 
+			 //      stage->background_val);
+
+    registration->SetFixedImage (regd->fixed_image->itk_float());
+    registration->SetMovingImage (regd->moving_image->itk_float());
+
+	VersorTransformType::Pointer trn= VersorTransformType::New();
+	TransformInitializerType::Pointer initializer = TransformInitializerType::New();
+	
+	
+    initializer->SetTransform(trn);
+    initializer->SetFixedImage(registration->GetFixedImage());
+    initializer->SetMovingImage(registration->GetMovingImage());
+	initializer->GeometryOn();
+
+	
+	std::cout << "Calling Initialize Transform" << std::endl;
+	initializer->InitializeTransform();
+	std::cout << "Initialization done." << std::endl;
+   // std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
+	registration->SetTransform(trn);
+	set_xf_out (xf_out, registration, stage);
+
+	//initializer->Delete();
+	std::cout << "Centering..." << std::endl;
 }
