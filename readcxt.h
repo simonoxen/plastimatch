@@ -36,10 +36,13 @@ struct structure_list {
 extern "C" {
 #endif
 
+plastimatch1_EXPORT
 void
 cxt_initialize (STRUCTURE_List* structures);
+plastimatch1_EXPORT
 void
 cxt_read (STRUCTURE_List* structures, const char* cxt_fn);
+plastimatch1_EXPORT
 void
 cxt_write (STRUCTURE_List* structures, const char* cxt_fn);
 

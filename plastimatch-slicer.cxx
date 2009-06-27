@@ -3,11 +3,6 @@
 #include <vector>
 #include "plastimatch-slicerCLP.h"
 #include "plm_registration.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-
 
 int 
 main (int argc, char * argv [])

@@ -153,6 +153,7 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
     fclose (fp);
 }
 
+gpuit_EXPORT
 BSPLINE_Xform* 
 read_bxf (char* filename)
 {

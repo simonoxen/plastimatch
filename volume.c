@@ -243,6 +243,7 @@ volume_convert_to_short (Volume* ref)
     }
 }
 
+gpuit_EXPORT
 void
 vf_convert_to_interleaved (Volume* vf)
 {
@@ -752,6 +753,7 @@ volume_difference (Volume* vol, Volume* warped)
     return temp;
 }
 
+gpuit_EXPORT
 void
 vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
 {
@@ -792,6 +794,7 @@ vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
     }
 }
 
+gpuit_EXPORT
 void
 vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width)
 {
@@ -832,6 +835,7 @@ vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width)
     }
 }
 
+gpuit_EXPORT
 void
 vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
 {

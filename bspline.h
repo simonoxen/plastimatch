@@ -103,6 +103,7 @@ void bspline_parms_free (BSPLINE_Parms* parms);
 gpuit_EXPORT
 void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
 		  Volume *moving_grad);
+gpuit_EXPORT
 BSPLINE_Xform* read_bxf (char* filename);
 gpuit_EXPORT
 void write_bxf (char* filename, BSPLINE_Xform* bxf);

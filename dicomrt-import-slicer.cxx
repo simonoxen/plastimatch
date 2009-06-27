@@ -1,13 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include "plastimatch-slicerCLP.h"
-#include "plm_registration.h"
-#include "itkImage.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkDiscreteGaussianImageFilter.h"
-
+#include "dicomrt-import-slicerCLP.h"
 
 int 
 main (int argc, char * argv [])
@@ -25,7 +19,7 @@ main (int argc, char * argv [])
 	     "output_labelmap = %s\n\n",
 	     input_dicomrt_ss.c_str(),
 	     reference_vol.c_str(),
-	     output_labelmap.c_str(),
+	     output_labelmap.c_str()
 	     );
 
     fclose (fp);

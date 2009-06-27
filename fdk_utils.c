@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "fdk.h"
 #include "fdk_opts.h"
+#include "fdk_utils.h"
 #include "volume.h"
 
 Volume*

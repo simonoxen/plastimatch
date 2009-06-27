@@ -421,8 +421,8 @@ SET(FDK_C_SRC
 SET(FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
-	volume.c volume.h
-	readmha.c readmha.h
+#	volume.c volume.h
+#	readmha.c readmha.h
 	fdk_cuda.h fdk.h
 	mathutil.h
 	fdk_cuda_main.c
@@ -433,8 +433,8 @@ SET(FDK_BROOK_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	mathutil.h
-	readmha.c readmha.h
-	volume.c volume.h
+#	readmha.c readmha.h
+#	volume.c volume.h
 	)
 SET(HND_TO_PFM_SRC
 	hnd_to_pfm.c
@@ -672,7 +672,8 @@ IF(CUDA_FOUND)
   NVCC_FILE(fdk_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
-  ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
+  #ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
+  ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} fdk_cuda_wrap.cpp)
 ENDIF(CUDA_FOUND)
 
 IF(CUDA_FOUND)
@@ -747,9 +748,6 @@ ENDIF(DCMTK_FOUND)
 ##  LINKING INSTRUCTIONS
 ######################################################
 
-#IF(CUDA_FOUND)
-#TARGET_LINK_LIBRARIES(gpuit ${CUDA_LIBRARIES} ${F2C_LIBRARY})
-#ENDIF(CUDA_FOUND)
 TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 IF(ITK_FOUND)
 TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
@@ -777,11 +775,12 @@ IF(BROOK_FOUND)
 ENDIF(BROOK_FOUND)
 
 # Require cuda
-IF(BUILD_DEMONS_CUDA)
-  IF(CUDA_FOUND)
+IF(CUDA_FOUND)
+  TARGET_LINK_LIBRARIES(fdk_cuda ${GPUIT_LIBRARIES} ${CUDA_LIBRARIES})
+  IF(BUILD_DEMONS_CUDA)
     TARGET_LINK_LIBRARIES(demons_cuda ${MY_MATH_LIB} ${CUDA_LIBRARIES})
-  ENDIF(CUDA_FOUND)
-ENDIF(BUILD_DEMONS_CUDA)
+  ENDIF(BUILD_DEMONS_CUDA)
+ENDIF(CUDA_FOUND)
 
 # Require dcmtk
 IF(DCMTK_FOUND)

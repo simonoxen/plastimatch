@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "plm_config.h"
 #include "fdk_opts.h"
+#include "readmha.h"
 #include "volume.h"
 
 int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options);

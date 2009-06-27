@@ -4,11 +4,17 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "readcxt.h"
 
 void
 do_dicom_rtss_to_cxt (char *rtss_fn, char *dicom_dir)
 {
-
+#if defined (commentout)
+    Cxt cxt;
+    
+    cxt_set_defaults (&cxt);
+    cxt_free (&cxt);
+#endif
 }
 
 int
