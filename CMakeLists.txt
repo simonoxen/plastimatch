@@ -7,12 +7,14 @@ PROJECT(plastimatch)
 INCLUDE(CheckFunctionExists)
 INCLUDE(FindOpenGL)
 ##INCLUDE(FindPantheios.cmake)
+#INCLUDE(FindwxWidgets)
+FIND_PACKAGE(wxWidgets)
+
+INCLUDE(PLM_Etags.cmake)
 INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
 INCLUDE(PLM_FindFFTW.cmake)
 INCLUDE(GPUIT.cmake)
-#INCLUDE(FindwxWidgets)
-FIND_PACKAGE(wxWidgets)
 
 ######################################################
 ##  Help the user out on unix
