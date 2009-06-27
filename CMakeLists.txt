@@ -34,7 +34,7 @@ ENDIF(wxWidgets_FOUND)
 ######################################################
 ##  Plastimatch configuration variables
 ###################################################### 	 
-SET(PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
+SET(PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
 SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
@@ -1013,20 +1013,6 @@ ENDMACRO(PLM_ADD_TEST)
 IF(PLM_BUILD_TESTING)
   ENABLE_TESTING()
   ADD_SUBDIRECTORY(Testing)
-  PLM_ADD_TEST (
-    "plastimatch_usage_1" 
-    ""
-    ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-    ""
-    )
-  if (0)
-  PLM_ADD_TEST (
-    "plastimatch_y1" 
-    "C:/gcs6/idata/synth_mse"
-    ${PLM_PLASTIMATCH_TESTING_PATH_HACK}/plastimatch
-    "parms.txt"
-    )
-  endif (0)
 ENDIF(PLM_BUILD_TESTING)
 
 ######################################################
