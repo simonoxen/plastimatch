@@ -44,7 +44,8 @@ The following versions of ITK are known to work:
   ITK 3.6.0		Does not work
   ITK 3.8.0		Works
   ITK 3.10.2		Works
-  ITK 3.12.0		Not tested
+  ITK 3.12.0		Works
+  ITK 3.14.0		Works
 
 When you build ITK, the following settings are recommended:
   BUILD_EXAMPLES         OFF
@@ -120,10 +121,16 @@ BUILDING PLASTIMATCH
 *) Special instructions for running cmake with MSYS/gcc on Windows
 
    There is a trick to this: you need to run the win32 cmake from 
-   the MSYS command line instead of the GUI.
+   the MSYS command line instead of the GUI.  For example, here is 
+   the command that I use:
 
-   mkdir /path/to/build/files; cd /path/to/build/files
-   /c/Program\ Files/CMake\ 2.4/bin/cmake -G"MSYS Makefiles" /path/to/source
+   mkdir /c/gcs6/build/mingw/plastimatch-3.14.0
+   cd /c/gcs6/build/mingw/plastimatch-3.14.0
+   /c/Program\ Files/CMake\ 2.6/bin/cmake \
+      -DITK_DIR=/c/gcs6/build/mingw/itk-3.14.0 \
+      -DF2C_LIBRARY=/c/gcs6/build/mingw/f2c/libf2c.a \
+      -G"MSYS Makefiles" \
+      /c/gcs6/projects/plastimatch
 
    Then, edit CMakeCache.txt to set your options.  Re-run cmake 
    to create the MSYS Makefile.

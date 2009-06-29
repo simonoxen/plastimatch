@@ -146,6 +146,14 @@ ELSE(NVCC_EXECUTABLE AND CUDA_INCLUDE_DIR AND CUDA_SDK_INCLUDE_DIR AND CUDA_LIBR
   SET(CUDA_FOUND FALSE)
 ENDIF(NVCC_EXECUTABLE AND CUDA_INCLUDE_DIR AND CUDA_SDK_INCLUDE_DIR AND CUDA_LIBRARIES)
 
+## Mingw isn't supported by mingw/gcc.  However, maybe this works:
+## http://forums.nvidia.com/index.php?showtopic=99096
+## or possibly this:
+## http://forums.nvidia.com/lofiversion/index.php?t61416.html
+IF(MINGW)
+  SET(CUDA_FOUND FALSE)
+ENDIF(MINGW)
+
 IF(CUDA_FOUND)
   MACRO(NVCC_FILE FILENAME)
     GET_FILENAME_COMPONENT(PATH "${FILENAME}" PATH)
