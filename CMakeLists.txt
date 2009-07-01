@@ -360,6 +360,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
+	compute_mean_mha_main.cxx
 	)
 
 ######################################################
@@ -476,6 +477,9 @@ SET(PLASTIMATCH_SRC
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
 	)
+SET(COMPUTE_MEAN_MHA_SRC
+	compute_mean_mha_main.cxx
+	)
 SET(RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	render_polyline.cxx render_polyline.h
@@ -526,8 +530,9 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
-    SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
+    SET(COMPUTE_MEAN_MHA_SRC ${COMPUTE_MEAN_MHA_SRC} getopt_long.c getopt.h)
     SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
@@ -724,6 +729,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(patient_mask ${PATIENT_MASK_SRC})
   ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
   ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
+  ADD_EXECUTABLE(compute_mean_mha ${COMPUTE_MEAN_MHA_SRC})
   ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
   ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
   ADD_EXECUTABLE(synthetic_mha ${SYNTHETIC_MHA_SRC})
@@ -808,6 +814,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(patient_mask ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
   TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(compute_mean_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
   TARGET_LINK_LIBRARIES(synthetic_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(shuffle_mha ${PLASTIMATCH_LIBS})
@@ -857,6 +864,7 @@ ENDIF(DCMTK_FOUND)
 # Require itk
 IF(ITK_FOUND)
   INSTALL(TARGETS adjust_mha DESTINATION bin)
+  INSTALL(TARGETS compute_mean_mha DESTINATION bin)
   INSTALL(TARGETS analyze_to_mha DESTINATION bin)
   INSTALL(TARGETS cms_to_cxt DESTINATION bin)
   INSTALL(TARGETS contour_statistics DESTINATION bin)
