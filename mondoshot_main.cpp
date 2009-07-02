@@ -230,12 +230,14 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
     wxString patient_name, patient_id;
 
     /* Save a copy */
+#if defined (commentout)
     this->m_bitmap.SaveFile (
 	::config.data_directory + wxString ("/tmp.jpg"),
 	wxBITMAP_TYPE_JPEG);
     this->m_bitmap.SaveFile (
 	::config.data_directory + wxString ("/tmp.png"),
 	wxBITMAP_TYPE_PNG);
+#endif
 
     /* Validate input fields */
     patient_name = this->m_textctrl_patient_name->GetValue ();
@@ -254,23 +256,34 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
     /* Hide dialog box */
     this->Show (FALSE);
 
-    /* Bundle up and send dicom */
-    wxImage image = this->m_bitmap.ConvertToImage ();
-    image = image.ConvertToGreyscale ();
-
-    wxString filename = wxString::Format ("%s [%s] [%s].dcm",
+    /* We need three filenames.  One for png storage (color), one for 
+       dcm storage (grayscale), and one with a simple filename for 
+       transmission using storescu. */
+    wxString filename_base = wxString::Format ("%s [%s] [%s]",
 	    (const char*) wxDateTime::Now().Format("%Y-%m-%d-%H%M%S"),
 	    (const char*) patient_id,
 	    (const char*) patient_name
 	    );
     for (unsigned int i = 0; i < wxFileName::GetForbiddenChars().Len(); i++) {
-	filename.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
+	filename_base.Replace (wxFileName::GetForbiddenChars().Mid(i,1), "-", true);
     }
-    filename = ::config.data_directory + wxString ("/") + filename;
+    filename_base = ::config.data_directory + wxString ("/") + filename_base;
+    wxString png_filename = wxString::Format ("%s.png", filename_base);
+    wxString dcm_filename = wxString::Format ("%s.dcm", filename_base);
+    wxString storescu_filename = ::config.data_directory + wxString ("/mondoshot.dcm");
 
-    /* wxImage is a pretty bad implementation of images.  There is no way 
-       to receive a grayscale pointer.  So we make our own.  We'll scramble
-       the RGB image in-place to get the grayscale image. */
+    /* Save the color image as png */
+    this->m_bitmap.SaveFile (png_filename, wxBITMAP_TYPE_PNG);
+
+    /* Convert to grayscale for dicom */
+    wxImage image = this->m_bitmap.ConvertToImage ();
+    image = image.ConvertToGreyscale ();
+
+    /* wxImage is a pretty bad implementation of images.  
+       The ConvertToGreyscale gives us an RGB with equal values for 
+       R, G, and B, but there is no way to receive a grayscale pointer.  
+       So we make our own.  We'll modify the RGB image in-place to get 
+       the proper grayscale image for transmission and storage. */
     unsigned char* bytes = image.GetData ();
     for (int r = 0; r < image.GetHeight (); r++) {
 	for (int c = 0; c < image.GetWidth (); c++) {
@@ -279,7 +292,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	}
     }
 
-    /* This creates a backup file with the date and patient id. */
+    /* Create dicom storage file */
     mondoshot_dicom_create_file (
 	    image.GetHeight (), 
 	    image.GetWidth (),
@@ -287,14 +300,13 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	    0, 
 	    (const char*) patient_id,
 	    (const char*) patient_name,
-	    (const char*) filename);
+	    (const char*) dcm_filename);
 
-#if defined (commentout)
-    /* Unfortunately, the storescu program chokes on the above filename. 
-	Call again with a more mundane filename.  Normally I would rename 
+    /* Unfortunately, the storescu program can't be used with these 
+	kinds of complex filenames.  We create the second file with 
+	the more mundane filename.  Normally I would rename (or link) 
 	the file instead of creating two, but wxWidgets doesn't have an 
 	API call for renaming. */
-    filename = "c:/tmp/mondoshot.dcm";
     mondoshot_dicom_create_file (
 	    image.GetHeight (), 
 	    image.GetWidth (),
@@ -302,8 +314,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	    0, 
 	    (const char*) patient_id,
 	    (const char*) patient_name,
-	    (const char*) filename);
-#endif
+	    (const char*) storescu_filename);
 
     /* Send the file, using the short filename */
     wxString cmd = wxString ("storescu -v ")
@@ -311,14 +322,12 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	+ wxString ("-aec ") + ::config.remote_aet + " "
 	+ ::config.remote_ip + " "
 	+ ::config.remote_port + " "
-	+ "\"" + filename + "\"";
-    //popup ("%s", cmd);
-    ::wxExecute (cmd);
+	+ "\"" + storescu_filename + "\"";
 
-    /* I would like to rename the file, but there is no wxwidgets call.
-	So, I will call twice, once with each name. */
-    //filename = "c:/tmp/mondoshot.dcm";
-    filename = ::config.data_directory + wxString ("/mondoshot.dcm");
+    long rc = ::wxExecute (cmd, wxEXEC_SYNC);
+    if (rc != 0) {
+	popup ("Mondoshot failed to send image to relay");
+    }
 
     /* Insert patient into the database */
     sqlite_patients_insert_record (patient_id, patient_name);
