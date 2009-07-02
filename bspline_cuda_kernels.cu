@@ -3461,6 +3461,467 @@ __global__ void bspline_cuda_score_e_mse_kernel1 (
 }
 
 /***********************************************************************
+ * bspline_cuda_score_e_mse_kernel2_by_sets
+ *
+ * This version of kernel2 updates the gradient stream for a given set
+ * of tiles.  It performs the calculation for the entire set at once,
+ * which improves parallelism and therefore improves performance as
+ * compared to the tile by tile implementation, which is found below.
+ ***********************************************************************/
+__global__ void bspline_cuda_score_e_mse_kernel2_by_sets(
+	float  *dc_dv,
+	float  *grad,
+	float  *gpu_q_lut,
+	int3   sidx,
+	int3   sdims,
+	float3 rdims,
+	int3   vox_per_rgn,
+	int    threads_per_tile,
+	int    num_threads)
+{
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// Calculate the linear "set index," which is the index of the tile in the set that contains the 
+	// voxel corresponding to this thread.
+	int tileIdxInSet = threadIdxInGrid / threads_per_tile;
+
+	// If the thread does not correspond to a control point, do nothing.
+	if(threadIdxInGrid < num_threads)
+	{
+		int3 s; // Offset of the tile in the set (x, y, and z)
+		int3 p; // Offset of the tile in the volume (x, y, and z)
+		int m;
+		int num_vox;
+		int xyzOffset;
+		int tileOffset;
+		int pidx;
+		int cidx;
+		int qidx;
+		float result = 0.0;
+		float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
+
+		// Calculate the offset of the tile within the set in the x, y, and z directions.
+		s.x = tileIdxInSet % sdims.x;
+		s.y = ((tileIdxInSet - s.x) / sdims.x) % sdims.y;
+		s.z = ((((tileIdxInSet - s.x) / sdims.x) - s.y) / sdims.y) % sdims.z;
+
+		// Calculate the offset of the tile in the volume, based on the set offset.
+		p.x = (s.x * 4) + sidx.x;
+		p.y = (s.y * 4) + sidx.y;
+		p.z = (s.z * 4) + sidx.z;
+
+		// Use the offset of the tile in the volume to compute the index into the c_lut.
+		pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
+
+		// Calculate the linear index of the control point in the range [0, 63].
+		m = (threadIdxInGrid % threads_per_tile) / 3;
+
+		// Determine if this thread corresponds to the x, y, or z coordinate,
+		// where x = 0, y = 1, and z = 2.
+		xyzOffset = (threadIdxInGrid % threads_per_tile) - (m * 3);
+
+		// Calculate the index into the coefficient lookup table.
+		cidx = tex1Dfetch(tex_c_lut, 64 * pidx + m) * 3;
+
+		// Calculate the number of voxels per tile.
+		num_vox = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+
+		// Calculate the offset of this tile in the dc_dv array.
+		tileOffset = 3 * num_vox * tileIdxInSet;
+
+		for(qidx = 0; qidx < num_vox - 8; qidx = qidx + 8) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		
+		if(qidx+7 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		else if(qidx+6 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6;
+		}
+		else if(qidx+5 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5;
+		}
+		else if(qidx+4 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4;
+		}
+		else if(qidx+3 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			result += temp0 + temp1 + temp2 + temp3;
+		}
+		else if(qidx+2 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			result += temp0 + temp1 + temp2;
+		}
+		else if(qidx+1 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			result += temp0 + temp1;
+		}
+		else if(qidx < num_vox)
+			result += tex1Dfetch(tex_dc_dv, 3*(qidx) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+
+		grad[cidx + xyzOffset] = tex1Dfetch(tex_grad, cidx + xyzOffset) + result;
+	}
+}
+
+/***********************************************************************
+ * bspline_cuda_score_e_mse_kernel2_by_tiles
+ * This version of kernel2 updates the gradient stream for a given tile.
+ * Since it operates on only one tile in a set at a given time, the
+ * performance is worse than bspline_cuda_score_e_mse_kernel2_by_sets.
+ ***********************************************************************/
+__global__ void bspline_cuda_score_e_mse_kernel2_by_tiles (
+	float  *dc_dv,
+	float  *grad,
+	float  *gpu_q_lut,
+	int    num_threads,
+	int3   p,
+	float3 rdims,
+	int    offset,
+	int3   vox_per_rgn,
+	int    total_vox_per_rgn) // Volume of a tile in voxels)
+{
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// If the thread does not correspond to a control point, do nothing.
+	if(threadIdxInGrid < num_threads)
+	{
+		int m;
+		int num_vox;
+		int xyzOffset;
+		int tileOffset;
+		int cidx;
+		int qidx;
+		float result = 0.0;
+		float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
+
+		// Use the offset of the voxel within the region to compute the index into the c_lut.
+		int pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
+		
+		// Calculate the linear index of the control point.
+		m = threadIdxInGrid / 3;
+
+		// Calculate the coordinate offset (x = 0, y = 1, z = 2).
+		xyzOffset = threadIdxInGrid - (m * 3);
+
+		// Calculate index into coefficient texture.
+		cidx = tex1Dfetch(tex_c_lut, 64 * pidx + m) * 3;
+
+		// Calculate the number of voxels in the region.
+		num_vox = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+
+		// Calculate the offset of this tile in the dc_dv array.
+		tileOffset = 3 * num_vox * offset;
+
+		/* ORIGINAL CODE: Looked at each offset serially.
+		// Serial across offsets.
+		for(int qidx = 0; qidx < (vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z); qidx++) {
+			result += tex1Dfetch(tex_dc_dv, 3*qidx + offset) * tex1Dfetch(tex_q_lut, 64*qidx + m);
+		}
+		*/
+
+		// NAGA: Unrolling the loop 8 times; 4 seems to work as well as 8
+		// FOR_CHRIS: FIX to make sure the unrolling works with an arbitrary loop index
+		for(qidx = 0; qidx < num_vox - 8; qidx = qidx + 8) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		
+		if(qidx+7 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		else if(qidx+6 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6;
+		}
+		else if(qidx+5 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5;
+		}
+		else if(qidx+4 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4;
+		}
+		else if(qidx+3 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
+			result += temp0 + temp1 + temp2 + temp3;
+		}
+		else if(qidx+2 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
+			result += temp0 + temp1 + temp2;
+		}
+		else if(qidx+1 < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
+			result += temp0 + temp1;
+		}
+		else if(qidx < num_vox)
+			result += tex1Dfetch(tex_dc_dv, 3*(qidx) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+
+		grad[cidx + xyzOffset] = tex1Dfetch(tex_grad, cidx + xyzOffset) + result;
+	}
+}
+
+/***********************************************************************
+ * bspline_cuda_score_e_mse_kernel2_by_tiles_v2
+ *
+ * In comparison to bspline_cuda_score_e_mse_kernel2_by_tiles_v2, this
+ * kernel uses multiple threads to accumulate the influence from a tile.
+ * The threads are synchronized at the end so that the partial sums can
+ * be exchanged using shared memory, summed together, and saved to the
+ * gradient stream.  The number of threads being used for each control
+ * point must be given as an argument.  The performance is better than
+ * bspline_cuda_score_e_mse_kernel2_by_tiles_v2, but the implementation
+ * is still buggy.
+ ***********************************************************************/
+__global__ void bspline_cuda_score_e_mse_kernel2_by_tiles_v2 (
+	float  *dc_dv,
+	float  *grad,
+	float  *gpu_q_lut,
+	int    num_threads,
+	int3   p,
+	float3 rdims,
+	int    offset,
+	int3   vox_per_rgn,
+	int    threadsPerControlPoint)
+{
+	// Shared memory is allocated on a per block basis.  Therefore, only allocate 
+	// (sizeof(data) * blocksize) memory when calling the kernel.
+	extern __shared__ float sdata[]; 
+
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// If the thread does not correspond to a control point, do nothing.
+	if(threadIdxInGrid < num_threads)
+	{
+		int qidx;
+		float result = 0.0;
+		float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
+
+		// Set the number of threads being used to work on each control point.
+		int tpcp = threadsPerControlPoint;
+
+		// Calculate the linear index of the control point.
+		int m = threadIdxInGrid / (threadsPerControlPoint * 3);
+
+		// Use the offset of the voxel within the region to compute the index into the c_lut.
+		int pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
+
+		// Calculate the coordinate offset (x = 0, y = 1, z = 2).
+		int xyzOffset = (threadIdxInGrid / threadsPerControlPoint) - (m * 3);
+
+		// Determine the thread offset for this control point, in the range [0, threadsPerControlPoint).
+		int cpThreadOffset = threadIdxInGrid % threadsPerControlPoint;
+
+		// Calculate index into coefficient texture.
+		int cidx = tex1Dfetch(tex_c_lut, 64 * pidx + m) * 3;
+
+		// Calculate the number of voxels in the region.
+		int num_vox = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+
+		// Calculate the offset of this tile in the dc_dv array.
+		int tileOffset = 3 * num_vox * offset;
+
+		for(qidx = cpThreadOffset; qidx < num_vox - (8*tpcp); qidx = qidx + (8*tpcp)) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+(7*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(7*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		
+		if(qidx+(7*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
+			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+(7*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(7*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
+		}
+		else if(qidx+(6*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
+			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6;
+		}
+		else if(qidx+(5*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
+			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5;
+		}
+		else if(qidx+(4*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3 + temp4;
+		}
+		else if(qidx+(3*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
+			result += temp0 + temp1 + temp2 + temp3;
+		}
+		else if(qidx+(2*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
+			result += temp0 + temp1 + temp2;
+		}
+		else if(qidx+(1*tpcp) < num_vox) {
+			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
+			result += temp0 + temp1;
+		}
+		else if(qidx < num_vox)
+			result += tex1Dfetch(tex_dc_dv, 3*(qidx) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
+
+		sdata[(tpcp * threadIdxInBlock) + cpThreadOffset] = result;
+		
+		// Wait for the other threads in the thread block to reach this point.
+		__syncthreads();
+
+		if(cpThreadOffset == 0) {
+			result = sdata[(tpcp * threadIdxInBlock) + 0] + sdata[(tpcp * threadIdxInBlock) + 1];
+				
+			/*
+			result = 0.0;
+
+			// Accumulate all the partial results for this control point.
+			for(int i = 0; i < tpcp; i++) {
+				result += sdata[(tpcp * threadIdxInBlock) + i];
+			}
+			*/
+
+			// Update the gradient stream.
+			grad[cidx + xyzOffset] = tex1Dfetch(tex_grad, cidx + xyzOffset) + result;
+		}			
+	}
+}
+
+/***********************************************************************
  * bspline_cuda_score_d_mse_kernel1
  *
  * This kernel is one of two used in the CUDA implementation of 
@@ -4223,318 +4684,6 @@ __global__ void bspline_cuda_score_d_mse_kernel1_v3 (
 	if(sdata[2*(threadIdxInBlock/3)+2] == 1.0)
 		dc_dv[threadIdxInGrid] = sdata[2*(threadIdxInBlock/3)] * 
 			tex1Dfetch(tex_moving_grad, (3 * (int)sdata[2*(threadIdxInBlock/3)+1]) + offset);
-}
-
-/***********************************************************************
- * bspline_cuda_score_e_mse_kernel2
- *
- * This kernel is the second of two used in the CUDA implementation of
- * score_e_mse.  It calculates the values for the gradient stream on 
- * a tile by tile basis.
- ***********************************************************************/
-__global__ void bspline_cuda_score_e_mse_kernel2 (
-	float  *dc_dv,
-	float  *grad,
-	float  *gpu_q_lut,
-	int    num_threads,
-	int3   p,
-	float3 rdims,
-	int    offset,
-	int3   vox_per_rgn,
-	int    total_vox_per_rgn) // Volume of a tile in voxels)
-{
-	// Calculate the index of the thread block in the grid.
-	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-
-	// Calculate the total number of threads in each thread block.
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-	// If the thread does not correspond to a control point, do nothing.
-	if(threadIdxInGrid < num_threads)
-	{
-		int m;
-		int num_vox;
-		int xyzOffset;
-		int tileOffset;
-		int cidx;
-		int qidx;
-		float result = 0.0;
-		float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
-
-		// Use the offset of the voxel within the region to compute the index into the c_lut.
-		int pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
-		
-		// Calculate the linear index of the control point.
-		m = threadIdxInGrid / 3;
-
-		// Calculate the coordinate offset (x = 0, y = 1, z = 2).
-		xyzOffset = threadIdxInGrid - (m * 3);
-
-		// Calculate index into coefficient texture.
-		cidx = tex1Dfetch(tex_c_lut, 64 * pidx + m) * 3;
-
-		// Calculate the number of voxels in the region.
-		num_vox = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
-
-		// Calculate the offset of this tile in the dc_dv array.
-		tileOffset = 3 * num_vox * offset;
-
-		/* ORIGINAL CODE: Looked at each offset serially.
-		// Serial across offsets.
-		for(int qidx = 0; qidx < (vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z); qidx++) {
-			result += tex1Dfetch(tex_dc_dv, 3*qidx + offset) * tex1Dfetch(tex_q_lut, 64*qidx + m);
-		}
-		*/
-
-		// NAGA: Unrolling the loop 8 times; 4 seems to work as well as 8
-		// FOR_CHRIS: FIX to make sure the unrolling works with an arbitrary loop index
-		for(qidx = 0; qidx < num_vox - 8; qidx = qidx + 8) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
-			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
-		}
-		
-		if(qidx+7 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
-			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+7) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+7) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
-		}
-		else if(qidx+6 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+6) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+6) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6;
-		}
-		else if(qidx+5 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+5) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+5) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5;
-		}
-		else if(qidx+4 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+4) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+4) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4;
-		}
-		else if(qidx+3 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+3) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+3) + m);
-			result += temp0 + temp1 + temp2 + temp3;
-		}
-		else if(qidx+2 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+2) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+2) + m);
-			result += temp0 + temp1 + temp2;
-		}
-		else if(qidx+1 < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)   + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx)   + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+1) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+1) + m);
-			result += temp0 + temp1;
-		}
-		else if(qidx < num_vox)
-			result += tex1Dfetch(tex_dc_dv, 3*(qidx) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-
-		grad[cidx + xyzOffset] = tex1Dfetch(tex_grad, cidx + xyzOffset) + result;
-	}
-}
-
-/***********************************************************************
- * bspline_cuda_score_e_mse_kernel2_v2
- *
- * This kernel is the second of two used in the CUDA implementation of
- * score_e_mse.  It calculates the values for the gradient stream on 
- * a tile by tile basis.
- *
- * In comparison to bspline_cuda_score_e_mse_kernel2, this kernel uses
- * multiple threads to accumulate the influence from a tile.  The
- * threads are synchronized at the end so that the partial sums can be
- * exchanged using shared memory, totaled, and accumulated into the
- * gradient stream.  The number of threads being used for each control
- * point must be given as an argument.  The performance is better than 
- * bspline_cuda_score_e_mse_kernel2, although the implementation is
- * still buggy.
- ***********************************************************************/
-__global__ void bspline_cuda_score_e_mse_kernel2_v2 (
-	float  *dc_dv,
-	float  *grad,
-	float  *gpu_q_lut,
-	int    num_threads,
-	int3   p,
-	float3 rdims,
-	int    offset,
-	int3   vox_per_rgn,
-	int    threadsPerControlPoint)
-{
-	// Shared memory is allocated on a per block basis.  Therefore, only allocate 
-	// (sizeof(data) * blocksize) memory when calling the kernel.
-	extern __shared__ float sdata[]; 
-
-	// Calculate the index of the thread block in the grid.
-	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-
-	// Calculate the total number of threads in each thread block.
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-	// If the thread does not correspond to a control point, do nothing.
-	if(threadIdxInGrid < num_threads)
-	{
-		int qidx;
-		float result = 0.0;
-		float temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7;
-
-		// Set the number of threads being used to work on each control point.
-		int tpcp = threadsPerControlPoint;
-
-		// Calculate the linear index of the control point.
-		int m = threadIdxInGrid / (threadsPerControlPoint * 3);
-
-		// Use the offset of the voxel within the region to compute the index into the c_lut.
-		int pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
-
-		// Calculate the coordinate offset (x = 0, y = 1, z = 2).
-		int xyzOffset = (threadIdxInGrid / threadsPerControlPoint) - (m * 3);
-
-		// Determine the thread offset for this control point, in the range [0, threadsPerControlPoint).
-		int cpThreadOffset = threadIdxInGrid % threadsPerControlPoint;
-
-		// Calculate index into coefficient texture.
-		int cidx = tex1Dfetch(tex_c_lut, 64 * pidx + m) * 3;
-
-		// Calculate the number of voxels in the region.
-		int num_vox = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
-
-		// Calculate the offset of this tile in the dc_dv array.
-		int tileOffset = 3 * num_vox * offset;
-
-		for(qidx = cpThreadOffset; qidx < num_vox - (8*tpcp); qidx = qidx + (8*tpcp)) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
-			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+(7*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(7*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
-		}
-		
-		if(qidx+(7*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
-			temp7 = tex1Dfetch(tex_dc_dv, 3*(qidx+(7*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(7*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6 + temp7;
-		}
-		else if(qidx+(6*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
-			temp6 = tex1Dfetch(tex_dc_dv, 3*(qidx+(6*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(6*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5 + temp6;
-		}
-		else if(qidx+(5*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
-			temp5 = tex1Dfetch(tex_dc_dv, 3*(qidx+(5*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(5*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4 + temp5;
-		}
-		else if(qidx+(4*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			temp4 = tex1Dfetch(tex_dc_dv, 3*(qidx+(4*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(4*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3 + temp4;
-		}
-		else if(qidx+(3*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			temp3 = tex1Dfetch(tex_dc_dv, 3*(qidx+(3*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(3*tpcp)) + m);
-			result += temp0 + temp1 + temp2 + temp3;
-		}
-		else if(qidx+(2*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			temp2 = tex1Dfetch(tex_dc_dv, 3*(qidx+(2*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(2*tpcp)) + m);
-			result += temp0 + temp1 + temp2;
-		}
-		else if(qidx+(1*tpcp) < num_vox) {
-			temp0 = tex1Dfetch(tex_dc_dv, 3*(qidx)          + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-			temp1 = tex1Dfetch(tex_dc_dv, 3*(qidx+(1*tpcp)) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx+(1*tpcp)) + m);
-			result += temp0 + temp1;
-		}
-		else if(qidx < num_vox)
-			result += tex1Dfetch(tex_dc_dv, 3*(qidx) + tileOffset + xyzOffset) * tex1Dfetch(tex_q_lut, 64*(qidx) + m);
-
-		sdata[(tpcp * threadIdxInBlock) + cpThreadOffset] = result;
-		
-		// Wait for the other threads in the thread block to reach this point.
-		__syncthreads();
-
-		if(cpThreadOffset == 0) {
-			result = sdata[(tpcp * threadIdxInBlock) + 0] + sdata[(tpcp * threadIdxInBlock) + 1];
-				
-			/*
-			result = 0.0;
-
-			// Accumulate all the partial results for this control point.
-			for(int i = 0; i < tpcp; i++) {
-				result += sdata[(tpcp * threadIdxInBlock) + i];
-			}
-			*/
-
-			// Update the gradient stream.
-			grad[cidx + xyzOffset] = tex1Dfetch(tex_grad, cidx + xyzOffset) + result;
-		}			
-	}
 }
 
 /***********************************************************************

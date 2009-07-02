@@ -1501,7 +1501,7 @@ void bspline_cuda_run_kernels_e_v2(
 	dim3 dimGrid1(num_blocks, 1, 1);
 	dim3 dimBlock1(threads_per_block, 1, 1);
 
-	// printf("Launching bspline_cuda_score_e_mse_kernel1... ");
+	// printf("Launching bspline_cuda_score_e_mse_kernel1b... ");
 	bspline_cuda_score_e_mse_kernel1b<<<dimGrid1, dimBlock1>>>(
 		gpu_dc_dv,
 		gpu_score,
@@ -1520,7 +1520,7 @@ void bspline_cuda_run_kernels_e_v2(
 	);
 
 	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("\nbspline_cuda_score_e_mse_kernel1 failed");
+		checkCUDAError("\nbspline_cuda_score_e_mse_kernel1b failed");
 
 	//QueryPerformanceCounter(&clock_count);
     //clock_end = (double)clock_count.QuadPart;
@@ -1528,6 +1528,10 @@ void bspline_cuda_run_kernels_e_v2(
 
 	//QueryPerformanceCounter(&clock_count);
     //clock_start = (double)clock_count.QuadPart;
+
+	/* The following code calculates the gradient by iterating through each tile
+	 * in the set.  The code following this section calculates the gradient for
+	 * the entire set at once, which improves parallelism and performance.
 
 	// Reconfigure the grid.
 	threads_per_block = 16;
@@ -1549,7 +1553,7 @@ void bspline_cuda_run_kernels_e_v2(
 				p.z = (s.z * 4) + sidx.z;
 
 				// printf("Launching bspline_cuda_score_d_mse_kernel2 for tile (%d, %d, %d)...\n", p.x, p.y, p.z);
-				bspline_cuda_score_e_mse_kernel2<<<dimGrid2, dimBlock2>>>(
+				bspline_cuda_score_e_mse_kernel2_by_tiles<<<dimGrid2, dimBlock2>>>(
 					gpu_dc_dv,
 					gpu_grad,
 					gpu_q_lut,
@@ -1568,6 +1572,27 @@ void bspline_cuda_run_kernels_e_v2(
 			}
 		}
 	}
+	*/
+	
+	threads_per_block = 16;
+	num_threads = 192 * num_tiles_per_set;
+	num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+	dim3 dimGrid2(num_blocks, 1, 1);
+	dim3 dimBlock2(threads_per_block, 1, 1);
+
+	bspline_cuda_score_e_mse_kernel2_by_sets<<<dimGrid2, dimBlock2>>>(
+		gpu_dc_dv,
+		gpu_grad,
+		gpu_q_lut,
+		sidx,
+		sdims,
+		rdims,
+		vox_per_rgn,
+		192,
+		num_threads);
+
+	if(cudaThreadSynchronize() != cudaSuccess)
+		checkCUDAError("\nbspline_cuda_score_e_mse_kernel2_by_sets failed");
 
 	//QueryPerformanceCounter(&clock_count);
     //clock_end = (double)clock_count.QuadPart;
@@ -1739,7 +1764,7 @@ void bspline_cuda_run_kernels_e(
 
 				/*
 				// printf("Launching bspline_cuda_score_d_mse_kernel2 for tile (%d, %d, %d)...\n", p.x, p.y, p.z);
-				bspline_cuda_score_e_mse_kernel2<<<dimGrid2, dimBlock2>>>(
+				bspline_cuda_score_e_mse_kernel2_by_tiles<<<dimGrid2, dimBlock2>>>(
 					gpu_dc_dv,
 					gpu_grad,
 					gpu_q_lut,
@@ -1752,7 +1777,7 @@ void bspline_cuda_run_kernels_e(
 				);
 				*/
 	
-				bspline_cuda_score_e_mse_kernel2_v2<<<dimGrid2, dimBlock2, smemSize>>>(
+				bspline_cuda_score_e_mse_kernel2_by_tiles_v2<<<dimGrid2, dimBlock2, smemSize>>>(
 					gpu_dc_dv,
 					gpu_grad,
 					gpu_q_lut,
