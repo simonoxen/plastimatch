@@ -87,24 +87,24 @@ void compute_average(char **inFileList, int nFiles, char *resFile)
 	AddFilterType::Pointer addition = AddFilterType::New();
 	DivFilterType::Pointer division = DivFilterType::New();
 
+	division->SetConstant(nFiles);
+	
 	//add all the input images
 	for (int i = 0; i < nFiles; i ++)
 	{
 		reader->SetFileName(inFileList[i]);
 		reader->Update();
-		addition->SetInput(i, reader->GetOutput());
+		// do division first
+		division->SetInput(reader->GetOutput());
+		division->Update();
+		addition->SetInput(i, division->GetOutput());
 	}
 	addition->Update();
-	
-	//get the average
-	division->SetConstant(nFiles);
-	division->SetInput(addition->GetOutput());
-	division->Update();
 
 	//write the output file	
 	WriterType::Pointer writer = WriterType::New();
 	writer->SetFileName(resFile);
-	writer->SetInput(division->GetOutput());
+	writer->SetInput(addition->GetOutput());
 	std::cout << "Write file ..." << std::endl << std::endl;
 	writer->Update();	
 	std::cout << "File " << resFile << " created" << std::endl;
