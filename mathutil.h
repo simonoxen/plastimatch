@@ -22,7 +22,7 @@
 
 
 /* Returns integer data type */
-#define ROUND_INT(x) ((x > 0) ? (int)(x+0.5) : (int)(ceil(x-0.5)))
+#define ROUND_INT(x) ((x > 0) ? ((long)(x+0.5)) : (long)(-(-(x)+0.5)))
 
 
 /* Primatives */

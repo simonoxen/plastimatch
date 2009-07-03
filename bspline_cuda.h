@@ -143,7 +143,7 @@ extern "C" {
 		Volume *moving_grad,
 		BSPLINE_Xform *bxf,
 		BSPLINE_Parms *parms,
-		bool run_low_mem_version);
+		int run_low_mem_version);
 
 	void bspline_cuda_calculate_run_kernels_f(
 		Volume *fixed,

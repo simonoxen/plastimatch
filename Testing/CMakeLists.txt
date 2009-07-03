@@ -12,7 +12,7 @@ PLM_ADD_TEST (
   "synth_test_2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;50 50 50;--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;50 50 50;--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 ## bspline_test_1 - read and write bxf

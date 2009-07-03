@@ -73,10 +73,18 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     default:
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
-    if (stage->impl_type == IMPLEMENTATION_GPUIT_CPU) {
-	parms.implementation = BIMPL_CPU;
-    } else {
-	parms.implementation = BIMPL_BROOK;
+    switch (stage->impl_type) {
+    case IMPLEMENTATION_GPUIT_CPU:
+	parms.threading = BTHR_CPU;
+	break;
+    case IMPLEMENTATION_GPUIT_BROOK:
+	parms.threading = BTHR_BROOK;
+	break;
+    case IMPLEMENTATION_GPUIT_CUDA:
+	parms.threading = BTHR_CUDA;
+	break;
+    default:
+	print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
     parms.max_its = stage->max_its;
     parms.mi_hist.fixed.bins = stage->mi_histogram_bins;

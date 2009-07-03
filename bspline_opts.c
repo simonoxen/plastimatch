@@ -17,9 +17,10 @@ print_usage (void)
 {
     printf ("Usage: bspline [options] fixed moving\n"
 	    "Options:\n"
-	    " -A implementation          Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	    " -A hardware                Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	    " -a { steepest | lbfgsb }   Choose optimization algorithm\n"
 	    " -M { mse | mi }            Registration metric (default is mse)\n"
+	    " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
 	    " -O outfile                 The output file\n"
@@ -51,13 +52,13 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
-		parms->implementation = BIMPL_BROOK;
+		parms->threading = BTHR_BROOK;
 	    } 
 	    else if(!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
-		parms->implementation = BIMPL_CUDA;
+		parms->threading = BTHR_CUDA;
 	    }
 	    else {
-		parms->implementation = BIMPL_CPU;
+		parms->threading = BTHR_CPU;
 	    }
 	}
         else if (!strcmp (argv[i], "-a")) {
@@ -73,6 +74,14 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    } else {
 		print_usage ();
 	    }
+	}
+	else if (!strcmp (argv[i], "-f")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    parms->implementation = argv[i][0];
 	}
 	else if (!strcmp (argv[i], "-m")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

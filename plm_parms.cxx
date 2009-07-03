@@ -174,6 +174,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	else if (!strcmp(val,"gpuit_brook")) {
 	    stage->impl_type = IMPLEMENTATION_GPUIT_BROOK;
 	}
+	else if (!strcmp(val,"cuda") || !strcmp(val,"gpuit_cuda")) {
+	    stage->impl_type = IMPLEMENTATION_GPUIT_CUDA;
+	}
 	else {
 	    goto error_exit;
 	}

@@ -801,7 +801,7 @@ void bspline_cuda_calculate_run_kernels_g(
 	Volume *moving_grad,
 	BSPLINE_Xform *bxf,
 	BSPLINE_Parms *parms,
-	bool run_low_mem_version)
+	int run_low_mem_version)
 {
 	LARGE_INTEGER clock_count, clock_frequency;
     double clock_start, clock_end;
@@ -877,7 +877,7 @@ void bspline_cuda_calculate_run_kernels_g(
 	int smemSize;
 
 	// printf("Launching bspline_cuda_score_f_mse_kernel1...\n");
-	if(run_low_mem_version == false) {
+	if (!run_low_mem_version) {
 		
 		printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
 		

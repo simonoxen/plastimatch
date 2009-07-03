@@ -828,30 +828,30 @@ void bspline_cuda_score_c_mse(
 	Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
-    int i;
+    //int i;
     int ri, rj, rk;
     int fi, fj, fk, fv;
-    float mi, mj, mk;
+    //float mi, mj, mk;
     float fx, fy, fz;
-    float mx, my, mz;
-    int mif, mjf, mkf, mvf;  /* Floor */
-    int mir, mjr, mkr, mvr;  /* Round */
+    //float mx, my, mz;
+    //int mif, mjf, mkf, mvf;  /* Floor */
+    //int mir, mjr, mkr, mvr;  /* Round */
     int p[3];
     int q[3];
     float diff;
     float dc_dv[3];
-    float fx1, fx2, fy1, fy2, fz1, fz2;
+    //float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
-    float dxyz[3];
+    //float dxyz[3];
     int num_vox;
     int pidx, qidx;
     float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock, end_clock;
-    float m_val;
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    //float m_val;
+    //float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    //float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 
     static int it = 0;
     char debug_fn[1024];

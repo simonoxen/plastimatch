@@ -20,13 +20,13 @@ typedef itk::DemonsRegistrationFilter<
                             DeformationFieldType> DemonsFilterType;
 
 
-#define STAGE_TRANSFORM_NONE		    0
+#define STAGE_TRANSFORM_NONE                0
 #define STAGE_TRANSFORM_TRANSLATION	    1
 #define STAGE_TRANSFORM_VERSOR		    2
 #define STAGE_TRANSFORM_AFFINE		    3
-#define STAGE_TRANSFORM_BSPLINE		    4
-#define STAGE_TRANSFORM_VECTOR_FIELD	    5
-#define STAGE_TRANSFORM_ALIGN_CENTER	6
+#define STAGE_TRANSFORM_BSPLINE	            4
+#define STAGE_TRANSFORM_VECTOR_FIELD        5
+#define STAGE_TRANSFORM_ALIGN_CENTER        6
 
 #define OPTIMIZATION_NO_REGISTRATION	    0
 #define OPTIMIZATION_AMOEBA		    1
@@ -41,6 +41,7 @@ typedef itk::DemonsRegistrationFilter<
 #define IMPLEMENTATION_ITK		    1
 #define IMPLEMENTATION_GPUIT_CPU	    2
 #define IMPLEMENTATION_GPUIT_BROOK	    3
+#define IMPLEMENTATION_GPUIT_CUDA	    4
 
 #define METRIC_NONE			    0
 #define METRIC_MSE			    1

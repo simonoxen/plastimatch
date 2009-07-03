@@ -39,48 +39,21 @@
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "logfile.h"
+#if (HAVE_CUDA)
+#include "bspline_cuda.h"
+#endif
+#include "mathutil.h"
 
-extern void 
-bspline_score_on_gpu_reference(
-	BSPLINE_Parms *parms, 
-	Volume *fixed, 
-	Volume *moving,		       
-	Volume *moving_grad);
-
-extern void 
-bspline_cuda_score_e_mse(
-	BSPLINE_Parms *parms, 
-	BSPLINE_Xform* bxf, 
-	Volume *fixed, 
-	Volume *moving, 
-	Volume *moving_grad);
-
-extern void 
-bspline_cuda_score_d_mse(
-	BSPLINE_Parms *parms, 
-	BSPLINE_Xform* bxf, 
-	Volume *fixed, 
-	Volume *moving, 
-	Volume *moving_grad);
-
-extern void 
-bspline_cuda_score_c_mse(
-	BSPLINE_Parms *parms, 
-	BSPLINE_Xform* bxf, 
-	Volume *fixed, 
-	Volume *moving, 
-	Volume *moving_grad);
-
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 gpuit_EXPORT
 void
 bspline_parms_set_default (BSPLINE_Parms* parms)
 {
     memset (parms, 0, sizeof(BSPLINE_Parms));
-    parms->implementation = BIMPL_CPU;
+    parms->threading = BTHR_CPU;
     parms->optimization = BOPT_LBFGSB;
     parms->metric = BMET_MSE;
+    parms->implementation = '\0';
     parms->max_its = 10;
     parms->convergence_tol = 0.1;
     parms->convergence_tol_its = 4;
@@ -1081,7 +1054,7 @@ clip_and_interpolate_obsolete (
 {
     dxyzf[d] = floor (dxyz[d]);
     *maf = a + (int) dxyzf[d];
-    *mar = a + round_int (dxyz[d]);
+    *mar = a + ROUND_INT (dxyz[d]);
     *fa2 = dxyz[d] - dxyzf[d];
     if (*maf < 0) {
 	*maf = 0;
@@ -1109,7 +1082,7 @@ clamp_linear_interpolate_inline (
 {
     float maff = floor(ma);
     *maf = (int) maff;
-    *mar = round_int (ma);
+    *mar = ROUND_INT (ma);
     *fa2 = ma - maff;
     if (*maf < 0) {
 	*maf = 0;
@@ -1135,7 +1108,7 @@ clamp_linear_interpolate (
 {
     float maff = floor(ma);
     *maf = (int) maff;
-    *mar = round_int (ma);
+    *mar = ROUND_INT (ma);
     *fa2 = ma - maff;
     if (*maf < 0) {
 	*maf = 0;
@@ -1689,7 +1662,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
  * sums the total influence from each of those tiles. This implementation
  * allows for greater parallelization on the GPU.
  */
-void bspline_score_f_mse(
+void bspline_score_f_mse (
 	BSPLINE_Parms *parms,
 	BSPLINE_Xform *bxf,
 	Volume *fixed,
@@ -2596,7 +2569,7 @@ bspline_score_c_mse (
    interpolation of both moving image and gradient which doesn't 
    work with stock L-BFGS-B optimizer. */
 void
-bspline_score_b (BSPLINE_Parms *parms, 
+bspline_score_b_mse (BSPLINE_Parms *parms, 
 		 BSPLINE_Xform *bxf, 
 		 Volume *fixed, 
 		 Volume *moving, 
@@ -2651,13 +2624,13 @@ bspline_score_b (BSPLINE_Parms *parms,
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
-		mi = round_int((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
 		if (mi < 0 || mi >= moving->dim[0]) continue;
 		my = fy + dxyz[1];
-		mj = round_int((my - moving->offset[1]) / moving->pix_spacing[1]);
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
 		if (mj < 0 || mj >= moving->dim[1]) continue;
 		mz = fz + dxyz[2];
-		mk = round_int((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
 		if (mk < 0 || mk >= moving->dim[2]) continue;
 		mv = (mk * moving->dim[1] + mj) * moving->dim[0] + mi;
 
@@ -2691,16 +2664,21 @@ bspline_score_b (BSPLINE_Parms *parms,
     }
 
     end_clock = clock();
+#if defined (commentout)
     logfile_printf ("Single iteration CPU [b] = %f seconds\n", 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
     logfile_printf ("NUM_VOX = %d\n", num_vox);
     logfile_printf ("MSE = %g\n", ssd->score);
     logfile_printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     logfile_printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+#endif
+    logfile_printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
 void
-bspline_score_a (BSPLINE_Parms *parms, 
+bspline_score_a_mse (BSPLINE_Parms *parms, 
 		 BSPLINE_Xform* bxf, 
 		 Volume *fixed, 
 		 Volume *moving, 
@@ -2755,13 +2733,13 @@ bspline_score_a (BSPLINE_Parms *parms,
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
-		mi = round_int((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
 		if (mi < 0 || mi >= moving->dim[0]) continue;
 		my = fy + dxyz[1];
-		mj = round_int((my - moving->offset[1]) / moving->pix_spacing[1]);
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
 		if (mj < 0 || mj >= moving->dim[1]) continue;
 		mz = fz + dxyz[2];
-		mk = round_int((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
 		if (mk < 0 || mk >= moving->dim[2]) continue;
 		mv = (mk * moving->dim[1] + mj) * moving->dim[0] + mi;
 
@@ -2793,12 +2771,17 @@ bspline_score_a (BSPLINE_Parms *parms,
 	ssd_grad_norm += fabs (ssd->grad[i]);
     }
     end_clock = clock();
+#if defined (commentout)
     logfile_printf ("Single iteration CPU [a] = %f seconds\n", 
 	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 
     logfile_printf ("MSE = %g\n", ssd->score);
     logfile_printf ("GRAD_MEAN = %g\n", ssd_grad_mean);
     logfile_printf ("GRAD_NORM = %g\n", ssd_grad_norm);
+#endif
+    logfile_printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
 }
 
 void
@@ -2809,34 +2792,66 @@ bspline_score (BSPLINE_Parms *parms,
 	       Volume *moving_grad)
 {
 #if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
-    if (parms->implementation == BIMPL_BROOK) {
+    if (parms->threading == BTHR_BROOK) {
 	printf("Using Brook GPU. \n");
 	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;
     }
 #endif
 
-#if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
-    if (parms->implementation == BIMPL_CUDA) {
-	printf("Using CUDA.\n");
-	//bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
-	//bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
-	bspline_cuda_score_e_mse_v2(parms, bxf, fixed, moving, moving_grad);
-	//bspline_cuda_score_e_mse(parms, bxf, fixed, moving, moving_grad);
-	//bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);
-	//bspline_cuda_score_c_mse(parms, bxf, fixed, moving, moving_grad);
+#if (HAVE_CUDA)
+    if (parms->threading == BTHR_CUDA) {
+	logfile_printf("Using CUDA.\n");
+	switch (parms->implementation) {
+	case 'c':
+	    bspline_cuda_score_c_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'd':
+	    bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'e':
+	    bspline_cuda_score_e_mse_v2(parms, bxf, fixed, moving, moving_grad);
+	    //bspline_cuda_score_e_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'f':
+	    bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'g':
+	    bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	default:
+	    bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
+	    break;
+	}
 	return;
     }
 #endif
 
     if (parms->metric == BMET_MSE) {
 	logfile_printf ("Using CPU. \n");
-	//bspline_score_f_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_e_mse (parms, bxf, fixed, moving, moving_grad);
-	bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
-	//bspline_score_b (parms, fixed, moving, moving_grad);
-	//bspline_score_a (parms, fixed, moving, moving_grad);
+	switch (parms->implementation) {
+	case 'a':
+	    bspline_score_a_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'b':
+	    bspline_score_b_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'c':
+	    bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'd':
+	    bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'e':
+	    bspline_score_e_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'f':
+	    bspline_score_f_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	default:
+	    bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	    break;
+	}
     } else {
 	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
     }

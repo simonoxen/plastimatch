@@ -11,10 +11,10 @@ enum BsplineOptimization {
     BOPT_STEEPEST
 };
 
-enum BsplineImplementation {
-    BIMPL_CPU,
-    BIMPL_BROOK,
-    BIMPL_CUDA
+enum BsplineThreading {
+    BTHR_CPU,
+    BTHR_BROOK,
+    BTHR_CUDA
 };
 
 enum BsplineMetric {
@@ -66,17 +66,18 @@ struct BSPLINE_MI_Hist_struct {
 
 typedef struct BSPLINE_Parms_struct BSPLINE_Parms;
 struct BSPLINE_Parms_struct {
-    enum BsplineImplementation implementation;
+    enum BsplineThreading threading;
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
     int max_its;
-    int debug;			         /* Create grad & histogram files */
-    double convergence_tol;      /* When to stop iterations based on score */
-    int convergence_tol_its;     /* How many iterations to check for convergence tol */
-    BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
-    BSPLINE_Score ssd;           /* Score and Gradient */
-    void *data_on_gpu;		     /* Pointer to structure encapsulating the data stored on the GPU */
-    void *data_from_gpu;	     /* Pointer to structure that stores the data returned from the GPU */
+    int debug;                           /* Create grad & histogram files */
+    char implementation;                 /* Which implementation ('a', 'b', etc.) */
+    double convergence_tol;              /* When to stop iterations based on score */
+    int convergence_tol_its;             /* How many iterations to check for convergence tol */
+    BSPLINE_MI_Hist mi_hist;             /* Histogram for MI score */
+    BSPLINE_Score ssd;                   /* Score and Gradient */
+    void *data_on_gpu;                   /* Pointer to structure encapsulating the data stored on the GPU */
+    void *data_from_gpu;                 /* Pointer to structure that stores the data returned from the GPU */
 };
 
 #if defined __cplusplus
