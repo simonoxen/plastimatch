@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <time.h>
+#include <math.h>
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
@@ -73,7 +74,7 @@ speedtest_openmp_2 (void)
 #endif /* OPENMP_FOUND */
 
 int
-main (int argc, char* argv)
+main (int argc, char* argv[])
 {
     clock_t time_start, time_end;
 
