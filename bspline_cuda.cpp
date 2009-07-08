@@ -112,6 +112,9 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
  *
  * This is currently the fastest CUDA implementation of the B-spline
  * algorithm.
+
+ Updated by Naga Kandasamy
+ Date: 07 July 2009
  ***********************************************************************/
 void bspline_cuda_score_g_mse(
 	BSPLINE_Parms *parms, 
@@ -129,6 +132,7 @@ void bspline_cuda_score_g_mse(
     char debug_fn[1024];
     FILE* fp;
     int dd = 0;
+	bool run_low_mem_kernel_version = false; // This flag chooses between the one-shot version of the kernel and the tile version for larger images
 
     if (parms->debug) {
 		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
@@ -149,7 +153,7 @@ void bspline_cuda_score_g_mse(
 		moving_grad,
 		bxf,
 		parms,
-		false);
+		run_low_mem_kernel_version);
 
     if (parms->debug) {
 		fclose (fp);

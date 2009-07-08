@@ -62,6 +62,9 @@ __global__ void test_kernel(
  * It is similar to bspline_cuda_score_f_mse_kernel1, but it computes
  * the c_lut and q_lut values on the fly rather than referencing the
  * lookup tables.
+ 
+ Updated by N. Kandasamy.
+ Date: 07 July 2009.
  ***********************************************************************/
 __global__ void bspline_cuda_score_g_mse_kernel1 (
 	float  *dc_dv,
@@ -121,11 +124,14 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
+	// Allocate memory for the spline coefficients evaluated at indices 0, 1, 2, and 3 in the 
+	// X, Y, and Z directions
 	float *A = &sdata[12*threadIdxInBlock + 0];
 	float *B = &sdata[12*threadIdxInBlock + 4];
 	float *C = &sdata[12*threadIdxInBlock + 8];
 	float ii, jj, kk;
 	float t1, t2, t3; 
+	float one_over_six = 1.0/6.0;
 
 	// If the voxel lies outside the volume, do nothing.
 	if(threadIdxInGrid < (volume_dim.x * volume_dim.y * volume_dim.z))
@@ -160,47 +166,45 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 			// Use the offset of the voxel within the region to compute the index into the c_lut.
 			pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 			dc_dv_element = &dc_dv[3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx];
-			pidx = pidx * 64;
 
 			// Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
 			qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
 			dc_dv_element = &dc_dv_element[3 * qidx];
-			qidx = qidx * 64;
 			
 			// Compute the q_lut values that pertain to this offset.
 			ii = ((float)q.x) / vox_per_rgn.x;
 			t3 = ii*ii*ii;
 			t2 = ii*ii;
 			t1 = ii;
-			A[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			A[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			A[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			A[3] = (1.0/6.0) * (+ 1.0 * t3);
+			A[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			A[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			A[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			A[3] = one_over_six * (+ 1.0 * t3);
 
 			jj = ((float)q.y) / vox_per_rgn.y;
 			t3 = jj*jj*jj;
 			t2 = jj*jj;
 			t1 = jj;
-			B[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			B[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			B[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			B[3] = (1.0/6.0) * (+ 1.0 * t3);
+			B[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			B[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			B[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			B[3] = one_over_six * (+ 1.0 * t3);
 
 			kk = ((float)q.z) / vox_per_rgn.z;
 			t3 = kk*kk*kk;
 			t2 = kk*kk;
 			t1 = kk;
-			C[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			C[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			C[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			C[3] = (1.0/6.0) * (+ 1.0 * t3);
+			C[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			C[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			C[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			C[3] = one_over_six * (+ 1.0 * t3);
 
 			// Compute the deformation vector.
 			d.x = 0.0;
 			d.y = 0.0;
 			d.z = 0.0;
 
-			int k = 0;
+			// Compute the B-spline interpolant for the voxel
 			int3 t;
 			for(t.z = 0; t.z < 4; t.z++) {
 				for(t.y = 0; t.y < 4; t.y++) {
@@ -211,20 +215,14 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 
 						// Fetch the values for P, Ni, Nj, and Nk.
 						P   = A[t.x] * B[t.y] * C[t.z];
-						//N.x = tex1Dfetch(tex_coeff, cidx + 0);  // x-value
-						//N.y = tex1Dfetch(tex_coeff, cidx + 1);  // y-value
-						//N.z = tex1Dfetch(tex_coeff, cidx + 2);  // z-value
-						N.x = coeff[cidx+0];  // x-value
-						N.y = coeff[cidx+1];  // y-value
-						N.z = coeff[cidx+2];  // z-value
+						N.x = tex1Dfetch(tex_coeff, cidx + 0);  // x-value
+						N.y = tex1Dfetch(tex_coeff, cidx + 1);  // y-value
+						N.z = tex1Dfetch(tex_coeff, cidx + 2);  // z-value
 
 						// Update the output (v) values.
 						d.x += P * N.x;
 						d.y += P * N.y;
 						d.z += P * N.z;
-
-						k++;
-
 					}
 				}
 			}
@@ -313,22 +311,14 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 				//-----------------------------------------------------------------
 
 				mvf = (displacement_in_vox_floor.z * volume_dim.y + displacement_in_vox_floor.y) * volume_dim.x + displacement_in_vox_floor.x;
-				//m_x1y1z1 = fx1 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf);
-				//m_x2y1z1 = fx2 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf + 1);
-				//m_x1y2z1 = fx1 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
-				//m_x2y2z1 = fx2 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
-				//m_x1y1z2 = fx1 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
-				//m_x2y1z2 = fx2 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
-				//m_x1y2z2 = fx1 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
-				//m_x2y2z2 = fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
-				m_x1y1z1 = fx1 * fy1 * fz1 * moving_image[mvf];
-				m_x2y1z1 = fx2 * fy1 * fz1 * moving_image[mvf + 1];
-				m_x1y2z1 = fx1 * fy2 * fz1 * moving_image[mvf + volume_dim.x];
-				m_x2y2z1 = fx2 * fy2 * fz1 * moving_image[mvf + volume_dim.x + 1];
-				m_x1y1z2 = fx1 * fy1 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x];
-				m_x2y1z2 = fx2 * fy1 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + 1];
-				m_x1y2z2 = fx1 * fy2 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + volume_dim.x];
-				m_x2y2z2 = fx2 * fy2 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1];
+				m_x1y1z1 = fx1 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf);
+				m_x2y1z1 = fx2 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf + 1);
+				m_x1y2z1 = fx1 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
+				m_x2y2z1 = fx2 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
+				m_x1y1z2 = fx1 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
+				m_x2y1z2 = fx2 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
+				m_x1y2z2 = fx1 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
+				m_x2y2z2 = fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
 
 				m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
@@ -336,8 +326,7 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 				// Compute intensity difference.
 				//-----------------------------------------------------------------
 
-				//diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
-				diff = fixed_image[fv] - m_val;
+				diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
 				
 				//-----------------------------------------------------------------
 				// Accumulate the score.
@@ -352,17 +341,215 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
 				// Compute spatial gradient using nearest neighbors.
 				mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
 				
-				//dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
-				//dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
-				//dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
-				dc_dv_element[0] = diff * moving_grad[3 * (int)mvr + 0];
-				dc_dv_element[1] = diff * moving_grad[3 * (int)mvr + 1];
-				dc_dv_element[2] = diff * moving_grad[3 * (int)mvr + 2];
-			
+				dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
+				dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
+				dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
 			}
 		}
 	}
 }
+
+/******************************************************
+* This function computes the spline basis function at 
+* index 0, 1, 2, or 3 for a voxel 
+Author: Naga Kandasamy
+Date: 07 July 2009
+*******************************************************/
+
+__device__ float obtain_spline_basis_function(float one_over_six,
+											  int t_idx, 
+											  int vox_idx, 
+											  int vox_per_rgn){
+								
+	float i = (float)vox_idx / vox_per_rgn;
+	float C;
+						
+	switch(t_idx) {
+		case 0:
+			C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
+			break;
+		case 1:
+			C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i            + 4.0);
+			break;
+		case 2:
+			C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
+			break;
+		case 3:
+			C = one_over_six * (+ 1.0 * i*i*i);
+			break;
+	}
+	return C;
+}
+
+/******************************************************************
+* This function performs the gradient computation. It operates on each control knot is parallel 
+* and each control knot accumulates the influence of the 64 tiles on each control knot.
+
+Updated by Naga Kandasamy
+Date: 07 July 2009 
+*******************************************************************/
+
+__global__ void bspline_cuda_score_g_mse_kernel2 (
+	float *dc_dv,
+	float *grad,
+	int   num_threads,
+	int3  rdims,
+	int3  cdims,
+	int3  vox_per_rgn)
+{
+	int3 knotLocation, tileOffset, tileLocation;
+	int idx;
+	int dc_dv_row;
+	float i;
+	float A, B, C;
+	int3 q;
+	float one_over_six = 1.0/6.0;
+
+	float3 result;
+	result.x = 0.0;
+	result.y = 0.0;
+	result.z = 0.0;
+
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+	
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+	
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+	
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	// If the thread does not correspond to a control point, do nothing.
+	if(threadIdxInGrid < num_threads) {	
+
+		// Determine the x, y, and z offset of the knot within the grid.
+		knotLocation.x = threadIdxInGrid % cdims.x;
+		knotLocation.y = ((threadIdxInGrid - knotLocation.x) / cdims.x) % cdims.y;
+		knotLocation.z = ((((threadIdxInGrid - knotLocation.x) / cdims.x) - knotLocation.y) / cdims.y) % cdims.z;
+
+		// Subtract 1 from each of the knot indices to account for the differing origin
+		// between the knot grid and the tile grid.
+		knotLocation.x -= 1;
+		knotLocation.y -= 1;
+		knotLocation.z -= 1;
+
+		// Iterate through each of the 64 tiles that influence this control knot.
+		for(tileOffset.z = -2; tileOffset.z < 2; tileOffset.z++) {
+			for(tileOffset.y = -2; tileOffset.y < 2; tileOffset.y++) {
+				for(tileOffset.x = -2; tileOffset.x < 2; tileOffset.x++) {
+						
+					// Using the current x, y, and z offset from the control knot position,
+					// calculate the index for one of the tiles that influence this knot.
+					tileLocation.x = knotLocation.x + tileOffset.x;
+					tileLocation.y = knotLocation.y + tileOffset.y;
+					tileLocation.z = knotLocation.z + tileOffset.z;
+
+					// Determine if the tile location is within the volume.
+					if((tileLocation.x >= 0 && tileLocation.x < rdims.x) &&
+						(tileLocation.y >= 0 && tileLocation.y < rdims.y) &&
+						(tileLocation.z >= 0 && tileLocation.z < rdims.z)) {
+
+						// Calculate linear index for tile.
+						idx = ((tileLocation.z * rdims.y + tileLocation.y) * rdims.x) + tileLocation.x;	
+						
+						// Calculate the offset into the dc_dv array corresponding to this tile.
+						dc_dv_row = 3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * idx;
+						
+						int3 t;
+						t.x = abs(tileOffset.x - 1);
+						t.y = abs(tileOffset.y - 1);
+						t.z = abs(tileOffset.z - 1);
+						
+						// For all the voxels in this tile, compute the influence on the control knot. We first compute the appropriate 
+						// spline paramterizationfor each voxel, relative to the control knot of interest
+						
+						float pre_multiplier;
+						float multiplier_1, multiplier_2, multiplier_3, multiplier_4;
+						
+						// An unrolling factor of four appears to be the best performer
+						int unrolling_factor = 4; // Set this parameter to achieve the level of loop unrolling desired; could be 1 or 4
+						int modified_idx = (vox_per_rgn.x/unrolling_factor)*unrolling_factor; // The modified index is an integral multiple of the unrolling factor
+						int lop_off = vox_per_rgn.x - modified_idx;
+							
+						// Compute the spline parametization	
+						for(q.z = 0, idx = 0; q.z < vox_per_rgn.z; q.z++) {
+							C = obtain_spline_basis_function(one_over_six, t.z, q.z, vox_per_rgn.z);	// Obtain the basis function along the Z direction
+							for(q.y = 0; q.y < vox_per_rgn.y; q.y++) {
+								B = obtain_spline_basis_function(one_over_six, t.y, q.y, vox_per_rgn.y); // Obtain the basis function along the Y direction
+								pre_multiplier = B*C;
+								
+								// The inner loop is unrolled multiple times as per a specified unrolling factor 
+								for(q.x = 0; q.x < modified_idx; q.x = q.x + unrolling_factor, idx = idx + unrolling_factor) {
+								
+									if(unrolling_factor == 1){ // No loop unrolling
+										A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
+										multiplier_1 = A*pre_multiplier;
+										
+										// Accumulate the results
+										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
+									} // End if unrolling_factor = 1
+									
+									if(unrolling_factor == 4){ // The loop is unrolled four times 
+										A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for Voxel 1 in the X direction
+										multiplier_1 = A * pre_multiplier;
+										
+										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 1), vox_per_rgn.x); // Obtain the basis function for Voxel 2 in the X direction
+										multiplier_2 = A * pre_multiplier;
+										
+										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 2), vox_per_rgn.x); // Obtain the basis function for Voxel 3 in the X direction
+										multiplier_3 = A * pre_multiplier;
+										
+										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 3), vox_per_rgn.x); // Obtain the basis function for Voxel 4 in the X direction
+										multiplier_4 = A * pre_multiplier;
+										
+										// Accumulate the results
+										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+											
+										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 0) * multiplier_2;
+										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 1) * multiplier_2;
+										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 2) * multiplier_2;
+											
+										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 0) * multiplier_3;
+										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 1) * multiplier_3;
+										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 2) * multiplier_3;
+											
+										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 0) * multiplier_4;
+										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 1) * multiplier_4;
+										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 2) * multiplier_4;
+										
+									} // End if unrolling_factor == 4
+								} // End for q.x loop
+								
+								// Take care of any lop off voxels that the unrolled loop did not process
+								for(q.x = modified_idx; q.x < (modified_idx + lop_off); q.x++, idx++){
+									A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
+									multiplier_1 = A * pre_multiplier;
+										
+									// Accumulate the results
+									result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+									result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+									result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+								} // End of lop off loop
+							} // End for q.y loop
+						} // End q.z loop
+					}
+				}
+			}
+		}
+
+		grad[3*threadIdxInGrid+0] = result.x;
+		grad[3*threadIdxInGrid+1] = result.y;
+		grad[3*threadIdxInGrid+2] = result.z;
+	}
+}
+
 
 /***********************************************************************
  * bspline_cuda_score_g_mse_kernel1_low_mem
@@ -373,6 +560,9 @@ __global__ void bspline_cuda_score_g_mse_kernel1 (
  * lookup tables.  Also, unlike bspline_cuda_score_g_mse_kernel1 above,
  * this version operates on only a portion of the volume at one time
  * in order to reduce the memory requirements on the GPU.
+ 
+ Updated by Naga Kandasamy
+ Date: 07 July 2009
  ***********************************************************************/
 __global__ void bspline_cuda_score_g_mse_kernel1_low_mem (
 	float  *dc_dv,
@@ -435,6 +625,7 @@ __global__ void bspline_cuda_score_g_mse_kernel1_low_mem (
 	float *C = &sdata[12*threadIdxInBlock + 8];
 	float ii, jj, kk;
 	float t1, t2, t3; 
+	float one_over_six = 1.0/6.0;
 
 	// If the voxel lies outside this group of tiles, do nothing.
 	if(threadIdxInGrid < (num_tiles * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z))
@@ -472,47 +663,44 @@ __global__ void bspline_cuda_score_g_mse_kernel1_low_mem (
 			// Use the offset of the voxel within the region to compute the index into the c_lut.
 			pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 			dc_dv_element = &dc_dv[3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx];
-			pidx = pidx * 64;
 
 			// Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
 			qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
 			dc_dv_element = &dc_dv_element[3 * qidx];
-			qidx = qidx * 64;
 			
 			// Compute the q_lut values that pertain to this offset.
 			ii = ((float)q.x) / vox_per_rgn.x;
 			t3 = ii*ii*ii;
 			t2 = ii*ii;
 			t1 = ii;
-			A[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			A[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			A[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			A[3] = (1.0/6.0) * (+ 1.0 * t3);
+			A[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			A[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			A[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			A[3] = one_over_six * (+ 1.0 * t3);
 
 			jj = ((float)q.y) / vox_per_rgn.y;
 			t3 = jj*jj*jj;
 			t2 = jj*jj;
 			t1 = jj;
-			B[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			B[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			B[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			B[3] = (1.0/6.0) * (+ 1.0 * t3);
+			B[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			B[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			B[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			B[3] = one_over_six * (+ 1.0 * t3);
 
 			kk = ((float)q.z) / vox_per_rgn.z;
 			t3 = kk*kk*kk;
 			t2 = kk*kk;
 			t1 = kk;
-			C[0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-			C[1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-			C[2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-			C[3] = (1.0/6.0) * (+ 1.0 * t3);
+			C[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+			C[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+			C[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+			C[3] = one_over_six * (+ 1.0 * t3);
 
 			// Compute the deformation vector.
 			d.x = 0.0;
 			d.y = 0.0;
 			d.z = 0.0;
 
-			int k = 0;
 			int3 t;
 			for(t.z = 0; t.z < 4; t.z++) {
 				for(t.y = 0; t.y < 4; t.y++) {
@@ -531,9 +719,6 @@ __global__ void bspline_cuda_score_g_mse_kernel1_low_mem (
 						d.x += P * N.x;
 						d.y += P * N.y;
 						d.z += P * N.z;
-
-						k++;
-
 					}
 				}
 			}
@@ -659,482 +844,7 @@ __global__ void bspline_cuda_score_g_mse_kernel1_low_mem (
 		}
 	}
 }
-
-__global__ void bspline_cuda_score_g_mse_kernel1_min_regs (
-	float  *dc_dv,
-	float  *score,			
-	int3   volume_dim,		// x, y, z dimensions of the volume in voxels
-	float3 img_origin,		// Image origin (in mm)
-    float3 img_spacing,     // Image spacing (in mm)
-	float3 img_offset,		// Offset corresponding to the region of interest
-    int3   roi_offset,	    // Position of first vox in ROI (in vox)
-    int3   roi_dim,			// Dimension of ROI (in vox)
-    int3   vox_per_rgn,	    // Knot spacing (in vox)
-	float3 pix_spacing,		// Dimensions of a single voxel (in mm)
-	int3   rdims,			// # of regions in (x,y,z)
-	int3   cdims)
-{
-	extern __shared__ float sdata[]; 
-	
-	int3   coord_in_volume; // Coordinate of the voxel in the volume (x,y,z)
-	int3   p;				// Index of the tile within the volume (x,y,z)
-	int3   q;				// Offset within the tile (measured in voxels)
-	int    fv;				// Index of voxel in linear image array
-	int    cidx;			// Index into the coefficient table
-
-	float3 d;				// B-spline deformation vector
-	float  diff;
-	int3   i;
-
-	float3 displacement_in_vox;
-	float3 displacement_in_vox_floor;
-	float3 displacement_in_vox_round;
-	float  fx2, fy2, fz2;
-	int    mvf;
-	float  mvr;
-	float  m_val;
-	
-	float* dc_dv_element;
-
-	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-	// Calculate the index of the thread in the grid, based on the location of the block in the grid.
-	int threadIdxInGrid = (((gridDim.x * blockIdx.y) + blockIdx.x) * (blockDim.x * blockDim.y * blockDim.z)) 
-		+ ((blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x);
-
-	// If the voxel lies outside the volume, do nothing.
-	if(threadIdxInGrid < (volume_dim.x * volume_dim.y * volume_dim.z))
-	{	
-		// Calculate the x, y, and z coordinate of the voxel within the volume.
-		coord_in_volume.z = threadIdxInGrid / (volume_dim.x * volume_dim.y);
-		coord_in_volume.y = (threadIdxInGrid - (coord_in_volume.z * volume_dim.x * volume_dim.y)) / volume_dim.x;
-		coord_in_volume.x = threadIdxInGrid - coord_in_volume.z * volume_dim.x * volume_dim.y - (coord_in_volume.y * volume_dim.x);
-			
-		// Calculate the x, y, and z offsets of the tile that contains this voxel.
-		p.x = coord_in_volume.x / vox_per_rgn.x;
-		p.y = coord_in_volume.y / vox_per_rgn.y;
-		p.z = coord_in_volume.z / vox_per_rgn.z;
-				
-		// Calculate the x, y, and z offsets of the voxel within the tile.
-		q.x = coord_in_volume.x - p.x * vox_per_rgn.x;
-		q.y = coord_in_volume.y - p.y * vox_per_rgn.y;
-		q.z = coord_in_volume.z - p.z * vox_per_rgn.z;
-
-		// If the voxel lies outside of the region of interest, do nothing.
-		if(coord_in_volume.x <= (roi_offset.x + roi_dim.x) || 
-			coord_in_volume.y <= (roi_offset.y + roi_dim.y) ||
-			coord_in_volume.z <= (roi_offset.z + roi_dim.z)) {
-
-			// Compute the linear index of fixed image voxel.
-			fv = (coord_in_volume.z * volume_dim.x * volume_dim.y) + (coord_in_volume.y * volume_dim.x) + coord_in_volume.x;
-
-			//-----------------------------------------------------------------
-			// Calculate the B-Spline deformation vector.
-			//-----------------------------------------------------------------
-
-			// Use the offset of the voxel within the region to compute the index into the c_lut.
-			dc_dv_element = &dc_dv[3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z 
-				* (((p.z * rdims.y + p.y) * rdims.x) + p.x)];
-
-			// Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
-			dc_dv_element = &dc_dv_element[3 * (((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x)];
-			
-			/*
-			// Compute the q_lut values that pertain to this offset.
-			diff = ((float)q.x) / vox_per_rgn.x;
-			t.z = diff*diff*diff;
-			t.y = diff*diff;
-			t.x = diff;
-			sdata[12*threadIdxInBlock + 0 + 0] = (1.0/6.0) * (- 1.0 * t.z + 3.0 * t.y - 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 0 + 1] = (1.0/6.0) * (+ 3.0 * t.z - 6.0 * t.y             + 4.0);
-			sdata[12*threadIdxInBlock + 0 + 2] = (1.0/6.0) * (- 3.0 * t.z + 3.0 * t.y + 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 0 + 3] = (1.0/6.0) * (+ 1.0 * t.z);
-
-			diff = ((float)q.y) / vox_per_rgn.y;
-			t.z = diff*diff*diff;
-			t.y = diff*diff;
-			t.x = diff;
-			sdata[12*threadIdxInBlock + 4 + 0] = (1.0/6.0) * (- 1.0 * t.z + 3.0 * t.y - 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 4 + 1] = (1.0/6.0) * (+ 3.0 * t.z - 6.0 * t.y             + 4.0);
-			sdata[12*threadIdxInBlock + 4 + 2] = (1.0/6.0) * (- 3.0 * t.z + 3.0 * t.y + 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 4 + 3] = (1.0/6.0) * (+ 1.0 * t.z);
-
-			diff = ((float)q.z) / vox_per_rgn.z;
-			t.z = diff*diff*diff;
-			t.y = diff*diff;
-			t.x = diff;
-			sdata[12*threadIdxInBlock + 8 + 0] = (1.0/6.0) * (- 1.0 * t.z + 3.0 * t.y - 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 8 + 1] = (1.0/6.0) * (+ 3.0 * t.z - 6.0 * t.y             + 4.0);
-			sdata[12*threadIdxInBlock + 8 + 2] = (1.0/6.0) * (- 3.0 * t.z + 3.0 * t.y + 3.0 * t.x + 1.0);
-			sdata[12*threadIdxInBlock + 8 + 3] = (1.0/6.0) * (+ 1.0 * t.z);
-			*/
-
-			// Compute the deformation vector.
-			d.x = 0.0;
-			d.y = 0.0;
-			d.z = 0.0;
-			
-			for(i.z = 0; i.z < 4; i.z++) {
-				for(i.y = 0; i.y < 4; i.y++) {
-					for(i.x = 0; i.x < 4; i.x++) {
-
-						// Calculate the index into the coefficients array.
-						cidx = 3 * ((p.z + i.z) * cdims.x * cdims.y + (p.y + i.y) * cdims.x + (p.x + i.x));
-
-						sdata[8*threadIdxInBlock + 3] = 1;
-
-						// Compute the q_lut values that pertain to this offset.
-						diff = ((float)q.x) / vox_per_rgn.x;
-						sdata[8*threadIdxInBlock + 0] = diff*diff*diff;
-						sdata[8*threadIdxInBlock + 1] = diff*diff;
-						sdata[8*threadIdxInBlock + 2] = diff;
-						switch(i.x) {
-							case 0: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 1.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] - 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 1:	sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 3.0 * sdata[8*threadIdxInBlock + 0] - 6.0 * sdata[8*threadIdxInBlock + 1]             + 4.0); break;
-							case 2: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 3.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] + 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 3: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 1.0 * sdata[8*threadIdxInBlock + 0]); break;
-						}
-						
-						diff = ((float)q.y) / vox_per_rgn.y;
-						sdata[8*threadIdxInBlock + 0] = diff*diff*diff;
-						sdata[8*threadIdxInBlock + 1] = diff*diff;
-						sdata[8*threadIdxInBlock + 2] = diff;
-						switch(i.y) {
-							case 0: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 1.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] - 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 1:	sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 3.0 * sdata[8*threadIdxInBlock + 0] - 6.0 * sdata[8*threadIdxInBlock + 1]             + 4.0); break;
-							case 2: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 3.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] + 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 3: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 1.0 * sdata[8*threadIdxInBlock + 0]); break;
-						}
-
-						diff = ((float)q.z) / vox_per_rgn.z;
-						sdata[8*threadIdxInBlock + 0] = diff*diff*diff;
-						sdata[8*threadIdxInBlock + 1] = diff*diff;
-						sdata[8*threadIdxInBlock + 2] = diff;
-						switch(i.z) {
-							case 0: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 1.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] - 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 1:	sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 3.0 * sdata[8*threadIdxInBlock + 0] - 6.0 * sdata[8*threadIdxInBlock + 1]             + 4.0); break;
-							case 2: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (- 3.0 * sdata[8*threadIdxInBlock + 0] + 3.0 * sdata[8*threadIdxInBlock + 1] + 3.0 * sdata[8*threadIdxInBlock + 2] + 1.0); break;
-							case 3: sdata[8*threadIdxInBlock + 3] *= (1.0/6.0) * (+ 1.0 * sdata[8*threadIdxInBlock + 0]); break;
-						}
-
-						// Update the output values.
-						d.x += sdata[8*threadIdxInBlock + 3] * tex1Dfetch(tex_coeff, cidx + 0);
-						d.y += sdata[8*threadIdxInBlock + 3] * tex1Dfetch(tex_coeff, cidx + 1);
-						d.z += sdata[8*threadIdxInBlock + 3] * tex1Dfetch(tex_coeff, cidx + 2);
-
-					}
-				}
-			}
-
-			//-----------------------------------------------------------------
-			// Find correspondence in the moving image.
-			//-----------------------------------------------------------------
-
-			// Calculate the distance of the voxel from the origin (in mm) along the x, y and z axes.
-			displacement_in_vox.x = img_origin.x + (pix_spacing.x * coord_in_volume.x);
-			displacement_in_vox.y = img_origin.y + (pix_spacing.y * coord_in_volume.y);
-			displacement_in_vox.z = img_origin.z + (pix_spacing.z * coord_in_volume.z);
-			
-			// Calculate the displacement of the voxel (in mm) in the x, y, and z directions.
-			displacement_in_vox.x = displacement_in_vox.x + d.x;
-			displacement_in_vox.y = displacement_in_vox.y + d.y;
-			displacement_in_vox.z = displacement_in_vox.z + d.z;
-
-			// Calculate the displacement value in terms of voxels.
-			displacement_in_vox.x = (displacement_in_vox.x - img_offset.x) / pix_spacing.x;
-			displacement_in_vox.y = (displacement_in_vox.y - img_offset.y) / pix_spacing.y;
-			displacement_in_vox.z = (displacement_in_vox.z - img_offset.z) / pix_spacing.z;
-
-			// Check if the displaced voxel lies outside the region of interest.
-			if ((displacement_in_vox.x < -0.5) || (displacement_in_vox.x > (volume_dim.x - 0.5)) || 
-				(displacement_in_vox.y < -0.5) || (displacement_in_vox.y > (volume_dim.y - 0.5)) || 
-				(displacement_in_vox.z < -0.5) || (displacement_in_vox.z > (volume_dim.z - 0.5))) {
-				// Do nothing.
-			}
-			else {
-
-				//-----------------------------------------------------------------
-				// Compute interpolation fractions.
-				//-----------------------------------------------------------------
-
-				// Clamp and interpolate along the X axis.
-				displacement_in_vox_floor.x = floor(displacement_in_vox.x);
-				displacement_in_vox_round.x = round(displacement_in_vox.x);
-				fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
-				if(displacement_in_vox_floor.x < 0){
-					displacement_in_vox_floor.x = 0;
-					displacement_in_vox_round.x = 0;
-					fx2 = 0.0;
-				}
-				else if(displacement_in_vox_floor.x >= (volume_dim.x - 1)){
-					displacement_in_vox_floor.x = volume_dim.x - 2;
-					displacement_in_vox_round.x = volume_dim.x - 1;
-					fx2 = 1.0;
-				}
-
-				// Clamp and interpolate along the Y axis.
-				displacement_in_vox_floor.y = floor(displacement_in_vox.y);
-				displacement_in_vox_round.y = round(displacement_in_vox.y);
-				fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
-				if(displacement_in_vox_floor.y < 0){
-					displacement_in_vox_floor.y = 0;
-					displacement_in_vox_round.y = 0;
-					fy2 = 0.0;
-				}
-				else if(displacement_in_vox_floor.y >= (volume_dim.y - 1)){
-					displacement_in_vox_floor.y = volume_dim.y - 2;
-					displacement_in_vox_round.y = volume_dim.y - 1;
-					fy2 = 1.0;
-				}
-				
-				// Clamp and intepolate along the Z axis.
-				displacement_in_vox_floor.z = floor(displacement_in_vox.z);
-				displacement_in_vox_round.z = round(displacement_in_vox.z);
-				fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
-				if(displacement_in_vox_floor.z < 0){
-					displacement_in_vox_floor.z = 0;
-					displacement_in_vox_round.z = 0;
-					fz2 = 0.0;
-				}
-				else if(displacement_in_vox_floor.z >= (volume_dim.z - 1)){
-					displacement_in_vox_floor.z = volume_dim.z - 2;
-					displacement_in_vox_round.z = volume_dim.z - 1;
-					fz2 = 1.0;
-				}
-				
-				//-----------------------------------------------------------------
-				// Compute moving image intensity using linear interpolation.
-				//-----------------------------------------------------------------
-
-				mvf = (displacement_in_vox_floor.z * volume_dim.y + displacement_in_vox_floor.y) * volume_dim.x + displacement_in_vox_floor.x;	
-				m_val = 0.0;
-				m_val += (1.0 - fx2) * (1.0 - fy2) * (1.0 - fz2) * tex1Dfetch(tex_moving_image, mvf);
-				m_val += fx2 * (1.0 - fy2) * (1.0 - fz2) * tex1Dfetch(tex_moving_image, mvf + 1);
-				m_val += (1.0 - fx2) * fy2 * (1.0 - fz2) * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
-				m_val += fx2 * fy2 * (1.0 - fz2) * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
-				m_val += (1.0 - fx2) * (1.0 - fy2) * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
-				m_val += fx2 * (1.0 - fy2) * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
-				m_val += (1.0 - fx2) * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
-				m_val += fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
-
-				//-----------------------------------------------------------------
-				// Compute intensity difference.
-				//-----------------------------------------------------------------
-
-				diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
-				
-				//-----------------------------------------------------------------
-				// Accumulate the score.
-				//-----------------------------------------------------------------
-
-				score[threadIdxInGrid] = (diff * diff);
-
-				//-----------------------------------------------------------------
-				// Compute dc_dv for this offset
-				//-----------------------------------------------------------------
-				
-				// Compute spatial gradient using nearest neighbors.
-				mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
-				
-				dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
-				dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
-				dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
-			
-			}
-		}
-	}
-}
-
-__global__ void bspline_cuda_score_g_mse_kernel2 (
-	float *dc_dv,
-	float *grad,
-	int   num_threads,
-	int3  rdims,
-	int3  cdims,
-	int3  vox_per_rgn)
-{
-	// Shared memory is allocated on a per block basis.  Therefore, only allocate 
-	// (sizeof(data) * blocksize) memory when calling the kernel.
-	extern __shared__ float sdata[]; 
-
-	int3 knotLocation;
-	int3 tileOffset;
-	int3 tileLocation;
-	int pidx;
-	int qidx;
-	int dc_dv_row;
-	float multiplier;
-
-	//float3 temp0, temp1, temp2, temp3;
-
-	float3 result;
-	result.x = 0.0;
-	result.y = 0.0;
-	result.z = 0.0;
-
-	// Calculate the index of the thread block in the grid.
-	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-
-	// Calculate the total number of threads in each thread block.
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-	float *temps = &sdata[15*threadIdxInBlock];
-	temps[12] = 0.0;
-	temps[13] = 0.0;
-	temps[14] = 0.0;
-
-	float ii, jj, kk;
-	float t1, t2, t3;
-	float A, B, C;
-	int3 q;
-
-	// If the thread does not correspond to a control point, do nothing.
-	if(threadIdxInGrid < num_threads) {	
-
-		// Determine the x, y, and z offset of the knot within the grid.
-		knotLocation.x = threadIdxInGrid % cdims.x;
-		knotLocation.y = ((threadIdxInGrid - knotLocation.x) / cdims.x) % cdims.y;
-		knotLocation.z = ((((threadIdxInGrid - knotLocation.x) / cdims.x) - knotLocation.y) / cdims.y) % cdims.z;
-
-		// Subtract 1 from each of the knot indices to account for the differing origin
-		// between the knot grid and the tile grid.
-		knotLocation.x -= 1;
-		knotLocation.y -= 1;
-		knotLocation.z -= 1;
-
-		// Iterate through each of the 64 tiles that influence this control knot.
-		for(tileOffset.z = -2; tileOffset.z < 2; tileOffset.z++) {
-			for(tileOffset.y = -2; tileOffset.y < 2; tileOffset.y++) {
-				for(tileOffset.x = -2; tileOffset.x < 2; tileOffset.x++) {
-						
-					// Using the current x, y, and z offset from the control knot position,
-					// calculate the index for one of the tiles that influence this knot.
-					tileLocation.x = knotLocation.x + tileOffset.x;
-					tileLocation.y = knotLocation.y + tileOffset.y;
-					tileLocation.z = knotLocation.z + tileOffset.z;
-
-					// Determine if the tile location is within the volume.
-					if((tileLocation.x >= 0 && tileLocation.x < rdims.x) &&
-						(tileLocation.y >= 0 && tileLocation.y < rdims.y) &&
-						(tileLocation.z >= 0 && tileLocation.z < rdims.z)) {
-
-						// Calculate linear index for tile.
-						pidx = ((tileLocation.z * rdims.y + tileLocation.y) * rdims.x) + tileLocation.x;	
-						
-						// Calculate the offset into the dc_dv array corresponding to this tile.
-						dc_dv_row = 3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx;
-
-						// Update pidx to index into the c_lut.
-						pidx = 64 * pidx;
-
-						// Find the coefficient index in the c_lut row in order to determine
-						// the linear index of the control point with respect to the current tile.
-						int3 t, t_temp;
-						int c_lut_value;
-						for(t_temp.z = 0; t_temp.z < 4; t_temp.z++) {
-							for(t_temp.y = 0; t_temp.y < 4; t_temp.y++) {
-								for(t_temp.x = 0; t_temp.x < 4; t_temp.x++) {
-									c_lut_value = 
-									    + (tileLocation.z + t_temp.z) * cdims.x * cdims.y
-										+ (tileLocation.y + t_temp.y) * cdims.x 
-										+ (tileLocation.x + t_temp.x);
-									if(c_lut_value == threadIdxInGrid) {
-										t.x = t_temp.x;
-										t.y = t_temp.y;
-										t.z = t_temp.z;
-										break;
-									}
-								}
-							}
-						}
-
-						// For all the voxels in this tile...
-						for(q.z = 0, qidx = 0; q.z < vox_per_rgn.z; q.z++) {
-							for(q.y = 0; q.y < vox_per_rgn.y; q.y++) {
-								for(q.x = 0; q.x < vox_per_rgn.x; q.x++, qidx++) {
-
-									// Compute the q_lut value.
-									ii = (float)q.x / vox_per_rgn.x;
-									t3 = ii*ii*ii;
-									t2 = ii*ii;
-									t1 = ii;
-									switch(t.x) {
-										case 0:
-											A = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-											break;
-										case 1:
-											A = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-											break;
-										case 2:
-											A = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-											break;
-										case 3:
-											A = (1.0/6.0) * (+ 1.0 * t3);
-											break;
-									}
-
-									jj = (float)q.y / vox_per_rgn.x;
-									t3 = jj*jj*jj;
-									t2 = jj*jj;
-									t1 = jj;
-									switch(t.y) {
-										case 0:
-											B = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-											break;
-										case 1:
-											B = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-											break;
-										case 2:
-											B = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-											break;
-										case 3:
-											B = (1.0/6.0) * (+ 1.0 * t3);
-											break;
-									}
-
-									kk = (float)q.z / vox_per_rgn.x;
-									t3 = kk*kk*kk;
-									t2 = kk*kk;
-									t1 = kk;
-									switch(t.z) {
-										case 0:
-											C = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-											break;
-										case 1:
-											C = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-											break;
-										case 2:
-											C = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-											break;
-										case 3:
-											C = (1.0/6.0) * (+ 1.0 * t3);
-											break;
-									}
-
-									multiplier = A * B * C;
-									result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+0) + 0) * multiplier;
-									result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+0) + 1) * multiplier;
-									result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+0) + 2) * multiplier;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		grad[3*threadIdxInGrid+0] = result.x;
-		grad[3*threadIdxInGrid+1] = result.y;
-		grad[3*threadIdxInGrid+2] = result.z;
-	}
-}
+							
 
 /***********************************************************************
  * bspline_cuda_score_f_mse_compute_score
@@ -1720,6 +1430,9 @@ __global__ void bspline_cuda_score_f_mse_kernel1_v2 (
  * given below (bspline_cuda_score_f_mse_kernel1_low_mem).  The score
  * stream should have the same number of elements are there are voxels
  * in the volume.
+ 
+ Updated by Naga Kandasamy
+ Date: 07 July 2009
  ***********************************************************************/
 __global__ void bspline_cuda_score_f_mse_kernel1 (
 	float  *dc_dv,
@@ -1811,12 +1524,10 @@ __global__ void bspline_cuda_score_f_mse_kernel1 (
 			// Use the offset of the voxel within the region to compute the index into the c_lut.
 			pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 			dc_dv_element = &dc_dv[3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx];
-			pidx = pidx * 64;
 
 			// Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
 			qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
-			dc_dv_element = &dc_dv_element[3 * qidx];
-			qidx = qidx * 64;
+			dc_dv_element = &dc_dv_element[3 * qidx]; // dc_dv_element+(3*qidx);
 
 			// Compute the deformation vector.
 			d.x = 0.0;
@@ -1826,19 +1537,19 @@ __global__ void bspline_cuda_score_f_mse_kernel1 (
 			for(int k = 0; k < 64; k++)
 			{
 				// Calculate the index into the coefficients array.
-				//cidx = 3 * tex1Dfetch(tex_c_lut, pidx + k); 
-				cidx = 3 * gpu_c_lut[pidx + k];
+				cidx = 3 * tex1Dfetch(tex_c_lut, pidx + k); 
+				// cidx = 3 * gpu_c_lut[pidx + k];
 
 				// Fetch the values for P, Ni, Nj, and Nk.
-				//P   = tex1Dfetch(tex_q_lut, qidx + k); 
-				P   = gpu_q_lut[qidx + k];
-				//N.x = tex1Dfetch(tex_coeff, cidx + 0);  // x-value
-				//N.y = tex1Dfetch(tex_coeff, cidx + 1);  // y-value
-				//N.z = tex1Dfetch(tex_coeff, cidx + 2);  // z-value
+				P   = tex1Dfetch(tex_q_lut, qidx + k); 
+				// P   = gpu_q_lut[qidx + k];
+				N.x = tex1Dfetch(tex_coeff, cidx + 0);  // x-value
+				N.y = tex1Dfetch(tex_coeff, cidx + 1);  // y-value
+				N.z = tex1Dfetch(tex_coeff, cidx + 2);  // z-value
 
-				N.x = coeff[cidx+0];  // x-value
-				N.y = coeff[cidx+1];  // y-value
-				N.z = coeff[cidx+2];  // z-value
+				// N.x = coeff[cidx+0];  // x-value
+				// N.y = coeff[cidx+1];  // y-value
+				// N.z = coeff[cidx+2];  // z-value
 
 				// Update the output (v) values.
 				d.x += P * N.x;
@@ -1930,30 +1641,22 @@ __global__ void bspline_cuda_score_f_mse_kernel1 (
 				//-----------------------------------------------------------------
 
 				mvf = (displacement_in_vox_floor.z * volume_dim.y + displacement_in_vox_floor.y) * volume_dim.x + displacement_in_vox_floor.x;
-				//m_x1y1z1 = fx1 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf);
-				//m_x2y1z1 = fx2 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf + 1);
-				//m_x1y2z1 = fx1 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
-				//m_x2y2z1 = fx2 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
-				//m_x1y1z2 = fx1 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
-				//m_x2y1z2 = fx2 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
-				//m_x1y2z2 = fx1 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
-				//m_x2y2z2 = fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
-				m_x1y1z1 = fx1 * fy1 * fz1 * moving_image[mvf];
-				m_x2y1z1 = fx2 * fy1 * fz1 * moving_image[mvf + 1];
-				m_x1y2z1 = fx1 * fy2 * fz1 * moving_image[mvf + volume_dim.x];
-				m_x2y2z1 = fx2 * fy2 * fz1 * moving_image[mvf + volume_dim.x + 1];
-				m_x1y1z2 = fx1 * fy1 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x];
-				m_x2y1z2 = fx2 * fy1 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + 1];
-				m_x1y2z2 = fx1 * fy2 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + volume_dim.x];
-				m_x2y2z2 = fx2 * fy2 * fz2 * moving_image[mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1];
+				m_x1y1z1 = fx1 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf);
+				m_x2y1z1 = fx2 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf + 1);
+				m_x1y2z1 = fx1 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
+				m_x2y2z1 = fx2 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
+				m_x1y1z2 = fx1 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
+				m_x2y1z2 = fx2 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
+				m_x1y2z2 = fx1 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
+				m_x2y2z2 = fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
 				m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
 				//-----------------------------------------------------------------
 				// Compute intensity difference.
 				//-----------------------------------------------------------------
 
-				//diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
-				diff = fixed_image[fv] - m_val;
+				diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
+				// diff = fixed_image[fv] - m_val;
 				
 				//-----------------------------------------------------------------
 				// Accumulate the score.
@@ -1968,12 +1671,12 @@ __global__ void bspline_cuda_score_f_mse_kernel1 (
 				// Compute spatial gradient using nearest neighbors.
 				mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
 				
-				//dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
-				//dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
-				//dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
-				dc_dv_element[0] = diff * moving_grad[3 * (int)mvr + 0];
-				dc_dv_element[1] = diff * moving_grad[3 * (int)mvr + 1];
-				dc_dv_element[2] = diff * moving_grad[3 * (int)mvr + 2];	
+				dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
+				dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
+				dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
+				// dc_dv_element[0] = diff * moving_grad[3 * (int)mvr + 0];
+				// dc_dv_element[1] = diff * moving_grad[3 * (int)mvr + 1];
+				// dc_dv_element[2] = diff * moving_grad[3 * (int)mvr + 2];	
 			}
 		}
 	}
@@ -2419,18 +2122,6 @@ __global__ void bspline_cuda_score_f_mse_kernel2_v2 (
 	}
 }
 
-/***********************************************************************
- * bspline_cuda_score_f_mse_kernel2
- *
- * This kernel fills up the gradient stream.  Each thread represents one
- * control knot, and therefore one element in the gradient stream.  The
- * kernel determines which tiles influence the given control knot, 
- * iterates through the voxels of each of those tiles, and accumulates
- * the total influence.  It then saves the result to the gradient stream.
- * This implementation offers much better performance than any of the
- * previous versions, which calculate the gradient values on a tile by
- * tile basis.
- ***********************************************************************/
 __global__ void bspline_cuda_score_f_mse_kernel2 (
 	float *dc_dv,
 	float *grad,
@@ -2734,6 +2425,150 @@ __global__ void bspline_cuda_score_f_mse_kernel2 (
 		grad[3*threadIdxInGrid+1] = temps[13];
 		grad[3*threadIdxInGrid+2] = temps[14];
 
+	}
+}
+
+/***********************************************************************
+ * bspline_cuda_score_f_mse_kernel2
+ *
+ * This kernel fills up the gradient stream.  Each thread represents one
+ * control knot, and therefore one element in the gradient stream.  The
+ * kernel determines which tiles influence the given control knot, 
+ * iterates through the voxels of each of those tiles, and accumulates
+ * the total influence.  It then saves the result to the gradient stream.
+ * This implementation offers much better performance than any of the
+ * previous versions, which calculate the gradient values on a tile by
+ * tile basis.
+ ***********************************************************************/
+__global__ void bspline_cuda_score_f_mse_kernel2_nk (
+	float *dc_dv,
+	float *grad,
+	int   num_threads,
+	int3  rdims,
+	int3  cdims,
+	int3  vox_per_rgn)
+{
+	int3 knotLocation;
+	int3 tileOffset;
+	int3 tileLocation;
+	int pidx;
+	int qidx;
+	int dc_dv_row;
+	int m;	
+	float multiplier;
+
+	float3 result;
+	result.x = 0.0; 
+	result.y = 0.0;
+	result.z = 0.0;
+	
+	// Calculate the index of the thread block in the grid.
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+	// Calculate the total number of threads in each thread block.
+	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+	int totalVoxPerRgn = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+
+	// If the thread does not correspond to a control point, do nothing.
+	if(threadIdxInGrid < num_threads) {	
+
+		// Determine the x, y, and z offset of the knot within the grid.
+		knotLocation.x = threadIdxInGrid % cdims.x;
+		knotLocation.y = ((threadIdxInGrid - knotLocation.x) / cdims.x) % cdims.y;
+		knotLocation.z = ((((threadIdxInGrid - knotLocation.x) / cdims.x) - knotLocation.y) / cdims.y) % cdims.z;
+
+		// Subtract 1 from each of the knot indices to account for the differing origin
+		// between the knot grid and the tile grid.
+		knotLocation.x -= 1;
+		knotLocation.y -= 1;
+		knotLocation.z -= 1;
+
+		// Iterate through each of the 64 tiles that influence this control knot.
+		for(tileOffset.z = -2; tileOffset.z < 2; tileOffset.z++) {
+			for(tileOffset.y = -2; tileOffset.y < 2; tileOffset.y++) {
+				for(tileOffset.x = -2; tileOffset.x < 2; tileOffset.x++) {
+						
+					// Using the current x, y, and z offset from the control knot position,
+					// calculate the index for one of the tiles that influence this knot.
+					tileLocation.x = knotLocation.x + tileOffset.x;
+					tileLocation.y = knotLocation.y + tileOffset.y;
+					tileLocation.z = knotLocation.z + tileOffset.z;
+
+					// Determine if the tile location is within the volume.
+					if((tileLocation.x >= 0 && tileLocation.x < rdims.x) &&
+						(tileLocation.y >= 0 && tileLocation.y < rdims.y) &&
+						(tileLocation.z >= 0 && tileLocation.z < rdims.z)) {
+
+						// Calculate linear index for tile.
+						pidx = ((tileLocation.z * rdims.y + tileLocation.y) * rdims.x) + tileLocation.x;	
+						
+						// Calculate the offset into the dc_dv array corresponding to this tile.
+						dc_dv_row = 3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx;
+
+						// Update pidx to index into the c_lut.
+						pidx = 64 * pidx;
+
+						// Find the coefficient index in the c_lut row in order to determine
+						// the linear index of the control point with respect to the current tile.
+						for(m = 0; m < 64; m++) {
+							if(tex1Dfetch(tex_c_lut, pidx + m) == threadIdxInGrid) 
+								break;
+						}									
+						
+						// Accumulate the influence of each voxel in the current tile
+						
+						// To improve performance, we unroll the loop to operate 
+						// on multiple voxels per iteration. An unrolling factor of four appears to be the best performer
+						
+						int unrolling_factor = 4; // Set this parameter to achieve the level of loop unrolling desired; could be 1 or 4
+						int total_vox_per_rgn = vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
+						int modified_idx = (total_vox_per_rgn/unrolling_factor)*unrolling_factor; // The modified index is an integral multiple of the unrolling factor
+						int lop_off = total_vox_per_rgn - modified_idx;
+						
+						for(qidx = 0; qidx < modified_idx; qidx = qidx + unrolling_factor) {
+							multiplier = tex1Dfetch(tex_q_lut, 64*qidx + m); // Voxel 1
+							result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 0) * multiplier;
+							result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 1) * multiplier;
+							result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 2) * multiplier;
+
+							multiplier = tex1Dfetch(tex_q_lut, 64*(qidx+1) + m); // Voxel 2
+							result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+1) + 0) * multiplier;
+							result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+1) + 1) * multiplier;
+							result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+1) + 2) * multiplier;
+
+							multiplier = tex1Dfetch(tex_q_lut, 64*(qidx+2) + m); // Voxel 3
+							result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+2) + 0) * multiplier;
+							result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+2) + 1) * multiplier;
+							result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+2) + 2) * multiplier;
+
+							multiplier = tex1Dfetch(tex_q_lut, 64*(qidx+3) + m); // Voxel 4
+							result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+3) + 0) * multiplier;
+							result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+3) + 1) * multiplier;
+							result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(qidx+3) + 2) * multiplier;
+						}
+						
+						// Take care of any lop off voxels
+						for(qidx = modified_idx; qidx < (modified_idx + lop_off); qidx++){
+							multiplier = tex1Dfetch(tex_q_lut, 64*qidx + m);
+							result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 0) * multiplier;
+							result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 1) * multiplier;
+							result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*qidx + 2) * multiplier;
+						} 
+					} // if tile location is within the volume
+				} // for each tile
+			} // 
+		}
+		grad[3*threadIdxInGrid+0] = result.x;
+		grad[3*threadIdxInGrid+1] = result.y;
+		grad[3*threadIdxInGrid+2] = result.z;
+		
 	}
 }
 

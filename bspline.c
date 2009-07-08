@@ -2819,7 +2819,7 @@ bspline_score (BSPLINE_Parms *parms,
 	    bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
 	    break;
 	default:
-	    bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
 	    break;
 	}
 	return;

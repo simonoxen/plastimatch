@@ -245,7 +245,7 @@ void bspline_cuda_initialize_f(
 		checkCUDAError("Failed to bind tex_score to linear memory");
 	total_bytes += score_mem_size;
 
-	/*
+	
 	// Allocate memory to hold the diff values.
 	if(cudaMalloc((void**)&gpu_diff, score_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to allocate memory for the diff stream on GPU");
@@ -259,7 +259,6 @@ void bspline_cuda_initialize_f(
 	if(cudaBindTexture(0, tex_mvr, gpu_mvr, score_mem_size) != cudaSuccess)
 		checkCUDAError("Failed to bind tex_mvr to linear memory");
 	total_bytes += score_mem_size;
-	*/
 
 	// Allocate memory to hold the gradient values.
 	if(cudaMalloc((void**)&gpu_grad, coeff_mem_size) != cudaSuccess)
@@ -876,9 +875,7 @@ void bspline_cuda_calculate_run_kernels_g(
 	int num_blocks;
 	int smemSize;
 
-	// printf("Launching bspline_cuda_score_f_mse_kernel1...\n");
 	if (!run_low_mem_version) {
-		
 		printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
 		
 		threads_per_block = 256;
@@ -886,10 +883,8 @@ void bspline_cuda_calculate_run_kernels_g(
 		num_blocks = (int)ceil(num_threads / (float)threads_per_block);
 		dim3 dimGrid1(num_blocks / 128, 128, 1);
 		dim3 dimBlock1(threads_per_block, 1, 1);
-		//smemSize = 4 * sizeof(float) * threads_per_block;
 		smemSize = 12 * sizeof(float) * threads_per_block;
 
-		//bspline_cuda_score_g_mse_kernel1_min_regs<<<dimGrid1, dimBlock1>>>(
 		bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
 			gpu_dc_dv,
 			gpu_score,
@@ -910,11 +905,9 @@ void bspline_cuda_calculate_run_kernels_g(
 
 	}
 	else {
-
-		printf("Launching low memory version of bspline_cuda_score_g_mse_kernel1...\n");
-
 		int tiles_per_launch = 512;
-
+		printf("Launching low memory version of bspline_cuda_score_g_mse_kernel1 with %d tiles per launch. \n", tiles_per_launch);
+		
 		threads_per_block = 256;
 		num_threads = tiles_per_launch * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z;
 		num_blocks = (int)ceil(num_threads / (float)threads_per_block);
@@ -948,7 +941,7 @@ void bspline_cuda_calculate_run_kernels_g(
 
 	QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
-	printf("%f seconds to run bspline_cuda_score_g_mse_kernel1\n", 
+	printf("%f seconds to run bspline_cuda_score_g_mse_kernel1 \n", 
 		double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 
 	QueryPerformanceCounter(&clock_count);
@@ -1059,7 +1052,7 @@ void bspline_cuda_calculate_run_kernels_f(
 
 	QueryPerformanceCounter(&clock_count);
     clock_start = (double)clock_count.QuadPart;
-
+	/*
 	// Configure the grid.
 	int threads_per_block = 256;
 	int num_threads = fixed->npix;
@@ -1068,6 +1061,7 @@ void bspline_cuda_calculate_run_kernels_f(
 	dim3 dimBlock1(threads_per_block, 1, 1);
 
 	// printf("Launching bspline_cuda_score_f_mse_kernel1...\n");
+	
 	bspline_cuda_score_f_mse_kernel1<<<dimGrid1, dimBlock1>>>(
 		gpu_dc_dv,
 		gpu_score,
@@ -1089,10 +1083,11 @@ void bspline_cuda_calculate_run_kernels_f(
 	
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\bspline_cuda_score_f_mse_kernel1 failed");
+		*/
 
-	/*
+	
 	// Configure the grid.
-	int threads_per_block = 512;
+	int threads_per_block = 256;
 	int num_threads = fixed->npix;
 	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
 	dim3 dimGrid11(num_blocks, 1, 1);
@@ -1117,7 +1112,7 @@ void bspline_cuda_calculate_run_kernels_f(
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\bspline_cuda_score_f_mse_compute_score failed");
 
-	threads_per_block = 512;
+	threads_per_block = 256;
 	num_threads = 3 * fixed->npix;
 	num_blocks = (int)ceil(num_threads / (float)threads_per_block);
 	dim3 dimGrid12((int)ceil(num_blocks / 64.0), 64, 1);
@@ -1133,7 +1128,7 @@ void bspline_cuda_calculate_run_kernels_f(
 
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\bspline_cuda_score_f_compute_dc_dv failed");
-	*/
+	
 
 	QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
@@ -1152,7 +1147,8 @@ void bspline_cuda_calculate_run_kernels_f(
 	int smemSize = 15 * sizeof(float) * threads_per_block;
 
 	//printf("Launching bspline_cuda_score_f_mse_kernel2...");
-	bspline_cuda_score_f_mse_kernel2<<<dimGrid2, dimBlock2, smemSize>>>(
+	
+	bspline_cuda_score_f_mse_kernel2_nk<<<dimGrid2, dimBlock2, smemSize>>>(
 		gpu_dc_dv,
 		gpu_grad,
 		num_threads,
@@ -1167,7 +1163,8 @@ void bspline_cuda_calculate_run_kernels_f(
 		rdims,
 		cdims,
 		vox_per_rgn);
-	*/
+		*/
+	
 
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("\bspline_cuda_score_f_mse_kernel2 failed");
