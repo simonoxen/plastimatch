@@ -40,6 +40,7 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_HOTKEY(0xB001, MyFrame::OnHotKey2)
     EVT_BUTTON(ID_BUTTON_SEND, MyFrame::OnButtonSend)
     EVT_BUTTON(ID_BUTTON_CANCEL, MyFrame::OnButtonCancel)
+    EVT_CLOSE(MyFrame::OnWindowClose)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
@@ -224,6 +225,19 @@ void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
     /* Hide dialog box */
     this->Show (FALSE);
 }
+
+void
+MyFrame::OnWindowClose (wxCloseEvent& event)
+{
+    if (event.CanVeto ()) {
+	/* Hide dialog box */
+	this->Show (FALSE);
+	event.Veto ();
+    } else {
+	this->Destroy ();
+    }
+}
+
 
 void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 {
@@ -648,66 +662,3 @@ sqlite_patients_query (MyFrame* frame)
 
     sqlite3_close (db);
 }
-
-#if defined (commentout)
-int
-sqlite_config_query_callback (void* data, int argc, char** argv, char** column_names)
-{
-    int i;
-    MyFrame *frame = (MyFrame*) data;
-    Config_settings *config = &frame->config;
-
-    /* Check column_names */
-    for (i = 0; i < argc; i++) {
-	if (!strcmp (column_names[i], "local_aet")) {
-	    config->local_aet = wxString (argv[i]);
-	}
-	else if (!strcmp (column_names[i], "remote_aet")) {
-	    config->remote_aet = wxString (argv[i]);
-	}
-	else if (!strcmp (column_names[i], "remote_ip")) {
-	    config->remote_ip = wxString (argv[i]);
-	}
-	else if (!strcmp (column_names[i], "remote_port")) {
-	    config->remote_port = wxString (argv[i]);
-	}
-    }
-    return 0;
-}
-
-static void
-sqlite_config_query (MyFrame* frame)
-{
-    int rc;
-    sqlite3 *db;
-    char *sql;
-    char *sqlite3_err;
-
-    rc = sqlite3_open ("C:/tmp/mondoshot.sqlite", &db);
-    if (rc) {
-	popup ("Can't open database: %s\n", sqlite3_errmsg(db));
-	sqlite3_close (db);
-	exit (1);
-    }
-
-    sql = "CREATE TABLE IF NOT EXISTS config ( "
-	"local_aet TEXT, "
-	"remote_aet TEXT, "
-	"remote_ip TEXT, "
-	"remote_port TEXT);";
-    rc = sqlite3_exec (db, sql, 0, 0, &sqlite3_err);
-    if (rc != SQLITE_OK) {
-	popup ("SQL error: %s\n", sqlite3_err);
-	sqlite3_free (sqlite3_err);
-    }
-
-    sql = "SELECT * FROM config LIMIT 1;";
-    rc = sqlite3_exec (db, sql, sqlite_config_query_callback, frame, &sqlite3_err);
-    if (rc != SQLITE_OK) {
-	popup ("SQL error: %s\n", sqlite3_err);
-	sqlite3_free (sqlite3_err);
-    }
-
-    sqlite3_close (db);
-}
-#endif

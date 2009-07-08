@@ -114,6 +114,7 @@ public:
     void OnButtonCancel (wxCommandEvent& event);
     void OnHotKey1 (wxKeyEvent& event);
     void OnHotKey2 (wxKeyEvent& event);
+    void OnWindowClose (wxCloseEvent& event);
     void listctrl_patients_populate (void);
 
     wxBitmap m_bitmap;
