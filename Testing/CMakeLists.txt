@@ -24,6 +24,9 @@ PLM_ADD_TEST (
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt"
   )
 ADD_EXECUTABLE(bspline_test_1 bspline_test_1.cxx)
+IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
+  SET_TARGET_PROPERTIES(bspline_test_1 PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
+ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
 TARGET_LINK_LIBRARIES(bspline_test_1 ${GPUIT_LIBRARIES})
 ADD_TEST (bspline_test_1_compare ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
