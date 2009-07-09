@@ -222,8 +222,8 @@ bspline_optimize_lbfgsb (
 
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
 	if(parms->threading == BTHR_CUDA) {
-		// bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
-		bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
+		bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
+		// bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
 		// bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
 		//bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
 		//bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
@@ -286,8 +286,8 @@ bspline_optimize_lbfgsb (
 
 #if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
 	if(parms->threading == BTHR_CUDA) {
-		// bspline_cuda_clean_up_g();
-		bspline_cuda_clean_up_f();
+		bspline_cuda_clean_up_g();
+		// bspline_cuda_clean_up_f();
 		// bspline_cuda_clean_up_d(); // Handles versions D and E
 		// bspline_cuda_clean_up();
 	}
