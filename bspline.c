@@ -42,6 +42,9 @@
 #if (HAVE_CUDA)
 #include "bspline_cuda.h"
 #endif
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
 #include "mathutil.h"
 
 
@@ -1671,7 +1674,7 @@ void bspline_score_f_mse (
 {
 	BSPLINE_Score* ssd = &parms->ssd;
 
-    int i, j, k, m;
+    int i, m;
     int fi, fj, fk, fv;
     float mi, mj, mk;
     float fx, fy, fz;
@@ -2194,31 +2197,16 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 		     Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
-    int i, j, k, m;
-    int fi, fj, fk, fv;
-    float mi, mj, mk;
-    float fx, fy, fz;
-    float mx, my, mz;
-    int mif, mjf, mkf, mvf;  /* Floor */
-    int mir, mjr, mkr, mvr;  /* Round */
+    int i;
+    int qz;
     int p[3];
-    int q[3];
-    float diff;
     float* dc_dv;
-    float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
-    float dxyz[3];
     int num_vox;
-    int pidx, qidx;
-    int cidx;
     float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock, end_clock;
-    float m_val;
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
-    int* c_lut;
 
     static int it = 0;
     char debug_fn[1024];
@@ -2240,6 +2228,11 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
     for (p[2] = 0; p[2] < bxf->rdims[2]; p[2]++) {
 	for (p[1] = 0; p[1] < bxf->rdims[1]; p[1]++) {
 	    for (p[0] = 0; p[0] < bxf->rdims[0]; p[0]++) {
+		int k;
+		int pidx;
+		int* c_lut;
+		int tile_num_vox = 0;
+		double tile_score = 0.0;
 
 		/* Compute linear index for tile */
 		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
@@ -2250,9 +2243,25 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 		//logfile_printf ("Kernel 1, tile %d %d %d\n", p[0], p[1], p[2]);
 
 		/* Parallel across offsets */
-		for (q[2] = 0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+#pragma omp parallel for reduction (+:tile_num_vox,tile_score)
+		for (qz = 0; qz < bxf->vox_per_rgn[2]; qz++) {
+		    int q[3];
+		    q[2] = qz;
 		    for (q[1] = 0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
 			for (q[0] = 0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+			    int qidx;
+			    int fi, fj, fk, fv;
+			    float mx, my, mz;
+			    float mi, mj, mk;
+			    float fx, fy, fz;
+			    int mif, mjf, mkf, mvf;  /* Floor */
+			    int mir, mjr, mkr, mvr;  /* Round */
+			    float fx1, fx2, fy1, fy2, fz1, fz2;
+			    float dxyz[3];
+			    float m_val;
+			    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+			    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+			    float diff;
 
 			    /* Compute linear index for this offset */
 			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
@@ -2324,8 +2333,8 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 
 			    /* We'll go ahead and accumulate the score here, but you would 
 			       have to reduce somewhere else instead */
-			    ssd->score += diff * diff;
-			    num_vox ++;
+			    tile_score += diff * diff;
+			    tile_num_vox ++;
 
 			    /* Compute spatial gradient using nearest neighbors */
 			    mvr = (mkr * moving->dim[1] + mjr) * moving->dim[0] + mir;
@@ -2339,11 +2348,19 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 		}
 
 		//logfile_printf ("Kernel 2, tile %d %d %d\n", p[0], p[1], p[2]);
+		num_vox += tile_num_vox;
+		ssd->score += tile_score;
 
 		/* Parallel across 64 control points */
+#pragma omp parallel for
 		for (k = 0; k < 4; k++) {
+		    int i, j;
 		    for (j = 0; j < 4; j++) {
 			for (i = 0; i < 4; i++) {
+			    int qidx;
+			    int cidx;
+			    int q[3];
+			    int m;
 
 			    /* Compute linear index of control point */
 			    m = k*16 + j*4 + i;

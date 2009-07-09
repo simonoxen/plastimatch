@@ -266,6 +266,28 @@ SET(HAVE_PANTHEIOS TRUE)
 ENDIF(PANTHEIOS_FOUND)
 
 ######################################################
+##  WXWINDOWS LIBRARY
+######################################################
+IF(wxWidgets_FOUND)
+  IF(wxWidgets_CXX_FLAGS)
+    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+      "${wxWidgets_DEFINITIONS}")
+    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+      PROPERTIES COMPILE_FLAGS 
+      ${wxWidgets_CXX_FLAGS}
+      )
+  ENDIF(wxWidgets_CXX_FLAGS)
+ENDIF(wxWidgets_FOUND)
+
+######################################################
+##  DCMTK LIBRARY
+######################################################
+SET(DCMTK_HAVE_CONFIG_H FALSE)
+IF(UNIX)
+   SET(DCMTK_HAVE_CONFIG_H TRUE)
+ENDIF(UNIX)
+
+######################################################
 ##  SOURCE FILES (LIBRARIES)
 ######################################################
 SET(GPUIT_LIBRARY_SRC
@@ -285,7 +307,6 @@ SET(GPUIT_LIBRARY_SRC
 ELSE(PLM_BSPLINE_CXX)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
-#	bspline_omp.c bspline.h)
 	bspline.c bspline.h)
 ENDIF(PLM_BSPLINE_CXX)
 IF(BROOK_FOUND)
@@ -541,40 +562,19 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
-
 ######################################################
-##  WXWINDOWS COMPILE FLAGS
+##  SOURCE FILE PROPERTIES
 ######################################################
-IF(wxWidgets_FOUND)
-
-#   SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
-#     PROPERTIES COMPILE_DEFINITIONS
-#     "_FILE_OFFSET_BITS=64;_LARGE_FILES;__WXGTK__"
-#     )
-
-  IF(wxWidgets_CXX_FLAGS)
-    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
-      "${wxWidgets_DEFINITIONS}")
-    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
-      PROPERTIES COMPILE_FLAGS 
-      ${wxWidgets_CXX_FLAGS}
-      )
-  ENDIF(wxWidgets_CXX_FLAGS)
-    
-ENDIF(wxWidgets_FOUND)
-
-######################################################
-##  DCMTK CONFIGURATION
-######################################################
-SET(DCMTK_HAVE_CONFIG_H FALSE)
-IF(UNIX)
-   SET(DCMTK_HAVE_CONFIG_H TRUE)
-ENDIF(UNIX)
+IF(OPENMP_FOUND)
+  SET_SOURCE_FILES_PROPERTIES(bspline_omp.c
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+ENDIF(OPENMP_FOUND)
 
 ######################################################
 ##  CONFIGURE INCLUDE FILE
 ######################################################
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
+  ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
 ######################################################
 ##  INCLUDE DIRECTORIES
@@ -758,13 +758,9 @@ ENDIF(DCMTK_FOUND)
 ##  LINKING INSTRUCTIONS
 ######################################################
 
-IF(ITK_FOUND)
-TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-ENDIF(ITK_FOUND)
-
+# gpuit
 IF(OPENMP_FOUND)
   TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES} ${OPENMP_LIBRARIES})
-  SET_TARGET_PROPERTIES(gpuit PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
     SET_TARGET_PROPERTIES(gpuit PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
   ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
@@ -772,19 +768,14 @@ ELSE(OPENMP_FOUND)
   TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 ENDIF(OPENMP_FOUND)
 
-# Always built
+# plastimatch
+IF(ITK_FOUND)
+  TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+ENDIF(ITK_FOUND)
+
+# always built
 TARGET_LINK_LIBRARIES(analyze_to_mha)
-
-IF(OPENMP_FOUND)
-  TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES} ${OPENMP_LIBRARIES})
-  SET_TARGET_PROPERTIES(bspline PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-    SET_TARGET_PROPERTIES(bspline PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-  ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-ELSE(OPENMP_FOUND)
-  TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
-ENDIF(OPENMP_FOUND)
-
+TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(drr_c ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(fdk_c ${GPUIT_LIBRARIES})
@@ -798,7 +789,7 @@ TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
 TARGET_LINK_LIBRARIES(vf3d_to_mha)
 TARGET_LINK_LIBRARIES(vox_to_mha)
 
-# Require brook
+# require brook
 IF(BROOK_FOUND)
   TARGET_LINK_LIBRARIES(fdk_brook ${MATH_LIB} ${GPUIT_LIBRARIES}
     ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
