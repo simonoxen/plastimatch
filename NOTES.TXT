@@ -92,6 +92,27 @@ For "C" logging, I found 2 projects:
 - log4c (LGPL license)
 - pantheios (BSD license)
 
+***** Timing *****
+
+Options:
+1) clock()
+2) time()
+3) gettimeofday()
+4) HighPerformanceCounter
+5) OpenMP timer
+
+http://cboard.cprogramming.com/c-programming/106025-clock-vs-gettimeofday.html
+
+Also
+6) clock_gettime(CLOCK_MONOTONIC)
+
+http://fixunix.com/linux/6645-negative-response-time-gettimeofday.html
+
+> timeval tv;
+> struct timezone tz;
+> gettimeofday(&tv, &tz);
+
+
 ***** SVN eol-goop *****
 
 Put the following in your ~/.subversion/config
