@@ -341,7 +341,8 @@ IF(F2C_LIBRARY)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
-	lbfgsb_2_1.c f2c.h
+	lbfgsb_2_1.c
+	plm_f2c.h plm_f2c_win32.h
 #	main__.c
 	)
 ENDIF(F2C_LIBRARY)

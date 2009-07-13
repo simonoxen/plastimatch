@@ -10,7 +10,7 @@
 		http://www.netlib.org/f2c/libf2c.zip
 */
 
-#include "f2c.h"
+#include "plm_f2c.h"
 #include <stdio.h>
 
 /* Table of constant values */
