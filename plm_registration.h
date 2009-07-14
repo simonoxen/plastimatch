@@ -5,6 +5,7 @@
 #define _plm_registration_h_
 
 #include <stdlib.h>
+#include <ctype.h>
 #include "itkDemonsRegistrationFilter.h"
 #include "itkImageRegistrationMethod.h"
 #include "plm_config.h"
