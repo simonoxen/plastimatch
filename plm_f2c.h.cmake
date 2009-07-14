@@ -7,7 +7,11 @@
 #if defined (_WIN32)
 #include "plm_f2c_win32.h"
 #else
-#include "f2c.h"
+/* If you try to compile and link against a self-built f2c library 
+   without installing, you can't include the f2c directory because 
+   f2c includes a broken "ctype.h" which conflicts with the system one.
+*/
+#include "@F2C_INCLUDE_DIR@/f2c.h"
 #endif
 
 #endif
