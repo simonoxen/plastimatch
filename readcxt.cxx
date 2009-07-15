@@ -9,36 +9,78 @@
 
 plastimatch1_EXPORT
 void
-cxt_initialize (STRUCTURE_List* structures)
+cxt_initialize (Cxt_structure_list* structures)
 {
-    memset (structures, 0, sizeof (STRUCTURE_List*));
+    memset (structures, 0, sizeof (Cxt_structure_list));
 }
 
 plastimatch1_EXPORT
 void
-cxt_write (STRUCTURE_List* structures, const char* cxt_fn)
+cxt_add_structure (Cxt_structure_list* structures, const char *structure_name, int structure_id)
 {
-    FILE *fp;
+    Cxt_structure* new_structure;
 
-    fp = fopen (cxt_fn, "wb");
-    if (!fp) {
-	printf ("Could not open contour file for write: %s\n", cxt_fn);
-        exit (-1);
+    structures->num_structures++;
+    structures->slist = (Cxt_structure*) realloc (structures->slist,
+                                              structures->num_structures * sizeof(Cxt_structure));
+    new_structure = &structures->slist[structures->num_structures - 1];
+    memset (new_structure, 0, sizeof(Cxt_structure));
+    strncpy (new_structure->name, structure_name, CXT_BUFLEN);
+    new_structure->name[CXT_BUFLEN-1] = 0;
+    new_structure->id = structure_id;
+}
+
+plastimatch1_EXPORT
+Cxt_polyline*
+cxt_add_polyline (Cxt_structure* structure)
+{
+    Cxt_polyline* new_polyline;
+
+    structure->num_contours++;
+    structure->pslist = (Cxt_polyline*) realloc (structure->pslist,
+						structure->num_contours * sizeof(Cxt_polyline));
+
+    new_polyline = &structure->pslist[structure->num_contours - 1];
+    memset (new_polyline, 0, sizeof(Cxt_polyline));
+    return new_polyline;
+}
+
+plastimatch1_EXPORT
+Cxt_structure*
+cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
+{
+    int i;
+    Cxt_structure* curr_structure;
+
+    for (i = 0; i < structures->num_structures; i++) {
+	curr_structure = &structures->slist[i];
+	if (curr_structure->id == structure_id) {
+	    return curr_structure;
+	}
     }
-
-    
-
-    fclose (fp);
+    return 0;
 }
 
 plastimatch1_EXPORT
 void
-cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
+cxt_debug_structures (Cxt_structure_list* structures)
+{
+    int i;
+    Cxt_structure* curr_structure;
+
+    for (i = 0; i < structures->num_structures; i++) {
+        curr_structure = &structures->slist[i];
+	printf ("%d %d %s\n", i, curr_structure->id, curr_structure->name);
+    }
+}
+
+plastimatch1_EXPORT
+void
+cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 {
     FILE* fp;
-    STRUCTURE* curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
-    //POLYLINE* curr_contour = (POLYLINE*) malloc (sizeof(POLYLINE));
-    POLYLINE* curr_contour;
+    Cxt_structure* curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
+    Cxt_polyline* curr_contour;
 
     float val_x = 0;
     float val_y = 0;
@@ -55,10 +97,8 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
     float y = 0;
     float z = 0;
 
-    memset (curr_structure, 0, sizeof(STRUCTURE));
-    //memset (curr_contour, 0, sizeof(POLYLINE));
+    memset (curr_structure, 0, sizeof(Cxt_structure));
     curr_structure->num_contours = 0;
-    //curr_contour->num_vertices = 0;
 
     fp = fopen (cxt_fn, "r");
 
@@ -117,13 +157,13 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
         }
 
         structures->num_structures++;
-        structures->slist = (STRUCTURE*) realloc (structures->slist,
-                                                  structures->num_structures * sizeof(STRUCTURE));
+        structures->slist = (Cxt_structure*) realloc (structures->slist,
+                                                  structures->num_structures * sizeof(Cxt_structure));
         curr_structure = &structures->slist[structures->num_structures - 1];
         strcpy (curr_structure->name, name);
         curr_structure->num_contours = 0;
         curr_structure->pslist = 0;
-        printf ("STRUCTURE: %s\n", curr_structure->name);
+        printf ("Cxt_structure: %s\n", curr_structure->name);
     }
 
     while (1) {
@@ -160,8 +200,8 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
         }
         curr_structure = &structures->slist[struct_no - 1];
         //printf ("Gonna realloc %p, %d\n", curr_structure->pslist, contour_no);
-        curr_structure->pslist = (POLYLINE*) realloc (curr_structure->pslist,
-                                                      (contour_no + 1) * sizeof(POLYLINE));
+        curr_structure->pslist = (Cxt_polyline*) realloc (curr_structure->pslist,
+                                                      (contour_no + 1) * sizeof(Cxt_polyline));
         //printf ("Gonna dereference pslist\n");
         curr_contour = &curr_structure->pslist[contour_no];
         curr_contour->num_vertices = num_pt;
@@ -206,4 +246,52 @@ cxt_read (STRUCTURE_List* structures, const char* cxt_fn)
 not_successful:
     fclose (fp);
     printf ("Error parsing input file.\n");
+}
+
+plastimatch1_EXPORT
+void
+cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
+{
+    int i;
+    FILE *fp;
+
+    fp = fopen (cxt_fn, "wb");
+    if (!fp) {
+	printf ("Could not open contour file for write: %s\n", cxt_fn);
+        exit (-1);
+    }
+
+    /* Part 1: Dicom info */
+    fprintf (fp, "SERIES_CT_UID\n");
+
+    /* Part 2: Structures info */
+    fprintf (fp, "ROI_NAMES\n");
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure *curr_structure = &structures->slist[i];
+	fprintf (fp, "%d|%s|%s\n", curr_structure->id, "255\\0\\0", curr_structure->name);
+    }
+    fprintf (fp, "END_OF_ROI_NAMES\n");
+
+    /* Part 3: Contour info */
+    for (i = 0; i < structures->num_structures; i++) {
+	int j;
+	Cxt_structure *curr_structure = &structures->slist[i];
+	for (j = 0; j < curr_structure->num_contours; j++) {
+	    int k;
+	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    fprintf (fp, "%d||%d|||", curr_structure->id, curr_polyline->num_vertices);
+	    for (k = 0; k < curr_polyline->num_vertices; k++) {
+		if (k > 0) {
+		    fprintf (fp, "\\");
+		}
+		fprintf (fp, "%f\\%f\\%f",
+		    curr_polyline->x[k], 
+		    curr_polyline->y[k], 
+		    curr_polyline->z[k]);
+	    }
+	    fprintf (fp, "\n");
+	}
+    }
+
+    fclose (fp);
 }

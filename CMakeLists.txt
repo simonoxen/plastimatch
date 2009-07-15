@@ -297,15 +297,16 @@ ENDIF(UNIX)
 ##  SOURCE FILES (LIBRARIES)
 ######################################################
 SET(GPUIT_LIBRARY_SRC
-	bspline_opts.c bspline_opts.h
-	demons.c demons.h
-	demons_cpu.c
-	demons_misc.c demons_misc.h
-	logfile.c logfile.h
-	mathutil.h
-	readmha.c readmha.h
-	volume.c volume.h
-	)
+  bspline_opts.c bspline_opts.h
+  bstrlib.c bstrlib.h
+  demons.c demons.h
+  demons_cpu.c
+  demons_misc.c demons_misc.h
+  logfile.c logfile.h
+  mathutil.h
+  readmha.c readmha.h
+  volume.c volume.h
+  )
 IF(PLM_BSPLINE_CXX)
 SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}

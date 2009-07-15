@@ -116,7 +116,7 @@ struct dose_header {
     float* fimage;
 };
 
-typedef struct polyline POLYLINE;
+typedef struct polyline Cxt_polyline;
 struct polyline {
     int num_vertices;
     float* x;
@@ -124,11 +124,11 @@ struct polyline {
     float* z;
 };
 
-typedef struct polyline_slice POLYLINE_Slice;
+typedef struct polyline_slice Cxt_polyline_Slice;
 struct polyline_slice {
     int slice_no;
     int num_polyline;
-    POLYLINE* pllist;
+    Cxt_polyline* pllist;
 };
 
 typedef struct structure STRUCTURE;
@@ -136,7 +136,7 @@ struct structure {
     int imno;
     char name[BUFLEN];
     int num_slices;
-    POLYLINE_Slice* pslist;
+    Cxt_polyline_Slice* pslist;
 };
 
 typedef struct structure_list STRUCTURE_List;
@@ -828,8 +828,8 @@ void
 load_structure (STRUCTURE* structure, Program_Parms* parms)
 {
     int nlev, scan_no, nseg, npts;
-    POLYLINE_Slice* curr_ps;
-    POLYLINE* curr_pl;
+    Cxt_polyline_Slice* curr_ps;
+    Cxt_polyline* curr_pl;
     int curr_pt;
     char buf[BUFLEN];
     float x, y, z;
@@ -849,8 +849,8 @@ load_structure (STRUCTURE* structure, Program_Parms* parms)
 	    /* Yeah, whatever */
 	} else if (1 == sscanf (buf,"\"SCAN # \" %d",&scan_no)) {
 	    structure->num_slices ++;
-	    structure->pslist = (POLYLINE_Slice*) realloc (structure->pslist, 
-			structure->num_slices * sizeof (POLYLINE_Slice));
+	    structure->pslist = (Cxt_polyline_Slice*) realloc (structure->pslist, 
+			structure->num_slices * sizeof (Cxt_polyline_Slice));
 	    curr_ps = &structure->pslist[structure->num_slices-1];
 	    curr_ps->slice_no = scan_no;
 	    curr_ps->num_polyline = 0;
@@ -859,8 +859,8 @@ load_structure (STRUCTURE* structure, Program_Parms* parms)
 	    /* Yeah, whatever */
 	} else if (1 == sscanf (buf, "\"NUMBER OF POINTS \" %d",&npts)) {
 	    curr_ps->num_polyline ++;
-	    curr_ps->pllist = (POLYLINE*) realloc (curr_ps->pllist,
-		curr_ps->num_polyline * sizeof (POLYLINE));
+	    curr_ps->pllist = (Cxt_polyline*) realloc (curr_ps->pllist,
+		curr_ps->num_polyline * sizeof (Cxt_polyline));
 	    curr_pl = &curr_ps->pllist[curr_ps->num_polyline-1];
 	    curr_pl->num_vertices = npts;
 	    curr_pl->x = (float*) malloc (npts * sizeof(float));
@@ -913,7 +913,7 @@ load_skin (RTOG_Header* rtog_header, Program_Parms* parms)
 
 void
 render_slice (RTOG_Header* rtog_header, unsigned char* slice_img, 
-	      unsigned char* acc_img, POLYLINE_Slice* ps)
+	      unsigned char* acc_img, Cxt_polyline_Slice* ps)
 {
     int i, j;
     int num_slices = rtog_header->ct.last_image - rtog_header->ct.first_image + 1;

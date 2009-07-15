@@ -12,6 +12,7 @@
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
+#include "bstrlib.h"
 
 #include "plm_config.h"
 #include "readcxt.h"
@@ -61,20 +62,15 @@ get_file_names (std::vector<std::pair<std::string,std::string> > *file_names,
 	printf ("Error\n");exit (-1);
     }
 
-    //    std::vector<std::pair<std::string,std::string> > sorted_filenames;
-
     // Scan directory for files. Each file is checked to see if it
     // matches the m_RegularExpression.
-    for (unsigned long i = 0; i < fileDir.GetNumberOfFiles(); i++)
-    {
+    for (unsigned long i = 0; i < fileDir.GetNumberOfFiles(); i++) {
 	// Only read files
-	if (itksys::SystemTools::FileIsDirectory( (m_Directory + "/" + fileDir.GetFile(i)).c_str() ))
-	{
+	if (itksys::SystemTools::FileIsDirectory ((m_Directory + "/" + fileDir.GetFile(i)).c_str())) {
 	    continue;
 	}
 
-	if (reg.find(fileDir.GetFile(i)))
-	{
+	if (reg.find (fileDir.GetFile(i))) {
 	    // Store the full filename and the selected sub expression match
 	    std::pair<std::string,std::string> fileNameMatch;
 	    fileNameMatch.first = m_Directory + "/" + fileDir.GetFile(i);
@@ -100,7 +96,65 @@ get_file_names (std::vector<std::pair<std::string,std::string> > *file_names,
 }
 
 void
-add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc)
+add_cms_contournames (Cxt_structure_list *structures, const char *filename)
+{
+    FILE *fp;
+    struct bStream * bs;
+    bstring line1 = bfromcstr ("");
+    bstring line2 = bfromcstr ("");
+
+    fp = fopen (filename, "r");
+    if (!fp) {
+	printf ("Error opening file %s for read\n", filename);
+	exit (-1);
+    }
+
+    bs = bsopen ((bNread) fread, fp);
+    printf ("0 [%d,%d]> %s\n", line1->mlen, line1->slen, line1->data);
+
+    bsreadln (line1, bs, '\n');
+    bsreadln (line1, bs, '\n');
+
+    while (1)
+    {
+	int rc, id;
+
+	/* Get structure name */
+	rc = bsreadln (line1, bs, '\n');
+	if (rc == BSTR_ERR) {
+	    break;
+	}
+	btrimws (line1);
+
+	/* Get structure number */
+	rc = bsreadln (line2, bs, '\n');
+	if (rc == BSTR_ERR) {
+	    break;
+	}
+	rc = sscanf ((char*) line2->data, "%d,", &id);
+	if (rc != 1) {
+	    fprintf (stderr, "Error parsing contournames: contour id not found (%s)\n", line1->data);
+	    exit (-1);
+	}
+
+	/* Add structure */
+	cxt_add_structure (structures, (char*) line1->data, id);
+
+	/* Skip 2 lines */
+	bsreadln (line1, bs, '\n');
+	bsreadln (line1, bs, '\n');
+    }
+
+    cxt_debug_structures (structures);
+
+    bdestroy (line1);
+    bdestroy (line2);
+    bsclose (bs);
+    fclose (fp);
+}
+
+void
+add_cms_structure (Cxt_structure_list *structures, const char *filename, float z_loc)
 {
     FILE *fp;
     char buf[1024];
@@ -120,8 +174,10 @@ add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc
 
     while (1) {
 	int rc;
-	int structure_number, num_points;
-	int remaining_points;
+	int structure_id, num_points;
+	int point_idx, remaining_points;
+	Cxt_structure *curr_structure;
+	Cxt_polyline *curr_polyline;
 
 	/* Get num points */
 	fgets (buf, 1024, fp);
@@ -133,19 +189,36 @@ add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc
 
 	/* Get structure number */
 	fgets (buf, 1024, fp);
-	rc = sscanf (buf, "%d", &structure_number);
+	rc = sscanf (buf, "%d", &structure_id);
 	if (rc != 1) {
-	    printf ("Error parsing file %s (structure_number)\n", filename);
+	    printf ("Error parsing file %s (structure_id)\n", filename);
 	    exit (-1);
 	}
 
+	/* Can this happen? */
 	if (num_points == 0) {
 	    break;
 	}
 
+	/* Look up the cxt structure for this id */
+	curr_structure = cxt_find_structure_by_id (structures, structure_id);
+	if (!curr_structure) {
+	    printf ("Couldn't reference structure with id %d\n", structure_id);
+	    exit (-1);
+	}
+
+	printf ("[%f %d %d]\n", z_loc, structure_id, num_points);
+	curr_polyline = cxt_add_polyline (curr_structure);
+	curr_polyline->slice_no = -1;
+	curr_polyline->num_vertices = num_points;
+	curr_polyline->x = (float*) malloc (num_points * sizeof(float));
+	curr_polyline->y = (float*) malloc (num_points * sizeof(float));
+	curr_polyline->z = (float*) malloc (num_points * sizeof(float));
+
+	point_idx = 0;
 	remaining_points = num_points;
 	while (remaining_points > 0) {
-	    int p, line_points, idx;
+	    int p, line_points, line_loc;
 
 	    fgets (buf, 1024, fp);
 
@@ -154,18 +227,22 @@ add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc
 	    } else {
 		line_points = remaining_points;
 	    }
-	    idx = 0;
+	    line_loc = 0;
 
 	    for (p = 0; p < line_points; p++) {
 		float x, y;
-		int rc, this_idx;
+		int rc, this_loc;
 
-		rc = sscanf (&buf[idx], "%f, %f,%n", &x, &y, &this_idx);
+		rc = sscanf (&buf[line_loc], "%f, %f,%n", &x, &y, &this_loc);
 		if (rc != 2) {
-		    printf ("Error parsing file %s (points) %s\n", filename, &buf[idx]);
+		    printf ("Error parsing file %s (points) %s\n", filename, &buf[line_loc]);
 		    exit (-1);
 		}
-		idx += this_idx;
+		curr_polyline->x[point_idx] = x;
+		curr_polyline->y[point_idx] = y;
+		curr_polyline->z[point_idx] = z_loc;
+		point_idx ++;
+		line_loc += this_loc;
 	    }
 	    remaining_points -= line_points;
 	}
@@ -177,15 +254,29 @@ add_cms_structure (STRUCTURE_List *structures, const char *filename, float z_loc
 void
 do_cms_to_cxt (char *input_dir, char *output_fn)
 {
-    STRUCTURE_List structures;
+    Cxt_structure_list structures;
     const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
+
+    /* Get the index file */
+    std::string index_file = std::string(input_dir) + "/" + "contournames";
+    if (!itksys::SystemTools::FileExists (index_file.c_str(), true)) {
+	fprintf (stderr, "No xio contournames file found in directory %s\n", input_dir);
+	exit (-1);
+    }
 
     /* Get the list of filenames */
     std::vector<std::pair<std::string,std::string> > file_names;
     get_file_names (&file_names, input_dir, filename_re);
+    if (file_names.empty ()) {
+	fprintf (stderr, "No xio structure files found in directory %s\n", input_dir);
+	exit (-1);
+    }
+
+    /* Load the index file */
+    cxt_initialize (&structures);
+    add_cms_contournames (&structures, index_file.c_str());
 
     /* Iterate through filenames, adding data to CXT */
-    cxt_initialize (&structures);
     std::vector<std::pair<std::string,std::string> >::iterator it;
     it = file_names.begin();
     while (it != file_names.end()) {
@@ -195,6 +286,9 @@ do_cms_to_cxt (char *input_dir, char *output_fn)
 	add_cms_structure (&structures, filename, z_loc);
 	++it;
     }
+
+    /* Write out the cxt */
+    cxt_write (&structures, output_fn);
 }
 
 int 

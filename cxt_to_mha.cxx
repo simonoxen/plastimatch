@@ -85,9 +85,9 @@ int
 main (int argc, char* argv[])
 {
     Program_Parms* parms = (Program_Parms*) malloc (sizeof(Program_Parms));
-    STRUCTURE_List* structures;
-    STRUCTURE* curr_structure;
-    POLYLINE* curr_contour;
+    Cxt_structure_list* structures;
+    Cxt_structure* curr_structure;
+    Cxt_polyline* curr_contour;
     Volume* uchar_vol;
     Volume* ulong_vol;
 
@@ -101,11 +101,11 @@ main (int argc, char* argv[])
 
     parse_args (parms, argc, argv);
 
-    structures = (STRUCTURE_List*) malloc (sizeof(STRUCTURE_List));
-    curr_structure = (STRUCTURE*) malloc (sizeof(STRUCTURE));
-    memset (structures, 0, sizeof(STRUCTURE_List));
+    structures = (Cxt_structure_list*) malloc (sizeof(Cxt_structure_list));
+    curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
+    memset (structures, 0, sizeof(Cxt_structure_list));
     structures->num_structures = 0;
-    memset (curr_structure, 0, sizeof(STRUCTURE));
+    memset (curr_structure, 0, sizeof(Cxt_structure));
     curr_structure->num_contours = 0;
 
     cxt_read (structures, parms->cxt_fn);
