@@ -389,6 +389,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
+	compute_mean_image_main.cxx
 	)
 
 ######################################################
@@ -505,8 +506,8 @@ SET(PLASTIMATCH_SRC
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
 	)
-SET(COMPUTE_MEAN_MHA_SRC
-	compute_mean_mha_main.cxx
+SET(COMPUTE_MEAN_IMAGE_SRC
+	compute_mean_image_main.cxx
 	)
 SET(RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
@@ -560,7 +561,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
     SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
-    SET(COMPUTE_MEAN_MHA_SRC ${COMPUTE_MEAN_MHA_SRC} getopt_long.c getopt.h)
+    SET(COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
     SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
@@ -729,7 +730,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(adjust_mha ${ADJUST_MHA_SRC})
   ADD_EXECUTABLE(cms_to_cxt ${CMS_TO_CXT_SRC})
   IF(ITK_USE_REVIEW)
-    ADD_EXECUTABLE(compute_mean_mha ${COMPUTE_MEAN_MHA_SRC})
+    ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
   ENDIF(ITK_USE_REVIEW)
   ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
@@ -748,6 +749,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(patient_mask ${PATIENT_MASK_SRC})
   ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
   ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
+  ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
   ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
   ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
   ADD_EXECUTABLE(synthetic_mha ${SYNTHETIC_MHA_SRC})
@@ -836,7 +838,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cms_to_cxt ${PLASTIMATCH_LIBS})
   IF(ITK_USE_REVIEW)
-    TARGET_LINK_LIBRARIES(compute_mean_mha ${PLASTIMATCH_LIBS})
+  	TARGET_LINK_LIBRARIES(compute_mean_image ${PLASTIMATCH_LIBS})
   ENDIF(ITK_USE_REVIEW)
   TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
@@ -905,7 +907,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS analyze_to_mha DESTINATION bin)
   INSTALL(TARGETS cms_to_cxt DESTINATION bin)
   IF(ITK_USE_REVIEW)
-    INSTALL(TARGETS compute_mean_mha DESTINATION bin)
+  	INSTALL(TARGETS compute_mean_image DESTINATION bin)  
   ENDIF(ITK_USE_REVIEW)
   INSTALL(TARGETS contour_statistics DESTINATION bin)
   INSTALL(TARGETS cxt_to_mha DESTINATION bin)
