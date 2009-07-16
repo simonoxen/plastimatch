@@ -402,17 +402,16 @@ SET(ADJUST_MHA_SRC
 SET(BSPLINE_SRC
 	bspline_main.c 
 	)
-SET(CONTOUR_STATISTICS_SRC
-	contour_statistics.cxx contour_statistics.h
-	dice_statistics.cxx 
-	closest_point.cxx 
-	read_obj.cxx
-	)
 SET(CMS_TO_CXT_SRC
 	cms_to_cxt.cxx
 	)
 SET(CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
+	)
+SET(COMPUTE_DISTANCE_SRC
+	compute_distance.cxx compute_distance.h
+	closest_point.cxx 
+	read_obj.cxx
 	)
 SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
@@ -434,6 +433,10 @@ SET(DEMONS_CUDA_SRC
 	volume.c volume.h
 	)
 ENDIF(BUILD_DEMONS_CUDA)
+SET(DICE_STATS_SRC
+	contour_statistics.cxx contour_statistics.h
+	dice_statistics.cxx 
+	)
 SET(DICOM_UID_SRC
 	dicom_uid_main.cxx
 	dicom_uid.cxx
@@ -733,8 +736,9 @@ IF(ITK_FOUND)
   IF(ITK_USE_REVIEW)
     ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
   ENDIF(ITK_USE_REVIEW)
-  ADD_EXECUTABLE(contour_statistics ${CONTOUR_STATISTICS_SRC})
+  ADD_EXECUTABLE(compute_distance ${COMPUTE_DISTANCE_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
+  ADD_EXECUTABLE(dice_stats ${DICE_STATS_SRC})
   ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
   ADD_EXECUTABLE(dicom_rtss_to_cxt dicom_rtss_to_cxt.cxx)
   IF(ITK_USE_REVIEW)
@@ -841,8 +845,9 @@ IF(ITK_FOUND)
   IF(ITK_USE_REVIEW)
   	TARGET_LINK_LIBRARIES(compute_mean_image ${PLASTIMATCH_LIBS})
   ENDIF(ITK_USE_REVIEW)
-  TARGET_LINK_LIBRARIES(contour_statistics ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(compute_distance ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
+  TARGET_LINK_LIBRARIES(dice_stats ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(dicom_rtss_to_cxt ${PLASTIMATCH_LIBS})
   IF(ITK_USE_REVIEW)
@@ -910,8 +915,10 @@ IF(ITK_FOUND)
   IF(ITK_USE_REVIEW)
   	INSTALL(TARGETS compute_mean_image DESTINATION bin)  
   ENDIF(ITK_USE_REVIEW)
-  INSTALL(TARGETS contour_statistics DESTINATION bin)
+  INSTALL(TARGETS compute_distance DESTINATION bin)
   INSTALL(TARGETS cxt_to_mha DESTINATION bin)
+  INSTALL(TARGETS compute_distance DESTINATION bin)
+  INSTALL(TARGETS dice_stats DESTINATION bin)
   INSTALL(TARGETS dicom_to_mha DESTINATION bin)
   INSTALL(TARGETS dicom_rtss_to_cxt DESTINATION bin)
   IF(ITK_USE_REVIEW)

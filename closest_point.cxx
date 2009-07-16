@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "contour_statistics.h"
+#include "compute_distance.h"
 #define BUFLEN 2048
 
 void calculate_mass(SURFACE* surface){
