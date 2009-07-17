@@ -1,9 +1,7 @@
 /** @file compute_mean_mha_main
  *  @brief Generate a mean image from a set of registered images 
  */
-#include <iostream>
-#include <string>
-using namespace std;
+#include <string.h>
   
 #include "plm_config.h"
 #include "itkImage.h"
@@ -21,22 +19,19 @@ using namespace std;
 #include "itk_image.h"
 #include "getopt.h"
 
-bool getFileExtension(const string& file)
+
+bool getFileExtension(const char *filename)
 {
-	string str = file;
-	string ext = "";
-	const char* p;
-        bool isDicom = false;
+        int len = strlen(filename);
+	char *ext = (char *)malloc(sizeof(char)*3);
+        filename += len-3;
+        strcpy(ext,filename);
+	bool isDicom = false;
 
-        for (int i=str.length()-3; i < str.length(); i++)
-                ext += str[i];
-
-        p = ext.c_str();
-        cout << "p = " << p << endl;
-        if (strcmp(p, "dcm") == 0 || strcmp(p, "DCM") == 0)
+        if (strcmp(ext, "dcm") == 0 || strcmp(ext, "DCM") == 0)
         {
                         isDicom = true;                        
-                        cout << "isDicom set to true!" << endl;
+                        std::cout << "isDicom set to true!" << std::endl;
         }
 
         return isDicom;
@@ -137,7 +132,7 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
                 }
                 catch ( itk::ExceptionObject & anException ) 
                 {
-                        cerr << "\n\n** Exception in File Reader:  " << anException <<  
+                        std::cerr << "\n\n** Exception in File Reader:  " << anException <<  
                                 " **\n\n" << std::endl;
                         return;
                 };
@@ -157,7 +152,7 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
         if (isDicom) 
         {
                 writer->SetImageIO(gdcmImageIO);
-                cout << "dicomIO set" << endl;
+                std::cout << "dicomIO set" << std::endl;
         }
         try 
         {

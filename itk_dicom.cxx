@@ -12,9 +12,17 @@
 #include "itkImageSeriesWriter.h"
 #include "itk_dicom.h"
 #include "print_and_exit.h"
+#include "gdcmFile.h"
 
-#include "gdcm/src/gdcmFile.h"
-#include "gdcm/src/gdcmUtil.h" 
+#if GDCM_MAJOR_VERSION < 2
+#include "gdcmUtil.H"
+#else
+#include "gdcmUIDGenerator.h"
+#endif
+
+
+//#include "gdcm/src/gdcmFile.h"
+//#include "gdcm/src/gdcmUtil.h" 
 
 /* -----------------------------------------------------------------------
     Definitions
@@ -211,9 +219,14 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     encapsulate (dict, "0010|0010", "PLASTIMATCH^ANONYMOUS");
     /* Patient id */
     encapsulate (dict, "0010|0020", "anon");
-
+    
     /* Frame of Reference UID */
+#if GDCM_MAJOR_VERSION < 2
     encapsulate (dict, "0020|0052", gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix()));
+#else
+    gdcm::UIDGenerator uid;
+    encapsulate (dict, "0020|0052", uid.Generate());    
+#endif
     /* Position Reference Indicator */
     encapsulate (dict, "0020|1040", "");
 

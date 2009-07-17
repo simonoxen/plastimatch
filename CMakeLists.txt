@@ -43,6 +43,8 @@ SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
+
+
 ######################################################
 ##  SLICER FRONT-ENDS
 ###################################################### 	 
@@ -261,6 +263,13 @@ FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
   SET(HAVE_ITK TRUE)
   INCLUDE(${ITK_USE_FILE})
+#  SET(ITK_NOREVIEW_VERSION "3.14.0")
+  SET(ITK_VERSION "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
+#  IF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")
+#  	SET(ITK_VERSION_314 FALSE)
+#  ELSE("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")
+#	SET(ITK_VERSION_314 TRUE)
+#  ENDIF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")	
 ENDIF(ITK_FOUND)
 
 ######################################################
@@ -390,7 +399,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
-	compute_mean_image_main.cxx
+#	compute_mean_image_main.cxx
 	)
 
 ######################################################
@@ -733,8 +742,8 @@ IF(ITK_FOUND)
 
   ADD_EXECUTABLE(adjust_mha ${ADJUST_MHA_SRC})
   ADD_EXECUTABLE(cms_to_cxt ${CMS_TO_CXT_SRC})
-  IF(ITK_USE_REVIEW)
-    ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
+  IF(ITK_USE_REVIEW)	
+	ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
   ENDIF(ITK_USE_REVIEW)
   ADD_EXECUTABLE(compute_distance ${COMPUTE_DISTANCE_SRC})
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
@@ -842,7 +851,7 @@ IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cms_to_cxt ${PLASTIMATCH_LIBS})
   IF(ITK_USE_REVIEW)
-  	TARGET_LINK_LIBRARIES(compute_mean_image ${PLASTIMATCH_LIBS})
+ 	TARGET_LINK_LIBRARIES(compute_mean_image ${PLASTIMATCH_LIBS})
   ENDIF(ITK_USE_REVIEW)
   TARGET_LINK_LIBRARIES(compute_distance ${PLASTIMATCH_LIBS})
   TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
@@ -912,7 +921,7 @@ IF(ITK_FOUND)
   INSTALL(TARGETS analyze_to_mha DESTINATION bin)
   INSTALL(TARGETS cms_to_cxt DESTINATION bin)
   IF(ITK_USE_REVIEW)
-  	INSTALL(TARGETS compute_mean_image DESTINATION bin)  
+	INSTALL(TARGETS compute_mean_image DESTINATION bin)  
   ENDIF(ITK_USE_REVIEW)
   INSTALL(TARGETS compute_distance DESTINATION bin)
   INSTALL(TARGETS cxt_to_mha DESTINATION bin)
