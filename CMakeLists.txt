@@ -436,16 +436,16 @@ SET(DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
 	)
-IF(BUILD_DEMONS_CUDA)
 SET(DEMONS_CUDA_SRC
 	readmha.c readmha.h
 	volume.c volume.h
 	)
-ENDIF(BUILD_DEMONS_CUDA)
 SET(DICE_STATS_SRC
 	contour_statistics.cxx contour_statistics.h
 	dice_statistics.cxx 
 	)
+SET(DICOM_RTSS_TO_CXT_SRC 
+  dicom_rtss_to_cxt.cxx)
 SET(DICOM_UID_SRC
 	dicom_uid_main.cxx
 	dicom_uid.cxx
@@ -569,6 +569,7 @@ CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
     SET(ADJUST_MHA_SRC ${ADJUST_MHA_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
@@ -749,7 +750,7 @@ IF(ITK_FOUND)
   ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
   ADD_EXECUTABLE(dice_stats ${DICE_STATS_SRC})
   ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
-  ADD_EXECUTABLE(dicom_rtss_to_cxt dicom_rtss_to_cxt.cxx)
+  ADD_EXECUTABLE(dicom_rtss_to_cxt ${DICOM_RTSS_TO_CXT_SRC})
   IF(ITK_USE_REVIEW)
     ADD_EXECUTABLE(extract_contour ${EXTRACT_CONTOUR_SRC})
   ENDIF(ITK_USE_REVIEW)
