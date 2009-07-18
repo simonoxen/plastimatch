@@ -15,7 +15,7 @@
 #include "gdcmFile.h"
 
 #if GDCM_MAJOR_VERSION < 2
-#include "gdcmUtil.H"
+#include "gdcmUtil.h"
 #else
 #include "gdcmUIDGenerator.h"
 #endif
