@@ -44,7 +44,6 @@ SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
 
-
 ######################################################
 ##  SLICER FRONT-ENDS
 ###################################################### 	 
@@ -231,6 +230,8 @@ SET(GPUIT_LIBRARY_DEPENDENCIES
   )
 SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
+SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+
 ######################################################
 ##  FFTW LIBRARY
 ######################################################
@@ -247,12 +248,48 @@ IF(BROOK_FOUND)
 SET(HAVE_BROOK TRUE)
 ENDIF(BROOK_FOUND)
 
+IF(BROOK_FOUND)
+  BRCC_FILE(fdk_brook_kernel.br)
+  SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
+    OBJECT_DEPENDS "fdk_brook_kernel.cpp")
+
+  BRCC_FILE(convolution_brook_kernel.br)
+  BRCC_FILE(demons_brook_kernel.br)
+  SET_SOURCE_FILES_PROPERTIES(demons_brook_kernel_wrap.cpp PROPERTIES
+    OBJECT_DEPENDS "demons_brook_kernel.cpp")
+  SET_SOURCE_FILES_PROPERTIES(convolution_brook_kernel_wrap.cpp PROPERTIES
+    OBJECT_DEPENDS "convolution_brook_kernel.cpp")
+
+  BRCC_FILE(bspline_brook_kernel.br)
+  BRCC_FILE(toy_kernels.br)
+  SET_SOURCE_FILES_PROPERTIES(bspline_brook.cpp PROPERTIES
+    OBJECT_DEPENDS "bspline_brook_kernel.cpp")
+  SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
+    OBJECT_DEPENDS "toy_kernels.cpp")
+ENDIF(BROOK_FOUND)
+
 ######################################################
 ##  CUDA LIBRARY
 ######################################################
 SET(HAVE_CUDA FALSE)
 IF(CUDA_FOUND)
 SET(HAVE_CUDA TRUE)
+ENDIF(CUDA_FOUND)
+
+IF(CUDA_FOUND)
+  IF(BUILD_DEMONS_CUDA)
+    NVCC_FILE(demons_cuda.cu)
+    SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu PROPERTIES
+      OBJECT_DEPENDS "demons_cuda_kernel.cu")
+  ENDIF(BUILD_DEMONS_CUDA)
+
+  NVCC_FILE(fdk_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
+
+  NVCC_FILE(cuda_probe.cu)
+  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
 ENDIF(CUDA_FOUND)
 
 ######################################################
@@ -426,6 +463,7 @@ SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
 	cuda_probe.cu
 	cuda_probe.h
+  	cuda_probe_wrap.cpp
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
@@ -466,20 +504,18 @@ SET(FDK_C_SRC
 SET(FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
-#	volume.c volume.h
-#	readmha.c readmha.h
 	fdk_cuda.h fdk.h
 	mathutil.h
 	fdk_cuda_main.c
 	fdk_cuda.cu
+	fdk_cuda_wrap.cpp
 	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	mathutil.h
-#	readmha.c readmha.h
-#	volume.c volume.h
+	fdk_brook_kernel.br
 	)
 SET(HND_TO_PFM_SRC
 	hnd_to_pfm.c
@@ -642,327 +678,171 @@ ENDIF(wxWidgets_FOUND)
 ######################################################
 ADD_SUBDIRECTORY(fatm/src)
 
+##-----------------------------------------------------------------------------
+##  Macro for creating targets
+##-----------------------------------------------------------------------------
+MACRO(PLM_ADD_EXECUTABLE TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
-######################################################
-##  MAKEFILE TARGETS
-######################################################
+  #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
+  #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
+  #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
 
-## http://social.msdn.microsoft.com/Forums/en-US/Vsexpressvc/thread/09ae5e38-8d81-4f3e-bfe8-e6250c31fca6
-## SET(ITK_LIBRARIES ${ITK_LIBRARIES} msvcprt)
+  ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
 
-SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+  IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES(${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+  INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+ENDMACRO(PLM_ADD_EXECUTABLE)
 
-
-# Always built
-#ADD_LIBRARY(gpuit STATIC ${GPUIT_LIBRARY_SRC})
-ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
-
-ADD_EXECUTABLE(analyze_to_mha analyze2mha.c)
-ADD_EXECUTABLE(bspline ${BSPLINE_SRC})
-ADD_EXECUTABLE(cms_dose_to_mha ${CMS_DOSE_TO_MHA_SRC})
-ADD_EXECUTABLE(demons ${DEMONS_SRC})
-ADD_EXECUTABLE(drr_c ${DRR_C_SRC})
-ADD_EXECUTABLE(fdk_c ${FDK_C_SRC})
-ADD_EXECUTABLE(hnd_to_pfm ${HND_TO_PFM_SRC})
-ADD_EXECUTABLE(mha_to_raw mha_to_raw.c)
-ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c)
-ADD_EXECUTABLE(raw_to_mha raw_to_mha.c)
-ADD_EXECUTABLE(tps_update tps_update.c)
-ADD_EXECUTABLE(vf_compare ${VF_COMPARE_SRC})
-ADD_EXECUTABLE(vf_to_vvf ${VF_TO_VVF_SRC})
-ADD_EXECUTABLE(vf_stats ${VF_STATS_SRC})
-ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c)
-ADD_EXECUTABLE(vox_to_mha vox_to_mha.c)
-
-# Require brook
-IF(BROOK_FOUND)
-  BRCC_FILE(fdk_brook_kernel.br)
-  SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
-    OBJECT_DEPENDS "fdk_brook_kernel.cpp")
-  ADD_EXECUTABLE(fdk_brook ${FDK_BROOK_SRC} fdk_brook_kernel.br)
-
-  BRCC_FILE(convolution_brook_kernel.br)
-  BRCC_FILE(demons_brook_kernel.br)
-  SET_SOURCE_FILES_PROPERTIES(demons_brook_kernel_wrap.cpp PROPERTIES
-    OBJECT_DEPENDS "demons_brook_kernel.cpp")
-  SET_SOURCE_FILES_PROPERTIES(convolution_brook_kernel_wrap.cpp PROPERTIES
-    OBJECT_DEPENDS "convolution_brook_kernel.cpp")
-
-  BRCC_FILE(bspline_brook_kernel.br)
-  BRCC_FILE(toy_kernels.br)
-  SET_SOURCE_FILES_PROPERTIES(bspline_brook.cpp PROPERTIES
-    OBJECT_DEPENDS "bspline_brook_kernel.cpp")
-  SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
-    OBJECT_DEPENDS "toy_kernels.cpp")
-ENDIF(BROOK_FOUND)
-
-# Require cuda
-IF(BUILD_DEMONS_CUDA)
-IF(CUDA_FOUND)
-  NVCC_FILE(demons_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu PROPERTIES
-    OBJECT_DEPENDS "demons_cuda_kernel.cu")
-  ADD_EXECUTABLE(demons_cuda ${DEMONS_CUDA_SRC} demons_cuda.obj)
-ENDIF(CUDA_FOUND)
-ENDIF(BUILD_DEMONS_CUDA)
-
-IF(CUDA_FOUND)
-  NVCC_FILE(fdk_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
-  #ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} ${CUDA_LIBRARIES} fdk_cuda_wrap.cpp)
-  ADD_EXECUTABLE(fdk_cuda ${FDK_CUDA_SRC} fdk_cuda_wrap.cpp)
-ENDIF(CUDA_FOUND)
-
-IF(CUDA_FOUND)
-  NVCC_FILE(cuda_probe.cu)
-  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
-  ADD_EXECUTABLE(cuda_probe ${CUDA_PROBE_SRC} ${CUDA_LIBRARIES} 
-  			    cuda_probe_wrap.cpp)
-ENDIF(CUDA_FOUND)
-
-# Require dcmtk
-IF(DCMTK_FOUND)
-  ADD_EXECUTABLE(dicom_uid ${DICOM_UID_SRC})
-ENDIF(DCMTK_FOUND)
-
-# Require f2c
+##-----------------------------------------------------------------------------
+##  Library targets
+##-----------------------------------------------------------------------------
 IF(F2C_LIBRARY AND UNIX)
-#  ADD_LIBRARY(f2c_helper STATIC ${F2C_HELPER_LIBRARY_SRC})
   ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
+  INSTALL(TARGETS f2c_helper DESTINATION lib)
 ENDIF(F2C_LIBRARY AND UNIX)
 
-# Require itk
+ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
+TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
+INSTALL(TARGETS gpuit DESTINATION lib)
+
 IF(ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
   ## with the same name as the executable.  What happens is the executable 
   ## tries to create a temporary library with the same name.  [MSVC 2005]
   ## That is why the library is called plastimatch1 instead of plastimatch.
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
-
-  ADD_EXECUTABLE(adjust_mha ${ADJUST_MHA_SRC})
-  ADD_EXECUTABLE(cms_to_cxt ${CMS_TO_CXT_SRC})
-  IF(ITK_USE_REVIEW)	
-	ADD_EXECUTABLE(compute_mean_image ${COMPUTE_MEAN_IMAGE_SRC})
-  ENDIF(ITK_USE_REVIEW)
-  ADD_EXECUTABLE(compute_distance ${COMPUTE_DISTANCE_SRC})
-  ADD_EXECUTABLE(cxt_to_mha ${CXT_TO_MHA_SRC})
-  ADD_EXECUTABLE(dice_stats ${DICE_STATS_SRC})
-  ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx)
-  ADD_EXECUTABLE(dicom_rtss_to_cxt ${DICOM_RTSS_TO_CXT_SRC})
-  IF(ITK_USE_REVIEW)
-    ADD_EXECUTABLE(extract_contour ${EXTRACT_CONTOUR_SRC})
-  ENDIF(ITK_USE_REVIEW)
-  ADD_EXECUTABLE(mask_mha ${MASK_MHA_SRC})
-  ADD_EXECUTABLE(merge_vfs merge_vector_fields.cxx)
-  ADD_EXECUTABLE(merge2 merge2.cxx)
-  ADD_EXECUTABLE(mha_to_analyze mha2analyze.c)
-  ADD_EXECUTABLE(mha_to_rtog_dose ${MHA_TO_RTOG_DOSE_SRC})
-  ADD_EXECUTABLE(mha_to_vox mha_to_vox.c)
-  ADD_EXECUTABLE(point_path ${POINT_PATH_SRC})
-  ADD_EXECUTABLE(patient_mask ${PATIENT_MASK_SRC})
-  ADD_EXECUTABLE(plastimatch ${PLASTIMATCH_SRC})
-  ADD_EXECUTABLE(resample_mha ${RESAMPLE_MHA_SRC})
-  ADD_EXECUTABLE(rtog_to_mha ${RTOG_TO_MHA_SRC})
-  ADD_EXECUTABLE(shuffle_mha ${SHUFFLE_MHA_SRC})
-  ADD_EXECUTABLE(synthetic_mha ${SYNTHETIC_MHA_SRC})
-  ADD_EXECUTABLE(tps_interp ${TPS_INTERP_SRC})
-  ADD_EXECUTABLE(union_mask union_mask.cxx)
-  ADD_EXECUTABLE(vf_compose ${VF_COMPOSE_SRC})
-  ADD_EXECUTABLE(vf_invert ${VF_INVERT_SRC})
-  ADD_EXECUTABLE(xf_to_xf ${XF_TO_XF_SRC})
-  ADD_EXECUTABLE(warp_dij ${WARP_DIJ_SRC})
-  ADD_EXECUTABLE(warp_mha ${WARP_MHA_SRC})
-  ADD_EXECUTABLE(warp_pointset ${WARP_POINTSET_SRC})
-ENDIF(ITK_FOUND)
-
-IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
-ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-IF(DCMTK_FOUND)
-  #ADD_EXECUTABLE(mondoshot_relay ${MONDOSHOT_RELAY_SRC})
-ENDIF(DCMTK_FOUND)
-
-#ADD_EXECUTABLE(ctest_test ctest_test.c)
-
-######################################################
-##  LINKING INSTRUCTIONS
-######################################################
-
-# OpenMP flags
-IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES(gpuit PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-  SET_TARGET_PROPERTIES(bspline PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-  IF(ITK_FOUND)
-    SET_TARGET_PROPERTIES(plastimatch PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-    SET_TARGET_PROPERTIES(point_path PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-    SET_TARGET_PROPERTIES(tps_interp PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-    SET_TARGET_PROPERTIES(warp_mha PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-    SET_TARGET_PROPERTIES(warp_pointset PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-    SET_TARGET_PROPERTIES(xf_to_xf  PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
-  ENDIF(ITK_FOUND)
-ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-
-# gpuit
-TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
-
-# plastimatch
-IF(ITK_FOUND)
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+  INSTALL(TARGETS plastimatch1 DESTINATION lib)
 ENDIF(ITK_FOUND)
 
-# always built
-TARGET_LINK_LIBRARIES(analyze_to_mha)
-TARGET_LINK_LIBRARIES(bspline ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(demons ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(drr_c ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(fdk_c ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(hnd_to_pfm)
-TARGET_LINK_LIBRARIES(mha_to_analyze)
-TARGET_LINK_LIBRARIES(raw_to_mha)
-TARGET_LINK_LIBRARIES(tps_update ${MATH_LIB})
-TARGET_LINK_LIBRARIES(vf_compare ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(vf_to_vvf ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(vf_stats ${GPUIT_LIBRARIES})
-TARGET_LINK_LIBRARIES(vf3d_to_mha)
-TARGET_LINK_LIBRARIES(vox_to_mha)
+##-----------------------------------------------------------------------------
+##  Executable targets
+##-----------------------------------------------------------------------------
+PLM_ADD_EXECUTABLE(analyze_to_mha analyze2mha.c "" "")
+PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
+PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(fdk_c "${FDK_C_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
+PLM_ADD_EXECUTABLE(mha_to_raw mha_to_raw.c "" "")
+PLM_ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c "" "")
+PLM_ADD_EXECUTABLE(raw_to_mha raw_to_mha.c "" "")
+PLM_ADD_EXECUTABLE(tps_update tps_update.c "${MATH_LIB}" "")
+PLM_ADD_EXECUTABLE(vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c "" "")
+PLM_ADD_EXECUTABLE(vox_to_mha vox_to_mha.c "" "")
 
-# require brook
+IF(ITK_FOUND)
+  PLM_ADD_EXECUTABLE(adjust_mha "${ADJUST_MHA_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(cms_to_cxt "${CMS_TO_CXT_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(cxt_to_mha "${CXT_TO_MHA_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  IF(ITK_USE_REVIEW)	
+    PLM_ADD_EXECUTABLE(compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
+      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  ENDIF(ITK_USE_REVIEW)
+
+  PLM_ADD_EXECUTABLE(dice_stats "${DICE_STATS_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(dicom_rtss_to_cxt ${DICOM_RTSS_TO_CXT_SRC}
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  IF(ITK_USE_REVIEW)
+    PLM_ADD_EXECUTABLE(extract_contour "${EXTRACT_CONTOUR_SRC}"
+      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  ENDIF(ITK_USE_REVIEW)
+  PLM_ADD_EXECUTABLE(mask_mha "${MASK_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(merge_vfs merge_vector_fields.cxx
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(merge2 merge2.cxx
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(mha_to_vox mha_to_vox.c
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(point_path "${POINT_PATH_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(patient_mask "${PATIENT_MASK_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(plastimatch "${PLASTIMATCH_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(resample_mha "${RESAMPLE_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(rtog_to_mha "${RTOG_TO_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(shuffle_mha "${SHUFFLE_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(synthetic_mha "${SYNTHETIC_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(tps_interp "${TPS_INTERP_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(union_mask union_mask.cxx
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(vf_compose "${VF_COMPOSE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(vf_invert "${VF_INVERT_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(xf_to_xf "${XF_TO_XF_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(warp_pointset "${WARP_POINTSET_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+ENDIF(ITK_FOUND)
+
+# Require brook
 IF(BROOK_FOUND)
-  TARGET_LINK_LIBRARIES(fdk_brook ${MATH_LIB} ${GPUIT_LIBRARIES}
+  SET(FDK_BROOK_LIBS ${MATH_LIB} ${GPUIT_LIBRARIES}
     ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
+  PLM_ADD_EXECUTABLE(fdk_brook "${FDK_BROOK_SRC}" "${FDK_BROOK_LIBS}" "")
 ENDIF(BROOK_FOUND)
 
 # Require cuda
 IF(CUDA_FOUND)
-  TARGET_LINK_LIBRARIES(fdk_cuda ${GPUIT_LIBRARIES} ${CUDA_LIBRARIES})
   IF(BUILD_DEMONS_CUDA)
-    TARGET_LINK_LIBRARIES(demons_cuda ${MATH_LIB} ${CUDA_LIBRARIES})
+    PLM_ADD_EXECUTABLE(demons_cuda "${DEMONS_CUDA_SRC}" 
+      "${GPUIT_LIBRARIES}" "")
   ENDIF(BUILD_DEMONS_CUDA)
+  PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
+  PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 
 # Require dcmtk
 IF(DCMTK_FOUND)
-  TARGET_LINK_LIBRARIES(dicom_uid ${DCMTK_LIBRARIES})
+  PLM_ADD_EXECUTABLE(dicom_uid "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "")
 ENDIF(DCMTK_FOUND)
 
-# Require itk
-IF(ITK_FOUND)
-  TARGET_LINK_LIBRARIES(adjust_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(cms_to_cxt ${PLASTIMATCH_LIBS})
-  IF(ITK_USE_REVIEW)
- 	TARGET_LINK_LIBRARIES(compute_mean_image ${PLASTIMATCH_LIBS})
-  ENDIF(ITK_USE_REVIEW)
-  TARGET_LINK_LIBRARIES(compute_distance ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(cxt_to_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(dice_stats ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(dicom_to_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(dicom_rtss_to_cxt ${PLASTIMATCH_LIBS})
-  IF(ITK_USE_REVIEW)
-    TARGET_LINK_LIBRARIES(extract_contour ${PLASTIMATCH_LIBS})
-  ENDIF(ITK_USE_REVIEW)
-  TARGET_LINK_LIBRARIES(mask_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(merge_vfs ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(merge2 ${ITK_LIBRARIES})
-  TARGET_LINK_LIBRARIES(mha_to_rtog_dose ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(point_path ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(patient_mask ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(plastimatch ${PLASTIMATCH_LIBS} ITKStatistics)
-  TARGET_LINK_LIBRARIES(resample_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(rtog_to_mha ${ITK_LIBRARIES})
-  TARGET_LINK_LIBRARIES(synthetic_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(shuffle_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(union_mask ${ITK_LIBRARIES})
-  TARGET_LINK_LIBRARIES(tps_interp ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(vf_compose ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(vf_invert ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(xf_to_xf ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(warp_dij ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(warp_mha ${PLASTIMATCH_LIBS})
-  TARGET_LINK_LIBRARIES(warp_pointset ${PLASTIMATCH_LIBS})
-ENDIF(ITK_FOUND)
-
+# WIN32 target
 IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} 
-    ${DCMTK_LIBRARIES})
+  ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
+  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
+  INSTALL(TARGETS mondoshot DESTINATION bin)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-IF(DCMTK_FOUND)
-  #TARGET_LINK_LIBRARIES(mondoshot_relay ${DCMTK_LIBRARIES})
-ENDIF(DCMTK_FOUND)
 
-######################################################
-##  INSTALL
-######################################################
-# Always built
-#INSTALL(TARGETS gpuit DESTINATION lib)
-INSTALL(TARGETS bspline DESTINATION bin)
-INSTALL(TARGETS cms_dose_to_mha DESTINATION bin)
-INSTALL(TARGETS demons DESTINATION bin)
-INSTALL(TARGETS drr_c DESTINATION bin)
-INSTALL(TARGETS fdk_c DESTINATION bin)
-INSTALL(TARGETS hnd_to_pfm DESTINATION bin)
-INSTALL(TARGETS mha_to_cms_dose DESTINATION bin)
-INSTALL(TARGETS mha_to_raw DESTINATION bin)
+##-----------------------------------------------------------------------------
+##  Additional install files
+##-----------------------------------------------------------------------------
 INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
 
-# Require brook
-IF(BROOK_FOUND)
-  INSTALL(TARGETS fdk_brook DESTINATION bin)
-ENDIF(BROOK_FOUND)
-
-# Require dcmtk
-IF(DCMTK_FOUND)
-  INSTALL(TARGETS dicom_uid DESTINATION bin)
-ENDIF(DCMTK_FOUND)
-
 # Require itk
 IF(ITK_FOUND)
-  INSTALL(TARGETS adjust_mha DESTINATION bin)
-  INSTALL(TARGETS analyze_to_mha DESTINATION bin)
-  INSTALL(TARGETS cms_to_cxt DESTINATION bin)
-  IF(ITK_USE_REVIEW)
-	INSTALL(TARGETS compute_mean_image DESTINATION bin)  
-  ENDIF(ITK_USE_REVIEW)
-  INSTALL(TARGETS compute_distance DESTINATION bin)
-  INSTALL(TARGETS cxt_to_mha DESTINATION bin)
-  INSTALL(TARGETS compute_distance DESTINATION bin)
-  INSTALL(TARGETS dice_stats DESTINATION bin)
-  INSTALL(TARGETS dicom_to_mha DESTINATION bin)
-  INSTALL(TARGETS dicom_rtss_to_cxt DESTINATION bin)
-  IF(ITK_USE_REVIEW)
-    INSTALL(TARGETS extract_contour DESTINATION bin)
-  ENDIF(ITK_USE_REVIEW)
-  INSTALL(TARGETS mask_mha DESTINATION bin)
-  INSTALL(TARGETS merge_vfs DESTINATION bin)
-  INSTALL(TARGETS merge2 DESTINATION bin)
-  INSTALL(TARGETS mha_to_analyze DESTINATION bin)
-  INSTALL(TARGETS mha_to_rtog_dose DESTINATION bin)
-  INSTALL(TARGETS mha_to_vox DESTINATION bin)
-  INSTALL(TARGETS point_path DESTINATION bin)
-  INSTALL(TARGETS patient_mask DESTINATION bin)
-  INSTALL(TARGETS raw_to_mha DESTINATION bin)
-  INSTALL(TARGETS plastimatch DESTINATION bin)
-  INSTALL(TARGETS plastimatch1 DESTINATION lib)
-  INSTALL(TARGETS resample_mha DESTINATION bin)
-  INSTALL(TARGETS rtog_to_mha DESTINATION bin)
-  INSTALL(TARGETS synthetic_mha DESTINATION bin)
-  INSTALL(TARGETS shuffle_mha DESTINATION bin)
-  INSTALL(TARGETS tps_interp DESTINATION bin)
-  INSTALL(TARGETS tps_update DESTINATION bin)
-  INSTALL(TARGETS union_mask DESTINATION bin)
-  INSTALL(TARGETS vf_compare DESTINATION bin)
-  INSTALL(TARGETS vf_to_vvf DESTINATION bin)
-  INSTALL(TARGETS vf_stats DESTINATION bin)
-  INSTALL(TARGETS vf3d_to_mha DESTINATION bin)
-  INSTALL(TARGETS vox_to_mha DESTINATION bin)
-  INSTALL(TARGETS vf_compose DESTINATION bin)
-  INSTALL(TARGETS vf_invert DESTINATION bin)
-  INSTALL(TARGETS xf_to_xf DESTINATION bin)
-  INSTALL(TARGETS warp_dij DESTINATION bin)
-  INSTALL(TARGETS warp_mha DESTINATION bin)
-  INSTALL(TARGETS warp_pointset DESTINATION bin)
-
   IF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
   ENDIF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
@@ -989,16 +869,9 @@ INSTALL(FILES
   REGISTRATION.TXT
   DESTINATION doc)
 
-IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  INSTALL(TARGETS mondoshot DESTINATION bin)
-ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-IF(DCMTK_FOUND)
-  #INSTALL(TARGETS mondoshot_relay DESTINATION bin)
-ENDIF(DCMTK_FOUND)
-
-######################################################
-##  Test executables
-###################################################### 	 
+##-----------------------------------------------------------------------------
+##  Regression testing
+##-----------------------------------------------------------------------------
 # Test executable -- openmp
 IF(BUILD_OPENMP_TEST)
   IF(OPENMP_FOUND)
