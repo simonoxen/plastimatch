@@ -2,9 +2,14 @@
  *  @brief Generate a mean image from a set of registered images 
  */
 #include <string.h>
-  
+#include <direct.h>
+
+#include <iostream>
+#include <fstream>
+
 #include "plm_config.h"
 #include "itkImage.h"
+#include "itkImageRegion.h"
 #include "itkAddImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkNaryAddImageFilter.h"
@@ -19,6 +24,26 @@
 #include "itk_image.h"
 #include "getopt.h"
 
+void print_image(ShortImageType::Pointer image, char *fname)
+{
+        typedef itk::ImageRegionConstIterator< ShortImageType > ConstIteratorType;
+        ConstIteratorType itg(image, image->GetRequestedRegion());
+
+        int count = 0;
+
+        std::ofstream out_file(fname, std::ios::out|std::ios::app|std::ios::ate);
+        if (out_file.bad(  ))
+                return; /* Where do we log an error if there is no log */
+   
+        for (itg.GoToBegin(); !itg.IsAtEnd(); ++itg)
+        {
+                out_file << itg.Get() << "\t";
+                count ++;
+                if (count%512 == 0)
+                        out_file << std::endl;
+        }
+
+}
 
 bool getFileExtension(const char *filename)
 {
@@ -96,14 +121,19 @@ void print_filelist(char** fNameList, int nFiles)
 
 void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
 {
-	typedef itk::NaryAddImageFilter< ShortImageType, ShortImageType > 
+	//typedef itk::NaryAddImageFilter< ShortImageType, ShortImageType > 
+	//	AddFilterType;
+
+        typedef itk::AddImageFilter< ShortImageType, ShortImageType, ShortImageType > 
 		AddFilterType;
-	typedef itk::DivideByConstantImageFilter< ShortImageType, int, ShortImageType >
+        typedef itk::DivideByConstantImageFilter< ShortImageType, int, ShortImageType >
 		DivFilterType;
 	typedef itk::ImageFileReader< ShortImageType > ReaderType;
 	typedef itk::ImageFileWriter< ShortImageType > WriterType;
         typedef itk::GDCMImageIO ImageIOType; 
         typedef itk::MetaDataDictionary DictionaryType;
+        ShortImageType::Pointer tmp;
+        ShortImageType::Pointer sumImg;
 
         ImageIOType::Pointer gdcmImageIO = ImageIOType::New(); 
         
@@ -118,11 +148,31 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
         if (isDicom) 
                 reader->SetImageIO( gdcmImageIO ); 
         reader->Update();
-        DictionaryType & dictionary = reader->GetOutput()->GetMetaDataDictionary();
+        division->SetInput(reader->GetOutput());
+	division->Update();
+        sumImg = division->GetOutput();
+        print_image(sumImg, "div.txt");
+        print_image(sumImg, "add.txt");
+        addition->SetInput1(sumImg);
+
+        //write the output file	
+	WriterType::Pointer writer = WriterType::New();
+	writer->SetFileName(resFile);
+
+
+        if (isDicom) 
+        {
+                writer->SetImageIO(gdcmImageIO);
+                std::cout << "dicomIO set" << std::endl;
+        }
+
 
 	//add all the input images
-	for (int i = 0; i < nFiles; i ++)
+	for (int i = 1; i < nFiles; i ++)
 	{
+                if (i > 1)
+                        addition->SetInput1(sumImg);
+                        
 		reader->SetFileName(inFileList[i]);
                 if (isDicom) 
                         reader->SetImageIO( gdcmImageIO ); 
@@ -136,24 +186,31 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
                                 " **\n\n" << std::endl;
                         return;
                 };
-
+                tmp = reader->GetOutput();
+                // print out the image before division
+                std::cout << "image content before division" << std::endl;
+                print_image(tmp, "readin.txt");
 		// do division first
-		division->SetInput(reader->GetOutput());
+		division->SetInput(tmp);
 		division->Update();
-		addition->SetInput(i, division->GetOutput());
+                
+                // print out the image after division
+                std::cout << "image content after division" << std::endl;
+                tmp = division->GetOutput();
+                print_image(tmp, "div.txt");
+
+		//addition->SetInput(i, tmp);
+                addition->SetInput2(tmp);
+                addition->Update();
+                sumImg = addition->GetOutput();
+
+                // print out the image after addition
+                std::cout << "image content after addition" << std::endl;
+                print_image(sumImg, "add.txt");
 	}
-	addition->Update();
 
-	//write the output file	
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetFileName(resFile);
-	writer->SetInput(addition->GetOutput());
-
-        if (isDicom) 
-        {
-                writer->SetImageIO(gdcmImageIO);
-                std::cout << "dicomIO set" << std::endl;
-        }
+	writer->SetInput(sumImg);
+        
         try 
         {
                 writer->Update();	
@@ -174,7 +231,7 @@ int main (int argc, char *argv[])
 {
 	// list of fnames -- to compute average
 	char **fNameList; 
-
+        char *buffer;
 	// number of image files
 	int nFiles;
 
@@ -186,6 +243,8 @@ int main (int argc, char *argv[])
 		print_usage();
 	else			        		
 	{
+                buffer = _getcwd( NULL, 0 );
+
 		//parse the file list
 		parse_filelist(argv[1], &fNameList, &nFiles);		
 
