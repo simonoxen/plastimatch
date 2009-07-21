@@ -22,7 +22,34 @@
 #include "itkMetaDataObject.h"
 
 #include "itk_image.h"
+#include "itk_dicom.h"
 #include "getopt.h"
+
+void print_filelist(char** fNameList, int nFiles);
+
+static int
+_is_directory (char *dir)
+{
+#if (defined(_WIN32) || defined(WIN32))
+    char pwd[_MAX_PATH];
+    if (!_getcwd (pwd, _MAX_PATH)) {
+        return 0;
+    }
+    if (_chdir (dir) == -1) {
+        return 0;
+    }
+    _chdir (pwd);
+#else /* UNIX */
+    DIR *dp;
+    if ((dp = opendir (dir)) == NULL) {
+        return 0;
+    }
+    closedir (dp);
+#endif
+    return 1;
+}
+
+
 
 void print_image(ShortImageType::Pointer image, char *fname)
 {
@@ -83,32 +110,29 @@ void show_stats(ShortImageType::Pointer image)
 	std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
 }
 
-void parse_filelist(const char* fName, char***fNameList, int *nFiles)
+void parse_filelist(const char* fName, char***fDirList, int *nFiles)
 {
-	int i;
-	int numFiles = 0;
+    int i = 0;
+    int numFiles = 0;
+    char buf[2048];
 
-	FILE* fp = fopen(fName, "r");
-	// file pointer is NULL
-	if (!fp)
-	{
-		fprintf(stderr, "FILE %s open failed!!\n", fName);
-		exit(-1);
-	}  
-	
-	fscanf(fp, "%d", &numFiles);
-	fprintf(stderr, "%d \n", numFiles); 
-	(*nFiles) = numFiles; 	
-	(*fNameList) = (char**) malloc ( sizeof(char*) * numFiles);			
-	
-	for (i = 0; i < numFiles; i ++)
-		(*fNameList)[i] = (char *) malloc ( sizeof(char) * 256);	
-	
-	for (i = 0; i < numFiles; i ++)	
-		fscanf(fp, "%s", (*fNameList)[i]); 
-		//fgets((*fNameList)[i], 256, fp);
-
-	fclose(fp);
+    FILE* fp = fopen(fName, "r");
+    // file pointer is NULL
+    if (!fp)
+    {
+	    fprintf(stderr, "FILE %s open failed!!\n", fName);
+	    exit(-1);
+    }  
+    (*fDirList) = 0;
+    while (fgets (buf, 2048, fp)) {
+	(*fDirList) = (char**) realloc ((*fDirList), (i+1) * sizeof(char**));
+	(*fDirList)[i] = (char*) malloc (strlen(buf)+1);
+	strcpy ((*fDirList)[i], buf);
+	(*fDirList)[i][strlen((*fDirList)[i])-1] = 0;
+	i++;
+    }
+    *nFiles = i;
+    fclose (fp);
 } 
 
 void print_filelist(char** fNameList, int nFiles)
@@ -124,103 +148,46 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
 	//typedef itk::NaryAddImageFilter< ShortImageType, ShortImageType > 
 	//	AddFilterType;
 
-        typedef itk::AddImageFilter< ShortImageType, ShortImageType, ShortImageType > 
+        typedef itk::AddImageFilter< FloatImageType, FloatImageType, FloatImageType > 
 		AddFilterType;
-        typedef itk::DivideByConstantImageFilter< ShortImageType, int, ShortImageType >
+        typedef itk::DivideByConstantImageFilter< FloatImageType, int, FloatImageType >
 		DivFilterType;
-	typedef itk::ImageFileReader< ShortImageType > ReaderType;
-	typedef itk::ImageFileWriter< ShortImageType > WriterType;
+	typedef itk::ImageFileReader< FloatImageType > ReaderType;
+	typedef itk::ImageFileWriter< FloatImageType > WriterType;
         typedef itk::GDCMImageIO ImageIOType; 
         typedef itk::MetaDataDictionary DictionaryType;
-        ShortImageType::Pointer tmp;
-        ShortImageType::Pointer sumImg;
-
+        FloatImageType::Pointer tmp;
+        FloatImageType::Pointer sumImg;
+    PlmImageType original_type;
+#if defined (commentout)
         ImageIOType::Pointer gdcmImageIO = ImageIOType::New(); 
-        
+
         ReaderType::Pointer reader = ReaderType::New();
+#endif
+
 	AddFilterType::Pointer addition = AddFilterType::New();
 	DivFilterType::Pointer division = DivFilterType::New();
 
-	division->SetConstant(nFiles);
-        
-        // get header information
-        reader->SetFileName(inFileList[0]);
-        if (isDicom) 
-                reader->SetImageIO( gdcmImageIO ); 
-        reader->Update();
-        division->SetInput(reader->GetOutput());
-	division->Update();
-        sumImg = division->GetOutput();
-        print_image(sumImg, "div.txt");
-        print_image(sumImg, "add.txt");
-        addition->SetInput1(sumImg);
+    if (nFiles <= 0) return;
 
-        //write the output file	
-	WriterType::Pointer writer = WriterType::New();
-	writer->SetFileName(resFile);
-
-
-        if (isDicom) 
-        {
-                writer->SetImageIO(gdcmImageIO);
-                std::cout << "dicomIO set" << std::endl;
-        }
-
-
+    printf ("%s -> %d\n", inFileList[0], _is_directory(inFileList[0]));
+	sumImg = load_float (inFileList[0], &original_type);
 	//add all the input images
 	for (int i = 1; i < nFiles; i ++)
 	{
-                if (i > 1)
-                        addition->SetInput1(sumImg);
-                        
-		reader->SetFileName(inFileList[i]);
-                if (isDicom) 
-                        reader->SetImageIO( gdcmImageIO ); 
-                try 
-                {
-                        reader->Update();
-                }
-                catch ( itk::ExceptionObject & anException ) 
-                {
-                        std::cerr << "\n\n** Exception in File Reader:  " << anException <<  
-                                " **\n\n" << std::endl;
-                        return;
-                };
-                tmp = reader->GetOutput();
-                // print out the image before division
-                std::cout << "image content before division" << std::endl;
-                print_image(tmp, "readin.txt");
-		// do division first
-		division->SetInput(tmp);
-		division->Update();
-                
-                // print out the image after division
-                std::cout << "image content after division" << std::endl;
-                tmp = division->GetOutput();
-                print_image(tmp, "div.txt");
-
-		//addition->SetInput(i, tmp);
-                addition->SetInput2(tmp);
-                addition->Update();
-                sumImg = addition->GetOutput();
-
-                // print out the image after addition
-                std::cout << "image content after addition" << std::endl;
-                print_image(sumImg, "add.txt");
+	    tmp = load_float (inFileList[i], &original_type);
+	    addition->SetInput1 (sumImg);
+	    addition->SetInput2 (tmp);
+	    addition->Update();
+	    sumImg = addition->GetOutput ();
 	}
 
-	writer->SetInput(sumImg);
-        
-        try 
-        {
-                writer->Update();	
-        }
-	catch (itk::ExceptionObject & anException)
-        {
-                std::cerr << "\n\n** Exception in writing result:  " << anException  << " **\n\n" << std::endl;
-                return; 
-        };
-	
+	division->SetConstant(nFiles);
+	division->SetInput (sumImg);
+	division->Update();
+        tmp = division->GetOutput ();
+	save_short_dicom (tmp, "C:/tmp/junk");
+
         //free memory for file name list
         for (int i = 0; i < nFiles; i ++)
                 free(inFileList[i]);
@@ -230,7 +197,7 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
 int main (int argc, char *argv[])
 {
 	// list of fnames -- to compute average
-	char **fNameList; 
+	char **fDirList; 
         char *buffer;
 	// number of image files
 	int nFiles;
@@ -246,15 +213,15 @@ int main (int argc, char *argv[])
                 buffer = _getcwd( NULL, 0 );
 
 		//parse the file list
-		parse_filelist(argv[1], &fNameList, &nFiles);		
+		parse_filelist(argv[1], &fDirList, &nFiles);		
 
 		//print the input file list
-		print_filelist(fNameList, nFiles);
+		print_filelist(fDirList, nFiles);
 
                 //check whether this is a dicom file
-                isDicom = getFileExtension(fNameList[0]);
+                //isDicom = getFileExtension(fNameList[0]);
 
                 //compute the average image
-		compute_average(fNameList, nFiles, argv[2], isDicom);		
+		compute_average(fDirList, nFiles, argv[2], isDicom);		
 	}	
 }
