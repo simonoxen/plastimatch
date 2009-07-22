@@ -2,7 +2,6 @@
  *  @brief Generate a mean image from a set of registered images 
  */
 #include <string.h>
-#include <direct.h>
 
 #include <iostream>
 #include <fstream>
@@ -26,28 +25,6 @@
 #include "getopt.h"
 
 void print_filelist(char** fNameList, int nFiles);
-
-static int
-_is_directory (char *dir)
-{
-#if (defined(_WIN32) || defined(WIN32))
-    char pwd[_MAX_PATH];
-    if (!_getcwd (pwd, _MAX_PATH)) {
-        return 0;
-    }
-    if (_chdir (dir) == -1) {
-        return 0;
-    }
-    _chdir (pwd);
-#else /* UNIX */
-    DIR *dp;
-    if ((dp = opendir (dir)) == NULL) {
-        return 0;
-    }
-    closedir (dp);
-#endif
-    return 1;
-}
 
 
 
@@ -170,7 +147,6 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
 
     if (nFiles <= 0) return;
 
-    printf ("%s -> %d\n", inFileList[0], _is_directory(inFileList[0]));
 	sumImg = load_float (inFileList[0], &original_type);
 	//add all the input images
 	for (int i = 1; i < nFiles; i ++)
@@ -196,32 +172,29 @@ void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
 
 int main (int argc, char *argv[])
 {
-	// list of fnames -- to compute average
-	char **fDirList; 
-        char *buffer;
-	// number of image files
-	int nFiles;
+    // list of fnames -- to compute average
+    char **fDirList; 
+    // number of image files
+    int nFiles;
 
-        // flag to indicate whether this is a dicom file
-        // default value is set to false
-        bool isDicom = false;
+    // flag to indicate whether this is a dicom file
+    // default value is set to false
+    bool isDicom = false;
 
-	if (argc < 3)
-		print_usage();
-	else			        		
-	{
-                buffer = _getcwd( NULL, 0 );
+    if (argc < 3)
+	print_usage();
+    else			        		
+    {
+	//parse the file list
+	parse_filelist(argv[1], &fDirList, &nFiles);		
 
-		//parse the file list
-		parse_filelist(argv[1], &fDirList, &nFiles);		
+	//print the input file list
+	print_filelist(fDirList, nFiles);
 
-		//print the input file list
-		print_filelist(fDirList, nFiles);
+	//check whether this is a dicom file
+	//isDicom = getFileExtension(fNameList[0]);
 
-                //check whether this is a dicom file
-                //isDicom = getFileExtension(fNameList[0]);
-
-                //compute the average image
-		compute_average(fDirList, nFiles, argv[2], isDicom);		
-	}	
+	//compute the average image
+	compute_average(fDirList, nFiles, argv[2], isDicom);		
+    }	
 }
