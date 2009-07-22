@@ -88,7 +88,7 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 			if(warped->GetPixel(k)!=reference->GetPixel(k))
 				FP++;
 		}
-		if(!warped->GetPixel(k) && !reference->GetPixel(k)){
+		if(warped->GetPixel(k)==0 && reference->GetPixel(k)==0){
 			TN++;
 		}
 		it.operator ++();
@@ -173,7 +173,10 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//BEGIN calculus DICE + FP,FN,TP,TN
 
 	//scaling of the TN with respect to FP
-	alpha=ceil((double)(FP/sizeRef));
+	if( (float)FP/(float)(FP+TN)<=1){
+		//printf("alfa: %f", (double)((FP+TN)/sizeRef));
+		alpha=ceil((double)((FP+TN)/sizeRef));
+	}
 	
 	printf("overlap=TP: %d\n",overlap);
 	fprintf(output,"TP: %d\n",overlap);
@@ -195,24 +198,32 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	printf("\n\n");
 	fprintf(output,"\n");
 
-	dice=((float)2*overlap)/((float)(sizeRef+sizeWarp));
+	dice=((float)(2*overlap))/((float)(sizeRef+sizeWarp));
 	printf("DICE COEFFICIENT: %f\n",dice);
 	fprintf(output,"DICE: %f\n",dice);
 	printf("\n\n");
 	fprintf(output,"\n");
 
+	//float dice2=0;
+	//dice2=((float)(2*overlap))/((float)(2*overlap+FN+FP));
+	//printf("DICE2 COEFFICIENT: %f\n",dice2);
+	//fprintf(output,"DICE2: %f\n",dice2);
+	//printf("\n\n");
+	//fprintf(output,"\n");
+
 	printf("ALPHA: %f\n",alpha);
 
-	se=((float)overlap)/((float)overlap+FN);
+	se=((float)overlap)/((float)(overlap+FN));
 	printf("Sensitivity: %f\n",se);
 	fprintf(output,"Sensitivity: %f\n",se);
 	printf("\n\n");
 	fprintf(output,"\n");
 
 	if (alpha==0){
+		printf("alpha = 0 \n");
 		sp=1;
 	}else{
-		sp=-((float)FP/(float)(alpha*vol_ref))+1;
+		sp=-((float)FP/(float)(alpha*sizeRef))+1;
 	}
 	printf("SP: %f\n",sp);
 	fprintf(output,"SP: %f\n",sp);
@@ -474,12 +485,18 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	//BEGIN calculus DICE + FP,FN,TP,TN
 
 	//scaling of the TN with respect to FP
-	alpha12=ceil((double)(FPex12/sizeEx_1));
-	alpha13=ceil((double)(FPex13/sizeEx_1));
-	alpha23=ceil((double)(FPex23/sizeEx_2));
-	alpha21=ceil((double)(FNex12/sizeEx_2));
-	alpha31=ceil((double)(FNex13/sizeEx_3));
-	alpha32=ceil((double)(FNex23/sizeEx_3));
+	if( (float)FPex12/(float)(FPex12+TNex12)<=1)
+		alpha12=ceil((double)((FPex12+TNex12)/sizeEx_1));
+	if( (float)FPex13/(float)(FPex13+TNex13)<=1)
+		alpha13=ceil((double)((FPex13+TNex13)/sizeEx_1));
+	if( (float)FPex23/(float)(FPex23+TNex23)<=1)
+		alpha23=ceil((double)((FPex23+TNex23)/sizeEx_2));
+	if( (float)FNex12/(float)(FNex12+TNex12)<=1)
+		alpha21=ceil((double)((FNex12+TNex12)/sizeEx_2));
+	if( (float)FNex13/(float)(FNex13+TNex13)<=1)
+		alpha31=ceil((double)((FNex13+TNex13)/sizeEx_3));
+	if( (float)FNex23/(float)(FNex23+TNex23)<=1)
+		alpha32=ceil((double)((FNex23+TNex23)/sizeEx_3));
 
 
 	printf("overlap12=TP12==TP21: %d\n",overlapE12);
