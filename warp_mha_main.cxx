@@ -56,7 +56,11 @@ void warp_any (Warp_Parms* parms, T im_in, U)
     }
 
     printf ("Saving...\n");
-    save_image (im_warped, parms->mha_out_fn);
+    if (parms->output_dicom) {
+	save_short_dicom (im_warped, parms->mha_out_fn);
+    } else {
+	save_image (im_warped, parms->mha_out_fn);
+    }
     if (parms->vf_out_fn[0]) {
 	save_image(vf, parms->vf_out_fn);
     }
@@ -106,7 +110,8 @@ print_usage (void)
     printf ("Options:   --interpolation nn\n"
 	    "           --fixed=im_fn\n"
 	    "           --output_vf=vf_fn\n"
-	    "           --default_val=val\n");
+	    "           --default_val=val\n"
+	    "           --output-format dicom\n");
     exit (-1);
 }
 
@@ -130,6 +135,7 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "offset",         required_argument,      NULL,           10 },
 	{ "spacing",        required_argument,      NULL,           11 },
 	{ "dims",           required_argument,      NULL,           12 },
+	{ "output-format",  required_argument,      NULL,           13 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -192,6 +198,14 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 		print_usage ();
 	    }
 	    have_dims = 1;
+	    break;
+	case 13:
+	    if (!strcmp (optarg, "dicom")) {
+		parms->output_dicom = 1;
+	    } else {
+		fprintf (stderr, "Error.  --output-type option only supports dicom.\n");
+		print_usage ();
+	    }
 	    break;
 	default:
 	    break;

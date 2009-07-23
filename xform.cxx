@@ -1035,7 +1035,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->SetOrigin (pih->m_origin);
     itk_vf->SetSpacing (pih->m_spacing);
     itk_vf->SetRegions (pih->m_region);
-    std::cout << pih->m_direction;
+    //std::cout << pih->m_direction;
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 

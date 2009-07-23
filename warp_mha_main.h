@@ -18,12 +18,14 @@ public:
     char vf_out_fn[_MAX_PATH];
     float default_val;
     int interp_lin;
+    int output_dicom;
     float offset[3];
     float spacing[3];
     int dims[3];
 public:
     Warp_Parms () {
 	memset (this, 0, sizeof(Warp_Parms));
+	output_dicom = 0;
 	interp_lin = 1;
     }
 };

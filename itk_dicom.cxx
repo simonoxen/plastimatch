@@ -1,7 +1,6 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-//#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include "plm_config.h"
@@ -19,10 +18,6 @@
 #else
 #include "gdcmUIDGenerator.h"
 #endif
-
-
-//#include "gdcm/src/gdcmFile.h"
-//#include "gdcm/src/gdcmUtil.h" 
 
 /* -----------------------------------------------------------------------
     Definitions
@@ -232,8 +227,6 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 
     /* Slice thickness */
     value = to_string ((double) (short_img->GetSpacing()[2]));
-    printf ("value = %g\n", short_img->GetSpacing()[2]);
-    printf ("value = %s\n", value.c_str());
     encapsulate (dict, "0018|0050", value);
 
     /* 0008,2112 is "Source Image Sequence", defined as "A Sequence that 
@@ -248,7 +241,6 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 	Yes it can.  The below code is adapted from:
 	http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
     */
-
 
     DicomShortWriterType::DictionaryArrayType dict_array;
     for (unsigned int f = 0; f < short_img->GetLargestPossibleRegion().GetSize()[2]; f++) {
@@ -275,100 +267,6 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 
 	dict_array.push_back (slice_dict);
     }
-
-#if defined (commentout)
-    // Copy the dictionary from the first slice
-    CopyDictionary (*inputDict, *dict);
-
-    // Set the UID's for the study, series, SOP  and frame of reference
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|000d", studyUID);
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|000e", seriesUID);
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|0052", frameOfReferenceUID);
-
-    std::string sopInstanceUID = gdcm::Util::CreateUniqueUID( gdcmIO->GetUIDPrefix());
-    itk::EncapsulateMetaData<std::string>(*dict,"0008|0018", sopInstanceUID);
-    itk::EncapsulateMetaData<std::string>(*dict,"0002|0003", sopInstanceUID);
-
-    // Change fields that are slice specific
-    itksys_ios::ostringstream value;
-    value.str("");
-    value << f + 1;
-
-    // Image Number
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|0013", value.str());
-
-    // Series Description - Append new description to current series
-    // description
-    std::string oldSeriesDesc;
-    itk::ExposeMetaData<std::string>(*inputDict, "0008|103e", oldSeriesDesc);
-
-    value.str("");
-    value << oldSeriesDesc
-          << ": Resampled with pixel spacing "
-          << outputSpacing[0] << ", "
-          << outputSpacing[1] << ", "
-          << outputSpacing[2];
-    // This is an long string and there is a 64 character limit in the
-    // standard
-    unsigned lengthDesc = value.str().length();
-   
-    std::string seriesDesc( value.str(), 0,
-                            lengthDesc > 64 ? 64
-                            : lengthDesc);
-    itk::EncapsulateMetaData<std::string>(*dict,"0008|103e", seriesDesc);
-
-    // Series Number
-    value.str("");
-    value << 1001;
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|0011", value.str());
-
-    // Derivation Description - How this image was derived
-    value.str("");
-    for (unsigned int i = 0; i < argc; i++)
-      {
-      value << argv[i] << " ";
-      }
-    value << ": " << ITK_SOURCE_VERSION;
-
-    lengthDesc = value.str().length();
-    std::string derivationDesc( value.str(), 0,
-                                lengthDesc > 1024 ? 1024
-                                : lengthDesc);
-    itk::EncapsulateMetaData<std::string>(*dict,"0008|2111", derivationDesc);
-   
-    // Image Position Patient: This is calculated by computing the
-    // physical coordinate of the first pixel in each slice.
-    InputImageType::PointType position;
-    InputImageType::IndexType index;
-    index[0] = 0;
-    index[1] = 0;
-    index[2] = f;
-    resampler->GetOutput()->TransformIndexToPhysicalPoint(index, position);
-
-    value.str("");
-    value << position[0] << "\\" << position[1] << "\\" << position[2];
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|0032", value.str());      
-    // Slice Location: For now, we store the z component of the Image
-    // Position Patient.
-    value.str("");
-    value << position[2];
-    itk::EncapsulateMetaData<std::string>(*dict,"0020|1041", value.str());      
-
-    if (changeInSpacing)
-      {
-      // Slice Thickness: For now, we store the z spacing
-      value.str("");
-      value << outputSpacing[2];
-      itk::EncapsulateMetaData<std::string>(*dict,"0018|0050",
-                                            value.str());
-      // Spacing Between Slices
-      itk::EncapsulateMetaData<std::string>(*dict,"0018|0088",
-                                            value.str());
-      }
-     
-    // Save the dictionary
-    outputArray.push_back(dict);
-#endif
 
     /* Create file names */
     DicomShortWriterType::Pointer seriesWriter = DicomShortWriterType::New();
