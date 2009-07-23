@@ -82,15 +82,15 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 			}else if (warped->GetPixel(k)!=reference->GetPixel(k)){
 				FN++;
 			}
-		}
-		if(warped->GetPixel(k)){
-			sizeWarp++;
-			if(warped->GetPixel(k)!=reference->GetPixel(k))
+		}else{
+			if(warped->GetPixel(k)==0)
+				TN++;
+			else
 				FP++;
 		}
-		if(warped->GetPixel(k)==0 && reference->GetPixel(k)==0){
-			TN++;
-		}
+		if(warped->GetPixel(k))
+			sizeWarp++;
+		
 		it.operator ++();
 		i++;
 	}
@@ -331,7 +331,7 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 		if(ex_3->GetPixel(k)){
 			sizeEx_3++;
 		}
-		if(ex_1->GetPixel(k) || ex_2->GetPixel(k) || ex_3->GetPixel(k)){
+		//if(ex_1->GetPixel(k) || ex_2->GetPixel(k) || ex_3->GetPixel(k)){
 			//size++;
 			if(ex_1->GetPixel(k)){
 				if(ex_2->GetPixel(k)){
@@ -339,11 +339,16 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 				}else{
 					FNex12++;
 				}
-			}else if(ex_2->GetPixel(k)){
+			}else{
+				if(ex_2->GetPixel(k)){
 					FPex12++;
-			}else if(ex_1->GetPixel(k)==ex_2->GetPixel(k)==0){
-				TNex12++;
+				}else{
+					TNex12++;
+				}
 			}
+			/*if(ex_1->GetPixel(k)==ex_2->GetPixel(k)==0){
+				TNex12++;
+			}*/
 
 			if(ex_1->GetPixel(k)){
 				if(ex_3->GetPixel(k)){
@@ -351,11 +356,16 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 				}else{
 					FNex13++;
 				}
-			}else if(ex_3->GetPixel(k)){
+			}else{
+				if(ex_3->GetPixel(k)){
 					FPex13++;
-			}else if(ex_1->GetPixel(k)==ex_3->GetPixel(k)==0){
-				TNex13++;
+				}else{
+					TNex13++;
+				}
 			}
+			/*if(ex_1->GetPixel(k)==ex_3->GetPixel(k)==0){
+				TNex13++;
+			}*/
 
 			if(ex_2->GetPixel(k)){
 				if(ex_3->GetPixel(k)){
@@ -363,12 +373,18 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 				}else{
 					FNex23++;
 				}
-			}else if(ex_3->GetPixel(k)){
+			}else{
+				if(ex_3->GetPixel(k)){
 					FPex23++;
-			}else if(ex_2->GetPixel(k)==ex_3->GetPixel(k)==0){
-				TNex23++;
+				}else{
+					TNex23++;
+				}
 			}
-		}else if(ex_1->GetPixel(k)==ex_2->GetPixel(k)==ex_3->GetPixel(k)){
+		//	if(ex_2->GetPixel(k)==ex_3->GetPixel(k)==0){
+		//		TNex23++;
+		//	}
+		//}
+		if(ex_1->GetPixel(k)==ex_2->GetPixel(k)==ex_3->GetPixel(k)){
 			overlap++;
 		}
 		it.operator ++();
@@ -392,6 +408,10 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	fprintf(output,"DICE E1-E2: %f\n",diceE12);
 	fprintf(output,"DICE E1-E3: %f\n",diceE13);
 	fprintf(output,"DICE E2-E3: %f\n",diceE23);
+	printf("DICE MEDIO: %f\n",dice);
+	printf("DICE E1-E2: %f\n",diceE12);
+	printf("DICE E1-E3: %f\n",diceE13);
+	printf("DICE E2-E3: %f\n",diceE23);
 	printf("\n\n");
 
 	volOver=overlap*(ex_1->GetSpacing()[0]*ex_1->GetSpacing()[1]*ex_1->GetSpacing()[2]);
@@ -556,10 +576,10 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 	printf("Sensitivity12: %f\n",se12);
 	fprintf(output,"Sensitivity12: %f\n",se12);
 	se13=((float)overlapE13)/((float)overlapE13+FNex13);
-	printf("Sensitivity13: %f\n",se12);
+	printf("Sensitivity13: %f\n",se13);
 	fprintf(output,"Sensitivity13: %f\n",se13);
 	se23=((float)overlapE12)/((float)overlapE23+FNex23);
-	printf("Sensitivity23: %f\n",se12);
+	printf("Sensitivity23: %f\n",se23);
 	fprintf(output,"Sensitivity23: %f\n",se23);
 	se21=((float)overlapE12)/((float)overlapE12+FPex12);
 	printf("Sensitivity21: %f\n",se21);
