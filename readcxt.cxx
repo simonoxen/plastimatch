@@ -170,8 +170,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	int k;
 
         if (1 != fscanf (fp, " %d", &struct_no)) {
-	    printf ("Can't parse struct_no\n");
-	    //goto not_successful;
+	    /* Normal exit from loop */
 	    break;
         }
         fgetc (fp);
@@ -219,20 +218,20 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         }
         for (k = 0; k < num_pt; k++) {
 	    long floc;
-            printf (" --> (%5d)", k);
+            //printf (" --> (%5d)", k);
 	    floc = ftell (fp);
             if (fscanf (fp, "%f\\%f\\%f", &x, &y, &z) != 3) {
 		fseek (fp, floc, SEEK_SET);
                 if (fscanf (fp, "\\%f\\%f\\%f", &x, &y, &z) != 3) {
 		    fseek (fp, floc, SEEK_SET);
-		    printf ("\n", k);
+		    //printf ("\n", k);
                     break;
                 }
             }
             curr_contour->x[k] = x;
             curr_contour->y[k] = y;
             curr_contour->z[k] = z;
-	    printf ("%g %g %g\n", x, y, z);
+	    //printf ("%g %g %g\n", x, y, z);
             x = 0;
             y = 0;
             z = 0;

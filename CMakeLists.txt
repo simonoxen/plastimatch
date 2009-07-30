@@ -354,16 +354,16 @@ SET(GPUIT_LIBRARY_SRC
   volume.c volume.h
   )
 IF(PLM_BSPLINE_CXX)
-SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline.cxx bspline.h)
+  SET(GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    bspline.cxx bspline.h)
 ELSE(PLM_BSPLINE_CXX)
-SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline.c bspline.h)
+  SET(GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    bspline.c bspline.h)
 ENDIF(PLM_BSPLINE_CXX)
 IF(BROOK_FOUND)
-SET(GPUIT_LIBRARY_SRC
+  SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	demons_brook.cpp
 	demons_brook_kernel_wrap.cpp
@@ -375,7 +375,7 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(BROOK_FOUND)
 IF(CUDA_FOUND)
-SET(GPUIT_LIBRARY_SRC
+  SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
 	bspline_cuda_wrap.cpp
@@ -385,7 +385,7 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(CUDA_FOUND)
 IF(F2C_LIBRARY)
-SET(GPUIT_LIBRARY_SRC
+  SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
 	lbfgsb_2_1.c
@@ -394,7 +394,7 @@ SET(GPUIT_LIBRARY_SRC
 	)
 ENDIF(F2C_LIBRARY)
 IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
-SET(GPUIT_LIBRARY_SRC
+  SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_brook_kernel_wrap.cpp
     	bspline_brook_kernel.br
@@ -407,13 +407,14 @@ SET(GPUIT_LIBRARY_SRC
 ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 
 IF(F2C_LIBRARY)
-SET(F2C_HELPER_LIBRARY_SRC
+  SET(F2C_HELPER_LIBRARY_SRC
 	main__.c
 	)
 ENDIF(F2C_LIBRARY)
 
 SET(PLASTIMATCH_LIBRARY_SRC
 	gcs_metric.h gcs_metric.hxx 
+	gdcm_rtss.cxx gdcm_rtss.h
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
 	itk_demons.cxx itk_demons.h 
@@ -436,7 +437,6 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	xform.cxx xform.h 
-#	compute_mean_image_main.cxx
 	)
 
 ######################################################
@@ -470,6 +470,8 @@ SET(CXT_TO_MHA_SRC
 	render_polyline.cxx
 	render_polyline.h
 	)
+SET(CXT_TO_DICOM_RTSS_SRC 
+  cxt_to_dicom_rtss.cxx)
 SET(DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
@@ -605,6 +607,7 @@ CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
     SET(ADJUST_MHA_SRC ${ADJUST_MHA_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
     SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
@@ -671,7 +674,6 @@ ENDIF(PANTHEIOS_FOUND)
 IF(wxWidgets_FOUND)
   INCLUDE_DIRECTORIES(BEFORE ${wxWidgets_INCLUDE_DIRS})
 ENDIF(wxWidgets_FOUND)
-
 
 ######################################################
 ##  FATM LIBRARY
@@ -748,7 +750,9 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(cxt_to_mha "${CXT_TO_MHA_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  IF(ITK_USE_REVIEW)	
+  PLM_ADD_EXECUTABLE(cxt_to_dicom_rtss "${CXT_TO_DICOM_RTSS_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF(ITK_USE_REVIEW)

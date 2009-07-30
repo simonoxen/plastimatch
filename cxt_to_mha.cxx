@@ -158,7 +158,7 @@ main (int argc, char* argv[])
             unsigned long* ulong_slice;
 
 	    curr_contour = &curr_structure->pslist[i];
-            printf ("Slice# %3d\n", curr_contour->slice_no);
+            //printf ("Slice# %3d\n", curr_contour->slice_no);
 
             memset (acc_img, 0, dim[0] * dim[1] * sizeof(unsigned char));
             render_slice_polyline (acc_img, dim, spacing, offset,

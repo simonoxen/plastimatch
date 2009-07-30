@@ -4,16 +4,22 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "gdcmFile.h"
+#include "gdcmGlobal.h"
+#include "gdcmSeqEntry.h"
+#include "gdcmSQItem.h"
 #include "gdcm_rtss.h"
 #include "readcxt.h"
 
 void
-do_dicom_rtss_to_cxt (char *rtss_fn, char *dicom_dir)
+do_cxt_to_dicom_rtss (char *cxt_fn, char *rtss_fn)
 {
     Cxt_structure_list structures;
 
     cxt_initialize (&structures);
-    gdcm_rtss_load (&structures, rtss_fn, dicom_dir);
+
+    cxt_read (&structures, cxt_fn);
+    gdcm_rtss_save (&structures, rtss_fn);
 
     cxt_write (&structures, "foo.cxt");
 }
@@ -21,18 +27,15 @@ do_dicom_rtss_to_cxt (char *rtss_fn, char *dicom_dir)
 int
 main(int argc, char *argv[])
 {
-    char *rtss_fn, *dicom_dir;
-    if (argc == 2) {
-	rtss_fn = argv[1];
-	dicom_dir = 0;
-    } else if (argc == 3) {
-	rtss_fn = argv[1];
-	dicom_dir = argv[2];
+    char *cxt_fn, *rtss_fn;
+    if (argc == 3) {
+	cxt_fn = argv[1];
+	rtss_fn = argv[2];
     } else {
-	printf ("Usage: dicom_rtss_to_cxt dicom_rtss [ dicom_dir ]\n");
+	printf ("Usage: cxt_to_dicom_rtss cxt_file dicom_rtss_file\n");
 	exit (1);
     }
 
-    do_dicom_rtss_to_cxt (rtss_fn, dicom_dir);
+    do_cxt_to_dicom_rtss (cxt_fn, rtss_fn);
     return 0;
 }
