@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "gdcmFile.h"
+#include "gdcmFileHelper.h"
 #include "gdcmGlobal.h"
 #include "gdcmSeqEntry.h"
 #include "gdcmSQItem.h"
@@ -149,8 +150,37 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 }
 
+
+
 plastimatch1_EXPORT
 void
 gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
 {
+    gdcm::File *header = new gdcm::File();
+
+    /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
+	which does not have a (7fe0,0000) PixelDataGroupLength element.
+	Therefore we have to write using Document::WriteContent() */
+    std::ofstream *fp;
+    fp = new std::ofstream (rtss_fn, std::ios::out | std::ios::binary);
+    if (*fp == NULL) {
+	fprintf (stderr, "Error opening file for write: %s\n", rtss_fn);
+	return;
+    }
+
+    //bstd::string value;
+    //MetaDataDictionary & dict = this->GetMetaDataDictionary();
+
+    header->InsertValEntry ("FOOBAR", 0x0010, 0x0010);
+    //header->Write (rtss_fn, gdcm::ExplicitVR);
+
+    header->WriteContent (fp, gdcm::ExplicitVR);
+    fp->close();
+    delete fp;
+
+#if defined (commentout)
+    if (!gfile->Write (rtss_fn)) {
+	fprintf (stderr, "Error writing gdcm file %s\n", rtss_fn);
+    }
+#endif
 }
