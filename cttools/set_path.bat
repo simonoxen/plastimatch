@@ -19,7 +19,7 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   echo Setting for SLUMBER
   SET ITK_PATH=%HOME%\build\vs2008\itk-3.14.0\bin\Release
   SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.14.0
-  SET CTTOOLS_PATH=%PLASTIMATCH_PATH%\cttools
+  SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="ROFOVIA" (
   echo Setting for ROFOVIA
   SET ITK_PATH=c:\plastimatch\build\itk-3.8.0\bin\Release
