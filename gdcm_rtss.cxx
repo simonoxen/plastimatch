@@ -150,8 +150,6 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 }
 
-
-
 plastimatch1_EXPORT
 void
 gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
@@ -177,10 +175,4 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     header->WriteContent (fp, gdcm::ExplicitVR);
     fp->close();
     delete fp;
-
-#if defined (commentout)
-    if (!gfile->Write (rtss_fn)) {
-	fprintf (stderr, "Error writing gdcm file %s\n", rtss_fn);
-    }
-#endif
 }
