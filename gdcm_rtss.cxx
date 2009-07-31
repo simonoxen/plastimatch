@@ -9,6 +9,7 @@
 #include "gdcmGlobal.h"
 #include "gdcmSeqEntry.h"
 #include "gdcmSQItem.h"
+#include "gdcmUtil.h"
 #include "gdcm_rtss.h"
 #include "readcxt.h"
 
@@ -154,7 +155,12 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
 {
-    gdcm::File *header = new gdcm::File();
+    gdcm::File *gf = new gdcm::File ();
+#if defined (commentout)
+    gdcm::FileHelper *gfh = new gdcm::FileHelper (gf);
+#endif
+    const std::string &current_date = gdcm::Util::GetCurrentDate();
+    const std::string &current_time = gdcm::Util::GetCurrentTime();
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
 	which does not have a (7fe0,0000) PixelDataGroupLength element.
@@ -165,14 +171,27 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
 	fprintf (stderr, "Error opening file for write: %s\n", rtss_fn);
 	return;
     }
+    
+    /* InstanceCreationDate */
+    gf->InsertValEntry (current_date, 0x0008, 0x0012);
+    /* InstanceCreationTime */
+    gf->InsertValEntry (current_time, 0x0008, 0x0013);
+    /* SOPClassUID = RTStructureSetStorage */
+    gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0008, 0x0016);
+    /* Modality */
+    gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
+    /* AccessionNumber */
+    gf->InsertValEntry ("", 0x0008, 0x0050);
+    /* PatientsName */
+    gf->InsertValEntry ("FOOBAR", 0x0010, 0x0010);
 
-    //bstd::string value;
-    //MetaDataDictionary & dict = this->GetMetaDataDictionary();
 
-    header->InsertValEntry ("FOOBAR", 0x0010, 0x0010);
-    //header->Write (rtss_fn, gdcm::ExplicitVR);
+#if defined (commentout)
+    gfh->SetWriteTypeToDcmExplVR ();
+    gfh->Write (rtss_fn);
+#endif
 
-    header->WriteContent (fp, gdcm::ExplicitVR);
+    gf->WriteContent (fp, gdcm::ExplicitVR);
     fp->close();
     delete fp;
 }
