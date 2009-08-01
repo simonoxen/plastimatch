@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
+#include "bstrlib.h"
 #include "readcxt.h"
 
 plastimatch1_EXPORT
@@ -91,7 +92,6 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     int old_struct_no = -1;
     int contour_no = 0;
     int slice_idx = -1;
-    char tag[CXT_BUFLEN];
 
     float x = 0;
     float y = 0;
@@ -102,43 +102,47 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
     fp = fopen (cxt_fn, "r");
 
+    // if (fp) b = bgets ((bNgetc) fgetc, fp, '\n');
+
     if (!fp) {
 	printf ("Could not open contour file for read: %s\n", cxt_fn);
         exit (-1);
     }
 
     printf ("Loading...\n");
+    /* Part 1: Dicom info */
     while (1) {
-        char buf[CXT_BUFLEN];
-        char *p;
+	bstring b;
 
-        p = fgets (buf, CXT_BUFLEN, fp);
-        if (!p) {
+	b = bgets ((bNgetc) fgetc, fp, '\n');
+        if (!b) {
             fprintf (stderr, "ERROR: Your file is not formatted correctly!\n");
             exit (-1);
         }
-        if (!strncmp (buf, "ROI_NAMES", strlen ("ROI_NAMES"))) {
+
+	btrimws (b);
+	if (!strcmp ((const char*) b->data, "ROI_NAMES")) {
             break;
         }
-        if (4 == sscanf (buf, "%s %f %f %f", tag, &val_x, &val_y, &val_z)) {
-            if (strcmp ("OFFSET", tag) == 0) {
-                structures->offset[0] = val_x;
-                structures->offset[1] = val_y;
-                structures->offset[2] = val_z;
-                //printf("%s\n",tag);
-            } else if (strcmp ("DIMENSION", tag) == 0) {
-                structures->dim[0] = val_x;
-                structures->dim[1] = val_y;
-                structures->dim[2] = val_z;
-                //printf("%s\n",tag);
-            } else if (strcmp ("SPACING", tag) == 0) {
-                structures->spacing[0] = val_x;
-                structures->spacing[1] = val_y;
-                structures->spacing[2] = val_z;
-                //printf("%s\n",tag);
-            }
-        }
+        else if (3 == sscanf ((const char*) b->data, "OFFSET %f %f %f", &val_x, &val_y, &val_z)) {
+            structures->offset[0] = val_x;
+            structures->offset[1] = val_y;
+            structures->offset[2] = val_z;
+	}
+        else if (3 == sscanf ((const char*) b->data, "DIMENSION %f %f %f", &val_x, &val_y, &val_z)) {
+            structures->dim[0] = val_x;
+            structures->dim[1] = val_y;
+            structures->dim[2] = val_z;
+	}
+        if (3 == sscanf ((const char*) b->data, "SPACING %f %f %f", &val_x, &val_y, &val_z)) {
+            structures->spacing[0] = val_x;
+            structures->spacing[1] = val_y;
+            structures->spacing[2] = val_z;
+	}
+	bdestroy (b);
     }
+
+    /* Part 2: Structures info */
     while (1) {
         char color[CXT_BUFLEN];
         char name[CXT_BUFLEN];
@@ -166,6 +170,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         printf ("Cxt_structure: %s\n", curr_structure->name);
     }
 
+    /* Part 3: Contour info */
     while (1) {
 	int k;
 

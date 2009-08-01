@@ -4,6 +4,7 @@
 #ifndef _readcxt_h_
 #define _readcxt_h_
 
+#include "bstrlib.h"
 #define CXT_BUFLEN 2048
 
 typedef struct cxt_polyline Cxt_polyline;
@@ -30,8 +31,8 @@ struct cxt_structure_list {
     float offset[3];
     int num_structures;
     Cxt_structure* slist;
+    bstring series_ct_uid;
 };
-
 
 #if defined __cplusplus
 extern "C" {
