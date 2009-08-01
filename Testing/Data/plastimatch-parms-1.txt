@@ -1,0 +1,16 @@
+[GLOBAL]
+fixed=synth_1.mha
+moving=synth_2.mha
+vf_out=plm-test-vf-1.mha
+xform_out=plm-test-1.txt
+img_out=plm-test-img-1.mha
+
+[STAGE]
+xform=bspline
+optim=lbfgsb
+impl=gpuit_cpu
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+grid_spac=30 30 30
+res=2 2 2

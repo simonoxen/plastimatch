@@ -32,22 +32,32 @@ ADD_TEST (bspline_test_1_compare ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
 
-## plastimatch_usage_1
-## make sure that plastimatch runs
+## plastimatch
 PLM_ADD_TEST (
-  "plastimatch_usage_1" 
+  "plastimatch_usage" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   ""
   )
 
-## ??
-if (0)
-  PLM_ADD_TEST (
-    "plastimatch_y1" 
-    "C:/gcs6/idata/synth_mse"
-    ${PLM_PLASTIMATCH_TESTING_PATH_HACK}/plastimatch
-    "parms.txt"
-    )
-endif (0)
+PLM_ADD_TEST (
+  "plastimatch_test_1" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plastimatch-parms-1.txt"
+  )
 
+PLM_ADD_TEST (
+  "plastimatch_test_2" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plastimatch-parms-2.txt"
+  )
+
+## xf_to_xf
+PLM_ADD_TEST (
+  "xf_to_xf_test_1" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/xf_to_xf
+  "--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/vf-bspline-1.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  )

@@ -1,0 +1,15 @@
+[GLOBAL]
+fixed=synth_1.mha
+moving=synth_2.mha
+vf_out=plm-test-vf-2.mha
+xform_out=plm-test-2.txt
+img_out=plm-test-img-2.mha
+
+[STAGE]
+xform=translation
+optim=rsg
+impl=itk
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+res=2 2 2

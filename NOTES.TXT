@@ -1,3 +1,32 @@
+***** Proposed engineering changes: Aug 1, 2009 *****
+
+1) Reduce number of executables
+
+   Old:
+     plastimatch [options]
+     dicom_to_mha [options]
+     warp_mha [options]
+   New:
+     plastimatch register [options]
+     plastimatch convert [options]
+     plastimatch warp [options]
+
+   "Simple" executables such as bspline.exe, drr_c.exe etc. will not 
+   be merged.
+
+2) Add threading options to plastimatch
+
+   Old:
+     implementation=gpuit_cpu
+   New:
+     implementation=plastimatch
+     threading=openmp
+     max_threads=2
+
+3) Remove gpuit sub-library, merge into plastimatch1.lib
+
+4) Move source code to src/ subdirectory
+
 ***** Consistency of indices *****
 
 By convention:
