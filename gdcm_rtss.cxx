@@ -184,6 +184,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     gf->InsertValEntry (PLM_UID_PREFIX, 0x0008, 0x0014);
     /* SOPClassUID = RTStructureSetStorage */
     gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0008, 0x0016);
+    /* SOPInstanceUID */
+    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 0x0008, 0x0018);
     /* StudyDate */
     gf->InsertValEntry ("", 0x0008, 0x0020);
     /* StudyTime */

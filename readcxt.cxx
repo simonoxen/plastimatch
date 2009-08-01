@@ -112,34 +112,57 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     printf ("Loading...\n");
     /* Part 1: Dicom info */
     while (1) {
-	bstring b;
+	int tag_idx;
+	bstring tag, val;
 
-	b = bgets ((bNgetc) fgetc, fp, '\n');
-        if (!b) {
+	tag = bgets ((bNgetc) fgetc, fp, '\n');
+        if (!tag) {
             fprintf (stderr, "ERROR: Your file is not formatted correctly!\n");
             exit (-1);
         }
 
-	btrimws (b);
-	if (!strcmp ((const char*) b->data, "ROI_NAMES")) {
+	btrimws (tag);
+        tag_idx = bstrchr (tag, ' ');
+	if (tag_idx == BSTR_ERR) {
+	    val = 0;
+	} else {
+	    val = bmidstr (tag, tag_idx, tag->slen);
+	    btrimws (val);
+	    btrunc (tag, tag_idx);
+	}
+	//printf ("%s|%s|\n", tag->data, val ? val->data : (unsigned char*) "(null)");
+
+	if (biseqcstr (tag, "ROI_NAMES")) {
+	    bdestroy (tag);
+	    bdestroy (val);
             break;
         }
-        else if (3 == sscanf ((const char*) b->data, "OFFSET %f %f %f", &val_x, &val_y, &val_z)) {
-            structures->offset[0] = val_x;
-            structures->offset[1] = val_y;
-            structures->offset[2] = val_z;
+        else if (biseqcstr (tag, "SERIES_CT_UID")) {
+	    structures->series_ct_uid = bstrcpy (val);
 	}
-        else if (3 == sscanf ((const char*) b->data, "DIMENSION %f %f %f", &val_x, &val_y, &val_z)) {
-            structures->dim[0] = val_x;
-            structures->dim[1] = val_y;
-            structures->dim[2] = val_z;
+        else if (biseqcstr (tag, "OFFSET")) {
+	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		structures->offset[0] = val_x;
+		structures->offset[1] = val_y;
+		structures->offset[2] = val_z;
+	    }
 	}
-        if (3 == sscanf ((const char*) b->data, "SPACING %f %f %f", &val_x, &val_y, &val_z)) {
-            structures->spacing[0] = val_x;
-            structures->spacing[1] = val_y;
-            structures->spacing[2] = val_z;
+        else if (biseqcstr (tag, "DIMENSION")) {
+	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		structures->dim[0] = val_x;
+		structures->dim[1] = val_y;
+		structures->dim[2] = val_z;
+	    }
 	}
-	bdestroy (b);
+        else if (biseqcstr (tag, "SPACING")) {
+	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		structures->spacing[0] = val_x;
+		structures->spacing[1] = val_y;
+		structures->spacing[2] = val_z;
+	    }
+	}
+	bdestroy (tag);
+	bdestroy (val);
     }
 
     /* Part 2: Structures info */
@@ -298,4 +321,12 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
     }
 
     fclose (fp);
+}
+
+plastimatch1_EXPORT
+void
+cxt_destroy (Cxt_structure_list* structures)
+{
+    bdestroy (structures->series_ct_uid);
+    memset (structures, 0, sizeof (Cxt_structure_list));
 }

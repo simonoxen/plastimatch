@@ -59,6 +59,9 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn);
 plastimatch1_EXPORT
 void
 cxt_debug_structures (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_destroy (Cxt_structure_list* structures);
 
 #if defined __cplusplus
 }
