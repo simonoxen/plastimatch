@@ -11,6 +11,8 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 #include "gdcm_rtss.h"
+#include "plm_uid_prefix.h"
+#include "plm_version.h"
 #include "readcxt.h"
 
 plastimatch1_EXPORT
@@ -172,19 +174,76 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
 	return;
     }
     
+    /* TransferSyntaxUID */
+    //    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
     /* InstanceCreationTime */
     gf->InsertValEntry (current_time, 0x0008, 0x0013);
+    /* InstanceCreatorUID */
+    gf->InsertValEntry (PLM_UID_PREFIX, 0x0008, 0x0014);
     /* SOPClassUID = RTStructureSetStorage */
     gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0008, 0x0016);
+    /* StudyDate */
+    gf->InsertValEntry ("", 0x0008, 0x0020);
+    /* StudyTime */
+    gf->InsertValEntry ("", 0x0008, 0x0030);
     /* Modality */
     gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
     /* AccessionNumber */
     gf->InsertValEntry ("", 0x0008, 0x0050);
+    /* Manufacturer */
+    gf->InsertValEntry ("Plastimatch", 0x0008, 0x0070);
+    /* ReferringPhysiciansName */
+    gf->InsertValEntry ("", 0x0008, 0x0090);
+    /* StationName */
+    gf->InsertValEntry ("", 0x0008, 0x1010);
+    /* SeriesDescription */
+    gf->InsertValEntry ("Plastimatch structure set", 0x0008, 0x103e);
+    /* ManufacturersModelName */
+    gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    gf->InsertValEntry ("FOOBAR", 0x0010, 0x0010);
+    gf->InsertValEntry ("", 0x0010, 0x0010);
+    /* PatientID */
+    gf->InsertValEntry ("", 0x0010, 0x0020);
+    /* PatientsBirthDate */
+    gf->InsertValEntry ("", 0x0010, 0x0030);
+    /* PatientsSex */
+    gf->InsertValEntry ("", 0x0010, 0x0040);
+    /* SoftwareVersions */
+    gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
+    /* PatientPosition */
+    // gf->InsertValEntry (xxx, 0x0018, 0x5100);
+    /* StudyInstanceUID */
+    gf->InsertValEntry ("", 0x0020, 0x000d);
+    /* SeriesInstanceUID */
+    gf->InsertValEntry ("", 0x0020, 0x000e);
+    /* StudyID */
+    gf->InsertValEntry ("", 0x0020, 0x0010);
+    /* SeriesNumber */
+    gf->InsertValEntry ("103", 0x0020, 0x0011);
+    /* InstanceNumber */
+    gf->InsertValEntry ("1", 0x0020, 0x0013);
+    /* StructureSetLabel */
+    gf->InsertValEntry ("", 0x3006, 0x0002);
+    /* StructureSetName */
+    gf->InsertValEntry ("", 0x3006, 0x0004);
+    /* StructureSetDate */
+    gf->InsertValEntry (current_date, 0x3006, 0x0008);
+    /* StructureSetTime */
+    gf->InsertValEntry (current_time, 0x3006, 0x0009);
 
+    /* Sequence of CT slices */
+    gdcm::SeqEntry *seq;
+    gdcm::SQItem *item;
+    seq = gf->InsertSeqEntry (0x3006, 0x0010);
+    item = new gdcm::SQItem (seq->GetDepthLevel());
+    seq->AddSQItem (item, 1);
+#if defined (NEED_DICOM_UIDS____)
+    for (i = 0; i < foo; i++) {
+	item->InsertValEntry (current_time, 0x3006, 0x0009);
+    }
+#endif
 
 #if defined (commentout)
     gfh->SetWriteTypeToDcmExplVR ();
