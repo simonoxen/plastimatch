@@ -1,10 +1,26 @@
-/** @file compute_mean_mha_main
- *  @brief Generate a mean image from a set of registered images 
+/*! \file compute_mean_image_main
+ *  \brief Generate a mean image from a set of images 
+ *
+ *  This funciton can compute the mean image from a
+ *  set of CT images, either of format .mha, or .dcm
+ *  or .nrrd
+ *
+ *  Author: Rui Li, Greg Sharp
+ *  
+ *  Date Created: June 26, 2009
+ *  Last Modified: July 23, 2009
  */
 #include <string.h>
 
 #include <iostream>
 #include <fstream>
+
+#if (defined(_WIN32) || defined(WIN32))
+#include <direct.h>
+#include <io.h>
+#else
+#include <dirent.h>
+#endif
 
 #include "plm_config.h"
 #include "itkImage.h"
@@ -16,185 +32,166 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
-#include "itkGDCMImageIO.h" 
-#include "itkMetaDataDictionary.h"
-#include "itkMetaDataObject.h"
 
 #include "itk_image.h"
 #include "itk_dicom.h"
 #include "getopt.h"
 
-void print_filelist(char** fNameList, int nFiles);
+/* local functions used in itk_image.cxx -- 
+  package to a separate plm_utils.h and plm_utils.cxx might be a better
+  way for this type of utility functions
+*/
 
-
-
-void print_image(ShortImageType::Pointer image, char *fname)
+// check if the input string is a directory
+static int is_directory (char *dir)
 {
-        typedef itk::ImageRegionConstIterator< ShortImageType > ConstIteratorType;
-        ConstIteratorType itg(image, image->GetRequestedRegion());
-
-        int count = 0;
-
-        std::ofstream out_file(fname, std::ios::out|std::ios::app|std::ios::ate);
-        if (out_file.bad(  ))
-                return; /* Where do we log an error if there is no log */
-   
-        for (itg.GoToBegin(); !itg.IsAtEnd(); ++itg)
-        {
-                out_file << itg.Get() << "\t";
-                count ++;
-                if (count%512 == 0)
-                        out_file << std::endl;
-        }
-
+#if (defined(_WIN32) || defined(WIN32))
+    char pwd[_MAX_PATH];
+    if (!_getcwd (pwd, _MAX_PATH)) {
+        return 0;
+    }
+    if (_chdir (dir) == -1) {
+        return 0;
+    }
+    _chdir (pwd);
+#else /* UNIX */
+    DIR *dp;
+    if ((dp = opendir (dir)) == NULL) {
+        return 0;
+    }
+    closedir (dp);
+#endif
+    return 1;
 }
 
-bool getFileExtension(const char *filename)
+// print out the image names/directoies stored 
+// in imageList
+void print_image_list(char** imageList, int nImages)
 {
-        int len = strlen(filename);
-	char *ext = (char *)malloc(sizeof(char)*3);
-        filename += len-3;
-        strcpy(ext,filename);
-	bool isDicom = false;
+	int i;
 
-        if (strcmp(ext, "dcm") == 0 || strcmp(ext, "DCM") == 0)
-        {
-                        isDicom = true;                        
-                        std::cout << "isDicom set to true!" << std::endl;
-        }
-
-        return isDicom;
+	for (i = 0; i < nImages; i ++)
+		fprintf(stdout, "%s \n", imageList[i]);
 }
 
-void print_usage (void)
+// parse the list of file/directory names, store them in imageList
+// and the number of images in nImages
+void parse_image_list(const char *fName, char ***imageList, int *nImages)
 {
-	printf("Usage: compute_mean_mha [list file] [result file] \n");
-	exit(1);
-}
-
-
-void show_stats(ShortImageType::Pointer image)
-{	
-	ShortImageType::RegionType region = image->GetLargestPossibleRegion();
-	const ShortImageType::IndexType& st = region.GetIndex();
-	const ShortImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
-	const ShortImageType::PointType& og =  image->GetOrigin();
-	const ShortImageType::SpacingType& sp = image->GetSpacing();
-
-	printf ("Origin = %g %g %g\n", og[0], og[1], og[2]);
-	printf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
-	std::cout << "Start = " << st[0] << " " << st[1] << " " << st[2] << std::endl;
-	std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
-}
-
-void parse_filelist(const char* fName, char***fDirList, int *nFiles)
-{
-    int i = 0;
-    int numFiles = 0;
-    char buf[2048];
-
     FILE* fp = fopen(fName, "r");
+    char curLine[MAX_PATH];
+    int nLines = 0;
+    
     // file pointer is NULL
     if (!fp)
     {
 	    fprintf(stderr, "FILE %s open failed!!\n", fName);
 	    exit(-1);
     }  
-    (*fDirList) = 0;
-    while (fgets (buf, 2048, fp)) {
-	(*fDirList) = (char**) realloc ((*fDirList), (i+1) * sizeof(char**));
-	(*fDirList)[i] = (char*) malloc (strlen(buf)+1);
-	strcpy ((*fDirList)[i], buf);
-	(*fDirList)[i][strlen((*fDirList)[i])-1] = 0;
-	i++;
+
+    // initialize the imageList
+    *imageList = NULL;
+    while (fgets (curLine, MAX_PATH, fp)) 
+    {
+	    (*imageList) = (char**) realloc ((*imageList), (nLines+1) * sizeof(char**));
+	    (*imageList)[nLines] = (char*) malloc (strlen(curLine)+1);
+	    strcpy ((*imageList)[nLines], curLine);
+        // remove the '\n' character if there is one at the end of the line
+        if (curLine[strlen(curLine) - 1] == '\n')
+            (*imageList)[nLines][strlen((*imageList)[nLines])-1] = 0;
+	    nLines++;
     }
-    *nFiles = i;
+    *nImages = nLines;
     fclose (fp);
-} 
-
-void print_filelist(char** fNameList, int nFiles)
-{
-	int i;
-
-	for (i = 0; i < nFiles; i ++)
-		fprintf(stdout, "%s \n", fNameList[i]);
 }
 
-void compute_average(char **inFileList, int nFiles, char *resFile, bool isDicom)
+void compute_average(char **imageList, int nImages, char *outFile)
 {
-	//typedef itk::NaryAddImageFilter< ShortImageType, ShortImageType > 
-	//	AddFilterType;
+    // filters we need to compute mean image
+    // we use FloatImageType to avoid pixel value overflow during the addition
+    typedef itk::AddImageFilter< FloatImageType, FloatImageType, FloatImageType > 
+        AddFilterType;
+    typedef itk::DivideByConstantImageFilter< FloatImageType, int, FloatImageType >
+        DivFilterType;
 
-        typedef itk::AddImageFilter< FloatImageType, FloatImageType, FloatImageType > 
-		AddFilterType;
-        typedef itk::DivideByConstantImageFilter< FloatImageType, int, FloatImageType >
-		DivFilterType;
-	typedef itk::ImageFileReader< FloatImageType > ReaderType;
-	typedef itk::ImageFileWriter< FloatImageType > WriterType;
-        typedef itk::GDCMImageIO ImageIOType; 
-        typedef itk::MetaDataDictionary DictionaryType;
-        FloatImageType::Pointer tmp;
-        FloatImageType::Pointer sumImg;
-    PlmImageType original_type;
-#if defined (commentout)
-        ImageIOType::Pointer gdcmImageIO = ImageIOType::New(); 
+    // the original type of the image
+    PlmImageType origImageType;
 
-        ReaderType::Pointer reader = ReaderType::New();
-#endif
+    FloatImageType::Pointer tmp;
+    FloatImageType::Pointer sumImg;
 
 	AddFilterType::Pointer addition = AddFilterType::New();
 	DivFilterType::Pointer division = DivFilterType::New();
 
-    if (nFiles <= 0) return;
+    if (nImages <= 1) 
+    {
+        std::cout << "number of images is less than or equal to 1" << std::endl;
+        return;
+    }
 
-	sumImg = load_float (inFileList[0], &original_type);
+	sumImg = load_float (imageList[0], &origImageType);
+
 	//add all the input images
-	for (int i = 1; i < nFiles; i ++)
+	for (int i = 1; i < nImages; i ++)
 	{
-	    tmp = load_float (inFileList[i], &original_type);
+	    tmp = load_float (imageList[i], &origImageType);
 	    addition->SetInput1 (sumImg);
 	    addition->SetInput2 (tmp);
 	    addition->Update();
 	    sumImg = addition->GetOutput ();
 	}
 
-	division->SetConstant(nFiles);
+    // divide by the total number of input images
+    division->SetConstant(nImages);
 	division->SetInput (sumImg);
 	division->Update();
-        tmp = division->GetOutput ();
-	save_short_dicom (tmp, "C:/tmp/junk");
+    // store the mean image in tmp first before write out
+    tmp = division->GetOutput();
 
-        //free memory for file name list
-        for (int i = 0; i < nFiles; i ++)
-                free(inFileList[i]);
-        free(inFileList);
+    // write the computed mean image
+    if (is_directory(outFile)) 
+    {
+        std::cout << "output dicom to " << outFile << std::endl;
+        // Dicom
+        save_short_dicom (tmp, outFile);
+    }
+    else
+    {
+        std::cout << "output to " << outFile << std::endl;
+        save_short(tmp, outFile);
+    }
+
+    // free allocated memeory 
+    for (int i = 0; i < nImages; i ++)
+         free(imageList[i]);
+    free(imageList);
 }
 
 int main (int argc, char *argv[])
 {
-    // list of fnames -- to compute average
-    char **fDirList; 
-    // number of image files
-    int nFiles;
+    // list of file names or list of dicom directories
+    // for mean image computation
+    // E.g. imageList can be a list of file names for mhd
+    //      files, nrrnd files or a list of directories 
+    //      for DICOM format
+    char **imageList;
+    int nImages;
 
-    // flag to indicate whether this is a dicom file
-    // default value is set to false
-    bool isDicom = false;
-
+    // check for input arguments
     if (argc < 3)
-	print_usage();
-    else			        		
     {
-	//parse the file list
-	parse_filelist(argv[1], &fDirList, &nFiles);		
+        printf("Usage: compute_mean_image_main [list file] [result file] \n");
+        exit(1);    
+    }
+    else { 
+        // parse the list
+        parse_image_list(argv[1], &imageList, &nImages);
 
-	//print the input file list
-	print_filelist(fDirList, nFiles);
+        // print the input image list
+        print_image_list(imageList, nImages);
 
-	//check whether this is a dicom file
-	//isDicom = getFileExtension(fNameList[0]);
-
-	//compute the average image
-	compute_average(fDirList, nFiles, argv[2], isDicom);		
-    }	
+        // compute and write out the average image
+        compute_average(imageList, nImages, argv[2]);		
+    }
 }
+
