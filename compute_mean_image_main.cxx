@@ -33,6 +33,7 @@
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
 
+#include "plm_path.h"
 #include "itk_image.h"
 #include "itk_dicom.h"
 #include "getopt.h"
@@ -79,7 +80,7 @@ void print_image_list(char** imageList, int nImages)
 void parse_image_list(const char *fName, char ***imageList, int *nImages)
 {
     FILE* fp = fopen(fName, "r");
-    char curLine[MAX_PATH];
+    char curLine[_MAX_PATH];
     int nLines = 0;
     
     // file pointer is NULL
@@ -91,7 +92,7 @@ void parse_image_list(const char *fName, char ***imageList, int *nImages)
 
     // initialize the imageList
     *imageList = NULL;
-    while (fgets (curLine, MAX_PATH, fp)) 
+    while (fgets (curLine, _MAX_PATH, fp)) 
     {
 	    (*imageList) = (char**) realloc ((*imageList), (nLines+1) * sizeof(char**));
 	    (*imageList)[nLines] = (char*) malloc (strlen(curLine)+1);
