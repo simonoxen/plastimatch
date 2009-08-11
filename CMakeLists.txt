@@ -10,6 +10,7 @@ PROJECT(plastimatch)
 ##  Include files
 ##-----------------------------------------------------------------------------
 INCLUDE(CheckFunctionExists)
+INCLUDE(language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and libraries
@@ -261,17 +262,17 @@ SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  FFTW LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(HAVE_FFTW FALSE)
 IF(FFTW_FOUND)
 SET(HAVE_FFTW TRUE)
 ENDIF(FFTW_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  BROOK LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(HAVE_BROOK FALSE)
 IF(BROOK_FOUND)
 SET(HAVE_BROOK TRUE)
@@ -297,9 +298,9 @@ IF(BROOK_FOUND)
     OBJECT_DEPENDS "toy_kernels.cpp")
 ENDIF(BROOK_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  CUDA LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(HAVE_CUDA FALSE)
 IF(CUDA_FOUND)
 SET(HAVE_CUDA TRUE)
@@ -321,9 +322,9 @@ IF(CUDA_FOUND)
     PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
 ENDIF(CUDA_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  ITK LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(HAVE_ITK FALSE)
 FIND_PACKAGE(ITK)
 IF(ITK_FOUND)
@@ -338,17 +339,17 @@ IF(ITK_FOUND)
 #  ENDIF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")	
 ENDIF(ITK_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  PANTHEIOS LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(HAVE_PANTHEIOS FALSE)
 IF(PANTHEIOS_FOUND)
 SET(HAVE_PANTHEIOS TRUE)
 ENDIF(PANTHEIOS_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 IF(wxWidgets_FOUND)
   IF(wxWidgets_CXX_FLAGS)
     string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
@@ -360,17 +361,17 @@ IF(wxWidgets_FOUND)
   ENDIF(wxWidgets_CXX_FLAGS)
 ENDIF(wxWidgets_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  DCMTK LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(DCMTK_HAVE_CONFIG_H FALSE)
 IF(UNIX)
    SET(DCMTK_HAVE_CONFIG_H TRUE)
 ENDIF(UNIX)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  SOURCE FILES (LIBRARIES)
-######################################################
+##-----------------------------------------------------------------------------
 SET(GPUIT_LIBRARY_SRC
   bspline_opts.c bspline_opts.h
   bstrlib.c bstrlib.h
@@ -480,9 +481,9 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	xform.cxx xform.h 
 	)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
-######################################################
+##-----------------------------------------------------------------------------
 SET(ADJUST_MHA_SRC
 	adjust_mha.cxx adjust_mha.h
 	)
@@ -664,17 +665,17 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
-######################################################
+##-----------------------------------------------------------------------------
 IF(OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES(bspline.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 ENDIF(OPENMP_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILE
-######################################################
+##-----------------------------------------------------------------------------
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
@@ -683,9 +684,9 @@ IF(F2C_LIBRARY)
     ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
 ENDIF(F2C_LIBRARY)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  INCLUDE DIRECTORIES
-######################################################
+##-----------------------------------------------------------------------------
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -716,9 +717,9 @@ IF(wxWidgets_FOUND)
   INCLUDE_DIRECTORIES(BEFORE ${wxWidgets_INCLUDE_DIRS})
 ENDIF(wxWidgets_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  FATM LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY(fatm/src)
 
 ##-----------------------------------------------------------------------------
@@ -956,7 +957,7 @@ IF(CUDA_FOUND)
 #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
 ENDIF(CUDA_FOUND)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  Regression testing
 ##  Rationale:
 ##    1) Tests need to be launched from a script, because 
@@ -968,7 +969,7 @@ ENDIF(CUDA_FOUND)
 ##    "Release" is hard coded.  There is (apparently) 
 ##    no easy way to avoid this (i.e. no good suggestions 
 ##    on CMake/CTest email list.
-###################################################### 	 
+##-----------------------------------------------------------------------------
 SET(PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 SET(PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
 SET(PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
@@ -1000,10 +1001,10 @@ IF(PLM_BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)
 ENDIF(PLM_BUILD_TESTING)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  CPACK stuff
 ##  Note: "make package_source" to create tarball
-###################################################### 	 
+##-----------------------------------------------------------------------------
 SET(CPACK_GENERATOR "ZIP")
 SET(CPACK_SOURCE_GENERATOR "TBZ2")
 SET(CPACK_PACKAGE_VERSION_MAJOR "1")
