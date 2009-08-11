@@ -130,7 +130,8 @@ SAVEME ()
 		g[i] = 8.0 * t2 - 1.6e1 * x[i] * t1;
 	    }
 	    g[n] = 8.0 * t1;
-	} else if (s_cmp(task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	    //	} else if (s_cmp(task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
 	    /* continue */
 	} else {
 	    break;
@@ -160,7 +161,7 @@ bspline_optimize_lbfgsb (
     int num_to_check;
 
     /* F2C Builtin function */
-    integer s_cmp (char *, char *, ftnlen, ftnlen);
+    //    integer s_cmp (char *, char *, ftnlen, ftnlen);
 
     NMAX = bxf->num_coeff;
     MMAX = (int) floor (bxf->num_coeff / 100);
@@ -260,7 +261,8 @@ bspline_optimize_lbfgsb (
 	    /* Check # iterations */
 	    if (++fnev == parms->max_its) break;
 
-	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	  //	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
 	    /* Optimizer has completed an iteration */
 	    /* Check convergence tolerance */
 	    if (it == 0) {

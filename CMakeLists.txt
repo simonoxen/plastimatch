@@ -1,39 +1,47 @@
+##-----------------------------------------------------------------------------
+##  Welcome to the Plastimatch CMakeLists.txt file
+##-----------------------------------------------------------------------------
+##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+##-----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 2.6)
 PROJECT(plastimatch)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  Include files
-###################################################### 	 
+##-----------------------------------------------------------------------------
 INCLUDE(CheckFunctionExists)
+
+##-----------------------------------------------------------------------------
+##  Search for languages and libraries
+##-----------------------------------------------------------------------------
 INCLUDE(FindOpenGL)
-##INCLUDE(FindPantheios.cmake)
-#INCLUDE(FindwxWidgets)
 FIND_PACKAGE(wxWidgets)
 
 INCLUDE(PLM_Etags.cmake)
-INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(PLM_FindDCMTK.cmake)
+INCLUDE(PLM_FindFortran.cmake)
 INCLUDE(PLM_FindFFTW.cmake)
+INCLUDE(PLM_FindSubversion.cmake)
 INCLUDE(GPUIT.cmake)
+#INCLUDE(FindPantheios.cmake)
 
-######################################################
-##  Help the user out on unix
-###################################################### 	 
+##-----------------------------------------------------------------------------
+##  User feedback on which languages and libraries were found
+##-----------------------------------------------------------------------------
+IF(wxWidgets_FOUND)
+  MESSAGE (STATUS "Looking for wxWidgets - found.")
+ELSE(wxWidgets_FOUND)
+  MESSAGE (STATUS "Looking for wxWidgets - not found.")
+ENDIF(wxWidgets_FOUND)
 IF(DCMTK_FOUND)
   MESSAGE (STATUS "Looking for dcmtk - found.")
 ELSE(DCMTK_FOUND)
   MESSAGE (STATUS "Looking for dcmtk - not found.")
 ENDIF(DCMTK_FOUND)
 
-IF(wxWidgets_FOUND)
-  MESSAGE (STATUS "Looking for wxWidgets - found.")
-ELSE(wxWidgets_FOUND)
-  MESSAGE (STATUS "Looking for wxWidgets - not found.")
-ENDIF(wxWidgets_FOUND)
-
-######################################################
+##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
-###################################################### 	 
+##-----------------------------------------------------------------------------
 SET(PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
 SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
@@ -43,10 +51,9 @@ SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
-
-######################################################
+##-----------------------------------------------------------------------------
 ##  SLICER FRONT-ENDS
-###################################################### 	 
+##-----------------------------------------------------------------------------
 SET(Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 
 IF(Slicer3_DIR)
@@ -104,9 +111,9 @@ IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
    cmake_policy(SET CMP0003 NEW)
 ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  By default, brook builts /MT.  We need to match this.
-######################################################
+##-----------------------------------------------------------------------------
 # IF(NOT GPUIT_LINK_MSVCRT)
 #   STRING(REGEX REPLACE "/MD" "/MT" 
 # 	     CMAKE_CXX_FLAGS_DEBUG 
@@ -141,21 +148,21 @@ IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  Set default build type to "Release"
-######################################################
+##-----------------------------------------------------------------------------
 ##  Unfortunately the below doesn't work.  It gets
 ##  reset by the ITK include.
-######################################################
+##-----------------------------------------------------------------------------
 #IF(NOT CMAKE_BUILD_TYPE)
 #  SET(CMAKE_BUILD_TYPE Release CACHE STRING
 #      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."	
 #      FORCE)
 #ENDIF(NOT CMAKE_BUILD_TYPE)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
-######################################################
+##-----------------------------------------------------------------------------
 IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF(Subversion_FOUND)
     SET(PLASTIMATCH_EXPERIMENTAL TRUE)
@@ -179,19 +186,20 @@ ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   SET(PLASTIMATCH_EXPERIMENTAL FALSE)
 ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  MATH LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 IF(UNIX)
   SET(MATH_LIB -lm)
 ELSE(UNIX)
   SET(MATH_LIB)
 ENDIF(UNIX)
 
-######################################################
+##-----------------------------------------------------------------------------
 ##  GPUIT LIBRARY
-######################################################
+##-----------------------------------------------------------------------------
 SET(GPUIT_LIBRARY_DEPENDENCIES "")
+
 IF(BROOK_FOUND)
   SET(GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -200,7 +208,23 @@ IF(BROOK_FOUND)
     ${DIRECTX_LIBRARIES}
     )
 ENDIF(BROOK_FOUND)
-IF(F2C_LIBRARY)
+
+IF (CMAKE_Fortran_COMPILER_WORKS)
+  # It would seem that mixed-language programs need to set compiler and 
+  # linker flags manually
+  #   http://www.vtk.org/Wiki/CMakeForFortranExample
+  # In theory, this is fixed in a future release
+  #   http://www.cmake.org/Bug/view.php?id=9195
+  MESSAGE (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
+  IF (Fortran_COMPILER_NAME STREQUAL "gfortran")
+    SET (GPUIT_LIBRARY_DEPENDENCIES
+      ${GPUIT_LIBRARY_DEPENDENCIES}
+      gfortran
+      )
+  ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran")
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+
+IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   SET(GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${F2C_LIBRARY}
@@ -211,23 +235,28 @@ IF(F2C_LIBRARY)
       f2c_helper
       )
   ENDIF(UNIX)
-ENDIF(F2C_LIBRARY)
+ENDIF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
+
 IF(CUDA_FOUND)
   SET(GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${CUDA_LIBRARIES}
     )
 ENDIF(CUDA_FOUND)
+
 IF(OPENMP_FOUND)
   SET(GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${OPENMP_LIBRARIES}
     )
 ENDIF(OPENMP_FOUND)
+
 SET(GPUIT_LIBRARY_DEPENDENCIES
   ${GPUIT_LIBRARY_DEPENDENCIES}
   ${MATH_LIB}
   )
+
+
 SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
@@ -384,15 +413,27 @@ IF(CUDA_FOUND)
 	bspline_cuda.h
 	)
 ENDIF(CUDA_FOUND)
-IF(F2C_LIBRARY)
+
+IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
+	)
+ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+IF (CMAKE_Fortran_COMPILER_WORKS)
+  SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	lbfgsb_2_1.f
+	)
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
+  SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
 	lbfgsb_2_1.c
 	plm_f2c.h plm_f2c_win32.h
-#	main__.c
 	)
-ENDIF(F2C_LIBRARY)
+ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
+
 IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}

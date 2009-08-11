@@ -684,8 +684,8 @@ static integer c__5 = 5;
     if (s_cmp(task, "START", (ftnlen)60, (ftnlen)5) == 0) {
 	timer_(&time1);
 /*        Generate the current machine precision. */
-	// epsmch = dpmeps_();
-	epsmch = 2.2e-16; 
+	epsmch = dpmeps_();
+	// epsmch = 2.2e-16; 
 /*        Initialize counters and scalars when task='START'. */
 /*           for the limited memory BFGS matrices: */
 	col = 0;
