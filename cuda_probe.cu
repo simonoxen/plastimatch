@@ -38,19 +38,11 @@ cuda_probe (void)
     cudaDeviceProp props;
     cudaGetDeviceProperties(&props, 0);
 
-    if(props.major == 1)
+    if (props.major == 1)
     {
-	if(props.minor == 0)
-	    printf ("Detected CUDA!  Compute Capability 1.0");
-	else if(props.minor == 1)
-	    printf ("Detected CUDA!  Compute Capability 1.1");
-	else if(props.minor == 2)
-	    printf ("Detected CUDA!  Compute Capability 1.2");
-	else
-	{
-	    printf ("Suitable CUDA environment not detected!\n");
-	    return 0;
-	}
+	/* GCS: Cuda 2.2 with Tesla returns compatibility 1.3 */
+	printf ("Detected CUDA!  Compute Capability %d.%d\n",
+		props.major, props.minor);
 	return 1;
     }
 

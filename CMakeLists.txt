@@ -15,16 +15,33 @@ INCLUDE(language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Search for languages and libraries
 ##-----------------------------------------------------------------------------
-INCLUDE(FindOpenGL)
-FIND_PACKAGE(wxWidgets)
+INCLUDE (FindOpenGL)
+FIND_PACKAGE (wxWidgets)
 
-INCLUDE(PLM_Etags.cmake)
-INCLUDE(PLM_FindDCMTK.cmake)
-INCLUDE(PLM_FindFortran.cmake)
-INCLUDE(PLM_FindFFTW.cmake)
-INCLUDE(PLM_FindSubversion.cmake)
-INCLUDE(GPUIT.cmake)
+INCLUDE (PLM_Etags.cmake)
+INCLUDE (PLM_FindDCMTK.cmake)
+INCLUDE (PLM_FindFortran.cmake)
+INCLUDE (PLM_FindFFTW.cmake)
+INCLUDE (PLM_FindSubversion.cmake)
+INCLUDE (GPUIT.cmake)
 #INCLUDE(FindPantheios.cmake)
+
+SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" ${CMAKE_MODULE_PATH})
+FIND_PACKAGE (CUDA)
+
+##-----------------------------------------------------------------------------
+##  FindCUDA post-processing
+##-----------------------------------------------------------------------------
+IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+  SET (CUDA_FOUND FALSE)
+ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+IF(CUDA_FOUND)
+  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+  CUDA_INCLUDE_DIRECTORIES(
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CUDA_CUT_INCLUDE_DIR}
+    )
+ENDIF(CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
@@ -313,13 +330,14 @@ IF(CUDA_FOUND)
       OBJECT_DEPENDS "demons_cuda_kernel.cu")
   ENDIF(BUILD_DEMONS_CUDA)
 
-  NVCC_FILE(fdk_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
+##### GCS kkk CUDA
+#  NVCC_FILE(fdk_cuda.cu)
+#  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+#    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
 
-  NVCC_FILE(cuda_probe.cu)
-  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
+#  NVCC_FILE(cuda_probe.cu)
+#  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
+#    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
 ENDIF(CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
@@ -404,11 +422,13 @@ IF(BROOK_FOUND)
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
+CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu bspline_cuda_kernels.cu)
 IF(CUDA_FOUND)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
-	bspline_cuda_wrap.cpp
+#	bspline_cuda_wrap.cpp
+	${BSPLINE_CUDA_WRAPPERS}
 	bspline_cuda.cu
 	bspline_cuda_kernels.cu
 	bspline_cuda.h
@@ -501,11 +521,13 @@ SET(COMPUTE_DISTANCE_SRC
 	closest_point.cxx 
 	read_obj.cxx
 	)
+CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
 SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
+	${CUDA_PROBE_WRAPPERS}
 	cuda_probe.cu
 	cuda_probe.h
-  	cuda_probe_wrap.cpp
+#  	cuda_probe_wrap.cpp
 	)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
@@ -545,14 +567,16 @@ SET(FDK_C_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	)
+CUDA_COMPILE(FDK_CUDA_WRAPPERS fdk_cuda.cu)
 SET(FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	fdk_cuda.h fdk.h
 	mathutil.h
 	fdk_cuda_main.c
+	${FDK_CUDA_WRAPPERS}
 	fdk_cuda.cu
-	fdk_cuda_wrap.cpp
+#	fdk_cuda_wrap.cpp
 	)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
@@ -698,10 +722,17 @@ IF(BROOK_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
 ENDIF(BROOK_FOUND)
 
+##### GCS kkk CUDA
 IF(CUDA_FOUND)
+  INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS} ${CUDA_CUT_INCLUDE_DIR})
+  MESSAGE (STATUS "Set include directory to include: ${CUDA_CUT_INCLUDE_DIR}")
   # Not sure.  GPUIT had both includes.
   # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
-  INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
+#   CUDA_INCLUDE_DIRECTORIES(
+#     ${CMAKE_CURRENT_SOURCE_DIR}
+#     ${CUDA_CUT_INCLUDE_DIR}
+#     )
+##  INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
 ENDIF(CUDA_FOUND)
 
 IF(DCMTK_FOUND)
@@ -948,13 +979,11 @@ ENDIF(BUILD_CUDA_TEST)
 
 # CUDA B-Spline
 IF(CUDA_FOUND)
-  NVCC_FILE(bspline_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
-#  MESSAGE(STATUS "CUDA_LDFLAGS = ${CUDA_LDFLAGS}")
-#  IF(NOT ${CUDA_LDFLAGS} STREQUAL "")
-#    SET_TARGET_PROPERTIES(bspline_cuda PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})
-#  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
+##### GCS kkk CUDA
+##  NVCC_FILE(bspline_cuda.cu)
+##  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
+##    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
+
 ENDIF(CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
