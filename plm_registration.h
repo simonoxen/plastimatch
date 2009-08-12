@@ -40,9 +40,15 @@ typedef itk::DemonsRegistrationFilter<
 
 #define IMPLEMENTATION_NONE		    0
 #define IMPLEMENTATION_ITK		    1
-#define IMPLEMENTATION_GPUIT_CPU	    2
-#define IMPLEMENTATION_GPUIT_BROOK	    3
-#define IMPLEMENTATION_GPUIT_CUDA	    4
+#define IMPLEMENTATION_PLASTIMATCH          2
+//#define IMPLEMENTATION_GPUIT_CPU	    2
+//#define IMPLEMENTATION_GPUIT_BROOK	    3
+//#define IMPLEMENTATION_GPUIT_CUDA	    4
+
+#define THREADING_SINGLE                    0
+#define THREADING_OPENMP                    1
+#define THREADING_BROOK                     2
+#define THREADING_CUDA                      3
 
 #define METRIC_NONE			    0
 #define METRIC_MSE			    1
@@ -62,6 +68,7 @@ public:
     int xform_type;
     int optim_type;
     int impl_type;
+    int threading_type;
     int metric_type;
     int resolution[3];
     float background_max;   /* This is used as a threshold to find the valid region */

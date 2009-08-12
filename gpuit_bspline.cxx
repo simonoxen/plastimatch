@@ -73,14 +73,21 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     default:
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
-    switch (stage->impl_type) {
-    case IMPLEMENTATION_GPUIT_CPU:
+    switch (stage->threading_type) {
+    case THREADING_SINGLE:
+	parms.implementation = 'c';
 	parms.threading = BTHR_CPU;
 	break;
-    case IMPLEMENTATION_GPUIT_BROOK:
+    case THREADING_OPENMP:
+	parms.implementation = 'f';
+	parms.threading = BTHR_CPU;
+	break;
+    case THREADING_BROOK:
+	/* Brook doesn't have different implementations */
 	parms.threading = BTHR_BROOK;
 	break;
-    case IMPLEMENTATION_GPUIT_CUDA:
+    case THREADING_CUDA:
+	parms.implementation = 'f';
 	parms.threading = BTHR_CUDA;
 	break;
     default:

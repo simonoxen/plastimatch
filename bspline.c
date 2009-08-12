@@ -2913,8 +2913,8 @@ bspline_optimize (BSPLINE_Xform* bxf,
 		  Volume *moving, 
 		  Volume *moving_grad)
 {
-    /* GCS FIX: This is a terrible way to handle gradient.  Should be separated 
-	from parms?  */
+    /* GCS FIX: This is a terrible way to handle gradient.  
+       Should be separated from parms?  */
     /* Make sure gradient is allocated */
     if (parms->ssd.grad) {
 	free (parms->ssd.grad);

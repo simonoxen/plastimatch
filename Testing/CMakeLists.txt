@@ -41,17 +41,31 @@ PLM_ADD_TEST (
   )
 
 PLM_ADD_TEST (
-  "plastimatch_test_1" 
+  "plastimatch-register-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-parms-1.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-register-itk-translation.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch_test_2" 
+  "plastimatch-register-plm-bspline-single" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-parms-2.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-single.txt"
+  )
+
+PLM_ADD_TEST (
+  "plastimatch-register-plm-bspline-openmp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-openmp.txt"
+  )
+
+PLM_ADD_TEST (
+  "plastimatch-register-plm-bspline-cuda" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-cuda.txt"
   )
 
 ## xf_to_xf

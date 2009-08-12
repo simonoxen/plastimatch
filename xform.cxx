@@ -48,7 +48,7 @@ get_parms (FILE* fp, itk::Array<double>* parms, int num_parms)
     int r, s;
 
     s = 0;
-    while (r = fscanf (fp, "%f",&f)) {
+    while ((r = fscanf (fp, "%f",&f))) {
 	(*parms)[s++] = (double) f;
 	if (s == num_parms) break;
 	if (!fp) break;
@@ -219,7 +219,7 @@ load_xform (Xform *xf, char* fn)
 	const unsigned int num_parms = xf->get_bsp()->GetNumberOfParameters();
 	BsplineTransformType::ParametersType bsp_coeff;
 	bsp_coeff.SetSize (num_parms);
-	for (int i = 0; i < num_parms; i++) {
+	for (unsigned int i = 0; i < num_parms; i++) {
 	    float d;
 	    if (!fgets(buf,1024,fp)) {
 		print_and_exit ("Missing bspline coefficient from xform_in file.\n");
@@ -332,7 +332,7 @@ save_xform_translation (TranslationTransformType::Pointer transform, char* filen
     }
 
     fprintf (fp,"ObjectType = MGH_XFORM_TRANSLATION\n");
-    for (int i = 0; i < transform->GetNumberOfParameters(); i++) {
+    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
@@ -348,7 +348,7 @@ save_xform_versor (VersorTransformType::Pointer transform, char* filename)
     }
 
     fprintf (fp,"ObjectType = MGH_XFORM_VERSOR\n");
-    for (int i = 0; i < transform->GetNumberOfParameters(); i++) {
+    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
@@ -364,7 +364,7 @@ save_xform_affine (AffineTransformType::Pointer transform, char* filename)
     }
 
     fprintf (fp,"ObjectType = MGH_XFORM_AFFINE\n");
-    for (int i = 0; i < transform->GetNumberOfParameters(); i++) {
+    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
@@ -380,41 +380,41 @@ save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
     }
 
     fprintf (fp,
-	"ObjectType = MGH_XFORM_BSPLINE\n"
-	"NDims = 3\n"
-	"BinaryData = False\n");
+	     "ObjectType = MGH_XFORM_BSPLINE\n"
+	     "NDims = 3\n"
+	     "BinaryData = False\n");
     if (transform->GetBulkTransform()) {
-		if ((!strcmp("TranslationTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
-			(!strcmp("AffineTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
-			(!strcmp("VersorTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
-			(!strcmp("VersorRigid3DTransform", transform->GetBulkTransform()->GetNameOfClass()))) {
-			fprintf (fp, "BulkTransform =");
-			for (int i = 0; i < transform->GetBulkTransform()->GetNumberOfParameters(); i++) {
-				fprintf (fp, " %g", transform->GetBulkTransform()->GetParameters()[i]);
-			}
-			fprintf (fp, "\n");
-		} else if (strcmp("IdentityTransform", transform->GetBulkTransform()->GetNameOfClass())) {
-			printf("Warning!!! BulkTransform exists. Type=%s\n", transform->GetBulkTransform()->GetNameOfClass());
-			printf(" # of parameters=%d\n", transform->GetBulkTransform()->GetNumberOfParameters());
-			printf(" The code currently does not know how to handle this type and will not write the parameters out!\n");
-		}
+	if ((!strcmp("TranslationTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
+	    (!strcmp("AffineTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
+	    (!strcmp("VersorTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
+	    (!strcmp("VersorRigid3DTransform", transform->GetBulkTransform()->GetNameOfClass()))) {
+	    fprintf (fp, "BulkTransform =");
+	    for (int i = 0; i < transform->GetBulkTransform()->GetNumberOfParameters(); i++) {
+		fprintf (fp, " %g", transform->GetBulkTransform()->GetParameters()[i]);
+	    }
+	    fprintf (fp, "\n");
+	} else if (strcmp("IdentityTransform", transform->GetBulkTransform()->GetNameOfClass())) {
+	    printf("Warning!!! BulkTransform exists. Type=%s\n", transform->GetBulkTransform()->GetNameOfClass());
+	    printf(" # of parameters=%d\n", transform->GetBulkTransform()->GetNumberOfParameters());
+	    printf(" The code currently does not know how to handle this type and will not write the parameters out!\n");
+	}
     }
 
     fprintf (fp,
-	"Offset = %f %f %f\n"
-	"ElementSpacing = %f %f %f\n"
-	"DimSize = %d %d %d\n"
-	"ElementDataFile = LOCAL\n",
-	transform->GetGridOrigin()[0],
-	transform->GetGridOrigin()[1],
-	transform->GetGridOrigin()[2],
-	transform->GetGridSpacing()[0],
-	transform->GetGridSpacing()[1],
-	transform->GetGridSpacing()[2],
-	transform->GetGridRegion().GetSize()[0],
-	transform->GetGridRegion().GetSize()[1],
-	transform->GetGridRegion().GetSize()[2]
-	);
+	     "Offset = %f %f %f\n"
+	     "ElementSpacing = %f %f %f\n"
+	     "DimSize = %d %d %d\n"
+	     "ElementDataFile = LOCAL\n",
+	     transform->GetGridOrigin()[0],
+	     transform->GetGridOrigin()[1],
+	     transform->GetGridOrigin()[2],
+	     transform->GetGridSpacing()[0],
+	     transform->GetGridSpacing()[1],
+	     transform->GetGridSpacing()[2],
+	     transform->GetGridRegion().GetSize()[0],
+	     transform->GetGridRegion().GetSize()[1],
+	     transform->GetGridRegion().GetSize()[2]
+	     );
     for (int i = 0; i < transform->GetNumberOfParameters(); i++) {
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }

@@ -8,7 +8,8 @@ img_out=plm-test-img-1.mha
 [STAGE]
 xform=bspline
 optim=lbfgsb
-impl=gpuit_cpu
+impl=plastimatch
+threading=openmp
 max_its=5
 convergence_tol=3
 grad_tol=0.1

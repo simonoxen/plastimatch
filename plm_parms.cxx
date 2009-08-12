@@ -168,14 +168,26 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	else if (!strcmp(val,"itk")) {
 	    stage->impl_type = IMPLEMENTATION_ITK;
 	}
-	else if (!strcmp(val,"gpuit_cpu")) {
-	    stage->impl_type = IMPLEMENTATION_GPUIT_CPU;
+	else if (!strcmp(val,"plastimatch")) {
+	    stage->impl_type = IMPLEMENTATION_PLASTIMATCH;
 	}
-	else if (!strcmp(val,"gpuit_brook")) {
-	    stage->impl_type = IMPLEMENTATION_GPUIT_BROOK;
+	else {
+	    goto error_exit;
 	}
-	else if (!strcmp(val,"cuda") || !strcmp(val,"gpuit_cuda")) {
-	    stage->impl_type = IMPLEMENTATION_GPUIT_CUDA;
+    }
+    else if (!strcmp (key, "threading")) {
+	if (section == 0) goto error_not_global;
+	if (!strcmp(val,"single")) {
+	    stage->threading_type = THREADING_SINGLE;
+	}
+	else if (!strcmp(val,"openmp")) {
+	    stage->threading_type = THREADING_OPENMP;
+	}
+	else if (!strcmp(val,"brook")) {
+	    stage->threading_type = THREADING_BROOK;
+	}
+	else if (!strcmp(val,"cuda")) {
+	    stage->threading_type = THREADING_CUDA;
 	}
 	else {
 	    goto error_exit;
@@ -245,14 +257,14 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	}
     }
     else if (!strcmp (key, "mattes_histogram_bins") 
-	    || !strcmp (key, "mi_histogram_bins")) {
+	     || !strcmp (key, "mi_histogram_bins")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->mi_histogram_bins) != 1) {
 	    goto error_exit;
 	}
     }
     else if (!strcmp (key, "mattes_num_spatial_samples")
-	    || !strcmp (key, "mi_num_spatial_samples")) {
+	     || !strcmp (key, "mi_num_spatial_samples")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->mi_num_spatial_samples) != 1) {
 	    goto error_exit;
@@ -319,15 +331,15 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     }
     return 0;
 
-error_not_stages:
+ error_not_stages:
     printf ("This key (%s) not allowed in a stages section\n", key);
     return -1;
 
-error_not_global:
+ error_not_global:
     printf ("This key (%s) not is allowed in a global section\n", key);
     return -1;
 
-error_exit:
+ error_exit:
     printf ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }
