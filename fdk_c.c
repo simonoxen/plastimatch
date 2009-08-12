@@ -319,8 +319,9 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
     char* img_file_pat = "out_%04d.pgm";
 #endif
     char* mat_file_pat = "out_%04d.txt";
+    int num_imgs;
 
-    int num_imgs = 1 + (options->last_img - options->first_img)
+    num_imgs = 1 + (options->last_img - options->first_img)
 	    / options->skip_img;
 
     float scale = (float) (sqrt(3) / (double) num_imgs);
@@ -331,8 +332,8 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
     for (i = options->first_img; i <= options->last_img; i += options->skip_img) {
 	CB_Image* cbi;
 	cbi = get_image(options, i);
-
-	//printf ("Projecting Image %d\n", i);
+	
+	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);

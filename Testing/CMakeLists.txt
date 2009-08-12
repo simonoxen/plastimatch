@@ -42,10 +42,17 @@ PLM_ADD_TEST (
 
 ## fdk
 PLM_ADD_TEST (
-  "fdk-1"
+  "fdk-cpu"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk_c
-  "-I;${PLM_TESTING_BUILD_DIR}"
+  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19"
+  )
+
+PLM_ADD_TEST (
+  "fdk-cuda"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/fdk_cuda
+  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19"
   )
 
 ## plastimatch
@@ -56,6 +63,8 @@ PLM_ADD_TEST (
   ""
   )
 
+IF(FALSE)
+ENDIF(FALSE)
 PLM_ADD_TEST (
   "plastimatch-register-itk-translation"
   ""
@@ -83,8 +92,6 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-cuda.txt"
   )
-IF(FALSE)
-ENDIF(FALSE)
 
 ## xf_to_xf
 PLM_ADD_TEST (

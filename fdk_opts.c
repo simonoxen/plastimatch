@@ -26,6 +26,7 @@ void set_default_options (MGHCBCT_Options* options)
 {
     options->first_img = 0;
     options->last_img = 119;
+    options->skip_img = 1;
     options->resolution[0] = 120;
     options->resolution[1] = 120;
     options->resolution[2] = 120;
