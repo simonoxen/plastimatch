@@ -15,10 +15,10 @@ PLM_ADD_TEST (
   "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;50 50 50;--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-## bspline_test_1 - read and write bxf
+## bspline-bxf - read and write bxf
 ## bspline_test_1_compare - compare written bxf with reference
 PLM_ADD_TEST (
-  "bspline_test_1"
+  "bspline-bxf"
   ""
   ${PLM_PLASTIMATCH_TESTING_PATH_HACK}/bspline_test_1
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt"
@@ -32,9 +32,25 @@ ADD_TEST (bspline_test_1_compare ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
 
+## drr
+PLM_ADD_TEST (
+  "drr"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/drr_c
+  "-a;20;-e;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  )
+
+## fdk
+PLM_ADD_TEST (
+  "fdk-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/fdk_c
+  "-I;${PLM_TESTING_BUILD_DIR}"
+  )
+
 ## plastimatch
 PLM_ADD_TEST (
-  "plastimatch_usage" 
+  "plastimatch-usage" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   ""
@@ -67,6 +83,8 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-cuda.txt"
   )
+IF(FALSE)
+ENDIF(FALSE)
 
 ## xf_to_xf
 PLM_ADD_TEST (
