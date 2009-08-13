@@ -13,6 +13,24 @@ INCLUDE(CheckFunctionExists)
 INCLUDE(language_support.cmake)
 
 ##-----------------------------------------------------------------------------
+##  Plastimatch configuration variables
+##-----------------------------------------------------------------------------
+SET(PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
+SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
+SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
+SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
+SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
+SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
+SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
+SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
+
+IF (WIN32)
+  SET(PLM_USE_FINDCUDA OFF)
+ELSE (WIN32)
+  SET(PLM_USE_FINDCUDA ON)
+ENDIF (WIN32)
+
+##-----------------------------------------------------------------------------
 ##  Search for languages and libraries
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
@@ -26,12 +44,17 @@ INCLUDE (PLM_FindSubversion.cmake)
 INCLUDE (GPUIT.cmake)
 #INCLUDE(FindPantheios.cmake)
 
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" ${CMAKE_MODULE_PATH})
-FIND_PACKAGE (CUDA)
+IF (PLM_USE_FINDCUDA)
+  SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" ${CMAKE_MODULE_PATH})
+  FIND_PACKAGE (CUDA)
+ELSE (PLM_USE_FINDCUDA)
+  INCLUDE (PLM_FindCUDA.cmake)
+ENDIF (PLM_USE_FINDCUDA)
 
 ##-----------------------------------------------------------------------------
 ##  FindCUDA post-processing
 ##-----------------------------------------------------------------------------
+IF (PLM_USE_FINDCUDA)
 IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
   SET (CUDA_FOUND FALSE)
 ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
@@ -42,6 +65,7 @@ IF(CUDA_FOUND)
     ${CUDA_CUT_INCLUDE_DIR}
     )
 ENDIF(CUDA_FOUND)
+ENDIF (PLM_USE_FINDCUDA)
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
@@ -56,18 +80,6 @@ IF(DCMTK_FOUND)
 ELSE(DCMTK_FOUND)
   MESSAGE (STATUS "Looking for dcmtk - not found.")
 ENDIF(DCMTK_FOUND)
-
-##-----------------------------------------------------------------------------
-##  Plastimatch configuration variables
-##-----------------------------------------------------------------------------
-SET(PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
-SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
-SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
-SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
-SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
-SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
 ##-----------------------------------------------------------------------------
 ##  SLICER FRONT-ENDS
@@ -323,22 +335,25 @@ IF(CUDA_FOUND)
 SET(HAVE_CUDA TRUE)
 ENDIF(CUDA_FOUND)
 
-IF(CUDA_FOUND)
+IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   IF(BUILD_DEMONS_CUDA)
     NVCC_FILE(demons_cuda.cu)
-    SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu PROPERTIES
-      OBJECT_DEPENDS "demons_cuda_kernel.cu")
+    SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu 
+      PROPERTIES OBJECT_DEPENDS "demons_cuda_kernel.cu")
   ENDIF(BUILD_DEMONS_CUDA)
 
-##### GCS kkk CUDA
-#  NVCC_FILE(fdk_cuda.cu)
-#  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-#    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
+  NVCC_FILE(fdk_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
 
-#  NVCC_FILE(cuda_probe.cu)
-#  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
-#    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
-ENDIF(CUDA_FOUND)
+  NVCC_FILE(cuda_probe.cu)
+  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
+
+  NVCC_FILE(bspline_cuda.cu)
+  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
+ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  ITK LIBRARY
@@ -422,18 +437,27 @@ IF(BROOK_FOUND)
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
-##CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu bspline_cuda_kernels.cu)
-CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu)
+
 IF(CUDA_FOUND)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
-#	bspline_cuda_wrap.cpp
-	${BSPLINE_CUDA_WRAPPERS}
 	bspline_cuda.cu
 	bspline_cuda_kernels.cu
 	bspline_cuda.h
 	)
+  IF (PLM_USE_FINDCUDA)
+    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu)
+    SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	${BSPLINE_CUDA_WRAPPERS}
+	)
+  ELSE (PLM_USE_FINDCUDA)
+    SET(GPUIT_LIBRARY_SRC
+	${GPUIT_LIBRARY_SRC}
+	bspline_cuda_wrap.cpp
+	)
+  ENDIF (PLM_USE_FINDCUDA)
 ENDIF(CUDA_FOUND)
 
 IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
@@ -522,14 +546,23 @@ SET(COMPUTE_DISTANCE_SRC
 	closest_point.cxx 
 	read_obj.cxx
 	)
-CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
 SET(CUDA_PROBE_SRC
 	cuda_probe_main.c
-	${CUDA_PROBE_WRAPPERS}
 	cuda_probe.cu
 	cuda_probe.h
-#  	cuda_probe_wrap.cpp
 	)
+IF (PLM_USE_FINDCUDA)
+  CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
+  SET(CUDA_PROBE_SRC
+	${CUDA_PROBE_SRC}
+	${CUDA_PROBE_WRAPPERS}
+	)
+ELSE (PLM_USE_FINDCUDA)
+  SET(CUDA_PROBE_SRC
+	${CUDA_PROBE_SRC}
+  	cuda_probe_wrap.cpp
+	)
+ENDIF (PLM_USE_FINDCUDA)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
 	render_polyline.cxx
@@ -568,17 +601,27 @@ SET(FDK_C_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	)
-CUDA_COMPILE(FDK_CUDA_WRAPPERS fdk_cuda.cu)
 SET(FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	fdk_cuda.h fdk.h
 	mathutil.h
 	fdk_cuda_main.c
-	${FDK_CUDA_WRAPPERS}
 	fdk_cuda.cu
-#	fdk_cuda_wrap.cpp
 	)
+IF (PLM_USE_FINDCUDA)
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+  SET (FDK_CUDA_SRC
+    ${FDK_CUDA_SRC}
+    ${FDK_CUDA_WRAPPERS}
+    )
+ELSE (PLM_USE_FINDCUDA)
+  SET (FDK_CUDA_SRC
+    ${FDK_CUDA_SRC}
+    fdk_cuda_wrap.cpp
+    )
+ENDIF (PLM_USE_FINDCUDA)
+
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
 	fdk_opts.c fdk_opts.h
@@ -723,17 +766,8 @@ IF(BROOK_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${BROOK_INCLUDE_DIR})
 ENDIF(BROOK_FOUND)
 
-##### GCS kkk CUDA
 IF(CUDA_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS} ${CUDA_CUT_INCLUDE_DIR})
-  MESSAGE (STATUS "Set include directory to include: ${CUDA_CUT_INCLUDE_DIR}")
-  # Not sure.  GPUIT had both includes.
-  # INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR})
-#   CUDA_INCLUDE_DIRECTORIES(
-#     ${CMAKE_CURRENT_SOURCE_DIR}
-#     ${CUDA_CUT_INCLUDE_DIR}
-#     )
-##  INCLUDE_DIRECTORIES(AFTER ${CUDA_INCLUDE_DIR} ${CUDA_SDK_INCLUDE_DIR})
 ENDIF(CUDA_FOUND)
 
 IF(DCMTK_FOUND)
@@ -948,7 +982,7 @@ INSTALL(FILES
   DESTINATION doc)
 
 ##-----------------------------------------------------------------------------
-##  Regression testing
+##  Simple test files
 ##-----------------------------------------------------------------------------
 # Test executable -- openmp
 IF(BUILD_OPENMP_TEST)
@@ -977,15 +1011,6 @@ IF(BUILD_CUDA_TEST)
     #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
   ENDIF(CUDA_FOUND)
 ENDIF(BUILD_CUDA_TEST)
-
-# CUDA B-Spline
-IF(CUDA_FOUND)
-##### GCS kkk CUDA
-##  NVCC_FILE(bspline_cuda.cu)
-##  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
-##    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
-
-ENDIF(CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
