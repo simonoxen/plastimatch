@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#if defined (_WIN32)
+#include <windows.h>
+#endif
 #include "volume.h"
 #include "readmha.h"
 #include "bspline_opts.h"

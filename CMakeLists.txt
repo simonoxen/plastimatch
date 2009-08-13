@@ -422,7 +422,8 @@ IF(BROOK_FOUND)
 	convolution_brook_kernel.h
 	)
 ENDIF(BROOK_FOUND)
-CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu bspline_cuda_kernels.cu)
+##CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu bspline_cuda_kernels.cu)
+CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu)
 IF(CUDA_FOUND)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
