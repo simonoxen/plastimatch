@@ -549,13 +549,14 @@ set(CUDA_SDK_SEARCH_PATH
   "${CUDA_TOOLKIT_ROOT_DIR}/NV_CUDA_SDK"
   "$ENV{HOME}/NVIDIA_CUDA_SDK"
   "$ENV{HOME}/NVIDIA_CUDA_SDK_MACOSX"
+  "$ENV{HOME}/NVIDIA_GPU_Computing_SDK"
   "/Developer/CUDA"
   )
 # CUDA_CUT_INCLUDE_DIR
 find_path(CUDA_CUT_INCLUDE_DIR
   cutil.h
   PATHS ${CUDA_SDK_SEARCH_PATH}
-  PATH_SUFFIXES "common/inc"
+  PATH_SUFFIXES "common/inc" "C/common/inc"
   DOC "Location of cutil.h"
   NO_DEFAULT_PATH
   )

@@ -27,7 +27,7 @@ struct volume
     float direction_cosines[9];
 
     enum Pixel_Type pix_type;	// Voxel Data type
-    int pix_size;		// (Unused??)
+    int pix_size;		// (Unused?)
     void* img;			// Voxel Data
 
     /* These are used for boundary testing */
