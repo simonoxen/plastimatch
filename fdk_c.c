@@ -327,8 +327,6 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
 
     scale = (float) (sqrt(3) / (double) num_imgs);
     scale = scale * options->scale;
-    //  scale = scale * 100;
-    //  scale = scale / 100.0;
 
     for (i = options->first_img; i <= options->last_img; i += options->skip_img) {
 	CB_Image* cbi;
