@@ -320,11 +320,12 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
 #endif
     char* mat_file_pat = "out_%04d.txt";
     int num_imgs;
+    float scale;
 
     num_imgs = 1 + (options->last_img - options->first_img)
 	    / options->skip_img;
 
-    float scale = (float) (sqrt(3) / (double) num_imgs);
+    scale = (float) (sqrt(3) / (double) num_imgs);
     scale = scale * options->scale;
     //  scale = scale * 100;
     //  scale = scale / 100.0;

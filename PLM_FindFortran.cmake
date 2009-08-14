@@ -25,12 +25,12 @@ ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 ##  Look for F2C library.
 ##-----------------------------------------------------------------------------
 ## http://readlist.com/lists/lists.sourceforge.net/mingw-users/0/3794.html
-SET(HAVE_F2C_LIBRARY FALSE)
-IF(GPUIT_LINK_MSVCRT)
-  SET(WIN32_LIBF2C "vcf2c_msvcrt")
-ELSE(GPUIT_LINK_MSVCRT)
-  SET(WIN32_LIBF2C "vcf2c_libcmt")
-ENDIF(GPUIT_LINK_MSVCRT)
+SET (HAVE_F2C_LIBRARY FALSE)
+IF (PLM_LINK_MSVCRT)
+  SET (WIN32_LIBF2C "vcf2c_msvcrt")
+ELSE (PLM_LINK_MSVCRT)
+  SET (WIN32_LIBF2C "vcf2c_libcmt")
+ENDIF (PLM_LINK_MSVCRT)
 
 IF(NOT F2C_DIR)
   FIND_PATH(F2C_DIR f2c.h

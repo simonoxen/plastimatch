@@ -22,8 +22,8 @@ SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 
+SET (PLM_LINK_MSVCRT ON)
 IF (WIN32)
   SET(PLM_USE_FINDCUDA OFF)
 ELSE (WIN32)
@@ -193,6 +193,7 @@ ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 ##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
 ##-----------------------------------------------------------------------------
+SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF(Subversion_FOUND)
     SET(PLASTIMATCH_EXPERIMENTAL TRUE)
