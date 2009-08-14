@@ -1,9 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <iostream>
 #include <sstream>
-#include "plm_config.h"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
@@ -11,13 +11,19 @@
 #include "itkImageSeriesWriter.h"
 #include "itk_dicom.h"
 #include "print_and_exit.h"
-#include "gdcmFile.h"
 
+/* winbase.h defines GetCurrentTime which conflicts with gdcm function */
+#if defined GetCurrentTime
+# undef GetCurrentTime
+#endif
+
+#include "gdcmFile.h"
 #if GDCM_MAJOR_VERSION < 2
 #include "gdcmUtil.h"
 #else
 #include "gdcmUIDGenerator.h"
 #endif
+
 
 /* -----------------------------------------------------------------------
     Definitions
@@ -186,10 +192,12 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
     const int export_as_ct = 1;
 
+    const std::string &current_date = gdcm::Util::GetCurrentDate();
+    const std::string &current_time = gdcm::Util::GetCurrentTime();
+
     printf ("Output dir = %s\n", dir_name);
 
     itksys::SystemTools::MakeDirectory (dir_name);
-
 
     ImageIOType::Pointer gdcmIO = ImageIOType::New();
     gdcmIO->SetUIDPrefix ("1.2.826.0.1.3680043.8.274.1.2"); 
@@ -210,11 +218,30 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 	encapsulate (dict, "0008|0064", "DV");
     }
 
+    /* StudyDate, SeriesDate, AcquisitionDate */
+    encapsulate (dict, "0008|0021", current_date);
+    encapsulate (dict, "0008|0022", current_date);
+    encapsulate (dict, "0008|0023", current_date);
+    /* StudyTime, SeriesTime, AcquisitionTime */
+    encapsulate (dict, "0008|0031", current_time);
+    encapsulate (dict, "0008|0032", current_time);
+    encapsulate (dict, "0008|0033", current_time);
+
     /* Patient name */
     encapsulate (dict, "0010|0010", "PLASTIMATCH^ANONYMOUS");
     /* Patient id */
     encapsulate (dict, "0010|0020", "anon");
-    
+    /* Patient sex */
+    encapsulate (dict, "0010|0040", "O");
+
+    /* PatientPosition */
+    encapsulate (dict, "0018|5100", "HFS");
+
+    /* StudyId */
+    encapsulate (dict, "0020|0010", "10001");
+    /* SeriesNumber */
+    encapsulate (dict, "0020|0010", "303");
+
     /* Frame of Reference UID */
 #if GDCM_MAJOR_VERSION < 2
     encapsulate (dict, "0020|0052", gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix()));
@@ -224,6 +251,7 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 #endif
     /* Position Reference Indicator */
     encapsulate (dict, "0020|1040", "");
+
 
     /* Slice thickness */
     value = to_string ((double) (short_img->GetSpacing()[2]));
