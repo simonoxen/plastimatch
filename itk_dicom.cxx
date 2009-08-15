@@ -206,7 +206,8 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
     if (export_as_ct) {
 	/* Image Type */
-	encapsulate (dict, "0008|0008", "AXIAL");
+	//encapsulate (dict, "0008|0008", "AXIAL");
+	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY\\AXIAL");
 	/* SOP Class UID */
 	encapsulate (dict, "0008|0016", "1.2.840.10008.5.1.4.1.1.2");
 	/* Modality */
@@ -240,7 +241,7 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     /* StudyId */
     encapsulate (dict, "0020|0010", "10001");
     /* SeriesNumber */
-    encapsulate (dict, "0020|0010", "303");
+    encapsulate (dict, "0020|0011", "303");
 
     /* Frame of Reference UID */
 #if GDCM_MAJOR_VERSION < 2
