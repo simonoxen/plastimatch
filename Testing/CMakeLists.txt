@@ -45,14 +45,14 @@ PLM_ADD_TEST (
   "fdk-cpu"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk_c
-  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19"
+  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19;-O;fdk_cpu_output.mha"
   )
 
 PLM_ADD_TEST (
   "fdk-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk_cuda
-  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19"
+  "-I;${PLM_TESTING_BUILD_DIR};-a;0 19;-O;fdk_cuda_output.mha"
   )
 
 ## plastimatch
