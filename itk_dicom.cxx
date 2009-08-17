@@ -4,6 +4,8 @@
 #include "plm_config.h"
 #include <iostream>
 #include <sstream>
+#include <stdlib.h>
+#include <time.h>
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
@@ -185,6 +187,26 @@ CopyDictionary (itk::MetaDataDictionary &fromDict, itk::MetaDataDictionary &toDi
     }
 }
 
+std::string 
+make_anon_patient_id (void)
+{
+    int i;
+    unsigned char uuid[16];
+    std::string patient_id = "PL";
+
+    /* Ugh.  It is a private function. */
+    //    bool rc = gdcm::Util::GenerateUUID (uuid);
+
+    srand (time (0));
+    for (i = 0; i < 16; i++) {
+       int r = (int) (10.0 * rand() / RAND_MAX);
+       uuid[i] = '0' + r;
+    }
+    uuid [15] = '\0';
+    patient_id = patient_id + to_string (uuid);
+    return patient_id;
+}
+
 void
 save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 {
@@ -207,11 +229,14 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     if (export_as_ct) {
 	/* Image Type */
 	//encapsulate (dict, "0008|0008", "AXIAL");
-	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY\\AXIAL");
+	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY\\REFORMATTED");
 	/* SOP Class UID */
 	encapsulate (dict, "0008|0016", "1.2.840.10008.5.1.4.1.1.2");
 	/* Modality */
 	encapsulate (dict, "0008|0060", "CT");
+	/* Conversion Type */
+	/* Note: Proton XiO does not like conversion type of SYN */
+	encapsulate (dict, "0008|0064", "");
     } else { /* export as secondary capture */
 	/* Image Type */
 	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY");
@@ -229,9 +254,9 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     encapsulate (dict, "0008|0033", current_time);
 
     /* Patient name */
-    encapsulate (dict, "0010|0010", "PLASTIMATCH^ANONYMOUS");
+    encapsulate (dict, "0010|0010", "ANONYMOUS");
     /* Patient id */
-    encapsulate (dict, "0010|0020", "anon");
+    encapsulate (dict, "0010|0020", make_anon_patient_id());
     /* Patient sex */
     encapsulate (dict, "0010|0040", "O");
 
@@ -270,7 +295,6 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 	Yes it can.  The below code is adapted from:
 	http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
     */
-
     DicomShortWriterType::DictionaryArrayType dict_array;
     for (unsigned int f = 0; f < short_img->GetLargestPossibleRegion().GetSize()[2]; f++) {
 	DicomShortWriterType::DictionaryRawPointer slice_dict = new DicomShortWriterType::DictionaryType;
@@ -316,10 +340,9 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
     seriesWriter->SetFileNames (namesGenerator->GetFileNames());
     seriesWriter->SetMetaDataDictionaryArray (&dict_array);
 
-    try 
-    {
-	    seriesWriter->Update();
-    } 
+    try {
+	seriesWriter->Update();
+    }
     catch (itk::ExceptionObject & excp) {
 	    std::cerr << "Exception thrown while writing the series " << std::endl;
 	    std::cerr << excp << std::endl;
