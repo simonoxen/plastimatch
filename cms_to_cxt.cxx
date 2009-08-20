@@ -20,7 +20,7 @@
 void
 print_usage (void)
 {
-    printf ("Usage: cms_to_cxt directory output_file.cxt\n");
+    printf ("Usage: cms_to_cxt directory output_file.cxt x_adj y_adj\n");
 }
 
 /* Modified from ITK source code, function RegularExpressionSeriesFileNames::
@@ -30,7 +30,7 @@ struct lt_pair_numeric_string_string
   bool operator()(const std::pair<std::string, std::string> s1, 
                   const std::pair<std::string, std::string> s2) const
     {
-    return atof(s1.second.c_str()) < atof(s2.second.c_str());
+	return atof(s1.second.c_str()) < atof(s2.second.c_str());
     }
 };
 
@@ -39,7 +39,7 @@ struct lt_pair_alphabetic_string_string
   bool operator()(const std::pair<std::string, std::string> s1, 
                   const std::pair<std::string, std::string> s2) const
     {
-    return s1.second < s2.second;
+	return s1.second < s2.second;
     }
 };
 
@@ -154,7 +154,8 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 }
 
 void
-add_cms_structure (Cxt_structure_list *structures, const char *filename, float z_loc)
+add_cms_structure (Cxt_structure_list *structures, const char *filename, 
+		   float z_loc, float x_adj, float y_adj)
 {
     FILE *fp;
     char buf[1024];
@@ -238,8 +239,8 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename, float z
 		    printf ("Error parsing file %s (points) %s\n", filename, &buf[line_loc]);
 		    exit (-1);
 		}
-		curr_polyline->x[point_idx] = x;
-		curr_polyline->y[point_idx] = y;
+		curr_polyline->x[point_idx] = x + x_adj;
+		curr_polyline->y[point_idx] = - y + y_adj;
 		curr_polyline->z[point_idx] = z_loc;
 		point_idx ++;
 		line_loc += this_loc;
@@ -252,7 +253,7 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename, float z
 }
 
 void
-do_cms_to_cxt (char *input_dir, char *output_fn)
+do_cms_to_cxt (char *input_dir, char *output_fn, float x_adj, float y_adj)
 {
     Cxt_structure_list structures;
     const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
@@ -283,7 +284,7 @@ do_cms_to_cxt (char *input_dir, char *output_fn)
 	const char *filename = (*it).first.c_str();
 	float z_loc = atof ((*it).second.c_str());
 	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (&structures, filename, z_loc);
+	add_cms_structure (&structures, filename, z_loc, x_adj, y_adj);
 	++it;
     }
 
@@ -295,15 +296,19 @@ int
 main (int argc, char* argv[]) 
 {
     char *input_dir, *output_fn;
-    if (argc != 3) {
+    float x_adj = 0.0, y_adj = 0.0;
+
+    if (argc != 5) {
 	print_usage ();
 	return 1;
     }
 
     input_dir = argv[1];
     output_fn = argv[2];
+    x_adj = atof (argv[3]);
+    y_adj = atof (argv[4]);
 
-    do_cms_to_cxt (input_dir, output_fn);
+    do_cms_to_cxt (input_dir, output_fn, x_adj, y_adj);
 
     return 0;
 }

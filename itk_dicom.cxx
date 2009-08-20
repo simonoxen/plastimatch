@@ -344,9 +344,9 @@ save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
 	seriesWriter->Update();
     }
     catch (itk::ExceptionObject & excp) {
-	    std::cerr << "Exception thrown while writing the series " << std::endl;
-	    std::cerr << excp << std::endl;
-	    exit (-1);
+	std::cerr << "Exception thrown while writing the series " << std::endl;
+	std::cerr << excp << std::endl;
+	exit (-1);
     }
 }
 
