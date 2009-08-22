@@ -23,36 +23,35 @@ main(int argc, char *argv[])
 
 	long offset; //deleteme when done debugging (along with offset).
 
-	char c;
 	char *mode = {"rc"}; /*rt vs. rc */
 	char myarray[200];
 	char prevline[200];
 	char currentline[200];
 	char *result = NULL;
-	int nn; int i; int j; int k; double x; double y; double z;
+	int i; int j; int k;
 	double CMS_rx; double CMS_ry; double CMS_rz;	double MHA_rx; double MHA_ry; double MHA_rz;
 	double CMS_ox; double CMS_oy; double CMS_oz; double MHA_ox; double MHA_oy; double MHA_oz;
 	int CMS_nPtsX; int CMS_nPtsY; int CMS_nPtsZ; int MHA_nPtsX; int MHA_nPtsY; int MHA_nPtsZ;
-	double CMS_dx; double CMS_dy; double CMS_dz; double MHA_dx; double MHA_dy; double MHA_dz;//element spacing
-	double CMS_startX; double CMS_startY; double CMS_startZ; double MHA_startX; double MHA_startY; double MHA_startZ; //offset (top left corner of first slice)
+	double MHA_dx; double MHA_dy; double MHA_dz;//element spacing
+	double MHA_startX; double MHA_startY; double MHA_startZ; //offset (top left corner of first slice)
 
-	int dose;short dose2; 
+	int dose; short dose2;
 
-	int o,p,q,l,m,n;
+	int o, p, q, l, m, n;
 	int ***data;
 
 	printf ("Size of int = %d\n", sizeof(int));
 
 	l = 520; n = 520; m = 520;
 
-	data = malloc(l*sizeof(int**));
-        for(o=0;o<l;o++)
+	data = malloc (l*sizeof(int**));
+        for (o=0; o<l; o++)
         {
-               data[o] = malloc(m*sizeof(int*));
-               for(p=0;p<m;p++)
+               data[o] = malloc (m*sizeof(int*));
+               for (p=0; p<m; p++)
                {
-                       data[o][p] = malloc(n*sizeof(int));
-                       for(q=0;q<n;q++)
+                       data[o][p] = malloc (n*sizeof(int));
+                       for (q=0; q<n; q++)
                        {
                                data[o][p][q] = 0;
                        }
