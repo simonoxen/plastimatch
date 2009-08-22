@@ -15,26 +15,30 @@ INCLUDE(language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-SET(PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
-SET(BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
-SET(BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
-SET(BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
-SET(BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET(PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
-SET(PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-
+SET (PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
+SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
+SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
+SET (PLM_BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
+SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
+SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
+SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON)
-IF (WIN32)
-  SET(PLM_USE_FINDCUDA OFF)
-ELSE (WIN32)
-  SET(PLM_USE_FINDCUDA ON)
-ENDIF (WIN32)
+SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
+
+# IF (WIN32)
+#   SET (PLM_USE_FINDCUDA OFF CACHE BOOL 
+#     "Use Stephens/Bigler FindCUDA cmake script")
+# ELSE (WIN32)
+#   SET (PLM_USE_FINDCUDA ON CACHE BOOL 
+#     "Use Stephens/Bigler FindCUDA cmake script")
+# ENDIF (WIN32)
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and libraries
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
+##FIND_PACKAGE (QT4)
 
 INCLUDE (PLM_Etags.cmake)
 INCLUDE (PLM_FindDCMTK.cmake)
@@ -59,7 +63,7 @@ IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
   SET (CUDA_FOUND FALSE)
 ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
 IF(CUDA_FOUND)
-  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+#  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
   CUDA_INCLUDE_DIRECTORIES(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CUDA_CUT_INCLUDE_DIR}
@@ -337,11 +341,11 @@ SET(HAVE_CUDA TRUE)
 ENDIF(CUDA_FOUND)
 
 IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
-  IF(BUILD_DEMONS_CUDA)
+  IF(PLM_BUILD_DEMONS_CUDA)
     NVCC_FILE(demons_cuda.cu)
     SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu 
       PROPERTIES OBJECT_DEPENDS "demons_cuda_kernel.cu")
-  ENDIF(BUILD_DEMONS_CUDA)
+  ENDIF(PLM_BUILD_DEMONS_CUDA)
 
   NVCC_FILE(fdk_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
@@ -354,6 +358,10 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   NVCC_FILE(bspline_cuda.cu)
   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
+
+  NVCC_FILE(bspline_cuda_kernels.cu)
+  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_kernels_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "bspline_cuda_kernels.cu.cpp")
 ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
@@ -448,7 +456,8 @@ IF(CUDA_FOUND)
 	bspline_cuda.h
 	)
   IF (PLM_USE_FINDCUDA)
-    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS bspline_cuda.cu)
+    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
+      bspline_cuda.cu bspline_cuda_kernels.cu)
     SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	${BSPLINE_CUDA_WRAPPERS}
@@ -457,6 +466,7 @@ IF(CUDA_FOUND)
     SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda_wrap.cpp
+	bspline_cuda_kernels_wrap.cpp
 	)
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF(CUDA_FOUND)
@@ -481,7 +491,7 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 	)
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
-IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+IF(HAVE_BROOK AND PLM_BUILD_BSPLINE_BROOK)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_brook_kernel_wrap.cpp
@@ -492,7 +502,7 @@ IF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
 	bspline_brook.cpp 
 	bspline_brook.h
 	)
-ENDIF(HAVE_BROOK AND BUILD_BSPLINE_BROOK)
+ENDIF(HAVE_BROOK AND PLM_BUILD_BSPLINE_BROOK)
 
 IF(F2C_LIBRARY)
   SET(F2C_HELPER_LIBRARY_SRC
@@ -929,10 +939,10 @@ ENDIF(BROOK_FOUND)
 
 # Require cuda
 IF(CUDA_FOUND)
-  IF(BUILD_DEMONS_CUDA)
+  IF(PLM_BUILD_DEMONS_CUDA)
     PLM_ADD_EXECUTABLE(demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
-  ENDIF(BUILD_DEMONS_CUDA)
+  ENDIF(PLM_BUILD_DEMONS_CUDA)
   PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
   PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
@@ -986,7 +996,7 @@ INSTALL(FILES
 ##  Simple test files
 ##-----------------------------------------------------------------------------
 # Test executable -- openmp
-IF(BUILD_OPENMP_TEST)
+IF(PLM_BUILD_OPENMP_TEST)
   IF(OPENMP_FOUND)
     ADD_EXECUTABLE(openmp_test openmp_test.c)
     TARGET_LINK_LIBRARIES(openmp_test ${MATH_LIB} ${OPENMP_LIBRARIES})
@@ -996,10 +1006,10 @@ IF(BUILD_OPENMP_TEST)
       SET_TARGET_PROPERTIES(openmp_test PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
     ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
   ENDIF(OPENMP_FOUND)
-ENDIF(BUILD_OPENMP_TEST)
+ENDIF(PLM_BUILD_OPENMP_TEST)
 
 # Test executable -- cuda
-IF(BUILD_CUDA_TEST)
+IF(PLM_BUILD_CUDA_TEST)
   IF(CUDA_FOUND)
     NVCC_FILE(cuda_test.cu)
     SET_SOURCE_FILES_PROPERTIES(cuda_test_wrap.cpp
@@ -1011,7 +1021,7 @@ IF(BUILD_CUDA_TEST)
     #    SET_TARGET_PROPERTIES(cuda_test PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})
     #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
   ENDIF(CUDA_FOUND)
-ENDIF(BUILD_CUDA_TEST)
+ENDIF(PLM_BUILD_CUDA_TEST)
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing

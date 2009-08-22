@@ -12,9 +12,32 @@
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "bspline_cuda.h"
+#include "bspline_cuda_kernels.h"
 
 // Include the kernels.
-#include "bspline_cuda_kernels.cu"
+//#include "bspline_cuda_kernels.cu"
+
+extern texture<float, 1, cudaReadModeElementType> tex_fixed_image;
+extern texture<float, 1, cudaReadModeElementType> tex_moving_image;
+extern texture<float, 1, cudaReadModeElementType> tex_moving_grad;
+extern texture<float, 1, cudaReadModeElementType> tex_coeff;
+extern texture<int, 1, cudaReadModeElementType>   tex_c_lut;
+extern texture<float, 1, cudaReadModeElementType> tex_q_lut;
+extern texture<float, 1, cudaReadModeElementType> tex_score;
+
+extern texture<float, 1> tex_dx;
+extern texture<float, 1> tex_dy;
+extern texture<float, 1> tex_dz;
+
+extern texture<float, 1> tex_diff;
+extern texture<float, 1> tex_mvr;
+
+extern texture<float, 1> tex_dc_dv;
+extern texture<float, 1> tex_dc_dv_x;
+extern texture<float, 1> tex_dc_dv_y;
+extern texture<float, 1> tex_dc_dv_z;
+extern texture<float, 1> tex_grad;
+
 
 // Declare global variables.
 float *gpu_fixed_image;  // The fixed image
