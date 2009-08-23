@@ -22,7 +22,7 @@ SET (PLM_BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-SET (PLM_LINK_MSVCRT ON)
+SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
 
 # IF (WIN32)

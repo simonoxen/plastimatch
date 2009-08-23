@@ -1,8 +1,4 @@
 ######################################################
-SET(GPUIT_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
-
-
-######################################################
 ##  RULES FOR FINDING BROOK
 ##  These variables are set:
 ##    BROOK_FOUND
