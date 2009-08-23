@@ -6,6 +6,21 @@
 # This additional function definition is needed to provide a workaround for
 # CMake bug 9220.
 
+# http://www.cmake.org/Bug/view.php?id=9220
+
+# On debian testing (cmake 2.6.2), I get return code zero when calling 
+# cmake the first time, but cmake crashes when running a second time
+# as follows:
+#
+#  -- The Fortran compiler identification is unknown
+#  CMake Error at /usr/share/cmake-2.6/Modules/CMakeFortranInformation.cmake:7 (GET_FILENAME_COMPONENT):
+#    get_filename_component called with incorrect number of arguments
+#  Call Stack (most recent call first):
+#    CMakeLists.txt:3 (enable_language)
+#
+# My workaround is to invoke cmake twice.  If both return codes are zero, 
+# it is safe to invoke ENABLE_LANGUAGE(Fortran OPTIONAL)
+
 function(workaround_9220 language language_works)
   #message("DEBUG: language = ${language}")
   set(text
@@ -23,9 +38,23 @@ enable_language(${language} OPTIONAL)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language}
     RESULT_VARIABLE return_code
     OUTPUT_QUIET
-    ERROR_QUIET)
+    ERROR_QUIET
+    )
+
   if(return_code EQUAL 0)
-    set(${language_works} ON PARENT_SCOPE)
+    # Second run
+    execute_process (
+      COMMAND ${CMAKE_COMMAND} .
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language}
+      RESULT_VARIABLE return_code
+      OUTPUT_QUIET
+      ERROR_QUIET
+      )
+    if(return_code EQUAL 0)
+      set(${language_works} ON PARENT_SCOPE)
+    else(return_code EQUAL 0)
+      set(${language_works} OFF PARENT_SCOPE)
+    endif(return_code EQUAL 0)
   else(return_code EQUAL 0)
     set(${language_works} OFF PARENT_SCOPE)
   endif(return_code EQUAL 0)
@@ -36,5 +65,3 @@ endfunction(workaround_9220)
 #message("CXX_language_works = ${CXX_language_works}")
 #workaround_9220(CXXp CXXp_language_works)
 #message("CXXp_language_works = ${CXXp_language_works}")
-
-

@@ -3,14 +3,14 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
-cmake_minimum_required(VERSION 2.6)
-PROJECT(plastimatch)
+cmake_minimum_required (VERSION 2.6)
+PROJECT (plastimatch)
 
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
-INCLUDE(CheckFunctionExists)
-INCLUDE(language_support.cmake)
+INCLUDE (CheckFunctionExists)
+INCLUDE (language_support.cmake)  # http://www.cmake.org/Bug/view.php?id=9220
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
