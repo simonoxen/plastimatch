@@ -76,67 +76,72 @@ texture<float, 1, cudaReadModeElementType> tex_matrix;
 __global__
 void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y)
 {
-	// CUDA 2.0 does not allow for a 3D grid, which severely
-	// limits the manipulation of large 3D arrays of data.  The
-	// following code is a hack to bypass this implementation
-	// limitation.
-	unsigned int blockIdx_z = __float2uint_rd(blockIdx.y * invBlocks_Y);
-	unsigned int blockIdx_y = blockIdx.y - __umul24(blockIdx_z, Blocks_Y);
-	unsigned int i = __umul24(blockIdx.x, blockDim.x) + threadIdx.x;
-	unsigned int j = __umul24(blockIdx_y, blockDim.y) + threadIdx.y;
-	unsigned int k = __umul24(blockIdx_z, blockDim.z) + threadIdx.z;
+    // CUDA 2.0 does not allow for a 3D grid, which severely
+    // limits the manipulation of large 3D arrays of data.  The
+    // following code is a hack to bypass this implementation
+    // limitation.
+    unsigned int blockIdx_z = __float2uint_rd(blockIdx.y * invBlocks_Y);
+    unsigned int blockIdx_y = blockIdx.y - __umul24(blockIdx_z, Blocks_Y);
+    unsigned int i = __umul24(blockIdx.x, blockDim.x) + threadIdx.x;
+    unsigned int j = __umul24(blockIdx_y, blockDim.y) + threadIdx.y;
+    unsigned int k = __umul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-	if( i >= vol_dim.x || j >= vol_dim.y || k >= vol_dim.z )
-		return; 
-/*
-	// EXPERIMENTAL //////////////////////////////////////////////
-	long int one_block = blockDim.x * blockDim.y * blockDim.z;
-	long int offset_x  = blockIdx.x * (one_block);
-	long long int offset_y  = blockIdx.y * (one_block * gridDim.x);
-	long int block_index = threadIdx.x + (blockDim.x * threadIdx.y) + (blockDim.x * blockDim.y * threadIdx.z);
-	long int vol_idx = offset_x + offset_y + block_index;
-	//////////////////////////////////////////////////////////////
-*/
-	// Index row major into the volume
-	long int vol_idx = i + ( j*(vol_dim.x) ) + ( k*(vol_dim.x)*(vol_dim.y) );
+    if (i >= vol_dim.x || j >= vol_dim.y || k >= vol_dim.z)
+	return; 
+    /*
+    // EXPERIMENTAL //////////////////////////////////////////////
+    long int one_block = blockDim.x * blockDim.y * blockDim.z;
+    long int offset_x  = blockIdx.x * (one_block);
+    long long int offset_y  = blockIdx.y * (one_block * gridDim.x);
+    long int block_index = threadIdx.x + (blockDim.x * threadIdx.y) + (blockDim.x * blockDim.y * threadIdx.z);
+    long int vol_idx = offset_x + offset_y + block_index;
+    //////////////////////////////////////////////////////////////
+    */
+    // Index row major into the volume
+    long int vol_idx = i + ( j*(vol_dim.x) ) + ( k*(vol_dim.x)*(vol_dim.y) );
 
-	float3 vp;
-	float3 ip;
-	float  s;
-	float voxel_data;
+    float3 vp;
+    float3 ip;
+    float  s;
+    float voxel_data;
 
-	float4 matrix_x;
-	float4 matrix_y;
-	float4 matrix_z;
+    float4 matrix_x;
+    float4 matrix_y;
+    float4 matrix_z;
 
-	// offset volume coords
-	vp.x = vol_offset.x + i * vol_pix_spacing.x;	// Compiler should combine into 1 FMAD.
-	vp.y = vol_offset.y + j * vol_pix_spacing.y;	// Compiler should combine into 1 FMAD.
-	vp.z = vol_offset.z + k * vol_pix_spacing.z;	// Compiler should combine into 1 FMAD.
+    // offset volume coords
+    vp.x = vol_offset.x + i * vol_pix_spacing.x;	// Compiler should combine into 1 FMAD.
+    vp.y = vol_offset.y + j * vol_pix_spacing.y;	// Compiler should combine into 1 FMAD.
+    vp.z = vol_offset.z + k * vol_pix_spacing.z;	// Compiler should combine into 1 FMAD.
 
-	// matrix multiply
-	ip.x = tex1Dfetch(tex_matrix, 0)*vp.x + tex1Dfetch(tex_matrix, 1)*vp.y + tex1Dfetch(tex_matrix, 2)*vp.z + tex1Dfetch(tex_matrix, 3);
-	ip.y = tex1Dfetch(tex_matrix, 4)*vp.x + tex1Dfetch(tex_matrix, 5)*vp.y + tex1Dfetch(tex_matrix, 6)*vp.z + tex1Dfetch(tex_matrix, 7);
-	ip.z = tex1Dfetch(tex_matrix, 8)*vp.x + tex1Dfetch(tex_matrix, 9)*vp.y + tex1Dfetch(tex_matrix, 10)*vp.z + tex1Dfetch(tex_matrix, 11);
+    // matrix multiply
+    ip.x = tex1Dfetch(tex_matrix, 0)*vp.x + tex1Dfetch(tex_matrix, 1)*vp.y + tex1Dfetch(tex_matrix, 2)*vp.z + tex1Dfetch(tex_matrix, 3);
+    ip.y = tex1Dfetch(tex_matrix, 4)*vp.x + tex1Dfetch(tex_matrix, 5)*vp.y + tex1Dfetch(tex_matrix, 6)*vp.z + tex1Dfetch(tex_matrix, 7);
+    ip.z = tex1Dfetch(tex_matrix, 8)*vp.x + tex1Dfetch(tex_matrix, 9)*vp.y + tex1Dfetch(tex_matrix, 10)*vp.z + tex1Dfetch(tex_matrix, 11);
 
-	// Change coordinate systems
-	ip.x = ic.x + ip.x / ip.z;
-	ip.y = ic.y + ip.y / ip.z;
+    // Change coordinate systems
+    ip.x = ic.x + ip.x / ip.z;
+    ip.y = ic.y + ip.y / ip.z;
 
-	// Get pixel from 2D image
-	ip.x = __float2int_rd(ip.x);
-	ip.y = __float2int_rd(ip.y);
-	voxel_data = tex1Dfetch(tex_img, ip.x*img_dim.x + ip.y);
+    // Get pixel from 2D image
+    ip.x = __float2int_rd(ip.x);
+    ip.y = __float2int_rd(ip.y);
 
-	// Dot product
-	s = nrm.x*vp.x + nrm.y*vp.y + nrm.z*vp.z;
+    // Clip against image dimensions
+    if (ip.x < 0 || ip.x >= img_dim.x || ip.y < 0 || ip.y >= img_dim.y) {
+	return;
+    }
+    voxel_data = tex1Dfetch(tex_img, ip.x*img_dim.x + ip.y);
 
-	// Conebeam weighting factor
-	s = sad - s;
-	s = (sad * sad) / (s * s);
+    // Dot product
+    s = nrm.x*vp.x + nrm.y*vp.y + nrm.z*vp.z;
 
-	// Place it into the volume
-	dev_vol[vol_idx] += scale * s * voxel_data;
+    // Conebeam weighting factor
+    s = sad - s;
+    s = (sad * sad) / (s * s);
+
+    // Place it into the volume
+    dev_vol[vol_idx] += scale * s * voxel_data;
 }
 //_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
 // K E R N E L S -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
