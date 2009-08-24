@@ -496,12 +496,14 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 			    for(q.x = 0; q.x < modified_idx; q.x = q.x + unrolling_factor, idx = idx + unrolling_factor) {
 
 #if defined (commentout)
+				/* GCS Aug 24: This doesn't crash */
 				result.x += 1;
 				result.y += 1;
 				result.z += 1;
 #endif
 
 #if defined (commentout)
+				/* GCS Aug 24: This crashes */
 				result.x += tex1Dfetch (tex_dc_dv, 0);
 				result.y += tex1Dfetch (tex_dc_dv, 0);
 				result.z += tex1Dfetch (tex_dc_dv, 0);
