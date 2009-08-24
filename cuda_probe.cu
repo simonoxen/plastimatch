@@ -12,11 +12,11 @@ cuda_probe (void)
     printf ("Testing for CUDA...\n");
     cudaGetDeviceCount (&devicecount);
 
-    if (devicecount == 0)
-    {
+    if (devicecount == 0) {
 	printf("Suitable CUDA environment not detected!\n");
 	return 0;
     }
+    printf ("Devices found: %d\n", devicecount);
 
     // It is possible at this point that devicecount = 1 and still be
     // without an actual CUDA device.  CUDA 2.0 and 2.1 exhibit this
@@ -34,19 +34,19 @@ cuda_probe (void)
     // working with Plastimatch.
     //
 
+
     // Get CUDA device properties.
     cudaDeviceProp props;
-    cudaGetDeviceProperties(&props, 0);
+    cudaGetDeviceProperties (&props, 0);
+    printf ("Compute Capability %d.%d\n", props.major, props.minor);
 
-    if (props.major == 1)
-    {
+    if (props.major == 1) {
 	/* GCS: Cuda 2.2 with Tesla returns compatibility 1.3 */
-	printf ("Detected CUDA!  Compute Capability %d.%d\n",
-		props.major, props.minor);
+	printf ("Device is presumed cuda capable.\n");
 	return 1;
     }
 
     // Unless proven otherwise, we assume no CUDA.
-    printf ("No cuda information found\n");
+    printf ("Device is presumed NOT cuda capable.\n");
     return 0;
 }
