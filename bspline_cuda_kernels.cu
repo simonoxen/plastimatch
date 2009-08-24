@@ -382,172 +382,199 @@ __device__ float obtain_spline_basis_function(float one_over_six,
 }
 
 /******************************************************************
-* This function performs the gradient computation. It operates on each control knot is parallel 
-* and each control knot accumulates the influence of the 64 tiles on each control knot.
+* This function performs the gradient computation. It operates on 
+* each control knot is parallel and each control knot accumulates 
+* the influence of the 64 tiles on each control knot.
 
 Updated by Naga Kandasamy
 Date: 07 July 2009 
 *******************************************************************/
 
-__global__ void bspline_cuda_score_g_mse_kernel2 (
-	float *dc_dv,
-	float *grad,
-	int   num_threads,
-	int3  rdims,
-	int3  cdims,
-	int3  vox_per_rgn)
+__global__ void bspline_cuda_score_g_mse_kernel2 
+(
+ float *dc_dv,
+ float *grad,
+ int   num_threads,
+ int3  rdims,
+ int3  cdims,
+ int3  vox_per_rgn)
 {
-	int3 knotLocation, tileOffset, tileLocation;
-	int idx;
-	int dc_dv_row;
-	float i;
-	float A, B, C;
-	int3 q;
-	float one_over_six = 1.0/6.0;
+    int3 knotLocation, tileOffset, tileLocation;
+    int idx;
+    int dc_dv_row;
+    float i;
+    float A, B, C;
+    int3 q;
+    float one_over_six = 1.0/6.0;
 
-	float3 result;
-	result.x = 0.0;
-	result.y = 0.0;
-	result.z = 0.0;
+    float3 result;
+    result.x = 0.0;
+    result.y = 0.0;
+    result.z = 0.0;
 
-	// Calculate the index of the thread block in the grid.
-	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
 	
-	// Calculate the total number of threads in each thread block.
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+    // Calculate the total number of threads in each thread block.
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
 	
-	// Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+    // Next, calculate the index of the thread in its thread block, 
+    // in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
 	
-	// Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+    // Finally, calculate the index of the thread in the grid, based on 
+    // the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
-	// If the thread does not correspond to a control point, do nothing.
-	if(threadIdxInGrid < num_threads) {	
+    // If the thread does not correspond to a control point, do nothing.
+    if (threadIdxInGrid >= num_threads) {
+	return;
+    }
 
-		// Determine the x, y, and z offset of the knot within the grid.
-		knotLocation.x = threadIdxInGrid % cdims.x;
-		knotLocation.y = ((threadIdxInGrid - knotLocation.x) / cdims.x) % cdims.y;
-		knotLocation.z = ((((threadIdxInGrid - knotLocation.x) / cdims.x) - knotLocation.y) / cdims.y) % cdims.z;
+    // Determine the x, y, and z offset of the knot within the grid.
+    knotLocation.x = threadIdxInGrid % cdims.x;
+    knotLocation.y = ((threadIdxInGrid - knotLocation.x) / cdims.x) % cdims.y;
+    knotLocation.z = ((((threadIdxInGrid - knotLocation.x) / cdims.x) - knotLocation.y) / cdims.y) % cdims.z;
 
-		// Subtract 1 from each of the knot indices to account for the differing origin
-		// between the knot grid and the tile grid.
-		knotLocation.x -= 1;
-		knotLocation.y -= 1;
-		knotLocation.z -= 1;
+    // Subtract 1 from each of the knot indices to account for the 
+    // differing origin between the knot grid and the tile grid.
+    knotLocation.x -= 1;
+    knotLocation.y -= 1;
+    knotLocation.z -= 1;
 
-		// Iterate through each of the 64 tiles that influence this control knot.
-		for(tileOffset.z = -2; tileOffset.z < 2; tileOffset.z++) {
-			for(tileOffset.y = -2; tileOffset.y < 2; tileOffset.y++) {
-				for(tileOffset.x = -2; tileOffset.x < 2; tileOffset.x++) {
+    // Iterate through each of the 64 tiles that influence this 
+    // control knot.
+    for(tileOffset.z = -2; tileOffset.z < 2; tileOffset.z++) {
+	for(tileOffset.y = -2; tileOffset.y < 2; tileOffset.y++) {
+	    for(tileOffset.x = -2; tileOffset.x < 2; tileOffset.x++) {
 						
-					// Using the current x, y, and z offset from the control knot position,
-					// calculate the index for one of the tiles that influence this knot.
-					tileLocation.x = knotLocation.x + tileOffset.x;
-					tileLocation.y = knotLocation.y + tileOffset.y;
-					tileLocation.z = knotLocation.z + tileOffset.z;
+		// Using the current x, y, and z offset from the control knot position,
+		// calculate the index for one of the tiles that influence this knot.
+		tileLocation.x = knotLocation.x + tileOffset.x;
+		tileLocation.y = knotLocation.y + tileOffset.y;
+		tileLocation.z = knotLocation.z + tileOffset.z;
 
-					// Determine if the tile location is within the volume.
-					if((tileLocation.x >= 0 && tileLocation.x < rdims.x) &&
-						(tileLocation.y >= 0 && tileLocation.y < rdims.y) &&
-						(tileLocation.z >= 0 && tileLocation.z < rdims.z)) {
+		// Determine if the tile location is within the volume.
+		if((tileLocation.x >= 0 && tileLocation.x < rdims.x) &&
+		   (tileLocation.y >= 0 && tileLocation.y < rdims.y) &&
+		   (tileLocation.z >= 0 && tileLocation.z < rdims.z)) {
 
-						// Calculate linear index for tile.
-						idx = ((tileLocation.z * rdims.y + tileLocation.y) * rdims.x) + tileLocation.x;	
+		    // Calculate linear index for tile.
+		    idx = ((tileLocation.z * rdims.y + tileLocation.y) * rdims.x) + tileLocation.x;	
 						
-						// Calculate the offset into the dc_dv array corresponding to this tile.
-						dc_dv_row = 3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * idx;
+		    // Calculate the offset into the dc_dv array corresponding to this tile.
+		    dc_dv_row = 3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * idx;
+		    int3 t;
+		    t.x = abs(tileOffset.x - 1);
+		    t.y = abs(tileOffset.y - 1);
+		    t.z = abs(tileOffset.z - 1);
 						
-						int3 t;
-						t.x = abs(tileOffset.x - 1);
-						t.y = abs(tileOffset.y - 1);
-						t.z = abs(tileOffset.z - 1);
+		    // For all the voxels in this tile, compute the influence on the control knot. We first compute the appropriate 
+		    // spline paramterizationfor each voxel, relative to the control knot of interest
 						
-						// For all the voxels in this tile, compute the influence on the control knot. We first compute the appropriate 
-						// spline paramterizationfor each voxel, relative to the control knot of interest
+		    float pre_multiplier;
+		    float multiplier_1, multiplier_2, multiplier_3, multiplier_4;
 						
-						float pre_multiplier;
-						float multiplier_1, multiplier_2, multiplier_3, multiplier_4;
-						
-						// An unrolling factor of four appears to be the best performer
-						int unrolling_factor = 4; // Set this parameter to achieve the level of loop unrolling desired; could be 1 or 4
-						int modified_idx = (vox_per_rgn.x/unrolling_factor)*unrolling_factor; // The modified index is an integral multiple of the unrolling factor
-						int lop_off = vox_per_rgn.x - modified_idx;
+		    // Set this parameter to achieve the level of loop 
+		    // unrolling desired; could be 1 or 4
+		    // An unrolling factor of four appears to be the best 
+		    // performer.  
+		    int unrolling_factor = 1;
+		    // The modified index is an integral multiple of 
+		    // the unrolling factor
+		    int modified_idx = (vox_per_rgn.x/unrolling_factor)*unrolling_factor; 
+		    int lop_off = vox_per_rgn.x - modified_idx;
 							
-						// Compute the spline parametization	
-						for(q.z = 0, idx = 0; q.z < vox_per_rgn.z; q.z++) {
-							C = obtain_spline_basis_function(one_over_six, t.z, q.z, vox_per_rgn.z);	// Obtain the basis function along the Z direction
-							for(q.y = 0; q.y < vox_per_rgn.y; q.y++) {
-								B = obtain_spline_basis_function(one_over_six, t.y, q.y, vox_per_rgn.y); // Obtain the basis function along the Y direction
-								pre_multiplier = B*C;
+		    // Compute the spline parametization	
+		    for(q.z = 0, idx = 0; q.z < vox_per_rgn.z; q.z++) {
+			C = obtain_spline_basis_function(one_over_six, t.z, q.z, vox_per_rgn.z);	// Obtain the basis function along the Z direction
+			for(q.y = 0; q.y < vox_per_rgn.y; q.y++) {
+			    B = obtain_spline_basis_function(one_over_six, t.y, q.y, vox_per_rgn.y); // Obtain the basis function along the Y direction
+			    pre_multiplier = B*C;
 								
-								// The inner loop is unrolled multiple times as per a specified unrolling factor 
-								for(q.x = 0; q.x < modified_idx; q.x = q.x + unrolling_factor, idx = idx + unrolling_factor) {
-								
-									if(unrolling_factor == 1){ // No loop unrolling
-										A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
-										multiplier_1 = A*pre_multiplier;
-										
-										// Accumulate the results
-										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
-									} // End if unrolling_factor = 1
-									
-									if(unrolling_factor == 4){ // The loop is unrolled four times 
-										A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for Voxel 1 in the X direction
-										multiplier_1 = A * pre_multiplier;
-										
-										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 1), vox_per_rgn.x); // Obtain the basis function for Voxel 2 in the X direction
-										multiplier_2 = A * pre_multiplier;
-										
-										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 2), vox_per_rgn.x); // Obtain the basis function for Voxel 3 in the X direction
-										multiplier_3 = A * pre_multiplier;
-										
-										A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 3), vox_per_rgn.x); // Obtain the basis function for Voxel 4 in the X direction
-										multiplier_4 = A * pre_multiplier;
-										
-										// Accumulate the results
-										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
-											
-										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 0) * multiplier_2;
-										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 1) * multiplier_2;
-										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 2) * multiplier_2;
-											
-										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 0) * multiplier_3;
-										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 1) * multiplier_3;
-										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 2) * multiplier_3;
-											
-										result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 0) * multiplier_4;
-										result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 1) * multiplier_4;
-										result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 2) * multiplier_4;
-										
-									} // End if unrolling_factor == 4
-								} // End for q.x loop
-								
-								// Take care of any lop off voxels that the unrolled loop did not process
-								for(q.x = modified_idx; q.x < (modified_idx + lop_off); q.x++, idx++){
-									A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
-									multiplier_1 = A * pre_multiplier;
-										
-									// Accumulate the results
-									result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-									result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-									result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
-								} // End of lop off loop
-							} // End for q.y loop
-						} // End q.z loop
-					}
-				}
-			}
-		}
+			    // The inner loop is unrolled multiple times as per a specified unrolling factor 
+			    for(q.x = 0; q.x < modified_idx; q.x = q.x + unrolling_factor, idx = idx + unrolling_factor) {
 
-		grad[3*threadIdxInGrid+0] = result.x;
-		grad[3*threadIdxInGrid+1] = result.y;
-		grad[3*threadIdxInGrid+2] = result.z;
+#if defined (commentout)
+				result.x += 1;
+				result.y += 1;
+				result.z += 1;
+#endif
+
+#if defined (commentout)
+				result.x += tex1Dfetch (tex_dc_dv, 0);
+				result.y += tex1Dfetch (tex_dc_dv, 0);
+				result.z += tex1Dfetch (tex_dc_dv, 0);
+#endif
+
+#if defined (commentout)
+				if(unrolling_factor == 1){ // No loop unrolling
+				    A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
+				    multiplier_1 = A*pre_multiplier;
+										
+				    // Accumulate the results
+				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
+				} // End if unrolling_factor = 1
+
+				if(unrolling_factor == 4){ // The loop is unrolled four times 
+				    A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for Voxel 1 in the X direction
+				    multiplier_1 = A * pre_multiplier;
+										
+				    A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 1), vox_per_rgn.x); // Obtain the basis function for Voxel 2 in the X direction
+				    multiplier_2 = A * pre_multiplier;
+										
+				    A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 2), vox_per_rgn.x); // Obtain the basis function for Voxel 3 in the X direction
+				    multiplier_3 = A * pre_multiplier;
+										
+				    A = obtain_spline_basis_function(one_over_six, t.x, (q.x + 3), vox_per_rgn.x); // Obtain the basis function for Voxel 4 in the X direction
+				    multiplier_4 = A * pre_multiplier;
+										
+				    // Accumulate the results
+				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+
+				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 0) * multiplier_2;
+				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 1) * multiplier_2;
+				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 2) * multiplier_2;
+											
+				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 0) * multiplier_3;
+				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 1) * multiplier_3;
+				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 2) * multiplier_3;
+											
+				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 0) * multiplier_4;
+				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 1) * multiplier_4;
+				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 2) * multiplier_4;
+										
+				} // End if unrolling_factor == 4
+#endif
+			    } // End for q.x loop
+								
+			    // Take care of any lop off voxels that the unrolled loop did not process
+#if defined (commentout)
+			    for(q.x = modified_idx; q.x < (modified_idx + lop_off); q.x++, idx++){
+				A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
+				multiplier_1 = A * pre_multiplier;
+										
+				// Accumulate the results
+				result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+			    } // End of lop off loop
+#endif
+			} // End for q.y loop
+		    } // End q.z loop
+		}
+	    }
 	}
+    }
+
+
+    grad[3*threadIdxInGrid+0] = result.x;
+    grad[3*threadIdxInGrid+1] = result.y;
+    grad[3*threadIdxInGrid+2] = result.z;
 }
 
 

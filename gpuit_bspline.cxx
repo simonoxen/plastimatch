@@ -87,7 +87,7 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 	parms.threading = BTHR_BROOK;
 	break;
     case THREADING_CUDA:
-	parms.implementation = 'f';
+	parms.implementation = 'g';
 	parms.threading = BTHR_CUDA;
 	break;
     default:

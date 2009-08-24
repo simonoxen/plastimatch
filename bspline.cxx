@@ -2816,7 +2816,7 @@ bspline_score (BSPLINE_Parms *parms,
     }
 #endif
 
-#if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
+#if (HAVE_CUDA)
     if (parms->implementation == BIMPL_CUDA) {
 	printf("Using CUDA.\n");
 	//bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);

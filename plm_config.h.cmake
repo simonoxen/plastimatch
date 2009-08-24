@@ -17,7 +17,6 @@
 #cmakedefine OPENMP_FOUND 1
 #cmakedefine BUILD_BSPLINE_BROOK 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1
-#cmakedefine BUILD_BSPLINE_CUDA 1
 
 #cmakedefine PLASTIMATCH_EXPERIMENTAL 1
 

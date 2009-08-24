@@ -142,11 +142,11 @@ SAVEME ()
 
 void
 bspline_optimize_lbfgsb (
-		BSPLINE_Xform* bxf, 
-		BSPLINE_Parms *parms, 
-		Volume *fixed, 
-		Volume *moving, 
-		Volume *moving_grad)
+			 BSPLINE_Xform* bxf, 
+			 BSPLINE_Parms *parms, 
+			 Volume *fixed, 
+			 Volume *moving, 
+			 Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &parms->ssd;
     char task[60], csave[60];
@@ -203,33 +203,33 @@ bspline_optimize_lbfgsb (
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
     logfile_printf (
-	">>> %c%c%c%c%c%c%c%c%c%c\n", 
-	task[0], task[1], task[2], task[3], task[4], 
-	task[5], task[6], task[7], task[8], task[9]);
+		    ">>> %c%c%c%c%c%c%c%c%c%c\n", 
+		    task[0], task[1], task[2], task[3], task[4], 
+		    task[5], task[6], task[7], task[8], task[9]);
 
     /* run_toy_kernel();
-    getchar();
+       getchar();
     */
 
     /* Fill the GPU data structure  */
 #if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     if (parms->implementation == BIMPL_BROOK) {
 	logfile_printf (log_fp, "Initializing GPU data structures for Brook. \n");
-	    // bspline_initialize_structure_to_store_data_from_gpu(fixed, parms);
+	// bspline_initialize_structure_to_store_data_from_gpu(fixed, parms);
 	bspline_initialize_streams_on_gpu(fixed, moving, moving_grad, bxf, parms);
 	logfile_printf (log_fp, "Done. \n");
     }
 #endif
 
-#if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
-	if(parms->threading == BTHR_CUDA) {
-		bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
-		// bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
-		// bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
-		//bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
-		//bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
-		//bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
-	}
+#if (HAVE_CUDA)
+    if(parms->threading == BTHR_CUDA) {
+	bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
+	//bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
+	//bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
+	//bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
+	//bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
+	//bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
+    }
 #endif
 
     while (1) {
@@ -261,7 +261,7 @@ bspline_optimize_lbfgsb (
 	    /* Check # iterations */
 	    if (++fnev == parms->max_its) break;
 
-	  //	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
+	    //	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
 	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
 	    /* Optimizer has completed an iteration */
 	    /* Check convergence tolerance */
@@ -286,13 +286,13 @@ bspline_optimize_lbfgsb (
 	}
     }
 
-#if (HAVE_CUDA) && (BUILD_BSPLINE_CUDA)
-	if(parms->threading == BTHR_CUDA) {
-		bspline_cuda_clean_up_g();
-		// bspline_cuda_clean_up_f();
-		// bspline_cuda_clean_up_d(); // Handles versions D and E
-		// bspline_cuda_clean_up();
-	}
+#if (HAVE_CUDA)
+    if(parms->threading == BTHR_CUDA) {
+	bspline_cuda_clean_up_g();
+	// bspline_cuda_clean_up_f();
+	// bspline_cuda_clean_up_d(); // Handles versions D and E
+	// bspline_cuda_clean_up();
+    }
 #endif
 
     free (nbd);

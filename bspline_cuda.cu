@@ -72,81 +72,86 @@ float *gpu_grad_temp;
  * Initialize the GPU to execute bspline_cuda_score_g_mse().
  ***********************************************************************/
 void bspline_cuda_initialize_g(
-	Volume *fixed,
-	Volume *moving,
-	Volume *moving_grad,
-	BSPLINE_Xform *bxf,
-	BSPLINE_Parms *parms)
+			       Volume *fixed,
+			       Volume *moving,
+			       Volume *moving_grad,
+			       BSPLINE_Xform *bxf,
+			       BSPLINE_Parms *parms)
 {
-	printf("Initializing CUDA... ");
+    printf("Initializing CUDA (g) ... ");
 
-	unsigned int total_bytes = 0;
+    unsigned int total_bytes = 0;
 
-	// Copy the fixed image to the GPU.
-	if(cudaMalloc((void**)&gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for fixed image");
-	if(cudaMemcpy(gpu_fixed_image, fixed->img, fixed->npix * fixed->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
-		checkCUDAError("Failed to copy fixed image to GPU");
-	if(cudaBindTexture(0, tex_fixed_image, gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_fixed_image to linear memory");
-	total_bytes += fixed->npix * fixed->pix_size;
+    // Copy the fixed image to the GPU.
+    if(cudaMalloc((void**)&gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for fixed image");
+    if(cudaMemcpy(gpu_fixed_image, fixed->img, fixed->npix * fixed->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
+	checkCUDAError("Failed to copy fixed image to GPU");
+    if(cudaBindTexture(0, tex_fixed_image, gpu_fixed_image, fixed->npix * fixed->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_fixed_image to linear memory");
+    total_bytes += fixed->npix * fixed->pix_size;
 
-	// Copy the moving image to the GPU.
-	if(cudaMalloc((void**)&gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for moving image");
-	if(cudaMemcpy(gpu_moving_image, moving->img, moving->npix * moving->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
-		checkCUDAError("Failed to copy moving image to GPU");
-	if(cudaBindTexture(0, tex_moving_image, gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_moving_image to linear memory");
-	total_bytes += moving->npix * moving->pix_size;
+    // Copy the moving image to the GPU.
+    if(cudaMalloc((void**)&gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for moving image");
+    if(cudaMemcpy(gpu_moving_image, moving->img, moving->npix * moving->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
+	checkCUDAError("Failed to copy moving image to GPU");
+    if(cudaBindTexture(0, tex_moving_image, gpu_moving_image, moving->npix * moving->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_moving_image to linear memory");
+    total_bytes += moving->npix * moving->pix_size;
 
-	// Copy the moving gradient to the GPU.
-	if(cudaMalloc((void**)&gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for moving gradient");
-	if(cudaMemcpy(gpu_moving_grad, moving_grad->img, moving_grad->npix * moving_grad->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
-		checkCUDAError("Failed to copy moving gradient to GPU");
-	if(cudaBindTexture(0, tex_moving_grad, gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_moving_grad to linear memory");
-	total_bytes += moving_grad->npix * moving_grad->pix_size;
+    // Copy the moving gradient to the GPU.
+    if(cudaMalloc((void**)&gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for moving gradient");
+    if(cudaMemcpy(gpu_moving_grad, moving_grad->img, moving_grad->npix * moving_grad->pix_size, cudaMemcpyHostToDevice) != cudaSuccess)
+	checkCUDAError("Failed to copy moving gradient to GPU");
+    if(cudaBindTexture(0, tex_moving_grad, gpu_moving_grad, moving_grad->npix * moving_grad->pix_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_moving_grad to linear memory");
+    total_bytes += moving_grad->npix * moving_grad->pix_size;
 
-	// Allocate memory for the coefficient LUT on the GPU.  The LUT will be copied to the
-	// GPU each time bspline_cuda_score_d_mse is called.
-	coeff_mem_size = sizeof(float) * bxf->num_coeff;
-	if(cudaMalloc((void**)&gpu_coeff, coeff_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for coefficient LUT");
-	if(cudaBindTexture(0, tex_coeff, gpu_coeff, coeff_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_coeff to linear memory");
-	total_bytes += coeff_mem_size;
+    // Allocate memory for the coefficient LUT on the GPU.  The LUT will be copied to the
+    // GPU each time bspline_cuda_score_d_mse is called.
+    coeff_mem_size = sizeof(float) * bxf->num_coeff;
+    if(cudaMalloc((void**)&gpu_coeff, coeff_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for coefficient LUT");
+    if(cudaBindTexture(0, tex_coeff, gpu_coeff, coeff_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_coeff to linear memory");
+    total_bytes += coeff_mem_size;
 
-	// Allocate memory to hold the calculated dc_dv values.
-	dc_dv_mem_size = 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
-		* bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
-	if(cudaMalloc((void**)&gpu_dc_dv, dc_dv_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for the dc_dv stream on GPU");
-	if(cudaBindTexture(0, tex_dc_dv, gpu_dc_dv, dc_dv_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_dc_dv to linear memory");
-	bspline_cuda_clear_dc_dv();
-	total_bytes += dc_dv_mem_size;
+    // Allocate memory to hold the calculated dc_dv values.
+    dc_dv_mem_size = 3 
+	    * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
+	    * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
+    printf ("vox_per_rgn (%d,%d,%d), rdim (%d,%d,%d), bytes %d\n", 
+	    bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2],
+	    bxf->rdims[0], bxf->rdims[1], bxf->rdims[2],
+	    dc_dv_mem_size);
+    if(cudaMalloc((void**)&gpu_dc_dv, dc_dv_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for the dc_dv stream on GPU");
+    if(cudaBindTexture(0, tex_dc_dv, gpu_dc_dv, dc_dv_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_dc_dv to linear memory");
+    bspline_cuda_clear_dc_dv();
+    total_bytes += dc_dv_mem_size;
 
-	// Allocate memory to hold the calculated score values.
-	score_mem_size = fixed->npix * sizeof(float);
-	if(cudaMalloc((void**)&gpu_score, score_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for the score stream on GPU");
-	if(cudaBindTexture(0, tex_score, gpu_score, score_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_score to linear memory");
-	total_bytes += score_mem_size;
+    // Allocate memory to hold the calculated score values.
+    score_mem_size = fixed->npix * sizeof(float);
+    if(cudaMalloc((void**)&gpu_score, score_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for the score stream on GPU");
+    if(cudaBindTexture(0, tex_score, gpu_score, score_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_score to linear memory");
+    total_bytes += score_mem_size;
 
-	// Allocate memory to hold the gradient values.
-	if(cudaMalloc((void**)&gpu_grad, coeff_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for the grad stream on GPU");
-	if(cudaMalloc((void**)&gpu_grad_temp, coeff_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to allocate memory for the grad_temp stream on GPU");
-	if(cudaBindTexture(0, tex_grad, gpu_grad, coeff_mem_size) != cudaSuccess)
-		checkCUDAError("Failed to bind tex_grad to linear memory");
-	total_bytes += 2 * coeff_mem_size;
+    // Allocate memory to hold the gradient values.
+    if(cudaMalloc((void**)&gpu_grad, coeff_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for the grad stream on GPU");
+    if(cudaMalloc((void**)&gpu_grad_temp, coeff_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to allocate memory for the grad_temp stream on GPU");
+    if(cudaBindTexture(0, tex_grad, gpu_grad, coeff_mem_size) != cudaSuccess)
+	checkCUDAError("Failed to bind tex_grad to linear memory");
+    total_bytes += 2 * coeff_mem_size;
 
-	printf("DONE!\n");
-	printf("Total Memory Allocated on GPU: %d MB\n", total_bytes / (1024 * 1024));
+    printf("DONE!\n");
+    printf("Total Memory Allocated on GPU: %d MB\n", total_bytes / (1024 * 1024));
 }
 
 /***********************************************************************
@@ -807,11 +812,10 @@ void bspline_cuda_clear_dc_dv()
  *
  * This function copies the gradient stream to the host.
  ***********************************************************************/
-void bspline_cuda_copy_grad_to_host(
-	float* host_grad)
+void bspline_cuda_copy_grad_to_host (float* host_grad)
 {
-	if(cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
-		checkCUDAError("Failed to copy gpu_grad to CPU");
+    if (cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
+	checkCUDAError("Failed to copy gpu_grad to CPU");
 }
 
 /***********************************************************************
@@ -915,26 +919,26 @@ void bspline_cuda_calculate_run_kernels_g(
 	dim3 dimBlock1(threads_per_block, 1, 1);
 	smemSize = 12 * sizeof(float) * threads_per_block;
 
-	bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
-									    gpu_dc_dv,
-									    gpu_score,
-									    gpu_coeff,
-									    gpu_fixed_image,
-									    gpu_moving_image,
-									    gpu_moving_grad,
-									    volume_dim,
-									    img_origin,
-									    img_spacing,
-									    img_offset,
-									    roi_offset,
-									    roi_dim,
-									    vox_per_rgn,
-									    pix_spacing,
-									    rdims,
-									    cdims);
-
-    }
-    else {
+	bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>
+		(
+		 gpu_dc_dv,
+		 gpu_score,
+		 gpu_coeff,
+		 gpu_fixed_image,
+		 gpu_moving_image,
+		 gpu_moving_grad,
+		 volume_dim,
+		 img_origin,
+		 img_spacing,
+		 img_offset,
+		 roi_offset,
+		 roi_dim,
+		 vox_per_rgn,
+		 pix_spacing,
+		 rdims,
+		 cdims);
+	printf ("Launch completed without crashing.\n");
+    } else {
 	int tiles_per_launch = 512;
 	printf("Launching low memory version of bspline_cuda_score_g_mse_kernel1 with %d tiles per launch. \n", tiles_per_launch);
 		
@@ -945,23 +949,23 @@ void bspline_cuda_calculate_run_kernels_g(
 	dim3 dimBlock1(threads_per_block, 1, 1);
 	smemSize = 12 * sizeof(float) * threads_per_block;
 
-	for(int i = 0; i < rdims.x * rdims.y * rdims.z; i += tiles_per_launch) {
-
-	    bspline_cuda_score_g_mse_kernel1_low_mem<<<dimGrid1, dimBlock1, smemSize>>>(
-											gpu_dc_dv,
-											gpu_score,
-											i,
-											tiles_per_launch,
-											volume_dim,
-											img_origin,
-											img_spacing,
-											img_offset,
-											roi_offset,
-											roi_dim,
-											vox_per_rgn,
-											pix_spacing,
-											rdims,
-											cdims);
+	for (int i = 0; i < rdims.x * rdims.y * rdims.z; i += tiles_per_launch) {
+	    bspline_cuda_score_g_mse_kernel1_low_mem<<<dimGrid1, dimBlock1, smemSize>>>
+		    (
+		     gpu_dc_dv,
+		     gpu_score,
+		     i,
+		     tiles_per_launch,
+		     volume_dim,
+		     img_origin,
+		     img_spacing,
+		     img_offset,
+		     roi_offset,
+		     roi_dim,
+		     vox_per_rgn,
+		     pix_spacing,
+		     rdims,
+		     cdims);
 	}
 
     }
@@ -988,16 +992,19 @@ void bspline_cuda_calculate_run_kernels_g(
     smemSize = 15 * sizeof(float) * threads_per_block;
 
     //printf("Launching bspline_cuda_score_f_mse_kernel2...");
-    bspline_cuda_score_g_mse_kernel2<<<dimGrid2, dimBlock2, smemSize>>>(
-									gpu_dc_dv,
-									gpu_grad,
-									num_threads,
-									rdims,
-									cdims,
-									vox_per_rgn);
+    bspline_cuda_score_g_mse_kernel2<<<dimGrid2, dimBlock2, smemSize>>>
+	    (
+	     gpu_dc_dv,
+	     gpu_grad,
+	     num_threads,
+	     rdims,
+	     cdims,
+	     vox_per_rgn);
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_g_mse_kernel2 failed");
+
+    printf ("bspline_cuda_score_g_mse_kernel2 complete.\n");
 
 #if defined (_WIN32)
     QueryPerformanceCounter(&clock_count);
@@ -1280,7 +1287,8 @@ void bspline_cuda_final_steps_f(
 	dim3 dimBlock2(128, 2, 2);
 	smemSize = 512 * sizeof(float);
 
-	// printf("Launching bspline_cuda_update_grad_kernel... ");
+#if defined (commentout)
+	printf("Launching bspline_cuda_update_grad_kernel... ");
 	bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>>(
 		gpu_grad,
 		num_vox,
@@ -1288,9 +1296,16 @@ void bspline_cuda_final_steps_f(
 
 	if(cudaThreadSynchronize() != cudaSuccess)
 		checkCUDAError("bspline_cuda_update_grad_kernel failed");
+#endif
 
 	if(cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
 		checkCUDAError("Failed to copy gpu_grad to CPU");
+
+	/* kkk */
+	printf ("host_grad[0] = %g\n", host_grad[0]);
+	printf ("host_grad[5] = %g\n", host_grad[5]);
+	printf ("host_grad[10000] = %g\n", host_grad[10000]);
+	exit (0);
 		
 	// printf("Launching bspline_cuda_compute_grad_mean_kernel... ");
 	bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
