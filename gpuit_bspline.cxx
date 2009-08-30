@@ -75,11 +75,19 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     }
     switch (stage->threading_type) {
     case THREADING_SINGLE:
-	parms.implementation = 'c';
+	if (stage->alg_flavor == 0) {
+	    parms.implementation = 'c';
+	} else {
+	    parms.implementation = stage->alg_flavor;
+	}
 	parms.threading = BTHR_CPU;
 	break;
     case THREADING_OPENMP:
-	parms.implementation = 'f';
+	if (stage->alg_flavor == 0) {
+	    parms.implementation = 'f';
+	} else {
+	    parms.implementation = stage->alg_flavor;
+	}
 	parms.threading = BTHR_CPU;
 	break;
     case THREADING_BROOK:
@@ -87,7 +95,11 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 	parms.threading = BTHR_BROOK;
 	break;
     case THREADING_CUDA:
-	parms.implementation = 'g';
+	if (stage->alg_flavor == 0) {
+	    parms.implementation = 'g';
+	} else {
+	    parms.implementation = stage->alg_flavor;
+	}
 	parms.threading = BTHR_CUDA;
 	break;
     default:

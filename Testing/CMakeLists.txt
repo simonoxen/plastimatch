@@ -34,10 +34,45 @@ ADD_TEST (bspline_test_1_compare ${CMAKE_COMMAND} -E compare_files
 
 ## bspline
 PLM_ADD_TEST (
-  "bspline-a" 
+  "bspline-a"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+
+PLM_ADD_TEST (
+  "bspline-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+
+PLM_ADD_TEST (
+  "bspline-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;c;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+
+PLM_ADD_TEST (
+  "bspline-d"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+
+PLM_ADD_TEST (
+  "bspline-e"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+
+PLM_ADD_TEST (
+  "bspline-f"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
 
 ## drr
