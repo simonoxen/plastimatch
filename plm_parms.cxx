@@ -197,6 +197,11 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    stage->threading_type = THREADING_SINGLE;
 #endif
 	}
+    else if (!strcmp (key, "alg_flavor")) {
+	if (section == 0) goto error_not_global;
+	if (strlen (val) >= 1) 
+	    stage->alg_flavor = val[0];
+	}
 	else {
 	    goto error_exit;
 	}

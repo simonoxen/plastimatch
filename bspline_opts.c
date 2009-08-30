@@ -23,7 +23,8 @@ print_usage (void)
 	    " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
-	    " -O outfile                 The output file\n"
+	    " -V outfile                 The output vector field\n"
+	    " -O outfile                 The output warped image\n"
 	    " --debug                    Create various debug files\n"
 	    );
     exit (1);
@@ -36,7 +37,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
     int d, i, rc;
     BSPLINE_Parms* parms = &options->parms;
 
-    options->output_fn = "output.mha";
+    memset (options, 0, sizeof (BSPLINE_Options));
     for (d = 0; d < 3; d++) {
 	options->vox_per_rgn[d] = 15;
     }
@@ -131,7 +132,15 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->output_fn = strdup (argv[i]);
+	    options->output_warped_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-V")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->output_vf_fn = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "--debug")) {
 	    parms->debug = 1;

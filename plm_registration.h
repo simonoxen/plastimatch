@@ -68,6 +68,7 @@ public:
     int xform_type;
     int optim_type;
     int impl_type;
+    char alg_flavor;
     int threading_type;
     int metric_type;
     int resolution[3];

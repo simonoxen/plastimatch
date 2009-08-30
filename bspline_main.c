@@ -28,8 +28,8 @@ main (int argc, char* argv[])
     BSPLINE_Parms* parms = &options.parms;
     BSPLINE_Xform bxf;
     Volume *moving, *fixed, *moving_grad;
-    Volume *vector_field;
-    Volume *moving_warped;
+    Volume *vector_field = 0;
+    Volume *moving_warped = 0;
     int roi_offset[3];
     int i;
 
@@ -66,23 +66,35 @@ main (int argc, char* argv[])
     bspline_optimize (&bxf, parms, fixed, moving, moving_grad);
 
     /* Create vector field from bspline coefficients and save */
-    vector_field = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing,
-	PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
-    bspline_interpolate_vf (vector_field, &bxf);
-    write_mha (options.output_fn, vector_field);
+    if (options.output_vf_fn || options.output_warped_fn) {
+	printf ("Creating vector field.\n");
+	vector_field = volume_create (fixed->dim, fixed->offset, 
+				      fixed->pix_spacing,
+				      PT_VF_FLOAT_INTERLEAVED, 
+				      fixed->direction_cosines, 0);
+	bspline_interpolate_vf (vector_field, &bxf);
+	if (options.output_vf_fn) {
+	    printf ("Writing vector field.\n");
+	    write_mha (options.output_vf_fn, vector_field);
+	}
+    }
 
     /* Create warped output image and save */
-    moving_warped = volume_warp (0, moving, vector_field);
-    write_mha ("warped.mha", moving_warped);
+    if (options.output_warped_fn) {
+	printf ("Warping image.\n");
+	moving_warped = volume_warp (0, moving, vector_field);
+	printf ("Writing warped image.\n");
+	write_mha (options.output_warped_fn, moving_warped);
+    }
 
-	/* Output the difference between the fixed and moving images after registration. */
-	/*
-	for(i = 0; i < moving_warped->npix; i++)
-	{
-		((float*)moving_warped->img)[i] -= ((float*)fixed->img)[i];
-	}
-	write_mha("difference.mha", moving_warped);
-	*/
+    /* Output the difference between the fixed and moving images after registration. */
+    /*
+      for(i = 0; i < moving_warped->npix; i++)
+      {
+      ((float*)moving_warped->img)[i] -= ((float*)fixed->img)[i];
+      }
+      write_mha("difference.mha", moving_warped);
+    */
 
     /* Free memory */
     bspline_parms_free (parms);

@@ -146,6 +146,7 @@ gpuit_EXPORT
 void
 volume_free (Volume* vol)
 {
+    if (!vol) return;
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	float** planes = (float**) vol->img;
 	free (planes[0]);

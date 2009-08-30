@@ -18,7 +18,8 @@ typedef struct BSPLINE_Options_struct BSPLINE_Options;
 struct BSPLINE_Options_struct {
     char* fixed_fn;
     char* moving_fn;
-    char* output_fn;
+    char* output_warped_fn;
+    char* output_vf_fn;
     char* method;
     int vox_per_rgn[3];
     BSPLINE_Parms parms;
