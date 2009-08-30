@@ -13,7 +13,7 @@
 #cmakedefine HAVE_PANTHEIOS 1
 #cmakedefine HAVE_FFTW 1
 
-#cmakedefine BUILD_SHARED_LIBS 1
+#cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine OPENMP_FOUND 1
 #cmakedefine BUILD_BSPLINE_BROOK 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1

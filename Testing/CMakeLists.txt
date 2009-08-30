@@ -33,12 +33,12 @@ ADD_TEST (bspline_test_1_compare ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
 
 ## bspline
-PLM_ADD_TEST (
-  "bspline-a" 
-  ""
-  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
-  )
+# PLM_ADD_TEST (
+#   "bspline-a" 
+#   ""
+#   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+#   "${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+#   )
 
 ## drr
 PLM_ADD_TEST (

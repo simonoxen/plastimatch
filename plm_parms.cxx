@@ -181,13 +181,21 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    stage->threading_type = THREADING_SINGLE;
 	}
 	else if (!strcmp(val,"openmp")) {
+#if (OPENMP_FOUND)
 	    stage->threading_type = THREADING_OPENMP;
+#else
+	    stage->threading_type = THREADING_SINGLE;
+#endif
 	}
 	else if (!strcmp(val,"brook")) {
 	    stage->threading_type = THREADING_BROOK;
 	}
 	else if (!strcmp(val,"cuda")) {
+#if (HAVE_CUDA)
 	    stage->threading_type = THREADING_CUDA;
+#else
+	    stage->threading_type = THREADING_SINGLE;
+#endif
 	}
 	else {
 	    goto error_exit;
