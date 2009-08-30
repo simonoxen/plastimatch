@@ -109,31 +109,38 @@ PLM_ADD_TEST (
 IF(FALSE)
 ENDIF(FALSE)
 PLM_ADD_TEST (
-  "plastimatch-register-itk-translation"
+  "plastimatch-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-register-itk-translation.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-itk-translation.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-register-plm-bspline-single" 
+  "plastimatch-bspline-single-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-single.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-single-c.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-register-plm-bspline-openmp" 
+  "plastimatch-bspline-single-f" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-openmp.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-single-f.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-register-plm-bspline-cuda" 
+  "plastimatch-bspline-openmp" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-register-plm-bspline-cuda.txt"
+  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-openmp.txt"
+  )
+
+PLM_ADD_TEST (
+  "plastimatch-bspline-cuda" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-cuda.txt"
   )
 
 ## xf_to_xf
