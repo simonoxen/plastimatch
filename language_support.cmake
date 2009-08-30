@@ -48,14 +48,11 @@ endif (CMAKE_${language}_COMPILER_WORKS)
     ERROR_FILE "${CMAKE_BINARY_DIR}/language_tests/${language}/test1.stderr"
     )
 
-  find_file (${language_works} 
-    ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS)
-  if (${language_works})
+  if (EXISTS ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS)
     set(${language_works} ON PARENT_SCOPE)
-  else (${language_works})
+  else (EXISTS ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS)
     set(${language_works} OFF PARENT_SCOPE)
-  endif (${language_works})
-
+  endif (EXISTS ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS)
 
 #   if(return_code EQUAL 0)
 #     # Second run

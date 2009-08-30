@@ -15,7 +15,7 @@ case $CNAME in
     export PATH=$PATH:/cygdrive/c/gcs6/build/plastimatch-cygwin
     ;;
     "physics.mgh.harvard.edu")
-    export PATH=$PATH:/home/gcs6/build/plastimatch-3.10.2
+    export PATH=$PATH:/home/gcs6/build/plastimatch-3.14.0
     export PATH=$PATH:/home/gcs6/projects/plastimatch/cttools
     ;;
     "fantasy")
