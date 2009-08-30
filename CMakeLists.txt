@@ -12,6 +12,7 @@ PROJECT (plastimatch)
 INCLUDE (CheckFunctionExists)
 INCLUDE (language_support.cmake)  # http://www.cmake.org/Bug/view.php?id=9220
 
+
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------

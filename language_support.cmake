@@ -27,6 +27,11 @@ function(workaround_9220 language language_works)
     "project(test NONE)
 cmake_minimum_required(VERSION 2.6.0)
 enable_language(${language} OPTIONAL)
+if (CMAKE_${language}_COMPILER_WORKS)
+  file (WRITE ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS \"YES\")
+else (CMAKE_${language}_COMPILER_WORKS)
+  file (WRITE DONT-WORK \"YES\")
+endif (CMAKE_${language}_COMPILER_WORKS)
 "
     )
   file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/language_tests/${language})
@@ -39,25 +44,36 @@ enable_language(${language} OPTIONAL)
     RESULT_VARIABLE return_code
     OUTPUT_QUIET
     ERROR_QUIET
+    OUTPUT_FILE "${CMAKE_BINARY_DIR}/language_tests/${language}/test1.stdout"
+    ERROR_FILE "${CMAKE_BINARY_DIR}/language_tests/${language}/test1.stderr"
     )
 
-  if(return_code EQUAL 0)
-    # Second run
-    execute_process (
-      COMMAND ${CMAKE_COMMAND} .
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language}
-      RESULT_VARIABLE return_code
-      OUTPUT_QUIET
-      ERROR_QUIET
-      )
-    if(return_code EQUAL 0)
-      set(${language_works} ON PARENT_SCOPE)
-    else(return_code EQUAL 0)
-      set(${language_works} OFF PARENT_SCOPE)
-    endif(return_code EQUAL 0)
-  else(return_code EQUAL 0)
+  find_file (${language_works} 
+    ${CMAKE_BINARY_DIR}/language_tests/${language}/WORKS)
+  if (${language_works})
+    set(${language_works} ON PARENT_SCOPE)
+  else (${language_works})
     set(${language_works} OFF PARENT_SCOPE)
-  endif(return_code EQUAL 0)
+  endif (${language_works})
+
+
+#   if(return_code EQUAL 0)
+#     # Second run
+#     execute_process (
+#       COMMAND ${CMAKE_COMMAND} .
+#       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/language_tests/${language}
+#       RESULT_VARIABLE return_code
+#       OUTPUT_QUIET
+#       ERROR_QUIET
+#       )
+#     if(return_code EQUAL 0)
+#       set(${language_works} ON PARENT_SCOPE)
+#     else(return_code EQUAL 0)
+#       set(${language_works} OFF PARENT_SCOPE)
+#     endif(return_code EQUAL 0)
+#   else(return_code EQUAL 0)
+#     set(${language_works} OFF PARENT_SCOPE)
+#   endif(return_code EQUAL 0)
 endfunction(workaround_9220)
 
 # Temporary tests of the above function.

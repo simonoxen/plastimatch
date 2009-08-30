@@ -1,3 +1,31 @@
+***** Alternative warping engine *****
+
+The exiting warping engine is slow, and uses a lot of memory.  On many 
+machines, plastimatch crashes because it uses too much memory.
+However, a low-memory warping method requires tight integration with 
+the xform type.  
+
+Challenges:
+
+1) B-spline code needs clean-up to remove redundancies.  However, removing 
+   redundancies takes time so as not to break everything. 
+2) Some of the xforms are only implemented in itk.  These will not benefit 
+   from redesign.
+3) Writing lots of separate warping functions is tedious.
+
+Strategy:
+
+Stage 1:  Refactor b-spline code
+Stage 2:  Write gpuit b-spline warper
+Stage 3:  Consider whether other xforms would benefit
+
+
+***** B-spline refactoring project *****
+
+Stage 1:  Write test harnesses to eliminate breakage
+Stage 2:  Identify parts to refactor
+Stage 3:  Do the refactoring
+
 ***** Proposed engineering changes: Aug 1, 2009 *****
 
 1) Reduce number of executables
