@@ -207,11 +207,13 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         while (fgetc (fp) != '|') ;
 
         if (1 != fscanf (fp, "%d", &num_pt)) {
+			printf("num_pt=%s\n",&num_pt);
 	    goto not_successful;
         }
         fgetc (fp);
 
         if (1 != fscanf (fp, "%d", &slice_idx)) {
+			printf("slice_idx=%d\n",&slice_idx);
 	    goto not_successful;
         }
         fgetc (fp);
