@@ -73,8 +73,6 @@ load_xform (Xform *xf, char* fn)
 	print_and_exit ("Error reading from xf_in file.\n");
     }
 
-    printf ("Test buf = %s\n", buf);
-
     if (strcmp_alt (buf,"ObjectType = MGH_XFORM_TRANSLATION") == 0) {
 	TranslationTransformType::Pointer trn = TranslationTransformType::New();
 	TranslationTransformType::ParametersType xfp(12);
