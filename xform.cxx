@@ -73,7 +73,9 @@ load_xform (Xform *xf, char* fn)
 	print_and_exit ("Error reading from xf_in file.\n");
     }
 
-    if (strcmp_alt(buf,"ObjectType = MGH_XFORM_TRANSLATION")==0) {
+    printf ("Test buf = %s\n", buf);
+
+    if (strcmp_alt (buf,"ObjectType = MGH_XFORM_TRANSLATION") == 0) {
 	TranslationTransformType::Pointer trn = TranslationTransformType::New();
 	TranslationTransformType::ParametersType xfp(12);
 	int num_parms;
@@ -121,7 +123,44 @@ load_xform (Xform *xf, char* fn)
 	}
 	xf->set_aff (aff);
 	fclose (fp);
-    } else if (strcmp_alt(buf,"ObjectType = MGH_XFORM_BSPLINE")==0) {
+    } else if (strcmp_alt (buf, "#Insight Transform File V1.0") == 0) {
+	float f;
+	int p, s, s1, rc;
+	int num_parms = 12;
+	AffineTransformType::Pointer aff = AffineTransformType::New();
+	AffineTransformType::ParametersType xfp(12);
+
+	/* Skip 2 lines */
+	fgets (buf, 1024, fp);
+	fgets (buf, 1024, fp);  /* GCS FIX: need to test if the file is actually affine! */
+
+	/* Read line with parameters */
+	fgets (buf, 1024, fp);
+
+	/* Find beginning of parameters */
+	rc = sscanf (buf, "Parameters: %n%f", &s, &f);
+	if (rc != 1) {
+	    print_and_exit ("Error parsing ITK-format xform file.\n");
+	}
+
+	p = 0;
+	while ((rc = sscanf (&buf[s], "%f%n", &f, &s1)) == 1) {
+	    xfp[p++] = (double) f;
+	    if (p == num_parms) break;
+	    s += s1;
+	}
+
+	if (p != 12) {
+	    print_and_exit ("Wrong number of parameters in ITK xform file.\n");
+	} else {
+	    aff->SetParameters(xfp);
+#if defined (commentout)
+	    std::cout << "Initial affine parms = " << aff << std::endl;
+#endif
+	}
+	xf->set_aff (aff);
+	fclose (fp);
+    } else if (strcmp_alt (buf, "ObjectType = MGH_XFORM_BSPLINE") == 0) {
 	int s[3];
 	float p[3];
 	BsplineTransformType::RegionType::SizeType bsp_size;
