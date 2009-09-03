@@ -183,9 +183,11 @@ main (int argc, char* argv[])
 		}
 	    }
         }
-	if (parms->prefix) {
-	    printf ("writing file: %s\n", fn);
-	    write_mha (fn, uchar_vol);
+	if (curr_structure->num_contours > 0) {
+	    if (parms->prefix) {
+		printf ("writing file: %s\n", fn);
+		write_mha (fn, uchar_vol);
+	    }
 	}
     }
     if (parms->labelmap_fn[0]) {
