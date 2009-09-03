@@ -81,7 +81,7 @@ for $i (0..$#{$ss_structures}) {
     next if not $s->{name};
     print GO "$i|$s->{color}|$s->{name}\n";
 }
-print GO "END_OF_ROI_NAMES\n";
+#print GO "END_OF_ROI_NAMES\n";
 
 
 ## Write list of polylines
