@@ -6,6 +6,7 @@
 #include "itkResampleImageFilter.h"
 #include "itkAffineTransform.h"
 #include "itkVectorResampleImageFilter.h"
+#include "itkNearestNeighborInterpolateImageFunction.h"
 
 #include "itk_image.h"
 #include "resample_mha.h"
@@ -206,13 +207,14 @@ vector_resample_image (T& image, float x_spacing,
 template <class T>
 T
 resample_image (T& image, DoublePointType origin, 
-		DoubleVectorType spacing, SizeType size, float default_val)
+		DoubleVectorType spacing, SizeType size, float default_val, int interp_lin)
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
     typedef itk::ResampleImageFilter < ImageType, ImageType > FilterType;
     typedef itk::LinearInterpolateImageFunction< 
-	    ImageType, double >  InterpolatorType;
+	    ImageType, double >  LinInterpType;
+	typedef itk::NearestNeighborInterpolateImageFunction < ImageType, double >  NNInterpType;
 
     typename FilterType::Pointer filter = FilterType::New();
 
@@ -225,8 +227,15 @@ resample_image (T& image, DoublePointType origin,
     TransformType::Pointer transform = TransformType::New();
     filter->SetTransform (transform);
 
-    typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
-    filter->SetInterpolator (interpolator);
+	typename LinInterpType::Pointer l_interpolator = LinInterpType::New();
+	typename NNInterpType::Pointer nn_interpolator = NNInterpType::New();
+
+	if (interp_lin) {
+	filter->SetInterpolator (l_interpolator);
+    } else {
+	filter->SetInterpolator (nn_interpolator);
+    }
+   
 
     filter->SetDefaultPixelValue ((PixelType) default_val);
 
@@ -247,7 +256,7 @@ resample_image (T& image, DoublePointType origin,
 
 template <class T>
 T
-resample_image (T& image, float* origin, float* spacing, int* size, float default_val)
+resample_image (T& image, float* origin, float* spacing, int* size, float default_val, int interp_lin)
 {
     DoublePointType cpp_origin;
     DoubleVectorType cpp_spacing;
@@ -258,7 +267,7 @@ resample_image (T& image, float* origin, float* spacing, int* size, float defaul
 	cpp_size[i] = size[i];
     }
 
-    return resample_image (image, cpp_origin, cpp_spacing, cpp_size, default_val);
+    return resample_image (image, cpp_origin, cpp_spacing, cpp_size, default_val, interp_lin);
 }
 
 template <class T>
@@ -329,10 +338,10 @@ template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image
 template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
-template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val);
-template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val);
-template UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val);
-template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val);
+template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+template UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);

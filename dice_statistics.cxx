@@ -43,6 +43,7 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//float sp_test=0;
 	//float dice_alt=0;
 	int i=0;
+	float radius=0;
 
 	DoubleVectorType c_ref;
 	DoubleVectorType c_warp;
@@ -77,6 +78,9 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 		k=it.GetIndex();
 		if(reference->GetPixel(k)){
 			sizeRef++;
+		}
+		if(reference->GetPixel(k)){
+			/*sizeRef++;*/
 			if(warped->GetPixel(k)==reference->GetPixel(k)){
 				overlap++;
 			}else if (warped->GetPixel(k)!=reference->GetPixel(k)){
@@ -95,21 +99,33 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 		i++;
 	}
 
+	
 
 	
 	printf("# of white pixels in the 2 images: REF: %d WARP: %d\n",sizeRef,sizeWarp);
 
+	if(overlap==0){
+		printf("the two images have no overlap!");
+		//exit(-1);
+	}
 	volOver=overlap*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 
 	//computes moments for reference image
 	moment->SetImage(reference);
 	moment->Compute();
 	c_ref=moment->GetCenterOfGravity();
-//	vol_ref=moment->GetTotalMass();
+	//vol_ref=moment->GetTotalMass();
 	vol_ref=sizeRef*(reference->GetSpacing()[0]*reference->GetSpacing()[1]*reference->GetSpacing()[2]);
+	printf("spacing: %f %f %f \n",reference->GetSpacing()[0],reference->GetSpacing()[1],reference->GetSpacing()[2]);
+
+	//in case you are working with spheres, uncomment these lines:
+	//radius=(3*vol_ref)/(4*3.14);
+	//fprintf(output,"RADIUS REF \t%f\n",radius);
+
 	percVolOver=(volOver/vol_ref)*100;
 
 	printf("VOLUME ref: %f\n", vol_ref);
+	fprintf(output,"volref \t%f\n",vol_ref);
 	printf("VOLUME OVERLAP PERC ex_1: %f \n",percVolOver);
 	printf("CENTER ref: %g %g %g\n",c_ref[0],c_ref[1],c_ref[2]);
 
@@ -129,6 +145,8 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//vol_warp=moment->GetTotalMass();
 	vol_warp=sizeWarp*(warped->GetSpacing()[0]*warped->GetSpacing()[1]*warped->GetSpacing()[2]);
 	percVolOver=(volOver/vol_warp)*100;
+
+
 
 	printf("VOLUME warp: %f\n", vol_warp);
 	printf("VOLUME OVERLAP PERC ex_2: %f \n",percVolOver);
@@ -150,20 +168,26 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	median_center[2]=(c_ref[2]+c_warp[2])/2;
 
 	percVolOver=(volOver/median_vol)*100;	
-	//printf("MEDIAN VOLUME: %f\n", median_vol);
-	//printf("MEDIAN VOLUME OVERLAP PERC: %f \n",percVolOver);
-	//fprintf(output,"median\t %f\t %f\n",  median_vol, percVolOver);
-	//printf("MEDIAN CENTER OF MASS: %g %g %g\n",median_center[0],median_center[1],median_center[2]);
+	printf("MEDIAN VOLUME: %f\n", median_vol);
+	printf("MEDIAN VOLUME OVERLAP PERC: %f \n",percVolOver);
+	fprintf(output,"median\t %f\t %f\n",  median_vol, percVolOver);
+	printf("MEDIAN CENTER OF MASS: %g %g %g\n",median_center[0],median_center[1],median_center[2]);
 	printf("MEAN VOLUME: %f\n", median_vol);
 	printf("MEAN VOLUME OVERLAP PERC: %f \n",percVolOver);
 	fprintf(output,"mean\t %f\t %f\n",  median_vol, percVolOver);
 	printf("MEAN CENTER OF MASS: %g %g %g\n",median_center[0],median_center[1],median_center[2]);
 
+	//if you are qorking with spheres, you can uncomment this:
+	//radius=(3*vol_warp)/(4*3.14);
+	//printf(output,"RADIUS WARP \t%f\n",radius);
+
 	fprintf(output,"\n");
 	fprintf(output,"CENTER_OF_MASS\n EXPERT\t");
-	fprintf(output, "x\t\t y\t\t z\n");
+	fprintf(output, "\t x\t\t y\t\t z\n");
 	fprintf(output,"ref\t %g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
 	fprintf(output,"warp\t %g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
+	fprintf(output,"%g\t %g\t %g\n",c_ref[0],c_ref[1],c_ref[2]);
+	fprintf(output,"%g\t %g\t %g\n",c_warp[0],c_warp[1],c_warp[2]);
 	fprintf(output,"mean \t %g\t %g\t %g\n",median_center[0],median_center[1],median_center[2]);
 	fprintf(output,"\n");
 
@@ -175,34 +199,35 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//scaling of the TN with respect to FP
 	if( (float)FP/(float)(FP+TN)<=1){
 		//printf("alfa: %f", (double)((FP+TN)/sizeRef));
-		alpha=ceil((double)((FP+TN)/sizeRef));
+		/*alpha=ceil((double)((FP+TN)/sizeRef));*/
+		alpha=ceil((double)((FP)/(vol_ref/1000)));
 	}
 	
 	printf("overlap=TP: %d\n",overlap);
-	fprintf(output,"TP: %d\n",overlap);
+	fprintf(output,"TP \t%d\n",overlap);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 
 	printf("TN: %d\n",TN);
-	fprintf(output,"TN: %d\n",TN);
+	fprintf(output,"TN \t%d\n",TN);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 
 	printf("FN: %d\n",FN);
-	fprintf(output,"FN: %d\n",FN);
+	fprintf(output,"FN \t%d\n",FN);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 
 	printf("FP: %d\n",FP);
-	fprintf(output,"FP: %d\n",FP);
+	fprintf(output,"FP \t%d\n",FP);
 	printf("\n\n");
-	fprintf(output,"\n");
-
+	//fprintf(output,"\n");
+	//fprintf(output,"ROC\n");
 	dice=((float)(2*overlap))/((float)(sizeRef+sizeWarp));
 	printf("DICE COEFFICIENT: %f\n",dice);
-	fprintf(output,"DICE: %f\n",dice);
+	fprintf(output,"DICE \t%f\n",dice);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 
 	//float dice2=0;
 	//dice2=((float)(2*overlap))/((float)(2*overlap+FN+FP));
@@ -212,12 +237,13 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 	//fprintf(output,"\n");
 
 	printf("ALPHA: %f\n",alpha);
+	fprintf(output,"ALPHA \t%f\n",alpha);
 
 	se=((float)overlap)/((float)(overlap+FN));
 	printf("Sensitivity: %f\n",se);
-	fprintf(output,"Sensitivity: %f\n",se);
+	fprintf(output,"Sensitivity \t%f\n",se);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 
 	if (alpha==0){
 		printf("alpha = 0 \n");
@@ -226,9 +252,9 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 		sp=-((float)FP/(float)(alpha*sizeRef))+1;
 	}
 	printf("SP: %f\n",sp);
-	fprintf(output,"SP: %f\n",sp);
+	fprintf(output,"Specificity \t%f\n",sp);
 	printf("\n\n");
-	fprintf(output,"\n");
+	//fprintf(output,"\n");
 }
 
 void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Pointer ex_3, FILE* output)

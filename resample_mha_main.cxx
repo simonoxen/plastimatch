@@ -24,6 +24,7 @@ print_usage (void)
 	    "            --origin=\"x y z\"\n"
 	    "            --spacing=\"x y z\"\n"
 	    "            --size=\"x y z\"\n"
+		"            --interpolation={nn, linear}\n"
 	    "            --default_val=val\n");
     exit (1);
 }
@@ -107,7 +108,8 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	{ "origin",         required_argument,      NULL,           6 },
 	{ "spacing",        required_argument,      NULL,           7 },
 	{ "size",           required_argument,      NULL,           8 },
-	{ "default_val",    required_argument,      NULL,           9 },
+	{ "interpolation",  required_argument,      NULL,           9 },
+	{ "default_val",    required_argument,      NULL,           10 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -195,6 +197,16 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	    resp->have_size = 1;
 	    break;
 	case 9:
+	    if (!strcmp (optarg, "nn")) {
+		resp->interp_lin = 0;
+	    } else if (!strcmp (optarg, "linear")) {
+		resp->interp_lin = 1;
+	    } else {
+		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
+		print_usage ();
+	    }
+	    break;
+	case 10:
 	    rc = sscanf (optarg, "%g", &(resp->default_val));
 	    if (rc != 1) {
 		printf ("Default value option must have one arguments\n");
@@ -237,7 +249,7 @@ do_resampling (Resample_Parms* resp)
 		    resp->subsample[1], resp->subsample[2], resp->default_val);
 	}
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
+	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
 	}
 	if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 	    //just output
@@ -280,7 +292,7 @@ do_resampling (Resample_Parms* resp)
 		    resp->subsample[1], resp->subsample[2], resp->default_val);
 	}
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
+	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
 	}
 
 	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
@@ -313,7 +325,7 @@ do_resampling (Resample_Parms* resp)
 		    resp->subsample[1], resp->subsample[2], resp->default_val);
 	}
 	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val);
+	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
 	}
 
 	if (resp->output_type == PLM_IMG_TYPE_ITK_UCHAR) {

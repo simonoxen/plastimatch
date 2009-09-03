@@ -26,6 +26,7 @@ public:
     float default_val;
     int have_default_val;
     int adjust;
+	int interp_lin;
 public:
     Resample_Parms () {
 	*mha_in_fn = 0;
@@ -45,6 +46,7 @@ public:
 	default_val = 0.0;
 	have_default_val = 0;
 	adjust = 0;
+	interp_lin=1;
     }
 };
 
