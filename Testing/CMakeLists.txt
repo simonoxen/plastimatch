@@ -1,18 +1,20 @@
 PROJECT(PLM_Testing)
 
+SET (SYNTH_MHA_SIZE 38)
+
 ## synth_test_1 - create synthetic mha file
 PLM_ADD_TEST (
   "synth_test_1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;50 50 50;--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;synth_1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 ## synth_test_2 - create synthetic mha file
 PLM_ADD_TEST (
   "synth_test_2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;50 50 50;--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 ## bspline-bxf - read and write bxf

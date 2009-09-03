@@ -177,6 +177,7 @@ Volume* read_mha (char* filename)
 	printf ("Oops, couldn't interpret mha data type\n");
 	exit (-1);
     }
+    printf ("pixsize = %d, npix = %d\n", vol->pix_size, vol->npix);
     vol->img = malloc (vol->pix_size*vol->npix);
     if (!vol->img) {
 	printf ("Oops, out of memory\n");

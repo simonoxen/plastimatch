@@ -90,6 +90,7 @@ parse_args (MGHDRR_Options* options, int argc, char* argv[])
 
     set_default_options (options);
     for (i = 1; i < argc; i++) {
+	//printf ("ARG[%d] = %s\n", i, argv[i]);
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-r")) {
 	    i++;

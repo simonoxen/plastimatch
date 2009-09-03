@@ -17,8 +17,8 @@
 
 #define MSD_NUM_BINS 60
 
-// #define ULTRA_VERBOSE 1
-// #define VERBOSE 1
+#define ULTRA_VERBOSE 1
+//#define VERBOSE 1
 
 #define PREPROCESS_ATTENUATION 1
 #define IMGTYPE float
@@ -123,7 +123,7 @@ drr_boundary_intersection_test (double ips[2][4], int *num_ips, double* plane, i
     /* No intersection when degenerate */
     if (drr_degeneracy_test(plane,ray) < DRR_PLANE_RAY_TOLERANCE) {
 #if defined (VERBOSE)
-	if (g_debug) printf ("Warning, degenerate ray\n");
+	printf ("Warning, degenerate ray\n");
 	vec4_print_eol (stdout, plane);
 	vec4_print_eol (stdout, ray);
 #endif
@@ -412,6 +412,11 @@ drr_trace_ray_nointerp (Volume* vol, double* p1in, double* p2in,
 	double pix_len;
 #if defined (ULTRA_VERBOSE)
 	printf ("(%d %d %d) (%g,%g,%g)\n",ai_x,ai_y,ai_z,ao_x,ao_y,ao_z);
+	printf ("img = %p, zz = %p, off = %d\n", 
+		img, zz, 
+		ai_z*vol->dim[0]*vol->dim[1], 
+		ai_y*vol->dim[0]+ai_x);
+	fflush (stdout);
 #endif
 	pix_density = zz[ai_y*vol->dim[0]+ai_x];
 	if ((ao_x < ao_y) && (ao_x < ao_z)) {
@@ -659,7 +664,10 @@ drr_trace_ray_trilin_exact (Volume* vol, double* p1in, double* p2in)
 	    double w0 = ao_z0 / al_z;
 	    double w1 = ao_z1 / al_z;
 	    double WW = (w1 - w0);
-//	    double tmp_accum;
+#if defined (ULTRA_VERBOSE)
+	    double tmp_accum;
+#endif
+
 #if defined (PREPROCESS_ATTENUATION)
 	    accum += pix_len *
 		    (interp_coefficient (u0,UU,v0,VV,w0,WW,1,1,1)
@@ -841,6 +849,12 @@ drr_trace_ray_trilin_exact_under_development (Volume* vol, double* p1in,
 	float pix111, pix112, pix121, pix122, 
 		pix211, pix212, pix221, pix222;
 	double pix_len;
+	double ap_x_init = ap_x;
+	double ap_y_init = ap_y;
+	double ap_z_init = ap_z;
+	double ap_x_end;
+	double ap_y_end;
+	double ap_z_end;
 
 #if defined (ULTRA_VERBOSE)
 	printf ("(%d %d %d) (%d %d %d) (%g,%g,%g) (%g,%g,%g)\n",
@@ -849,13 +863,6 @@ drr_trace_ray_trilin_exact_under_development (Volume* vol, double* p1in,
 		ao_x,ao_y,ao_z,
 		al_x,al_y,al_z);
 #endif
-
-	double ap_x_init = ap_x;
-	double ap_y_init = ap_y;
-	double ap_z_init = ap_z;
-	double ap_x_end;
-	double ap_y_end;
-	double ap_z_end;
 
 	x1 = ai_x;
 	x2 = ai_x + 1;
@@ -930,7 +937,10 @@ drr_trace_ray_trilin_exact_under_development (Volume* vol, double* p1in,
 	    double VV = ap_y_end - ap_y_init;
 	    double w0 = ap_z_init;
 	    double WW = ap_y_end - ap_y_init;
-//	    double tmp_accum;
+#if defined (ULTRA_VERBOSE)
+	    double tmp_accum;
+#endif
+
 #if defined (PREPROCESS_ATTENUATION)
 	    accum += pix_len *
 		    (interp_coefficient (u0,UU,v0,VV,w0,WW,1,1,1)
@@ -1191,7 +1201,10 @@ drr_trace_ray_trilin_approx (Volume* vol, double* p1in, double* p2in)
 	    double w0 = ao_z0 / al_z;
 	    double w1 = ao_z1 / al_z;
 	    double WW = (w1 + w0) / 2.0;
-	    //	    double tmp_accum;
+#if defined (ULTRA_VERBOSE)
+	    double tmp_accum;
+#endif
+
 #if defined (PREPROCESS_ATTENUATION)
 	    accum += pix_len * 
 		    (approx_coefficient (UU,VV,WW,1,1,1)
@@ -1462,6 +1475,9 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 	vec3_scale3 (tmp, incr_r, (double) r);
 	vec3_add2 (r_tgt, tmp);
 	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
+#if defined (ULTRA_VERBOSE)
+	    printf ("Row: %4d/%d  Col:%4d/%d\n",r,res_r,c,res_c);
+#endif
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
@@ -1519,7 +1535,6 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 /* All distances in mm */
 void
 drr_render_volumes (Volume* vol, MGHDRR_Options* options)
-
 {
     int a;
 
@@ -1623,7 +1638,8 @@ set_isocenter (Volume* vol, MGHDRR_Options* options)
     vol->zmax += options->isocenter[2];
 }
 
-int main(int argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
     Volume* vol;
     MGHDRR_Options options;
@@ -1638,6 +1654,6 @@ int main(int argc, char* argv[])
     preprocess_attenuation (vol);
 #endif
     drr_render_volumes (vol, &options);
-
+    printf ("Done.\n");
     return 0;
 }
