@@ -30,4 +30,7 @@ public:
     }
 };
 
+void
+do_command_warp (int argc, char* argv[]);
+
 #endif

@@ -675,6 +675,7 @@ SET(POINT_PATH_SRC
 	)
 SET(PLASTIMATCH_SRC
 	plastimatch_main.cxx 
+	warp_mha_main.cxx warp_mha_main.h
 	)
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
@@ -718,9 +719,9 @@ SET(XF_TO_XF_SRC
 SET(WARP_DIJ_SRC
 	warp_dij.cxx
 	)
-SET(WARP_MHA_SRC
-	warp_mha_main.cxx warp_mha_main.h
-	)
+#SET(WARP_MHA_SRC
+#	warp_mha_main.cxx warp_mha_main.h
+#	)
 SET(WARP_POINTSET_SRC
 	warp_pointset_main.cxx warp_pointset_main.h
 	)
@@ -740,7 +741,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
     SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
-    SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
+#    SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
     SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
@@ -925,8 +926,8 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+#  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
+#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(warp_pointset "${WARP_POINTSET_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 ENDIF(ITK_FOUND)

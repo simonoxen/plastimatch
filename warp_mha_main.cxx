@@ -24,6 +24,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
     T im_warped = T::ObjectType::New();
     T im_ref = im_in;
 
+#if defined (commentout)
     if (parms->vf_in_fn[0]) {
 	printf ("Loading vf...\n");
 	vf = load_float_field (parms->vf_in_fn);
@@ -32,6 +33,7 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 	im_warped = itk_warp_image (im_in, vf, parms->interp_lin, (U) parms->default_val);
 
     } else {
+#endif
 	/* convert xform into vector field, then warp */
 	PlmImageHeader pih;
 
@@ -53,7 +55,9 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 
 	printf ("Warping...\n");
 	im_warped = itk_warp_image (im_in, vf, parms->interp_lin, (U) parms->default_val);
+#if defined (commentout)
     }
+#endif
 
     printf ("Saving...\n");
     if (parms->output_dicom) {
@@ -105,13 +109,17 @@ warp_image_main (Warp_Parms* parms)
 void
 print_usage (void)
 {
-    printf ("Usage: warp_mha --input=image_in --vf=vf_in --output=image_out [options]\n");
-    printf ("   or: warp_mha --input=image_in --xf=xf_in --output=image_out [options]\n");
-    printf ("Options:   --interpolation nn\n"
-	    "           --fixed=im_fn\n"
-	    "           --output_vf=vf_fn\n"
-	    "           --default_val=val\n"
-	    "           --output-format dicom\n");
+    printf ("Usage: plastimatch warp [options]\n"
+	    "Required:\n"
+	    "    --input=filename\n"
+	    "    --xf=filename\n"
+	    "    --output=filename\n"
+	    "Optional:\n"
+	    "    --interpolation=nn\n"
+	    "    --fixed=filename\n"
+	    "    --output_vf=filename\n"
+	    "    --default_val=number\n"
+	    "    --output-format=dicom\n");
     exit (-1);
 }
 
@@ -138,6 +146,9 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "output-format",  required_argument,      NULL,           13 },
 	{ NULL,             0,                      NULL,           0 }
     };
+
+    /* Skip command */
+    optind ++;
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
@@ -212,13 +223,14 @@ parse_args (Warp_Parms* parms, int argc, char* argv[])
 	}
     }
     if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0] || !(parms->vf_in_fn[0] || parms->xf_in_fn[0])) {
-	printf ("Error: must specify --input, --output, and --vf or --xf\n");
 	print_usage();
     }
 }
 
-int
-main(int argc, char *argv[])
+void
+do_command_warp (int argc, char* argv[])
+//int
+//main (int argc, char *argv[])
 {
     Warp_Parms parms;
     
@@ -227,5 +239,5 @@ main(int argc, char *argv[])
     warp_image_main (&parms);
 
     printf ("Finished!\n");
-    return 0;
+//    return 0;
 }
