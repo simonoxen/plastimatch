@@ -667,10 +667,10 @@ SET(POINT_PATH_SRC
 SET(PLASTIMATCH_SRC
 	plastimatch_main.cxx
  	file_type.cxx file_type.h
- 	warp_dij_main.cxx warp_dij_main.h
+ 	warp_dij_main.cxx 
 	warp_main.cxx warp_main.h
-	warp_mha_main.cxx warp_mha_main.h
- 	warp_pointset_main.cxx warp_pointset_main.h
+	warp_mha_main.cxx 
+ 	warp_pointset_main.cxx 
 	)
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h

@@ -11,11 +11,13 @@
 #include "itkVectorLinearInterpolateImageFunction.h"
 #include "getopt.h"
 #include "plm_path.h"
+#include "warp_main.h"
 #include "itk_image.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;
 
+#if defined (commentout)
 typedef struct __Program_Parms Program_Parms;
 struct __Program_Parms {
     char dij_in[_MAX_PATH];
@@ -24,6 +26,7 @@ struct __Program_Parms {
     char vf_in[_MAX_PATH];
     char dij_out[_MAX_PATH];
 };
+#endif
 
 typedef struct __Ctatts Ctatts;
 struct __Ctatts {
@@ -577,51 +580,18 @@ convert_vector_field (DeformationFieldType::Pointer vf,
 }
 
 void
-warp_dij_main (Program_Parms* parms)
+warp_dij_main (Warp_Parms* parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Ctatts ctatts;
     Dif dif;
 
     printf ("Loading vector field...\n");
-    vf = load_float_field (parms->vf_in);
+    vf = load_float_field (parms->vf_in_fn);
 
     printf ("Loading ctatts and dif...\n");
-    load_ctatts (&ctatts, parms->ctatts_in);
-    load_dif (&dif, parms->dif_in);
+    load_ctatts (&ctatts, parms->ctatts_in_fn);
+    load_dif (&dif, parms->dif_in_fn);
 
-    convert_vector_field (vf, &ctatts, &dif, parms->dij_in, parms->dij_out);
-}
-
-void
-print_usage (void)
-{
-    printf ("Usage: warp_dij dij_in ctatts_in dif_in vf_in dij_out\n");
-    exit (-1);
-}
-
-void
-parse_args (Program_Parms* parms, int argc, char* argv[])
-{
-    if (argc!=6) print_usage();
-    
-    strcpy (parms->dij_in, argv[1]);
-    strcpy (parms->ctatts_in, argv[2]);
-    strcpy (parms->dif_in, argv[3]);
-    strcpy (parms->vf_in, argv[4]);
-    strcpy (parms->dij_out, argv[5]);
-}
-
-//int main(int argc, char *argv[])
-void
-do_command_warp_dij (int argc, char* argv[])
-{
-    Program_Parms parms;
-    
-    parse_args (&parms, argc, argv);
-
-    warp_dij_main (&parms);
-
-    printf ("Finished!\n");
-//    return 0;
+    convert_vector_field (vf, &ctatts, &dif, parms->mha_in_fn, parms->mha_out_fn);
 }

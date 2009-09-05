@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include <time.h>
 #include "plm_config.h"
+#include "file_type.h"
 
 File_type
 deduce_file_type (char* path)

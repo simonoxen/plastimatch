@@ -15,7 +15,7 @@
 #include "itk_optim.h"
 #include "xform.h"
 #include "plm_version.h"
-#include "warp_mha_main.h"
+#include "warp_main.h"
 
 static void
 print_usage (int return_code)

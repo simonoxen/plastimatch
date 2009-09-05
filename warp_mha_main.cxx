@@ -9,7 +9,7 @@
 #include "itkCastImageFilter.h"
 
 #include "getopt.h"
-#include "warp_mha_main.h"
+#include "warp_main.h"
 #include "itk_image.h"
 #include "itk_warp.h"
 #include "print_and_exit.h"

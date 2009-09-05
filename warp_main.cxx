@@ -7,7 +7,7 @@
 #include "getopt.h"
 #include "warp_main.h"
 #include "file_type.h"
-#include "warp_mha_main.h"
+#include "warp_main.h"
 #include "warp_dij_main.h"
 #include "warp_pointset_main.h"
 #include "print_and_exit.h"
@@ -53,6 +53,8 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "dims",           required_argument,      NULL,           12 },
 	{ "output_format",  required_argument,      NULL,           13 },
 	{ "output-format",  required_argument,      NULL,           13 },
+	{ "ctatts",         required_argument,      NULL,           14 },
+	{ "dif",            required_argument,      NULL,           15 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -73,7 +75,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	case 5:
 	    if (sscanf (optarg, "%f", &parms->default_val) != 1) {
 		printf ("Error: default_val takes an argument\n");
-		print_usage();
+		warp_print_usage();
 	    }
 	    break;
 	case 6:
@@ -92,14 +94,14 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		parms->interp_lin = 1;
 	    } else {
 		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
-		print_usage ();
+		warp_print_usage ();
 	    }
 	    break;
 	case 10:
 	    rc = sscanf (optarg, "%f %f %f", &parms->offset[0], &parms->offset[1], &parms->offset[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --offset requires 3 values.");
-		print_usage ();
+		warp_print_usage ();
 	    }
 	    have_offset = 1;
 	    break;
@@ -107,7 +109,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%f %f %f", &parms->spacing[0], &parms->spacing[1], &parms->spacing[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --spacing requires 3 values.");
-		print_usage ();
+		warp_print_usage ();
 	    }
 	    have_spacing = 1;
 	    break;
@@ -115,7 +117,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%d %d %d", &parms->dims[0], &parms->dims[1], &parms->dims[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --dims requires 3 values.");
-		print_usage ();
+		warp_print_usage ();
 	    }
 	    have_dims = 1;
 	    break;
@@ -124,15 +126,21 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		parms->output_dicom = 1;
 	    } else {
 		fprintf (stderr, "Error.  --output-type option only supports dicom.\n");
-		print_usage ();
+		warp_print_usage ();
 	    }
+	    break;
+	case 14:
+	    strncpy (parms->ctatts_in_fn, optarg, _MAX_PATH);
+	    break;
+	case 15:
+	    strncpy (parms->dif_in_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;
 	}
     }
     if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0] || !(parms->vf_in_fn[0] || parms->xf_in_fn[0])) {
-	print_usage();
+	warp_print_usage();
     }
 }
 
@@ -142,24 +150,29 @@ do_command_warp (int argc, char* argv[])
     Warp_Parms parms;
     File_type file_type;
     
-    parse_args (&parms, argc, argv);
-    file_type = deduce_file_type (parms->mha_in_fn);
-    switch (file_type) {
-    case FILE_TYPE_IMG:
-    case FILE_TYPE_DICOM_DIR:
-	warp_image_main (&parms);
-	break;
-    case FILE_TYPE_DIJ:
+    warp_parse_args (&parms, argc, argv);
+    file_type = deduce_file_type (parms.mha_in_fn);
+
+    if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
 	warp_dij_main (&parms);
-	break;
-    case FILE_TYPE_POINTSET:
-	warp_pointset_main (&parms);
-	break;
-    default:
-	print_and_exit ("Sorry, don't know how to warp input type %s (%s)\n",
-			file_type_string (file_type),
-			parms->mha_in_fn);
-	break;
+    } else {
+	switch (file_type) {
+	case FILE_TYPE_IMG:
+	case FILE_TYPE_DICOM_DIR:
+	    warp_image_main (&parms);
+	    break;
+	case FILE_TYPE_DIJ:
+	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
+	    break;
+	case FILE_TYPE_POINTSET:
+	    warp_pointset_main (&parms);
+	    break;
+	default:
+	    print_and_exit ("Sorry, don't know how to warp input type %s (%s)\n",
+			    file_type_string (file_type),
+			    parms.mha_in_fn);
+	    break;
+	}
     }
 
     printf ("Finished!\n");

@@ -4,6 +4,7 @@
 #ifndef _plm_path_h_
 #define _plm_path_h_
 
+#include <stdlib.h>
 #include <stdio.h>
 
 /* Need a sane way of dealing with path buffers.
