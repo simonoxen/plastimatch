@@ -8,8 +8,6 @@
 #include "warp_main.h"
 #include "file_type.h"
 #include "warp_main.h"
-#include "warp_dij_main.h"
-#include "warp_pointset_main.h"
 #include "print_and_exit.h"
 
 void
