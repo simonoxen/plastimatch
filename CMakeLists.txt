@@ -10,7 +10,12 @@ PROJECT (plastimatch)
 ##  Include files
 ##-----------------------------------------------------------------------------
 INCLUDE (CheckFunctionExists)
-INCLUDE (language_support.cmake)  # http://www.cmake.org/Bug/view.php?id=9220
+
+# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
+include (InstallRequiredSystemLibraries)
+
+# http://www.cmake.org/Bug/view.php?id=9220
+INCLUDE (language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -959,9 +964,6 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Additional install files
 ##-----------------------------------------------------------------------------
-INSTALL(FILES volume.h readmha.h demons.h DESTINATION include/gpuit)
-
-# Require itk
 IF(ITK_FOUND)
   IF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
@@ -979,6 +981,12 @@ IF(ITK_FOUND)
     #slicer3_install_plugins(gpuit)
   endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
+
+IF (CUDA_FOUND)
+  IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+    INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
+  ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+ENDIF (CUDA_FOUND)
 
 INSTALL(FILES 
   COPYRIGHT.TXT
