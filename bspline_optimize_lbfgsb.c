@@ -6,14 +6,15 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+#if (HAVE_F2C_LIBRARY)
 #include "plm_f2c.h"
+#endif
 #include "volume.h"
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "logfile.h"
 
 extern void bspline_initialize_streams_on_gpu(Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform *bxf, BSPLINE_Parms *parms);
-
 
 void
 setulb_ (integer*       n,
