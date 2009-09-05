@@ -39,34 +39,45 @@ FIND_PACKAGE (wxWidgets)
 
 INCLUDE (PLM_Etags.cmake)
 INCLUDE (PLM_FindDCMTK.cmake)
-INCLUDE (PLM_FindFortran.cmake)
-INCLUDE (FortranCInterface)
+IF (NOT MINGW)
+  ## For some reason, CMake tries to invoke devenv instead of gfortran
+  ## for mingw.
+  INCLUDE (PLM_FindFortran.cmake)
+  INCLUDE (FortranCInterface)
+ENDIF (NOT MINGW)
+INCLUDE (PLM_FindF2C.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
 INCLUDE (GPUIT.cmake)
 #INCLUDE(FindPantheios.cmake)
 
 ##-----------------------------------------------------------------------------
-##  Special FindCUDA processing
+##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-IF (PLM_USE_FINDCUDA)
-  SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" ${CMAKE_MODULE_PATH})
-  FIND_PACKAGE (CUDA QUIET)
-ELSE (PLM_USE_FINDCUDA)
-  INCLUDE (PLM_FindCUDA.cmake)
-ENDIF (PLM_USE_FINDCUDA)
+IF (MINGW)
+  # Cuda doesn't work with mingw at all
+  SET (CUDA_FOUND FALSE)
+ELSE (MINGW)
+  IF (PLM_USE_FINDCUDA)
+    SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" 
+      ${CMAKE_MODULE_PATH})
+    FIND_PACKAGE (CUDA QUIET)
+  ELSE (PLM_USE_FINDCUDA)
+    INCLUDE (PLM_FindCUDA.cmake)
+  ENDIF (PLM_USE_FINDCUDA)
+ENDIF (MINGW)
 
 IF (PLM_USE_FINDCUDA)
-IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-  SET (CUDA_FOUND FALSE)
-ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-IF(CUDA_FOUND)
-#  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
-  CUDA_INCLUDE_DIRECTORIES(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CUDA_CUT_INCLUDE_DIR}
-    )
-ENDIF(CUDA_FOUND)
+  IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+    SET (CUDA_FOUND FALSE)
+  ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+  IF(CUDA_FOUND)
+    #  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+    CUDA_INCLUDE_DIRECTORIES(
+      ${CMAKE_CURRENT_SOURCE_DIR}
+      ${CUDA_CUT_INCLUDE_DIR}
+      )
+  ENDIF(CUDA_FOUND)
 ENDIF (PLM_USE_FINDCUDA)
 
 ##-----------------------------------------------------------------------------
@@ -560,18 +571,20 @@ SET(CUDA_PROBE_SRC
 	cuda_probe.cu
 	cuda_probe.h
 	)
-IF (PLM_USE_FINDCUDA)
-  CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
-  SET(CUDA_PROBE_SRC
-	${CUDA_PROBE_SRC}
-	${CUDA_PROBE_WRAPPERS}
-	)
-ELSE (PLM_USE_FINDCUDA)
-  SET(CUDA_PROBE_SRC
-	${CUDA_PROBE_SRC}
-  	cuda_probe_wrap.cpp
-	)
-ENDIF (PLM_USE_FINDCUDA)
+IF (CUDA_FOUND)
+  IF (PLM_USE_FINDCUDA)
+    CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
+    SET(CUDA_PROBE_SRC
+      ${CUDA_PROBE_SRC}
+      ${CUDA_PROBE_WRAPPERS}
+      )
+  ELSE (PLM_USE_FINDCUDA)
+    SET(CUDA_PROBE_SRC
+      ${CUDA_PROBE_SRC}
+      cuda_probe_wrap.cpp
+      )
+  ENDIF (PLM_USE_FINDCUDA)
+ENDIF (CUDA_FOUND)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
 	render_polyline.cxx
@@ -618,18 +631,20 @@ SET(FDK_CUDA_SRC
 	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
-IF (PLM_USE_FINDCUDA)
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-  SET (FDK_CUDA_SRC
-    ${FDK_CUDA_SRC}
-    ${FDK_CUDA_WRAPPERS}
-    )
-ELSE (PLM_USE_FINDCUDA)
-  SET (FDK_CUDA_SRC
-    ${FDK_CUDA_SRC}
-    fdk_cuda_wrap.cpp
-    )
-ENDIF (PLM_USE_FINDCUDA)
+IF (CUDA_FOUND)
+  IF (PLM_USE_FINDCUDA)
+    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+    SET (FDK_CUDA_SRC
+      ${FDK_CUDA_SRC}
+      ${FDK_CUDA_WRAPPERS}
+      )
+  ELSE (PLM_USE_FINDCUDA)
+    SET (FDK_CUDA_SRC
+      ${FDK_CUDA_SRC}
+      fdk_cuda_wrap.cpp
+      )
+  ENDIF (PLM_USE_FINDCUDA)
+ENDIF (CUDA_FOUND)
 
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
