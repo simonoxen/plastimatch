@@ -19,4 +19,7 @@ public:
     }
 };
 
+void
+do_command_warp_pointset (int argc, char* argv[]);
+
 #endif

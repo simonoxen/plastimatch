@@ -1,12 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _warp_mha_main_h_
-#define _warp_mha_main_h_
-
-#include <stdlib.h>
-#include "plm_path.h"
-#include "itk_image.h"
+#ifndef _warp_main_h_
+#define _warp_main_h_
 
 class Warp_Parms {
 public:

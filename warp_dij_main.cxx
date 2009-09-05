@@ -612,8 +612,9 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
     strcpy (parms->dij_out, argv[5]);
 }
 
-int
-main(int argc, char *argv[])
+//int main(int argc, char *argv[])
+void
+do_command_warp_dij (int argc, char* argv[])
 {
     Program_Parms parms;
     
@@ -622,5 +623,5 @@ main(int argc, char *argv[])
     warp_dij_main (&parms);
 
     printf ("Finished!\n");
-    return 0;
+//    return 0;
 }

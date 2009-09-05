@@ -61,8 +61,10 @@ parse_args (Warp_Pointset_Parms* parms, int argc, char* argv[])
     }
 }
 
-int
-main (int argc, char *argv[])
+//int
+//main (int argc, char *argv[])
+void
+do_command_warp_pointset (int argc, char* argv[])
 {
     Warp_Pointset_Parms parms;
     
@@ -71,5 +73,5 @@ main (int argc, char *argv[])
     warp_pointset_main (&parms);
 
     printf ("Finished!\n");
-    return 0;
+//    return 0;
 }

@@ -12,7 +12,6 @@ PROJECT (plastimatch)
 INCLUDE (CheckFunctionExists)
 INCLUDE (language_support.cmake)  # http://www.cmake.org/Bug/view.php?id=9220
 
-
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
@@ -25,14 +24,6 @@ SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
-
-# IF (WIN32)
-#   SET (PLM_USE_FINDCUDA OFF CACHE BOOL 
-#     "Use Stephens/Bigler FindCUDA cmake script")
-# ELSE (WIN32)
-#   SET (PLM_USE_FINDCUDA ON CACHE BOOL 
-#     "Use Stephens/Bigler FindCUDA cmake script")
-# ENDIF (WIN32)
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and libraries
@@ -674,8 +665,12 @@ SET(POINT_PATH_SRC
 	point_path.cxx
 	)
 SET(PLASTIMATCH_SRC
-	plastimatch_main.cxx 
+	plastimatch_main.cxx
+ 	file_type.cxx file_type.h
+ 	warp_dij_main.cxx warp_dij_main.h
+	warp_main.cxx warp_main.h
 	warp_mha_main.cxx warp_mha_main.h
+ 	warp_pointset_main.cxx warp_pointset_main.h
 	)
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
@@ -716,15 +711,15 @@ SET(VF_STATS_SRC
 SET(XF_TO_XF_SRC
 	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
-SET(WARP_DIJ_SRC
-	warp_dij.cxx
-	)
-#SET(WARP_MHA_SRC
+# SET(WARP_DIJ_SRC
+# 	warp_dij.cxx
+# 	)
+# SET(WARP_MHA_SRC
 #	warp_mha_main.cxx warp_mha_main.h
 #	)
-SET(WARP_POINTSET_SRC
-	warp_pointset_main.cxx warp_pointset_main.h
-	)
+# SET(WARP_POINTSET_SRC
+# 	warp_pointset_main.cxx warp_pointset_main.h
+# 	)
 
 CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
@@ -740,9 +735,9 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
     SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
-    SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
+#    SET(WARP_DIJ_SRC ${WARP_DIJ_SRC} getopt_long.c getopt.h)
 #    SET(WARP_MHA_SRC ${WARP_MHA_SRC} getopt_long.c getopt.h)
-    SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
+#    SET(WARP_POINTSET_SRC ${WARP_POINTSET_SRC} getopt_long.c getopt.h)
     SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
@@ -924,12 +919,12 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(xf_to_xf "${XF_TO_XF_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+#  PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
+#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 #  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
 #    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(warp_pointset "${WARP_POINTSET_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+#  PLM_ADD_EXECUTABLE(warp_pointset "${WARP_POINTSET_SRC}"
+#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 ENDIF(ITK_FOUND)
 
 # Require brook
