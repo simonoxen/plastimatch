@@ -6,9 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
-#if (HAVE_F2C_LIBRARY)
 #include "plm_f2c.h"
-#endif
 #include "volume.h"
 #include "bspline_opts.h"
 #include "bspline.h"

@@ -40,11 +40,15 @@ FIND_PACKAGE (wxWidgets)
 INCLUDE (PLM_Etags.cmake)
 INCLUDE (PLM_FindDCMTK.cmake)
 INCLUDE (PLM_FindFortran.cmake)
+INCLUDE (FortranCInterface)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
 INCLUDE (GPUIT.cmake)
 #INCLUDE(FindPantheios.cmake)
 
+##-----------------------------------------------------------------------------
+##  Special FindCUDA processing
+##-----------------------------------------------------------------------------
 IF (PLM_USE_FINDCUDA)
   SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" ${CMAKE_MODULE_PATH})
   FIND_PACKAGE (CUDA QUIET)
@@ -52,9 +56,6 @@ ELSE (PLM_USE_FINDCUDA)
   INCLUDE (PLM_FindCUDA.cmake)
 ENDIF (PLM_USE_FINDCUDA)
 
-##-----------------------------------------------------------------------------
-##  FindCUDA post-processing
-##-----------------------------------------------------------------------------
 IF (PLM_USE_FINDCUDA)
 IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
   SET (CUDA_FOUND FALSE)
@@ -67,6 +68,15 @@ IF(CUDA_FOUND)
     )
 ENDIF(CUDA_FOUND)
 ENDIF (PLM_USE_FINDCUDA)
+
+##-----------------------------------------------------------------------------
+##  Set the math library
+##-----------------------------------------------------------------------------
+IF(UNIX)
+  SET(MATH_LIB -lm)
+ELSE(UNIX)
+  SET(MATH_LIB)
+ENDIF(UNIX)
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
@@ -217,15 +227,6 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   SET(PLASTIMATCH_EXPERIMENTAL FALSE)
 ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-
-##-----------------------------------------------------------------------------
-##  MATH LIBRARY
-##-----------------------------------------------------------------------------
-IF(UNIX)
-  SET(MATH_LIB -lm)
-ELSE(UNIX)
-  SET(MATH_LIB)
-ENDIF(UNIX)
 
 ##-----------------------------------------------------------------------------
 ##  GPUIT LIBRARY
@@ -760,10 +761,13 @@ ENDIF(OPENMP_FOUND)
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
-IF(F2C_LIBRARY)
-  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_f2c.h.cmake 
-    ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
-ENDIF(F2C_LIBRARY)
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_f2c.h.cmake 
+  ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
+
+IF (CMAKE_Fortran_COMPILER_WORKS)
+##  Ideally I should do this if there is a real fortran compiler.
+##  create_fortran_c_interface ("" setulb(int i) ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
 ##-----------------------------------------------------------------------------
 ##  INCLUDE DIRECTORIES
