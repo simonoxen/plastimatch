@@ -1,13 +1,47 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include <stdlib.h>
+#include <stdio.h>
 #include <time.h>
+#include <string>
+#include <itksys/SystemTools.hxx>
+
 #include "plm_config.h"
 #include "file_type.h"
 
 File_type
 deduce_file_type (char* path)
 {
+    std::string ext;
+    
+    ext = itksys::SystemTools::GetFilenameLastExtension (std::string (path));
+
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".txt")) {
+	/* Probe for pointset */
+	int rc;
+	const int MAX_LINE = 2048;
+	char line[MAX_LINE];
+	float f[4];
+	FILE* fp = fopen (path, "rb");
+	if (!fp) return FILE_TYPE_NO_FILE;
+
+	fgets (line, MAX_LINE, fp);
+	fclose (fp);
+
+	rc = sscanf (line, "%g %g %g %g", &f[0], &f[1], &f[2], &f[3]);
+	if (rc == 3) {
+	    return FILE_TYPE_POINTSET;
+	}
+
+	/* Not sure, assume image */
+	return FILE_TYPE_IMG;
+    }
+
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".cxt")) {
+	return FILE_TYPE_CXT;
+    }
+
     return FILE_TYPE_IMG;
 }
 

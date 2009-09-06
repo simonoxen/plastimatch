@@ -155,6 +155,11 @@ do_command_warp (int argc, char* argv[])
 	warp_dij_main (&parms);
     } else {
 	switch (file_type) {
+	case FILE_TYPE_NO_FILE:
+	    print_and_exit ("Could not open input file %s for read\n",
+		parms.mha_in_fn);
+	    break;
+	case FILE_TYPE_UNKNOWN:
 	case FILE_TYPE_IMG:
 	case FILE_TYPE_DICOM_DIR:
 	    warp_image_main (&parms);

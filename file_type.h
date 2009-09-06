@@ -5,6 +5,7 @@
 #define _file_type_h_
 
 enum File_type {
+    FILE_TYPE_NO_FILE,
     FILE_TYPE_UNKNOWN,
     FILE_TYPE_IMG,
     FILE_TYPE_DIJ,
