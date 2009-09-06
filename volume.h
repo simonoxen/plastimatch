@@ -30,6 +30,7 @@ struct volume
     int pix_size;		// (Unused?)
     void* img;			// Voxel Data
 
+#if defined (commentout)
     /* These are used for boundary testing */
     float xmin;	// Minimum X Value in Volume
     float xmax; // Maximum X Value in Volume
@@ -37,6 +38,7 @@ struct volume
     float ymax; // Maximum Y Value in Volume
     float zmin; // Minimum Z Value in Volume
     float zmax; // Maximum Z Value in Volume
+#endif
 };
 
 #if defined __cplusplus

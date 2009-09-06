@@ -20,4 +20,3 @@ warp_pointset_main (Warp_Parms* parms)
     PointSetType::Pointer ps_out = pointset_warp (ps_in, &xf);
     pointset_debug (ps_out);
 }
-

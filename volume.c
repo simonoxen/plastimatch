@@ -72,6 +72,7 @@ volume_create (int* dim,
 	exit (-1);
     }
 
+#if defined (commentout)
     /* Compute some auxiliary variables */
     vol->xmin = vol->offset[0] - vol->pix_spacing[0] / 2;
     vol->xmax = vol->xmin + vol->pix_spacing[0] * vol->dim[0];
@@ -79,6 +80,7 @@ volume_create (int* dim,
     vol->ymax = vol->ymin + vol->pix_spacing[1] * vol->dim[1];
     vol->zmin = vol->offset[2] - vol->pix_spacing[2] / 2;
     vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
+#endif
 
     if (pix_type == PT_VF_FLOAT_PLANAR) {
 	int i;
@@ -724,12 +726,14 @@ volume_difference (Volume* vol, Volume* warped)
 
     temp->npix = vol->npix;
     temp->pix_type = vol->pix_type;
+#if defined (commentout)
     temp->xmax = vol->xmax;
     temp->xmin = vol->xmin;
     temp->ymax = vol->ymax;
     temp->ymin = vol->ymin;
     temp->zmax = vol->zmax;
     temp->zmin = vol->zmin;
+#endif
 
     temp->img = (void*) malloc (sizeof(short)*temp->npix);
     if (!temp->img) {

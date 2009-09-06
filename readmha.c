@@ -191,6 +191,7 @@ Volume* read_mha (char* filename)
     printf ("Read OK!\n");
     fclose (fp);
 
+#if defined (commentout)
     /* Compute some auxiliary variables */
     vol->xmin = vol->offset[0] - vol->pix_spacing[0] / 2;
     vol->xmax = vol->xmin + vol->pix_spacing[0] * vol->dim[0];
@@ -198,6 +199,7 @@ Volume* read_mha (char* filename)
     vol->ymax = vol->ymin + vol->pix_spacing[1] * vol->dim[1];
     vol->zmin = vol->offset[2] - vol->pix_spacing[2] / 2;
     vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
-    
+#endif
+
     return vol;
 }

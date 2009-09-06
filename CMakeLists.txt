@@ -612,8 +612,9 @@ SET(DICOM_UID_SRC
 	dicom_uid.h
 	)
 SET(DRR_C_SRC
-	drr_c.c
+	drr_c.c drr.h
 	drr_opts.c drr_opts.h
+	drr_trilin.c drr_trilin.h
 	)
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
