@@ -104,7 +104,7 @@ drr_degeneracy_test (double* plane, double* ray)
     return dp;
 }
 
-enum Point_location
+Point_location
 drr_test_boundary (Volume_limit* vol_limit, double x)
 {
     if (vol_limit->dir == 0) {
