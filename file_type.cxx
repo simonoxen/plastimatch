@@ -49,6 +49,9 @@ char*
 file_type_string (File_type file_type)
 {
     switch (file_type) {
+    case FILE_TYPE_NO_FILE:
+	return "No such file";
+	break;
     case FILE_TYPE_UNKNOWN:
 	return "Unknown";
 	break;
