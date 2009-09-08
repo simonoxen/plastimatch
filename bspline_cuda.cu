@@ -937,7 +937,31 @@ void bspline_cuda_calculate_run_kernels_g(
 		 pix_spacing,
 		 rdims,
 		 cdims);
-	printf ("Launch completed without crashing.\n");
+
+	if (1) {
+	    float *tmp = (float*) malloc (dc_dv_mem_size);
+	    if (cudaMemcpy (tmp, gpu_dc_dv, dc_dv_mem_size,
+			    cudaMemcpyDeviceToHost) != cudaSuccess) {
+		checkCUDAError("Failed to copy gpu_dc_dv to CPU");
+	    }
+
+	    /* kkk */
+	    int found = 0;
+	    for (int i = 0; i < 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2]; i++) {
+		if (tmp[i] != 0.0) {
+		    printf ("tmp[%d] = %g\n", i, tmp[i]);
+		    found = 1;
+		    break;
+		}
+	    }
+	    if (!found) {
+		printf ("No non-zero elements found\n");
+	    }
+
+	    free (tmp);
+	    exit (0);
+	}
+
     } else {
 	int tiles_per_launch = 512;
 	printf("Launching low memory version of bspline_cuda_score_g_mse_kernel1 with %d tiles per launch. \n", tiles_per_launch);
@@ -1003,6 +1027,22 @@ void bspline_cuda_calculate_run_kernels_g(
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_g_mse_kernel2 failed");
+
+
+    if (1) {
+	float *host_grad = (float*) malloc (coeff_mem_size);
+	if (cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, 
+		       cudaMemcpyDeviceToHost) != cudaSuccess) {
+	    checkCUDAError("Failed to copy gpu_grad to CPU");
+	}
+
+	/* kkk */
+	printf ("host_grad[0] = %g\n", host_grad[0]);
+	printf ("host_grad[5] = %g\n", host_grad[5]);
+
+	free (host_grad);
+	exit (0);
+    }
 
     printf ("bspline_cuda_score_g_mse_kernel2 complete.\n");
 
@@ -1230,120 +1270,119 @@ void bspline_cuda_calculate_run_kernels_f(
  * streams as part of bspline_cuda_score_f_mse.
  ***********************************************************************/
 void bspline_cuda_final_steps_f(
-	BSPLINE_Parms* parms, 
-	BSPLINE_Xform* bxf,
-	Volume *fixed,
-	int   *vox_per_rgn,
-	int   *volume_dim,
-	float *host_score,
-	float *host_grad,
-	float *host_grad_mean,
-	float *host_grad_norm)
+				BSPLINE_Parms* parms, 
+				BSPLINE_Xform* bxf,
+				Volume *fixed,
+				int   *vox_per_rgn,
+				int   *volume_dim,
+				float *host_score,
+				float *host_grad,
+				float *host_grad_mean,
+				float *host_grad_norm)
 {
-	//int num_elems = vox_per_rgn[0] * vox_per_rgn[1] * vox_per_rgn[2];
-	int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
-	int num_blocks = (int)ceil(num_elems / 512.0);
-	dim3 dimGrid(num_blocks, 1, 1);
-	dim3 dimBlock(128, 2, 2);
-	int smemSize = 512 * sizeof(float);
+    //int num_elems = vox_per_rgn[0] * vox_per_rgn[1] * vox_per_rgn[2];
+    int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
+    int num_blocks = (int)ceil(num_elems / 512.0);
+    dim3 dimGrid(num_blocks, 1, 1);
+    dim3 dimBlock(128, 2, 2);
+    int smemSize = 512 * sizeof(float);
 	
-	// Calculate the score.
-	// printf("Launching sum_reduction_kernel... ");
-	sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
-		gpu_score,
-		gpu_score,
-		num_elems
-	);
+    // Calculate the score.
+    // printf("Launching sum_reduction_kernel... ");
+    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
+							  gpu_score,
+							  gpu_score,
+							  num_elems
+							  );
 
-	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("bspline_cuda_compute_score_kernel failed");
+    if(cudaThreadSynchronize() != cudaSuccess)
+	checkCUDAError("bspline_cuda_compute_score_kernel failed");
 
-	sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
-		gpu_score,
-		gpu_score,
-		num_elems
-	);
+    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+							  gpu_score,
+							  gpu_score,
+							  num_elems
+							  );
 	
-	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("sum_reduction_last_step_kernel failed");
+    if(cudaThreadSynchronize() != cudaSuccess)
+	checkCUDAError("sum_reduction_last_step_kernel failed");
 
-	if(cudaMemcpy(host_score, gpu_score,  sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
-		checkCUDAError("Failed to copy score from GPU to host");
+    if(cudaMemcpy(host_score, gpu_score,  sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+	checkCUDAError("Failed to copy score from GPU to host");
 
-	*host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
+    *host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
 
-	FILE *scores_file; 
-	scores_file = fopen("scores.txt", "a+");
-	fprintf(scores_file, "%f\n", *host_score);
-	fclose(scores_file);
+    FILE *scores_file; 
+    scores_file = fopen("scores.txt", "a+");
+    fprintf(scores_file, "%f\n", *host_score);
+    fclose(scores_file);
 
-	// Calculate grad_norm and grad_mean.
+    // Calculate grad_norm and grad_mean.
 
-	// Reconfigure the grid.
-	int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
-	num_elems = bxf->num_coeff;
-	num_blocks = (int)ceil(num_elems / 512.0);
-	dim3 dimGrid2(num_blocks, 1, 1);
-	dim3 dimBlock2(128, 2, 2);
-	smemSize = 512 * sizeof(float);
+    // Reconfigure the grid.
+    int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
+    num_elems = bxf->num_coeff;
+    num_blocks = (int)ceil(num_elems / 512.0);
+    dim3 dimGrid2(num_blocks, 1, 1);
+    dim3 dimBlock2(128, 2, 2);
+    smemSize = 512 * sizeof(float);
 
-#if defined (commentout)
-	printf("Launching bspline_cuda_update_grad_kernel... ");
-	bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>>(
-		gpu_grad,
-		num_vox,
-		num_elems);
+    //    printf("Launching bspline_cuda_update_grad_kernel... ");
+    bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>>(
+							     gpu_grad,
+							     num_vox,
+							     num_elems);
 
-	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("bspline_cuda_update_grad_kernel failed");
-#endif
+    if(cudaThreadSynchronize() != cudaSuccess)
+	checkCUDAError("bspline_cuda_update_grad_kernel failed");
 
-	if(cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
-		checkCUDAError("Failed to copy gpu_grad to CPU");
+    if(cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, cudaMemcpyDeviceToHost) != cudaSuccess)
+	checkCUDAError("Failed to copy gpu_grad to CPU");
 
-	/* kkk */
-	printf ("host_grad[0] = %g\n", host_grad[0]);
-	printf ("host_grad[5] = %g\n", host_grad[5]);
-	printf ("host_grad[10000] = %g\n", host_grad[10000]);
-	exit (0);
+    /* kkk */
+    printf ("host_grad[0] = %g\n", host_grad[0]);
+    printf ("host_grad[5] = %g\n", host_grad[5]);
+    exit (0);
 		
-	// printf("Launching bspline_cuda_compute_grad_mean_kernel... ");
-	bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
-		gpu_grad,
-		gpu_grad_temp,
-		num_elems);
+    // printf("Launching bspline_cuda_compute_grad_mean_kernel... ");
+    bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>
+	    (
+	     gpu_grad,
+	     gpu_grad_temp,
+	     num_elems);
 
-	cudaThreadSynchronize();
+    cudaThreadSynchronize();
 
-	sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
-		gpu_grad_temp,
-		gpu_grad_temp,
-		num_elems);
+    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
+							    gpu_grad_temp,
+							    gpu_grad_temp,
+							    num_elems);
 
-	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("bspline_cuda_compute_grad_mean_kernel failed");
+    if(cudaThreadSynchronize() != cudaSuccess)
+	checkCUDAError("bspline_cuda_compute_grad_mean_kernel failed");
 
-	if(cudaMemcpy(host_grad_mean, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
-		checkCUDAError("Failed to copy grad_mean from GPU to host");
+    if(cudaMemcpy(host_grad_mean, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+	checkCUDAError("Failed to copy grad_mean from GPU to host");
 
-	// printf("Launching bspline_cuda_compute_grad_norm_kernel... ");
-	bspline_cuda_compute_grad_norm_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
-		gpu_grad,
-		gpu_grad_temp,
-		num_elems);
+    // printf("Launching bspline_cuda_compute_grad_norm_kernel... ");
+    bspline_cuda_compute_grad_norm_kernel<<<dimGrid2, dimBlock2, smemSize>>>
+	    (
+	     gpu_grad,
+	     gpu_grad_temp,
+	     num_elems);
 
-	cudaThreadSynchronize();
+    cudaThreadSynchronize();
 
-	sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
-		gpu_grad_temp,
-		gpu_grad_temp,
-		num_elems);
+    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
+							    gpu_grad_temp,
+							    gpu_grad_temp,
+							    num_elems);
 
-	if(cudaThreadSynchronize() != cudaSuccess)
-		checkCUDAError("bspline_cuda_compute_grad_norm_kernel failed");
+    if(cudaThreadSynchronize() != cudaSuccess)
+	checkCUDAError("bspline_cuda_compute_grad_norm_kernel failed");
 
-	if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
-		checkCUDAError("Failed to copy grad_norm from GPU to host");
+    if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
+	checkCUDAError("Failed to copy grad_norm from GPU to host");
 }
 
 /***********************************************************************

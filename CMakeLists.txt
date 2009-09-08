@@ -43,7 +43,9 @@ IF (NOT MINGW)
   ## For some reason, CMake tries to invoke devenv instead of gfortran
   ## for mingw.
   INCLUDE (PLM_FindFortran.cmake)
-  INCLUDE (FortranCInterface)
+
+  ## The FortranCInterface is not included on CMake 2.6.2
+  # INCLUDE (FortranCInterface)
 ENDIF (NOT MINGW)
 INCLUDE (PLM_FindF2C.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
