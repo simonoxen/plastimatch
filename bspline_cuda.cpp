@@ -148,15 +148,11 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
     start_clock = clock();
 
     // Prepare the GPU to run the kernels.
-    printf ("    bspline_cuda_copy_coeff_lut(bxf);\n");
     bspline_cuda_copy_coeff_lut(bxf);
-    printf ("    bspline_cuda_clear_score();\n");
     bspline_cuda_clear_score();
-    printf ("    bspline_cuda_clear_grad();\n");
     bspline_cuda_clear_grad();
 
     // Run the kernels that fill the score, dc_dv, and gradient streams.
-    printf ("    bspline_cuda_calculate_run_kernels_g\n");
     bspline_cuda_calculate_run_kernels_g(
 					 fixed,
 					 moving,
@@ -172,7 +168,6 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
     //dump_coeff (bxf, "coeff.txt");
 
     // Run the kernels to calculate the score and gradient values.
-    printf ("    bspline_cuda_final_steps_f\n");
     bspline_cuda_final_steps_f(
 			       parms,
 			       bxf,

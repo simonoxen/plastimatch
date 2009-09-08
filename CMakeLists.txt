@@ -370,9 +370,9 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
 
-  NVCC_FILE(bspline_cuda_kernels.cu)
-  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_kernels_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "bspline_cuda_kernels.cu.cpp")
+#   NVCC_FILE(bspline_cuda_kernels.cu)
+#   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_kernels_wrap.cpp
+#     PROPERTIES OBJECT_DEPENDS "bspline_cuda_kernels.cu.cpp")
 ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
@@ -463,12 +463,14 @@ IF(CUDA_FOUND)
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda.cpp
 	bspline_cuda.cu
-	bspline_cuda_kernels.cu
+#	bspline_cuda_kernels.cu
 	bspline_cuda.h
 	)
   IF (PLM_USE_FINDCUDA)
+#    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
+#      bspline_cuda.cu bspline_cuda_kernels.cu)
     CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
-      bspline_cuda.cu bspline_cuda_kernels.cu)
+      bspline_cuda.cu)
     SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	${BSPLINE_CUDA_WRAPPERS}
@@ -477,7 +479,7 @@ IF(CUDA_FOUND)
     SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_cuda_wrap.cpp
-	bspline_cuda_kernels_wrap.cpp
+#	bspline_cuda_kernels_wrap.cpp
 	)
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF(CUDA_FOUND)
