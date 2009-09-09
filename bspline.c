@@ -451,8 +451,9 @@ bspline_display_coeff_stats (BSPLINE_Xform* bxf)
 	if (cf_min > bxf->coeff[i]) cf_min = bxf->coeff[i];
 	if (cf_max < bxf->coeff[i]) cf_max = bxf->coeff[i];
     }
-    logfile_printf ("CF (MIN,AVG,MAX) = %g %g %g\n", 
-	    cf_min, cf_avg / bxf->num_coeff, cf_max);
+    logfile_printf ("                    "
+		    "CMIN %6.2f CAVG %6.2f CMAX %6.2f\n", 
+		    cf_min, cf_avg / bxf->num_coeff, cf_max);
 }
 
 void

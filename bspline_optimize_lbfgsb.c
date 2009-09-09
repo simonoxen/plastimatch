@@ -214,11 +214,13 @@ bspline_optimize_lbfgsb
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
 		csave,lsave,isave,dsave,60,60);
+#if defined (commentout)
 	logfile_printf (">>> ");
 	for (i = 0; i < 60; i++) {
 	    logfile_printf ("%c", task[i]);
 	}
 	logfile_printf ("\n");
+#endif
 	if (task[0] == 'F' && task[1] == 'G') {
 
 	    /* Copy from fortran to C (double -> float) */
