@@ -310,22 +310,21 @@ dump_luts (BSPLINE_Xform* bxf)
     fp = fopen ("clut.txt","wb");
     p = 0;
     for (k = 0; k < bxf->rdims[2]; k++) {
-		for (j = 0; j < bxf->rdims[1]; j++) {
-			for (i = 0; i < bxf->rdims[0]; i++) {
+	for (j = 0; j < bxf->rdims[1]; j++) {
+	    for (i = 0; i < bxf->rdims[0]; i++) {
 				
-				fprintf (fp, "%3d %3d %3d\n", k, j, i);
+		fprintf (fp, "%3d %3d %3d\n", k, j, i);
 		
-				for (tz = 0; tz < 4; tz++) {
-					for (ty = 0; ty < 4; ty++) {
-						for (tx = 0; tx < 4; tx++) {
-							fprintf (fp, " %d", bxf->c_lut[p++]);
-						}
-					}
-				}
-
-				fprintf (fp, "\n");
+		for (tz = 0; tz < 4; tz++) {
+		    for (ty = 0; ty < 4; ty++) {
+			for (tx = 0; tx < 4; tx++) {
+			    fprintf (fp, " %d", bxf->c_lut[p++]);
 			}
+		    }
 		}
+		fprintf (fp, "\n");
+	    }
+	}
     }
     fclose (fp);
 }
@@ -474,6 +473,9 @@ bspline_save_debug_state
 	}
 	dump_gradient (bxf, &bst->ssd, fn);
 
+	sprintf (fn, "coeff_%02d.txt", bst->it);
+	dump_coeff (bxf, fn);
+
 	if (parms->metric == BMET_MI) {
 	    sprintf (fn, "hist_%02d.txt", bst->it);
 	    dump_hist (&parms->mi_hist, fn);
@@ -499,14 +501,15 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
    ----------------------------------------------------------------------- */
 gpuit_EXPORT
 void
-bspline_xform_initialize (
-	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
-	float img_origin[3],         /* Image origin (in mm) */
-	float img_spacing[3],        /* Image spacing (in mm) */
-	int img_dim[3],              /* Image size (in vox) */
-	int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
-	int roi_dim[3],		     /* Dimension of ROI (in vox) */
-	int vox_per_rgn[3])	     /* Knot spacing (in vox) */
+bspline_xform_initialize 
+(
+ BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+ float img_origin[3],         /* Image origin (in mm) */
+ float img_spacing[3],        /* Image spacing (in mm) */
+ int img_dim[3],              /* Image size (in vox) */
+ int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
+ int roi_dim[3],		     /* Dimension of ROI (in vox) */
+ int vox_per_rgn[3])	     /* Knot spacing (in vox) */
 {
     int d;
     int i, j, k, p;
@@ -515,22 +518,22 @@ bspline_xform_initialize (
 
     logfile_printf ("bspline_xform_initialize\n");
     for (d = 0; d < 3; d++) {
-		/* copy input parameters over */
-		bxf->img_origin[d] = img_origin[d];
-		bxf->img_spacing[d] = img_spacing[d];
-		bxf->img_dim[d] = img_dim[d];
-		bxf->roi_offset[d] = roi_offset[d];
-		bxf->roi_dim[d] = roi_dim[d];
-		bxf->vox_per_rgn[d] = vox_per_rgn[d];
+	/* copy input parameters over */
+	bxf->img_origin[d] = img_origin[d];
+	bxf->img_spacing[d] = img_spacing[d];
+	bxf->img_dim[d] = img_dim[d];
+	bxf->roi_offset[d] = roi_offset[d];
+	bxf->roi_dim[d] = roi_dim[d];
+	bxf->vox_per_rgn[d] = vox_per_rgn[d];
 
-		/* grid spacing is in mm */
-		bxf->grid_spac[d] = bxf->vox_per_rgn[d] * bxf->img_spacing[d];
+	/* grid spacing is in mm */
+	bxf->grid_spac[d] = bxf->vox_per_rgn[d] * bxf->img_spacing[d];
 
-		/* rdims is the number of regions */
-		bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
+	/* rdims is the number of regions */
+	bxf->rdims[d] = 1 + (bxf->roi_dim[d] - 1) / bxf->vox_per_rgn[d];
 
-		/* cdims is the number of control points */
-		bxf->cdims[d] = 3 + bxf->rdims[d];
+	/* cdims is the number of control points */
+	bxf->cdims[d] = 3 + bxf->rdims[d];
     }
 
     /* total number of control points & coefficients */
@@ -543,60 +546,60 @@ bspline_xform_initialize (
 
     /* Create q_lut */
     bxf->q_lut = (float*) malloc (sizeof(float) 
-				 * bxf->vox_per_rgn[0] 
-				 * bxf->vox_per_rgn[1] 
-				 * bxf->vox_per_rgn[2] 
-				 * 64);
+				  * bxf->vox_per_rgn[0] 
+				  * bxf->vox_per_rgn[1] 
+				  * bxf->vox_per_rgn[2] 
+				  * 64);
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
  
     for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-		float ii = ((float) i) / bxf->vox_per_rgn[0];
-		float t3 = ii*ii*ii;
-		float t2 = ii*ii;
-		float t1 = ii;
-		A[i*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-		A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-		A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-		A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+	float ii = ((float) i) / bxf->vox_per_rgn[0];
+	float t3 = ii*ii*ii;
+	float t2 = ii*ii;
+	float t1 = ii;
+	A[i*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+	A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+	A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+	A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
     for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-		float jj = ((float) j) / bxf->vox_per_rgn[1];
-		float t3 = jj*jj*jj;
-		float t2 = jj*jj;
-		float t1 = jj;
-		B[j*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-		B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-		B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-		B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+	float jj = ((float) j) / bxf->vox_per_rgn[1];
+	float t3 = jj*jj*jj;
+	float t2 = jj*jj;
+	float t1 = jj;
+	B[j*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+	B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+	B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+	B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-		float kk = ((float) k) / bxf->vox_per_rgn[2];
-		float t3 = kk*kk*kk;
-		float t2 = kk*kk;
-		float t1 = kk;
-		C[k*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-		C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-		C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-		C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
+	float kk = ((float) k) / bxf->vox_per_rgn[2];
+	float t3 = kk*kk*kk;
+	float t2 = kk*kk;
+	float t1 = kk;
+	C[k*4+0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+	C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+	C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
     }
 
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
-		for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
-			for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
+	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
 
-				for (tz = 0; tz < 4; tz++) {
-					for (ty = 0; ty < 4; ty++) {
-						for (tx = 0; tx < 4; tx++) {
-							bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
-						}
-					}
-				}
-
+		for (tz = 0; tz < 4; tz++) {
+		    for (ty = 0; ty < 4; ty++) {
+			for (tx = 0; tx < 4; tx++) {
+			    bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
 			}
+		    }
 		}
+
+	    }
+	}
     }
     free (C);
     free (B);
@@ -604,26 +607,26 @@ bspline_xform_initialize (
 
     /* Create c_lut */
     bxf->c_lut = (int*) malloc (sizeof(int) 
-				 * bxf->rdims[0] 
-				 * bxf->rdims[1] 
-				 * bxf->rdims[2] 
-				 * 64);
+				* bxf->rdims[0] 
+				* bxf->rdims[1] 
+				* bxf->rdims[2] 
+				* 64);
     p = 0;
     for (k = 0; k < bxf->rdims[2]; k++) {
-		for (j = 0; j < bxf->rdims[1]; j++) {
-			for (i = 0; i < bxf->rdims[0]; i++) {
-				for (tz = 0; tz < 4; tz++) {
-					for (ty = 0; ty < 4; ty++) {
-						for (tx = 0; tx < 4; tx++) {
-							bxf->c_lut[p++] = 
-								+ (k + tz) * bxf->cdims[0] * bxf->cdims[1]
-								+ (j + ty) * bxf->cdims[0] 
-								+ (i + tx);
-						}
-					}
-				}
+	for (j = 0; j < bxf->rdims[1]; j++) {
+	    for (i = 0; i < bxf->rdims[0]; i++) {
+		for (tz = 0; tz < 4; tz++) {
+		    for (ty = 0; ty < 4; ty++) {
+			for (tx = 0; tx < 4; tx++) {
+			    bxf->c_lut[p++] = 
+				    + (k + tz) * bxf->cdims[0] * bxf->cdims[1]
+				    + (j + ty) * bxf->cdims[0] 
+				    + (i + tx);
 			}
+		    }
 		}
+	    }
+	}
     }
 
     //dump_luts (bxf);
@@ -2189,8 +2192,6 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
 	fclose (fp);
     }
 
-    //dump_coeff (bxf, "coeff.txt");
-
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
@@ -2450,8 +2451,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 	fclose (fp);
     }
 
-    //dump_coeff (bxf, "coeff.txt");
-
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
@@ -2469,17 +2468,19 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 }
 
 /* Mean-squared error version of implementation "C" */
+/* ----- This is the best known version for single processor CPU's ----- */
 /* Implementation "C" is slower than "B", but yields a smoother cost function 
    for use by L-BFGS-B.  It uses linear interpolation of moving image, 
    and nearest neighbor interpolation of gradient */
 void
-bspline_score_c_mse (
-		BSPLINE_Parms *parms, 
-		Bspline_state *bst,
-		BSPLINE_Xform* bxf, 
-		Volume *fixed, 
-		Volume *moving, 
-		Volume *moving_grad)
+bspline_score_c_mse 
+(
+ BSPLINE_Parms *parms, 
+ Bspline_state *bst,
+ BSPLINE_Xform* bxf, 
+ Volume *fixed, 
+ Volume *moving, 
+ Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &bst->ssd;
     int i;
@@ -2595,8 +2596,6 @@ bspline_score_c_mse (
     if (parms->debug) {
 	fclose (fp);
     }
-
-    //dump_coeff (bxf, "coeff.txt");
 
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;

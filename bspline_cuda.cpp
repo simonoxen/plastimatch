@@ -160,8 +160,6 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
 					 run_low_mem_kernel_version,
 					 parms->debug);
 
-    //dump_coeff (bxf, "coeff.txt");
-
     // Run the kernels to calculate the score and gradient values.
     bspline_cuda_final_steps_f(
 			       parms,
@@ -174,8 +172,6 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
 			       &ssd_grad_mean,
 			       &ssd_grad_norm);
 
-    //dump_gradient(bxf, ssd, "grad_gpu.txt");
-	
     end_clock = clock();
 
     printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
@@ -242,8 +238,6 @@ bspline_cuda_score_f_mse
 	fclose (fp);
     }
 
-    //dump_coeff (bxf, "coeff.txt");
-
     // Run the kernels to calculate the score and gradient values.
     bspline_cuda_final_steps_f(
 			       parms,
@@ -256,8 +250,6 @@ bspline_cuda_score_f_mse
 			       &ssd_grad_mean,
 			       &ssd_grad_norm);
 
-    //dump_gradient(bxf, ssd, "grad_gpu.txt");
-	
     end_clock = clock();
 
     printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
@@ -356,8 +348,6 @@ bspline_cuda_score_e_mse_v2
 	fclose (fp);
     }
 
-    //dump_coeff(bxf, "coeff_gpu.txt");
-
     //QueryPerformanceFrequency(&clock_frequency);
     //QueryPerformanceCounter(&clock_count);
     //clock_start = (double)clock_count.QuadPart;
@@ -374,8 +364,6 @@ bspline_cuda_score_e_mse_v2
 				  &ssd_grad_mean,
 				  &ssd_grad_norm);
 	
-    //dump_gradient(bxf, ssd, "grad_gpu.txt");
-
     //QueryPerformanceCounter(&clock_count);
     //clock_end = (double)clock_count.QuadPart;
     //printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
@@ -476,8 +464,6 @@ bspline_cuda_score_e_mse
 	fclose (fp);
     }
 
-    //dump_coeff(bxf, "coeff_gpu.txt");
-
 #if defined (_WIN32)  	
     QueryPerformanceFrequency(&clock_frequency);
     QueryPerformanceCounter(&clock_count);
@@ -496,8 +482,6 @@ bspline_cuda_score_e_mse
 			       &ssd_grad_mean,
 			       &ssd_grad_norm);
 	
-    //dump_gradient(bxf, ssd, "grad_gpu.txt");
-
 #if defined (_WIN32)  	
     QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
@@ -777,8 +761,6 @@ void bspline_cuda_score_d_mse
 		fclose (fp);
     }
 
-    //dump_coeff (bxf, "coeff.txt");
-
 	// Compute the score.
 	bspline_cuda_final_steps_d(
 		parms,
@@ -969,8 +951,6 @@ bspline_cuda_score_c_mse
     if (parms->debug) {
 	fclose (fp);
     }
-
-    //dump_coeff (bxf, "coeff.txt");
 
     bspline_cuda_calculate_gradient_c (parms,
 				       bst, 
