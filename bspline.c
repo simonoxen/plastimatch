@@ -1698,12 +1698,6 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
-
-    if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "w");
-    }
 
     start_clock = clock();
 
@@ -1928,10 +1922,6 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     free (dc_dv);
 
-    if (parms->debug) {
-	fclose (fp);
-    }
-
     //dump_coeff (bxf, "coeff_cpu.txt");
 
     /* Normalize score for MSE */
@@ -1970,7 +1960,7 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
     FILE* fp;
 
     if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
 	fp = fopen (debug_fn, "w");
     }
 
@@ -2226,7 +2216,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
     FILE* fp;
 
     if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
 	fp = fopen (debug_fn, "w");
     }
 
@@ -2470,7 +2460,7 @@ bspline_score_c_mse (
     FILE* fp;
 
     if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
 	fp = fopen (debug_fn, "w");
     }
 
