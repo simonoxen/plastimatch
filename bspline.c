@@ -2925,6 +2925,28 @@ bspline_optimize (BSPLINE_Xform* bxf,
     log_parms (parms);
     log_bxf_header (bxf);
 
+#if (HAVE_CUDA)
+    if(parms->threading == BTHR_CUDA) {
+	switch (parms->implementation) {
+	case 'c':
+	    bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
+	case 'd':
+	    bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
+	    break;
+	case 'e':
+	    bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
+	    //	    bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
+	    break;
+	case 'f':
+	    bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
+	    break;
+	default:
+	    bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
+	    break;
+	}
+    }
+#endif
+
     if (parms->metric == BMET_MI) {
 	bspline_initialize_mi (parms, fixed, moving);
     }
@@ -2942,4 +2964,23 @@ bspline_optimize (BSPLINE_Xform* bxf,
     } else {
 	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
     }
+
+#if (HAVE_CUDA)
+    if(parms->threading == BTHR_CUDA) {
+	switch (parms->implementation) {
+	case 'c':
+	    bspline_cuda_clean_up();
+	case 'd':
+	case 'e':
+	    bspline_cuda_clean_up_d(); // Handles versions D and E
+	    break;
+	case 'f':
+	    bspline_cuda_clean_up_f();
+	    break;
+	default:
+	    bspline_cuda_clean_up_g();
+	    break;
+	}
+    }
+#endif
 }

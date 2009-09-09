@@ -6344,8 +6344,12 @@ void bspline_cuda_calculate_run_kernels_g(
 					  Volume *moving_grad,
 					  BSPLINE_Xform *bxf,
 					  BSPLINE_Parms *parms,
-					  int run_low_mem_version)
+					  int run_low_mem_version, 
+					  int debug)
 {
+    FILE *fp;
+    char debug_fn[1024];
+
 #if defined (_WIN32)
     LARGE_INTEGER clock_count, clock_frequency;
     double clock_start, clock_end;
@@ -6423,8 +6427,13 @@ void bspline_cuda_calculate_run_kernels_g(
     int num_blocks;
     int smemSize;
 
+    if (debug) {
+	sprintf (debug_fn, "dump_mse.txt");
+	fp = fopen (debug_fn, "w");
+    }
+
     if (!run_low_mem_version) {
-	printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
+	//	printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
 		
 	threads_per_block = 256;
 	num_threads = fixed->npix;
@@ -6452,31 +6461,26 @@ void bspline_cuda_calculate_run_kernels_g(
 		 rdims,
 		 cdims);
 
-#if defined (commentout)
-	if (1) {
+	if (debug) {
+	    int ri, rj, rk;
+	    int fi, fj, fk;
 	    float *tmp = (float*) malloc (dc_dv_mem_size);
 	    if (cudaMemcpy (tmp, gpu_dc_dv, dc_dv_mem_size,
 			    cudaMemcpyDeviceToHost) != cudaSuccess) {
 		checkCUDAError("Failed to copy gpu_dc_dv to CPU");
 	    }
 
-	    /* kkk */
-	    int found = 0;
-	    for (int i = 0; i < 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2]; i++) {
-		if (tmp[i] != 0.0) {
-		    printf ("tmp[%d] = %g\n", i, tmp[i]);
-		    found = 1;
-		    break;
+	    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+		for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+		    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+			int idx = 3 * (((rk * bxf->roi_dim[1]) + rj) * bxf->roi_dim[0] + ri);
+			fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, 
+				 tmp[idx+0], tmp[idx+1], tmp[idx+2]);
+		    }
 		}
 	    }
-	    if (!found) {
-		printf ("No non-zero elements found\n");
-	    }
-
 	    free (tmp);
-	    exit (0);
 	}
-#endif
 
     } else {
 	int tiles_per_launch = 512;
@@ -6509,6 +6513,11 @@ void bspline_cuda_calculate_run_kernels_g(
 	}
 
     }
+
+    if (debug) {
+	fclose (fp);
+    }
+
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_g_mse_compute_score failed");
@@ -6561,7 +6570,7 @@ void bspline_cuda_calculate_run_kernels_g(
     }
 #endif
 
-    printf ("bspline_cuda_score_g_mse_kernel2 complete.\n");
+    //    printf ("bspline_cuda_score_g_mse_kernel2 complete.\n");
 
 #if defined (_WIN32)
     QueryPerformanceCounter(&clock_count);
@@ -8335,25 +8344,23 @@ void bspline_cuda_calculate_gradient_c(
  ***********************************************************************/
 void bspline_cuda_clean_up_g() {
 
-	// Free memory on GPU.
-	if(cudaFree(gpu_fixed_image) != cudaSuccess) 
-		checkCUDAError("Failed to free memory for fixed_image");
-	if(cudaFree(gpu_moving_image) != cudaSuccess) 
-		checkCUDAError("Failed to free memory for moving_image");
-	if(cudaFree(gpu_moving_grad) != cudaSuccess)
-		checkCUDAError("Failed to free memory for moving_grad");
-	if(cudaFree(gpu_coeff) != cudaSuccess) 
-		checkCUDAError("Failed to free memory for coeff");
-	if(cudaFree(gpu_dc_dv_x) != cudaSuccess)
-		checkCUDAError("Failed to free memory for dc_dv_x");
-	if(cudaFree(gpu_dc_dv_y) != cudaSuccess)
-		checkCUDAError("Failed to free memory for dc_dv_y");
-	if(cudaFree(gpu_dc_dv_z) != cudaSuccess)
-		checkCUDAError("Failed to free memory for dc_dv_z");
-	if(cudaFree(gpu_score) != cudaSuccess)
-		checkCUDAError("Failed to free memory for score");
-
-	printf("All memory on the GPU has been freed.\n");
+    // Free memory on GPU.
+    if(cudaFree(gpu_fixed_image) != cudaSuccess) 
+	checkCUDAError("Failed to free memory for fixed_image");
+    if(cudaFree(gpu_moving_image) != cudaSuccess) 
+	checkCUDAError("Failed to free memory for moving_image");
+    if(cudaFree(gpu_moving_grad) != cudaSuccess)
+	checkCUDAError("Failed to free memory for moving_grad");
+    if(cudaFree(gpu_coeff) != cudaSuccess) 
+	checkCUDAError("Failed to free memory for coeff");
+    if(cudaFree(gpu_dc_dv_x) != cudaSuccess)
+	checkCUDAError("Failed to free memory for dc_dv_x");
+    if(cudaFree(gpu_dc_dv_y) != cudaSuccess)
+	checkCUDAError("Failed to free memory for dc_dv_y");
+    if(cudaFree(gpu_dc_dv_z) != cudaSuccess)
+	checkCUDAError("Failed to free memory for dc_dv_z");
+    if(cudaFree(gpu_score) != cudaSuccess)
+	checkCUDAError("Failed to free memory for score");
 }
 
 /***********************************************************************

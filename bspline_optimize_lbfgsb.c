@@ -12,8 +12,6 @@
 #include "bspline.h"
 #include "logfile.h"
 
-extern void bspline_initialize_streams_on_gpu(Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform *bxf, BSPLINE_Parms *parms);
-
 void
 setulb_ (integer*       n,
 	 integer*       m,
@@ -210,27 +208,6 @@ bspline_optimize_lbfgsb (
        getchar();
     */
 
-    /* Fill the GPU data structure  */
-#if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
-    if (parms->implementation == BIMPL_BROOK) {
-	logfile_printf (log_fp, "Initializing GPU data structures for Brook. \n");
-	// bspline_initialize_structure_to_store_data_from_gpu(fixed, parms);
-	bspline_initialize_streams_on_gpu(fixed, moving, moving_grad, bxf, parms);
-	logfile_printf (log_fp, "Done. \n");
-    }
-#endif
-
-#if (HAVE_CUDA)
-    if(parms->threading == BTHR_CUDA) {
-	bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
-	//bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
-	//bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
-	//bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
-	//bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
-	//bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
-    }
-#endif
-
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
 		csave,lsave,isave,dsave,60,60);
@@ -284,15 +261,6 @@ bspline_optimize_lbfgsb (
 	    break;
 	}
     }
-
-#if (HAVE_CUDA)
-    if(parms->threading == BTHR_CUDA) {
-	bspline_cuda_clean_up_g();
-	// bspline_cuda_clean_up_f();
-	// bspline_cuda_clean_up_d(); // Handles versions D and E
-	// bspline_cuda_clean_up();
-    }
-#endif
 
     free (nbd);
     free (iwa);

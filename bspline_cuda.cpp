@@ -140,11 +140,6 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
        and the tile version for larger images */
     bool run_low_mem_kernel_version = false; 
 
-    if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "w");
-    }
-
     start_clock = clock();
 
     // Prepare the GPU to run the kernels.
@@ -159,11 +154,8 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
 					 moving_grad,
 					 bxf,
 					 parms,
-					 run_low_mem_kernel_version);
-
-    if (parms->debug) {
-	fclose (fp);
-    }
+					 run_low_mem_kernel_version,
+					 parms->debug);
 
     //dump_coeff (bxf, "coeff.txt");
 
