@@ -48,6 +48,12 @@ struct BSPLINE_Score_struct {
     float* grad;
 };
 
+typedef struct bspline_state Bspline_state;
+struct bspline_state {
+    int it;
+    BSPLINE_Score ssd;                   /* Score and Gradient */
+};
+
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
 struct BSPLINE_MI_Hist_Parms_struct {
     long bins;
@@ -75,7 +81,6 @@ struct BSPLINE_Parms_struct {
     double convergence_tol;              /* When to stop iterations based on score */
     int convergence_tol_its;             /* How many iterations to check for convergence tol */
     BSPLINE_MI_Hist mi_hist;             /* Histogram for MI score */
-    BSPLINE_Score ssd;                   /* Score and Gradient */
     void *data_on_gpu;                   /* Pointer to structure encapsulating the data stored on the GPU */
     void *data_from_gpu;                 /* Pointer to structure that stores the data returned from the GPU */
 };
@@ -87,6 +92,9 @@ gpuit_EXPORT
 void bspline_parms_set_default (BSPLINE_Parms* parms);
 gpuit_EXPORT
 void bspline_xform_set_default (BSPLINE_Xform* bxf);
+gpuit_EXPORT
+Bspline_state *
+bspline_state_create (BSPLINE_Xform *bxf);
 gpuit_EXPORT
 void
 bspline_xform_initialize (
@@ -102,8 +110,15 @@ void bspline_xform_free (BSPLINE_Xform* bxf);
 gpuit_EXPORT
 void bspline_parms_free (BSPLINE_Parms* parms);
 gpuit_EXPORT
-void bspline_optimize (BSPLINE_Xform* bxf, BSPLINE_Parms *parms, Volume *fixed, Volume *moving, 
-		  Volume *moving_grad);
+void
+bspline_state_free (Bspline_state *bst);
+gpuit_EXPORT
+void bspline_optimize (BSPLINE_Xform* bxf, 
+		       Bspline_state **bst,
+		       BSPLINE_Parms *parms, 
+		       Volume *fixed, 
+		       Volume *moving, 
+		       Volume *moving_grad);
 gpuit_EXPORT
 BSPLINE_Xform* read_bxf (char* filename);
 gpuit_EXPORT
@@ -116,6 +131,7 @@ void
 bspline_display_coeff_stats (BSPLINE_Xform* bxf);
 void
 bspline_score (BSPLINE_Parms *parms, 
+	       Bspline_state *bst,
 	       BSPLINE_Xform* bxf, 
 	       Volume *fixed, 
 	       Volume *moving, 
@@ -133,7 +149,8 @@ void
 clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
 
 void
-bspline_update_grad_b (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int pidx, int qidx, float dc_dv[3]);
+bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
+		       int pidx, int qidx, float dc_dv[3]);
 
 /* Debugging routines */
 void

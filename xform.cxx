@@ -426,7 +426,7 @@ save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 	    (!strcmp("VersorTransform", transform->GetBulkTransform()->GetNameOfClass())) ||
 	    (!strcmp("VersorRigid3DTransform", transform->GetBulkTransform()->GetNameOfClass()))) {
 	    fprintf (fp, "BulkTransform =");
-	    for (int i = 0; i < transform->GetBulkTransform()->GetNumberOfParameters(); i++) {
+	    for (unsigned int i = 0; i < transform->GetBulkTransform()->GetNumberOfParameters(); i++) {
 		fprintf (fp, " %g", transform->GetBulkTransform()->GetParameters()[i]);
 	    }
 	    fprintf (fp, "\n");

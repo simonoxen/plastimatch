@@ -89,6 +89,17 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
 }
 
 gpuit_EXPORT
+Bspline_state *
+bspline_state_create (BSPLINE_Xform *bxf)
+{
+    Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
+    memset (bst, 0, sizeof (Bspline_state));
+    bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
+    memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
+    return bst;
+}
+
+gpuit_EXPORT
 void
 write_bxf (char* filename, BSPLINE_Xform* bxf)
 {
@@ -731,14 +742,21 @@ gpuit_EXPORT
 void
 bspline_parms_free (BSPLINE_Parms* parms)
 {
-    if (parms->ssd.grad) {
-	free (parms->ssd.grad);
-    }
     if (parms->mi_hist.j_hist) {
 	free (parms->mi_hist.f_hist);
 	free (parms->mi_hist.m_hist);
 	free (parms->mi_hist.j_hist);
     }
+}
+
+gpuit_EXPORT
+void
+bspline_state_free (Bspline_state* bst)
+{
+    if (bst->ssd.grad) {
+	free (bst->ssd.grad);
+    }
+    free (bst);
 }
 
 /* This function will split the amout to add between two bins (linear interp) 
@@ -968,9 +986,11 @@ bspline_interpolate_vf (Volume* interp,
 }
 
 inline void
-bspline_update_grad (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int p[3], int qidx, float dc_dv[3])
+bspline_update_grad (Bspline_state *bst, 
+		     BSPLINE_Xform* bxf, 
+		     int p[3], int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -993,10 +1013,10 @@ bspline_update_grad (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, int p[3], int qid
 }
 
 inline void
-bspline_update_grad_b_inline (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, 
+bspline_update_grad_b_inline (Bspline_state* bst, BSPLINE_Xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -1017,10 +1037,10 @@ bspline_update_grad_b_inline (BSPLINE_Parms* parms, BSPLINE_Xform* bxf,
 }
 
 void
-bspline_update_grad_b (BSPLINE_Parms* parms, BSPLINE_Xform* bxf, 
+bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut = &bxf->q_lut[qidx*64];
@@ -1271,12 +1291,13 @@ report_score (char *alg, BSPLINE_Xform *bxf,
 /* Mutual information version of implementation "C" */
 static void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
+		    Bspline_state *bst,
 		    BSPLINE_Xform *bxf, 
 		    Volume *fixed, 
 		    Volume *moving, 
 		    Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     int ri, rj, rk;
     int fi, fj, fk, fv;
@@ -1651,7 +1672,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 			fxqs[0], fxqs[1], fxqs[2]);
 		}
 
-		bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
+		bspline_update_grad_b_inline (bst, bxf, pidx, qidx, dc_dv);
 	    }
 	}
     }
@@ -1676,12 +1697,13 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
  * allows for greater parallelization on the GPU.
  */
 void bspline_score_f_mse (BSPLINE_Parms *parms,
+			  Bspline_state *bst, 
 			  BSPLINE_Xform *bxf,
 			  Volume *fixed,
 			  Volume *moving,
 			  Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
 
     int i;
     int qz;
@@ -1696,8 +1718,8 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     int total_vox_per_rgn = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
 
-    static int it = 0;
-    char debug_fn[1024];
+    //static int it = 0;
+    //char debug_fn[1024];
 
     start_clock = clock();
 
@@ -1940,12 +1962,13 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
 void
 bspline_score_e_mse (BSPLINE_Parms *parms, 
+		     Bspline_state *bst,
 		     BSPLINE_Xform* bxf, 
 		     Volume *fixed, 
 		     Volume *moving, 
 		     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i;
     int p[3];
     int s[3];
@@ -2195,12 +2218,13 @@ end
 
 void
 bspline_score_d_mse (BSPLINE_Parms *parms, 
+		     Bspline_state *bst,
 		     BSPLINE_Xform* bxf, 
 		     Volume *fixed, 
 		     Volume *moving, 
 		     Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i;
     int qz;
     int p[3];
@@ -2425,12 +2449,13 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 void
 bspline_score_c_mse (
 		BSPLINE_Parms *parms, 
+		Bspline_state *bst,
 		BSPLINE_Xform* bxf, 
 		Volume *fixed, 
 		Volume *moving, 
 		Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i;
     int ri, rj, rk;
     int fi, fj, fk, fv;
@@ -2529,7 +2554,7 @@ bspline_score_c_mse (
 		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
-		bspline_update_grad_b_inline (parms, bxf, pidx, qidx, dc_dv);
+		bspline_update_grad_b_inline (bst, bxf, pidx, qidx, dc_dv);
 		
 		if (parms->debug) {
 		    fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, dc_dv[0], dc_dv[1], dc_dv[2]);
@@ -2563,13 +2588,16 @@ bspline_score_c_mse (
    interpolation of both moving image and gradient which doesn't 
    work with stock L-BFGS-B optimizer. */
 void
-bspline_score_b_mse (BSPLINE_Parms *parms, 
-		 BSPLINE_Xform *bxf, 
-		 Volume *fixed, 
-		 Volume *moving, 
-		 Volume *moving_grad)
+bspline_score_b_mse 
+(
+ BSPLINE_Parms *parms, 
+ Bspline_state *bst,
+ BSPLINE_Xform *bxf, 
+ Volume *fixed, 
+ Volume *moving, 
+ Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i;
     int ri, rj, rk;
     int fi, fj, fk, fv;
@@ -2635,7 +2663,7 @@ bspline_score_b_mse (BSPLINE_Parms *parms,
 		dc_dv[1] = diff * m_grad[3*mv+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mv+2];  /* z component */
 
-		bspline_update_grad_b (parms, bxf, pidx, qidx, dc_dv);
+		bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
 		
 		ssd->score += diff * diff;
 		num_vox ++;
@@ -2656,14 +2684,17 @@ bspline_score_b_mse (BSPLINE_Parms *parms,
 }
 
 void
-bspline_score_a_mse (BSPLINE_Parms *parms, 
-		 BSPLINE_Xform* bxf, 
-		 Volume *fixed, 
-		 Volume *moving, 
-		 Volume *moving_grad
-		 )
+bspline_score_a_mse 
+(
+ BSPLINE_Parms *parms, 
+ Bspline_state *bst,
+ BSPLINE_Xform* bxf, 
+ Volume *fixed, 
+ Volume *moving, 
+ Volume *moving_grad
+ )
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i;
     int ri, rj, rk;
     int fi, fj, fk, fv;
@@ -2727,7 +2758,7 @@ bspline_score_a_mse (BSPLINE_Parms *parms,
 		dc_dv[0] = diff * m_grad[3*mv+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mv+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mv+2];  /* z component */
-		bspline_update_grad (parms, bxf, p, qidx, dc_dv);
+		bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 		
 		ssd->score += diff * diff;
 		num_vox ++;
@@ -2749,6 +2780,7 @@ bspline_score_a_mse (BSPLINE_Parms *parms,
 
 void
 bspline_score (BSPLINE_Parms *parms, 
+	       Bspline_state *bst,
 	       BSPLINE_Xform* bxf, 
 	       Volume *fixed, 
 	       Volume *moving, 
@@ -2767,23 +2799,23 @@ bspline_score (BSPLINE_Parms *parms,
 	logfile_printf("Using CUDA.\n");
 	switch (parms->implementation) {
 	case 'c':
-	    bspline_cuda_score_c_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'd':
-	    bspline_cuda_score_d_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_d_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'e':
-	    bspline_cuda_score_e_mse_v2(parms, bxf, fixed, moving, moving_grad);
-	    //bspline_cuda_score_e_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_e_mse_v2(parms, bst, bxf, fixed, moving, moving_grad);
+	    //bspline_cuda_score_e_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'f':
-	    bspline_cuda_score_f_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_f_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'g':
-	    bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_g_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	default:
-	    bspline_cuda_score_g_mse(parms, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_g_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	}
 	return;
@@ -2794,42 +2826,43 @@ bspline_score (BSPLINE_Parms *parms,
 	logfile_printf ("Using CPU. \n");
 	switch (parms->implementation) {
 	case 'a':
-	    bspline_score_a_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_a_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'b':
-	    bspline_score_b_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_b_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'c':
-	    bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'd':
-	    bspline_score_d_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_d_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'e':
-	    bspline_score_e_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_e_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'f':
-	    bspline_score_f_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_f_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	default:
-	    bspline_score_c_mse (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	}
     } else {
-	bspline_score_c_mi (parms, bxf, fixed, moving, moving_grad);
+	bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
     }
 }
 
 void
 bspline_optimize_steepest (
 		BSPLINE_Xform *bxf, 
+		Bspline_state *bst, 
 		BSPLINE_Parms *parms, 
 		Volume *fixed, 
 		Volume *moving, 
 		Volume *moving_grad
 		)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     int i, it;
 //    float a = 0.003f;
 //    float alpha = 0.5f, A = 10.0f;
@@ -2839,8 +2872,8 @@ bspline_optimize_steepest (
     float old_score;
 
     /* Get score and gradient */
-    bspline_score (parms, bxf, fixed, moving, moving_grad);
-    old_score = parms->ssd.score;
+    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+    old_score = bst->ssd.score;
 
     /* Set alpha based on norm gradient */
     ssd_grad_norm = 0;
@@ -2880,15 +2913,15 @@ bspline_optimize_steepest (
 	}
 
 	/* Get score and gradient */
-	bspline_score (parms, bxf, fixed, moving, moving_grad);
+	bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 
 	/* Update gamma */
-	if (parms->ssd.score < old_score) {
+	if (bst->ssd.score < old_score) {
 	    gamma *= gain;
 	} else {
 	    gamma /= gain;
 	}
-	old_score = parms->ssd.score;
+	old_score = bst->ssd.score;
 
 	/* Give a little feedback to the user */
 	bspline_display_coeff_stats (bxf);
@@ -2898,19 +2931,14 @@ bspline_optimize_steepest (
 gpuit_EXPORT
 void
 bspline_optimize (BSPLINE_Xform* bxf, 
+		  Bspline_state **bst_in, 
 		  BSPLINE_Parms *parms, 
 		  Volume *fixed, 
 		  Volume *moving, 
 		  Volume *moving_grad)
 {
-    /* GCS FIX: This is a terrible way to handle gradient.  
-       Should be separated from parms?  */
-    /* Make sure gradient is allocated */
-    if (parms->ssd.grad) {
-	free (parms->ssd.grad);
-    }
-    parms->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
-    memset (parms->ssd.grad, 0, bxf->num_coeff * sizeof(float));
+    Bspline_state *bst;
+    bst = bspline_state_create (bxf);
 
     log_parms (parms);
     log_bxf_header (bxf);
@@ -2919,19 +2947,19 @@ bspline_optimize (BSPLINE_Xform* bxf,
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
-	    bspline_cuda_initialize(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize (fixed, moving, moving_grad, bxf, parms);
 	case 'd':
-	    bspline_cuda_initialize_d(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_d (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'e':
-	    bspline_cuda_initialize_e_v2(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_e_v2 (fixed, moving, moving_grad, bxf, parms);
 	    //	    bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'f':
-	    bspline_cuda_initialize_f(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_f (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	default:
-	    bspline_cuda_initialize_g(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_g (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	}
     }
@@ -2943,34 +2971,40 @@ bspline_optimize (BSPLINE_Xform* bxf,
 
     if (parms->optimization == BOPT_LBFGSB) {
 #if defined (HAVE_F2C_LIBRARY)
-	bspline_optimize_lbfgsb (bxf, parms, fixed, moving, moving_grad);
+	bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
 #else
 	logfile_printf (
 	    "LBFGSB not compiled for this platform (f2c library missing).\n"
 	    "Reverting to steepest descent.\n"
 	    );
-	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
+	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
 #endif
     } else {
-	bspline_optimize_steepest (bxf, parms, fixed, moving, moving_grad);
+	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
     }
 
 #if (HAVE_CUDA)
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
-	    bspline_cuda_clean_up();
+	    bspline_cuda_clean_up ();
 	case 'd':
 	case 'e':
-	    bspline_cuda_clean_up_d(); // Handles versions D and E
+	    bspline_cuda_clean_up_d (); // Handles versions D and E
 	    break;
 	case 'f':
-	    bspline_cuda_clean_up_f();
+	    bspline_cuda_clean_up_f ();
 	    break;
 	default:
-	    bspline_cuda_clean_up_g();
+	    bspline_cuda_clean_up_g ();
 	    break;
 	}
     }
 #endif
+
+    if (bst_in) {
+	*bst_in = bst;
+    } else {
+	bspline_state_free (bst);
+    }
 }

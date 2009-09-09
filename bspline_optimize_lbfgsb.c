@@ -138,14 +138,16 @@ SAVEME ()
 #endif
 
 void
-bspline_optimize_lbfgsb (
-			 BSPLINE_Xform* bxf, 
-			 BSPLINE_Parms *parms, 
-			 Volume *fixed, 
-			 Volume *moving, 
-			 Volume *moving_grad)
+bspline_optimize_lbfgsb 
+(
+ BSPLINE_Xform* bxf, 
+ Bspline_state* bst,
+ BSPLINE_Parms *parms, 
+ Volume *fixed, 
+ Volume *moving, 
+ Volume *moving_grad)
 {
-    BSPLINE_Score* ssd = &parms->ssd;
+    BSPLINE_Score* ssd = &bst->ssd;
     char task[60], csave[60];
     logical lsave[4];
     integer n, m, iprint, *nbd, *iwa, isave[44];
@@ -224,7 +226,7 @@ bspline_optimize_lbfgsb (
 	    }
 
 	    /* Compute cost and gradient */
-	    bspline_score (parms, bxf, fixed, moving, moving_grad);
+	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	    /* Give a little feedback to the user */
 	    bspline_display_coeff_stats (bxf);
 

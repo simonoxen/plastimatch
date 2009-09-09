@@ -13,6 +13,7 @@ extern "C" {
 void
 bspline_optimize_lbfgsb (
 		BSPLINE_Xform* bxf, 
+		Bspline_state* bst,
 		BSPLINE_Parms *parms, 
 		Volume *fixed, 
 		Volume *moving, 

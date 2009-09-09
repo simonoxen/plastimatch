@@ -311,7 +311,7 @@ save_regp_output_itk_ref (Registration_Data* regd, Xform *xf_out, Registration_P
 
 	/* Convert xform to vf */
 	logfile_printf ("Converting xf to vector field ...\n");
-	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
+	//	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */
@@ -342,7 +342,7 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 
 	/* Convert xform to vf */
 	logfile_printf ("Converting xf to vector field ...\n");
-	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
+	//	const FloatImageType::SizeType& img_size = regd->fixed_image->itk_float()->GetLargestPossibleRegion().GetSize();
 	xform_to_itk_vf (&xf_tmp, xf_out, regd->fixed_image->itk_float());
 
 	/* Save warped image */
@@ -395,7 +395,7 @@ do_registration_stage (Registration_Parms* regp,
 		       Stage_Parms* stage)
 {
     /* Convert image types */
-    PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
+    //    PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
 
     logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
 		    xf_in->m_type, xf_out->m_type);

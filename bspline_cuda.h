@@ -39,6 +39,7 @@ extern "C" {
 
     void bspline_cuda_score_g_mse(
 				  BSPLINE_Parms *parms, 
+				  Bspline_state *bst,
 				  BSPLINE_Xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
@@ -46,6 +47,7 @@ extern "C" {
 
     void bspline_cuda_score_f_mse(
 				  BSPLINE_Parms *parms, 
+				  Bspline_state *bst,
 				  BSPLINE_Xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
@@ -53,6 +55,7 @@ extern "C" {
 
     void bspline_cuda_score_e_mse_v2(
 				     BSPLINE_Parms *parms, 
+				     Bspline_state *bst,
 				     BSPLINE_Xform* bxf, 
 				     Volume *fixed, 
 				     Volume *moving, 
@@ -60,6 +63,7 @@ extern "C" {
 
     void bspline_cuda_score_e_mse(
 				  BSPLINE_Parms *parms, 
+				  Bspline_state *bst,
 				  BSPLINE_Xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
@@ -67,6 +71,7 @@ extern "C" {
 
     void bspline_cuda_score_d_mse(
 				  BSPLINE_Parms *parms, 
+				  Bspline_state *bst,
 				  BSPLINE_Xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
@@ -74,6 +79,7 @@ extern "C" {
 
     void bspline_cuda_score_c_mse(
 				  BSPLINE_Parms *parms, 
+				  Bspline_state *bst,
 				  BSPLINE_Xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
@@ -256,12 +262,13 @@ extern "C" {
 				    float *host_grad_mean,
 				    float *host_grad_norm);
 
-    void bspline_cuda_calculate_gradient_c(
-					   BSPLINE_Parms* parms, 
-					   BSPLINE_Xform* bxf,
-					   Volume *fixed,
-					   float *host_grad_norm,
-					   float *host_grad_mean);
+    void bspline_cuda_calculate_gradient_c (
+					    BSPLINE_Parms* parms, 
+					    Bspline_state* bst,
+					    BSPLINE_Xform* bxf,
+					    Volume *fixed,
+					    float *host_grad_norm,
+					    float *host_grad_mean);
 
     void bspline_cuda_clean_up_g();
 

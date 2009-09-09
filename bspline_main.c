@@ -63,7 +63,7 @@ main (int argc, char* argv[])
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_optimize (&bxf, parms, fixed, moving, moving_grad);
+    bspline_optimize (&bxf, 0, parms, fixed, moving, moving_grad);
 
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn || options.output_warped_fn) {
