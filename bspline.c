@@ -2813,7 +2813,6 @@ bspline_score (BSPLINE_Parms *parms,
 {
 #if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
     if (parms->threading == BTHR_BROOK) {
-	printf("Using Brook GPU. \n");
 	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
 	return;
     }
@@ -2821,7 +2820,6 @@ bspline_score (BSPLINE_Parms *parms,
 
 #if (HAVE_CUDA)
     if (parms->threading == BTHR_CUDA) {
-	logfile_printf("Using CUDA.\n");
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
@@ -2848,7 +2846,6 @@ bspline_score (BSPLINE_Parms *parms,
 #endif
 
     if (parms->metric == BMET_MSE) {
-	logfile_printf ("Using CPU. \n");
 	switch (parms->implementation) {
 	case 'a':
 	    bspline_score_a_mse (parms, bst, bxf, fixed, moving, moving_grad);
