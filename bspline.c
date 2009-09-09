@@ -456,6 +456,31 @@ bspline_display_coeff_stats (BSPLINE_Xform* bxf)
 }
 
 void
+bspline_save_debug_state 
+(
+ BSPLINE_Parms *parms, 
+ Bspline_state *bst, 
+ BSPLINE_Xform* bxf
+ )
+{
+    char fn[1024];
+
+    if (parms->debug) {
+	if (parms->metric == BMET_MI) {
+	    sprintf (fn, "grad_mi_%02d.txt", bst->it);
+	} else {
+	    sprintf (fn, "grad_mse_%02d.txt", bst->it);
+	}
+	dump_gradient (bxf, &bst->ssd, fn);
+
+	if (parms->metric == BMET_MI) {
+	    sprintf (fn, "hist_%02d.txt", bst->it);
+	    dump_hist (&parms->mi_hist, fn);
+	}
+    }
+}
+
+void
 bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
 {
     int i;
@@ -1270,7 +1295,7 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 
 static void
 report_score (char *alg, BSPLINE_Xform *bxf, 
-	      BSPLINE_Score *ssd, int num_vox, double timing)
+	      Bspline_state *bst, int num_vox, double timing)
 {
     int i;
     float ssd_grad_norm, ssd_grad_mean;
@@ -1279,12 +1304,12 @@ report_score (char *alg, BSPLINE_Xform *bxf,
     ssd_grad_norm = 0;
     ssd_grad_mean = 0;
     for (i = 0; i < bxf->num_coeff; i++) {
-	ssd_grad_mean += ssd->grad[i];
-	ssd_grad_norm += fabs (ssd->grad[i]);
+	ssd_grad_mean += bst->ssd.grad[i];
+	ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
-    logfile_printf ("SCORE: %s %6.3f NV %6d GM %6.3f GN %6.3f [%6.3f secs]\n", 
-		    alg, ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+    logfile_printf ("%s[%4d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, ssd_grad_norm, 
 		    timing);
 }
 
@@ -1685,7 +1710,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     end_clock = clock();
 
-    report_score ("MI", bxf, ssd, num_vox, 
+    report_score ("MI", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -1956,7 +1981,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     end_clock = clock();
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2177,7 +2202,7 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
     fprintf(fp, "%f\n", ssd->score);
     fclose(fp);
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2438,7 +2463,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
     fprintf(fp, "%f\n", ssd->score);
     fclose(fp);
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2580,7 +2605,7 @@ bspline_score_c_mse (
 
     end_clock = clock();
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2679,7 +2704,7 @@ bspline_score_b_mse
 
     end_clock = clock();
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2774,7 +2799,7 @@ bspline_score_a_mse
 
     end_clock = clock();
 
-    report_score ("MSE", bxf, ssd, num_vox, 
+    report_score ("MSE", bxf, bst, num_vox, 
 		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
@@ -2854,22 +2879,30 @@ bspline_score (BSPLINE_Parms *parms,
 
 void
 bspline_optimize_steepest (
-		BSPLINE_Xform *bxf, 
-		Bspline_state *bst, 
-		BSPLINE_Parms *parms, 
-		Volume *fixed, 
-		Volume *moving, 
-		Volume *moving_grad
-		)
+			   BSPLINE_Xform *bxf, 
+			   Bspline_state *bst, 
+			   BSPLINE_Parms *parms, 
+			   Volume *fixed, 
+			   Volume *moving, 
+			   Volume *moving_grad
+			   )
 {
     BSPLINE_Score* ssd = &bst->ssd;
-    int i, it;
-//    float a = 0.003f;
-//    float alpha = 0.5f, A = 10.0f;
+    int i;
+    //    float a = 0.003f;
+    //    float alpha = 0.5f, A = 10.0f;
     float a, gamma;
     float gain = 1.5;
     float ssd_grad_norm;
     float old_score;
+    FILE* fp;
+
+    if (parms->debug) {
+	fp = fopen("scores.txt", "w");
+    }
+
+    /* Set iteration */
+    bst->it = 0;
 
     /* Get score and gradient */
     bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
@@ -2886,27 +2919,20 @@ bspline_optimize_steepest (
 
     /* Give a little feedback to the user */
     bspline_display_coeff_stats (bxf);
+    /* Save some debugging information */
+    bspline_save_debug_state (parms, bst, bxf);
+    if (parms->debug) {
+	fprintf (fp, "%f\n", ssd->score);
+    }
 
-    for (it = 0; it < parms->max_its; it++) {
-	char fn[128];
+    while (bst->it < parms->max_its) {
 
-	logfile_printf ("Beginning iteration %d, gamma = %g\n", it, gamma);
+	/* Update iteration number */
+	bst->it ++;
 
-	/* Save some debugging information */
-	if (parms->debug) {
-	    if (parms->metric == BMET_MI) {
-		sprintf (fn, "grad_mi_%02d.txt", it);
-	    } else {
-		sprintf (fn, "grad_mse_%02d.txt", it);
-	    }
-	    dump_gradient (bxf, ssd, fn);
-	    if (parms->metric == BMET_MI) {
-		sprintf (fn, "hist_%02d.txt", it);
-		dump_hist (&parms->mi_hist, fn);
-	    }
-	}
+	logfile_printf ("Beginning iteration %d, gamma = %g\n", bst->it, gamma);
 
-	/* Update coefficients */
+	/* Update b-spline coefficients from gradient */
 	//gamma = a / pow(it + A, alpha);
 	for (i = 0; i < bxf->num_coeff; i++) {
 	    bxf->coeff[i] = bxf->coeff[i] + gamma * ssd->grad[i];
@@ -2925,6 +2951,15 @@ bspline_optimize_steepest (
 
 	/* Give a little feedback to the user */
 	bspline_display_coeff_stats (bxf);
+	/* Save some debugging information */
+	bspline_save_debug_state (parms, bst, bxf);
+	if (parms->debug) {
+	    fprintf (fp, "%f\n", ssd->score);
+	}
+    }
+
+    if (parms->debug) {
+	fclose (fp);
     }
 }
 

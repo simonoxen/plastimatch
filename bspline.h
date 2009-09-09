@@ -161,6 +161,13 @@ void
 dump_luts (BSPLINE_Xform* bxf);
 void
 dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn);
+void
+bspline_save_debug_state 
+(
+ BSPLINE_Parms *parms, 
+ Bspline_state *bst, 
+ BSPLINE_Xform* bxf
+ );
 
 #if defined __cplusplus
 }

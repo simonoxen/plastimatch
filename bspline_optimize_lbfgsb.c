@@ -153,11 +153,10 @@ bspline_optimize_lbfgsb
     integer n, m, iprint, *nbd, *iwa, isave[44];
     doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
     integer i;
-    int it = 0;		/* # iterations */
-    int fnev = 0;	/* # function evaluations */
+    int num_ls = 0;	/* # line searches */
     int NMAX, MMAX;
-    double best_score;
-    int num_to_check;
+    FILE *fp;
+    //    double best_score;
 
     /* F2C Builtin function */
     //    integer s_cmp (char *, char *, ftnlen, ftnlen);
@@ -201,14 +200,16 @@ bspline_optimize_lbfgsb
     /* Remember: Fortran expects strings to be padded with blanks */
     memset (task, ' ', sizeof(task));
     memcpy (task, "START", 5);
-    logfile_printf (
-		    ">>> %c%c%c%c%c%c%c%c%c%c\n", 
+    logfile_printf (">>> %c%c%c%c%c%c%c%c%c%c\n", 
 		    task[0], task[1], task[2], task[3], task[4], 
 		    task[5], task[6], task[7], task[8], task[9]);
 
-    /* run_toy_kernel();
-       getchar();
-    */
+    /* Initialize # iterations (1 iteration = 1 function eval) */
+    bst->it = 0;
+
+    if (parms->debug) {
+	fp = fopen ("scores.txt", "w");
+    }
 
     while (1) {
 	setulb_(&n,&m,x,l,u,nbd,&f,g,&factr,&pgtol,wa,iwa,task,&iprint,
@@ -220,48 +221,45 @@ bspline_optimize_lbfgsb
 	logfile_printf ("\n");
 	if (task[0] == 'F' && task[1] == 'G') {
 
-	    /* Copy from fortran variables (double -> float) */
+	    /* Copy from fortran to C (double -> float) */
 	    for (i = 0; i < NMAX; i++) {
 		bxf->coeff[i] = (float) x[i];
 	    }
 
 	    /* Compute cost and gradient */
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+
 	    /* Give a little feedback to the user */
 	    bspline_display_coeff_stats (bxf);
+	    /* Save some debugging information */
+	    bspline_save_debug_state (parms, bst, bxf);
+	    if (parms->debug) {
+		fprintf (fp, "%f\n", ssd->score);
+	    }
 
-	    /* Copy to fortran variables (float -> double) */
+	    /* Copy from C to fortran (float -> double) */
 	    f = ssd->score;
 	    for (i = 0; i < NMAX; i++) {
 		g[i] = - ssd->grad[i];
 	    }
 
 	    /* Check # iterations */
-	    if (++fnev == parms->max_its) break;
+	    if (bst->it >= parms->max_its) break;
+	    bst->it ++;
 
-	    //	} else if (s_cmp (task, "NEW_X", (ftnlen)60, (ftnlen)5) == 0) {
 	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
-	    /* Optimizer has completed an iteration */
+	    /* Optimizer has completed a line search. */
 	    /* Check convergence tolerance */
-	    if (it == 0) {
-		best_score = ssd->score;
-		num_to_check = parms->convergence_tol_its;
-	    } else {
-		if (ssd->score < best_score - parms->convergence_tol) {
-		    best_score = ssd->score;
-		    num_to_check = parms->convergence_tol_its;
-		} else {
-		    num_to_check --;
-		}
-	    }
-	    logfile_printf ("Score: %g, Best: %g, It: %d\n", ssd->score, best_score, num_to_check);
-	    if (num_to_check <= 0) {
-		break;
-	    }
-	    /* else continue */
+	    ++num_ls;
+	    //logfile_printf ("Score: %g, Best: %g, Its: (%d,%d)\n", ssd->score, best_score, num_ls, bst->it);
+
 	} else {
 	    break;
 	}
+    }
+
+    if (parms->debug) {
+	fclose (fp);
     }
 
     free (nbd);
