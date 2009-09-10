@@ -522,7 +522,7 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 		    // unrolling desired; could be 1 or 4
 		    // An unrolling factor of four appears to be the best 
 		    // performer.  
-		    int unrolling_factor = 1;
+		    int unrolling_factor = 4;
 		    // The modified index is an integral multiple of 
 		    // the unrolling factor
 		    int modified_idx = (vox_per_rgn.x/unrolling_factor)*unrolling_factor; 
@@ -537,11 +537,6 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 								
 			    // The inner loop is unrolled multiple times as per a specified unrolling factor 
 			    for(q.x = 0; q.x < modified_idx; q.x = q.x + unrolling_factor, idx = idx + unrolling_factor) {
-
-				/* GCS Aug 24: This crashes */
-				result.x += tex1Dfetch (tex_dc_dv, 0);
-				result.y += tex1Dfetch (tex_dc_dv, 0);
-				result.z += tex1Dfetch (tex_dc_dv, 0);
 
 				if(unrolling_factor == 1){ // No loop unrolling
 				    A = obtain_spline_basis_function(one_over_six, t.x, q.x, vox_per_rgn.x); // Obtain the basis function for voxel in the X direction
@@ -6419,10 +6414,12 @@ void bspline_cuda_calculate_run_kernels_g(
     int num_blocks;
     int smemSize;
 
+#if defined (commentout)
     if (debug) {
 	sprintf (debug_fn, "dump_mse.txt");
 	fp = fopen (debug_fn, "w");
     }
+#endif
 
     if (!run_low_mem_version) {
 	//	printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
@@ -6453,6 +6450,7 @@ void bspline_cuda_calculate_run_kernels_g(
 		 rdims,
 		 cdims);
 
+#if defined (commentout)
 	if (debug) {
 	    int ri, rj, rk;
 	    int fi, fj, fk;
@@ -6473,6 +6471,7 @@ void bspline_cuda_calculate_run_kernels_g(
 	    }
 	    free (tmp);
 	}
+#endif
 
     } else {
 	int tiles_per_launch = 512;
@@ -6506,9 +6505,11 @@ void bspline_cuda_calculate_run_kernels_g(
 
     }
 
+#if defined (commentout)
     if (debug) {
 	fclose (fp);
     }
+#endif
 
 
     if(cudaThreadSynchronize() != cudaSuccess)
