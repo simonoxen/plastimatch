@@ -821,11 +821,6 @@ IF(wxWidgets_FOUND)
 ENDIF(wxWidgets_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  FATM LIBRARY
-##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY(fatm/src)
-
-##-----------------------------------------------------------------------------
 ##  Macro for creating targets
 ##-----------------------------------------------------------------------------
 MACRO(PLM_ADD_EXECUTABLE TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
@@ -843,6 +838,12 @@ MACRO(PLM_ADD_EXECUTABLE TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
   ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
   INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
 ENDMACRO(PLM_ADD_EXECUTABLE)
+
+##-----------------------------------------------------------------------------
+##  Subdirectories
+##-----------------------------------------------------------------------------
+ADD_SUBDIRECTORY(fatm/src)
+ADD_SUBDIRECTORY(CUDA_tex_test)
 
 ##-----------------------------------------------------------------------------
 ##  Library targets
@@ -1038,19 +1039,15 @@ IF(PLM_BUILD_OPENMP_TEST)
 ENDIF(PLM_BUILD_OPENMP_TEST)
 
 # Test executable -- cuda
-IF(PLM_BUILD_CUDA_TEST)
-  IF(CUDA_FOUND)
+IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+  IF (NOT PLM_USE_FINDCUDA)
     NVCC_FILE(cuda_test.cu)
     SET_SOURCE_FILES_PROPERTIES(cuda_test_wrap.cpp
       PROPERTIES OBJECT_DEPENDS "cuda_test.cu.cpp")
     ADD_EXECUTABLE(cuda_test cuda_test_wrap.cpp)
     TARGET_LINK_LIBRARIES(cuda_test ${CUDA_LIBRARIES})
-    #  MESSAGE(STATUS "CUDA_LDFLAGS = ${CUDA_LDFLAGS}")
-    #  IF(NOT ${CUDA_LDFLAGS} STREQUAL "")
-    #    SET_TARGET_PROPERTIES(cuda_test PROPERTIES LINK_FLAGS ${CUDA_LDFLAGS})
-    #  ENDIF(NOT ${CUDA_LDFLAGS} STREQUAL "")
-  ENDIF(CUDA_FOUND)
-ENDIF(PLM_BUILD_CUDA_TEST)
+  ENDIF (NOT PLM_USE_FINDCUDA)
+ENDIF(PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
