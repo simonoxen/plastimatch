@@ -5,6 +5,56 @@
 #define _bspline_cuda_kernels_h_
 
 /* Function prototypes of kernels */
+__global__ void kernel_deinterleave(
+				int num_values,
+				float* input,
+				float* out_x,
+				float* out_y,
+				float* out_z);
+
+__global__ void kernel_pad(
+			float* input,
+			float* output,
+			int3 vol_dim,
+			int3 tile_dim);
+
+
+__global__ void kernel_row_to_tile_major(
+			float* input,
+			float* output,
+			int3 vol_dim,
+			int3 tile_dim);
+
+
+
+__global__ void kernel_bspline_mse_2_condense(
+				float* cond_x,		// Return: condensed dc_dv_x values
+				float* cond_y,		// Return: condensed dc_dv_y values
+				float* cond_z,		// Return: condensed dc_dv_z values
+				float* dc_dv_x,		// Input : dc_dv_x values
+				float* dc_dv_y,		// Input : dc_dv_y values
+				float* dc_dv_z,		// Input : dc_dv_z values
+				int* LUT_Tile_Offsets,	// Input : tile offsets
+				int* LUT_Knot,		// Input : linear knot indicies
+				int pad,		// Input : amount of tile padding
+				int4 tile_dim,		// Input : dims of tiles
+				float one_over_six);	// Input : Precomputed since GPU division is slow
+
+
+__global__ void kernel_bspline_mse_2_reduce(
+				float* grad,		// Return: interleaved dc_dp values
+				float* cond_x,		// Input : condensed dc_dv_x values
+				float* cond_y,		// Input : condensed dc_dv_y values
+				float* cond_z);		// Input : condensed dc_dv_z values
+
+
+__device__ float obtain_spline_basis_function(float one_over_six,
+						  int t_idx, 
+						  int vox_idx, 
+						  int vox_per_rgn);
+
+
+
 __global__ void bspline_cuda_score_g_mse_kernel1 
 (
  float  *dc_dv,

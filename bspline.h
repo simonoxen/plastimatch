@@ -48,10 +48,77 @@ struct BSPLINE_Score_struct {
     float* grad;
 };
 
+
+typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
+struct dev_pointers_bspline
+{
+
+	// IMPORTANT!
+	// Each member of this struct is a POINTER TO
+	// AN ADDRESS RESIDING IN THE GPU'S GLOBAL
+	// MEMORY!  Care must be taken when referencing
+	// and dereferencing members of this structure!
+
+	float* my_gpu_addr;		// Holds address of this
+					//   structure in global
+					//   device memory.
+	float* fixed_image;		// Fixed Image Voxels
+	float* moving_image;		// Moving Image Voxels
+	float* moving_grad;		// dc_dp (Gradient) Volume
+	float* coeff;			// B-Spline coefficients (p)
+	float* score;			// The "Score"
+	float* dc_dv;			// dc_dv (Interleaved)
+	float* dc_dv_x;			// dc_dv (De-Interleaved)
+	float* dc_dv_y;			// dc_dv (De-Interleaved)
+	float* dc_dv_z;			// dc_dv (De-Interleaved)
+	float* cond_x;			// dc_dv_x (Condensed)
+	float* cond_y;			// dc_dv_y (Condensed)
+	float* cond_z;			// dc_dv_z (Condensed)
+	float* grad;			// dc_dp
+	float* dc_dp_x;
+	float* dc_dp_y;
+	float* dc_dp_z;
+	float* grad_temp;
+	int* LUT_Knot;
+	int* LUT_NumTiles;
+	int* LUT_Offsets;
+	float* LUT_Bspline_x;
+	float* LUT_Bspline_y;
+	float* LUT_Bspline_z;
+
+	// These hold the size of the
+	// chucks of memory we allocated
+	// that each start at the addresses
+	// stored in the pointers above.
+	size_t my_size;
+	size_t fixed_image_size;
+	size_t moving_image_size;
+	size_t moving_grad_size;
+	size_t coeff_size;
+	size_t score_size;
+	size_t dc_dv_size;
+	size_t dc_dv_x_size;
+	size_t dc_dv_y_size;
+	size_t dc_dv_z_size;
+	size_t cond_x_size;
+	size_t cond_y_size;
+	size_t cond_z_size;
+	size_t grad_size;
+	size_t grad_temp_size;
+	size_t LUT_Knot_size;
+	size_t LUT_NumTiles_size;
+	size_t LUT_Offsets_size;
+	size_t LUT_Bspline_x_size;
+	size_t LUT_Bspline_y_size;
+	size_t LUT_Bspline_z_size;
+};
+
+
 typedef struct bspline_state Bspline_state;
 struct bspline_state {
     int it;
     BSPLINE_Score ssd;                   /* Score and Gradient */
+    Dev_Pointers_Bspline* dev_ptrs;      /* GPU Device Pointers */
 };
 
 typedef struct BSPLINE_MI_Hist_Parms_struct BSPLINE_MI_Hist_Parms;
@@ -84,6 +151,9 @@ struct BSPLINE_Parms_struct {
     void *data_on_gpu;                   /* Pointer to structure encapsulating the data stored on the GPU */
     void *data_from_gpu;                 /* Pointer to structure that stores the data returned from the GPU */
 };
+
+ 
+
 
 #if defined __cplusplus
 extern "C" {
@@ -151,6 +221,12 @@ clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, flo
 void
 bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
 		       int pidx, int qidx, float dc_dv[3]);
+
+int* calc_offsets(int* tile_dims, int* cdims);
+
+void find_knots(int* knots, int tile_num, int* rdims, int* cdims);
+
+
 
 /* Debugging routines */
 void

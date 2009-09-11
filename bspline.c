@@ -224,6 +224,93 @@ free_exit:
     return 0;
 }
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: calc_offsets()
+//
+// This function accepts the number or voxels per control region
+// and the dimensions of the control grid to generate where the linear
+// memory offsets lie for the beginning of each tile in a 32-byte
+// aligned tile-major data organization scheme (such as that which
+// is produced by kernel_row_to_tile_major().
+//
+// Author: James Shackleford
+// Data: July 30th, 2009
+////////////////////////////////////////////////////////////////////////////////
+int* calc_offsets(int* tile_dims, int* cdims)
+{
+	int vox_per_tile = (tile_dims[0] * tile_dims[1] * tile_dims[2]);
+	int pad = 32 - (vox_per_tile % 32);
+	int num_tiles = (cdims[0]-3)*(cdims[1]-3)*(cdims[2]-3);
+
+	int* output = (int*)malloc(num_tiles*sizeof(int));
+
+	int i;
+	for(i = 0; i < num_tiles; i++)
+		output[i] = (vox_per_tile + pad) * i;
+
+	return output;
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: find_knots()
+//
+// This function takes a tile index as an input and generates
+// the indicies of the 64 control knots that it affects.
+//
+// Returns:
+//    knots[idx] - idx is [0,63] and knots[idx] = the linear knot index
+//                 of affected control knot # idx within the entire control
+//                 knot grid.
+//
+//    tile_pos[
+//
+// Author: James Shackleford
+// Data: July 13th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
+{
+	int tile_loc[3];
+	int i, j, k;
+	int idx = 0;
+	int num_tiles_x = cdims[0] - 3;
+	int num_tiles_y = cdims[1] - 3;
+	int num_tiles_z = cdims[2] - 3;
+	
+	// First get the [x,y,z] coordinate of
+	// the tile in the control grid.
+	tile_loc[0] = tile_num % num_tiles_x;
+	tile_loc[1] = ((tile_num - tile_loc[0]) / num_tiles_x) % num_tiles_y;
+	tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / num_tiles_y) % num_tiles_z);
+/*
+	tile_loc[0] = tile_num % rdims[0];
+	tile_loc[1] = ((tile_num - tile_loc[0]) / rdims[0]) % rdims[1];
+	tile_loc[2] = ((((tile_num - tile_loc[0]) / rdims[0]) / rdims[1]) % rdims[2]);
+*/
+
+	// Tiles do not start on the edges of the grid, so we
+	// push them to the center of the control grid.
+	tile_loc[0]++;
+	tile_loc[1]++;
+	tile_loc[2]++;
+
+	// Find 64 knots' [x,y,z] coordinates
+	// and convert into a linear knot index
+	for (k = -1; k < 3; k++)
+		for (j = -1; j < 3; j++)
+			for (i = -1; i < 3; i++)
+			{
+				knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) + (cdims[0]*(tile_loc[1]+j)) + (tile_loc[0]+i);
+			}
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
 /* -----------------------------------------------------------------------
    Debugging routines
    ----------------------------------------------------------------------- */
@@ -2837,8 +2924,11 @@ bspline_score (BSPLINE_Parms *parms,
 	case 'g':
 	    bspline_cuda_score_g_mse(parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+	case 'h':
+	    bspline_cuda_score_h_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    break;
 	default:
-	    bspline_cuda_score_g_mse(parms, bst, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_h_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;
@@ -2975,7 +3065,16 @@ bspline_optimize (BSPLINE_Xform* bxf,
     log_parms (parms);
     log_bxf_header (bxf);
 
+
+
 #if (HAVE_CUDA)
+    
+    // Contains GPU memory addresses
+    Dev_Pointers_Bspline dev_mem;
+    Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
+
+    bst->dev_ptrs = dev_ptrs;
+
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
@@ -2990,9 +3089,11 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'f':
 	    bspline_cuda_initialize_f (fixed, moving, moving_grad, bxf, parms);
 	    break;
-	default:
+	case 'g':
 	    bspline_cuda_initialize_g (fixed, moving, moving_grad, bxf, parms);
 	    break;
+	default:
+	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	}
     }
 #endif
@@ -3027,9 +3128,11 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'f':
 	    bspline_cuda_clean_up_f ();
 	    break;
-	default:
+	case 'g':
 	    bspline_cuda_clean_up_g ();
 	    break;
+	default:
+	    bspline_cuda_clean_up_h (dev_ptrs);
 	}
     }
 #endif
