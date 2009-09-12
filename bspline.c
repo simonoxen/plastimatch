@@ -3060,21 +3060,17 @@ bspline_optimize (BSPLINE_Xform* bxf,
 		  Volume *moving_grad)
 {
     Bspline_state *bst;
-    bst = bspline_state_create (bxf);
+#if (HAVE_CUDA)
+    Dev_Pointers_Bspline dev_mem;
+    Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
+#endif
 
+    bst = bspline_state_create (bxf);
     log_parms (parms);
     log_bxf_header (bxf);
 
-
-
 #if (HAVE_CUDA)
-    
-    // Contains GPU memory addresses
-    Dev_Pointers_Bspline dev_mem;
-    Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
-
     bst->dev_ptrs = dev_ptrs;
-
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
