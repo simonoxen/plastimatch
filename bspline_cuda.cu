@@ -63,6 +63,17 @@ size_t score_mem_size;
 float *gpu_grad;
 float *gpu_grad_temp;
 
+#define USE_TEXTURES 1
+
+#if defined (USE_TEXTURES)
+#define TEX_REF(array,index) \
+    (tex1Dfetch(tex_ ## array, index))
+#else
+#define TEX_REF(array,index) \
+    (array[index])
+#endif
+
+
 /***********************************************************************
  * test_kernel
  *
@@ -1369,10 +1380,10 @@ bspline_cuda_score_g_mse_kernel1
 
 			// Fetch the values for P, Ni, Nj, and Nk.
 			P   = A[t.x] * B[t.y] * C[t.z];
-			N.x = tex1Dfetch(tex_coeff, cidx + 0);  // x-value
-			N.y = tex1Dfetch(tex_coeff, cidx + 1);  // y-value
-			N.z = tex1Dfetch(tex_coeff, cidx + 2);  // z-value
-
+			N.x = TEX_REF (coeff, cidx + 0);
+			N.y = TEX_REF (coeff, cidx + 1);
+			N.z = TEX_REF (coeff, cidx + 2);
+			
 			// Update the output (v) values.
 			d.x += P * N.x;
 			d.y += P * N.y;
@@ -1465,14 +1476,15 @@ bspline_cuda_score_g_mse_kernel1
 		//-----------------------------------------------------------------
 
 		mvf = (displacement_in_vox_floor.z * volume_dim.y + displacement_in_vox_floor.y) * volume_dim.x + displacement_in_vox_floor.x;
-		m_x1y1z1 = fx1 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf);
-		m_x2y1z1 = fx2 * fy1 * fz1 * tex1Dfetch(tex_moving_image, mvf + 1);
-		m_x1y2z1 = fx1 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x);
-		m_x2y2z1 = fx2 * fy2 * fz1 * tex1Dfetch(tex_moving_image, mvf + volume_dim.x + 1);
-		m_x1y1z2 = fx1 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x);
-		m_x2y1z2 = fx2 * fy1 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + 1);
-		m_x1y2z2 = fx1 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
-		m_x2y2z2 = fx2 * fy2 * fz2 * tex1Dfetch(tex_moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
+
+		m_x1y1z1 = fx1 * fy1 * fz1 * TEX_REF (moving_image, mvf);
+		m_x2y1z1 = fx2 * fy1 * fz1 * TEX_REF (moving_image, mvf + 1);
+		m_x1y2z1 = fx1 * fy2 * fz1 * TEX_REF (moving_image, mvf + volume_dim.x);
+		m_x2y2z1 = fx2 * fy2 * fz1 * TEX_REF (moving_image, mvf + volume_dim.x + 1);
+		m_x1y1z2 = fx1 * fy1 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x);
+		m_x2y1z2 = fx2 * fy1 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + 1);
+		m_x1y2z2 = fx1 * fy2 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
+		m_x2y2z2 = fx2 * fy2 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
 
 		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
@@ -1480,7 +1492,7 @@ bspline_cuda_score_g_mse_kernel1
 		// Compute intensity difference.
 		//-----------------------------------------------------------------
 
-		diff = tex1Dfetch(tex_fixed_image, fv) - m_val;
+		diff = TEX_REF (fixed_image, fv) - m_val;
 				
 		//-----------------------------------------------------------------
 		// Accumulate the score.
@@ -1495,9 +1507,9 @@ bspline_cuda_score_g_mse_kernel1
 		// Compute spatial gradient using nearest neighbors.
 		mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
 				
-		dc_dv_element[0] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 0);
-		dc_dv_element[1] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 1);
-		dc_dv_element[2] = diff * tex1Dfetch(tex_moving_grad, (3 * (int)mvr) + 2);
+		dc_dv_element[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
+		dc_dv_element[1] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
+		dc_dv_element[2] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 2);
 	    }
 	}
     }
@@ -1633,7 +1645,7 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 		    // unrolling desired; could be 1 or 4
 		    // An unrolling factor of four appears to be the best 
 		    // performer.  
-		    int unrolling_factor = 4;
+		    int unrolling_factor = 1;
 		    // The modified index is an integral multiple of 
 		    // the unrolling factor
 		    int modified_idx = (vox_per_rgn.x/unrolling_factor)*unrolling_factor; 
@@ -1654,9 +1666,10 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				    multiplier_1 = A*pre_multiplier;
 										
 				    // Accumulate the results
-				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
+				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
+
 				} // End if unrolling_factor = 1
 
 				if(unrolling_factor == 4){ // The loop is unrolled four times 
@@ -1673,22 +1686,22 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				    multiplier_4 = A * pre_multiplier;
 										
 				    // Accumulate the results
-				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
 
-				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 0) * multiplier_2;
-				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 1) * multiplier_2;
-				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 1) + 2) * multiplier_2;
+				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 1) + 0) * multiplier_2;
+				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 1) + 1) * multiplier_2;
+				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 1) + 2) * multiplier_2;
 											
-				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 0) * multiplier_3;
-				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 1) * multiplier_3;
-				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 2) + 2) * multiplier_3;
+				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 2) + 0) * multiplier_3;
+				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 2) + 1) * multiplier_3;
+				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 2) + 2) * multiplier_3;
 											
-				    result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 0) * multiplier_4;
-				    result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 1) * multiplier_4;
-				    result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*(idx + 3) + 2) * multiplier_4;
-										
+				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 3) + 0) * multiplier_4;
+				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 3) + 1) * multiplier_4;
+				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*(idx + 3) + 2) * multiplier_4;
+
 				} // End if unrolling_factor == 4
 			    } // End for q.x loop
 								
@@ -1698,9 +1711,9 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				multiplier_1 = A * pre_multiplier;
 										
 				// Accumulate the results
-				result.x += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
-				result.y += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
-				result.z += tex1Dfetch(tex_dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
+				result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
+				result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
+				result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
 			    } // End of lop off loop
 			} // End for q.y loop
 		    } // End q.z loop
@@ -7910,6 +7923,7 @@ void bspline_cuda_calculate_run_kernels_g(
 	//	printf("Launching one-shot version of bspline_cuda_score_g_mse_kernel1...\n");
 		
 	threads_per_block = 256;
+	//threads_per_block = 64;
 	num_threads = fixed->npix;
 	num_blocks = (int)ceil(num_threads / (float)threads_per_block);
 	dim3 dimGrid1(num_blocks / 128, 128, 1);
@@ -8012,6 +8026,7 @@ void bspline_cuda_calculate_run_kernels_g(
 
     // Reconfigure the grid.
     threads_per_block = 256;
+    //    threads_per_block = 64;
     num_threads = bxf->num_knots;
     num_blocks = (int)ceil(num_threads / (float)threads_per_block);
     dim3 dimGrid2(num_blocks, 1, 1);
