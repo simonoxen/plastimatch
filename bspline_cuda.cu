@@ -404,7 +404,7 @@ extern "C" void bspline_cuda_h_stage_1 (Volume* fixed,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_stage_2()
+// STUB: bspline_cuda_h_stage_2()
 //
 // KERNELS INVOKED:
 //   sum_reduction_kernel()
@@ -417,7 +417,7 @@ extern "C" void bspline_cuda_h_stage_1 (Volume* fixed,
 //
 // bspline_cuda_final_steps_f()
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void CUDA_bspline_stage_2(
+extern "C" void bspline_cuda_h_stage_2(
 	BSPLINE_Parms* parms, 
 	BSPLINE_Xform* bxf,
 	Volume* fixed,
