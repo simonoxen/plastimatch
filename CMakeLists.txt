@@ -526,6 +526,8 @@ ENDIF(F2C_LIBRARY)
 SET(PLASTIMATCH_LIBRARY_SRC
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
+	gdcm_series.cxx gdcm_series.h
+	gdcm_series_helper_2.cxx gdcm_series_helper_2.h
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
 	itk_demons.cxx itk_demons.h 
@@ -608,6 +610,8 @@ SET(DICE_STATS_SRC
 	contour_statistics.cxx contour_statistics.h
 	dice_statistics.cxx 
 	)
+SET(DICOM_SERIES_TEST_SRC
+  dicom_series_test.cxx)
 SET(DICOM_RTSS_TO_CXT_SRC 
   dicom_rtss_to_cxt.cxx)
 SET(DICOM_UID_SRC
@@ -753,6 +757,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
     SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
+    SET(DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
@@ -908,6 +913,8 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(dicom_to_mha dicom_to_mha.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(dicom_rtss_to_cxt "${DICOM_RTSS_TO_CXT_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(extract_contour "${EXTRACT_CONTOUR_SRC}"
