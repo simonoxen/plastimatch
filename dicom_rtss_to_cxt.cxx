@@ -4,24 +4,90 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "getopt.h"
 #include "gdcm_rtss.h"
 #include "readcxt.h"
 
+
+
+class Program_parms {
+public:
+    char dicom_dir[_MAX_PATH];
+    char output_fn[_MAX_PATH];
+    char rtss_fn[_MAX_PATH];
+
+public:
+    Program_parms () {
+	memset (this, 0, sizeof(Program_parms));
+    }
+};
+
 void
-do_dicom_rtss_to_cxt (char *rtss_fn, char *dicom_dir)
+do_dicom_rtss_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
 
     cxt_initialize (&structures);
-    gdcm_rtss_load (&structures, rtss_fn, dicom_dir);
+    gdcm_rtss_load (&structures, parms->rtss_fn, parms->dicom_dir);
 
-    cxt_write (&structures, "foo.cxt");
+    cxt_write (&structures, parms->output_fn);
+}
+
+void
+print_usage (void)
+{
+    printf ("Usage: dicom_rtss_to_cxt [options] rtss_file\n"
+	    "Optional:\n"
+	    "    --dicom-dir=directory\n"
+	    "    --output=filename\n"
+	    );
+    exit (-1);
+}
+
+void
+parse_args (Program_parms* parms, int argc, char* argv[])
+{
+    int ch;
+    int have_offset = 0;
+    int have_spacing = 0;
+    int have_dims = 0;
+    static struct option longopts[] = {
+	{ "dicom-dir",      required_argument,      NULL,           1 },
+	{ "dicom_dir",      required_argument,      NULL,           1 },
+	{ "output",	    required_argument,      NULL,           2 },
+	{ NULL,             0,                      NULL,           0 }
+    };
+
+    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+	switch (ch) {
+	case 1:
+	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
+	    break;
+	case 2:
+	    strncpy (parms->output_fn, optarg, _MAX_PATH);
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    argc -= optind;
+    argv += optind;
+    if (argc != 1) {
+	print_usage ();
+    }
+    strncpy (parms->rtss_fn, argv[0], _MAX_PATH);
+
+    if (!parms->output_fn) {
+	strncpy (parms->output_fn, "output.cxt", _MAX_PATH);
+    }
 }
 
 int
 main(int argc, char *argv[])
 {
-    char *rtss_fn, *dicom_dir;
+    Program_parms parms;
+#if defined (commentout)
     if (argc == 2) {
 	rtss_fn = argv[1];
 	dicom_dir = 0;
@@ -32,7 +98,10 @@ main(int argc, char *argv[])
 	printf ("Usage: dicom_rtss_to_cxt dicom_rtss [ dicom_dir ]\n");
 	exit (1);
     }
+#endif
 
-    do_dicom_rtss_to_cxt (rtss_fn, dicom_dir);
+    parse_args (&parms, argc, argv);
+
+    do_dicom_rtss_to_cxt (&parms);
     return 0;
 }
