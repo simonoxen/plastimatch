@@ -249,8 +249,6 @@ void SerieHelper2::SetDirectory(std::string const &dir, bool recursive)
   
    DirListType filenames_list = dirList.GetFilenames();
 
-    printf ("Setting directory %s\n", dir.c_str());
-
     for( DirListType::const_iterator it = filenames_list.begin(); 
         it != filenames_list.end(); ++it)
    {

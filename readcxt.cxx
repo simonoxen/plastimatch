@@ -138,7 +138,10 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
             break;
         }
         else if (biseqcstr (tag, "SERIES_CT_UID")) {
-	    structures->series_ct_uid = bstrcpy (val);
+	    structures->ct_series_uid = bstrcpy (val);
+	}
+        else if (biseqcstr (tag, "CT_SERIES_UID")) {
+	    structures->ct_series_uid = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
@@ -291,7 +294,36 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
     }
 
     /* Part 1: Dicom info */
-    fprintf (fp, "SERIES_CT_UID\n");
+    if (structures->ct_series_uid) {
+	fprintf (fp, "SERIES_CT_UID %s\n", structures->ct_series_uid->data);
+    } else {
+	fprintf (fp, "SERIES_CT_UID\n");
+    }
+    if (structures->patient_name) {
+	fprintf (fp, "PATIENT_NAME %s\n", structures->patient_name->data);
+    } else {
+	fprintf (fp, "PATIENT_NAME\n");
+    }
+    if (structures->patient_id) {
+	fprintf (fp, "PATIENT_ID %s\n", structures->patient_id->data);
+    } else {
+	fprintf (fp, "PATIENT_ID\n");
+    }
+    if (structures->patient_sex) {
+	fprintf (fp, "PATIENT_SEX %s\n", structures->patient_sex->data);
+    } else {
+	fprintf (fp, "PATIENT_SEX\n");
+    }
+    if (structures->patient_sex) {
+	fprintf (fp, "STUDY_ID %s\n", structures->study_id->data);
+    } else {
+	fprintf (fp, "STUDY_ID\n");
+    }
+    if (structures->have_geometry) {
+	fprintf (fp, "OFFSET %g %g %g\n", structures->offset);
+	fprintf (fp, "DIMENSION %d %d %d\n", structures->dim);
+	fprintf (fp, "SPACING %g %g %g\n", structures->spacing);
+    }
 
     /* Part 2: Structures info */
     fprintf (fp, "ROI_NAMES\n");
@@ -329,6 +361,6 @@ plastimatch1_EXPORT
 void
 cxt_destroy (Cxt_structure_list* structures)
 {
-    bdestroy (structures->series_ct_uid);
+    bdestroy (structures->ct_series_uid);
     memset (structures, 0, sizeof (Cxt_structure_list));
 }

@@ -16,6 +16,7 @@ public:
     ~Gdcm_series ();
 
     void load (char *dicom_dir);
+    void digest (void);
 
     gdcm::SerieHelper2 *gdcm_sh2;
 };

@@ -26,12 +26,17 @@ struct cxt_structure {
 
 typedef struct cxt_structure_list Cxt_structure_list;
 struct cxt_structure_list {
+    bstring ct_series_uid;
+    bstring patient_name;
+    bstring patient_id;
+    bstring patient_sex;
+    bstring study_id;
+    int have_geometry;
     int dim[3];
     float spacing[3];
     float offset[3];
     int num_structures;
     Cxt_structure* slist;
-    bstring series_ct_uid;
 };
 
 #if defined __cplusplus

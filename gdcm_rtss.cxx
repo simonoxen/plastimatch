@@ -11,6 +11,7 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 #include "gdcm_rtss.h"
+#include "gdcm_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "readcxt.h"
@@ -22,20 +23,55 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     gdcm::File *gdcm_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
+    Gdcm_series gs;
+    std::string tmp;
+
+    if (dicom_dir) {
+	gs.load (dicom_dir);
+	gs.digest ();
+    }
 
     gdcm_file->SetMaxSizeLoadEntry (0xffff);
     gdcm_file->SetFileName (rtss_fn);
     gdcm_file->SetLoadMode (0);	    // ??
     bool headerLoaded = gdcm_file->Load();
 
-    std::string foo = gdcm_file->GetEntryValue (0x0008, 0x0060);
-    printf ("0x0008,0x0060 = %s\n", foo.c_str());
+    /* Modality -- better be RTSTRUCT */
+    tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
+    printf ("0x0008,0x0060 = %s\n", tmp.c_str());
+
+    /* PatientName */
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0010);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	structures->patient_name = bfromcstr (tmp.c_str());
+    }
+
+    /* PatientID */
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0020);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	structures->patient_id = bfromcstr (tmp.c_str());
+    }
+
+    /* PatientSex */
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0040);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	structures->patient_sex = bfromcstr (tmp.c_str());
+    }
+
+    /* StudyID */
+    tmp = gdcm_file->GetEntryValue (0x0020, 0x0010);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	structures->study_id = bfromcstr (tmp.c_str());
+    }
 
     /* ReferencedFramOfReferenceSequence */
     gdcm::SeqEntry *referencedFrameOfReferenceSequence = gdcm_file->GetSeqEntry(0x3006,0x0010);
     item = referencedFrameOfReferenceSequence->GetFirstSQItem();
-    foo = item->GetEntryValue(0x0020,0x0052);
-    printf ("0x0020,0x0052 = %s\n", foo.c_str());
+    /* FrameOfReferenceUID */
+    tmp = item->GetEntryValue(0x0020,0x0052);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	structures->ct_series_uid = bfromcstr (tmp.c_str());
+    }
 
     /* StructureSetROISequence */
     seq = gdcm_file->GetSeqEntry (0x3006,0x0020);

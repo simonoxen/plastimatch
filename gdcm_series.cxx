@@ -57,6 +57,53 @@ print_series_ipp (gdcm::FileList *file_list)
     printf ("\n");
 }
 
+static void
+digest_file_list (gdcm::FileList *file_list, double origin[3], int dim[3], double spacing[3])
+{
+    int loop = 0;
+    double prev_z;
+
+    // For all the files of a SingleSerieUID File set
+    for (gdcm::FileList::iterator it =  file_list->begin();
+	    it != file_list->end(); 
+	    ++it)
+    {
+	if (loop == 0) {
+	    spacing[0] = (*it)->GetXSpacing ();
+	    spacing[1] = (*it)->GetYSpacing ();
+	    origin[0] = (*it)->GetXOrigin ();
+	    origin[1] = (*it)->GetYOrigin ();
+	    prev_z = origin[2] = (*it)->GetZOrigin ();
+	    dim[0] = (*it)->GetXSize ();
+	    dim[1] = (*it)->GetYSize ();
+	    loop ++;
+	} else if (loop == 1) {
+	    double z = (*it)->GetZOrigin ();
+	    if (z - prev_z > 1e-5) {
+		spacing[2] = z - origin[2];
+		loop ++;
+	    } else {
+		printf ("Warning: duplicate slice locations (%g)\n", z);
+	    }
+	    prev_z = z;
+	} else {
+	    double z = (*it)->GetZOrigin ();
+	    if (z - prev_z > 1e-5) {
+		//printf (">> %g %g %g\n", z, prev_z, spacing[2]);
+		/* XiO rounds IPP to nearest .1 mm */
+		if (fabs (z - prev_z - spacing[2]) > 0.11) {
+		    print_and_exit ("Error: irregular slice thickness in dicom series\n");
+		}
+		loop ++;
+	    } else {
+		printf ("Warning: duplicate slice locations (%g)\n", z);
+	    }
+	    prev_z = z;
+	}
+    }
+    dim[2] = loop;
+}
+
 Gdcm_series::Gdcm_series (void)
 {
     this->gdcm_sh2 = 0;
@@ -89,6 +136,7 @@ Gdcm_series::load (char *dicom_dir)
 	if (file_list->size()) {	
 	    this->gdcm_sh2->OrderFileList (file_list);
 
+#if defined (commentout)
 	    /* Choose one file, and print the id */
 	    gdcm::File *file = (*file_list)[0];
 	    std::string id = this->gdcm_sh2->
@@ -97,8 +145,43 @@ Gdcm_series::load (char *dicom_dir)
 
 	    /* Iterate through files, and print the ipp */
 	    print_series_ipp (file_list);
+#endif
 	}
 	file_list = this->gdcm_sh2->GetNextSingleSerieUIDFileSet();
     }
 
+}
+
+void
+Gdcm_series::digest (void)
+{
+    int dim[3];
+    double origin[3];
+    double spacing[3];
+
+    if (!this->gdcm_sh2) {
+	return;
+    }
+
+    gdcm::FileList *file_list = this->gdcm_sh2->GetFirstSingleSerieUIDFileSet ();
+    while (file_list) {
+	if (file_list->size()) {	
+	    this->gdcm_sh2->OrderFileList (file_list);
+
+	    /* Get the USI */
+	    gdcm::File *file = (*file_list)[0];
+	    std::string id = this->gdcm_sh2->
+		    CreateUniqueSeriesIdentifier(file).c_str();
+
+	    /* Digest the USI */
+	    digest_file_list (file_list, origin, dim, spacing);
+	    printf ("---- %s\n", id.c_str());
+	    printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
+	    printf ("OFF = %g %g %g\n", origin[0], origin[1], origin[2]);
+	    printf ("SPA = %g %g %g\n", spacing[0], spacing[1], spacing[2]);
+
+
+	}
+	file_list = this->gdcm_sh2->GetNextSingleSerieUIDFileSet();
+    }
 }
