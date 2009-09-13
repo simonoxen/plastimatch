@@ -30,9 +30,10 @@
 
 namespace gdcm 
 {
-class File;
+    class File;
+    typedef std::vector<File* > FileList;
 
-   typedef std::vector<File* > FileList;
+
 #ifndef GDCM_LEGACY_REMOVE
 typedef std::vector<File* > GdcmFileList;
 #endif
@@ -66,6 +67,7 @@ public:
    /// ( List were actually std::vectors, and wher no coherent at all :
    ///   They were only Single SeriesInstanceUID File sets)
    typedef std::map<std::string, FileList *> SingleSerieUIDFileSetmap;
+   typedef std::map<std::string, FileList *> SingleSerieUIDSeriesSetmap;
 
    typedef std::vector<File* > FileVector;
 

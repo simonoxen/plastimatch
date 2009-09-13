@@ -99,7 +99,6 @@ void SerieHelper2::AddFileName(std::string const &filename)
    /* GCS: Sept 12, 2009.  gdcm::File::IsReadable() is too strict about 
 	which tags are required.  Therefore non-image files such as 
 	dicomrt will not show up in the list of series.  */
-   //if ( header->IsReadable() )
    if (header->IsParsable())
    {
       if ( !AddFile( header ) )
@@ -903,7 +902,10 @@ void SerieHelper2::CreateDefaultUniqueSeriesIdentifier()
  */
 std::string SerieHelper2::CreateUniqueSeriesIdentifier( File *inFile )
 {
-   if( inFile->IsReadable() )
+   /* GCS: Sept 12, 2009.  gdcm::File::IsReadable() is too strict about 
+	which tags are required.  Therefore non-image files such as 
+	dicomrt will not show up in the list of series.  */
+   if (inFile->IsParsable())
    {
     // 0020 000e UI REL Series Instance UID
     std::string uid = inFile->GetEntryValue (0x0020, 0x000e);
@@ -920,19 +922,22 @@ std::string SerieHelper2::CreateUniqueSeriesIdentifier( File *inFile )
           {
           s = "";
           }
-        if( id == uid && !s.empty() )
+        //if( id == uid && !s.empty() )
+        if( !s.empty() )
           {
-          id += "."; // add separator
+          id += ";"; // add separator
           }
         id += s;
         }
       }
+
     // Eliminate non-alnum characters, including whitespace...
     //   that may have been introduced by concats.
     for(size_t i=0; i<id.size(); i++)
       {
       while(i<id.size() 
         && !( id[i] == '.'
+	  || (id[i] == ';')
           || (id[i] >= 'a' && id[i] <= 'z')
           || (id[i] >= '0' && id[i] <= '9')
           || (id[i] >= 'A' && id[i] <= 'Z')))

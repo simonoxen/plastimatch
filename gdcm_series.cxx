@@ -36,6 +36,25 @@ gdcm_series_test (char *dicom_dir)
     gdcm_series_test_2 (dicom_dir);
 }
 
+
+static void
+print_series_ipp (gdcm::FileList *file_list)
+{
+    // For all the files of a SingleSerieUID File set
+    for (gdcm::FileList::iterator it =  file_list->begin();
+	    it != file_list->end(); 
+	    ++it)
+    {
+        double ipp[3];
+	ipp[0] = (*it)->GetXOrigin();
+	ipp[1] = (*it)->GetYOrigin();
+	ipp[2] = (*it)->GetZOrigin();
+	printf ("(%g,%g,%g)\t", ipp[0], ipp[1], ipp[2]);
+	//printf ("Name = %s\n", (*it)->GetFileName().c_str());
+    }
+    printf ("\n");
+}
+
 static void
 gdcm_series_test_2 (char *dicom_dir)
 {
@@ -44,20 +63,27 @@ gdcm_series_test_2 (char *dicom_dir)
     gdcm::SerieHelper2 *gdcm_shelper = new gdcm::SerieHelper2();
 
     gdcm_shelper->Clear ();
-    gdcm_shelper->SetUseSeriesDetails (false);
+    gdcm_shelper->CreateDefaultUniqueSeriesIdentifier ();
+    gdcm_shelper->SetUseSeriesDetails (true);
     gdcm_shelper->SetDirectory (dicom_dir, recursive);
 
-    gdcm_shelper->Print ();
+    //gdcm_shelper->Print ();
+
 
     gdcm::FileList *file_list = gdcm_shelper->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
 	if (file_list->size()) {	
-	    gdcm::File *file = (*file_list)[0]; //for example take the first one
+	    gdcm_shelper->OrderFileList (file_list);
 
+	    /* Choose one file, and print the id */
+	    gdcm::File *file = (*file_list)[0];
 	    std::string id = gdcm_shelper->
 		    CreateUniqueSeriesIdentifier(file).c_str();
+	    printf ("id = %s\n", id.c_str());
 
-	    //printf ("id = %s\n", id.c_str());
+	    /* Iterate through files, and print the ipp */
+	    print_series_ipp (file_list);
+
 	}
 	file_list = gdcm_shelper->GetNextSingleSerieUIDFileSet();
     }
