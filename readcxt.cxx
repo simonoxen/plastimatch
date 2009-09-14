@@ -320,9 +320,12 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
 	fprintf (fp, "STUDY_ID\n");
     }
     if (structures->have_geometry) {
-	fprintf (fp, "OFFSET %g %g %g\n", structures->offset);
-	fprintf (fp, "DIMENSION %d %d %d\n", structures->dim);
-	fprintf (fp, "SPACING %g %g %g\n", structures->spacing);
+	fprintf (fp, "OFFSET %g %g %g\n", structures->offset[0],
+		 structures->offset[1], structures->offset[2]);
+	fprintf (fp, "DIMENSION %d %d %d\n", structures->dim[0], 
+		 structures->dim[1], structures->dim[2]);
+	fprintf (fp, "SPACING %g %g %g\n", structures->spacing[0], 
+		 structures->spacing[1], structures->spacing[2]);
     }
 
     /* Part 2: Structures info */

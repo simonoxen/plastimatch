@@ -12,6 +12,7 @@
 #include "gdcmUtil.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
+#include "print_and_exit.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "readcxt.h"
@@ -26,19 +27,32 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     Gdcm_series gs;
     std::string tmp;
 
-    if (dicom_dir) {
-	gs.load (dicom_dir);
-	gs.digest ();
-    }
-
     gdcm_file->SetMaxSizeLoadEntry (0xffff);
     gdcm_file->SetFileName (rtss_fn);
-    gdcm_file->SetLoadMode (0);	    // ??
-    bool headerLoaded = gdcm_file->Load();
+    gdcm_file->SetLoadMode (0);
+    gdcm_file->Load();
 
     /* Modality -- better be RTSTRUCT */
     tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
-    printf ("0x0008,0x0060 = %s\n", tmp.c_str());
+    if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
+	print_and_exit ("Error.  Input file not an RT structure set: %s\n",
+			rtss_fn);
+    }
+
+    /* Got the RT struct.  Try to load the corresponding CT. */
+    if (dicom_dir) {
+	gs.load (dicom_dir);
+	gs.get_best_ct ();
+	if (gs.m_have_ct) {
+	    int d;
+	    structures->have_geometry = 1;
+	    for (d = 0; d < 3; d++) {
+		structures->offset[d] = gs.m_origin[d];
+		structures->dim[d] = gs.m_dim[d];
+		structures->spacing[d] = gs.m_spacing[d];
+	    }
+	}
+    }
 
     /* PatientName */
     tmp = gdcm_file->GetEntryValue (0x0010, 0x0010);

@@ -47,9 +47,6 @@ void
 parse_args (Program_parms* parms, int argc, char* argv[])
 {
     int ch;
-    int have_offset = 0;
-    int have_spacing = 0;
-    int have_dims = 0;
     static struct option longopts[] = {
 	{ "dicom-dir",      required_argument,      NULL,           1 },
 	{ "dicom_dir",      required_argument,      NULL,           1 },

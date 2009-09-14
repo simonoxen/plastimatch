@@ -16,9 +16,14 @@ public:
     ~Gdcm_series ();
 
     void load (char *dicom_dir);
-    void digest (void);
+    void get_best_ct (void);
 
-    gdcm::SerieHelper2 *gdcm_sh2;
+    gdcm::SerieHelper2 *m_gsh2;
+
+    int m_have_ct;
+    int m_dim[3];
+    double m_origin[3];
+    double m_spacing[3];
 };
 
 #if defined __cplusplus

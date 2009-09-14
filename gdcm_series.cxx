@@ -19,16 +19,6 @@
 #include "print_and_exit.h"
 #include "readcxt.h"
 
-static void
-gdcm_series_itk_test (char *dicom_dir);
-static void
-gdcm_series_test_1 (char *dicom_dir);
-static void
-gdcm_series_test_2 (char *dicom_dir);
-static void
-parse_directory (std::string const &dir, bool recursive);
-
-
 plastimatch1_EXPORT
 void
 gdcm_series_test (char *dicom_dir)
@@ -37,7 +27,6 @@ gdcm_series_test (char *dicom_dir)
 
     gs.load (dicom_dir);
 }
-
 
 static void
 print_series_ipp (gdcm::FileList *file_list)
@@ -58,7 +47,10 @@ print_series_ipp (gdcm::FileList *file_list)
 }
 
 static void
-digest_file_list (gdcm::FileList *file_list, double origin[3], int dim[3], double spacing[3])
+digest_file_list (gdcm::FileList *file_list, 
+		  double origin[3], 
+		  int dim[3], 
+		  double spacing[3])
 {
     int loop = 0;
     double prev_z;
@@ -106,13 +98,13 @@ digest_file_list (gdcm::FileList *file_list, double origin[3], int dim[3], doubl
 
 Gdcm_series::Gdcm_series (void)
 {
-    this->gdcm_sh2 = 0;
+    this->m_gsh2 = 0;
 }
 
 Gdcm_series::~Gdcm_series (void)
 {
-    if (this->gdcm_sh2) {
-	delete this->gdcm_sh2;
+    if (this->m_gsh2) {
+	delete this->m_gsh2;
     }
 }
 
@@ -121,25 +113,25 @@ Gdcm_series::load (char *dicom_dir)
 {
     bool recursive = false;
 
-    this->gdcm_sh2 = new gdcm::SerieHelper2();
+    this->m_gsh2 = new gdcm::SerieHelper2();
 
-    this->gdcm_sh2->Clear ();
-    this->gdcm_sh2->CreateDefaultUniqueSeriesIdentifier ();
-    this->gdcm_sh2->SetUseSeriesDetails (true);
-    this->gdcm_sh2->SetDirectory (dicom_dir, recursive);
+    this->m_gsh2->Clear ();
+    this->m_gsh2->CreateDefaultUniqueSeriesIdentifier ();
+    this->m_gsh2->SetUseSeriesDetails (true);
+    this->m_gsh2->SetDirectory (dicom_dir, recursive);
 
     //gdcm_shelper->Print ();
 
 
-    gdcm::FileList *file_list = this->gdcm_sh2->GetFirstSingleSerieUIDFileSet ();
+    gdcm::FileList *file_list = this->m_gsh2->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
 	if (file_list->size()) {	
-	    this->gdcm_sh2->OrderFileList (file_list);
+	    this->m_gsh2->OrderFileList (file_list);
 
 #if defined (commentout)
 	    /* Choose one file, and print the id */
 	    gdcm::File *file = (*file_list)[0];
-	    std::string id = this->gdcm_sh2->
+	    std::string id = this->m_gsh2->
 		    CreateUniqueSeriesIdentifier(file).c_str();
 	    printf ("id = %s\n", id.c_str());
 
@@ -147,41 +139,60 @@ Gdcm_series::load (char *dicom_dir)
 	    print_series_ipp (file_list);
 #endif
 	}
-	file_list = this->gdcm_sh2->GetNextSingleSerieUIDFileSet();
+	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();
     }
 
 }
 
 void
-Gdcm_series::digest (void)
+Gdcm_series::get_best_ct (void)
 {
-    int dim[3];
-    double origin[3];
-    double spacing[3];
+    int d;
+    for (d = 0; d < 3; d++) {
+	this->m_origin[d] = 0.0;
+	this->m_dim[d] = 0;
+	this->m_spacing[d] = 0.0;
+    }
 
-    if (!this->gdcm_sh2) {
+    if (!this->m_gsh2) {
 	return;
     }
 
-    gdcm::FileList *file_list = this->gdcm_sh2->GetFirstSingleSerieUIDFileSet ();
+    gdcm::FileList *file_list = this->m_gsh2->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
 	if (file_list->size()) {	
-	    this->gdcm_sh2->OrderFileList (file_list);
+	    this->m_gsh2->OrderFileList (file_list);
 
 	    /* Get the USI */
 	    gdcm::File *file = (*file_list)[0];
-	    std::string id = this->gdcm_sh2->
+	    std::string id = this->m_gsh2->
 		    CreateUniqueSeriesIdentifier(file).c_str();
 
-	    /* Digest the USI */
-	    digest_file_list (file_list, origin, dim, spacing);
-	    printf ("---- %s\n", id.c_str());
-	    printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
-	    printf ("OFF = %g %g %g\n", origin[0], origin[1], origin[2]);
-	    printf ("SPA = %g %g %g\n", spacing[0], spacing[1], spacing[2]);
-
-
+	    /* Is this a CT? */
+	    std::string modality = file->GetEntryValue (0x0008, 0x0060);
+	    if (modality == std::string ("CT")) {
+		int dim[3];
+		double origin[3];
+		double spacing[3];
+	    
+		/* Digest the USI */
+		digest_file_list (file_list, origin, dim, spacing);
+		printf ("---- %s\n", id.c_str());
+		printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
+		printf ("OFF = %g %g %g\n", origin[0], origin[1], origin[2]);
+		printf ("SPA = %g %g %g\n", spacing[0], 
+			spacing[1], spacing[2]);
+		
+		/* Pick the CT with the largest dim[2] */
+		if (dim[2] > this->m_dim[2]) {
+		    for (d = 0; d < 3; d++) {
+			this->m_origin[d] = origin[d];
+			this->m_dim[d] = dim[d];
+			this->m_spacing[d] = spacing[d];
+		    }
+		}
+	    }
 	}
-	file_list = this->gdcm_sh2->GetNextSingleSerieUIDFileSet();
+	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();
     }
 }
