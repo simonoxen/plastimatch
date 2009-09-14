@@ -10,6 +10,7 @@
 typedef struct cxt_polyline Cxt_polyline;
 struct cxt_polyline {
     int slice_no;
+    bstring ct_slice_uid;
     int num_vertices;
     float* x;
     float* y;

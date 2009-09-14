@@ -17,13 +17,15 @@ cxt_initialize (Cxt_structure_list* structures)
 
 plastimatch1_EXPORT
 void
-cxt_add_structure (Cxt_structure_list* structures, const char *structure_name, int structure_id)
+cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
+		   int structure_id)
 {
     Cxt_structure* new_structure;
 
     structures->num_structures++;
-    structures->slist = (Cxt_structure*) realloc (structures->slist,
-                                              structures->num_structures * sizeof(Cxt_structure));
+    structures->slist = (Cxt_structure*) 
+	    realloc (structures->slist, 
+		     structures->num_structures * sizeof(Cxt_structure));
     new_structure = &structures->slist[structures->num_structures - 1];
     memset (new_structure, 0, sizeof(Cxt_structure));
     strncpy (new_structure->name, structure_name, CXT_BUFLEN);
@@ -210,13 +212,11 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         while (fgetc (fp) != '|') ;
 
         if (1 != fscanf (fp, "%d", &num_pt)) {
-			printf("num_pt=%s\n",&num_pt);
 	    goto not_successful;
         }
         fgetc (fp);
 
         if (1 != fscanf (fp, "%d", &slice_idx)) {
-			printf("slice_idx=%d\n",&slice_idx);
 	    goto not_successful;
         }
         fgetc (fp);
@@ -343,7 +343,18 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    int k;
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
-	    fprintf (fp, "%d||%d|||", curr_structure->id, curr_polyline->num_vertices);
+
+	    /* struct_no|contour_thickness|num_points|slice_no|slice_uid|points */
+	    /* I don't think contour thickness is used. */
+	    fprintf (fp, "%d||%d|", curr_structure->id, 
+		     curr_polyline->num_vertices);
+	    /* slice_no and slice_uid are optional */
+	    if (curr_polyline->slice_no >= 0) {
+		fprintf (fp, "%d|%s|", curr_polyline->slice_no, 
+			 curr_polyline->ct_slice_uid->data);
+	    } else {
+		fprintf (fp, "||");
+	    }
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
 		if (k > 0) {
 		    fprintf (fp, "\\");
@@ -365,5 +376,11 @@ void
 cxt_destroy (Cxt_structure_list* structures)
 {
     bdestroy (structures->ct_series_uid);
+    bdestroy (structures->patient_name);
+    bdestroy (structures->patient_id);
+    bdestroy (structures->patient_sex);
+    bdestroy (structures->study_id);
+
+    /* GCS FIX: This leaks memory */
     memset (structures, 0, sizeof (Cxt_structure_list));
 }

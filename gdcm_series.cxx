@@ -18,6 +18,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "readcxt.h"
+#include "mathutil.h"
 
 plastimatch1_EXPORT
 void
@@ -88,7 +89,7 @@ digest_file_list (gdcm::FileList *file_list,
 		}
 		loop ++;
 	    } else {
-		printf ("Warning: duplicate slice locations (%g)\n", z);
+		print_and_exit ("Error: duplicate slice locations (%g)\n", z);
 	    }
 	    prev_z = z;
 	}
@@ -185,14 +186,40 @@ Gdcm_series::get_best_ct (void)
 		
 		/* Pick the CT with the largest dim[2] */
 		if (dim[2] > this->m_dim[2]) {
+		    this->m_ct_file_list = file_list;
 		    for (d = 0; d < 3; d++) {
 			this->m_origin[d] = origin[d];
 			this->m_dim[d] = dim[d];
 			this->m_spacing[d] = spacing[d];
 		    }
+		    
 		}
 	    }
 	}
 	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();
     }
+}
+
+void
+Gdcm_series::get_slice_info (int *slice_no, bstring *ct_slice_uid, float z)
+{
+    if (!this->m_have_ct) {
+	return;
+    }
+
+    /* NOTE: This algorithm doesn't work if there are duplicate slices */
+    *slice_no = ROUND_INT ((z - this->m_origin[2]) / this->m_spacing[2]);
+    if (*slice_no < 0 || *slice_no >= this->m_dim[2]) {
+	*slice_no = -1;
+	return;
+    }
+
+    gdcm::File *file = (*this->m_ct_file_list)[*slice_no];
+    if (!file) {
+	print_and_exit ("Error finding slice %d in volume\n", *slice_no);
+    }
+    
+    std::string slice_uid = file->GetEntryValue (0x0008, 0x0018);
+
+    (*ct_slice_uid) = bfromcstr (slice_uid.c_str());
 }

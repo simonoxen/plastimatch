@@ -87,6 +87,10 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	structures->ct_series_uid = bfromcstr (tmp.c_str());
     }
 
+    /* GCS FIX: In the above, structures->ct_series_uid is set from 
+       the rtstruct.  However, the dicom_dir command line option 
+       may specify a different ct_series_uid. */
+
     /* StructureSetROISequence */
     seq = gdcm_file->GetSeqEntry (0x3006,0x0020);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
@@ -149,6 +153,10 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 		printf ("Error parsing number_of_contour_points...\n");
 		continue;
 	    }
+	    if (num_points <= 0) {
+		/* Polyline with zero points?  Skip it. */
+		continue;
+	    }
 	    contour_data = c_item->GetEntryValue (0x3006,0x0050);
 	    if (contour_data == gdcm::GDCM_UNFOUND) {
 		printf ("Error grabbing contour data.\n");
@@ -158,6 +166,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	    /* Create a new polyline for this structure */
 	    curr_polyline = cxt_add_polyline (curr_structure);
 	    curr_polyline->slice_no = -1;
+	    curr_polyline->ct_slice_uid = 0;
 	    curr_polyline->num_vertices = num_points;
 	    curr_polyline->x = (float*) malloc (num_points * sizeof(float));
 	    curr_polyline->y = (float*) malloc (num_points * sizeof(float));
@@ -198,6 +207,12 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 		    break;
 		}
 		i = (i + 1) % 3;
+	    }
+	    /* Find matching CT slice at this z location */
+	    if (gs.m_have_ct) {
+		gs.get_slice_info (&curr_polyline->slice_no,
+				   &curr_polyline->ct_slice_uid,
+				   curr_polyline->z[0]);
 	    }
 	}
     }
