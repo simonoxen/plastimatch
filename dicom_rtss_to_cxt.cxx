@@ -5,10 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "getopt.h"
+#include "plm_path.h"
 #include "gdcm_rtss.h"
 #include "readcxt.h"
-
-
 
 class Program_parms {
 public:
