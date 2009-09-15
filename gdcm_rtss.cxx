@@ -279,6 +279,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 {
+    int i, j, k;
     gdcm::File *gf = new gdcm::File ();
 #if defined (commentout)
     gdcm::FileHelper *gfh = new gdcm::FileHelper (gf);
@@ -306,8 +307,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
-	which does not have a (7fe0,0000) PixelDataGroupLength element.
-	Therefore we have to write using Document::WriteContent() */
+       which does not have a (7fe0,0000) PixelDataGroupLength element.
+       Therefore we have to write using Document::WriteContent() */
     std::ofstream *fp;
     fp = new std::ofstream (rtss_fn, std::ios::out | std::ios::binary);
     if (*fp == NULL) {
@@ -447,8 +448,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* SeriesInstanceUID */
     if (structures->ct_series_uid) {
 	rtrseries_item->InsertValEntry ((const char*) 
-				       structures->ct_series_uid->data, 
-				       0x0020, 0x000e);
+					structures->ct_series_uid->data, 
+					0x0020, 0x000e);
     } else {
 	rtrseries_item->InsertValEntry ("", 0x0020, 0x000e);
     }
@@ -474,14 +475,134 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
     else {
 	/* What to do here? */
-	printf ("Sorry, no ct found??\n");
+	printf ("Warning: CT not found. "
+		"ContourImageSequence not generated.\n");
     }
 
-#if defined (commentout)
-    gfh->SetWriteTypeToDcmExplVR ();
-    gfh->Write (rtss_fn);
-#endif
+    /* ----------------------------------------------------------------- */
+    /*     Part 3  -- Structure info                                     */
+    /* ----------------------------------------------------------------- */
 
+    /* StructureSetROISequence */
+    gdcm::SeqEntry *ssroi_seq = gf->InsertSeqEntry (0x3006, 0x0020);
+    for (i = 0; i < structures->num_structures; i++) {
+	gdcm::SQItem *ssroi_item 
+		= new gdcm::SQItem (ssroi_seq->GetDepthLevel());
+	ssroi_seq->AddSQItem (ssroi_item, i+1);
+	/* ROINumber */
+	ssroi_item->InsertValEntry (gdcm::Util::Format 
+				    ("%d", structures->slist[i].id),
+				    0x3006, 0x0022);
+	/* ReferencedFrameOfReferenceUID */
+	if (structures->ct_fref_uid) {
+	    ssroi_item->InsertValEntry ((const char*) 
+					structures->ct_fref_uid->data, 
+					0x3006, 0x0024);
+	} else {
+	    ssroi_item->InsertValEntry ("", 0x3006, 0x0024);
+	}
+	/* ROIName */
+	ssroi_item->InsertValEntry (structures->slist[i].name, 0x3006, 0x0026);
+	/* ROIGenerationAlgorithm */
+	ssroi_item->InsertValEntry ("", 0x3006, 0x0036);
+    }
+
+    /* ----------------------------------------------------------------- */
+    /*     Part 4  -- Contour info                                       */
+    /* ----------------------------------------------------------------- */
+
+    /* ROIContourSequence */
+    gdcm::SeqEntry *roic_seq = gf->InsertSeqEntry (0x3006, 0x0039);
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure *curr_structure = &structures->slist[i];
+	gdcm::SQItem *roic_item 
+		= new gdcm::SQItem (roic_seq->GetDepthLevel());
+	roic_seq->AddSQItem (roic_item, i+1);
+	
+	/* ROIDisplayColor */
+	if (curr_structure->color) {
+	    roic_item->InsertValEntry ((const char*) 
+				       curr_structure->color->data,
+				       0x3006, 0x002a);
+	} else {
+	    roic_item->InsertValEntry ("255\\0\\0", 0x3006, 0x002a);
+	}
+	/* ContourSequence */
+	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
+	for (j = 0; j < curr_structure->num_contours; j++) {
+	    Cxt_polyline *curr_contour = &curr_structure->pslist[j];
+	    if (curr_contour->num_vertices <= 0) continue;
+
+	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
+	    c_seq->AddSQItem (c_item, j+1);
+	    /* ContourImageSequence */
+	    if (curr_contour->ct_slice_uid) {
+		gdcm::SeqEntry *ci_seq 
+			= c_item->InsertSeqEntry (0x3006, 0x0016);
+		gdcm::SQItem *ci_item 
+			= new gdcm::SQItem (ci_seq->GetDepthLevel());
+		ci_seq->AddSQItem (ci_item, 1);
+		/* ReferencedSOPClassUID = CTImageStorage */
+		ci_item->InsertValEntry ("CTImageStorage", 0x0008, 0x1150);
+		/* ReferencedSOPInstanceUID */
+		ci_item->InsertValEntry ((const char*) 
+					 curr_contour->ct_slice_uid->data, 
+					 0x0008, 0x1155);
+	    }
+	    /* ContourGeometricType */
+	    c_item->InsertValEntry ("CLOSED_PLANAR", 0x3006, 0x0042);
+	    /* NumberOfContourPoints */
+	    c_item->InsertValEntry (gdcm::Util::Format 
+				     ("%d", curr_contour->num_vertices),
+				     0x3006, 0x0046);
+	    /* ContourData */
+	    std::string contour_string 
+		    = gdcm::Util::Format ("%g\\%g\\%g",
+					  curr_contour->x[0],
+					  curr_contour->y[0],
+					  curr_contour->z[0]);
+	    for (k = 1; k < curr_contour->num_vertices; k++) {
+		contour_string += gdcm::Util::Format ("\\%g\\%g\\%g",
+						      curr_contour->x[k],
+						      curr_contour->y[k],
+						      curr_contour->z[k]);
+	    }
+	    c_item->InsertValEntry (contour_string, 0x3006, 0x0050);
+	}
+	/* ReferencedROINumber */
+	roic_item->InsertValEntry (gdcm::Util::Format 
+				   ("%d", curr_structure->id),
+				   0x3006, 0x0084);
+    }
+
+    /* ----------------------------------------------------------------- */
+    /*     Part 5  -- More structure info                                */
+    /* ----------------------------------------------------------------- */
+
+    /* RTROIObservationsSequence */
+    gdcm::SeqEntry *rtroio_seq = gf->InsertSeqEntry (0x3006, 0x0080);
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure *curr_structure = &structures->slist[i];
+	gdcm::SQItem *rtroio_item 
+		= new gdcm::SQItem (rtroio_seq->GetDepthLevel());
+	rtroio_seq->AddSQItem (rtroio_item, i+1);
+	/* ObservationNumber */
+	rtroio_item->InsertValEntry (gdcm::Util::Format 
+				     ("%d", curr_structure->id),
+				     0x3006, 0x0082);
+	/* ReferencedROINumber */
+	rtroio_item->InsertValEntry (gdcm::Util::Format 
+				     ("%d", curr_structure->id),
+				     0x3006, 0x0084);
+	/* ROIObservationLabel */
+	rtroio_item->InsertValEntry (curr_structure->name, 0x3006, 0x0085);
+	/* RTROIInterpretedType */
+	rtroio_item->InsertValEntry ("", 0x3006, 0x00a4);
+	/* ROIInterpreter */
+	rtroio_item->InsertValEntry ("", 0x3006, 0x00a6);
+    }
+
+    /* Do the actual writing out to file */
     gf->WriteContent (fp, gdcm::ExplicitVR);
     fp->close();
     delete fp;

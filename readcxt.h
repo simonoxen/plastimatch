@@ -20,6 +20,7 @@ struct cxt_polyline {
 typedef struct cxt_structure Cxt_structure;
 struct cxt_structure {
     char name[CXT_BUFLEN];
+    bstring color;
     int id;
     int num_contours;
     Cxt_polyline* pslist;
