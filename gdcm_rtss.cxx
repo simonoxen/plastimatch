@@ -351,7 +351,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     seq2 = item1->InsertSeqEntry (0x3006, 0x0012);
     item2 = new gdcm::SQItem (seq2->GetDepthLevel());
     seq2->AddSQItem (item2, 1);
-    item2->InsertValEntry ("DetachedStudyManagementSOPClass", 0x0008, 0x1150);
+    /* DetachedStudyManagementSOPClass */
+    item2->InsertValEntry ("1.2.840.10008.3.1.2.3.1", 0x0008, 0x1150);
 
 #if defined (NEED_DICOM_UIDS____)
     for (i = 0; i < foo; i++) {
