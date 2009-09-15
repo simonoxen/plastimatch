@@ -21,19 +21,20 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 {
-    gdcm::File *gdcm_file = new gdcm::File;
+    gdcm::File *rtss_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     Gdcm_series gs;
     std::string tmp;
 
-    gdcm_file->SetMaxSizeLoadEntry (0xffff);
-    gdcm_file->SetFileName (rtss_fn);
-    gdcm_file->SetLoadMode (0);
-    gdcm_file->Load();
+    rtss_file->SetMaxSizeLoadEntry (0xffff);
+    rtss_file->SetFileName (rtss_fn);
+    rtss_file->SetLoadMode (0);
+    rtss_file->Load();
+
 
     /* Modality -- better be RTSTRUCT */
-    tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
+    tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
     if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
 	print_and_exit ("Error.  Input file not an RT structure set: %s\n",
 			rtss_fn);
@@ -55,44 +56,98 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 
     /* PatientName */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0010);
+    tmp = rtss_file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_name = bfromcstr (tmp.c_str());
     }
 
     /* PatientID */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0020);
+    tmp = rtss_file->GetEntryValue (0x0010, 0x0020);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_id = bfromcstr (tmp.c_str());
     }
 
     /* PatientSex */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0040);
+    tmp = rtss_file->GetEntryValue (0x0010, 0x0040);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_sex = bfromcstr (tmp.c_str());
     }
 
     /* StudyID */
-    tmp = gdcm_file->GetEntryValue (0x0020, 0x0010);
+    tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->study_id = bfromcstr (tmp.c_str());
     }
 
-    /* ReferencedFramOfReferenceSequence */
-    gdcm::SeqEntry *referencedFrameOfReferenceSequence = gdcm_file->GetSeqEntry(0x3006,0x0010);
-    item = referencedFrameOfReferenceSequence->GetFirstSQItem();
-    /* FrameOfReferenceUID */
-    tmp = item->GetEntryValue(0x0020,0x0052);
-    if (tmp != gdcm::GDCM_UNFOUND) {
+    /* If we have a CT series, get the uids from there */
+    if (gs.m_have_ct) {
+	gdcm::File *ct_file = gs.get_ct_slice ();
+	
+	/* StudyInstanceUID */
+	tmp = ct_file->GetEntryValue (0x0020, 0x000d);
+	structures->ct_study_uid = bfromcstr (tmp.c_str());
+	
+	/* SeriesInstanceUID */
+	tmp = ct_file->GetEntryValue (0x0020, 0x000e);
 	structures->ct_series_uid = bfromcstr (tmp.c_str());
+	
+	/* FrameOfReferenceUID */
+	tmp = ct_file->GetEntryValue (0x0020, 0x0052);
+	structures->ct_fref_uid = bfromcstr (tmp.c_str());
+    } 
+
+    /* Otherwise, no CT series, so we get the UIDs from the RT structure set */
+    else {
+
+	/* StudyInstanceUID */
+	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
+	structures->ct_study_uid = bfromcstr (tmp.c_str());
+
+	/* ReferencedFrameOfReferenceSequence */
+	gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
+	if (rfor_seq) {
+
+	    /* FrameOfReferenceUID */
+	    item = rfor_seq->GetFirstSQItem ();
+	    if (item) {
+		tmp = item->GetEntryValue (0x0020,0x0052);
+		if (tmp != gdcm::GDCM_UNFOUND) {
+		    structures->ct_fref_uid = bfromcstr (tmp.c_str());
+		}
+	
+		/* RTReferencedStudySequence */
+		gdcm::SeqEntry *rtrstudy_seq 
+			= item->GetSeqEntry (0x3006, 0x0012);
+		if (rtrstudy_seq) {
+	
+		    /* RTReferencedSeriesSequence */
+		    item = rtrstudy_seq->GetFirstSQItem ();
+		    if (item) {
+			gdcm::SeqEntry *rtrseries_seq 
+				= item->GetSeqEntry (0x3006, 0x0014);
+			if (rtrseries_seq) {
+			    item = rtrseries_seq->GetFirstSQItem ();
+
+			    /* SeriesInstanceUID */
+			    if (item) {
+				tmp = item->GetEntryValue (0x0020, 0x000e);
+				if (tmp != gdcm::GDCM_UNFOUND) {
+				    structures->ct_series_uid 
+					    = bfromcstr (tmp.c_str());
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
     }
 
-    /* GCS FIX: In the above, structures->ct_series_uid is set from 
-       the rtstruct.  However, the dicom_dir command line option 
-       may specify a different ct_series_uid. */
+    printf ("Finished uid parsing\n");
+
 
     /* StructureSetROISequence */
-    seq = gdcm_file->GetSeqEntry (0x3006,0x0020);
+    seq = rtss_file->GetSeqEntry (0x3006,0x0020);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
 	int structure_id;
 	std::string roi_number, roi_name;
@@ -105,7 +160,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 
     /* ROIContourSequence */
-    seq = gdcm_file->GetSeqEntry (0x3006,0x0039);
+    seq = rtss_file->GetSeqEntry (0x3006,0x0039);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
 	int structure_id;
 	std::string roi_display_color, referenced_roi_number;
@@ -216,6 +271,8 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	    }
 	}
     }
+    printf ("Loading complete.\n");
+
 }
 
 plastimatch1_EXPORT
@@ -270,7 +327,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* SOPClassUID = RTStructureSetStorage */
     gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0008, 0x0016);
     /* SOPInstanceUID */
-    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 0x0008, 0x0018);
+    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
+			0x0008, 0x0018);
     /* StudyDate */
     gf->InsertValEntry ("", 0x0008, 0x0020);
     /* StudyTime */
@@ -317,9 +375,15 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* PatientPosition */
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
     /* StudyInstanceUID */
-    gf->InsertValEntry ("", 0x0020, 0x000d);
+    if (structures->ct_study_uid) {
+	gf->InsertValEntry ((const char*) structures->ct_study_uid->data, 
+			    0x0020, 0x000d);
+    } else {
+	gf->InsertValEntry ("", 0x0020, 0x000d);
+    }
     /* SeriesInstanceUID */
-    gf->InsertValEntry ("", 0x0020, 0x000e);
+    gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
+			0x0020, 0x000e);
     /* StudyID */
     if (structures->study_id) {
 	gf->InsertValEntry ((const char*) structures->study_id->data, 

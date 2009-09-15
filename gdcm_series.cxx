@@ -100,6 +100,7 @@ digest_file_list (gdcm::FileList *file_list,
 Gdcm_series::Gdcm_series (void)
 {
     this->m_gsh2 = 0;
+    this->m_have_ct = 0;
 }
 
 Gdcm_series::~Gdcm_series (void)
@@ -222,4 +223,14 @@ Gdcm_series::get_slice_info (int *slice_no, bstring *ct_slice_uid, float z)
     std::string slice_uid = file->GetEntryValue (0x0008, 0x0018);
 
     (*ct_slice_uid) = bfromcstr (slice_uid.c_str());
+}
+
+gdcm::File*
+Gdcm_series::get_ct_slice (void)
+{
+    if (!this->m_have_ct) {
+	return 0;
+    }
+    
+    return (*this->m_ct_file_list)[0];
 }

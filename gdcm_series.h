@@ -19,6 +19,7 @@ public:
     void load (char *dicom_dir);
     void get_best_ct (void);
     void get_slice_info (int *slice_no, bstring *ct_slice_uid, float z);
+    gdcm::File *get_ct_slice (void);
 
     gdcm::SerieHelper2 *m_gsh2;
 

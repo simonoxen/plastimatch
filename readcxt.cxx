@@ -152,11 +152,14 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         else if (biseqcstr (tag, "STUDY_ID")) {
 	    structures->study_id = bstrcpy (val);
 	}
+        else if (biseqcstr (tag, "CT_STUDY_UID")) {
+	    structures->ct_study_uid = bstrcpy (val);
+	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
 	    structures->ct_series_uid = bstrcpy (val);
 	}
-        else if (biseqcstr (tag, "SERIES_CT_UID")) {
-	    structures->ct_series_uid = bstrcpy (val);
+        else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
+	    structures->ct_fref_uid = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
@@ -338,6 +341,17 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
 	fprintf (fp, "CT_SERIES_UID %s\n", structures->ct_series_uid->data);
     } else {
 	fprintf (fp, "CT_SERIES_UID\n");
+    }
+    if (structures->ct_study_uid) {
+	fprintf (fp, "CT_STUDY_UID %s\n", structures->ct_study_uid->data);
+    } else {
+	fprintf (fp, "CT_STUDY_UID\n");
+    }
+    if (structures->ct_fref_uid) {
+	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
+		 structures->ct_fref_uid->data);
+    } else {
+	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     if (structures->patient_name) {
 	fprintf (fp, "PATIENT_NAME %s\n", structures->patient_name->data);
