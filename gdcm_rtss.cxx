@@ -404,19 +404,47 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* StructureSetTime */
     gf->InsertValEntry (current_time, 0x3006, 0x0009);
 
-    /* Sequence of CT slices */
-    gdcm::SeqEntry *seq1, *seq2;
-    gdcm::SQItem *item1, *item2;
-    seq1 = gf->InsertSeqEntry (0x3006, 0x0010);
-    item1 = new gdcm::SQItem (seq1->GetDepthLevel());
-    seq1->AddSQItem (item1, 1);
-    item1->InsertValEntry ("2.16.840.1.114337.86854324933.16313.1237241461.0.2", 
-			  0x0020, 0x0052);
-    seq2 = item1->InsertSeqEntry (0x3006, 0x0012);
-    item2 = new gdcm::SQItem (seq2->GetDepthLevel());
-    seq2->AddSQItem (item2, 1);
-    /* DetachedStudyManagementSOPClass */
-    item2->InsertValEntry ("1.2.840.10008.3.1.2.3.1", 0x0008, 0x1150);
+    /* ReferencedFrameOfReferenceSequence */
+    gdcm::SeqEntry *rfor_seq = gf->InsertSeqEntry (0x3006, 0x0010);
+    gdcm::SQItem *rfor_item = new gdcm::SQItem (rfor_seq->GetDepthLevel());
+    rfor_seq->AddSQItem (rfor_item, 1);
+    /* FrameOfReferenceUID */
+    if (structures->ct_fref_uid) {
+	rfor_item->InsertValEntry ((const char*) 
+				   structures->ct_fref_uid->data, 
+				   0x0020, 0x0052);
+    } else {
+	rfor_item->InsertValEntry ("", 0x0020, 0x0052);
+    }
+    /* RTReferencedStudySequence */
+    gdcm::SeqEntry *rtrstudy_seq = rfor_item->InsertSeqEntry (0x3006, 0x0012);
+    gdcm::SQItem *rtrstudy_item 
+	    = new gdcm::SQItem (rtrstudy_seq->GetDepthLevel());
+    rtrstudy_seq->AddSQItem (rtrstudy_item, 1);
+    /* ReferencedSOPClassUID = DetachedStudyManagementSOPClass */
+    rtrstudy_item->InsertValEntry ("1.2.840.10008.3.1.2.3.1", 0x0008, 0x1150);
+    /* ReferencedSOPInstanceUID */
+    if (structures->ct_study_uid) {
+	rtrstudy_item->InsertValEntry ((const char*) 
+				       structures->ct_study_uid->data, 
+				       0x0008, 0x1155);
+    } else {
+	rtrstudy_item->InsertValEntry ("", 0x0008, 0x1155);
+    }
+    /* RTReferencedSeriesSequence */
+    gdcm::SeqEntry *rtrseries_seq 
+	    = rtrstudy_item->InsertSeqEntry (0x3006, 0x0014);
+    gdcm::SQItem *rtrseries_item 
+	    = new gdcm::SQItem (rtrseries_seq->GetDepthLevel());
+    rtrseries_seq->AddSQItem (rtrseries_item, 1);
+    /* SeriesInstanceUID */
+    if (structures->ct_series_uid) {
+	rtrseries_item->InsertValEntry ((const char*) 
+				       structures->ct_series_uid->data, 
+				       0x0020, 0x000e);
+    } else {
+	rtrseries_item->InsertValEntry ("", 0x0020, 0x000e);
+    }
 
 #if defined (NEED_DICOM_UIDS____)
     for (i = 0; i < foo; i++) {
