@@ -240,20 +240,21 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         /* Num vertices */
 	num_pt = 0;
         if (1 != fscanf (fp, "%d", &num_pt)) {
-	    goto not_successful;
+	    //goto not_successful;
         }
         fgetc (fp);
 
         /* Slice idx */
 	slice_idx = -1;
         if (1 != fscanf (fp, "%d", &slice_idx)) {
-	    goto not_successful;
+	    //goto not_successful;
         }
         fgetc (fp);
 
         /* Slice uid */
+	slice_uid[0] = 0;
         if (1 != fscanf (fp, "%1023[0-9.]", slice_uid)) {
-	    goto not_successful;
+	    //goto not_successful;
 	}
         fgetc (fp);
 
@@ -272,7 +273,11 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         curr_contour = &curr_structure->pslist[contour_no];
         curr_contour->num_vertices = num_pt;
         curr_contour->slice_no = slice_idx;
-        curr_contour->ct_slice_uid = bfromcstr (slice_uid);
+	if (slice_uid[0]) {
+	    curr_contour->ct_slice_uid = bfromcstr (slice_uid);
+	} else {
+	    curr_contour->ct_slice_uid = 0;
+	}
         contour_no++;
         curr_structure->num_contours = contour_no;
 
@@ -310,9 +315,9 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     fclose (fp);
     printf ("successful!\n");
     return;
-not_successful:
-    fclose (fp);
-    printf ("Error parsing input file.\n");
+    //not_successful:
+    //    fclose (fp);
+    //    printf ("Error parsing input file.\n");
 }
 
 plastimatch1_EXPORT
@@ -385,10 +390,14 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
 		     curr_polyline->num_vertices);
 	    /* slice_no and slice_uid are optional */
 	    if (curr_polyline->slice_no >= 0) {
-		fprintf (fp, "%d|%s|", curr_polyline->slice_no, 
-			 curr_polyline->ct_slice_uid->data);
+		fprintf (fp, "%d|", curr_polyline->slice_no);
 	    } else {
-		fprintf (fp, "||");
+		fprintf (fp, "|");
+	    }
+	    if (curr_polyline->ct_slice_uid) {
+		fprintf (fp, "%s|", curr_polyline->ct_slice_uid->data);
+	    } else {
+		fprintf (fp, "|");
 	    }
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
 		if (k > 0) {
