@@ -21,7 +21,7 @@ sub parse_cxt_format {
     open CF, "<$fn" || die "CXT file not found: $fn\n";
     while (<CF>) {
 	chomp;
-	if (/^SERIES_CT_UID/) {
+	if (/^SERIES_CT_UID/ || /^CT_SERIES_UID/) {
 	    ($junk, $series_ct_contour) = split;
 	    if ($series_ct_contour eq "Unknown" 
 		|| $series_ct_contour ne $series_ct_uid) {
