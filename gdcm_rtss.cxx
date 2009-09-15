@@ -229,6 +229,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
+    printf ("Hello from gdcm_rtss_save\n");
+
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
 	which does not have a (7fe0,0000) PixelDataGroupLength element.
 	Therefore we have to write using Document::WriteContent() */

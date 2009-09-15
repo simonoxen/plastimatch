@@ -21,7 +21,7 @@ do_cxt_to_dicom_rtss (char *cxt_fn, char *rtss_fn)
     cxt_read (&structures, cxt_fn);
     gdcm_rtss_save (&structures, rtss_fn);
 
-    cxt_write (&structures, "foo.cxt");
+    cxt_write (&structures, "junk.cxt");
 
     cxt_destroy (&structures);
 }

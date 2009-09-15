@@ -90,11 +90,12 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     float val_z = 0;
 
     int struct_no = 0;
-    int num_pt = 0;
     int old_struct_no = -1;
     int contour_no = 0;
-    int slice_idx = -1;
 
+    int have_offset = 0;
+    int have_dim = 0;
+    int have_spacing = 0;
     float x = 0;
     float y = 0;
     float z = 0;
@@ -139,14 +140,27 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    bdestroy (val);
             break;
         }
-        else if (biseqcstr (tag, "SERIES_CT_UID")) {
-	    structures->ct_series_uid = bstrcpy (val);
+        else if (biseqcstr (tag, "PATIENT_NAME")) {
+	    structures->patient_name = bstrcpy (val);
+	}
+        else if (biseqcstr (tag, "PATIENT_ID")) {
+	    structures->patient_id = bstrcpy (val);
+	}
+        else if (biseqcstr (tag, "PATIENT_SEX")) {
+	    structures->patient_sex = bstrcpy (val);
+	}
+        else if (biseqcstr (tag, "STUDY_ID")) {
+	    structures->study_id = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
 	    structures->ct_series_uid = bstrcpy (val);
 	}
+        else if (biseqcstr (tag, "SERIES_CT_UID")) {
+	    structures->ct_series_uid = bstrcpy (val);
+	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		have_offset = 1;
 		structures->offset[0] = val_x;
 		structures->offset[1] = val_y;
 		structures->offset[2] = val_z;
@@ -154,6 +168,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	}
         else if (biseqcstr (tag, "DIMENSION")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		have_dim = 1;
 		structures->dim[0] = val_x;
 		structures->dim[1] = val_y;
 		structures->dim[2] = val_z;
@@ -161,6 +176,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	}
         else if (biseqcstr (tag, "SPACING")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+		have_spacing = 1;
 		structures->spacing[0] = val_x;
 		structures->spacing[1] = val_y;
 		structures->spacing[2] = val_z;
@@ -169,12 +185,16 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	bdestroy (tag);
 	bdestroy (val);
     }
+    if (have_offset && have_dim && have_spacing) {
+	structures->have_geometry = 1;
+    }
 
     /* Part 2: Structures info */
     while (1) {
         char color[CXT_BUFLEN];
         char name[CXT_BUFLEN];
         char buf[CXT_BUFLEN];
+	int struct_id;
         char *p;
         int rc;
 
@@ -183,16 +203,18 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
             fprintf (stderr, "ERROR: Your file is not formatted correctly!\n");
             exit (-1);
         }
-        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_no, color, name);
+        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
         if (rc != 3) {
             break;
         }
 
         structures->num_structures++;
-        structures->slist = (Cxt_structure*) realloc (structures->slist,
-                                                  structures->num_structures * sizeof(Cxt_structure));
+        structures->slist = (Cxt_structure*) 
+		realloc (structures->slist,
+			 structures->num_structures * sizeof(Cxt_structure));
         curr_structure = &structures->slist[structures->num_structures - 1];
         strcpy (curr_structure->name, name);
+        curr_structure->id = struct_id;
         curr_structure->num_contours = 0;
         curr_structure->pslist = 0;
         printf ("Cxt_structure: %s\n", curr_structure->name);
@@ -201,7 +223,11 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     /* Part 3: Contour info */
     while (1) {
 	int k;
+	int num_pt;
+	int slice_idx;
+	char slice_uid[1024];
 
+	/* Structure no */
         if (1 != fscanf (fp, " %d", &struct_no)) {
 	    /* Normal exit from loop */
 	    break;
@@ -211,20 +237,27 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         /* Skip contour thickness */
         while (fgetc (fp) != '|') ;
 
+        /* Num vertices */
+	num_pt = 0;
         if (1 != fscanf (fp, "%d", &num_pt)) {
 	    goto not_successful;
         }
         fgetc (fp);
 
+        /* Slice idx */
+	slice_idx = -1;
         if (1 != fscanf (fp, "%d", &slice_idx)) {
 	    goto not_successful;
         }
         fgetc (fp);
 
-        /* Skip uid */
-        while (fgetc (fp) != '|') ;
+        /* Slice uid */
+        if (1 != fscanf (fp, "%1023[0-9.]", slice_uid)) {
+	    goto not_successful;
+	}
+        fgetc (fp);
 
-        //printf ("%d %d %d\n", struct_no, num_pt, slice_idx);
+        printf ("%d %d %d %s\n", struct_no, num_pt, slice_idx, slice_uid);
 
         if (struct_no != old_struct_no) {
             old_struct_no = struct_no;
@@ -232,12 +265,14 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         }
         curr_structure = &structures->slist[struct_no - 1];
         //printf ("Gonna realloc %p, %d\n", curr_structure->pslist, contour_no);
-        curr_structure->pslist = (Cxt_polyline*) realloc (curr_structure->pslist,
-                                                      (contour_no + 1) * sizeof(Cxt_polyline));
+        curr_structure->pslist = (Cxt_polyline*) 
+		realloc (curr_structure->pslist, 
+			 (contour_no + 1) * sizeof(Cxt_polyline));
         //printf ("Gonna dereference pslist\n");
         curr_contour = &curr_structure->pslist[contour_no];
         curr_contour->num_vertices = num_pt;
         curr_contour->slice_no = slice_idx;
+        curr_contour->ct_slice_uid = bfromcstr (slice_uid);
         contour_no++;
         curr_structure->num_contours = contour_no;
 
@@ -295,9 +330,9 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
 
     /* Part 1: Dicom info */
     if (structures->ct_series_uid) {
-	fprintf (fp, "SERIES_CT_UID %s\n", structures->ct_series_uid->data);
+	fprintf (fp, "CT_SERIES_UID %s\n", structures->ct_series_uid->data);
     } else {
-	fprintf (fp, "SERIES_CT_UID\n");
+	fprintf (fp, "CT_SERIES_UID\n");
     }
     if (structures->patient_name) {
 	fprintf (fp, "PATIENT_NAME %s\n", structures->patient_name->data);
