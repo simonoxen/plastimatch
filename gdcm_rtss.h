@@ -16,7 +16,7 @@ void
 gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir);
 plastimatch1_EXPORT
 void
-gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn);
+gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir);
 
 #if defined __cplusplus
 }

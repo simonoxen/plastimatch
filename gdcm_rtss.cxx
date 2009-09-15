@@ -220,16 +220,34 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 
 plastimatch1_EXPORT
 void
-gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
+gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 {
     gdcm::File *gf = new gdcm::File ();
 #if defined (commentout)
     gdcm::FileHelper *gfh = new gdcm::FileHelper (gf);
 #endif
+    Gdcm_series gs;
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
     printf ("Hello from gdcm_rtss_save\n");
+
+
+    /* Got the RT struct.  Try to load the corresponding CT. */
+    if (dicom_dir) {
+	gs.load (dicom_dir);
+	gs.get_best_ct ();
+	if (gs.m_have_ct) {
+	    int d;
+	    structures->have_geometry = 1;
+	    for (d = 0; d < 3; d++) {
+		structures->offset[d] = gs.m_origin[d];
+		structures->dim[d] = gs.m_dim[d];
+		structures->spacing[d] = gs.m_spacing[d];
+	    }
+	}
+    }
+
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
 	which does not have a (7fe0,0000) PixelDataGroupLength element.
@@ -272,13 +290,28 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    gf->InsertValEntry ("", 0x0010, 0x0010);
+    if (structures->patient_name) {
+	gf->InsertValEntry ((const char*) structures->patient_name->data, 
+			    0x0010, 0x0010);
+    } else {
+	gf->InsertValEntry ("", 0x0010, 0x0010);
+    }
     /* PatientID */
-    gf->InsertValEntry ("", 0x0010, 0x0020);
+    if (structures->patient_id) {
+	gf->InsertValEntry ((const char*) structures->patient_id->data, 
+			    0x0010, 0x0020);
+    } else {
+	gf->InsertValEntry ("", 0x0010, 0x0020);
+    }
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    gf->InsertValEntry ("", 0x0010, 0x0040);
+    if (structures->patient_sex) {
+	gf->InsertValEntry ((const char*) structures->patient_sex->data, 
+			    0x0010, 0x0040);
+    } else {
+	gf->InsertValEntry ("", 0x0010, 0x0040);
+    }
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */
@@ -288,7 +321,12 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     /* SeriesInstanceUID */
     gf->InsertValEntry ("", 0x0020, 0x000e);
     /* StudyID */
-    gf->InsertValEntry ("", 0x0020, 0x0010);
+    if (structures->study_id) {
+	gf->InsertValEntry ((const char*) structures->study_id->data, 
+			    0x0020, 0x0010);
+    } else {
+	gf->InsertValEntry ("", 0x0020, 0x0010);
+    }
     /* SeriesNumber */
     gf->InsertValEntry ("103", 0x0020, 0x0011);
     /* InstanceNumber */
@@ -303,14 +341,21 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn)
     gf->InsertValEntry (current_time, 0x3006, 0x0009);
 
     /* Sequence of CT slices */
-    gdcm::SeqEntry *seq;
-    gdcm::SQItem *item;
-    seq = gf->InsertSeqEntry (0x3006, 0x0010);
-    item = new gdcm::SQItem (seq->GetDepthLevel());
-    seq->AddSQItem (item, 1);
+    gdcm::SeqEntry *seq1, *seq2;
+    gdcm::SQItem *item1, *item2;
+    seq1 = gf->InsertSeqEntry (0x3006, 0x0010);
+    item1 = new gdcm::SQItem (seq1->GetDepthLevel());
+    seq1->AddSQItem (item1, 1);
+    item1->InsertValEntry ("2.16.840.1.114337.86854324933.16313.1237241461.0.2", 
+			  0x0020, 0x0052);
+    seq2 = item1->InsertSeqEntry (0x3006, 0x0012);
+    item2 = new gdcm::SQItem (seq2->GetDepthLevel());
+    seq2->AddSQItem (item2, 1);
+    item2->InsertValEntry ("DetachedStudyManagementSOPClass", 0x0008, 0x1150);
+
 #if defined (NEED_DICOM_UIDS____)
     for (i = 0; i < foo; i++) {
-	item->InsertValEntry (current_time, 0x3006, 0x0009);
+    item->InsertValEntry (current_time, 0x3006, 0x0009);
     }
 #endif
 
