@@ -289,7 +289,6 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 
     printf ("Hello from gdcm_rtss_save\n");
 
-
     /* Got the RT struct.  Try to load the corresponding CT. */
     if (dicom_dir) {
 	gs.load (dicom_dir);
@@ -316,6 +315,10 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	return;
     }
     
+    /* ----------------------------------------------------------------- */
+    /*     Part 1  -- General header                                     */
+    /* ----------------------------------------------------------------- */
+
     /* TransferSyntaxUID */
     //    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
     /* InstanceCreationDate */
@@ -404,6 +407,10 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* StructureSetTime */
     gf->InsertValEntry (current_time, 0x3006, 0x0009);
 
+    /* ----------------------------------------------------------------- */
+    /*     Part 2  -- UID's for CT series                                */
+    /* ----------------------------------------------------------------- */
+
     /* ReferencedFrameOfReferenceSequence */
     gdcm::SeqEntry *rfor_seq = gf->InsertSeqEntry (0x3006, 0x0010);
     gdcm::SQItem *rfor_item = new gdcm::SQItem (rfor_seq->GetDepthLevel());
@@ -445,12 +452,30 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     } else {
 	rtrseries_item->InsertValEntry ("", 0x0020, 0x000e);
     }
-
-#if defined (NEED_DICOM_UIDS____)
-    for (i = 0; i < foo; i++) {
-    item->InsertValEntry (current_time, 0x3006, 0x0009);
+    /* ContourImageSequence */
+    gdcm::SeqEntry *ci_seq = rtrseries_item->InsertSeqEntry (0x3006, 0x0016);
+    if (gs.m_have_ct) {
+	int i = 1;
+	gdcm::FileList *file_list = gs.m_ct_file_list;
+	for (gdcm::FileList::iterator it =  file_list->begin();
+	     it != file_list->end(); 
+	     ++it)
+	{
+	    /* Get SOPInstanceUID of CT */
+	    std::string tmp = (*it)->GetEntryValue (0x0008, 0x0018);
+	    /* Put item into sequence */
+	    gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
+	    ci_seq->AddSQItem (ci_item, i++);
+	    /* ReferencedSOPClassUID = CTImageStorage */
+	    ci_item->InsertValEntry ("CTImageStorage", 0x0008, 0x1150);
+	    /* Put ReferencedSOPInstanceUID */
+	    ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
+	}
     }
-#endif
+    else {
+	/* What to do here? */
+	printf ("Sorry, no ct found??\n");
+    }
 
 #if defined (commentout)
     gfh->SetWriteTypeToDcmExplVR ();

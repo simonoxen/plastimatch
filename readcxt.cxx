@@ -261,7 +261,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	}
         fgetc (fp);
 
-        printf ("%d %d %d %s\n", struct_no, num_pt, slice_idx, slice_uid);
+        //printf ("%d %d %d %s\n", struct_no, num_pt, slice_idx, slice_uid);
 
         if (struct_no != old_struct_no) {
             old_struct_no = struct_no;

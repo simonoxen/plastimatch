@@ -177,6 +177,9 @@ Gdcm_series::get_best_ct (void)
 		double origin[3];
 		double spacing[3];
 	    
+		/* OK, I guess we have a CT */
+		this->m_have_ct = 1;
+
 		/* Digest the USI */
 		digest_file_list (file_list, origin, dim, spacing);
 		printf ("---- %s\n", id.c_str());
