@@ -8,7 +8,7 @@
 #include "plm_path.h"
 #include "getopt.h"
 #include "cxt_io.h"
-#include "xio_load.h"
+#include "xio_io.h"
 
 class Program_parms {
 public:

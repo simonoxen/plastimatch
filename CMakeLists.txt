@@ -549,7 +549,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
-	xio_load.cxx xio_load.h
+	xio_io.cxx xio_io.h
 	xform.cxx xform.h 
 	)
 

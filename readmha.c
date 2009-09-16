@@ -33,8 +33,9 @@ void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 	if (this_write > WRITE_BLOCK) this_write = WRITE_BLOCK;
 	rc = fwrite (&bufc[cur], 1, this_write, fp);
 	if (rc != this_write) {
-	    fprintf (stderr, "Error writing to file.  rc=%d, this_write=%d\n",
-		    rc, this_write);
+	    fprintf (stderr, "Error writing to file."
+		     "rc=%zd, this_write=%zd\n",
+		     rc, this_write);
 	    return;
 	}
 	cur += rc;

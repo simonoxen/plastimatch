@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _xio_load_h
-#define _xio_load_h
+#ifndef _xio_io_h
+#define _xio_io_h
 
 #include "plm_config.h"
 #include "cxt_io.h"
