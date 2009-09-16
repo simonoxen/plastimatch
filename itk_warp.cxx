@@ -77,4 +77,5 @@ FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, Deformati
 /* Explicit instantiations */
 template plastimatch1_EXPORT UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
 template plastimatch1_EXPORT ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
+template plastimatch1_EXPORT ULongImageType::Pointer itk_warp_image (ULongImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned long default_val);
 template plastimatch1_EXPORT FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);

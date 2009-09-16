@@ -43,12 +43,14 @@ const unsigned int Dimension = 3;
 typedef itk::Image < unsigned char, Dimension > UCharImageType;
 typedef itk::Image < short, Dimension > ShortImageType;
 typedef itk::Image < unsigned short, Dimension > UShortImageType;
+typedef itk::Image < unsigned long, Dimension > ULongImageType;
 typedef itk::Image < float, Dimension > FloatImageType;
 typedef itk::Image < double, Dimension > DoubleImageType;
 
 typedef itk::Image < unsigned char, 2 > UCharImage2DType;
 typedef itk::Image < short, 2 > ShortImage2DType;
 typedef itk::Image < unsigned short, 2 > UShortImage2DType;
+typedef itk::Image < unsigned long, 2 > ULongImage2DType;
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
 
@@ -72,6 +74,7 @@ typedef itk::ImageRegion < Dimension > ImageRegionType;
 plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname, PlmImageType* original_type);
 plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname, PlmImageType* original_type);
 plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT ULongImageType::Pointer load_ulong (char* fname, PlmImageType* original_type);
 plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname, PlmImageType* original_type);
 plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
 

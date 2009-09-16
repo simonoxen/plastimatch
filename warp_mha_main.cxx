@@ -81,28 +81,39 @@ warp_image_main (Warp_Parms* parms)
     itk__GetImageType (parms->mha_in_fn, pixelType, componentType);
 
     switch (componentType) {
-	case itk::ImageIOBase::UCHAR:
-	    {
-		UCharImageType::Pointer mha_in = load_uchar (parms->mha_in_fn, 0);
-		warp_any (parms, mha_in, static_cast<unsigned char>(0));
-	    }
-	    break;
-        case itk::ImageIOBase::SHORT:
-	    {
-		ShortImageType::Pointer mha_in = load_short (parms->mha_in_fn, 0);
-		warp_any (parms, mha_in, static_cast<short>(0));
-	    }
-	    break;
-        case itk::ImageIOBase::FLOAT:
-	    {
-		FloatImageType::Pointer mha_in = load_float (parms->mha_in_fn, 0);
-		warp_any (parms, mha_in, static_cast<float>(0));
-	    }
-	    break;
-	default:
-	    printf ("Error, unsupported output type\n");
-	    exit (-1);
-	    break;
+    case itk::ImageIOBase::UCHAR:
+	{
+	    UCharImageType::Pointer mha_in 
+		    = load_uchar (parms->mha_in_fn, 0);
+	    warp_any (parms, mha_in, static_cast<unsigned char>(0));
+	}
+	break;
+    case itk::ImageIOBase::SHORT:
+	{
+	    ShortImageType::Pointer mha_in 
+		    = load_short (parms->mha_in_fn, 0);
+	    warp_any (parms, mha_in, static_cast<short>(0));
+	}
+	break;
+    case itk::ImageIOBase::UINT:
+    case itk::ImageIOBase::ULONG:
+	{
+	    ULongImageType::Pointer mha_in 
+		    = load_ulong (parms->mha_in_fn, 0);
+	    warp_any (parms, mha_in, static_cast<unsigned long>(0));
+	}
+	break;
+    case itk::ImageIOBase::FLOAT:
+	{
+	    FloatImageType::Pointer mha_in 
+		    = load_float (parms->mha_in_fn, 0);
+	    warp_any (parms, mha_in, static_cast<float>(0));
+	}
+	break;
+    default:
+	printf ("Error, unsupported output type\n");
+	exit (-1);
+	break;
     }
 }
 
