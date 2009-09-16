@@ -73,7 +73,10 @@ cxt_debug_structures (Cxt_structure_list* structures)
 
     for (i = 0; i < structures->num_structures; i++) {
         curr_structure = &structures->slist[i];
-	printf ("%d %d %s\n", i, curr_structure->id, curr_structure->name);
+	printf ("%d %d %s (%p)\n", 
+		i, curr_structure->id, 
+		curr_structure->name, 
+		curr_structure->pslist);
     }
 }
 
@@ -88,10 +91,6 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     float val_x = 0;
     float val_y = 0;
     float val_z = 0;
-
-    int struct_no = 0;
-    int old_struct_no = -1;
-    int contour_no = 0;
 
     int have_offset = 0;
     int have_dim = 0;
@@ -215,9 +214,12 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         structures->slist = (Cxt_structure*) 
 		realloc (structures->slist,
 			 structures->num_structures * sizeof(Cxt_structure));
+
         curr_structure = &structures->slist[structures->num_structures - 1];
         strcpy (curr_structure->name, name);
+
         curr_structure->id = struct_id;
+        curr_structure->color = bfromcstr (color);
         curr_structure->num_contours = 0;
         curr_structure->pslist = 0;
         printf ("Cxt_structure: %s\n", curr_structure->name);
@@ -227,11 +229,12 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     while (1) {
 	int k;
 	int num_pt;
+	int struct_id = 0;
 	int slice_idx;
 	char slice_uid[1024];
 
-	/* Structure no */
-        if (1 != fscanf (fp, " %d", &struct_no)) {
+	/* Structure id */
+        if (1 != fscanf (fp, " %d", &struct_id)) {
 	    /* Normal exit from loop */
 	    break;
         }
@@ -261,19 +264,23 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	}
         fgetc (fp);
 
-        //printf ("%d %d %d %s\n", struct_no, num_pt, slice_idx, slice_uid);
+	
+	//printf ("%d %d %d %s\n", struct_id, num_pt, slice_idx, slice_uid);
 
-        if (struct_no != old_struct_no) {
-            old_struct_no = struct_no;
-            contour_no = 0;
-        }
-        curr_structure = &structures->slist[struct_no - 1];
-        //printf ("Gonna realloc %p, %d\n", curr_structure->pslist, contour_no);
+        curr_structure = cxt_find_structure_by_id (structures, struct_id);
+
+	/* If there is no header line for this structure, we will 
+	   skip all contours for the structure. */
+	if (!curr_structure) {
+	    continue;
+	}
+
+	++ (curr_structure->num_contours);
         curr_structure->pslist = (Cxt_polyline*) 
 		realloc (curr_structure->pslist, 
-			 (contour_no + 1) * sizeof(Cxt_polyline));
-        //printf ("Gonna dereference pslist\n");
-        curr_contour = &curr_structure->pslist[contour_no];
+			 curr_structure->num_contours * sizeof(Cxt_polyline));
+	
+        curr_contour = &curr_structure->pslist[curr_structure->num_contours-1];
         curr_contour->num_vertices = num_pt;
         curr_contour->slice_no = slice_idx;
 	if (slice_uid[0]) {
@@ -281,10 +288,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	} else {
 	    curr_contour->ct_slice_uid = 0;
 	}
-        contour_no++;
-        curr_structure->num_contours = contour_no;
 
-        //printf ("Gonna dereference curr_contour->x\n");
         curr_contour->x = (float*) malloc (num_pt * sizeof(float));
         curr_contour->y = (float*) malloc (num_pt * sizeof(float));
         curr_contour->z = (float*) malloc (num_pt * sizeof(float));

@@ -131,9 +131,9 @@ main (int argc, char* argv[])
     acc_img = (unsigned char*) malloc (slice_voxels * sizeof(unsigned char));
 
     /* Create output volume for mask image.  This is reused for each 
-	structure */
+       structure */
     uchar_vol = volume_create (structures->dim, structures->offset, 
-			 structures->spacing, PT_UCHAR, 0, 0);
+			       structures->spacing, PT_UCHAR, 0, 0);
     if (uchar_vol == 0) {
         fprintf (stderr, "ERROR: failed in allocating the volume");
     }
@@ -142,7 +142,7 @@ main (int argc, char* argv[])
     /* Create output volume for labelmask and xormap image. */
     if (parms->labelmap_fn[0]) {
 	labelmap_vol = volume_create (structures->dim, structures->offset, 
-				     structures->spacing, PT_ULONG, 0, 0);
+				      structures->spacing, PT_ULONG, 0, 0);
 	if (labelmap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}
@@ -150,7 +150,7 @@ main (int argc, char* argv[])
     }
     if (parms->xormap_fn[0]) {
 	xormap_vol = volume_create (structures->dim, structures->offset, 
-				     structures->spacing, PT_ULONG, 0, 0);
+				    structures->spacing, PT_ULONG, 0, 0);
 	if (xormap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}
@@ -179,7 +179,10 @@ main (int argc, char* argv[])
             unsigned char* uchar_slice;
 
 	    curr_contour = &curr_structure->pslist[i];
-            //printf ("Slice# %3d\n", curr_contour->slice_no);
+
+	    if (curr_contour->slice_no == -1) {
+		continue;
+	    }
 
             memset (acc_img, 0, dim[0] * dim[1] * sizeof(unsigned char));
             render_slice_polyline (acc_img, dim, spacing, offset,
