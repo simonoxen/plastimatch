@@ -39,13 +39,13 @@ do_command_register (int argc, char* argv[])
 	    command_filename = argv[2];
 	} else {
 	    printf ("Usage: plastimatch register command_file\n");
-	    print_usage (1);
+	    exit (1);
 	}
     } else {
 	command_filename = argv[1];
     }
 
-    if (parse_command_file (&regp, argv[1]) < 0) {
+    if (parse_command_file (&regp, command_filename) < 0) {
 	print_usage (1);
     }
     do_registration (&regp);
