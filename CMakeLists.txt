@@ -549,6 +549,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
+	xio_load.cxx xio_load.h
 	xform.cxx xform.h 
 	)
 
@@ -561,8 +562,8 @@ SET(ADJUST_MHA_SRC
 SET(BSPLINE_SRC
 	bspline_main.c 
 	)
-SET(CMS_TO_CXT_SRC
-	cms_to_cxt.cxx
+SET(XIO_TO_CXT_SRC
+	xio_to_cxt.cxx
 	)
 SET(CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
@@ -895,7 +896,7 @@ PLM_ADD_EXECUTABLE(vox_to_mha vox_to_mha.c "" "")
 IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(adjust_mha "${ADJUST_MHA_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(cms_to_cxt "${CMS_TO_CXT_SRC}" 
+  PLM_ADD_EXECUTABLE(xio_to_cxt "${XIO_TO_CXT_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")

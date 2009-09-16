@@ -17,12 +17,6 @@
 #include "plm_config.h"
 #include "readcxt.h"
 
-void
-print_usage (void)
-{
-    printf ("Usage: cms_to_cxt directory output_file.cxt x_adj y_adj\n");
-}
-
 /* Modified from ITK source code, function RegularExpressionSeriesFileNames::
    GetFileNames() */
 struct lt_pair_numeric_string_string
@@ -43,7 +37,7 @@ struct lt_pair_alphabetic_string_string
     }
 };
 
-void
+static void
 get_file_names (std::vector<std::pair<std::string,std::string> > *file_names,
 		const char *input_dir, const char *regular_expression)
 {
@@ -95,7 +89,7 @@ get_file_names (std::vector<std::pair<std::string,std::string> > *file_names,
     }
 }
 
-void
+static void
 add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 {
     FILE *fp;
@@ -153,7 +147,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
     fclose (fp);
 }
 
-void
+static void
 add_cms_structure (Cxt_structure_list *structures, const char *filename, 
 		   float z_loc, float x_adj, float y_adj)
 {
@@ -253,9 +247,10 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 }
 
 void
-do_cms_to_cxt (char *input_dir, char *output_fn, float x_adj, float y_adj)
+xio_load_structures (Cxt_structure_list *structures, char *input_dir, 
+		     float x_adj, float y_adj)
 {
-    Cxt_structure_list structures;
+    
     const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
 
     /* Get the index file */
@@ -274,8 +269,8 @@ do_cms_to_cxt (char *input_dir, char *output_fn, float x_adj, float y_adj)
     }
 
     /* Load the index file */
-    cxt_initialize (&structures);
-    add_cms_contournames (&structures, index_file.c_str());
+    cxt_initialize (structures);
+    add_cms_contournames (structures, index_file.c_str());
 
     /* Iterate through filenames, adding data to CXT */
     std::vector<std::pair<std::string,std::string> >::iterator it;
@@ -284,31 +279,8 @@ do_cms_to_cxt (char *input_dir, char *output_fn, float x_adj, float y_adj)
 	const char *filename = (*it).first.c_str();
 	float z_loc = atof ((*it).second.c_str());
 	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (&structures, filename, z_loc, x_adj, y_adj);
+	add_cms_structure (structures, filename, z_loc, x_adj, y_adj);
 	++it;
     }
-
-    /* Write out the cxt */
-    cxt_write (&structures, output_fn);
 }
 
-int 
-main (int argc, char* argv[]) 
-{
-    char *input_dir, *output_fn;
-    float x_adj = 0.0, y_adj = 0.0;
-
-    if (argc != 5) {
-	print_usage ();
-	return 1;
-    }
-
-    input_dir = argv[1];
-    output_fn = argv[2];
-    x_adj = atof (argv[3]);
-    y_adj = atof (argv[4]);
-
-    do_cms_to_cxt (input_dir, output_fn, x_adj, y_adj);
-
-    return 0;
-}
