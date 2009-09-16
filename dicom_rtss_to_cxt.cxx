@@ -74,7 +74,7 @@ parse_args (Program_parms* parms, int argc, char* argv[])
     }
     strncpy (parms->rtss_fn, argv[0], _MAX_PATH);
 
-    if (!parms->output_fn) {
+    if (!parms->output_fn[0]) {
 	strncpy (parms->output_fn, "output.cxt", _MAX_PATH);
     }
 }
