@@ -64,7 +64,8 @@ void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn);
 plastimatch1_EXPORT
 void
-cxt_write (Cxt_structure_list* structures, const char* cxt_fn);
+cxt_write (Cxt_structure_list* structures, const char* cxt_fn, 
+	   bool prune_empty);
 plastimatch1_EXPORT
 void
 cxt_debug_structures (Cxt_structure_list* structures);

@@ -325,7 +325,8 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
 plastimatch1_EXPORT
 void
-cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
+cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
+	   bool prune_empty)
 {
     int i;
     FILE *fp;
@@ -386,7 +387,13 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
     fprintf (fp, "ROI_NAMES\n");
     for (i = 0; i < structures->num_structures; i++) {
 	Cxt_structure *curr_structure = &structures->slist[i];
-	fprintf (fp, "%d|%s|%s\n", curr_structure->id, "255\\0\\0", curr_structure->name);
+	if (prune_empty && curr_structure->num_contours <= 0) {
+	    continue;
+	}
+	fprintf (fp, "%d|%s|%s\n", curr_structure->id, 
+		 curr_structure->color 
+		 ? (const char*) curr_structure->color->data : "255\\0\\0", 
+		 curr_structure->name);
     }
     fprintf (fp, "END_OF_ROI_NAMES\n");
 
@@ -394,6 +401,9 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
     for (i = 0; i < structures->num_structures; i++) {
 	int j;
 	Cxt_structure *curr_structure = &structures->slist[i];
+	if (prune_empty && curr_structure->num_contours <= 0) {
+	    continue;
+	}
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    int k;
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
@@ -429,16 +439,56 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn)
     fclose (fp);
 }
 
+static void
+cxt_polyline_free (Cxt_polyline* polyline)
+{
+    bdestroy (polyline->ct_slice_uid);
+    free (polyline->x);
+    free (polyline->y);
+    free (polyline->z);
+
+    polyline->slice_no = -1;
+    polyline->ct_slice_uid = 0;
+    polyline->num_vertices = 0;
+    polyline->x = 0;
+    polyline->y = 0;
+    polyline->z = 0;
+}
+
+static void
+cxt_structure_free (Cxt_structure* structure)
+{
+    int i;
+    bdestroy (structure->color);
+    for (i = 0; i < structure->num_contours; i++) {
+	cxt_polyline_free (&structure->pslist[i]);
+    }
+    free (structure->pslist);
+
+    structure->name[0] = 0;
+    structure->color = 0;
+    structure->id = -1;
+    structure->num_contours = 0;
+    structure->pslist = 0;
+}
+
 plastimatch1_EXPORT
 void
 cxt_destroy (Cxt_structure_list* structures)
 {
+    int i;
+
     bdestroy (structures->ct_series_uid);
     bdestroy (structures->patient_name);
     bdestroy (structures->patient_id);
     bdestroy (structures->patient_sex);
     bdestroy (structures->study_id);
 
-    /* GCS FIX: This leaks memory */
-    memset (structures, 0, sizeof (Cxt_structure_list));
+    for (i = 0; i < structures->num_structures; i++) {
+	cxt_structure_free (&structures->slist[i]);
+    }
+    free (structures->slist);
+
+    cxt_initialize (structures);
 }
+

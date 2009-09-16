@@ -107,7 +107,7 @@ do_xio_to_cxt (Program_parms *parms)
     }
 
     /* Write out the cxt */
-    cxt_write (&structures, parms->output_cxt_fn);
+    cxt_write (&structures, parms->output_cxt_fn, true);
 }
 
 int 
