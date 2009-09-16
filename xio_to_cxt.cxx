@@ -83,6 +83,7 @@ parse_args (Program_parms* parms, int argc, char* argv[])
     argv += optind;
     if (argc != 1) {
 	print_usage ();
+	exit (1);
     }
     strncpy (parms->xio_dir, argv[0], _MAX_PATH);
 
@@ -96,6 +97,7 @@ do_xio_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
 
+    /* Load from xio */
     xio_load_structures (&structures, parms->xio_dir, parms->x_adj, 
 			 parms->y_adj);
 
