@@ -5,7 +5,7 @@
 #define _xio_load_h
 
 #include "plm_config.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 
 void
 xio_load_structures (Cxt_structure_list *structures, char *input_dir, 

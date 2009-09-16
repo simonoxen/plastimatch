@@ -524,6 +524,7 @@ IF(F2C_LIBRARY)
 ENDIF(F2C_LIBRARY)
 
 SET(PLASTIMATCH_LIBRARY_SRC
+	cxt_io.cxx cxt_io.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
@@ -545,7 +546,6 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	plm_registration.h 
 	plm_version.h 
 	print_and_exit.cxx print_and_exit.h 
-	readcxt.cxx readcxt.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h

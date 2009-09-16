@@ -15,7 +15,7 @@
 #include "print_and_exit.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 
 plastimatch1_EXPORT
 void

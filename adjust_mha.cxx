@@ -63,9 +63,6 @@ void
 parse_args (Adjust_Mha_Parms* parms, int argc, char* argv[])
 {
     int ch;
-    int have_offset = 0;
-    int have_spacing = 0;
-    int have_dims = 0;
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },

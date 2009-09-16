@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _readcxt_h_
-#define _readcxt_h_
+#ifndef _cxt_io_h_
+#define _cxt_io_h_
 
 #include "bstrlib.h"
 #define CXT_BUFLEN 2048

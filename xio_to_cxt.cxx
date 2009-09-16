@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "plm_path.h"
 #include "getopt.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 #include "xio_load.h"
 
 class Program_parms {

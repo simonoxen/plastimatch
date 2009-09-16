@@ -15,7 +15,7 @@
 #include "bstrlib.h"
 
 #include "plm_config.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 
 /* Modified from ITK source code, function RegularExpressionSeriesFileNames::
    GetFileNames() */

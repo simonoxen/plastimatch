@@ -6,7 +6,7 @@
 #include <string.h>
 #include "plm_config.h"
 #include "bstrlib.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 
 plastimatch1_EXPORT
 void

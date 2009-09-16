@@ -5,7 +5,7 @@
 #define _gdcm_rtss_h_
 
 #include "plm_config.h"
-#include "readcxt.h"
+#include "cxt_io.h"
 
 #if defined __cplusplus
 extern "C" {
