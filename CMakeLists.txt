@@ -524,6 +524,7 @@ IF(F2C_LIBRARY)
 ENDIF(F2C_LIBRARY)
 
 SET(PLASTIMATCH_LIBRARY_SRC
+	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
