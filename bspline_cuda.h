@@ -38,6 +38,15 @@ extern "C" {
     };
 
 
+    void bspline_cuda_score_i_mse(BSPLINE_Parms* parms,
+			  			Bspline_state *bst,
+						BSPLINE_Xform* bxf,
+						Volume* fixed,
+						Volume* moving,
+						Volume* moving_grad,
+						Dev_Pointers_Bspline* dev_ptrs);
+
+
     void bspline_cuda_score_h_mse(BSPLINE_Parms* parms,
 			  			Bspline_state *bst,
 						BSPLINE_Xform* bxf,
@@ -98,7 +107,16 @@ extern "C" {
     // Simple utility function to check for CUDA runtime errors.
     void checkCUDAError(const char *msg);  
 
-    // Initialize the GPU to execute bspline_cuda_score_g_mse().
+    // Initialize the GPU to execute bspline_cuda_score_i_mse().
+    void bspline_cuda_initialize_i(
+				   Dev_Pointers_Bspline *dev_ptrs,
+				   Volume *fixed,
+				   Volume *moving,
+				   Volume *moving_grad,
+				   BSPLINE_Xform *bxf,
+				   BSPLINE_Parms *parms);
+
+    // Initialize the GPU to execute bspline_cuda_score_h_mse().
     void bspline_cuda_initialize_h(
 				   Dev_Pointers_Bspline *dev_ptrs,
 				   Volume *fixed,
@@ -160,6 +178,15 @@ extern "C" {
 
     void bspline_cuda_copy_grad_to_host(
 					float* host_grad);
+
+    void bspline_cuda_i_stage_1(
+		   Volume* fixed,
+		   Volume* moving,
+		   Volume* moving_grad,
+		   BSPLINE_Xform* bxf,
+		   BSPLINE_Parms* parms,
+		   Dev_Pointers_Bspline* dev_ptrs);
+
 
     void bspline_cuda_h_stage_1(
 		   Volume* fixed,
@@ -246,6 +273,19 @@ extern "C" {
 				      int *volume_dim,
 				      float *host_score);
 
+    void bspline_cuda_i_stage_2(
+			BSPLINE_Parms* parms,
+			BSPLINE_Xform* bxf,
+			Volume* fixed,
+			int* vox_per_rgn,
+			int* volume_dim,
+			float* host_score,
+			float* host_grad,
+			float* host_grad_mean,
+			float* host_grad_norm,
+			Dev_Pointers_Bspline* dev_ptrs);
+
+
     void bspline_cuda_h_stage_2(
 			BSPLINE_Parms* parms,
 			BSPLINE_Xform* bxf,
@@ -311,6 +351,8 @@ extern "C" {
 					    float *host_grad_norm,
 					    float *host_grad_mean);
 
+    void bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs);
+
     void bspline_cuda_clean_up_h(Dev_Pointers_Bspline* dev_ptrs);
 
     void bspline_cuda_clean_up_g();
@@ -329,7 +371,11 @@ extern "C" {
 
     void CUDA_deinterleave( int num_values, float* input, float* out_x, float* out_y, float* out_z);
 
+    void CUDA_pad_64( float** input, int* vol_dims, int* tile_dims);
+
     void CUDA_pad( float** input, int* vol_dims, int* tile_dims);
+
+    void CUDA_bspline_mse_2_condense_64( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
     void CUDA_bspline_mse_2_condense( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 

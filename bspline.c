@@ -1364,7 +1364,7 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 		 m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
 		 fxs[0], fxs[1]);
     }
-
+/*
     if (j_hist[j_idxs[0]] < j_hist_thresh) {
 	dS_dP_0 = 0.0f;
     } else {
@@ -1380,7 +1380,7 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
     if (debug) {
 	fprintf (stderr, "dS_dP %g = %g %g\n", dS_dP, dS_dP_0, dS_dP_1);
     }
-
+*/
     return dS_dP;
 }
 
@@ -2927,8 +2927,11 @@ bspline_score (BSPLINE_Parms *parms,
 	case 'h':
 	    bspline_cuda_score_h_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
+	case 'i':
+	    bspline_cuda_score_i_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    break;
 	default:
-	    bspline_cuda_score_h_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    bspline_cuda_score_i_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;
@@ -3088,8 +3091,11 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'g':
 	    bspline_cuda_initialize_g (fixed, moving, moving_grad, bxf, parms);
 	    break;
-	default:
+	case 'h':
 	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    break;
+	default:
+	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	}
     }
 #endif
@@ -3127,8 +3133,11 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'g':
 	    bspline_cuda_clean_up_g ();
 	    break;
-	default:
+	case 'h':
 	    bspline_cuda_clean_up_h (dev_ptrs);
+	    break;
+	default:
+	    bspline_cuda_clean_up_i (dev_ptrs);
 	}
     }
 #endif
