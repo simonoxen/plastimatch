@@ -11541,7 +11541,7 @@ void CUDA_bspline_mse_2_condense_64(
 	int Grid_x = 0;
 	int Grid_y = 0;
 
-	int num_block = num_tiles;
+	int num_blocks = num_tiles;
 
 
 	// *****
