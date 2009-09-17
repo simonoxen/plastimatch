@@ -38,6 +38,24 @@ extern "C" {
     };
 
 
+    void bspline_cuda_j_stage_1 (Volume* fixed,
+				Volume* moving,
+				Volume* moving_grad,
+				BSPLINE_Xform* bxf,
+				BSPLINE_Parms* parms,
+				Dev_Pointers_Bspline* dev_ptrs);
+
+
+    void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
+			  			Bspline_state *bst,
+						BSPLINE_Xform* bxf,
+						Volume* fixed,
+						Volume* moving,
+						Volume* moving_grad,
+						Dev_Pointers_Bspline* dev_ptrs);
+
+
+
     void bspline_cuda_score_i_mse(BSPLINE_Parms* parms,
 			  			Bspline_state *bst,
 						BSPLINE_Xform* bxf,
@@ -106,6 +124,15 @@ extern "C" {
 
     // Simple utility function to check for CUDA runtime errors.
     void checkCUDAError(const char *msg);  
+    
+    // Initialize the GPU to execute bspline_cuda_score_j_mse().
+    void bspline_cuda_initialize_j(
+				   Dev_Pointers_Bspline *dev_ptrs,
+				   Volume *fixed,
+				   Volume *moving,
+				   Volume *moving_grad,
+				   BSPLINE_Xform *bxf,
+				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_i_mse().
     void bspline_cuda_initialize_i(
@@ -351,6 +378,8 @@ extern "C" {
 					    float *host_grad_norm,
 					    float *host_grad_mean);
 
+    void bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs);
+
     void bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs);
 
     void bspline_cuda_clean_up_h(Dev_Pointers_Bspline* dev_ptrs);
@@ -375,13 +404,17 @@ extern "C" {
 
     void CUDA_pad( float** input, int* vol_dims, int* tile_dims);
 
+    void CUDA_bspline_mse_2_condense_64_texfetch( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
+
     void CUDA_bspline_mse_2_condense_64( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
     void CUDA_bspline_mse_2_condense( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
     void CUDA_bspline_mse_2_reduce( Dev_Pointers_Bspline* dev_ptrs, int num_knots);
 
-
+    float CPU_obtain_spline_basis_function( int t_idx, 
+					  int vox_idx, 
+					  int vox_per_rgn);
     
 
 #if defined __cplusplus

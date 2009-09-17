@@ -103,6 +103,97 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_score_j_mse()
+//
+////////////////////////////////////////////////////////////////////////////////
+void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
+			  			Bspline_state *bst,
+						BSPLINE_Xform* bxf,
+						Volume* fixed,
+						Volume* moving,
+						Volume* moving_grad,
+						Dev_Pointers_Bspline* dev_ptrs)
+{
+
+
+	// --- DECLARE LOCAL VARIABLES ------------------------------
+	BSPLINE_Score* ssd;	// Holds the SSD "Score" information
+	int num_vox;		// Holds # of voxels in the fixed volume
+	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
+	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
+	clock_t start_clock;	// Timer Start Count
+	clock_t stop_clock;	// Timer Stop  Count
+
+	static int it=0;	// Holds Iteration Number
+	char debug_fn[1024];	// Debug message buffer
+	FILE* fp;		// File Pointer to Debug File
+	// ----------------------------------------------------------
+
+
+	// --- INITIALIZE LOCAL VARIABLES ---------------------------
+	ssd = &bst->ssd;
+	num_vox = fixed->npix;
+	
+	if (parms->debug)
+	{
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+	}
+	// ----------------------------------------------------------
+
+
+	start_clock = clock();	// <=== START TIMING HERE
+
+	
+	// --- INITIALIZE GPU MEMORY --------------------------------
+	bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
+	bspline_cuda_h_clear_score(dev_ptrs);
+	bspline_cuda_h_clear_grad(dev_ptrs);
+	// ----------------------------------------------------------
+
+
+	
+	// --- LAUNCH STUB FUNCTIONS --------------------------------
+
+	// Populate the score, dc_dv, and gradient
+	bspline_cuda_j_stage_1(
+		fixed,
+		moving,
+		moving_grad,
+		bxf,
+		parms,
+		dev_ptrs);
+
+
+	// Calculate the score and gradient
+	// via sum reduction
+	bspline_cuda_i_stage_2(
+		parms,
+		bxf,
+		fixed,
+		bxf->vox_per_rgn,
+		fixed->dim,
+		&(ssd->score),
+		ssd->grad,
+		&ssd_grad_mean,
+		&ssd_grad_norm,
+		dev_ptrs);
+
+	// ----------------------------------------------------------
+
+
+	stop_clock = clock();	// <=== STOP TIMING HERE
+
+	
+	// --- USER FEEDBACK ----------------------------------------
+	printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
+		ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
+		(double)(stop_clock - start_clock)/CLOCKS_PER_SEC);
+	// ----------------------------------------------------------
+
+}
+////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_cuda_score_i_mse()

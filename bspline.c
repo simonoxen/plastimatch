@@ -2931,7 +2931,7 @@ bspline_score (BSPLINE_Parms *parms,
 	    bspline_cuda_score_i_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	default:
-	    bspline_cuda_score_i_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    bspline_cuda_score_j_mse(parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;
@@ -3094,8 +3094,12 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'h':
 	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
-	default:
+	case 'i':
 	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    break;
+	default:
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+
 	}
     }
 #endif
@@ -3136,8 +3140,11 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'h':
 	    bspline_cuda_clean_up_h (dev_ptrs);
 	    break;
-	default:
+	case 'i':
 	    bspline_cuda_clean_up_i (dev_ptrs);
+	    break;
+	default:
+	    bspline_cuda_clean_up_j (dev_ptrs);
 	}
     }
 #endif

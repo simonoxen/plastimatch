@@ -32,6 +32,20 @@ __global__ void kernel_row_to_tile_major(
 			int3 tile_dim);
 
 
+__global__ void kernel_bspline_mse_2_condense_64_texfetch(
+				float* cond_x,		// Return: condensed dc_dv_x values
+				float* cond_y,		// Return: condensed dc_dv_y values
+				float* cond_z,		// Return: condensed dc_dv_z values
+				float* dc_dv_x,		// Input : dc_dv_x values
+				float* dc_dv_y,		// Input : dc_dv_y values
+				float* dc_dv_z,		// Input : dc_dv_z values
+				int* LUT_Tile_Offsets,	// Input : tile offsets
+				int* LUT_Knot,		// Input : linear knot indicies
+				int pad,		// Input : amount of tile padding
+				int4 tile_dim,		// Input : dims of tiles
+				float one_over_six);	// Input : Precomputed since GPU division is slow
+
+
 __global__ void kernel_bspline_mse_2_condense_64(
 				float* cond_x,		// Return: condensed dc_dv_x values
 				float* cond_y,		// Return: condensed dc_dv_y values
