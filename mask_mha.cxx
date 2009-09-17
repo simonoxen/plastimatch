@@ -27,8 +27,8 @@ merge_pixels(ShortImageType::Pointer im_out, ShortImageType::Pointer im_1,
     ShortImageType::RegionType r_1 = im_1->GetLargestPossibleRegion();
     UCharImageType::RegionType r_2 = im_2->GetLargestPossibleRegion();
 
-    const ShortImageType::IndexType& st = r_1.GetIndex();
-    const ShortImageType::SizeType& sz = r_1.GetSize();
+    //const ShortImageType::IndexType& st = r_1.GetIndex();
+    //const ShortImageType::SizeType& sz = r_1.GetSize();
     //const InputImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
     const ShortImageType::PointType& og = im_1->GetOrigin();
     const ShortImageType::SpacingType& sp = im_1->GetSpacing();
@@ -62,8 +62,8 @@ mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
     DeformationFieldType::RegionType r_1 = vf->GetLargestPossibleRegion();
     UCharImageType::RegionType r_2 = mask->GetLargestPossibleRegion();
 
-    const DeformationFieldType::IndexType& st = r_1.GetIndex();
-    const DeformationFieldType::SizeType& sz = r_1.GetSize();
+    //const DeformationFieldType::IndexType& st = r_1.GetIndex();
+    //const DeformationFieldType::SizeType& sz = r_1.GetSize();
     const DeformationFieldType::PointType& og = vf->GetOrigin();
     const DeformationFieldType::SpacingType& sp = vf->GetSpacing();
     
