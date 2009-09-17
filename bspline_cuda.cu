@@ -1484,10 +1484,7 @@ __global__ void kernel_bspline_mse_2_condense_64(
 	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
-	int myGlobalWarpPairNumber = threadIdxInGrid / 64;			// Warp Pair #
-	int myLocalWarpNumber = threadIdxInBlock / 32;				// Either 0 or 1
-	int myWarpId_inPair = threadIdxInGrid - 64*myGlobalWarpPairNumber;	// From 0 to 63
-	int warpsPerBlock = threadsPerBlock / 32;				// Hardcoded to 2
+	int myWarpId_inPair = threadIdxInGrid - 64*blockIdxInGrid;		// From 0 to 63
 	// --------------------------------------------------------
 
 
@@ -1512,7 +1509,7 @@ __global__ void kernel_bspline_mse_2_condense_64(
 
 	// First, get the offset of where our tile starts in memory.
 //	tileOffset = tex1Dfetch(tex_LUT_Offsets, myGlobalWarpNumber);
-	tileOffset = LUT_Tile_Offsets[myGlobalWarpPairNumber];
+	tileOffset = LUT_Tile_Offsets[blockIdxInGrid];
 
 	// Main Loop for Warp Work
 	// (Here we condense a tile into 64x3 floats)
@@ -1620,7 +1617,7 @@ __global__ void kernel_bspline_mse_2_condense_64(
 	// ----------------------------------------------------------
 	// HERE, EACH WARP OPERATES ON A SINGLE TILE'S SET OF 64!!
 	// ----------------------------------------------------------
-	tileOffset = 64*myGlobalWarpPairNumber;
+	tileOffset = 64*blockIdxInGrid;
 
 	tile_pos.x = 63 - myWarpId_inPair;
 
@@ -11532,6 +11529,7 @@ void CUDA_bspline_mse_2_condense_64(
 
 	int pad = 64 - (vox_per_region.w % 64);
 
+	vox_per_region.w += pad;
 
 	// --- INITIALIZE GRID --------------------------------------
 	// LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
@@ -11543,7 +11541,7 @@ void CUDA_bspline_mse_2_condense_64(
 	int Grid_x = 0;
 	int Grid_y = 0;
 
-	int num_blocks = (num_tiles+warps_per_block-1) / warps_per_block;
+	int num_block = num_tiles;
 
 
 	// *****
