@@ -1364,7 +1364,7 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
 		 m_idxs[0], m_idxs[1], m_hist[m_idxs[0]], m_hist[m_idxs[1]],
 		 fxs[0], fxs[1]);
     }
-/*
+
     if (j_hist[j_idxs[0]] < j_hist_thresh) {
 	dS_dP_0 = 0.0f;
     } else {
@@ -1380,7 +1380,7 @@ compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* 
     if (debug) {
 	fprintf (stderr, "dS_dP %g = %g %g\n", dS_dP, dS_dP_0, dS_dP_1);
     }
-*/
+
     return dS_dP;
 }
 
