@@ -11,7 +11,9 @@
 #include "gdcm_rtss.h"
 #include "plm_path.h"
 #include "getopt.h"
+#include "cxt_extract.h"
 #include "cxt_io.h"
+#include "itk_image.h"
 
 class Program_parms {
 public:
@@ -30,9 +32,13 @@ void
 do_mha_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
+    FloatImageType::Pointer image;
 
     cxt_initialize (&structures);
 
+    image = load_float (parms->mha_fn, 0);
+
+    cxt_extract (&structures, image);
 
     cxt_destroy (&structures);
 }

@@ -554,6 +554,12 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	xform.cxx xform.h 
 	)
 
+IF(ITK_USE_REVIEW)
+  SET(PLASTIMATCH_LIBRARY_SRC
+    ${PLASTIMATCH_LIBRARY_SRC}
+    cxt_extract.cxx cxt_extract.h)
+ENDIF(ITK_USE_REVIEW)
+
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
@@ -932,8 +938,10 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  IF(ITK_USE_REVIEW)
+    PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
+      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  ENDIF(ITK_USE_REVIEW)
   PLM_ADD_EXECUTABLE(mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_vox mha_to_vox.c
