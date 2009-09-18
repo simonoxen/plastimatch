@@ -31,6 +31,7 @@ typedef struct program_parms Program_Parms;
 struct program_parms {
     char labelmap_fn[_MAX_PATH];
     char xormap_fn[_MAX_PATH];
+    char xorlist_fn[_MAX_PATH];
     char* cxt_fn;
     char* prefix;
 };
@@ -43,6 +44,7 @@ print_usage (void)
     printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
     printf ("Options:\n");
     printf ("  --xormap   filename     Generate multi-structure map\n");
+    printf ("  --xorlist  filename     File with xormap structure names\n");
     printf ("  --labelmap filename     Generate Slicer3 labelmap\n");
     exit (-1);
 }
@@ -54,11 +56,13 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "labelmap",       required_argument,      NULL,           1 },
 	{ "xormap",         required_argument,      NULL,           2 },
+	{ "xorlist",        required_argument,      NULL,           3 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
     parms->labelmap_fn[0] = 0;
     parms->xormap_fn[0] = 0;
+    parms->xorlist_fn[0] = 0;
 
     while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
@@ -67,6 +71,9 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	    break;
 	case 2:
 	    strncpy (parms->xormap_fn, optarg, _MAX_PATH);
+	    break;
+	case 3:
+	    strncpy (parms->xorlist_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;
@@ -109,6 +116,8 @@ main (int argc, char* argv[])
     int slice_voxels = 0;
     int sno = 0;		/* Structure number */
 
+    FILE *xorlist_fp;
+
     parse_args (parms, argc, argv);
 
     structures = (Cxt_structure_list*) malloc (sizeof(Cxt_structure_list));
@@ -128,6 +137,15 @@ main (int argc, char* argv[])
     spacing[1] = structures->spacing[1];
     slice_voxels = dim[0] * dim[1];
 
+    if (parms->xorlist_fn) {
+	xorlist_fp = fopen (parms->xorlist_fn, "w");
+	if (!xorlist_fp) {
+	    fprintf (stderr, "Error opening file for write: %s\n",
+		     parms->xorlist_fn);
+	    exit (-1);
+	}
+    }
+
     acc_img = (unsigned char*) malloc (slice_voxels * sizeof(unsigned char));
 
     /* Create output volume for mask image.  This is reused for each 
@@ -135,7 +153,7 @@ main (int argc, char* argv[])
     uchar_vol = volume_create (structures->dim, structures->offset, 
 			       structures->spacing, PT_UCHAR, 0, 0);
     if (uchar_vol == 0) {
-        fprintf (stderr, "ERROR: failed in allocating the volume");
+	fprintf (stderr, "ERROR: failed in allocating the volume");
     }
     uchar_img = (unsigned char*) uchar_vol->img;
 
@@ -158,8 +176,8 @@ main (int argc, char* argv[])
     }
 
     for (int j = 0; j < structures->num_structures; j++) {
-        curr_structure = &structures->slist[j];
-        char fn[BUFLEN] = "";
+	curr_structure = &structures->slist[j];
+	char fn[BUFLEN] = "";
 
 	if (parms->prefix) {
 	    strcat (fn, parms->prefix);
@@ -176,7 +194,7 @@ main (int argc, char* argv[])
 	}
 
 	for (int i = 0; i < curr_structure->num_contours; i++) {
-            unsigned char* uchar_slice;
+	    unsigned char* uchar_slice;
 
 	    curr_contour = &curr_structure->pslist[i];
 
@@ -184,9 +202,9 @@ main (int argc, char* argv[])
 		continue;
 	    }
 
-            memset (acc_img, 0, dim[0] * dim[1] * sizeof(unsigned char));
-            render_slice_polyline (acc_img, dim, spacing, offset,
-                                   curr_contour->num_vertices, 
+	    memset (acc_img, 0, dim[0] * dim[1] * sizeof(unsigned char));
+	    render_slice_polyline (acc_img, dim, spacing, offset,
+				   curr_contour->num_vertices, 
 				   curr_contour->x, curr_contour->y);
 
 	    /* Copy from acc_img into mask image */
@@ -216,7 +234,16 @@ main (int argc, char* argv[])
 		    }
 		}
 	    }
-        }
+	}
+
+	if (parms->xorlist_fn[0]) {
+	    fprintf (xorlist_fp, "%d|%s|%s\n",
+		     sno, 
+		     (curr_structure->color 
+		      ? (const char*) curr_structure->color->data : "\255\\0\\0"),
+		     curr_structure->name);
+	}
+
 	if (parms->prefix) {
 	    printf ("writing file: %s\n", fn);
 	    write_mha (fn, uchar_vol);
@@ -232,6 +259,10 @@ main (int argc, char* argv[])
 	printf ("writing file: %s\n", parms->xormap_fn);
 	write_mha (parms->xormap_fn, xormap_vol);
 	volume_free (xormap_vol);
+    }
+    if (parms->xorlist_fn[0]) {
+	printf ("writing file: %s\n", parms->xorlist_fn);
+	fclose (xorlist_fp);
     }
     if (parms->prefix) {
 	volume_free (uchar_vol);
