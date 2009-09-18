@@ -9,8 +9,11 @@
 #include "slice_extract.h"
 
 template<class T>
-typename itk::Image<T,2>::Pointer slice_extract (typename itk::Image<T,3>::Pointer reader, 
-						 int index, T)
+typename itk::Image<T,2>::Pointer slice_extract 
+(
+ typename itk::Image<T,3>::Pointer reader, 
+ int index, 
+ T)
 {
     typedef typename itk::Image<T,3> inImgType;
     typedef typename itk::Image<T,2> outImgType;
@@ -62,5 +65,6 @@ typename itk::Image<T,2>::Pointer slice_extract (typename itk::Image<T,3>::Point
 /* RMK: Visual studio 2005 without service pack requires <float> specifier
    on the explicit extantiations.  The current hypothesis is that this 
    is because the template is nested. */
-template plastimatch1_EXPORT itk::Image<float,2>::Pointer slice_extract<float> (itk::Image<float,3>::Pointer reader, int index, float);
 template plastimatch1_EXPORT itk::Image<unsigned char,2>::Pointer slice_extract<unsigned char> (itk::Image<unsigned char,3>::Pointer reader, int index, unsigned char);
+template plastimatch1_EXPORT itk::Image<unsigned long,2>::Pointer slice_extract<unsigned long> (itk::Image<unsigned long,3>::Pointer reader, int index, unsigned long);
+template plastimatch1_EXPORT itk::Image<float,2>::Pointer slice_extract<float> (itk::Image<float,3>::Pointer reader, int index, float);

@@ -32,11 +32,11 @@ void
 do_mha_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
-    FloatImageType::Pointer image;
+    ULongImageType::Pointer image;
 
     cxt_initialize (&structures);
 
-    image = load_float (parms->mha_fn, 0);
+    image = load_ulong (parms->mha_fn, 0);
 
     cxt_extract (&structures, image);
 
