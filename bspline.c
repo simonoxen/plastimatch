@@ -47,6 +47,13 @@
 #endif
 #include "mathutil.h"
 
+// Fix for logf() under MSVC 2005 32-bit
+// (math.h has an erronous semicolon)
+#if !defined (_M_IA64) && !defined (_M_AMD64)
+#undef logf
+#define logf(x)     ((float)log((double)(x)))
+#endif
+
 
 gpuit_EXPORT
 void

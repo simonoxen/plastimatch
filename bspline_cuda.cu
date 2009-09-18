@@ -2195,9 +2195,7 @@ __global__ void kernel_bspline_mse_2_condense(
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
 	int myGlobalWarpNumber = threadIdxInGrid / 32;	// Tile #
-	int myLocalWarpNumber = threadIdxInBlock / 32;	// Currently hardcoded to 0
 	int myWarpId = threadIdxInGrid - 32*myGlobalWarpNumber;	// 0 to 31
-	int warpsPerBlock = threadsPerBlock / 32;
 	// --------------------------------------------------------
 
 
@@ -2412,9 +2410,7 @@ __global__ void kernel_bspline_mse_2_reduce(
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
 	int myGlobalWarpPairNumber = threadIdxInGrid / 64;	// Knot Cluster #
-	int myLocalWarpNumber = threadIdxInBlock / 32;
 	int myWarpId_inPair = threadIdxInGrid - 64*myGlobalWarpPairNumber;	// 0 to 63
-	int warpsPerBlock = threadsPerBlock / 32;	// Hardcoded to 2
 	// --------------------------------------------------------
 
 	// -- Setup Shared Memory ---------------------------------
@@ -7957,7 +7953,6 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	// Keep track of how much memory we allocated
 	// in the GPU global memory.
 	int GPU_Memory_Bytes = 0;
-	int temp;
 
 	// Tell the user we are busy copying information
 	// to the device memory.
@@ -8220,9 +8215,9 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	// --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
 	int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
 
-	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+//	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
 	int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-	int pad = 64 - (vox_per_tile % 64);
+//	int pad = 64 - (vox_per_tile % 64);
 
 	dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
 
@@ -8374,7 +8369,7 @@ void bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
 	// Keep track of how much memory we allocated
 	// in the GPU global memory.
 	int GPU_Memory_Bytes = 0;
-	int temp;
+//	int temp;
 
 	// Tell the user we are busy copying information
 	// to the device memory.
@@ -8637,9 +8632,9 @@ void bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
 	// --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
 	int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
 
-	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+//	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
 	int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-	int pad = 64 - (vox_per_tile % 64);
+//	int pad = 64 - (vox_per_tile % 64);
 
 	dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
 
@@ -8745,7 +8740,7 @@ void bspline_cuda_initialize_h(Dev_Pointers_Bspline* dev_ptrs,
 	// Keep track of how much memory we allocated
 	// in the GPU global memory.
 	int GPU_Memory_Bytes = 0;
-	int temp;
+//	int temp;
 
 	// Tell the user we are busy copying information
 	// to the device memory.
@@ -9008,9 +9003,9 @@ void bspline_cuda_initialize_h(Dev_Pointers_Bspline* dev_ptrs,
 	// --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
 	int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
 
-	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+//	int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
 	int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-	int pad = 32 - (vox_per_tile % 32);
+//	int pad = 32 - (vox_per_tile % 32);
 
 	dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
 
@@ -9877,8 +9872,8 @@ void bspline_cuda_calculate_run_kernels_g(
 					  int run_low_mem_version, 
 					  int debug)
 {
-    FILE *fp;
-    char debug_fn[1024];
+//    FILE *fp;
+//    char debug_fn[1024];
 
 #if defined (_WIN32)
     LARGE_INTEGER clock_count, clock_frequency;
