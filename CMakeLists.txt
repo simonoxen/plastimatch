@@ -670,11 +670,14 @@ SET(HND_TO_PFM_SRC
 SET(MASK_MHA_SRC
 	mask_mha.cxx
 	)
-SET(MHA_TO_RTOG_DOSE_SRC
-	mha_to_rtog_dose.cxx
-	)
 SET(MHA_TO_CMS_DOSE_SRC
 	mha_to_cms_dose.c
+	)
+SET(MHA_TO_CXT_SRC
+	mha_to_cxt.cxx
+	)
+SET(MHA_TO_RTOG_DOSE_SRC
+	mha_to_rtog_dose.cxx
 	)
 SET(MONDOSHOT_SRC
 	dicom_uid.cxx
@@ -760,6 +763,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
     SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
     SET(DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
+    SET(MHA_TO_CXT_SRC ${MHA_TO_CXT_SRC} getopt_long.c getopt.h)
     SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
@@ -927,6 +931,8 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(merge2 merge2.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
