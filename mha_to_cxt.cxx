@@ -36,9 +36,13 @@ do_mha_to_cxt (Program_parms *parms)
 
     cxt_initialize (&structures);
 
+    printf ("Loading input file...\n");
     image = load_ulong (parms->mha_fn, 0);
+    printf ("Done.\n");
 
     cxt_extract (&structures, image);
+
+    cxt_write (&structures, parms->output_fn, true);
 
     cxt_destroy (&structures);
 }

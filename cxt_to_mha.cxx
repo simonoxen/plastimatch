@@ -33,16 +33,17 @@ struct program_parms {
     char xormap_fn[_MAX_PATH];
     char xorlist_fn[_MAX_PATH];
     char* cxt_fn;
-    char* prefix;
+    char prefix[_MAX_PATH];
 };
 
 void
 print_usage (void)
 {
-    printf ("Usage: cxt_to_mha [options] cxt_file prefix\n");
+    printf ("Usage: cxt_to_mha [options] cxt_file\n");
     printf ("  The cxt_file is an ASCII file with the contours\n");
     printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
     printf ("Options:\n");
+    printf ("  --prefix   string       Generate one file per structure with prefix\n");
     printf ("  --xormap   filename     Generate multi-structure map\n");
     printf ("  --xorlist  filename     File with xormap structure names\n");
     printf ("  --labelmap filename     Generate Slicer3 labelmap\n");
@@ -57,12 +58,14 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	{ "labelmap",       required_argument,      NULL,           1 },
 	{ "xormap",         required_argument,      NULL,           2 },
 	{ "xorlist",        required_argument,      NULL,           3 },
+	{ "prefix",         required_argument,      NULL,           4 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
     parms->labelmap_fn[0] = 0;
     parms->xormap_fn[0] = 0;
     parms->xorlist_fn[0] = 0;
+    parms->prefix[0] = 0;
 
     while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
@@ -75,6 +78,9 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	case 3:
 	    strncpy (parms->xorlist_fn, optarg, _MAX_PATH);
 	    break;
+	case 4:
+	    strncpy (parms->prefix, optarg, _MAX_PATH);
+	    break;
 	default:
 	    break;
 	}
@@ -83,16 +89,11 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
     argc -= optind;
     argv += optind;
 
-    if (argc < 1 || argc > 2) {
+    if (argc != 1) {
 	print_usage ();
     }
 
     parms->cxt_fn = argv[0];
-    if (argc == 2) {
-	parms->prefix = argv[1];
-    } else {
-	parms->prefix = 0;
-    }
 }
 
 int
@@ -179,7 +180,7 @@ main (int argc, char* argv[])
 	curr_structure = &structures->slist[j];
 	char fn[BUFLEN] = "";
 
-	if (parms->prefix) {
+	if (parms->prefix[0]) {
 	    strcat (fn, parms->prefix);
 	    strcat (fn, "_");
 	    strcat (fn, curr_structure->name);
@@ -208,7 +209,7 @@ main (int argc, char* argv[])
 				   curr_contour->x, curr_contour->y);
 
 	    /* Copy from acc_img into mask image */
-	    if (parms->prefix) {
+	    if (parms->prefix[0]) {
 		uchar_slice = &uchar_img[curr_contour->slice_no * dim[0] * dim[1]];
 		for (int k = 0; k < slice_voxels; k++) {
 		    uchar_slice[k] ^= acc_img[k];
@@ -244,7 +245,7 @@ main (int argc, char* argv[])
 		     curr_structure->name);
 	}
 
-	if (parms->prefix) {
+	if (parms->prefix[0]) {
 	    printf ("writing file: %s\n", fn);
 	    write_mha (fn, uchar_vol);
 	}
@@ -264,7 +265,7 @@ main (int argc, char* argv[])
 	printf ("writing file: %s\n", parms->xorlist_fn);
 	fclose (xorlist_fp);
     }
-    if (parms->prefix) {
+    if (parms->prefix[0]) {
 	volume_free (uchar_vol);
     }
     free (parms);

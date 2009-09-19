@@ -243,24 +243,24 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         /* Skip contour thickness */
         while (fgetc (fp) != '|') ;
 
-        /* Num vertices */
+        /* Num vertices: required */
 	num_pt = 0;
         if (1 != fscanf (fp, "%d", &num_pt)) {
-	    //goto not_successful;
+	     goto not_successful;
         }
         fgetc (fp);
 
-        /* Slice idx */
+        /* Slice idx: optional */
 	slice_idx = -1;
         if (1 != fscanf (fp, "%d", &slice_idx)) {
-	    //goto not_successful;
+	    slice_idx = -1;
         }
         fgetc (fp);
 
-        /* Slice uid */
+        /* Slice uid: optional */
 	slice_uid[0] = 0;
         if (1 != fscanf (fp, "%1023[0-9.]", slice_uid)) {
-	    //goto not_successful;
+	    slice_uid[0] = 0;
 	}
         fgetc (fp);
 
@@ -272,6 +272,8 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	/* If there is no header line for this structure, we will 
 	   skip all contours for the structure. */
 	if (!curr_structure) {
+	    /* Skip to end of line */
+	    while (fgetc (fp) != '\n') ;
 	    continue;
 	}
 
@@ -322,9 +324,10 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     fclose (fp);
     printf ("successful!\n");
     return;
-    //not_successful:
-    //    fclose (fp);
-    //    printf ("Error parsing input file.\n");
+ not_successful:
+    fclose (fp);
+    printf ("Error parsing input file.\n");
+    exit (1);
 }
 
 plastimatch1_EXPORT

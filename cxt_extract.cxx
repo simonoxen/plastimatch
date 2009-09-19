@@ -12,6 +12,7 @@
 #include "itk_image.h"
 #include "itkImageLinearIteratorWithIndex.h"
 #include "slice_extract.h"
+#include "itkBinaryThresholdImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include "cxt_io.h"
 #include "cxt_extract.h"
@@ -21,39 +22,87 @@ void
 cxt_extract (Cxt_structure_list *structures, T image)
 {
     typedef typename T::ObjectType ImageType;
-    typedef itk::ContourExtractor2DImageFilter<ULongImage2DType> 
+    typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
 	    ContourType;
     typedef ContourType::VertexType VertexType;
     typedef itk::ImageSliceConstIteratorWithIndex<ImageType> IteratorType;
+    typedef itk::BinaryThresholdImageFilter<ULongImage2DType, 
+	    UCharImage2DType> ThresholdFilterType;
 
     IteratorType itSlice (image, image->GetLargestPossibleRegion());
+    typename ThresholdFilterType::Pointer threshold_filter 
+	    = ThresholdFilterType::New();
+    ContourType::Pointer contour = ContourType::New();
+    
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
-	
+
+    for (int j = 0; j < 10; j++) {
+	cxt_add_structure (structures, "foo", j);
+    }
+
     while (!itSlice.IsAtEnd())
     {
-	typename ImageType::IndexType k;
-	k = itSlice.GetIndex();
-	printf("%2d\n", k[2]);
-		
-	ULongImage2DType::Pointer slice;
-	slice = slice_extract (image, k[2], (unsigned long) 0);
+	typename ImageType::IndexType idx;
+	ULongImage2DType::Pointer ulong_slice;
+	UCharImage2DType::Pointer uchar_slice;
 
-	ContourType::Pointer contour = ContourType::New();
+	idx = itSlice.GetIndex();
+	ulong_slice = slice_extract (image, idx[2], (unsigned long) 0);
 
-	contour->SetContourValue(0.5);
-	contour->SetInput(slice);
+	threshold_filter->SetInput (ulong_slice);
+	threshold_filter->SetOutsideValue (0);
+	threshold_filter->SetInsideValue (1);
 		
-	try
-	{
-	    contour->Update();
-	    //std::cout << "Cerco il contorno!\n" << std::endl;
-	}
-	catch (itk::ExceptionObject &err)
-	{
-	    std::cout << "ExceptionObject caught !" << std::endl; 
-	    std::cout << err << std::endl; 
-	    return;
+	for (int j = 0; j < 10; j++) {
+	    printf("%2ld%c\n", idx[2], 'a' + j);
+	    threshold_filter->SetOutsideValue (0);
+	    threshold_filter->SetInsideValue (1);
+	    threshold_filter->SetUpperThreshold (j);
+	    threshold_filter->SetLowerThreshold (j);
+	    try {
+		threshold_filter->Update ();
+	    }
+	    catch (itk::ExceptionObject &err) {
+		std::cout << "Exception during threshold." << std::endl; 
+		std::cout << err << std::endl; 
+		return;
+	    }
+	    uchar_slice = threshold_filter->GetOutput ();
+	    contour->SetInput (uchar_slice);
+	    contour->SetContourValue (0.5);
+	    try {
+		contour->Update();
+	    }
+	    catch (itk::ExceptionObject &err) {
+		std::cout << "Exception during marching squares." 
+			  << std::endl; 
+		std::cout << err << std::endl; 
+		return;
+	    }
+
+	    /* Add marching squares output to cxt */
+	    Cxt_structure *curr_structure = &structures->slist[j];
+	    for (unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++) {
+		ContourType::VertexListConstPointer vertices 
+			= contour->GetOutput(i)->GetVertexList();
+		Cxt_polyline *curr_polyline 
+			= cxt_add_polyline (curr_structure);
+
+		curr_polyline->num_vertices = vertices->Size();
+		curr_polyline->x = (float*) 
+			malloc (vertices->Size() * sizeof(float));
+		curr_polyline->y = (float*) 
+			malloc (vertices->Size() * sizeof(float));
+		curr_polyline->z = (float*) 
+			malloc (vertices->Size() * sizeof(float));
+		for (unsigned int k = 0; k < vertices->Size(); k++) {
+		    const VertexType& vertex = vertices->ElementAt (k);
+		    curr_polyline->x[k] = vertex[0];
+		    curr_polyline->y[k] = vertex[1];
+		    curr_polyline->z[k] = idx[2];
+		}
+	    }
 	}
 
 #if defined (commentout)		

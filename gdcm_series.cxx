@@ -30,24 +30,6 @@ gdcm_series_test (char *dicom_dir)
 }
 
 static void
-print_series_ipp (gdcm::FileList *file_list)
-{
-    // For all the files of a SingleSerieUID File set
-    for (gdcm::FileList::iterator it =  file_list->begin();
-	    it != file_list->end(); 
-	    ++it)
-    {
-        double ipp[3];
-	ipp[0] = (*it)->GetXOrigin();
-	ipp[1] = (*it)->GetYOrigin();
-	ipp[2] = (*it)->GetZOrigin();
-	printf ("(%g,%g,%g)\t", ipp[0], ipp[1], ipp[2]);
-	//printf ("Name = %s\n", (*it)->GetFileName().c_str());
-    }
-    printf ("\n");
-}
-
-static void
 digest_file_list (gdcm::FileList *file_list, 
 		  double origin[3], 
 		  int dim[3], 
