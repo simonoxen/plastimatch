@@ -242,13 +242,16 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
         /* Skip contour thickness */
         while (fgetc (fp) != '|') ;
+	//printf ("%d||", struct_id); fflush (stdout);
 
         /* Num vertices: required */
 	num_pt = 0;
         if (1 != fscanf (fp, "%d", &num_pt)) {
-	     goto not_successful;
+	    //printf ("\n"); fflush (stdout);
+	    goto not_successful;
         }
         fgetc (fp);
+	//printf ("%d|", num_pt); fflush (stdout);
 
         /* Slice idx: optional */
 	slice_idx = -1;
@@ -256,6 +259,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    slice_idx = -1;
         }
         fgetc (fp);
+	//printf ("%d|", slice_idx); fflush (stdout);
 
         /* Slice uid: optional */
 	slice_uid[0] = 0;
@@ -263,15 +267,14 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    slice_uid[0] = 0;
 	}
         fgetc (fp);
-
-	
-	//printf ("%d %d %d %s\n", struct_id, num_pt, slice_idx, slice_uid);
+	//printf ("%s|", slice_uid); fflush (stdout);
 
         curr_structure = cxt_find_structure_by_id (structures, struct_id);
 
 	/* If there is no header line for this structure, we will 
 	   skip all contours for the structure. */
 	if (!curr_structure) {
+	    //printf ("\nskipping...\n");
 	    /* Skip to end of line */
 	    while (fgetc (fp) != '\n') ;
 	    continue;
@@ -300,24 +303,33 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         }
         for (k = 0; k < num_pt; k++) {
 	    long floc;
-            //printf (" --> (%5d)", k);
+            //printf ("(%5d)", k);
 	    floc = ftell (fp);
-            if (fscanf (fp, "%f\\%f\\%f", &x, &y, &z) != 3) {
+            if (fscanf (fp, "%f\\%f\\%f\\", &x, &y, &z) != 3) {
+#if defined (commentout)
 		fseek (fp, floc, SEEK_SET);
                 if (fscanf (fp, "\\%f\\%f\\%f", &x, &y, &z) != 3) {
+		    char buf1[2048];
 		    fseek (fp, floc, SEEK_SET);
-		    //printf ("\n", k);
+		    fread (buf1, 1, 2047, fp);
+		    buf1[2047] = 0;
+		    printf ("\nBUF\n%s\n", buf1);
+		    exit (1);
                     break;
                 }
+		break;
+#endif
+		goto not_successful;
             }
             curr_contour->x[k] = x;
             curr_contour->y[k] = y;
             curr_contour->z[k] = z;
-	    //printf ("%g %g %g\n", x, y, z);
+	    //printf ("[%g %g %g] ", x, y, z);
             x = 0;
             y = 0;
             z = 0;
         }
+	//printf ("|%d\n", k); fflush (stdout);
         slice_idx = 0;
         num_pt = 0;
     }

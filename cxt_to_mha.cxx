@@ -138,7 +138,7 @@ main (int argc, char* argv[])
     spacing[1] = structures->spacing[1];
     slice_voxels = dim[0] * dim[1];
 
-    if (parms->xorlist_fn) {
+    if (parms->xorlist_fn[0]) {
 	xorlist_fp = fopen (parms->xorlist_fn, "w");
 	if (!xorlist_fp) {
 	    fprintf (stderr, "Error opening file for write: %s\n",
