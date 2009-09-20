@@ -56,7 +56,7 @@ volume_create (int* dim,
     case PT_SHORT:
 	vol->pix_size = sizeof(short);
 	break;
-    case PT_UINT:
+    case PT_UINT32:
 	vol->pix_size = sizeof(uint32_t);
 	break;
     case PT_FLOAT:
@@ -131,7 +131,7 @@ volume_clone (Volume* ref)
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
-    case PT_UINT:
+    case PT_UINT32:
     case PT_FLOAT:
     case PT_VF_FLOAT_INTERLEAVED:
 	memcpy (vout->img, ref->img, ref->npix * ref->pix_size);
@@ -193,7 +193,7 @@ volume_convert_to_float (Volume* ref)
     case PT_FLOAT:
 	/* Nothing to do */
 	break;
-    case PT_UINT:
+    case PT_UINT32:
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
     default:
@@ -236,7 +236,7 @@ volume_convert_to_short (Volume* ref)
 	    free (old_img);
 	}
 	break;
-    case PT_UINT:
+    case PT_UINT32:
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
     default:
@@ -280,7 +280,7 @@ vf_convert_to_interleaved (Volume* vf)
 	break;
     case PT_UCHAR:
     case PT_SHORT:
-    case PT_UINT:
+    case PT_UINT32:
     case PT_FLOAT:
     default:
 	/* Can't convert this */
@@ -330,7 +330,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
 	break;
     case PT_UCHAR:
     case PT_SHORT:
-    case PT_UINT:
+    case PT_UINT32:
     case PT_FLOAT:
     default:
 	/* Can't convert this */
@@ -490,7 +490,7 @@ volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing)
     switch (vol_in->pix_type) {
 	case PT_UCHAR:
 	case PT_SHORT:
-	case PT_UINT:
+	case PT_UINT32:
 	    fprintf (stderr, "Error, resampling PT_SHORT or PT_UCHAR is unsupported\n");
 	    return 0;
 	case PT_FLOAT:

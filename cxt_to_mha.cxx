@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+#include "plm_int.h"
 #include "plm_path.h"
 #include "volume.h"
 #include "cxt_io.h"
@@ -108,8 +109,8 @@ main (int argc, char* argv[])
     Volume* xormap_vol;
 
     unsigned char* uchar_img;
-    unsigned long* labelmap_img;
-    unsigned long* xormap_img;
+    uint32_t* labelmap_img;
+    uint32_t* xormap_img;
     unsigned char* acc_img;
     int dim[2];
     float offset[2];
@@ -161,19 +162,19 @@ main (int argc, char* argv[])
     /* Create output volume for labelmask and xormap image. */
     if (parms->labelmap_fn[0]) {
 	labelmap_vol = volume_create (structures->dim, structures->offset, 
-				      structures->spacing, PT_UINT, 0, 0);
+				      structures->spacing, PT_UINT32, 0, 0);
 	if (labelmap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}
-	labelmap_img = (unsigned long*) labelmap_vol->img;
+	labelmap_img = (uint32_t*) labelmap_vol->img;
     }
     if (parms->xormap_fn[0]) {
 	xormap_vol = volume_create (structures->dim, structures->offset, 
-				    structures->spacing, PT_UINT, 0, 0);
+				    structures->spacing, PT_UINT32, 0, 0);
 	if (xormap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}
-	xormap_img = (unsigned long*) xormap_vol->img;
+	xormap_img = (uint32_t*) xormap_vol->img;
     }
 
     for (int j = 0; j < structures->num_structures; j++) {
@@ -218,7 +219,7 @@ main (int argc, char* argv[])
 
 	    /* Copy from acc_img into labelmask and xormap images */
 	    if (parms->labelmap_fn[0]) {
-		unsigned long* ulong_slice;
+		uint32_t* ulong_slice;
 		ulong_slice = &labelmap_img[curr_contour->slice_no * dim[0] * dim[1]];
 		for (int k = 0; k < slice_voxels; k++) {
 		    if (acc_img[k]) {
@@ -227,7 +228,7 @@ main (int argc, char* argv[])
 		}
 	    }
 	    if (parms->xormap_fn[0]) {
-		unsigned long* ulong_slice;
+		uint32_t* ulong_slice;
 		ulong_slice = &xormap_img[curr_contour->slice_no * dim[0] * dim[1]];
 		for (int k = 0; k < slice_voxels; k++) {
 		    if (acc_img[k]) {
@@ -241,7 +242,8 @@ main (int argc, char* argv[])
 	    fprintf (xorlist_fp, "%d|%s|%s\n",
 		     sno, 
 		     (curr_structure->color 
-		      ? (const char*) curr_structure->color->data : "\255\\0\\0"),
+		      ? (const char*) curr_structure->color->data 
+		      : "\255\\0\\0"),
 		     curr_structure->name);
 	}
 
