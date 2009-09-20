@@ -11,6 +11,7 @@
 #include <dirent.h>
 #endif
 #include "plm_config.h"
+#include "plm_int.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"

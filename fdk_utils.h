@@ -5,6 +5,7 @@
 #define _fdk_utils_h_
 
 #include "volume.h"
+#include "fdk.h"
 #include "fdk_opts.h"
 
 #if defined __cplusplus

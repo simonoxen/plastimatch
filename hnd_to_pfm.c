@@ -103,7 +103,7 @@ main (int argc, char* argv[])
 	    break;
 	}
 
-	buf[i] = - r11 + r21 + r12 + diff;
+	buf[i] = r21 + r12 + diff - r11;
 	b = buf[i];
 	//if (buf[i] > 65535) b = 65535;
 	fwrite (&b, sizeof(float), 1, fp_pfm);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "plm_int.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkContourExtractor2DImageFilter.h"
