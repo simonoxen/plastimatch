@@ -278,6 +278,7 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
     } else {
         print_and_exit ("Error: Unknown optimizer value.\n");
     }
+    exit (1);    /* Suppress compiler warning */
 }
 
 void

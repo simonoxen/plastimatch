@@ -885,7 +885,7 @@ ENDIF(ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-PLM_ADD_EXECUTABLE(analyze_to_mha analyze2mha.c "" "")
+#PLM_ADD_EXECUTABLE(analyze_to_mha analyze2mha.c "" "")
 PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" "")
@@ -936,8 +936,8 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(merge2 merge2.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  #PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
+    #"${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
