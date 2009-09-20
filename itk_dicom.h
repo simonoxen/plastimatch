@@ -9,7 +9,7 @@
 UCharImageType::Pointer load_dicom_uchar (char *dicom_dir);
 ShortImageType::Pointer load_dicom_short (char *dicom_dir);
 UShortImageType::Pointer load_dicom_ushort (char *dicom_dir);
-ULongImageType::Pointer load_dicom_ulong (char *dicom_dir);
+UInt32ImageType::Pointer load_dicom_uint32 (char *dicom_dir);
 FloatImageType::Pointer load_dicom_float (char *dicom_dir);
 
 void save_image_dicom (ShortImageType::Pointer short_img, char* dir_name);

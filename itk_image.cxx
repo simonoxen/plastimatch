@@ -302,16 +302,16 @@ load_ushort (char* fname, PlmImageType* original_type)
     return orient_image (img);
 }
 
-ULongImageType::Pointer
-load_ulong (char* fname, PlmImageType* original_type)
+UInt32ImageType::Pointer
+load_uint32 (char* fname, PlmImageType* original_type)
 {
-    ULongImageType::Pointer img;
+    UInt32ImageType::Pointer img;
 
     /* If it is directory, then must be dicom */
     if (is_directory(fname)) {
-	img = load_dicom_ulong (fname);
+	img = load_dicom_uint32 (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<unsigned long>(0));
+	img = load_any (fname, original_type, static_cast<uint32_t>(0));
     }
     return orient_image (img);
 }
@@ -410,7 +410,7 @@ save_float (T image, char* fname)
 template plastimatch1_EXPORT void save_image(UCharImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(ShortImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(UShortImageType::Pointer, char*);
-template plastimatch1_EXPORT void save_image(ULongImageType::Pointer, char*);
+template plastimatch1_EXPORT void save_image(UInt32ImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
 template void save_uchar (FloatImageType::Pointer, char*);
@@ -418,7 +418,7 @@ template void save_short (FloatImageType::Pointer, char*);
 template void save_short_dicom (UCharImageType::Pointer, char*);
 template void save_short_dicom (ShortImageType::Pointer, char*);
 template void save_short_dicom (UShortImageType::Pointer, char*);
-template void save_short_dicom (ULongImageType::Pointer, char*);
+template void save_short_dicom (UInt32ImageType::Pointer, char*);
 template void save_short_dicom (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_float (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);

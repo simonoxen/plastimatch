@@ -32,12 +32,12 @@ void
 do_mha_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
-    ULongImageType::Pointer image;
+    UInt32ImageType::Pointer image;
 
     cxt_initialize (&structures);
 
     printf ("Loading input file...\n");
-    image = load_ulong (parms->mha_fn, 0);
+    image = load_uint32 (parms->mha_fn, 0);
     printf ("Done.\n");
 
     cxt_extract (&structures, image);

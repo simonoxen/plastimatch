@@ -33,7 +33,7 @@
 typedef itk::ImageSeriesReader < UCharImageType > DicomUCharReaderType;
 typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
 typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
-typedef itk::ImageSeriesReader < ULongImageType > DicomULongReaderType;
+typedef itk::ImageSeriesReader < UInt32ImageType > DicomUInt32ReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
 typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
 
@@ -139,11 +139,11 @@ load_dicom_ushort (char *dicom_dir)
     return fixed_input_rdr->GetOutput();
 }
 
-ULongImageType::Pointer
-load_dicom_ulong (char *dicom_dir)
+UInt32ImageType::Pointer
+load_dicom_uint32 (char *dicom_dir)
 {
-    DicomULongReaderType::Pointer fixed_input_rdr
-		= DicomULongReaderType::New();
+    DicomUInt32ReaderType::Pointer fixed_input_rdr
+		= DicomUInt32ReaderType::New();
     load_dicom_dir_rdr (fixed_input_rdr, dicom_dir);
     fixed_input_rdr->Update();
     return fixed_input_rdr->GetOutput();

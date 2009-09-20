@@ -10,7 +10,7 @@ enum Pixel_Type {
     PT_UNDEFINED,
     PT_UCHAR,
     PT_SHORT,
-    PT_ULONG,
+    PT_UINT,
     PT_FLOAT,
     PT_VF_FLOAT_INTERLEAVED,
     PT_VF_FLOAT_PLANAR

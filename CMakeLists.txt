@@ -10,6 +10,7 @@ PROJECT (plastimatch)
 ##  Include files
 ##-----------------------------------------------------------------------------
 INCLUDE (CheckFunctionExists)
+INCLUDE (CheckTypeSize)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
 include (InstallRequiredSystemLibraries)
@@ -31,7 +32,26 @@ SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
 
 ##-----------------------------------------------------------------------------
-##  Search for languages and libraries
+##  Search for languages and language features
+##-----------------------------------------------------------------------------
+
+# C/C++ 32/64
+CHECK_TYPE_SIZE("unsigned int"    CMAKE_SIZEOF_UINT)
+CHECK_TYPE_SIZE("unsigned long"   CMAKE_SIZEOF_ULONG)
+
+# Fortran
+IF (NOT MINGW)
+  # For some reason, CMake tries to invoke devenv instead of gfortran
+  # for mingw.
+  INCLUDE (PLM_FindFortran.cmake)
+
+  # The FortranCInterface is not included on CMake 2.6.2
+  # INCLUDE (FortranCInterface)
+ENDIF (NOT MINGW)
+INCLUDE (PLM_FindF2C.cmake)
+
+##-----------------------------------------------------------------------------
+##  Search for libraries
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
@@ -39,15 +59,6 @@ FIND_PACKAGE (wxWidgets)
 
 INCLUDE (PLM_Etags.cmake)
 INCLUDE (PLM_FindDCMTK.cmake)
-IF (NOT MINGW)
-  ## For some reason, CMake tries to invoke devenv instead of gfortran
-  ## for mingw.
-  INCLUDE (PLM_FindFortran.cmake)
-
-  ## The FortranCInterface is not included on CMake 2.6.2
-  # INCLUDE (FortranCInterface)
-ENDIF (NOT MINGW)
-INCLUDE (PLM_FindF2C.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
 INCLUDE (GPUIT.cmake)

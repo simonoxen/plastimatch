@@ -95,12 +95,16 @@ warp_image_main (Warp_Parms* parms)
 	    warp_any (parms, mha_in, static_cast<short>(0));
 	}
 	break;
+#if (CMAKE_SIZEOF_UINT == 4)
     case itk::ImageIOBase::UINT:
+#endif
+#if (CMAKE_SIZEOF_ULONG == 4)
     case itk::ImageIOBase::ULONG:
+#endif
 	{
-	    ULongImageType::Pointer mha_in 
-		    = load_ulong (parms->mha_in_fn, 0);
-	    warp_any (parms, mha_in, static_cast<unsigned long>(0));
+	    UInt32ImageType::Pointer mha_in 
+		    = load_uint32 (parms->mha_in_fn, 0);
+	    warp_any (parms, mha_in, static_cast<uint32_t>(0));
 	}
 	break;
     case itk::ImageIOBase::FLOAT:

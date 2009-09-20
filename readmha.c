@@ -80,8 +80,8 @@ void write_mha (char* filename, Volume* vol)
     case PT_SHORT:
 	element_type = "MET_SHORT";
 	break;
-    case PT_ULONG:
-	element_type = "MET_ULONG";
+    case PT_UINT:
+	element_type = "MET_UINT";
 	break;
     case PT_FLOAT:
 	element_type = "MET_FLOAT";

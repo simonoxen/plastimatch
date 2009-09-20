@@ -161,7 +161,7 @@ main (int argc, char* argv[])
     /* Create output volume for labelmask and xormap image. */
     if (parms->labelmap_fn[0]) {
 	labelmap_vol = volume_create (structures->dim, structures->offset, 
-				      structures->spacing, PT_ULONG, 0, 0);
+				      structures->spacing, PT_UINT, 0, 0);
 	if (labelmap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}
@@ -169,7 +169,7 @@ main (int argc, char* argv[])
     }
     if (parms->xormap_fn[0]) {
 	xormap_vol = volume_create (structures->dim, structures->offset, 
-				    structures->spacing, PT_ULONG, 0, 0);
+				    structures->spacing, PT_UINT, 0, 0);
 	if (xormap_vol == 0) {
 	    fprintf (stderr, "ERROR: failed in allocating the volume");
 	}

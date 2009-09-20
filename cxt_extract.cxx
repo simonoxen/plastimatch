@@ -26,7 +26,7 @@ cxt_extract (Cxt_structure_list *structures, T image)
 	    ContourType;
     typedef ContourType::VertexType VertexType;
     typedef itk::ImageSliceConstIteratorWithIndex<ImageType> IteratorType;
-    typedef itk::BinaryThresholdImageFilter<ULongImage2DType, 
+    typedef itk::BinaryThresholdImageFilter<UInt32Image2DType, 
 	    UCharImage2DType> ThresholdFilterType;
 
     IteratorType itSlice (image, image->GetLargestPossibleRegion());
@@ -44,13 +44,13 @@ cxt_extract (Cxt_structure_list *structures, T image)
     while (!itSlice.IsAtEnd())
     {
 	typename ImageType::IndexType idx;
-	ULongImage2DType::Pointer ulong_slice;
+	UInt32Image2DType::Pointer uint32_slice;
 	UCharImage2DType::Pointer uchar_slice;
 
 	idx = itSlice.GetIndex();
-	ulong_slice = slice_extract (image, idx[2], (unsigned long) 0);
+	uint32_slice = slice_extract (image, idx[2], (uint32_t) 0);
 
-	threshold_filter->SetInput (ulong_slice);
+	threshold_filter->SetInput (uint32_slice);
 	threshold_filter->SetOutsideValue (0);
 	threshold_filter->SetInsideValue (1);
 		
@@ -136,4 +136,4 @@ cxt_extract (Cxt_structure_list *structures, T image)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *structures, ULongImageType::Pointer image);
+template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *structures, UInt32ImageType::Pointer image);
