@@ -6,6 +6,7 @@
 
 #include <wx/wx.h>
 #include <wx/listctrl.h>
+#include <wx/snglinst.h>
 
 enum
 {
@@ -22,7 +23,10 @@ enum
 class MyApp : public wxApp
 {
 public:
-    virtual bool OnInit();
+    virtual bool OnInit ();
+    virtual int OnExit ();
+public:
+    wxSingleInstanceChecker *m_checker;
 };
 
 class MyListCtrl : public wxListCtrl

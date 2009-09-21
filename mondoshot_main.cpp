@@ -102,8 +102,17 @@ popup (char* fmt, ...)
 /* -----------------------------------------------------------------------
    MyApp
    ----------------------------------------------------------------------- */
-bool MyApp::OnInit()
+bool
+MyApp::OnInit ()
 {
+    /* Refuse to launch multiple instances */
+    //const wxString name = wxString::Format("Mondoshot-%s", wxGetUserId().c_str());
+    const wxString name = wxString::Format("Mondoshot");
+    m_checker = new wxSingleInstanceChecker (name);
+    if (m_checker->IsAnotherRunning()) {
+        return false;
+    }
+
     /* Initialize JPEG library */
     ::wxInitAllImageHandlers ();
 
@@ -115,7 +124,14 @@ bool MyApp::OnInit()
     frame->OnInit ();
     SetTopWindow (frame);
 
-    return TRUE;
+    return true;
+}
+
+int
+MyApp::OnExit ()
+{
+    delete m_checker;
+    return 0;
 }
 
 /* -----------------------------------------------------------------------
