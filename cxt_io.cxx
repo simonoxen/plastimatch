@@ -97,7 +97,8 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
     fp = fopen (xorlist_fn, "r");
 
     if (!fp) {
-	printf ("Could not open xorlist file for read: %s\n", xorlist_fn);
+	fprintf (stderr, 
+		 "Could not open xorlist file for read: %s\n", xorlist_fn);
         exit (-1);
     }
 
@@ -134,7 +135,7 @@ void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 {
     FILE* fp;
-    Cxt_structure* curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
+    //    Cxt_structure* curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
     Cxt_polyline* curr_contour;
 
     float val_x = 0;
@@ -148,19 +149,18 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     float y = 0;
     float z = 0;
 
-    memset (curr_structure, 0, sizeof(Cxt_structure));
-    curr_structure->num_contours = 0;
+    //    memset (curr_structure, 0, sizeof(Cxt_structure));
+    //    curr_structure->num_contours = 0;
 
     fp = fopen (cxt_fn, "r");
 
     // if (fp) b = bgets ((bNgetc) fgetc, fp, '\n');
 
     if (!fp) {
-	printf ("Could not open contour file for read: %s\n", cxt_fn);
+	fprintf (stderr, "Could not open contour file for read: %s\n", cxt_fn);
         exit (-1);
     }
 
-    printf ("Loading...\n");
     /* Part 1: Dicom info */
     while (1) {
 	int tag_idx;
@@ -289,6 +289,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	int struct_id = 0;
 	int slice_idx;
 	char slice_uid[1024];
+	Cxt_structure* curr_structure;
 
 	/* Structure id */
         if (1 != fscanf (fp, " %d", &struct_id)) {
@@ -299,16 +300,13 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
         /* Skip contour thickness */
         while (fgetc (fp) != '|') ;
-	//printf ("%d||", struct_id); fflush (stdout);
 
         /* Num vertices: required */
 	num_pt = 0;
         if (1 != fscanf (fp, "%d", &num_pt)) {
-	    //printf ("\n"); fflush (stdout);
 	    goto not_successful;
         }
         fgetc (fp);
-	//printf ("%d|", num_pt); fflush (stdout);
 
         /* Slice idx: optional */
 	slice_idx = -1;
@@ -316,7 +314,6 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    slice_idx = -1;
         }
         fgetc (fp);
-	//printf ("%d|", slice_idx); fflush (stdout);
 
         /* Slice uid: optional */
 	slice_uid[0] = 0;
@@ -324,14 +321,12 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    slice_uid[0] = 0;
 	}
         fgetc (fp);
-	//printf ("%s|", slice_uid); fflush (stdout);
 
         curr_structure = cxt_find_structure_by_id (structures, struct_id);
 
 	/* If there is no header line for this structure, we will 
 	   skip all contours for the structure. */
 	if (!curr_structure) {
-	    //printf ("\nskipping...\n");
 	    /* Skip to end of line */
 	    while (fgetc (fp) != '\n') ;
 	    continue;
@@ -360,7 +355,6 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         }
         for (k = 0; k < num_pt; k++) {
 	    long floc;
-            //printf ("(%5d)", k);
 	    floc = ftell (fp);
             if (fscanf (fp, "%f\\%f\\%f\\", &x, &y, &z) != 3) {
 #if defined (commentout)
@@ -391,11 +385,10 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         num_pt = 0;
     }
     fclose (fp);
-    printf ("successful!\n");
     return;
  not_successful:
     fclose (fp);
-    printf ("Error parsing input file.\n");
+    fprintf (stderr, "Error parsing input file: %s\n", cxt_fn);
     exit (1);
 }
 
@@ -409,7 +402,8 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
 
     fp = fopen (cxt_fn, "wb");
     if (!fp) {
-	printf ("Could not open contour file for write: %s\n", cxt_fn);
+	fprintf (stderr, 
+		 "Could not open contour file for write: %s\n", cxt_fn);
         exit (-1);
     }
 

@@ -580,9 +580,6 @@ SET(ADJUST_MHA_SRC
 SET(BSPLINE_SRC
 	bspline_main.c 
 	)
-SET(XIO_TO_CXT_SRC
-	xio_to_cxt.cxx
-	)
 SET(CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
 	)
@@ -610,13 +607,15 @@ IF (CUDA_FOUND)
       )
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (CUDA_FOUND)
+SET(CXT_APPLY_DICOM_SRC
+  cxt_apply_dicom_main.cxx)
+SET(CXT_TO_DICOM_RTSS_SRC 
+  cxt_to_dicom_rtss.cxx)
 SET(CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
 	render_polyline.cxx
 	render_polyline.h
 	)
-SET(CXT_TO_DICOM_RTSS_SRC 
-  cxt_to_dicom_rtss.cxx)
 SET(DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
@@ -763,21 +762,16 @@ SET(VF_STATS_SRC
 SET(XF_TO_XF_SRC
 	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
-# SET(WARP_DIJ_SRC
-# 	warp_dij.cxx
-# 	)
-# SET(WARP_MHA_SRC
-#	warp_mha_main.cxx warp_mha_main.h
-#	)
-# SET(WARP_POINTSET_SRC
-# 	warp_pointset_main.cxx warp_pointset_main.h
-# 	)
+SET(XIO_TO_CXT_SRC
+	xio_to_cxt.cxx
+	)
 
 CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
     SET(ADJUST_MHA_SRC ${ADJUST_MHA_SRC} getopt_long.c getopt.h)
-    SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET(CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
+    SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
     SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
     SET(DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
     SET(MHA_TO_CXT_SRC ${MHA_TO_CXT_SRC} getopt_long.c getopt.h)
@@ -920,9 +914,11 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(cxt_to_mha "${CXT_TO_MHA_SRC}" 
+  PLM_ADD_EXECUTABLE(cxt_apply_dicom "${CXT_APPLY_DICOM_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(cxt_to_dicom_rtss "${CXT_TO_DICOM_RTSS_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(cxt_to_mha "${CXT_TO_MHA_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"

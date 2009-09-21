@@ -84,6 +84,7 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	{ "cxt_reference",  required_argument,      NULL,           1 },
 	{ "output",	    required_argument,      NULL,           2 },
 	{ "xorlist",        required_argument,      NULL,           3 },
+	{ "dicom-dir",      required_argument,      NULL,           4 },
 	{ "dicom_dir",      required_argument,      NULL,           4 },
 	{ NULL,             0,                      NULL,           0 }
     };
