@@ -281,9 +281,6 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 {
     int i, j, k;
     gdcm::File *gf = new gdcm::File ();
-#if defined (commentout)
-    gdcm::FileHelper *gfh = new gdcm::FileHelper (gf);
-#endif
     Gdcm_series gs;
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
@@ -334,17 +331,27 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 			0x0008, 0x0018);
     /* StudyDate */
-    gf->InsertValEntry ("", 0x0008, 0x0020);
+    gf->InsertValEntry ("20000101", 0x0008, 0x0020);
+    /* SeriesDate */
+    gf->InsertValEntry ("20000101", 0x0008, 0x0021);
+    /* AcquisitionDate */
+    gf->InsertValEntry ("20000101", 0x0008, 0x0022);
+    /* ContentDate */
+    gf->InsertValEntry ("20000101", 0x0008, 0x0023);
     /* StudyTime */
-    gf->InsertValEntry ("", 0x0008, 0x0030);
-    /* Modality */
-    gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
+    gf->InsertValEntry ("120000", 0x0008, 0x0030);
     /* AccessionNumber */
     gf->InsertValEntry ("", 0x0008, 0x0050);
+    /* Modality */
+    gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
     /* Manufacturer */
-    gf->InsertValEntry ("Plastimatch", 0x0008, 0x0070);
+    gf->InsertValEntry ("MGH", 0x0008, 0x0070);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
+    /* ReferringPhysiciansAddress */
+    gf->InsertValEntry ("", 0x0008, 0x0092);
+    /* ReferringPhysiciansTelephoneNumbers */
+    gf->InsertValEntry ("", 0x0008, 0x0094);
     /* StationName */
     gf->InsertValEntry ("", 0x0008, 0x1010);
     /* SeriesDescription */
@@ -400,9 +407,9 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* InstanceNumber */
     gf->InsertValEntry ("1", 0x0020, 0x0013);
     /* StructureSetLabel */
-    gf->InsertValEntry ("", 0x3006, 0x0002);
+    gf->InsertValEntry ("AutoSS", 0x3006, 0x0002);
     /* StructureSetName */
-    gf->InsertValEntry ("", 0x3006, 0x0004);
+    gf->InsertValEntry ("AutoSS", 0x3006, 0x0004);
     /* StructureSetDate */
     gf->InsertValEntry (current_date, 0x3006, 0x0008);
     /* StructureSetTime */
@@ -468,7 +475,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	    gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
 	    ci_seq->AddSQItem (ci_item, i++);
 	    /* ReferencedSOPClassUID = CTImageStorage */
-	    ci_item->InsertValEntry ("CTImageStorage", 0x0008, 0x1150);
+	    ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+				     0x0008, 0x1150);
 	    /* Put ReferencedSOPInstanceUID */
 	    ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
 	}
@@ -543,7 +551,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 			= new gdcm::SQItem (ci_seq->GetDepthLevel());
 		ci_seq->AddSQItem (ci_item, 1);
 		/* ReferencedSOPClassUID = CTImageStorage */
-		ci_item->InsertValEntry ("CTImageStorage", 0x0008, 0x1150);
+		ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+					 0x0008, 0x1150);
 		/* ReferencedSOPInstanceUID */
 		ci_item->InsertValEntry ((const char*) 
 					 curr_contour->ct_slice_uid->data, 

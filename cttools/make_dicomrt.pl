@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 #######################################################
 # This function creates a DicomRT structure set from 
 # a UIDS file and a CXT file.  The UIDS file is used 

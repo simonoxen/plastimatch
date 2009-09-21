@@ -77,9 +77,12 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 	num_structs = 32;     /* Max 32 structs in 32-bit xormap */
     }
 
-    /* If structure names are unknown, set them */
-    for (int j = 0; j < num_structs; j++) {
-	cxt_add_structure (structures, "Unknown structure", 0, j);
+    /* If structure names are unknown, name them, and give them 
+       arbitrary id numbers */
+    for (int j = structures->num_structures; j < num_structs; j++) {
+	int k = 1;
+	while (cxt_find_structure_by_id (structures, k)) k++;
+	cxt_add_structure (structures, "Unknown structure", 0, k);
     }
 
     /* Loop through slices */

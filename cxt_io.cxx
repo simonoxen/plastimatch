@@ -130,6 +130,7 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
     fclose (fp);
 }
 
+
 plastimatch1_EXPORT
 void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)

@@ -1,3 +1,4 @@
+#!/usr/bin/perl
 #######################################################
 # This function merges information from a UIDS file 
 # into a CXT file.  Specifically, slice locations, pixel 

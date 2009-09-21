@@ -15,6 +15,7 @@
 #include "bstrlib.h"
 
 #include "plm_config.h"
+#include "print_and_exit.h"
 #include "cxt_io.h"
 
 /* Modified from ITK source code, function RegularExpressionSeriesFileNames::
@@ -99,8 +100,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 
     fp = fopen (filename, "r");
     if (!fp) {
-	printf ("Error opening file %s for read\n", filename);
-	exit (-1);
+	print_and_exit ("Error opening file %s for read\n", filename);
     }
 
     bs = bsopen ((bNread) fread, fp);
@@ -127,8 +127,8 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	}
 	rc = sscanf ((char*) line2->data, "%d,", &id);
 	if (rc != 1) {
-	    fprintf (stderr, "Error parsing contournames: contour id not found (%s)\n", line1->data);
-	    exit (-1);
+	    print_and_exit ("Error parsing contournames: "
+			    "contour id not found (%s)\n", line1->data);
 	}
 
 	/* Add structure */
@@ -178,16 +178,22 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 	fgets (buf, 1024, fp);
 	rc = sscanf (buf, "%d", &num_points);
 	if (rc != 1) {
-	    printf ("Error parsing file %s (num_points)\n", filename);
-	    exit (-1);
+	    print_and_exit ("Error parsing file %s (num_points)\n", filename);
 	}
 
 	/* Get structure number */
 	fgets (buf, 1024, fp);
 	rc = sscanf (buf, "%d", &structure_id);
 	if (rc != 1) {
-	    printf ("Error parsing file %s (structure_id)\n", filename);
-	    exit (-1);
+	    print_and_exit ("Error parsing file %s (structure_id)\n", 
+			    filename);
+	}
+	
+	/* Xio structures can be zero.  This is possibly not tolerated 
+	   by dicom.  So we modify before inserting into the cxt. */
+	structure_id ++;
+	if (structure_id <= 0) {
+	    print_and_exit ("Error, structure_id was less than zero\n");
 	}
 
 	/* Can this happen? */
@@ -198,8 +204,8 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 	/* Look up the cxt structure for this id */
 	curr_structure = cxt_find_structure_by_id (structures, structure_id);
 	if (!curr_structure) {
-	    printf ("Couldn't reference structure with id %d\n", structure_id);
-	    exit (-1);
+	    print_and_exit ("Couldn't reference structure with id %d\n", 
+			    structure_id);
 	}
 
 	printf ("[%f %d %d]\n", z_loc, structure_id, num_points);
@@ -230,8 +236,8 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 
 		rc = sscanf (&buf[line_loc], "%f, %f,%n", &x, &y, &this_loc);
 		if (rc != 2) {
-		    printf ("Error parsing file %s (points) %s\n", filename, &buf[line_loc]);
-		    exit (-1);
+		    print_and_exit ("Error parsing file %s (points) %s\n", 
+				    filename, &buf[line_loc]);
 		}
 		curr_polyline->x[point_idx] = x + x_adj;
 		curr_polyline->y[point_idx] = - y + y_adj;
@@ -256,16 +262,16 @@ xio_load_structures (Cxt_structure_list *structures, char *input_dir,
     /* Get the index file */
     std::string index_file = std::string(input_dir) + "/" + "contournames";
     if (!itksys::SystemTools::FileExists (index_file.c_str(), true)) {
-	fprintf (stderr, "No xio contournames file found in directory %s\n", input_dir);
-	exit (-1);
+	print_and_exit ("No xio contournames file found in directory %s\n", 
+			input_dir);
     }
 
     /* Get the list of filenames */
     std::vector<std::pair<std::string,std::string> > file_names;
     get_file_names (&file_names, input_dir, filename_re);
     if (file_names.empty ()) {
-	fprintf (stderr, "No xio structure files found in directory %s\n", input_dir);
-	exit (-1);
+	print_and_exit ("No xio structure files found in directory %s\n", 
+			input_dir);
     }
 
     /* Load the index file */
