@@ -11,6 +11,7 @@
 #include "gdcm_rtss.h"
 #include "plm_path.h"
 #include "getopt.h"
+#include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
 #include "cxt_io.h"
 #include "itk_image.h"
@@ -47,9 +48,15 @@ do_mha_to_cxt (Program_parms *parms)
 	num_structs = structures.num_structures;
     }
 
-    //printf ("num_structs = %d\n", num_structs);
-
+    printf ("Running marching squares...\n");
     cxt_extract (&structures, image, num_structs);
+    printf ("Done.\n");
+
+    if (parms->dicom_dir[0]) {
+	printf ("Parsing dicom...\n");
+	cxt_apply_dicom_dir (&structures, parms->dicom_dir);
+	printf ("Done.\n");
+    }
 
     cxt_write (&structures, parms->output_fn, false);
 
@@ -77,6 +84,7 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	{ "cxt_reference",  required_argument,      NULL,           1 },
 	{ "output",	    required_argument,      NULL,           2 },
 	{ "xorlist",        required_argument,      NULL,           3 },
+	{ "dicom_dir",      required_argument,      NULL,           4 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -90,6 +98,9 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	    break;
 	case 3:
 	    strncpy (parms->xorlist_fn, optarg, _MAX_PATH);
+	    break;
+	case 4:
+	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;
