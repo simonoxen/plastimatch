@@ -52,13 +52,17 @@ void
 cxt_initialize (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
-cxt_add_structure (Cxt_structure_list* structures, const char *structure_name, int structure_id);
+cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
+		   bstring color, int structure_id);
 plastimatch1_EXPORT
 Cxt_polyline*
 cxt_add_polyline (Cxt_structure* structure);
 plastimatch1_EXPORT
 Cxt_structure*
 cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id);
+plastimatch1_EXPORT
+void
+cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn);
 plastimatch1_EXPORT
 void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn);

@@ -13,33 +13,75 @@
 #include "itk_image.h"
 #include "itkImageLinearIteratorWithIndex.h"
 #include "slice_extract.h"
-#include "itkBinaryThresholdImageFilter.h"
+#include "itkAndConstantToImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include "cxt_io.h"
 #include "cxt_extract.h"
 
+#if defined (commentout)
+static bool
+debug_uchar_slice (UCharImage2DType::Pointer uchar_slice)
+{
+    typedef itk::ImageRegionIterator< UCharImage2DType > IteratorType;
+    IteratorType it1 (uchar_slice, uchar_slice->GetBufferedRegion());
+
+    it1.GoToBegin();
+    while (!it1.IsAtEnd()) {
+	unsigned char p = it1.Get ();
+	if (p != 0) {
+	    printf ("Got pixel: %d ", p);
+	    return true;
+	}
+	++it1;
+    }
+    return false;
+}
+
+static bool
+debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
+{
+    typedef itk::ImageRegionIterator< UInt32Image2DType > IteratorType;
+    IteratorType it1 (slice, slice->GetBufferedRegion());
+
+    it1.GoToBegin();
+    while (!it1.IsAtEnd()) {
+	uint32_t p = it1.Get ();
+	if (p &= val) {
+	    printf ("Got pixel: %d\n", p);
+	    return true;
+	}
+	++it1;
+    }
+    return false;
+}
+#endif
+
 template<class T>
 void
-cxt_extract (Cxt_structure_list *structures, T image)
+cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
-	    ContourType;
-    typedef ContourType::VertexType VertexType;
+	    ContourFilterType;
+    typedef ContourFilterType::VertexType VertexType;
     typedef itk::ImageSliceConstIteratorWithIndex<ImageType> IteratorType;
-    typedef itk::BinaryThresholdImageFilter<UInt32Image2DType, 
-	    UCharImage2DType> ThresholdFilterType;
+    typedef itk::AndConstantToImageFilter<UInt32Image2DType, 
+	    uint32_t, UCharImage2DType> AndFilterType;
+
 
     IteratorType itSlice (image, image->GetLargestPossibleRegion());
-    typename ThresholdFilterType::Pointer threshold_filter 
-	    = ThresholdFilterType::New();
-    ContourType::Pointer contour = ContourType::New();
+    typename AndFilterType::Pointer and_filter 
+	    = AndFilterType::New();
+
+    if (num_structs < 0) {
+	num_structs = 32;     /* Max 32 structs in 32-bit xormap */
+    }
     
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
 
-    for (int j = 0; j < 10; j++) {
-	cxt_add_structure (structures, "foo", j);
+    for (int j = 0; j < num_structs; j++) {
+	cxt_add_structure (structures, "foo", 0, j);
     }
 
     while (!itSlice.IsAtEnd())
@@ -51,42 +93,53 @@ cxt_extract (Cxt_structure_list *structures, T image)
 	idx = itSlice.GetIndex();
 	uint32_slice = slice_extract (image, idx[2], (uint32_t) 0);
 
-	threshold_filter->SetInput (uint32_slice);
-	threshold_filter->SetOutsideValue (0);
-	threshold_filter->SetInsideValue (1);
+	and_filter->SetInput (uint32_slice);
 		
-	for (int j = 0; j < 10; j++) {
-	    printf("%2ld%c\n", idx[2], 'a' + j);
-	    threshold_filter->SetOutsideValue (0);
-	    threshold_filter->SetInsideValue (1);
-	    threshold_filter->SetUpperThreshold (j);
-	    threshold_filter->SetLowerThreshold (j);
+	for (int j = 0; j < num_structs; j++) {
+	    uint32_t val = (1 << j);
+	    /* Note: due to an ITK bug, the contour filter cannot be 
+	       "re-run" with different inputs.  Instead we should 
+	       delete and create a new one for each contour. */
+	    ContourFilterType::Pointer contour_filter 
+		    = ContourFilterType::New();
+
+	    and_filter->SetConstant (val);
 	    try {
-		threshold_filter->Update ();
+		and_filter->Update ();
 	    }
 	    catch (itk::ExceptionObject &err) {
-		std::cout << "Exception during threshold." << std::endl; 
+		std::cout << "Exception during and operation." << std::endl; 
 		std::cout << err << std::endl; 
-		return;
+		exit (1);
 	    }
-	    uchar_slice = threshold_filter->GetOutput ();
-	    contour->SetInput (uchar_slice);
-	    contour->SetContourValue (0.5);
+	    uchar_slice = and_filter->GetOutput ();
+
+	    //	    debug_uint32_slice (uint32_slice, val);
+
+	    //	    if (debug_uchar_slice (uchar_slice)) {
+	    //		printf (" || %d %d, %d\n", idx[2], j, val);
+	    //	    }
+	    contour_filter->SetInput (uchar_slice);
+	    contour_filter->SetContourValue (0.5);
 	    try {
-		contour->Update();
+		contour_filter->Update();
 	    }
 	    catch (itk::ExceptionObject &err) {
 		std::cout << "Exception during marching squares." 
 			  << std::endl; 
 		std::cout << err << std::endl; 
-		return;
+		exit (1);
 	    }
+
+	    //	    if (contour_filter->GetNumberOfOutputs() > 0) {
+	    //		printf ("Got contours...\n");
+	    //	    }
 
 	    /* Add marching squares output to cxt */
 	    Cxt_structure *curr_structure = &structures->slist[j];
-	    for (unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++) {
-		ContourType::VertexListConstPointer vertices 
-			= contour->GetOutput(i)->GetVertexList();
+	    for (unsigned int i = 0; i < contour_filter->GetNumberOfOutputs(); i++) {
+		ContourFilterType::VertexListConstPointer vertices 
+			= contour_filter->GetOutput(i)->GetVertexList();
 		Cxt_polyline *curr_polyline 
 			= cxt_add_polyline (curr_structure);
 
@@ -111,7 +164,7 @@ cxt_extract (Cxt_structure_list *structures, T image)
 	//system("PAUSE");
 	for(unsigned int i = 0; i < contour->GetNumberOfOutputs(); i++)
 	{
-	    ContourType::VertexListConstPointer vertices =contour->GetOutput(i)->GetVertexList();
+	    ContourFilterType::VertexListConstPointer vertices =contour->GetOutput(i)->GetVertexList();
 	    /*fprintf(fp,"%s %d%s%d\n","Contour",k[2],".",i);*/
 	    /*fprintf(fp,"%d%s%d\n",k[2],".",i);*/
 	    //fprintf(fp,"\n");
@@ -137,4 +190,4 @@ cxt_extract (Cxt_structure_list *structures, T image)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *structures, UInt32ImageType::Pointer image);
+template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *structures, UInt32ImageType::Pointer image, int num_structs);

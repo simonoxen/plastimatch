@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "cxt_io.h"
 
-template<class T> void cxt_extract (Cxt_structure_list *structures, T image);
+template<class T> void cxt_extract (Cxt_structure_list *structures, T image,
+				    int num_structs);
 
 #endif

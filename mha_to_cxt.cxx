@@ -20,6 +20,7 @@ public:
     char dicom_dir[_MAX_PATH];
     char output_fn[_MAX_PATH];
     char cxt_reference_fn[_MAX_PATH];
+    char xorlist_fn[_MAX_PATH];
     char mha_fn[_MAX_PATH];
 
 public:
@@ -33,6 +34,7 @@ do_mha_to_cxt (Program_parms *parms)
 {
     Cxt_structure_list structures;
     UInt32ImageType::Pointer image;
+    int num_structs = -1;
 
     cxt_initialize (&structures);
 
@@ -40,9 +42,16 @@ do_mha_to_cxt (Program_parms *parms)
     image = load_uint32 (parms->mha_fn, 0);
     printf ("Done.\n");
 
-    cxt_extract (&structures, image);
+    if (parms->xorlist_fn[0]) {
+	cxt_xorlist_read (&structures, parms->xorlist_fn);
+	num_structs = structures.num_structures;
+    }
 
-    cxt_write (&structures, parms->output_fn, true);
+    //printf ("num_structs = %d\n", num_structs);
+
+    cxt_extract (&structures, image, num_structs);
+
+    cxt_write (&structures, parms->output_fn, false);
 
     cxt_destroy (&structures);
 }
@@ -53,6 +62,7 @@ print_usage (void)
     printf ("Usage: mha_to_cxt [options] mha_file\n"
 	    "Optional:\n"
 	    "    --cxt-reference=filename\n"
+	    "    --xorlist=filename\n"
 	    "    --output=filename\n"
 	    );
     exit (-1);
@@ -66,6 +76,7 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	{ "cxt-reference",  required_argument,      NULL,           1 },
 	{ "cxt_reference",  required_argument,      NULL,           1 },
 	{ "output",	    required_argument,      NULL,           2 },
+	{ "xorlist",        required_argument,      NULL,           3 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -76,6 +87,9 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	    break;
 	case 2:
 	    strncpy (parms->output_fn, optarg, _MAX_PATH);
+	    break;
+	case 3:
+	    strncpy (parms->xorlist_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;

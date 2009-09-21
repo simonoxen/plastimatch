@@ -156,7 +156,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
 	    continue;
 	}
-	cxt_add_structure (structures, roi_name.c_str(), structure_id);
+	cxt_add_structure (structures, roi_name.c_str(), 0, structure_id);
     }
 
     /* ROIContourSequence */

@@ -18,19 +18,27 @@ cxt_initialize (Cxt_structure_list* structures)
 plastimatch1_EXPORT
 void
 cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
-		   int structure_id)
+		   bstring color, int structure_id)
 {
     Cxt_structure* new_structure;
+
+    if (cxt_find_structure_by_id (structures, structure_id)) {
+	return;
+    }
 
     structures->num_structures++;
     structures->slist = (Cxt_structure*) 
 	    realloc (structures->slist, 
 		     structures->num_structures * sizeof(Cxt_structure));
     new_structure = &structures->slist[structures->num_structures - 1];
+
     memset (new_structure, 0, sizeof(Cxt_structure));
     strncpy (new_structure->name, structure_name, CXT_BUFLEN);
     new_structure->name[CXT_BUFLEN-1] = 0;
     new_structure->id = structure_id;
+    new_structure->color = color;
+    new_structure->num_contours = 0;
+    new_structure->pslist = 0;
 }
 
 plastimatch1_EXPORT
@@ -82,6 +90,47 @@ cxt_debug_structures (Cxt_structure_list* structures)
 
 plastimatch1_EXPORT
 void
+cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
+{
+    FILE* fp;
+
+    fp = fopen (xorlist_fn, "r");
+
+    if (!fp) {
+	printf ("Could not open xorlist file for read: %s\n", xorlist_fn);
+        exit (-1);
+    }
+
+    /* Part 2: Structures info */
+    while (1) {
+        char color[CXT_BUFLEN];
+        char name[CXT_BUFLEN];
+        char buf[CXT_BUFLEN];
+	int struct_id;
+        char *p;
+        int rc;
+        //Cxt_structure *curr_structure;
+
+        p = fgets (buf, CXT_BUFLEN, fp);
+        if (!p) {
+	    break;
+        }
+        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
+        if (rc != 3) {
+            fprintf (stderr, 
+		     "Error. xorlist file not formatted correctly: %s\n",
+		     xorlist_fn);
+            exit (-1);
+        }
+
+	cxt_add_structure (structures, name, bfromcstr (color), struct_id);
+    }
+
+    fclose (fp);
+}
+
+plastimatch1_EXPORT
+void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 {
     FILE* fp;
@@ -119,7 +168,9 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
 	tag = bgets ((bNgetc) fgetc, fp, '\n');
         if (!tag) {
-            fprintf (stderr, "ERROR: Your file is not formatted correctly!\n");
+            fprintf (stderr, 
+		     "Error. cxt file is not formatted correctly: %s\n",
+		     cxt_fn);
             exit (-1);
         }
 
@@ -202,7 +253,9 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 
         p = fgets (buf, CXT_BUFLEN, fp);
         if (!p) {
-            fprintf (stderr, "ERROR: Your file is not formatted correctly!\n");
+            fprintf (stderr, 
+		     "Error. cxt file is not formatted correctly: %s\n",
+		     cxt_fn);
             exit (-1);
         }
         rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
@@ -210,6 +263,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
             break;
         }
 
+#if defined (commentout)
         structures->num_structures++;
         structures->slist = (Cxt_structure*) 
 		realloc (structures->slist,
@@ -223,6 +277,9 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         curr_structure->num_contours = 0;
         curr_structure->pslist = 0;
         printf ("Cxt_structure: %s\n", curr_structure->name);
+#endif
+
+	cxt_add_structure (structures, name, bfromcstr (color), struct_id);
     }
 
     /* Part 3: Contour info */

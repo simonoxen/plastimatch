@@ -132,7 +132,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	}
 
 	/* Add structure */
-	cxt_add_structure (structures, (char*) line1->data, id);
+	cxt_add_structure (structures, (char*) line1->data, 0, id);
 
 	/* Skip 2 lines */
 	bsreadln (line1, bs, '\n');
