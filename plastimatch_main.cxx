@@ -60,7 +60,10 @@ do_command (int argc, char* argv[])
 	print_usage (0);
     }
 
-    if (!strcmp (command, "register")) {
+    if (!strcmp (command, "adjust")) {
+	do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
@@ -76,7 +79,7 @@ do_command (int argc, char* argv[])
 }
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
     do_command (argc, argv);
 

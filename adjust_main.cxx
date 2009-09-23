@@ -5,11 +5,11 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
-#include "adjust_mha.h"
+#include "adjust_main.h"
 #include "itk_image.h"
 
 void
-adjust_mha_main (Adjust_Mha_Parms* parms)
+adjust_main (Adjust_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
@@ -17,11 +17,20 @@ adjust_mha_main (Adjust_Mha_Parms* parms)
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 
-    if (parms->have_upper_trunc) {
+    if (parms->have_truncate_above) {
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
 	    float v = it.Get();
-	    if (v > parms->upper_trunc) {
-		it.Set (parms->upper_trunc);
+	    if (v > parms->truncate_above) {
+		it.Set (parms->truncate_above);
+	    }
+	}
+    }
+
+    if (parms->have_truncate_below) {
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    if (v < parms->truncate_below) {
+		it.Set (parms->truncate_below);
 	    }
 	}
     }
@@ -51,23 +60,31 @@ adjust_mha_main (Adjust_Mha_Parms* parms)
 }
 
 void
-print_usage (void)
+adjust_print_usage (void)
 {
-    printf ("Usage: adjust_mha --input=image_in --output=image_out [options]\n");
-    printf ("Opts:    --upper_trunc=value\n");
-    printf ("Opts:    --stretch=\"min max\"\n");
+    printf ("Usage: plastimatch adjust [options]\n"
+	    "Required:\n"
+	    "    --input=image_in"
+	    "    --output=image_out"
+	    "Optional:\n"
+	    "    --truncate_above=value"
+	    "    --stretch=\"min max\"\n"
+	    );
     exit (-1);
 }
 
 void
-parse_args (Adjust_Mha_Parms* parms, int argc, char* argv[])
+adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 {
     int ch;
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
-	{ "upper_trunc",    required_argument,      NULL,           4 },
-	{ "stretch",        required_argument,      NULL,           5 },
+	{ "truncate_above", required_argument,      NULL,           4 },
+	{ "truncate-above", required_argument,      NULL,           4 },
+	{ "truncate_below", required_argument,      NULL,           5 },
+	{ "truncate-below", required_argument,      NULL,           5 },
+	{ "stretch",        required_argument,      NULL,           6 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -80,16 +97,23 @@ parse_args (Adjust_Mha_Parms* parms, int argc, char* argv[])
 	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
 	    break;
 	case 4:
-	    if (sscanf (optarg, "%f", &parms->upper_trunc) != 1) {
-		printf ("Error: upper_trunc takes an argument\n");
-		print_usage();
+	    if (sscanf (optarg, "%f", &parms->truncate_above) != 1) {
+		printf ("Error: truncate_above takes an argument\n");
+		adjust_print_usage ();
 	    }
-	    parms->have_upper_trunc = 1;
+	    parms->have_truncate_above = 1;
 	    break;
 	case 5:
-	    if (sscanf (optarg, "%f %f", &parms->stretch[0], &parms->stretch[1]) != 1) {
+	    if (sscanf (optarg, "%f", &parms->truncate_below) != 1) {
+		printf ("Error: truncate_below takes an argument\n");
+		adjust_print_usage ();
+	    }
+	    parms->have_truncate_below = 1;
+	    break;
+	case 6:
+	    if (sscanf (optarg, "%f %f", &parms->stretch[0], &parms->stretch[1]) != 2) {
 		printf ("Error: stretch takes two arguments\n");
-		print_usage();
+		adjust_print_usage ();
 	    }
 	    parms->have_stretch = 1;
 	    break;
@@ -99,19 +123,18 @@ parse_args (Adjust_Mha_Parms* parms, int argc, char* argv[])
     }
     if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
 	printf ("Error: must specify --input and --output\n");
-	print_usage();
+	adjust_print_usage ();
     }
 }
 
-int
-main(int argc, char *argv[])
+void
+do_command_adjust (int argc, char *argv[])
 {
-    Adjust_Mha_Parms parms;
+    Adjust_Parms parms;
     
-    parse_args (&parms, argc, argv);
+    adjust_parse_args (&parms, argc, argv);
 
-    adjust_mha_main (&parms);
+    adjust_main (&parms);
 
     printf ("Finished!\n");
-    return 0;
 }

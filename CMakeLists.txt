@@ -574,9 +574,6 @@ ENDIF(ITK_USE_REVIEW)
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-SET(ADJUST_MHA_SRC
-	adjust_mha.cxx adjust_mha.h
-	)
 SET(BSPLINE_SRC
 	bspline_main.c 
 	)
@@ -716,6 +713,7 @@ SET(POINT_PATH_SRC
 	point_path.cxx
 	)
 SET(PLASTIMATCH_SRC
+	adjust_main.cxx adjust_main.h
 	plastimatch_main.cxx
  	file_type.cxx file_type.h
  	warp_dij_main.cxx 
@@ -768,7 +766,6 @@ SET(XIO_TO_CXT_SRC
 
 CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
-    SET(ADJUST_MHA_SRC ${ADJUST_MHA_SRC} getopt_long.c getopt.h)
     SET(CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
     SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
@@ -908,8 +905,6 @@ PLM_ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c "" "")
 PLM_ADD_EXECUTABLE(vox_to_mha vox_to_mha.c "" "")
 
 IF(ITK_FOUND)
-  PLM_ADD_EXECUTABLE(adjust_mha "${ADJUST_MHA_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(xio_to_cxt "${XIO_TO_CXT_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
