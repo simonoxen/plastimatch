@@ -411,9 +411,7 @@ ENDIF(ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  FFTW LIBRARY
 ##-----------------------------------------------------------------------------
-#IF(FFTW_FOUND)
-#	include(${FFTW_INCLUDE_DIR})
-#ENDIF(FFTW_FOUND)
+
 ##-----------------------------------------------------------------------------
 ##  PANTHEIOS LIBRARY
 ##-----------------------------------------------------------------------------
@@ -885,6 +883,10 @@ ENDIF(PANTHEIOS_FOUND)
 IF(wxWidgets_FOUND)
   INCLUDE_DIRECTORIES(BEFORE ${wxWidgets_INCLUDE_DIRS})
 ENDIF(wxWidgets_FOUND)
+
+IF(FFTW_FOUND)
+	INCLUDE_DIRECTORIES(BEFORE ${FFTW_INCLUDE_DIR})
+ENDIF(FFTW_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Macro for creating targets
