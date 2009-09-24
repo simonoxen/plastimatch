@@ -887,6 +887,7 @@ ENDIF(wxWidgets_FOUND)
 
 IF(FFTW_FOUND)
 	INCLUDE_DIRECTORIES(BEFORE ${FFTW_INCLUDE_DIR})
+	LINK_DIRECTORIES(${FFTWDIR})
 ENDIF(FFTW_FOUND)
 
 ##-----------------------------------------------------------------------------
