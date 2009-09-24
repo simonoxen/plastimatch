@@ -373,6 +373,10 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
 
+  NVCC_FILE(fdk_cuda2.cu)
+  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda2.cu.cpp")
+
   NVCC_FILE(cuda_probe.cu)
   SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
@@ -403,6 +407,13 @@ IF(ITK_FOUND)
 #  ENDIF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")	
 ENDIF(ITK_FOUND)
 
+
+##-----------------------------------------------------------------------------
+##  FFTW LIBRARY
+##-----------------------------------------------------------------------------
+#IF(FFTW_FOUND)
+#	include(${FFTW_INCLUDE_DIR})
+#ENDIF(FFTW_FOUND)
 ##-----------------------------------------------------------------------------
 ##  PANTHEIOS LIBRARY
 ##-----------------------------------------------------------------------------
@@ -655,6 +666,43 @@ SET(FDK_CUDA_SRC
 	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
+<<<<<<< .mine
+SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+	fdk_opts2.c fdk_opts_ext.h
+	fdk_utils2.c fdk_utils2.h
+	fdk_cuda.h fdk.h
+	mathutil.h
+	fdk_cuda_integrated_main.c
+	fdk_cuda2.cu
+	write_matrix.h MGHMtx_opts.h
+	ramp_filter.h readmha_ext.h
+	volume.h volume_ext.h
+	volume.c volume_ext.c
+	write_matrix.c writematrix_opts.c
+	writemha_512prefix.c	
+	)
+IF (PLM_USE_FINDCUDA)
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+  SET (FDK_CUDA_SRC
+    ${FDK_CUDA_SRC}
+    ${FDK_CUDA_WRAPPERS}
+    )
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda2.cu)
+  SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+    ${FDK_CUDA_WRAPPERS}
+    )
+ELSE (PLM_USE_FINDCUDA)
+  SET (FDK_CUDA_SRC
+    ${FDK_CUDA_SRC}
+    fdk_cuda_wrap.cpp
+    )
+   SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+    fdk_cuda_wrap.cpp
+    )
+ENDIF (PLM_USE_FINDCUDA)
+=======
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -669,6 +717,7 @@ IF (CUDA_FOUND)
       )
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (CUDA_FOUND)
+>>>>>>> .r580
 
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
@@ -994,6 +1043,7 @@ IF(CUDA_FOUND)
       "${GPUIT_LIBRARIES}" "")
   ENDIF(PLM_BUILD_DEMONS_CUDA)
   PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
+  PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" "${GPUIT_LIBRARIES}" "")
   PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 
