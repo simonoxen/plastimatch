@@ -353,7 +353,7 @@ vf_pad_planar (Volume* vol, int size)
     }
 
     for (i = 0; i < 3; i++) {
-	img[i] = realloc (img[i], size);
+	img[i] = (float *) realloc (img[i], size);
     }
 }
 
