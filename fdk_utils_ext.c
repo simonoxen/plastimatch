@@ -13,7 +13,7 @@
 //#include "imageview.h"
 #include "readmha_ext.h"
 #include "fftw3.h"
-#include "fdk_utils2.h"
+#include "fdk_utils.h"
 //#include "fftw3.h"
 
 //#pragma comment (lib, "C:\AAAfiles\Anthony\FFTW\libfftw3-3.lib")
@@ -69,6 +69,152 @@ convert_to_hu (Volume* vol, MGHCBCT_Options_ext* options)
 }
 
 #define READ_PFM 1
+CB_Image* 
+load_cb_image (char* img_filename, char* mat_filename)
+{
+    int i;
+    size_t rc;
+    float f;
+    FILE* fp;
+    char buf[1024];
+    CB_Image* cbi;
+
+    cbi = (CB_Image*) malloc (sizeof(CB_Image));
+
+    fp = fopen (img_filename,"rb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for read\n", img_filename);
+	exit (-1);
+    }
+
+#if defined (READ_PFM)
+    /* Verify that it is pfm */
+    fgets (buf, 1024, fp);
+    if (strncmp(buf, "Pf", 2)) {
+	fprintf (stderr, "Couldn't parse file %s as an image [1]\n",
+		 img_filename);
+	printf (buf);
+	exit (-1);
+    }
+    /* Get image resolution */
+    fgets (buf, 1024, fp);
+    if (2 != sscanf (buf, "%d %d", &cbi->dim[0], &cbi->dim[1])) {
+	fprintf (stderr, "Couldn't parse file %s as an image [2]\n", 
+		 img_filename);
+	exit (-1);
+    }
+    /* Skip third line */
+    fgets (buf, 1024, fp);
+
+    /* Malloc memory */
+    cbi->img = (float*) malloc (sizeof(float) * cbi->dim[0] * cbi->dim[1]);
+    if (!cbi->img) {
+	fprintf (stderr, "Couldn't malloc memory for input image\n");
+	exit (-1);
+    }
+
+    /* Load pixels */
+    rc = fread (cbi->img, sizeof(float), cbi->dim[0] * cbi->dim[1], fp);
+    if (rc != cbi->dim[0] * cbi->dim[1]) {
+	fprintf (stderr, "Couldn't load raster data for %s\n",
+		 img_filename);
+	exit (-1);
+    }
+#else
+    /* Verify that it is pgm */
+    fgets (buf, 1024, fp);
+    if (strncmp(buf, "P2", 2)) {
+	fprintf (stderr, "Couldn't parse file %s as an image [1]\n",
+		 img_filename);
+	printf (buf);
+	exit (-1);
+    }
+    /* Skip comment line */
+    fgets (buf, 1024, fp);
+    /* Get image resolution */
+    fgets (buf, 1024, fp);
+    if (2 != sscanf (buf, "%d %d", &cbi->dim[0], &cbi->dim[1])) {
+	fprintf (stderr, "Couldn't parse file %s as an image [2]\n", 
+		 img_filename);
+	exit (-1);
+    }
+    /* Skip max gray */
+    fgets (buf, 1024, fp);
+
+    /* Malloc memory */
+    cbi->img = (float*) malloc (sizeof(float) * cbi->dim[0] * cbi->dim[1]);
+    if (!cbi->img) {
+	fprintf (stderr, "Couldn't malloc memory for input image\n");
+	exit (-1);
+    }
+
+    /* Load pixels */
+    for (i = 0; i < cbi->dim[0] * cbi->dim[1]; i++) {
+	if (1 != fscanf (fp, "%g", &cbi->img[i])) {
+	    fprintf (stderr, "Couldn't parse file %s as an image [3,%d]\n", 
+		     img_filename, i);
+	    exit (-1);
+	}
+    }
+#endif
+    fclose (fp);
+
+    /* Load projection matrix */
+    fp = fopen (mat_filename,"r");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for read\n", mat_filename);
+	exit (-1);
+    }
+    /* Load image center */
+    for (i = 0; i < 2; i++) {
+	if (1 != fscanf (fp, "%g", &f)) {
+	    fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
+		     mat_filename, i);
+	    exit (-1);
+	}
+	cbi->ic[i] = (double) f;
+    }
+    /* Load projection matrix */
+    for (i = 0; i < 12; i++) {
+	if (1 != fscanf (fp, "%g", &f)) {
+	    fprintf (stderr, "Couldn't parse file %s as a matrix [2,%d]\n", 
+		     mat_filename, i);
+	    exit (-1);
+	}
+	cbi->matrix[i] = (double) f;
+    }
+    /* Load sad */
+    if (1 != fscanf (fp, "%g", &f)) {
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
+	exit (-1);
+    }
+    cbi->sad = (double) f;
+    /* Load sid */
+    if (1 != fscanf (fp, "%g", &f)) {
+	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
+	exit (-1);
+    }
+    cbi->sid = (double) f;
+    /* Load nrm vector */
+    for (i = 0; i < 3; i++) {
+	if (1 != fscanf (fp, "%g", &f)) {
+	    fprintf (stderr, "Couldn't parse file %s as a matrix [1,%d]\n", 
+		     mat_filename, i);
+	    exit (-1);
+	}
+	cbi->nrm[i] = (double) f;
+    }
+    fclose (fp);
+
+#if defined (commentout)
+    printf ("Image center: ");
+    rawvec2_print_eol (stdout, cbi->ic);
+    printf ("Projection matrix:\n");
+    matrix_print_eol (stdout, cbi->matrix, 3, 4);
+#endif
+
+    return cbi;
+}
 
 CB_Image* 
 load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, char* mat_filename)
@@ -310,164 +456,3 @@ free_cb_image (CB_Image* cbi)
     free (cbi);
 }
 
-void LowPass(int n, double * v)
-{
-	int i;
-	fftw_complex* in, * fft, * ifft;
-	fftw_plan fftp, ifftp;
-	in    = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
-	fft   = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
-	ifft  = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * n);
-	for( i=0; i<n; i++){
-		in[i][0]=v[i];
-		in[i][1]=0.0;
-	}
-	fftp  = fftw_plan_dft_1d(n, in, fft, FFTW_FORWARD, FFTW_ESTIMATE);
-	ifftp = fftw_plan_dft_1d(n, fft, ifft, FFTW_BACKWARD, FFTW_ESTIMATE);
-	fftw_execute(fftp);
-	for(i=0;i<n;i++){
-		double tmp=	pow((cos(i * DEGTORAD * 360/n)+1)/2,20);
-		fft[i][0]*=tmp;
-		fft[i][1]*=tmp;
-	}	
-	fftw_execute(ifftp);
-	for( i=0; i<n; i++)
-		v[i]=ifft[i][0]/(float)n;
-}
-
-
-void process_norm_CBCT(Volume * norm_CBCT, MGHCBCT_Options_ext* options)
-{
-	int ni,nj,nk;
-	double norm_radius;
-	double radius;
-	int radius_r;
-	double average;
-	double *average_r;
-	int *pixels_r;
-	int pixels;
-	float *norm;
-	average_r=(double *)malloc(norm_CBCT->dim[0]*sizeof(double));
-	if (average_r==NULL){
-		printf("Malloc error for *average");
-		exit(1);
-	}
-	
-	for(ni=0; ni<norm_CBCT->dim[0]; ni++)
-		average_r[ni]=0.0f;
-
-	pixels_r=(int *)malloc(norm_CBCT->dim[0]*sizeof(int));
-	if (pixels_r==NULL){
-		printf("Malloc error for *pixels_r");
-		exit(1);
-	}
-
-	for(ni=0; ni<norm_CBCT->dim[0]; ni++)
-		pixels_r[ni]=0.0f;
-	
-	pixels=0;
-	average=0;
-
-	norm=(float *)norm_CBCT->img;
-
-
-	if (options->full_fan){
-		printf("Processing %s\n",options->Full_normCBCT_name);
-		norm_radius=options->Full_radius;
-	}
-	else{
-		printf("Processing %s\n",options->Half_normCBCT_name);
-		norm_radius=options->Half_radius;
-	}
-
-	for (nj=0; nj<norm_CBCT->dim[1]; nj++){
-		for (ni=0; ni<norm_CBCT->dim[0]; ni++){
-			float x=(float)ni*norm_CBCT->pix_spacing[0]+norm_CBCT->offset[0]-norm_CBCT->pix_spacing[0];
-			float y=(float)nj*norm_CBCT->pix_spacing[1]+norm_CBCT->offset[1]-norm_CBCT->pix_spacing[1];
-			radius=sqrt(x*x+y*y);
-			radius_r=(int)(radius/norm_CBCT->pix_spacing[0]+0.5);
-			for (nk=0; nk<norm_CBCT->dim[2]; nk++){
-				if (radius>norm_radius-20 && radius<norm_radius) {
-					int pi=volume_index(norm_CBCT->dim,ni,nj,nk);
-					float *pp=(float*)norm_CBCT->img+pi;
-					average+=norm[pi];
-					pixels++;
-				}
-				average_r[radius_r]+=norm[volume_index(norm_CBCT->dim,ni,nj,nk)];
-				pixels_r[radius_r]++;
-			}
-		}
-}
-
-average/=(float)pixels;
-printf("average(radius %d-%d mm)=%f\n",(int)norm_radius-20,(int)norm_radius,average);
-
-for(ni=0; ni<norm_CBCT->dim[0]; ni++)
-		average_r[ni]/=pixels_r[ni];
-for(ni=0; ni<=2; ni++)
-	average_r[ni]=average_r[3];
-
-LowPass(140,average_r);
-
-for (nj=0; nj<norm_CBCT->dim[1]; nj++){
-	for (ni=0; ni<norm_CBCT->dim[0]; ni++){
-		float x=(float)ni*norm_CBCT->pix_spacing[0]+norm_CBCT->offset[0]-norm_CBCT->pix_spacing[0];
-		float y=(float)nj*norm_CBCT->pix_spacing[1]+norm_CBCT->offset[1]-norm_CBCT->pix_spacing[1];
-		radius=sqrt(x*x+y*y);
-		radius_r=(int)(radius/norm_CBCT->pix_spacing[0]+0.5);
-		for (nk=0; nk<norm_CBCT->dim[2]; nk++){
-			if (radius>norm_radius)
-				norm[volume_index(norm_CBCT->dim,ni,nj,nk)]=0.0f;
-			else{
-				norm[volume_index(norm_CBCT->dim,ni,nj,nk)]=average-average_r[radius_r];
-			}
-		}
-	}
-}
-		printf("The norm mha is processed\n");
-		free(average_r);
-		free(pixels_r);
-}
-
-void bowtie_correction(Volume * vol,MGHCBCT_Options_ext* options)
-{
- Volume * norm_CBCT;
- float * img, * norm;
- int ni,nj,nk;
- int i,j,k;
-
- 	if (options->full_fan){
-		norm_CBCT=read_mha(options->Full_normCBCT_name);
-	}
-	else{
-		norm_CBCT=read_mha(options->Half_normCBCT_name);
-	}
- //norm_CBCT=volume_clone(vol);
- process_norm_CBCT(norm_CBCT,options);
- img=(float *)vol->img;
- norm=(float *)norm_CBCT->img;
-
- //norm_CBCT=read_mha("C:/AAAfiles/CatPhantom_Full_Fan_Half_Scan/Scan0/Full_norm.mha");
-
- for (k=0; k<vol->dim[2]; k++){ 
-	 nk=(int)floor((k*vol->pix_spacing[2]+vol->offset[2]-vol->pix_spacing[2]-(norm_CBCT->offset[2]-norm_CBCT->pix_spacing[2]))/norm_CBCT->pix_spacing[2]);
-	 if ((nk<0)||(nk>=norm_CBCT->dim[2]))
-		 continue;
-	 for (j=0; j<vol->dim[1]; j++){
-		 nj=(int)floor((j*vol->pix_spacing[1]+vol->offset[1]-vol->pix_spacing[1]-(norm_CBCT->offset[1]-norm_CBCT->pix_spacing[1]))/norm_CBCT->pix_spacing[1]);
-		 if ((nj<0)||(nj>=norm_CBCT->dim[1]))
-			 continue;
-		 for (i=0; i<vol->dim[0]; i++){
-			 ni=(int)floor((i*vol->pix_spacing[0]+vol->offset[0]-vol->pix_spacing[0]-(norm_CBCT->offset[0]-norm_CBCT->pix_spacing[0]))/norm_CBCT->pix_spacing[0]);	
-			 if ((ni<0)||(ni>=norm_CBCT->dim[0]))
-				 continue;
-			 img[volume_index (vol->dim, i,j,k)]+=norm[volume_index(norm_CBCT->dim,ni,nj,nk)];
-		 }
-	 }
- }
- free(norm_CBCT->img);
- free(norm_CBCT);
-}
-
-
-//}

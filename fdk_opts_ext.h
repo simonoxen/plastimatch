@@ -42,7 +42,7 @@ struct MGHCBCT_Options_struct_ext {
 extern "C" {
 #endif
 
-void parse_args (MGHCBCT_Options_ext* options, int argc, char* argv[]);
+void parse_args_ext (MGHCBCT_Options_ext* options, int argc, char* argv[]);
 
 #if defined __cplusplus
 }

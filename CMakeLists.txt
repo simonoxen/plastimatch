@@ -373,9 +373,9 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
 
-  NVCC_FILE(fdk_cuda2.cu)
+  NVCC_FILE(fdk_cuda_ext.cu)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda2.cu.cpp")
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda_ext.cu.cpp")
 
   NVCC_FILE(cuda_probe.cu)
   SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
@@ -666,18 +666,19 @@ SET(FDK_CUDA_SRC
 	)
 #<<<<<<< .mine
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-	fdk_opts2.c fdk_opts_ext.h
-	fdk_utils2.c fdk_utils2.h
+	fdk_opts_ext.c fdk_opts_ext.h
+	fdk_utils_ext.c fdk_utils_ext.h
 	fdk_cuda.h fdk.h
 	mathutil.h
 	fdk_cuda_integrated_main.c
-	fdk_cuda2.cu
+	fdk_cuda_ext.cu
 	write_matrix.h MGHMtx_opts.h
 	ramp_filter.h readmha_ext.h
 	volume.h volume_ext.h
 	volume.c volume_ext.c
 	write_matrix.c writematrix_opts.c
-	writemha_512prefix.c	
+	wrmha_512prefix.c
+	bowtie_correction.c	
 	)
 IF (PLM_USE_FINDCUDA)
   CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -685,7 +686,7 @@ IF (PLM_USE_FINDCUDA)
     ${FDK_CUDA_SRC}
     ${FDK_CUDA_WRAPPERS}
     )
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda2.cu)
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
   SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
     ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
     ${FDK_CUDA_WRAPPERS}

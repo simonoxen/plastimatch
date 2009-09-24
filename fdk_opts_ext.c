@@ -27,7 +27,7 @@ void print_usage (void)
     exit (1);
 }
 
-void set_default_options (MGHCBCT_Options_ext* options)
+void set_default_options_ext (MGHCBCT_Options_ext* options)
 {
 	options->first_img = 0;
     options->last_img = 119;
@@ -43,10 +43,10 @@ void set_default_options (MGHCBCT_Options_ext* options)
 	options->sagittal=0;
     //options->input_dir = ".";
 	options->sub_dir = ".";
-    options->output_file = "output.mha";
-	options->Full_normCBCT_name="Full_norm.mha"; 
+    options->output_file = "output.mh5";
+	options->Full_normCBCT_name="Full_norm.mh5"; 
 	options->Full_radius=120;
-	options->Half_normCBCT_name="Half_norm.mha"; 
+	options->Half_normCBCT_name="Half_norm.mh5"; 
 	options->Half_radius=220;
     //options->first_img = 0;
     //options->last_img = 119;
@@ -61,14 +61,14 @@ void set_default_options (MGHCBCT_Options_ext* options)
     //options->output_file = "output.mha";
 }
 
-void parse_args (MGHCBCT_Options_ext* options, int argc, char* argv[])
+void parse_args_ext (MGHCBCT_Options_ext* options, int argc, char* argv[])
 {
     int i, rc;
 	
     if (argc < 2)
 	{ print_usage(); exit(1); }
 
-    set_default_options (options);
+    set_default_options_ext (options);
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-r")) {

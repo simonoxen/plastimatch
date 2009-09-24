@@ -42,7 +42,7 @@
 #include "volume.h"
 #include "readmha_ext.h"
 #include "mathutil.h"
-#include "C:\AAAfiles\Anthony\plastimatch\plastimatch\trunk\fdk_utils2.h"
+#include "fdk_utils_ext.h"
 /*********************
 * High Res Win Timer *
 *********************/

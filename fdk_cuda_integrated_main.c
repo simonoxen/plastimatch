@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include "plm_config.h"
 #include "fdk_opts_ext.h"
-#include "fdk_utils2.h"
+#include "fdk_utils_ext.h"
 #include "volume.h"
 #include "readmha_ext.h"
 #include "MGHDRR_Options.h"
@@ -53,7 +53,7 @@ main(int argc, char* argv[])
      * STEP 0: Parse commandline arguments                           * 
      ****************************************************************/
 
-	parse_args (&options, argc, argv);
+	parse_args_ext (&options, argc, argv);
 	wm_set_default_options (&matrix_options);
 	//give the previously allocated array to pointers.
 	
@@ -133,7 +133,7 @@ main(int argc, char* argv[])
      * STEP 4: Write MHA output file      *
      *************************************/
     printf("Writing output volume...");	
-    write_mha (options.output_file, vol,&options);
+    write_mha_512prefix (options.output_file, vol,&options);
     printf(" done.\n\n");
 	free(vol->img);
 	free(vol);

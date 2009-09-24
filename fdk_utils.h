@@ -18,6 +18,7 @@ CB_Image* get_image (MGHCBCT_Options* options, int image_num);
 CB_Image* load_cb_image (char* img_filename, char* mat_filename);
 void free_cb_image (CB_Image* cbi);
 
+
 #if defined __cplusplus
 }
 #endif

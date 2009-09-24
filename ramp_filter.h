@@ -1,10 +1,11 @@
-#pragma once
+#ifndef _ramp_filter_h_
+#define __ramp_filter_h_
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include "C:\AAAfiles\Anthony\FFTW\fftw3.h"
-//#pragma comment (lib, "libfftw3-3.lib")
-#pragma comment (lib, "C:\\AAAfiles\\Anthony\\FFTW\\libfftw3-3.lib")
+#include "fftw3.h"
+#pragma comment (lib, "libfftw3-3.lib")
+#endif 
 
 #ifndef PI
 	static const double PI = 3.14159265;
