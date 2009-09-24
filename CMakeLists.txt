@@ -666,7 +666,7 @@ SET(FDK_CUDA_SRC
 	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
-<<<<<<< .mine
+#<<<<<<< .mine
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_opts2.c fdk_opts_ext.h
 	fdk_utils2.c fdk_utils2.h
@@ -702,7 +702,7 @@ ELSE (PLM_USE_FINDCUDA)
     fdk_cuda_wrap.cpp
     )
 ENDIF (PLM_USE_FINDCUDA)
-=======
+#=======
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -717,7 +717,7 @@ IF (CUDA_FOUND)
       )
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (CUDA_FOUND)
->>>>>>> .r580
+#>>>>>>> .r580
 
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h

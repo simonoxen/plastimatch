@@ -91,8 +91,8 @@ void write_mha (char* filename, Volume* vol, MGHCBCT_Options_ext* options)
     case PT_SHORT:
 	element_type = "MET_SHORT";
 	break;
-    case PT_ULONG:
-	element_type = "MET_ULONG";
+    //case PT_ULONG:
+	//element_type = "MET_ULONG";
 	break;
     case PT_FLOAT:
 	element_type = "MET_FLOAT";

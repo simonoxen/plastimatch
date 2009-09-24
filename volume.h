@@ -39,6 +39,12 @@ struct volume
     float zmin; // Minimum Z Value in Volume
     float zmax; // Maximum Z Value in Volume
 #endif
+	float xmin;	// Minimum X Value in Volume
+    float xmax; // Maximum X Value in Volume
+    float ymin; // Minimum Y Value in Volume
+    float ymax; // Maximum Y Value in Volume
+    float zmin; // Minimum Z Value in Volume
+    float zmax; // Maximum Z Value in Volume
 };
 
 #if defined __cplusplus

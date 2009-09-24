@@ -12,7 +12,7 @@
 #include "volume.h"
 //#include "imageview.h"
 #include "readmha_ext.h"
-#include "C:\AAAfiles\Anthony\FFTW\fftw3.h"
+#include "fftw3.h"
 #include "fdk_utils2.h"
 //#include "fftw3.h"
 
