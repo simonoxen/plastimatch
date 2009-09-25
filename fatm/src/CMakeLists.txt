@@ -1,9 +1,9 @@
 PROJECT(fatm)
 
 ## --- It would be nice, but this doesn't work with UNIX MAKEFILES
-## INCLUDE(FindMatlab)
+INCLUDE(FindMatlab)
 
-SET (PLM_BUILD_MEXFATM 0)
+SET (PLM_BUILD_MEXFATM OFF CACHE BOOL "Enable mex fatm")
 
 ######################################################
 ##  RULES FOR BUILDING FATM
