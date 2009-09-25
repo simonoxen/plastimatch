@@ -664,7 +664,6 @@ SET(FDK_CUDA_SRC
 	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
-#<<<<<<< .mine
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_opts_ext.c fdk_opts_ext.h
 	fdk_utils_ext.c fdk_utils_ext.h
@@ -680,28 +679,6 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	wrmha_512prefix.c
 	bowtie_correction.c	
 	)
-IF (PLM_USE_FINDCUDA)
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-  SET (FDK_CUDA_SRC
-    ${FDK_CUDA_SRC}
-    ${FDK_CUDA_WRAPPERS}
-    )
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
-  SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-    ${FDK_CUDA_WRAPPERS}
-    )
-ELSE (PLM_USE_FINDCUDA)
-  SET (FDK_CUDA_SRC
-    ${FDK_CUDA_SRC}
-    fdk_cuda_wrap.cpp
-    )
-   SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-    fdk_cuda_wrap.cpp
-    )
-ENDIF (PLM_USE_FINDCUDA)
-#=======
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -709,14 +686,22 @@ IF (CUDA_FOUND)
       ${FDK_CUDA_SRC}
       ${FDK_CUDA_WRAPPERS}
       )
+    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
+    SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+      ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+      ${FDK_CUDA_WRAPPERS}
+      )
   ELSE (PLM_USE_FINDCUDA)
     SET (FDK_CUDA_SRC
       ${FDK_CUDA_SRC}
       fdk_cuda_wrap.cpp
       )
+    SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+      ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+      fdk_cuda_wrap.cpp
+      )
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (CUDA_FOUND)
-#>>>>>>> .r580
 
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
@@ -1047,7 +1032,9 @@ IF(CUDA_FOUND)
       "${GPUIT_LIBRARIES}" "")
   ENDIF(PLM_BUILD_DEMONS_CUDA)
   PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
-  PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" "${GPUIT_LIBRARIES}" "")
+  IF (FFTW_FOUND)
+    PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" "${GPUIT_LIBRARIES}" "")
+  ENDIF (FFTW_FOUND)
   PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 

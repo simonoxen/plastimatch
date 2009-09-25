@@ -143,9 +143,6 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	}
     }
 
-    printf ("Finished uid parsing\n");
-
-
     /* StructureSetROISequence */
     seq = rtss_file->GetSeqEntry (0x3006,0x0020);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
@@ -186,88 +183,89 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	}
 
 	/* ContourSequence */
-	printf ("Parsing contour_sequence...\n");
 	c_seq = item->GetSeqEntry (0x3006,0x0040);
-	for (c_item = c_seq->GetFirstSQItem (); c_item; c_item = c_seq->GetNextSQItem ()) {
-	    int i, p, n, contour_data_len;
-	    int num_points;
-	    std::string contour_geometric_type;
-	    std::string contour_data;
-	    std::string number_of_contour_points;
-	    Cxt_polyline *curr_polyline;
+	if (c_seq) {
+	    for (c_item = c_seq->GetFirstSQItem (); c_item; c_item = c_seq->GetNextSQItem ()) {
+		int i, p, n, contour_data_len;
+		int num_points;
+		std::string contour_geometric_type;
+		std::string contour_data;
+		std::string number_of_contour_points;
+		Cxt_polyline *curr_polyline;
 
-	    /* Grab data from dicom */
-	    contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
-	    if (strncmp (contour_geometric_type.c_str(), "CLOSED_PLANAR", strlen("CLOSED_PLANAR"))) {
-		/* Might be "POINT".  Do I want to preserve this? */
-		printf ("Skipping geometric type: [%s]\n", contour_geometric_type.c_str());
-		continue;
-	    }
-	    number_of_contour_points = c_item->GetEntryValue (0x3006,0x0046);
-	    if (1 != sscanf (number_of_contour_points.c_str(), "%d", &num_points)) {
-		printf ("Error parsing number_of_contour_points...\n");
-		continue;
-	    }
-	    if (num_points <= 0) {
-		/* Polyline with zero points?  Skip it. */
-		continue;
-	    }
-	    contour_data = c_item->GetEntryValue (0x3006,0x0050);
-	    if (contour_data == gdcm::GDCM_UNFOUND) {
-		printf ("Error grabbing contour data.\n");
-		continue;
-	    }
+		/* Grab data from dicom */
+		contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
+		if (strncmp (contour_geometric_type.c_str(), "CLOSED_PLANAR", strlen("CLOSED_PLANAR"))) {
+		    /* Might be "POINT".  Do I want to preserve this? */
+		    printf ("Skipping geometric type: [%s]\n", contour_geometric_type.c_str());
+		    continue;
+		}
+		number_of_contour_points = c_item->GetEntryValue (0x3006,0x0046);
+		if (1 != sscanf (number_of_contour_points.c_str(), "%d", &num_points)) {
+		    printf ("Error parsing number_of_contour_points...\n");
+		    continue;
+		}
+		if (num_points <= 0) {
+		    /* Polyline with zero points?  Skip it. */
+		    continue;
+		}
+		contour_data = c_item->GetEntryValue (0x3006,0x0050);
+		if (contour_data == gdcm::GDCM_UNFOUND) {
+		    printf ("Error grabbing contour data.\n");
+		    continue;
+		}
 
-	    /* Create a new polyline for this structure */
-	    curr_polyline = cxt_add_polyline (curr_structure);
-	    curr_polyline->slice_no = -1;
-	    curr_polyline->ct_slice_uid = 0;
-	    curr_polyline->num_vertices = num_points;
-	    curr_polyline->x = (float*) malloc (num_points * sizeof(float));
-	    curr_polyline->y = (float*) malloc (num_points * sizeof(float));
-	    curr_polyline->z = (float*) malloc (num_points * sizeof(float));
+		/* Create a new polyline for this structure */
+		curr_polyline = cxt_add_polyline (curr_structure);
+		curr_polyline->slice_no = -1;
+		curr_polyline->ct_slice_uid = 0;
+		curr_polyline->num_vertices = num_points;
+		curr_polyline->x = (float*) malloc (num_points * sizeof(float));
+		curr_polyline->y = (float*) malloc (num_points * sizeof(float));
+		curr_polyline->z = (float*) malloc (num_points * sizeof(float));
 
-	    /* Parse dicom data string */
-	    i = 0;
-	    n = 0;
-	    contour_data_len = strlen (contour_data.c_str());
-	    for (p = 0; p < 3 * num_points; p++) {
-		float f;
-		int this_n;
+		/* Parse dicom data string */
+		i = 0;
+		n = 0;
+		contour_data_len = strlen (contour_data.c_str());
+		for (p = 0; p < 3 * num_points; p++) {
+		    float f;
+		    int this_n;
 		
-		/* Skip \\ */
-		if (n < contour_data_len) {
-		    if (contour_data.c_str()[n] == '\\') {
-			n++;
+		    /* Skip \\ */
+		    if (n < contour_data_len) {
+			if (contour_data.c_str()[n] == '\\') {
+			    n++;
+			}
 		    }
-		}
 
-		/* Parse float value */
-		if (1 != sscanf (&contour_data[n], "%f%n", &f, &this_n)) {
-		    printf ("Error parsing data...\n");
-		    break;
-		}
-		n += this_n;
+		    /* Parse float value */
+		    if (1 != sscanf (&contour_data[n], "%f%n", &f, &this_n)) {
+			printf ("Error parsing data...\n");
+			break;
+		    }
+		    n += this_n;
 
-		/* Put value into polyline */
-		switch (i) {
-		case 0:
-		    curr_polyline->x[p/3] = f;
-		    break;
-		case 1:
-		    curr_polyline->y[p/3] = f;
-		    break;
-		case 2:
-		    curr_polyline->z[p/3] = f;
-		    break;
+		    /* Put value into polyline */
+		    switch (i) {
+		    case 0:
+			curr_polyline->x[p/3] = f;
+			break;
+		    case 1:
+			curr_polyline->y[p/3] = f;
+			break;
+		    case 2:
+			curr_polyline->z[p/3] = f;
+			break;
+		    }
+		    i = (i + 1) % 3;
 		}
-		i = (i + 1) % 3;
-	    }
-	    /* Find matching CT slice at this z location */
-	    if (gs.m_have_ct) {
-		gs.get_slice_info (&curr_polyline->slice_no,
-				   &curr_polyline->ct_slice_uid,
-				   curr_polyline->z[0]);
+		/* Find matching CT slice at this z location */
+		if (gs.m_have_ct) {
+		    gs.get_slice_info (&curr_polyline->slice_no,
+				       &curr_polyline->ct_slice_uid,
+				       curr_polyline->z[0]);
+		}
 	    }
 	}
     }

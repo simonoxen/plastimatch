@@ -123,7 +123,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    if (!strcmp (optarg, "dicom")) {
 		parms->output_dicom = 1;
 	    } else {
-		fprintf (stderr, "Error.  --output-type option only supports dicom.\n");
+		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
 		warp_print_usage ();
 	    }
 	    break;

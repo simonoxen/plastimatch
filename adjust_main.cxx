@@ -8,7 +8,7 @@
 #include "adjust_main.h"
 #include "itk_image.h"
 
-void
+static void
 adjust_main (Adjust_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
@@ -56,24 +56,29 @@ adjust_main (Adjust_Parms* parms)
 	}
     }
 
-    save_float (img, parms->mha_out_fn);
+    if (parms->output_dicom) {
+	save_short_dicom (img, parms->mha_out_fn);
+    } else {
+	save_image (img, parms->mha_out_fn);
+    }
 }
 
-void
+static void
 adjust_print_usage (void)
 {
     printf ("Usage: plastimatch adjust [options]\n"
 	    "Required:\n"
-	    "    --input=image_in"
-	    "    --output=image_out"
+	    "    --input=image_in\n"
+	    "    --output=image_out\n"
 	    "Optional:\n"
-	    "    --truncate_above=value"
+	    "    --truncate-above=value\n"
+	    "    --truncate-below=value\n"
 	    "    --stretch=\"min max\"\n"
 	    );
     exit (-1);
 }
 
-void
+static void
 adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 {
     int ch;
@@ -85,6 +90,7 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	{ "truncate_below", required_argument,      NULL,           5 },
 	{ "truncate-below", required_argument,      NULL,           5 },
 	{ "stretch",        required_argument,      NULL,           6 },
+	{ "output-format",  required_argument,      NULL,           7 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -116,6 +122,14 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 		adjust_print_usage ();
 	    }
 	    parms->have_stretch = 1;
+	    break;
+	case 7:
+	    if (!strcmp (optarg, "dicom")) {
+		parms->output_dicom = 1;
+	    } else {
+		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
+		adjust_print_usage ();
+	    }
 	    break;
 	default:
 	    break;

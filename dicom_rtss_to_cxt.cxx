@@ -83,18 +83,6 @@ int
 main(int argc, char *argv[])
 {
     Program_parms parms;
-#if defined (commentout)
-    if (argc == 2) {
-	rtss_fn = argv[1];
-	dicom_dir = 0;
-    } else if (argc == 3) {
-	rtss_fn = argv[1];
-	dicom_dir = argv[2];
-    } else {
-	printf ("Usage: dicom_rtss_to_cxt dicom_rtss [ dicom_dir ]\n");
-	exit (1);
-    }
-#endif
 
     parse_args (&parms, argc, argv);
 

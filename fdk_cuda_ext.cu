@@ -47,8 +47,10 @@
 * High Res Win Timer *
 *********************/
 #include <time.h>
+#if defined (_WIN32)
 #include <windows.h>
 #include <winbase.h>
+#endif
 void free_cb_image (CB_Image* cbi);
 
 
@@ -149,257 +151,273 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
 extern "C"
 int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options_ext *options)
 {
-	// Thead Block Dimensions
-	int tBlock_x = 16;
-	int tBlock_y = 4;
-	int tBlock_z = 4;
+    // Thead Block Dimensions
+    int tBlock_x = 16;
+    int tBlock_y = 4;
+    int tBlock_z = 4;
 
-	// Each element in the volume (each voxel) gets 1 thread
-	int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
-	int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
-	int blocksInZ = (vol->dim[2]+tBlock_z-1)/tBlock_z;
-	dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
-	dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+    // Each element in the volume (each voxel) gets 1 thread
+    int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
+    int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
+    int blocksInZ = (vol->dim[2]+tBlock_z-1)/tBlock_z;
+    dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
+    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
 
-	// Size of volume Malloc
-	int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
+    // Size of volume Malloc
+    int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
 
-	// Structure for passing arugments to kernel: (See fdk_cuda.h)
-	kernel_args_fdk *kargs;
-	kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
+    // Structure for passing arugments to kernel: (See fdk_cuda.h)
+    kernel_args_fdk *kargs;
+    kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-	CB_Image* cbi;
-	int image_num;
-	int i;
+    CB_Image* cbi;
+    int image_num;
+    int i;
 
-	// CUDA device pointers
-	float *dev_vol;	            // Holds voxels on device
-	float *dev_img;	            // Holds image pixels on device
-	float *dev_matrix;
-	kernel_args_fdk *dev_kargs; // Holds kernel parameters
-	cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
-	cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
+    // CUDA device pointers
+    float *dev_vol;	            // Holds voxels on device
+    float *dev_img;	            // Holds image pixels on device
+    float *dev_matrix;
+    kernel_args_fdk *dev_kargs; // Holds kernel parameters
+    cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
+    cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
 
-	// Calculate the scale
-	image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
-	float scale = (float) (sqrt(3.0) / (double) image_num);
-	scale = scale * options->scale;
+    // Calculate the scale
+    image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
+    float scale = (float) (sqrt(3.0) / (double) image_num);
+    scale = scale * options->scale;
 
-	// Load static kernel arguments
-	kargs->scale = scale;
-	kargs->vol_offset.x = vol->offset[0];
-	kargs->vol_offset.y = vol->offset[1];
-	kargs->vol_offset.z = vol->offset[2];
-	kargs->vol_dim.x = vol->dim[0];
-	kargs->vol_dim.y = vol->dim[1];
-	kargs->vol_dim.z = vol->dim[2];
-	kargs->vol_pix_spacing.x = vol->pix_spacing[0];
-	kargs->vol_pix_spacing.y = vol->pix_spacing[1];
-	kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+    // Load static kernel arguments
+    kargs->scale = scale;
+    kargs->vol_offset.x = vol->offset[0];
+    kargs->vol_offset.y = vol->offset[1];
+    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_dim.x = vol->dim[0];
+    kargs->vol_dim.y = vol->dim[1];
+    kargs->vol_dim.z = vol->dim[2];
+    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
+    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
+    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
 
 
-		////// TIMING CODE //////////////////////
-		// Initialize Windows HighRes Timer
-		int count,a;
-		float kernel_total, io_total;
-		LARGE_INTEGER ticksPerSecond;
-		LARGE_INTEGER tick;   // A point in time
-		LARGE_INTEGER start_ticks_kernel, end_ticks_kernel, cputime;   
-		LARGE_INTEGER start_ticks_io, end_ticks_io;   
-		LARGE_INTEGER start_ticks_total, end_ticks_total;   
+    ////// TIMING CODE //////////////////////
+    // Initialize Windows HighRes Timer
+    int count,a;
+    float kernel_total, io_total;
+#if defined (_WIN32)
+    LARGE_INTEGER ticksPerSecond;
+    LARGE_INTEGER tick;   // A point in time
+    LARGE_INTEGER start_ticks_kernel, end_ticks_kernel, cputime;   
+    LARGE_INTEGER start_ticks_io, end_ticks_io;   
+    LARGE_INTEGER start_ticks_total, end_ticks_total;   
+#endif
 
-		#if defined (VERBOSE)
-			printf("\n\nInitializing High Resolution Timers\n");
-		#endif
-		io_total=0;
-		kernel_total=0;
+#if defined (VERBOSE)
+    printf("\n\nInitializing High Resolution Timers\n");
+#endif
+    io_total=0;
+    kernel_total=0;
 
-		// get the high resolution counter's accuracy
-		if (!QueryPerformanceFrequency(&ticksPerSecond))
-			printf("QueryPerformance not present!");
+    // get the high resolution counter's accuracy
+#if defined (_WIN32)
+    if (!QueryPerformanceFrequency(&ticksPerSecond))
+	printf("QueryPerformance not present!");
+#endif
 
-		#if defined (VERBOSE)
-			printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-		#endif
+#if defined (VERBOSE)
+    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
+#endif
 
-		// Test: Get current time.
-		if (!QueryPerformanceCounter(&tick))
-			printf("no go counter not installed");  
+    // Test: Get current time.
+#if defined (_WIN32)
+    if (!QueryPerformanceCounter(&tick))
+	printf("no go counter not installed");  
+#endif
 
-		#if defined (VERBOSE)
-			printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-		#endif
-		/////////////////////////////////////////
+#if defined (VERBOSE)
+    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
+#endif
+    /////////////////////////////////////////
 	
 
-	#if defined (VERBOSE)
-		// First, we need to allocate memory on the host device
-		// for the 3D volume of voxels that will hold our reconstruction.
-		printf("========================================\n");
-		printf("Allocating %dMB of video memory...", vol_size_malloc/1000000);
-	#endif
+#if defined (VERBOSE)
+    // First, we need to allocate memory on the host device
+    // for the 3D volume of voxels that will hold our reconstruction.
+    printf("========================================\n");
+    printf("Allocating %dMB of video memory...", vol_size_malloc/1000000);
+#endif
 
-	cudaMalloc( (void**)&dev_vol, vol_size_malloc);
-	cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
-	checkCUDAError("Unable to allocate data volume");
+    cudaMalloc( (void**)&dev_vol, vol_size_malloc);
+    cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
+    checkCUDAError("Unable to allocate data volume");
 
-	#if defined (VERBOSE)
-		printf(" done.\n\n");
+#if defined (VERBOSE)
+    printf(" done.\n\n");
 
-		// State the kernel execution parameters
-		printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
-		printf("%u voxels in volume\n", vol->npix);
-		printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-		printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
-		printf("========================================\n\n");
+    // State the kernel execution parameters
+    printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
+    printf("%u voxels in volume\n", vol->npix);
+    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
+    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
+    printf("========================================\n\n");
 
-		// Start working
-		printf("Processing...");
-	#endif
+    // Start working
+    printf("Processing...");
+#endif
 
 	
 	
-	// This is just to retrieve the 2D image dimensions
-	int fimg=options->first_img;
-		do{
-		cbi = get_image(options, fimg);
-			fimg++;
-			}
-			while(cbi==NULL);
+    // This is just to retrieve the 2D image dimensions
+    int fimg=options->first_img;
+    do{
+	cbi = get_image(options, fimg);
+	fimg++;
+    }
+    while(cbi==NULL);
 		
-	cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-	free_cb_image( cbi );
+    cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
+    free_cb_image( cbi );
 
-		////// TIMING CODE //////////////////////
-		QueryPerformanceCounter(&start_ticks_total);
-		/////////////////////////////////////////
+    ////// TIMING CODE //////////////////////
+#if defined (_WIN32)
+    QueryPerformanceCounter(&start_ticks_total);
+#endif
+    /////////////////////////////////////////
 
-	printf ("Projecting Image:");
-	// Project each image into the volume one at a time
-	for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
-	{
+    printf ("Projecting Image:");
+    // Project each image into the volume one at a time
+    for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
+    {
 	printf (" %d\n", image_num);
 	fflush(stdout);
-			////// TIMING CODE //////////////////////
-			#if defined (TIME_KERNEL)
-				QueryPerformanceCounter(&start_ticks_io);
-			#endif
-			/////////////////////////////////////////
+	////// TIMING CODE //////////////////////
+#if defined (TIME_KERNEL)
+#if defined (_WIN32)
+	QueryPerformanceCounter(&start_ticks_io);
+#endif
+#endif
+	/////////////////////////////////////////
 
-		// Load the current image
-		cbi = get_image(options, image_num);
-		if (cbi==NULL)
-			continue;
+	// Load the current image
+	cbi = get_image(options, image_num);
+	if (cbi==NULL)
+	    continue;
 
-		// Load dynamic kernel arguments
-		kargs->img_dim.x = cbi->dim[0];
-		kargs->img_dim.y = cbi->dim[1];
-		kargs->ic.x = cbi->ic[0];
-		kargs->ic.y = cbi->ic[1];
-		kargs->nrm.x = cbi->nrm[0];
-		kargs->nrm.y = cbi->nrm[1];
-		kargs->nrm.z = cbi->nrm[2];
-		kargs->sad = cbi->sad;
-		kargs->sid = cbi->sid;
-		for(i=0; i<12; i++)
-			kargs->matrix[i] = (float)cbi->matrix[i];
+	// Load dynamic kernel arguments
+	kargs->img_dim.x = cbi->dim[0];
+	kargs->img_dim.y = cbi->dim[1];
+	kargs->ic.x = cbi->ic[0];
+	kargs->ic.y = cbi->ic[1];
+	kargs->nrm.x = cbi->nrm[0];
+	kargs->nrm.y = cbi->nrm[1];
+	kargs->nrm.z = cbi->nrm[2];
+	kargs->sad = cbi->sad;
+	kargs->sid = cbi->sid;
+	for(i=0; i<12; i++)
+	    kargs->matrix[i] = (float)cbi->matrix[i];
 
-		// Copy image pixel data & projection matrix to device Global Memory
-		// and then bind them to the texture hardware.
-		cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
-		cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
-		cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
-		cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
+	// Copy image pixel data & projection matrix to device Global Memory
+	// and then bind them to the texture hardware.
+	cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
+	cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
+	cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
+	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
-		// Free the current image 
-		free_cb_image( cbi );
+	// Free the current image 
+	free_cb_image( cbi );
 
-			////// TIMING CODE //////////////////////
-			#if defined (TIME_KERNEL)
-				QueryPerformanceCounter(&end_ticks_io);
-				cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
-				io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
-				QueryPerformanceCounter(&start_ticks_kernel);
-			#endif
-			/////////////////////////////////////////
+	////// TIMING CODE //////////////////////
+#if defined (TIME_KERNEL)
+#if defined (_WIN32)
+	QueryPerformanceCounter(&end_ticks_io);
+	cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
+	io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+	QueryPerformanceCounter(&start_ticks_kernel);
+#endif
+#endif
+	/////////////////////////////////////////
 
-		// Invoke ze kernel  \(^_^)/
-		// Note: cbi->img AND cbi->matrix are passed via texture memory
-		//-------------------------------------
-		kernel_fdk<<< dimGrid, dimBlock >>>(dev_vol,
-						    kargs->img_dim,
-						    kargs->ic,
-						    kargs->nrm,
-						    kargs->sad,
-						    kargs->scale,
-						    kargs->vol_offset,
-						    kargs->vol_dim,
-						    kargs->vol_pix_spacing,
-						    blocksInY,
-						    1.0f/(float)blocksInY);
-		checkCUDAError("Kernel Panic!");
+	// Invoke ze kernel  \(^_^)/
+	// Note: cbi->img AND cbi->matrix are passed via texture memory
+	//-------------------------------------
+	kernel_fdk<<< dimGrid, dimBlock >>>(dev_vol,
+					    kargs->img_dim,
+					    kargs->ic,
+					    kargs->nrm,
+					    kargs->sad,
+					    kargs->scale,
+					    kargs->vol_offset,
+					    kargs->vol_dim,
+					    kargs->vol_pix_spacing,
+					    blocksInY,
+					    1.0f/(float)blocksInY);
+	checkCUDAError("Kernel Panic!");
 
-		#if defined (TIME_KERNEL)
-			// CUDA kernel calls are asynchronous...
-			// In order to accurately time the kernel
-			// execution time we need to set a thread
-			// barrier here after its execution.
-			cudaThreadSynchronize();
-		#endif
+#if defined (TIME_KERNEL)
+	// CUDA kernel calls are asynchronous...
+	// In order to accurately time the kernel
+	// execution time we need to set a thread
+	// barrier here after its execution.
+	cudaThreadSynchronize();
+#endif
 
-		// Unbind the image and projection matrix textures
-		cudaUnbindTexture( tex_img );
-		cudaUnbindTexture( tex_matrix );
+	// Unbind the image and projection matrix textures
+	cudaUnbindTexture( tex_img );
+	cudaUnbindTexture( tex_matrix );
 
-			////// TIMING CODE //////////////////////
-			#if defined (TIME_KERNEL)
-				QueryPerformanceCounter(&end_ticks_kernel);
-				cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
-				kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
-			#endif
-			/////////////////////////////////////////
-	}
+	////// TIMING CODE //////////////////////
+#if defined (TIME_KERNEL)
+#if defined (_WIN32)
+	QueryPerformanceCounter(&end_ticks_kernel);
+	cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
+	kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+#endif
+#endif
+	/////////////////////////////////////////
+    }
 
-	#if defined (VERBOSE)
-		printf(" done.\n\n");
-	#endif
+#if defined (VERBOSE)
+    printf(" done.\n\n");
+#endif
 	
-	// Copy reconstructed volume from device to host
-	cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
-	checkCUDAError("Error: Unable to retrieve data volume.");
+    // Copy reconstructed volume from device to host
+    cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
+    checkCUDAError("Error: Unable to retrieve data volume.");
 
 	
-		////// TIMING CODE //////////////////////
-		// Report Timing Data
-		#if defined (TIME_KERNEL)
-			QueryPerformanceCounter(&end_ticks_total);
-			cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-			printf("========================================\n");
-			printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-			printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
-			printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
+    ////// TIMING CODE //////////////////////
+    // Report Timing Data
+#if defined (_WIN32)
+#if defined (TIME_KERNEL)
+    QueryPerformanceCounter(&end_ticks_total);
+    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
+    printf("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
+    printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
+    printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
 
-			printf ("[Average Projection Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart)/ (1+(options->last_img - options->first_img) / options->skip_img));
-			printf ("\tAverage Kernel  Time: %.9fs\n", kernel_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-			printf ("\tAverage File IO Time: %.9fs\n\n", io_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-			printf("========================================\n");
-		#else
-			QueryPerformanceCounter(&end_ticks_total);
-			cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-			printf("========================================\n");
-			printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-			printf("========================================\n");
-		#endif
-		/////////////////////////////////////////
+    printf ("[Average Projection Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart)/ (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage Kernel  Time: %.9fs\n", kernel_total/ (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage File IO Time: %.9fs\n\n", io_total/ (1+(options->last_img - options->first_img) / options->skip_img));
+    printf("========================================\n");
+#else
+    QueryPerformanceCounter(&end_ticks_total);
+    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
+    printf("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
+    printf("========================================\n");
+#endif
+#endif
+    /////////////////////////////////////////
 
 
-	// Cleanup
-	cudaFree( dev_img );
-	cudaFree( dev_kargs );
-	cudaFree( dev_matrix );
-	cudaFree( dev_vol );	
+    // Cleanup
+    cudaFree( dev_img );
+    cudaFree( dev_kargs );
+    cudaFree( dev_matrix );
+    cudaFree( dev_vol );	
 
-	return 0;
+    return 0;
 }
 //}
 ///////////////////////////////////////////////////////////////////////////

@@ -20,10 +20,13 @@ public:
     bool have_truncate_below;
     float stretch[2];
     bool have_stretch;
+    int output_dicom;
 public:
     Adjust_Parms () {
 	memset (this, 0, sizeof(Adjust_Parms));
     }
 };
+
+void do_command_adjust (int argc, char *argv[]);
 
 #endif
