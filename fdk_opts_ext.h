@@ -22,20 +22,21 @@ struct MGHCBCT_Options_struct_ext {
     int first_img;
     int skip_img;
     int last_img;
-	int full_fan; //Full_fan=1, Half_fan=0;
-	int coronal;
-	int sagittal;
     int resolution[3];
     float vol_size[3];
     float scale;
     char* input_dir;
-	char* output_file;
-	//MGHCBCT_Options_extOpt
-	char* sub_dir;
-	char* Full_normCBCT_name; 
-	int Full_radius;
-	char*Half_normCBCT_name; 
-	int Half_radius;
+    char* output_file;
+
+    int full_fan; //Full_fan=1, Half_fan=0;
+    int coronal;
+    int sagittal;
+    //MGHCBCT_Options_extOpt
+    char* sub_dir;
+    char* Full_normCBCT_name; 
+    int Full_radius;
+    char*Half_normCBCT_name; 
+    int Half_radius;
 };
 
 #if defined __cplusplus

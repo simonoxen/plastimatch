@@ -13,7 +13,7 @@
 //#include "imageview.h"
 #include "readmha_ext.h"
 #include "fftw3.h"
-#include "fdk_utils.h"
+#include "fdk_utils_ext.h"
 //#include "fftw3.h"
 
 //#pragma comment (lib, "C:\AAAfiles\Anthony\FFTW\libfftw3-3.lib")
@@ -39,8 +39,6 @@ my_create_volume (MGHCBCT_Options_ext* options)
 
     return volume_create (resolution, offset, spacing, PT_FLOAT, 0, 0);
 }
-
-
 
 float
 convert_to_hu_pixel (float in_value)

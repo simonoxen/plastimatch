@@ -6,6 +6,7 @@
 
 #define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
 
+#cmakedefine HAVE_SYS_STAT 1
 #cmakedefine HAVE_BROOK 1
 #cmakedefine HAVE_CUDA 1
 #cmakedefine FORTRAN_COMPILER_FOUND 1

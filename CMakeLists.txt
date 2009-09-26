@@ -51,6 +51,11 @@ ENDIF (NOT MINGW)
 INCLUDE (PLM_FindF2C.cmake)
 
 ##-----------------------------------------------------------------------------
+##  Search for include files
+##-----------------------------------------------------------------------------
+CHECK_INCLUDE_FILE ("sys/stat.h" HAVE_SYS_STAT)
+
+##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
@@ -451,6 +456,7 @@ SET(GPUIT_LIBRARY_SRC
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
+  file_util.c file_util.h
   logfile.c logfile.h
   mathutil.h
   readmha.c readmha.h
@@ -1033,7 +1039,11 @@ IF(CUDA_FOUND)
   ENDIF(PLM_BUILD_DEMONS_CUDA)
   PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
   IF (FFTW_FOUND)
-    PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" "${GPUIT_LIBRARIES}" "")
+    SET(FDK_CUDA_INTEGRATED_NORMALIZED_LIBS ${GPUIT_LIBRARIES} 
+      ${FFTW_LIBRARIES})
+    PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized 
+      "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" 
+      "${FDK_CUDA_INTEGRATED_NORMALIZED_LIBS}" "")
   ENDIF (FFTW_FOUND)
   PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)

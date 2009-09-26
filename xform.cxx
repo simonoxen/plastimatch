@@ -452,7 +452,7 @@ save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 	     transform->GetGridRegion().GetSize()[1],
 	     transform->GetGridRegion().GetSize()[2]
 	     );
-    for (int i = 0; i < transform->GetNumberOfParameters(); i++) {
+    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
