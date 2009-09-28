@@ -6,6 +6,9 @@
 #if HAVE_SYS_STAT
 #include <sys/stat.h>
 #endif
+#if _WIN32
+#include <direct.h>
+#endif
 
 int
 file_exists (char *filename)
