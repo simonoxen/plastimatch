@@ -1353,14 +1353,22 @@ clamp_quadratic_interpolate_grad_inline (
 }
 
 inline float
-compute_dS_dP (float* j_hist, float* f_hist, float* m_hist, long* j_idxs, long* f_idxs, long* m_idxs, float num_vox_f, float* fxs, float score, int debug)
+compute_dS_dP (
+    float* j_hist, 
+    float* f_hist, 
+    float* m_hist, 
+    long* j_idxs, 
+    long* f_idxs, 
+    long* m_idxs, 
+    float num_vox_f, 
+    float* fxs, 
+    float score, 
+    int debug
+)
 {
     float dS_dP_0, dS_dP_1, dS_dP;
     const float j_hist_thresh = 0.0001f;
 
-#if defined (commentout)
-#endif
-	
     if (debug) {
 	fprintf (stderr, "j=[%ld %ld] (%g %g), "
 		 "f=[%ld] (%g), "
@@ -1840,6 +1848,48 @@ bspline_find_correspondence
     return 1;
 }
 
+static inline float 
+bspline_li_value (float fx1, float fx2, float fy1, float fy2, 
+		  float fz1, float fz2, int mvf, 
+		  float *m_img, Volume *moving)
+{
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float m_val;
+
+    m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+    m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+    m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+    return m_val;
+}
+
+#define BSPLINE_LI_VALUE(m_val, fx1, fx2, fy1, fy2, fz1, fz2, mvf, \
+			 m_img, moving)				   \
+    do {							   \
+	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;		   \
+	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;		   \
+								   \
+	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];		   \
+	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];		   \
+	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
+	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
+	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+    } while (0)
+
+
 /* Version g is (probably, almost) exactly as fast as version c, except 
    that it is shorter and more modular. */
 void
@@ -1866,6 +1916,9 @@ bspline_score_g_mse (
     float diff;
     float dc_dv[3];
     float fx1, fx2, fy1, fy2, fz1, fz2;
+#if defined (commentout)
+    float li_frac[6];
+#endif
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
@@ -1874,8 +1927,10 @@ bspline_score_g_mse (
     int pidx, qidx;
     clock_t start_clock, end_clock;
     float m_val;
+#if defined (commentout)
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+#endif
 
     static int it = 0;
     char debug_fn[1024];
@@ -1911,9 +1966,11 @@ bspline_score_g_mse (
 			* bxf->vox_per_rgn[0]) + q[0];
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
-		/* Compute coordinate of fixed image voxel */
+		/* Compute moving image coordinate of fixed image voxel */
 		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
 						  dxyz, moving);
+
+		/* If voxel is not inside moving image */
 		if (!rc) continue;
 
 		/* Compute interpolation fractions */
@@ -1921,20 +1978,19 @@ bspline_score_g_mse (
 		clamp_linear_interpolate_inline (mijk[1], moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
 		clamp_linear_interpolate_inline (mijk[2], moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
 
-		/* Compute moving image intensity using linear interpolation */
+		/* Find linear index of "corner voxel" in moving image */
 		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
-		m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
-		m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
-		m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
-		m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
-		m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
-		m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-		m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-		m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
-		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
-			+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
-		/* Compute index of fixed image voxel */
+		/* Compute moving image intensity using linear interpolation */
+		/* Macro is slightly faster than function */
+#if defined (commentout)
+		m_val = bspline_li_value (fx1, fx2, fy1, fy2, fz1, fz2,
+					  mvf, m_img, moving);
+#endif
+		BSPLINE_LI_VALUE (m_val, fx1, fx2, fy1, fy2, fz1, fz2,
+				  mvf, m_img, moving);
+
+		/* Compute linear index of fixed image voxel */
 		fv = fijk[2] * fixed->dim[0] * fixed->dim[1] 
 			+ fijk[1] * fixed->dim[0] + fijk[0];
 
