@@ -42,16 +42,16 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 	Xform xform, xform_tmp;
 	load_xform (&xform, parms->xf_in_fn);
 
-	/* Try to get the proper output dimensions, spacing */
+	/* Try to guess the proper dimensions and spacing for output image */
 	if (parms->fixed_im_fn[0]) {
-	    /* if given, use the grid spacing of user-supplied fixed image */
+	    /* use the spacing of user-supplied fixed image */
 	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
 	    pih.set_from_itk_image (fixed);
-	} else if (xform->m_type == XFORM_ITK_VECTOR_FIELD) {
-	    /* next, test the vector field resolution */
+	} else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
+	    /* use the spacing from input vector field */
 	    pih.set_from_itk_image (xform.get_itk_vf());
 	} else {
-	    /* otherwise, use the grid spacing of the input image */
+	    /* otherwise, use the spacing of the input image */
 	    pih.set_from_itk_image (im_in);
 	}
 	printf ("converting to vf...\n");
