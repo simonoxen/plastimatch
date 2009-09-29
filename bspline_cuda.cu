@@ -12191,7 +12191,7 @@ void CUDA_deinterleave(
 	int Grid_x = 0;
 	int Grid_y = 0;
 
-	int num_blocks = (num_values / threads_per_block) + 1;
+	int num_blocks = (num_values + threads_per_block - 1) / threads_per_block;
 
 
 	// *****
