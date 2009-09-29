@@ -50,6 +50,10 @@ BEGIN_EVENT_TABLE(Config_dialog, wxDialog)
     EVT_BUTTON(wxID_ANY, Config_dialog::OnButton)
 END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(MyApp, wxApp)
+    EVT_QUERY_END_SESSION(MyApp::OnQueryEndSession)
+END_EVENT_TABLE()
+
 
 IMPLEMENT_APP(MyApp)
 
@@ -93,6 +97,13 @@ MyApp::OnInit ()
     SetTopWindow (frame);
 
     return true;
+}
+
+void
+MyApp::OnQueryEndSession (wxCloseEvent& event)
+{
+    wxWindow* frame = GetTopWindow();
+    frame->Close (TRUE);
 }
 
 int

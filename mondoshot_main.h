@@ -24,9 +24,12 @@ class MyApp : public wxApp
 {
 public:
     virtual bool OnInit ();
+    virtual void OnQueryEndSession (wxCloseEvent& event);
     virtual int OnExit ();
 public:
     wxSingleInstanceChecker *m_checker;
+private:
+    DECLARE_EVENT_TABLE()
 };
 
 class MyListCtrl : public wxListCtrl
