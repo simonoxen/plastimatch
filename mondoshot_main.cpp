@@ -37,7 +37,6 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_SETTINGS, MyFrame::OnMenuSettings)
     EVT_MENU(ID_MENU_ABOUT, MyFrame::OnMenuAbout)
     EVT_HOTKEY(0xB000, MyFrame::OnHotKey1)
-    EVT_HOTKEY(0xB001, MyFrame::OnHotKey2)
     EVT_BUTTON(ID_BUTTON_SEND, MyFrame::OnButtonSend)
     EVT_BUTTON(ID_BUTTON_CANCEL, MyFrame::OnButtonCancel)
     EVT_CLOSE(MyFrame::OnWindowClose)
@@ -45,37 +44,6 @@ END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(MyListCtrl, wxListCtrl)
     EVT_LIST_ITEM_SELECTED(ID_LISTCTRL_PATIENTS, MyListCtrl::OnSelected)
-#if defined (commentout)
-    EVT_LIST_BEGIN_DRAG(LIST_CTRL, MyListCtrl::OnBeginDrag)
-    EVT_LIST_BEGIN_RDRAG(LIST_CTRL, MyListCtrl::OnBeginRDrag)
-    EVT_LIST_BEGIN_LABEL_EDIT(LIST_CTRL, MyListCtrl::OnBeginLabelEdit)
-    EVT_LIST_END_LABEL_EDIT(LIST_CTRL, MyListCtrl::OnEndLabelEdit)
-    EVT_LIST_DELETE_ITEM(LIST_CTRL, MyListCtrl::OnDeleteItem)
-    EVT_LIST_DELETE_ALL_ITEMS(LIST_CTRL, MyListCtrl::OnDeleteAllItems)
-#if WXWIN_COMPATIBILITY_2_4
-    EVT_LIST_GET_INFO(LIST_CTRL, MyListCtrl::OnGetInfo)
-    EVT_LIST_SET_INFO(LIST_CTRL, MyListCtrl::OnSetInfo)
-#endif
-    EVT_LIST_ITEM_DESELECTED(LIST_CTRL, MyListCtrl::OnDeselected)
-    EVT_LIST_KEY_DOWN(LIST_CTRL, MyListCtrl::OnListKeyDown)
-    EVT_LIST_ITEM_ACTIVATED(LIST_CTRL, MyListCtrl::OnActivated)
-    EVT_LIST_ITEM_FOCUSED(LIST_CTRL, MyListCtrl::OnFocused)
-
-    EVT_LIST_COL_CLICK(LIST_CTRL, MyListCtrl::OnColClick)
-    EVT_LIST_COL_RIGHT_CLICK(LIST_CTRL, MyListCtrl::OnColRightClick)
-    EVT_LIST_COL_BEGIN_DRAG(LIST_CTRL, MyListCtrl::OnColBeginDrag)
-    EVT_LIST_COL_DRAGGING(LIST_CTRL, MyListCtrl::OnColDragging)
-    EVT_LIST_COL_END_DRAG(LIST_CTRL, MyListCtrl::OnColEndDrag)
-
-    EVT_LIST_CACHE_HINT(LIST_CTRL, MyListCtrl::OnCacheHint)
-
-#if USE_CONTEXT_MENU
-    EVT_CONTEXT_MENU(MyListCtrl::OnContextMenu)
-#endif
-    EVT_CHAR(MyListCtrl::OnChar)
-
-    EVT_RIGHT_DOWN(MyListCtrl::OnRightClick)
-#endif
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(Config_dialog, wxDialog)
@@ -245,7 +213,8 @@ void MyFrame::OnButtonCancel (wxCommandEvent& WXUNUSED(event))
 void
 MyFrame::OnWindowClose (wxCloseEvent& event)
 {
-    if (event.CanVeto ()) {
+    //popup ("Event type = %d (%d)", event.GetEventType(), wxEVT_CLOSE_WINDOW);
+    if (event.GetEventType() == wxEVT_CLOSE_WINDOW && event.CanVeto ()) {
 	/* Hide dialog box */
 	this->Show (FALSE);
 	event.Veto ();
@@ -253,7 +222,6 @@ MyFrame::OnWindowClose (wxCloseEvent& event)
 	this->Destroy ();
     }
 }
-
 
 void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 {
@@ -370,7 +338,6 @@ bool MyFrame::OnInit ()
 {
     bool rc;
     rc = this->RegisterHotKey (0xB000, 0, wxCharCodeWXToMSW(WXK_F11));
-    rc = this->RegisterHotKey (0xB001, 0, wxCharCodeWXToMSW(WXK_F12));
 
     wxSize screenSize = wxGetDisplaySize();
     this->m_bitmap.Create (screenSize.x, screenSize.y);
@@ -389,11 +356,6 @@ void MyFrame::OnHotKey1 (wxKeyEvent& WXUNUSED(event))
     memDC.SelectObject (wxNullBitmap);
 
     this->Show (TRUE);
-}
-
-void MyFrame::OnHotKey2 (wxKeyEvent& WXUNUSED(event))
-{
-    this->Close (TRUE);
 }
 
 void
