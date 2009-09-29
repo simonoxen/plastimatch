@@ -119,10 +119,16 @@ figure(1);
 imshow(curFrame, [minI, maxI]);
 DrawTrackedTemplate(nClips, clipTracks{1});
 
+
 % generate hypothesis for each clip based on the initial estimate
 % states is a cell array indexed by the number of clips
-state = GenerateInitialParticleSet(clipTracks{1}, template.tSet, ...
-    nClips, nParticles); 
+% compute the initial linkLength at this step
+linkLengths = zeros(nClips, nClips, nFrames);
+[state, linkLengths(:,:,1)] = ...
+    GenerateInitialParticleSet(clipTracks{1}, template.tSet.patWidths, ...
+    template.tSet.patThetas, nClips, nParticles); 
+
+keyboard;
 
 % the index for the last frame
 lastFrame = startFrame + nFrames - 1;
@@ -130,24 +136,30 @@ lastFrame = startFrame + nFrames - 1;
 % start tracking
 % the first 30 frames are essentially tracked by template
 % match
-count = 1;
+count = 2;
 
 for iFrame=startFrame+1:lastFrame
     % accumulate 30 frames, then start learning a weak
     % dynamic model
-    if count > 30
+    if count > 30 && isempty(MODEL_PARAM.P)
         [MODEL_PARAM.P, MODEL_PARAM.LINK_MEAN, MODEL_PARAM.LINK_VAR] = ...
-            LearnModelParams(clipTracks);
+            LearnModelParams(clipTracks, linkLengths);
     end
     % open the current frame and display it
     fid = fopen([path, imageFiles(iFrame).name], 'rb');
     curFrame = reshape(fread(fid, pixelType), imageSize);
     curFrame = curFrame';    
-    pause(0.01);
+    
+    [clipTracks{count}, state, linkLengths{count}] = ...
+        PropagateParticles(MODEL_PARAM, state, curFrame, nClips, ...
+        template.tSet, linkLengths{count-1});
+    
+    % show current tracks
     clf;
     imshow(curFrame, [minI, maxI]);
-    [clipTracks{count}, state, linkLengths{count}] = ...
-        PropagateParticles(MODEL_PARAM, state, curFrame, nClips);
+    DrawTrackedTemplate(nClips, clipTracks{count});
+    drawnow; pause(0.01);
+    
     count = count + 1;
 end
 
