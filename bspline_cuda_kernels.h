@@ -88,6 +88,31 @@ __device__ float obtain_spline_basis_function(float one_over_six,
 
 
 
+__global__ void
+bspline_cuda_score_j_mse_kernel1 
+(
+ float  *dc_dv_x,	// OUTPUT
+ float  *dc_dv_y,	// OUTPUT
+ float  *dc_dv_z,	// OUTPUT
+ float  *score,		// OUTPUT
+ float  *coeff,		// INPUT
+ float  *fixed_image,	// INPUT
+ float  *moving_image,	// INPUT
+ float  *moving_grad,	// INPUT
+ int3   volume_dim,	// x, y, z dimensions of the volume in voxels
+ float3 img_origin,	// Image origin (in mm)
+ float3 img_spacing,	// Image spacing (in mm)
+ float3 img_offset,	// Offset corresponding to the region of interest
+ int3   roi_offset,	// Position of first vox in ROI (in vox)
+ int3   roi_dim,	// Dimension of ROI (in vox)
+ int3   vox_per_rgn,	// Knot spacing (in vox)
+ float3 pix_spacing,	// Dimensions of a single voxel (in mm)
+ int3   rdims,		// # of regions in (x,y,z)
+ int3   cdims,
+ int	pad);
+
+
+
 __global__ void bspline_cuda_score_g_mse_kernel1 
 (
  float  *dc_dv,
