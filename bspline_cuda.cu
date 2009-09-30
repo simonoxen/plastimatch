@@ -194,12 +194,49 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 
 
 	// --- INITIALIZE GRID --------------------------------------
+	int i;
+	int Grid_x = 0;
+	int Grid_y = 0;
 	int threads_per_block = 128;
 	int num_threads = fixed->npix;
-	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+//	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
 	int smemSize = 12 * sizeof(float) * threads_per_block;
 
-	dim3 dimGrid1(num_blocks / 128, 128, 1);
+
+	// *****
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// *****
+
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		// If this happens we should consider falling back to a
+		// CPU implementation, using a different CUDA algorithm,
+		// or padding the input dc_dv stream to work with this
+		// CUDA algorithm.
+		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting CUDA_deinterleave() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid1(Grid_x, Grid_y, 1);
+
+
+//	dim3 dimGrid1(num_blocks / 128, 128, 1);
 	dim3 dimBlock1(threads_per_block, 1, 1);
 	// ----------------------------------------------------------
 
