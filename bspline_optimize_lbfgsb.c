@@ -162,8 +162,20 @@ bspline_optimize_lbfgsb
     //    integer s_cmp (char *, char *, ftnlen, ftnlen);
 
     NMAX = bxf->num_coeff;
-    MMAX = (int) floor (bxf->num_coeff / 100);
-    if (MMAX < 20) MMAX = 20;
+    // MMAX = (int) floor (bxf->num_coeff / 100);
+
+    /* GCS: Sep 29, 2009.  The previous rule overflows.  I hacked the 
+       following new rule, which does not overflow, but is not 
+       tested, and may be worse for practical cases. */
+    if (bxf->num_coeff < 20) {
+	MMAX = 20;
+    } else {
+	MMAX = 20 + (int) floor (sqrt (bxf->num_coeff - 20));
+	// MMAX = (int) floor (bxf->num_coeff / 100);
+	if (MMAX > 1000) {
+	    MMAX = 1000;
+	}
+    }
 
     logfile_printf ("Setting NMAX, MMAX = %d %d\n", NMAX, MMAX);
 
