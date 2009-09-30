@@ -1881,9 +1881,14 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 		// Third, find the [x,y,z] location within the current tile
 		// for the voxel this thread is processing.
 		voxel_idx = (voxel_cluster + myWarpId_inPair);
-		voxel_loc.x = voxel_idx % tile_dim.x;
-		voxel_loc.y = ((voxel_idx - voxel_loc.x) / tile_dim.x) % tile_dim.y;
-		voxel_loc.z = (((voxel_idx - voxel_loc.x) / tile_dim.x) / tile_dim.y) % tile_dim.z;
+		voxel_loc.z = voxel_idx / (tile_dim.x * tile_dim.y);
+		voxel_loc.y = (voxel_idx - (voxel_loc.z * tile_dim.x * tile_dim.y)) / tile_dim.x;
+		voxel_loc.x = voxel_idx - voxel_loc.z * tile_dim.x * tile_dim.y - (voxel_loc.y * tile_dim.x);
+
+		// this method is ever so slightly slower
+//		voxel_loc.x = voxel_idx % tile_dim.x;
+//		voxel_loc.y = ((voxel_idx - voxel_loc.x) / tile_dim.x) % tile_dim.y;
+//		voxel_loc.z = (((voxel_idx - voxel_loc.x) / tile_dim.x) / tile_dim.y) % tile_dim.z;
 
 		// Fourth, we will perform all 64x3 calculations on the current voxel cluster.
 		// (Every thead in the warp will be doing this at the same time for its voxel)
