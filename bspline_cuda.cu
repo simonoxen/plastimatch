@@ -8526,33 +8526,6 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	// ----------------------------------------------------------
 
 
-	// --- ALLOCATE dc_dv IN GPU GLOBAL -------------------------
-	// Calculate space requirements for the allocation
-	// and tuck it away for later...
-	dev_ptrs->dc_dv_size = 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
-	                       * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
-
-	// Allocate memory in the GPU Global memory for dc_dv
-	// The pointer to this area of GPU global memory will
-	// be returned and placed into dev_ptrs->dc_dv. (dc_dv is a pointer)
-	cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-	printf(".");
-
-	// Cuda does not automatically zero out malloc()ed blocks
-	// of memory that have been allocated in GPU global
-	// memory.  So, we zero them out ourselves.
-	cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
-
-	// Bind this to a texture reference
-	cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-	checkCUDAError("Failed to bind dev_ptrs->dc_dv to texture reference!");
-	printf(".");
-
-	// Increment the GPU memory byte counter
-	GPU_Memory_Bytes += dev_ptrs->dc_dv_size;
-	// ----------------------------------------------------------
-
-
 	// --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
 	// Calculate space requirements for the allocation
 	// and tuck it away for later...
