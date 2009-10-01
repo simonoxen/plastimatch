@@ -104,14 +104,13 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
     }
 
     bs = bsopen ((bNread) fread, fp);
-    printf ("0 [%d,%d]> %s\n", line1->mlen, line1->slen, line1->data);
 
     bsreadln (line1, bs, '\n');
     bsreadln (line1, bs, '\n');
 
     while (1)
     {
-	int rc, id;
+	int rc, structure_id;
 
 	/* Get structure name */
 	rc = bsreadln (line1, bs, '\n');
@@ -125,14 +124,21 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	if (rc == BSTR_ERR) {
 	    break;
 	}
-	rc = sscanf ((char*) line2->data, "%d,", &id);
+	rc = sscanf ((char*) line2->data, "%d,", &structure_id);
 	if (rc != 1) {
 	    print_and_exit ("Error parsing contournames: "
 			    "contour id not found (%s)\n", line1->data);
 	}
 
+	/* Xio structures can be zero.  This is possibly not tolerated 
+	   by dicom.  So we modify before inserting into the cxt. */
+	structure_id ++;
+	if (structure_id <= 0) {
+	    print_and_exit ("Error, structure_id was less than zero\n");
+	}
+
 	/* Add structure */
-	cxt_add_structure (structures, (char*) line1->data, 0, id);
+	cxt_add_structure (structures, (char*) line1->data, 0, structure_id);
 
 	/* Skip 2 lines */
 	bsreadln (line1, bs, '\n');
@@ -252,6 +258,26 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
     fclose (fp);
 }
 
+/* The x_adj, and y_adj are currently done manually, until I get experience 
+   to do automatically.  Here is how I think it is done:
+   
+   1) Open any of the .CT files
+   2) Look for the lines like this:
+
+        0
+        230.000,230.000
+        512,512,16
+
+   3) The (230,230) values are the location of the isocenter within the 
+      slice relative to the upper left pixel.  
+   4) The cxt file will normally get assigned an OFFSET field based 
+      on the ImagePatientPosition from the dicom set, such as:
+
+        OFFSET -231.6 -230 -184.5
+
+   5) So, in the above example, we should set --x-adj=-1.6, to translate 
+      the structures from XiO coordinates to Dicom.
+*/
 void
 xio_load_structures (Cxt_structure_list *structures, char *input_dir, 
 		     float x_adj, float y_adj)
