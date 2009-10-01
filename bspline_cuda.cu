@@ -2672,7 +2672,7 @@ bspline_cuda_score_j_mse_kernel1
     float *C = &sdata[12*threadIdxInBlock + 8];
     float ii, jj, kk;
     float t1, t2, t3; 
-    float one_over_six = 1.0/6.0;
+    float one_over_six = 1.0f/6.0f;
 
     // If the voxel lies outside the volume, do nothing.
     if(threadIdxInGrid < (volume_dim.x * volume_dim.y * volume_dim.z))
@@ -2721,28 +2721,28 @@ bspline_cuda_score_j_mse_kernel1
 	    t3 = ii*ii*ii;
 	    t2 = ii*ii;
 	    t1 = ii;
-	    A[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	    A[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	    A[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	    A[3] = one_over_six * (+ 1.0 * t3);
+	    A[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+	    A[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+	    A[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+	    A[3] = one_over_six * (+ 1.0f * t3);
 
 	    jj = ((float)q.y) / vox_per_rgn.y;
 	    t3 = jj*jj*jj;
 	    t2 = jj*jj;
 	    t1 = jj;
-	    B[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	    B[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	    B[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	    B[3] = one_over_six * (+ 1.0 * t3);
+	    B[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+	    B[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+	    B[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+	    B[3] = one_over_six * (+ 1.0f * t3);
 
 	    kk = ((float)q.z) / vox_per_rgn.z;
 	    t3 = kk*kk*kk;
 	    t2 = kk*kk;
 	    t1 = kk;
-	    C[0] = one_over_six * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
-	    C[1] = one_over_six * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
-	    C[2] = one_over_six * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
-	    C[3] = one_over_six * (+ 1.0 * t3);
+	    C[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+	    C[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+	    C[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+	    C[3] = one_over_six * (+ 1.0f * t3);
 
 	    // Compute the deformation vector.
 	    d.x = 0.0;
@@ -2810,14 +2810,14 @@ bspline_cuda_score_j_mse_kernel1
 		if(displacement_in_vox_floor.x < 0){
 		    displacement_in_vox_floor.x = 0;
 		    displacement_in_vox_round.x = 0;
-		    fx2 = 0.0;
+		    fx2 = 0.0f;
 		}
 		else if(displacement_in_vox_floor.x >= (volume_dim.x - 1)){
 		    displacement_in_vox_floor.x = volume_dim.x - 2;
 		    displacement_in_vox_round.x = volume_dim.x - 1;
-		    fx2 = 1.0;
+		    fx2 = 1.0f;
 		}
-		fx1 = 1.0 - fx2;
+		fx1 = 1.0f - fx2;
 
 		// Clamp and interpolate along the Y axis.
 		displacement_in_vox_floor.y = floor(displacement_in_vox.y);
@@ -2826,14 +2826,14 @@ bspline_cuda_score_j_mse_kernel1
 		if(displacement_in_vox_floor.y < 0){
 		    displacement_in_vox_floor.y = 0;
 		    displacement_in_vox_round.y = 0;
-		    fy2 = 0.0;
+		    fy2 = 0.0f;
 		}
 		else if(displacement_in_vox_floor.y >= (volume_dim.y - 1)){
 		    displacement_in_vox_floor.y = volume_dim.y - 2;
 		    displacement_in_vox_round.y = volume_dim.y - 1;
-		    fy2 = 1.0;
+		    fy2 = 1.0f;
 		}
-		fy1 = 1.0 - fy2;
+		fy1 = 1.0f - fy2;
 				
 		// Clamp and intepolate along the Z axis.
 		displacement_in_vox_floor.z = floor(displacement_in_vox.z);
@@ -2842,14 +2842,14 @@ bspline_cuda_score_j_mse_kernel1
 		if(displacement_in_vox_floor.z < 0){
 		    displacement_in_vox_floor.z = 0;
 		    displacement_in_vox_round.z = 0;
-		    fz2 = 0.0;
+		    fz2 = 0.0f;
 		}
 		else if(displacement_in_vox_floor.z >= (volume_dim.z - 1)){
 		    displacement_in_vox_floor.z = volume_dim.z - 2;
 		    displacement_in_vox_round.z = volume_dim.z - 1;
 		    fz2 = 1.0;
 		}
-		fz1 = 1.0 - fz2;
+		fz1 = 1.0f - fz2;
 				
 		//-----------------------------------------------------------------
 		// Compute moving image intensity using linear interpolation.
