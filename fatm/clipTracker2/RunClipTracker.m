@@ -12,5 +12,7 @@ maxI = 2600;
 imageROI = [800 550 310 390];
 nClips = 3;
 nParticles = 30;
+nIter = 5;
+addpath('./fastop');
 ClipTracker(path, fileExt, imageSize, pixelType, startFrame, nFrames, ...
-    model, templateType, minI, maxI, imageROI, nClips);
+    model, templateType, minI, maxI, imageROI, nClips, nParticles, nIter);

@@ -38,7 +38,7 @@ for iClip = 1:nClips
     nThetaIdxs = length(thetaIdxs);
     
     % nParticles: number of particles per configuration (width, theta);
-    particles = mvnrnd(initialTrack(iClip, end-1:end), 2*eye(2), nParticles);
+    particles = mvnrnd(initialTrack(iClip, end-1:end), eye(2), nParticles);
     particles = unique(int16(particles), 'rows');
     nParticles = size(particles, 1);
     

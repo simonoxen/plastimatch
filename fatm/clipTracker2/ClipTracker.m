@@ -26,7 +26,7 @@
 % =========================================================================
 function trackResult = ClipTracker(path, fileExt, imageSize, pixelType,...
     startFrame, nFrames, model, templateType, minI, maxI, imageROI, nClips, ...
-    nParticles)
+    nParticles, nIteration)
 
 % check for minimum number of inputs
 if nargin < 1
@@ -96,6 +96,11 @@ if nargin < 13
     nParticles = 30;
 end
 
+% default number of iterations for the mean field monte carlo
+if nargin < 14
+    nIterations = 5;
+end
+
 % make template based on the input template type
 if strcmpi(templateType, 'cylinder') == 1
     template = InitCylinderTemplate();
@@ -152,7 +157,7 @@ for iFrame=startFrame+1:lastFrame
     
     [clipTracks{count}, state, linkLengths{count}] = ...
         PropagateParticles(MODEL_PARAM, state, curFrame, nClips, ...
-        template.tSet, linkLengths{count-1});
+        template.tSet, linkLengths{count-1}, nIterations);
     
     % show current tracks
     clf;
