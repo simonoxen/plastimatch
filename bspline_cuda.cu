@@ -1911,11 +1911,6 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 	// -- Setup Thread Attributes -----------------------------
 	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-	int myWarpId_inPair = threadIdxInGrid - 64*blockIdxInGrid;		// From 0 to 63
 	// --------------------------------------------------------
 
 
@@ -1933,9 +1928,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 
 	// Clear Shared Memory!!
-	sBuffer_x[myWarpId_inPair] = 0;
-	sBuffer_y[myWarpId_inPair] = 0;
-	sBuffer_z[myWarpId_inPair] = 0;
+	sBuffer_x[threadIdx.x] = 0;
+	sBuffer_y[threadIdx.x] = 0;
+	sBuffer_z[threadIdx.x] = 0;
 
 
 	// First, get the offset of where our tile starts in memory.
@@ -1952,14 +1947,14 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 		// Second, we pulldown the current voxel cluster.
 		// Each thread in the warp pulls down 1 voxel (3 values)
 		// ----------------------------------------------------------
-		voxel_val.x = dc_dv_x[tileOffset + voxel_cluster + myWarpId_inPair];
-		voxel_val.y = dc_dv_y[tileOffset + voxel_cluster + myWarpId_inPair];
-		voxel_val.z = dc_dv_z[tileOffset + voxel_cluster + myWarpId_inPair];
+		voxel_val.x = dc_dv_x[tileOffset + voxel_cluster + threadIdx.x];
+		voxel_val.y = dc_dv_y[tileOffset + voxel_cluster + threadIdx.x];
+		voxel_val.z = dc_dv_z[tileOffset + voxel_cluster + threadIdx.x];
 		// ----------------------------------------------------------
 
 		// Third, find the [x,y,z] location within the current tile
 		// for the voxel this thread is processing.
-		voxel_idx = (voxel_cluster + myWarpId_inPair);
+		voxel_idx = (voxel_cluster + threadIdx.x);
 		voxel_loc.z = voxel_idx / (tile_dim.x * tile_dim.y);
 		voxel_loc.y = (voxel_idx - (voxel_loc.z * tile_dim.x * tile_dim.y)) / tile_dim.x;
 		voxel_loc.x = voxel_idx - voxel_loc.z * tile_dim.x * tile_dim.y - (voxel_loc.y * tile_dim.x);
@@ -1984,9 +1979,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 					// ---------------------------------------------------------------------------------
 
 					// Clear Shared Memory!!
-					sBuffer_redux_x[myWarpId_inPair] = 0;
-					sBuffer_redux_y[myWarpId_inPair] = 0;
-					sBuffer_redux_z[myWarpId_inPair] = 0;
+					sBuffer_redux_x[threadIdx.x] = 0;
+					sBuffer_redux_y[threadIdx.x] = 0;
+					sBuffer_redux_z[threadIdx.x] = 0;
 
 					// Calculate the b-spline multiplier for this voxel @ this tile
 					// position relative to a given control knot.
@@ -1996,9 +1991,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 					D = A*B*C;
 
 					// Perform the multiplication and store to redux shared memory
-					sBuffer_redux_x[myWarpId_inPair] = voxel_val.x * D;
-					sBuffer_redux_y[myWarpId_inPair] = voxel_val.y * D;
-					sBuffer_redux_z[myWarpId_inPair] = voxel_val.z * D;
+					sBuffer_redux_x[threadIdx.x] = voxel_val.x * D;
+					sBuffer_redux_y[threadIdx.x] = voxel_val.y * D;
+					sBuffer_redux_z[threadIdx.x] = voxel_val.z * D;
 					__syncthreads();
 
 					// All 64 dc_dv values in the current cluster have been processed
@@ -2008,11 +2003,11 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 					// condense the data down to one value.
 					for(unsigned int s = 32; s > 0; s >>= 1)
 					{
-						if (myWarpId_inPair < s)
+						if (threadIdx.x < s)
 						{
-							sBuffer_redux_x[myWarpId_inPair] += sBuffer_redux_x[myWarpId_inPair + s];
-							sBuffer_redux_y[myWarpId_inPair] += sBuffer_redux_y[myWarpId_inPair + s];
-							sBuffer_redux_z[myWarpId_inPair] += sBuffer_redux_z[myWarpId_inPair + s];
+							sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + s];
+							sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + s];
+							sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + s];
 						}
 
 						// Wait for all threads in to complete the current tier.
@@ -2021,7 +2016,7 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 					// We then accumulate this single condensed value into the element of
 					// shared memory that correlates to the current tile position.
-					if (myWarpId_inPair == 0)
+					if (threadIdx.x == 0)
 					{
 						sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
 						sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
@@ -2054,15 +2049,15 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 	// ----------------------------------------------------------
 	tileOffset = 64*blockIdxInGrid;
 
-	tile_pos.x = 63 - myWarpId_inPair;
+	tile_pos.x = 63 - threadIdx.x;
 
 	int knot_num;
 
-	knot_num = LUT_Knot[tileOffset + myWarpId_inPair];
+	knot_num = LUT_Knot[tileOffset + threadIdx.x];
 
-	cond_x[ (64*knot_num) + tile_pos.x ] = sBuffer_x[myWarpId_inPair];
-	cond_y[ (64*knot_num) + tile_pos.x ] = sBuffer_y[myWarpId_inPair];
-	cond_z[ (64*knot_num) + tile_pos.x ] = sBuffer_z[myWarpId_inPair];
+	cond_x[ (64*knot_num) + tile_pos.x ] = sBuffer_x[threadIdx.x];
+	cond_y[ (64*knot_num) + tile_pos.x ] = sBuffer_y[threadIdx.x];
+	cond_z[ (64*knot_num) + tile_pos.x ] = sBuffer_z[threadIdx.x];
 	// ----------------------------------------------------------
 
 	// Done with tile.
