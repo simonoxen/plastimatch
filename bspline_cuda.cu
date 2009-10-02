@@ -425,6 +425,8 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 	cudaEventRecord (start, 0);                                 //!!
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+	cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->grad");
 
 	// --- INVOKE KERNEL CONDENSE -------------------------------
 	CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
@@ -1915,7 +1917,7 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 
 	// -- Setup Shared Memory ---------------------------------
-	// -- SIZE: 3*threadsPerBlock*sizeof(float)
+	// -- SIZE: 6*threadsPerBlock*sizeof(float)
 	// --------------------------------------------------------
 	extern __shared__ float sdata[]; 
 	float* sBuffer_x = (float*)sdata;			// sBuffer_x[64]
@@ -1958,11 +1960,6 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 		voxel_loc.z = voxel_idx / (tile_dim.x * tile_dim.y);
 		voxel_loc.y = (voxel_idx - (voxel_loc.z * tile_dim.x * tile_dim.y)) / tile_dim.x;
 		voxel_loc.x = voxel_idx - voxel_loc.z * tile_dim.x * tile_dim.y - (voxel_loc.y * tile_dim.x);
-
-		// this method is ever so slightly slower
-//		voxel_loc.x = voxel_idx % tile_dim.x;
-//		voxel_loc.y = ((voxel_idx - voxel_loc.x) / tile_dim.x) % tile_dim.y;
-//		voxel_loc.z = (((voxel_idx - voxel_loc.x) / tile_dim.x) / tile_dim.y) % tile_dim.z;
 
 		// Fourth, we will perform all 64x3 calculations on the current voxel cluster.
 		// (Every thead in the warp will be doing this at the same time for its voxel)
@@ -2497,18 +2494,6 @@ __global__ void kernel_bspline_mse_2_condense(
 //
 // * The 2 warps will work together to sum reduce the 64 floats to 1 float
 // * The sum reduction result is stored in shared memory
-// * Then the 2 warps will move to the next knot (out of 32)
-//
-// * Once 32 knots have been sum reduced, the "low warp" and the "high warp"
-//   will work together to place the results in shared memory into
-//   global memory.
-//
-// * The final results written to global memory are interleaved... 3 values
-//   per knot [x,y,z].  The "low warp" will place 10 knots (30 values) and
-//   the "high warp" will place 10 knots (30 values).  Then the "low warp"
-//   will place 10 more knots (30 values) and the "high warp" will place
-//   2 knots (6 values).  This will coalesce the write pattern to global
-//   memory.
 //
 // AUTHOR: James Shackleford
 // DATE  : August 27th, 2009
@@ -2527,7 +2512,7 @@ __global__ void kernel_bspline_mse_2_reduce(
 	// -- SIZE: ((3*64)+3)*sizeof(float)
 	// --------------------------------------------------------
 	extern __shared__ float sdata[]; 
-	float* sBuffer = (float*)sdata;				// sBuffer_x[96]
+	float* sBuffer = (float*)sdata;				// sBuffer[3]
 	float* sBuffer_redux_x = (float*)&sBuffer[3];		// sBuffer_redux_x[64]
 	float* sBuffer_redux_y = (float*)&sBuffer_redux_x[64];	// sBuffer_redux_y[64]
 	float* sBuffer_redux_z = (float*)&sBuffer_redux_y[64];	// sBuffer_redux_z[64]
