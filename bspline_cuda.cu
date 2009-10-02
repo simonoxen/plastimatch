@@ -2523,6 +2523,8 @@ __global__ void kernel_bspline_mse_2_reduce(
 	sBuffer_redux_y[threadIdx.x] = cond_y[64*blockIdxInGrid + threadIdx.x];
 	sBuffer_redux_z[threadIdx.x] = cond_z[64*blockIdxInGrid + threadIdx.x];
 
+	// This thread barrier is very important!
+	__syncthreads();
 	
 	// Perform sum reduction on the 64 condensed dc_dv values
 	for(unsigned int s = 32; s > 0; s >>= 1)
