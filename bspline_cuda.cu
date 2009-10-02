@@ -1928,9 +1928,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 
 	// Clear Shared Memory!!
-	sBuffer_x[threadIdx.x] = 0;
-	sBuffer_y[threadIdx.x] = 0;
-	sBuffer_z[threadIdx.x] = 0;
+	sBuffer_x[threadIdx.x] = 0.0f;
+	sBuffer_y[threadIdx.x] = 0.0f;
+	sBuffer_z[threadIdx.x] = 0.0f;
 
 
 	// First, get the offset of where our tile starts in memory.
@@ -1979,9 +1979,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 					// ---------------------------------------------------------------------------------
 
 					// Clear Shared Memory!!
-					sBuffer_redux_x[threadIdx.x] = 0;
-					sBuffer_redux_y[threadIdx.x] = 0;
-					sBuffer_redux_z[threadIdx.x] = 0;
+					sBuffer_redux_x[threadIdx.x] = 0.0f;
+					sBuffer_redux_y[threadIdx.x] = 0.0f;
+					sBuffer_redux_z[threadIdx.x] = 0.0f;
 
 					// Calculate the b-spline multiplier for this voxel @ this tile
 					// position relative to a given control knot.
@@ -2521,38 +2521,32 @@ __global__ void kernel_bspline_mse_2_reduce(
 {
 	// -- Setup Thread Attributes -----------------------------
 	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-	int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-	int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-	int myGlobalWarpPairNumber = threadIdxInGrid / 64;	// Knot Cluster #
-	int myWarpId_inPair = threadIdxInGrid - 64*myGlobalWarpPairNumber;	// 0 to 63
 	// --------------------------------------------------------
 
 	// -- Setup Shared Memory ---------------------------------
-	// -- SIZE: 4*32*sizeof(float)
+	// -- SIZE: ((3*64)+3)*sizeof(float)
 	// --------------------------------------------------------
 	extern __shared__ float sdata[]; 
 	float* sBuffer = (float*)sdata;				// sBuffer_x[96]
-	float* sBuffer_redux_x = (float*)&sBuffer[96];		// sBuffer_redux_x[64]
+	float* sBuffer_redux_x = (float*)&sBuffer[3];		// sBuffer_redux_x[64]
 	float* sBuffer_redux_y = (float*)&sBuffer_redux_x[64];	// sBuffer_redux_y[64]
 	float* sBuffer_redux_z = (float*)&sBuffer_redux_y[64];	// sBuffer_redux_z[64]
 	// --------------------------------------------------------
 
 	// Pull down the 64 condensed dc_dv values for the knot this warp pair is working on
-	sBuffer_redux_x[myWarpId_inPair] = cond_x[64*myGlobalWarpPairNumber + myWarpId_inPair];
-	sBuffer_redux_y[myWarpId_inPair] = cond_y[64*myGlobalWarpPairNumber + myWarpId_inPair];
-	sBuffer_redux_z[myWarpId_inPair] = cond_z[64*myGlobalWarpPairNumber + myWarpId_inPair];
+	sBuffer_redux_x[threadIdx.x] = cond_x[64*blockIdxInGrid + threadIdx.x];
+	sBuffer_redux_y[threadIdx.x] = cond_y[64*blockIdxInGrid + threadIdx.x];
+	sBuffer_redux_z[threadIdx.x] = cond_z[64*blockIdxInGrid + threadIdx.x];
 
 	
 	// Perform sum reduction on the 64 condensed dc_dv values
 	for(unsigned int s = 32; s > 0; s >>= 1)
 	{
-		if (myWarpId_inPair < s)
+		if (threadIdx.x < s)
 		{
-			sBuffer_redux_x[myWarpId_inPair] += sBuffer_redux_x[myWarpId_inPair + s];
-			sBuffer_redux_y[myWarpId_inPair] += sBuffer_redux_y[myWarpId_inPair + s];
-			sBuffer_redux_z[myWarpId_inPair] += sBuffer_redux_z[myWarpId_inPair + s];
+			sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + s];
+			sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + s];
+			sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + s];
 		}
 
 		// Wait for all threads in to complete the current tier.
@@ -2565,21 +2559,21 @@ __global__ void kernel_bspline_mse_2_reduce(
 	// These 3 floats are the dc_dp value [x,y,z] for the current knot
 	// This shared memory store is interleaved so that the final global
 	// memory store will be coalaced.
-	if (myWarpId_inPair == 0)
-		sBuffer[myWarpId_inPair] = sBuffer_redux_x[0];
+	if (threadIdx.x == 0)
+		sBuffer[0] = sBuffer_redux_x[0];
 	
-	if (myWarpId_inPair == 1)
-		sBuffer[myWarpId_inPair] = sBuffer_redux_y[0];
+	if (threadIdx.x == 1)
+		sBuffer[1] = sBuffer_redux_y[0];
 
-	if (myWarpId_inPair == 2)
-		sBuffer[myWarpId_inPair] = sBuffer_redux_z[0];
+	if (threadIdx.x == 2)
+		sBuffer[2] = sBuffer_redux_z[0];
 
 	// Prevent read before write race condition
 	__syncthreads();
 
 
-	if (myWarpId_inPair < 3)
-		grad[3*myGlobalWarpPairNumber + myWarpId_inPair] = sBuffer[myWarpId_inPair];
+	if (threadIdx.x < 3)
+		grad[3*blockIdxInGrid + threadIdx.x] = sBuffer[threadIdx.x];
 
 	// END OF KERNEL 
 }
@@ -13005,7 +12999,6 @@ void CUDA_bspline_mse_2_condense_64_texfetch(
 
 	dim3 dimGrid(Grid_x, Grid_y, 1);
 	int smemSize = 384*sizeof(float);
-//	int smemSize = 288*sizeof(float);
 	// ----------------------------------------------------------
 
 
@@ -13265,7 +13258,7 @@ extern "C" void CUDA_bspline_mse_2_reduce(
 	}
 
 	dim3 dimGrid(Grid_x, Grid_y, 1);
-	int smemSize = 288*sizeof(float);
+	int smemSize = 195*sizeof(float);
 	// ----------------------------------------------------------
 
 
