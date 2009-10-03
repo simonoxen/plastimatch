@@ -102,7 +102,9 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 	for (int j = 0; j < num_structs; j++)
 	{
 	    /* And the current slice with the mask for this structure */
-	    uint32_t val = (1 << j);
+	    Cxt_structure *curr_structure = &structures->slist[j];
+
+	    uint32_t val = (1 << curr_structure->id);
 	    and_filter->SetConstant (val);
 	    try {
 		and_filter->Update ();
@@ -134,7 +136,6 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 
 	    /* Add marching squares output to cxt.  Loop through 
 	       contours on this slice... */
-	    Cxt_structure *curr_structure = &structures->slist[j];
 	    for (unsigned int i = 0; 
 		 i < contour_filter->GetNumberOfOutputs(); i++)
 	    {

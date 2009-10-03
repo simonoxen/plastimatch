@@ -33,6 +33,7 @@ do_cxt_to_dicom_rtss (Program_parms *parms)
     cxt_initialize (&structures);
 
     cxt_read (&structures, parms->cxt_fn);
+    cxt_adjust_structure_names (&structures);
     gdcm_rtss_save (&structures, parms->output_fn, parms->dicom_dir);
 
     //    cxt_write (&structures, "junk.cxt", true);

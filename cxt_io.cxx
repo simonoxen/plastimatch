@@ -90,6 +90,32 @@ cxt_debug_structures (Cxt_structure_list* structures)
 
 plastimatch1_EXPORT
 void
+cxt_adjust_structure_names (Cxt_structure_list* structures)
+{
+    int i, j;
+    Cxt_structure* curr_structure;
+
+    for (i = 0; i < structures->num_structures; i++) {
+        curr_structure = &structures->slist[i];
+	for (j = 0; j < CXT_BUFLEN; j++) {
+	    if (!curr_structure->name[j]) {
+		break;
+	    }
+	    switch (curr_structure->name[j]) {
+	    case ' ':
+	    case '+':
+	    case '.':
+		/* GE Adv sim doesn't like names with strange punctuation. */
+		curr_structure->name[j] = '_';
+		printf ("Substituted in name %s\n", curr_structure->name);
+		break;
+	    }
+	}
+    }
+}
+
+plastimatch1_EXPORT
+void
 cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
 {
     FILE* fp;

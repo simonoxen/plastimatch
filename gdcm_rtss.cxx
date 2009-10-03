@@ -539,6 +539,10 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	    Cxt_polyline *curr_contour = &curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
+	    /* GE -> XiO transfer does not work if contour does not have 
+	       corresponding slice uid */
+	    if (! curr_contour->ct_slice_uid) continue;
+
 	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
 	    c_seq->AddSQItem (c_item, j+1);
 	    /* ContourImageSequence */

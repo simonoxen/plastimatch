@@ -48,7 +48,7 @@ do_mha_to_cxt (Program_parms *parms)
 	num_structs = structures.num_structures;
     }
 
-    printf ("Running marching squares...\n");
+    printf ("Running marching squares (%d structs)...\n", num_structs);
     cxt_extract (&structures, image, num_structs);
     printf ("Done.\n");
 
