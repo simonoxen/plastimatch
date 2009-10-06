@@ -20,11 +20,16 @@ within the plastimatch source directory:
 
 EXTERNAL DEPENDENCIES
 ---------------------
+
+Cmake
+-----
 Plastimatch uses cmake, so you must download and install cmake 
 before you can build plastimatch.  Download from here:
 
   http://cmake.org/
 
+Compiler
+--------
 In addition, you will need a C/C++ compiler.  If you are running 
 Windows, we recommend Microsoft Visual Studio (Express or Full, 
 2005 or 2008).  If you are running unix, we recommend gcc.
@@ -35,6 +40,8 @@ from here:
 
 For the Express version, you need the platform SDK as well.
 
+ITK
+---
 ITK is required for the main plastimatch program.  But if you only 
 want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
@@ -42,28 +49,70 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
 The following versions of ITK are known to work:
   ITK 3.6.0		Does not work
-  ITK 3.8.0		Works
-  ITK 3.10.2		Works
-  ITK 3.12.0		Works
+  ITK 3.8.0		Works (not recently tested)
+  ITK 3.10.2		Works (not recently tested)
+  ITK 3.12.0		Works (not recently tested)
   ITK 3.14.0		Works
+  ITK 3.16.0		Works
 
 When you build ITK, the following settings are recommended:
-  BUILD_EXAMPLES         OFF
-  BUILD_SHARED_LIBS      (EITHER)
-  BUILD_TESTING          OFF
-  ITK_USE_REVIEW         ON
+
+  BUILD_EXAMPLES                            OFF
+  BUILD_SHARED_LIBS                         (EITHER)
+  BUILD_TESTING                             OFF
+  ITK_USE_REVIEW                            ON
+  ITK_USE_OPTIMIZED_REGITRATION_METHODS     ON
+
 Also, you probably want make sure the build type is "Release" when 
 you compile.
 
-F2C is required if you want to run B-Spline registration with 
-LBFGSB optimization.  For windows, the library is included in the 
-download.  For unix, including MSYS, get from here:
+Fortran
+-------
+Fortran is required if you want to run B-Spline registration with 
+LBFGSB optimization.  On unix, it is recommended to install the 
+GNU Fortran compiler.  For windows, the f2c library is included in the 
+download.  If the f2c library is desired for other platforms, 
+such as MSYS, get from here:
 
   http://www.netlib.org/f2c/
 
-Brook is needed if you want to run with GPU acceleration.  This is 
-only tested on Windows.  Detailed instructions on building brook 
-are available in a separate file: README.BROOK.TXT.
+DCMTK
+-----
+DCMTK is needed for mondoshot and a few other small utilities.
+Here is how to compile and use on windows:
+
+  a) Download 3.5.5 snapshot
+  b) Download contributed md-support libraries
+  c) Configure 3.5.5 snapshots to use md-support libraries
+  d-1) Build
+  d-2) Note: only the release target works with md-support
+  d-3) Note: a few of the targets might fail to build, but don't worry 
+       about these.  As long as the libraries compile you are ok.
+  e) Install
+  f) Tell plastimatch to use the install directory
+
+Cuda
+----
+Cuda is needed if you want GPU acceleration for FDK and B-Spline 
+registration.  Install all three components: driver, toolkit, and SDK.
+
+The following versions of CUDA are known to work:
+
+  CUDA 2.1              Status unknown
+  CUDA 2.2              Works
+  CUDA 2.3              Believed to not work
+
+Download CUDA from here:
+
+  http://www.nvidia.com/object/cuda_get.html
+
+Brook
+-----
+Brook is needed if you want to run with GPU acceleration of 
+demons deformable registration.  Brook acceleration of FDK is 
+also available, but the cuda version is recommended.  Brook is only 
+tested on Windows.  Detailed instructions on building brook are available 
+in a separate file: README.BROOK.TXT.
 Download Brook from here:
 
   http://graphics.stanford.edu/projects/brookgpu/
@@ -71,6 +120,14 @@ Download Brook from here:
 If using brook, you also need to install the DirectX SDK and 
 the NVIDIA CG compiler.  Please refer to README.BROOK.TXT.
 
+After you have compiled plastimatch, you need to set the brook runtime 
+variables to get GPU acceleration.  Only the DirectX9 backend works.  
+Using the %COMSPEC% shell, do this:f
+
+   set BRT_RUNTIME=dx9
+
+Slicer
+------
 Slicer is needed if you want to build the Slicer plugin.  This is still
 experimental.  Download Slicer from here:
 
@@ -95,8 +152,6 @@ BUILDING PLASTIMATCH
      Set ITK directory (might be found automatically)
      If using brook, set brook directory
      If using slicer, set Slicer3_DIR
-     If desired, set BUILD_EXTRACT_CONTOUR to ON
-       (this requires ITK_USE_REVIEW to be ON for ITK 3.6)
      Click configure
        <CMake configures>
      Click OK
@@ -110,8 +165,6 @@ BUILDING PLASTIMATCH
        <CMake configures>
      Set ITK directory (might be found automatically)
      If using slicer, set Slicer3_DIR
-     If desired, set BUILD_EXTRACT_CONTOUR to ON
-       (this requires ITK_USE_REVIEW to be ON for ITK 3.6)
      You probably want to change the build type to "Release" (type it in)
      Type "c" to configure
        <CMake configures>
@@ -142,21 +195,6 @@ BUILDING PLASTIMATCH
    correctly set the options for CMAKE_C_FLAGS_DEBUG, CMAKE_C_FLAGS_RELEASE, 
    and so on.  If this happens, you can copy these values from the CXX options.
 
-*) Special instructions for MSVC express:
-
-   You might have to add the Windows SDK to your build path.
-   Fire up the MSVC express GUI, and do the following:
-
-   1) Tools -> Options -> Projects and Solutions -> VC++ Directories
-
-   2) Add e.g. C:\Program Files\Microsoft Platform SDK for Windows Server 
-      2003 R2\Lib to "Library files
-
-   3) Add e.g. C:\Program Files\Microsoft Platform SDK for Windows Server 
-      2003 R2\Include to "Include files"
-
-   4) Click OK to save the settings
-
 *) General windows instructions:
 
    1) Navigate to your binary directory
@@ -175,13 +213,4 @@ BUILDING PLASTIMATCH
 *) General unix instructions:
 
    1) Navigate to the plastimatch binaries directory, and then type "make".
-
-
-USING GPU ACCELERATION
-----------------------
-You need to set the brook runtime variables to get GPU acceleration.
-Only the DirectX9 backend works.  Using the %COMSPEC% shell, this 
-is done like this:
-
-   set BRT_RUNTIME=dx9
 
