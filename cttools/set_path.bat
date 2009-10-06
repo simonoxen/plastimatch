@@ -23,6 +23,11 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET ITK_PATH=c:\plastimatch\build\itk-3.8.0\bin\Release
   SET PLASTIMATCH_BASE=c:\plastimatch\build\plastimatch
   SET CTTOOLS_PATH=c:\plastimatch\src\plastimatch\cttools
+) else if "%COMPUTERNAME%"=="TORTOISE" (
+  echo Setting for TORTOISE
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.16.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.16.0
+  SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else (
   echo "Sorry, couldn't recognize host"
   exit /b

@@ -96,7 +96,7 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 	break;
     case THREADING_CUDA:
 	if (stage->alg_flavor == 0) {
-	    parms.implementation = 'g';
+	    parms.implementation = 'j';
 	} else {
 	    parms.implementation = stage->alg_flavor;
 	}
