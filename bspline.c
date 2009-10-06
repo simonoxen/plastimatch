@@ -2821,6 +2821,11 @@ bspline_score_c_mse
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 
+    /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
+       of the score requires double precision.  However, reduction 
+       accumulation does not. */
+    double score_acc = 0.;
+
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
@@ -2901,7 +2906,7 @@ bspline_score_c_mse
 		    fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, dc_dv[0], dc_dv[1], dc_dv[2]);
 		}
 
-		ssd->score += diff * diff;
+		score_acc += diff * diff;
 		num_vox ++;
 	    }
 	}
@@ -2912,7 +2917,7 @@ bspline_score_c_mse
     }
 
     /* Normalize score for MSE */
-    ssd->score = ssd->score / num_vox;
+    ssd->score = score_acc / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
