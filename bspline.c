@@ -55,6 +55,8 @@
 #define logf(x)     ((float)log((double)(x)))
 #endif
 
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
 gpuit_EXPORT
 void
@@ -1917,11 +1919,30 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
+#if defined (commentout)
+#define BSPLINE_LI_VALUE(m_val, li_1, li_2, mvf, m_img, moving)		\
+    do {								\
+	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
+	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
+									\
+	m_x1y1z1 = li_1[0] * li_1[1] * li_1[2] * m_img[mvf];		\
+	m_x2y1z1 = li_2[0] * li_1[1] * li_1[2] * m_img[mvf+1];		\
+	m_x1y2z1 = li_1[0] * li_2[1] * li_1[2] * m_img[mvf+moving->dim[0]]; \
+	m_x2y2z1 = li_2[0] * li_2[1] * li_1[2] * m_img[mvf+moving->dim[0]+1]; \
+	m_x1y1z2 = li_1[0] * li_1[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+	m_x2y1z2 = li_2[0] * li_1[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+	m_x1y2z2 = li_1[0] * li_2[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+	m_x2y2z2 = li_2[0] * li_2[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+    } while (0)
+#endif
+
 
 /* Version g is (probably, almost) exactly as fast as version c, except 
    that it is shorter and more modular. */
 /* Alg c ~ 25.540, 25.540, 25.490, 25.560, 25.570 */
-/* Alg g ~ 25.520, 25.590, 25.500, 25.560, 25.530 */
+/* Alg g ~ 25.520, 25.590, 25.500, 25.560, 25.530 (rev 624) */
 void
 bspline_score_g_mse (
     BSPLINE_Parms *parms, 
@@ -1945,8 +1966,7 @@ bspline_score_g_mse (
     int q[3];
     float diff;
     float dc_dv[3];
-    float li_frac_1[3];
-    float li_frac_2[3];
+    float li_1[3], li_2[3];
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
@@ -1990,9 +2010,8 @@ bspline_score_g_mse (
 		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) 
-			* bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute moving image coordinate of fixed image voxel */
@@ -2009,39 +2028,36 @@ bspline_score_g_mse (
 					     moving);
 #endif
 		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-					     li_frac_1, li_frac_2,
-					     moving);
+					     li_1, li_2, moving);
 
 		/* Find linear index of "corner voxel" in moving image */
-		mvf = (mijk_f[2] * moving->dim[1] + mijk_f[1]) 
-		    * moving->dim[0] + mijk_f[0];
+		mvf = INDEX_OF (mijk_f, moving->dim);
 
 		/* Compute moving image intensity using linear interpolation */
 		/* Macro is slightly faster than function */
 #if defined (commentout)
-		m_val = bspline_li_value (fx1, fx2, fy1, fy2, fz1, fz2,
-					  mvf, m_img, moving);
+		m_val = bspline_li_value (
+		    fx1, fx2, fy1, fy2, fz1, fz2,
+		    mvf, m_img, moving);
 #endif
 #if defined (commentout)
-		BSPLINE_LI_VALUE (m_val, fx1, fx2, fy1, fy2, fz1, fz2,
+		BSPLINE_LI_VALUE (m_val, li_1, li_2,
 				  mvf, m_img, moving);
 #endif
 		BSPLINE_LI_VALUE (m_val, 
-				  li_frac_1[0], li_frac_2[0],
-				  li_frac_1[1], li_frac_2[1],
-				  li_frac_1[2], li_frac_2[2],
+				  li_1[0], li_2[0],
+				  li_1[1], li_2[1],
+				  li_1[2], li_2[2],
 				  mvf, m_img, moving);
 
 		/* Compute linear index of fixed image voxel */
-		fv = fijk[2] * fixed->dim[0] * fixed->dim[1] 
-		    + fijk[1] * fixed->dim[0] + fijk[0];
+		fv = INDEX_OF (fijk, fixed->dim);
 
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
 
 		/* Compute spatial gradient using nearest neighbors */
-		mvr = (mijk_r[2] * moving->dim[1] + mijk_r[1]) 
-		    * moving->dim[0] + mijk_r[0];
+		mvr = INDEX_OF (mijk_r, moving->dim);
 		dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
 		dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
 		dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */
@@ -2053,7 +2069,6 @@ bspline_score_g_mse (
 			     dc_dv[0], dc_dv[1], dc_dv[2]);
 		}
 		score_acc += diff * diff;
-		//ssd->score += diff * diff;
 		num_vox ++;
 	    }
 	}
@@ -2065,7 +2080,6 @@ bspline_score_g_mse (
 
     /* Normalize score for MSE */
     ssd->score = score_acc / num_vox;
-    //ssd->score = ssd->score / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
