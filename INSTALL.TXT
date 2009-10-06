@@ -83,16 +83,15 @@ it is a breeze, but Windows can be tricky.  Here is a rough guide how
 to compile and use on windows:
 
   a) Download 3.5.5 snapshot
-  b-1) Optionally, download contributed md-support libraries
-  b-2) Configure 3.5.5 snapshots to use md-support libraries
-  c-1) Build
-  c-2) Note: you must use the release target if you use the md-support
-  c-3) Note: if you use build with shared libraries (/MD), you need 
-       to edit the CMakeLists.txt file distributed by dcmtk.  
-       Delete (or comment out) the sections beginning with "settings for 
-       Microsoft Visual C", and "settings for Microsoft Visual C++"
+  b) Edit the CMakeLists.txt file distributed by dcmtk.  
+     Delete (or comment out) the sections beginning with "settings for 
+     Microsoft Visual C", and "settings for Microsoft Visual C++"
+  c) Build
   d) Install
   e) Tell plastimatch to use the install directory
+
+I once was able to use the contributed md-libraries (with VC 2005), 
+but can no longer figure out how to do this.
 
 Cuda
 ----
