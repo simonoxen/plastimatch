@@ -183,6 +183,14 @@ gpuit_EXPORT
 void
 bspline_state_free (Bspline_state *bst);
 gpuit_EXPORT
+void
+bspline_warp (
+    Volume *vout,         /* Output image (already sized and allocated) */
+    BSPLINE_Xform* bxf,   /* Bspline transform coefficients */
+    Volume *moving,       /* Input image */
+    float default_val     /* Fill in this value outside of image */
+);
+gpuit_EXPORT
 void bspline_optimize (BSPLINE_Xform* bxf, 
 		       Bspline_state **bst,
 		       BSPLINE_Parms *parms, 

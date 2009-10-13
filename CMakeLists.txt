@@ -6,6 +6,11 @@
 cmake_minimum_required (VERSION 2.6)
 PROJECT (plastimatch)
 
+## Tell CMake to be quiet
+IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+  cmake_policy(SET CMP0003 NEW)
+ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
@@ -30,6 +35,46 @@ SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
+
+##-----------------------------------------------------------------------------
+##  Macros for creating targets
+##-----------------------------------------------------------------------------
+MACRO (PLM_ADD_EXECUTABLE 
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
+
+  #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
+  #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
+  #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
+
+  ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
+
+  IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES(${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+  INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+ENDMACRO (PLM_ADD_EXECUTABLE)
+
+
+MACRO (PLM_ADD_SLICER_EXECUTABLE 
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
+
+  #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
+  #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
+  #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
+
+  GENERATECLP (${TARGET_SRC} ${TARGET_NAME}.xml)
+
+  ADD_EXECUTABLE (${TARGET_NAME} ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+
+  IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES (${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+  SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
+ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
@@ -122,64 +167,24 @@ ELSE(DCMTK_FOUND)
 ENDIF(DCMTK_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  SLICER FRONT-ENDS
+##  Slicer front-ends
 ##-----------------------------------------------------------------------------
-SET(Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
-
-IF(Slicer3_DIR)
-  cmake_minimum_required(VERSION 2.6)
+SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
+IF (Slicer3_DIR)
+  cmake_minimum_required (VERSION 2.6)
 
   MESSAGE (STATUS "Looking for Slicer3 - found " ${Slicer3_DIR})
 
-  find_package(Slicer3 REQUIRED)
-  include(${Slicer3_USE_FILE})
+  find_package (Slicer3 REQUIRED)
+  include (${Slicer3_USE_FILE})
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-  slicer3_set_default_install_prefix_for_external_projects()
+  slicer3_set_default_install_prefix_for_external_projects ()
 
-  # The Command Line Module
-  set(CLP plastimatch-slicer)
-  set(${CLP}_SOURCE ${CLP}.cxx)
-  generateclp(${CLP}_SOURCE ${CLP}.xml)
-
-  # Build it
-  add_executable(${CLP} ${${CLP}_SOURCE})
-  slicer3_set_plugins_output_path(${CLP})
-  target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
-
-  # Install it
-  slicer3_install_plugins(${CLP})
-
-  # The Command Line Module
-  set(CLP dicomrt-import-slicer)
-  set(${CLP}_SOURCE ${CLP}.cxx)
-  generateclp(${CLP}_SOURCE ${CLP}.xml)
-
-  # Build it
-  add_executable(${CLP} ${${CLP}_SOURCE})
-  slicer3_set_plugins_output_path(${CLP})
-  target_link_libraries(${CLP} plastimatch1 ${ITK_LIBRARIES})
-
-  # Install it
-  slicer3_install_plugins(${CLP})
-
-  # Test it
-  #enable_testing()
-  #include(CTest)
-  #set(UPDATE_TYPE svn)
-
-  # ? 	 
-  #slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
-
-ELSE(Slicer3_DIR)
+ELSE (Slicer3_DIR)
   MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF(Slicer3_DIR)
-
-## Tell CMake to be quiet
-IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
-   cmake_policy(SET CMP0003 NEW)
-ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+ENDIF (Slicer3_DIR)
 
 ##-----------------------------------------------------------------------------
 ##  By default, brook builts /MT.  We need to match this.
@@ -649,6 +654,9 @@ SET(DICOM_UID_SRC
 	dicom_uid.cxx
 	dicom_uid.h
 	)
+SET (DICOMRT_IMPORT_SLICER_SRC
+        dicomrt-import-slicer.cxx
+	)
 SET(DRR_C_SRC
 	drr_c.c drr.h
 	drr_opts.c drr_opts.h
@@ -759,6 +767,9 @@ SET(PLASTIMATCH_SRC
 	warp_main.cxx warp_main.h
 	warp_mha_main.cxx 
  	warp_pointset_main.cxx 
+	)
+SET(PLASTIMATCH_SLICER_SRC
+        plastimatch-slicer.cxx
 	)
 SET(RESAMPLE_MHA_SRC
 	resample_mha_main.cxx resample_mha_main.h
@@ -882,25 +893,6 @@ IF(FFTW_FOUND)
 ENDIF(FFTW_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  Macro for creating targets
-##-----------------------------------------------------------------------------
-MACRO(PLM_ADD_EXECUTABLE TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
-
-  #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
-  #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
-  #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
-
-  ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
-  TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
-
-  IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
-    SET_TARGET_PROPERTIES(${TARGET_NAME} 
-      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-  ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
-  INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
-ENDMACRO(PLM_ADD_EXECUTABLE)
-
-##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY(fatm/src)
@@ -934,23 +926,27 @@ ENDIF(ITK_FOUND)
 #PLM_ADD_EXECUTABLE(analyze_to_mha analyze2mha.c "" "")
 PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
-PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" "")
-PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" "")
-PLM_ADD_EXECUTABLE(fdk_c "${FDK_C_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(fdk_c "${FDK_C_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
 PLM_ADD_EXECUTABLE(mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE(raw_to_mha raw_to_mha.c "" "")
 PLM_ADD_EXECUTABLE(tps_update tps_update.c "${MATH_LIB}" "")
-PLM_ADD_EXECUTABLE(vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" "")
-PLM_ADD_EXECUTABLE(vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" "")
-PLM_ADD_EXECUTABLE(vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" "")
+PLM_ADD_EXECUTABLE(vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c "" "")
 PLM_ADD_EXECUTABLE(vox_to_mha vox_to_mha.c "" "")
 
 IF(ITK_FOUND)
-  PLM_ADD_EXECUTABLE(xio_to_cxt "${XIO_TO_CXT_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(cxt_apply_dicom "${CXT_APPLY_DICOM_SRC}" 
@@ -972,10 +968,14 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  IF(ITK_USE_REVIEW)
-    PLM_ADD_EXECUTABLE(extract_contour "${EXTRACT_CONTOUR_SRC}"
+  IF (Slicer3_DIR)
+    PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
+      "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  ENDIF (Slicer3_DIR)
+  IF (ITK_USE_REVIEW)
+    PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  ENDIF(ITK_USE_REVIEW)
+  ENDIF (ITK_USE_REVIEW)
   PLM_ADD_EXECUTABLE(mask_mha "${MASK_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(merge_vfs merge_vector_fields.cxx
@@ -984,10 +984,10 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   #PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
     #"${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  IF(ITK_USE_REVIEW)
+  IF (ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  ENDIF(ITK_USE_REVIEW)
+  ENDIF (ITK_USE_REVIEW)
   PLM_ADD_EXECUTABLE(mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_vox mha_to_vox.c
@@ -998,6 +998,10 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  IF (Slicer3_DIR)
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer "${PLASTIMATCH_SLICER_SRC}"
+      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  ENDIF (Slicer3_DIR)
   PLM_ADD_EXECUTABLE(resample_mha "${RESAMPLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(rtog_to_mha "${RTOG_TO_MHA_SRC}"
@@ -1016,6 +1020,8 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(xf_to_xf "${XF_TO_XF_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+  PLM_ADD_EXECUTABLE(xio_to_cxt "${XIO_TO_CXT_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 #  PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
 #    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 #  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
@@ -1033,19 +1039,21 @@ ENDIF(BROOK_FOUND)
 
 # Require cuda
 IF(CUDA_FOUND)
-  IF(PLM_BUILD_DEMONS_CUDA)
-    PLM_ADD_EXECUTABLE(demons_cuda "${DEMONS_CUDA_SRC}" 
+  IF (PLM_BUILD_DEMONS_CUDA)
+    PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
-  ENDIF(PLM_BUILD_DEMONS_CUDA)
-  PLM_ADD_EXECUTABLE(fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" "")
+  ENDIF (PLM_BUILD_DEMONS_CUDA)
+  PLM_ADD_EXECUTABLE (fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" 
+    "${OPENMP_LDFLAGS}")
   IF (FFTW_FOUND)
-    SET(FDK_CUDA_INTEGRATED_NORMALIZED_LIBS ${GPUIT_LIBRARIES} 
+    SET (FDK_CUDA_INTEGRATED_NORMALIZED_LIBS ${GPUIT_LIBRARIES} 
       ${FFTW_LIBRARIES})
-    PLM_ADD_EXECUTABLE(fdk_cuda_integrated_normalized 
+    PLM_ADD_EXECUTABLE (fdk_cuda_integrated_normalized 
       "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" 
-      "${FDK_CUDA_INTEGRATED_NORMALIZED_LIBS}" "")
+      "${FDK_CUDA_INTEGRATED_NORMALIZED_LIBS}" 
+      "${OPENMP_LDFLAGS}")
   ENDIF (FFTW_FOUND)
-  PLM_ADD_EXECUTABLE(cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
+  PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 
 # Require dcmtk

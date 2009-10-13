@@ -739,14 +739,16 @@ bspline_xform_initialize
 /* GCS -- Is there an implicit assumption that the roi_origin > 0? */
 void
 bspline_xform_extend (
-	BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
-	int new_roi_offset[3],	     /* Position of first vox in ROI (in vox) */
-	int new_roi_dim[3])	     /* Dimension of ROI (in vox) */
+    BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+    int new_roi_offset[3],   /* Position of first vox in ROI (in vox) */
+    int new_roi_dim[3]	     /* Dimension of ROI (in vox) */
+)
 {
     int d;
     int roi_offset_diff[3];
     int roi_corner_diff[3];
-    int eb[3], ea[3];  /* # of control points to "extend before" and "extend after" existing grid */
+    int eb[3];  /* # of control points to "extend before" existing grid */
+    int ea[3];  /* # of control points to "extend after" existing grid */
     int extend_needed = 0;
     int new_rdims[3];
     int new_cdims[3];
@@ -1939,6 +1941,115 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 #endif
 
 
+/* This only warps voxels within the ROI.  If you need the whole 
+   image, call bspline_xform_extend. */
+gpuit_EXPORT
+void
+bspline_warp (
+    Volume *vout,         /* Output image (already sized and allocated) */
+    BSPLINE_Xform* bxf,   /* Bspline transform coefficients */
+    Volume *moving,       /* Input image */
+    float default_val     /* Fill in this value outside of image */
+)
+{
+    int d;
+    int vidx;
+    float* vout_img = (float*) vout->img;
+
+    int rijk[3];             /* Indices within fixed image region (vox) */
+    int fijk[3], fv;         /* Indices within fixed image (vox) */
+    float mijk[3];           /* Indices within moving image (vox) */
+    float fxyz[3];           /* Position within fixed image (mm) */
+    float mxyz[3];           /* Position within moving image (mm) */
+    int mijk_f[3], mvf;      /* Floor */
+    int mijk_r[3];           /* Round */
+    int p[3];
+    int q[3];
+    int pidx, qidx;
+    float dxyz[3];
+    float li_1[3];           /* Fraction of interpolant in lower index */
+    float li_2[3];           /* Fraction of interpolant in upper index */
+    float* m_img = (float*) moving->img;
+    float m_val;
+
+    /* A few sanity checks */
+    if (vout->pix_type != PT_FLOAT) {
+	fprintf (stderr, "Error: bspline_warp pix type mismatch\n");
+	return;
+    }
+    for (d = 0; d < 3; d++) {
+	if ((vout->dim[d] != bxf->img_dim[d])
+	    || (vout->offset[d] != bxf->img_origin[d])
+	    || (vout->pix_spacing[d] != bxf->img_origin[d])) {
+	    fprintf (stderr, "Error: bspline_warp size mismatch\n");
+	    return;
+	}
+    }
+
+    /* Set default */
+    for (vidx = 0; vidx < vout->npix; vidx++) {
+	vout_img[vidx] = default_val;
+    }
+	
+    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
+	p[2] = rijk[2] / bxf->vox_per_rgn[2];
+	q[2] = rijk[2] % bxf->vox_per_rgn[2];
+	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
+	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
+	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+		int rc;
+		p[0] = rijk[0] / bxf->vox_per_rgn[0];
+		q[0] = rijk[0] % bxf->vox_per_rgn[0];
+		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+
+		/* Get B-spline deformation vector */
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+
+		/* Compute moving image coordinate of fixed image voxel */
+		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
+						  dxyz, moving);
+
+		/* If voxel is not inside moving image */
+		if (!rc) continue;
+
+		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+					     li_1, li_2, moving);
+
+		/* Find linear index of "corner voxel" in moving image */
+		mvf = INDEX_OF (mijk_f, moving->dim);
+
+		/* Compute moving image intensity using linear interpolation */
+		/* Macro is slightly faster than function */
+#if defined (commentout)
+		m_val = bspline_li_value (
+		    fx1, fx2, fy1, fy2, fz1, fz2,
+		    mvf, m_img, moving);
+#endif
+#if defined (commentout)
+		BSPLINE_LI_VALUE (m_val, li_1, li_2,
+				  mvf, m_img, moving);
+#endif
+		BSPLINE_LI_VALUE (m_val, 
+				  li_1[0], li_2[0],
+				  li_1[1], li_2[1],
+				  li_1[2], li_2[2],
+				  mvf, m_img, moving);
+
+		/* Compute linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, vout->dim);
+
+		/* Assign warped value to output image */
+		vout_img[fv] = m_val;
+	    }
+	}
+    }
+}
+
 /* Version g is (probably, almost) exactly as fast as version c, except 
    that it is shorter and more modular. */
 /* Alg c ~ 25.540, 25.540, 25.490, 25.560, 25.570 */
@@ -1966,7 +2077,8 @@ bspline_score_g_mse (
     int q[3];
     float diff;
     float dc_dv[3];
-    float li_1[3], li_2[3];
+    float li_1[3];           /* Fraction of interpolant in lower index */
+    float li_2[3];           /* Fraction of interpolant in upper index */
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
