@@ -387,23 +387,39 @@ template<class T>
 void
 save_short (T image, char* fname)
 {
-    ShortImageType::Pointer short_img = cast_short(image);
+    ShortImageType::Pointer short_img = cast_short (image);
     save_image (short_img, fname);
+}
+
+template<class T> 
+void
+save_ushort (T image, char* fname)
+{
+    UShortImageType::Pointer ushort_img = cast_ushort (image);
+    save_image (ushort_img, fname);
 }
 
 template<class T> 
 void
 save_short_dicom (T image, char* dir_name)
 {
-    ShortImageType::Pointer short_img = cast_short(image);
+    ShortImageType::Pointer short_img = cast_short (image);
     save_image_dicom (short_img, dir_name);
+}
+
+template<class T> 
+void
+save_ulong (T image, char* fname)
+{
+    UInt32ImageType::Pointer ulong_img = cast_ulong (image);
+    save_image (ulong_img, fname);
 }
 
 template<class T> 
 void
 save_float (T image, char* fname)
 {
-    FloatImageType::Pointer float_img = cast_float(image);
+    FloatImageType::Pointer float_img = cast_float (image);
     save_image (float_img, fname);
 }
 
@@ -415,7 +431,10 @@ template plastimatch1_EXPORT void save_image(UInt32ImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void save_image(DeformationFieldType::Pointer, char*);
 template void save_uchar (FloatImageType::Pointer, char*);
+template void save_ushort (FloatImageType::Pointer, char*);
 template void save_short (FloatImageType::Pointer, char*);
+template void save_ulong (FloatImageType::Pointer, char*);
+
 template void save_short_dicom (UCharImageType::Pointer, char*);
 template void save_short_dicom (ShortImageType::Pointer, char*);
 template void save_short_dicom (UShortImageType::Pointer, char*);

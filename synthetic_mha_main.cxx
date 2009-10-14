@@ -19,7 +19,23 @@ do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)
     FloatImageType::Pointer img = synthetic_mha (parms);
 
     /* Save to file */
-    save_float (img, fn);
+    switch (parms->output_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	save_uchar (img, fn);
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	save_short (img, fn);
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	save_ushort (img, fn);
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	save_ulong (img, fn);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	save_float (img, fn);
+	break;
+    }
 }
 
 void
@@ -27,7 +43,7 @@ print_usage (void)
 {
     printf ("Usage: resample_mha [options]\n");
     printf ("Required:   --output=file\n"
-	    "Optional:   --output-type={uchar,short,ushort,float}\n"
+	    "Optional:   --output-type={uchar,short,ushort,ulong,float}\n"
 	    "            --pattern={gauss,rect,sphere}\n"
 	    "            --origin=\"x y z\"\n"
 	    "            --resolution=\"x [y z]\"\n"
@@ -84,17 +100,20 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_fn, optarg, _MAX_PATH);
 	    break;
 	case 2:
-	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
+	    if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
 		sm_parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
+	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
+	    }
 	    else if (!strcmp(optarg,"float")) {
 		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
-	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
+	    else if (!strcmp(optarg,"uint") || !strcmp(optarg,"uint32")) {
+		sm_parms->output_type = PLM_IMG_TYPE_ITK_ULONG;
 	    }
 #if defined (commentout)
 	    else if (!strcmp(optarg,"vf")) {

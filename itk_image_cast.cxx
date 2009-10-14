@@ -54,12 +54,54 @@ cast_uchar (T image)
 }
 
 template<class T> 
+UShortImageType::Pointer
+cast_ushort (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, UShortImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
+    return caster->GetOutput();
+}
+
+template<class T> 
 ShortImageType::Pointer
 cast_short (T image)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::CastImageFilter <
 	ImageType, ShortImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
+    return caster->GetOutput();
+}
+
+template<class T> 
+UInt32ImageType::Pointer
+cast_ulong (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, UInt32ImageType > CastFilterType;
 
     typename CastFilterType::Pointer caster = CastFilterType::New();
     caster->SetInput(image);
@@ -97,9 +139,11 @@ cast_float (T image)
 
 /* Explicit instantiations */
 template plastimatch1_EXPORT UCharImageType::Pointer cast_uchar (FloatImageType::Pointer);
+template plastimatch1_EXPORT UShortImageType::Pointer cast_ushort (FloatImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UCharImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (ShortImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UShortImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UInt32ImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (FloatImageType::Pointer);
+template plastimatch1_EXPORT UInt32ImageType::Pointer cast_ulong (FloatImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (FloatImageType::Pointer);

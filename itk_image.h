@@ -28,15 +28,6 @@ enum PlmImageType {
     PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
 };
 
-#if defined (commentout)
-    #define TYPE_UNSPECIFIED      0
-    #define TYPE_UCHAR            1
-    #define TYPE_SHORT            2
-    #define TYPE_USHORT           3
-    #define TYPE_FLOAT            4
-    #define TYPE_FLOAT_FIELD      5
-#endif
-
 /* We only deal with 3D images. */
 const unsigned int Dimension = 3;
 
@@ -96,5 +87,7 @@ template<class T> void save_image (T img_ptr, char* fname);
 template<class T> void save_short_dicom (T image, char* dir_name);
 template<class T> plastimatch1_EXPORT void save_uchar (T img_ptr, char* fname);
 template<class T> plastimatch1_EXPORT void save_short (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void save_ushort (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void save_ulong (T img_ptr, char* fname);
 template<class T> plastimatch1_EXPORT void save_float (T img_ptr, char* fname);
 #endif
