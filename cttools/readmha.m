@@ -97,6 +97,8 @@ if (strcmp(element_type,'MET_FLOAT'))
   [A,count] = fread(fp,sz(1)*sz(2)*sz(3)*nchannels,'float');
 elseif (strcmp(element_type,'MET_UCHAR'))
   [A,count] = fread(fp,sz(1)*sz(2)*sz(3)*nchannels,'uchar');
+elseif (strcmp(element_type,'MET_UINT'))
+  [A,count] = fread(fp,sz(1)*sz(2)*sz(3)*nchannels,'uint32');
 else
   [A,count] = fread(fp,sz(1)*sz(2)*sz(3)*nchannels,'int16');
 end
