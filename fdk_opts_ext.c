@@ -23,6 +23,8 @@ void print_usage (void)
 		" -F \"F(f)ull (default)\"  or \"H(alf     Full/Half fan options\n"
 		" -cor (#slices)                     Turn on Coronal output (n slices)  \n"
 		" -sag (#slices)                     Turn on Sagittal output (n slices) \n"
+		"As an example \n"
+		"fdk_cuda_integrated_normalized.exe -a \"0 1 379\" -r \"512 512 200\" -z \"250 250 200\" -I \"\\raw\" -O \"\\raw\\CBCT.mh5\" -F \"Full\" "
 	    );
     exit (1);
 }
