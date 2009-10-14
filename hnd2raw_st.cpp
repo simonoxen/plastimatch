@@ -59,7 +59,10 @@ int main(int argc, char* argv[])
 			   "file_002, file_003, etc.\n"
 				"[OPTIONAL] /f(num) This specifies the output numbered filesnames have fixed lengths (with"
 			   "trailing zeros. Example: /f3 means that the files will have names like file_001, "
-			   "file_002, file_003, etc.\n");
+			   "file_002, file_003, etc.\n"
+			   "As an example:\n"
+			   "hnd2rawst.exe \"\\hnd\" \"Proj_\" \".hnd\" \"\\raw\" \"Proj_\" \".raw\" \"0\" \"688\" \"\\f5\" \"\\f3\" \n"
+			   );
 		fflush(stdout);
 
 		system("pause");
