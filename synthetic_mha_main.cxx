@@ -112,7 +112,8 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    else if (!strcmp(optarg,"float")) {
 		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
-	    else if (!strcmp(optarg,"uint") || !strcmp(optarg,"uint32")) {
+	    else if (!strcmp(optarg,"uint") || !strcmp(optarg,"ulong")
+		     || !strcmp(optarg,"uint32")) {
 		sm_parms->output_type = PLM_IMG_TYPE_ITK_ULONG;
 	    }
 #if defined (commentout)
