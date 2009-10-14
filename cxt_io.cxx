@@ -101,14 +101,11 @@ cxt_adjust_structure_names (Cxt_structure_list* structures)
 	    if (!curr_structure->name[j]) {
 		break;
 	    }
-	    switch (curr_structure->name[j]) {
-	    case ' ':
-	    case '+':
-	    case '.':
-		/* GE Adv sim doesn't like names with strange punctuation. */
+
+	    /* GE Adv sim doesn't like names with strange punctuation. */
+	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
 		printf ("Substituted in name %s\n", curr_structure->name);
-		break;
 	    }
 	}
     }
