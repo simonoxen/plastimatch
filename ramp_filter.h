@@ -31,7 +31,7 @@ void RampFilter(unsigned short * data,
 				float* out,
 				unsigned int width,
 				unsigned int height)
-{	int i,r,c;
+{	unsigned int i,r,c;
 	static unsigned int N;
 	fftw_complex *in;
 	fftw_complex *fft; 
@@ -72,7 +72,7 @@ void RampFilter(unsigned short * data,
 		in[i][1] = 0.0;
 	}
 
-	for (i = 0; i < (int)width / 2; ++i)
+	for (i = 0; i < width / 2; ++i)
 		ramp[i] = i;
 
 	for (i = width / 2; i < (int)width; ++i)

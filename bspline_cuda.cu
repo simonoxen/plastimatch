@@ -12644,6 +12644,9 @@ void CUDA_deinterleave(
 	// Search for a valid execution configuration
 	// for the required # of blocks.
 	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+	
+	printf("numb_block=%d",num_blocks);
+	printf("sqrt_numb_block=%d",sqrt_num_blocks);
 
 	for (i = sqrt_num_blocks; i < 65535; i++)
 	{

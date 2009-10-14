@@ -7,7 +7,8 @@
 #include "volume.h"
 
 Volume* read_mha_512prefix (char* filename);
-void write_mha (char* filename, Volume* vol);
+//void write_mha (char* filename, Volume* vol);
 void write_mha_512prefix (char* filename, Volume* vol, MGHCBCT_Options_ext* options);
+//void write_mha_512 (char* filename, Volume* vol)
 
 #endif

@@ -13,6 +13,7 @@
 #include "fdk_opts_ext.h"
 #include "fdk_utils_ext.h"
 #include "volume.h"
+//#include "volume_ext.h"
 #include "readmha_ext.h"
 #include "MGHDRR_Options.h"
 #include "MGHMtx_opts.h"
@@ -25,6 +26,7 @@
 //extern "C"
 //{
 int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options_ext *options);
+int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options);
 //}
 int
 main(int argc, char* argv[]) 
@@ -82,13 +84,14 @@ main(int argc, char* argv[])
 	
 
     strcpy(dirbuf,options.input_dir);
-    //    CreateDirectory(strcat(dirbuf,"\\tmp"),NULL);
-    make_directory (strcat (dirbuf, "/tmp"));
+    CreateDirectory(strcat(dirbuf,"\\tmp"),NULL);
+    //make_directory (strcat (dirbuf, "/tmp"));
 
     strcpy(matrix_output_prefix ,options.input_dir);
     strcat(matrix_output_prefix , "\\tmp\\out_");
     matrix_options.output_prefix=matrix_output_prefix;
 	
+
     if (!options.full_fan){
 	matrix_options.image_resolution[0]=384;
 	matrix_options.image_resolution[1]=512*2;
@@ -105,6 +108,8 @@ main(int argc, char* argv[])
     printf("Write matrix OK");
     fflush(stdout);
 	
+
+#if 1 
     /*****************************************************
      * STEP 1: Create the 3D array of voxels              *
      *****************************************************/
@@ -142,5 +147,11 @@ main(int argc, char* argv[])
     free(vol->img);
     free(vol);
 
+#else
+	vol=read_mha_512prefix(options.output_file);
+	CUDA_DRR(vol, &options);
+	free(vol->img);
+	free(vol);
+#endif
     return 0;
 }

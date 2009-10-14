@@ -658,12 +658,15 @@ volume_warp (Volume *vout, Volume *vin, Volume *vf)
     /* Assumes size, spacing of vout same as size, spacing of vf */
     for (d = 0; d < 3; d++) {
 	if (vout->dim[d] != vf->dim[d]) {
+		printf("Dimension mismatch between fixed and moving\n");
 	    return 0;
 	}
 	if (vout->pix_spacing[d] != vf->pix_spacing[d]) {
+		printf("Resolutions mismatch between fixed and moving\n");
 	    return 0;
 	}
 	if (vout->offset[d] != vf->offset[d]) {
+		printf("offset mismatch between fixed and moving\n");
 	    return 0;
 	}
     }

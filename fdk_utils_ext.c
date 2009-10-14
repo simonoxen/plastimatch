@@ -221,7 +221,7 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
     size_t rc;
     float f;
     FILE* fp;
-    char buf[1024];
+
     CB_Image* cbi;
 	unsigned short * readimg;
 	int movelength,fillhead,filltail;
@@ -262,12 +262,12 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
 
 
 	if(options->full_fan){
-		cbi->dim[0]=512;
-		cbi->dim[1]=384;
+		cbi->dim[0]=384;
+		cbi->dim[1]=512;
 	}
 	else{
-		cbi->dim[0]=1024;
-		cbi->dim[1]=384;
+		cbi->dim[0]=384;
+		cbi->dim[1]=1024;
 	}
 	/* Malloc memory */
 	cbi->img = (float*) malloc (sizeof(float) * cbi->dim[0] * cbi->dim[1]);
@@ -277,22 +277,22 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
 		}
 	memset(cbi->img,0,cbi->dim[0] * cbi->dim[1]*sizeof(float));
 	
-	readimg = (unsigned short*) malloc (sizeof(unsigned short) * 512 * cbi->dim[1]);
+	readimg = (unsigned short*) malloc (sizeof(unsigned short) * 512 * cbi->dim[0]);
 	if (!readimg ) {
 			fprintf (stderr, "Couldn't malloc memory for input image\n");
 			exit (-1);
 		}
 
 		/* Load pixels */
-		rc = fread (readimg , sizeof(unsigned short),  512* cbi->dim[1], fp);
-		if (rc != 512 * cbi->dim[1]) {
+		rc = fread (readimg , sizeof(unsigned short),  512* cbi->dim[0], fp);
+		if (rc != 512 * cbi->dim[0]) {
 			fprintf (stderr, "Couldn't load raster data for %s\n",
 				img_filename);
 			exit (-1);
 		}
 
 	
-		RampFilter(readimg,cbi->img,512,cbi->dim[1]);
+		RampFilter(readimg,cbi->img,512,cbi->dim[0]);
 			
 		free(readimg);
 
@@ -309,13 +309,13 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
 		}
 #endif
 #if 1
-		for (i=cbi->dim[1]-1; i>=0; i--)
+		for (i=cbi->dim[0]-1; i>=0; i--)
 			memcpy(cbi->img+1024*i+512-65, cbi->img+512*i, 512*sizeof(float));
-		for (i=cbi->dim[1]-1; i>=0; i--){
+		for (i=cbi->dim[0]-1; i>=0; i--){
 			memset(cbi->img+1024*i,0,(fillhead-filltail)*sizeof(float));
 			memset(cbi->img+1024*i+1023-65,0,65*sizeof(float));
 		}
-		for (j=cbi->dim[1]-1; j>=0; j--)
+		for (j=cbi->dim[0]-1; j>=0; j--)
 			for(i=(512-filltail);i<=512+filltail-1;i++)
 				cbi->img[j*1024+i]*=(float)(i-(512-filltail-1))/(float)(512+filltail-1+1-(512-filltail-1));
 
@@ -433,7 +433,7 @@ get_image (MGHCBCT_Options_ext* options, int image_num)
 #endif
     char* mat_file_pat = "";
 
-    char img_file[1024], mat_file[1024], fmt[1024];
+    char img_file[1024], mat_file[1024];
     //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
 	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
  //   sprintf (img_file, fmt, image_num);
@@ -445,6 +445,61 @@ sprintf (img_file, "%s\\Proj_%03d.raw", options->input_dir,image_num);
  //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
  sprintf (mat_file, "%s\\tmp\\out_%04d.txt",options->input_dir, image_num);
     return load_and_filter_cb_image (options,img_file, mat_file);
+}
+
+
+int
+write_image (CB_Image* cbi, MGHCBCT_Options_ext* options, int image_num)
+{
+#if defined (READ_PFM)
+    char* img_file_pat = "Proj_%03d.raw";
+//	char* img_file_pat = "out_%04d.pfm";
+#else
+    char* img_file_pat = "out_%04d.pgm";
+#endif
+    char* mat_file_pat = "";
+
+    char img_file[1024];
+	
+    size_t rc;
+    FILE* fp;
+    //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
+	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
+ //   sprintf (img_file, fmt, image_num);
+ //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+ //   sprintf (mat_file, fmt, image_num);
+ //   return load_and_filter_cb_image (options,img_file, mat_file);
+sprintf (img_file, "%s\\Proj_%03d.drr", options->input_dir,image_num);
+ //   sprintf (img_file, fmt, image_num);
+ //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+
+
+
+
+    fp = fopen (img_file,"wb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
+	return(1);
+    }
+
+
+
+		/* write pixels */
+		rc = fwrite (cbi->img , sizeof(float),  512* 384, fp); 
+		if (rc != 512 * 384) {
+			fprintf (stderr, "Couldn't write raster data for %s\n",
+				img_file);
+			return(1);
+		}
+			
+		fclose(fp);
+
+		return(0);
+
+	
+	//ImageView imgview(IF_FLOAT_32_GREY, cbi->dim[0], cbi->dim[1], cbi->img);
+ //   system("pause");
+
 }
 
 void

@@ -13,7 +13,6 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
-#include "volume.h"
 #include "readmha.h"
 #include "bspline_opts.h"
 #include "bspline.h"
@@ -78,12 +77,15 @@ main (int argc, char* argv[])
 	    write_mha (options.output_vf_fn, vector_field);
 	}
     }
-
+	moving_warped = volume_warp (0, moving, vector_field);
+	
+	//printf("%f",moving_warped->dim[1]);
     /* Create warped output image and save */
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
-	moving_warped = volume_warp (0, moving, vector_field);
 	printf ("Writing warped image.\n");
+	//printf("write to %s\n",options.output_warped_fn);
+	//system("pause");
 	write_mha (options.output_warped_fn, moving_warped);
     }
 

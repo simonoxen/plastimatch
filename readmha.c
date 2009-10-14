@@ -47,6 +47,7 @@ gpuit_EXPORT
 void write_mha (char* filename, Volume* vol)
 {
     FILE* fp;
+	int wbyte;
     char* mha_header = 
 	    "ObjectType = Image\n"
 	    "NDims = 3\n"
@@ -67,7 +68,6 @@ void write_mha (char* filename, Volume* vol)
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
 	exit (-1);
     }
-
     fp = fopen (filename,"wb");
     if (!fp) {
 	fprintf (stderr, "Can't open file %s for write\n", filename);
@@ -94,13 +94,26 @@ void write_mha (char* filename, Volume* vol)
 	fprintf (stderr, "Unhandled type in write_mha().\n");
 	exit (-1);
     }
-    fprintf (fp, mha_header, 
+  //  fprintf (fp, mha_header, 
+	 //    vol->offset[0], vol->offset[1], vol->offset[2], 
+	 //    vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
+	 //    vol->dim[0], vol->dim[1], vol->dim[2],
+	 //    (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
+		//? "ElementNumberOfChannels = 3\n" : "",
+	 //    element_type);
+	printf("write to %s\n",filename);
+    wbyte=fprintf (fp, mha_header, 
 	     vol->offset[0], vol->offset[1], vol->offset[2], 
 	     vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
 	     vol->dim[0], vol->dim[1], vol->dim[2],
 	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
 		? "ElementNumberOfChannels = 3\n" : "",
 	     element_type);
+	//printf("wbyte=%d",wbyte);
+	for (;wbyte<512;wbyte++)
+
+		fprintf(fp,"\n");
+
     fflush (fp);
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
@@ -184,6 +197,7 @@ Volume* read_mha (char* filename)
 	printf ("Oops, out of memory\n");
 	exit (-1);
     }
+	fseek(fp,512,SEEK_SET);
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
     if (rc != vol->npix) {
 	printf ("Oops, bad read from file (%d)\n", rc);
