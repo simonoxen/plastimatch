@@ -78,11 +78,13 @@ float *gpu_grad_temp;
 #endif
 
 
-/***********************************************************************
- * test_kernel
+/**
+ * A simple kernel used to ensure that CUDA is working correctly.
  *
- * A simple kernel used to ensure that CUDA is working correctly. 
- ***********************************************************************/
+ * @param dx Stores thread index of every executed thread.
+ * @param dy Stores thread index of every executed thread.
+ * @param dz Stores thread index of every executed thread.
+ */
 __global__ void
 test_kernel
 (
@@ -113,14 +115,22 @@ test_kernel
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_j_stage_1()
-//
-// KERNELS INVOKED:
-//   bspline_cuda_score_g_mse_kernel_1()
-//   bspline_cuda_score_i_mse_kernel_2()
-//
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation J.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see bspline_cuda_score_j_mse_kernel1()
+ * @see CUDA_bspline_mse_2_condense_64_texfetch()
+ * @see CUDA_bspline_mse_2_reduce()
+ *
+ * @author James A. Shackleford
+ */
 extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 				Volume* moving,
 				Volume* moving_grad,
@@ -128,8 +138,10 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 				BSPLINE_Parms* parms,
 				Dev_Pointers_Bspline* dev_ptrs)
 {
-
-	// --- INITIALIZE LOCAL VARIABLES ---------------------------
+	// JAS 10.15.2009
+	// TODO: A structure similar to the BSpline_Xform
+	//       that uses float3s needs to be used here
+	//       to clean up the code.
 
 	// Dimensions of the volume (in tiles)
 	int3 rdims;			
@@ -190,21 +202,25 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 	roi_dim.x = bxf->roi_dim[0];	
 	roi_dim.y = bxf->roi_dim[1];
 	roi_dim.z = bxf->roi_dim[2];
-	// ----------------------------------------------------------
 
 
-	// --- INITIALIZE GRID -------------------------------------
+	// JAS 10.15.2009
+	// TODO: The following blocked off section needs
+	//       to be turned into its own function.
+	// ------------------------------------------------
+	// ------------------------------------------------
+
+	// --- INITIALIZE GRID ---
 	int i;
 	int Grid_x = 0;
 	int Grid_y = 0;
 	int threads_per_block = 128;
 	int num_threads = fixed->npix;
-//	int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
 	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
 	int smemSize = 12 * sizeof(float) * threads_per_block;
 
 
-	// *****
+	// -----
 	// Search for a valid execution configuration
 	// for the required # of blocks.
 	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
@@ -218,7 +234,7 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 			break;
 		}
 	}
-	// *****
+	// -----
 
 
 	// Were we able to find a valid exec config?
@@ -234,16 +250,11 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 	}
 
 	dim3 dimGrid1(Grid_x, Grid_y, 1);
-
-
-//	dim3 dimGrid1(num_blocks / 128, 128, 1);
 	dim3 dimBlock1(threads_per_block, 1, 1);
-	// ----------------------------------------------------------
+	// ----------------------
 
 
-	// --- BEGIN KERNEL EXECUTION -------------------------------
-	// (a.k.a: bspline_cuda_score_g_mse_kernel1)
-
+	// --- BEGIN KERNEL EXECUTION ---
 	cudaEvent_t start, stop;
 	float time;
 
@@ -263,8 +274,6 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 
 	int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
 
-	// For now we are using the legacy g_mse_kernel1
-	// later to be replaced with h_mse_kernel1
 	bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
 		dev_ptrs->dc_dv_x,	// Addr of dc_dv_x on GPU
 		dev_ptrs->dc_dv_y,	// Addr of dc_dv_y on GPU
@@ -284,7 +293,7 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 		pix_spacing,		// Pixel Spacing
 		rdims,			// 
 		cdims,
-		tile_padding);		// 
+		tile_padding);
 
 	cudaEventRecord (stop, 0);	
 	cudaEventSynchronize (stop);
@@ -295,92 +304,19 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 	cudaEventDestroy (stop);
 
 	printf("\n[%f ms] MSE & dc_dv\n", time);
+	// ------------------------------
+
+	// END: Needs to be turned into its own function.
+	// ----------------------------------------------------------
 	// ----------------------------------------------------------
 
 
 
-	// --- PREPARE FOR NEXT KERNEL ------------------------------
+	// Prepare for the next kernel
 	cudaThreadSynchronize();
 	checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
-	// ----------------------------------------------------------
-	
-	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-	// &&&&&&&&&&&&&&&&&&&&& PART 2 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-	// &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-
-	// !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//	cudaEventCreate(&start);                                    //!!
-//	cudaEventCreate(&stop);                                     //!!
-//	cudaEventRecord (start, 0);                                 //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-	// ----------------------------------------------------------
-	// * Glue Code 1
-	//    [GPU] Generate 3 seperate Row-Major dc_dv volumes
-	//          One for X, one for Y, and one for Z
-/*
-	CUDA_deinterleave(dev_ptrs->dc_dv_size/sizeof(float),
-			dev_ptrs->dc_dv,
-			dev_ptrs->dc_dv_x,
-			dev_ptrs->dc_dv_y,
-			dev_ptrs->dc_dv_z);
-*/
-
-	// Release dc_dv on the card so we have enough memory
-	// (We will have to re-allocate dc_dv before we return)
-//	cudaUnbindTexture (tex_dc_dv);
-//	cudaFree( dev_ptrs->dc_dv );
-	// ----------------------------------------------------------
-
-	// !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//	cudaEventRecord (stop, 0);                                  //!!
-//	cudaEventSynchronize (stop);                                //!!
-//	cudaEventElapsedTime (&time, start, stop);                  //!!
-//	cudaEventDestroy (start);                                   //!!
-//	cudaEventDestroy (stop);                                    //!!
-//	printf("[%f ms] Deinterleaving\n", time);                   //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-/*
-	// !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventCreate(&start);                                    //!!
-	cudaEventCreate(&stop);                                     //!!
-	cudaEventRecord (start, 0);                                 //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	
-	// ----------------------------------------------------------
-	// * Glue Code 2
-	//    [GPU] Convert the 3 deinterleaved row-major
-	//          data streams into 3 32-byte aligned
-	//          tiled streams.
-	CUDA_pad_64(&dev_ptrs->dc_dv_x,
-			fixed->dim,
-			bxf->vox_per_rgn);
-
-	CUDA_pad_64(&dev_ptrs->dc_dv_y,
-			fixed->dim,
-			bxf->vox_per_rgn);
-
-	CUDA_pad_64(&dev_ptrs->dc_dv_z,
-			fixed->dim,
-			bxf->vox_per_rgn);
-	// ----------------------------------------------------------
-
-	// !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventRecord (stop, 0);                                  //!!
-	cudaEventSynchronize (stop);                                //!!
-	cudaEventElapsedTime (&time, start, stop);                  //!!
-	cudaEventDestroy (start);                                   //!!
-	cudaEventDestroy (stop);                                    //!!
-	printf("[%f ms] Data Padding\n", time);                     //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-*/
-
-	// ----------------------------------------------------------
-	// * Setup 3
-	//     Clear out the condensed dc_dv streams
-	
+	// Clear out the condensed dc_dv streams
 	cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
 	checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
 
@@ -389,92 +325,73 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 
 	cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
 	checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-	// ----------------------------------------------------------
 
 
-	// !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventCreate(&start);                                    //!!
-	cudaEventCreate(&stop);                                     //!!
-	cudaEventRecord (start, 0);                                 //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// Start timing the kernel
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord (start, 0);
 
-
-	// --- INVOKE KERNEL CONDENSE -------------------------------
+	// Invoke kernel condense
 	int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
 	CUDA_bspline_mse_2_condense_64_texfetch(dev_ptrs, bxf->vox_per_rgn, num_tiles);
-//	CPU_bspline_mse_2_condense(dev_ptrs, bxf->vox_per_rgn, bxf->cdims, bxf->rdims, num_tiles);
-	// ----------------------------------------------------------
 
-	// !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventRecord (stop, 0);                                  //!!
-	cudaEventSynchronize (stop);                                //!!
-	cudaEventElapsedTime (&time, start, stop);                  //!!
-	cudaEventDestroy (start);                                   //!!
-	cudaEventDestroy (stop);                                    //!!
-	printf("[%f ms] Condense\n", time);                         //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// Stop timing the kernel
+	cudaEventRecord (stop, 0);
+	cudaEventSynchronize (stop);
+	cudaEventElapsedTime (&time, start, stop);
+	cudaEventDestroy (start);
+	cudaEventDestroy (stop);
+	printf("[%f ms] Condense\n", time);
 
-	// --- PREPARE FOR NEXT KERNEL ------------------------------
+	// Prepare for the next kernel
 	cudaThreadSynchronize();
 	checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-	// ----------------------------------------------------------
 
-	// !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventCreate(&start);                                    //!!
-	cudaEventCreate(&stop);                                     //!!
-	cudaEventRecord (start, 0);                                 //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	// Start timing the kernel
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord (start, 0);
 
+	// Clear out the gradient
 	cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
 	checkCUDAError("cudaMemset(): dev_ptrs->grad");
 
-	// --- INVOKE KERNEL CONDENSE -------------------------------
+	// Invoke kernel reduce
 	CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-//	CPU_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-	// ----------------------------------------------------------
 
+	// Stop timing the kernel
+	cudaEventRecord (stop, 0);
+	cudaEventSynchronize (stop);
+	cudaEventElapsedTime (&time, start, stop);
+	cudaEventDestroy (start);
+	cudaEventDestroy (stop);
+	printf("[%f ms] Reduce\n\n", time);
 
-	// !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	cudaEventRecord (stop, 0);                                  //!!
-	cudaEventSynchronize (stop);                                //!!
-	cudaEventElapsedTime (&time, start, stop);                  //!!
-	cudaEventDestroy (start);                                   //!!
-	cudaEventDestroy (stop);                                    //!!
-	printf("[%f ms] Reduce\n\n", time);                         //!!
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-	// --- PREPARE FOR NEXT KERNEL ------------------------------
+	// Prepare for the next kernel
 	cudaThreadSynchronize();
 	checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-	// ----------------------------------------------------------
-
-
-	// --- PUT dc_dv BACK THE WAY WE FOUND IT -------------------
-	// This is some disabled LOW-MEM code.  We don't need
-	// to de-allocate and re-allocate dc_dv, but we can if
-	// we are in dire need for more memory.  The re-allocation
-	// process is a little slow, so we waste a little memory
-	// here in a trade off for speed.
-
-	// Re-Allocate dev_ptrs->dc_dv
-//	cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-//	cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
-//	cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-	// ----------------------------------------------------------
-
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_i_stage_1()
-//
-// KERNELS INVOKED:
-//   bspline_cuda_score_g_mse_kernel_1()
-//   bspline_cuda_score_i_mse_kernel_2()
-//
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation I.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see bspline_cuda_score_g_mse_kernel1()
+ * @see CUDA_deinterleave()
+ * @see CUDA_pad_64()
+ * @see CUDA_bspline_mse_2_condense_64_texfetch()
+ * @see CUDA_bspline_mse_2_reduce()
+ *
+ */
 extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 				Volume* moving,
 				Volume* moving_grad,
@@ -995,18 +912,22 @@ extern "C" void bspline_cuda_i_stage_2(
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
 	// ----------------------------------------------------------
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_h_stage_1()
-//
-// KERNELS INVOKED:
-//   bspline_cuda_score_g_mse_kernel_1()
-//   bspline_cuda_score_h_mse_kernel_2()
-//
-////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation H.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * Author: James A. Shackleford
+ */
 extern "C" void bspline_cuda_h_stage_1 (Volume* fixed,
 				Volume* moving,
 				Volume* moving_grad,
@@ -1338,7 +1259,7 @@ extern "C" void bspline_cuda_h_stage_1 (Volume* fixed,
 	// ----------------------------------------------------------
 
 }
-////////////////////////////////////////////////////////////////////////////////
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1528,18 +1449,17 @@ extern "C" void bspline_cuda_h_stage_2(
 ////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_deinterleave()
-//
-// This kernel accepts a 3-interleaved data stream and produces 3 seperate
-// contigious data streams.  Shared memory is utilized to obtain perfect
-// data coalescence.  This kernel was designed with the intent of
-// deinterleaving the dc_dv stream produced by Chris's kernel that
-// calculates the Score and a 3-interleaved dc_dv stream.
-//
-// Author: James Shackleford
-// Date: 22 July 2009
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Deinterleaves 3-interleaved data and generates three deinterleaved arrays.
+ *
+ * @param num_values Deprecated
+ * @param input Pointer to memory containing interleaved data
+ * @param out_x Pointer to memory containing the deinterleaved x-values
+ * @param out_y Pointer to memory containing the deinterleaved y-values
+ * @param out_z Pointer to memory containing the deinterleaved z-values
+ *
+ * @author James A. Shackleford
+ */
 __global__ void kernel_deinterleave(
 				int num_values,
 				float* input,
@@ -1635,29 +1555,22 @@ __global__ void kernel_deinterleave(
 	}
 
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_row_to_tile_major()
-//
-// This kernel will convert a row-major data stream into a 32-byte aligned
-// tile-major stream.
-//
-// NOTE:
-// * Invoke this kernel with as many threads as there are voxels in
-//   the input row-major volume.
-//
-// * You should cudaMalloc() the output stream to be:
-//     ( (32 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 32)) * num_tiles ) + ( (tile_dim.x * tile_dim.y * tile_dim.z) * num_tiles )
-//     --------------------------------------------------------------------   ------------------------------------------------------
-//                             PADDING BYTES                                +                     TILE BYTES
-//                                                                                               (VOXEL DATA)
-// TODO: Modify output scheme to selectively use threads
-//       to read from shared memory.  Currently, all global
-//       loads are coalaced, but none of the global stores are.
-//
-////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This kernel converts a row-major data stream into a 32-byte aligned
+ * tile-major stream.
+ *
+ * @warning Invoke with as many threads as there are elements in the row-major data.
+ *
+ * @param input Pointer to the input row-major data
+ * @param output Pointer to the output tiled data
+ * @param vol_dim Dimensions of the row-major data volume
+ * @param tile_dim Desired dimensions of the tiles
+ *
+ * @author James A. Shackleford
+ */
 __global__ void kernel_row_to_tile_major(
 			float* input,
 			float* output,
@@ -1767,17 +1680,18 @@ __global__ void kernel_row_to_tile_major(
 
 	// Fin.
 }
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_pad_64()
-//
-// This kernel takes data that is ALREADY TILED (!) and
-// pads it so that it is byte aligned to 64 byte boundaries.
-//
-// AUTHOR: James Shackleford
-// DATE  : September 10th, 2009
-////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This kernel pads tiled data so that each tile is aligned to 64 byte boundaries
+ *
+ * @param input Pointer to tiled data
+ * @param output Pointer to padded tiled data
+ * @param vol_dim Dimensions of input data volume
+ * @param tile_dim Dimension of input data volume's tiles
+ *
+ * @author James A. Shackleford
+ */
 __global__ void kernel_pad_64(
 			float* input,
 			float* output,
@@ -1816,17 +1730,19 @@ __global__ void kernel_pad_64(
 	output[offset + idx] = input[threadIdxInGrid];
 	
 }
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_pad()
-//
-// This kernel takes data that is ALREADY TILED (!) and
-// pads it so that it is byte aligned.
-//
-// AUTHOR: James Shackleford
-// DATE  : September 10th, 2009
-////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * This kernel pads tiled data so that each tile is aligned to 32 byte boundaries
+ *
+ * @param input Pointer to tiled data
+ * @param output Pointer to padded tiled data
+ * @param vol_dim Dimensions of input data volume
+ * @param tile_dim Dimension of input data volume's tiles
+ *
+ * @author James A. Shackleford
+ */
 __global__ void kernel_pad(
 			float* input,
 			float* output,
@@ -1850,45 +1766,42 @@ __global__ void kernel_pad(
 
 	int num_elements = tile_dim.x * tile_dim.y * tile_dim.z;
 
-	// "Which tile am I handling," wondered the warp.
 	int tile_id = threadIdxInGrid / num_elements;
 	
-	// "Hmm... a pad," said the thread with intrigue.
 	int tile_padding = 32 - (num_elements % 32);
 
-	// "We'll need an offset as well," he said.
 	int offset = tile_id * (tile_padding + num_elements);
 
 	int idx = threadIdxInGrid - (tile_id * num_elements);
 
-	// This story sucks... let's just get this over with.
 	output[offset + idx] = input[threadIdxInGrid];
 	
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_bspline_mse_2_condense_64_texfetch()
-//
-// * Each threadblock contains 2 warps.
-// * Each set of 2 warps operates on only one tile
-// * Each tile is reduced to 64x3 single precision floating point values
-// * Each of the 64 values consists of 3 floats [x,y,z]
-// * Each of the 64 values relates to a different control knot
-// * Each set of 3 floats (there are 64 sets) are placed into a stream
-// * The stream is indexed into by an offset + [0,64].
-// * The offset is the knot number that the set of 3 floats influences
-// * Each warp will write to 64 different offsets
-//
-// IMPORTANT: To use this 64 thread version of the condense kernel, one must
-//            insure that the tiles are padded to a multiple of 64!
-//            (not a multiple of 32 as was the case with the 32 thread version)
-//
-// AUTHOR: James Shackleford
-// DATE  : September 17th, 2009
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * This kernel partially computes the gradient by generating condensed dc_dv values.
+ *
+ * @warning It is required that input data tiles be aligned to 64 byte boundaries.
+ *
+ * @see CUDA_pad_64()
+ * @see kernel_pad_64()
+ *
+ * @param cond_x Pointer to condensed dc_dv x-values
+ * @param cond_y Pointer to condensed dc_dv y-values
+ * @param cond_z Pointer to condensed dc_dv z-values
+ * @param dc_dv_x Pointer to dc_dv x-values
+ * @param dc_dv_y Pointer to dc_dv y-values
+ * @param dc_dv_z Pointer to dc_dv z-values
+ * @param LUT_Tile_Offsets Pointer to offset lookup table
+ * @param LUT_Knot Pointer to linear knot indices
+ * @param pad Amount of tile padding, in bytes
+ * @param tile_dim Dimensions of input volume tiles
+ * @param one_over_six The value 1/6
+ *
+ * @author: James A. Shackleford
+ */
 __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 				float* cond_x,		// Return: condensed dc_dv_x values
 				float* cond_y,		// Return: condensed dc_dv_y values
@@ -2061,29 +1974,31 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 	// END OF KERNEL
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_bspline_mse_2_condense_64()
-//
-// * Each threadblock contains 2 warps.
-// * Each set of 2 warps operates on only one tile
-// * Each tile is reduced to 64x3 single precision floating point values
-// * Each of the 64 values consists of 3 floats [x,y,z]
-// * Each of the 64 values relates to a different control knot
-// * Each set of 3 floats (there are 64 sets) are placed into a stream
-// * The stream is indexed into by an offset + [0,64].
-// * The offset is the knot number that the set of 3 floats influences
-// * Each warp will write to 64 different offsets
-//
-// IMPORTANT: To use this 64 thread version of the condense kernel, one must
-//            insure that the tiles are padded to a multiple of 64!
-//            (not a multiple of 32 as was the case with the 32 thread version)
-//
-// AUTHOR: James Shackleford
-// DATE  : September 16th, 2009
-////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * This kernel partially computes the gradient by generating condensed dc_dv values.
+ *
+ * @warning It is required that input data tiles be aligned to 64 byte boundaries.
+ *
+ * @see CUDA_pad_64()
+ * @see kernel_pad_64()
+ *
+ * @param cond_x Pointer to condensed dc_dv x-values
+ * @param cond_y Pointer to condensed dc_dv y-values
+ * @param cond_z Pointer to condensed dc_dv z-values
+ * @param dc_dv_x Pointer to dc_dv x-values
+ * @param dc_dv_y Pointer to dc_dv y-values
+ * @param dc_dv_z Pointer to dc_dv z-values
+ * @param LUT_Tile_Offsets Pointer to offset lookup table
+ * @param LUT_Knot Pointer to linear knot indices
+ * @param pad Amount of tile padding, in bytes
+ * @param tile_dim Dimensions of input volume tiles
+ * @param one_over_six The value 1/6
+ *
+ * @author: James A. Shackleford
+ */
 __global__ void kernel_bspline_mse_2_condense_64(
 				float* cond_x,		// Return: condensed dc_dv_x values
 				float* cond_y,		// Return: condensed dc_dv_y values
@@ -2092,11 +2007,22 @@ __global__ void kernel_bspline_mse_2_condense_64(
 				float* dc_dv_y,		// Input : dc_dv_y values
 				float* dc_dv_z,		// Input : dc_dv_z values
 				int* LUT_Tile_Offsets,	// Input : tile offsets
-				int* LUT_Knot,		// Input : linear knot indicies
+				int* LUT_Knot,		// Input : linear knot indices
 				int pad,		// Input : amount of tile padding
 				int4 tile_dim,		// Input : dims of tiles
 				float one_over_six)	// Input : Precomputed since GPU division is slow
 {
+	// NOTES
+	// * Each threadblock contains 2 warps.
+	// * Each set of 2 warps operates on only one tile
+	// * Each tile is reduced to 64x3 single precision floating point values
+	// * Each of the 64 values consists of 3 floats [x,y,z]
+	// * Each of the 64 values relates to a different control knot
+	// * Each set of 3 floats (there are 64 sets) are placed into a stream
+	// * The stream is indexed into by an offset + [0,64].
+	// * The offset is the knot number that the set of 3 floats influences
+	// * Each warp will write to 64 different offsets
+
 	int tileOffset;
 	int voxel_cluster;
 	int voxel_idx;
@@ -2261,24 +2187,31 @@ __global__ void kernel_bspline_mse_2_condense_64(
 
 	// END OF KERNEL
 }
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_bspline_mse_2_condense()
-//
-// * Each threadblock contains only 1 warp.
-// * Each warp operates on only one tile
-// * Each tile is reduced to 64x3 single precision floating point values
-// * Each of the 64 values consists of 3 floats [x,y,z]
-// * Each of the 64 values relates to a different control knot
-// * Each set of 3 floats (there are 64 sets) are placed into a stream
-// * The stream is indexed into by an offset + [0,64].
-// * The offset is the knot number that the set of 3 floats influences
-// * Each warp will write to 64 different offsets
-//
-// AUTHOR: James Shackleford
-// DATE  : August 19th, 2009
-////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * This kernel partially computes the gradient by generating condensed dc_dv values.
+ *
+ * @warning It is required that input data tiles be aligned to 32 byte boundaries.
+ *
+ * @see CUDA_pad_32()
+ * @see kernel_pad_32()
+ *
+ * @param cond_x Pointer to condensed dc_dv x-values
+ * @param cond_y Pointer to condensed dc_dv y-values
+ * @param cond_z Pointer to condensed dc_dv z-values
+ * @param dc_dv_x Pointer to dc_dv x-values
+ * @param dc_dv_y Pointer to dc_dv y-values
+ * @param dc_dv_z Pointer to dc_dv z-values
+ * @param LUT_Tile_Offsets Pointer to offset lookup table
+ * @param LUT_Knot Pointer to linear knot indices
+ * @param pad Amount of tile padding, in bytes
+ * @param tile_dim Dimensions of input volume tiles
+ * @param one_over_six The value 1/6
+ *
+ * @author: James A. Shackleford
+ */
 __global__ void kernel_bspline_mse_2_condense(
 				float* cond_x,		// Return: condensed dc_dv_x values
 				float* cond_y,		// Return: condensed dc_dv_y values
@@ -2292,6 +2225,17 @@ __global__ void kernel_bspline_mse_2_condense(
 				int4 tile_dim,		// Input : dims of tiles
 				float one_over_six)	// Input : Precomputed since GPU division is slow
 {
+	// NOTES
+	// * Each threadblock contains only 1 warp.
+	// * Each warp operates on only one tile
+	// * Each tile is reduced to 64x3 single precision floating point values
+	// * Each of the 64 values consists of 3 floats [x,y,z]
+	// * Each of the 64 values relates to a different control knot
+	// * Each set of 3 floats (there are 64 sets) are placed into a stream
+	// * The stream is indexed into by an offset + [0,64].
+	// * The offset is the knot number that the set of 3 floats influences
+	// * Each warp will write to 64 different offsets
+
 	int tileOffset;
 	int voxel_cluster;
 	int voxel_idx;
