@@ -197,7 +197,8 @@ Volume* read_mha (char* filename)
 	printf ("Oops, out of memory\n");
 	exit (-1);
     }
-	fseek(fp,512,SEEK_SET);
+    //	This line breaks known working file reads.
+//	fseek(fp,512,SEEK_SET);
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
     if (rc != vol->npix) {
 	printf ("Oops, bad read from file (%d)\n", rc);
