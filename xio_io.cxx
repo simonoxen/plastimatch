@@ -1,4 +1,4 @@
-/* -----------------------------------------------------------------------
+ /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include <stdlib.h>
@@ -16,6 +16,7 @@
 
 #include "plm_config.h"
 #include "print_and_exit.h"
+#include "xio_io.h"
 #include "cxt_io.h"
 
 /* Modified from ITK source code, function RegularExpressionSeriesFileNames::

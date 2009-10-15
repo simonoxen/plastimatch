@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "cxt_io.h"
 
-void
+plastimatch1_EXPORT void
 xio_load_structures (Cxt_structure_list *structures, char *input_dir, 
 		     float x_adj, float y_adj);
 
