@@ -1,5 +1,5 @@
 % =========================================================================
-% function trackResult = ClipTracker(path, fileExt, startFrame, nFrames, model, ...
+% function trackResult = ClipTracker(path, prefix, fileExt, startFrame, nFrames, model, ...
 %                           templateType)
 % 
 % Top level function for runnning clip tracker
@@ -24,82 +24,90 @@
 % Author: Rui Li 
 % Date: 09/02/2009
 % =========================================================================
-function trackResult = ClipTracker(path, fileExt, imageSize, pixelType,...
+function trackResult = ClipTracker(path, prefix, fileExt, imageSize, pixelType,...
     startFrame, nFrames, model, templateType, minI, maxI, imageROI, nClips, ...
-    nParticles, nIteration)
+    nParticles, nIterations)
 
 % check for minimum number of inputs
 if nargin < 1
     error('The ClipTracker function needs to know the path to the images');
 end
 
-% file extension
+% filename prefix
 if nargin < 2
+    prefix = '0_';
+end
+
+% file extension
+if nargin < 3
     fileExt = '*.raw';
 end
 
 % image size
-if nargin < 3
+if nargin < 4
     imageSize = [2048, 1536];
 end
 
 % image pixel type
-if nargin < 4
+if nargin < 5
     pixelType = 'ushort';
 end
 
 % check for minimum number of inputs
-if nargin < 5
+if nargin < 6
     startFrame = 1;
 end
 
-imageFiles = dir([path, fileExt]);
+imageFiles = dir([path, prefix, fileExt]);
 
 % the default is to track all the images in the directory
-if nargin < 6
+if nargin < 7
     nFrames = length(imageFiles);
 end
 
 % set default trackermodel if the model is not specified in the input
 % arguments
-if nargin < 7
+if nargin < 8
     model = 'MI';
 end
 
 % set default template type if there is no input type
-if nargin < 8
+if nargin < 9
     templateType = 'cylinder';
 end
 
 % display range value, equivalent to the win/level values in
 % viva
-if nargin < 9 
+if nargin < 10 
     minI = 0;
     maxI = 2600;
 end
-if nargin < 10
+
+if nargin < 11
     maxI = 2600;
 end
 
 % choose a region of interest (ROI)
-if nargin < 11
+if nargin < 12
     imageROI = [800 550 310 390];
 end
 
 % default number of clips to track
-if nargin < 12
+if nargin < 13
     nClips = 3;
 end
 
 % default number samples per clip per configuration
-if nargin < 13
+if nargin < 14
     nParticles = 30;
 end
 
 % default number of iterations for the mean field monte carlo
-if nargin < 14
+if nargin < 15
     nIterations = 5;
 end
+
+trackResFile = [path, prefix, 'res.mat'];
 
 % make template based on the input template type
 if strcmpi(templateType, 'cylinder') == 1
@@ -114,11 +122,12 @@ curFrame = reshape(fread(fid, pixelType), imageSize);
 fclose(fid);
 curFrame = curFrame';
 
-
 % initialize the clip tracks
 clipTracks = cell(nFrames, 1);
-clipTracks{1} = InitalizeTracks(imcrop(curFrame, imageROI), ...
+currTrack = InitalizeTracks(imcrop(curFrame, imageROI), ...
     imageROI, template, nClips);
+clipTracks{1} = currTrack;
+save(trackResFile, 'clipTracks');
 
 figure(1);
 imshow(curFrame, [minI, maxI]);
@@ -133,7 +142,6 @@ linkLengths = zeros(nClips, nClips, nFrames);
     GenerateInitialParticleSet(clipTracks{1}, template.tSet.patWidths, ...
     template.tSet.patThetas, nClips, nParticles); 
 
-keyboard;
 
 % the index for the last frame
 lastFrame = startFrame + nFrames - 1;
@@ -143,28 +151,36 @@ lastFrame = startFrame + nFrames - 1;
 % match
 count = 2;
 
+MODEL_PARAM = [];
+
 for iFrame=startFrame+1:lastFrame
-    % accumulate 30 frames, then start learning a weak
+    % accumulate 60 frames, then start learning a weak
     % dynamic model
-    if count > 30 && isempty(MODEL_PARAM.P)
-        [MODEL_PARAM.P, MODEL_PARAM.LINK_MEAN, MODEL_PARAM.LINK_VAR] = ...
-            LearnModelParams(clipTracks, linkLengths);
-    end
+%     if count > 30 && isempty(MODEL_PARAM.P)
+%         [MODEL_PARAM.P, MODEL_PARAM.LINK_MEAN, MODEL_PARAM.LINK_VAR] = ...
+%             LearnModelParams(clipTracks, linkLengths);
+%     end
     % open the current frame and display it
     fid = fopen([path, imageFiles(iFrame).name], 'rb');
     curFrame = reshape(fread(fid, pixelType), imageSize);
     curFrame = curFrame';    
-    
-    [clipTracks{count}, state, linkLengths{count}] = ...
-        PropagateParticles(MODEL_PARAM, state, curFrame, nClips, ...
-        template.tSet, linkLengths{count-1}, nIterations);
-    
-    % show current tracks
     clf;
-    imshow(curFrame, [minI, maxI]);
+    imshow(curFrame, [minI, maxI]);    
+    DrawParticles(nClips, state);
+    [currTrack, state, currLinkLength] = ...
+        PropagateParticles(MODEL_PARAM, state, curFrame, nClips, ...
+        template.tSet, linkLengths(:, :, count-1), nIterations);
+    
+    clipTracks{count} = currTrack;
+    linkLengths(:,:,count) = currLinkLength;
+    % show current track
     DrawTrackedTemplate(nClips, clipTracks{count});
+    
     drawnow; pause(0.01);
     
     count = count + 1;
+    
+    save(trackResFile, 'clipTracks', '-append');
 end
 
+trackResult = clipTracks;

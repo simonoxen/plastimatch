@@ -30,7 +30,7 @@ scoreImage = TemplateMatch(subImage, patCache, nWidths, nThetas);
 
 % locate the top n matches
 simSize = size(scoreImage);
-% clips: each row store information about [width rotation r c]
+% clips: each row store information about [width height rotation r c]
 clipTracks = zeros(nClips, 5);
 
 for iClip=1:nClips
