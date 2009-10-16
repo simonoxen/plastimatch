@@ -658,15 +658,15 @@ volume_warp (Volume *vout, Volume *vin, Volume *vf)
     /* Assumes size, spacing of vout same as size, spacing of vf */
     for (d = 0; d < 3; d++) {
 	if (vout->dim[d] != vf->dim[d]) {
-		printf("Dimension mismatch between fixed and moving\n");
+	    printf("Dimension mismatch between fixed and moving\n");
 	    return 0;
 	}
 	if (vout->pix_spacing[d] != vf->pix_spacing[d]) {
-		printf("Resolutions mismatch between fixed and moving\n");
+	    printf("Resolutions mismatch between fixed and moving\n");
 	    return 0;
 	}
 	if (vout->offset[d] != vf->offset[d]) {
-		printf("offset mismatch between fixed and moving\n");
+	    printf("offset mismatch between fixed and moving\n");
 	    return 0;
 	}
     }
@@ -686,11 +686,15 @@ volume_warp (Volume *vout, Volume *vin, Volume *vf)
 		if (mi < 0 || mi >= vin->dim[0]) continue;
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
+		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
+			    i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
+			    mx, my, mz, mi, mj, mk);
+
 #if defined (commentout)
 		if (k == 45 && j == 46 && (i == 58 || i == 59)) {
 		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
-			i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
-			mx, my, mz, mi, mj, mk);
+			    i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
+			    mx, my, mz, mi, mj, mk);
 		}
 #endif
 		vout_img[v] = vin_img[mv];

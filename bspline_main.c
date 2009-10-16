@@ -58,11 +58,12 @@ main (int argc, char* argv[])
 			      roi_offset,
 			      fixed->dim,
 			      options.vox_per_rgn
-			      );
+			     );
 
     /* Run the optimization */
     printf ("Running optimization.\n");
     bspline_optimize (&bxf, 0, parms, fixed, moving, moving_grad);
+    printf ("Done running optimization.\n");
 
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn || options.output_warped_fn) {
@@ -77,12 +78,12 @@ main (int argc, char* argv[])
 	    write_mha (options.output_vf_fn, vector_field);
 	}
     }
-	moving_warped = volume_warp (0, moving, vector_field);
 	
-	//printf("%f",moving_warped->dim[1]);
+    //printf("%f",moving_warped->dim[1]);
     /* Create warped output image and save */
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
+	moving_warped = volume_warp (0, moving, vector_field);
 	printf ("Writing warped image.\n");
 	//printf("write to %s\n",options.output_warped_fn);
 	//system("pause");
@@ -99,6 +100,7 @@ main (int argc, char* argv[])
     */
 
     /* Free memory */
+    printf ("Done warping images.\n");
     bspline_parms_free (parms);
     bspline_xform_free (&bxf);
     volume_free (fixed);
@@ -106,6 +108,8 @@ main (int argc, char* argv[])
     volume_free (moving_grad);
     volume_free (moving_warped);
     volume_free (vector_field);
+
+    printf ("Done freeing memory\n");
 
     return 0;
 }
