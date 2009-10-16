@@ -8302,7 +8302,7 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 
 	// Tell the user we are busy copying information
 	// to the device memory.
-	printf("Copying data to GPU global memory");
+	printf("Copying data to GPU global memory\n");
 
 	// --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
 	// Calculate space requirements for the allocation
@@ -8313,8 +8313,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	// volume's voxel data. The pointer to this area of GPU
 	// global memory will be returned and placed into
 	// dev_parms->fixed_image. (fixed_image is a pointer)
-	cudaMalloc((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
-	checkCUDAError("Failed to allocate memory for fixed image");
+	printf ("Trying to allocate %d\n",
+		dev_ptrs->fixed_image_size);
+	cudaMalloc ((void**)&dev_ptrs->fixed_image, 
+		    dev_ptrs->fixed_image_size);
+	checkCUDAError ("Failed to allocate memory for fixed image");
 	printf(".");
 
 
@@ -12252,30 +12255,34 @@ bspline_cuda_calculate_gradient_c
 ////////////////////////////////////////////////////////////////////////////////
 void bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs)
 {
-	cudaUnbindTexture(tex_LUT_Offsets);
-	cudaUnbindTexture(tex_LUT_Bspline_x);
-	cudaUnbindTexture(tex_LUT_Bspline_y);
-	cudaUnbindTexture(tex_LUT_Bspline_z);
+    cudaUnbindTexture(tex_fixed_image);
+    cudaUnbindTexture(tex_moving_image);
+    cudaUnbindTexture(tex_moving_grad);
+    cudaUnbindTexture(tex_coeff);
+    cudaUnbindTexture(tex_grad);
+    cudaUnbindTexture(tex_LUT_Offsets);
+    cudaUnbindTexture(tex_LUT_Bspline_x);
+    cudaUnbindTexture(tex_LUT_Bspline_y);
+    cudaUnbindTexture(tex_LUT_Bspline_z);
 	
-	cudaFree(dev_ptrs->fixed_image);
-	cudaFree(dev_ptrs->moving_image);
-	cudaFree(dev_ptrs->moving_grad);
-	cudaFree(dev_ptrs->coeff);
-	cudaFree(dev_ptrs->score);
-	cudaFree(dev_ptrs->dc_dv);
-	cudaFree(dev_ptrs->dc_dv_x);
-	cudaFree(dev_ptrs->dc_dv_y);
-	cudaFree(dev_ptrs->dc_dv_z);
-	cudaFree(dev_ptrs->cond_x);
-	cudaFree(dev_ptrs->cond_y);
-	cudaFree(dev_ptrs->cond_z);
-	cudaFree(dev_ptrs->grad);
-	cudaFree(dev_ptrs->grad_temp);
-	cudaFree(dev_ptrs->LUT_Knot);
-	cudaFree(dev_ptrs->LUT_Offsets);
-	cudaFree(dev_ptrs->LUT_Bspline_x);
-	cudaFree(dev_ptrs->LUT_Bspline_y);
-	cudaFree(dev_ptrs->LUT_Bspline_z);
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->LUT_Offsets);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->LUT_Bspline_x);
+    cudaFree(dev_ptrs->LUT_Bspline_y);
+    cudaFree(dev_ptrs->LUT_Bspline_z);
 }
 
 

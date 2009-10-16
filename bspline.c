@@ -3483,13 +3483,14 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_initialize (fixed, moving, moving_grad, bxf, parms);
-	    /* Fall through??? */
+	    /* fall through */
 	case 'd':
 	    bspline_cuda_initialize_d (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'e':
-	    bspline_cuda_initialize_e_v2 (fixed, moving, moving_grad, bxf, parms);
-	    //	    bspline_cuda_initialize_e(fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_e_v2 (fixed, moving, moving_grad, 
+					  bxf, parms);
+	    // bspline_cuda_initialize_e (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'f':
 	    bspline_cuda_initialize_f (fixed, moving, moving_grad, bxf, parms);
@@ -3498,19 +3499,23 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	    bspline_cuda_initialize_g (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'h':
-	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, 
+				       moving_grad, bxf, parms);
 	    break;
 	case 'i':
-	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, 
+				       moving_grad, bxf, parms);
 	    break;
 	case 'j':
 	case '\0':   /* Default */
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
+				       moving_grad, bxf, parms);
 	    break;
 	default:
 	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
 		    parms->implementation);
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
+				       moving_grad, bxf, parms);
 	    break;
 	}
     }
@@ -3539,6 +3544,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_clean_up ();
+	    /* fall through */
 	case 'd':
 	case 'e':
 	    bspline_cuda_clean_up_d (); // Handles versions D and E
