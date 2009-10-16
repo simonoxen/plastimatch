@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "plm_config.h"
 #include "fdk_opts_ext.h"
 #include "fdk_utils_ext.h"
@@ -84,8 +85,8 @@ main(int argc, char* argv[])
 	
 
     strcpy(dirbuf,options.input_dir);
-    CreateDirectory(strcat(dirbuf,"\\tmp"),NULL);
-    //make_directory (strcat (dirbuf, "/tmp"));
+    //CreateDirectory(strcat(dirbuf,"\\tmp"),NULL);
+    make_directory (strcat (dirbuf, "/tmp"));
 
     strcpy(matrix_output_prefix ,options.input_dir);
     strcat(matrix_output_prefix , "\\tmp\\out_");

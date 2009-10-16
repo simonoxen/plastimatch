@@ -11,7 +11,7 @@
 #endif
 
 int
-file_exists (char *filename)
+file_exists (const char *filename)
 {
     FILE *f = fopen (filename, "r");
     if (f) {
@@ -22,7 +22,7 @@ file_exists (char *filename)
 }
 
 void
-make_directory (char *dirname)
+make_directory (const char *dirname)
 {
 #if (_WIN32)
     mkdir (dirname);

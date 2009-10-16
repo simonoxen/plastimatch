@@ -4,7 +4,15 @@
 #ifndef _file_util_h_
 #define _file_util_h_
 
-int file_exists (char *filename);
-void make_directory (char *dirname);
+#if defined __cplusplus
+extern "C" {
+#endif
+
+int file_exists (const char *filename);
+void make_directory (const char *dirname);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

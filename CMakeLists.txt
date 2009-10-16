@@ -693,7 +693,7 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	wrmha_512prefix.c
 	bowtie_correction.c	
 	)
- SET(HND2RAW_ST_SRC
+SET(HND2RAW_ST_SRC
 	hnd2raw_st.cpp
 	)
 IF (CUDA_FOUND)
@@ -936,7 +936,8 @@ PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE(fdk_c "${FDK_C_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
-PLM_ADD_EXECUTABLE(hnd2raw_ST "${HND2RAW_ST_SRC}" "" "")
+PLM_ADD_EXECUTABLE(hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE(raw_to_mha raw_to_mha.c "" "")

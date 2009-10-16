@@ -6,7 +6,7 @@
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
-#include <windows.h>
+//#include <windows.h>
 #include <memory>
 #include <string>
 
@@ -14,14 +14,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
-#include <process.h>
+//#include <process.h>
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <shlwapi.h>
+//#include <shlwapi.h>
 #include <time.h>
-#define DSR 2
+#include "file_util.h"
+
 using namespace std;
+
+#define DSR 2
+
 
 int main(int argc, char* argv[])
 {
@@ -114,7 +118,8 @@ int main(int argc, char* argv[])
 		if (inFixedWidth != -1)
 			sprintf(indexString, "%0*d", inFixedWidth, proj);
 		else
-			_itoa(proj, indexString, 10);
+		    //_itoa(proj, indexString, 10);
+		    snprintf (indexString, 32, "%d", proj);
 
 		hndfp = hndDir;
 		hndfp += '\\';
@@ -122,7 +127,8 @@ int main(int argc, char* argv[])
 		hndfp += indexString;
 		hndfp += hndPostfix;
 
-		if (GetFileAttributes(hndfp.c_str()) == INVALID_FILE_ATTRIBUTES)
+		//if (GetFileAttributes(hndfp.c_str()) == INVALID_FILE_ATTRIBUTES)
+		if (!file_exists (hndfp.c_str()))
 		{
 			printf("Error: hnd_file (%s) does not exist.\n", hndfp.c_str());
 			return 0;
@@ -133,7 +139,8 @@ int main(int argc, char* argv[])
 			if (outFixedWidth != -1)
 				sprintf(indexString, "%0*d", outFixedWidth, proj);
 			else
-				_itoa(proj, indexString, 10);
+			    //_itoa(proj, indexString, 10);
+			    snprintf (indexString, 32, "%d", proj);
 		}
 
 		rawfp = rawDir;
@@ -462,7 +469,7 @@ int main(int argc, char* argv[])
 		fwrite(Img,sizeof(long),SizeX*SizeY,wp);
 		printf("%s = >%s (int32)\n",rbuffer,sbuffer);		
 		}
-		/**/
+		**/
 
 
 

@@ -158,8 +158,8 @@ vector_resample_image (T& image, float x_spacing,
     size[0] = (unsigned long) (old_coverage[0] / spacing[0]);
     size[1] = (unsigned long) (old_coverage[1] / spacing[1]);
     size[2] = (unsigned long) (old_coverage[2] / spacing[2]);
-    printf ("Size was %d %d %d\n", old_size[0], old_size[1], old_size[2]);
-    printf ("Size will be %d %d %d\n", size[0], size[1], size[2]);
+    printf ("Size was %ld %ld %ld\n", old_size[0], old_size[1], old_size[2]);
+    printf ("Size will be %ld %ld %ld\n", size[0], size[1], size[2]);
     filter->SetSize (size);
 
     float coverage[3];
