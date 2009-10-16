@@ -201,6 +201,10 @@ gpuit_EXPORT
 BSPLINE_Xform* read_bxf (char* filename);
 gpuit_EXPORT
 void write_bxf (char* filename, BSPLINE_Xform* bxf);
+gpuit_EXPORT
+void
+bspline_interpolate_vf (Volume* interp, 
+			BSPLINE_Xform* bxf);
 
 /* Used internally */
 void
@@ -218,23 +222,19 @@ void
 bspline_score_reference (BSPLINE_Score *ssd, 
 			 Volume *fixed, Volume *moving, Volume *moving_grad, 
 			 BSPLINE_Parms *parms);
-gpuit_EXPORT
 void
-bspline_interpolate_vf (Volume* interp, 
-			BSPLINE_Xform* bxf);
-
-void
-clamp_linear_interpolate(float ma, int dmax, int* maf, int* mar, float* fa1, float* fa2);
+clamp_linear_interpolate (float ma, int dmax, int* maf, int* mar, 
+			  float* fa1, float* fa2);
 
 void
 bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
 		       int pidx, int qidx, float dc_dv[3]);
+int* calc_offsets (int* tile_dims, int* cdims);
 
-int* calc_offsets(int* tile_dims, int* cdims);
-
-void find_knots(int* knots, int tile_num, int* rdims, int* cdims);
-
-
+void find_knots (int* knots, int tile_num, int* rdims, int* cdims);
+void
+report_score (char *alg, BSPLINE_Xform *bxf, 
+	      Bspline_state *bst, int num_vox, double timing);
 
 /* Debugging routines */
 void

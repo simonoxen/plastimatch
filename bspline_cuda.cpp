@@ -123,7 +123,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
 	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
 	clock_t start_clock;	// Timer Start Count
-	clock_t stop_clock;	// Timer Stop  Count
+	clock_t end_clock;	// Timer Stop  Count
 
 	static int it=0;	// Holds Iteration Number
 	char debug_fn[1024];	// Debug message buffer
@@ -183,13 +183,12 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	stop_clock = clock();	// <=== STOP TIMING HERE
+	end_clock = clock();	// <=== STOP TIMING HERE
 
 	
 	// --- USER FEEDBACK ----------------------------------------
-	printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-		ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-		(double)(stop_clock - start_clock)/CLOCKS_PER_SEC);
+	report_score ("MSE", bxf, bst, num_vox, 
+		      (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 	// ----------------------------------------------------------
 
 }
@@ -215,7 +214,7 @@ void bspline_cuda_score_i_mse(BSPLINE_Parms* parms,
 	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
 	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
 	clock_t start_clock;	// Timer Start Count
-	clock_t stop_clock;	// Timer Stop  Count
+	clock_t end_clock;	// Timer Stop  Count
 
 	static int it=0;	// Holds Iteration Number
 	char debug_fn[1024];	// Debug message buffer
@@ -275,13 +274,12 @@ void bspline_cuda_score_i_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	stop_clock = clock();	// <=== STOP TIMING HERE
+	end_clock = clock();	// <=== STOP TIMING HERE
 
 	
 	// --- USER FEEDBACK ----------------------------------------
-	printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-		ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-		(double)(stop_clock - start_clock)/CLOCKS_PER_SEC);
+	report_score ("MSE", bxf, bst, num_vox, 
+		      (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 	// ----------------------------------------------------------
 
 }
@@ -308,7 +306,7 @@ void bspline_cuda_score_h_mse(BSPLINE_Parms* parms,
 	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
 	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
 	clock_t start_clock;	// Timer Start Count
-	clock_t stop_clock;	// Timer Stop  Count
+	clock_t end_clock;	// Timer Stop  Count
 
 	static int it=0;	// Holds Iteration Number
 	char debug_fn[1024];	// Debug message buffer
@@ -368,13 +366,12 @@ void bspline_cuda_score_h_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	stop_clock = clock();	// <=== STOP TIMING HERE
+	end_clock = clock();	// <=== STOP TIMING HERE
 
 	
 	// --- USER FEEDBACK ----------------------------------------
-	printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-		ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-		(double)(stop_clock - start_clock)/CLOCKS_PER_SEC);
+	report_score ("MSE", bxf, bst, num_vox, 
+		      (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 	// ----------------------------------------------------------
 
 }
@@ -435,31 +432,30 @@ bspline_cuda_score_g_mse (BSPLINE_Parms *parms,
 
     // Run the kernels that fill the score, dc_dv, and gradient streams.
     bspline_cuda_calculate_run_kernels_g(
-					 fixed,
-					 moving,
-					 moving_grad,
-					 bxf,
-					 parms,
-					 run_low_mem_kernel_version,
-					 parms->debug);
+	fixed,
+	moving,
+	moving_grad,
+	bxf,
+	parms,
+	run_low_mem_kernel_version,
+	parms->debug);
 
     // Run the kernels to calculate the score and gradient values.
     bspline_cuda_final_steps_f(
-			       parms,
-			       bxf,
-			       fixed,
-			       bxf->vox_per_rgn,
-			       fixed->dim,
-			       &(ssd->score),
-			       ssd->grad,
-			       &ssd_grad_mean,
-			       &ssd_grad_norm);
+	parms,
+	bxf,
+	fixed,
+	bxf->vox_per_rgn,
+	fixed->dim,
+	&(ssd->score),
+	ssd->grad,
+	&ssd_grad_mean,
+	&ssd_grad_norm);
 
     end_clock = clock();
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
 /***********************************************************************
@@ -535,9 +531,8 @@ bspline_cuda_score_f_mse
 
     end_clock = clock();
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
 /***********************************************************************
@@ -653,9 +648,8 @@ bspline_cuda_score_e_mse_v2
 
     end_clock = clock();
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
 /***********************************************************************
@@ -687,7 +681,7 @@ bspline_cuda_score_e_mse
     int num_vox;
     float ssd_grad_norm, ssd_grad_mean;
     clock_t start_clock;
-    //clock_t end_clock;
+    clock_t end_clock;
 
     static int it = 0;
     char debug_fn[1024];
@@ -769,13 +763,12 @@ bspline_cuda_score_e_mse
     QueryPerformanceCounter(&clock_count);
     clock_end = (double)clock_count.QuadPart;
     printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    clock_end = clock();
-
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(clock_end - clock_start)/CLOCKS_PER_SEC);
 #endif
+
+    end_clock = clock();
+
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
 /***********************************************************************
@@ -1100,9 +1093,8 @@ void bspline_cuda_score_d_mse
 
     end_clock = clock();
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }
 
 /***********************************************************************
@@ -1277,7 +1269,6 @@ bspline_cuda_score_c_mse
     free(host_grad_norm);
     free(host_grad_mean);
 
-    printf ("SCORE: MSE %6.3f NV [%6d] GM %6.3f GN %6.3f [%6.3f secs]\n", 
-	    ssd->score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-	    (double)(end_clock - start_clock)/CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, 
+		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
 }

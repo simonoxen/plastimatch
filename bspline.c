@@ -1403,7 +1403,7 @@ compute_dS_dP (
     return dS_dP;
 }
 
-static void
+void
 report_score (char *alg, BSPLINE_Xform *bxf, 
 	      Bspline_state *bst, int num_vox, double timing)
 {
@@ -1419,8 +1419,8 @@ report_score (char *alg, BSPLINE_Xform *bxf,
     }
 
     logfile_printf ("%s[%4d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, ssd_grad_norm, 
-		    timing);
+		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
+		    ssd_grad_norm, timing);
 }
 
 /* Mutual information version of implementation "C" */
@@ -3483,6 +3483,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_initialize (fixed, moving, moving_grad, bxf, parms);
+	    /* Fall through??? */
 	case 'd':
 	    bspline_cuda_initialize_d (fixed, moving, moving_grad, bxf, parms);
 	    break;
@@ -3502,9 +3503,15 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'i':
 	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
-	default:
+	case 'j':
+	case '\0':   /* Default */
 	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-
+	    break;
+	default:
+	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
+		    parms->implementation);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    break;
 	}
     }
 #endif
