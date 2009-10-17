@@ -256,13 +256,18 @@ set_fixed_image_region_new_unfinished (RegistrationType::Pointer registration,
 
     for (int d = 0; d < 3; d++) {
 	float ori = regd->fixed_region_origin[d] + regd->fixed_region.GetIndex()[d] * regd->fixed_region_spacing[d];
-	int idx = floor (ori - (fi->GetOrigin()[d] - 0.5 * fi->GetSpacing()[d]) / fi->GetSpacing()[d]);
+	int idx = (int) floor (ori - (fi->GetOrigin()[d] 
+				      - 0.5 * fi->GetSpacing()[d]) 
+			       / fi->GetSpacing()[d]);
 	if (idx < 0) {
 	    fprintf (stderr, "set_fixed_image_region conversion error.\n");
 	    exit (-1);
 	}
-	float last_pix_center = ori + (regd->fixed_region.GetSize()[d]-1) * regd->fixed_region_spacing[d];
-	int siz = floor (last_pix_center - (fi->GetOrigin()[d] - 0.5 * fi->GetSpacing()[d]) / fi->GetSpacing()[d]);
+	float last_pix_center = ori + (regd->fixed_region.GetSize()[d]-1) 
+		* regd->fixed_region_spacing[d];
+	int siz = (int) floor (last_pix_center - (fi->GetOrigin()[d] 
+						  - 0.5 * fi->GetSpacing()[d]) 
+			       / fi->GetSpacing()[d]);
 	siz = siz - idx + 1;
 	valid_index[d] = idx;
 	valid_size[d] = siz;

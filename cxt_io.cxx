@@ -244,11 +244,14 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    }
 	}
         else if (biseqcstr (tag, "DIMENSION")) {
-	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+	    int int_x, int_y, int_z;
+
+	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
+			     &int_x, &int_y, &int_z)) {
 		have_dim = 1;
-		structures->dim[0] = val_x;
-		structures->dim[1] = val_y;
-		structures->dim[2] = val_z;
+		structures->dim[0] = int_x;
+		structures->dim[1] = int_y;
+		structures->dim[2] = int_z;
 	    }
 	}
         else if (biseqcstr (tag, "SPACING")) {

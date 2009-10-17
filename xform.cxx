@@ -440,7 +440,7 @@ save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
     fprintf (fp,
 	     "Offset = %f %f %f\n"
 	     "ElementSpacing = %f %f %f\n"
-	     "DimSize = %d %d %d\n"
+	     "DimSize = %lu %lu %lu\n"
 	     "ElementDataFile = LOCAL\n",
 	     transform->GetGridOrigin()[0],
 	     transform->GetGridOrigin()[1],
@@ -483,6 +483,9 @@ save_xform (Xform *xf, char* fn)
     case XFORM_GPUIT_VECTOR_FIELD:
 	write_mha (fn, xf->get_gpuit_vf());
 	break;
+    case XFORM_NONE:
+	print_and_exit ("Error trying to save null transform\n");
+	break;
     }
 }
 
@@ -523,7 +526,7 @@ xform_transform_point (FloatPointType* point_out, Xform* xf_in, FloatPointType p
     if (isInside) {
 	DeformationFieldType::PixelType pixelValue = vf->GetPixel (idx);
 	printf ("pi [%g %g %g]\n", point_in[0], point_in[1], point_in[2]);
-	printf ("idx [%d %d %d]\n", idx[0], idx[1], idx[2]);
+	printf ("idx [%ld %ld %ld]\n", idx[0], idx[1], idx[2]);
 	printf ("vf [%g %g %g]\n", pixelValue[0], pixelValue[1], pixelValue[2]);
 	for (int d = 0; d < 3; d++) {
 	    (*point_out)[d] = point_in[d] + pixelValue[d];

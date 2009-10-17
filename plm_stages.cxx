@@ -128,6 +128,7 @@ set_fixed_image_region_global (Registration_Data* regd)
     }
 }
 
+#if defined (commentout)
 static PlmImageType
 choose_image_type (int xform_type, int optim_type, int impl_type)
 {
@@ -138,6 +139,7 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 	return PLM_IMG_TYPE_ITK_FLOAT;
     }
 }
+#endif
 
 void
 save_warped_img_itk (Registration_Data* regd,
