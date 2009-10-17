@@ -1,31 +1,25 @@
 // cdecompress.cpp : Defines the entry point for the console application.
-//
-//#include "Common.h"
+#include "plm_config.h"
+
 #if defined (_DEBUG) && defined (DETECT_MEM_LEAKS)
 	#define _CRTDBG_MAP_ALLOC
 	#include <stdlib.h>
 	#include <crtdbg.h>
 #endif
-//#include <windows.h>
 #include <memory>
 #include <string>
-
-//#include "stdafx.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <malloc.h>
-//#include <process.h>
 #include <cstdio>
 #include <string>
 #include <vector>
-//#include <shlwapi.h>
 #include <time.h>
 #include "file_util.h"
 
 using namespace std;
 
 #define DSR 2
-
 
 int main(int argc, char* argv[])
 {
