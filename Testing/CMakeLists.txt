@@ -31,7 +31,7 @@ IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
 ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
 TARGET_LINK_LIBRARIES(bspline_test_1 ${GPUIT_LIBRARIES})
 
-ADD_TEST (bspline-bxf-compare ${CMAKE_COMMAND} -E compare_files
+ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
 
@@ -42,12 +42,28 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
+ADD_TEST (bspline-a-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-a.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=18945.5"
+  "-DUPPER_THRESH=18945.7"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "bspline-b"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+ADD_TEST (bspline-b-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-b.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=18945.5"
+  "-DUPPER_THRESH=18945.7"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 PLM_ADD_TEST (
@@ -56,12 +72,28 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;c;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
+ADD_TEST (bspline-c-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-c.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=7429.0"
+  "-DUPPER_THRESH=7429.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "bspline-d"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+ADD_TEST (bspline-d-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=7429.0"
+  "-DUPPER_THRESH=7429.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 PLM_ADD_TEST (
@@ -70,12 +102,28 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
+ADD_TEST (bspline-e-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=7429.0"
+  "-DUPPER_THRESH=7429.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "bspline-f"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+ADD_TEST (bspline-f-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=7429.0"
+  "-DUPPER_THRESH=7429.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## drr
