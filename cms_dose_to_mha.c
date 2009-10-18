@@ -153,12 +153,12 @@ main (int argc, char *argv[])
     printf("topx,topy,topz are: %f%s%f%s%f\n", topx,",",topy,",",topz);
 
     offset = ftell (ifp);
-    printf ("My offset is %d\n", offset);
+    printf ("My offset is %ld\n", offset);
     printf ("This far from the end %d\n", nx*ny*nz*4);
     fseek (ifp, -nx*ny*nz*4, SEEK_END);
 
     offset = ftell (ifp);
-    printf ("My offset is %d\n", offset);
+    printf ("My offset is %ld\n", offset);
 
 
     for(j = 0; j < ny; j++){ //for(j = 0; j < ny; j++){ 
@@ -173,7 +173,7 @@ main (int argc, char *argv[])
 
     offset = ftell (ifp);
     printf("CHECKPOINT!\n");
-    printf ("My offset is %d\n", offset);
+    printf ("My offset is %ld\n", offset);
 
     fclose(ifp);
 
