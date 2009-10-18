@@ -2,7 +2,9 @@ PROJECT(PLM_Testing)
 
 SET (SYNTH_MHA_SIZE 38)
 
+## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "synth-test-1"
   ""
@@ -17,7 +19,9 @@ PLM_ADD_TEST (
   "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-## bspline-bxf - read and write bxf
+## -------------------------------------------------------------------------
+## bspline-bxf - read and write bxf format
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "bspline-bxf"
   ""
@@ -35,7 +39,9 @@ ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
 
-## bspline - bspline driver program
+## -------------------------------------------------------------------------
+## bspline - bspline algorithm flavors
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "bspline-a"
   ""
@@ -70,7 +76,7 @@ PLM_ADD_TEST (
   "bspline-c"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;c;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
 ADD_TEST (bspline-c-check
   ${CMAKE_COMMAND} 
@@ -126,7 +132,9 @@ ADD_TEST (bspline-f-check
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
+## -------------------------------------------------------------------------
 ## drr
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "drr"
   ""
@@ -134,7 +142,9 @@ PLM_ADD_TEST (
   "-a;20;-e;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
   )
 
+## -------------------------------------------------------------------------
 ## fdk
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-cpu"
   ""
@@ -149,7 +159,9 @@ PLM_ADD_TEST (
   "-I;${PLM_TESTING_BUILD_DIR};-a;0 19;-O;fdk_cuda_output.mha"
   )
 
-## plastimatch
+## -------------------------------------------------------------------------
+## plastimatch register
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plastimatch-usage" 
   ""
@@ -192,7 +204,19 @@ PLM_ADD_TEST (
   "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-cuda.txt"
   )
 
+## -------------------------------------------------------------------------
+## plastimatch warp
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plastimatch-warp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/synth_1_warped.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## xf_to_xf
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "xf-to-xf" 
   ""

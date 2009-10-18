@@ -147,6 +147,8 @@ do_command_warp (int argc, char* argv[])
 {
     Warp_Parms parms;
     File_type file_type;
+
+    void test_fn (Warp_Parms *parms);
     
     warp_parse_args (&parms, argc, argv);
     file_type = deduce_file_type (parms.mha_in_fn);
@@ -162,6 +164,9 @@ do_command_warp (int argc, char* argv[])
 	case FILE_TYPE_UNKNOWN:
 	case FILE_TYPE_IMG:
 	case FILE_TYPE_DICOM_DIR:
+	    printf ("Calling warp_image_main (%s)\n", parms.xf_in_fn);
+	    printf ("Calling warp_image_main (%p)\n", &parms);
+	    test_fn (&parms);
 	    warp_image_main (&parms);
 	    break;
 	case FILE_TYPE_DIJ:
