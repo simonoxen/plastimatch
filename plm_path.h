@@ -5,15 +5,18 @@
 #define _plm_path_h_
 
 #include <stdlib.h>
-#include <stdio.h>
+#include <limits.h>
 
-/* Need a sane way of dealing with path buffers.
+/* Need a sane way of dealing with path buffers, see e.g.:
    http://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html */
+/* Here is what posix has to say on the subject:
+   http://www.opengroup.org/onlinepubs/009695399/basedefs/limits.h.html */
+
 #ifndef _MAX_PATH
 #ifdef PATH_MAX
 #define _MAX_PATH PATH_MAX
 #else
-#define _MAX_PATH 256
+#define _MAX_PATH 255
 #endif
 #endif
 

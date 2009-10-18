@@ -76,23 +76,13 @@ void warp_any (Warp_Parms* parms, T im_in, U)
 }
 
 void
-test_fn (Warp_Parms *parms)
-{
-    printf ("Inside test_fn (%p)\n", parms);
-    printf ("Inside test_fn #1 (%s)\n", parms->xf_in_fn);
-}
-
-void
 warp_image_main (Warp_Parms* parms)
 {
-    printf ("Inside warp_image_main (%p)\n", parms);
-    printf ("Inside warp_image_main #1 (%s)\n", parms->xf_in_fn);
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
 
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
 
-    printf ("Inside warp_image_main #2 (%s)\n", parms->xf_in_fn);
     itk__GetImageType (parms->mha_in_fn, pixelType, componentType);
 
     switch (componentType) {

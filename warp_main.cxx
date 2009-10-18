@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include <stdio.h>
 #include <time.h>
 #include "plm_config.h"
 
@@ -164,9 +165,6 @@ do_command_warp (int argc, char* argv[])
 	case FILE_TYPE_UNKNOWN:
 	case FILE_TYPE_IMG:
 	case FILE_TYPE_DICOM_DIR:
-	    printf ("Calling warp_image_main (%s)\n", parms.xf_in_fn);
-	    printf ("Calling warp_image_main (%p)\n", &parms);
-	    test_fn (&parms);
 	    warp_image_main (&parms);
 	    break;
 	case FILE_TYPE_DIJ:
