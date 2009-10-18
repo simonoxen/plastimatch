@@ -52,7 +52,7 @@
 /* -Wno-sign-conversion warnings are generated when comparing signed 
    and unsigned integers -- these should be revisited occasionally 
    to check for actual bugs. */
-#pragma GCC diagnostic ignored "-Wno-sign-conversion"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
 #if _MSC_VER
