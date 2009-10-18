@@ -6,19 +6,19 @@
 
 #include "bspline.h"
 
-#define OPTION_INTEGER_SPACING_STRING "integer-spacing"
-#define OPTION_INTEGER_SPACING 's'
-
-#define OPTION_RESOLUTION 'r'
-#define OPTION_OUTPUT_FILE 'O'
-#define OPTION_ALGORITHM 'a'
-#define OPTION_MAX_ITS 'm'
+//#define OPTION_INTEGER_SPACING_STRING "integer-spacing"
+//#define OPTION_INTEGER_SPACING 's'
+//#define OPTION_RESOLUTION 'r'
+//#define OPTION_OUTPUT_FILE 'O'
+//#define OPTION_ALGORITHM 'a'
+//#define OPTION_MAX_ITS 'm'
 
 typedef struct BSPLINE_Options_struct BSPLINE_Options;
 struct BSPLINE_Options_struct {
     char* fixed_fn;
     char* moving_fn;
     char* output_warped_fn;
+    char* output_xf_fn;
     char* output_vf_fn;
     char* method;
     int vox_per_rgn[3];

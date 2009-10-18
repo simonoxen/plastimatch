@@ -24,6 +24,7 @@ print_usage (void)
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
 	    " -V outfile                 The output vector field\n"
+	    " -x outfile                 The output bspline coefficients\n"
 	    " -O outfile                 The output warped image\n"
 	    " --debug                    Create various debug files\n"
 	    );
@@ -141,6 +142,14 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    options->output_vf_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-x")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->output_xf_fn = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "--debug")) {
 	    parms->debug = 1;

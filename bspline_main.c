@@ -30,7 +30,6 @@ main (int argc, char* argv[])
     Volume *vector_field = 0;
     Volume *moving_warped = 0;
     int roi_offset[3];
-    int i;
 
     bspline_opts_parse_args (&options, argc, argv);
 
@@ -65,6 +64,11 @@ main (int argc, char* argv[])
     bspline_optimize (&bxf, 0, parms, fixed, moving, moving_grad);
     printf ("Done running optimization.\n");
 
+    /* Save output transform */
+    if (options.output_xf_fn) {
+	write_bxf (options.output_xf_fn, &bxf);
+    }
+
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn || options.output_warped_fn) {
 	printf ("Creating vector field.\n");
@@ -89,15 +93,6 @@ main (int argc, char* argv[])
 	//system("pause");
 	write_mha (options.output_warped_fn, moving_warped);
     }
-
-    /* Output the difference between the fixed and moving images after registration. */
-    /*
-      for(i = 0; i < moving_warped->npix; i++)
-      {
-      ((float*)moving_warped->img)[i] -= ((float*)fixed->img)[i];
-      }
-      write_mha("difference.mha", moving_warped);
-    */
 
     /* Free memory */
     printf ("Done warping images.\n");
