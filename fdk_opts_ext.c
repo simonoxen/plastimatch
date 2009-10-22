@@ -19,12 +19,14 @@ void print_usage (void)
 	    " -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 		" -I indir               The input (parent) directory containing ProjAngles.txt\n"
 		" -sb \". (default)\" The subfolder with *.raw files\n"
-		" -O outfile             The output file\n"
-		" -F \"F(f)ull (default)\"  or \"H(alf     Full/Half fan options\n"
-		" -cor (#slices)                     Turn on Coronal output (n slices)  \n"
-		" -sag (#slices)                     Turn on Sagittal output (n slices) \n"
-		"As an example \n"
-		"fdk_cuda_integrated_normalized.exe -a \"0 1 379\" -r \"512 512 200\" -z \"250 250 200\" -I \"\\raw\" -O \"\\raw\\CBCT.mh5\" -F \"Full\" "
+		" -O outfile             The output file. \n"
+		"    (In DRR mode, this is input mha images with 512-byte file header. )\n"
+		" -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
+		" -cor (=0 default)                      Turn on Coronal output   \n"
+		" -sag (=0 default)                     Turn on Sagittal output \n"
+		" -DRR					        Generate DRR instead of FDK\n"     
+		" In DRR mode, DRR files will be generated in side the indir\\DRR\n"
+		" Subdir DRR will be automatically in windows but need to be create in linux"
 	    );
     exit (1);
 }
@@ -43,6 +45,7 @@ void set_default_options_ext (MGHCBCT_Options_ext* options)
 	options->full_fan=1;
 	options->coronal=0;
 	options->sagittal=0;
+	options->DRR=0;
     //options->input_dir = ".";
 	options->sub_dir = ".";
     options->output_file = "output.mh5";
@@ -108,6 +111,9 @@ void parse_args_ext (MGHCBCT_Options_ext* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-sag")) {
 		options->sagittal=1;
+	}
+	else if (!strcmp (argv[i], "-DRR")) {
+		options->DRR=1;
 	}
 	else if (!strcmp (argv[i], "-I")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

@@ -31,6 +31,7 @@ struct MGHCBCT_Options_struct_ext {
     int full_fan; //Full_fan=1, Half_fan=0;
     int coronal;
     int sagittal;
+	int DRR;
     //MGHCBCT_Options_extOpt
     char* sub_dir;
     char* Full_normCBCT_name; 
