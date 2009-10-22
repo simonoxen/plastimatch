@@ -46,6 +46,7 @@
 #include <omp.h>
 #endif
 #include "mathutil.h"
+#include "timer.h"
 
 // Fix for logf() under MSVC 2005 32-bit
 // (math.h has an erronous semicolon)
@@ -2227,14 +2228,17 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
     float* m_grad = (float*)moving_grad->img;
     int num_vox;
     int cidx;
-    clock_t start_clock, end_clock;
+    //clock_t start_clock, end_clock;
+    Timer *timer;
+    double interval;
 
     int total_vox_per_rgn = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
 
     //static int it = 0;
     //char debug_fn[1024];
 
-    start_clock = clock();
+    //start_clock = clock();
+    timer = plm_timer_create ();
 
     // Allocate memory for the dc_dv array. In this implementation, 
     // dc_dv values are computed for each voxel, and stored in the 
@@ -2467,10 +2471,13 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     //dump_gradient(bxf, ssd, "grad_cpu.txt");
 
-    end_clock = clock();
+    //end_clock = clock();
+    interval = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 
     report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		  interval);
 }
 
 void
@@ -2986,7 +2993,9 @@ bspline_score_c_mse
     float dxyz[3];
     int num_vox;
     int pidx, qidx;
-    clock_t start_clock, end_clock;
+    Timer *timer;
+    double interval;
+    //clock_t start_clock, end_clock;
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
@@ -3005,7 +3014,8 @@ bspline_score_c_mse
 	fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+    //start_clock = clock();
+    timer = plm_timer_create ();
 
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -3092,10 +3102,13 @@ bspline_score_c_mse
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    end_clock = clock();
+    //end_clock = clock();
+    interval = plm_timer_report (timer);
+    plm_timer_destroy (timer);
 
     report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		  interval);
 }
 
 /* This is the fastest known version.  It does nearest neighbors 

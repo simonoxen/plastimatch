@@ -12,6 +12,7 @@
 #include "plm_config.h"
 #include "volume.h"
 #include "readmha.h"
+#include "timer.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "bspline.h"
@@ -122,8 +123,10 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	int num_vox;		// Holds # of voxels in the fixed volume
 	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
 	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
-	clock_t start_clock;	// Timer Start Count
-	clock_t end_clock;	// Timer Stop  Count
+	//clock_t start_clock;	// Timer Start Count
+	//clock_t end_clock;	// Timer Stop  Count
+	Timer *timer;
+	double interval;
 
 	static int it=0;	// Holds Iteration Number
 	char debug_fn[1024];	// Debug message buffer
@@ -143,7 +146,8 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	start_clock = clock();	// <=== START TIMING HERE
+	//start_clock = clock();	// <=== START TIMING HERE
+	timer = plm_timer_create ();
 
 	
 	// --- INITIALIZE GPU MEMORY --------------------------------
@@ -183,12 +187,15 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	end_clock = clock();	// <=== STOP TIMING HERE
+	//end_clock = clock();	// <=== STOP TIMING HERE
+	interval = plm_timer_report (timer);
+	plm_timer_destroy (timer);
 
 	
 	// --- USER FEEDBACK ----------------------------------------
 	report_score ("MSE", bxf, bst, num_vox, 
-		      (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		      //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+		      interval);
 	// ----------------------------------------------------------
 
 }

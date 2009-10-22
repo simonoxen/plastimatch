@@ -465,6 +465,7 @@ SET(GPUIT_LIBRARY_SRC
   logfile.c logfile.h
   mathutil.h
   readmha.c readmha.h
+  timer.c timer.h
   volume.c volume.h
   )
 IF(PLM_BSPLINE_CXX)
