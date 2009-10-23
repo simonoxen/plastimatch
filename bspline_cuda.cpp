@@ -123,9 +123,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	int num_vox;		// Holds # of voxels in the fixed volume
 	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
 	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
-	//clock_t start_clock;	// Timer Start Count
-	//clock_t end_clock;	// Timer Stop  Count
-	Timer *timer;
+	Timer timer;
 	double interval;
 
 	static int it=0;	// Holds Iteration Number
@@ -146,8 +144,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	// ----------------------------------------------------------
 
 
-	//start_clock = clock();	// <=== START TIMING HERE
-	timer = plm_timer_create ();
+	plm_timer_start (&timer);	// <=== START TIMING HERE
 
 	
 	// --- INITIALIZE GPU MEMORY --------------------------------
@@ -188,8 +185,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 
 
 	//end_clock = clock();	// <=== STOP TIMING HERE
-	interval = plm_timer_report (timer);
-	plm_timer_destroy (timer);
+	interval = plm_timer_report (&timer);
 
 	
 	// --- USER FEEDBACK ----------------------------------------
@@ -592,12 +588,6 @@ bspline_cuda_score_e_mse_v2
     bspline_cuda_clear_score();
     bspline_cuda_clear_grad();
 	  	
-    //LARGE_INTEGER clock_count, clock_frequency;
-    //double clock_start, clock_end;
-    //QueryPerformanceFrequency(&clock_frequency);
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
-
     // Calculate the score for the entire volume all at once.
     bspline_cuda_calculate_score_e(
 				   fixed,

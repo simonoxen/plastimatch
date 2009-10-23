@@ -15,7 +15,6 @@ plm_timer_get_time (Timer *timer)
     return ((double) (clock_count.QuadPart)) / ((double) timer->clock_freq.QuadPart);
 #else
     struct timeval tv;
-    double interval;
     int rc;
     rc = gettimeofday (&tv, 0);
     return ((double) tv.tv_sec) + ((double) tv.tv_usec) / 1000000.;
