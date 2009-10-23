@@ -15,20 +15,17 @@ typedef struct timer_struct Timer;
 struct timer_struct {
     double start_time;
 #ifdef _WIN32
-    LARGE_INTEGER pc_freq;
+    LARGE_INTEGER clock_freq;
 #endif
 };
 
 #if defined __cplusplus
 extern "C" {
 #endif
-Timer *plm_timer_create (void);
 gpuit_EXPORT
 void plm_timer_start (Timer *timer);
 gpuit_EXPORT
 double plm_timer_report (Timer *timer);
-gpuit_EXPORT
-void plm_timer_destroy (Timer *timer);
 #if defined __cplusplus
 }
 #endif

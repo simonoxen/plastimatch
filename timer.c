@@ -6,48 +6,36 @@
 #include <stdio.h>
 #include "timer.h"
 
-double
-plm_timer_get_time (void)
+static double
+plm_timer_get_time (Timer *timer)
 {
-#if _WIN32
-
-}
-
-void
-plm_timer_start (Timer *timer)
-{
-#if _WIN32
-    QueryPerformanceCounterFrequency (&timer->clock_freq);
-#endif
-    return timer;
-}
-
-void
-plm_timer_start (Timer *timer)
-{
+#if defined (_WIN32)
+    LARGE_INTEGER clock_count;
+    QueryPerformanceCounter (&clock_count);
+    return ((double) (clock_count.QuadPart)) / ((double) timer->clock_freq.QuadPart);
+#else
+    struct timeval tv;
+    double interval;
     int rc;
+    rc = gettimeofday (&tv, 0);
+    return ((double) tv.tv_sec) + ((double) tv.tv_usec) / 1000000.;
+#endif
+}
 
-    rc = gettimeofday (&timer->tv, 0);
+void
+plm_timer_start (Timer *timer)
+{
+#if defined (_WIN32)
+    QueryPerformanceFrequency (&timer->clock_freq);
+#endif
+    timer->start_time = plm_timer_get_time (timer);
 }
 
 double
 plm_timer_report (Timer *timer)
 {
-    struct timeval tv;
-    double interval;
-    int rc;
-    
-    rc = gettimeofday (&tv, 0);
+    double current_time;
 
-    interval = (double) (tv.tv_sec - timer->tv.tv_sec);
-    interval += ((double) (tv.tv_usec - timer->tv.tv_usec)) / 1000000.;
-
-    return interval;
-}
-
-
-void
-plm_timer_destroy (Timer *timer)
-{
-    free (timer);
+    current_time = plm_timer_get_time (timer);
+    return current_time - timer->start_time;
 }

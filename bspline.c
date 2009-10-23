@@ -2228,8 +2228,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
     float* m_grad = (float*)moving_grad->img;
     int num_vox;
     int cidx;
-    //clock_t start_clock, end_clock;
-    Timer *timer;
+    Timer timer;
     double interval;
 
     int total_vox_per_rgn = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
@@ -2237,8 +2236,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
     //static int it = 0;
     //char debug_fn[1024];
 
-    //start_clock = clock();
-    timer = plm_timer_create ();
+    plm_timer_start (&timer);
 
     // Allocate memory for the dc_dv array. In this implementation, 
     // dc_dv values are computed for each voxel, and stored in the 
@@ -2471,9 +2469,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     //dump_gradient(bxf, ssd, "grad_cpu.txt");
 
-    //end_clock = clock();
-    interval = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    interval = plm_timer_report (&timer);
 
     report_score ("MSE", bxf, bst, num_vox, 
 		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
@@ -2993,7 +2989,7 @@ bspline_score_c_mse
     float dxyz[3];
     int num_vox;
     int pidx, qidx;
-    Timer *timer;
+    Timer timer;
     double interval;
     //clock_t start_clock, end_clock;
     float m_val;
@@ -3015,7 +3011,7 @@ bspline_score_c_mse
     }
 
     //start_clock = clock();
-    timer = plm_timer_create ();
+    plm_timer_start (&timer);
 
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -3102,9 +3098,7 @@ bspline_score_c_mse
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    //end_clock = clock();
-    interval = plm_timer_report (timer);
-    plm_timer_destroy (timer);
+    interval = plm_timer_report (&timer);
 
     report_score ("MSE", bxf, bst, num_vox, 
 		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
