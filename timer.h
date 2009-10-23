@@ -5,13 +5,18 @@
 #define _timer_h_
 
 #include "plm_config.h"
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/time.h>
+#endif
 
 typedef struct timer_struct Timer;
 struct timer_struct {
-
-    struct timeval tv;
-    
+    double start_time;
+#ifdef _WIN32
+    LARGE_INTEGER pc_freq;
+#endif
 };
 
 #if defined __cplusplus

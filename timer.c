@@ -6,17 +6,19 @@
 #include <stdio.h>
 #include "timer.h"
 
-Timer *
-plm_timer_create (void)
+double
+plm_timer_get_time (void)
 {
-    Timer *timer;
-    int rc;
+#if _WIN32
 
-    timer = (Timer*) malloc (sizeof(Timer));
-    if (!timer) return 0;
-    
-    rc = gettimeofday (&timer->tv, 0);
+}
 
+void
+plm_timer_start (Timer *timer)
+{
+#if _WIN32
+    QueryPerformanceCounterFrequency (&timer->clock_freq);
+#endif
     return timer;
 }
 
