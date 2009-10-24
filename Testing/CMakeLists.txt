@@ -132,6 +132,21 @@ ADD_TEST (bspline-f-check
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
+PLM_ADD_TEST (
+  "bspline-g"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  )
+ADD_TEST (bspline-g-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-g.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=7429.0"
+  "-DUPPER_THRESH=7429.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
 ## -------------------------------------------------------------------------
 ## drr
 ## -------------------------------------------------------------------------
