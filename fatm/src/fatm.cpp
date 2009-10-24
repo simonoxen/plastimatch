@@ -8,7 +8,7 @@
 #include "s_fancc.h"
 #include "s_fncc.h"
 #include "s_ncc.h"
-#if (HAVE_FFTW)
+#if (FFTW_FOUND)
 #include "s_ncc_fft.h"
 #endif
 #include "s_rssd.h"
@@ -170,7 +170,7 @@ match_process_free (FATM_Options *options)
     case MATCH_ALGORITHM_FANCC:
 	s_fancc_free (options);
 	break;
-#if (HAVE_FFTW)
+#if (FFTW_FOUND)
     case MATCH_ALGORITHM_NCC_FFT:
 	s_ncc_fft_free (options);
 	break;
@@ -193,7 +193,7 @@ match_process_compile (FATM_Options *options)
     case MATCH_ALGORITHM_FANCC:
 	s_fancc_compile (options);
 	break;
-#if (HAVE_FFTW)
+#if (FFTW_FOUND)
     case MATCH_ALGORITHM_NCC_FFT:
 	s_ncc_fft_compile (options);
 	break;
@@ -219,7 +219,7 @@ match_process_run (FATM_Options *options)
 	    s_fancc_free (options);
 	}
 	break;
-#if (HAVE_FFTW)
+#if (FFTW_FOUND)
     case MATCH_ALGORITHM_NCC_FFT:
 	if (options->alg_data) {
 	    s_ncc_fft_run (options);

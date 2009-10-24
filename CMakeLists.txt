@@ -329,14 +329,6 @@ SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
 ##-----------------------------------------------------------------------------
-##  FFTW LIBRARY
-##-----------------------------------------------------------------------------
-SET(HAVE_FFTW FALSE)
-IF(FFTW_FOUND)
-SET(HAVE_FFTW TRUE)
-ENDIF(FFTW_FOUND)
-
-##-----------------------------------------------------------------------------
 ##  BROOK LIBRARY
 ##-----------------------------------------------------------------------------
 SET(HAVE_BROOK FALSE)
