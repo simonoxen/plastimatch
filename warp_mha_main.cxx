@@ -19,51 +19,123 @@
 #include "volume.h"
 
 template<class T, class U>
-void warp_any (Warp_Parms* parms, T im_in, U)
+static void
+do_warp_itk (
+    T *im_warped,                         /* Output　*/
+    DeformationFieldType::Pointer *vf,    /* Output */
+    Warp_Parms* parms,                    /* Input */
+    Xform *xf_in,                         /* Input */
+    PlmImageHeader *pih,                  /* Input */
+    T im_in,                              /* Input */
+    U output_type                         /* Input */
+)
 {
-    DeformationFieldType::Pointer vf = DeformationFieldType::New();
-    T im_warped = T::ObjectType::New();
-    T im_ref = im_in;
+    Xform xform_tmp;
+    printf ("converting to vf...\n");
+    xform_to_itk_vf (&xform_tmp, xf_in, pih);
+    *vf = xform_tmp.get_itk_vf ();
+
+    printf ("Warping...\n");
+    *im_warped = itk_warp_image (im_in, *vf, parms->interp_lin, 
+				 (U) parms->default_val);
+}
+
+/* Fallback for unsupported native warping */
+template<class T, class U>
+static void
+do_warp_native (
+    T *im_warped,                         /* Output　*/
+    DeformationFieldType::Pointer *vf,    /* Output */
+    Warp_Parms* parms,                    /* Input */
+    Xform *xf_in,                         /* Input */
+    PlmImageHeader *pih,                  /* Input */
+    T im_in,                              /* Input */
+    U output_type                         /* Input */
+)
+{
+    printf ("Tried to warp native, but falling back to itk\n");
+    do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+}
 
 #if defined (commentout)
-    if (parms->vf_in_fn[0]) {
-	printf ("Loading vf...\n");
-	vf = load_float_field (parms->vf_in_fn);
-    		
-	printf ("Warping...\n");
-	im_warped = itk_warp_image (im_in, vf, parms->interp_lin, (U) parms->default_val);
-
-    } else {
+/* Native warping for floats */
+template<class T>
+static void
+do_warp_native (
+    T *im_warped,                         /* Output　*/
+    DeformationFieldType::Pointer *vf,    /* Output */
+    Warp_Parms* parms,                    /* Input */
+    Xform *xf_in,                         /* Input */
+    PlmImageHeader *pih,                  /* Input */
+    T im_in,                              /* Input */
+    float output_type                     /* Input */
+)
+{
+    printf ("Hello world\n");
+    exit (-1);
+}
 #endif
-	/* convert xform into vector field, then warp */
-	PlmImageHeader pih;
 
-	printf ("Loading xform (%s)\n", parms->xf_in_fn);
-	Xform xform, xform_tmp;
-	load_xform (&xform, parms->xf_in_fn);
-
-	/* Try to guess the proper dimensions and spacing for output image */
-	if (parms->fixed_im_fn[0]) {
-	    /* use the spacing of user-supplied fixed image */
-	    FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
-	    pih.set_from_itk_image (fixed);
-	} else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
-	    /* use the spacing from input vector field */
-	    pih.set_from_itk_image (xform.get_itk_vf());
-	} else {
-	    /* otherwise, use the spacing of the input image */
-	    pih.set_from_itk_image (im_in);
-	}
-	printf ("converting to vf...\n");
- 	xform_to_itk_vf (&xform_tmp, &xform, &pih);
-	vf = xform_tmp.get_itk_vf();
-
-	printf ("Warping...\n");
-	im_warped = itk_warp_image (im_in, vf, parms->interp_lin, (U) parms->default_val);
-#if defined (commentout)
+template<class T, class U>
+static void
+do_warp (
+    T *im_warped,                         /* Output　*/
+    DeformationFieldType::Pointer *vf,    /* Output */
+    Warp_Parms* parms,                    /* Input */
+    Xform *xf_in,                         /* Input */
+    PlmImageHeader *pih,                  /* Input */
+    T im_in,                              /* Input */
+    U output_type                         /* Input */
+)
+{
+    /* If user wants ITK-based warping, respect their wish */
+    if (parms->use_itk) {
+	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+	return;
     }
-#endif
 
+    /* Otherwise, we try to do native warping (when possible) */
+    switch (xf_in->m_type) {
+    case XFORM_GPUIT_BSPLINE:
+	do_warp_native (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+	break;
+    default:
+	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+	break;
+    }
+}
+
+/* GCS FIX: This function can't actually change the output type */
+template<class T, class U>
+static void 
+warp_any (Warp_Parms* parms, T im_in, U output_type)
+{
+    PlmImageHeader pih;
+    Xform xform;
+
+    T im_warped = T::ObjectType::New();
+    DeformationFieldType::Pointer vf = DeformationFieldType::New();
+
+    printf ("Loading xform (%s)\n", parms->xf_in_fn);
+    load_xform (&xform, parms->xf_in_fn);
+
+    /* Try to guess the proper dimensions and spacing for output image */
+    if (parms->fixed_im_fn[0]) {
+	/* use the spacing of user-supplied fixed image */
+	FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
+	pih.set_from_itk_image (fixed);
+    } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
+	/* use the spacing from input vector field */
+	pih.set_from_itk_image (xform.get_itk_vf());
+    } else {
+	/* otherwise, use the spacing of the input image */
+	pih.set_from_itk_image (im_in);
+    }
+
+    /* Do the warp */
+    do_warp (&im_warped, &vf, parms, &xform, &pih, im_in, output_type);
+
+    /* Save output files */
     printf ("Saving...\n");
     if (parms->output_dicom) {
 	save_short_dicom (im_warped, parms->mha_out_fn);

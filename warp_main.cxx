@@ -24,7 +24,8 @@ warp_print_usage (void)
 	    "    --fixed=filename\n"
 	    "    --output-vf=filename\n"
 	    "    --default-val=number\n"
-	    "    --output-format=dicom\n");
+	    "    --output-format=dicom\n"
+	    "    --algorithm=itk\n");
     exit (-1);
 }
 
@@ -54,6 +55,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "output-format",  required_argument,      NULL,           13 },
 	{ "ctatts",         required_argument,      NULL,           14 },
 	{ "dif",            required_argument,      NULL,           15 },
+	{ "algorithm",      required_argument,      NULL,           16 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -133,6 +135,14 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    break;
 	case 15:
 	    strncpy (parms->dif_in_fn, optarg, _MAX_PATH);
+	    break;
+	case 16:
+	    if (!strcmp (optarg, "itk")) {
+		parms->use_itk = 1;
+	    } else {
+		fprintf (stderr, "Error.  --algorithm option only supports itk.\n");
+		warp_print_usage ();
+	    }
 	    break;
 	default:
 	    break;
