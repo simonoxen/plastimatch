@@ -1948,6 +1948,7 @@ gpuit_EXPORT
 void
 bspline_warp (
     Volume *vout,         /* Output image (already sized and allocated) */
+    Volume *vf_out,       /* Output vf (already sized and allocated, can be null) */
     BSPLINE_Xform* bxf,   /* Bspline transform coefficients */
     Volume *moving,       /* Input image */
     float default_val     /* Fill in this value outside of image */
@@ -1986,10 +1987,17 @@ bspline_warp (
 	    return;
 	}
     }
+    if (vf_out && vf_out->pix_type != PT_VF_FLOAT_INTERLEAVED) {
+	fprintf (stderr, "Error: bspline_warp requires interleaved vf\n");
+	return;
+    }
 
     /* Set default */
     for (vidx = 0; vidx < vout->npix; vidx++) {
 	vout_img[vidx] = default_val;
+    }
+    if (vf_out) {
+	memset (vf_out->img, 0, vf_out->pix_size * vf_out->npix);
     }
 	
     for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
@@ -2026,15 +2034,6 @@ bspline_warp (
 
 		/* Compute moving image intensity using linear interpolation */
 		/* Macro is slightly faster than function */
-#if defined (commentout)
-		m_val = bspline_li_value (
-		    fx1, fx2, fy1, fy2, fz1, fz2,
-		    mvf, m_img, moving);
-#endif
-#if defined (commentout)
-		BSPLINE_LI_VALUE (m_val, li_1, li_2,
-				  mvf, m_img, moving);
-#endif
 		BSPLINE_LI_VALUE (m_val, 
 				  li_1[0], li_2[0],
 				  li_1[1], li_2[1],
@@ -2046,6 +2045,14 @@ bspline_warp (
 
 		/* Assign warped value to output image */
 		vout_img[fv] = m_val;
+
+		/* Assign deformation */
+		if (vf_out) {
+		    float *vf_out_img = (float*) vf_out->img;
+		    vf_out_img[3*fv+0] = dxyz[0];
+		    vf_out_img[3*fv+1] = dxyz[1];
+		    vf_out_img[3*fv+2] = dxyz[2];
+		}
 	    }
 	}
     }
@@ -2107,7 +2114,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 		int* c_lut;
 
 		// Compute linear index for tile
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		pidx = INDEX_OF (p, bxf->rdims);
 
 		// Find c_lut row for this tile
 		c_lut = &bxf->c_lut[pidx*64];
@@ -2135,7 +2142,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 			    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 
 			    // Compute linear index for this offset
-			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+			    qidx = INDEX_OF (q, bxf->vox_per_rgn);
 
 			    // Tentatively mark this pixel as no contribution
 			    dc_dv[(pidx * 3 * total_vox_per_rgn) + (3*qidx+0)] = 0.f;
@@ -2307,18 +2314,13 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     free (dc_dv);
 
-    //dump_coeff (bxf, "coeff_cpu.txt");
-
     /* Normalize score for MSE */
     ssd->score = ssd->score / num_vox;
     for (i = 0; i < bxf->num_coeff; i++) {
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    //dump_gradient(bxf, ssd, "grad_cpu.txt");
-
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
@@ -2394,7 +2396,7 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
 		    p[2] = tilelist[3*tile + 2];
 
 		    /* Compute linear index for tile */
-		    pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		    pidx = INDEX_OF (p, bxf->rdims);
 
 		    /* Find c_lut row for this tile */
 		    c_lut = &bxf->c_lut[pidx*64];
@@ -2422,7 +2424,7 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
 				int m;
 
 				/* Compute linear index for this offset */
-				qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+				qidx = INDEX_OF (q, bxf->vox_per_rgn);
 
 				/* Get (i,j,k) index of the voxel */
 				fi = bxf->roi_offset[0] + p[0] * bxf->vox_per_rgn[0] + q[0];
@@ -2533,7 +2535,6 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
     }
 
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
@@ -2619,7 +2620,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 		double tile_score = 0.0;
 
 		/* Compute linear index for tile */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		pidx = INDEX_OF (p, bxf->rdims);
 
 		/* Find c_lut row for this tile */
 		c_lut = &bxf->c_lut[pidx*64];
@@ -2648,7 +2649,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 			    float diff;
 
 			    /* Compute linear index for this offset */
-			    qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+			    qidx = INDEX_OF (q, bxf->vox_per_rgn);
 
 			    /* Tentatively mark this pixel as no contribution */
 			    dc_dv[3*qidx+0] = 0.f;
@@ -2788,7 +2789,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
     }
 
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
@@ -2927,7 +2927,6 @@ bspline_score_c_mse (
     }
 
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
@@ -2983,9 +2982,8 @@ bspline_score_b_mse
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
-			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
@@ -3026,7 +3024,6 @@ bspline_score_b_mse
     }
 
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
@@ -3080,8 +3077,7 @@ bspline_score_a_mse
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
-			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix (dxyz, bxf, p, qidx);
 
 		/* Compute coordinate of fixed image voxel */
@@ -3121,7 +3117,6 @@ bspline_score_a_mse
     }
 
     interval = plm_timer_report (&timer);
-
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
