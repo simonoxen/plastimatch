@@ -1455,7 +1455,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     int num_vox;
     float num_vox_f;
     int pidx, qidx;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
@@ -1474,7 +1475,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(float));
@@ -1819,10 +1820,9 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     mse_score = mse_score / num_vox;
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    report_score ("MI", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MI", bxf, bst, num_vox, interval);
 }
 
 /* Find location and index of corresponding voxel in moving image.  
@@ -2086,7 +2086,8 @@ bspline_score_g_mse (
     float dxyz[3];
     int num_vox;
     int pidx, qidx;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
     float m_val;
 
     /* GCS: Oct 5, 2009.  We have determined that sequential accumulation
@@ -2103,7 +2104,7 @@ bspline_score_g_mse (
 	fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     ssd->score = 0.0f;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -2197,10 +2198,9 @@ bspline_score_g_mse (
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 /* bspline_score_f_mse:
@@ -2471,9 +2471,7 @@ void bspline_score_f_mse (BSPLINE_Parms *parms,
 
     interval = plm_timer_report (&timer);
 
-    report_score ("MSE", bxf, bst, num_vox, 
-		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
-		  interval);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 void
@@ -2492,7 +2490,8 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     int num_vox;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
 
     static int it = 0;
     char debug_fn[1024];
@@ -2503,7 +2502,7 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
 	fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -2685,14 +2684,9 @@ bspline_score_e_mse (BSPLINE_Parms *parms,
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    fp = fopen("scores.txt", "a+");
-    fprintf(fp, "%f\n", ssd->score);
-    fclose(fp);
-
-    report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 
@@ -2747,7 +2741,8 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
     float* m_img = (float*) moving->img;
     float* m_grad = (float*) moving_grad->img;
     int num_vox;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
 
     static int it = 0;
     char debug_fn[1024];
@@ -2758,7 +2753,7 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 	fp = fopen (debug_fn, "w");
     }
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     dc_dv = (float*) malloc (3*bxf->vox_per_rgn[0]*bxf->vox_per_rgn[1]*bxf->vox_per_rgn[2]*sizeof(float));
     ssd->score = 0;
@@ -2944,14 +2939,9 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    fp = fopen("scores.txt", "a+");
-    fprintf(fp, "%f\n", ssd->score);
-    fclose(fp);
-
-    report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 /* Mean-squared error version of implementation "C" */
@@ -2991,7 +2981,6 @@ bspline_score_c_mse
     int pidx, qidx;
     Timer timer;
     double interval;
-    //clock_t start_clock, end_clock;
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
@@ -3010,7 +2999,6 @@ bspline_score_c_mse
 	fp = fopen (debug_fn, "w");
     }
 
-    //start_clock = clock();
     plm_timer_start (&timer);
 
     ssd->score = 0;
@@ -3100,9 +3088,7 @@ bspline_score_c_mse
 
     interval = plm_timer_report (&timer);
 
-    report_score ("MSE", bxf, bst, num_vox, 
-		  //(double) (end_clock - start_clock) / CLOCKS_PER_SEC);
-		  interval);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 /* This is the fastest known version.  It does nearest neighbors 
@@ -3135,9 +3121,10 @@ bspline_score_b_mse
     float dxyz[3];
     int num_vox;
     int pidx, qidx;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -3198,10 +3185,9 @@ bspline_score_b_mse
 	ssd->grad[i] = ssd->grad[i] / num_vox;
     }
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 void
@@ -3232,9 +3218,10 @@ bspline_score_a_mse
     float dxyz[3];
     int num_vox;
     int qidx;
-    clock_t start_clock, end_clock;
+    Timer timer;
+    double interval;
 
-    start_clock = clock();
+    plm_timer_start (&timer);
 
     ssd->score = 0;
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
@@ -3293,10 +3280,9 @@ bspline_score_a_mse
 	ssd->grad[i] /= num_vox;
     }
 
-    end_clock = clock();
+    interval = plm_timer_report (&timer);
 
-    report_score ("MSE", bxf, bst, num_vox, 
-		  (double) (end_clock - start_clock) / CLOCKS_PER_SEC);
+    report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
 void
