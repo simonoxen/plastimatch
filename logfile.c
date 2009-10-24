@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "plm_config.h"
-#if (HAVE_PANTHEIOS)
+#if (PANTHEIOS_FOUND)
 #include <pantheios/pantheios.h>        /* The root header for Panthieos when using the C-API. */
 #include <pantheios/frontends/stock.h>  /* Declares the process identity symbol PANTHEIOS_FE_PROCESS_IDENTITY */
 #include <pantheios/implicit_link/fe.simple.h>
@@ -17,7 +17,7 @@
 
 #define LOGFILE_ECHO_ON 1
 
-#if (HAVE_PANTHEIOS)
+#if (PANTHEIOS_FOUND)
 const char PANTHEIOS_FE_PROCESS_IDENTITY[] = "plastimatch";
 
 gpuit_EXPORT

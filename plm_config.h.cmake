@@ -4,27 +4,31 @@
 #ifndef __plm_config_h__
 #define __plm_config_h__
 
-#define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
-
-#cmakedefine HAVE_SYS_STAT 1
-#cmakedefine HAVE_BROOK 1
-#cmakedefine HAVE_CUDA 1
+/* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
-#cmakedefine HAVE_F2C_LIBRARY 1
-#cmakedefine HAVE_GETOPT_LONG 1
-#cmakedefine HAVE_PANTHEIOS 1
-#cmakedefine FFTW_FOUND 1
-
-#cmakedefine PLM_BUILD_SHARED_LIBS 1
+#cmakedefine HAVE_SYS_STAT 1
 #cmakedefine OPENMP_FOUND 1
-#cmakedefine BUILD_BSPLINE_BROOK 1
-#cmakedefine DCMTK_HAVE_CONFIG_H 1
-
 #define CMAKE_SIZEOF_UINT @CMAKE_SIZEOF_UINT@
 #define CMAKE_SIZEOF_ULONG @CMAKE_SIZEOF_ULONG@
 
+/* Plastimatch attributes */
+#define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
 #cmakedefine PLASTIMATCH_EXPERIMENTAL 1
 
+/* External libraries */
+#cmakedefine PANTHEIOS_FOUND 1
+#cmakedefine FFTW_FOUND 1
+#cmakedefine HAVE_BROOK 1
+#cmakedefine HAVE_CUDA 1
+#cmakedefine HAVE_F2C_LIBRARY 1
+#cmakedefine HAVE_GETOPT_LONG 1
+#cmakedefine DCMTK_HAVE_CONFIG_H 1
+
+/* User options */
+#cmakedefine PLM_BUILD_SHARED_LIBS 1
+#cmakedefine BUILD_BSPLINE_BROOK 1
+
+/* ITK attributes */
 #cmakedefine HAVE_ITK 1
 #if (HAVE_ITK && !PLM_CUDA_COMPILE)
 #include "itkConfigure.h"

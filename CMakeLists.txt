@@ -29,7 +29,6 @@ INCLUDE (language_support.cmake)
 SET (PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
-SET (PLM_BUILD_BSPLINE_BROOK OFF CACHE BOOL "Build brook version of B-splines")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
@@ -348,10 +347,7 @@ IF(BROOK_FOUND)
   SET_SOURCE_FILES_PROPERTIES(convolution_brook_kernel_wrap.cpp PROPERTIES
     OBJECT_DEPENDS "convolution_brook_kernel.cpp")
 
-  BRCC_FILE(bspline_brook_kernel.br)
   BRCC_FILE(toy_kernels.br)
-  SET_SOURCE_FILES_PROPERTIES(bspline_brook.cpp PROPERTIES
-    OBJECT_DEPENDS "bspline_brook_kernel.cpp")
   SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
 ENDIF(BROOK_FOUND)
@@ -409,18 +405,6 @@ IF(ITK_FOUND)
 #  ENDIF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")	
 ENDIF(ITK_FOUND)
 
-
-##-----------------------------------------------------------------------------
-##  FFTW LIBRARY
-##-----------------------------------------------------------------------------
-
-##-----------------------------------------------------------------------------
-##  PANTHEIOS LIBRARY
-##-----------------------------------------------------------------------------
-SET(HAVE_PANTHEIOS FALSE)
-IF(PANTHEIOS_FOUND)
-SET(HAVE_PANTHEIOS TRUE)
-ENDIF(PANTHEIOS_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
@@ -527,19 +511,6 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 	plm_f2c.h plm_f2c_win32.h
 	)
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
-
-IF(HAVE_BROOK AND PLM_BUILD_BSPLINE_BROOK)
-  SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline_brook_kernel_wrap.cpp
-    	bspline_brook_kernel.br
-#	bspline_brook_kernel.cpp
-	toy_kernels.br
-	toy_kernels.cpp
-	bspline_brook.cpp 
-	bspline_brook.h
-	)
-ENDIF(HAVE_BROOK AND PLM_BUILD_BSPLINE_BROOK)
 
 IF(F2C_LIBRARY)
   SET(F2C_HELPER_LIBRARY_SRC
