@@ -39,7 +39,7 @@
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "logfile.h"
-#if (HAVE_CUDA)
+#if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
 #if (OPENMP_FOUND)
@@ -3314,7 +3314,7 @@ bspline_score (BSPLINE_Parms *parms,
     }
 #endif
 
-#if (HAVE_CUDA)
+#if (CUDA_FOUND)
     if (parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
@@ -3475,7 +3475,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 		  Volume *moving_grad)
 {
     Bspline_state *bst;
-#if (HAVE_CUDA)
+#if (CUDA_FOUND)
     Dev_Pointers_Bspline dev_mem;
     Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
 #endif
@@ -3484,7 +3484,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
     log_parms (parms);
     log_bxf_header (bxf);
 
-#if (HAVE_CUDA)
+#if (CUDA_FOUND)
     bst->dev_ptrs = dev_ptrs;
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
@@ -3546,7 +3546,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
     }
 
-#if (HAVE_CUDA)
+#if (CUDA_FOUND)
     if(parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':

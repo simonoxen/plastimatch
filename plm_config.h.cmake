@@ -16,10 +16,10 @@
 #cmakedefine PLASTIMATCH_EXPERIMENTAL 1
 
 /* External libraries */
+#cmakedefine CUDA_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
 #cmakedefine FFTW_FOUND 1
 #cmakedefine HAVE_BROOK 1
-#cmakedefine HAVE_CUDA 1
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1

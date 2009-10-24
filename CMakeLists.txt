@@ -128,6 +128,7 @@ ELSE (MINGW)
     INCLUDE (PLM_FindCUDA.cmake)
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (MINGW)
+SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
 IF (PLM_USE_FINDCUDA)
   IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
@@ -355,11 +356,6 @@ ENDIF(BROOK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  CUDA LIBRARY
 ##-----------------------------------------------------------------------------
-SET(HAVE_CUDA FALSE)
-IF(CUDA_FOUND)
-SET(HAVE_CUDA TRUE)
-ENDIF(CUDA_FOUND)
-
 IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   IF(PLM_BUILD_DEMONS_CUDA)
     NVCC_FILE(demons_cuda.cu)
@@ -1121,11 +1117,9 @@ SET(PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 # Note: we need two copies, because unix users might run "make test" 
 # in either directory
 CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
-  ${CMAKE_BINARY_DIR}/CTestCustom.cmake
-  COPYONLY)
+  ${CMAKE_BINARY_DIR}/CTestCustom.cmake)
 CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
-  ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
-  COPYONLY)
+  ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake)
 
 # Set the "hack" macros to find windows binaries (under Release subdir)
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
