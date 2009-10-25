@@ -1,13 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
 #include "plm_config.h"
+#include <time.h>
 #include "itkImage.h"
 #include "itkInverseDeformationFieldImageFilter.h"
 #include "itkIterativeInverseDeformationFieldImageFilter.h"
 #include "getopt.h"
 #include "vf_invert.h"
+#include "plm_image_header.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "xform.h"

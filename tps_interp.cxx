@@ -1,6 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "tps_interp.h"
 #include "itk_warp.h"
 

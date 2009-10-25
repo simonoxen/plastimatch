@@ -8,6 +8,7 @@
 
 #include "getopt.h"
 #include "xf_to_xf_main.h"
+#include "plm_image_header.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 #include "xform.h"
