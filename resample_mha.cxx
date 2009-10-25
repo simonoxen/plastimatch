@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkImage.h"
 #include "itkResampleImageFilter.h"
@@ -8,6 +9,7 @@
 #include "itkVectorResampleImageFilter.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
 
+#include "plm_image_header.h"
 #include "itk_image.h"
 #include "resample_mha.h"
 

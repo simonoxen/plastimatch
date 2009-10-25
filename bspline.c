@@ -27,12 +27,17 @@
 	Index LUT                           pidx
 
     ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
+#include "mathutil.h"
+#include "timer.h"
 #include "volume.h"
 #include "readmha.h"
 #include "bspline_optimize_lbfgsb.h"
@@ -42,11 +47,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#if (OPENMP_FOUND)
-#include <omp.h>
-#endif
-#include "mathutil.h"
-#include "timer.h"
+#include "print_and_exit.h"
 
 // Fix for logf() under MSVC 2005 32-bit
 // (math.h has an erronous semicolon)
@@ -1980,10 +1981,16 @@ bspline_warp (
 	return;
     }
     for (d = 0; d < 3; d++) {
-	if ((vout->dim[d] != bxf->img_dim[d])
-	    || (vout->offset[d] != bxf->img_origin[d])
-	    || (vout->pix_spacing[d] != bxf->img_origin[d])) {
-	    fprintf (stderr, "Error: bspline_warp size mismatch\n");
+	if (vout->dim[d] != bxf->img_dim[d]) {
+	    print_and_exit ("Error: bspline_warp dim mismatch\n");
+	    return;
+	}
+	if (vout->offset[d] != bxf->img_origin[d]) {
+	    print_and_exit ("Error: bspline_warp offset mismatch\n");
+	    return;
+	}
+	if (vout->pix_spacing[d] != bxf->img_spacing[d]) {
+	    print_and_exit ("Error: bspline_warp pix spacing mismatch\n");
 	    return;
 	}
     }

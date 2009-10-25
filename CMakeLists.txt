@@ -436,6 +436,7 @@ SET(GPUIT_LIBRARY_SRC
   file_util.c file_util.h
   logfile.c logfile.h
   mathutil.h
+  print_and_exit.c print_and_exit.h 
   readmha.c readmha.h
   timer.c timer.h
   volume.c volume.h
@@ -532,12 +533,12 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	itk_registration.cxx itk_registration.h 
 	itk_warp.cxx itk_warp.h 
 	plm_image.cxx plm_image.h 
+	plm_image_header.cxx plm_image_header.h 
 	plm_int.h
 	plm_parms.cxx 
 	plm_stages.cxx 
 	plm_registration.h 
 	plm_version.h 
-	print_and_exit.cxx print_and_exit.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h

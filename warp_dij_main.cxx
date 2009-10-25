@@ -532,7 +532,7 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
 	update_output_image (oimg, &discarded, dij_matrix, 
 			    dose_wx, dose_wy, dose_wz, value);
     }
-    printf ("Discarded dose: %8d/%8d (%6.4f %%)\n", discarded, total, 
+    printf ("Discarded dose: %8lu/%8lu (%6.4f %%)\n", discarded, total, 
 	    ((double)discarded/total));
 }
 

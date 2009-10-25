@@ -5,44 +5,13 @@
 #define _plm_image_h_
 
 #include "volume.h"
+#include "plm_image.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 
-/* -----------------------------------------------------------------------
-   PlmImage class
-   ----------------------------------------------------------------------- */
 class PlmImageHeader;
-class PlmImageHeader {
-public:
-    OriginType m_origin;
-    SpacingType m_spacing;
-    ImageRegionType m_region;
-    DirectionType m_direction;
-
-public:
-    int Size (int d) const { return m_region.GetSize()[d]; }
-
-public:
-    void plastimatch1_EXPORT set_from_gpuit (float gpuit_origin[3],
-			 float gpuit_spacing[3],
-			 int gpuit_dim[3],
-			 float gpuit_direction_cosines[9]);
-
-    void plastimatch1_EXPORT get_gpuit_origin (float gpuit_origin[3]);
-    void plastimatch1_EXPORT get_gpuit_spacing (float gpuit_spacing[3]);
-    void plastimatch1_EXPORT get_gpuit_dim (int gpuit_dim[3]);
-
-    void plastimatch1_EXPORT print (void);
-    template<class T> 
-    void set_from_itk_image (T image) {
-	m_origin = image->GetOrigin ();
-	m_spacing = image->GetSpacing ();
-	m_region = image->GetLargestPossibleRegion ();
-	m_direction = image->GetDirection ();
-    }
-};
-
 class PlmImage;
+
 class PlmImage {
 
 public:
@@ -51,10 +20,12 @@ public:
     PlmImageType m_type;
 
     /* The actual image is one of the following. */
-    FloatImageType::Pointer m_itk_float;
-    ShortImageType::Pointer m_itk_short;
     UCharImageType::Pointer m_itk_uchar;
     UShortImageType::Pointer m_itk_ushort;
+    ShortImageType::Pointer m_itk_short;
+    UInt32ImageType::Pointer m_itk_uint32;
+    FloatImageType::Pointer m_itk_float;
+    DoubleImageType::Pointer m_itk_double;
     void* m_gpuit;
 
 private:
@@ -82,12 +53,36 @@ public:
 	m_gpuit = 0;
     }
     void free () {
-	/* GCS FIX: This doesn't actually free anything. */
+	switch (m_type) {
+	case PLM_IMG_TYPE_GPUIT_FLOAT:
+	case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+	    volume_free ((Volume*) m_gpuit);
+	    break;
+	default:
+	    /* GCS FIX: This doesn't actually free anything for itk. */
+	    break;
+	}
 	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
     }
 
+    /* Loading */
+    void load_native (char* fname);
+
+    /* Saving */
+    void save_short_dicom (char* fname);
+    void save_image (char* fname);
+
+    /* Assignment */
+    void set_gpuit_float (Volume *v) {
+	free ();
+	m_gpuit = (void*) v;
+	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+    }
+
+    /* Conversion */
     FloatImageType::Pointer& itk_float () {
 	convert_itk_float ();
 	return m_itk_float;
@@ -102,6 +97,6 @@ public:
    Public functions
    ----------------------------------------------------------------------- */
 PlmImage* plm_image_load (char* fname, PlmImageType type);
-void itk_roi_from_gpuit (ImageRegionType* roi, int roi_offset[3], int roi_dim[3]);
+PlmImage* plm_image_load_native (char* fname);
 
 #endif

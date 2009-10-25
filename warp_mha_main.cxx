@@ -1,16 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
 #include "plm_config.h"
-#include "plm_int.h"
+#include <time.h>
 #include "itkImage.h"
 #include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkCastImageFilter.h"
 
+#include "plm_int.h"
 #include "getopt.h"
 #include "warp_main.h"
+#include "plm_image_header.h"
 #include "itk_image.h"
 #include "itk_warp.h"
 #include "print_and_exit.h"
@@ -18,16 +19,14 @@
 #include "readmha.h"
 #include "volume.h"
 
-template<class T, class U>
 static void
 do_warp_itk (
-    T *im_warped,                         /* Output */
+    PlmImage *im_warped,                  /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
     PlmImageHeader *pih,                  /* Input */
-    T im_in,                              /* Input */
-    U output_type                         /* Input */
+    PlmImage *im_in                       /* Input */
 )
 {
     Xform xform_tmp;
@@ -36,86 +35,153 @@ do_warp_itk (
     *vf = xform_tmp.get_itk_vf ();
 
     printf ("Warping...\n");
-    *im_warped = itk_warp_image (im_in, *vf, parms->interp_lin, 
-				 (U) parms->default_val);
+    switch (im_in->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	im_warped->m_itk_uchar = itk_warp_image (
+	    im_in->m_itk_uchar, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<unsigned char>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	im_warped->m_itk_short = itk_warp_image (
+	    im_in->m_itk_short, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<short>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_SHORT;
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	im_warped->m_itk_ushort = itk_warp_image (
+	    im_in->m_itk_ushort, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<unsigned short>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_USHORT;
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	im_warped->m_itk_uint32 = itk_warp_image (
+	    im_in->m_itk_uint32, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<uint32_t>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_ULONG;
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	im_warped->m_itk_float = itk_warp_image (
+	    im_in->m_itk_float, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<float>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_FLOAT;
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	im_warped->m_itk_double = itk_warp_image (
+	    im_in->m_itk_double, 
+	    *vf, 
+	    parms->interp_lin, 
+	    static_cast<double>(parms->default_val));
+	im_warped->m_original_type = PLM_IMG_TYPE_ITK_DOUBLE;
+	im_warped->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
+	break;
+    case PLM_IMG_TYPE_ITK_CHAR:
+    case PLM_IMG_TYPE_ITK_LONG:
+    default:
+	print_and_exit ("Unhandled case in do_warp_itk()\n");
+	break;
+    }
 }
 
-/* Fallback for unsupported native warping */
-template<class T, class U>
+/* Native warping (only gpuit bspline + float) */
 static void
 do_warp_native (
-    T *im_warped,                         /* Output */
+    PlmImage *im_warped,                  /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
     PlmImageHeader *pih,                  /* Input */
-    T im_in,                              /* Input */
-    U output_type                         /* Input */
+    PlmImage *im_in                       /* Input */
 )
 {
-    printf ("Tried to warp native, but falling back to itk\n");
-    do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+    Xform xf_tmp;
+    BSPLINE_Xform* bxf_in = xf_in->get_gpuit_bsp ();
+    Volume *vf_out = 0;     /* Output vector field */
+    Volume *v_out = 0;       /* Output warped image */
+    int dim[3];
+    float origin[3];
+    float spacing[3];
+    float direction_cosines[9];
+
+    /* Convert input image to gpuit format */
+    printf ("Converting input image...\n");
+    Volume *v_in = im_in->gpuit_float();
+
+    /* Transform input xform to gpuit bspline with correct voxel spacing */
+    printf ("Converting xform...\n");
+    xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
+
+    /* For now, don't create vf output */
+
+    /* Create output image */
+    printf ("Creating output volume...\n");
+    pih->get_gpuit_origin (origin);
+    pih->get_gpuit_spacing (spacing);
+    pih->get_gpuit_dim (dim);
+    pih->get_gpuit_direction_cosines (direction_cosines);
+    v_out = volume_create (dim, origin, spacing, PT_FLOAT, 
+			  direction_cosines, 0);
+
+    /* Warp using gpuit native warper */
+    bspline_warp (v_out, vf_out, xf_tmp.get_gpuit_bsp(), v_in, 
+		  parms->default_val);
+
+    /* Return output image to caller */
+    im_warped->set_gpuit_float (v_out);
 }
 
-/* Native warping for floats */
-#if defined (commentout)
-template<class T>
-static void
-do_warp_native (
-    T *im_warped,                         /* Output */
-    DeformationFieldType::Pointer *vf,    /* Output */
-    Warp_Parms* parms,                    /* Input */
-    Xform *xf_in,                         /* Input */
-    PlmImageHeader *pih,                  /* Input */
-    T im_in,                              /* Input */
-    float output_type                     /* Input */
-)
-{
-    printf ("Hello world\n");
-    exit (-1);
-}
-#endif
-
-template<class T, class U>
 static void
 do_warp (
-    T *im_warped,                         /* Output */
+    PlmImage *im_warped,                  /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
     PlmImageHeader *pih,                  /* Input */
-    T im_in,                              /* Input */
-    U output_type                         /* Input */
+    PlmImage *im_in                       /* Input */
 )
 {
-    /* If user wants ITK-based warping, respect their wish */
+    /* If user requested ITK-based warping, respect their wish */
     if (parms->use_itk) {
-	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
+	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in);
 	return;
     }
 
-    /* Otherwise, we try to do native warping (when possible) */
-    switch (xf_in->m_type) {
-    case XFORM_GPUIT_BSPLINE:
-	do_warp_native (im_warped, vf, parms, xf_in, pih, im_in, output_type);
-	break;
-    default:
-	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
-	break;
+    /* Otherwise, try to do native warping where possible */
+    if (xf_in->m_type == XFORM_GPUIT_BSPLINE 
+	&& im_in->m_type == PLM_IMG_TYPE_ITK_FLOAT) {
+	do_warp_native (im_warped, vf, parms, xf_in, pih, im_in);
+    } else {
+	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in);
     }
 }
 
-/* GCS FIX: This function can't actually change the output type */
-template<class T, class U>
-static void 
-warp_any (Warp_Parms* parms, T im_in, U output_type)
+void
+warp_image_main (Warp_Parms* parms)
 {
+    DeformationFieldType::Pointer vf = DeformationFieldType::New();
+    PlmImage im_in, im_out;
     PlmImageHeader pih;
     Xform xform;
 
-    T im_warped = T::ObjectType::New();
-    DeformationFieldType::Pointer vf = DeformationFieldType::New();
+    /* Load input image */
+    im_in.load_native (parms->mha_in_fn);
 
+    /* Load transform */
     printf ("Loading xform (%s)\n", parms->xf_in_fn);
     load_xform (&xform, parms->xf_in_fn);
 
@@ -129,72 +195,25 @@ warp_any (Warp_Parms* parms, T im_in, U output_type)
 	pih.set_from_itk_image (xform.get_itk_vf());
     } else {
 	/* otherwise, use the spacing of the input image */
-	pih.set_from_itk_image (im_in);
+	pih.set_from_plm_image (&im_in);
     }
 
+    printf ("PIH is:\n");
+    pih.print ();
+
     /* Do the warp */
-    do_warp (&im_warped, &vf, parms, &xform, &pih, im_in, output_type);
+    do_warp (&im_out, &vf, parms, &xform, &pih, &im_in);
 
     /* Save output files */
     printf ("Saving...\n");
     if (parms->output_dicom) {
-	save_short_dicom (im_warped, parms->mha_out_fn);
+	im_out.save_short_dicom (parms->mha_out_fn);
     } else {
-	save_image (im_warped, parms->mha_out_fn);
+	im_out.save_image (parms->mha_out_fn);
     }
     if (parms->vf_out_fn[0]) {
 	save_image(vf, parms->vf_out_fn);
     }
-}
-
-void
-warp_image_main (Warp_Parms* parms)
-{
-    DeformationFieldType::Pointer vf = DeformationFieldType::New();
-
-    itk::ImageIOBase::IOPixelType pixelType;
-    itk::ImageIOBase::IOComponentType componentType;
-
-    itk__GetImageType (parms->mha_in_fn, pixelType, componentType);
-
-    switch (componentType) {
-    case itk::ImageIOBase::UCHAR:
-	{
-	    UCharImageType::Pointer mha_in 
-		    = load_uchar (parms->mha_in_fn, 0);
-	    warp_any (parms, mha_in, static_cast<unsigned char>(0));
-	}
-	break;
-    case itk::ImageIOBase::SHORT:
-	{
-	    ShortImageType::Pointer mha_in 
-		    = load_short (parms->mha_in_fn, 0);
-	    warp_any (parms, mha_in, static_cast<short>(0));
-	}
-	break;
-#if (CMAKE_SIZEOF_UINT == 4)
-    case itk::ImageIOBase::UINT:
+#if defined (commentout)
 #endif
-#if (CMAKE_SIZEOF_ULONG == 4)
-    case itk::ImageIOBase::ULONG:
-#endif
-	{
-	    UInt32ImageType::Pointer mha_in 
-		    = load_uint32 (parms->mha_in_fn, 0);
-	    warp_any (parms, mha_in, static_cast<uint32_t>(0));
-	}
-	break;
-    case itk::ImageIOBase::FLOAT:
-	{
-	    FloatImageType::Pointer mha_in 
-		    = load_float (parms->mha_in_fn, 0);
-	    warp_any (parms, mha_in, static_cast<float>(0));
-	}
-	break;
-    default:
-	printf ("Error, unsupported output type\n");
-	exit (-1);
-	break;
-    }
 }
-

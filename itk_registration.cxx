@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
-#include "plm_int.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageMaskSpatialObject.h"
 #include "itkMutualInformationImageToImageMetric.h"
@@ -25,7 +24,9 @@
 #endif
 #endif
 
+#include "plm_int.h"
 #include "plm_registration.h"
+#include "plm_image_header.h"
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "resample_mha.h"

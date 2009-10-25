@@ -7,6 +7,7 @@
 #include <math.h>
 #include "plm_config.h"
 #include "plm_registration.h"
+#include "plm_image_header.h"
 #include "xform.h"
 #include "readmha.h"
 #include "volume.h"
@@ -46,11 +47,14 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
     /* Subsample images */
-    logfile_printf ("SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
+    logfile_printf ("SUBSAMPLE: %d %d %d\n", stage->resolution[0], 
+		    stage->resolution[1], stage->resolution[2]);
     moving_ss = volume_subsample (moving, stage->resolution);
     fixed_ss = volume_subsample (fixed, stage->resolution);
-    logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], moving_ss->dim[1], moving_ss->dim[2]);
-    logfile_printf ("fixed_ss size = %d %d %d\n", fixed_ss->dim[0], fixed_ss->dim[1], fixed_ss->dim[2]);
+    logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], 
+		    moving_ss->dim[1], moving_ss->dim[2]);
+    logfile_printf ("fixed_ss size = %d %d %d\n", fixed_ss->dim[0], 
+		    fixed_ss->dim[1], fixed_ss->dim[2]);
 
     /* Make spatial gradient image */
     moving_grad = volume_make_gradient (moving_ss);
@@ -110,7 +114,8 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
     parms.mi_hist.moving.bins = stage->mi_histogram_bins;
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, fixed_ss->dim, fixed_ss->direction_cosines);
+    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, 
+			fixed_ss->dim, fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */

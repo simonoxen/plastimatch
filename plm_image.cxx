@@ -1,168 +1,77 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
-#include "plm_image.h"
 #include "itkImageRegionIterator.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "itk_image.h"
 #include "readmha.h"
 #include "volume.h"
 #include "print_and_exit.h"
 
 /* -----------------------------------------------------------------------
-   Image header conversion
+   Loading
    ----------------------------------------------------------------------- */
-void
-gpuit_direction_from_itk (
-    float gpuit_direction_cosines[9],
-    DirectionType* itk_direction)	    
+PlmImage*
+plm_image_load_native (char* fname)
 {
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
-	    gpuit_direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
-	}
-    }
+    PlmImage *pli = new PlmImage;
+    if (!pli) return 0;
+
+    pli->load_native (fname);
+
+    return pli;
 }
 
 void
-itk_direction_from_gpuit (
-    DirectionType* itk_direction,
-    float gpuit_direction_cosines[9])
+PlmImage::load_native (char* fname)
 {
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
-	    (*itk_direction)[d1][d2] = gpuit_direction_cosines[d1*3+d2];
-	}
-    }
-}
+    itk::ImageIOBase::IOPixelType pixelType;
+    itk::ImageIOBase::IOComponentType componentType;
+    itk__GetImageType (fname, pixelType, componentType);
 
-void
-itk_direction_identity (
-    DirectionType* itk_direction)
-{
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
-	    (*itk_direction)[d1][d2] = (float) (d1 == d2);
-	}
-    }
-}
-
-void
-PlmImageHeader::set_from_gpuit (float gpuit_origin[3],
-			 float gpuit_spacing[3],
-			 int gpuit_dim[3],
-			 float gpuit_direction_cosines[9])
-{
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
-
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	m_origin[d1] = gpuit_origin[d1];
-	m_spacing[d1] = gpuit_spacing[d1];
-	itk_index[d1] = 0;
-	itk_size[d1] = gpuit_dim[d1];
-    }
-    if (gpuit_direction_cosines) {
-	itk_direction_from_gpuit (&m_direction, gpuit_direction_cosines);
-    } else {
-	itk_direction_identity (&m_direction);
-    }
-    m_region.SetSize (itk_size);
-    m_region.SetIndex (itk_index);
-}
-
-void 
-PlmImageHeader::get_gpuit_origin (float gpuit_origin[3])
-{
-    for (unsigned int d = 0; d < Dimension; d++) {
-	gpuit_origin[d] = m_origin[d];
-    }
-}
-
-void 
-PlmImageHeader::get_gpuit_spacing (float gpuit_spacing[3])
-{
-    for (unsigned int d = 0; d < Dimension; d++) {
-	gpuit_spacing[d] = m_spacing[d];
-    }
-}
-
-void 
-PlmImageHeader::get_gpuit_dim (int gpuit_dim[3])
-{
-    ImageRegionType::SizeType itk_size = m_region.GetSize ();
-    for (unsigned int d = 0; d < Dimension; d++) {
-	gpuit_dim[d] = itk_size[d];
-    }
-}
-
-#if defined (commentout)
-void
-PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
-			    float gpuit_spacing[3],
-			    int gpuit_dim[3],
-			    float gpuit_direction_cosines[9])
-{
-    ImageRegionType::SizeType itk_size;
-    itk_size = m_region.GetSize ();
-
-    for (int d1 = 0; d1 < Dimension; d1++) {
-	gpuit_origin[d1] = m_origin[d1];
-	gpuit_spacing[d1] = m_spacing[d1];
-	gpuit_dim[d1] = itk_size[d1];
-    }
-    gpuit_direction_from_itk (gpuit_direction_cosines, &m_direction);
-}
+    switch (componentType) {
+    case itk::ImageIOBase::UCHAR:
+	this->m_itk_uchar = load_uchar (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
+	this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
+	break;
+    case itk::ImageIOBase::SHORT:
+	this->m_itk_short = load_short (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+	this->m_type = PLM_IMG_TYPE_ITK_SHORT;
+	break;
+    case itk::ImageIOBase::USHORT:
+	this->m_itk_ushort = load_ushort (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
+	this->m_type = PLM_IMG_TYPE_ITK_USHORT;
+	break;
+#if (CMAKE_SIZEOF_UINT == 4)
+    case itk::ImageIOBase::UINT:
 #endif
-
-void
-PlmImageHeader::print (void)
-{
-    ImageRegionType::SizeType itk_size;
-    itk_size = m_region.GetSize ();
-
-    printf ("Origin =");
-    for (unsigned int d = 0; d < Dimension; d++) {
-	printf (" %g", m_origin[d]);
+#if (CMAKE_SIZEOF_ULONG == 4)
+    case itk::ImageIOBase::ULONG:
+#endif
+	this->m_itk_uint32 = load_uint32 (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
+	this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+	break;
+    case itk::ImageIOBase::FLOAT:
+	this->m_itk_float = load_float (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
+	this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
+	break;
+    default:
+	printf ("Error, unsupported output type\n");
+	exit (-1);
+	break;
     }
-    printf ("\nSize =");
-    for (unsigned int d = 0; d < Dimension; d++) {
-	printf (" %lu", itk_size[d]);
-    }
-    printf ("\nSpacing =");
-    for (unsigned int d = 0; d < Dimension; d++) {
-	printf (" %g", m_spacing[d]);
-    }
-    printf ("\nDirection =\n");
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
-	    printf (" %g", m_direction[d1][d2]);
-	}
-    }
-    printf ("\n");
 }
 
-void
-itk_roi_from_gpuit (
-    ImageRegionType* roi,
-    int roi_offset[3], int roi_dim[3])
-{
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
-
-    for (unsigned int d = 0; d < Dimension; d++) {
-	itk_index[d] = roi_offset[d];
-	itk_size[d] = roi_dim[d];
-    }
-    (*roi).SetSize (itk_size);
-    (*roi).SetIndex (itk_index);
-}
-
-/* -----------------------------------------------------------------------
-   Image conversion
-   ----------------------------------------------------------------------- */
 PlmImage*
 plm_image_load (char* fname, PlmImageType type)
 {
@@ -188,6 +97,46 @@ plm_image_load (char* fname, PlmImageType type)
     return ri;
 }
 
+/* -----------------------------------------------------------------------
+   Saving
+   ----------------------------------------------------------------------- */
+void
+PlmImage::save_short_dicom (char* fname)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	::save_short_dicom (this->m_itk_float, fname);
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->convert_itk_float ();
+	::save_short_dicom (this->m_itk_float, fname);
+	break;
+    default:
+	print_and_exit ("Unhandled image type in PlmImage::save_image\n");
+	break;
+    }
+}
+
+void
+PlmImage::save_image (char* fname)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	save_float (this->m_itk_float, fname);
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->convert_itk_float ();
+	save_float (this->m_itk_float, fname);
+	break;
+    default:
+	print_and_exit ("Unhandled image type in PlmImage::save_image\n");
+	break;
+    }
+}
+
+/* -----------------------------------------------------------------------
+   Conversion
+   ----------------------------------------------------------------------- */
 void
 PlmImage::convert_itk_float ()
 {

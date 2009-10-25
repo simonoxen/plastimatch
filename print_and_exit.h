@@ -6,7 +6,15 @@
 
 #include "plm_config.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
+gpuit_EXPORT 
 void print_and_wait (char* prompt_fmt, ...);
-plastimatch1_EXPORT void print_and_exit (char* prompt_fmt, ...);
+gpuit_EXPORT 
+void print_and_exit (char* prompt_fmt, ...);
+#if defined __cplusplus
+}
+#endif
 
 #endif

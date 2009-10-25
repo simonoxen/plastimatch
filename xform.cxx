@@ -1,16 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
+#include "plm_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
+#include <time.h>
 #include "itkArray.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"
 #include "xform.h"
 #include "plm_registration.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "resample_mha.h"
 #include "print_and_exit.h"
 #include "volume.h"
@@ -485,6 +486,9 @@ save_xform (Xform *xf, char* fn)
 	break;
     case XFORM_NONE:
 	print_and_exit ("Error trying to save null transform\n");
+	break;
+    default:
+	print_and_exit ("Unhandled case trying to save transform\n");
 	break;
     }
 }
@@ -1325,7 +1329,12 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih,
 }
 
 void
-xform_gpuit_bsp_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* grid_spac)
+xform_gpuit_bsp_to_gpuit_bsp (
+    Xform* xf_out, 
+    Xform* xf_in, 
+    PlmImageHeader* pih, 
+    float* grid_spac
+)
 {
     Xform xf_tmp;
     ImageRegionType roi;

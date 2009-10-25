@@ -11,22 +11,7 @@
 #include "itkOrientedImage.h"
 #endif
 #include "itkImageIOBase.h"
-
-/* We only deal with these kinds of images. */
-enum PlmImageType {
-    PLM_IMG_TYPE_UNDEFINED, 
-    PLM_IMG_TYPE_ITK_CHAR, 
-    PLM_IMG_TYPE_ITK_UCHAR, 
-    PLM_IMG_TYPE_ITK_SHORT, 
-    PLM_IMG_TYPE_ITK_USHORT, 
-    PLM_IMG_TYPE_ITK_LONG, 
-    PLM_IMG_TYPE_ITK_ULONG, 
-    PLM_IMG_TYPE_ITK_FLOAT, 
-    PLM_IMG_TYPE_ITK_DOUBLE, 
-    PLM_IMG_TYPE_ITK_FLOAT_FIELD, 
-    PLM_IMG_TYPE_GPUIT_FLOAT, 
-    PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
-};
+#include "plm_image_type.h"
 
 /* We only deal with 3D images. */
 const unsigned int Dimension = 3;
