@@ -21,7 +21,7 @@
 template<class T, class U>
 static void
 do_warp_itk (
-    T *im_warped,                         /* Output　*/
+    T *im_warped,                         /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
@@ -44,7 +44,7 @@ do_warp_itk (
 template<class T, class U>
 static void
 do_warp_native (
-    T *im_warped,                         /* Output　*/
+    T *im_warped,                         /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
@@ -57,12 +57,12 @@ do_warp_native (
     do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in, output_type);
 }
 
-#if defined (commentout)
 /* Native warping for floats */
+#if defined (commentout)
 template<class T>
 static void
 do_warp_native (
-    T *im_warped,                         /* Output　*/
+    T *im_warped,                         /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */
@@ -79,7 +79,7 @@ do_warp_native (
 template<class T, class U>
 static void
 do_warp (
-    T *im_warped,                         /* Output　*/
+    T *im_warped,                         /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Warp_Parms* parms,                    /* Input */
     Xform *xf_in,                         /* Input */

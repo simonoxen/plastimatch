@@ -208,7 +208,14 @@ PLM_ADD_TEST (
 ## plastimatch warp
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plastimatch-warp" 
+  "plastimatch-warp-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--algorithm=itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/synth_1_warped.mha"
+  )
+
+PLM_ADD_TEST (
+  "plastimatch-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/synth_1_warped.mha"
