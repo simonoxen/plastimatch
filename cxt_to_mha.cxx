@@ -105,12 +105,12 @@ main (int argc, char* argv[])
     Cxt_structure* curr_structure;
     Cxt_polyline* curr_contour;
     Volume* uchar_vol;
-    Volume* labelmap_vol;
-    Volume* xormap_vol;
+    Volume* labelmap_vol = 0;
+    Volume* xormap_vol = 0;
 
     unsigned char* uchar_img;
-    uint32_t* labelmap_img;
-    uint32_t* xormap_img;
+    uint32_t* labelmap_img = 0;
+    uint32_t* xormap_img = 0;
     unsigned char* acc_img;
     int dim[2];
     float offset[2];
@@ -118,7 +118,7 @@ main (int argc, char* argv[])
     int slice_voxels = 0;
     int sno = 0;		/* Structure number */
 
-    FILE *xorlist_fp;
+    FILE *xorlist_fp = 0;
 
     parse_args (parms, argc, argv);
 

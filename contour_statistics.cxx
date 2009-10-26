@@ -24,7 +24,7 @@ int main(int argc, char* argv[])
 	ImgType::Pointer ex_1=ImgType::New();
 	ImgType::Pointer ex_2=ImgType::New();
 	ImgType::Pointer ex_3=ImgType::New();
-	FILE* output;
+	FILE* output = 0;
 
 	if (argc<4)
 		print_usage();

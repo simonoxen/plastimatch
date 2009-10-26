@@ -1948,11 +1948,11 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 gpuit_EXPORT
 void
 bspline_warp (
-    Volume *vout,         /* Output image (already sized and allocated) */
-    Volume *vf_out,       /* Output vf (already sized and allocated, can be null) */
-    BSPLINE_Xform* bxf,   /* Bspline transform coefficients */
-    Volume *moving,       /* Input image */
-    float default_val     /* Fill in this value outside of image */
+    Volume *vout,       /* Output image (sized and allocated) */
+    Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
+    BSPLINE_Xform* bxf, /* Bspline transform coefficients */
+    Volume *moving,     /* Input image */
+    float default_val   /* Fill in this value outside of image */
 )
 {
     int d;

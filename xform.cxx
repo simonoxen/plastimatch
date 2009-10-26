@@ -1200,8 +1200,11 @@ xform_gpuit_bsp_to_itk_vf_under_development (Xform* xf_in, PlmImageHeader* pih)
 
 /* 1) convert gpuit -> itk at the native resolution, 
    2) convert itk -> itk to change resolution.  */
-static DeformationFieldType::Pointer 
-xform_gpuit_vf_to_itk_vf (Volume* vf, PlmImageHeader* pih)
+DeformationFieldType::Pointer 
+xform_gpuit_vf_to_itk_vf (
+    Volume* vf,            /* Input */
+    PlmImageHeader* pih    /* Input, can be null */
+)
 {
     int i;
     DeformationFieldType::SizeType sz;
@@ -1255,7 +1258,9 @@ xform_gpuit_vf_to_itk_vf (Volume* vf, PlmImageHeader* pih)
     }
 
     /* Resample to requested resolution */
-    itk_vf = xform_itk_vf_to_itk_vf (itk_vf, pih);
+    if (pih) {
+	itk_vf = xform_itk_vf_to_itk_vf (itk_vf, pih);
+    }
 
     return itk_vf;
 }

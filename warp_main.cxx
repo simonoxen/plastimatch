@@ -145,6 +145,8 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	default:
+		fprintf (stderr, "Error.  Unknown option.");
+		warp_print_usage ();
 	    break;
 	}
     }

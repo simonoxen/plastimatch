@@ -206,6 +206,11 @@ plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
 void xform_to_trn (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
 void xform_to_aff (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih);
+DeformationFieldType::Pointer 
+xform_gpuit_vf_to_itk_vf (
+    Volume* vf,            /* Input */
+    PlmImageHeader* pih    /* Input, can be null */
+);
 plastimatch1_EXPORT void xform_to_itk_bsp (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih, float* grid_spac);
 plastimatch1_EXPORT void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, PlmImageHeader* pih, float* grid_spac);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih);

@@ -493,7 +493,7 @@ bspline_cuda_score_f_mse
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     //int dd = 0;
 
     if (parms->debug) {
@@ -573,7 +573,7 @@ bspline_cuda_score_e_mse_v2
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     //int dd = 0;
 
     if (parms->debug) {
@@ -682,7 +682,7 @@ bspline_cuda_score_e_mse
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     //    int dd = 0;
 
     if (parms->debug) {
@@ -818,7 +818,7 @@ void bspline_cuda_score_d_mse
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     //    int dd = 0;
 
 	/* BEGIN CUDA VARIABLES */
@@ -1138,7 +1138,7 @@ bspline_cuda_score_c_mse
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     //    int dd = 0;
 
     /* BEGIN CUDA VARIABLES */

@@ -110,6 +110,7 @@ do_warp_native (
 )
 {
     Xform xf_tmp;
+    Xform vf_tmp;
     BSPLINE_Xform* bxf_in = xf_in->get_gpuit_bsp ();
     Volume *vf_out = 0;     /* Output vector field */
     Volume *v_out = 0;       /* Output warped image */
@@ -126,14 +127,19 @@ do_warp_native (
     printf ("Converting xform...\n");
     xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
 
-    /* For now, don't create vf output */
-
-    /* Create output image */
-    printf ("Creating output volume...\n");
+    /* Create output vf */
     pih->get_gpuit_origin (origin);
     pih->get_gpuit_spacing (spacing);
     pih->get_gpuit_dim (dim);
     pih->get_gpuit_direction_cosines (direction_cosines);
+    printf ("Creating output vf...\n");
+    if (parms->vf_out_fn[0]) {
+	vf_out = volume_create (dim, origin, spacing, PT_VF_FLOAT_INTERLEAVED,
+				direction_cosines, 0);
+    }
+
+    /* Create output image */
+    printf ("Creating output volume...\n");
     v_out = volume_create (dim, origin, spacing, PT_FLOAT, 
 			  direction_cosines, 0);
 
@@ -143,6 +149,12 @@ do_warp_native (
 
     /* Return output image to caller */
     im_warped->set_gpuit_float (v_out);
+
+    /* Return vf to caller */
+    if (parms->vf_out_fn[0]) {
+	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
+	volume_free (vf_out);
+    }
 }
 
 static void
@@ -205,13 +217,14 @@ warp_image_main (Warp_Parms* parms)
     do_warp (&im_out, &vf, parms, &xform, &pih, &im_in);
 
     /* Save output files */
-    printf ("Saving...\n");
+    printf ("Saving image...\n");
     if (parms->output_dicom) {
 	im_out.save_short_dicom (parms->mha_out_fn);
     } else {
 	im_out.save_image (parms->mha_out_fn);
     }
     if (parms->vf_out_fn[0]) {
+	printf ("Saving vf...\n");
 	save_image(vf, parms->vf_out_fn);
     }
 #if defined (commentout)

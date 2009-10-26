@@ -211,14 +211,14 @@ PLM_ADD_TEST (
   "plastimatch-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-a.mha"
   )
 
 PLM_ADD_TEST (
   "plastimatch-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b.mha"
   )
 
 ## -------------------------------------------------------------------------
