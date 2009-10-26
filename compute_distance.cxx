@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	FILE* mesh;
 	//FILE* refMesh;
 	FILE* MDpoints;
-	FILE* output;
+	FILE* output = 0;
 
 	if (argc<3)
 		print_usage();
