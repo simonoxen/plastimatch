@@ -372,6 +372,8 @@ SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
+SET(SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
+
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
@@ -870,35 +872,41 @@ ADD_SUBDIRECTORY(CUDA_tex_test)
 ##  Library targets
 ##-----------------------------------------------------------------------------
 IF (F2C_LIBRARY AND UNIX)
-  ADD_LIBRARY (f2c_helper ${F2C_HELPER_LIBRARY_SRC})
   IF (BUILD_AGAINST_SLICER3)
+    ADD_LIBRARY (f2c_helper STATIC ${F2C_HELPER_LIBRARY_SRC})
     SLICER3_SET_PLUGINS_OUTPUT_PATH (f2c_helper)
     SLICER3_INSTALL_PLUGINS (f2c_helper)
+  ELSE (BUILD_AGAINST_SLICER3)
+    ADD_LIBRARY (f2c_helper ${F2C_HELPER_LIBRARY_SRC})
   ENDIF (BUILD_AGAINST_SLICER3)
   INSTALL (TARGETS f2c_helper DESTINATION lib)
 ENDIF (F2C_LIBRARY AND UNIX)
 
-ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
-TARGET_LINK_LIBRARIES (gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 IF (BUILD_AGAINST_SLICER3)
+  ADD_LIBRARY (gpuit STATIC ${GPUIT_LIBRARY_SRC})
   SLICER3_SET_PLUGINS_OUTPUT_PATH (gpuit)
   SLICER3_INSTALL_PLUGINS (gpuit)
+ELSE (BUILD_AGAINST_SLICER3)
+  ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
 ENDIF (BUILD_AGAINST_SLICER3)
+TARGET_LINK_LIBRARIES (gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 INSTALL (TARGETS gpuit DESTINATION lib)
 
-IF(ITK_FOUND)
+IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
   ## with the same name as the executable.  What happens is the executable 
   ## tries to create a temporary library with the same name.  [MSVC 2005]
   ## That is why the library is called plastimatch1 instead of plastimatch.
-  ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
-  TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
   IF (BUILD_AGAINST_SLICER3)
+    ADD_LIBRARY (plastimatch1 STATIC ${PLASTIMATCH_LIBRARY_SRC})
     SLICER3_SET_PLUGINS_OUTPUT_PATH (plastimatch1)
     SLICER3_INSTALL_PLUGINS (plastimatch1)
+  ELSE (BUILD_AGAINST_SLICER3)
+    ADD_LIBRARY (plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   ENDIF (BUILD_AGAINST_SLICER3)
+  TARGET_LINK_LIBRARIES (plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
   INSTALL (TARGETS plastimatch1 DESTINATION lib)
-ENDIF(ITK_FOUND)
+ENDIF (ITK_FOUND)
 
 
 ##-----------------------------------------------------------------------------
@@ -981,6 +989,10 @@ IF(ITK_FOUND)
   IF (Slicer3_DIR)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer "${PLASTIMATCH_SLICER_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+#    SET(PLASTIMATCH_SLICER_SRC ${PLASTIMATCH_SLICER_SRC}
+#      ${PLASTIMATCH_LIBRARY_SRC} ${GPUIT_LIBRARY_SRC})
+#    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer "${PLASTIMATCH_SLICER_SRC}"
+#      "${SLICER_PLUGIN_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
   PLM_ADD_EXECUTABLE(resample_mha "${RESAMPLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
