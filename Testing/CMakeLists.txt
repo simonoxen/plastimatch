@@ -230,3 +230,12 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/xf_to_xf
   "--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/vf-bspline-1.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
   )
+
+
+## -------------------------------------------------------------------------
+## slicer tests
+## -------------------------------------------------------------------------
+IF (Slicer3_DIR)
+#  slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
+ENDIF (Slicer3_DIR)
+

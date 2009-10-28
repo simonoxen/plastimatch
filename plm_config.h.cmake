@@ -29,8 +29,8 @@
 #cmakedefine BUILD_BSPLINE_BROOK 1
 
 /* ITK attributes */
-#cmakedefine HAVE_ITK 1
-#if (HAVE_ITK && !PLM_CUDA_COMPILE)
+#cmakedefine ITK_FOUND 1
+#if (ITK_FOUND && !PLM_CUDA_COMPILE)
 #include "itkConfigure.h"
 #if (ITK_VERSION_MAJOR >=3) && (ITK_VERSION_MINOR >= 10) && defined (ITK_USE_ORIENTED_IMAGE_DIRECTION)
 #define PLM_ITK_ORIENTED_IMAGES 1

@@ -26,7 +26,7 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-SET (PLM_BUILD_TESTING OFF CACHE BOOL "Enable regression testing")
+SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
@@ -169,7 +169,9 @@ ENDIF(DCMTK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Slicer front-ends
 ##-----------------------------------------------------------------------------
-SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
+find_package (Slicer3 QUIET)
+
+#SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 IF (Slicer3_DIR)
   cmake_minimum_required (VERSION 2.6)
 
@@ -181,6 +183,8 @@ IF (Slicer3_DIR)
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
+
+  slicer3_enable_plugins_testing()
 
 ELSE (Slicer3_DIR)
   MESSAGE (STATUS "Looking for Slicer3 - not found")
@@ -263,6 +267,39 @@ ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
 ##-----------------------------------------------------------------------------
+##  ITK LIBRARY
+##-----------------------------------------------------------------------------
+FIND_PACKAGE(ITK)
+IF(ITK_FOUND)
+  INCLUDE(${ITK_USE_FILE})
+  SET (ITK_VERSION 
+    "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
+ENDIF(ITK_FOUND)
+
+
+##-----------------------------------------------------------------------------
+##  WXWINDOWS LIBRARY
+##-----------------------------------------------------------------------------
+IF(wxWidgets_FOUND)
+  IF(wxWidgets_CXX_FLAGS)
+    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+      "${wxWidgets_DEFINITIONS}")
+    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+      PROPERTIES COMPILE_FLAGS 
+      ${wxWidgets_CXX_FLAGS}
+      )
+  ENDIF(wxWidgets_CXX_FLAGS)
+ENDIF(wxWidgets_FOUND)
+
+##-----------------------------------------------------------------------------
+##  DCMTK LIBRARY
+##-----------------------------------------------------------------------------
+SET(DCMTK_HAVE_CONFIG_H FALSE)
+IF(UNIX)
+   SET(DCMTK_HAVE_CONFIG_H TRUE)
+ENDIF(UNIX)
+
+##-----------------------------------------------------------------------------
 ##  GPUIT LIBRARY
 ##-----------------------------------------------------------------------------
 SET(GPUIT_LIBRARY_DEPENDENCIES "")
@@ -329,7 +366,7 @@ SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
 ##-----------------------------------------------------------------------------
-##  BROOK LIBRARY
+##  BROOK FILES
 ##-----------------------------------------------------------------------------
 SET(HAVE_BROOK FALSE)
 IF(BROOK_FOUND)
@@ -354,7 +391,7 @@ IF(BROOK_FOUND)
 ENDIF(BROOK_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  CUDA LIBRARY
+##  CUDA FILES
 ##-----------------------------------------------------------------------------
 IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   IF(PLM_BUILD_DEMONS_CUDA)
@@ -385,47 +422,7 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  ITK LIBRARY
-##-----------------------------------------------------------------------------
-SET(HAVE_ITK FALSE)
-FIND_PACKAGE(ITK)
-IF(ITK_FOUND)
-  SET(HAVE_ITK TRUE)
-  INCLUDE(${ITK_USE_FILE})
-#  SET(ITK_NOREVIEW_VERSION "3.14.0")
-  SET(ITK_VERSION "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
-#  IF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")
-#  	SET(ITK_VERSION_314 FALSE)
-#  ELSE("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")
-#	SET(ITK_VERSION_314 TRUE)
-#  ENDIF("${ITK_VERSION}" STRLESS "${ITK_NOREVIEW_VERSION}")	
-ENDIF(ITK_FOUND)
-
-
-##-----------------------------------------------------------------------------
-##  WXWINDOWS LIBRARY
-##-----------------------------------------------------------------------------
-IF(wxWidgets_FOUND)
-  IF(wxWidgets_CXX_FLAGS)
-    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
-      "${wxWidgets_DEFINITIONS}")
-    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
-      PROPERTIES COMPILE_FLAGS 
-      ${wxWidgets_CXX_FLAGS}
-      )
-  ENDIF(wxWidgets_CXX_FLAGS)
-ENDIF(wxWidgets_FOUND)
-
-##-----------------------------------------------------------------------------
-##  DCMTK LIBRARY
-##-----------------------------------------------------------------------------
-SET(DCMTK_HAVE_CONFIG_H FALSE)
-IF(UNIX)
-   SET(DCMTK_HAVE_CONFIG_H TRUE)
-ENDIF(UNIX)
-
-##-----------------------------------------------------------------------------
-##  SOURCE FILES (LIBRARIES)
+##  GPUIT/PLASTIMATCH SOURCE FILES
 ##-----------------------------------------------------------------------------
 SET(GPUIT_LIBRARY_SRC
   bspline_opts.c bspline_opts.h
