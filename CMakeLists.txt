@@ -11,8 +11,6 @@ IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
   cmake_policy(SET CMP0003 NEW)
 ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 
-MESSAGE (FATAL_ERROR "BUILD_AGAINST_SLICER3 = ${BUILD_AGAINST_SLICER3}")
-
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
