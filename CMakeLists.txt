@@ -11,6 +11,8 @@ IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
   cmake_policy(SET CMP0003 NEW)
 ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 
+MESSAGE (FATAL_ERROR "BUILD_AGAINST_SLICER3 = ${BUILD_AGAINST_SLICER3}")
+
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
@@ -72,7 +74,9 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
     SET_TARGET_PROPERTIES (${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
-  SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
+  IF (NOT BUILD_AGAINST_SLICER3)
+    SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
+  ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
 
 ##-----------------------------------------------------------------------------
@@ -136,7 +140,7 @@ IF (PLM_USE_FINDCUDA)
   ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
   IF(CUDA_FOUND)
     #  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
-    CUDA_INCLUDE_DIRECTORIES(
+    CUDA_INCLUDE_DIRECTORIES (
       ${CMAKE_CURRENT_SOURCE_DIR}
       ${CUDA_CUT_INCLUDE_DIR}
       )
@@ -183,6 +187,9 @@ IF (Slicer3_DIR)
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
+  IF (BUILD_AGAINST_SLICER3)
+    #slicer3_set_plugins_output_path (plastimatch-slicer)
+  ENDIF (BUILD_AGAINST_SLICER3)
 
   slicer3_enable_plugins_testing()
 
@@ -862,14 +869,15 @@ ADD_SUBDIRECTORY(CUDA_tex_test)
 ##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
+SET (PLM_INSTALL_LIBRARIES "")
 IF(F2C_LIBRARY AND UNIX)
   ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
-  INSTALL(TARGETS f2c_helper DESTINATION lib)
+  SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} f2c_helper)
 ENDIF(F2C_LIBRARY AND UNIX)
 
 ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
 TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
-INSTALL(TARGETS gpuit DESTINATION lib)
+SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} gpuit)
 
 IF(ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -878,13 +886,16 @@ IF(ITK_FOUND)
   ## That is why the library is called plastimatch1 instead of plastimatch.
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-  INSTALL(TARGETS plastimatch1 DESTINATION lib)
+  SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} plastimatch1)
 ENDIF(ITK_FOUND)
+
+IF (NOT BUILD_AGAINST_SLICER3)
+  INSTALL(TARGETS ${PLM_INSTALL_LIBRARIES} DESTINATION lib)
+ENDIF (NOT BUILD_AGAINST_SLICER3)
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-#PLM_ADD_EXECUTABLE(analyze_to_mha analyze2mha.c "" "")
 PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
@@ -945,8 +956,6 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(merge2 merge2.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  #PLM_ADD_EXECUTABLE(mha_to_analyze mha2analyze.c
-    #"${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF (ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE(mha_to_cxt "${MHA_TO_CXT_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
@@ -985,22 +994,16 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(xio_to_cxt "${XIO_TO_CXT_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-#  PLM_ADD_EXECUTABLE(warp_dij "${WARP_DIJ_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-#  PLM_ADD_EXECUTABLE(warp_mha "${WARP_MHA_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-#  PLM_ADD_EXECUTABLE(warp_pointset "${WARP_POINTSET_SRC}"
-#    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 ENDIF(ITK_FOUND)
 
-# Require brook
+# fdk_brook requires brook
 IF(BROOK_FOUND)
   SET(FDK_BROOK_LIBS ${MATH_LIB} ${GPUIT_LIBRARIES}
     ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
   PLM_ADD_EXECUTABLE(fdk_brook "${FDK_BROOK_SRC}" "${FDK_BROOK_LIBS}" "")
 ENDIF(BROOK_FOUND)
 
-# Require cuda
+# several executables require cuda
 IF(CUDA_FOUND)
   IF (PLM_BUILD_DEMONS_CUDA)
     PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
@@ -1019,16 +1022,18 @@ IF(CUDA_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 
-# Require dcmtk
+# dicom_uid requires dcmtk
 IF(DCMTK_FOUND)
   PLM_ADD_EXECUTABLE(dicom_uid "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "")
 ENDIF(DCMTK_FOUND)
 
-# WIN32 target
+# mondoshot requires WIN32, wx, dcmtk
 IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
   TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
-  INSTALL(TARGETS mondoshot DESTINATION bin)
+  IF (NOT BUILD_AGAINST_SLICER3)
+    INSTALL(TARGETS mondoshot DESTINATION bin)
+  ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 
 ##-----------------------------------------------------------------------------
@@ -1054,18 +1059,22 @@ ENDIF(ITK_FOUND)
 
 IF (CUDA_FOUND)
   IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
-    INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
+    IF (NOT BUILD_AGAINST_SLICER3)
+      INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
+    ENDIF (NOT BUILD_AGAINST_SLICER3)
   ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
 ENDIF (CUDA_FOUND)
 
-INSTALL(FILES 
-  COPYRIGHT.TXT
-  INSTALL.TXT
-  LICENSE.TXT
-  README.TXT
-  README.BROOK.TXT
-  REGISTRATION.TXT
-  DESTINATION doc)
+IF (NOT BUILD_AGAINST_SLICER3)
+  INSTALL (FILES 
+    COPYRIGHT.TXT
+    INSTALL.TXT
+    LICENSE.TXT
+    README.TXT
+    README.BROOK.TXT
+    REGISTRATION.TXT
+    DESTINATION doc)
+ENDIF (NOT BUILD_AGAINST_SLICER3)
 
 ##-----------------------------------------------------------------------------
 ##  Simple test files
