@@ -73,6 +73,7 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
   IF (NOT BUILD_AGAINST_SLICER3)
+    slicer3_set_plugins_output_path (${TARGET_NAME})
     SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
   ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
@@ -185,9 +186,8 @@ IF (Slicer3_DIR)
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
-  IF (BUILD_AGAINST_SLICER3)
-    #slicer3_set_plugins_output_path (plastimatch-slicer)
-  ENDIF (BUILD_AGAINST_SLICER3)
+#  IF (BUILD_AGAINST_SLICER3)
+#  ENDIF (BUILD_AGAINST_SLICER3)
 
   #slicer3_enable_plugins_testing()
 
@@ -867,15 +867,22 @@ ADD_SUBDIRECTORY(CUDA_tex_test)
 ##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
-SET (PLM_INSTALL_LIBRARIES "")
-IF(F2C_LIBRARY AND UNIX)
-  ADD_LIBRARY(f2c_helper ${F2C_HELPER_LIBRARY_SRC})
-  SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} f2c_helper)
-ENDIF(F2C_LIBRARY AND UNIX)
+IF (F2C_LIBRARY AND UNIX)
+  ADD_LIBRARY (f2c_helper ${F2C_HELPER_LIBRARY_SRC})
+  IF (BUILD_AGAINST_SLICER3)
+    slicer3_set_plugins_output_path (f2c_helper)
+    SLICER3_INSTALL_PLUGINS (f2c_helper)
+  ELSE (BUILD_AGAINST_SLICER3)
+    INSTALL (TARGETS f2c_helper DESTINATION lib)
+  ENDIF (BUILD_AGAINST_SLICER3)
+ENDIF (F2C_LIBRARY AND UNIX)
 
-ADD_LIBRARY(gpuit ${GPUIT_LIBRARY_SRC})
-TARGET_LINK_LIBRARIES(gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
-SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} gpuit)
+ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
+TARGET_LINK_LIBRARIES (gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
+IF (BUILD_AGAINST_SLICER3)
+  slicer3_set_plugins_output_path (gpuit)
+ENDIF (BUILD_AGAINST_SLICER3)
+INSTALL (TARGETS gpuit DESTINATION lib)
 
 IF(ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -884,13 +891,12 @@ IF(ITK_FOUND)
   ## That is why the library is called plastimatch1 instead of plastimatch.
   ADD_LIBRARY(plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES(plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-  SET (PLM_INSTALL_LIBRARIES ${PLM_INSTALL_LIBRARIES} plastimatch1)
+  IF (BUILD_AGAINST_SLICER3)
+    slicer3_set_plugins_output_path (plastimatch1)
+  ENDIF (BUILD_AGAINST_SLICER3)
+  INSTALL (TARGETS plastimatch1 DESTINATION lib)
 ENDIF(ITK_FOUND)
 
-IF (NOT BUILD_AGAINST_SLICER3)
-  MESSAGE (FATAL_ERROR "Oops")
-  INSTALL(TARGETS ${PLM_INSTALL_LIBRARIES} DESTINATION lib)
-ENDIF (NOT BUILD_AGAINST_SLICER3)
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
