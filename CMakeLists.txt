@@ -186,7 +186,7 @@ IF (Slicer3_DIR)
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
   IF (BUILD_AGAINST_SLICER3)
-    #slicer3_set_plugins_output_path (plastimatch-slicer)
+    slicer3_set_plugins_output_path (plastimatch-slicer)
   ENDIF (BUILD_AGAINST_SLICER3)
 
   slicer3_enable_plugins_testing()
