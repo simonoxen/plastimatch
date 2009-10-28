@@ -34,6 +34,7 @@ SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
+SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
@@ -41,18 +42,20 @@ SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
 MACRO (PLM_ADD_EXECUTABLE 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
-  #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
-  #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
-  #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
+  IF (NOT BUILD_AGAINST_SLICER3)
+    #MESSAGE(STATUS "TARGET_SRC = ${TARGET_SRC}")
+    #MESSAGE(STATUS "TARGET_LIBS = ${TARGET_LIBS}")
+    #MESSAGE(STATUS "TARGET_LDFLAGS = ${TARGET_LDFLAGS}")
 
-  ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
-  TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
+    ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
+    TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
 
-  IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
-    SET_TARGET_PROPERTIES(${TARGET_NAME} 
-      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-  ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
-  INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+    IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+      SET_TARGET_PROPERTIES(${TARGET_NAME} 
+	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+    ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+    INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
+  ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDMACRO (PLM_ADD_EXECUTABLE)
 
 
@@ -176,18 +179,15 @@ find_package (Slicer3 QUIET)
 
 #SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 IF (Slicer3_DIR)
-  cmake_minimum_required (VERSION 2.6)
-
   MESSAGE (STATUS "Looking for Slicer3 - found " ${Slicer3_DIR})
-
   find_package (Slicer3 REQUIRED)
   include (${Slicer3_USE_FILE})
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
-#  IF (BUILD_AGAINST_SLICER3)
-#  ENDIF (BUILD_AGAINST_SLICER3)
+  #  IF (BUILD_AGAINST_SLICER3)
+  #  ENDIF (BUILD_AGAINST_SLICER3)
 
   #slicer3_enable_plugins_testing()
 
@@ -872,9 +872,8 @@ IF (F2C_LIBRARY AND UNIX)
   IF (BUILD_AGAINST_SLICER3)
     slicer3_set_plugins_output_path (f2c_helper)
     SLICER3_INSTALL_PLUGINS (f2c_helper)
-  ELSE (BUILD_AGAINST_SLICER3)
-    INSTALL (TARGETS f2c_helper DESTINATION lib)
   ENDIF (BUILD_AGAINST_SLICER3)
+  INSTALL (TARGETS f2c_helper DESTINATION lib)
 ENDIF (F2C_LIBRARY AND UNIX)
 
 ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
@@ -1057,7 +1056,7 @@ IF(ITK_FOUND)
     DESTINATION bin)
 
   if (Slicer3_DIR)
-    slicer3_install_plugins(plastimatch1)
+    #slicer3_install_plugins(plastimatch1)
     #slicer3_install_plugins(gpuit)
   endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
