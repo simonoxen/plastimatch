@@ -3,12 +3,12 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
-cmake_minimum_required (VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 PROJECT (plastimatch)
 
 ## Tell CMake to be quiet
 IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
-  cmake_policy(SET CMP0003 NEW)
+  CMAKE_POLICY (SET CMP0003 NEW)
 ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 
 ##-----------------------------------------------------------------------------
@@ -18,7 +18,7 @@ INCLUDE (CheckFunctionExists)
 INCLUDE (CheckTypeSize)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
-include (InstallRequiredSystemLibraries)
+INCLUDE (InstallRequiredSystemLibraries)
 
 # http://www.cmake.org/Bug/view.php?id=9220
 INCLUDE (language_support.cmake)
@@ -76,7 +76,7 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
 
-  slicer3_set_plugins_output_path (${TARGET_NAME})
+  SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
   SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 
   IF (NOT BUILD_AGAINST_SLICER3)
@@ -875,7 +875,6 @@ IF (F2C_LIBRARY AND UNIX)
   IF (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (f2c_helper STATIC ${F2C_HELPER_LIBRARY_SRC})
     SLICER3_SET_PLUGINS_OUTPUT_PATH (f2c_helper)
-    #SLICER3_INSTALL_PLUGINS (f2c_helper)
   ELSE (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (f2c_helper ${F2C_HELPER_LIBRARY_SRC})
     INSTALL (TARGETS f2c_helper
@@ -888,7 +887,6 @@ ENDIF (F2C_LIBRARY AND UNIX)
 IF (BUILD_AGAINST_SLICER3)
   ADD_LIBRARY (gpuit STATIC ${GPUIT_LIBRARY_SRC})
   SLICER3_SET_PLUGINS_OUTPUT_PATH (gpuit)
-  #SLICER3_INSTALL_PLUGINS (gpuit)
 ELSE (BUILD_AGAINST_SLICER3)
   ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
   TARGET_LINK_LIBRARIES (gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
@@ -906,7 +904,6 @@ IF (ITK_FOUND)
   IF (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (plastimatch1 STATIC ${PLASTIMATCH_LIBRARY_SRC})
     SLICER3_SET_PLUGINS_OUTPUT_PATH (plastimatch1)
-    #SLICER3_INSTALL_PLUGINS (plastimatch1)
   ELSE (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
     INSTALL (TARGETS plastimatch1 
