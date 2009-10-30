@@ -476,7 +476,7 @@ save_xform (Xform *xf, char* fn)
 	save_xform_itk_bsp (xf->get_bsp(), fn);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
-	save_image (xf->get_itk_vf(), fn);
+	itk_image_save (xf->get_itk_vf(), fn);
 	break;
     case XFORM_GPUIT_BSPLINE:
 	write_bxf (fn, xf->get_gpuit_bsp());

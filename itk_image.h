@@ -68,11 +68,11 @@ plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
 
 template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 
-template<class T> void save_image (T img_ptr, char* fname);
-template<class T> void save_short_dicom (T image, char* dir_name);
-template<class T> plastimatch1_EXPORT void save_uchar (T img_ptr, char* fname);
-template<class T> plastimatch1_EXPORT void save_short (T img_ptr, char* fname);
-template<class T> plastimatch1_EXPORT void save_ushort (T img_ptr, char* fname);
-template<class T> plastimatch1_EXPORT void save_ulong (T img_ptr, char* fname);
-template<class T> plastimatch1_EXPORT void save_float (T img_ptr, char* fname);
+template<class T> void itk_image_save (T img_ptr, char* fname);
+template<class T> void itk_image_save_short_dicom (T image, char* dir_name);
+template<class T> plastimatch1_EXPORT void itk_image_save_uchar (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void itk_image_save_short (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void itk_image_save_ushort (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void itk_image_save_ulong (T img_ptr, char* fname);
+template<class T> plastimatch1_EXPORT void itk_image_save_float (T img_ptr, char* fname);
 #endif

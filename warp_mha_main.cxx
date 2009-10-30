@@ -225,8 +225,6 @@ warp_image_main (Warp_Parms* parms)
     }
     if (parms->vf_out_fn[0]) {
 	printf ("Saving vf...\n");
-	save_image(vf, parms->vf_out_fn);
+	itk_image_save (vf, parms->vf_out_fn);
     }
-#if defined (commentout)
-#endif
 }

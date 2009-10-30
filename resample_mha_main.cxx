@@ -363,7 +363,7 @@ do_resampling (Resample_Parms* resp)
 		printf ("Resampling...\n");
 		input_field = vector_resample_image (input_field, resp->origin, resp->spacing, resp->size);
 	    }
-	    save_image (input_field, resp->mha_out_fn);
+	    itk_image_save (input_field, resp->mha_out_fn);
 	} else {
 	    /* Do nothing for now */
 	    printf ("Error. Unimplemented conversion type.\n");

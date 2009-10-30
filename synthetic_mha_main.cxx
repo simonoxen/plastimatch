@@ -21,19 +21,19 @@ do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)
     /* Save to file */
     switch (parms->output_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
-	save_uchar (img, fn);
+	itk_image_save_uchar (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	save_short (img, fn);
+	itk_image_save_short (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
-	save_ushort (img, fn);
+	itk_image_save_ushort (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	save_ulong (img, fn);
+	itk_image_save_ulong (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	save_float (img, fn);
+	itk_image_save_float (img, fn);
 	break;
     }
 }

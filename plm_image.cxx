@@ -105,11 +105,11 @@ PlmImage::save_short_dicom (char* fname)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_FLOAT:
-	::save_short_dicom (this->m_itk_float, fname);
+	itk_image_save_short_dicom (this->m_itk_float, fname);
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_itk_float ();
-	::save_short_dicom (this->m_itk_float, fname);
+	itk_image_save_short_dicom (this->m_itk_float, fname);
 	break;
     default:
 	print_and_exit ("Unhandled image type in PlmImage::save_image\n");
@@ -121,12 +121,15 @@ void
 PlmImage::save_image (char* fname)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_SHORT:
+	itk_image_save (this->m_itk_short, fname);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
-	save_float (this->m_itk_float, fname);
+	itk_image_save (this->m_itk_float, fname);
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_itk_float ();
-	save_float (this->m_itk_float, fname);
+	itk_image_save (this->m_itk_float, fname);
 	break;
     default:
 	print_and_exit ("Unhandled image type in PlmImage::save_image\n");

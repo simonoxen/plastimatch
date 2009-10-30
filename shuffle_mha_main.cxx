@@ -75,7 +75,7 @@ int main (int argc, char* argv[])
 	it_out.SetIndex (idx_out);
     }
 
-    save_float(v_out, fn_out);
+    itk_image_save_float (v_out, fn_out);
 
     return 0;
 }

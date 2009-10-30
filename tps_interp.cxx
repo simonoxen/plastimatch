@@ -86,8 +86,8 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typena
     typename ImgType::Pointer im_warped = itk_warp_image (img_moving, vf, 1, default_val);
 
     printf ("Saving...\n");
-    save_image (im_warped, parms->warped);
-    save_image(vf, parms->vf);
+    itk_image_save (im_warped, parms->warped);
+    itk_image_save (vf, parms->vf);
 }
 
 /* Explicit instantiations */

@@ -57,9 +57,9 @@ adjust_main (Adjust_Parms* parms)
     }
 
     if (parms->output_dicom) {
-	save_short_dicom (img, parms->mha_out_fn);
+	itk_image_save_short_dicom (img, parms->mha_out_fn);
     } else {
-	save_image (img, parms->mha_out_fn);
+	itk_image_save (img, parms->mha_out_fn);
     }
 }
 

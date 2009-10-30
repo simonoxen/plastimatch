@@ -154,12 +154,12 @@ void compute_average(char **imageList, int nImages, char *outFile)
     {
         std::cout << "output dicom to " << outFile << std::endl;
         // Dicom
-        save_short_dicom (tmp, outFile);
+        itk_image_save_short_dicom (tmp, outFile);
     }
     else
     {
         std::cout << "output to " << outFile << std::endl;
-        save_short(tmp, outFile);
+        itk_image_save_short (tmp, outFile);
     }
 
     // free allocated memeory 

@@ -219,7 +219,7 @@ make_anon_patient_id (void)
 }
 
 void
-save_image_dicom (ShortImageType::Pointer short_img, char* dir_name)
+itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name)
 {
     typedef itk::GDCMImageIO ImageIOType;
     typedef itk::NumericSeriesFileNames NamesGeneratorType;

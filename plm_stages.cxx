@@ -182,17 +182,17 @@ save_warped_img_itk (Registration_Data* regd,
 	}
 	switch (img_out_type) {
 	    case IMG_OUT_TYPE_UCHAR:
-		save_uchar (im_warped, fn);
+		itk_image_save_uchar (im_warped, fn);
 		break;
 	    case IMG_OUT_TYPE_SHORT:
-		save_short (im_warped, fn);
+		itk_image_save_short (im_warped, fn);
 		break;
 	    case IMG_OUT_TYPE_FLOAT:
-		save_float (im_warped, fn);
+		itk_image_save_float (im_warped, fn);
 		break;
 	}
     } else if (img_out_fmt == IMG_OUT_FMT_DICOM) {
-	save_short_dicom (im_warped, fn);
+	itk_image_save_short_dicom (im_warped, fn);
     } else {
 	print_and_exit ("Program error.  Unknown output file fmt (%d).\n", img_out_fmt);
     }
@@ -242,7 +242,7 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 	/* Save deformation field */
 	if (stage->vf_out_fn[0]) {
 	    printf ("Writing vector field ...\n");
-	    save_image (xf_tmp.get_itk_vf(), stage->vf_out_fn);
+	    itk_image_save (xf_tmp.get_itk_vf(), stage->vf_out_fn);
 	}
     }
 
@@ -325,7 +325,7 @@ save_regp_output_itk_ref (Registration_Data* regd, Xform *xf_out, Registration_P
 	/* Save deformation field */
 	if (regp->vf_out_fn[0]) {
 	    logfile_printf ("Writing vector field ...\n");
-	    save_image (xf_tmp.get_itk_vf(), regp->vf_out_fn);
+	    itk_image_save (xf_tmp.get_itk_vf(), regp->vf_out_fn);
 	}
     }
 }
@@ -359,7 +359,7 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 
 #define USE_BUGGY_ITK 1
 #if defined (USE_BUGGY_ITK)
-	    save_image (xf_tmp.get_itk_vf(), regp->vf_out_fn);
+	    itk_image_save (xf_tmp.get_itk_vf(), regp->vf_out_fn);
 #else
 	    {
 		Xform xf2;

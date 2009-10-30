@@ -296,7 +296,7 @@ do_patient_mask (Patient_Mask_Parms* opts)
     invert_image (i2);
 
     /* Save the image */
-    save_image (i2, opts->mha_out_fn);
+    itk_image_save (i2, opts->mha_out_fn);
 }
 
 void

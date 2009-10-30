@@ -31,9 +31,11 @@ SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
-SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
+SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
+  "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
-SET (PLM_USE_FINDCUDA ON CACHE BOOL "Use Stephens/Bigler FindCUDA cmake script")
+SET (PLM_USE_FINDCUDA ON CACHE BOOL 
+  "Use Stephens/Bigler FindCUDA cmake script")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 
 ##-----------------------------------------------------------------------------
@@ -333,12 +335,14 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
   # In theory, this is fixed in a future release
   #   http://www.cmake.org/Bug/view.php?id=9195
   MESSAGE (STATUS "Fortran compiler = ${CMAKE_Fortran_COMPILER}")
-  IF (Fortran_COMPILER_NAME STREQUAL "gfortran" OR Fortran_COMPILER_NAME STREQUAL "f95")
+  IF (Fortran_COMPILER_NAME STREQUAL "gfortran" 
+      OR Fortran_COMPILER_NAME STREQUAL "f95")
     SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       gfortran
       )
-  ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran" OR Fortran_COMPILER_NAME STREQUAL "f95")
+  ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran" 
+    OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
 IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
@@ -922,7 +926,8 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
@@ -1117,7 +1122,8 @@ IF(PLM_BUILD_OPENMP_TEST)
     SET_TARGET_PROPERTIES(openmp_test PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
     MESSAGE(STATUS "OPENMP_LDFLAGS = ${OPENMP_LDFLAGS}")
     IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-      SET_TARGET_PROPERTIES(openmp_test PROPERTIES LINK_FLAGS ${OPENMP_LDFLAGS})
+      SET_TARGET_PROPERTIES(openmp_test PROPERTIES LINK_FLAGS 
+	${OPENMP_LDFLAGS})
     ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
   ENDIF(OPENMP_FOUND)
 ENDIF(PLM_BUILD_OPENMP_TEST)
@@ -1162,7 +1168,8 @@ CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET(PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
   SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Release)
-  SET(PLM_PLASTIMATCH_TESTING_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Testing/Release)
+  SET(PLM_PLASTIMATCH_TESTING_PATH_HACK 
+    ${CMAKE_CURRENT_BINARY_DIR}/Testing/Release)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET(PLM_ITK_LIBRARY_PATH_HACK "")
   SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR})

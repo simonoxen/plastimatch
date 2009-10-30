@@ -88,7 +88,7 @@ main (int argc, char *argv[])
 	++vf1_it;
     }
 
-    save_image (vf_out, argv[3]);
+    itk_image_save (vf_out, argv[3]);
 
     return 0;
 }

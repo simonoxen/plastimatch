@@ -39,16 +39,16 @@ main(int argc, char *argv[])
 
     if (output_type == PLM_IMG_TYPE_ITK_UCHAR) {
 	UCharImageType::Pointer input_image = load_uchar (dicom_dir, 0);
-	save_image (input_image, output_fn);
+	itk_image_save (input_image, output_fn);
     } else if (output_type == PLM_IMG_TYPE_ITK_SHORT) {
 	ShortImageType::Pointer input_image = load_short (dicom_dir, 0);
-	save_image (input_image, output_fn);
+	itk_image_save (input_image, output_fn);
     } else if (output_type == PLM_IMG_TYPE_ITK_USHORT) {
 	UShortImageType::Pointer input_image = load_ushort (dicom_dir, 0);
-	save_image (input_image, output_fn);
+	itk_image_save (input_image, output_fn);
     } else if (output_type == PLM_IMG_TYPE_ITK_FLOAT) {
 	FloatImageType::Pointer input_image = load_float (dicom_dir, 0);
-	save_image (input_image, output_fn);
+	itk_image_save (input_image, output_fn);
     }
 
     printf ("Finished!\n");
