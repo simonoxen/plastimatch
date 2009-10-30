@@ -1952,6 +1952,7 @@ bspline_warp (
     Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
     BSPLINE_Xform* bxf, /* Bspline transform coefficients */
     Volume *moving,     /* Input image */
+    int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */
 )
 {
@@ -2036,17 +2037,24 @@ bspline_warp (
 		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
 					     li_1, li_2, moving);
 
-		/* Find linear index of "corner voxel" in moving image */
-		mvf = INDEX_OF (mijk_f, moving->dim);
+		if (linear_interp) {
+		    /* Find linear index of "corner voxel" in moving image */
+		    mvf = INDEX_OF (mijk_f, moving->dim);
 
-		/* Compute moving image intensity using linear interpolation */
-		/* Macro is slightly faster than function */
-		BSPLINE_LI_VALUE (m_val, 
-				  li_1[0], li_2[0],
-				  li_1[1], li_2[1],
-				  li_1[2], li_2[2],
-				  mvf, m_img, moving);
+		    /* Compute moving image intensity using linear 
+		       interpolation */
+		    /* Macro is slightly faster than function */
+		    BSPLINE_LI_VALUE (m_val, 
+				      li_1[0], li_2[0],
+				      li_1[1], li_2[1],
+				      li_1[2], li_2[2],
+				      mvf, m_img, moving);
+		} else {
+		    /* Find linear index of "nearest voxel" in moving image */
+		    mvf = INDEX_OF (mijk_r, moving->dim);
 
+		    m_val = m_img[mvf];
+		}
 		/* Compute linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, vout->dim);
 

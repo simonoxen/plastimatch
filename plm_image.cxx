@@ -121,8 +121,17 @@ void
 PlmImage::save_image (char* fname)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	itk_image_save (this->m_itk_uchar, fname);
+	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	itk_image_save (this->m_itk_short, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	itk_image_save (this->m_itk_ushort, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	itk_image_save (this->m_itk_uint32, fname);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	itk_image_save (this->m_itk_float, fname);
@@ -199,10 +208,61 @@ PlmImage::convert_itk_float ()
     }
 }
 
+template<class T> 
+static void
+plm_image_convert_to_gpuit_float (PlmImage* pli, T img)
+{
+    typedef typename T::ObjectType ImageType;
+    int i, d1;
+    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    typename ImageType::PointType og = img->GetOrigin();
+    typename ImageType::SpacingType sp = img->GetSpacing();
+    typename ImageType::SizeType sz = rg.GetSize();
+    typename ImageType::DirectionType dc = img->GetDirection();
+
+    /* Copy header & allocate data for gpuit float */
+    int dim[3];
+    float offset[3];
+    float pix_spacing[3];
+    float direction_cosines[9];
+    for (d1 = 0; d1 < 3; d1++) {
+	dim[d1] = sz[d1];
+	offset[d1] = og[d1];
+	pix_spacing[d1] = sp[d1];
+    }
+    gpuit_direction_from_itk (direction_cosines, &dc);
+    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 
+				 direction_cosines, 0);
+    float* vol_img = (float*) vol->img;
+
+    /* Copy data into gpuit */
+    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
+    IteratorType it (img, rg);
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+	vol_img[i] = it.Get();
+    }
+
+#if defined (commentout)
+    /* Free itk data */
+    this->m_itk_float = 0;
+#endif
+
+    /* Set data type */
+    pli->m_gpuit = vol;
+    pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+}
+
 void
 PlmImage::convert_gpuit_float ()
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_SHORT:
+	plm_image_convert_to_gpuit_float (this, this->m_itk_short);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	plm_image_convert_to_gpuit_float (this, this->m_itk_float);
+	break;
+#if defined (commentout)
     case PLM_IMG_TYPE_ITK_FLOAT:
 	{
 	    int i, d1;
@@ -242,6 +302,7 @@ PlmImage::convert_gpuit_float ()
 	    this->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	}
 	return;
+#endif
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return;
     default:

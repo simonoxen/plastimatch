@@ -145,6 +145,7 @@ do_warp_native (
 
     /* Warp using gpuit native warper */
     bspline_warp (v_out, vf_out, xf_tmp.get_gpuit_bsp(), v_in, 
+		  parms->interp_lin, 
 		  parms->default_val);
 
     /* Return output image to caller */
@@ -174,9 +175,16 @@ do_warp (
     }
 
     /* Otherwise, try to do native warping where possible */
-    if (xf_in->m_type == XFORM_GPUIT_BSPLINE 
-	&& im_in->m_type == PLM_IMG_TYPE_ITK_FLOAT) {
-	do_warp_native (im_warped, vf, parms, xf_in, pih, im_in);
+    if (xf_in->m_type == XFORM_GPUIT_BSPLINE) {
+	switch (im_in->m_type) {
+	case PLM_IMG_TYPE_ITK_SHORT:
+	case PLM_IMG_TYPE_ITK_FLOAT:
+	    do_warp_native (im_warped, vf, parms, xf_in, pih, im_in);
+	    break;
+	default:
+	    do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in);
+	    break;
+	}
     } else {
 	do_warp_itk (im_warped, vf, parms, xf_in, pih, im_in);
     }
