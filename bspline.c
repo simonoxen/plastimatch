@@ -892,13 +892,13 @@ bspline_state_free (Bspline_state* bst)
     based on m_val, but one bin based on f_val. */
 inline void
 bspline_mi_hist_lookup (
-	long j_idxs[2],		    /* Output: Joint histogram indices */
-	long m_idxs[2],		    /* Output: Moving marginal indices */
-	long f_idxs[1],		    /* Output: Fixed marginal indices */
-	float fxs[2],		    /* Output: Fraction contribution at indices */
-	BSPLINE_MI_Hist* mi_hist,   /* Input:  The histogram */
-	float f_val,		    /* Input:  Intensity of fixed image */
-	float m_val		    /* Input:  Intensity of moving image */
+    long j_idxs[2],		/* Output: Joint histogram indices */
+    long m_idxs[2],		/* Output: Moving marginal indices */
+    long f_idxs[1],		/* Output: Fixed marginal indices */
+    float fxs[2],		/* Output: Fraction contribution at indices */
+    BSPLINE_MI_Hist* mi_hist,   /* Input:  The histogram */
+    float f_val,		/* Input:  Intensity of fixed image */
+    float m_val		        /* Input:  Intensity of moving image */
 )
 {
     long fl;
@@ -924,7 +924,7 @@ bspline_mi_hist_lookup (
     midx = ((m_val - mi_hist->moving.offset) / mi_hist->moving.delta);
     midx_trunc = floorf (midx);
     ml_1 = (long) midx_trunc;
-    mf_1 = (midx - midx_trunc) / mi_hist->moving.delta;
+    mf_1 = midx - midx_trunc;    // Always between 0 and 1
     ml_2 = ml_1 + 1;
     mf_2 = 1.0 - mf_1;
 
@@ -958,10 +958,10 @@ bspline_mi_hist_lookup (
     based on m_val, but one bin based on f_val. */
 inline void
 bspline_mi_hist_add (
-	BSPLINE_MI_Hist* mi_hist,   /* The histogram */
-	float f_val,		    /* Intensity of fixed image */
-	float m_val,		    /* Intensity of moving image */
-	float amt		    /* How much to add to histogram */
+    BSPLINE_MI_Hist* mi_hist,   /* The histogram */
+    float f_val,		/* Intensity of fixed image */
+    float m_val,		/* Intensity of moving image */
+    float amt		        /* How much to add to histogram */
 )
 {
     float* f_hist = mi_hist->f_hist;
@@ -972,7 +972,8 @@ bspline_mi_hist_add (
     long f_idxs[1];
     float fxs[2];
 
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_val, m_val);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+			    mi_hist, f_val, m_val);
 
     fxs[0] *= amt;
     fxs[1] *= amt;
