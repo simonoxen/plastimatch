@@ -47,21 +47,20 @@ gpuit_EXPORT
 void write_mha (char* filename, Volume* vol)
 {
     FILE* fp;
-	int wbyte;
     char* mha_header = 
-	    "ObjectType = Image\n"
-	    "NDims = 3\n"
-	    "BinaryData = True\n"
-	    "BinaryDataByteOrderMSB = False\n"
-	    "TransformMatrix = 1 0 0 0 1 0 0 0 1\n"
-	    "Offset = %g %g %g\n"
-	    "CenterOfRotation = 0 0 0\n"
-	    "ElementSpacing = %g %g %g\n"
-	    "DimSize = %d %d %d\n"
-	    "AnatomicalOrientation = RAI\n"
-	    "%s"
-	    "ElementType = %s\n"
-	    "ElementDataFile = LOCAL\n";
+	"ObjectType = Image\n"
+	"NDims = 3\n"
+	"BinaryData = True\n"
+	"BinaryDataByteOrderMSB = False\n"
+	"TransformMatrix = 1 0 0 0 1 0 0 0 1\n"
+	"Offset = %g %g %g\n"
+	"CenterOfRotation = 0 0 0\n"
+	"ElementSpacing = %g %g %g\n"
+	"DimSize = %d %d %d\n"
+	"AnatomicalOrientation = RAI\n"
+	"%s"
+	"ElementType = %s\n"
+	"ElementDataFile = LOCAL\n";
     char* element_type;
 
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
@@ -94,26 +93,13 @@ void write_mha (char* filename, Volume* vol)
 	fprintf (stderr, "Unhandled type in write_mha().\n");
 	exit (-1);
     }
-  //  fprintf (fp, mha_header, 
-	 //    vol->offset[0], vol->offset[1], vol->offset[2], 
-	 //    vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
-	 //    vol->dim[0], vol->dim[1], vol->dim[2],
-	 //    (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
-		//? "ElementNumberOfChannels = 3\n" : "",
-	 //    element_type);
-	printf("write to %s\n",filename);
-    wbyte=fprintf (fp, mha_header, 
+    fprintf (fp, mha_header, 
 	     vol->offset[0], vol->offset[1], vol->offset[2], 
 	     vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
 	     vol->dim[0], vol->dim[1], vol->dim[2],
 	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
-		? "ElementNumberOfChannels = 3\n" : "",
+	     ? "ElementNumberOfChannels = 3\n" : "",
 	     element_type);
-	//printf("wbyte=%d",wbyte);
-	for (;wbyte<512;wbyte++)
-
-		fprintf(fp,"\n");
-
     fflush (fp);
 
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
@@ -191,31 +177,17 @@ Volume* read_mha (char* filename)
 	printf ("Oops, couldn't interpret mha data type\n");
 	exit (-1);
     }
-    printf ("pixsize = %d, npix = %d\n", vol->pix_size, vol->npix);
     vol->img = malloc (vol->pix_size*vol->npix);
     if (!vol->img) {
 	printf ("Oops, out of memory\n");
 	exit (-1);
     }
-    //	This line breaks known working file reads.
-//	fseek(fp,512,SEEK_SET);
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
     if (rc != vol->npix) {
 	printf ("Oops, bad read from file (%d)\n", rc);
 	exit (-1);
     }
-    printf ("Read OK!\n");
     fclose (fp);
-
-#if defined (commentout)
-    /* Compute some auxiliary variables */
-    vol->xmin = vol->offset[0] - vol->pix_spacing[0] / 2;
-    vol->xmax = vol->xmin + vol->pix_spacing[0] * vol->dim[0];
-    vol->ymin = vol->offset[1] - vol->pix_spacing[1] / 2;
-    vol->ymax = vol->ymin + vol->pix_spacing[1] * vol->dim[1];
-    vol->zmin = vol->offset[2] - vol->pix_spacing[2] / 2;
-    vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
-#endif
 
     return vol;
 }

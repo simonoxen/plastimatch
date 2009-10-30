@@ -3413,3 +3413,4 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	bspline_state_free (bst);
     }
 }
+

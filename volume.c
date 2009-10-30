@@ -73,16 +73,6 @@ volume_create (int* dim,
 	exit (-1);
     }
 
-#if defined (commentout)
-    /* Compute some auxiliary variables */
-    vol->xmin = vol->offset[0] - vol->pix_spacing[0] / 2;
-    vol->xmax = vol->xmin + vol->pix_spacing[0] * vol->dim[0];
-    vol->ymin = vol->offset[1] - vol->pix_spacing[1] / 2;
-    vol->ymax = vol->ymin + vol->pix_spacing[1] * vol->dim[1];
-    vol->zmin = vol->offset[2] - vol->pix_spacing[2] / 2;
-    vol->zmax = vol->zmin + vol->pix_spacing[2] * vol->dim[2];
-#endif
-
     if (pix_type == PT_VF_FLOAT_PLANAR) {
 	int i;
 	int alloc_size = min_size;
@@ -92,7 +82,6 @@ volume_create (int* dim,
 	    exit(1);
 	}
 	if (alloc_size < vol->npix) alloc_size = vol->npix;
-	printf ("alloc_size = %d, min_size = %d, npix = %d\n", alloc_size, min_size, vol->npix);
 	for (i=0; i < 3; i++) {
 	    der[i] = (float*) malloc (alloc_size*sizeof(float));
 	    if (!der[i]) {
@@ -306,7 +295,6 @@ vf_convert_to_planar (Volume* ref, int min_size)
 		exit(1);
 	    }
 	    if (alloc_size < ref->npix) alloc_size = ref->npix;
-	    printf ("alloc_size = %d, min_size = %d, npix = %d\n", alloc_size, min_size, ref->npix);
 	    for (i=0; i < 3; i++) {
 		der[i] = (float*) malloc (alloc_size*sizeof(float));
 		if (!der[i]) {
@@ -686,10 +674,6 @@ volume_warp (Volume *vout, Volume *vin, Volume *vf)
 		if (mi < 0 || mi >= vin->dim[0]) continue;
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
-		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
-			    i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
-			    mx, my, mz, mi, mj, mk);
-
 #if defined (commentout)
 		if (k == 45 && j == 46 && (i == 58 || i == 59)) {
 		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
@@ -734,14 +718,6 @@ volume_difference (Volume* vol, Volume* warped)
 
     temp->npix = vol->npix;
     temp->pix_type = vol->pix_type;
-#if defined (commentout)
-    temp->xmax = vol->xmax;
-    temp->xmin = vol->xmin;
-    temp->ymax = vol->ymax;
-    temp->ymin = vol->ymin;
-    temp->zmax = vol->zmax;
-    temp->zmin = vol->zmin;
-#endif
 
     temp->img = (void*) malloc (sizeof(short)*temp->npix);
     if (!temp->img) {

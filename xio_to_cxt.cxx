@@ -95,19 +95,21 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 void
 do_xio_to_cxt (Program_parms *parms)
 {
-    Cxt_structure_list structures;
+    Cxt_structure_list cxt;
 
     /* Load from xio */
-    xio_load_structures (&structures, parms->xio_dir, parms->x_adj, 
+    xio_load_structures (&cxt, parms->xio_dir, parms->x_adj, 
 			 parms->y_adj);
 
     /* Set dicom uids, etc. */
     if (parms->dicom_dir[0]) {
-	cxt_apply_dicom_dir (&structures, parms->dicom_dir);
+	cxt_apply_dicom_dir (&cxt, parms->dicom_dir);
+	//cxt.offset[0] += parms->x_adj;
+	//cxt.offset[1] += parms->y_adj;
     }
 
     /* Write out the cxt */
-    cxt_write (&structures, parms->output_cxt_fn, true);
+    cxt_write (&cxt, parms->output_cxt_fn, true);
 }
 
 int 

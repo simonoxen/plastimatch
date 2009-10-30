@@ -7,6 +7,8 @@
 #include <string.h>
 #include <math.h>
 #include "plm_config.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_path.h"
 #include "volume.h"
@@ -33,6 +35,7 @@ struct program_parms {
     char labelmap_fn[_MAX_PATH];
     char xormap_fn[_MAX_PATH];
     char xorlist_fn[_MAX_PATH];
+    char fixed_fn[_MAX_PATH];
     char* cxt_fn;
     char prefix[_MAX_PATH];
 };
@@ -48,6 +51,7 @@ print_usage (void)
     printf ("  --xormap   filename     Generate multi-structure map\n");
     printf ("  --xorlist  filename     File with xormap structure names\n");
     printf ("  --labelmap filename     Generate Slicer3 labelmap\n");
+    printf ("  --fixed filename        Render mha with fixed resolution and geometry\n");
     exit (-1);
 }
 
@@ -60,6 +64,7 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	{ "xormap",         required_argument,      NULL,           2 },
 	{ "xorlist",        required_argument,      NULL,           3 },
 	{ "prefix",         required_argument,      NULL,           4 },
+	{ "fixed",          required_argument,      NULL,           5 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -81,6 +86,9 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	    break;
 	case 4:
 	    strncpy (parms->prefix, optarg, _MAX_PATH);
+	    break;
+	case 5:
+	    strncpy (parms->fixed_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;
@@ -130,6 +138,18 @@ main (int argc, char* argv[])
     curr_structure->num_contours = 0;
 
     cxt_read (structures, parms->cxt_fn);
+
+    /* Override cxt geometry if user specified --fixed */
+    if (parms->fixed_fn[0]) {
+	FloatImageType::Pointer fixed = load_float (parms->fixed_fn, 0);
+	PlmImageHeader pih;
+	
+	pih.set_from_itk_image (fixed);
+	pih.get_gpuit_origin (structures->offset);
+	pih.get_gpuit_spacing (structures->spacing);
+	pih.get_gpuit_dim (structures->dim);
+	
+    }
 
     dim[0] = structures->dim[0];
     dim[1] = structures->dim[1];
@@ -204,6 +224,7 @@ main (int argc, char* argv[])
 		continue;
 	    }
 
+	    /* Render contour to binary */
 	    memset (acc_img, 0, dim[0] * dim[1] * sizeof(unsigned char));
 	    render_slice_polyline (acc_img, dim, spacing, offset,
 				   curr_contour->num_vertices, 
@@ -219,20 +240,20 @@ main (int argc, char* argv[])
 
 	    /* Copy from acc_img into labelmask and xormap images */
 	    if (parms->labelmap_fn[0]) {
-		uint32_t* ulong_slice;
-		ulong_slice = &labelmap_img[curr_contour->slice_no * dim[0] * dim[1]];
+		uint32_t* uint32_slice;
+		uint32_slice = &labelmap_img[curr_contour->slice_no * dim[0] * dim[1]];
 		for (int k = 0; k < slice_voxels; k++) {
 		    if (acc_img[k]) {
-			ulong_slice[k] = sno + 1;
+			uint32_slice[k] = sno + 1;
 		    }
 		}
 	    }
 	    if (parms->xormap_fn[0]) {
-		uint32_t* ulong_slice;
-		ulong_slice = &xormap_img[curr_contour->slice_no * dim[0] * dim[1]];
+		uint32_t* uint32_slice;
+		uint32_slice = &xormap_img[curr_contour->slice_no * dim[0] * dim[1]];
 		for (int k = 0; k < slice_voxels; k++) {
 		    if (acc_img[k]) {
-			ulong_slice[k] |= (1 << sno);
+			uint32_slice[k] |= (1 << sno);
 		    }
 		}
 	    }
