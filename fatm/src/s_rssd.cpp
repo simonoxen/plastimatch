@@ -15,11 +15,13 @@ static inline void s_rssd_score_point_1 (FATM_Options* options,
 void
 s_rssd_scorewin_1 (FATM_Options* options)
 {
+#if defined (commentout)
     Image_Rect* prc = &options->pat_rect_valid;
-    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Image* pat = &options->pat;
     Image* sig = &options->sig;
     Image* score = &options->score;
+#endif
+    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Scorewin_Struct ss;
 
     int* ip = ss.idx_pt;
@@ -51,7 +53,9 @@ static inline void
 s_rssd_score_point_1 (FATM_Options* options,
 		   Scorewin_Struct* ss)
 {
+#if defined (commentout)
     S_Rssd_Data* udp = (S_Rssd_Data*) options->alg_data;
+#endif
     Image* signal = &options->sig;
     Image* pattern = &options->pat;
     Image* score = &options->score;

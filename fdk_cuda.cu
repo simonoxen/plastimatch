@@ -46,11 +46,8 @@
 /*********************
 * High Res Win Timer *
 *********************/
-#include <time.h>
-#if defined (_WIN32)
-#include <windows.h>
-#include <winbase.h>
-#endif
+//#include <time.h>
+#include "timer.h"
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
@@ -104,10 +101,6 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
     float3 ip;
     float  s;
     float voxel_data;
-
-    float4 matrix_x;
-    float4 matrix_y;
-    float4 matrix_z;
 
     // offset volume coords
     vp.x = vol_offset.x + i * vol_pix_spacing.x;	// Compiler should combine into 1 FMAD.
@@ -208,39 +201,16 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
     // Initialize Windows HighRes Timer
     int count,a;
     float kernel_total, io_total;
-#if defined (_WIN32)
-    LARGE_INTEGER ticksPerSecond;
-    LARGE_INTEGER tick;   // A point in time
-    LARGE_INTEGER start_ticks_kernel, end_ticks_kernel, cputime;   
-    LARGE_INTEGER start_ticks_io, end_ticks_io;   
-    LARGE_INTEGER start_ticks_total, end_ticks_total;   
+    Timer timer_total;
+    double time_total = 0;
+#if defined (TIME_KERNEL)
+    Timer timer;
+    double time_kernel = 0;
+    double time_io = 0;
 #endif
 
-#if defined (VERBOSE)
-    printf("\n\nInitializing High Resolution Timers\n");
-#endif
-
-#if defined (_WIN32)
-    // get the high resolution counter's accuracy
-    if (!QueryPerformanceFrequency(&ticksPerSecond))
-	printf("QueryPerformance not present!");
-#endif
-
-#if defined (VERBOSE)
-    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-#endif
-
-    // Test: Get current time.
-#if defined (_WIN32)
-    if (!QueryPerformanceCounter(&tick))
-	printf("no go counter not installed");  
-#endif
-
-#if defined (VERBOSE)
-    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-#endif
-    /////////////////////////////////////////
-	
+    // Start timing total execution
+    plm_timer_start (&timer_total);
 
 #if defined (VERBOSE)
     // First, we need to allocate memory on the host device
@@ -257,7 +227,10 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
     printf(" done.\n\n");
 
     // State the kernel execution parameters
-    printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
+    printf("kernel parameters:\n dimGrid: %u, %u "
+	   "(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
+	   dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
+	   dimBlock.x, dimBlock.y, dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
     printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
     printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
@@ -272,23 +245,15 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
     free_cb_image( cbi );
 
-    ////// TIMING CODE //////////////////////
-#if defined (_WIN32)
-    QueryPerformanceCounter(&start_ticks_total);
-#endif
-    /////////////////////////////////////////
-
     // Project each image into the volume one at a time
-    for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
-    {
-	////// TIMING CODE //////////////////////
-#if defined (TIME_KERNEL)
-#if defined (_WIN32)
-	QueryPerformanceCounter(&start_ticks_io);
-#endif
-#endif
-	/////////////////////////////////////////
+    for (image_num = options->first_img;
+	 image_num <= options->last_img;
+	 image_num += options->skip_img) {
 
+#if defined (TIME_KERNEL)
+	// Start I/O timer
+	plm_timer_start (&timer);
+#endif
 	// Load the current image
 	cbi = get_image(options, image_num);
 
@@ -302,29 +267,30 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 	kargs->nrm.z = cbi->nrm[2];
 	kargs->sad = cbi->sad;
 	kargs->sid = cbi->sid;
-	for(i=0; i<12; i++)
+	for(i=0; i<12; i++) {
 	    kargs->matrix[i] = (float)cbi->matrix[i];
+	}
 
 	// Copy image pixel data & projection matrix to device Global Memory
 	// and then bind them to the texture hardware.
-	cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
-	cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
-	cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
+	cudaMemcpy (dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), 
+		    cudaMemcpyHostToDevice );
+	cudaBindTexture (0, tex_img, dev_img, 
+			 cbi->dim[0]*cbi->dim[1]*sizeof(float) );
+	cudaMemcpy (dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+		    cudaMemcpyHostToDevice);
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
 	// Free the current image 
 	free_cb_image( cbi );
 
-	////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
-#if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_io);
-	cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
-	io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
-	QueryPerformanceCounter(&start_ticks_kernel);
+	// Report IO time
+	time_io += plm_timer_report (&timer);
+
+	// Start kernel timer
+	plm_timer_start (&timer);
 #endif
-#endif
-	/////////////////////////////////////////
 
 	// Invoke ze kernel  \(^_^)/
 	// Note: cbi->img AND cbi->matrix are passed via texture memory
@@ -351,18 +317,13 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 #endif
 
 	// Unbind the image and projection matrix textures
-	cudaUnbindTexture( tex_img );
-	cudaUnbindTexture( tex_matrix );
+	cudaUnbindTexture (tex_img);
+	cudaUnbindTexture (tex_matrix);
 
-	////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
-#if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_kernel);
-	cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
-	kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+	// Report kernel time
+	time_kernel += plm_timer_report (&timer);
 #endif
-#endif
-	/////////////////////////////////////////
     }
 
 #if defined (VERBOSE)
@@ -370,41 +331,34 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 #endif
 	
     // Copy reconstructed volume from device to host
-    cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
-    checkCUDAError("Error: Unable to retrieve data volume.");
+    cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, 
+		cudaMemcpyDeviceToHost);
+    checkCUDAError ("Error: Unable to retrieve data volume.");
 
 	
-    ////// TIMING CODE //////////////////////
-    // Report Timing Data
-#if defined (_WIN32)
+    // Report total time
+    time_total = plm_timer_report (&timer_total);
+    printf ("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if defined (TIME_KERNEL)
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-    printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
-    printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
-
-    printf ("[Average Projection Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart)/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage Kernel  Time: %.9fs\n", kernel_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage File IO Time: %.9fs\n\n", io_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n");
-#else
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-    printf("========================================\n");
+    printf ("\tTotal Kernel  Time: %.9fs\n", time_kernel);
+    printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
 #endif
-#endif
-    /////////////////////////////////////////
 
+    int num_images = 1 + (options->last_img - options->first_img) 
+	/ options->skip_img;
+    printf ("[Average Projection Time: %.9fs ]\n", time_total / num_images);
+#if defined (TIME_KERNEL)
+    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / num_images);
+    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / num_images);
+#endif
+    printf ("========================================\n");
 
     // Cleanup
-    cudaFree( dev_img );
-    cudaFree( dev_kargs );
-    cudaFree( dev_matrix );
-    cudaFree( dev_vol );	
+    cudaFree (dev_img);
+    cudaFree (dev_kargs);
+    cudaFree (dev_matrix);
+    cudaFree (dev_vol);	
 
     return 0;
 }

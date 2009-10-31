@@ -127,6 +127,7 @@ s_fancc_partition (FATM_Options* options)
     options->bin_values[0] = - bc[2] * options->bin_values[2] / bc[0];
 }
 
+#if defined (commentout)
 /* Use std to quantize pattern - it fails in a bunch of cases */
 static void
 s_fancc_partition_std (FATM_Options* options)
@@ -164,6 +165,7 @@ s_fancc_partition_std (FATM_Options* options)
     options->bin_values[1] = 0.0;
     options->bin_values[0] = - bc[2] * options->bin_values[2] / bc[0];
 }
+#endif
 
 /* Quantization must be done before calling this */
 void
@@ -261,12 +263,12 @@ s_fancc_scorewin_1 (FATM_Options* options)
 {
 #if defined (commentout)
     Image_Rect* prc = &options->pat_rect.pat_rect_clipped;
-#endif
     Image_Rect* prc = &options->pat_rect_valid;
-    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Image* pat = &options->pat;
     Image* sig = &options->sig;
     Image* score = &options->score;
+#endif
+    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Scorewin_Struct ss;
 
     int* ip = ss.idx_pt;
@@ -286,7 +288,9 @@ s_fancc_scorewin_1 (FATM_Options* options)
 void
 s_fancc_run (FATM_Options* options)
 {
+#if defined (commentout)
     S_Fancc_Data* udp = (S_Fancc_Data*) options->alg_data;
+#endif
 
     /* Initialize to zero. Skipped locations will show no correlation. */
     memset ((void *) options->score.data, 0, image_bytes(&options->score));
@@ -306,8 +310,10 @@ s_fancc_score_point (FATM_Options* options,
 {
     S_Fancc_Data* udp = (S_Fancc_Data*) options->alg_data;
     Pattern_Stats* p_stats = &udp->p_stats;
+#if defined (commentout)
     Image* signal = &options->sig;
     Image* score = &options->score;
+#endif
     const double* ii;
     const double* ii2;
     const double* li;

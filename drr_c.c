@@ -633,7 +633,7 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 		} else if (value < 0) {
 		    value = 0;
 		}
-		fprintf (pgm_fp,"%d ", ROUND_INT(value));
+		fprintf (pgm_fp,"%lu ", ROUND_INT(value));
 	    }
 	    else {
 		/* RAW */

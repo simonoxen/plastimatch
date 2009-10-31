@@ -313,12 +313,6 @@ void
 reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
 {
     int i;
-#if defined (READ_PFM)
-    char* img_file_pat = "out_%04d.pfm";
-#else
-    char* img_file_pat = "out_%04d.pgm";
-#endif
-    char* mat_file_pat = "out_%04d.txt";
     int num_imgs;
     float scale;
 

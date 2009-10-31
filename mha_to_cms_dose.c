@@ -40,7 +40,7 @@ main (int argc, char *argv[])
     int o, p, q, l, m, n;
     int ***data;
 
-    printf ("Size of int = %d\n", sizeof(int));
+    printf ("Size of int = %lu\n", sizeof(int));
 
     l = 520; n = 520; m = 520;
 
@@ -137,7 +137,7 @@ main (int argc, char *argv[])
 
 
     offset = ftell (ifp);
-    printf ("My offset is %d\n", offset);
+    printf ("My offset is %ld\n", offset);
     printf ("This far from the end %d\n", MHA_nPtsX*MHA_nPtsY*MHA_nPtsZ*2);
     //MHA_nPtsX = 262; MHA_nPtsY = 154; MHA_nPtsZ = 193;
     fseek (ifp, -MHA_nPtsX*MHA_nPtsY*MHA_nPtsZ*2, SEEK_END);
@@ -155,7 +155,7 @@ main (int argc, char *argv[])
 
 
     offset = ftell (ifp);
-    printf ("My offset is %d\n", offset); 
+    printf ("My offset is %ld\n", offset); 
 
 
     fclose(ifp);

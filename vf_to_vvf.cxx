@@ -58,8 +58,9 @@ fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 	if (this_write > WRITE_BLOCK) this_write = WRITE_BLOCK;
 	rc = fwrite (&bufc[cur], 1, this_write, fp);
 	if (rc != this_write) {
-	    fprintf (stderr, "Error writing to file.  rc=%d, this_write=%d\n",
-		    rc, this_write);
+	    fprintf (stderr, 
+		     "Error writing to file.  rc=%lu, this_write=%lu\n",
+		     (long unsigned) rc, (long unsigned) this_write);
 	    return;
 	}
 	cur += rc;

@@ -36,7 +36,6 @@ void
 image_malloc_rand (Image* image, int dims[2])
 {
     int i;
-    double j = 0;
     image_malloc (image, dims);
     for (i = 0; i < image_size(image); i++) {
 	image_data(image)[i] = rand_kr() / 32768.0;

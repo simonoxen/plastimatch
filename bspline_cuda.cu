@@ -8313,8 +8313,8 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	// volume's voxel data. The pointer to this area of GPU
 	// global memory will be returned and placed into
 	// dev_parms->fixed_image. (fixed_image is a pointer)
-	printf ("Trying to allocate %d\n",
-		dev_ptrs->fixed_image_size);
+	printf ("Trying to allocate %lu\n",
+		(long unsigned) dev_ptrs->fixed_image_size);
 	cudaMalloc ((void**)&dev_ptrs->fixed_image, 
 		    dev_ptrs->fixed_image_size);
 	checkCUDAError ("Failed to allocate memory for fixed image");

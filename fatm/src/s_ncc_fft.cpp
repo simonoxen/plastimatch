@@ -4,6 +4,7 @@
 /* -----------------------------------------------------------------------
    s_ncc_fft:  NCC using FFT for correlation term.
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
@@ -66,7 +67,8 @@ s_ncc_fft_compile (FATM_Options* fopt)
     dump_fft (udp->pat_fft, fft_nx, fft_ny, "pat_fft.txt");
 
     /* Alloc memory for fft of sig */
-    udp->sig_fft = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) * fft_nx * (fft_ny/2+1));
+    udp->sig_fft = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) 
+						* fft_nx * (fft_ny/2+1));
 
     /* Create plan for sig -> sig_fft */
     fftw_dims[0].n = fft_nx;

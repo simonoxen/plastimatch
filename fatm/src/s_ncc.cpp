@@ -18,12 +18,12 @@ s_ncc_scorewin_1 (FATM_Options* options)
 {
 #if defined (commentout)
     Image_Rect* prc = &options->pat_rect.pat_rect_clipped;
-#endif
     Image_Rect* prc = &options->pat_rect_valid;
-    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Image* pat = &options->pat;
     Image* sig = &options->sig;
     Image* score = &options->score;
+#endif
+    Image_Rect* zv = &options->score_rect.score_rect_valid;
     Scorewin_Struct ss;
 
 #if defined (commentout)
@@ -70,7 +70,9 @@ static inline void
 s_ncc_score_point_1 (FATM_Options* options,
 		   Scorewin_Struct* ss)
 {
+#if defined (commentout)
     S_Ncc_Data* udp = (S_Ncc_Data*) options->alg_data;
+#endif
     Image* signal = &options->sig;
     Image* pattern = &options->pat;
     Image* score = &options->score;

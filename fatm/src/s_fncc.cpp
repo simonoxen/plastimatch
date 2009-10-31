@@ -57,12 +57,12 @@ s_fncc_scorewin_1 (FATM_Options* fopt)
 {
 #if defined (commentout)
     Image_Rect* prc = &fopt->pat_rect.pat_rect_clipped;
-#endif
     Image_Rect* prc = &fopt->pat_rect_valid;
-    Image_Rect* zv = &fopt->score_rect.score_rect_valid;
     Image* pat = &fopt->pat;
     Image* sig = &fopt->sig;
     Image* score = &fopt->score;
+#endif
+    Image_Rect* zv = &fopt->score_rect.score_rect_valid;
     Scorewin_Struct ss;
 
 #if defined (commentout)
@@ -97,7 +97,9 @@ s_fncc_scorewin_1 (FATM_Options* fopt)
 void
 s_fncc_run (FATM_Options* fopt)
 {
+#if defined (commentout)
     S_Fncc_Data* udp = (S_Fncc_Data*) fopt->alg_data;
+#endif
 
     /* Initialize to zero. Skipped locations will show no correlation. */
     memset ((void *) fopt->score.data, 0, image_bytes(&fopt->score));
