@@ -199,8 +199,6 @@ int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
 
     ////// TIMING CODE //////////////////////
     // Initialize Windows HighRes Timer
-    int count,a;
-    float kernel_total, io_total;
     Timer timer_total;
     double time_total = 0;
 #if defined (TIME_KERNEL)

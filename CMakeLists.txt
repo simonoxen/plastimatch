@@ -642,12 +642,19 @@ SET(DRR_C_SRC
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
+SET (FDK_SRC
+        fdk_main.c 
+	fdk_opts.c fdk_opts.h
+	fdk_utils.c fdk_utils.h
+	)
+
+IF (COMMENTOUT)
 SET(FDK_C_SRC
 	fdk_c.c fdk.h
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	)
-SET(FDK_CUDA_SRC
+SET (FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	fdk_cuda.h fdk.h
@@ -655,6 +662,17 @@ SET(FDK_CUDA_SRC
 	fdk_cuda_main.c
 	fdk_cuda.cu
 	)
+ENDIF (COMMENTOUT)
+
+IF (CUDA_FOUND)
+  SET (FDK_SRC
+    ${FDK_SRC}
+    fdk_cuda.h fdk.h
+    mathutil.h
+    fdk_cuda.cu
+    )
+ENDIF (CUDA_FOUND)
+
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_opts_ext.c fdk_opts_ext.h
 	fdk_utils_ext.c fdk_utils_ext.h
@@ -670,9 +688,7 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	wrmha_512prefix.c
 	bowtie_correction.c	
 	)
-SET(HND2RAW_ST_SRC
-	hnd2raw_st.cpp
-	)
+
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -703,6 +719,9 @@ SET(FDK_BROOK_SRC
 	fdk_utils.c fdk_utils.h
 	mathutil.h
 	fdk_brook_kernel.br
+	)
+SET(HND2RAW_ST_SRC
+	hnd2raw_st.cpp
 	)
 SET(HND_TO_PFM_SRC
 	hnd_to_pfm.c
@@ -933,7 +952,7 @@ PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(fdk_c "${FDK_C_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE(fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
 PLM_ADD_EXECUTABLE(hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
@@ -1044,8 +1063,10 @@ IF(CUDA_FOUND)
     PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
   ENDIF (PLM_BUILD_DEMONS_CUDA)
+  IF (COMMENTOUT)
   PLM_ADD_EXECUTABLE (fdk_cuda "${FDK_CUDA_SRC}" "${GPUIT_LIBRARIES}" 
     "${OPENMP_LDFLAGS}")
+  ENDIF (COMMENTOUT)
   IF (FFTW_FOUND)
     SET (FDK_CUDA_INTEGRATED_NORMALIZED_LIBS ${GPUIT_LIBRARIES} 
       ${FFTW_LIBRARIES})

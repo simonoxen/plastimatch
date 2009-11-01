@@ -17,8 +17,16 @@
 #define OPTION_VOL_SIZE_STRING "volume-size"
 #define OPTION_VOL_SIZE 'z'
 
+enum Fdk_threading {
+    THREADING_CPU,
+    THREADING_BROOK,
+    THREADING_CUDA
+};
+
+
 typedef struct MGHCBCT_Options_struct MGHCBCT_Options;
 struct MGHCBCT_Options_struct {
+    enum Fdk_threading threading;
     int first_img;
     int skip_img;
     int last_img;

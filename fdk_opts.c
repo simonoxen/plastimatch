@@ -12,6 +12,7 @@ void print_usage (void)
 {
     printf ("Usage: mghcbct [options]\n"
 	    "Options:\n"
+	    " -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	    " -a \"num ((num) num)\"   Use this range of images\n"
 	    " -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
 	    " -s scale               Scale the intensity of the output file\n"
@@ -24,6 +25,7 @@ void print_usage (void)
 
 void set_default_options (MGHCBCT_Options* options)
 {
+    options->threading = THREADING_CPU;
     options->first_img = 0;
     options->last_img = 119;
     options->skip_img = 1;
@@ -48,7 +50,24 @@ void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
     set_default_options (options);
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
-	if (!strcmp (argv[i], "-r")) {
+	if (!strcmp (argv[i], "-A")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
+		options->threading = THREADING_BROOK;
+	    } 
+	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
+		     || !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		options->threading = THREADING_CUDA;
+	    }
+	    else {
+		options->threading = THREADING_CPU;
+	    }
+	}
+	else if (!strcmp (argv[i], "-r")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);
