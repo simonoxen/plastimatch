@@ -17,7 +17,7 @@ print_usage (void)
 {
     printf ("Usage: bspline [options] fixed moving\n"
 	    "Options:\n"
-	    " -A hardware                Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	    " -A hardware                Either \"cpu\" or \"cuda\" (default=cpu)\n"
 	    " -a { steepest | lbfgsb }   Choose optimization algorithm\n"
 	    " -M { mse | mi }            Registration metric (default is mse)\n"
 	    " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
@@ -52,11 +52,8 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
+	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
-		parms->threading = BTHR_BROOK;
-	    } 
-	    else if(!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
 		parms->threading = BTHR_CUDA;
 	    }
 	    else {
