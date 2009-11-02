@@ -8,8 +8,10 @@
 #include <math.h>
 #include <time.h>
 #include "mathutil.h"
-#include "fdk.h"
 #include "readmha.h"
+#include "fdk.h"
+#include "fdk_brook.h"
+#include "fdk_cuda.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 
@@ -349,7 +351,7 @@ int main(int argc, char* argv[])
 	break;
     case THREADING_BROOK:
 #if (HAVE_BROOK)
-	reconstruct_conebeam (vol, &options);
+	fdk_brook_c (vol, &options);
 #else
 	reconstruct_conebeam (vol, &options);
 #endif

@@ -43,7 +43,7 @@
 *****************/
 #include "fdk.h"
 #include "fdk_opts_ext.h"
-#include "fdk_cuda.h"
+#include "fdk_cuda_p.h"
 #include "volume.h"
 #include "readmha_ext.h"
 #include "mathutil.h"
@@ -558,7 +558,7 @@ void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float 
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
 extern "C"
-int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options_ext *options)
+int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
 {
     // Thead Block Dimensions
     int tBlock_x = 16;

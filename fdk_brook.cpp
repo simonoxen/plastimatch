@@ -13,12 +13,13 @@
 #include "volume.h"
 #include "readmha.h"
 #include "fdk.h"
+#include "fdk_brook.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "fdk_brook_kernel.cpp"
 
 void
-gpu_main_512_256(Volume* vol, MGHCBCT_Options* options){
+fdk_brook_512_256(Volume* vol, MGHCBCT_Options* options){
 
     float3 xip, yip, zip, spacing, offset, wip;
 
@@ -219,7 +220,7 @@ gpu_main_512_256(Volume* vol, MGHCBCT_Options* options){
 }
 
 void
-gpu_main_c(Volume* vol, MGHCBCT_Options* options)
+fdk_brook_c (Volume* vol, MGHCBCT_Options* options)
 {
     float3 xip, yip, zip, spacing, offset, wip;
 
@@ -385,7 +386,7 @@ gpu_main_c(Volume* vol, MGHCBCT_Options* options)
 }
 
 void
-gpu_main_b(Volume* vol, MGHCBCT_Options* options)
+fdk_brook_b(Volume* vol, MGHCBCT_Options* options)
 {
     float3 xip, yip, zip, spacing, offset, wip;
 
@@ -553,30 +554,4 @@ gpu_main_b(Volume* vol, MGHCBCT_Options* options)
 	temp[i] = temp_vol[i];
 
     free(temp_vol);
-}
-
-
-int main(int argc, char* argv[])
-{
-    MGHCBCT_Options options;
-    Volume* vol;
-    clock_t start_run, end_run;
-    double diff_run;
-    
-    parse_args (&options, argc, argv);
-
-    vol = my_create_volume (&options);
-
-    start_run = clock();
-
-    gpu_main_c(vol, &options);
-
-    end_run = clock();
-    diff_run = double(end_run - start_run)/CLOCKS_PER_SEC;
-    printf("Time needed to reconstruct volume = %f\n",diff_run);
-
-    convert_to_hu (vol, &options);
-    printf ("Writing output volume\n");
-    write_mha (options.output_file, vol);
-    return 0;
 }

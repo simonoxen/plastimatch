@@ -643,7 +643,7 @@ SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
 SET (FDK_SRC
-        fdk_main.c 
+        fdk_main.c fdk.h
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	)
@@ -657,21 +657,28 @@ SET(FDK_C_SRC
 SET (FDK_CUDA_SRC
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
-	fdk_cuda.h fdk.h
+	fdk.h
 	mathutil.h
 	fdk_cuda_main.c
-	fdk_cuda.cu
+	fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h 
 	)
 ENDIF (COMMENTOUT)
 
 IF (CUDA_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
-    fdk_cuda.h fdk.h
-    mathutil.h
+    fdk_cuda.h
     fdk_cuda.cu
     )
 ENDIF (CUDA_FOUND)
+
+IF (HAVE_BROOK)
+  SET (FDK_SRC
+    ${FDK_SRC}
+    fdk_brook.cpp
+    fdk_brook_kernel.br
+    )
+ENDIF (HAVE_BROOK)
 
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_opts_ext.c fdk_opts_ext.h
@@ -713,6 +720,7 @@ IF (CUDA_FOUND)
   ENDIF (PLM_USE_FINDCUDA)
 ENDIF (CUDA_FOUND)
 
+IF (COMMENTOUT)
 SET(FDK_BROOK_SRC
 	fdk_brook.cpp fdk.h
 	fdk_opts.c fdk_opts.h
@@ -720,6 +728,8 @@ SET(FDK_BROOK_SRC
 	mathutil.h
 	fdk_brook_kernel.br
 	)
+ENDIF (COMMENTOUT)
+
 SET(HND2RAW_ST_SRC
 	hnd2raw_st.cpp
 	)
@@ -1051,11 +1061,13 @@ IF(ITK_FOUND)
 ENDIF(ITK_FOUND)
 
 # fdk_brook requires brook
+IF (COMMENTOUT)
 IF(BROOK_FOUND)
   SET(FDK_BROOK_LIBS ${MATH_LIB} ${GPUIT_LIBRARIES}
     ${BROOK_LIBRARIES} ${OPENGL_LIBRARIES} ${DIRECTX_LIBRARIES})
   PLM_ADD_EXECUTABLE(fdk_brook "${FDK_BROOK_SRC}" "${FDK_BROOK_LIBS}" "")
 ENDIF(BROOK_FOUND)
+ENDIF (COMMENTOUT)
 
 # several executables require cuda
 IF(CUDA_FOUND)

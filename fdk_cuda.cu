@@ -38,7 +38,7 @@
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
-#include "fdk_cuda.h"
+#include "fdk_cuda_p.h"
 #include "volume.h"
 #include "readmha.h"
 #include "mathutil.h"

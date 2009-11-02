@@ -26,7 +26,7 @@
 
 //extern "C"
 //{
-int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options_ext *options);
+int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options);
 int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options);
 //}
 int
@@ -119,7 +119,7 @@ main(int argc, char* argv[])
 		/***********************************************
 		* STEP 2: Reconstruct/populate the volume      *
 		***********************************************/
-		CUDA_reconstruct_conebeam (vol, &options);	
+		CUDA_reconstruct_conebeam_ext (vol, &options);	
 
 		/*************************************
 		* STEP 3: Convert to HU values       *
