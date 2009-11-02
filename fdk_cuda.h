@@ -4,8 +4,8 @@
 #ifndef _fdk_cuda_h_
 #define _fdk_cuda_h_
 
-typedef struct volume Volume;
-typedef struct MGHCBCT_Options_struct MGHCBCT_Options;
+#include "fdk_opts.h"
+#include "volume.h"
 
 #if defined __cplusplus
 extern "C" {
