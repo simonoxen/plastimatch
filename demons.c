@@ -1,12 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "plm_config.h"
 #include "demons.h"
 
 /* GCS FIX: ITK uses sum_d(pix_spacing[d]^2) / (#dim) for homog */
@@ -28,7 +28,7 @@ gpuit_EXPORT
 Volume*
 demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, char* method, DEMONS_Parms* parms)
 {
-#if HAVE_BROOK
+#if BROOK_FOUND
     if (!strcmp (method, "BROOK") || !strcmp (method, "brook")) {
 	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
     }

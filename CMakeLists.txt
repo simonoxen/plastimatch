@@ -387,11 +387,6 @@ SET(SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
-SET(HAVE_BROOK FALSE)
-IF(BROOK_FOUND)
-SET(HAVE_BROOK TRUE)
-ENDIF(BROOK_FOUND)
-
 IF(BROOK_FOUND)
   BRCC_FILE(fdk_brook_kernel.br)
   SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
@@ -672,13 +667,13 @@ IF (CUDA_FOUND)
     )
 ENDIF (CUDA_FOUND)
 
-IF (HAVE_BROOK)
+IF (BROOK_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
     fdk_brook.cpp
     fdk_brook_kernel.br
     )
-ENDIF (HAVE_BROOK)
+ENDIF (BROOK_FOUND)
 
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_opts_ext.c fdk_opts_ext.h

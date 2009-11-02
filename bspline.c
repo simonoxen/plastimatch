@@ -3144,13 +3144,6 @@ bspline_score (BSPLINE_Parms *parms,
 	       Volume *moving, 
 	       Volume *moving_grad)
 {
-#if (HAVE_BROOK) && (BUILD_BSPLINE_BROOK)
-    if (parms->threading == BTHR_BROOK) {
-	bspline_score_on_gpu_reference (parms, fixed, moving, moving_grad);
-	return;
-    }
-#endif
-
 #if (CUDA_FOUND)
     if (parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {

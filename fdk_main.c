@@ -350,7 +350,7 @@ int main(int argc, char* argv[])
 	reconstruct_conebeam (vol, &options);
 	break;
     case THREADING_BROOK:
-#if (HAVE_BROOK)
+#if (BROOK_FOUND)
 	fdk_brook_c (vol, &options);
 #else
 	reconstruct_conebeam (vol, &options);
