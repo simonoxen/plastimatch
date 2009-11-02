@@ -17,9 +17,9 @@ warp_print_usage (void)
     printf ("Usage: plastimatch warp [options]\n"
 	    "Required:\n"
 	    "    --input=filename\n"
-	    "    --xf=filename\n"
 	    "    --output=filename\n"
 	    "Optional:\n"
+	    "    --xf=filename\n"
 	    "    --interpolation=nn\n"
 	    "    --fixed=filename\n"
 	    "    --output-vf=filename\n"
@@ -150,7 +150,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0] || !(parms->vf_in_fn[0] || parms->xf_in_fn[0])) {
+    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
 	warp_print_usage();
     }
 }

@@ -195,6 +195,7 @@ warp_image_main (Warp_Parms* parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     PlmImage im_in, im_out;
+    PlmImage* im_out_ptr;
     PlmImageHeader pih;
     Xform xform;
 
@@ -202,8 +203,10 @@ warp_image_main (Warp_Parms* parms)
     im_in.load_native (parms->mha_in_fn);
 
     /* Load transform */
-    printf ("Loading xform (%s)\n", parms->xf_in_fn);
-    load_xform (&xform, parms->xf_in_fn);
+    if (parms->xf_in_fn[0]) {
+	printf ("Loading xform (%s)\n", parms->xf_in_fn);
+	load_xform (&xform, parms->xf_in_fn);
+    }
 
     /* Try to guess the proper dimensions and spacing for output image */
     if (parms->fixed_im_fn[0]) {
@@ -222,16 +225,23 @@ warp_image_main (Warp_Parms* parms)
     pih.print ();
 
     /* Do the warp */
-    do_warp (&im_out, &vf, parms, &xform, &pih, &im_in);
+    if (parms->xf_in_fn[0]) {
+	do_warp (&im_out, &vf, parms, &xform, &pih, &im_in);
+	im_out_ptr = &im_out;
+    } else {
+	im_out_ptr = &im_in;
+    }
 
-    /* Save output files */
+    /* Save output image */
     printf ("Saving image...\n");
     if (parms->output_dicom) {
-	im_out.save_short_dicom (parms->mha_out_fn);
+	im_out_ptr->save_short_dicom (parms->mha_out_fn);
     } else {
-	im_out.save_image (parms->mha_out_fn);
+	im_out_ptr->save_image (parms->mha_out_fn);
     }
-    if (parms->vf_out_fn[0]) {
+
+    /* Save output vector field */
+    if (parms->xf_in_fn[0] && parms->vf_out_fn[0]) {
 	printf ("Saving vf...\n");
 	itk_image_save (vf, parms->vf_out_fn);
     }
