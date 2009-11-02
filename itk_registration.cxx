@@ -1,10 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
+#include "plm_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 #include "itkImageMaskSpatialObject.h"
 #include "itkMutualInformationImageToImageMetric.h"
@@ -25,6 +24,7 @@
 #endif
 
 #include "plm_int.h"
+#include "timer.h"
 #include "plm_registration.h"
 #include "plm_image_header.h"
 #include "itk_image.h"
@@ -67,7 +67,7 @@ public:
     Stage_Parms* m_stage;
     RegistrationType::Pointer m_registration;
     double last_value;
-    clock_t start;
+    Timer timer;
 
     void Set_Stage_Parms (RegistrationType::Pointer registration,
 			  Stage_Parms* stage) {
@@ -77,7 +77,7 @@ public:
 
     void Execute(itk::Object * caller, const itk::EventObject & event) {
         Execute((const itk::Object *) caller, event);
-	start = clock ();
+	plm_timer_start (&timer);
     }
 
     void Execute(const itk::Object * object,
@@ -89,12 +89,12 @@ public:
 		std::cout << optimizer_get_current_position (m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
-	    start = clock ();
+	    plm_timer_start (&timer);
 	}
 	if (typeid(event) == typeid(itk::InitializeEvent)) {
 	    std::cout << "InitializeEvent: ";
 	    std::cout << std::endl;
-	    start = clock ();
+	    plm_timer_start (&timer);
 	}
 	else if (typeid(event) == typeid(itk::EndEvent)) {
 	    std::cout << "EndEvent: ";
@@ -112,10 +112,11 @@ public:
 
 	    std::cout << "VAL+GRAD ";
 	    double val = optimizer_get_value(m_registration, m_stage);
-	    duration = (double)(clock() - start) / CLOCKS_PER_SEC;
+
+	    duration = plm_timer_report (&timer);
 	    printf ("%6.3f [%6.3f secs]", val, duration);
 	    std::cout << std::endl;
-	    start = clock();
+	    plm_timer_start (&timer);
 	}
 	else if (typeid(event) == typeid(itk::IterationEvent)) {
 	    std::cout << "IterationEvent: ";
