@@ -567,17 +567,9 @@ bspline_cuda_score_e_mse_v2
 	}
     }
 
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("All iterations of bspline_cuda_run_kernels_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
     if (parms->debug) {
 	fclose (fp);
     }
-
-    //QueryPerformanceFrequency(&clock_frequency);
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
 
     // Compute the score.
     bspline_cuda_final_steps_e_v2(
@@ -644,20 +636,11 @@ bspline_cuda_score_e_mse
     // Index of the set, in the range [0, 63)
     int sidx[3];
 
-#if defined (_WIN32)  	
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
-    // There are 64 sets of tiles for which the score can be calculated in parallel.  Iterate through these sets.
+    // There are 64 sets of tiles for which the score can be calculated 
+    // in parallel.  Iterate through these sets.
     for(sidx[2] = 0; sidx[2] < 4; sidx[2]++) {
 	for(sidx[1] = 0; sidx[1] < 4; sidx[1]++) {
 	    for(sidx[0] = 0; sidx[0] < 4; sidx[0]++) {
-
-		// printf("Running kernels for set (%d, %d, %d)...\n", sidx[0], sidx[1], sidx[2]);
 		bspline_cuda_run_kernels_e(
 		    fixed,
 		    moving,
@@ -671,21 +654,9 @@ bspline_cuda_score_e_mse
 	}
     }
 
-#if defined (_WIN32)  	
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("All iterations of bspline_cuda_run_kernels_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
-
     if (parms->debug) {
 	fclose (fp);
     }
-
-#if defined (_WIN32)  	
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
 
     // Compute the score.
     bspline_cuda_final_steps_e(
@@ -699,12 +670,6 @@ bspline_cuda_score_e_mse
 	&ssd_grad_mean,
 	&ssd_grad_norm);
 	
-#if defined (_WIN32)  	
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("Single iteration of bspline_cuda_final_steps_e completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
-
     report_score ("MSE", bxf, bst, num_vox, plm_timer_report (&timer));
 }
 
@@ -1111,27 +1076,6 @@ bspline_cuda_score_c_mse
     ssd->score = *host_score;
     ssd_grad_norm = *host_grad_norm;
     ssd_grad_mean = *host_grad_mean;
-
-    /* Normalize score for MSE */
-    /*
-      ssd->score = ssd->score / num_vox;
-      for (i = 0; i < bxf->num_coeff; i++) {
-      ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
-      }
-
-      ssd_grad_norm = 0;
-      ssd_grad_mean = 0;
-      for (i = 0; i < bxf->num_coeff; i++) {
-      ssd_grad_mean += ssd->grad[i];
-      ssd_grad_norm += fabs (ssd->grad[i]);
-      }
-    */
-
-    /*
-      printf("%d errors found between CUDA and CPU calculations of dxyz.\n", dxyz_errors);
-      printf("%d errors found between CUDA and CPU calculations of diff.\n", diff_errors);
-      printf("%d errors found between CUDA and CPU calculations of dc_dv.\n", dc_dv_errors);
-    */
 
     free(host_diff);
     free(host_dc_dv_x);

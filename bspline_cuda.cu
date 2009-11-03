@@ -10200,24 +10200,16 @@ void bspline_cuda_copy_grad_to_host (float* host_grad)
  * This function runs the kernels to calculate the score and gradient
  * as part of bspline_cuda_score_g_mse.
  ***********************************************************************/
-void bspline_cuda_calculate_run_kernels_g(
-					  Volume *fixed,
-					  Volume *moving,
-					  Volume *moving_grad,
-					  BSPLINE_Xform *bxf,
-					  BSPLINE_Parms *parms,
-					  int run_low_mem_version, 
-					  int debug)
+void 
+bspline_cuda_calculate_run_kernels_g (
+    Volume *fixed,
+    Volume *moving,
+    Volume *moving_grad,
+    BSPLINE_Xform *bxf,
+    BSPLINE_Parms *parms,
+    int run_low_mem_version, 
+    int debug)
 {
-//    FILE *fp;
-//    char debug_fn[1024];
-
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-#endif
-	
     // Dimensions of the volume (in tiles)
     int3 rdims;			
     rdims.x = bxf->rdims[0];
@@ -10278,11 +10270,6 @@ void bspline_cuda_calculate_run_kernels_g(
     roi_dim.y = bxf->roi_dim[1];
     roi_dim.z = bxf->roi_dim[2];
 
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
     // Configure the grid.
     int threads_per_block;
     int num_threads;
@@ -10317,25 +10304,25 @@ void bspline_cuda_calculate_run_kernels_g(
 	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
 	for (i = sqrt_num_blocks; i < 65535; i++)
-	{
+	    {
 		if (num_blocks % i == 0)
-		{
+		    {
 			Grid_x = i;
 			Grid_y = num_blocks / Grid_x;
 			break;
-		}
-	}
+		    }
+	    }
 	// *****
 
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		// If this happens we should consider falling back to a
-		// CPU implementation, using a different CUDA algorithm,
-		// or padding the input dc_dv stream to work with this
-		// CUDA algorithm.
-		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
-		exit(0);
+	    // If this happens we should consider falling back to a
+	    // CPU implementation, using a different CUDA algorithm,
+	    // or padding the input dc_dv stream to work with this
+	    // CUDA algorithm.
+	    printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
+	    exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_g_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
 	}
@@ -10348,33 +10335,33 @@ void bspline_cuda_calculate_run_kernels_g(
 	// ----------------------------------------------------------
 
 /*
-	threads_per_block = 256;
-	//threads_per_block = 64;
-	num_threads = fixed->npix;
-	num_blocks = (int)ceil(num_threads / (float)threads_per_block);
-	dim3 dimGrid1(num_blocks / 128, 128, 1);
-	dim3 dimBlock1(threads_per_block, 1, 1);
+  threads_per_block = 256;
+  //threads_per_block = 64;
+  num_threads = fixed->npix;
+  num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+  dim3 dimGrid1(num_blocks / 128, 128, 1);
+  dim3 dimBlock1(threads_per_block, 1, 1);
 */
 	smemSize = 12 * sizeof(float) * threads_per_block;
 
 	bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>
-		(
-		 gpu_dc_dv,
-		 gpu_score,
-		 gpu_coeff,
-		 gpu_fixed_image,
-		 gpu_moving_image,
-		 gpu_moving_grad,
-		 volume_dim,
-		 img_origin,
-		 img_spacing,
-		 img_offset,
-		 roi_offset,
-		 roi_dim,
-		 vox_per_rgn,
-		 pix_spacing,
-		 rdims,
-		 cdims);
+	    (
+		gpu_dc_dv,
+		gpu_score,
+		gpu_coeff,
+		gpu_fixed_image,
+		gpu_moving_image,
+		gpu_moving_grad,
+		volume_dim,
+		img_origin,
+		img_spacing,
+		img_offset,
+		roi_offset,
+		roi_dim,
+		vox_per_rgn,
+		pix_spacing,
+		rdims,
+		cdims);
 
 #if defined (commentout)
 	if (debug) {
@@ -10412,21 +10399,21 @@ void bspline_cuda_calculate_run_kernels_g(
 
 	for (int i = 0; i < rdims.x * rdims.y * rdims.z; i += tiles_per_launch) {
 	    bspline_cuda_score_g_mse_kernel1_low_mem<<<dimGrid1, dimBlock1, smemSize>>>
-		    (
-		     gpu_dc_dv,
-		     gpu_score,
-		     i,
-		     tiles_per_launch,
-		     volume_dim,
-		     img_origin,
-		     img_spacing,
-		     img_offset,
-		     roi_offset,
-		     roi_dim,
-		     vox_per_rgn,
-		     pix_spacing,
-		     rdims,
-		     cdims);
+		(
+		    gpu_dc_dv,
+		    gpu_score,
+		    i,
+		    tiles_per_launch,
+		    volume_dim,
+		    img_origin,
+		    img_spacing,
+		    img_offset,
+		    roi_offset,
+		    roi_dim,
+		    vox_per_rgn,
+		    pix_spacing,
+		    rdims,
+		    cdims);
 	}
 
     }
@@ -10441,16 +10428,6 @@ void bspline_cuda_calculate_run_kernels_g(
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_g_mse_compute_score failed");
 
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("%f seconds to run bspline_cuda_score_g_mse_kernel1 \n", 
-	   double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
     // Reconfigure the grid.
     threads_per_block = 256;
     //    threads_per_block = 64;
@@ -10462,42 +10439,16 @@ void bspline_cuda_calculate_run_kernels_g(
 
     //printf("Launching bspline_cuda_score_f_mse_kernel2...");
     bspline_cuda_score_g_mse_kernel2<<<dimGrid2, dimBlock2, smemSize>>>
-	    (
-	     gpu_dc_dv,
-	     gpu_grad,
-	     num_threads,
-	     rdims,
-	     cdims,
-	     vox_per_rgn);
+	(
+	    gpu_dc_dv,
+	    gpu_grad,
+	    num_threads,
+	    rdims,
+	    cdims,
+	    vox_per_rgn);
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_g_mse_kernel2 failed");
-
-#if defined (commentout)
-    if (1) {
-	float *host_grad = (float*) malloc (coeff_mem_size);
-	if (cudaMemcpy(host_grad, gpu_grad, coeff_mem_size, 
-		       cudaMemcpyDeviceToHost) != cudaSuccess) {
-	    checkCUDAError("Failed to copy gpu_grad to CPU");
-	}
-
-	/* kkk */
-	printf ("host_grad[0] = %g\n", host_grad[0]);
-	printf ("host_grad[5] = %g\n", host_grad[5]);
-
-	free (host_grad);
-	exit (0);
-    }
-#endif
-
-    //    printf ("bspline_cuda_score_g_mse_kernel2 complete.\n");
-
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("%f seconds to run bspline_cuda_score_g_mse_kernel2\n", 
-	   double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 /***********************************************************************
@@ -10515,12 +10466,6 @@ bspline_cuda_calculate_run_kernels_f
  BSPLINE_Xform *bxf,
  BSPLINE_Parms *parms)
 {
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-#endif
-	
     // Dimensions of the volume (in tiles)
     int3 rdims;			
     rdims.x = bxf->rdims[0];
@@ -10581,10 +10526,6 @@ bspline_cuda_calculate_run_kernels_f
     roi_dim.y = bxf->roi_dim[1];
     roi_dim.z = bxf->roi_dim[2];
 
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
     /*
     // Configure the grid.
     int threads_per_block = 256;
@@ -10662,16 +10603,6 @@ bspline_cuda_calculate_run_kernels_f
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_f_compute_dc_dv failed");
 	
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("%f seconds to run bspline_cuda_score_f_mse_kernel1\n", 
-	   double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
     // Reconfigure the grid.
     threads_per_block = 256;
     num_threads = bxf->num_knots;
@@ -10702,13 +10633,6 @@ bspline_cuda_calculate_run_kernels_f
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\bspline_cuda_score_f_mse_kernel2 failed");
-
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("%f seconds to run bspline_cuda_score_f_mse_kernel2\n", 
-	   double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 /***********************************************************************
@@ -10950,13 +10874,6 @@ bspline_cuda_run_kernels_e_v2
  int sidx1,
  int sidx2)
 {
-    //LARGE_INTEGER clock_count, clock_frequency;
-    //double clock_start, clock_end;
-    //QueryPerformanceFrequency(&clock_frequency);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
-	
     // Dimensions of the volume (in tiles)
     float3 rdims;			
     rdims.x = (float)bxf->rdims[0];
@@ -11022,22 +10939,8 @@ bspline_cuda_run_kernels_e_v2
     sidx.y = sidx1;
     sidx.z = sidx2;
 	
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to read in the variables\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
-
     // Clear the dc_dv values.
     bspline_cuda_clear_dc_dv();
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to clear dc_dv values\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
 
     // Run kernel #1.
     int threads_per_block = 256;
@@ -11068,13 +10971,6 @@ bspline_cuda_run_kernels_e_v2
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\nbspline_cuda_score_e_mse_kernel1b failed");
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to configure and run kernel1\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
 
     /* The following code calculates the gradient by iterating through each tile
      * in the set.  The code following this section calculates the gradient for
@@ -11140,10 +11036,6 @@ bspline_cuda_run_kernels_e_v2
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\nbspline_cuda_score_e_mse_kernel2_by_sets failed");
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to configure and run kernel2 64 times\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 }
 
 /***********************************************************************
@@ -11164,15 +11056,6 @@ bspline_cuda_run_kernels_e
  int sidx1,
  int sidx2)
 {
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-#endif
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
-	
     // Dimensions of the volume (in tiles)
     float3 rdims;			
     rdims.x = (float)bxf->rdims[0];
@@ -11238,22 +11121,8 @@ bspline_cuda_run_kernels_e
     sidx.y = sidx1;
     sidx.z = sidx2;
 	
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to read in the variables\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
-
     // Clear the dc_dv values.
     bspline_cuda_clear_dc_dv();
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to clear dc_dv values\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
 
     // Run kernel #1.
     int threads_per_block = 256;
@@ -11284,13 +11153,6 @@ bspline_cuda_run_kernels_e
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\nbspline_cuda_score_e_mse_kernel1 failed");
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to configure and run kernel1\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_start = (double)clock_count.QuadPart;
 
     // Reconfigure the grid.
     int threadsPerControlPoint = 2;
@@ -11347,10 +11209,6 @@ bspline_cuda_run_kernels_e
 	    }
 	}
     }
-
-    //QueryPerformanceCounter(&clock_count);
-    //clock_end = (double)clock_count.QuadPart;
-    //printf("%f seconds to configure and run kernel2 64 times\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 }
 
 /***********************************************************************
@@ -11375,13 +11233,6 @@ bspline_cuda_final_steps_e_v2
  float *host_grad_mean,
  float *host_grad_norm)
 {
-    // Start the clock.
-    // LARGE_INTEGER clock_count, clock_frequency;
-    // double clock_start, clock_end;
-    // QueryPerformanceFrequency(&clock_frequency);
-    // QueryPerformanceCounter(&clock_count);
-    // clock_start = (double)clock_count.QuadPart;
-
     // Calculate the set dimensions.
 #if defined (commentout)
     int3 sdims;
@@ -11481,10 +11332,6 @@ bspline_cuda_final_steps_e_v2
     if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
 
-    // Stop the clock.
-    // QueryPerformanceCounter(&clock_count);
-    // clock_end = (double)clock_count.QuadPart;
-    // printf("CUDA kernels completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
 }
 
 /***********************************************************************
@@ -11508,15 +11355,6 @@ void bspline_cuda_final_steps_e
     float *host_grad_mean,
     float *host_grad_norm)
 {
-#if defined (_WIN32)
-    // Start the clock.
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
     // Calculate the set dimensions.
     int3 sdims;
     sdims.x = (int)ceil(bxf->rdims[0] / 4.0);
@@ -11615,13 +11453,6 @@ void bspline_cuda_final_steps_e
 
     if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
-
-    // Stop the clock.
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    // printf("CUDA kernels completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 /***********************************************************************
@@ -11699,15 +11530,6 @@ bspline_cuda_run_kernels_d
     p.x = p0;
     p.y = p1;
     p.z = p2;
-
-    // Start the clock.
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
 
     // Clear the dc_dv values.
     if(cudaMemset(gpu_dc_dv, 0, dc_dv_mem_size) != cudaSuccess)
@@ -11829,13 +11651,6 @@ bspline_cuda_run_kernels_d
 
     if(cudaThreadSynchronize() != cudaSuccess)
 	checkCUDAError("\nbspline_cuda_score_d_mse_kernel2 failed");
-	
-    // Stop the clock.
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    // printf("CUDA kernels for dc_dv and grad completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 /***********************************************************************
@@ -11857,15 +11672,6 @@ bspline_cuda_final_steps_d
     float *host_grad_mean,
     float *host_grad_norm)
 {
-    // Start the clock.
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
-
     int num_elems = vox_per_rgn[0] * vox_per_rgn[1] * vox_per_rgn[2];
     int num_blocks = (int)ceil(num_elems / 512.0);
     dim3 dimGrid(num_blocks, 1, 1);
@@ -11956,13 +11762,6 @@ bspline_cuda_final_steps_d
 
     if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
-
-    // Stop the clock.
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("CUDA kernels for score completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 /***********************************************************************
@@ -12032,15 +11831,6 @@ bspline_cuda_run_kernels_c
     dim3 dimBlock(128, 2, 2);
     int smemSize = 512 * sizeof(float);
     printf("%d thread blocks will be created for each kernel.\n", num_blocks);
-
-    // Start the clock.
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
 
     //printf("Launching bspline_cuda_compute_dxyz_kernel... ");
     bspline_cuda_compute_dxyz_kernel<<<dimGrid, dimBlock>>>(
@@ -12130,13 +11920,6 @@ bspline_cuda_run_kernels_c
 
     *host_score = *host_score / num_elems;
 
-    // Stop the clock.
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("CUDA kernels completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
-
     // Copy results back from GPU.
     if(cudaMemcpy(host_dc_dv_x, gpu_dc_dv_x, fixed->npix * sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy dc_dv stream from GPU to host");
@@ -12178,15 +11961,6 @@ bspline_cuda_calculate_gradient_c
     dim3 dimGrid(num_blocks, 1, 1);
     dim3 dimBlock(128, 2, 2);
     int smemSize = 512 * sizeof(float);
-
-    // Start the clock.
-#if defined (_WIN32)
-    LARGE_INTEGER clock_count, clock_frequency;
-    double clock_start, clock_end;
-    QueryPerformanceFrequency(&clock_frequency);
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
-#endif
 
     //printf("Launching bspline_cuda_update_grad_kernel... ");
     bspline_cuda_update_grad_kernel<<<dimGrid, dimBlock>>>(
@@ -12237,13 +12011,6 @@ bspline_cuda_calculate_gradient_c
 
     if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
-
-    // Stop the clock.
-#if defined (_WIN32)
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    printf("CUDA kernels completed in %f seconds.\n", double(clock_end - clock_start)/(double)clock_frequency.QuadPart);
-#endif
 }
 
 
@@ -13180,31 +12947,31 @@ extern "C" void CUDA_bspline_mse_2_reduce(
 // DATE  : 09.04.2009
 ////////////////////////////////////////////////////////////////////////////////
 float CPU_obtain_spline_basis_function( int t_idx, 
-					  int vox_idx, 
-					  int vox_per_rgn)
+					int vox_idx, 
+					int vox_per_rgn)
 {
 								
-	float i = (float)vox_idx / vox_per_rgn;
-	float C;
+    float i = (float)vox_idx / vox_per_rgn;
+    float C;
 						
-	switch(t_idx) {
-		case 0:
-			C = (1.0/6.0) * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
-			break;
-		case 1:
-			C = (1.0/6.0) * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
-			break;
-		case 2:
-			C = (1.0/6.0) * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
-			break;
-		case 3:
-			C = (1.0/6.0) * (+ 1.0 * i*i*i);
-			break;
-		default:
-			C = 0.0;
-			break;
-	}
-	return C;
+    switch(t_idx) {
+    case 0:
+	C = (1.0/6.0) * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
+	break;
+    case 1:
+	C = (1.0/6.0) * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
+	break;
+    case 2:
+	C = (1.0/6.0) * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
+	break;
+    case 3:
+	C = (1.0/6.0) * (+ 1.0 * i*i*i);
+	break;
+    default:
+	C = 0.0;
+	break;
+    }
+    return C;
 }
 ////////////////////////////////////////////////////////////////////////////////
 
