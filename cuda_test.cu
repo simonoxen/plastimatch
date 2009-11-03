@@ -2,41 +2,41 @@
 #include <assert.h>
 
 // Simple utility function to check for CUDA runtime errors
-void checkCUDAError(const char *msg);
+void checkCUDAError (const char *msg);
 
 // Part 3 of 5: implement the kernel
-__global__ void myFirstKernel(int *d_a)
+__global__ void 
+myFirstKernel(int *d_a)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     d_a[idx] = idx;  
 }
 
-__global__ void reduce(float *idata, float *odata) {
-	
-	extern __shared__ float sdata[];
+__global__ void 
+reduce(float *idata, float *odata) 
+{
+    extern __shared__ float sdata[];
 
-	unsigned int tid = threadIdx.x;
-	unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
-	sdata[tid] = idata[i];
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    sdata[tid] = idata[i];
 
+    __syncthreads();
+
+    for(unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+	if(tid < s) {
+	    sdata[tid] += sdata[tid + s];
+	}
 	__syncthreads();
+    }
 
-	for(unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-		if(tid < s) {
-			sdata[tid] += sdata[tid + s];
-		}
-		__syncthreads();
-	}
-
-	if(tid == 0) {
-		odata[blockIdx.x] = sdata[0];
-	}
+    if(tid == 0) {
+	odata[blockIdx.x] = sdata[0];
+    }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
-int main( int argc, char** argv) 
+int 
+cuda_test_1 (int argc, char** argv)
 {
     // pointer for host memory
     int *h_a;
@@ -53,7 +53,7 @@ int main( int argc, char** argv)
     h_a = (int *) malloc(memSize);
     cudaMalloc((void **) &d_a, memSize);
 
-	checkCUDAError("cudaMalloc");
+    checkCUDAError("cudaMalloc");
 
     // Part 2 of 5: launch kernel
     dim3 dimGrid(numBlocks, 1, 1);
@@ -73,12 +73,10 @@ int main( int argc, char** argv)
     checkCUDAError("cudaMemcpy");
 
     // Part 5 of 5: verify the data returned to the host is correct
-    for (int i = 0; i < numBlocks; i++)
-    {
-        for (int j = 0; j < numThreadsPerBlock; j++)
-        {
-            assert(h_a[i * numThreadsPerBlock + j] == i * numThreadsPerBlock + j);
-        }
+    for (int i = 0; i < numBlocks; i++)	{
+	for (int j = 0; j < numThreadsPerBlock; j++) {
+	    assert (h_a[i * numThreadsPerBlock + j] == i * numThreadsPerBlock + j);
+	}
     }
 
     // free device memory
@@ -94,26 +92,48 @@ int main( int argc, char** argv)
     return 0;
 }
 
-void checkCUDAError(const char *msg)
+void 
+checkCUDAError (const char *msg)
 {
     cudaError_t err = cudaGetLastError();
-    if( cudaSuccess != err) 
-    {
-        fprintf(stderr, "Cuda error: %s: %s.\n", msg, cudaGetErrorString( err) );
+    if (cudaSuccess != err)  {
+        fprintf (stderr, "Cuda error: %s: %s.\n", 
+		 msg, cudaGetErrorString (err));
         exit(-1);
     }                         
 }
 
-
-/*
 int
-main (int argc, char* argv)
+cuda_mem_test (int argc, char** argv)
 {
-    int A[SIZE], B[SIZE], C[SIZE];
-    int *Ad, *Bd, *Cd;
+    void *test[4];
+    int alloc_size;
 
-    cudaMalloc ((void**) &Ad, sizeof(float)*SIZE);
-
-    cudaFree (Ad);
+    for (alloc_size = 1024; alloc_size <= 1024*1024*1024; alloc_size *= 2) {
+	printf ("Alloc = %d\n", alloc_size);
+	cudaMalloc ((void**) &test[0], alloc_size);
+	checkCUDAError ("cudaMalloc");
+	cudaMalloc ((void**) &test[1], alloc_size);
+	checkCUDAError ("cudaMalloc");
+	cudaMalloc ((void**) &test[2], alloc_size);
+	checkCUDAError ("cudaMalloc");
+	cudaMalloc ((void**) &test[3], alloc_size);
+	checkCUDAError ("cudaMalloc");
+	cudaFree (test[0]);
+	checkCUDAError ("cudaFree");
+	cudaFree (test[1]);
+	checkCUDAError ("cudaFree");
+	cudaFree (test[2]);
+	checkCUDAError ("cudaFree");
+	cudaFree (test[3]);
+	checkCUDAError ("cudaFree");
+    }
+    return 0;
 }
-*/
+
+int 
+main (int argc, char** argv)
+{
+    //cuda_test_1 (argc, argv);
+    return cuda_mem_test (argc, argv);
+}
