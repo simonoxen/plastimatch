@@ -756,9 +756,42 @@ extern "C" void bspline_cuda_i_stage_2(
 {
 
 	// --- INITIALIZE GRID --------------------------------------
+	int Grid_x = 0;
+	int Grid_y = 0;
 	int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
-	int num_blocks = (int)ceil(num_elems / 512.0);
-	dim3 dimGrid(num_blocks, 1, 1);
+//	int num_blocks = (int)ceil(num_elems / 512.0);
+	int num_blocks = (num_elems + 511.0) / 512.0;
+	
+	// *****
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	int i;
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// *****
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		// If this happens we should consider falling back to a
+		// CPU implementation, using a different CUDA algorithm,
+		// or padding the input dc_dv stream to work with this
+		// CUDA algorithm.
+		printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid(Grid_x, Grid_y, 1);
 	dim3 dimBlock(128, 2, 2);
 	int smemSize = 512 * sizeof(float);
 	// ----------------------------------------------------------
@@ -818,8 +851,38 @@ extern "C" void bspline_cuda_i_stage_2(
 	// --- RE-INITIALIZE GRID -----------------------------------
 	int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
 	num_elems = bxf->num_coeff;
-	num_blocks = (int)ceil(num_elems / 512.0);
-	dim3 dimGrid2(num_blocks, 1, 1);
+//	num_blocks = (int)ceil(num_elems / 512.0);
+	num_blocks = (num_elems + 511.0) / 512.0;
+	
+	// *****
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// *****
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		// If this happens we should consider falling back to a
+		// CPU implementation, using a different CUDA algorithm,
+		// or padding the input dc_dv stream to work with this
+		// CUDA algorithm.
+		printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid2(Grid_x, Grid_y, 1);
 	dim3 dimBlock2(128, 2, 2);
 	smemSize = 512 * sizeof(float);
 	// ----------------------------------------------------------
