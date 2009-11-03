@@ -90,7 +90,7 @@ Volume*
 demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad, 
 		       Volume* vf_init, DEMONS_Parms* parms)
 {
-    int i, it;
+    int it;
     float3 m_offset, f_offset;              /* Copied from input volume */
     float3 m_pix_spacing, f_pix_spacing;    /* Copied from input volume */
     float3 f_dim, m_dim;		    /* Copied from input volume */
@@ -102,6 +102,8 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     int fw[3];				    /* Filter widths */
     Volume* vf;				    /* Output vector field */
     Volume* debug_vol;			    /* Only used when debugging */
+    double io_cycles = 0;		    /* Timing for I/O */
+    double processing_cycles = 0;	    /* Timing for GPU processing */
 
     /* Compute texture sizes.  Textures are float4, thus divide by 4. */
     f_size = (int) ceil (sqrt((double)fixed->npix/4));
