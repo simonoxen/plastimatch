@@ -5,6 +5,9 @@
 
 set(ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};c:/Program Files/Microsoft DirectX SDK (June 2007)/Utilities/Bin/x86")
 
+# Only used for brook programs
+set(ENV{BRT_RUNTIME} "dx9")
+
 MESSAGE("PLM_TEST_COMMAND is ${PLM_TEST_COMMAND}")
 MESSAGE("PARMS is ${PARMS}")
 
