@@ -8,6 +8,7 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+#include "timer.h"
 
 #define LOOP1 2000
 #define LOOP2 20000
@@ -76,21 +77,17 @@ speedtest_openmp_2 (void)
 int
 main (int argc, char* argv[])
 {
-    clock_t time_start, time_end;
+    Timer timer;
 
 #if (OPENMP_FOUND)
     display_num_threads ();
-    time_start = clock ();
+    plm_timer_start (&timer);
     speedtest_openmp_1 ();
-    time_end = clock ();
-    printf ("Time = %f seconds\n", 
-	    ((float) (time_end - time_start)) / CLOCKS_PER_SEC);
+    printf ("Time = %f seconds\n", plm_timer_report (&timer);
 
-    time_start = clock ();
+    plm_timer_start (&timer);
     speedtest_openmp_2 ();
-    time_end = clock ();
-    printf ("Time = %f seconds\n", 
-	    ((float) (time_end - time_start)) / CLOCKS_PER_SEC);
+    printf ("Time = %f seconds\n", plm_timer_report (&timer);
 
 #else
     printf ("Sorry, openmp was not supported by your compiler\n");

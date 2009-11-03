@@ -1,16 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
 #include "readmha.h"
 #include "volume.h"
 #include "demons_opts.h"
 #include "demons_misc.h"
+#include "timer.h"
 
 int
 round_int (float f)
@@ -20,7 +20,12 @@ round_int (float f)
 
 /* Vector fields are all in mm units */
 Volume*
-demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms)
+demons_c (
+    Volume* fixed, 
+    Volume* moving, 
+    Volume* moving_grad, 
+    Volume* vf_init, 
+    DEMONS_Parms* parms)
 {
     int i, j, k, v;
     int	it;			    /* Iterations */
@@ -33,7 +38,6 @@ demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, D
     float *dxyz;
     int mv, mx, my, mz;
     int fw[3];
-    clock_t start_run, end_run;
     double diff_run;
     Volume *vf_est, *vf_smooth;
     Volume *m_grad_mag;
@@ -46,6 +50,7 @@ demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, D
     float *vf_est_img, *vf_smooth_img;
     int inliers;
     float ssd;
+    Timer timer;
 
     /* Allocate memory for vector fields */
     if (vf_init) {
@@ -88,7 +93,7 @@ demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, D
 	f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
     }
 
-    start_run = clock();
+    plm_timer_start (&timer);
 
     /* Main loop through iterations */
     for (it = 0; it < parms->max_its; it++) {
@@ -151,9 +156,8 @@ demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, D
     volume_free (vf_est);
     volume_free (m_grad_mag);
 
-    end_run = clock();
-    diff_run = (double)(end_run - start_run)/CLOCKS_PER_SEC;
-    printf ("Time to estimate vector field for %d iterations = %f (%f sec / it)\n", 
+    diff_run = plm_timer_report (&timer);
+    printf ("Time for %d iterations = %f (%f sec / it)\n", 
 	    parms->max_its, diff_run, diff_run / parms->max_its);
 
     return vf_smooth;

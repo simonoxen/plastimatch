@@ -1,15 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <brook/brook.hpp>
 #include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <math.h>
-#include "plm_config.h"
 #include "demons_opts.h"
 #include "demons_misc.h"
+#include "timer.h"
 #include "volume.h"
 #include "readmha.h"
 #include "demons_brook_kernel.h"
@@ -60,7 +60,8 @@ estimate_partial_derivatives (Volume* vol1)
 		}
 	}
 
-	clock_t start_run = clock();
+	Timer timer;
+	plm_timer_start (&timer);
 
 	/* Compute partial derivatives on the GPU */
 	::brook::stream vol_st1(::brook::getStreamType(( float4  *)0), size , size, -1);
@@ -77,8 +78,8 @@ estimate_partial_derivatives (Volume* vol1)
 	k_epdz(vol_st1, (float)size, dim, vol1->pix_spacing[2], der_st);
 	streamWrite(der_st, der[2]);
 
-	clock_t end_run = clock();
-	printf("Time taken to compute image intensity gradient on the GPU = %f\n", double(end_run - start_run)/CLOCKS_PER_SEC);
+	printf ("Compute image intensity gradient on the GPU = %f secs\n", 
+		plm_timer_report (&timer));
 
 	free(img1);
 	return (der);
@@ -87,7 +88,7 @@ estimate_partial_derivatives (Volume* vol1)
 /* Vector fields are all in mm units */
 Volume*
 demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad, 
-			Volume* vf_init, DEMONS_Parms* parms)
+		       Volume* vf_init, DEMONS_Parms* parms)
 {
     int i, it;
     float3 m_offset, f_offset;              /* Copied from input volume */
@@ -175,7 +176,7 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     ::brook::stream s_debug(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
  
     /* Allocate memory for the various streams.  At the beginning and end 
-	of each loop, the current estimate is in s_vf_smooth_x, s_vf_smooth_y and s_vf_smooth_z.  */
+       of each loop, the current estimate is in s_vf_smooth_x, s_vf_smooth_y and s_vf_smooth_z.  */
     ::brook::stream s_vf_smooth_x(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
     ::brook::stream s_vf_smooth_y(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
     ::brook::stream s_vf_smooth_z(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
@@ -207,15 +208,8 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     streamRead (s_vf_smooth_y, vf_img[1]);
     streamRead (s_vf_smooth_z, vf_img[2]);
 
-    LARGE_INTEGER clock_count;
-    LARGE_INTEGER clock_frequency;
-    double clock_start, clock_end;
-    double io_cycles = 0.0;
-    double processing_cycles = 0.0;
-
-    QueryPerformanceFrequency(&clock_frequency); // Get CPU frequency
-    QueryPerformanceCounter(&clock_count); // Get CPU cycle counter
-    clock_start = (double)clock_count.QuadPart;
+    Timer timer;
+    plm_timer_start (&timer);
 
     /* Read data into the stream structures used by Brook */
     streamRead (der_st_x, mg_img[0]);
@@ -227,12 +221,9 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     streamRead (st_kery, kery);
     streamRead (st_kerz, kerz);
 
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    io_cycles += (clock_end - clock_start);
+    io_cycles += plm_timer_report (&timer);
 
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
+    plm_timer_start (&timer);
 
     for (it = 0; it < parms->max_its; it++) {
 
@@ -313,11 +304,11 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	    st_vf_temp_z);  // output stream
 
 	/* GCS Wed Dec 26 16:36:41 EST 2007 
-	    I haven't been able to get reduce to work on the GPU.  But the image difference 
-	    works just fine.  So I will do everything except the summation on the GPU, and 
-	    the summation on the CPU.
-	    Ref: http://www.gpgpu.org/forums/viewtopic.php?t=5013
-	    */
+	   I haven't been able to get reduce to work on the GPU.  But the image difference 
+	   works just fine.  So I will do everything except the summation on the GPU, and 
+	   the summation on the CPU.
+	   Ref: http://www.gpgpu.org/forums/viewtopic.php?t=5013
+	*/
 #if defined (commentout)
 	/* Uncomment this code to print SSD each iteration */
 	k_volume_difference (
@@ -353,18 +344,18 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 #if defined (commentout)
 	/* Uncomment this to get an intermediate snapshot of the vectorfield */
 	k_debug (s_vf_smooth_x, // input stream
-	      s_vf_smooth_x, // x displacement in voxels
-	      s_vf_smooth_y, // y displacement in voxels
-	      s_vf_smooth_z, // z displacement in voxels
-	      der_st_x, // nabla_z
-	      der_st_x, // nabla_x
-	      der_st_y, // nabla_y
-	      der_st_z, // nabla_z
-	      img_st_1, // static image
-	      img_st_2, // moving image
-	      dim, // volume dimensions
-	      (float)size, // texture memory dimensions
-	      s_debug); // output stream
+		 s_vf_smooth_x, // x displacement in voxels
+		 s_vf_smooth_y, // y displacement in voxels
+		 s_vf_smooth_z, // z displacement in voxels
+		 der_st_x, // nabla_z
+		 der_st_x, // nabla_x
+		 der_st_y, // nabla_y
+		 der_st_z, // nabla_z
+		 img_st_1, // static image
+		 img_st_2, // moving image
+		 dim, // volume dimensions
+		 (float)size, // texture memory dimensions
+		 s_debug); // output stream
 	streamWrite (s_debug, debug_vol->img);
 	write_mha ("debug.mha", debug_vol);
 #endif
@@ -394,23 +385,18 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 #endif
     }
 
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    processing_cycles +=  (clock_end - clock_start);
+    processing_cycles += plm_timer_report (&timer);
 
     printf("\n");
 	
-    QueryPerformanceCounter(&clock_count);
-    clock_start = (double)clock_count.QuadPart;
+    plm_timer_start (&timer);
 
     /* Read back the displacement field in terms of voxels */
     streamWrite(s_vf_smooth_x, vf_img[0]);
     streamWrite(s_vf_smooth_y, vf_img[1]);
     streamWrite(s_vf_smooth_z, vf_img[2]);
 
-    QueryPerformanceCounter(&clock_count);
-    clock_end = (double)clock_count.QuadPart;
-    io_cycles +=  (clock_end - clock_start);
+    io_cycles += plm_timer_report (&timer);
 
     /* Read back the displacement field in terms of mm */
     /*
@@ -420,11 +406,9 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
       write_to_file("gpu_vector_field_magnitude.txt", vol1->npix, vec_mm);
     */
 
-    printf("I/O time = %f\n", io_cycles/(double)clock_frequency.QuadPart);
-    printf("Processing time on GPU = %f\n", processing_cycles/(double)clock_frequency.QuadPart);
-    printf("Total time = %f\n", 
-	   io_cycles/(double)clock_frequency.QuadPart + 
-	   processing_cycles/(double)clock_frequency.QuadPart);
+    printf ("I/O time = %f\n", io_cycles);
+    printf ("Processing time on GPU = %f\n", processing_cycles);
+    printf("Total time = %f\n", io_cycles + processing_cycles);
 
     printf ("Converting to interleaved\n");
     vf_convert_to_interleaved (vf);
@@ -535,15 +519,14 @@ demons_brook (Volume* fixed, Volume* moving, Volume* moving_grad,
 	      Volume* vf_init, DEMONS_Parms* parms)
 {
     Volume* vf;
-    clock_t start_run, end_run;
+    Timer timer;
     double diff_run;
 
     /* Run the algorithm */
-    start_run = clock();
+    plm_timer_start (&timer);
     vf = demons_brook_internal (fixed, moving, moving_grad, vf_init, parms);
-    end_run = clock();
-    diff_run = (double) (end_run - start_run)/CLOCKS_PER_SEC;
-    printf("Time taken to estimate the vector field using %d iterations = %f\n", parms->max_its, diff_run);
+    diff_run = plm_timer_report (&timer);
+    printf("Time for %d iterations = %f\n", parms->max_its, diff_run);
     printf ("Done!\n");
 
     return vf;
