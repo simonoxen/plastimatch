@@ -8377,9 +8377,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // volume's voxel data. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->fixed_image. (fixed_image is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->fixed_image_size,
 	   GPU_Memory_Bytes);
+#endif
     cudaMalloc ((void**)&dev_ptrs->fixed_image, 
 		dev_ptrs->fixed_image_size);
     checkCUDAError ("Failed to allocate memory for fixed image");
@@ -8415,9 +8417,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // volume's voxel data. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->moving_image. (moving_image is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->moving_image_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
     checkCUDAError("Failed to allocate memory for moving image");
     printf(".");
@@ -8447,9 +8451,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // volume's data. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->moving_grad. (moving_grad is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->moving_grad_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
     checkCUDAError("Failed to allocate memory for moving grad");
     printf(".");
@@ -8480,9 +8486,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // coefficient LUT. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->coeff. (coeff is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->coeff_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
     checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
     printf(".");
@@ -8512,9 +8520,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // "Score". The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->score. (scoreis a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->score_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
     printf(".");
 
@@ -8537,9 +8547,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // grad. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->grad. (grad is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->grad_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
     printf(".");
 
@@ -8568,9 +8580,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // grad_temp. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->grad_temp. (grad_temp is a pointer)
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->grad_temp_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
     printf(".");
 
@@ -8616,23 +8630,29 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // deinterleaved dc_dv arrays. The pointer to this area of GPU
     // global memory will be returned and placed into
     // dev_parms->dc_dv_X. 
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->dc_dv_x_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
     GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
     checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
     printf(".");
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->dc_dv_y_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
     GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
     checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
     printf(".");
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->dc_dv_z_size,
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
     GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
@@ -8658,9 +8678,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 
     dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
 
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->LUT_Offsets_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
     printf(".");
@@ -8687,9 +8709,11 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 	    for (j = 0; j < 64; j++)
 		LUT_Knot[64*i + j] = local_set_of_64[j];
 	}
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->LUT_Knot_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
     printf(".");
@@ -8711,23 +8735,29 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
     dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
 
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->cond_x_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
     printf(".");
 
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->cond_y_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
     printf(".");
 
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->cond_z_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
     checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
     printf(".");
@@ -8766,19 +8796,25 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
 		LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
 	}
 	
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->LUT_Bspline_x_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->LUT_Bspline_y_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
+#if VERBOSE
     printf ("Trying to allocate %lu (%lu already allocated)\n",
 	    (long unsigned) dev_ptrs->LUT_Bspline_z_size, 
 	    GPU_Memory_Bytes);
+#endif
     cudaMalloc((void**)&dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
 
