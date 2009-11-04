@@ -139,7 +139,7 @@ PLM_ADD_TEST (
   "drr"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/drr_c
-  "-a;20;-e;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  "-a;20;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
   )
 
 ## -------------------------------------------------------------------------
