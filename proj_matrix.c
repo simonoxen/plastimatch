@@ -8,7 +8,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 #include "mathutil.h"
 #include "volume.h"
 #include "MGHMtx_opts.h"
-#include "write_matrix.h"
+#include "proj_matrix.h"
 void set_image_parms (MGHMtx_Options * options);
 
 #define DRR_PLANE_RAY_TOLERANCE 1e-8

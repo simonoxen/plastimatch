@@ -8,7 +8,7 @@
 #include "drr_opts.h"
 #include "MGHMtx_opts.h"
 #include "mathutil.h"
-#include "write_matrix.h"
+#include "proj_matrix.h"
 
 
 #ifndef NULL

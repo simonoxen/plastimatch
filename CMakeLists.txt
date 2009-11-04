@@ -666,14 +666,15 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	mathutil.h
 	fdk_cuda_integrated_main.c
 	fdk_cuda_ext.cu
-	write_matrix.h MGHMtx_opts.h
+	MGHMtx_opts.h
+	proj_matrix.c proj_matrix.h 
 	ramp_filter.c ramp_filter.h 
 	readmha_ext.h
 	volume.h volume_ext.h
 	volume.c volume_ext.c
-	write_matrix.c writematrix_opts.c
+	writematrix_opts.c
 	wrmha_512prefix.c
-	bowtie_correction.c	
+	bowtie_correction.c
 	)
 
 IF (CUDA_FOUND)

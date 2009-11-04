@@ -18,7 +18,7 @@
 #include "readmha_ext.h"
 #include "MGHDRR_Options.h"
 #include "MGHMtx_opts.h"
-#include "write_matrix.h"
+#include "proj_matrix.h"
 #include "file_util.h"
 #if (_WIN32)
 #include <windows.h>
@@ -45,7 +45,6 @@ main(int argc, char* argv[])
     char argbuf[256];
     int CheckNormExits;
 	
-
     /**************************************************************** 
      * STEP 0: Parse commandline arguments                           * 
      ****************************************************************/
