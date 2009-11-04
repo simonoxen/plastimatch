@@ -1,10 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
@@ -179,8 +179,10 @@ proj_image_load_and_filter (
 	exit (-1);
     }
 
+#if (FFTW_FOUND)
     RampFilter(readimg,cbi->img,512,cbi->dim[0]);
-			
+#endif
+
     free(readimg);
 
     if(!options->full_fan){
