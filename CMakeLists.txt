@@ -661,10 +661,11 @@ IF (BROOK_FOUND)
     )
 ENDIF (BROOK_FOUND)
 
+
 SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-	fdk_opts_ext.c fdk_opts_ext.h
-	fdk_utils_ext.c fdk_utils_ext.h
 	fdk_cuda.h fdk.h
+	fdk_opts.c fdk_opts.h
+	fdk_utils.c fdk_utils.h
 	mathutil.h
 	fdk_cuda_integrated_main.c
 	fdk_cuda_ext.cu
@@ -677,6 +678,9 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	wrmha_512prefix.c
 	bowtie_correction.c
 	)
+
+#	fdk_opts_ext.c fdk_opts_ext.h
+#	fdk_utils_ext.c fdk_utils_ext.h
 
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)

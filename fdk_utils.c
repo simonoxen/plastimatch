@@ -13,7 +13,7 @@
 #include "volume.h"
 
 Volume*
-my_create_volume (MGHCBCT_Options* options)
+my_create_volume (Fdk_options* options)
 {
     float offset[3];
     float spacing[3];
@@ -41,7 +41,7 @@ convert_to_hu_pixel (float in_value)
 }
 
 void
-convert_to_hu (Volume* vol, MGHCBCT_Options* options)
+convert_to_hu (Volume* vol, Fdk_options* options)
 {
     int i, j, k, p;
     float* img = (float*) vol->img;
@@ -58,7 +58,7 @@ convert_to_hu (Volume* vol, MGHCBCT_Options* options)
 }
 
 CB_Image*
-get_image (MGHCBCT_Options* options, int image_num)
+get_image (Fdk_options* options, int image_num)
 {
 #if defined (READ_PFM)
     char* img_file_pat = "out_%04d.pfm";

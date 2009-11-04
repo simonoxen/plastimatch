@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-void fdk_brook_c (Volume *vol, MGHCBCT_Options *options);
+void fdk_brook_c (Volume *vol, Fdk_options *options);
 
 #if defined __cplusplus
 }

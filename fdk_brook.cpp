@@ -19,8 +19,8 @@
 #include "fdk_brook_kernel.cpp"
 
 void
-fdk_brook_512_256(Volume* vol, MGHCBCT_Options* options){
-
+fdk_brook_512_256(Volume* vol, Fdk_options* options)
+{
     float3 xip, yip, zip, spacing, offset, wip;
 
     int image_num, size;
@@ -220,7 +220,7 @@ fdk_brook_512_256(Volume* vol, MGHCBCT_Options* options){
 }
 
 void
-fdk_brook_c (Volume* vol, MGHCBCT_Options* options)
+fdk_brook_c (Volume* vol, Fdk_options* options)
 {
     float3 xip, yip, zip, spacing, offset, wip;
 
@@ -386,7 +386,7 @@ fdk_brook_c (Volume* vol, MGHCBCT_Options* options)
 }
 
 void
-fdk_brook_b(Volume* vol, MGHCBCT_Options* options)
+fdk_brook_b(Volume* vol, Fdk_options* options)
 {
     float3 xip, yip, zip, spacing, offset, wip;
 

@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options);
+int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options);
 
 #if defined __cplusplus
 }

@@ -122,7 +122,7 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
 
 CB_Image* 
 proj_image_load_and_filter (
-    MGHCBCT_Options * options, 
+    Fdk_options * options, 
     char* img_filename, 
     char* mat_filename
 )
@@ -263,7 +263,7 @@ proj_image_load_and_filter (
 
 #if defined (commentout)
 CB_Image*
-get_image (MGHCBCT_Options* options, int image_num)
+get_image (Fdk_options* options, int image_num)
 {
     char* img_file_pat = "out_%04d.pfm";
     char* mat_file_pat = "out_%04d.txt";

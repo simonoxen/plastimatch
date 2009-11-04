@@ -27,7 +27,7 @@ void print_usage (void)
     exit (1);
 }
 
-void set_default_options (MGHCBCT_Options* options)
+void set_default_options (Fdk_options* options)
 {
     options->threading = THREADING_CPU;
     options->first_img = 0;
@@ -54,7 +54,7 @@ void set_default_options (MGHCBCT_Options* options)
     options->Half_radius=220;
 }
 
-void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
+void parse_args (Fdk_options* options, int argc, char* argv[])
 {
     int i, rc;
 	

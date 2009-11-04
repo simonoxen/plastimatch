@@ -51,7 +51,7 @@
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-CB_Image* get_image (MGHCBCT_Options* options, int image_num);
+CB_Image* get_image (Fdk_options* options, int image_num);
 void checkCUDAError(const char *msg);
 
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
@@ -146,7 +146,7 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
 extern "C"
-int CUDA_reconstruct_conebeam (Volume *vol, MGHCBCT_Options *options)
+int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 {
     // Thead Block Dimensions
     int tBlock_x = 16;

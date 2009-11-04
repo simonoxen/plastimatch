@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-CB_Image* get_image (MGHCBCT_Options* options, int image_num);
+CB_Image* get_image (Fdk_options* options, int image_num);
 CB_Image* proj_image_load_pfm (char* img_filename, char* mat_filename);
 void free_cb_image (CB_Image* cbi);
 

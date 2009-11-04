@@ -7,16 +7,18 @@
 //#include <crtdbg.h>
 
 
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
-#include "fdk_opts_ext.h"
-#include "fdk_utils_ext.h"
+//#include "fdk_opts_ext.h"
+//#include "fdk_utils_ext.h"
+#include "fdk_opts.h"
+#include "fdk_utils.h"
 #include "volume.h"
 //#include "volume_ext.h"
 #include "readmha_ext.h"
-#include "MGHDRR_Options.h"
+//#include "MGHDRR_Options.h"
 #include "MGHMtx_opts.h"
 #include "proj_matrix.h"
 #include "file_util.h"
@@ -26,8 +28,8 @@
 
 //extern "C"
 //{
-int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options);
-int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options);
+int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options);
+int CUDA_DRR (Volume *vol, Fdk_options *options);
 //}
 int
 main(int argc, char* argv[]) 
@@ -35,7 +37,7 @@ main(int argc, char* argv[])
     //memoryleak test. No leakage dected
     //_CrtSetDbgFlag ( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
     int i;
-    MGHCBCT_Options_ext options;
+    Fdk_options options;
     MGHMtx_Options matrix_options;
 
     Volume* vol;
@@ -49,7 +51,7 @@ main(int argc, char* argv[])
      * STEP 0: Parse commandline arguments                           * 
      ****************************************************************/
 
-    parse_args_ext (&options, argc, argv);
+    parse_args (&options, argc, argv);
     wm_set_default_options (&matrix_options);
     //give the previously allocated array to pointers.
 	

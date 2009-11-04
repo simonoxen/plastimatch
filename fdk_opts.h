@@ -23,9 +23,8 @@ enum Fdk_threading {
     THREADING_CUDA
 };
 
-
-typedef struct MGHCBCT_Options_struct MGHCBCT_Options;
-struct MGHCBCT_Options_struct {
+typedef struct fdk_options Fdk_options;
+struct fdk_options {
     enum Fdk_threading threading;
     int first_img;
     int skip_img;
@@ -51,7 +50,7 @@ struct MGHCBCT_Options_struct {
 extern "C" {
 #endif
 
-void parse_args (MGHCBCT_Options* options, int argc, char* argv[]);
+void fdk_parse_args (Fdk_options* options, int argc, char* argv[]);
 
 #if defined __cplusplus
 }

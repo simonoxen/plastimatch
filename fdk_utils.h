@@ -12,10 +12,9 @@
 extern "C" {
 #endif
 
-void convert_to_hu (Volume* vol, MGHCBCT_Options* options);
-Volume* my_create_volume (MGHCBCT_Options* options);
-CB_Image* get_image (MGHCBCT_Options* options, int image_num);
-//CB_Image* load_cb_image (char* img_filename, char* mat_filename);
+void convert_to_hu (Volume* vol, Fdk_options* options);
+Volume* my_create_volume (Fdk_options* options);
+CB_Image* get_image (Fdk_options* options, int image_num);
 void free_cb_image (CB_Image* cbi);
 
 

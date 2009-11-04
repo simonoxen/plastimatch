@@ -312,7 +312,7 @@ project_volume_onto_image_reference (Volume* vol, CB_Image* cbi, float scale)
 }
 
 void
-reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
+reconstruct_conebeam (Volume* vol, Fdk_options* options)
 {
     int i;
     int num_imgs;
@@ -339,7 +339,7 @@ reconstruct_conebeam (Volume* vol, MGHCBCT_Options* options)
 
 int main(int argc, char* argv[])
 {
-    MGHCBCT_Options options;
+    Fdk_options options;
     Volume* vol;
     
     parse_args (&options, argc, argv);
