@@ -60,11 +60,7 @@ convert_to_hu (Volume* vol, Fdk_options* options)
 CB_Image*
 get_image (Fdk_options* options, int image_num)
 {
-#if defined (READ_PFM)
     char* img_file_pat = "out_%04d.pfm";
-#else
-    char* img_file_pat = "out_%04d.pgm";
-#endif
     char* mat_file_pat = "out_%04d.txt";
 
     char img_file[1024], mat_file[1024], fmt[1024];
