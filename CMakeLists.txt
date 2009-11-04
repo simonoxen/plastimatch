@@ -748,6 +748,7 @@ SET(PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
 	plastimatch_main.cxx
  	file_type.cxx file_type.h
+	stats_main.cxx stats_main.h
  	warp_dij_main.cxx 
 	warp_main.cxx warp_main.h
 	warp_mha_main.cxx 

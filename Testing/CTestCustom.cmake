@@ -9,6 +9,8 @@ IF (NOT CUDA_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "fdk-cuda"
+    "fdk-cuda-stats"
+    "fdk-cuda-check"
     "plastimatch-bspline-cuda" 
     )
 ENDIF (NOT CUDA_FOUND)
@@ -17,6 +19,8 @@ IF (NOT BROOK_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "fdk-brook"
+    "fdk-brook-stats"
+    "fdk-brook-check"
     )
 ENDIF (NOT BROOK_FOUND)
 

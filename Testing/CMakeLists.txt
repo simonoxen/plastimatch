@@ -143,7 +143,7 @@ PLM_ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
-## fdk
+## fdk cpu
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-cpu"
@@ -151,19 +151,70 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
   "-I;${PLM_TESTING_BUILD_DIR};-a;0 19;-O;fdk_cpu_output.mha"
   )
+PLM_ADD_TEST (
+  "fdk-cpu-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;fdk_cpu_output.mha"
+  )
+ADD_TEST (
+  "fdk-cpu-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=-999.9"
+  "-DUPPER_THRESH=-999.8"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
+## -------------------------------------------------------------------------
+## fdk brook
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-brook"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
   "-I;${PLM_TESTING_BUILD_DIR};-A;brook;-a;0 19;-O;fdk_brook_output.mha"
   )
+PLM_ADD_TEST (
+  "fdk-brook-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;fdk_brook_output.mha"
+  )
+ADD_TEST (
+  "fdk-brook-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-brook-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=-999.9"
+  "-DUPPER_THRESH=-999.8"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
+## -------------------------------------------------------------------------
+## fdk cuda
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
   "-I;${PLM_TESTING_BUILD_DIR};-A;cuda;-a;0 19;-O;fdk_cuda_output.mha"
+  )
+PLM_ADD_TEST (
+  "fdk-cuda-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;fdk_cuda_output.mha"
+  )
+ADD_TEST (
+  "fdk-cuda-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=-999.9"
+  "-DUPPER_THRESH=-999.8"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------

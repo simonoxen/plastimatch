@@ -11,11 +11,9 @@
 #include "getopt.h"
 #endif
 #include "plm_registration.h"
-#include "itk_image.h"
-#include "itk_optim.h"
-#include "xform.h"
 #include "plm_version.h"
 #include "adjust_main.h"
+#include "stats_main.h"
 #include "warp_main.h"
 
 static void
@@ -25,7 +23,9 @@ print_usage (int return_code)
     printf ("Usage: plastimatch command [options]\n");
     printf ("Commands:\n");
     printf ("  adjust\n");
+    printf ("  convert\n");
     printf ("  register\n");
+    printf ("  stats\n");
     printf ("  warp\n");
     exit (return_code);
 }
@@ -65,8 +65,16 @@ do_command (int argc, char* argv[])
     if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
     }
+    else if (!strcmp (command, "convert")) {
+	/* warp and convert are the same */
+	do_command_warp (argc, argv);
+    }
     else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);
+    }
+    else if (!strcmp (command, "stats")) {
+	/* warp and convert are the same */
+	do_command_stats (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
 	do_command_warp (argc, argv);
