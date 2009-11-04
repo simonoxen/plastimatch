@@ -451,6 +451,8 @@ SET (GPUIT_LIBRARY_SRC
   logfile.c logfile.h
   mathutil.h
   print_and_exit.c print_and_exit.h 
+  proj_image.c proj_image.h
+  proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
   timer.c timer.h
   volume.c volume.h
@@ -667,7 +669,6 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_cuda_integrated_main.c
 	fdk_cuda_ext.cu
 	MGHMtx_opts.h
-	proj_matrix.c proj_matrix.h 
 	ramp_filter.c ramp_filter.h 
 	readmha_ext.h
 	volume.h volume_ext.h

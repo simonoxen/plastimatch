@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _fdk_utils_h_
-#define _fdk_utils_h_
+#ifndef _proj_image_h_
+#define _proj_image_h_
 
 #include "volume.h"
 #include "fdk.h"
@@ -12,10 +12,8 @@
 extern "C" {
 #endif
 
-void convert_to_hu (Volume* vol, MGHCBCT_Options* options);
-Volume* my_create_volume (MGHCBCT_Options* options);
 CB_Image* get_image (MGHCBCT_Options* options, int image_num);
-//CB_Image* load_cb_image (char* img_filename, char* mat_filename);
+CB_Image* proj_image_load_pfm (char* img_filename, char* mat_filename);
 void free_cb_image (CB_Image* cbi);
 
 

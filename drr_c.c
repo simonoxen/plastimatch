@@ -1,14 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "plm_config.h"
 #include "mathutil.h"
 #include "drr.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
+#include "proj_matrix.h"
 #include "readmha.h"
 
 //#define ULTRA_VERBOSE 1
@@ -389,6 +390,7 @@ drr_render_volume_orthographic (Volume* volume)
 {
 }
 
+#if defined (commentout)
 void
 drr_write_projection_matrix (Volume* vol, double* cam, 
 			     double* tgt, double* vup,
@@ -432,6 +434,7 @@ drr_write_projection_matrix (Volume* vol, double* cam,
     vec3_copy (&extrinsic[0], vrt);
     vec3_copy (&extrinsic[4], vup_tmp);
     vec3_copy (&extrinsic[8], nrm);
+
     sad = vec3_len (cam);
     m_idx(extrinsic,cols,2,3) = - sad;
     m_idx(extrinsic,cols,3,3) = 1.0;
@@ -472,6 +475,7 @@ drr_write_projection_matrix (Volume* vol, double* cam,
     fprintf (fp, "%18.8e %18.8e %18.8e\n", nrm[0], nrm[1], nrm[2]);
     fclose (fp);
 }
+#endif
 
 void
 drr_render_volume_perspective (Volume* vol, double* cam, 
@@ -667,6 +671,7 @@ drr_render_volumes (Volume* vol, MGHDRR_Options* options)
     double tgt[3] = {0.0, 0.0, 0.0};
     double nrm[3];
     double tmp[3];
+    int varian_mode = 0;
 
     /* Set source-to-axis distance */
     double sad = options->sad;
@@ -722,8 +727,13 @@ drr_render_volumes (Volume* vol, MGHDRR_Options* options)
 	printf ("ic:  %g %g\n", ic[0], ic[1]);
 #endif
 	sprintf (out_fn, "%s%04d.txt", options->output_prefix, a);
+#if defined (commentout)
 	drr_write_projection_matrix (vol, cam, tgt, vup, 
 				     sid, ic, ps, ires, out_fn);
+#endif
+
+	proj_matrix_write (cam, tgt, vup, sid, ic, ps, ires, 
+			   varian_mode, out_fn);
 	if (options->output_format == OUTPUT_FORMAT_PFM) {
 	    sprintf (out_fn, "%s%04d.pfm", options->output_prefix, a);
 	} else if (options->output_format == OUTPUT_FORMAT_PGM) {
