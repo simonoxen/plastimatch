@@ -30,7 +30,6 @@ SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET (PLM_BSPLINE_CXX OFF CACHE BOOL "Use C++ version of bspline code")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
   "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
@@ -291,7 +290,6 @@ IF(ITK_FOUND)
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
 ENDIF(ITK_FOUND)
 
-
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
 ##-----------------------------------------------------------------------------
@@ -309,24 +307,24 @@ ENDIF(wxWidgets_FOUND)
 ##-----------------------------------------------------------------------------
 ##  DCMTK LIBRARY
 ##-----------------------------------------------------------------------------
-SET(DCMTK_HAVE_CONFIG_H FALSE)
-IF(UNIX)
-   SET(DCMTK_HAVE_CONFIG_H TRUE)
-ENDIF(UNIX)
+SET (DCMTK_HAVE_CONFIG_H FALSE)
+IF (UNIX)
+  SET(DCMTK_HAVE_CONFIG_H TRUE)
+ENDIF (UNIX)
 
 ##-----------------------------------------------------------------------------
-##  GPUIT LIBRARY
+##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
-SET(GPUIT_LIBRARY_DEPENDENCIES "")
+SET (GPUIT_LIBRARY_DEPENDENCIES "")
 
-IF(BROOK_FOUND)
+IF (BROOK_FOUND)
   SET(GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${BROOK_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${DIRECTX_LIBRARIES}
     )
-ENDIF(BROOK_FOUND)
+ENDIF (BROOK_FOUND)
 
 IF (CMAKE_Fortran_COMPILER_WORKS)
   # It would seem that mixed-language programs need to set compiler and 
@@ -365,29 +363,33 @@ IF(CUDA_FOUND)
     )
 ENDIF(CUDA_FOUND)
 
-IF(OPENMP_FOUND)
-  SET(GPUIT_LIBRARY_DEPENDENCIES
+IF (OPENMP_FOUND)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${OPENMP_LIBRARIES}
     )
-ENDIF(OPENMP_FOUND)
+ENDIF (OPENMP_FOUND)
 
-SET(GPUIT_LIBRARY_DEPENDENCIES
+SET (GPUIT_LIBRARY_DEPENDENCIES
   ${GPUIT_LIBRARY_DEPENDENCIES}
   ${MATH_LIB}
   )
 
+SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
-SET(GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
+SET (PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
-SET(PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+SET (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
-SET(SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
+SET (FDK_LIBRARIES ${GPUIT_LIBRARIES})
+IF (FFTW_FOUND)
+  SET (FDK_LIBRARIES ${FDK_LIBRARIES} ${FFTW_LIBRARIES})
+ENDIF (FFTW_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
-IF(BROOK_FOUND)
+IF (BROOK_FOUND)
   BRCC_FILE(fdk_brook_kernel.br)
   SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
     OBJECT_DEPENDS "fdk_brook_kernel.cpp")
@@ -402,7 +404,7 @@ IF(BROOK_FOUND)
   BRCC_FILE(toy_kernels.br)
   SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
-ENDIF(BROOK_FOUND)
+ENDIF (BROOK_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  CUDA FILES
@@ -438,7 +440,8 @@ ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
 ##-----------------------------------------------------------------------------
 ##  GPUIT/PLASTIMATCH SOURCE FILES
 ##-----------------------------------------------------------------------------
-SET(GPUIT_LIBRARY_SRC
+SET (GPUIT_LIBRARY_SRC
+  bspline.c bspline.h
   bspline_opts.c bspline_opts.h
   bstrlib.c bstrlib.h
   demons.c demons.h
@@ -452,15 +455,6 @@ SET(GPUIT_LIBRARY_SRC
   timer.c timer.h
   volume.c volume.h
   )
-IF(PLM_BSPLINE_CXX)
-  SET(GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    bspline.cxx bspline.h)
-ELSE(PLM_BSPLINE_CXX)
-  SET(GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    bspline.c bspline.h)
-ENDIF(PLM_BSPLINE_CXX)
 IF(BROOK_FOUND)
   SET(GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
@@ -643,11 +637,17 @@ SET (FDK_SRC
 	fdk_utils.c fdk_utils.h
 	)
 
+IF (FFTW_FOUND)
+  SET (FDK_SRC
+    ${FDK_SRC}
+    ramp_filter.c ramp_filter.h
+   )
+ENDIF (FFTW_FOUND)
+
 IF (CUDA_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
-    fdk_cuda.h
-    fdk_cuda.cu
+    fdk_cuda.cu fdk_cuda.h
     )
 ENDIF (CUDA_FOUND)
 
@@ -667,7 +667,8 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_cuda_integrated_main.c
 	fdk_cuda_ext.cu
 	write_matrix.h MGHMtx_opts.h
-	ramp_filter.h readmha_ext.h
+	ramp_filter.c ramp_filter.h 
+	readmha_ext.h
 	volume.h volume_ext.h
 	volume.c volume_ext.c
 	write_matrix.c writematrix_opts.c
@@ -931,8 +932,7 @@ PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE(fdk "${FDK_SRC}" "${FDK_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
 PLM_ADD_EXECUTABLE(hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")

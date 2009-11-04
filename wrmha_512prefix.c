@@ -25,6 +25,7 @@
     into many "medium-sized" writes. */
 
 
+#if defined (commentout)
 void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 {
     size_t left_to_write = count * size;
@@ -46,6 +47,7 @@ void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 	left_to_write -= rc;
     }
 }
+#endif
 
 void write_mha_512prefix (char* filename, Volume* vol, MGHCBCT_Options_ext* options)
 {

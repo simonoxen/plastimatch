@@ -11,7 +11,7 @@
 * Uncomment the line below to enable verbose output. *
 * Enabling this should not nerf performance.         *
 \****************************************************/
-//#define VERBOSE
+#define VERBOSE 1
 
 /**********************************************************\
 * Uncomment the line below to enable detailed performance  *
@@ -575,6 +575,8 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
     // Size of volume Malloc
     int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
 
+    printf ("Hello world from CUDA_reconstruct_conebeam_ext\n");
+
     // Structure for passing arugments to kernel: (See fdk_cuda.h)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
@@ -589,12 +591,16 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
     float *dev_matrix;
     kernel_args_fdk *dev_kargs; // Holds kernel parameters
     cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
+    checkCUDAError ("cudaMalloc");
     cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
+    checkCUDAError ("cudaMalloc");
 
     // Calculate the scale
     image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
     float scale = (float) (sqrt(3.0) / (double) image_num);
     scale = scale * options->scale;
+
+    printf ("loading static kernel arguments\n");
 
     // Load static kernel arguments
     kargs->scale = scale;
@@ -633,19 +639,12 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
 	printf("QueryPerformance not present!");
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-#endif
-
     // Test: Get current time.
 #if defined (_WIN32)
     if (!QueryPerformanceCounter(&tick))
 	printf("no go counter not installed");  
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-#endif
     /////////////////////////////////////////
 	
 
@@ -678,8 +677,9 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
 	
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
-    do{
-	cbi = get_image(options, fimg);
+    do {
+	printf ("Calling get_image\n");
+	cbi = get_image (options, fimg);
 	fimg++;
     }
     while(cbi==NULL);
@@ -913,21 +913,12 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
 	printf("QueryPerformance not present!");
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-#endif
-
     // Test: Get current time.
 #if defined (_WIN32)
     if (!QueryPerformanceCounter(&tick))
 	printf("no go counter not installed");  
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-#endif
-    /////////////////////////////////////////
-	
 
 #if defined (VERBOSE)
     // First, we need to allocate memory on the host device
@@ -939,13 +930,6 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
-
-    // State the kernel execution parameters
-    printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
-    printf("%u voxels in volume\n", vol->npix);
-    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n\n");
 
     // Start working
     printf("Processing...");
@@ -1246,49 +1230,19 @@ int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
 	printf("QueryPerformance not present!");
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-#endif
-
     // Test: Get current time.
 #if defined (_WIN32)
     if (!QueryPerformanceCounter(&tick))
 	printf("no go counter not installed");  
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-#endif
     /////////////////////////////////////////
 	
-
-#if defined (VERBOSE)
-    // First, we need to allocate memory on the host device
-    // for the 3D volume of voxels that will hold our reconstruction.
-    printf("========================================\n");
-    printf("Allocating %dMB of video memory...", vol_size_malloc/1000000);
-#endif
-
 
     cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
     //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
     checkCUDAError("Unable to allocate data volume");
 
-#if defined (VERBOSE)
-    printf(" done.\n\n");
-
-    // State the kernel execution parameters
-    printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
-    printf("%u voxels in volume\n", vol->npix);
-    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n\n");
-
-    // Start working
-    printf("Processing...");
-#endif
-
-	
 	
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
@@ -1310,168 +1264,168 @@ int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
     printf ("Projecting Image:");
     // Project each image into the volume one at a time
     for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
-    {
+	{
 
-	fflush(stdout);
-	////// TIMING CODE //////////////////////
+	    fflush(stdout);
+	    ////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
-	QueryPerformanceCounter(&start_ticks_io);
+	    QueryPerformanceCounter(&start_ticks_io);
 #endif
 #endif
-	/////////////////////////////////////////
+	    /////////////////////////////////////////
 
-	// Load the current image
-	cbi = get_image(options, image_num);
-	if (cbi==NULL)
-	    continue;
+	    // Load the current image
+	    cbi = get_image(options, image_num);
+	    if (cbi==NULL)
+		continue;
 
-	// Load dynamic kernel arguments
-	kargs->img_dim.x = cbi->dim[0];
-	kargs->img_dim.y = cbi->dim[1];
-	kargs->ic.x = cbi->ic[0];
-	kargs->ic.y = cbi->ic[1];
-	kargs->nrm.x = cbi->nrm[0];
-	kargs->nrm.y = cbi->nrm[1];
-	kargs->nrm.z = cbi->nrm[2];
-	kargs->sad = cbi->sad;
-	kargs->sid = cbi->sid;
-	for(i=0; i<12; i++)
-	    kargs->matrix[i] = (float)cbi->matrix[i];
+	    // Load dynamic kernel arguments
+	    kargs->img_dim.x = cbi->dim[0];
+	    kargs->img_dim.y = cbi->dim[1];
+	    kargs->ic.x = cbi->ic[0];
+	    kargs->ic.y = cbi->ic[1];
+	    kargs->nrm.x = cbi->nrm[0];
+	    kargs->nrm.y = cbi->nrm[1];
+	    kargs->nrm.z = cbi->nrm[2];
+	    kargs->sad = cbi->sad;
+	    kargs->sid = cbi->sid;
+	    for(i=0; i<12; i++)
+		kargs->matrix[i] = (float)cbi->matrix[i];
 
-	// Copy image pixel data & projection matrix to device Global Memory
-	// and then bind them to the texture hardware.
-	//cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
-	//cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
+	    // Copy image pixel data & projection matrix to device Global Memory
+	    // and then bind them to the texture hardware.
+	    //cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
+	    //cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
 
-	cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
+	    cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
 
-	cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
-	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)); 
+	    cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
+	    cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)); 
 
-	// Free the current vol 
-	//free_cb_image( cbi );
+	    // Free the current vol 
+	    //free_cb_image( cbi );
 
-	////// TIMING CODE //////////////////////
+	    ////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_io);
-	cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
-	io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
-	QueryPerformanceCounter(&start_ticks_kernel);
+	    QueryPerformanceCounter(&end_ticks_io);
+	    cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
+	    io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+	    QueryPerformanceCounter(&start_ticks_kernel);
 #endif
 #endif
-	/////////////////////////////////////////
+	    /////////////////////////////////////////
 
 
 	    // Thead Block Dimensions
-    int tBlock_x = vol->dim[0];
-    int tBlock_y = 1;
-    int tBlock_z = 1;
+	    int tBlock_x = vol->dim[0];
+	    int tBlock_y = 1;
+	    int tBlock_z = 1;
 
-    // Each element in the volume (each voxel) gets 1 thread
-    int blocksInX = cbi->dim[0];
-    int blocksInY = cbi->dim[1];
-    dim3 dimGrid  = dim3(blocksInX, blocksInY);
-    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+	    // Each element in the volume (each voxel) gets 1 thread
+	    int blocksInX = cbi->dim[0];
+	    int blocksInY = cbi->dim[1];
+	    dim3 dimGrid  = dim3(blocksInX, blocksInY);
+	    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
 
 
-	// Invoke ze kernel  \(^_^)/
-	// Note: cbi->img AND cbi->matrix are passed via texture memory
+	    // Invoke ze kernel  \(^_^)/
+	    // Note: cbi->img AND cbi->matrix are passed via texture memory
 
-	int smemSize = vol->dim[0]  * sizeof(float);
-	if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
-	//-------------------------------------
-	kernel_drr_i<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
-					    kargs->img_dim,
-					    kargs->ic,
-					    kargs->nrm,
-					    kargs->sad,
-					    kargs->scale,
-					    kargs->vol_offset,
-					    kargs->vol_dim,
-					    kargs->vol_pix_spacing);
-	else
-			//-------------------------------------
-	kernel_drr_j<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
-					    kargs->img_dim,
-					    kargs->ic,
-					    kargs->nrm,
-					    kargs->sad,
-					    kargs->scale,
-					    kargs->vol_offset,
-					    kargs->vol_dim,
-					    kargs->vol_pix_spacing);
-	checkCUDAError("Kernel Panic!");
-	printf (" %d\n", image_num);
+	    int smemSize = vol->dim[0]  * sizeof(float);
+	    if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
+		//-------------------------------------
+		kernel_drr_i<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
+								kargs->img_dim,
+								kargs->ic,
+								kargs->nrm,
+								kargs->sad,
+								kargs->scale,
+								kargs->vol_offset,
+								kargs->vol_dim,
+								kargs->vol_pix_spacing);
+	    else
+		//-------------------------------------
+		kernel_drr_j<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
+								kargs->img_dim,
+								kargs->ic,
+								kargs->nrm,
+								kargs->sad,
+								kargs->scale,
+								kargs->vol_offset,
+								kargs->vol_dim,
+								kargs->vol_pix_spacing);
+	    checkCUDAError("Kernel Panic!");
+	    printf (" %d\n", image_num);
 
 #if defined (TIME_KERNEL)
-	// CUDA kernel calls are asynchronous...
-	// In order to accurately time the kernel
-	// execution time we need to set a thread
-	// barrier here after its execution.
-	cudaThreadSynchronize();
+	    // CUDA kernel calls are asynchronous...
+	    // In order to accurately time the kernel
+	    // execution time we need to set a thread
+	    // barrier here after its execution.
+	    cudaThreadSynchronize();
 #endif
 
-	// Unbind the image and projection matrix textures
-	//cudaUnbindTexture( tex_img );
-	cudaUnbindTexture( tex_matrix );
+	    // Unbind the image and projection matrix textures
+	    //cudaUnbindTexture( tex_img );
+	    cudaUnbindTexture( tex_matrix );
 
 	    // Copy reconstructed volume from device to host
-    //cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
-	cudaMemcpy( cbi->img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyDeviceToHost );
-    checkCUDAError("Error: Unable to retrieve data volume.");
+	    //cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
+	    cudaMemcpy( cbi->img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyDeviceToHost );
+	    checkCUDAError("Error: Unable to retrieve data volume.");
 		
-	char img_file[1024];
+	    char img_file[1024];
 	
-    size_t rc;
-    FILE* fp;
-    //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
-	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
- //   sprintf (mat_file, fmt, image_num);
- //   return load_and_filter_cb_image (options,img_file, mat_file);
-sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+	    size_t rc;
+	    FILE* fp;
+	    //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
+	    //sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
+	    //   sprintf (img_file, fmt, image_num);
+	    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+	    //   sprintf (mat_file, fmt, image_num);
+	    //   return load_and_filter_cb_image (options,img_file, mat_file);
+	    sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
+	    //   sprintf (img_file, fmt, image_num);
+	    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
 
 
 
 
-    fp = fopen (img_file,"wb");
-    if (!fp) {
-	fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
-	return(1);
-    }
-	float writeimg[512*384];
-	for (int i=0; i<512*384; i++)
+	    fp = fopen (img_file,"wb");
+	    if (!fp) {
+		fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
+		return(1);
+	    }
+	    float writeimg[512*384];
+	    for (int i=0; i<512*384; i++)
 		writeimg[i]=65535*exp(-cbi->img[i]/30000);
 
 
-		/* write pixels */
-		rc = fwrite (writeimg , sizeof(float),  512* 384, fp); 
-		if (rc != 512 * 384) {
-			fprintf (stderr, "Couldn't write raster data for %s\n",
-				img_file);
-			return(1);
-		}
-		printf("Writing OK\n");
+	    /* write pixels */
+	    rc = fwrite (writeimg , sizeof(float),  512* 384, fp); 
+	    if (rc != 512 * 384) {
+		fprintf (stderr, "Couldn't write raster data for %s\n",
+			 img_file);
+		return(1);
+	    }
+	    printf("Writing OK\n");
 			
-		fclose(fp);
+	    fclose(fp);
 
 
 
-	////// TIMING CODE //////////////////////
+	    ////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_kernel);
-	cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
-	kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+	    QueryPerformanceCounter(&end_ticks_kernel);
+	    cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
+	    kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
 #endif
 #endif
-	/////////////////////////////////////////
-    }
+	    /////////////////////////////////////////
+	}
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
@@ -1602,20 +1556,11 @@ int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
 	printf("QueryPerformance not present!");
 #endif
 
-#if defined (VERBOSE)
-    printf ("\tFreq Test:   %I64Ld ticks/sec\n",ticksPerSecond    );
-#endif
-
     // Test: Get current time.
 #if defined (_WIN32)
     if (!QueryPerformanceCounter(&tick))
 	printf("no go counter not installed");  
 #endif
-
-#if defined (VERBOSE)
-    printf ("\tTestpoint:   %I64Ld  ticks\n",tick);
-#endif
-    /////////////////////////////////////////
 	
 //Create DRR directory
 #if defined (_WIN32)
@@ -1623,14 +1568,6 @@ int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
 	sprintf (drr_dir, "%s\\DRR", options->input_dir);
 	CreateDirectory(drr_dir,NULL);
 #endif
-
-#if defined (VERBOSE)
-    // First, we need to allocate memory on the host device
-    // for the 3D volume of voxels that will hold our reconstruction.
-    printf("========================================\n");
-    printf("Allocating %dMB of video memory...", vol_size_malloc/1000000);
-#endif
-
 
     //cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
     //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
@@ -1682,19 +1619,8 @@ int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
 #if defined (VERBOSE)
     printf(" done.\n\n");
 
-    // State the kernel execution parameters
-    printf("kernel parameters:\n dimGrid: %u, %u (Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, dimBlock.x, dimBlock.y, dimBlock.z);
-    printf("%u voxels in volume\n", vol->npix);
-    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
-    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n\n");
-
-    // Start working
-    printf("Processing...");
 #endif
 
-	
-	
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
     do{

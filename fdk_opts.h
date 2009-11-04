@@ -35,6 +35,16 @@ struct MGHCBCT_Options_struct {
     float scale;
     char* input_dir;
     char* output_file;
+
+    int full_fan;            //Full_fan=1, Half_fan=0;
+    int coronal;
+    int sagittal;
+    int DRR;
+    char* sub_dir;
+    char* Full_normCBCT_name;
+    int Full_radius;
+    char*Half_normCBCT_name;
+    int Half_radius;
 };
 
 #if defined __cplusplus

@@ -215,7 +215,11 @@ load_cb_image (char* img_filename, char* mat_filename)
 }
 
 CB_Image* 
-load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, char* mat_filename)
+load_and_filter_cb_image (
+    MGHCBCT_Options_ext * options, 
+    char* img_filename, 
+    char* mat_filename
+)
 {
     int i,j;
     size_t rc;
@@ -223,12 +227,12 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
     FILE* fp;
 
     CB_Image* cbi;
-	unsigned short * readimg;
-	int movelength,fillhead,filltail;
+    unsigned short * readimg;
+    int movelength,fillhead,filltail;
 
-	fillhead=512;
-	filltail=55;
-	movelength=(512-filltail);
+    fillhead=512;
+    filltail=55;
+    movelength=(512-filltail);
 
     cbi = (CB_Image*) malloc (sizeof(CB_Image));
 
@@ -258,74 +262,74 @@ load_and_filter_cb_image (MGHCBCT_Options_ext * options, char* img_filename, cha
     /* Skip third line */
     fgets (buf, 1024, fp);
 #endif
-	//only support 512x384
+    //only support 512x384
 
 
-	if(options->full_fan){
-		cbi->dim[0]=384;
-		cbi->dim[1]=512;
-	}
-	else{
-		cbi->dim[0]=384;
-		cbi->dim[1]=1024;
-	}
-	/* Malloc memory */
-	cbi->img = (float*) malloc (sizeof(float) * cbi->dim[0] * cbi->dim[1]);
-	if (!cbi->img) {
-			fprintf (stderr, "Couldn't malloc memory for input image\n");
-			exit (-1);
-		}
-	memset(cbi->img,0,cbi->dim[0] * cbi->dim[1]*sizeof(float));
+    if (options->full_fan) {
+	cbi->dim[0]=384;
+	cbi->dim[1]=512;
+    }
+    else {
+	cbi->dim[0]=384;
+	cbi->dim[1]=1024;
+    }
+    /* Malloc memory */
+    cbi->img = (float*) malloc (sizeof(float) * cbi->dim[0] * cbi->dim[1]);
+    if (!cbi->img) {
+	fprintf (stderr, "Couldn't malloc memory for input image\n");
+	exit (-1);
+    }
+    memset(cbi->img,0,cbi->dim[0] * cbi->dim[1]*sizeof(float));
 	
-	readimg = (unsigned short*) malloc (sizeof(unsigned short) * 512 * cbi->dim[0]);
-	if (!readimg ) {
-			fprintf (stderr, "Couldn't malloc memory for input image\n");
-			exit (-1);
-		}
+    readimg = (unsigned short*) malloc (sizeof(unsigned short) * 512 * cbi->dim[0]);
+    if (!readimg ) {
+	fprintf (stderr, "Couldn't malloc memory for input image\n");
+	exit (-1);
+    }
 
-		/* Load pixels */
-		rc = fread (readimg , sizeof(unsigned short),  512* cbi->dim[0], fp);
-		if (rc != 512 * cbi->dim[0]) {
-			fprintf (stderr, "Couldn't load raster data for %s\n",
-				img_filename);
-			exit (-1);
-		}
+    /* Load pixels */
+    rc = fread (readimg , sizeof(unsigned short),  512* cbi->dim[0], fp);
+    if (rc != 512 * cbi->dim[0]) {
+	fprintf (stderr, "Couldn't load raster data for %s\n",
+		 img_filename);
+	exit (-1);
+    }
 
 	
-		RampFilter(readimg,cbi->img,512,cbi->dim[0]);
+    RampFilter(readimg,cbi->img,512,cbi->dim[0]);
 			
-		free(readimg);
+    free(readimg);
 
-	if(!options->full_fan){
+    if(!options->full_fan){
 
-		//ImageView imgview(IF_FLOAT_32_GREY, 1024, cbi->dim[1], cbi->img);
-		//system("pause");
+	//ImageView imgview(IF_FLOAT_32_GREY, 1024, cbi->dim[1], cbi->img);
+	//system("pause");
 #if 0
-		for (i=cbi->dim[1]-1; i>=0; i--)
-			memcpy(cbi->img+1024*i+512, cbi->img+512*i+65, movelength*sizeof(float));
-		for (i=cbi->dim[1]-1; i>=0; i--){
-			memset(cbi->img+1024*i,0,fillhead*sizeof(float));
-			memset(cbi->img+1024*i+1023-65,0,filltail*sizeof(float));
-		}
+	for (i=cbi->dim[1]-1; i>=0; i--)
+	    memcpy(cbi->img+1024*i+512, cbi->img+512*i+65, movelength*sizeof(float));
+	for (i=cbi->dim[1]-1; i>=0; i--){
+	    memset(cbi->img+1024*i,0,fillhead*sizeof(float));
+	    memset(cbi->img+1024*i+1023-65,0,filltail*sizeof(float));
+	}
 #endif
 #if 1
-		for (i=cbi->dim[0]-1; i>=0; i--)
-			memcpy(cbi->img+1024*i+512-65, cbi->img+512*i, 512*sizeof(float));
-		for (i=cbi->dim[0]-1; i>=0; i--){
-			memset(cbi->img+1024*i,0,(fillhead-filltail)*sizeof(float));
-			memset(cbi->img+1024*i+1023-65,0,65*sizeof(float));
-		}
-		for (j=cbi->dim[0]-1; j>=0; j--)
-			for(i=(512-filltail);i<=512+filltail-1;i++)
-				cbi->img[j*1024+i]*=(float)(i-(512-filltail-1))/(float)(512+filltail-1+1-(512-filltail-1));
+	for (i=cbi->dim[0]-1; i>=0; i--)
+	    memcpy(cbi->img+1024*i+512-65, cbi->img+512*i, 512*sizeof(float));
+	for (i=cbi->dim[0]-1; i>=0; i--){
+	    memset(cbi->img+1024*i,0,(fillhead-filltail)*sizeof(float));
+	    memset(cbi->img+1024*i+1023-65,0,65*sizeof(float));
+	}
+	for (j=cbi->dim[0]-1; j>=0; j--)
+	    for(i=(512-filltail);i<=512+filltail-1;i++)
+		cbi->img[j*1024+i]*=(float)(i-(512-filltail-1))/(float)(512+filltail-1+1-(512-filltail-1));
 
 #endif
 
-	}
+    }
 
 	
-	//ImageView imgview(IF_FLOAT_32_GREY, cbi->dim[0], cbi->dim[1], cbi->img);
- //   system("pause");
+    //ImageView imgview(IF_FLOAT_32_GREY, cbi->dim[0], cbi->dim[1], cbi->img);
+    //   system("pause");
 #else
     /* Verify that it is pgm */
     fgets (buf, 1024, fp);
@@ -435,16 +439,16 @@ get_image (MGHCBCT_Options_ext* options, int image_num)
 
     char img_file[1024], mat_file[1024];
     //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
-	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
- //   sprintf (mat_file, fmt, image_num);
- //   return load_and_filter_cb_image (options,img_file, mat_file);
-sprintf (img_file, "%s\\Proj_%03d.raw", options->input_dir,image_num);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
- sprintf (mat_file, "%s\\tmp\\out_%04d.txt",options->input_dir, image_num);
-    return load_and_filter_cb_image (options,img_file, mat_file);
+    //sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
+    //   sprintf (img_file, fmt, image_num);
+    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+    //   sprintf (mat_file, fmt, image_num);
+    //   return load_and_filter_cb_image (options,img_file, mat_file);
+    sprintf (img_file, "%s/Proj_%03d.raw", options->input_dir,image_num);
+    //   sprintf (img_file, fmt, image_num);
+    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+    sprintf (mat_file, "%s/tmp/out_%04d.txt",options->input_dir, image_num);
+    return load_and_filter_cb_image (options, img_file, mat_file);
 }
 
 
@@ -464,14 +468,14 @@ write_image (CB_Image* cbi, MGHCBCT_Options_ext* options, int image_num)
     size_t rc;
     FILE* fp;
     //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
-	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
- //   sprintf (mat_file, fmt, image_num);
- //   return load_and_filter_cb_image (options,img_file, mat_file);
-sprintf (img_file, "%s\\Proj_%03d.drr", options->input_dir,image_num);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+    //sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
+    //   sprintf (img_file, fmt, image_num);
+    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+    //   sprintf (mat_file, fmt, image_num);
+    //   return load_and_filter_cb_image (options,img_file, mat_file);
+    sprintf (img_file, "%s\\Proj_%03d.drr", options->input_dir,image_num);
+    //   sprintf (img_file, fmt, image_num);
+    //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
 
 
 
@@ -484,21 +488,21 @@ sprintf (img_file, "%s\\Proj_%03d.drr", options->input_dir,image_num);
 
 
 
-		/* write pixels */
-		rc = fwrite (cbi->img , sizeof(float),  512* 384, fp); 
-		if (rc != 512 * 384) {
-			fprintf (stderr, "Couldn't write raster data for %s\n",
-				img_file);
-			return(1);
-		}
+    /* write pixels */
+    rc = fwrite (cbi->img , sizeof(float),  512* 384, fp); 
+    if (rc != 512 * 384) {
+	fprintf (stderr, "Couldn't write raster data for %s\n",
+		 img_file);
+	return(1);
+    }
 			
-		fclose(fp);
+    fclose(fp);
 
-		return(0);
+    return(0);
 
 	
-	//ImageView imgview(IF_FLOAT_32_GREY, cbi->dim[0], cbi->dim[1], cbi->img);
- //   system("pause");
+    //ImageView imgview(IF_FLOAT_32_GREY, cbi->dim[0], cbi->dim[1], cbi->img);
+    //   system("pause");
 
 }
 

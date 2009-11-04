@@ -107,18 +107,20 @@ int
 cuda_mem_test (int argc, char** argv)
 {
     void *test[4];
-    int alloc_size;
+    int alloc_mb;
+    const int MB = (1024*1024);
 
-    for (alloc_size = 1024; alloc_size <= 1024*1024*1024; alloc_size *= 2) {
-	printf ("Alloc = %d\n", alloc_size);
-	cudaMalloc ((void**) &test[0], alloc_size);
-	checkCUDAError ("cudaMalloc");
-	cudaMalloc ((void**) &test[1], alloc_size);
-	checkCUDAError ("cudaMalloc");
-	cudaMalloc ((void**) &test[2], alloc_size);
-	checkCUDAError ("cudaMalloc");
-	cudaMalloc ((void**) &test[3], alloc_size);
-	checkCUDAError ("cudaMalloc");
+    //for (alloc_mb = 1024; alloc_mb <= 1024*1024*1024; alloc_mb *= 2) {
+    for (alloc_mb = 100; alloc_mb <= 1100; alloc_mb += 100) {
+	printf ("Alloc = 4 x %d MB = %d MB\n", alloc_mb, 4*alloc_mb);
+	cudaMalloc ((void**) &test[0], alloc_mb * MB);
+	checkCUDAError ("cudaMalloc[0]");
+	cudaMalloc ((void**) &test[1], alloc_mb * MB);
+	checkCUDAError ("cudaMalloc[1]");
+	cudaMalloc ((void**) &test[2], alloc_mb * MB);
+	checkCUDAError ("cudaMalloc[2]");
+	cudaMalloc ((void**) &test[3], alloc_mb * MB);
+	checkCUDAError ("cudaMalloc[3]");
 	cudaFree (test[0]);
 	checkCUDAError ("cudaFree");
 	cudaFree (test[1]);

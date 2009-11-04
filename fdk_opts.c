@@ -19,6 +19,10 @@ void print_usage (void)
 	    " -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	    " -I indir               The input directory\n"
 	    " -O outfile             The output file\n"
+	    " -sb \". (default)\" The subfolder with *.raw files\n"
+	    " -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
+	    " -cor (=0 default)                      Turn on Coronal output   \n"
+	    " -sag (=0 default)                     Turn on Sagittal output \n"
 	    );
     exit (1);
 }
@@ -29,15 +33,25 @@ void set_default_options (MGHCBCT_Options* options)
     options->first_img = 0;
     options->last_img = 119;
     options->skip_img = 1;
-    options->resolution[0] = 120;
-    options->resolution[1] = 120;
-    options->resolution[2] = 120;
-    options->vol_size[0] = 500.0f;
-    options->vol_size[1] = 500.0f;
-    options->vol_size[2] = 500.0f;
+    options->resolution[0] = 256;
+    options->resolution[1] = 256;
+    options->resolution[2] = 100;
+    options->vol_size[0] = 300.0f;
+    options->vol_size[1] = 300.0f;
+    options->vol_size[2] = 150.0f;
     options->scale = 1.0f;
     options->input_dir = ".";
     options->output_file = "output.mha";
+    //options->output_file = "output.mh5";
+
+    options->full_fan=1;
+    options->coronal=0;
+    options->sagittal=0;
+    options->sub_dir = ".";
+    options->Full_normCBCT_name="Full_norm.mh5";
+    options->Full_radius=120;
+    options->Half_normCBCT_name="Half_norm.mh5";
+    options->Half_radius=220;
 }
 
 void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
@@ -67,39 +81,6 @@ void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
 		options->threading = THREADING_CPU;
 	    }
 	}
-	else if (!strcmp (argv[i], "-r")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    rc = sscanf (argv[i], "%d %d %d", 
-			 &options->resolution[0], 
-			 &options->resolution[1],
-			 &options->resolution[2]);
-	    if (rc == 1) {
-		options->resolution[1] = options->resolution[0];
-		options->resolution[2] = options->resolution[0];
-	    } else if (rc != 3) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-I")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    options->input_dir = strdup (argv[i]);
-	}
-	else if (!strcmp (argv[i], "-O")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    options->output_file = strdup (argv[i]);
-	}
 	else if (!strcmp (argv[i], "-a")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
@@ -120,6 +101,55 @@ void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
+	else if (!strcmp (argv[i], "-cor")) {
+		options->coronal=1;
+	}
+	else if (!strcmp (argv[i], "-F")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i],"FULL")||!strcmp(argv[i],"full")|!strcmp(argv[i],"Full"))
+		options->full_fan=1;
+	    else if (!strcmp(argv[i],"HALF")||!strcmp(argv[i],"half")||!strcmp(argv[i],"Half"))
+		options->full_fan=0;
+	    else 
+		print_usage ();
+	}
+	else if (!strcmp (argv[i], "-I")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_dir = strdup (argv[i]);
+	}
+	else if (!strcmp (argv[i], "-O")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->output_file = strdup (argv[i]);
+	}
+	else if (!strcmp (argv[i], "-r")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%d %d %d", 
+			 &options->resolution[0], 
+			 &options->resolution[1],
+			 &options->resolution[2]);
+	    if (rc == 1) {
+		options->resolution[1] = options->resolution[0];
+		options->resolution[2] = options->resolution[0];
+	    } else if (rc != 3) {
+		print_usage ();
+	    }
+	}
 	else if (!strcmp (argv[i], "-s")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
@@ -130,6 +160,17 @@ void parse_args (MGHCBCT_Options* options, int argc, char* argv[])
 	    if (rc != 1) {
 		print_usage ();
 	    }
+	}
+	else if (!strcmp (argv[i], "-sag")) {
+		options->sagittal=1;
+	}
+	else if (!strcmp (argv[i], "-sb")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->sub_dir = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-z")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

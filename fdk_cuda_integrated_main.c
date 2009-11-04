@@ -46,15 +46,6 @@ main(int argc, char* argv[])
     int CheckNormExits;
 	
 
-    ////////////////////////////////////
-#if defined (READ_PFM)
-    printf("[PFM Input]\n");
-#else
-    printf("[PGM Input]\n"); 
-#endif
-    ////////////////////////////////////
-
-
     /**************************************************************** 
      * STEP 0: Parse commandline arguments                           * 
      ****************************************************************/
@@ -80,7 +71,7 @@ main(int argc, char* argv[])
 	
 
     strcpy(matrix_ProjAngle_file ,options.input_dir);
-    strcat(matrix_ProjAngle_file, "\\ProjAngles.txt");
+    strcat(matrix_ProjAngle_file, "/ProjAngles.txt");
     matrix_options.ProjAngle_file=matrix_ProjAngle_file;
 	
 
@@ -89,7 +80,7 @@ main(int argc, char* argv[])
     make_directory (strcat (dirbuf, "/tmp"));
 
     strcpy(matrix_output_prefix ,options.input_dir);
-    strcat(matrix_output_prefix , "\\tmp\\out_");
+    strcat(matrix_output_prefix , "/tmp/out_");
     matrix_options.output_prefix=matrix_output_prefix;
 	
 
@@ -106,54 +97,58 @@ main(int argc, char* argv[])
 	matrix_options.image_size[1]=400;
     }
     write_matrix(&matrix_options);
-    printf("Write matrix OK");
+    printf("Write matrix OK\n");
     fflush(stdout);
 	
 
-	if (!options.DRR){ 
-		/*****************************************************
-		* STEP 1: Create the 3D array of voxels              *
-		*****************************************************/
-		vol = my_create_volume (&options);
+    if (!options.DRR){ 
+	/*****************************************************
+	 * STEP 1: Create the 3D array of voxels              *
+	 *****************************************************/
+	printf ("Trying to my_create_volume\n");
+	vol = my_create_volume (&options);
 
-		/***********************************************
-		* STEP 2: Reconstruct/populate the volume      *
-		***********************************************/
-		CUDA_reconstruct_conebeam_ext (vol, &options);	
+	/***********************************************
+	 * STEP 2: Reconstruct/populate the volume      *
+	 ***********************************************/
+	printf ("Trying to CUDA_reconstruct_conebeam_ext\n");
+	CUDA_reconstruct_conebeam_ext (vol, &options);	
 
-		/*************************************
-		* STEP 3: Convert to HU values       *
-		*************************************/
-		convert_to_hu (vol, &options);
-		if (options.full_fan)
-			CheckNormExits = file_exists (options.Full_normCBCT_name);
-		else
-			CheckNormExits = file_exists (options.Half_normCBCT_name);
-		if (CheckNormExits) {
-			bowtie_correction(vol,&options);
-		}
-		else{
-			printf("%s\n%s\n",options.Full_normCBCT_name,options.Half_normCBCT_name);
-			printf("%s\n",argv[0]);
-			printf("Skip bowtie correction because norm files do not exits\n");
-		}
-
-
-		/*************************************
-		* STEP 4: Write MHA output file      *
-		*************************************/
-		printf("Writing output volume...");	
-		write_mha_512prefix (options.output_file, vol,&options);
-		printf(" done.\n\n");
-		free(vol->img);
-		free(vol);
+	/*************************************
+	 * STEP 3: Convert to HU values       *
+	 *************************************/
+	printf ("Convert_to_hu\n");
+	convert_to_hu (vol, &options);
+	if (options.full_fan)
+	    CheckNormExits = file_exists (options.Full_normCBCT_name);
+	else
+	    CheckNormExits = file_exists (options.Half_normCBCT_name);
+	if (CheckNormExits) {
+	    bowtie_correction(vol,&options);
 	}
-
 	else{
-		vol=read_mha_512prefix(options.output_file);
-		CUDA_DRR3(vol, &options);
-		free(vol->img);
-		free(vol);
+	    printf("%s\n%s\n",options.Full_normCBCT_name,options.Half_normCBCT_name);
+	    printf("%s\n",argv[0]);
+	    printf("Skip bowtie correction because norm files do not exits\n");
 	}
+
+
+	/*************************************
+	 * STEP 4: Write MHA output file      *
+	 *************************************/
+	printf("Writing output volume...");	
+	//write_mha_512prefix (options.output_file, vol, &options);
+	write_mha (options.output_file, vol, &options);
+	printf(" done.\n\n");
+	free(vol->img);
+	free(vol);
+    }
+
+    else{
+	vol=read_mha_512prefix(options.output_file);
+	CUDA_DRR3(vol, &options);
+	free(vol->img);
+	free(vol);
+    }
     return 0;
 }
