@@ -424,6 +424,10 @@ IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
   SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "fdk_cuda_ext.cu.cpp")
 
+  NVCC_FILE(fdk_cuda_ext.cu)
+  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
+    PROPERTIES OBJECT_DEPENDS "fdk_cuda_ext.cu.cpp")
+
   NVCC_FILE(cuda_probe.cu)
   SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
     PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
@@ -625,11 +629,18 @@ SET(DICOM_UID_SRC
 SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
 	)
-SET(DRR_C_SRC
+SET(DRR_SRC
 	drr_c.c drr.h
 	drr_opts.c drr_opts.h
 	drr_trilin.c drr_trilin.h
 	)
+IF (CUDA_FOUND)
+  SET (DRR_SRC
+    ${DRR_SRC}
+    drr_cuda.cu drr_cuda.h
+    )
+ENDIF (CUDA_FOUND)
+
 SET(EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
@@ -934,7 +945,7 @@ PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(drr_c "${DRR_C_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE(drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(fdk "${FDK_SRC}" "${FDK_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
