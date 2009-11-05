@@ -15,8 +15,15 @@
 #define MIN_SHORT -32768
 #define MAX_SHORT 32767
 
-gpuit_EXPORT
-void write_mha (char* filename, Volume* vol)
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
+static void 
+write_mha_internal (
+    char* filename,          /* Input: filename to write to */
+    Volume* vol,             /* Input: volume to write */
+    int mh5                  /* Input: force 512 byte header */
+)
 {
     FILE* fp;
     char* mha_header = 
@@ -34,6 +41,7 @@ void write_mha (char* filename, Volume* vol)
 	"ElementType = %s\n"
 	"ElementDataFile = LOCAL\n";
     char* element_type;
+    int bytes_written;
 
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	fprintf (stderr, "Error, PT_VF_FLOAT_PLANAR not implemented\n");
@@ -65,7 +73,7 @@ void write_mha (char* filename, Volume* vol)
 	fprintf (stderr, "Unhandled type in write_mha().\n");
 	exit (-1);
     }
-    fprintf (fp, mha_header, 
+    bytes_written = fprintf (fp, mha_header, 
 	     vol->offset[0], vol->offset[1], vol->offset[2], 
 	     vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
 	     vol->dim[0], vol->dim[1], vol->dim[2],
@@ -74,13 +82,23 @@ void write_mha (char* filename, Volume* vol)
 	     element_type);
     fflush (fp);
 
+    if (mh5) {
+	while (bytes_written < 512) {
+	    fprintf(fp,"\n");
+	    bytes_written ++;
+	}
+    }
+
     fwrite_block (vol->img, vol->pix_size, vol->npix, fp);
 
     fclose (fp);
 }
 
-gpuit_EXPORT
-Volume* read_mha (char* filename)
+static Volume* 
+read_mha_internal (
+    char* filename,          /* Input: filename to read from */
+    int mh5                  /* Input: force 512 byte header */
+)
 {
     int rc;
     char linebuf[LINELEN];
@@ -149,6 +167,11 @@ Volume* read_mha (char* filename)
 	printf ("Oops, couldn't interpret mha data type\n");
 	exit (-1);
     }
+
+    if (mh5) {
+	fseek(fp, 512, SEEK_SET);
+    }
+
     vol->img = malloc (vol->pix_size*vol->npix);
     if (!vol->img) {
 	printf ("Oops, out of memory\n");
@@ -162,4 +185,31 @@ Volume* read_mha (char* filename)
     fclose (fp);
 
     return vol;
+}
+
+/* -----------------------------------------------------------------------
+   Public functions
+   ----------------------------------------------------------------------- */
+gpuit_EXPORT
+void write_mha (char* filename, Volume* vol)
+{
+    write_mha_internal (filename, vol, 0);
+}
+
+gpuit_EXPORT
+void write_mh5 (char* filename, Volume* vol)
+{
+    write_mha_internal (filename, vol, 1);
+}
+
+gpuit_EXPORT
+Volume* read_mha (char* filename)
+{
+    return read_mha_internal (filename, 0);
+}
+
+gpuit_EXPORT
+Volume* read_mh5 (char* filename)
+{
+    return read_mha_internal (filename, 1);
 }
