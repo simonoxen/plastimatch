@@ -33,8 +33,6 @@ SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
   "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
-SET (PLM_USE_FINDCUDA ON CACHE BOOL 
-  "Use Stephens/Bigler FindCUDA cmake script")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 
 ##-----------------------------------------------------------------------------
@@ -135,28 +133,22 @@ IF (MINGW)
   # Cuda doesn't work with mingw at all
   SET (CUDA_FOUND FALSE)
 ELSE (MINGW)
-  IF (PLM_USE_FINDCUDA)
-    SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" 
-      ${CMAKE_MODULE_PATH})
-    FIND_PACKAGE (CUDA QUIET)
-  ELSE (PLM_USE_FINDCUDA)
-    INCLUDE (PLM_FindCUDA.cmake)
-  ENDIF (PLM_USE_FINDCUDA)
+  SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" 
+    ${CMAKE_MODULE_PATH})
+  FIND_PACKAGE (CUDA QUIET)
 ENDIF (MINGW)
 SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
-IF (PLM_USE_FINDCUDA)
-  IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-    SET (CUDA_FOUND FALSE)
-  ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-  IF(CUDA_FOUND)
-    #  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
-    CUDA_INCLUDE_DIRECTORIES (
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      ${CUDA_CUT_INCLUDE_DIR}
-      )
-  ENDIF(CUDA_FOUND)
-ENDIF (PLM_USE_FINDCUDA)
+IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+  SET (CUDA_FOUND FALSE)
+ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
+IF(CUDA_FOUND)
+  #  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+  CUDA_INCLUDE_DIRECTORIES (
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CUDA_CUT_INCLUDE_DIR}
+    )
+ENDIF(CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library
@@ -407,41 +399,6 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  CUDA FILES
-##-----------------------------------------------------------------------------
-IF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
-  IF(PLM_BUILD_DEMONS_CUDA)
-    NVCC_FILE(demons_cuda.cu)
-    SET_SOURCE_FILES_PROPERTIES(demons_cuda.cu 
-      PROPERTIES OBJECT_DEPENDS "demons_cuda_kernel.cu")
-  ENDIF(PLM_BUILD_DEMONS_CUDA)
-
-  NVCC_FILE(fdk_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda.cu.cpp")
-
-  NVCC_FILE(fdk_cuda_ext.cu)
-  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda_ext.cu.cpp")
-
-  NVCC_FILE(fdk_cuda_ext.cu)
-  SET_SOURCE_FILES_PROPERTIES(fdk_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "fdk_cuda_ext.cu.cpp")
-
-  NVCC_FILE(cuda_probe.cu)
-  SET_SOURCE_FILES_PROPERTIES(cuda_probe_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "cuda_probe.cu.cpp")
-
-  NVCC_FILE(bspline_cuda.cu)
-  SET_SOURCE_FILES_PROPERTIES(bspline_cuda_wrap.cpp
-    PROPERTIES OBJECT_DEPENDS "bspline_cuda.cu.cpp")
-
-#   NVCC_FILE(bspline_cuda_kernels.cu)
-#   SET_SOURCE_FILES_PROPERTIES(bspline_cuda_kernels_wrap.cpp
-#     PROPERTIES OBJECT_DEPENDS "bspline_cuda_kernels.cu.cpp")
-ENDIF(NOT PLM_USE_FINDCUDA AND CUDA_FOUND)
-
-##-----------------------------------------------------------------------------
 ##  GPUIT/PLASTIMATCH SOURCE FILES
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_SRC
@@ -476,28 +433,17 @@ ENDIF(BROOK_FOUND)
 
 IF(CUDA_FOUND)
   SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline_cuda.cpp
-	bspline_cuda.cu
-#	bspline_cuda_kernels.cu
-	bspline_cuda.h
-	)
-  IF (PLM_USE_FINDCUDA)
-#    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
-#      bspline_cuda.cu bspline_cuda_kernels.cu)
-    CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
-      bspline_cuda.cu)
-    SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	${BSPLINE_CUDA_WRAPPERS}
-	)
-  ELSE (PLM_USE_FINDCUDA)
-    SET(GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline_cuda_wrap.cpp
-#	bspline_cuda_kernels_wrap.cpp
-	)
-  ENDIF (PLM_USE_FINDCUDA)
+    ${GPUIT_LIBRARY_SRC}
+    bspline_cuda.cpp
+    bspline_cuda.cu
+    bspline_cuda.h
+    )
+  CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
+    bspline_cuda.cu)
+  SET(GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    ${BSPLINE_CUDA_WRAPPERS}
+    )
 ENDIF(CUDA_FOUND)
 
 IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
@@ -583,18 +529,11 @@ SET(CUDA_PROBE_SRC
 	cuda_probe.h
 	)
 IF (CUDA_FOUND)
-  IF (PLM_USE_FINDCUDA)
-    CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
-    SET(CUDA_PROBE_SRC
-      ${CUDA_PROBE_SRC}
-      ${CUDA_PROBE_WRAPPERS}
-      )
-  ELSE (PLM_USE_FINDCUDA)
-    SET(CUDA_PROBE_SRC
-      ${CUDA_PROBE_SRC}
-      cuda_probe_wrap.cpp
-      )
-  ENDIF (PLM_USE_FINDCUDA)
+  CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
+  SET(CUDA_PROBE_SRC
+    ${CUDA_PROBE_SRC}
+    ${CUDA_PROBE_WRAPPERS}
+    )
 ENDIF (CUDA_FOUND)
 SET(CXT_APPLY_DICOM_SRC
   cxt_apply_dicom_main.cxx)
@@ -691,27 +630,16 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	)
 
 IF (CUDA_FOUND)
-  IF (PLM_USE_FINDCUDA)
-    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-    SET (FDK_SRC
-      ${FDK_SRC}
-      ${FDK_CUDA_WRAPPERS}
-      )
-    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
-    SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-      ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-      ${FDK_CUDA_WRAPPERS}
-      )
-  ELSE (PLM_USE_FINDCUDA)
-    SET (FDK_SRC
-      ${FDK_SRC}
-      fdk_cuda_wrap.cpp
-      )
-    SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-      ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-      fdk_cuda_wrap.cpp
-      )
-  ENDIF (PLM_USE_FINDCUDA)
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+  SET (FDK_SRC
+    ${FDK_SRC}
+    ${FDK_CUDA_WRAPPERS}
+    )
+  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
+  SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+    ${FDK_CUDA_WRAPPERS}
+    )
 ENDIF (CUDA_FOUND)
 
 SET(HND2RAW_ST_SRC
@@ -1134,18 +1062,10 @@ ENDIF(PLM_BUILD_OPENMP_TEST)
 
 # Test executable -- cuda
 IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
-  IF (NOT PLM_USE_FINDCUDA)
-    NVCC_FILE(cuda_test.cu)
-    SET_SOURCE_FILES_PROPERTIES(cuda_test_wrap.cpp
-      PROPERTIES OBJECT_DEPENDS "cuda_test.cu.cpp")
-    ADD_EXECUTABLE(cuda_test cuda_test_wrap.cpp)
-    TARGET_LINK_LIBRARIES(cuda_test ${CUDA_LIBRARIES})
-  ELSE (NOT PLM_USE_FINDCUDA)
-    CUDA_COMPILE (CUDA_TEST_WRAPPERS cuda_test.cu)
-    SET (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
-    PLM_ADD_EXECUTABLE(cuda_test "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "")
-    SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
-  ENDIF (NOT PLM_USE_FINDCUDA)
+  CUDA_COMPILE (CUDA_TEST_WRAPPERS cuda_test.cu)
+  SET (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
+  PLM_ADD_EXECUTABLE(cuda_test "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "")
+  SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 ENDIF(PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
