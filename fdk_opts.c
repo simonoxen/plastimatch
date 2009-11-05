@@ -8,26 +8,29 @@
 #include "fdk_opts.h"
 #include "volume.h"
 
-void print_usage (void)
+void 
+print_usage (void)
 {
-    printf ("Usage: mghcbct [options]\n"
-	    "Options:\n"
-	    " -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
-	    " -a \"num ((num) num)\"   Use this range of images\n"
-	    " -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
-	    " -s scale               Scale the intensity of the output file\n"
-	    " -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
-	    " -I indir               The input directory\n"
-	    " -O outfile             The output file\n"
-	    " -sb \". (default)\" The subfolder with *.raw files\n"
-	    " -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
-	    " -cor (=0 default)                      Turn on Coronal output   \n"
-	    " -sag (=0 default)                     Turn on Sagittal output \n"
-	    );
+    printf (
+	"Usage: mghcbct [options]\n"
+	"Options:\n"
+	" -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	" -a \"num ((num) num)\"   Use this range of images\n"
+	" -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
+	" -s scale               Scale the intensity of the output file\n"
+	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
+	" -I indir               The input directory\n"
+	" -O outfile             The output file\n"
+	" -sb \". (default)\" The subfolder with *.raw files\n"
+	" -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
+	" -cor (=0 default)                      Turn on Coronal output   \n"
+	" -sag (=0 default)                     Turn on Sagittal output \n"
+    );
     exit (1);
 }
 
-void set_default_options (Fdk_options* options)
+void 
+set_default_options (Fdk_options* options)
 {
     options->threading = THREADING_CPU;
     options->first_img = 0;
@@ -54,7 +57,8 @@ void set_default_options (Fdk_options* options)
     options->Half_radius=220;
 }
 
-void parse_args (Fdk_options* options, int argc, char* argv[])
+void 
+parse_args (Fdk_options* options, int argc, char* argv[])
 {
     int i, rc;
 	

@@ -50,7 +50,6 @@
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-CB_Image* get_image (Fdk_options* options, int image_num);
 void checkCUDAError(const char *msg);
 
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
@@ -238,7 +237,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 #endif
 
     // This is just to retrieve the 2D image dimensions
-    cbi = get_image(options, options->first_img);
+    cbi = get_image_pfm (options, options->first_img);
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
     free_cb_image( cbi );
 
@@ -252,7 +251,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 	plm_timer_start (&timer);
 #endif
 	// Load the current image
-	cbi = get_image(options, image_num);
+	cbi = get_image_pfm (options, image_num);
 
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];

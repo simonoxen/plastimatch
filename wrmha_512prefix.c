@@ -1,16 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-//#include "plm_config.h"
 #include "volume.h"
 #include "volume_ext.h"
-#include "fdk_opts_ext.h"
+#include "fdk_opts.h"
 
 #define LINELEN 128
 #define MIN_SHORT -32768
@@ -49,7 +49,7 @@ void fwrite_block (void* buf, size_t size, size_t count, FILE* fp)
 }
 #endif
 
-void write_mha_512prefix (char* filename, Volume* vol, MGHCBCT_Options_ext* options)
+void write_mha_512prefix (char* filename, Volume* vol, Fdk_options* options)
 {
     FILE* fp, *fcp, *fsp;
 	int wbyte=0;

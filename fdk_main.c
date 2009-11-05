@@ -326,7 +326,7 @@ reconstruct_conebeam (Volume* vol, Fdk_options* options)
 
     for (i = options->first_img; i <= options->last_img; i += options->skip_img) {
 	CB_Image* cbi;
-	cbi = get_image(options, i);
+	cbi = get_image_pfm (options, i);
 	
 	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);

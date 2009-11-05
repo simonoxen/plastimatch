@@ -679,9 +679,6 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	bowtie_correction.c
 	)
 
-#	fdk_opts_ext.c fdk_opts_ext.h
-#	fdk_utils_ext.c fdk_utils_ext.h
-
 IF (CUDA_FOUND)
   IF (PLM_USE_FINDCUDA)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)

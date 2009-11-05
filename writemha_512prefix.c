@@ -1,16 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #if (defined(_WIN32) || defined(WIN32))
 #include <io.h>        // windows //
 #endif
-//#include "plm_config.h"
 #include "volume.h"
 #include "volume_ext.h"
-#include "fdk_opts_ext.h"
+#include "fdk_opts.h"
 
 #define LINELEN 128
 #define MIN_SHORT -32768

@@ -4,9 +4,8 @@
 #include <string.h>
 #include "plm_config.h"
 #include "fdk.h"
-#include "fdk_opts_ext.h"
+#include "fdk_opts.h"
 #include "volume.h"
-//#include "imageview.h"
 #include "readmha_ext.h"
 #include <mathutil.h>
 #include "fftw3.h"
@@ -16,9 +15,9 @@
 	static const double DEGTORAD = 3.14159265 / 180.0;
 #endif
 void LowPass(int n, double * v);
-void process_norm_CBCT(Volume * norm_CBCT, MGHCBCT_Options_ext* options);
+void process_norm_CBCT(Volume * norm_CBCT, Fdk_options* options);
 
-void bowtie_correction(Volume * vol,MGHCBCT_Options_ext* options)
+void bowtie_correction(Volume * vol,Fdk_options* options)
 {
  Volume * norm_CBCT;
  float * img, * norm;
@@ -86,7 +85,7 @@ void LowPass(int n, double * v)
 }
 
 
-void process_norm_CBCT(Volume * norm_CBCT, MGHCBCT_Options_ext* options)
+void process_norm_CBCT(Volume * norm_CBCT, Fdk_options* options)
 {
 	int ni,nj,nk;
 	double norm_radius;

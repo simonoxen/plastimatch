@@ -42,16 +42,17 @@
 * FDK  #includes *
 *****************/
 #include "fdk.h"
-#include "fdk_opts_ext.h"
+#include "fdk_opts.h"
 #include "fdk_cuda_p.h"
 #include "volume.h"
 #include "readmha_ext.h"
 #include "mathutil.h"
-#include "fdk_utils_ext.h"
+#include "fdk_utils.h"
+
 /*********************
 * High Res Win Timer *
 *********************/
-#include <time.h>
+#include "timer.h"
 #if defined (_WIN32)
 #include <windows.h>
 #include <winbase.h>
@@ -60,7 +61,6 @@ void free_cb_image (CB_Image* cbi);
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-CB_Image* get_image (MGHCBCT_Options_ext* options, int image_num);
 void checkCUDAError(const char *msg);
 
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
@@ -558,7 +558,7 @@ void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float 
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
 extern "C"
-int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
+int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options)
 {
     // Thead Block Dimensions
     int tBlock_x = 16;
@@ -595,6 +595,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
     cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
     checkCUDAError ("cudaMalloc");
 
+    printf ("Calculating scale: %d\n", options->skip_img);
     // Calculate the scale
     image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
     float scale = (float) (sqrt(3.0) / (double) image_num);
@@ -679,7 +680,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
     int fimg=options->first_img;
     do {
 	printf ("Calling get_image\n");
-	cbi = get_image (options, fimg);
+	cbi = get_image_raw (options, fimg);
 	fimg++;
     }
     while(cbi==NULL);
@@ -708,7 +709,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
 	/////////////////////////////////////////
 
 	// Load the current image
-	cbi = get_image(options, image_num);
+	cbi = get_image_raw (options, image_num);
 	if (cbi==NULL)
 	    continue;
 
@@ -842,7 +843,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, MGHCBCT_Options_ext *options)
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
 extern "C"
-int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
+int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
 {
 
 
@@ -940,7 +941,7 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
     do{
-	cbi = get_image(options, fimg);
+	cbi = get_image_raw (options, fimg);
 	fimg++;
     }
     while(cbi==NULL);
@@ -994,7 +995,7 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
 	/////////////////////////////////////////
 
 	// Load the current image
-	cbi = get_image(options, image_num);
+	cbi = get_image_raw (options, image_num);
 	if (cbi==NULL)
 	    continue;
 
@@ -1155,7 +1156,7 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, MGHCBCT_Options_ext *options)
 //////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_DRR() //////////////////////////////////
 extern "C"
-int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
+int CUDA_DRR (Volume *vol, Fdk_options *options)
 {
     //// Thead Block Dimensions
     //int tBlock_x = 16;
@@ -1247,7 +1248,7 @@ int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
     do{
-	cbi = get_image(options, fimg);
+	cbi = get_image_raw (options, fimg);
 	fimg++;
     }
     while(cbi==NULL);
@@ -1276,7 +1277,7 @@ int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
 	    /////////////////////////////////////////
 
 	    // Load the current image
-	    cbi = get_image(options, image_num);
+	    cbi = get_image_raw (options, image_num);
 	    if (cbi==NULL)
 		continue;
 
@@ -1475,7 +1476,7 @@ int CUDA_DRR (Volume *vol, MGHCBCT_Options_ext *options)
 //////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_DRR() //////////////////////////////////
 extern "C"
-int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
+int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 {
     //// Thead Block Dimensions
     //int tBlock_x = 16;
@@ -1624,7 +1625,7 @@ int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
     do{
-	cbi = get_image(options, fimg);
+	cbi = get_image_raw (options, fimg);
 	fimg++;
     }
     while(cbi==NULL);
@@ -1661,7 +1662,7 @@ int CUDA_DRR3 (Volume *vol, MGHCBCT_Options_ext *options)
 
 
 	// Load the current image
-	cbi = get_image(options, image_num);
+	cbi = get_image_raw (options, image_num);
 	if (cbi==NULL)
 	    continue;
 
