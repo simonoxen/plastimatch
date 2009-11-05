@@ -626,9 +626,7 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_cuda_ext.cu
 	MGHMtx_opts.h
 	ramp_filter.c ramp_filter.h 
-	readmha_ext.h
-	volume.h volume_ext.h
-	volume.c volume_ext.c
+	volume.c volume.h 
 	writematrix_opts.c
 	wrmha_512prefix.c
 	bowtie_correction.c

@@ -106,7 +106,7 @@ parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-cor")) {
-		options->coronal=1;
+	    options->coronal=1;
 	}
 	else if (!strcmp (argv[i], "-F")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -166,7 +166,7 @@ parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	}
 	else if (!strcmp (argv[i], "-sag")) {
-		options->sagittal=1;
+	    options->sagittal=1;
 	}
 	else if (!strcmp (argv[i], "-sb")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

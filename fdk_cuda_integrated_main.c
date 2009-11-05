@@ -138,7 +138,7 @@ main (int argc, char* argv[])
     }
 
     else{
-	vol=read_mha_512prefix(options.output_file);
+	vol = read_mha (options.output_file);
 	CUDA_DRR3(vol, &options);
 	free(vol->img);
 	free(vol);

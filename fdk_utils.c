@@ -1,10 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
+#include "plm_path.h"
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
@@ -83,7 +84,48 @@ get_image_raw (Fdk_options* options, int image_num)
     return proj_image_load_and_filter (options, img_file, mat_file);
 }
 
+static void
+strip_extension (char* filename)
+{
+    char *p;
 
+    p = strrchr (filename, ".");
+    if (p) {
+	*p = 0;
+    }
+}
+
+void
+write_coronal_sagittal (Fdk_options* options, Volume* vol)
+{
+    if (options->coronal) {
+	Volume *cor;
+	char fn[_MAX_PATH];
+	FILE *fp;
+
+	strcpy (fn, options->output_file);
+	strip_extension (fn);
+	strcat (fn, "-cor.mh5");
+
+	cor = volume_axial2coronal (vol);
+	write_mha (fn, cor);
+	volume_free (cor);
+    }
+
+    if (options->sagittal) {
+	Volume *sag;
+	char fn[_MAX_PATH];
+	FILE *fp;
+
+	strcpy (fn, options->output_file);
+	strip_extension (fn);
+	strcat (fn, "-sag.mh5");
+
+	sag = volume_axial2sagittal (vol);
+	write_mha (fn, sag);
+	volume_free (sag);
+    }
+}
 
 #if defined (commentout)
 void
