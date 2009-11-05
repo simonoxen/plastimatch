@@ -187,29 +187,36 @@ read_mha_internal (
     return vol;
 }
 
+/* Return 1 if filename ends in ".mh5" */
+static int 
+is_mh5 (char* filename)
+{
+    int len = strlen (filename);
+    if (len < 4) return 0;
+    if (!strcmp (&filename[len-4], ".mh5")) return 1;
+    if (!strcmp (&filename[len-4], ".MH5")) return 1;
+    return 0;
+}
+
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
 gpuit_EXPORT
 void write_mha (char* filename, Volume* vol)
 {
-    write_mha_internal (filename, vol, 0);
-}
-
-gpuit_EXPORT
-void write_mh5 (char* filename, Volume* vol)
-{
-    write_mha_internal (filename, vol, 1);
+    if (is_mh5 (filename)) {
+	write_mha_internal (filename, vol, 1);
+    } else {
+	write_mha_internal (filename, vol, 0);
+    }
 }
 
 gpuit_EXPORT
 Volume* read_mha (char* filename)
 {
-    return read_mha_internal (filename, 0);
-}
-
-gpuit_EXPORT
-Volume* read_mh5 (char* filename)
-{
-    return read_mha_internal (filename, 1);
+    if (is_mh5 (filename)) {
+	return read_mha_internal (filename, 1);
+    } else {
+	return read_mha_internal (filename, 0);
+    }
 }
