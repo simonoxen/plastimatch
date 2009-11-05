@@ -410,6 +410,7 @@ SET (GPUIT_LIBRARY_SRC
   demons_cpu.c
   demons_misc.c demons_misc.h
   file_util.c file_util.h
+  fwrite_block.c fwrite_block.h
   logfile.c logfile.h
   mathutil.h
   print_and_exit.c print_and_exit.h 
