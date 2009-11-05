@@ -12,6 +12,7 @@
 #include "mathutil.h"
 #include "volume.h"
 #include "readmha.h"
+#include "proj_image.h"
 #include "fdk.h"
 #include "fdk_brook.h"
 #include "fdk_opts.h"
@@ -50,7 +51,7 @@ fdk_brook_512_256(Volume* vol, Fdk_options* options)
     size = 1024;
 
     /* Initial Image Dimension and scaling */
-    cbi = get_image(options,options->first_img);
+    cbi = get_image_pfm (options,options->first_img);
     int num_imgs = 1 + (options->last_img - options->first_img)/ options->skip_img;
     scale = (float) (sqrt((double)3) / (double) num_imgs);
     scale = scale * options->scale;
@@ -102,7 +103,7 @@ fdk_brook_512_256(Volume* vol, Fdk_options* options)
 	QueryPerformanceCounter(&clock_count);
 	clock_start = (double)clock_count.QuadPart;
 		
-	cbi = get_image(options,image_num);
+	cbi = get_image_pfm(options,image_num);
 
 	QueryPerformanceCounter(&clock_count);
 	clock_end = (double)clock_count.QuadPart;
@@ -260,7 +261,7 @@ fdk_brook_c (Volume* vol, Fdk_options* options)
     }	
 
     /* Initial Image Dimension and scaling */
-    cbi = get_image(options,options->first_img);
+    cbi = get_image_pfm(options,options->first_img);
     int num_imgs = 1 + (options->last_img - options->first_img)/ options->skip_img;
     scale = (float) (sqrt((double)3) / (double) num_imgs);
     scale = scale * options->scale;
@@ -299,7 +300,7 @@ fdk_brook_c (Volume* vol, Fdk_options* options)
 	QueryPerformanceCounter(&clock_count);
 	clock_start = (double)clock_count.QuadPart;
 		
-	cbi = get_image(options,image_num);
+	cbi = get_image_pfm(options,image_num);
 
 	QueryPerformanceCounter(&clock_count);
 	clock_end = (double)clock_count.QuadPart;
@@ -426,7 +427,7 @@ fdk_brook_b(Volume* vol, Fdk_options* options)
     }	
 
     /* Initial Image Dimension and scaling */
-    cbi = get_image(options,options->first_img);
+    cbi = get_image_pfm(options,options->first_img);
     int num_imgs = 1 + (options->last_img - options->first_img)/ options->skip_img;
     scale = (float) (sqrt((double)3) / (double) num_imgs);
     scale = scale * options->scale;
@@ -467,7 +468,7 @@ fdk_brook_b(Volume* vol, Fdk_options* options)
 	QueryPerformanceCounter(&clock_count);
 	clock_start = (double)clock_count.QuadPart;
 		
-	cbi = get_image(options,image_num);
+	cbi = get_image_pfm(options,image_num);
 
 	QueryPerformanceCounter(&clock_count);
 	clock_end = (double)clock_count.QuadPart;
