@@ -2789,7 +2789,7 @@ bspline_cuda_score_j_mse_kernel1
 
 		// Clamp and interpolate along the X axis.
 		displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
-		displacement_in_vox_round.x = round(displacement_in_vox.x);
+		displacement_in_vox_round.x = rintf(displacement_in_vox.x);	// Single instruction round
 		fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
 		if(displacement_in_vox_floor.x < 0){
 		    displacement_in_vox_floor.x = 0;
@@ -2805,7 +2805,7 @@ bspline_cuda_score_j_mse_kernel1
 
 		// Clamp and interpolate along the Y axis.
 		displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
-		displacement_in_vox_round.y = round(displacement_in_vox.y);
+		displacement_in_vox_round.y = rintf(displacement_in_vox.y);	// Single instruction round
 		fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
 		if(displacement_in_vox_floor.y < 0){
 		    displacement_in_vox_floor.y = 0;
@@ -2821,7 +2821,7 @@ bspline_cuda_score_j_mse_kernel1
 				
 		// Clamp and intepolate along the Z axis.
 		displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
-		displacement_in_vox_round.z = round(displacement_in_vox.z);
+		displacement_in_vox_round.z = rintf(displacement_in_vox.z);	// Single instruction round
 		fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
 		if(displacement_in_vox_floor.z < 0){
 		    displacement_in_vox_floor.z = 0;
@@ -2930,7 +2930,7 @@ bspline_cuda_score_g_mse_kernel1
     float3 distance_from_image_origin;
     float3 displacement_in_mm; 
     float3 displacement_in_vox;
-    float3 displacement_in_vox_floor;
+    int3 displacement_in_vox_floor;
     float3 displacement_in_vox_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
@@ -3087,8 +3087,8 @@ bspline_cuda_score_g_mse_kernel1
 		//-----------------------------------------------------------------
 
 		// Clamp and interpolate along the X axis.
-		displacement_in_vox_floor.x = floor(displacement_in_vox.x);
-		displacement_in_vox_round.x = round(displacement_in_vox.x);
+		displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
+		displacement_in_vox_round.x = rintf(displacement_in_vox.x);	// Single instruction round
 		fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
 		if(displacement_in_vox_floor.x < 0){
 		    displacement_in_vox_floor.x = 0;
@@ -3103,8 +3103,8 @@ bspline_cuda_score_g_mse_kernel1
 		fx1 = 1.0 - fx2;
 
 		// Clamp and interpolate along the Y axis.
-		displacement_in_vox_floor.y = floor(displacement_in_vox.y);
-		displacement_in_vox_round.y = round(displacement_in_vox.y);
+		displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
+		displacement_in_vox_round.y = rintf(displacement_in_vox.y);	// Single instruction round
 		fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
 		if(displacement_in_vox_floor.y < 0){
 		    displacement_in_vox_floor.y = 0;
@@ -3119,8 +3119,8 @@ bspline_cuda_score_g_mse_kernel1
 		fy1 = 1.0 - fy2;
 				
 		// Clamp and intepolate along the Z axis.
-		displacement_in_vox_floor.z = floor(displacement_in_vox.z);
-		displacement_in_vox_round.z = round(displacement_in_vox.z);
+		displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
+		displacement_in_vox_round.z = rintf(displacement_in_vox.z);	// Single instruction round
 		fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
 		if(displacement_in_vox_floor.z < 0){
 		    displacement_in_vox_floor.z = 0;
@@ -3730,7 +3730,7 @@ bspline_cuda_score_f_mse_compute_score
     float3 distance_from_image_origin;
     float3 displacement_in_mm; 
     float3 displacement_in_vox;
-    float3 displacement_in_vox_floor;
+    int3 displacement_in_vox_floor;
     float3 displacement_in_vox_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
@@ -3846,8 +3846,8 @@ bspline_cuda_score_f_mse_compute_score
 		//-----------------------------------------------------------------
 
 		// Clamp and interpolate along the X axis.
-		displacement_in_vox_floor.x = floor(displacement_in_vox.x);
-		displacement_in_vox_round.x = round(displacement_in_vox.x);
+		displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
+		displacement_in_vox_round.x = rintf(displacement_in_vox.x);	// Single instruction round
 		fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
 		if(displacement_in_vox_floor.x < 0){
 		    displacement_in_vox_floor.x = 0;
@@ -3862,8 +3862,8 @@ bspline_cuda_score_f_mse_compute_score
 		fx1 = 1.0 - fx2;
 
 		// Clamp and interpolate along the Y axis.
-		displacement_in_vox_floor.y = floor(displacement_in_vox.y);
-		displacement_in_vox_round.y = round(displacement_in_vox.y);
+		displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
+		displacement_in_vox_round.y = rintf(displacement_in_vox.y);	// Single instruction round
 		fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
 		if(displacement_in_vox_floor.y < 0){
 		    displacement_in_vox_floor.y = 0;
@@ -3878,8 +3878,8 @@ bspline_cuda_score_f_mse_compute_score
 		fy1 = 1.0 - fy2;
 				
 		// Clamp and intepolate along the Z axis.
-		displacement_in_vox_floor.z = floor(displacement_in_vox.z);
-		displacement_in_vox_round.z = round(displacement_in_vox.z);
+		displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
+		displacement_in_vox_round.z = rintf(displacement_in_vox.z);	// Single instruction round
 		fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
 		if(displacement_in_vox_floor.z < 0){
 		    displacement_in_vox_floor.z = 0;
@@ -5459,7 +5459,7 @@ __global__ void bspline_cuda_score_e_mse_kernel1a (
 	float3 distance_from_image_origin;
 	float3 displacement_in_mm; 
 	float3 displacement_in_vox;
-	float3 displacement_in_vox_floor;
+	int3 displacement_in_vox_floor;
 	float  fx1, fx2, fy1, fy2, fz1, fz2;
 	int    mvf;
 	float  m_val;
@@ -5574,7 +5574,7 @@ __global__ void bspline_cuda_score_e_mse_kernel1a (
 				//-----------------------------------------------------------------
 
 				// Clamp and interpolate along the X axis.
-				displacement_in_vox_floor.x = floor(displacement_in_vox.x);
+				displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
 				fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
 				if(displacement_in_vox_floor.x < 0){
 					displacement_in_vox_floor.x = 0;
@@ -5587,7 +5587,7 @@ __global__ void bspline_cuda_score_e_mse_kernel1a (
 				fx1 = 1.0 - fx2;
 
 				// Clamp and interpolate along the Y axis.
-				displacement_in_vox_floor.y = floor(displacement_in_vox.y);
+				displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
 				fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
 				if(displacement_in_vox_floor.y < 0){
 					displacement_in_vox_floor.y = 0;
@@ -5600,7 +5600,7 @@ __global__ void bspline_cuda_score_e_mse_kernel1a (
 				fy1 = 1.0 - fy2;
 				
 				// Clamp and intepolate along the Z axis.
-				displacement_in_vox_floor.z = floor(displacement_in_vox.z);
+				displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
 				fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
 				if(displacement_in_vox_floor.z < 0){
 					displacement_in_vox_floor.z = 0;
@@ -6643,7 +6643,7 @@ __global__ void bspline_cuda_score_d_mse_kernel1 (
 	float3 distance_from_image_origin;
 	float3 displacement_in_mm; 
 	float3 displacement_in_vox;
-	float3 displacement_in_vox_floor;
+	int3 displacement_in_vox_floor;
 	float3 displacement_in_vox_round;
 	float  fx1, fx2, fy1, fy2, fz1, fz2;
 	int    mvf;
@@ -6751,8 +6751,8 @@ __global__ void bspline_cuda_score_d_mse_kernel1 (
 				//-----------------------------------------------------------------
 
 				// Clamp and interpolate along the X axis.
-				displacement_in_vox_floor.x = floor(displacement_in_vox.x);
-				displacement_in_vox_round.x = round(displacement_in_vox.x);
+				displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
+				displacement_in_vox_round.x = rintf(displacement_in_vox.x);	// Single instruction round
 				fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
 				if(displacement_in_vox_floor.x < 0){
 					displacement_in_vox_floor.x = 0;
@@ -6767,8 +6767,8 @@ __global__ void bspline_cuda_score_d_mse_kernel1 (
 				fx1 = 1.0 - fx2;
 
 				// Clamp and interpolate along the Y axis.
-				displacement_in_vox_floor.y = floor(displacement_in_vox.y);
-				displacement_in_vox_round.y = round(displacement_in_vox.y);
+				displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
+				displacement_in_vox_round.y = rintf(displacement_in_vox.y);	// Single instruction round
 				fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
 				if(displacement_in_vox_floor.y < 0){
 					displacement_in_vox_floor.y = 0;
@@ -6783,8 +6783,8 @@ __global__ void bspline_cuda_score_d_mse_kernel1 (
 				fy1 = 1.0 - fy2;
 				
 				// Clamp and intepolate along the Z axis.
-				displacement_in_vox_floor.z = floor(displacement_in_vox.z);
-				displacement_in_vox_round.z = round(displacement_in_vox.z);
+				displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
+				displacement_in_vox_round.z = rintf(displacement_in_vox.z);	// Single instruction round
 				fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
 				if(displacement_in_vox_floor.z < 0){
 					displacement_in_vox_floor.z = 0;
