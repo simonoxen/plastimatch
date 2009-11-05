@@ -6,10 +6,11 @@
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "volume.h"
-#include "readmha_ext.h"
-#include <mathutil.h>
+#include "readmha.h"
+#include "mathutil.h"
 #include "fftw3.h"
-#pragma comment (lib, "libfftw3-3.lib")
+
+//#pragma comment (lib, "libfftw3-3.lib")
 
 #ifndef DEGTORAD
 	static const double DEGTORAD = 3.14159265 / 180.0;

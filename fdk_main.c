@@ -367,8 +367,11 @@ int main(int argc, char* argv[])
 
     convert_to_hu (vol, &options);
 
-    printf ("Writing output volume...\n");
+    printf ("Writing output volume(s)...\n");
     write_mha (options.output_file, vol);
+    write_coronal_sagittal (&options, vol);
+
+    volume_free (vol);
     printf(" done.\n\n");
 
     return 0;

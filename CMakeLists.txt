@@ -628,7 +628,6 @@ SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	ramp_filter.c ramp_filter.h 
 	volume.c volume.h 
 	writematrix_opts.c
-	wrmha_512prefix.c
 	bowtie_correction.c
 	)
 

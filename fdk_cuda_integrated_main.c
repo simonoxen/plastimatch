@@ -8,7 +8,6 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "volume.h"
-#include "readmha_ext.h"
 #include "MGHMtx_opts.h"
 #include "proj_matrix.h"
 #include "file_util.h"
