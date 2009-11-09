@@ -910,7 +910,9 @@ extern "C" void bspline_cuda_i_stage_2(
 	checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
 	// ----------------------------------------------------------
 
-
+	// The following is unnecessary since report_score()
+	// calculates the grad mean & norm from grad[] anyway.
+/*
 	// --- BEGIN KERNEL EXECUTION -------------------------------
 	bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
 		dev_ptrs->grad,
@@ -977,6 +979,7 @@ extern "C" void bspline_cuda_i_stage_2(
 	cudaMemcpy(host_grad_norm, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
 	// ----------------------------------------------------------
+*/
 }
 
 
@@ -8237,7 +8240,7 @@ __global__ void bspline_cuda_update_grad_kernel(
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
 	if(threadIdxInGrid < num_elems) {
-		grad[threadIdxInGrid] = 2 * tex1Dfetch(tex_grad, threadIdxInGrid) / num_vox;
+		grad[threadIdxInGrid] = 2.0 * tex1Dfetch(tex_grad, threadIdxInGrid) / num_vox;
 	}
 }
 
@@ -8278,7 +8281,7 @@ __global__ void bspline_cuda_compute_grad_mean_kernel(
 
 	// Perform the reduction in shared memory.  Stride over the block and reduce
 	// parts until it is down to a single value (stored in sdata[0]).
-	for(unsigned int s = threadsPerBlock / 2; s > 0; s >>= 1) {
+	for(unsigned int s = (threadsPerBlock / 2); s > 0; s >>= 1) {
 		if (threadIdxInBlock < s) {
 			sdata[threadIdxInBlock] += sdata[threadIdxInBlock + s];
 		}

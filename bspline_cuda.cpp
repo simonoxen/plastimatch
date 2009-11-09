@@ -174,7 +174,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	bxf->vox_per_rgn,
 	fixed->dim,
 	&(ssd->score),
-	ssd->grad,
+	bst->ssd.grad, //ssd->grad,
 	&ssd_grad_mean,
 	&ssd_grad_norm,
 	dev_ptrs);
