@@ -8240,7 +8240,8 @@ __global__ void bspline_cuda_update_grad_kernel(
 	int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
 	if(threadIdxInGrid < num_elems) {
-		grad[threadIdxInGrid] = 2.0 * tex1Dfetch(tex_grad, threadIdxInGrid) / num_vox;
+//		grad[threadIdxInGrid] = 2.0 * tex1Dfetch(tex_grad, threadIdxInGrid) / num_vox;
+		grad[threadIdxInGrid] = 2.0 * grad[threadIdxInGrid] / num_vox;
 	}
 }
 
