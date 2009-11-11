@@ -22,6 +22,7 @@
 #include "itk_dicom.h"
 #include "itk_image_cast.h"
 #include "logfile.h"
+#include "file_util.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -366,6 +367,7 @@ itk_image_save (T image, char* fname)
     typename WriterType::Pointer writer = WriterType::New();
     writer->SetInput (image);
     writer->SetFileName (fname);
+    make_directory_recursive (fname);
     try {
 	writer->Update();
     }

@@ -53,7 +53,7 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     }
 
     /* The following keywords are allowed either globally or in stages */
-    else if (!strcmp (key, "img_out")) {
+    else if (!strcmp (key, "img_out") || !strcmp (key, "image_out")) {
 	if (section == 0) {
 	    strncpy (regp->img_out_fn, val, _MAX_PATH);
 	} else {

@@ -132,8 +132,8 @@ do_warp_native (
     pih->get_gpuit_spacing (spacing);
     pih->get_gpuit_dim (dim);
     pih->get_gpuit_direction_cosines (direction_cosines);
-    printf ("Creating output vf...\n");
     if (parms->vf_out_fn[0]) {
+	printf ("Creating output vf...\n");
 	vf_out = volume_create (dim, origin, spacing, PT_VF_FLOAT_INTERLEAVED,
 				direction_cosines, 0);
     }
@@ -141,7 +141,7 @@ do_warp_native (
     /* Create output image */
     printf ("Creating output volume...\n");
     v_out = volume_create (dim, origin, spacing, PT_FLOAT, 
-			  direction_cosines, 0);
+			   direction_cosines, 0);
 
     /* Warp using gpuit native warper */
     bspline_warp (v_out, vf_out, xf_tmp.get_gpuit_bsp(), v_in, 
