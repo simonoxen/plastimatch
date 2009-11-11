@@ -1,3 +1,5 @@
+#! /usr/bin/perl
+
 ###### The number at the end of the output directory 
 ######    is the "StudyID" from the dicom header
 ###### Find it like this:
@@ -10,6 +12,26 @@
 use File::Copy;
 use File::Spec;
 use File::Path;
+
+#####################################################################
+##     configuration variables
+#####################################################################
+$move_files = 1;
+$want_mip = 1;
+$want_min_ip = 1;
+$want_ave_ip = 1;
+$want_unsorted = 1;
+
+##$free_breathing = 3;
+$free_breathing = -1;
+$mip = -1;
+$min_ip = -1;
+$ave_ip = -1;
+$unsorted = -1;
+$s103 = -1;
+$s105 = -1;
+$s107 = -1;
+
 
 #####################################################################
 ##     handle_directory_change
@@ -30,22 +52,9 @@ if ($#ARGV == 1) {
     $indir = $ARGV[0];
     $outdir = $ARGV[1];
     $use_no_phi = 0;
-    $move_files = 0;
 } else {
-    $indir = "G:\\ConquestDICOM\\data\\4303547";
-    $outdir = "G:\\reality\\new-data\\0061";
-    $use_no_phi = 1;
-    $move_files = 1;
+    die "Usage: conquest_split.pl indir outdir\n";
 }
-
-##$free_breathing = 3;
-$free_breathing = -1;
-$want_mip = 1;
-$mip = -1;
-$unsorted = -1;
-$s103 = -1;
-$s105 = -1;
-$s107 = -1;
 
 opendir(DIR, $indir);
 if ($use_no_phi) {
@@ -107,6 +116,12 @@ foreach $k (keys %series_description_hash) {
     elsif ($series_description_hash{$k} =~ /^MIP/) {
 	$mip = $k;
     }
+    elsif ($series_description_hash{$k} =~ /^Min-IP/) {
+	$min_ip = $k;
+    }
+    elsif ($series_description_hash{$k} =~ /^Ave-IP/) {
+	$ave_ip = $k;
+    }
     elsif ($k == 103) {
 	$s103 = $k;
     }
@@ -130,6 +145,8 @@ foreach (0..9) { print $sorted[$_] . " "; }
 print "\n";
 print "FREE_BREATHING: $free_breathing\n";
 print "MIP:            $mip\n";
+print "MIN IP:         $min_ip\n";
+print "AVE IP:         $ave_ip\n";
 print "STRUCTS:        $s103 $s105 $s107\n";
 print "--------------------\n";
 
@@ -215,3 +232,26 @@ if ($want_mip && $mip > 0) {
 	&move_or_copy ($f, $od, $move_files);
     }
 }
+
+if ($want_min_ip && $min_ip > 0) {
+    print "Moving min ip\n";
+    $od = File::Spec->catfile($outdir, "min_ip");
+    mkdir $od;
+    @move_files = grep(/_${min_ip}_/,@files);
+    for $file (@move_files) {
+	$f = File::Spec->catfile($indir,$file);
+	&move_or_copy ($f, $od, $move_files);
+    }
+}
+
+if ($want_ave_ip && $ave_ip > 0) {
+    print "Moving ave ip\n";
+    $od = File::Spec->catfile($outdir, "ave_ip");
+    mkdir $od;
+    @move_files = grep(/_${ave_ip}_/,@files);
+    for $file (@move_files) {
+	$f = File::Spec->catfile($indir,$file);
+	&move_or_copy ($f, $od, $move_files);
+    }
+}
+
