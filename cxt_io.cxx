@@ -6,6 +6,7 @@
 #include <string.h>
 #include "plm_config.h"
 #include "bstrlib.h"
+#include "file_util.h"
 #include "cxt_io.h"
 
 plastimatch1_EXPORT
@@ -426,6 +427,9 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
 {
     int i;
     FILE *fp;
+
+    /* Prepare output directory */
+    make_directory_recursive (cxt_fn);
 
     fp = fopen (cxt_fn, "wb");
     if (!fp) {

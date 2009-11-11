@@ -10,6 +10,7 @@ extern "C" {
 
 int file_exists (const char *filename);
 void make_directory (const char *dirname);
+void make_directory_recursive (const char *dirname);
 
 #if defined __cplusplus
 }

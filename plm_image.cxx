@@ -104,6 +104,18 @@ void
 PlmImage::save_short_dicom (char* fname)
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	itk_image_save_short_dicom (this->m_itk_uchar, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	itk_image_save_short_dicom (this->m_itk_short, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	itk_image_save_short_dicom (this->m_itk_ushort, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	itk_image_save_short_dicom (this->m_itk_uint32, fname);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	itk_image_save_short_dicom (this->m_itk_float, fname);
 	break;
@@ -112,7 +124,8 @@ PlmImage::save_short_dicom (char* fname)
 	itk_image_save_short_dicom (this->m_itk_float, fname);
 	break;
     default:
-	print_and_exit ("Unhandled image type in PlmImage::save_image\n");
+	print_and_exit ("Unhandled image type in PlmImage::save_short_dicom"
+			" (type = %d)\n", this->m_type);
 	break;
     }
 }
@@ -141,7 +154,8 @@ PlmImage::save_image (char* fname)
 	itk_image_save (this->m_itk_float, fname);
 	break;
     default:
-	print_and_exit ("Unhandled image type in PlmImage::save_image\n");
+	print_and_exit ("Unhandled image type in PlmImage::save_image"
+			" (type = %d)\n", this->m_type);
 	break;
     }
 }
