@@ -40,6 +40,7 @@ if ($#ARGV == 1) {
 
 ##$free_breathing = 3;
 $free_breathing = -1;
+$want_mip = 1;
 $mip = -1;
 $unsorted = -1;
 $s103 = -1;
