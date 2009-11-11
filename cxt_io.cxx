@@ -49,8 +49,9 @@ cxt_add_polyline (Cxt_structure* structure)
     Cxt_polyline* new_polyline;
 
     structure->num_contours++;
-    structure->pslist = (Cxt_polyline*) realloc (structure->pslist,
-						structure->num_contours * sizeof(Cxt_polyline));
+    structure->pslist = (Cxt_polyline*) 
+	realloc (structure->pslist, structure->num_contours 
+		 * sizeof(Cxt_polyline));
 
     new_polyline = &structure->pslist[structure->num_contours - 1];
     memset (new_polyline, 0, sizeof(Cxt_polyline));
@@ -134,7 +135,6 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
 	int struct_id;
         char *p;
         int rc;
-        //Cxt_structure *curr_structure;
 
         p = fgets (buf, CXT_BUFLEN, fp);
         if (!p) {
@@ -160,7 +160,6 @@ void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 {
     FILE* fp;
-    //    Cxt_structure* curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
     Cxt_polyline* curr_contour;
 
     float val_x = 0;
@@ -174,12 +173,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     float y = 0;
     float z = 0;
 
-    //    memset (curr_structure, 0, sizeof(Cxt_structure));
-    //    curr_structure->num_contours = 0;
-
     fp = fopen (cxt_fn, "r");
-
-    // if (fp) b = bgets ((bNgetc) fgetc, fp, '\n');
 
     if (!fp) {
 	fprintf (stderr, "Could not open contour file for read: %s\n", cxt_fn);
