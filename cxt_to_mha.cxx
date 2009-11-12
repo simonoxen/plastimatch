@@ -13,6 +13,7 @@
 #include "plm_path.h"
 #include "volume.h"
 #include "cxt_io.h"
+#include "file_util.h"
 #include "readmha.h"
 
 #if defined (WIN32)
@@ -160,6 +161,7 @@ main (int argc, char* argv[])
     slice_voxels = dim[0] * dim[1];
 
     if (parms->xorlist_fn[0]) {
+	make_directory_recursive (parms->xorlist_fn);
 	xorlist_fp = fopen (parms->xorlist_fn, "w");
 	if (!xorlist_fp) {
 	    fprintf (stderr, "Error opening file for write: %s\n",
