@@ -107,6 +107,9 @@ IF (NOT MINGW)
 ENDIF (NOT MINGW)
 INCLUDE (PLM_FindF2C.cmake)
 
+# OpenMP
+INCLUDE (PLM_FindOpenMP.cmake)
+
 ##-----------------------------------------------------------------------------
 ##  Search for include files
 ##-----------------------------------------------------------------------------
@@ -119,11 +122,11 @@ INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
 ##FIND_PACKAGE (QT4)
 
+INCLUDE (PLM_FindBrook.cmake)
 INCLUDE (PLM_Etags.cmake)
 INCLUDE (PLM_FindDCMTK.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
-INCLUDE (GPUIT.cmake)
 #INCLUDE(FindPantheios.cmake)
 
 ##-----------------------------------------------------------------------------
