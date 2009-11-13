@@ -1,7 +1,6 @@
 Introduction
 ------------
-This document is draft status.  Mostly just to remind myself to 
-use a consistent style as anything else.
+This document is draft status.
 
 Unified coding style is important because it eases software review 
 and maintenance.  This file specifies guidelines which can be broken 
@@ -13,10 +12,13 @@ file is included in the distribution.
 
 Files
 -----
-Third-party code should be placed in separate files, and should be 
-clearly identified, so that no mistake in licensing occurs.
 Source code files should use Unix-style end-of-line characters.
 All source code should be written in 7-bit clean ASCII.
+
+Third-party code
+----------------
+Third-party code should be placed in separate files, and should be 
+clearly identified, so that no mistake in licensing occurs.
 
 Indentation
 -----------
@@ -98,6 +100,7 @@ Use explicit "void" in the argument list if there are no arguments:
 
 Horizontal whitespace
 ---------------------
+Horizontal whitespace is used between operators and operands.  
 Conditionals should be laid out like this:
 
     if (bar == 3 && baz > 4) {
@@ -132,14 +135,14 @@ rather than the name.
 
 Vertical whitespace
 -------------------
-Only a single blank space is required between functions or between 
+A single empty line is used between functions or between 
 two groups of code.
 
 Identifier naming
 -----------------
-Prefer English names, with words separated by underscores.  Use lowercase 
-for function names, variable names, and structure names.  Use all upper 
-case for constants.
+Prefer English words to abbreviations.  Words are separated by 
+underscores.  Use lowercase for function names, variable names, 
+and structure names.  Use all upper case for constants.
 
     struct long_list {
         int list_length;
