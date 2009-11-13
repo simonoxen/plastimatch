@@ -13,6 +13,7 @@
 #include "plm_registration.h"
 #include "plm_version.h"
 #include "adjust_main.h"
+#include "compare_main.h"
 #include "stats_main.h"
 #include "warp_main.h"
 
@@ -20,13 +21,15 @@ static void
 print_usage (int return_code)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
-    printf ("Usage: plastimatch command [options]\n");
-    printf ("Commands:\n");
-    printf ("  adjust\n");
-    printf ("  convert\n");
-    printf ("  register\n");
-    printf ("  stats\n");
-    printf ("  warp\n");
+    printf ("Usage: plastimatch command [options]\n"
+	    "Commands:\n"
+	    "  adjust\n"
+	    "  compare\n"
+	    "  convert\n"
+	    "  register\n"
+	    "  stats\n"
+	    "  warp\n"
+	   );
     exit (return_code);
 }
 
@@ -66,7 +69,7 @@ do_command (int argc, char* argv[])
 	do_command_adjust (argc, argv);
     }
     else if (!strcmp (command, "compare")) {
-	do_command_warp (argc, argv);
+	do_command_compare (argc, argv);
     }
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */

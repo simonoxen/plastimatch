@@ -25,6 +25,7 @@ stats_main (Stats_parms* parms)
 	float v = it.Get();
 	if (first) {
 	    min_val = max_val = v;
+	    first = 0;
 	}
 	if (min_val > v) min_val = v;
 	if (max_val < v) max_val = v;

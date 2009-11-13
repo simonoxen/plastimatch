@@ -9,6 +9,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "itk_image.h"
+#include "itk_image_cast.h"
 #include "readmha.h"
 #include "volume.h"
 #include "print_and_exit.h"
@@ -256,34 +257,42 @@ void
 PlmImage::convert_to_itk_float ()
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_ULONG:
+	this->m_itk_float = cast_float (this->m_itk_uint32);
+	this->m_itk_uint32 = 0;
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_float = plm_image_convert_gpuit_float_to_itk (
 	    this, this->m_itk_float);
-	this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
-	return;
+	break;
     default:
 	print_and_exit ("Error: unhandled conversion to itk_float()\n");
 	return;
     }
+    this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 }
 
 void
-PlmImage::convert_to_itk_ulong ()
+PlmImage::convert_to_itk_uint32 (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
 	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_uint32 = cast_uint32 (this->m_itk_float);
+	this->m_itk_float = 0;
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_uint32 = plm_image_convert_gpuit_float_to_itk (
 	    this, this->m_itk_uint32);
-	this->m_type = PLM_IMG_TYPE_ITK_ULONG;
-	return;
+	break;
     default:
 	print_and_exit ("Error: unhandled conversion to itk_float()\n");
 	return;
     }
+    this->m_type = PLM_IMG_TYPE_ITK_ULONG;
 }
 
 void
@@ -324,7 +333,7 @@ PlmImage::convert_to_original_type (void)
     case PLM_IMG_TYPE_ITK_USHORT:
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->convert_to_itk_ulong ();
+	this->convert_to_itk_uint32 ();
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->convert_to_itk_float ();

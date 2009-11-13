@@ -377,10 +377,10 @@ itk_image_save_short_dicom (T image, char* dir_name)
 
 template<class T> 
 void
-itk_image_save_ulong (T image, char* fname)
+itk_image_save_uint32 (T image, char* fname)
 {
-    UInt32ImageType::Pointer ulong_img = cast_ulong (image);
-    itk_image_save (ulong_img, fname);
+    UInt32ImageType::Pointer uint32_img = cast_uint32 (image);
+    itk_image_save (uint32_img, fname);
 }
 
 template<class T> 
@@ -401,7 +401,7 @@ template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, 
 template plastimatch1_EXPORT void itk_image_save_uchar (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void itk_image_save_short (FloatImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save_ulong (FloatImageType::Pointer, char*);
+template plastimatch1_EXPORT void itk_image_save_uint32 (FloatImageType::Pointer, char*);
 
 template plastimatch1_EXPORT void itk_image_save_short_dicom (UCharImageType::Pointer, char*);
 template plastimatch1_EXPORT void itk_image_save_short_dicom (ShortImageType::Pointer, char*);

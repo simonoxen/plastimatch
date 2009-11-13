@@ -30,7 +30,7 @@ do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)
 	itk_image_save_ushort (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	itk_image_save_ulong (img, fn);
+	itk_image_save_uint32 (img, fn);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	itk_image_save_float (img, fn);

@@ -30,7 +30,6 @@ compare_main (Compare_parms* parms)
 	print_and_exit ("Error: image sizes do not match\n");
     }
 
-    typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
     FloatImageType::Pointer fi1 = img1->itk_float ();
     FloatImageType::Pointer fi2 = img2->itk_float ();
 
@@ -47,33 +46,44 @@ compare_main (Compare_parms* parms)
 	std::cerr << "ITK exception caught: " << excep << std::endl;
 	exit (-1);
     }
+    FloatImageType::Pointer diff = sub_filter->GetOutput ();
 
-    FloatImageType::RegionType rg1 = fi1->GetLargestPossibleRegion ();
-
-#if defined (commentout)
-    
-
-    FloatIteratorType it (img, rg);
+    typedef itk::ImageRegionConstIterator < FloatImageType > FloatIteratorType;
+    FloatIteratorType it (diff, diff->GetRequestedRegion ());
 
     int first = 1;
     float min_val, max_val;
-    int num = 0;
-    double sum = 0.0;
+    int num = 0, num_dif = 0;
+    double ave = 0.0;
+    double mae = 0.0;
+    double mse = 0.0;
 
     for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
 	float v = it.Get();
 	if (first) {
-	    min_val = max_val = v;
+	    min_val = v;
+	    max_val = v;
+	    first = 0;
 	}
-	if (min_val > v) min_val = v;
-	if (max_val < v) max_val = v;
-	sum += v;
+	if (min_val > v)     min_val = v;
+	if (max_val < v)     max_val = v;
+	if (v != 0.0)        num_dif ++;
+	ave += v;
+	mae += fabs (v);
+	mse += (v * v);
 	num ++;
     }
 
-    printf ("MIN %f AVE %f MAX %f NUM %d\n",
-	    min_val, max_val, (float) (sum / num), num);
-#endif
+    printf ("MIN %f AVE %f MAX %f\n"
+	    "MAE %f MSE %f\n"
+	    "DIF %d NUM %d\n",
+	    min_val, 
+	    (float) (ave / num), 
+	    max_val, 
+	    (float) (mae / num), 
+	    (float) (mse / num), 
+	    num_dif, 
+	    num);
 }
 
 static void

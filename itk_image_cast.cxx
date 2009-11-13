@@ -97,7 +97,7 @@ cast_short (T image)
 
 template<class T> 
 UInt32ImageType::Pointer
-cast_ulong (T image)
+cast_uint32 (T image)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::CastImageFilter <
@@ -145,5 +145,6 @@ template plastimatch1_EXPORT ShortImageType::Pointer cast_short (ShortImageType:
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UShortImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UInt32ImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (FloatImageType::Pointer);
-template plastimatch1_EXPORT UInt32ImageType::Pointer cast_ulong (FloatImageType::Pointer);
+template plastimatch1_EXPORT UInt32ImageType::Pointer cast_uint32 (FloatImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (FloatImageType::Pointer);
+template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UInt32ImageType::Pointer);

@@ -37,7 +37,7 @@ private:
 	return *this;
     }
     void convert_to_itk_float ();
-    void convert_to_itk_ulong ();
+    void convert_to_itk_uint32 ();
     void convert_to_gpuit_float ();
 
 public:
