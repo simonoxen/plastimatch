@@ -1,28 +1,23 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
-#if (defined(_WIN32) || defined(WIN32))
-#include <direct.h>
-#include <io.h>
-#else
-#include <dirent.h>
-#endif
 #include "plm_config.h"
-#include "plm_int.h"
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkCastImageFilter.h"
 #include "itkOrientImageFilter.h"
+
+#include "plm_int.h"
 #include "itk_image.h"
-#include "print_and_exit.h"
 #include "itk_dicom.h"
 #include "itk_image_cast.h"
-#include "logfile.h"
 #include "file_util.h"
+#include "print_and_exit.h"
+#include "logfile.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -35,35 +30,6 @@
 /* -----------------------------------------------------------------------
     Functions
    ----------------------------------------------------------------------- */
-int
-is_directory (char *dir)
-{
-#if (defined(_WIN32) || defined(WIN32))
-    char pwd[_MAX_PATH];
-    if (!_getcwd (pwd, _MAX_PATH)) {
-        return 0;
-    }
-    if (_chdir (dir) == -1) {
-        return 0;
-    }
-    _chdir (pwd);
-#else /* UNIX */
-    DIR *dp;
-    if ((dp = opendir (dir)) == NULL) {
-        return 0;
-    }
-    closedir (dp);
-#endif
-    return 1;
-}
-
-int
-extension_is (char* fname, char* ext)
-{
-    return (strlen (fname) > strlen(ext)) 
-	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);
-}
-
 // This function is copied from Slicer3 (itkPluginUtilities.h)
 //   so it's available in case Slicer3 is not installed.
 // Get the PixelType and ComponentType from fileName

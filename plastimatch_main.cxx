@@ -65,6 +65,9 @@ do_command (int argc, char* argv[])
     if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
     }
+    else if (!strcmp (command, "compare")) {
+	do_command_warp (argc, argv);
+    }
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */
 	do_command_warp (argc, argv);

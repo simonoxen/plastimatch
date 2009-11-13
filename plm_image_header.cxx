@@ -206,3 +206,19 @@ itk_roi_from_gpuit (
     (*roi).SetSize (itk_size);
     (*roi).SetIndex (itk_index);
 }
+
+/* Return 1 if the two headers are the same */
+int
+PlmImageHeader::compare (PlmImageHeader *pli1, PlmImageHeader *pli2)
+{
+    int d;
+    for (d = 0; d < 3; d++) {
+	if (pli1->m_origin[d] != pli2->m_origin[d]) return 0;
+	if (pli1->m_spacing[d] != pli2->m_spacing[d]) return 0;
+	if (pli1->Size(d) != pli2->Size(d)) return 0;
+    }
+
+    /* GCS FIX: check direction cosines */
+
+    return 1;
+}

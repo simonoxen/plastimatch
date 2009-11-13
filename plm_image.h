@@ -36,8 +36,9 @@ private:
     PlmImage& operator= (PlmImage& xf) {
 	return *this;
     }
-    void convert_itk_float ();
-    void convert_gpuit_float ();
+    void convert_to_itk_float ();
+    void convert_to_itk_ulong ();
+    void convert_to_gpuit_float ();
 
 public:
     PlmImage () {
@@ -84,13 +85,17 @@ public:
 
     /* Conversion */
     FloatImageType::Pointer& itk_float () {
-	convert_itk_float ();
+	convert_to_itk_float ();
 	return m_itk_float;
     }
     Volume* gpuit_float () {
-	convert_gpuit_float ();
+	convert_to_gpuit_float ();
 	return (Volume*) m_gpuit;
     }
+    void convert_to_original_type (void);
+
+    /* Other */
+    static int compare_headers (PlmImage *pli1, PlmImage *pli2);
 };
 
 /* -----------------------------------------------------------------------

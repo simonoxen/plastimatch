@@ -684,12 +684,13 @@ SET(POINT_PATH_SRC
 	)
 SET(PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
-	plastimatch_main.cxx
  	file_type.cxx file_type.h
+	compare_main.cxx compare_main.h
+	plastimatch_main.cxx
 	stats_main.cxx stats_main.h
  	warp_dij_main.cxx 
-	warp_main.cxx warp_main.h
 	warp_mha_main.cxx 
+	warp_main.cxx warp_main.h
  	warp_pointset_main.cxx 
 	)
 SET(PLASTIMATCH_SLICER_SRC

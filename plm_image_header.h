@@ -22,6 +22,10 @@ public:
     int Size (int d) const { return m_region.GetSize()[d]; }
 
 public:
+    /* Return 1 if the two headers are the same */
+    static int compare (PlmImageHeader *pli1, PlmImageHeader *pli2);
+
+public:
     void plastimatch1_EXPORT 
     set_from_gpuit (float gpuit_origin[3],
 		    float gpuit_spacing[3],

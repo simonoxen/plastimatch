@@ -151,6 +151,9 @@ do_warp_native (
     /* Return output image to caller */
     im_warped->set_gpuit_float (v_out);
 
+    /* Bspline_warp only operates on float.  We need to back-convert */
+    im_warped->convert_to_original_type ();
+
     /* Return vf to caller */
     if (parms->vf_out_fn[0]) {
 	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
@@ -179,6 +182,7 @@ do_warp (
 	switch (im_in->m_type) {
 	case PLM_IMG_TYPE_ITK_SHORT:
 	case PLM_IMG_TYPE_ITK_FLOAT:
+	case PLM_IMG_TYPE_ITK_ULONG:
 	    do_warp_native (im_warped, vf, parms, xf_in, pih, im_in);
 	    break;
 	default:

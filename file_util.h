@@ -8,7 +8,9 @@
 extern "C" {
 #endif
 
+int extension_is (char* fname, char* ext);
 int file_exists (const char *filename);
+int is_directory (char *dir);
 void make_directory (const char *dirname);
 void make_directory_recursive (const char *dirname);
 

@@ -37,33 +37,12 @@
 #include "itk_image.h"
 #include "itk_dicom.h"
 #include "getopt.h"
+#include "file_util.h"
 
 /* local functions used in itk_image.cxx -- 
   package to a separate plm_utils.h and plm_utils.cxx might be a better
   way for this type of utility functions
 */
-
-// check if the input string is a directory
-static int is_directory (char *dir)
-{
-#if (defined(_WIN32) || defined(WIN32))
-    char pwd[_MAX_PATH];
-    if (!_getcwd (pwd, _MAX_PATH)) {
-        return 0;
-    }
-    if (_chdir (dir) == -1) {
-        return 0;
-    }
-    _chdir (pwd);
-#else /* UNIX */
-    DIR *dp;
-    if ((dp = opendir (dir)) == NULL) {
-        return 0;
-    }
-    closedir (dp);
-#endif
-    return 1;
-}
 
 // print out the image names/directoies stored 
 // in imageList
@@ -110,10 +89,10 @@ void compute_average(char **imageList, int nImages, char *outFile)
 {
     // filters we need to compute mean image
     // we use FloatImageType to avoid pixel value overflow during the addition
-    typedef itk::AddImageFilter< FloatImageType, FloatImageType, FloatImageType > 
-        AddFilterType;
-    typedef itk::DivideByConstantImageFilter< FloatImageType, int, FloatImageType >
-        DivFilterType;
+    typedef itk::AddImageFilter< FloatImageType, FloatImageType, 
+	FloatImageType > AddFilterType;
+    typedef itk::DivideByConstantImageFilter< FloatImageType, int, 
+	FloatImageType > DivFilterType;
 
     // the original type of the image
     PlmImageType origImageType;
@@ -121,19 +100,18 @@ void compute_average(char **imageList, int nImages, char *outFile)
     FloatImageType::Pointer tmp;
     FloatImageType::Pointer sumImg;
 
-	AddFilterType::Pointer addition = AddFilterType::New();
-	DivFilterType::Pointer division = DivFilterType::New();
+    AddFilterType::Pointer addition = AddFilterType::New();
+    DivFilterType::Pointer division = DivFilterType::New();
 
-    if (nImages <= 1) 
-    {
-        std::cout << "number of images is less than or equal to 1" << std::endl;
-        return;
+    if (nImages <= 1) {
+	std::cout << "number of images is less than or equal to 1" << std::endl;
+	return;
     }
 
-	sumImg = load_float (imageList[0], &origImageType);
+    sumImg = load_float (imageList[0], &origImageType);
 
-	//add all the input images
-	for (int i = 1; i < nImages; i ++)
+    //add all the input images
+    for (int i = 1; i < nImages; i ++)
 	{
 	    tmp = load_float (imageList[i], &origImageType);
 	    addition->SetInput1 (sumImg);
@@ -144,27 +122,27 @@ void compute_average(char **imageList, int nImages, char *outFile)
 
     // divide by the total number of input images
     division->SetConstant(nImages);
-	division->SetInput (sumImg);
-	division->Update();
+    division->SetInput (sumImg);
+    division->Update();
     // store the mean image in tmp first before write out
     tmp = division->GetOutput();
 
     // write the computed mean image
     if (is_directory(outFile)) 
-    {
-        std::cout << "output dicom to " << outFile << std::endl;
-        // Dicom
-        itk_image_save_short_dicom (tmp, outFile);
-    }
+	{
+	    std::cout << "output dicom to " << outFile << std::endl;
+	    // Dicom
+	    itk_image_save_short_dicom (tmp, outFile);
+	}
     else
-    {
-        std::cout << "output to " << outFile << std::endl;
-        itk_image_save_short (tmp, outFile);
-    }
+	{
+	    std::cout << "output to " << outFile << std::endl;
+	    itk_image_save_short (tmp, outFile);
+	}
 
     // free allocated memeory 
     for (int i = 0; i < nImages; i ++)
-         free(imageList[i]);
+	free(imageList[i]);
     free(imageList);
 }
 

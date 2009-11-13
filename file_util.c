@@ -5,11 +5,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#if (defined(_WIN32) || defined(WIN32))
+#include <direct.h>
+#include <io.h>
+#else
+#include <dirent.h>
+#endif
 #if HAVE_SYS_STAT
 #include <sys/stat.h>
-#endif
-#if _WIN32
-#include <direct.h>
 #endif
 
 #if (_WIN32)
@@ -18,6 +21,34 @@
 #define ISSLASH(c) ((c) == '/')
 #endif
 
+int
+is_directory (char *dir)
+{
+#if (defined(_WIN32) || defined(WIN32))
+    char pwd[_MAX_PATH];
+    if (!_getcwd (pwd, _MAX_PATH)) {
+        return 0;
+    }
+    if (_chdir (dir) == -1) {
+        return 0;
+    }
+    _chdir (pwd);
+#else /* UNIX */
+    DIR *dp;
+    if ((dp = opendir (dir)) == NULL) {
+        return 0;
+    }
+    closedir (dp);
+#endif
+    return 1;
+}
+
+int
+extension_is (char* fname, char* ext)
+{
+    return (strlen (fname) > strlen(ext)) 
+	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);
+}
 
 int
 file_exists (const char *filename)
