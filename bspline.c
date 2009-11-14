@@ -2028,6 +2028,17 @@ bspline_warp (
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
+		/* Compute linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, vout->dim);
+
+		/* Assign deformation */
+		if (vf_out) {
+		    float *vf_out_img = (float*) vf_out->img;
+		    vf_out_img[3*fv+0] = dxyz[0];
+		    vf_out_img[3*fv+1] = dxyz[1];
+		    vf_out_img[3*fv+2] = dxyz[2];
+		}
+
 		/* Compute moving image coordinate of fixed image voxel */
 		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
 						  dxyz, moving);
@@ -2056,19 +2067,8 @@ bspline_warp (
 
 		    m_val = m_img[mvf];
 		}
-		/* Compute linear index of fixed image voxel */
-		fv = INDEX_OF (fijk, vout->dim);
-
 		/* Assign warped value to output image */
 		vout_img[fv] = m_val;
-
-		/* Assign deformation */
-		if (vf_out) {
-		    float *vf_out_img = (float*) vf_out->img;
-		    vf_out_img[3*fv+0] = dxyz[0];
-		    vf_out_img[3*fv+1] = dxyz[1];
-		    vf_out_img[3*fv+2] = dxyz[2];
-		}
 	    }
 	}
     }
