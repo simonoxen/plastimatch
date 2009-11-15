@@ -29,9 +29,9 @@ INCLUDE (language_support.cmake)
 SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
+SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
-  "Build plastimatch as shared library")
+SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 
@@ -128,6 +128,9 @@ INCLUDE (PLM_FindDCMTK.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
 #INCLUDE(FindPantheios.cmake)
+
+SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+FIND_PACKAGE (OpenCL)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -1071,6 +1074,14 @@ IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
   PLM_ADD_EXECUTABLE(cuda_test "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "")
   SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 ENDIF(PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+
+# Test executable -- opencl
+IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
+  INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
+  SET (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl)
+  PLM_ADD_EXECUTABLE(opencl_test "${OPENCL_TEST_SRC}" "${OPENCL_LIBRARIES}" "")
+  #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
+ENDIF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing

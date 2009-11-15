@@ -26,6 +26,10 @@ case $CNAME in
     export PATH=$PATH:$HOME/build/plastimatch-3.16.0
     export PATH=$PATH:$HOME/projects/plastimatch/cttools
     ;;
+    "wormwood")
+    export PATH=$PATH:$HOME/build/plastimatch-3.16.0
+    export PATH=$PATH:$HOME/projects/plastimatch/cttools
+    ;;
     *)
     echo "Unknown machine"
     ;;
