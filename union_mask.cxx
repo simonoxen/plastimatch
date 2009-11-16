@@ -55,24 +55,15 @@ load_mha_rdr(char *fn)
     return reader;
 }
 
-#if defined (commentout)
-MaskReaderType::Pointer
-load_mha(char *fn)
-{
-    return load_mha_rdr(fn)->GetOutput();
-}
-#endif
-
 void
-merge_pixels(MaskImageType::Pointer im_out, MaskImageType::Pointer im_1, MaskImageType::Pointer im_2)
+merge_pixels (MaskImageType::Pointer im_out, 
+	      MaskImageType::Pointer im_1, 
+	      MaskImageType::Pointer im_2)
 {
     typedef itk::ImageRegionIterator< MaskImageType > IteratorType;
     MaskImageType::RegionType r_1 = im_1->GetLargestPossibleRegion();
     MaskImageType::RegionType r_2 = im_2->GetLargestPossibleRegion();
 
-    const MaskImageType::IndexType& st = r_1.GetIndex();
-    const MaskImageType::SizeType& sz = r_1.GetSize();
-    //const InputImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
     const MaskImageType::PointType& og = im_1->GetOrigin();
     const MaskImageType::SpacingType& sp = im_1->GetSpacing();
     
@@ -93,7 +84,7 @@ merge_pixels(MaskImageType::Pointer im_out, MaskImageType::Pointer im_1, MaskIma
 }
 
 int
-main(int argc, char *argv[])
+main (int argc, char *argv[])
 {
   
     if (argc != 4) {

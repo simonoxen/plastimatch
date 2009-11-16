@@ -1132,9 +1132,6 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const PlmImageHeader* pih)
 static DeformationFieldType::Pointer 
 xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, PlmImageHeader* pih)
 {
-    const DeformationFieldType::SpacingType& vf_spacing = vf->GetSpacing();
-    const DeformationFieldType::SizeType vf_size = vf->GetLargestPossibleRegion().GetSize();
-
     vf = vector_resample_image (vf, pih);
     return vf;
 }

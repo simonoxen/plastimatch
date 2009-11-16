@@ -869,7 +869,7 @@ Volume*
 volume_axial2coronal (Volume* ref)
 {
     Volume* vout;
-    int i, j, k;
+    int j, k;
     vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
     vout->dim[1]=ref->dim[2];
     vout->dim[2]=ref->dim[1];

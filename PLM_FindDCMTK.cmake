@@ -13,6 +13,11 @@
 #
 # Written for VXL by Amitha Perera.
 # 
+# On debian, require the following packages:
+#   libdcmtk1-dev
+#   libpng12-dev
+#   libtiff4-dev
+#   libwrap0-dev
 
 INCLUDE(FindThreads)
 INCLUDE(FindPNG)
