@@ -100,28 +100,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_fn, optarg, _MAX_PATH);
 	    break;
 	case 2:
-	    if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
-	    }
-	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
-	    }
-	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
-	    }
-	    else if (!strcmp(optarg,"float")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
-	    }
-	    else if (!strcmp(optarg,"uint") || !strcmp(optarg,"ulong")
-		     || !strcmp(optarg,"uint32")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_ULONG;
-	    }
-#if defined (commentout)
-	    else if (!strcmp(optarg,"vf")) {
-		sm_parms->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
-	    }
-#endif
-	    else {
+	    sm_parms->output_type = plm_image_type_parse (optarg);
+	    if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+		printf ("Unknown output type option\n");
 		print_usage();
 	    }
 	    break;
@@ -136,6 +117,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 		sm_parms->pattern = PATTERN_SPHERE;
 	    }
 	    else {
+		printf ("Unknown pattern option\n");
 		print_usage();
 	    }
 	    break;

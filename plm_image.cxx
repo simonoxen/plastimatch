@@ -257,7 +257,7 @@ void
 PlmImage::convert_to_itk_uchar (void)
 {
     switch (this->m_type) {
-    case PLM_IMG_TYPE_ITK_CHAR:
+    case PLM_IMG_TYPE_ITK_UCHAR:
 	return;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->m_itk_uchar = cast_uchar (this->m_itk_float);
@@ -299,6 +299,10 @@ void
 PlmImage::convert_to_itk_float ()
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	this->m_itk_float = cast_float (this->m_itk_uchar);
+	this->m_itk_uchar = 0;
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	this->m_itk_float = cast_float (this->m_itk_uint32);
 	this->m_itk_uint32 = 0;

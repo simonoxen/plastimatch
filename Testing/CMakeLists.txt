@@ -19,6 +19,13 @@ PLM_ADD_TEST (
   "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
+PLM_ADD_TEST (
+  "synth-test-3"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
+  "--output;synth_3.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  )
+
 ## -------------------------------------------------------------------------
 ## bspline-bxf - read and write bxf format
 ## -------------------------------------------------------------------------
@@ -277,6 +284,13 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b.mha"
+  )
+
+PLM_ADD_TEST (
+  "plastimatch-warp-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-c.mha;--interpolation;nn"
   )
 
 ## -------------------------------------------------------------------------
