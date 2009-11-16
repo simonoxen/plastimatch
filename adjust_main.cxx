@@ -6,14 +6,16 @@
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
 #include "adjust_main.h"
-#include "itk_image.h"
+#include "plm_image.h"
 
 static void
 adjust_main (Adjust_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    FloatImageType::Pointer img = load_float (parms->mha_in_fn, 0);
+    PlmImage *plm_image = plm_image_load (parms->mha_in_fn, 
+					  PLM_IMG_TYPE_ITK_FLOAT);
+    FloatImageType::Pointer img = plm_image->m_itk_float;
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 
@@ -59,7 +61,10 @@ adjust_main (Adjust_Parms* parms)
     if (parms->output_dicom) {
 	itk_image_save_short_dicom (img, parms->mha_out_fn);
     } else {
-	itk_image_save (img, parms->mha_out_fn);
+	if (parms->output_type) {
+	    plm_image->convert (parms->output_type);
+	}
+	plm_image->save_image (parms->mha_out_fn);
     }
 }
 
@@ -74,6 +79,7 @@ adjust_print_usage (void)
 	    "    --truncate-above=value\n"
 	    "    --truncate-below=value\n"
 	    "    --stretch=\"min max\"\n"
+	    "    --output-type={uchar,short,ushort,ulong,float}\n"
 	    );
     exit (-1);
 }
@@ -91,6 +97,7 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	{ "truncate-below", required_argument,      NULL,           5 },
 	{ "stretch",        required_argument,      NULL,           6 },
 	{ "output-format",  required_argument,      NULL,           7 },
+	{ "output-type",    required_argument,      NULL,           8 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -129,6 +136,12 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	    } else {
 		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
 		adjust_print_usage ();
+	    }
+	    break;
+	case 8:
+	    parms->output_type = plm_image_type_parse (optarg);
+	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+		adjust_print_usage();
 	    }
 	    break;
 	default:

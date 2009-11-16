@@ -21,6 +21,7 @@ public:
     float stretch[2];
     bool have_stretch;
     int output_dicom;
+    PlmImageType output_type;
 public:
     Adjust_Parms () {
 	memset (this, 0, sizeof(Adjust_Parms));

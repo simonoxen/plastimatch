@@ -3,10 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <time.h>
-#include "itkImage.h"
-#include "itkWarpImageFilter.h"
-#include "itkLinearInterpolateImageFunction.h"
-#include "itkCastImageFilter.h"
 
 #include "plm_int.h"
 #include "getopt.h"

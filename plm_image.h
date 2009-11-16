@@ -36,8 +36,9 @@ private:
     PlmImage& operator= (PlmImage& xf) {
 	return *this;
     }
-    void convert_to_itk_float ();
+    void convert_to_itk_uchar ();
     void convert_to_itk_uint32 ();
+    void convert_to_itk_float ();
     void convert_to_gpuit_float ();
 
 public:
@@ -92,6 +93,7 @@ public:
 	convert_to_gpuit_float ();
 	return (Volume*) m_gpuit;
     }
+    void convert (PlmImageType new_type);
     void convert_to_original_type (void);
 
     /* Other */

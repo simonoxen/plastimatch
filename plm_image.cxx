@@ -254,24 +254,24 @@ plm_image_convert_itk_to_gpuit_float (PlmImage* pli, T img)
 }
 
 void
-PlmImage::convert_to_itk_float ()
+PlmImage::convert_to_itk_uchar (void)
 {
     switch (this->m_type) {
-    case PLM_IMG_TYPE_ITK_ULONG:
-	this->m_itk_float = cast_float (this->m_itk_uint32);
-	this->m_itk_uint32 = 0;
-	break;
-    case PLM_IMG_TYPE_ITK_FLOAT:
+    case PLM_IMG_TYPE_ITK_CHAR:
 	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_uchar = cast_uchar (this->m_itk_float);
+	this->m_itk_float = 0;
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_float = plm_image_convert_gpuit_float_to_itk (
-	    this, this->m_itk_float);
+	this->m_itk_uchar = plm_image_convert_gpuit_float_to_itk (
+	    this, this->m_itk_uchar);
 	break;
     default:
 	print_and_exit ("Error: unhandled conversion to itk_float()\n");
 	return;
     }
-    this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
+    this->m_type = PLM_IMG_TYPE_ITK_ULONG;
 }
 
 void
@@ -293,6 +293,27 @@ PlmImage::convert_to_itk_uint32 (void)
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+}
+
+void
+PlmImage::convert_to_itk_float ()
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_ULONG:
+	this->m_itk_float = cast_float (this->m_itk_uint32);
+	this->m_itk_uint32 = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	return;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_float = plm_image_convert_gpuit_float_to_itk (
+	    this, this->m_itk_float);
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_float()\n");
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 }
 
 void
@@ -325,8 +346,15 @@ PlmImage::convert_to_gpuit_float ()
 void
 PlmImage::convert_to_original_type (void)
 {
-    switch (this->m_original_type) {
+    this->convert (this->m_original_type);
+}
+
+void
+PlmImage::convert (PlmImageType new_type)
+{
+    switch (new_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
+	this->convert_to_itk_uchar ();
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	break;
@@ -343,10 +371,11 @@ PlmImage::convert_to_original_type (void)
 	break;
     default:
 	print_and_exit ("Unhandled image type in "
-			"PlmImage::convert_to_original_type"
-			" (type = %d)\n", this->m_type);
+			"PlmImage::convert (type = %d)\n", 
+			this->m_type);
 	break;
     }
+    this->m_type = new_type;
 }
 
 /* Return 1 if the two headers are the same */

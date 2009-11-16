@@ -20,4 +20,7 @@ enum PlmImageType {
     PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
 };
 
+PlmImageType
+plm_image_type_parse (const char* string);
+
 #endif
