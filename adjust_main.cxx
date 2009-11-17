@@ -66,6 +66,8 @@ adjust_main (Adjust_Parms* parms)
 	}
 	plm_image->save_image (parms->mha_out_fn);
     }
+
+    delete plm_image;
 }
 
 static void

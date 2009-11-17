@@ -382,6 +382,13 @@ PlmImage::convert (PlmImageType new_type)
     this->m_type = new_type;
 }
 
+void
+PlmImage::convert_and_save (char* fname, PlmImageType new_type)
+{
+    this->convert (new_type);
+    this->save_image (fname);
+}
+
 /* Return 1 if the two headers are the same */
 int
 PlmImage::compare_headers (PlmImage *pli1, PlmImage *pli2)

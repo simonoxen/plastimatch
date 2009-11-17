@@ -75,23 +75,24 @@ public:
     /* Saving */
     void save_short_dicom (char* fname);
     void save_image (char* fname);
+    void convert_and_save (char* fname, PlmImageType new_type);
 
-    /* Assignment */
-    void set_gpuit_float (Volume *v) {
+    /* assignment */
+    void set_gpuit_float (volume *v) {
 	free ();
 	m_gpuit = (void*) v;
 	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
     }
 
-    /* Conversion */
+    /* conversion */
     FloatImageType::Pointer& itk_float () {
 	convert_to_itk_float ();
 	return m_itk_float;
     }
-    Volume* gpuit_float () {
+    volume* gpuit_float () {
 	convert_to_gpuit_float ();
-	return (Volume*) m_gpuit;
+	return (volume*) m_gpuit;
     }
     void convert (PlmImageType new_type);
     void convert_to_original_type (void);

@@ -84,6 +84,9 @@ compare_main (Compare_parms* parms)
 	    (float) (mse / num), 
 	    num_dif, 
 	    num);
+
+    delete img1;
+    delete img2;
 }
 
 static void

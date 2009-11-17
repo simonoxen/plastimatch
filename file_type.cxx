@@ -1,13 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <string>
 #include <itksys/SystemTools.hxx>
+#include <itkImageIOBase.h>
 
-#include "plm_config.h"
+#include "itk_image.h"
 #include "file_type.h"
 
 File_type
@@ -40,6 +42,19 @@ deduce_file_type (char* path)
 
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".cxt")) {
 	return FILE_TYPE_CXT;
+    }
+
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".dij")) {
+	return FILE_TYPE_DIJ;
+    }
+
+    /* Maybe vector field, or maybe image */
+    itk::ImageIOBase::IOPixelType pixelType;
+    itk::ImageIOBase::IOComponentType componentType;
+
+    itk__GetImageType (std::string (path), pixelType, componentType);
+    if (pixelType == itk::ImageIOBase::VECTOR) {
+	return FILE_TYPE_VF;
     }
 
     return FILE_TYPE_IMG;

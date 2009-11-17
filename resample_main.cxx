@@ -9,22 +9,22 @@
 
 #include "resample_main.h"
 #include "itk_image.h"
+#include "file_type.h"
 #include "resample_mha.h"
 #include "getopt.h"
 
 void
 print_usage (void)
 {
-    printf ("Usage: resample_mha [options]\n");
-    printf ("Required:   --input=file\n"
+    printf ("Usage: plastimatch resample [options]\n"
+	    "Required:   --input=file\n"
 	    "            --output=file\n"
-	    "            --input_type={uchar,short,ushort,float,vf}\n"
-	    "            --output_type={uchar,short,ushort,float,vf}\n"
 	    "Optional:   --subsample=\"x y z\"\n"
 	    "            --origin=\"x y z\"\n"
 	    "            --spacing=\"x y z\"\n"
 	    "            --size=\"x y z\"\n"
-		"            --interpolation={nn, linear}\n"
+	    "            --output_type={uchar,short,ushort,float,vf}\n"
+	    "            --interpolation={nn, linear}\n"
 	    "            --default_val=val\n");
     exit (1);
 }
@@ -100,8 +100,6 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 {
     int ch, rc;
     static struct option longopts[] = {
-	{ "input_type",     required_argument,      NULL,           1 },
-	{ "input-type",     required_argument,      NULL,           1 },
 	{ "output_type",    required_argument,      NULL,           2 },
 	{ "output-type",    required_argument,      NULL,           2 },
 	{ "input",          required_argument,      NULL,           3 },
@@ -117,43 +115,9 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
-	case 1:
-	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		parms->input_type = PLM_IMG_TYPE_ITK_USHORT;
-	    }
-	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		parms->input_type = PLM_IMG_TYPE_ITK_SHORT;
-	    }
-	    else if (!strcmp(optarg,"float")) {
-		parms->input_type = PLM_IMG_TYPE_ITK_FLOAT;
-	    }
-	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		parms->input_type = PLM_IMG_TYPE_ITK_UCHAR;
-	    }
-	    else if (!strcmp(optarg,"vf")) {
-		parms->input_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
-	    }
-	    else {
-		print_usage();
-	    }
-	    break;
 	case 2:
-	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
-	    }
-	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
-	    }
-	    else if (!strcmp(optarg,"float")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
-	    }
-	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
-	    }
-	    else if (!strcmp(optarg,"vf")) {
-		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
-	    }
-	    else {
+	    parms->output_type = plm_image_type_parse (optarg);
+	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
 		print_usage();
 	    }
 	    break;
@@ -226,155 +190,88 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 	printf ("Error: must specify --input and --output\n");
 	print_usage();
     }
-    if (parms->input_type == PLM_IMG_TYPE_UNDEFINED 
-	|| parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
-	printf ("Error: must specify --input_type and --output_type\n");
-	print_usage();
+}
+
+template<class T>
+T
+do_resample_itk (Resample_parms* parms, T img)
+{
+    if (parms->have_subsample) {
+	return subsample_image (img, parms->subsample[0], parms->subsample[1], 
+			       parms->subsample[2], parms->default_val);
     }
+    else if (parms->have_origin && parms->have_spacing && parms->have_size) {
+	return resample_image (img, parms->origin, parms->spacing, 
+			      parms->size, parms->default_val, 
+			      parms->interp_lin);
+    } else {
+	/* Do nothing */
+	return img;
+    }
+}
+
+void
+resample_main_itk_vf (Resample_parms* parms)
+{
+    DeformationFieldType::Pointer input_field 
+	    = load_float_field (parms->mha_in_fn);
+
+    if (parms->have_subsample) {
+	print_and_exit ("Error. Subsample not supported for vector field.\n");
+	exit (-1);
+    }
+    else if (parms->have_origin && parms->have_spacing && parms->have_size) {
+	printf ("Resampling...\n");
+	input_field = vector_resample_image (input_field, parms->origin, 
+					     parms->spacing, parms->size);
+    }
+    itk_image_save (input_field, parms->mha_out_fn);
 }
 
 void
 resample_main (Resample_parms* parms)
 {
-    typedef itk::ImageFileWriter < UCharImageType > UCharWriterType;
-    typedef itk::ImageFileWriter < ShortImageType > ShortWriterType;
-    typedef itk::ImageFileWriter < UShortImageType > UShortWriterType;
-    typedef itk::ImageFileWriter < FloatImageType > FloatWriterType;
+    PlmImage plm_image;
 
-    if (parms->input_type == PLM_IMG_TYPE_ITK_USHORT) {
-	/* Do nothing for now */
-	printf ("Unsigned short not yet supported.\n");
+    File_type file_type;
+
+    file_type = deduce_file_type (parms->mha_in_fn);
+
+    /* Vector fields are templated differently, so do them separately */
+    if (file_type == FILE_TYPE_VF) {
+	resample_main_itk_vf (parms);
+	return;
     }
-    else if (parms->input_type == PLM_IMG_TYPE_ITK_SHORT) {
 
-	ShortImageType::Pointer input_image = load_short (parms->mha_in_fn, 0);
+    plm_image.load_native (parms->mha_in_fn);
 
-	if (parms->have_subsample) {
-	    input_image = subsample_image (input_image, parms->subsample[0],
-					   parms->subsample[1], parms->subsample[2], parms->default_val);
-	}
-	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
-	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
-	}
-	if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
-	    //just output
-	    fix_invalid_pixels (input_image);
-
-	    ShortWriterType::Pointer writer = ShortWriterType::New();
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput (input_image);
-	    writer->Update();
-
-	}
-	else if (parms->output_type == PLM_IMG_TYPE_ITK_USHORT) {
-	    if (parms->adjust == 0) {
-		fix_invalid_pixels_with_shift (input_image);
-	    }
-
-	    typedef itk::CastImageFilter <ShortImageType,
-		    UShortImageType > CastFilterType;
-	    CastFilterType::Pointer caster = CastFilterType::New();
-	    caster->SetInput(input_image);
-        
-	    UShortWriterType::Pointer writer = UShortWriterType::New();
-
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput(caster->GetOutput());
-	    writer->Update();
-	}
-	else {
-	    /* Do nothing for now */
-	    printf ("Error. Unimplemented conversion type.\n");
-	    exit (-1);
-	}
+    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+	parms->output_type = plm_image.m_type;
     }
-    else if (parms->input_type == PLM_IMG_TYPE_ITK_FLOAT) {
 
-	FloatImageType::Pointer input_image = load_float (parms->mha_in_fn, 0);
-
-	if (parms->have_subsample) {
-	    input_image = subsample_image (input_image, parms->subsample[0],
-					   parms->subsample[1], parms->subsample[2], parms->default_val);
-	}
-	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
-	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
-	}
-
-	if (parms->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
-	    FloatWriterType::Pointer writer = FloatWriterType::New();
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput (input_image);
-	    writer->Update();
-	} else if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
-
-	    typedef itk::CastImageFilter <FloatImageType,
-		    ShortImageType > CastFilterType;
-	    CastFilterType::Pointer caster = CastFilterType::New();
-	    caster->SetInput(input_image);
-        
-	    ShortWriterType::Pointer writer = ShortWriterType::New();
-
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput(caster->GetOutput());
-	    writer->Update();
-	} else {
-	    /* Do nothing for now */
-	    printf ("Error. Unimplemented conversion type.\n");
-	    exit (-1);
-	}
+    switch (plm_image.m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	plm_image.m_itk_uchar 
+		= do_resample_itk (parms, plm_image.m_itk_uchar);
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	plm_image.m_itk_short 
+		= do_resample_itk (parms, plm_image.m_itk_short);
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	plm_image.m_itk_uint32 
+		= do_resample_itk (parms, plm_image.m_itk_uint32);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	plm_image.m_itk_float 
+		= do_resample_itk (parms, plm_image.m_itk_float);
+	break;
+    default:
+	print_and_exit ("Unhandled image type in resample_main()\n");
+	break;
     }
-    else if (parms->input_type == PLM_IMG_TYPE_ITK_UCHAR) {
-	UCharImageType::Pointer input_image = load_uchar (parms->mha_in_fn, 0);
-	if (parms->have_subsample) {
-	    input_image = subsample_image (input_image, parms->subsample[0],
-					   parms->subsample[1], parms->subsample[2], parms->default_val);
-	}
-	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
-	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
-	}
 
-	if (parms->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
-
-	    UCharWriterType::Pointer writer = UCharWriterType::New();
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput(input_image);
-	    writer->Update();
-	} else if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
-	    typedef itk::CastImageFilter <UCharImageType,
-		    ShortImageType > CastFilterType;
-	    CastFilterType::Pointer caster = CastFilterType::New();
-	    caster->SetInput(input_image);
-        
-	    ShortWriterType::Pointer writer = ShortWriterType::New();
-
-	    writer->SetFileName (parms->mha_out_fn);
-	    writer->SetInput(caster->GetOutput());
-	    writer->Update();
-	} else {
-	    /* Do nothing for now */
-	    printf ("Error. Unimplemented conversion type.\n");
-	    exit (-1);
-	}
-    }
-    else if (parms->input_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
-	if (parms->output_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
-	    DeformationFieldType::Pointer input_field = load_float_field (parms->mha_in_fn);
-	    if (parms->have_subsample) {
-		/* Do nothing for now */
-		printf ("Error. Unimplemented conversion type.\n");
-		exit (-1);
-	    }
-	    else if (parms->have_origin && parms->have_spacing && parms->have_size) {
-		printf ("Resampling...\n");
-		input_field = vector_resample_image (input_field, parms->origin, parms->spacing, parms->size);
-	    }
-	    itk_image_save (input_field, parms->mha_out_fn);
-	} else {
-	    /* Do nothing for now */
-	    printf ("Error. Unimplemented conversion type.\n");
-	    exit (-1);
-	}
-    }
+    plm_image.convert_and_save (parms->mha_out_fn, parms->output_type);
 }
 
 void

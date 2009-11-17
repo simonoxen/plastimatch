@@ -342,9 +342,11 @@ template DeformationFieldType::Pointer vector_resample_image (DeformationFieldTy
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
 template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
-template UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+template plastimatch1_EXPORT UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+template plastimatch1_EXPORT UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);
+template plastimatch1_EXPORT UInt32ImageType::Pointer subsample_image (UInt32ImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT FloatImageType::Pointer subsample_image (FloatImageType::Pointer&, int, int, int, float);
