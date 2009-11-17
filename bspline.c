@@ -3337,7 +3337,8 @@ bspline_optimize (BSPLINE_Xform* bxf,
 				       moving_grad, bxf, parms);
 	    break;
 	case 'i':
-	    bspline_cuda_initialize_i (dev_ptrs, fixed, moving, 
+	    // i now uses j's init and cleanup routines
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
 				       moving_grad, bxf, parms);
 	    break;
 	case 'j':
@@ -3393,7 +3394,8 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	    bspline_cuda_clean_up_h (dev_ptrs);
 	    break;
 	case 'i':
-	    bspline_cuda_clean_up_i (dev_ptrs);
+	    // i now uses j's init and cleanup routines
+	    bspline_cuda_clean_up_j (dev_ptrs);
 	    break;
 	default:
 	    bspline_cuda_clean_up_j (dev_ptrs);
