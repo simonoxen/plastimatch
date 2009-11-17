@@ -2634,7 +2634,7 @@ bspline_cuda_score_j_mse_kernel1
     float3 displacement_in_vox_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
-    float  mvr;
+    int    mvr;
     float  m_val;
     float  m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 	
@@ -2874,11 +2874,28 @@ bspline_cuda_score_j_mse_kernel1
 		//-----------------------------------------------------------------
 				
 		// Compute spatial gradient using nearest neighbors.
-		mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
+		mvr = ((((int)displacement_in_vox_round.z * volume_dim.y) + (int)displacement_in_vox_round.y) * volume_dim.x) + (int)displacement_in_vox_round.x;
+
+		// tex1Dfetch() uses 27-bits for indexing, which results in an
+		// index overflow for large image volumes.  The following code
+		// removes the usage of the 1D texture reference and attempts
+		// to use several smaller indices and pointer arithmetic in
+		// order to reduce the size of the index.
+		float* big_fat_grad;
+
+		big_fat_grad = &moving_grad[3*(int)displacement_in_vox_round.z * volume_dim.y * volume_dim.x];
+		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.y * volume_dim.x];
+		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.x];
+
+		dc_dv_element_x[0] = diff * big_fat_grad[0];
+		dc_dv_element_y[0] = diff * big_fat_grad[1];
+		dc_dv_element_z[0] = diff * big_fat_grad[2];
+
 				
-		dc_dv_element_x[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
-		dc_dv_element_y[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
-		dc_dv_element_z[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 2);
+		// This code does not work for large image volumes > 512x512x170
+//		dc_dv_element_x[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
+//		dc_dv_element_y[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
+//		dc_dv_element_z[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 2);
 	    }
 	}
     }
@@ -2939,7 +2956,7 @@ bspline_cuda_score_g_mse_kernel1
     float3 displacement_in_vox_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
-    float  mvr;
+    int    mvr;
     float  m_val;
     float  m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 	
@@ -2996,11 +3013,11 @@ bspline_cuda_score_g_mse_kernel1
 	    // Calculate the B-Spline deformation vector.
 	    //-----------------------------------------------------------------
 
-	    // Use the offset of the voxel within the region to compute the index into the c_lut.
+	    // pidx is the tile index for the tile the current voxel falls within.
 	    pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 	    dc_dv_element = &dc_dv[3 * vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z * pidx];
 
-	    // Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
+	    // qidx is the local index of the voxel within the tile
 	    qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
 	    dc_dv_element = &dc_dv_element[3 * qidx];
 
@@ -3173,11 +3190,18 @@ bspline_cuda_score_g_mse_kernel1
 		//-----------------------------------------------------------------
 				
 		// Compute spatial gradient using nearest neighbors.
-		mvr = (((displacement_in_vox_round.z * volume_dim.y) + displacement_in_vox_round.y) * volume_dim.x) + displacement_in_vox_round.x;
-				
-		dc_dv_element[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
-		dc_dv_element[1] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
-		dc_dv_element[2] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 2);
+		mvr = ((((int)displacement_in_vox_round.z * volume_dim.y) + (int)displacement_in_vox_round.y) * volume_dim.x) + (int)displacement_in_vox_round.x;
+
+		float* big_fat_grad;
+
+		big_fat_grad = &moving_grad[3*(int)displacement_in_vox_round.z * volume_dim.y * volume_dim.x];
+		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.y * volume_dim.x];
+		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.x];
+
+                dc_dv_element[0] = diff * big_fat_grad[0];
+                dc_dv_element[1] = diff * big_fat_grad[1];
+                dc_dv_element[2] = diff * big_fat_grad[2];
+	
 	    }
 	}
     }
