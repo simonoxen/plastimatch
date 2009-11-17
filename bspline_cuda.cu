@@ -401,6 +401,248 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 				Dev_Pointers_Bspline* dev_ptrs)
 {
 
+	// JAS 10.15.2009
+	// TODO: A structure similar to the BSpline_Xform
+	//       that uses float3s needs to be used here
+	//       to clean up the code.
+
+	// Dimensions of the volume (in tiles)
+	int3 rdims;			
+	rdims.x = bxf->rdims[0];
+	rdims.y = bxf->rdims[1];
+	rdims.z = bxf->rdims[2];
+
+	// Number of knots
+	int3 cdims;
+	cdims.x = bxf->cdims[0];
+	cdims.y = bxf->cdims[1];
+	cdims.z = bxf->cdims[2];
+
+	// Dimensions of the volume (in voxels)
+	int3 volume_dim;		
+	volume_dim.x = fixed->dim[0]; 
+	volume_dim.y = fixed->dim[1];
+	volume_dim.z = fixed->dim[2];
+
+	// Number of voxels per region
+	int3 vox_per_rgn;		
+	vox_per_rgn.x = bxf->vox_per_rgn[0];
+	vox_per_rgn.y = bxf->vox_per_rgn[1];
+	vox_per_rgn.z = bxf->vox_per_rgn[2];
+
+	// Image origin (in mm)
+	float3 img_origin;		
+	img_origin.x = (float)bxf->img_origin[0];
+	img_origin.y = (float)bxf->img_origin[1];
+	img_origin.z = (float)bxf->img_origin[2];
+
+	// Image spacing (in mm)
+	float3 img_spacing;     
+	img_spacing.x = (float)bxf->img_spacing[0];
+	img_spacing.y = (float)bxf->img_spacing[1];
+	img_spacing.z = (float)bxf->img_spacing[2];
+
+	// Image offset
+	float3 img_offset;     
+	img_offset.x = (float)moving->offset[0];
+	img_offset.y = (float)moving->offset[1];
+	img_offset.z = (float)moving->offset[2];
+
+	// Pixel spacing
+	float3 pix_spacing;     
+	pix_spacing.x = (float)moving->pix_spacing[0];
+	pix_spacing.y = (float)moving->pix_spacing[1];
+	pix_spacing.z = (float)moving->pix_spacing[2];
+
+	// Position of first vox in ROI (in vox)
+	int3 roi_offset;        
+	roi_offset.x = bxf->roi_offset[0];
+	roi_offset.y = bxf->roi_offset[1];
+	roi_offset.z = bxf->roi_offset[2];
+
+	// Dimension of ROI (in vox)
+	int3 roi_dim;           
+	roi_dim.x = bxf->roi_dim[0];	
+	roi_dim.y = bxf->roi_dim[1];
+	roi_dim.z = bxf->roi_dim[2];
+
+
+	// JAS 10.15.2009
+	// TODO: The following blocked off section needs
+	//       to be turned into its own function.
+	// ------------------------------------------------
+	// ------------------------------------------------
+
+	// --- INITIALIZE GRID ---
+	int i;
+	int Grid_x = 0;
+	int Grid_y = 0;
+	int threads_per_block = 128;
+	int num_threads = fixed->npix;
+	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	int smemSize = 12 * sizeof(float) * threads_per_block;
+
+
+	// -----
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// -----
+
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		// If this happens we should consider falling back to a
+		// CPU implementation, using a different CUDA algorithm,
+		// or padding the input dc_dv stream to work with this
+		// CUDA algorithm.
+		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid1(Grid_x, Grid_y, 1);
+	dim3 dimBlock1(threads_per_block, 1, 1);
+	// ----------------------
+
+
+	// --- BEGIN KERNEL EXECUTION ---
+	cudaEvent_t start, stop;
+	float time;
+
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+
+	cudaEventRecord (start, 0);	
+
+	cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
+
+	cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
+
+	cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+
+	int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+
+	bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
+		dev_ptrs->dc_dv_x,	// Addr of dc_dv_x on GPU
+		dev_ptrs->dc_dv_y,	// Addr of dc_dv_y on GPU
+		dev_ptrs->dc_dv_z,	// Addr of dc_dv_z on GPU
+		dev_ptrs->score,	// Addr of score on GPU
+		dev_ptrs->coeff,	// Addr of coeff on GPU
+		dev_ptrs->fixed_image,	// Addr of fixed_image on GPU
+		dev_ptrs->moving_image,	// Addr of moving_image on GPU
+		dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
+		volume_dim,		// Volume Dimensions
+		img_origin,		// Origin
+		img_spacing,		// Voxel Spacing
+		img_offset,		// Image Offset
+		roi_offset,		// Region of Intrest Offset
+		roi_dim,		// Region of Intrest Dimenions
+		vox_per_rgn,		// Voxels per Region
+		pix_spacing,		// Pixel Spacing
+		rdims,			// 
+		cdims,
+		tile_padding);
+
+	cudaEventRecord (stop, 0);	
+	cudaEventSynchronize (stop);
+
+	cudaEventElapsedTime (&time, start, stop);
+
+	cudaEventDestroy (start);
+	cudaEventDestroy (stop);
+
+	printf("\n[%f ms] MSE & dc_dv\n", time);
+	// ------------------------------
+
+	// END: Needs to be turned into its own function.
+	// ----------------------------------------------------------
+	// ----------------------------------------------------------
+
+
+
+	// Prepare for the next kernel
+	cudaThreadSynchronize();
+	checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
+
+	// Clear out the condensed dc_dv streams
+	cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+	cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+	cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+
+	// Start timing the kernel
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord (start, 0);
+
+	// Invoke kernel condense
+	int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+	CUDA_bspline_mse_2_condense_64(dev_ptrs, bxf->vox_per_rgn, num_tiles);
+
+	// Stop timing the kernel
+	cudaEventRecord (stop, 0);
+	cudaEventSynchronize (stop);
+	cudaEventElapsedTime (&time, start, stop);
+	cudaEventDestroy (start);
+	cudaEventDestroy (stop);
+	printf("[%f ms] Condense\n", time);
+
+	// Prepare for the next kernel
+	cudaThreadSynchronize();
+	checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+	// Start timing the kernel
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord (start, 0);
+
+	// Clear out the gradient
+	cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->grad");
+
+	// Invoke kernel reduce
+	CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
+
+	// Stop timing the kernel
+	cudaEventRecord (stop, 0);
+	cudaEventSynchronize (stop);
+	cudaEventElapsedTime (&time, start, stop);
+	cudaEventDestroy (start);
+	cudaEventDestroy (stop);
+	printf("[%f ms] Reduce\n\n", time);
+
+	// Prepare for the next kernel
+	cudaThreadSynchronize();
+	checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+// END OF FUNCTION
+
+// ORIGIONAL i STARTS HERE.
+// Replaced with a version of j that performs on the fly
+// calculations instead of using a LUT for B-Spline coefficients.
+//
+// The following is maintained for reference purposes.
+/*
 	// --- INITIALIZE LOCAL VARIABLES ---------------------------
 
 	// Dimensions of the volume (in tiles)
@@ -724,6 +966,9 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 //	cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
 //	cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
 	// ----------------------------------------------------------
+
+*/
+// END OF REFERENCE CODE
 
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -2693,13 +2938,13 @@ bspline_cuda_score_j_mse_kernel1
 	    // Calculate the B-Spline deformation vector.
 	    //-----------------------------------------------------------------
 
-	    // Use the offset of the voxel within the region to compute the index into the c_lut.
+	    // pidx is the tile index for the tile the current voxel falls within.
 	    pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 	    dc_dv_element_x = &dc_dv_x[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
 	    dc_dv_element_y = &dc_dv_y[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
 	    dc_dv_element_z = &dc_dv_z[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
 
-	    // Use the offset of the voxel to compute the index into the multiplier LUT or q_lut.
+	    // qidx is the local index of the voxel within the tile
 	    qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
 	    dc_dv_element_x = &dc_dv_element_x[qidx];
 	    dc_dv_element_y = &dc_dv_element_y[qidx];
@@ -3358,9 +3603,16 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				    multiplier_1 = A*pre_multiplier;
 										
 				    // Accumulate the results
+				    // USE GLOBAL MEMORY
+//				    result.x += dc_dv[dc_dv_row + 3*idx + 0] * multiplier_1;	
+//				    result.y += dc_dv[dc_dv_row + 3*idx + 1] * multiplier_1;	
+//				    result.z += dc_dv[dc_dv_row + 3*idx + 2] * multiplier_1;	
+
+				    // USE TEXTURES
 				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
 				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
 				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;	
+
 
 				} // End if unrolling_factor = 1
 
@@ -3378,6 +3630,24 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				    multiplier_4 = A * pre_multiplier;
 										
 				    // Accumulate the results
+				    // USE GLOBAL MEMORY
+//				    result.x += dc_dv[dc_dv_row + 3*idx + 0] * multiplier_1;
+//				    result.y += dc_dv[dc_dv_row + 3*idx + 1] * multiplier_1;
+//				    result.z += dc_dv[dc_dv_row + 3*idx + 2] * multiplier_1;
+//
+//				    result.x += dc_dv[dc_dv_row + 3*(idx + 1) + 0] * multiplier_2;
+//				    result.y += dc_dv[dc_dv_row + 3*(idx + 1) + 1] * multiplier_2;
+//				    result.z += dc_dv[dc_dv_row + 3*(idx + 1) + 2] * multiplier_2;
+//											
+//				    result.x += dc_dv[dc_dv_row + 3*(idx + 2) + 0] * multiplier_3;
+//				    result.y += dc_dv[dc_dv_row + 3*(idx + 2) + 1] * multiplier_3;
+//				    result.z += dc_dv[dc_dv_row + 3*(idx + 2) + 2] * multiplier_3;
+//											
+//				    result.x += dc_dv[dc_dv_row + 3*(idx + 3) + 0] * multiplier_4;
+//				    result.y += dc_dv[dc_dv_row + 3*(idx + 3) + 1] * multiplier_4;
+//				    result.z += dc_dv[dc_dv_row + 3*(idx + 3) + 2] * multiplier_4;
+
+				    // USE TEXTURES
 				    result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
 				    result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
 				    result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
@@ -3403,6 +3673,12 @@ __global__ void bspline_cuda_score_g_mse_kernel2
 				multiplier_1 = A * pre_multiplier;
 										
 				// Accumulate the results
+				// USE GLOBAL MEMORY
+//				result.x += dc_dv[dc_dv_row + 3*idx + 0] * multiplier_1;
+//				result.y += dc_dv[dc_dv_row + 3*idx + 1] * multiplier_1;
+//				result.z += dc_dv[dc_dv_row + 3*idx + 2] * multiplier_1;
+
+				// USE TEXTURES
 				result.x += TEX_REF (dc_dv, dc_dv_row + 3*idx + 0) * multiplier_1;
 				result.y += TEX_REF (dc_dv, dc_dv_row + 3*idx + 1) * multiplier_1;
 				result.z += TEX_REF (dc_dv, dc_dv_row + 3*idx + 2) * multiplier_1;
