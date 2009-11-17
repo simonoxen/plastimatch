@@ -4,6 +4,8 @@
 #ifndef _plm_image_header_h_
 #define _plm_image_header_h_
 
+#include "plm_config.h"
+#include "xform.h"
 #include "volume.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
@@ -31,6 +33,8 @@ public:
 		    float gpuit_spacing[3],
 		    int gpuit_dim[3],
 		    float gpuit_direction_cosines[9]);
+    void plastimatch1_EXPORT 
+    set_from_gpuit_bspline (BSPLINE_Xform *bxf);
     void plastimatch1_EXPORT 
     set_from_plm_image (PlmImage *pli);
     template<class T> 

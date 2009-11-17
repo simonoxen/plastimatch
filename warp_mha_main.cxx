@@ -216,6 +216,9 @@ warp_image_main (Warp_Parms* parms)
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* use the spacing from input vector field */
 	pih.set_from_itk_image (xform.get_itk_vf());
+    } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
+	/* use the spacing from input bxf file */
+	pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
     } else {
 	/* otherwise, use the spacing of the input image */
 	pih.set_from_plm_image (&im_in);

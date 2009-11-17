@@ -77,6 +77,16 @@ PlmImageHeader::set_from_gpuit (
 }
 
 void
+PlmImageHeader::set_from_gpuit_bspline (BSPLINE_Xform *bxf)
+{
+    this->set_from_gpuit (
+	bxf->img_origin,
+	bxf->img_spacing,
+	bxf->img_dim,
+	0);
+}
+
+void
 PlmImageHeader::set_from_plm_image (PlmImage *pli)
 {
     switch (pli->m_type) {
