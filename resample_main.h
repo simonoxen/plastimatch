@@ -1,15 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _resample_mha_main_h_
-#define _resample_mha_main_h_
+#ifndef _resample_main_h_
+#define _resample_main_h_
 
+#include "plm_config.h"
 #include <stdlib.h>
 #include "plm_path.h"
 #include "itk_image.h"
 
-
-class Resample_Parms {
+class Resample_parms {
 public:
     char mha_in_fn[_MAX_PATH];
     char mha_out_fn[_MAX_PATH];
@@ -26,9 +26,9 @@ public:
     float default_val;
     int have_default_val;
     int adjust;
-	int interp_lin;
+    int interp_lin;
 public:
-    Resample_Parms () {
+    Resample_parms () {
 	*mha_in_fn = 0;
 	*mha_out_fn = 0;
 	input_type = PLM_IMG_TYPE_UNDEFINED;
@@ -49,5 +49,8 @@ public:
 	interp_lin=1;
     }
 };
+
+void
+do_command_resample (int argc, char *argv[]);
 
 #endif

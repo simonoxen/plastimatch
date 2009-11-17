@@ -7,7 +7,7 @@
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
 
-#include "resample_mha_main.h"
+#include "resample_main.h"
 #include "itk_image.h"
 #include "resample_mha.h"
 #include "getopt.h"
@@ -95,13 +95,15 @@ fix_invalid_pixels (ShortImageType::Pointer image)
     }
 }
 
-void
-parse_args (Resample_Parms* resp, int argc, char* argv[])
+static void
+parse_args (Resample_parms* parms, int argc, char* argv[])
 {
     int ch, rc;
     static struct option longopts[] = {
 	{ "input_type",     required_argument,      NULL,           1 },
+	{ "input-type",     required_argument,      NULL,           1 },
 	{ "output_type",    required_argument,      NULL,           2 },
+	{ "output-type",    required_argument,      NULL,           2 },
 	{ "input",          required_argument,      NULL,           3 },
 	{ "output",         required_argument,      NULL,           4 },
 	{ "subsample",      required_argument,      NULL,           5 },
@@ -113,26 +115,23 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	{ NULL,             0,                      NULL,           0 }
     };
 
-    char **parm_argv = argv;
-    int parm_argc = argc;
-
-    while ((ch = getopt_long(parm_argc, parm_argv, "", longopts, NULL)) != -1) {
+    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 1:
 	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		resp->input_type = PLM_IMG_TYPE_ITK_USHORT;
+		parms->input_type = PLM_IMG_TYPE_ITK_USHORT;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		resp->input_type = PLM_IMG_TYPE_ITK_SHORT;
+		parms->input_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
 	    else if (!strcmp(optarg,"float")) {
-		resp->input_type = PLM_IMG_TYPE_ITK_FLOAT;
+		parms->input_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
 	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		resp->input_type = PLM_IMG_TYPE_ITK_UCHAR;
+		parms->input_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 	    else if (!strcmp(optarg,"vf")) {
-		resp->input_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
+		parms->input_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 	    }
 	    else {
 		print_usage();
@@ -140,129 +139,135 @@ parse_args (Resample_Parms* resp, int argc, char* argv[])
 	    break;
 	case 2:
 	    if (!strcmp(optarg,"ushort") || !strcmp(optarg,"unsigned")) {
-		resp->output_type = PLM_IMG_TYPE_ITK_USHORT;
+		parms->output_type = PLM_IMG_TYPE_ITK_USHORT;
 	    }
 	    else if (!strcmp(optarg,"short") || !strcmp(optarg,"signed")) {
-		resp->output_type = PLM_IMG_TYPE_ITK_SHORT;
+		parms->output_type = PLM_IMG_TYPE_ITK_SHORT;
 	    }
 	    else if (!strcmp(optarg,"float")) {
-		resp->output_type = PLM_IMG_TYPE_ITK_FLOAT;
+		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	    }
 	    else if (!strcmp(optarg,"mask") || !strcmp(optarg,"uchar")) {
-		resp->output_type = PLM_IMG_TYPE_ITK_UCHAR;
+		parms->output_type = PLM_IMG_TYPE_ITK_UCHAR;
 	    }
 	    else if (!strcmp(optarg,"vf")) {
-		resp->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
+		parms->output_type = PLM_IMG_TYPE_ITK_FLOAT_FIELD;
 	    }
 	    else {
 		print_usage();
 	    }
 	    break;
 	case 3:
-	    strncpy (resp->mha_in_fn, optarg, _MAX_PATH);
+	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
 	    break;
 	case 4:
-	    strncpy (resp->mha_out_fn, optarg, _MAX_PATH);
+	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
 	    break;
 	case 5:
-	    rc = sscanf (optarg, "%d %d %d", &(resp->subsample[0]), &(resp->subsample[1]), &(resp->subsample[2]));
+	    rc = sscanf (optarg, "%d %d %d", &(parms->subsample[0]), 
+			 &(parms->subsample[1]), &(parms->subsample[2]));
 	    if (rc != 3) {
 		printf ("Subsampling option must have three arguments\n");
 		exit (1);
 	    }
-	    resp->have_subsample = 1;
+	    parms->have_subsample = 1;
 	    break;
 	case 6:
-	    rc = sscanf (optarg, "%g %g %g", &(resp->origin[0]), &(resp->origin[1]), &(resp->origin[2]));
+	    rc = sscanf (optarg, "%g %g %g", &(parms->origin[0]), 
+			 &(parms->origin[1]), &(parms->origin[2]));
 	    if (rc != 3) {
 		printf ("Origin option must have three arguments\n");
 		exit (1);
 	    }
-	    resp->have_origin = 1;
+	    parms->have_origin = 1;
 	    break;
 	case 7:
-	    rc = sscanf (optarg, "%g %g %g", &(resp->spacing[0]), &(resp->spacing[1]), &(resp->spacing[2]));
+	    rc = sscanf (optarg, "%g %g %g", &(parms->spacing[0]), 
+			 &(parms->spacing[1]), &(parms->spacing[2]));
 	    if (rc != 3) {
 		printf ("Spacing option must have three arguments\n");
 		exit (1);
 	    }
-	    resp->have_spacing = 1;
+	    parms->have_spacing = 1;
 	    break;
 	case 8:
-	    rc = sscanf (optarg, "%d %d %d", &(resp->size[0]), &(resp->size[1]), &(resp->size[2]));
+	    rc = sscanf (optarg, "%d %d %d", &(parms->size[0]), 
+			 &(parms->size[1]), &(parms->size[2]));
 	    if (rc != 3) {
 		printf ("Size option must have three arguments\n");
 		exit (1);
 	    }
-	    resp->have_size = 1;
+	    parms->have_size = 1;
 	    break;
 	case 9:
 	    if (!strcmp (optarg, "nn")) {
-		resp->interp_lin = 0;
+		parms->interp_lin = 0;
 	    } else if (!strcmp (optarg, "linear")) {
-		resp->interp_lin = 1;
+		parms->interp_lin = 1;
 	    } else {
-		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
+		fprintf (stderr, 
+			 "Interpolation must be either nn or linear.\n");
 		print_usage ();
 	    }
 	    break;
 	case 10:
-	    rc = sscanf (optarg, "%g", &(resp->default_val));
+	    rc = sscanf (optarg, "%g", &(parms->default_val));
 	    if (rc != 1) {
 		printf ("Default value option must have one arguments\n");
 		exit (1);
 	    }
-	    resp->have_default_val = 1;
+	    parms->have_default_val = 1;
 	    break;
 	default:
 	    break;
 	}
     }
-    if (!resp->mha_in_fn[0] || !resp->mha_out_fn[0]) {
+    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
 	printf ("Error: must specify --input and --output\n");
 	print_usage();
     }
-    if (resp->input_type == PLM_IMG_TYPE_UNDEFINED || resp->output_type == PLM_IMG_TYPE_UNDEFINED) {
+    if (parms->input_type == PLM_IMG_TYPE_UNDEFINED 
+	|| parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
 	printf ("Error: must specify --input_type and --output_type\n");
 	print_usage();
     }
 }
 
 void
-do_resampling (Resample_Parms* resp)
+resample_main (Resample_parms* parms)
 {
     typedef itk::ImageFileWriter < UCharImageType > UCharWriterType;
     typedef itk::ImageFileWriter < ShortImageType > ShortWriterType;
     typedef itk::ImageFileWriter < UShortImageType > UShortWriterType;
     typedef itk::ImageFileWriter < FloatImageType > FloatWriterType;
 
-    if (resp->input_type == PLM_IMG_TYPE_ITK_USHORT) {
+    if (parms->input_type == PLM_IMG_TYPE_ITK_USHORT) {
 	/* Do nothing for now */
 	printf ("Unsigned short not yet supported.\n");
     }
-    else if (resp->input_type == PLM_IMG_TYPE_ITK_SHORT) {
+    else if (parms->input_type == PLM_IMG_TYPE_ITK_SHORT) {
 
-	ShortImageType::Pointer input_image = load_short (resp->mha_in_fn, 0);
+	ShortImageType::Pointer input_image = load_short (parms->mha_in_fn, 0);
 
-	if (resp->have_subsample) {
-	    input_image = subsample_image (input_image, resp->subsample[0],
-		    resp->subsample[1], resp->subsample[2], resp->default_val);
+	if (parms->have_subsample) {
+	    input_image = subsample_image (input_image, parms->subsample[0],
+					   parms->subsample[1], parms->subsample[2], parms->default_val);
 	}
-	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
+	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
+	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
 	}
-	if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
+	if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 	    //just output
 	    fix_invalid_pixels (input_image);
 
 	    ShortWriterType::Pointer writer = ShortWriterType::New();
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput (input_image);
 	    writer->Update();
 
 	}
-	else if (resp->output_type == PLM_IMG_TYPE_ITK_USHORT) {
-	    if (resp->adjust == 0) {
+	else if (parms->output_type == PLM_IMG_TYPE_ITK_USHORT) {
+	    if (parms->adjust == 0) {
 		fix_invalid_pixels_with_shift (input_image);
 	    }
 
@@ -273,7 +278,7 @@ do_resampling (Resample_Parms* resp)
         
 	    UShortWriterType::Pointer writer = UShortWriterType::New();
 
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput(caster->GetOutput());
 	    writer->Update();
 	}
@@ -283,24 +288,24 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == PLM_IMG_TYPE_ITK_FLOAT) {
+    else if (parms->input_type == PLM_IMG_TYPE_ITK_FLOAT) {
 
-	FloatImageType::Pointer input_image = load_float (resp->mha_in_fn, 0);
+	FloatImageType::Pointer input_image = load_float (parms->mha_in_fn, 0);
 
-	if (resp->have_subsample) {
-	    input_image = subsample_image (input_image, resp->subsample[0],
-		    resp->subsample[1], resp->subsample[2], resp->default_val);
+	if (parms->have_subsample) {
+	    input_image = subsample_image (input_image, parms->subsample[0],
+					   parms->subsample[1], parms->subsample[2], parms->default_val);
 	}
-	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
+	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
+	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
 	}
 
-	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
+	if (parms->output_type == PLM_IMG_TYPE_ITK_FLOAT) {
 	    FloatWriterType::Pointer writer = FloatWriterType::New();
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput (input_image);
 	    writer->Update();
-	} else if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
+	} else if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 
 	    typedef itk::CastImageFilter <FloatImageType,
 		    ShortImageType > CastFilterType;
@@ -309,7 +314,7 @@ do_resampling (Resample_Parms* resp)
         
 	    ShortWriterType::Pointer writer = ShortWriterType::New();
 
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput(caster->GetOutput());
 	    writer->Update();
 	} else {
@@ -318,23 +323,23 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == PLM_IMG_TYPE_ITK_UCHAR) {
-	UCharImageType::Pointer input_image = load_uchar (resp->mha_in_fn, 0);
-	if (resp->have_subsample) {
-	    input_image = subsample_image (input_image, resp->subsample[0],
-		    resp->subsample[1], resp->subsample[2], resp->default_val);
+    else if (parms->input_type == PLM_IMG_TYPE_ITK_UCHAR) {
+	UCharImageType::Pointer input_image = load_uchar (parms->mha_in_fn, 0);
+	if (parms->have_subsample) {
+	    input_image = subsample_image (input_image, parms->subsample[0],
+					   parms->subsample[1], parms->subsample[2], parms->default_val);
 	}
-	else if (resp->have_origin && resp->have_spacing && resp->have_size) {
-	    input_image = resample_image (input_image, resp->origin, resp->spacing, resp->size, resp->default_val, resp->interp_lin);
+	else if (parms->have_origin && parms->have_spacing && parms->have_size) {
+	    input_image = resample_image (input_image, parms->origin, parms->spacing, parms->size, parms->default_val, parms->interp_lin);
 	}
 
-	if (resp->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
+	if (parms->output_type == PLM_IMG_TYPE_ITK_UCHAR) {
 
 	    UCharWriterType::Pointer writer = UCharWriterType::New();
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput(input_image);
 	    writer->Update();
-	} else if (resp->output_type == PLM_IMG_TYPE_ITK_SHORT) {
+	} else if (parms->output_type == PLM_IMG_TYPE_ITK_SHORT) {
 	    typedef itk::CastImageFilter <UCharImageType,
 		    ShortImageType > CastFilterType;
 	    CastFilterType::Pointer caster = CastFilterType::New();
@@ -342,7 +347,7 @@ do_resampling (Resample_Parms* resp)
         
 	    ShortWriterType::Pointer writer = ShortWriterType::New();
 
-	    writer->SetFileName (resp->mha_out_fn);
+	    writer->SetFileName (parms->mha_out_fn);
 	    writer->SetInput(caster->GetOutput());
 	    writer->Update();
 	} else {
@@ -351,19 +356,19 @@ do_resampling (Resample_Parms* resp)
 	    exit (-1);
 	}
     }
-    else if (resp->input_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
-	if (resp->output_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
-	    DeformationFieldType::Pointer input_field = load_float_field (resp->mha_in_fn);
-	    if (resp->have_subsample) {
+    else if (parms->input_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
+	if (parms->output_type == PLM_IMG_TYPE_ITK_FLOAT_FIELD) {
+	    DeformationFieldType::Pointer input_field = load_float_field (parms->mha_in_fn);
+	    if (parms->have_subsample) {
 		/* Do nothing for now */
 		printf ("Error. Unimplemented conversion type.\n");
 		exit (-1);
 	    }
-	    else if (resp->have_origin && resp->have_spacing && resp->have_size) {
+	    else if (parms->have_origin && parms->have_spacing && parms->have_size) {
 		printf ("Resampling...\n");
-		input_field = vector_resample_image (input_field, resp->origin, resp->spacing, resp->size);
+		input_field = vector_resample_image (input_field, parms->origin, parms->spacing, parms->size);
 	    }
-	    itk_image_save (input_field, resp->mha_out_fn);
+	    itk_image_save (input_field, parms->mha_out_fn);
 	} else {
 	    /* Do nothing for now */
 	    printf ("Error. Unimplemented conversion type.\n");
@@ -372,14 +377,12 @@ do_resampling (Resample_Parms* resp)
     }
 }
 
-int
-main (int argc, char *argv[])
+void
+do_command_resample (int argc, char *argv[])
 {
-    Resample_Parms resp;
-    parse_args (&resp, argc, argv);
+    Resample_parms parms;
 
-    do_resampling (&resp);
+    parse_args (&parms, argc, argv);
 
-    printf ("Finished!\n");
-    return 0;
+    resample_main (&parms);
 }

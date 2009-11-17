@@ -14,6 +14,7 @@
 #include "plm_version.h"
 #include "adjust_main.h"
 #include "compare_main.h"
+#include "resample_main.h"
 #include "stats_main.h"
 #include "warp_main.h"
 
@@ -27,6 +28,7 @@ print_usage (int return_code)
 	    "  compare\n"
 	    "  convert\n"
 	    "  register\n"
+	    "  resample\n"
 	    "  stats\n"
 	    "  warp\n"
 	   );
@@ -77,6 +79,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);
+    }
+    else if (!strcmp (command, "resample")) {
+	do_command_resample (argc, argv);
     }
     else if (!strcmp (command, "stats")) {
 	/* warp and convert are the same */

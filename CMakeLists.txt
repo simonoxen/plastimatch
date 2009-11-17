@@ -694,6 +694,7 @@ SET(PLASTIMATCH_SRC
  	file_type.cxx file_type.h
 	compare_main.cxx compare_main.h
 	plastimatch_main.cxx
+	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h
  	warp_dij_main.cxx 
 	warp_mha_main.cxx 
@@ -702,9 +703,6 @@ SET(PLASTIMATCH_SRC
 	)
 SET(PLASTIMATCH_SLICER_SRC
         plastimatch-slicer.cxx
-	)
-SET(RESAMPLE_MHA_SRC
-	resample_mha_main.cxx resample_mha_main.h
 	)
 SET(COMPUTE_MEAN_IMAGE_SRC
 	compute_mean_image_main.cxx
@@ -758,7 +756,6 @@ IF(NOT HAVE_GETOPT_LONG)
     SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
-    SET(RESAMPLE_MHA_SRC ${RESAMPLE_MHA_SRC} getopt_long.c getopt.h)
     SET(COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
     SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
@@ -960,8 +957,6 @@ IF(ITK_FOUND)
 #    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer "${PLASTIMATCH_SLICER_SRC}"
 #      "${SLICER_PLUGIN_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
-  PLM_ADD_EXECUTABLE(resample_mha "${RESAMPLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(shuffle_mha "${SHUFFLE_MHA_SRC}"

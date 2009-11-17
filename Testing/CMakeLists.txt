@@ -225,72 +225,85 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch usage
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-usage" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  ""
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch register
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plastimatch-usage" 
+  "plm-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  ""
+  "${PLM_TESTING_DATA_DIR}/plm-itk-translation.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-itk-translation"
+  "plm-bspline-single-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-itk-translation.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-c.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-bspline-single-c" 
+  "plm-bspline-single-f" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-single-c.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-f.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-bspline-single-f" 
+  "plm-bspline-openmp" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-single-f.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-openmp.txt"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-bspline-openmp" 
+  "plm-bspline-cuda" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-openmp.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-cuda.txt"
   )
 
+## -------------------------------------------------------------------------
+## plastimatch resample
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plastimatch-bspline-cuda" 
+  "plm-resample-a" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plastimatch-bspline-cuda.txt"
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
   )
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plastimatch-warp-a" 
+  "plm-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-warp-b" 
+  "plm-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
   )
 
 PLM_ADD_TEST (
-  "plastimatch-warp-c" 
+  "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plastimatch-warp-c.mha;--interpolation;nn"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
   )
 
 ## -------------------------------------------------------------------------
