@@ -11,8 +11,8 @@
 #include "warp_main.h"
 #include "print_and_exit.h"
 
-void
-warp_print_usage (void)
+static void
+warp_print_usage ()
 {
     printf ("Usage: plastimatch warp [options]\n"
 	    "Required:\n"
@@ -22,11 +22,48 @@ warp_print_usage (void)
 	    "    --xf=filename\n"
 	    "    --interpolation=nn\n"
 	    "    --fixed=filename\n"
+	    "    --offset=\"x y z\"\n"
+	    "    --spacing=\"x y z\"\n"
+	    "    --dims=\"x y z\"\n"
+	    "    --output-vf=filename\n"
+	    "    --default-val=number\n"
+	    "    --output-format=dicom\n"
+	    "    --algorithm=itk\n"
+	    "    --ctatts=filename  (for dij)\n"
+	    "    --dif=filename     (for dij)\n"
+	    );
+    exit (-1);
+}
+
+static void
+convert_print_usage ()
+{
+    printf ("Usage: plastimatch convert [options]\n"
+	    "Required:\n"
+	    "    --input=filename\n"
+	    "    --output=filename\n"
+	    "Optional:\n"
+	    "    --xf=filename\n"
+	    "    --interpolation=nn\n"
+	    "    --fixed=filename\n"
+	    "    --offset=\"x y z\"\n"
+	    "    --spacing=\"x y z\"\n"
+	    "    --dims=\"x y z\"\n"
 	    "    --output-vf=filename\n"
 	    "    --default-val=number\n"
 	    "    --output-format=dicom\n"
 	    "    --algorithm=itk\n");
     exit (-1);
+}
+
+static void
+print_usage (char* command)
+{
+    if (!strcmp (command, "convert")) {
+	convert_print_usage ();
+    } else {
+	warp_print_usage ();
+    }
 }
 
 void
@@ -76,7 +113,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	case 5:
 	    if (sscanf (optarg, "%f", &parms->default_val) != 1) {
 		printf ("Error: default_val takes an argument\n");
-		warp_print_usage();
+		print_usage (argv[1]);
 	    }
 	    break;
 	case 6:
@@ -95,14 +132,14 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		parms->interp_lin = 1;
 	    } else {
 		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    break;
 	case 10:
 	    rc = sscanf (optarg, "%f %f %f", &parms->offset[0], &parms->offset[1], &parms->offset[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --offset requires 3 values.");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    have_offset = 1;
 	    break;
@@ -110,7 +147,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%f %f %f", &parms->spacing[0], &parms->spacing[1], &parms->spacing[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --spacing requires 3 values.");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    have_spacing = 1;
 	    break;
@@ -118,7 +155,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%d %d %d", &parms->dims[0], &parms->dims[1], &parms->dims[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --dims requires 3 values.");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    have_dims = 1;
 	    break;
@@ -127,7 +164,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		parms->output_dicom = 1;
 	    } else {
 		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    break;
 	case 14:
@@ -141,17 +178,17 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		parms->use_itk = 1;
 	    } else {
 		fprintf (stderr, "Error.  --algorithm option only supports itk.\n");
-		warp_print_usage ();
+		print_usage (argv[1]);
 	    }
 	    break;
 	default:
-		fprintf (stderr, "Error.  Unknown option.");
-		warp_print_usage ();
+	    fprintf (stderr, "Error.  Unknown option.");
+	    print_usage (argv[1]);
 	    break;
 	}
     }
     if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
-	warp_print_usage();
+	print_usage (argv[1]);
     }
 }
 

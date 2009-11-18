@@ -61,11 +61,12 @@ do_command_register (int argc, char* argv[])
 void
 do_command (int argc, char* argv[])
 {
-    char* command = argv[1];
+    char* command;
 
     if (argc == 1) {
 	print_usage (0);
     }
+    command = argv[1];
 
     if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
@@ -84,7 +85,6 @@ do_command (int argc, char* argv[])
 	do_command_resample (argc, argv);
     }
     else if (!strcmp (command, "stats")) {
-	/* warp and convert are the same */
 	do_command_stats (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
