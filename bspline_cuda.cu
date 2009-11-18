@@ -1080,14 +1080,6 @@ extern "C" void bspline_cuda_i_stage_2(
 
 	*host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
 
-	// --- DEBUG: PRINT SCORES TO FILE --------------------------
-//	FILE *scores_file; 
-//	scores_file = fopen("scores.txt", "a+");
-//	fprintf(scores_file, "%f\n", *host_score);
-//	fclose(scores_file);
-	// ----------------------------------------------------------
-
-
 	/////////////////////////////////////////////////////////////
 	/////////////////////// CALCULATE ///////////////////////////
 	////////////// GRAD, GRAD NORM *AND* GRAD MEAN //////////////
@@ -1648,14 +1640,6 @@ extern "C" void bspline_cuda_h_stage_2(
 	// ----------------------------------------------------------
 
 	*host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
-
-	// --- DEBUG: PRINT SCORES TO FILE --------------------------
-	FILE *scores_file; 
-	scores_file = fopen("scores.txt", "a+");
-	fprintf(scores_file, "%f\n", *host_score);
-	fclose(scores_file);
-	// ----------------------------------------------------------
-
 
 	/////////////////////////////////////////////////////////////
 	/////////////////////// CALCULATE ///////////////////////////
@@ -11182,11 +11166,6 @@ bspline_cuda_final_steps_f
 	checkCUDAError("Failed to copy score from GPU to host");
 
     *host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
-
-    FILE *scores_file; 
-    scores_file = fopen("scores.txt", "a+");
-    fprintf(scores_file, "%f\n", *host_score);
-    fclose(scores_file);
 
     // Calculate grad_norm and grad_mean.
 
