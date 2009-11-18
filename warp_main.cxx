@@ -196,7 +196,7 @@ void
 do_command_warp (int argc, char* argv[])
 {
     Warp_Parms parms;
-    File_type file_type;
+    Plm_file_type file_type;
 
     void test_fn (Warp_Parms *parms);
     
@@ -207,19 +207,19 @@ do_command_warp (int argc, char* argv[])
 	warp_dij_main (&parms);
     } else {
 	switch (file_type) {
-	case FILE_TYPE_NO_FILE:
+	case PLM_FILE_TYPE_NO_FILE:
 	    print_and_exit ("Could not open input file %s for read\n",
 		parms.mha_in_fn);
 	    break;
-	case FILE_TYPE_UNKNOWN:
-	case FILE_TYPE_IMG:
-	case FILE_TYPE_DICOM_DIR:
+	case PLM_FILE_TYPE_UNKNOWN:
+	case PLM_FILE_TYPE_IMG:
+	case PLM_FILE_TYPE_DICOM_DIR:
 	    warp_image_main (&parms);
 	    break;
-	case FILE_TYPE_DIJ:
+	case PLM_FILE_TYPE_DIJ:
 	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
 	    break;
-	case FILE_TYPE_POINTSET:
+	case PLM_FILE_TYPE_POINTSET:
 	    warp_pointset_main (&parms);
 	    break;
 	default:

@@ -233,12 +233,12 @@ resample_main (Resample_parms* parms)
 {
     PlmImage plm_image;
 
-    File_type file_type;
+    Plm_file_type file_type;
 
     file_type = deduce_file_type (parms->mha_in_fn);
 
     /* Vector fields are templated differently, so do them separately */
-    if (file_type == FILE_TYPE_VF) {
+    if (file_type == PLM_FILE_TYPE_VF) {
 	resample_main_itk_vf (parms);
 	return;
     }
