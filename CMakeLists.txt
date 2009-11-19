@@ -27,9 +27,10 @@ INCLUDE (language_support.cmake)
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
-SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
+SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
+SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
@@ -120,7 +121,7 @@ CHECK_INCLUDE_FILE ("sys/stat.h" HAVE_SYS_STAT)
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
-##FIND_PACKAGE (QT4)
+FIND_PACKAGE (Qt4)
 
 INCLUDE (PLM_FindBrook.cmake)
 INCLUDE (PLM_Etags.cmake)
