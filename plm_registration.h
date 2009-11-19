@@ -71,9 +71,10 @@ public:
     char alg_flavor;
     int threading_type;
     int metric_type;
-    int resolution[3];
-    float background_max;   /* This is used as a threshold to find the valid region */
-    float background_val;   /* This is used for replacement when resampling */
+    int fixed_subsample_rate[3];   /* In voxels */
+    int moving_subsample_rate[3];  /* In voxels */
+    float background_max;          /* Threshold to find the valid region */
+    float background_val;          /* Replacement when out-of-view */
     int min_its;
     int max_its;
     float grad_tol;
@@ -105,9 +106,12 @@ public:
 	optim_type = OPTIMIZATION_VERSOR;
 	impl_type = IMPLEMENTATION_ITK;
 	metric_type = METRIC_MSE;
-	resolution[0] = 4;
-	resolution[1] = 4;
-	resolution[2] = 1;
+	fixed_subsample_rate[0] = 4;
+	fixed_subsample_rate[1] = 4;
+	fixed_subsample_rate[2] = 1;
+	moving_subsample_rate[0] = 4;
+	moving_subsample_rate[1] = 4;
+	moving_subsample_rate[2] = 1;
 	/* Intensity values for air */
 	background_max = -999.0;
 	background_val = -1200.0;

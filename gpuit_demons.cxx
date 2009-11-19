@@ -30,9 +30,13 @@ do_gpuit_demons_stage_internal (Registration_Data* regd,
     volume_convert_to_float (moving);		    /* Maybe not necessary? */
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
-    printf ("SUBSAMPLE: %d %d %d\n", stage->resolution[0], stage->resolution[1], stage->resolution[2]);
-    moving_ss = volume_subsample (moving, stage->resolution);
-    fixed_ss = volume_subsample (fixed, stage->resolution);
+    printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
+	    stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
+	    stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
+	    stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
+	    );
+    moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
+    fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
 
     moving_grad = volume_make_gradient (moving_ss);
 

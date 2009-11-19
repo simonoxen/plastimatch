@@ -317,9 +317,33 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "res")) {
+    else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
 	if (section == 0) goto error_not_global;
-	if (sscanf (val, "%d %d %d", &(stage->resolution[0]), &(stage->resolution[1]), &(stage->resolution[2])) != 3) {
+	if (sscanf (val, "%d %d %d", 
+		    &(stage->fixed_subsample_rate[0]), 
+		    &(stage->fixed_subsample_rate[1]), 
+		    &(stage->fixed_subsample_rate[2])) != 3) {
+	    goto error_exit;
+	}
+	stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
+	stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
+	stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
+    }
+    else if (!strcmp (key, "fixed_ss")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%d %d %d", 
+		    &(stage->fixed_subsample_rate[0]), 
+		    &(stage->fixed_subsample_rate[1]), 
+		    &(stage->fixed_subsample_rate[2])) != 3) {
+	    goto error_exit;
+	}
+    }
+    else if (!strcmp (key, "moving_ss")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%d %d %d", 
+		    &(stage->moving_subsample_rate[0]), 
+		    &(stage->moving_subsample_rate[1]), 
+		    &(stage->moving_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
     }

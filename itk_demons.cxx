@@ -592,15 +592,15 @@ do_demons_stage_internal (Registration_Data* regd,
     /* Subsample fixed & moving images */
     FloatImageType::Pointer fixed_ss
 	    = subsample_image (regd->fixed_image->itk_float(), 
-			       stage->resolution[0],
-			       stage->resolution[1],
-			       stage->resolution[2],
+			       stage->fixed_subsample_rate[0], 
+			       stage->fixed_subsample_rate[1], 
+			       stage->fixed_subsample_rate[2], 
 			       stage->background_val);
     FloatImageType::Pointer moving_ss
 	    = subsample_image (regd->moving_image->itk_float(), 
-			       stage->resolution[0],
-			       stage->resolution[1],
-			       stage->resolution[2],
+			       stage->moving_subsample_rate[0], 
+			       stage->moving_subsample_rate[1], 
+			       stage->moving_subsample_rate[2], 
 			       stage->background_val);
 
     filter->SetFixedImage (fixed_ss);
