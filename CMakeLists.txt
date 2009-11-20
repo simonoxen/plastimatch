@@ -431,6 +431,7 @@ SET (GPUIT_LIBRARY_SRC
   proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
   timer.c timer.h
+  tps.c tps.h
   volume.c volume.h
   )
 
@@ -729,8 +730,8 @@ SET(SHUFFLE_MHA_SRC
 SET(SYNTHETIC_MHA_SRC
 	synthetic_mha_main.cxx synthetic_mha_main.h
 	)
-SET(TPS_INTERP_SRC
-	tps_interp_main.cxx 
+SET(TPS_WARP_SRC
+	tps_warp_main.cxx 
 	)
 SET(VF_COMPARE_SRC
 	vf_compare.c
@@ -971,7 +972,7 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(tps_interp "${TPS_INTERP_SRC}"
+  PLM_ADD_EXECUTABLE(tps_warp "${TPS_WARP_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")

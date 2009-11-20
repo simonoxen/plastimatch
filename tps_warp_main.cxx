@@ -5,7 +5,7 @@
 
 void print_usage (void)
 {
-    printf ("Usage: tps_interp\n");
+    printf ("Usage: tps_warp\n");
     printf ("  reference landmarks ");
     printf ("  target landmarks ");
     printf ("  fixed image ");
@@ -54,7 +54,7 @@ tps_interp_main (TPS_parms* parms)
 }
 
 int 
-main(int argc, char* argv[])
+main (int argc, char* argv[])
 {
     if (argc < 6) {
 	print_usage ();

@@ -9,9 +9,10 @@
         ...
         9 x9 y9 z9 
  * =======================================================================*/
+#include "plm_config.h"
 #include <stdio.h>
 #include <string.h>
-#include "plm_config.h"
+#include "tps.h"
 #include "xform.h"
 
 int input_phase;
@@ -19,12 +20,6 @@ int reference_phase = 5;
 float input_position[3];
 char deform_dir[256];
 char output_file[256];
-
-struct tps_node {
-    float src_pos[3];
-    float tgt_pos[3];
-    float alpha;
-};
 
 void
 load_tps (struct tps_node** tps, int* num_tps_nodes, char* fn)
@@ -63,40 +58,6 @@ load_tps (struct tps_node** tps, int* num_tps_nodes, char* fn)
 }
 
 void
-free_tps (struct tps_node** tps, int *num_tps_nodes)
-{
-    free (*tps);
-    *tps = 0;
-    *num_tps_nodes = 0;
-}
-
-void
-transform_point_tps (struct tps_node* tps, int num_tps_nodes, float pos[3])
-{
-    int i, j;
-    float new_pos[3];
-
-    if (!tps) return;
-
-    memcpy (new_pos, pos, 3 * sizeof(float));
-    for (i = 0; i < num_tps_nodes; i++) {
-	float dist = sqrt (
-	    ((pos[0] - tps[i].src_pos[0]) * (pos[0] - tps[i].src_pos[0])) +
-	    ((pos[1] - tps[i].src_pos[1]) * (pos[1] - tps[i].src_pos[1])) +
-	    ((pos[2] - tps[i].src_pos[2]) * (pos[2] - tps[i].src_pos[2])));
-	dist = dist / tps[i].alpha;
-	if (dist < 1.0) {
-	    float weight = (1 - dist) * (1 - dist);
-	    for (j = 0; j < 3; j++) {
-		new_pos[j] += weight * tps[i].tgt_pos[j];
-	    }
-	}
-    }
-
-    memcpy (pos, new_pos, 3 * sizeof(float));
-}
-
-void
 transform_point_bsp (Xform* xf, float pos[3])
 {
     DoublePointType itk_1;
@@ -125,8 +86,8 @@ compute_point_path (float pos[3], int output_phase)
     /* TPS of input */
     sprintf (fn, "%s/%d_rbf_inv.txt", deform_dir, input_phase);
     load_tps (&tps, &num_tps_nodes, fn);
-    transform_point_tps (tps, num_tps_nodes, pos);
-    free_tps (&tps, &num_tps_nodes);
+    tps_transform_point (tps, num_tps_nodes, pos);
+    tps_free (&tps, &num_tps_nodes);
 
     /* BSP from input to reference */
     if (input_phase != reference_phase) {
@@ -144,8 +105,8 @@ compute_point_path (float pos[3], int output_phase)
     /* TPS of output */
     sprintf (fn, "%s/%d_rbf_fwd.txt", deform_dir, output_phase);
     load_tps (&tps, &num_tps_nodes, fn);
-    transform_point_tps (tps, num_tps_nodes, pos);
-    free_tps (&tps, &num_tps_nodes);
+    tps_transform_point (tps, num_tps_nodes, pos);
+    tps_free (&tps, &num_tps_nodes);
 }
 
 int
