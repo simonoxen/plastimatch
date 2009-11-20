@@ -9,11 +9,14 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    char buf1[L_tmpnam+1];
-    char* parms_fn = tmpnam (buf1);
-    //    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-    FILE* fp = fopen (parms_fn, "w");
+    //char buf1[L_tmpnam+1];
+    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    //char* parms_fn = tmpnam (buf1);
+    //char* parms_fn = mkstemptmpnam (buf1);
+    //FILE* fp = fopen (parms_fn, "w");
+    FILE* fp = tmpfile ();
 
+#if defined (commentout)
     fprintf (fp,
 	     "[GLOBAL]\n"
 	     "fixed=%s\n"
@@ -125,5 +128,6 @@ main (int argc, char * argv [])
 	return EXIT_FAILURE;
     }
     do_registration (&regp);
+#endif
     return EXIT_SUCCESS;
 }

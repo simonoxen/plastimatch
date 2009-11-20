@@ -438,9 +438,21 @@ get_command_file_line (FILE* fp, Registration_Parms* regp)
 }
 
 int
-parse_command_file (Registration_Parms* regp, const char* options_fn)
+plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
+{
+    /* Loop through file, parsing each line, and adding it to regp */
+    while (!feof(fp)) {
+	if (get_command_file_line (fp, regp) < 0) {
+	    return -1;
+	}
+    }
+}
+
+int
+plm_parms_parse_command_file (Registration_Parms* regp, const char* options_fn)
 {
     FILE* fp;
+    int rc;
 
     /* Open file */
     fp = fopen (options_fn, "r");
@@ -449,12 +461,9 @@ parse_command_file (Registration_Parms* regp, const char* options_fn)
 	return -1;
     }
 
-    /* Loop through file, parsing each line, and adding it to regp */
-    while (!feof(fp)) {
-	if (get_command_file_line (fp, regp) < 0) {
-	    return -1;
-	}
-    }
+    /* Process it */
+    rc = plm_parms_process_command_file (regp, fp);
+    if (!rc) return rc;
 
     /* Close file */
     fclose (fp);

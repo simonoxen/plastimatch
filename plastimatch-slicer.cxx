@@ -9,10 +9,11 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    char buf1[L_tmpnam+1];
-    char* parms_fn = tmpnam (buf1);
-    //    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-    FILE* fp = fopen (parms_fn, "w");
+    //char buf1[L_tmpnam+1];
+    //char* parms_fn = tmpnam (buf1);
+    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    //FILE* fp = fopen (parms_fn, "w");
+    FILE* fp = tmpfile ();
 
     fprintf (fp,
 	     "[GLOBAL]\n"
@@ -94,7 +95,6 @@ main (int argc, char * argv [])
 	     stage_2_grid_size
 	     );
     }
-    fclose (fp);
 
 #if defined (commentout)
     fp = fopen (ff_fn, "w");
@@ -120,10 +120,17 @@ main (int argc, char * argv [])
     fclose (fp);
 #endif
 
+    /* Go back to beginning of file */
+    fseek (fp, SEEK_SET, 0);
+
+    /* Go back to beginning of file */
     Registration_Parms regp;
-    if (parse_command_file (&regp, parms_fn) < 0) {
+    if (plm_parms_process_command_file (&regp, fp) < 0) {
 	return EXIT_FAILURE;
     }
+
+    fclose (fp);
+
     do_registration (&regp);
     return EXIT_SUCCESS;
 }
