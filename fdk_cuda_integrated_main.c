@@ -17,7 +17,7 @@
 
 int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options);
 int CUDA_DRR (Volume *vol, Fdk_options *options);
-void writematrix_set_image_parms (MGHMtx_Options* options)
+void writematrix_set_image_parms (MGHMtx_Options* options);
 
 int
 main (int argc, char* argv[]) 
