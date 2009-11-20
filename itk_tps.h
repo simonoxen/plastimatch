@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _tps_interp_h_
-#define _tps_interp_h_
+#ifndef _itk_tps_h_
+#define _itk_tps_h_
 
 #include "plm_config.h"
 #include "itkImageFileReader.h"
@@ -18,9 +18,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-
-#define BUFLEN 2048
 
 typedef struct tps_parms TPS_parms;
 struct tps_parms {

@@ -4,11 +4,14 @@
 #include "plm_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "tps_interp.h"
+#include "itk_tps.h"
 #include "itk_warp.h"
 
+#define BUFLEN 2048
+
 template<class T>
-void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typename itk::Image<T,3>::Pointer img_moving, T default_val)
+void do_tps (TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,
+	     typename itk::Image<T,3>::Pointer img_moving, T default_val)
 {
     typedef typename itk::Image<T,3> ImgType;
     typedef double CoordinateRepType;
@@ -47,23 +50,23 @@ void do_tps(TPS_parms* parms, typename itk::Image<T,3>::Pointer img_fixed,typena
     }
 
     while(fgets(line, BUFLEN,reference)){
-		if(sscanf(line,"%lf %lf %lf",&p1[0],&p1[1],&p1[2])==3){
-			sourceLandMarkContainer->InsertElement( id++, p1 );
-			printf("reference Landmark: %f %f %f\n",p1[0],p1[1],p1[2]);
-		}else{
-			printf("Error! can't read the reference landmarks file");
-			exit(-1);
-		}
+	if(sscanf(line,"%lf %lf %lf",&p1[0],&p1[1],&p1[2])==3){
+	    sourceLandMarkContainer->InsertElement( id++, p1 );
+	    printf("reference Landmark: %f %f %f\n",p1[0],p1[1],p1[2]);
+	}else{
+	    printf("Error! can't read the reference landmarks file");
+	    exit(-1);
+	}
     }
     id = itk::NumericTraits< PointIdType >::Zero;
     while(fgets(line, BUFLEN,target)){
-		if(sscanf(line,"%lf %lf %lf",&p2[0],&p2[1],&p2[2])==3){
-			targetLandMarkContainer->InsertElement( id2++, p2 );
-			printf("target Landmark: %f %f %f \n",p2[0],p2[1],p2[2]);
-		}else{
-			printf("Error! can't read the target landmarks file");
-			exit(-1);
-		}
+	if(sscanf(line,"%lf %lf %lf",&p2[0],&p2[1],&p2[2])==3){
+	    targetLandMarkContainer->InsertElement( id2++, p2 );
+	    printf("target Landmark: %f %f %f \n",p2[0],p2[1],p2[2]);
+	}else{
+	    printf("Error! can't read the target landmarks file");
+	    exit(-1);
+	}
     }
 
     fclose(reference);
