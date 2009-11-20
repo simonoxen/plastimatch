@@ -15,11 +15,10 @@
 #include <windows.h>
 #endif
 
-//extern "C"
-//{
 int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options);
 int CUDA_DRR (Volume *vol, Fdk_options *options);
-//}
+void writematrix_set_image_parms (MGHMtx_Options* options)
+
 int
 main (int argc, char* argv[]) 
 {
@@ -88,10 +87,10 @@ main (int argc, char* argv[])
 	matrix_options.image_size[1]=400;
     }
 
-    write_matrix(&matrix_options);
+    writematrix_set_image_parms (&matrix_options);
+    proj_matrix_write_varian_dir (&matrix_options);
     printf("Write matrix OK\n");
     fflush(stdout);
-	
 
     if (!options.DRR){ 
 	/*****************************************************

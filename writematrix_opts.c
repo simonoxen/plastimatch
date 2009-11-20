@@ -68,7 +68,7 @@ wm_set_default_options (MGHMtx_Options* options)
 }
 
 void
-set_image_parms (MGHMtx_Options* options)
+writematrix_set_image_parms (MGHMtx_Options* options)
 {
     if (!options->have_image_center) {
 	options->image_center[0] = (options->image_resolution[0]-1)/2.0;
@@ -114,9 +114,9 @@ wm_parse_args (MGHMtx_Options* options, int argc, char* argv[])
 	    options->output_prefix = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-P")){
-		i++;
-		options->ProjAngle_file = strdup (argv[i]);
-		printf("ProjAnglefile=%s\n",options->ProjAngle_file); 
+	    i++;
+	    options->ProjAngle_file = strdup (argv[i]);
+	    printf("ProjAnglefile=%s\n",options->ProjAngle_file); 
 	}
 	else if (!strcmp (argv[i], "-a")) {
 	    i++;
@@ -222,20 +222,20 @@ wm_parse_args (MGHMtx_Options* options, int argc, char* argv[])
 	//}
     }
 
-	//if (!options->input_file) {
-	//	if (i < argc) {
-	//		options->input_file = strdup (argv[i++]);
-	//	}
-	//}
-	//if (i < argc) {
-	//	print_usage ();
-	//}
-	//if (!options->input_file) {
-	//	print_usage ();
-	//}
-	if (!options->ProjAngle_file) {
-		wm_print_usage ();
-	}
+    //if (!options->input_file) {
+    //	if (i < argc) {
+    //		options->input_file = strdup (argv[i++]);
+    //	}
+    //}
+    //if (i < argc) {
+    //	print_usage ();
+    //}
+    //if (!options->input_file) {
+    //	print_usage ();
+    //}
+    if (!options->ProjAngle_file) {
+	wm_print_usage ();
+    }
 
-    set_image_parms (options);
+    writematrix_set_image_parms (options);
 }

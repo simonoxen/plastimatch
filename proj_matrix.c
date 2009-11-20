@@ -260,30 +260,3 @@ proj_matrix_write_varian_dir (MGHMtx_Options* options)
 			   varian_mode, out_fn);
     }
 }
-
-//	int main(int argc, char* argv[])
-//{
-//	MGHMtx_Options options;
-//
-//	parse_args (&options, argc, argv);
-//
-////#if defined (PREPROCESS_ATTENUATION)
-////	preprocess_attenuation (vol);
-////#endif
-//	drr_render_volumes (&options);
-//
-//	return 0;
-//}
-
-void write_matrix(MGHMtx_Options * options)
-{
-
-//#if defined (PREPROCESS_ATTENUATION)
-//	preprocess_attenuation (vol);
-	set_image_parms (options);
-//#endif
-	//drr_render_volumes (options);
-	proj_matrix_write_varian_dir (options);
-}
-
-
