@@ -37,8 +37,17 @@ tps_xform_save (Tps_xform *tps_xform, char *fn);
 gpuit_EXPORT void
 tps_xform_free (Tps_xform *tps_xform);
 
+gpuit_EXPORT float
+tps_default_alpha (float src[3], float tgt[3]);
 gpuit_EXPORT void
-tps_transform_point (Tps_node* tps, int num_tps_nodes, float pos[3]);
+tps_warp (
+    Volume *vout,       /* Output image (sized and allocated) */
+    Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
+    Tps_xform* tps,     /* TPS control points */
+    Volume *moving,     /* Input image */
+    int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
+    float default_val   /* Fill in this value outside of image */
+);
 
 #if defined __cplusplus
 }

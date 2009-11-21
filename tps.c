@@ -147,6 +147,17 @@ tps_xform_free (Tps_xform *tps)
     free (tps);
 }
 
+float
+tps_default_alpha (float src[3], float tgt[3])
+{
+    float dist;
+
+    dist = sqrt (((src[0] - tgt[0]) * (src[0] - tgt[0]))
+	+ ((src[1] - tgt[1]) * (src[1] - tgt[1]))
+	+ ((src[2] - tgt[2]) * (src[2] - tgt[2])));
+    return DIST_MULTIPLIER * dist;
+}
+
 #if defined (commentout)
 void
 tps_warp_point (
@@ -201,7 +212,7 @@ void
 tps_warp (
     Volume *vout,       /* Output image (sized and allocated) */
     Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
-    Tps_xform* tps, /* TPS control points */
+    Tps_xform* tps,     /* TPS control points */
     Volume *moving,     /* Input image */
     int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */

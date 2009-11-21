@@ -9,125 +9,43 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    //char buf1[L_tmpnam+1];
-    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-    //char* parms_fn = tmpnam (buf1);
-    //char* parms_fn = mkstemptmpnam (buf1);
-    //FILE* fp = fopen (parms_fn, "w");
-    FILE* fp = tmpfile ();
+    //FILE* fp = tmpfile ();
 
-#if defined (commentout)
-    fprintf (fp,
-	     "[GLOBAL]\n"
-	     "fixed=%s\n"
-	     "moving=%s\n"
-//	     "xf_out=%s\n"
-//	     "vf_out=%s\n"
-	     "img_out=%s\n\n",
-	     /* Global */
-	     plmslc_fixed_volume.c_str(),
-	     plmslc_moving_volume.c_str(),
-//	     "C:/tmp/plmslc-xf.txt",
-//	     "C:/tmp/plmslc-vf.mha",
-	     plmslc_warped_volume.c_str());
+    //char* fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    char* fn = "/tmp/plastimatch-slicer-tps.txt";
+    FILE* fp = fopen (fn, "w");
 
-    if (enable_stage_0) {
-	fprintf (fp,
-		 "[STAGE]\n"
-		 "metric=%s\n"
-		 "xform=%s\n"
-		 "optim=%s\n"
-		 "impl=itk\n"
-		 "max_its=%d\n"
-		 "convergence_tol=5\n"
-		 "grad_tol=1.5\n"
-		 "res=%d %d %d\n",
-		 metric.c_str(),
-		 "translation",
-		 "rsg",
-		 stage_0_its,
-		 stage_0_resolution[0],
-		 stage_0_resolution[1],
-		 stage_0_resolution[2]
-		 );
+    fprintf (fp, "PLASTIMATCH_TPS_XFORM <experimental>\n");
+
+    int num_fiducials = plmslc_fixed_fiducials.size();
+    if (plmslc_moving_fiducials.size() < num_fiducials) {
+	num_fiducials = plmslc_moving_fiducials.size();
     }
 
-    /* Stage 1 */
-    fprintf (fp,
-	     "[STAGE]\n"
-	     "metric=%s\n"
-	     "xform=bspline\n"	
-	     "optim=lbfgsb\n"
-	     "impl=plastimatch\n"
-	     "threading=openmp\n"
-	     "max_its=%d\n"
-	     "convergence_tol=5\n"
-	     "grad_tol=1.5\n"
-	     "res=%d %d %d\n"
-	     "grid_spac=%g %g %g\n",
-	     /* Stage 1 */
-	     metric.c_str(),
-	     stage_1_its,
-	     stage_1_resolution[0],
-	     stage_1_resolution[1],
-	     stage_1_resolution[2],
-	     stage_1_grid_size,
-	     stage_1_grid_size,
-	     stage_1_grid_size
-	     );
+    for (int i = 0; i < num_fiducials; i++) {
+	float alpha = tps_default_alpha (
+	    plmslc_fixed_fiducials[i],
+	    plmslc_moving_fiducials[i]);
 
-    if (enable_stage_2) {
-	fprintf (fp, 
-	     "[STAGE]\n"
-	     "xform=bspline\n"
-	     "optim=lbfgsb\n"
-	     "impl=plastimatch\n"
-	     "max_its=%d\n"
-	     "convergence_tol=5\n"
-	     "grad_tol=1.5\n"
-	     "res=%d %d %d\n"
-	     "grid_spac=%g %g %g\n",
-	     /* Stage 2 */
-	     stage_2_its,
-	     stage_2_resolution[0],
-	     stage_2_resolution[1],
-	     stage_2_resolution[2],
-	     stage_2_grid_size,
-	     stage_2_grid_size,
-	     stage_2_grid_size
-	     );
+	fprintf (fp, "%g %g %g %g %g %g %g\n", 
+	    plmslc_fixed_fiducials[i][0],
+	    plmslc_fixed_fiducials[i][1],
+	    plmslc_fixed_fiducials[i][2]
+	    plmslc_moving_fiducials[i][0],
+	    plmslc_moving_fiducials[i][1],
+	    plmslc_moving_fiducials[i][2],
+	    alpha
+	);
     }
     fclose (fp);
 
 #if defined (commentout)
-    fp = fopen (ff_fn, "w");
-    //fprintf (fp, "Fixed fiducials:\n");
-    for (int i = 0; i < plmslc_fixed_fiducials.size(); i++) {
-      fprintf (fp, "%g %g %g\n", 
-	       plmslc_fixed_fiducials[i][0],
-	       plmslc_fixed_fiducials[i][1],
-	       plmslc_fixed_fiducials[i][2]
-	       );
-    }
-    fclose (fp);
-
-    fp = fopen (mf_fn, "w");
-    //fprintf (fp, "Moving fiducials:\n");
-    for (int i = 0; i < plmslc_moving_fiducials.size(); i++) {
-      fprintf (fp, "%g %g %g\n", 
-	       plmslc_moving_fiducials[i][0],
-	       plmslc_moving_fiducials[i][1],
-	       plmslc_moving_fiducials[i][2]
-	       );
-    }
-    fclose (fp);
-#endif
-
     Registration_Parms regp;
     if (parse_command_file (&regp, parms_fn) < 0) {
 	return EXIT_FAILURE;
     }
     do_registration (&regp);
 #endif
+
     return EXIT_SUCCESS;
 }
