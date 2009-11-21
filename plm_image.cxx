@@ -18,7 +18,7 @@
    Loading
    ----------------------------------------------------------------------- */
 PlmImage*
-plm_image_load_native (char* fname)
+plm_image_load_native (const char* fname)
 {
     PlmImage *pli = new PlmImage;
     if (!pli) return 0;
@@ -29,7 +29,7 @@ plm_image_load_native (char* fname)
 }
 
 void
-PlmImage::load_native (char* fname)
+PlmImage::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;

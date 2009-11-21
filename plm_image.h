@@ -70,7 +70,7 @@ public:
     }
 
     /* Loading */
-    void load_native (char* fname);
+    void load_native (const char* fname);
 
     /* Saving */
     void save_short_dicom (char* fname);
@@ -105,6 +105,6 @@ public:
    Public functions
    ----------------------------------------------------------------------- */
 PlmImage* plm_image_load (char* fname, PlmImageType type);
-PlmImage* plm_image_load_native (char* fname);
+PlmImage* plm_image_load_native (const char* fname);
 
 #endif

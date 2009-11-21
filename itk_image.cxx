@@ -50,7 +50,7 @@ itk__GetImageType (std::string fileName,
 
 template<class RdrT>
 void
-load_itk_rdr(RdrT reader, char *fn)
+load_itk_rdr (RdrT reader, const char *fn)
 {
     reader->SetFileName(fn);
     try {
@@ -139,7 +139,7 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
    ----------------------------------------------------------------------- */
 template<class T, class U>
 typename itk::Image< U, 3 >::Pointer
-load_any_2 (char* fname, T, U)
+load_any_2 (const char* fname, T, U)
 {
     typedef typename itk::Image < T, 3 > TImageType;
     typedef typename itk::Image < U, 3 > UImageType;
@@ -173,7 +173,7 @@ set_original_type (PlmImageType *original_type,
 
 template<class U>
 typename itk::Image< U, 3 >::Pointer
-load_any (char* fname,
+load_any (const char* fname,
 	  PlmImageType* original_type, 
 	  U otype)
 {
@@ -229,7 +229,7 @@ load_any (char* fname,
 }
 
 UCharImageType::Pointer
-load_uchar (char* fname, PlmImageType* original_type)
+load_uchar (const char* fname, PlmImageType* original_type)
 {
     UCharImageType::Pointer img;
 
@@ -243,7 +243,7 @@ load_uchar (char* fname, PlmImageType* original_type)
 }
 
 ShortImageType::Pointer
-load_short (char* fname, PlmImageType* original_type)
+load_short (const char* fname, PlmImageType* original_type)
 {
     ShortImageType::Pointer img;
 
@@ -257,7 +257,7 @@ load_short (char* fname, PlmImageType* original_type)
 }
 
 UShortImageType::Pointer
-load_ushort (char* fname, PlmImageType* original_type)
+load_ushort (const char* fname, PlmImageType* original_type)
 {
     UShortImageType::Pointer img;
 
@@ -271,7 +271,7 @@ load_ushort (char* fname, PlmImageType* original_type)
 }
 
 UInt32ImageType::Pointer
-load_uint32 (char* fname, PlmImageType* original_type)
+load_uint32 (const char* fname, PlmImageType* original_type)
 {
     UInt32ImageType::Pointer img;
 
@@ -285,7 +285,7 @@ load_uint32 (char* fname, PlmImageType* original_type)
 }
 
 FloatImageType::Pointer
-load_float (char* fname, PlmImageType* original_type)
+load_float (const char* fname, PlmImageType* original_type)
 {
     FloatImageType::Pointer img;
 
@@ -299,7 +299,7 @@ load_float (char* fname, PlmImageType* original_type)
 }
 
 DeformationFieldType::Pointer
-load_float_field (char* fname)
+load_float_field (const char* fname)
 {
     typedef itk::ImageFileReader< DeformationFieldType >  FieldReaderType;
 

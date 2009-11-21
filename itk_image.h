@@ -55,12 +55,12 @@ typedef itk::ImageRegion < Dimension > ImageRegionType;
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT UCharImageType::Pointer load_uchar (char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT ShortImageType::Pointer load_short (char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT UShortImageType::Pointer load_ushort (char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT UInt32ImageType::Pointer load_uint32 (char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT FloatImageType::Pointer load_float (char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (char* fname);
+plastimatch1_EXPORT UCharImageType::Pointer load_uchar (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT ShortImageType::Pointer load_short (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT UShortImageType::Pointer load_ushort (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT UInt32ImageType::Pointer load_uint32 (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT FloatImageType::Pointer load_float (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT DeformationFieldType::Pointer load_float_field (const char* fname);
 
 plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
 			itk::ImageIOBase::IOPixelType &pixelType,

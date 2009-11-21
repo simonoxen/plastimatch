@@ -42,7 +42,7 @@ typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWr
    ----------------------------------------------------------------------- */
 template<class T>
 void
-load_dicom_dir_rdr(T rdr, char *dicom_dir)
+load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 {
     typedef itk::GDCMImageIO ImageIOType;
     ImageIOType::Pointer dicomIO = ImageIOType::New();
@@ -110,7 +110,7 @@ load_dicom_dir_rdr(T rdr, char *dicom_dir)
 }
 
 UCharImageType::Pointer
-load_dicom_uchar (char *dicom_dir)
+load_dicom_uchar (const char *dicom_dir)
 {
     DicomUCharReaderType::Pointer fixed_input_rdr
 		= DicomUCharReaderType::New();
@@ -120,7 +120,7 @@ load_dicom_uchar (char *dicom_dir)
 }
 
 ShortImageType::Pointer
-load_dicom_short (char *dicom_dir)
+load_dicom_short (const char *dicom_dir)
 {
     DicomShortReaderType::Pointer fixed_input_rdr
 		= DicomShortReaderType::New();
@@ -130,7 +130,7 @@ load_dicom_short (char *dicom_dir)
 }
 
 UShortImageType::Pointer
-load_dicom_ushort (char *dicom_dir)
+load_dicom_ushort (const char *dicom_dir)
 {
     DicomUShortReaderType::Pointer fixed_input_rdr
 		= DicomUShortReaderType::New();
@@ -140,7 +140,7 @@ load_dicom_ushort (char *dicom_dir)
 }
 
 UInt32ImageType::Pointer
-load_dicom_uint32 (char *dicom_dir)
+load_dicom_uint32 (const char *dicom_dir)
 {
     DicomUInt32ReaderType::Pointer fixed_input_rdr
 		= DicomUInt32ReaderType::New();
@@ -150,7 +150,7 @@ load_dicom_uint32 (char *dicom_dir)
 }
 
 FloatImageType::Pointer
-load_dicom_float (char *dicom_dir)
+load_dicom_float (const char *dicom_dir)
 {
     DicomFloatReaderType::Pointer fixed_input_rdr
 		= DicomFloatReaderType::New();
@@ -362,6 +362,6 @@ itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name)
 }
 
 /* Explicit instantiations */
-template void load_dicom_dir_rdr(DicomShortReaderType::Pointer rdr, char *dicom_dir);
-template void load_dicom_dir_rdr(DicomUShortReaderType::Pointer rdr, char *dicom_dir);
-template void load_dicom_dir_rdr(DicomFloatReaderType::Pointer rdr, char *dicom_dir);
+template void load_dicom_dir_rdr(DicomShortReaderType::Pointer rdr, const char *dicom_dir);
+template void load_dicom_dir_rdr(DicomUShortReaderType::Pointer rdr, const char *dicom_dir);
+template void load_dicom_dir_rdr(DicomFloatReaderType::Pointer rdr, const char *dicom_dir);

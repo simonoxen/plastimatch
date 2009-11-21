@@ -446,6 +446,7 @@ plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
 	    return -1;
 	}
     }
+    return 0;
 }
 
 int

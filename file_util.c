@@ -22,7 +22,7 @@
 #endif
 
 int
-is_directory (char *dir)
+is_directory (const char *dir)
 {
 #if (defined(_WIN32) || defined(WIN32))
     char pwd[_MAX_PATH];
