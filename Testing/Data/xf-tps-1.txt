@@ -1,5 +1,4 @@
 PLASTIMATCH_TPS_XFORM <experimental>
-PLASTIMATCH_TPS_XFORM <experimental>
 img_origin = -25 -25 -25
 img_spacing = 1.31579 1.31579 1.31579
 img_dim = 38 38 38

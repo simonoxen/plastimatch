@@ -212,7 +212,7 @@ void
 tps_warp (
     Volume *vout,       /* Output image (sized and allocated) */
     Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
-    Tps_xform* tps,     /* TPS control points */
+    Tps_xform *tps,     /* TPS control points */
     Volume *moving,     /* Input image */
     int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */
@@ -220,7 +220,6 @@ tps_warp (
 {
     int d;
     int vidx;
-    float* vout_img = (float*) vout->img;
 
     int cpi;
     int fijk[3], fidx;       /* Indices within fixed image (vox) */
@@ -229,7 +228,7 @@ tps_warp (
     float *vf_img;
 
     /* A few sanity checks */
-    if (vout->pix_type != PT_FLOAT) {
+    if (vout && vout->pix_type != PT_FLOAT) {
 	fprintf (stderr, "Error: tps_warp pix type mismatch\n");
 	return;
     }
@@ -239,8 +238,11 @@ tps_warp (
     }
 
     /* Set defaults */
-    for (vidx = 0; vidx < vout->npix; vidx++) {
-	vout_img[vidx] = default_val;
+    if (vout) {
+	float* vout_img = (float*) vout->img;
+	for (vidx = 0; vidx < vout->npix; vidx++) {
+	    vout_img[vidx] = default_val;
+	}
     }
     if (vf_out) {
 	vf = vf_out;
@@ -280,12 +282,20 @@ tps_warp (
 	    roi_size[d] = rmaxi - rmini + 1;
 	}
 
+	printf (
+	    "cpi = %d, offset = (%ld %ld %ld), size = (%ld %ld %ld)"
+	    "alpha = %g\n",
+	    cpi, roi_offset[0], roi_offset[1], roi_offset[2], 
+	    roi_size[0], roi_size[1], roi_size[2],
+	    curr_node->alpha
+	);
+
 	/* Loop through ROI */
-	for (fijk[2] = roi_offset[d]; fijk[2] < roi_offset[d] + roi_size[d] - 1; fijk[2]++) {
+	for (fijk[2] = roi_offset[2]; fijk[2] < roi_offset[2] + roi_size[2] - 1; fijk[2]++) {
 	    fxyz[2] = tps->img_origin[2] + tps->img_spacing[2] * fijk[2];
-	    for (fijk[1] = roi_offset[d]; fijk[1] < roi_offset[d] + roi_size[d] - 1; fijk[1]++) {
+	    for (fijk[1] = roi_offset[1]; fijk[1] < roi_offset[1] + roi_size[1] - 1; fijk[1]++) {
 		fxyz[1] = tps->img_origin[1] + tps->img_spacing[1] * fijk[1];
-		for (fijk[0] = roi_offset[d]; fijk[0] < roi_offset[d] + roi_size[d] - 1; fijk[0]++) {
+		for (fijk[0] = roi_offset[0]; fijk[0] < roi_offset[0] + roi_size[0] - 1; fijk[0]++) {
 
 		    /* Update vf at this voxel, for this node */
 		    fxyz[0] = tps->img_origin[0] 
@@ -299,7 +309,9 @@ tps_warp (
 
     /* Warp the image */
     /* GCS FIX: Does not implement linear interpolation */
-    volume_warp (vout, moving, vf);
+    if (vout) {
+	volume_warp (vout, moving, vf);
+    }
 
     if (!vf_out) {
 	volume_free (vf);
