@@ -39,18 +39,20 @@ main (int argc, char * argv [])
 
     for (unsigned long i = 0; i < num_fiducials; i++) {
 	float src[3], tgt[3];
+
 	for (int d = 0; d < 3; d++) {
 	    src[d] = plmslc_fixed_fiducials[i][d];
 	    tgt[d] = plmslc_moving_fiducials[i][d];
 	}
 	float alpha = tps_default_alpha (src, tgt);
 
+	/* Only RAS coordinates seem to work in slicer.  Change to LPS */
 	fprintf (fp, "%g %g %g %g %g %g %g\n", 
-	    plmslc_fixed_fiducials[i][0],
-	    plmslc_fixed_fiducials[i][1],
+	    -plmslc_fixed_fiducials[i][0],
+	    -plmslc_fixed_fiducials[i][1],
 	    plmslc_fixed_fiducials[i][2],
-	    plmslc_moving_fiducials[i][0],
-	    plmslc_moving_fiducials[i][1],
+	    -plmslc_moving_fiducials[i][0],
+	    -plmslc_moving_fiducials[i][1],
 	    plmslc_moving_fiducials[i][2],
 	    alpha
 	);

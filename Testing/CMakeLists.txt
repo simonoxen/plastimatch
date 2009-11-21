@@ -313,7 +313,7 @@ PLM_ADD_TEST (
   "tps-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/tps_warp
-  "-V;${PLM_TESTING_BUILD_DIR}/tps-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/tps-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  "-V;${PLM_TESTING_BUILD_DIR}/tps-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/tps-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
   )
 
 
