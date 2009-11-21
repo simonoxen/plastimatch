@@ -4,6 +4,8 @@
 #ifndef _tps_h_
 #define _tps_h_
 
+#include "volume.h"
+
 /* Incremental TPS only */
 typedef struct tps_node Tps_node;
 struct tps_node {

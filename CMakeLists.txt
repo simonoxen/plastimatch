@@ -706,6 +706,7 @@ SET (SYNTHETIC_MHA_SRC
 	)
 SET (TPS_WARP_SRC
         tps_warp_main.c
+        tps_warp_opts.c tps_warp_opts.h
 	)
 SET (VF_COMPARE_SRC
 	vf_compare.c
