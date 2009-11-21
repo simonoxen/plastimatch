@@ -87,7 +87,7 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
 {
     int d;
 
-    memset (bxf, 0, sizeof(BSPLINE_Xform));
+    memset (bxf, 0, sizeof (BSPLINE_Xform));
 
     for (d = 0; d < 3; d++) {
 	bxf->img_origin[d] = 0.0f;

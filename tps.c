@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "tps.h"
+#include "print_and_exit.h"
 
 #define BUFLEN 1024
 #define MOTION_TOL 0.01
@@ -16,6 +17,60 @@ char tgt_fn[256];
 char src_fn[256];
 char deform_dir[256];
 char tps_fn[256];
+
+Tps_xform*
+tps_xform_alloc (void)
+{
+    Tps_xform *tps_xform;
+
+    tps_xform = (Tps_xform*) malloc (sizeof (Tps_xform));
+    if (!tps_xform) {
+	print_and_exit ("Out of memory\n");
+    }
+    memset (tps_xform, 0, sizeof (Tps_xform));
+    return tps_xform;
+}
+
+Tps_xform*
+tps_load (char* fn)
+{
+    char buf[256];
+    FILE *fp;
+    Tps_xform *tps_xform;
+
+    tps_xform = tps_xform_alloc ();
+
+    /* If file doesn't exist, then no tps for this phase */
+    fp = fopen (fn, "r");
+    if (!fp) return tps_xform;
+
+    while (fgets (buf, 256, fp)) {
+	int rc;
+	Tps_node *curr_node;
+	tps_xform->tps_nodes = (struct tps_node*) 
+		realloc ((void*) (tps_xform->tps_nodes), 
+			 (tps_xform->num_tps_nodes + 1) * sizeof (Tps_node));
+	if (!(tps_xform->tps_nodes)) {
+	    print_and_exit ("Error allocating memory");
+	}
+	curr_node = &tps_xform->tps_nodes[tps_xform->num_tps_nodes];
+	rc = sscanf (buf, "%g %g %g %g %g %g %g", 
+		     &curr_node->src_pos[0],
+		     &curr_node->src_pos[1],
+		     &curr_node->src_pos[2],
+		     &curr_node->tgt_pos[0],
+		     &curr_node->tgt_pos[1],
+		     &curr_node->tgt_pos[2],
+		     &curr_node->alpha
+		     );
+	if (rc != 7) {
+	    print_and_exit ("Ill-formed input file: %s\n", fn);
+	}
+	tps_xform->num_tps_nodes++;
+    }
+    fclose (fp);
+    return tps_xform;
+}
 
 void
 tps_free (Tps_node** tps, int *num_tps_nodes)

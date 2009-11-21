@@ -210,35 +210,9 @@ ELSE (Slicer3_DIR)
 ENDIF (Slicer3_DIR)
 
 ##-----------------------------------------------------------------------------
-##  By default, brook builts /MT.  We need to match this.
+##  I can't remember why this is necessary.  But at one time I needed 
+##  it for compiling on AMD linux 64-bit.
 ##-----------------------------------------------------------------------------
-# IF(NOT GPUIT_LINK_MSVCRT)
-#   STRING(REGEX REPLACE "/MD" "/MT" 
-# 	     CMAKE_CXX_FLAGS_DEBUG 
-# 	     "${CMAKE_CXX_FLAGS_DEBUG}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_CXX_FLAGS_MINSIZEREL 
-# 	     "${CMAKE_CXX_FLAGS_MINSIZEREL}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_CXX_FLAGS_RELEASE 
-# 	     "${CMAKE_CXX_FLAGS_RELEASE}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_CXX_FLAGS_RELWITHDEBINFO 
-# 	     "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-#   STRING(REGEX REPLACE "/MD" "/MT" 
-# 	     CMAKE_C_FLAGS_DEBUG 
-# 	     "${CMAKE_C_FLAGS_DEBUG}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_C_FLAGS_MINSIZEREL 
-# 	     "${CMAKE_C_FLAGS_MINSIZEREL}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_C_FLAGS_RELEASE 
-# 	     "${CMAKE_C_FLAGS_RELEASE}")
-#   STRING(REGEX REPLACE "/MD" "/MT"
-# 	     CMAKE_C_FLAGS_RELWITHDEBINFO 
-# 	     "${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-# ENDIF(NOT GPUIT_LINK_MSVCRT)
-
 IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
   SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
@@ -666,6 +640,9 @@ SET(HND2RAW_ST_SRC
 SET(HND_TO_PFM_SRC
 	hnd_to_pfm.c
 	)
+SET(ITK_TPS_WARP_SRC
+        itk_tps_warp_main.cxx 
+	)
 SET(MASK_MHA_SRC
 	mask_mha.cxx
 	)
@@ -694,9 +671,6 @@ SET(MONDOSHOT_RELAY_SRC
 	)
 SET(PATIENT_MASK_SRC
 	patient_mask.cxx
-	)
-SET(POINT_PATH_SRC
-	point_path.cxx
 	)
 SET(PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
@@ -729,9 +703,6 @@ SET(SHUFFLE_MHA_SRC
 	)
 SET(SYNTHETIC_MHA_SRC
 	synthetic_mha_main.cxx synthetic_mha_main.h
-	)
-SET(TPS_WARP_SRC
-	tps_warp_main.cxx 
 	)
 SET(VF_COMPARE_SRC
 	vf_compare.c
@@ -940,6 +911,8 @@ IF(ITK_FOUND)
     PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (ITK_USE_REVIEW)
+  PLM_ADD_EXECUTABLE (itk_tps_warp "${ITK_TPS_WARP_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mask_mha "${MASK_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(merge_vfs merge_vector_fields.cxx
@@ -953,8 +926,6 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(mha_to_vox mha_to_vox.c
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(point_path "${POINT_PATH_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(patient_mask "${PATIENT_MASK_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
@@ -971,8 +942,6 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(synthetic_mha "${SYNTHETIC_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE(tps_warp "${TPS_WARP_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE(union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
