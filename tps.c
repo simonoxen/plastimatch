@@ -15,10 +15,8 @@
 #define MOTION_TOL 0.01
 #define DIST_MULTIPLIER 5.0
 
-char tgt_fn[256];
-char src_fn[256];
-char deform_dir[256];
-char tps_fn[256];
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
 Tps_xform*
 tps_xform_alloc (void)
@@ -103,6 +101,9 @@ tps_xform_load (char* fn)
 	if (rc != 7) {
 	    print_and_exit ("Ill-formed input file: %s\n", fn);
 	}
+	curr_node->dxyz[2] = curr_node->tgt[2] - curr_node->src[2];
+	curr_node->dxyz[1] = curr_node->tgt[1] - curr_node->src[1];
+	curr_node->dxyz[0] = curr_node->tgt[0] - curr_node->src[0];
 	tps->num_tps_nodes++;
     }
     fclose (fp);
@@ -174,6 +175,28 @@ tps_warp_point (
 }
 #endif
 
+static void
+tps_update_point (
+    float vf[3],       /* Output: displacement to update */
+    Tps_node* tpsn,    /* Input: the tps control point */
+    float pos[3])      /* Input: location of voxel to update */
+{
+    int i, j;
+
+    float dist2 = 
+	((pos[0] - tpsn[i].src[0]) * (pos[0] - tpsn[i].src[0])) +
+	((pos[1] - tpsn[i].src[1]) * (pos[1] - tpsn[i].src[1])) +
+	((pos[2] - tpsn[i].src[2]) * (pos[2] - tpsn[i].src[2]));
+    dist2 = dist2 / tpsn[i].alpha;
+    if (dist2 < 1.0) {
+	float dist = sqrt (dist2);
+	float weight = (1 - dist) * (1 - dist);
+	for (j = 0; j < 3; j++) {
+	    vf[j] += weight * tpsn[i].tgt[j];
+	}
+    }
+}
+
 void
 tps_warp (
     Volume *vout,       /* Output image (sized and allocated) */
@@ -189,21 +212,10 @@ tps_warp (
     float* vout_img = (float*) vout->img;
 
     int cpi;
-    int rijk[3];             /* Indices within fixed image region (vox) */
-    int fijk[3], fv;         /* Indices within fixed image (vox) */
-    float mijk[3];           /* Indices within moving image (vox) */
+    int fijk[3], fidx;       /* Indices within fixed image (vox) */
     float fxyz[3];           /* Position within fixed image (mm) */
-    float mxyz[3];           /* Position within moving image (mm) */
-    int mijk_f[3], mvf;      /* Floor */
-    int mijk_r[3];           /* Round */
-    int p[3];
-    int q[3];
-    int pidx, qidx;
-    float dxyz[3];
-    float li_1[3];           /* Fraction of interpolant in lower index */
-    float li_2[3];           /* Fraction of interpolant in upper index */
-    float* m_img = (float*) moving->img;
-    float m_val;
+    Volume *vf;
+    float *vf_img;
 
     /* A few sanity checks */
     if (vout->pix_type != PT_FLOAT) {
@@ -215,15 +227,24 @@ tps_warp (
 	return;
     }
 
-    /* Set default */
+    /* Set defaults */
     for (vidx = 0; vidx < vout->npix; vidx++) {
 	vout_img[vidx] = default_val;
     }
     if (vf_out) {
-	memset (vf_out->img, 0, vf_out->pix_size * vf_out->npix);
+	vf = vf_out;
+	memset (vf->img, 0, vf->pix_size * vf_out->npix);
+    } else {
+	vf = volume_create (
+	    tps->img_dim,
+	    tps->img_origin,
+	    tps->img_spacing,
+	    PT_VF_FLOAT_INTERLEAVED,
+	    0, 0);
     }
+    vf_img = (float*) vf->img;
 	
-    /* Loop through control points */
+    /* Loop through control points, and construct the vector field */
     for (cpi = 0; cpi < tps->num_tps_nodes; cpi++) {
 	Tps_node *curr_node = &tps->tps_nodes[cpi];
 	long roi_offset[3];
@@ -248,74 +269,30 @@ tps_warp (
 	    roi_size[d] = rmaxi - rmini + 1;
 	}
 
-	
-    }
+	/* Loop through ROI */
+	for (fijk[2] = roi_offset[d]; fijk[2] < roi_offset[d] + roi_size[d] - 1; fijk[2]++) {
+	    fxyz[2] = tps->img_origin[2] + tps->img_spacing[2] * fijk[2];
+	    for (fijk[1] = roi_offset[d]; fijk[1] < roi_offset[d] + roi_size[d] - 1; fijk[1]++) {
+		fxyz[1] = tps->img_origin[1] + tps->img_spacing[1] * fijk[1];
+		for (fijk[0] = roi_offset[d]; fijk[0] < roi_offset[d] + roi_size[d] - 1; fijk[0]++) {
 
-#if defined (commentout)
-    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
-	p[2] = rijk[2] / bxf->vox_per_rgn[2];
-	q[2] = rijk[2] % bxf->vox_per_rgn[2];
-	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
-	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
-	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
-	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
-	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
-	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
-		int rc;
-		p[0] = rijk[0] / bxf->vox_per_rgn[0];
-		q[0] = rijk[0] % bxf->vox_per_rgn[0];
-		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
-
-		/* Get B-spline deformation vector */
-		pidx = INDEX_OF (p, bxf->rdims);
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
-
-		/* Compute linear index of fixed image voxel */
-		fv = INDEX_OF (fijk, vout->dim);
-
-		/* Assign deformation */
-		if (vf_out) {
-		    float *vf_out_img = (float*) vf_out->img;
-		    vf_out_img[3*fv+0] = dxyz[0];
-		    vf_out_img[3*fv+1] = dxyz[1];
-		    vf_out_img[3*fv+2] = dxyz[2];
+		    /* Update vf at this voxel, for this node */
+		    fxyz[0] = tps->img_origin[0] 
+			+ tps->img_spacing[0] * fijk[0];
+		    fidx = INDEX_OF (fijk, tps->img_dim);
+		    tps_update_point (&vf_img[fidx], curr_node, fxyz);
 		}
-
-		/* Compute moving image coordinate of fixed image voxel */
-		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-						  dxyz, moving);
-
-		/* If voxel is not inside moving image */
-		if (!rc) continue;
-
-		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-					     li_1, li_2, moving);
-
-		if (linear_interp) {
-		    /* Find linear index of "corner voxel" in moving image */
-		    mvf = INDEX_OF (mijk_f, moving->dim);
-
-		    /* Compute moving image intensity using linear 
-		       interpolation */
-		    /* Macro is slightly faster than function */
-		    BSPLINE_LI_VALUE (m_val, 
-				      li_1[0], li_2[0],
-				      li_1[1], li_2[1],
-				      li_1[2], li_2[2],
-				      mvf, m_img, moving);
-		} else {
-		    /* Find linear index of "nearest voxel" in moving image */
-		    mvf = INDEX_OF (mijk_r, moving->dim);
-
-		    m_val = m_img[mvf];
-		}
-		/* Assign warped value to output image */
-		vout_img[fv] = m_val;
 	    }
 	}
     }
-#endif
+
+    /* Warp the image */
+    /* GCS FIX: Does not implement linear interpolation */
+    volume_warp (vout, moving, vf);
+
+    if (!vf_out) {
+	volume_free (vf);
+    }
 }
 
 #if defined (commentout)

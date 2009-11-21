@@ -9,6 +9,7 @@ typedef struct tps_node Tps_node;
 struct tps_node {
     float src[3];   /* (x,y,z) in fixed image */
     float tgt[3];   /* (x,y,z) in moving image */
+    float dxyz[3];  /* tgt - src */
     float alpha;    /* RBF weight */
 };
 
