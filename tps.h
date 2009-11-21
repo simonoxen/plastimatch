@@ -7,9 +7,9 @@
 /* Incremental TPS only */
 typedef struct tps_node Tps_node;
 struct tps_node {
-    float src_pos[3];
-    float tgt_pos[3];
-    float alpha;
+    float src[3];   /* (x,y,z) in fixed image */
+    float tgt[3];   /* (x,y,z) in moving image */
+    float alpha;    /* RBF weight */
 };
 
 typedef struct tps_xform Tps_xform;
@@ -23,11 +23,16 @@ extern "C" {
 #endif
 
 gpuit_EXPORT Tps_xform*
-tps_load (char* fn);
+tps_xform_alloc (void);
+gpuit_EXPORT Tps_xform*
+tps_xform_load (char* fn);
+gpuit_EXPORT void
+tps_xform_save (Tps_xform *tps_xform, char *fn);
+gpuit_EXPORT void
+tps_xform_free (Tps_xform *tps_xform);
+
 gpuit_EXPORT void
 tps_transform_point (Tps_node* tps, int num_tps_nodes, float pos[3]);
-gpuit_EXPORT void
-tps_free (Tps_node** tps, int *num_tps_nodes);
 
 #if defined __cplusplus
 }

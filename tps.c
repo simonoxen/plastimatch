@@ -32,7 +32,7 @@ tps_xform_alloc (void)
 }
 
 Tps_xform*
-tps_load (char* fn)
+tps_xform_load (char* fn)
 {
     char buf[256];
     FILE *fp;
@@ -55,12 +55,12 @@ tps_load (char* fn)
 	}
 	curr_node = &tps_xform->tps_nodes[tps_xform->num_tps_nodes];
 	rc = sscanf (buf, "%g %g %g %g %g %g %g", 
-		     &curr_node->src_pos[0],
-		     &curr_node->src_pos[1],
-		     &curr_node->src_pos[2],
-		     &curr_node->tgt_pos[0],
-		     &curr_node->tgt_pos[1],
-		     &curr_node->tgt_pos[2],
+		     &curr_node->src[0],
+		     &curr_node->src[1],
+		     &curr_node->src[2],
+		     &curr_node->tgt[0],
+		     &curr_node->tgt[1],
+		     &curr_node->tgt[2],
 		     &curr_node->alpha
 		     );
 	if (rc != 7) {
@@ -73,11 +73,40 @@ tps_load (char* fn)
 }
 
 void
-tps_free (Tps_node** tps, int *num_tps_nodes)
+tps_xform_save (Tps_xform *tps_xform, char *fn)
 {
-    free (*tps);
-    *tps = 0;
-    *num_tps_nodes = 0;
+    int i;
+    FILE *fp = fopen (fn, "w");
+    if (!fp) {
+	print_and_exit ("Couldn't open file \"%s\" for write\n", fn);
+    }
+
+    for (i = 0; i < tps_xform->num_tps_nodes; i++) {
+	float dist;
+	float *src = tps_xform->tps_nodes[i].src;
+	float *tgt = tps_xform->tps_nodes[i].tgt;
+	dist = sqrt (((src[0] - tgt[0]) * (src[0] - tgt[0]))
+		     + ((src[1] - tgt[1]) * (src[1] - tgt[1]))
+		     + ((src[2] - tgt[2]) * (src[2] - tgt[2])));
+
+	fprintf (fp, "%g %g %g %g %g %g %g\n", 
+		 src[0],
+		 src[1],
+		 src[2],
+		 tgt[0]-src[0],
+		 tgt[1]-src[1],
+		 tgt[2]-src[2],
+		 DIST_MULTIPLIER * dist
+		 );
+    }
+    fclose (fp);
+}
+
+void
+tps_xform_free (Tps_xform *tps_xform)
+{
+    free (tps_xform->tps_nodes);
+    free (tps_xform);
 }
 
 void
@@ -91,14 +120,14 @@ tps_transform_point (Tps_node* tps, int num_tps_nodes, float pos[3])
     memcpy (new_pos, pos, 3 * sizeof(float));
     for (i = 0; i < num_tps_nodes; i++) {
 	float dist = sqrt (
-	    ((pos[0] - tps[i].src_pos[0]) * (pos[0] - tps[i].src_pos[0])) +
-	    ((pos[1] - tps[i].src_pos[1]) * (pos[1] - tps[i].src_pos[1])) +
-	    ((pos[2] - tps[i].src_pos[2]) * (pos[2] - tps[i].src_pos[2])));
+	    ((pos[0] - tps[i].src[0]) * (pos[0] - tps[i].src[0])) +
+	    ((pos[1] - tps[i].src[1]) * (pos[1] - tps[i].src[1])) +
+	    ((pos[2] - tps[i].src[2]) * (pos[2] - tps[i].src[2])));
 	dist = dist / tps[i].alpha;
 	if (dist < 1.0) {
 	    float weight = (1 - dist) * (1 - dist);
 	    for (j = 0; j < 3; j++) {
-		new_pos[j] += weight * tps[i].tgt_pos[j];
+		new_pos[j] += weight * tps[i].tgt[j];
 	    }
 	}
     }
@@ -118,7 +147,7 @@ main (int argc, char *argv[])
 	int rc;
 	char src_buf[BUFLEN], tgt_buf[BUFLEN];
 	int src_phase, tgt_phase;
-	float src_pos[3], tgt_pos[3];
+	float src[3], tgt[3];
 	if (!fgets (src_buf, BUFLEN, src_fp)) {
 	    fprintf (stderr, "Ill-formed input file (1): %s\n", src_fn);
 	    return 1;
@@ -127,28 +156,28 @@ main (int argc, char *argv[])
 	    fprintf (stderr, "Ill-formed input file (1): %s\n", tgt_fn);
 	    return 1;
 	}
-	rc = sscanf (src_buf, "%d %g %g %g", &src_phase, &src_pos[0], 
-		    &src_pos[1],  &src_pos[2]);
+	rc = sscanf (src_buf, "%d %g %g %g", &src_phase, &src[0], 
+		    &src[1],  &src[2]);
 	if (rc != 4 || src_phase != i) {
 	    fprintf (stderr, "Ill-formed input file (2): %s\n", src_fn);
 	    return 1;
 	}
-	rc = sscanf (tgt_buf, "%d %g %g %g", &tgt_phase, &tgt_pos[0], 
-		    &tgt_pos[1],  &tgt_pos[2]);
+	rc = sscanf (tgt_buf, "%d %g %g %g", &tgt_phase, &tgt[0], 
+		    &tgt[1],  &tgt[2]);
 	if (rc != 4 || tgt_phase != i) {
 	    fprintf (stderr, "Ill-formed input file (2): %s\n", tgt_fn);
 	    return 1;
 	}
 
-	if ((fabs (src_pos[0] - tgt_pos[0]) > MOTION_TOL) ||
-	    (fabs (src_pos[1] - tgt_pos[1]) > MOTION_TOL) ||
-	    (fabs (src_pos[2] - tgt_pos[2]) > MOTION_TOL)) {
+	if ((fabs (src[0] - tgt[0]) > MOTION_TOL) ||
+	    (fabs (src[1] - tgt[1]) > MOTION_TOL) ||
+	    (fabs (src[2] - tgt[2]) > MOTION_TOL)) {
 	    float dist;
 	    char tps_fn[256];
 
-	    dist = sqrt (((src_pos[0] - tgt_pos[0]) * (src_pos[0] - tgt_pos[0]))
-		    + ((src_pos[1] - tgt_pos[1]) * (src_pos[1] - tgt_pos[1]))
-		    + ((src_pos[2] - tgt_pos[2]) * (src_pos[2] - tgt_pos[2])));
+	    dist = sqrt (((src[0] - tgt[0]) * (src[0] - tgt[0]))
+		    + ((src[1] - tgt[1]) * (src[1] - tgt[1]))
+		    + ((src[2] - tgt[2]) * (src[2] - tgt[2])));
 
 	    /* Append to fwd deformation */
 	    snprintf (tps_fn, 256, "%s/%d_rbf_fwd.txt", deform_dir, i);
@@ -158,12 +187,12 @@ main (int argc, char *argv[])
 		return 1;
 	    }
 	    fprintf (tps_fp, "%g %g %g %g %g %g %g\n", 
-		    src_pos[0],
-		    src_pos[1],
-		    src_pos[2],
-		    tgt_pos[0]-src_pos[0],
-		    tgt_pos[1]-src_pos[1],
-		    tgt_pos[2]-src_pos[2],
+		    src[0],
+		    src[1],
+		    src[2],
+		    tgt[0]-src[0],
+		    tgt[1]-src[1],
+		    tgt[2]-src[2],
 		    DIST_MULTIPLIER * dist
 		    );
 	    fclose (tps_fp);
@@ -176,12 +205,12 @@ main (int argc, char *argv[])
 		return 1;
 	    }
 	    fprintf (tps_fp, "%g %g %g %g %g %g %g\n", 
-		    tgt_pos[0],
-		    tgt_pos[1],
-		    tgt_pos[2],
-		    src_pos[0]-tgt_pos[0],
-		    src_pos[1]-tgt_pos[1],
-		    src_pos[2]-tgt_pos[2],
+		    tgt[0],
+		    tgt[1],
+		    tgt[2],
+		    src[0]-tgt[0],
+		    src[1]-tgt[1],
+		    src[2]-tgt[2],
 		    DIST_MULTIPLIER * dist
 		    );
 	    fclose (tps_fp);
