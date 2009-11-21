@@ -101,9 +101,15 @@ tps_xform_load (char* fn)
 	if (rc != 7) {
 	    print_and_exit ("Ill-formed input file: %s\n", fn);
 	}
-	curr_node->dxyz[2] = curr_node->tgt[2] - curr_node->src[2];
-	curr_node->dxyz[1] = curr_node->tgt[1] - curr_node->src[1];
-	curr_node->dxyz[0] = curr_node->tgt[0] - curr_node->src[0];
+
+	/* Compute weights, based on distance and alpha */
+	curr_node->wxyz[2] = curr_node->alpha * 
+	    (curr_node->tgt[2] - curr_node->src[2]);
+	curr_node->wxyz[1] = curr_node->alpha * 
+	    (curr_node->tgt[1] - curr_node->src[1]);
+	curr_node->wxyz[0] = curr_node->alpha * 
+	    (curr_node->tgt[0] - curr_node->src[0]);
+
 	tps->num_tps_nodes++;
     }
     fclose (fp);
@@ -190,20 +196,20 @@ static void
 tps_update_point (
     float vf[3],       /* Output: displacement to update */
     Tps_node* tpsn,    /* Input: the tps control point */
-    float pos[3])      /* Input: location of voxel to update */
+    float fxyz[3])     /* Input: location of voxel to update */
 {
-    int i, j;
+    int d;
 
     float dist2 = 
-	((pos[0] - tpsn[i].src[0]) * (pos[0] - tpsn[i].src[0])) +
-	((pos[1] - tpsn[i].src[1]) * (pos[1] - tpsn[i].src[1])) +
-	((pos[2] - tpsn[i].src[2]) * (pos[2] - tpsn[i].src[2]));
-    dist2 = dist2 / tpsn[i].alpha;
+	((fxyz[0] - tpsn->src[0]) * (fxyz[0] - tpsn->src[0])) +
+	((fxyz[1] - tpsn->src[1]) * (fxyz[1] - tpsn->src[1])) +
+	((fxyz[2] - tpsn->src[2]) * (fxyz[2] - tpsn->src[2]));
+    dist2 = dist2 / tpsn->alpha;
     if (dist2 < 1.0) {
 	float dist = sqrt (dist2);
 	float weight = (1 - dist) * (1 - dist);
-	for (j = 0; j < 3; j++) {
-	    vf[j] += weight * tpsn[i].tgt[j];
+	for (d = 0; d < 3; d++) {
+	    vf[d] += weight * tpsn->wxyz[d];
 	}
     }
 }
@@ -284,7 +290,7 @@ tps_warp (
 
 	printf (
 	    "cpi = %d, offset = (%ld %ld %ld), size = (%ld %ld %ld)"
-	    "alpha = %g\n",
+	    " alpha = %g\n",
 	    cpi, roi_offset[0], roi_offset[1], roi_offset[2], 
 	    roi_size[0], roi_size[1], roi_size[2],
 	    curr_node->alpha

@@ -59,7 +59,6 @@ main (int argc, char *argv[])
     printf ("Calling tps_warp...\n");
     tps_warp (warped_out, vf_out, tps, moving, 1, -1000);
     printf ("done!\n");
-
     if (options.output_vf_fn) {
 	printf ("Writing output vf.\n");
 	write_mha (options.output_vf_fn, vf_out);
