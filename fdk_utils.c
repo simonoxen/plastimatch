@@ -10,6 +10,7 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "proj_image.h"
+#include "readmha.h"
 #include "ramp_filter.h"
 #include "volume.h"
 
@@ -101,7 +102,6 @@ write_coronal_sagittal (Fdk_options* options, Volume* vol)
     if (options->coronal) {
 	Volume *cor;
 	char fn[_MAX_PATH];
-	FILE *fp;
 
 	strcpy (fn, options->output_file);
 	strip_extension (fn);
@@ -115,7 +115,6 @@ write_coronal_sagittal (Fdk_options* options, Volume* vol)
     if (options->sagittal) {
 	Volume *sag;
 	char fn[_MAX_PATH];
-	FILE *fp;
 
 	strcpy (fn, options->output_file);
 	strip_extension (fn);

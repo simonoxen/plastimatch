@@ -167,9 +167,9 @@ ENDIF(CUDA_FOUND)
 ##  Set the math library
 ##-----------------------------------------------------------------------------
 IF(UNIX)
-  SET(MATH_LIB -lm)
+  SET (MATH_LIB -lm)
 ELSE(UNIX)
-  SET(MATH_LIB)
+  SET (MATH_LIB)
 ENDIF(UNIX)
 
 ##-----------------------------------------------------------------------------
@@ -214,10 +214,10 @@ ENDIF (Slicer3_DIR)
 ##  it for compiling on AMD linux 64-bit.
 ##-----------------------------------------------------------------------------
 IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  SET(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+  SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
+  SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
+  SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+  SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
 ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
 ##-----------------------------------------------------------------------------
@@ -227,7 +227,7 @@ ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 ##  reset by the ITK include.
 ##-----------------------------------------------------------------------------
 #IF(NOT CMAKE_BUILD_TYPE)
-#  SET(CMAKE_BUILD_TYPE Release CACHE STRING
+#  SET (CMAKE_BUILD_TYPE Release CACHE STRING
 #      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."	
 #      FORCE)
 #ENDIF(NOT CMAKE_BUILD_TYPE)
@@ -235,10 +235,10 @@ ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 ##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
 ##-----------------------------------------------------------------------------
-SET(PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
+SET (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF(Subversion_FOUND)
-    SET(PLASTIMATCH_EXPERIMENTAL TRUE)
+    SET (PLASTIMATCH_EXPERIMENTAL TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS(
       COMMAND ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
@@ -248,7 +248,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
       )
     IF(${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - found")
-      SET(PLASTIMATCH_SVN_VERSION ${svn_version})
+      SET (PLASTIMATCH_SVN_VERSION ${svn_version})
     ELSE(${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - can't connect")
     ENDIF(${svn_result} EQUAL 0)
@@ -256,7 +256,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     MESSAGE(STATUS "Looking for version in svn - svn not found")
   ENDIF(Subversion_FOUND)
 ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-  SET(PLASTIMATCH_EXPERIMENTAL FALSE)
+  SET (PLASTIMATCH_EXPERIMENTAL FALSE)
 ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
 ##-----------------------------------------------------------------------------
@@ -288,7 +288,7 @@ ENDIF(wxWidgets_FOUND)
 ##-----------------------------------------------------------------------------
 SET (DCMTK_HAVE_CONFIG_H FALSE)
 IF (UNIX)
-  SET(DCMTK_HAVE_CONFIG_H TRUE)
+  SET (DCMTK_HAVE_CONFIG_H TRUE)
 ENDIF (UNIX)
 
 ##-----------------------------------------------------------------------------
@@ -297,7 +297,7 @@ ENDIF (UNIX)
 SET (GPUIT_LIBRARY_DEPENDENCIES "")
 
 IF (BROOK_FOUND)
-  SET(GPUIT_LIBRARY_DEPENDENCIES
+  SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${BROOK_LIBRARIES}
     ${OPENGL_LIBRARIES}
@@ -306,7 +306,7 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 IF(CUDA_FOUND)
-  SET(GPUIT_LIBRARY_DEPENDENCIES
+  SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${CUDA_LIBRARIES}
     )
@@ -336,12 +336,12 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
 IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
-  SET(GPUIT_LIBRARY_DEPENDENCIES
+  SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${F2C_LIBRARY}
     )
   IF(UNIX)
-    SET(GPUIT_LIBRARY_DEPENDENCIES
+    SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       f2c_helper
       )
@@ -410,7 +410,7 @@ SET (GPUIT_LIBRARY_SRC
   )
 
 IF(BROOK_FOUND)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	demons_brook.cpp
 	demons_brook_kernel_wrap.cpp
@@ -423,7 +423,7 @@ IF(BROOK_FOUND)
 ENDIF(BROOK_FOUND)
 
 IF(CUDA_FOUND)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     bspline_cuda.cpp
     bspline_cuda.cu
@@ -431,7 +431,7 @@ IF(CUDA_FOUND)
     )
   CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
     bspline_cuda.cu)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ${BSPLINE_CUDA_WRAPPERS}
     )
@@ -445,19 +445,19 @@ IF (FFTW_FOUND)
 ENDIF (FFTW_FOUND)
 
 IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
 	)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
 IF (CMAKE_Fortran_COMPILER_WORKS)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	lbfgsb_2_1.f
 	)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
-  SET(GPUIT_LIBRARY_SRC
+  SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	lbfgsb_2_1.c
 	plm_f2c.h plm_f2c_win32.h
@@ -465,12 +465,12 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
 IF(F2C_LIBRARY)
-  SET(F2C_HELPER_LIBRARY_SRC
+  SET (F2C_HELPER_LIBRARY_SRC
 	main__.c
 	)
 ENDIF(F2C_LIBRARY)
 
-SET(PLASTIMATCH_LIBRARY_SRC
+SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
 	gcs_metric.h gcs_metric.hxx 
@@ -504,7 +504,7 @@ SET(PLASTIMATCH_LIBRARY_SRC
 	)
 
 IF(ITK_USE_REVIEW)
-  SET(PLASTIMATCH_LIBRARY_SRC
+  SET (PLASTIMATCH_LIBRARY_SRC
     ${PLASTIMATCH_LIBRARY_SRC}
     cxt_extract.cxx cxt_extract.h)
 ENDIF(ITK_USE_REVIEW)
@@ -512,55 +512,55 @@ ENDIF(ITK_USE_REVIEW)
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-SET(BSPLINE_SRC
+SET (BSPLINE_SRC
 	bspline_main.c 
 	)
-SET(CMS_DOSE_TO_MHA_SRC
+SET (CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
 	)
-SET(COMPUTE_DISTANCE_SRC
+SET (COMPUTE_DISTANCE_SRC
 	compute_distance.cxx compute_distance.h
 	closest_point.cxx 
 	read_obj.cxx
 	)
-SET(CUDA_PROBE_SRC
+SET (CUDA_PROBE_SRC
 	cuda_probe_main.c
 	cuda_probe.cu
 	cuda_probe.h
 	)
 IF (CUDA_FOUND)
   CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
-  SET(CUDA_PROBE_SRC
+  SET (CUDA_PROBE_SRC
     ${CUDA_PROBE_SRC}
     ${CUDA_PROBE_WRAPPERS}
     )
 ENDIF (CUDA_FOUND)
-SET(CXT_APPLY_DICOM_SRC
+SET (CXT_APPLY_DICOM_SRC
   cxt_apply_dicom_main.cxx)
-SET(CXT_TO_DICOM_RTSS_SRC 
+SET (CXT_TO_DICOM_RTSS_SRC 
   cxt_to_dicom_rtss.cxx)
-SET(CXT_TO_MHA_SRC
+SET (CXT_TO_MHA_SRC
 	cxt_to_mha.cxx
 	render_polyline.cxx
 	render_polyline.h
 	)
-SET(DEMONS_SRC
+SET (DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
 	)
-SET(DEMONS_CUDA_SRC
+SET (DEMONS_CUDA_SRC
 	readmha.c readmha.h
 	volume.c volume.h
 	)
-SET(DICE_STATS_SRC
+SET (DICE_STATS_SRC
 	contour_statistics.cxx contour_statistics.h
 	dice_statistics.cxx 
 	)
-SET(DICOM_SERIES_TEST_SRC
+SET (DICOM_SERIES_TEST_SRC
   dicom_series_test.cxx)
-SET(DICOM_RTSS_TO_CXT_SRC 
+SET (DICOM_RTSS_TO_CXT_SRC 
   dicom_rtss_to_cxt.cxx)
-SET(DICOM_UID_SRC
+SET (DICOM_UID_SRC
 	dicom_uid_main.cxx
 	dicom_uid.cxx
 	dicom_uid.h
@@ -568,7 +568,7 @@ SET(DICOM_UID_SRC
 SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
 	)
-SET(DRR_SRC
+SET (DRR_SRC
 	drr_c.c drr.h
 	drr_opts.c drr_opts.h
 	drr_trilin.c drr_trilin.h
@@ -583,7 +583,7 @@ IF (CUDA_FOUND)
     )
 ENDIF (CUDA_FOUND)
 
-SET(EXTRACT_CONTOUR_SRC
+SET (EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
 SET (FDK_SRC
@@ -607,7 +607,7 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 
-SET(FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_cuda.h fdk.h
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
@@ -634,28 +634,28 @@ IF (CUDA_FOUND)
     )
 ENDIF (CUDA_FOUND)
 
-SET(HND2RAW_ST_SRC
+SET (HND2RAW_ST_SRC
 	hnd2raw_st.cpp
 	)
-SET(HND_TO_PFM_SRC
+SET (HND_TO_PFM_SRC
 	hnd_to_pfm.c
 	)
-SET(ITK_TPS_WARP_SRC
+SET (ITK_TPS_WARP_SRC
         itk_tps_warp_main.cxx 
 	)
-SET(MASK_MHA_SRC
+SET (MASK_MHA_SRC
 	mask_mha.cxx
 	)
-SET(MHA_TO_CMS_DOSE_SRC
+SET (MHA_TO_CMS_DOSE_SRC
 	mha_to_cms_dose.c
 	)
-SET(MHA_TO_CXT_SRC
+SET (MHA_TO_CXT_SRC
 	mha_to_cxt.cxx
 	)
-SET(MHA_TO_RTOG_DOSE_SRC
+SET (MHA_TO_RTOG_DOSE_SRC
 	mha_to_rtog_dose.cxx
 	)
-SET(MONDOSHOT_SRC
+SET (MONDOSHOT_SRC
 	dicom_uid.cxx
 	dicom_uid.h
 	mondoshot_dicom.cpp
@@ -666,13 +666,13 @@ SET(MONDOSHOT_SRC
 	sqlite3.h
 	sqlite3ext.h
 	)
-SET(MONDOSHOT_RELAY_SRC
+SET (MONDOSHOT_RELAY_SRC
 	mondoshot_relay_main.cpp
 	)
-SET(PATIENT_MASK_SRC
+SET (PATIENT_MASK_SRC
 	patient_mask.cxx
 	)
-SET(PLASTIMATCH_SRC
+SET (PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
  	file_type.cxx file_type.h
 	compare_main.cxx compare_main.h
@@ -684,65 +684,68 @@ SET(PLASTIMATCH_SRC
 	warp_main.cxx warp_main.h
  	warp_pointset_main.cxx 
 	)
-SET(PLASTIMATCH_SLICER_SRC
+SET (PLASTIMATCH_SLICER_SRC
         plastimatch-slicer.cxx
 	)
-SET(PLASTIMATCH_SLICER_TPS_SRC
+SET (PLASTIMATCH_SLICER_TPS_SRC
         plastimatch-slicer-tps.cxx
 	)
-SET(COMPUTE_MEAN_IMAGE_SRC
+SET (COMPUTE_MEAN_IMAGE_SRC
 	compute_mean_image_main.cxx
 	)
-SET(RTOG_TO_MHA_SRC
+SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	render_polyline.cxx render_polyline.h
 	exchkeys.cxx exchkeys.h
 	)
-SET(SHUFFLE_MHA_SRC
+SET (SHUFFLE_MHA_SRC
 	shuffle_mha_main.cxx
 	)
-SET(SYNTHETIC_MHA_SRC
+SET (SYNTHETIC_MHA_SRC
 	synthetic_mha_main.cxx synthetic_mha_main.h
 	)
-SET(VF_COMPARE_SRC
+SET (TPS_WARP_SRC
+        tps_warp_main.c
+	)
+SET (VF_COMPARE_SRC
 	vf_compare.c
 	)
-SET(VF_COMPOSE_SRC
+SET (VF_COMPOSE_SRC
 	vf_compose.cxx
 	)
-SET(VF_INVERT_SRC
+SET (VF_INVERT_SRC
 	vf_invert.cxx
 	)
-SET(VF_TO_VVF_SRC
+SET (VF_TO_VVF_SRC
 	vf_to_vvf.cxx
 	)
-SET(VF_STATS_SRC
+SET (VF_STATS_SRC
 	vf_stats.c
 	)
-SET(XF_TO_XF_SRC
+SET (XF_TO_XF_SRC
 	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
-SET(XIO_TO_CXT_SRC
+SET (XIO_TO_CXT_SRC
 	xio_to_cxt.cxx
 	)
 
 CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
 IF(NOT HAVE_GETOPT_LONG)
-    SET(CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
-    SET(CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
-    SET(CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
-    SET(DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
-    SET(DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
-    SET(MHA_TO_CXT_SRC ${MHA_TO_CXT_SRC} getopt_long.c getopt.h)
-    SET(MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
-    SET(PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
-    SET(PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
-    SET(RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
-    SET(COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
-    SET(SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
-    SET(VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
-    SET(XIO_TO_CXT_SRC ${XIO_TO_CXT_SRC} getopt_long.c getopt.h)
-    SET(XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
+    SET (CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
+    SET (CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
+    SET (CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET (DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
+    SET (DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
+    SET (MHA_TO_CXT_SRC ${MHA_TO_CXT_SRC} getopt_long.c getopt.h)
+    SET (MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
+    SET (PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
+    SET (PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
+    SET (RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
+    SET (COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
+    SET (SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
+    SET (VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
+    SET (XIO_TO_CXT_SRC ${XIO_TO_CXT_SRC} getopt_long.c getopt.h)
+    SET (XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF(NOT HAVE_GETOPT_LONG)
 
 ##-----------------------------------------------------------------------------
@@ -857,29 +860,30 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-PLM_ADD_EXECUTABLE(bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
-PLM_ADD_EXECUTABLE(demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
+PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
-PLM_ADD_EXECUTABLE(hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
+PLM_ADD_EXECUTABLE (hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(mha_to_raw mha_to_raw.c "" "")
-PLM_ADD_EXECUTABLE(mha_to_cms_dose mha_to_cms_dose.c "" "")
-PLM_ADD_EXECUTABLE(raw_to_mha raw_to_mha.c "" "")
-PLM_ADD_EXECUTABLE(tps_update tps_update.c "${MATH_LIB}" "")
-PLM_ADD_EXECUTABLE(vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
+PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
+PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
+PLM_ADD_EXECUTABLE (tps_warp "${TPS_WARP_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" 
+PLM_ADD_EXECUTABLE (vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE(vf3d_to_mha vf3d_to_mha.c "" "")
-PLM_ADD_EXECUTABLE(vox_to_mha vox_to_mha.c "" "")
+PLM_ADD_EXECUTABLE (vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE (vf3d_to_mha vf3d_to_mha.c "" "")
+PLM_ADD_EXECUTABLE (vox_to_mha vox_to_mha.c "" "")
 
 IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE(compute_distance "${COMPUTE_DISTANCE_SRC}" 
@@ -1074,9 +1078,9 @@ ENDIF (PLM_BUILD_QT_TEST AND QT4_FOUND)
 ##    no easy way to avoid this (i.e. no good suggestions 
 ##    on CMake/CTest email list.
 ##-----------------------------------------------------------------------------
-SET(PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
-SET(PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
-SET(PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
+SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
+SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
+SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
@@ -1090,14 +1094,14 @@ CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
 
 # Set the "hack" macros to find windows binaries (under Release subdir)
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  SET(PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
-  SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Release)
-  SET(PLM_PLASTIMATCH_TESTING_PATH_HACK 
+  SET (PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
+  SET (PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Release)
+  SET (PLM_PLASTIMATCH_TESTING_PATH_HACK 
     ${CMAKE_CURRENT_BINARY_DIR}/Testing/Release)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  SET(PLM_ITK_LIBRARY_PATH_HACK "")
-  SET(PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR})
-  SET(PLM_PLASTIMATCH_TESTING_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Testing)
+  SET (PLM_ITK_LIBRARY_PATH_HACK "")
+  SET (PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR})
+  SET (PLM_PLASTIMATCH_TESTING_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Testing)
 ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
 
 MACRO(PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
@@ -1122,13 +1126,13 @@ ENDIF(PLM_BUILD_TESTING)
 ##  CPACK stuff
 ##  Note: "make package_source" to create tarball
 ##-----------------------------------------------------------------------------
-SET(CPACK_GENERATOR "ZIP")
-SET(CPACK_SOURCE_GENERATOR "TBZ2")
-SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MAJOR "1")
-SET(CPACK_PACKAGE_VERSION_MINOR "4-beta")
-SET(CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
-set(CPACK_SOURCE_IGNORE_FILES
+SET (CPACK_GENERATOR "ZIP")
+SET (CPACK_SOURCE_GENERATOR "TBZ2")
+SET (CPACK_PACKAGE_VERSION_MAJOR "1")
+SET (CPACK_PACKAGE_VERSION_MAJOR "1")
+SET (CPACK_PACKAGE_VERSION_MINOR "4-beta")
+SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
+SET (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
 )
