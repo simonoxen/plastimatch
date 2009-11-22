@@ -74,8 +74,8 @@ public:
 
     /* Saving */
     void save_short_dicom (char* fname);
-    void save_image (char* fname);
-    void convert_and_save (char* fname, PlmImageType new_type);
+    void save_image (const char* fname);
+    void convert_and_save (const char* fname, PlmImageType new_type);
 
     /* assignment */
     void set_gpuit_float (volume *v) {

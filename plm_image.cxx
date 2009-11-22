@@ -132,7 +132,7 @@ PlmImage::save_short_dicom (char* fname)
 }
 
 void
-PlmImage::save_image (char* fname)
+PlmImage::save_image (const char* fname)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -383,7 +383,7 @@ PlmImage::convert (PlmImageType new_type)
 }
 
 void
-PlmImage::convert_and_save (char* fname, PlmImageType new_type)
+PlmImage::convert_and_save (const char* fname, PlmImageType new_type)
 {
     this->convert (new_type);
     this->save_image (fname);

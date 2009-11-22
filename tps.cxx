@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -111,14 +112,10 @@ tps_xform_load (char* fn)
 	    print_and_exit ("Ill-formed input file: %s\n", fn);
 	}
 
-	/* Compute weights, based on distance and alpha */
+	/* Compute initial weights, based on distance and alpha */
 	curr_node->wxyz[2] = curr_node->tgt[2] - curr_node->src[2];
 	curr_node->wxyz[1] = curr_node->tgt[1] - curr_node->src[1];
 	curr_node->wxyz[0] = curr_node->tgt[0] - curr_node->src[0];
-	printf ("wxyz = (%g %g %g)\n", 
-	    curr_node->wxyz[0],
-	    curr_node->wxyz[1],
-	    curr_node->wxyz[2]);
 
 	tps->num_tps_nodes++;
     }
@@ -164,88 +161,166 @@ tps_xform_free (Tps_xform *tps)
 }
 
 void
-tps_solve (void)
+tps_xform_debug (Tps_xform *tps)
 {
-    typedef vnl_matrix <double> Vnl_matrix;
-    typedef vnl_svd <double> SVDSolverType;
-
-    Vnl_matrix A, b;
-
-    A.set_size (10, 10);
-    A.set_identity ();
-    A (3, 3) = 1.0;
-    b.set_size (10, 1);
-    b.fill (0.0);
-    b (3, 1) = 1.0;
-
-    SVDSolverType svd (A, 1e-8);
-    Vnl_matrix x = svd.solve (b);
+    int i;
+    printf ("TPS XFORM (%d nodes)\n", tps->num_tps_nodes);
+    for (i = 0; i < tps->num_tps_nodes; i++) {
+	Tps_node *curr_node = &tps->tps_nodes[i];
+	printf ("src %5.1f %5.1f %5.1f tgt %5.1f %5.1f %5.1f "
+	    "wxyz %5.1f %5.1f %5.1f a %5.1f\n", 
+	    curr_node->src[0],
+	    curr_node->src[1],
+	    curr_node->src[2],
+	    curr_node->tgt[0],
+	    curr_node->tgt[1],
+	    curr_node->tgt[2],
+	    curr_node->wxyz[0],
+	    curr_node->wxyz[1],
+	    curr_node->wxyz[2],
+	    curr_node->alpha
+	);
+    }
 }
-#if defined (commentout)
-#endif
 
 float
 tps_default_alpha (float src[3], float tgt[3])
 {
-    float dist;
+    float dist2;
 
-    dist = sqrt (((src[0] - tgt[0]) * (src[0] - tgt[0]))
+    dist2 = ((src[0] - tgt[0]) * (src[0] - tgt[0]))
 	+ ((src[1] - tgt[1]) * (src[1] - tgt[1]))
-	+ ((src[2] - tgt[2]) * (src[2] - tgt[2])));
-    return DIST_MULTIPLIER * dist;
+	+ ((src[2] - tgt[2]) * (src[2] - tgt[2]));
+    return DIST_MULTIPLIER * dist2;
 }
 
-#if defined (commentout)
-void
-tps_warp_point (
-    float new_pos[3], 
-    Tps_xform* tps, 
-    float pos[3])
+static double
+tps_compute_influence (Tps_node *tpsn, float pos[3])
 {
-    int i, j;
-
-    if (!tps) return;
-
-    memcpy (new_pos, pos, 3 * sizeof(float));
-    for (i = 0; i < tps->num_tps_nodes; i++) {
-	float dist = sqrt (
-	    ((pos[0] - tps[i].src[0]) * (pos[0] - tps[i].src[0])) +
-	    ((pos[1] - tps[i].src[1]) * (pos[1] - tps[i].src[1])) +
-	    ((pos[2] - tps[i].src[2]) * (pos[2] - tps[i].src[2])));
-	dist = dist / tps[i].alpha;
-	if (dist < 1.0) {
-	    float weight = (1 - dist) * (1 - dist);
-	    for (j = 0; j < 3; j++) {
-		new_pos[j] += weight * tps[i].tgt[j];
-	    }
-	}
+    float dist2 = 
+	((pos[0] - tpsn->src[0]) * (pos[0] - tpsn->src[0])) +
+	((pos[1] - tpsn->src[1]) * (pos[1] - tpsn->src[1])) +
+	((pos[2] - tpsn->src[2]) * (pos[2] - tpsn->src[2]));
+    dist2 = dist2 / (tpsn->alpha * tpsn->alpha);
+    if (dist2 < 1.0) {
+	float dist = sqrt (dist2);
+	float weight = (1 - dist) * (1 - dist);
+	return (double) weight;
     }
+    return 0.0;
 }
-#endif
 
 static void
 tps_update_point (
     float vf[3],       /* Output: displacement to update */
     Tps_node* tpsn,    /* Input: the tps control point */
-    float fxyz[3])     /* Input: location of voxel to update */
+    float pos[3])      /* Input: location of voxel to update */
 {
     int d;
 
     float dist2 = 
-	((fxyz[0] - tpsn->src[0]) * (fxyz[0] - tpsn->src[0])) +
-	((fxyz[1] - tpsn->src[1]) * (fxyz[1] - tpsn->src[1])) +
-	((fxyz[2] - tpsn->src[2]) * (fxyz[2] - tpsn->src[2]));
+	((pos[0] - tpsn->src[0]) * (pos[0] - tpsn->src[0])) +
+	((pos[1] - tpsn->src[1]) * (pos[1] - tpsn->src[1])) +
+	((pos[2] - tpsn->src[2]) * (pos[2] - tpsn->src[2]));
     dist2 = dist2 / (tpsn->alpha * tpsn->alpha);
     if (dist2 < 1.0) {
 	float dist = sqrt (dist2);
 	float weight = (1 - dist) * (1 - dist);
-	if (weight > 1.0) {
-	    printf ("(d2,d,w) = (%g,%g,%g)\n", dist2, dist, weight);
-	}
 	for (d = 0; d < 3; d++) {
 	    vf[d] += weight * tpsn->wxyz[d];
 	}
     }
+}
+
+void
+tps_solve (Tps_xform *tps)
+{
+    typedef vnl_matrix <double> Vnl_matrix;
+    typedef vnl_svd <double> SVDSolverType;
+
+    int cpi1, cpi2;
+    Vnl_matrix A, b;
+    
+    A.set_size (3 * tps->num_tps_nodes, 3 * tps->num_tps_nodes);
+    A.set_identity ();
+
+    b.set_size (3 * tps->num_tps_nodes, 1);
+    b.fill (0.0);
+
+    tps_xform_debug (tps);
+
+    for (cpi1 = 0; cpi1 < tps->num_tps_nodes; cpi1++) {
+	Tps_node *curr_node = &tps->tps_nodes[cpi1];
+	for (cpi2 = 0; cpi2 < tps->num_tps_nodes; cpi2++) {
+	    double w;
+	    w = tps_compute_influence (curr_node, tps->tps_nodes[cpi2].src);
+
+	    for (int d = 0; d < 3; d++) {
+		A (3 * cpi1 + d, 3 * cpi2 + d) = w;
+	    }
+	}
+    }
+
+    for (cpi1 = 0; cpi1 < tps->num_tps_nodes; cpi1++) {
+	Tps_node *curr_node = &tps->tps_nodes[cpi1];
+	for (int d = 0; d < 3; d++) {
+	    b (3 * cpi1 + d, 0) = curr_node->tgt[d] - curr_node->src[d];
+	}
+    }
+
+    A.print (std::cout);
+    b.print (std::cout);
+
+    SVDSolverType svd (A, 1e-8);
+    Vnl_matrix x = svd.solve (b);
+
+    x.print (std::cout);
+
+    for (cpi1 = 0; cpi1 < tps->num_tps_nodes; cpi1++) {
+	Tps_node *curr_node = &tps->tps_nodes[cpi1];
+	for (int d = 0; d < 3; d++) {
+	    curr_node->wxyz[d] = x (3 * cpi1 + d, 0);
+	}
+    }
+}
+
+void
+tps_hack (Tps_xform *tps)
+{
+    int max_its = tps->num_tps_nodes;
+    int it, cpi1, cpi2;
+    float *wxyz_scratch;
+    wxyz_scratch = (float*) malloc (tps->num_tps_nodes * 3 * sizeof (float));
+
+    for (it = 0; it < max_its; it++) {
+
+	/* Loop through pairs of control points, accumulate deformation */
+	for (cpi1 = 0; cpi1 < tps->num_tps_nodes; cpi1++) {
+	    wxyz_scratch[3 * cpi1 + 0] = 0.f;
+	    wxyz_scratch[3 * cpi1 + 1] = 0.f;
+	    wxyz_scratch[3 * cpi1 + 2] = 0.f;
+	    for (cpi2 = 0; cpi2 < tps->num_tps_nodes; cpi2++) {
+		tps_update_point (&wxyz_scratch[3 * cpi1],
+		    &tps->tps_nodes[cpi2],
+		    tps->tps_nodes[cpi1].src);
+	    }
+	}
+
+	/* Update wxyz to improve approximate at control points */
+	for (cpi1 = 0; cpi1 < tps->num_tps_nodes; cpi1++) {
+	    Tps_node *curr_node = &tps->tps_nodes[cpi1];
+	    printf ("err[%d] = ", cpi1);
+	    for (int d = 0; d < 3; d++) {
+		float err = wxyz_scratch[3 * cpi1 + d] 
+		    - (curr_node->tgt[d] - curr_node->src[d]);
+		printf ("%g ", err);
+		curr_node->wxyz[d] -= err;
+	    }
+	    printf ("\n");
+	}
+    }
+
+    free (wxyz_scratch);
 }
 
 void
@@ -296,6 +371,12 @@ tps_warp (
 	    0, 0);
     }
     vf_img = (float*) vf->img;
+
+    /* Hack */
+    //tps_hack (tps);
+
+    /* Solve */
+    tps_solve (tps);
 	
     /* Loop through control points, and construct the vector field */
     for (cpi = 0; cpi < tps->num_tps_nodes; cpi++) {
@@ -323,7 +404,7 @@ tps_warp (
 	}
 
 	printf (
-	    "cpi = %d, offset = (%ld %ld %ld), size = (%ld %ld %ld)"
+	    "Region[%d] offset = (%ld %ld %ld), size = (%ld %ld %ld)"
 	    " alpha = %g\n",
 	    cpi, roi_offset[0], roi_offset[1], roi_offset[2], 
 	    roi_size[0], roi_size[1], roi_size[2],

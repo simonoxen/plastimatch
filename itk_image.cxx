@@ -323,7 +323,7 @@ load_float_field (const char* fname)
    ----------------------------------------------------------------------- */
 template<class T> 
 void
-itk_image_save (T image, char* fname)
+itk_image_save (T image, const char* fname)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::ImageFileWriter< ImageType >  WriterType;
@@ -392,12 +392,12 @@ itk_image_save_float (T image, char* fname)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void itk_image_save(UCharImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save(ShortImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save(UShortImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save(UInt32ImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save(FloatImageType::Pointer, char*);
-template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, char*);
+template plastimatch1_EXPORT void itk_image_save(UCharImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(ShortImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(UShortImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(UInt32ImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(FloatImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_uchar (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, char*);
 template plastimatch1_EXPORT void itk_image_save_short (FloatImageType::Pointer, char*);

@@ -98,8 +98,8 @@ int main(int argc, char ** argv)
 	    {
 		const VertexType& vertex = vertices->ElementAt(j);
 					
-		fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]);
-		fprintf(file,"%.3f %.3f %.3f \n",vertex[0]*volume->GetSpacing()[0]+volume->GetSpacing()[3],vertex[1]*volume->GetSpacing()[1]+volume->GetSpacing()[4],k[2]*volume->GetSpacing()[2]+volume->GetSpacing()[5]);
+		fprintf (fp,"%.3f %.3f %2ld\n",vertex[0],vertex[1],k[2]);
+		fprintf (file,"%.3f %.3f %.3f \n",vertex[0]*volume->GetSpacing()[0]+volume->GetSpacing()[3],vertex[1]*volume->GetSpacing()[1]+volume->GetSpacing()[4],k[2]*volume->GetSpacing()[2]+volume->GetSpacing()[5]);
 		
 		//fprintf(fp,"%.3f %.3f %2d\n",vertex[0],vertex[1],k[2]*volume->GetSpacing()[2]);
 		//std::cout << vertex[0] <<" "<<vertex[1]<<" "<<k[2]<<std::endl;
