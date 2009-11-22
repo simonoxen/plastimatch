@@ -7,14 +7,13 @@
 #include <string.h>
 #include <math.h>
 
-#if defined (commentout)
 #include "vnl/vnl_matrix_fixed.h"
 #include "vnl/vnl_matrix.h"
 #include "vnl/vnl_vector.h"
 #include "vnl/vnl_vector_fixed.h"
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
-#endif
+
 
 #include "logfile.h"
 #include "print_and_exit.h"
@@ -164,23 +163,25 @@ tps_xform_free (Tps_xform *tps)
     free (tps);
 }
 
-#if defined (commentout)
 void
 tps_solve (void)
 {
     typedef vnl_matrix <double> Vnl_matrix;
-    typedef vnl_svd <odouble> SVDSolverType;
+    typedef vnl_svd <double> SVDSolverType;
 
     Vnl_matrix A, b;
 
     A.set_size (10, 10);
-    A.fill (0.0);
+    A.set_identity ();
+    A (3, 3) = 1.0;
     b.set_size (10, 1);
     b.fill (0.0);
+    b (3, 1) = 1.0;
 
     SVDSolverType svd (A, 1e-8);
     Vnl_matrix x = svd.solve (b);
 }
+#if defined (commentout)
 #endif
 
 float
