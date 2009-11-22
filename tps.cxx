@@ -15,11 +15,11 @@
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
 
-
 #include "logfile.h"
 #include "print_and_exit.h"
-#include "volume.h"
 #include "tps.h"
+#include "vf.h"
+#include "volume.h"
 
 #define BUFLEN 1024
 #define MOTION_TOL 0.01
@@ -431,7 +431,7 @@ tps_warp (
     /* Warp the image */
     /* GCS FIX: Does not implement linear interpolation */
     if (vout) {
-	volume_warp (vout, moving, vf);
+	vf_warp (vout, moving, vf);
     }
 
     if (!vf_out) {

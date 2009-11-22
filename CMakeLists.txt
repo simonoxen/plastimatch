@@ -405,6 +405,7 @@ SET (GPUIT_LIBRARY_SRC
   proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
   timer.c timer.h
+  vf.c vf.h
   volume.c volume.h
   )
 

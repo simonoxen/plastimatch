@@ -1,23 +1,25 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
 #include "itkTimeProbe.h"
-#include "plm_config.h"
-#include "plm_registration.h"
-#include "plm_image.h"
-#include "itk_registration.h"
-#include "itk_optim.h"
-#include "resample_mha.h"
-#include "itk_warp.h"
-#include "itk_demons.h"
+
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
-#include "xform.h"
-#include "readmha.h"
+#include "itk_demons.h"
+#include "itk_optim.h"
+#include "itk_registration.h"
+#include "itk_warp.h"
 #include "logfile.h"
+#include "plm_image.h"
+#include "plm_registration.h"
+#include "readmha.h"
+#include "resample_mha.h"
+#include "vf.h"
+#include "xform.h"
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
@@ -210,8 +212,9 @@ save_warped_img_gpuit (Registration_Data* regd,
 
     printf ("Warping image...\n");
 
-    vout = volume_create (vf->dim, vf->offset, vf->pix_spacing, PT_FLOAT, vf->direction_cosines, 0);
-    volume_warp (vout, vin, vf);
+    vout = volume_create (vf->dim, vf->offset, vf->pix_spacing, 
+			  PT_FLOAT, vf->direction_cosines, 0);
+    vf_warp (vout, vin, vf);
 
     printf ("Output image: npix = %d\n", vout->npix);
 

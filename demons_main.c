@@ -5,10 +5,11 @@
 #include <stdlib.h>
 #include <time.h>
 #include "plm_config.h"
-#include "readmha.h"
-#include "volume.h"
 #include "demons.h"
 #include "demons_opts.h"
+#include "readmha.h"
+#include "vf.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])
@@ -53,7 +54,7 @@ main (int argc, char* argv[])
 
     write_mha ("demons_vf.mha", vector_field);
 
-    warped = volume_warp (0, moving, vector_field);
+    warped = vf_warp (0, moving, vector_field);
 
     write_mha ("warped.mha", warped);
 

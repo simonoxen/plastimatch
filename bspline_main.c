@@ -8,17 +8,18 @@
     http://graphics.idav.ucdavis.edu/education/CAGDNotes/Quadratic-B-Spline-Surface-Refinement/Quadratic-B-Spline-Surface-Refinement.html
 
     ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
-#include "readmha.h"
 #include "bspline_opts.h"
 #include "bspline.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
+#include "readmha.h"
+#include "vf.h"
 
 int
 main (int argc, char* argv[])
@@ -87,7 +88,7 @@ main (int argc, char* argv[])
     /* Create warped output image and save */
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
-	moving_warped = volume_warp (0, moving, vector_field);
+	moving_warped = vf_warp (0, moving, vector_field);
 	printf ("Writing warped image.\n");
 	//printf("write to %s\n",options.output_warped_fn);
 	//system("pause");

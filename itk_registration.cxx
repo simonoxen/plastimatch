@@ -282,14 +282,17 @@ set_fixed_image_region_new_unfinished (RegistrationType::Pointer registration,
 
 void
 set_fixed_image_region (RegistrationType::Pointer registration,
-			 Registration_Data* regd,
-			 Stage_Parms* stage)
+			Registration_Data* regd,
+			Stage_Parms* stage)
 {
     int use_magic_value = 0;
     if (regd->fixed_mask) {
 	FloatImageType::RegionType valid_region;
 	FloatImageType::RegionType::IndexType valid_index;
 	FloatImageType::RegionType::SizeType valid_size;
+	valid_size[0] = 1;
+	valid_size[1] = 1;
+	valid_size[2] = 1;
 
 	/* Search for bounding box of fixed mask */
 	typedef Mask_SOType* Mask_SOPointer;
