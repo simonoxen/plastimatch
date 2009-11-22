@@ -405,7 +405,6 @@ SET (GPUIT_LIBRARY_SRC
   proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
   timer.c timer.h
-  tps.c tps.h
   volume.c volume.h
   )
 
@@ -499,6 +498,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
+	tps.cxx tps.h
 	xio_io.cxx xio_io.h
 	xform.cxx xform.h 
 	)
@@ -705,8 +705,8 @@ SET (SYNTHETIC_MHA_SRC
 	synthetic_mha_main.cxx synthetic_mha_main.h
 	)
 SET (TPS_WARP_SRC
-        tps_warp_main.c
-        tps_warp_opts.c tps_warp_opts.h
+        tps_warp_main.cxx
+        tps_warp_opts.cxx tps_warp_opts.h
 	)
 SET (VF_COMPARE_SRC
 	vf_compare.c
