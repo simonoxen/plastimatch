@@ -50,6 +50,8 @@ tps_warp (
     int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */
 );
+gpuit_EXPORT void
+tps_xform_reset_alpha_values (Tps_xform *tps);
 
 #if defined __cplusplus
 }

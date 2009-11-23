@@ -24,6 +24,7 @@
 #define BUFLEN 1024
 #define MOTION_TOL 0.01
 #define DIST_MULTIPLIER 5.0
+#define DIST2_MULTIPLIER (DIST_MULTIPLIER * DIST_MULTIPLIER)
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
@@ -120,9 +121,14 @@ tps_xform_load (char* fn)
 	tps->num_tps_nodes++;
     }
     fclose (fp);
+
+    tps_xform_reset_alpha_values (tps);
+
     return tps;
 }
 
+/* GCS FIX: Current best version in plastimatch-slicer-tps.cxx */
+#if defined (commentout)
 void
 tps_xform_save (Tps_xform *tps, char *fn)
 {
@@ -147,11 +153,12 @@ tps_xform_save (Tps_xform *tps, char *fn)
 	    tgt[0]-src[0],
 	    tgt[1]-src[1],
 	    tgt[2]-src[2],
-	    DIST_MULTIPLIER * dist
+	    DIST2_MULTIPLIER * dist
 	);
     }
     fclose (fp);
 }
+#endif
 
 void
 tps_xform_free (Tps_xform *tps)
@@ -183,6 +190,16 @@ tps_xform_debug (Tps_xform *tps)
     }
 }
 
+void
+tps_xform_reset_alpha_values (Tps_xform *tps)
+{
+    int i;
+    for (i = 0; i < tps->num_tps_nodes; i++) {
+	Tps_node *curr_node = &tps->tps_nodes[i];
+	curr_node->alpha = tps_default_alpha (curr_node->src, curr_node->tgt);
+    }
+}
+
 float
 tps_default_alpha (float src[3], float tgt[3])
 {
@@ -191,7 +208,7 @@ tps_default_alpha (float src[3], float tgt[3])
     dist2 = ((src[0] - tgt[0]) * (src[0] - tgt[0]))
 	+ ((src[1] - tgt[1]) * (src[1] - tgt[1]))
 	+ ((src[2] - tgt[2]) * (src[2] - tgt[2]));
-    return DIST_MULTIPLIER * dist2;
+    return DIST2_MULTIPLIER * dist2;
 }
 
 static double
@@ -201,10 +218,9 @@ tps_compute_influence (Tps_node *tpsn, float pos[3])
 	((pos[0] - tpsn->src[0]) * (pos[0] - tpsn->src[0])) +
 	((pos[1] - tpsn->src[1]) * (pos[1] - tpsn->src[1])) +
 	((pos[2] - tpsn->src[2]) * (pos[2] - tpsn->src[2]));
-    dist2 = dist2 / (tpsn->alpha * tpsn->alpha);
+    dist2 = dist2 / tpsn->alpha;
     if (dist2 < 1.0) {
-	float dist = sqrt (dist2);
-	float weight = (1 - dist) * (1 - dist);
+	float weight = (1 - dist2);
 	return (double) weight;
     }
     return 0.0;
@@ -222,10 +238,9 @@ tps_update_point (
 	((pos[0] - tpsn->src[0]) * (pos[0] - tpsn->src[0])) +
 	((pos[1] - tpsn->src[1]) * (pos[1] - tpsn->src[1])) +
 	((pos[2] - tpsn->src[2]) * (pos[2] - tpsn->src[2]));
-    dist2 = dist2 / (tpsn->alpha * tpsn->alpha);
+    dist2 = dist2 / tpsn->alpha;
     if (dist2 < 1.0) {
-	float dist = sqrt (dist2);
-	float weight = (1 - dist) * (1 - dist);
+	float weight = (1 - dist2);
 	for (d = 0; d < 3; d++) {
 	    vf[d] += weight * tpsn->wxyz[d];
 	}

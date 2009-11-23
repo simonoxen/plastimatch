@@ -1,26 +1,27 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
-#include "plm_config.h"
-#include "plm_registration.h"
+#include "bspline.h"
+#include "logfile.h"
+#include "mathutil.h"
 #include "plm_image_header.h"
-#include "xform.h"
+#include "plm_registration.h"
 #include "readmha.h"
 #include "volume.h"
-#include "bspline.h"
-#include "mathutil.h"
-#include "logfile.h"
+#include "xform.h"
 
 static void
-do_gpuit_bspline_stage_internal (Registration_Parms* regp, 
-				 Registration_Data* regd, 
-				 Xform *xf_out, 
-				 Xform *xf_in, 
-				 Stage_Parms* stage)
+do_gpuit_bspline_stage_internal (
+    Registration_Parms* regp, 
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Stage_Parms* stage)
 {
     BSPLINE_Parms parms;
     PlmImageHeader pih;
@@ -48,17 +49,17 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 
     /* Subsample images */
     printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
-	    stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
-	    stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
-	    stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
-	    );
+	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
+	stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
+	stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
+    );
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
 
     logfile_printf ("moving_ss size = %d %d %d\n", moving_ss->dim[0], 
-		    moving_ss->dim[1], moving_ss->dim[2]);
+	moving_ss->dim[1], moving_ss->dim[2]);
     logfile_printf ("fixed_ss size = %d %d %d\n", fixed_ss->dim[0], 
-		    fixed_ss->dim[1], fixed_ss->dim[2]);
+	fixed_ss->dim[1], fixed_ss->dim[2]);
 
     /* Make spatial gradient image */
     moving_grad = volume_make_gradient (moving_ss);
@@ -92,16 +93,14 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 	break;
     case THREADING_OPENMP:
 	if (stage->alg_flavor == 0) {
-	    parms.implementation = 'e';
+	    parms.implementation = 'g';
 	} else {
 	    parms.implementation = stage->alg_flavor;
 	}
 	parms.threading = BTHR_CPU;
 	break;
     case THREADING_BROOK:
-	/* Brook doesn't have different implementations */
-	parms.threading = BTHR_BROOK;
-	break;
+	/* Brook B-spline doesn't exist.  Use cuda instead. */
     case THREADING_CUDA:
 	if (stage->alg_flavor == 0) {
 	    parms.implementation = 'j';
@@ -119,11 +118,12 @@ do_gpuit_bspline_stage_internal (Registration_Parms* regp,
 
     /* Transform input xform to gpuit vector field */
     pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, 
-			fixed_ss->dim, fixed_ss->direction_cosines);
+	fixed_ss->dim, fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, moving_ss, moving_grad);
+    bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 
+	moving_ss, moving_grad);
 
     /* Free up temporary memory */
     volume_free (fixed_ss);

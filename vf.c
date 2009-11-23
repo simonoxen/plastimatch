@@ -50,22 +50,26 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		float *dxyz = &vf_img[3*v];
 		mz = fz + dxyz[2];
 		mk = round_int((mz - vin->offset[2]) / vin->pix_spacing[2]);
-		if (mk < 0 || mk >= vin->dim[2]) continue;
+		//if (mk < 0 || mk >= vin->dim[2]) continue;
 		my = fy + dxyz[1];
 		mj = round_int((my - vin->offset[1]) / vin->pix_spacing[1]);
-		if (mj < 0 || mj >= vin->dim[1]) continue;
+		//if (mj < 0 || mj >= vin->dim[1]) continue;
 		mx = fx + dxyz[0];
 		mi = round_int((mx - vin->offset[0]) / vin->pix_spacing[0]);
-		if (mi < 0 || mi >= vin->dim[0]) continue;
+		//if (mi < 0 || mi >= vin->dim[0]) continue;
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
-#if defined (commentout)
-		if (k == 45 && j == 46 && (i == 58 || i == 59)) {
+		if (i == 128 && j == 128 && (k == 96 || k == 95)) {
 		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
-			    i,j,k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
+			    i, j, k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
 			    mx, my, mz, mi, mj, mk);
 		}
+#if defined (commentout)
 #endif
+		if (mk < 0 || mk >= vin->dim[2]) continue;
+		if (mj < 0 || mj >= vin->dim[1]) continue;
+		if (mi < 0 || mi >= vin->dim[0]) continue;
+
 		vout_img[v] = vin_img[mv];
 	    }
 	}
