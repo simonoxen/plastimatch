@@ -404,6 +404,8 @@ extern "C" {
 
     void CUDA_pad( float** input, int* vol_dims, int* tile_dims);
 
+    void CUDA_bspline_mse_score_dc_dv( Dev_Pointers_Bspline* dev_ptrs, BSPLINE_Xform* bxf, Volume* fixed, Volume* moving);
+
     void CUDA_bspline_mse_2_condense_64_texfetch( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
     void CUDA_bspline_mse_2_condense_64( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
