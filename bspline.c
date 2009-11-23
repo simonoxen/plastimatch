@@ -2090,7 +2090,8 @@ bspline_warp (
 // AUTHOR: James A. Shackleford
 // DATE: 11.22.2009
 ////////////////////////////////////////////////////////////////////////////////
-void bspline_score_g_mse (BSPLINE_Parms *parms,
+void
+bspline_score_g_mse (BSPLINE_Parms *parms,
 			  Bspline_state *bst, 
 			  BSPLINE_Xform *bxf,
 			  Volume *fixed,
@@ -2098,7 +2099,7 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 			  Volume *moving_grad)
 {
 	BSPLINE_Score* ssd = &bst->ssd;
-	float score_tile;
+	double score_tile;
 	int num_vox;
 
 	float* f_img = (float*)fixed->img;
@@ -2111,12 +2112,10 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 	Timer timer;
 	double interval;
 
-
 	size_t cond_size = 64*bxf->num_knots*sizeof(float);
 	float* cond_x = (float*)malloc(cond_size);
 	float* cond_y = (float*)malloc(cond_size);
 	float* cond_z = (float*)malloc(cond_size);
-
 
 	int idx_knot;
 	int idx_set;
@@ -2127,18 +2126,16 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 
 	// Zero out accumulators
 	ssd->score = 0;
-	memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
 	num_vox = 0;
 	score_tile = 0;
-
+	memset(ssd->grad, 0, bxf->num_coeff * sizeof(float));
 	memset(cond_x, 0, cond_size);
 	memset(cond_y, 0, cond_size);
 	memset(cond_z, 0, cond_size);
 
 	// Parallel across tiles
 #pragma omp parallel for reduction (+:num_vox,score_tile)
-	for (idx_tile = 0; idx_tile < num_tiles; idx_tile++)
-	{
+	for (idx_tile = 0; idx_tile < num_tiles; idx_tile++) {
 		int rc;
 		int set_num;
 
@@ -2170,20 +2167,17 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 
 		int* k_lut = (int*)malloc(64*sizeof(int));
 
-
 		memset(sets_x, 0, 64*sizeof(float));
 		memset(sets_y, 0, 64*sizeof(float));
 		memset(sets_z, 0, 64*sizeof(float));
 
-
 		// Get tile coordinates from index
-		COORDS_FROM_INDEX(crds_tile, idx_tile, bxf->rdims); 
+		COORDS_FROM_INDEX (crds_tile, idx_tile, bxf->rdims); 
 
 		// Serial through voxels in tile
-		for (crds_local[2] = 0; crds_local[2] < bxf->vox_per_rgn[2]; crds_local[2]++)
-			for (crds_local[1] = 0; crds_local[1] < bxf->vox_per_rgn[1]; crds_local[1]++)
-				for (crds_local[0] = 0; crds_local[0] < bxf->vox_per_rgn[0]; crds_local[0]++)
-				{
+		for (crds_local[2] = 0; crds_local[2] < bxf->vox_per_rgn[2]; crds_local[2]++) {
+			for (crds_local[1] = 0; crds_local[1] < bxf->vox_per_rgn[1]; crds_local[1]++) {
+				for (crds_local[0] = 0; crds_local[0] < bxf->vox_per_rgn[0]; crds_local[0]++) {
 					float* q_lut;
 					
 					// Construct coordinates into fixed image volume
@@ -2259,14 +2253,14 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 					q_lut = &bxf->q_lut[64*idx_local];
 					
 					// Condense dc_dv @ current voxel index
-					for (set_num = 0; set_num < 64; set_num++)
-					{
+					for (set_num = 0; set_num < 64; set_num++) {
 						sets_x[set_num] += dc_dv[0] * q_lut[set_num];
 						sets_y[set_num] += dc_dv[1] * q_lut[set_num];
 						sets_z[set_num] += dc_dv[2] * q_lut[set_num];
 					}
-
 				}
+			}
+		}
 		
 		// The tile is now condensed.  Now we will put it in the
 		// proper slot within the control point bin that it belong to.
@@ -2274,8 +2268,7 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 		// Generate k_lut
 		find_knots(k_lut, idx_tile, bxf->rdims, bxf->cdims);
 
-		for (set_num = 0; set_num < 64; set_num++)
-		{
+		for (set_num = 0; set_num < 64; set_num++) {
 			int knot_num = k_lut[set_num];
 
 			cond_x[ (64*knot_num) + (63 - set_num) ] = sets_x[set_num];
@@ -2287,21 +2280,17 @@ void bspline_score_g_mse (BSPLINE_Parms *parms,
 	}
 
 	// "Reduce"
-	for (idx_knot = 0; idx_knot < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); idx_knot++)
-		for(idx_set = 0; idx_set < 64; idx_set++)
-		{
+	for (idx_knot = 0; idx_knot < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); idx_knot++) {
+		for(idx_set = 0; idx_set < 64; idx_set++) {
 			ssd->grad[3*idx_knot + 0] += cond_x[64*idx_knot + idx_set];
 			ssd->grad[3*idx_knot + 1] += cond_y[64*idx_knot + idx_set];
 			ssd->grad[3*idx_knot + 2] += cond_z[64*idx_knot + idx_set];
 		}
+	}
 
+	ssd->score = score_tile / num_vox;
 
-	ssd->score = score_tile;
-	ssd->score = ssd->score / num_vox;
-
-
-	for (i = 0; i < bxf->num_coeff; i++)
-	{
+	for (i = 0; i < bxf->num_coeff; i++) {
 		ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
 	}
 
