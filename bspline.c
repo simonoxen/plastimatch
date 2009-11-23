@@ -2288,6 +2288,10 @@ bspline_score_g_mse (BSPLINE_Parms *parms,
 		}
 	}
 
+	free (cond_x);
+	free (cond_y);
+	free (cond_z);
+
 	ssd->score = score_tile / num_vox;
 
 	for (i = 0; i < bxf->num_coeff; i++) {
