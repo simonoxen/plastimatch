@@ -146,8 +146,11 @@ IF (MINGW)
   # Cuda doesn't work with mingw at all
   SET (CUDA_FOUND FALSE)
 ELSE (MINGW)
-  SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" 
-    ${CMAKE_MODULE_PATH})
+  # In cmake 2.8, use stock findcuda.  Otherwise, use included one.
+  IF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
+    SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/FindCUDA/CMake/cuda" 
+      ${CMAKE_MODULE_PATH})
+  ENDIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
   FIND_PACKAGE (CUDA QUIET)
 ENDIF (MINGW)
 SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
