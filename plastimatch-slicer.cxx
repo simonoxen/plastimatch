@@ -1,3 +1,4 @@
+#include "plm_config.h"
 #include <stdio.h>
 #include <iostream>
 #include <vector>
@@ -9,11 +10,15 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    //char buf1[L_tmpnam+1];
-    //char* parms_fn = tmpnam (buf1);
-    //char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-    //FILE* fp = fopen (parms_fn, "w");
-    FILE* fp = tmpfile ();
+#if defined (_WIN32)
+    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+#else
+    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+#endif
+
+    FILE* fp = fopen (parms_fn, "w");
+
+    //FILE* fp = tmpfile ();
 
     fprintf (fp,
 	     "[GLOBAL]\n"
@@ -95,30 +100,6 @@ main (int argc, char * argv [])
 	     stage_2_grid_size
 	     );
     }
-
-#if defined (commentout)
-    fp = fopen (ff_fn, "w");
-    //fprintf (fp, "Fixed fiducials:\n");
-    for (int i = 0; i < plmslc_fixed_fiducials.size(); i++) {
-      fprintf (fp, "%g %g %g\n", 
-	       plmslc_fixed_fiducials[i][0],
-	       plmslc_fixed_fiducials[i][1],
-	       plmslc_fixed_fiducials[i][2]
-	       );
-    }
-    fclose (fp);
-
-    fp = fopen (mf_fn, "w");
-    //fprintf (fp, "Moving fiducials:\n");
-    for (int i = 0; i < plmslc_moving_fiducials.size(); i++) {
-      fprintf (fp, "%g %g %g\n", 
-	       plmslc_moving_fiducials[i][0],
-	       plmslc_moving_fiducials[i][1],
-	       plmslc_moving_fiducials[i][2]
-	       );
-    }
-    fclose (fp);
-#endif
 
     /* Go back to beginning of file */
     fseek (fp, SEEK_SET, 0);
