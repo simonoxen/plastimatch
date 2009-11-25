@@ -39,7 +39,7 @@ main (int argc, char* argv[])
      * STEP 0: Parse commandline arguments                           * 
      ****************************************************************/
 
-    parse_args (&options, argc, argv);
+    fdk_parse_args (&options, argc, argv);
 
     wm_set_default_options (&matrix_options);
     //give the previously allocated array to pointers.
