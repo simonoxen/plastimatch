@@ -10,15 +10,15 @@
 #include "gdcmSeqEntry.h"
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
+
+#include "cxt_apply_dicom.h"
+#include "cxt_io.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
-#include "print_and_exit.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
-#include "cxt_io.h"
-#include "cxt_apply_dicom.h"
+#include "print_and_exit.h"
 
-plastimatch1_EXPORT
 void
 cxt_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
 {
