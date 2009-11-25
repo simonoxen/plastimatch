@@ -14,6 +14,7 @@
 #if HAVE_SYS_STAT
 #include <sys/stat.h>
 #endif
+#include "file_util.h"
 
 #if (_WIN32)
 #define ISSLASH(c) (((c) == '/') || ((c) == '\\'))

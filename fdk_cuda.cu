@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 
+#include "plm_config.h"
+
 #define _CRT_SECURE_NO_DEPRECATE
 #define WRITE_BLOCK (1024*1024)
 
@@ -38,9 +40,10 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "fdk_cuda_p.h"
-#include "volume.h"
-#include "readmha.h"
 #include "mathutil.h"
+#include "proj_image.h"
+#include "readmha.h"
+#include "volume.h"
 
 /*********************
 * High Res Win Timer *

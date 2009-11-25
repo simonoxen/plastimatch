@@ -30,5 +30,7 @@ struct tps_parms {
 };
 
 template<class T>
+plastimatch1_EXPORT
 void do_tps(TPS_parms* parms,typename itk::Image<T,3>::Pointer img_fixed, typename itk::Image<T,3>::Pointer img_moving,T);
+
 #endif

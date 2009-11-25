@@ -6,13 +6,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "itkImageRegionIterator.h"
-#include "plm_image.h"
-#include "plm_image_header.h"
+
 #include "itk_image.h"
 #include "itk_image_cast.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "print_and_exit.h"
 #include "readmha.h"
 #include "volume.h"
-#include "print_and_exit.h"
 
 /* -----------------------------------------------------------------------
    Loading

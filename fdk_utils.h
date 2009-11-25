@@ -16,7 +16,6 @@ void convert_to_hu (Volume* vol, Fdk_options* options);
 Volume* my_create_volume (Fdk_options* options);
 CB_Image* get_image_pfm (Fdk_options* options, int image_num);
 CB_Image* get_image_raw (Fdk_options* options, int image_num);
-void free_cb_image (CB_Image* cbi);
 void write_coronal_sagittal (Fdk_options* options, Volume* vol);
 
 

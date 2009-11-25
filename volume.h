@@ -84,8 +84,10 @@ gpuit_EXPORT
 void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
 gpuit_EXPORT
 void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
+gpuit_EXPORT
 Volume* 
 volume_axial2coronal (Volume* ref);
+gpuit_EXPORT
 Volume* 
 volume_axial2sagittal (Volume* ref);
 

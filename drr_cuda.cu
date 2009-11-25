@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-
+#include "plm_config.h"
 
 #define _CRT_SECURE_NO_DEPRECATE
 #define READ_PFM
@@ -42,11 +42,12 @@
 * FDK  #includes *
 *****************/
 #include "fdk.h"
-#include "fdk_opts.h"
 #include "fdk_cuda_p.h"
-#include "volume.h"
-#include "mathutil.h"
+#include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "mathutil.h"
+#include "proj_image.h"
+#include "volume.h"
 
 /*********************
 * High Res Win Timer *
@@ -56,7 +57,6 @@
 #include <windows.h>
 #include <winbase.h>
 #endif
-void free_cb_image (CB_Image* cbi);
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////

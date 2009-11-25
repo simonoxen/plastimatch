@@ -9,6 +9,7 @@
 #include "drr.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
+#include "proj_image.h"
 #include "proj_matrix.h"
 #include "readmha.h"
 

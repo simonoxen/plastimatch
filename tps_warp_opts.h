@@ -15,7 +15,6 @@ struct tps_options {
     char* output_vf_fn;
 };
 
-gpuit_EXPORT
 void tps_warp_opts_parse_args (Tps_options* options, int argc, char* argv[]);
 
 #endif

@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void
 proj_matrix_write (double* cam, 
 		   double* tgt, double* vup,

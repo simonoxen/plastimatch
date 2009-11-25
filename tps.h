@@ -30,18 +30,18 @@ struct tps_xform {
 extern "C" {
 #endif
 
-gpuit_EXPORT Tps_xform*
+plastimatch1_EXPORT Tps_xform*
 tps_xform_alloc (void);
-gpuit_EXPORT Tps_xform*
+plastimatch1_EXPORT Tps_xform*
 tps_xform_load (char* fn);
-gpuit_EXPORT void
+plastimatch1_EXPORT void
 tps_xform_save (Tps_xform *tps_xform, char *fn);
-gpuit_EXPORT void
+plastimatch1_EXPORT void
 tps_xform_free (Tps_xform *tps_xform);
 
-gpuit_EXPORT float
+plastimatch1_EXPORT float
 tps_default_alpha (float src[3], float tgt[3]);
-gpuit_EXPORT void
+plastimatch1_EXPORT void
 tps_warp (
     Volume *vout,       /* Output image (sized and allocated) */
     Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
@@ -50,7 +50,7 @@ tps_warp (
     int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */
 );
-gpuit_EXPORT void
+plastimatch1_EXPORT void
 tps_xform_reset_alpha_values (Tps_xform *tps);
 
 #if defined __cplusplus

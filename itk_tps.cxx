@@ -101,6 +101,6 @@ do_tps (
 /* RMK: Visual studio 2005 without service pack requires <float> specifier
    on the explicit extantiations.  The current hypothesis is that this
    is because the template is nested. */
-template void do_tps<unsigned char>(TPS_parms* parms, itk::Image<unsigned char, 3>::Pointer img_fixed, itk::Image<unsigned char, 3>::Pointer img_moving, unsigned char);
-template void do_tps<float>(TPS_parms* parms, itk::Image<float, 3>::Pointer img_fixed, itk::Image<float, 3>::Pointer img_moving, float);
-template void do_tps<short>(TPS_parms* parms, itk::Image<short, 3>::Pointer img_fixed, itk::Image<short, 3>::Pointer img_moving, short);
+template plastimatch1_EXPORT void do_tps<unsigned char>(TPS_parms* parms, itk::Image<unsigned char, 3>::Pointer img_fixed, itk::Image<unsigned char, 3>::Pointer img_moving, unsigned char);
+template plastimatch1_EXPORT void do_tps<float>(TPS_parms* parms, itk::Image<float, 3>::Pointer img_fixed, itk::Image<float, 3>::Pointer img_moving, float);
+template plastimatch1_EXPORT void do_tps<short>(TPS_parms* parms, itk::Image<short, 3>::Pointer img_fixed, itk::Image<short, 3>::Pointer img_moving, short);

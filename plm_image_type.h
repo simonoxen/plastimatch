@@ -4,6 +4,8 @@
 #ifndef _plm_image_type_h_
 #define _plm_image_type_h_
 
+#include "plm_config.h"
+
 /* We only deal with these kinds of images. */
 enum PlmImageType {
     PLM_IMG_TYPE_UNDEFINED, 
@@ -20,6 +22,7 @@ enum PlmImageType {
     PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
 };
 
+plastimatch1_EXPORT
 PlmImageType
 plm_image_type_parse (const char* string);
 

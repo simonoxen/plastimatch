@@ -6,9 +6,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include "mathutil.h"
-#include "volume.h"
 #include "MGHMtx_opts.h"
 #include "proj_matrix.h"
+#include "volume.h"
+
 void set_image_parms (MGHMtx_Options * options);
 
 #define DRR_PLANE_RAY_TOLERANCE 1e-8

@@ -4,10 +4,11 @@
 #ifndef _plm_image_h_
 #define _plm_image_h_
 
-#include "volume.h"
-#include "plm_image.h"
+#include "plm_config.h"
 #include "itk_image.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
+#include "volume.h"
 
 class PlmImageHeader;
 class PlmImage;
@@ -38,7 +39,9 @@ private:
     }
     void convert_to_itk_uchar ();
     void convert_to_itk_uint32 ();
+    plastimatch1_EXPORT
     void convert_to_itk_float ();
+    plastimatch1_EXPORT
     void convert_to_gpuit_float ();
 
 public:
@@ -70,11 +73,15 @@ public:
     }
 
     /* Loading */
+    plastimatch1_EXPORT
     void load_native (const char* fname);
 
     /* Saving */
+    plastimatch1_EXPORT
     void save_short_dicom (char* fname);
+    plastimatch1_EXPORT
     void save_image (const char* fname);
+    plastimatch1_EXPORT
     void convert_and_save (const char* fname, PlmImageType new_type);
 
     /* assignment */
@@ -94,17 +101,22 @@ public:
 	convert_to_gpuit_float ();
 	return (volume*) m_gpuit;
     }
+    plastimatch1_EXPORT
     void convert (PlmImageType new_type);
+    plastimatch1_EXPORT
     void convert_to_original_type (void);
 
     /* Other */
+    plastimatch1_EXPORT
     static int compare_headers (PlmImage *pli1, PlmImage *pli2);
 };
 
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
+plastimatch1_EXPORT
 PlmImage* plm_image_load (char* fname, PlmImageType type);
+plastimatch1_EXPORT
 PlmImage* plm_image_load_native (const char* fname);
 
 #endif

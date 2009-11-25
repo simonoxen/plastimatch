@@ -125,12 +125,3 @@ write_coronal_sagittal (Fdk_options* options, Volume* vol)
 	volume_free (sag);
     }
 }
-
-#if defined (commentout)
-void
-free_cb_image (CB_Image* cbi)
-{
-    free (cbi->img);
-    free (cbi);
-}
-#endif

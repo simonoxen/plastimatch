@@ -8,6 +8,7 @@
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"
 
