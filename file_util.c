@@ -91,3 +91,15 @@ make_directory_recursive (const char *dirname)
     }
     free (tmp);
 }
+
+void
+strip_extension (char* filename)
+{
+    char *p;
+
+    p = strrchr (filename, '.');
+    if (p) {
+	*p = 0;
+    }
+}
+

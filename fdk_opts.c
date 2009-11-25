@@ -58,7 +58,7 @@ set_default_options (Fdk_options* options)
 }
 
 void 
-parse_args (Fdk_options* options, int argc, char* argv[])
+fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 {
     int i, rc;
 	

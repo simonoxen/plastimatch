@@ -7,13 +7,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "mathutil.h"
-#include "readmha.h"
 #include "fdk.h"
 #include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "mathutil.h"
+#include "proj_image.h"
+#include "readmha.h"
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */
@@ -342,7 +343,7 @@ int main(int argc, char* argv[])
     Fdk_options options;
     Volume* vol;
     
-    parse_args (&options, argc, argv);
+    fdk_parse_args (&options, argc, argv);
     vol = my_create_volume (&options);
 
     switch (options.threading) {

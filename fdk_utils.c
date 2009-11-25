@@ -9,6 +9,7 @@
 #include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "file_util.h"
 #include "proj_image.h"
 #include "readmha.h"
 #include "ramp_filter.h"
@@ -83,17 +84,6 @@ get_image_raw (Fdk_options* options, int image_num)
     sprintf (img_file, "%s/Proj_%03d.raw", options->input_dir,image_num);
     sprintf (mat_file, "%s/tmp/out_%04d.txt",options->input_dir, image_num);
     return proj_image_load_and_filter (options, img_file, mat_file);
-}
-
-static void
-strip_extension (char* filename)
-{
-    char *p;
-
-    p = strrchr (filename, ".");
-    if (p) {
-	*p = 0;
-    }
 }
 
 void
