@@ -66,7 +66,6 @@
 	ijk[0] = idx_tile - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
 
 
-gpuit_EXPORT
 void
 bspline_parms_set_default (BSPLINE_Parms* parms)
 {
@@ -87,7 +86,6 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->mi_hist.moving.bins = 20;
 }
 
-gpuit_EXPORT
 void
 bspline_xform_set_default (BSPLINE_Xform* bxf)
 {
@@ -106,7 +104,6 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
     }
 }
 
-gpuit_EXPORT
 Bspline_state *
 bspline_state_create (BSPLINE_Xform *bxf)
 {
@@ -117,7 +114,6 @@ bspline_state_create (BSPLINE_Xform *bxf)
     return bst;
 }
 
-gpuit_EXPORT
 void
 write_bxf (char* filename, BSPLINE_Xform* bxf)
 {
@@ -158,7 +154,6 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
     fclose (fp);
 }
 
-gpuit_EXPORT
 BSPLINE_Xform* 
 read_bxf (char* filename)
 {
@@ -603,7 +598,6 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
 
     Inputs: roi_dim, vox_per_rgn.
    ----------------------------------------------------------------------- */
-gpuit_EXPORT
 void
 bspline_xform_initialize 
 (
@@ -864,7 +858,6 @@ bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
     bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
 }
 
-gpuit_EXPORT
 void
 bspline_xform_free (BSPLINE_Xform* bxf)
 {
@@ -873,7 +866,6 @@ bspline_xform_free (BSPLINE_Xform* bxf)
     free (bxf->c_lut);
 }
 
-gpuit_EXPORT
 void
 bspline_parms_free (BSPLINE_Parms* parms)
 {
@@ -884,7 +876,6 @@ bspline_parms_free (BSPLINE_Parms* parms)
     }
 }
 
-gpuit_EXPORT
 void
 bspline_state_free (Bspline_state* bst)
 {
@@ -1088,7 +1079,6 @@ bspline_interp_pix_b (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
     }
 }
 
-gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
 			BSPLINE_Xform* bxf)
@@ -1953,7 +1943,6 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */
-gpuit_EXPORT
 void
 bspline_warp (
     Volume *vout,       /* Output image (sized and allocated) */
@@ -3751,7 +3740,6 @@ bspline_optimize_steepest (
     }
 }
 
-gpuit_EXPORT
 void
 bspline_optimize (BSPLINE_Xform* bxf, 
 		  Bspline_state **bst_in, 

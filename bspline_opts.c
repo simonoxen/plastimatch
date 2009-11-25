@@ -31,7 +31,6 @@ print_usage (void)
     exit (1);
 }
 
-gpuit_EXPORT
 void
 bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 {

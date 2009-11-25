@@ -7,11 +7,11 @@
 #include <math.h>
 #include "plm_config.h"
 #include "plm_int.h"
+#include "vf.h"
 #include "volume.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
-gpuit_EXPORT
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {

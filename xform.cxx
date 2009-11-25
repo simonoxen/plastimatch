@@ -519,7 +519,6 @@ init_versor_moments (RegistrationType::Pointer registration,
 /* -----------------------------------------------------------------------
    Transform points
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT 
 void
 xform_transform_point (FloatPointType* point_out, Xform* xf_in, FloatPointType point_in)
 {
@@ -1504,7 +1503,7 @@ xform_to_aff (Xform *xf_out,
     }
 }
 
-plastimatch1_EXPORT void
+void
 xform_to_itk_bsp (Xform *xf_out, 
 		  Xform *xf_in, 
 		  PlmImageHeader* pih,
@@ -1547,7 +1546,7 @@ xform_to_itk_bsp (Xform *xf_out,
     }
 }
 
-plastimatch1_EXPORT void
+void
 xform_to_itk_bsp_nobulk (Xform *xf_out, 
 		  Xform *xf_in, 
 		  PlmImageHeader* pih,

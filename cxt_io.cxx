@@ -1,22 +1,20 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
 #include "bstrlib.h"
 #include "file_util.h"
 #include "cxt_io.h"
 
-plastimatch1_EXPORT
 void
 cxt_initialize (Cxt_structure_list* structures)
 {
     memset (structures, 0, sizeof (Cxt_structure_list));
 }
 
-plastimatch1_EXPORT
 void
 cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
 		   bstring color, int structure_id)
@@ -42,7 +40,6 @@ cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
     new_structure->pslist = 0;
 }
 
-plastimatch1_EXPORT
 Cxt_polyline*
 cxt_add_polyline (Cxt_structure* structure)
 {
@@ -58,7 +55,6 @@ cxt_add_polyline (Cxt_structure* structure)
     return new_polyline;
 }
 
-plastimatch1_EXPORT
 Cxt_structure*
 cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
 {
@@ -74,7 +70,6 @@ cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
     return 0;
 }
 
-plastimatch1_EXPORT
 void
 cxt_debug_structures (Cxt_structure_list* structures)
 {
@@ -90,7 +85,6 @@ cxt_debug_structures (Cxt_structure_list* structures)
     }
 }
 
-plastimatch1_EXPORT
 void
 cxt_adjust_structure_names (Cxt_structure_list* structures)
 {
@@ -113,7 +107,6 @@ cxt_adjust_structure_names (Cxt_structure_list* structures)
     }
 }
 
-plastimatch1_EXPORT
 void
 cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
 {
@@ -155,7 +148,6 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
 }
 
 
-plastimatch1_EXPORT
 void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 {
@@ -414,7 +406,6 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     exit (1);
 }
 
-plastimatch1_EXPORT
 void
 cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
 	   bool prune_empty)
@@ -567,7 +558,6 @@ cxt_structure_free (Cxt_structure* structure)
     structure->pslist = 0;
 }
 
-plastimatch1_EXPORT
 void
 cxt_destroy (Cxt_structure_list* structures)
 {

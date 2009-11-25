@@ -5,6 +5,7 @@
 #define _vf_h_
 
 #include "plm_config.h"
+#include "volume.h"
 
 #if defined __cplusplus
 extern "C" {

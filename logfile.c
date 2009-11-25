@@ -20,7 +20,6 @@
 #if (PANTHEIOS_FOUND)
 const char PANTHEIOS_FE_PROCESS_IDENTITY[] = "plastimatch";
 
-gpuit_EXPORT
 void
 logfile_open (FILE** log_fp, char* log_fn)
 {
@@ -33,14 +32,12 @@ logfile_open (FILE** log_fp, char* log_fn)
     }
 }
 
-gpuit_EXPORT
 void
 logfile_printf (FILE* log_fp, char* fmt, ...)
 {
 //    pantheios_logprintf (PANTHEIOS_SEV_DEBUG, fmt, ...);
 }
 
-gpuit_EXPORT
 void
 logfile_close (FILE** log_fp, char* log_fn)
 {
@@ -57,7 +54,6 @@ logfile_close (FILE** log_fp, char* log_fn)
 
 FILE* log_fp = 0;
 
-gpuit_EXPORT
 void
 logfile_open (char* log_fn)
 {
@@ -75,7 +71,6 @@ logfile_open (char* log_fn)
 		     "\n");
 }
 
-gpuit_EXPORT
 void
 logfile_close (void)
 {
@@ -85,7 +80,6 @@ logfile_close (void)
     }
 }
 
-gpuit_EXPORT
 void
 logfile_printf (char* fmt, ...)
 {

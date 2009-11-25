@@ -9,6 +9,7 @@
 #include <io.h>        // windows //
 #endif
 #include "fwrite_block.h"
+#include "readmha.h"
 #include "volume.h"
 
 #define LINELEN 128
@@ -201,8 +202,8 @@ is_mh5 (char* filename)
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
-gpuit_EXPORT
-void write_mha (char* filename, Volume* vol)
+void 
+write_mha (char* filename, Volume* vol)
 {
     if (is_mh5 (filename)) {
 	write_mha_internal (filename, vol, 1);
@@ -211,8 +212,8 @@ void write_mha (char* filename, Volume* vol)
     }
 }
 
-gpuit_EXPORT
-Volume* read_mha (char* filename)
+Volume* 
+read_mha (char* filename)
 {
     if (is_mh5 (filename)) {
 	return read_mha_internal (filename, 1);
