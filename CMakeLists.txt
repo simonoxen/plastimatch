@@ -212,6 +212,12 @@ ELSE (Slicer3_DIR)
   MESSAGE (STATUS "Looking for Slicer3 - not found")
 ENDIF (Slicer3_DIR)
 
+# Slicer seems to require a shared library build
+IF (Slicer3_DIR)
+  SET (PLM_BUILD_SHARED_LIBS ON)
+ENDIF (Slicer3_DIR)
+
+
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
 ##  it for compiling on AMD linux 64-bit.
