@@ -1,40 +1,36 @@
 function rpm = readrpm(fn)
 % READRPM Read Varian RPM format file
-%    RPM = READRPM(FN) reads the information from the RPM file FN, which 
-%    can be in either DAT 1.4, VXP 1.5, or VXP 1.6 format.  
-%    The contents of the file are returned in the structure RPM, which 
-%    has the following fields:
+%    RPM = READRPM(FN)
 %
-%    RPM.VERSION String indicating the file type.  Valid values are 
-%                'DAT 1.4', 'DAT 1.7', 'VXP 1.5', or 'VXP 1.6'
+%    Read Varian RPM format, either DAT or VXP, and store the results
+%    in the structure RPM, which has the following fields:
 %
-%    The following fields will be Nx1 arrays, with one element per 
-%    data point:
+%    RPM.VERSION  String indicating the file type.  Valid values are 
+%                   'DAT 1.4', 'DAT 1.7', 'VXP 1.5', or 'VXP 1.6'
+%    RPM.AMP      Nx1 array with position in centimeters relative to 
+%                   an arbitrary reference
+%    RPM.PHASE    Nx1 array with phase value for this sample
+%    RPM.TIME     Nx1 array indicating measurement time of the sample
+%                   in seconds from application start
+%    RPM.VALID    Nx1 array indicating the status of the position signal
+%                   VALID >=  0: valid track and periodic signal
+%                   VALID == -1: lost track or bad video signal
+%                   VALID == -2: non-periodic breathing, e.g. coughing
+%    RPM.TTLIN    Nx1 array indicating value of TTL input signal
 %
-%    RPM.AMP     Nx1 array with position in centimeters relative to 
-%                an arbitrary reference
-%    RPM.PHASE   Nx1 array with phase value for this sample
-%    RPM.TIME    Nx1 array indicating measurement time of the sample
-%                in seconds from application start
-%    RPM.VALID   Nx1 array indicating the status of the position signal
-%                  VALID >=  0: valid track and periodic signal
-%                  VALID == -1: lost track or bad video signal
-%                  VALID == -2: non-periodic breathing, e.g. coughing
-%    RPM.TTLIN   Nx1 array indicating value of TTL input signal
-%
-%    If the file is a version DAT 1.4 file, the following fields 
-%    will be present:
+%    If the file is DAT 1.4 or DAT 1.7, the following fields will also 
+%    be present:
 %
 %    RPM.GATTYP  Either 'PHASE' for phase-based gating or 'AMP' for 
-%                amplitude based gating
+%                  amplitude based gating
 %    RPM.GATWIN  2x2 array containing the gating window
 %    RPM.VIDEO   Nx1 array of index of the video frame corresponding 
-%                to this position measurement (if video recording is enabled)
+%                  to this position measurement (if video recording is enabled)
 %    RPM.BEAM    Nx1 array indicating if treatment beam was enabled (for 
-%                treatment session)
+%                  treatment session)
 %
-%    If the file is a version VXP 1.6 file, the following field will be 
-%    present:
+%    If the file is a version VXP 1.5 or 1.6 file, the following fields 
+%    will also be present:
 %
 %    RPM.MARK    Nx1 array that specifies sample when phase value is 
 %                closest to 0 or Pi
@@ -58,6 +54,7 @@ function rpm = readrpm(fn)
 %                             - Properly interpret scale factor in header
 %      14-May-2008  GCS  1.4  - Update for DAT 1.7 format
 %      23-Nov-2009  GCS  1.5  - Add Octave support
+%      26-Nov-2009  GCS  1.5  - Update comments
 
 rpm = [];
 fp = fopen(fn,'r');
@@ -141,7 +138,6 @@ n = 0;
 rpm_data = zeros(num_lines,7);
 
 if (strcmp(rpm.version,'DAT 1.4'))
-    %% Parse DAT 1.4 version
     %% <Signal_Value>,<Phase_Value>,<Timestamp>,<Valid_Flag>,<Video_Idx>,
     %%   <TTL_In>,<Beam_On>
     while (1)
@@ -169,7 +165,6 @@ if (strcmp(rpm.version,'DAT 1.4'))
     rpm.ttlin = rpm_data(:,6);
     rpm.beam = rpm_data(:,7);
 elseif (strcmp(rpm.version,'DAT 1.7'))
-    %% Parse DAT 1.4 version
     %% <Signal_Value>,<Phase_Value>,<Timestamp>,<Valid_Flag>,<Video_Idx>,
     %%   <TTL_In>,<Beam_On>
     while (1)
