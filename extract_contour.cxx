@@ -55,6 +55,8 @@ main (int argc, char *argv[])
     }
 
     if (!fp || !file) {
+	if (fp) fclose (fp);
+	if (file) fclose (file);
         printf ("Could not open vertices file for writing\n");
         return -1;
     }

@@ -108,12 +108,12 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
 //
 ////////////////////////////////////////////////////////////////////////////////
 void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
-			      Bspline_state *bst,
-			      BSPLINE_Xform* bxf,
-			      Volume* fixed,
-			      Volume* moving,
-			      Volume* moving_grad,
-			      Dev_Pointers_Bspline* dev_ptrs)
+    Bspline_state *bst,
+    BSPLINE_Xform* bxf,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    Dev_Pointers_Bspline* dev_ptrs)
 {
 
 
@@ -134,11 +134,10 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
     ssd = &bst->ssd;
     num_vox = fixed->npix;
 	
-    if (parms->debug)
-	{
-	    sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	    fp = fopen (debug_fn, "w");
-	}
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
     // ----------------------------------------------------------
 
 
@@ -179,9 +178,14 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	&ssd_grad_norm,
 	dev_ptrs);
 
+    if (parms->debug) {
+	fclose (fp);
+    }
+
     // --- USER FEEDBACK ----------------------------------------
     report_score ("MSE", bxf, bst, num_vox, plm_timer_report (&timer));
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -216,8 +220,7 @@ void bspline_cuda_score_i_mse (
     ssd = &bst->ssd;
     num_vox = fixed->npix;
 	
-    if (parms->debug)
-	{
+    if (parms->debug) {
 	    sprintf (debug_fn, "dump_mse_%02d.txt", it++);
 	    fp = fopen (debug_fn, "w");
 	}
@@ -259,8 +262,9 @@ void bspline_cuda_score_i_mse (
 	&ssd_grad_norm,
 	dev_ptrs);
 
-    // ----------------------------------------------------------
-
+    if (parms->debug) {
+	fclose (fp);
+    }
 
     // --- USER FEEDBACK ----------------------------------------
     report_score ("MSE", bxf, bst, num_vox, plm_timer_report (&timer));
@@ -299,11 +303,10 @@ void bspline_cuda_score_h_mse(
     ssd = &bst->ssd;
     num_vox = fixed->npix;
 	
-    if (parms->debug)
-	{
-	    sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	    fp = fopen (debug_fn, "w");
-	}
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
     // ----------------------------------------------------------
 
     plm_timer_start (&timer);
@@ -340,6 +343,10 @@ void bspline_cuda_score_h_mse(
 	&ssd_grad_mean,
 	&ssd_grad_norm,
 	dev_ptrs);
+
+    if (parms->debug) {
+	fclose (fp);
+    }
 
     // --- USER FEEDBACK ----------------------------------------
     report_score ("MSE", bxf, bst, num_vox, plm_timer_report (&timer));

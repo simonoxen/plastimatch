@@ -103,10 +103,9 @@ read_mha_internal (
 {
     int rc;
     char linebuf[LINELEN];
-    Volume* vol = (Volume*) malloc (sizeof(Volume));
+    Volume* vol;
     int tmp;
     FILE* fp;
-
 
     fp = fopen (filename,"rb");
     if (!fp) {
@@ -114,6 +113,7 @@ read_mha_internal (
 	return 0;
     }
     
+    vol  = (Volume*) malloc (sizeof(Volume));
     vol->pix_size = -1;
     vol->pix_type = PT_UNDEFINED;
     while (fgets(linebuf,LINELEN,fp)) {

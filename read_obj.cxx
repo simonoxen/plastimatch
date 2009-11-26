@@ -20,41 +20,17 @@ read_obj (FILE* mesh, SURFACE* surface)
     VERTICES_LIST* vertices;
     TRIANGLE_LIST* triangles;
 
-#if defined (commentout)
-    VERTICES_LIST* vertices = (VERTICES_LIST*) malloc (sizeof(VERTICES_LIST));
-    TRIANGLE_LIST* triangles = (TRIANGLE_LIST*) malloc (sizeof(TRIANGLE_LIST));
-
-    memset (vertices, 0, sizeof(VERTICES_LIST));
-    memset (triangles, 0, sizeof(TRIANGLE_LIST));
-    vertices->num_vertices = 0;
-    triangles->num_triangles = 0;
-
-    vertices->x = (float*) malloc (sizeof(float));
-    memset (vertices->x, 0, sizeof(float));
-    vertices->y = (float*) malloc (sizeof(float));
-    memset (vertices->y, 0, sizeof(float));
-    vertices->z = (float*) malloc (sizeof(float));
-    memset (vertices->z, 0, sizeof(float));
-
-    triangles->first = (int*) malloc (sizeof(int));
-    memset (triangles->first, 0, sizeof(int));
-    triangles->second = (int*) malloc (sizeof(int));
-    memset (triangles->second, 0, sizeof(int));
-    triangles->third = (int*) malloc (sizeof(int));
-    memset (triangles->third, 0, sizeof(int));
-#endif
-
     if (!fgets (line, BUFLEN, mesh)) {
         fprintf (stderr, "Error while parsing the file occurred, couldn't read the first line\n");
         exit (-1);
-    } else if (sscanf (line, "g %s", dumm) != 1) {
+    }
+    if (sscanf (line, "g %s", dumm) != 1) {
         fprintf (stderr, "Error while parsing the file occurred, the first line in the .obj isn't in the correct format\n");
         exit (-1);
-    } else {
-        vertices = &surface->vertices;
-        triangles = &surface->triangles;
     }
 
+    vertices = &surface->vertices;
+    triangles = &surface->triangles;
     while (fgets (line, BUFLEN, mesh)) {
         if (sscanf (line, "v %f %f %f", &x, &y, &z) == 3) {
             vertices->num_vertices++;
@@ -103,29 +79,16 @@ read_MDcontours (FILE* MDpoints, SURFACE* surface)
 
     VERTICES_LIST* pointsMD;
 
-#if defined (commentout)
-    VERTICES_LIST* pointsMD = (VERTICES_LIST*) malloc (sizeof(VERTICES_LIST));
-    memset (pointsMD, 0, sizeof(VERTICES_LIST));
-    pointsMD->num_vertices = 0;
-
-    pointsMD->x = (float*) malloc (sizeof(float));
-    memset (pointsMD->x, 0, sizeof(float));
-    pointsMD->y = (float*) malloc (sizeof(float));
-    memset (pointsMD->y, 0, sizeof(float));
-    pointsMD->z = (float*) malloc (sizeof(float));
-    memset (pointsMD->z, 0, sizeof(float));
-#endif
-
     if (!fgets (line, BUFLEN, MDpoints)) {
         fprintf (stderr, "Error while parsing the file occurred, couldn't read the first line\n");
         exit (-1);
-    } else if (strstr (line, "NaN NaN NaN") == NULL) {
+    }
+    if (strstr (line, "NaN NaN NaN") == NULL) {
         fprintf (stderr, "Error while parsing MDpoints file occurred, the first line isn't in the correct format\n");
         exit (-1);
-    } else {
-        pointsMD = &surface->MDpoints;
     }
 
+    pointsMD = &surface->MDpoints;
     while (fgets (line, BUFLEN, MDpoints)) {
         //fprintf(stderr,"Error while parsing the file occurred, couldn't read something\n");
         //exit(-1);

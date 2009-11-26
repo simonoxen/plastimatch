@@ -464,7 +464,10 @@ plm_parms_parse_command_file (Registration_Parms* regp, const char* options_fn)
 
     /* Process it */
     rc = plm_parms_process_command_file (regp, fp);
-    if (!rc) return rc;
+    if (!rc) {
+	fclose (fp);
+	return rc;
+    }
 
     /* Close file */
     fclose (fp);

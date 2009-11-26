@@ -75,16 +75,19 @@ image_read (Image* image, char* fn)
 
     fgets (buf, 1024, fp);
     if (strcmp (buf, "Pf\n")) {
+	fclose (fp);
 	printf ("Error reading pfm file\n");
 	return;
     }
     fgets (buf, 1024, fp);
     if (sscanf (buf, "%d %d", &image->dims[0], &image->dims[1]) != 2) {
+	fclose (fp);
 	printf ("Error reading pfm file\n");
 	return;
     }
     fgets (buf, 1024, fp);
     if (strcmp (buf, "-1\n")) {
+	fclose (fp);
 	printf ("Error reading pfm file\n");
 	return;
     }

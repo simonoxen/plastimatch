@@ -110,9 +110,8 @@ main (int argc, char* argv[])
 	i++;
     }
 
+    free (buf);
     fclose (fp_hnd);
-
-    /* Write results */
     fclose (fp_pfm);
 
     return 0;

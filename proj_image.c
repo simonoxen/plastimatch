@@ -141,13 +141,14 @@ proj_image_load_and_filter (
     filltail=55;
     movelength=(512-filltail);
 
-    cbi = (CB_Image*) malloc (sizeof(CB_Image));
-
     fp = fopen (img_filename,"rb");
     if (!fp) {
-	fprintf (stderr, "Can't open file %s for read\n. Skipped", img_filename);
+	fprintf (stderr, "Can't open file %s for read\n. Skipped", 
+	    img_filename);
 	return NULL;
     }
+
+    cbi = (CB_Image*) malloc (sizeof(CB_Image));
 
     //only support 512x384
     if (options->full_fan) {

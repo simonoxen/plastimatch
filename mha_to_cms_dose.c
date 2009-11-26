@@ -156,47 +156,44 @@ main (int argc, char *argv[])
 
     offset = ftell (ifp);
     printf ("My offset is %ld\n", offset); 
-
-
     fclose(ifp);
 
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    //ofp = fopen("myZZZdose", "w");
     ofp = fopen(argv[2], "w");
-    ifp2 = fopen(argv[3], "rt");
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-
-    if(ofp==NULL) {
-	printf("Error: can't create file for writing.\n");
+    if (ofp==NULL) {
+	printf ("Error: can't create file for writing.\n");
 	return 1;
     }
-    else {
-	//currentline=str(0);
-	//prevline="empty";
-	for(i = 0; i < 50; i++){
-	    fgets(myarray, sizeof(char)*500, ifp2);
-	    printf("LINE: %s",myarray);
-	    strcpy(currentline,myarray);
-	    printf("LINE2: %s\n",currentline);
-	    //currentline=myarray;}
-	    if(((currentline[0]=='0')&&(currentline[1]=='\n'))&&((prevline[0]=='0')&&(prevline[1]=='\n'))){
-		fprintf(ofp,currentline);
-		printf("Found two zeros!\n");
-		break;}
-	    fprintf(ofp,currentline);
-	    strcpy(prevline,currentline);}
 
-	for(k = 0; k < MHA_nPtsZ; k++){  
-	    for(j = MHA_nPtsY-1; j >= 0; j--){ //going through the CMS Z
-		for(i = 0; i < MHA_nPtsX; i++){ 
-		    fwrite(&(data[i][k][j]), 4, 1, ofp);
-		}
+    ifp2 = fopen(argv[3], "rt");
+    if (!ifp2) {
+	fclose (ofp);
+	printf ("Error: can't open file for read\n");
+	return 1;
+    }
+
+    //currentline=str(0);
+    //prevline="empty";
+    for (i = 0; i < 50; i++) {
+	fgets(myarray, sizeof(char)*500, ifp2);
+	printf("LINE: %s",myarray);
+	strcpy(currentline,myarray);
+	printf("LINE2: %s\n",currentline);
+	//currentline=myarray;}
+	if(((currentline[0]=='0')&&(currentline[1]=='\n'))&&((prevline[0]=='0')&&(prevline[1]=='\n'))){
+	    fprintf(ofp,currentline);
+	    printf("Found two zeros!\n");
+	    break;}
+	fprintf(ofp,currentline);
+	strcpy(prevline,currentline);}
+
+    for(k = 0; k < MHA_nPtsZ; k++){  
+	for(j = MHA_nPtsY-1; j >= 0; j--){ //going through the CMS Z
+	    for(i = 0; i < MHA_nPtsX; i++){ 
+		fwrite(&(data[i][k][j]), 4, 1, ofp);
 	    }
 	}
-	fclose(ofp);
-	fclose(ifp2);
     }
+    fclose(ofp);
+    fclose(ifp2);
     return 0;
 }
