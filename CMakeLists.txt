@@ -502,9 +502,10 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_image_type.cxx plm_image_type.h 
 	plm_int.h
 	plm_parms.cxx 
-	plm_stages.cxx 
 	plm_registration.h 
+	plm_stages.cxx 
 	plm_version.h 
+	plm_warp.cxx plm_warp.h 
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
