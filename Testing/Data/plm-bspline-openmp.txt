@@ -1,10 +1,9 @@
 [GLOBAL]
 fixed=synth_1.mha
 moving=synth_2.mha
-vf_out=plm-test-vf-1.mha
-xform_out=plm-test-1.txt
-img_out=plm-test-img-1.mha
-
+vf_out=plm-bspline-openmp-vf.mha
+xform_out=plm-bspline-openmp-xf.txt
+img_out=plm-bspline-openmp-img.mha
 [STAGE]
 xform=bspline
 optim=lbfgsb

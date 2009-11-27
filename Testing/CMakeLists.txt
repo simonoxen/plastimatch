@@ -168,7 +168,7 @@ ADD_TEST (
   "fdk-cpu-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
+  "-DREGEX=AVE *([-0-9.]*)"
   "-DLOWER_THRESH=-999.9"
   "-DUPPER_THRESH=-999.8"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
@@ -243,12 +243,42 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-itk-translation.txt"
   )
+PLM_ADD_TEST (
+  "plm-itk-translation-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-itk-translation-img.mha"
+  )
+ADD_TEST (
+  "plm-itk-translation-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-itk-translation-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-637.0"
+  "-DUPPER_THRESH=-636.9"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "plm-bspline-single-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-single-c.txt"
+  )
+PLM_ADD_TEST (
+  "plm-bspline-single-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-bspline-single-c-img.mha"
+  )
+ADD_TEST (
+  "plm-bspline-single-c-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-883.7"
+  "-DUPPER_THRESH=-883.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 PLM_ADD_TEST (
@@ -257,6 +287,21 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-single-f.txt"
   )
+PLM_ADD_TEST (
+  "plm-bspline-single-f-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-bspline-single-f-img.mha"
+  )
+ADD_TEST (
+  "plm-bspline-single-f-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-f-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-883.7"
+  "-DUPPER_THRESH=-883.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "plm-bspline-openmp" 
@@ -264,12 +309,42 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-openmp.txt"
   )
+PLM_ADD_TEST (
+  "plm-bspline-openmp-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-bspline-openmp-img.mha"
+  )
+ADD_TEST (
+  "plm-bspline-openmp-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-883.7"
+  "-DUPPER_THRESH=-883.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "plm-bspline-cuda" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-cuda.txt"
+  )
+PLM_ADD_TEST (
+  "plm-bspline-cuda-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-bspline-cuda-img.mha"
+  )
+ADD_TEST (
+  "plm-bspline-cuda-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-883.7"
+  "-DUPPER_THRESH=-883.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------

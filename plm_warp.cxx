@@ -22,7 +22,6 @@ plm_warp_itk (
     PlmImageHeader *pih,                  /* Input */
     PlmImage *im_in,                      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
-    int use_itk,           /* Input:  Force use of itk (1) or not (0) */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
 {
@@ -104,7 +103,6 @@ plm_warp_native (
     PlmImageHeader *pih,                  /* Input */
     PlmImage *im_in,                      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
-    int use_itk,           /* Input:  Force use of itk (1) or not (0) */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
 {
@@ -174,7 +172,7 @@ plm_warp (
     /* If user requested ITK-based warping, respect their wish */
     if (use_itk) {
 	plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,
-	    use_itk, interp_lin);
+	    interp_lin);
 	return;
     }
 
@@ -184,16 +182,17 @@ plm_warp (
 	case PLM_IMG_TYPE_ITK_SHORT:
 	case PLM_IMG_TYPE_ITK_FLOAT:
 	case PLM_IMG_TYPE_ITK_ULONG:
+	case PLM_IMG_TYPE_GPUIT_FLOAT:
 	    plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
-		use_itk, interp_lin);
+		interp_lin);
 	    break;
 	default:
 	    plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,
-		use_itk, interp_lin);
+		interp_lin);
 	    break;
 	}
     } else {
-	plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
-	    use_itk, interp_lin);
+	plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,
+	    interp_lin);
     }
 }

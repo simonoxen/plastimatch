@@ -15,7 +15,9 @@
 #include "itk_warp.h"
 #include "logfile.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_registration.h"
+#include "plm_warp.h"
 #include "readmha.h"
 #include "resample_mha.h"
 #include "vf.h"
@@ -394,6 +396,104 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
 }
 
 static void
+save_regp_output (
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    Registration_Parms* regp
+)
+{
+    if (regp->xf_out_fn[0]) {
+	logfile_printf ("Writing transformation ...\n");
+	save_xform (xf_out, regp->xf_out_fn);
+    }
+
+    if (regp->img_out_fn[0] || regp->vf_out_fn[0]) {
+	DeformationFieldType::Pointer vf;
+	DeformationFieldType::Pointer *vfp;
+	PlmImage im_warped;
+	PlmImage *imp;
+	PlmImageHeader pih;
+	float default_val = 0.0f;   /* GCS FIX: hard coded. */
+
+	if (regp->vf_out_fn[0]) {
+	    vfp = &vf;
+	} else {
+	    vfp = 0;
+	}
+	if (regp->img_out_fn[0]) {
+	    imp = &im_warped;
+	} else {
+	    imp = 0;
+	}
+	
+	pih.set_from_plm_image (regd->fixed_image);
+
+	logfile_printf ("Warping...\n");
+	plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
+	    default_val, 0, 1);
+
+	if (regp->img_out_fn[0]) {
+	    logfile_printf ("Saving image...\n");
+	    im_warped.save_image (regp->img_out_fn);
+	}
+	if (regp->vf_out_fn[0]) {
+	    logfile_printf ("Saving vf...\n");
+	    itk_image_save (vf, regp->vf_out_fn);
+	}
+    }
+}
+
+static void
+save_output (
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    char *xf_out_fn,
+    char *img_out_fn,
+    char *vf_out_fn
+)
+{
+    if (xf_out_fn[0]) {
+	logfile_printf ("Writing transformation ...\n");
+	save_xform (xf_out, xf_out_fn);
+    }
+
+    if (img_out_fn[0] || vf_out_fn[0]) {
+	DeformationFieldType::Pointer vf;
+	DeformationFieldType::Pointer *vfp;
+	PlmImage im_warped;
+	PlmImage *imp;
+	PlmImageHeader pih;
+	float default_val = 0.0f;   /* GCS FIX: hard coded. */
+
+	if (vf_out_fn[0]) {
+	    vfp = &vf;
+	} else {
+	    vfp = 0;
+	}
+	if (img_out_fn[0]) {
+	    imp = &im_warped;
+	} else {
+	    imp = 0;
+	}
+	
+	pih.set_from_plm_image (regd->fixed_image);
+
+	logfile_printf ("Warping...\n");
+	plm_warp (imp, vfp, xf_out, &pih, regd->moving_image, 
+	    default_val, 0, 1);
+
+	if (img_out_fn[0]) {
+	    logfile_printf ("Saving image...\n");
+	    im_warped.save_image (img_out_fn);
+	}
+	if (vf_out_fn[0]) {
+	    logfile_printf ("Saving vf...\n");
+	    itk_image_save (vf, vf_out_fn);
+	}
+    }
+}
+
+static void
 do_registration_stage (Registration_Parms* regp, 
 		       Registration_Data* regd, 
 		       Xform *xf_out, Xform *xf_in, 
@@ -432,7 +532,9 @@ do_registration_stage (Registration_Parms* regp,
 		    xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
-    save_stage_output (regd, xf_out, stage);
+    //save_stage_output (regd, xf_out, stage);
+    save_output (regd, xf_out, stage->xf_out_fn, stage->img_out_fn, 
+	stage->vf_out_fn);
 }
 
 static void
@@ -517,7 +619,9 @@ do_registration (Registration_Parms* regp)
     /* RMK: If no stages, we still generate output (same as input) */
 
     timer3.Start();
-    save_regp_output_itk (&regd, xf_out, regp);
+    //save_regp_output_itk (&regd, xf_out, regp);
+    save_output (&regd, xf_out, regp->xf_out_fn, regp->img_out_fn, 
+	regp->vf_out_fn);
     timer3.Stop();
 
     logfile_printf (
