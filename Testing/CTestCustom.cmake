@@ -11,7 +11,7 @@ IF (NOT CUDA_FOUND)
     "fdk-cuda"
     "fdk-cuda-stats"
     "fdk-cuda-check"
-    "plastimatch-bspline-cuda" 
+    "plm-bspline-cuda" 
     )
 ENDIF (NOT CUDA_FOUND)
 
