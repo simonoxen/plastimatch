@@ -34,7 +34,7 @@ stats_main (Stats_parms* parms)
     }
 
     printf ("MIN %f AVE %f MAX %f NUM %d\n",
-	    min_val, max_val, (float) (sum / num), num);
+	    min_val, (float) (sum / num), max_val, num);
 }
 
 static void
