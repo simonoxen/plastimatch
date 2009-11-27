@@ -39,7 +39,7 @@ void
 insert_ordered_by_x (Edge** head, Edge* c)
 {
     Edge* p;
-    if (p = *head) {
+    if ((p = *head)) {
 	if (p->x > c->x) {
 	    c->next = p;
 	    *head = c;
