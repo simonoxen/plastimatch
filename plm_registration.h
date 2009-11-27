@@ -221,7 +221,6 @@ public:
 };
 
 void not_implemented (void);
-plastimatch1_EXPORT void do_registration (Registration_Parms* regp);
 plastimatch1_EXPORT int 
 plm_parms_parse_command_file (Registration_Parms* regp, 
 			      const char* options_fn);

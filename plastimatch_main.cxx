@@ -10,10 +10,11 @@
 #else
 #include "getopt.h"
 #endif
-#include "plm_registration.h"
-#include "plm_version.h"
 #include "adjust_main.h"
 #include "compare_main.h"
+#include "plm_registration.h"
+#include "plm_stages.h"
+#include "plm_version.h"
 #include "resample_main.h"
 #include "stats_main.h"
 #include "warp_main.h"

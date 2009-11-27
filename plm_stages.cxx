@@ -143,7 +143,7 @@ choose_image_type (int xform_type, int optim_type, int impl_type)
 }
 #endif
 
-void
+static void
 save_warped_img_itk (Registration_Data* regd,
 		 DeformationFieldType::Pointer vf,
 		 int img_out_fmt, 
@@ -200,7 +200,7 @@ save_warped_img_itk (Registration_Data* regd,
     }
 }
 
-void
+static void
 save_warped_img_gpuit (Registration_Data* regd,
 			Volume* vf, char* fn)
 {
@@ -227,7 +227,7 @@ save_warped_img_gpuit (Registration_Data* regd,
     volume_free (vout);
 }
 
-void
+static void
 save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
 {
     Xform xf_tmp;
@@ -255,7 +255,7 @@ save_stage_output (Registration_Data* regd, Xform *xf_out, Stage_Parms* stage)
     }
 }
 
-void
+static void
 save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     if (regp->xf_out_fn[0]) {
@@ -302,7 +302,7 @@ save_regp_output_gpuit (Registration_Data* regd, Xform *xf_out, Registration_Par
     }
 }
 
-void
+static void
 save_regp_output_itk_ref (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     Xform xf_tmp;
@@ -333,7 +333,7 @@ save_regp_output_itk_ref (Registration_Data* regd, Xform *xf_out, Registration_P
     }
 }
 
-void
+static void
 save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms* regp)
 {
     Xform xf_tmp;
@@ -393,7 +393,7 @@ save_regp_output_itk (Registration_Data* regd, Xform *xf_out, Registration_Parms
     }
 }
 
-void
+static void
 do_registration_stage (Registration_Parms* regp, 
 		       Registration_Data* regd, 
 		       Xform *xf_out, Xform *xf_in, 
