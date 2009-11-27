@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=synth_1.mha
 moving=synth_2.mha
-vf_out=plm-test-vf-2.mha
-xform_out=plm-test-2.txt
-img_out=plm-test-img-2.mha
+vf_out=plm-itk-translation-vf.mha
+xform_out=plm-itk-translation-xf.txt
+img_out=plm-itk-translation-img.mha
 
 [STAGE]
 xform=translation
