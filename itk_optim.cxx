@@ -17,6 +17,7 @@
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
 
+#include "itk_registration.h"
 #include "plm_registration.h"
 #include "print_and_exit.h"
 

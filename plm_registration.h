@@ -6,20 +6,9 @@
 
 #include <stdlib.h>
 #include <ctype.h>
-#include "itkDemonsRegistrationFilter.h"
-#include "itkImageRegistrationMethod.h"
 #include "plm_config.h"
 #include "plm_path.h"
 #include "plm_image.h"
-
-/* Registration typedefs */
-typedef itk::ImageRegistrationMethod < 
-    FloatImageType, FloatImageType > RegistrationType;
-typedef itk::DemonsRegistrationFilter<
-                            FloatImageType,
-                            FloatImageType,
-                            DeformationFieldType> DemonsFilterType;
-
 
 #define STAGE_TRANSFORM_NONE                0
 #define STAGE_TRANSFORM_TRANSLATION	    1

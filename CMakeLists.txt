@@ -503,7 +503,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_int.h
 	plm_parms.cxx 
 	plm_registration.h 
-	plm_stages.cxx 
+	plm_stages.cxx plm_stages.h 
 	plm_version.h 
 	plm_warp.cxx plm_warp.h 
 	resample_mha.cxx resample_mha.h 

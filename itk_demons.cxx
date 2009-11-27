@@ -1,26 +1,32 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
 #include <iostream>   // Note: gcc prefers c++-style includes
-#include "plm_config.h"
-#include "itkLinearInterpolateImageFunction.h"
+#include "itkArray.h"
+#include "itkCommand.h"
+#include "itkHistogramMatchingImageFilter.h"
+#include "itkIdentityTransform.h"
 #include "itkImage.h"
 #include "itkImageFileWriter.h"
+#include "itkDemonsRegistrationFilter.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkResampleImageFilter.h"
-#include "itkCommand.h"
-#include "itkArray.h"
-#include "itkIdentityTransform.h"
 #include "itkWarpImageFilter.h"
-#include "itkHistogramMatchingImageFilter.h"
 
 #include "getopt.h"
-#include "plm_registration.h"
 #include "itk_image.h"
+#include "plm_registration.h"
 #include "resample_mha.h"
 #include "xform.h"
+
+typedef itk::DemonsRegistrationFilter<
+                            FloatImageType,
+                            FloatImageType,
+                            DeformationFieldType> DemonsFilterType;
 
 #if defined (GCS_REARRANGING_STUFF)
 

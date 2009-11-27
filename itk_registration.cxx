@@ -4,10 +4,12 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <string.h>
-#include "itkRegularStepGradientDescentOptimizer.h"
-#include "itkImageMaskSpatialObject.h"
-#include "itkMutualInformationImageToImageMetric.h"
 #include "itkCenteredTransformInitializer.h"
+#include "itkImageMaskSpatialObject.h"
+#include "itkImageRegistrationMethod.h"
+#include "itkLinearInterpolateImageFunction.h"
+#include "itkMutualInformationImageToImageMetric.h"
+#include "itkRegularStepGradientDescentOptimizer.h"
 
 #define USE_GCS_METRIC 1
 
@@ -23,17 +25,16 @@
 #endif
 #endif
 
-#include "plm_int.h"
-#include "timer.h"
-#include "plm_registration.h"
-#include "plm_image_header.h"
+#include "itk_demons.h"
 #include "itk_image.h"
 #include "itk_optim.h"
-#include "resample_mha.h"
 #include "itk_warp.h"
-#include "itk_demons.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
+#include "plm_registration.h"
+#include "resample_mha.h"
+#include "timer.h"
 #include "xform.h"
-
 
 #if !defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) && defined (USE_GCS_METRIC)
 typedef itk::GCSMetric <
