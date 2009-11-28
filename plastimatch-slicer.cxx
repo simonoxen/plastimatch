@@ -4,6 +4,7 @@
 #include <vector>
 #include "plastimatch-slicerCLP.h"
 #include "plm_registration.h"
+#include "plm_stages.h"
 
 int 
 main (int argc, char * argv [])
@@ -13,7 +14,7 @@ main (int argc, char * argv [])
 #if defined (_WIN32)
     char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
 #else
-    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
+    char* parms_fn = "/tmp/plastimatch-slicer-parms.txt";
 #endif
 
     FILE* fp = fopen (parms_fn, "w");
