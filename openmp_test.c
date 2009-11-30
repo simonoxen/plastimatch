@@ -83,11 +83,11 @@ main (int argc, char* argv[])
     display_num_threads ();
     plm_timer_start (&timer);
     speedtest_openmp_1 ();
-    printf ("Time = %f seconds\n", plm_timer_report (&timer);
+    printf ("Time = %f seconds\n", plm_timer_report (&timer));
 
     plm_timer_start (&timer);
     speedtest_openmp_2 ();
-    printf ("Time = %f seconds\n", plm_timer_report (&timer);
+    printf ("Time = %f seconds\n", plm_timer_report (&timer));
 
 #else
     printf ("Sorry, openmp was not supported by your compiler\n");
