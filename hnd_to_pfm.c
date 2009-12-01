@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "plm_int.h"
 
 #define ROWS 768
 #define COLS 1024
@@ -13,21 +14,22 @@ main (int argc, char* argv[])
 {
     FILE *fp_hnd, *fp_pfm;
     unsigned char pt_lut[1024*768];
-    unsigned long* buf;
+    uint32_t* buf;
     int i, lut_idx, lut_off;
     char dc;
     short ds;
     long dl, diff;
-    unsigned long a;
+    uint32_t a;
     float b;
     unsigned char v;
+    size_t num_read;
 
     if (argc != 3) {
 	printf ("Usage: hndtopfm hndfile pfmfile\n");
 	return 1;
     }
 
-    buf = (unsigned long*) malloc (sizeof(unsigned long) * ROWS * COLS);
+    buf = (uint32_t*) malloc (sizeof(uint32_t) * ROWS * COLS);
 
     fp_hnd = fopen (argv[1], "rb");
     if (!fp_hnd) {
@@ -44,26 +46,28 @@ main (int argc, char* argv[])
     fseek (fp_hnd, 1024, SEEK_SET);
     fread (pt_lut, sizeof(unsigned char), (ROWS-1)*COLS / 4, fp_hnd);
 
+    /* Write image header */
+    fprintf (fp_pfm, "Pf\n%d %d\n-1\n", COLS, ROWS);
+
     /* Read first row */
     for (i = 0; i < COLS; i++) {
-	fread (&a, sizeof(unsigned long), 1, fp_hnd);
+	fread (&a, sizeof(uint32_t), 1, fp_hnd);
 	buf[i] = a;
 	b = a;
-	fwrite (&b, sizeof(short), 1, fp_pfm);
+	fwrite (&b, sizeof(float), 1, fp_pfm);
     }
 
     /* Read first pixel of second row */
-    fread (&a, sizeof(unsigned long), 1, fp_hnd);
+    fread (&a, sizeof(uint32_t), 1, fp_hnd);
     buf[i++] = a;
     b = a;
-    fwrite (&b, sizeof(short), 1, fp_pfm);
+    fwrite (&b, sizeof(float), 1, fp_pfm);
     
     /* Decompress the rest */
     lut_idx = 0;
     lut_off = 0;
     while (i < COLS*ROWS) {
-	unsigned long r11, r12, r21;
-	unsigned short b;
+	uint32_t r11, r12, r21;
 
 	r11 = buf[i-COLS-1];
 	r12 = buf[i-COLS];
@@ -90,15 +94,18 @@ main (int argc, char* argv[])
 	}
 	switch (v) {
 	case 0:
-	    fread (&dc, sizeof(unsigned char), 1, fp_hnd);
+	    num_read = fread (&dc, sizeof(unsigned char), 1, fp_hnd);
+	    if (num_read != 1) goto read_error;
 	    diff = dc;
 	    break;
 	case 1:
-	    fread (&ds, sizeof(unsigned short), 1, fp_hnd);
+	    num_read = fread (&ds, sizeof(unsigned short), 1, fp_hnd);
+	    if (num_read != 1) goto read_error;
 	    diff = ds;
 	    break;
 	case 2:
-	    fread (&dl, sizeof(unsigned long), 1, fp_hnd);
+	    num_read = fread (&dl, sizeof(uint32_t), 1, fp_hnd);
+	    if (num_read != 1) goto read_error;
 	    diff = dl;
 	    break;
 	}
@@ -113,6 +120,14 @@ main (int argc, char* argv[])
     free (buf);
     fclose (fp_hnd);
     fclose (fp_pfm);
-
     return 0;
+
+ read_error:
+
+    fprintf (stderr, "Error reading hnd file\n");
+    free (buf);
+    fclose (fp_hnd);
+    fclose (fp_pfm);
+
+    return -1;
 }
