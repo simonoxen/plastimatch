@@ -798,7 +798,8 @@ itk_bsp_extend_to_region (Xform* xf,
 	const PlmImageHeader* pih,
 	const ImageRegionType* roi)
 {
-    int d, i, j, k, old_idx;
+    int d, old_idx;
+    unsigned long i, j, k;
     int extend_needed = 0;
     BsplineTransformType::Pointer bsp = xf->get_bsp();
     BsplineTransformType::OriginType bsp_origin = bsp->GetGridOrigin();
@@ -977,7 +978,7 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 {
     BsplineTransformType::SizeType bsp_size;
 
-    for (int d = 0; d < Dimension; d++) {
+    for (int d = 0; d < 3; d++) {
 	bsp_size[d] = bxf->cdims[d];
 	bsp_origin[d] = bxf->img_origin[d] + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
 	bsp_spacing[d] = bxf->grid_spac[d];
@@ -1014,7 +1015,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
 
     /* Copy from GPUIT coefficient array to ITK coefficient array */
     int k = 0;
-    for (int d = 0; d < Dimension; d++) {
+    for (int d = 0; d < 3; d++) {
 	for (int i = 0; i < bxf->num_knots; i++) {
 	    bsp_coeff[k] = bxf->coeff[3*i+d];
 	    k++;
@@ -1097,7 +1098,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 	index = fi.GetIndex();
 	itk_vf->TransformIndexToPhysicalPoint (index, fixed_point);
 	moving_point = xf->TransformPoint (fixed_point);
-	for (int r = 0; r < Dimension; r++) {
+	for (int r = 0; r < 3; r++) {
 	    displacement[r] = moving_point[r] - fixed_point[r];
 	}
 	fi.Set (displacement);
@@ -1150,7 +1151,6 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
     DeformationFieldType::Pointer itk_vf;
 
     Xform xf_tmp;
-    BSPLINE_Xform* bxf_old = xf_in->get_gpuit_bsp();
     OriginType img_origin;
     SpacingType img_spacing;
     ImageRegionType img_region;
@@ -1166,30 +1166,6 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
     /* Render to vector field */
     printf ("xform_itk_any_to_itk_vf\n");
     itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
-
-    return itk_vf;
-}
-
-/* Here what we're going to do is use GPUIT library to interpolate the 
-    B-Spline at its native resolution, then convert gpuit_vf -> itk_vf. 
-
-    GCS: Mar 25, 2009.  The itk_any_to_itk_vf is too slow.
-    1) Convert grid spacing
-    2) Create itk vf directly from gpuit_vf
-    */
-static DeformationFieldType::Pointer
-xform_gpuit_bsp_to_itk_vf_under_development (Xform* xf_in, PlmImageHeader* pih)
-{
-    DeformationFieldType::Pointer itk_vf;
-    Xform xf_tmp;
-    BSPLINE_Xform* bxf_old = xf_in->get_gpuit_bsp();
-    OriginType img_origin;
-    SpacingType img_spacing;
-    ImageRegionType img_region;
-
-    /* Extend gpuit bsp grid (native) */
-
-    /* Render to vector field */
 
     return itk_vf;
 }
@@ -1234,7 +1210,7 @@ xform_gpuit_vf_to_itk_vf (
 	float* img = (float*) vf->img;
 	int i = 0;
 	for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
-	    for (int r = 0; r < Dimension; r++) {
+	    for (int r = 0; r < 3; r++) {
 		displacement[r] = img[i++];
 	    }
 	    fi.Set (displacement);
@@ -1244,7 +1220,7 @@ xform_gpuit_vf_to_itk_vf (
 	float** img = (float**) vf->img;
 	int i = 0;
 	for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi, ++i) {
-	    for (int r = 0; r < Dimension; r++) {
+	    for (int r = 0; r < 3; r++) {
 		displacement[r] = img[r][i];
 	    }
 	    fi.Set (displacement);
@@ -1315,7 +1291,7 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih,
 
 	/* Copy from ITK coefficient array to gpuit coefficient array */
 	int k = 0;
-	for (int d = 0; d < Dimension; d++) {
+	for (int d = 0; d < 3; d++) {
 	    for (int i = 0; i < bxf_new->num_knots; i++) {
 		bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
 		k++;
@@ -1351,7 +1327,7 @@ xform_gpuit_bsp_to_gpuit_bsp (
 
     /* Copy from ITK coefficient array to gpuit coefficient array */
     int k = 0;
-    for (int d = 0; d < Dimension; d++) {
+    for (int d = 0; d < 3; d++) {
 	for (int i = 0; i < bxf_new->num_knots; i++) {
 	    bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
 	    k++;
@@ -1399,7 +1375,7 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
     for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
 	displacement = fi.Get ();
-	for (int r = 0; r < Dimension; r++) {
+	for (int r = 0; r < 3; r++) {
 	    img[i++] = displacement[r];
 	}
     }

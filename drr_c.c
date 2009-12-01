@@ -772,6 +772,15 @@ main (int argc, char* argv[])
     vol = read_mha (options.input_file);
 
     switch (options.threading) {
+    case THREADING_BROOK:
+    case THREADING_CUDA:
+#if defined (CUDA_FOUND)
+	CUDA_DRR3 (vol, &options);
+	break;
+#else
+	/* Fall through */
+#endif
+
     case THREADING_CPU:
 	volume_convert_to_float (vol);
 	set_isocenter (vol, &options);
@@ -779,11 +788,6 @@ main (int argc, char* argv[])
 	preprocess_attenuation (vol);
 #endif
 	drr_render_volumes (vol, &options);
-	break;
-
-    case THREADING_BROOK:
-    case THREADING_CUDA:
-	CUDA_DRR3 (vol, &options);
 	break;
     }
 
