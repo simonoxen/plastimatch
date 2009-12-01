@@ -139,6 +139,10 @@ extern "C" void bspline_cuda_j_stage_1 (Volume* fixed,
 				BSPLINE_Parms* parms,
 				Dev_Pointers_Bspline* dev_ptrs)
 {
+	// Reset our "voxels fallen outside" counter
+	cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->skipped");
+
 	// Calculate the score and dc_dv
 	CUDA_bspline_mse_score_dc_dv(dev_ptrs, bxf, fixed, moving);
 
@@ -368,6 +372,9 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 
 	cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
 	checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+
+	cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+	checkCUDAError("cudaMemset(): dev_ptrs->skipped");
 
 	int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
 
