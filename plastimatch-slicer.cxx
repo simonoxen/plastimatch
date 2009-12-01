@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
 #include <iostream>
@@ -17,89 +20,84 @@ main (int argc, char * argv [])
     char* parms_fn = "/tmp/plastimatch-slicer-parms.txt";
 #endif
 
-    FILE* fp = fopen (parms_fn, "w");
-
+    FILE* fp = fopen (parms_fn, "w+");
     //FILE* fp = tmpfile ();
 
     fprintf (fp,
-	     "[GLOBAL]\n"
-	     "fixed=%s\n"
-	     "moving=%s\n"
-//	     "xf_out=%s\n"
-//	     "vf_out=%s\n"
-	     "img_out=%s\n\n",
-	     /* Global */
-	     plmslc_fixed_volume.c_str(),
-	     plmslc_moving_volume.c_str(),
-//	     "C:/tmp/plmslc-xf.txt",
-//	     "C:/tmp/plmslc-vf.mha",
-	     plmslc_warped_volume.c_str());
+	"[GLOBAL]\n"
+	"fixed=%s\n"
+	"moving=%s\n"
+	"img_out=%s\n\n",
+	plmslc_fixed_volume.c_str(),
+	plmslc_moving_volume.c_str(),
+	plmslc_warped_volume.c_str());
 
     if (enable_stage_0) {
 	fprintf (fp,
-		 "[STAGE]\n"
-		 "metric=%s\n"
-		 "xform=%s\n"
-		 "optim=%s\n"
-		 "impl=itk\n"
-		 "max_its=%d\n"
-		 "convergence_tol=5\n"
-		 "grad_tol=1.5\n"
-		 "res=%d %d %d\n",
-		 metric.c_str(),
-		 "translation",
-		 "rsg",
-		 stage_0_its,
-		 stage_0_resolution[0],
-		 stage_0_resolution[1],
-		 stage_0_resolution[2]
-		 );
+	    "[STAGE]\n"
+	    "metric=%s\n"
+	    "xform=%s\n"
+	    "optim=%s\n"
+	    "impl=itk\n"
+	    "max_its=%d\n"
+	    "convergence_tol=5\n"
+	    "grad_tol=1.5\n"
+	    "res=%d %d %d\n",
+	    metric.c_str(),
+	    "translation",
+	    "rsg",
+	    stage_0_its,
+	    stage_0_resolution[0],
+	    stage_0_resolution[1],
+	    stage_0_resolution[2]
+	);
     }
 
     /* Stage 1 */
     fprintf (fp,
-	     "[STAGE]\n"
-	     "metric=%s\n"
-	     "xform=bspline\n"	
-	     "optim=lbfgsb\n"
-	     "impl=plastimatch\n"
-	     "threading=openmp\n"
-	     "max_its=%d\n"
-	     "convergence_tol=5\n"
-	     "grad_tol=1.5\n"
-	     "res=%d %d %d\n"
-	     "grid_spac=%g %g %g\n",
-	     /* Stage 1 */
-	     metric.c_str(),
-	     stage_1_its,
-	     stage_1_resolution[0],
-	     stage_1_resolution[1],
-	     stage_1_resolution[2],
-	     stage_1_grid_size,
-	     stage_1_grid_size,
-	     stage_1_grid_size
-	     );
+	"[STAGE]\n"
+	"metric=%s\n"
+	"xform=bspline\n"	
+	"optim=lbfgsb\n"
+	"impl=plastimatch\n"
+	"threading=%s\n"
+	"max_its=%d\n"
+	"convergence_tol=5\n"
+	"grad_tol=1.5\n"
+	"res=%d %d %d\n"
+	"grid_spac=%g %g %g\n",
+	/* Stage 1 */
+	metric.c_str(),
+	strcmp (hardware.c_str(),"CPU") ? "cuda" : "openmp",
+	stage_1_its,
+	stage_1_resolution[0],
+	stage_1_resolution[1],
+	stage_1_resolution[2],
+	stage_1_grid_size,
+	stage_1_grid_size,
+	stage_1_grid_size
+    );
 
     if (enable_stage_2) {
 	fprintf (fp, 
-	     "[STAGE]\n"
-	     "xform=bspline\n"
-	     "optim=lbfgsb\n"
-	     "impl=plastimatch\n"
-	     "max_its=%d\n"
-	     "convergence_tol=5\n"
-	     "grad_tol=1.5\n"
-	     "res=%d %d %d\n"
-	     "grid_spac=%g %g %g\n",
-	     /* Stage 2 */
-	     stage_2_its,
-	     stage_2_resolution[0],
-	     stage_2_resolution[1],
-	     stage_2_resolution[2],
-	     stage_2_grid_size,
-	     stage_2_grid_size,
-	     stage_2_grid_size
-	     );
+	    "[STAGE]\n"
+	    "xform=bspline\n"
+	    "optim=lbfgsb\n"
+	    "impl=plastimatch\n"
+	    "max_its=%d\n"
+	    "convergence_tol=5\n"
+	    "grad_tol=1.5\n"
+	    "res=%d %d %d\n"
+	    "grid_spac=%g %g %g\n",
+	    /* Stage 2 */
+	    stage_2_its,
+	    stage_2_resolution[0],
+	    stage_2_resolution[1],
+	    stage_2_resolution[2],
+	    stage_2_grid_size,
+	    stage_2_grid_size,
+	    stage_2_grid_size
+	);
     }
 
     /* Go back to beginning of file */
