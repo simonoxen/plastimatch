@@ -12411,6 +12411,7 @@ void bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs)
     cudaFree(dev_ptrs->LUT_Bspline_x);
     cudaFree(dev_ptrs->LUT_Bspline_y);
     cudaFree(dev_ptrs->LUT_Bspline_z);
+    cudaFree(dev_ptrs->skipped);
 }
 
 
