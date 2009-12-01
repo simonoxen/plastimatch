@@ -479,13 +479,15 @@ drr_write_projection_matrix (Volume* vol, double* cam,
 #endif
 
 void
-drr_render_volume_perspective (Volume* vol, double* cam, 
-			       double* tgt, double* vup,
-			       double sid, double* ic,
-			       double* ps, int* ires,
-			       char* image_fn, 
-			       char* multispectral_fn, 
-			       MGHDRR_Options* options)
+drr_render_volume_perspective (
+    Volume* vol, double* cam, 
+    double* tgt, double* vup,
+    double sid, double* ic,
+    double* ps, int* ires,
+    char* image_fn, 
+    char* multispectral_fn, 
+    Drr_options* options
+)
 {
     int d;
     double nrm[3];
@@ -562,18 +564,18 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 
     if (options->output_format == OUTPUT_FORMAT_PFM) {
 	fprintf (pgm_fp, 
-		 "Pf\n"
-		 "%d %d\n"
-		 "-1\n",
-		 res_c, res_r);
+	    "Pf\n"
+	    "%d %d\n"
+	    "-1\n",
+	    res_c, res_r);
     } 
     else if (options->output_format == OUTPUT_FORMAT_PGM) {
 	fprintf (pgm_fp, 
-		 "P2\n"
-		 "# Created by mghdrr\n"
-		 "%d %d\n"
-		 "65536\n",
-		 res_c, res_r);
+	    "P2\n"
+	    "# Created by mghdrr\n"
+	    "%d %d\n"
+	    "65536\n",
+	    res_c, res_r);
     }
     else {
 	/* Nothing for RAW */
@@ -659,7 +661,7 @@ drr_render_volume_perspective (Volume* vol, double* cam,
 
 /* All distances in mm */
 void
-drr_render_volumes (Volume* vol, MGHDRR_Options* options)
+drr_render_volumes (Volume* vol, Drr_options* options)
 {
     int a;
 
@@ -752,7 +754,7 @@ drr_render_volumes (Volume* vol, MGHDRR_Options* options)
 }
 
 void
-set_isocenter (Volume* vol, MGHDRR_Options* options)
+set_isocenter (Volume* vol, Drr_options* options)
 {
     vol->offset[0] -= options->isocenter[0];
     vol->offset[1] -= options->isocenter[1];
@@ -760,21 +762,31 @@ set_isocenter (Volume* vol, MGHDRR_Options* options)
 }
 
 int
-main(int argc, char* argv[])
+main (int argc, char* argv[])
 {
     Volume* vol;
-    MGHDRR_Options options;
+    Drr_options options;
 
     parse_args (&options, argc, argv);
 
     vol = read_mha (options.input_file);
-    volume_convert_to_float (vol);
-    set_isocenter (vol, &options);
 
+    switch (options.threading) {
+    case THREADING_CPU:
+	volume_convert_to_float (vol);
+	set_isocenter (vol, &options);
 #if defined (PREPROCESS_ATTENUATION)
-    preprocess_attenuation (vol);
+	preprocess_attenuation (vol);
 #endif
-    drr_render_volumes (vol, &options);
+	drr_render_volumes (vol, &options);
+	break;
+
+    case THREADING_CUDA:
+	CUDA_DRR3 (vol, &options);
+	break;
+    }
+
+    volume_free (vol);
     printf ("Done.\n");
     return 0;
 }

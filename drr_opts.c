@@ -15,31 +15,34 @@
 void
 print_usage (void)
 {
-    printf ("Usage: mghdrr [options] [infile]\n"
-	    "Options:\n"
-	    " -a num            Generate num equally spaced angles\n"
-	    " -A ang            Difference between neighboring anges (in degrees)\n"
-	    " -r \"r1 r2\"        Set output resolution (in pixels)\n"
-	    " -s scale          Scale the intensity of the output file\n"
-	    " -e                Do exponential mapping of output values\n"
-	    " -g \"sad sid\"      Set the sad, sid (in mm)\n"
-	    " -c \"c1 c2\"        Set the image center (in pixels)\n"
-	    " -z \"s1 s2\"        Set the physical size of imager (in mm)\n"
-	    " -w \"w1 w2 w3 w4\"  Only produce image for pixes in window (in pix)\n"
-	    " -t outformat      Select output format: pgm, pfm or raw\n"
-	    " -S                Output multispectral output files\n"
-	    " -i exact          Use exact trilinear interpolation\n"
-	    " -i approx         Use approximate trilinear interpolation\n"
-	    " -o \"o1 o2 o3\"     Set isocenter position\n"
-	    " -I infile         Set the input file in mha format\n"
-	    " -O outprefix      Generate output files using the specified prefix\n"
-	    );
+    printf (
+	"Usage: mghdrr [options] [infile]\n"
+	"Options:\n"
+	" -A hardware       Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	" -a num            Generate num equally spaced angles\n"
+	" -N ang            Difference between neighboring anges (in degrees)\n"
+	" -r \"r1 r2\"        Set output resolution (in pixels)\n"
+	" -s scale          Scale the intensity of the output file\n"
+	" -e                Do exponential mapping of output values\n"
+	" -g \"sad sid\"      Set the sad, sid (in mm)\n"
+	" -c \"c1 c2\"        Set the image center (in pixels)\n"
+	" -z \"s1 s2\"        Set the physical size of imager (in mm)\n"
+	" -w \"w1 w2 w3 w4\"  Only produce image for pixes in window (in pix)\n"
+	" -t outformat      Select output format: pgm, pfm or raw\n"
+	" -S                Output multispectral output files\n"
+	" -i exact          Use exact trilinear interpolation\n"
+	" -i approx         Use approximate trilinear interpolation\n"
+	" -o \"o1 o2 o3\"     Set isocenter position\n"
+	" -I infile         Set the input file in mha format\n"
+	" -O outprefix      Generate output files using the specified prefix\n"
+    );
     exit (1);
 }
 
 void
-set_default_options (MGHDRR_Options* options)
+set_default_options (Drr_options* options)
 {
+    options->threading = THREADING_CPU;
     options->image_resolution[0] = 128;
     options->image_resolution[1] = 128;
     options->image_size[0] = 600;
@@ -64,7 +67,7 @@ set_default_options (MGHDRR_Options* options)
 }
 
 void
-set_image_parms (MGHDRR_Options* options)
+set_image_parms (Drr_options* options)
 {
     if (!options->have_image_center) {
 	options->image_center[0] = (options->image_resolution[0]-1)/2.0;
@@ -84,7 +87,7 @@ set_image_parms (MGHDRR_Options* options)
 }
 
 void
-parse_args (MGHDRR_Options* options, int argc, char* argv[])
+parse_args (Drr_options* options, int argc, char* argv[])
 {
     int i, rc;
 
@@ -92,6 +95,23 @@ parse_args (MGHDRR_Options* options, int argc, char* argv[])
     for (i = 1; i < argc; i++) {
 	//printf ("ARG[%d] = %s\n", i, argv[i]);
 	if (argv[i][0] != '-') break;
+	if (!strcmp (argv[i], "-A")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
+		options->threading = THREADING_BROOK;
+	    } 
+	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
+		     || !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		options->threading = THREADING_CUDA;
+	    }
+	    else {
+		options->threading = THREADING_CPU;
+	    }
+	}
 	if (!strcmp (argv[i], "-r")) {
 	    i++;
 	    rc = sscanf (argv[i], "%d %d", &options->image_resolution[0], 
@@ -117,7 +137,7 @@ parse_args (MGHDRR_Options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-	else if (!strcmp (argv[i], "-A")) {
+	else if (!strcmp (argv[i], "-N")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->angle_diff);
 	    if (rc != 1) {

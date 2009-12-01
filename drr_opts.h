@@ -1,8 +1,10 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _mghdrr_opts_h_
-#define _mghdrr_opts_h_
+#ifndef _drr_opts_h_
+#define _drr_opts_h_
+
+#include "threading.h"
 
 #define OPTION_RESOLUTION_STRING "resolution"
 #define OPTION_RESOLUTION 'r'
@@ -43,8 +45,9 @@
 #define OUTPUT_FORMAT_PGM                 1
 #define OUTPUT_FORMAT_RAW                 2
 
-typedef struct MGHDRR_Options_struct MGHDRR_Options;
-struct MGHDRR_Options_struct {
+typedef struct Drr_options_struct Drr_options;
+struct Drr_options_struct {
+    enum Threading threading;
     int image_resolution[2];         /* In pixels */
     float image_size[2];             /* In mm */
     int have_image_center;           /* Was image_center spec'd in options? */
@@ -66,6 +69,6 @@ struct MGHDRR_Options_struct {
     char* output_prefix;
 };
 
-void parse_args (MGHDRR_Options* options, int argc, char* argv[]);
+void parse_args (Drr_options* options, int argc, char* argv[]);
 
 #endif

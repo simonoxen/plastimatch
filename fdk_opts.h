@@ -4,6 +4,8 @@
 #ifndef _fdk_opts_h_
 #define _fdk_opts_h_
 
+#include "threading.h"
+
 #define OPTION_RESOLUTION_STRING "resolution"
 #define OPTION_RESOLUTION 'r'
 #define OPTION_INPUT_DIR_STRING "input-dir"
@@ -17,15 +19,9 @@
 #define OPTION_VOL_SIZE_STRING "volume-size"
 #define OPTION_VOL_SIZE 'z'
 
-enum Fdk_threading {
-    THREADING_CPU,
-    THREADING_BROOK,
-    THREADING_CUDA
-};
-
 typedef struct fdk_options Fdk_options;
 struct fdk_options {
-    enum Fdk_threading threading;
+    enum Threading threading;
     int first_img;
     int skip_img;
     int last_img;

@@ -413,6 +413,7 @@ SET (GPUIT_LIBRARY_SRC
   proj_image.c proj_image.h
   proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
+  threading.h
   timer.c timer.h
   vf.c vf.h
   volume.c volume.h

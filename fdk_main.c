@@ -338,7 +338,8 @@ reconstruct_conebeam (Volume* vol, Fdk_options* options)
     }
 }
 
-int main(int argc, char* argv[])
+int 
+main (int argc, char* argv[])
 {
     Fdk_options options;
     Volume* vol;
