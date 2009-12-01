@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +17,7 @@ void
 print_usage (void)
 {
     printf (
-	"Usage: mghdrr [options] [infile]\n"
+	"Usage: drr [options] [infile]\n"
 	"Options:\n"
 	" -A hardware       Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	" -a num            Generate num equally spaced angles\n"
@@ -112,7 +113,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 		options->threading = THREADING_CPU;
 	    }
 	}
-	if (!strcmp (argv[i], "-r")) {
+	else if (!strcmp (argv[i], "-r")) {
 	    i++;
 	    rc = sscanf (argv[i], "%d %d", &options->image_resolution[0], 
 			 &options->image_resolution[1]);

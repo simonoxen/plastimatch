@@ -781,6 +781,7 @@ main (int argc, char* argv[])
 	drr_render_volumes (vol, &options);
 	break;
 
+    case THREADING_BROOK:
     case THREADING_CUDA:
 	CUDA_DRR3 (vol, &options);
 	break;
