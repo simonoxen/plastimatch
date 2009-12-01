@@ -109,7 +109,8 @@ bspline_cuda_score_j_mse_kernel1
  float3 pix_spacing,	// Dimensions of a single voxel (in mm)
  int3   rdims,		// # of regions in (x,y,z)
  int3   cdims,
- int	pad);
+ int	pad,
+ int*   skipped);
 
 
 

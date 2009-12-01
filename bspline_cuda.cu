@@ -390,7 +390,8 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 		pix_spacing,		// Pixel Spacing
 		rdims,			// 
 		cdims,
-		tile_padding);
+		tile_padding,
+		dev_ptrs->skipped);
 
 	cudaEventRecord (stop, 0);	
 	cudaEventSynchronize (stop);
@@ -832,7 +833,8 @@ extern "C" void bspline_cuda_i_stage_2(
 	float* host_grad,
 	float* host_grad_mean,
 	float* host_grad_norm,
-	Dev_Pointers_Bspline* dev_ptrs)
+	Dev_Pointers_Bspline* dev_ptrs,
+	int *num_vox)
 {
 
 	// --- INITIALIZE GRID --------------------------------------
@@ -911,8 +913,13 @@ extern "C" void bspline_cuda_i_stage_2(
 	cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
 	checkCUDAError("Failed to copy score from GPU to host");
 	// ----------------------------------------------------------
+	int* skipped = (int*)malloc(dev_ptrs->skipped_size);
+	cudaMemcpy(skipped, dev_ptrs->skipped, dev_ptrs->skipped_size, cudaMemcpyDeviceToHost);
 
-	*host_score = *host_score / (volume_dim[0] * volume_dim[1] * volume_dim[2]);
+	*num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped[0];
+
+	*host_score = *host_score / *num_vox;
+	free (skipped);
 
 	/////////////////////////////////////////////////////////////
 	/////////////////////// CALCULATE ///////////////////////////
@@ -962,10 +969,9 @@ extern "C" void bspline_cuda_i_stage_2(
 	
 
 	// --- BEGIN KERNEL EXECUTION -------------------------------
-	int num_vox = fixed->dim[0] * fixed->dim[1] * fixed->dim[2];
 	bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>>(
 		dev_ptrs->grad,
-		num_vox,
+		*num_vox,
 		num_elems);
 	// ----------------------------------------------------------
 
@@ -2673,7 +2679,8 @@ bspline_cuda_score_j_mse_kernel1
  float3 pix_spacing,	// Dimensions of a single voxel (in mm)
  int3   rdims,		// # of regions in (x,y,z)
  int3   cdims,
- int    pad)
+ int    pad,
+ int    *skipped)	// # of voxels that fell outside the ROI
 {
     extern __shared__ float sdata[]; 
 	
@@ -2847,7 +2854,8 @@ bspline_cuda_score_j_mse_kernel1
 	    if ((displacement_in_vox.x < -0.5) || (displacement_in_vox.x > (volume_dim.x - 0.5)) || 
 		(displacement_in_vox.y < -0.5) || (displacement_in_vox.y > (volume_dim.y - 0.5)) || 
 		(displacement_in_vox.z < -0.5) || (displacement_in_vox.z > (volume_dim.z - 0.5))) {
-		// Do nothing.
+
+		skipped[0]++;	// Count voxel as outside the ROI
 	    }
 	    else {
 
@@ -8639,6 +8647,7 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // Calculate space requirements for the allocation
     // and tuck it away for later...
     dev_ptrs->score_size = sizeof(float) * fixed->npix;
+    dev_ptrs->skipped_size = sizeof(int);
 
     // Allocate memory in the GPU Global memory for the 
     // "Score". The pointer to this area of GPU
@@ -8652,13 +8661,18 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
     printf(".");
 
+    cudaMalloc((void**)&dev_ptrs->skipped, dev_ptrs->skipped_size);
+    printf(".");
+
     // Cuda does not automatically zero out malloc()ed blocks
     // of memory that have been allocated in GPU global
     // memory.  So, we zero them out ourselves.
     cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
+    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
 
     // Increment the GPU memory byte counter
     GPU_Memory_Bytes += dev_ptrs->score_size;
+    GPU_Memory_Bytes += dev_ptrs->skipped_size;
     // ----------------------------------------------------------
 
 
@@ -13107,7 +13121,8 @@ extern "C" void CUDA_bspline_mse_score_dc_dv(
 		pix_spacing,		// Pixel Spacing
 		rdims,			// 
 		cdims,
-		tile_padding);
+		tile_padding,
+		dev_ptrs->skipped);
 
 //	cudaEventRecord (stop, 0);	
 //	cudaEventSynchronize (stop);

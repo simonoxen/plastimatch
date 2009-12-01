@@ -84,6 +84,7 @@ struct dev_pointers_bspline
     float* LUT_Bspline_x;
     float* LUT_Bspline_y;
     float* LUT_Bspline_z;
+    int* skipped;			// # of voxels that fell outside post warp
 
     // These hold the size of the
     // chucks of memory we allocated
@@ -110,6 +111,7 @@ struct dev_pointers_bspline
     size_t LUT_Bspline_x_size;
     size_t LUT_Bspline_y_size;
     size_t LUT_Bspline_z_size;
+    size_t skipped_size;
 };
 
 

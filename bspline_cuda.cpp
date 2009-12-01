@@ -132,7 +132,6 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 
     // --- INITIALIZE LOCAL VARIABLES ---------------------------
     ssd = &bst->ssd;
-    num_vox = fixed->npix;
 	
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
@@ -176,7 +175,8 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 	bst->ssd.grad, //ssd->grad,
 	&ssd_grad_mean,
 	&ssd_grad_norm,
-	dev_ptrs);
+	dev_ptrs,
+	&num_vox);
 
     if (parms->debug) {
 	fclose (fp);
@@ -218,7 +218,6 @@ void bspline_cuda_score_i_mse (
 
     // --- INITIALIZE LOCAL VARIABLES ---------------------------
     ssd = &bst->ssd;
-    num_vox = fixed->npix;
 	
     if (parms->debug) {
 	    sprintf (debug_fn, "dump_mse_%02d.txt", it++);
@@ -260,7 +259,8 @@ void bspline_cuda_score_i_mse (
 	ssd->grad,
 	&ssd_grad_mean,
 	&ssd_grad_norm,
-	dev_ptrs);
+	dev_ptrs,
+	&num_vox);
 
     if (parms->debug) {
 	fclose (fp);

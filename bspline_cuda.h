@@ -310,7 +310,8 @@ extern "C" {
 			float* host_grad,
 			float* host_grad_mean,
 			float* host_grad_norm,
-			Dev_Pointers_Bspline* dev_ptrs);
+			Dev_Pointers_Bspline* dev_ptrs,
+			int* num_vox);
 
 
     void bspline_cuda_h_stage_2(
