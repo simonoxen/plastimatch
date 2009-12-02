@@ -920,13 +920,19 @@ extern "C" void bspline_cuda_i_stage_2(
 	cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
 	checkCUDAError("Failed to copy score from GPU to host");
 	// ----------------------------------------------------------
-	int* skipped = (int*)malloc(dev_ptrs->skipped_size);
+
+	int *skipped = (int*)malloc(dev_ptrs->skipped_size);
 	cudaMemcpy(skipped, dev_ptrs->skipped, dev_ptrs->skipped_size, cudaMemcpyDeviceToHost);
+
+	for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
+		skipped[0] += skipped[i];
 
 	*num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped[0];
 
 	*host_score = *host_score / *num_vox;
+
 	free (skipped);
+
 
 	/////////////////////////////////////////////////////////////
 	/////////////////////// CALCULATE ///////////////////////////
@@ -2862,7 +2868,7 @@ bspline_cuda_score_j_mse_kernel1
 		(displacement_in_vox.y < -0.5) || (displacement_in_vox.y > (volume_dim.y - 0.5)) || 
 		(displacement_in_vox.z < -0.5) || (displacement_in_vox.z > (volume_dim.z - 0.5))) {
 
-		skipped[0]++;	// Count voxel as outside the ROI
+		skipped[threadIdxInGrid]++;	// Count voxel as outside the ROI
 	    }
 	    else {
 
@@ -8654,7 +8660,7 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // Calculate space requirements for the allocation
     // and tuck it away for later...
     dev_ptrs->score_size = sizeof(float) * fixed->npix;
-    dev_ptrs->skipped_size = sizeof(int);
+    dev_ptrs->skipped_size = sizeof(int) * fixed->npix;
 
     // Allocate memory in the GPU Global memory for the 
     // "Score". The pointer to this area of GPU
