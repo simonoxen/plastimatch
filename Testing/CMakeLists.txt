@@ -168,9 +168,9 @@ ADD_TEST (
   "fdk-cpu-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-999.9"
-  "-DUPPER_THRESH=-999.8"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=-987.5"
+  "-DUPPER_THRESH=-986.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -194,8 +194,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-brook-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-999.9"
-  "-DUPPER_THRESH=-999.8"
+  "-DLOWER_THRESH=-987.5"
+  "-DUPPER_THRESH=-986.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -219,8 +219,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-999.9"
-  "-DUPPER_THRESH=-999.8"
+  "-DLOWER_THRESH=-987.5"
+  "-DUPPER_THRESH=-986.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -276,8 +276,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-883.7"
-  "-DUPPER_THRESH=-883.5"
+  "-DLOWER_THRESH=-750.0"
+  "-DUPPER_THRESH=-748.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -298,8 +298,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-f-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-883.7"
-  "-DUPPER_THRESH=-883.5"
+  "-DLOWER_THRESH=-750.0"
+  "-DUPPER_THRESH=-748.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -320,8 +320,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-883.7"
-  "-DUPPER_THRESH=-883.5"
+  "-DLOWER_THRESH=-750.0"
+  "-DUPPER_THRESH=-748.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -342,8 +342,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-883.7"
-  "-DUPPER_THRESH=-883.5"
+  "-DLOWER_THRESH=-750.0"
+  "-DUPPER_THRESH=-748.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 

@@ -49,6 +49,13 @@ set_fixed_image_region_global (Registration_Data* regd)
 	IteratorType it (regd->fixed_mask, region);
 
 	int first = 1;
+	valid_index[0] = 0;
+	valid_index[1] = 0;
+	valid_index[2] = 0;
+	valid_size[0] = 0;
+	valid_size[1] = 0;
+	valid_size[2] = 0;
+
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
 	    unsigned char c = it.Get();
 	    if (c) {
@@ -67,7 +74,7 @@ set_fixed_image_region_global (Registration_Data* regd)
 			    valid_index[i] = idx[i];
 			    updated = 1;
 			}
-			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
 			    updated = 1;
 			}
@@ -108,7 +115,7 @@ set_fixed_image_region_global (Registration_Data* regd)
 			    valid_index[i] = idx[i];
 			    updated = 1;
 			}
-			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
 			    updated = 1;
 			}
