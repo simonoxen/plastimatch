@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=synth_1.mha
 moving=synth_2.mha
-vf_out=plm-test-vf-1.mha
-xform_out=plm-test-1.txt
-img_out=plm-test-img-1.mha
+vf_out=plm-bspline-cuda-vf.mha
+xform_out=plm-bspline-cuda-xf.txt
+img_out=plm-bspline-cuda-img.mha
 
 [STAGE]
 xform=bspline
