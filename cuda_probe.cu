@@ -1,9 +1,11 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
 #include <cuda.h>
-#include <cutil.h>
 
 extern "C" int
 cuda_probe (void)
