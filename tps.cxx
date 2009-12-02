@@ -408,8 +408,10 @@ tps_warp (
 
 	    rmin = curr_node->src[d] - curr_node->alpha;
 	    rmax = curr_node->src[d] + curr_node->alpha;
-	    rmini = floorl (rmin - tps->img_origin[d] / tps->img_spacing[d]);
-	    rmaxi = ceill (rmax - tps->img_origin[d] / tps->img_spacing[d]);
+	    rmini = (long) floor (rmin - tps->img_origin[d] 
+		/ tps->img_spacing[d]);
+	    rmaxi = (long) ceil (rmax - tps->img_origin[d] 
+		/ tps->img_spacing[d]);
 
 	    if (rmini < 0) rmini = 0;
 	    if (rmaxi >= moving->dim[d]) rmaxi = moving->dim[d] - 1;
