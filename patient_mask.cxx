@@ -79,7 +79,7 @@ find_patient_bottom (FloatImageType::Pointer i1)
     /* pt_top = top of patient, couch_bot = bottom of couch */
 
     float* i3max = (float*) malloc (sz[1]*sizeof(float));
-    for (int i = 0; i < sz[1]; i++) {
+    for (unsigned long i = 0; i < sz[1]; i++) {
 	i3max[i] = -1000;
     }
     FloatImageType::RegionType r3 = i3->GetLargestPossibleRegion();
@@ -91,7 +91,7 @@ find_patient_bottom (FloatImageType::Pointer i1)
 	i3max[idx[1]] = pix_value;
     }
     int pt_top = -1, couch_bot = -1;
-    for (int i = 0; i < sz[1]; i++) {
+    for (unsigned long i = 0; i < sz[1]; i++) {
 	if (i3max[i] > T1) {
 	    if (pt_top == -1) {
 		pt_top = i;
