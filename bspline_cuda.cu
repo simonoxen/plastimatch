@@ -921,18 +921,39 @@ extern "C" void bspline_cuda_i_stage_2(
 	checkCUDAError("Failed to copy score from GPU to host");
 	// ----------------------------------------------------------
 
-	int *skipped = (int*)malloc(dev_ptrs->skipped_size);
-	cudaMemcpy(skipped, dev_ptrs->skipped, dev_ptrs->skipped_size, cudaMemcpyDeviceToHost);
 
-	for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
-		skipped[0] += skipped[i];
+//	for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
+//		skipped[0] += skipped[i];
 
-	*num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped[0];
+	// --- BEGIN KERNEL EXECUTION -------------------------------
+	sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
+		dev_ptrs->skipped,
+		dev_ptrs->skipped,
+		num_elems
+	);
+	// ----------------------------------------------------------
+
+
+	// --- PREPARE FOR NEXT KERNEL ------------------------------
+	cudaThreadSynchronize();
+	checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
+	// ----------------------------------------------------------
+
+
+	// --- BEGIN KERNEL EXECUTION -------------------------------
+	sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+		dev_ptrs->skipped,
+		dev_ptrs->skipped,
+		num_elems
+	);
+	// ----------------------------------------------------------
+
+	float skipped;
+	cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
+
+	*num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped;
 
 	*host_score = *host_score / *num_vox;
-
-	free (skipped);
-
 
 	/////////////////////////////////////////////////////////////
 	/////////////////////// CALCULATE ///////////////////////////
@@ -2693,7 +2714,7 @@ bspline_cuda_score_j_mse_kernel1
  int3   rdims,		// # of regions in (x,y,z)
  int3   cdims,
  int    pad,
- int    *skipped)	// # of voxels that fell outside the ROI
+ float  *skipped)	// # of voxels that fell outside the ROI
 {
     extern __shared__ float sdata[]; 
 	
@@ -8660,7 +8681,7 @@ void bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // Calculate space requirements for the allocation
     // and tuck it away for later...
     dev_ptrs->score_size = sizeof(float) * fixed->npix;
-    dev_ptrs->skipped_size = sizeof(int) * fixed->npix;
+    dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
 
     // Allocate memory in the GPU Global memory for the 
     // "Score". The pointer to this area of GPU

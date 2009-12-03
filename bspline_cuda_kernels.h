@@ -110,7 +110,7 @@ bspline_cuda_score_j_mse_kernel1
  int3   rdims,		// # of regions in (x,y,z)
  int3   cdims,
  int	pad,
- int*   skipped);
+ float*   skipped);
 
 
 
