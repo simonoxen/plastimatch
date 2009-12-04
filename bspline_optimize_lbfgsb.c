@@ -1,12 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
-#include "plm_f2c.h"
+#include "plm_fortran.h"
 #include "volume.h"
 #include "bspline_opts.h"
 #include "bspline.h"

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _plm_f2c_h_
-#define _plm_f2c_h_
+#ifndef _plm_fortran_h_
+#define _plm_fortran_h_
 
 #include "plm_config.h"
 
@@ -27,6 +27,10 @@
   #else
     /* No fortran, no f2c, so do nothing */
   #endif
+#endif
+
+#if (FORTRAN_COMPILER_FOUND || HAVE_F2C_LIBRARY)
+  #define FORTRAN_FOUND 1
 #endif
 
 #endif

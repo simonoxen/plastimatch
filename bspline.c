@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/* -------------------------------------------------------------------------
+/* -----------------------------------------------------------------------
 
     B-Spline basics:
 	http://en.wikipedia.org/wiki/B-spline
@@ -26,7 +26,7 @@
 	Multiplier LUT                      qidx
 	Index LUT                           pidx
 
-    ----------------------------------------------------------------------- */
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,27 +36,31 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
-#include "mathutil.h"
-#include "timer.h"
-#include "volume.h"
-#include "readmha.h"
-#include "bspline_optimize_lbfgsb.h"
-#include "bspline_opts.h"
+
 #include "bspline.h"
-#include "logfile.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_optimize_lbfgsb.h"
+#include "bspline_opts.h"
+#include "logfile.h"
+#include "mathutil.h"
+#include "plm_fortran.h"
 #include "print_and_exit.h"
+#include "readmha.h"
+#include "timer.h"
+#include "volume.h"
 
-// Fix for logf() under MSVC 2005 32-bit
-// (math.h has an erronous semicolon)
+// Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
 #if !defined (_M_IA64) && !defined (_M_AMD64) && defined (_WIN32)
 #undef logf
 #define logf(x)     ((float)log((double)(x)))
 #endif
 
+/* -----------------------------------------------------------------------
+   Macros
+   ----------------------------------------------------------------------- */
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
 
@@ -3813,12 +3817,12 @@ bspline_optimize (BSPLINE_Xform* bxf,
     }
 
     if (parms->optimization == BOPT_LBFGSB) {
-#if defined (HAVE_F2C_LIBRARY)
+#if (FORTRAN_FOUND)
 	bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
 #else
 	logfile_printf (
-	    "LBFGSB not compiled for this platform (f2c library missing).\n"
-	    "Reverting to steepest descent.\n"
+	    "LBFGSB not compiled for this platform (no fortran compiler, "
+	    "no f2c library).\n  Reverting to steepest descent.\n"
 	    );
 	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
 #endif
@@ -3861,4 +3865,3 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	bspline_state_free (bst);
     }
 }
-
