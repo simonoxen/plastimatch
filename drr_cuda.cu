@@ -377,15 +377,13 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 
 
     ////// TIMING CODE //////////////////////
-    // Initialize Windows HighRes Timer
-    int count,a;
-    float kernel_total, io_total;
-    Timer timer;
+    Timer timer, total_timer;
     double time_kernel = 0;
     double time_io = 0;
+    double time_total = 0;
 
      // Start the timer
-    plm_timer_start (&timer);
+    plm_timer_start (&total_timer);
 
 
     cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
@@ -441,7 +439,7 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 	// Free the current vol 
 	//free_cb_image( cbi );
 
-	io_total += plm_timer_report (&timer);
+	time_io += plm_timer_report (&timer);
 	plm_timer_start (&timer);
 
 	// Thead Block Dimensions
@@ -540,40 +538,28 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 			
 	fclose(fp);
 
-	kernel_total += plm_timer_report (&timer);
+	time_kernel += plm_timer_report (&timer);
     }
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
 #endif
 	
-
-	
-
-	
-    ////// TIMING CODE //////////////////////
     // Report Timing Data
-#if defined (_WIN32)
+    time_total = plm_timer_report (&total_timer);
+    printf("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if defined (TIME_KERNEL)
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", plm_timer_report(&timer));
-    printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
-    printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
-
-    printf ("[Average Projection Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart)/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage Kernel  Time: %.9fs\n", kernel_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage File IO Time: %.9fs\n\n", io_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n");
-#else
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-    printf("========================================\n");
+    printf ("\tTotal Kernel  Time: %.9fs\n", time_kernel);
+    printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
 #endif
-#endif
-    /////////////////////////////////////////
 
+    printf ("[Average Projection Time: %.9fs ]\n", time_total / (1+(options->last_img - options->first_img) / options->skip_img));
+#if defined (TIME_KERNEL)
+    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / (1+(options->last_img - options->first_img) / options->skip_img));
+#endif
+    printf("========================================\n");
 
     // Cleanup
     cudaFree( dev_img );
@@ -591,32 +577,16 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 extern "C"
 int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 {
-    //// Thead Block Dimensions
-    //int tBlock_x = 16;
-    //int tBlock_y = 4;
-    //int tBlock_z = 4;
-
-    //// Each element in the volume (each voxel) gets 1 thread
-    //int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
-    //int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
-    //int blocksInZ = (vol->dim[2]+tBlock_z-1)/tBlock_z;
-    //dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
-    //dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
-
-    // Size of volume Malloc
-    //int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
-
     // Structure for passing arugments to kernel: (See fdk_cuda.h)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
     CB_Image* cbi;
     int image_num;
-    int i,j,k;
-
+    int i;
 
     // CUDA device pointers
-    float *dev_vol;	            // Holds voxels on device
+    //float *dev_vol;	            // Holds voxels on device
     float *dev_img;	            // Holds image pixels on device
     float *dev_matrix;
     float *dev_coef;
@@ -644,35 +614,18 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
 
     ////// TIMING CODE //////////////////////
-    // Initialize Windows HighRes Timer
-    int count,a;
-    float kernel_total, io_total;
-    Timer timer;
+    Timer timer, total_timer;
     double time_kernel = 0;
     double time_io = 0;
+    double time_total = 0;
 
     // Start the timer
-    plm_timer_start (&timer);
+    plm_timer_start (&total_timer);
 
     //Create DRR directory
     char drr_dir[1024];
     sprintf (drr_dir, "%s/DRR", options->input_dir);
     make_directory (drr_dir);
-
-    //cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
-    //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
-    //   checkCUDAError("Unable to allocate data volume");
-    //float *tmp=(float *)malloc(vol->npix*sizeof(float));
-    //    memcpy((void *)tmp,(void *)vol->img,vol->npix*sizeof(float));
-    //float *vol_img=(float *)vol->img;
-    //for(i=0; i<vol->dim[0]; i++)
-    //	for(j=0; j<vol->dim[1]; j++)
-    //		for(k=0; k<vol->dim[2]; k++)
-    //			vol_img[j*vol->dim[0]*vol->dim[2]+k*vol->dim[0]+i]=tmp[k*vol->dim[0]*vol->dim[1]+j*vol->dim[0]+i];
-    //free(tmp);
-
-    ////////////////////////////////////////////////////
-
 
     // prepare texture
     cudaChannelFormatDesc ca_descriptor;
@@ -707,12 +660,11 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
-
 #endif
 
     // This is just to retrieve the 2D image dimensions
     int fimg=options->first_img;
-    do{
+    do {
 	cbi = get_image_raw (options, fimg);
 	fimg++;
     }
@@ -725,12 +677,6 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     host_coef=(float*)malloc(7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
 		
     free_cb_image( cbi );
-
-    ////// TIMING CODE //////////////////////
-#if defined (_WIN32)
-    QueryPerformanceCounter(&start_ticks_total);
-#endif
-    /////////////////////////////////////////
 
     printf ("Projecting Image:");
     // Project each image into the volume one at a time
@@ -839,7 +785,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	cudaThreadSynchronize();
 #endif
 
-	kernel_total += plm_timer_report (&timer);
+	time_kernel += plm_timer_report (&timer);
 
 	// Unbind the image and projection matrix textures
 	//cudaUnbindTexture( tex_img );
@@ -895,41 +841,32 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
     ////// TIMING CODE //////////////////////
     // Report Timing Data
-#if defined (_WIN32)
+    time_total = plm_timer_report (&total_timer);
+    printf("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if defined (TIME_KERNEL)
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-    printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
-    printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
+    printf ("\tTotal Kernel  Time: %.9fs\n", time_kernel);
+    printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
+#endif
 
-    printf ("[Average Projection Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart)/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage Kernel  Time: %.9fs\n", kernel_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage File IO Time: %.9fs\n\n", io_total/ (1+(options->last_img - options->first_img) / options->skip_img));
-    printf("========================================\n");
-#else
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
-    printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
-    printf("========================================\n");
+    printf ("[Average Projection Time: %.9fs ]\n", time_total / (1+(options->last_img - options->first_img) / options->skip_img));
+#if defined (TIME_KERNEL)
+    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / (1+(options->last_img - options->first_img) / options->skip_img));
 #endif
-#endif
+    printf("========================================\n");
     /////////////////////////////////////////
-
 
     // Cleanup
     cudaFree( dev_img );
     cudaFree( dev_kargs );
     cudaFree( dev_matrix );
-    cudaFree( dev_vol );
+    //cudaFree( dev_vol );
     cudaFree( dev_coef);
     free(host_coef);
 
     return 0;
 }
-//}
 ///////////////////////////////////////////////////////////////////////////
 
 
