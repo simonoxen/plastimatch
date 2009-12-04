@@ -1954,7 +1954,33 @@ bspline_warp (
 		    printf ("p = %d %d %d\n", p[0], p[1], p[2]);
 		    printf ("q = %d %d %d\n", q[0], q[1], q[2]);
 		    printf ("pidx, qidx = %d %d\n", pidx, qidx);
-		    printf ("dxyz = %g %g %g\n", dxyz[0], dxyz[1], dxyz[2]);
+		}
+		if (rijk[0] == 10 && rijk[1] == 11 && rijk[2] == 11) {
+		    int i, j, k, m;
+		    int cidx;
+		    float* q_lut = &bxf->q_lut[qidx*64];
+		    int* c_lut = &bxf->c_lut[pidx*64];
+		    float out[3];
+
+		    out[0] = out[1] = out[2] = 0;
+		    m = 0;
+		    for (k = 0; k < 4; k++) {
+			for (j = 0; j < 4; j++) {
+			    for (i = 0; i < 4; i++) {
+				cidx = 3 * c_lut[m];
+				out[0] += q_lut[m] * bxf->coeff[cidx+0];
+				out[1] += q_lut[m] * bxf->coeff[cidx+1];
+				out[2] += q_lut[m] * bxf->coeff[cidx+2];
+				printf ("dxyz[%d] = %g %g %g, %g %g %g\n", 
+				    m,
+				    q_lut[m] * bxf->coeff[cidx+0],
+				    q_lut[m] * bxf->coeff[cidx+1],
+				    q_lut[m] * bxf->coeff[cidx+2],
+				    out[0], out[1], out[2]);
+				m ++;
+			    }
+			}
+		    }
 		}
 
 		/* Compute linear index of fixed image voxel */
@@ -1970,13 +1996,13 @@ bspline_warp (
 
 		/* Compute moving image coordinate of fixed image voxel */
 		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-						  dxyz, moving);
+		    dxyz, moving);
 
 		/* If voxel is not inside moving image */
 		if (!rc) continue;
 
 		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-					     li_1, li_2, moving);
+		    li_1, li_2, moving);
 
 		if (linear_interp) {
 		    /* Find linear index of "corner voxel" in moving image */
@@ -1986,10 +2012,10 @@ bspline_warp (
 		       interpolation */
 		    /* Macro is slightly faster than function */
 		    BSPLINE_LI_VALUE (m_val, 
-				      li_1[0], li_2[0],
-				      li_1[1], li_2[1],
-				      li_1[2], li_2[2],
-				      mvf, m_img, moving);
+			li_1[0], li_2[0],
+			li_1[1], li_2[1],
+			li_1[2], li_2[2],
+			mvf, m_img, moving);
 		} else {
 		    /* Find linear index of "nearest voxel" in moving image */
 		    mvf = INDEX_OF (mijk_r, moving->dim);
