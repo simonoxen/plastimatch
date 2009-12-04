@@ -2015,6 +2015,7 @@ bspline_warp (
 	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
 	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
 		int rc;
+
 		p[0] = rijk[0] / bxf->vox_per_rgn[0];
 		q[0] = rijk[0] % bxf->vox_per_rgn[0];
 		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
@@ -2023,6 +2024,10 @@ bspline_warp (
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		
+		if (rijk[0] == 10 && rijk[1] == 11 && rijk[2] == 11) {
+		    printf ("dxyz = %g %g %g\n", dxyz[0], dxyz[1], dxyz[2]);
+		}
 
 		/* Compute linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, vout->dim);

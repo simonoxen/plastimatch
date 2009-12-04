@@ -26,7 +26,8 @@ plm_warp_itk (
 )
 {
     Xform xform_tmp;
-    printf ("converting to vf...\n");
+    printf ("Running: plm_warp_itk\n");
+    printf ("Creating vf...\n");
     xform_to_itk_vf (&xform_tmp, xf_in, pih);
     *vf = xform_tmp.get_itk_vf ();
 
@@ -117,6 +118,7 @@ plm_warp_native (
     float direction_cosines[9];
 
     /* Convert input image to gpuit format */
+    printf ("Running: plm_warp_native\n");
     printf ("Converting input image...\n");
     Volume *v_in = im_in->gpuit_float();
 
