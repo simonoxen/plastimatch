@@ -14,6 +14,7 @@ ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
+INCLUDE (CTest)
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckTypeSize)
 
