@@ -4,8 +4,8 @@
 
 	- From The Shogakukan DICTIONARY OF NEW ENGLISH (Second edition) */
 
-#ifndef PLM_F2C_WIN32
-#define PLM_F2C_WIN32
+#ifndef _plm_f2c_win32_h_
+#define _plm_f2c_win32_h_
 
 typedef long int integer;
 typedef unsigned long int uinteger;

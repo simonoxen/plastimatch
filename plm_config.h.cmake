@@ -28,6 +28,11 @@
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine BUILD_BSPLINE_BROOK 1
 
+/* Did we find fortran? */
+#if (FORTRAN_COMPILER_FOUND || HAVE_F2C_LIBRARY)
+  #define FORTRAN_FOUND 1
+#endif
+
 /* ITK attributes */
 #cmakedefine ITK_FOUND 1
 #if (ITK_FOUND && !PLM_CUDA_COMPILE)
