@@ -1949,39 +1949,6 @@ bspline_warp (
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
-		
-		if (rijk[0] == 10 && rijk[1] == 11 && rijk[2] == 11) {
-		    printf ("p = %d %d %d\n", p[0], p[1], p[2]);
-		    printf ("q = %d %d %d\n", q[0], q[1], q[2]);
-		    printf ("pidx, qidx = %d %d\n", pidx, qidx);
-		}
-		if (rijk[0] == 10 && rijk[1] == 11 && rijk[2] == 11) {
-		    int i, j, k, m;
-		    int cidx;
-		    float* q_lut = &bxf->q_lut[qidx*64];
-		    int* c_lut = &bxf->c_lut[pidx*64];
-		    float out[3];
-
-		    out[0] = out[1] = out[2] = 0;
-		    m = 0;
-		    for (k = 0; k < 4; k++) {
-			for (j = 0; j < 4; j++) {
-			    for (i = 0; i < 4; i++) {
-				cidx = 3 * c_lut[m];
-				out[0] += q_lut[m] * bxf->coeff[cidx+0];
-				out[1] += q_lut[m] * bxf->coeff[cidx+1];
-				out[2] += q_lut[m] * bxf->coeff[cidx+2];
-				printf ("dxyz[%d] = %g %g %g, %g %g %g\n", 
-				    m,
-				    q_lut[m] * bxf->coeff[cidx+0],
-				    q_lut[m] * bxf->coeff[cidx+1],
-				    q_lut[m] * bxf->coeff[cidx+2],
-				    out[0], out[1], out[2]);
-				m ++;
-			    }
-			}
-		    }
-		}
 
 		/* Compute linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, vout->dim);
