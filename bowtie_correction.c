@@ -1,9 +1,7 @@
-
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
-#include "fdk.h"
 #include "fdk_opts.h"
 #include "volume.h"
 #include "readmha.h"

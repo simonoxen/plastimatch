@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "plm_path.h"
-#include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "file_util.h"
@@ -60,7 +59,7 @@ convert_to_hu (Volume* vol, Fdk_options* options)
     }
 }
 
-CB_Image*
+Proj_image*
 get_image_pfm (Fdk_options* options, int image_num)
 {
     char* img_file_pat = "out_%04d.pfm";
@@ -74,7 +73,7 @@ get_image_pfm (Fdk_options* options, int image_num)
     return proj_image_load_pfm (img_file, mat_file);
 }
 
-CB_Image*
+Proj_image*
 get_image_raw (Fdk_options* options, int image_num)
 {
     char* img_file_pat = "Proj_%03d.raw";

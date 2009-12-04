@@ -4,9 +4,9 @@
 #ifndef _fdk_utils_h_
 #define _fdk_utils_h_
 
-#include "volume.h"
-#include "fdk.h"
 #include "fdk_opts.h"
+#include "proj_image.h"
+#include "volume.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -14,8 +14,8 @@ extern "C" {
 
 void convert_to_hu (Volume* vol, Fdk_options* options);
 Volume* my_create_volume (Fdk_options* options);
-CB_Image* get_image_pfm (Fdk_options* options, int image_num);
-CB_Image* get_image_raw (Fdk_options* options, int image_num);
+Proj_image* get_image_pfm (Fdk_options* options, int image_num);
+Proj_image* get_image_raw (Fdk_options* options, int image_num);
 void write_coronal_sagittal (Fdk_options* options, Volume* vol);
 
 

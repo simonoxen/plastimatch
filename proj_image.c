@@ -5,14 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "fdk.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"
 
-CB_Image* 
+Proj_image* 
 proj_image_load_pfm (char* img_filename, char* mat_filename)
 {
     int i;
@@ -20,9 +19,9 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     float f;
     FILE* fp;
     char buf[1024];
-    CB_Image* cbi;
+    Proj_image* cbi;
 
-    cbi = (CB_Image*) malloc (sizeof(CB_Image));
+    cbi = (Proj_image*) malloc (sizeof(Proj_image));
 
     fp = fopen (img_filename,"rb");
     if (!fp) {
@@ -121,7 +120,7 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     return cbi;
 }
 
-CB_Image* 
+Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
     char* img_filename, 
@@ -133,7 +132,7 @@ proj_image_load_and_filter (
     float f;
     FILE* fp;
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     unsigned short * readimg;
     int movelength,fillhead,filltail;
 
@@ -148,7 +147,7 @@ proj_image_load_and_filter (
 	return NULL;
     }
 
-    cbi = (CB_Image*) malloc (sizeof(CB_Image));
+    cbi = (Proj_image*) malloc (sizeof(Proj_image));
 
     //only support 512x384
     if (options->full_fan) {
@@ -266,7 +265,7 @@ proj_image_load_and_filter (
 }
 
 #if defined (commentout)
-CB_Image*
+Proj_image*
 get_image (Fdk_options* options, int image_num)
 {
     char* img_file_pat = "out_%04d.pfm";
@@ -282,7 +281,7 @@ get_image (Fdk_options* options, int image_num)
 #endif
 
 void
-free_cb_image (CB_Image* cbi)
+free_cb_image (Proj_image* cbi)
 {
     free (cbi->img);
     free (cbi);

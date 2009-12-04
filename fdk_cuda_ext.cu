@@ -41,7 +41,6 @@
 /*****************
 * FDK  #includes *
 *****************/
-#include "fdk.h"
 #include "fdk_cuda_p.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
@@ -581,7 +580,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     int image_num;
     int i;
 
@@ -855,7 +854,7 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     int image_num, image_idx, image_n;
     int i;
 
@@ -1177,7 +1176,7 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     int image_num;
     int i;
 
@@ -1497,7 +1496,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     int image_num;
     int i,j,k;
 

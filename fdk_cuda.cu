@@ -1,11 +1,9 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-
 #include "plm_config.h"
 
-#define _CRT_SECURE_NO_DEPRECATE
-#define WRITE_BLOCK (1024*1024)
+//#define WRITE_BLOCK (1024*1024)
 
 /****************************************************\
 * Uncomment the line below to enable verbose output. *
@@ -36,10 +34,9 @@
 /*****************
 * FDK  #includes *
 *****************/
-#include "fdk.h"
+#include "fdk_cuda_p.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
-#include "fdk_cuda_p.h"
 #include "mathutil.h"
 #include "proj_image.h"
 #include "readmha.h"
@@ -48,7 +45,6 @@
 /*********************
 * High Res Win Timer *
 *********************/
-//#include <time.h>
 #include "timer.h"
 
 
@@ -168,7 +164,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
-    CB_Image* cbi;
+    Proj_image* cbi;
     int image_num;
     int i;
 

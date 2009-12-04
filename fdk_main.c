@@ -7,7 +7,6 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "fdk.h"
 #include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opts.h"
@@ -19,7 +18,7 @@
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */
 inline float
-get_pixel_value_c (CB_Image* cbi, double r, double c)
+get_pixel_value_c (Proj_image* cbi, double r, double c)
 {
     int rr, cc;
 
@@ -37,7 +36,7 @@ get_pixel_value_c (CB_Image* cbi, double r, double c)
 }
 
 inline float
-get_pixel_value_b (CB_Image* cbi, double r, double c)
+get_pixel_value_b (Proj_image* cbi, double r, double c)
 {
     int rr, cc;
 
@@ -50,7 +49,7 @@ get_pixel_value_b (CB_Image* cbi, double r, double c)
 
 #if defined (commentout)
 inline float
-get_pixel_value_a (CB_Image* cbi, double r, double c)
+get_pixel_value_a (Proj_image* cbi, double r, double c)
 {
     int rr, cc;
 
@@ -65,7 +64,7 @@ get_pixel_value_a (CB_Image* cbi, double r, double c)
 /* This version folds ic & wip into zip, as well as using faster 
    nearest neighbor macro. */
 void
-project_volume_onto_image_c (Volume* vol, CB_Image* cbi, float scale)
+project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 {
     int i, j, k, p;
     float* img = (float*) vol->img;
@@ -127,7 +126,7 @@ project_volume_onto_image_c (Volume* vol, CB_Image* cbi, float scale)
 }
 
 void
-project_volume_onto_image_b (Volume* vol, CB_Image* cbi, float scale)
+project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 {
     int i, j, k, p;
     float* img = (float*) vol->img;
@@ -203,7 +202,7 @@ project_volume_onto_image_b (Volume* vol, CB_Image* cbi, float scale)
 }
 
 void
-project_volume_onto_image_a (Volume* vol, CB_Image* cbi, float scale)
+project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 {
     int i, j, k, p;
     float* img = (float*) vol->img;
@@ -282,7 +281,7 @@ project_volume_onto_image_a (Volume* vol, CB_Image* cbi, float scale)
 }
 
 void
-project_volume_onto_image_reference (Volume* vol, CB_Image* cbi, float scale)
+project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
 {
     int i, j, k, p;
     double vp[4];   /* vp = voxel position */
@@ -326,7 +325,7 @@ reconstruct_conebeam (Volume* vol, Fdk_options* options)
     scale = scale * options->scale;
 
     for (i = options->first_img; i <= options->last_img; i += options->skip_img) {
-	CB_Image* cbi;
+	Proj_image* cbi;
 	cbi = get_image_pfm (options, i);
 	
 	// printf ("Projecting Image %d\n", i);

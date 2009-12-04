@@ -3,8 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
-#define _CRT_SECURE_NO_DEPRECATE
-
 /****************************************************\
 * Uncomment the line below to enable verbose output. *
 * Enabling this should not nerf performance.         *
@@ -32,14 +30,13 @@
 #include <math.h>
 #include <cuda.h>
 
-#include "fdk.h"
-#include "fdk_cuda_p.h"
+#include "drr_cuda.h"
+#include "drr_cuda_p.h"
 #include "drr_opts.h"
-#include "fdk_utils.h"
+#include "file_util.h"
 #include "mathutil.h"
 #include "proj_image.h"
 #include "volume.h"
-#include "file_util.h"
 #include "timer.h"
 
 
@@ -324,47 +321,31 @@ void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float 
 
 //////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_DRR() //////////////////////////////////
+#if defined (commentout)
 extern "C"
-int CUDA_DRR (Volume *vol, Fdk_options *options)
+int CUDA_DRR (Volume *vol, Drr_options *options)
 {
-    //// Thead Block Dimensions
-    //int tBlock_x = 16;
-    //int tBlock_y = 4;
-    //int tBlock_z = 4;
-
-    //// Each element in the volume (each voxel) gets 1 thread
-    //int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
-    //int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
-    //int blocksInZ = (vol->dim[2]+tBlock_z-1)/tBlock_z;
-    //dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
-    //dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
-
-    // Size of volume Malloc
-    //int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
-
-    // Structure for passing arugments to kernel: (See fdk_cuda.h)
-    kernel_args_fdk *kargs;
-    kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
-
-    CB_Image* cbi;
+    Timer timer, total_timer;
+    double time_kernel = 0;
+    double time_io = 0;
+    double time_total = 0;
+    Drr_kernel_args *kargs;
+    Proj_image* cbi;
     int image_num;
-    int i;
+    int a, i;
 
     // CUDA device pointers
     float *dev_vol;	            // Holds voxels on device
     float *dev_img;	            // Holds image pixels on device
     float *dev_matrix;
-    kernel_args_fdk *dev_kargs; // Holds kernel parameters
-    cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
-    cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
+    Drr_kernel_args *dev_kargs; // Holds kernel parameters
 
-    // Calculate the scale
-    image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
-    float scale = (float) (sqrt(3.0) / (double) image_num);
-    scale = scale * options->scale;
+    // Start the timer
+    plm_timer_start (&total_timer);
 
-    // Load static kernel arguments
-    kargs->scale = scale;
+    cudaMalloc ((void**)&dev_matrix, 12*sizeof(float) );
+    cudaMalloc ((void**)&dev_kargs, sizeof (Drr_kernel_args));
+    kargs = (Drr_kernel_args *) malloc (sizeof(Drr_kernel_args));
     kargs->vol_offset.x = vol->offset[0];
     kargs->vol_offset.y = vol->offset[1];
     kargs->vol_offset.z = vol->offset[2];
@@ -375,69 +356,51 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     kargs->vol_pix_spacing.y = vol->pix_spacing[1];
     kargs->vol_pix_spacing.z = vol->pix_spacing[2];
 
-
-    ////// TIMING CODE //////////////////////
-    Timer timer, total_timer;
-    double time_kernel = 0;
-    double time_io = 0;
-    double time_total = 0;
-
-     // Start the timer
-    plm_timer_start (&total_timer);
-
-
     cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
-    //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
     checkCUDAError("Unable to allocate data volume");
 	
-    // This is just to retrieve the 2D image dimensions
-    int fimg=options->first_img;
-    do {
-	cbi = get_image_raw (options, fimg);
-	fimg++;
-    }
-    while(cbi==NULL);
-		
-    cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-    free_cb_image( cbi );
+    cudaMalloc ((void**)&dev_img, 
+	options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
 
-	printf ("Projecting Image:");
-    // Project each image into the volume one at a time
-    for (image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
+    for (a = 0; a < options->num_angles; a++)
     {
-	fflush(stdout);
 	plm_timer_start (&timer);
 
-	// Load the current image
-	cbi = get_image_raw (options, image_num);
-	if (cbi==NULL)
-	    continue;
+	/* Copied from drr_c.c */
+	double vup[3] = {0, 0, 1};
+	double tgt[3] = {0.0, 0.0, 0.0};
+	double nrm[3];
+	double tmp[3];
+	double cam[3];
+	cam[0] = cos(angle);
+	cam[1] = sin(angle);
+	cam[2] = 0.0;
+	vec3_sub3 (nrm, tgt, cam);
+	vec3_normalize1 (nrm);
+	vec3_scale3 (tmp, nrm, sad);
+	vec3_copy (cam, tgt);
+	vec3_sub2 (cam, tmp);
 
 	// Load dynamic kernel arguments
-	kargs->img_dim.x = cbi->dim[0];
-	kargs->img_dim.y = cbi->dim[1];
-	kargs->ic.x = cbi->ic[0];
-	kargs->ic.y = cbi->ic[1];
-	kargs->nrm.x = cbi->nrm[0];
-	kargs->nrm.y = cbi->nrm[1];
-	kargs->nrm.z = cbi->nrm[2];
-	kargs->sad = cbi->sad;
-	kargs->sid = cbi->sid;
-	for(i=0; i<12; i++)
-	    kargs->matrix[i] = (float)cbi->matrix[i];
+	kargs->img_dim.x = options->image_resolution[0];
+	kargs->img_dim.y = options->image_resolution[1];
+	kargs->ic.x = options->image_center[0];
+	kargs->ic.y = options->image_center[1];
+	kargs->nrm.x = nrm[0];
+	kargs->nrm.y = nrm[1];
+	kargs->nrm.z = nrm[2];
+	kargs->sad = options->sad;
+	kargs->sid = options->sid;
+	for (i=0; i<12; i++) {
+	    kargs->matrix[i] = (float) cbi->matrix[i];
+	}
 
-	// Copy image pixel data & projection matrix to device Global Memory
-	// and then bind them to the texture hardware.
-	//cudaMemcpy( dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyHostToDevice );
-	//cudaBindTexture( 0, tex_img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float) );
-
-	cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
-
-	cudaMemcpy( dev_matrix, kargs->matrix, sizeof(kargs->matrix), cudaMemcpyHostToDevice );
+	cudaMemcpy (dev_vol, vol->img, vol->npix * vol->pix_size, 
+	    cudaMemcpyHostToDevice);
+	cudaMemcpy (dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+	    cudaMemcpyHostToDevice );
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)); 
-
-	// Free the current vol 
-	//free_cb_image( cbi );
 
 	time_io += plm_timer_report (&timer);
 	plm_timer_start (&timer);
@@ -453,9 +416,7 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 	dim3 dimGrid  = dim3(blocksInX, blocksInY);
 	dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
 
-
 	// Invoke ze kernel  \(^_^)/
-	// Note: cbi->img AND cbi->matrix are passed via texture memory
 
 	int smemSize = vol->dim[0]  * sizeof(float);
 	if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
@@ -496,9 +457,8 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 	cudaUnbindTexture( tex_matrix );
 
 	// Copy reconstructed volume from device to host
-	//cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
-	cudaMemcpy( cbi->img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyDeviceToHost );
-	checkCUDAError("Error: Unable to retrieve data volume.");
+	cudaMemcpy (cbi->img, dev_img, cbi->dim[0] * cbi->dim[1] * sizeof(float), cudaMemcpyDeviceToHost);
+	checkCUDAError ("Error: Unable to retrieve data volume.");
 		
 	char img_file[1024];
 	
@@ -569,39 +529,37 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
 
     return 0;
 }
+#endif
 
 //DRR3 uses 3D textures and pre-calculated coefs to accelerate DRR generation.
 
 //////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_DRR() //////////////////////////////////
-extern "C"
-int CUDA_DRR3 (Volume *vol, Fdk_options *options)
+int CUDA_DRR3 (Volume *vol, Drr_options *options)
 {
-    // Structure for passing arugments to kernel: (See fdk_cuda.h)
-    kernel_args_fdk *kargs;
-    kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
-
-    CB_Image* cbi;
+    Timer timer, total_timer;
+    double time_kernel = 0;
+    double time_io = 0;
+    double time_total = 0;
+    Proj_image* cbi;
     int image_num;
-    int i;
+    int a, i;
 
     // CUDA device pointers
-    //float *dev_vol;	            // Holds voxels on device
+    Drr_kernel_args *kargs;
+    Drr_kernel_args *dev_kargs;     // Holds kernel parameters on device
     float *dev_img;	            // Holds image pixels on device
     float *dev_matrix;
     float *dev_coef;
     float *host_coef;
-    kernel_args_fdk *dev_kargs; // Holds kernel parameters
-    cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
-    cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
 
-    // Calculate the scale
-    image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
-    float scale = (float) (sqrt(3.0) / (double) image_num);
-    scale = scale * options->scale;
+    // Start the timer
+    plm_timer_start (&total_timer);
 
-    // Load static kernel arguments
-    kargs->scale = scale;
+    kargs = (Drr_kernel_args*) malloc (sizeof(Drr_kernel_args));
+    cudaMalloc ((void**)&dev_matrix, 12*sizeof(float));
+    cudaMalloc ((void**)&dev_kargs, sizeof(Drr_kernel_args));
+
     kargs->vol_offset.x = vol->offset[0];
     kargs->vol_offset.y = vol->offset[1];
     kargs->vol_offset.z = vol->offset[2];
@@ -612,20 +570,11 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     kargs->vol_pix_spacing.y = vol->pix_spacing[1];
     kargs->vol_pix_spacing.z = vol->pix_spacing[2];
 
-
-    ////// TIMING CODE //////////////////////
-    Timer timer, total_timer;
-    double time_kernel = 0;
-    double time_io = 0;
-    double time_total = 0;
-
-    // Start the timer
-    plm_timer_start (&total_timer);
-
     //Create DRR directory
     char drr_dir[1024];
-    sprintf (drr_dir, "%s/DRR", options->input_dir);
-    make_directory (drr_dir);
+    //    sprintf (drr_dir, "%s/DRR", options->input_dir);
+    //    make_directory (drr_dir);
+    printf ("GCS: Warning, output prefix not yet handled in cuda...\n");
 
     // prepare texture
     cudaChannelFormatDesc ca_descriptor;
@@ -636,9 +585,6 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     ca_extent.width  = vol->dim[0];
     ca_extent.height = vol->dim[1];
     ca_extent.depth  = vol->dim[2];
-    //ca_extent.width  = vol->dim[0];
-    //ca_extent.height = vol->dim[2];
-    //ca_extent.depth  = vol->dim[1];
     cudaMalloc3DArray( &dev_3Dvol, &ca_descriptor, ca_extent );
     cudaBindTextureToArray( tex_3Dvol, dev_3Dvol, ca_descriptor );
 
@@ -651,36 +597,30 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     // The pitched pointer is really tricky to get right. We give the
     // pitch of a row, then the number of elements in a row, then the
     // height, and we omit the 3rd dimension.
-    cpy_params.srcPtr   = make_cudaPitchedPtr( (void*)vol->img, ca_extent.width *sizeof(float), ca_extent.width , ca_extent.height  );
+    cpy_params.srcPtr = make_cudaPitchedPtr ((void*)vol->img, 
+	ca_extent.width *sizeof(float), ca_extent.width , ca_extent.height);
 
-    cudaMemcpy3D( &cpy_params );
+    cudaMemcpy3D ( &cpy_params );
 
     // cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
-
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
 #endif
 
-    // This is just to retrieve the 2D image dimensions
-    int fimg=options->first_img;
-    do {
-	cbi = get_image_raw (options, fimg);
-	fimg++;
-    }
-    while(cbi==NULL);
-		
-    cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
+    cudaMalloc ((void**)&dev_img, 
+	options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
 
-    cudaMalloc( (void**)&dev_coef, 7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
-    checkCUDAError("Unable to allocate coef devmem");
-    host_coef=(float*)malloc(7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
+    cudaMalloc ((void**)&dev_coef, 
+	7 * options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
+    checkCUDAError ("Unable to allocate coef devmem");
+    host_coef = (float*) malloc (
+	7 * options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
 		
-    free_cb_image( cbi );
-
-    printf ("Projecting Image:");
-    // Project each image into the volume one at a time
-    for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
+    for (a = 0; a < options->num_angles; a++)
     {
 
 	printf(" %d\n",image_num);
@@ -688,10 +628,12 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
 	plm_timer_start (&timer);
 
+#if defined (commentout)
 	// Load the current image
 	cbi = get_image_raw (options, image_num);
 	if (cbi==NULL)
 	    continue;
+#endif
 
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];
@@ -807,7 +749,13 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
 	//   sprintf (mat_file, fmt, image_num);
 	//   return load_and_filter_cb_image (options,img_file, mat_file);
-	sprintf (img_file, "%s/DRR/Proj_%03d.raw", options->input_dir,image_num);
+	
+
+	//sprintf (img_file, "%s/DRR/Proj_%03d.raw", options->input_dir,image_num);
+
+	printf ("GCS Warning: output filename may not be flexible enough\n");
+	sprintf (img_file, "%s%04d.txt", options->output_prefix, a);
+
 	//   sprintf (img_file, fmt, image_num);
 	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
 
@@ -839,7 +787,6 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     printf(" done.\n\n");
 #endif
 
-    ////// TIMING CODE //////////////////////
     // Report Timing Data
     time_total = plm_timer_report (&total_timer);
     printf("========================================\n");
@@ -849,13 +796,15 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
 #endif
 
-    printf ("[Average Projection Time: %.9fs ]\n", time_total / (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("[Average Projection Time: %.9fs ]\n", 
+	time_total / options->num_angles);
 #if defined (TIME_KERNEL)
-    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / (1+(options->last_img - options->first_img) / options->skip_img));
-    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage Kernel  Time: %.9fs\n", 
+	time_kernel / options->num_angles);
+    printf ("\tAverage File IO Time: %.9fs\n\n", 
+	time_io / options->num_angles);
 #endif
     printf("========================================\n");
-    /////////////////////////////////////////
 
     // Cleanup
     cudaFree( dev_img );
@@ -876,7 +825,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 void checkCUDAError(const char *msg)
 {
     cudaError_t err = cudaGetLastError();
-    if( cudaSuccess != err) 
+    if ( cudaSuccess != err) 
     {
         fprintf(stderr, "CUDA ERROR: %s (%s).\n", msg, cudaGetErrorString( err) );
         exit(EXIT_FAILURE);

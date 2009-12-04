@@ -593,8 +593,8 @@ IF (CUDA_FOUND)
   SET (DRR_SRC
     ${DRR_SRC}
     ${CUDA_WRAPPERS}
-    drr_cuda.cu drr_cuda.h
-    fdk_utils.c fdk_utils.h    ## Temporary
+    drr_cuda.cu drr_cuda.h drr_cuda_p.h 
+##    fdk_utils.c fdk_utils.h    ## Temporary
     )
 ENDIF (CUDA_FOUND)
 
@@ -602,7 +602,7 @@ SET (EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
 SET (FDK_SRC
-        fdk_main.c fdk.h
+        fdk_main.c 
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	)
@@ -623,7 +623,7 @@ ENDIF (BROOK_FOUND)
 
 
 SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-	fdk_cuda.h fdk.h
+        fdk_cuda.h fdk_cuda_p.h 
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
 	mathutil.h

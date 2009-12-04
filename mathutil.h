@@ -5,6 +5,7 @@
 #define __mathutil_h__
 
 #include "plm_config.h"
+#include <math.h>
 #include <string.h>
 
 #ifndef M_PI

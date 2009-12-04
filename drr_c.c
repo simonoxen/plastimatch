@@ -391,93 +391,6 @@ drr_render_volume_orthographic (Volume* volume)
 {
 }
 
-#if defined (commentout)
-void
-drr_write_projection_matrix (Volume* vol, double* cam, 
-			     double* tgt, double* vup,
-			     double sid, double* ic,
-			     double* ps, int* ires,
-			     char* out_fn)
-{
-    double extrinsic[16];
-    double intrinsic[12];
-    double projection[12];
-    const int cols = 4;
-    double sad;
-
-    double nrm[3];
-    double vrt[3];
-    double vup_tmp[3];  /* Don't overwrite vup */
-
-    FILE* fp;
-
-    vec_zero (extrinsic, 16);
-    vec_zero (intrinsic, 12);
-
-    /* Compute image coordinate sys (nrm,vup,vrt) relative to room coords.
-       ---------------
-       nrm = tgt - cam
-       vrt = nrm x vup
-       vup = vrt x nrm
-       ---------------
-    */
-    vec3_sub3 (nrm, tgt, cam);
-    vec3_normalize1 (nrm);
-    vec3_cross (vrt, nrm, vup);
-    vec3_normalize1 (vrt);
-    vec3_cross (vup_tmp, vrt, nrm);
-    vec3_normalize1 (vup_tmp);
-
-    /* !!! But change nrm here to -nrm */
-    vec3_scale2 (nrm, -1.0);
-
-    /* Build extrinsic matrix */
-    vec3_copy (&extrinsic[0], vrt);
-    vec3_copy (&extrinsic[4], vup_tmp);
-    vec3_copy (&extrinsic[8], nrm);
-
-    sad = vec3_len (cam);
-    m_idx(extrinsic,cols,2,3) = - sad;
-    m_idx(extrinsic,cols,3,3) = 1.0;
-
-    /* Build intrinsic matrix */
-    m_idx(intrinsic,cols,0,1) = - 1 / ps[0];
-    m_idx(intrinsic,cols,1,0) = 1 / ps[1];
-    m_idx(intrinsic,cols,2,2) = - 1 / sid;
-    //    m_idx(intrinsic,cols,0,3) = ic[0];
-    //    m_idx(intrinsic,cols,1,3) = ic[1];
-
-    mat_mult_mat (projection, intrinsic,3,4, extrinsic,4,4);
-
-#if defined (VERBOSE)
-    printf ("Extrinsic:\n");
-    matrix_print_eol (stdout, extrinsic, 4, 4);
-    printf ("Intrinsic:\n");
-    matrix_print_eol (stdout, intrinsic, 3, 4);
-    printf ("Projection:\n");
-    matrix_print_eol (stdout, projection, 3, 4);
-#endif
-
-    fp = fopen (out_fn, "w");
-    if (!fp) {
-	fprintf (stderr, "Error opening %s for write\n", out_fn);
-	exit (-1);
-    }
-    fprintf (fp, "%18.8e %18.8e\n", ic[0], ic[1]);
-    fprintf (fp,
-	"%18.8e %18.8e %18.8e %18.8e\n" 
-	"%18.8e %18.8e %18.8e %18.8e\n" 
-	"%18.8e %18.8e %18.8e %18.8e\n", 
-	projection[0], projection[1], projection[2], projection[3],
-	projection[4], projection[5], projection[6], projection[7],
-	projection[8], projection[9], projection[10], projection[11]
-	);
-    fprintf (fp, "%18.8e\n%18.8e\n", sad, sid);
-    fprintf (fp, "%18.8e %18.8e %18.8e\n", nrm[0], nrm[1], nrm[2]);
-    fclose (fp);
-}
-#endif
-
 void
 drr_render_volume_perspective (
     Volume* vol, double* cam, 
@@ -730,13 +643,10 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	printf ("ic:  %g %g\n", ic[0], ic[1]);
 #endif
 	sprintf (out_fn, "%s%04d.txt", options->output_prefix, a);
-#if defined (commentout)
-	drr_write_projection_matrix (vol, cam, tgt, vup, 
-				     sid, ic, ps, ires, out_fn);
-#endif
 
 	proj_matrix_write (cam, tgt, vup, sid, ic, ps, ires, 
 			   varian_mode, out_fn);
+
 	if (options->output_format == OUTPUT_FORMAT_PFM) {
 	    sprintf (out_fn, "%s%04d.pfm", options->output_prefix, a);
 	} else if (options->output_format == OUTPUT_FORMAT_PGM) {
@@ -745,11 +655,11 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	    sprintf(out_fn, "%s%04d.raw", options->output_prefix, a);
 	}
 	sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
-	drr_render_volume_perspective (vol, cam, tgt, vup, 
-				       sid, ic, ps, 
-				       ires, 
-				       out_fn, multispectral_fn, 
-				       options);
+
+	drr_render_volume_perspective (
+	    vol, cam, tgt, vup, sid, ic, ps, 
+	    ires, out_fn, multispectral_fn, 
+	    options);
     }
 }
 
