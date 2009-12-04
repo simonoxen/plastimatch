@@ -384,8 +384,9 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     double time_kernel = 0;
     double time_io = 0;
 
-    // Start the timer
+     // Start the timer
     plm_timer_start (&timer);
+
 
     cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
     //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
@@ -402,13 +403,7 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
     free_cb_image( cbi );
 
-    ////// TIMING CODE //////////////////////
-#if defined (_WIN32)
-    QueryPerformanceCounter(&start_ticks_total);
-#endif
-    /////////////////////////////////////////
-
-    printf ("Projecting Image:");
+	printf ("Projecting Image:");
     // Project each image into the volume one at a time
     for (image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
     {
@@ -560,10 +555,8 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     // Report Timing Data
 #if defined (_WIN32)
 #if defined (TIME_KERNEL)
-    QueryPerformanceCounter(&end_ticks_total);
-    cputime.QuadPart = end_ticks_total.QuadPart- start_ticks_total.QuadPart;
     printf("========================================\n");
-    printf ("[Total Execution Time: %.9fs ]\n", ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart));
+    printf ("[Total Execution Time: %.9fs ]\n", plm_timer_report(&timer));
     printf ("\tTotal Kernel  Time: %.9fs\n", kernel_total);
     printf ("\tTotal File IO Time: %.9fs\n\n", io_total);
 
