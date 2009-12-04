@@ -8,13 +8,7 @@
 	http://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-construct.html
 	http://graphics.idav.ucdavis.edu/education/CAGDNotes/Quadratic-B-Spline-Surface-Refinement/Quadratic-B-Spline-Surface-Refinement.html
 
-    For multithreading - how to get number of processors?
-	On Win32: GetProcessAffinityMask, or GetSystemInfo
-	    http://msdn.microsoft.com/en-us/library/ms810438.aspx
-	Posix: 
-	    http://ndevilla.free.fr/threads/index.html
-
-    Proposed variable naming:
+    Variable naming guide:
 	Fixed image voxel                   (f[3]), fidx <currently (fi,fj,fk),fv>
 	Moving image voxel                  (m[3]), midx < ditto >
 	    - what about ROI's              ?
@@ -461,83 +455,6 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn)
 	}
     }
     fclose (fp);
-}
-
-/* -----------------------------------------------------------------------
-   Reference code for alternate GPU-based data structure
-   ----------------------------------------------------------------------- */
-void
-control_poimg_loop (BSPLINE_Xform* bxf, Volume* fixed)
-{
-    int i, j, k;
-    int rx, ry, rz;
-    int vx, vy, vz;
-    int cidx;
-    float* img;
-
-    img = (float*) fixed->img;
-
-    /* Loop through cdim^3 control points */
-    for (k = 0; k < bxf->cdims[2]; k++) {
-	for (j = 0; j < bxf->cdims[1]; j++) {
-	    for (i = 0; i < bxf->cdims[0]; i++) {
-
-		/* Linear index of control point */
-		cidx = k * bxf->cdims[1] * bxf->cdims[0]
-		    + j * bxf->cdims[0] + i;
-
-		/* Each control point has 64 regions */
-		for (rz = 0; rz < 4; rz ++) {
-		    for (ry = 0; ry < 4; ry ++) {
-			for (rx = 0; rx < 4; rx ++) {
-
-			    /* Some of the 64 regions are invalid. */
-			    if (k + rz - 2 < 0) continue;
-			    if (k + rz - 2 >= bxf->rdims[2]) continue;
-			    if (j + ry - 2 < 0) continue;
-			    if (j + ry - 2 >= bxf->rdims[1]) continue;
-			    if (i + rx - 2 < 0) continue;
-			    if (i + rx - 2 >= bxf->rdims[0]) continue;
-
-			    /* Each region has vox_per_rgn^3 voxels */
-			    for (vz = 0; vz < bxf->vox_per_rgn[2]; vz ++) {
-				for (vy = 0; vy < bxf->vox_per_rgn[1]; vy ++) {
-				    for (vx = 0; vx < bxf->vox_per_rgn[0]; vx ++) {
-					int img_idx[3], p;
-					float img_val, coeff_val;
-
-					/* Get (i,j,k) index of the voxel */
-					img_idx[0] = bxf->roi_offset[0] + (i + rx - 2) * bxf->vox_per_rgn[0] + vx;
-					img_idx[1] = bxf->roi_offset[1] + (j + ry - 2) * bxf->vox_per_rgn[1] + vy;
-					img_idx[2] = bxf->roi_offset[2] + (k + rz - 2) * bxf->vox_per_rgn[2] + vz;
-
-					/* Some of the pixels are invalid. */
-					if (img_idx[0] > fixed->dim[0]) continue;
-					if (img_idx[1] > fixed->dim[1]) continue;
-					if (img_idx[2] > fixed->dim[2]) continue;
-
-					/* Get the image value */
-					p = img_idx[2] * fixed->dim[1] * fixed->dim[0] 
-					    + img_idx[1] * fixed->dim[0] + img_idx[0];
-					img_val = img[p];
-
-					/* Get coefficient multiplier */
-					p = vz * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1]
-					    + vy * bxf->vox_per_rgn[0] + vx;
-					coeff_val = bxf->coeff[p];
-
-					/* Here you would update the gradient: 
-					    grad[cidx] += (fixed_val - moving_val) * coeff_val;
-					*/
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
 }
 
 void
@@ -1037,7 +954,12 @@ bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
 }
 
 inline void
-bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qidx)
+bspline_interp_pix_b_inline (
+    float out[3], 
+    BSPLINE_Xform* bxf, 
+    int pidx, 
+    int qidx
+)
 {
     int i, j, k, m;
     int cidx;
