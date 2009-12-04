@@ -2029,6 +2029,9 @@ bspline_warp (
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 		
 		if (rijk[0] == 10 && rijk[1] == 11 && rijk[2] == 11) {
+		    printf ("p = %d %d %d\n", p[0], p[1], p[2]);
+		    printf ("q = %d %d %d\n", q[0], q[1], q[2]);
+		    printf ("pidx, qidx = %d %d\n", pidx, qidx);
 		    printf ("dxyz = %g %g %g\n", dxyz[0], dxyz[1], dxyz[2]);
 		}
 

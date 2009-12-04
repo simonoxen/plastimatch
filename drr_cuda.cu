@@ -146,7 +146,6 @@ void kernel_drr_i (float * dev_vol,  float * dev_img, int2 img_dim, float2 ic, f
 
 }
 
-#if 1
 void kernel_drr_j (float * dev_vol,  float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
 {
 	// CUDA 2.0 does not allow for a 3D grid, which severely
@@ -227,7 +226,6 @@ void kernel_drr_j (float * dev_vol,  float * dev_img, int2 img_dim, float2 ic, f
 
 
 }
-#endif
 
 
 //DRR3  uses 3D textures and pre-calculated coefs to accelerate DRR generation.
