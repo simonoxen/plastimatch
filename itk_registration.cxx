@@ -322,7 +322,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 			    valid_index[i] = idx[i];
 			    updated = 1;
 			}
-			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
 			    updated = 1;
 			}
@@ -362,7 +362,7 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 			    valid_index[i] = idx[i];
 			    updated = 1;
 			}
-			if (idx[i] - valid_index[i] >= valid_size[i]) {
+			if (idx[i] - valid_index[i] >= (long) valid_size[i]) {
 			    valid_size[i] = idx[i] - valid_index[i] + 1;
 			    updated = 1;
 			}

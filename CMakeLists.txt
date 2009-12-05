@@ -419,6 +419,7 @@ SET (GPUIT_LIBRARY_SRC
   threading.h
   timer.c timer.h
   vf.c vf.h
+  vf_stats.c vf_stats.h 
   volume.c volume.h
   )
 
@@ -735,9 +736,6 @@ SET (VF_INVERT_SRC
 SET (VF_TO_VVF_SRC
 	vf_to_vvf.cxx
 	)
-SET (VF_STATS_SRC
-	vf_stats.c
-	)
 SET (XF_TO_XF_SRC
 	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
@@ -891,8 +889,6 @@ PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
 PLM_ADD_EXECUTABLE (vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE (vf_stats "${VF_STATS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")

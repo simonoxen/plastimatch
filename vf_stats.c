@@ -12,14 +12,7 @@
 #include "readmha.h"
 
 void
-print_usage (void)
-{
-    printf ("Usage: vf_stats vf_file\n");
-    exit (1);
-}
-
-void
-analyze_volume (Volume* vol)
+vf_analyze (Volume* vol)
 {
     int d, i, j, k, v;
     float* img = (float*) vol->img;
@@ -57,34 +50,4 @@ analyze_volume (Volume* vol)
     printf ("Mean:      %10.3f %10.3f %10.3f\n", mean_v[0], mean_v[1], mean_v[2]);
     printf ("Max:       %10.3f %10.3f %10.3f\n", maxs[0], maxs[1], maxs[2]);
     printf ("Mean abs:  %10.3f %10.3f %10.3f\n", mean_av[0], mean_av[1], mean_av[2]);
-}
-
-int
-main (int argc, char *argv[])
-{
-    char* vf_fn;
-    Volume* vol;
-
-    if (argc != 2) {
-	print_usage ();
-    }
-    vf_fn = argv[1];
-
-    vol = read_mha (vf_fn);
-    if (!vol) {
-	fprintf (stderr, "Sorry, couldn't open file \"%s\" for read.\n", vf_fn);
-	exit (-1);
-    }
-
-    if (vol->pix_type != PT_VF_FLOAT_INTERLEAVED) {
-	fprintf (stderr, "Sorry, file \"%s\" is not an interleaved float vector field.\n", vf_fn);
-	fprintf (stderr, "Type = %d\n", vol->pix_type);
-	exit (-1);
-    }
-
-    analyze_volume (vol);
-
-    volume_free (vol);
-
-    return 0;
 }

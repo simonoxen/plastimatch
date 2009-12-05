@@ -50,7 +50,7 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
 	{ NULL,                    0,                      NULL,           0 }
     };
 
-    while (ch = getopt_long (argc, argv, "i:n:o:s:", longopts, NULL)) {
+    while ((ch = getopt_long (argc, argv, "i:n:o:s:", longopts, NULL))) {
 	if (ch == -1) break;
 	switch (ch) {
 	case 'i':

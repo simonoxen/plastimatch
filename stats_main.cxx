@@ -4,13 +4,40 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+#include "file_type.h"
 #include "getopt.h"
-#include "stats_main.h"
 #include "itk_image.h"
+#include "readmha.h"
+#include "stats_main.h"
+#include "vf_stats.h"
 
 static void
-stats_main (Stats_parms* parms)
+stats_vf_main (Stats_parms* parms)
 {
+    Volume* vol;
+
+    vol = read_mha (parms->mha_in_fn);
+    if (!vol) {
+	fprintf (stderr, "Sorry, couldn't open file \"%s\" for read.\n", 
+	    parms->mha_in_fn);
+	exit (-1);
+    }
+
+    if (vol->pix_type != PT_VF_FLOAT_INTERLEAVED) {
+	fprintf (stderr, "Sorry, file \"%s\" is not an interleaved "
+	    "float vector field.\n", parms->mha_in_fn);
+	fprintf (stderr, "Type = %d\n", vol->pix_type);
+	volume_free (vol);
+	exit (-1);
+    }
+    vf_analyze (vol);
+    volume_free (vol);
+}
+
+static void
+stats_img_main (Stats_parms* parms)
+{
+
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
     FloatImageType::Pointer img = load_float (parms->mha_in_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
@@ -35,6 +62,20 @@ stats_main (Stats_parms* parms)
 
     printf ("MIN %f AVE %f MAX %f NUM %d\n",
 	    min_val, (float) (sum / num), max_val, num);
+}
+
+static void
+stats_main (Stats_parms* parms)
+{
+    switch (deduce_file_type (parms->mha_in_fn)) {
+    case PLM_FILE_TYPE_VF:
+	stats_vf_main (parms);
+	break;
+    case PLM_FILE_TYPE_IMG:
+    default:
+	stats_img_main (parms);
+	break;
+    }
 }
 
 static void
