@@ -175,7 +175,7 @@ fdk_brook_512_256(Volume* vol, Fdk_options* options)
 	clock_end = (double)clock_count.QuadPart;
 	processing_cycles +=  (clock_end - clock_start);
 			
-	free_cb_image(cbi);
+	proj_image_free(cbi);
     } 
 		
     int texture_size = size*size; // Texture of float4 elements
@@ -355,7 +355,7 @@ fdk_brook_c (Volume* vol, Fdk_options* options)
 	clock_end = (double)clock_count.QuadPart;
 	processing_cycles +=  (clock_end - clock_start);
 			
-	free_cb_image(cbi);
+	proj_image_free(cbi);
     } 
 		
     QueryPerformanceCounter(&clock_count);
@@ -527,7 +527,7 @@ fdk_brook_b(Volume* vol, Fdk_options* options)
 	clock_end = (double)clock_count.QuadPart;
 	processing_cycles +=  (clock_end - clock_start);
 			
-	free_cb_image(cbi);
+	proj_image_free(cbi);
     } 
 		
     QueryPerformanceCounter(&clock_count);

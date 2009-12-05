@@ -685,7 +685,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options)
     while(cbi==NULL);
 		
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-    free_cb_image( cbi );
+    proj_image_free( cbi );
 
     ////// TIMING CODE //////////////////////
 #if defined (_WIN32)
@@ -733,7 +733,7 @@ int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options)
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
 	// Free the current image 
-	free_cb_image( cbi );
+	proj_image_free( cbi );
 
 	////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
@@ -860,9 +860,9 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
 
     // CUDA device pointers
     float *dev_vol;	            // Holds voxels on device
-	float *host_img;
+    float *host_img;
     float *dev_img;	            // Holds image pixels on device
-	float *host_matrix;
+    float *host_matrix;
     float *dev_matrix;
     kernel_args_fdk *dev_kargs; // Holds kernel parameters
 
@@ -946,31 +946,31 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
     while(cbi==NULL);
 
 
-	cudaMalloc( (void**)&dev_matrix, 12*sizeof(float)*image_n );
-	checkCUDAError("Unable to allocate dev_matrix");
+    cudaMalloc( (void**)&dev_matrix, 12*sizeof(float)*image_n );
+    checkCUDAError("Unable to allocate dev_matrix");
     
-	cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
-	checkCUDAError("Unable to allocate dev_kargs");
+    cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
+    checkCUDAError("Unable to allocate dev_kargs");
 
-	cudaMalloc( (void**)&dev_vol, vol_size_malloc);
+    cudaMalloc( (void**)&dev_vol, vol_size_malloc);
     cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
     checkCUDAError("Unable to allocate dev_vol");
 
 		
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)*image_n); 
-	checkCUDAError("Unable to allocate dev_img");
+    checkCUDAError("Unable to allocate dev_img");
 
-	host_matrix=(float *)malloc(12*sizeof(float)*image_n);
-	if (host_matrix==NULL){
-		printf("Can no allocate host memory for host_matrix");
-		exit(1);
-	}
-	host_img=(float *)malloc(cbi->dim[0]*cbi->dim[1]*sizeof(float)*image_n); 
-	if (host_img==NULL){
-		printf("Can no allocate host memory for host_img");
-		exit(1);
-	}
-    free_cb_image( cbi );
+    host_matrix=(float *)malloc(12*sizeof(float)*image_n);
+    if (host_matrix==NULL){
+	printf("Can no allocate host memory for host_matrix");
+	exit(1);
+    }
+    host_img=(float *)malloc(cbi->dim[0]*cbi->dim[1]*sizeof(float)*image_n); 
+    if (host_img==NULL){
+	printf("Can no allocate host memory for host_img");
+	exit(1);
+    }
+    proj_image_free( cbi );
 
     ////// TIMING CODE //////////////////////
 #if defined (_WIN32)
@@ -979,7 +979,7 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
     /////////////////////////////////////////
 
     printf ("Projecting Image:");
-	image_idx=0;
+    image_idx=0;
     // Project each image into the volume one at a time
     for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
     {
@@ -1022,88 +1022,88 @@ int CUDA_reconstruct_conebeam2 (Volume *vol, Fdk_options *options)
 
 
 	// Free the current image 
-	free_cb_image( cbi );
+	proj_image_free( cbi );
 	image_idx++;
 
-	}
+    }
 
 	
-	// Copy image pixel data & projection matrix to device Global Memory
-	// and then bind them to the texture hardware.
-	cudaMemcpy( dev_img, host_img, kargs->img_dim.x*kargs->img_dim.y*sizeof(float)*image_n, cudaMemcpyHostToDevice );
-	printf("Copy imgs from host to device");
-	cudaBindTexture( 0, tex_img, dev_img, kargs->img_dim.x*kargs->img_dim.y*sizeof(float)*image_n);
-	cudaMemcpy( dev_matrix, host_matrix, sizeof(kargs->matrix)*image_n, cudaMemcpyHostToDevice);
-	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)*image_n);
+    // Copy image pixel data & projection matrix to device Global Memory
+    // and then bind them to the texture hardware.
+    cudaMemcpy( dev_img, host_img, kargs->img_dim.x*kargs->img_dim.y*sizeof(float)*image_n, cudaMemcpyHostToDevice );
+    printf("Copy imgs from host to device");
+    cudaBindTexture( 0, tex_img, dev_img, kargs->img_dim.x*kargs->img_dim.y*sizeof(float)*image_n);
+    cudaMemcpy( dev_matrix, host_matrix, sizeof(kargs->matrix)*image_n, cudaMemcpyHostToDevice);
+    cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)*image_n);
 
-	free(host_img);
-	free(host_matrix);
+    free(host_img);
+    free(host_matrix);
 
-	////// TIMING CODE //////////////////////
+    ////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_io);
-	cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
-	io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
-	QueryPerformanceCounter(&start_ticks_kernel);
+    QueryPerformanceCounter(&end_ticks_io);
+    cputime.QuadPart = end_ticks_io.QuadPart- start_ticks_io.QuadPart;
+    io_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+    QueryPerformanceCounter(&start_ticks_kernel);
 #endif
 #endif
-	/////////////////////////////////////////
+    /////////////////////////////////////////
 
-	int smemSize = image_n  * sizeof(float);
+    int smemSize = image_n  * sizeof(float);
 
     // Thead Block Dimensions
     int tBlock_x = image_n;
     int tBlock_y = 1;
     int tBlock_z = 1;
 
-	    // Each element in the volume (each voxel) gets 1 thread
+    // Each element in the volume (each voxel) gets 1 thread
     int blocksInX = vol->dim[0];
     int blocksInY = vol->dim[1];
-	int blocksInZ = vol->dim[2];
+    int blocksInZ = vol->dim[2];
     dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
     dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
 
 
-	// Invoke ze kernel  \(^_^)/
-	// Note: cbi->img AND cbi->matrix are passed via texture memory
-	//-------------------------------------
+    // Invoke ze kernel  \(^_^)/
+    // Note: cbi->img AND cbi->matrix are passed via texture memory
+    //-------------------------------------
 
-	kernel_fdk2<<< dimGrid, dimBlock, smemSize >>>(dev_vol, 
-						image_n,
-					    kargs->img_dim,
-					    kargs->ic,
-					    kargs->nrm,
-					    kargs->sad,
-					    kargs->scale,
-					    kargs->vol_offset,
-					    kargs->vol_dim,
-					    kargs->vol_pix_spacing,
-					    blocksInY,
-					    1.0f/(float)blocksInY);
-	checkCUDAError("Kernel Panic!");
+    kernel_fdk2<<< dimGrid, dimBlock, smemSize >>>(dev_vol, 
+	image_n,
+	kargs->img_dim,
+	kargs->ic,
+	kargs->nrm,
+	kargs->sad,
+	kargs->scale,
+	kargs->vol_offset,
+	kargs->vol_dim,
+	kargs->vol_pix_spacing,
+	blocksInY,
+	1.0f/(float)blocksInY);
+    checkCUDAError("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
-	// CUDA kernel calls are asynchronous...
-	// In order to accurately time the kernel
-	// execution time we need to set a thread
-	// barrier here after its execution.
-	cudaThreadSynchronize();
+    // CUDA kernel calls are asynchronous...
+    // In order to accurately time the kernel
+    // execution time we need to set a thread
+    // barrier here after its execution.
+    cudaThreadSynchronize();
 #endif
 
-	// Unbind the image and projection matrix textures
-	cudaUnbindTexture( tex_img );
-	cudaUnbindTexture( tex_matrix );
+    // Unbind the image and projection matrix textures
+    cudaUnbindTexture( tex_img );
+    cudaUnbindTexture( tex_matrix );
 
-	////// TIMING CODE //////////////////////
+    ////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
-	QueryPerformanceCounter(&end_ticks_kernel);
-	cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
-	kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
+    QueryPerformanceCounter(&end_ticks_kernel);
+    cputime.QuadPart = end_ticks_kernel.QuadPart- start_ticks_kernel.QuadPart;
+    kernel_total += ((float)cputime.QuadPart/(float)ticksPerSecond.QuadPart);
 #endif
 #endif
-	/////////////////////////////////////////
+    /////////////////////////////////////////
  
 #if defined (VERBOSE)
     printf(" done.\n\n");
@@ -1253,7 +1253,7 @@ int CUDA_DRR (Volume *vol, Fdk_options *options)
     while(cbi==NULL);
 		
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-    free_cb_image( cbi );
+    proj_image_free( cbi );
 
     ////// TIMING CODE //////////////////////
 #if defined (_WIN32)
@@ -1505,8 +1505,8 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     float *dev_vol;	            // Holds voxels on device
     float *dev_img;	            // Holds image pixels on device
     float *dev_matrix;
-	float *dev_coef;
-	float *host_coef;
+    float *dev_coef;
+    float *host_coef;
     kernel_args_fdk *dev_kargs; // Holds kernel parameters
     cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
     cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
@@ -1562,58 +1562,58 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	printf("no go counter not installed");  
 #endif
 	
-//Create DRR directory
+    //Create DRR directory
 #if defined (_WIN32)
-	char drr_dir[1024];
-	sprintf (drr_dir, "%s\\DRR", options->input_dir);
-	CreateDirectory(drr_dir,NULL);
+    char drr_dir[1024];
+    sprintf (drr_dir, "%s\\DRR", options->input_dir);
+    CreateDirectory(drr_dir,NULL);
 #endif
 
     //cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
     //cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
- //   checkCUDAError("Unable to allocate data volume");
-	//float *tmp=(float *)malloc(vol->npix*sizeof(float));
- //    memcpy((void *)tmp,(void *)vol->img,vol->npix*sizeof(float));
-	//float *vol_img=(float *)vol->img;
-	//for(i=0; i<vol->dim[0]; i++)
-	//	for(j=0; j<vol->dim[1]; j++)
-	//		for(k=0; k<vol->dim[2]; k++)
-	//			vol_img[j*vol->dim[0]*vol->dim[2]+k*vol->dim[0]+i]=tmp[k*vol->dim[0]*vol->dim[1]+j*vol->dim[0]+i];
-	//free(tmp);
+    //   checkCUDAError("Unable to allocate data volume");
+    //float *tmp=(float *)malloc(vol->npix*sizeof(float));
+    //    memcpy((void *)tmp,(void *)vol->img,vol->npix*sizeof(float));
+    //float *vol_img=(float *)vol->img;
+    //for(i=0; i<vol->dim[0]; i++)
+    //	for(j=0; j<vol->dim[1]; j++)
+    //		for(k=0; k<vol->dim[2]; k++)
+    //			vol_img[j*vol->dim[0]*vol->dim[2]+k*vol->dim[0]+i]=tmp[k*vol->dim[0]*vol->dim[1]+j*vol->dim[0]+i];
+    //free(tmp);
 
-	   ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
 
 
 
-   // prepare texture
-   cudaChannelFormatDesc ca_descriptor;
-   cudaExtent ca_extent;
-   cudaArray *dev_3Dvol=0;
+    // prepare texture
+    cudaChannelFormatDesc ca_descriptor;
+    cudaExtent ca_extent;
+    cudaArray *dev_3Dvol=0;
 
-   ca_descriptor = cudaCreateChannelDesc<float>();
-   ca_extent.width  = vol->dim[0];
-   ca_extent.height = vol->dim[1];
-   ca_extent.depth  = vol->dim[2];
-   //ca_extent.width  = vol->dim[0];
-   //ca_extent.height = vol->dim[2];
-   //ca_extent.depth  = vol->dim[1];
-   cudaMalloc3DArray( &dev_3Dvol, &ca_descriptor, ca_extent );
-   cudaBindTextureToArray( tex_3Dvol, dev_3Dvol, ca_descriptor );
+    ca_descriptor = cudaCreateChannelDesc<float>();
+    ca_extent.width  = vol->dim[0];
+    ca_extent.height = vol->dim[1];
+    ca_extent.depth  = vol->dim[2];
+    //ca_extent.width  = vol->dim[0];
+    //ca_extent.height = vol->dim[2];
+    //ca_extent.depth  = vol->dim[1];
+    cudaMalloc3DArray( &dev_3Dvol, &ca_descriptor, ca_extent );
+    cudaBindTextureToArray( tex_3Dvol, dev_3Dvol, ca_descriptor );
 
-   cudaMemcpy3DParms cpy_params = {0};
-   cpy_params.extent   = ca_extent;
-   cpy_params.kind     = cudaMemcpyHostToDevice;
-   cpy_params.dstArray = dev_3Dvol;
+    cudaMemcpy3DParms cpy_params = {0};
+    cpy_params.extent   = ca_extent;
+    cpy_params.kind     = cudaMemcpyHostToDevice;
+    cpy_params.dstArray = dev_3Dvol;
 
-   //http://sites.google.com/site/cudaiap2009/cookbook-1#TOC-CUDA-3D-Texture-Example-Gerald-Dall
-   // The pitched pointer is really tricky to get right. We give the
-   // pitch of a row, then the number of elements in a row, then the
-   // height, and we omit the 3rd dimension.
+    //http://sites.google.com/site/cudaiap2009/cookbook-1#TOC-CUDA-3D-Texture-Example-Gerald-Dall
+    // The pitched pointer is really tricky to get right. We give the
+    // pitch of a row, then the number of elements in a row, then the
+    // height, and we omit the 3rd dimension.
     cpy_params.srcPtr   = make_cudaPitchedPtr( (void*)vol->img, ca_extent.width *sizeof(float), ca_extent.width , ca_extent.height  );
 
-   cudaMemcpy3D( &cpy_params );
+    cudaMemcpy3D( &cpy_params );
 
-  // cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
+    // cudaMemcpy(dev_vol,  vol->img, vol->npix * vol->pix_size, cudaMemcpyHostToDevice );
 
 
 #if defined (VERBOSE)
@@ -1631,11 +1631,11 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 		
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
 
-	cudaMalloc( (void**)&dev_coef, 7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
-	checkCUDAError("Unable to allocate coef devmem");
-	host_coef=(float*)malloc(7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
+    cudaMalloc( (void**)&dev_coef, 7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
+    checkCUDAError("Unable to allocate coef devmem");
+    host_coef=(float*)malloc(7*cbi->dim[0]*cbi->dim[1]*sizeof(float));
 		
-	free_cb_image( cbi );
+    proj_image_free( cbi );
 
     ////// TIMING CODE //////////////////////
 #if defined (_WIN32)
@@ -1648,7 +1648,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
     for(image_num = options->first_img;  image_num <= options->last_img;  image_num += options->skip_img)
     {
 
-		printf(" %d\n",image_num);
+	printf(" %d\n",image_num);
 	fflush(stdout);
 
 	////// TIMING CODE //////////////////////
@@ -1678,23 +1678,23 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	for(i=0; i<12; i++)
 	    kargs->matrix[i] = (float)cbi->matrix[i];
 
-		//Precalculate coeff
+	//Precalculate coeff
 
 	int xy7;
 	double * ic=cbi->ic;
 	for (int x=0;x<cbi->dim[0];x++)
-		for (int y=0; y<cbi->dim[1];y++){
-			xy7=7*(y*cbi->dim[0]+x);
-			host_coef[xy7]  =((y-ic[1])*cbi->matrix[8]-cbi->matrix[4])/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
-			host_coef[xy7+2]=((y-ic[1])*cbi->matrix[9]-cbi->matrix[5])/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
-			host_coef[xy7+1]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
-			host_coef[xy7+3]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
-			host_coef[xy7+4]=(x-ic[0])*cbi->matrix[8]/cbi->matrix[2];
-			host_coef[xy7+5]=(x-ic[0])*cbi->matrix[9]/cbi->matrix[2];
-			host_coef[xy7+6]=(x-ic[0])*cbi->matrix[11]/cbi->matrix[2];
-		}
+	    for (int y=0; y<cbi->dim[1];y++){
+		xy7=7*(y*cbi->dim[0]+x);
+		host_coef[xy7]  =((y-ic[1])*cbi->matrix[8]-cbi->matrix[4])/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
+		host_coef[xy7+2]=((y-ic[1])*cbi->matrix[9]-cbi->matrix[5])/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
+		host_coef[xy7+1]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
+		host_coef[xy7+3]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
+		host_coef[xy7+4]=(x-ic[0])*cbi->matrix[8]/cbi->matrix[2];
+		host_coef[xy7+5]=(x-ic[0])*cbi->matrix[9]/cbi->matrix[2];
+		host_coef[xy7+6]=(x-ic[0])*cbi->matrix[11]/cbi->matrix[2];
+	    }
 
-			////// TIMING CODE //////////////////////
+	////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
 	QueryPerformanceCounter(&start_ticks_io);
@@ -1727,16 +1727,16 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
 
 
-	    // Thead Block Dimensions
-    int tBlock_x = vol->dim[0];
-    int tBlock_y = 1;
-    int tBlock_z = 1;
+	// Thead Block Dimensions
+	int tBlock_x = vol->dim[0];
+	int tBlock_y = 1;
+	int tBlock_z = 1;
 
-    // Each element in the volume (each voxel) gets 1 thread
-    int blocksInX = cbi->dim[0];
-    int blocksInY = cbi->dim[1];
-    dim3 dimGrid  = dim3(blocksInX, blocksInY);
-    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+	// Each element in the volume (each voxel) gets 1 thread
+	int blocksInX = cbi->dim[0];
+	int blocksInY = cbi->dim[1];
+	dim3 dimGrid  = dim3(blocksInX, blocksInY);
+	dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
 
 
 
@@ -1746,7 +1746,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	// Note: cbi->img AND cbi->matrix are passed via texture memory
 
 	int smemSize = vol->dim[0]  * sizeof(float);
-//	if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
+	//	if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
 
 	
 	////// TIMING CODE //////////////////////
@@ -1761,14 +1761,14 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 	/////////////////////////////////////////
 	//-------------------------------------
 	kernel_drr_i3<<< dimGrid, dimBlock,  smemSize>>>(dev_img, 
-					    kargs->img_dim,
-					    kargs->ic,
-					    kargs->nrm,
-					    kargs->sad,
-					    kargs->scale,
-					    kargs->vol_offset,
-					    kargs->vol_dim,
-					    kargs->vol_pix_spacing);
+	    kargs->img_dim,
+	    kargs->ic,
+	    kargs->nrm,
+	    kargs->sad,
+	    kargs->scale,
+	    kargs->vol_offset,
+	    kargs->vol_dim,
+	    kargs->vol_pix_spacing);
 
 	checkCUDAError("Kernel Panic!");
 
@@ -1782,7 +1782,7 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 
 
 
-		////// TIMING CODE //////////////////////
+	////// TIMING CODE //////////////////////
 #if defined (TIME_KERNEL)
 #if defined (_WIN32)
 	QueryPerformanceCounter(&end_ticks_kernel);
@@ -1792,54 +1792,54 @@ int CUDA_DRR3 (Volume *vol, Fdk_options *options)
 #endif
 	/////////////////////////////////////////
 
-		// Unbind the image and projection matrix textures
+	// Unbind the image and projection matrix textures
 	//cudaUnbindTexture( tex_img );
 	cudaUnbindTexture( tex_matrix );
 	cudaUnbindTexture( tex_coef);
 
-	    // Copy reconstructed volume from device to host
-    //cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
+	// Copy reconstructed volume from device to host
+	//cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
 	cudaMemcpy( cbi->img, dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float), cudaMemcpyDeviceToHost );
-    checkCUDAError("Error: Unable to retrieve data volume.");
+	checkCUDAError("Error: Unable to retrieve data volume.");
 		
 	char img_file[1024];
 	
-    size_t rc;
-    FILE* fp;
-    //sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
+	size_t rc;
+	FILE* fp;
+	//sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
 	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
- //   sprintf (mat_file, fmt, image_num);
- //   return load_and_filter_cb_image (options,img_file, mat_file);
-sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
- //   sprintf (img_file, fmt, image_num);
- //   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+	//   sprintf (img_file, fmt, image_num);
+	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+	//   sprintf (mat_file, fmt, image_num);
+	//   return load_and_filter_cb_image (options,img_file, mat_file);
+	sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
+	//   sprintf (img_file, fmt, image_num);
+	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
 
 
 
 
-    fp = fopen (img_file,"wb");
-    if (!fp) {
-	fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
-	return(1);
-    }
+	fp = fopen (img_file,"wb");
+	if (!fp) {
+	    fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
+	    return(1);
+	}
 	float writeimg[512*384];
 	for (int i=0; i<512*384; i++)
-		writeimg[i]=65535*exp(-cbi->img[i]/30000);
-//		writeimg[i]=cbi->img[i];
+	    writeimg[i]=65535*exp(-cbi->img[i]/30000);
+	//		writeimg[i]=cbi->img[i];
 
-		/* write pixels */
-		rc = fwrite (writeimg , sizeof(float),  512* 384, fp); 
-		if (rc != 512 * 384) {
-			fprintf (stderr, "Couldn't write raster data for %s\n",
-				img_file);
-			return(1);
-		}
-		printf("Writing OK\n");
+	/* write pixels */
+	rc = fwrite (writeimg , sizeof(float),  512* 384, fp); 
+	if (rc != 512 * 384) {
+	    fprintf (stderr, "Couldn't write raster data for %s\n",
+		img_file);
+	    return(1);
+	}
+	printf("Writing OK\n");
 			
-		fclose(fp);
-		free_cb_image( cbi );
+	fclose(fp);
+	proj_image_free( cbi );
 
     }
 
@@ -1882,8 +1882,8 @@ sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
     cudaFree( dev_kargs );
     cudaFree( dev_matrix );
     cudaFree( dev_vol );
-	cudaFree( dev_coef);
-	free(host_coef);
+    cudaFree( dev_coef);
+    free(host_coef);
 
     return 0;
 }

@@ -779,7 +779,7 @@ int CUDA_DRR3 (Volume *vol, Drr_options *options)
 	printf("Writing OK\n");
 			
 	fclose(fp);
-	free_cb_image( cbi );
+	proj_image_free ( cbi );
 
     }
 

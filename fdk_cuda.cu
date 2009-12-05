@@ -238,7 +238,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
     // This is just to retrieve the 2D image dimensions
     cbi = get_image_pfm (options, options->first_img);
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-    free_cb_image( cbi );
+    proj_image_free (cbi);
 
     // Project each image into the volume one at a time
     for (image_num = options->first_img;
@@ -277,7 +277,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
 	// Free the current image 
-	free_cb_image( cbi );
+	proj_image_free( cbi );
 
 #if defined (TIME_KERNEL)
 	// Report IO time
