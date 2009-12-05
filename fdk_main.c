@@ -333,7 +333,7 @@ reconstruct_conebeam (Volume* vol, Fdk_options* options)
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);
 	project_volume_onto_image_c (vol, cbi, scale);
-	free_cb_image (cbi);
+	proj_image_free (cbi);
     }
 }
 

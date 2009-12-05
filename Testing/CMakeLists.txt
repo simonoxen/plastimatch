@@ -148,6 +148,21 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/drr
   "-a;20;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
   )
+PLM_ADD_TEST (
+  "drr-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;out_0010.pfm"
+  )
+ADD_TEST (
+  "drr-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 ## -------------------------------------------------------------------------
 ## fdk cpu

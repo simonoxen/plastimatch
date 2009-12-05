@@ -27,20 +27,22 @@ struct proj_image
     float* img;		// Pixel data
 };
 
-gpuit_EXPORT
-Proj_image* get_image (Fdk_options* options, int image_num);
-gpuit_EXPORT
-Proj_image* proj_image_load_pfm (char* img_filename, char* mat_filename);
-gpuit_EXPORT
-Proj_image* 
+gpuit_EXPORT Proj_image* 
+get_image (Fdk_options* options, int image_num);
+gpuit_EXPORT Proj_image* 
+proj_image_load_pfm (char* img_filename, char* mat_filename);
+gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
     char* img_filename, 
     char* mat_filename
 );
-
-gpuit_EXPORT
-void free_cb_image (Proj_image* cbi);
+gpuit_EXPORT void
+proj_image_debug_header (Proj_image *proj);
+gpuit_EXPORT void
+proj_image_stats (Proj_image *proj);
+gpuit_EXPORT void 
+proj_image_free (Proj_image* proj);
 
 #if defined __cplusplus
 }

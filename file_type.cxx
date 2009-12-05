@@ -48,6 +48,10 @@ deduce_file_type (char* path)
 	return PLM_FILE_TYPE_DIJ;
     }
 
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".pfm")) {
+	return PLM_FILE_TYPE_PFM;
+    }
+
     /* Maybe vector field, or maybe image */
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
@@ -90,6 +94,9 @@ file_type_string (Plm_file_type file_type)
 	break;
     case PLM_FILE_TYPE_RTOG_DIR:
 	return "RTOG directory";
+	break;
+    case PLM_FILE_TYPE_PFM:
+	return "PFM file";
 	break;
     default:
 	return "Unknown/default";

@@ -7,6 +7,7 @@
 #include "file_type.h"
 #include "getopt.h"
 #include "itk_image.h"
+#include "proj_image.h"
 #include "readmha.h"
 #include "stats_main.h"
 #include "vf_stats.h"
@@ -32,6 +33,17 @@ stats_vf_main (Stats_parms* parms)
     }
     vf_analyze (vol);
     volume_free (vol);
+}
+
+static void
+stats_proj_image_main (Stats_parms* parms)
+{
+    Proj_image *proj;
+
+    proj = proj_image_load_pfm (parms->mha_in_fn, 0);
+    proj_image_debug_header (proj);
+    proj_image_stats (proj);
+    proj_image_free (proj);
 }
 
 static void
@@ -70,6 +82,9 @@ stats_main (Stats_parms* parms)
     switch (deduce_file_type (parms->mha_in_fn)) {
     case PLM_FILE_TYPE_VF:
 	stats_vf_main (parms);
+	break;
+    case PLM_FILE_TYPE_PFM:
+	stats_proj_image_main (parms);
 	break;
     case PLM_FILE_TYPE_IMG:
     default:
