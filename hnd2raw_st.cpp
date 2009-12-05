@@ -1,11 +1,14 @@
-// cdecompress.cpp : Defines the entry point for the console application.
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
 #if defined (_DEBUG) && defined (DETECT_MEM_LEAKS)
-	#define _CRTDBG_MAP_ALLOC
-	#include <stdlib.h>
-	#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
 #endif
+
 #include <memory>
 #include <string>
 #include <stdio.h>
@@ -14,8 +17,10 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include "timer.h"
 #include "file_util.h"
+#include "plm_int.h"
+#include "print_and_exit.h"
+#include "timer.h"
 
 using namespace std;
 
@@ -81,7 +86,6 @@ int main(int argc, char* argv[])
     endIndex = END_INDEX;
 #endif
 
-
     hndDir     = argv[1];
     hndPrefix  = argv[2];
     hndPostfix = argv[3];
@@ -99,7 +103,7 @@ int main(int argc, char* argv[])
     else
 	outFixedWidth = -1;
 
-    angleFile=fopen((string(rawDir) + "\\ProjAngles.txt").c_str(), "w");;
+    angleFile=fopen((string(rawDir) + "/ProjAngles.txt").c_str(), "w");;
     if(angleFile==NULL)
     {
 	printf("Cannot open angle file");
@@ -119,6 +123,8 @@ int main(int argc, char* argv[])
 	hndfp += hndPrefix;
 	hndfp += indexString;
 	hndfp += hndPostfix;
+
+	printf ("Looking for %s\n", hndfp.c_str());
 
 	//if (GetFileAttributes(hndfp.c_str()) == INVALID_FILE_ATTRIBUTES)
 	if (!file_exists (hndfp.c_str()))
@@ -142,6 +148,8 @@ int main(int argc, char* argv[])
 	rawfp += indexString;
 	rawfp += rawPostfix;
 
+	printf ("Opening %s\n", rawfp.c_str());
+
 	pFile = fopen(hndfp.c_str(), "rb");
 
 
@@ -161,24 +169,24 @@ int main(int argc, char* argv[])
 	fsetpos(pFile, &pstart);
 
 	char   sFileType[32];
-	int    FileLength;
+	uint32_t    FileLength;
 	char   sChecksumSpec[4];
-	int    nCheckSum;
+	uint32_t    nCheckSum;
 	char   sCreationDate[8];
 	char   sCreationTime[8];
 	char   sPatientID[16];
-	int    nPatientSer;
+	uint32_t    nPatientSer;
 	char   sSeriesID[16];
-	int    nSeriesSer;
+	uint32_t    nSeriesSer;
 	char   sSliceID[16];
-	int    nSliceSer;
-	int    SizeX;
-	int    SizeY;
+	uint32_t    nSliceSer;
+	uint32_t    SizeX;
+	uint32_t    SizeY;
 	double dSliceZPos;
 	char   sModality[16];
-	int    nWindow;
-	int    nLevel;
-	int    nPixelOffset;
+	uint32_t    nWindow;
+	uint32_t    nLevel;
+	uint32_t    nPixelOffset;
 	char   sImageType[4];
 	double dGantryRtn;
 	double dSAD;
@@ -221,25 +229,27 @@ int main(int argc, char* argv[])
 	double dGating4DInfoZ;
 	double dGating4DInfoTime;
 
+	printf ("Reading...\n");
+
 	fread(( void *)sFileType, sizeof(char), 32, pFile);
-	fread(( void *)&FileLength, sizeof(unsigned long), 1, pFile);
+	fread(( void *)&FileLength, sizeof(uint32_t), 1, pFile);
 	fread(( void *)sChecksumSpec, sizeof(char), 4, pFile);
-	fread(( void *)&nCheckSum, sizeof(long), 1, pFile);
+	fread(( void *)&nCheckSum, sizeof(uint32_t), 1, pFile);
 	fread(( void *)sCreationDate, sizeof(char), 8, pFile);
 	fread(( void *)sCreationTime, sizeof(char), 8, pFile);
 	fread(( void *)sPatientID, sizeof(char), 16, pFile);
-	fread(( void *)&nPatientSer, sizeof(long), 1, pFile);
+	fread(( void *)&nPatientSer, sizeof(uint32_t), 1, pFile);
 	fread(( void *)sSeriesID, sizeof(char), 16, pFile);
-	fread(( void *)&nSeriesSer, sizeof(long), 1, pFile);
+	fread(( void *)&nSeriesSer, sizeof(uint32_t), 1, pFile);
 	fread(( void *)sSliceID, sizeof(char), 16, pFile);
-	fread(( void *)&nSliceSer, sizeof(long), 1, pFile);
-	fread(( void *)&SizeX, sizeof(long), 1, pFile);
-	fread(( void *)&SizeY, sizeof(long), 1, pFile);
+	fread(( void *)&nSliceSer, sizeof(uint32_t), 1, pFile);
+	fread(( void *)&SizeX, sizeof(uint32_t), 1, pFile);
+	fread(( void *)&SizeY, sizeof(uint32_t), 1, pFile);
 	fread(( void *)&dSliceZPos, sizeof(double), 1, pFile);
 	fread(( void *)sModality, sizeof(char), 16, pFile);
-	fread(( void *)&nWindow, sizeof(long), 1, pFile);
-	fread(( void *)&nLevel, sizeof(long), 1, pFile);
-	fread(( void *)&nPixelOffset, sizeof(long), 1, pFile);
+	fread(( void *)&nWindow, sizeof(uint32_t), 1, pFile);
+	fread(( void *)&nLevel, sizeof(uint32_t), 1, pFile);
+	fread(( void *)&nPixelOffset, sizeof(uint32_t), 1, pFile);
 	fread(( void *)sImageType, sizeof(char), 4, pFile);
 	fread(( void *)&dGantryRtn, sizeof(double), 1, pFile);
 	fread(( void *)&dSAD, sizeof(double), 1, pFile);
@@ -297,12 +307,15 @@ int main(int argc, char* argv[])
 	//unsigned short *uImg=(unsigned short*)malloc(sizeof(unsigned short)*SizeX*SizeY);
 	unsigned short *uImg=(unsigned short*)malloc(sizeof(unsigned short)*SizeX*SizeY/DSR/DSR);
 
-	if(!SkipHead || !LookupTable || !CD || !LookupType || !Img)
-	    printf("Malloc error");
+	if (!SkipHead || !LookupTable || !CD || !LookupType || !Img) {
+	    print_and_exit ("Malloc error\n");
+	}
 
 	int hFileLength = FileLength>>16;
 	int lFileLength = FileLength - hFileLength<<16;
 	int fFileLength = lFileLength<<16 + hFileLength;
+
+	printf ("Setting position...\n");
 
 	fsetpos(pFile, &pstart);
 	fread(SkipHead, 1, 1024, pFile); 
