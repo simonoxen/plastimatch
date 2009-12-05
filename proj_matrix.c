@@ -165,19 +165,19 @@ int
 read_ProjAngle(char *ProjAngle_file, float *ProjAngle)
 {
 
-	FILE *fp;
-	char linebuf[LINELEN];
-	int nProj=0;
+    FILE *fp;
+    char linebuf[LINELEN];
+    int nProj=0;
     fp = fopen (ProjAngle_file,"rb");
     if (!fp) {
 	fprintf (stderr, "File %s not found\n", ProjAngle_file);
 	return 0;
     }
-	while (fgets(linebuf,LINELEN,fp)) {
-		sscanf (linebuf, "%f",&ProjAngle[nProj++]);
-	}
-	fclose(fp);
-	return(nProj);
+    while (fgets(linebuf,LINELEN,fp)) {
+	sscanf (linebuf, "%f",&ProjAngle[nProj++]);
+    }
+    fclose(fp);
+    return(nProj);
 }
 
 void
