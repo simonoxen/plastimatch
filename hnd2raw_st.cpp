@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 #include "file_util.h"
+#include "hnd_io.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
 #include "timer.h"

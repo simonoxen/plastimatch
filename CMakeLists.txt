@@ -654,6 +654,7 @@ SET (HND2RAW_ST_SRC
 	hnd2raw_st.cpp
 	)
 SET (HND_TO_PFM_SRC
+        hnd_io.cxx hnd_io.h
 	hnd_to_pfm.c
 	)
 SET (ITK_TPS_WARP_SRC
@@ -882,7 +883,8 @@ PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "" "")
+PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")

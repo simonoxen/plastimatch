@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "plm_int.h"
+#include "hnd_io.h"
 
 #define ROWS 768
 #define COLS 1024
