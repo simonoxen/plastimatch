@@ -32,6 +32,8 @@ get_image (Fdk_options* options, int image_num);
 gpuit_EXPORT Proj_image* 
 proj_image_load_pfm (char* img_filename, char* mat_filename);
 gpuit_EXPORT Proj_image* 
+proj_image_load_hnd (char* img_filename);
+gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
     char* img_filename, 

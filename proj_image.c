@@ -8,13 +8,14 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "file_util.h"
+#include "hnd_io.h"
 #include "mathutil.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"
 
 static void
-load_pfm (Proj_image *proj, char* img_filename)
+pfm_load (Proj_image *proj, char* img_filename)
 {
     FILE* fp;
     char buf[1024];
@@ -64,7 +65,7 @@ load_pfm (Proj_image *proj, char* img_filename)
 }
 
 static void
-load_mat (Proj_image *proj, char* mat_filename)
+mat_load (Proj_image *proj, char* mat_filename)
 {
     FILE* fp;
     int i;
@@ -191,10 +192,10 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     proj = proj_image_create ();
     if (!proj) return 0;
 
-    load_pfm (proj, img_filename);
+    pfm_load (proj, img_filename);
 
     if (mat_filename) {
-	load_mat (proj, mat_filename);
+	mat_load (proj, mat_filename);
     } else {
 	/* No mat file, so try to find automatically */
 	int img_filename_len = strlen (img_filename);
@@ -204,10 +205,28 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
 	    char *mat_fn = strdup (img_filename);
 	    strcpy (&mat_fn[img_filename_len-4], ".txt");
 	    if (file_exists (mat_fn)) {
-		load_mat (proj, mat_fn);
+		mat_load (proj, mat_fn);
 	    }
 	    free (mat_fn);
 	}
+    }
+
+    return proj;
+}
+
+Proj_image* 
+proj_image_load_hnd (char* img_filename)
+{
+    Proj_image* proj;
+
+    if (!img_filename) return 0;
+
+    proj = proj_image_create ();
+    if (!proj) return 0;
+
+    hnd_load (proj, img_filename);
+    if (proj->img == 0) {
+	proj_image_free (proj);
     }
 
     return proj;
@@ -376,6 +395,9 @@ get_image (Fdk_options* options, int image_num)
 void
 proj_image_free (Proj_image* proj)
 {
-    free (proj->img);
+    if (!proj) return;
+    if (proj->img) {
+	free (proj->img);
+    }
     free (proj);
 }

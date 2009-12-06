@@ -410,6 +410,7 @@ SET (GPUIT_LIBRARY_SRC
   demons_misc.c demons_misc.h
   file_util.c file_util.h
   fwrite_block.c fwrite_block.h
+  hnd_io.c hnd_io.h
   logfile.c logfile.h
   mathutil.h
   print_and_exit.c print_and_exit.h 
@@ -654,7 +655,6 @@ SET (HND2RAW_ST_SRC
 	hnd2raw_st.cpp
 	)
 SET (HND_TO_PFM_SRC
-        hnd_io.cxx hnd_io.h
 	hnd_to_pfm.c
 	)
 SET (ITK_TPS_WARP_SRC

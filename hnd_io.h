@@ -72,7 +72,15 @@ struct hnd_header {
     double dGating4DInfoTime;
 };
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 void
 hnd_load (Proj_image *proj, char *fn);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif
