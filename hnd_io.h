@@ -5,6 +5,7 @@
 #define _hnd_io_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
 #include "proj_image.h"
 
 typedef struct hnd_header Hnd_header;
