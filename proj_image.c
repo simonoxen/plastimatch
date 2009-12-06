@@ -37,6 +37,7 @@ pfm_load (Proj_image *proj, char* img_filename)
 	printf (buf);
 	exit (-1);
     }
+
     /* Get image resolution */
     fgets (buf, 1024, fp);
     if (2 != sscanf (buf, "%d %d", &proj->dim[0], &proj->dim[1])) {
@@ -276,16 +277,16 @@ proj_image_load_and_filter (
 	fprintf (stderr, "Couldn't malloc memory for input image\n");
 	exit (-1);
     }
-    memset(proj->img,0,proj->dim[0] * proj->dim[1]*sizeof(float));
+    memset (proj->img, 0, proj->dim[0] * proj->dim[1] * sizeof(float));
 	
     readimg = (unsigned short*) malloc (sizeof(unsigned short) * 512 * proj->dim[0]);
-    if (!readimg ) {
+    if (!readimg) {
 	fprintf (stderr, "Couldn't malloc memory for input image\n");
 	exit (-1);
     }
 
     /* Load pixels */
-    rc = fread (readimg , sizeof(unsigned short),  512* proj->dim[0], fp);
+    rc = fread (readimg, sizeof(unsigned short), 512 * proj->dim[0], fp);
     if (rc != 512 * proj->dim[0]) {
 	fprintf (stderr, "Couldn't load raster data for %s\n",
 		 img_filename);
@@ -375,22 +376,6 @@ proj_image_load_and_filter (
 
     return proj;
 }
-
-#if defined (commentout)
-Proj_image*
-get_image (Fdk_options* options, int image_num)
-{
-    char* img_file_pat = "out_%04d.pfm";
-    char* mat_file_pat = "out_%04d.txt";
-
-    char img_file[1024], mat_file[1024], fmt[1024];
-    sprintf (fmt, "%s/%s", options->input_dir, img_file_pat);
-    sprintf (img_file, fmt, image_num);
-    sprintf (fmt, "%s/%s", options->input_dir, mat_file_pat);
-    sprintf (mat_file, fmt, image_num);
-    return load_cb_image (img_file, mat_file);
-}
-#endif
 
 void
 proj_image_free (Proj_image* proj)

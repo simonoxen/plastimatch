@@ -62,26 +62,24 @@ convert_to_hu (Volume* vol, Fdk_options* options)
 Proj_image*
 get_image_pfm (Fdk_options* options, int image_num)
 {
-    char* img_file_pat = "out_%04d.pfm";
-    char* mat_file_pat = "out_%04d.txt";
+    char* img_file_pat = "%s/out_%04d.pfm";
+    char* mat_file_pat = "%s/out_%04d.txt";
 
-    char img_file[1024], mat_file[1024], fmt[1024];
-    sprintf (fmt, "%s/%s", options->input_dir, img_file_pat);
-    sprintf (img_file, fmt, image_num);
-    sprintf (fmt, "%s/%s", options->input_dir, mat_file_pat);
-    sprintf (mat_file, fmt, image_num);
+    char img_file[1024], mat_file[1024];
+    sprintf (img_file, img_file_pat, options->input_dir, image_num);
+    sprintf (mat_file, mat_file_pat, options->input_dir, image_num);
     return proj_image_load_pfm (img_file, mat_file);
 }
 
 Proj_image*
 get_image_raw (Fdk_options* options, int image_num)
 {
-    char* img_file_pat = "Proj_%03d.raw";
-    char* mat_file_pat = "";
+    char* img_file_pat = "%s/Proj_%03d.raw";
+    char* mat_file_pat = "%s/tmp/out_%04d.txt";
 
     char img_file[1024], mat_file[1024];
-    sprintf (img_file, "%s/Proj_%03d.raw", options->input_dir,image_num);
-    sprintf (mat_file, "%s/tmp/out_%04d.txt",options->input_dir, image_num);
+    sprintf (img_file, img_file_pat, options->input_dir, image_num);
+    sprintf (mat_file, mat_file_pat, options->input_dir, image_num);
     return proj_image_load_and_filter (options, img_file, mat_file);
 }
 

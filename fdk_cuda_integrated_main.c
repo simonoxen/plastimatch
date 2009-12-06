@@ -16,7 +16,6 @@
 #endif
 
 int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options);
-int CUDA_DRR (Volume *vol, Fdk_options *options);
 void writematrix_set_image_parms (MGHMtx_Options* options);
 
 int
@@ -92,54 +91,46 @@ main (int argc, char* argv[])
     printf("Write matrix OK\n");
     fflush(stdout);
 
-    if (!options.DRR){ 
-	/*****************************************************
-	 * STEP 1: Create the 3D array of voxels              *
-	 *****************************************************/
-	printf ("Trying to my_create_volume\n");
-	vol = my_create_volume (&options);
+    /*****************************************************
+     * STEP 1: Create the 3D array of voxels              *
+     *****************************************************/
+    printf ("Trying to my_create_volume\n");
+    vol = my_create_volume (&options);
 
-	/***********************************************
-	 * STEP 2: Reconstruct/populate the volume      *
-	 ***********************************************/
-	printf ("Trying to CUDA_reconstruct_conebeam_ext\n");
-	CUDA_reconstruct_conebeam_ext (vol, &options);	
+    /***********************************************
+     * STEP 2: Reconstruct/populate the volume      *
+     ***********************************************/
+    printf ("Trying to CUDA_reconstruct_conebeam_ext\n");
+    CUDA_reconstruct_conebeam_ext (vol, &options);	
 
-	/*************************************
-	 * STEP 3: Convert to HU values       *
-	 *************************************/
-	printf ("Convert_to_hu\n");
-	convert_to_hu (vol, &options);
-	if (options.full_fan)
-	    CheckNormExits = file_exists (options.Full_normCBCT_name);
-	else
-	    CheckNormExits = file_exists (options.Half_normCBCT_name);
-	if (CheckNormExits) {
-	    bowtie_correction(vol,&options);
-	}
-	else{
-	    printf("%s\n%s\n",options.Full_normCBCT_name,options.Half_normCBCT_name);
-	    printf("%s\n",argv[0]);
-	    printf("Skip bowtie correction because norm files do not exits\n");
-	}
-
-
-	/*************************************
-	 * STEP 4: Write MHA output file      *
-	 *************************************/
-	printf("Writing output volume...");	
-	//write_mha_512prefix (options.output_file, vol, &options);
-	write_mha (options.output_file, vol, &options);
-	printf(" done.\n\n");
-	free(vol->img);
-	free(vol);
+    /*************************************
+     * STEP 3: Convert to HU values       *
+     *************************************/
+    printf ("Convert_to_hu\n");
+    convert_to_hu (vol, &options);
+    if (options.full_fan)
+	CheckNormExits = file_exists (options.Full_normCBCT_name);
+    else
+	CheckNormExits = file_exists (options.Half_normCBCT_name);
+    if (CheckNormExits) {
+	bowtie_correction(vol,&options);
     }
-
     else{
-	vol = read_mha (options.output_file);
-	CUDA_DRR3(vol, &options);
-	free(vol->img);
-	free(vol);
+	printf("%s\n%s\n",options.Full_normCBCT_name,options.Half_normCBCT_name);
+	printf("%s\n",argv[0]);
+	printf("Skip bowtie correction because norm files do not exits\n");
     }
+
+
+    /*************************************
+     * STEP 4: Write MHA output file      *
+     *************************************/
+    printf("Writing output volume...");	
+    //write_mha_512prefix (options.output_file, vol, &options);
+    write_mha (options.output_file, vol, &options);
+    printf(" done.\n\n");
+    free(vol->img);
+    free(vol);
+
     return 0;
 }

@@ -28,8 +28,6 @@ struct proj_image
 };
 
 gpuit_EXPORT Proj_image* 
-get_image (Fdk_options* options, int image_num);
-gpuit_EXPORT Proj_image* 
 proj_image_load_pfm (char* img_filename, char* mat_filename);
 gpuit_EXPORT Proj_image* 
 proj_image_load_hnd (char* img_filename);
