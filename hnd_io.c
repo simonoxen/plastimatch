@@ -181,9 +181,22 @@ hnd_load (Proj_image *proj, char *fn)
 	i++;
     }
 
+    /* Convert hnd to proj_image */
+    proj->dim[0] = hnd.SizeX;
+    proj->dim[1] = hnd.SizeY;
+    proj->img = (float*) malloc (
+	hnd.SizeX * hnd.SizeY * sizeof(float));
+    if (!proj->img) {
+	print_and_exit ("Error allocating memory\n");
+    }
+    for (i = 0; i < hnd.SizeX * hnd.SizeY; i++) {
+	proj->img[i] = (float) buf[i];
+    }
+
+    /* Clean up */
     free (pt_lut);
+    free (buf);
     fclose (fp);
-    //return 0;
     return;
 
  read_error:
@@ -192,5 +205,4 @@ hnd_load (Proj_image *proj, char *fn)
     free (pt_lut);
     free (buf);
     fclose (fp);
-    //return -1;
 }
