@@ -100,10 +100,10 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 {
     int ch, rc;
     static struct option longopts[] = {
+	{ "output",         required_argument,      NULL,           1 },
 	{ "output_type",    required_argument,      NULL,           2 },
 	{ "output-type",    required_argument,      NULL,           2 },
 	{ "input",          required_argument,      NULL,           3 },
-	{ "output",         required_argument,      NULL,           4 },
 	{ "subsample",      required_argument,      NULL,           5 },
 	{ "origin",         required_argument,      NULL,           6 },
 	{ "spacing",        required_argument,      NULL,           7 },
@@ -115,6 +115,9 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
+	case 1:
+	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
+	    break;
 	case 2:
 	    parms->output_type = plm_image_type_parse (optarg);
 	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
@@ -123,9 +126,6 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 	    break;
 	case 3:
 	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
-	    break;
-	case 4:
-	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%d %d %d", &(parms->subsample[0]), 
