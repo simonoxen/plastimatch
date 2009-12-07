@@ -21,6 +21,19 @@ hnd_load (Proj_image *proj, char *fn)
     Hnd_header hnd;
     FILE *fp;
 
+    uint32_t* buf;
+    unsigned char *pt_lut;
+    uint32_t a;
+    float b;
+    unsigned char v;
+    int lut_idx, lut_off;
+    size_t num_read;
+    char dc;
+    short ds;
+    long dl, diff;
+    uint32_t i;
+
+
     if (!proj) return;
 
     printf ("Looking for %s\n", fn);
@@ -94,18 +107,6 @@ hnd_load (Proj_image *proj, char *fn)
     fread ((void *) &hnd.dGating4DInfoY, sizeof(double), 1, fp);
     fread ((void *) &hnd.dGating4DInfoZ, sizeof(double), 1, fp);
     fread ((void *) &hnd.dGating4DInfoTime, sizeof(double), 1, fp);
-
-    uint32_t* buf;
-    unsigned char *pt_lut;
-    uint32_t a;
-    float b;
-    unsigned char v;
-    int lut_idx, lut_off;
-    size_t num_read;
-    char dc;
-    short ds;
-    long dl, diff;
-    uint32_t i;
 
     pt_lut = (unsigned char*) malloc (
 	sizeof (unsigned char) * hnd.SizeX * hnd.SizeY);
