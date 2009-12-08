@@ -139,7 +139,7 @@ INCLUDE (PLM_FindSubversion.cmake)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 FIND_PACKAGE (OpenCL)
-FIND_PACKAGE (Sqlite)
+FIND_PACKAGE (SQLite)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -398,17 +398,6 @@ IF (BROOK_FOUND)
   SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
 ENDIF (BROOK_FOUND)
-
-##-----------------------------------------------------------------------------
-##  SQLITE LIBRARY
-##-----------------------------------------------------------------------------
-SET (SQLITE_LIBRARY_SRC
-  sqlite3.c
-  sqlite3.h
-  sqlite3ext.h
-  )
-
-
 
 ##-----------------------------------------------------------------------------
 ##  GPUIT/PLASTIMATCH SOURCE FILES
@@ -839,6 +828,11 @@ ENDIF(FFTW_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
+
+IF (NOT SQLITE3_FOUND)
+  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
+ENDIF (NOT SQLITE3_FOUND)
+
 ADD_SUBDIRECTORY(fatm/src)
 ADD_SUBDIRECTORY(CUDA_tex_test)
 
