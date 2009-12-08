@@ -8,8 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "volume.h"
 #include "readmha.h"
+#include "vf_stats.h"
+#include "volume.h"
 
 void
 vf_analyze (Volume* vol)
