@@ -139,6 +139,7 @@ INCLUDE (PLM_FindSubversion.cmake)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 FIND_PACKAGE (OpenCL)
+FIND_PACKAGE (Sqlite)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -397,6 +398,17 @@ IF (BROOK_FOUND)
   SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
 ENDIF (BROOK_FOUND)
+
+##-----------------------------------------------------------------------------
+##  SQLITE LIBRARY
+##-----------------------------------------------------------------------------
+SET (SQLITE_LIBRARY_SRC
+  sqlite3.c
+  sqlite3.h
+  sqlite3ext.h
+  )
+
+
 
 ##-----------------------------------------------------------------------------
 ##  GPUIT/PLASTIMATCH SOURCE FILES
@@ -707,6 +719,9 @@ SET (PLASTIMATCH_SLICER_SRC
 SET (PLASTIMATCH_SLICER_TPS_SRC
         plastimatch-slicer-tps.cxx
 	)
+SET (PLASTIMATCH_QT_SRC
+        plastimatch_qt_main.cxx
+	)
 SET (COMPUTE_MEAN_IMAGE_SRC
 	compute_mean_image_main.cxx
 	)
@@ -834,17 +849,7 @@ IF (F2C_LIBRARY AND UNIX)
   PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "")
 ENDIF (F2C_LIBRARY AND UNIX)
 
-# IF (BUILD_AGAINST_SLICER3)
-#   ADD_LIBRARY (gpuit STATIC ${GPUIT_LIBRARY_SRC})
-#   SLICER3_SET_PLUGINS_OUTPUT_PATH (gpuit)
-# ELSE (BUILD_AGAINST_SLICER3)
-#   ADD_LIBRARY (gpuit ${GPUIT_LIBRARY_SRC})
-#   TARGET_LINK_LIBRARIES (gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
-#   INSTALL (TARGETS gpuit
-#     RUNTIME DESTINATION bin
-#     LIBRARY DESTINATION lib
-#     ARCHIVE DESTINATION lib)
-# ENDIF (BUILD_AGAINST_SLICER3)
+PLM_ADD_LIBRARY (sqlite "${SQLITE_LIBRARY_SRC}" "")
 
 PLM_ADD_LIBRARY (gpuit "${GPUIT_LIBRARY_SRC}" "${GPUIT_LIBRARY_DEPENDENCIES}")
 
@@ -953,6 +958,11 @@ IF(ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
+  IF (QT4_FOUND)
+    SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+    PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
+      "${PLASTIMATCH_QT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+  ENDIF (QT4_FOUND)
   PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
