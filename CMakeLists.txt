@@ -829,9 +829,9 @@ ENDIF(FFTW_FOUND)
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
 
-IF (NOT SQLITE3_FOUND)
+IF (NOT SQLite3_FOUND)
   ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
-ENDIF (NOT SQLITE3_FOUND)
+ENDIF (NOT SQLite3_FOUND)
 
 ADD_SUBDIRECTORY(fatm/src)
 ADD_SUBDIRECTORY(CUDA_tex_test)
