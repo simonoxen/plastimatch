@@ -139,7 +139,13 @@ INCLUDE (PLM_FindSubversion.cmake)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 FIND_PACKAGE (OpenCL)
+
 FIND_PACKAGE (SQLite)
+IF (NOT SQLITE_FOUND)
+  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
+  SET (SQLITE_INCLUDE_DIR libs/sqlite-3.6.21)
+  SET (SQLITE_LIBRARIES sqlite3)
+ENDIF (NOT SQLITE_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -680,9 +686,6 @@ SET (MONDOSHOT_SRC
 	mondoshot_dicom.h
 	mondoshot_main.cpp
 	mondoshot_main.h
-        sqlite3.c
-	sqlite3.h
-	sqlite3ext.h
 	)
 SET (MONDOSHOT_RELAY_SRC
 	mondoshot_relay_main.cpp
@@ -794,6 +797,7 @@ ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 ##-----------------------------------------------------------------------------
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 
 IF(BROOK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
@@ -828,10 +832,6 @@ ENDIF(FFTW_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
-
-IF (NOT SQLite3_FOUND)
-  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
-ENDIF (NOT SQLite3_FOUND)
 
 ADD_SUBDIRECTORY(fatm/src)
 ADD_SUBDIRECTORY(CUDA_tex_test)
@@ -995,10 +995,11 @@ IF(DCMTK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_uid "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "")
 ENDIF(DCMTK_FOUND)
 
-# mondoshot requires WIN32, wx, dcmtk
+# mondoshot requires WIN32, wx, dcmtk, sqlite3
 IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
-  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES})
+  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES}
+    ${SQLITE_LIBRARIES})
   IF (NOT BUILD_AGAINST_SLICER3)
     INSTALL(TARGETS mondoshot DESTINATION bin)
   ENDIF (NOT BUILD_AGAINST_SLICER3)
