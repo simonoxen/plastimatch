@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <brook/brook.hpp>
 #include <windows.h>
 #include <stdio.h>
@@ -8,14 +9,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "plm_config.h"
-#include "mathutil.h"
-#include "volume.h"
-#include "readmha.h"
-#include "proj_image.h"
 #include "fdk_brook.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "mathutil.h"
+#include "proj_image.h"
+#include "readmha.h"
+#include "volume.h"
+
 #include "fdk_brook_kernel.cpp"
 
 void
@@ -29,7 +30,7 @@ fdk_brook_512_256(Volume* vol, Fdk_options* options)
     float scale;
 
     float* volumeGPU_data = (float*) vol->img;
-    CB_Image* cbi;
+    Proj_image* cbi;
 	
     /*******************
 	Variable Assignment
@@ -231,7 +232,7 @@ fdk_brook_c (Volume* vol, Fdk_options* options)
     float scale;
 
     float* volumeGPU_data = (float*) vol->img;
-    CB_Image* cbi;
+    Proj_image* cbi;
 	
     /*******************
 	Variable Assignment
@@ -397,7 +398,7 @@ fdk_brook_b(Volume* vol, Fdk_options* options)
     float scale;
 
     float* volumeGPU_data = (float*) vol->img;
-    CB_Image* cbi;
+    Proj_image* cbi;
 	
     /*******************
 	Variable Assignment
