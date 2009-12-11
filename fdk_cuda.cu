@@ -264,15 +264,15 @@ CUDA_reconstruct_conebeam (
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];
 	kargs->img_dim.y = cbi->dim[1];
-	kargs->ic.x = cbi->ic[0];
-	kargs->ic.y = cbi->ic[1];
-	kargs->nrm.x = cbi->nrm[0];
-	kargs->nrm.y = cbi->nrm[1];
-	kargs->nrm.z = cbi->nrm[2];
-	kargs->sad = cbi->sad;
-	kargs->sid = cbi->sid;
+	kargs->ic.x = cbi->pmat->ic[0];
+	kargs->ic.y = cbi->pmat->ic[1];
+	kargs->nrm.x = cbi->pmat->nrm[0];
+	kargs->nrm.y = cbi->pmat->nrm[1];
+	kargs->nrm.z = cbi->pmat->nrm[2];
+	kargs->sad = cbi->pmat->sad;
+	kargs->sid = cbi->pmat->sid;
 	for(i=0; i<12; i++) {
-	    kargs->matrix[i] = (float)cbi->matrix[i];
+	    kargs->matrix[i] = (float)cbi->pmat->matrix[i];
 	}
 
 	// Copy image pixel data & projection matrix to device Global Memory

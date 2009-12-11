@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "plm_int.h"
 #include "proj_image.h"
+#include "proj_matrix.h"
 
 typedef struct hnd_header Hnd_header;
 struct hnd_header {

@@ -74,9 +74,10 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
     double acc2[3],acc3[3];
     double dw;
     double sad_sid_2;
+    Proj_matrix *pmat = cbi->pmat;
 
     /* Rescale image (destructive rescaling) */
-    sad_sid_2 = (cbi->sad * cbi->sad) / (cbi->sid * cbi->sid);
+    sad_sid_2 = (pmat->sad * pmat->sad) / (pmat->sid * pmat->sid);
     for (i = 0; i < cbi->dim[0]*cbi->dim[1]; i++) {
 	cbi->img[i] *= sad_sid_2;	// Speedup trick re: Kachelsreiss
 	cbi->img[i] *= scale;		// User scaling
@@ -89,23 +90,23 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
 	double x = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
-	xip[i*3+0] = x * (cbi->matrix[0] + cbi->ic[0] * cbi->matrix[8]);
-	xip[i*3+1] = x * (cbi->matrix[4] + cbi->ic[1] * cbi->matrix[8]);
-	xip[i*3+2] = x * cbi->matrix[8];
+	xip[i*3+0] = x * (pmat->matrix[0] + pmat->ic[0] * pmat->matrix[8]);
+	xip[i*3+1] = x * (pmat->matrix[4] + pmat->ic[1] * pmat->matrix[8]);
+	xip[i*3+2] = x * pmat->matrix[8];
     }
     for (j = 0; j < vol->dim[1]; j++) {
 	double y = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
-	yip[j*3+0] = y * (cbi->matrix[1] + cbi->ic[0] * cbi->matrix[9]);
-	yip[j*3+1] = y * (cbi->matrix[5] + cbi->ic[1] * cbi->matrix[9]);
-	yip[j*3+2] = y * cbi->matrix[9];
+	yip[j*3+0] = y * (pmat->matrix[1] + pmat->ic[0] * pmat->matrix[9]);
+	yip[j*3+1] = y * (pmat->matrix[5] + pmat->ic[1] * pmat->matrix[9]);
+	yip[j*3+2] = y * pmat->matrix[9];
     }
     for (k = 0; k < vol->dim[2]; k++) {
 	double z = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
-	zip[k*3+0] = z * (cbi->matrix[2] + cbi->ic[0] * cbi->matrix[10]) 
-		+ cbi->ic[0] * cbi->matrix[11] + cbi->matrix[3];
-	zip[k*3+1] = z * (cbi->matrix[6] + cbi->ic[1] * cbi->matrix[10]) 
-		+ cbi->ic[1] * cbi->matrix[11] + cbi->matrix[7];
-	zip[k*3+2] = z * cbi->matrix[10] + cbi->matrix[11];
+	zip[k*3+0] = z * (pmat->matrix[2] + pmat->ic[0] * pmat->matrix[10]) 
+		+ pmat->ic[0] * pmat->matrix[11] + pmat->matrix[3];
+	zip[k*3+1] = z * (pmat->matrix[6] + pmat->ic[1] * pmat->matrix[10]) 
+		+ pmat->ic[1] * pmat->matrix[11] + pmat->matrix[7];
+	zip[k*3+2] = z * pmat->matrix[10] + pmat->matrix[11];
     }
     
     /* Main loop */
@@ -138,9 +139,10 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
     double *x, *y, *z;
     double dw;
     double sad_sid_2;
+    Proj_matrix *pmat = cbi->pmat;
 
     /* Rescale image (destructive rescaling) */
-    sad_sid_2 = (cbi->sad * cbi->sad) / (cbi->sid * cbi->sid);
+    sad_sid_2 = (pmat->sad * pmat->sad) / (pmat->sid * pmat->sid);
     for (i = 0; i < cbi->dim[0]*cbi->dim[1]; i++) {
 	cbi->img[i] *= sad_sid_2;	// Speedup trick re: Kachelsreiss
 	cbi->img[i] *= scale;		// User scaling
@@ -156,29 +158,29 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
 	x[i] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
-	xip[i*3+0] = x[i] * cbi->matrix[0];
-	xip[i*3+1] = x[i] * cbi->matrix[4];
-	xip[i*3+2] = x[i] * cbi->matrix[8];
-	x[i] *= cbi->nrm[0];
+	xip[i*3+0] = x[i] * pmat->matrix[0];
+	xip[i*3+1] = x[i] * pmat->matrix[4];
+	xip[i*3+2] = x[i] * pmat->matrix[8];
+	x[i] *= pmat->nrm[0];
     }
     for (j = 0; j < vol->dim[1]; j++) {
 	y[j] = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
-	yip[j*3+0] = y[j] * cbi->matrix[1];
-	yip[j*3+1] = y[j] * cbi->matrix[5];
-	yip[j*3+2] = y[j] * cbi->matrix[9];
-	y[j] *= cbi->nrm[1];
+	yip[j*3+0] = y[j] * pmat->matrix[1];
+	yip[j*3+1] = y[j] * pmat->matrix[5];
+	yip[j*3+2] = y[j] * pmat->matrix[9];
+	y[j] *= pmat->nrm[1];
     }
     for (k = 0; k < vol->dim[2]; k++) {
 	z[k] = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
-	zip[k*3+0] = z[k] * cbi->matrix[2];
-	zip[k*3+1] = z[k] * cbi->matrix[6];
-	zip[k*3+2] = z[k] * cbi->matrix[10];
-	z[k] *= cbi->nrm[2];
-	z[k] = cbi->sad - z[k];
+	zip[k*3+0] = z[k] * pmat->matrix[2];
+	zip[k*3+1] = z[k] * pmat->matrix[6];
+	zip[k*3+2] = z[k] * pmat->matrix[10];
+	z[k] *= pmat->nrm[2];
+	z[k] = pmat->sad - z[k];
     }
-    wip[0] = cbi->matrix[3];
-    wip[1] = cbi->matrix[7];
-    wip[2] = cbi->matrix[11];
+    wip[0] = pmat->matrix[3];
+    wip[1] = pmat->matrix[7];
+    wip[2] = pmat->matrix[11];
     
     /* Main loop */
     p = 0;
@@ -189,8 +191,8 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 	    for (i = 0; i < vol->dim[0]; i++) {
 		vec3_add3 (acc3, acc2, &xip[3*i]);
 		dw = 1 / acc3[2];
-		acc3[0] = cbi->ic[0] + acc3[0] * dw;
-		acc3[1] = cbi->ic[1] + acc3[1] * dw;
+		acc3[0] = pmat->ic[0] + acc3[0] * dw;
+		acc3[1] = pmat->ic[1] + acc3[1] * dw;
 		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[0], acc3[1]);
 	    }
 	}
@@ -213,6 +215,7 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
     double acc1[3],acc2[3],acc3[3];
     double *x, *y, *z;
     double s1, s, sad2;
+    Proj_matrix *pmat = cbi->pmat;
 
     /* Rescale image (destructive rescaling) */
     for (i = 0; i < cbi->dim[0]*cbi->dim[1]; i++) {
@@ -229,30 +232,30 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
 	x[i] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
-	xip[i*3+0] = x[i] * cbi->matrix[0];
-	xip[i*3+1] = x[i] * cbi->matrix[4];
-	xip[i*3+2] = x[i] * cbi->matrix[8];
-	x[i] *= cbi->nrm[0];
+	xip[i*3+0] = x[i] * pmat->matrix[0];
+	xip[i*3+1] = x[i] * pmat->matrix[4];
+	xip[i*3+2] = x[i] * pmat->matrix[8];
+	x[i] *= pmat->nrm[0];
     }
     for (j = 0; j < vol->dim[1]; j++) {
 	y[j] = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
-	yip[j*3+0] = y[j] * cbi->matrix[1];
-	yip[j*3+1] = y[j] * cbi->matrix[5];
-	yip[j*3+2] = y[j] * cbi->matrix[9];
-	y[j] *= cbi->nrm[1];
+	yip[j*3+0] = y[j] * pmat->matrix[1];
+	yip[j*3+1] = y[j] * pmat->matrix[5];
+	yip[j*3+2] = y[j] * pmat->matrix[9];
+	y[j] *= pmat->nrm[1];
     }
     for (k = 0; k < vol->dim[2]; k++) {
 	z[k] = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
-	zip[k*3+0] = z[k] * cbi->matrix[2];
-	zip[k*3+1] = z[k] * cbi->matrix[6];
-	zip[k*3+2] = z[k] * cbi->matrix[10];
-	z[k] *= cbi->nrm[2];
-	z[k] = cbi->sad - z[k];
+	zip[k*3+0] = z[k] * pmat->matrix[2];
+	zip[k*3+1] = z[k] * pmat->matrix[6];
+	zip[k*3+2] = z[k] * pmat->matrix[10];
+	z[k] *= pmat->nrm[2];
+	z[k] = pmat->sad - z[k];
     }
-    wip[0] = cbi->matrix[3];
-    wip[1] = cbi->matrix[7];
-    wip[2] = cbi->matrix[11];
-    sad2 = cbi->sad * cbi->sad;
+    wip[0] = pmat->matrix[3];
+    wip[1] = pmat->matrix[7];
+    wip[2] = pmat->matrix[11];
+    sad2 = pmat->sad * pmat->sad;
     
     /* Main loop */
     p = 0;
@@ -268,8 +271,8 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 		s = sad2 / (s * s);
 		vec3_add3 (acc3, acc2, &xip[3*i]);
 		//printf ("%10.10g\n", acc3[2]);
-		acc3[0] = cbi->ic[0] + acc3[0] / acc3[2];
-		acc3[1] = cbi->ic[1] + acc3[1] / acc3[2];
+		acc3[0] = pmat->ic[0] + acc3[0] / acc3[2];
+		acc3[1] = pmat->ic[1] + acc3[1] / acc3[2];
 		img[p++] += s * get_pixel_value_b (cbi, acc3[0], acc3[1]);
 	    }
 	}
@@ -288,6 +291,7 @@ project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
     int i, j, k, p;
     double vp[4];   /* vp = voxel position */
     float* img = (float*) vol->img;
+    Proj_matrix *pmat = cbi->pmat;
     
     p = 0;
     vp[3] = 1.0;
@@ -299,14 +303,14 @@ project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
 		double ip[3];        /* ip = image position */
 		double s;            /* s = projection of vp onto s axis */
 		vp[0] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
-		mat43_mult_vec3 (ip, cbi->matrix, vp);
-		ip[0] = cbi->ic[0] + ip[0] / ip[2];
-		ip[1] = cbi->ic[1] + ip[1] / ip[2];
+		mat43_mult_vec3 (ip, pmat->matrix, vp);
+		ip[0] = pmat->ic[0] + ip[0] / ip[2];
+		ip[1] = pmat->ic[1] + ip[1] / ip[2];
 		/* Distance on axis from ctr to source */
-		s = vec3_dot (cbi->nrm, vp);
+		s = vec3_dot (pmat->nrm, vp);
 		/* Conebeam weighting factor */
-		s = cbi->sad - s;
-		s = cbi->sad * cbi->sad / (s * s);
+		s = pmat->sad - s;
+		s = pmat->sad * pmat->sad / (s * s);
 		img[p++] += scale * s * get_pixel_value_b (cbi, ip[0], ip[1]);
 	    }
 	}
@@ -335,7 +339,9 @@ reconstruct_conebeam (
 	 i += options->skip_img)
     {
 	Proj_image* cbi;
+	printf ("Loading image %d\n", i);
 	cbi = proj_image_dir_load_image (proj_dir, i);
+	printf ("done.\n");
 	
 	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);

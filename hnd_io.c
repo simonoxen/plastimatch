@@ -7,14 +7,144 @@
 #include <malloc.h>
 #include "file_util.h"
 #include "hnd_io.h"
+#include "mathutil.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
 #include "timer.h"
 
-//using namespace std;
-//#define ROWS 768
-//#define COLS 1024
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
+/* "Varian mode" function */
+static void
+hnd_proj_matrix_compute (
+    double* cam, 
+    double* tgt, double* vup,
+    double sid, double* ic,
+    double* ps, int* ires
+)
+{
+    double extrinsic[16];
+    double intrinsic[12];
+    double projection[12];
+    const int cols = 4;
+    double sad;
 
+    double nrm[3];
+    double vrt[3];
+    double vup_tmp[3];  /* Don't overwrite vup */
+
+    const int varian_mode = 1;
+
+    vec_zero (extrinsic, 16);
+    vec_zero (intrinsic, 12);
+
+    /* Compute image coordinate sys (nrm,vup,vrt) relative to room coords.
+       ---------------
+       nrm = tgt - cam
+       vrt = nrm x vup
+       vup = vrt x nrm
+       ---------------
+    */
+    vec3_sub3 (nrm, tgt, cam);
+    vec3_normalize1 (nrm);
+    vec3_cross (vrt, nrm, vup);
+    vec3_normalize1 (vrt);
+    vec3_cross (vup_tmp, vrt, nrm);
+    vec3_normalize1 (vup_tmp);
+
+    /* !!! But change nrm here to -nrm */
+    vec3_scale2 (nrm, -1.0);
+
+    /* Build extrinsic matrix */
+    if (varian_mode) {
+	vec3_scale2 (vrt, -1.0);
+	vec3_copy (&extrinsic[0], nrm);
+	vec3_copy (&extrinsic[4], vup_tmp);
+	vec3_copy (&extrinsic[8], vrt);
+    } else {
+	vec3_copy (&extrinsic[0], vrt);
+	vec3_copy (&extrinsic[4], vup_tmp);
+	vec3_copy (&extrinsic[8], nrm);
+    }
+
+    sad = vec3_len (cam);
+    m_idx(extrinsic,cols,2,3) = - sad;
+    m_idx(extrinsic,cols,3,3) = 1.0;
+
+    /* Build intrinsic matrix */
+
+    m_idx(intrinsic,cols,0,1) = - 1 / ps[0];
+    m_idx(intrinsic,cols,1,0) = 1 / ps[1];
+    m_idx(intrinsic,cols,2,2) = - 1 / sid;
+    //    m_idx(intrinsic,cols,0,3) = ic[0];
+    //    m_idx(intrinsic,cols,1,3) = ic[1];
+
+    mat_mult_mat (projection, intrinsic,3,4, extrinsic,4,4);
+
+#if defined (VERBOSE)
+    printf ("Extrinsic:\n");
+    matrix_print_eol (stdout, extrinsic, 4, 4);
+    printf ("Intrinsic:\n");
+    matrix_print_eol (stdout, intrinsic, 3, 4);
+    printf ("Projection:\n");
+    matrix_print_eol (stdout, projection, 3, 4);
+#endif
+}
+
+static void
+hnd_set_proj_matrix (
+    Proj_image *proj, 
+    double angle, 
+    double sad, 
+    double sid
+)
+{
+    double vup[3] = {0, 0, 1};
+    double tgt[3] = {0.0, 0.0, 0.0};
+    double nrm[3];
+    double tmp[3];
+
+    /* Set image resolution */
+    int ires[2] = { proj->dim[0],
+		    proj->dim[1] };
+
+    /* Set physical size of imager in mm */
+    int isize[2] = { 300, 400 };      /* Actual resolution */
+    //int isize[2] = { options->image_size[0],
+    //		     options->image_size[1] };
+
+    /* Set ic = image center (in pixels), and ps = pixel size (in mm)
+       Note: pixels are numbered from 0 to ires-1 */
+    double ic[2] = { 0.5 * proj->dim[0],
+		     0.5 * proj->dim[2] };
+    //    double ic[2] = { options->image_center[0],
+    //		     options->image_center[1] };
+
+    /* Set pixel size in mm */
+    double ps[2] = { (double) isize[0] / (double) ires[0], 
+		     (double) isize[1] / (double) ires[1] };
+
+    double cam[3];
+
+    cam[0] = cos (angle * M_PI / 180.0);
+    cam[1] = sin (angle * M_PI / 180.0);
+    cam[2] = 0.0;
+
+    /* Place camera at distance "sad" from the volume isocenter */
+    vec3_sub3 (nrm, tgt, cam);
+    vec3_normalize1 (nrm);
+    vec3_scale3 (tmp, nrm, sad);
+    vec3_copy (cam, tgt);
+    vec3_sub2 (cam, tmp);
+
+    hnd_proj_matrix_compute (cam, tgt, vup, 
+	sid, ic, ps, ires);
+}
+
+/* -----------------------------------------------------------------------
+   Public functions
+   ----------------------------------------------------------------------- */
 void
 hnd_load (Proj_image *proj, char *fn)
 {
@@ -35,8 +165,6 @@ hnd_load (Proj_image *proj, char *fn)
 
 
     if (!proj) return;
-
-    printf ("Looking for %s\n", fn);
 
     if (!file_exists (fn)) {
         print_and_exit ("Error: hnd_file (%s) does not exist.\n", fn);
@@ -192,6 +320,9 @@ hnd_load (Proj_image *proj, char *fn)
     for (i = 0; i < hnd.SizeX * hnd.SizeY; i++) {
 	proj->img[i] = (float) buf[i];
     }
+
+    /* Set the matrix */
+    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, hnd.dSFD);
 
     /* Clean up */
     free (pt_lut);

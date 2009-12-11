@@ -24,7 +24,6 @@ raw_load (Proj_image *proj, char* img_filename)
     size_t rc;
     uint64_t fs;
 
-
     if (!proj) return;
 
     /* Open file */
@@ -133,10 +132,14 @@ mat_load (Proj_image *proj, char* mat_filename)
     FILE* fp;
     int i;
     float f;
+    Proj_matrix *pmat;
 
     if (!proj) return;
 
-    /* Load projection matrix */
+    /* Allocate memory */
+    pmat = proj_matrix_create ();
+
+    /* Open file */
     fp = fopen (mat_filename,"r");
     if (!fp) {
 	fprintf (stderr, "Can't open file %s for read\n", mat_filename);
@@ -149,7 +152,7 @@ mat_load (Proj_image *proj, char* mat_filename)
 		     mat_filename, i);
 	    exit (-1);
 	}
-	proj->ic[i] = (double) f;
+	pmat->ic[i] = (double) f;
     }
     /* Load projection matrix */
     for (i = 0; i < 12; i++) {
@@ -158,20 +161,20 @@ mat_load (Proj_image *proj, char* mat_filename)
 		     mat_filename, i);
 	    exit (-1);
 	}
-	proj->matrix[i] = (double) f;
+	pmat->matrix[i] = (double) f;
     }
     /* Load sad */
     if (1 != fscanf (fp, "%g", &f)) {
 	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
-    proj->sad = (double) f;
+    pmat->sad = (double) f;
     /* Load sid */
     if (1 != fscanf (fp, "%g", &f)) {
 	fprintf (stderr, "Couldn't load sad from %s\n", mat_filename);
 	exit (-1);
     }
-    proj->sid = (double) f;
+    pmat->sid = (double) f;
     /* Load nrm vector */
     for (i = 0; i < 3; i++) {
 	if (1 != fscanf (fp, "%g", &f)) {
@@ -179,9 +182,26 @@ mat_load (Proj_image *proj, char* mat_filename)
 		     mat_filename, i);
 	    exit (-1);
 	}
-	proj->nrm[i] = (double) f;
+	pmat->nrm[i] = (double) f;
     }
     fclose (fp);
+
+    proj->pmat = pmat;
+}
+
+static void
+mat_load_by_img_filename (Proj_image* proj, char* img_filename)
+{
+    /* No mat file, so try to find automatically */
+    int img_filename_len = strlen (img_filename);
+    if (img_filename_len > 4) {
+	char *mat_fn = strdup (img_filename);
+	strcpy (&mat_fn[img_filename_len-4], ".txt");
+	if (file_exists (mat_fn)) {
+	    mat_load (proj, mat_fn);
+	}
+	free (mat_fn);
+    }
 }
 
 static Proj_image* 
@@ -194,11 +214,15 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     proj = proj_image_create ();
     if (!proj) return 0;
 
+    printf ("Loading pfm...\n");
     pfm_load (proj, img_filename);
 
     if (mat_filename) {
 	mat_load (proj, mat_filename);
+    } else {
+	mat_load_by_img_filename (proj, img_filename);
     }
+    printf ("done.\n");
 
     return proj;
 }
@@ -217,6 +241,8 @@ proj_image_load_raw (char* img_filename, char* mat_filename)
 
     if (mat_filename) {
 	mat_load (proj, mat_filename);
+    } else {
+	mat_load_by_img_filename (proj, img_filename);
     }
 
     return proj;
@@ -235,6 +261,7 @@ proj_image_load_hnd (char* img_filename)
     hnd_load (proj, img_filename);
     if (proj->img == 0) {
 	proj_image_free (proj);
+	return 0;
     }
 
     return proj;
@@ -266,10 +293,10 @@ void
 proj_image_debug_header (Proj_image *proj)
 {
     int i;
-    printf ("Image center: %g %g\n", proj->ic[0], proj->ic[1]);
+    printf ("Image center: %g %g\n", proj->pmat->ic[0], proj->pmat->ic[1]);
     printf ("Projection matrix: ");
     for (i = 0; i < 12; i++) {
-	printf ("%g ", proj->matrix[i]);
+	printf ("%g ", proj->pmat->matrix[i]);
     }
     printf ("\n");
 }
@@ -329,12 +356,14 @@ proj_image_load_and_filter (
     char* mat_filename
 )
 {
+    Proj_image* proj = 0;
+
+#if defined (commentout)
     int i,j;
     size_t rc;
     float f;
     FILE* fp;
 
-    Proj_image* proj;
     unsigned short * readimg;
     int movelength,fillhead,filltail;
 
@@ -386,7 +415,7 @@ proj_image_load_and_filter (
     RampFilter(readimg,proj->img,512,proj->dim[0]);
 #endif
 
-    free(readimg);
+    free (readimg);
 
     if(!options->full_fan){
 
@@ -463,6 +492,8 @@ proj_image_load_and_filter (
     matrix_print_eol (stdout, proj->matrix, 3, 4);
 #endif
 
+#endif
+
     return proj;
 }
 
@@ -470,6 +501,9 @@ void
 proj_image_free (Proj_image* proj)
 {
     if (!proj) return;
+    if (proj->pmat) {
+	free (proj->pmat);
+    }
     if (proj->img) {
 	free (proj->img);
     }

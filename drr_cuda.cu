@@ -638,30 +638,30 @@ int CUDA_DRR3 (Volume *vol, Drr_options *options)
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];
 	kargs->img_dim.y = cbi->dim[1];
-	kargs->ic.x = cbi->ic[0];
-	kargs->ic.y = cbi->ic[1];
-	kargs->nrm.x = cbi->nrm[0];
-	kargs->nrm.y = cbi->nrm[1];
-	kargs->nrm.z = cbi->nrm[2];
-	kargs->sad = cbi->sad;
-	kargs->sid = cbi->sid;
+	kargs->ic.x = cbi->pmat->ic[0];
+	kargs->ic.y = cbi->pmat->ic[1];
+	kargs->nrm.x = cbi->pmat->nrm[0];
+	kargs->nrm.y = cbi->pmat->nrm[1];
+	kargs->nrm.z = cbi->pmat->nrm[2];
+	kargs->sad = cbi->pmat->sad;
+	kargs->sid = cbi->pmat->sid;
 	for(i=0; i<12; i++)
-	    kargs->matrix[i] = (float)cbi->matrix[i];
+	    kargs->matrix[i] = (float)cbi->pmat->matrix[i];
 
 	//Precalculate coeff
 
 	int xy7;
-	double * ic=cbi->ic;
+	double * ic=cbi->pmat->ic;
 	for (int x=0;x<cbi->dim[0];x++)
 	    for (int y=0; y<cbi->dim[1];y++){
 		xy7=7*(y*cbi->dim[0]+x);
-		host_coef[xy7]  =((y-ic[1])*cbi->matrix[8]-cbi->matrix[4])/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
-		host_coef[xy7+2]=((y-ic[1])*cbi->matrix[9]-cbi->matrix[5])/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
-		host_coef[xy7+1]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[5]-(y-ic[1])*cbi->matrix[9]);
-		host_coef[xy7+3]=(y-ic[1])*cbi->matrix[11]/(cbi->matrix[4]-(y-ic[1])*cbi->matrix[8]);
-		host_coef[xy7+4]=(x-ic[0])*cbi->matrix[8]/cbi->matrix[2];
-		host_coef[xy7+5]=(x-ic[0])*cbi->matrix[9]/cbi->matrix[2];
-		host_coef[xy7+6]=(x-ic[0])*cbi->matrix[11]/cbi->matrix[2];
+		host_coef[xy7]  =((y-ic[1])*cbi->pmat->matrix[8]-cbi->pmat->matrix[4])/(cbi->pmat->matrix[5]-(y-ic[1])*cbi->pmat->matrix[9]);
+		host_coef[xy7+2]=((y-ic[1])*cbi->pmat->matrix[9]-cbi->pmat->matrix[5])/(cbi->pmat->matrix[4]-(y-ic[1])*cbi->pmat->matrix[8]);
+		host_coef[xy7+1]=(y-ic[1])*cbi->pmat->matrix[11]/(cbi->pmat->matrix[5]-(y-ic[1])*cbi->pmat->matrix[9]);
+		host_coef[xy7+3]=(y-ic[1])*cbi->pmat->matrix[11]/(cbi->pmat->matrix[4]-(y-ic[1])*cbi->pmat->matrix[8]);
+		host_coef[xy7+4]=(x-ic[0])*cbi->pmat->matrix[8]/cbi->pmat->matrix[2];
+		host_coef[xy7+5]=(x-ic[0])*cbi->pmat->matrix[9]/cbi->pmat->matrix[2];
+		host_coef[xy7+6]=(x-ic[0])*cbi->pmat->matrix[11]/cbi->pmat->matrix[2];
 	    }
 
 	time_io += plm_timer_report (&timer);

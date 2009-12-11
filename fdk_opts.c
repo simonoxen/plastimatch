@@ -12,7 +12,7 @@ void
 print_usage (void)
 {
     printf (
-	"Usage: mghcbct [options]\n"
+	"Usage: fdk [options]\n"
 	"Options:\n"
 	" -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	" -a \"num ((num) num)\"   Use this range of images\n"
@@ -23,8 +23,8 @@ print_usage (void)
 	" -O outfile             The output file\n"
 	" -sb \". (default)\" The subfolder with *.raw files\n"
 	" -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
-	" -cor (=0 default)                      Turn on Coronal output   \n"
-	" -sag (=0 default)                     Turn on Sagittal output \n"
+	" -cor                   Turn on Coronal output\n"
+	" -sag                   Turn on Sagittal output\n"
     );
     exit (1);
 }

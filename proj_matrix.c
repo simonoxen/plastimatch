@@ -34,6 +34,31 @@ void set_image_parms (MGHMtx_Options * options);
 #define M_TWOPI         (M_PI * 2.0)
 #endif
 
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
+/* -----------------------------------------------------------------------
+   Public functions
+   ----------------------------------------------------------------------- */
+void
+proj_matrix_init (Proj_matrix* matrix)
+{
+    memset (matrix, 0, sizeof(Proj_matrix));
+}
+
+Proj_matrix*
+proj_matrix_create (void)
+{
+    Proj_matrix *matrix;
+    
+    matrix = (Proj_matrix*) malloc (sizeof(Proj_matrix));
+    if (!matrix) return 0;
+
+    proj_matrix_init (matrix);
+
+    return matrix;
+}
+
 void
 proj_matrix_write (double* cam, 
 		   double* tgt, double* vup,
