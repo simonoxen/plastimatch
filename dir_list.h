@@ -23,6 +23,10 @@ Dir_list*
 dir_list_create (void);
 
 gpuit_EXPORT
+void
+dir_list_init (Dir_list* dl);
+
+gpuit_EXPORT
 Dir_list *
 dir_list_load (Dir_list *dir_list, const char* dir);
 

@@ -6,7 +6,7 @@
 
 /* Compiler attributes */
 #cmakedefine FORTRAN_COMPILER_FOUND 1
-#cmakedefine HAVE_SYS_STAT 1
+#cmakedefine HAVE_SYS_STAT_H 1
 #cmakedefine OPENMP_FOUND 1
 #define CMAKE_SIZEOF_UINT @CMAKE_SIZEOF_UINT@
 #define CMAKE_SIZEOF_ULONG @CMAKE_SIZEOF_ULONG@

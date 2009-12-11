@@ -1,4 +1,4 @@
-##-----------------------------------------------------------------------------
+ ##-----------------------------------------------------------------------------
 ##  Welcome to the Plastimatch CMakeLists.txt file
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
@@ -16,6 +16,7 @@ ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
 ##-----------------------------------------------------------------------------
 INCLUDE (CTest)
 INCLUDE (CheckFunctionExists)
+INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckTypeSize)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
@@ -90,6 +91,12 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
 
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
 
+
+##-----------------------------------------------------------------------------
+##  Search for include files
+##-----------------------------------------------------------------------------
+CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
+
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
@@ -111,12 +118,6 @@ INCLUDE (PLM_FindF2C.cmake)
 
 # OpenMP
 INCLUDE (PLM_FindOpenMP.cmake)
-
-##-----------------------------------------------------------------------------
-##  Search for include files
-##-----------------------------------------------------------------------------
-CHECK_INCLUDE_FILE ("sys/stat.h" HAVE_SYS_STAT)
-
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
