@@ -18,19 +18,19 @@
 /* "Varian mode" function */
 static void
 hnd_proj_matrix_compute (
+    Proj_matrix *pmat,
     double* cam, 
-    double* tgt, double* vup,
-    double sid, double* ic,
-    double* ps, int* ires
+    double* tgt, 
+    double* vup,
+    double* ps, 
+    int* ires
 )
 {
     double extrinsic[16];
     double intrinsic[12];
     double projection[12];
     const int cols = 4;
-    double sad;
 
-    double nrm[3];
     double vrt[3];
     double vup_tmp[3];  /* Don't overwrite vup */
 
@@ -46,9 +46,7 @@ hnd_proj_matrix_compute (
        vup = vrt x nrm
        ---------------
     */
-    vec3_sub3 (nrm, tgt, cam);
-    vec3_normalize1 (nrm);
-    vec3_cross (vrt, nrm, vup);
+    vec3_cross (vrt, pmat->nrm, vup);
     vec3_normalize1 (vrt);
     vec3_cross (vup_tmp, vrt, nrm);
     vec3_normalize1 (vup_tmp);
@@ -104,6 +102,10 @@ hnd_set_proj_matrix (
     double tgt[3] = {0.0, 0.0, 0.0};
     double nrm[3];
     double tmp[3];
+    Proj_matrix *pmat = proj->pmat;
+
+    pmat->sad = sad;
+    pmat->sid = sid;
 
     /* Set image resolution */
     int ires[2] = { proj->dim[0],
@@ -116,8 +118,8 @@ hnd_set_proj_matrix (
 
     /* Set ic = image center (in pixels), and ps = pixel size (in mm)
        Note: pixels are numbered from 0 to ires-1 */
-    double ic[2] = { 0.5 * proj->dim[0],
-		     0.5 * proj->dim[2] };
+    pmat->ic[0] = 0.5 * proj->dim[0];
+    pmat->ic[1] = 0.5 * proj->dim[1];
     //    double ic[2] = { options->image_center[0],
     //		     options->image_center[1] };
 
@@ -132,14 +134,13 @@ hnd_set_proj_matrix (
     cam[2] = 0.0;
 
     /* Place camera at distance "sad" from the volume isocenter */
-    vec3_sub3 (nrm, tgt, cam);
-    vec3_normalize1 (nrm);
-    vec3_scale3 (tmp, nrm, sad);
+    vec3_sub3 (pmat->nrm, tgt, cam);
+    vec3_normalize1 (pmat->nrm);
+    vec3_scale3 (tmp, pmat->nrm, sad);
     vec3_copy (cam, tgt);
     vec3_sub2 (cam, tmp);
 
-    hnd_proj_matrix_compute (cam, tgt, vup, 
-	sid, ic, ps, ires);
+    hnd_proj_matrix_compute (pmat, cam, tgt, vup, ps, ires);
 }
 
 /* -----------------------------------------------------------------------
@@ -322,6 +323,7 @@ hnd_load (Proj_image *proj, char *fn)
     }
 
     /* Set the matrix */
+    proj->pmat = proj_matrix_create ();
     hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, hnd.dSFD);
 
     /* Clean up */
