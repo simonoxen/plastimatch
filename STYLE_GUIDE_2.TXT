@@ -1,0 +1,57 @@
+Introduction
+------------
+This is part 2 of the style guide.  It concerns how variables 
+and functions should be named to maintain a uniform look and feel.
+
+This style guide is not ready for use.
+
+
+File names and function names
+-----------------------------
+Generally, files will come in pairs, one H file for each C/CXX file.  
+
+Global functions within a C file are usually prefixed by the 
+name of the file.  For example, if a file is proj_image.c, then 
+it should have functions such as proj_image_load () and 
+proj_image_free ().
+
+The class name within a CXX file has the same name as the file.  
+For example, if the file is named Plm_image.cxx, the class is named 
+Plm_image.
+
+
+Function names: Object-oriented C
+---------------------------------
+When appropriate, C language files can use an object oriented style.  
+Function names should use the following pattern.
+
+
+    /* For objects created on the heap */
+    Proj_image *proj;
+    proj = proj_image_create ();
+    ...
+    proj_image_destroy (proj);
+
+
+    /* For objects created on the stack */
+    Proj_image proj;
+    proj_image_init (&proj);
+    ...
+    proj_image_free (&proj)
+
+
+    /* For objects created on heap by loading from file */
+    Proj_image *proj;
+    proj = proj_image_load (0, filename);
+    ...
+    proj_image_save (proj, filename);
+    proj_image_destroy (proj);
+
+
+    /* For objects created on stack by loading from file */
+    Proj_image proj;
+    proj_image_load (&proj, filename);
+    ...
+    proj_image_save (&proj, filename);
+    proj_image_free (&proj);
+

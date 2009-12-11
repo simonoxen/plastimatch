@@ -25,7 +25,7 @@ main (int argc, char* argv[])
     pfm_fn = argv[2];
 
     /* Read image */
-    proj = proj_image_load_hnd (hnd_fn);
+    proj = proj_image_load (hnd_fn, 0);
     if (!proj) {
 	print_and_exit ("Couldn't load file for read: %s\n", hnd_fn);
     }

@@ -49,8 +49,12 @@ deduce_file_type (char* path)
     }
 
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".pfm")) {
-	return PLM_FILE_TYPE_PFM;
+	return PLM_FILE_TYPE_PROJ_IMG;
     }
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".hnd")) {
+	return PLM_FILE_TYPE_PROJ_IMG;
+    }
+
 
     /* Maybe vector field, or maybe image */
     itk::ImageIOBase::IOPixelType pixelType;
@@ -95,8 +99,8 @@ file_type_string (Plm_file_type file_type)
     case PLM_FILE_TYPE_RTOG_DIR:
 	return "RTOG directory";
 	break;
-    case PLM_FILE_TYPE_PFM:
-	return "PFM file";
+    case PLM_FILE_TYPE_PROJ_IMG:
+	return "Projection image";
 	break;
     default:
 	return "Unknown/default";

@@ -14,6 +14,68 @@
 #include "ramp_filter.h"
 #include "volume.h"
 
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
+static void
+raw_load (Proj_image *proj, char* img_filename)
+{
+    FILE* fp;
+    size_t rc;
+    uint64_t fs;
+
+
+    if (!proj) return;
+
+    /* Open file */
+    fp = fopen (img_filename,"rb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for read\n", img_filename);
+	exit (-1);
+    }
+    
+    /* Malloc memory */
+    fs = file_size (img_filename);
+    proj->img = (float*) malloc (fs);
+    if (!proj->img) {
+	fprintf (stderr, "Couldn't malloc memory for input image\n");
+	exit (-1);
+    }
+
+    /* Load pixels */
+    rc = fread (proj->img, sizeof(float), proj->dim[0] * proj->dim[1], fp);
+    if (rc != proj->dim[0] * proj->dim[1]) {
+	fprintf (stderr, "Couldn't load raster data for %s\n",
+		 img_filename);
+	exit (-1);
+    }
+    fclose (fp);
+
+    /* Guess image size */
+    switch (fs) {
+    case (512*384*sizeof(float)):
+	proj->dim[0] = 512;
+	proj->dim[1] = 384;
+	break;
+    case (1024*384*sizeof(float)):
+	proj->dim[0] = 1024;
+	proj->dim[1] = 384;
+	break;
+    case (1024*768*sizeof(float)):
+	proj->dim[0] = 1024;
+	proj->dim[1] = 768;
+	break;
+    case (2048*1536*sizeof(float)):
+	proj->dim[0] = 1024;
+	proj->dim[1] = 768;
+	break;
+    default:
+	proj->dim[0] = 1024;
+	proj->dim[1] = fs / (1024 * sizeof(float));
+	break;
+    }
+}
+
 static void
 pfm_load (Proj_image *proj, char* img_filename)
 {
@@ -122,8 +184,67 @@ mat_load (Proj_image *proj, char* mat_filename)
     fclose (fp);
 }
 
+static Proj_image* 
+proj_image_load_pfm (char* img_filename, char* mat_filename)
+{
+    Proj_image* proj;
+
+    if (!img_filename) return 0;
+
+    proj = proj_image_create ();
+    if (!proj) return 0;
+
+    pfm_load (proj, img_filename);
+
+    if (mat_filename) {
+	mat_load (proj, mat_filename);
+    }
+
+    return proj;
+}
+
+static Proj_image* 
+proj_image_load_raw (char* img_filename, char* mat_filename)
+{
+    Proj_image* proj;
+
+    if (!img_filename) return 0;
+
+    proj = proj_image_create ();
+    if (!proj) return 0;
+
+    raw_load (proj, img_filename);
+
+    if (mat_filename) {
+	mat_load (proj, mat_filename);
+    }
+
+    return proj;
+}
+
+static Proj_image* 
+proj_image_load_hnd (char* img_filename)
+{
+    Proj_image* proj;
+
+    if (!img_filename) return 0;
+
+    proj = proj_image_create ();
+    if (!proj) return 0;
+
+    hnd_load (proj, img_filename);
+    if (proj->img == 0) {
+	proj_image_free (proj);
+    }
+
+    return proj;
+}
+
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
 void
-proj_image_initialize (Proj_image *proj)
+proj_image_init (Proj_image *proj)
 {
     memset (proj, 0, sizeof(Proj_image));
 }
@@ -136,7 +257,7 @@ proj_image_create (void)
     proj = (Proj_image*) malloc (sizeof(Proj_image));
     if (!proj) return 0;
 
-    proj_image_initialize (proj);
+    proj_image_init (proj);
 
     return proj;
 }
@@ -184,53 +305,21 @@ proj_image_stats (Proj_image *proj)
 }
 
 Proj_image* 
-proj_image_load_pfm (char* img_filename, char* mat_filename)
+proj_image_load (
+    char* img_filename,
+    char* mat_filename
+)
 {
-    Proj_image* proj;
-
-    if (!img_filename) return 0;
-
-    proj = proj_image_create ();
-    if (!proj) return 0;
-
-    pfm_load (proj, img_filename);
-
-    if (mat_filename) {
-	mat_load (proj, mat_filename);
-    } else {
-	/* No mat file, so try to find automatically */
-	int img_filename_len = strlen (img_filename);
-	if (img_filename_len > 4 
-	    && !strcmp (&img_filename[img_filename_len-4], ".pfm")) 
-	{
-	    char *mat_fn = strdup (img_filename);
-	    strcpy (&mat_fn[img_filename_len-4], ".txt");
-	    if (file_exists (mat_fn)) {
-		mat_load (proj, mat_fn);
-	    }
-	    free (mat_fn);
-	}
+    if (extension_is (img_filename, ".pfm")) {
+	return proj_image_load_pfm (img_filename, mat_filename);
     }
-
-    return proj;
-}
-
-Proj_image* 
-proj_image_load_hnd (char* img_filename)
-{
-    Proj_image* proj;
-
-    if (!img_filename) return 0;
-
-    proj = proj_image_create ();
-    if (!proj) return 0;
-
-    hnd_load (proj, img_filename);
-    if (proj->img == 0) {
-	proj_image_free (proj);
+    if (extension_is (img_filename, ".raw")) {
+	return proj_image_load_raw (img_filename, mat_filename);
     }
-
-    return proj;
+    if (extension_is (img_filename, ".hnd")) {
+	return proj_image_load_hnd (img_filename);
+    }
+    return 0;
 }
 
 Proj_image* 

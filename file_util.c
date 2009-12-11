@@ -62,6 +62,15 @@ file_exists (const char *filename)
     return 0;
 }
 
+uint64_t
+file_size (const char *filename)
+{
+    struct stat fs;
+    if (stat (filename, &fs) != 0) return 0;
+
+    return (uint64_t) fs.st_size;
+}
+
 void
 make_directory (const char *dirname)
 {
@@ -102,4 +111,3 @@ strip_extension (char* filename)
 	*p = 0;
     }
 }
-

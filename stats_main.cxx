@@ -40,7 +40,7 @@ stats_proj_image_main (Stats_parms* parms)
 {
     Proj_image *proj;
 
-    proj = proj_image_load_pfm (parms->mha_in_fn, 0);
+    proj = proj_image_load (parms->mha_in_fn, 0);
     proj_image_debug_header (proj);
     proj_image_stats (proj);
     proj_image_free (proj);
@@ -83,7 +83,7 @@ stats_main (Stats_parms* parms)
     case PLM_FILE_TYPE_VF:
 	stats_vf_main (parms);
 	break;
-    case PLM_FILE_TYPE_PFM:
+    case PLM_FILE_TYPE_PROJ_IMG:
 	stats_proj_image_main (parms);
 	break;
     case PLM_FILE_TYPE_IMG:

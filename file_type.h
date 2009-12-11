@@ -15,7 +15,7 @@ enum Plm_file_type {
     PLM_FILE_TYPE_DICOM_DIR,
     PLM_FILE_TYPE_XIO_DIR,
     PLM_FILE_TYPE_RTOG_DIR,
-    PLM_FILE_TYPE_PFM,
+    PLM_FILE_TYPE_PROJ_IMG,
 };
 
 Plm_file_type

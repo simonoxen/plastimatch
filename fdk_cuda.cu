@@ -39,6 +39,7 @@
 #include "fdk_utils.h"
 #include "mathutil.h"
 #include "proj_image.h"
+#include "proj_image_dir.h"
 #include "readmha.h"
 #include "volume.h"
 
@@ -143,7 +144,12 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
 extern "C"
-int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
+int 
+CUDA_reconstruct_conebeam (
+    Volume *vol, 
+    Proj_image_dir *proj_dir,
+    Fdk_options *options
+)
 {
     // Thead Block Dimensions
     int tBlock_x = 16;
@@ -159,6 +165,9 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 
     // Size of volume Malloc
     int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
+
+    /* Parse the input directory */
+    
 
     // Structure for passing arugments to kernel: (See fdk_cuda.h)
     kernel_args_fdk *kargs;
@@ -236,7 +245,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 #endif
 
     // This is just to retrieve the 2D image dimensions
-    cbi = get_image_pfm (options, options->first_img);
+    cbi = proj_image_dir_load_image (proj_dir, options->first_img);
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
     proj_image_free (cbi);
 
@@ -250,7 +259,7 @@ int CUDA_reconstruct_conebeam (Volume *vol, Fdk_options *options)
 	plm_timer_start (&timer);
 #endif
 	// Load the current image
-	cbi = get_image_pfm (options, image_num);
+	cbi = proj_image_dir_load_image (proj_dir, image_num);
 
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];

@@ -12,7 +12,9 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "mathutil.h"
+#include "print_and_exit.h"
 #include "proj_image.h"
+#include "proj_image_dir.h"
 #include "readmha.h"
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
@@ -312,21 +314,28 @@ project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
 }
 
 void
-reconstruct_conebeam (Volume* vol, Fdk_options* options)
+reconstruct_conebeam (
+    Volume* vol, 
+    Proj_image_dir *proj_dir, 
+    Fdk_options* options
+)
 {
     int i;
     int num_imgs;
     float scale;
 
     num_imgs = 1 + (options->last_img - options->first_img)
-	    / options->skip_img;
+	/ options->skip_img;
 
     scale = (float) (sqrt(3) / (double) num_imgs);
     scale = scale * options->scale;
 
-    for (i = options->first_img; i <= options->last_img; i += options->skip_img) {
+    for (i = options->first_img; 
+	 i <= options->last_img; 
+	 i += options->skip_img)
+    {
 	Proj_image* cbi;
-	cbi = get_image_pfm (options, i);
+	cbi = proj_image_dir_load_image (proj_dir, i);
 	
 	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);
@@ -342,37 +351,52 @@ main (int argc, char* argv[])
 {
     Fdk_options options;
     Volume* vol;
+    Proj_image_dir *proj_dir;
     
+    /* Parse command line arguments */
     fdk_parse_args (&options, argc, argv);
-    vol = my_create_volume (&options);
 
-    switch (options.threading) {
-    case THREADING_CPU:
-	reconstruct_conebeam (vol, &options);
-	break;
-    case THREADING_BROOK:
-#if (BROOK_FOUND)
-	fdk_brook_c (vol, &options);
-#else
-	reconstruct_conebeam (vol, &options);
-#endif
-	break;
-    case THREADING_CUDA:
-#if (CUDA_FOUND)
-	CUDA_reconstruct_conebeam (vol, &options);
-#else
-	reconstruct_conebeam (vol, &options);
-#endif
-	break;
+    /* Look for input files */
+    proj_dir = proj_image_dir_create (options.input_dir);
+    if (!proj_dir) {
+	print_and_exit ("Error: couldn't find input files in directory %s\n",
+	    options.input_dir);
     }
 
+    /* Allocate memory */
+    vol = my_create_volume (&options);
+
+    printf ("Reconstructing...\n");
+    switch (options.threading) {
+#if (BROOK_FOUND)
+    case THREADING_BROOK:
+	fdk_brook_c (vol, proj_dir, &options);
+	break;
+#endif
+#if (CUDA_FOUND)
+    case THREADING_CUDA:
+	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
+	break;
+#endif
+    case THREADING_CPU:
+    default:
+	reconstruct_conebeam (vol, proj_dir, &options);
+    }
+
+    /* Free memory */
+    proj_image_dir_destroy (proj_dir);
+
+    /* Prepare HU values in output volume */
     convert_to_hu (vol, &options);
 
+    /* Write output */
     printf ("Writing output volume(s)...\n");
     write_mha (options.output_file, vol);
     write_coronal_sagittal (&options, vol);
 
+    /* Free memory */
     volume_free (vol);
+
     printf(" done.\n\n");
 
     return 0;

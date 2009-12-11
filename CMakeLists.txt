@@ -415,6 +415,7 @@ SET (GPUIT_LIBRARY_SRC
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
+  dir_list.c dir_list.h
   file_util.c file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
@@ -422,6 +423,7 @@ SET (GPUIT_LIBRARY_SRC
   mathutil.h
   print_and_exit.c print_and_exit.h 
   proj_image.c proj_image.h
+  proj_image_dir.c proj_image_dir.h
   proj_matrix.c proj_matrix.h 
   readmha.c readmha.h
   threading.h
@@ -637,7 +639,7 @@ SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
 	fdk_utils.c fdk_utils.h
 	mathutil.h
 	fdk_cuda_integrated_main.c
-	fdk_cuda_ext.cu
+	fdk_cuda.cu fdk_cuda.h
 	MGHMtx_opts.h
 	ramp_filter.c ramp_filter.h 
 	volume.c volume.h 
@@ -651,7 +653,6 @@ IF (CUDA_FOUND)
     ${FDK_SRC}
     ${FDK_CUDA_WRAPPERS}
     )
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda_ext.cu)
   SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
     ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
     ${FDK_CUDA_WRAPPERS}

@@ -5,17 +5,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "fdk_cuda.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "volume.h"
 #include "MGHMtx_opts.h"
+#include "proj_image_dir.h"
 #include "proj_matrix.h"
 #include "file_util.h"
 #if (_WIN32)
 #include <windows.h>
 #endif
 
-int CUDA_reconstruct_conebeam_ext (Volume *vol, Fdk_options *options);
 void writematrix_set_image_parms (MGHMtx_Options* options);
 
 int
@@ -33,6 +34,7 @@ main (int argc, char* argv[])
     char dirbuf[256];
     char argbuf[256];
     int CheckNormExits;
+    Proj_image_dir *proj_dir;
 	
     /**************************************************************** 
      * STEP 0: Parse commandline arguments                           * 
@@ -41,8 +43,8 @@ main (int argc, char* argv[])
     fdk_parse_args (&options, argc, argv);
 
     wm_set_default_options (&matrix_options);
-    //give the previously allocated array to pointers.
-	
+
+    /* Get pwd for norm image */
     strcpy(argbuf,argv[0]);
     for(i=strlen(argbuf)-1;i>=0;i--)
 	if (argbuf[i]=='\\'||argbuf[i]=='/'){
@@ -58,20 +60,17 @@ main (int argc, char* argv[])
 	options.Half_normCBCT_name=argbuf;
     }
 	
-
+    /* Get proj_angle file */
     strcpy(matrix_ProjAngle_file ,options.input_dir);
     strcat(matrix_ProjAngle_file, "/ProjAngles.txt");
     matrix_options.ProjAngle_file=matrix_ProjAngle_file;
-	
 
+    /* Create matrix files */
     strcpy(dirbuf,options.input_dir);
-    //CreateDirectory(strcat(dirbuf,"\\tmp"),NULL);
     make_directory (strcat (dirbuf, "/tmp"));
-
     strcpy(matrix_output_prefix ,options.input_dir);
     strcat(matrix_output_prefix , "/tmp/out_");
     matrix_options.output_prefix=matrix_output_prefix;
-	
 
     if (!options.full_fan){
 	matrix_options.image_resolution[0]=384;
@@ -100,8 +99,16 @@ main (int argc, char* argv[])
     /***********************************************
      * STEP 2: Reconstruct/populate the volume      *
      ***********************************************/
-    printf ("Trying to CUDA_reconstruct_conebeam_ext\n");
-    CUDA_reconstruct_conebeam_ext (vol, &options);	
+
+    /* Look for input files */
+    proj_dir = proj_image_dir_create (options.input_dir);
+    if (!proj_dir) {
+	print_and_exit ("Error: couldn't find input files in directory %s\n",
+	    options.input_dir);
+    }
+
+    printf ("Trying to CUDA_reconstruct_conebeam\n");
+    CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 
     /*************************************
      * STEP 3: Convert to HU values       *

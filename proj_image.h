@@ -8,10 +8,6 @@
 #include "volume.h"
 #include "fdk_opts.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
-
 typedef struct proj_image Proj_image;
 struct proj_image
 {
@@ -27,20 +23,33 @@ struct proj_image
     float* img;		// Pixel data
 };
 
-gpuit_EXPORT Proj_image* 
-proj_image_load_pfm (char* img_filename, char* mat_filename);
-gpuit_EXPORT Proj_image* 
-proj_image_load_hnd (char* img_filename);
+#if defined __cplusplus
+extern "C" {
+#endif
+
+gpuit_EXPORT
+Proj_image*
+proj_image_create (void);
+
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
     char* img_filename, 
     char* mat_filename
 );
+
+gpuit_EXPORT Proj_image* 
+proj_image_load (
+    char* img_filename,
+    char* mat_filename
+);
+
 gpuit_EXPORT void
 proj_image_debug_header (Proj_image *proj);
+
 gpuit_EXPORT void
 proj_image_stats (Proj_image *proj);
+
 gpuit_EXPORT void 
 proj_image_free (Proj_image* proj);
 

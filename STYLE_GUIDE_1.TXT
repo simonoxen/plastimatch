@@ -1,6 +1,7 @@
 Introduction
 ------------
-This document is draft status.
+This is part 1 of the style guide.  It concerns how the C/C++ syntax 
+should be formated within a file.
 
 Unified coding style is important because it eases software review 
 and maintenance.  This file specifies guidelines which can be broken 

@@ -22,5 +22,5 @@ struct MGHMtx_Options_struct {
     int interpolation;
     char* input_file;
     char* output_prefix;
-	char* ProjAngle_file;
+    char* ProjAngle_file;
 };

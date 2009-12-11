@@ -5,6 +5,13 @@
 #define _file_util_h_
 
 #include "plm_config.h"
+#include "plm_int.h"
+
+#if (_WIN32)
+#define ISSLASH(c) (((c) == '/') || ((c) == '\\'))
+#else
+#define ISSLASH(c) ((c) == '/')
+#endif
 
 #if defined __cplusplus
 extern "C" {
@@ -14,6 +21,8 @@ gpuit_EXPORT
 int extension_is (char* fname, char* ext);
 gpuit_EXPORT
 int file_exists (const char *filename);
+gpuit_EXPORT
+uint64_t file_size (const char *filename);
 gpuit_EXPORT
 int is_directory (const char *dir);
 gpuit_EXPORT
