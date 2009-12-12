@@ -16,18 +16,21 @@
 //#define ULTRA_VERBOSE 1
 //#define VERBOSE 1
 
+typedef enum point_location Point_location;
 enum point_location {
     POINTLOC_LEFT,
     POINTLOC_INSIDE,
     POINTLOC_RIGHT,
 };
-typedef enum point_location Point_location;
 
-struct volume_limit {
-    double limits[2];   /* upper and lower limits of volume, including tolerances */
-    int dir;		/* dir == 0 if limits go from low to high */
-};
 typedef struct volume_limit Volume_limit;
+struct volume_limit {
+    /* upper and lower limits of volume, including tolerances */
+    double limits[2];
+
+    /* dir == 0 if limits go from low to high */
+    int dir;
+};
 
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
    is 0.22 cm^2 per gram.  Thus, we scale by 0.022 per mm
@@ -576,6 +579,104 @@ drr_render_volume_perspective (
 void
 drr_render_volumes (Volume* vol, Drr_options* options)
 {
+    Proj_matrix *pmat;
+    int a;
+
+    //    double cam_ap[3] = {0.0, -1.0, 0.0};
+    //    double cam_lat[3] = {-1.0, 0.0, 0.0};
+    //    double* cam = cam_ap;
+    //    double* cam = cam_lat;
+
+    /* tgt is zero because we shifted volume. */
+    double vup[3] = {0.0, 0.0, 1.0};
+    double tgt[3] = {0.0, 0.0, 0.0};
+    double tmp[3];
+
+    /* Set source-to-axis distance */
+    double sad = options->sad;
+
+    /* Set source-to-image distance */
+    double sid = options->sid;
+
+    /* Set image resolution */
+    int ires[2] = { options->image_resolution[0],
+		    options->image_resolution[1] };
+
+    /* Set physical size of imager in mm */
+    //    int isize[2] = { 300, 400 };      /* Actual resolution */
+    int isize[2] = { options->image_size[0],
+		     options->image_size[1] };
+
+    /* Set ic = image center (in pixels), and ps = pixel size (in mm)
+       Note: pixels are numbered from 0 to ires-1 */
+    double ic[2] = { options->image_center[0],
+		     options->image_center[1] };
+    
+    /* Set pixel size in mm */
+    double ps[2] = { (double)isize[0]/(double)ires[0], 
+		     (double)isize[1]/(double)ires[1] };
+
+    pmat = proj_matrix_create ();
+
+    /* Loop through camera angles */
+    for (a = 0; a < options->num_angles; a++) {
+	double angle = a * options->angle_diff;
+	double cam[3];
+	double nrm[3];
+	char mat_fn[256];
+	char img_fn[256];
+	char multispectral_fn[256];
+
+	cam[0] = cos(angle);
+	cam[1] = sin(angle);
+	cam[2] = 0.0;
+	
+	printf ("Rendering DRR %d\n", a);
+
+	/* Place camera at distance "sad" from the volume isocenter */
+	vec3_sub3 (nrm, tgt, cam);
+	vec3_normalize1 (nrm);
+	vec3_scale3 (tmp, nrm, sad);
+	vec3_copy (cam, tgt);
+	vec3_sub2 (cam, tmp);
+
+	/* Some debugging info */
+#if defined (VERBOSE)
+	vec_set_fmt ("%12.4g ");
+	printf ("cam: ");
+	vec3_print_eol (stdout, cam);
+	printf ("tgt: ");
+	vec3_print_eol (stdout, tgt);
+	printf ("ic:  %g %g\n", ic[0], ic[1]);
+#endif
+	sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
+
+	proj_matrix_set (pmat, cam, tgt, vup, sid, ic, ps, ires);
+
+	proj_matrix_save (pmat, mat_fn);
+
+	if (options->output_format == OUTPUT_FORMAT_PFM) {
+	    sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);
+	} else if (options->output_format == OUTPUT_FORMAT_PGM) {
+	    sprintf (img_fn, "%s%04d.pgm", options->output_prefix, a);
+	} else {
+	    sprintf (img_fn, "%s%04d.raw", options->output_prefix, a);
+	}
+	sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
+
+	drr_render_volume_perspective (
+	    vol, cam, tgt, vup, sid, ic, ps, 
+	    ires, img_fn, multispectral_fn, 
+	    options);
+    }
+    proj_matrix_destroy (pmat);
+}
+
+#if defined (commentout)
+/* All distances in mm */
+void
+drr_render_volumes (Volume* vol, Drr_options* options)
+{
     int a;
 
     //    double cam_ap[3] = {0.0, -1.0, 0.0};
@@ -662,6 +763,7 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	    options);
     }
 }
+#endif
 
 void
 set_isocenter (Volume* vol, Drr_options* options)
@@ -680,6 +782,13 @@ main (int argc, char* argv[])
     parse_args (&options, argc, argv);
 
     vol = read_mha (options.input_file);
+    volume_convert_to_float (vol);
+
+    set_isocenter (vol, &options);
+
+#if defined (PREPROCESS_ATTENUATION)
+    preprocess_attenuation (vol);
+#endif
 
     switch (options.threading) {
     case THREADING_BROOK:
@@ -692,11 +801,6 @@ main (int argc, char* argv[])
 #endif
 
     case THREADING_CPU:
-	volume_convert_to_float (vol);
-	set_isocenter (vol, &options);
-#if defined (PREPROCESS_ATTENUATION)
-	preprocess_attenuation (vol);
-#endif
 	drr_render_volumes (vol, &options);
 	break;
     }

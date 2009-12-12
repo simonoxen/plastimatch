@@ -45,8 +45,8 @@
 #define OUTPUT_FORMAT_PGM                 1
 #define OUTPUT_FORMAT_RAW                 2
 
-typedef struct Drr_options_struct Drr_options;
-struct Drr_options_struct {
+typedef struct drr_options Drr_options;
+struct drr_options {
     enum Threading threading;
     int image_resolution[2];         /* In pixels */
     float image_size[2];             /* In mm */
@@ -55,9 +55,15 @@ struct Drr_options_struct {
     int have_image_window;           /* Was image_window spec'd in options? */
     int image_window[4];             /* In pixels */
     float isocenter[3];              /* In mm */
+
     int num_angles;
     int have_angle_diff;             /* Was angle_diff spec'd in options? */
     float angle_diff;                /* In degrees */
+
+    int have_nrm;                    /* Was nrm specified? */
+    float nrm[3];                    /* Normal vector (unitless) */
+    float vup[3];                    /* Direction vector (unitless) */
+
     float sad;			     /* In mm */
     float sid;			     /* In mm */
     float scale;

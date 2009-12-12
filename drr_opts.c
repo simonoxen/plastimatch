@@ -21,11 +21,13 @@ print_usage (void)
 	"Options:\n"
 	" -A hardware       Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	" -a num            Generate num equally spaced angles\n"
-	" -N ang            Difference between neighboring anges (in degrees)\n"
+	" -N ang            Difference between neighboring angles (in degrees)\n"
+	" -nrm \"x y z\"      Set the normal vector for the panel\n"
+	" -vup \"x y z\"      Set the vup vector (toward top row) for the panel\n"
+	" -g \"sad sid\"      Set the sad, sid (in mm)\n"
 	" -r \"r1 r2\"        Set output resolution (in pixels)\n"
 	" -s scale          Scale the intensity of the output file\n"
 	" -e                Do exponential mapping of output values\n"
-	" -g \"sad sid\"      Set the sad, sid (in mm)\n"
 	" -c \"c1 c2\"        Set the image center (in pixels)\n"
 	" -z \"s1 s2\"        Set the physical size of imager (in mm)\n"
 	" -w \"w1 w2 w3 w4\"  Only produce image for pixes in window (in pix)\n"
@@ -41,7 +43,7 @@ print_usage (void)
 }
 
 void
-set_default_options (Drr_options* options)
+drr_opts_init (Drr_options* options)
 {
     options->threading = THREADING_CPU;
     options->image_resolution[0] = 128;
@@ -56,6 +58,15 @@ set_default_options (Drr_options* options)
     options->have_angle_diff = 0;
     options->num_angles = 1;
     options->angle_diff = 1.0f;
+
+    options->have_nrm = 0;
+    options->nrm[0] = 1.0f;
+    options->nrm[1] = 0.0f;
+    options->nrm[2] = 0.0f;
+    options->vup[0] = 0.0f;
+    options->vup[1] = 0.0f;
+    options->vup[2] = 1.0f;
+
     options->sad = 1000.0f;
     options->sid = 1630.0f;
     options->scale = 1.0f;
@@ -92,7 +103,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 {
     int i, rc;
 
-    set_default_options (options);
+    drr_opts_init (options);
     for (i = 1; i < argc; i++) {
 	//printf ("ARG[%d] = %s\n", i, argv[i]);
 	if (argv[i][0] != '-') break;
@@ -106,7 +117,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 		options->threading = THREADING_BROOK;
 	    } 
 	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
-		     || !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
 		options->threading = THREADING_CUDA;
 	    }
 	    else {
@@ -116,7 +127,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-r")) {
 	    i++;
 	    rc = sscanf (argv[i], "%d %d", &options->image_resolution[0], 
-			 &options->image_resolution[1]);
+		&options->image_resolution[1]);
 	    if (rc == 1) {
 		options->image_resolution[1] = options->image_resolution[0];
 	    } else if (rc != 2) {
@@ -146,6 +157,23 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	    }
 	    options->have_angle_diff = 1;
 	}
+	else if (!strcmp (argv[i], "-nrm")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f %f %f", &options->nrm[0],
+		&options->nrm[1], &options->nrm[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	    options->have_nrm = 1;
+	}
+	else if (!strcmp (argv[i], "-vup")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f %f %f", &options->vup[0],
+		&options->vup[1], &options->vup[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	}
 	else if (!strcmp (argv[i], "-s")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->scale);
@@ -171,7 +199,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-c")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g %g", &options->image_center[0],
-			 &options->image_center[1]);
+		&options->image_center[1]);
 	    if (rc == 1) {
 		options->image_center[1] = options->image_center[0];
 	    } else if (rc != 2) {
@@ -182,7 +210,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-z")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g %g", &options->image_size[0],
-			 &options->image_size[1]);
+		&options->image_size[1]);
 	    if (rc == 1) {
 		options->image_size[1] = options->image_size[0];
 	    } else if (rc != 2) {
@@ -199,10 +227,10 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-w")) {
 	    i++;
 	    rc = sscanf (argv[i], "%d %d %d %d",
-			 &options->image_window[0],
-			 &options->image_window[1],
-			 &options->image_window[2],
-			 &options->image_window[3]);
+		&options->image_window[0],
+		&options->image_window[1],
+		&options->image_window[2],
+		&options->image_window[3]);
 	    if (rc == 2) {
 		options->image_window[2] = options->image_window[0];
 		options->image_window[3] = options->image_window[1];
@@ -224,9 +252,9 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-o")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g %g %g" , 
-			 &options->isocenter[0],
-			 &options->isocenter[1],
-			 &options->isocenter[2]);
+		&options->isocenter[0],
+		&options->isocenter[1],
+		&options->isocenter[2]);
 	    if (rc != 3) {
 		print_usage ();
 	    }

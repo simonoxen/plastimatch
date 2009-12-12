@@ -7,11 +7,14 @@
 typedef struct proj_matrix Proj_matrix;
 struct proj_matrix
 {
-    double ic[2];	/* Image Center:  ic[0] = x, ic[1] = y     */
-    double matrix[12];	/* Projection matrix */
-    double sad;		/* Distance: Source To Axis */
-    double sid;		/* Distance: Source to Image */
-    double nrm[3];	/* Ray from image center to source */
+    double ic[2];	  /* Image Center:  ic[0] = x, ic[1] = y */
+    double matrix[12];	  /* Projection matrix */
+    double sad;		  /* Distance: Source To Axis */
+    double sid;		  /* Distance: Source to Image */
+    double nrm[3];	  /* Ray from image center to source */
+
+    double extrinsic[16];
+    double intrinsic[12];
 };
 
 
@@ -28,14 +31,29 @@ gpuit_EXPORT
 void
 proj_matrix_init (Proj_matrix* matrix);
 
+gpuit_EXPORT 
+void
+proj_matrix_destroy (Proj_matrix* pmat);
+
 gpuit_EXPORT
 void
-proj_matrix_write (double* cam, 
-		   double* tgt, double* vup,
-		   double sid, double* ic,
-		   double* ps, int* ires,
-		   int varian_mode, 
-		   char* out_fn);
+proj_matrix_set (
+    Proj_matrix *pmat,
+    double* cam, 
+    double* tgt, 
+    double* vup, 
+    double sid, 
+    double* ic, 
+    double* ps, 
+    int* ires
+);
+
+gpuit_EXPORT
+void
+proj_matrix_save (
+    Proj_matrix *pmat,
+    const char *fn
+);
 
 void write_matrix (MGHMtx_Options* options);
 void wm_set_default_options (MGHMtx_Options* options);

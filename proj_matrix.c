@@ -60,6 +60,123 @@ proj_matrix_create (void)
 }
 
 void
+proj_matrix_destroy (Proj_matrix* pmat)
+{
+    free (pmat);
+}
+
+void
+proj_matrix_save (
+    Proj_matrix *pmat,
+    const char *fn
+)
+{
+    FILE *fp;
+
+    fp = fopen (fn, "w");
+    if (!fp) {
+	fprintf (stderr, "Error opening %s for write\n", fn);
+	exit (-1);
+    }
+    fprintf (fp, "%18.8e %18.8e\n", pmat->ic[0], pmat->ic[1]);
+    fprintf (fp,
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n", 
+	pmat->matrix[0], pmat->matrix[1], pmat->matrix[2], pmat->matrix[3],
+	pmat->matrix[4], pmat->matrix[5], pmat->matrix[6], pmat->matrix[7],
+	pmat->matrix[8], pmat->matrix[9], pmat->matrix[10], pmat->matrix[11]
+    );
+    fprintf (fp, "%18.8e\n%18.8e\n", pmat->sad, pmat->sid);
+
+    /* NRM */
+    //fprintf (fp, "%18.8e %18.8e %18.8e\n", nrm[0], nrm[1], nrm[2]);
+    fprintf (fp, "%18.8e %18.8e %18.8e\n", pmat->extrinsic[8], 
+	pmat->extrinsic[9], pmat->extrinsic[10]);
+
+    fprintf (fp,
+	"Extrinsic\n"
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n", 
+	pmat->extrinsic[0], pmat->extrinsic[1], pmat->extrinsic[2], 
+	pmat->extrinsic[3], pmat->extrinsic[4], pmat->extrinsic[5], 
+	pmat->extrinsic[6], pmat->extrinsic[7], pmat->extrinsic[8], 
+	pmat->extrinsic[9], pmat->extrinsic[10], pmat->extrinsic[11],
+	pmat->extrinsic[12], pmat->extrinsic[13], pmat->extrinsic[14], 
+	pmat->extrinsic[15]
+    );
+    fprintf (fp,
+	"Intrinsic\n"
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n" 
+	"%18.8e %18.8e %18.8e %18.8e\n", 
+	pmat->intrinsic[0], pmat->intrinsic[1], 
+	pmat->intrinsic[2], pmat->intrinsic[3],
+	pmat->intrinsic[4], pmat->intrinsic[5], 
+	pmat->intrinsic[6], pmat->intrinsic[7],
+	pmat->intrinsic[8], pmat->intrinsic[9], 
+	pmat->intrinsic[10], pmat->intrinsic[11]
+    );
+    fclose (fp);
+}
+
+void
+proj_matrix_set (
+    Proj_matrix *pmat,
+    double* cam, 
+    double* tgt, 
+    double* vup, 
+    double sid, 
+    double* ic, 
+    double* ps, 
+    int* ires
+)
+{
+    const int cols = 4;
+    double nrm[3];       /* Panel normal */
+    double prt[3];       /* Panel right (toward first column) */
+    double pup[3];       /* Panel up (toward top row) */
+
+    pmat->sid = sid;
+    pmat->sad = vec3_len (cam);
+    pmat->ic[0] = ic[0];
+    pmat->ic[1] = ic[1];
+
+    /* Compute imager coordinate sys (nrm,pup,prt) 
+       ---------------
+       nrm = tgt - cam
+       prt = nrm x vup
+       pup = prt x nrm
+       ---------------
+    */
+    vec3_sub3 (nrm, tgt, cam);
+    vec3_normalize1 (nrm);
+    vec3_cross (prt, nrm, vup);
+    vec3_normalize1 (prt);
+    vec3_cross (pup, prt, nrm);
+    vec3_normalize1 (pup);
+
+    /* Build extrinsic matrix */
+    vec_zero (pmat->extrinsic, 16);
+    vec3_copy (&pmat->extrinsic[0], prt);
+    vec3_copy (&pmat->extrinsic[4], pup);
+    vec3_copy (&pmat->extrinsic[8], nrm);
+    m_idx (pmat->extrinsic,cols,2,3) = - pmat->sad;
+    m_idx (pmat->extrinsic,cols,3,3) = 1.0;
+
+    /* Build intrinsic matrix */
+    vec_zero (pmat->intrinsic, 12);
+    m_idx (pmat->intrinsic,cols,0,1) = - 1 / ps[0];
+    m_idx (pmat->intrinsic,cols,1,0) = 1 / ps[1];
+    m_idx (pmat->intrinsic,cols,2,2) = - 1 / sid;
+
+    /* Build projection matrix */
+    mat_mult_mat (pmat->matrix, pmat->intrinsic,3,4, pmat->extrinsic,4,4);
+}
+
+void
 proj_matrix_write (double* cam, 
 		   double* tgt, double* vup,
 		   double sid, double* ic,
