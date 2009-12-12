@@ -3,13 +3,13 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
-CMAKE_MINIMUM_REQUIRED (VERSION 2.6)
 PROJECT (plastimatch)
 
+## FindCUDA requires 2.6.2 or higher
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
+
 ## Tell CMake to be quiet
-IF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
-  CMAKE_POLICY (SET CMP0003 NEW)
-ENDIF(${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} GREATER 2.4)
+CMAKE_POLICY (SET CMP0003 NEW)
 
 ##-----------------------------------------------------------------------------
 ##  Include files
@@ -118,6 +118,7 @@ INCLUDE (PLM_FindF2C.cmake)
 
 # OpenMP
 INCLUDE (PLM_FindOpenMP.cmake)
+
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
@@ -164,16 +165,9 @@ ELSE (MINGW)
 ENDIF (MINGW)
 SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
-
-
-#IF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-#  SET (CUDA_FOUND FALSE)
-#ENDIF (CUDA_FOUND AND NOT CUDA_CUT_INCLUDE_DIR)
-IF(CUDA_FOUND)
-  #  SET (CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE OFF)
+IF (CUDA_FOUND)
   CUDA_INCLUDE_DIRECTORIES (
     ${CMAKE_CURRENT_SOURCE_DIR}
-#    ${CUDA_CUT_INCLUDE_DIR}
     )
 ENDIF(CUDA_FOUND)
 
@@ -189,27 +183,27 @@ ENDIF(UNIX)
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
 ##-----------------------------------------------------------------------------
-IF(wxWidgets_FOUND)
+IF (wxWidgets_FOUND)
   MESSAGE (STATUS "Looking for wxWidgets - found.")
-ELSE(wxWidgets_FOUND)
+ELSE (wxWidgets_FOUND)
   MESSAGE (STATUS "Looking for wxWidgets - not found.")
-ENDIF(wxWidgets_FOUND)
-IF(DCMTK_FOUND)
+ENDIF (wxWidgets_FOUND)
+IF (DCMTK_FOUND)
   MESSAGE (STATUS "Looking for dcmtk - found.")
-ELSE(DCMTK_FOUND)
+ELSE (DCMTK_FOUND)
   MESSAGE (STATUS "Looking for dcmtk - not found.")
-ENDIF(DCMTK_FOUND)
+ENDIF (DCMTK_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Slicer front-ends
 ##-----------------------------------------------------------------------------
-find_package (Slicer3 QUIET)
+FIND_PACKAGE (Slicer3 QUIET)
 
 #SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
 IF (Slicer3_DIR)
   MESSAGE (STATUS "Looking for Slicer3 - found " ${Slicer3_DIR})
-  find_package (Slicer3 REQUIRED)
-  include (${Slicer3_USE_FILE})
+  FIND_PACKAGE (Slicer3 REQUIRED)
+  INCLUDE (${Slicer3_USE_FILE})
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
@@ -233,12 +227,12 @@ ENDIF (Slicer3_DIR)
 ##  I can't remember why this is necessary.  But at one time I needed 
 ##  it for compiling on AMD linux 64-bit.
 ##-----------------------------------------------------------------------------
-IF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
   SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
   SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
   SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-ENDIF("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
 ##-----------------------------------------------------------------------------
 ##  Set default build type to "Release"
@@ -260,7 +254,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF(Subversion_FOUND)
     SET (PLASTIMATCH_EXPERIMENTAL TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
-    EXECUTE_PROCESS(
+    EXECUTE_PROCESS (
       COMMAND ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
@@ -282,26 +276,26 @@ ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 ##-----------------------------------------------------------------------------
 ##  ITK LIBRARY
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE(ITK)
-IF(ITK_FOUND)
-  INCLUDE(${ITK_USE_FILE})
+FIND_PACKAGE (ITK)
+IF (ITK_FOUND)
+  INCLUDE (${ITK_USE_FILE})
   SET (ITK_VERSION 
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
-ENDIF(ITK_FOUND)
+ENDIF (ITK_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
 ##-----------------------------------------------------------------------------
-IF(wxWidgets_FOUND)
-  IF(wxWidgets_CXX_FLAGS)
-    string(REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+IF (wxWidgets_FOUND)
+  IF (wxWidgets_CXX_FLAGS)
+    STRING (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
       "${wxWidgets_DEFINITIONS}")
-    SET_SOURCE_FILES_PROPERTIES(mondoshot_main.cpp
+    SET_SOURCE_FILES_PROPERTIES (mondoshot_main.cpp
       PROPERTIES COMPILE_FLAGS 
       ${wxWidgets_CXX_FLAGS}
       )
-  ENDIF(wxWidgets_CXX_FLAGS)
-ENDIF(wxWidgets_FOUND)
+  ENDIF (wxWidgets_CXX_FLAGS)
+ENDIF (wxWidgets_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  DCMTK LIBRARY
@@ -596,7 +590,7 @@ SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
 	)
 SET (DRR_SRC
-	drr_c.c drr.h
+	drr_main.c drr.h
 	drr_opts.c drr_opts.h
 	drr_trilin.c drr_trilin.h
 	)
@@ -606,7 +600,6 @@ IF (CUDA_FOUND)
     ${DRR_SRC}
     ${CUDA_WRAPPERS}
     drr_cuda.cu drr_cuda.h drr_cuda_p.h 
-##    fdk_utils.c fdk_utils.h    ## Temporary
     )
 ENDIF (CUDA_FOUND)
 
@@ -834,9 +827,8 @@ ENDIF(FFTW_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
-
-ADD_SUBDIRECTORY(fatm/src)
-ADD_SUBDIRECTORY(CUDA_tex_test)
+ADD_SUBDIRECTORY (fatm/src)
+ADD_SUBDIRECTORY (CUDA_tex_test)
 
 ##-----------------------------------------------------------------------------
 ##  Library targets
@@ -1106,10 +1098,10 @@ SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
 # in either directory
-CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
+CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
   ${CMAKE_BINARY_DIR}/CTestCustom.cmake
   @ONLY)
-CONFIGURE_FILE(${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
+CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
   ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
   @ONLY)
 
@@ -1125,7 +1117,7 @@ ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (PLM_PLASTIMATCH_TESTING_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Testing)
 ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
 
-MACRO(PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
+MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
   ADD_TEST (${TESTNAME} ${CMAKE_COMMAND} 
     -DTESTNAME=${TESTNAME}
     -DWORKING_DIR=${WORKING_DIR}
@@ -1136,12 +1128,12 @@ MACRO(PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     "-DPARMS=${PARMS}"
     -P ${CMAKE_SOURCE_DIR}/RUN_CTEST.cmake
     )
-ENDMACRO(PLM_ADD_TEST)
+ENDMACRO (PLM_ADD_TEST)
 
-IF(PLM_BUILD_TESTING)
-  ENABLE_TESTING()
-  ADD_SUBDIRECTORY(Testing)
-ENDIF(PLM_BUILD_TESTING)
+IF (PLM_BUILD_TESTING)
+  ENABLE_TESTING ()
+  ADD_SUBDIRECTORY (Testing)
+ENDIF (PLM_BUILD_TESTING)
 
 ##-----------------------------------------------------------------------------
 ##  CPACK stuff
@@ -1157,4 +1149,4 @@ SET (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
 )
-INCLUDE(CPack)
+INCLUDE (CPack)
