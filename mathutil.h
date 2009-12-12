@@ -67,6 +67,10 @@ static inline void vec3_sub3 (double* v1, const double* v2, const double* v3) {
     v1[0] = v2[0] - v3[0]; v1[1] = v2[1] - v3[1]; v1[2] = v2[2] - v3[2];
 }
 
+static inline void vec3_invert (double* v1) {
+    vec3_scale2 (v1, -1.0);
+}
+
 static inline void vec_zero (double* v1, int n) {
     memset (v1, 0, n*sizeof(double));
 }

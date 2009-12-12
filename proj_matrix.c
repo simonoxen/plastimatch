@@ -146,23 +146,52 @@ proj_matrix_set (
 
     /* Compute imager coordinate sys (nrm,pup,prt) 
        ---------------
-       nrm = tgt - cam
+       nrm = cam - tgt
        prt = nrm x vup
        pup = prt x nrm
        ---------------
     */
-    vec3_sub3 (nrm, tgt, cam);
+    vec3_sub3 (nrm, cam, tgt);
     vec3_normalize1 (nrm);
     vec3_cross (prt, nrm, vup);
     vec3_normalize1 (prt);
     vec3_cross (pup, prt, nrm);
     vec3_normalize1 (pup);
 
+#if defined (commentout)
+    printf ("CAM = %g %g %g\n", cam[0], cam[1], cam[2]);
+    printf ("TGT = %g %g %g\n", tgt[0], tgt[1], tgt[2]);
+    printf ("NRM = %g %g %g\n", nrm[0], nrm[1], nrm[2]);
+    printf ("PRT = %g %g %g\n", prt[0], prt[1], prt[2]);
+    printf ("PUP = %g %g %g\n", pup[0], pup[1], pup[2]);
+#endif
+
     /* Build extrinsic matrix */
     vec_zero (pmat->extrinsic, 16);
     vec3_copy (&pmat->extrinsic[0], prt);
     vec3_copy (&pmat->extrinsic[4], pup);
     vec3_copy (&pmat->extrinsic[8], nrm);
+    vec3_copy (&pmat->extrinsic[8], nrm);
+    vec3_invert (&pmat->extrinsic[0]);
+    vec3_invert (&pmat->extrinsic[4]);
+    vec3_invert (&pmat->extrinsic[8]);
+    m_idx (pmat->extrinsic,cols,2,3) = - pmat->sad;
+    m_idx (pmat->extrinsic,cols,3,3) = 1.0;
+
+    /* Build intrinsic matrix */
+    vec_zero (pmat->intrinsic, 12);
+    m_idx (pmat->intrinsic,cols,0,0) = 1 / ps[0];
+    m_idx (pmat->intrinsic,cols,1,1) = 1 / ps[1];
+    m_idx (pmat->intrinsic,cols,2,2) = 1 / sid;
+
+#if defined (commentout)
+    /* Build extrinsic matrix */
+    vec_zero (pmat->extrinsic, 16);
+    vec3_copy (&pmat->extrinsic[0], prt);
+    vec3_copy (&pmat->extrinsic[4], pup);
+    vec3_copy (&pmat->extrinsic[8], nrm);
+    vec3_copy (&pmat->extrinsic[8], nrm);
+    vec3_invert (&pmat->extrinsic[8]);
     m_idx (pmat->extrinsic,cols,2,3) = - pmat->sad;
     m_idx (pmat->extrinsic,cols,3,3) = 1.0;
 
@@ -171,6 +200,7 @@ proj_matrix_set (
     m_idx (pmat->intrinsic,cols,0,1) = - 1 / ps[0];
     m_idx (pmat->intrinsic,cols,1,0) = 1 / ps[1];
     m_idx (pmat->intrinsic,cols,2,2) = - 1 / sid;
+#endif
 
     /* Build projection matrix */
     mat_mult_mat (pmat->matrix, pmat->intrinsic,3,4, pmat->extrinsic,4,4);
