@@ -48,33 +48,33 @@ hnd_proj_matrix_compute (
     */
     vec3_cross (vrt, pmat->nrm, vup);
     vec3_normalize1 (vrt);
-    vec3_cross (vup_tmp, vrt, nrm);
+    vec3_cross (vup_tmp, vrt, pmat->nrm);
     vec3_normalize1 (vup_tmp);
 
     /* !!! But change nrm here to -nrm */
-    vec3_scale2 (nrm, -1.0);
+    vec3_scale2 (pmat->nrm, -1.0);
 
     /* Build extrinsic matrix */
     if (varian_mode) {
 	vec3_scale2 (vrt, -1.0);
-	vec3_copy (&extrinsic[0], nrm);
+	vec3_copy (&extrinsic[0], pmat->nrm);
 	vec3_copy (&extrinsic[4], vup_tmp);
 	vec3_copy (&extrinsic[8], vrt);
     } else {
 	vec3_copy (&extrinsic[0], vrt);
 	vec3_copy (&extrinsic[4], vup_tmp);
-	vec3_copy (&extrinsic[8], nrm);
+	vec3_copy (&extrinsic[8], pmat->nrm);
     }
 
-    sad = vec3_len (cam);
-    m_idx(extrinsic,cols,2,3) = - sad;
+    pmat->sad = vec3_len (cam);
+    m_idx(extrinsic,cols,2,3) = - pmat->sad;
     m_idx(extrinsic,cols,3,3) = 1.0;
 
     /* Build intrinsic matrix */
 
     m_idx(intrinsic,cols,0,1) = - 1 / ps[0];
     m_idx(intrinsic,cols,1,0) = 1 / ps[1];
-    m_idx(intrinsic,cols,2,2) = - 1 / sid;
+    m_idx(intrinsic,cols,2,2) = - 1 / pmat->sid;
     //    m_idx(intrinsic,cols,0,3) = ic[0];
     //    m_idx(intrinsic,cols,1,3) = ic[1];
 
@@ -100,7 +100,6 @@ hnd_set_proj_matrix (
 {
     double vup[3] = {0, 0, 1};
     double tgt[3] = {0.0, 0.0, 0.0};
-    double nrm[3];
     double tmp[3];
     Proj_matrix *pmat = proj->pmat;
 
