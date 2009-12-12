@@ -589,7 +589,10 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 
     /* tgt is zero because we shifted volume. */
     double vup[3] = {0.0, 0.0, 1.0};
-    double tgt[3] = {0.0, 0.0, 0.0};
+    double tgt[3] = {
+	options->isocenter[0],
+	options->isocenter[1],
+	options->isocenter[2] };
     double tmp[3];
 
     /* Set source-to-axis distance */
@@ -628,7 +631,7 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	char multispectral_fn[256];
 
 	cam[0] = cos(angle);
-	cam[1] = sin(angle);
+	cam[1] = -sin(angle);
 	cam[2] = 0.0;
 	
 	printf ("Rendering DRR %d\n", a);
@@ -784,7 +787,7 @@ main (int argc, char* argv[])
     vol = read_mha (options.input_file);
     volume_convert_to_float (vol);
 
-    set_isocenter (vol, &options);
+    //set_isocenter (vol, &options);
 
 #if defined (PREPROCESS_ATTENUATION)
     preprocess_attenuation (vol);
