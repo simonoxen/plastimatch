@@ -486,11 +486,11 @@ drr_render_volume_perspective (
 	    res_c, res_r);
     } 
     else if (options->output_format == OUTPUT_FORMAT_PGM) {
-	fprintf (pgm_fp, 
+	   fprintf (pgm_fp, 
 	    "P2\n"
 	    "# Created by mghdrr\n"
 	    "%d %d\n"
-	    "65536\n",
+	    "65535\n",
 	    res_c, res_r);
     }
     else {
@@ -630,9 +630,9 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	char img_fn[256];
 	char multispectral_fn[256];
 
-	cam[0] = cos(angle);
-	cam[1] = -sin(angle);
-	cam[2] = 0.0;
+	cam[0] = tgt[0] + options->sad * cos(angle);
+	cam[1] = tgt[1] - options->sad * sin(angle);
+	cam[2] = tgt[2];
 	
 	printf ("Rendering DRR %d\n", a);
 

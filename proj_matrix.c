@@ -166,17 +166,20 @@ proj_matrix_set (
     printf ("PUP = %g %g %g\n", pup[0], pup[1], pup[2]);
 #endif
 
-    /* Build extrinsic matrix */
+    /* Build extrinsic matrix - rotation part */
     vec_zero (pmat->extrinsic, 16);
     vec3_copy (&pmat->extrinsic[0], prt);
     vec3_copy (&pmat->extrinsic[4], pup);
     vec3_copy (&pmat->extrinsic[8], nrm);
-    vec3_copy (&pmat->extrinsic[8], nrm);
     vec3_invert (&pmat->extrinsic[0]);
     vec3_invert (&pmat->extrinsic[4]);
     vec3_invert (&pmat->extrinsic[8]);
-    m_idx (pmat->extrinsic,cols,2,3) = - pmat->sad;
     m_idx (pmat->extrinsic,cols,3,3) = 1.0;
+
+    /* Build extrinsic matrix - translation part */
+    pmat->extrinsic[3] = vec3_dot (prt, tgt);
+    pmat->extrinsic[7] = vec3_dot (pup, tgt);
+    pmat->extrinsic[11] = vec3_dot (nrm, tgt) + pmat->sad;
 
     /* Build intrinsic matrix */
     vec_zero (pmat->intrinsic, 12);
@@ -184,28 +187,11 @@ proj_matrix_set (
     m_idx (pmat->intrinsic,cols,1,1) = 1 / ps[1];
     m_idx (pmat->intrinsic,cols,2,2) = 1 / sid;
 
-#if defined (commentout)
-    /* Build extrinsic matrix */
-    vec_zero (pmat->extrinsic, 16);
-    vec3_copy (&pmat->extrinsic[0], prt);
-    vec3_copy (&pmat->extrinsic[4], pup);
-    vec3_copy (&pmat->extrinsic[8], nrm);
-    vec3_copy (&pmat->extrinsic[8], nrm);
-    vec3_invert (&pmat->extrinsic[8]);
-    m_idx (pmat->extrinsic,cols,2,3) = - pmat->sad;
-    m_idx (pmat->extrinsic,cols,3,3) = 1.0;
-
-    /* Build intrinsic matrix */
-    vec_zero (pmat->intrinsic, 12);
-    m_idx (pmat->intrinsic,cols,0,1) = - 1 / ps[0];
-    m_idx (pmat->intrinsic,cols,1,0) = 1 / ps[1];
-    m_idx (pmat->intrinsic,cols,2,2) = - 1 / sid;
-#endif
-
     /* Build projection matrix */
     mat_mult_mat (pmat->matrix, pmat->intrinsic,3,4, pmat->extrinsic,4,4);
 }
 
+#if defined (commentout)
 void
 proj_matrix_write (double* cam, 
 		   double* tgt, double* vup,
@@ -319,18 +305,6 @@ proj_matrix_write (double* cam,
 	    );
     fclose (fp);
 }
-
-#if defined (commentout)
-void
-set_isocenter (Volume* vol, MGHMtx_Options* options)
-{
-    vol->xmin += options->isocenter[0];
-    vol->xmax += options->isocenter[0];
-    vol->ymin += options->isocenter[1];
-    vol->ymax += options->isocenter[1];
-    vol->zmin += options->isocenter[2];
-    vol->zmax += options->isocenter[2];
-}
 #endif
 
 int
@@ -352,6 +326,7 @@ read_ProjAngle(char *ProjAngle_file, float *ProjAngle)
     return(nProj);
 }
 
+#if defined (commentout)
 void
 proj_matrix_write_varian_dir (MGHMtx_Options* options)
 {
@@ -433,3 +408,4 @@ proj_matrix_write_varian_dir (MGHMtx_Options* options)
 			   varian_mode, out_fn);
     }
 }
+#endif

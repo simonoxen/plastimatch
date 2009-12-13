@@ -214,7 +214,6 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     proj = proj_image_create ();
     if (!proj) return 0;
 
-    printf ("Loading pfm...\n");
     pfm_load (proj, img_filename);
 
     if (mat_filename) {
@@ -222,7 +221,6 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
     } else {
 	mat_load_by_img_filename (proj, img_filename);
     }
-    printf ("done.\n");
 
     return proj;
 }

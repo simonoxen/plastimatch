@@ -59,7 +59,11 @@ main (int argc, char* argv[])
 	strcat(argbuf,options.Half_normCBCT_name);
 	options.Half_normCBCT_name=argbuf;
     }
-	
+
+    /* GCS FIX: The below code is to be replaced by loading from varian 
+       files directly. */
+
+#if defined (commentout)	
     /* Get proj_angle file */
     strcpy(matrix_ProjAngle_file ,options.input_dir);
     strcat(matrix_ProjAngle_file, "/ProjAngles.txt");
@@ -89,6 +93,7 @@ main (int argc, char* argv[])
     proj_matrix_write_varian_dir (&matrix_options);
     printf("Write matrix OK\n");
     fflush(stdout);
+#endif
 
     /*****************************************************
      * STEP 1: Create the 3D array of voxels              *

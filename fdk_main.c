@@ -49,20 +49,6 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
     return cbi->img[rr*cbi->dim[0] + cc];
 }
 
-#if defined (commentout)
-inline float
-get_pixel_value_a (Proj_image* cbi, double r, double c)
-{
-    int rr, cc;
-
-    rr = round_int (r);
-    if (rr < 0 || rr >= cbi->dim[1]) return 0.0;
-    cc = round_int (c);
-    if (cc < 0 || cc >= cbi->dim[0]) return 0.0;
-    return cbi->img[rr*cbi->dim[0] + cc];
-}
-#endif
-
 /* This version folds ic & wip into zip, as well as using faster 
    nearest neighbor macro. */
 void
@@ -119,7 +105,7 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 		dw = 1 / acc3[2];
 		acc3[0] = acc3[0] * dw;
 		acc3[1] = acc3[1] * dw;
-		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[0], acc3[1]);
+		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[1], acc3[0]);
 	    }
 	}
     }
@@ -193,7 +179,7 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 		dw = 1 / acc3[2];
 		acc3[0] = pmat->ic[0] + acc3[0] * dw;
 		acc3[1] = pmat->ic[1] + acc3[1] * dw;
-		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[0], acc3[1]);
+		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[1], acc3[0]);
 	    }
 	}
     }
@@ -273,7 +259,7 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 		//printf ("%10.10g\n", acc3[2]);
 		acc3[0] = pmat->ic[0] + acc3[0] / acc3[2];
 		acc3[1] = pmat->ic[1] + acc3[1] / acc3[2];
-		img[p++] += s * get_pixel_value_b (cbi, acc3[0], acc3[1]);
+		img[p++] += s * get_pixel_value_b (cbi, acc3[1], acc3[0]);
 	    }
 	}
     }
@@ -286,7 +272,11 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 }
 
 void
-project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
+project_volume_onto_image_reference (
+    Volume* vol, 
+    Proj_image* cbi, 
+    float scale
+)
 {
     int i, j, k, p;
     double vp[4];   /* vp = voxel position */
@@ -311,7 +301,7 @@ project_volume_onto_image_reference (Volume* vol, Proj_image* cbi, float scale)
 		/* Conebeam weighting factor */
 		s = pmat->sad - s;
 		s = pmat->sad * pmat->sad / (s * s);
-		img[p++] += scale * s * get_pixel_value_b (cbi, ip[0], ip[1]);
+		img[p++] += scale * s * get_pixel_value_b (cbi, ip[1], ip[0]);
 	    }
 	}
     }
