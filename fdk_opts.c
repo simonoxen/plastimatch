@@ -17,6 +17,7 @@ print_usage (void)
 	" -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
 	" -a \"num ((num) num)\"   Use this range of images\n"
 	" -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
+	" -f filter              Either \"none\" or \"ramp\" (default=ramp)\n"
 	" -s scale               Scale the intensity of the output file\n"
 	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	" -I indir               The input directory\n"
@@ -43,6 +44,7 @@ set_default_options (Fdk_options* options)
     options->vol_size[1] = 300.0f;
     options->vol_size[2] = 150.0f;
     options->scale = 1.0f;
+    options->filter = FDK_FILTER_TYPE_RAMP;
     options->input_dir = ".";
     options->output_file = "output.mha";
     //options->output_file = "output.mh5";
@@ -107,6 +109,22 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	}
 	else if (!strcmp (argv[i], "-cor")) {
 	    options->coronal=1;
+	}
+	else if (!strcmp (argv[i], "-f")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "none") || !strcmp(argv[i], "NONE")) {
+		options->filter = FDK_FILTER_TYPE_NONE;
+	    }
+	    else if (!strcmp(argv[i], "ramp") || !strcmp(argv[i], "RAMP")) {
+		options->filter = FDK_FILTER_TYPE_RAMP;
+	    }
+	    else {
+		print_usage ();
+	    }
 	}
 	else if (!strcmp (argv[i], "-F")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

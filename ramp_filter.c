@@ -22,21 +22,24 @@ static const unsigned int MARGIN = 5;
 #error "MARGIN IS DEFINED"
 #endif
 
+/* GCS: Dec 12, 2009 
+   Change from unsigned short to float,
+   Change to destructive update
+*/
 //! In-place ramp filter for greyscale images
 //! \param data The pixel data of the image
 //! \param width The width of the image
 //! \param height The height of the image
 //! \template_param T The type of pixel in the image
 void
-RampFilter (
-    unsigned short * data,
-    float* out,
-    unsigned int width,
+ramp_filter (
+    float *data, 
+    unsigned int width, 
     unsigned int height
 )
 {
     unsigned int i, r, c;
-    static unsigned int N;
+    unsigned int N;
 
     fftw_complex *in;
     fftw_complex *fft;
@@ -55,10 +58,12 @@ RampFilter (
     ifft = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) * N);
 
     for (r = 0; r < MARGIN; ++r)
-        memcpy (data + r * width, data + MARGIN * width, width * sizeof(unsigned short));
+        memcpy (data + r * width, data + MARGIN * width, 
+	    width * sizeof(float));
 
     for (r = height - MARGIN; r < height; ++r)
-        memcpy (data + r * width, data + (height - MARGIN - 1) * width, width * sizeof(unsigned short));
+        memcpy (data + r * width, data + (height - MARGIN - 1) * width, 
+	    width * sizeof(float));
 
     for (r = 0; r < height; ++r) {
         for (c = 0; c < MARGIN; ++c)
@@ -70,9 +75,9 @@ RampFilter (
     // Fill in
     for (i = 0; i < N; ++i) {
         in[i][0] = (double)(data[i]);
-        in[i][0] /= 65535;
-        in[i][0] = (in[i][0] == 0 ? 1 : in[i][0]);
-        in[i][0] = -log (in[i][0]);
+        //in[i][0] /= 65535;
+        //in[i][0] = (in[i][0] == 0 ? 1 : in[i][0]);
+        //in[i][0] = -log (in[i][0]);
         in[i][1] = 0.0;
     }
 
@@ -86,18 +91,18 @@ RampFilter (
         ramp[i] *= (cos (i * DEGTORAD * 360 / width) + 1) / 2;
 
     for (r = 0; r < height; ++r) {
-        fftp = fftw_plan_dft_1d (width, in + r * width, fft + r * width, FFTW_FORWARD, FFTW_ESTIMATE);
-        ifftp = fftw_plan_dft_1d (width, fft + r * width, ifft + r * width, FFTW_BACKWARD, FFTW_ESTIMATE);
+        fftp = fftw_plan_dft_1d (width, in + r * width, fft + r * width, 
+	    FFTW_FORWARD, FFTW_ESTIMATE);
+        ifftp = fftw_plan_dft_1d (width, fft + r * width, ifft + r * width, 
+	    FFTW_BACKWARD, FFTW_ESTIMATE);
 
         fftw_execute (fftp);
 
         // Apply ramp
-#if 1
         for (c = 0; c < width; ++c) {
             fft[r * width + c][0] *= ramp[c];
             fft[r * width + c][1] *= ramp[c];
         }
-#endif
 
         fftw_execute (ifftp);
 
@@ -109,7 +114,7 @@ RampFilter (
         ifft[i][0] /= width;
 
     for (i = 0; i < N; ++i)
-        out[i] = (float)(ifft[i][0]);
+        data[i] = (float)(ifft[i][0]);
 
     fftw_free (in);
     fftw_free (fft);

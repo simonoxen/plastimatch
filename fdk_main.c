@@ -331,13 +331,18 @@ reconstruct_conebeam (
 	Proj_image* cbi;
 	printf ("Loading image %d\n", i);
 	cbi = proj_image_dir_load_image (proj_dir, i);
-	printf ("done.\n");
+	if (options->filter == FDK_FILTER_TYPE_RAMP) {
+	    printf ("Filtering image %d\n", i);
+	    proj_image_filter (cbi);
+	}
 	
 	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);
+	printf ("Backprojecting image %d\n", i);
 	project_volume_onto_image_c (vol, cbi, scale);
+	printf ("done.\n");
 	proj_image_free (cbi);
     }
 }

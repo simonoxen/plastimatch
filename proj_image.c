@@ -347,6 +347,14 @@ proj_image_load (
     return 0;
 }
 
+void
+proj_image_filter (Proj_image *proj)
+{
+#if (FFTW_FOUND)
+    ramp_filter (proj->img, proj->dim[0], proj->dim[1]);
+#endif
+}
+
 Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 

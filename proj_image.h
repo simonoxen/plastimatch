@@ -25,6 +25,9 @@ gpuit_EXPORT
 Proj_image*
 proj_image_create (void);
 
+gpuit_EXPORT void 
+proj_image_free (Proj_image* proj);
+
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
@@ -38,14 +41,15 @@ proj_image_load (
     char* mat_filename
 );
 
+gpuit_EXPORT
+void
+proj_image_filter (Proj_image *proj);
+
 gpuit_EXPORT void
 proj_image_debug_header (Proj_image *proj);
 
 gpuit_EXPORT void
 proj_image_stats (Proj_image *proj);
-
-gpuit_EXPORT void 
-proj_image_free (Proj_image* proj);
 
 #if defined __cplusplus
 }

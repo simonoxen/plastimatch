@@ -6,6 +6,11 @@
 
 #include "threading.h"
 
+enum Fdk_filter_type {
+    FDK_FILTER_TYPE_NONE,
+    FDK_FILTER_TYPE_RAMP
+};
+
 #define OPTION_RESOLUTION_STRING "resolution"
 #define OPTION_RESOLUTION 'r'
 #define OPTION_INPUT_DIR_STRING "input-dir"
@@ -27,7 +32,10 @@ struct fdk_options {
     int last_img;
     int resolution[3];
     float vol_size[3];
+
     float scale;
+    enum Fdk_filter_type filter;
+
     char* input_dir;
     char* output_file;
 
