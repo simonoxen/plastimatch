@@ -103,9 +103,6 @@ hnd_set_proj_matrix (
     double tmp[3];
     Proj_matrix *pmat = proj->pmat;
 
-    pmat->sad = sad;
-    pmat->sid = sid;
-
     /* Set image resolution */
     int ires[2] = { proj->dim[0],
 		    proj->dim[1] };
@@ -115,10 +112,6 @@ hnd_set_proj_matrix (
     //int isize[2] = { options->image_size[0],
     //		     options->image_size[1] };
 
-    /* Set ic = image center (in pixels), and ps = pixel size (in mm)
-       Note: pixels are numbered from 0 to ires-1 */
-    pmat->ic[0] = 0.5 * proj->dim[0];
-    pmat->ic[1] = 0.5 * proj->dim[1];
     //    double ic[2] = { options->image_center[0],
     //		     options->image_center[1] };
 
@@ -127,6 +120,14 @@ hnd_set_proj_matrix (
 		     (double) isize[1] / (double) ires[1] };
 
     double cam[3];
+
+    pmat->sad = sad;
+    pmat->sid = sid;
+
+    /* Set ic = image center (in pixels), and ps = pixel size (in mm)
+       Note: pixels are numbered from 0 to ires-1 */
+    pmat->ic[0] = 0.5 * proj->dim[0];
+    pmat->ic[1] = 0.5 * proj->dim[1];
 
     cam[0] = cos (angle * M_PI / 180.0);
     cam[1] = sin (angle * M_PI / 180.0);
