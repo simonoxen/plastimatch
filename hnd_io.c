@@ -12,82 +12,25 @@
 #include "print_and_exit.h"
 #include "timer.h"
 
+#define HND_INTENSITY_MAX (139000)
+
 /* -----------------------------------------------------------------------
    Private functions
    ----------------------------------------------------------------------- */
-/* "Varian mode" function */
-static void
-hnd_proj_matrix_compute (
-    Proj_matrix *pmat,
-    double* cam, 
-    double* tgt, 
-    double* vup,
-    double* ps, 
-    int* ires
-)
+static void 
+hnd_adjust_intensity (Proj_image *proj)
 {
-    double extrinsic[16];
-    double intrinsic[12];
-    double projection[12];
-    const int cols = 4;
+    int i;
+    float *img = proj->img;
 
-    double vrt[3];
-    double vup_tmp[3];  /* Don't overwrite vup */
-
-    const int varian_mode = 1;
-
-    vec_zero (extrinsic, 16);
-    vec_zero (intrinsic, 12);
-
-    /* Compute image coordinate sys (nrm,vup,vrt) relative to room coords.
-       ---------------
-       nrm = tgt - cam
-       vrt = nrm x vup
-       vup = vrt x nrm
-       ---------------
-    */
-    vec3_cross (vrt, pmat->nrm, vup);
-    vec3_normalize1 (vrt);
-    vec3_cross (vup_tmp, vrt, pmat->nrm);
-    vec3_normalize1 (vup_tmp);
-
-    /* !!! But change nrm here to -nrm */
-    vec3_scale2 (pmat->nrm, -1.0);
-
-    /* Build extrinsic matrix */
-    if (varian_mode) {
-	vec3_scale2 (vrt, -1.0);
-	vec3_copy (&extrinsic[0], pmat->nrm);
-	vec3_copy (&extrinsic[4], vup_tmp);
-	vec3_copy (&extrinsic[8], vrt);
-    } else {
-	vec3_copy (&extrinsic[0], vrt);
-	vec3_copy (&extrinsic[4], vup_tmp);
-	vec3_copy (&extrinsic[8], pmat->nrm);
+    for (i = 0; i < proj->dim[0] * proj->dim[1]; i++) {
+	if (img[i] == 0.0f) {
+	    continue;
+	}
+	img[i] = img[i] / HND_INTENSITY_MAX;
+	img[i] = 1.0 - img[i];
+	if (img[i] < 0.0f) img[i] = 0.0;
     }
-
-    pmat->sad = vec3_len (cam);
-    m_idx(extrinsic,cols,2,3) = - pmat->sad;
-    m_idx(extrinsic,cols,3,3) = 1.0;
-
-    /* Build intrinsic matrix */
-
-    m_idx(intrinsic,cols,0,1) = - 1 / ps[0];
-    m_idx(intrinsic,cols,1,0) = 1 / ps[1];
-    m_idx(intrinsic,cols,2,2) = - 1 / pmat->sid;
-    //    m_idx(intrinsic,cols,0,3) = ic[0];
-    //    m_idx(intrinsic,cols,1,3) = ic[1];
-
-    mat_mult_mat (projection, intrinsic,3,4, extrinsic,4,4);
-
-#if defined (VERBOSE)
-    printf ("Extrinsic:\n");
-    matrix_print_eol (stdout, extrinsic, 4, 4);
-    printf ("Intrinsic:\n");
-    matrix_print_eol (stdout, intrinsic, 3, 4);
-    printf ("Projection:\n");
-    matrix_print_eol (stdout, projection, 3, 4);
-#endif
 }
 
 static void
@@ -100,37 +43,28 @@ hnd_set_proj_matrix (
 {
     double vup[3] = {0, 0, 1};
     double tgt[3] = {0.0, 0.0, 0.0};
-    double tmp[3];
     Proj_matrix *pmat = proj->pmat;
 
-    /* Set image resolution */
-    int ires[2] = { proj->dim[0],
-		    proj->dim[1] };
-
     /* Set physical size of imager in mm */
-    int isize[2] = { 300, 400 };      /* Actual resolution */
-    //int isize[2] = { options->image_size[0],
-    //		     options->image_size[1] };
-
-    //    double ic[2] = { options->image_center[0],
-    //		     options->image_center[1] };
+    int isize[2] = { 400, 300 };      /* Actual resolution */
 
     /* Set pixel size in mm */
-    double ps[2] = { (double) isize[0] / (double) ires[0], 
-		     (double) isize[1] / (double) ires[1] };
+    double ps[2] = { (double) isize[0] / (double) proj->dim[0],
+		     (double) isize[1] / (double) proj->dim[1] };
 
     double cam[3];
+    double tmp[3];
 
     pmat->sad = sad;
     pmat->sid = sid;
 
-    /* Set ic = image center (in pixels), and ps = pixel size (in mm)
-       Note: pixels are numbered from 0 to ires-1 */
-    pmat->ic[0] = 0.5 * proj->dim[0];
-    pmat->ic[1] = 0.5 * proj->dim[1];
+    /* Set ic = image center (in pixels) */
+    pmat->ic[0] = 0.5 * proj->dim[0] - 0.5;
+    pmat->ic[1] = 0.5 * proj->dim[1] - 0.5;
 
-    cam[0] = cos (angle * M_PI / 180.0);
-    cam[1] = sin (angle * M_PI / 180.0);
+    /* Change from varian angles to plastimatch angles */
+    cam[0] = sad * cos ((angle + 270) * M_PI / 180.0);
+    cam[1] = sad * sin ((angle + 270) * M_PI / 180.0);
     cam[2] = 0.0;
 
     /* Place camera at distance "sad" from the volume isocenter */
@@ -140,7 +74,7 @@ hnd_set_proj_matrix (
     vec3_copy (cam, tgt);
     vec3_sub2 (cam, tmp);
 
-    hnd_proj_matrix_compute (pmat, cam, tgt, vup, ps, ires);
+    proj_matrix_set (pmat, cam, tgt, vup, sid, pmat->ic, ps, proj->dim);
 }
 
 /* -----------------------------------------------------------------------
@@ -322,9 +256,14 @@ hnd_load (Proj_image *proj, char *fn)
 	proj->img[i] = (float) buf[i];
     }
 
+    /* Convert from "raw" intensities to attenuation values */
+    hnd_adjust_intensity (proj);
+
     /* Set the matrix */
+    /* Note: Varian HND seems to give 0 for the SFD.  We will hard code 
+       the sid to 1500 until told otherwise. */
     proj->pmat = proj_matrix_create ();
-    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, hnd.dSFD);
+    hnd_set_proj_matrix (proj, hnd.dCTProjectionAngle, hnd.dSAD, 1500);
 
     /* Clean up */
     free (pt_lut);

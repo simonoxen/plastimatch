@@ -41,22 +41,22 @@ void set_image_parms (MGHMtx_Options * options);
    Public functions
    ----------------------------------------------------------------------- */
 void
-proj_matrix_init (Proj_matrix* matrix)
+proj_matrix_init (Proj_matrix *pmat)
 {
-    memset (matrix, 0, sizeof(Proj_matrix));
+    memset (pmat, 0, sizeof(Proj_matrix));
 }
 
 Proj_matrix*
 proj_matrix_create (void)
 {
-    Proj_matrix *matrix;
+    Proj_matrix *pmat;
     
-    matrix = (Proj_matrix*) malloc (sizeof(Proj_matrix));
-    if (!matrix) return 0;
+    pmat = (Proj_matrix*) malloc (sizeof(Proj_matrix));
+    if (!pmat) return 0;
 
-    proj_matrix_init (matrix);
+    proj_matrix_init (pmat);
 
-    return matrix;
+    return pmat;
 }
 
 void
@@ -181,11 +181,34 @@ proj_matrix_set (
     pmat->extrinsic[7] = vec3_dot (pup, tgt);
     pmat->extrinsic[11] = vec3_dot (nrm, tgt) + pmat->sad;
 
+#if defined (commentout)
+    printf ("EXTRINSIC\n%g %g %g %g\n%g %g %g %g\n"
+	"%g %g %g %g\n%g %g %g %g\n",
+	pmat->extrinsic[0], pmat->extrinsic[1], 
+	pmat->extrinsic[2], pmat->extrinsic[3],
+	pmat->extrinsic[4], pmat->extrinsic[5], 
+	pmat->extrinsic[6], pmat->extrinsic[7],
+	pmat->extrinsic[8], pmat->extrinsic[9], 
+	pmat->extrinsic[10], pmat->extrinsic[11],
+	pmat->extrinsic[12], pmat->extrinsic[13], 
+	pmat->extrinsic[14], pmat->extrinsic[15]);
+#endif
+
     /* Build intrinsic matrix */
     vec_zero (pmat->intrinsic, 12);
     m_idx (pmat->intrinsic,cols,0,0) = 1 / ps[0];
     m_idx (pmat->intrinsic,cols,1,1) = 1 / ps[1];
     m_idx (pmat->intrinsic,cols,2,2) = 1 / sid;
+
+#if defined (commentout)
+    printf ("INTRINSIC\n%g %g %g %g\n%g %g %g %g\n%g %g %g %g\n",
+	pmat->intrinsic[0], pmat->intrinsic[1], 
+	pmat->intrinsic[2], pmat->intrinsic[3],
+	pmat->intrinsic[4], pmat->intrinsic[5], 
+	pmat->intrinsic[6], pmat->intrinsic[7],
+	pmat->intrinsic[8], pmat->intrinsic[9], 
+	pmat->intrinsic[10], pmat->intrinsic[11]);
+#endif
 
     /* Build projection matrix */
     mat_mult_mat (pmat->matrix, pmat->intrinsic,3,4, pmat->extrinsic,4,4);

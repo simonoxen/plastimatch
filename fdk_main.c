@@ -7,6 +7,10 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
+
 #include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opts.h"
@@ -16,6 +20,7 @@
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "readmha.h"
+#include "timer.h"
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */
@@ -54,11 +59,9 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
 void
 project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 {
-    int i, j, k, p;
+    int i, j, k;
     float* img = (float*) vol->img;
     double *xip, *yip, *zip;
-    double acc2[3],acc3[3];
-    double dw;
     double sad_sid_2;
     Proj_matrix *pmat = cbi->pmat;
 
@@ -94,18 +97,25 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 		+ pmat->ic[1] * pmat->matrix[11] + pmat->matrix[7];
 	zip[k*3+2] = z * pmat->matrix[10] + pmat->matrix[11];
     }
-    
+
     /* Main loop */
-    p = 0;
+#pragma omp parallel for
     for (k = 0; k < vol->dim[2]; k++) {
+	int p = k * vol->dim[1] * vol->dim[0];
+	int j;
 	for (j = 0; j < vol->dim[1]; j++) {
+	    int i;
+	    double acc2[3];
 	    vec3_add3 (acc2, &zip[3*k], &yip[3*j]);
 	    for (i = 0; i < vol->dim[0]; i++) {
+		double dw;
+		double acc3[3];
 		vec3_add3 (acc3, acc2, &xip[3*i]);
 		dw = 1 / acc3[2];
 		acc3[0] = acc3[0] * dw;
 		acc3[1] = acc3[1] * dw;
-		img[p++] += dw * dw * get_pixel_value_c (cbi, acc3[1], acc3[0]);
+		img[p++] += 
+		    dw * dw * get_pixel_value_c (cbi, acc3[1], acc3[0]);
 	    }
 	}
     }
@@ -317,6 +327,10 @@ reconstruct_conebeam (
     int i;
     int num_imgs;
     float scale;
+    Timer timer;
+    double backproject_time = 0.0;
+    double filter_time = 0.0;
+    double io_time = 0.0;
 
     num_imgs = 1 + (options->last_img - options->first_img)
 	/ options->skip_img;
@@ -329,22 +343,30 @@ reconstruct_conebeam (
 	 i += options->skip_img)
     {
 	Proj_image* cbi;
-	printf ("Loading image %d\n", i);
+	printf ("Processing image %d\n", i);
+	plm_timer_start (&timer);
 	cbi = proj_image_dir_load_image (proj_dir, i);
+	io_time += plm_timer_report (&timer);
+
 	if (options->filter == FDK_FILTER_TYPE_RAMP) {
-	    printf ("Filtering image %d\n", i);
+	    plm_timer_start (&timer);
 	    proj_image_filter (cbi);
+	    filter_time += plm_timer_report (&timer);
 	}
 	
 	// printf ("Projecting Image %d\n", i);
 	// project_volume_onto_image_reference (vol, cbi, scale);
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);
-	printf ("Backprojecting image %d\n", i);
+	plm_timer_start (&timer);
 	project_volume_onto_image_c (vol, cbi, scale);
-	printf ("done.\n");
+	backproject_time += plm_timer_report (&timer);
+
 	proj_image_free (cbi);
     }
+    printf ("I/O time = %g\n", io_time);
+    printf ("Filter time = %g\n", filter_time);
+    printf ("Backprojection time = %g\n", backproject_time);
 }
 
 int 
