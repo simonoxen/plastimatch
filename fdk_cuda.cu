@@ -3,8 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
-//#define WRITE_BLOCK (1024*1024)
-
 /****************************************************\
 * Uncomment the line below to enable verbose output. *
 * Enabling this should not nerf performance.         *
@@ -209,8 +207,9 @@ CUDA_reconstruct_conebeam (
     double time_total = 0;
 #if defined (TIME_KERNEL)
     Timer timer;
-    double time_kernel = 0;
-    double time_io = 0;
+    double backproject_time = 0.0;
+    double filter_time = 0.0;
+    double io_time = 0.0;
 #endif
 
     // Start timing total execution
@@ -232,9 +231,9 @@ CUDA_reconstruct_conebeam (
 
     // State the kernel execution parameters
     printf("kernel parameters:\n dimGrid: %u, %u "
-	   "(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
-	   dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
-	   dimBlock.x, dimBlock.y, dimBlock.z);
+	"(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
+	dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
+	dimBlock.x, dimBlock.y, dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
     printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
     printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
@@ -254,12 +253,25 @@ CUDA_reconstruct_conebeam (
 	 image_num <= options->last_img;
 	 image_num += options->skip_img) {
 
+	// Load the current image
 #if defined (TIME_KERNEL)
-	// Start I/O timer
 	plm_timer_start (&timer);
 #endif
-	// Load the current image
 	cbi = proj_image_dir_load_image (proj_dir, image_num);
+#if defined (TIME_KERNEL)
+	io_time += plm_timer_report (&timer);
+#endif
+
+	if (options->filter == FDK_FILTER_TYPE_RAMP) {
+#if defined (TIME_KERNEL)
+	    plm_timer_start (&timer);
+#endif
+	    proj_image_filter (cbi);
+#if defined (TIME_KERNEL)
+	    filter_time += plm_timer_report (&timer);
+#endif
+	}
+	
 
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];
@@ -278,38 +290,33 @@ CUDA_reconstruct_conebeam (
 	// Copy image pixel data & projection matrix to device Global Memory
 	// and then bind them to the texture hardware.
 	cudaMemcpy (dev_img, cbi->img, cbi->dim[0]*cbi->dim[1]*sizeof(float), 
-		    cudaMemcpyHostToDevice );
+	    cudaMemcpyHostToDevice );
 	cudaBindTexture (0, tex_img, dev_img, 
-			 cbi->dim[0]*cbi->dim[1]*sizeof(float) );
+	    cbi->dim[0]*cbi->dim[1]*sizeof(float) );
 	cudaMemcpy (dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
-		    cudaMemcpyHostToDevice);
+	    cudaMemcpyHostToDevice);
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
 	// Free the current image 
 	proj_image_free( cbi );
 
 #if defined (TIME_KERNEL)
-	// Report IO time
-	time_io += plm_timer_report (&timer);
-
-	// Start kernel timer
 	plm_timer_start (&timer);
 #endif
-
 	// Invoke ze kernel  \(^_^)/
 	// Note: cbi->img AND cbi->matrix are passed via texture memory
 	//-------------------------------------
 	kernel_fdk<<< dimGrid, dimBlock >>>(dev_vol,
-					    kargs->img_dim,
-					    kargs->ic,
-					    kargs->nrm,
-					    kargs->sad,
-					    kargs->scale,
-					    kargs->vol_offset,
-					    kargs->vol_dim,
-					    kargs->vol_pix_spacing,
-					    blocksInY,
-					    1.0f/(float)blocksInY);
+	    kargs->img_dim,
+	    kargs->ic,
+	    kargs->nrm,
+	    kargs->sad,
+	    kargs->scale,
+	    kargs->vol_offset,
+	    kargs->vol_dim,
+	    kargs->vol_pix_spacing,
+	    blocksInY,
+	    1.0f/(float)blocksInY);
 	checkCUDAError("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
@@ -325,8 +332,7 @@ CUDA_reconstruct_conebeam (
 	cudaUnbindTexture (tex_matrix);
 
 #if defined (TIME_KERNEL)
-	// Report kernel time
-	time_kernel += plm_timer_report (&timer);
+	backproject_time += plm_timer_report (&timer);
 #endif
     }
 
@@ -336,7 +342,7 @@ CUDA_reconstruct_conebeam (
 	
     // Copy reconstructed volume from device to host
     cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, 
-		cudaMemcpyDeviceToHost);
+	cudaMemcpyDeviceToHost);
     checkCUDAError ("Error: Unable to retrieve data volume.");
 
 	
@@ -345,16 +351,18 @@ CUDA_reconstruct_conebeam (
     printf ("========================================\n");
     printf ("[Total Execution Time: %.9fs ]\n", time_total);
 #if defined (TIME_KERNEL)
-    printf ("\tTotal Kernel  Time: %.9fs\n", time_kernel);
-    printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
+    printf ("I/O time = %g\n", io_time);
+    printf ("Filter time = %g\n", filter_time);
+    printf ("Backprojection time = %g\n", backproject_time);
 #endif
 
     int num_images = 1 + (options->last_img - options->first_img) 
 	/ options->skip_img;
     printf ("[Average Projection Time: %.9fs ]\n", time_total / num_images);
 #if defined (TIME_KERNEL)
-    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / num_images);
-    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / num_images);
+    printf ("I/O time = %g\n", io_time / num_images);
+    printf ("Filter time = %g\n", filter_time / num_images);
+    printf ("Backprojection time = %g\n", backproject_time / num_images);
 #endif
     printf ("========================================\n");
 
