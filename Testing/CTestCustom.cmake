@@ -8,6 +8,9 @@ SET (REDUCED_TEST OFF)
 IF (NOT CUDA_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "drr-cuda"
+    "drr-cuda-stats"
+    "drr-cuda-check"
     "fdk-cuda"
     "fdk-cuda-stats"
     "fdk-cuda-check"
