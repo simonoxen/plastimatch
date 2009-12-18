@@ -533,6 +533,20 @@ int CUDA_DRR (Volume *vol, Drr_options *options)
 
 //DRR3 uses 3D textures and pre-calculated coefs to accelerate DRR generation.
 
+void
+drr_cuda_render_volume_perspective (
+    Volume* vol, double* cam, 
+    double* tgt, double* vup,
+    double sid, double* ic,
+    double* ps, int* ires,
+    char* image_fn, 
+    char* multispectral_fn, 
+    Drr_options* options
+)
+{
+    
+}
+
 //////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_DRR() //////////////////////////////////
 int CUDA_DRR3 (Volume *vol, Drr_options *options)

@@ -165,6 +165,31 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## drr-cuda
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "drr-cuda"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/drr
+  "-A;cuda;-a;20;-O;cuda_drr_;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  )
+PLM_ADD_TEST (
+  "drr-cuda-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;cuda_drr_0010.pfm"
+  )
+ADD_TEST (
+  "drr-cuda-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-cuda-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+## -------------------------------------------------------------------------
 ## fdk cpu
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (

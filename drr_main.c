@@ -577,7 +577,7 @@ drr_render_volume_perspective (
 
 /* All distances in mm */
 void
-drr_render_volumes (Volume* vol, Drr_options* options)
+drr_render_volume (Volume* vol, Drr_options* options)
 {
     Proj_matrix *pmat;
     int a;
@@ -667,10 +667,27 @@ drr_render_volumes (Volume* vol, Drr_options* options)
 	}
 	sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
 
-	drr_render_volume_perspective (
-	    vol, cam, tgt, vup, sid, ic, ps, 
-	    ires, img_fn, multispectral_fn, 
-	    options);
+	switch (options->threading) {
+	case THREADING_BROOK:
+	case THREADING_CUDA:
+#if defined (CUDA_FOUND)
+	    drr_cuda_render_volume_perspective (
+		vol, cam, tgt, vup, sid, ic, ps, 
+		ires, img_fn, multispectral_fn, 
+		options);
+	    //CUDA_DRR3 (vol, &options);
+	    break;
+#else
+	    /* Fall through */
+#endif
+
+	case THREADING_CPU:
+	    drr_render_volume_perspective (
+		vol, cam, tgt, vup, sid, ic, ps, 
+		ires, img_fn, multispectral_fn, 
+		options);
+	    break;
+	}
     }
     proj_matrix_destroy (pmat);
 }
@@ -700,20 +717,7 @@ main (int argc, char* argv[])
     preprocess_attenuation (vol);
 #endif
 
-    switch (options.threading) {
-    case THREADING_BROOK:
-    case THREADING_CUDA:
-#if defined (CUDA_FOUND)
-	CUDA_DRR3 (vol, &options);
-	break;
-#else
-	/* Fall through */
-#endif
-
-    case THREADING_CPU:
-	drr_render_volumes (vol, &options);
-	break;
-    }
+    drr_render_volume (vol, &options);
 
     volume_free (vol);
     printf ("Done.\n");
