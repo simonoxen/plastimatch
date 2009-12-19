@@ -390,31 +390,19 @@ drr_trace_ray_nointerp_2009 (Volume* vol, Volume_limit vol_limits[3],
 }
 
 void
-drr_render_volume_orthographic (Volume* volume)
-{
-}
-
-void
 drr_render_volume_perspective (
-    Volume* vol, double* cam, 
-    double* tgt, double* vup,
-    double sid, double* ic,
-    double* ps, int* ires,
-    char* image_fn, 
-    char* multispectral_fn, 
-    Drr_options* options
+    Proj_image *proj,
+    Volume *vol, 
+    double ps[2], 
+    char *image_fn, 
+    char *multispectral_fn, 
+    Drr_options*options
 )
 {
     int d;
-    double nrm[3];
-    double vrt[3];
     double p1[3], p2[3];
-    //    int res_r = ires[0];
-    //    int res_c = ires[1];
     int res_r = options->image_window[1] - options->image_window[0] + 1;
     int res_c = options->image_window[3] - options->image_window[2] + 1;
-    double pp_r = - ps[0];
-    double pp_c = ps[1];
     double ic_room[3];
     double ul_room[3];
     double incr_r[3];
@@ -422,46 +410,46 @@ drr_render_volume_perspective (
     double r_tgt[3];
     double tmp[3];
     Volume_limit vol_limits[3];
-
+    double nrm[3], pdn[3], prt[3];
     FILE *pgm_fp, *msd_fp;
     int r, c;
     double value;
+    Proj_matrix *pmat = proj->pmat;
 
-    /* Compute image coordinate sys (nrm,vup,vrt) relative to room coords.
-       ---------------
-       nrm = tgt - cam
-       vrt = nrm x vup
-       vup = vrt x nrm
-       ---------------
-    */
-    vec3_sub3 (nrm, tgt, cam);
-    vec3_normalize1 (nrm);
-    vec3_cross (vrt, nrm, vup);
-    vec3_normalize1 (vrt);
-    vec3_cross (vup, vrt, nrm);
-    vec3_normalize1 (vup);
+    proj_matrix_get_nrm (pmat, nrm);
+    proj_matrix_get_pdn (pmat, pdn);
+    proj_matrix_get_prt (pmat, prt);
 
     /* Compute position of image center in room coordinates */
-    vec3_scale3 (tmp, nrm, sid);
-    vec3_add3 (ic_room, cam, tmp);
-#if defined (VERBOSE)
-    printf ("icr: ");
-    vec3_print_eol (stdout, ic_room);
-#endif
+    vec3_scale3 (tmp, nrm, - pmat->sid);
+    vec3_add3 (ic_room, pmat->cam, tmp);
 
-    /* Compute base and increments for pixels. Base is at upper left, 
-       and increment with increasing rows and columns. */
-    vec3_scale3 (incr_r, vup, pp_r);
-    vec3_scale3 (incr_c, vrt, pp_c);
+    /* Compute incremental change in 3d position for each change 
+       in panel row/column. */
+    vec3_scale3 (incr_c, prt, ps[0]);
+    vec3_scale3 (incr_r, pdn, ps[1]);
+
+    /* Get position of upper left pixel on panel */
     vec3_copy (ul_room, ic_room);
-    vec3_scale3 (tmp, incr_r, -ic[0]);
+    vec3_scale3 (tmp, incr_r, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
-    vec3_scale3 (tmp, incr_c, -ic[1]);
+    vec3_scale3 (tmp, incr_c, - pmat->ic[0]);
     vec3_add2 (ul_room, tmp);
 
     /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 
        direction of the ray */
-    vec3_copy (p1, cam);
+    vec3_copy (p1, pmat->cam);
+
+#if defined (VERBOSE)
+    printf ("NRM: %g %g %g\n", nrm[0], nrm[1], nrm[2]);
+    printf ("PDN: %g %g %g\n", pdn[0], pdn[1], pdn[2]);
+    printf ("PRT: %g %g %g\n", prt[0], prt[1], prt[2]);
+    printf ("CAM: %g %g %g\n", pmat->cam[0], pmat->cam[1], pmat->cam[2]);
+    printf ("ICR: %g %g %g\n", ic_room[0], ic_room[1], ic_room[2]);
+    printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
+    printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
+    printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+#endif
 
     pgm_fp = fopen(image_fn,"wb");
     if (!pgm_fp) {
@@ -579,13 +567,9 @@ drr_render_volume_perspective (
 void
 drr_render_volume (Volume* vol, Drr_options* options)
 {
+    Proj_image *proj;
     Proj_matrix *pmat;
     int a;
-
-    //    double cam_ap[3] = {0.0, -1.0, 0.0};
-    //    double cam_lat[3] = {-1.0, 0.0, 0.0};
-    //    double* cam = cam_ap;
-    //    double* cam = cam_lat;
 
     /* tgt is zero because we shifted volume. */
     double vup[3] = {0.0, 0.0, 1.0};
@@ -593,10 +577,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	options->isocenter[0],
 	options->isocenter[1],
 	options->isocenter[2] };
-    double tmp[3];
-
-    /* Set source-to-axis distance */
-    double sad = options->sad;
 
     /* Set source-to-image distance */
     double sid = options->sid;
@@ -619,7 +599,11 @@ drr_render_volume (Volume* vol, Drr_options* options)
     double ps[2] = { (double)isize[0]/(double)ires[0], 
 		     (double)isize[1]/(double)ires[1] };
 
-    pmat = proj_matrix_create ();
+    /* Allocate data for image and matrix */
+    proj = proj_image_create ();
+    proj_image_create_pmat (proj);
+    proj_image_create_img (proj, ires);
+    pmat = proj->pmat;
 
     /* Loop through camera angles */
     for (a = 0; a < options->num_angles; a++) {
@@ -630,32 +614,20 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	char img_fn[256];
 	char multispectral_fn[256];
 
+	printf ("Rendering DRR %d\n", a);
+
+	/* Place camera at distance "sad" from the volume isocenter */
 	cam[0] = tgt[0] + options->sad * cos(angle);
 	cam[1] = tgt[1] - options->sad * sin(angle);
 	cam[2] = tgt[2];
 	
-	printf ("Rendering DRR %d\n", a);
-
-	/* Place camera at distance "sad" from the volume isocenter */
+	/* Compute normal vector */
 	vec3_sub3 (nrm, tgt, cam);
 	vec3_normalize1 (nrm);
-	vec3_scale3 (tmp, nrm, sad);
-	vec3_copy (cam, tgt);
-	vec3_sub2 (cam, tmp);
 
-	/* Some debugging info */
-#if defined (VERBOSE)
-	vec_set_fmt ("%12.4g ");
-	printf ("cam: ");
-	vec3_print_eol (stdout, cam);
-	printf ("tgt: ");
-	vec3_print_eol (stdout, tgt);
-	printf ("ic:  %g %g\n", ic[0], ic[1]);
-#endif
+	/* Create projection matrix */
 	sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
-
 	proj_matrix_set (pmat, cam, tgt, vup, sid, ic, ps, ires);
-
 	proj_matrix_save (pmat, mat_fn);
 
 	if (options->output_format == OUTPUT_FORMAT_PFM) {
@@ -683,13 +655,13 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
 	case THREADING_CPU:
 	    drr_render_volume_perspective (
-		vol, cam, tgt, vup, sid, ic, ps, 
-		ires, img_fn, multispectral_fn, 
-		options);
+		proj, vol, ps, img_fn, multispectral_fn, options);
 	    break;
 	}
+
+	//proj_image_save
     }
-    proj_matrix_destroy (pmat);
+    proj_image_destroy (proj);
 }
 
 void

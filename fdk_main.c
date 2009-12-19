@@ -362,7 +362,7 @@ reconstruct_conebeam (
 	project_volume_onto_image_c (vol, cbi, scale);
 	backproject_time += plm_timer_report (&timer);
 
-	proj_image_free (cbi);
+	proj_image_destroy (cbi);
     }
     printf ("I/O time = %g\n", io_time);
     printf ("Filter time = %g\n", filter_time);

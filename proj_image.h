@@ -25,8 +25,13 @@ gpuit_EXPORT
 Proj_image*
 proj_image_create (void);
 
-gpuit_EXPORT void 
+gpuit_EXPORT 
+void 
 proj_image_free (Proj_image* proj);
+
+gpuit_EXPORT 
+void
+proj_image_destroy (Proj_image* proj);
 
 gpuit_EXPORT Proj_image* 
 proj_image_load_and_filter (
@@ -47,6 +52,14 @@ proj_image_filter (Proj_image *proj);
 
 gpuit_EXPORT void
 proj_image_debug_header (Proj_image *proj);
+
+gpuit_EXPORT
+void
+proj_image_create_pmat (Proj_image *proj);
+
+gpuit_EXPORT
+void
+proj_image_create_img (Proj_image *proj, int dim[2]);
 
 gpuit_EXPORT void
 proj_image_stats (Proj_image *proj);

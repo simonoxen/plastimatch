@@ -246,7 +246,7 @@ CUDA_reconstruct_conebeam (
     // This is just to retrieve the 2D image dimensions
     cbi = proj_image_dir_load_image (proj_dir, options->first_img);
     cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
-    proj_image_free (cbi);
+    proj_image_destroy (cbi);
 
     // Project each image into the volume one at a time
     for (image_num = options->first_img;
@@ -298,7 +298,7 @@ CUDA_reconstruct_conebeam (
 	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix));
 
 	// Free the current image 
-	proj_image_free( cbi );
+	proj_image_destroy ( cbi );
 
 #if defined (TIME_KERNEL)
 	plm_timer_start (&timer);

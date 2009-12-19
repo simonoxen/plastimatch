@@ -160,7 +160,7 @@ fdk_brook_c (Volume* vol, Proj_image_dir* proj_dir, Fdk_options* options)
 	clock_end = (double)clock_count.QuadPart;
 	processing_cycles +=  (clock_end - clock_start);
 			
-	proj_image_free(cbi);
+	proj_image_destroy (cbi);
     } 
 		
     QueryPerformanceCounter(&clock_count);

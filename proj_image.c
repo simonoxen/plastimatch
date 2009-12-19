@@ -258,7 +258,7 @@ proj_image_load_hnd (char* img_filename)
 
     hnd_load (proj, img_filename);
     if (proj->img == 0) {
-	proj_image_free (proj);
+	proj_image_destroy (proj);
 	return 0;
     }
 
@@ -285,6 +285,21 @@ proj_image_create (void)
     proj_image_init (proj);
 
     return proj;
+}
+
+void
+proj_image_create_pmat (Proj_image *proj)
+{
+    /* Allocate memory */
+    proj->pmat = proj_matrix_create ();
+}
+
+void
+proj_image_create_img (Proj_image *proj, int dim[2])
+{
+    proj->dim[0] = dim[0];
+    proj->dim[1] = dim[1];
+    proj->img = (float*) malloc (sizeof(float) * proj->dim[0] * proj->dim[1]);
 }
 
 void
@@ -513,5 +528,11 @@ proj_image_free (Proj_image* proj)
     if (proj->img) {
 	free (proj->img);
     }
+}
+
+void
+proj_image_destroy (Proj_image* proj)
+{
+    proj_image_free (proj);
     free (proj);
 }

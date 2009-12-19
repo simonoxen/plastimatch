@@ -43,7 +43,7 @@ stats_proj_image_main (Stats_parms* parms)
     proj = proj_image_load (parms->mha_in_fn, 0);
     proj_image_debug_header (proj);
     proj_image_stats (proj);
-    proj_image_free (proj);
+    proj_image_destroy (proj);
 }
 
 static void

@@ -11,6 +11,7 @@ struct proj_matrix
     double matrix[12];	  /* Projection matrix */
     double sad;		  /* Distance: Source To Axis */
     double sid;		  /* Distance: Source to Image */
+    double cam[3];	  /* Location of camera */
     double nrm[3];	  /* Ray from image center to source */
 
     double extrinsic[16];
@@ -46,6 +47,27 @@ proj_matrix_set (
     double* ic, 
     double* ps, 
     int* ires
+);
+
+gpuit_EXPORT
+void
+proj_matrix_get_nrm (
+    Proj_matrix *pmat,
+    double nrm[3]
+);
+
+gpuit_EXPORT
+void
+proj_matrix_get_pdn (
+    Proj_matrix *pmat,
+    double pdn[3]
+);
+
+gpuit_EXPORT
+void
+proj_matrix_get_prt (
+    Proj_matrix *pmat,
+    double prt[3]
 );
 
 gpuit_EXPORT
