@@ -73,6 +73,9 @@ proj_matrix_save (
 {
     FILE *fp;
 
+    if (!fn) return;
+    if (!pmat) return;
+
     fp = fopen (fn, "w");
     if (!fp) {
 	fprintf (stderr, "Error opening %s for write\n", fn);

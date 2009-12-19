@@ -40,10 +40,19 @@ proj_image_load_and_filter (
     char* mat_filename
 );
 
-gpuit_EXPORT Proj_image* 
+gpuit_EXPORT 
+Proj_image* 
 proj_image_load (
     char* img_filename,
     char* mat_filename
+);
+
+gpuit_EXPORT 
+void
+proj_image_save (
+    Proj_image *proj,
+    char *img_filename,
+    char *mat_filename
 );
 
 gpuit_EXPORT

@@ -17,13 +17,11 @@ int CUDA_DRR (Volume *vol, Drr_options *options);
 
 void
 drr_cuda_render_volume_perspective (
-    Volume* vol, double* cam, 
-    double* tgt, double* vup,
-    double sid, double* ic,
-    double* ps, int* ires,
-    char* image_fn, 
-    char* multispectral_fn, 
-    Drr_options* options
+    Proj_image *proj,
+    Volume *vol, 
+    double ps[2], 
+    char *multispectral_fn, 
+    Drr_options *options
 );
 
 #if defined __cplusplus

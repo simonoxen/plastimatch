@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#if (OPENMP_FOUND)
+#include <omp.h>
+#endif
 #include "mathutil.h"
 #include "drr.h"
 #include "drr_opts.h"
@@ -12,6 +15,7 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "readmha.h"
+#include "timer.h"
 
 //#define ULTRA_VERBOSE 1
 //#define VERBOSE 1
@@ -394,26 +398,22 @@ drr_render_volume_perspective (
     Proj_image *proj,
     Volume *vol, 
     double ps[2], 
-    char *image_fn, 
     char *multispectral_fn, 
-    Drr_options*options
+    Drr_options *options
 )
 {
     int d;
-    double p1[3], p2[3];
-    int res_r = options->image_window[1] - options->image_window[0] + 1;
-    int res_c = options->image_window[3] - options->image_window[2] + 1;
+    double p1[3];
+    int rows = options->image_window[1] - options->image_window[0] + 1;
+    int cols = options->image_window[3] - options->image_window[2] + 1;
     double ic_room[3];
     double ul_room[3];
     double incr_r[3];
     double incr_c[3];
-    double r_tgt[3];
     double tmp[3];
     Volume_limit vol_limits[3];
     double nrm[3], pdn[3], prt[3];
-    FILE *pgm_fp, *msd_fp;
-    int r, c;
-    double value;
+    int r;
     Proj_matrix *pmat = proj->pmat;
 
     proj_matrix_get_nrm (pmat, nrm);
@@ -451,44 +451,11 @@ drr_render_volume_perspective (
     printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
 #endif
 
-    pgm_fp = fopen(image_fn,"wb");
-    if (!pgm_fp) {
-	fprintf (stderr, "Error opening %s for write\n", image_fn);
-	exit (-1);
-    }
-    if (options->multispectral) {
-	msd_fp = fopen(multispectral_fn,"wb");
-	if (!msd_fp) {
-	    fprintf (stderr, "Error opening %s for write\n", multispectral_fn);
-	    exit (-1);
-	}
-    } else {
-	msd_fp = 0;
-    }
-
-    if (options->output_format == OUTPUT_FORMAT_PFM) {
-	fprintf (pgm_fp, 
-	    "Pf\n"
-	    "%d %d\n"
-	    "-1\n",
-	    res_c, res_r);
-    } 
-    else if (options->output_format == OUTPUT_FORMAT_PGM) {
-	   fprintf (pgm_fp, 
-	    "P2\n"
-	    "# Created by mghdrr\n"
-	    "%d %d\n"
-	    "65535\n",
-	    res_c, res_r);
-    }
-    else {
-	/* Nothing for RAW */
-    }
-
     /* Compute volume boundary box */
     for (d = 0; d < 3; d++) {
 	vol_limits[d].limits[0] = vol->offset[d] - 0.5 * vol->pix_spacing[d];
-	vol_limits[d].limits[1] = vol_limits[d].limits[0] + vol->dim[d] * vol->pix_spacing[d];
+	vol_limits[d].limits[1] = vol_limits[d].limits[0] 
+	    + vol->dim[d] * vol->pix_spacing[d];
 	if (vol_limits[d].limits[0] <= vol_limits[d].limits[1]) {
 	    vol_limits[d].dir = 0;
 	    vol_limits[d].limits[0] += DRR_BOUNDARY_TOLERANCE;
@@ -500,27 +467,41 @@ drr_render_volume_perspective (
 	}
     }
 
+    /* Compute the drr pixels */
+#pragma omp parallel for
     for (r=options->image_window[0]; r<=options->image_window[1]; r++) {
-	if (r % 50 == 0) printf ("Row: %4d/%d\n",r,res_r);
+	int c;
+	double r_tgt[3];
+	double tmp[3];
+	double p2[3];
+
+	//if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
 	vec3_copy (r_tgt, ul_room);
 	vec3_scale3 (tmp, incr_r, (double) r);
 	vec3_add2 (r_tgt, tmp);
+
 	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
+	    double value;
+	    int idx = c - options->image_window[2] 
+		+ (r - options->image_window[0]) * cols;
+
 #if defined (ULTRA_VERBOSE)
-	    printf ("Row: %4d/%d  Col:%4d/%d\n",r,res_r,c,res_c);
+	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
 #endif
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
 	    switch (options->interpolation) {
 	    case INTERPOLATION_NONE:
-		value = drr_trace_ray_nointerp_2009 (vol,vol_limits,p1,p2,msd_fp);
+		/* MSD is disabled */
+		value = drr_trace_ray_nointerp_2009 (vol, vol_limits, 
+		    p1, p2, 0);
 		break;
 	    case INTERPOLATION_TRILINEAR_EXACT:
-		value = drr_trace_ray_trilin_exact (vol,p1,p2);
+		value = drr_trace_ray_trilin_exact (vol, p1, p2);
 		break;
 	    case INTERPOLATION_TRILINEAR_APPROX:
-		value = drr_trace_ray_trilin_approx (vol,p1,p2);
+		value = drr_trace_ray_trilin_approx (vol, p1, p2);
 		break;
 	    }
 	    value = value / 10;     /* Translate from pixels to cm*gm */
@@ -528,39 +509,10 @@ drr_render_volume_perspective (
 		value = exp(-value);
 	    }
 	    value = value * options->scale;   /* User requested scaling */
-	    if (options->output_format == OUTPUT_FORMAT_PFM) {
-		float fv = (float) value;
-		fwrite (&fv, sizeof(float), 1, pgm_fp);
-		//fprintf (pgm_fp,"%g ",value);
-	    }
-	    else if (options->output_format == OUTPUT_FORMAT_PGM) {
-		if (options->exponential_mapping) {
-		    value = value * 65536;
-		} else {
-		    value = value * 15000;
-		}
-		if (value > 65536) {
-		    value = 65536;
-		} else if (value < 0) {
-		    value = 0;
-		}
-		fprintf (pgm_fp,"%lu ", ROUND_INT(value));
-	    }
-	    else {
-		/* RAW */
-		short fv = (short) value;
-		fwrite (&fv, sizeof(short), 1, pgm_fp);
-	    }
-	}
-	if (options->output_format == OUTPUT_FORMAT_PGM) {
-	    fprintf (pgm_fp,"\n");
+
+	    proj->img[idx] = (float) value;
 	}
     }
-    fclose (pgm_fp);
-    if (msd_fp) {
-	fclose (msd_fp);
-    }
-    printf ("done.\n");
 }
 
 /* All distances in mm */
@@ -570,6 +522,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     Proj_image *proj;
     Proj_matrix *pmat;
     int a;
+    Timer timer;
 
     /* tgt is zero because we shifted volume. */
     double vup[3] = {0.0, 0.0, 1.0};
@@ -586,7 +539,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
 		    options->image_resolution[1] };
 
     /* Set physical size of imager in mm */
-    //    int isize[2] = { 300, 400 };      /* Actual resolution */
     int isize[2] = { options->image_size[0],
 		     options->image_size[1] };
 
@@ -598,6 +550,8 @@ drr_render_volume (Volume* vol, Drr_options* options)
     /* Set pixel size in mm */
     double ps[2] = { (double)isize[0]/(double)ires[0], 
 		     (double)isize[1]/(double)ires[1] };
+
+    plm_timer_start (&timer);
 
     /* Allocate data for image and matrix */
     proj = proj_image_create ();
@@ -628,7 +582,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	/* Create projection matrix */
 	sprintf (mat_fn, "%s%04d.txt", options->output_prefix, a);
 	proj_matrix_set (pmat, cam, tgt, vup, sid, ic, ps, ires);
-	proj_matrix_save (pmat, mat_fn);
 
 	if (options->output_format == OUTPUT_FORMAT_PFM) {
 	    sprintf (img_fn, "%s%04d.pfm", options->output_prefix, a);
@@ -644,9 +597,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	case THREADING_CUDA:
 #if defined (CUDA_FOUND)
 	    drr_cuda_render_volume_perspective (
-		vol, cam, tgt, vup, sid, ic, ps, 
-		ires, img_fn, multispectral_fn, 
-		options);
+		proj, vol, ps, multispectral_fn, options);
 	    //CUDA_DRR3 (vol, &options);
 	    break;
 #else
@@ -655,13 +606,15 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
 	case THREADING_CPU:
 	    drr_render_volume_perspective (
-		proj, vol, ps, img_fn, multispectral_fn, options);
+		proj, vol, ps, multispectral_fn, options);
 	    break;
 	}
-
-	//proj_image_save
+	proj_image_save (proj, img_fn, mat_fn);
     }
     proj_image_destroy (proj);
+
+    printf ("Total time: %g secs\n", plm_timer_report (&timer));
+
 }
 
 void

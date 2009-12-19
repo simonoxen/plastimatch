@@ -76,6 +76,21 @@ raw_load (Proj_image *proj, char* img_filename)
 }
 
 static void
+raw_save (Proj_image *proj, char* img_filename)
+{
+    FILE* fp;
+    
+    fp = fopen (img_filename, "wb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for write\n", img_filename);
+	exit (-1);
+    }
+
+    fwrite (proj->img, sizeof(float), proj->dim[0]*proj->dim[1], fp);
+    fclose (fp);
+}
+
+static void
 pfm_load (Proj_image *proj, char* img_filename)
 {
     FILE* fp;
@@ -122,6 +137,61 @@ pfm_load (Proj_image *proj, char* img_filename)
 	fprintf (stderr, "Couldn't load raster data for %s\n",
 		 img_filename);
 	exit (-1);
+    }
+    fclose (fp);
+}
+
+static void
+pfm_save (Proj_image *proj, char* img_filename)
+{
+    FILE* fp;
+    
+    fp = fopen (img_filename, "wb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for write\n", img_filename);
+	exit (-1);
+    }
+
+    fprintf (fp, 
+	"Pf\n"
+	"%d %d\n"
+	"-1\n",
+	proj->dim[0], proj->dim[1]);
+
+    fwrite (proj->img, sizeof(float), proj->dim[0]*proj->dim[1], fp);
+    fclose (fp);
+}
+
+static void
+pgm_save (Proj_image *proj, char* img_filename)
+{
+    FILE* fp;
+    int i;
+    
+    fp = fopen (img_filename, "wb");
+    if (!fp) {
+	fprintf (stderr, "Can't open file %s for write\n", img_filename);
+	exit (-1);
+    }
+
+    fprintf (fp, 
+	"P2\n"
+	"# Created by plastimatch\n"
+	"%d %d\n"
+	"65535\n",
+	proj->dim[0], proj->dim[1]);
+
+    for (i = 0; i < proj->dim[0]*proj->dim[1]; i++) {
+	float v = proj->img[i];
+	if (v > 65536) {
+	    v = 65536;
+	} else if (v < 0) {
+	    v = 0;
+	}
+	fprintf (fp,"%lu ", ROUND_INT(v));
+	if (i % 25 == 24) {
+	    fprintf (fp,"\n");
+	}
     }
     fclose (fp);
 }
@@ -266,7 +336,7 @@ proj_image_load_hnd (char* img_filename)
 }
 
 /* -----------------------------------------------------------------------
-   Private functions
+   Public functions
    ----------------------------------------------------------------------- */
 void
 proj_image_init (Proj_image *proj)
@@ -353,13 +423,33 @@ proj_image_load (
     if (extension_is (img_filename, ".pfm")) {
 	return proj_image_load_pfm (img_filename, mat_filename);
     }
-    if (extension_is (img_filename, ".raw")) {
+    else if (extension_is (img_filename, ".raw")) {
 	return proj_image_load_raw (img_filename, mat_filename);
     }
-    if (extension_is (img_filename, ".hnd")) {
+    else if (extension_is (img_filename, ".hnd")) {
 	return proj_image_load_hnd (img_filename);
     }
     return 0;
+}
+
+void
+proj_image_save (
+    Proj_image *proj,
+    char *img_filename,
+    char *mat_filename
+)
+{
+    if (extension_is (img_filename, ".pfm")) {
+	pfm_save (proj, img_filename);
+    }
+    else if (extension_is (img_filename, ".raw")) {
+	raw_save (proj, img_filename);
+    }
+    else if (extension_is (img_filename, ".pgm")) {
+	pgm_save (proj, img_filename);
+    }
+
+    proj_matrix_save (proj->pmat, mat_filename);
 }
 
 void
