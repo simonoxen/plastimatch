@@ -11,10 +11,12 @@
 #include <omp.h>
 #endif
 
+#include "bowtie_correction.h"
 #include "fdk_brook.h"
 #include "fdk_cuda.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
+#include "file_util.h"
 #include "mathutil.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
@@ -369,6 +371,26 @@ reconstruct_conebeam (
     printf ("Backprojection time = %g\n", backproject_time);
 }
 
+void
+do_bowtie (Volume* vol, Fdk_options* options)
+{
+    int norm_exists;
+    if (options->full_fan)
+	norm_exists = file_exists (options->Full_normCBCT_name);
+    else
+	norm_exists = file_exists (options->Half_normCBCT_name);
+
+    if (norm_exists) {
+	bowtie_correction (vol, options);
+    } else {
+	printf("%s\n%s\n", 
+	    options->Full_normCBCT_name,
+	    options->Half_normCBCT_name);
+	printf("Skip bowtie correction because norm files do not exits\n");
+    }
+}
+
+
 int 
 main (int argc, char* argv[])
 {
@@ -411,6 +433,9 @@ main (int argc, char* argv[])
 
     /* Prepare HU values in output volume */
     convert_to_hu (vol, &options);
+
+    /* Do bowtie filter corrections */
+    do_bowtie (vol, &options);
 
     /* Write output */
     printf ("Writing output volume(s)...\n");

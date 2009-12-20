@@ -47,7 +47,6 @@ set_default_options (Fdk_options* options)
     options->filter = FDK_FILTER_TYPE_RAMP;
     options->input_dir = ".";
     options->output_file = "output.mha";
-    //options->output_file = "output.mh5";
 
     options->full_fan=1;
     options->coronal=0;

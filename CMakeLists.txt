@@ -610,6 +610,7 @@ SET (FDK_SRC
         fdk_main.c 
 	fdk_opts.c fdk_opts.h
 	fdk_utils.c fdk_utils.h
+	bowtie_correction.c bowtie_correction.h
 	)
 IF (CUDA_FOUND)
   SET (FDK_SRC
@@ -627,19 +628,19 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 
-SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-        fdk_cuda.h fdk_cuda_p.h 
-	fdk_opts.c fdk_opts.h
-	fdk_utils.c fdk_utils.h
-	mathutil.h
-	fdk_cuda_integrated_main.c
-	fdk_cuda.cu fdk_cuda.h
-	MGHMtx_opts.h
-	ramp_filter.c ramp_filter.h 
-	volume.c volume.h 
-	writematrix_opts.c
-	bowtie_correction.c
-	)
+# SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+#         fdk_cuda.h fdk_cuda_p.h 
+# 	fdk_opts.c fdk_opts.h
+# 	fdk_utils.c fdk_utils.h
+# 	mathutil.h
+# 	fdk_cuda_integrated_main.c
+# 	fdk_cuda.cu fdk_cuda.h
+# 	MGHMtx_opts.h
+# 	ramp_filter.c ramp_filter.h 
+# 	volume.c volume.h 
+# 	writematrix_opts.c
+# 	bowtie_correction.c
+# 	)
 
 IF (CUDA_FOUND)
   CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
@@ -647,10 +648,10 @@ IF (CUDA_FOUND)
     ${FDK_SRC}
     ${FDK_CUDA_WRAPPERS}
     )
-  SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-    ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-    ${FDK_CUDA_WRAPPERS}
-    )
+  # SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
+  #   ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
+  #   ${FDK_CUDA_WRAPPERS}
+  #   )
 ENDIF (CUDA_FOUND)
 
 #SET (HND2RAW_ST_SRC
@@ -981,12 +982,12 @@ IF(CUDA_FOUND)
     PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
   ENDIF (PLM_BUILD_DEMONS_CUDA)
-  IF (FFTW_FOUND)
-    PLM_ADD_EXECUTABLE (fdk_cuda_integrated_normalized 
-      "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" 
-      "${GPUIT_LIBRARIES}" 
-      "${OPENMP_LDFLAGS}")
-  ENDIF (FFTW_FOUND)
+#  IF (FFTW_FOUND)
+#    PLM_ADD_EXECUTABLE (fdk_cuda_integrated_normalized 
+#      "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" 
+#      "${GPUIT_LIBRARIES}" 
+#      "${OPENMP_LDFLAGS}")
+#  ENDIF (FFTW_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF(CUDA_FOUND)
 

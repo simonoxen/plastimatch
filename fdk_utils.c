@@ -59,32 +59,6 @@ convert_to_hu (Volume* vol, Fdk_options* options)
     }
 }
 
-#if defined (commentout)
-Proj_image*
-get_image_pfm (Fdk_options* options, int image_num)
-{
-    char* img_file_pat = "%s/out_%04d.pfm";
-    char* mat_file_pat = "%s/out_%04d.txt";
-
-    char img_file[1024], mat_file[1024];
-    sprintf (img_file, img_file_pat, options->input_dir, image_num);
-    sprintf (mat_file, mat_file_pat, options->input_dir, image_num);
-    return proj_image_load_pfm (img_file, mat_file);
-}
-
-Proj_image*
-get_image_raw (Fdk_options* options, int image_num)
-{
-    char* img_file_pat = "%s/Proj_%03d.raw";
-    char* mat_file_pat = "%s/tmp/out_%04d.txt";
-
-    char img_file[1024], mat_file[1024];
-    sprintf (img_file, img_file_pat, options->input_dir, image_num);
-    sprintf (mat_file, mat_file_pat, options->input_dir, image_num);
-    return proj_image_load_and_filter (options, img_file, mat_file);
-}
-#endif
-
 void
 write_coronal_sagittal (Fdk_options* options, Volume* vol)
 {
