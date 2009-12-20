@@ -14,6 +14,9 @@ extern "C" {
 gpuit_EXPORT 
 void
 vf_analyze (Volume* vol);
+gpuit_EXPORT 
+void
+vf_analyze_strain (Volume* vol);
 
 #if defined __cplusplus
 }

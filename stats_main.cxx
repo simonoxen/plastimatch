@@ -32,6 +32,7 @@ stats_vf_main (Stats_parms* parms)
 	exit (-1);
     }
     vf_analyze (vol);
+    vf_analyze_strain (vol);
     volume_free (vol);
 }
 
