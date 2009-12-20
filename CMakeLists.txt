@@ -653,9 +653,9 @@ IF (CUDA_FOUND)
     )
 ENDIF (CUDA_FOUND)
 
-SET (HND2RAW_ST_SRC
-	hnd2raw_st.cpp
-	)
+#SET (HND2RAW_ST_SRC
+#	hnd2raw_st.cpp
+#	)
 SET (HND_TO_PFM_SRC
 	hnd_to_pfm.c
 	)
@@ -880,8 +880,8 @@ PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE (hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+#PLM_ADD_EXECUTABLE (hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
+#  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
