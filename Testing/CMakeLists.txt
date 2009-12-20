@@ -478,7 +478,7 @@ PLM_ADD_TEST (
   "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
   )
 PLM_ADD_TEST (
   "plm-warp-c-stats"
@@ -490,6 +490,28 @@ ADD_TEST (
   "plm-warp-c-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-c-stats.stdout.txt"
+  "-DREGEX=Mean: *([-0-9.]*)"
+  "-DLOWER_THRESH=2.26"
+  "-DUPPER_THRESH=2.28"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "plm-warp-d" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
+  )
+PLM_ADD_TEST (
+  "plm-warp-d-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-d-vf.mha"
+  )
+ADD_TEST (
+  "plm-warp-d-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-d-stats.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
   "-DLOWER_THRESH=2.26"
   "-DUPPER_THRESH=2.28"

@@ -2,6 +2,8 @@
 SET (CUDA_FOUND @CUDA_FOUND@)
 SET (BROOK_FOUND @BROOK_FOUND@)
 
+SET (PLM_EXTENDED_TESTS @PLM_EXTENDED_TESTS@)
+
 #SET (REDUCED_TEST ON)
 SET (REDUCED_TEST OFF)
 
@@ -28,6 +30,22 @@ IF (NOT BROOK_FOUND)
     "fdk-brook-check"
     )
 ENDIF (NOT BROOK_FOUND)
+
+IF (NOT PLM_TEST_EXTENDED)
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "bspline-a"
+    "bspline-a-check"
+    "bspline-b"
+    "bspline-b-check"
+    "bspline-d"
+    "bspline-d-check"
+    "bspline-e"
+    "bspline-e-check"
+    "bspline-f"
+    "bspline-f-check"
+    )
+ENDIF (NOT PLM_TEST_EXTENDED)
 
 ## Don't delete from the list, comment out instead.
 IF (REDUCED_TEST)

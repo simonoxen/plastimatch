@@ -325,6 +325,11 @@ void
 PlmImage::convert_to_gpuit_float ()
 {
     switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	plm_image_convert_itk_to_gpuit_float (this, this->m_itk_uchar);
+	/* Free itk data */
+	this->m_itk_short = 0;
+	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	plm_image_convert_itk_to_gpuit_float (this, this->m_itk_short);
 	/* Free itk data */

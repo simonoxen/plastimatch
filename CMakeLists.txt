@@ -37,6 +37,7 @@ SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
+SET (PLM_TEST_EXTENDED OFF CACHE BOOL "Extended regression testing")
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
