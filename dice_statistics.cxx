@@ -56,10 +56,16 @@ void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* o
 
     if(reference->GetLargestPossibleRegion().GetSize() != warped->GetLargestPossibleRegion().GetSize()){
 	fprintf (stderr, "ERROR: The 2 volumes have different sizes. \n");
-	fprintf (stderr, "Size Reference: %d %d %d \n ",
-		 reference->GetLargestPossibleRegion().GetSize());
-	fprintf (stderr, "Size Warped: %d %d %d \n ",
-		 warped->GetLargestPossibleRegion().GetSize());
+	fprintf (stderr, "Size Reference: %ld %ld %ld \n ",
+	    reference->GetLargestPossibleRegion().GetSize()[0],
+	    reference->GetLargestPossibleRegion().GetSize()[1],
+	    reference->GetLargestPossibleRegion().GetSize()[2]
+	);
+	fprintf (stderr, "Size Warped: %ld %ld %ld \n ",
+	    warped->GetLargestPossibleRegion().GetSize()[0],
+	    warped->GetLargestPossibleRegion().GetSize()[1],
+	    warped->GetLargestPossibleRegion().GetSize()[2]
+	);
 	exit(-1);
     }
 
@@ -320,9 +326,21 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
 
     if(ex_1->GetLargestPossibleRegion().GetSize() != ex_2->GetLargestPossibleRegion().GetSize() && ex_1->GetLargestPossibleRegion().GetSize() != ex_3->GetLargestPossibleRegion().GetSize()){
 	fprintf(stderr,"ERROR: The 3 volumes have different sizes. \n");
-	fprintf(stderr, "Size expert 1: %d %d %d \n ",ex_1->GetLargestPossibleRegion().GetSize());
-	fprintf(stderr, "Size expert 2: %d %d %d \n ",ex_2->GetLargestPossibleRegion().GetSize());
-	fprintf(stderr, "Size expert 3: %d %d %d \n ",ex_3->GetLargestPossibleRegion().GetSize());
+	fprintf(stderr, "Size expert 1: %ld %ld %ld \n ",
+	    ex_1->GetLargestPossibleRegion().GetSize()[0],
+	    ex_1->GetLargestPossibleRegion().GetSize()[1],
+	    ex_1->GetLargestPossibleRegion().GetSize()[2]
+	);
+	fprintf(stderr, "Size expert 2: %ld %ld %ld \n ",
+	    ex_2->GetLargestPossibleRegion().GetSize()[0],
+	    ex_2->GetLargestPossibleRegion().GetSize()[1],
+	    ex_2->GetLargestPossibleRegion().GetSize()[2]
+	);
+	fprintf(stderr, "Size expert 3: %ld %ld %ld \n ",
+	    ex_3->GetLargestPossibleRegion().GetSize()[0],
+	    ex_3->GetLargestPossibleRegion().GetSize()[1],
+	    ex_3->GetLargestPossibleRegion().GetSize()[2]
+	);
 	exit(-1);
     }
 

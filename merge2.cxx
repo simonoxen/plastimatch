@@ -128,7 +128,7 @@ int main( int argc, char *argv[] )
 
 	interp_disp = interpolator->Evaluate(moving_point_1);
 
-	for (int r = 0; r < Dimension; r++) 
+	for (int r = 0; r < 3; r++) 
 	{
 	    displacement[r] = moving_point_1[r] + interp_disp[r] - fixed_point[r];
 	}

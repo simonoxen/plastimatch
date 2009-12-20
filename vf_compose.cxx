@@ -68,18 +68,18 @@ main (int argc, char *argv[])
 //	printf ("%d %d %d\n", index[0], index[1], index[2]); fflush(stdout);
 	vf1->TransformIndexToPhysicalPoint (index, point_1);
 	displacement_1 = vf1_it.Get ();
-	for (int r = 0; r < Dimension; r++) {
+	for (int r = 0; r < 3; r++) {
 	    point_2[r] = point_1[r] + displacement_1[r];
 	}
         if (interpolator->IsInsideBuffer (point_2)) {
 	    displacement_2 = interpolator->Evaluate (point_2);
-	    for (int r = 0; r < Dimension; r++) {
+	    for (int r = 0; r < 3; r++) {
 		point_3[r] = point_2[r] + displacement_2[r];
 		displacement_3[r] = point_3[r] - point_1[r];
 	    }
 	    vf_out_it.Set (displacement_3);
 	} else {
-	    for (int r = 0; r < Dimension; r++) {
+	    for (int r = 0; r < 3; r++) {
 		displacement_3[r] = 0.0;
 	    }
 	    vf_out_it.Set (displacement_3);

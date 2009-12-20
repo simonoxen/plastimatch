@@ -184,7 +184,7 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
     parms->indir = ".";
     parms->outdir = ".";
 
-    while (ch = getopt_long (argc, argv, "d:o:", longopts, NULL)) {
+    while ((ch = getopt_long (argc, argv, "d:o:", longopts, NULL))) {
 	if (ch == -1) break;
 	switch (ch) {
 	case 'd':
@@ -224,7 +224,7 @@ get_rtog_line (FILE* fp, char* key, char* val)
 	if (!s) continue;
 	gs_strncpy (key, buf, s-buf);
 	gs_strncpy (val, s+strlen(":= "), BUFLEN);
-	if (s = strpbrk (val, "\n\r")) {
+	if ((s = strpbrk (val, "\n\r"))) {
 	    *s = 0;
 	}
 	return 1;
@@ -239,7 +239,7 @@ parse_rtog_string (char** list, int list_size, char* str)
     int i;
 
     /* Make str uppercase */
-    for (u = upstr, s = str; *u = toupper(*s); u++, s++);
+    for (u = upstr, s = str; (*u = toupper(*s)); u++, s++);
 
     /* Find in list and return enum */
     for (i = 0; i < list_size; i++) {
@@ -916,9 +916,7 @@ render_slice (RTOG_Header* rtog_header, unsigned char* slice_img,
 	      unsigned char* acc_img, Cxt_polyline_Slice* ps)
 {
     int i, j;
-    int num_slices = rtog_header->ct.last_image - rtog_header->ct.first_image + 1;
     int slice_voxels = rtog_header->ct.size_of_dimension_1 * rtog_header->ct.size_of_dimension_2;
-    int num_voxels = slice_voxels * num_slices;
 
     float offset[2] = {
 	(float) (rtog_header->ct.grid_1_units / 2.0),
@@ -972,7 +970,6 @@ correct_skin (RTOG_Header* rtog_header)
     int i, j, k;
     int num_slices = rtog_header->ct.last_image - rtog_header->ct.first_image + 1;
     int slice_voxels = rtog_header->ct.size_of_dimension_1 * rtog_header->ct.size_of_dimension_2;
-    int num_voxels = slice_voxels * num_slices;
 
     for (i = 0; i < num_slices; i++) {
 	unsigned char* slice_img = &rtog_header->structures.skin_image[i * slice_voxels];
