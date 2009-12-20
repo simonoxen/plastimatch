@@ -19,7 +19,6 @@ struct proj_matrix
 };
 
 
-#include "MGHMtx_opts.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -76,9 +75,6 @@ proj_matrix_save (
     Proj_matrix *pmat,
     const char *fn
 );
-
-void write_matrix (MGHMtx_Options* options);
-void wm_set_default_options (MGHMtx_Options* options);
 
 #ifdef __cplusplus
 }

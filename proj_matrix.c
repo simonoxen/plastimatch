@@ -6,11 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 #include "mathutil.h"
-#include "MGHMtx_opts.h"
 #include "proj_matrix.h"
 #include "volume.h"
-
-void set_image_parms (MGHMtx_Options * options);
 
 #define DRR_PLANE_RAY_TOLERANCE 1e-8
 #define DRR_STRIDE_TOLERANCE 1e-10
@@ -244,23 +241,4 @@ proj_matrix_get_prt (
 )
 {
     vec3_copy (prt, &pmat->extrinsic[0]);
-}
-
-int
-read_ProjAngle (char *ProjAngle_file, float *ProjAngle)
-{
-
-    FILE *fp;
-    char linebuf[LINELEN];
-    int nProj=0;
-    fp = fopen (ProjAngle_file,"rb");
-    if (!fp) {
-	fprintf (stderr, "File %s not found\n", ProjAngle_file);
-	return 0;
-    }
-    while (fgets(linebuf,LINELEN,fp)) {
-	sscanf (linebuf, "%f",&ProjAngle[nProj++]);
-    }
-    fclose(fp);
-    return(nProj);
 }

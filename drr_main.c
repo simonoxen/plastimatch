@@ -404,7 +404,9 @@ drr_render_volume_perspective (
 {
     int d;
     double p1[3];
+#if defined (ULTRA_VERBOSE)
     int rows = options->image_window[1] - options->image_window[0] + 1;
+#endif
     int cols = options->image_window[3] - options->image_window[2] + 1;
     double ic_room[3];
     double ul_room[3];
