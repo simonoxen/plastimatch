@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "drr_opts.h"
+#include "proj_image.h"
 #include "volume.h"
 
 #if defined __cplusplus
