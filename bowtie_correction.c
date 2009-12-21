@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if FFTW_FOUND
 #include "fftw3.h"
+#endif
 
 #include "fdk_opts.h"
 #include "mathutil.h"
@@ -15,50 +17,6 @@
 #ifndef DEGTORAD
 static const double DEGTORAD = 3.14159265 / 180.0;
 #endif
-static void LowPass (int n, double *v);
-static void process_norm_CBCT (Volume *norm_CBCT, Fdk_options *options);
-
-void
-bowtie_correction (Volume *vol, Fdk_options *options)
-{
-    Volume *norm_CBCT;
-    float *img, *norm;
-    int ni, nj, nk;
-    int i, j, k;
-
-    if (options->full_fan) {
-        norm_CBCT = read_mha (options->Full_normCBCT_name);
-    } else   {
-        norm_CBCT = read_mha (options->Half_normCBCT_name);
-    }
-    //norm_CBCT=volume_clone(vol);
-#if FFTW_FOUND
-    process_norm_CBCT (norm_CBCT, options);
-#endif
-    img = (float *) vol->img;
-    norm = (float *) norm_CBCT->img;
-
-    //norm_CBCT=read_mha("C:/AAAfiles/CatPhantom_Full_Fan_Half_Scan/Scan0/Full_norm.mha");
-
-    for (k = 0; k < vol->dim[2]; k++) {
-        nk = (int) floor ((k * vol->pix_spacing[2] + vol->offset[2] - vol->pix_spacing[2] - (norm_CBCT->offset[2] - norm_CBCT->pix_spacing[2])) / norm_CBCT->pix_spacing[2]);
-        if ((nk < 0) || (nk >= norm_CBCT->dim[2]))
-            continue;
-        for (j = 0; j < vol->dim[1]; j++) {
-            nj = (int) floor ((j * vol->pix_spacing[1] + vol->offset[1] - vol->pix_spacing[1] - (norm_CBCT->offset[1] - norm_CBCT->pix_spacing[1])) / norm_CBCT->pix_spacing[1]);
-            if ((nj < 0) || (nj >= norm_CBCT->dim[1]))
-                continue;
-            for (i = 0; i < vol->dim[0]; i++) {
-                ni = (int) floor ((i * vol->pix_spacing[0] + vol->offset[0] - vol->pix_spacing[0] - (norm_CBCT->offset[0] - norm_CBCT->pix_spacing[0])) / norm_CBCT->pix_spacing[0]);
-                if ((ni < 0) || (ni >= norm_CBCT->dim[0]))
-                    continue;
-                img[volume_index (vol->dim, i, j, k)] += norm[volume_index (norm_CBCT->dim, ni, nj, nk)];
-            }
-        }
-    }
-    free (norm_CBCT->img);
-    free (norm_CBCT);
-}
 
 #if FFTW_FOUND
 static void
@@ -178,3 +136,43 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
     free (pixels_r);
 }
 #endif /* FFTW_FOUND */
+
+void
+bowtie_correction (Volume *vol, Fdk_options *options)
+{
+    Volume *norm_CBCT;
+    float *img, *norm;
+    int ni, nj, nk;
+    int i, j, k;
+
+    if (options->full_fan) {
+        norm_CBCT = read_mha (options->Full_normCBCT_name);
+    } else   {
+        norm_CBCT = read_mha (options->Half_normCBCT_name);
+    }
+
+#if FFTW_FOUND
+    process_norm_CBCT (norm_CBCT, options);
+#endif
+    img = (float *) vol->img;
+    norm = (float *) norm_CBCT->img;
+
+    for (k = 0; k < vol->dim[2]; k++) {
+        nk = (int) floor ((k * vol->pix_spacing[2] + vol->offset[2] - vol->pix_spacing[2] - (norm_CBCT->offset[2] - norm_CBCT->pix_spacing[2])) / norm_CBCT->pix_spacing[2]);
+        if ((nk < 0) || (nk >= norm_CBCT->dim[2]))
+            continue;
+        for (j = 0; j < vol->dim[1]; j++) {
+            nj = (int) floor ((j * vol->pix_spacing[1] + vol->offset[1] - vol->pix_spacing[1] - (norm_CBCT->offset[1] - norm_CBCT->pix_spacing[1])) / norm_CBCT->pix_spacing[1]);
+            if ((nj < 0) || (nj >= norm_CBCT->dim[1]))
+                continue;
+            for (i = 0; i < vol->dim[0]; i++) {
+                ni = (int) floor ((i * vol->pix_spacing[0] + vol->offset[0] - vol->pix_spacing[0] - (norm_CBCT->offset[0] - norm_CBCT->pix_spacing[0])) / norm_CBCT->pix_spacing[0]);
+                if ((ni < 0) || (ni >= norm_CBCT->dim[0]))
+                    continue;
+                img[volume_index (vol->dim, i, j, k)] += norm[volume_index (norm_CBCT->dim, ni, nj, nk)];
+            }
+        }
+    }
+    free (norm_CBCT->img);
+    free (norm_CBCT);
+}
