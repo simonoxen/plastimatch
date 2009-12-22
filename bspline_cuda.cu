@@ -13104,7 +13104,8 @@ extern "C" void CUDA_bspline_mse_score_dc_dv(
 		// Using a thread block size of 128 has resulted
 		// in a prime number of thread blocks larger than
 		// 65,535.  So we step down the thread block size.
-		threads_per_block = 64;
+		printf("[EXCEPTION] Prime encountered.  Re-solving... ");
+		threads_per_block = 96;
 		num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
 		smemSize = 12 * sizeof(float) * threads_per_block;
 		sqrt_num_blocks = (int)sqrt((float)num_blocks);
@@ -13113,6 +13114,7 @@ extern "C" void CUDA_bspline_mse_score_dc_dv(
 			if (num_blocks % i == 0) {
 				Grid_x = i;
 				Grid_y = num_blocks / Grid_x;
+				printf("success!\n");
 				break;
 			}
 		}
