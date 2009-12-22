@@ -13097,6 +13097,27 @@ extern "C" void CUDA_bspline_mse_score_dc_dv(
 			break;
 		}
 	}
+
+	// This is not an elegant fix... this packing problem
+	// needs to be made into its own function... badly.
+	if (Grid_x == 0) {
+		// Using a thread block size of 128 has resulted
+		// in a prime number of thread blocks larger than
+		// 65,535.  So we step down the thread block size.
+		threads_per_block = 64;
+		num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+		smemSize = 12 * sizeof(float) * threads_per_block;
+		sqrt_num_blocks = (int)sqrt((float)num_blocks);
+		
+		for (i = sqrt_num_blocks; i < 65535; i++) {
+			if (num_blocks % i == 0) {
+				Grid_x = i;
+				Grid_y = num_blocks / Grid_x;
+				break;
+			}
+		}
+
+	}
 	// -----
 
 
