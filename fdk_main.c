@@ -415,7 +415,7 @@ main (int argc, char* argv[])
     switch (options.threading) {
 #if (BROOK_FOUND)
     case THREADING_BROOK:
-	fdk_brook_c (vol, proj_dir, &options);
+	fdk_brook_reconstruct (vol, proj_dir, &options);
 	break;
 #endif
 #if (CUDA_FOUND)

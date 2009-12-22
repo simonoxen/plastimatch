@@ -13,8 +13,12 @@
 extern "C" {
 #endif
 
-
-void fdk_brook_c (Volume *vol, Proj_image_dir *proj_dir, Fdk_options *options);
+void
+fdk_brook_reconstruct (
+    Volume* vol, 
+    Proj_image_dir *proj_dir, 
+    Fdk_options* options
+);
 
 #if defined __cplusplus
 }
