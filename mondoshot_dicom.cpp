@@ -15,23 +15,51 @@
 
 bool 
 mondoshot_dicom_create_file (
-		int height,
-		int width,
-		unsigned char* bytes,
-		bool rgb,
-		const char *patient_id,
-		const char *patient_name,
-		const char *filename)
+    int height,
+    int width,
+    unsigned char* bytes,
+    bool use_rgb,
+    bool use_rtimage,
+    const char *patient_id,
+    const char *patient_name,
+    const char *filename
+)
 {
     char uid[100];
     DcmFileFormat fileformat;
     DcmDataset *dataset = fileformat.getDataset();
     const char *uid_root = "1.2.826.0.1.3680043.8.274.1.1.200";
-    
-    dataset->putAndInsertString (DCM_SOPClassUID, UID_SecondaryCaptureImageStorage);
+
+    OFString date_string, time_string;
+    DcmDate::getCurrentDate (date_string);
+    DcmTime::getCurrentTime (time_string);
+
+    /* Is this needed? */
+    if (use_rtimage) {
+	dataset->putAndInsertString (DCM_ImageType, "ORIGINAL\\PRIMARY\\PORTAL");
+    }
+
+    /* At least we can set an instance creation Date/Time.  Should we set Study Date/Time too? */
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, date_string);
+    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, time_string);
+
+    if (use_rtimage) {
+	dataset->putAndInsertString (DCM_SOPClassUID, UID_RTImageStorage);
+    } else {
+	dataset->putAndInsertString (DCM_SOPClassUID, UID_SecondaryCaptureImageStorage);
+    }
     dataset->putAndInsertString (DCM_SOPInstanceUID, plm_generate_dicom_uid (uid, uid_root));
 
+    if (use_rtimage) {
+	dataset->putAndInsertString (DCM_Modality, "RTIMAGE");
+    }
     dataset->putAndInsertString (DCM_ConversionType, "WSD");
+
+    /* Mosaiq seems to like this */
+    if (use_rtimage) {
+	dataset->putAndInsertString (DCM_Manufacturer, "Varian Medical Systems");
+    }
+
     dataset->putAndInsertString (DCM_ReferringPhysiciansName, "");
     dataset->putAndInsertString (DCM_PatientsName, patient_name);
     dataset->putAndInsertString (DCM_PatientID, patient_id);
@@ -47,7 +75,7 @@ mondoshot_dicom_create_file (
     dataset->putAndInsertString (DCM_InstanceNumber, "");
     dataset->putAndInsertString (DCM_PatientOrientation, "");
 
-    if (rgb) {
+    if (use_rgb) {
 	dataset->putAndInsertString (DCM_SamplesPerPixel, "3");
 	dataset->putAndInsertString (DCM_PhotometricInterpretation, "RGB");
 	dataset->putAndInsertString (DCM_PlanarConfiguration, "0");
@@ -63,14 +91,7 @@ mondoshot_dicom_create_file (
     dataset->putAndInsertString (DCM_HighBit, "7");
     dataset->putAndInsertString (DCM_PixelRepresentation, "0");
 
-    /* At least we can set an instance creation Date/Time.  Should we set Study Date/Time too? */
-    OFString s;
-    DcmDate::getCurrentDate(s);
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationDate, s);
-    DcmTime::getCurrentTime(s);
-    dataset->putAndInsertOFStringArray(DCM_InstanceCreationTime, s);
-
-    if (rgb) {
+    if (use_rgb) {
 	dataset->putAndInsertUint8Array (DCM_PixelData, bytes, height * width * 3);
     } else {
 	dataset->putAndInsertUint8Array (DCM_PixelData, bytes, height * width);

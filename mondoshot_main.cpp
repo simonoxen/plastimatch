@@ -37,7 +37,8 @@ BEGIN_EVENT_TABLE(MyFrame, wxFrame)
     EVT_MENU(ID_MENU_SETTINGS, MyFrame::OnMenuSettings)
     EVT_MENU(ID_MENU_ABOUT, MyFrame::OnMenuAbout)
     EVT_HOTKEY(0xB000, MyFrame::OnHotKey1)
-    EVT_BUTTON(ID_BUTTON_SEND, MyFrame::OnButtonSend)
+    EVT_BUTTON(ID_BUTTON_SEND_PORTAL, MyFrame::OnButtonSend)
+    EVT_BUTTON(ID_BUTTON_SEND_SCREENSHOT, MyFrame::OnButtonSend)
     EVT_BUTTON(ID_BUTTON_CANCEL, MyFrame::OnButtonCancel)
     EVT_CLOSE(MyFrame::OnWindowClose)
 END_EVENT_TABLE()
@@ -132,7 +133,8 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
 
     m_panel = new wxPanel (this, -1);
 
-    wxButton *send = new wxButton (m_panel, ID_BUTTON_SEND, wxT("Send"));
+    wxButton *send_portal = new wxButton (m_panel, ID_BUTTON_SEND_PORTAL, wxT("Send Portal"));
+    wxButton *send_screenshot = new wxButton (m_panel, ID_BUTTON_SEND_SCREENSHOT, wxT("Send Screenshot"));
     wxButton *cancel = new wxButton (m_panel, ID_BUTTON_CANCEL, wxT("Cancel"));
 
     wxBoxSizer *vbox = new wxBoxSizer (wxVERTICAL);
@@ -185,7 +187,9 @@ MyFrame::MyFrame (const wxString& title, const wxPoint& pos, const wxSize& size)
     //hbox2->Add (new wxTextCtrl (m_panel, wxID_ANY), 1);
     //hbox2->Layout ();
 
-    hbox3->Add (send);
+    hbox3->Add (send_screenshot);
+    hbox3->AddSpacer (20);
+    hbox3->Add (send_portal);
     hbox3->AddSpacer (20);
     hbox3->Add (cancel);
 
@@ -234,7 +238,8 @@ MyFrame::OnWindowClose (wxCloseEvent& event)
     }
 }
 
-void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
+void
+MyFrame::OnButtonSend (wxCommandEvent& event)
 {
     wxString patient_name, patient_id;
 
@@ -307,6 +312,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	    image.GetWidth (),
 	    bytes, 
 	    0, 
+	    (event.GetId() == ID_BUTTON_SEND_PORTAL), 
 	    (const char*) patient_id,
 	    (const char*) patient_name,
 	    (const char*) dcm_filename);
@@ -321,6 +327,7 @@ void MyFrame::OnButtonSend (wxCommandEvent& WXUNUSED(event))
 	    image.GetWidth (),
 	    bytes, 
 	    0, 
+	    (event.GetId() == ID_BUTTON_SEND_PORTAL), 
 	    (const char*) patient_id,
 	    (const char*) patient_name,
 	    (const char*) storescu_filename);
@@ -473,7 +480,7 @@ Config_dialog::Config_dialog (wxWindow *parent)
     m_button_save->SetDefault();
 }
 
-void Config_dialog::OnButton(wxCommandEvent& event)
+void Config_dialog::OnButton (wxCommandEvent& event)
 {
     if (event.GetEventObject() == m_button_save) {
 

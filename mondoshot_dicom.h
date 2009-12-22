@@ -6,13 +6,14 @@
 
 bool 
 mondoshot_dicom_create_file (
-		int height,
-		int width,
-		unsigned char* bytes,
-		bool rgb,
-		const char *patient_id,
-		const char *patient_name,
-		const char *filename);
-
+    int height,
+    int width,
+    unsigned char* bytes,
+    bool use_rgb,
+    bool use_rtimage,
+    const char *patient_id,
+    const char *patient_name,
+    const char *filename
+);
 
 #endif

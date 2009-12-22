@@ -2,8 +2,8 @@
 
 if "%COMPUTERNAME%"=="ROSHAR" (
   echo Setting for ROSHAR
-  SET ITK_PATH=%HOME%\build\vs2005\itk-3.14.0\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\vs2005\plastimatch-3.14.0
+  SET ITK_PATH=%HOME%\build\vs2005\itk-3.16.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2005\plastimatch-3.16.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="COTTONTAIL" (
   echo Setting for COTTONTAIL
