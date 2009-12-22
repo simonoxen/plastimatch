@@ -1,0 +1,14 @@
+Version 1.4.0
+(Coming soon)
+*  First stable release
+*  Native grid-aligned B-spline registration (MSE: CUDA, OpenMP, MI: CPU)
+*  Native demons registration (Brook, CPU)
+*  Wrappers for some ITK registration transforms: translation, rigid, 
+   affine, B-spline, demons
+*  Global thin-plate spline warping (ITK), local RBF warping (native)
+*  Multistage registration framework
+*  FDK cone-beam reconstruction (CUDA, OpenMP)
+*  DRR generation (CUDA, OpenMP)
+*  Dicom image support, DicomRT structure set support
+*  3D slicer plugins
+*  Mondoshot screen capture program
