@@ -12,6 +12,7 @@
 #endif
 #include "adjust_main.h"
 #include "compare_main.h"
+#include "diff_main.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
 #include "plm_version.h"
@@ -28,6 +29,7 @@ print_usage (int return_code)
 	    "  adjust\n"
 	    "  compare\n"
 	    "  convert\n"
+	    "  diff\n"
 	    "  register\n"
 	    "  resample\n"
 	    "  stats\n"
@@ -78,6 +80,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */
 	do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "diff")) {
+	do_command_diff (argc, argv);
     }
     else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);

@@ -694,6 +694,7 @@ SET (PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
  	file_type.cxx file_type.h
 	compare_main.cxx compare_main.h
+	diff_main.cxx diff_main.h
 	plastimatch_main.cxx
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h

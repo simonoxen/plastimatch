@@ -30,9 +30,6 @@
 #define IMPLEMENTATION_NONE		    0
 #define IMPLEMENTATION_ITK		    1
 #define IMPLEMENTATION_PLASTIMATCH          2
-//#define IMPLEMENTATION_GPUIT_CPU	    2
-//#define IMPLEMENTATION_GPUIT_BROOK	    3
-//#define IMPLEMENTATION_GPUIT_CUDA	    4
 
 #define THREADING_SINGLE                    0
 #define THREADING_OPENMP                    1
@@ -54,6 +51,7 @@
 
 class Stage_Parms {
 public:
+    /* Generic optimization parms */
     int xform_type;
     int optim_type;
     int impl_type;
@@ -62,26 +60,34 @@ public:
     int metric_type;
     int fixed_subsample_rate[3];   /* In voxels */
     int moving_subsample_rate[3];  /* In voxels */
+    /* Intensity values for air */
     float background_max;          /* Threshold to find the valid region */
     float background_val;          /* Replacement when out-of-view */
+    /* Generic optimization parms */
     int min_its;
     int max_its;
     float grad_tol;
     float convergence_tol;
+    /* Versor & RSG optimizer */
     float max_step;
     float min_step;
+    /* Mattes mutual information */
     int mi_histogram_bins;
     int mi_num_spatial_samples;
+    /* ITK & GPUIT demons */
     float demons_std;
+    /* GPUIT demons */
     float demons_acceleration;
     float demons_homogenization;
     int demons_filter_width[3];
+    /* ITK amoeba */
     float amoeba_parameter_tol;
+    /* Bspline parms */
     int num_grid[3];     // number of grid points in x,y,z directions
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
-    int grid_method;     // which grid method used, numbers (0) or absolute spacing (1)
+    int grid_method;     // num control points (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
-
+    /* Output files */
     int img_out_fmt;
     int img_out_type;
     char img_out_fn[_MAX_PATH];
@@ -94,6 +100,8 @@ public:
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
 	impl_type = IMPLEMENTATION_ITK;
+	alg_flavor = 'c';
+	threading_type = THREADING_SINGLE;
 	metric_type = METRIC_MSE;
 	fixed_subsample_rate[0] = 4;
 	fixed_subsample_rate[1] = 4;
