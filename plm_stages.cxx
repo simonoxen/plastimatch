@@ -158,6 +158,7 @@ save_output (
     Registration_Data* regd, 
     Xform *xf_out, 
     char *xf_out_fn,
+    int img_out_fmt,
     char *img_out_fn,
     char *vf_out_fn
 )
@@ -194,7 +195,11 @@ save_output (
 
 	if (img_out_fn[0]) {
 	    logfile_printf ("Saving image...\n");
-	    im_warped.save_image (img_out_fn);
+	    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
+		im_warped.save_image (img_out_fn);
+	    } else {
+		im_warped.save_short_dicom (img_out_fn);
+	    }
 	}
 	if (vf_out_fn[0]) {
 	    logfile_printf ("Saving vf...\n");
@@ -242,9 +247,8 @@ do_registration_stage (Registration_Parms* regp,
 		    xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
-    //save_stage_output (regd, xf_out, stage);
-    save_output (regd, xf_out, stage->xf_out_fn, stage->img_out_fn, 
-	stage->vf_out_fn);
+    save_output (regd, xf_out, stage->xf_out_fn, 
+	stage->img_out_fmt, stage->img_out_fn, stage->vf_out_fn);
 }
 
 static void
@@ -329,9 +333,8 @@ do_registration (Registration_Parms* regp)
     /* RMK: If no stages, we still generate output (same as input) */
 
     timer3.Start();
-    //save_regp_output_itk (&regd, xf_out, regp);
-    save_output (&regd, xf_out, regp->xf_out_fn, regp->img_out_fn, 
-	regp->vf_out_fn);
+    save_output (&regd, xf_out, regp->xf_out_fn, 
+	regp->img_out_fmt, regp->img_out_fn, regp->vf_out_fn);
     timer3.Stop();
 
     logfile_printf (
