@@ -11,6 +11,11 @@ CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
 ## Tell CMake to be quiet
 CMAKE_POLICY (SET CMP0003 NEW)
 
+## Default to release
+IF (NOT CMAKE_BUILD_TYPE)
+  SET (CMAKE_BUILD_TYPE Release)
+ENDIF (NOT CMAKE_BUILD_TYPE)
+
 ##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
@@ -545,6 +550,9 @@ SET (COMPUTE_DISTANCE_SRC
 	closest_point.cxx 
 	read_obj.cxx
 	)
+SET (COMPUTE_MEAN_IMAGE_SRC
+	compute_mean_image_main.cxx
+	)
 SET (CUDA_PROBE_SRC
 	cuda_probe_main.c
 	cuda_probe.cu
@@ -711,10 +719,11 @@ SET (PLASTIMATCH_SLICER_TPS_SRC
 	)
 SET (PLASTIMATCH_QT_SRC
         plastimatch_qt_main.cxx
+	pqt_main_window.cxx pqt_main_window.h
 	)
-SET (COMPUTE_MEAN_IMAGE_SRC
-	compute_mean_image_main.cxx
-	)
+IF (QT4_FOUND)
+  QT4_WRAP_CPP (PLASTIMATCH_QT_SRC pqt_main_window.h)
+ENDIF (QT4_FOUND)
 SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	render_polyline.cxx render_polyline.h
@@ -749,8 +758,8 @@ SET (XIO_TO_CXT_SRC
 	xio_to_cxt.cxx
 	)
 
-CHECK_FUNCTION_EXISTS(getopt_long HAVE_GETOPT_LONG)
-IF(NOT HAVE_GETOPT_LONG)
+CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
+IF (NOT HAVE_GETOPT_LONG)
     SET (CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
     SET (CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
     SET (CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
@@ -766,7 +775,7 @@ IF(NOT HAVE_GETOPT_LONG)
     SET (VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
     SET (XIO_TO_CXT_SRC ${XIO_TO_CXT_SRC} getopt_long.c getopt.h)
     SET (XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
-ENDIF(NOT HAVE_GETOPT_LONG)
+ENDIF (NOT HAVE_GETOPT_LONG)
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
@@ -783,10 +792,10 @@ ENDIF(OPENMP_FOUND)
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILE
 ##-----------------------------------------------------------------------------
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
-CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.cmake 
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.cmake 
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 
 IF (CMAKE_Fortran_COMPILER_WORKS)
