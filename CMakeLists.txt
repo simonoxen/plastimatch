@@ -718,7 +718,7 @@ SET (PLASTIMATCH_SLICER_TPS_SRC
         plastimatch-slicer-tps.cxx
 	)
 SET (PLASTIMATCH_QT_SRC
-        plastimatch_qt_main.cxx
+        pqt_main.cxx
 	pqt_main_window.cxx pqt_main_window.h
 	)
 IF (QT4_FOUND)
