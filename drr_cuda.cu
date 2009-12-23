@@ -533,16 +533,211 @@ int CUDA_DRR (Volume *vol, Drr_options *options)
 
 //DRR3 uses 3D textures and pre-calculated coefs to accelerate DRR generation.
 
+void*
+drr_cuda_state_create (
+    Proj_image *proj,
+    Volume *vol,
+    Drr_options *options
+)
+{
+    Drr_cuda_state *state;
+    Drr_kernel_args *kargs;
+
+    state = (Drr_cuda_state *) malloc (sizeof(Drr_cuda_state));
+    memset (state, 0, sizeof(Drr_cuda_state));
+
+    state->kargs = kargs = (Drr_kernel_args*) malloc (sizeof(Drr_kernel_args));
+    cudaMalloc ((void**) &state->dev_matrix, 12 * sizeof(float));
+    cudaMalloc ((void**) &state->dev_kargs, sizeof(Drr_kernel_args));
+
+    kargs->vol_offset.x = vol->offset[0];
+    kargs->vol_offset.y = vol->offset[1];
+    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_dim.x = vol->dim[0];
+    kargs->vol_dim.y = vol->dim[1];
+    kargs->vol_dim.z = vol->dim[2];
+    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
+    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
+    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+
+    // prepare texture
+    cudaChannelFormatDesc ca_descriptor;
+    cudaExtent ca_extent;
+    cudaArray *dev_3Dvol=0;
+
+    ca_descriptor = cudaCreateChannelDesc<float>();
+    ca_extent.width  = vol->dim[0];
+    ca_extent.height = vol->dim[1];
+    ca_extent.depth  = vol->dim[2];
+    cudaMalloc3DArray (&dev_3Dvol, &ca_descriptor, ca_extent);
+    cudaBindTextureToArray (tex_3Dvol, dev_3Dvol, ca_descriptor);
+
+    cudaMemcpy3DParms cpy_params = {0};
+    cpy_params.extent   = ca_extent;
+    cpy_params.kind     = cudaMemcpyHostToDevice;
+    cpy_params.dstArray = dev_3Dvol;
+
+    //http://sites.google.com/site/cudaiap2009/cookbook-1#TOC-CUDA-3D-Texture-Example-Gerald-Dall
+    // The pitched pointer is really tricky to get right. We give the
+    // pitch of a row, then the number of elements in a row, then the
+    // height, and we omit the 3rd dimension.
+    cpy_params.srcPtr = make_cudaPitchedPtr ((void*)vol->img, 
+	ca_extent.width * sizeof(float), ca_extent.width , ca_extent.height);
+
+    cudaMemcpy3D (&cpy_params);
+
+    cudaMalloc ((void**) &state->dev_img, 
+	options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
+
+    cudaMalloc ((void**) &state->dev_coef, 
+	7 * options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
+    checkCUDAError ("Unable to allocate coef devmem");
+    state->host_coef = (float*) malloc (
+	7 * options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
+		
+    return (void*) state;
+}
+
+void
+drr_cuda_state_destroy (
+    void *void_state
+)
+{
+    Drr_cuda_state *state = (Drr_cuda_state*) void_state;
+    
+    cudaFree (state->dev_img);
+    cudaFree (state->dev_kargs);
+    cudaFree (state->dev_matrix);
+    cudaFree (state->dev_coef);
+    free (state->host_coef);
+    free (state->kargs);
+}
+
 void
 drr_cuda_render_volume_perspective (
     Proj_image *proj,
+    void *void_state,
     Volume *vol, 
     double ps[2], 
     char *multispectral_fn, 
     Drr_options *options
 )
 {
-    
+    Timer timer, total_timer;
+    double time_kernel = 0;
+    double time_io = 0;
+    int i;
+
+    // CUDA device pointers
+    Drr_cuda_state *state = (Drr_cuda_state*) void_state;
+    Drr_kernel_args *kargs = state->kargs;
+    float *host_coef = state->host_coef;
+
+    // Start the timer
+    plm_timer_start (&total_timer);
+    plm_timer_start (&timer);
+
+    // Load dynamic kernel arguments
+    kargs->img_dim.x = proj->dim[0];
+    kargs->img_dim.y = proj->dim[1];
+    kargs->ic.x = proj->pmat->ic[0];
+    kargs->ic.y = proj->pmat->ic[1];
+    kargs->nrm.x = proj->pmat->nrm[0];
+    kargs->nrm.y = proj->pmat->nrm[1];
+    kargs->nrm.z = proj->pmat->nrm[2];
+    kargs->sad = proj->pmat->sad;
+    kargs->sid = proj->pmat->sid;
+    for (i = 0; i < 12; i++) {
+	kargs->matrix[i] = (float) proj->pmat->matrix[i];
+    }
+
+    // Precalculate coeff
+    int xy7;
+    double * ic=proj->pmat->ic;
+    for (int x=0;x<proj->dim[0];x++) {
+	for (int y=0; y<proj->dim[1];y++) {
+	    xy7=7*(y*proj->dim[0]+x);
+	    host_coef[xy7]  =((y-ic[1])*proj->pmat->matrix[8]-proj->pmat->matrix[4])/(proj->pmat->matrix[5]-(y-ic[1])*proj->pmat->matrix[9]);
+	    host_coef[xy7+2]=((y-ic[1])*proj->pmat->matrix[9]-proj->pmat->matrix[5])/(proj->pmat->matrix[4]-(y-ic[1])*proj->pmat->matrix[8]);
+	    host_coef[xy7+1]=(y-ic[1])*proj->pmat->matrix[11]/(proj->pmat->matrix[5]-(y-ic[1])*proj->pmat->matrix[9]);
+	    host_coef[xy7+3]=(y-ic[1])*proj->pmat->matrix[11]/(proj->pmat->matrix[4]-(y-ic[1])*proj->pmat->matrix[8]);
+	    host_coef[xy7+4]=(x-ic[0])*proj->pmat->matrix[8]/proj->pmat->matrix[2];
+	    host_coef[xy7+5]=(x-ic[0])*proj->pmat->matrix[9]/proj->pmat->matrix[2];
+	    host_coef[xy7+6]=(x-ic[0])*proj->pmat->matrix[11]/proj->pmat->matrix[2];
+	}
+    }
+
+    time_io += plm_timer_report (&timer);
+    plm_timer_start (&timer);
+
+    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+	cudaMemcpyHostToDevice);
+
+    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+
+    cudaMemcpy (state->dev_coef, host_coef, 
+	7 * proj->dim[0] * proj->dim[1] * sizeof(float), 
+	cudaMemcpyHostToDevice);
+
+    cudaBindTexture (0, tex_coef, state->dev_coef, 
+	7 * proj->dim[0] * proj->dim[1] * sizeof(float));
+
+    // Thead Block Dimensions
+    int tBlock_x = vol->dim[0];
+    int tBlock_y = 1;
+    int tBlock_z = 1;
+
+    // Each element in the volume (each voxel) gets 1 thread
+    int blocksInX = proj->dim[0];
+    int blocksInY = proj->dim[1];
+    dim3 dimGrid  = dim3(blocksInX, blocksInY);
+    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+
+    // Invoke ze kernel  \(^_^)/
+    // Note: proj->img AND proj->matrix are passed via texture memory
+
+    int smemSize = vol->dim[0]  * sizeof(float);
+
+    plm_timer_start (&timer);
+
+    //-------------------------------------
+    kernel_drr_i3<<< dimGrid, dimBlock,  smemSize>>> (
+	state->dev_img, 
+	kargs->img_dim,
+	kargs->ic,
+	kargs->nrm,
+	kargs->sad,
+	kargs->scale,
+	kargs->vol_offset,
+	kargs->vol_dim,
+	kargs->vol_pix_spacing);
+
+    checkCUDAError("Kernel Panic!");
+
+#if defined (TIME_KERNEL)
+    // CUDA kernel calls are asynchronous...
+    // In order to accurately time the kernel
+    // execution time we need to set a thread
+    // barrier here after its execution.
+    cudaThreadSynchronize();
+#endif
+
+    time_kernel += plm_timer_report (&timer);
+
+    // Unbind the image and projection matrix textures
+    //cudaUnbindTexture( tex_img );
+    cudaUnbindTexture (tex_matrix);
+    cudaUnbindTexture (tex_coef);
+
+    // Copy reconstructed volume from device to host
+    //cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
+    cudaMemcpy (proj->img, state->dev_img, 
+	proj->dim[0] * proj->dim[1] * sizeof(float), 
+	cudaMemcpyDeviceToHost);
+    checkCUDAError("Error: Unable to retrieve data volume.");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -581,12 +776,6 @@ int CUDA_DRR3 (Volume *vol, Drr_options *options)
     kargs->vol_pix_spacing.x = vol->pix_spacing[0];
     kargs->vol_pix_spacing.y = vol->pix_spacing[1];
     kargs->vol_pix_spacing.z = vol->pix_spacing[2];
-
-    //Create DRR directory
-    char drr_dir[1024];
-    //    sprintf (drr_dir, "%s/DRR", options->input_dir);
-    //    make_directory (drr_dir);
-    printf ("GCS: Warning, output prefix not yet handled in cuda...\n");
 
     // prepare texture
     cudaChannelFormatDesc ca_descriptor;

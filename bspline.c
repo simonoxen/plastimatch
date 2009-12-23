@@ -3761,7 +3761,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
     }
 
 #if (CUDA_FOUND)
-    if(parms->threading == BTHR_CUDA) {
+    if (parms->threading == BTHR_CUDA) {
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_clean_up ();

@@ -85,7 +85,7 @@ do_gpuit_bspline_stage_internal (
     switch (stage->threading_type) {
     case THREADING_SINGLE:
 	if (stage->alg_flavor == 0) {
-	    parms.implementation = 'c';
+	    parms.implementation = 'h';
 	} else {
 	    parms.implementation = stage->alg_flavor;
 	}

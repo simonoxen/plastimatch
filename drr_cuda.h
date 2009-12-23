@@ -16,9 +16,21 @@ extern "C" {
 int CUDA_DRR3 (Volume *vol, Drr_options *options);
 int CUDA_DRR (Volume *vol, Drr_options *options);
 
+void*
+drr_cuda_state_create (
+    Proj_image *proj,
+    Volume *vol,
+    Drr_options *options
+);
+void
+drr_cuda_state_destroy (
+    void *void_state
+);
+
 void
 drr_cuda_render_volume_perspective (
     Proj_image *proj,
+    void *state,
     Volume *vol, 
     double ps[2], 
     char *multispectral_fn, 

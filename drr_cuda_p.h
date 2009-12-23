@@ -23,4 +23,15 @@ struct drr_kernel_args
     //padding to 128Bytes
 };
 
+typedef struct drr_cuda_state Drr_cuda_state;
+struct drr_cuda_state
+{
+    Drr_kernel_args *kargs;
+    Drr_kernel_args *dev_kargs;     // Holds kernel parameters on device
+    float *dev_img;	            // Holds image pixels on device
+    float *dev_matrix;
+    float *dev_coef;
+    float *host_coef;
+};
+
 #endif

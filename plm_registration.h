@@ -100,7 +100,7 @@ public:
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
 	impl_type = IMPLEMENTATION_ITK;
-	alg_flavor = 'c';
+	alg_flavor = 0;
 	threading_type = THREADING_SINGLE;
 	metric_type = METRIC_MSE;
 	fixed_subsample_rate[0] = 4;

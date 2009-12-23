@@ -10,6 +10,7 @@
 #endif
 #include "mathutil.h"
 #include "drr.h"
+#include "drr_cuda.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
 #include "proj_image.h"
@@ -517,6 +518,27 @@ drr_render_volume_perspective (
     }
 }
 
+static void*
+allocate_gpu_memory (
+    Proj_image *proj, 
+    Volume *vol,
+    Drr_options *options
+)
+{
+#if CUDA_FOUND
+    switch (options->threading) {
+    case THREADING_BROOK:
+    case THREADING_CUDA:
+	return drr_cuda_state_create (proj, vol, options);
+    default:
+    case THREADING_CPU:
+	return 0;
+    }
+#else
+    return 0;
+#endif
+}
+
 /* All distances in mm */
 void
 drr_render_volume (Volume* vol, Drr_options* options)
@@ -525,6 +547,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     Proj_matrix *pmat;
     int a;
     Timer timer;
+    void *dev_state = 0;
 
     /* tgt is zero because we shifted volume. */
     double vup[3] = {0.0, 0.0, 1.0};
@@ -560,6 +583,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
     proj_image_create_pmat (proj);
     proj_image_create_img (proj, ires);
     pmat = proj->pmat;
+
+    /* Allocate memory on the gpu device */
+    dev_state = allocate_gpu_memory (proj, vol, options);
 
     /* Loop through camera angles */
     for (a = 0; a < options->num_angles; a++) {
@@ -597,9 +623,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	switch (options->threading) {
 	case THREADING_BROOK:
 	case THREADING_CUDA:
-#if defined (CUDA_FOUND)
+#if CUDA_FOUND
 	    drr_cuda_render_volume_perspective (
-		proj, vol, ps, multispectral_fn, options);
+		proj, vol, dev_state, ps, multispectral_fn, options);
 	    //CUDA_DRR3 (vol, &options);
 	    break;
 #else
@@ -615,8 +641,13 @@ drr_render_volume (Volume* vol, Drr_options* options)
     }
     proj_image_destroy (proj);
 
-    printf ("Total time: %g secs\n", plm_timer_report (&timer));
+#if CUDA_FOUND
+    if (dev_state) {
+	drr_cuda_state_destroy (dev_state);
+    }
+#endif
 
+    printf ("Total time: %g secs\n", plm_timer_report (&timer));
 }
 
 void
