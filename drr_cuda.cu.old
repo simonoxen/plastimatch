@@ -42,7 +42,14 @@
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
 void checkCUDAError(const char *msg);
+
+__global__ void kernel_drr_i (float * dev_img,  float * dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
+
 __global__ void kernel_drr_i3 (float * dev_vol,  int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
+
+__global__ void kernel_drr_j (float * dev_img,  float * dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
+
+///////////////////////////////////////////////////////////////////////////
 
 
 
@@ -51,9 +58,175 @@ texture<float, 1, cudaReadModeElementType> tex_img;
 texture<float, 1, cudaReadModeElementType> tex_matrix;
 texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
+///////////////////////////////////////////////////////////////////////////
 
 
-// uses 3D textures and pre-calculated coefs to accelerate DRR generation.
+
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+// K E R N E L S -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_( S T A R T )_
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+__global__
+void kernel_drr_i (float * dev_vol,  float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
+{
+    // CUDA 2.0 does not allow for a 3D grid, which severely
+    // limits the manipulation of large 3D arrays of data.  The
+    // following code is a hack to bypass this implementation
+    // limitation.
+    extern __shared__ float sdata[];
+    float3 ip;
+    float3 vp;
+    int i,j,k;
+    long int vol_idx;
+
+    unsigned int tid = threadIdx.x;
+
+    ip.x = __int2float_rn(blockIdx.x)-ic.x;
+    ip.y = __int2float_rn(blockIdx.y)-ic.y;
+	
+    vp.x=vol_offset.x+threadIdx.x*vol_pix_spacing.x;
+
+    vp.y=(ip.y*tex1Dfetch(tex_matrix, 8)-tex1Dfetch(tex_matrix, 4))*vp.x+ip.y*tex1Dfetch(tex_matrix, 11);
+
+    vp.y/=tex1Dfetch(tex_matrix, 5)-ip.y*tex1Dfetch(tex_matrix, 9);
+
+    vp.z=ip.x*(tex1Dfetch(tex_matrix, 8)*vp.x+tex1Dfetch(tex_matrix, 9)*vp.y+tex1Dfetch(tex_matrix, 11));
+
+    vp.z/=tex1Dfetch(tex_matrix, 2);
+
+    i=  threadIdx.x;
+
+    j=  __float2int_rd((vp.y-vol_offset.y)/vol_pix_spacing.y);
+
+    k=  __float2int_rd((vp.z-vol_offset.z)/vol_pix_spacing.z);
+
+    if (j<0||j>=vol_dim.y||k<0||k>=vol_dim.z)
+
+	sdata[tid]=0.0f;
+    else{
+	vol_idx = i + ( j*(vol_dim.x) ) + ( k*(vol_dim.x)*(vol_dim.y) );
+	sdata[tid]=(dev_vol[vol_idx]+1000.0f);
+    }
+
+    __syncthreads();
+
+    // do reduction in shared mem
+    for(unsigned int s=blockDim.x/2; s>32; s>>=1) 
+    {
+        if (tid < s)
+            sdata[tid] += sdata[tid + s];
+        __syncthreads();
+    }
+
+#ifndef __DEVICE_EMULATION__
+    if (tid < 32)
+#endif
+    {
+        sdata[tid] += sdata[tid + 32]; EMUSYNC;
+        sdata[tid] += sdata[tid + 16]; EMUSYNC;
+        sdata[tid] += sdata[tid +  8]; EMUSYNC;
+        sdata[tid] += sdata[tid +  4]; EMUSYNC;
+        sdata[tid] += sdata[tid +  2]; EMUSYNC;
+        sdata[tid] += sdata[tid +  1]; EMUSYNC;
+    }
+
+    // do reduction in shared mem
+
+
+
+
+
+    // write result for this block to global mem
+    if (tid == 0) 
+	dev_img[blockIdx.x*img_dim.y + blockIdx.y] = sdata[0];
+
+
+}
+
+void kernel_drr_j (float * dev_vol,  float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
+{
+	// CUDA 2.0 does not allow for a 3D grid, which severely
+	// limits the manipulation of large 3D arrays of data.  The
+	// following code is a hack to bypass this implementation
+	// limitation.
+	extern __shared__ float sdata[];
+	float3 ip;
+	float3 vp;
+	int i,j,k;
+	long int vol_idx;
+
+	unsigned int tid = threadIdx.x;
+
+	ip.y = __int2float_rn(blockIdx.y)-ic.y;
+	ip.x = __int2float_rn(blockIdx.x)-ic.x;
+	
+	vp.y=vol_offset.y+threadIdx.x*vol_pix_spacing.y;
+
+	vp.x=(ip.y*tex1Dfetch(tex_matrix, 9)-tex1Dfetch(tex_matrix, 5))*vp.y+ip.y*tex1Dfetch(tex_matrix, 11);
+
+	vp.x/=tex1Dfetch(tex_matrix, 4)-ip.y*tex1Dfetch(tex_matrix, 8);
+
+	vp.z=ip.x*(tex1Dfetch(tex_matrix, 8)*vp.x+tex1Dfetch(tex_matrix, 9)*vp.y+tex1Dfetch(tex_matrix, 11));
+
+	vp.z/=tex1Dfetch(tex_matrix, 2);
+
+	i=  __float2int_rd((vp.x-vol_offset.x)/vol_pix_spacing.x);
+
+	j=  threadIdx.x;
+
+	k=  __float2int_rd((vp.z-vol_offset.z)/vol_pix_spacing.z);
+
+	if (i<0||i>=vol_dim.x||k<0||k>=vol_dim.z)
+
+		sdata[tid]=0.0f;
+	else{
+		//wrong?
+		 vol_idx = i + ( j*(vol_dim.x) ) + ( k*(vol_dim.x)*(vol_dim.y) );
+		sdata[tid]=(dev_vol[vol_idx]+1000.0f);
+		if (sdata[tid]<0)	sdata[tid]=0;
+		if (sdata[tid]>2000) sdata[tid]=2000;
+	}
+
+	__syncthreads();
+
+	  // do reduction in shared mem
+    for(unsigned int s=blockDim.x/2; s>32; s>>=1) 
+    {
+        if (tid < s)
+            sdata[tid] += sdata[tid + s];
+        __syncthreads();
+    }
+
+#ifndef __DEVICE_EMULATION__
+    if (tid < 32)
+#endif
+    {
+        sdata[tid] += sdata[tid + 32]; EMUSYNC;
+        sdata[tid] += sdata[tid + 16]; EMUSYNC;
+        sdata[tid] += sdata[tid +  8]; EMUSYNC;
+        sdata[tid] += sdata[tid +  4]; EMUSYNC;
+        sdata[tid] += sdata[tid +  2]; EMUSYNC;
+        sdata[tid] += sdata[tid +  1]; EMUSYNC;
+    }
+
+  //  // do reduction in shared mem
+  //  for(unsigned int s=blockDim.x/2; s>0; s>>=1) {
+  //      if (tid < s) {
+  //          sdata[tid] += sdata[tid + s];
+  //      }
+  //      __syncthreads();
+  //  }
+
+  //  // write result for this block to global mem
+  //  if (tid == 0) 
+		//dev_img[blockIdx.x*img_dim.y + blockIdx.y] = sdata[0];
+
+
+}
+
+
+//DRR3  uses 3D textures and pre-calculated coefs to accelerate DRR generation.
+
 void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
 {
     // CUDA 2.0 does not allow for a 3D grid, which severely
@@ -136,6 +309,229 @@ void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float 
     if (tid == 0) 
 	dev_img[blockIdx.x*img_dim.y + blockIdx.y] = sdata[0];
 }
+
+
+
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+// K E R N E L S -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-( E N D )-_-_
+//_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// FUNCTION: CUDA_DRR() //////////////////////////////////
+#if defined (commentout)
+extern "C"
+int CUDA_DRR (Volume *vol, Drr_options *options)
+{
+    Timer timer, total_timer;
+    double time_kernel = 0;
+    double time_io = 0;
+    double time_total = 0;
+    Drr_kernel_args *kargs;
+    Proj_image* cbi;
+    int image_num;
+    int a, i;
+
+    // CUDA device pointers
+    float *dev_vol;	            // Holds voxels on device
+    float *dev_img;	            // Holds image pixels on device
+    float *dev_matrix;
+    Drr_kernel_args *dev_kargs; // Holds kernel parameters
+
+    // Start the timer
+    plm_timer_start (&total_timer);
+
+    cudaMalloc ((void**)&dev_matrix, 12*sizeof(float) );
+    cudaMalloc ((void**)&dev_kargs, sizeof (Drr_kernel_args));
+    kargs = (Drr_kernel_args *) malloc (sizeof(Drr_kernel_args));
+    kargs->vol_offset.x = vol->offset[0];
+    kargs->vol_offset.y = vol->offset[1];
+    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_dim.x = vol->dim[0];
+    kargs->vol_dim.y = vol->dim[1];
+    kargs->vol_dim.z = vol->dim[2];
+    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
+    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
+    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+
+    cudaMalloc( (void**)&dev_vol, vol->npix*sizeof(float));
+    checkCUDAError("Unable to allocate data volume");
+	
+    cudaMalloc ((void**)&dev_img, 
+	options->image_resolution[0] * options->image_resolution[1] 
+	* sizeof(float));
+
+    for (a = 0; a < options->num_angles; a++)
+    {
+	plm_timer_start (&timer);
+
+	/* Copied from drr_c.c */
+	double vup[3] = {0, 0, 1};
+	double tgt[3] = {0.0, 0.0, 0.0};
+	double nrm[3];
+	double tmp[3];
+	double cam[3];
+	cam[0] = cos(angle);
+	cam[1] = sin(angle);
+	cam[2] = 0.0;
+	vec3_sub3 (nrm, tgt, cam);
+	vec3_normalize1 (nrm);
+	vec3_scale3 (tmp, nrm, sad);
+	vec3_copy (cam, tgt);
+	vec3_sub2 (cam, tmp);
+
+	// Load dynamic kernel arguments
+	kargs->img_dim.x = options->image_resolution[0];
+	kargs->img_dim.y = options->image_resolution[1];
+	kargs->ic.x = options->image_center[0];
+	kargs->ic.y = options->image_center[1];
+	kargs->nrm.x = nrm[0];
+	kargs->nrm.y = nrm[1];
+	kargs->nrm.z = nrm[2];
+	kargs->sad = options->sad;
+	kargs->sid = options->sid;
+	for (i=0; i<12; i++) {
+	    kargs->matrix[i] = (float) cbi->matrix[i];
+	}
+
+	cudaMemcpy (dev_vol, vol->img, vol->npix * vol->pix_size, 
+	    cudaMemcpyHostToDevice);
+	cudaMemcpy (dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+	    cudaMemcpyHostToDevice );
+	cudaBindTexture( 0, tex_matrix, dev_matrix, sizeof(kargs->matrix)); 
+
+	time_io += plm_timer_report (&timer);
+	plm_timer_start (&timer);
+
+	// Thead Block Dimensions
+	int tBlock_x = vol->dim[0];
+	int tBlock_y = 1;
+	int tBlock_z = 1;
+
+	// Each element in the volume (each voxel) gets 1 thread
+	int blocksInX = cbi->dim[0];
+	int blocksInY = cbi->dim[1];
+	dim3 dimGrid  = dim3(blocksInX, blocksInY);
+	dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+
+	// Invoke ze kernel  \(^_^)/
+
+	int smemSize = vol->dim[0]  * sizeof(float);
+	if (abs(kargs->matrix[5])>abs(kargs->matrix[4]))
+	    //-------------------------------------
+	    kernel_drr_i<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
+		kargs->img_dim,
+		kargs->ic,
+		kargs->nrm,
+		kargs->sad,
+		kargs->scale,
+		kargs->vol_offset,
+		kargs->vol_dim,
+		kargs->vol_pix_spacing);
+	else
+	    //-------------------------------------
+	    kernel_drr_j<<< dimGrid, dimBlock,  smemSize>>>(dev_vol,dev_img,
+		kargs->img_dim,
+		kargs->ic,
+		kargs->nrm,
+		kargs->sad,
+		kargs->scale,
+		kargs->vol_offset,
+		kargs->vol_dim,
+		kargs->vol_pix_spacing);
+	checkCUDAError("Kernel Panic!");
+	printf (" %d\n", image_num);
+
+#if defined (TIME_KERNEL)
+	// CUDA kernel calls are asynchronous...
+	// In order to accurately time the kernel
+	// execution time we need to set a thread
+	// barrier here after its execution.
+	cudaThreadSynchronize();
+#endif
+
+	// Unbind the image and projection matrix textures
+	//cudaUnbindTexture( tex_img );
+	cudaUnbindTexture( tex_matrix );
+
+	// Copy reconstructed volume from device to host
+	cudaMemcpy (cbi->img, dev_img, cbi->dim[0] * cbi->dim[1] * sizeof(float), cudaMemcpyDeviceToHost);
+	checkCUDAError ("Error: Unable to retrieve data volume.");
+		
+	char img_file[1024];
+	
+	size_t rc;
+	FILE* fp;
+	//sprintf (fmt, "%s\\%s\\%s", options->input_dir,options->sub_dir,img_file_pat);
+	//sprintf (fmt, "%s\\%s", options->input_dir,img_file_pat);
+	//   sprintf (img_file, fmt, image_num);
+	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+	//   sprintf (mat_file, fmt, image_num);
+	//   return load_and_filter_cb_image (options,img_file, mat_file);
+	sprintf (img_file, "%s\\DRR\\Proj_%03d.raw", options->input_dir,image_num);
+	//   sprintf (img_file, fmt, image_num);
+	//   sprintf (fmt, "%s\\%s", options->input_dir, mat_file_pat);
+
+
+
+
+	fp = fopen (img_file,"wb");
+	if (!fp) {
+	    fprintf (stderr, "Can't open file %s for write\n. Skipped", img_file);
+	    return(1);
+	}
+	float writeimg[512*384];
+	for (int i=0; i<512*384; i++)
+	    writeimg[i]=65535*exp(-cbi->img[i]/30000);
+
+
+	/* write pixels */
+	rc = fwrite (writeimg , sizeof(float),  512* 384, fp); 
+	if (rc != 512 * 384) {
+	    fprintf (stderr, "Couldn't write raster data for %s\n",
+		img_file);
+	    return(1);
+	}
+	printf("Writing OK\n");
+			
+	fclose(fp);
+
+	time_kernel += plm_timer_report (&timer);
+    }
+
+#if defined (VERBOSE)
+    printf(" done.\n\n");
+#endif
+	
+    // Report Timing Data
+    time_total = plm_timer_report (&total_timer);
+    printf("========================================\n");
+    printf ("[Total Execution Time: %.9fs ]\n", time_total);
+#if defined (TIME_KERNEL)
+    printf ("\tTotal Kernel  Time: %.9fs\n", time_kernel);
+    printf ("\tTotal File IO Time: %.9fs\n\n", time_io);
+#endif
+
+    printf ("[Average Projection Time: %.9fs ]\n", time_total / (1+(options->last_img - options->first_img) / options->skip_img));
+#if defined (TIME_KERNEL)
+    printf ("\tAverage Kernel  Time: %.9fs\n", time_kernel / (1+(options->last_img - options->first_img) / options->skip_img));
+    printf ("\tAverage File IO Time: %.9fs\n\n", time_io / (1+(options->last_img - options->first_img) / options->skip_img));
+#endif
+    printf("========================================\n");
+
+    // Cleanup
+    cudaFree( dev_img );
+    cudaFree( dev_kargs );
+    cudaFree( dev_matrix );
+    cudaFree( dev_vol );	
+
+    return 0;
+}
+#endif
+
+//DRR3 uses 3D textures and pre-calculated coefs to accelerate DRR generation.
 
 void*
 drr_cuda_state_create (

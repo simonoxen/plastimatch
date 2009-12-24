@@ -624,8 +624,9 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	case THREADING_BROOK:
 	case THREADING_CUDA:
 #if CUDA_FOUND
+	    printf ("Calling drr_cuda_render_volume_perspective\n");
 	    drr_cuda_render_volume_perspective (
-		proj, vol, dev_state, ps, multispectral_fn, options);
+		proj, dev_state, vol, ps, multispectral_fn, options);
 	    //CUDA_DRR3 (vol, &options);
 	    break;
 #else
