@@ -12,9 +12,12 @@ int
 main (int argc, char **argv)
 {
     QApplication app (argc, argv);
-    QLabel *label = new QLabel("Hello World!");
-  
-    label->show();
+
+    Pqt_main_window pqt_main_window;
+    pqt_main_window.show ();
+
+    //QLabel *label = new QLabel("Hello World!");
+    //label->show();
 
     return app.exec();
 }

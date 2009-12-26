@@ -5,21 +5,21 @@
 #define _pqt_main_window_h_
 
 #include "plm_config.h"
-#include <QDialog>
+#include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
-class QAction;
-class QDialogButtonBox;
-class QGroupBox;
-class QLabel;
-class QLineEdit;
+// class QAction;
+// class QDialogButtonBox;
+// class QGroupBox;
+// class QLabel;
+// class QLineEdit;
 class QMenu;
-class QMenuBar;
-class QPushButton;
-class QTextEdit;
+// class QMenuBar;
+// class QPushButton;
+// class QTextEdit;
 QT_END_NAMESPACE
 
-class Pqt_main_window : public QDialog {
+class Pqt_main_window : public QMainWindow {
     Q_OBJECT
     ;
 
@@ -27,6 +27,6 @@ public:
     Pqt_main_window ();
 
 private:
-    QMenuBar *menuBar;
+    QMenu *file_menu;
 };
 #endif
