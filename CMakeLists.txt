@@ -1039,12 +1039,33 @@ IF(ITK_FOUND)
 ENDIF(ITK_FOUND)
 
 IF (CUDA_FOUND)
-  IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
-    INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
-  ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
-  IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
-    INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so" DESTINATION bin)
-  ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
+#   IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+#     INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
+#   ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+#   IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
+#     INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so" DESTINATION bin)
+#   ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
+
+  IF (UNIX)
+    # Hard code to cuda 2.2.  Note, we copy it first, because otherwise 
+    # CMake 2.6 will install a broken symbolic link
+    SET (CUDART_FILE_SRC "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so.2.2")
+    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/libcudart.so.2")
+    IF (EXISTS "${CUDART_FILE_SRC}")
+      EXECUTE_PROCESS (COMMAND ${CMAKE_COMMAND} "-E" "copy" 
+	"${CUDART_FILE_SRC}" "${CUDART_FILE}")
+    ENDIF (EXISTS "${CUDART_FILE_SRC}")
+  ELSE (UNIX)
+    SET (CUDART_FILE "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+  ENDIF (UNIX)
+
+  IF (EXISTS "${CUDART_FILE}")
+    INSTALL (FILES "${CUDART_FILE}" DESTINATION bin)
+    IF (BUILD_AGAINST_SLICER3)
+      INSTALL (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
+    ENDIF (BUILD_AGAINST_SLICER3)
+  ENDIF (EXISTS "${CUDART_FILE}")
+
 ENDIF (CUDA_FOUND)
 
 IF (NOT BUILD_AGAINST_SLICER3)
