@@ -264,7 +264,7 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
       COMMAND ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
-      ERROR_VARIABLE svn_version
+      ERROR_VARIABLE svn_error
       )
     IF(${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - found")
