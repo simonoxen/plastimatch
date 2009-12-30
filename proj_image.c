@@ -146,6 +146,7 @@ pfm_save (Proj_image *proj, char* img_filename)
 {
     FILE* fp;
     
+    make_directory_recursive (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
 	fprintf (stderr, "Can't open file %s for write\n", img_filename);
@@ -168,6 +169,7 @@ pgm_save (Proj_image *proj, char* img_filename)
     FILE* fp;
     int i;
     
+    make_directory_recursive (img_filename);
     fp = fopen (img_filename, "wb");
     if (!fp) {
 	fprintf (stderr, "Can't open file %s for write\n", img_filename);
@@ -460,6 +462,7 @@ proj_image_filter (Proj_image *proj)
 #endif
 }
 
+#if defined (commentout)
 Proj_image* 
 proj_image_load_and_filter (
     Fdk_options * options, 
@@ -607,6 +610,7 @@ proj_image_load_and_filter (
 
     return proj;
 }
+#endif
 
 void
 proj_image_free (Proj_image* proj)

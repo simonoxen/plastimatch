@@ -201,13 +201,13 @@ PLM_ADD_TEST (
   "drr-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/drr
-  "-A;cuda;-a;20;-O;cuda_drr_;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/cuda_drr/out_;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
   )
 PLM_ADD_TEST (
   "drr-cuda-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;cuda_drr_0010.pfm"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/cuda_drr/out_0010.pfm"
   )
 ADD_TEST (
   "drr-cuda-check"
