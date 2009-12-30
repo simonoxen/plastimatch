@@ -99,11 +99,11 @@ main (int argc, char* argv[])
     printf ("Done warping images.\n");
     bspline_parms_free (parms);
     bspline_xform_free (&bxf);
-    volume_free (fixed);
-    volume_free (moving);
-    volume_free (moving_grad);
-    volume_free (moving_warped);
-    volume_free (vector_field);
+    volume_destroy (fixed);
+    volume_destroy (moving);
+    volume_destroy (moving_grad);
+    volume_destroy (moving_warped);
+    volume_destroy (vector_field);
 
     printf ("Done freeing memory\n");
 

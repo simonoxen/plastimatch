@@ -86,22 +86,24 @@ main (int argc, char *argv[])
 	exit (-1);
     }
     if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
-	fprintf (stderr, "Sorry, file \"%s\" is not an interleaved float vector field.\n", vf2_fn);
+	fprintf (stderr, "Sorry, file \"%s\" is not an "
+	    "interleaved float vector field.\n", vf2_fn);
 	fprintf (stderr, "Type = %d\n", vol2->pix_type);
 	exit (-1);
     }
 
     for (d = 0; d < 3; d++) {
 	if (vol1->dim[d] != vol2->dim[d]) {
-	    fprintf (stderr, "Can't compare.  Files have different dimensions.\n");
+	    fprintf (stderr, "Can't compare.  "
+		"Files have different dimensions.\n");
 	    exit (-1);
 	}
     }
 
     analyze_volumes (vol1, vol2);
 
-    volume_free (vol1);
-    volume_free (vol2);
+    volume_destroy (vol1);
+    volume_destroy (vol2);
 
     return 0;
 }

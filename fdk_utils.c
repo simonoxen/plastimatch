@@ -72,7 +72,7 @@ write_coronal_sagittal (Fdk_options* options, Volume* vol)
 
 	cor = volume_axial2coronal (vol);
 	write_mha (fn, cor);
-	volume_free (cor);
+	volume_destroy (cor);
     }
 
     if (options->sagittal) {
@@ -85,6 +85,6 @@ write_coronal_sagittal (Fdk_options* options, Volume* vol)
 
 	sag = volume_axial2sagittal (vol);
 	write_mha (fn, sag);
-	volume_free (sag);
+	volume_destroy (sag);
     }
 }

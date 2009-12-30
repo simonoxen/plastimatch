@@ -209,7 +209,7 @@ plm_image_convert_gpuit_float_to_itk (PlmImage* pli, T itk_img)
     }
 
     /* Free gpuit data */
-    volume_free (vol);
+    volume_destroy (vol);
     pli->m_gpuit = 0;
 
     return itk_img;

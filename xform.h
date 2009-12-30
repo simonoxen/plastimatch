@@ -96,7 +96,7 @@ public:
     void clear () {
 	if (m_gpuit) {
 	    if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
-		volume_free ((Volume*) m_gpuit);
+		volume_destroy ((Volume*) m_gpuit);
 	    } else {
 		bspline_xform_free ((BSPLINE_Xform*) m_gpuit);
 	    }

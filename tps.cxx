@@ -452,6 +452,6 @@ tps_warp (
     }
 
     if (!vf_out) {
-	volume_free (vf);
+	volume_destroy (vf);
     }
 }

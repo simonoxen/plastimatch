@@ -126,9 +126,9 @@ do_gpuit_bspline_stage_internal (
 	moving_ss, moving_grad);
 
     /* Free up temporary memory */
-    volume_free (fixed_ss);
-    volume_free (moving_ss);
-    volume_free (moving_grad);
+    volume_destroy (fixed_ss);
+    volume_destroy (moving_ss);
+    volume_destroy (moving_grad);
     bspline_parms_free (&parms);
 }
 

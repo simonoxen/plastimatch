@@ -153,8 +153,8 @@ demons_c (
     free (kerx);
     free (kery);
     free (kerz);
-    volume_free (vf_est);
-    volume_free (m_grad_mag);
+    volume_destroy (vf_est);
+    volume_destroy (m_grad_mag);
 
     diff_run = plm_timer_report (&timer);
     printf ("Time for %d iterations = %f (%f sec / it)\n", 

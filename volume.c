@@ -18,12 +18,14 @@ volume_index (int* dims, int i, int j, int k)
 }
 
 Volume*
-volume_create (int* dim, 
-	       float* offset, 
-	       float* pix_spacing, 
-	       enum Pixel_Type pix_type, 
-	       float* direction_cosines,
-	       int min_size)
+volume_create (
+    int dim[3], 
+    float offset[3], 
+    float pix_spacing[3], 
+    enum Volume_pixel_type pix_type, 
+    float direction_cosines[9],
+    int min_size
+)
 {
     int i;
     Volume* vol = (Volume*) malloc (sizeof(Volume));
@@ -94,7 +96,7 @@ volume_create (int* dim,
 	vol->img = (void*) malloc (vol->pix_size * vol->npix);
 	if (!vol->img) {
 	    fprintf (stderr, "Memory allocation failed (alloc size = %d).\n",
-		    vol->pix_size * vol->npix);
+		vol->pix_size * vol->npix);
 	    exit(1);
 	}
 	memset (vol->img, 0, vol->pix_size * vol->npix);
@@ -134,7 +136,7 @@ volume_clone (Volume* ref)
 }
 
 void
-volume_free (Volume* vol)
+volume_destroy (Volume* vol)
 {
     if (!vol) return;
     if (vol->pix_type == PT_VF_FLOAT_PLANAR) {

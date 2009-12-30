@@ -9,28 +9,6 @@
 #include "proj_matrix.h"
 #include "volume.h"
 
-#define DRR_PLANE_RAY_TOLERANCE 1e-8
-#define DRR_STRIDE_TOLERANCE 1e-10
-#define DRR_HUGE_DOUBLE 1e10
-#define DRR_LEN_TOLERANCE 1e-6
-#define DRR_TOPLANE_TOLERANCE 1e-7
-
-#define MSD_NUM_BINS 60
-#define LINELEN 128
-
-// #define ULTRA_VERBOSE 1
-// #define VERBOSE 1
-
-#define PREPROCESS_ATTENUATION 0
-#define IMGTYPE float
-
-#ifndef M_PI
-#define M_PI            3.14159265358979323846
-#endif
-#ifndef M_TWOPI
-#define M_TWOPI         (M_PI * 2.0)
-#endif
-
 /* -----------------------------------------------------------------------
    Private functions
    ----------------------------------------------------------------------- */

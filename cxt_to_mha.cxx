@@ -279,19 +279,19 @@ main (int argc, char* argv[])
     if (parms->labelmap_fn[0]) {
 	printf ("writing file: %s\n", parms->labelmap_fn);
 	write_mha (parms->labelmap_fn, labelmap_vol);
-	volume_free (labelmap_vol);
+	volume_destroy (labelmap_vol);
     }
     if (parms->xormap_fn[0]) {
 	printf ("writing file: %s\n", parms->xormap_fn);
 	write_mha (parms->xormap_fn, xormap_vol);
-	volume_free (xormap_vol);
+	volume_destroy (xormap_vol);
     }
     if (parms->xorlist_fn[0]) {
 	printf ("writing file: %s\n", parms->xorlist_fn);
 	fclose (xorlist_fp);
     }
     if (parms->prefix[0]) {
-	volume_free (uchar_vol);
+	volume_destroy (uchar_vol);
     }
     free (parms);
 }

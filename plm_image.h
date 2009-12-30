@@ -61,7 +61,7 @@ public:
 	switch (m_type) {
 	case PLM_IMG_TYPE_GPUIT_FLOAT:
 	case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
-	    volume_free ((Volume*) m_gpuit);
+	    volume_destroy ((Volume*) m_gpuit);
 	    break;
 	default:
 	    /* GCS FIX: This doesn't actually free anything for itk. */

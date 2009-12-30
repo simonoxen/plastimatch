@@ -4,6 +4,11 @@
 #ifndef _drr_h_
 #define _drr_h_
 
+#include "drr_opts.h"
+#include "mathutil.h"
+#include "proj_image.h"
+#include "volume.h"
+
 #define DRR_PLANE_RAY_TOLERANCE 1e-8
 #define DRR_STRIDE_TOLERANCE 1e-10
 #define DRR_HUGE_DOUBLE 1e10
@@ -11,16 +16,29 @@
 #define DRR_TOPLANE_TOLERANCE 1e-7
 #define DRR_BOUNDARY_TOLERANCE 1e-6
 
-#define MSD_NUM_BINS 60
+#define DRR_MSD_NUM_BINS 60
 
-#define PREPROCESS_ATTENUATION 1
-#define IMGTYPE float
+#define DRR_PREPROCESS_ATTENUATION 1
 
-#ifndef M_PI
-#define M_PI            3.14159265358979323846
+
+#if defined __cplusplus
+extern "C" {
 #endif
-#ifndef M_TWOPI
-#define M_TWOPI         (M_PI * 2.0)
+gpuit_EXPORT
+void
+drr_render_volume_perspective (
+    Proj_image *proj,
+    Volume *vol, 
+    double ps[2], 
+    char *multispectral_fn, 
+    Drr_options *options
+);
+gpuit_EXPORT
+void
+drr_preprocess_attenuation (Volume* vol);
+
+#if defined __cplusplus
+}
 #endif
 
 #endif

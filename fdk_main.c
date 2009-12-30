@@ -443,7 +443,7 @@ main (int argc, char* argv[])
     write_coronal_sagittal (&options, vol);
 
     /* Free memory */
-    volume_free (vol);
+    volume_destroy (vol);
 
     printf(" done.\n\n");
 

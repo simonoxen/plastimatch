@@ -118,7 +118,7 @@ main (int argc, char *argv[])
 
     write_vvf (vol, vvf_out);
 
-    volume_free (vol);
+    volume_destroy (vol);
 
     return 0;
 }

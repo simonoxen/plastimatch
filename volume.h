@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 
-enum Pixel_Type {
+enum Volume_pixel_type {
     PT_UNDEFINED,
     PT_UCHAR,
     PT_SHORT,
@@ -26,25 +26,9 @@ struct volume
     float pix_spacing[3];	// voxel spacing
     float direction_cosines[9];
 
-    enum Pixel_Type pix_type;	// Voxel Data type
+    enum Volume_pixel_type pix_type;	// Voxel Data type
     int pix_size;		// (Unused?)
     void* img;			// Voxel Data
-
-#if defined (commentout)
-    /* These are used for boundary testing */
-    float xmin;	// Minimum X Value in Volume
-    float xmax; // Maximum X Value in Volume
-    float ymin; // Minimum Y Value in Volume
-    float ymax; // Maximum Y Value in Volume
-    float zmin; // Minimum Z Value in Volume
-    float zmax; // Maximum Z Value in Volume
-#endif
-	float xmin;	// Minimum X Value in Volume
-    float xmax; // Maximum X Value in Volume
-    float ymin; // Minimum Y Value in Volume
-    float ymax; // Maximum Y Value in Volume
-    float zmin; // Minimum Z Value in Volume
-    float zmax; // Maximum Z Value in Volume
 };
 
 #if defined __cplusplus
@@ -52,11 +36,17 @@ extern "C" {
 #endif
 int volume_index (int* dims, int k, int j, int i);
 gpuit_EXPORT
-Volume* volume_create (int* dim, float* offset, float* pix_spacing, 
-		       enum Pixel_Type pix_type, float* direction_cosines, 
-		       int min_size);
+Volume*
+volume_create (
+    int dim[3], 
+    float offset[3], 
+    float pix_spacing[3], 
+    enum Volume_pixel_type pix_type, 
+    float direction_cosines[9],
+    int min_size
+);
 gpuit_EXPORT
-void volume_free (Volume* vol);
+void volume_destroy (Volume* vol);
 gpuit_EXPORT
 void volume_convert_to_float (Volume* ref);
 void volume_convert_to_short (Volume* ref);
@@ -68,7 +58,6 @@ Volume* volume_clone_empty (Volume* ref);
 Volume* volume_clone (Volume* ref);
 gpuit_EXPORT
 Volume* volume_make_gradient (Volume* ref);
-Volume* warp_image (Volume* vol, float** vec);
 Volume* volume_difference (Volume* vol, Volume* warped);
 gpuit_EXPORT
 Volume* volume_warp (Volume* vout, Volume* vin, Volume* vf);

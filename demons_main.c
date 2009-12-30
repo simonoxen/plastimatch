@@ -58,10 +58,10 @@ main (int argc, char* argv[])
 
     write_mha ("warped.mha", warped);
 
-    volume_free (fixed);
-    volume_free (moving);
-    volume_free (moving_grad);
-    volume_free (vector_field);
+    volume_destroy (fixed);
+    volume_destroy (moving);
+    volume_destroy (moving_grad);
+    volume_destroy (vector_field);
 
     return 0;
 }

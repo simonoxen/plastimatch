@@ -417,6 +417,7 @@ SET (GPUIT_LIBRARY_SRC
   demons_cpu.c
   demons_misc.c demons_misc.h
   dir_list.c dir_list.h
+  drr.c drr.h
   file_util.c file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
@@ -599,7 +600,7 @@ SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
 	)
 SET (DRR_SRC
-	drr_main.c drr.h
+	drr_main.c 
 	drr_opts.c drr_opts.h
 	drr_trilin.c drr_trilin.h
 	)
@@ -783,7 +784,7 @@ ENDIF (NOT HAVE_GETOPT_LONG)
 IF(OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (bspline.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (drr_main.c
+  SET_SOURCE_FILES_PROPERTIES (drr.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (fdk_main.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})

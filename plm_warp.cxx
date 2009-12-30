@@ -155,7 +155,7 @@ plm_warp_native (
     /* Return vf to caller */
     if (vf) {
 	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
-	volume_free (vf_out);
+	volume_destroy (vf_out);
     }
 }
 

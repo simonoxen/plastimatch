@@ -28,12 +28,12 @@ stats_vf_main (Stats_parms* parms)
 	fprintf (stderr, "Sorry, file \"%s\" is not an interleaved "
 	    "float vector field.\n", parms->mha_in_fn);
 	fprintf (stderr, "Type = %d\n", vol->pix_type);
-	volume_free (vol);
+	volume_destroy (vol);
 	exit (-1);
     }
     vf_analyze (vol);
     vf_analyze_strain (vol);
-    volume_free (vol);
+    volume_destroy (vol);
 }
 
 static void

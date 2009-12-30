@@ -115,7 +115,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
     }
 
     /* We're done with input volume now. */
-    volume_free (vf_in);
+    volume_destroy (vf_in);
 
     /* GCS FIX: Need direction cosines */
     /* Create tmp & output volumes */
@@ -155,12 +155,12 @@ vf_invert_main (Vf_Invert_Parms* parms)
     printf ("Done.\n");
 
     /* We're done with the mask & smooth image. */
-    volume_free (mask);
-    volume_free (vf_smooth);
+    volume_destroy (mask);
+    volume_destroy (vf_smooth);
 
     /* Write the output */
     write_mha (parms->vf_out_fn, vf_out);
-    volume_free (vf_out);
+    volume_destroy (vf_out);
 }
 
 void
