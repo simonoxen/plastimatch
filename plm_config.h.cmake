@@ -23,6 +23,7 @@
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1
+#cmakedefine BUILD_AGAINST_SLICER3
 
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
@@ -74,7 +75,7 @@
 #endif
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS) || defined (PLM_BUILD_SHARED_LIBS))
+#if (!BUILD_AGAINST_SLICER3 && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS) || defined (PLM_BUILD_SHARED_LIBS)))
 # ifdef plastimatch1_EXPORTS
 #  define plastimatch1_EXPORT __declspec(dllexport)
 # else
