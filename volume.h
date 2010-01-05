@@ -34,6 +34,7 @@ struct volume
 #if defined __cplusplus
 extern "C" {
 #endif
+gpuit_EXPORT
 int volume_index (int* dims, int k, int j, int i);
 gpuit_EXPORT
 Volume*

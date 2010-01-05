@@ -418,6 +418,7 @@ SET (GPUIT_LIBRARY_SRC
   demons_misc.c demons_misc.h
   dir_list.c dir_list.h
   drr.c drr.h
+  drr_trilin.c drr_trilin.h
   file_util.c file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
@@ -602,7 +603,6 @@ SET (DICOMRT_IMPORT_SLICER_SRC
 SET (DRR_SRC
 	drr_main.c 
 	drr_opts.c drr_opts.h
-	drr_trilin.c drr_trilin.h
 	)
 IF (CUDA_FOUND)
   CUDA_COMPILE (CUDA_WRAPPERS drr_cuda.cu)
