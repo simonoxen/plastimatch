@@ -31,6 +31,7 @@ IF (NOT BROOK_FOUND)
     )
 ENDIF (NOT BROOK_FOUND)
 
+## Don't test unused algorithms
 IF (NOT PLM_TEST_EXTENDED)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -44,6 +45,15 @@ IF (NOT PLM_TEST_EXTENDED)
     "bspline-e-check"
     "bspline-f"
     "bspline-f-check"
+    )
+ENDIF (NOT PLM_TEST_EXTENDED)
+
+## Don't test things which require download
+IF (NOT PLM_TEST_EXTENDED)
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom"
+    "plm-convert-dicom-rtss"
     )
 ENDIF (NOT PLM_TEST_EXTENDED)
 

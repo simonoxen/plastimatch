@@ -314,6 +314,26 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch convert dicom
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.0;--output;chest-phantom.mha"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rtss
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom-rtss"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.0/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch usage
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (

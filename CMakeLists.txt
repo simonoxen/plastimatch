@@ -989,7 +989,7 @@ IF(ITK_FOUND)
 ENDIF(ITK_FOUND)
 
 # several executables require cuda
-IF(CUDA_FOUND)
+IF (CUDA_FOUND)
   IF (PLM_BUILD_DEMONS_CUDA)
     PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
@@ -1001,7 +1001,7 @@ IF(CUDA_FOUND)
 #      "${OPENMP_LDFLAGS}")
 #  ENDIF (FFTW_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
-ENDIF(CUDA_FOUND)
+ENDIF (CUDA_FOUND)
 
 # dicom_uid requires dcmtk
 IF(DCMTK_FOUND)
@@ -1133,6 +1133,11 @@ ENDIF (PLM_BUILD_QT_TEST AND QT4_FOUND)
 SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
 SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
+
+# Figure out if this platform has a working GPU for cuda test code
+# TODO.  This probably can be accomplished through the following method:
+#   A) TRY_COMPILE on separate directory with cuda_probe sources
+#   B) EXECUTE_PROCESS on output from step A
 
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
