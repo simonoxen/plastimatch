@@ -66,7 +66,7 @@ warp_image_main (Warp_parms* parms)
     /* Save output image */
     printf ("Saving image...\n");
     switch (parms->output_format) {
-    case PLM_FILE_TYPE_DICOM_DIR:
+    case PLM_FILE_FMT_DICOM_DIR:
 	im_out_ptr->save_short_dicom (parms->output_fn);
 	break;
     default:

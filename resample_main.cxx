@@ -237,7 +237,7 @@ resample_main (Resample_parms* parms)
     file_format = plm_file_format_deduce (parms->mha_in_fn);
 
     /* Vector fields are templated differently, so do them separately */
-    if (file_format == PLM_FILE_TYPE_VF) {
+    if (file_format == PLM_FILE_FMT_VF) {
 	resample_main_itk_vf (parms);
 	return;
     }

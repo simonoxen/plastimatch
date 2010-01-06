@@ -81,13 +81,13 @@ static void
 stats_main (Stats_parms* parms)
 {
     switch (plm_file_format_deduce (parms->mha_in_fn)) {
-    case PLM_FILE_TYPE_VF:
+    case PLM_FILE_FMT_VF:
 	stats_vf_main (parms);
 	break;
-    case PLM_FILE_TYPE_PROJ_IMG:
+    case PLM_FILE_FMT_PROJ_IMG:
 	stats_proj_image_main (parms);
 	break;
-    case PLM_FILE_TYPE_IMG:
+    case PLM_FILE_FMT_IMG:
     default:
 	stats_img_main (parms);
 	break;

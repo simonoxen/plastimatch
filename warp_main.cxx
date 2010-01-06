@@ -219,22 +219,22 @@ do_command_warp (int argc, char* argv[])
 	warp_dij_main (&parms);
     } else {
 	switch (file_type) {
-	case PLM_FILE_TYPE_NO_FILE:
+	case PLM_FILE_FMT_NO_FILE:
 	    print_and_exit ("Could not open input file %s for read\n",
 		parms.input_fn);
 	    break;
-	case PLM_FILE_TYPE_UNKNOWN:
-	case PLM_FILE_TYPE_IMG:
-	case PLM_FILE_TYPE_DICOM_DIR:
+	case PLM_FILE_FMT_UNKNOWN:
+	case PLM_FILE_FMT_IMG:
+	case PLM_FILE_FMT_DICOM_DIR:
 	    warp_image_main (&parms);
 	    break;
-	case PLM_FILE_TYPE_DIJ:
+	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
 	    break;
-	case PLM_FILE_TYPE_POINTSET:
+	case PLM_FILE_FMT_POINTSET:
 	    warp_pointset_main (&parms);
 	    break;
-	case PLM_FILE_TYPE_DICOM_RTSS:
+	case PLM_FILE_FMT_DICOM_RTSS:
 	    warp_dicom_rtss (&parms);
 	    break;
 	default:

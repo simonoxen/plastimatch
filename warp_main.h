@@ -35,7 +35,7 @@ public:
 	memset (this, 0, sizeof(Warp_parms));
 	use_itk = 0;
 	interp_lin = 1;
-	output_format = PLM_FILE_TYPE_UNKNOWN;
+	output_format = PLM_FILE_FMT_UNKNOWN;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };
