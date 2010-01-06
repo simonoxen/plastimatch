@@ -35,17 +35,22 @@
 // Get the PixelType and ComponentType from fileName
 void
 itk__GetImageType (std::string fileName,
-		    itk::ImageIOBase::IOPixelType &pixelType,
-		    itk::ImageIOBase::IOComponentType &componentType)
+		    itk::ImageIOBase::IOPixelType &pixel_type,
+		    itk::ImageIOBase::IOComponentType &component_type)
 {
+    pixel_type = itk::ImageIOBase::UNKNOWNPIXELTYPE;
+    component_type = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
     typedef itk::Image<short, 3> ImageType;
     itk::ImageFileReader<ImageType>::Pointer imageReader =
 	itk::ImageFileReader<ImageType>::New();
     imageReader->SetFileName(fileName.c_str());
-    imageReader->UpdateOutputInformation();
-
-    pixelType = imageReader->GetImageIO()->GetPixelType();
-    componentType = imageReader->GetImageIO()->GetComponentType();
+    try {
+	imageReader->UpdateOutputInformation();
+	pixel_type = imageReader->GetImageIO()->GetPixelType();
+	component_type = imageReader->GetImageIO()->GetComponentType();
+    } catch (itk::ExceptionObject &ex) {
+	ex;    /* Suppress compiler warning */
+    }
 }
 
 template<class RdrT>

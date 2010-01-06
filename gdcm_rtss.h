@@ -12,6 +12,9 @@ extern "C" {
 #endif
 
 plastimatch1_EXPORT
+bool
+gdcm_rtss_probe (char *rtss_fn);
+plastimatch1_EXPORT
 void
 gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir);
 plastimatch1_EXPORT

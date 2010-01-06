@@ -18,6 +18,29 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 
+/* This function probes whether or not the file is a dicom rtss format */
+bool
+gdcm_rtss_probe (char *rtss_fn)
+{
+    gdcm::File *rtss_file = new gdcm::File;
+    Gdcm_series gs;
+    std::string tmp;
+
+    rtss_file->SetMaxSizeLoadEntry (0xffff);
+    rtss_file->SetFileName (rtss_fn);
+    rtss_file->SetLoadMode (0);
+    rtss_file->Load();
+
+    /* Modality -- better be RTSTRUCT */
+    tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
+    if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
+	return false;
+    } else {
+	return true;
+    }
+    delete rtss_file;
+}
+
 void
 gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 {
@@ -270,7 +293,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	}
     }
     printf ("Loading complete.\n");
-
+    delete rtss_file;
 }
 
 void

@@ -18,6 +18,7 @@ enum Plm_file_type {
     PLM_FILE_TYPE_XIO_DIR,
     PLM_FILE_TYPE_RTOG_DIR,
     PLM_FILE_TYPE_PROJ_IMG,
+    PLM_FILE_TYPE_DICOM_RTSS,
 };
 
 plastimatch1_EXPORT

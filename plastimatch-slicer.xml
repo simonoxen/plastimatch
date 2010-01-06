@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Registration</category>
-  <title>(MGH) Plastimatch B-spline</title>
+  <category>Plastimatch</category>
+  <title>B-spline deformable registration</title>
   <description>Plastimatch deformable registration software</description>
   <version>0.0</version>
   <documentation-url></documentation-url>

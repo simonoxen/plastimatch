@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
-  <category>Registration</category>
-  <title>(MGH) Plastimatch thin-plate spline</title>
-  <description>Plastimatch deformable registration software (thin-plate-splines)</description>
+  <category>Plastimatch</category>
+  <title>Landmark deformable registration</title>
+  <description>Plastimatch deformable registration software (landmark deformation)</description>
   <version>0.0</version>
   <documentation-url></documentation-url>
   <license>BSD-style</license>
