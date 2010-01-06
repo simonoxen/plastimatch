@@ -1,12 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _file_type_h_
-#define _file_type_h_
+#ifndef _plm_file_format_h_
+#define _plm_file_format_h_
 
 #include "plm_config.h"
 
-enum Plm_file_type {
+enum Plm_file_format {
     PLM_FILE_TYPE_NO_FILE,
     PLM_FILE_TYPE_UNKNOWN,
     PLM_FILE_TYPE_IMG,
@@ -22,10 +22,13 @@ enum Plm_file_type {
 };
 
 plastimatch1_EXPORT
-Plm_file_type
-deduce_file_type (char* path);
+Plm_file_format
+plm_file_format_deduce (char* path);
 plastimatch1_EXPORT
 char*
-file_type_string (Plm_file_type);
+plm_file_format_string (Plm_file_format file_type);
+plastimatch1_EXPORT
+Plm_file_format 
+plm_file_format_parse (const char* string);
 
 #endif

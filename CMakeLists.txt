@@ -500,7 +500,6 @@ ENDIF(F2C_LIBRARY)
 SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
- 	file_type.cxx file_type.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
@@ -516,6 +515,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	itk_registration.cxx itk_registration.h 
 	itk_tps.cxx itk_tps.h
 	itk_warp.cxx itk_warp.h 
+ 	plm_file_format.cxx plm_file_format.h 
 	plm_image.cxx plm_image.h 
 	plm_image_header.cxx plm_image_header.h 
 	plm_image_type.cxx plm_image_type.h 

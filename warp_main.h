@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <string.h>
+#include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "plm_path.h"
 
@@ -23,7 +24,7 @@ public:
     float default_val;
     int use_itk;                 /* force use of itk (1) or not (0) */
     int interp_lin;              /* trilinear (1) or nn (0) */
-    int output_dicom;
+    Plm_file_format output_format;
     PlmImageType output_type;
     float offset[3];
     float spacing[3];
@@ -34,7 +35,7 @@ public:
 	memset (this, 0, sizeof(Warp_parms));
 	use_itk = 0;
 	interp_lin = 1;
-	output_dicom = 0;
+	output_format = PLM_FILE_TYPE_UNKNOWN;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };

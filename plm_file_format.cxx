@@ -9,12 +9,12 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
-#include "file_type.h"
-#include "itk_image.h"
 #include "gdcm_rtss.h"
+#include "itk_image.h"
+#include "plm_file_format.h"
 
-Plm_file_type
-deduce_file_type (char* path)
+Plm_file_format
+plm_file_format_deduce (char* path)
 {
     std::string ext;
     
@@ -79,7 +79,7 @@ deduce_file_type (char* path)
 }
 
 char*
-file_type_string (Plm_file_type file_type)
+plm_file_format_string (Plm_file_format file_type)
 {
     switch (file_type) {
     case PLM_FILE_TYPE_NO_FILE:
@@ -117,3 +117,42 @@ file_type_string (Plm_file_type file_type)
 	break;
     }
 }
+
+Plm_file_format 
+plm_file_format_parse (const char* string)
+{
+    if (!strcmp (string, "mha")) {
+	return PLM_FILE_TYPE_IMG;
+    }
+    else if (!strcmp (string, "vf")) {
+	return PLM_FILE_TYPE_VF;
+    }
+    else if (!strcmp (string, "dij")) {
+	return PLM_FILE_TYPE_DIJ;
+    }
+    else if (!strcmp (string, "pointset")) {
+	return PLM_FILE_TYPE_POINTSET;
+    }
+    else if (!strcmp (string, "cxt")) {
+	return PLM_FILE_TYPE_CXT;
+    }
+    else if (!strcmp (string, "dicom") || !strcmp (string, "dicom-dir")) {
+	return PLM_FILE_TYPE_DICOM_DIR;
+    }
+    else if (!strcmp (string, "xio")) {
+	return PLM_FILE_TYPE_XIO_DIR;
+    }
+    else if (!strcmp (string, "rtog")) {
+	return PLM_FILE_TYPE_RTOG_DIR;
+    }
+    else if (!strcmp (string, "proj")) {
+	return PLM_FILE_TYPE_PROJ_IMG;
+    }
+    else if (!strcmp (string, "rtss") || !strcmp (string, "dicom-rtss")) {
+	return PLM_FILE_TYPE_DICOM_RTSS;
+    }
+    else {
+	return PLM_FILE_TYPE_UNKNOWN;
+    }
+}
+

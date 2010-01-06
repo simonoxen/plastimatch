@@ -1,15 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <time.h>
-#include "plm_config.h"
 
 #include "getopt.h"
-#include "warp_main.h"
-#include "file_type.h"
-#include "warp_main.h"
+#include "plm_file_format.h"
 #include "print_and_exit.h"
+#include "warp_main.h"
+#include "warp_main.h"
 
 static void
 warp_print_usage ()
@@ -97,6 +97,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "algorithm",      required_argument,      NULL,           16 },
 	{ "output-type",    required_argument,      NULL,           17 },
 	{ "output_type",    required_argument,      NULL,           17 },
+	{ "dicom-dir",      required_argument,      NULL,           18 },
+	{ "dicom_dir",      required_argument,      NULL,           18 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -164,12 +166,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    have_dims = 1;
 	    break;
 	case 13:
-	    if (!strcmp (optarg, "dicom")) {
-		parms->output_dicom = 1;
-	    } else {
-		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
-		print_usage (argv[1]);
-	    }
+	    parms->output_format = plm_file_format_parse (optarg);
 	    break;
 	case 14:
 	    strncpy (parms->ctatts_in_fn, optarg, _MAX_PATH);
@@ -192,6 +189,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 		print_usage (argv[1]);
 	    }
 	    break;
+	case 18:
+	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");
 	    print_usage (argv[1]);
@@ -207,13 +207,13 @@ void
 do_command_warp (int argc, char* argv[])
 {
     Warp_parms parms;
-    Plm_file_type file_type;
+    Plm_file_format file_type;
 
     void test_fn (Warp_parms *parms);
     
     warp_parse_args (&parms, argc, argv);
     printf ("Trying to deduce file type\n");
-    file_type = deduce_file_type (parms.input_fn);
+    file_type = plm_file_format_deduce (parms.input_fn);
 
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
 	warp_dij_main (&parms);
@@ -239,7 +239,7 @@ do_command_warp (int argc, char* argv[])
 	    break;
 	default:
 	    print_and_exit ("Sorry, don't know how to convert/warp input type %s (%s)\n",
-			    file_type_string (file_type),
+			    plm_file_format_string (file_type),
 			    parms.input_fn);
 	    break;
 	}

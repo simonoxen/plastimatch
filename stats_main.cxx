@@ -4,9 +4,9 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
-#include "file_type.h"
 #include "getopt.h"
 #include "itk_image.h"
+#include "plm_file_format.h"
 #include "proj_image.h"
 #include "readmha.h"
 #include "stats_main.h"
@@ -80,7 +80,7 @@ stats_img_main (Stats_parms* parms)
 static void
 stats_main (Stats_parms* parms)
 {
-    switch (deduce_file_type (parms->mha_in_fn)) {
+    switch (plm_file_format_deduce (parms->mha_in_fn)) {
     case PLM_FILE_TYPE_VF:
 	stats_vf_main (parms);
 	break;

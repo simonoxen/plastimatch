@@ -6,10 +6,9 @@
 #include "itkResampleImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
-
 #include "resample_main.h"
 #include "itk_image.h"
-#include "file_type.h"
+#include "plm_file_format.h"
 #include "resample_mha.h"
 #include "getopt.h"
 
@@ -233,12 +232,12 @@ resample_main (Resample_parms* parms)
 {
     PlmImage plm_image;
 
-    Plm_file_type file_type;
+    Plm_file_format file_format;
 
-    file_type = deduce_file_type (parms->mha_in_fn);
+    file_format = plm_file_format_deduce (parms->mha_in_fn);
 
     /* Vector fields are templated differently, so do them separately */
-    if (file_type == PLM_FILE_TYPE_VF) {
+    if (file_format == PLM_FILE_TYPE_VF) {
 	resample_main_itk_vf (parms);
 	return;
     }
