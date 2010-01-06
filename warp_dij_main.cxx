@@ -580,7 +580,7 @@ convert_vector_field (DeformationFieldType::Pointer vf,
 }
 
 void
-warp_dij_main (Warp_Parms* parms)
+warp_dij_main (Warp_parms* parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Ctatts ctatts;
@@ -593,5 +593,5 @@ warp_dij_main (Warp_Parms* parms)
     load_ctatts (&ctatts, parms->ctatts_in_fn);
     load_dif (&dif, parms->dif_in_fn);
 
-    convert_vector_field (vf, &ctatts, &dif, parms->mha_in_fn, parms->mha_out_fn);
+    convert_vector_field (vf, &ctatts, &dif, parms->input_fn, parms->output_fn);
 }

@@ -65,15 +65,12 @@ deduce_file_type (char* path)
     /* Maybe vector field? */
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
-
-    printf ("Testing vf type.\n");
     itk__GetImageType (std::string (path), pixelType, componentType);
     if (pixelType == itk::ImageIOBase::VECTOR) {
 	return PLM_FILE_TYPE_VF;
     }
 
     /* Maybe dicom rtss? */
-    printf ("Testing rtss.\n");
     if (gdcm_rtss_probe (path)) {
 	return PLM_FILE_TYPE_DICOM_RTSS;
     }

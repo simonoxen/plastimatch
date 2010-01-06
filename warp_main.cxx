@@ -69,7 +69,7 @@ print_usage (char* command)
 }
 
 void
-warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
+warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 {
     int ch;
     int rc;
@@ -106,10 +106,10 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
-	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    strncpy (parms->input_fn, optarg, _MAX_PATH);
 	    break;
 	case 3:
-	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_fn, optarg, _MAX_PATH);
 	    break;
 	case 4:
 	    strncpy (parms->vf_in_fn, optarg, _MAX_PATH);
@@ -198,7 +198,7 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
+    if (!parms->input_fn[0] || !parms->output_fn[0]) {
 	print_usage (argv[1]);
     }
 }
@@ -206,14 +206,14 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 void
 do_command_warp (int argc, char* argv[])
 {
-    Warp_Parms parms;
+    Warp_parms parms;
     Plm_file_type file_type;
 
-    void test_fn (Warp_Parms *parms);
+    void test_fn (Warp_parms *parms);
     
     warp_parse_args (&parms, argc, argv);
     printf ("Trying to deduce file type\n");
-    file_type = deduce_file_type (parms.mha_in_fn);
+    file_type = deduce_file_type (parms.input_fn);
 
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
 	warp_dij_main (&parms);
@@ -221,7 +221,7 @@ do_command_warp (int argc, char* argv[])
 	switch (file_type) {
 	case PLM_FILE_TYPE_NO_FILE:
 	    print_and_exit ("Could not open input file %s for read\n",
-		parms.mha_in_fn);
+		parms.input_fn);
 	    break;
 	case PLM_FILE_TYPE_UNKNOWN:
 	case PLM_FILE_TYPE_IMG:
@@ -234,10 +234,13 @@ do_command_warp (int argc, char* argv[])
 	case PLM_FILE_TYPE_POINTSET:
 	    warp_pointset_main (&parms);
 	    break;
+	case PLM_FILE_TYPE_DICOM_RTSS:
+	    warp_dicom_rtss (&parms);
+	    break;
 	default:
-	    print_and_exit ("Sorry, don't know how to warp input type %s (%s)\n",
+	    print_and_exit ("Sorry, don't know how to convert/warp input type %s (%s)\n",
 			    file_type_string (file_type),
-			    parms.mha_in_fn);
+			    parms.input_fn);
 	    break;
 	}
     }

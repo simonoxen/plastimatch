@@ -17,7 +17,7 @@
 #include "xform.h"
 
 void
-warp_image_main (Warp_Parms* parms)
+warp_image_main (Warp_parms* parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     PlmImage im_in, im_out;
@@ -26,7 +26,7 @@ warp_image_main (Warp_Parms* parms)
     Xform xform;
 
     /* Load input image */
-    im_in.load_native (parms->mha_in_fn);
+    im_in.load_native (parms->input_fn);
 
     /* Load transform */
     if (parms->xf_in_fn[0]) {
@@ -66,9 +66,9 @@ warp_image_main (Warp_Parms* parms)
     /* Save output image */
     printf ("Saving image...\n");
     if (parms->output_dicom) {
-	im_out_ptr->save_short_dicom (parms->mha_out_fn);
+	im_out_ptr->save_short_dicom (parms->output_fn);
     } else {
-	im_out_ptr->save_image (parms->mha_out_fn);
+	im_out_ptr->save_image (parms->output_fn);
     }
 
     /* Save output vector field */

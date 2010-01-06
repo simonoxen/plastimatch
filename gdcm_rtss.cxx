@@ -64,7 +64,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 
     /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir) {
+    if (dicom_dir && dicom_dir[0]) {
 	gs.load (dicom_dir);
 	gs.get_best_ct ();
 	if (gs.m_have_ct) {

@@ -7,12 +7,12 @@
 #include "xform.h"
 
 void
-warp_pointset_main (Warp_Parms* parms)
+warp_pointset_main (Warp_parms* parms)
 {
     Xform xf;
     PointSetType::Pointer ps_in = PointSetType::New ();
 
-    pointset_load (ps_in, parms->mha_in_fn);
+    pointset_load (ps_in, parms->input_fn);
     pointset_debug (ps_in);
 
     load_xform (&xf, parms->xf_in_fn);

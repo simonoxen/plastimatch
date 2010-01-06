@@ -707,9 +707,10 @@ SET (PLASTIMATCH_SRC
 	plastimatch_main.cxx
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h
+ 	warp_dicom_rtss.cxx 
  	warp_dij_main.cxx 
 	warp_mha_main.cxx 
-	warp_main.cxx warp_main.h
+	warp_main.cxx warp_main.h 
  	warp_pointset_main.cxx 
 	)
 SET (PLASTIMATCH_SLICER_SRC
