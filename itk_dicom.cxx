@@ -12,6 +12,7 @@
 #include "itkImageSeriesReader.h"
 #include "itkImageSeriesWriter.h"
 #include "itk_dicom.h"
+#include "logfile.h"
 #include "print_and_exit.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -61,7 +62,7 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 	std::cout << std::endl << "The directory: " << std::endl;
 	std::cout << std::endl << dicom_dir << std::endl << std::endl;
 	std::cout << "Contains the following DICOM Series: ";
-	std::cout << std::endl << std::endl;
+	std::cout << std::endl;
 
 	typedef std::vector< std::string > SeriesIdContainer;
 	const SeriesIdContainer & seriesUID = nameGenerator->GetSeriesUIDs();
@@ -71,38 +72,46 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 	    std::cout << seriesItr->c_str() << std::endl;
 	    seriesItr++;
 	}
+	std::cout << std::endl;
 
-	/* Assumes series is first one found */
-	std::string seriesIdentifier;
-	seriesIdentifier = seriesUID.begin()->c_str();
+	/* Loop through series and use first one that loads */
+	seriesItr = seriesUID.begin();
+	bool dicom_load_succeeded = false;
+	while (!dicom_load_succeeded && seriesItr != seriesEnd) {
+	    std::string seriesIdentifier;
+	    seriesIdentifier = seriesItr->c_str();
 
-	std::cout << std::endl << std::endl;
-	std::cout << "Now reading series: " << std::endl << std::endl;
-	std::cout << seriesIdentifier << std::endl;
-	std::cout << std::endl << std::endl;
+	    std::cout << "Now reading series: " << std::endl;
+	    std::cout << seriesIdentifier << std::endl;
 
-	/* Read the files */
-	typedef std::vector< std::string >   FileNamesContainer;
-	FileNamesContainer fileNames;
-	fileNames = nameGenerator->GetFileNames( seriesIdentifier );
+	    /* Read the files */
+	    typedef std::vector< std::string >   FileNamesContainer;
+	    FileNamesContainer fileNames;
+	    fileNames = nameGenerator->GetFileNames( seriesIdentifier );
 
 #if defined (commentout)
-	/* Print out the file names */
-	FileNamesContainer::const_iterator fn_it = fileNames.begin();
-	printf ("File names are:\n");
-	while (fn_it != fileNames.end()) {
-	    printf ("  %s\n", fn_it->c_str());
-	    fn_it ++;
-	}
+	    /* Print out the file names */
+	    FileNamesContainer::const_iterator fn_it = fileNames.begin();
+	    printf ("File names are:\n");
+	    while (fn_it != fileNames.end()) {
+		printf ("  %s\n", fn_it->c_str());
+		fn_it ++;
+	    }
 #endif
 
-	rdr->SetFileNames( fileNames );
-	try {
-	    rdr->Update();
-	} catch (itk::ExceptionObject &ex) {
-	    std::cout << ex << std::endl;
-	    print_and_exit ("Error loading dicom series.\n");
-	}	
+	    rdr->SetFileNames( fileNames );
+	    try {
+		rdr->Update();
+		dicom_load_succeeded = true;
+	    } catch (itk::ExceptionObject &ex) {
+		/* do nothing */
+		logfile_printf ("Failed to load: %s\n", ex.GetDescription());
+	    }
+	    seriesItr++;
+	}
+	if (!dicom_load_succeeded) {
+	    print_and_exit ("Error, unable to load dicom series.\n");
+	}
     } catch (itk::ExceptionObject &ex) {
 	std::cout << ex << std::endl;
 	print_and_exit ("Error loading dicom series.\n");

@@ -17,6 +17,11 @@ deduce_file_type (char* path)
 {
     std::string ext;
     
+    if (itksys::SystemTools::FileIsDirectory (path)) {
+	/* GCS TODO:  Distinguish between xio, dicom, rtog directories */
+	return PLM_FILE_TYPE_DICOM_DIR;
+    }
+
     ext = itksys::SystemTools::GetFilenameLastExtension (std::string (path));
 
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".txt")) {

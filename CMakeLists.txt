@@ -500,6 +500,7 @@ ENDIF(F2C_LIBRARY)
 SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
+ 	file_type.cxx file_type.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
@@ -701,7 +702,6 @@ SET (PATIENT_MASK_SRC
 	)
 SET (PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
- 	file_type.cxx file_type.h
 	compare_main.cxx compare_main.h
 	diff_main.cxx diff_main.h
 	plastimatch_main.cxx

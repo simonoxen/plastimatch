@@ -7,6 +7,7 @@
 #include <string.h>
 #include "itkImageRegionIterator.h"
 
+#include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
 #include "plm_image.h"
@@ -30,10 +31,28 @@ plm_image_load_native (const char* fname)
 }
 
 void
+PlmImage::load_native_dicom (const char* fname)
+{
+    /* GCS FIX: We don't yet have a way of getting original pixel type 
+	for dicom.  Force SHORT */
+    this->m_itk_short = load_short (fname, 0);
+    this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+    this->m_type = PLM_IMG_TYPE_ITK_SHORT;
+}
+
+void
 PlmImage::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
+
+    if (is_directory (fname)) {
+	/* GCS FIX: The call to is_directory is redundant -- we already 
+	    called deduce_file_type in warp_main() */
+	load_native_dicom (fname);
+	return;
+    }
+
     itk__GetImageType (fname, pixelType, componentType);
 
     switch (componentType) {

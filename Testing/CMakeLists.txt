@@ -1,22 +1,27 @@
 PROJECT(PLM_Testing)
 
 IF (PLM_TEST_EXTENDED)
-  SET (TEST_DATA_FILENAME
+  SET (DOWNLOADED_TEST_DATA_URL
+    http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz)
+  SET (DOWNLOADED_TEST_DATA_FILENAME
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz")
-  IF (NOT EXISTS ${TEST_DATA_FILENAME})
+  SET (DOWNLOADED_TEST_DATA_DIRECTORY
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+  IF (NOT EXISTS ${DOWNLOADED_TEST_DATA_FILENAME})
     MESSAGE (STATUS "Downloading test data")
-    FILE (DOWNLOAD 
-      http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz
-      ${TEST_DATA_FILENAME})
-  ENDIF (NOT EXISTS ${TEST_DATA_FILENAME})
-  MESSAGE (STATUS "Untarring test data")
-  EXECUTE_PROCESS (
-    COMMAND ${CMAKE_COMMAND} "-E" "tar" "xvzf" ${TEST_DATA_FILENAME}
-    WORKING_DIRECTORY ${PLM_TESTING_BUILD_DIR}
-    RESULT_VARIABLE untar_result
-    OUTPUT_VARIABLE untar_output
-    ERROR_VARIABLE untar_error)
-  MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
+    FILE (DOWNLOAD ${DOWNLOADED_TEST_DATA_URL}
+      ${DOWNLOADED_TEST_DATA_FILENAME})
+  ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_FILENAME})
+  IF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
+    MESSAGE (STATUS "Untarring test data")
+    EXECUTE_PROCESS (
+      COMMAND ${CMAKE_COMMAND} "-E" "tar" "xvzf" ${TEST_DATA_FILENAME}
+      WORKING_DIRECTORY ${PLM_TESTING_BUILD_DIR}
+      RESULT_VARIABLE untar_result
+      OUTPUT_VARIABLE untar_output
+      ERROR_VARIABLE untar_error)
+    MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
+  ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
 ENDIF (PLM_TEST_EXTENDED)
 
 SET (SYNTH_MHA_SIZE 38)
@@ -320,7 +325,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.0;--output;chest-phantom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output;chest-phantom.mha"
   )
 
 ## -------------------------------------------------------------------------
@@ -330,7 +335,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-rtss"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.0/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha"
   )
 
 ## -------------------------------------------------------------------------

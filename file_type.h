@@ -4,6 +4,8 @@
 #ifndef _file_type_h_
 #define _file_type_h_
 
+#include "plm_config.h"
+
 enum Plm_file_type {
     PLM_FILE_TYPE_NO_FILE,
     PLM_FILE_TYPE_UNKNOWN,
@@ -18,8 +20,10 @@ enum Plm_file_type {
     PLM_FILE_TYPE_PROJ_IMG,
 };
 
+plastimatch1_EXPORT
 Plm_file_type
 deduce_file_type (char* path);
+plastimatch1_EXPORT
 char*
 file_type_string (Plm_file_type);
 

@@ -28,6 +28,7 @@ warp_print_usage ()
 	    "    --output-vf=filename\n"
 	    "    --default-val=number\n"
 	    "    --output-format=dicom\n"
+	    "    --output-type={uchar,short,float,...}\n"
 	    "    --algorithm=itk\n"
 	    "    --ctatts=filename  (for dij)\n"
 	    "    --dif=filename     (for dij)\n"
@@ -52,6 +53,7 @@ convert_print_usage ()
 	    "    --output-vf=filename\n"
 	    "    --default-val=number\n"
 	    "    --output-format=dicom\n"
+	    "    --output-type={uchar,short,float,...}\n"
 	    "    --algorithm=itk\n");
     exit (-1);
 }
@@ -93,6 +95,8 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 	{ "ctatts",         required_argument,      NULL,           14 },
 	{ "dif",            required_argument,      NULL,           15 },
 	{ "algorithm",      required_argument,      NULL,           16 },
+	{ "output-type",    required_argument,      NULL,           17 },
+	{ "output_type",    required_argument,      NULL,           17 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -181,6 +185,13 @@ warp_parse_args (Warp_Parms* parms, int argc, char* argv[])
 		print_usage (argv[1]);
 	    }
 	    break;
+	case 17:
+	    parms->output_type = plm_image_type_parse (optarg);
+	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+		fprintf (stderr, "Error, unknown output type %s\n", optarg);
+		print_usage (argv[1]);
+	    }
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");
 	    print_usage (argv[1]);
@@ -201,6 +212,7 @@ do_command_warp (int argc, char* argv[])
     void test_fn (Warp_Parms *parms);
     
     warp_parse_args (&parms, argc, argv);
+    printf ("Trying to deduce file type\n");
     file_type = deduce_file_type (parms.mha_in_fn);
 
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {

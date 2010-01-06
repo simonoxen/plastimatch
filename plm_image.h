@@ -75,7 +75,9 @@ public:
     /* Loading */
     plastimatch1_EXPORT
     void load_native (const char* fname);
-
+    
+    plastimatch1_EXPORT
+    void load_native_dicom (const char* fname);
     /* Saving */
     plastimatch1_EXPORT
     void save_short_dicom (char* fname);

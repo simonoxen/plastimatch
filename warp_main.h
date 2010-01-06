@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <string.h>
+#include "plm_image_type.h"
 #include "plm_path.h"
 
 class Warp_Parms {
@@ -22,6 +23,7 @@ public:
     int use_itk;                 /* force use of itk (1) or not (0) */
     int interp_lin;              /* trilinear (1) or nn (0) */
     int output_dicom;
+    PlmImageType output_type;
     float offset[3];
     float spacing[3];
     int dims[3];
@@ -32,6 +34,7 @@ public:
 	use_itk = 0;
 	interp_lin = 1;
 	output_dicom = 0;
+	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };
 
