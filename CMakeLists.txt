@@ -500,6 +500,7 @@ ENDIF(F2C_LIBRARY)
 SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
+	cxt_to_mha.cxx cxt_to_mha.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
@@ -525,6 +526,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_stages.cxx plm_stages.h 
 	plm_version.h 
 	plm_warp.cxx plm_warp.h 
+	render_polyline.cxx render_polyline.h
 	resample_mha.cxx resample_mha.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
@@ -573,10 +575,8 @@ SET (CXT_APPLY_DICOM_SRC
 SET (CXT_TO_DICOM_RTSS_SRC 
   cxt_to_dicom_rtss.cxx)
 SET (CXT_TO_MHA_SRC
-	cxt_to_mha.cxx
-	render_polyline.cxx
-	render_polyline.h
-	)
+  cxt_to_mha_main.cxx
+  )
 SET (DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
@@ -728,7 +728,6 @@ IF (QT4_FOUND)
 ENDIF (QT4_FOUND)
 SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
-	render_polyline.cxx render_polyline.h
 	exchkeys.cxx exchkeys.h
 	)
 SET (SHUFFLE_MHA_SRC

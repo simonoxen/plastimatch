@@ -59,9 +59,9 @@ Cxt_structure*
 cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
 {
     int i;
-    Cxt_structure* curr_structure;
 
     for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure* curr_structure;
 	curr_structure = &structures->slist[i];
 	if (curr_structure->id == structure_id) {
 	    return curr_structure;
@@ -404,6 +404,24 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
     fclose (fp);
     fprintf (stderr, "Error parsing input file: %s\n", cxt_fn);
     exit (1);
+}
+
+void
+cxt_prune_empty (Cxt_structure_list* structures)
+{
+    int i;
+
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure* curr_structure;
+	curr_structure = &structures->slist[i];
+	if (curr_structure->num_contours == 0) {
+	    memcpy (curr_structure, 
+		&structures->slist[structures->num_structures-1],
+		sizeof (Cxt_structure));
+	    structures->num_structures --;
+	    i --;
+	}
+    }
 }
 
 void

@@ -25,7 +25,6 @@ Function names: Object-oriented C
 When appropriate, C language files can use an object oriented style.  
 Function names should use the following pattern.
 
-
     /* For objects created on the heap */
     Proj_image *proj;
     proj = proj_image_create ();
@@ -55,3 +54,25 @@ Function names should use the following pattern.
     proj_image_save (&proj, filename);
     proj_image_free (&proj);
 
+
+Command line args, Function options [Proposed, not implemented]
+---------------------------------------------------------------
+Command line arguments are digested, and then placed in a structure 
+called Xxx_args.  Example:
+
+class Warp_args {
+    ...
+};
+
+Complicated functions which are controlled by a structure full of 
+options will use a structure called Xxx_opts.  Example:
+
+typedef struct bspline_opts Bspline_opts;
+struct bspline_opts {
+    ...
+};
+
+N.b. The old way is to use the term "parms" for both types of structures.  
+
+N.b. Does this even make sense?  Cxt_to_mha can use the same structure 
+for both uses.

@@ -1,24 +1,21 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include "cxt_io.h"
-#include "cxt_to_mha.h"
-#include "file_util.h"
+#include "plm_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_path.h"
-#include "readmha.h"
-#include "render_polyline.h"
 #include "volume.h"
+#include "cxt_io.h"
+#include "file_util.h"
+#include "readmha.h"
 
-#if defined (commentout)
 #if defined (WIN32)
 #include <direct.h>
 #define snprintf _snprintf
@@ -27,178 +24,90 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #endif
-#endif
 
+#include "render_polyline.h"
+#include "getopt.h"
+
+#define BUFLEN 2048
+//#define BUF (128 * 1024)
+
+typedef struct program_parms Program_Parms;
+struct program_parms {
+    char labelmap_fn[_MAX_PATH];
+    char xormap_fn[_MAX_PATH];
+    char xorlist_fn[_MAX_PATH];
+    char fixed_fn[_MAX_PATH];
+    char* cxt_fn;
+    char prefix[_MAX_PATH];
+};
 
 void
-cxt_to_mha_init (
-    Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures,
-    bool want_prefix_imgs,
-    bool want_labelmap,
-    bool want_ss_img
-)
+print_usage (void)
 {
-    int slice_voxels;
-
-    slice_voxels = structures->dim[0] * structures->dim[1];
-
-    ctm_state->want_prefix_imgs = want_prefix_imgs;
-    ctm_state->want_labelmap = want_labelmap;
-    ctm_state->want_ss_img = want_ss_img;
-
-    ctm_state->acc_img = (unsigned char*) malloc (
-	slice_voxels * sizeof(unsigned char));
-
-    /* Create output volume for mask image.  This is reused for each 
-       structure */
-    ctm_state->uchar_vol 
-	= volume_create (structures->dim, structures->offset, 
-	    structures->spacing, PT_UCHAR, 0, 0);
-    if (ctm_state->uchar_vol == 0) {
-	print_and_exit ("ERROR: failed in allocating the volume");
-    }
-
-    /* Create output volume for labelmap */
-    ctm_state->labelmap_vol = 0;
-    if (want_labelmap) {
-	ctm_state->labelmap_vol = volume_create (structures->dim, 
-	    structures->offset, structures->spacing, PT_UINT32, 0, 0);
-	if (ctm_state->labelmap_vol == 0) {
-	    print_and_exit ("ERROR: failed in allocating the volume");
-	}
-    }
-
-    /* Create output volume for ss_img */
-    ctm_state->ss_img_vol = 0;
-    if (want_ss_img) {
-	ctm_state->ss_img_vol = volume_create (structures->dim, 
-	    structures->offset, structures->spacing, PT_UINT32, 0, 0);
-	if (ctm_state->ss_img_vol == 0) {
-	    print_and_exit ("ERROR: failed in allocating the volume");
-	}
-    }
-
-    /* Initialize to start with first structure */
-    ctm_state->curr_struct_no = 0;
-}
-
-/* Return true if an image was processed */
-bool
-cxt_to_mha_process_next (
-    Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
-)
-{
-    Cxt_structure* curr_structure;
-    Cxt_polyline* curr_contour;
-    unsigned char* uchar_img = (unsigned char*) ctm_state->uchar_vol->img;
-    int slice_voxels;
-
-    /* If done, return false */
-    if (ctm_state->curr_struct_no >= structures->num_structures) {
-	ctm_state->curr_struct_no = structures->num_structures + 1;
-	return false;
-    }
-    
-    curr_structure = &structures->slist[ctm_state->curr_struct_no];
-    slice_voxels = structures->dim[0] * structures->dim[1];
-
-    memset (uchar_img, 0, structures->dim[0] * structures->dim[1] 
-		* structures->dim[2] * sizeof(unsigned char));
-
-    /* Loop through polylines in this structure */
-    for (int i = 0; i < curr_structure->num_contours; i++) {
-	unsigned char* uchar_slice;
-
-	curr_contour = &curr_structure->pslist[i];
-	if (curr_contour->slice_no == -1) {
-	    continue;
-	}
-
-	/* Render contour to binary */
-	memset (ctm_state->acc_img, 0, slice_voxels * sizeof(unsigned char));
-	render_slice_polyline (ctm_state->acc_img, 
-	    structures->dim, 
-	    structures->spacing, 
-	    structures->offset,
-	    curr_contour->num_vertices, 
-	    curr_contour->x, curr_contour->y);
-
-	/* Copy from acc_img into mask image */
-	if (ctm_state->want_prefix_imgs) {
-	    uchar_slice = &uchar_img[curr_contour->slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
-		uchar_slice[k] ^= ctm_state->acc_img[k];
-	    }
-	}
-
-	/* Copy from acc_img into labelmask and xormap images */
-	if (ctm_state->want_labelmap) {
-	    uint32_t* labelmap_img;
-	    uint32_t* uint32_slice;
-	    labelmap_img = (uint32_t*) ctm_state->labelmap_vol->img;
-	    uint32_slice = &labelmap_img[curr_contour->slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
-		if (ctm_state->acc_img[k]) {
-		    uint32_slice[k] = ctm_state->curr_struct_no + 1;
-		}
-	    }
-	}
-	if (ctm_state->want_ss_img) {
-	    uint32_t* ss_img_img = 0;
-	    uint32_t* uint32_slice;
-	    ss_img_img = (uint32_t*) ctm_state->ss_img_vol->img;
-	    uint32_slice = &ss_img_img[curr_contour->slice_no * slice_voxels];
-	    for (int k = 0; k < slice_voxels; k++) {
-		if (ctm_state->acc_img[k]) {
-		    uint32_slice[k] |= (1 << ctm_state->curr_struct_no);
-		}
-	    }
-	}
-    }
-
-    ctm_state->curr_struct_no ++;
-    return true;
-}
-
-const char*
-cxt_to_mha_current_name (
-    Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
-)
-{
-    if (ctm_state->curr_struct_no == 0 
-	|| ctm_state->curr_struct_no == structures->num_structures + 1)
-    {
-	Cxt_structure *curr_structure;
-	curr_structure = &structures->slist[ctm_state->curr_struct_no-1];
-	return curr_structure->name;
-    } else {
-	return "";
-    }
+    printf ("Usage: cxt_to_mha [options] cxt_file\n");
+    printf ("  The cxt_file is an ASCII file with the contours\n");
+    printf ("  The prefix is (e.g.) a 4 digit patient number.\n");
+    printf ("Options:\n");
+    printf ("  --prefix   string       Generate one file per structure with prefix\n");
+    printf ("  --xormap   filename     Generate multi-structure map\n");
+    printf ("  --xorlist  filename     File with xormap structure names\n");
+    printf ("  --labelmap filename     Generate Slicer3 labelmap\n");
+    printf ("  --fixed filename        Render mha with fixed resolution and geometry\n");
+    exit (-1);
 }
 
 void
-cxt_to_mha_free (Cxt_to_mha_state *ctm_state)
+parse_args (Program_Parms* parms, int argc, char* argv[])
 {
-    if (ctm_state->uchar_vol) {
-	volume_destroy (ctm_state->uchar_vol);
+    int ch;
+    static struct option longopts[] = {
+	{ "labelmap",       required_argument,      NULL,           1 },
+	{ "xormap",         required_argument,      NULL,           2 },
+	{ "xorlist",        required_argument,      NULL,           3 },
+	{ "prefix",         required_argument,      NULL,           4 },
+	{ "fixed",          required_argument,      NULL,           5 },
+	{ NULL,             0,                      NULL,           0 }
+    };
+
+    parms->labelmap_fn[0] = 0;
+    parms->xormap_fn[0] = 0;
+    parms->xorlist_fn[0] = 0;
+    parms->prefix[0] = 0;
+
+    while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
+	switch (ch) {
+	case 1:
+	    strncpy (parms->labelmap_fn, optarg, _MAX_PATH);
+	    break;
+	case 2:
+	    strncpy (parms->xormap_fn, optarg, _MAX_PATH);
+	    break;
+	case 3:
+	    strncpy (parms->xorlist_fn, optarg, _MAX_PATH);
+	    break;
+	case 4:
+	    strncpy (parms->prefix, optarg, _MAX_PATH);
+	    break;
+	case 5:
+	    strncpy (parms->fixed_fn, optarg, _MAX_PATH);
+	    break;
+	default:
+	    break;
+	}
     }
-    if (ctm_state->labelmap_vol) {
-	volume_destroy (ctm_state->labelmap_vol);
+
+    argc -= optind;
+    argv += optind;
+
+    if (argc != 1) {
+	print_usage ();
     }
-    if (ctm_state->ss_img_vol) {
-	volume_destroy (ctm_state->ss_img_vol);
-    }
-    free (ctm_state->acc_img);
+
+    parms->cxt_fn = argv[0];
 }
 
-
-#if defined (commentout)
 int
-cxt_to_mha_
-    fixed,
+main (int argc, char* argv[])
 {
     Program_Parms* parms = (Program_Parms*) malloc (sizeof(Program_Parms));
     Cxt_structure_list* structures;
@@ -220,6 +129,8 @@ cxt_to_mha_
 
     FILE *xorlist_fp = 0;
 
+    parse_args (parms, argc, argv);
+
     structures = (Cxt_structure_list*) malloc (sizeof(Cxt_structure_list));
     curr_structure = (Cxt_structure*) malloc (sizeof(Cxt_structure));
     memset (structures, 0, sizeof(Cxt_structure_list));
@@ -238,6 +149,7 @@ cxt_to_mha_
 	pih.get_gpuit_origin (structures->offset);
 	pih.get_gpuit_spacing (structures->spacing);
 	pih.get_gpuit_dim (structures->dim);
+	
     }
 
     dim[0] = structures->dim[0];
@@ -383,4 +295,3 @@ cxt_to_mha_
     }
     free (parms);
 }
-#endif

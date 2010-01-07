@@ -46,7 +46,7 @@ is_directory (const char *dir)
 }
 
 int
-extension_is (char* fname, char* ext)
+extension_is (const char* fname, const char* ext)
 {
     return (strlen (fname) > strlen(ext)) 
 	&& !strcmp (&fname[strlen(fname)-strlen(ext)], ext);

@@ -79,6 +79,9 @@ cxt_adjust_structure_names (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_destroy (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_prune_empty (Cxt_structure_list* structures);
 
 #if defined __cplusplus
 }

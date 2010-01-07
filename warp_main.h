@@ -21,6 +21,10 @@ public:
     char ctatts_in_fn[_MAX_PATH];
     char dif_in_fn[_MAX_PATH];
     char dicom_dir[_MAX_PATH];
+    char prefix[_MAX_PATH];
+    char labelmap_fn[_MAX_PATH];
+    char ss_img_fn[_MAX_PATH];
+    char ss_list_fn[_MAX_PATH];
     float default_val;
     int use_itk;                 /* force use of itk (1) or not (0) */
     int interp_lin;              /* trilinear (1) or nn (0) */

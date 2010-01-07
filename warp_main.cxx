@@ -12,60 +12,34 @@
 #include "warp_main.h"
 
 static void
-warp_print_usage ()
-{
-    printf ("Usage: plastimatch warp [options]\n"
-	    "Required:\n"
-	    "    --input=filename\n"
-	    "    --output=filename\n"
-	    "Optional:\n"
-	    "    --xf=filename\n"
-	    "    --interpolation=nn\n"
-	    "    --fixed=filename\n"
-	    "    --offset=\"x y z\"\n"
-	    "    --spacing=\"x y z\"\n"
-	    "    --dims=\"x y z\"\n"
-	    "    --output-vf=filename\n"
-	    "    --default-val=number\n"
-	    "    --output-format=dicom\n"
-	    "    --output-type={uchar,short,float,...}\n"
-	    "    --algorithm=itk\n"
-	    "    --ctatts=filename  (for dij)\n"
-	    "    --dif=filename     (for dij)\n"
-	    );
-    exit (-1);
-}
-
-static void
-convert_print_usage ()
-{
-    printf ("Usage: plastimatch convert [options]\n"
-	    "Required:\n"
-	    "    --input=filename\n"
-	    "    --output=filename\n"
-	    "Optional:\n"
-	    "    --xf=filename\n"
-	    "    --interpolation=nn\n"
-	    "    --fixed=filename\n"
-	    "    --offset=\"x y z\"\n"
-	    "    --spacing=\"x y z\"\n"
-	    "    --dims=\"x y z\"\n"
-	    "    --output-vf=filename\n"
-	    "    --default-val=number\n"
-	    "    --output-format=dicom\n"
-	    "    --output-type={uchar,short,float,...}\n"
-	    "    --algorithm=itk\n");
-    exit (-1);
-}
-
-static void
 print_usage (char* command)
 {
-    if (!strcmp (command, "convert")) {
-	convert_print_usage ();
-    } else {
-	warp_print_usage ();
-    }
+    printf (
+	"Usage: plastimatch %s [options]\n"
+	"Required:\n"
+	"    --input=filename\n"
+	"    --output=filename\n"
+	"Optional:\n"
+	"    --xf=filename\n"
+	"    --interpolation=nn\n"
+	"    --fixed=filename\n"
+	"    --offset=\"x y z\"\n"
+	"    --spacing=\"x y z\"\n"
+	"    --dims=\"x y z\"\n"
+	"    --output-vf=filename\n"
+	"    --default-val=number\n"
+	"    --output-format=dicom\n"
+	"    --output-type={uchar,short,float,...}\n"
+	"    --algorithm=itk\n",
+	"    --ctatts=filename         (for dij)\n"
+	"    --dif=filename            (for dij)\n"
+	"    --prefix=string           (for structures)\n"
+	"    --labelmap=filename       (for structures)\n"
+	"    --ss-img=filename         (for structures)\n"
+	"    --ss-list=filename        (for structures)\n"
+	,
+	command);
+    exit (-1);
 }
 
 void
@@ -99,6 +73,14 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output_type",    required_argument,      NULL,           17 },
 	{ "dicom-dir",      required_argument,      NULL,           18 },
 	{ "dicom_dir",      required_argument,      NULL,           18 },
+	{ "prefix",         required_argument,      NULL,           19 },
+	{ "labelmap",       required_argument,      NULL,           20 },
+	{ "ss_img",         required_argument,      NULL,           21 },
+	{ "ss-img",         required_argument,      NULL,           21 },
+	{ "xormap",         required_argument,      NULL,           21 },
+	{ "ss_list",        required_argument,      NULL,           22 },
+	{ "ss-list",        required_argument,      NULL,           22 },
+	{ "xorlist",        required_argument,      NULL,           22 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -191,6 +173,18 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 18:
 	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
+	    break;
+	case 19:
+	    strncpy (parms->prefix, optarg, _MAX_PATH);
+	    break;
+	case 20:
+	    strncpy (parms->labelmap_fn, optarg, _MAX_PATH);
+	    break;
+	case 21:
+	    strncpy (parms->ss_img_fn, optarg, _MAX_PATH);
+	    break;
+	case 22:
+	    strncpy (parms->ss_list_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");

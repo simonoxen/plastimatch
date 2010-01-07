@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 gpuit_EXPORT
-int extension_is (char* fname, char* ext);
+int extension_is (const char* fname, const char* ext);
 gpuit_EXPORT
 int file_exists (const char *filename);
 gpuit_EXPORT

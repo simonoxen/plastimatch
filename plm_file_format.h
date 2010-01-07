@@ -30,5 +30,8 @@ plm_file_format_string (Plm_file_format file_type);
 plastimatch1_EXPORT
 Plm_file_format 
 plm_file_format_parse (const char* string);
+plastimatch1_EXPORT
+Plm_file_format 
+plm_file_format_from_extension (const char* filename);
 
 #endif

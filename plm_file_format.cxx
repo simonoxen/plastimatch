@@ -9,6 +9,7 @@
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 
+#include "file_util.h"
 #include "gdcm_rtss.h"
 #include "itk_image.h"
 #include "plm_file_format.h"
@@ -156,3 +157,17 @@ plm_file_format_parse (const char* string)
     }
 }
 
+
+Plm_file_format 
+plm_file_format_from_extension (const char* filename)
+{
+    if (extension_is (filename, ".dcm")) {
+	return PLM_FILE_FMT_DICOM_DIR;
+    }
+    else if (extension_is (filename, ".cxt")) {
+	return PLM_FILE_FMT_CXT;
+    }
+    else {
+	return PLM_FILE_FMT_IMG;
+    }
+}

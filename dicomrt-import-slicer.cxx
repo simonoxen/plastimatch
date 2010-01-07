@@ -3,11 +3,15 @@
 #include <vector>
 #include "dicomrt-import-slicerCLP.h"
 
+#include "plm_config.h"
+#include "warp_main.h"
+
 int 
 main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
+    Warp_parms parms;
     char buf1[L_tmpnam+1];
     //    char* parms_fn = tmpnam (buf1);
     char* parms_fn = "C:/tmp/dicomrt-import-slicer-parms.txt";
@@ -23,6 +27,8 @@ main (int argc, char * argv [])
 	     );
 
     fclose (fp);
+
+    warp_dicom_rtss (&parms);
 
     return EXIT_SUCCESS;
 }
