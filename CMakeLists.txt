@@ -600,6 +600,7 @@ SET (DICOM_UID_SRC
 	)
 SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
+ 	warp_dicom_rtss.cxx 
 	)
 SET (DRR_SRC
 	drr_main.c 

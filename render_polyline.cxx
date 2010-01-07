@@ -7,10 +7,12 @@
     http://graphics.cs.ucdavis.edu/education/GraphicsNotes/Scan-Conversion/Scan-Conversion.html
     http://www.cs.berkeley.edu/~sequin/CS184/TEXT/Algorithm.html
   */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "render_polyline.h"
 
 typedef struct edge Edge;
 struct edge {
