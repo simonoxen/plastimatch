@@ -27,7 +27,8 @@ do_cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 	    strcat (fn, "_");
 	    strcat (fn, cxt_to_mha_current_name (&ctm_state, structures));
 	    strcat (fn, ".mha");
-	    write_mha (fn, ctm_state.uchar_vol);
+	    //write_mha (fn, ctm_state.uchar_vol);
+	    plm_image_save_vol (fn, ctm_state.uchar_vol);
 	}
     }
     /* Write out labelmap, ss_img */

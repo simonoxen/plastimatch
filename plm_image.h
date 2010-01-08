@@ -87,11 +87,33 @@ public:
     void convert_and_save (const char* fname, PlmImageType new_type);
 
     /* assignment */
-    void set_gpuit_float (volume *v) {
+    void set_gpuit (volume *v) {
 	free ();
 	m_gpuit = (void*) v;
-	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	switch (v->pix_type) {
+	case PT_UCHAR:
+	    m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+	    m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+	    break;
+	case PT_SHORT:
+	    m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
+	    m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+	    break;
+	case PT_UINT32:
+	    m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
+	    m_type = PLM_IMG_TYPE_GPUIT_UINT32;
+	    break;
+	case PT_FLOAT:
+	    m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	    m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	    break;
+	default:
+	    print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
+	    break;
+	}
+    }
+    void set_gpuit_float (volume *v) {
+	set_gpuit (v);
     }
 
     /* conversion */
@@ -120,5 +142,8 @@ plastimatch1_EXPORT
 PlmImage* plm_image_load (char* fname, PlmImageType type);
 plastimatch1_EXPORT
 PlmImage* plm_image_load_native (const char* fname);
+plastimatch1_EXPORT
+void
+plm_image_save_vol (const char* fname, Volume *vol);
 
 #endif

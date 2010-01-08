@@ -429,3 +429,13 @@ PlmImage::compare_headers (PlmImage *pli1, PlmImage *pli2)
 
     return PlmImageHeader::compare (&pih1, &pih2);
 }
+
+void
+plm_image_save_vol (const char* fname, Volume *vol)
+{
+    Volume *v2 = volume_clone (vol);
+    PlmImage pi;
+
+    pi.set_gpuit (v2);
+    
+}
