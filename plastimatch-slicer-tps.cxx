@@ -74,7 +74,7 @@ main (int argc, char * argv [])
 
     /* Export as slicer requests */
     PlmImage pli_warped;
-    pli_warped.set_gpuit_float (vout);  /* vout will be freed by container */
+    pli_warped.set_gpuit (vout);  /* vout will be freed by container */
     pli_warped.convert_and_save (plmslc_warped_volume.c_str(), 
 	PLM_IMG_TYPE_ITK_FLOAT);
 

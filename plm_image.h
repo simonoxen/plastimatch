@@ -91,8 +91,8 @@ public:
     void convert_and_save (const char* fname, PlmImageType new_type);
 
     /* assignment */
+    plastimatch1_EXPORT
     void set_gpuit (volume *v);
-    void set_gpuit_float (volume *v);
 
     /* conversion */
     FloatImageType::Pointer& itk_float () {

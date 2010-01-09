@@ -147,7 +147,7 @@ plm_warp_native (
 	interp_lin, default_val);
 
     /* Return output image to caller */
-    im_warped->set_gpuit_float (v_out);
+    im_warped->set_gpuit (v_out);
 
     /* Bspline_warp only operates on float.  We need to back-convert */
     im_warped->convert_to_original_type ();
