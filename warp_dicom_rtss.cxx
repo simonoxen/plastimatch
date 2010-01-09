@@ -33,13 +33,16 @@ do_cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
     }
     /* Write out labelmap, ss_img */
     if (parms->labelmap_fn[0]) {
-	write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
+	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
+	plm_image_save_vol (parms->labelmap_fn, ctm_state.labelmap_vol);
     }
     if (parms->output_fn[0]) {
-	write_mha (parms->output_fn, ctm_state.ss_img_vol);
+	//write_mha (parms->output_fn, ctm_state.ss_img_vol);
+	plm_image_save_vol (parms->output_fn, ctm_state.ss_img_vol);
     }
     else if (parms->output_fn[0]) {
-	write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
+	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
+	plm_image_save_vol (parms->ss_img_fn, ctm_state.ss_img_vol);
     }
 
     /* Write out list of structure names */

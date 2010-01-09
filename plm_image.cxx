@@ -183,16 +183,53 @@ PlmImage::save_image (const char* fname)
 }
 
 /* -----------------------------------------------------------------------
+   Assignment
+   ----------------------------------------------------------------------- */
+void 
+PlmImage::set_gpuit (volume *v)
+{
+    this->free ();
+    m_gpuit = (void*) v;
+    switch (v->pix_type) {
+    case PT_UCHAR:
+	m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+	m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
+	break;
+    case PT_SHORT:
+	m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
+	m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+	break;
+    case PT_UINT32:
+	m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
+	m_type = PLM_IMG_TYPE_GPUIT_UINT32;
+	break;
+    case PT_FLOAT:
+	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
+	break;
+    default:
+	print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
+	break;
+    }
+}
+
+void 
+PlmImage::set_gpuit_float (volume *v)
+{
+    set_gpuit (v);
+}
+
+/* -----------------------------------------------------------------------
    Conversion
    ----------------------------------------------------------------------- */
-template<class T> 
+template<class T, class U> 
 static T
-plm_image_convert_gpuit_float_to_itk (PlmImage* pli, T itk_img)
+plm_image_convert_gpuit_to_itk (PlmImage* pli, T itk_img, U)
 {
     typedef typename T::ObjectType ImageType;
     int i, d1, d2;
     Volume* vol = (Volume*) pli->m_gpuit;
-    float* img = (float*) vol->img;
+    U* img = (U*) vol->img;
     typename ImageType::SizeType sz;
     typename ImageType::IndexType st;
     typename ImageType::RegionType rg;
@@ -218,13 +255,14 @@ plm_image_convert_gpuit_float_to_itk (PlmImage* pli, T itk_img)
     itk_img->SetOrigin (og);
     itk_img->SetSpacing (sp);
     itk_img->SetDirection (dc);
+
     itk_img->Allocate();
 
     /* Copy data into itk */
     typedef itk::ImageRegionIterator< ImageType > IteratorType;
     IteratorType it (itk_img, rg);
     for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	/* Type conversion: float -> itk happens here */
+	/* Type conversion: U -> itk happens here */
 	it.Set (img[i]);
     }
 
@@ -284,15 +322,44 @@ PlmImage::convert_to_itk_uchar (void)
 	this->m_itk_uchar = cast_uchar (this->m_itk_float);
 	this->m_itk_float = 0;
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uchar, (unsigned char) 0);
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uchar = plm_image_convert_gpuit_float_to_itk (
-	    this, this->m_itk_uchar);
+	this->m_itk_uchar = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uchar, float (0));
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_float()\n");
+	print_and_exit ("Error: unhandled conversion to itk_uchar\n");
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+}
+
+void
+PlmImage::convert_to_itk_short (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_SHORT:
+	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_short = cast_short (this->m_itk_float);
+	this->m_itk_float = 0;
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->m_itk_short = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_short, (short) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_short = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_short, (float) 0);
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_short\n");
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 }
 
 void
@@ -305,12 +372,26 @@ PlmImage::convert_to_itk_uint32 (void)
 	this->m_itk_uint32 = cast_uint32 (this->m_itk_float);
 	this->m_itk_float = 0;
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uint32, (unsigned char) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uint32, (short) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	printf ("Trying to convert gpuit to itk.\n");
+	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uint32, (uint32_t) 0);
+	printf ("Finished conversion.\n");
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_uint32 = plm_image_convert_gpuit_float_to_itk (
-	    this, this->m_itk_uint32);
+	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_uint32, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_float()\n");
+	print_and_exit ("Error: unhandled conversion to itk_uint32\n");
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_ULONG;
@@ -335,14 +416,50 @@ PlmImage::convert_to_itk_float ()
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
-	this->m_itk_float = plm_image_convert_gpuit_float_to_itk (
-	    this, this->m_itk_float);
+	this->m_itk_float = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_float, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_float()\n");
+	print_and_exit ("Error: unhandled conversion to itk_float\n");
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
+}
+
+void
+PlmImage::convert_to_itk (void)
+{
+    switch (m_type) {
+
+    case PLM_IMG_TYPE_ITK_CHAR:
+    case PLM_IMG_TYPE_ITK_UCHAR:
+    case PLM_IMG_TYPE_ITK_SHORT:
+    case PLM_IMG_TYPE_ITK_USHORT:
+    case PLM_IMG_TYPE_ITK_LONG:
+    case PLM_IMG_TYPE_ITK_ULONG:
+    case PLM_IMG_TYPE_ITK_FLOAT:
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+    case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+	/* Do nothing */
+	break;
+
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->convert_to_itk_uchar ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->convert_to_itk_short ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	this->convert_to_itk_uint32 ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->convert_to_itk_float ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+    default:
+	print_and_exit ("Undefined conversion in Plm_image::convert_to_itk\n");
+	break;
+    }
 }
 
 void
@@ -431,12 +548,20 @@ PlmImage::compare_headers (PlmImage *pli1, PlmImage *pli2)
     return PlmImageHeader::compare (&pih1, &pih2);
 }
 
+/* GCS FIX:  This is inefficient.  Because the pli owns the vol, 
+   it will free it when it converts to itk.  Therefore we make an 
+   extra copy just for this deletion.  Maybe we could switch to 
+   reference counting?  See e.g. 
+   http://blog.placidhacker.com/2008/11/reference-counting-in-c.html
+   for an example of ref counting in C.  */
 void
 plm_image_save_vol (const char* fname, Volume *vol)
 {
     Volume *v2 = volume_clone (vol);
-    PlmImage pi;
+    PlmImage pli;
 
-    pi.set_gpuit (v2);
+    pli.set_gpuit (v2);
+    pli.convert_to_itk ();
     
+    pli.save_image (fname);
 }

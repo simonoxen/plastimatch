@@ -37,7 +37,11 @@ private:
     PlmImage& operator= (PlmImage& xf) {
 	return *this;
     }
+    plastimatch1_EXPORT
     void convert_to_itk_uchar ();
+    plastimatch1_EXPORT
+    void convert_to_itk_short ();
+    plastimatch1_EXPORT
     void convert_to_itk_uint32 ();
     plastimatch1_EXPORT
     void convert_to_itk_float ();
@@ -87,34 +91,8 @@ public:
     void convert_and_save (const char* fname, PlmImageType new_type);
 
     /* assignment */
-    void set_gpuit (volume *v) {
-	free ();
-	m_gpuit = (void*) v;
-	switch (v->pix_type) {
-	case PT_UCHAR:
-	    m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR;
-	    m_type = PLM_IMG_TYPE_GPUIT_UCHAR;
-	    break;
-	case PT_SHORT:
-	    m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
-	    m_type = PLM_IMG_TYPE_GPUIT_SHORT;
-	    break;
-	case PT_UINT32:
-	    m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
-	    m_type = PLM_IMG_TYPE_GPUIT_UINT32;
-	    break;
-	case PT_FLOAT:
-	    m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-	    m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-	    break;
-	default:
-	    print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
-	    break;
-	}
-    }
-    void set_gpuit_float (volume *v) {
-	set_gpuit (v);
-    }
+    void set_gpuit (volume *v);
+    void set_gpuit_float (volume *v);
 
     /* conversion */
     FloatImageType::Pointer& itk_float () {
@@ -129,6 +107,8 @@ public:
     void convert (PlmImageType new_type);
     plastimatch1_EXPORT
     void convert_to_original_type (void);
+    plastimatch1_EXPORT
+    void convert_to_itk (void);
 
     /* Other */
     plastimatch1_EXPORT

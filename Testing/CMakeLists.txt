@@ -328,6 +328,21 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output;chest-phantom.mha"
   )
+PLM_ADD_TEST (
+  "plm-convert-dicom-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;chest-phantom.mha"
+  )
+ADD_TEST (
+  "plm-convert-dicom-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-667.5"
+  "-DUPPER_THRESH=-666.6"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rtss
@@ -336,7 +351,13 @@ PLM_ADD_TEST (
   "plm-convert-dicom-rtss"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-rtss-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;chest-phantom-structures.mha"
   )
 
 ## -------------------------------------------------------------------------
@@ -591,4 +612,3 @@ PLM_ADD_TEST (
 IF (Slicer3_DIR)
 #  slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
 ENDIF (Slicer3_DIR)
-
