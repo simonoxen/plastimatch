@@ -1,30 +1,50 @@
-***** Alternative warping engine *****
+***** dcmtk quick ref *****
 
-The exiting warping engine is slow, and uses a lot of memory.  On many 
-machines, plastimatch crashes because it uses too much memory.
-However, a low-memory warping method requires tight integration with 
-the xform type.  
+Run the dicom server like this:
 
-Challenges:
+  $ dcmqrscp
 
-1) B-spline code needs clean-up to remove redundancies.  However, removing 
-   redundancies takes time so as not to break everything. 
-2) Some of the xforms are only implemented in itk.  These will not benefit 
-   from redesign.
-3) Writing lots of separate warping functions is tedious.
+It will read a file "dcmqrscp.cfg" in the current directory, which is used 
+to set user/group, port, AET, storage directory.  NOTE: Be very careful 
+about extra spaces in the list of remote AETs.  Here the file I used 
+for these tests:
 
-Strategy:
+--- begin here ---
+NetworkType     = "tcp"
+NetworkTCPPort  = 9885
+MaxPDUSize      = 16384
+MaxAssociations = 16
+Display         = "no"
+UserName        = "gsharp"
+GroupName       = "gsharp"
+HostTable BEGIN
+entry1           = (MOVESCU, localhost, 19530)
+entry2           = (STORESCP, localhost, 19335)
+HostTable END
+VendorTable BEGIN
+VendorTable END
+AETable BEGIN
+READWRITE     /home/gsharp/projects/dicom-test/junk RW (10, 1024mb)  ANY
+AETable END
+--- end here ---
 
-Stage 1:  Refactor b-spline code
-Stage 2:  Write gpuit b-spline warper
-Stage 3:  Consider whether other xforms would benefit
+Send files to database like this:
 
+  $ storescu -aec READWRITE localhost 9885 *.dcm
 
-***** B-spline refactoring project *****
+Query the database like this:
 
-Stage 1:  Write test harnesses to eliminate breakage
-Stage 2:  Identify parts to refactor
-Stage 3:  Do the refactoring
+  $ findscu -P -k 0010,0010 -k 0008,0052=PATIENT -aec READWRITE localhost 9885
+
+Retrieve from the database like this:
+
+  $ movescu -v --patient -aet MOVESCU -aem MOVESCU -aec READWRITE --port 19530 -k 0008,0052=PATIENT -k 0010,0020=PL811332912032439 localhost 9885
+
+Or like this:
+
+  $ storescp 19335 &
+  $ movescu -v --patient -aet MOVESCU -aem STORESCP -aec READWRITE -k 0008,0052=PATIENT -k 0010,0020=PL811332912032439 localhost 9885
+
 
 ***** Proposed engineering changes: Aug 1, 2009 *****
 

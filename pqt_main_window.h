@@ -5,28 +5,29 @@
 #define _pqt_main_window_h_
 
 #include "plm_config.h"
-#include <QMainWindow>
+#include "pqt_patient_list_model.h"
+#include "ui_pqt_main_window.h"
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 // class QAction;
 // class QDialogButtonBox;
 // class QGroupBox;
 // class QLabel;
 // class QLineEdit;
-class QMenu;
+// class QMenu;
 // class QMenuBar;
 // class QPushButton;
 // class QTextEdit;
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-class Pqt_main_window : public QMainWindow {
+class Pqt_main_window : public QMainWindow, private Ui::pqtMainWindow {
     Q_OBJECT
     ;
 
 public:
     Pqt_main_window ();
+    ~Pqt_main_window ();
 
-private:
-    QMenu *file_menu;
+    Pqt_patient_list_model *m_patient_list_model;
 };
 #endif
