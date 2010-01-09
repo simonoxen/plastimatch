@@ -228,12 +228,13 @@ do_command_warp (int argc, char* argv[])
 	    warp_pointset_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
-	    warp_dicom_rtss (&parms);
+	    rtss_warp (&parms);
 	    break;
 	default:
-	    print_and_exit ("Sorry, don't know how to convert/warp input type %s (%s)\n",
-			    plm_file_format_string (file_type),
-			    parms.input_fn);
+	    print_and_exit (
+		"Sorry, don't know how to convert/warp input type %s (%s)\n",
+		plm_file_format_string (file_type),
+		parms.input_fn);
 	    break;
 	}
     }

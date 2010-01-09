@@ -8,7 +8,8 @@
 #include "plm_file_format.h"
 #include "plm_image_header.h"
 #include "readmha.h"
-#include "warp_main.h"
+#include "rtss_warp.h"
+#include "warp_parms.h"
 #include "xform.h"
 
 
@@ -69,7 +70,7 @@ do_cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 }
 
 void
-warp_dicom_rtss (Warp_parms *parms)
+rtss_warp (Warp_parms *parms)
 {
     Cxt_structure_list structures;
 

@@ -528,6 +528,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_warp.cxx plm_warp.h 
 	render_polyline.cxx render_polyline.h
 	resample_mha.cxx resample_mha.h 
+ 	rtss_warp.cxx rtss_warp.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	tps.cxx tps.h
@@ -600,7 +601,6 @@ SET (DICOM_UID_SRC
 	)
 SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
- 	warp_dicom_rtss.cxx 
 	)
 SET (DRR_SRC
 	drr_main.c 
@@ -708,7 +708,6 @@ SET (PLASTIMATCH_SRC
 	plastimatch_main.cxx
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h
- 	warp_dicom_rtss.cxx 
  	warp_dij_main.cxx 
 	warp_mha_main.cxx 
 	warp_main.cxx warp_main.h 

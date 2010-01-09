@@ -4,7 +4,7 @@
 #include "dicomrt-import-slicerCLP.h"
 
 #include "plm_config.h"
-#include "warp_main.h"
+#include "rtss_warp.h"
 
 int 
 main (int argc, char * argv [])
@@ -31,7 +31,7 @@ main (int argc, char * argv [])
     strcpy (parms.input_fn, input_dicomrt_ss.c_str());
     strcpy (parms.labelmap_fn, output_labelmap.c_str());
     strcpy (parms.fixed_im_fn, reference_vol.c_str());
-    warp_dicom_rtss (&parms);
+    rtss_warp (&parms);
 
     return EXIT_SUCCESS;
 }
