@@ -49,7 +49,9 @@ itk__GetImageType (std::string fileName,
 	pixel_type = imageReader->GetImageIO()->GetPixelType();
 	component_type = imageReader->GetImageIO()->GetComponentType();
     } catch (itk::ExceptionObject &ex) {
-	ex;    /* Suppress compiler warning */
+#if _MSC_VER
+	ex;    /* Suppress compiler warning on windows */
+#endif
     }
 }
 

@@ -87,7 +87,8 @@ PlmImage::load_native (const char* fname)
 	this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 	break;
     default:
-	printf ("Error, unsupported output type\n");
+	printf ("Error, unsupported input type in load_native(): %d\n",
+	    componentType);
 	exit (-1);
 	break;
     }

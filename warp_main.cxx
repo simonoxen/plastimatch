@@ -30,7 +30,7 @@ print_usage (char* command)
 	"    --default-val=number\n"
 	"    --output-format=dicom\n"
 	"    --output-type={uchar,short,float,...}\n"
-	"    --algorithm=itk\n",
+	"    --algorithm=itk\n"
 	"    --ctatts=filename         (for dij)\n"
 	"    --dif=filename            (for dij)\n"
 	"    --prefix=string           (for structures)\n"
@@ -206,7 +206,6 @@ do_command_warp (int argc, char* argv[])
     void test_fn (Warp_parms *parms);
     
     warp_parse_args (&parms, argc, argv);
-    printf ("Trying to deduce file type\n");
     file_type = plm_file_format_deduce (parms.input_fn);
 
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {

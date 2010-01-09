@@ -55,6 +55,26 @@ Function names should use the following pattern.
     proj_image_free (&proj);
 
 
+Native layer, itk layer, wrapper layer [Proposed, not implemented]
+------------------------------------------------------------------
+The following prefixes should be used for these three layers:
+
+  itk_xxxx            ## ITK layer, makes itk function calls.
+  xxxx                ## Native layer
+  plm_xxxx            ## Wrapper layer
+
+Alternatives:
+
+  plc_xxx             ## Native layer
+  plm_core_xxx        ## Native layer
+
+For images, use this following 
+
+  itk_image, itk      ## ITK layer
+  vol                 ## Native layer
+  plm_image, pli      ## Wrapper layer
+
+
 Command line args, Function options [Proposed, not implemented]
 ---------------------------------------------------------------
 Command line arguments are digested, and then placed in a structure 
@@ -76,3 +96,18 @@ N.b. The old way is to use the term "parms" for both types of structures.
 
 N.b. Does this even make sense?  Cxt_to_mha can use the same structure 
 for both uses.
+
+
+Variable naming for indexing  [Proposed, not implemented]
+---------------------------------------------------------
+
+Fixed image voxel                   (f[3]), fidx <currently (fi,fj,fk),fv>
+Moving image voxel                  (m[3]), midx < ditto >
+    - what about ROI's              ?
+    - what about physical coords    ?
+Tile (fixed)                        (t[3]), tidx <currently p[3]>
+Offset within tile (fixed)          (o[3]), oidx <currently q[3]>
+Control point                       (c[3]), cidx <currently (i,j,k), m>
+Coefficient array                   ?                <currently cidx>
+Multiplier LUT                      qidx
+Index LUT                           pidx
