@@ -1097,9 +1097,22 @@ ENDIF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 # Test executable -- opencl
 IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
-  SET (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl)
+  SET (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl
+    "${CMAKE_BINARY_DIR}/opencl_test.cl"
+    )
   PLM_ADD_EXECUTABLE (opencl_test "${OPENCL_TEST_SRC}" "${OPENCL_LIBRARIES}" "")
   #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
+
+  ## I don't yet know how to bundle the .cl file within the executable.
+  ## Therefore, do the copying method.
+  # ADD_CUSTOM_COMMAND (TARGET opencl_test
+  #   COMMAND ${CMAKE_COMMAND} "-E" "copy" 
+  #   "${CMAKE_SOURCE_DIR}/opencl_test.cl" "${CMAKE_BINARY_DIR}")
+  ADD_CUSTOM_COMMAND (OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl"
+    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
+    "${CMAKE_SOURCE_DIR}/opencl_test.cl" "${CMAKE_BINARY_DIR}/opencl_test.cl"
+    DEPENDS "${CMAKE_SOURCE_DIR}/opencl_test.cl")
+  ADD_DEPENDENCIES (opencl_test "${CMAKE_BINARY_DIR}/opencl_test.cl")
 ENDIF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
 
 # Test executable -- openmp

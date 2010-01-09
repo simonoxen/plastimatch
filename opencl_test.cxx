@@ -181,10 +181,59 @@ initializeCL(void)
     cl_int status = 0;
     size_t deviceListSize;
 
+    /*
+     * Have a look at the available platforms and pick either
+     * the AMD one if available or a reasonable default.
+     */
+
+    cl_uint numPlatforms;
+    cl_platform_id platform = NULL;
+    status = clGetPlatformIDs(0, NULL, &numPlatforms);
+    if(status != CL_SUCCESS)
+    {
+        std::cout << "Error: Getting Platforms. (clGetPlatformsIDs)\n";
+        return 1;
+    }
+    
+    if(numPlatforms > 0)
+    {
+        cl_platform_id* platforms = new cl_platform_id[numPlatforms];
+        status = clGetPlatformIDs(numPlatforms, platforms, NULL);
+        if(status != CL_SUCCESS)
+        {
+            std::cout << "Error: Getting Platform Ids. (clGetPlatformsIDs)\n";
+            return 1;
+        }
+        for(unsigned int i=0; i < numPlatforms; ++i)
+        {
+            char pbuff[100];
+            status = clGetPlatformInfo(
+                        platforms[i],
+                        CL_PLATFORM_VENDOR,
+                        sizeof(pbuff),
+                        pbuff,
+                        NULL);
+            platform = platforms[i];
+            if(!strcmp(pbuff, "Advanced Micro Devices, Inc."))
+            {
+                break;
+            }
+        }
+        delete platforms;
+    }
+
+    /* 
+     * If we could find our platform, use it. Otherwise pass a NULL and get whatever the
+     * implementation thinks we should be using.
+     */
+
+    cl_context_properties cps[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0 };
+    cl_context_properties* cprops = (NULL == platform) ? NULL : cps;
+
 	/////////////////////////////////////////////////////////////////
 	// Create an OpenCL context
 	/////////////////////////////////////////////////////////////////
-    context = clCreateContextFromType(0, 
+    context = clCreateContextFromType(cprops, 
                                       CL_DEVICE_TYPE_CPU, 
                                       NULL, 
                                       NULL, 
@@ -279,7 +328,7 @@ initializeCL(void)
 	/////////////////////////////////////////////////////////////////
 	// Load CL file, build CL program object, create CL kernel object
 	/////////////////////////////////////////////////////////////////
-    const char * filename  = "Template_Kernels.cl";
+    const char * filename  = "opencl_test.cl";
     std::string  sourceStr = convertToString(filename);
     const char * source    = sourceStr.c_str();
     size_t sourceSize[]    = { strlen(source) };
