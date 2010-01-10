@@ -12,7 +12,6 @@
 #include "warp_parms.h"
 #include "xform.h"
 
-
 static void
 do_cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 {
@@ -92,7 +91,12 @@ rtss_warp (Warp_parms *parms)
 	pih.get_gpuit_origin (structures.offset);
 	pih.get_gpuit_spacing (structures.spacing);
 	pih.get_gpuit_dim (structures.dim);
+	structures.have_geometry = 1;
+
+	cxt_apply_geometry (&structures);
     }
+
+    cxt_debug (&structures);
 
     /* If user didn't specify output format, see if we can guess from 
        filename extension */

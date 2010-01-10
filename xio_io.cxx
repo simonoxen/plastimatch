@@ -146,7 +146,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	bsreadln (line1, bs, '\n');
     }
 
-    cxt_debug_structures (structures);
+    cxt_debug (structures);
 
     bdestroy (line1);
     bdestroy (line2);

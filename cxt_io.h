@@ -72,7 +72,7 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
 	   bool prune_empty);
 plastimatch1_EXPORT
 void
-cxt_debug_structures (Cxt_structure_list* structures);
+cxt_debug (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_adjust_structure_names (Cxt_structure_list* structures);
@@ -82,6 +82,9 @@ cxt_destroy (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_prune_empty (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_apply_geometry (Cxt_structure_list* structures);
 
 #if defined __cplusplus
 }

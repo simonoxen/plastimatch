@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Plastimatch</category>
-  <title>(MGH) DicomRT Structure Import</title>
+  <title>DicomRT Structure Import</title>
   <description>DicomRT Structure Set Import</description>
   <version>0.0</version>
   <documentation-url></documentation-url>
@@ -27,7 +27,7 @@
       <default>None</default>
       <description>Reference Volume (to set size)</description>
     </image>
-    <image>
+    <image type="label">
       <name>output_labelmap</name>
       <label>Output Labelmap</label>
       <channel>output</channel>

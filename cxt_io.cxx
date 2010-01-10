@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bstrlib.h"
-#include "file_util.h"
 #include "cxt_io.h"
+#include "file_util.h"
+#include "mathutil.h"
 
 void
 cxt_initialize (Cxt_structure_list* structures)
@@ -71,17 +72,26 @@ cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
 }
 
 void
-cxt_debug_structures (Cxt_structure_list* structures)
+cxt_debug (Cxt_structure_list* structures)
 {
     int i;
     Cxt_structure* curr_structure;
 
+    printf ("dim = %d %d %d\n", 
+	structures->dim[0], structures->dim[1], structures->dim[2]);
+    printf ("offset = %g %g %g\n", 
+	structures->offset[0], structures->offset[1], structures->offset[2]);
+    printf ("spacing = %g %g %g\n", 
+	structures->spacing[0], structures->spacing[1], structures->spacing[2]);
+
     for (i = 0; i < structures->num_structures; i++) {
         curr_structure = &structures->slist[i];
-	printf ("%d %d %s (%p)\n", 
-		i, curr_structure->id, 
-		curr_structure->name, 
-		curr_structure->pslist);
+	printf ("%d %d %s (%p) (%d contours)\n", 
+	    i, curr_structure->id, 
+	    curr_structure->name, 
+	    curr_structure->pslist,
+	    curr_structure->num_contours
+	);
     }
 }
 
@@ -146,7 +156,6 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
 
     fclose (fp);
 }
-
 
 void
 cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
@@ -595,3 +604,29 @@ cxt_destroy (Cxt_structure_list* structures)
     cxt_initialize (structures);
 }
 
+void
+cxt_apply_geometry (Cxt_structure_list* structures)
+{
+    int i, j;
+
+    if (!structures->have_geometry) return;
+
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure *curr_structure = &structures->slist[i];
+	for (j = 0; j < curr_structure->num_contours; j++) {
+	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    if (curr_polyline->num_vertices == 0) {
+		curr_polyline->slice_no = -1;
+		continue;
+	    }
+	    float z = curr_polyline->z[0];
+	    int slice_idx = ROUND_INT((z - structures->offset[2]) 
+		/ structures->spacing[2]);
+	    if (slice_idx < 0 || slice_idx >= structures->dim[2]) {
+		curr_polyline->slice_no = -1;
+	    } else {
+		curr_polyline->slice_no = slice_idx;
+	    }
+	}
+    }
+}

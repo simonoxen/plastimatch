@@ -348,16 +348,46 @@ ADD_TEST (
 ## plastimatch convert dicom-rtss
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plm-convert-dicom-rtss"
+  "plm-convert-dicom-rtss-a"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures-a.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
   )
 PLM_ADD_TEST (
-  "plm-convert-dicom-rtss-stats"
+  "plm-convert-dicom-rtss-stats-a"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;chest-phantom-structures.mha"
+  "stats;--input;chest-phantom-structures-a.mha"
+  )
+ADD_TEST (
+  "plm-convert-dicom-rtss-check-a"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-rtss-stats-a.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=1.05"
+  "-DUPPER_THRESH=1.06"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-rtss-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures-b.mha;--fixed;${PLM_TESTING_BUILD_DIR}/chest-phantom.mha"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-rtss-stats-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;chest-phantom-structures-b.mha"
+  )
+ADD_TEST (
+  "plm-convert-dicom-rtss-check-b"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-rtss-stats-b.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=1.05"
+  "-DUPPER_THRESH=1.06"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------
