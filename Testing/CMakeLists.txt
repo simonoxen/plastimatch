@@ -1,6 +1,6 @@
 PROJECT(PLM_Testing)
 
-IF (PLM_TEST_EXTENDED)
+IF (PLM_TEST_DICOM)
   SET (DOWNLOADED_TEST_DATA_URL
     http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz)
   SET (DOWNLOADED_TEST_DATA_FILENAME
@@ -23,7 +23,7 @@ IF (PLM_TEST_EXTENDED)
       ERROR_VARIABLE untar_error)
     MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
   ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
-ENDIF (PLM_TEST_EXTENDED)
+ENDIF (PLM_TEST_DICOM)
 
 SET (SYNTH_MHA_SIZE 38)
 

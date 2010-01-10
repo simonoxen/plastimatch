@@ -1,11 +1,29 @@
 
 SET (CUDA_FOUND @CUDA_FOUND@)
 SET (BROOK_FOUND @BROOK_FOUND@)
-
-SET (PLM_TEST_EXTENDED @PLM_TEST_EXTENDED@)
+SET (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
+SET (PLM_TEST_DICOM @PLM_TEST_DICOM@)
+SET (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
 
 #SET (REDUCED_TEST ON)
 SET (REDUCED_TEST OFF)
+
+
+## If we didn't get dicom test data, don't add these tests
+IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom"
+    "plm-convert-dicom-stats"
+    "plm-convert-dicom-check"
+    "plm-convert-dicom-rtss-a"
+    "plm-convert-dicom-rtss-stats-a"
+    "plm-convert-dicom-rtss-check-a"
+    "plm-convert-dicom-rtss-b"
+    "plm-convert-dicom-rtss-stats-b"
+    "plm-convert-dicom-rtss-check-b"
+    )
+ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 
 IF (NOT CUDA_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -32,7 +50,7 @@ IF (NOT BROOK_FOUND)
 ENDIF (NOT BROOK_FOUND)
 
 ## Don't test unused algorithms
-IF (NOT PLM_TEST_EXTENDED)
+IF (NOT PLM_TEST_BSPLINE_FLAVORS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "bspline-a"
@@ -46,16 +64,7 @@ IF (NOT PLM_TEST_EXTENDED)
     "bspline-f"
     "bspline-f-check"
     )
-ENDIF (NOT PLM_TEST_EXTENDED)
-
-## Don't test things which require download
-IF (NOT PLM_TEST_EXTENDED)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "plm-convert-dicom"
-    "plm-convert-dicom-rtss"
-    )
-ENDIF (NOT PLM_TEST_EXTENDED)
+ENDIF (NOT PLM_TEST_BSPLINE_FLAVORS)
 
 ## Don't delete from the list, comment out instead.
 IF (REDUCED_TEST)

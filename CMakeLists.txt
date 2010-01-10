@@ -42,7 +42,10 @@ SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
-SET (PLM_TEST_EXTENDED OFF CACHE BOOL "Extended regression testing")
+SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
+  "Regression tests for seldom used b-spline implementations")
+SET (PLM_TEST_DICOM OFF CACHE BOOL 
+  "Regression tests for dicom, dicomrt (downloads extra test data)")
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
@@ -791,20 +794,6 @@ IF(OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (fdk_main.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 ENDIF(OPENMP_FOUND)
-
-##-----------------------------------------------------------------------------
-##  CONFIGURE INCLUDE FILE
-##-----------------------------------------------------------------------------
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake 
-  ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
-
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.cmake 
-  ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
-
-IF (CMAKE_Fortran_COMPILER_WORKS)
-##  Ideally I should do this if there is a real fortran compiler.
-##  create_fortran_c_interface ("" setulb(int i) ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
-ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
 ##-----------------------------------------------------------------------------
 ##  INCLUDE DIRECTORIES
