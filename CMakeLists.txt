@@ -1143,16 +1143,6 @@ SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 #   A) TRY_COMPILE on separate directory with cuda_probe sources
 #   B) EXECUTE_PROCESS on output from step A
 
-# Figure out which tests to ignore
-# Note: we need two copies, because unix users might run "make test" 
-# in either directory
-CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
-  ${CMAKE_BINARY_DIR}/CTestCustom.cmake
-  @ONLY)
-CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake
-  ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
-  @ONLY)
-
 # Set the "hack" macros to find windows binaries (under Release subdir)
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
@@ -1177,6 +1167,16 @@ MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     -P ${CMAKE_SOURCE_DIR}/RUN_CTEST.cmake
     )
 ENDMACRO (PLM_ADD_TEST)
+
+# Figure out which tests to ignore
+# Note: we need two copies, because unix users might run "make test" 
+# in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
+CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+  ${CMAKE_BINARY_DIR}/CTestCustom.cmake
+  @ONLY)
+CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+  ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
+  @ONLY)
 
 IF (PLM_BUILD_TESTING)
   ENABLE_TESTING ()

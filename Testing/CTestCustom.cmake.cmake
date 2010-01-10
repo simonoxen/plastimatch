@@ -12,14 +12,23 @@ SET (REDUCED_TEST OFF)
 ## If we don't have functioning GPU, don't run cuda tests
 SET (RUN_CUDA_TESTS OFF)
 IF (CUDA_FOUND)
-  EXECUTE_PROCESS (COMMAND ${PLM_PLASTIMACH_PATH_HACK}/cuda_probe
+  EXECUTE_PROCESS (COMMAND 
+    "${PLM_PLASTIMATCH_PATH_HACK}/cuda_probe.exe"
     RESULT_VARIABLE CUDA_PROBE_RESULT
     OUTPUT_VARIABLE CUDA_PROBE_STDOUT
     ERROR_VARIABLE CUDA_PROBE_STDERR
     )
-  IF (CUDA_PROBE_RESULT)
+  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_result.txt"
+    "${CUDA_PROBE_RESULT}")
+  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stdout.txt"
+    "${CUDA_PROBE_STDOUT}")
+  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stderr.txt"
+    "${CUDA_PROBE_STDERR}")
+  STRING (REGEX MATCH "NOT cuda capable" CUDA_PROBE_NOT_CAPABLE
+    ${CUDA_PROBE_STDOUT})
+  IF (NOT CUDA_PROBE_NOT_CAPABLE)
     SET (RUN_CUDA_TESTS ON)
-  ENDIF (CUDA_PROBE_RESULT)
+  ENDIF (NOT CUDA_PROBE_NOT_CAPABLE)
 ENDIF (CUDA_FOUND)
 
 ## If we didn't get dicom test data, don't run dicom tests
@@ -100,6 +109,10 @@ IF (REDUCED_TEST)
     "bspline-e-check"
     "bspline-f"
     "bspline-f-check"
+    "bspline-g"
+    "bspline-g-check"
+    "bspline-h"
+    "bspline-h-check"
 #    "drr"
 #    "drr-stats"
 #    "drr-check"
@@ -121,6 +134,15 @@ IF (REDUCED_TEST)
     "plm-bspline-cuda"
     "plm-bspline-cuda-stats" 
     "plm-bspline-cuda-check" 
+    "plm-convert-dicom"
+    "plm-convert-dicom-stats"
+    "plm-convert-dicom-check"
+    "plm-convert-dicom-rtss-a"
+    "plm-convert-dicom-rtss-stats-a"
+    "plm-convert-dicom-rtss-check-a"
+    "plm-convert-dicom-rtss-b"
+    "plm-convert-dicom-rtss-stats-b"
+    "plm-convert-dicom-rtss-check-b"
     "plm-itk-translation"
     "plm-itk-translation-stats"
     "plm-itk-translation-check"
