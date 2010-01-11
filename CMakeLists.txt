@@ -796,6 +796,20 @@ IF(OPENMP_FOUND)
 ENDIF(OPENMP_FOUND)
 
 ##-----------------------------------------------------------------------------
+##  CONFIGURE INCLUDE FILES
+##-----------------------------------------------------------------------------
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
+
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
+
+IF (CMAKE_Fortran_COMPILER_WORKS)
+  ##  Ideally I should do this if there is a real fortran compiler.
+  ##  create_fortran_c_interface ("" setulb(int i) ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+
+##-----------------------------------------------------------------------------
 ##  INCLUDE DIRECTORIES
 ##-----------------------------------------------------------------------------
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
