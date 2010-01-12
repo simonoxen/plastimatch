@@ -58,7 +58,8 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
 
 
 /* First try at OpenMP FDK... modeled after version c */
-void project_volume_onto_image_d (Volume* vol, CB_Image* cbi, float scale)
+void
+project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 {
     int i, j, k, p;
     float* img = (float*) vol->img;
@@ -66,9 +67,10 @@ void project_volume_onto_image_d (Volume* vol, CB_Image* cbi, float scale)
     double acc2[3],acc3[3];
     double dw;
     double sad_sid_2;
+    Proj_matrix *pmat = cbi->pmat;
 
     /* Rescale image (destructive rescaling) */
-    sad_sid_2 = (cbi->sad * cbi->sad) / (cbi->sid * cbi->sid);
+    sad_sid_2 = (pmat->sad * pmat->sad) / (pmat->sid * pmat->sid);
     for (i = 0; i < cbi->dim[0]*cbi->dim[1]; i++) {
 	cbi->img[i] *= sad_sid_2;	// Speedup trick re: Kachelsreiss
 	cbi->img[i] *= scale;		// User scaling
@@ -82,27 +84,27 @@ void project_volume_onto_image_d (Volume* vol, CB_Image* cbi, float scale)
 #pragma omp parallel for
     for (i = 0; i < vol->dim[0]; i++) {
 	double x = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
-	xip[i*3+0] = x * (cbi->matrix[0] + cbi->ic[0] * cbi->matrix[8]);
-	xip[i*3+1] = x * (cbi->matrix[4] + cbi->ic[1] * cbi->matrix[8]);
-	xip[i*3+2] = x * cbi->matrix[8];
+	xip[i*3+0] = x * (pmat->matrix[0] + pmat->ic[0] * pmat->matrix[8]);
+	xip[i*3+1] = x * (pmat->matrix[4] + pmat->ic[1] * pmat->matrix[8]);
+	xip[i*3+2] = x * pmat->matrix[8];
     }
     
 #pragma omp parallel for
     for (j = 0; j < vol->dim[1]; j++) {
 	double y = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
-	yip[j*3+0] = y * (cbi->matrix[1] + cbi->ic[0] * cbi->matrix[9]);
-	yip[j*3+1] = y * (cbi->matrix[5] + cbi->ic[1] * cbi->matrix[9]);
-	yip[j*3+2] = y * cbi->matrix[9];
+	yip[j*3+0] = y * (pmat->matrix[1] + pmat->ic[0] * pmat->matrix[9]);
+	yip[j*3+1] = y * (pmat->matrix[5] + pmat->ic[1] * pmat->matrix[9]);
+	yip[j*3+2] = y * pmat->matrix[9];
     }
 
 #pragma omp parallel for
     for (k = 0; k < vol->dim[2]; k++) {
 	double z = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
-	zip[k*3+0] = z * (cbi->matrix[2] + cbi->ic[0] * cbi->matrix[10]) 
-		+ cbi->ic[0] * cbi->matrix[11] + cbi->matrix[3];
-	zip[k*3+1] = z * (cbi->matrix[6] + cbi->ic[1] * cbi->matrix[10]) 
-		+ cbi->ic[1] * cbi->matrix[11] + cbi->matrix[7];
-	zip[k*3+2] = z * cbi->matrix[10] + cbi->matrix[11];
+	zip[k*3+0] = z * (pmat->matrix[2] + pmat->ic[0] * pmat->matrix[10]) 
+		+ pmat->ic[0] * pmat->matrix[11] + pmat->matrix[3];
+	zip[k*3+1] = z * (pmat->matrix[6] + pmat->ic[1] * pmat->matrix[10]) 
+		+ pmat->ic[1] * pmat->matrix[11] + pmat->matrix[7];
+	zip[k*3+2] = z * pmat->matrix[10] + pmat->matrix[11];
     }
     
     /* Main loop */
