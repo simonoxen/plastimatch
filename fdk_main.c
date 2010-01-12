@@ -56,6 +56,100 @@ get_pixel_value_b (Proj_image* cbi, double r, double c)
     return cbi->img[rr*cbi->dim[0] + cc];
 }
 
+
+/* First try at OpenMP FDK... modeled after version c */
+void project_volume_onto_image_d (Volume* vol, CB_Image* cbi, float scale)
+{
+    int i, j, k, p;
+    float* img = (float*) vol->img;
+    double *xip, *yip, *zip;
+    double acc2[3],acc3[3];
+    double dw;
+    double sad_sid_2;
+
+    /* Rescale image (destructive rescaling) */
+    sad_sid_2 = (cbi->sad * cbi->sad) / (cbi->sid * cbi->sid);
+    for (i = 0; i < cbi->dim[0]*cbi->dim[1]; i++) {
+	cbi->img[i] *= sad_sid_2;	// Speedup trick re: Kachelsreiss
+	cbi->img[i] *= scale;		// User scaling
+    }
+
+    xip = (double*) malloc (3*vol->dim[0]*sizeof(double));
+    yip = (double*) malloc (3*vol->dim[1]*sizeof(double));
+    zip = (double*) malloc (3*vol->dim[2]*sizeof(double));
+
+    /* Precompute partial projections here */
+#pragma omp parallel for
+    for (i = 0; i < vol->dim[0]; i++) {
+	double x = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+	xip[i*3+0] = x * (cbi->matrix[0] + cbi->ic[0] * cbi->matrix[8]);
+	xip[i*3+1] = x * (cbi->matrix[4] + cbi->ic[1] * cbi->matrix[8]);
+	xip[i*3+2] = x * cbi->matrix[8];
+    }
+    
+#pragma omp parallel for
+    for (j = 0; j < vol->dim[1]; j++) {
+	double y = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	yip[j*3+0] = y * (cbi->matrix[1] + cbi->ic[0] * cbi->matrix[9]);
+	yip[j*3+1] = y * (cbi->matrix[5] + cbi->ic[1] * cbi->matrix[9]);
+	yip[j*3+2] = y * cbi->matrix[9];
+    }
+
+#pragma omp parallel for
+    for (k = 0; k < vol->dim[2]; k++) {
+	double z = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	zip[k*3+0] = z * (cbi->matrix[2] + cbi->ic[0] * cbi->matrix[10]) 
+		+ cbi->ic[0] * cbi->matrix[11] + cbi->matrix[3];
+	zip[k*3+1] = z * (cbi->matrix[6] + cbi->ic[1] * cbi->matrix[10]) 
+		+ cbi->ic[1] * cbi->matrix[11] + cbi->matrix[7];
+	zip[k*3+2] = z * cbi->matrix[10] + cbi->matrix[11];
+    }
+    
+    /* Main loop */
+    
+// OpenMP attempt #1 (slower than single core version c)
+#pragma omp parallel for
+    for (p = 0; p < (vol->dim[2] * vol->dim[1] * vol->dim[0]); p++)
+    {
+	i = p % vol->dim[0];
+	j = ((p - i) / vol->dim[0]) % vol->dim[1];
+	k = (((p - i) / vol->dim[0]) / vol->dim[1]) % vol->dim[2];
+
+	vec3_add3 (acc2, &zip[3*k], &yip[3*j]);
+	vec3_add3 (acc3, acc2, &xip[3*i]);
+	dw = 1 / acc3[2];
+	acc3[0] = acc3[0] * dw;
+	acc3[1] = acc3[1] * dw;
+	img[p] += dw * dw * get_pixel_value_c (cbi, acc3[0], acc3[1]);
+    }
+
+/*    
+// OpenMP attempt #2 (still slower than single core version c)
+#pragma omp parallel for private(i,j)
+{
+    for (k = 0; k < vol->dim[2]; k++) {
+	for (j = 0; j < vol->dim[1]; j++) {
+	    vec3_add3 (acc2, &zip[3*k], &yip[3*j]);
+	    for (i = 0; i < vol->dim[0]; i++) {
+		vec3_add3 (acc3, acc2, &xip[3*i]);
+		dw = 1 / acc3[2];
+		acc3[0] = acc3[0] * dw;
+		acc3[1] = acc3[1] * dw;
+		p = i + j*vol->dim[0] + k*vol->dim[0]*vol->dim[1];
+		img[p] += dw * dw * get_pixel_value_c (cbi, acc3[0], acc3[1]);
+	    }
+	}
+    }
+}
+*/
+
+
+    free (xip);
+    free (yip);
+    free (zip);
+}
+
+
 /* This version folds ic & wip into zip, as well as using faster 
    nearest neighbor macro. */
 void
@@ -357,11 +451,12 @@ reconstruct_conebeam (
 	}
 	
 	// printf ("Projecting Image %d\n", i);
+	plm_timer_start (&timer);
 	// project_volume_onto_image_reference (vol, cbi, scale);
 	// project_volume_onto_image_a (vol, cbi, scale);
 	// project_volume_onto_image_b (vol, cbi, scale);
-	plm_timer_start (&timer);
 	project_volume_onto_image_c (vol, cbi, scale);
+	// project_volume_onto_image_d (vol, cbi, scale);
 	backproject_time += plm_timer_report (&timer);
 
 	proj_image_destroy (cbi);
