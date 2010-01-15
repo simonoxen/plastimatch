@@ -463,9 +463,13 @@ reconstruct_conebeam (
 
 	proj_image_destroy (cbi);
     }
-    printf ("I/O time = %g\n", io_time);
+    printf ("I/O time (total) = %g\n", io_time);
+    printf ("I/O time (per image) = %g\n", io_time / num_imgs);
     printf ("Filter time = %g\n", filter_time);
+    printf ("Filter time (per image) = %g\n", filter_time / num_imgs);
     printf ("Backprojection time = %g\n", backproject_time);
+    printf ("Backprojection time (per image) = %g\n", 
+	backproject_time / num_imgs);
 }
 
 void

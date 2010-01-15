@@ -24,7 +24,7 @@ case $CNAME in
     ;;
     "gelato")
     export PATH=$PATH:$HOME/build/plastimatch-3.16.0
-    export PATH=$PATH:$HOME/projects/plastimatch/cttools
+    export PATH=$PATH:$HOME/work/plastimatch/cttools
     ;;
     "wormwood")
     export PATH=$PATH:$HOME/build/plastimatch-3.16.0
