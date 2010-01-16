@@ -71,6 +71,8 @@
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="actionNew_data_source"/>
+    <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuEd_it">
     <property name="title">
@@ -81,7 +83,53 @@
    <addaction name="menuEd_it"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNew_data_source">
+   <property name="text">
+    <string>&amp;New data source</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>&amp;Quit</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionNew_data_source</sender>
+   <signal>triggered()</signal>
+   <receiver>pqtMainWindow</receiver>
+   <slot>new_data_source()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionQuit</sender>
+   <signal>triggered()</signal>
+   <receiver>pqtMainWindow</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>304</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>new_data_source()</slot>
+ </slots>
 </ui>

@@ -725,13 +725,21 @@ SET (PLASTIMATCH_SLICER_TPS_SRC
         plastimatch-slicer-tps.cxx
 	)
 SET (PLASTIMATCH_QT_SRC
+	pqt_data_source_dialog.cxx pqt_data_source_dialog.h
         pqt_main.cxx
 	pqt_main_window.cxx pqt_main_window.h
 	pqt_patient_list_model.cxx pqt_patient_list_model.h
 	)
 IF (QT4_FOUND)
-  QT4_WRAP_CPP (PLASTIMATCH_QT_SRC pqt_main_window.h pqt_patient_list_model.h)
-  QT4_WRAP_UI (PLASTIMATCH_QT_SRC pqt_main_window.ui)
+  QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
+    pqt_data_source_dialog.h
+    pqt_main_window.h 
+    pqt_patient_list_model.h
+    )
+  QT4_WRAP_UI (PLASTIMATCH_QT_SRC 
+    pqt_data_source_dialog.ui
+    pqt_main_window.ui
+    )
 ENDIF (QT4_FOUND)
 SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx

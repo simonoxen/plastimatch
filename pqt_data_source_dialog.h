@@ -1,13 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _pqt_main_window_h_
-#define _pqt_main_window_h_
+#ifndef _pqt_data_source_dialog_h_
+#define _pqt_data_source_dialog_h_
 
 #include "plm_config.h"
-#include "pqt_data_source_dialog.h"
-#include "pqt_patient_list_model.h"
-#include "ui_pqt_main_window.h"
+#include "ui_pqt_data_source_dialog.h"
 
 //QT_BEGIN_NAMESPACE
 // class QAction;
@@ -21,20 +19,14 @@
 // class QTextEdit;
 //QT_END_NAMESPACE
 
-class Pqt_main_window : public QMainWindow, private Ui::pqtMainWindow {
+class Pqt_data_source_dialog : public QDialog, private Ui::pqtDataSourceDialog {
     Q_OBJECT
     ;
 
 public:
-    Pqt_main_window ();
-    ~Pqt_main_window ();
+    Pqt_data_source_dialog ();
+    ~Pqt_data_source_dialog ();
 
-    Pqt_data_source_dialog *m_data_source_dialog;
-
-    Pqt_patient_list_model *m_patient_list_model;
-
-public slots:
-    void new_data_source (void);
-
+    int foo;
 };
 #endif
