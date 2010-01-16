@@ -706,7 +706,7 @@ SET (PLASTIMATCH_QT_SRC
 	pqt_main_window.cxx pqt_main_window.h
 	pqt_patient_list_model.cxx pqt_patient_list_model.h
 	)
-IF (QT4_FOUND)
+IF (QT4_FOUND AND QT_QTSQL_FOUND)
   QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
     pqt_data_source_dialog.h
     pqt_main_window.h 
@@ -716,7 +716,7 @@ IF (QT4_FOUND)
     pqt_data_source_dialog.ui
     pqt_main_window.ui
     )
-ENDIF (QT4_FOUND)
+ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
 SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	exchkeys.cxx exchkeys.h
@@ -934,12 +934,12 @@ IF(ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
-  IF (QT4_FOUND)
+  IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
-      ${SQLITE_LIBRARIES} ${QT_LIBRARIES})
+      ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
     PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${PLASTIMATCH_QT_LIBRARIES}" "${OPENMP_LDFLAGS}")
-  ENDIF (QT4_FOUND)
+  ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
   PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
