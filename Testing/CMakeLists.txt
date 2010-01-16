@@ -425,6 +425,16 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch convert xio
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-xio"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02/20080627A/anatomy/studyset/CHESTPHANTOM;--output;chest-phantom.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch usage
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
