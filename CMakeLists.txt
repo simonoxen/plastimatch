@@ -83,7 +83,6 @@ MACRO (PLM_ADD_EXECUTABLE
   ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDMACRO (PLM_ADD_EXECUTABLE)
 
-
 MACRO (PLM_ADD_SLICER_EXECUTABLE 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
@@ -101,7 +100,6 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
   SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
-
 
 ##-----------------------------------------------------------------------------
 ##  Search for include files
@@ -233,7 +231,6 @@ IF (Slicer3_DIR)
   SET (PLM_BUILD_SHARED_LIBS ON)
 ENDIF (Slicer3_DIR)
 
-
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
 ##  it for compiling on AMD linux 64-bit.
@@ -266,7 +263,8 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     SET (PLASTIMATCH_EXPERIMENTAL TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS (
-      COMMAND ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
+      COMMAND 
+      ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
       ERROR_VARIABLE svn_error
@@ -644,36 +642,14 @@ IF (BROOK_FOUND)
     )
 ENDIF (BROOK_FOUND)
 
-
-# SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-#         fdk_cuda.h fdk_cuda_p.h 
-# 	fdk_opts.c fdk_opts.h
-# 	fdk_utils.c fdk_utils.h
-# 	mathutil.h
-# 	fdk_cuda_integrated_main.c
-# 	fdk_cuda.cu fdk_cuda.h
-# 	MGHMtx_opts.h
-# 	ramp_filter.c ramp_filter.h 
-# 	volume.c volume.h 
-# 	writematrix_opts.c
-# 	bowtie_correction.c
-# 	)
-
 IF (CUDA_FOUND)
   CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
   SET (FDK_SRC
     ${FDK_SRC}
     ${FDK_CUDA_WRAPPERS}
     )
-  # SET (FDK_CUDA_INTEGRATED_NORMALIZED_SRC
-  #   ${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}
-  #   ${FDK_CUDA_WRAPPERS}
-  #   )
 ENDIF (CUDA_FOUND)
 
-#SET (HND2RAW_ST_SRC
-#	hnd2raw_st.cpp
-#	)
 SET (HND_TO_PFM_SRC
 	hnd_to_pfm.c
 	)
@@ -852,10 +828,6 @@ IF(FFTW_FOUND)
   LINK_DIRECTORIES (${FFTWDIR})
 ENDIF(FFTW_FOUND)
 
-# IF (Qt4_FOUND)
-#   INCLUDE_DIRECTORIES (AFTER ${Qt4_INCLUDE_DIRS})
-# ENDIF (Qt4_FOUND)
-
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
@@ -876,24 +848,10 @@ IF (ITK_FOUND)
   ## with the same name as the executable.  What happens is the executable 
   ## tries to create a temporary library with the same name.  [MSVC 2005]
   ## That is why the library is called plastimatch1 instead of plastimatch.
-
-#   IF (BUILD_AGAINST_SLICER3)
-#     ADD_LIBRARY (plastimatch1 STATIC ${PLASTIMATCH_LIBRARY_SRC})
-#     SLICER3_SET_PLUGINS_OUTPUT_PATH (plastimatch1)
-#   ELSE (BUILD_AGAINST_SLICER3)
-#     ADD_LIBRARY (plastimatch1 ${PLASTIMATCH_LIBRARY_SRC})
-#     INSTALL (TARGETS plastimatch1 
-#       RUNTIME DESTINATION bin
-#       LIBRARY DESTINATION lib
-#       ARCHIVE DESTINATION lib)
-#   ENDIF (BUILD_AGAINST_SLICER3)
-#   TARGET_LINK_LIBRARIES (plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-
   SET (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
   PLM_ADD_LIBRARY (plastimatch1 "${PLASTIMATCH_LIBRARY_SRC}" 
     "${PLASTIMATCH_LIBRARY_DEPENDENCIES}")
 ENDIF (ITK_FOUND)
-
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
@@ -908,8 +866,6 @@ PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-#PLM_ADD_EXECUTABLE (hnd2raw_ST "${HND2RAW_ST_SRC}" "${GPUIT_LIBRARIES}" 
-#  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
@@ -979,7 +935,8 @@ IF(ITK_FOUND)
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
   IF (QT4_FOUND)
-    SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} ${QT_LIBRARIES})
+    SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
+      ${SQLITE_LIBRARIES} ${QT_LIBRARIES})
     PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${PLASTIMATCH_QT_LIBRARIES}" "${OPENMP_LDFLAGS}")
   ENDIF (QT4_FOUND)
@@ -1009,12 +966,6 @@ IF (CUDA_FOUND)
     PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
       "${GPUIT_LIBRARIES}" "")
   ENDIF (PLM_BUILD_DEMONS_CUDA)
-#  IF (FFTW_FOUND)
-#    PLM_ADD_EXECUTABLE (fdk_cuda_integrated_normalized 
-#      "${FDK_CUDA_INTEGRATED_NORMALIZED_SRC}" 
-#      "${GPUIT_LIBRARIES}" 
-#      "${OPENMP_LDFLAGS}")
-#  ENDIF (FFTW_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF (CUDA_FOUND)
 
@@ -1047,21 +998,9 @@ IF(ITK_FOUND)
     "${CMAKE_SOURCE_DIR}/cttools/cxt_apply_uids.pl"
     "${CMAKE_SOURCE_DIR}/cttools/parse_cxt.pl"
     DESTINATION bin)
-
-  if (Slicer3_DIR)
-    #slicer3_install_plugins(plastimatch1)
-    #slicer3_install_plugins(gpuit)
-  endif (Slicer3_DIR)
 ENDIF(ITK_FOUND)
 
 IF (CUDA_FOUND)
-#   IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
-#     INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll" DESTINATION bin)
-#   ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
-#   IF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
-#     INSTALL (FILES "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so" DESTINATION bin)
-#   ENDIF (EXISTS "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so")
-
   IF (UNIX)
     # Hard code to cuda 2.2.  Note, we copy it first, because otherwise 
     # CMake 2.6 will install a broken symbolic link
@@ -1116,10 +1055,7 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
   #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
 
   ## I don't yet know how to bundle the .cl file within the executable.
-  ## Therefore, do the copying method.
-  # ADD_CUSTOM_COMMAND (TARGET opencl_test
-  #   COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-  #   "${CMAKE_SOURCE_DIR}/opencl_test.cl" "${CMAKE_BINARY_DIR}")
+  ## Therefore, copy the .cl into binary directory.
   ADD_CUSTOM_COMMAND (OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl"
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
     "${CMAKE_SOURCE_DIR}/opencl_test.cl" "${CMAKE_BINARY_DIR}/opencl_test.cl"
@@ -1162,12 +1098,7 @@ SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
 SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 
-# Figure out if this platform has a working GPU for cuda test code
-# TODO.  This probably can be accomplished through the following method:
-#   A) TRY_COMPILE on separate directory with cuda_probe sources
-#   B) EXECUTE_PROCESS on output from step A
-
-# Set the "hack" macros to find windows binaries (under Release subdir)
+# Set the "hack" variables to find windows binaries (under Release subdir)
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (PLM_ITK_LIBRARY_PATH_HACK -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
   SET (PLM_PLASTIMATCH_PATH_HACK ${CMAKE_CURRENT_BINARY_DIR}/Release)
