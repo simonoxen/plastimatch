@@ -46,6 +46,8 @@ SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL
   "Regression tests for seldom used b-spline implementations")
 SET (PLM_TEST_DICOM OFF CACHE BOOL 
   "Regression tests for dicom, dicomrt (downloads extra test data)")
+SET (PLM_TEST_XIO OFF CACHE BOOL 
+  "Regression tests for xio file exchange (downloads extra test data)")
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets

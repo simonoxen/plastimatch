@@ -1,5 +1,38 @@
 PROJECT(PLM_Testing)
 
+MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
+  IF (NOT EXISTS ${DOWNLOAD_FILENAME})
+    MESSAGE (STATUS "Downloading test data")
+    FILE (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
+  ENDIF (NOT EXISTS ${DOWNLOAD_FILENAME})
+  IF (NOT EXISTS ${DOWNLOAD_DIR})
+    MESSAGE (STATUS "Untarring test data")
+    EXECUTE_PROCESS (
+      COMMAND 
+      ${CMAKE_COMMAND} "-E" "tar" "xvzf" "${DOWNLOAD_FILENAME}"
+      WORKING_DIRECTORY ${PLM_TESTING_BUILD_DIR}
+      RESULT_VARIABLE untar_result
+      OUTPUT_VARIABLE untar_output
+      ERROR_VARIABLE untar_error)
+    MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
+  ENDIF (NOT EXISTS ${DOWNLOAD_DIR})
+ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
+
+IF (PLM_TEST_DICOM)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+ENDIF (PLM_TEST_DICOM)
+
+IF (PLM_TEST_XIO)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+ENDIF (PLM_TEST_XIO)
+
+IF (XXX)
 IF (PLM_TEST_DICOM)
   SET (DOWNLOADED_TEST_DATA_URL
     http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz)
@@ -24,6 +57,7 @@ IF (PLM_TEST_DICOM)
     MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
   ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
 ENDIF (PLM_TEST_DICOM)
+ENDIF (XXX)
 
 SET (SYNTH_MHA_SIZE 38)
 
