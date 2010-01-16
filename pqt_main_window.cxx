@@ -6,6 +6,7 @@
 #include <QtGui>
 #include <QtSql/QSqlDatabase>
 #include <QtSql/QSqlError>
+#include <QtSql/QSqlQuery>
 
 #include "pqt_data_source_dialog.h"
 #include "pqt_main_window.h"
@@ -44,21 +45,52 @@ Pqt_main_window::~Pqt_main_window ()
     settings.sync ();
 }
 
+static void
+print_database_error (QSqlError sql_error)
+{
+    QMessageBox::information (0, QString ("Database error"),
+	QString ("Database error: %1, %2, %3")
+	.arg(sql_error.type())
+	.arg(sql_error.number())
+	.arg(sql_error.text()));
+}
+
 void
 Pqt_main_window::test_database ()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase ("QSQLITE");
-    db.setDatabaseName (":memory:");
-    bool ok = db.open();
-    if (!ok) {
-	QSqlError qsqlerror = db.lastError();
+    //db.setDatabaseName (":memory:");
 
-	QMessageBox::information (this, QString ("Database error"),
-	    QString ("Error (%1,%2), %3")
-	    .arg(qsqlerror.type())
-	    .arg(qsqlerror.number())
-	    .arg(qsqlerror.text()));
+    /* For sqlite, QSqlDatabase::setDatabaseName is where we pass the
+       name of the sqlite file. */
+    db.setDatabaseName ("deleteme.sqlite");
+    bool ok = db.open ();
+    if (!ok) {
+	print_database_error (db.lastError());
+	return;
     }
+
+    QSqlQuery query;
+    QString sql = "CREATE TABLE IF NOT EXISTS patient_screenshots ( oi INTEGER PRIMARY KEY, patient_id TEXT, patient_name TEXT, screenshot_timestamp DATE );";
+
+    ok = query.exec (sql);
+
+    if (!ok) {
+	print_database_error (query.lastError());
+	return;
+    }
+
+    sql = 
+	"SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
+	"FROM patient_screenshots GROUP BY patient_id,patient_name "
+	"ORDER BY MAX(screenshot_timestamp) DESC;";
+    ok = query.exec (sql);
+    if (!ok) {
+	print_database_error (query.lastError());
+	return;
+    }
+    
+    db.close ();
 }
 
 void
