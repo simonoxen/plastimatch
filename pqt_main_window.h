@@ -35,6 +35,5 @@ public:
 
 public slots:
     void new_data_source (void);
-    void test_database (void);
 };
 #endif

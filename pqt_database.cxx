@@ -1,0 +1,118 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <stdio.h>
+#include <QDir>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QObject>
+#include <QString>
+//#include <QtSql/QSqlDatabase>
+//#include <QtSql/QSqlError>
+//#include <QtSql/QSqlQuery>
+#include <QSqlDatabase>
+#include <QSqlError>
+#include <QSqlQuery>
+#include <QVariant>
+
+static void
+print_database_error (QSqlError sql_error)
+{
+    QMessageBox::information (0, QString ("Database error"),
+	QString ("Database error: %1, %2, %3")
+	.arg(sql_error.type())
+	.arg(sql_error.number())
+	.arg(sql_error.text()));
+}
+
+void
+pqt_database_start (QString db_path)
+{
+    /* Make parent directory for database file if it doesn't exist */
+    QDir().mkpath(QFileInfo(db_path).absolutePath());
+
+    /* Open the sqlite database file. */
+    QSqlDatabase db = QSqlDatabase::addDatabase ("QSQLITE");
+    db.setDatabaseName (db_path);
+    bool ok = db.open ();
+    if (!ok) {
+	print_database_error (db.lastError());
+	return;
+    }
+
+    QSqlQuery query;
+    QString sql;
+
+    /* Check database for version upgrade */
+    sql = 
+	"CREATE TABLE IF NOT EXISTS "
+	"pqt_application_version ( "
+	"  version TEXT "
+	");";
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+    sql = 
+	"SELECT version FROM pqt_application_version;";
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+    if (query.next ()) {
+	QString version_string = query.value(0).toString();
+	QMessageBox::information (0, QString ("Version string"),
+	    QString ("Version string: %1").arg(version_string));
+    } else {
+	/* New database.  Add version string. */
+	sql = 
+	    "INSERT INTO pqt_application_version values ('Experimental');";
+	if (!query.exec (sql)) {
+	    print_database_error (query.lastError());
+	    return;
+	}
+    }
+
+    /* Create tables if they don't exist */
+    sql = 
+	"CREATE TABLE IF NOT EXISTS "
+	"data_source ( "
+	"  oi INTEGER PRIMARY KEY, "
+	"  label TEXT, "
+	"  type TEXT, "
+	"  host TEXT, "
+	"  port TEXT, "
+	"  aet TEXT "
+	");";
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+
+    sql = 
+	"CREATE TABLE IF NOT EXISTS "
+	"data_source_dicom ( "
+	"  oi INTEGER PRIMARY KEY, "
+	"  host TEXT, "
+	"  port TEXT, "
+	"  aet TEXT "
+	");";
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+
+    sql = 
+	"CREATE TABLE IF NOT EXISTS "
+	"data_source_directory ( "
+	"  oi INTEGER PRIMARY KEY, "
+	"  directory TEXT "
+	");";
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+
+    db.close ();
+}

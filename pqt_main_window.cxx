@@ -4,11 +4,9 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <QtGui>
-#include <QtSql/QSqlDatabase>
-#include <QtSql/QSqlError>
-#include <QtSql/QSqlQuery>
 
 #include "pqt_data_source_dialog.h"
+#include "pqt_database.h"
 #include "pqt_main_window.h"
 
 Pqt_main_window::Pqt_main_window ()
@@ -28,12 +26,30 @@ Pqt_main_window::Pqt_main_window ()
     QCoreApplication::setOrganizationDomain ("plastimatch.org");
     QCoreApplication::setApplicationName ("plastimatch_qt");
 
-    /* Load application settings */
+    /* QT doesn't seem to have an API for getting the user's application 
+       data directory.  So we construct a hypothetical ini file name, 
+       then grab the directory. */
+    QSettings tmp (
+	QSettings::IniFormat, /* Make sure we get path, not registry */
+	QSettings::UserScope, /* Get user directory, not system direcory */
+	"Plastimatch",        /* Orginazation name (subfolder within path) */
+	"plastimatch_qt"      /* Application name (file name with subfolder) */
+    );
+    QString config_dir = QFileInfo(tmp.fileName()).absolutePath();
+
+#if defined (commentout)
+    QMessageBox::information (0, QString ("Info"), 
+	QString ("Config dir is %1").arg (config_dir));
+#endif
+
+    /* Construct filename of sqlite database that holds settings */
     QSettings settings;
     QString db_path = settings.value ("db/sqlite3_path", 
-	"/tmp/pqt.sqlite").toString();
+	QFileInfo (QDir (config_dir), QString ("pqt.sqlite"))
+	.absoluteFilePath()).toString();
 
-    test_database ();
+    /* Load database */
+    pqt_database_start (db_path);
 }
 
 Pqt_main_window::~Pqt_main_window ()
@@ -43,54 +59,6 @@ Pqt_main_window::~Pqt_main_window ()
 
     QSettings settings;
     settings.sync ();
-}
-
-static void
-print_database_error (QSqlError sql_error)
-{
-    QMessageBox::information (0, QString ("Database error"),
-	QString ("Database error: %1, %2, %3")
-	.arg(sql_error.type())
-	.arg(sql_error.number())
-	.arg(sql_error.text()));
-}
-
-void
-Pqt_main_window::test_database ()
-{
-    QSqlDatabase db = QSqlDatabase::addDatabase ("QSQLITE");
-    //db.setDatabaseName (":memory:");
-
-    /* For sqlite, QSqlDatabase::setDatabaseName is where we pass the
-       name of the sqlite file. */
-    db.setDatabaseName ("deleteme.sqlite");
-    bool ok = db.open ();
-    if (!ok) {
-	print_database_error (db.lastError());
-	return;
-    }
-
-    QSqlQuery query;
-    QString sql = "CREATE TABLE IF NOT EXISTS patient_screenshots ( oi INTEGER PRIMARY KEY, patient_id TEXT, patient_name TEXT, screenshot_timestamp DATE );";
-
-    ok = query.exec (sql);
-
-    if (!ok) {
-	print_database_error (query.lastError());
-	return;
-    }
-
-    sql = 
-	"SELECT patient_id,patient_name,datetime(MAX(screenshot_timestamp)) "
-	"FROM patient_screenshots GROUP BY patient_id,patient_name "
-	"ORDER BY MAX(screenshot_timestamp) DESC;";
-    ok = query.exec (sql);
-    if (!ok) {
-	print_database_error (query.lastError());
-	return;
-    }
-    
-    db.close ();
 }
 
 void
