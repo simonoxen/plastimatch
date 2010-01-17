@@ -13,6 +13,19 @@
 #include "gdcm_rtss.h"
 #include "itk_image.h"
 #include "plm_file_format.h"
+#include "xio_dir.h"
+
+static int
+is_xio_directory (char* path)
+{
+    Xio_dir *xd = xio_dir_create (path);
+    if (xio_dir_num_patients (xd) > 0) {
+	printf ("Found an XiO directory!!!!\n");
+	return 1;
+    } else {
+	return 0;
+    }
+}
 
 Plm_file_format
 plm_file_format_deduce (char* path)
@@ -20,7 +33,12 @@ plm_file_format_deduce (char* path)
     std::string ext;
     
     if (itksys::SystemTools::FileIsDirectory (path)) {
-	/* GCS TODO:  Distinguish between xio, dicom, rtog directories */
+
+	if (is_xio_directory (path)) {
+	    return PLM_FILE_FMT_XIO_DIR;
+	}
+
+	/* GCS TODO:  Distinguish rtog directories */
 	return PLM_FILE_FMT_DICOM_DIR;
     }
 

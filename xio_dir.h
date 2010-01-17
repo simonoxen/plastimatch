@@ -10,7 +10,7 @@
 typedef struct xio_dir Xio_dir;
 struct xio_dir {
     char path[_MAX_PATH];
-    
+    int num_patients;
 };
 
 plastimatch1_EXPORT
@@ -18,11 +18,15 @@ Xio_dir*
 xio_dir_create (char *input_dir);
 
 plastimatch1_EXPORT
-int
-xio_dir_num_patients (Xio_dir* xd);
+void
+xio_dir_destroy (Xio_dir* xd);
 
 plastimatch1_EXPORT
 void
-xio_dir_destroy (Xio_dir* xd);
+xio_dir_analyze (Xio_dir *xd);
+
+plastimatch1_EXPORT
+int
+xio_dir_num_patients (Xio_dir* xd);
 
 #endif

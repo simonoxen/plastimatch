@@ -691,6 +691,7 @@ SET (PLASTIMATCH_SRC
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h
  	warp_dij_main.cxx 
+	warp_xio.cxx warp_xio.h 
 	warp_mha_main.cxx 
 	warp_main.cxx warp_main.h 
  	warp_pointset_main.cxx 

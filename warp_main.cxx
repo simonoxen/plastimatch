@@ -9,7 +9,7 @@
 #include "plm_file_format.h"
 #include "print_and_exit.h"
 #include "warp_main.h"
-#include "warp_main.h"
+#include "warp_xio.h"
 
 static void
 print_usage (char* command)
@@ -220,6 +220,9 @@ do_command_warp (int argc, char* argv[])
 	case PLM_FILE_FMT_IMG:
 	case PLM_FILE_FMT_DICOM_DIR:
 	    warp_image_main (&parms);
+	    break;
+	case PLM_FILE_FMT_XIO_DIR:
+	    warp_xio_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
