@@ -1,6 +1,7 @@
  /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <vector>
@@ -14,7 +15,6 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "plm_config.h"
 #include "print_and_exit.h"
 #include "xio_io.h"
 #include "cxt_io.h"
