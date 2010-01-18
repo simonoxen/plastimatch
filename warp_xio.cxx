@@ -2,82 +2,39 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <time.h>
-
-#include "plm_int.h"
-#include "getopt.h"
-#include "itk_image.h"
-#include "itk_warp.h"
-#include "plm_image_header.h"
-#include "plm_warp.h"
+#include <string>
 #include "print_and_exit.h"
-#include "readmha.h"
-#include "volume.h"
-#include "warp_main.h"
+#include "warp_parms.h"
 #include "warp_xio.h"
-#include "xform.h"
+#include "xio_dir.h"
 
 void
 warp_xio_main (Warp_parms* parms)
 {
-    DeformationFieldType::Pointer vf = DeformationFieldType::New();
-    PlmImage im_in, im_out;
-    PlmImage* im_out_ptr;
-    PlmImageHeader pih;
-    Xform xform;
+    Xio_dir *xd;
+    Xio_patient_dir *xpd;
+    std::string ct_path;
 
-    /* Load input image */
-    im_in.load_native (parms->input_fn);
+    xd = xio_dir_create (parms->input_fn);
 
-    /* Load transform */
-    if (parms->xf_in_fn[0]) {
-	printf ("Loading xform (%s)\n", parms->xf_in_fn);
-	load_xform (&xform, parms->xf_in_fn);
+    if (xd->num_patient_dir <= 0) {
+	print_and_exit ("Error, xio num_patient_dir = %d\n", 
+	    xd->num_patient_dir);
     }
 
-    /* Try to guess the proper dimensions and spacing for output image */
-    if (parms->fixed_im_fn[0]) {
-	/* use the spacing of user-supplied fixed image */
-	FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
-	pih.set_from_itk_image (fixed);
-    } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
-	/* use the spacing from input vector field */
-	pih.set_from_itk_image (xform.get_itk_vf());
-    } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
-	/* use the spacing from input bxf file */
-	pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
-    } else {
-	/* otherwise, use the spacing of the input image */
-	pih.set_from_plm_image (&im_in);
+    xpd = &xd->patient_dir[0];
+    if (xd->num_patient_dir > 1) {
+	printf ("Warning: multiple patients found in xio directory.\n"
+	    "Defaulting to first directory: %s\n", xpd->path);
     }
 
-    printf ("PIH is:\n");
-    pih.print ();
-
-    /* Do the warp */
-    if (parms->xf_in_fn[0]) {
-	plm_warp (&im_out, &vf, &xform, &pih, &im_in, parms->default_val, 
-	    parms->use_itk, parms->interp_lin);
-	//do_warp (&im_out, &vf, parms, &xform, &pih, &im_in);
-	im_out_ptr = &im_out;
-    } else {
-	im_out_ptr = &im_in;
-    }
-
-    /* Save output image */
-    printf ("Saving image...\n");
-    switch (parms->output_format) {
-    case PLM_FILE_FMT_DICOM_DIR:
-	im_out_ptr->save_short_dicom (parms->output_fn);
+    switch (xpd->type) {
+    case XPD_TOPLEVEL_PATIENT_DIR:
+	/* GCS FIX: Need xio_dir to figure out studyset subdirectory */
+	ct_path = std::string(xpd->path) + "/anatomy/studyset";
 	break;
-    default:
-	im_out_ptr->save_image (parms->output_fn);
+    case XPD_STUDYSET_DIR:
+	ct_path = xpd->path;
 	break;
-    }
-
-    /* Save output vector field */
-    if (parms->xf_in_fn[0] && parms->vf_out_fn[0]) {
-	printf ("Saving vf...\n");
-	itk_image_save (vf, parms->vf_out_fn);
     }
 }

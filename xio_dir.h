@@ -7,10 +7,24 @@
 #include "plm_config.h"
 #include "plm_path.h"
 
+enum xio_patient_dir_type {
+    XPD_TOPLEVEL_PATIENT_DIR,
+    XPD_STUDYSET_DIR
+};
+typedef enum xio_patient_dir_type Xio_patient_dir_type;
+
+typedef struct xio_patient_dir Xio_patient_dir;
+struct xio_patient_dir {
+    char path[_MAX_PATH];
+    Xio_patient_dir_type type;
+};
+
 typedef struct xio_dir Xio_dir;
 struct xio_dir {
     char path[_MAX_PATH];
-    int num_patients;
+
+    int num_patient_dir;
+    Xio_patient_dir *patient_dir;
 };
 
 plastimatch1_EXPORT

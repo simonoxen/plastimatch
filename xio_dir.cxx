@@ -18,6 +18,9 @@
 #include "print_and_exit.h"
 #include "xio_dir.h"
 
+/* -----------------------------------------------------------------------
+   Private functions
+   ----------------------------------------------------------------------- */
 static int
 is_xio_patient_dir (std::string dir)
 {
@@ -71,7 +74,14 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
 
     /* Look for top-level patient directory */
     if (is_xio_patient_dir (dir)) {
-	xd->num_patients ++;
+	Xio_patient_dir *curr_patient_dir;
+	xd->patient_dir = (Xio_patient_dir*) malloc (
+	    (xd->num_patient_dir+1) * sizeof (Xio_patient_dir));
+	curr_patient_dir = &xd->patient_dir[xd->num_patient_dir];
+	strncpy (curr_patient_dir->path, dir.c_str(), _MAX_PATH);
+	curr_patient_dir->type = XPD_TOPLEVEL_PATIENT_DIR;
+
+	xd->num_patient_dir ++;
 	return;
     }
 
@@ -79,7 +89,14 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
        GCS FIX: Each studyset counts as a separate patient 
        GCS FIX: Look for plan directories too. */
     else if (is_xio_studyset_dir (dir)) {
-	xd->num_patients ++;
+	Xio_patient_dir *curr_patient_dir;
+	xd->patient_dir = (Xio_patient_dir*) malloc (
+	    (xd->num_patient_dir+1) * sizeof (Xio_patient_dir));
+	curr_patient_dir = &xd->patient_dir[xd->num_patient_dir];
+	strncpy (curr_patient_dir->path, dir.c_str(), _MAX_PATH);
+	curr_patient_dir->type = XPD_STUDYSET_DIR;
+
+	xd->num_patient_dir ++;
 	return;
     }
 
@@ -95,6 +112,9 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
     }
 }
 
+/* -----------------------------------------------------------------------
+   Public functions
+   ----------------------------------------------------------------------- */
 Xio_dir*
 xio_dir_create (char *input_dir)
 {
@@ -102,7 +122,8 @@ xio_dir_create (char *input_dir)
     xd = (Xio_dir*) malloc (sizeof (Xio_dir));
 
     strncpy (xd->path, input_dir, _MAX_PATH);
-    xd->num_patients = -1;
+    xd->num_patient_dir = -1;
+    xd->patient_dir = 0;
 
     xio_dir_analyze (xd);
     return xd;
@@ -111,7 +132,7 @@ xio_dir_create (char *input_dir)
 void
 xio_dir_analyze (Xio_dir *xd)
 {
-    xd->num_patients = 0;
+    xd->num_patient_dir = 0;
     if (!is_directory (xd->path)) {
 	return;
     }
@@ -122,14 +143,14 @@ xio_dir_analyze (Xio_dir *xd)
 int
 xio_dir_num_patients (Xio_dir* xd)
 {
-    itksys::Directory dir;
-    if (!dir.Load (xd->path)) {
-	printf ("Error\n");exit (-1);
-    }
-    return xd->num_patients;
+    return xd->num_patient_dir;
 }
 
 void
 xio_dir_destroy (Xio_dir* xd)
 {
+    if (xd->patient_dir) {
+	free (xd->patient_dir);
+    }
+    free (xd);
 }
