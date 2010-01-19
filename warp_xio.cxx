@@ -3,17 +3,21 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <string>
+#include "cxt_apply_dicom.h"
+#include "cxt_io.h"
 #include "print_and_exit.h"
 #include "warp_parms.h"
 #include "warp_xio.h"
 #include "xio_dir.h"
+#include "xio_structures.h"
 
 void
 warp_xio_main (Warp_parms* parms)
 {
+    Cxt_structure_list cxt;
     Xio_dir *xd;
     Xio_patient_dir *xpd;
-    std::string ct_path;
+    Xio_studyset_dir *xsd;
 
     xd = xio_dir_create (parms->input_fn);
 
@@ -21,20 +25,32 @@ warp_xio_main (Warp_parms* parms)
 	print_and_exit ("Error, xio num_patient_dir = %d\n", 
 	    xd->num_patient_dir);
     }
-
     xpd = &xd->patient_dir[0];
     if (xd->num_patient_dir > 1) {
 	printf ("Warning: multiple patients found in xio directory.\n"
 	    "Defaulting to first directory: %s\n", xpd->path);
     }
 
-    switch (xpd->type) {
-    case XPD_TOPLEVEL_PATIENT_DIR:
-	/* GCS FIX: Need xio_dir to figure out studyset subdirectory */
-	ct_path = std::string(xpd->path) + "/anatomy/studyset";
-	break;
-    case XPD_STUDYSET_DIR:
-	ct_path = xpd->path;
-	break;
+    if (xpd->num_studyset_dir <= 0) {
+	print_and_exit ("Error, xio patient has no studyset.");
     }
+    xsd = &xpd->studyset_dir[0];
+    if (xpd->num_studyset_dir > 1) {
+	printf ("Warning: multiple studyset found in xio patient directory.\n"
+	    "Defaulting to first directory: %s\n", xsd->path);
+    }
+
+    /* Load structures from xio */
+    //xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
+    xio_structures_load (&cxt, xsd->path, 0, 0);
+
+    /* Set dicom uids, etc. */
+    if (parms->dicom_dir[0]) {
+	cxt_apply_dicom_dir (&cxt, parms->dicom_dir);
+	//cxt.offset[0] += parms->x_adj;
+	//cxt.offset[1] += parms->y_adj;
+    }
+
+    /* Write out the cxt */
+    cxt_write (&cxt, parms->output_fn, true);
 }

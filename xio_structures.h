@@ -1,20 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _xio_io_h
-#define _xio_io_h
+#ifndef _xio_structures_h
+#define _xio_structures_h
 
 #include "plm_config.h"
-#include <string>
-#include <vector>
 #include "cxt_io.h"
 
-plastimatch1_EXPORT 
-void
-xio_io_get_file_names (
-    std::vector<std::pair<std::string,std::string> > *file_names,
-    const char *input_dir, 
-    const char *regular_expression
-);
+plastimatch1_EXPORT void
+xio_structures_load (Cxt_structure_list *structures, char *input_dir, 
+		     float x_adj, float y_adj);
 
 #endif

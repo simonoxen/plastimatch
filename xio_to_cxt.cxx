@@ -1,15 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "plm_config.h"
-#include "plm_path.h"
-#include "getopt.h"
 #include "cxt_io.h"
 #include "cxt_apply_dicom.h"
+#include "getopt.h"
+#include "plm_path.h"
 #include "xio_io.h"
+#include "xio_structures.h"
 
 class Program_parms {
 public:
@@ -98,8 +99,7 @@ do_xio_to_cxt (Program_parms *parms)
     Cxt_structure_list cxt;
 
     /* Load from xio */
-    xio_load_structures (&cxt, parms->xio_dir, parms->x_adj, 
-			 parms->y_adj);
+    xio_structures_load (&cxt, parms->xio_dir, parms->x_adj, parms->y_adj);
 
     /* Set dicom uids, etc. */
     if (parms->dicom_dir[0]) {

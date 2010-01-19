@@ -314,12 +314,12 @@ void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Point
     float sp31=0;
     float se32=0;
     float sp32=0;
-    double alpha12;
-    double alpha13;
-    double alpha23;
-    double alpha21;
-    double alpha31;
-    double alpha32;
+    double alpha12=0;
+    double alpha13=0;
+    double alpha23=0;
+    double alpha21=0;
+    double alpha31=0;
+    double alpha32=0;
 
     MomentCalculatorType::Pointer moment= MomentCalculatorType::New();
 	
