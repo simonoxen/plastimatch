@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _xio_io_h
-#define _xio_io_h
+#ifndef _xio_io_h_
+#define _xio_io_h_
 
 #include "plm_config.h"
 #include <string>

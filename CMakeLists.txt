@@ -535,9 +535,10 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	tps.cxx tps.h
+	xio_ct.cxx xio_ct.h
 	xio_dir.cxx xio_dir.h
 	xio_io.cxx xio_io.h
-	xio_structures.cxx xio_structures.h 
+	xio_structures.cxx xio_structures.h
 	xform.cxx xform.h 
 	)
 

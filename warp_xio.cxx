@@ -5,9 +5,11 @@
 #include <string>
 #include "cxt_apply_dicom.h"
 #include "cxt_io.h"
+#include "plm_image.h"
 #include "print_and_exit.h"
 #include "warp_parms.h"
 #include "warp_xio.h"
+#include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_structures.h"
 
@@ -43,6 +45,9 @@ warp_xio_main (Warp_parms* parms)
     /* Load structures from xio */
     //xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
     xio_structures_load (&cxt, xsd->path, 0, 0);
+
+    PlmImage pli;
+    xio_ct_load (&pli, xsd->path);
 
     /* Set dicom uids, etc. */
     if (parms->dicom_dir[0]) {

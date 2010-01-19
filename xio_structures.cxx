@@ -245,4 +245,3 @@ xio_structures_load (Cxt_structure_list *structures, char *input_dir,
 	++it;
     }
 }
-
