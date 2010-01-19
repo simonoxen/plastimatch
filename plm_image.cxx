@@ -502,8 +502,7 @@ PlmImage::convert (PlmImageType new_type)
 	this->convert_to_itk_uchar ();
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
-	break;
-    case PLM_IMG_TYPE_ITK_USHORT:
+	this->convert_to_itk_short ();
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	this->convert_to_itk_uint32 ();
@@ -514,6 +513,7 @@ PlmImage::convert (PlmImageType new_type)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_gpuit_float ();
 	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
     default:
 	print_and_exit ("Unhandled image type in "
 			"PlmImage::convert (type = %d)\n", 

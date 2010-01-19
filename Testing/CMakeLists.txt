@@ -32,33 +32,6 @@ IF (PLM_TEST_XIO)
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 ENDIF (PLM_TEST_XIO)
 
-IF (XXX)
-IF (PLM_TEST_DICOM)
-  SET (DOWNLOADED_TEST_DATA_URL
-    http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz)
-  SET (DOWNLOADED_TEST_DATA_FILENAME
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz")
-  SET (DOWNLOADED_TEST_DATA_DIRECTORY
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-  IF (NOT EXISTS ${DOWNLOADED_TEST_DATA_FILENAME})
-    MESSAGE (STATUS "Downloading test data")
-    FILE (DOWNLOAD ${DOWNLOADED_TEST_DATA_URL}
-      ${DOWNLOADED_TEST_DATA_FILENAME})
-  ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_FILENAME})
-  IF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
-    MESSAGE (STATUS "Untarring test data")
-    EXECUTE_PROCESS (
-      COMMAND 
-      ${CMAKE_COMMAND} "-E" "tar" "xvzf" "${DOWNLOADED_TEST_DATA_FILENAME}"
-      WORKING_DIRECTORY ${PLM_TESTING_BUILD_DIR}
-      RESULT_VARIABLE untar_result
-      OUTPUT_VARIABLE untar_output
-      ERROR_VARIABLE untar_error)
-    MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
-  ENDIF (NOT EXISTS ${DOWNLOADED_TEST_DATA_DIRECTORY})
-ENDIF (PLM_TEST_DICOM)
-ENDIF (XXX)
-
 SET (SYNTH_MHA_SIZE 38)
 
 ## -------------------------------------------------------------------------
@@ -431,7 +404,7 @@ PLM_ADD_TEST (
   "plm-convert-xio"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02/20080627A/anatomy/studyset/CHESTPHANTOM;--output;chest-phantom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output;chest-phantom.mha"
   )
 
 ## -------------------------------------------------------------------------

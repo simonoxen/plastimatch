@@ -16,7 +16,7 @@
 void
 warp_xio_main (Warp_parms* parms)
 {
-    Cxt_structure_list cxt;
+    //Cxt_structure_list cxt;
     Xio_dir *xd;
     Xio_patient_dir *xpd;
     Xio_studyset_dir *xsd;
@@ -42,13 +42,16 @@ warp_xio_main (Warp_parms* parms)
 	    "Defaulting to first directory: %s\n", xsd->path);
     }
 
+#if defined (commentout)
     /* Load structures from xio */
     //xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
     xio_structures_load (&cxt, xsd->path, 0, 0);
+#endif
 
     PlmImage pli;
     xio_ct_load (&pli, xsd->path);
 
+#if defined (commentout)
     /* Set dicom uids, etc. */
     if (parms->dicom_dir[0]) {
 	cxt_apply_dicom_dir (&cxt, parms->dicom_dir);
@@ -58,4 +61,8 @@ warp_xio_main (Warp_parms* parms)
 
     /* Write out the cxt */
     cxt_write (&cxt, parms->output_fn, true);
+#endif
+
+    /* Write out the image */
+    pli.convert_and_save (parms->output_fn, PLM_IMG_TYPE_ITK_SHORT);
 }
