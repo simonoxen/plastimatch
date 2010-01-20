@@ -333,13 +333,13 @@ PLM_ADD_TEST (
   "plm-convert-dicom"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output;chest-phantom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output;chest-phantom-dicom.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;chest-phantom.mha"
+  "stats;--input;chest-phantom-dicom.mha"
   )
 ADD_TEST (
   "plm-convert-dicom-check"
@@ -379,7 +379,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-rtss-b"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures-b.mha;--fixed;${PLM_TESTING_BUILD_DIR}/chest-phantom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output;chest-phantom-structures-b.mha;--fixed;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicom.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-rtss-stats-b"
@@ -404,7 +404,22 @@ PLM_ADD_TEST (
   "plm-convert-xio"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output;chest-phantom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output;chest-phantom-xio.mha"
+  )
+PLM_ADD_TEST (
+  "plm-convert-xio-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;chest-phantom-xio.mha"
+  )
+ADD_TEST (
+  "plm-convert-xio-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-xio-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-667.5"
+  "-DUPPER_THRESH=-666.6"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------
