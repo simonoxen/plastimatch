@@ -48,6 +48,15 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 
+IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-xio"
+    "plm-convert-xio-stats"
+    "plm-convert-xio-check"
+    )
+ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+
 IF (NOT RUN_CUDA_TESTS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
