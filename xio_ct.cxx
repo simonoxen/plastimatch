@@ -223,7 +223,8 @@ xio_ct_create_volume (
 void
 xio_ct_load (PlmImage *pli, char *input_dir)
 {
-    const char *filename_re = "T\\.([-\\.0-9]*)\\.CT";
+    //const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";
+    const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";
     const char *filename;
     std::vector<std::pair<std::string,std::string> >::iterator it;
     int i;
@@ -237,7 +238,7 @@ xio_ct_load (PlmImage *pli, char *input_dir)
     std::vector<std::pair<std::string,std::string> > file_names;
     xio_io_get_file_names (&file_names, input_dir, filename_re);
     if (file_names.empty ()) {
-	print_and_exit ("No xio structure files found in directory %s\n", 
+	print_and_exit ("No xio CT files found in directory %s\n", 
 			input_dir);
     }
 

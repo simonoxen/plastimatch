@@ -504,6 +504,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt_io.cxx cxt_io.h 
 	cxt_to_mha.cxx cxt_to_mha.h 
+ 	cxt_warp.cxx cxt_warp.h 
 	gcs_metric.h gcs_metric.hxx 
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
@@ -693,10 +694,10 @@ SET (PLASTIMATCH_SRC
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h
  	warp_dij_main.cxx 
-	warp_xio.cxx warp_xio.h 
 	warp_mha_main.cxx 
 	warp_main.cxx warp_main.h 
  	warp_pointset_main.cxx 
+	xio_warp.cxx xio_warp.h 
 	)
 SET (PLASTIMATCH_SLICER_SRC
         plastimatch-slicer.cxx

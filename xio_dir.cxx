@@ -67,7 +67,7 @@ static Xio_patient_dir*
 xio_dir_add_patient_dir (Xio_dir *xd, std::string dir)
 {
     Xio_patient_dir *xpd;
-    xd->patient_dir = (Xio_patient_dir*) malloc (
+    xd->patient_dir = (Xio_patient_dir*) realloc (xd->patient_dir, 
 	(xd->num_patient_dir+1) * sizeof (Xio_patient_dir));
     xpd = &xd->patient_dir[xd->num_patient_dir];
     xd->num_patient_dir ++;
@@ -87,7 +87,7 @@ xio_patient_dir_add_studyset_dir (
 {
     Xio_studyset_dir *xsd;
 
-    xpd->studyset_dir = (Xio_studyset_dir*) malloc (
+    xpd->studyset_dir = (Xio_studyset_dir*) realloc (xpd->studyset_dir, 
 	(xpd->num_studyset_dir+1) * sizeof (Xio_studyset_dir));
     xsd = &xpd->studyset_dir[xpd->num_studyset_dir];
     xpd->num_studyset_dir ++;
@@ -109,6 +109,7 @@ xio_patient_dir_analyze (Xio_patient_dir *xpd)
 	std::string curr_path = studyset_path + "/" + itk_dir.GetFile(i);
 	
 	if (is_xio_studyset_dir (curr_path)) {
+	    printf ("Adding xsd: %s\n", curr_path.c_str());
 	    xio_patient_dir_add_studyset_dir (xpd, curr_path);
 	}
     }
@@ -127,24 +128,19 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
     if (is_xio_patient_dir (dir)) {
 	Xio_patient_dir *curr_patient_dir 
 	    = xio_dir_add_patient_dir (xd, dir);
-	curr_patient_dir->type = XPD_TOPLEVEL_PATIENT_DIR;
-
 	xio_patient_dir_analyze (curr_patient_dir);
 	return;
     }
 
-#if defined (commentout)
     /* Look for studyset directories.  
        GCS FIX: Each studyset counts as a separate patient 
        GCS FIX: Look for plan directories too. */
     else if (is_xio_studyset_dir (dir)) {
-	Xio_patient_dir *curr_patient_dir 
-	    = xio_dir_add_patient_dir (xpd, dir);
-	curr_patient_dir->type = XPD_STUDYSET_DIR;
-	
+	Xio_patient_dir *xpd
+	    = xio_dir_add_patient_dir (xd, dir);
+	xio_patient_dir_add_studyset_dir (xpd, dir);
 	return;
     }
-#endif
 
     for (unsigned long i = 0; i < itk_dir.GetNumberOfFiles(); i++) {
 	std::string curr_file = itk_dir.GetFile(i);

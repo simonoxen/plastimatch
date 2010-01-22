@@ -9,6 +9,7 @@
 #include "cxt_io.h"
 #include "file_util.h"
 #include "mathutil.h"
+#include "plm_image_header.h"
 
 void
 cxt_initialize (Cxt_structure_list* structures)
@@ -629,4 +630,20 @@ cxt_apply_geometry (Cxt_structure_list* structures)
 	    }
 	}
     }
+}
+
+void
+cxt_set_geometry_from_plm_image (
+    Cxt_structure_list* structures,
+    PlmImage *pli
+)
+{
+    PlmImageHeader pih;
+    pih.set_from_plm_image (pli);
+    pih.get_gpuit_origin (structures->offset);
+    pih.get_gpuit_spacing (structures->spacing);
+    pih.get_gpuit_dim (structures->dim);
+    structures->have_geometry = 1;
+
+    cxt_apply_geometry (structures);
 }

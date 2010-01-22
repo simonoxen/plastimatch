@@ -5,16 +5,17 @@
 #include <string>
 #include "cxt_apply_dicom.h"
 #include "cxt_io.h"
+#include "cxt_warp.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 #include "warp_parms.h"
-#include "warp_xio.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_structures.h"
+#include "xio_warp.h"
 
 void
-warp_xio_main (Warp_parms* parms)
+xio_warp_main (Warp_parms* parms)
 {
     //Cxt_structure_list cxt;
     Xio_dir *xd;
@@ -42,14 +43,16 @@ warp_xio_main (Warp_parms* parms)
 	    "Defaulting to first directory: %s\n", xsd->path);
     }
 
-#if defined (commentout)
-    /* Load structures from xio */
-    //xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
-    xio_structures_load (&cxt, xsd->path, 0, 0);
-#endif
-
     PlmImage pli;
+
+    /* Load the input image */
     xio_ct_load (&pli, xsd->path);
+
+
+    /* Write out the image */
+    if (parms->output_fn[0]) {
+	pli.convert_and_save (parms->output_fn, PLM_IMG_TYPE_ITK_SHORT);
+    }
 
 #if defined (commentout)
     /* Set dicom uids, etc. */
@@ -58,11 +61,20 @@ warp_xio_main (Warp_parms* parms)
 	//cxt.offset[0] += parms->x_adj;
 	//cxt.offset[1] += parms->y_adj;
     }
-
-    /* Write out the cxt */
-    cxt_write (&cxt, parms->output_fn, true);
 #endif
 
-    /* Write out the image */
-    pli.convert_and_save (parms->output_fn, PLM_IMG_TYPE_ITK_SHORT);
+    if (parms->ss_img_fn[0] || parms->labelmap_fn[0] || parms->prefix[0]) {
+
+	Cxt_structure_list cxt;
+
+	/* Load structures from xio */
+	//xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
+	xio_structures_load (&cxt, xsd->path, 0, 0);
+
+	/* Copy geometry from Xio CT to structures */
+	cxt_set_geometry_from_plm_image (&cxt, &pli);
+
+	/* Convert and write output */
+	cxt_to_mha_write (&cxt, parms);
+    }
 }

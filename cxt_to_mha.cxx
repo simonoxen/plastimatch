@@ -18,18 +18,6 @@
 #include "render_polyline.h"
 #include "volume.h"
 
-#if defined (commentout)
-#if defined (WIN32)
-#include <direct.h>
-#define snprintf _snprintf
-#define mkdir(a, b) _mkdir (a)
-#else
-#include <sys/stat.h>
-#include <sys/types.h>
-#endif
-#endif
-
-
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,

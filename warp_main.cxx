@@ -8,18 +8,18 @@
 #include "getopt.h"
 #include "plm_file_format.h"
 #include "print_and_exit.h"
+#include "rtss_warp.h"
 #include "warp_main.h"
-#include "warp_xio.h"
+#include "xio_warp.h"
 
 static void
 print_usage (char* command)
 {
     printf (
 	"Usage: plastimatch %s [options]\n"
-	"Required:\n"
+	"Options:\n"
 	"    --input=filename\n"
 	"    --output=filename\n"
-	"Optional:\n"
 	"    --xf=filename\n"
 	"    --interpolation=nn\n"
 	"    --fixed=filename\n"
@@ -53,6 +53,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
+	{ "img-output",     required_argument,      NULL,           3 },
 	{ "vf",             required_argument,      NULL,           4 },
 	{ "default_val",    required_argument,      NULL,           5 },
 	{ "default-val",    required_argument,      NULL,           5 },
@@ -192,9 +193,14 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
+    if (!parms->input_fn[0]) {
+	print_usage (argv[1]);
+    }
+#if defined (commentout)
     if (!parms->input_fn[0] || !parms->output_fn[0]) {
 	print_usage (argv[1]);
     }
+#endif
 }
 
 void
@@ -222,7 +228,7 @@ do_command_warp (int argc, char* argv[])
 	    warp_image_main (&parms);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
-	    warp_xio_main (&parms);
+	    xio_warp_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");

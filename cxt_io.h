@@ -4,8 +4,10 @@
 #ifndef _cxt_io_h_
 #define _cxt_io_h_
 
+#include "plm_config.h"
 #include "bstrlib.h"
 #define CXT_BUFLEN 2048
+#include "plm_image.h"
 
 typedef struct cxt_polyline Cxt_polyline;
 struct cxt_polyline {
@@ -85,6 +87,12 @@ cxt_prune_empty (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_apply_geometry (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_set_geometry_from_plm_image (
+    Cxt_structure_list* structures,
+    PlmImage *pli
+);
 
 #if defined __cplusplus
 }
