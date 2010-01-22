@@ -75,8 +75,6 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	bsreadln (line1, bs, '\n');
     }
 
-    cxt_debug (structures);
-
     bdestroy (line1);
     bdestroy (line2);
     bsclose (bs);
@@ -209,8 +207,12 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
       the structures from XiO coordinates to Dicom.
 */
 void
-xio_structures_load (Cxt_structure_list *structures, char *input_dir, 
-    float x_adj, float y_adj)
+xio_structures_load (
+    Cxt_structure_list *structures, 
+    char *input_dir, 
+    float x_adj,
+    float y_adj
+)
 {
     
     const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
@@ -244,4 +246,6 @@ xio_structures_load (Cxt_structure_list *structures, char *input_dir,
 	add_cms_structure (structures, filename, z_loc, x_adj, y_adj);
 	++it;
     }
+
+    cxt_debug (structures);
 }

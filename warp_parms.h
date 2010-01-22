@@ -25,7 +25,9 @@ public:
     char labelmap_fn[_MAX_PATH];
     char ss_img_fn[_MAX_PATH];
     char ss_list_fn[_MAX_PATH];
+    char cxt_output_fn[_MAX_PATH];
     float default_val;
+    int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */
     int interp_lin;              /* trilinear (1) or nn (0) */
     Plm_file_format output_format;
@@ -38,6 +40,7 @@ public:
     Warp_parms () {
 	memset (this, 0, sizeof(Warp_parms));
 	use_itk = 0;
+	prune_empty = 0;
 	interp_lin = 1;
 	output_format = PLM_FILE_FMT_UNKNOWN;
 	output_type = PLM_IMG_TYPE_UNDEFINED;

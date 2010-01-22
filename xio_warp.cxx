@@ -52,6 +52,7 @@ xio_warp_main (Warp_parms* parms)
     /* Write out the image */
     if (parms->output_fn[0]) {
 	pli.convert_and_save (parms->output_fn, PLM_IMG_TYPE_ITK_SHORT);
+	printf ("Done writing xio ct.\n");
     }
 
 #if defined (commentout)
@@ -63,18 +64,32 @@ xio_warp_main (Warp_parms* parms)
     }
 #endif
 
-    if (parms->ss_img_fn[0] || parms->labelmap_fn[0] || parms->prefix[0]) {
-
+    if (parms->ss_img_fn[0] || parms->labelmap_fn[0] 
+	|| parms->prefix[0] || parms->cxt_output_fn[0])
+    {
 	Cxt_structure_list cxt;
 
 	/* Load structures from xio */
 	//xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
+	printf ("calling xio_structures_load\n");
 	xio_structures_load (&cxt, xsd->path, 0, 0);
 
+	if (parms->prune_empty) {
+	    cxt_prune_empty (&cxt);
+	}
+
 	/* Copy geometry from Xio CT to structures */
+	printf ("calling cxt_set_geometry_from_plm_image\n");
 	cxt_set_geometry_from_plm_image (&cxt, &pli);
 
+	/* Write cxt output */
+	if (parms->cxt_output_fn[0]) {
+	    cxt_write (&cxt, parms->cxt_output_fn, 0);
+	}
+
 	/* Convert and write output */
+	printf ("calling cxt_to_mha_write\n");
 	cxt_to_mha_write (&cxt, parms);
+	printf ("done.\n");
     }
 }

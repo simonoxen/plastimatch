@@ -37,6 +37,8 @@ print_usage (char* command)
 	"    --labelmap=filename       (for structures)\n"
 	"    --ss-img=filename         (for structures)\n"
 	"    --ss-list=filename        (for structures)\n"
+	"    --cxt-output=filename     (for structures)\n"
+	"    --prune-empty             (for structures)\n"
 	,
 	command);
     exit (-1);
@@ -82,6 +84,10 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "ss_list",        required_argument,      NULL,           22 },
 	{ "ss-list",        required_argument,      NULL,           22 },
 	{ "xorlist",        required_argument,      NULL,           22 },
+	{ "cxt_output",     required_argument,      NULL,           23 },
+	{ "cxt-output",     required_argument,      NULL,           23 },
+	{ "prune_empty",    required_argument,      NULL,           24 },
+	{ "prune-empty",    no_argument,            NULL,           24 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -186,6 +192,12 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 22:
 	    strncpy (parms->ss_list_fn, optarg, _MAX_PATH);
+	    break;
+	case 23:
+	    strncpy (parms->cxt_output_fn, optarg, _MAX_PATH);
+	    break;
+	case 24:
+	    parms->prune_empty = 1;
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");

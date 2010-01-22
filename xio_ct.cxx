@@ -185,12 +185,12 @@ xio_ct_create_volume (
     dim[1] = xch->dim[1];
     dim[2] = best_chunk_len;
 
-    offset[0] = - xch->slice_size[0] / 2;
-    offset[1] = - xch->slice_size[1] / 2;
+    offset[0] = - xch->slice_size[0];
+    offset[1] = - xch->slice_size[1];
     offset[2] = xch->z_loc;
 
-    spacing[0] = - xch->spacing[0];
-    spacing[1] = - xch->spacing[1];
+    spacing[0] = xch->spacing[0];
+    spacing[1] = xch->spacing[1];
     spacing[2] = best_chunk_diff;
 
     v = volume_create (dim, offset, spacing, PT_SHORT, 0, 0);
