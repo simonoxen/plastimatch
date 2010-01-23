@@ -18,6 +18,11 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 
+/* winbase.h defines GetCurrentTime which conflicts with gdcm function */
+#if defined GetCurrentTime
+# undef GetCurrentTime
+#endif
+
 /* This function probes whether or not the file is a dicom rtss format */
 bool
 gdcm_rtss_probe (char *rtss_fn)
