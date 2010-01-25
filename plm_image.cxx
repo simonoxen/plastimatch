@@ -559,5 +559,7 @@ plm_image_save_vol (const char* fname, Volume *vol)
     PlmImage pli;
 
     pli.set_gpuit (v2);
-    pli.convert_and_save (fname, PLM_IMG_TYPE_ITK_UCHAR);
+    pli.convert_to_itk ();
+    pli.convert_to_itk ();
+    pli.save_image (fname);
 }
