@@ -25,6 +25,9 @@ INCLUDE(FindTIFF)
 INCLUDE(FindZLIB)
 INCLUDE(CheckLibraryExists)
 
+FIND_LIBRARY (SSL_LIBRARY ssl)
+MESSAGE (STATUS "SSL LIBRARY is ${SSL_LIBRARY}")
+
 FIND_PATH(DCMTK_INCLUDE_DIR dcmtk/config/osconfig.h
 	${DCMTK_DIR}/include
 	)
@@ -97,6 +100,13 @@ FIND_LIBRARY(DCMTK_dcmnet_LIBRARY dcmnet
   ${DCMTK_DIR}/lib/
 )
 
+FIND_LIBRARY(DCMTK_dcmtls_LIBRARY dcmtls 
+  ${DCMTK_DIR}/dcmnet/libsrc/Release
+  ${DCMTK_DIR}/dcmnet/libsrc/Debug
+  ${DCMTK_DIR}/dcmnet/libsrc/
+  ${DCMTK_DIR}/lib/
+)
+
 
 #IF( DCMTK_config_INCLUDE_DIR 
 #    AND DCMTK_ofstd_INCLUDE_DIR 
@@ -120,7 +130,7 @@ IF(DCMTK_INCLUDE_DIR
 #    ${DCMTK_dcmimgle_INCLUDE_DIR}
 #  )
 
-  SET( DCMTK_LIBRARIES
+  SET(DCMTK_LIBRARIES
     ${DCMTK_ofstd_LIBRARY}
     ${DCMTK_dcmimgle_LIBRARY}
     ${DCMTK_dcmdata_LIBRARY}
@@ -133,6 +143,19 @@ IF(DCMTK_INCLUDE_DIR
      ${DCMTK_imagedb_LIBRARY}
      )
   ENDIF(DCMTK_imagedb_LIBRARY)
+
+  IF(DCMTK_dcmtls_LIBRARY)
+   SET(DCMTK_LIBRARIES
+     ${DCMTK_LIBRARIES}
+     ${DCMTK_dcmtls_LIBRARY}
+     )
+   IF (SSL_LIBRARY)
+   SET(DCMTK_LIBRARIES
+     ${DCMTK_LIBRARIES}
+     ${SSL_LIBRARY}
+     )
+   ENDIF (SSL_LIBRARY)
+  ENDIF(DCMTK_dcmtls_LIBRARY)
 
   IF(DCMTK_dcmnet_LIBRARY)
    SET(DCMTK_LIBRARIES

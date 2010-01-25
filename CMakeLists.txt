@@ -625,6 +625,9 @@ ENDIF (CUDA_FOUND)
 SET (EXTRACT_CONTOUR_SRC
 	extract_contour.cxx
 	)
+SET (FINDSCU_SRC
+	findscu.cc
+	)
 SET (FDK_SRC
         fdk_main.c 
 	fdk_opts.c fdk_opts.h
@@ -682,6 +685,9 @@ SET (MONDOSHOT_SRC
 	)
 SET (MONDOSHOT_RELAY_SRC
 	mondoshot_relay_main.cpp
+	)
+SET (MOVESCU_SRC
+	movescu.cc
 	)
 SET (PATIENT_MASK_SRC
 	patient_mask.cxx
@@ -984,6 +990,8 @@ ENDIF (CUDA_FOUND)
 # dicom_uid requires dcmtk
 IF(DCMTK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_uid "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "")
+  PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "")
+  PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "")
 ENDIF(DCMTK_FOUND)
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
