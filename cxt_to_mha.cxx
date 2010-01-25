@@ -156,9 +156,7 @@ cxt_to_mha_current_name (
     Cxt_structure_list *structures
 )
 {
-    if (ctm_state->curr_struct_no == 0 
-	|| ctm_state->curr_struct_no == structures->num_structures + 1)
-    {
+    if (ctm_state->curr_struct_no < structures->num_structures + 1) {
 	Cxt_structure *curr_structure;
 	curr_structure = &structures->slist[ctm_state->curr_struct_no-1];
 	return curr_structure->name;

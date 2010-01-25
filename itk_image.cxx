@@ -345,8 +345,8 @@ itk_image_save (T image, const char* fname)
 	writer->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << "ITK exception writing image file." << std::endl;
-	std::cerr << excp << std::endl;
+	printf ("ITK exception writing image file.\n");
+	std::cout << excp << std::endl;
     }
 }
 

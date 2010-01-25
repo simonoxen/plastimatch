@@ -328,7 +328,7 @@ PlmImage::convert_to_itk_uchar (void)
 	print_and_exit ("Error: unhandled conversion to itk_uchar\n");
 	return;
     }
-    this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+    this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
 }
 
 void
@@ -409,6 +409,10 @@ PlmImage::convert_to_itk_float ()
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	return;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_float = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_float, (unsigned char) 0);
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_float = plm_image_convert_gpuit_to_itk (
 	    this, this->m_itk_float, (float) 0);
@@ -555,7 +559,5 @@ plm_image_save_vol (const char* fname, Volume *vol)
     PlmImage pli;
 
     pli.set_gpuit (v2);
-    pli.convert_to_itk ();
-    
-    pli.save_image (fname);
+    pli.convert_and_save (fname, PLM_IMG_TYPE_ITK_UCHAR);
 }

@@ -23,7 +23,7 @@ cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 	/* Write out prefix images */
 	if (parms->prefix[0]) {
 	    char fn[_MAX_PATH];
-	    strcat (fn, parms->prefix);
+	    strcpy (fn, parms->prefix);
 	    strcat (fn, "_");
 	    strcat (fn, cxt_to_mha_current_name (&ctm_state, structures));
 	    strcat (fn, ".mha");
