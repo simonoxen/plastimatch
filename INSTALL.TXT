@@ -28,6 +28,7 @@ before you can build plastimatch.  Download from here:
 
   http://cmake.org/
 
+
 Compiler
 --------
 In addition, you will need a C/C++ compiler.  If you are running 
@@ -40,6 +41,7 @@ from here:
 
 For the Express version, you need the platform SDK as well.
 
+
 ITK
 ---
 ITK is required for the main plastimatch program.  But if you only 
@@ -47,13 +49,7 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-The following versions of ITK are known to work:
-  ITK 3.6.0		Does not work
-  ITK 3.8.0		Works (not recently tested)
-  ITK 3.10.2		Works (not recently tested)
-  ITK 3.12.0		Works (not recently tested)
-  ITK 3.14.0		Works
-  ITK 3.16.0		Works
+ITK 3.16.0 (or higher) is recommended.
 
 When you build ITK, the following settings are recommended:
 
@@ -66,15 +62,20 @@ When you build ITK, the following settings are recommended:
 Also, you probably want make sure the build type is "Release" when 
 you compile.
 
-Fortran
--------
+
+Fortran (or f2c)
+----------------
 Fortran is required if you want to run B-Spline registration with 
-LBFGSB optimization.  On unix, it is recommended to install the 
-GNU Fortran compiler.  For windows, the f2c library is included in the 
-download.  If the f2c library is desired for other platforms, 
-such as MSYS, get from here:
+LBFGSB optimization.  Alternatively, f2c can be used.
+
+For windows, the f2c library is included in plastimatch.
+On unix, it is recommended to install the GNU Fortran compiler.  
+
+If the f2c library is desired for other platforms (such as MSYS),
+get from here:
 
   http://www.netlib.org/f2c/
+
 
 DCMTK
 -----
@@ -82,16 +83,19 @@ DCMTK is needed for mondoshot and a few other small utilities.  On Unix,
 it is a breeze, but Windows can be tricky.  Here is a rough guide how 
 to compile and use on windows:
 
-  a) Download 3.5.5 snapshot
-  b) Edit the CMakeLists.txt file distributed by dcmtk.  
+  a) Download 3.5.4
+  b) Optionally, edit the CMakeLists.txt file distributed by dcmtk.  
      Delete (or comment out) the sections beginning with "settings for 
      Microsoft Visual C", and "settings for Microsoft Visual C++"
+     (I think this is required when building shared library version 
+     on MSVC 2005, but not required for static library on MSVC 2008).
   c) Build
   d) Install
   e) Tell plastimatch to use the install directory
 
 I once was able to use the contributed md-libraries (with VC 2005), 
 but can no longer figure out how to do this.
+
 
 Cuda
 ----
@@ -108,25 +112,27 @@ Download CUDA from here:
 
   http://www.nvidia.com/object/cuda_get.html
 
+
 Brook
 -----
-Brook is needed if you want to run with GPU acceleration of 
-demons deformable registration.  Brook acceleration of FDK is 
-also available, but the cuda version is recommended.  Brook is only 
-tested on Windows.  Detailed instructions on building brook are available 
-in a separate file: README.BROOK.TXT.
+Brook is depricated.
+
+Howver, you still need brook for GPU acceleration of demons deformable 
+registration.  Note also that brook is only tested on Windows.
+
 Download Brook from here:
 
   http://graphics.stanford.edu/projects/brookgpu/
 
 If using brook, you also need to install the DirectX SDK and 
-the NVIDIA CG compiler.  Please refer to README.BROOK.TXT.
+the NVIDIA CG compiler.  Please refer to README.BROOK.TXT for details.
 
 After you have compiled plastimatch, you need to set the brook runtime 
 variables to get GPU acceleration.  Only the DirectX9 backend works.  
 Using the %COMSPEC% shell, do this:f
 
    set BRT_RUNTIME=dx9
+
 
 Slicer
 ------
