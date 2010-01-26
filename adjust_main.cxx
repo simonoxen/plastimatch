@@ -99,7 +99,9 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	{ "truncate-below", required_argument,      NULL,           5 },
 	{ "stretch",        required_argument,      NULL,           6 },
 	{ "output-format",  required_argument,      NULL,           7 },
+	{ "output_format",  required_argument,      NULL,           7 },
 	{ "output-type",    required_argument,      NULL,           8 },
+	{ "output_type",    required_argument,      NULL,           8 },
 	{ NULL,             0,                      NULL,           0 }
     };
 

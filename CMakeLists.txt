@@ -520,6 +520,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	itk_registration.cxx itk_registration.h 
 	itk_tps.cxx itk_tps.h
 	itk_warp.cxx itk_warp.h 
+	mask_mha.cxx mask_mha.h 
  	plm_file_format.cxx plm_file_format.h 
 	plm_image.cxx plm_image.h 
 	plm_image_header.cxx plm_image_header.h 
@@ -664,7 +665,7 @@ SET (ITK_TPS_WARP_SRC
         itk_tps_warp_main.cxx 
 	)
 SET (MASK_MHA_SRC
-	mask_mha.cxx
+	mask_mha_main.cxx
 	)
 SET (MHA_TO_CMS_DOSE_SRC
 	mha_to_cms_dose.c
@@ -696,6 +697,7 @@ SET (PLASTIMATCH_SRC
 	adjust_main.cxx adjust_main.h
 	compare_main.cxx compare_main.h
 	diff_main.cxx diff_main.h
+	mask_main.cxx mask_main.h
 	plastimatch_main.cxx
 	resample_main.cxx resample_main.h
 	stats_main.cxx stats_main.h

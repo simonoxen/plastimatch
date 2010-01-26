@@ -13,6 +13,7 @@
 #include "adjust_main.h"
 #include "compare_main.h"
 #include "diff_main.h"
+#include "mask_main.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
 #include "plm_version.h"
@@ -24,17 +25,26 @@ static void
 print_usage (int return_code)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
-    printf ("Usage: plastimatch command [options]\n"
-	    "Commands:\n"
-	    "  adjust\n"
-	    "  compare\n"
-	    "  convert\n"
-	    "  diff\n"
-	    "  register\n"
-	    "  resample\n"
-	    "  stats\n"
-	    "  warp\n"
-	   );
+    printf (
+	"Usage: plastimatch command [options]\n"
+	"Commands:\n"
+	"  adjust      "
+	"  compare     "
+	"\n"
+	"  convert     "
+	"  diff        "
+	"\n"
+	"  mask        "
+	"  register    "
+	"\n"
+	"  resample    "
+	"  stats       "
+	"\n"
+	"  warp        "
+	"\n"
+	"For detailed usage of a specific command, type:\n"
+	"  plastimatch command\n"
+    );
     exit (return_code);
 }
 
@@ -83,6 +93,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "diff")) {
 	do_command_diff (argc, argv);
+    }
+    else if (!strcmp (command, "mask")) {
+	do_command_mask (argc, argv);
     }
     else if (!strcmp (command, "register")) {
 	do_command_register (argc, argv);
