@@ -1,4 +1,4 @@
- /* -----------------------------------------------------------------------
+/* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
@@ -16,6 +16,8 @@
 #include "bstrlib.h"
 
 #include "cxt_io.h"
+#include "file_util.h"
+#include "plm_path.h"
 #include "print_and_exit.h"
 #include "xio_io.h"
 #include "xio_structures.h"
@@ -248,4 +250,73 @@ xio_structures_load (
     }
 
     cxt_debug (structures);
+}
+
+void
+xio_structures_save (
+    Cxt_structure_list *cxt, 
+    char *output_dir
+)
+{
+    FILE *fp;
+    int i, j, k, z;
+    char fn[_MAX_PATH];
+
+    if (!cxt->have_geometry) {
+	print_and_exit ("Sorry, can't output xio format without ct geometry\n");
+    }
+
+    /* Write contournames */
+    sprintf (fn, "%s/%s", output_dir, "contournames");
+    make_directory_recursive (fn);
+    fp = fopen (fn, "w");
+    if (!fp) {
+	print_and_exit ("Error opening output file %s\n", fn);
+    }
+    fprintf (fp, "00041027\n%d\n", cxt->num_structures);
+    for (i = 0; i < cxt->num_structures; i++) {
+	Cxt_structure *curr_structure = &cxt->slist[i];
+	fprintf (fp, "%s\n", curr_structure->name);
+	fprintf (fp, "%d,1.000000,0,1,19691231.190000\n", i);
+	fprintf (fp, "General\n");
+	fprintf (fp, "1,5,-1,1,0,0\n");
+    }
+    fclose (fp);
+
+    /* Write WC files */
+    for (z = 0; z < cxt->dim[2]; z++) {
+	char fn[_MAX_PATH];
+	float z_loc = cxt->offset[2] + z * cxt->spacing[2];
+	sprintf (fn, "%s/T.%.1f.WC", output_dir, (round(z_loc * 10) / 10.f));
+	fp = fopen (fn, "w");
+	if (!fp) {
+	    print_and_exit ("Error opening output file %s\n", fn);
+	}
+	fprintf (fp, "00061013\n\n");
+	fprintf (fp, "0\n0.000,0.000,0.000\n");
+	/* GCS FIX: These seem to be min/max */
+	fprintf (fp, "-158.1,-135.6, 147.7,  81.6\n");
+	for (i = 0; i < cxt->num_structures; i++) {
+	    Cxt_structure *curr_structure = &cxt->slist[i];
+	    for (j = 0; j < curr_structure->num_contours; j++) {
+		Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+		fprintf (fp, "%d\n", curr_polyline->num_vertices);
+		fprintf (fp, "%d\n", i);
+		for (k = 0; k < curr_polyline->num_vertices; k++) {
+		    fprintf (fp, "%6.1f,%6.1f", 
+			curr_polyline->x[k], curr_polyline->y[k]);
+		    if (k % 5 == 0) {
+			fprintf (fp, "\n");
+		    }
+		    else if (k < curr_polyline->num_vertices - 1) {
+			fprintf (fp, ",");
+		    } else {
+			fprintf (fp, "\n");
+		    }
+		}
+	    }
+	}
+	fprintf (fp, "0\n0\n0\nBart\n");
+	fclose (fp);
+    }
 }

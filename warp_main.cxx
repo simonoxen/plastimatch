@@ -38,6 +38,7 @@ print_usage (char* command)
 	"    --ss-img=filename         (for structures)\n"
 	"    --ss-list=filename        (for structures)\n"
 	"    --cxt-output=filename     (for structures)\n"
+	"    --xio-output=directory    (for structures)\n"
 	"    --prune-empty             (for structures)\n"
 	,
 	command);
@@ -88,6 +89,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "cxt-output",     required_argument,      NULL,           23 },
 	{ "prune_empty",    required_argument,      NULL,           24 },
 	{ "prune-empty",    no_argument,            NULL,           24 },
+	{ "xio_output",     required_argument,      NULL,           25 },
+	{ "xio-output",     required_argument,      NULL,           25 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -198,6 +201,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 24:
 	    parms->prune_empty = 1;
+	    break;
+	case 25:
+	    strncpy (parms->xio_output_dirname, optarg, _MAX_PATH);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");

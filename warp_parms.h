@@ -26,6 +26,7 @@ public:
     char ss_img_fn[_MAX_PATH];
     char ss_list_fn[_MAX_PATH];
     char cxt_output_fn[_MAX_PATH];
+    char xio_output_dirname[_MAX_PATH];
     float default_val;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */

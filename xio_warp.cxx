@@ -65,12 +65,12 @@ xio_warp_main (Warp_parms* parms)
 #endif
 
     if (parms->ss_img_fn[0] || parms->labelmap_fn[0] 
-	|| parms->prefix[0] || parms->cxt_output_fn[0])
+	|| parms->prefix[0] || parms->cxt_output_fn[0] 
+	|| parms->xio_output_dirname[0])
     {
 	Cxt_structure_list cxt;
 
 	/* Load structures from xio */
-	//xio_structures_load (&cxt, xsd->path, parms->x_adj, parms->y_adj);
 	printf ("calling xio_structures_load\n");
 	xio_structures_load (&cxt, xsd->path, 0, 0);
 
@@ -85,6 +85,11 @@ xio_warp_main (Warp_parms* parms)
 	/* Write cxt output */
 	if (parms->cxt_output_fn[0]) {
 	    cxt_write (&cxt, parms->cxt_output_fn, 0);
+	}
+
+	/* Write xio output */
+	if (parms->xio_output_dirname[0]) {
+	    xio_structures_save (&cxt, parms->xio_output_dirname);
 	}
 
 	/* Convert and write output */
