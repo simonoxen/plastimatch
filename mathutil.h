@@ -25,6 +25,9 @@
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((long)((x)+0.5)) : (long)(-(-(x)+0.5)))
 
+/* Returns double data type -- note MSVC does not have C99 round(). */
+#define ROUND(x) ((double) (ROUND_INT(x)))
+
 
 /* Primatives */
 static inline void vec3_add2 (double* v1, const double* v2) {

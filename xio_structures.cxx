@@ -4,9 +4,9 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <vector>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
@@ -17,6 +17,7 @@
 
 #include "cxt_io.h"
 #include "file_util.h"
+#include "mathutil.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "xio_io.h"
@@ -287,7 +288,7 @@ xio_structures_save (
     for (z = 0; z < cxt->dim[2]; z++) {
 	char fn[_MAX_PATH];
 	float z_loc = cxt->offset[2] + z * cxt->spacing[2];
-	sprintf (fn, "%s/T.%.1f.WC", output_dir, (round(z_loc * 10) / 10.f));
+	sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
 	fp = fopen (fn, "w");
 	if (!fp) {
 	    print_and_exit ("Error opening output file %s\n", fn);
