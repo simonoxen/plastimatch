@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "plm_config.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "synthetic_mha.h"
 #include "itk_image.h"

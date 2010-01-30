@@ -44,7 +44,7 @@
 #include "fdk_cuda_p.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "proj_image.h"
 #include "readmha.h"
 #include "volume.h"

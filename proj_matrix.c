@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "mathutil.h"
+#include "math_util.h"
 #include "proj_matrix.h"
 #include "volume.h"
 

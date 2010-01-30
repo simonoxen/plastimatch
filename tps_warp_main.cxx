@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
-#include "mathutil.h"
+#include "math_util.h"
 #include "readmha.h"
 #include "tps_warp_opts.h"
 

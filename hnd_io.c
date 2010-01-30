@@ -7,7 +7,7 @@
 #include <malloc.h>
 #include "file_util.h"
 #include "hnd_io.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
 #include "timer.h"

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef __mathutil_h__
-#define __mathutil_h__
+#ifndef _math_util_h_
+#define _math_util_h_
 
 #include "plm_config.h"
 #include <math.h>
@@ -132,4 +132,4 @@ static inline void mat_mult_mat (double* m1,
 }
 
 
-#endif /* __mathutil_h__ */
+#endif

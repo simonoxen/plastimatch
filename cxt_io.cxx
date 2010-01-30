@@ -8,7 +8,7 @@
 #include "bstrlib.h"
 #include "cxt_io.h"
 #include "file_util.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "plm_image_header.h"
 
 void

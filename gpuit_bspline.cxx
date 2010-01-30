@@ -8,7 +8,7 @@
 #include <math.h>
 #include "bspline.h"
 #include "logfile.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "plm_image_header.h"
 #include "plm_registration.h"
 #include "readmha.h"

@@ -10,7 +10,7 @@
 #endif
 
 #include "fdk_opts.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "readmha.h"
 #include "volume.h"
 

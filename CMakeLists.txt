@@ -426,7 +426,7 @@ SET (GPUIT_LIBRARY_SRC
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
   logfile.c logfile.h
-  mathutil.h
+  math_util.h
   print_and_exit.c print_and_exit.h 
   proj_image.c proj_image.h
   proj_image_dir.c proj_image_dir.h

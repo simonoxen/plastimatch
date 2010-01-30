@@ -7,7 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "drr_opts.h"
-#include "mathutil.h"
+#include "math_util.h"
 
 #ifndef NULL
 #define NULL ((void*)0)

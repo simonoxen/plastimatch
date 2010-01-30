@@ -17,7 +17,7 @@
 
 #include "cxt_io.h"
 #include "file_util.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "xio_io.h"

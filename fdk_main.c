@@ -17,7 +17,7 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "file_util.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"

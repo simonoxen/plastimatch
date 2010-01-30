@@ -9,7 +9,7 @@
 #include "fdk_utils.h"
 #include "file_util.h"
 #include "hnd_io.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"

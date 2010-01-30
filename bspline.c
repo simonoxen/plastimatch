@@ -38,7 +38,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "logfile.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "print_and_exit.h"
 #include "readmha.h"
 #include "timer.h"

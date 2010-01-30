@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "mathutil.h"
+#include "math_util.h"
 #include "drr.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"

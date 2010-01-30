@@ -8,7 +8,7 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
-#include "mathutil.h"
+#include "math_util.h"
 #include "drr.h"
 #include "drr_cuda.h"
 #include "drr_opts.h"

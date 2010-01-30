@@ -5,7 +5,7 @@
 #define _drr_h_
 
 #include "drr_opts.h"
-#include "mathutil.h"
+#include "math_util.h"
 #include "proj_image.h"
 #include "volume.h"
 
