@@ -595,7 +595,7 @@ The msinttypes package (msinttypes/*)
   ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ------------------------------------------------------------------------
-Dicom processing (no dcmtk code used currently)
+Dicom processing (findscu.cc, movescu.cc)
 
   Copyright (C) 2001-2008, OFFIS
 
