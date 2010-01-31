@@ -28,5 +28,11 @@ public:
     ~Pqt_data_source_dialog ();
 
     int foo;
+
+public slots:
+    void pushbutton_new_released (void);
+    void pushbutton_save_released (void);
+    void pushbutton_delete_released (void);
+
 };
 #endif

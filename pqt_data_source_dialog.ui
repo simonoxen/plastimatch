@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QListView" name="listView">
+  <widget class="QListView" name="listView_data_source_list">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -23,55 +23,58 @@
     </rect>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="pushButton_save">
    <property name="geometry">
     <rect>
      <x>390</x>
      <y>400</y>
-     <width>92</width>
-     <height>28</height>
+     <width>85</width>
+     <height>27</height>
     </rect>
    </property>
    <property name="text">
     <string>Save</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_2">
+  <widget class="QPushButton" name="pushButton_close">
    <property name="geometry">
     <rect>
      <x>490</x>
      <y>400</y>
-     <width>92</width>
-     <height>28</height>
+     <width>85</width>
+     <height>27</height>
     </rect>
    </property>
    <property name="text">
     <string>Close</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton_3">
+  <widget class="QPushButton" name="pushButton_new">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>400</y>
-     <width>92</width>
-     <height>28</height>
+     <width>85</width>
+     <height>27</height>
     </rect>
    </property>
    <property name="text">
     <string>New</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>245</x>
      <y>20</y>
      <width>331</width>
-     <height>189</height>
+     <height>231</height>
     </rect>
    </property>
    <layout class="QFormLayout" name="formLayout">
+    <property name="fieldGrowthPolicy">
+     <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+    </property>
     <item row="0" column="0">
      <widget class="QLabel" name="label">
       <property name="text">
@@ -80,7 +83,7 @@
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QLineEdit" name="lineEdit"/>
+     <widget class="QLineEdit" name="lineEdit_data_source_name"/>
     </item>
     <item row="1" column="0">
      <widget class="QLabel" name="label_2">
@@ -90,7 +93,11 @@
      </widget>
     </item>
     <item row="1" column="1">
-     <widget class="QComboBox" name="comboBox"/>
+     <widget class="QComboBox" name="comboBox_data_source_type">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_3">
@@ -100,7 +107,7 @@
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QLineEdit" name="lineEdit_2"/>
+     <widget class="QLineEdit" name="lineEdit_host"/>
     </item>
     <item row="3" column="0">
      <widget class="QLabel" name="label_4">
@@ -110,7 +117,7 @@
      </widget>
     </item>
     <item row="3" column="1">
-     <widget class="QLineEdit" name="lineEdit_3"/>
+     <widget class="QLineEdit" name="lineEdit_port"/>
     </item>
     <item row="4" column="0">
      <widget class="QLabel" name="label_5">
@@ -120,7 +127,7 @@
      </widget>
     </item>
     <item row="4" column="1">
-     <widget class="QLineEdit" name="lineEdit_4"/>
+     <widget class="QLineEdit" name="lineEdit_aet"/>
     </item>
     <item row="5" column="0">
      <widget class="QLabel" name="label_6">
@@ -130,11 +137,114 @@
      </widget>
     </item>
     <item row="5" column="1">
-     <widget class="QLineEdit" name="lineEdit_5"/>
+     <widget class="QLineEdit" name="lineEdit_spare">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>
+  <widget class="QPushButton" name="pushButton_delete">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>400</y>
+     <width>85</width>
+     <height>27</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_status">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>270</y>
+     <width>59</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>pushButton_close</sender>
+   <signal>released()</signal>
+   <receiver>pqtDataSourceDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>537</x>
+     <y>421</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>314</x>
+     <y>296</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_save</sender>
+   <signal>released()</signal>
+   <receiver>pqtDataSourceDialog</receiver>
+   <slot>pushbutton_save_released()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>456</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>439</x>
+     <y>332</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_new</sender>
+   <signal>released()</signal>
+   <receiver>pqtDataSourceDialog</receiver>
+   <slot>pushbutton_new_released()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>70</x>
+     <y>418</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>258</x>
+     <y>368</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_delete</sender>
+   <signal>released()</signal>
+   <receiver>pqtDataSourceDialog</receiver>
+   <slot>pushbutton_delete_released()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>150</x>
+     <y>419</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>257</x>
+     <y>402</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>pushbutton_save_released()</slot>
+  <slot>pushbutton_new_released()</slot>
+  <slot>pushbutton_delete_released()</slot>
+ </slots>
 </ui>
