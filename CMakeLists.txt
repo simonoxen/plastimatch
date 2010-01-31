@@ -716,6 +716,7 @@ SET (PLASTIMATCH_SLICER_TPS_SRC
 SET (PLASTIMATCH_QT_SRC
 #        pqt_application.cxx pqt_application.h
 	pqt_data_source_dialog.cxx pqt_data_source_dialog.h
+	pqt_data_source_list_model.cxx pqt_data_source_list_model.h
 	pqt_database.cxx pqt_database.h
         pqt_main.cxx
 	pqt_main_window.cxx pqt_main_window.h
@@ -725,6 +726,7 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
 #    pqt_application.h
     pqt_data_source_dialog.h
+    pqt_data_source_list_model.h
     pqt_main_window.h 
     pqt_patient_list_model.h
     )

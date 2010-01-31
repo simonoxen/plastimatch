@@ -4,14 +4,25 @@
 #include "plm_config.h"
 #include <QtGui>
 #include "pqt_data_source_dialog.h"
+#include "pqt_database.h"
 
 Pqt_data_source_dialog::Pqt_data_source_dialog ()
 {
     setupUi (this); // this sets up the GUI
 
-    foo = 3;
-
+    /* Hide status */
     this->label_status->hide();
+
+    /* Attach model to QT listView */
+    this->m_data_source_list_model = new Pqt_data_source_list_model;
+    this->listView_data_source_list->setModel (this->m_data_source_list_model);
+
+    /* Load data sources from database */
+    QSqlQuery query = pqt_database_query_data_source_label ();
+    while (query.next()) {
+	QString label = query.value(0).toString();
+	//this->listView_data_source_list->insert
+    }
 }
 
 Pqt_data_source_dialog::~Pqt_data_source_dialog ()

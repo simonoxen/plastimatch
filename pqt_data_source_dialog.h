@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "ui_pqt_data_source_dialog.h"
+#include "pqt_data_source_list_model.h"
 
 //QT_BEGIN_NAMESPACE
 // class QAction;
@@ -27,7 +28,7 @@ public:
     Pqt_data_source_dialog ();
     ~Pqt_data_source_dialog ();
 
-    int foo;
+    Pqt_data_source_list_model *m_data_source_list_model;
 
 public slots:
     void pushbutton_new_released (void);

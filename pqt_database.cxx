@@ -8,13 +8,13 @@
 #include <QMessageBox>
 #include <QObject>
 #include <QString>
-//#include <QtSql/QSqlDatabase>
-//#include <QtSql/QSqlError>
-//#include <QtSql/QSqlQuery>
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QVariant>
+
+/* Use global variable for database handle */
+static QSqlDatabase global_db;
 
 static void
 print_database_error (QSqlError sql_error)
@@ -33,11 +33,11 @@ pqt_database_start (QString db_path)
     QDir().mkpath(QFileInfo(db_path).absolutePath());
 
     /* Open the sqlite database file. */
-    QSqlDatabase db = QSqlDatabase::addDatabase ("QSQLITE");
-    db.setDatabaseName (db_path);
-    bool ok = db.open ();
+    global_db = QSqlDatabase::addDatabase ("QSQLITE");
+    global_db.setDatabaseName (db_path);
+    bool ok = global_db.open ();
     if (!ok) {
-	print_database_error (db.lastError());
+	print_database_error (global_db.lastError());
 	return;
     }
 
@@ -63,7 +63,7 @@ pqt_database_start (QString db_path)
     if (query.next ()) {
 	QString version_string = query.value(0).toString();
 	QMessageBox::information (0, QString ("Version string"),
-	    QString ("Version string: %1").arg(version_string));
+	    QString ("PQT database version = %1").arg(version_string));
     } else {
 	/* New database.  Add version string. */
 	sql = 
@@ -113,6 +113,19 @@ pqt_database_start (QString db_path)
 	print_database_error (query.lastError());
 	return;
     }
+}
 
-    db.close ();
+QSqlQuery
+pqt_database_query_data_source_label (void)
+{
+    QString sql = 
+	"SELECT label FROM data_source ORDER BY label;";
+    return QSqlQuery (sql);
+}
+
+
+void
+pqt_database_stop (void)
+{
+    global_db.close ();
 }
