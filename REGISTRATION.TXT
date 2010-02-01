@@ -28,7 +28,7 @@ img_out=my_output_img.mha
 [STAGE]
 xform=bspline
 optim=lbfgsb
-impl=gpuit_cpu
+impl=plastimatch
 # Quit after 50 iterations
 max_its=50
 # Quit if change in score differs by less than 3
