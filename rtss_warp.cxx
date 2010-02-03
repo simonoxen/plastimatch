@@ -52,6 +52,7 @@ rtss_warp (Warp_parms *parms)
 
     cxt_debug (&structures);
 
+#if defined (commentout)
     /* If user didn't specify output format, see if we can guess from 
        filename extension */
     if (parms->output_format == PLM_FILE_FMT_UNKNOWN) {
@@ -74,4 +75,5 @@ rtss_warp (Warp_parms *parms)
 	cxt_to_mha_write (&structures, parms);
 	break;
     }
+#endif
 }

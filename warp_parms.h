@@ -23,34 +23,37 @@ public:
     char dicom_dir[_MAX_PATH];
 
     /* Output files */
-    char output_fn[_MAX_PATH];
-    char vf_out_fn[_MAX_PATH];
-    char output_prefix[_MAX_PATH];
+    char output_cxt[_MAX_PATH];
+    char output_dicom[_MAX_PATH];
+    char output_dij[_MAX_PATH];
+    char output_img[_MAX_PATH];
     char output_labelmap_fn[_MAX_PATH];
+    char output_prefix[_MAX_PATH];
     char output_ss_img_fn[_MAX_PATH];
     char output_ss_list_fn[_MAX_PATH];
-    char output_cxt_fn[_MAX_PATH];
+    char output_vf[_MAX_PATH];
     char output_xio_dirname[_MAX_PATH];
 
-    /* Misc options */
-    float default_val;
-    int prune_empty;             /* remove empty structures (1) or not (0) */
-    int use_itk;                 /* force use of itk (1) or not (0) */
-    int interp_lin;              /* trilinear (1) or nn (0) */
-    Plm_file_format output_format;
-    PlmImageType output_type;
+    /* Geometry options */
     float offset[3];
     float spacing[3];
     int dims[3];
 
+    /* Misc options */
+    float default_val;
+    int interp_lin;              /* trilinear (1) or nn (0) */
+    PlmImageType output_type;
+    int prune_empty;             /* remove empty structures (1) or not (0) */
+    int use_itk;                 /* force use of itk (1) or not (0) */
+
 public:
     Warp_parms () {
 	memset (this, 0, sizeof(Warp_parms));
-	use_itk = 0;
-	prune_empty = 0;
+	default_val = 0.0f;
 	interp_lin = 1;
-	output_format = PLM_FILE_FMT_UNKNOWN;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
+	prune_empty = 0;
+	use_itk = 0;
     }
 };
 

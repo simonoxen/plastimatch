@@ -593,5 +593,6 @@ warp_dij_main (Warp_parms* parms)
     load_ctatts (&ctatts, parms->ctatts_in_fn);
     load_dif (&dif, parms->dif_in_fn);
 
-    convert_vector_field (vf, &ctatts, &dif, parms->input_fn, parms->output_fn);
+    convert_vector_field (vf, &ctatts, &dif, parms->input_fn, 
+	parms->output_dij);
 }

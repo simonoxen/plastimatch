@@ -6,7 +6,9 @@
 #include <time.h>
 
 #include "cxt_io.h"
+#include "cxt_to_mha.h"
 #include "cxt_warp.h"
+#include "file_util.h"
 #include "gdcm_rtss.h"
 #include "getopt.h"
 #include "plm_file_format.h"
@@ -26,29 +28,30 @@ print_usage (char* command)
 	"Usage: plastimatch %s [options]\n"
 	"Options:\n"
 	"    --input=filename\n"
-	"    --output=filename\n"
 	"    --xf=filename\n"
 	"    --interpolation=nn\n"
 	"    --fixed=filename\n"
 	"    --offset=\"x y z\"\n"
 	"    --spacing=\"x y z\"\n"
 	"    --dims=\"x y z\"\n"
-	"    --output-vf=filename\n"
 	"    --default-val=number\n"
-	"    --output-format=dicom\n"
 	"    --output-type={uchar,short,float,...}\n"
 	"    --algorithm=itk\n"
+	"    --dicom-dir=directory      (for structure association)\n"
 	"    --ctatts=filename          (for dij)\n"
 	"    --dif=filename             (for dij)\n"
 	"    --input-ss-img=filename    (for structures)\n"
-	"    --dicom-dir=directory      (for structure association)\n"
-	"    --output-prefix=string     (for structures)\n"
+	"    --prune-empty              (for structures)\n"
+	"\n"
+	"    --output-dicom=directory   (for image and structures)\n"
+	"    --output-cxt=filename      (for structures)\n"
+	"    --output-img=filename      (for image)\n"
 	"    --output-labelmap=filename (for structures)\n"
+	"    --output-prefix=string     (for structures)\n"
 	"    --output-ss-img=filename   (for structures)\n"
 	"    --output-ss-list=filename  (for structures)\n"
-	"    --output-cxt=filename      (for structures)\n"
+	"    --output-vf=filename       (for vector field)\n"
 	"    --output-xio=directory     (for structures)\n"
-	"    --prune-empty              (for structures)\n"
 	,
 	command);
     exit (-1);
@@ -65,7 +68,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
-	{ "img-output",     required_argument,      NULL,           3 },
+	{ "output_img",     required_argument,      NULL,           3 },
+	{ "output-img",     required_argument,      NULL,           3 },
 	{ "vf",             required_argument,      NULL,           4 },
 	{ "default_val",    required_argument,      NULL,           5 },
 	{ "default-val",    required_argument,      NULL,           5 },
@@ -77,8 +81,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "offset",         required_argument,      NULL,           10 },
 	{ "spacing",        required_argument,      NULL,           11 },
 	{ "dims",           required_argument,      NULL,           12 },
-	{ "output_format",  required_argument,      NULL,           13 },
-	{ "output-format",  required_argument,      NULL,           13 },
+	{ "output_dicom",   required_argument,      NULL,           13 },
+	{ "output-dicom",   required_argument,      NULL,           13 },
 	{ "ctatts",         required_argument,      NULL,           14 },
 	{ "dif",            required_argument,      NULL,           15 },
 	{ "algorithm",      required_argument,      NULL,           16 },
@@ -114,7 +118,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->input_fn, optarg, _MAX_PATH);
 	    break;
 	case 3:
-	    strncpy (parms->output_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_img, optarg, _MAX_PATH);
 	    break;
 	case 4:
 	    strncpy (parms->vf_in_fn, optarg, _MAX_PATH);
@@ -132,7 +136,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->fixed_im_fn, optarg, _MAX_PATH);
 	    break;
 	case 8:
-	    strncpy (parms->vf_out_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_vf, optarg, _MAX_PATH);
 	    break;
 	case 9:
 	    if (!strcmp (optarg, "nn")) {
@@ -169,7 +173,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    have_dims = 1;
 	    break;
 	case 13:
-	    parms->output_format = plm_file_format_parse (optarg);
+	    strncpy (parms->output_dicom, optarg, _MAX_PATH);
 	    break;
 	case 14:
 	    strncpy (parms->ctatts_in_fn, optarg, _MAX_PATH);
@@ -208,7 +212,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_ss_list_fn, optarg, _MAX_PATH);
 	    break;
 	case 23:
-	    strncpy (parms->output_cxt_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_cxt, optarg, _MAX_PATH);
 	    break;
 	case 24:
 	    parms->prune_empty = 1;
@@ -228,11 +232,6 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
     if (!parms->input_fn[0]) {
 	print_usage (argv[1]);
     }
-#if defined (commentout)
-    if (!parms->input_fn[0] || !parms->output_fn[0]) {
-	print_usage (argv[1]);
-    }
-#endif
 }
 
 void
@@ -279,35 +278,99 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 }
 
 void
+save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
+{
+    Cxt_to_mha_state ctm_state;
+
+    cxt_to_mha_init (&ctm_state, cxt, true, true, true);
+
+    while (cxt_to_mha_process_next (&ctm_state, cxt)) {
+	/* Write out prefix images */
+	if (parms->output_prefix[0]) {
+	    char fn[_MAX_PATH];
+	    strcpy (fn, parms->output_prefix);
+	    strcat (fn, "_");
+	    strcat (fn, cxt_to_mha_current_name (&ctm_state, cxt));
+	    strcat (fn, ".mha");
+	    plm_image_save_vol (fn, ctm_state.uchar_vol);
+	}
+    }
+    /* Write out labelmap, ss_img */
+    if (parms->output_labelmap_fn[0]) {
+	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
+	plm_image_save_vol (parms->output_labelmap_fn, ctm_state.labelmap_vol);
+    }
+    if (parms->output_ss_img_fn[0]) {
+	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
+	plm_image_save_vol (parms->output_ss_img_fn, ctm_state.ss_img_vol);
+    }
+
+    /* Write out list of structure names */
+    if (parms->output_ss_list_fn[0]) {
+	int i;
+	FILE *fp;
+	make_directory_recursive (parms->output_ss_list_fn);
+	fp = fopen (parms->output_ss_list_fn, "w");
+	for (i = 0; i < cxt->num_structures; i++) {
+	    Cxt_structure *curr_structure;
+	    curr_structure = &cxt->slist[i];
+	    fprintf (fp, "%d|%s|%s\n",
+		i, 
+		(curr_structure->color 
+		    ? (const char*) curr_structure->color->data 
+		    : "\255\\0\\0"),
+		curr_structure->name);
+	}
+	fclose (fp);
+    }
+
+    /* Free ctm_state */
+    cxt_to_mha_free (&ctm_state);
+}
+
+
+void
 save_ss_output (Rtds *rtds,  Warp_parms *parms)
 {
     if (!rtds->m_cxt) {
 	return;
     }
 
-    if (parms->output_fn[0]) {
+#if defined (commentout)
+    if (parms->output_img[0]) {
 	/* If user didn't specify output format, see if we can guess from 
 	   filename extension */
 	if (parms->output_format == PLM_FILE_FMT_UNKNOWN) {
 	    parms->output_format = plm_file_format_from_extension (
-		parms->output_fn);
+		parms->output_img);
 	}
 
 	/* Save output */
 	switch (parms->output_format) {
 	case PLM_FILE_FMT_CXT:
-	    cxt_write (rtds->m_cxt, parms->output_fn, true);
+	    cxt_write (rtds->m_cxt, parms->output_img, true);
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
 	case PLM_FILE_FMT_DICOM_DIR:
 	    cxt_adjust_structure_names (rtds->m_cxt);
-	    gdcm_rtss_save (rtds->m_cxt, parms->output_fn, parms->dicom_dir);
+	    gdcm_rtss_save (rtds->m_cxt, parms->output_img, parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_IMG:
 	default:
 	    cxt_to_mha_write (rtds->m_cxt, parms);
 	    break;
 	}
+    }
+#endif
+
+    if (parms->output_labelmap_fn[0] || parms->output_ss_img_fn[0]
+	|| parms->output_ss_list_fn[0] || parms->output_prefix[0])
+    {
+	save_ss_img (rtds->m_cxt, parms);
+    }
+
+    if (parms->output_cxt[0]) {
+	cxt_write (rtds->m_cxt, parms->output_cxt, true);
     }
 }
 
@@ -320,8 +383,6 @@ warp_rtds (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
-
-    printf ("checkpoint 1.\n");
 
     /* Load transform */
     if (parms->xf_in_fn[0]) {
@@ -371,27 +432,19 @@ warp_rtds (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output image */
-    if (parms->output_fn[0] && rtds->m_img) {
+    if (parms->output_img[0] && rtds->m_img) {
 	printf ("Saving image...\n");
-	switch (parms->output_format) {
-	case PLM_FILE_FMT_DICOM_DIR:
-	    rtds->m_img->save_short_dicom (parms->output_fn);
-	    break;
-	default:
-	    rtds->m_img->save_image (parms->output_fn);
-	    break;
-	}
+	rtds->m_img->save_image (parms->output_img);
     }
 
     /* Save output vector field */
-    if (parms->xf_in_fn[0] && parms->vf_out_fn[0]) {
+    if (parms->xf_in_fn[0] && parms->output_vf[0]) {
 	printf ("Saving vf...\n");
-	itk_image_save (vf, parms->vf_out_fn);
+	itk_image_save (vf, parms->output_vf);
     }
 
     /* Save output structure set */
     save_ss_output (rtds, parms);
-
 }
 
 void
