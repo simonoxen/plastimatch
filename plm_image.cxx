@@ -171,6 +171,18 @@ PlmImage::save_image (const char* fname)
     case PLM_IMG_TYPE_ITK_FLOAT:
 	itk_image_save (this->m_itk_float, fname);
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->convert_to_itk_uchar ();
+	itk_image_save (this->m_itk_uchar, fname);
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->convert_to_itk_short ();
+	itk_image_save (this->m_itk_short, fname);
+	break;
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	this->convert_to_itk_uint32 ();
+	itk_image_save (this->m_itk_uint32, fname);
+	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
 	itk_image_save (this->m_itk_float, fname);

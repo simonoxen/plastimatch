@@ -108,6 +108,9 @@ PlmImageHeader::set_from_plm_image (PlmImage *pli)
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	this->set_from_itk_image (pli->m_itk_double);
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     {
