@@ -11,27 +11,36 @@
 #include "math_util.h"
 #include "plm_image_header.h"
 
-void
-cxt_initialize (Cxt_structure_list* structures)
+Cxt_structure_list*
+cxt_create (void)
 {
-    memset (structures, 0, sizeof (Cxt_structure_list));
+    Cxt_structure_list *cxt;
+    cxt = (Cxt_structure_list*) malloc (sizeof (Cxt_structure_list));
+    cxt_init (cxt);
+    return cxt;
 }
 
 void
-cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
+cxt_init (Cxt_structure_list* cxt)
+{
+    memset (cxt, 0, sizeof (Cxt_structure_list));
+}
+
+void
+cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
 		   bstring color, int structure_id)
 {
     Cxt_structure* new_structure;
 
-    if (cxt_find_structure_by_id (structures, structure_id)) {
+    if (cxt_find_structure_by_id (cxt, structure_id)) {
 	return;
     }
 
-    structures->num_structures++;
-    structures->slist = (Cxt_structure*) 
-	    realloc (structures->slist, 
-		     structures->num_structures * sizeof(Cxt_structure));
-    new_structure = &structures->slist[structures->num_structures - 1];
+    cxt->num_structures++;
+    cxt->slist = (Cxt_structure*) 
+	    realloc (cxt->slist, 
+		     cxt->num_structures * sizeof(Cxt_structure));
+    new_structure = &cxt->slist[cxt->num_structures - 1];
 
     memset (new_structure, 0, sizeof(Cxt_structure));
     strncpy (new_structure->name, structure_name, CXT_BUFLEN);
@@ -58,13 +67,13 @@ cxt_add_polyline (Cxt_structure* structure)
 }
 
 Cxt_structure*
-cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
+cxt_find_structure_by_id (Cxt_structure_list* cxt, int structure_id)
 {
     int i;
 
-    for (i = 0; i < structures->num_structures; i++) {
+    for (i = 0; i < cxt->num_structures; i++) {
 	Cxt_structure* curr_structure;
-	curr_structure = &structures->slist[i];
+	curr_structure = &cxt->slist[i];
 	if (curr_structure->id == structure_id) {
 	    return curr_structure;
 	}
@@ -73,20 +82,20 @@ cxt_find_structure_by_id (Cxt_structure_list* structures, int structure_id)
 }
 
 void
-cxt_debug (Cxt_structure_list* structures)
+cxt_debug (Cxt_structure_list* cxt)
 {
     int i;
     Cxt_structure* curr_structure;
 
     printf ("dim = %d %d %d\n", 
-	structures->dim[0], structures->dim[1], structures->dim[2]);
+	cxt->dim[0], cxt->dim[1], cxt->dim[2]);
     printf ("offset = %g %g %g\n", 
-	structures->offset[0], structures->offset[1], structures->offset[2]);
+	cxt->offset[0], cxt->offset[1], cxt->offset[2]);
     printf ("spacing = %g %g %g\n", 
-	structures->spacing[0], structures->spacing[1], structures->spacing[2]);
+	cxt->spacing[0], cxt->spacing[1], cxt->spacing[2]);
 
-    for (i = 0; i < structures->num_structures; i++) {
-        curr_structure = &structures->slist[i];
+    for (i = 0; i < cxt->num_structures; i++) {
+        curr_structure = &cxt->slist[i];
 	printf ("%d %d %s (%p) (%d contours)\n", 
 	    i, curr_structure->id, 
 	    curr_structure->name, 
@@ -97,13 +106,13 @@ cxt_debug (Cxt_structure_list* structures)
 }
 
 void
-cxt_adjust_structure_names (Cxt_structure_list* structures)
+cxt_adjust_structure_names (Cxt_structure_list* cxt)
 {
     int i, j;
     Cxt_structure* curr_structure;
 
-    for (i = 0; i < structures->num_structures; i++) {
-        curr_structure = &structures->slist[i];
+    for (i = 0; i < cxt->num_structures; i++) {
+        curr_structure = &cxt->slist[i];
 	for (j = 0; j < CXT_BUFLEN; j++) {
 	    if (!curr_structure->name[j]) {
 		break;
@@ -119,7 +128,7 @@ cxt_adjust_structure_names (Cxt_structure_list* structures)
 }
 
 void
-cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
+cxt_xorlist_read (Cxt_structure_list* cxt, const char* xorlist_fn)
 {
     FILE* fp;
 
@@ -152,14 +161,14 @@ cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn)
             exit (-1);
         }
 
-	cxt_add_structure (structures, name, bfromcstr (color), struct_id);
+	cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
     }
 
     fclose (fp);
 }
 
 void
-cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
+cxt_read (Cxt_structure_list* cxt, const char* cxt_fn)
 {
     FILE* fp;
     Cxt_polyline* curr_contour;
@@ -212,32 +221,32 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
             break;
         }
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    structures->patient_name = bstrcpy (val);
+	    cxt->patient_name = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    structures->patient_id = bstrcpy (val);
+	    cxt->patient_id = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    structures->patient_sex = bstrcpy (val);
+	    cxt->patient_sex = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
-	    structures->study_id = bstrcpy (val);
+	    cxt->study_id = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "CT_STUDY_UID")) {
-	    structures->ct_study_uid = bstrcpy (val);
+	    cxt->ct_study_uid = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
-	    structures->ct_series_uid = bstrcpy (val);
+	    cxt->ct_series_uid = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-	    structures->ct_fref_uid = bstrcpy (val);
+	    cxt->ct_fref_uid = bstrcpy (val);
 	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
 		have_offset = 1;
-		structures->offset[0] = val_x;
-		structures->offset[1] = val_y;
-		structures->offset[2] = val_z;
+		cxt->offset[0] = val_x;
+		cxt->offset[1] = val_y;
+		cxt->offset[2] = val_z;
 	    }
 	}
         else if (biseqcstr (tag, "DIMENSION")) {
@@ -246,24 +255,24 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
 			     &int_x, &int_y, &int_z)) {
 		have_dim = 1;
-		structures->dim[0] = int_x;
-		structures->dim[1] = int_y;
-		structures->dim[2] = int_z;
+		cxt->dim[0] = int_x;
+		cxt->dim[1] = int_y;
+		cxt->dim[2] = int_z;
 	    }
 	}
         else if (biseqcstr (tag, "SPACING")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
 		have_spacing = 1;
-		structures->spacing[0] = val_x;
-		structures->spacing[1] = val_y;
-		structures->spacing[2] = val_z;
+		cxt->spacing[0] = val_x;
+		cxt->spacing[1] = val_y;
+		cxt->spacing[2] = val_z;
 	    }
 	}
 	bdestroy (tag);
 	bdestroy (val);
     }
     if (have_offset && have_dim && have_spacing) {
-	structures->have_geometry = 1;
+	cxt->have_geometry = 1;
     }
 
     /* Part 2: Structures info */
@@ -303,7 +312,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
         printf ("Cxt_structure: %s\n", curr_structure->name);
 #endif
 
-	cxt_add_structure (structures, name, bfromcstr (color), struct_id);
+	cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
     }
 
     /* Part 3: Contour info */
@@ -346,7 +355,7 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 	}
         fgetc (fp);
 
-        curr_structure = cxt_find_structure_by_id (structures, struct_id);
+        curr_structure = cxt_find_structure_by_id (cxt, struct_id);
 
 	/* If there is no header line for this structure, we will 
 	   skip all contours for the structure. */
@@ -417,25 +426,25 @@ cxt_read (Cxt_structure_list* structures, const char* cxt_fn)
 }
 
 void
-cxt_prune_empty (Cxt_structure_list* structures)
+cxt_prune_empty (Cxt_structure_list* cxt)
 {
     int i;
 
-    for (i = 0; i < structures->num_structures; i++) {
+    for (i = 0; i < cxt->num_structures; i++) {
 	Cxt_structure* curr_structure;
-	curr_structure = &structures->slist[i];
+	curr_structure = &cxt->slist[i];
 	if (curr_structure->num_contours == 0) {
 	    memcpy (curr_structure, 
-		&structures->slist[structures->num_structures-1],
+		&cxt->slist[cxt->num_structures-1],
 		sizeof (Cxt_structure));
-	    structures->num_structures --;
+	    cxt->num_structures --;
 	    i --;
 	}
     }
 }
 
 void
-cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
+cxt_write (Cxt_structure_list* cxt, const char* cxt_fn,
 	   bool prune_empty)
 {
     int i;
@@ -452,55 +461,55 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
     }
 
     /* Part 1: Dicom info */
-    if (structures->ct_series_uid) {
-	fprintf (fp, "CT_SERIES_UID %s\n", structures->ct_series_uid->data);
+    if (cxt->ct_series_uid) {
+	fprintf (fp, "CT_SERIES_UID %s\n", cxt->ct_series_uid->data);
     } else {
 	fprintf (fp, "CT_SERIES_UID\n");
     }
-    if (structures->ct_study_uid) {
-	fprintf (fp, "CT_STUDY_UID %s\n", structures->ct_study_uid->data);
+    if (cxt->ct_study_uid) {
+	fprintf (fp, "CT_STUDY_UID %s\n", cxt->ct_study_uid->data);
     } else {
 	fprintf (fp, "CT_STUDY_UID\n");
     }
-    if (structures->ct_fref_uid) {
+    if (cxt->ct_fref_uid) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
-		 structures->ct_fref_uid->data);
+		 cxt->ct_fref_uid->data);
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
-    if (structures->patient_name) {
-	fprintf (fp, "PATIENT_NAME %s\n", structures->patient_name->data);
+    if (cxt->patient_name) {
+	fprintf (fp, "PATIENT_NAME %s\n", cxt->patient_name->data);
     } else {
 	fprintf (fp, "PATIENT_NAME\n");
     }
-    if (structures->patient_id) {
-	fprintf (fp, "PATIENT_ID %s\n", structures->patient_id->data);
+    if (cxt->patient_id) {
+	fprintf (fp, "PATIENT_ID %s\n", cxt->patient_id->data);
     } else {
 	fprintf (fp, "PATIENT_ID\n");
     }
-    if (structures->patient_sex) {
-	fprintf (fp, "PATIENT_SEX %s\n", structures->patient_sex->data);
+    if (cxt->patient_sex) {
+	fprintf (fp, "PATIENT_SEX %s\n", cxt->patient_sex->data);
     } else {
 	fprintf (fp, "PATIENT_SEX\n");
     }
-    if (structures->patient_sex) {
-	fprintf (fp, "STUDY_ID %s\n", structures->study_id->data);
+    if (cxt->patient_sex) {
+	fprintf (fp, "STUDY_ID %s\n", cxt->study_id->data);
     } else {
 	fprintf (fp, "STUDY_ID\n");
     }
-    if (structures->have_geometry) {
-	fprintf (fp, "OFFSET %g %g %g\n", structures->offset[0],
-		 structures->offset[1], structures->offset[2]);
-	fprintf (fp, "DIMENSION %d %d %d\n", structures->dim[0], 
-		 structures->dim[1], structures->dim[2]);
-	fprintf (fp, "SPACING %g %g %g\n", structures->spacing[0], 
-		 structures->spacing[1], structures->spacing[2]);
+    if (cxt->have_geometry) {
+	fprintf (fp, "OFFSET %g %g %g\n", cxt->offset[0],
+		 cxt->offset[1], cxt->offset[2]);
+	fprintf (fp, "DIMENSION %d %d %d\n", cxt->dim[0], 
+		 cxt->dim[1], cxt->dim[2]);
+	fprintf (fp, "SPACING %g %g %g\n", cxt->spacing[0], 
+		 cxt->spacing[1], cxt->spacing[2]);
     }
 
     /* Part 2: Structures info */
     fprintf (fp, "ROI_NAMES\n");
-    for (i = 0; i < structures->num_structures; i++) {
-	Cxt_structure *curr_structure = &structures->slist[i];
+    for (i = 0; i < cxt->num_structures; i++) {
+	Cxt_structure *curr_structure = &cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
@@ -512,9 +521,9 @@ cxt_write (Cxt_structure_list* structures, const char* cxt_fn,
     fprintf (fp, "END_OF_ROI_NAMES\n");
 
     /* Part 3: Contour info */
-    for (i = 0; i < structures->num_structures; i++) {
+    for (i = 0; i < cxt->num_structures; i++) {
 	int j;
-	Cxt_structure *curr_structure = &structures->slist[i];
+	Cxt_structure *curr_structure = &cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
@@ -587,33 +596,33 @@ cxt_structure_free (Cxt_structure* structure)
 }
 
 void
-cxt_destroy (Cxt_structure_list* structures)
+cxt_destroy (Cxt_structure_list* cxt)
 {
     int i;
 
-    bdestroy (structures->ct_series_uid);
-    bdestroy (structures->patient_name);
-    bdestroy (structures->patient_id);
-    bdestroy (structures->patient_sex);
-    bdestroy (structures->study_id);
+    bdestroy (cxt->ct_series_uid);
+    bdestroy (cxt->patient_name);
+    bdestroy (cxt->patient_id);
+    bdestroy (cxt->patient_sex);
+    bdestroy (cxt->study_id);
 
-    for (i = 0; i < structures->num_structures; i++) {
-	cxt_structure_free (&structures->slist[i]);
+    for (i = 0; i < cxt->num_structures; i++) {
+	cxt_structure_free (&cxt->slist[i]);
     }
-    free (structures->slist);
+    free (cxt->slist);
 
-    cxt_initialize (structures);
+    cxt_init (cxt);
 }
 
 void
-cxt_apply_geometry (Cxt_structure_list* structures)
+cxt_apply_geometry (Cxt_structure_list* cxt)
 {
     int i, j;
 
-    if (!structures->have_geometry) return;
+    if (!cxt->have_geometry) return;
 
-    for (i = 0; i < structures->num_structures; i++) {
-	Cxt_structure *curr_structure = &structures->slist[i];
+    for (i = 0; i < cxt->num_structures; i++) {
+	Cxt_structure *curr_structure = &cxt->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
@@ -621,9 +630,8 @@ cxt_apply_geometry (Cxt_structure_list* structures)
 		continue;
 	    }
 	    float z = curr_polyline->z[0];
-	    int slice_idx = ROUND_INT((z - structures->offset[2]) 
-		/ structures->spacing[2]);
-	    if (slice_idx < 0 || slice_idx >= structures->dim[2]) {
+	    int slice_idx = ROUND_INT((z - cxt->offset[2]) / cxt->spacing[2]);
+	    if (slice_idx < 0 || slice_idx >= cxt->dim[2]) {
 		curr_polyline->slice_no = -1;
 	    } else {
 		curr_polyline->slice_no = slice_idx;
@@ -633,17 +641,26 @@ cxt_apply_geometry (Cxt_structure_list* structures)
 }
 
 void
+cxt_set_geometry_from_plm_image_header (
+    Cxt_structure_list* cxt,
+    PlmImageHeader *pih
+)
+{
+    pih->get_gpuit_origin (cxt->offset);
+    pih->get_gpuit_spacing (cxt->spacing);
+    pih->get_gpuit_dim (cxt->dim);
+    cxt->have_geometry = 1;
+
+    cxt_apply_geometry (cxt);
+}
+
+void
 cxt_set_geometry_from_plm_image (
-    Cxt_structure_list* structures,
+    Cxt_structure_list* cxt, 
     PlmImage *pli
 )
 {
     PlmImageHeader pih;
     pih.set_from_plm_image (pli);
-    pih.get_gpuit_origin (structures->offset);
-    pih.get_gpuit_spacing (structures->spacing);
-    pih.get_gpuit_dim (structures->dim);
-    structures->have_geometry = 1;
-
-    cxt_apply_geometry (structures);
+    cxt_set_geometry_from_plm_image_header (cxt, &pih);
 }

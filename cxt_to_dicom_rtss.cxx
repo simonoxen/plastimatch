@@ -30,7 +30,7 @@ do_cxt_to_dicom_rtss (Program_parms *parms)
 {
     Cxt_structure_list structures;
 
-    cxt_initialize (&structures);
+    cxt_init (&structures);
 
     cxt_read (&structures, parms->cxt_fn);
     cxt_adjust_structure_names (&structures);

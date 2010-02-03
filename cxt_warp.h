@@ -5,6 +5,7 @@
 #define _cxt_warp_h_
 
 #include "plm_config.h"
+#include "cxt_io.h"
 #include "warp_parms.h"
 
 #if defined __cplusplus

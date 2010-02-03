@@ -12,22 +12,27 @@
 
 class Warp_parms {
 public:
+    /* Input files */
     char input_fn[_MAX_PATH];
-    char output_fn[_MAX_PATH];
+    char input_ss_list_fn[_MAX_PATH];
     char vf_in_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     char fixed_im_fn[_MAX_PATH];
-    char vf_out_fn[_MAX_PATH];
     char ctatts_in_fn[_MAX_PATH];
     char dif_in_fn[_MAX_PATH];
     char dicom_dir[_MAX_PATH];
-    char prefix[_MAX_PATH];
-    char labelmap_fn[_MAX_PATH];
-    char ss_img_output_fn[_MAX_PATH];
-    char ss_list_output_fn[_MAX_PATH];
-    char cxt_output_fn[_MAX_PATH];
-    char xio_output_dirname[_MAX_PATH];
-    char ss_list_input_fn[_MAX_PATH];
+
+    /* Output files */
+    char output_fn[_MAX_PATH];
+    char vf_out_fn[_MAX_PATH];
+    char output_prefix[_MAX_PATH];
+    char output_labelmap_fn[_MAX_PATH];
+    char output_ss_img_fn[_MAX_PATH];
+    char output_ss_list_fn[_MAX_PATH];
+    char output_cxt_fn[_MAX_PATH];
+    char output_xio_dirname[_MAX_PATH];
+
+    /* Misc options */
     float default_val;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */

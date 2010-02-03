@@ -236,7 +236,7 @@ xio_structures_load (
     }
 
     /* Load the index file */
-    cxt_initialize (structures);
+    cxt_init (structures);
     add_cms_contournames (structures, index_file.c_str());
 
     /* Iterate through filenames, adding data to CXT */

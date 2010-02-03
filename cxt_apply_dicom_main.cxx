@@ -25,7 +25,7 @@ do_cxt_apply_dicom (Program_parms *parms)
 {
     Cxt_structure_list structures;
 
-    cxt_initialize (&structures);
+    cxt_init (&structures);
     cxt_read (&structures, parms->cxt_fn);
 
     cxt_apply_dicom_dir (&structures, parms->dicom_dir);

@@ -64,11 +64,11 @@ xio_warp_main (Warp_parms* parms)
     }
 #endif
 
-    if (parms->ss_img_output_fn[0] 
-	|| parms->labelmap_fn[0] 
-	|| parms->prefix[0] 
-	|| parms->cxt_output_fn[0] 
-	|| parms->xio_output_dirname[0])
+    if (parms->output_ss_img_fn[0] 
+	|| parms->output_labelmap_fn[0] 
+	|| parms->output_prefix[0] 
+	|| parms->output_cxt_fn[0] 
+	|| parms->output_xio_dirname[0])
     {
 	Cxt_structure_list cxt;
 
@@ -85,13 +85,13 @@ xio_warp_main (Warp_parms* parms)
 	cxt_set_geometry_from_plm_image (&cxt, &pli);
 
 	/* Write cxt output */
-	if (parms->cxt_output_fn[0]) {
-	    cxt_write (&cxt, parms->cxt_output_fn, 0);
+	if (parms->output_cxt_fn[0]) {
+	    cxt_write (&cxt, parms->output_cxt_fn, 0);
 	}
 
 	/* Write xio output */
-	if (parms->xio_output_dirname[0]) {
-	    xio_structures_save (&cxt, parms->xio_output_dirname);
+	if (parms->output_xio_dirname[0]) {
+	    xio_structures_save (&cxt, parms->output_xio_dirname);
 	}
 
 	/* Convert and write output */

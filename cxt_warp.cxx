@@ -21,9 +21,9 @@ cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 
     while (cxt_to_mha_process_next (&ctm_state, structures)) {
 	/* Write out prefix images */
-	if (parms->prefix[0]) {
+	if (parms->output_prefix[0]) {
 	    char fn[_MAX_PATH];
-	    strcpy (fn, parms->prefix);
+	    strcpy (fn, parms->output_prefix);
 	    strcat (fn, "_");
 	    strcat (fn, cxt_to_mha_current_name (&ctm_state, structures));
 	    strcat (fn, ".mha");
@@ -32,21 +32,21 @@ cxt_to_mha_write (Cxt_structure_list *structures, Warp_parms *parms)
 	}
     }
     /* Write out labelmap, ss_img */
-    if (parms->labelmap_fn[0]) {
+    if (parms->output_labelmap_fn[0]) {
 	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
-	plm_image_save_vol (parms->labelmap_fn, ctm_state.labelmap_vol);
+	plm_image_save_vol (parms->output_labelmap_fn, ctm_state.labelmap_vol);
     }
-    if (parms->ss_img_output_fn[0]) {
+    if (parms->output_ss_img_fn[0]) {
 	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
-	plm_image_save_vol (parms->ss_img_output_fn, ctm_state.ss_img_vol);
+	plm_image_save_vol (parms->output_ss_img_fn, ctm_state.ss_img_vol);
     }
 
     /* Write out list of structure names */
-    if (parms->ss_list_output_fn[0]) {
+    if (parms->output_ss_list_fn[0]) {
 	int i;
 	FILE *fp;
-	make_directory_recursive (parms->ss_list_output_fn);
-	fp = fopen (parms->ss_list_output_fn, "w");
+	make_directory_recursive (parms->output_ss_list_fn);
+	fp = fopen (parms->output_ss_list_fn, "w");
 	for (i = 0; i < structures->num_structures; i++) {
 	    Cxt_structure *curr_structure;
 	    curr_structure = &structures->slist[i];
@@ -76,7 +76,7 @@ cxt_warp (Warp_parms *parms)
     }
 
     /* Load structures */
-    cxt_initialize (&structures);
+    cxt_init (&structures);
     cxt_read (&structures, parms->input_fn);
 
 #if defined (commentout)

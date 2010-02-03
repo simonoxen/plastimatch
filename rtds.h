@@ -31,6 +31,7 @@ public:
 	    delete m_img;
 	}
     }
+    void load_xio (char *xio_dir);
 };
 
 #if defined __cplusplus

@@ -37,7 +37,7 @@ do_mha_to_cxt (Program_parms *parms)
     UInt32ImageType::Pointer image;
     int num_structs = -1;
 
-    cxt_initialize (&structures);
+    cxt_init (&structures);
 
     printf ("Loading input file...\n");
     image = load_uint32 (parms->mha_fn, 0);

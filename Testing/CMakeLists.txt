@@ -404,7 +404,7 @@ PLM_ADD_TEST (
   "plm-convert-xio"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output;chest-phantom-xio.mha;--xio-output;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-xio-output"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output;chest-phantom-xio.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-xio-output"
   )
 PLM_ADD_TEST (
   "plm-convert-xio-stats"

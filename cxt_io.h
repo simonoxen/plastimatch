@@ -8,6 +8,7 @@
 #include "bstrlib.h"
 #define CXT_BUFLEN 2048
 #include "plm_image.h"
+#include "plm_image_header.h"
 
 typedef struct cxt_polyline Cxt_polyline;
 struct cxt_polyline {
@@ -50,8 +51,11 @@ extern "C" {
 #endif
 
 plastimatch1_EXPORT
+Cxt_structure_list*
+cxt_create (void);
+plastimatch1_EXPORT
 void
-cxt_initialize (Cxt_structure_list* structures);
+cxt_init (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
@@ -87,6 +91,12 @@ cxt_prune_empty (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_apply_geometry (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_set_geometry_from_plm_image_header (
+    Cxt_structure_list* cxt, 
+    PlmImageHeader *pih
+);
 plastimatch1_EXPORT
 void
 cxt_set_geometry_from_plm_image (

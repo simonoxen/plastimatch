@@ -24,7 +24,7 @@ rtss_warp (Warp_parms *parms)
     }
 
     /* Load structures */
-    cxt_initialize (&structures);
+    cxt_init (&structures);
     gdcm_rtss_load (&structures, parms->input_fn, parms->dicom_dir);
 
 #if defined (commentout)

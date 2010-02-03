@@ -5,11 +5,18 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "cxt_io.h"
+#include "cxt_warp.h"
+#include "gdcm_rtss.h"
 #include "getopt.h"
 #include "plm_file_format.h"
+#include "plm_image_header.h"
+#include "plm_warp.h"
 #include "print_and_exit.h"
+#include "rtds.h"
 #include "rtss_warp.h"
 #include "warp_main.h"
+#include "xform.h"
 #include "xio_warp.h"
 
 static void
@@ -31,16 +38,17 @@ print_usage (char* command)
 	"    --output-format=dicom\n"
 	"    --output-type={uchar,short,float,...}\n"
 	"    --algorithm=itk\n"
-	"    --ctatts=filename         (for dij)\n"
-	"    --dif=filename            (for dij)\n"
-	"    --ss-img-input=filename   (for structures)\n"
-	"    --prefix=string           (for structures)\n"
-	"    --labelmap=filename       (for structures)\n"
-	"    --ss-img-output=filename  (for structures)\n"
-	"    --ss-list-output=filename (for structures)\n"
-	"    --cxt-output=filename     (for structures)\n"
-	"    --xio-output=directory    (for structures)\n"
-	"    --prune-empty             (for structures)\n"
+	"    --ctatts=filename          (for dij)\n"
+	"    --dif=filename             (for dij)\n"
+	"    --input-ss-img=filename    (for structures)\n"
+	"    --dicom-dir=directory      (for structure association)\n"
+	"    --output-prefix=string     (for structures)\n"
+	"    --output-labelmap=filename (for structures)\n"
+	"    --output-ss-img=filename   (for structures)\n"
+	"    --output-ss-list=filename  (for structures)\n"
+	"    --output-cxt=filename      (for structures)\n"
+	"    --output-xio=directory     (for structures)\n"
+	"    --prune-empty              (for structures)\n"
 	,
 	command);
     exit (-1);
@@ -78,22 +86,22 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output_type",    required_argument,      NULL,           17 },
 	{ "dicom-dir",      required_argument,      NULL,           18 },
 	{ "dicom_dir",      required_argument,      NULL,           18 },
-	{ "prefix",         required_argument,      NULL,           19 },
-	{ "labelmap",       required_argument,      NULL,           20 },
-	{ "ss_img_output",  required_argument,      NULL,           21 },
-	{ "ss-img-output",  required_argument,      NULL,           21 },
-	{ "xormap",         required_argument,      NULL,           21 },
-	{ "ss_list_output", required_argument,      NULL,           22 },
-	{ "ss-list-output", required_argument,      NULL,           22 },
-	{ "xorlist",        required_argument,      NULL,           22 },
-	{ "cxt_output",     required_argument,      NULL,           23 },
-	{ "cxt-output",     required_argument,      NULL,           23 },
+	{ "output-prefix",  required_argument,      NULL,           19 },
+	{ "output_prefix",  required_argument,      NULL,           19 },
+	{ "output-labelmap",required_argument,      NULL,           20 },
+	{ "output_labelmap",required_argument,      NULL,           20 },
+	{ "output-ss-img",  required_argument,      NULL,           21 },
+	{ "output_ss_img",  required_argument,      NULL,           21 },
+	{ "output_ss_list", required_argument,      NULL,           22 },
+	{ "output-ss-list", required_argument,      NULL,           22 },
+	{ "output_cxt",     required_argument,      NULL,           23 },
+	{ "output-cxt",     required_argument,      NULL,           23 },
 	{ "prune_empty",    required_argument,      NULL,           24 },
 	{ "prune-empty",    no_argument,            NULL,           24 },
-	{ "xio_output",     required_argument,      NULL,           25 },
-	{ "xio-output",     required_argument,      NULL,           25 },
-	{ "ss_list_input",  required_argument,      NULL,           26 },
-	{ "ss-list-input",  required_argument,      NULL,           26 },
+	{ "output_xio",     required_argument,      NULL,           25 },
+	{ "output-xio",     required_argument,      NULL,           25 },
+	{ "input_ss_list",  required_argument,      NULL,           26 },
+	{ "input-ss-list",  required_argument,      NULL,           26 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -188,28 +196,28 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
 	    break;
 	case 19:
-	    strncpy (parms->prefix, optarg, _MAX_PATH);
+	    strncpy (parms->output_prefix, optarg, _MAX_PATH);
 	    break;
 	case 20:
-	    strncpy (parms->labelmap_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_labelmap_fn, optarg, _MAX_PATH);
 	    break;
 	case 21:
-	    strncpy (parms->ss_img_output_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_ss_img_fn, optarg, _MAX_PATH);
 	    break;
 	case 22:
-	    strncpy (parms->ss_list_output_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_ss_list_fn, optarg, _MAX_PATH);
 	    break;
 	case 23:
-	    strncpy (parms->cxt_output_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_cxt_fn, optarg, _MAX_PATH);
 	    break;
 	case 24:
 	    parms->prune_empty = 1;
 	    break;
 	case 25:
-	    strncpy (parms->xio_output_dirname, optarg, _MAX_PATH);
+	    strncpy (parms->output_xio_dirname, optarg, _MAX_PATH);
 	    break;
 	case 26:
-	    strncpy (parms->ss_list_input_fn, optarg, _MAX_PATH);
+	    strncpy (parms->input_ss_list_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");
@@ -228,58 +236,191 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 }
 
 void
+load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
+{
+    switch (file_type) {
+    case PLM_FILE_FMT_NO_FILE:
+	print_and_exit ("Could not open input file %s for read\n",
+	    parms->input_fn);
+	break;
+    case PLM_FILE_FMT_UNKNOWN:
+    case PLM_FILE_FMT_IMG:
+	rtds->m_img = plm_image_load_native (parms->input_fn);
+	//warp_image_main (&parms);
+	break;
+    case PLM_FILE_FMT_DICOM_DIR:
+	/* GCS FIX: Need to load rtss too */
+	rtds->m_img = plm_image_load_native (parms->input_fn);
+	//warp_image_main (&parms);
+	break;
+    case PLM_FILE_FMT_XIO_DIR:
+	rtds->load_xio (parms->input_fn);
+	//xio_warp_main (&parms);
+	break;
+    case PLM_FILE_FMT_DIJ:
+	print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
+	break;
+    case PLM_FILE_FMT_DICOM_RTSS:
+	rtds->m_cxt = cxt_create ();
+	gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
+	printf ("gdcm_rtss_load complete.\n");
+	//rtss_warp (&parms);
+	break;
+    case PLM_FILE_FMT_CXT:
+	//ctx_warp (&parms);
+	break;
+    default:
+	print_and_exit (
+	    "Sorry, don't know how to convert/warp input type %s (%s)\n",
+	    plm_file_format_string (file_type),
+	    parms->input_fn);
+	break;
+    }
+}
+
+void
+save_ss_output (Rtds *rtds,  Warp_parms *parms)
+{
+    if (!rtds->m_cxt) {
+	return;
+    }
+
+    if (parms->output_fn[0]) {
+	/* If user didn't specify output format, see if we can guess from 
+	   filename extension */
+	if (parms->output_format == PLM_FILE_FMT_UNKNOWN) {
+	    parms->output_format = plm_file_format_from_extension (
+		parms->output_fn);
+	}
+
+	/* Save output */
+	switch (parms->output_format) {
+	case PLM_FILE_FMT_CXT:
+	    cxt_write (rtds->m_cxt, parms->output_fn, true);
+	    break;
+	case PLM_FILE_FMT_DICOM_RTSS:
+	case PLM_FILE_FMT_DICOM_DIR:
+	    cxt_adjust_structure_names (rtds->m_cxt);
+	    gdcm_rtss_save (rtds->m_cxt, parms->output_fn, parms->dicom_dir);
+	    break;
+	case PLM_FILE_FMT_IMG:
+	default:
+	    cxt_to_mha_write (rtds->m_cxt, parms);
+	    break;
+	}
+    }
+}
+
+void
+warp_rtds (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
+{
+    DeformationFieldType::Pointer vf = DeformationFieldType::New();
+    Xform xform;
+    PlmImageHeader pih;
+
+    /* Load input file(s) */
+    load_input_files (rtds, file_type, parms);
+
+    printf ("checkpoint 1.\n");
+
+    /* Load transform */
+    if (parms->xf_in_fn[0]) {
+	printf ("Loading xform (%s)\n", parms->xf_in_fn);
+	load_xform (&xform, parms->xf_in_fn);
+    }
+
+    /* Try to guess the proper dimensions and spacing for output image */
+    if (parms->fixed_im_fn[0]) {
+	/* use the spacing of user-supplied fixed image */
+	FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
+	pih.set_from_itk_image (fixed);
+    } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
+	/* use the spacing from input vector field */
+	pih.set_from_itk_image (xform.get_itk_vf());
+    } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
+	/* use the spacing from input bxf file */
+	pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
+    } else if (rtds->m_img) {
+	/* use the spacing of the input image */
+	pih.set_from_plm_image (rtds->m_img);
+    } else if (rtds->m_cxt) {
+	/* use the spacing of the structure set */
+	pih.set_from_gpuit (rtds->m_cxt->offset, rtds->m_cxt->spacing, 
+	    rtds->m_cxt->dim, 0);
+    } else {
+	/* out of options?  :( */
+	print_and_exit ("Sorry, I couldn't determine the output geometry\n");
+    }
+
+    printf ("PIH is:\n");
+    pih.print ();
+
+    /* Set the geometry */
+    if (rtds->m_cxt) {
+	cxt_set_geometry_from_plm_image_header (rtds->m_cxt, &pih);
+    }
+
+    /* Do the warp */
+    if (parms->xf_in_fn[0] && rtds->m_img) {
+	PlmImage *im_out;
+	im_out = new PlmImage;
+	plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
+	    parms->use_itk, parms->interp_lin);
+	delete rtds->m_img;
+	rtds->m_img = im_out;
+    }
+
+    /* Save output image */
+    if (parms->output_fn[0] && rtds->m_img) {
+	printf ("Saving image...\n");
+	switch (parms->output_format) {
+	case PLM_FILE_FMT_DICOM_DIR:
+	    rtds->m_img->save_short_dicom (parms->output_fn);
+	    break;
+	default:
+	    rtds->m_img->save_image (parms->output_fn);
+	    break;
+	}
+    }
+
+    /* Save output vector field */
+    if (parms->xf_in_fn[0] && parms->vf_out_fn[0]) {
+	printf ("Saving vf...\n");
+	itk_image_save (vf, parms->vf_out_fn);
+    }
+
+    /* Save output structure set */
+    save_ss_output (rtds, parms);
+
+}
+
+void
 do_command_warp (int argc, char* argv[])
 {
     Warp_parms parms;
     Plm_file_format file_type;
+    Rtds rtds;
 
-    void test_fn (Warp_parms *parms);
-    
+    /* Parse command line parameters */
     warp_parse_args (&parms, argc, argv);
-    file_type = plm_file_format_deduce (parms.input_fn);
 
-    /* GCS FIX: Need to re-write after implementing a structure 
-       for aggregation of image, structure set, dose */
+    /* Dij matrices are a special case */
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
 	warp_dij_main (&parms);
-    } else {
-	switch (file_type) {
-	case PLM_FILE_FMT_NO_FILE:
-	    print_and_exit ("Could not open input file %s for read\n",
-		parms.input_fn);
-	    break;
-	case PLM_FILE_FMT_UNKNOWN:
-	case PLM_FILE_FMT_IMG:
-	case PLM_FILE_FMT_DICOM_DIR:
-	    if (parms.ss_list_input_fn[0]) {
-		print_and_exit ("Error, need to implement aggregate data set type\n");
-	    } else {
-		warp_image_main (&parms);
-	    }
-	    break;
-	case PLM_FILE_FMT_XIO_DIR:
-	    xio_warp_main (&parms);
-	    break;
-	case PLM_FILE_FMT_DIJ:
-	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
-	    break;
-	case PLM_FILE_FMT_CXT:
-	    rtss_warp (&parms);
-	    break;
-	case PLM_FILE_FMT_POINTSET:
-	    warp_pointset_main (&parms);
-	    break;
-	case PLM_FILE_FMT_DICOM_RTSS:
-	    rtss_warp (&parms);
-	    break;
-	default:
-	    print_and_exit (
-		"Sorry, don't know how to convert/warp input type %s (%s)\n",
-		plm_file_format_string (file_type),
-		parms.input_fn);
-	    break;
-	}
+	return;
     }
+
+    /* What is the input file type? */
+    file_type = plm_file_format_deduce (parms.input_fn);
+
+    /* Pointsets are a special case */
+    if (file_type == PLM_FILE_FMT_POINTSET) {
+	warp_pointset_main (&parms);
+	return;
+    }
+
+    /* Process warp */
+    warp_rtds (&rtds, file_type, &parms);
 
     printf ("Finished!\n");
 }
