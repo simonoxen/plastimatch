@@ -533,6 +533,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_warp.cxx plm_warp.h 
 	render_polyline.cxx render_polyline.h
 	resample_mha.cxx resample_mha.h 
+	rtds.cxx rtds.h
  	rtss_warp.cxx rtss_warp.h 
 	slice_extract.cxx slice_extract.h
 	synthetic_mha.cxx synthetic_mha.h

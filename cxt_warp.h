@@ -15,6 +15,9 @@ plastimatch1_EXPORT
 void
 cxt_to_mha_write (Cxt_structure_list *structures, 
     Warp_parms *parms);
+plastimatch1_EXPORT 
+void
+cxt_warp (Warp_parms *parms);
 
 #if defined __cplusplus
 }

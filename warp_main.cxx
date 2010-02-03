@@ -33,10 +33,11 @@ print_usage (char* command)
 	"    --algorithm=itk\n"
 	"    --ctatts=filename         (for dij)\n"
 	"    --dif=filename            (for dij)\n"
+	"    --ss-img-input=filename   (for structures)\n"
 	"    --prefix=string           (for structures)\n"
 	"    --labelmap=filename       (for structures)\n"
-	"    --ss-img=filename         (for structures)\n"
-	"    --ss-list=filename        (for structures)\n"
+	"    --ss-img-output=filename  (for structures)\n"
+	"    --ss-list-output=filename (for structures)\n"
 	"    --cxt-output=filename     (for structures)\n"
 	"    --xio-output=directory    (for structures)\n"
 	"    --prune-empty             (for structures)\n"
@@ -79,11 +80,11 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "dicom_dir",      required_argument,      NULL,           18 },
 	{ "prefix",         required_argument,      NULL,           19 },
 	{ "labelmap",       required_argument,      NULL,           20 },
-	{ "ss_img",         required_argument,      NULL,           21 },
-	{ "ss-img",         required_argument,      NULL,           21 },
+	{ "ss_img_output",  required_argument,      NULL,           21 },
+	{ "ss-img-output",  required_argument,      NULL,           21 },
 	{ "xormap",         required_argument,      NULL,           21 },
-	{ "ss_list",        required_argument,      NULL,           22 },
-	{ "ss-list",        required_argument,      NULL,           22 },
+	{ "ss_list_output", required_argument,      NULL,           22 },
+	{ "ss-list-output", required_argument,      NULL,           22 },
 	{ "xorlist",        required_argument,      NULL,           22 },
 	{ "cxt_output",     required_argument,      NULL,           23 },
 	{ "cxt-output",     required_argument,      NULL,           23 },
@@ -91,6 +92,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "prune-empty",    no_argument,            NULL,           24 },
 	{ "xio_output",     required_argument,      NULL,           25 },
 	{ "xio-output",     required_argument,      NULL,           25 },
+	{ "ss_list_input",  required_argument,      NULL,           26 },
+	{ "ss-list-input",  required_argument,      NULL,           26 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -191,10 +194,10 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->labelmap_fn, optarg, _MAX_PATH);
 	    break;
 	case 21:
-	    strncpy (parms->ss_img_fn, optarg, _MAX_PATH);
+	    strncpy (parms->ss_img_output_fn, optarg, _MAX_PATH);
 	    break;
 	case 22:
-	    strncpy (parms->ss_list_fn, optarg, _MAX_PATH);
+	    strncpy (parms->ss_list_output_fn, optarg, _MAX_PATH);
 	    break;
 	case 23:
 	    strncpy (parms->cxt_output_fn, optarg, _MAX_PATH);
@@ -204,6 +207,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 25:
 	    strncpy (parms->xio_output_dirname, optarg, _MAX_PATH);
+	    break;
+	case 26:
+	    strncpy (parms->ss_list_input_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");
@@ -232,6 +238,8 @@ do_command_warp (int argc, char* argv[])
     warp_parse_args (&parms, argc, argv);
     file_type = plm_file_format_deduce (parms.input_fn);
 
+    /* GCS FIX: Need to re-write after implementing a structure 
+       for aggregation of image, structure set, dose */
     if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
 	warp_dij_main (&parms);
     } else {
@@ -243,13 +251,20 @@ do_command_warp (int argc, char* argv[])
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	case PLM_FILE_FMT_DICOM_DIR:
-	    warp_image_main (&parms);
+	    if (parms.ss_list_input_fn[0]) {
+		print_and_exit ("Error, need to implement aggregate data set type\n");
+	    } else {
+		warp_image_main (&parms);
+	    }
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
 	    xio_warp_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requres ctatts_in and dif_in files\n");
+	    break;
+	case PLM_FILE_FMT_CXT:
+	    rtss_warp (&parms);
 	    break;
 	case PLM_FILE_FMT_POINTSET:
 	    warp_pointset_main (&parms);

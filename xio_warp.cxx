@@ -64,8 +64,10 @@ xio_warp_main (Warp_parms* parms)
     }
 #endif
 
-    if (parms->ss_img_fn[0] || parms->labelmap_fn[0] 
-	|| parms->prefix[0] || parms->cxt_output_fn[0] 
+    if (parms->ss_img_output_fn[0] 
+	|| parms->labelmap_fn[0] 
+	|| parms->prefix[0] 
+	|| parms->cxt_output_fn[0] 
 	|| parms->xio_output_dirname[0])
     {
 	Cxt_structure_list cxt;
