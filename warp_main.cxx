@@ -19,6 +19,7 @@
 #include "rtss_warp.h"
 #include "warp_main.h"
 #include "xform.h"
+#include "xio_structures.h"
 #include "xio_warp.h"
 
 static void
@@ -43,8 +44,9 @@ print_usage (char* command)
 	"    --input-ss-img=filename    (for structures)\n"
 	"    --prune-empty              (for structures)\n"
 	"\n"
-	"    --output-dicom=directory   (for image and structures)\n"
 	"    --output-cxt=filename      (for structures)\n"
+	"    --output-dicom=directory   (for image and structures)\n"
+	"    --output-dij=filename      (for dij)\n"
 	"    --output-img=filename      (for image)\n"
 	"    --output-labelmap=filename (for structures)\n"
 	"    --output-prefix=string     (for structures)\n"
@@ -106,6 +108,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output-xio",     required_argument,      NULL,           25 },
 	{ "input_ss_list",  required_argument,      NULL,           26 },
 	{ "input-ss-list",  required_argument,      NULL,           26 },
+	{ "output_dij",     required_argument,      NULL,           27 },
+	{ "output-dij",     required_argument,      NULL,           27 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -223,6 +227,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	case 26:
 	    strncpy (parms->input_ss_list_fn, optarg, _MAX_PATH);
 	    break;
+	case 27:
+	    strncpy (parms->output_dij, optarg, _MAX_PATH);
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.");
 	    print_usage (argv[1]);
@@ -266,6 +273,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	//rtss_warp (&parms);
 	break;
     case PLM_FILE_FMT_CXT:
+	rtds->m_cxt = cxt_create ();
+	cxt_read (rtds->m_cxt, parms->input_fn);
 	//ctx_warp (&parms);
 	break;
     default:
@@ -372,6 +381,17 @@ save_ss_output (Rtds *rtds,  Warp_parms *parms)
     if (parms->output_cxt[0]) {
 	cxt_write (rtds->m_cxt, parms->output_cxt, true);
     }
+
+    if (parms->output_xio_dirname[0]) {
+	printf ("Saving xio format...\n");
+	xio_structures_save (rtds->m_cxt, parms->output_xio_dirname);
+	printf ("Done.\n");
+    }
+
+    if (parms->output_dicom[0]) {
+	cxt_adjust_structure_names (rtds->m_cxt);
+	gdcm_rtss_save (rtds->m_cxt, parms->output_dicom, parms->dicom_dir);
+    }
 }
 
 void
@@ -458,9 +478,13 @@ do_command_warp (int argc, char* argv[])
     warp_parse_args (&parms, argc, argv);
 
     /* Dij matrices are a special case */
-    if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
-	warp_dij_main (&parms);
-	return;
+    if (parms.output_dij[0]) {
+	if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
+	    warp_dij_main (&parms);
+	    return;
+	} else {
+	    print_and_exit ("Sorry, you need to specify --ctatts and --dif for dij warping.\n");
+	}
     }
 
     /* What is the input file type? */

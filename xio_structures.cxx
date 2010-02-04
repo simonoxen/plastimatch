@@ -253,6 +253,37 @@ xio_structures_load (
     cxt_debug (structures);
 }
 
+/* This is idiotic */
+static void
+format_xio_filename (char *fn, char *output_dir, float z_loc)
+{
+    int neg;
+    int z_round, z_ones, z_tenths;
+    const char *neg_string;
+
+    neg = (z_loc < 0);
+    if (neg) z_loc = - z_loc;
+    z_round = ROUND (z_loc * 10);
+    z_ones = z_round / 10;
+    z_tenths = z_round % 10;
+
+    neg_string = neg ? "-" : "";
+
+    if (z_ones == 0 && z_tenths == 0) {
+	sprintf (fn, "%s/T.%s0.WC", output_dir, neg_string);
+    } 
+    else if (z_ones == 0) {
+	sprintf (fn, "%s/T.%s.%d.WC", output_dir, neg_string, z_tenths);
+    }
+    else if (z_tenths == 0) {
+	sprintf (fn, "%s/T.%s%d.WC", output_dir, neg_string, z_ones);
+    }
+    else {
+	sprintf (fn, "%s/T.%s%d.%d.WC", output_dir, neg_string, 
+	    z_ones, z_tenths);
+    }
+}
+
 void
 xio_structures_save (
     Cxt_structure_list *cxt, 
@@ -288,7 +319,8 @@ xio_structures_save (
     for (z = 0; z < cxt->dim[2]; z++) {
 	char fn[_MAX_PATH];
 	float z_loc = cxt->offset[2] + z * cxt->spacing[2];
-	sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
+	format_xio_filename (fn, output_dir, z_loc);
+	//sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
 	fp = fopen (fn, "w");
 	if (!fp) {
 	    print_and_exit ("Error opening output file %s\n", fn);
@@ -301,17 +333,21 @@ xio_structures_save (
 	    Cxt_structure *curr_structure = &cxt->slist[i];
 	    for (j = 0; j < curr_structure->num_contours; j++) {
 		Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+		if (z != curr_polyline->slice_no) {
+		    continue;
+		}
 		fprintf (fp, "%d\n", curr_polyline->num_vertices);
 		fprintf (fp, "%d\n", i);
 		for (k = 0; k < curr_polyline->num_vertices; k++) {
 		    fprintf (fp, "%6.1f,%6.1f", 
 			curr_polyline->x[k], curr_polyline->y[k]);
-		    if (k % 5 == 0) {
+		    if ((k+1) % 5 == 0) {
 			fprintf (fp, "\n");
 		    }
 		    else if (k < curr_polyline->num_vertices - 1) {
 			fprintf (fp, ",");
-		    } else {
+		    }
+		    else {
 			fprintf (fp, "\n");
 		    }
 		}
