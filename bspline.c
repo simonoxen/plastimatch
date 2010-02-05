@@ -43,6 +43,7 @@
 #include "readmha.h"
 #include "timer.h"
 #include "volume.h"
+#include "xpm.h"
 
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
@@ -1357,6 +1358,333 @@ report_score (char *alg, BSPLINE_Xform *bxf,
 		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
 		    ssd_grad_norm, timing);
 }
+
+
+void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_name)
+{
+	int i,j,k;	
+	char c;
+
+	int bar_width = 5;		// pixels
+	int bar_max_height = 100;	// pixels
+	
+	// Pull out a canvas and brush!
+	xpm_struct xpm;
+	xpm_brush brush;
+    
+	// stretch the canvas
+	xpm_create (&xpm, 200, 400, 1);
+    
+	// Get the brush ready
+	brush.type = XPM_BOX;
+	brush.color = 'w';
+	brush.width = 100;
+	brush.height = 200;
+	
+	// setup the palette
+	xpm_add_color (&xpm, 'b', 0x000000);
+	xpm_add_color (&xpm, 'w', 0xFFFFFF);
+
+	// generate a nice BLUE->RED gradient
+	c = 'c';
+	j = 0x0000FF;
+	for (i=0; i<20; i++)
+	{
+		xpm_add_color (&xpm, c, j);
+
+		j -= 0x00000C;		// BLUE--
+		j += 0x0C0000;		//  RED++
+
+		c = (char)((int)c + 1);	// LETTER++
+	}
+
+	// Prime the XPM Canvas
+	xpm_prime_canvas (&xpm, 'b');
+
+	// Histogram Properties
+
+//	xpm_draw (&xpm, &brush);
+
+	// Write to file
+	xpm_write (&xpm, "my_xpm.xpm");
+}
+
+
+/* Mutual information version of implementation "C" */
+static void
+bspline_score_d_mi (BSPLINE_Parms *parms, 
+		    Bspline_state *bst,
+		    BSPLINE_Xform *bxf, 
+		    Volume *fixed, 
+		    Volume *moving, 
+		    Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &bst->ssd;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    int ri, rj, rk;
+    int fi, fj, fk, fv;
+    float mi, mj, mk;
+    float fx, fy, fz;
+    float mx, my, mz;
+    int mif, mjf, mkf, mvf;  /* Floor */
+    int mir, mjr, mkr;       /* Round */
+    long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
+    float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
+    int p[3];
+    int q[3];
+    float diff;
+    float dc_dv[3];
+    float fx1, fx2, fy1, fy2, fz1, fz2;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float dxyz[3];
+    int num_vox;
+    float num_vox_f;
+    int pidx, qidx;
+    Timer timer;
+    double interval;
+    float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float mse_score = 0.0f;
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+    const float ONE_THIRD = 1.0f / 3.0f;
+
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mi_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
+
+
+    plm_timer_start (&timer);
+
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(float));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(float));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
+    num_vox = 0;
+
+
+    /* PASS 1 - Accumulate histogram */
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+
+		/* Get B-spline deformation vector */
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+ 
+		/* Compute coordinate of fixed image voxel */
+		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+		/* Find correspondence in moving image */
+		mx = fx + dxyz[0];
+		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+		my = fy + dxyz[1];
+		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+		mz = fz + dxyz[2];
+		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+		/* Compute quadratic interpolation fractions */
+		clamp_quadratic_interpolate_inline (mi, moving->dim[0], miqs, fxqs);
+		clamp_quadratic_interpolate_inline (mj, moving->dim[1], mjqs, fyqs);
+		clamp_quadratic_interpolate_inline (mk, moving->dim[2], mkqs, fzqs);
+
+		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * (fxqs[1] + fyqs[1] + fzqs[1]));
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[0]);
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[2]);
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[0]);
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[2]);
+		mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[0]);
+		mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[2]);
+
+		// Increment voxel counter
+		num_vox ++;
+	    }
+	}
+    }
+
+    /* Compute score */
+    ssd->score = mi_hist_score (mi_hist, num_vox);
+    num_vox_f = (float) num_vox;
+
+    /* PASS 2 - Compute gradient */
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		long j_idxs[2];
+		long m_idxs[2];
+		long f_idxs[1];
+		float fxs[2];
+		float dS_dP;
+		int debug;
+
+		debug = 0;
+		if (ri == 20 && rj == 20 && rk == 20) {
+		    //debug = 1;
+		}
+		if (ri == 25 && rj == 25 && rk == 25) {
+		    //debug = 1;
+		}
+
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+
+		/* Get B-spline deformation vector */
+		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+
+		/* Compute coordinate of fixed image voxel */
+		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+		/* Find correspondence in moving image */
+		mx = fx + dxyz[0];
+		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+		my = fy + dxyz[1];
+		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+		mz = fz + dxyz[2];
+		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+		/* Compute pixel contribution to gradient based on histogram change
+
+		   There are eight correspondences between fixed and moving.  
+		   Each of these eight correspondences will update 2 histogram bins
+		     (other options are possible, but this is my current strategy).
+
+		   First, figure out which histogram bins this correspondence influences
+		   by calling bspline_mi_hist_lookup().
+
+		   Next, compute dS/dP * dP/dx. 
+		    dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
+		    dS/dP is 1/N (ln (N P / Pf Pm) - I)
+		    dS/dP is weighted by the relative contribution of the 2 histogram bins.
+
+		   dS_dx and dc_dv are really the same thing.  Just different notation.
+
+		   For dc_dv:
+		   We do -= instead of += because our optimizer wants to minimize 
+		    instead of maximize.
+		   The right hand side is - for "left" voxels, and + for "right" voxels.
+
+		   Use a hard threshold on j_hist[j_idxs] to prevent overflow.  This test 
+		    should be reconsidered, because it is theoretically unsound.
+
+		   Some trivial speedups for the future:
+		    The pixel size component is constant, so we can post-multiply.
+		    1/N is constant, so post-multiply.
+		*/
+		dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+
+		/* Compute quadratic interpolation fractions */
+		clamp_quadratic_interpolate_grad_inline (mi, moving->dim[0], miqs, fxqs);
+		clamp_quadratic_interpolate_grad_inline (mj, moving->dim[1], mjqs, fyqs);
+		clamp_quadratic_interpolate_grad_inline (mk, moving->dim[2], mkqs, fzqs);
+
+		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[0] -= - fxqs[1] * dS_dP;
+		dc_dv[1] -= - fyqs[1] * dS_dP;
+		dc_dv[2] -= - fzqs[1] * dS_dP;
+
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[0] -= - fxqs[0] * dS_dP;
+
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[0] -= - fxqs[2] * dS_dP;
+
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[1] -= - fyqs[0] * dS_dP;
+
+		mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[1] -= - fyqs[2] * dS_dP;
+
+		mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[2] -= - fzqs[0] * dS_dP;
+
+		mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+		dc_dv[2] -= - fzqs[2] * dS_dP;
+
+		dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
+		dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
+		dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
+
+		if (parms->debug) {
+//		    fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, dc_dv[0], dc_dv[1], dc_dv[2]);
+		    fprintf (fp, "%d %d %d %g %g %g\n", 
+			ri, rj, rk, 
+			fxqs[0], fxqs[1], fxqs[2]);
+		}
+
+		bspline_update_grad_b_inline (bst, bxf, pidx, qidx, dc_dv);
+	    }
+	}
+    }
+
+    if (parms->debug) {
+	fclose (fp);
+    }
+
+    interval = plm_timer_report (&timer);
+
+    report_score ("MI", bxf, bst, num_vox, interval);
+}
+
 
 /* Mutual information version of implementation "C" */
 static void
@@ -3588,8 +3916,20 @@ bspline_score (BSPLINE_Parms *parms,
 	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	}
-    } else {
-	bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
+    }
+
+    if (parms->metric == BMET_MI) {
+	switch (parms->implementation) {
+	case 'c':
+	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+	case 'd':
+	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+	default:
+	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+	}
     }
 }
 
