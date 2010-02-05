@@ -437,6 +437,7 @@ SET (GPUIT_LIBRARY_SRC
   vf.c vf.h
   vf_stats.c vf_stats.h 
   volume.c volume.h
+  xpm.c xpm.h
   )
 
 IF(BROOK_FOUND)
