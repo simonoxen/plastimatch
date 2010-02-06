@@ -9,6 +9,7 @@ Version 1.4.0
 *  Multistage registration framework
 *  FDK cone-beam reconstruction (CUDA, OpenMP)
 *  DRR generation (CUDA, OpenMP)
-*  Dicom image support, DicomRT structure set support
+*  Dicom image import/export, DicomRT structure set import/export
+*  XiO image import, XiO structure set import/export
 *  3D slicer plugins
 *  Mondoshot screen capture program
