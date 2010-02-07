@@ -23,6 +23,7 @@ print_usage (void)
 	    " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
 	    " -m iterations              Maximum iterations (default is 10)\n"
 	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
+	    " -h prefix                  Generate histograms for each MI iteration\n"
 	    " -V outfile                 The output vector field\n"
 	    " -x outfile                 The output bspline coefficients\n"
 	    " -O outfile                 The output warped image\n"
@@ -122,6 +123,14 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    } else if (rc != 3) {
 		print_usage ();
 	    }
+	}
+        else if (!strcmp (argv[i], "-h")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    parms->xpm_hist_dump = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "-O")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

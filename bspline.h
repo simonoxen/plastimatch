@@ -151,6 +151,7 @@ struct BSPLINE_Parms_struct {
     BSPLINE_MI_Hist mi_hist;          /* Histogram for MI score */
     void *data_on_gpu;                /* Pointer to structure encapsulating the data stored on the GPU */
     void *data_from_gpu;              /* Pointer to structure that stores the data returned from the GPU */
+    char *xpm_hist_dump;              /* Pointer to base string of hist dumps */
 };
 
 #if defined __cplusplus

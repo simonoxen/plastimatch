@@ -130,7 +130,7 @@ void xpm_write (xpm_struct* xpm, char* xpm_file)
 	// Construct Palette
 	fprintf(fp, "/* color codes */\n");
 	for (i=0; i<xpm->num_colors; i++)
-		fprintf(fp, "\"%c c #%x\",\n", xpm->color_code[i], xpm->colors[i]);
+		fprintf(fp, "\"%c c #%.6x\",\n", xpm->color_code[i], xpm->colors[i]);
 
 	// Write Pixel Data
 	fprintf(fp, "\n/* Pixel Data */\n");
