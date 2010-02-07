@@ -155,9 +155,9 @@ Gdcm_series::get_best_ct (void)
 	    /* Is this a CT? */
 	    std::string modality = file->GetEntryValue (0x0008, 0x0060);
 	    if (modality == std::string ("CT")) {
-		int dim[3];
-		double origin[3];
-		double spacing[3];
+		int dim[3] = {0, 0, 0};
+		double origin[3] = {0., 0., 0.};
+		double spacing[3] = {0., 0., 0.};
 	    
 		/* OK, I guess we have a CT */
 		this->m_have_ct = 1;
