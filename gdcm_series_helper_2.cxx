@@ -588,7 +588,7 @@ bool SerieHelper2::ImagePositionPatientOrdering( FileList *fileList )
 {
    //iop is calculated based on the file file
    float cosines[6];
-   double normal[3];
+   double normal[3] = {0., 0., 0.};
    double ipp[3];
    double dist;
    double min = 0, max = 0;
