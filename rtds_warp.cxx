@@ -222,7 +222,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output image */
     if (parms->output_img[0] && rtds->m_img) {
 	printf ("Saving image...\n");
-	rtds->m_img->save_image (parms->output_img);
+	//rtds->m_img->save_image (parms->output_img);
+	rtds->m_img->convert_and_save (parms->output_img, parms->output_type);
     }
 
     /* Save output vector field */

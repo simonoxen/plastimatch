@@ -110,6 +110,10 @@ public:
     plastimatch1_EXPORT
     void convert_to_itk (void);
 
+    /* metadata */
+    plastimatch1_EXPORT
+    void set_metadata (char *tag, char *value);
+
     /* Other */
     plastimatch1_EXPORT
     static int compare_headers (PlmImage *pli1, PlmImage *pli2);

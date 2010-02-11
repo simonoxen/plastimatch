@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "itkImageRegionIterator.h"
+#include "itkMetaDataDictionary.h"
+#include "itkMetaDataObject.h"
 
 #include "file_util.h"
 #include "itk_image.h"
@@ -166,6 +168,7 @@ PlmImage::save_image (const char* fname)
 	itk_image_save (this->m_itk_ushort, fname);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
+	this->set_metadata ("Hello", "World");
 	itk_image_save (this->m_itk_uint32, fname);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
@@ -387,10 +390,8 @@ PlmImage::convert_to_itk_uint32 (void)
 	    this, this->m_itk_uint32, (short) 0);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	printf ("Trying to convert gpuit to itk.\n");
 	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
 	    this, this->m_itk_uint32, (uint32_t) 0);
-	printf ("Finished conversion.\n");
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->m_itk_uint32 = plm_image_convert_gpuit_to_itk (
@@ -514,6 +515,9 @@ void
 PlmImage::convert (PlmImageType new_type)
 {
     switch (new_type) {
+    case PLM_IMG_TYPE_UNDEFINED:
+	/* Do nothing */
+	return;
     case PLM_IMG_TYPE_ITK_UCHAR:
 	this->convert_to_itk_uchar ();
 	break;
@@ -531,9 +535,9 @@ PlmImage::convert (PlmImageType new_type)
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
     default:
-	print_and_exit ("Unhandled image type in "
-			"PlmImage::convert (type = %d)\n", 
-			this->m_type);
+	print_and_exit (
+	    "Unhandled image type in PlmImage::convert (%d -> %d)\n", 
+	    this->m_type, new_type);
 	break;
     }
     this->m_type = new_type;
@@ -556,6 +560,48 @@ PlmImage::compare_headers (PlmImage *pli1, PlmImage *pli2)
     pih2.set_from_plm_image (pli2);
 
     return PlmImageHeader::compare (&pih1, &pih2);
+}
+
+void 
+PlmImage::set_metadata (char *tag, char *value)
+{
+    /* GCS FIX: This works for NRRD (and dicom?), but not MHA/MHD */
+#if defined (commentout)
+    typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+    itk::MetaDataDictionary *dict;
+
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_ULONG:
+	{
+	    printf ("SETTING METADATA ????\n");
+	    dict = &this->m_itk_uint32->GetMetaDataDictionary();
+
+	    itk::EncapsulateMetaData<std::string> (
+		*dict, std::string (tag), std::string (value));
+
+	    itk::MetaDataDictionary::ConstIterator itr = dict->Begin();
+	    itk::MetaDataDictionary::ConstIterator end = dict->End();
+
+	    while ( itr != end ) {
+		itk::MetaDataObjectBase::Pointer entry = itr->second;
+		MetaDataStringType::Pointer entryvalue =
+		    dynamic_cast<MetaDataStringType *>( entry.GetPointer());
+		if (entryvalue) {
+		    std::string tagkey = itr->first;
+		    std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+		    std::cout << tagkey << " = " << tagvalue << std::endl;
+		}
+		++itr;
+	    }
+	}
+	break;
+    default:
+	print_and_exit ("Error, can't set metadata for image type %d\n",
+	    this->m_type);
+	break;
+    }
+#endif
 }
 
 /* GCS FIX:  This is inefficient.  Because the pli owns the vol, 
