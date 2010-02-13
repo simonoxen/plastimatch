@@ -24,8 +24,8 @@ and positron emission tomography (PET). Software features include:
   global registration
 * Landmark-based deformable registration using radial basis functions 
   for local corrections of deformable registration
-* A wide support for image file formats (all ITK types supported, including 
-  Dicom, Nifti, NRRD, MetaImage, and Analyze)
+* Broad support for 3D image file formats (using ITK), including 
+  Dicom, Nifti, NRRD, MetaImage, and Analyze
 * Dicom and DicomRT import and export
 * XiO import and export
 * Plugin to 3D Slicer
@@ -51,6 +51,7 @@ Contents:
    :maxdepth: 2
 
    getting_started
+   command_reference
    registration
    drr
    cbct

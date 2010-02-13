@@ -3,9 +3,6 @@ Image registration
 
 Registration command file example
 ---------------------------------
-
-Plastimatch is the main executable program.  It is used for image registration, image warping, image resampling, and file format conversion.
-
 To run a regstration, do the following::
 
   plastimatch register command-file
