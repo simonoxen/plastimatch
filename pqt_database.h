@@ -13,6 +13,9 @@ pqt_database_start (QString db_path);
 QSqlQuery
 pqt_database_query_data_source_label (void);
 void
+pqt_database_insert_data_source (QString label, QString host, 
+    QString port, QString aet);
+void
 pqt_database_stop (void);
 
 #endif

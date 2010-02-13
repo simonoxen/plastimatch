@@ -11,6 +11,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 #include <QSqlQuery>
+#include <QTextStream>
 #include <QVariant>
 
 /* Use global variable for database handle */
@@ -62,8 +63,10 @@ pqt_database_start (QString db_path)
     }
     if (query.next ()) {
 	QString version_string = query.value(0).toString();
+#if defined (commentout)
 	QMessageBox::information (0, QString ("Version string"),
 	    QString ("PQT database version = %1").arg(version_string));
+#endif
     } else {
 	/* New database.  Add version string. */
 	sql = 
@@ -120,12 +123,43 @@ pqt_database_query_data_source_label (void)
 {
     QString sql = 
 	"SELECT label FROM data_source ORDER BY label;";
-    return QSqlQuery (sql);
+    QSqlQuery query = QSqlQuery (sql);
+
+#if defined (commentout)
+    while (query.next ()) {
+	QString label_string = query.value(0).toString();
+	QTextStream(stdout) << QString ("label = %1\n").arg(label_string);
+    }
+    query.seek (-1);
+#endif
+
+    return query;
 }
 
+void
+pqt_database_insert_data_source (QString label, QString host, 
+    QString port, QString aet)
+{
+    QString sql = QString (
+	"INSERT INTO data_source "
+	"(label, type, host, port, aet) "
+	"values ('%1', '', '%2', '%3', '%4');")
+	.arg (label)
+	.arg (host)
+	.arg (port)
+	.arg (aet);
+
+    QSqlQuery query;
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
+}
 
 void
 pqt_database_stop (void)
 {
+    printf ("Closing databse\n");
     global_db.close ();
+    printf ("Done closing databse\n");
 }

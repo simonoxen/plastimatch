@@ -16,13 +16,6 @@ Pqt_data_source_dialog::Pqt_data_source_dialog ()
     /* Attach model to QT listView */
     this->m_data_source_list_model = new Pqt_data_source_list_model;
     this->listView_data_source_list->setModel (this->m_data_source_list_model);
-
-    /* Load data sources from database */
-    QSqlQuery query = pqt_database_query_data_source_label ();
-    while (query.next()) {
-	QString label = query.value(0).toString();
-	//this->listView_data_source_list->insert
-    }
 }
 
 Pqt_data_source_dialog::~Pqt_data_source_dialog ()
@@ -40,9 +33,37 @@ Pqt_data_source_dialog::pushbutton_new_released (void)
 void
 Pqt_data_source_dialog::pushbutton_save_released (void)
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("Pushed save: %1").arg(
-	    this->lineEdit_data_source_name->text()));
+    /* Validate input */
+    if (this->lineEdit_data_source_name->text().isEmpty()) {
+	QMessageBox::information (0, QString ("Info"), 
+	    QString ("Please fill in the data source name."));
+	return;
+    }
+    if (this->lineEdit_host->text().isEmpty()) {
+	QMessageBox::information (0, QString ("Info"), 
+	    QString ("Please fill in the hostname."));
+	return;
+    }
+    if (this->lineEdit_port->text().isEmpty()) {
+	QMessageBox::information (0, QString ("Info"), 
+	    QString ("Please fill in the port."));
+	return;
+    }
+    if (this->lineEdit_aet->text().isEmpty()) {
+	QMessageBox::information (0, QString ("Info"), 
+	    QString ("Please fill in AET."));
+	return;
+    }
+
+    /* Insert into database */
+    pqt_database_insert_data_source (
+	this->lineEdit_data_source_name->text(),
+	this->lineEdit_host->text(),
+	this->lineEdit_port->text(),
+	this->lineEdit_aet->text());
+
+    /* Refresh model */
+    this->m_data_source_list_model->load_query ();
 }
 
 void

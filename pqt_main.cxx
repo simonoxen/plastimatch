@@ -47,6 +47,7 @@ initialize_application (void)
 int
 main (int argc, char **argv)
 {
+    int rc;
     QApplication app (argc, argv);
 
     initialize_application ();
@@ -54,5 +55,12 @@ main (int argc, char **argv)
     Pqt_main_window pqt_main_window;
     pqt_main_window.show ();
 
-    return app.exec();
+    rc = app.exec();
+
+    pqt_database_stop ();
+    
+    /* Application emits database warning on program exit.  Apparently 
+       this is a bug in Qt.
+       Ref: http://lists.trolltech.com/qt-interest/2008-05/msg00553.html */
+    return rc;
 }

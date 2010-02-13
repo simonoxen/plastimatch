@@ -5,21 +5,28 @@
 #define _pqt_data_source_list_model_h_
 
 #include "plm_config.h"
+#include <QSqlQuery>
 #include "ui_pqt_main_window.h"
 
-class Pqt_data_source_list_model : public QAbstractTableModel {
+class Pqt_data_source_list_model : public QAbstractListModel {
     Q_OBJECT
     ;
 
 public:
     Pqt_data_source_list_model (QObject *parent = 0)
-	: QAbstractTableModel (parent) {}
+	: QAbstractListModel (parent) { load_query (); }
     ~Pqt_data_source_list_model () {}
 
+    /* Overrides from base class */
     int rowCount (const QModelIndex& parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
     QVariant data (const QModelIndex& index, int role) const;
-    QVariant headerData (int section, Qt::Orientation orientation,
-	int role = Qt::DisplayRole) const;
+
+    /* Other methods */
+    void load_query ();
+
+public:
+    mutable QSqlQuery m_query;
+    int m_num_rows;
 };
+
 #endif

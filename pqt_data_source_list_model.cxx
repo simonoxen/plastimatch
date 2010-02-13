@@ -3,6 +3,8 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <QtGui>
+#include <QSqlQuery>
+#include "pqt_database.h"
 #include "pqt_data_source_list_model.h"
 
 int 
@@ -10,15 +12,7 @@ Pqt_data_source_list_model::rowCount (
     const QModelIndex& parent
 ) const
 {
-    return 2;
-}
-
-int 
-Pqt_data_source_list_model::columnCount (
-    const QModelIndex& parent
-) const
-{
-    return 3;
+    return this->m_num_rows;
 }
 
 QVariant 
@@ -27,29 +21,31 @@ Pqt_data_source_list_model::data (const QModelIndex& index, int role) const
     if (!index.isValid()) {
 	return QVariant();
     }
-    if (index.row() >= 2) {
+    if (index.row() >= this->m_num_rows) {
 	return QVariant();
     }
 
-    if (role == Qt::DisplayRole) {
-	return QString ("String %1").arg(index.row());
-    } else {
+    if (role != Qt::DisplayRole) {
 	return QVariant();
     }
+
+    this->m_query.seek (index.row());
+    return this->m_query.value(0).toString();
 }
 
-QVariant 
-Pqt_data_source_list_model::headerData (
-    int section, 
-    Qt::Orientation orientation,
-    int role
-) const
+void
+Pqt_data_source_list_model::load_query (void)
 {
-     if (role != Qt::DisplayRole)
-         return QVariant();
+    /* Load data sources from database */
+    this->m_query = pqt_database_query_data_source_label ();
+    this->m_num_rows = 0;
 
-     if (orientation == Qt::Horizontal)
-         return QString("Column %1").arg(section);
-     else
-         return QString("Row %1").arg(section);
+    /* QSqlQuery::size returns -1 if not supported (sqlite).  
+       So we manually count the rows. */
+    while (this->m_query.next()) {
+	this->m_num_rows ++;
+    }
+    this->m_query.seek (-1);
+
+    this->reset ();
 }
