@@ -16,6 +16,9 @@ Pqt_data_source_dialog::Pqt_data_source_dialog ()
     /* Attach model to QT listView */
     this->m_data_source_list_model = new Pqt_data_source_list_model;
     this->listView_data_source_list->setModel (this->m_data_source_list_model);
+
+    /* Which data source is active in dialog box */
+    this->m_active_index = -1;
 }
 
 Pqt_data_source_dialog::~Pqt_data_source_dialog ()
@@ -71,4 +74,24 @@ Pqt_data_source_dialog::pushbutton_delete_released (void)
 {
     QMessageBox::information (0, QString ("Info"), 
 	QString ("Pushed delete"));
+}
+
+void
+Pqt_data_source_dialog::listview_data_source_activated (
+    QModelIndex model_index
+)
+{
+    if (model_index.row() == this->m_active_index) {
+	return;
+    }
+
+    this->m_active_index = model_index.row();
+    QString label = this->m_data_source_list_model->get_label ();
+    this->lineEdit_data_source_name->setText (label);
+    QString host = this->m_data_source_list_model->get_host ();
+    this->lineEdit_host->setText (host);
+    QString port = this->m_data_source_list_model->get_port ();
+    this->lineEdit_port->setText (port);
+    QString aet = this->m_data_source_list_model->get_aet ();
+    this->lineEdit_aet->setText (aet);
 }

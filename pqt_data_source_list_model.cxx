@@ -34,6 +34,36 @@ Pqt_data_source_list_model::data (const QModelIndex& index, int role) const
 }
 
 void
+Pqt_data_source_list_model::set_active_row (int index)
+{
+    this->m_query.seek (index);
+}
+
+QString
+Pqt_data_source_list_model::get_label (void)
+{
+    return this->m_query.value(0).toString();
+}
+
+QString
+Pqt_data_source_list_model::get_host (void)
+{
+    return this->m_query.value(1).toString();
+}
+
+QString
+Pqt_data_source_list_model::get_port (void)
+{
+    return this->m_query.value(2).toString();
+}
+
+QString
+Pqt_data_source_list_model::get_aet (void)
+{
+    return this->m_query.value(3).toString();
+}
+
+void
 Pqt_data_source_list_model::load_query (void)
 {
     /* Load data sources from database */
@@ -45,7 +75,11 @@ Pqt_data_source_list_model::load_query (void)
     while (this->m_query.next()) {
 	this->m_num_rows ++;
     }
+
+    /* Reset query back to first row */
     this->m_query.seek (-1);
 
+    /* Refresh widget by resetting model (I think this is how it is 
+       supposed to be done, can't find in documentation) */
     this->reset ();
 }

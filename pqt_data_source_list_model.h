@@ -22,7 +22,12 @@ public:
     QVariant data (const QModelIndex& index, int role) const;
 
     /* Other methods */
-    void load_query ();
+    void load_query (void);
+    void set_active_row (int index);
+    QString get_label (void);
+    QString get_host (void);
+    QString get_port (void);
+    QString get_aet (void);
 
 public:
     mutable QSqlQuery m_query;

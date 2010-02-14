@@ -34,6 +34,9 @@ public slots:
     void pushbutton_new_released (void);
     void pushbutton_save_released (void);
     void pushbutton_delete_released (void);
+    void listview_data_source_activated (QModelIndex model_index);
 
+public:
+    int m_active_index;
 };
 #endif

@@ -122,7 +122,7 @@ QSqlQuery
 pqt_database_query_data_source_label (void)
 {
     QString sql = 
-	"SELECT label FROM data_source ORDER BY label;";
+	"SELECT label,host,port,aet FROM data_source ORDER BY label;";
     QSqlQuery query = QSqlQuery (sql);
 
 #if defined (commentout)
