@@ -29,8 +29,11 @@ Pqt_data_source_dialog::~Pqt_data_source_dialog ()
 void
 Pqt_data_source_dialog::pushbutton_new_released (void)
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("Pushed new"));
+    /* Update dialog box */
+    /* GCS FIX: This works correctly, but emits a Qt warning on the console */
+    this->m_active_index = -1;
+    this->m_data_source_list_model->set_active_row (-1);
+    update_fields ();
 }
 
 void
@@ -65,8 +68,13 @@ Pqt_data_source_dialog::pushbutton_save_released (void)
 	this->lineEdit_port->text(),
 	this->lineEdit_aet->text());
 
-    /* Refresh model */
+    /* Refresh model - this also sets query index to -1 */
     this->m_data_source_list_model->load_query ();
+
+    /* Update dialog box */
+    /* GCS FIX: This works correctly, but emits a Qt warning on the console */
+    this->m_active_index = -1;
+    update_fields ();
 }
 
 void
@@ -86,6 +94,12 @@ Pqt_data_source_dialog::listview_data_source_activated (
     }
 
     this->m_active_index = model_index.row();
+    update_fields ();
+}
+
+void
+Pqt_data_source_dialog::update_fields (void)
+{
     QString label = this->m_data_source_list_model->get_label ();
     this->lineEdit_data_source_name->setText (label);
     QString host = this->m_data_source_list_model->get_host ();
