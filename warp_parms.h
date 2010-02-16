@@ -9,12 +9,14 @@
 #include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "plm_path.h"
+#include "xio_io.h"
 
 class Warp_parms {
 public:
     /* Input files */
     char input_fn[_MAX_PATH];
-    char input_ss_list_fn[_MAX_PATH];
+    char input_ss_img[_MAX_PATH];
+    char input_ss_list[_MAX_PATH];
     char vf_in_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     char fixed_im_fn[_MAX_PATH];
@@ -29,8 +31,8 @@ public:
     char output_img[_MAX_PATH];
     char output_labelmap_fn[_MAX_PATH];
     char output_prefix[_MAX_PATH];
-    char output_ss_img_fn[_MAX_PATH];
-    char output_ss_list_fn[_MAX_PATH];
+    char output_ss_img[_MAX_PATH];
+    char output_ss_list[_MAX_PATH];
     char output_vf[_MAX_PATH];
     char output_xio_dirname[_MAX_PATH];
 
@@ -43,6 +45,7 @@ public:
     float default_val;
     int interp_lin;              /* trilinear (1) or nn (0) */
     PlmImageType output_type;
+    Xio_version output_xio_version;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */
 
@@ -52,6 +55,7 @@ public:
 	default_val = 0.0f;
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
+	output_xio_version = XIO_VERSION_4_2_1;
 	prune_empty = 0;
 	use_itk = 0;
     }

@@ -287,6 +287,7 @@ format_xio_filename (char *fn, char *output_dir, float z_loc)
 void
 xio_structures_save (
     Cxt_structure_list *cxt, 
+    Xio_version xio_version, 
     char *output_dir
 )
 {
@@ -305,11 +306,21 @@ xio_structures_save (
     if (!fp) {
 	print_and_exit ("Error opening output file %s\n", fn);
     }
-    fprintf (fp, "00041027\n%d\n", cxt->num_structures);
+
+    if (xio_version == XIO_VERSION_4_2_1) {
+	fprintf (fp, "00031027\n");
+    } else {
+	fprintf (fp, "00041027\n");
+    }
+
+    fprintf (fp, "%d\n", cxt->num_structures);
+
     for (i = 0; i < cxt->num_structures; i++) {
 	Cxt_structure *curr_structure = &cxt->slist[i];
 	fprintf (fp, "%s\n", curr_structure->name);
-	fprintf (fp, "%d,1.000000,0,1,19691231.190000\n", i);
+	fprintf (fp, "%d,1.000000,0,1%s\n", 
+	    i,
+	    (xio_version == XIO_VERSION_4_2_1) ? "" : ",19691231.190000");
 	fprintf (fp, "General\n");
 	fprintf (fp, "1,5,-1,1,0,0\n");
     }
@@ -340,7 +351,8 @@ xio_structures_save (
 		fprintf (fp, "%d\n", i);
 		for (k = 0; k < curr_polyline->num_vertices; k++) {
 		    fprintf (fp, "%6.1f,%6.1f", 
-			curr_polyline->x[k], curr_polyline->y[k]);
+			curr_polyline->x[k], 
+			- curr_polyline->y[k]);
 		    if ((k+1) % 5 == 0) {
 			fprintf (fp, "\n");
 		    }

@@ -9,6 +9,11 @@
 #include <vector>
 #include "cxt_io.h"
 
+enum Xio_version {
+    XIO_VERSION_4_2_1,         /* MGH proton Xio */
+    XIO_VERSION_4_33_02,       /* Older MGH photon Xio */
+};
+
 plastimatch1_EXPORT 
 void
 xio_io_get_file_names (

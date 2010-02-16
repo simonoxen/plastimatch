@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include "cxt_apply_dicom.h"
+#include "cxt_extract.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
 #include "gdcm_rtss.h"
@@ -10,47 +12,93 @@
 #include "xio_structures.h"
 
 static void
+load_ss_img (Rtds *rtds, Warp_parms *parms)
+{
+    PlmImage *pli;
+    int num_structs = -1;
+
+    /* Load ss_img */
+    printf ("Loading input file...\n");
+    pli = plm_image_load_native (parms->input_ss_img);
+    printf ("Done.\n");
+
+    /* Allocate memory for cxt */
+    rtds->m_cxt = cxt_create ();
+
+    /* Set structure names */
+    if (parms->input_ss_list[0]) {
+	cxt_xorlist_read (rtds->m_cxt, parms->input_ss_list);
+	num_structs = rtds->m_cxt->num_structures;
+    }
+
+    /* Copy geometry to cxt */
+    cxt_set_geometry_from_plm_image (rtds->m_cxt, pli);
+
+    /* Extract polylines */
+    printf ("Running marching squares (%d structs)...\n", num_structs);
+    pli->convert (PLM_IMG_TYPE_ITK_ULONG);
+    cxt_extract (rtds->m_cxt, pli->m_itk_uint32, num_structs);
+    printf ("Done.\n");
+
+    /* Set UIDs */
+    if (parms->dicom_dir[0]) {
+	printf ("Parsing dicom...\n");
+	cxt_apply_dicom_dir (rtds->m_cxt, parms->dicom_dir);
+	printf ("Done.\n");
+    }
+
+    /* Free ss_img */
+    delete pli;
+}
+
+static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
-    switch (file_type) {
-    case PLM_FILE_FMT_NO_FILE:
-	print_and_exit ("Could not open input file %s for read\n",
-	    parms->input_fn);
-	break;
-    case PLM_FILE_FMT_UNKNOWN:
-    case PLM_FILE_FMT_IMG:
-	rtds->m_img = plm_image_load_native (parms->input_fn);
-	//warp_image_main (&parms);
-	break;
-    case PLM_FILE_FMT_DICOM_DIR:
-	/* GCS FIX: Need to load rtss too */
-	rtds->m_img = plm_image_load_native (parms->input_fn);
-	//warp_image_main (&parms);
-	break;
-    case PLM_FILE_FMT_XIO_DIR:
-	rtds->load_xio (parms->input_fn);
-	//xio_warp_main (&parms);
-	break;
-    case PLM_FILE_FMT_DIJ:
-	print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
-	break;
-    case PLM_FILE_FMT_DICOM_RTSS:
-	rtds->m_cxt = cxt_create ();
-	gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
-	printf ("gdcm_rtss_load complete.\n");
-	//rtss_warp (&parms);
-	break;
-    case PLM_FILE_FMT_CXT:
-	rtds->m_cxt = cxt_create ();
-	cxt_read (rtds->m_cxt, parms->input_fn);
-	//ctx_warp (&parms);
-	break;
-    default:
-	print_and_exit (
-	    "Sorry, don't know how to convert/warp input type %s (%s)\n",
-	    plm_file_format_string (file_type),
-	    parms->input_fn);
-	break;
+    if (parms->input_fn[0]) {
+	switch (file_type) {
+	case PLM_FILE_FMT_NO_FILE:
+	    print_and_exit ("Could not open input file %s for read\n",
+		parms->input_fn);
+	    break;
+	case PLM_FILE_FMT_UNKNOWN:
+	case PLM_FILE_FMT_IMG:
+	    rtds->m_img = plm_image_load_native (parms->input_fn);
+	    //warp_image_main (&parms);
+	    break;
+	case PLM_FILE_FMT_DICOM_DIR:
+	    /* GCS FIX: Need to load rtss too */
+	    rtds->m_img = plm_image_load_native (parms->input_fn);
+	    //warp_image_main (&parms);
+	    break;
+	case PLM_FILE_FMT_XIO_DIR:
+	    rtds->load_xio (parms->input_fn);
+	    //xio_warp_main (&parms);
+	    break;
+	case PLM_FILE_FMT_DIJ:
+	    print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
+	    break;
+	case PLM_FILE_FMT_DICOM_RTSS:
+	    rtds->m_cxt = cxt_create ();
+	    gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
+	    printf ("gdcm_rtss_load complete.\n");
+	    //rtss_warp (&parms);
+	    break;
+	case PLM_FILE_FMT_CXT:
+	    rtds->m_cxt = cxt_create ();
+	    cxt_read (rtds->m_cxt, parms->input_fn);
+	    //ctx_warp (&parms);
+	    break;
+	default:
+	    print_and_exit (
+		"Sorry, don't know how to convert/warp input type %s (%s)\n",
+		plm_file_format_string (file_type),
+		parms->input_fn);
+	    break;
+	}
+    }
+
+    if (parms->input_ss_img[0]) {
+	load_ss_img (rtds, parms);
     }
 }
 
@@ -77,17 +125,17 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
 	plm_image_save_vol (parms->output_labelmap_fn, ctm_state.labelmap_vol);
     }
-    if (parms->output_ss_img_fn[0]) {
+    if (parms->output_ss_img[0]) {
 	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
-	plm_image_save_vol (parms->output_ss_img_fn, ctm_state.ss_img_vol);
+	plm_image_save_vol (parms->output_ss_img, ctm_state.ss_img_vol);
     }
 
     /* Write out list of structure names */
-    if (parms->output_ss_list_fn[0]) {
+    if (parms->output_ss_list[0]) {
 	int i;
 	FILE *fp;
-	make_directory_recursive (parms->output_ss_list_fn);
-	fp = fopen (parms->output_ss_list_fn, "w");
+	make_directory_recursive (parms->output_ss_list);
+	fp = fopen (parms->output_ss_list, "w");
 	for (i = 0; i < cxt->num_structures; i++) {
 	    Cxt_structure *curr_structure;
 	    curr_structure = &cxt->slist[i];
@@ -140,8 +188,8 @@ save_ss_output (Rtds *rtds,  Warp_parms *parms)
     }
 #endif
 
-    if (parms->output_labelmap_fn[0] || parms->output_ss_img_fn[0]
-	|| parms->output_ss_list_fn[0] || parms->output_prefix[0])
+    if (parms->output_labelmap_fn[0] || parms->output_ss_img[0]
+	|| parms->output_ss_list[0] || parms->output_prefix[0])
     {
 	save_ss_img (rtds->m_cxt, parms);
     }
@@ -152,7 +200,9 @@ save_ss_output (Rtds *rtds,  Warp_parms *parms)
 
     if (parms->output_xio_dirname[0]) {
 	printf ("Saving xio format...\n");
-	xio_structures_save (rtds->m_cxt, parms->output_xio_dirname);
+	xio_structures_save (rtds->m_cxt, 
+	    parms->output_xio_version, 
+	    parms->output_xio_dirname);
 	printf ("Done.\n");
     }
 

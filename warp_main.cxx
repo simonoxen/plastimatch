@@ -40,6 +40,7 @@ print_usage (char* command)
 	"    --ctatts=filename          (for dij)\n"
 	"    --dif=filename             (for dij)\n"
 	"    --input-ss-img=filename    (for structures)\n"
+	"    --input-ss-list=filename   (for structures)\n"
 	"    --prune-empty              (for structures)\n"
 	"\n"
 	"    --output-cxt=filename      (for structures)\n"
@@ -108,6 +109,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "input-ss-list",  required_argument,      NULL,           26 },
 	{ "output_dij",     required_argument,      NULL,           27 },
 	{ "output-dij",     required_argument,      NULL,           27 },
+	{ "input_ss_img",   required_argument,      NULL,           28 },
+	{ "input-ss-img",   required_argument,      NULL,           28 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -208,10 +211,10 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_labelmap_fn, optarg, _MAX_PATH);
 	    break;
 	case 21:
-	    strncpy (parms->output_ss_img_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_ss_img, optarg, _MAX_PATH);
 	    break;
 	case 22:
-	    strncpy (parms->output_ss_list_fn, optarg, _MAX_PATH);
+	    strncpy (parms->output_ss_list, optarg, _MAX_PATH);
 	    break;
 	case 23:
 	    strncpy (parms->output_cxt, optarg, _MAX_PATH);
@@ -223,18 +226,22 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_xio_dirname, optarg, _MAX_PATH);
 	    break;
 	case 26:
-	    strncpy (parms->input_ss_list_fn, optarg, _MAX_PATH);
+	    strncpy (parms->input_ss_list, optarg, _MAX_PATH);
 	    break;
 	case 27:
 	    strncpy (parms->output_dij, optarg, _MAX_PATH);
 	    break;
+	case 28:
+	    strncpy (parms->input_ss_img, optarg, _MAX_PATH);
+	    break;
 	default:
-	    fprintf (stderr, "Error.  Unknown option.");
+	    fprintf (stderr, "Error.  Unknown option.\n");
 	    print_usage (argv[1]);
 	    break;
 	}
     }
-    if (!parms->input_fn[0]) {
+    if (!parms->input_fn[0] && !parms->input_ss_img[0]) {
+	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);
     }
 }
