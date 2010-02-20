@@ -496,5 +496,40 @@ __global__ void bspline_cuda_compute_grad_norm_kernel
  float *odata,
  int num_elems);
 
+__global__ void k_bspline_cuda_MI_a_hist_fix
+(
+ float *f_hist_seg,
+ float *fixed,
+ float offset,
+ float delta,
+ long bins,
+ int nthreads);
+
+
+__global__ void k_bspline_cuda_MI_a_hist_mov (
+ float* m_hist_seg,	// partial histogram (moving image)
+ float* fixed,		// fixed  image voxels
+ float* moving,		// moving image voxels
+ float offset,		// histogram offset
+ float delta,		// histogram delta
+ long bins,		// # histogram bins
+ int3 vpr,		// voxels per region
+ int3 fdim,		// fixed  image dimensions
+ int3 mdim,		// moving image dimensions
+ int3 rdim,		//       region dimensions
+ float3 img_origin,	// image origin
+ float3 img_spacing,	// image spacing
+ float3 mov_offset,	// moving image offset
+ float3 mov_ps,		// moving image pixel spacing
+ int* c_lut,		// DEBUG
+ float* q_lut,		// DEBUG
+ float* coeff,		// DEBUG
+ int nthreads);		// # threads (to be removed)
+
+
+__global__ void k_bspline_cuda_MI_a_hist_fix_merge (
+ float *f_hist,
+ float *f_hist_seg,
+ long num_seg_hist);
 
 #endif

@@ -1635,7 +1635,6 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
     num_vox = 0;
 
-
     /* PASS 1 - Accumulate histogram */
     for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / bxf->vox_per_rgn[2];
@@ -1654,7 +1653,7 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
 		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
- 
+
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
@@ -1702,6 +1701,7 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
     // Dump histogram images ??
     if (parms->xpm_hist_dump)
 	    dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+
 
     /* Compute score */
     ssd->score = mi_hist_score (mi_hist, num_vox);
@@ -4028,7 +4028,7 @@ bspline_score (BSPLINE_Parms *parms,
 	       Volume *moving_grad)
 {
 #if (CUDA_FOUND)
-    if (parms->threading == BTHR_CUDA) {
+    if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
@@ -4057,6 +4057,16 @@ bspline_score (BSPLINE_Parms *parms,
 	    break;
 	}
 	return;
+    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+	switch (parms->implementation) {
+	case 'a':
+	    bspline_cuda_MI_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    break;
+	default:
+	    bspline_cuda_MI_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    break;
+	}
+
     }
 #endif
 
@@ -4202,6 +4212,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 		  Volume *moving_grad)
 {
     Bspline_state *bst;
+
 #if (CUDA_FOUND)
     Dev_Pointers_Bspline dev_mem;
     Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
@@ -4213,7 +4224,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 
 #if (CUDA_FOUND)
     bst->dev_ptrs = dev_ptrs;
-    if(parms->threading == BTHR_CUDA) {
+    if( (parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE) ) {
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_cuda_initialize (fixed, moving, moving_grad, bxf, parms);
@@ -4253,6 +4264,17 @@ bspline_optimize (BSPLINE_Xform* bxf,
 				       moving_grad, bxf, parms);
 	    break;
 	}
+    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+	switch (parms->implementation) {
+	case 'a':
+		bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+		break;
+	default:
+		printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n", parms->implementation);
+		bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+		break;
+	}
+
     }
 #endif
 

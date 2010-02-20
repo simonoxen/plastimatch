@@ -103,6 +103,80 @@ bspline_interp_pix_b_inline (float out[3], BSPLINE_Xform* bxf, int pidx, int qid
 }
 
 
+
+
+////////////////////////////////////////////////////////////////////////////////
+void bspline_cuda_MI_a (
+		BSPLINE_Parms *parms,
+		Bspline_state *bst,
+		BSPLINE_Xform *bxf,
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		Dev_Pointers_Bspline *dev_ptrs)
+{
+
+    // --- DECLARE LOCAL VARIABLES ------------------------------
+    BSPLINE_Score* ssd;		// Holds the SSD "Score" information
+    int num_vox;		// Holds # of voxels in the fixed volume
+    float ssd_grad_norm;	// Holds the SSD Gradient's Norm
+    float ssd_grad_mean;	// Holds the SSD Gradient's Mean
+    Timer timer;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+
+    static int it=0;	// Holds Iteration Number
+    char debug_fn[1024];	// Debug message buffer
+    FILE* fp;		// File Pointer to Debug File
+    // ----------------------------------------------------------
+
+
+    // --- INITIALIZE LOCAL VARIABLES ---------------------------
+    ssd = &bst->ssd;
+	
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
+    // ----------------------------------------------------------
+
+
+    plm_timer_start (&timer);	// <=== START TIMING HERE
+
+	
+    // --- INITIALIZE GPU MEMORY --------------------------------
+    bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
+//    bspline_cuda_h_clear_score(dev_ptrs);
+//    bspline_cuda_h_clear_grad(dev_ptrs);
+    // ----------------------------------------------------------
+
+	plm_timer_start (&timer);	// <=== START TIMING HERE
+	
+	// generate histograms
+	bspline_cuda_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+
+
+	// calculate dC/dp and MI
+
+	// calculate dp/dv
+
+	// calculate dC/dv
+
+	// calculate dv/dP
+
+	// calculate dC/dP
+
+	
+	printf ("Time: %f\n", plm_timer_report (&timer));
+	
+
+	exit(0);
+
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_cuda_score_j_mse()
 //
@@ -118,7 +192,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
-    BSPLINE_Score* ssd;	// Holds the SSD "Score" information
+    BSPLINE_Score* ssd;		// Holds the SSD "Score" information
     int num_vox;		// Holds # of voxels in the fixed volume
     float ssd_grad_norm;	// Holds the SSD Gradient's Norm
     float ssd_grad_mean;	// Holds the SSD Gradient's Mean

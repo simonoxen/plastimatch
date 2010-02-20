@@ -59,32 +59,49 @@ struct dev_pointers_bspline
     // and dereferencing members of this structure!
 
     float* my_gpu_addr;		// Holds address of this
-    //   structure in global
-    //   device memory.
+				//   structure in global
+				//   device memory.
+
     float* fixed_image;		// Fixed Image Voxels
-    float* moving_image;		// Moving Image Voxels
+    float* moving_image;	// Moving Image Voxels
     float* moving_grad;		// dc_dp (Gradient) Volume
-    float* coeff;			// B-Spline coefficients (p)
-    float* score;			// The "Score"
-    float* dc_dv;			// dc_dv (Interleaved)
-    float* dc_dv_x;			// dc_dv (De-Interleaved)
-    float* dc_dv_y;			// dc_dv (De-Interleaved)
-    float* dc_dv_z;			// dc_dv (De-Interleaved)
-    float* cond_x;			// dc_dv_x (Condensed)
-    float* cond_y;			// dc_dv_y (Condensed)
-    float* cond_z;			// dc_dv_z (Condensed)
-    float* grad;			// dc_dp
+
+    float* coeff;		// B-Spline coefficients (p)
+    float* score;		// The "Score"
+
+    float* f_hist_seg;		// "Segmented" fixed histogram
+    float* m_hist_seg;		// "Segmented" moving histogram
+    float* j_hist_seg;		// "Segmented" joint histogram
+
+    float* f_hist;		// fixed image histogram
+    float* m_hist;		// moving image histogram
+    float* j_hist;		// joint histogram
+
+    float* dc_dv;		// dc_dv (Interleaved)
+    float* dc_dv_x;		// dc_dv (De-Interleaved)
+    float* dc_dv_y;		// dc_dv (De-Interleaved)
+    float* dc_dv_z;		// dc_dv (De-Interleaved)
+
+    float* cond_x;		// dc_dv_x (Condensed)
+    float* cond_y;		// dc_dv_y (Condensed)
+    float* cond_z;		// dc_dv_z (Condensed)
+
+    float* grad;		// dc_dp
     float* dc_dp_x;
     float* dc_dp_y;
     float* dc_dp_z;
     float* grad_temp;
+
     int* LUT_Knot;
     int* LUT_NumTiles;
     int* LUT_Offsets;
     float* LUT_Bspline_x;
     float* LUT_Bspline_y;
     float* LUT_Bspline_z;
-    float* skipped;			// # of voxels that fell outside post warp
+    float* skipped;		// # of voxels that fell outside post warp
+
+    int* c_lut;
+    float* q_lut;
 
     // These hold the size of the
     // chucks of memory we allocated
@@ -112,13 +129,21 @@ struct dev_pointers_bspline
     size_t LUT_Bspline_y_size;
     size_t LUT_Bspline_z_size;
     size_t skipped_size;
+    size_t f_hist_size;
+    size_t m_hist_size;
+    size_t j_hist_size;
+    size_t f_hist_seg_size;
+    size_t m_hist_seg_size;
+    size_t j_hist_seg_size;
+    size_t c_lut_size;
+    size_t q_lut_size;
 };
 
 
 typedef struct bspline_state Bspline_state;
 struct bspline_state {
     int it;
-    BSPLINE_Score ssd;                   /* Score and Gradient */
+    BSPLINE_Score ssd;                   /* Score and Gradient  */
     Dev_Pointers_Bspline* dev_ptrs;      /* GPU Device Pointers */
 };
 
@@ -253,6 +278,8 @@ bspline_save_debug_state
  Bspline_state *bst, 
  BSPLINE_Xform* bxf
  );
+
+void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
 
 #if defined __cplusplus
 }

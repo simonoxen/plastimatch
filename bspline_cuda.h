@@ -16,6 +16,7 @@
 extern "C" {
 #endif
 
+// I don't think this is ever used...
     typedef struct BSPLINE_CUDA_Data_struct BSPLINE_CUDA_Data;
     struct BSPLINE_CUDA_Data_struct {
 	size_t image_size;
@@ -36,6 +37,21 @@ extern "C" {
 	float *partial_sum; // Stream for storing the partial sums during reductions 
 	float *sum_element;
     };
+
+    // -------------------------------------------------------------------
+    // Prototypes: bspline_cuda.cpp 
+
+    void bspline_cuda_MI_a (
+		BSPLINE_Parms *parms,
+		Bspline_state *bst,
+		BSPLINE_Xform *bxf,
+		Volume *fixed,
+		Volume *moving,
+		Volume *moving_grad,
+		Dev_Pointers_Bspline *dev_ptrs);
+
+
+
 
 
     void bspline_cuda_j_stage_1 (Volume* fixed,
@@ -121,6 +137,14 @@ extern "C" {
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
+    //
+    // -------------------------------------------------------------------
+
+
+
+
+    // -------------------------------------------------------------------
+    // Prototypes: bspline_cuda.cu
 
     // Simple utility function to check for CUDA runtime errors.
     void checkCUDAError(const char *msg);  
@@ -419,6 +443,18 @@ extern "C" {
 					  int vox_idx, 
 					  int vox_per_rgn);
     
+    
+    void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform* bxf, BSPLINE_Parms* parms);
+
+    void bspline_cuda_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+
+    void bspline_cuda_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed);
+    
+    void bspline_cuda_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    
+    
+    //
+    // -------------------------------------------------------------------
 
 #if defined __cplusplus
 }

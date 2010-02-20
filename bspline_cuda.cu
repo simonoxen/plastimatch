@@ -116,6 +116,857 @@ test_kernel
 
 
 
+
+extern "C" void bspline_cuda_init_MI_a (
+			Dev_Pointers_Bspline* dev_ptrs,
+			Volume* fixed,
+			Volume* moving,
+			Volume* moving_grad,
+			BSPLINE_Xform* bxf,
+			BSPLINE_Parms* parms)
+{
+	BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+
+	// input volumes
+	dev_ptrs->fixed_image_size = fixed->npix * sizeof(float);
+	dev_ptrs->moving_image_size = moving->npix * sizeof(float);
+	dev_ptrs->moving_grad_size = moving_grad->npix * sizeof(float);
+	cudaMalloc ((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
+	checkCUDAError ("Failed to allocate memory for fixed image");
+	cudaMalloc ((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+	checkCUDAError ("Failed to allocate memory for moving image");
+	cudaMalloc ((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+	checkCUDAError ("Failed to allocate memory for moving grad");
+	cudaMemcpy (dev_ptrs->fixed_image, fixed->img, dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
+	cudaMemcpy (dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+	cudaMemcpy (dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+
+	// segmented histograms
+	int num_blocks = (fixed->npix + 31) / 32;
+	dev_ptrs->f_hist_seg_size = mi_hist->fixed.bins * 2*num_blocks * sizeof(float);
+	dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
+//	dev_ptrs->j_hist_seg_size = mi_hist->fixed.bin * num_blocks * sizeof(float);
+	cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
+	checkCUDAError ("Failed to allocate memory for f_hist_seg");
+	cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
+	checkCUDAError ("Failed to allocate memory for m_hist_seg");
+//	cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
+
+
+	// histograms
+	dev_ptrs->f_hist_size = mi_hist->fixed.bins * sizeof(float);
+	dev_ptrs->m_hist_size = mi_hist->moving.bins * sizeof(float);
+	dev_ptrs->j_hist_size = mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float);
+	cudaMalloc ((void**)&dev_ptrs->f_hist, dev_ptrs->f_hist_size);
+	cudaMalloc ((void**)&dev_ptrs->m_hist, dev_ptrs->m_hist_size);
+	cudaMalloc ((void**)&dev_ptrs->j_hist, dev_ptrs->j_hist_size);
+
+	//--- OLD STUFF 
+
+	// Copy the multiplier LUT to the GPU.
+	dev_ptrs->q_lut_size = sizeof(float)
+				* bxf->vox_per_rgn[0]
+				* bxf->vox_per_rgn[1]
+				* bxf->vox_per_rgn[2]
+				* 64;
+
+	cudaMalloc((void**)&dev_ptrs->q_lut, dev_ptrs->q_lut_size);
+	checkCUDAError("Failed to allocate memory for q_LUT");
+
+	cudaMemcpy(dev_ptrs->q_lut, bxf->q_lut, dev_ptrs->q_lut_size, cudaMemcpyHostToDevice);
+	checkCUDAError("Failed to copy multiplier q_LUT to GPU");
+
+	cudaBindTexture(0, tex_q_lut, dev_ptrs->q_lut, dev_ptrs->q_lut_size);
+	checkCUDAError("Failed to bind tex_q_lut to texture");
+
+	// Copy the index LUT to the GPU.
+	dev_ptrs->c_lut_size = sizeof(int) 
+				* bxf->rdims[0] 
+				* bxf->rdims[1] 
+				* bxf->rdims[2] 
+				* 64;
+
+	cudaMalloc((void**)&dev_ptrs->c_lut, dev_ptrs->c_lut_size);
+	checkCUDAError("Failed to allocate memory for c_LUT");
+	cudaMemcpy(dev_ptrs->c_lut, bxf->c_lut, dev_ptrs->c_lut_size, cudaMemcpyHostToDevice);
+	checkCUDAError("Failed to copy index c_LUT to GPU");
+	cudaBindTexture(0, tex_c_lut, dev_ptrs->c_lut, dev_ptrs->c_lut_size);
+	checkCUDAError("Failed to bind tex_c_lut to texture");
+
+	dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
+	cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
+	checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
+	cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
+	cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
+	checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
+	
+}
+
+
+extern "C" void bspline_cuda_MI_a_hist (
+			Dev_Pointers_Bspline *dev_ptrs,
+			BSPLINE_MI_Hist* mi_hist,
+			Volume* fixed,
+			Volume* moving,
+			BSPLINE_Xform* bxf)
+{
+	// Initialize histogram memory on GPU
+//	cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
+//	cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
+//	cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_size);
+//	cudaMemset(dev_ptrs->j_hist, 0, dev_ptrs->j_hist_size);
+
+	// Generate the fixed histogram (47.56 ms)
+	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
+
+	// Generate the moving histogram (??.?? ms) -- broken
+	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+
+	// Generate the joint histogram (??.?? ms) -- not written
+//	bspline_cuda_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving);
+
+}
+
+
+
+extern "C" void bspline_cuda_MI_a_hist_fix (
+			Dev_Pointers_Bspline *dev_ptrs,
+			BSPLINE_MI_Hist* mi_hist,
+			Volume* fixed)
+{
+	// Initialize histogram memory on GPU
+	cudaMemset(dev_ptrs->f_hist_seg, 0, dev_ptrs->f_hist_seg_size);
+	cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
+
+	// --- INITIALIZE GRID ---
+	int i;
+	int Grid_x = 0;
+	int Grid_y = 0;
+	int threads_per_block = 32;
+	int num_threads = fixed->npix;
+	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	int smemSize = threads_per_block * mi_hist->fixed.bins * sizeof(float);
+
+	// -----
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// -----
+
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid1(Grid_x, Grid_y, 1);
+	dim3 dimBlock1(threads_per_block, 1, 1);
+	// ----------------------
+
+	// Launch kernel with one thread per voxel
+	k_bspline_cuda_MI_a_hist_fix <<<dimGrid1, dimBlock1, smemSize>>> (
+					dev_ptrs->f_hist_seg,
+					dev_ptrs->fixed_image,
+					mi_hist->fixed.offset,
+					1.0f/mi_hist->fixed.delta,
+					mi_hist->fixed.bins,
+					threads_per_block);
+					
+	checkCUDAError ("kernel hist_fix");
+	int num_sub_hists = num_blocks;
+
+
+	// Merge sub-histograms
+	threads_per_block = 512;
+	dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
+	dim3 dimBlock2 (threads_per_block, 1, 1);
+	smemSize = i * sizeof(float);
+	
+	// this kernel can be ran with any thread-block size that
+	// contains a power of 2 # threads.
+	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+					dev_ptrs->f_hist,
+					dev_ptrs->f_hist_seg,
+					num_sub_hists);
+
+	checkCUDAError ("kernel hist_fix_merge");
+					
+	// DEBUG
+//	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
+//	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+
+//	mi_hist->f_hist = f_hist;
+
+//	dump_xpm_hist (mi_hist, "test", 0);
+//	dump_hist (mi_hist, "test.txt");
+
+}
+			
+
+
+extern "C" void bspline_cuda_MI_a_hist_mov (
+			Dev_Pointers_Bspline *dev_ptrs,
+			BSPLINE_MI_Hist* mi_hist,
+			Volume* fixed,
+			Volume* moving,
+			BSPLINE_Xform *bxf)
+{
+	// Initialize histogram memory on GPU
+	cudaMemset(dev_ptrs->m_hist_seg, 1, dev_ptrs->m_hist_seg_size);
+	cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
+
+	int3 vpr;
+	vpr.x = bxf->vox_per_rgn[0];
+	vpr.y = bxf->vox_per_rgn[1];
+	vpr.z = bxf->vox_per_rgn[2];
+
+	int3 fdim;
+	fdim.x = fixed->dim[0];
+	fdim.y = fixed->dim[1];
+	fdim.z = fixed->dim[2];
+
+	int3 mdim;
+	mdim.x = moving->dim[0];
+	mdim.y = moving->dim[1];
+	mdim.z = moving->dim[2];
+	
+	int3 rdim;
+	rdim.x = bxf->rdims[0];
+	rdim.y = bxf->rdims[1];
+	rdim.z = bxf->rdims[2];
+
+	float3 img_origin;
+	img_origin.x = bxf->img_origin[0];
+	img_origin.y = bxf->img_origin[1];
+	img_origin.z = bxf->img_origin[2];
+	
+	float3 img_spacing;     
+	img_spacing.x = bxf->img_spacing[0];
+	img_spacing.y = bxf->img_spacing[1];
+	img_spacing.z = bxf->img_spacing[2];
+
+
+	float3 mov_offset;     
+	mov_offset.x = moving->offset[0];
+	mov_offset.y = moving->offset[1];
+	mov_offset.z = moving->offset[2];
+
+	float3 mov_ps;
+	mov_ps.x = moving->pix_spacing[0];
+	mov_ps.y = moving->pix_spacing[1];
+	mov_ps.z = moving->pix_spacing[2];
+	
+
+	// --- INITIALIZE GRID ---
+	int i;
+	int Grid_x = 0;
+	int Grid_y = 0;
+	int threads_per_block = 32;
+	int num_threads = fixed->npix;
+	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	int smemSize = threads_per_block * mi_hist->fixed.bins * sizeof(float);
+
+	// -----
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// -----
+
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid1(Grid_x, Grid_y, 1);
+	dim3 dimBlock1(threads_per_block, 1, 1);
+	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
+	// ----------------------
+
+	// Launch kernel with one thread per voxel
+	k_bspline_cuda_MI_a_hist_mov <<<dimGrid1, dimBlock1, smemSize>>> (
+			dev_ptrs->m_hist_seg,		// partial histogram (moving image)
+			dev_ptrs->fixed_image,		// fixed  image voxels
+			dev_ptrs->moving_image,		// moving image voxels
+			mi_hist->moving.offset,		// histogram offset
+			1.0f/mi_hist->moving.delta,	// histogram delta
+			mi_hist->moving.bins,		// # histogram bins
+			vpr,				// voxels per region
+			fdim,				// fixed  image dimensions
+			mdim,				// moving image dimensions
+			rdim,				//       region dimensions
+			img_origin,			// image origin
+			img_spacing,			// image spacing
+			mov_offset,			// moving image offset
+			mov_ps,				// moving image pixel spacing
+			dev_ptrs->c_lut,		// DEBUG
+			dev_ptrs->q_lut,		// DEBUG
+			dev_ptrs->coeff,		// DEBUG
+			threads_per_block);		// # threads (to be removed)
+
+	checkCUDAError ("kernel hist_mov");
+
+	int num_sub_hists = num_blocks;
+
+
+	// Merge sub-histograms
+	threads_per_block = 512;
+	dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
+	dim3 dimBlock2 (threads_per_block, 1, 1);
+	smemSize = i * sizeof(float);
+	
+	// this kernel can be ran with any thread-block size
+	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+					dev_ptrs->m_hist,
+					dev_ptrs->m_hist_seg,
+					num_sub_hists);
+
+	checkCUDAError ("kernel hist_mov_merge");
+					
+	// DEBUG
+/*
+	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
+	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
+	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+	cudaMemcpy (m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
+
+	mi_hist->f_hist = f_hist;
+	mi_hist->m_hist = m_hist;
+
+	dump_xpm_hist (mi_hist, "test", 0);
+	dump_hist (mi_hist, "test.txt");
+*/
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Generates many sub-histograms of the fixed image
+//
+// NOTE: The main focus of this kernel is to avoid shared memory
+//       bank conflicts.
+////////////////////////////////////////////////////////////////////////////////
+__global__ void k_bspline_cuda_MI_a_hist_fix (
+					float* f_hist_seg,
+					float* fixed,
+					float offset,
+					float delta,
+					long bins,
+					int nthreads)
+{
+	int bin;
+	int stride;
+
+
+	// -- Setup Thread Attributes -----------------------------
+	int blockIdxInGrid = (gridDim.x * blockIdx.y) + blockIdx.x;
+	int blockOffset = blockIdxInGrid * blockDim.x;
+	int voxel_idx = blockOffset + threadIdx.x;
+	// --------------------------------------------------------
+
+
+	// -- Initialize Shared Memory ----------------------------
+	extern __shared__ float s_Fixed[];
+
+	for (long i=0; i < bins; i++)
+		s_Fixed[threadIdx.x + i*nthreads] = 0.0f;
+	// --------------------------------------------------------
+
+	__syncthreads();
+	
+	// -- Accumulate Into Segmented Histograms ----------------
+	for (int chunk=0; chunk < 1; chunk++)
+	{
+		stride = chunk * 64;
+		bin = (int)((fixed[voxel_idx + stride] - offset) * delta);
+		s_Fixed[threadIdx.x + bin*nthreads]++;
+	}
+	// --------------------------------------------------------
+
+	__syncthreads();
+
+	// -- Merge Segmented Histograms --------------------------
+	if (threadIdx.x < bins)
+	{
+		float sum = 0.0f;
+
+
+		// Stagger the starting shared memory bank
+		// access for each thread so as to prevent
+		// bank conflicts, which reasult in half
+		// warp difergence / serialization.
+		const int startPos = (threadIdx.x & 0x0F);
+		const int offset   = threadIdx.x * nthreads;
+
+		for (int i=0, accumPos = startPos; i < nthreads; i++)
+		{
+			sum += s_Fixed[offset + accumPos];
+			if (++accumPos == nthreads)
+				accumPos = 0;
+		}
+
+		f_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
+
+	}
+	// --------------------------------------------------------
+
+	// Done.
+	// We now have (num_thread_blocks) partial histograms that
+	// need to be merged.  This will be done with another
+	// kernel to be ran immediately following the completion
+	// of this kernel.
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Generates many sub-histograms of the moving image
+//
+//                 --- Neightborhood of 6 ---
+//
+// NOTE: The main focus of this kernel is to avoid shared memory
+//       bank conflicts.
+////////////////////////////////////////////////////////////////////////////////
+__global__ void k_bspline_cuda_MI_a_hist_mov (
+	float* m_hist_seg,	// partial histogram (moving image)
+	float* fixed,		// fixed  image voxels
+	float* moving,		// moving image voxels
+	float offset,		// histogram offset
+	float delta,		// histogram delta
+	long bins,		// # histogram bins
+	int3 vpr,		// voxels per region
+	int3 fdim,		// fixed  image dimensions
+	int3 mdim,		// moving image dimensions
+	int3 rdim,		//       region dimensions
+	float3 img_origin,	// image origin
+	float3 img_spacing,	// image spacing
+	float3 mov_offset,	// moving image offset
+	float3 mov_ps,		// moving image pixel spacing
+ 	int* c_lut,		// DEBUG
+	float* q_lut,		// DEBUG
+	float* coeff,		// DEBUG
+	int nthreads)		// # threads (to be removed)
+{
+	// -- Initialize Shared Memory ----------------------------
+	// Amount: 32 * # bins
+	extern __shared__ float s_Moving[];
+
+	for (long i=0; i < bins; i++)
+		s_Moving[threadIdx.x + i*nthreads] = 0.0f;
+	// --------------------------------------------------------
+
+
+	__syncthreads();
+
+
+	// -- Setup Thread Attributes -----------------------------
+	int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+	int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+	int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+	// --------------------------------------------------------
+
+	
+	// -- Only process threads that map to voxels -------------
+	if (thread_idxg > fdim.x * fdim.y * fdim.z)
+		return;
+	// --------------------------------------------------------
+
+
+	// -- Variables used by histogram -------------------------
+	long bin;
+	int  stride;
+	// --------------------------------------------------------
+
+
+	// -- Variables used by correspondence --------------------
+	int3 r;			// Voxel index (global)
+	int4 q;			// Voxel index (local)
+	int4 p;			// Tile index
+
+
+	float3 f;		// Distance from origin (in mm )
+	float3 m;		// Voxel Displacement   (in mm )
+	float3 n;		// Voxel Displacement   (in vox)
+	float3 d;		// Deformation vector
+
+	int3 miqs;		// PVI - 6 NBH
+	int3 mjqs;		//    Moving image pixel coords
+	int3 mkqs;
+
+	float3 fxqs;		// PVI - 6 NBH
+	float3 fyqs;		//    Interpolant fraction
+	float3 fzqs;
+	int mvf;
+
+
+	//   ----    ----    ----    ----    ----    ----    ----    
+	
+	r.z = thread_idxg / (fdim.x * fdim.y);
+	r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
+	r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+	
+	p.x = r.x / vpr.x;
+	p.y = r.y / vpr.y;
+	p.z = r.z / vpr.z;
+	p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
+
+	q.x = r.x - p.x * vpr.x;
+	q.y = r.y - p.y * vpr.y;
+	q.z = r.z - p.z * vpr.z;
+	q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+
+	f.x = img_origin.x + img_spacing.x * r.x;
+	f.y = img_origin.y + img_spacing.y * r.y;
+	f.z = img_origin.z + img_spacing.z * r.z;
+	// --------------------------------------------------------
+
+
+	// -- Compute deformation vector --------------------------
+	int cidx;
+	float P;
+
+	d.x = 0.0f;
+	d.y = 0.0f;
+	d.z = 0.0f;
+
+	for (int k=0; k < 64; k++)
+	{
+/*
+		// Texture Version
+		P = tex1Dfetch (tex_q_lut, 64*q.w + k);
+		cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
+
+		d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
+		d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
+		d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
+*/
+
+		// Global Memory Version
+		P = q_lut[64*q.w + k];
+		cidx = 3 * c_lut[64*p.w + k];
+
+		d.x += P * coeff[cidx + 0];
+		d.y += P * coeff[cidx + 1];
+		d.z += P * coeff[cidx + 2];
+	}
+	// --------------------------------------------------------
+
+
+	// -- Correspondence --------------------------------------
+	m.x = f.x + d.x;
+	m.y = f.y + d.y;
+	m.z = f.z + d.z;
+
+	// n.x = m.i  etc
+	n.x = (m.x - mov_offset.x) / mov_ps.x;
+	n.y = (m.y - mov_offset.y) / mov_ps.y;
+	n.z = (m.z - mov_offset.z) / mov_ps.z;
+
+	if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
+	    n.y < -0.5 || n.y > mdim.y - 0.5 ||
+	    n.z < -0.5 || n.z > mdim.z - 0.5)
+	{
+		// -->> skipped voxel logic here <<--
+		return;
+	}
+	// --------------------------------------------------------
+
+
+	// -- Compute quadratic interpolation fractions -----------
+	float t, t2, t22;
+	float marf;
+	long mari;
+
+	// --- - x - ---
+	marf = (float)((long)(n.x + 0.5));
+	mari = (long)(n.x + 0.5);
+	t = n.x - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fxqs.x = t22;
+	fxqs.y = -t2 + t + 0.5;
+	fxqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	miqs.x = mari - 1;
+	miqs.y = mari;
+	miqs.z = mari + 1;
+
+	// --- - y - ---
+	marf = (float)((long)(n.y + 0.5));
+	mari = (long)(n.y + 0.5);
+	t = n.y - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fyqs.x = t22;
+	fyqs.y = -t2 + t + 0.5;
+	fyqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	mjqs.x = mari - 1;
+	mjqs.y = mari;
+	mjqs.z = mari + 1;
+
+	
+	// --- - z - ---
+	marf = (float)((long)(n.z + 0.5));
+	mari = (long)(n.z + 0.5);
+	t = n.z - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fzqs.x = t22;
+	fzqs.y = -t2 + t + 0.5;
+	fzqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	mkqs.x = mari - 1;
+	mkqs.y = mari;
+	mkqs.z = mari + 1;
+
+	// --- Bounds checking
+	if (miqs.x < 0) miqs.x = 0;
+	if (miqs.y < 0) miqs.y = 0;
+	if (miqs.z < 0) miqs.z = 0;
+	if (mjqs.x < 0) mjqs.x = 0;
+	if (mjqs.y < 0) mjqs.y = 0;
+	if (mjqs.z < 0) mjqs.z = 0;
+	if (mkqs.x < 0) mkqs.x = 0;
+	if (mkqs.y < 0) mkqs.y = 0;
+	if (mkqs.z < 0) mkqs.z = 0;
+	// --------------------------------------------------------
+
+	__syncthreads();
+	
+	// -- Accumulate Into Segmented Histograms ----------------
+	float midx;
+	float mf_1, mf_2;
+	float amt;
+
+
+
+	// --- -- - BIN #1 - -- ---
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fxqs.y + fyqs.y + fzqs.y);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #2 - -- ---
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fxqs.x);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #3 - -- ---
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.z;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fxqs.z);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #4 - -- ---
+	mvf = (mkqs.y * mdim.y + mjqs.x) * mdim.x + miqs.y;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fyqs.x);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #5 - -- ---
+	mvf = (mkqs.y * mdim.y + mjqs.z) * mdim.x + miqs.y;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fyqs.z);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #6 - -- ---
+	mvf = (mkqs.x * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fzqs.x);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+
+	// --- -- - BIN #7 - -- ---
+	mvf = (mkqs.z * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	midx = (moving[mvf] - offset) * delta;
+	bin = (long)(midx);
+	mf_1 = midx - (float)((long)(midx));
+	mf_2 = 1.0f - mf_1;
+	amt = 1/3 * (fzqs.z);
+	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
+	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+	// --------------------------------------------------------
+
+	__syncthreads();
+
+	// -- Merge Segmented Histograms --------------------------
+	if (threadIdx.x < bins)
+	{
+		float sum = 0.0f;
+
+
+		// Stagger the starting shared memory bank
+		// access for each thread so as to prevent
+		// bank conflicts, which reasult in half
+		// warp difergence / serialization.
+		const int startPos = (threadIdx.x & 0x0F);
+		const int offset   = threadIdx.x * nthreads;
+
+		for (int i=0, accumPos = startPos; i < nthreads; i++)
+		{
+			sum += s_Moving[offset + accumPos];
+			if (++accumPos == nthreads)
+				accumPos = 0;
+		}
+
+		m_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
+
+	}
+	// --------------------------------------------------------
+
+	// Done.
+	// We now have (num_thread_blocks) partial histograms that
+	// need to be merged.  This will be done with another
+	// kernel to be ran immediately following the completion
+	// of this kernel.
+
+	//NOTE:
+	// fv = thread_idxg
+	// fi = r.x
+	// fj = r.y
+	// fk = r.z
+}
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Merge Partial/Segmented Histograms
+//
+//   This kernel is designed to be executed after k_bspline_cuda_MI_a_hist_fix 
+//   has genereated many partial histograms (equal to the number of thread-
+//   blocks k_bspline_cuda_MI_a_hist_fix() was executed with).  Depending on
+//   the image size, this could be as high as hundredes of thousands of
+//   partial histograms needing to be merged.
+//
+//   >> Each thread-block is responsible for a bin number.
+//
+//   >> A thread-block will use multiple threads to pull down
+//      multiple partial histogram bin values in parallel.
+//
+//   >> Because there are many more partial histograms than threads,
+//      the threads in a thread-block will have to iterate through
+//      all of the partial histograms using a for-loop.
+//
+//   >> The # of for-loop iterations is equal to the number of
+//      partial histograms divided by the number of threads in a block.
+//
+//   >> Therefore, this kernel should be launched with:
+//
+//      -- num_seg_hist % num_threads = 0     (num_seg_hist % blockDim.x = 0)
+//      -- num_blocks = num_bins
+//
+//   >> This means that a search must be executed to find the largest #
+//      of threads that can fit within the number of partial histograms
+//      we have.  This will exhibit the largest amount of parallelism.
+//
+////////////////////////////////////////////////////////////////////////////////
+__global__ void k_bspline_cuda_MI_a_hist_fix_merge (
+			float *f_hist,
+			float *f_hist_seg,
+			long num_seg_hist)
+
+{
+	extern __shared__ float data[];
+
+	float sum = 0.0f;
+
+	// -- Work through all the sub-histograms ------------------------
+	for (long i = threadIdx.x; i < num_seg_hist; i += blockDim.x)
+		sum += f_hist_seg[blockIdx.x + i * gridDim.x];
+
+	data[threadIdx.x] = sum;
+	// ---------------------------------------------------------------
+
+	__syncthreads();
+
+	// -- Sum all of the thread sums for this bin --------------------
+	for (long s = blockDim.x / 2; s > 0; s >>= 1)
+	{
+
+		if (threadIdx.x < s)
+			data[threadIdx.x] += data[threadIdx.x + s];
+
+		__syncthreads();
+	}
+	// ---------------------------------------------------------------
+
+
+	// -- Write the final bin value to Global ------------------------
+	if (threadIdx.x == 0)
+		f_hist[blockIdx.x] = data[0];
+	// ---------------------------------------------------------------
+
+	// Done.
+}
+
+
+
 /**
  * Calculates the B-spline score and gradient using CUDA implementation J.
  *
