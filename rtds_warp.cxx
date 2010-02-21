@@ -106,11 +106,7 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 {
     Cxt_to_mha_state ctm_state;
 
-    printf ("--- 1\n");cxt_debug (cxt);
-
     cxt_to_mha_init (&ctm_state, cxt, true, true, true);
-
-    printf ("--- 2\n");cxt_debug (cxt);
 
     while (cxt_to_mha_process_next (&ctm_state, cxt)) {
 	/* Write out prefix images */
@@ -124,8 +120,6 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	}
     }
 
-    printf ("--- 3\n");cxt_debug (cxt);
-
     /* Write out labelmap, ss_img */
     if (parms->output_labelmap_fn[0]) {
 	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
@@ -135,8 +129,6 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
 	plm_image_save_vol (parms->output_ss_img, ctm_state.ss_img_vol);
     }
-
-    printf ("--- 4\n");cxt_debug (cxt);
 
     /* Write out list of structure names */
     if (parms->output_ss_list[0]) {
