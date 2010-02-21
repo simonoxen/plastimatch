@@ -72,6 +72,7 @@ parse_args (Program_Parms* parms, int argc, char* argv[])
     parms->labelmap_fn[0] = 0;
     parms->xormap_fn[0] = 0;
     parms->xorlist_fn[0] = 0;
+    parms->fixed_fn[0] = 0;
     parms->prefix[0] = 0;
 
     while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {

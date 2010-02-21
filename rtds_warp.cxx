@@ -80,7 +80,6 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_cxt = cxt_create ();
 	    gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
-	    printf ("gdcm_rtss_load complete.\n");
 	    //rtss_warp (&parms);
 	    break;
 	case PLM_FILE_FMT_CXT:
@@ -107,7 +106,11 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 {
     Cxt_to_mha_state ctm_state;
 
+    printf ("--- 1\n");cxt_debug (cxt);
+
     cxt_to_mha_init (&ctm_state, cxt, true, true, true);
+
+    printf ("--- 2\n");cxt_debug (cxt);
 
     while (cxt_to_mha_process_next (&ctm_state, cxt)) {
 	/* Write out prefix images */
@@ -120,6 +123,9 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	    plm_image_save_vol (fn, ctm_state.uchar_vol);
 	}
     }
+
+    printf ("--- 3\n");cxt_debug (cxt);
+
     /* Write out labelmap, ss_img */
     if (parms->output_labelmap_fn[0]) {
 	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
@@ -129,6 +135,8 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
 	plm_image_save_vol (parms->output_ss_img, ctm_state.ss_img_vol);
     }
+
+    printf ("--- 4\n");cxt_debug (cxt);
 
     /* Write out list of structure names */
     if (parms->output_ss_list[0]) {

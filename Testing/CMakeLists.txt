@@ -398,6 +398,31 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch convert cxt
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-cxt"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom.cxt;--output-ss-img;chest-phantom-cxt.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/chest-phantom-cxt.txt"
+  )
+PLM_ADD_TEST (
+  "plm-convert-cxt-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;chest-phantom-cxt.mha"
+  )
+ADD_TEST (
+  "plm-convert-cxt-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=1.05"
+  "-DUPPER_THRESH=1.06"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch convert xio
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (

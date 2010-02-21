@@ -12,13 +12,15 @@ extern "C" {
 
 plastimatch1_EXPORT
 void
-render_slice_polyline (unsigned char* acc_img,
-		    int* dims,
-		    float* spacing,
-		    float* offset, 
-		    int num_vertices,
-		    float* x,
-		    float* y);
+render_slice_polyline (
+    unsigned char* acc_img,
+    int* dims,
+    float* spacing,
+    float* offset,
+    int num_vertices,
+    float* x_in,           /* vertices in mm */
+    float* y_in            /* vertices in mm */
+);
 
 #if defined __cplusplus
 }

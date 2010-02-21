@@ -96,12 +96,23 @@ cxt_debug (Cxt_structure_list* cxt)
 
     for (i = 0; i < cxt->num_structures; i++) {
         curr_structure = &cxt->slist[i];
-	printf ("%d %d %s (%p) (%d contours)\n", 
+	printf ("%d %d %s (%p) (%d contours)", 
 	    i, curr_structure->id, 
 	    curr_structure->name, 
 	    curr_structure->pslist,
 	    curr_structure->num_contours
 	);
+	if (curr_structure->num_contours) {
+	    if (curr_structure->pslist[0].num_vertices) {
+		printf (" [%f,%f,%f,...]",
+		    curr_structure->pslist[0].x[0],
+		    curr_structure->pslist[0].y[0],
+		    curr_structure->pslist[0].z[0]);
+	    } else {
+		printf (" <no vertices>");
+	    }
+	}
+	printf ("\n");
     }
 }
 

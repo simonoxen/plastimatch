@@ -12,6 +12,7 @@
 #include "gdcmUtil.h"
 
 #include "cxt.h"
+#include "file_util.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"
@@ -65,21 +66,30 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
     if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
 	print_and_exit ("Error.  Input file not an RT structure set: %s\n",
-			rtss_fn);
+	    rtss_fn);
     }
 
     /* Got the RT struct.  Try to load the corresponding CT. */
     if (dicom_dir && dicom_dir[0]) {
 	gs.load (dicom_dir);
-	gs.get_best_ct ();
-	if (gs.m_have_ct) {
-	    int d;
-	    structures->have_geometry = 1;
-	    for (d = 0; d < 3; d++) {
-		structures->offset[d] = gs.m_origin[d];
-		structures->dim[d] = gs.m_dim[d];
-		structures->spacing[d] = gs.m_spacing[d];
-	    }
+    } else {
+	/* Caller did not specify dicom_dir.  Try same directory as 
+	   rtss file */
+	printf ("rtss_fn = %s\n", rtss_fn);
+	char *dir = file_util_dirname (rtss_fn);
+	printf ("dir = %s\n", dir);
+	gs.load (dir);
+	printf ("Successful load\n");
+	free (dir);
+    }
+    gs.get_best_ct ();
+    if (gs.m_have_ct) {
+	int d;
+	structures->have_geometry = 1;
+	for (d = 0; d < 3; d++) {
+	    structures->offset[d] = gs.m_origin[d];
+	    structures->dim[d] = gs.m_dim[d];
+	    structures->spacing[d] = gs.m_spacing[d];
 	}
     }
 
@@ -107,8 +117,9 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	structures->study_id = bfromcstr (tmp.c_str());
     }
 
-    /* If we have a CT series, get the uids from there */
-    if (gs.m_have_ct) {
+    /* If caller specified dicom_dir, and we found a CT in the directory, 
+       get the uids from there */
+    if (dicom_dir && dicom_dir[0] && gs.m_have_ct) {
 	gdcm::File *ct_file = gs.get_ct_slice ();
 	
 	/* StudyInstanceUID */
@@ -124,7 +135,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	structures->ct_fref_uid = bfromcstr (tmp.c_str());
     } 
 
-    /* Otherwise, no CT series, so we get the UIDs from the RT structure set */
+    /* Otherwise get the UIDs from the RT structure set */
     else {
 
 	/* StudyInstanceUID */
@@ -145,14 +156,14 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	
 		/* RTReferencedStudySequence */
 		gdcm::SeqEntry *rtrstudy_seq 
-			= item->GetSeqEntry (0x3006, 0x0012);
+		    = item->GetSeqEntry (0x3006, 0x0012);
 		if (rtrstudy_seq) {
 	
 		    /* RTReferencedSeriesSequence */
 		    item = rtrstudy_seq->GetFirstSQItem ();
 		    if (item) {
 			gdcm::SeqEntry *rtrseries_seq 
-				= item->GetSeqEntry (0x3006, 0x0014);
+			    = item->GetSeqEntry (0x3006, 0x0014);
 			if (rtrseries_seq) {
 			    item = rtrseries_seq->GetFirstSQItem ();
 
@@ -161,7 +172,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 				tmp = item->GetEntryValue (0x0020, 0x000e);
 				if (tmp != gdcm::GDCM_UNFOUND) {
 				    structures->ct_series_uid 
-					    = bfromcstr (tmp.c_str());
+					= bfromcstr (tmp.c_str());
 				}
 			    }
 			}
@@ -291,8 +302,8 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 		/* Find matching CT slice at this z location */
 		if (gs.m_have_ct) {
 		    gs.get_slice_info (&curr_polyline->slice_no,
-				       &curr_polyline->ct_slice_uid,
-				       curr_polyline->z[0]);
+			&curr_polyline->ct_slice_uid,
+			curr_polyline->z[0]);
 		}
 	    }
 	}

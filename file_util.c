@@ -102,6 +102,32 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+/* Caller must free memory */
+char*
+file_util_dirname (const char *filename)
+{
+    char *tmp = 0;
+    char *p = 0, *q = 0;
+
+    if (!filename) return tmp;
+
+    p = tmp = strdup (filename);
+    while (*p) {
+	if (ISSLASH (*p)) {
+	    q = p;
+	}
+	p ++;
+    }
+    if (q) {
+	*q = 0;
+	return tmp;
+    } else {
+	/* No directory separators -- return "." */
+	free (tmp);
+	return strdup (".");
+    }
+}
+
 void
 strip_extension (char* filename)
 {

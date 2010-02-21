@@ -67,29 +67,34 @@ print_edges (Edge* p)
 
 
 void
-render_slice_polyline (unsigned char* acc_img,
-		    int* dims,
-		    float* spacing,
-		    float* offset,
-		    int num_vertices,
-		    float* x,
-		    float* y)
+render_slice_polyline (
+    unsigned char* acc_img,
+    int* dims,
+    float* spacing,
+    float* offset,
+    int num_vertices,
+    float* x_in,           /* vertices in mm */
+    float* y_in            /* vertices in mm */
+)
 {
     unsigned char* imgp;
     Edge** edge_table;
     Edge* edge_list;	    /* Global edge list */
     Edge* ael;		    /* Active edge list */
     int i;
+    float *x, *y;           /* vertices in pixel coordinates */
 
     /* Check if last vertex == first vertex.  If so, remove it. */
-    if (x[num_vertices-1]==x[0] && y[num_vertices-1]==y[0]) {
+    if (x_in[num_vertices-1] == x_in[0] && y_in[num_vertices-1] == y_in[0]) {
 	num_vertices --;
     }
 
-    /* Destructively convert to image coordinates */
+    /* Convert from mm to pixel coordinates */
+    x = (float*) malloc (sizeof (float) * num_vertices);
+    y = (float*) malloc (sizeof (float) * num_vertices);
     for (i = 0; i < num_vertices; i++) {
-	x[i] = (x[i] - offset[0]) / spacing[0];
-	y[i] = (y[i] - offset[1]) / spacing[1];
+	x[i] = (x_in[i] - offset[0]) / spacing[0];
+	y[i] = (y_in[i] - offset[1]) / spacing[1];
     }
 
     /* Make edge table */
@@ -122,7 +127,7 @@ render_slice_polyline (unsigned char* acc_img,
 	/* Insert into edge_table */
 #if defined (commentout)
 	printf ("[y:%g %g, x:%g %g] -> [y:%d %d, x:%g (%g)]\n", y[b], y[a], x[b], x[a],
-		ymin, ymax, edge_list[i].x, edge_list[i].xincr);
+	    ymin, ymax, edge_list[i].x, edge_list[i].xincr);
 #endif
         insert_ordered_by_x (&edge_table[ymin], &edge_list[i]);
     }
@@ -216,6 +221,8 @@ render_slice_polyline (unsigned char* acc_img,
     }
 
     /* Free things up */
+    free (x);
+    free (y);
     free (edge_table);
     free (edge_list);
 }

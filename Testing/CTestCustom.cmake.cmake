@@ -45,6 +45,9 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-dicom-rtss-b"
     "plm-convert-dicom-rtss-stats-b"
     "plm-convert-dicom-rtss-check-b"
+    "plm-convert-cxt"
+    "plm-convert-cxt-stats"
+    "plm-convert-cxt-check"
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 

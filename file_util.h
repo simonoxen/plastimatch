@@ -31,6 +31,9 @@ gpuit_EXPORT
 void make_directory_recursive (const char *dirname);
 gpuit_EXPORT
 void strip_extension (char* filename);
+gpuit_EXPORT
+char*
+file_util_dirname (const char *filename);
 
 #if defined __cplusplus
 }
