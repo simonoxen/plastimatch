@@ -353,8 +353,14 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
 
+    /* From Chang-Yu Wang: 
+       Some dicom validation toolkit (such as DVTK dicom editor)
+       required the TransferSyntaxUID tag, and commenting out 
+       gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_rtss.cxx 
+       will cause failure to read in. */
+
     /* TransferSyntaxUID */
-    //    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
+    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
     /* InstanceCreationTime */
