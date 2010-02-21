@@ -13,6 +13,15 @@
 #define LOOP1 2000
 #define LOOP2 20000
 
+void
+initialize_vector (double input[LOOP1])
+{
+    int i;
+    for (i = 0; i < LOOP1; i++) {
+	input[i] = sqrt ((double) i);
+    }
+}
+
 #if (OPENMP_FOUND)
 void
 display_num_threads (void)
@@ -23,7 +32,7 @@ display_num_threads (void)
     {
 	/* Obtain and print thread id */
 	tid = omp_get_thread_num();
-	printf("Hello World from thread = %d\n", tid);
+	//printf("Hello World from thread = %d\n", tid);
 
 	/* Only master thread does this */
 	if (tid == 0) 
@@ -36,13 +45,13 @@ display_num_threads (void)
 }
 
 void
-speedtest_openmp_1 (void)
+speedtest_openmp_1 (double output[LOOP1], double input[LOOP1])
 {
     int i;
 #pragma omp parallel for
     for (i = 0; i < LOOP1; i++) {
 	int j;
-	double d1 = 0.0;
+	double d1 = input[i];
 	double d2 = 1.0;
 	for (j = 0; j < LOOP2; j++) {
 	    d1 += 0.872013;
@@ -51,17 +60,17 @@ speedtest_openmp_1 (void)
 		d2 -= floor(d2);
 	    }
 	}
+	output[i] = d2;
     }
 }
 
 void
-speedtest_openmp_2 (void)
+speedtest_openmp_2 (double output[LOOP1], double input[LOOP1])
 {
     int i;
-    double d1, d2;
     for (i = 0; i < LOOP1; i++) {
 	int j;
-	double d1 = 0.0;
+	double d1 = input[i];
 	double d2 = 1.0;
 	for (j = 0; j < LOOP2; j++) {
 	    d1 += 0.872013;
@@ -70,6 +79,7 @@ speedtest_openmp_2 (void)
 		d2 -= floor(d2);
 	    }
 	}
+	output[i] = d2;
     }
 }
 #endif /* OPENMP_FOUND */
@@ -79,15 +89,19 @@ main (int argc, char* argv[])
 {
     Timer timer;
 
+    double input[LOOP1], output[LOOP1];
+
 #if (OPENMP_FOUND)
     display_num_threads ();
+    initialize_vector (input);
     plm_timer_start (&timer);
-    speedtest_openmp_1 ();
-    printf ("Time = %f seconds\n", plm_timer_report (&timer));
+    speedtest_openmp_1 (output, input);
+    printf ("Time [openmp] = %f seconds\n", plm_timer_report (&timer));
 
+    initialize_vector (input);
     plm_timer_start (&timer);
-    speedtest_openmp_2 ();
-    printf ("Time = %f seconds\n", plm_timer_report (&timer));
+    speedtest_openmp_2 (output, input);
+    printf ("Time [serial] = %f seconds\n", plm_timer_report (&timer));
 
 #else
     printf ("Sorry, openmp was not supported by your compiler\n");
