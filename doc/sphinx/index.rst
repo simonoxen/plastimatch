@@ -58,6 +58,7 @@ Contents:
    utility_programs
    cxt_file_format
    dicom_conformance
+   other_toolkits
 
 
 Indices and tables
