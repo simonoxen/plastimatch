@@ -13,7 +13,7 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt_io.h"
+#include "cxt.h"
 #include "gdcm_series.h"
 #include "gdcm_series_helper_2.h"
 #include "math_util.h"

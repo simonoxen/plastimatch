@@ -379,7 +379,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-rtss-b"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;chest-phantom-structures-b.mha;--fixed;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicom.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;chest-phantom-structures-b.mha;--fixed;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicom.mha;--output-cxt;${PLM_TESTING_BUILD_DIR}/chest-phantom.cxt"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-rtss-stats-b"

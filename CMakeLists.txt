@@ -503,6 +503,7 @@ ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
+	cxt.cxx cxt.h 
 	cxt_io.cxx cxt_io.h 
 	cxt_to_mha.cxx cxt_to_mha.h 
 	gcs_metric.h gcs_metric.hxx 

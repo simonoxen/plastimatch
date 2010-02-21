@@ -15,7 +15,7 @@
 #include "slice_extract.h"
 #include "itkAndConstantToImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "cxt_io.h"
+#include "cxt.h"
 #include "cxt_extract.h"
 
 #if defined (commentout)

@@ -12,7 +12,7 @@
 #include "gdcmUtil.h"
 
 #include "cxt_apply_dicom.h"
-#include "cxt_io.h"
+#include "cxt.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"

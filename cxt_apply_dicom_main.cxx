@@ -7,7 +7,7 @@
 #include "getopt.h"
 #include "plm_path.h"
 #include "cxt_apply_dicom.h"
-#include "cxt_io.h"
+#include "cxt.h"
 
 class Program_parms {
 public:

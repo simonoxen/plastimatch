@@ -15,7 +15,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "cxt_io.h"
+#include "cxt.h"
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_path.h"

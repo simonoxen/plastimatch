@@ -15,7 +15,7 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
-#include "cxt_io.h"
+#include "cxt.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "print_and_exit.h"
