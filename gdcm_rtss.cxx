@@ -23,11 +23,12 @@
 # undef GetCurrentTime
 #endif
 
-/* Gdcm has broken header file gdcmCommon.h, which defines C99 types 
-   (e.g. int32_t) when missing (e.g. MSVC), but does so in an incorrect way.
-   This conflicts with plm_int.h, which also fixes missing C99 types.  
+/* Gdcm has a broken header file gdcmCommon.h, which defines C99 types 
+   (e.g. int32_t) when missing on MSVC.  However, it does so in an incorrect 
+   way.  This conflicts with plm_int.h, which also fixes missing C99 types.  
    The workaround is to separately define the functions in flie_util.h 
    that we need. */
+extern "C"
 gpuit_EXPORT
 char* file_util_dirname (const char *filename);
 
