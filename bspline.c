@@ -575,6 +575,9 @@ bspline_xform_initialize
 				  * bxf->vox_per_rgn[1] 
 				  * bxf->vox_per_rgn[2] 
 				  * 64);
+    if (!bxf->q_lut) {
+	print_and_exit ("Error allocating memory for q_lut\n");
+    }
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
@@ -614,7 +617,6 @@ bspline_xform_initialize
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
 	    for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-
 		for (tz = 0; tz < 4; tz++) {
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
@@ -622,7 +624,6 @@ bspline_xform_initialize
 			}
 		    }
 		}
-
 	    }
 	}
     }
