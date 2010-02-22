@@ -2,13 +2,18 @@ Other Toolkits
 ==============
 
 Plastimatch is not the only choice for deformable image registration.
-Please feel free to try out some of these other great software, and use 
-the one which best fits your needs.
+Please try out some of these other great software, and use 
+the ones which best fits your needs.
 
 Open Source Toolkits
 --------------------
 
 The following software are available under open source licenses.
+
+ANTS
+  http://www.picsl.upenn.edu/ANTS/
+
+  License: BSD
 
 BRAINSFit
   http://www.nitrc.org/projects/multimodereg/
@@ -21,12 +26,12 @@ Dirart
   License: GPL 3
 
 Elastix
-  http://elastix.isi.uu.nl/index.php
+  http://elastix.isi.uu.nl/
 
   License: BSD
 
 ITK
-  http://www.itk.org/ITK/resources/software.html
+  http://www.itk.org/
 
   License: BSD
 
@@ -52,10 +57,10 @@ BioImage Suite
 
   License: The software is GPL, but the download link is password protected.
 
-Irtk/Ixico
-  http://www.doc.ic.ac.uk/~dr/software/
+Drop
+  http://www.mrf-registration.net
 
-  License: Research use only
+  License: Non-commercial use only
 
 FLIRT
   http://www.fmrib.ox.ac.uk/fsl/fsl/downloading.html
@@ -71,6 +76,11 @@ HAMMER
   http://www.nitrc.org/projects/hammer/
 
   License: Non-commercial use only
+
+Irtk/Ixico
+  http://www.doc.ic.ac.uk/~dr/software/
+
+  License: Research use only
 
 .. Commercial Toolkits
 .. -------------------
