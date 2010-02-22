@@ -12,7 +12,6 @@
 #include "gdcmUtil.h"
 
 #include "cxt.h"
-#include "file_util.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"
@@ -23,6 +22,14 @@
 #if defined GetCurrentTime
 # undef GetCurrentTime
 #endif
+
+/* Gdcm has broken header file gdcmCommon.h, which defines C99 types 
+   (e.g. int32_t) when missing (e.g. MSVC), but does so in an incorrect way.
+   This conflicts with plm_int.h, which also fixes missing C99 types.  
+   The workaround is to separately define the functions in flie_util.h 
+   that we need. */
+gpuit_EXPORT
+char* file_util_dirname (const char *filename);
 
 /* This function probes whether or not the file is a dicom rtss format */
 bool
