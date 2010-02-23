@@ -45,21 +45,17 @@ Plastimatch lacks the following:
 * Surface matching registration
 * Non-volumetric registration (e.g. 2D-2D or 2D-3D)
 
-Contents:
+For more information:
+
+* `Download page (svn) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=AccessInfo>`_
+* `License (BSD-style) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=browse&path=%2F*checkout*%2Fplastimatch%2Ftrunk%2FLICENSE.TXT&revision=1>`_
+
+Documentation:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   getting_started
-   command_reference
-   registration
-   drr
-   cbct
-   utility_programs
-   cxt_file_format
-   dicom_conformance
-   other_toolkits
-
+   contents
 
 .. Indices and tables
 .. ==================

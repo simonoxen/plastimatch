@@ -3,7 +3,7 @@ Other Toolkits
 
 Plastimatch is not the only choice for deformable image registration.
 Please try out some of these other great software, and use 
-the ones which best fits your needs.
+the ones which fit your needs.
 
 Open Source Toolkits
 --------------------
