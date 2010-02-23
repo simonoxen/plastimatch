@@ -1,15 +1,10 @@
-.. plastimatch documentation master file, created by
-   sphinx-quickstart on Sat Feb  6 10:25:18 2010.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to plastimatch
 ======================
 
 Plastimatch is an open source software for deformable image registration. 
 It is designed for high-performance
 volumetric registration of medical images, such as 
-X-ray computed tomography (CT), magnetic resonant imaging (MRI), 
+X-ray computed tomography (CT), magnetic resonance imaging (MRI), 
 and positron emission tomography (PET). Software features include:
 
 * B-spline method for deformable image registration 
@@ -23,7 +18,7 @@ and positron emission tomography (PET). Software features include:
 * Landmark-based deformable registration using thin-plate splines for 
   global registration
 * Landmark-based deformable registration using radial basis functions 
-  for local corrections of deformable registration
+  for local corrections
 * Broad support for 3D image file formats (using ITK), including 
   Dicom, Nifti, NRRD, MetaImage, and Analyze
 * Dicom and DicomRT import and export
