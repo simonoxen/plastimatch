@@ -116,38 +116,40 @@ void bspline_cuda_MI_a (
 		Dev_Pointers_Bspline *dev_ptrs)
 {
 
-    // --- DECLARE LOCAL VARIABLES ------------------------------
-    BSPLINE_Score* ssd;		// Holds the SSD "Score" information
-    int num_vox;		// Holds # of voxels in the fixed volume
-    float ssd_grad_norm;	// Holds the SSD Gradient's Norm
-    float ssd_grad_mean;	// Holds the SSD Gradient's Mean
-    Timer timer;
-    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+	// --- DECLARE LOCAL VARIABLES ------------------------------
+	BSPLINE_Score* ssd;	// Holds the SSD "Score" information
+	int num_vox;		// Holds # of voxels in the fixed volume
+	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
+	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
+	Timer timer;
+	BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
-    static int it=0;	// Holds Iteration Number
-    char debug_fn[1024];	// Debug message buffer
-    FILE* fp;		// File Pointer to Debug File
-    // ----------------------------------------------------------
+	static int it=0;	// Holds Iteration Number
+	char debug_fn[1024];	// Debug message buffer
+	FILE* fp;		// File Pointer to Debug File
+	int i;
+	// ----------------------------------------------------------
 
 
-    // --- INITIALIZE LOCAL VARIABLES ---------------------------
-    ssd = &bst->ssd;
+	// --- INITIALIZE LOCAL VARIABLES ---------------------------
+	ssd = &bst->ssd;
 	
-    if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "w");
-    }
-    // ----------------------------------------------------------
+	if (parms->debug) {
+		sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+		fp = fopen (debug_fn, "w");
+	}
+	// ----------------------------------------------------------
 
 
-    plm_timer_start (&timer);	// <=== START TIMING HERE
+	plm_timer_start (&timer);	// <=== START TIMING HERE
 
 	
-    // --- INITIALIZE GPU MEMORY --------------------------------
-    bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
-//    bspline_cuda_h_clear_score(dev_ptrs);
-//    bspline_cuda_h_clear_grad(dev_ptrs);
-    // ----------------------------------------------------------
+	// --- INITIALIZE GPU MEMORY --------------------------------
+	bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
+//	bspline_cuda_h_clear_score(dev_ptrs);
+//	bspline_cuda_h_clear_grad(dev_ptrs);
+	// ----------------------------------------------------------
+
 
 	plm_timer_start (&timer);	// <=== START TIMING HERE
 	

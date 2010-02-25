@@ -293,7 +293,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 	threads_per_block = 512;
 	dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
 	dim3 dimBlock2 (threads_per_block, 1, 1);
-	smemSize = i * sizeof(float);
+	smemSize = 512 * sizeof(float);
 	
 	// this kernel can be ran with any thread-block size that
 	// contains a power of 2 # threads.
@@ -434,12 +434,22 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	int num_sub_hists = num_blocks;
 
+/*
+	float* gpu_debug = (float*)malloc(dev_ptrs->m_hist_seg_size);
+	cudaMemcpy (gpu_debug, dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size, cudaMemcpyDeviceToHost);
+
+	for (int n = 0; n < 852529; n++)
+		fprintf (stderr, "[%10i] %f\n", n, gpu_debug[n]);
+
+
+	exit(0);
+*/
 
 	// Merge sub-histograms
 	threads_per_block = 512;
 	dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
 	dim3 dimBlock2 (threads_per_block, 1, 1);
-	smemSize = i * sizeof(float);
+	smemSize = 512 * sizeof(float);
 	
 	// this kernel can be ran with any thread-block size
 	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
@@ -450,7 +460,6 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 	checkCUDAError ("kernel hist_mov_merge");
 					
 	// DEBUG
-/*
 	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
 	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
 	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
@@ -461,7 +470,6 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	dump_xpm_hist (mi_hist, "test", 0);
 	dump_hist (mi_hist, "test.txt");
-*/
 
 }
 
@@ -608,6 +616,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 
 	// -- Variables used by correspondence --------------------
+	// -- (Block verified) ------------------------------------
 	int3 r;			// Voxel index (global)
 	int4 q;			// Voxel index (local)
 	int4 p;			// Tile index
@@ -660,7 +669,6 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	for (int k=0; k < 64; k++)
 	{
-/*
 		// Texture Version
 		P = tex1Dfetch (tex_q_lut, 64*q.w + k);
 		cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
@@ -668,20 +676,21 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 		d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
 		d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
 		d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
-*/
+
 
 		// Global Memory Version
-		P = q_lut[64*q.w + k];
-		cidx = 3 * c_lut[64*p.w + k];
-
-		d.x += P * coeff[cidx + 0];
-		d.y += P * coeff[cidx + 1];
-		d.z += P * coeff[cidx + 2];
+//		P = q_lut[64*q.w + k];
+//		cidx = 3 * c_lut[64*p.w + k];
+//
+//		d.x += P * coeff[cidx + 0];
+//		d.y += P * coeff[cidx + 1];
+//		d.z += P * coeff[cidx + 2];
 	}
 	// --------------------------------------------------------
 
 
 	// -- Correspondence --------------------------------------
+	// -- (Block verified) ------------------------------------
 	m.x = f.x + d.x;
 	m.y = f.y + d.y;
 	m.z = f.z + d.z;
@@ -707,7 +716,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	long mari;
 
 	// --- - x - ---
-	marf = (float)((long)(n.x + 0.5));
+	marf = (float)(n.x + 0.5);
 	mari = (long)(n.x + 0.5);
 	t = n.x - marf;
 	t2 = t * t;
@@ -715,7 +724,8 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	// Generate fxqs
 	fxqs.x = t22;
-	fxqs.y = -t2 + t + 0.5;
+//	fxqs.y = 1 - (t2 + t + 0.5);
+	fxqs.y = - t2 + t + 0.5;
 	fxqs.z = t22 - t + 0.5;
 
 	// Generate miqs
@@ -724,7 +734,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	miqs.z = mari + 1;
 
 	// --- - y - ---
-	marf = (float)((long)(n.y + 0.5));
+	marf = (float)(n.y + 0.5);
 	mari = (long)(n.y + 0.5);
 	t = n.y - marf;
 	t2 = t * t;
@@ -732,7 +742,8 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	// Generate fxqs
 	fyqs.x = t22;
-	fyqs.y = -t2 + t + 0.5;
+//	fyqs.y = 1 - (t2 + t + 0.5);
+	fyqs.y = - t2 + t + 0.5;
 	fyqs.z = t22 - t + 0.5;
 
 	// Generate miqs
@@ -742,7 +753,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	
 	// --- - z - ---
-	marf = (float)((long)(n.z + 0.5));
+	marf = (float)(n.z + 0.5);
 	mari = (long)(n.z + 0.5);
 	t = n.z - marf;
 	t2 = t * t;
@@ -750,7 +761,8 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	// Generate fxqs
 	fzqs.x = t22;
-	fzqs.y = -t2 + t + 0.5;
+//	fzqs.y = 1 - (t2 + t + 0.5);
+	fzqs.y = - t2 + t + 0.5;
 	fzqs.z = t22 - t + 0.5;
 
 	// Generate miqs
@@ -762,7 +774,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	if (miqs.x < 0) miqs.x = 0;
 	if (miqs.y < 0) miqs.y = 0;
 	if (miqs.z < 0) miqs.z = 0;
-	if (mjqs.x < 0) mjqs.x = 0;
+	if (mjqs.x < 0) mjqs.x = 0;	
 	if (mjqs.y < 0) mjqs.y = 0;
 	if (mjqs.z < 0) mjqs.z = 0;
 	if (mkqs.x < 0) mkqs.x = 0;
@@ -771,7 +783,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	// --------------------------------------------------------
 
 	__syncthreads();
-	
+
 	// -- Accumulate Into Segmented Histograms ----------------
 	float midx;
 	float mf_1, mf_2;
@@ -783,19 +795,24 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.y;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fxqs.y + fyqs.y + fzqs.y);
+	amt = (1.0/3.0) * (fxqs.y + fyqs.y + fzqs.y);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
+	// Verify miqs
+//	if (thread_idxg < 852529)
+//		m_hist_seg[thread_idxg] = amt;
+
+	
 	// --- -- - BIN #2 - -- ---
 	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fxqs.x);
+	amt = (1.0/3.0) * (fxqs.x);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
@@ -803,9 +820,9 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.z;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fxqs.z);
+	amt = (1.0/3.0) * (fxqs.z);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
@@ -813,9 +830,9 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.y * mdim.y + mjqs.x) * mdim.x + miqs.y;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fyqs.x);
+	amt = (1.0/3.0) * (fyqs.x);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
@@ -823,9 +840,9 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.y * mdim.y + mjqs.z) * mdim.x + miqs.y;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fyqs.z);
+	amt = (1.0/3.0) * (fyqs.z);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
@@ -833,9 +850,9 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.x * mdim.y + mjqs.y) * mdim.x + miqs.y;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fzqs.x);
+	amt = (1.0/3.0) * (fzqs.x);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
@@ -843,9 +860,9 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	mvf = (mkqs.z * mdim.y + mjqs.y) * mdim.x + miqs.y;
 	midx = (moving[mvf] - offset) * delta;
 	bin = (long)(midx);
-	mf_1 = midx - (float)((long)(midx));
+	mf_1 = midx - (float)((int)midx);
 	mf_2 = 1.0f - mf_1;
-	amt = 1/3 * (fzqs.z);
+	amt = (1.0/3.0) * (fzqs.z);
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 	// --------------------------------------------------------
