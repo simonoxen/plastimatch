@@ -118,6 +118,14 @@ pqt_database_start (QString db_path)
     }
 }
 
+void
+pqt_database_stop (void)
+{
+    printf ("Closing databse\n");
+    global_db.close ();
+    printf ("Done closing databse\n");
+}
+
 QSqlQuery
 pqt_database_query_data_source_label (void)
 {
@@ -157,9 +165,22 @@ pqt_database_insert_data_source (QString label, QString host,
 }
 
 void
-pqt_database_stop (void)
+pqt_database_delete_data_source (QString label, QString host, 
+    QString port, QString aet)
 {
-    printf ("Closing databse\n");
-    global_db.close ();
-    printf ("Done closing databse\n");
+    QString sql = QString (
+	"DELETE FROM data_source WHERE "
+	"label = \"%1\" AND host = \"%2\" AND port = \"%3\" AND aet = \"%4\";")
+	.arg (label)
+	.arg (host)
+	.arg (port)
+	.arg (aet);
+    
+    QTextStream(stdout) << sql << "\n";
+
+    QSqlQuery query;
+    if (!query.exec (sql)) {
+	print_database_error (query.lastError());
+	return;
+    }
 }

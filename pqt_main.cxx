@@ -33,7 +33,9 @@ initialize_application (void)
 	QString ("Config dir is %1").arg (config_dir));
 #endif
 
-    /* Construct filename of sqlite database that holds settings */
+    /* Construct filename of sqlite database that holds settings.
+       On unix, this is $HOME/.config/Plastimatch/pqt.sqlite
+    */
     QSettings settings;
     QString db_path = settings.value ("db/sqlite3_path", 
 	QFileInfo (QDir (config_dir), QString ("pqt.sqlite"))

@@ -64,7 +64,7 @@
      <x>0</x>
      <y>0</y>
      <width>975</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -85,7 +85,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionNew_data_source">
    <property name="text">
-    <string>&amp;New data source</string>
+    <string>&amp;Data source</string>
    </property>
   </action>
   <action name="actionQuit">

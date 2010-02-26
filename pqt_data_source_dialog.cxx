@@ -68,20 +68,28 @@ Pqt_data_source_dialog::pushbutton_save_released (void)
 	this->lineEdit_port->text(),
 	this->lineEdit_aet->text());
 
-    /* Refresh model - this also sets query index to -1 */
-    this->m_data_source_list_model->load_query ();
-
-    /* Update dialog box */
-    /* GCS FIX: This works correctly, but emits a Qt warning on the console */
-    this->m_active_index = -1;
-    update_fields ();
+    /* Refresh list model and dialog box fields */
+    this->refresh_from_database ();
 }
 
 void
 Pqt_data_source_dialog::pushbutton_delete_released (void)
 {
-    QMessageBox::information (0, QString ("Info"), 
-	QString ("Pushed delete"));
+    /* Do nothing if no data source is highlighted */
+    if (this->m_active_index == -1) {
+	return;
+    }
+
+    /* Delete the row from the database */
+    this->m_data_source_list_model->set_active_row (this->m_active_index);
+    pqt_database_delete_data_source (
+	this->m_data_source_list_model->get_label (),
+	this->m_data_source_list_model->get_host (),
+	this->m_data_source_list_model->get_port (),
+	this->m_data_source_list_model->get_aet ());
+
+    /* Refresh list model and dialog box fields */
+    this->refresh_from_database ();
 }
 
 void
@@ -108,4 +116,16 @@ Pqt_data_source_dialog::update_fields (void)
     this->lineEdit_port->setText (port);
     QString aet = this->m_data_source_list_model->get_aet ();
     this->lineEdit_aet->setText (aet);
+}
+
+void
+Pqt_data_source_dialog::refresh_from_database (void)
+{
+    /* Refresh model - this also sets query index to -1 */
+    this->m_data_source_list_model->load_query ();
+
+    /* Update dialog box */
+    /* GCS FIX: This works correctly, but emits a Qt warning on the console */
+    this->m_active_index = -1;
+    update_fields ();
 }

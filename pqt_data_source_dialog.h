@@ -38,6 +38,7 @@ public slots:
 
 public:
     int m_active_index;
+    void refresh_from_database (void);
     void update_fields (void);
 };
 #endif
