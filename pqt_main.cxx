@@ -7,6 +7,7 @@
 #include <QtGui>
 
 #include "pqt_database.h"
+#include "pqt_findscu.h"
 #include "pqt_main_window.h"
 
 static void

@@ -718,6 +718,7 @@ SET (PLASTIMATCH_QT_SRC
 	pqt_data_source_dialog.cxx pqt_data_source_dialog.h
 	pqt_data_source_list_model.cxx pqt_data_source_list_model.h
 	pqt_database.cxx pqt_database.h
+	pqt_findscu.cxx pqt_findscu.h
         pqt_main.cxx
 	pqt_main_window.cxx pqt_main_window.h
 	pqt_patient_list_model.cxx pqt_patient_list_model.h

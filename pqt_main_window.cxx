@@ -17,6 +17,16 @@ Pqt_main_window::Pqt_main_window ()
     /* Create data source dialog */
     m_data_source_dialog = new Pqt_data_source_dialog;
 
+    /* Query remote sources */
+    QSqlQuery query = pqt_database_query_data_source_label ();
+    while (query.next()) {
+	this->m_findscu.query (
+	    query.value(1).toString(),
+	    query.value(2).toString(),
+	    query.value(3).toString());
+    }
+    this->m_findscu.debug ();
+
     /* Attach model to QT table in main window */
     m_patient_list_model = new Pqt_patient_list_model;
     tableView->setModel (m_patient_list_model);

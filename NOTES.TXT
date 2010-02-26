@@ -1,3 +1,12 @@
+***** Writing to stdout in Qt *****
+
+    QTextStream(stdout) << QString("foo") << "\n";
+
+***** dgate quite ref (for wormwood) *****
+
+cd ~/build/conquest-1.4.15
+./dgate &
+
 ***** dcmtk quick ref *****
 
 Run the dicom server like this:

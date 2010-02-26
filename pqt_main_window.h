@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "pqt_data_source_dialog.h"
+#include "pqt_findscu.h"
 #include "pqt_patient_list_model.h"
 #include "ui_pqt_main_window.h"
 
@@ -32,6 +33,8 @@ public:
     Pqt_data_source_dialog *m_data_source_dialog;
 
     Pqt_patient_list_model *m_patient_list_model;
+
+    Pqt_findscu m_findscu;
 
 public slots:
     void new_data_source (void);
