@@ -18,7 +18,10 @@ public:
 class Pqt_findscu
 {
 public:
-    QList<Pqt_findscu_entry> m_patient_list;
+    ~Pqt_findscu (void);
+
+public:
+    QList<Pqt_findscu_entry*> m_patient_list;
 
 public:
     void query (QString host, QString port, QString aet);

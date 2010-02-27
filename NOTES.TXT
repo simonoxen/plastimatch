@@ -1,3 +1,9 @@
+***** File browser design *****
+
+http://www.xvsxp.com/files/file_browsing.php
+http://rixstep.com/4/0/xfile/ss.shtml
+http://www.ragesw.com/products/explorer/screenshots/1/
+
 ***** Writing to stdout in Qt *****
 
     QTextStream(stdout) << QString("foo") << "\n";
