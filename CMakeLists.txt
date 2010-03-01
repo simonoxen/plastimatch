@@ -290,6 +290,10 @@ IF (ITK_FOUND)
   INCLUDE (${ITK_USE_FILE})
   SET (ITK_VERSION 
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
+  IF (NOT ITK_USE_REVIEW)
+    MESSAGE (FATAL_ERROR 
+      "\nFatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
+  ENDIF (NOT ITK_USE_REVIEW)
 ENDIF (ITK_FOUND)
 
 ##-----------------------------------------------------------------------------
