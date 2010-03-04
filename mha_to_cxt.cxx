@@ -60,7 +60,7 @@ do_mha_to_cxt (Program_parms *parms)
 
     cxt_write (&structures, parms->output_fn, false);
 
-    cxt_destroy (&structures);
+    cxt_free (&structures);
 }
 
 void

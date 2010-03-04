@@ -179,3 +179,22 @@ cxt_to_mha_free (Cxt_to_mha_state *ctm_state)
     }
     free (ctm_state->acc_img);
 }
+
+Cxt_to_mha_state*
+cxt_to_mha_create (
+    Cxt_structure_list *cxt
+)
+{
+    Cxt_to_mha_state *ctm_state = new Cxt_to_mha_state;
+    cxt_to_mha_init (ctm_state, cxt, false, true, true);
+    while (cxt_to_mha_process_next (ctm_state, cxt)) {}
+
+    return ctm_state;
+}
+
+void
+cxt_to_mha_destroy (Cxt_to_mha_state *ctm_state)
+{
+    cxt_to_mha_free (ctm_state);
+    delete ctm_state;
+}

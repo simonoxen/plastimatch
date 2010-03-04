@@ -102,12 +102,38 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 }
 
 static void
-save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
+warp_and_save_ss_img (Rtds *rtds, Xform *xf, 
+    PlmImageHeader *pih, Warp_parms *parms)
 {
-    Cxt_to_mha_state ctm_state;
+    PlmImage *pli_labelmap = new PlmImage;
+    PlmImage *pli_ss_img = new PlmImage;
 
+    printf ("Saving ss_img...\n");
+
+    /* If we have need to create image outputs, or if we have to 
+       warp something, then we need to rasterize the volume */
+    if (parms->output_labelmap_fn[0] || parms->output_ss_img[0]
+	|| parms->xf_in_fn[0] || parms->output_prefix[0])
+    {
+	/* Rasterize structure sets */
+	Cxt_to_mha_state *ctm_state;
+	ctm_state = cxt_to_mha_create (rtds->m_cxt);
+
+	/* Convert rasterized structure sets from vol to plm_image */
+	pli_labelmap->set_gpuit (ctm_state->labelmap_vol);
+	ctm_state->labelmap_vol = 0;
+	pli_ss_img->set_gpuit (ctm_state->ss_img_vol);
+	ctm_state->ss_img_vol = 0;
+
+	/* We're done with cxt_state now */
+	cxt_to_mha_destroy (ctm_state);
+    }
+
+#if defined (commentout)
+    /* GCS NOTE: This code will create prefix files "on-the-fly".  
+       It is faster than what we do here, but can't work when we warp
+       the images. */
     cxt_to_mha_init (&ctm_state, cxt, true, true, true);
-
     while (cxt_to_mha_process_next (&ctm_state, cxt)) {
 	/* Write out prefix images */
 	if (parms->output_prefix[0]) {
@@ -119,15 +145,33 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	    plm_image_save_vol (fn, ctm_state.uchar_vol);
 	}
     }
+#endif
+
+    /* If we are warping, warp rasterized image(s) */
+    if (parms->xf_in_fn[0]) {
+	PlmImage *tmp;
+
+	tmp = new PlmImage;
+	plm_warp (tmp, 0, xf, pih, pli_labelmap, 0, parms->use_itk, 0);
+	delete pli_labelmap;
+	pli_labelmap = tmp;
+
+	tmp = new PlmImage;
+	plm_warp (tmp, 0, xf, pih, pli_ss_img, 0, parms->use_itk, 0);
+	delete pli_ss_img;
+	pli_ss_img = tmp;
+    }
 
     /* Write out labelmap, ss_img */
     if (parms->output_labelmap_fn[0]) {
-	//write_mha (parms->labelmap_fn, ctm_state.labelmap_vol);
-	plm_image_save_vol (parms->output_labelmap_fn, ctm_state.labelmap_vol);
+	printf ("Writing labelmap.\n");
+	pli_labelmap->save_image (parms->output_labelmap_fn);
+	printf ("Done.\n");
     }
     if (parms->output_ss_img[0]) {
-	//write_mha (parms->ss_img_fn, ctm_state.ss_img_vol);
-	plm_image_save_vol (parms->output_ss_img, ctm_state.ss_img_vol);
+	printf ("Writing ss img.\n");
+	pli_ss_img->save_image (parms->output_ss_img);
+	printf ("Done.\n");
     }
 
     /* Write out list of structure names */
@@ -136,9 +180,9 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	FILE *fp;
 	make_directory_recursive (parms->output_ss_list);
 	fp = fopen (parms->output_ss_list, "w");
-	for (i = 0; i < cxt->num_structures; i++) {
+	for (i = 0; i < rtds->m_cxt->num_structures; i++) {
 	    Cxt_structure *curr_structure;
-	    curr_structure = &cxt->slist[i];
+	    curr_structure = &rtds->m_cxt->slist[i];
 	    fprintf (fp, "%d|%s|%s\n",
 		i, 
 		(curr_structure->color 
@@ -149,50 +193,29 @@ save_ss_img (Cxt_structure_list *cxt, Warp_parms *parms)
 	fclose (fp);
     }
 
-    /* Free ctm_state */
-    cxt_to_mha_free (&ctm_state);
+    /* Write out prefix images .. */
+    if (parms->output_prefix[0]) {
+	/* GCS FIX */
+	print_and_exit ("Sorry, prefix image export disabled.\n");
+    }
+
+    /* If we are warping, re-extract polylines into cxt */
+    if (parms->xf_in_fn[0]) {
+	cxt_free_all_polylines (rtds->m_cxt);
+	cxt_extract (rtds->m_cxt, pli_ss_img->m_itk_uint32, 
+	    rtds->m_cxt->num_structures);
+    }
 }
 
-
 static void
-save_ss_output (Rtds *rtds,  Warp_parms *parms)
+save_ss_output (Rtds *rtds,  Xform *xf, 
+    PlmImageHeader *pih, Warp_parms *parms)
 {
     if (!rtds->m_cxt) {
 	return;
     }
 
-#if defined (commentout)
-    if (parms->output_img[0]) {
-	/* If user didn't specify output format, see if we can guess from 
-	   filename extension */
-	if (parms->output_format == PLM_FILE_FMT_UNKNOWN) {
-	    parms->output_format = plm_file_format_from_extension (
-		parms->output_img);
-	}
-
-	/* Save output */
-	switch (parms->output_format) {
-	case PLM_FILE_FMT_CXT:
-	    cxt_write (rtds->m_cxt, parms->output_img, true);
-	    break;
-	case PLM_FILE_FMT_DICOM_RTSS:
-	case PLM_FILE_FMT_DICOM_DIR:
-	    cxt_adjust_structure_names (rtds->m_cxt);
-	    gdcm_rtss_save (rtds->m_cxt, parms->output_img, parms->dicom_dir);
-	    break;
-	case PLM_FILE_FMT_IMG:
-	default:
-	    cxt_to_mha_write (rtds->m_cxt, parms);
-	    break;
-	}
-    }
-#endif
-
-    if (parms->output_labelmap_fn[0] || parms->output_ss_img[0]
-	|| parms->output_ss_list[0] || parms->output_prefix[0])
-    {
-	save_ss_img (rtds->m_cxt, parms);
-    }
+    warp_and_save_ss_img (rtds, xf, pih, parms);
 
     if (parms->output_cxt[0]) {
 	cxt_write (rtds->m_cxt, parms->output_cxt, true);
@@ -259,8 +282,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	cxt_set_geometry_from_plm_image_header (rtds->m_cxt, &pih);
     }
 
-    /* Do the warp */
-    if (parms->xf_in_fn[0] && rtds->m_img) {
+    /* Warp the image and create vf */
+    if (rtds->m_img && parms->xf_in_fn[0] 
+	&& (parms->output_img[0] || parms->output_vf[0]))
+    {
 	PlmImage *im_out;
 	im_out = new PlmImage;
 	plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
@@ -272,7 +297,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output image */
     if (parms->output_img[0] && rtds->m_img) {
 	printf ("Saving image...\n");
-	//rtds->m_img->save_image (parms->output_img);
 	rtds->m_img->convert_and_save (parms->output_img, parms->output_type);
     }
 
@@ -282,6 +306,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	itk_image_save (vf, parms->output_vf);
     }
 
-    /* Save output structure set */
-    save_ss_output (rtds, parms);
+    /* Warp and save output structure set */
+    save_ss_output (rtds, &xform, &pih, parms);
 }

@@ -183,9 +183,17 @@ plm_warp (
 	switch (im_in->m_type) {
 	case PLM_IMG_TYPE_ITK_UCHAR:
 	case PLM_IMG_TYPE_ITK_SHORT:
-	case PLM_IMG_TYPE_ITK_FLOAT:
 	case PLM_IMG_TYPE_ITK_ULONG:
+	case PLM_IMG_TYPE_ITK_FLOAT:
+	case PLM_IMG_TYPE_GPUIT_UCHAR:
+	case PLM_IMG_TYPE_GPUIT_SHORT:
+	case PLM_IMG_TYPE_GPUIT_UINT32:
 	case PLM_IMG_TYPE_GPUIT_FLOAT:
+	    if (im_in->m_type == PLM_IMG_TYPE_GPUIT_SHORT) {
+		printf ("Image type = GPUIT_SHORT\n");
+	    } else if (im_in->m_type == PLM_IMG_TYPE_GPUIT_UINT32) {
+		printf ("Image type = GPUIT_UINT32\n");
+	    }
 	    plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
 		interp_lin);
 	    break;

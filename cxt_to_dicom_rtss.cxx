@@ -38,7 +38,7 @@ do_cxt_to_dicom_rtss (Program_parms *parms)
 
     //    cxt_write (&structures, "junk.cxt", true);
 
-    cxt_destroy (&structures);
+    cxt_free (&structures);
 }
 
 void

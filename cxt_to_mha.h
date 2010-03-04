@@ -48,8 +48,16 @@ cxt_to_mha_current_name (
     Cxt_structure_list *structures
 );
 plastimatch1_EXPORT
+Cxt_to_mha_state*
+cxt_to_mha_create (
+    Cxt_structure_list *cxt
+);
+plastimatch1_EXPORT
 void
 cxt_to_mha_free (Cxt_to_mha_state *ctm_state);
+plastimatch1_EXPORT
+void
+cxt_to_mha_destroy (Cxt_to_mha_state *ctm_state);
 
 #if defined __cplusplus
 }

@@ -189,8 +189,24 @@ cxt_structure_free (Cxt_structure* structure)
     structure->pslist = 0;
 }
 
+/* Clear the polylines, but keep structure name, id, color */
 void
-cxt_destroy (Cxt_structure_list* cxt)
+cxt_free_all_polylines (Cxt_structure_list* cxt)
+{
+    int i;
+    for (i = 0; i < cxt->num_structures; i++) {
+	int j;
+	Cxt_structure *curr_structure = &cxt->slist[i];
+	for (j = 0; j < curr_structure->num_contours; j++) {
+	    cxt_polyline_free (&curr_structure->pslist[j]);
+	}
+	curr_structure->num_contours = 0;
+	curr_structure->pslist = 0;
+    }
+}
+
+void
+cxt_free (Cxt_structure_list* cxt)
 {
     int i;
 
@@ -206,6 +222,13 @@ cxt_destroy (Cxt_structure_list* cxt)
     free (cxt->slist);
 
     cxt_init (cxt);
+}
+
+void
+cxt_destroy (Cxt_structure_list* cxt)
+{
+    cxt_free (cxt);
+    free (cxt);
 }
 
 void

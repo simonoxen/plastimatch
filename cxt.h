@@ -74,10 +74,16 @@ void
 cxt_adjust_structure_names (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
+cxt_free (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
 cxt_destroy (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_prune_empty (Cxt_structure_list* structures);
+plastimatch1_EXPORT
+void
+cxt_free_all_polylines (Cxt_structure_list* cxt);
 plastimatch1_EXPORT
 void
 cxt_apply_geometry (Cxt_structure_list* structures);

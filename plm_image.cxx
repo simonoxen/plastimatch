@@ -497,6 +497,11 @@ PlmImage::convert_to_gpuit_float ()
 	/* Free itk data */
 	this->m_itk_float = 0;
 	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	volume_convert_to_float ((Volume *) this->m_gpuit);
+	return;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	return;
     default:

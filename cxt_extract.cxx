@@ -56,9 +56,11 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 }
 #endif
 
+/* This function only fills in the polylines.  Structure names, id, etc. 
+   will be assigned to default values if they are not already set. */
 template<class T>
 void
-cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
+cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
@@ -79,10 +81,10 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 
     /* If structure names are unknown, name them, and give them 
        arbitrary id numbers */
-    for (int j = structures->num_structures; j < num_structs; j++) {
+    for (int j = cxt->num_structures; j < num_structs; j++) {
 	int k = 1;
-	while (cxt_find_structure_by_id (structures, k)) k++;
-	cxt_add_structure (structures, "Unknown structure", 0, k);
+	while (cxt_find_structure_by_id (cxt, k)) k++;
+	cxt_add_structure (cxt, "Unknown structure", 0, k);
     }
 
     /* Loop through slices */
@@ -102,7 +104,7 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 	for (int j = 0; j < num_structs; j++)
 	{
 	    /* And the current slice with the mask for this structure */
-	    Cxt_structure *curr_structure = &structures->slist[j];
+	    Cxt_structure *curr_structure = &cxt->slist[j];
 
 	    uint32_t val = (1 << curr_structure->id);
 	    and_filter->SetConstant (val);
@@ -171,4 +173,4 @@ cxt_extract (Cxt_structure_list *structures, T image, int num_structs)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *structures, UInt32ImageType::Pointer image, int num_structs);
+template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *cxt, UInt32ImageType::Pointer image, int num_structs);
