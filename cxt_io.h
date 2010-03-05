@@ -13,13 +13,13 @@ extern "C" {
 
 plastimatch1_EXPORT
 void
-cxt_xorlist_read (Cxt_structure_list* structures, const char* xorlist_fn);
+cxt_xorlist_load (Cxt_structure_list* structures, const char* xorlist_fn);
 plastimatch1_EXPORT
 void
-cxt_read (Cxt_structure_list* structures, const char* cxt_fn);
+cxt_load (Cxt_structure_list* structures, const char* cxt_fn);
 plastimatch1_EXPORT
 void
-cxt_write (Cxt_structure_list* structures, const char* cxt_fn, 
+cxt_save (Cxt_structure_list* structures, const char* cxt_fn, 
 	   bool prune_empty);
 
 #if defined __cplusplus

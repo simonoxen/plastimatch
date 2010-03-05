@@ -12,7 +12,7 @@
 #include "plm_image_header.h"
 
 void
-cxt_xorlist_read (Cxt_structure_list* cxt, const char* xorlist_fn)
+cxt_xorlist_load (Cxt_structure_list* cxt, const char* xorlist_fn)
 {
     FILE* fp;
 
@@ -52,7 +52,7 @@ cxt_xorlist_read (Cxt_structure_list* cxt, const char* xorlist_fn)
 }
 
 void
-cxt_read (Cxt_structure_list* cxt, const char* cxt_fn)
+cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
 {
     FILE* fp;
     Cxt_polyline* curr_contour;
@@ -310,8 +310,8 @@ cxt_read (Cxt_structure_list* cxt, const char* cxt_fn)
 }
 
 void
-cxt_write (Cxt_structure_list* cxt, const char* cxt_fn,
-	   bool prune_empty)
+cxt_save (Cxt_structure_list* cxt, const char* cxt_fn,
+    bool prune_empty)
 {
     int i;
     FILE *fp;
@@ -379,10 +379,11 @@ cxt_write (Cxt_structure_list* cxt, const char* cxt_fn,
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
-	fprintf (fp, "%d|%s|%s\n", curr_structure->id, 
-		 curr_structure->color 
-		 ? (const char*) curr_structure->color->data : "255\\0\\0", 
-		 curr_structure->name);
+	fprintf (fp, "%d|%s|%s\n", 
+	    curr_structure->id, 
+	    (curr_structure->color 
+		? (const char*) curr_structure->color->data : "255\\0\\0"), 
+	    curr_structure->name);
     }
     fprintf (fp, "END_OF_ROI_NAMES\n");
 

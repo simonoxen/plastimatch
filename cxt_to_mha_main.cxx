@@ -139,7 +139,7 @@ main (int argc, char* argv[])
     memset (curr_structure, 0, sizeof(Cxt_structure));
     curr_structure->num_contours = 0;
 
-    cxt_read (structures, parms->cxt_fn);
+    cxt_load (structures, parms->cxt_fn);
 
     /* Override cxt geometry if user specified --fixed */
     if (parms->fixed_fn[0]) {

@@ -26,11 +26,11 @@ do_cxt_apply_dicom (Program_parms *parms)
     Cxt_structure_list structures;
 
     cxt_init (&structures);
-    cxt_read (&structures, parms->cxt_fn);
+    cxt_load (&structures, parms->cxt_fn);
 
     cxt_apply_dicom_dir (&structures, parms->dicom_dir);
 
-    cxt_write (&structures, parms->cxt_fn, true);
+    cxt_save (&structures, parms->cxt_fn, true);
 }
 
 void

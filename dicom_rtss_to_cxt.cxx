@@ -30,7 +30,7 @@ do_dicom_rtss_to_cxt (Program_parms *parms)
     cxt_init (&structures);
     gdcm_rtss_load (&structures, parms->rtss_fn, parms->dicom_dir);
 
-    cxt_write (&structures, parms->output_fn, true);
+    cxt_save (&structures, parms->output_fn, true);
 }
 
 void

@@ -28,7 +28,7 @@ load_ss_img (Rtds *rtds, Warp_parms *parms)
 
     /* Set structure names */
     if (parms->input_ss_list[0]) {
-	cxt_xorlist_read (rtds->m_cxt, parms->input_ss_list);
+	cxt_xorlist_load (rtds->m_cxt, parms->input_ss_list);
 	num_structs = rtds->m_cxt->num_structures;
     }
 
@@ -85,7 +85,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_cxt = cxt_create ();
-	    cxt_read (rtds->m_cxt, parms->input_fn);
+	    cxt_load (rtds->m_cxt, parms->input_fn);
 	    //ctx_warp (&parms);
 	    break;
 	default:
@@ -188,7 +188,7 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 		i, 
 		(curr_structure->color 
 		    ? (const char*) curr_structure->color->data 
-		    : "\255\\0\\0"),
+		    : "255\\0\\0"),
 		curr_structure->name);
 	}
 	fclose (fp);
@@ -223,7 +223,7 @@ save_ss_output (Rtds *rtds,  Xform *xf,
     warp_and_save_ss_img (rtds, xf, pih, parms);
 
     if (parms->output_cxt[0]) {
-	cxt_write (rtds->m_cxt, parms->output_cxt, true);
+	cxt_save (rtds->m_cxt, parms->output_cxt, true);
     }
 
     if (parms->output_xio_dirname[0]) {

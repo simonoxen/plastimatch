@@ -44,7 +44,7 @@ do_mha_to_cxt (Program_parms *parms)
     printf ("Done.\n");
 
     if (parms->xorlist_fn[0]) {
-	cxt_xorlist_read (&structures, parms->xorlist_fn);
+	cxt_xorlist_load (&structures, parms->xorlist_fn);
 	num_structs = structures.num_structures;
     }
 
@@ -58,7 +58,7 @@ do_mha_to_cxt (Program_parms *parms)
 	printf ("Done.\n");
     }
 
-    cxt_write (&structures, parms->output_fn, false);
+    cxt_save (&structures, parms->output_fn, false);
 
     cxt_free (&structures);
 }
