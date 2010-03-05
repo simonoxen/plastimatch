@@ -145,12 +145,12 @@ extern "C" void bspline_cuda_init_MI_a (
 	int num_blocks = (fixed->npix + 31) / 32;
 	dev_ptrs->f_hist_seg_size = mi_hist->fixed.bins * 2*num_blocks * sizeof(float);
 	dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
-//	dev_ptrs->j_hist_seg_size = mi_hist->fixed.bin * num_blocks * sizeof(float);
+	dev_ptrs->j_hist_seg_size = mi_hist->fixed.bins * num_blocks * sizeof(float);
 	cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
 	checkCUDAError ("Failed to allocate memory for f_hist_seg");
 	cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
 	checkCUDAError ("Failed to allocate memory for m_hist_seg");
-//	cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
+	cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
 
 
 	// histograms
@@ -210,21 +210,28 @@ extern "C" void bspline_cuda_MI_a_hist (
 			Volume* moving,
 			BSPLINE_Xform* bxf)
 {
-	// Initialize histogram memory on GPU
-//	cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
-//	cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
-//	cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_size);
-//	cudaMemset(dev_ptrs->j_hist, 0, dev_ptrs->j_hist_size);
+	// check to see if we get atomic operations
+	// for GPU memory
+	#ifndef CUDA_NO_SM_12_ATOMIC_INTRINSICS
+		printf ("\n******************* FATAL ERROR *******************\n");
+		printf ("   Atomic memory operations not supported by GPU!\n");
+		printf ("     A GPU of Compute Capability 1.2 or greater\n");
+		printf ("     is required to for GPU accelerated MI\n");
+		printf ("***************************************************\n\n");
+		exit(0);
+	#endif
 
-	// Generate the fixed histogram (47.56 ms)
-	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
+	// Generate the fixed histogram (48 ms)
+//	printf ("Generating Fixed Histogram:\n");
+//	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
 
-	// Generate the moving histogram (??.?? ms) -- broken
-	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+	// Generate the moving histogram (150 ms)
+//	printf ("Generating Moving Histogram:\n");
+//	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
 
 	// Generate the joint histogram (??.?? ms) -- not written
-//	bspline_cuda_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving);
-
+	printf ("Generating Joint Histogram:\n");
+	bspline_cuda_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
 }
 
 
@@ -266,7 +273,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_fix() configuration!\n");
 		exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
@@ -304,14 +311,16 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 
 	checkCUDAError ("kernel hist_fix_merge");
 					
+/*
 	// DEBUG
-//	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
-//	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
+	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
 
-//	mi_hist->f_hist = f_hist;
+	mi_hist->f_hist = f_hist;
 
-//	dump_xpm_hist (mi_hist, "test", 0);
-//	dump_hist (mi_hist, "test.txt");
+	dump_xpm_hist (mi_hist, "test", 0);
+	dump_hist (mi_hist, "test.txt");
+*/
 
 }
 			
@@ -325,7 +334,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 			BSPLINE_Xform *bxf)
 {
 	// Initialize histogram memory on GPU
-	cudaMemset(dev_ptrs->m_hist_seg, 1, dev_ptrs->m_hist_seg_size);
+	cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
 	cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
 
 	int3 vpr;
@@ -398,7 +407,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_mov() configuration!\n");
 		exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
@@ -434,16 +443,6 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	int num_sub_hists = num_blocks;
 
-/*
-	float* gpu_debug = (float*)malloc(dev_ptrs->m_hist_seg_size);
-	cudaMemcpy (gpu_debug, dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size, cudaMemcpyDeviceToHost);
-
-	for (int n = 0; n < 852529; n++)
-		fprintf (stderr, "[%10i] %f\n", n, gpu_debug[n]);
-
-
-	exit(0);
-*/
 
 	// Merge sub-histograms
 	threads_per_block = 512;
@@ -459,6 +458,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	checkCUDAError ("kernel hist_mov_merge");
 					
+/*
 	// DEBUG
 	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
 	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
@@ -470,8 +470,173 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	dump_xpm_hist (mi_hist, "test", 0);
 	dump_hist (mi_hist, "test.txt");
+*/
 
 }
+
+
+
+extern "C" void bspline_cuda_MI_a_hist_jnt (
+			Dev_Pointers_Bspline *dev_ptrs,
+			BSPLINE_MI_Hist* mi_hist,
+			Volume* fixed,
+			Volume* moving,
+			BSPLINE_Xform *bxf)
+{
+	// Initialize histogram memory on GPU
+	cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
+	cudaMemset(dev_ptrs->j_hist, 0, dev_ptrs->j_hist_size);
+
+	int3 vpr;
+	vpr.x = bxf->vox_per_rgn[0];
+	vpr.y = bxf->vox_per_rgn[1];
+	vpr.z = bxf->vox_per_rgn[2];
+
+	int3 fdim;
+	fdim.x = fixed->dim[0];
+	fdim.y = fixed->dim[1];
+	fdim.z = fixed->dim[2];
+
+	int3 mdim;
+	mdim.x = moving->dim[0];
+	mdim.y = moving->dim[1];
+	mdim.z = moving->dim[2]; 
+	int3 rdim;
+	rdim.x = bxf->rdims[0];
+	rdim.y = bxf->rdims[1];
+	rdim.z = bxf->rdims[2];
+
+	float3 img_origin;
+	img_origin.x = bxf->img_origin[0];
+	img_origin.y = bxf->img_origin[1];
+	img_origin.z = bxf->img_origin[2];
+	
+	float3 img_spacing;     
+	img_spacing.x = bxf->img_spacing[0];
+	img_spacing.y = bxf->img_spacing[1];
+	img_spacing.z = bxf->img_spacing[2];
+
+
+	float3 mov_offset;     
+	mov_offset.x = moving->offset[0];
+	mov_offset.y = moving->offset[1];
+	mov_offset.z = moving->offset[2];
+
+	float3 mov_ps;
+	mov_ps.x = moving->pix_spacing[0];
+	mov_ps.y = moving->pix_spacing[1];
+	mov_ps.z = moving->pix_spacing[2];
+	
+	int num_bins = (int)mi_hist->fixed.bins * (int)mi_hist->moving.bins;
+
+	// --- INITIALIZE GRID ---
+	int i;
+	int Grid_x = 0;
+	int Grid_y = 0;
+	int threads_per_block = 32;
+	int num_threads = fixed->npix;
+	int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	int smemSize = num_bins * sizeof(float);
+
+	// -----
+	// Search for a valid execution configuration
+	// for the required # of blocks.
+	int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+	for (i = sqrt_num_blocks; i < 65535; i++)
+	{
+		if (num_blocks % i == 0)
+		{
+			Grid_x = i;
+			Grid_y = num_blocks / Grid_x;
+			break;
+		}
+	}
+	// -----
+
+
+	// Were we able to find a valid exec config?
+	if (Grid_x == 0) {
+		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_jnt() configuration!\n");
+		exit(0);
+	} else {
+//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	}
+
+	dim3 dimGrid1(Grid_x, Grid_y, 1);
+	dim3 dimBlock1(threads_per_block, 1, 1);
+	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
+	// ----------------------
+
+	// Launch kernel with one thread per voxel
+	k_bspline_cuda_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
+			dev_ptrs->j_hist_seg,		// partial histogram (moving image)
+			dev_ptrs->fixed_image,		// fixed  image voxels
+			dev_ptrs->moving_image,		// moving image voxels
+			mi_hist->fixed.offset,		// fixed histogram offset
+			mi_hist->moving.offset,		// moving histogram offset
+			1.0f/mi_hist->fixed.delta,	// fixed histogram delta
+			1.0f/mi_hist->moving.delta,	// moving histogram delta
+			mi_hist->moving.bins,		// # moving bins
+			num_bins,	 		// # joint bins
+			vpr,				// voxels per region
+			fdim,				// fixed  image dimensions
+			mdim,				// moving image dimensions
+			rdim,				//       region dimensions
+			img_origin,			// image origin
+			img_spacing,			// image spacing
+			mov_offset,			// moving image offset
+			mov_ps,				// moving image pixel spacing
+			dev_ptrs->c_lut,		// DEBUG
+			dev_ptrs->q_lut,		// DEBUG
+			dev_ptrs->coeff,		// DEBUG
+			threads_per_block);		// # threads (to be removed)
+
+	checkCUDAError ("kernel hist_mov");
+
+	int num_sub_hists = num_blocks;
+
+/*
+	// Merge sub-histograms
+	threads_per_block = 512;
+	dim3 dimGrid2 (num_bins, 1, 1);
+	dim3 dimBlock2 (threads_per_block, 1, 1);
+	smemSize = 512 * sizeof(float);
+	
+	// this kernel can be ran with any thread-block size
+	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+					dev_ptrs->j_hist,
+					dev_ptrs->j_hist_seg,
+					num_sub_hists);
+
+	checkCUDAError ("kernel hist_jnt_merge");
+*/
+					
+	// DEBUG
+	printf ("GPU -> CPU Memcpy()... ");
+	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
+	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
+	float* j_hist = (float*)malloc(dev_ptrs->j_hist_size);
+	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+	cudaMemcpy (m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
+	cudaMemcpy (j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
+	printf ("done.\n");
+
+	printf ("Recording pointers... ");
+	mi_hist->f_hist = f_hist;
+	mi_hist->m_hist = m_hist;
+	mi_hist->j_hist = j_hist;
+	printf ("done.\n");
+
+	printf ("Dumping xpm... ");
+	dump_xpm_hist (mi_hist, "test", 0);
+	printf ("done.\n");
+
+	printf ("Dumping text... ");
+	dump_hist (mi_hist, "test.txt");
+	printf ("done.\n");
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -801,11 +966,6 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 	s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
 	s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
 
-	// Verify miqs
-//	if (thread_idxg < 852529)
-//		m_hist_seg[thread_idxg] = amt;
-
-	
 	// --- -- - BIN #2 - -- ---
 	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
 	midx = (moving[mvf] - offset) * delta;
@@ -892,6 +1052,376 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 		m_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
 
 	}
+	// --------------------------------------------------------
+
+	// Done.
+	// We now have (num_thread_blocks) partial histograms that
+	// need to be merged.  This will be done with another
+	// kernel to be ran immediately following the completion
+	// of this kernel.
+
+	//NOTE:
+	// fv = thread_idxg
+	// fi = r.x
+	// fj = r.y
+	// fk = r.z
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Generates the joint histogram
+//
+//                 --- Neightborhood of 6 ---
+//
+////////////////////////////////////////////////////////////////////////////////
+__global__ void k_bspline_cuda_MI_a_hist_jnt (
+	float* j_hist_seg,	// partial histogram (joint)
+	float* fixed,		// fixed  image voxels
+	float* moving,		// moving image voxels
+	float f_offset,		// fixed histogram offset
+	float m_offset,		// moving histogram offset
+	float f_delta,		// fixed histogram delta
+	float m_delta,		// moving histogram delta
+	long m_bins,		// # moving histogram bins
+	long j_bins,		// # joint  histogram bins
+	int3 vpr,		// voxels per region
+	int3 fdim,		// fixed  image dimensions
+	int3 mdim,		// moving image dimensions
+	int3 rdim,		//       region dimensions
+	float3 img_origin,	// image origin
+	float3 img_spacing,	// image spacing
+	float3 mov_offset,	// moving image offset
+	float3 mov_ps,		// moving image pixel spacing
+ 	int* c_lut,		// DEBUG
+	float* q_lut,		// DEBUG
+	float* coeff,		// DEBUG
+	int nthreads)		// # threads (to be removed)
+{
+	// -- Initialize Shared Memory ----------------------------
+	// Amount: (# fixed bins) * (# moving bins)
+	extern __shared__ float s_Joint[];
+
+	long clusters = (j_bins + 31) / 32;
+
+	for (long i=0; i < clusters; i++)
+		if (threadIdx.x + 32*i < j_bins)
+			s_Joint[threadIdx.x + 32*i] = 0.0f;
+	// --------------------------------------------------------
+
+
+	__syncthreads();
+
+
+	// -- Setup Thread Attributes -----------------------------
+	int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+	int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+	int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+	int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+	// --------------------------------------------------------
+
+	
+	// -- Only process threads that map to voxels -------------
+	if (thread_idxg > fdim.x * fdim.y * fdim.z)
+		return;
+	// --------------------------------------------------------
+
+
+	// -- Variables used by correspondence --------------------
+	// -- (Block verified) ------------------------------------
+	int3 r;			// Voxel index (global)
+	int4 q;			// Voxel index (local)
+	int4 p;			// Tile index
+
+
+	float3 f;		// Distance from origin (in mm )
+	float3 m;		// Voxel Displacement   (in mm )
+	float3 n;		// Voxel Displacement   (in vox)
+	float3 d;		// Deformation vector
+
+	int3 miqs;		// PVI - 6 NBH
+	int3 mjqs;		//    Moving image pixel coords
+	int3 mkqs;
+
+	float3 fxqs;		// PVI - 6 NBH
+	float3 fyqs;		//    Interpolant fraction
+	float3 fzqs;
+	int mvf;
+
+
+	//   ----    ----    ----    ----    ----    ----    ----    
+	
+	r.z = thread_idxg / (fdim.x * fdim.y);
+	r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
+	r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+	
+	p.x = r.x / vpr.x;
+	p.y = r.y / vpr.y;
+	p.z = r.z / vpr.z;
+	p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
+
+	q.x = r.x - p.x * vpr.x;
+	q.y = r.y - p.y * vpr.y;
+	q.z = r.z - p.z * vpr.z;
+	q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+
+	f.x = img_origin.x + img_spacing.x * r.x;
+	f.y = img_origin.y + img_spacing.y * r.y;
+	f.z = img_origin.z + img_spacing.z * r.z;
+	// --------------------------------------------------------
+
+
+	// -- Compute deformation vector --------------------------
+	int cidx;
+	float P;
+
+	d.x = 0.0f;
+	d.y = 0.0f;
+	d.z = 0.0f;
+
+	for (int k=0; k < 64; k++)
+	{
+		// Texture Version
+		P = tex1Dfetch (tex_q_lut, 64*q.w + k);
+		cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
+
+		d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
+		d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
+		d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
+
+
+		// Global Memory Version
+//		P = q_lut[64*q.w + k];
+//		cidx = 3 * c_lut[64*p.w + k];
+//
+//		d.x += P * coeff[cidx + 0];
+//		d.y += P * coeff[cidx + 1];
+//		d.z += P * coeff[cidx + 2];
+	}
+	// --------------------------------------------------------
+
+
+	// -- Correspondence --------------------------------------
+	// -- (Block verified) ------------------------------------
+	m.x = f.x + d.x;
+	m.y = f.y + d.y;
+	m.z = f.z + d.z;
+
+	// n.x = m.i  etc
+	n.x = (m.x - mov_offset.x) / mov_ps.x;
+	n.y = (m.y - mov_offset.y) / mov_ps.y;
+	n.z = (m.z - mov_offset.z) / mov_ps.z;
+
+	if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
+	    n.y < -0.5 || n.y > mdim.y - 0.5 ||
+	    n.z < -0.5 || n.z > mdim.z - 0.5)
+	{
+		// -->> skipped voxel logic here <<--
+		return;
+	}
+	// --------------------------------------------------------
+
+
+	// -- Compute quadratic interpolation fractions -----------
+	float t, t2, t22;
+	float marf;
+	long mari;
+
+	// --- - x - ---
+	marf = (float)(n.x + 0.5);
+	mari = (long)(n.x + 0.5);
+	t = n.x - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fxqs.x = t22;
+//	fxqs.y = 1 - (t2 + t + 0.5);
+	fxqs.y = - t2 + t + 0.5;
+	fxqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	miqs.x = mari - 1;
+	miqs.y = mari;
+	miqs.z = mari + 1;
+
+	// --- - y - ---
+	marf = (float)(n.y + 0.5);
+	mari = (long)(n.y + 0.5);
+	t = n.y - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fyqs.x = t22;
+//	fyqs.y = 1 - (t2 + t + 0.5);
+	fyqs.y = - t2 + t + 0.5;
+	fyqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	mjqs.x = mari - 1;
+	mjqs.y = mari;
+	mjqs.z = mari + 1;
+
+	
+	// --- - z - ---
+	marf = (float)(n.z + 0.5);
+	mari = (long)(n.z + 0.5);
+	t = n.z - marf;
+	t2 = t * t;
+	t22 = 0.5 * t2;
+
+	// Generate fxqs
+	fzqs.x = t22;
+//	fzqs.y = 1 - (t2 + t + 0.5);
+	fzqs.y = - t2 + t + 0.5;
+	fzqs.z = t22 - t + 0.5;
+
+	// Generate miqs
+	mkqs.x = mari - 1;
+	mkqs.y = mari;
+	mkqs.z = mari + 1;
+
+	// --- Bounds checking
+	if (miqs.x < 0) miqs.x = 0;
+	if (miqs.y < 0) miqs.y = 0;
+	if (miqs.z < 0) miqs.z = 0;
+	if (mjqs.x < 0) mjqs.x = 0;	
+	if (mjqs.y < 0) mjqs.y = 0;
+	if (mjqs.z < 0) mjqs.z = 0;
+	if (mkqs.x < 0) mkqs.x = 0;
+	if (mkqs.y < 0) mkqs.y = 0;
+	if (mkqs.z < 0) mkqs.z = 0;
+	// --------------------------------------------------------
+
+	__syncthreads();
+
+	// -- Accumulate Into Segmented Histograms ----------------
+	long m_bin;
+	long f_bin;
+	long j_bin;
+	float midx;
+	float fidx;
+	float mf_1, mf_2;
+	float amt;
+
+
+	// NOTE: j_bin+1 can really fuck us here
+	//       if bin is equal to the last bin
+	//       in the histogram.
+	//
+	//  ***: Implement bin bound checking
+	//       -AND- go back and do it for
+	//       fixed and moving hists as well
+	// --- -- - BIN #1 - -- ---
+	amt = (1.0/3.0) * (fxqs.y + fyqs.y + fzqs.y);
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #2 - -- ---
+	amt = (1.0/3.0) * (fxqs.x);
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #3 - -- ---
+	amt = (1.0/3.0) * (fxqs.z);
+	mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.z;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #4 - -- ---
+	amt = (1.0/3.0) * (fyqs.x);
+	mvf = (mkqs.y * mdim.y + mjqs.x) * mdim.x + miqs.y;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #5 - -- ---
+	amt = (1.0/3.0) * (fyqs.z);
+	mvf = (mkqs.y * mdim.y + mjqs.z) * mdim.x + miqs.y;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #6 - -- ---
+	amt = (1.0/3.0) * (fzqs.x);
+	mvf = (mkqs.x * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+
+	// --- -- - BIN #7 - -- ---
+	amt = (1.0/3.0) * (fzqs.z);
+	mvf = (mkqs.z * mdim.y + mjqs.y) * mdim.x + miqs.y;
+	fidx = (fixed[thread_idxg] - f_offset) * f_delta;
+	midx = (moving[mvf] - m_offset) * m_delta;
+	f_bin = (long)(fidx);
+	m_bin = (long)(midx);
+	j_bin = (f_bin * m_bins) + m_bin;
+	mf_1 = midx - (float)((long)midx);
+	mf_2 = 1.0f - mf_1;
+	s_Joint[j_bin + 0] += mf_1 * amt;
+	s_Joint[j_bin + 1] += mf_2 * amt;
+	// --------------------------------------------------------
+
+	__syncthreads();
+
+	// -- Write per Warp Histograms out -----------------------
+	// NOTE: Because our joint histogram is so big & shared
+	//       memory is only 16KB, we only have 1 warp per
+	//       thread block.  This means that here we don't
+	//       need to merge per warp histograms (there is only 1),
+	//       we just need to write it out to global memory.
+
+//	for (int i=0; i < j_bins; i++)
+//		j_hist_seg[blockIdxInGrid*j_bins + i] = s_Joint[i];
+
+	for (long i=0; i < clusters; i++)
+		if (threadIdx.x + 32*i < j_bins)
+			j_hist_seg[blockIdxInGrid*j_bins + 32*i] = s_Joint[threadIdx.x + 32*i];
 	// --------------------------------------------------------
 
 	// Done.
@@ -2861,7 +3391,7 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 	float3 voxel_val;
 	int3 voxel_loc;
 	int4 tile_pos;
-	float A,B,C,D;
+	float A,B,C;
 
 
 	// -- Setup Thread Attributes -----------------------------
@@ -2870,7 +3400,7 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 
 
 	// -- Setup Shared Memory ---------------------------------
-	// -- SIZE: 6*threadsPerBlock*sizeof(float)
+	// -- SIZE: 9*64*sizeof(float)
 	// --------------------------------------------------------
 	extern __shared__ float sdata[]; 
 	float* sBuffer_x = (float*)sdata;			// sBuffer_x[64]
@@ -2879,6 +3409,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 	float* sBuffer_redux_x = (float*)&sBuffer_z[64];	// sBuffer_redux_x[64]
 	float* sBuffer_redux_y = (float*)&sBuffer_redux_x[64];	// sBuffer_redux_y[64]
 	float* sBuffer_redux_z = (float*)&sBuffer_redux_y[64];	// sBuffer_redux_z[64]
+	float* sBuffer_redux_x2 = (float*)&sBuffer_redux_z[64];	// sBuffer_redux_x2[64]
+	float* sBuffer_redux_y2 = (float*)&sBuffer_redux_x2[64];// sBuffer_redux_y2[64]
+	float* sBuffer_redux_z2 = (float*)&sBuffer_redux_y2[64];// sBuffer_redux_z2[64]
 	// --------------------------------------------------------
 
 
@@ -2920,66 +3453,265 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 		tile_pos.w = 0;	// Current tile position within [0,63]
 
 		for (tile_pos.z = 0; tile_pos.z < 4; tile_pos.z++)
+		{
+			C = TEX_REF(LUT_Bspline_z, tile_pos.z * tile_dim.z + voxel_loc.z);
 			for (tile_pos.y = 0; tile_pos.y < 4; tile_pos.y++)
-				for (tile_pos.x = 0; tile_pos.x < 4; tile_pos.x++)
+			{
+				B = C * TEX_REF(LUT_Bspline_y, tile_pos.y * tile_dim.y + voxel_loc.y);
+				tile_pos.x = 0;
+
+				// #### FIRST HALF ####
+
+				// ---------------------------------------------------------------------------------
+				// Do the 1st two x-positions out of four using our two
+				// blocks of shared memory for reduction
+
+				// Calculate the b-spline multiplier for this voxel @ this tile
+				// position relative to a given control knot.
+				// ---------------------------------------------------------------------------------
+				A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+
+				// Perform the multiplication and store to redux shared memory
+				sBuffer_redux_x[threadIdx.x] = voxel_val.x * A;
+				sBuffer_redux_y[threadIdx.x] = voxel_val.y * A;
+				sBuffer_redux_z[threadIdx.x] = voxel_val.z * A;
+				tile_pos.x++;
+
+				// Calculate the b-spline multiplier for this voxel @ the next tile
+				// position relative to a given control knot.
+				A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+
+				// Perform the multiplication and store to redux shared memory
+				// for the second position
+				sBuffer_redux_x2[threadIdx.x] = voxel_val.x * A;
+				sBuffer_redux_y2[threadIdx.x] = voxel_val.y * A;
+				sBuffer_redux_z2[threadIdx.x] = voxel_val.z * A;
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
+
+
+				// ---------------------------------------------------------------------------------
+				// All 64 dc_dv values in the current cluster have been processed
+				// for the current 2 tile positions (out of 64 total tile positions).
+				
+				// We now perform a sum reduction on these 64 dc_dv values to
+				// condense the data down to one value.
+				// ---------------------------------------------------------------------------------
+				if (threadIdx.x < 32)
 				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 32];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 32];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 32];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 32];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 32];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 32];
+				}
+				__syncthreads();
 
-					// ---------------------------------------------------------------------------------
-					//                           STAGE 2 IN POWERPOINT
-					// ---------------------------------------------------------------------------------
+				if (threadIdx.x < 16)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 16];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 16];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 16];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 16];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 16];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 16];
+				}
+				__syncthreads();
 
-					// Clear Shared Memory!!
-					sBuffer_redux_x[threadIdx.x] = 0.0f;
-					sBuffer_redux_y[threadIdx.x] = 0.0f;
-					sBuffer_redux_z[threadIdx.x] = 0.0f;
+				if (threadIdx.x < 8)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 8];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 8];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 8];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 8];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 8];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 8];
+				}
+				__syncthreads();
 
-					// Calculate the b-spline multiplier for this voxel @ this tile
-					// position relative to a given control knot.
-					A = TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
-					B = TEX_REF(LUT_Bspline_y, tile_pos.y * tile_dim.y + voxel_loc.y);
-					C = TEX_REF(LUT_Bspline_z, tile_pos.z * tile_dim.z + voxel_loc.z);
-					D = A*B*C;
+				if (threadIdx.x < 4)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 4];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 4];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 4];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 4];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 4];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 4];
+				}
+				__syncthreads();
 
-					// Perform the multiplication and store to redux shared memory
-					sBuffer_redux_x[threadIdx.x] = voxel_val.x * D;
-					sBuffer_redux_y[threadIdx.x] = voxel_val.y * D;
-					sBuffer_redux_z[threadIdx.x] = voxel_val.z * D;
-					__syncthreads();
+				if (threadIdx.x < 2)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 2];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 2];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 2];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 2];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 2];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 2];
+				}
+				__syncthreads();
 
-					// All 64 dc_dv values in the current cluster have been processed
-					// for the current tile position (out of 64 total tile positions).
-					
-					// We now perform a sum reduction on these 64 dc_dv values to
-					// condense the data down to one value.
-					for(unsigned int s = 32; s > 0; s >>= 1)
-					{
-						if (threadIdx.x < s)
-						{
-							sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + s];
-							sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + s];
-							sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + s];
-						}
+				if (threadIdx.x < 1)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 1];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 1];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 1];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 1];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 1];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 1];
+				}
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
 
-						// Wait for all threads in to complete the current tier.
-						__syncthreads();
-					}
 
-					// We then accumulate this single condensed value into the element of
-					// shared memory that correlates to the current tile position.
-					if (threadIdx.x == 0)
-					{
-						sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
-						sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
-						sBuffer_z[tile_pos.w] += sBuffer_redux_z[0];
-					}
-					__syncthreads();
 
-					// Continue to work on the current voxel cluster, but shift
-					// to the next tile position.
+				// ---------------------------------------------------------------------------------
+				// We then accumulate this single condensed value into the element of
+				// shared memory that correlates to the current tile position.
+				// ---------------------------------------------------------------------------------
+				if (threadIdx.x == 0)
+				{
+					sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
+					sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
+					sBuffer_z[tile_pos.w] += sBuffer_redux_z[0];
 					tile_pos.w++;
-					// ---------------------------------------------------------------------------------
 
-				} // LOOP: 64 B-Spline Values for current voxel_cluster
+					sBuffer_x[tile_pos.w] += sBuffer_redux_x2[0];
+					sBuffer_y[tile_pos.w] += sBuffer_redux_y2[0];
+					sBuffer_z[tile_pos.w] += sBuffer_redux_z2[0];
+					tile_pos.w++;
+				}
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
+
+
+				// #### SECOND HALF ####
+
+				// ---------------------------------------------------------------------------------
+				// Do the 2nd two x-positions out of four using our two
+				// blocks of shared memory for reduction
+				// ---------------------------------------------------------------------------------
+				tile_pos.x++;
+				A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+
+				// Perform the multiplication and store to redux shared memory
+				sBuffer_redux_x[threadIdx.x] = voxel_val.x * A;
+				sBuffer_redux_y[threadIdx.x] = voxel_val.y * A;
+				sBuffer_redux_z[threadIdx.x] = voxel_val.z * A;
+				tile_pos.x++;
+
+				// Calculate the b-spline multiplier for this voxel @ the next tile
+				// position relative to a given control knot.
+				A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+
+				// Perform the multiplication and store to redux shared memory
+				// for the second position
+				sBuffer_redux_x2[threadIdx.x] = voxel_val.x * A;
+				sBuffer_redux_y2[threadIdx.x] = voxel_val.y * A;
+				sBuffer_redux_z2[threadIdx.x] = voxel_val.z * A;
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
+
+
+					
+				// ---------------------------------------------------------------------------------
+				// All 64 dc_dv values in the current cluster have been processed
+				// for the current 2 tile positions (out of 64 total tile positions).
+				//
+				// We now perform a sum reduction on these 64 dc_dv values to
+				// condense the data down to one value.
+				// ---------------------------------------------------------------------------------
+				if (threadIdx.x < 32)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 32];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 32];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 32];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 32];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 32];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 32];
+				}
+				__syncthreads();
+
+				if (threadIdx.x < 16)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 16];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 16];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 16];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 16];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 16];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 16];
+				}
+				__syncthreads();
+
+				if (threadIdx.x < 8)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 8];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 8];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 8];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 8];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 8];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 8];
+				}
+				__syncthreads();
+
+				if (threadIdx.x < 4)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 4];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 4];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 4];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 4];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 4];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 4];
+				}
+				__syncthreads();
+
+				if (threadIdx.x < 2)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 2];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 2];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 2];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 2];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 2];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 2];
+				}
+				__syncthreads();
+
+				if (threadIdx.x < 1)
+				{
+					sBuffer_redux_x[threadIdx.x] += sBuffer_redux_x[threadIdx.x + 1];
+					sBuffer_redux_y[threadIdx.x] += sBuffer_redux_y[threadIdx.x + 1];
+					sBuffer_redux_z[threadIdx.x] += sBuffer_redux_z[threadIdx.x + 1];
+					sBuffer_redux_x2[threadIdx.x] += sBuffer_redux_x2[threadIdx.x + 1];
+					sBuffer_redux_y2[threadIdx.x] += sBuffer_redux_y2[threadIdx.x + 1];
+					sBuffer_redux_z2[threadIdx.x] += sBuffer_redux_z2[threadIdx.x + 1];
+				}
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
+
+
+
+				// ---------------------------------------------------------------------------------
+				// We then accumulate this single condensed value into the element of
+				// shared memory that correlates to the current tile position.
+				// ---------------------------------------------------------------------------------
+				if (threadIdx.x == 0)
+				{
+					sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
+					sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
+					sBuffer_z[tile_pos.w] += sBuffer_redux_z[0];
+					tile_pos.w++;
+
+					sBuffer_x[tile_pos.w] += sBuffer_redux_x2[0];
+					sBuffer_y[tile_pos.w] += sBuffer_redux_y2[0];
+					sBuffer_z[tile_pos.w] += sBuffer_redux_z2[0];
+					tile_pos.w++;
+				}
+				__syncthreads();
+				// ---------------------------------------------------------------------------------
+
+			}
+		} // LOOP: 64 B-Spline Values for current voxel_cluster
 
 	} // LOOP: voxel_clusters
 
@@ -2989,11 +3721,6 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch(
 	// ----------------------------------------------------------
 	// By this point every voxel cluster within the tile has been
 	// processed for every possible tile position (there are 64).
-	//
-	// Now it is time to put these 64 condensed values in their
-	// proper places.  We will work off of myGlobalWarpNumber,
-	// which is equal to the tile index, and myWarpId, which is
-	// equal to the knot number [0,63].
 	// ----------------------------------------------------------
 	// HERE, EACH WARP OPERATES ON A SINGLE TILE'S SET OF 64!!
 	// ----------------------------------------------------------
@@ -14119,7 +14846,8 @@ void CUDA_bspline_mse_2_condense_64_texfetch(
 	}
 
 	dim3 dimGrid(Grid_x, Grid_y, 1);
-	int smemSize = 384*sizeof(float);
+//	int smemSize = 384*sizeof(float);
+	int smemSize = 576*sizeof(float);
 	// ----------------------------------------------------------
 
 

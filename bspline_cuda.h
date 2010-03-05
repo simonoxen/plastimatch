@@ -452,6 +452,7 @@ extern "C" {
     
     void bspline_cuda_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
     
+    void bspline_cuda_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
     
     //
     // -------------------------------------------------------------------
