@@ -182,6 +182,31 @@ volume_convert_to_float (Volume* ref)
 	/* Nothing to do */
 	break;
     case PT_UINT32:
+	{
+	    int v;
+	    uint32_t* old_img;
+	    float* new_img;
+
+	    old_img = (uint32_t*) ref->img;
+	    new_img = (float*) malloc (sizeof(float) * ref->npix);
+	    if (!new_img) {
+		fprintf (stderr, "Memory allocation failed.\n");
+		exit(1);
+	    }
+	    for (v = 0; v < ref->npix; v++) {
+		static int once = 0;
+		new_img[v] = (float) old_img[v];
+		if (!once && old_img[v] != 0) {
+		    printf ("DATA %d %d -> %f\n", v, old_img[v], new_img[v]);
+		    once = 1;
+		}
+	    }
+	    ref->pix_size = sizeof(float);
+	    ref->pix_type = PT_FLOAT;
+	    ref->img = (void*) new_img;
+	    free (old_img);
+	}
+	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
     default:
@@ -230,6 +255,54 @@ volume_convert_to_short (Volume* ref)
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to SHORT\n");
+	exit (-1);
+	break;
+    }
+}
+
+void
+volume_convert_to_uint32 (Volume* ref)
+{
+    switch (ref->pix_type) {
+    case PT_UCHAR:
+    case PT_SHORT:
+	fprintf (stderr, "Sorry, UCHAR/SHORT to UINT32 is not implemented\n");
+	exit (-1);
+	break;
+    case PT_FLOAT:
+	{
+	    int v;
+	    float* old_img;
+	    uint32_t* new_img;
+
+	    old_img = (float*) ref->img;
+	    new_img = (uint32_t*) malloc (sizeof(uint32_t) * ref->npix);
+	    if (!new_img) {
+		fprintf (stderr, "Memory allocation failed.\n");
+		exit(1);
+	    }
+	    for (v = 0; v < ref->npix; v++) {
+		static int once = 0;
+		new_img[v] = (uint32_t) old_img[v];
+		if (!once && old_img[v] != 0) {
+		    printf ("DATA %d %f -> %d\n", v, old_img[v], new_img[v]);
+		    once = 1;
+		}
+	    }
+	    ref->pix_size = sizeof (uint32_t);
+	    ref->pix_type = PT_UINT32;
+	    ref->img = (void*) new_img;
+	    free (old_img);
+	}
+	break;
+    case PT_UINT32:
+	/* Nothing to do */
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to UINT32\n");
 	exit (-1);
 	break;
     }

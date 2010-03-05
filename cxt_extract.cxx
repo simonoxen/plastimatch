@@ -70,8 +70,8 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
     typedef itk::AndConstantToImageFilter<UInt32Image2DType, 
 	    uint32_t, UCharImage2DType> AndFilterType;
 
-
     IteratorType itSlice (image, image->GetLargestPossibleRegion());
+
     typename AndFilterType::Pointer and_filter 
 	    = AndFilterType::New();
 

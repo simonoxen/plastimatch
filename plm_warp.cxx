@@ -150,7 +150,8 @@ plm_warp_native (
     im_warped->set_gpuit (v_out);
 
     /* Bspline_warp only operates on float.  We need to back-convert */
-    im_warped->convert_to_original_type ();
+    im_warped->convert (im_in->m_original_type);
+    im_warped->m_original_type = im_in->m_original_type;
 
     /* Return vf to caller */
     if (vf) {

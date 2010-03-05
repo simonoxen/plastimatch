@@ -50,7 +50,11 @@ gpuit_EXPORT
 void volume_destroy (Volume* vol);
 gpuit_EXPORT
 void volume_convert_to_float (Volume* ref);
+gpuit_EXPORT
 void volume_convert_to_short (Volume* ref);
+gpuit_EXPORT
+void
+volume_convert_to_uint32 (Volume* ref);
 gpuit_EXPORT
 void vf_convert_to_interleaved (Volume* ref);
 void vf_convert_to_planar (Volume* ref, int min_size);

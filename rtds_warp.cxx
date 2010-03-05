@@ -7,6 +7,7 @@
 #include "cxt_to_mha.h"
 #include "file_util.h"
 #include "gdcm_rtss.h"
+#include "plm_image_type.h"
 #include "plm_warp.h"
 #include "rtds_warp.h"
 #include "xio_structures.h"
@@ -200,10 +201,14 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
     }
 
     /* If we are warping, re-extract polylines into cxt */
+    /* GCS FIX: This is only necessary if we are outputting polylines. 
+       Otherwise it is  wasting users time. */
     if (parms->xf_in_fn[0]) {
 	cxt_free_all_polylines (rtds->m_cxt);
+	pli_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	cxt_extract (rtds->m_cxt, pli_ss_img->m_itk_uint32, 
 	    rtds->m_cxt->num_structures);
+	printf ("Done.\n");
     }
 }
 

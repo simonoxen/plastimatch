@@ -200,6 +200,8 @@ cxt_free_all_polylines (Cxt_structure_list* cxt)
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    cxt_polyline_free (&curr_structure->pslist[j]);
 	}
+	free (curr_structure->pslist);
+
 	curr_structure->num_contours = 0;
 	curr_structure->pslist = 0;
     }

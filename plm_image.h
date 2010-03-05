@@ -47,6 +47,8 @@ private:
     void convert_to_itk_float ();
     plastimatch1_EXPORT
     void convert_to_gpuit_float ();
+    plastimatch1_EXPORT
+    void convert_to_gpuit_uint32 ();
 
 public:
     PlmImage () {
