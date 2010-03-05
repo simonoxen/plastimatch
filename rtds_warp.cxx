@@ -250,6 +250,11 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
 
+    /* Delete empty structures */
+    if (parms->prune_empty && rtds->m_cxt) {
+	cxt_prune_empty (rtds->m_cxt);
+    }
+
     /* Load transform */
     if (parms->xf_in_fn[0]) {
 	printf ("Loading xform (%s)\n", parms->xf_in_fn);
