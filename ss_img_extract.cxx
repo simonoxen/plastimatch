@@ -19,7 +19,7 @@ ss_img_extract (UInt32ImageType::Pointer image, int bit)
     AndFilterType::Pointer and_filter = AndFilterType::New();
 
     and_filter->SetInput (image);
-    and_filter->SetConstant (bit);
+    and_filter->SetConstant (1 << bit);
     try {
 	and_filter->Update ();
     }

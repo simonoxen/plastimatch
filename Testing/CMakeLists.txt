@@ -712,6 +712,51 @@ ADD_TEST (
   "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+PLM_ADD_TEST (
+  "plm-warp-e-stats-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-e_Patient.mha"
+  )
+ADD_TEST (
+  "plm-warp-e-check-2"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-2.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=0.385"
+  "-DUPPER_THRESH=0.395"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-warp-e-stats-3"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-e-labelmap.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-e-check-3"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-3.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=0.68"
+  "-DUPPER_THRESH=0.69"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-warp-e-stats-4"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-e-ss-img.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-e-check-4"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=1.05"
+  "-DUPPER_THRESH=1.15"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 ## -------------------------------------------------------------------------
 ## tps_warp

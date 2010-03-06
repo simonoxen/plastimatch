@@ -38,11 +38,13 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
     for (i = 0; i < rtds->m_cxt->num_structures; i++) {
 	Cxt_structure *curr_structure = &rtds->m_cxt->slist[i];
 	int bit = curr_structure->bit;
+	if (bit == -1) continue;
+
 	UCharImageType::Pointer prefix_img = ss_img_extract (
 	    rtds->m_ss_img->m_itk_uint32, bit);
 	char fn[_MAX_PATH];
 	compose_prefix_fn (fn, _MAX_PATH, curr_structure->name, parms);
-	printf ("Trying to save prefix image: %s\n", fn);
+	printf ("Trying to save prefix image: [%d,%d], %s\n", i, bit, fn);
 	itk_image_save (prefix_img, fn);
     }
 }
