@@ -84,14 +84,6 @@ Rtds::convert_ss_img_to_cxt (void)
     }
     this->m_cxt = cxt_create ();
 
-#if defined (commentout)
-    /* Set structure names */
-    if (parms->input_ss_list[0]) {
-	cxt_load_ss_list (rtds->m_cxt, parms->input_ss_list);
-	num_structs = rtds->m_cxt->num_structures;
-    }
-#endif
-
     /* Copy geometry from ss_img to cxt */
     cxt_set_geometry_from_plm_image (this->m_cxt, this->m_ss_img);
 

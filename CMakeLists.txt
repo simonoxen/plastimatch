@@ -541,6 +541,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	rtds.cxx rtds.h
 	rtds_warp.cxx rtds_warp.h
 	slice_extract.cxx slice_extract.h
+	ss_img_extract.cxx ss_img_extract.h
 	synthetic_mha.cxx synthetic_mha.h
 	tps.cxx tps.h
 	xio_ct.cxx xio_ct.h
