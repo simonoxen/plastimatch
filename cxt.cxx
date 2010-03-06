@@ -46,6 +46,7 @@ cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
     strncpy (new_structure->name, structure_name, CXT_BUFLEN);
     new_structure->name[CXT_BUFLEN-1] = 0;
     new_structure->id = structure_id;
+    new_structure->bit = -1;
     new_structure->color = color;
     new_structure->num_contours = 0;
     new_structure->pslist = 0;

@@ -57,10 +57,21 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 #endif
 
 /* This function only fills in the polylines.  Structure names, id, etc. 
-   will be assigned to default values if they are not already set. */
+   will be assigned to default values if they are not already set. 
+
+   By default, 32 structures will be searched.  If num_structs > 0, 
+   only structures with bits between 0 and num_structs-1 will be processed.
+
+   In the case that we are doing a cxt->mha, then warp, then mha->cxt, 
+   the cxt->mha step will mark the bit values in the cxt.  In this case, 
+   the caller should set check_cxt_bits, so that this function will 
+   look at the "bit" field in each cxt structure to see which bit
+   should be processed.
+*/
 template<class T>
 void
-cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
+cxt_extract (Cxt_structure_list *cxt, T image, int num_structs, 
+    bool check_cxt_bits)
 {
     typedef typename T::ObjectType ImageType;
     typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
@@ -82,12 +93,15 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
     /* If structure names are unknown, name them, and give them 
        arbitrary id numbers */
     for (int j = cxt->num_structures; j < num_structs; j++) {
+	/* Get a free id */
 	int k = 1;
 	while (cxt_find_structure_by_id (cxt, k)) k++;
+	/* Add the structure */
 	cxt_add_structure (cxt, "Unknown structure", 0, k);
     }
 
     /* Loop through slices */
+    int slice_no = 0;
     itSlice.SetFirstDirection(0);
     itSlice.SetSecondDirection(1);
     while (!itSlice.IsAtEnd())
@@ -106,14 +120,27 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
 	    /* And the current slice with the mask for this structure */
 	    Cxt_structure *curr_structure = &cxt->slist[j];
 
-	    uint32_t val = (1 << curr_structure->id);
+	    /* Choose the bit value for this structure */
+	    uint32_t val;
+	    if (check_cxt_bits) {
+		if (curr_structure->bit == -1) {
+		    /* Skip if this structure is not represented in image */
+		    continue;
+		} else {
+		    val = (1 << curr_structure->bit);
+		}
+	    } else {
+		val = (1 << j);
+	    }
+
+	    /* Mask the slice with this bit */
 	    and_filter->SetConstant (val);
 	    try {
 		and_filter->Update ();
 	    }
 	    catch (itk::ExceptionObject &err) {
-		std::cout << "Exception during and operation." << std::endl; 
-		std::cout << err << std::endl; 
+		std::cout << "Exception during and operation." << std::endl;
+		std::cout << err << std::endl;
 		exit (1);
 	    }
 	    uchar_slice = and_filter->GetOutput ();
@@ -131,10 +158,13 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
 	    }
 	    catch (itk::ExceptionObject &err) {
 		std::cout << "Exception during marching squares." 
-			  << std::endl; 
-		std::cout << err << std::endl; 
+			  << std::endl;
+		std::cout << err << std::endl;
 		exit (1);
 	    }
+
+	    printf ("Extract: %d / %d (%d contours)\n", j, val, 
+		contour_filter->GetNumberOfOutputs());
 
 	    /* Add marching squares output to cxt.  Loop through 
 	       contours on this slice... */
@@ -153,6 +183,7 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
 			malloc (vertices->Size() * sizeof(float));
 		curr_polyline->z = (float*) 
 			malloc (vertices->Size() * sizeof(float));
+		curr_polyline->slice_no = slice_no;
 		/* Loop through vertices of this output contour */
 		for (unsigned int k = 0; k < vertices->Size(); k++) {
 		    const VertexType& vertex = vertices->ElementAt (k);
@@ -169,8 +200,9 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs)
 	    }
 	}
 	itSlice.NextSlice();
+	slice_no ++;
     }
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *cxt, UInt32ImageType::Pointer image, int num_structs);
+template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

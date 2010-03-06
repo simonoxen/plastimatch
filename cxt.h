@@ -24,7 +24,8 @@ typedef struct cxt_structure Cxt_structure;
 struct cxt_structure {
     char name[CXT_BUFLEN];
     bstring color;
-    int id;
+    int id;                    /* Used for import/export (must be >= 1) */
+    int bit;                   /* Used for ss-img (-1 for no bit) */
     int num_contours;
     Cxt_polyline* pslist;
 };

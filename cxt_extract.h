@@ -8,6 +8,6 @@
 #include "cxt_io.h"
 
 template<class T> void cxt_extract (Cxt_structure_list *structures, T image,
-				    int num_structs);
+    int num_structs, bool check_cxt_bits);
 
 #endif

@@ -20,6 +20,7 @@ public:
     Volume* ss_img_vol;
 
     int curr_struct_no;
+    int curr_bit;
 };
 
 #if defined __cplusplus

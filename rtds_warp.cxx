@@ -38,7 +38,7 @@ load_ss_img (Rtds *rtds, Warp_parms *parms)
     /* Extract polylines */
     printf ("Running marching squares (%d structs)...\n", num_structs);
     pli->convert (PLM_IMG_TYPE_ITK_ULONG);
-    cxt_extract (rtds->m_cxt, pli->m_itk_uint32, num_structs);
+    cxt_extract (rtds->m_cxt, pli->m_itk_uint32, num_structs, false);
     printf ("Done.\n");
 
     /* Set UIDs */
@@ -156,11 +156,13 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 	plm_warp (tmp, 0, xf, pih, pli_labelmap, 0, parms->use_itk, 0);
 	delete pli_labelmap;
 	pli_labelmap = tmp;
+	pli_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
 
 	tmp = new PlmImage;
 	plm_warp (tmp, 0, xf, pih, pli_ss_img, 0, parms->use_itk, 0);
 	delete pli_ss_img;
 	pli_ss_img = tmp;
+	pli_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     }
 
     /* Write out labelmap, ss_img */
@@ -175,6 +177,12 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 	printf ("Done.\n");
     }
 
+    /* Write out prefix images .. */
+    if (parms->output_prefix[0]) {
+	/* GCS FIX */
+	print_and_exit ("Sorry, prefix image export disabled.\n");
+    }
+
     /* Write out list of structure names */
     if (parms->output_ss_list[0]) {
 	int i;
@@ -185,19 +193,13 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 	    Cxt_structure *curr_structure;
 	    curr_structure = &rtds->m_cxt->slist[i];
 	    fprintf (fp, "%d|%s|%s\n",
-		i, 
+		curr_structure->bit, 
 		(curr_structure->color 
 		    ? (const char*) curr_structure->color->data 
 		    : "255\\0\\0"),
 		curr_structure->name);
 	}
 	fclose (fp);
-    }
-
-    /* Write out prefix images .. */
-    if (parms->output_prefix[0]) {
-	/* GCS FIX */
-	print_and_exit ("Sorry, prefix image export disabled.\n");
     }
 
     /* If we are warping, re-extract polylines into cxt */
@@ -207,7 +209,7 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 	cxt_free_all_polylines (rtds->m_cxt);
 	pli_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	cxt_extract (rtds->m_cxt, pli_ss_img->m_itk_uint32, 
-	    rtds->m_cxt->num_structures);
+	    rtds->m_cxt->num_structures, true);
 	printf ("Done.\n");
     }
 }
@@ -223,7 +225,7 @@ save_ss_output (Rtds *rtds,  Xform *xf,
     warp_and_save_ss_img (rtds, xf, pih, parms);
 
     if (parms->output_cxt[0]) {
-	cxt_save (rtds->m_cxt, parms->output_cxt, true);
+	cxt_save (rtds->m_cxt, parms->output_cxt, false);
     }
 
     if (parms->output_xio_dirname[0]) {

@@ -20,11 +20,11 @@
 
 void
 cxt_to_mha_init (
-    Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures,
-    bool want_prefix_imgs,
-    bool want_labelmap,
-    bool want_ss_img
+    Cxt_to_mha_state *ctm_state,       /* Output */
+    Cxt_structure_list *structures,    /* Input */
+    bool want_prefix_imgs,             /* Input */
+    bool want_labelmap,                /* Input */
+    bool want_ss_img                   /* Input */
 )
 {
     int slice_voxels;
@@ -69,13 +69,14 @@ cxt_to_mha_init (
 
     /* Initialize to start with first structure */
     ctm_state->curr_struct_no = 0;
+    ctm_state->curr_bit = 0;
 }
 
 /* Return true if an image was processed */
 bool
 cxt_to_mha_process_next (
-    Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
+    Cxt_to_mha_state *ctm_state,       /* In/out */
+    Cxt_structure_list *structures     /* In/out */
 )
 {
     Cxt_structure* curr_structure;
@@ -129,7 +130,7 @@ cxt_to_mha_process_next (
 	    uint32_slice = &labelmap_img[curr_contour->slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		if (ctm_state->acc_img[k]) {
-		    uint32_slice[k] = ctm_state->curr_struct_no + 1;
+		    uint32_slice[k] = ctm_state->curr_bit + 1;
 		}
 	    }
 	}
@@ -140,13 +141,17 @@ cxt_to_mha_process_next (
 	    uint32_slice = &ss_img_img[curr_contour->slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		if (ctm_state->acc_img[k]) {
-		    uint32_slice[k] |= (1 << ctm_state->curr_struct_no);
+		    uint32_slice[k] |= (1 << ctm_state->curr_bit);
 		}
 	    }
 	}
     }
 
     ctm_state->curr_struct_no ++;
+    if (curr_structure->num_contours > 0) {
+	curr_structure->bit = ctm_state->curr_bit;
+	ctm_state->curr_bit ++;
+    }
     return true;
 }
 
