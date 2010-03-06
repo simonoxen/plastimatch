@@ -237,6 +237,7 @@ read_bxf (char* filename)
     return bxf;
 
 free_exit:
+    fclose (fp);
     free (bxf);
     return 0;
 }
