@@ -11,8 +11,8 @@
 #include "math_util.h"
 #include "plm_image_header.h"
 
-void
-cxt_xorlist_load (Cxt_structure_list* cxt, const char* xorlist_fn)
+Cxt_structure_list*
+cxt_load_ss_list (Cxt_structure_list* cxt, const char* xorlist_fn)
 {
     FILE* fp;
 
@@ -22,6 +22,10 @@ cxt_xorlist_load (Cxt_structure_list* cxt, const char* xorlist_fn)
 	fprintf (stderr, 
 		 "Could not open xorlist file for read: %s\n", xorlist_fn);
         exit (-1);
+    }
+
+    if (!cxt) {
+	cxt = cxt_create ();
     }
 
     /* Part 2: Structures info */
@@ -49,6 +53,7 @@ cxt_xorlist_load (Cxt_structure_list* cxt, const char* xorlist_fn)
     }
 
     fclose (fp);
+    return cxt;
 }
 
 void

@@ -12,8 +12,8 @@ extern "C" {
 #endif
 
 plastimatch1_EXPORT
-void
-cxt_xorlist_load (Cxt_structure_list* structures, const char* xorlist_fn);
+Cxt_structure_list*
+cxt_load_ss_list (Cxt_structure_list* structures, const char* xorlist_fn);
 plastimatch1_EXPORT
 void
 cxt_load (Cxt_structure_list* structures, const char* cxt_fn);

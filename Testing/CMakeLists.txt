@@ -582,6 +582,11 @@ PLM_ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp
+##   plm warp a: xf = bspline, algorithm = itk
+##   plm warp b: xf = bspline, algorithm = native
+##   plm warp c: xf = bspline, algorithm = itk, interp = nn
+##   plm warp d: xf = bspline, algorithm = native, interp = nn
+##   plm warp e: input = xio, multiple outputs
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-warp-a" 
@@ -612,18 +617,33 @@ PLM_ADD_TEST (
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
   )
 PLM_ADD_TEST (
-  "plm-warp-b-stats"
+  "plm-warp-b-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
   "stats;--input;plm-warp-b-vf.mha"
   )
 ADD_TEST (
-  "plm-warp-b-check"
+  "plm-warp-b-check-1"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-1.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
   "-DLOWER_THRESH=2.26"
   "-DUPPER_THRESH=2.28"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-warp-b-stats-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-b.mha"
+  )
+ADD_TEST (
+  "plm-warp-b-check-2"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-2.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-843.8"
+  "-DUPPER_THRESH=-843.6"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -637,15 +657,15 @@ PLM_ADD_TEST (
   "plm-warp-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;plm-warp-c-vf.mha"
+  "stats;--input;plm-warp-c.mha"
   )
 ADD_TEST (
   "plm-warp-c-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-c-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=2.26"
-  "-DUPPER_THRESH=2.28"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=8.0"
+  "-DUPPER_THRESH=8.2"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -659,15 +679,37 @@ PLM_ADD_TEST (
   "plm-warp-d-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;plm-warp-d-vf.mha"
+  "stats;--input;plm-warp-d.mha"
   )
 ADD_TEST (
   "plm-warp-d-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-d-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=2.26"
-  "-DUPPER_THRESH=2.28"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=8.0"
+  "-DUPPER_THRESH=8.2"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "plm-warp-e" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e__;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt"
+  )
+PLM_ADD_TEST (
+  "plm-warp-e-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-e-img.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-e-check-1"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-1.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-661.5"
+  "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 

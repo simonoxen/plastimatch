@@ -5,13 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cxt_extract.h"
 #include "rtds.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_io.h"
 #include "xio_structures.h"
 
-void Rtds::load_xio (char *xio_dir)
+void
+Rtds::load_xio (char *xio_dir)
 {
     Xio_dir *xd;
     Xio_patient_dir *xpd;
@@ -49,4 +51,61 @@ void Rtds::load_xio (char *xio_dir)
     /* Copy geometry from Xio CT to structures */
     printf ("calling cxt_set_geometry_from_plm_image\n");
     cxt_set_geometry_from_plm_image (this->m_cxt, this->m_img);
+}
+
+void
+Rtds::load_ss_img (char *ss_img, char *ss_list)
+{
+    /* Load ss_img */
+    if (this->m_ss_img) {
+	delete this->m_ss_img;
+    }
+    if (ss_img) {
+	this->m_ss_img = plm_image_load_native (ss_img);
+    }
+
+    /* Load ss_list */
+    if (this->m_ss_list) {
+	cxt_destroy (this->m_ss_list);
+    }
+    if (ss_list) {
+	this->m_ss_list = cxt_load_ss_list (0, ss_list);
+    }
+}
+
+void
+Rtds::convert_ss_img_to_cxt (void)
+{
+    int num_structs = -1;
+
+    /* Allocate memory for cxt */
+    if (this->m_cxt) {
+	cxt_destroy (this->m_cxt);
+    }
+    this->m_cxt = cxt_create ();
+
+#if defined (commentout)
+    /* Set structure names */
+    if (parms->input_ss_list[0]) {
+	cxt_load_ss_list (rtds->m_cxt, parms->input_ss_list);
+	num_structs = rtds->m_cxt->num_structures;
+    }
+#endif
+
+    /* Copy geometry from ss_img to cxt */
+    cxt_set_geometry_from_plm_image (this->m_cxt, this->m_ss_img);
+
+    /* Extract polylines */
+	num_structs = this->m_ss_list->num_structures;
+    /* Image type must be uint32_t for cxt_extract */
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+
+    /* Do extraction */
+    printf ("Running marching squares\n");
+    if (this->m_ss_list) {
+	cxt_clone_empty (this->m_cxt, this->m_ss_list);
+	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
+    } else {
+	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
+    }
 }

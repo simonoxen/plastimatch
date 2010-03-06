@@ -26,14 +26,16 @@ cxt_init (Cxt_structure_list* cxt)
     memset (cxt, 0, sizeof (Cxt_structure_list));
 }
 
-void
+/* Add structure (if it doesn't already exist) */
+Cxt_structure*
 cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
-		   bstring color, int structure_id)
+    bstring color, int structure_id)
 {
     Cxt_structure* new_structure;
 
-    if (cxt_find_structure_by_id (cxt, structure_id)) {
-	return;
+    new_structure = cxt_find_structure_by_id (cxt, structure_id);
+    if (new_structure) {
+	return new_structure;
     }
 
     cxt->num_structures++;
@@ -50,6 +52,7 @@ cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
     new_structure->color = color;
     new_structure->num_contours = 0;
     new_structure->pslist = 0;
+    return new_structure;
 }
 
 Cxt_polyline*
@@ -188,6 +191,35 @@ cxt_structure_free (Cxt_structure* structure)
     structure->id = -1;
     structure->num_contours = 0;
     structure->pslist = 0;
+}
+
+/* Copy structure name, id, color, but not contents */
+Cxt_structure_list*
+cxt_clone_empty (
+    Cxt_structure_list* cxt_out, 
+    Cxt_structure_list* cxt_in
+)
+{
+    int i;
+
+    /* Initialize output cxt */
+    if (cxt_out) {
+	cxt_free (cxt_out);
+    } else {
+	cxt_out = cxt_create ();
+    }
+
+    for (i = 0; i < cxt_in->num_structures; i++) {
+	Cxt_structure *old_structure = &cxt_in->slist[i];
+	Cxt_structure *new_structure = cxt_add_structure (
+	    cxt_out, old_structure->name,
+	    old_structure->color, old_structure->id);
+
+	/* Copy bit */
+	new_structure->bit = old_structure->bit;
+    }
+
+    return cxt_out;
 }
 
 /* Clear the polylines, but keep structure name, id, color */

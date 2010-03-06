@@ -58,7 +58,7 @@ plastimatch1_EXPORT
 void
 cxt_init (Cxt_structure_list* structures);
 plastimatch1_EXPORT
-void
+Cxt_structure*
 cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
 		   bstring color, int structure_id);
 plastimatch1_EXPORT
@@ -85,6 +85,12 @@ cxt_prune_empty (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 void
 cxt_free_all_polylines (Cxt_structure_list* cxt);
+plastimatch1_EXPORT
+Cxt_structure_list*
+cxt_clone_empty (
+    Cxt_structure_list* cxt_out, 
+    Cxt_structure_list* cxt_in
+);
 plastimatch1_EXPORT
 void
 cxt_apply_geometry (Cxt_structure_list* structures);

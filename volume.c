@@ -11,6 +11,27 @@
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
+#define CONVERT_VOLUME(old_type,new_type,new_type_enum)	  \
+    {                                             \
+    int v;                                        \
+    old_type* old_img;                            \
+    new_type* new_img;                            \
+                                                  \
+    old_img = (old_type*) ref->img;               \
+    new_img = (new_type*) malloc (sizeof(new_type) * ref->npix); \
+    if (!new_img) {                               \
+      fprintf (stderr, "Memory allocation failed.\n"); \
+      exit(1);                                    \
+    }                                             \
+    for (v = 0; v < ref->npix; v++) {             \
+      new_img[v] = (new_type) old_img[v];         \
+    }                                             \
+    ref->pix_size = sizeof(new_type);             \
+    ref->pix_type = new_type_enum;                \
+    ref->img = (void*) new_img;                   \
+    free (old_img);                               \
+    }
+
 int
 volume_index (int* dims, int i, int j, int k)
 {
@@ -158,6 +179,8 @@ volume_convert_to_float (Volume* ref)
 	exit (-1);
 	break;
     case PT_SHORT:
+	CONVERT_VOLUME (short, float, PT_FLOAT);
+#if defined (commentout)
 	{
 	    int v;
 	    short* old_img;
@@ -177,11 +200,13 @@ volume_convert_to_float (Volume* ref)
 	    ref->img = (void*) new_img;
 	    free (old_img);
 	}
+#endif
 	break;
     case PT_FLOAT:
 	/* Nothing to do */
 	break;
     case PT_UINT32:
+#if defined (commentout)
 	{
 	    int v;
 	    uint32_t* old_img;
@@ -206,6 +231,8 @@ volume_convert_to_float (Volume* ref)
 	    ref->img = (void*) new_img;
 	    free (old_img);
 	}
+#endif
+	CONVERT_VOLUME (uint32_t, float, PT_FLOAT);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -229,6 +256,7 @@ volume_convert_to_short (Volume* ref)
 	/* Nothing to do */
 	break;
     case PT_FLOAT:
+#if defined (commentout)
 	{
 	    int v;
 	    float* old_img;
@@ -248,6 +276,8 @@ volume_convert_to_short (Volume* ref)
 	    ref->img = (void*) new_img;
 	    free (old_img);
 	}
+#endif
+	CONVERT_VOLUME (float, short, PT_SHORT);
 	break;
     case PT_UINT32:
     case PT_VF_FLOAT_INTERLEAVED:
@@ -270,6 +300,7 @@ volume_convert_to_uint32 (Volume* ref)
 	exit (-1);
 	break;
     case PT_FLOAT:
+#if defined (commentout)
 	{
 	    int v;
 	    float* old_img;
@@ -294,6 +325,8 @@ volume_convert_to_uint32 (Volume* ref)
 	    ref->img = (void*) new_img;
 	    free (old_img);
 	}
+#endif
+	CONVERT_VOLUME (float, uint32_t, PT_UINT32);
 	break;
     case PT_UINT32:
 	/* Nothing to do */

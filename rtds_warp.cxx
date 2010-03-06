@@ -13,33 +13,14 @@
 #include "xio_structures.h"
 
 static void
-load_ss_img (Rtds *rtds, Warp_parms *parms)
+convert_ss_img_to_cxt (Rtds *rtds, Warp_parms *parms)
 {
-    PlmImage *pli;
-    int num_structs = -1;
-
-    /* Load ss_img */
-    printf ("Loading input file...\n");
-    pli = plm_image_load_native (parms->input_ss_img);
-    printf ("Done.\n");
-
-    /* Allocate memory for cxt */
-    rtds->m_cxt = cxt_create ();
-
-    /* Set structure names */
-    if (parms->input_ss_list[0]) {
-	cxt_xorlist_load (rtds->m_cxt, parms->input_ss_list);
-	num_structs = rtds->m_cxt->num_structures;
+    if (!rtds->m_ss_img) {
+	return;
     }
 
-    /* Copy geometry to cxt */
-    cxt_set_geometry_from_plm_image (rtds->m_cxt, pli);
-
-    /* Extract polylines */
-    printf ("Running marching squares (%d structs)...\n", num_structs);
-    pli->convert (PLM_IMG_TYPE_ITK_ULONG);
-    cxt_extract (rtds->m_cxt, pli->m_itk_uint32, num_structs, false);
-    printf ("Done.\n");
+    /* Convert image to cxt */
+    rtds->convert_ss_img_to_cxt ();
 
     /* Set UIDs */
     if (parms->dicom_dir[0]) {
@@ -47,9 +28,6 @@ load_ss_img (Rtds *rtds, Warp_parms *parms)
 	cxt_apply_dicom_dir (rtds->m_cxt, parms->dicom_dir);
 	printf ("Done.\n");
     }
-
-    /* Free ss_img */
-    delete pli;
 }
 
 static void
@@ -98,7 +76,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (parms->input_ss_img[0]) {
-	load_ss_img (rtds, parms);
+	rtds->load_ss_img (parms->input_ss_img, parms->input_ss_list);
     }
 }
 
@@ -251,6 +229,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
+
+    /* Convert ss_img to cxt, etc */
+    convert_ss_img_to_cxt (rtds, parms);
 
     /* Delete empty structures */
     if (parms->prune_empty && rtds->m_cxt) {
