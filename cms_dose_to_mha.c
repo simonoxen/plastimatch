@@ -26,7 +26,7 @@ main (int argc, char *argv[])
     long offset; //deleteme when done debugging.
 
     char *mode = {"rc"}; /*rt vs. rc */
-    char array[200];char myarray[500];
+    char array[500];char myarray[500];
     char *result = NULL;
     int nn; int i; int j; int k;
     double rx; double ry; double rz; //dimension sizes
