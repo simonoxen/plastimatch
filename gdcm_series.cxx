@@ -30,10 +30,11 @@ gdcm_series_test (char *dicom_dir)
 }
 
 static void
-digest_file_list (gdcm::FileList *file_list, 
-		  double origin[3], 
-		  int dim[3], 
-		  double spacing[3])
+digest_file_list (
+    gdcm::FileList *file_list, 
+    double origin[3], 
+    int dim[3], 
+    double spacing[3])
 {
     int loop = 0;
     double prev_z;
