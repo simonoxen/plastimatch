@@ -7,7 +7,7 @@
 #include "plm_config.h"
 
 /* We only deal with these kinds of images. */
-enum PlmImageType {
+enum Plm_image_type {
     PLM_IMG_TYPE_UNDEFINED, 
     PLM_IMG_TYPE_ITK_CHAR, 
     PLM_IMG_TYPE_ITK_UCHAR, 
@@ -26,7 +26,7 @@ enum PlmImageType {
 };
 
 plastimatch1_EXPORT
-PlmImageType
+Plm_image_type
 plm_image_type_parse (const char* string);
 
 #endif

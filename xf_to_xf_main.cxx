@@ -17,7 +17,7 @@ void
 xf_to_xf_main (Xf_To_Xf_Parms* parms)
 {
     Xform xf_in, xf_out;
-    PlmImageHeader pih;
+    Plm_image_header pih;
 
     load_xform (&xf_in, parms->xf_in_fn);
     pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);

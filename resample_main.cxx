@@ -230,7 +230,7 @@ resample_main_itk_vf (Resample_parms* parms)
 void
 resample_main (Resample_parms* parms)
 {
-    PlmImage plm_image;
+    Plm_image plm_image;
 
     Plm_file_format file_format;
 

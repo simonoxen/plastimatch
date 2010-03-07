@@ -30,8 +30,8 @@ main (int argc, char * argv [])
 
     /* GCS FIX: This is a waste to load the whole image just to get 
        the header. */
-    PlmImage *pli_fixed = plm_image_load_native (plmslc_fixed_volume.c_str());
-    PlmImageHeader plih;
+    Plm_image *pli_fixed = plm_image_load_native (plmslc_fixed_volume.c_str());
+    Plm_image_header plih;
     plih.set_from_plm_image (pli_fixed);
     delete pli_fixed;
 
@@ -66,14 +66,14 @@ main (int argc, char * argv [])
     fclose (fp);
 
     /* Load image and warp it */
-    PlmImage *pli_moving = plm_image_load_native (plmslc_moving_volume.c_str());
+    Plm_image *pli_moving = plm_image_load_native (plmslc_moving_volume.c_str());
     Tps_xform *tps = tps_xform_load (fn);
     Volume *vout = volume_create (tps->img_dim, tps->img_origin, 
 	tps->img_spacing, PT_FLOAT, 0, 0);
     tps_warp (vout, 0, tps, pli_moving->gpuit_float(), 1, -1000);
 
     /* Export as slicer requests */
-    PlmImage pli_warped;
+    Plm_image pli_warped;
     pli_warped.set_gpuit (vout);  /* vout will be freed by container */
     pli_warped.convert_and_save (plmslc_warped_volume.c_str(), 
 	PLM_IMG_TYPE_ITK_FLOAT);

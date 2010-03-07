@@ -13,7 +13,7 @@ adjust_main (Adjust_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    PlmImage *plm_image = plm_image_load (parms->mha_in_fn, 
+    Plm_image *plm_image = plm_image_load (parms->mha_in_fn, 
 					  PLM_IMG_TYPE_ITK_FLOAT);
     FloatImageType::Pointer img = plm_image->m_itk_float;
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();

@@ -10,15 +10,15 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
-class PlmImageHeader;
-class PlmImage;
+class Plm_image_header;
+class Plm_image;
 
-class PlmImage {
+class Plm_image {
 
 public:
 
-    PlmImageType m_original_type;
-    PlmImageType m_type;
+    Plm_image_type m_original_type;
+    Plm_image_type m_type;
 
     /* The actual image is one of the following. */
     UCharImageType::Pointer m_itk_uchar;
@@ -31,10 +31,10 @@ public:
 
 private:
     /* Please don't use copy constructors.  They suck. */
-    PlmImage (PlmImage& xf) {
+    Plm_image (Plm_image& xf) {
     }
     /* Please don't use overloaded operators.  They suck. */
-    PlmImage& operator= (PlmImage& xf) {
+    Plm_image& operator= (Plm_image& xf) {
 	return *this;
     }
     plastimatch1_EXPORT
@@ -53,10 +53,10 @@ private:
     void convert_to_gpuit_float ();
 
 public:
-    PlmImage () {
+    Plm_image () {
 	clear ();
     }
-    ~PlmImage () {
+    ~Plm_image () {
 	free ();
     }
 
@@ -92,7 +92,7 @@ public:
     plastimatch1_EXPORT
     void save_image (const char* fname);
     plastimatch1_EXPORT
-    void convert_and_save (const char* fname, PlmImageType new_type);
+    void convert_and_save (const char* fname, Plm_image_type new_type);
 
     /* assignment */
     plastimatch1_EXPORT
@@ -108,7 +108,7 @@ public:
 	return (volume*) m_gpuit;
     }
     plastimatch1_EXPORT
-    void convert (PlmImageType new_type);
+    void convert (Plm_image_type new_type);
     plastimatch1_EXPORT
     void convert_to_original_type (void);
     plastimatch1_EXPORT
@@ -120,16 +120,16 @@ public:
 
     /* Other */
     plastimatch1_EXPORT
-    static int compare_headers (PlmImage *pli1, PlmImage *pli2);
+    static int compare_headers (Plm_image *pli1, Plm_image *pli2);
 };
 
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
 plastimatch1_EXPORT
-PlmImage* plm_image_load (char* fname, PlmImageType type);
+Plm_image* plm_image_load (char* fname, Plm_image_type type);
 plastimatch1_EXPORT
-PlmImage* plm_image_load_native (const char* fname);
+Plm_image* plm_image_load_native (const char* fname);
 plastimatch1_EXPORT
 void
 plm_image_save_vol (const char* fname, Volume *vol);

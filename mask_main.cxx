@@ -12,7 +12,7 @@
 static void
 mask_main (Mask_Parms* parms)
 {
-    PlmImage *img;
+    Plm_image *img;
     img = plm_image_load_native (parms->input_fn);
     if (!img) {
 	print_and_exit ("Error: could not open '%s' for read\n",

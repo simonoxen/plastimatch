@@ -25,7 +25,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
 {
     typedef itk::InverseDeformationFieldImageFilter < DeformationFieldType, DeformationFieldType >  FilterType;
     
-    PlmImageHeader pih;
+    Plm_image_header pih;
 
     if (parms->fixed_img_fn[0]) {
 	/* if given, use the parameters from user-supplied fixed image */
@@ -55,7 +55,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
     int i, j, k, v;
     int its;
     float x, y, z;
-    PlmImageHeader pih;
+    Plm_image_header pih;
     Volume *mask, *vf_in, *vf_inv, *vf_smooth, *vf_out;
     float *img_in, *img_inv, *img_smooth, *img_out;
     unsigned char *img_mask;

@@ -145,7 +145,7 @@ main (int argc, char* argv[])
     if (parms->fixed_fn[0]) {
 	FloatImageType::Pointer fixed = itk_image_load_float (
 	    parms->fixed_fn, 0);
-	PlmImageHeader pih;
+	Plm_image_header pih;
 	
 	pih.set_from_itk_image (fixed);
 	pih.get_gpuit_origin (structures->offset);

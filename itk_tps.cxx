@@ -27,7 +27,7 @@ do_tps (
     typedef typename PointSetType::Pointer PointSetPointer;
     typedef typename PointSetType::PointIdentifier PointIdType;
 
-    PlmImageHeader pih;
+    Plm_image_header pih;
     PointType p1;
     PointType p2;
     char line[BUFLEN];

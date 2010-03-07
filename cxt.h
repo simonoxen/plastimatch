@@ -98,13 +98,13 @@ plastimatch1_EXPORT
 void
 cxt_set_geometry_from_plm_image_header (
     Cxt_structure_list* cxt, 
-    PlmImageHeader *pih
+    Plm_image_header *pih
 );
 plastimatch1_EXPORT
 void
 cxt_set_geometry_from_plm_image (
     Cxt_structure_list* structures,
-    PlmImage *pli
+    Plm_image *pli
 );
 
 #if defined __cplusplus

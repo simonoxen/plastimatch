@@ -9,6 +9,6 @@
 
 plastimatch1_EXPORT 
 void
-xio_ct_load (PlmImage *plm, char *input_dir);
+xio_ct_load (Plm_image *plm, char *input_dir);
 
 #endif

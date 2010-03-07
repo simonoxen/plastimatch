@@ -15,7 +15,7 @@
 
 template <class T>
 T
-vector_resample_image (T& vf_image, PlmImageHeader* pih)
+vector_resample_image (T& vf_image, Plm_image_header* pih)
 {
     typedef typename T::ObjectType VFImageType;
     typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
@@ -336,7 +336,7 @@ subsample_image (T& image, int x_sampling_rate,
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, PlmImageHeader*);
+template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, Plm_image_header*);
 template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);

@@ -55,11 +55,11 @@ typedef itk::ImageRegion < Dimension > ImageRegionType;
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT UCharImageType::Pointer itk_image_load_uchar (const char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT ShortImageType::Pointer itk_image_load_short (const char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT UShortImageType::Pointer itk_image_load_ushort (const char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT UInt32ImageType::Pointer itk_image_load_uint32 (const char* fname, PlmImageType* original_type);
-plastimatch1_EXPORT FloatImageType::Pointer itk_image_load_float (const char* fname, PlmImageType* original_type);
+plastimatch1_EXPORT UCharImageType::Pointer itk_image_load_uchar (const char* fname, Plm_image_type* original_type);
+plastimatch1_EXPORT ShortImageType::Pointer itk_image_load_short (const char* fname, Plm_image_type* original_type);
+plastimatch1_EXPORT UShortImageType::Pointer itk_image_load_ushort (const char* fname, Plm_image_type* original_type);
+plastimatch1_EXPORT UInt32ImageType::Pointer itk_image_load_uint32 (const char* fname, Plm_image_type* original_type);
+plastimatch1_EXPORT FloatImageType::Pointer itk_image_load_float (const char* fname, Plm_image_type* original_type);
 plastimatch1_EXPORT DeformationFieldType::Pointer itk_image_load_float_field (const char* fname);
 
 plastimatch1_EXPORT void itk__GetImageType (std::string fileName,

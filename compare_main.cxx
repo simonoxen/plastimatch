@@ -13,7 +13,7 @@
 static void
 compare_main (Compare_parms* parms)
 {
-    PlmImage *img1, *img2;
+    Plm_image *img1, *img2;
 
     img1 = plm_image_load_native (parms->img_in_1_fn);
     if (!img1) {
@@ -26,7 +26,7 @@ compare_main (Compare_parms* parms)
 		       parms->img_in_2_fn);
     }
 
-    if (!PlmImage::compare_headers (img1, img2)) {
+    if (!Plm_image::compare_headers (img1, img2)) {
 	print_and_exit ("Error: image sizes do not match\n");
     }
 

@@ -20,7 +20,7 @@ T
 vector_mask_image (T& vf_image, float* origin, float* spacing, int* size);
 template <class T>
 T
-vector_mask_image (T& vf_image, PlmImageHeader* pih);
+vector_mask_image (T& vf_image, Plm_image_header* pih);
 #endif
 
 template <class T>

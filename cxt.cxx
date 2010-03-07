@@ -295,7 +295,7 @@ cxt_apply_geometry (Cxt_structure_list* cxt)
 void
 cxt_set_geometry_from_plm_image_header (
     Cxt_structure_list* cxt,
-    PlmImageHeader *pih
+    Plm_image_header *pih
 )
 {
     pih->get_gpuit_origin (cxt->offset);
@@ -309,10 +309,10 @@ cxt_set_geometry_from_plm_image_header (
 void
 cxt_set_geometry_from_plm_image (
     Cxt_structure_list* cxt, 
-    PlmImage *pli
+    Plm_image *pli
 )
 {
-    PlmImageHeader pih;
+    Plm_image_header pih;
     pih.set_from_plm_image (pli);
     cxt_set_geometry_from_plm_image_header (cxt, &pih);
 }

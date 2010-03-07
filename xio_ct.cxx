@@ -124,7 +124,7 @@ xio_ct_load_header (Xio_ct_header *xch, const char *filename)
 
 static void
 xio_ct_load_image (
-    PlmImage *pli, 
+    Plm_image *pli, 
     int slice_no,
     const char *filename
 )
@@ -170,7 +170,7 @@ xio_ct_load_image (
 
 static void
 xio_ct_create_volume (
-    PlmImage *pli, 
+    Plm_image *pli, 
     Xio_ct_header *xch,
     int best_chunk_len,
     float best_chunk_diff
@@ -221,7 +221,7 @@ xio_ct_create_volume (
       the structures from XiO coordinates to Dicom.
 */
 void
-xio_ct_load (PlmImage *pli, char *input_dir)
+xio_ct_load (Plm_image *pli, char *input_dir)
 {
     //const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";
     const char *filename_re = "T\\.([-\\.0-9]*)\\.(CT|MR)";

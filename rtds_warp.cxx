@@ -25,7 +25,7 @@ static void
 prefix_output_save (Rtds *rtds, Warp_parms *parms)
 {
     int i;
-    PlmImage *ss_img;
+    Plm_image *ss_img;
 
     ss_img = rtds->m_ss_img;
     if (!ss_img) {
@@ -111,9 +111,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
 static void
 warp_and_save_ss_img (Rtds *rtds, Xform *xf, 
-    PlmImageHeader *pih, Warp_parms *parms)
+    Plm_image_header *pih, Warp_parms *parms)
 {
-    PlmImage *pli_labelmap = new PlmImage;
+    Plm_image *pli_labelmap = new Plm_image;
 
     printf ("Saving ss_img... (cxt=%p, ss_img=%p)\n", 
 	rtds->m_cxt, rtds->m_ss_img);
@@ -137,7 +137,7 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 	if (rtds->m_ss_img) {
 	    delete rtds->m_ss_img;
 	}
-	rtds->m_ss_img = new PlmImage;
+	rtds->m_ss_img = new Plm_image;
 	rtds->m_ss_img->set_gpuit (ctm_state->ss_img_vol);
 	ctm_state->ss_img_vol = 0;
 
@@ -168,15 +168,15 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 
     /* If we are warping, warp rasterized image(s) */
     if (parms->xf_in_fn[0]) {
-	PlmImage *tmp;
+	Plm_image *tmp;
 
-	tmp = new PlmImage;
+	tmp = new Plm_image;
 	plm_warp (tmp, 0, xf, pih, pli_labelmap, 0, parms->use_itk, 0);
 	delete pli_labelmap;
 	pli_labelmap = tmp;
 	pli_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
 
-	tmp = new PlmImage;
+	tmp = new Plm_image;
 	plm_warp (tmp, 0, xf, pih, rtds->m_ss_img, 0, parms->use_itk, 0);
 	delete rtds->m_ss_img;
 	rtds->m_ss_img = tmp;
@@ -233,7 +233,7 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 
 static void
 save_ss_output (Rtds *rtds,  Xform *xf, 
-    PlmImageHeader *pih, Warp_parms *parms)
+    Plm_image_header *pih, Warp_parms *parms)
 {
     if (!rtds->m_cxt) {
 	return;
@@ -264,7 +264,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     DeformationFieldType::Pointer vf = DeformationFieldType::New();
     Xform xform;
-    PlmImageHeader pih;
+    Plm_image_header pih;
 
     /* Load input file(s) */
     load_input_files (rtds, file_type, parms);
@@ -322,8 +322,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_img && parms->xf_in_fn[0] 
 	&& (parms->output_img[0] || parms->output_vf[0]))
     {
-	PlmImage *im_out;
-	im_out = new PlmImage;
+	Plm_image *im_out;
+	im_out = new Plm_image;
 	plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
 	    parms->use_itk, parms->interp_lin);
 	delete rtds->m_img;

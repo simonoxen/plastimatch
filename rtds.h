@@ -11,11 +11,11 @@
 /* rtds = RT data set */
 class Rtds {
 public:
-    PlmImage *m_img;                     /* CT image */
+    Plm_image *m_img;                     /* CT image */
     Cxt_structure_list *m_cxt;           /* Structure set in polyline form */
-    PlmImage *m_ss_img;                  /* Structure set in bitmap form */
+    Plm_image *m_ss_img;                  /* Structure set in bitmap form */
     Cxt_structure_list *m_ss_list;       /* Names of structures/bitmap form */
-    PlmImage *m_dose;                    /* RT dose */
+    Plm_image *m_dose;                    /* RT dose */
 public:
     Rtds () {
 	m_img = 0;

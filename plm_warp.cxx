@@ -16,11 +16,11 @@
 
 static void
 plm_warp_itk (
-    PlmImage *im_warped,                  /* Output */
+    Plm_image *im_warped,                  /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Xform *xf_in,                         /* Input */
-    PlmImageHeader *pih,                  /* Input */
-    PlmImage *im_in,                      /* Input */
+    Plm_image_header *pih,                  /* Input */
+    Plm_image *im_in,                      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -98,11 +98,11 @@ plm_warp_itk (
 /* Native warping (only gpuit bspline + float) */
 static void
 plm_warp_native (
-    PlmImage *im_warped,                  /* Output */
+    Plm_image *im_warped,                  /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Xform *xf_in,                         /* Input */
-    PlmImageHeader *pih,                  /* Input */
-    PlmImage *im_in,                      /* Input */
+    Plm_image_header *pih,                  /* Input */
+    Plm_image *im_in,                      /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -162,11 +162,11 @@ plm_warp_native (
 
 void
 plm_warp (
-    PlmImage *im_warped,   /* Output: Output image */
+    Plm_image *im_warped,   /* Output: Output image */
     DeformationFieldType::Pointer* vf,    /* Output: Output vf (optional) */
     Xform *xf_in,          /* Input:  Input image warped by this xform */
-    PlmImageHeader *pih,   /* Input:  Size of output image */
-    PlmImage *im_in,       /* Input:  Input image */
+    Plm_image_header *pih,   /* Input:  Size of output image */
+    Plm_image *im_in,       /* Input:  Input image */
     float default_val,     /* Input:  Value for pixels without match */
     int use_itk,           /* Input:  Force use of itk (1) or not (0) */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */

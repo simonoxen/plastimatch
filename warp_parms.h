@@ -44,7 +44,7 @@ public:
     /* Misc options */
     float default_val;
     int interp_lin;              /* trilinear (1) or nn (0) */
-    PlmImageType output_type;
+    Plm_image_type output_type;
     Xio_version output_xio_version;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */

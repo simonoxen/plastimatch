@@ -21,10 +21,10 @@
 /* -----------------------------------------------------------------------
    Loading
    ----------------------------------------------------------------------- */
-PlmImage*
+Plm_image*
 plm_image_load_native (const char* fname)
 {
-    PlmImage *pli = new PlmImage;
+    Plm_image *pli = new Plm_image;
     if (!pli) return 0;
 
     pli->load_native (fname);
@@ -33,7 +33,7 @@ plm_image_load_native (const char* fname)
 }
 
 void
-PlmImage::load_native_dicom (const char* fname)
+Plm_image::load_native_dicom (const char* fname)
 {
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
@@ -43,7 +43,7 @@ PlmImage::load_native_dicom (const char* fname)
 }
 
 void
-PlmImage::load_native (const char* fname)
+Plm_image::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
@@ -96,10 +96,10 @@ PlmImage::load_native (const char* fname)
     }
 }
 
-PlmImage*
-plm_image_load (char* fname, PlmImageType type)
+Plm_image*
+plm_image_load (char* fname, Plm_image_type type)
 {
-    PlmImage *ri = new PlmImage;
+    Plm_image *ri = new Plm_image;
     if (!ri) return 0;
 
     switch (type) {
@@ -126,7 +126,7 @@ plm_image_load (char* fname, PlmImageType type)
    Saving
    ----------------------------------------------------------------------- */
 void
-PlmImage::save_short_dicom (char* fname)
+Plm_image::save_short_dicom (char* fname)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -149,14 +149,14 @@ PlmImage::save_short_dicom (char* fname)
 	itk_image_save_short_dicom (this->m_itk_float, fname);
 	break;
     default:
-	print_and_exit ("Unhandled image type in PlmImage::save_short_dicom"
+	print_and_exit ("Unhandled image type in Plm_image::save_short_dicom"
 			" (type = %d)\n", this->m_type);
 	break;
     }
 }
 
 void
-PlmImage::save_image (const char* fname)
+Plm_image::save_image (const char* fname)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -192,7 +192,7 @@ PlmImage::save_image (const char* fname)
 	itk_image_save (this->m_itk_float, fname);
 	break;
     default:
-	print_and_exit ("Unhandled image type in PlmImage::save_image"
+	print_and_exit ("Unhandled image type in Plm_image::save_image"
 			" (type = %d)\n", this->m_type);
 	break;
     }
@@ -202,7 +202,7 @@ PlmImage::save_image (const char* fname)
    Assignment
    ----------------------------------------------------------------------- */
 void 
-PlmImage::set_gpuit (volume *v)
+Plm_image::set_gpuit (volume *v)
 {
     this->free ();
     m_gpuit = (void*) v;
@@ -234,7 +234,7 @@ PlmImage::set_gpuit (volume *v)
    ----------------------------------------------------------------------- */
 template<class T, class U> 
 static T
-plm_image_convert_gpuit_to_itk (PlmImage* pli, T itk_img, U)
+plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
 {
     typedef typename T::ObjectType ImageType;
     int i, d1, d2;
@@ -285,7 +285,7 @@ plm_image_convert_gpuit_to_itk (PlmImage* pli, T itk_img, U)
 
 template<class T> 
 static void
-plm_image_convert_itk_to_gpuit_float (PlmImage* pli, T img)
+plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
 {
     typedef typename T::ObjectType ImageType;
     int i, d1;
@@ -323,7 +323,7 @@ plm_image_convert_itk_to_gpuit_float (PlmImage* pli, T img)
 }
 
 void
-PlmImage::convert_to_itk_uchar (void)
+Plm_image::convert_to_itk_uchar (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -348,7 +348,7 @@ PlmImage::convert_to_itk_uchar (void)
 }
 
 void
-PlmImage::convert_to_itk_short (void)
+Plm_image::convert_to_itk_short (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_SHORT:
@@ -373,7 +373,7 @@ PlmImage::convert_to_itk_short (void)
 }
 
 void
-PlmImage::convert_to_itk_uint32 (void)
+Plm_image::convert_to_itk_uint32 (void)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
@@ -406,7 +406,7 @@ PlmImage::convert_to_itk_uint32 (void)
 }
 
 void
-PlmImage::convert_to_itk_float ()
+Plm_image::convert_to_itk_float ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -439,7 +439,7 @@ PlmImage::convert_to_itk_float ()
 }
 
 void
-PlmImage::convert_to_itk (void)
+Plm_image::convert_to_itk (void)
 {
     switch (m_type) {
 
@@ -475,7 +475,7 @@ PlmImage::convert_to_itk (void)
 }
 
 void
-PlmImage::convert_to_gpuit_short ()
+Plm_image::convert_to_gpuit_short ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_GPUIT_SHORT:
@@ -496,7 +496,7 @@ PlmImage::convert_to_gpuit_short ()
 }
 
 void
-PlmImage::convert_to_gpuit_uint32 ()
+Plm_image::convert_to_gpuit_uint32 ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_GPUIT_UINT32:
@@ -517,7 +517,7 @@ PlmImage::convert_to_gpuit_uint32 ()
 }
 
 void
-PlmImage::convert_to_gpuit_float ()
+Plm_image::convert_to_gpuit_float ()
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -554,13 +554,13 @@ PlmImage::convert_to_gpuit_float ()
 }
 
 void
-PlmImage::convert_to_original_type (void)
+Plm_image::convert_to_original_type (void)
 {
     this->convert (this->m_original_type);
 }
 
 void
-PlmImage::convert (PlmImageType new_type)
+Plm_image::convert (Plm_image_type new_type)
 {
     switch (new_type) {
     case PLM_IMG_TYPE_UNDEFINED:
@@ -590,7 +590,7 @@ PlmImage::convert (PlmImageType new_type)
     case PLM_IMG_TYPE_ITK_USHORT:
     default:
 	print_and_exit (
-	    "Unhandled image type in PlmImage::convert (%d -> %d)\n", 
+	    "Unhandled image type in Plm_image::convert (%d -> %d)\n", 
 	    this->m_type, new_type);
 	break;
     }
@@ -598,7 +598,7 @@ PlmImage::convert (PlmImageType new_type)
 }
 
 void
-PlmImage::convert_and_save (const char* fname, PlmImageType new_type)
+Plm_image::convert_and_save (const char* fname, Plm_image_type new_type)
 {
     this->convert (new_type);
     this->save_image (fname);
@@ -606,18 +606,18 @@ PlmImage::convert_and_save (const char* fname, PlmImageType new_type)
 
 /* Return 1 if the two headers are the same */
 int
-PlmImage::compare_headers (PlmImage *pli1, PlmImage *pli2)
+Plm_image::compare_headers (Plm_image *pli1, Plm_image *pli2)
 {
-    PlmImageHeader pih1, pih2;
+    Plm_image_header pih1, pih2;
 
     pih1.set_from_plm_image (pli1);
     pih2.set_from_plm_image (pli2);
 
-    return PlmImageHeader::compare (&pih1, &pih2);
+    return Plm_image_header::compare (&pih1, &pih2);
 }
 
 void 
-PlmImage::set_metadata (char *tag, char *value)
+Plm_image::set_metadata (char *tag, char *value)
 {
     /* GCS FIX: This works for NRRD (and dicom?), but not MHA/MHD */
 #if defined (commentout)
@@ -668,7 +668,7 @@ void
 plm_image_save_vol (const char* fname, Volume *vol)
 {
     Volume *v2 = volume_clone (vol);
-    PlmImage pli;
+    Plm_image pli;
 
     pli.set_gpuit (v2);
     pli.convert_to_itk ();

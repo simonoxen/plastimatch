@@ -18,7 +18,7 @@ public:
     int negate_mask;
     float mask_value;
     int output_dicom;
-    PlmImageType output_type;
+    Plm_image_type output_type;
 public:
     Mask_Parms () {
 	memset (this, 0, sizeof(Mask_Parms));

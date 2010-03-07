@@ -95,7 +95,7 @@ void compute_average(char **imageList, int nImages, char *outFile)
 	FloatImageType > DivFilterType;
 
     // the original type of the image
-    PlmImageType origImageType;
+    Plm_image_type origImageType;
 
     FloatImageType::Pointer tmp;
     FloatImageType::Pointer sumImg;

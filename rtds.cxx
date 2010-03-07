@@ -48,7 +48,7 @@ Rtds::load_xio (char *xio_dir)
     }
 
     /* Load the input image */
-    this->m_img = new PlmImage;
+    this->m_img = new Plm_image;
     xio_ct_load (this->m_img, xsd->path);
 
     /* Load the structure set */

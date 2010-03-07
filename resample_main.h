@@ -13,7 +13,7 @@ class Resample_parms {
 public:
     char mha_in_fn[_MAX_PATH];
     char mha_out_fn[_MAX_PATH];
-    PlmImageType output_type;
+    Plm_image_type output_type;
     float origin[3];
     int have_origin;
     float spacing[3];

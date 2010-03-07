@@ -10,10 +10,10 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 
-class PlmImageHeader;
-class PlmImage;
+class Plm_image_header;
+class Plm_image;
 
-class PlmImageHeader {
+class Plm_image_header {
 public:
     OriginType m_origin;
     SpacingType m_spacing;
@@ -25,7 +25,7 @@ public:
 
 public:
     /* Return 1 if the two headers are the same */
-    static int compare (PlmImageHeader *pli1, PlmImageHeader *pli2);
+    static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
 public:
     void plastimatch1_EXPORT 
@@ -36,7 +36,7 @@ public:
     void plastimatch1_EXPORT 
     set_from_gpuit_bspline (BSPLINE_Xform *bxf);
     void plastimatch1_EXPORT 
-    set_from_plm_image (PlmImage *pli);
+    set_from_plm_image (Plm_image *pli);
     template<class T> 
     void set_from_itk_image (T image) {
 	m_origin = image->GetOrigin ();

@@ -24,7 +24,7 @@ do_gpuit_bspline_stage_internal (
     Stage_Parms* stage)
 {
     BSPLINE_Parms parms;
-    PlmImageHeader pih;
+    Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");
     Volume *fixed = regd->fixed_image->gpuit_float();

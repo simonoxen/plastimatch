@@ -141,7 +141,7 @@ set_fixed_image_region_global (Registration_Data* regd)
 }
 
 #if defined (commentout)
-static PlmImageType
+static Plm_image_type
 choose_image_type (int xform_type, int optim_type, int impl_type)
 {
     switch (impl_type) {
@@ -171,9 +171,9 @@ save_output (
     if (img_out_fn[0] || vf_out_fn[0]) {
 	DeformationFieldType::Pointer vf;
 	DeformationFieldType::Pointer *vfp;
-	PlmImage im_warped;
-	PlmImage *imp;
-	PlmImageHeader pih;
+	Plm_image im_warped;
+	Plm_image *imp;
+	Plm_image_header pih;
 	float default_val = 0.0f;   /* GCS FIX: hard coded. */
 
 	if (vf_out_fn[0]) {
@@ -215,7 +215,7 @@ do_registration_stage (Registration_Parms* regp,
 		       Stage_Parms* stage)
 {
     /* Convert image types */
-    //    PlmImageType image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
+    //    Plm_image_type image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
 
     logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
 		    xf_in->m_type, xf_out->m_type);
@@ -254,7 +254,7 @@ do_registration_stage (Registration_Parms* regp,
 static void
 load_input_files (Registration_Data* regd, Registration_Parms* regp)
 {
-    PlmImageType image_type = PLM_IMG_TYPE_ITK_FLOAT;
+    Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
 #if defined (commentout)
     /* Load the appropriate image type for the first stage */

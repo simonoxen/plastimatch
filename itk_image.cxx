@@ -171,8 +171,8 @@ load_any_2 (const char* fname, T, U)
 }
 
 static void
-set_original_type (PlmImageType *original_type,
-		   PlmImageType t)
+set_original_type (Plm_image_type *original_type,
+		   Plm_image_type t)
 {
     if (original_type) {
 	*original_type = t;
@@ -182,7 +182,7 @@ set_original_type (PlmImageType *original_type,
 template<class U>
 typename itk::Image< U, 3 >::Pointer
 itk_image_load_any (const char* fname,
-	  PlmImageType* original_type, 
+	  Plm_image_type* original_type, 
 	  U otype)
 {
     itk::ImageIOBase::IOPixelType pixelType;
@@ -237,7 +237,7 @@ itk_image_load_any (const char* fname,
 }
 
 UCharImageType::Pointer
-itk_image_load_uchar (const char* fname, PlmImageType* original_type)
+itk_image_load_uchar (const char* fname, Plm_image_type* original_type)
 {
     UCharImageType::Pointer img;
 
@@ -252,7 +252,7 @@ itk_image_load_uchar (const char* fname, PlmImageType* original_type)
 }
 
 ShortImageType::Pointer
-itk_image_load_short (const char* fname, PlmImageType* original_type)
+itk_image_load_short (const char* fname, Plm_image_type* original_type)
 {
     ShortImageType::Pointer img;
 
@@ -266,7 +266,7 @@ itk_image_load_short (const char* fname, PlmImageType* original_type)
 }
 
 UShortImageType::Pointer
-itk_image_load_ushort (const char* fname, PlmImageType* original_type)
+itk_image_load_ushort (const char* fname, Plm_image_type* original_type)
 {
     UShortImageType::Pointer img;
 
@@ -280,7 +280,7 @@ itk_image_load_ushort (const char* fname, PlmImageType* original_type)
 }
 
 UInt32ImageType::Pointer
-itk_image_load_uint32 (const char* fname, PlmImageType* original_type)
+itk_image_load_uint32 (const char* fname, Plm_image_type* original_type)
 {
     UInt32ImageType::Pointer img;
 
@@ -294,7 +294,7 @@ itk_image_load_uint32 (const char* fname, PlmImageType* original_type)
 }
 
 FloatImageType::Pointer
-itk_image_load_float (const char* fname, PlmImageType* original_type)
+itk_image_load_float (const char* fname, Plm_image_type* original_type)
 {
     FloatImageType::Pointer img;
 

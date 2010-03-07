@@ -29,7 +29,7 @@ itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::DirectionType bsp_direction);
 static void
 itk_bsp_set_grid_img (Xform *xf,
-	      const PlmImageHeader* pih,
+	      const Plm_image_header* pih,
 	      float* grid_spac);
 static void load_gpuit_bsp (Xform *xf, char* fn);
 
@@ -582,7 +582,7 @@ bsp_grid_from_img_grid (
     BsplineTransformType::OriginType& bsp_origin,    /* Output */
     BsplineTransformType::SpacingType& bsp_spacing,  /* Output */
     BsplineTransformType::RegionType& bsp_region,    /* Output */
-    const PlmImageHeader* pih,			     /* Input */
+    const Plm_image_header* pih,			     /* Input */
     float* grid_spac)				     /* Input */
 {
     BsplineTransformType::RegionType::SizeType bsp_size;
@@ -603,7 +603,7 @@ bsp_grid_from_img_grid (
 /* Initialize using image spacing */
 static void
 itk_bsp_set_grid_img (Xform *xf,
-	      const PlmImageHeader* pih,
+	      const Plm_image_header* pih,
 	      float* grid_spac)
 {
     BsplineTransformType::OriginType bsp_origin;
@@ -621,7 +621,7 @@ itk_bsp_set_grid_img (Xform *xf,
 
 static void
 xform_trn_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
-			    const PlmImageHeader* pih,
+			    const Plm_image_header* pih,
 			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
@@ -631,7 +631,7 @@ xform_trn_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 
 static void
 xform_vrs_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
-			    const PlmImageHeader* pih,
+			    const Plm_image_header* pih,
 			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
@@ -641,7 +641,7 @@ xform_vrs_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 
 static void
 xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
-			    const PlmImageHeader* pih,
+			    const Plm_image_header* pih,
 			    float* grid_spac)
 {
     init_itk_bsp_default (xf_out);
@@ -652,12 +652,12 @@ xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 /* Convert xf to vector field to bspline */
 static void
 xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
-			    const PlmImageHeader* pih,
+			    const Plm_image_header* pih,
 			    float* grid_spac)
 {
     int d;
     Xform xf_tmp;
-    PlmImageHeader pih_bsp;
+    Plm_image_header pih_bsp;
 
     /* Set bsp grid parameters in xf_out */
     init_itk_bsp_default (xf_out);
@@ -736,7 +736,7 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
     within the valid region. */
 void
 itk_bsp_extend_to_region (Xform* xf,		    
-	const PlmImageHeader* pih,
+	const Plm_image_header* pih,
 	const ImageRegionType* roi)
 {
     int d, old_idx;
@@ -832,7 +832,7 @@ itk_bsp_extend_to_region (Xform* xf,
 
 static void
 xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const PlmImageHeader* pih,
+		      const Plm_image_header* pih,
 		      float* grid_spac)
 {
     BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
@@ -929,7 +929,7 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 
 static void
 gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in, 
-			  const PlmImageHeader* pih)
+			  const Plm_image_header* pih)
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
@@ -970,7 +970,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
 /* If grid_spac is null, then don't resample */
 void
 xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const PlmImageHeader* pih,
+		      const Plm_image_header* pih,
 		      const ImageRegionType* roi, /* Not yet used */
 		      float* grid_spac)
 {
@@ -1013,7 +1013,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
    ----------------------------------------------------------------------- */
 static DeformationFieldType::Pointer
 xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
-		     const PlmImageHeader* pih)
+		     const Plm_image_header* pih)
 {
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
 
@@ -1051,7 +1051,7 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 /* ITK bsp is different from itk_any, because additional control points might be 
     needed */
 static DeformationFieldType::Pointer 
-xform_itk_bsp_to_itk_vf (Xform* xf_in, const PlmImageHeader* pih)
+xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 {
     int d;
     Xform xf_tmp;
@@ -1071,7 +1071,7 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const PlmImageHeader* pih)
 }
 
 static DeformationFieldType::Pointer 
-xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, PlmImageHeader* pih)
+xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, Plm_image_header* pih)
 {
     vf = vector_resample_image (vf, pih);
     return vf;
@@ -1087,7 +1087,7 @@ xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, PlmImageHeader* pih)
     3) Render vf.
     */
 static DeformationFieldType::Pointer
-xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
+xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
 {
     DeformationFieldType::Pointer itk_vf;
 
@@ -1116,7 +1116,7 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, PlmImageHeader* pih)
 DeformationFieldType::Pointer 
 xform_gpuit_vf_to_itk_vf (
     Volume* vf,            /* Input */
-    PlmImageHeader* pih    /* Input, can be null */
+    Plm_image_header* pih    /* Input, can be null */
 )
 {
     int i;
@@ -1182,7 +1182,7 @@ xform_gpuit_vf_to_itk_vf (
    Conversion to gpuit_bsp
    ----------------------------------------------------------------------- */
 static BSPLINE_Xform*
-create_gpuit_bxf (PlmImageHeader* pih, float* grid_spac)
+create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 {
     int d;
     BSPLINE_Xform* bxf = (BSPLINE_Xform*) malloc (sizeof(BSPLINE_Xform));
@@ -1214,7 +1214,7 @@ create_gpuit_bxf (PlmImageHeader* pih, float* grid_spac)
 }
 
 void
-xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, 
+xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, 
 			float* grid_spac)
 {
     Xform xf_tmp;
@@ -1250,7 +1250,7 @@ void
 xform_gpuit_bsp_to_gpuit_bsp (
     Xform* xf_out, 
     Xform* xf_in, 
-    PlmImageHeader* pih, 
+    Plm_image_header* pih, 
     float* grid_spac
 )
 {
@@ -1330,7 +1330,7 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
 void
 xform_to_trn (Xform *xf_out, 
 	      Xform *xf_in, 
-	      PlmImageHeader *pih)
+	      Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1359,7 +1359,7 @@ xform_to_trn (Xform *xf_out,
 void
 xform_to_vrs (Xform *xf_out, 
 	      Xform *xf_in, 
-	      PlmImageHeader *pih)
+	      Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1390,7 +1390,7 @@ xform_to_vrs (Xform *xf_out,
 void
 xform_to_aff (Xform *xf_out, 
 	      Xform *xf_in, 
-	      PlmImageHeader *pih)
+	      Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1423,7 +1423,7 @@ xform_to_aff (Xform *xf_out,
 void
 xform_to_itk_bsp (Xform *xf_out, 
 		  Xform *xf_in, 
-		  PlmImageHeader* pih,
+		  Plm_image_header* pih,
 		  float* grid_spac)
 {
     BsplineTransformType::Pointer bsp;
@@ -1466,7 +1466,7 @@ xform_to_itk_bsp (Xform *xf_out,
 void
 xform_to_itk_bsp_nobulk (Xform *xf_out, 
 		  Xform *xf_in, 
-		  PlmImageHeader* pih,
+		  Plm_image_header* pih,
 		  float* grid_spac)
 {
     switch (xf_in->m_type) {
@@ -1505,7 +1505,7 @@ xform_to_itk_bsp_nobulk (Xform *xf_out,
 }
 
 void
-xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih)
+xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 {
     DeformationFieldType::Pointer vf;
 
@@ -1548,13 +1548,13 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, PlmImageHeader* pih)
 void
 xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 {
-    PlmImageHeader pih;
+    Plm_image_header pih;
     pih.set_from_itk_image (image);
     xform_to_itk_vf (xf_out, xf_in, &pih);
 }
 
 void
-xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, PlmImageHeader* pih, float* grid_spac)
+xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:

@@ -52,7 +52,7 @@ itk_direction_identity (
 }
 
 void
-PlmImageHeader::set_from_gpuit (
+Plm_image_header::set_from_gpuit (
     float gpuit_origin[3],
     float gpuit_spacing[3],
     int gpuit_dim[3],
@@ -77,7 +77,7 @@ PlmImageHeader::set_from_gpuit (
 }
 
 void
-PlmImageHeader::set_from_gpuit_bspline (BSPLINE_Xform *bxf)
+Plm_image_header::set_from_gpuit_bspline (BSPLINE_Xform *bxf)
 {
     this->set_from_gpuit (
 	bxf->img_origin,
@@ -87,7 +87,7 @@ PlmImageHeader::set_from_gpuit_bspline (BSPLINE_Xform *bxf)
 }
 
 void
-PlmImageHeader::set_from_plm_image (PlmImage *pli)
+Plm_image_header::set_from_plm_image (Plm_image *pli)
 {
     switch (pli->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -129,7 +129,7 @@ PlmImageHeader::set_from_plm_image (PlmImage *pli)
 }
 
 void 
-PlmImageHeader::get_gpuit_origin (float gpuit_origin[3])
+Plm_image_header::get_gpuit_origin (float gpuit_origin[3])
 {
     for (unsigned int d = 0; d < Dimension; d++) {
 	gpuit_origin[d] = m_origin[d];
@@ -137,7 +137,7 @@ PlmImageHeader::get_gpuit_origin (float gpuit_origin[3])
 }
 
 void 
-PlmImageHeader::get_gpuit_spacing (float gpuit_spacing[3])
+Plm_image_header::get_gpuit_spacing (float gpuit_spacing[3])
 {
     for (unsigned int d = 0; d < Dimension; d++) {
 	gpuit_spacing[d] = m_spacing[d];
@@ -145,7 +145,7 @@ PlmImageHeader::get_gpuit_spacing (float gpuit_spacing[3])
 }
 
 void 
-PlmImageHeader::get_gpuit_dim (int gpuit_dim[3])
+Plm_image_header::get_gpuit_dim (int gpuit_dim[3])
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < Dimension; d++) {
@@ -154,14 +154,14 @@ PlmImageHeader::get_gpuit_dim (int gpuit_dim[3])
 }
 
 void 
-PlmImageHeader::get_gpuit_direction_cosines (float gpuit_direction_cosines[9])
+Plm_image_header::get_gpuit_direction_cosines (float gpuit_direction_cosines[9])
 {
     gpuit_direction_from_itk (gpuit_direction_cosines, &m_direction);
 }
 
 #if defined (commentout)
 void
-PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
+Plm_image_header::cvt_to_gpuit (float gpuit_origin[3],
 			    float gpuit_spacing[3],
 			    int gpuit_dim[3],
 			    float gpuit_direction_cosines[9])
@@ -179,7 +179,7 @@ PlmImageHeader::cvt_to_gpuit (float gpuit_origin[3],
 #endif
 
 void
-PlmImageHeader::print (void)
+Plm_image_header::print (void)
 {
     ImageRegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
@@ -223,7 +223,7 @@ itk_roi_from_gpuit (
 
 /* Return 1 if the two headers are the same */
 int
-PlmImageHeader::compare (PlmImageHeader *pli1, PlmImageHeader *pli2)
+Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
 {
     int d;
     for (d = 0; d < 3; d++) {

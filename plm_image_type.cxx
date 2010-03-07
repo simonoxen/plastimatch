@@ -5,7 +5,7 @@
 #include <string.h>
 #include "plm_image_type.h"
 
-PlmImageType
+Plm_image_type
 plm_image_type_parse (const char* string)
 {
     if (!strcmp (string,"char")) {
