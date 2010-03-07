@@ -37,7 +37,7 @@ PlmImage::load_native_dicom (const char* fname)
 {
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
-    this->m_itk_short = load_short (fname, 0);
+    this->m_itk_short = itk_image_load_short (fname, 0);
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 }
@@ -59,17 +59,17 @@ PlmImage::load_native (const char* fname)
 
     switch (componentType) {
     case itk::ImageIOBase::UCHAR:
-	this->m_itk_uchar = load_uchar (fname, 0);
+	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
 	this->m_type = PLM_IMG_TYPE_ITK_UCHAR;
 	break;
     case itk::ImageIOBase::SHORT:
-	this->m_itk_short = load_short (fname, 0);
+	this->m_itk_short = itk_image_load_short (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
 	this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 	break;
     case itk::ImageIOBase::USHORT:
-	this->m_itk_ushort = load_ushort (fname, 0);
+	this->m_itk_ushort = itk_image_load_ushort (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
 	this->m_type = PLM_IMG_TYPE_ITK_USHORT;
 	break;
@@ -79,12 +79,12 @@ PlmImage::load_native (const char* fname)
 #if (CMAKE_SIZEOF_ULONG == 4)
     case itk::ImageIOBase::ULONG:
 #endif
-	this->m_itk_uint32 = load_uint32 (fname, 0);
+	this->m_itk_uint32 = itk_image_load_uint32 (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
 	this->m_type = PLM_IMG_TYPE_ITK_ULONG;
 	break;
     case itk::ImageIOBase::FLOAT:
-	this->m_itk_float = load_float (fname, 0);
+	this->m_itk_float = itk_image_load_float (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
 	this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 	break;
@@ -112,7 +112,8 @@ plm_image_load (char* fname, PlmImageType type)
 	    ri->m_type = type;
 	    //ri->m_itk_float = load_float (fname);
 	    //load_float (&ri->m_itk_float, &ri->m_original_type, fname);
-	    ri->m_itk_float = load_float (fname, &ri->m_original_type);
+	    ri->m_itk_float = itk_image_load_float (fname, 
+		&ri->m_original_type);
 	    break;
 	default:
 	    print_and_exit ("Unhandled image load in plm_image_load\n");

@@ -57,7 +57,7 @@ itk__GetImageType (std::string fileName,
 
 template<class RdrT>
 void
-load_itk_rdr (RdrT reader, const char *fn)
+itk_image_load_rdr (RdrT reader, const char *fn)
 {
     reader->SetFileName(fn);
     try {
@@ -145,6 +145,7 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
    Reading image files
    ----------------------------------------------------------------------- */
 template<class T, class U>
+static
 typename itk::Image< U, 3 >::Pointer
 load_any_2 (const char* fname, T, U)
 {
@@ -156,7 +157,7 @@ load_any_2 (const char* fname, T, U)
 
     /* Load image as type T */
     typename TReaderType::Pointer rdr = TReaderType::New();
-    load_itk_rdr (rdr, fname);
+    itk_image_load_rdr (rdr, fname);
     typename TImageType::Pointer input_image = rdr->GetOutput();
 
     /* Convert images to type U */
@@ -180,7 +181,7 @@ set_original_type (PlmImageType *original_type,
 
 template<class U>
 typename itk::Image< U, 3 >::Pointer
-load_any (const char* fname,
+itk_image_load_any (const char* fname,
 	  PlmImageType* original_type, 
 	  U otype)
 {
@@ -236,7 +237,7 @@ load_any (const char* fname,
 }
 
 UCharImageType::Pointer
-load_uchar (const char* fname, PlmImageType* original_type)
+itk_image_load_uchar (const char* fname, PlmImageType* original_type)
 {
     UCharImageType::Pointer img;
 
@@ -244,13 +245,14 @@ load_uchar (const char* fname, PlmImageType* original_type)
     if (is_directory(fname)) {
 	img = load_dicom_uchar (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<unsigned char>(0));
+	img = itk_image_load_any (fname, original_type, 
+	    static_cast<unsigned char>(0));
     }
     return orient_image (img);
 }
 
 ShortImageType::Pointer
-load_short (const char* fname, PlmImageType* original_type)
+itk_image_load_short (const char* fname, PlmImageType* original_type)
 {
     ShortImageType::Pointer img;
 
@@ -258,13 +260,13 @@ load_short (const char* fname, PlmImageType* original_type)
     if (is_directory(fname)) {
 	img = load_dicom_short (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<short>(0));
+	img = itk_image_load_any (fname, original_type, static_cast<short>(0));
     }
     return orient_image (img);
 }
 
 UShortImageType::Pointer
-load_ushort (const char* fname, PlmImageType* original_type)
+itk_image_load_ushort (const char* fname, PlmImageType* original_type)
 {
     UShortImageType::Pointer img;
 
@@ -272,13 +274,13 @@ load_ushort (const char* fname, PlmImageType* original_type)
     if (is_directory(fname)) {
 	img = load_dicom_ushort (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<unsigned short>(0));
+	img = itk_image_load_any (fname, original_type, static_cast<unsigned short>(0));
     }
     return orient_image (img);
 }
 
 UInt32ImageType::Pointer
-load_uint32 (const char* fname, PlmImageType* original_type)
+itk_image_load_uint32 (const char* fname, PlmImageType* original_type)
 {
     UInt32ImageType::Pointer img;
 
@@ -286,13 +288,13 @@ load_uint32 (const char* fname, PlmImageType* original_type)
     if (is_directory(fname)) {
 	img = load_dicom_uint32 (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<uint32_t>(0));
+	img = itk_image_load_any (fname, original_type, static_cast<uint32_t>(0));
     }
     return orient_image (img);
 }
 
 FloatImageType::Pointer
-load_float (const char* fname, PlmImageType* original_type)
+itk_image_load_float (const char* fname, PlmImageType* original_type)
 {
     FloatImageType::Pointer img;
 
@@ -300,13 +302,13 @@ load_float (const char* fname, PlmImageType* original_type)
     if (is_directory(fname)) {
 	img = load_dicom_float (fname);
     } else {
-	img = load_any (fname, original_type, static_cast<float>(0));
+	img = itk_image_load_any (fname, original_type, static_cast<float>(0));
     }
     return orient_image (img);
 }
 
 DeformationFieldType::Pointer
-load_float_field (const char* fname)
+itk_image_load_float_field (const char* fname)
 {
     typedef itk::ImageFileReader< DeformationFieldType >  FieldReaderType;
 

@@ -26,7 +26,7 @@ int main (int argc, char* argv[])
     }
 
     /* Load input */
-    FloatImageType::Pointer v_in = load_float(argv[2], 0);
+    FloatImageType::Pointer v_in = itk_image_load_float(argv[2], 0);
 
     /* Allocate memory for output */
     FloatImageType::Pointer v_out = FloatImageType::New();

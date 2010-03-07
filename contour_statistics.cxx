@@ -30,12 +30,12 @@ int main(int argc, char* argv[])
 		print_usage();
 
 	if(strcmp("global",argv[1])==0){
-		reference=load_uchar(argv[2], 0);
-		warped=load_uchar(argv[3], 0);
+		reference = itk_image_load_uchar(argv[2], 0);
+		warped = itk_image_load_uchar(argv[3], 0);
 	}else if(strcmp("experts",argv[1])==0){
-		ex_1=load_uchar(argv[2], 0);
-		ex_2=load_uchar(argv[3], 0);
-		ex_3=load_uchar(argv[4], 0);
+		ex_1 = itk_image_load_uchar(argv[2], 0);
+		ex_2 = itk_image_load_uchar(argv[3], 0);
+		ex_3 = itk_image_load_uchar(argv[4], 0);
 	}else{
 		fprintf(stderr,"Sorry! you typed in the wrong mode");
 		print_usage();

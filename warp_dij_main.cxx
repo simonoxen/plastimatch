@@ -587,7 +587,7 @@ warp_dij_main (Warp_parms* parms)
     Dif dif;
 
     printf ("Loading vector field...\n");
-    vf = load_float_field (parms->vf_in_fn);
+    vf = itk_image_load_float_field (parms->vf_in_fn);
 
     printf ("Loading ctatts and dif...\n");
     load_ctatts (&ctatts, parms->ctatts_in_fn);

@@ -6,11 +6,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cxt_extract.h"
+#include "gdcm_rtss.h"
 #include "rtds.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_io.h"
 #include "xio_structures.h"
+
+void
+Rtds::load_dicom_dir (char *dicom_dir)
+{
+    this->m_img = plm_image_load_native (dicom_dir);
+    
+}
 
 void
 Rtds::load_xio (char *xio_dir)
@@ -70,6 +78,19 @@ Rtds::load_ss_img (char *ss_img, char *ss_list)
     }
     if (ss_list) {
 	this->m_ss_list = cxt_load_ss_list (0, ss_list);
+    }
+}
+
+void
+Rtds::save_dicom (char *dicom_dir)
+{
+    if (this->m_img) {
+	this->m_img->save_short_dicom (dicom_dir);
+    }
+    if (this->m_cxt) {
+	char fn[_MAX_PATH];
+	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "ss.dcm");
+	gdcm_rtss_save (this->m_cxt, fn, dicom_dir);
     }
 }
 

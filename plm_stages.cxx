@@ -279,14 +279,14 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 
     if (regp->fixed_mask_fn[0]) {
 	logfile_printf ("Loading fixed mask...");
-	regd->fixed_mask = load_uchar (regp->fixed_mask_fn, 0);
+	regd->fixed_mask = itk_image_load_uchar (regp->fixed_mask_fn, 0);
 	logfile_printf ("done!\n");
     } else {
 	regd->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
 	logfile_printf ("Loading moving mask...");
-	regd->moving_mask = load_uchar (regp->moving_mask_fn, 0);
+	regd->moving_mask = itk_image_load_uchar (regp->moving_mask_fn, 0);
 	logfile_printf ("done!\n");
     } else {
 	regd->moving_mask = 0;

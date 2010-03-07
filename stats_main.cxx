@@ -52,7 +52,7 @@ stats_img_main (Stats_parms* parms)
 {
 
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
-    FloatImageType::Pointer img = load_float (parms->mha_in_fn, 0);
+    FloatImageType::Pointer img = itk_image_load_float (parms->mha_in_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 

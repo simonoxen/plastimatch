@@ -28,22 +28,28 @@ tps_interp_main (TPS_parms* parms)
     switch (componentType) {
     case itk::ImageIOBase::UCHAR:
 	{
-	    UCharImageType::Pointer img_moving = load_uchar (parms->moving, 0);
-	    UCharImageType::Pointer img_fixed = load_uchar (parms->fixed, 0);
+	    UCharImageType::Pointer img_moving = itk_image_load_uchar (
+		parms->moving, 0);
+	    UCharImageType::Pointer img_fixed = itk_image_load_uchar (
+		parms->fixed, 0);
 	    do_tps(parms,img_fixed,img_moving,(unsigned char)0);
 	}
 	break;
     case itk::ImageIOBase::SHORT:
 	{
-	    ShortImageType::Pointer img_moving = load_short (parms->moving, 0);
-	    ShortImageType::Pointer img_fixed = load_short (parms->fixed, 0);
+	    ShortImageType::Pointer img_moving = itk_image_load_short (
+		parms->moving, 0);
+	    ShortImageType::Pointer img_fixed = itk_image_load_short (
+		parms->fixed, 0);
 	    do_tps(parms,img_fixed,img_moving,(short)-1200);
 	}
 	break;
     case itk::ImageIOBase::FLOAT:
 	{
-	    FloatImageType::Pointer img_moving = load_float (parms->moving, 0);
-	    FloatImageType::Pointer img_fixed = load_float (parms->fixed, 0);
+	    FloatImageType::Pointer img_moving = itk_image_load_float (
+		parms->moving, 0);
+	    FloatImageType::Pointer img_fixed = itk_image_load_float (
+		parms->fixed, 0);
 	    do_tps(parms,img_fixed,img_moving,(float)-1200.0);
 	}
 	break;

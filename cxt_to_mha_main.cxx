@@ -143,7 +143,8 @@ main (int argc, char* argv[])
 
     /* Override cxt geometry if user specified --fixed */
     if (parms->fixed_fn[0]) {
-	FloatImageType::Pointer fixed = load_float (parms->fixed_fn, 0);
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->fixed_fn, 0);
 	PlmImageHeader pih;
 	
 	pih.set_from_itk_image (fixed);

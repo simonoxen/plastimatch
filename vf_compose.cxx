@@ -36,9 +36,9 @@ main (int argc, char *argv[])
     }
 
     printf ("Loading image 1...\n");
-    DeformationFieldType::Pointer vf1 = load_float_field (argv[1]);
+    DeformationFieldType::Pointer vf1 = itk_image_load_float_field (argv[1]);
     printf ("Loading image 2...\n");
-    DeformationFieldType::Pointer vf2 = load_float_field (argv[2]);
+    DeformationFieldType::Pointer vf2 = itk_image_load_float_field (argv[2]);
     DeformationFieldType::Pointer vf_out = DeformationFieldType::New();
 
     vf_out->SetRegions (vf1->GetBufferedRegion());

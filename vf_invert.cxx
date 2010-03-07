@@ -63,9 +63,9 @@ vf_invert_main (Vf_Invert_Parms* parms)
 
     if (parms->fixed_img_fn[0]) {
 	/* if given, use the parameters from user-supplied fixed image */
-	FloatImageType::Pointer fixed = load_float (parms->fixed_img_fn, 0);
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->fixed_img_fn, 0);
 	pih.set_from_itk_image (fixed);
-
 	pih.get_gpuit_origin (parms->origin);
 	pih.get_gpuit_spacing (parms->spacing);
 	pih.get_gpuit_dim (parms->dim);

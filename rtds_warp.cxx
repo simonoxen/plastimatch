@@ -18,9 +18,7 @@ compose_prefix_fn (char *fn, int max_path, char *structure_name,
     Warp_parms *parms)
 {
     snprintf (fn, max_path, "%s_%s.%s",
-	parms->output_prefix,
-	structure_name,
-	"mha");
+	parms->output_prefix, structure_name, "mha");
 }
 
 static void
@@ -79,16 +77,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
-	    //warp_image_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DICOM_DIR:
-	    /* GCS FIX: Need to load rtss too */
-	    rtds->m_img = plm_image_load_native (parms->input_fn);
-	    //warp_image_main (&parms);
+	    rtds->load_dicom_dir (parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
 	    rtds->load_xio (parms->input_fn);
-	    //xio_warp_main (&parms);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
@@ -96,12 +90,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_cxt = cxt_create ();
 	    gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
-	    //rtss_warp (&parms);
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_cxt = cxt_create ();
 	    cxt_load (rtds->m_cxt, parms->input_fn);
-	    //ctx_warp (&parms);
 	    break;
 	default:
 	    print_and_exit (
@@ -131,7 +123,7 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
     /* GCS FIX: If there is an input m_ss_img, we still do this 
        because we might need the labelmap */
     if (parms->output_labelmap_fn[0] || parms->output_ss_img[0]
-	    || parms->xf_in_fn[0] || parms->output_prefix[0])
+	|| parms->xf_in_fn[0] || parms->output_prefix[0])
     {
 	/* Rasterize structure sets */
 	Cxt_to_mha_state *ctm_state;
@@ -286,7 +278,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Try to guess the proper dimensions and spacing for output image */
     if (parms->fixed_im_fn[0]) {
 	/* use the spacing of user-supplied fixed image */
-	FloatImageType::Pointer fixed = load_float (parms->fixed_im_fn, 0);
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->fixed_im_fn, 0);
 	pih.set_from_itk_image (fixed);
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* use the spacing from input vector field */
@@ -351,4 +344,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Warp and save output structure set */
     save_ss_output (rtds, &xform, &pih, parms);
+
+    /* Save dicom */
+    if (parms->output_dicom[0]) {
+	rtds->save_dicom (parms->output_dicom);
+    }
 }

@@ -108,12 +108,12 @@ void compute_average(char **imageList, int nImages, char *outFile)
 	return;
     }
 
-    sumImg = load_float (imageList[0], &origImageType);
+    sumImg = itk_image_load_float (imageList[0], &origImageType);
 
     //add all the input images
     for (int i = 1; i < nImages; i ++)
 	{
-	    tmp = load_float (imageList[i], &origImageType);
+	    tmp = itk_image_load_float (imageList[i], &origImageType);
 	    addition->SetInput1 (sumImg);
 	    addition->SetInput2 (tmp);
 	    addition->Update();

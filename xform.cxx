@@ -279,7 +279,7 @@ load_xform (Xform *xf, char* fn)
 	/* Close the file and try again, it is probably a vector field */
 	fclose (fp);
 	DeformationFieldType::Pointer vf = DeformationFieldType::New();
-	vf = load_float_field (fn);
+	vf = itk_image_load_float_field (fn);
 	if (!vf) {
 	    print_and_exit ("Unexpected file format for xf_in file.\n");
 	}

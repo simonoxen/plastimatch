@@ -213,7 +213,7 @@ void
 resample_main_itk_vf (Resample_parms* parms)
 {
     DeformationFieldType::Pointer input_field 
-	    = load_float_field (parms->mha_in_fn);
+	    = itk_image_load_float_field (parms->mha_in_fn);
 
     if (parms->have_subsample) {
 	print_and_exit ("Error. Subsample not supported for vector field.\n");

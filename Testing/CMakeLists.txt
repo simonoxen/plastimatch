@@ -587,6 +587,7 @@ PLM_ADD_TEST (
 ##   plm warp c: xf = bspline, algorithm = itk, interp = nn
 ##   plm warp d: xf = bspline, algorithm = native, interp = nn
 ##   plm warp e: input = xio, multiple outputs
+##   plm warp f: input = dicom, multiple outputs
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-warp-a" 
@@ -755,6 +756,29 @@ ADD_TEST (
   "-DREGEX=AVE *([-0-9.]*)"
   "-DLOWER_THRESH=1.05"
   "-DUPPER_THRESH=1.15"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+
+PLM_ADD_TEST (
+  "plm-warp-f" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-warp-f-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-f-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-f;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-f.cxt"
+  )
+PLM_ADD_TEST (
+  "plm-warp-f-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;plm-warp-f-img.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-f-check-1"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-1.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-661.5"
+  "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 

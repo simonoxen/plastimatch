@@ -19,7 +19,7 @@ mask_main (Mask_Parms* parms)
 		       parms->input_fn);
     }
 
-    UCharImageType::Pointer mask = load_uchar (parms->mask_fn, 0);
+    UCharImageType::Pointer mask = itk_image_load_uchar (parms->mask_fn, 0);
 
     switch (img->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
