@@ -110,14 +110,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 }
 
 static void
-warp_and_save_ss_img (Rtds *rtds, Xform *xf, 
+rasterize_ss_img (Rtds *rtds, Xform *xf, 
     Plm_image_header *pih, Warp_parms *parms)
 {
-    Plm_image *pli_labelmap = new Plm_image;
-
-    printf ("Saving ss_img... (cxt=%p, ss_img=%p)\n", 
-	rtds->m_cxt, rtds->m_ss_img);
-
     /* If we have need to create image outputs, or if we have to 
        warp something, then we need to rasterize the volume */
     /* GCS FIX: If there is an input m_ss_img, we still do this 
@@ -132,7 +127,8 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 
 	/* Convert rasterized structure sets from vol to plm_image */
 	printf ("Converting...\n");
-	pli_labelmap->set_gpuit (ctm_state->labelmap_vol);
+	rtds->m_labelmap = new Plm_image;
+	rtds->m_labelmap->set_gpuit (ctm_state->labelmap_vol);
 	ctm_state->labelmap_vol = 0;
 	if (rtds->m_ss_img) {
 	    delete rtds->m_ss_img;
@@ -166,27 +162,43 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
     }
 #endif
 
+}
+
+static void
+warp_ss_img (Rtds *rtds, Xform *xf, 
+    Plm_image_header *pih, Warp_parms *parms)
+{
+    /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
+       not included in output. */
     /* If we are warping, warp rasterized image(s) */
     if (parms->xf_in_fn[0]) {
 	Plm_image *tmp;
 
 	tmp = new Plm_image;
-	plm_warp (tmp, 0, xf, pih, pli_labelmap, 0, parms->use_itk, 0);
-	delete pli_labelmap;
-	pli_labelmap = tmp;
-	pli_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
+	plm_warp (tmp, 0, xf, pih, rtds->m_labelmap, 0, parms->use_itk, 0);
+	delete rtds->m_labelmap;
+	rtds->m_labelmap = tmp;
+	rtds->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
 
 	tmp = new Plm_image;
 	plm_warp (tmp, 0, xf, pih, rtds->m_ss_img, 0, parms->use_itk, 0);
 	delete rtds->m_ss_img;
 	rtds->m_ss_img = tmp;
 	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-    }
 
+	/* The cxt is obsolete, but we can't delete it because it 
+	   contains our "bits", used by prefix extraction.  */
+    }
+}
+
+static void
+save_ss_img (Rtds *rtds, Xform *xf, 
+    Plm_image_header *pih, Warp_parms *parms)
+{
     /* Write out labelmap, ss_img */
     if (parms->output_labelmap_fn[0]) {
 	printf ("Writing labelmap.\n");
-	pli_labelmap->save_image (parms->output_labelmap_fn);
+	rtds->m_labelmap->save_image (parms->output_labelmap_fn);
 	printf ("Done.\n");
     }
     if (parms->output_ss_img[0]) {
@@ -197,11 +209,14 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 
     /* Write out prefix images .. */
     if (parms->output_prefix[0]) {
+	printf ("Writing prefix images.\n");
 	prefix_output_save (rtds, parms);
+	printf ("Done.\n");
     }
 
     /* Write out list of structure names */
     if (parms->output_ss_list[0]) {
+	printf ("Writing ss list.\n");
 	int i;
 	FILE *fp;
 	make_directory_recursive (parms->output_ss_list);
@@ -217,12 +232,14 @@ warp_and_save_ss_img (Rtds *rtds, Xform *xf,
 		curr_structure->name);
 	}
 	fclose (fp);
+	printf ("Done.\n");
     }
 
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is  wasting users time. */
     if (parms->xf_in_fn[0]) {
+	printf ("Re-extracting cxt.\n");
 	cxt_free_all_polylines (rtds->m_cxt);
 	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	cxt_extract (rtds->m_cxt, rtds->m_ss_img->m_itk_uint32, 
@@ -239,7 +256,11 @@ save_ss_output (Rtds *rtds,  Xform *xf,
 	return;
     }
 
-    warp_and_save_ss_img (rtds, xf, pih, parms);
+    rasterize_ss_img (rtds, xf, pih, parms);
+
+    warp_ss_img (rtds, xf, pih, parms);
+
+    save_ss_img (rtds, xf, pih, parms);
 
     if (parms->output_cxt[0]) {
 	cxt_save (rtds->m_cxt, parms->output_cxt, false);

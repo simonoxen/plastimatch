@@ -11,16 +11,18 @@
 /* rtds = RT data set */
 class Rtds {
 public:
-    Plm_image *m_img;                     /* CT image */
+    Plm_image *m_img;                    /* CT image */
     Cxt_structure_list *m_cxt;           /* Structure set in polyline form */
-    Plm_image *m_ss_img;                  /* Structure set in bitmap form */
+    Plm_image *m_ss_img;                 /* Structure set in bitmap form */
     Cxt_structure_list *m_ss_list;       /* Names of structures/bitmap form */
-    Plm_image *m_dose;                    /* RT dose */
+    Plm_image *m_labelmap;               /* Structure set in bitmap form */
+    Plm_image *m_dose;                   /* RT dose */
 public:
     Rtds () {
 	m_img = 0;
 	m_ss_img = 0;
 	m_ss_list = 0;
+	m_labelmap = 0;
 	m_cxt = 0;
 	m_dose = 0;
     }
@@ -36,6 +38,9 @@ public:
 	}
 	if (m_ss_list) {
 	    cxt_destroy (m_ss_list);
+	}
+	if (m_labelmap) {
+	    delete m_labelmap;
 	}
 	if (m_dose) {
 	    delete m_dose;

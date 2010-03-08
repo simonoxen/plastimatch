@@ -163,9 +163,6 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs,
 		exit (1);
 	    }
 
-	    printf ("Extract: %d / %d (%d contours)\n", j, val, 
-		contour_filter->GetNumberOfOutputs());
-
 	    /* Add marching squares output to cxt.  Loop through 
 	       contours on this slice... */
 	    for (unsigned int i = 0; 
