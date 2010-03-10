@@ -510,7 +510,9 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	cxt.cxx cxt.h 
 	cxt_io.cxx cxt_io.h 
 	cxt_to_mha.cxx cxt_to_mha.h 
+	demographics.cxx demographics.h 
 	gcs_metric.h gcs_metric.hxx 
+	gdcm_dose.cxx gdcm_dose.h
 	gdcm_rtss.cxx gdcm_rtss.h
 	gdcm_series.cxx gdcm_series.h
 	gdcm_series_helper_2.cxx gdcm_series_helper_2.h

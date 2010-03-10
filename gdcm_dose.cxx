@@ -12,7 +12,7 @@
 #include "gdcmUtil.h"
 
 #include "cxt.h"
-#include "gdcm_rtss.h"
+#include "gdcm_dose.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -32,94 +32,73 @@ extern "C"
 gpuit_EXPORT
 char* file_util_dirname (const char *filename);
 
-/* This function probes whether or not the file is a dicom rtss format */
+/* This function probes whether or not the file is a dicom dose format */
 bool
-gdcm_rtss_probe (char *rtss_fn)
+gdcm_dose_probe (char *dose_fn)
 {
-    gdcm::File *rtss_file = new gdcm::File;
+    gdcm::File *gdcm_file = new gdcm::File;
     std::string tmp;
 
-    rtss_file->SetMaxSizeLoadEntry (0xffff);
-    rtss_file->SetFileName (rtss_fn);
-    rtss_file->SetLoadMode (0);
-    rtss_file->Load();
+    gdcm_file->SetMaxSizeLoadEntry (0xffff);
+    gdcm_file->SetFileName (dose_fn);
+    gdcm_file->SetLoadMode (0);
+    gdcm_file->Load();
 
-    /* Modality -- better be RTSTRUCT */
-    tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
-    delete rtss_file;
-    if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
+    /* Modality -- better be RTDOSE */
+    tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
+    delete gdcm_file;
+    if (strncmp (tmp.c_str(), "RTDOSE", strlen("RTDOSE"))) {
 	return false;
     } else {
 	return true;
     }
 }
 
-void
-gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
+Plm_image*
+gdcm_dose_load (Plm_image *pli, char *dose_fn)
 {
-    gdcm::File *rtss_file = new gdcm::File;
+    gdcm::File *gdcm_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     Gdcm_series gs;
     std::string tmp;
 
-    rtss_file->SetMaxSizeLoadEntry (0xffff);
-    rtss_file->SetFileName (rtss_fn);
-    rtss_file->SetLoadMode (0);
-    rtss_file->Load();
-
+    gdcm_file->SetMaxSizeLoadEntry (0xffff);
+    gdcm_file->SetFileName (dose_fn);
+    gdcm_file->SetLoadMode (0);
+    gdcm_file->Load();
 
     /* Modality -- better be RTSTRUCT */
-    tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
-    if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
-	print_and_exit ("Error.  Input file not an RT structure set: %s\n",
-	    rtss_fn);
+    tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
+    if (strncmp (tmp.c_str(), "RTDOSE", strlen("RTDOSE"))) {
+	print_and_exit ("Error.  Input file not RTDOSE: %s\n",
+	    dose_fn);
     }
 
-    /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir && dicom_dir[0]) {
-	gs.load (dicom_dir);
-    } else {
-	/* Caller did not specify dicom_dir.  Try same directory as 
-	   rtss file */
-	printf ("rtss_fn = %s\n", rtss_fn);
-	char *dir = file_util_dirname (rtss_fn);
-	printf ("dir = %s\n", dir);
-	gs.load (dir);
-	printf ("Successful load\n");
-	free (dir);
-    }
-    gs.get_best_ct ();
-    if (gs.m_have_ct) {
-	int d;
-	structures->have_geometry = 1;
-	for (d = 0; d < 3; d++) {
-	    structures->offset[d] = gs.m_origin[d];
-	    structures->dim[d] = gs.m_dim[d];
-	    structures->spacing[d] = gs.m_spacing[d];
-	}
-    }
+    /* Create output pli if necessary */
+    if (!pli) pli = new Plm_image;
 
+#if defined (commentout)
     /* PatientName */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0010);
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_name = bfromcstr (tmp.c_str());
     }
 
     /* PatientID */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0020);
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0020);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_id = bfromcstr (tmp.c_str());
     }
 
     /* PatientSex */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0040);
+    tmp = gdcm_file->GetEntryValue (0x0010, 0x0040);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->patient_sex = bfromcstr (tmp.c_str());
     }
 
     /* StudyID */
-    tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
+    tmp = gdcm_file->GetEntryValue (0x0020, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	structures->study_id = bfromcstr (tmp.c_str());
     }
@@ -146,11 +125,11 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     else {
 
 	/* StudyInstanceUID */
-	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
+	tmp = gdcm_file->GetEntryValue (0x0020, 0x000d);
 	structures->ct_study_uid = bfromcstr (tmp.c_str());
 
 	/* ReferencedFrameOfReferenceSequence */
-	gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
+	gdcm::SeqEntry *rfor_seq = gdcm_file->GetSeqEntry (0x3006,0x0010);
 	if (rfor_seq) {
 
 	    /* FrameOfReferenceUID */
@@ -190,7 +169,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 
     /* StructureSetROISequence */
-    seq = rtss_file->GetSeqEntry (0x3006,0x0020);
+    seq = gdcm_file->GetSeqEntry (0x3006,0x0020);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
 	int structure_id;
 	std::string roi_number, roi_name;
@@ -203,7 +182,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     }
 
     /* ROIContourSequence */
-    seq = rtss_file->GetSeqEntry (0x3006,0x0039);
+    seq = gdcm_file->GetSeqEntry (0x3006,0x0039);
     for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
 	int structure_id;
 	std::string roi_display_color, referenced_roi_number;
@@ -316,11 +295,13 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	}
     }
     printf ("Loading complete.\n");
-    delete rtss_file;
+#endif
+    delete gdcm_file;
+    return pli;
 }
 
 void
-gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
+gdcm_dose_save (Plm_image *pli, char *dose_fn)
 {
     int i, j, k;
     gdcm::File *gf = new gdcm::File ();
@@ -328,8 +309,9 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
-    printf ("Hello from gdcm_rtss_save\n");
+    printf ("Hello from gdcm_dose_save\n");
 
+#if defined (commentout)
     /* Got the RT struct.  Try to load the corresponding CT. */
     if (dicom_dir) {
 	gs.load (dicom_dir);
@@ -350,9 +332,9 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
        which does not have a (7fe0,0000) PixelDataGroupLength element.
        Therefore we have to write using Document::WriteContent() */
     std::ofstream *fp;
-    fp = new std::ofstream (rtss_fn, std::ios::out | std::ios::binary);
+    fp = new std::ofstream (dose_fn, std::ios::out | std::ios::binary);
     if (*fp == NULL) {
-	fprintf (stderr, "Error opening file for write: %s\n", rtss_fn);
+	fprintf (stderr, "Error opening file for write: %s\n", dose_fn);
 	return;
     }
     
@@ -363,7 +345,7 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* From Chang-Yu Wang: 
        Some dicom validation toolkit (such as DVTK dicom editor)
        required the TransferSyntaxUID tag, and commenting out 
-       gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_rtss.cxx 
+       gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_dose.cxx 
        will cause failure to read in. */
 
     /* TransferSyntaxUID */
@@ -668,4 +650,5 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     gf->WriteContent (fp, gdcm::ExplicitVR);
     fp->close();
     delete fp;
+#endif
 }
