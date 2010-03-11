@@ -1,11 +1,155 @@
 Image registration
 ==================
 
-Registration command file example
----------------------------------
-To run a regstration, do the following::
+Quick start guide
+-----------------
+You must create a command file to do registration.  
+If you want to register image_2.mha to match image_1.mha using 
+B-spline registration, create a command file like this::
 
-  plastimatch register command-file
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=bspline
+  impl=plastimatch
+  threading=openmp
+  max_its=30
+  grid_spac=100 100 100
+  res=4 2 2
+
+Then, run the registration like this::
+
+  plastimatch register command_file.txt
+
+The above example only performs a single registration stage.  If you 
+want to do multi-stage registration, use multiple [STAGE] sections.  
+Like this::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=bspline
+  impl=plastimatch
+  threading=openmp
+  max_its=30
+  grid_spac=100 100 100
+  res=4 2 2
+
+  [STAGE]
+  max_its=30
+  grid_spac=80 80 80
+  res=2 2 1
+
+  [STAGE]
+  max_its=30
+  grid_spac=60 60 60
+  res=1 1 1
+
+That concludes the quick start guide.  For more details and 
+examples, read on!
+
+3-DOF registration (translation)
+--------------------------------
+Sometimes it is convenient to register only with translations.  
+You can do this with the following example::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+
+  [STAGE]
+  xform=translation
+  optim=rsg
+  max_its=30
+  res=4 2 2
+
+6-DOF registration (rigid)
+--------------------------
+The following example performs a rigid registration::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+
+  [STAGE]
+  xform=rigid
+  optim=versor
+  max_its=30
+  res=4 2 2
+
+12-DOF registration (affine)
+----------------------------
+The following example performs an affine registration::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=affine_coefficients.txt
+
+  [STAGE]
+  xform=affine
+  optim=rsg
+  max_its=30
+  res=4 2 2
+
+Using ITK algorithms
+--------------------
+(To be written)
+
+
+Mutual information
+------------------
+The default metric is mean squared error, which is useful for 
+registration of CT with CT.  For other registration problems, mutual 
+information is better.  The first example uses the Mattes 
+mutual information metric with the B-spline transform::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=bspline
+  impl=plastimatch
+  metric=mi
+  max_its=30
+  res=4 2 2
+
+
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=bspline
+  optim=lbfgsb
+  metric=mi
+  max_its=30
+  res=4 2 2
+
 
 The command file is an ASCII text file, which controls the registration. 
 An example registration parameter file is given as follows::
