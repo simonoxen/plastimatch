@@ -38,6 +38,7 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
 	int bit = curr_structure->bit;
 	if (bit == -1) continue;
 
+	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	UCharImageType::Pointer prefix_img = ss_img_extract (
 	    rtds->m_ss_img->m_itk_uint32, bit);
 	char fn[_MAX_PATH];
