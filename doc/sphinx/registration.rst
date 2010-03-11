@@ -134,25 +134,9 @@ mutual information metric with the B-spline transform::
   max_its=30
   res=4 2 2
 
-
-
-  # command_file.txt
-  [GLOBAL]
-  fixed=image_1.mha
-  moving=image_2.mha
-  img_out=warped_2.mha
-  xform_out=bspline_coefficients.txt
-
-  [STAGE]
-  xform=bspline
-  optim=lbfgsb
-  metric=mi
-  max_its=30
-  res=4 2 2
-
-
-The command file is an ASCII text file, which controls the registration. 
-An example registration parameter file is given as follows::
+More examples
+-------------
+Here are some more examples::
 
 	## Comments begin with '#', blank lines are ignored
 	## A "GLOBAL" section is required, and specifies the inputs 
