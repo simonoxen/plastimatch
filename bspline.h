@@ -169,14 +169,16 @@ struct BSPLINE_Parms_struct {
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
     int max_its;
-    int debug;                        /* Create grad & histogram files */
-    char implementation;              /* Implementation ('a', 'b', etc.) */
-    double convergence_tol;           /* When to stop iterations based on score */
-    int convergence_tol_its;          /* How many iterations to check for convergence tol */
-    BSPLINE_MI_Hist mi_hist;          /* Histogram for MI score */
-    void *data_on_gpu;                /* Pointer to structure encapsulating the data stored on the GPU */
-    void *data_from_gpu;              /* Pointer to structure that stores the data returned from the GPU */
-    char *xpm_hist_dump;              /* Pointer to base string of hist dumps */
+    int debug;                   /* Create grad & histogram files */
+    char implementation;         /* Implementation ('a', 'b', etc.) */
+    double convergence_tol;      /* When to stop iterations based on score */
+    int convergence_tol_its;     /* How many iterations to check for convergence tol */
+    BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
+    void *data_on_gpu;           /* Pointer to structure encapsulating the data stored on the GPU */
+    void *data_from_gpu;         /* Pointer to structure that stores the data returned from the GPU */
+    char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
+    double lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
+    double lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
 };
 
 #if defined __cplusplus

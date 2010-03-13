@@ -76,6 +76,8 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->convergence_tol = 0.1;
     parms->convergence_tol_its = 4;
     parms->debug = 0;
+    parms->lbfgsb_factr = 1.0e+7;
+    parms->lbfgsb_pgtol = 1.0e-5;
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;

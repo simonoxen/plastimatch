@@ -194,8 +194,10 @@ bspline_optimize_lbfgsb
     iprint = 1;
     iprint = 0;
 
-    factr=1.0e+7;
-    pgtol=1.0e-5;
+    //factr = 1.0e+7;
+    //pgtol = 1.0e-5;
+    factr = parms->lbfgsb_factr;
+    pgtol = parms->lbfgsb_pgtol;
 
     /* Bounds for deformation problem */
     for (i=0; i < n; i++) {

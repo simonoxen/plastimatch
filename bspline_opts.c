@@ -15,20 +15,23 @@
 void
 print_usage (void)
 {
-    printf ("Usage: bspline [options] fixed moving\n"
-	    "Options:\n"
-	    " -A hardware                Either \"cpu\" or \"cuda\" (default=cpu)\n"
-	    " -a { steepest | lbfgsb }   Choose optimization algorithm\n"
-	    " -M { mse | mi }            Registration metric (default is mse)\n"
-	    " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
-	    " -m iterations              Maximum iterations (default is 10)\n"
-	    " -s \"i j k\"                 Integer knot spacing (voxels)\n"
-	    " -h prefix                  Generate histograms for each MI iteration\n"
-	    " -V outfile                 The output vector field\n"
-	    " -x outfile                 The output bspline coefficients\n"
-	    " -O outfile                 The output warped image\n"
-	    " --debug                    Create various debug files\n"
-	    );
+    printf (
+	"Usage: bspline [options] fixed moving\n"
+	"Options:\n"
+	" -A hardware                Either \"cpu\" or \"cuda\" (default=cpu)\n"
+	" -a { steepest | lbfgsb }   Choose optimization algorithm\n"
+	" -M { mse | mi }            Registration metric (default is mse)\n"
+	" -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
+	" -m iterations              Maximum iterations (default is 10)\n"
+	" --factr value              L-BFGS-B cost converg tol (default is 1e+7)\n"
+	" --pgtol value              L-BFGS-B projected grad tol (default is 1e-5)\n"
+	" -s \"i j k\"                 Integer knot spacing (voxels)\n"
+	" -h prefix                  Generate histograms for each MI iteration\n"
+	" -V outfile                 The output vector field\n"
+	" -x outfile                 The output bspline coefficients\n"
+	" -O outfile                 The output warped image\n"
+	" --debug                    Create various debug files\n"
+    );
     exit (1);
 }
 
@@ -114,9 +117,9 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%d %d %d", 
-			 &options->vox_per_rgn[0],
-			 &options->vox_per_rgn[1],
-			 &options->vox_per_rgn[2]);
+		&options->vox_per_rgn[0],
+		&options->vox_per_rgn[1],
+		&options->vox_per_rgn[2]);
 	    if (rc == 1) {
 		options->vox_per_rgn[1] = options->vox_per_rgn[0];
 		options->vox_per_rgn[2] = options->vox_per_rgn[0];
@@ -156,8 +159,31 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    options->output_xf_fn = strdup (argv[i]);
 	}
-        else if (!strcmp (argv[i], "--debug")) {
-	    parms->debug = 1;
+        else if (!strcmp (argv[i], "--factr")) {
+	    float f;
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &f);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	    parms->lbfgsb_factr = (double) f;
+	}
+        else if (!strcmp (argv[i], "--pgtol")) {
+	    float f;
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &f);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	    parms->lbfgsb_pgtol = (double) f;
 	}
 	else {
 	    print_usage ();
