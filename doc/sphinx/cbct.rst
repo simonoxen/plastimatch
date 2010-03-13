@@ -12,7 +12,8 @@ of the HND images go from ant to post, and the rows go from sup to
 inf.  An illustration of this idea is shown in the figure below. 
 
 
-.. figure:: ../figures/cbct_geometry.svg
+.. figure:: ../figures/cbct_geometry.png
+   :width: 60 %
 
    Geometry of Varian HND files
 

@@ -50,11 +50,13 @@ geometry description:
 +-----------+-----------------+-----------------------------------------+
 
 
-.. figure:: ../figures/drr_geometry.svg
+.. figure:: ../figures/drr_geometry.png
+   :width: 80 %
 
    Geometry attributes of a DRR
 
-.. figure:: ../figures/drr_intrinsic.svg
+.. figure:: ../figures/drr_intrinsic.png
+   :width: 50 %
 
    Intrinsic geometry for DRR computation
 

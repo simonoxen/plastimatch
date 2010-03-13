@@ -17,7 +17,7 @@
    version="1.0"
    sodipodi:docname="cbct_geometry.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/gcs6/projects/plastimatch/doc/figures/cbct_geometry.png"
+   inkscape:export-filename="/home/gsharp/work/plastimatch/doc/figures/cbct_geometry.png"
    inkscape:export-xdpi="300"
    inkscape:export-ydpi="300">
   <defs
@@ -115,6 +115,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -148,7 +149,7 @@
          sodipodi:role="line"
          id="tspan3217"
          x="42.206051"
-         y="50.607967">HND Geometry</tspan></text>
+         y="50.607967">Varian HND Geometry</tspan></text>
     <g
        id="g3228"
        transform="translate(-9.9013704,0.84420283)">
