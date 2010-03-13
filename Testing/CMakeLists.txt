@@ -121,8 +121,8 @@ ADD_TEST (bspline-c-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-c.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7429.0"
-  "-DUPPER_THRESH=7429.4"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -136,8 +136,8 @@ ADD_TEST (bspline-d-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7429.0"
-  "-DUPPER_THRESH=7429.4"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -151,8 +151,8 @@ ADD_TEST (bspline-e-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7429.0"
-  "-DUPPER_THRESH=7429.4"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -166,8 +166,8 @@ ADD_TEST (bspline-f-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7429.0"
-  "-DUPPER_THRESH=7429.4"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -181,8 +181,8 @@ ADD_TEST (bspline-g-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-g.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7428.5"
-  "-DUPPER_THRESH=7428.9"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -196,8 +196,8 @@ ADD_TEST (bspline-h-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-h.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=7428.5"
-  "-DUPPER_THRESH=7428.9"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
