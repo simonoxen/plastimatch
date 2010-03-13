@@ -137,11 +137,20 @@ drr_test_boundary (Volume_limit* vol_limit, double x)
 }
 
 void
-drr_trace_init_loopvars_nointerp (int* ai, int* aidir, double* ao, double* al, 
-				  double pt, double ry, 
-				  double offset, double samp)
+drr_trace_init_loopvars_nointerp (
+    int* ai,           /* Output */
+    int* aidir,        /* Output */
+    double* ao,        /* Output */
+    double* al,        /* Output */
+    double pt,         /* Input: initial intersection of ray with volume */
+    double ry,         /* Input: normalized direction of ray */
+    double offset,     /* Input: origin of volume */
+    double samp        /* Input: pixel spacing of volume */
+)
 {
-
+#if (ULTRA_VERBOSE)
+    printf ("pt/ry/off/samp: %g %g %g %g\n", pt, ry, offset, samp);
+#endif
     if (ry > 0) {
 	*aidir = 1;
         *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
@@ -163,24 +172,25 @@ drr_trace_init_loopvars_nointerp (int* ai, int* aidir, double* ao, double* al,
 /* Initialize loop variables.  Returns 1 if the segment intersects 
    the volume, and 0 if the segment does not intersect. */
 int
-drr_trace_init (int *ai_x,
-		int *ai_y,
-		int *ai_z,
-		int *aixdir, 
-		int *aiydir, 
-		int *aizdir,
-		double *ao_x, 
-		double *ao_y, 
-		double *ao_z,
-		double *al_x, 
-		double *al_y, 
-		double *al_z,
-		double *len,
-		Volume* vol, 
-		Volume_limit vol_limits[3], 
-		double* p1, 
-		double* p2 
-		)
+drr_trace_init (
+    int *ai_x,
+    int *ai_y,
+    int *ai_z,
+    int *aixdir, 
+    int *aiydir, 
+    int *aizdir,
+    double *ao_x, 
+    double *ao_y, 
+    double *ao_z,
+    double *al_x, 
+    double *al_y, 
+    double *al_z,
+    double *len,
+    Volume* vol, 
+    Volume_limit vol_limits[3], 
+    double* p1, 
+    double* p2 
+)
 {
     int d;
     Point_location ploc[3][2];
@@ -199,16 +209,18 @@ drr_trace_init (int *ai_x,
     }
 
 #if defined (ULTRA_VERBOSE)
-    printf ("vol_limit[*][0] = %g %g %g\n", vol_limits[0].limits[0], vol_limits[1].limits[0], vol_limits[2].limits[0]);
-    printf ("vol_limit[*][1] = %g %g %g\n", vol_limits[0].limits[1], vol_limits[1].limits[1], vol_limits[2].limits[1]);
+    printf ("vol_limit[*][0] = %g %g %g\n", vol_limits[0].limits[0], 
+	vol_limits[1].limits[0], vol_limits[2].limits[0]);
+    printf ("vol_limit[*][1] = %g %g %g\n", vol_limits[0].limits[1], 
+	vol_limits[1].limits[1], vol_limits[2].limits[1]);
     printf ("ploc[*][0]: %d %d %d\n", ploc[0][0], ploc[1][0], ploc[2][0]);
     printf ("ploc[*][1]: %d %d %d\n", ploc[0][1], ploc[1][1], ploc[2][1]);
 #endif
 
     /* If we made it here, all three dimensions have some range of alpha
-	where they intersects the volume.  However, these alphas might 
-	not overlap.  We compute the alphas, then test overlapping 
-	alphas to find the segment range within the volume.  */
+       where they intersects the volume.  However, these alphas might 
+       not overlap.  We compute the alphas, then test overlapping 
+       alphas to find the segment range within the volume.  */
     for (d = 0; d < 3; d++) {
 	if (ploc[d][0] == POINTLOC_LEFT) {
 	    alpha[d][0] = (vol_limits[d].limits[0] - p1[d]) / (p2[d] - p1[d]);
@@ -292,20 +304,32 @@ drr_trace_init (int *ai_x,
     return 1;
 }
 
-double
-drr_trace_ray_nointerp_2009 (Volume* vol, Volume_limit vol_limits[3], 
-			     double* p1in, double* p2in, 
-			     FILE* msd_fp)
+double                            /* Return value: intensity of ray */
+drr_trace_ray_nointerp (
+    Volume* vol,                  /* Input: volume */
+    Volume_limit vol_limits[3],   /* Input: min/max coordinates of volume */
+    double* p1in,                 /* Input: start point for ray */
+    double* p2in,                 /* Input: end point for ray */
+    FILE* msd_fp                  /* Not used */
+)
 {
+    /* Variable notation:
+       ai_x     index of x
+       aixdir   x indices moving up or down?
+       ao_x     absolute length to next voxel crossing
+       al_x     length between voxel crossings
+    */
     int ai_x, ai_y, ai_z;
     int aixdir, aiydir, aizdir;
     double ao_x, ao_y, ao_z;
     double al_x, al_y, al_z;
-    double len;
-    double aggr_len = 0.0;
-    double accum = 0.0;
-    int num_pix = 0;
-    float msd_bins[DRR_MSD_NUM_BINS];
+
+    double len;                       /* Total length of ray within volume */
+    double aggr_len = 0.0;            /* Length traced so far */
+    double accum = 0.0;               /* Accumulated intensity */
+    int num_pix = 0;                  /* Number of pixels traversed */
+    float msd_bins[DRR_MSD_NUM_BINS]; /* Not used */
+
     float* img = (float*) vol->img;
 
 #if defined (ULTRA_VERBOSE)
@@ -314,20 +338,20 @@ drr_trace_ray_nointerp_2009 (Volume* vol, Volume_limit vol_limits[3],
 #endif
 
     if (!drr_trace_init (
-		&ai_x,
-		&ai_y,
-		&ai_z,
-		&aixdir, 
-		&aiydir, 
-		&aizdir,
-		&ao_x, 
-		&ao_y, 
-		&ao_z,
-		&al_x, 
-		&al_y, 
-		&al_z,
-		&len,
-		vol, vol_limits, p1in, p2in)) {
+	    &ai_x,
+	    &ai_y,
+	    &ai_z,
+	    &aixdir, 
+	    &aiydir, 
+	    &aizdir,
+	    &ao_x, 
+	    &ao_y, 
+	    &ao_z,
+	    &al_x, 
+	    &al_y, 
+	    &al_z,
+	    &len,
+	    vol, vol_limits, p1in, p2in)) {
 	return 0.0;
     }
 
@@ -336,12 +360,6 @@ drr_trace_ray_nointerp_2009 (Volume* vol, Volume_limit vol_limits[3],
     }
 
     /* We'll go from p1 to p2 */
-    /* Variable notation:
-       ai_x    // index of x
-       aixdir  // x indices moving up or down?
-       ao_x    // absolute length to next voxel crossing
-       al_x    // length between voxel crossings
-    */
     do {
 	float* zz = (float*) &img[ai_z*vol->dim[0]*vol->dim[1]];
 	float pix_density;
@@ -378,7 +396,7 @@ drr_trace_ray_nointerp_2009 (Volume* vol, Volume_limit vol_limits[3],
 	accum += pix_len * pix_density;
 #if defined (DEBUG_INTENSITIES)
 	printf ("len: %10g dens: %10g acc: %10g\n", 
-		pix_len, pix_density, accum);
+	    pix_len, pix_density, accum);
 #endif
 #else
 	accum += pix_len * attenuation_lookup (pix_density);
@@ -405,7 +423,7 @@ drr_render_volume_perspective (
 {
     int d;
     double p1[3];
-#if defined (ULTRA_VERBOSE)
+#if defined (VERBOSE)
     int rows = options->image_window[1] - options->image_window[0] + 1;
 #endif
     int cols = options->image_window[3] - options->image_window[2] + 1;
@@ -452,6 +470,9 @@ drr_render_volume_perspective (
     printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
     printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
     printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+    printf ("IMG WDW: %d %d %d %d\n", 
+	options->image_window[0], options->image_window[1], 
+	options->image_window[2], options->image_window[3]);
 #endif
 
     /* Compute volume boundary box */
@@ -488,7 +509,7 @@ drr_render_volume_perspective (
 	    int idx = c - options->image_window[2] 
 		+ (r - options->image_window[0]) * cols;
 
-#if defined (ULTRA_VERBOSE)
+#if defined (VERBOSE)
 	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
 #endif
 	    vec3_scale3 (tmp, incr_c, (double) c);
@@ -497,7 +518,7 @@ drr_render_volume_perspective (
 	    switch (options->interpolation) {
 	    case INTERPOLATION_NONE:
 		/* DRR_MSD is disabled */
-		value = drr_trace_ray_nointerp_2009 (vol, vol_limits, 
+		value = drr_trace_ray_nointerp (vol, vol_limits, 
 		    p1, p2, 0);
 		break;
 	    case INTERPOLATION_TRILINEAR_EXACT:
