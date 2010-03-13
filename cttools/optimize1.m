@@ -1,4 +1,8 @@
-%% Eqn 2.8 + Eqn 2.20 in Madsen, Nielsen, and Tingleff
+%% This combines a steepest descent direction with trust interval line search.
+%% See Eqn 2.8 + Eqn 2.20 in Madsen, Nielsen, and Tingleff's 
+%%   booklet: "Methods for non-linear least squares probelms"
+%%   http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3215/pdf/imm3215.pdf
+%% See also: http://www2.imm.dtu.dk/~hbn/immoptibox/
 x0 = [1;0];
 max_its = 100;
 alg = 'steepest';
