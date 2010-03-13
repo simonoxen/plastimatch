@@ -59,8 +59,17 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     "plm-convert-xio-stats"
     "plm-convert-xio-check"
     "plm-warp-e"
-    "plm-warp-e-stats"
-    "plm-warp-e-check"
+    "plm-warp-e-stats-1"
+    "plm-warp-e-check-1"
+    "plm-warp-e-stats-2"
+    "plm-warp-e-check-2"
+    "plm-warp-e-stats-3"
+    "plm-warp-e-check-3"
+    "plm-warp-e-stats-4"
+    "plm-warp-e-check-4"
+    "plm-warp-f"
+    "plm-warp-f-stats-1"
+    "plm-warp-f-check-1"
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 
