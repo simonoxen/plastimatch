@@ -2518,6 +2518,9 @@ bspline_warp (
 // This is a single core CPU implementation of CUDA implementation J.
 // The tile "condense" method is demonstrated.
 //
+// This is the fastest know CPU implmentation for both single core 
+// and multi-core
+//
 // See also:
 //   OpenMP implementation of CUDA J: bspline_score_g_mse()
 //
@@ -3694,7 +3697,6 @@ bspline_score_d_mse (BSPLINE_Parms *parms,
 }
 
 /* Mean-squared error version of implementation "C" */
-/* ----- This is the best known version for single processor CPU's ----- */
 /* Implementation "C" is slower than "B", but yields a smoother cost function 
    for use by L-BFGS-B.  It uses linear interpolation of moving image, 
    and nearest neighbor interpolation of gradient */

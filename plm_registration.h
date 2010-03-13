@@ -99,9 +99,11 @@ public:
 	/* Generic optimization parms */
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
-	impl_type = IMPLEMENTATION_ITK;
+	//impl_type = IMPLEMENTATION_ITK;
+	impl_type = IMPLEMENTATION_NONE;
 	alg_flavor = 0;
-	threading_type = THREADING_SINGLE;
+	//threading_type = THREADING_SINGLE;
+	threading_type = THREADING_OPENMP;
 	metric_type = METRIC_MSE;
 	fixed_subsample_rate[0] = 4;
 	fixed_subsample_rate[1] = 4;

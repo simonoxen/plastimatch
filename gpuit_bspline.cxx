@@ -93,7 +93,7 @@ do_gpuit_bspline_stage_internal (
 	break;
     case THREADING_OPENMP:
 	if (stage->alg_flavor == 0) {
-	    parms.implementation = 'g';
+	    parms.implementation = 'h';
 	} else {
 	    parms.implementation = stage->alg_flavor;
 	}
