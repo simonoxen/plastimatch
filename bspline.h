@@ -219,12 +219,13 @@ bspline_warp (
     float default_val     /* Fill in this value outside of image */
 );
 gpuit_EXPORT
-void bspline_optimize (BSPLINE_Xform* bxf, 
-		       Bspline_state **bst,
-		       BSPLINE_Parms *parms, 
-		       Volume *fixed, 
-		       Volume *moving, 
-		       Volume *moving_grad);
+void bspline_run_optimization (
+    BSPLINE_Xform* bxf, 
+    Bspline_state **bst,
+    BSPLINE_Parms *parms, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad);
 gpuit_EXPORT
 BSPLINE_Xform* read_bxf (char* filename);
 gpuit_EXPORT

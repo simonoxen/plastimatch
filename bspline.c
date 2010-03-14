@@ -4124,12 +4124,13 @@ bspline_score (BSPLINE_Parms *parms,
 }
 
 void
-bspline_optimize (BSPLINE_Xform* bxf, 
-		  Bspline_state **bst_in, 
-		  BSPLINE_Parms *parms, 
-		  Volume *fixed, 
-		  Volume *moving, 
-		  Volume *moving_grad)
+bspline_run_optimization (
+    BSPLINE_Xform* bxf, 
+    Bspline_state **bst_in, 
+    BSPLINE_Parms *parms, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
 {
     Bspline_state *bst;
 
@@ -4154,7 +4155,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	    break;
 	case 'e':
 	    bspline_cuda_initialize_e_v2 (fixed, moving, moving_grad, 
-					  bxf, parms);
+		bxf, parms);
 	    // bspline_cuda_initialize_e (fixed, moving, moving_grad, bxf, parms);
 	    break;
 	case 'f':
@@ -4165,34 +4166,34 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	    break;
 	case 'h':
 	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, 
-				       moving_grad, bxf, parms);
+		moving_grad, bxf, parms);
 	    break;
 	case 'i':
 	    // i now uses j's init and cleanup routines
 	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
-				       moving_grad, bxf, parms);
+		moving_grad, bxf, parms);
 	    break;
 	case 'j':
 	case '\0':   /* Default */
 	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
-				       moving_grad, bxf, parms);
-	    break;
+		moving_grad, bxf, parms);
+	break;
 	default:
 	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
-		    parms->implementation);
+		parms->implementation);
 	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, 
-				       moving_grad, bxf, parms);
+		moving_grad, bxf, parms);
 	    break;
 	}
     } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 	switch (parms->implementation) {
 	case 'a':
-		bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-		break;
+	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    break;
 	default:
-		printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n", parms->implementation);
-		bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-		break;
+	    printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n", parms->implementation);
+	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    break;
 	}
 
     }
@@ -4202,19 +4203,8 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	bspline_initialize_mi (parms, fixed, moving);
     }
 
-    if (parms->optimization == BOPT_LBFGSB) {
-#if (FORTRAN_FOUND)
-	bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
-#else
-	logfile_printf (
-	    "LBFGSB not compiled for this platform (no fortran compiler, "
-	    "no f2c library).\n  Reverting to steepest descent.\n"
-	    );
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
-#endif
-    } else {
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
-    }
+    /* Do the optimization */
+    bspline_optimize (bxf, bst, parms, fixed, moving, moving_grad);    
 
 #if (CUDA_FOUND)
     if (parms->threading == BTHR_CUDA) {
@@ -4225,7 +4215,7 @@ bspline_optimize (BSPLINE_Xform* bxf,
 	case 'd':
 	case 'e':
 	    bspline_cuda_clean_up_d (); // Handles versions D and E
-	    break;
+	break;
 	case 'f':
 	    bspline_cuda_clean_up_f ();
 	    break;

@@ -122,7 +122,7 @@ do_gpuit_bspline_stage_internal (
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */
-    bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 
+    bspline_run_optimization (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 
 	moving_ss, moving_grad);
 
     /* Free up temporary memory */

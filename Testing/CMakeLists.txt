@@ -606,8 +606,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-a-stats.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=2.26"
-  "-DUPPER_THRESH=2.28"
+  "-DLOWER_THRESH=5.77"
+  "-DUPPER_THRESH=5.78"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -628,8 +628,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-1.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=2.26"
-  "-DUPPER_THRESH=2.28"
+  "-DLOWER_THRESH=5.77"
+  "-DUPPER_THRESH=5.78"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 PLM_ADD_TEST (
@@ -643,8 +643,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-2.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-843.8"
-  "-DUPPER_THRESH=-843.6"
+  "-DLOWER_THRESH=-775.7"
+  "-DUPPER_THRESH=-775.6"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -665,8 +665,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-c-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=8.0"
-  "-DUPPER_THRESH=8.2"
+  "-DLOWER_THRESH=9.2"
+  "-DUPPER_THRESH=9.3"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -687,8 +687,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-d-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=8.0"
-  "-DUPPER_THRESH=8.2"
+  "-DLOWER_THRESH=9.2"
+  "-DUPPER_THRESH=9.3"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
