@@ -27,7 +27,8 @@ bspline_optimize (
     Volume *moving, 
     Volume *moving_grad)
 {
-    if (parms->optimization == BOPT_LBFGSB) {
+    switch (parms->optimization) {
+    case BOPT_LBFGSB:
 #if (FORTRAN_FOUND)
 	bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
 #else
@@ -37,7 +38,9 @@ bspline_optimize (
 	);
 	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
 #endif
-    } else {
+	break;
+    case BOPT_STEEPEST:
 	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
+	break;
     }
 }
