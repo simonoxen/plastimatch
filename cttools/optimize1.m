@@ -4,7 +4,7 @@
 %%   http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3215/pdf/imm3215.pdf
 %% See also: http://www2.imm.dtu.dk/~hbn/immoptibox/
 x0 = [1;0];
-max_its = 100;
+max_its = 90;
 alg = 'steepest';
 
 alpha = 1;

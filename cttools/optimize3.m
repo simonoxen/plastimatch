@@ -5,7 +5,7 @@
 %%   http://www2.imm.dtu.dk/pubdb/views/edoc_download.php/3217/pdf/imm3217.pdf
 x0 = [1; 0];
 delta = 1;
-max_its = 100;
+max_its = 80;
 alg = 'conjugate-gradient-1';
 
 alpha = 1;
@@ -15,13 +15,14 @@ disp (sprintf ('%10g [%10g %10g] [%10g %10g], %10g', ...
                f, x(1), x(2), g(1), g(2), alpha));
 gamma = 0;
 hcg = [0;0];
+hist = [];
+
 for it = 1:max_its
     
     %% Compute search direction
     hprev = hcg;
     hcg = -g + gamma*hprev;
 
-    
     %% Perform line search
     line_search_complete = 0;
     while ~line_search_complete
@@ -39,6 +40,7 @@ for it = 1:max_its
         %% Evaluate function
         x1 = x + hcg;
         [f1,g1] = rosenbrock (x1);
+        hist = [hist, [f1;x1]];
 
         %% Compute gain ratio with linear model
         gr = (f - f1) / (-hcg'*g);

@@ -1,7 +1,7 @@
 %% Algorithm 3.27 in Madsen, Nielsen, and Tingleff
 x0 = [1; 0];
 delta = 1;
-max_its = 60;
+max_its = 90;
 alg = 'bfgs';
 
 alpha = 1;
