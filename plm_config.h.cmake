@@ -19,6 +19,7 @@
 #cmakedefine BROOK_FOUND 1
 #cmakedefine CUDA_FOUND 1
 #cmakedefine FFTW_FOUND 1
+#cmakedefine NLOPT_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1
