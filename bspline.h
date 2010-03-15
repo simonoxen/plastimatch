@@ -8,7 +8,8 @@
 
 enum BsplineOptimization {
     BOPT_LBFGSB,
-    BOPT_STEEPEST
+    BOPT_STEEPEST,
+    BOPT_NLOPT_LBFGS,
 };
 
 enum BsplineThreading {

@@ -71,6 +71,8 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    if (!strcmp(argv[i], "steepest")) {
 		parms->optimization = BOPT_STEEPEST;
+	    } else if (!strcmp(argv[i], "nlopt-lbfgs")) {
+		parms->optimization = BOPT_NLOPT_LBFGS;
 	    } else if (!strcmp(argv[i], "lbfgsb")) {
 		parms->optimization = BOPT_LBFGSB;
 	    } else {
