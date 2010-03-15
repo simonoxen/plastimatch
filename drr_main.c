@@ -47,6 +47,7 @@ create_matrix_and_drr (
     double tgt[3],
     double nrm[3],
     int a, 
+    void *dev_state, 
     Drr_options* options
 )
 {
@@ -154,7 +155,8 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	cam[1] = tgt[1] + options->sad * nrm[1];
 	cam[2] = tgt[2] + options->sad * nrm[2];
 
-	create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0, options);
+	create_matrix_and_drr (vol, proj, cam, tgt, nrm, 0, 
+	    dev_state, options);
     }
 
     /* Otherwise, loop through camera angles */
@@ -175,7 +177,8 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	    vec3_sub3 (nrm, tgt, cam);
 	    vec3_normalize1 (nrm);
 
-	    create_matrix_and_drr (vol, proj, cam, tgt, nrm, a, options);
+	    create_matrix_and_drr (vol, proj, cam, tgt, nrm, a, 
+		dev_state, options);
 	}
     }
     proj_image_destroy (proj);
