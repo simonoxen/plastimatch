@@ -1,4 +1,4 @@
-Dicom Conformance
+Dicom conformance
 =================
 
 This section is under development.
@@ -35,7 +35,7 @@ routines, and DCMTK for non-itk routines (dicom_uid.exe,
 mondoshot.exe, perl scripts, etc.).  These engines have different
 default conformance properties.  
 
-CT Export
+CT export
 ---------
 
 CT Images exported by plastimatch will contain the following modules.
@@ -92,12 +92,12 @@ Frame of Reference Module
 |Indicator          |               |               |                    |
 +-------------------+---------------+---------------+--------------------+
 
-Dicom RT Structure Sets
+Dicom RT structure sets
 -----------------------
 
 To be written.
 
-Dicom RT Dose
+Dicom RT dose
 -------------
 
 To be written.

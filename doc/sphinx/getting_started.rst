@@ -1,4 +1,4 @@
-Getting Started
+Getting started
 ====================
 
 Downloading the code

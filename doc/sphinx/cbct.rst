@@ -1,7 +1,7 @@
 CBCT - Cone-beam computed tomography
 ====================================
 
-HND Geometry
+HND geometry
 ------------
 By default, when you generate a DRR, the image is oriented as if the
 virtual x-ray source were a camera.  That means that for a right

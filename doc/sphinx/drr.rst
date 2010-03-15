@@ -2,7 +2,7 @@ DRR - Digitally reconstructed radiographs
 =========================================
 
 
-DRR Geometry
+DRR geometry
 ------------
 
 The DRR code generates images from a volume, using the following

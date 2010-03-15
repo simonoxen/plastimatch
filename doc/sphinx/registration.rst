@@ -108,16 +108,120 @@ The following example performs an affine registration::
   max_its=30
   res=4 2 2
 
+Demons registration
+-------------------
+The following example performs a demons registration::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=demons_vf.mha
+
+  [STAGE]
+  xform=vf
+  optim=demons
+  max_its=30
+  res=4 2 2
+
+The demons code has several parameters which can be optimized.
+The following example illustrates their use::
+
+  # GPU acceleration requires brook
+  [STAGE]
+  xform=vf
+  optim=demons
+  max_its=200
+  res=4 4 2
+  # Std dev of smoothing kernel (in mm)
+  demons_std=10
+  # "Gain" factor, higher gains are faster but less robust
+  demons_acceleration=5
+  # Homogenezation is the tradeoff between gradient 
+  # and image difference.  Values should increase for larger 
+  # voxel sizes, going down to about 1 for 1mm voxels.
+  demons_homogenization=30
+  # This is the size of the filter (in voxels)
+  demons_filter_width=5 5 5
+
+If you have brook installed, you can use GPU-accelerated demons::
+
+  # GPU acceleration requires brook
+  [STAGE]
+  optim=demons
+  xform=vf
+  impl=gpuit_brook
+  res=4 4 2
+  max_its=200
+
+B-spline registration
+---------------------
+The following example performs a B-spline registration::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=bspline
+  optim=lbfgsb
+  max_its=30
+  res=4 2 2
+  # B-spline grid spacing (in mm)
+  grid_spac=30 30 30
+
+Just like demons, b-spline has several options.  The most important one 
+is the grid spacing, which defines how far apart the control points are 
+spaced.  
+The following example illustrates some additional options::
+
+  [STAGE]
+  xform=bspline
+  optim=lbfgsb
+  max_its=50
+  res=4 4 2
+  # B-spline grid spacing (in mm)
+  grid_spac=30 30 30
+  # Quit if change in score differs by less than 3
+  convergence_tol=3
+  # Quit if gradient norm is less than 0.1
+  grad_tol=0.1
+
+
 Using ITK algorithms
 --------------------
-(To be written)
+The default is to use plastimatch native implementations where available.  
+When a native implementation is not available, the ITK implementation is used.
+Native implementations are available for demons and bspline methods.  
+
+If you want to use an ITK method, you can use the "impl=itk" parameter.
+For example, the following command file will use the ITK demons 
+implementation::
+
+  # command_file.txt
+  [GLOBAL]
+  fixed=image_1.mha
+  moving=image_2.mha
+  img_out=warped_2.mha
+  xform_out=bspline_coefficients.txt
+
+  [STAGE]
+  xform=vf
+  optim=demons
+  impl=itk
+  max_its=30
+  res=4 2 2
 
 
 Mutual information
 ------------------
 The default metric is mean squared error, which is useful for 
 registration of CT with CT.  For other registration problems, mutual 
-information is better.  The first example uses the Mattes 
+information is better.  The following example uses the Mattes 
 mutual information metric with the B-spline transform::
 
   # command_file.txt
@@ -134,90 +238,49 @@ mutual information metric with the B-spline transform::
   max_its=30
   res=4 2 2
 
-More examples
--------------
-Here are some more examples::
+Output options
+--------------
+Outputs can be generated at the end of the registration, by putting 
+the appropriate file names in the "[GLOBAL]" section.  The 
+file formats of the output files are selected automatically based 
+on the file extension.  
 
-	## Comments begin with '#', blank lines are ignored
-	## A "GLOBAL" section is required, and specifies the inputs 
-	## and optional outputs.  
-	## 
-	## For the output files, it is similar, but not exactly the same 
-	## as putting them in the last stage.  
-	## 
-	## The use of xform_out is undefined when xform=vf, 
-	## such as demons registration.  Use vf_out instead.
-	[GLOBAL]
-	fixed=t0p_221.mha
-	moving=t5p_221.mha
-	xform_in=my_bsp.txt
-	vf_out=my_output_vf.mha
-	xform_out=my_output_bsp.txt
-	img_out=my_output_img.mha
+In addition to generating files at the end of registration, intermediate 
+results can be generated at the end of each stage.  The following 
+example shows the range of output files which can be created::
 
-	## Use a "STAGE" section for each stage of processing.  
-	## You can get outputs (vf_out, xform_out, and img_out) if 
-	## you like. 
-	## Default values will be used for each option unless you 
-	## override them here. 
-	[STAGE]
-	xform=bspline
-	optim=lbfgsb
-	# Use plastimatch native implementation
-	impl=plastimatch
-	# Quit after 50 iterations
-	max_its=50
-	# Quit if change in score differs by less than 3
-	convergence_tol=3
-	# Quit if gradient norm is less than 0.1
-	grad_tol=0.1
-	# B-spline grid spacing (in mm)
-	grid_spac=30 30 30
-	# Subsample both files by 4,4,2 in x,y,z directions
-	res=4 4 2
-	# At the end of this stage, output the final xform
-	xform_out=stage_1_output_bsp.txt
+  [GLOBAL]
+  # These are the inputs
+  fixed=t0p_221.mha
+  moving=t5p_221.mha
+  xform_in=my_bsp.txt
 
-	## For each subsequent stage, add another "STAGE" section.
-	## You only need to include parameters that you want to change.
-	## Any unspecified parameter is inherited from the 
-	## previous stage.
-	[STAGE]
-	max_its=20
-	convergence_tol=4
-	grad_tol=0.2
-	res=2 2 1
+  # These are the final outputs.  They will be rendered at full resolution.
+  vf_out=my_output_vf.mha
+  xform_out=my_output_bsp.txt
+  img_out=my_output_img.mha
 
-	## To run demons, set optim to "demons" and xform to "vf." 
-	[STAGE]
-	xform=vf
-	optim=demons
-	impl=itk
-	vf_out=output_2.mha
+  [STAGE]
+  xform=rigid
+  max_its=20
+  res=4 4 2
 
-	## If you want to, you can use a "COMMENT" section 
-	## to comment out a stage.
-	[COMMENT]
-	xform=bspline
-	max_its=200
+  # These are the outputs from the first stage
+  xform_out=stage_1_rigid.txt
+  vf_out=stage_1_rigid.mha
+  img_out=stage_1_img.mha
 
-	## GPU acceleration requires brook
-	[STAGE]
-	optim=demons
-	xform=vf
-	impl=gpuit_brook
-	res=4 4 2
-	max_its=200
-	# Std dev of smoothing kernel (in mm)
-	demons_std=10
-	# "Gain" factor, higher gains are faster but less robust
-	demons_acceleration=5
-	# Homogenezation is the tradeoff between gradient 
-	# and image difference.  Values should increase for larger 
-	# voxel sizes, going down to about 1 for 1mm voxels.
-	demons_homogenization=30
-	# This is the size of the filter (in voxels)
-	demons_filter_width=5 5 5
+  [STAGE]
+  xform=vf
+  optim=demons
+  res=2 2 1
+
+  # These are the outputs from the second stage.
+  # They will be similar to the final outputs, but at lower resolution.  
+  # The resolution of the stage outputs match the resolution of the stage.
+  vf_out=stage_1_rigid.mha
+  img_out=stage_1_img.mha
+
 
 Registration command file reference
 -----------------------------------

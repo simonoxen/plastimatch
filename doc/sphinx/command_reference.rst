@@ -1,4 +1,4 @@
-Command Reference
+Command reference
 =================
 The plastimatch executable is used for 
 a variety of operations, including image
