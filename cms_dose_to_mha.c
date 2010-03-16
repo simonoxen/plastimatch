@@ -26,20 +26,29 @@ main (int argc, char *argv[])
     long offset; //deleteme when done debugging.
 
     char *mode = {"rc"}; /*rt vs. rc */
-    char array[500];char myarray[500];
+    char buf[1024];
+    char myarray[1024];
     char *result = NULL;
     int nn; int i; int j; int k;
-    double rx; double ry; double rz; //dimension sizes
+    //dimension sizes
+    double rx; double ry; double rz;
     double ox; double oy; double oz;
     int nx; int ny; int nz;
-    double dx; double dy; double dz; //element spacing
-    double topx; double topy; double topz; //offset (top left corner of first slice)
+    //element spacing
+    double dx; double dy; double dz;
+    //offset (top left corner of first slice)
+    double topx; double topy; double topz;
 
     int dose;
-
+    int found;
     int o,p,q,l,m,n; short ***data;
+    char *fn;
 
-	
+    if (argc != 3) {
+	printf("Usage: cms_dose_to_mha cmsdose outputfile.mha\n");
+	exit(0);
+    }
+
     l = 520; n = 520; m = 520;
     data = malloc(l*sizeof(short**));
     for(o=0;o<l;o++)
@@ -55,60 +64,45 @@ main (int argc, char *argv[])
 	}
     }
 
-
-    /////////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////////
-    if(argc==1){
-	printf("Usage: cms2mha.c cmsdose outputfile.mha");
-	exit(0);}
-
-    //	for(i = 0; i < argc; i++){
-    //		printf("arg %d: %s\n", i, argv[i]);
-    //		printf("HELLO %d: %s\n", i, argv[i]);
-    //		printf("HELLO %d: %d\n", i, strcmp(argv[i], "hello"));
-    //		if (0==strcmp(argv[i], "hello")){
-    //			printf("HI %d: %s\n", i, argv[i]);}
-    //	}
-
-    //////////////////////////////////////////////////////////
-    ifp = fopen(argv[1], mode);
-    //ifp = fopen("april-test-dose.1", mode);
-    //////////////////////////////////////////////////////////
-
-
-
-
-    //////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////
+    fn = argv[1];
+    ifp = fopen (fn, mode);
     if (ifp == NULL) {
 	fprintf(stderr, "Can't open input file in.list!\n");
 	exit(1);
     }
 
-    for(i = 0; i < 20; i++){
-	fgets(array, sizeof(char)*500, ifp);
-	printf("LINE: %s",array);
-	for(j = 0; j < 200; j++){
-	    myarray[j] = array[j];
-	}
-	//printf("NEW LINE AGAIN!: %s",myarray);
+    /* Get version number */
+    fgets (buf, 1024, ifp);
+    found = 0;
 
-	//Now to check the number of comma-delineated entries in each...
+    /* Search for geometry string */
+    for (i = 0; i < 25; i++){
+	fgets (buf, 1024, ifp);
+	printf ("LINE: %s",buf);
+	for (j = 0; j < 200; j++) {
+	    myarray[j] = buf[j];
+	}
+
+	/* Check the number of commas in the line */
 	nn=0;
-	result = strtok(array,",");
+	result = strtok(buf,",");
 	while(result!=NULL) {
 	    result = strtok( NULL, ",");
 	    nn++;
-	    //printf("result is: \%s\n", result );
-	    //printf("Current line is: %s",myarray);
-	    //printf("N is: %d\n\n",n);
 	}
 
-	if(nn==10){
+	if (nn==10) {
 	    printf("%s\n\n","found 9 commas");
-	    break;}
+	    found = 1;
+	    break;
+	}
     }
+
+    if (!found) {
+	printf ("Sorry, couldn't parse dose file: %s\n", fn);
+	exit (-1);
+    }
+
     printf("Target String: %s",myarray);
     result = strtok (myarray,",");
     printf("first number is: %s\n", result);

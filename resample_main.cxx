@@ -6,11 +6,12 @@
 #include "itkResampleImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
-#include "resample_main.h"
+#include "getopt.h"
 #include "itk_image.h"
 #include "plm_file_format.h"
+#include "plm_image_header.h"
+#include "resample_main.h"
 #include "resample_mha.h"
-#include "getopt.h"
 
 void
 print_usage (void)
@@ -19,6 +20,7 @@ print_usage (void)
 	    "Required:   --input=file\n"
 	    "            --output=file\n"
 	    "Optional:   --subsample=\"x y z\"\n"
+	    "            --fixed=file\n"
 	    "            --origin=\"x y z\"\n"
 	    "            --spacing=\"x y z\"\n"
 	    "            --size=\"x y z\"\n"
@@ -26,21 +28,6 @@ print_usage (void)
 	    "            --interpolation={nn, linear}\n"
 	    "            --default_val=val\n");
     exit (1);
-}
-
-void
-show_stats (ShortImageType::Pointer image)
-{
-    ShortImageType::RegionType region = image->GetLargestPossibleRegion();
-    const ShortImageType::IndexType& st = region.GetIndex();
-    const ShortImageType::SizeType& sz = image->GetLargestPossibleRegion().GetSize();
-    const ShortImageType::PointType& og = image->GetOrigin();
-    const ShortImageType::SpacingType& sp = image->GetSpacing();
-
-    printf ("Origin = %g %g %g\n", og[0], og[1], og[2]);
-    printf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
-    std::cout << "Start = " << st[0] << " " << st[1] << " " << st[2] << std::endl;
-    std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
 }
 
 void
@@ -103,6 +90,7 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 	{ "output_type",    required_argument,      NULL,           2 },
 	{ "output-type",    required_argument,      NULL,           2 },
 	{ "input",          required_argument,      NULL,           3 },
+	{ "fixed",          required_argument,      NULL,           4 },
 	{ "subsample",      required_argument,      NULL,           5 },
 	{ "origin",         required_argument,      NULL,           6 },
 	{ "spacing",        required_argument,      NULL,           7 },
@@ -125,6 +113,9 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 	    break;
 	case 3:
 	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    break;
+	case 4:
+	    strncpy (parms->input_fixed, optarg, _MAX_PATH);
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%d %d %d", &(parms->subsample[0]), 
@@ -199,10 +190,20 @@ do_resample_itk (Resample_parms* parms, T img)
 	return subsample_image (img, parms->subsample[0], parms->subsample[1], 
 			       parms->subsample[2], parms->default_val);
     }
+    else if (parms->input_fixed[0]) {
+	/* use the spacing of user-supplied fixed image */
+	Plm_image_header pih;
+	FloatImageType::Pointer fixed = itk_image_load_float (
+	    parms->input_fixed, 0);
+	pih.set_from_itk_image (fixed);
+	return resample_image (img, &pih, parms->default_val, 
+	    parms->interp_lin);
+    }
     else if (parms->have_origin && parms->have_spacing && parms->have_size) {
-	return resample_image (img, parms->origin, parms->spacing, 
-			      parms->size, parms->default_val, 
-			      parms->interp_lin);
+	return resample_image (
+	    img, parms->origin, parms->spacing, 
+	    parms->size, parms->default_val, 
+	    parms->interp_lin);
     } else {
 	/* Do nothing */
 	return img;

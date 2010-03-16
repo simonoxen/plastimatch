@@ -208,8 +208,13 @@ vector_resample_image (T& image, float x_spacing,
 
 template <class T>
 T
-resample_image (T& image, DoublePointType origin, 
-		DoubleVectorType spacing, SizeType size, float default_val, int interp_lin)
+resample_image (
+    T& image, 
+    DoublePointType origin, 
+    DoubleVectorType spacing, 
+    SizeType size, 
+    float default_val, 
+    int interp_lin)
 {
     typedef typename T::ObjectType ImageType;
     typedef typename T::ObjectType::PixelType PixelType;
@@ -258,7 +263,13 @@ resample_image (T& image, DoublePointType origin,
 
 template <class T>
 T
-resample_image (T& image, float* origin, float* spacing, int* size, float default_val, int interp_lin)
+resample_image (
+    T& image, 
+    float* origin, 
+    float* spacing, 
+    int* size, 
+    float default_val, 
+    int interp_lin)
 {
     DoublePointType cpp_origin;
     DoubleVectorType cpp_spacing;
@@ -269,7 +280,20 @@ resample_image (T& image, float* origin, float* spacing, int* size, float defaul
 	cpp_size[i] = size[i];
     }
 
-    return resample_image (image, cpp_origin, cpp_spacing, cpp_size, default_val, interp_lin);
+    return resample_image (image, cpp_origin, cpp_spacing, cpp_size, 
+	default_val, interp_lin);
+}
+
+template <class T>
+T
+resample_image (
+    T& image, 
+    Plm_image_header* pih, 
+    float default_val, 
+    int interp_lin)
+{
+    return resample_image (image, pih->m_origin, pih->m_spacing, 
+	pih->m_region.GetSize(), default_val, interp_lin);
 }
 
 template <class T>
@@ -340,11 +364,19 @@ template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image
 template plastimatch1_EXPORT DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float*, float*, int*);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, FloatImageType::Pointer&);
 template DeformationFieldType::Pointer vector_resample_image (DeformationFieldType::Pointer&, float, float, float);
+
 template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT UShortImageType::Pointer resample_image (UShortImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
 template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, float*, float*, int*, float default_val, int interp_lin);
+
+template plastimatch1_EXPORT UCharImageType::Pointer resample_image (UCharImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template plastimatch1_EXPORT ShortImageType::Pointer resample_image (ShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template plastimatch1_EXPORT UShortImageType::Pointer resample_image (UShortImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template plastimatch1_EXPORT UInt32ImageType::Pointer resample_image (UInt32ImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+template plastimatch1_EXPORT FloatImageType::Pointer resample_image (FloatImageType::Pointer&, Plm_image_header*, float default_val, int interp_lin);
+
 template plastimatch1_EXPORT UCharImageType::Pointer subsample_image (UCharImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT ShortImageType::Pointer subsample_image (ShortImageType::Pointer&, int, int, int, float);
 template plastimatch1_EXPORT UShortImageType::Pointer subsample_image (UShortImageType::Pointer&, int, int, int, float);

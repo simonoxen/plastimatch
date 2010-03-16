@@ -13,6 +13,7 @@ class Resample_parms {
 public:
     char mha_in_fn[_MAX_PATH];
     char mha_out_fn[_MAX_PATH];
+    char input_fixed[_MAX_PATH];
     Plm_image_type output_type;
     float origin[3];
     int have_origin;
@@ -30,6 +31,7 @@ public:
     Resample_parms () {
 	*mha_in_fn = 0;
 	*mha_out_fn = 0;
+	*input_fixed = 0;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 	for (int i = 0; i < 3; i++) {
 	    origin[i] = 0.0;
