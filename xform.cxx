@@ -582,7 +582,7 @@ bsp_grid_from_img_grid (
     BsplineTransformType::OriginType& bsp_origin,    /* Output */
     BsplineTransformType::SpacingType& bsp_spacing,  /* Output */
     BsplineTransformType::RegionType& bsp_region,    /* Output */
-    const Plm_image_header* pih,			     /* Input */
+    const Plm_image_header* pih,		     /* Input */
     float* grid_spac)				     /* Input */
 {
     BsplineTransformType::RegionType::SizeType bsp_size;
@@ -591,7 +591,8 @@ bsp_grid_from_img_grid (
     for (int d=0; d<3; d++) {
 	float img_ext = (pih->Size(d) - 1) * pih->m_spacing[d];
 #if defined (commentout)
-	printf ("img_ext[%d] %g <- (%d - 1) * %g\n", d, img_ext, pih->Size(d), pih->m_spacing[d]);
+	printf ("img_ext[%d] %g <- (%d - 1) * %g\n", 
+	    d, img_ext, pih->Size(d), pih->m_spacing[d]);
 #endif
 	bsp_origin[d] = pih->m_origin[d] - grid_spac[d];
 	bsp_spacing[d] = grid_spac[d];
@@ -602,9 +603,10 @@ bsp_grid_from_img_grid (
 
 /* Initialize using image spacing */
 static void
-itk_bsp_set_grid_img (Xform *xf,
-	      const Plm_image_header* pih,
-	      float* grid_spac)
+itk_bsp_set_grid_img (
+    Xform *xf,
+    const Plm_image_header* pih,
+    float* grid_spac)
 {
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
@@ -613,7 +615,8 @@ itk_bsp_set_grid_img (Xform *xf,
 
     /* Compute bspline grid specifications */
     bsp_direction = pih->m_direction;
-    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
+    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, 
+	pih, grid_spac);
 
     /* Set grid specifications into xf structure */
     itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
@@ -651,9 +654,11 @@ xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 
 /* Convert xf to vector field to bspline */
 static void
-xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
-			    const Plm_image_header* pih,
-			    float* grid_spac)
+xform_any_to_itk_bsp_nobulk (
+    Xform *xf_out, 
+    Xform* xf_in,
+    const Plm_image_header* pih,
+    float* grid_spac)
 {
     int d;
     Xform xf_tmp;
@@ -674,7 +679,8 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
     BsplineTransformType::SpacingType bsp_spacing;
     BsplineTransformType::RegionType bsp_region;
     BsplineTransformType::DirectionType bsp_direction;
-    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, bsp_region, pih, grid_spac);
+    bsp_grid_from_img_grid (bsp_origin, bsp_spacing, 
+	bsp_region, pih, grid_spac);
 
     /* GCS FIX: above should set m_direction */
     bsp_direction[0][0] = bsp_direction[1][1] = bsp_direction[2][2] = 1.0;
@@ -702,12 +708,16 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
 	typedef itk::ImageRegionIterator< DeformationFieldType > VFIteratorType;
 	FloatIteratorType img_it (img, pih_bsp.m_region);
 	VFIteratorType vf_it (xf_tmp.get_itk_vf(), pih_bsp.m_region);
-	for (img_it.GoToBegin(), vf_it.GoToBegin(); !img_it.IsAtEnd(); ++img_it, ++vf_it) {
+	for (img_it.GoToBegin(), vf_it.GoToBegin(); 
+	     !img_it.IsAtEnd(); 
+	     ++img_it, ++vf_it) 
+	{
 	    img_it.Set(vf_it.Get()[d]);
 	}
 
 	/* Decompose into bpline coefficient image */
-	typedef itk::BSplineDecompositionImageFilter <FloatImageType, DoubleImageType> DecompositionType;
+	typedef itk::BSplineDecompositionImageFilter <FloatImageType, 
+	    DoubleImageType> DecompositionType;
 	DecompositionType::Pointer decomposition = DecompositionType::New();
 	decomposition->SetSplineOrder (SplineOrder);
 	decomposition->SetInput (img);
@@ -715,7 +725,8 @@ xform_any_to_itk_bsp_nobulk (Xform *xf_out, Xform* xf_in,
 
 	/* Copy the coefficients into a temporary parameter array */
 	typedef BsplineTransformType::ImageType ParametersImageType;
-	ParametersImageType::Pointer newCoefficients = decomposition->GetOutput();
+	ParametersImageType::Pointer newCoefficients 
+	    = decomposition->GetOutput();
 	typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
 	Iterator co_it (newCoefficients, bsp_out->GetGridRegion());
 	co_it.GoToBegin();
@@ -1215,7 +1226,7 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 
 void
 xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, 
-			float* grid_spac)
+    float* grid_spac)
 {
     Xform xf_tmp;
     ImageRegionType roi;
@@ -1464,10 +1475,11 @@ xform_to_itk_bsp (Xform *xf_out,
 }
 
 void
-xform_to_itk_bsp_nobulk (Xform *xf_out, 
-		  Xform *xf_in, 
-		  Plm_image_header* pih,
-		  float* grid_spac)
+xform_to_itk_bsp_nobulk (
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Plm_image_header* pih,
+    float* grid_spac)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1554,7 +1566,8 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image)
 }
 
 void
-xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac)
+xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, 
+    float* grid_spac)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:

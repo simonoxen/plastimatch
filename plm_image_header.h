@@ -51,7 +51,7 @@ public:
     void plastimatch1_EXPORT get_gpuit_direction_cosines (
 	float gpuit_direction_cosines[9]);
 
-    void plastimatch1_EXPORT print (void);
+    void plastimatch1_EXPORT print (void) const;
 };
 
 /* -----------------------------------------------------------------------

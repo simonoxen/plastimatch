@@ -179,7 +179,7 @@ Plm_image_header::cvt_to_gpuit (float gpuit_origin[3],
 #endif
 
 void
-Plm_image_header::print (void)
+Plm_image_header::print (void) const
 {
     ImageRegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
