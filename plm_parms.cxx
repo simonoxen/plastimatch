@@ -201,7 +201,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "alg_flavor")) {
+    else if (!strcmp (key, "alg_flavor")
+	|| !strcmp (key, "flavor"))
+    {
 	if (section == 0) goto error_not_global;
 	if (strlen (val) >= 1) {
 	    stage->alg_flavor = val[0];
@@ -274,14 +276,14 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	}
     }
     else if (!strcmp (key, "mattes_histogram_bins") 
-	     || !strcmp (key, "mi_histogram_bins")) {
+	|| !strcmp (key, "mi_histogram_bins")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->mi_histogram_bins) != 1) {
 	    goto error_exit;
 	}
     }
     else if (!strcmp (key, "mattes_num_spatial_samples")
-	     || !strcmp (key, "mi_num_spatial_samples")) {
+	|| !strcmp (key, "mi_num_spatial_samples")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->mi_num_spatial_samples) != 1) {
 	    goto error_exit;
@@ -320,9 +322,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
-		    &(stage->fixed_subsample_rate[0]), 
-		    &(stage->fixed_subsample_rate[1]), 
-		    &(stage->fixed_subsample_rate[2])) != 3) {
+		&(stage->fixed_subsample_rate[0]), 
+		&(stage->fixed_subsample_rate[1]), 
+		&(stage->fixed_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
 	stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
@@ -332,18 +334,18 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     else if (!strcmp (key, "fixed_ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
-		    &(stage->fixed_subsample_rate[0]), 
-		    &(stage->fixed_subsample_rate[1]), 
-		    &(stage->fixed_subsample_rate[2])) != 3) {
+		&(stage->fixed_subsample_rate[0]), 
+		&(stage->fixed_subsample_rate[1]), 
+		&(stage->fixed_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
     }
     else if (!strcmp (key, "moving_ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
-		    &(stage->moving_subsample_rate[0]), 
-		    &(stage->moving_subsample_rate[1]), 
-		    &(stage->moving_subsample_rate[2])) != 3) {
+		&(stage->moving_subsample_rate[0]), 
+		&(stage->moving_subsample_rate[1]), 
+		&(stage->moving_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
     }
@@ -373,15 +375,15 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     return 0;
 
  error_not_stages:
-    printf ("This key (%s) not allowed in a stages section\n", key);
+    print_and_exit ("This key (%s) not allowed in a stages section\n", key);
     return -1;
 
  error_not_global:
-    printf ("This key (%s) not is allowed in a global section\n", key);
+    print_and_exit ("This key (%s) not is allowed in a global section\n", key);
     return -1;
 
  error_exit:
-    printf ("Unknown (key,val) combination: (%s,%s)\n", key, val);
+    print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }
 
