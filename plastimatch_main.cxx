@@ -10,6 +10,7 @@
 #else
 #include "getopt.h"
 #endif
+#include "add_main.h"
 #include "adjust_main.h"
 #include "compare_main.h"
 #include "diff_main.h"
@@ -28,15 +29,15 @@ print_usage (int return_code)
     printf (
 	"Usage: plastimatch command [options]\n"
 	"Commands:\n"
+	"  add         "
 	"  adjust      "
 	"  compare     "
 	"\n"
 	"  convert     "
 	"  diff        "
-	"\n"
 	"  mask        "
-	"  register    "
 	"\n"
+	"  register    "
 	"  resample    "
 	"  stats       "
 	"\n"
@@ -81,7 +82,10 @@ do_command (int argc, char* argv[])
     }
     command = argv[1];
 
-    if (!strcmp (command, "adjust")) {
+    if (!strcmp (command, "add")) {
+	do_command_add (argc, argv);
+    }
+    else if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
     }
     else if (!strcmp (command, "compare")) {

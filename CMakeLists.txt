@@ -713,6 +713,7 @@ SET (PATIENT_MASK_SRC
 	patient_mask.cxx
 	)
 SET (PLASTIMATCH_SRC
+	add_main.cxx add_main.h
 	adjust_main.cxx adjust_main.h
 	compare_main.cxx compare_main.h
 	diff_main.cxx diff_main.h
