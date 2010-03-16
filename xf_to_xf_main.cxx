@@ -22,7 +22,7 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
     load_xform (&xf_in, parms->xf_in_fn);
     pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);
 
-    switch (parms->xf_type) {
+    switch (parms->xf_out_type) {
     case XFORM_NONE:
 	print_and_exit ("Sorry, couldn't convert to XFORM_NONE\n");
 	break;
@@ -63,9 +63,10 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 	xform_to_itk_vf (&xf_out, &xf_in, &pih);
 	break;
     case XFORM_GPUIT_BSPLINE:
-#if defined (commentout)
 	if (parms->grid_spac[0] <=0.0f) {
-	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE || xf_in.m_type == XFORM_ITK_BSPLINE) {
+	    if (xf_in.m_type == XFORM_GPUIT_BSPLINE 
+		|| xf_in.m_type == XFORM_ITK_BSPLINE)
+	    {
 		xform_to_gpuit_bsp (&xf_out, &xf_in, &pih, 0);
 	    } else {
 		print_and_exit ("Sorry, grid spacing cannot be zero for conversion to gpuit_bsp\n");
@@ -73,9 +74,6 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 	} else {
 	    xform_to_gpuit_bsp (&xf_out, &xf_in, &pih, parms->grid_spac);
 	}
-#endif
-	/* GPUIT_BSPLINE still requires separate bookkeeping for aux data. */
-	print_and_exit ("Sorry, couldn't convert to XFORM_GPUIT_BSPLINE\n");
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	/* There would be no point of this, I think. */
@@ -91,9 +89,17 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 void
 print_usage (void)
 {
-    printf ("Usage: xf_to_xf --output-type=type --input=xform_in --output=vf_out --dims=\"x y z\"\n");
-    printf ("          --origin=\"x y z\" --spacing=\"x y z\" --grid-spacing=\"x y z\"\n");
-    printf ("       Supported output-types: vf, itk_bsp.\n");
+    printf (
+	"Usage: xf_to_xf [options]\n"
+	"Options:\n"
+	"   --input=xform_in\n"
+	"   --output=vf_out\n"
+	"   --output-type={vf,bspline}\n"
+	"   --dims=\"x y z\"\n"
+	"   --origin=\"x y z\"\n"
+	"   --spacing=\"x y z\"\n"
+	"   --grid-spacing=\"x y z\"\n"
+    );
     exit (-1);
 }
 
@@ -123,43 +129,42 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    break;
 	case 3:
 	    if (!strcmp (optarg, "vf")) {
-		parms->xf_type = XFORM_ITK_VECTOR_FIELD;
-	    } else if (!strcmp (optarg, "itk_bsp")) {
-		printf ("CVT to itk_bsp\n");
-		parms->xf_type = XFORM_ITK_BSPLINE;
-	    } else if (!strcmp (optarg, "gpuit_bsp")) {
-		printf ("CVT to gpuit_bsp\n");
-		parms->xf_type = XFORM_GPUIT_BSPLINE;
+		parms->xf_out_type = XFORM_ITK_VECTOR_FIELD;
+	    } else if (!strcmp (optarg, "itk_bsp")
+		|| !strcmp (optarg, "gpuit_bsp")
+		|| !strcmp (optarg, "bspline"))
+	    {
+		parms->xf_out_type = XFORM_GPUIT_BSPLINE;
 	    } else {
-		fprintf (stderr, "Unexpected output type.  Hmm, what to do...\nAborting.\n");
+		fprintf (stderr, "Unexpected output type.\n");
 		print_usage();
 	    }
 	    break;
 	case 4: {
-		rc = sscanf (optarg, "%d %d %d", &(parms->dim[0]), 
-			&(parms->dim[1]), &(parms->dim[2]));
-		if (rc != 3) {
-		    print_usage();
-		}
+	    rc = sscanf (optarg, "%d %d %d", &(parms->dim[0]), 
+		&(parms->dim[1]), &(parms->dim[2]));
+	    if (rc != 3) {
+		print_usage();
 	    }
+	}
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->origin[0]), 
-		    &(parms->origin[1]), &(parms->origin[2]));
+		&(parms->origin[1]), &(parms->origin[2]));
 	    if (rc != 3) {
 		print_usage();
 	    }
 	    break;
 	case 6:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->spacing[0]), 
-		    &(parms->spacing[1]), &(parms->spacing[2]));
+		&(parms->spacing[1]), &(parms->spacing[2]));
 	    if (rc != 3) {
 		print_usage();
 	    }
 	    break;
 	case 7:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->grid_spac[0]), 
-		    &(parms->grid_spac[1]), &(parms->grid_spac[2]));
+		&(parms->grid_spac[1]), &(parms->grid_spac[2]));
 	    if (rc != 3) {
 		print_usage();
 	    }
@@ -171,7 +176,10 @@ parse_args (Xf_To_Xf_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->xf_in_fn[0] || !parms->xf_out_fn[0] || !parms->xf_type || !parms->dim[0] || parms->spacing[0] == 0.0) {
+    if (!parms->xf_in_fn[0] || !parms->xf_out_fn[0] 
+	|| !parms->xf_out_type 
+	|| !parms->dim[0] || parms->spacing[0] == 0.0)
+    {
 	printf ("Error: must specify all options\n");
 	print_usage();
     }

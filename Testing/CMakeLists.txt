@@ -797,10 +797,24 @@ PLM_ADD_TEST (
 ## xf_to_xf
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "xf-to-xf" 
+  "xf-to-xf-1" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/xf_to_xf
-  "--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/vf-bspline-1.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  "--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-1.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  )
+
+PLM_ADD_TEST (
+  "xf-to-xf-2" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/xf_to_xf
+  "--input;${PLM_TESTING_BUILD_DIR}/xf-to-xf-1.mha;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-2.txt;--output-type;bspline;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;--grid-spacing;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "xf-to-xf-3" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/xf_to_xf
+  "--input;${PLM_TESTING_BUILD_DIR}/xf-to-xf-2.txt;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-3.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
   )
 
 

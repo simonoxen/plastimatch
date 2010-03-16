@@ -13,7 +13,7 @@ class Xf_To_Xf_Parms {
 public:
     char xf_in_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
-    XFormInternalType xf_type;
+    XFormInternalType xf_out_type;
     float origin[3];
     float spacing[3];
     int dim[3];
