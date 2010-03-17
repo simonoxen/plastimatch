@@ -14,6 +14,7 @@
 #include "adjust_main.h"
 #include "compare_main.h"
 #include "diff_main.h"
+#include "dvh_main.h"
 #include "mask_main.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
@@ -35,12 +36,13 @@ print_usage (int return_code)
 	"\n"
 	"  convert     "
 	"  diff        "
-	"  mask        "
+	"  dvh         "
 	"\n"
+	"  mask        "
 	"  register    "
 	"  resample    "
-	"  stats       "
 	"\n"
+	"  stats       "
 	"  warp        "
 	"\n"
 	"For detailed usage of a specific command, type:\n"
@@ -97,6 +99,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "diff")) {
 	do_command_diff (argc, argv);
+    }
+    else if (!strcmp (command, "dvh")) {
+	do_command_dvh (argc, argv);
     }
     else if (!strcmp (command, "mask")) {
 	do_command_mask (argc, argv);

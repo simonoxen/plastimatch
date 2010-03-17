@@ -126,7 +126,8 @@ render_slice_polyline (
 	edge_list[i].next = 0;
 	/* Insert into edge_table */
 #if defined (commentout)
-	printf ("[y:%g %g, x:%g %g] -> [y:%d %d, x:%g (%g)]\n", y[b], y[a], x[b], x[a],
+	printf ("[y:%g %g, x:%g %g] -> [y:%d %d, x:%g (%g)]\n", 
+	    y[b], y[a], x[b], x[a],
 	    ymin, ymax, edge_list[i].x, edge_list[i].xincr);
 #endif
         insert_ordered_by_x (&edge_table[ymin], &edge_list[i]);

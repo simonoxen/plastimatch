@@ -4,6 +4,10 @@
 #include "plm_config.h"
 #include "plm_int.h"
 
+
+#define XIO_VERSION_450       1
+#define XIO_VERSION_UNKNOWN   2
+
 /* function to perform endian swaps when going from Big-Endian
  * to little-endian or vice-versa
  */
@@ -43,6 +47,9 @@ main (int argc, char *argv[])
     int found;
     int o,p,q,l,m,n; short ***data;
     char *fn;
+    int xio_version;
+    float xio_dose_scale;
+    int rc;
 
     if (argc != 3) {
 	printf("Usage: cms_dose_to_mha cmsdose outputfile.mha\n");
@@ -73,9 +80,42 @@ main (int argc, char *argv[])
 
     /* Get version number */
     fgets (buf, 1024, ifp);
+    if (!strncmp (buf, "006d101e", strlen("006d101e"))) {
+	xio_version = XIO_VERSION_450;
+    } else {
+	xio_version = XIO_VERSION_UNKNOWN;
+    }
+
+    /* Get dose scale factor */
     found = 0;
+    if (xio_version == XIO_VERSION_450) {
+	float dummy;
+
+	/* Skip line 2 */
+	fgets (buf, 1024, ifp);
+
+	/* Find dose scale line */
+	for (i = 0; i < 25; i++){
+	    fgets (buf, 1024, ifp);
+	    rc = sscanf (buf, "%g,%g", &dummy, &xio_dose_scale);
+	    if (rc == 2) {
+		found = 1;
+		break;
+	    }
+	}
+	
+	if (!found) {
+	    printf ("Sorry, couldn't parse dose scale: %s\n", buf);
+	    exit (-1);
+	}
+    } else {
+	xio_dose_scale = 1.0;
+    }
+
+    printf ("Dose scale = %g\n", xio_dose_scale);
 
     /* Search for geometry string */
+    found = 0;
     for (i = 0; i < 25; i++){
 	fgets (buf, 1024, ifp);
 	printf ("LINE: %s",buf);
@@ -85,14 +125,14 @@ main (int argc, char *argv[])
 
 	/* Check the number of commas in the line */
 	nn=0;
-	result = strtok(buf,",");
-	while(result!=NULL) {
+	result = strtok (buf,",");
+	while (result!=NULL) {
 	    result = strtok( NULL, ",");
 	    nn++;
 	}
 
 	if (nn==10) {
-	    printf("%s\n\n","found 9 commas");
+	    printf ("%s\n\n","found 9 commas");
 	    found = 1;
 	    break;
 	}
@@ -155,59 +195,55 @@ main (int argc, char *argv[])
     printf ("My offset is %ld\n", offset);
 
 
-    for(j = 0; j < ny; j++){ //for(j = 0; j < ny; j++){ 
-	for(k = 0; k < nz; k++){ //for(k = 0; k < nz; k++){
-	    for(i = 0; i < nx; i++){ //for(i = 0; i < nx; i++){
-		fread(&dose, 4, 1, ifp);
-		int_endian(&dose);
+    for (j = 0; j < ny; j++) {
+	for (k = 0; k < nz; k++) {
+	    for (i = 0; i < nx; i++) {
+		float tmp_dose;
+		fread (&dose, 4, 1, ifp);
+		int_endian (&dose);
+		tmp_dose = dose * xio_dose_scale;
+		dose = (int) (tmp_dose / 10000.);
 		data[k][j][i]=(short)dose;
-	    } //CMS is 0-10,000? (divide by 100?, but fovia doesn't care.)
+	    }
 	}
     }
 
     offset = ftell (ifp);
-    printf("CHECKPOINT!\n");
+    printf ("CHECKPOINT!\n");
     printf ("My offset is %ld\n", offset);
 
     fclose(ifp);
 
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    //ofp = fopen("doseY.mha", "w");
     ofp = fopen(argv[2], "w");
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
     if(ofp==NULL) {
-	printf("Error: can't create file for writing.\n");
+	printf ("Error: can't create file for writing.\n");
 	return 1;
     }
-    else {
 
-	fprintf(ofp,"ObjectType = Image\n");
-	fprintf(ofp,"NDims = 3\n");
-	fprintf(ofp,"BinaryData = True\n");
-	fprintf(ofp,"BinaryDataByteOrderMSB = False\n");
-	printf("Writing topx,topy,topz...which are: %f%s%f%s%f\n", topx,",",topy,",",topz);
-	fprintf(ofp,"Offset = %f %f %f\n", topx,topz,topy);   //OFFSET
-	fprintf(ofp,"ElementSpacing = %f %f %f\n", dx,dz,dy); //ELEMENT SPACING
-	fprintf(ofp,"DimSize = %d %d %d\n", nx,nz,ny);        //DIMENSION sIZE # of voxels
+    fprintf(ofp,"ObjectType = Image\n");
+    fprintf(ofp,"NDims = 3\n");
+    fprintf(ofp,"BinaryData = True\n");
+    fprintf(ofp,"BinaryDataByteOrderMSB = False\n");
+    printf("Writing topx,topy,topz...which are: %f%s%f%s%f\n", topx,",",topy,",",topz);
+    fprintf(ofp,"Offset = %f %f %f\n", topx,topz,topy);   //OFFSET
+    fprintf(ofp,"ElementSpacing = %f %f %f\n", dx,dz,dy); //ELEMENT SPACING
+    fprintf(ofp,"DimSize = %d %d %d\n", nx,nz,ny);        //DIMENSION sIZE # of voxels
 
-	fprintf(ofp,"AnatomicalOrientation = RAI\n");
-	fprintf(ofp,"TransformMatrix = 1 0 0 0 1 0 0 0 1\n");
-	fprintf(ofp,"CenterOfRotation = 0 0 0\n");
-	fprintf(ofp,"ElementType = MET_SHORT\n");
-	fprintf(ofp,"ElementDataFile = LOCAL\n");
+    fprintf(ofp,"AnatomicalOrientation = RAI\n");
+    fprintf(ofp,"TransformMatrix = 1 0 0 0 1 0 0 0 1\n");
+    fprintf(ofp,"CenterOfRotation = 0 0 0\n");
+    fprintf(ofp,"ElementType = MET_SHORT\n");
+    fprintf(ofp,"ElementDataFile = LOCAL\n");
 
-	for(j = 0; j < ny; j++){
-	    for(k = nz-1; k >= 0; k--){ 
-		for(i = 0; i < nx; i++){ 
-		    fwrite(&(data[k][j][i]), 2, 1, ofp);
-		    //fprintf (ofp, "%d %d %d\n", k, j, i);
-		}
+    for(j = 0; j < ny; j++){
+	for(k = nz-1; k >= 0; k--){ 
+	    for(i = 0; i < nx; i++){ 
+		fwrite(&(data[k][j][i]), 2, 1, ofp);
+		//fprintf (ofp, "%d %d %d\n", k, j, i);
 	    }
 	}
-	fclose(ofp);
     }
+    fclose(ofp);
 
     return 0;
 }

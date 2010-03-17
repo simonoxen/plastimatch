@@ -49,7 +49,9 @@ cxt_load_ss_list (Cxt_structure_list* cxt, const char* xorlist_fn)
             exit (-1);
         }
 
-	cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
+	Cxt_structure *curr_structure 
+	    = cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
+	curr_structure->bit = struct_id;
     }
 
     fclose (fp);

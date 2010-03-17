@@ -37,6 +37,15 @@ adjust_main (Adjust_Parms* parms)
 	}
     }
 
+    if (parms->have_scale) {
+	it.GoToBegin();
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    v = v * parms->scale;
+	    it.Set (v);
+	}
+    }
+
     if (parms->have_stretch) {
 	float vmin, vmax;
 	it.GoToBegin();
@@ -78,10 +87,11 @@ adjust_print_usage (void)
 	    "    --input=image_in\n"
 	    "    --output=image_out\n"
 	    "Optional:\n"
+	    "    --output-type={uchar,short,ushort,ulong,float}\n"
+	    "    --scale=\"min max\"\n"
+	    "    --stretch=\"min max\"\n"
 	    "    --truncate-above=value\n"
 	    "    --truncate-below=value\n"
-	    "    --stretch=\"min max\"\n"
-	    "    --output-type={uchar,short,ushort,ulong,float}\n"
 	    );
     exit (-1);
 }
@@ -102,6 +112,7 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	{ "output_format",  required_argument,      NULL,           7 },
 	{ "output-type",    required_argument,      NULL,           8 },
 	{ "output_type",    required_argument,      NULL,           8 },
+	{ "scale",          required_argument,      NULL,           9 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -147,6 +158,13 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
 		adjust_print_usage();
 	    }
+	    break;
+	case 9:
+	    if (sscanf (optarg, "%f", &parms->scale) != 1) {
+		printf ("Error: --scale takes an arguments\n");
+		adjust_print_usage ();
+	    }
+	    parms->have_scale = 1;
 	    break;
 	default:
 	    break;

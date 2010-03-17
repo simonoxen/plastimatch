@@ -20,6 +20,8 @@ public:
     bool have_truncate_below;
     float stretch[2];
     bool have_stretch;
+    float scale;
+    bool have_scale;
     int output_dicom;
     Plm_image_type output_type;
 public:
