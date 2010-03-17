@@ -317,12 +317,20 @@ xio_structures_save (
 
     for (i = 0; i < cxt->num_structures; i++) {
 	Cxt_structure *curr_structure = &cxt->slist[i];
+	int color = 1 + (i % 8);
+	int pen = 1;
+	/* Class 0 is "patient", class 1 is "Int" */
+	int structure_class = (i == 0) ? 0 : 1;
+	/* Name */
 	fprintf (fp, "%s\n", curr_structure->name);
-	fprintf (fp, "%d,1.000000,0,1%s\n", 
-	    i,
+	/* Structure no, density, ??, class [, date] */
+	fprintf (fp, "%d,1.000000,0,%d%s\n", 
+	    i+1, structure_class, 
 	    (xio_version == XIO_VERSION_4_2_1) ? "" : ",19691231.190000");
+	/* Grouping */
 	fprintf (fp, "General\n");
-	fprintf (fp, "1,5,-1,1,0,0\n");
+	/* color, ??, pen, ??, ??, ?? */
+	fprintf (fp, "%d,5,%d,1,0,0\n", color, pen);
     }
     fclose (fp);
 
@@ -348,7 +356,7 @@ xio_structures_save (
 		    continue;
 		}
 		fprintf (fp, "%d\n", curr_polyline->num_vertices);
-		fprintf (fp, "%d\n", i);
+		fprintf (fp, "%d\n", i+1);
 		for (k = 0; k < curr_polyline->num_vertices; k++) {
 		    fprintf (fp, "%6.1f,%6.1f", 
 			curr_polyline->x[k], 
