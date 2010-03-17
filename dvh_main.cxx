@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <time.h>
+#include <stdint.h>
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
