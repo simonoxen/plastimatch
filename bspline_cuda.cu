@@ -151,6 +151,7 @@ extern "C" void bspline_cuda_init_MI_a (
 	cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
 	checkCUDAError ("Failed to allocate memory for m_hist_seg");
 	cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
+	checkCUDAError ("Failed to allocate memory for j_hist_seg");
 
 
 	// histograms
@@ -160,8 +161,6 @@ extern "C" void bspline_cuda_init_MI_a (
 	cudaMalloc ((void**)&dev_ptrs->f_hist, dev_ptrs->f_hist_size);
 	cudaMalloc ((void**)&dev_ptrs->m_hist, dev_ptrs->m_hist_size);
 	cudaMalloc ((void**)&dev_ptrs->j_hist, dev_ptrs->j_hist_size);
-
-	//--- OLD STUFF 
 
 	// Copy the multiplier LUT to the GPU.
 	dev_ptrs->q_lut_size = sizeof(float)
@@ -199,7 +198,15 @@ extern "C" void bspline_cuda_init_MI_a (
 	cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
 	cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
 	checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
+
+	// score
+	dev_ptrs->score_size = sizeof(float) * fixed->npix;
+	dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
+	cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
 	
+	// grad
+	dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
+	cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
 }
 
 
@@ -222,16 +229,16 @@ extern "C" void bspline_cuda_MI_a_hist (
 	#endif
 
 	// Generate the fixed histogram (48 ms)
-//	printf ("Generating Fixed Histogram:\n");
-//	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
+	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
+	cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
 
 	// Generate the moving histogram (150 ms)
-//	printf ("Generating Moving Histogram:\n");
-//	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+	cudaMemcpy (mi_hist->m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
 
 	// Generate the joint histogram (??.?? ms) -- not written
-	printf ("Generating Joint Histogram:\n");
 	bspline_cuda_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
+	cudaMemcpy (mi_hist->j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
 }
 
 
@@ -310,18 +317,6 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 					num_sub_hists);
 
 	checkCUDAError ("kernel hist_fix_merge");
-					
-/*
-	// DEBUG
-	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
-	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-
-	mi_hist->f_hist = f_hist;
-
-	dump_xpm_hist (mi_hist, "test", 0);
-	dump_hist (mi_hist, "test.txt");
-*/
-
 }
 			
 
@@ -348,8 +343,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 	fdim.z = fixed->dim[2];
 
 	int3 mdim;
-	mdim.x = moving->dim[0];
-	mdim.y = moving->dim[1];
+	mdim.x = moving->dim[0]; mdim.y = moving->dim[1];
 	mdim.z = moving->dim[2];
 	
 	int3 rdim;
@@ -415,7 +409,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	dim3 dimGrid1(Grid_x, Grid_y, 1);
 	dim3 dimBlock1(threads_per_block, 1, 1);
-	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
+//	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
 	// ----------------------
 
 	// Launch kernel with one thread per voxel
@@ -457,21 +451,6 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 					num_sub_hists);
 
 	checkCUDAError ("kernel hist_mov_merge");
-					
-/*
-	// DEBUG
-	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
-	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
-	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-	cudaMemcpy (m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
-
-	mi_hist->f_hist = f_hist;
-	mi_hist->m_hist = m_hist;
-
-	dump_xpm_hist (mi_hist, "test", 0);
-	dump_hist (mi_hist, "test.txt");
-*/
-
 }
 
 
@@ -565,12 +544,13 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 
 	dim3 dimGrid1(Grid_x, Grid_y, 1);
 	dim3 dimBlock1(threads_per_block, 1, 1);
-	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
+//	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
 	// ----------------------
 
 	// Launch kernel with one thread per voxel
 	k_bspline_cuda_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
-			dev_ptrs->j_hist_seg,		// partial histogram (moving image)
+			dev_ptrs->j_hist,		// partial histogram (moving image)
+//			dev_ptrs->j_hist_seg,		// partial histogram (moving image)
 			dev_ptrs->fixed_image,		// fixed  image voxels
 			dev_ptrs->moving_image,		// moving image voxels
 			mi_hist->fixed.offset,		// fixed histogram offset
@@ -612,29 +592,6 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 	checkCUDAError ("kernel hist_jnt_merge");
 */
 					
-	// DEBUG
-	printf ("GPU -> CPU Memcpy()... ");
-	float* f_hist = (float*)malloc(dev_ptrs->f_hist_size);
-	float* m_hist = (float*)malloc(dev_ptrs->m_hist_size);
-	float* j_hist = (float*)malloc(dev_ptrs->j_hist_size);
-	cudaMemcpy (f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-	cudaMemcpy (m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
-	cudaMemcpy (j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
-	printf ("done.\n");
-
-	printf ("Recording pointers... ");
-	mi_hist->f_hist = f_hist;
-	mi_hist->m_hist = m_hist;
-	mi_hist->j_hist = j_hist;
-	printf ("done.\n");
-
-	printf ("Dumping xpm... ");
-	dump_xpm_hist (mi_hist, "test", 0);
-	printf ("done.\n");
-
-	printf ("Dumping text... ");
-	dump_hist (mi_hist, "test.txt");
-	printf ("done.\n");
 }
 
 
@@ -1325,8 +1282,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #2 - -- ---
 	amt = (1.0/3.0) * (fxqs.x);
@@ -1338,8 +1297,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #3 - -- ---
 	amt = (1.0/3.0) * (fxqs.z);
@@ -1351,8 +1312,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #4 - -- ---
 	amt = (1.0/3.0) * (fyqs.x);
@@ -1364,8 +1327,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #5 - -- ---
 	amt = (1.0/3.0) * (fyqs.z);
@@ -1377,8 +1342,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #6 - -- ---
 	amt = (1.0/3.0) * (fzqs.x);
@@ -1390,8 +1357,10 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 
 	// --- -- - BIN #7 - -- ---
 	amt = (1.0/3.0) * (fzqs.z);
@@ -1403,13 +1372,15 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 	j_bin = (f_bin * m_bins) + m_bin;
 	mf_1 = midx - (float)((long)midx);
 	mf_2 = 1.0f - mf_1;
-	s_Joint[j_bin + 0] += mf_1 * amt;
-	s_Joint[j_bin + 1] += mf_2 * amt;
+	j_hist_seg[j_bin + 0] += mf_1 * amt;
+	j_hist_seg[j_bin + 1] += mf_2 * amt;
+//	s_Joint[j_bin + 0] += mf_1 * amt;
+//	s_Joint[j_bin + 1] += mf_2 * amt;
 	// --------------------------------------------------------
 
 	__syncthreads();
 
-	// -- Write per Warp Histograms out -----------------------
+	// -- Write per Block Histograms out -----------------------
 	// NOTE: Because our joint histogram is so big & shared
 	//       memory is only 16KB, we only have 1 warp per
 	//       thread block.  This means that here we don't
@@ -1419,9 +1390,20 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 //	for (int i=0; i < j_bins; i++)
 //		j_hist_seg[blockIdxInGrid*j_bins + i] = s_Joint[i];
 
+//	for (long i=0; i < clusters; i++)
+//		if (threadIdx.x + 32*i < j_bins)
+//			j_hist_seg[blockIdxInGrid*j_bins + 32*i] = s_Joint[threadIdx.x + 32*i];
+
+/*
 	for (long i=0; i < clusters; i++)
 		if (threadIdx.x + 32*i < j_bins)
-			j_hist_seg[blockIdxInGrid*j_bins + 32*i] = s_Joint[threadIdx.x + 32*i];
+			j_hist_seg[blockIdxInGrid*j_bins + 32*i+threadIdx.x] += s_Joint[threadIdx.x + 32*i];
+*/
+
+	for (int i=0; i < j_bins; i++)
+		j_hist_seg[i] += s_Joint[i];
+
+
 	// --------------------------------------------------------
 
 	// Done.

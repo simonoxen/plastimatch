@@ -1625,6 +1625,9 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
     char debug_fn[1024];
     FILE* fp;
 
+    int zz;
+    float tmp = 0;;
+
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mi_%02d.txt", it++);
 	fp = fopen (debug_fn, "w");
@@ -1664,15 +1667,15 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
 		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
-		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+		if (mi < -0.5 || mi > moving->dim[0] - 0.5) { printf ("bing!\n"); continue; }
 
 		my = fy + dxyz[1];
 		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
-		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+		if (mj < -0.5 || mj > moving->dim[1] - 0.5) { printf ("bing!\n"); continue; }
 
 		mz = fz + dxyz[2];
 		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
-		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+		if (mk < -0.5 || mk > moving->dim[2] - 0.5) { printf ("bing!\n"); continue; }
 
 		/* Compute quadratic interpolation fractions */
 		clamp_quadratic_interpolate_inline (mi, moving->dim[0], miqs, fxqs);
@@ -1702,9 +1705,21 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 	}
     }
 
+    printf ("num_vox: %i\n", num_vox);
     // Dump histogram images ??
-    if (parms->xpm_hist_dump)
+    if (parms->xpm_hist_dump) {
 	    dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+	    dump_hist (mi_hist, "cpu_hist.txt");
+    }
+
+
+	for (zz=0; zz < mi_hist->fixed.bins; zz++) { tmp += f_hist[zz]; }
+	printf ("f_hist total: %f\n", tmp);
+	tmp = 0;
+	for (zz=0; zz < mi_hist->moving.bins; zz++) { tmp += m_hist[zz]; }
+	printf ("m_hist total: %f\n", tmp);
+	for (zz=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) { tmp += j_hist[zz]; }
+	printf ("j_hist total: %f\n", tmp);
 
 
     /* Compute score */
@@ -4108,7 +4123,7 @@ bspline_score (BSPLINE_Parms *parms,
 	}
     }
 
-    if (parms->metric == BMET_MI) {
+    if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MI)) {
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
