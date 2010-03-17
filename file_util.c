@@ -75,11 +75,24 @@ file_size (const char *filename)
 void
 make_directory (const char *dirname)
 {
+    int retries = 4;
+
 #if (_WIN32)
     mkdir (dirname);
 #else
     mkdir (dirname, 0777);
 #endif
+
+    /* On various samba mounts, there is a delay in creating the directory. 
+       Here, we work around that problem by waiting until the directory 
+       is created */
+    while (--retries > 0 && !is_directory (dirname)) {
+#if (_WIN32)
+	Sleep (1000);
+#else
+	sleep (1);
+#endif
+    }
 }
 
 void
