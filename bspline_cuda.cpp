@@ -331,6 +331,15 @@ void bspline_cuda_MI_a (
 	float* f_hist = mi_hist->f_hist;
 	float* m_hist = mi_hist->m_hist;
 	float* j_hist = mi_hist->j_hist;
+
+	// for MSE
+	float m_val;
+	int mif, mjf, mkf;
+	int mir, mjr, mkr;
+	float fx1, fx2, fy1, fy2, fz1, fz2;
+	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+	float diff;
 	// ----------------------------------------------------------
 
 
@@ -364,7 +373,7 @@ void bspline_cuda_MI_a (
 	printf ("m_hist total: %f\n", tmp);
 	for (int zz=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) { tmp += j_hist[zz]; }
 	printf ("j_hist total: %f\n", tmp);
-		
+
 	
 	// Dump histogram images ??
 	if (parms->xpm_hist_dump) {
@@ -377,6 +386,77 @@ void bspline_cuda_MI_a (
 	num_vox = fixed->npix;
 	num_vox_f = (float) num_vox;
 	ssd->score = mi_hist_score (mi_hist, num_vox);
+
+	// TEMP: Compute MSE
+/*
+	printf ("MSE: ");
+	for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+		p[2] = rk / bxf->vox_per_rgn[2];
+		q[2] = rk % bxf->vox_per_rgn[2];
+		fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
+		for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+			p[1] = rj / bxf->vox_per_rgn[1];
+			q[1] = rj % bxf->vox_per_rgn[1];
+			fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
+			for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+				p[0] = ri / bxf->vox_per_rgn[0];
+				q[0] = ri % bxf->vox_per_rgn[0];
+				fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+
+				// Get B-spline deformation vector
+				pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
+				qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+				bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+
+				// Compute coordinate of fixed image voxel
+				fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+
+				// Find correspondence in moving image
+				mx = fx + dxyz[0];
+				mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
+				if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+
+				my = fy + dxyz[1];
+				mj = (my - moving->offset[1]) / moving->pix_spacing[1];
+				if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+
+				mz = fz + dxyz[2];
+				mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
+				if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+
+				// Compute linear interpolation fractions
+				clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
+				clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
+				clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+
+				// Compute linearly interpolated moving image value
+				mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
+				m_x1y1z1 = fx1 * fy1 * fz1;
+				m_x2y1z1 = fx2 * fy1 * fz1;
+				m_x1y2z1 = fx1 * fy2 * fz1;
+				m_x2y2z1 = fx2 * fy2 * fz1;
+				m_x1y1z2 = fx1 * fy1 * fz2;
+				m_x2y1z2 = fx2 * fy1 * fz2;
+				m_x1y2z2 = fx1 * fy2 * fz2;
+				m_x2y2z2 = fx2 * fy2 * fz2;
+				m_val = m_x1y1z1 * m_img[mvf]
+				    + m_x2y1z1 * m_img[mvf+1]
+				    + m_x1y2z1 * m_img[mvf+moving->dim[0]]
+				    + m_x2y2z1 * m_img[mvf+moving->dim[0]+1]
+				    + m_x1y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]] 
+				    + m_x2y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]
+				    + m_x1y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]
+				    + m_x2y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+
+				// compute (un-normalized) MSE
+				diff = f_img[fv] - m_val;
+				mse_score += diff * diff;
+			}
+		}
+	}
+
+	printf ("%f\n", mse_score/fixed->npix);
+*/
 
 	// TEMP: CPU Code
 	memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
