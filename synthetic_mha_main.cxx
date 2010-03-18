@@ -269,7 +269,8 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 
     /* Set spacing based on size and resolution */
     for (int d1 = 0; d1 < 3; d1++) {
-	sm_parms->spacing[d1] = parms->volume_size[d1] / ((float) sm_parms->dim[d1]);
+	sm_parms->spacing[d1] 
+	    = parms->volume_size[d1] / ((float) sm_parms->dim[d1]);
     }
 }
 

@@ -15,6 +15,7 @@
 FloatImageType::Pointer
 synthetic_mha (Synthetic_mha_parms* parms)
 {
+
     /* Create ITK image */
     FloatImageType::SizeType sz;
     FloatImageType::IndexType st;

@@ -41,21 +41,42 @@ PLM_ADD_TEST (
   "synth-test-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;synth-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "synth-test-2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;synth-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "synth-test-3"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
-  "--output;synth_3.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  "--output;synth-3.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "synth-test-4"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
+  "--output;synth-4.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "synth-test-5"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
+  "--output;rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  )
+
+PLM_ADD_TEST (
+  "synth-test-6"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
+  "--output;rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
 
 ## -------------------------------------------------------------------------
@@ -85,7 +106,7 @@ PLM_ADD_TEST (
   "bspline-a"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-a-check
   ${CMAKE_COMMAND} 
@@ -100,7 +121,7 @@ PLM_ADD_TEST (
   "bspline-b"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-b-check
   ${CMAKE_COMMAND} 
@@ -115,7 +136,7 @@ PLM_ADD_TEST (
   "bspline-c"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-c-check
   ${CMAKE_COMMAND} 
@@ -130,7 +151,7 @@ PLM_ADD_TEST (
   "bspline-d"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-d-check
   ${CMAKE_COMMAND} 
@@ -145,7 +166,7 @@ PLM_ADD_TEST (
   "bspline-e"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-e-check
   ${CMAKE_COMMAND} 
@@ -160,7 +181,7 @@ PLM_ADD_TEST (
   "bspline-f"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-f-check
   ${CMAKE_COMMAND} 
@@ -175,7 +196,7 @@ PLM_ADD_TEST (
   "bspline-g"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-g-check
   ${CMAKE_COMMAND} 
@@ -190,11 +211,41 @@ PLM_ADD_TEST (
   "bspline-h"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;h;${PLM_TESTING_BUILD_DIR}/synth_1.mha;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-a;steepest;-m;10;-f;h;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 ADD_TEST (bspline-h-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-h.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "bspline-mi-c-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;c;-M;mi;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
+  )
+ADD_TEST (bspline-mi-c-1-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
+  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
+  "-DLOWER_THRESH=1168.25"
+  "-DUPPER_THRESH=1168.35"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "bspline-mi-c-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bspline
+  "-a;steepest;-m;10;-f;c;-M;mi;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/rect-2.mha"
+  )
+ADD_TEST (bspline-mi-c-2-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
   "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
   "-DLOWER_THRESH=1168.25"
   "-DUPPER_THRESH=1168.35"
@@ -208,7 +259,7 @@ PLM_ADD_TEST (
   "drr"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/drr
-  "-a;20;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  "-a;20;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
   )
 PLM_ADD_TEST (
   "drr-stats"
@@ -233,7 +284,7 @@ PLM_ADD_TEST (
   "drr-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/drr
-  "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/cuda_drr/out_;${PLM_TESTING_BUILD_DIR}/synth_1.mha"
+  "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/cuda_drr/out_;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
   )
 PLM_ADD_TEST (
   "drr-cuda-stats"
@@ -577,7 +628,7 @@ PLM_ADD_TEST (
   "plm-resample-a" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "resample;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
   )
 
 ## -------------------------------------------------------------------------
@@ -593,7 +644,7 @@ PLM_ADD_TEST (
   "plm-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
   )
 PLM_ADD_TEST (
   "plm-warp-a-stats"
@@ -615,7 +666,7 @@ PLM_ADD_TEST (
   "plm-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
   )
 PLM_ADD_TEST (
   "plm-warp-b-stats-1"
@@ -652,7 +703,7 @@ PLM_ADD_TEST (
   "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
   )
 PLM_ADD_TEST (
   "plm-warp-c-stats"
@@ -674,7 +725,7 @@ PLM_ADD_TEST (
   "plm-warp-d" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth_3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
   )
 PLM_ADD_TEST (
   "plm-warp-d-stats"
@@ -789,7 +840,7 @@ PLM_ADD_TEST (
   "tps-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/tps_warp
-  "-V;${PLM_TESTING_BUILD_DIR}/tps-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/tps-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth_2.mha"
+  "-V;${PLM_TESTING_BUILD_DIR}/tps-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/tps-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 
 

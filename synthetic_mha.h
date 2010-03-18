@@ -30,7 +30,7 @@ public:
     float sphere_radius[3];
 public:
     Synthetic_mha_parms () {
-	output_type = PLM_IMG_TYPE_UNDEFINED;
+	output_type = PLM_IMG_TYPE_ITK_FLOAT;
 	pattern = PATTERN_GAUSS;
 	for (int i = 0; i < 3; i++) {
 	    spacing[i] = 5.0f;
