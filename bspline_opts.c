@@ -161,6 +161,9 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    options->output_xf_fn = strdup (argv[i]);
 	}
+        else if (!strcmp (argv[i], "--debug")) {
+	    parms->debug = 1;
+	}
         else if (!strcmp (argv[i], "--factr")) {
 	    float f;
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
