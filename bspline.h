@@ -187,11 +187,14 @@ extern "C" {
 #endif
 gpuit_EXPORT
 void bspline_parms_set_default (BSPLINE_Parms* parms);
+
 gpuit_EXPORT
 void bspline_xform_set_default (BSPLINE_Xform* bxf);
+
 gpuit_EXPORT
 Bspline_state *
 bspline_state_create (BSPLINE_Xform *bxf);
+
 gpuit_EXPORT
 void
 bspline_xform_initialize (
@@ -202,13 +205,17 @@ bspline_xform_initialize (
     int roi_offset[3],	         /* Position of first vox in ROI (in vox) */
     int roi_dim[3],		 /* Dimension of ROI (in vox) */
     int vox_per_rgn[3]);	 /* Knot spacing (in vox) */
+
 gpuit_EXPORT
 void bspline_xform_free (BSPLINE_Xform* bxf);
+
 gpuit_EXPORT
 void bspline_parms_free (BSPLINE_Parms* parms);
+
 gpuit_EXPORT
 void
 bspline_state_free (Bspline_state *bst);
+
 gpuit_EXPORT
 void
 bspline_warp (
@@ -219,6 +226,7 @@ bspline_warp (
     int linear_interp,    /* 1 = trilinear, 0 = nearest neighbors */
     float default_val     /* Fill in this value outside of image */
 );
+
 gpuit_EXPORT
 void bspline_run_optimization (
     BSPLINE_Xform* bxf, 
@@ -229,8 +237,10 @@ void bspline_run_optimization (
     Volume *moving_grad);
 gpuit_EXPORT
 BSPLINE_Xform* read_bxf (char* filename);
+
 gpuit_EXPORT
 void write_bxf (char* filename, BSPLINE_Xform* bxf);
+
 gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
@@ -239,8 +249,10 @@ bspline_interpolate_vf (Volume* interp,
 /* Used internally */
 void
 bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
+
 void
 bspline_display_coeff_stats (BSPLINE_Xform* bxf);
+
 void
 bspline_score (BSPLINE_Parms *parms, 
 	       Bspline_state *bst,
@@ -248,10 +260,7 @@ bspline_score (BSPLINE_Parms *parms,
 	       Volume *fixed, 
 	       Volume *moving, 
 	       Volume *moving_grad);
-void
-bspline_score_reference (BSPLINE_Score *ssd, 
-			 Volume *fixed, Volume *moving, Volume *moving_grad, 
-			 BSPLINE_Parms *parms);
+
 void
 clamp_linear_interpolate (float ma, int dmax, int* maf, int* mar, 
 			  float* fa1, float* fa2);
@@ -262,6 +271,7 @@ bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf,
 int* calc_offsets (int* tile_dims, int* cdims);
 
 void find_knots (int* knots, int tile_num, int* rdims, int* cdims);
+
 void
 report_score (char *alg, BSPLINE_Xform *bxf, 
 	      Bspline_state *bst, int num_vox, double timing);
@@ -269,12 +279,16 @@ report_score (char *alg, BSPLINE_Xform *bxf,
 /* Debugging routines */
 void
 dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn);
+
 void
 dump_coeff (BSPLINE_Xform* bxf, char* fn);
+
 void
 dump_luts (BSPLINE_Xform* bxf);
+
 void
 dump_hist (BSPLINE_MI_Hist* mi_hist, char* fn);
+
 void
 bspline_save_debug_state 
 (
