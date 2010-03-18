@@ -531,6 +531,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	gdcm_series_helper_2.cxx gdcm_series_helper_2.h
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
+	itk_crop.cxx itk_crop.h 
 	itk_demons.cxx itk_demons.h 
 	itk_dicom.cxx itk_dicom.h 
 	itk_image.cxx itk_image.h 
@@ -716,6 +717,7 @@ SET (PLASTIMATCH_SRC
 	add_main.cxx add_main.h
 	adjust_main.cxx adjust_main.h
 	compare_main.cxx compare_main.h
+	crop_main.cxx crop_main.h
 	diff_main.cxx diff_main.h
 	dvh_main.cxx dvh_main.h
 	mask_main.cxx mask_main.h

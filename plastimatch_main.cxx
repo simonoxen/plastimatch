@@ -13,6 +13,7 @@
 #include "add_main.h"
 #include "adjust_main.h"
 #include "compare_main.h"
+#include "crop_main.h"
 #include "diff_main.h"
 #include "dvh_main.h"
 #include "mask_main.h"
@@ -32,18 +33,19 @@ print_usage (int return_code)
 	"Commands:\n"
 	"  add         "
 	"  adjust      "
+	"  crop        "
 	"  compare     "
 	"\n"
 	"  convert     "
 	"  diff        "
 	"  dvh         "
-	"\n"
 	"  mask        "
+	"\n"
 	"  register    "
 	"  resample    "
-	"\n"
 	"  stats       "
 	"  warp        "
+	"\n"
 	"\n"
 	"For detailed usage of a specific command, type:\n"
 	"  plastimatch command\n"
@@ -96,6 +98,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */
 	do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "crop")) {
+	do_command_crop (argc, argv);
     }
     else if (!strcmp (command, "diff")) {
 	do_command_diff (argc, argv);
