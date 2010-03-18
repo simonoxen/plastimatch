@@ -2067,7 +2067,7 @@ bspline_score_l_mi (BSPLINE_Parms *parms,
     report_score ("MI", bxf, bst, num_vox, interval);
 }
 
-/* Mutual information version of implementation "C" */
+/* Debugging analog for CUDA MI version A */
 static void
 bspline_score_d_mi (BSPLINE_Parms *parms, 
 		    Bspline_state *bst,
@@ -2189,7 +2189,6 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 
 		// Increment voxel counter
 		num_vox ++;
-
 	    }
 	}
     }

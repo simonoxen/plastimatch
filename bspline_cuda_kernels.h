@@ -120,7 +120,7 @@ __global__ void bspline_cuda_update_grad_kernel
  int num_vox,
  int num_elems);
 
-__global__ void k_bspline_cuda_MI_a_hist_fix
+__global__ void kernel_bspline_MI_a_hist_fix
 (
  float *f_hist_seg,
  float *fixed,
@@ -129,7 +129,7 @@ __global__ void k_bspline_cuda_MI_a_hist_fix
  long bins,
  int nthreads);
 
-__global__ void k_bspline_cuda_MI_a_hist_mov (
+__global__ void kernel_bspline_MI_a_hist_mov (
  float* m_hist_seg,	// partial histogram (moving image)
  float* fixed,		// fixed  image voxels
  float* moving,		// moving image voxels
@@ -150,7 +150,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
  int nthreads);		// # threads (to be removed)
 
 
-__global__ void k_bspline_cuda_MI_a_hist_jnt (
+__global__ void kernel_bspline_MI_a_hist_jnt (
  float* j_hist_seg,	// partial histogram (joint)
  float* fixed,		// fixed  image voxels
  float* moving,		// moving image voxels
@@ -174,7 +174,7 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
  int nthreads);		// # threads (to be removed)
 
 
-__global__ void k_bspline_cuda_MI_a_hist_fix_merge (
+__global__ void kernel_bspline_MI_a_hist_fix_merge (
  float *f_hist,
  float *f_hist_seg,
  long num_seg_hist);

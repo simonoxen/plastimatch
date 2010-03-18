@@ -30,8 +30,14 @@ texture<float, 1> tex_grad;
 
 
 
-#define USE_TEXTURES 1
-//#define USE_TEXTURES 0
+////////////////////////////////////////////////////////////
+// Note that disabling textures may not
+// always work.  Not all GPU kernel functions
+// receive a global memory analog of their
+// texture references!
+
+#define USE_TEXTURES 1		// Textures Enabled
+//#define USE_TEXTURES 0	// Textures Disabled
 
 #if defined (USE_TEXTURES)
 #define TEX_REF(array,index) \
@@ -40,6 +46,9 @@ texture<float, 1> tex_grad;
 #define TEX_REF(array,index) \
     (array[index])
 #endif
+////////////////////////////////////////////////////////////
+
+
 
 
 /**
@@ -173,7 +182,7 @@ extern "C" void bspline_cuda_init_MI_a (
 }
 
 
-extern "C" void bspline_cuda_MI_a_hist (
+extern "C" void CUDA_bspline_MI_a_hist (
 			Dev_Pointers_Bspline *dev_ptrs,
 			BSPLINE_MI_Hist* mi_hist,
 			Volume* fixed,
@@ -192,21 +201,21 @@ extern "C" void bspline_cuda_MI_a_hist (
 	#endif
 
 	// Generate the fixed histogram (48 ms)
-	bspline_cuda_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
+	CUDA_bspline_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
 	cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
 
 	// Generate the moving histogram (150 ms)
-	bspline_cuda_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+	CUDA_bspline_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
 	cudaMemcpy (mi_hist->m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
 
 	// Generate the joint histogram (??.?? ms) -- not written
-	bspline_cuda_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
+	CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
 	cudaMemcpy (mi_hist->j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
 }
 
 
 
-extern "C" void bspline_cuda_MI_a_hist_fix (
+extern "C" void CUDA_bspline_MI_a_hist_fix (
 			Dev_Pointers_Bspline *dev_ptrs,
 			BSPLINE_MI_Hist* mi_hist,
 			Volume* fixed)
@@ -243,7 +252,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_fix() configuration!\n");
+		printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_fix() configuration!\n");
 		exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
@@ -254,7 +263,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 	// ----------------------
 
 	// Launch kernel with one thread per voxel
-	k_bspline_cuda_MI_a_hist_fix <<<dimGrid1, dimBlock1, smemSize>>> (
+	kernel_bspline_MI_a_hist_fix <<<dimGrid1, dimBlock1, smemSize>>> (
 					dev_ptrs->f_hist_seg,
 					dev_ptrs->fixed_image,
 					mi_hist->fixed.offset,
@@ -274,7 +283,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 	
 	// this kernel can be ran with any thread-block size that
 	// contains a power of 2 # threads.
-	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+	kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
 					dev_ptrs->f_hist,
 					dev_ptrs->f_hist_seg,
 					num_sub_hists);
@@ -284,7 +293,7 @@ extern "C" void bspline_cuda_MI_a_hist_fix (
 			
 
 
-extern "C" void bspline_cuda_MI_a_hist_mov (
+extern "C" void CUDA_bspline_MI_a_hist_mov (
 			Dev_Pointers_Bspline *dev_ptrs,
 			BSPLINE_MI_Hist* mi_hist,
 			Volume* fixed,
@@ -364,7 +373,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_mov() configuration!\n");
+		printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_mov() configuration!\n");
 		exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
@@ -376,7 +385,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 	// ----------------------
 
 	// Launch kernel with one thread per voxel
-	k_bspline_cuda_MI_a_hist_mov <<<dimGrid1, dimBlock1, smemSize>>> (
+	kernel_bspline_MI_a_hist_mov <<<dimGrid1, dimBlock1, smemSize>>> (
 			dev_ptrs->m_hist_seg,		// partial histogram (moving image)
 			dev_ptrs->fixed_image,		// fixed  image voxels
 			dev_ptrs->moving_image,		// moving image voxels
@@ -408,7 +417,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 	smemSize = 512 * sizeof(float);
 	
 	// this kernel can be ran with any thread-block size
-	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+	kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
 					dev_ptrs->m_hist,
 					dev_ptrs->m_hist_seg,
 					num_sub_hists);
@@ -418,7 +427,7 @@ extern "C" void bspline_cuda_MI_a_hist_mov (
 
 
 
-extern "C" void bspline_cuda_MI_a_hist_jnt (
+extern "C" void CUDA_bspline_MI_a_hist_jnt (
 			Dev_Pointers_Bspline *dev_ptrs,
 			BSPLINE_MI_Hist* mi_hist,
 			Volume* fixed,
@@ -499,7 +508,7 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 
 	// Were we able to find a valid exec config?
 	if (Grid_x == 0) {
-		printf("\n[ERROR] Unable to find suitable k_bspline_cuda_MI_a_hist_jnt() configuration!\n");
+		printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_jnt() configuration!\n");
 		exit(0);
 	} else {
 //		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
@@ -511,7 +520,7 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 	// ----------------------
 
 	// Launch kernel with one thread per voxel
-	k_bspline_cuda_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
+	kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
 			dev_ptrs->j_hist,		// partial histogram (moving image)
 //			dev_ptrs->j_hist_seg,		// partial histogram (moving image)
 			dev_ptrs->fixed_image,		// fixed  image voxels
@@ -537,9 +546,9 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 
 	checkCUDAError ("kernel hist_mov");
 
+/*
 	int num_sub_hists = num_blocks;
 
-/*
 	// Merge sub-histograms
 	threads_per_block = 512;
 	dim3 dimGrid2 (num_bins, 1, 1);
@@ -547,7 +556,7 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 	smemSize = 512 * sizeof(float);
 	
 	// this kernel can be ran with any thread-block size
-	k_bspline_cuda_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+	kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
 					dev_ptrs->j_hist,
 					dev_ptrs->j_hist_seg,
 					num_sub_hists);
@@ -565,7 +574,7 @@ extern "C" void bspline_cuda_MI_a_hist_jnt (
 // NOTE: The main focus of this kernel is to avoid shared memory
 //       bank conflicts.
 ////////////////////////////////////////////////////////////////////////////////
-__global__ void k_bspline_cuda_MI_a_hist_fix (
+__global__ void kernel_bspline_MI_a_hist_fix (
 					float* f_hist_seg,
 					float* fixed,
 					float offset,
@@ -647,7 +656,7 @@ __global__ void k_bspline_cuda_MI_a_hist_fix (
 // NOTE: The main focus of this kernel is to avoid shared memory
 //       bank conflicts.
 ////////////////////////////////////////////////////////////////////////////////
-__global__ void k_bspline_cuda_MI_a_hist_mov (
+__global__ void kernel_bspline_MI_a_hist_mov (
 	float* m_hist_seg,	// partial histogram (moving image)
 	float* fixed,		// fixed  image voxels
 	float* moving,		// moving image voxels
@@ -696,7 +705,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 
 	// -- Variables used by histogram -------------------------
 	long bin;
-	int  stride;
+//	int  stride;
 	// --------------------------------------------------------
 
 
@@ -996,7 +1005,7 @@ __global__ void k_bspline_cuda_MI_a_hist_mov (
 //                 --- Neightborhood of 6 ---
 //
 ////////////////////////////////////////////////////////////////////////////////
-__global__ void k_bspline_cuda_MI_a_hist_jnt (
+__global__ void kernel_bspline_MI_a_hist_jnt (
 	float* j_hist_seg,	// partial histogram (joint)
 	float* fixed,		// fixed  image voxels
 	float* moving,		// moving image voxels
@@ -1418,7 +1427,7 @@ __global__ void k_bspline_cuda_MI_a_hist_jnt (
 //      we have.  This will exhibit the largest amount of parallelism.
 //
 ////////////////////////////////////////////////////////////////////////////////
-__global__ void k_bspline_cuda_MI_a_hist_fix_merge (
+__global__ void kernel_bspline_MI_a_hist_fix_merge (
 			float *f_hist,
 			float *f_hist_seg,
 			long num_seg_hist)
@@ -2160,7 +2169,7 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_i_stage_2()
+// STUB: bspline_cuda_j_stage_2()
 //
 // KERNELS INVOKED:
 //   sum_reduction_kernel()
@@ -2173,7 +2182,7 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 //
 // bspline_cuda_final_steps_f()
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void bspline_cuda_i_stage_2(
+extern "C" void bspline_cuda_j_stage_2(
 	BSPLINE_Parms* parms, 
 	BSPLINE_Xform* bxf,
 	Volume* fixed,
@@ -3752,7 +3761,7 @@ bspline_cuda_score_j_mse_kernel1
     float3 displacement_in_vox_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
-    int    mvr;
+//    int    mvr;	// (Deprecated: See below)
     float  m_val;
     float  m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 	
@@ -3993,7 +4002,10 @@ bspline_cuda_score_j_mse_kernel1
 		//-----------------------------------------------------------------
 				
 		// Compute spatial gradient using nearest neighbors.
-		mvr = ((((int)displacement_in_vox_round.z * volume_dim.y) + (int)displacement_in_vox_round.y) * volume_dim.x) + (int)displacement_in_vox_round.x;
+//		mvr = ((((int)displacement_in_vox_round.z * volume_dim.y) + (int)displacement_in_vox_round.y) * volume_dim.x) + (int)displacement_in_vox_round.x;
+		// The above is commented out because mvr becomes too large
+		// to be used as a GPU texture reference index.  See below
+		// for the workaround using offsets
 
 		// tex1Dfetch() uses 27-bits for indexing, which results in an
 		// index overflow for large image volumes.  The following code

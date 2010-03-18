@@ -298,15 +298,13 @@ void bspline_cuda_MI_a (
 	// --- DECLARE LOCAL VARIABLES ------------------------------
 	BSPLINE_Score* ssd;	// Holds the SSD "Score" information
 	int num_vox;		// Holds # of voxels in the fixed volume
-	float ssd_grad_norm;	// Holds the SSD Gradient's Norm
-	float ssd_grad_mean;	// Holds the SSD Gradient's Mean
 	Timer timer;
 	BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
 	static int it=0;	// Holds Iteration Number
 	char debug_fn[1024];	// Debug message buffer
-	FILE* fp;		// File Pointer to Debug File
-	int i;
+	FILE* fp = NULL;	// File Pointer to Debug File
+//	int i;
 	// ----------------------------------------------------------
 
 	// --- TEMP CPU CODE VARIABLES ------------------------------
@@ -363,7 +361,7 @@ void bspline_cuda_MI_a (
 	plm_timer_start (&timer);	// <=== START TIMING HERE
 
 	// generate histograms
-	bspline_cuda_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+	CUDA_bspline_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
 
 	float tmp = 0;
 	for (int zz=0; zz < mi_hist->fixed.bins; zz++) { tmp += f_hist[zz]; }
@@ -619,7 +617,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 
     static int it=0;	// Holds Iteration Number
     char debug_fn[1024];	// Debug message buffer
-    FILE* fp;		// File Pointer to Debug File
+    FILE* fp = NULL;		// File Pointer to Debug File
     // ----------------------------------------------------------
 
 
@@ -658,7 +656,7 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 
     // Calculate the score and gradient
     // via sum reduction
-    bspline_cuda_i_stage_2(
+    bspline_cuda_j_stage_2(
 	parms,
 	bxf,
 	fixed,
@@ -705,7 +703,7 @@ void bspline_cuda_score_i_mse (
 
     static int it=0;	// Holds Iteration Number
     char debug_fn[1024];	// Debug message buffer
-    FILE* fp;		// File Pointer to Debug File
+    FILE* fp = NULL;		// File Pointer to Debug File
     // ----------------------------------------------------------
 
 
@@ -742,14 +740,14 @@ void bspline_cuda_score_i_mse (
 
     // Calculate the score and gradient
     // via sum reduction
-    bspline_cuda_i_stage_2(
+    bspline_cuda_j_stage_2(
 	parms,
 	bxf,
 	fixed,
 	bxf->vox_per_rgn,
 	fixed->dim,
 	&(ssd->score),
-	ssd->grad,
+	bst->ssd.grad, //ssd->grad,
 	&ssd_grad_mean,
 	&ssd_grad_norm,
 	dev_ptrs,

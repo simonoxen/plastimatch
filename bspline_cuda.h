@@ -324,7 +324,7 @@ extern "C" {
 				      int *volume_dim,
 				      float *host_score);
 
-    void bspline_cuda_i_stage_2(
+    void bspline_cuda_j_stage_2(
 			BSPLINE_Parms* parms,
 			BSPLINE_Xform* bxf,
 			Volume* fixed,
@@ -446,13 +446,13 @@ extern "C" {
     
     void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform* bxf, BSPLINE_Parms* parms);
 
-    void bspline_cuda_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    void CUDA_bspline_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
 
-    void bspline_cuda_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed);
+    void CUDA_bspline_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed);
     
-    void bspline_cuda_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    void CUDA_bspline_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
     
-    void bspline_cuda_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    void CUDA_bspline_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
     
     //
     // -------------------------------------------------------------------
