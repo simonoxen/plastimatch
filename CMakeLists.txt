@@ -579,6 +579,9 @@ ENDIF(ITK_USE_REVIEW)
 SET (BSPLINE_SRC
 	bspline_main.c 
 	)
+SET (CHECK_GRAD_SRC
+  check_grad.c
+  )
 SET (CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
 	)
@@ -902,6 +905,8 @@ ENDIF (ITK_FOUND)
 ##  Executable targets
 ##-----------------------------------------------------------------------------
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 

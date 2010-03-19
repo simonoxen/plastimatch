@@ -214,7 +214,7 @@ void bspline_parms_free (BSPLINE_Parms* parms);
 
 gpuit_EXPORT
 void
-bspline_state_free (Bspline_state *bst);
+bspline_state_destroy (Bspline_state *bst);
 
 gpuit_EXPORT
 void

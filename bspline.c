@@ -814,7 +814,7 @@ bspline_parms_free (BSPLINE_Parms* parms)
 }
 
 void
-bspline_state_free (Bspline_state* bst)
+bspline_state_destroy (Bspline_state* bst)
 {
     if (bst->ssd.grad) {
 	free (bst->ssd.grad);
@@ -3937,6 +3937,6 @@ bspline_run_optimization (
     if (bst_in) {
 	*bst_in = bst;
     } else {
-	bspline_state_free (bst);
+	bspline_state_destroy (bst);
     }
 }
