@@ -105,13 +105,69 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
     }
 }
 
+static void
+bspline_cuda_state_create (
+    Bspline_state *bst,           /* Modified in routine */
+    BSPLINE_Xform* bxf,
+    BSPLINE_Parms *parms,
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
+{
+#if (CUDA_FOUND)
+    Dev_Pointers_Bspline* dev_ptrs 
+	= (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
+
+    bst->dev_ptrs = dev_ptrs;
+    if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+	switch (parms->implementation) {
+	case 'i':
+	case 'j':
+	case '\0':   /* Default */
+	    /* i and j use the same init and cleanup routines */
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, 
+		bxf, parms);
+	break;
+	default:
+	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", 
+		parms->implementation);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, 
+		bxf, parms);
+	    break;
+	}
+    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+	switch (parms->implementation) {
+	case 'a':
+	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, 
+		bxf, parms);
+	    break;
+	default:
+	    printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n",
+		parms->implementation);
+	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, 
+		bxf, parms);
+	    break;
+	}
+
+    }
+#endif
+}
+
 Bspline_state *
-bspline_state_create (BSPLINE_Xform *bxf)
+bspline_state_create (
+    BSPLINE_Xform *bxf, 
+    BSPLINE_Parms *parms, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
 {
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
     memset (bst->ssd.grad, 0, bxf->num_coeff * sizeof(float));
+
+    bspline_cuda_state_create (bst, bxf, parms, fixed, moving, moving_grad);
+
     return bst;
 }
 
@@ -124,12 +180,18 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
     if (!fp) return;
 
     fprintf (fp, "MGH_GPUIT_BSP <experimental>\n");
-    fprintf (fp, "img_origin = %f %f %f\n", bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
-    fprintf (fp, "img_spacing = %f %f %f\n", bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
-    fprintf (fp, "img_dim = %d %d %d\n", bxf->img_dim[0], bxf->img_dim[1], bxf->img_dim[2]);
-    fprintf (fp, "roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
-    fprintf (fp, "roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
-    fprintf (fp, "vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    fprintf (fp, "img_origin = %f %f %f\n", 
+	bxf->img_origin[0], bxf->img_origin[1], bxf->img_origin[2]);
+    fprintf (fp, "img_spacing = %f %f %f\n", 
+	bxf->img_spacing[0], bxf->img_spacing[1], bxf->img_spacing[2]);
+    fprintf (fp, "img_dim = %d %d %d\n", 
+	bxf->img_dim[0], bxf->img_dim[1], bxf->img_dim[2]);
+    fprintf (fp, "roi_offset = %d %d %d\n", 
+	bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    fprintf (fp, "roi_dim = %d %d %d\n", 
+	bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+    fprintf (fp, "vox_per_rgn = %d %d %d\n", 
+	bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
     /* No need to save grid_spac */
 
 #if defined (commentout)
@@ -819,6 +881,12 @@ bspline_state_destroy (Bspline_state* bst)
     if (bst->ssd.grad) {
 	free (bst->ssd.grad);
     }
+
+#if (CUDA_FOUND)
+    /* Both 'i', and 'j' use this routine */
+    bspline_cuda_clean_up_j (bst->dev_ptrs);
+#endif
+
     free (bst);
 }
 
@@ -3836,103 +3904,16 @@ bspline_run_optimization (
 {
     Bspline_state *bst;
 
-#if (CUDA_FOUND)
-    Dev_Pointers_Bspline dev_mem;
-    Dev_Pointers_Bspline* dev_ptrs = &dev_mem;
-#endif
-
-    bst = bspline_state_create (bxf);
+    bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
     log_parms (parms);
     log_bxf_header (bxf);
-
-#if (CUDA_FOUND)
-    bst->dev_ptrs = dev_ptrs;
-    if( (parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE) ) {
-	switch (parms->implementation) {
-	case 'c':
-//	    bspline_cuda_initialize (fixed, moving, moving_grad, bxf, parms);
-	    /* fall through */
-	case 'd':
-//	    bspline_cuda_initialize_d (fixed, moving, moving_grad, bxf, parms);
-//	    break;
-	case 'e':
-//	    bspline_cuda_initialize_e_v2 (fixed, moving, moving_grad, bxf, parms);
-	    // bspline_cuda_initialize_e (fixed, moving, moving_grad, bxf, parms);
-//	    break;
-	case 'f':
-//	    bspline_cuda_initialize_f (fixed, moving, moving_grad, bxf, parms);
-//	    break;
-	case 'g':
-//	    bspline_cuda_initialize_g (fixed, moving, moving_grad, bxf, parms);
-//	    break;
-	case 'h':
-//	    bspline_cuda_initialize_h (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-//	    break;
-	case 'i':
-	    // i now uses j's init and cleanup routines
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	    break;
-	case 'j':
-	case '\0':   /* Default */
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	break;
-	default:
-	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	    break;
-	}
-    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-	switch (parms->implementation) {
-	case 'a':
-	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	    break;
-	default:
-	    printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n", parms->implementation);
-	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	    break;
-	}
-
-    }
-#endif
 
     if (parms->metric == BMET_MI) {
 	bspline_initialize_mi (parms, fixed, moving);
     }
 
     /* Do the optimization */
-    bspline_optimize (bxf, bst, parms, fixed, moving, moving_grad);    
-
-#if (CUDA_FOUND)
-    if (parms->threading == BTHR_CUDA) {
-	switch (parms->implementation) {
-	case 'c':
-//	    bspline_cuda_clean_up ();
-	    /* fall through */
-	case 'd':
-	case 'e':
-//	    bspline_cuda_clean_up_d (); // Handles versions D and E
-	break;
-	case 'f':
-//	    bspline_cuda_clean_up_f ();
-//	    break;
-	case 'g':
-//	    bspline_cuda_clean_up_g ();
-//	    break;
-	case 'h':
-//	    bspline_cuda_clean_up_h (dev_ptrs);
-//	    break;
-	case 'i':
-	    // i now uses j's init and cleanup routines
-	    bspline_cuda_clean_up_j (dev_ptrs);
-	    break;
-	case 'j':
-	    bspline_cuda_clean_up_j (dev_ptrs);
-	    break;
-	default:
-	    bspline_cuda_clean_up_j (dev_ptrs);
-	}
-    }
-#endif
+    bspline_optimize (bxf, bst, parms, fixed, moving, moving_grad);
 
     if (bst_in) {
 	*bst_in = bst;

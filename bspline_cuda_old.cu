@@ -6868,9 +6868,12 @@ void bspline_cuda_initialize_d(
 
 
 /***********************************************************************
- * bspline_cuda_initialize
+ * bspline_cuda_initialize_c
+ * 
+ * cuda "c" requires calling initialize_d after initialize_c.
+ * 
  ***********************************************************************/
-void bspline_cuda_initialize(
+void bspline_cuda_initialize_c(
 	Volume *fixed,
 	Volume *moving,
 	Volume *moving_grad,
@@ -9032,11 +9035,11 @@ void bspline_cuda_clean_up_d()
 }
 
 /***********************************************************************
- * bspline_cuda_clean_up
+ * bspline_cuda_clean_up_c
  *
  * This function frees all allocated memory on the GPU for version "c".
  ***********************************************************************/
-void bspline_cuda_clean_up() 
+void bspline_cuda_clean_up_c() 
 {
     // Free memory on GPU.
     if(cudaFree(gpu_fixed_image) != cudaSuccess) 

@@ -42,7 +42,7 @@ check_gradient (
 	fixed->dim,
 	options->vox_per_rgn
     );
-    bst = bspline_state_create (&bxf);
+    bst = bspline_state_create (&bxf, parms, fixed, moving, moving_grad);
 
     /* Create scratch variables */
     x = (float*) malloc (sizeof(float) * bxf.num_coeff);

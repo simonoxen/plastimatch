@@ -193,7 +193,12 @@ void bspline_xform_set_default (BSPLINE_Xform* bxf);
 
 gpuit_EXPORT
 Bspline_state *
-bspline_state_create (BSPLINE_Xform *bxf);
+bspline_state_create (
+    BSPLINE_Xform *bxf, 
+    BSPLINE_Parms *parms, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad);
 
 gpuit_EXPORT
 void
