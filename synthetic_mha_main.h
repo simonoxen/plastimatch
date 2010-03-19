@@ -13,6 +13,7 @@ class Synthetic_mha_main_parms {
 public:
     char output_fn[_MAX_PATH];
     int have_offset;
+    int have_spacing;
     float volume_size[3];
     Synthetic_mha_parms sm_parms;
 public:

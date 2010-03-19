@@ -88,6 +88,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	{ "sphere-center",  required_argument,      NULL,           12 },
 	{ "sphere_radius",  required_argument,      NULL,           13 },
 	{ "sphere-radius",  required_argument,      NULL,           13 },
+	{ "spacing",        required_argument,      NULL,           14 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -123,9 +124,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 4:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(sm_parms->offset[0]), 
-			 &(sm_parms->offset[1]), 
-			 &(sm_parms->offset[2]));
+		&(sm_parms->offset[0]), 
+		&(sm_parms->offset[1]), 
+		&(sm_parms->offset[2]));
 	    if (rc != 3) {
 		printf ("Origin option must have three arguments\n");
 		exit (1);
@@ -134,9 +135,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(parms->volume_size[0]), 
-			 &(parms->volume_size[1]), 
-			 &(parms->volume_size[2]));
+		&(parms->volume_size[0]), 
+		&(parms->volume_size[1]), 
+		&(parms->volume_size[2]));
 	    if (rc == 1) {
 		parms->volume_size[1] = parms->volume_size[0];
 		parms->volume_size[2] = parms->volume_size[0];
@@ -147,9 +148,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 6:
 	    rc = sscanf (optarg, "%d %d %d", 
-			 &(sm_parms->dim[0]), 
-			 &(sm_parms->dim[1]), 
-			 &(sm_parms->dim[2]));
+		&(sm_parms->dim[0]), 
+		&(sm_parms->dim[1]), 
+		&(sm_parms->dim[2]));
 	    if (rc == 1) {
 		sm_parms->dim[1] = sm_parms->dim[0];
 		sm_parms->dim[2] = sm_parms->dim[0];
@@ -174,9 +175,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 9:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(sm_parms->gauss_center[0]), 
-			 &(sm_parms->gauss_center[1]), 
-			 &(sm_parms->gauss_center[2]));
+		&(sm_parms->gauss_center[0]), 
+		&(sm_parms->gauss_center[1]), 
+		&(sm_parms->gauss_center[2]));
 	    if (rc != 3) {
 		printf ("Gauss_center option must have three arguments\n");
 		exit (1);
@@ -184,9 +185,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 10:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(sm_parms->gauss_std[0]), 
-			 &(sm_parms->gauss_std[1]), 
-			 &(sm_parms->gauss_std[2]));
+		&(sm_parms->gauss_std[0]), 
+		&(sm_parms->gauss_std[1]), 
+		&(sm_parms->gauss_std[2]));
 	    if (rc == 1) {
 		sm_parms->gauss_std[1] = sm_parms->gauss_std[0];
 		sm_parms->gauss_std[2] = sm_parms->gauss_std[0];
@@ -198,12 +199,12 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 11:
 	    rc = sscanf (optarg, "%g %g %g %g %g %g", 
-			 &(sm_parms->rect_size[0]), 
-			 &(sm_parms->rect_size[1]), 
-			 &(sm_parms->rect_size[2]), 
-			 &(sm_parms->rect_size[3]), 
-			 &(sm_parms->rect_size[4]), 
-			 &(sm_parms->rect_size[5]));
+		&(sm_parms->rect_size[0]), 
+		&(sm_parms->rect_size[1]), 
+		&(sm_parms->rect_size[2]), 
+		&(sm_parms->rect_size[3]), 
+		&(sm_parms->rect_size[4]), 
+		&(sm_parms->rect_size[5]));
 	    if (rc == 1) {
 		sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
 		sm_parms->rect_size[1] = - sm_parms->rect_size[0];
@@ -227,9 +228,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 12:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(sm_parms->sphere_center[0]), 
-			 &(sm_parms->sphere_center[1]), 
-			 &(sm_parms->sphere_center[2]));
+		&(sm_parms->sphere_center[0]), 
+		&(sm_parms->sphere_center[1]), 
+		&(sm_parms->sphere_center[2]));
 	    if (rc != 3) {
 		printf ("Sphere center option must have three arguments\n");
 		exit (1);
@@ -237,9 +238,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 13:
 	    rc = sscanf (optarg, "%g %g %g", 
-			 &(sm_parms->sphere_radius[0]), 
-			 &(sm_parms->sphere_radius[1]), 
-			 &(sm_parms->sphere_radius[2]));
+		&(sm_parms->sphere_radius[0]), 
+		&(sm_parms->sphere_radius[1]), 
+		&(sm_parms->sphere_radius[2]));
 	    if (rc == 1) {
 		sm_parms->sphere_radius[1] = sm_parms->sphere_radius[0];
 		sm_parms->sphere_radius[2] = sm_parms->sphere_radius[0];
@@ -249,6 +250,20 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 		exit (1);
 	    }
 	    break;
+	case 14:
+	    rc = sscanf (optarg, "%g %g %g", 
+		&(sm_parms->spacing[0]), 
+		&(sm_parms->spacing[1]), 
+		&(sm_parms->spacing[2]));
+	    if (rc == 1) {
+		sm_parms->spacing[1] = sm_parms->spacing[0];
+		sm_parms->spacing[2] = sm_parms->spacing[0];
+	    }
+	    else if (rc != 3) {
+		printf ("Spacing option must have one or three arguments\n");
+		exit (1);
+	    }
+	    parms->have_spacing = 1;
 	default:
 	    break;
 	}
@@ -263,14 +278,16 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	int d;
 	for (d = 0; d < 3; d++) {
 	    sm_parms->offset[d] = - 0.5 * parms->volume_size[d] 
-		    + 0.5 * parms->volume_size[d] / sm_parms->dim[d];
+		+ 0.5 * parms->volume_size[d] / sm_parms->dim[d];
 	}
     }
 
     /* Set spacing based on size and resolution */
-    for (int d1 = 0; d1 < 3; d1++) {
-	sm_parms->spacing[d1] 
-	    = parms->volume_size[d1] / ((float) sm_parms->dim[d1]);
+    if (!parms->have_spacing) {
+	for (int d1 = 0; d1 < 3; d1++) {
+	    sm_parms->spacing[d1] 
+		= parms->volume_size[d1] / ((float) sm_parms->dim[d1]);
+	}
     }
 }
 
