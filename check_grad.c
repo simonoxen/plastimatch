@@ -27,15 +27,22 @@ check_gradient (
     float *x, *grad, *grad_fd;
     float score;
     Bspline_state *bst;
+    FILE *fp;
 
     bst = bspline_state_create (bxf);
     x = (float*) malloc (sizeof(float) * bxf->num_coeff);
     grad = (float*) malloc (sizeof(float) * bxf->num_coeff);
     grad_fd = (float*) malloc (sizeof(float) * bxf->num_coeff);
 
+    fp = fopen ("check_grad.txt", "w");
+
     /* Save a copy of x */
     for (i = 0; i < bxf->num_coeff; i++) {
 	x[i] = bxf->coeff[i];
+    }
+
+    if (parms->metric == BMET_MI) {
+	bspline_initialize_mi (parms, fixed, moving);
     }
 
     /* Get score and gradient */
@@ -62,11 +69,10 @@ check_gradient (
 	grad_fd[i] = (score - bst->ssd.score) / STEP_SIZE;
 
 	/* Compute difference between grad and grad_fd */
-	printf ("%5d/%5d %10.5f %10.5f %10.5f\n", 
-	    i, bxf->num_coeff, grad[i], grad_fd[i],
-	    grad[i] - grad_fd[i]);
+	fprintf (fp, "%10.5f %10.5f\n", grad[i], grad_fd[i]);
     }
 
+    fclose (fp);
     free (x);
     free (grad);
     free (grad_fd);

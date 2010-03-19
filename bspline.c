@@ -784,7 +784,7 @@ bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
     hparms->offset = min_vox - 0.5 * hparms->delta;
 }
 
-static void
+void
 bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;

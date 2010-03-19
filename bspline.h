@@ -248,6 +248,9 @@ bspline_interpolate_vf (Volume* interp,
 
 /* Used internally */
 void
+bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving);
+
+void
 bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
 
 void
