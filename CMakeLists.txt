@@ -581,6 +581,7 @@ SET (BSPLINE_SRC
 	)
 SET (CHECK_GRAD_SRC
   check_grad.c
+  check_grad_opts.c check_grad_opts.h 
   )
 SET (CMS_DOSE_TO_MHA_SRC
 	cms_dose_to_mha.c
