@@ -72,6 +72,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	{ "output-type",    required_argument,      NULL,           2 },
 	{ "pattern",        required_argument,      NULL,           3 },
 	{ "origin",         required_argument,      NULL,           4 },
+	{ "offset",         required_argument,      NULL,           4 },
 	{ "volume_size",    required_argument,      NULL,           5 },
 	{ "volume-size",    required_argument,      NULL,           5 },
 	{ "res",            required_argument,      NULL,           6 },

@@ -20,6 +20,7 @@ public:
     Synthetic_mha_main_parms () {
 	*output_fn = 0;
 	have_offset = 0;
+	have_spacing = 0;
 	for (int i = 0; i < 3; i++) {
 	    volume_size[i] = 500.0f;
 	}

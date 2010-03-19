@@ -135,7 +135,8 @@ bspline_cuda_state_create (
 		bxf, parms);
 	    break;
 	}
-    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+    } 
+    else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 	switch (parms->implementation) {
 	case 'a':
 	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, 
@@ -149,6 +150,9 @@ bspline_cuda_state_create (
 	    break;
 	}
 
+    }
+    else {
+	printf ("No cuda initialization performed.\n");
     }
 #endif
 }
