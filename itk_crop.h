@@ -6,8 +6,9 @@
 
 #include "plm_config.h"
 
+plastimatch1_EXPORT
 template <class T>
 T
-itk_crop (T& image, int new_size[6]);
+itk_crop (T& image, const int *new_size);
 
 #endif

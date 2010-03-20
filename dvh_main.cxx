@@ -3,13 +3,14 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <time.h>
-#include <stdint.h>
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
+
 #include "dvh_main.h"
 #include "itk_image.h"
 #include "plm_image.h"
+#include "plm_int.h"
 #include "rtds.h"
 
 

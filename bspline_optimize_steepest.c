@@ -261,10 +261,10 @@ bspline_optimize_steepest (
     const int USE_NAIVE = 0;
 
     if (USE_NAIVE) {
-	return bspline_optimize_steepest_naive (
+	bspline_optimize_steepest_naive (
 	    bxf, bst, parms, fixed, moving, moving_grad);
     } else {
-	return bspline_optimize_steepest_trust (
+	bspline_optimize_steepest_trust (
 	    bxf, bst, parms, fixed, moving, moving_grad);
     }
 }
