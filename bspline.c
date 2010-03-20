@@ -20,6 +20,8 @@
 	Multiplier LUT                      qidx
 	Index LUT                           pidx
 
+    qlut = Multiplier LUT
+    clut = Index LUT
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
@@ -65,6 +67,9 @@
 	ijk[0] = idx_tile - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
 
 
+/* -----------------------------------------------------------------------
+   Initialization and teardown
+   ----------------------------------------------------------------------- */
 void
 bspline_parms_set_default (BSPLINE_Parms* parms)
 {
@@ -589,22 +594,16 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
     }
 }
 
-/* -----------------------------------------------------------------------
-    qlut = Multiplier LUT
-    clut = Index LUT
-
-    Inputs: roi_dim, vox_per_rgn.
-   ----------------------------------------------------------------------- */
 void
 bspline_xform_initialize 
 (
- BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
- float img_origin[3],         /* Image origin (in mm) */
- float img_spacing[3],        /* Image spacing (in mm) */
- int img_dim[3],              /* Image size (in vox) */
- int roi_offset[3],	     /* Position of first vox in ROI (in vox) */
- int roi_dim[3],		     /* Dimension of ROI (in vox) */
- int vox_per_rgn[3])	     /* Knot spacing (in vox) */
+ BSPLINE_Xform* bxf,         /* Output: bxf is initialized */
+ float img_origin[3],        /* Image origin (in mm) */
+ float img_spacing[3],       /* Image spacing (in mm) */
+ int img_dim[3],             /* Image size (in vox) */
+ int roi_offset[3],          /* Position of first vox in ROI (in vox) */
+ int roi_dim[3],             /* Dimension of ROI (in vox) */
+ int vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
     int d;
     int i, j, k, p;
@@ -735,10 +734,12 @@ bspline_xform_initialize
 	bxf->cdims[0], bxf->cdims[1], bxf->cdims[2]);
 }
 
-/* This extends the bspline grid.  Note, that the new roi_offset 
+/* -----------------------------------------------------------------------
+   This extends the bspline grid.  Note, that the new roi_offset 
     in the bxf will not be the same as the one requested, because 
     bxf routines implicitly require that the first voxel of the 
-    ROI matches the position of the control point. */
+    ROI matches the position of the control point. 
+   ----------------------------------------------------------------------- */
 /* GCS -- Is there an implicit assumption that the roi_origin > 0? */
 void
 bspline_xform_extend (
@@ -1091,10 +1092,10 @@ bspline_interpolate_vf (Volume* interp,
 	    for (i = 0; i < bxf->roi_dim[0]; i++) {
 		p[0] = i / bxf->vox_per_rgn[0];
 		q[0] = i % bxf->vox_per_rgn[0];
-		qidx = q[2] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[0]
-			+ q[1] * bxf->vox_per_rgn[0] + q[0];
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		v = (k+bxf->roi_offset[2]) * interp->dim[0] * interp->dim[1]
-			+ (j+bxf->roi_offset[1]) * interp->dim[0] + (i+bxf->roi_offset[0]);
+		    + (j+bxf->roi_offset[1]) * interp->dim[0] 
+		    + (i+bxf->roi_offset[0]);
 		out = &img[3*v];
 		bspline_interp_pix (out, bxf, p, qidx);
 	    }
@@ -1597,6 +1598,107 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 	xpm_write (&xpm, filename);
 }
 
+/* -----------------------------------------------------------------------
+   Macros
+   ----------------------------------------------------------------------- */
+/* Find location and index of corresponding voxel in moving image.  
+   Return 1 if corresponding voxel lies within the moving image, 
+   return 0 if outside the moving image.  */
+static inline int
+bspline_find_correspondence 
+(
+ float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
+ float *mijk,             /* Output: ijk indices in moving image (vox) */
+ const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
+ const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
+ const Volume *moving     /* Input:  moving image */
+ )
+{
+    mxyz[0] = fxyz[0] + dxyz[0];
+    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->pix_spacing[0];
+    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
+
+    mxyz[1] = fxyz[1] + dxyz[1];
+    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->pix_spacing[1];
+    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
+
+    mxyz[2] = fxyz[2] + dxyz[2];
+    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->pix_spacing[2];
+    if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
+
+    return 1;
+}
+
+static inline void
+clamp_linear_interpolate_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
+			     float li_frac_1[3], float li_frac_2[3],
+			     Volume *moving)
+{
+    clamp_linear_interpolate (mijk[0], moving->dim[0]-1, &mijk_f[0], 
+			      &mijk_r[0], &li_frac_1[0], &li_frac_2[0]);
+    clamp_linear_interpolate (mijk[1], moving->dim[1]-1, &mijk_f[1], 
+			      &mijk_r[1], &li_frac_1[1], &li_frac_2[1]);
+    clamp_linear_interpolate (mijk[2], moving->dim[2]-1, &mijk_f[2], 
+			      &mijk_r[2], &li_frac_1[2], &li_frac_2[2]);
+}
+
+#define CLAMP_LINEAR_INTERPOLATE_3D(mijk, mijk_f, mijk_r, li_frac_1,	\
+				    li_frac_2, moving)			\
+    do {								\
+	clamp_linear_interpolate (mijk[0], moving->dim[0]-1,		\
+				  &mijk_f[0], &mijk_r[0],		\
+				  &li_frac_1[0], &li_frac_2[0]);	\
+	clamp_linear_interpolate (mijk[1], moving->dim[1]-1,		\
+				  &mijk_f[1], &mijk_r[1],		\
+				  &li_frac_1[1], &li_frac_2[1]);	\
+	clamp_linear_interpolate (mijk[2], moving->dim[2]-1,		\
+				  &mijk_f[2], &mijk_r[2],		\
+				  &li_frac_1[2], &li_frac_2[2]);	\
+    } while (0)
+
+static inline float 
+bspline_li_value (float fx1, float fx2, float fy1, float fy2, 
+		  float fz1, float fz2, int mvf, 
+		  float *m_img, Volume *moving)
+{
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float m_val;
+
+    m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
+    m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
+    m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
+    m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
+    m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
+    m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
+    m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
+    m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+    m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
+	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+    return m_val;
+}
+
+#define BSPLINE_LI_VALUE(m_val, fx1, fx2, fy1, fy2, fz1, fz2, mvf, \
+			 m_img, moving)				   \
+    do {							   \
+	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;		   \
+	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;		   \
+								   \
+	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];		   \
+	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];		   \
+	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
+	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
+	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
+	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
+	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
+	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
+	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
+		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
+    } while (0)
+
+
+
 /* NSh Mutual information version of implementation "C" with landmarks
 See bspline_score_k_mse for details
 Input files: 
@@ -1888,8 +1990,8 @@ bspline_score_l_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
@@ -2218,8 +2320,8 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
@@ -2316,8 +2418,8 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
@@ -2438,28 +2540,27 @@ bspline_score_d_mi (BSPLINE_Parms *parms,
 /* Mutual information version of implementation "C" */
 static void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
-		    Bspline_state *bst,
-		    BSPLINE_Xform *bxf, 
-		    Volume *fixed, 
-		    Volume *moving, 
-		    Volume *moving_grad)
+    Bspline_state *bst,
+    BSPLINE_Xform *bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
 {
     BSPLINE_Score* ssd = &bst->ssd;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    int ri, rj, rk;
-    int fi, fj, fk, fv;
-    float mi, mj, mk;
-    float fx, fy, fz;
-    float mx, my, mz;
-    int mif, mjf, mkf, mvf;  /* Floor */
-    int mir, mjr, mkr;       /* Round */
+    int rijk[3];
+    int fijk[3], fv;
+    float mijk[3];
+    float fxyz[3];
+    float mxyz[3];
+    int mijk_f[3], mvf;      /* Floor */
+    int mijk_r[3];           /* Round */
     long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
     float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
     int p[3];
     int q[3];
     float diff;
     float dc_dv[3];
-    float fx1, fx2, fy1, fy2, fz1, fz2;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
     float dxyz[3];
@@ -2468,9 +2569,10 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     int pidx, qidx;
     Timer timer;
     double interval;
+    float li_1[3];           /* Fraction of interpolant in lower index */
+    float li_2[3];           /* Fraction of interpolant in upper index */
     float m_val;
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+
     float mse_score = 0.0f;
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
@@ -2496,65 +2598,50 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
-    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / bxf->vox_per_rgn[2];
-	q[2] = rk % bxf->vox_per_rgn[2];
-	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
-	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / bxf->vox_per_rgn[1];
-	    q[1] = rj % bxf->vox_per_rgn[1];
-	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
-	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
-		p[0] = ri / bxf->vox_per_rgn[0];
-		q[0] = ri % bxf->vox_per_rgn[0];
-		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
+	p[2] = rijk[2] / bxf->vox_per_rgn[2];
+	q[2] = rijk[2] % bxf->vox_per_rgn[2];
+	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
+	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
+	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+		int rc;
+
+		p[0] = rijk[0] / bxf->vox_per_rgn[0];
+		q[0] = rijk[0] % bxf->vox_per_rgn[0];
+		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
-		/* Compute coordinate of fixed image voxel */
-		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
-
 		/* Find correspondence in moving image */
-		mx = fx + dxyz[0];
-		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
-		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
+		    dxyz, moving);
 
-		my = fy + dxyz[1];
-		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
-		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
+		/* If voxel is not inside moving image */
+		if (!rc) continue;
 
-		mz = fz + dxyz[2];
-		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
-		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+		    li_1, li_2, moving);
 
-#if defined (commentout)
-#endif
-		/* Compute linear interpolation fractions */
-		clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
-		clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
-		clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
+		/* Find linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, fixed->dim);
 
-		/* Compute linearly interpolated moving image value */
-		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
-		m_x1y1z1 = fx1 * fy1 * fz1;
-		m_x2y1z1 = fx2 * fy1 * fz1;
-		m_x1y2z1 = fx1 * fy2 * fz1;
-		m_x2y2z1 = fx2 * fy2 * fz1;
-		m_x1y1z2 = fx1 * fy1 * fz2;
-		m_x2y1z2 = fx2 * fy1 * fz2;
-		m_x1y2z2 = fx1 * fy2 * fz2;
-		m_x2y2z2 = fx2 * fy2 * fz2;
-		m_val = m_x1y1z1 * m_img[mvf]
-		    + m_x2y1z1 * m_img[mvf+1]
-		    + m_x1y2z1 * m_img[mvf+moving->dim[0]]
-		    + m_x2y2z1 * m_img[mvf+moving->dim[0]+1]
-		    + m_x1y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]] 
-		    + m_x2y1z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]
-		    + m_x1y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]
-		    + m_x2y2z2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
+		/* Find linear index of "corner voxel" in moving image */
+		mvf = INDEX_OF (mijk_f, moving->dim);
+
+		/* Compute moving image intensity using linear 
+		   interpolation */
+		/* Macro is slightly faster than function */
+		BSPLINE_LI_VALUE (m_val, 
+		    li_1[0], li_2[0],
+		    li_1[1], li_2[1],
+		    li_1[2], li_2[2],
+		    mvf, m_img, moving);
 
 #if defined (commentout)
 		/* LINEAR INTERPOLATION */
@@ -2574,15 +2661,15 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 #endif
 
 		/* Compute quadratic interpolation fractions */
-		clamp_quadratic_interpolate_inline (mi, moving->dim[0], miqs, fxqs);
-		clamp_quadratic_interpolate_inline (mj, moving->dim[1], mjqs, fyqs);
-		clamp_quadratic_interpolate_inline (mk, moving->dim[2], mkqs, fzqs);
+		clamp_quadratic_interpolate_inline (mijk[0], moving->dim[0], miqs, fxqs);
+		clamp_quadratic_interpolate_inline (mijk[1], moving->dim[1], mjqs, fyqs);
+		clamp_quadratic_interpolate_inline (mijk[2], moving->dim[2], mkqs, fzqs);
 #if 0
 		printf ("Done! [%d %d %d], [%d %d %d], [%d %d %d]\n",
 		    miqs[0], miqs[1], miqs[2],
 		    mjqs[0], mjqs[1], mjqs[2],
 		    mkqs[0], mkqs[1], mkqs[2]
-		    );
+		);
 #endif
 
 		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
@@ -2611,61 +2698,50 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     // Dump histogram images ??
     if (parms->xpm_hist_dump)
-	    dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+	dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
 
     /* Compute score */
     ssd->score = mi_hist_score (mi_hist, num_vox);
     num_vox_f = (float) num_vox;
 
     /* PASS 2 - Compute gradient */
-    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
-	p[2] = rk / bxf->vox_per_rgn[2];
-	q[2] = rk % bxf->vox_per_rgn[2];
-	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
-	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
-	    p[1] = rj / bxf->vox_per_rgn[1];
-	    q[1] = rj % bxf->vox_per_rgn[1];
-	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
-	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
+	p[2] = rijk[2] / bxf->vox_per_rgn[2];
+	q[2] = rijk[2] % bxf->vox_per_rgn[2];
+	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
+	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
+	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
 		long j_idxs[2];
 		long m_idxs[2];
 		long f_idxs[1];
 		float fxs[2];
 		float dS_dP;
 		int debug;
+		int rc;
 
 		debug = 0;
-		if (ri == 20 && rj == 20 && rk == 20) {
-		    //debug = 1;
-		}
-		if (ri == 25 && rj == 25 && rk == 25) {
-		    //debug = 1;
-		}
 
-		p[0] = ri / bxf->vox_per_rgn[0];
-		q[0] = ri % bxf->vox_per_rgn[0];
-		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+		p[0] = rijk[0] / bxf->vox_per_rgn[0];
+		q[0] = rijk[0] % bxf->vox_per_rgn[0];
+		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
-		/* Compute coordinate of fixed image voxel */
-		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
+		/* Find linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, fixed->dim);
 
 		/* Find correspondence in moving image */
-		mx = fx + dxyz[0];
-		mi = (mx - moving->offset[0]) / moving->pix_spacing[0];
-		if (mi < -0.5 || mi > moving->dim[0] - 0.5) continue;
+		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
+		    dxyz, moving);
 
-		my = fy + dxyz[1];
-		mj = (my - moving->offset[1]) / moving->pix_spacing[1];
-		if (mj < -0.5 || mj > moving->dim[1] - 0.5) continue;
-
-		mz = fz + dxyz[2];
-		mk = (mz - moving->offset[2]) / moving->pix_spacing[2];
-		if (mk < -0.5 || mk > moving->dim[2] - 0.5) continue;
+		/* If voxel is not inside moving image */
+		if (!rc) continue;
 
 #if defined (commentout)
 		/* Compute interpolation fractions */
@@ -2694,29 +2770,29 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
 		   There are eight correspondences between fixed and moving.  
 		   Each of these eight correspondences will update 2 histogram bins
-		     (other options are possible, but this is my current strategy).
+		   (other options are possible, but this is my current strategy).
 
 		   First, figure out which histogram bins this correspondence influences
 		   by calling bspline_mi_hist_lookup().
 
 		   Next, compute dS/dP * dP/dx. 
-		    dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
-		    dS/dP is 1/N (ln (N P / Pf Pm) - I)
-		    dS/dP is weighted by the relative contribution of the 2 histogram bins.
+		   dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
+		   dS/dP is 1/N (ln (N P / Pf Pm) - I)
+		   dS/dP is weighted by the relative contribution of the 2 histogram bins.
 
 		   dS_dx and dc_dv are really the same thing.  Just different notation.
 
 		   For dc_dv:
 		   We do -= instead of += because our optimizer wants to minimize 
-		    instead of maximize.
+		   instead of maximize.
 		   The right hand side is - for "left" voxels, and + for "right" voxels.
 
 		   Use a hard threshold on j_hist[j_idxs] to prevent overflow.  This test 
-		    should be reconsidered, because it is theoretically unsound.
+		   should be reconsidered, because it is theoretically unsound.
 
 		   Some trivial speedups for the future:
-		    The pixel size component is constant, so we can post-multiply.
-		    1/N is constant, so post-multiply.
+		   The pixel size component is constant, so we can post-multiply.
+		   1/N is constant, so post-multiply.
 		*/
 		dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
 
@@ -2772,9 +2848,9 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 #endif
 
 		/* Compute quadratic interpolation fractions */
-		clamp_quadratic_interpolate_grad_inline (mi, moving->dim[0], miqs, fxqs);
-		clamp_quadratic_interpolate_grad_inline (mj, moving->dim[1], mjqs, fyqs);
-		clamp_quadratic_interpolate_grad_inline (mk, moving->dim[2], mkqs, fzqs);
+		clamp_quadratic_interpolate_grad_inline (mijk[0], moving->dim[0], miqs, fxqs);
+		clamp_quadratic_interpolate_grad_inline (mijk[1], moving->dim[1], mjqs, fyqs);
+		clamp_quadratic_interpolate_grad_inline (mijk[2], moving->dim[2], mkqs, fzqs);
 
 		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
 		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
@@ -2819,9 +2895,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
 
 		if (parms->debug) {
-//		    fprintf (fp, "%d %d %d %g %g %g\n", ri, rj, rk, dc_dv[0], dc_dv[1], dc_dv[2]);
 		    fprintf (fp, "%d %d %d %g %g %g\n", 
-			ri, rj, rk, 
+			rijk[0], rijk[1], rijk[2], 
 			fxqs[0], fxqs[1], fxqs[2]);
 		}
 
@@ -2840,124 +2915,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     report_score ("MI", bxf, bst, num_vox, interval);
 }
-
-/* Find location and index of corresponding voxel in moving image.  
-   Return 1 if corresponding voxel lies within the moving image, 
-   return 0 if outside the moving image.  */
-static inline int
-bspline_find_correspondence 
-(
- float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
- float *mijk,             /* Output: ijk indices in moving image (vox) */
- const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
- const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
- const Volume *moving     /* Input:  moving image */
- )
-{
-    mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->pix_spacing[0];
-    if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
-
-    mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->pix_spacing[1];
-    if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
-
-    mxyz[2] = fxyz[2] + dxyz[2];
-    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->pix_spacing[2];
-    if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
-
-    return 1;
-}
-
-static inline void
-clamp_linear_interpolate_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
-			     float li_frac_1[3], float li_frac_2[3],
-			     Volume *moving)
-{
-    clamp_linear_interpolate (mijk[0], moving->dim[0]-1, &mijk_f[0], 
-			      &mijk_r[0], &li_frac_1[0], &li_frac_2[0]);
-    clamp_linear_interpolate (mijk[1], moving->dim[1]-1, &mijk_f[1], 
-			      &mijk_r[1], &li_frac_1[1], &li_frac_2[1]);
-    clamp_linear_interpolate (mijk[2], moving->dim[2]-1, &mijk_f[2], 
-			      &mijk_r[2], &li_frac_1[2], &li_frac_2[2]);
-}
-
-#define CLAMP_LINEAR_INTERPOLATE_3D(mijk, mijk_f, mijk_r, li_frac_1,	\
-				    li_frac_2, moving)			\
-    do {								\
-	clamp_linear_interpolate (mijk[0], moving->dim[0]-1,		\
-				  &mijk_f[0], &mijk_r[0],		\
-				  &li_frac_1[0], &li_frac_2[0]);	\
-	clamp_linear_interpolate (mijk[1], moving->dim[1]-1,		\
-				  &mijk_f[1], &mijk_r[1],		\
-				  &li_frac_1[1], &li_frac_2[1]);	\
-	clamp_linear_interpolate (mijk[2], moving->dim[2]-1,		\
-				  &mijk_f[2], &mijk_r[2],		\
-				  &li_frac_1[2], &li_frac_2[2]);	\
-    } while (0)
-
-
-static inline float 
-bspline_li_value (float fx1, float fx2, float fy1, float fy2, 
-		  float fz1, float fz2, int mvf, 
-		  float *m_img, Volume *moving)
-{
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
-    float m_val;
-
-    m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
-    m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
-    m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
-    m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
-    m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
-    m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-    m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-    m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
-    m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
-	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
-
-    return m_val;
-}
-
-#define BSPLINE_LI_VALUE(m_val, fx1, fx2, fy1, fy2, fz1, fz2, mvf, \
-			 m_img, moving)				   \
-    do {							   \
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;		   \
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;		   \
-								   \
-	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];		   \
-	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];		   \
-	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
-    } while (0)
-
-#if defined (commentout)
-#define BSPLINE_LI_VALUE(m_val, li_1, li_2, mvf, m_img, moving)		\
-    do {								\
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;			\
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;			\
-									\
-	m_x1y1z1 = li_1[0] * li_1[1] * li_1[2] * m_img[mvf];		\
-	m_x2y1z1 = li_2[0] * li_1[1] * li_1[2] * m_img[mvf+1];		\
-	m_x1y2z1 = li_1[0] * li_2[1] * li_1[2] * m_img[mvf+moving->dim[0]]; \
-	m_x2y2z1 = li_2[0] * li_2[1] * li_1[2] * m_img[mvf+moving->dim[0]+1]; \
-	m_x1y1z2 = li_1[0] * li_1[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = li_2[0] * li_1[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = li_1[0] * li_2[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = li_2[0] * li_2[1] * li_2[2] * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
-    } while (0)
-#endif
-
-
 
 /* This only warps voxels within the ROI.  If you need the whole 
    image, call bspline_xform_extend. */
