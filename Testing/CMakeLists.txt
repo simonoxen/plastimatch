@@ -231,9 +231,9 @@ PLM_ADD_TEST (
 ADD_TEST (bspline-mi-c-1-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
-  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
+  "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
+  "-DLOWER_THRESH=-0.310"
+  "-DUPPER_THRESH=-0.308"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -246,9 +246,9 @@ PLM_ADD_TEST (
 ADD_TEST (bspline-mi-c-2-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
-  "-DREGEX=^MSE\\\\[  10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
+  "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
+  "-DLOWER_THRESH=-0.032"
+  "-DUPPER_THRESH=-0.030"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
