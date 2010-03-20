@@ -67,15 +67,15 @@ check_gradient (
     }
     score = bst->ssd.score;
 
-    fp = fopen ("check_grad.txt", "w");
+    fp = fopen (options->output_fn, "w");
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
 	fprintf (fp, "%10.5f\n", score);
 
 	/* For each step along line */
-	for (i = 0; i < 30; i++) {
+	for (i = 1; i < 30; i++) {
 	    /* Create new location for x */
 	    for (j = 0; j < bxf.num_coeff; j++) {
-		bxf.coeff[j] = x[j] + options->step_size * grad[i];
+		bxf.coeff[j] = x[j] + i * options->step_size * grad[j];
 	    }
 
 	    /* Get score */

@@ -24,6 +24,7 @@ print_usage (void)
 	"                           backward, or central difference, or \"line\" for\n"
 	"                           line profile. (default=fwd)\n"
 	" -e step                 Step size (default is 1e-4)\n"
+	" -O file                 Output file\n"
     );
     exit (1);
 }
@@ -140,6 +141,14 @@ check_grad_opts_parse_args (Check_grad_opts* options,
 		print_usage ();
 	    }
 	}
+        else if (!strcmp (argv[i], "-O")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->output_fn = strdup (argv[i]);
+	}
 	else {
 	    print_usage ();
 	    break;
@@ -152,4 +161,8 @@ check_grad_opts_parse_args (Check_grad_opts* options,
     options->moving_fn = argv[i+1];
     printf ("Fixed = %s\n", options->fixed_fn);
     printf ("Moving = %s\n", options->moving_fn);
+
+    if (!options->output_fn) {
+	options->output_fn = "check_grad.txt";
+    }
 }

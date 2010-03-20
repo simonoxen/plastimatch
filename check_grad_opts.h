@@ -16,6 +16,7 @@ typedef struct check_grad_opts Check_grad_opts;
 struct check_grad_opts {
     char* fixed_fn;
     char* moving_fn;
+    char* output_fn;
     float factr;
     float pgtol;
     float step_size;
