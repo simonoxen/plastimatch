@@ -20,6 +20,7 @@ struct check_grad_opts {
     float factr;
     float pgtol;
     float step_size;
+    int line_range[2];
     int vox_per_rgn[3];
     int process;
     BSPLINE_Parms parms;

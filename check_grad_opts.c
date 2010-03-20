@@ -24,6 +24,7 @@ print_usage (void)
 	"                           backward, or central difference, or \"line\" for\n"
 	"                           line profile. (default=fwd)\n"
 	" -e step                 Step size (default is 1e-4)\n"
+	" -l \"min max\"            Min, max range for line profile (default \"0 30\")\n"
 	" -O file                 Output file\n"
     );
     exit (1);
@@ -44,7 +45,8 @@ check_grad_opts_parse_args (Check_grad_opts* options,
     bspline_parms_set_default (parms);
     options->process = CHECK_GRAD_PROCESS_FWD;
     options->step_size = 1e-4;
-
+    options->line_range[0] = 0;
+    options->line_range[1] = 30;
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
@@ -148,6 +150,16 @@ check_grad_opts_parse_args (Check_grad_opts* options,
 	    }
 	    i++;
 	    options->output_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-l")) {
+	    i++;
+	    rc = sscanf (argv[i], "%d %d", 
+		&options->line_range[0],
+		&options->line_range[1]);
+	    if (rc != 2) {
+		printf ("Error parsing -l option.\n");
+		print_usage ();
+	    }
 	}
 	else {
 	    print_usage ();

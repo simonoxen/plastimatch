@@ -69,10 +69,15 @@ check_gradient (
 
     fp = fopen (options->output_fn, "w");
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
-	fprintf (fp, "%10.5f\n", score);
-
 	/* For each step along line */
-	for (i = 1; i < 30; i++) {
+	for (i = options->line_range[0]; i < options->line_range[1]; i++) {
+
+	    /* Already computed for i = 0 */
+	    if (i == 0) {
+		fprintf (fp, "%d %10.5f\n", i, score);
+		continue;
+	    }
+
 	    /* Create new location for x */
 	    for (j = 0; j < bxf.num_coeff; j++) {
 		bxf.coeff[j] = x[j] + i * options->step_size * grad[j];
@@ -82,7 +87,7 @@ check_gradient (
 	    bspline_score (parms, bst, &bxf, fixed, moving, moving_grad);
 	
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%10.5f\n", bst->ssd.score);
+	    fprintf (fp, "%d, %10.5f\n", i, bst->ssd.score);
 	}
     } else {
 	/* Loop through directions */
