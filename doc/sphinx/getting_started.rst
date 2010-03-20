@@ -89,7 +89,7 @@ The following versions of CUDA are known to work::
 
   CUDA 2.1              Status unknown
   CUDA 2.2              Works
-  CUDA 2.3              Believed to not work
+  CUDA 2.3              Works
 
 Download CUDA from here:
 

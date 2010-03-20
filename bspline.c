@@ -1755,10 +1755,10 @@ bspline_score_l_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
-// 
+
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
@@ -2491,7 +2491,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
     memset (f_hist, 0, mi_hist->fixed.bins * sizeof(float));
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(float));
-    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(float));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins 
+	* sizeof(float));
     num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
@@ -2509,10 +2510,10 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
-// 
+
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
 
@@ -2646,8 +2647,8 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		pidx = ((p[2] * bxf->rdims[1] + p[1]) * bxf->rdims[0]) + p[0];
-		qidx = ((q[2] * bxf->vox_per_rgn[1] + q[1]) * bxf->vox_per_rgn[0]) + q[0];
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */

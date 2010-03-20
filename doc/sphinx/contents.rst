@@ -9,6 +9,6 @@ Documentation:
    drr
    cbct
    utility_programs
-   cxt_file_format
    dicom_conformance
+   technical_reference
    other_toolkits

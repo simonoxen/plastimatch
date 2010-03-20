@@ -1,5 +1,5 @@
-CXT File Format
-===============
+CXT file format
+---------------
 
 The cxt file format is an ASCII format that mirrors the DICOM-RT structure set format. The perl utility make_dicomrt.pl converts from CXT to DICOM-RT.
 
