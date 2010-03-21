@@ -1234,10 +1234,10 @@ clamp_linear_interpolate (
 
 inline void
 clamp_quadratic_interpolate_inline (
-    float ma,           /* (Unrounded) pixel coordinate (in vox units) */
-    long dmax,		/* Maximum coordinate in this dimension */
-    long maqs[3],	/* x, y, or z coord of 3 pixels in moving img */
-    float faqs[3]	/* Fraction of interpolant for 3 voxels */
+    float ma,           /* Input: (Unrounded) pixel coordinate (in vox units) */
+    long dmax,          /* Input: Maximum coordinate in this dimension */
+    long maqs[3],       /* Output: x, y, or z coord of 3 pixels in moving img */
+    float faqs[3]       /* Output: Fraction of interpolant for 3 voxels */
 )
 {
     float marf = floorf (ma + 0.5);	/* marf = ma, rounded, floating */
@@ -1276,10 +1276,10 @@ clamp_quadratic_interpolate_inline (
 
 inline void
 clamp_quadratic_interpolate_grad_inline (
-    float ma,           /* (Unrounded) pixel coordinate (in vox units) */
-    long dmax,		/* Maximum coordinate in this dimension */
-    long maqs[3],	/* x, y, or z coord of 3 pixels in moving img */
-    float faqs[3]	/* Gradient interpolant for 3 voxels */
+    float ma,          /* Input: (Unrounded) pixel coordinate (in vox units) */
+    long dmax,         /* Input: Maximum coordinate in this dimension */
+    long maqs[3],      /* Output: x, y, or z coord of 3 pixels in moving img */
+    float faqs[3]      /* Output: Gradient interpolant for 3 voxels */
 )
 {
     float marf = floorf (ma + 0.5);	/* marf = ma, rounded, floating */
@@ -1382,7 +1382,6 @@ report_score (char *alg, BSPLINE_Xform *bxf,
 		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
 		    ssd_grad_norm, timing);
 }
-
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 {
@@ -1697,8 +1696,284 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
     } while (0)
 
+static inline void
+bspline_mi_hist_add_pvi_8 (
+    BSPLINE_MI_Hist* mi_hist, 
+    Volume *fixed, 
+    Volume *moving, 
+    int fv, 
+    int mvf, 
+    float li_1[3],           /* Fraction of interpolant in lower index */
+    float li_2[3])           /* Fraction of interpolant in upper index */
+{
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
 
+    m_x1y1z1 = li_1[0] * li_1[1] * li_1[2];
+    m_x2y1z1 = li_2[0] * li_1[1] * li_1[2];
+    m_x1y2z1 = li_1[0] * li_2[1] * li_1[2];
+    m_x2y2z1 = li_2[0] * li_2[1] * li_1[2];
+    m_x1y1z2 = li_1[0] * li_1[1] * li_2[2];
+    m_x2y1z2 = li_2[0] * li_1[1] * li_2[2];
+    m_x1y2z2 = li_1[0] * li_2[1] * li_2[2];
+    m_x2y2z2 = li_2[0] * li_2[1] * li_2[2];
 
+    /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], m_x1y1z1);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+1], m_x2y1z1);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]], m_x1y2z1);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1], m_x2y2z1);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]], m_x1y1z2);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1], m_x2y1z2);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]], m_x1y2z2);
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1], m_x2y2z2);
+}
+
+static inline void
+bspline_mi_hist_add_pvi_6 (
+    BSPLINE_MI_Hist* mi_hist, 
+    Volume *fixed, 
+    Volume *moving, 
+    int fv, 
+    int mvf, 
+    float mijk[3]
+)
+{
+    long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
+    float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    const float ONE_THIRD = 1.0f / 3.0f;
+
+    /* Compute quadratic interpolation fractions */
+    clamp_quadratic_interpolate_inline (mijk[0], moving->dim[0], miqs, fxqs);
+    clamp_quadratic_interpolate_inline (mijk[1], moving->dim[1], mjqs, fyqs);
+    clamp_quadratic_interpolate_inline (mijk[2], moving->dim[2], mkqs, fzqs);
+
+#if 0
+    printf ("[%d %d %d], [%d %d %d], [%d %d %d]\n",
+	miqs[0], miqs[1], miqs[2],
+	mjqs[0], mjqs[1], mjqs[2],
+	mkqs[0], mkqs[1], mkqs[2]
+    );
+    printf ("[%f %f %f], [%f %f %f], [%f %f %f]\n",
+	fxqs[0], fxqs[1], fxqs[2], 
+	fyqs[0], fyqs[1], fyqs[2], 
+	fzqs[0], fzqs[1], fzqs[2]
+    );
+#endif
+
+    /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * (fxqs[1] + fyqs[1] + fzqs[1]));
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[0]);
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[2]);
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[0]);
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[2]);
+    mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[0]);
+    mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[2]);
+}
+
+/* -----------------------------------------------------------------------
+   bspline_mi_pvi_8_dc_dv
+   bspline_mi_pvi_6_dc_dv
+
+   Compute pixel contribution to gradient based on histogram change
+
+   There are 6 or 8 correspondences between fixed and moving.  
+   Each of these correspondences will update 2 or 3 histogram bins
+   (other options are possible, but this is my current strategy).
+
+   First, figure out which histogram bins this correspondence influences
+   by calling bspline_mi_hist_lookup().
+
+   Next, compute dS/dP * dP/dx. 
+   dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
+   dS/dP is 1/N (ln (N P / Pf Pm) - I)
+   dS/dP is weighted by the relative contribution of the 2 histogram bins.
+
+   dS_dx and dc_dv are really the same thing.  Just different notation.
+
+   For dc_dv:
+   We do -= instead of += because our optimizer wants to minimize 
+   instead of maximize.
+   The right hand side is - for "left" voxels, and + for "right" voxels.
+
+   Use a hard threshold on j_hist[j_idxs] to prevent overflow.  This test 
+   should be reconsidered, because it is theoretically unsound.
+
+   Some trivial speedups for the future:
+   The pixel size component is constant, so we can post-multiply.
+   1/N is constant, so post-multiply.
+   ----------------------------------------------------------------------- */
+static inline void
+bspline_mi_pvi_8_dc_dv (
+    float dc_dv[3],                /* Output */
+    BSPLINE_MI_Hist* mi_hist,      /* Input */
+    Bspline_state *bst,            /* Input */
+    Volume *fixed,                 /* Input */
+    Volume *moving,                /* Input */
+    int fv,                        /* Input */
+    int mvf,                       /* Input */
+    float mijk[3],                 /* Input */
+    float num_vox_f                /* Input */
+)
+{
+    long j_idxs[2];
+    long m_idxs[2];
+    long f_idxs[1];
+    float fxs[2];
+    float dS_dP;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+    BSPLINE_Score* ssd = &bst->ssd;
+    int debug = 0;
+
+    dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+
+    /* The below code is for the 8-neighborhood */
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - dS_dP;
+    dc_dv[1] -= - dS_dP;
+    dc_dv[2] -= - dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+1]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= + dS_dP;
+    dc_dv[1] -= - dS_dP;
+    dc_dv[2] -= - dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - dS_dP;
+    dc_dv[1] -= + dS_dP;
+    dc_dv[2] -= - dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= + dS_dP;
+    dc_dv[1] -= + dS_dP;
+    dc_dv[2] -= - dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - dS_dP;
+    dc_dv[1] -= - dS_dP;
+    dc_dv[2] -= + dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= + dS_dP;
+    dc_dv[1] -= - dS_dP;
+    dc_dv[2] -= + dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - dS_dP;
+    dc_dv[1] -= + dS_dP;
+    dc_dv[2] -= + dS_dP;
+
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= + dS_dP;
+    dc_dv[1] -= + dS_dP;
+    dc_dv[2] -= + dS_dP;
+}
+
+static inline void
+bspline_mi_pvi_6_dc_dv (
+    float dc_dv[3],                /* Output */
+    BSPLINE_MI_Hist* mi_hist,      /* Input */
+    Bspline_state *bst,            /* Input */
+    Volume *fixed,                 /* Input */
+    Volume *moving,                /* Input */
+    int fv,                        /* Input */
+    int mvf,                       /* Input */
+    float mijk[3],                 /* Input */
+    float num_vox_f                /* Input */
+)
+{
+    long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
+    float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
+    long j_idxs[2];
+    long m_idxs[2];
+    long f_idxs[1];
+    float fxs[2];
+    float dS_dP;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    float* f_hist = mi_hist->f_hist;
+    float* m_hist = mi_hist->m_hist;
+    float* j_hist = mi_hist->j_hist;
+    BSPLINE_Score* ssd = &bst->ssd;
+    int debug = 0;
+
+    dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+
+    /* Compute quadratic interpolation fractions */
+    clamp_quadratic_interpolate_grad_inline (mijk[0], moving->dim[0], miqs, fxqs);
+    clamp_quadratic_interpolate_grad_inline (mijk[1], moving->dim[1], mjqs, fyqs);
+    clamp_quadratic_interpolate_grad_inline (mijk[2], moving->dim[2], mkqs, fzqs);
+
+    /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - fxqs[1] * dS_dP;
+    dc_dv[1] -= - fyqs[1] * dS_dP;
+    dc_dv[2] -= - fzqs[1] * dS_dP;
+
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - fxqs[0] * dS_dP;
+
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[0] -= - fxqs[2] * dS_dP;
+
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[1] -= - fyqs[0] * dS_dP;
+
+    mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[1] -= - fyqs[2] * dS_dP;
+
+    mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[2] -= - fzqs[0] * dS_dP;
+
+    mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    dc_dv[2] -= - fzqs[2] * dS_dP;
+
+    dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
+    dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
+    dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
+}
+    
+
+/* -----------------------------------------------------------------------
+   Scoring functions
+   ----------------------------------------------------------------------- */
 /* NSh Mutual information version of implementation "C" with landmarks
 See bspline_score_k_mse for details
 Input files: 
@@ -2555,8 +2830,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float mxyz[3];
     int mijk_f[3], mvf;      /* Floor */
     int mijk_r[3];           /* Round */
-    long miqs[3], mjqs[3], mkqs[3];	/* Rounded indices */
-    float fxqs[3], fyqs[3], fzqs[3];	/* Fractional values */
     int p[3];
     int q[3];
     float diff;
@@ -2568,7 +2841,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float num_vox_f;
     int pidx, qidx;
     Timer timer;
-    double interval;
     float li_1[3];           /* Fraction of interpolant in lower index */
     float li_2[3];           /* Fraction of interpolant in upper index */
     float m_val;
@@ -2577,8 +2849,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
-    const float ONE_THIRD = 1.0f / 3.0f;
-
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
@@ -2608,7 +2878,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
 	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
 		int rc;
-
 		p[0] = rijk[0] / bxf->vox_per_rgn[0];
 		q[0] = rijk[0] % bxf->vox_per_rgn[0];
 		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
@@ -2634,8 +2903,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		/* Find linear index of "corner voxel" in moving image */
 		mvf = INDEX_OF (mijk_f, moving->dim);
 
-		/* Compute moving image intensity using linear 
-		   interpolation */
+		/* Compute moving image intensity using linear interpolation */
 		/* Macro is slightly faster than function */
 		BSPLINE_LI_VALUE (m_val, 
 		    li_1[0], li_2[0],
@@ -2650,43 +2918,11 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
 #if defined (commentout)
 		/* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], m_x1y1z1);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+1], m_x2y1z1);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]], m_x1y2z1);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1], m_x2y2z1);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]], m_x1y1z2);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1], m_x2y1z2);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]], m_x1y2z2);
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1], m_x2y2z2);
-#endif
-
-		/* Compute quadratic interpolation fractions */
-		clamp_quadratic_interpolate_inline (mijk[0], moving->dim[0], miqs, fxqs);
-		clamp_quadratic_interpolate_inline (mijk[1], moving->dim[1], mjqs, fyqs);
-		clamp_quadratic_interpolate_inline (mijk[2], moving->dim[2], mkqs, fzqs);
-#if 0
-		printf ("Done! [%d %d %d], [%d %d %d], [%d %d %d]\n",
-		    miqs[0], miqs[1], miqs[2],
-		    mjqs[0], mjqs[1], mjqs[2],
-		    mkqs[0], mkqs[1], mkqs[2]
-		);
+		bspline_mi_hist_add_pvi_8 (mi_hist, fixed, moving, fv, mvf, li_1, li_2);
 #endif
 
 		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * (fxqs[1] + fyqs[1] + fzqs[1]));
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[0]);
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fxqs[2]);
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[0]);
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fyqs[2]);
-		mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[0]);
-		mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_add (mi_hist, f_img[fv], m_img[mvf], ONE_THIRD * fzqs[2]);
+		bspline_mi_hist_add_pvi_6 (mi_hist, fixed, moving, fv, mvf, mijk);
 
 		/* Compute intensity difference */
 		diff = f_img[fv] - m_val;
@@ -2714,11 +2950,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
 	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
 	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
-		long j_idxs[2];
-		long m_idxs[2];
-		long f_idxs[1];
-		float fxs[2];
-		float dS_dP;
 		int debug;
 		int rc;
 
@@ -2743,162 +2974,17 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		/* If voxel is not inside moving image */
 		if (!rc) continue;
 
-#if defined (commentout)
-		/* Compute interpolation fractions */
-		clamp_linear_interpolate_inline (mi, moving->dim[0]-1, &mif, &mir, &fx1, &fx2);
-		clamp_linear_interpolate_inline (mj, moving->dim[1]-1, &mjf, &mjr, &fy1, &fy2);
-		clamp_linear_interpolate_inline (mk, moving->dim[2]-1, &mkf, &mkr, &fz1, &fz2);
-
-		mvf = (mkf * moving->dim[1] + mjf) * moving->dim[0] + mif;
-		m_x1y1z1 = fx1 * fy1 * fz1;
-		m_x2y1z1 = fx2 * fy1 * fz1;
-		m_x1y2z1 = fx1 * fy2 * fz1;
-		m_x2y2z1 = fx2 * fy2 * fz1;
-		m_x1y1z2 = fx1 * fy1 * fz2;
-		m_x2y1z2 = fx2 * fy1 * fz2;
-		m_x1y2z2 = fx1 * fy2 * fz2;
-		m_x2y2z2 = fx2 * fy2 * fz2;
-
-		if (debug) {
-		    printf ("m_xyz %g %g %g %g %g %g %g %g\n",
-			m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, 
-			m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2);
-		}
-#endif
-
-		/* Compute pixel contribution to gradient based on histogram change
-
-		   There are eight correspondences between fixed and moving.  
-		   Each of these eight correspondences will update 2 histogram bins
-		   (other options are possible, but this is my current strategy).
-
-		   First, figure out which histogram bins this correspondence influences
-		   by calling bspline_mi_hist_lookup().
-
-		   Next, compute dS/dP * dP/dx. 
-		   dP/dx is zero outside of the 8 neighborhood.  Otherwise it is +/- 1/pixel size.
-		   dS/dP is 1/N (ln (N P / Pf Pm) - I)
-		   dS/dP is weighted by the relative contribution of the 2 histogram bins.
-
-		   dS_dx and dc_dv are really the same thing.  Just different notation.
-
-		   For dc_dv:
-		   We do -= instead of += because our optimizer wants to minimize 
-		   instead of maximize.
-		   The right hand side is - for "left" voxels, and + for "right" voxels.
-
-		   Use a hard threshold on j_hist[j_idxs] to prevent overflow.  This test 
-		   should be reconsidered, because it is theoretically unsound.
-
-		   Some trivial speedups for the future:
-		   The pixel size component is constant, so we can post-multiply.
-		   1/N is constant, so post-multiply.
-		*/
-		dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
+		/* LINEAR INTERPOLATION - (not implemented) */
 
 #if defined (commentout)
-		/* The below code is for the 8-neighborhood */
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - dS_dP;
-		dc_dv[1] -= - dS_dP;
-		dc_dv[2] -= - dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= + dS_dP;
-		dc_dv[1] -= - dS_dP;
-		dc_dv[2] -= - dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - dS_dP;
-		dc_dv[1] -= + dS_dP;
-		dc_dv[2] -= - dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= + dS_dP;
-		dc_dv[1] -= + dS_dP;
-		dc_dv[2] -= - dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - dS_dP;
-		dc_dv[1] -= - dS_dP;
-		dc_dv[2] -= + dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= + dS_dP;
-		dc_dv[1] -= - dS_dP;
-		dc_dv[2] -= + dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - dS_dP;
-		dc_dv[1] -= + dS_dP;
-		dc_dv[2] -= + dS_dP;
-
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= + dS_dP;
-		dc_dv[1] -= + dS_dP;
-		dc_dv[2] -= + dS_dP;
+		/* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+		bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+		    fv, mvf, mijk, num_vox_f);
 #endif
-
-		/* Compute quadratic interpolation fractions */
-		clamp_quadratic_interpolate_grad_inline (mijk[0], moving->dim[0], miqs, fxqs);
-		clamp_quadratic_interpolate_grad_inline (mijk[1], moving->dim[1], mjqs, fyqs);
-		clamp_quadratic_interpolate_grad_inline (mijk[2], moving->dim[2], mkqs, fzqs);
 
 		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - fxqs[1] * dS_dP;
-		dc_dv[1] -= - fyqs[1] * dS_dP;
-		dc_dv[2] -= - fzqs[1] * dS_dP;
-
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - fxqs[0] * dS_dP;
-
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[0] -= - fxqs[2] * dS_dP;
-
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[1] -= - fyqs[0] * dS_dP;
-
-		mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[1] -= - fyqs[2] * dS_dP;
-
-		mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[2] -= - fzqs[0] * dS_dP;
-
-		mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-		bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-		dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
-		dc_dv[2] -= - fzqs[2] * dS_dP;
-
-		dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
-		dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
-		dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
-
-		if (parms->debug) {
-		    fprintf (fp, "%d %d %d %g %g %g\n", 
-			rijk[0], rijk[1], rijk[2], 
-			fxqs[0], fxqs[1], fxqs[2]);
-		}
+		bspline_mi_pvi_6_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+		    fv, mvf, mijk, num_vox_f);
 
 		bspline_update_grad_b_inline (bst, bxf, pidx, qidx, dc_dv);
 	    }
@@ -2911,9 +2997,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     mse_score = mse_score / num_vox;
 
-    interval = plm_timer_report (&timer);
-
-    report_score ("MI", bxf, bst, num_vox, interval);
+    report_score ("MI", bxf, bst, num_vox, plm_timer_report (&timer));
 }
 
 /* This only warps voxels within the ROI.  If you need the whole 
