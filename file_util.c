@@ -10,6 +10,7 @@
 #include <direct.h>
 #include <io.h>
 #else
+#include <unistd.h>    /* sleep() */
 #include <dirent.h>
 #endif
 #if HAVE_SYS_STAT

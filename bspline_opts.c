@@ -73,9 +73,14 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		parms->optimization = BOPT_STEEPEST;
 	    } else if (!strcmp(argv[i], "nlopt-lbfgs")) {
 		parms->optimization = BOPT_NLOPT_LBFGS;
+	    } else if (!strcmp(argv[i], "nlopt-ld-mma")) {
+		parms->optimization = BOPT_NLOPT_LD_MMA;
+	    } else if (!strcmp(argv[i], "nlopt-ptn")) {
+		parms->optimization = BOPT_NLOPT_PTN_1;
 	    } else if (!strcmp(argv[i], "lbfgsb")) {
 		parms->optimization = BOPT_LBFGSB;
 	    } else {
+		fprintf (stderr, "Unknown optimization type: %s\n", argv[i]);
 		print_usage ();
 	    }
 	}
