@@ -25,8 +25,8 @@ int
 main (int argc, char* argv[])
 {
     BSPLINE_Options options;
-    BSPLINE_Parms* parms = &options.parms;
-    BSPLINE_Xform bxf;
+    BSPLINE_Parms *parms = &options.parms;
+    BSPLINE_Xform *bxf;
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;
     Volume *moving_warped = 0;
@@ -51,33 +51,39 @@ main (int argc, char* argv[])
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(int));
-    bspline_xform_initialize (&bxf,
-			      fixed->offset,
-			      fixed->pix_spacing,
-			      fixed->dim,
-			      roi_offset,
-			      fixed->dim,
-			      options.vox_per_rgn
-			     );
+    if (options.input_xf_fn) {
+	bxf = read_bxf (options.input_xf_fn);
+    } else {
+	bxf = (BSPLINE_Xform*) malloc (sizeof (BSPLINE_Xform));
+	bspline_xform_initialize (
+	    bxf,
+	    fixed->offset,
+	    fixed->pix_spacing,
+	    fixed->dim,
+	    roi_offset,
+	    fixed->dim,
+	    options.vox_per_rgn
+	);
+    }
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_run_optimization (&bxf, 0, parms, fixed, moving, moving_grad);
+    bspline_run_optimization (bxf, 0, parms, fixed, moving, moving_grad);
     printf ("Done running optimization.\n");
 
     /* Save output transform */
     if (options.output_xf_fn) {
-	write_bxf (options.output_xf_fn, &bxf);
+	write_bxf (options.output_xf_fn, bxf);
     }
 
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn || options.output_warped_fn) {
 	printf ("Creating vector field.\n");
 	vector_field = volume_create (fixed->dim, fixed->offset, 
-				      fixed->pix_spacing,
-				      PT_VF_FLOAT_INTERLEAVED, 
-				      fixed->direction_cosines, 0);
-	bspline_interpolate_vf (vector_field, &bxf);
+	    fixed->pix_spacing,
+	    PT_VF_FLOAT_INTERLEAVED, 
+	    fixed->direction_cosines, 0);
+	bspline_interpolate_vf (vector_field, bxf);
 	if (options.output_vf_fn) {
 	    printf ("Writing vector field.\n");
 	    write_mha (options.output_vf_fn, vector_field);
@@ -98,7 +104,8 @@ main (int argc, char* argv[])
     /* Free memory */
     printf ("Done warping images.\n");
     bspline_parms_free (parms);
-    bspline_xform_free (&bxf);
+    bspline_xform_free (bxf);
+    free (bxf);
     volume_destroy (fixed);
     volume_destroy (moving);
     volume_destroy (moving_grad);

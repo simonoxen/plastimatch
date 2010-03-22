@@ -27,9 +27,10 @@ print_usage (void)
 	" --pgtol value              L-BFGS-B projected grad tol (default is 1e-5)\n"
 	" -s \"i j k\"                 Integer knot spacing (voxels)\n"
 	" -h prefix                  Generate histograms for each MI iteration\n"
-	" -V outfile                 The output vector field\n"
-	" -x outfile                 The output bspline coefficients\n"
-	" -O outfile                 The output warped image\n"
+	" -V outfile                 Output vector field\n"
+	" -X infile                  Input bspline coefficients\n"
+	" -x outfile                 Output bspline coefficients\n"
+	" -O outfile                 Output warped image\n"
 	" --debug                    Create various debug files\n"
     );
     exit (1);
@@ -165,6 +166,14 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    options->output_xf_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-X")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_xf_fn = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "--debug")) {
 	    parms->debug = 1;

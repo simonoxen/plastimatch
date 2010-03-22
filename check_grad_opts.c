@@ -25,6 +25,7 @@ print_usage (void)
 	"                           line profile. (default=fwd)\n"
 	" -e step                 Step size (default is 1e-4)\n"
 	" -l \"min max\"            Min, max range for line profile (default \"0 30\")\n"
+	" -X infile               Input bspline coefficients\n"
 	" -O file                 Output file\n"
     );
     exit (1);
@@ -160,6 +161,14 @@ check_grad_opts_parse_args (Check_grad_opts* options,
 		printf ("Error parsing -l option.\n");
 		print_usage ();
 	    }
+	}
+        else if (!strcmp (argv[i], "-X")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_xf_fn = strdup (argv[i]);
 	}
 	else {
 	    print_usage ();
