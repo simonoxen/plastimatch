@@ -94,12 +94,16 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed)
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_fix[i*3 + d] 
-		= ROUND_INT ((fixed->offset[d] + blm->fixed_landmarks[i*3 + d])
+		= ROUND_INT ((blm->fixed_landmarks[i*3 + d] - fixed->offset[d])
 		    / fixed->pix_spacing[d]);
 	    if (blm->landvox_fix[i*3 + d] < 0 
 		|| blm->landvox_fix[i*3 + d] >= fixed->dim[d])
 	    {
-		print_and_exit ("Error: landmark %d out of image!\n", i);
+		print_and_exit (
+		    "Error, landmark %d outside of fixed image for dim %d.\n"
+		    "Location in vox = %d\n"
+		    "Image boundary in vox = (%d %d)\n",
+		    i, d, blm->landvox_fix[i*3 + d], 0, fixed->dim[d]-1);
 	    }
 	}
     }
