@@ -1,5 +1,10 @@
-$indir = "/c/gsharp/idata/4dct-traces/all_traces_3";
+#$indir = "/c/gsharp/idata/4dct-traces/all_traces_3";
+$indir = ".";
 $count = 0;
+
+# If rename = 0, overwrite existing file
+$rename = 0;
+
 for $file (`ls $indir/*.vxp`) {
     chomp($file);
     $base = $file;
@@ -46,5 +51,8 @@ for $file (`ls $indir/*.vxp`) {
     }
     close FPI;
     close FPO;
+    if (! $rename) {
+	`mv $outfile $file`;
+    }
     ## `rm $file`;
 }
