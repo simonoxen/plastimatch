@@ -168,22 +168,19 @@ bspline_landmarks_score (
 {
     BSPLINE_Score* ssd = &bst->ssd;
     Bspline_landmarks *blm = parms->landmarks;
-    int num_landmarks;
     int lidx;
     FILE *fp, *fp2;
-    float land_score, land_coeff, land_grad_coeff, land_rawdist, l_dist;
+    float land_score, land_grad_coeff, land_rawdist;
 
     land_score = 0;
     land_rawdist = 0;
-    land_grad_coeff = land_coeff / num_landmarks;
-
-    printf ("Scoring...\n");
+    land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
     fp  = fopen("warplist.fcsv","w");
     fp2 = fopen("distlist.dat","w");
     fprintf(fp,"# name = warped\n");
 
-    for(lidx=0;lidx<num_landmarks;lidx++)
+    for (lidx=0; lidx < blm->num_landmarks; lidx++)
     {
 	int d;
 	int p[3], q[3];
@@ -192,6 +189,7 @@ bspline_landmarks_score (
 	float diff[3];   /* mxyz - moving_landmark */
 	float dc_dv[3];
 	float dxyz[3];
+	float l_dist;
 
 	for (d = 0; d < 3; d++) {
 	    p[d] = blm->landvox_fix[lidx*3+d] / bxf->vox_per_rgn[d];
@@ -203,8 +201,16 @@ bspline_landmarks_score (
 
 	for (d = 0; d < 3; d++) {
 	    mxyz[d] = blm->fixed_landmarks[lidx*3+d] + dxyz[d];
-	    diff[d] = mxyz[d] - blm->moving_landmarks[lidx*3+d];
+	    diff[d] = blm->moving_landmarks[lidx*3+d] - mxyz[d];
 	}
+
+#if defined (commentout)
+	printf ("    flm = %f %f %f\n", blm->fixed_landmarks[lidx*3+0], 
+	    blm->fixed_landmarks[lidx*3+1], blm->fixed_landmarks[lidx*3+2]);
+	printf ("    mxyz = %f %f %f\n", mxyz[0], mxyz[1], mxyz[2]);
+	printf ("    mlm = %f %f %f\n", blm->moving_landmarks[lidx*3+0], 
+	    blm->moving_landmarks[lidx*3+1], blm->moving_landmarks[lidx*3+2]);
+#endif
 
         l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
 
@@ -224,7 +230,7 @@ bspline_landmarks_score (
     fclose(fp);
     fclose(fp2);
 
-    land_score = land_score * land_coeff / num_landmarks;
-    printf ("        LANDMARKS %.4f\n", land_score);
+    land_score = land_score * parms->landmark_stiffness / blm->num_landmarks;
+    printf ("        LM DIST %.4f COST %.4f\n", land_rawdist, land_score);
     ssd->score += land_score;
 }
