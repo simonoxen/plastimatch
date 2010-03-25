@@ -23,6 +23,9 @@
 #include "xio_io.h"
 #include "xio_structures.h"
 
+
+/* This is a comment */
+
 static void
 add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 {
