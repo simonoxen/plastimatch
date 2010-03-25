@@ -28,8 +28,10 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 {
     FILE *fp;
     struct bStream * bs;
+    bstring version = bfromcstr ("");
     bstring line1 = bfromcstr ("");
     bstring line2 = bfromcstr ("");
+    int skip_lines = 2;
 
     fp = fopen (filename, "r");
     if (!fp) {
@@ -38,7 +40,11 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 
     bs = bsopen ((bNread) fread, fp);
 
-    bsreadln (line1, bs, '\n');
+    bsreadln (version, bs, '\n');
+    btrimws (version);
+    if (!strcmp ((const char*) version->data, "00061027")) {
+	skip_lines = 5;
+    }
     bsreadln (line1, bs, '\n');
 
     while (1)
@@ -60,7 +66,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	rc = sscanf ((char*) line2->data, "%d,", &structure_id);
 	if (rc != 1) {
 	    print_and_exit ("Error parsing contournames: "
-			    "contour id not found (%s)\n", line1->data);
+			    "contour id not found (%s)\n", line2->data);
 	}
 
 	/* Xio structures can be zero.  This is possibly not tolerated 
@@ -73,11 +79,13 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	/* Add structure */
 	cxt_add_structure (structures, (char*) line1->data, 0, structure_id);
 
-	/* Skip 2 lines */
-	bsreadln (line1, bs, '\n');
-	bsreadln (line1, bs, '\n');
+	/* Skip extra lines */
+	for (int i = 0; i < skip_lines; i++) {
+	    bsreadln (line1, bs, '\n');
+	}
     }
 
+    bdestroy (version);
     bdestroy (line1);
     bdestroy (line2);
     bsclose (bs);
