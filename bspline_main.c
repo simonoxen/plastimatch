@@ -13,11 +13,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "bspline_opts.h"
 #include "bspline.h"
+#include "bspline_landmarks.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
+#include "bspline_opts.h"
 #include "readmha.h"
 #include "vf.h"
 

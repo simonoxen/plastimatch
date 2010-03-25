@@ -19,7 +19,7 @@ Bspline_landmarks*
 bspline_landmarks_create (void)
 {
     Bspline_landmarks *blm;
-    blm = (Bspline_landmarks*) malloc (sizeof (Bspline_landmarks*));
+    blm = (Bspline_landmarks*) malloc (sizeof (Bspline_landmarks));
     memset (blm, 0, sizeof (Bspline_landmarks));
     return blm;
 }
@@ -76,19 +76,18 @@ bspline_landmarks_load_file (float **landmarks, int *num_landmarks, char *fn)
 
 	/* Note: Slicer landmarks are in RAS coordinates. 
 	   Change RAS to LPS (i.e. ITK RAI). */
-	(*landmarks)[(*num_landmarks-1)*3 + 0] = - lm[0];
-	(*landmarks)[(*num_landmarks-1)*3 + 1] = - lm[1];
-	(*landmarks)[(*num_landmarks-1)*3 + 2] = lm[2];
+	(*landmarks)[((*num_landmarks)-1)*3 + 0] = - lm[0];
+	(*landmarks)[((*num_landmarks)-1)*3 + 1] = - lm[1];
+	(*landmarks)[((*num_landmarks)-1)*3 + 2] = lm[2];
     }
     fclose (fp);
-    printf ("found %d landmarks on fixed image\n", *num_landmarks);
 }
 
 void
 bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed)
 {
     int i, d;
-    
+
     // Save position of landmarks in voxels for vector field calculation
     // GCS: I think we only need fixed
     blm->landvox_fix = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
@@ -104,6 +103,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed)
 	    }
 	}
     }
+    printf ("Adjusting complete.\n");
 }
 
 Bspline_landmarks*
@@ -118,15 +118,19 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
     bspline_landmarks_load_file (&moving_landmarks, &num_moving_landmarks, 
 	moving_fn);
 
-    if (fixed_landmarks != moving_landmarks) {
+    if (num_fixed_landmarks != num_moving_landmarks) {
 	print_and_exit ("Error. Different number of landmarks in files: "
-	    "%s and %s\n", fixed_fn, moving_fn);
+	    "%s (%d), %s (%d)\n", fixed_fn, num_fixed_landmarks, 
+	    moving_fn, num_moving_landmarks);
     }
     
     blm = bspline_landmarks_create ();
     blm->num_landmarks = num_fixed_landmarks;
     blm->moving_landmarks = moving_landmarks;
     blm->fixed_landmarks = fixed_landmarks;
+
+    printf ("Found %d landmark(s) from fixed to moving image\n", 
+	blm->num_landmarks);
 
     return blm;
 }
@@ -168,6 +172,8 @@ bspline_landmarks_score (
     land_score = 0;
     land_rawdist = 0;
     land_grad_coeff = land_coeff / num_landmarks;
+
+    printf ("Scoring...\n");
 
     fp  = fopen("warplist.fcsv","w");
     fp2 = fopen("distlist.dat","w");

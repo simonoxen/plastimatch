@@ -33,6 +33,7 @@ print_usage (void)
 	" -O outfile                 Output warped image\n"
 	" --fixed-landmarks file     Input fixed landmarks file\n"
 	" --moving-landmarks file    Input moving landmarks file\n"
+	" --landmark-stiffness float Relative weight of landmarks\n"      
 	" --debug                    Create various debug files\n"
     );
     exit (1);

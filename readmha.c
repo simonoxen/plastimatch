@@ -10,6 +10,7 @@
 #endif
 #include "fwrite_block.h"
 #include "readmha.h"
+#include "string_util.h"
 #include "volume.h"
 
 #define LINELEN 128
@@ -116,8 +117,9 @@ read_mha_internal (
     vol  = (Volume*) malloc (sizeof(Volume));
     vol->pix_size = -1;
     vol->pix_type = PT_UNDEFINED;
-    while (fgets(linebuf,LINELEN,fp)) {
-	if (strcmp (linebuf, "ElementDataFile = LOCAL\n") == 0) {
+    while (fgets (linebuf, LINELEN, fp)) {
+	string_util_rtrim_whitespace (linebuf);
+	if (strcmp (linebuf, "ElementDataFile = LOCAL") == 0) {
 	    break;
 	}
 	if (sscanf (linebuf, "DimSize = %d %d %d",
@@ -146,19 +148,19 @@ read_mha_internal (
 	    }
 	    continue;
 	}
-	if (strcmp (linebuf, "ElementType = MET_FLOAT\n") == 0) {
+	if (strcmp (linebuf, "ElementType = MET_FLOAT") == 0) {
 	    if (vol->pix_type == PT_UNDEFINED) {
 		vol->pix_type = PT_FLOAT;
 		vol->pix_size = sizeof(float);
 	    }
 	    continue;
 	}
-	if (strcmp (linebuf, "ElementType = MET_SHORT\n") == 0) {
+	if (strcmp (linebuf, "ElementType = MET_SHORT") == 0) {
 	    vol->pix_type = PT_SHORT;
 	    vol->pix_size = sizeof(short);
 	    continue;
 	}
-	if (strcmp (linebuf, "ElementType = MET_UCHAR\n") == 0) {
+	if (strcmp (linebuf, "ElementType = MET_UCHAR") == 0) {
 	    vol->pix_type = PT_UCHAR;
 	    vol->pix_size = sizeof(unsigned char);
 	    continue;

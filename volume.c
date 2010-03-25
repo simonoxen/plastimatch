@@ -175,8 +175,7 @@ volume_convert_to_float (Volume* ref)
 {
     switch (ref->pix_type) {
     case PT_UCHAR:
-	fprintf (stderr, "Sorry, UCHAR to FLOAT is not implemented\n");
-	exit (-1);
+	CONVERT_VOLUME (unsigned char, float, PT_FLOAT);
 	break;
     case PT_SHORT:
 	CONVERT_VOLUME (short, float, PT_FLOAT);
