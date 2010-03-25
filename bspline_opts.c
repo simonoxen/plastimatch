@@ -204,6 +204,18 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    parms->lbfgsb_pgtol = (double) f;
 	}
+        else if (!strcmp (argv[i], "--landmark-stiffness")) {
+	    float f;
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &parms->landmark_stiffness);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
 	else {
 	    print_usage ();
 	    break;

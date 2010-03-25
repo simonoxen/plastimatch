@@ -4,7 +4,24 @@
 #ifndef _bspline_h_
 #define _bspline_h_
 
+#include "plm_config.h"
 #include "volume.h"
+
+/* -----------------------------------------------------------------------
+   Macros
+   ----------------------------------------------------------------------- */
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
+
+#define COORDS_FROM_INDEX(ijk, idx, dim) \
+	ijk[2] = idx / (dim[0] * dim[1]);	\
+	ijk[1] = (idx_tile - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
+	ijk[0] = idx_tile - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
+
+/* -----------------------------------------------------------------------
+   Types
+   ----------------------------------------------------------------------- */
+struct bspline_landmarks;
 
 enum BsplineOptimization {
     BOPT_LBFGSB,
@@ -182,8 +199,14 @@ struct BSPLINE_Parms_struct {
     char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
     double lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
     double lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
+
+    struct bspline_landmarks* landmarks;  /* The landmarks themselves */
+    float landmark_stiffness;    /* Attraction of landmarks (0 == no attraction) */
 };
 
+/* -----------------------------------------------------------------------
+   Function declarations
+   ----------------------------------------------------------------------- */
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -254,6 +277,15 @@ bspline_interpolate_vf (Volume* interp,
 			BSPLINE_Xform* bxf);
 
 /* Used internally */
+void
+bspline_interp_pix (float out[3], BSPLINE_Xform *bxf, int p[3], int qidx);
+
+void
+bspline_update_grad (
+    Bspline_state *bst, 
+    BSPLINE_Xform* bxf, 
+    int p[3], int qidx, float dc_dv[3]);
+
 void
 bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving);
 

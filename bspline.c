@@ -55,17 +55,6 @@
 #define logf(x)     ((float)log((double)(x)))
 #endif
 
-/* -----------------------------------------------------------------------
-   Macros
-   ----------------------------------------------------------------------- */
-#define INDEX_OF(ijk, dim) \
-    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
-
-#define COORDS_FROM_INDEX(ijk, idx, dim) \
-	ijk[2] = idx / (dim[0] * dim[1]);	\
-	ijk[1] = (idx_tile - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
-	ijk[0] = idx_tile - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
-
 
 /* -----------------------------------------------------------------------
    Initialization and teardown
@@ -84,6 +73,8 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->debug = 0;
     parms->lbfgsb_factr = 1.0e+7;
     parms->lbfgsb_pgtol = 1.0e-5;
+    parms->landmarks = 0;
+    parms->landmark_stiffness = 1.0;
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
@@ -1018,7 +1009,7 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     return score;
 }
 
-inline void
+void
 bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
 {
     int i, j, k, m;
@@ -1103,10 +1094,11 @@ bspline_interpolate_vf (Volume* interp,
     }
 }
 
-inline void
-bspline_update_grad (Bspline_state *bst, 
-		     BSPLINE_Xform* bxf, 
-		     int p[3], int qidx, float dc_dv[3])
+void
+bspline_update_grad (
+    Bspline_state *bst, 
+    BSPLINE_Xform* bxf, 
+    int p[3], int qidx, float dc_dv[3])
 {
     BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
@@ -3936,6 +3928,11 @@ bspline_score (BSPLINE_Parms *parms,
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	}
+    }
+
+    /* Add landmark score/gradient to image score/gradient */
+    if (parms->landmarks) {
+	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
 }
 

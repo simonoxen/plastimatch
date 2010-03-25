@@ -22,8 +22,7 @@ struct BSPLINE_Options_struct {
     char* output_xf_fn;
     char* output_vf_fn;
     char* method;
-    float factr;
-    float pgtol;
+    float landmark_stiffness;
     int vox_per_rgn[3];
     BSPLINE_Parms parms;
 };
