@@ -164,7 +164,6 @@ bspline_landmarks_score (
     int lidx;
     FILE *fp, *fp2;
     float land_score, land_coeff, land_grad_coeff, land_rawdist, l_dist;
-    float voxel_score;
 
     land_score = 0;
     land_rawdist = 0;
@@ -215,8 +214,7 @@ bspline_landmarks_score (
     fclose(fp);
     fclose(fp2);
 
-    printf ("RAWDIST %.4f     VOXSCORE %.4f\n", 
-	land_rawdist/num_landmarks, voxel_score);
     land_score = land_score * land_coeff / num_landmarks;
+    printf ("        LANDMARKS %.4f\n", land_score);
     ssd->score += land_score;
 }

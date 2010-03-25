@@ -21,6 +21,8 @@ struct BSPLINE_Options_struct {
     char* output_warped_fn;
     char* output_xf_fn;
     char* output_vf_fn;
+    char* fixed_landmarks;
+    char* moving_landmarks;
     char* method;
     float landmark_stiffness;
     int vox_per_rgn[3];

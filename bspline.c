@@ -37,6 +37,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"

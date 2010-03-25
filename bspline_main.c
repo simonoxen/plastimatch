@@ -45,6 +45,13 @@ main (int argc, char* argv[])
     printf ("Making gradient\n");
     moving_grad = volume_make_gradient (moving);
 
+    /* Load and adjust landmarks */
+    if (options.fixed_landmarks && options.moving_landmarks) {
+	parms->landmarks = bspline_landmarks_load (
+	    options.fixed_landmarks, options.moving_landmarks);
+	bspline_landmarks_adjust (parms->landmarks, fixed);
+    }
+
     /* Debug */
     //write_mha ("moving_grad.mha", moving_grad);
 

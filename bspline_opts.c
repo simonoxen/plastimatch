@@ -31,6 +31,8 @@ print_usage (void)
 	" -X infile                  Input bspline coefficients\n"
 	" -x outfile                 Output bspline coefficients\n"
 	" -O outfile                 Output warped image\n"
+	" --fixed-landmarks file     Input fixed landmarks file\n"
+	" --moving-landmarks file    Input moving landmarks file\n"
 	" --debug                    Create various debug files\n"
     );
     exit (1);
@@ -203,6 +205,22 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	    parms->lbfgsb_pgtol = (double) f;
+	}
+        else if (!strcmp (argv[i], "--fixed-landmarks")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->fixed_landmarks = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "--moving-landmarks")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->moving_landmarks = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "--landmark-stiffness")) {
 	    float f;
