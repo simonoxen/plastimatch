@@ -151,7 +151,8 @@ If you have brook installed, you can use GPU-accelerated demons::
   [STAGE]
   optim=demons
   xform=vf
-  impl=gpuit_brook
+  impl=plastimatch
+  threading=brook
   res=4 4 2
   max_its=200
 
@@ -369,75 +370,78 @@ The following specific parameters are used to refine the optimization.
 Depending on the choice of xform, optim, and impl, a different set of
 specific parameters are available. 
 
-+----------------------+----------------+------------+-------------------------+
-|option                |xform+optim+impl|default     |description              |
-+======================+================+============+=========================+
-|res                   |any+any+any     |[4 4 1]     |[1 1 1] (minimum) Units: |
-|                      |                |            |voxels Must be integers  |
-|                      |                |            |                         |
-|                      |                |            |                         |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|metric                |any+not         |mse         |mse, mi, mattes          |
-|                      |demons+any      |            |(impl=itk) mse, mi       |
-|                      |                |            |(impl=gpuit_cpu)         |
-+----------------------+----------------+------------+-------------------------+
-|background_val        |any+any+any     |-999.0      |Units: image intensity   |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|min_its               |any+any+any     |2           |Units: iterations        |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|max_its               |any+any+any     |25          |Units: iterations        |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|convergence_tol       |any+not         |5.0         |Units: score             |
-|                      |demons+any      |            |                         |
-|                      |                |            |                         |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|grad_tol              |any+{lbfgsb or  |1.5         |Units: score per unit    |
-|                      |lbfgs}+any      |            |parameter                |
-+----------------------+----------------+------------+-------------------------+
-|max_step              |any+{versor or  |10.0        |Units: scaled parameters |
-|                      |rsg}+itk        |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|min_step              |any+{versor or  |0.5         |Units: scaled parameters |
-|                      |rsg}+itk        |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|mi_histogram_bins     |any+any+any     |20          |Number of histogram      |
-|                      |                |            |bins. Only for used for  |
-|                      |                |            |plastimatch mi or itk    |
-|                      |                |            |mattes metrics           |
-+----------------------+----------------+------------+-------------------------+
-|mi_num_spatial_samples|any+any+itk     |10000       |Number of spatial        |
-|                      |                |            |samples.  Only for itk   |
-|                      |                |            |mattes metric            |
-+----------------------+----------------+------------+-------------------------+
-|grid_spac             |bspline+any+any |[20 20 20]  |Units: mm. Minimum size  |
-|                      |                |            |is 4*(Pixel Size).  If a |
-|                      |                |            |smaller size is          |
-|                      |                |            |specified, it will be    |
-|                      |                |            |adjusted upward.         |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|histoeq               |vf+demons+itk   |0           |Specifies whether or not |
-|                      |                |            |to equalize intensity    |
-|                      |                |            |histograms before        |
-|                      |                |            |registration.            |
-+----------------------+----------------+------------+-------------------------+
-|demons_std            |vf+demons+any   |6.0         |Units: mm                |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|demons_acceleration   |vf+demons +     |1.0         |Units: percent           |
-|                      |plastimatch     |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|demons_homogenization |vf+demons +     |1.0         |Untiless                 |
-|                      |plastimatch     |            |                         |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
-|demons_filter_width   |vf+demons +     |[3 3 3]     |Units: voxels.           |
-|                      |plastimatch     |            |                         |
-|                      |                |            |                         |
-+----------------------+----------------+------------+-------------------------+
++----------------------+----------------+------------+---------------------------+
+|option                |xform+optim+impl|default     |description                |
++======================+================+============+===========================+
+|res                   |any+any+any     |[4 4 1]     |[1 1 1] (minimum) Units:   |
+|                      |                |            |voxels Must be integers    |
+|                      |                |            |                           |
+|                      |                |            |                           |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|metric                |any+not         |mse         |Choices are: {mse, mi,     |
+|                      |demons+any      |            |mattes} when impl=itk,     |
+|                      |                |            |{mse, mi} when             |
+|                      |                |            |impl=plastimatch, and {mse}|
+|                      |                |            |for GPU-accelerated        |
+|                      |                |            |B-Spline                   |
++----------------------+----------------+------------+---------------------------+
+|background_val        |any+any+any     |-999.0      |Units: image intensity     |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|min_its               |any+any+any     |2           |Units: iterations          |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|max_its               |any+any+any     |25          |Units: iterations          |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|convergence_tol       |any+not         |5.0         |Units: score               |
+|                      |demons+any      |            |                           |
+|                      |                |            |                           |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|grad_tol              |any+{lbfgsb or  |1.5         |Units: score per unit      |
+|                      |lbfgs}+any      |            |parameter                  |
++----------------------+----------------+------------+---------------------------+
+|max_step              |any+{versor or  |10.0        |Units: scaled parameters   |
+|                      |rsg}+itk        |            |                           |
++----------------------+----------------+------------+---------------------------+
+|min_step              |any+{versor or  |0.5         |Units: scaled parameters   |
+|                      |rsg}+itk        |            |                           |
++----------------------+----------------+------------+---------------------------+
+|mi_histogram_bins     |any+any+any     |20          |Number of histogram        |
+|                      |                |            |bins. Only for used for    |
+|                      |                |            |plastimatch mi or itk      |
+|                      |                |            |mattes metrics             |
++----------------------+----------------+------------+---------------------------+
+|mi_num_spatial_samples|any+any+itk     |10000       |Number of spatial          |
+|                      |                |            |samples.  Only for itk     |
+|                      |                |            |mattes metric              |
++----------------------+----------------+------------+---------------------------+
+|grid_spac             |bspline+any+any |[20 20 20]  |Units: mm. Minimum size    |
+|                      |                |            |is 4*(Pixel Size).  If a   |
+|                      |                |            |smaller size is            |
+|                      |                |            |specified, it will be      |
+|                      |                |            |adjusted upward.           |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|histoeq               |vf+demons+itk   |0           |Specifies whether or not   |
+|                      |                |            |to equalize intensity      |
+|                      |                |            |histograms before          |
+|                      |                |            |registration.              |
++----------------------+----------------+------------+---------------------------+
+|demons_std            |vf+demons+any   |6.0         |Units: mm                  |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|demons_acceleration   |vf+demons +     |1.0         |Units: percent             |
+|                      |plastimatch     |            |                           |
++----------------------+----------------+------------+---------------------------+
+|demons_homogenization |vf+demons +     |1.0         |Untiless                   |
+|                      |plastimatch     |            |                           |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
+|demons_filter_width   |vf+demons +     |[3 3 3]     |Units: voxels.             |
+|                      |plastimatch     |            |                           |
+|                      |                |            |                           |
++----------------------+----------------+------------+---------------------------+
 
