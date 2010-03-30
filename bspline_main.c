@@ -50,7 +50,7 @@ main (int argc, char* argv[])
     if (options.fixed_landmarks && options.moving_landmarks) {
 	parms->landmarks = bspline_landmarks_load (
 	    options.fixed_landmarks, options.moving_landmarks);
-	bspline_landmarks_adjust (parms->landmarks, fixed);
+	bspline_landmarks_adjust (parms->landmarks, fixed, moving);
     }
 
     /* Debug */

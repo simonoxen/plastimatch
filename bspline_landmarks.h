@@ -11,7 +11,7 @@ struct bspline_landmarks {
     int num_landmarks;
     float *fixed_landmarks;
     float *moving_landmarks;
-    int *landvox_fix;
+    int *landvox_mov;
 };
 
 #if defined __cplusplus
@@ -22,7 +22,7 @@ Bspline_landmarks*
 bspline_landmarks_load (char *fixed_fn, char *moving_fn);
 
 void
-bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed);
+bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving);
 
 void
 bspline_landmarks_score (
