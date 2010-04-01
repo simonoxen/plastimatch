@@ -37,6 +37,17 @@ adjust_main (Adjust_Parms* parms)
 	}
     }
 
+    if (parms->have_ab_scale) {
+	it.GoToBegin();
+	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	    float v = it.Get();
+	    float d_per_fx = v / parms->num_fx;
+	    v = v * (parms->alpha_beta + d_per_fx) 
+		/ (parms->alpha_beta + parms->norm_dose_per_fx);
+	    it.Set (v);
+	}
+    }
+
     if (parms->have_scale) {
 	it.GoToBegin();
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
@@ -62,7 +73,8 @@ adjust_main (Adjust_Parms* parms)
 	for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
 	    float v = it.Get();
 	    v = (v - vmin) / (vmax - vmin);
-	    v = (v + parms->stretch[0]) * (parms->stretch[1] - parms->stretch[0]);
+	    v = (v + parms->stretch[0]) 
+		* (parms->stretch[1] - parms->stretch[0]);
 	    it.Set (v);
 	}
     }
@@ -89,6 +101,7 @@ adjust_print_usage (void)
 	    "Optional:\n"
 	    "    --output-type={uchar,short,ushort,ulong,float}\n"
 	    "    --scale=\"min max\"\n"
+	    "    --ab-scale=\"ab nfx ndf\"       (Alpha-beta scaling)\n"
 	    "    --stretch=\"min max\"\n"
 	    "    --truncate-above=value\n"
 	    "    --truncate-below=value\n"
@@ -113,10 +126,13 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	{ "output-type",    required_argument,      NULL,           8 },
 	{ "output_type",    required_argument,      NULL,           8 },
 	{ "scale",          required_argument,      NULL,           9 },
+	{ "ab_scale",       required_argument,      NULL,           10 },
+	{ "ab-scale",       required_argument,      NULL,           10 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+	int rc;
 	switch (ch) {
 	case 2:
 	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
@@ -165,6 +181,17 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 		adjust_print_usage ();
 	    }
 	    parms->have_scale = 1;
+	    break;
+	case 10:
+	    rc = sscanf (optarg, "%f %f %f", 
+		&parms->alpha_beta, 
+		&parms->num_fx, 
+		&parms->norm_dose_per_fx);
+	    if (rc != 3) {
+		printf ("Error: --ab-scale takes 3 arguments\n");
+		adjust_print_usage ();
+	    }
+	    parms->have_ab_scale = 1;
 	    break;
 	default:
 	    break;

@@ -22,6 +22,13 @@ public:
     bool have_stretch;
     float scale;
     bool have_scale;
+
+    /* Alpha-beta scaling */
+    float alpha_beta;
+    float num_fx;
+    float norm_dose_per_fx;
+    bool have_ab_scale;
+
     int output_dicom;
     Plm_image_type output_type;
 public:

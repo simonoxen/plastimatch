@@ -14,6 +14,7 @@
 #include "rtds.h"
 
 
+
 static void
 load_input_files (Rtds *rtds, Dvh_parms *parms)
 {
@@ -60,8 +61,11 @@ dvh_main (Dvh_parms* parms)
 	 ++it_d, ++it_s)
     {
 	float d = it_d.Get();
+	/* Convert from Gy to cGy */
+	if (parms->input_units == DVH_UNITS_GY) {
+	    d = d * 100;
+	}
 	uint32_t s = it_s.Get();
-	int sno;
 
 	/* Compute the bin */
 	bin = (int) floor ((d+(0.5*bin_width)) / bin_width);
@@ -85,10 +89,21 @@ dvh_main (Dvh_parms* parms)
 	}
     }
 
+    /* Convert histogram to cumulative histogram */
+    if (parms->cumulative) {
+	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
+	    int cum = 0;
+	    for (bin = num_bins - 1; bin >= 0; bin--) {
+		cum = cum + hist[bin*rtds.m_ss_list->num_structures + sno];
+		hist[bin*rtds.m_ss_list->num_structures + sno] = cum;
+	    }
+	}
+    }
+
     /* Save the csv file */
     FILE *fp = fopen (parms->output_csv, "w");
+    fprintf (fp, "Dose (cGy)");
     for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	fprintf (fp, "Dose (cGy)");
 	Cxt_structure *curr_structure = &rtds.m_ss_list->slist[sno];
 	fprintf (fp, ",%s", curr_structure->name);
     }
@@ -113,6 +128,8 @@ print_usage (void)
 	"   --input-ss-list file\n"
 	"   --input-dose file\n"
 	"   --output-csv file\n"
+	"   --input-uints {gy,cgy}\n"
+	"   --cumulative\n"
     );
     exit (-1);
 }
@@ -130,6 +147,9 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	{ "input-dose",     required_argument,      NULL,           4 },
 	{ "output_csv",     required_argument,      NULL,           5 },
 	{ "output-csv",     required_argument,      NULL,           5 },
+	{ "input_units",    required_argument,      NULL,           6 },
+	{ "input-units",    required_argument,      NULL,           6 },
+	{ "cumulative",     no_argument,            NULL,           7 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -149,6 +169,23 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	    break;
 	case 5:
 	    strncpy (parms->output_csv, optarg, _MAX_PATH);
+	    break;
+	case 6:
+	    if (!strcmp (optarg, "cgy") || !strcmp (optarg, "cGy"))
+	    {
+		parms->input_units = DVH_UNITS_CGY;
+	    }
+	    else if (!strcmp (optarg, "gy") || !strcmp (optarg, "Gy"))
+	    {
+		parms->input_units = DVH_UNITS_CGY;
+	    }
+	    else {
+		fprintf (stderr, "Error.  Units must be Gy or cGy.\n");
+		print_usage ();
+	    }
+	    break;
+	case 7:
+	    parms->cumulative = 1;
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

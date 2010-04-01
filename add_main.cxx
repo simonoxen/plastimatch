@@ -10,6 +10,16 @@
 #include "plm_image.h"
 #include "plm_path.h"
 
+static void
+print_usage (void)
+{
+    printf (
+	"Usage: plastimatch add [options]"
+	" input_file [input_file ...] output_file\n"
+    );
+    exit (1);
+}
+
 void
 add_main (int argc, char *argv[])
 {
@@ -67,10 +77,7 @@ void
 do_command_add (int argc, char *argv[])
 {
     if (argc < 4) {
-        printf (
-	    "Usage: plastimatch add "
-	    "input_file [input_file ...] output_file\n");
-        exit(1);    
+	print_usage ();
     }
 
     add_main (argc, argv);

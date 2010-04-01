@@ -47,6 +47,7 @@ print_usage (void)
 	    "            --pattern={gauss,rect,sphere}\n"
 	    "            --origin=\"x y z\"\n"
 	    "            --resolution=\"x [y z]\"\n"
+	    "            --spacing=\"x [y z]\"\n"
 	    "            --volume-size=\"x [y z]\"\n"
 	    "            --background=val\n"
 	    "            --foreground=val\n"
