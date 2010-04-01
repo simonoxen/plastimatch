@@ -103,10 +103,12 @@ main (int argc, char* argv[])
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
 	moving_warped = vf_warp (0, moving, vector_field);
-	printf ("Writing warped image.\n");
-	//printf("write to %s\n",options.output_warped_fn);
-	//system("pause");
-	write_mha (options.output_warped_fn, moving_warped);
+	if (moving_warped) {
+	    printf ("Writing warped image.\n");
+	    write_mha (options.output_warped_fn, moving_warped);
+	} else {
+	    printf ("Sorry, couldn't create warped image.\n");
+	}
     }
 
     /* Free memory */
