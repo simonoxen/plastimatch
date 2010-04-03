@@ -175,9 +175,9 @@ gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
     unsigned short* image_data 
 	= (unsigned short*) gdcm_file_helper.GetImageData ();
     size_t image_data_size = gdcm_file_helper.GetImageDataSize();
-    const char* pixel_type = gdcm_file->GetPixelType().c_str();
-    if (strcmp (pixel_type, "16U")) {
-	print_and_exit ("Error RTDOSE not type 16U\n");
+    if (strcmp (gdcm_file->GetPixelType().c_str(), "16U")) {
+	print_and_exit ("Error RTDOSE not type 16U (type=%s)\n",
+	    gdcm_file->GetPixelType().c_str());
     }
 
     /* GCS FIX: Do I need to do something about endian-ness? */
