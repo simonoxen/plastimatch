@@ -10,8 +10,13 @@
 
 #include "bspline.h"
 #include "bspline_optimize.h"
+#if (LIBLBFGS_FOUND)
+#include "bspline_optimize_liblbfgs.h"
+#endif
 #include "bspline_optimize_lbfgsb.h"
+#if (NLOPT_FOUND)
 #include "bspline_optimize_nlopt.h"
+#endif
 #include "bspline_optimize_steepest.h"
 #include "bspline_opts.h"
 #include "logfile.h"
@@ -53,6 +58,11 @@ bspline_optimize (
     case BOPT_STEEPEST:
 	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
 	break;
+#if (LIBLBFGS_FOUND)
+    case BOPT_LIBLBFGS:
+	bspline_optimize_liblbfgs (&bod);
+	break;
+#endif
 #if (NLOPT_FOUND)
     case BOPT_NLOPT_LBFGS:
 	bspline_optimize_nlopt (&bod, NLOPT_LD_LBFGS);

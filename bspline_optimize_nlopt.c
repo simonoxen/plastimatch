@@ -44,7 +44,7 @@ bspline_optimize_nlopt_score (
 
     /* Copy gradient out */
     for (i = 0; i < bod->bxf->num_coeff; i++) {
-	grad[i] = (double) bod->bst->ssd.grad[i];
+	grad[i] = - (double) bod->bst->ssd.grad[i];
     }
 
     /* Return cost */

@@ -26,6 +26,7 @@ struct bspline_landmarks;
 enum BsplineOptimization {
     BOPT_LBFGSB,
     BOPT_STEEPEST,
+    BOPT_LIBLBFGS,
     BOPT_NLOPT_LBFGS,
     BOPT_NLOPT_LD_MMA,
     BOPT_NLOPT_PTN_1,

@@ -75,6 +75,8 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    if (!strcmp(argv[i], "steepest")) {
 		parms->optimization = BOPT_STEEPEST;
+	    } else if (!strcmp(argv[i], "liblbfgs")) {
+		parms->optimization = BOPT_LIBLBFGS;
 	    } else if (!strcmp(argv[i], "nlopt-lbfgs")) {
 		parms->optimization = BOPT_NLOPT_LBFGS;
 	    } else if (!strcmp(argv[i], "nlopt-ld-mma")) {
@@ -224,7 +226,6 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    options->moving_landmarks = strdup (argv[i]);
 	}
         else if (!strcmp (argv[i], "--landmark-stiffness")) {
-	    float f;
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);

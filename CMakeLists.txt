@@ -136,12 +136,6 @@ INCLUDE (PLM_FindOpenMP.cmake)
 INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
 FIND_PACKAGE (Qt4 COMPONENTS QtCore QtGui OPTIONAL)
-IF (QT4_FOUND)
-  MESSAGE (STATUS "Looking for Qt4 - found")
-  INCLUDE (${QT_USE_FILE})
-ELSE (QT4_FOUND)
-  MESSAGE (STATUS "Looking for Qt4 - not found")
-ENDIF (QT4_FOUND)
 
 INCLUDE (PLM_FindBrook.cmake)
 INCLUDE (PLM_Etags.cmake)
@@ -151,11 +145,25 @@ INCLUDE (PLM_FindSubversion.cmake)
 #INCLUDE(FindPantheios.cmake)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-FIND_PACKAGE (OpenCL)
 
+FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
-
+FIND_PACKAGE (OpenCL)
 FIND_PACKAGE (SQLite)
+
+##-----------------------------------------------------------------------------
+##  QT requires including the use file
+##-----------------------------------------------------------------------------
+IF (QT4_FOUND)
+  MESSAGE (STATUS "Looking for Qt4 - found")
+  INCLUDE (${QT_USE_FILE})
+ELSE (QT4_FOUND)
+  MESSAGE (STATUS "Looking for Qt4 - not found")
+ENDIF (QT4_FOUND)
+
+##-----------------------------------------------------------------------------
+##  Use local sqlite if not found
+##-----------------------------------------------------------------------------
 IF (NOT SQLITE_FOUND)
   ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
   SET (SQLITE_INCLUDE_DIR libs/sqlite-3.6.21)
@@ -379,6 +387,13 @@ IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   ENDIF(UNIX)
 ENDIF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
+IF (LIBLBFGS_FOUND)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    ${LIBLBFGS_LIBRARIES}
+    )
+ENDIF (LIBLBFGS_FOUND)
+
 IF (NLOPT_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -462,15 +477,15 @@ SET (GPUIT_LIBRARY_SRC
 
 IF(BROOK_FOUND)
   SET (GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	demons_brook.cpp
-	demons_brook_kernel_wrap.cpp
-	demons_brook_kernel.br
-	demons_brook_kernel.h
-	convolution_brook_kernel.br
-	convolution_brook_kernel_wrap.cpp
-	convolution_brook_kernel.h
-	)
+    ${GPUIT_LIBRARY_SRC}
+    demons_brook.cpp
+    demons_brook_kernel_wrap.cpp
+    demons_brook_kernel.br
+    demons_brook_kernel.h
+    convolution_brook_kernel.br
+    convolution_brook_kernel_wrap.cpp
+    convolution_brook_kernel.h
+    )
 ENDIF(BROOK_FOUND)
 
 IF(CUDA_FOUND)
@@ -509,16 +524,23 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   SET (GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	lbfgsb_2_1.c
-	plm_fortran.h plm_f2c_win32.h
-	)
+    ${GPUIT_LIBRARY_SRC}
+    lbfgsb_2_1.c
+    plm_fortran.h plm_f2c_win32.h
+    )
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
+
+IF (LIBLBFGS_FOUND)
+  SET (GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
+    )
+ENDIF (LIBLBFGS_FOUND)
 
 IF(F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC
-	main__.c
-	)
+    main__.c
+    )
 ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
@@ -861,6 +883,10 @@ ENDIF(CUDA_FOUND)
 IF(DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF(DCMTK_FOUND)
+
+IF (LIBLBFGS_FOUND)
+  INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
+ENDIF (LIBLBFGS_FOUND)
 
 IF(PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
