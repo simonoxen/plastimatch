@@ -16,7 +16,7 @@ bool
 gdcm_dose_probe (char *dose_fn);
 plastimatch1_EXPORT
 Plm_image*
-gdcm_dose_load (Plm_image *pli, char *dose_fn);
+gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir);
 plastimatch1_EXPORT
 void
 gdcm_dose_save (Plm_image *pli, char *dose_fn);

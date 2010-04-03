@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "gdcmBinEntry.h"
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
 #include "gdcmGlobal.h"
@@ -17,6 +18,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -25,12 +27,15 @@
 
 /* Gdcm has a broken header file gdcmCommon.h, which defines C99 types 
    (e.g. int32_t) when missing on MSVC.  However, it does so in an incorrect 
-   way.  This conflicts with plm_int.h, which also fixes missing C99 types.  
+   way that conflicts with plm_int.h (which also fixes missing C99 types).  
    The workaround is to separately define the functions in flie_util.h 
    that we need. */
 extern "C"
 gpuit_EXPORT
 char* file_util_dirname (const char *filename);
+
+/* This is the tolerance on irregularity of the grid spacing (in mm) */
+#define GFOV_SPACING_TOL (1e-1)
 
 /* This function probes whether or not the file is a dicom dose format */
 bool
@@ -55,13 +60,21 @@ gdcm_dose_probe (char *dose_fn)
 }
 
 Plm_image*
-gdcm_dose_load (Plm_image *pli, char *dose_fn)
+gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
 {
+    int i, rc;
     gdcm::File *gdcm_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     Gdcm_series gs;
     std::string tmp;
+    float ipp[3];
+    int dim[3];
+    float spacing[3];
+    float *gfov;    /* gfov = GridFrameOffsetVector */
+    int gfov_len;
+    const char *gfov_str;
+    float dose_scaling;
 
     gdcm_file->SetMaxSizeLoadEntry (0xffff);
     gdcm_file->SetFileName (dose_fn);
@@ -75,227 +88,126 @@ gdcm_dose_load (Plm_image *pli, char *dose_fn)
 	    dose_fn);
     }
 
+    /* ImagePositionPatient */
+    tmp = gdcm_file->GetEntryValue (0x0020, 0x0032);
+    rc = sscanf (tmp.c_str(), "%f\\%f\\%f", &ipp[0], &ipp[1], &ipp[2]);
+    if (rc != 3) {
+	print_and_exit ("Error parsing RTDOSE ipp.\n");
+    }
+
+    /* Rows */
+    tmp = gdcm_file->GetEntryValue (0x0028, 0x0010);
+    rc = sscanf (tmp.c_str(), "%d", &dim[1]);
+    if (rc != 1) {
+	print_and_exit ("Error parsing RTDOSE rows.\n");
+    }
+
+    /* Columns */
+    tmp = gdcm_file->GetEntryValue (0x0028, 0x0011);
+    rc = sscanf (tmp.c_str(), "%d", &dim[0]);
+    if (rc != 1) {
+	print_and_exit ("Error parsing RTDOSE columns.\n");
+    }
+
+    /* PixelSpacing */
+    tmp = gdcm_file->GetEntryValue (0x0028, 0x0030);
+    rc = sscanf (tmp.c_str(), "%g\\%g", &spacing[0], &spacing[1]);
+    if (rc != 2) {
+	print_and_exit ("Error parsing RTDOSE pixel spacing.\n");
+    }
+
+    /* GridFrameOffsetVector */
+    tmp = gdcm_file->GetEntryValue (0x3004, 0x000C);
+    gfov = 0;
+    gfov_len = 0;
+    gfov_str = tmp.c_str();
+    while (1) {
+	int len;
+	gfov = (float*) realloc (gfov, (gfov_len + 1) * sizeof(float));
+	rc = sscanf (gfov_str, "%g%n", &gfov[gfov_len], &len);
+	if (rc != 1) {
+	    break;
+	}
+	gfov_len ++;
+	gfov_str += len;
+	if (gfov_str[0] == '\\') {
+	    gfov_str ++;
+	}
+    }
+    dim[2] = gfov_len;
+    if (gfov_len == 0) {
+	print_and_exit ("Error parsing RTDOSE gfov.\n");
+    }
+
+    /* --- Analyze GridFrameOffsetVector --- */
+
+    /* (1) Make sure first element is 0. */
+    if (gfov[0] != 0.) {
+	print_and_exit ("Error RTDOSE gfov[0] is not 0.\n");
+    }
+
+    /* (2) Handle case where gfov_len == 1 (only one slice). */
+    if (gfov_len == 1) {
+	spacing[2] = spacing[0];
+    }
+
+    /* (3) Check to make sure spacing is regular. */
+    for (i = 1; i < gfov_len; i++) {
+	if (i == 1) {
+	    spacing[2] = gfov[1] - gfov[0];
+	} else {
+	    float sp = gfov[i] - gfov[i-1];
+	    if (fabs(sp - spacing[2]) > GFOV_SPACING_TOL) {
+		print_and_exit ("Error RTDOSE grid has irregular spacing:"
+		    "%f vs %f.\n", sp, spacing[2]);
+	    }
+	}
+    }
+
+    /* DoseGridScaling */
+    dose_scaling = 1.0;
+    tmp = gdcm_file->GetEntryValue (0x3004, 0x000E);
+    rc = sscanf (tmp.c_str(), "%f", &dose_scaling);
+    /* If element doesn't exist, scaling is 1.0 */
+
+    /* PixelData */
+    gdcm::FileHelper gdcm_file_helper (gdcm_file);
+    unsigned short* image_data 
+	= (unsigned short*) gdcm_file_helper.GetImageData ();
+    size_t image_data_size = gdcm_file_helper.GetImageDataSize();
+    const char* pixel_type = gdcm_file->GetPixelType().c_str();
+    if (strcmp (pixel_type, "16U")) {
+	print_and_exit ("Error RTDOSE not type 16U\n");
+    }
+
+    /* GCS FIX: Do I need to do something about endian-ness? */
+
     /* Create output pli if necessary */
     if (!pli) pli = new Plm_image;
+    pli->free ();
+
+    /* Create Volume */
+    Volume *vol = volume_create (dim, ipp, spacing, PT_FLOAT, 0, 0);
+
+    /* Copy data to volume */
+    float *img = (float*) vol->img;
+    for (i = 0; i < vol->npix; i++) {
+	img[i] = image_data[i] * dose_scaling;
+    }
+
+    /* Bind volume to plm_image */
+    pli->set_gpuit (vol);
 
 #if defined (commentout)
-    /* PatientName */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_name = bfromcstr (tmp.c_str());
-    }
-
-    /* PatientID */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0020);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_id = bfromcstr (tmp.c_str());
-    }
-
-    /* PatientSex */
-    tmp = gdcm_file->GetEntryValue (0x0010, 0x0040);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_sex = bfromcstr (tmp.c_str());
-    }
-
-    /* StudyID */
-    tmp = gdcm_file->GetEntryValue (0x0020, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->study_id = bfromcstr (tmp.c_str());
-    }
-
-    /* If caller specified dicom_dir, and we found a CT in the directory, 
-       get the uids from there */
-    if (dicom_dir && dicom_dir[0] && gs.m_have_ct) {
-	gdcm::File *ct_file = gs.get_ct_slice ();
-	
-	/* StudyInstanceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x000d);
-	structures->ct_study_uid = bfromcstr (tmp.c_str());
-	
-	/* SeriesInstanceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x000e);
-	structures->ct_series_uid = bfromcstr (tmp.c_str());
-	
-	/* FrameOfReferenceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x0052);
-	structures->ct_fref_uid = bfromcstr (tmp.c_str());
-    } 
-
-    /* Otherwise get the UIDs from the RT structure set */
-    else {
-
-	/* StudyInstanceUID */
-	tmp = gdcm_file->GetEntryValue (0x0020, 0x000d);
-	structures->ct_study_uid = bfromcstr (tmp.c_str());
-
-	/* ReferencedFrameOfReferenceSequence */
-	gdcm::SeqEntry *rfor_seq = gdcm_file->GetSeqEntry (0x3006,0x0010);
-	if (rfor_seq) {
-
-	    /* FrameOfReferenceUID */
-	    item = rfor_seq->GetFirstSQItem ();
-	    if (item) {
-		tmp = item->GetEntryValue (0x0020,0x0052);
-		if (tmp != gdcm::GDCM_UNFOUND) {
-		    structures->ct_fref_uid = bfromcstr (tmp.c_str());
-		}
-	
-		/* RTReferencedStudySequence */
-		gdcm::SeqEntry *rtrstudy_seq 
-		    = item->GetSeqEntry (0x3006, 0x0012);
-		if (rtrstudy_seq) {
-	
-		    /* RTReferencedSeriesSequence */
-		    item = rtrstudy_seq->GetFirstSQItem ();
-		    if (item) {
-			gdcm::SeqEntry *rtrseries_seq 
-			    = item->GetSeqEntry (0x3006, 0x0014);
-			if (rtrseries_seq) {
-			    item = rtrseries_seq->GetFirstSQItem ();
-
-			    /* SeriesInstanceUID */
-			    if (item) {
-				tmp = item->GetEntryValue (0x0020, 0x000e);
-				if (tmp != gdcm::GDCM_UNFOUND) {
-				    structures->ct_series_uid 
-					= bfromcstr (tmp.c_str());
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-    }
-
-    /* StructureSetROISequence */
-    seq = gdcm_file->GetSeqEntry (0x3006,0x0020);
-    for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
-	int structure_id;
-	std::string roi_number, roi_name;
-	roi_number = item->GetEntryValue (0x3006,0x0022);
-	roi_name = item->GetEntryValue (0x3006,0x0026);
-	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
-	    continue;
-	}
-	cxt_add_structure (structures, roi_name.c_str(), 0, structure_id);
-    }
-
-    /* ROIContourSequence */
-    seq = gdcm_file->GetSeqEntry (0x3006,0x0039);
-    for (item = seq->GetFirstSQItem (); item; item = seq->GetNextSQItem ()) {
-	int structure_id;
-	std::string roi_display_color, referenced_roi_number;
-	gdcm::SeqEntry *c_seq;
-	gdcm::SQItem *c_item;
-	Cxt_structure *curr_structure;
-
-	/* Get id and color */
-	referenced_roi_number = item->GetEntryValue (0x3006,0x0084);
-	roi_display_color = item->GetEntryValue (0x3006,0x002a);
-	printf ("RRN = [%s], RDC = [%s]\n", referenced_roi_number.c_str(), roi_display_color.c_str());
-
-	if (1 != sscanf (referenced_roi_number.c_str(), "%d", &structure_id)) {
-	    printf ("Error parsing rrn...\n");
-	    continue;
-	}
-
-	/* Look up the cxt structure for this id */
-	curr_structure = cxt_find_structure_by_id (structures, structure_id);
-	if (!curr_structure) {
-	    printf ("Couldn't reference structure with id %d\n", structure_id);
-	    exit (-1);
-	}
-
-	/* ContourSequence */
-	c_seq = item->GetSeqEntry (0x3006,0x0040);
-	if (c_seq) {
-	    for (c_item = c_seq->GetFirstSQItem (); c_item; c_item = c_seq->GetNextSQItem ()) {
-		int i, p, n, contour_data_len;
-		int num_points;
-		std::string contour_geometric_type;
-		std::string contour_data;
-		std::string number_of_contour_points;
-		Cxt_polyline *curr_polyline;
-
-		/* Grab data from dicom */
-		contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
-		if (strncmp (contour_geometric_type.c_str(), "CLOSED_PLANAR", strlen("CLOSED_PLANAR"))) {
-		    /* Might be "POINT".  Do I want to preserve this? */
-		    printf ("Skipping geometric type: [%s]\n", contour_geometric_type.c_str());
-		    continue;
-		}
-		number_of_contour_points = c_item->GetEntryValue (0x3006,0x0046);
-		if (1 != sscanf (number_of_contour_points.c_str(), "%d", &num_points)) {
-		    printf ("Error parsing number_of_contour_points...\n");
-		    continue;
-		}
-		if (num_points <= 0) {
-		    /* Polyline with zero points?  Skip it. */
-		    continue;
-		}
-		contour_data = c_item->GetEntryValue (0x3006,0x0050);
-		if (contour_data == gdcm::GDCM_UNFOUND) {
-		    printf ("Error grabbing contour data.\n");
-		    continue;
-		}
-
-		/* Create a new polyline for this structure */
-		curr_polyline = cxt_add_polyline (curr_structure);
-		curr_polyline->slice_no = -1;
-		curr_polyline->ct_slice_uid = 0;
-		curr_polyline->num_vertices = num_points;
-		curr_polyline->x = (float*) malloc (num_points * sizeof(float));
-		curr_polyline->y = (float*) malloc (num_points * sizeof(float));
-		curr_polyline->z = (float*) malloc (num_points * sizeof(float));
-
-		/* Parse dicom data string */
-		i = 0;
-		n = 0;
-		contour_data_len = strlen (contour_data.c_str());
-		for (p = 0; p < 3 * num_points; p++) {
-		    float f;
-		    int this_n;
-		
-		    /* Skip \\ */
-		    if (n < contour_data_len) {
-			if (contour_data.c_str()[n] == '\\') {
-			    n++;
-			}
-		    }
-
-		    /* Parse float value */
-		    if (1 != sscanf (&contour_data[n], "%f%n", &f, &this_n)) {
-			printf ("Error parsing data...\n");
-			break;
-		    }
-		    n += this_n;
-
-		    /* Put value into polyline */
-		    switch (i) {
-		    case 0:
-			curr_polyline->x[p/3] = f;
-			break;
-		    case 1:
-			curr_polyline->y[p/3] = f;
-			break;
-		    case 2:
-			curr_polyline->z[p/3] = f;
-			break;
-		    }
-		    i = (i + 1) % 3;
-		}
-		/* Find matching CT slice at this z location */
-		if (gs.m_have_ct) {
-		    gs.get_slice_info (&curr_polyline->slice_no,
-			&curr_polyline->ct_slice_uid,
-			curr_polyline->z[0]);
-		}
-	    }
-	}
-    }
-    printf ("Loading complete.\n");
+    printf ("IPP = %f %f %f\n", ipp[0], ipp[1], ipp[2]);
+    printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
+    printf ("SPC = %f %f %f\n", spacing[0], spacing[1], spacing[2]);
+    printf ("NVX = %d\n", dim[0] * dim[1] * dim[2]);
+    printf ("ID  = size %d, type %s\n", image_data_size, 
+	gdcm_file->GetPixelType().c_str());
 #endif
+
+    free (gfov);
     delete gdcm_file;
     return pli;
 }

@@ -6,6 +6,7 @@
 #include "cxt_extract.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
+#include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
@@ -91,6 +92,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_cxt = cxt_create ();
 	    gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
+	    break;
+	case PLM_FILE_FMT_DICOM_DOSE:
+	    rtds->m_dose = gdcm_dose_load (0, parms->input_fn, 
+		parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_cxt = cxt_create ();
@@ -319,6 +324,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	/* use the spacing of the structure set */
 	pih.set_from_gpuit (rtds->m_cxt->offset, rtds->m_cxt->spacing, 
 	    rtds->m_cxt->dim, 0);
+    } else if (rtds->m_dose) {
+	/* use the spacing of dose */
+	pih.set_from_plm_image (rtds->m_dose);
     } else {
 	/* out of options?  :( */
 	print_and_exit ("Sorry, I couldn't determine the output geometry\n");
@@ -356,6 +364,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->output_img[0] && rtds->m_img) {
 	printf ("Saving image...\n");
 	rtds->m_img->convert_and_save (parms->output_img, parms->output_type);
+    }
+    else if (parms->output_img[0] && rtds->m_dose) {
+	printf ("Saving image...\n");
+	rtds->m_dose->convert_and_save (parms->output_img, parms->output_type);
     }
 
     /* Save output vector field */

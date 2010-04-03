@@ -10,6 +10,7 @@
 #include <itkImageIOBase.h>
 
 #include "file_util.h"
+#include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "itk_image.h"
 #include "plm_file_format.h"
@@ -94,6 +95,11 @@ plm_file_format_deduce (char* path)
     /* Maybe dicom rtss? */
     if (gdcm_rtss_probe (path)) {
 	return PLM_FILE_FMT_DICOM_RTSS;
+    }
+
+    /* Maybe dicom dose? */
+    if (gdcm_dose_probe (path)) {
+	return PLM_FILE_FMT_DICOM_DOSE;
     }
 
     return PLM_FILE_FMT_IMG;
