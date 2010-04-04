@@ -447,14 +447,14 @@ drr_render_volume_perspective (
 
     /* Compute incremental change in 3d position for each change 
        in panel row/column. */
-    vec3_scale3 (incr_c, prt, ps[0]);
-    vec3_scale3 (incr_r, pdn, ps[1]);
+    vec3_scale3 (incr_c, prt, ps[1]);
+    vec3_scale3 (incr_r, pdn, ps[0]);
 
     /* Get position of upper left pixel on panel */
     vec3_copy (ul_room, ic_room);
-    vec3_scale3 (tmp, incr_r, - pmat->ic[1]);
+    vec3_scale3 (tmp, incr_r, - pmat->ic[0]);
     vec3_add2 (ul_room, tmp);
-    vec3_scale3 (tmp, incr_c, - pmat->ic[0]);
+    vec3_scale3 (tmp, incr_c, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
 
     /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 

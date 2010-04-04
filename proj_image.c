@@ -187,8 +187,8 @@ pgm_save (Proj_image *proj, char* img_filename)
 
     for (i = 0; i < proj->dim[0]*proj->dim[1]; i++) {
 	float v = proj->img[i];
-	if (v > 65536) {
-	    v = 65536;
+	if (v >= 65535) {
+	    v = 65535;
 	} else if (v < 0) {
 	    v = 0;
 	}
