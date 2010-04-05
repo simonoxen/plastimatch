@@ -5,11 +5,23 @@ Plastimatch uses a histogram-based mutual information method.
 Let :math:`\mu` be the transformation parameters, such as B-spline 
 coefficients.  The joint histogram :math:`p` keeps track of the 
 joint probability, and is indexed by :math:`i` and :math:`k`.  
-Marginal probabilities are computed for both the reference (fixed) image 
-(stored in :math:`p_R`), and the test (moving) image 
-(stored in :math:`p_T`).
-The mutual information is given as:
+Marginal probabilities are computed for both the fixed (reference) image 
+(stored in :math:`p_F`), and the moving (test) image 
+(stored in :math:`p_M`).
+The mutual information equation is given as:
 
 .. math::
 
-   s = \sum_{i,k} p(i,k|\mu) \ln{ \frac{p(i,k|\mu)}{p_T(i|\mu) p_R(k)} }
+   s = \sum_{i,k} p(i,k|\mu) \ln{ \frac{p(i,k|\mu)}{p_M(i|\mu) p_F(k)} }.
+
+To clarify the previous equation, :math:`p(i,k|\mu)` is a two-dimensional 
+histogram, and :math:`p_M(i|\mu)` and :math:`p_F(k)` are the marginal 
+histograms.  
+The marginal histogram :math:`p_F(k)` is traditionally written 
+considered independent of :math:`\mu`, but in fact gets recomputed 
+each iteration as :math:`\mu` is optimized.  This is because the 
+degree of overlap between the two images changes for each iteration.  
+Pixels in the fixed image 
+which fall outside of the moving image are not included in the calculation 
+of :math:`p_F(k)`.
+
