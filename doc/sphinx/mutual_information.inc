@@ -38,3 +38,35 @@ interpolation is used to proportionally update both of the moving bins.
 .. image:: ../figures/mutual_information_1.png
    :width: 55 %
 
+Correspondences are formed using the partial value interpolation method.  
+Consider a location 
+:math:`f` in the fixed image, with intensity :math:`f_v`.  
+The matching location :math:`m` in the moving image is not aligned 
+with the moving image grid, but rather lies between voxels.  
+In the 2D example below, location :math:`m` lies between \
+pixels with intensities a, b, c, and d.
+
+.. image:: ../figures/mutual_information_2.png
+   :width: 28 %
+
+Instead of performing linear interpolation of the intensities 
+and forming a single correspondence, four partial correspondences are made
+with the four closest voxels.  Fractional updates are made to 
+the joint histogram for each of these correspondences according 
+to the table below:
+
++---------------------------------------------+-------------------------------+
+|Intensity pair (fixed value, moving value)   |Update fraction                |
+|                                             |                               |
++=============================================+===============================+
+|(f_v,a)                                      |:math:`(1-d_x)(1-d_y)`         |
++---------------------------------------------+-------------------------------+
+|(f_v,b)                                      |:math:`d_x(1-d_y)`             |
++---------------------------------------------+-------------------------------+
+|(f_v,c)                                      |:math:`(1-d_x)d_y`             |
++---------------------------------------------+-------------------------------+
+|(f_v,d)                                      |:math:`d_x d_y`                |
++---------------------------------------------+-------------------------------+
+
+Recalling that two joint histogram entries are updated for each 
+intensity pair, we see that up to 8 entries will be updated in our 2D example.

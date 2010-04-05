@@ -79,7 +79,7 @@ check_gradient (
 
 	    /* Already computed for i = 0 */
 	    if (i == 0) {
-		fprintf (fp, "%d %10.5f\n", i, score);
+		fprintf (fp, "%d, %10.10f\n", i, score);
 		continue;
 	    }
 
@@ -92,7 +92,7 @@ check_gradient (
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%d, %10.5f\n", i, bst->ssd.score);
+	    fprintf (fp, "%d, %10.10f\n", i, bst->ssd.score);
 	}
     } else {
 	/* Loop through directions */
@@ -110,7 +110,7 @@ check_gradient (
 	    grad_fd[i] = (score - bst->ssd.score) / options->step_size;
 
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%10.5f %10.5f\n", grad[i], grad_fd[i]);
+	    fprintf (fp, "%10.10f %10.10f\n", grad[i], grad_fd[i]);
 	}
     }
 

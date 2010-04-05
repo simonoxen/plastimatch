@@ -17,7 +17,7 @@
    version="1.0"
    sodipodi:docname="mutual_information_1.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   inkscape:export-filename="/home/gsharp/work/plastimatch/doc/figures/cbct_geometry.png"
+   inkscape:export-filename="/home/gsharp/work/plastimatch/doc/figures/mutual_information_1.png"
    inkscape:export-xdpi="300"
    inkscape:export-ydpi="300">
   <defs
@@ -291,7 +291,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
