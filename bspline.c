@@ -501,7 +501,7 @@ dump_luts (BSPLINE_Xform* bxf)
     fclose (fp);
 }
 
-static void
+void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it)
 {
     float *f_hist = mi_hist->f_hist;

@@ -229,7 +229,7 @@ xio_structures_load (
 )
 {
     
-    const char *filename_re = "T\\.([-\\.0-9]*)\\.WC";
+    const char *filename_re = "^T\\.([-\\.0-9]*)\\.WC$";
 
     /* Get the index file */
     std::string index_file = std::string(input_dir) + "/" + "contournames";

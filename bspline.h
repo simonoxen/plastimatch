@@ -314,6 +314,8 @@ bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf,
 int* calc_offsets (int* tile_dims, int* cdims);
 
 void find_knots (int* knots, int tile_num, int* rdims, int* cdims);
+void
+dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
 
 void
 report_score (char *alg, BSPLINE_Xform *bxf, 
