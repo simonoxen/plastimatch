@@ -196,7 +196,7 @@ Plm_image_header::print (void) const
     for (unsigned int d = 0; d < Dimension; d++) {
 	printf (" %g", m_spacing[d]);
     }
-    printf ("\nDirection =\n");
+    printf ("\nDirection =");
     for (unsigned int d1 = 0; d1 < Dimension; d1++) {
 	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
 	    printf (" %g", m_direction[d1][d2]);

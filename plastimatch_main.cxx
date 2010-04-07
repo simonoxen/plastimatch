@@ -17,6 +17,7 @@
 #include "diff_main.h"
 #include "dvh_main.h"
 #include "mask_main.h"
+#include "pcmd_header.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
 #include "plm_version.h"
@@ -39,11 +40,13 @@ print_usage (int return_code)
 	"  convert     "
 	"  diff        "
 	"  dvh         "
-	"  mask        "
+	"  header      "
 	"\n"
+	"  mask        "
 	"  register    "
 	"  resample    "
 	"  stats       "
+	"\n"
 	"  warp        "
 	"\n"
 	"\n"
@@ -107,6 +110,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "dvh")) {
 	do_command_dvh (argc, argv);
+    }
+    else if (!strcmp (command, "header")) {
+	do_command_header (argc, argv);
     }
     else if (!strcmp (command, "mask")) {
 	do_command_mask (argc, argv);

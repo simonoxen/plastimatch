@@ -749,6 +749,7 @@ SET (PLASTIMATCH_SRC
 	crop_main.cxx crop_main.h
 	diff_main.cxx diff_main.h
 	dvh_main.cxx dvh_main.h
+	pcmd_header.cxx pcmd_header.h
 	mask_main.cxx mask_main.h
 	plastimatch_main.cxx
 	resample_main.cxx resample_main.h
