@@ -97,9 +97,7 @@ stats_main (Stats_parms* parms)
 static void
 stats_print_usage (void)
 {
-    printf ("Usage: plastimatch stats [options]\n"
-	    "Required:\n"
-	    "    --input=image_in\n"
+    printf ("Usage: plastimatch stats file [file ...]\n"
 	    );
     exit (-1);
 }
@@ -113,7 +111,7 @@ stats_parse_args (Stats_parms* parms, int argc, char* argv[])
 	{ NULL,             0,                      NULL,           0 }
     };
 
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+    while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
 	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
@@ -123,8 +121,13 @@ stats_parse_args (Stats_parms* parms, int argc, char* argv[])
 	}
     }
     if (!parms->mha_in_fn[0]) {
-	printf ("Error: must specify --input and --output\n");
-	stats_print_usage ();
+	optind ++;   /* Skip plastimatch command argument */
+	if (optind < argc) {
+	    strncpy (parms->mha_in_fn, argv[optind], _MAX_PATH);
+	} else {
+	    printf ("Error: must specify input file\n");
+	    stats_print_usage ();
+	}
     }
 }
 
