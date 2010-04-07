@@ -43,11 +43,15 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 
     bs = bsopen ((bNread) fread, fp);
 
+    /* Read version number */
     bsreadln (version, bs, '\n');
     btrimws (version);
     if (!strcmp ((const char*) version->data, "00061027")) {
+	printf ("Version 00061027 found.\n");
 	skip_lines = 5;
     }
+
+    /* Skip line */
     bsreadln (line1, bs, '\n');
 
     while (1)
@@ -66,8 +70,16 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	if (rc == BSTR_ERR) {
 	    break;
 	}
+	btrimws (line2);
 	rc = sscanf ((char*) line2->data, "%d,", &structure_id);
+
 	if (rc != 1) {
+	    if (!strcmp ((const char*) version->data, "00061027")) {
+		/* This XiO version seems to write corrupted contourfiles 
+		   when editing files created with previous versions. 
+		   We'll assume that everything went ok.  */
+		break;
+	    }
 	    print_and_exit ("Error parsing contournames: "
 			    "contour id not found (%s)\n", line2->data);
 	}
