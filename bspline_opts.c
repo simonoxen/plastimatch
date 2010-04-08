@@ -34,6 +34,7 @@ print_usage (void)
 	" --fixed-landmarks file     Input fixed landmarks file\n"
 	" --moving-landmarks file    Input moving landmarks file\n"
 	" --landmark-stiffness float Relative weight of landmarks\n"      
+	" --young-modulus float      Young modulus (cost of vector field gradient)\n"
 	" --debug                    Create various debug files\n"
     );
     exit (1);
@@ -232,6 +233,17 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%g", &parms->landmark_stiffness);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+        else if (!strcmp (argv[i], "--young-modulus")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &parms->young_modulus);
 	    if (rc != 1) {
 		print_usage ();
 	    }

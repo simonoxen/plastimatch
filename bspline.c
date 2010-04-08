@@ -37,6 +37,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_gradient.h"
 #include "bspline_landmarks.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
@@ -77,6 +78,7 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->lbfgsb_pgtol = 1.0e-5;
     parms->landmarks = 0;
     parms->landmark_stiffness = 1.0;
+    parms->young_modulus = 0.0;
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
@@ -3661,10 +3663,17 @@ bspline_score (BSPLINE_Parms *parms,
 	}
     }
 
+
+    /* Add vector field score/gradient to image score/gradient */
+    if (parms->young_modulus) {
+	bspline_gradient_score (parms, bst, bxf, fixed, moving);
+    }
+
     /* Add landmark score/gradient to image score/gradient */
     if (parms->landmarks) {
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
+    
 }
 
 void

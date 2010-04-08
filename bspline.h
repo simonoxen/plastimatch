@@ -203,6 +203,8 @@ struct BSPLINE_Parms_struct {
 
     struct bspline_landmarks* landmarks;  /* The landmarks themselves */
     float landmark_stiffness;    /* Attraction of landmarks (0 == no attraction) */
+	
+	float young_modulus;  /* Penalty for having large gradient of the vector field */
 };
 
 /* -----------------------------------------------------------------------
