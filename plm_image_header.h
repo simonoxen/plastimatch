@@ -52,6 +52,7 @@ public:
 	float gpuit_direction_cosines[9]);
 
     void plastimatch1_EXPORT print (void) const;
+    void plastimatch1_EXPORT get_image_center (float center[3]);
 };
 
 /* -----------------------------------------------------------------------

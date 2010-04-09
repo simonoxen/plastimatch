@@ -18,6 +18,7 @@
 #include "dvh_main.h"
 #include "mask_main.h"
 #include "pcmd_header.h"
+#include "pcmd_segment.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
 #include "plm_version.h"
@@ -25,6 +26,8 @@
 #include "stats_main.h"
 #include "warp_main.h"
 
+
+/* GCS FIX: "segment" is a hidden option until it works */
 static void
 print_usage (int return_code)
 {
@@ -122,6 +125,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "resample")) {
 	do_command_resample (argc, argv);
+    }
+    else if (!strcmp (command, "segment")) {
+	do_command_segment (argc, argv);
     }
     else if (!strcmp (command, "stats")) {
 	do_command_stats (argc, argv);

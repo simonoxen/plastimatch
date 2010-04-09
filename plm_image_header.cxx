@@ -221,6 +221,16 @@ itk_roi_from_gpuit (
     (*roi).SetIndex (itk_index);
 }
 
+void 
+Plm_image_header::get_image_center (float center[3])
+{
+    int d;
+    for (d = 0; d < 3; d++) {
+	center[d] = this->m_origin[d] 
+	    + this->m_spacing[d] * (this->Size(d) - 1) / 2;
+    }
+}
+
 /* Return 1 if the two headers are the same */
 int
 Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)

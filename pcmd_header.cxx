@@ -23,7 +23,7 @@ header_main (Header_parms* parms)
 static void
 header_print_usage (void)
 {
-    printf ("Usage: plastimatch header file\n"
+    printf ("Usage: plastimatch header input-file\n"
 	    );
     exit (-1);
 }
