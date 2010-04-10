@@ -15,7 +15,6 @@ Ainfo = [];
 for i=1:20
   t = fgetl(fp);
 
-  t
   [a,cnt] = sscanf(t,'NDims = %d',1);
   if (cnt > 0)
     dims = a;
