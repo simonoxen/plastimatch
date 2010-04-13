@@ -216,9 +216,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 		sm_parms->rect_size[5] = - sm_parms->rect_size[0];
 	    }
 	    else if (rc == 3) {
-		sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
-		sm_parms->rect_size[2] = - 0.5 * sm_parms->rect_size[1];
 		sm_parms->rect_size[4] = - 0.5 * sm_parms->rect_size[2];
+		sm_parms->rect_size[2] = - 0.5 * sm_parms->rect_size[1];
+		sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
 		sm_parms->rect_size[1] = - sm_parms->rect_size[0];
 		sm_parms->rect_size[3] = - sm_parms->rect_size[2];
 		sm_parms->rect_size[5] = - sm_parms->rect_size[4];
