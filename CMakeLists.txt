@@ -40,6 +40,7 @@ SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
+SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
@@ -191,6 +192,26 @@ IF (CUDA_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
 ENDIF(CUDA_FOUND)
+
+##-----------------------------------------------------------------------------
+##  Special linking instructions on unix
+##  http://www.cmake.org/Wiki/CMake_RPATH_handling
+##-----------------------------------------------------------------------------
+IF (PLM_INSTALL_RPATH)
+  # use, i.e. don't skip the full RPATH for the build tree
+  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+
+  # when building, don't use the install RPATH already
+  # (but later on when installing)
+  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+
+  # the RPATH to be used when installing
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+  # add the automatically determined parts of the RPATH
+  # which point to directories outside the build tree to the install RPATH
+  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ENDIF (PLM_INSTALL_RPATH)
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library
