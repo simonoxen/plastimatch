@@ -327,6 +327,10 @@ IF (ITK_FOUND)
     MESSAGE (FATAL_ERROR 
       "\nFatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
   ENDIF (NOT ITK_USE_REVIEW)
+IF (ITK_USE_SYSTEM_GDCM)
+    MESSAGE (FATAL_ERROR 
+      "\nFatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
+  ENDIF (ITK_USE_SYSTEM_GDCM)
 ENDIF (ITK_FOUND)
 
 ##-----------------------------------------------------------------------------
