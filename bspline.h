@@ -7,6 +7,8 @@
 #include "plm_config.h"
 #include "volume.h"
 
+#define DOUBLE_HISTS	// Use doubles for histogram accumulation
+
 /* -----------------------------------------------------------------------
    Macros
    ----------------------------------------------------------------------- */
@@ -175,6 +177,20 @@ struct BSPLINE_MI_Hist_Parms_struct {
     float delta;
 };
 
+#ifdef DOUBLE_HISTS
+typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
+struct BSPLINE_MI_Hist_struct {
+    BSPLINE_MI_Hist_Parms moving;
+    BSPLINE_MI_Hist_Parms fixed;
+    float* m_hist;
+    float* f_hist;
+    float* j_hist;
+    double* m_hist_d;
+    double* f_hist_d;
+    double* j_hist_d;
+
+};
+#else
 typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
 struct BSPLINE_MI_Hist_struct {
     BSPLINE_MI_Hist_Parms moving;
@@ -183,6 +199,7 @@ struct BSPLINE_MI_Hist_struct {
     float* f_hist;
     float* j_hist;
 };
+#endif
 
 typedef struct BSPLINE_Parms_struct BSPLINE_Parms;
 struct BSPLINE_Parms_struct {

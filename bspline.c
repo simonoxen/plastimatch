@@ -860,6 +860,11 @@ bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
     mi_hist->m_hist = (float*) malloc (sizeof (float) * mi_hist->moving.bins);
     mi_hist->f_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins);
     mi_hist->j_hist = (float*) malloc (sizeof (float) * mi_hist->fixed.bins * mi_hist->moving.bins);
+#ifdef DOUBLE_HISTS
+    mi_hist->m_hist_d = (double*) malloc (sizeof (double) * mi_hist->moving.bins);
+    mi_hist->f_hist_d = (double*) malloc (sizeof (double) * mi_hist->fixed.bins);
+    mi_hist->j_hist_d = (double*) malloc (sizeof (double) * mi_hist->fixed.bins * mi_hist->moving.bins);
+#endif
     bspline_initialize_mi_vol (&mi_hist->moving, moving);
     bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
 }
@@ -973,9 +978,15 @@ bspline_mi_hist_add (
     float amt		        /* How much to add to histogram */
 )
 {
+#ifdef DOUBLE_HISTS
+    double* f_hist = mi_hist->f_hist_d;
+    double* m_hist = mi_hist->m_hist_d;
+    double* j_hist = mi_hist->j_hist_d;
+#else
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
+#endif
     long j_idxs[2];
     long m_idxs[2];
     long f_idxs[1];
@@ -2557,9 +2568,15 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     float* f_hist = mi_hist->f_hist;
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
+#ifdef DOUBLE_HISTS
+    double* f_hist_d = mi_hist->f_hist_d;
+    double* m_hist_d = mi_hist->m_hist_d;
+    double* j_hist_d = mi_hist->j_hist_d;
+#endif
     static int it = 0;
     char debug_fn[1024];
     FILE* fp;
+    int zz;
 
     if (parms->debug) {
 	sprintf (debug_fn, "dump_mi_%02d.txt", it++);
@@ -2573,6 +2590,11 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
     memset (m_hist, 0, mi_hist->moving.bins * sizeof(float));
     memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins 
 	* sizeof(float));
+#ifdef DOUBLE_HISTS
+    memset (f_hist_d, 0, mi_hist->fixed.bins * sizeof(double));
+    memset (m_hist_d, 0, mi_hist->moving.bins * sizeof(double));
+    memset (j_hist_d, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
+#endif
     num_vox = 0;
 
     /* PASS 1 - Accumulate histogram */
@@ -2642,6 +2664,15 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	}
     }
 
+#ifdef DOUBLE_HISTS
+    for (zz=0; zz < mi_hist->fixed.bins; zz++)
+    	f_hist[zz] = (float)f_hist_d[zz];
+    for (zz=0; zz < mi_hist->moving.bins; zz++)
+    	m_hist[zz] = (float)m_hist_d[zz];
+    for (zz=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++)
+    	j_hist[zz] = (float)j_hist_d[zz];
+#endif
+
     // Dump histogram images ??
     if (parms->xpm_hist_dump) {
 	dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
@@ -2649,7 +2680,6 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 
     if (parms->debug) {
 	double tmp;
-	int zz;
 	tmp = 0;
 	for (zz=0; zz < mi_hist->fixed.bins; zz++) { tmp += f_hist[zz]; }
 	printf ("f_hist total: %f\n", tmp);
