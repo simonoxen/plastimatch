@@ -35,6 +35,7 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
+SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
 SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
@@ -1153,14 +1154,14 @@ IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 ENDIF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 
 # Test executable -- nlopt
-IF (NLOPT_FOUND)
+IF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
   SET (NLOPT_TEST_SRC nlopt_test.c)
   SET (NLOPT_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${NLOPT_LIBRARIES})
   PLM_ADD_EXECUTABLE (nlopt_test "${NLOPT_TEST_SRC}" "${NLOPT_TEST_LIBS}" 
     "${OPENMP_LDFLAGS}")
   SET_TARGET_PROPERTIES (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
-ENDIF (NLOPT_FOUND)
+ENDIF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
 
 # Test executable -- opencl
 IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
