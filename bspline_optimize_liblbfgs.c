@@ -40,7 +40,11 @@ evaluate (
 
     /* Copy gradient out */
     for (i = 0; i < bod->bxf->num_coeff; i++) {
+#if PLM_DONT_INVERT_GRADIENT
+	g[i] = (lbfgsfloatval_t) bod->bst->ssd.grad[i];
+#else
 	g[i] = - (lbfgsfloatval_t) bod->bst->ssd.grad[i];
+#endif
     }
 
     /* Return cost */

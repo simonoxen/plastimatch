@@ -33,17 +33,21 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
 SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
 SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
-SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
+
 SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
+
+SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
+SET (PLM_DONT_INVERT_GRADIENT OFF CACHE BOOL "Fix problem that gradients are inverted")
+
+SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
   "Regression tests for seldom used b-spline implementations")
 SET (PLM_TEST_DICOM OFF CACHE BOOL 

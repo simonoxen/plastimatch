@@ -1938,47 +1938,94 @@ bspline_mi_pvi_6_dc_dv (
     dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
 
     /* Compute quadratic interpolation fractions */
-    clamp_quadratic_interpolate_grad_inline (mijk[0], moving->dim[0], miqs, fxqs);
-    clamp_quadratic_interpolate_grad_inline (mijk[1], moving->dim[1], mjqs, fyqs);
-    clamp_quadratic_interpolate_grad_inline (mijk[2], moving->dim[2], mkqs, fzqs);
+    clamp_quadratic_interpolate_grad_inline (mijk[0], moving->dim[0], 
+	miqs, fxqs);
+    clamp_quadratic_interpolate_grad_inline (mijk[1], moving->dim[1], 
+	mjqs, fyqs);
+    clamp_quadratic_interpolate_grad_inline (mijk[2], moving->dim[2], 
+	mkqs, fzqs);
 
     /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
     mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[0] = - fxqs[1] * dS_dP;
+    dc_dv[1] = - fyqs[1] * dS_dP;
+    dc_dv[2] = - fzqs[1] * dS_dP;
+#else
     dc_dv[0] -= - fxqs[1] * dS_dP;
     dc_dv[1] -= - fyqs[1] * dS_dP;
     dc_dv[2] -= - fzqs[1] * dS_dP;
+#endif
 
     mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[0];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[0] = - fxqs[0] * dS_dP;
+#else
     dc_dv[0] -= - fxqs[0] * dS_dP;
+#endif
 
     mvf = (mkqs[1] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[2];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[0] = - fxqs[2] * dS_dP;
+#else
     dc_dv[0] -= - fxqs[2] * dS_dP;
+#endif
 
     mvf = (mkqs[1] * moving->dim[1] + mjqs[0]) * moving->dim[0] + miqs[1];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[1] = - fyqs[0] * dS_dP;
+#else
     dc_dv[1] -= - fyqs[0] * dS_dP;
+#endif
 
     mvf = (mkqs[1] * moving->dim[1] + mjqs[2]) * moving->dim[0] + miqs[1];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[1] = - fyqs[2] * dS_dP;
+#else
     dc_dv[1] -= - fyqs[2] * dS_dP;
+#endif
 
     mvf = (mkqs[0] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[2] = - fzqs[0] * dS_dP;
+#else
     dc_dv[2] -= - fzqs[0] * dS_dP;
+#endif
 
     mvf = (mkqs[2] * moving->dim[1] + mjqs[1]) * moving->dim[0] + miqs[1];
-    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, mi_hist, f_img[fv], m_img[mvf]);
-    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, num_vox_f, fxs, ssd->score, debug);
+    bspline_mi_hist_lookup (j_idxs, m_idxs, f_idxs, fxs, 
+	mi_hist, f_img[fv], m_img[mvf]);
+    dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
+	num_vox_f, fxs, ssd->score, debug);
+#if PLM_DONT_INVERT_GRADIENT
+    dc_dv[2] = - fzqs[2] * dS_dP;
+#else
     dc_dv[2] -= - fzqs[2] * dS_dP;
+#endif
 
     dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
     dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
@@ -2657,7 +2704,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		    fv, mvf, mijk);
 
 		/* Compute intensity difference */
-		diff = f_img[fv] - m_val;
+		diff = m_val - f_img[fv];
 		mse_score += diff * diff;
 		num_vox ++;
 	    }
@@ -3133,11 +3180,6 @@ bspline_score_k_mse
     report_score ("MSE", bxf, bst, num_vox, interval);
 }
 
-
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_score_h_mse()
 //
@@ -3300,7 +3342,11 @@ bspline_score_h_mse (
 			m_img, moving);
 
 		    // Compute intensity difference
+#if PLM_DONT_INVERT_GRADIENT
+		    diff = m_val - f_img[idx_fixed];
+#else
 		    diff = f_img[idx_fixed] - m_val;
+#endif
 
 		    // Store the score!
 		    score_tile += diff * diff;
@@ -3525,7 +3571,11 @@ bspline_score_g_mse (
 			m_img, moving);
 
 		    // Compute intensity difference
+#if PLM_DONT_INVERT_GRADIENT
+		    diff = m_val - f_img[idx_fixed];
+#else
 		    diff = f_img[idx_fixed] - m_val;
+#endif
 
 		    // Store the score!
 		    score_tile += diff * diff;
