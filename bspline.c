@@ -3746,11 +3746,13 @@ bspline_score (BSPLINE_Parms *parms,
 
     /* Add vector field score/gradient to image score/gradient */
     if (parms->young_modulus) {
+	printf ("comuting regularization\n");
 	bspline_gradient_score (parms, bst, bxf, fixed, moving);
     }
 
     /* Add landmark score/gradient to image score/gradient */
     if (parms->landmarks) {
+	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
     
