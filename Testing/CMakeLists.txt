@@ -243,12 +243,14 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
   "-a;steepest;-m;10;-f;c;-M;mi;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/rect-2.mha"
   )
+## Without DOUBLE_HIST defined, output is 0.031
+## With DOUBLE_HIST defined, output is 0.032
 ADD_TEST (bspline-mi-c-2-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
   "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.032"
-  "-DUPPER_THRESH=-0.030"
+  "-DLOWER_THRESH=-0.033"
+  "-DUPPER_THRESH=-0.031"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
