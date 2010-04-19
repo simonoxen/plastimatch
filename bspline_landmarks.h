@@ -11,7 +11,12 @@ struct bspline_landmarks {
     int num_landmarks;
     float *fixed_landmarks;
     float *moving_landmarks;
-    int *landvox_mov;
+    float *warped_landmarks; //moving landmarks displaced by current vector field
+	int *landvox_mov;
+	int *landvox_fix;
+	int *landvox_warp;
+	float *rbf_coeff;
+	float *landmark_dxyz; //temporary array used in RBF
 };
 
 #if defined __cplusplus
@@ -32,6 +37,8 @@ bspline_landmarks_score (
     Volume *fixed, 
     Volume *moving
 );
+
+void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset);
 
 #if defined __cplusplus
 }

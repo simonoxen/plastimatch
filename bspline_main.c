@@ -15,6 +15,7 @@
 #include <math.h>
 #include "bspline.h"
 #include "bspline_landmarks.h"
+#include "bspline_rbf.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
@@ -97,7 +98,30 @@ main (int argc, char* argv[])
 	    write_mha (options.output_vf_fn, vector_field);
 	}
     }
-	
+
+	/* If using radial basis functions, find coeffs and update vector field */
+	if (parms->rbf_radius>0) {
+		printf("Radial basis functions requested, radius %.2f\n", parms->rbf_radius);
+	if (!vector_field) {
+		printf("Sorry, vector field must be present for RBF. Please use -O or -V\n");
+	} else {
+		printf ("Warping image before RBF.\n");
+		moving_warped = vf_warp (0, moving, vector_field);
+		write_mha ("wnorbf.mha", moving_warped);
+		if ( parms->landmarks->num_landmarks < 1 ) {
+		printf("Sorry, no landmarks found\n");
+		} else {
+		/* Do actual RBF adjustment */
+		bspline_rbf_find_coeffs( vector_field, parms );
+		bspline_rbf_update_vector_field( vector_field, parms );
+		bspline_rbf_update_landmarks( vector_field, parms, bxf, fixed, moving );
+	    bspline_landmarks_write_file( "warp_rbf.fcsv", "warp_and_rbf", 
+					parms->landmarks->warped_landmarks, 
+					parms->landmarks->num_landmarks,  fixed->offset );
+		}
+	}
+	}
+
     //printf("%f",moving_warped->dim[1]);
     /* Create warped output image and save */
     if (options.output_warped_fn) {

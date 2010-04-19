@@ -36,7 +36,22 @@ bspline_landmarks_destroy (Bspline_landmarks* blm)
     if (blm->landvox_mov) {
 	free (blm->landvox_mov);
     }
-    free (blm);
+    if (blm->landvox_fix) {
+	free (blm->landvox_fix);
+    }
+    if (blm->landvox_warp) {
+	free (blm->landvox_warp);
+    }
+	if (blm->warped_landmarks) {
+	free (blm->warped_landmarks);
+	}
+	if (blm->rbf_coeff) {
+	free (blm->rbf_coeff);
+	}
+	if (blm->landmark_dxyz) {
+	free (blm->landmark_dxyz);
+	}
+	free (blm);
 }
 
 static void
@@ -110,6 +125,24 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	}
     }
 
+	blm->landvox_fix = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
+    for (i = 0; i < blm->num_landmarks; i++) {
+	for (d = 0; d < 3; d++) {
+	    blm->landvox_fix[i*3 + d] 
+		= ROUND_INT ((blm->fixed_landmarks[i*3 + d] - fixed->offset[d])
+		    / fixed->pix_spacing[d]);
+	    if (blm->landvox_fix[i*3 + d] < 0 
+		|| blm->landvox_fix[i*3 + d] >= fixed->dim[d])
+	    {
+		print_and_exit (
+		    "Error, landmark %d outside of fixed image for dim %d.\n"
+		    "Location in vox = %d\n"
+		    "Image boundary in vox = (%d %d)\n",
+		    i, d, blm->landvox_fix[i*3 + d], 0, fixed->dim[d]-1);
+	    }
+	}
+    }
+
 	//re-basing landmarks to the origin of fixed image
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
@@ -143,10 +176,36 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
     blm->moving_landmarks = moving_landmarks;
     blm->fixed_landmarks = fixed_landmarks;
 
+	blm->warped_landmarks = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+	blm->landvox_warp = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
+	// just in case even if RBF are not used
+	blm->rbf_coeff = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+	blm->landmark_dxyz = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+
     printf ("Found %d landmark(s) from fixed to moving image\n", 
 	blm->num_landmarks);
 
     return blm;
+}
+
+void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset)
+{
+FILE *fp;
+int lidx;
+fp = fopen(fn,"w");
+    if (!fp) {
+	print_and_exit ("cannot write landmarks to file: %s\n", fn);
+    }
+fprintf(fp,"# name = %s\n",title);
+
+/* Changing LPS to RAS and shifting */
+for(lidx=0;lidx<n;lidx++)
+fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+		-offset[0]-coords[0+3*lidx], 
+		-offset[1]-coords[1+3*lidx],  
+		 offset[2]+coords[2+3*lidx] );
+
+fclose(fp);
 }
 
 /* 
@@ -157,6 +216,14 @@ Input: parms->landmark_stiffness = spring constant for attraction
 between landmarks. landmark_stiffness = 0 corresponds to no constraints
 on landmarks, so moving landmarks "follow" the moving image
 as it is being deformed.
+
+Returns: score
+
+Other output: 
+parms->landmarks->warped_landmarks are landmark positions (in mm) deformed
+by the current vector field
+For reading into Slicer, the warped_landmarks must be transformed back to RAS 
+and fixed->offset must be added, see bspline_landmarks_write_file
 
 Output files: warplist.fcsv is a fiducials file with landmarks 
 on the warped image; distlist.dat are the distances between
@@ -169,35 +236,10 @@ landmarks must change coordinates to remain "stuck" to their
 corresponding features on the moving image, even if there
 is no attraction.
 
-To ensure that landmarks stick to their image features,
-one must move the moving landmark by the same vector
-as the corresponding voxel in the moving image.
-
-Voxel coordinates of the image feature depend 
-on the current vector field. Thus, to find the correct
-displacement of a landmark, we must iterate over the
-entire vector field and move the landmark as soon
-as its voxel coordinates match the voxel coordinates
-of the image feature on the image deformed according
-to the current vector field.
-
-I do not know of a way to correctly deduce the displacement 
-of a landmark without iterating over the v.f. 
-A more efficient implementation would place landmark
-checking directly in the main loop of voxel score calculation,
-to avoid going over the vector field twice if landmarks are 
-processed. 
-
-The present code passes the test of keeping the landmarks
-on top of their image features for stiffness=0 and any number
-of iterations, for strong deformations; all previous versions did not.
-
-Minor fix: correct behavior if fixed and moving images
-have different offsets. On output, warped image has the offset
-of fixed image, so warped landmarks must reference to fixed
-offset.
-However, bspline_main does not seem to support different offsets
-in fixed and moving.
+LM = moving landmark (in voxels).
+We must solve  x+u(x)=LM for x to find the vector field u(x) 
+that must be used to update landmark positions. It is not u(LM)!
+This is due to the definition of v.f. and warping in vf_warp()
 
 Mar 30 2010 - NSh 
 */
@@ -227,7 +269,6 @@ bspline_landmarks_score (
 	int d;
 	float diff[3];
 	float l_dist;
-	float lm_tmp[3];
 	float dc_dv[3];
 	float dd, *dd_min;  //minimum distance between a displaced voxel in moving and landvox_mov
 	int *land_p, *land_q;
@@ -237,7 +278,7 @@ bspline_landmarks_score (
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
 	dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20; //a very large number
+	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
 	land_p = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
 	land_q = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
@@ -311,24 +352,47 @@ bspline_landmarks_score (
 		bspline_interp_pix (dxyz, bxf, p, qidx);
 
 		//actually move the moving landmark; note the minus sign
-		for (d = 0; d < 3; d++) lm_tmp[d] = blm->moving_landmarks[3*lidx + d] - dxyz[d];
-		for (d = 0; d < 3; d++) diff[d] = blm->fixed_landmarks[lidx*3 + d]-lm_tmp[d];
+		for (d = 0; d < 3; d++) blm->warped_landmarks[3*lidx+d] = blm->moving_landmarks[3*lidx + d] - dxyz[d];
+		for (d = 0; d < 3; d++) diff[d] = blm->fixed_landmarks[3*lidx+d]-blm->warped_landmarks[3*lidx+d];
 		l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
 		land_score += l_dist;
 		land_rawdist += sqrt(l_dist);
 		for (d = 0; d < 3; d++) dc_dv[d] = -land_grad_coeff * diff[d]; 
 		bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
-				// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
+		// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
 				fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-								-fixed->offset[0]-lm_tmp[0], 
-								-fixed->offset[1]-lm_tmp[1],  
-								 fixed->offset[2]+lm_tmp[2] );
+								-fixed->offset[0]-blm->warped_landmarks[0+3*lidx], 
+								-fixed->offset[1]-blm->warped_landmarks[1+3*lidx],  
+								 fixed->offset[2]+blm->warped_landmarks[2+3*lidx] );
 				fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
 	}
 
     fclose(fp);
     fclose(fp2);
+
+/* calculate voxel positions of warped landmarks  
+ landmarks are stored internally without offsets.
+ Offsets are used only when reading/writing landmarks form/to files
+*/
+	for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
+	for (d = 0; d < 3; d++) {
+	    blm->landvox_warp[lidx*3 + d] 
+		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] /*- fixed->offset[d]*/ )
+		    / fixed->pix_spacing[d]);
+	    if (blm->landvox_warp[lidx*3 + d] < 0 
+		|| blm->landvox_warp[lidx*3 + d] >= fixed->dim[d])
+	    {
+		print_and_exit (
+		    "Error, warped landmark %d outside of fixed image for dim %d.\n"
+		    "Location in vox = %d\n"
+		    "Image boundary in vox = (%d %d)\n",
+		    lidx, d, blm->landvox_warp[lidx*3 + d], 0, fixed->dim[d]-1);
+			}
+		} 
+	}
+
+
 
 	free(dd_min);
 	free(land_p);

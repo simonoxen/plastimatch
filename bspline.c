@@ -79,6 +79,7 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->landmarks = 0;
     parms->landmark_stiffness = 1.0;
     parms->young_modulus = 0.0;
+	parms->rbf_radius = 0.0;
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;

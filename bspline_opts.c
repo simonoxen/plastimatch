@@ -35,6 +35,7 @@ print_usage (void)
 	" --moving-landmarks file    Input moving landmarks file\n"
 	" --landmark-stiffness float Relative weight of landmarks\n"      
 	" --young-modulus float      Young modulus (cost of vector field gradient)\n"
+	" --rbf-radius float		 Apply radial basis functions with a given radius\n"
 	" --debug                    Create various debug files\n"
     );
     exit (1);
@@ -248,7 +249,18 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-	else {
+       else if (!strcmp (argv[i], "--rbf-radius")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &parms->rbf_radius);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+		else {
 	    print_usage ();
 	    break;
 	}
