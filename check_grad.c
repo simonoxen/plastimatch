@@ -76,6 +76,7 @@ check_gradient (
     if (options->process == CHECK_GRAD_PROCESS_LINE) {
 	/* For each step along line */
 	for (i = options->line_range[0]; i < options->line_range[1]; i++) {
+	    bst->it = i;
 
 	    /* Already computed for i = 0 */
 	    if (i == 0) {
@@ -93,12 +94,18 @@ check_gradient (
 	
 	    /* Compute difference between grad and grad_fd */
 	    fprintf (fp, "%d, %10.10f\n", i, bst->ssd.score);
+
+	    // JAS 04.19.2010
+	    // This loop could take a while to exit.  This will
+	    // flush the buffer so that we will at least get the data
+	    // that we worked for if we get sick of waiting and opt
+	    // for early program termination.
+	    fflush(fp);
 	}
     } else {
 	/* Loop through directions */
 	for (i = 0; i < bxf->num_coeff; i++) {
-	    /* Take a step in this direction */
-	    for (j = 0; j < bxf->num_coeff; j++) {
+	    /* Take a step in this direction */ for (j = 0; j < bxf->num_coeff; j++) {
 		bxf->coeff[j] = x[j];
 	    }
 	    bxf->coeff[i] = bxf->coeff[i] + options->step_size;

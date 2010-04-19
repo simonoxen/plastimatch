@@ -1023,8 +1023,7 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
 	    if (j_hist[v] > hist_thresh) {
-		score -= j_hist[v] * logf (fnv * j_hist[v] 
-		    / (m_hist[j] * f_hist[i]));
+		score -= j_hist[v] * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
 	    }
 	}
     }
@@ -1394,9 +1393,20 @@ report_score (char *alg, BSPLINE_Xform *bxf,
 	ssd_grad_norm += fabs (bst->ssd.grad[i]);
     }
 
-    logfile_printf ("%s[%4d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+    // JAS 04.19.2010
+    // MI scores are between 0 and 1
+    // The extra decimal point resolution helps in seeing
+    // if the optimizer is performing adaquately.
+    if (alg == "MI")
+    {
+	    logfile_printf ("%s[%4d] %1.6f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
 		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
 		    ssd_grad_norm, timing);
+    } else {
+	    logfile_printf ("%s[%4d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
+		    ssd_grad_norm, timing);
+    }
 }
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)

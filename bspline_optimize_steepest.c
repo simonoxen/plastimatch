@@ -57,6 +57,16 @@ bspline_optimize_steepest_trust (
 	fp = fopen("scores.txt", "w");
     }
 
+    // JAS 04.19.2010
+    // Testing...
+#ifdef DOUBLE_HISTS
+    if (parms->metric == BMET_MI)
+    {
+	    alpha = 500.0f;
+	    printf ("Using large alpha_0 (%f)\n", alpha);
+    }
+#endif
+
     /* Allocate memory for search direction */
     x = (float*) malloc (bxf->num_coeff * sizeof(float));
     h = (float*) malloc (bxf->num_coeff * sizeof(float));
