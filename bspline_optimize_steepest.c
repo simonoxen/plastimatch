@@ -58,11 +58,20 @@ bspline_optimize_steepest_trust (
     }
 
     // JAS 04.19.2010
-    // Testing...
+    // With a starting alpha of 1, the gradient
+    // descent optimizer is unable to maximize the
+    // mutual information.  The L-BFGS-B optimizer
+    // also fails to maximize.  After manual inspection 
+    // of the gradient, a large starting alpha seemed
+    // like a good idea.
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
-	    alpha = 500.0f;
+	    // This converges for all my test
+	    // cases, but do to the efficiency of
+	    // this optimizer it takes quite a few
+	    // iterations (at least 50).
+	    alpha = 50.0f;
 	    printf ("Using large alpha_0 (%f)\n", alpha);
     }
 #endif

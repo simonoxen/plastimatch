@@ -3989,7 +3989,11 @@ bspline_cuda_score_j_mse_kernel1
 		// Compute intensity difference.
 		//-----------------------------------------------------------------
 
+#if PLM_DONT_INVERT_GRADIENT
+		diff = m_val - TEX_REF (fixed_image, fv);
+#else
 		diff = TEX_REF (fixed_image, fv) - m_val;
+#endif
 				
 		//-----------------------------------------------------------------
 		// Accumulate the score.
