@@ -79,10 +79,10 @@ float *x0, *xr, *xe, *xc;
 float val_xr, val_xe, val_xc;
 float alpha=1., gamma=2., rho=0.5, sigma=0.5;
 
-x0 = (float *)malloc( n*sizeof(int) );
-xr = (float *)malloc( n*sizeof(int) );
-xe = (float *)malloc( n*sizeof(int) );
-xc = (float *)malloc( n*sizeof(int) );
+x0 = (float *)malloc( n*sizeof(float) );
+xr = (float *)malloc( n*sizeof(float) );
+xe = (float *)malloc( n*sizeof(float) );
+xc = (float *)malloc( n*sizeof(float) );
 
 //initialize
 for(i=0;i<n+1;i++)  funcval[i] = func( x+i*n, n, params );
@@ -158,10 +158,10 @@ return val;
 
 
 /*
-LF + u(LF) + alpha*rbf(LF,LW) = LM  (one landmark, 1D)
+LF + u(LF) + alpha*rbf(LF,LF) = LM  (one landmark, 1D)
 Solve for alpha; LF=fixed landmark, LM=moving landmark,
 LW=warped landmark (moving displaced by u(x)).
-RBFs are centered on warped landmarks
+RBFs are centered on fixed landmarks
 */
 float bspline_rbf_score( float *trial_rbf_coeff,  int num_rbf_coeff, Rbf_parms *rbf_par)
 {
@@ -177,7 +177,9 @@ for(i=0;i<blm->num_landmarks;i++) {
 	ds = blm->fixed_landmarks[3*i+d1] + blm->landmark_dxyz[3*i+d1] - blm->moving_landmarks[3*i+d1];
 
 	for(j=0;j<blm->num_landmarks;j++) {
-		for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_warp[3*j+d]; 
+		//where are the centers?
+		//for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_warp[3*j+d]; 
+		for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*j+d];
 
 		rbfv = rbf_value( rbfcenter, blm->landvox_fix[3*i+0],
 		 						    blm->landvox_fix[3*i+1],
@@ -376,7 +378,9 @@ bspline_rbf_update_vector_field (
 
 	dr = parms->rbf_radius+1;
 	vf = (float*) vector_field->img;
-	rbf_vox_origin = blm->landvox_warp;
+	//where are the centers?
+	//rbf_vox_origin = blm->landvox_warp;
+	rbf_vox_origin = blm->landvox_fix;
 
 	//RBF contributions added to vector field
 	for(lidx=0;lidx<blm->num_landmarks;lidx++) {
