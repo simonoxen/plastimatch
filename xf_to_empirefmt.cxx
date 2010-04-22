@@ -111,26 +111,25 @@ int main (int argc, char* argv[])
 
     // iterate through the deformation field pixel by pixel and write each x, y, z
     // component to the corresponding binary files
-    typedef itk::ImageRegionConstIterator< DeformationFieldType > ConstIteratorType;
+    typedef itk::ImageRegionConstIterator< DeformationFieldType > RegionIteratorType;
 
     fprintf(stdout, "requested region size %d %d %d\n",
         vf->GetRequestedRegion().GetSize()[0],
         vf->GetRequestedRegion().GetSize()[1],
         vf->GetRequestedRegion().GetSize()[2]);
 
-    ConstIteratorType  vf_it(vf, vf->GetRequestedRegion() );
-    int count = 1;
+    RegionIteratorType  vf_it(vf, vf->GetRequestedRegion() );
+    
     vf_it.GoToBegin();
-    while(! vf_it.IsAtEnd()  && count <= 49685152 )
+    while(! vf_it.IsAtEnd() )
     {
         DeformationFieldType::PixelType v(vf_it.Get());        
         fwrite(&v[0], 4, 1, ofpx);
         fwrite(&v[1], 4, 1, ofpy);
         fwrite(&v[2], 4, 1, ofpz);
-        vf_it ++;
-        count ++;
+        ++ vf_it;
     }
-    fprintf(stdout, "total count = %d\n", count);
+
     fclose(ofpx);
     fclose(ofpy);
     fclose(ofpz);
