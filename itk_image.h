@@ -20,8 +20,10 @@ typedef itk::Image < unsigned char, Dimension > UCharImageType;
 typedef itk::Image < short, Dimension > ShortImageType;
 typedef itk::Image < unsigned short, Dimension > UShortImageType;
 #if (CMAKE_SIZEOF_UINT == 4)
+typedef itk::Image < int, Dimension > Int32ImageType;
 typedef itk::Image < unsigned int, Dimension > UInt32ImageType;
 #else
+typedef itk::Image < long, Dimension > Int32ImageType;
 typedef itk::Image < unsigned long, Dimension > UInt32ImageType;
 #endif
 typedef itk::Image < float, Dimension > FloatImageType;
@@ -31,8 +33,10 @@ typedef itk::Image < unsigned char, 2 > UCharImage2DType;
 typedef itk::Image < short, 2 > ShortImage2DType;
 typedef itk::Image < unsigned short, 2 > UShortImage2DType;
 #if (CMAKE_SIZEOF_UINT == 4)
+typedef itk::Image < int, 2 > Int32Image2DType;
 typedef itk::Image < unsigned int, 2 > UInt32Image2DType;
 #else
+typedef itk::Image < long, 2 > Int32Image2DType;
 typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
 #endif
 typedef itk::Image < float, 2 > FloatImage2DType;

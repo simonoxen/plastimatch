@@ -168,6 +168,9 @@ Plm_image::save_image (const char* fname)
     case PLM_IMG_TYPE_ITK_USHORT:
 	itk_image_save (this->m_itk_ushort, fname);
 	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	itk_image_save (this->m_itk_int32, fname);
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	this->set_metadata ("Hello", "World");
 	itk_image_save (this->m_itk_uint32, fname);
@@ -373,6 +376,39 @@ Plm_image::convert_to_itk_short (void)
 }
 
 void
+Plm_image::convert_to_itk_int32 (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_ULONG:
+	return;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_int32 = cast_int32 (this->m_itk_float);
+	this->m_itk_float = 0;
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_int32, (unsigned char) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_int32, (short) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_int32, (uint32_t) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_int32 = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_int32, (float) 0);
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_int32\n");
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_ULONG;
+}
+
+void
 Plm_image::convert_to_itk_uint32 (void)
 {
     switch (this->m_type) {
@@ -571,6 +607,9 @@ Plm_image::convert (Plm_image_type new_type)
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	this->convert_to_itk_short ();
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	this->convert_to_itk_int32 ();
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	this->convert_to_itk_uint32 ();

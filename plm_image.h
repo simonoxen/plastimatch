@@ -22,8 +22,9 @@ public:
 
     /* The actual image is one of the following. */
     UCharImageType::Pointer m_itk_uchar;
-    UShortImageType::Pointer m_itk_ushort;
     ShortImageType::Pointer m_itk_short;
+    UShortImageType::Pointer m_itk_ushort;
+    Int32ImageType::Pointer m_itk_int32;
     UInt32ImageType::Pointer m_itk_uint32;
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
@@ -41,6 +42,8 @@ private:
     void convert_to_itk_uchar ();
     plastimatch1_EXPORT
     void convert_to_itk_short ();
+    plastimatch1_EXPORT
+    void convert_to_itk_int32 (void);
     plastimatch1_EXPORT
     void convert_to_itk_uint32 ();
     plastimatch1_EXPORT
