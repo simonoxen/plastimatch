@@ -185,6 +185,10 @@ itk_image_load_any (const char* fname,
 	  Plm_image_type* original_type, 
 	  U otype)
 {
+    if (!file_exists (fname)) {
+	print_and_exit ("Can't open file \"%s\" for read\n", fname);
+    }
+
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
     try {

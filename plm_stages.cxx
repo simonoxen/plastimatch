@@ -256,36 +256,26 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
 {
     Plm_image_type image_type = PLM_IMG_TYPE_ITK_FLOAT;
 
-#if defined (commentout)
-    /* Load the appropriate image type for the first stage */
-    if (regp->num_stages > 0) {
-	image_type = choose_image_type (regp->stages[0]->xform_type,
-	    regp->stages[0]->optim_type, regp->stages[0]->impl_type);
-    }
-#endif
-
-    /* GCS Jun 2, 2008.  Always load as ITK so we can find the ROI */
-
+    /* Always load as ITK so we can find the ROI */
     logfile_printf ("fixed image=%s\n", regp->fixed_fn);
-    logfile_printf ("Loading fixed image...");
-    //regd->fixed_image = load_float (regp->fixed_fn);
+    logfile_printf ("Loading fixed image...\n");
     regd->fixed_image = plm_image_load (regp->fixed_fn, image_type);
     logfile_printf ("done!\n");
 
     logfile_printf ("moving image=%s\n", regp->moving_fn);
-    logfile_printf ("Loading moving image...");
+    logfile_printf ("Loading moving image...\n");
     regd->moving_image = plm_image_load (regp->moving_fn, image_type);
     logfile_printf ("done!\n");
 
     if (regp->fixed_mask_fn[0]) {
-	logfile_printf ("Loading fixed mask...");
+	logfile_printf ("Loading fixed mask...\n");
 	regd->fixed_mask = itk_image_load_uchar (regp->fixed_mask_fn, 0);
 	logfile_printf ("done!\n");
     } else {
 	regd->fixed_mask = 0;
     }
     if (regp->moving_mask_fn[0]) {
-	logfile_printf ("Loading moving mask...");
+	logfile_printf ("Loading moving mask...\n");
 	regd->moving_mask = itk_image_load_uchar (regp->moving_mask_fn, 0);
 	logfile_printf ("done!\n");
     } else {
