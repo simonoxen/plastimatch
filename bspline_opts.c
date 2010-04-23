@@ -33,9 +33,11 @@ print_usage (void)
 	" -O outfile                 Output warped image\n"
 	" --fixed-landmarks file     Input fixed landmarks file\n"
 	" --moving-landmarks file    Input moving landmarks file\n"
+	" --warped-landmarks file    Output warped landmarks file\n"
 	" --landmark-stiffness float Relative weight of landmarks\n"      
+	" -F landm_implementation    Landmark implementation: a or b (default is a)\n"
 	" --young-modulus float      Young modulus (cost of vector field gradient)\n"
-	" --rbf-radius float		 Apply radial basis functions with a given radius\n"
+	" --rbf-radius float         Apply radial basis functions with a given radius\n"
 	" --debug                    Create various debug files\n"
     );
     exit (1);
@@ -227,7 +229,15 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    i++;
 	    options->moving_landmarks = strdup (argv[i]);
 	}
-        else if (!strcmp (argv[i], "--landmark-stiffness")) {
+        else if (!strcmp (argv[i], "--warped-landmarks")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->warped_landmarks = strdup (argv[i]);
+	}
+		else if (!strcmp (argv[i], "--landmark-stiffness")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);
@@ -238,7 +248,15 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-        else if (!strcmp (argv[i], "--young-modulus")) {
+	else if (!strcmp (argv[i], "-F")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    parms->landmark_implementation = argv[i][0];
+	}
+		else if (!strcmp (argv[i], "--young-modulus")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);

@@ -99,6 +99,16 @@ main (int argc, char* argv[])
 	}
     }
 
+	/* Assuming vector field has been created, update warped landmarks*/
+    if (options.fixed_landmarks && options.moving_landmarks) {
+		printf("Creating warped landmarks\n");
+		bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
+		if (options.warped_landmarks)
+			bspline_landmarks_write_file( options.warped_landmarks, "warped", 
+					parms->landmarks->warped_landmarks, 
+					parms->landmarks->num_landmarks,  fixed->offset );
+	}
+
 	/* If using radial basis functions, find coeffs and update vector field */
 	if (parms->rbf_radius>0) {
 		printf("Radial basis functions requested, radius %.2f\n", parms->rbf_radius);
@@ -114,8 +124,9 @@ main (int argc, char* argv[])
 		/* Do actual RBF adjustment */
 		bspline_rbf_find_coeffs( vector_field, parms );
 		bspline_rbf_update_vector_field( vector_field, parms );
-		bspline_rbf_update_landmarks( vector_field, parms, bxf, fixed, moving );
-	    bspline_landmarks_write_file( "warp_rbf.fcsv", "warp_and_rbf", 
+		bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
+		if (options.warped_landmarks)
+			bspline_landmarks_write_file( options.warped_landmarks, "warp_and_rbf", 
 					parms->landmarks->warped_landmarks, 
 					parms->landmarks->num_landmarks,  fixed->offset );
 		}

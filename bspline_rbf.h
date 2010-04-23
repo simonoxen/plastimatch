@@ -12,13 +12,6 @@ extern "C" {
 
 void bspline_rbf_find_coeffs( Volume *vector_field, BSPLINE_Parms *parms );
 
-void bspline_rbf_update_landmarks(
-	Volume *vector_field, 
-	BSPLINE_Parms *parms,
-	BSPLINE_Xform* bxf, 
-    Volume *fixed, 
-    Volume *moving);
-
 void bspline_rbf_update_vector_field( Volume *vector_field,	BSPLINE_Parms *parms );
 
 #if defined __cplusplus

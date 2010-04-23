@@ -38,6 +38,13 @@ bspline_landmarks_score (
     Volume *moving
 );
 
+void bspline_landmarks_warp (
+	Volume *vector_field, 
+	BSPLINE_Parms *parms,
+	BSPLINE_Xform* bxf, 
+    Volume *fixed, 
+    Volume *moving);
+
 void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset);
 
 #if defined __cplusplus
