@@ -193,6 +193,8 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	else if (!strcmp(val,"cuda")) {
 #if (CUDA_FOUND)
 	    stage->threading_type = THREADING_CUDA;
+#elif (OPENMP_FOUND)
+	    stage->threading_type = THREADING_OPENMP;
 #else
 	    stage->threading_type = THREADING_SINGLE;
 #endif

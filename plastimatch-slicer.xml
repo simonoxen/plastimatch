@@ -124,7 +124,7 @@
     <double>
       <name>stage_1_grid_size</name>
       <label>Grid Size (mm)</label>
-      <default>200</default>
+      <default>100</default>
       <longflag>--stage1gridsize</longflag>
       <description>Approximate B-Spline Grid Spacing (isotropic)</description>
     </double>
