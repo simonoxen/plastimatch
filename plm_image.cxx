@@ -74,6 +74,16 @@ Plm_image::load_native (const char* fname)
 	this->m_type = PLM_IMG_TYPE_ITK_USHORT;
 	break;
 #if (CMAKE_SIZEOF_UINT == 4)
+    case itk::ImageIOBase::INT:
+#endif
+#if (CMAKE_SIZEOF_ULONG == 4)
+    case itk::ImageIOBase::LONG:
+#endif
+	this->m_itk_int32 = itk_image_load_int32 (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_LONG;
+	this->m_type = PLM_IMG_TYPE_ITK_LONG;
+	break;
+#if (CMAKE_SIZEOF_UINT == 4)
     case itk::ImageIOBase::UINT:
 #endif
 #if (CMAKE_SIZEOF_ULONG == 4)
@@ -356,6 +366,10 @@ Plm_image::convert_to_itk_short (void)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_SHORT:
 	return;
+    case PLM_IMG_TYPE_ITK_LONG:
+	this->m_itk_short = cast_short (this->m_itk_int32);
+	this->m_itk_int32 = 0;
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->m_itk_short = cast_short (this->m_itk_float);
 	this->m_itk_float = 0;
