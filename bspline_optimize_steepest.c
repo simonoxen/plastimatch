@@ -60,12 +60,12 @@ bspline_optimize_steepest_trace(
     }
 
     // JAS 04.19.2010
-    // Testing...
+    // For Testing...
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
 	    alpha = 1.0f;
-	    printf ("Using large alpha_0 (%f)\n", alpha);
+	    printf ("Using alpha_0 (%f)\n", alpha);
     }
 #endif
 
@@ -253,21 +253,12 @@ bspline_optimize_steepest_trust (
     }
 
     // JAS 04.19.2010
-    // With a starting alpha of 1, the gradient
-    // descent optimizer is unable to maximize the
-    // mutual information.  The L-BFGS-B optimizer
-    // also fails to maximize.  After manual inspection 
-    // of the gradient, a large starting alpha seemed
-    // like a good idea.
+    // For testing...
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
-	    // This converges for all my test
-	    // cases, but do to the efficiency of
-	    // this optimizer it takes quite a few
-	    // iterations (at least 50).
 	    alpha = 1.0f;
-	    printf ("Using large alpha_0 (%f)\n", alpha);
+	    printf ("Using alpha_0 (%f)\n", alpha);
     }
 #endif
 
@@ -488,10 +479,10 @@ bspline_optimize_steepest (
 	bspline_optimize_steepest_naive (
 	    bxf, bst, parms, fixed, moving, moving_grad);
     } else {
-//	bspline_optimize_steepest_trust (
-//	    bxf, bst, parms, fixed, moving, moving_grad);
-//	DEBUG
-	bspline_optimize_steepest_trace (
+	bspline_optimize_steepest_trust (
 	    bxf, bst, parms, fixed, moving, moving_grad);
+//	DEBUG
+//	bspline_optimize_steepest_trace (
+//	    bxf, bst, parms, fixed, moving, moving_grad);
     }
 }

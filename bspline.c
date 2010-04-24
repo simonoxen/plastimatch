@@ -1407,7 +1407,7 @@ report_score (char *alg, BSPLINE_Xform *bxf,
     // JAS 04.19.2010
     // MI scores are between 0 and 1
     // The extra decimal point resolution helps in seeing
-    // if the optimizer is performing adaquately.
+    // if the optimizer is performing adequately.
     if (!strcmp (alg, "MI"))
     {
 	    logfile_printf ("%s[%4d] %1.6f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
@@ -1801,7 +1801,6 @@ bspline_mi_hist_add_pvi_8 (
     m_hist[idx_mbin] += w8;
     j_hist[idx_jbin] += w8;
 
-//    printf ("success!\n");
 }
 
 static inline void
