@@ -1400,7 +1400,7 @@ report_score (char *alg, BSPLINE_Xform *bxf,
     // MI scores are between 0 and 1
     // The extra decimal point resolution helps in seeing
     // if the optimizer is performing adaquately.
-    if (alg == "MI")
+    if (!strcmp (alg, "MI"))
     {
 	    logfile_printf ("%s[%4d] %1.6f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
 		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
