@@ -34,11 +34,13 @@
 #endif
 
 #include "bspline.h"
+#include "bspline_mse_cpu_c.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
 #include "bspline_gradient.h"
 #include "bspline_landmarks.h"
+#include "bspline_macros.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
@@ -1060,8 +1062,8 @@ bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
     }
 }
 
-inline void
-bspline_interp_pix_b_inline (
+void
+bspline_interp_pix_b (
     float out[3], 
     BSPLINE_Xform* bxf, 
     int pidx, 
@@ -1632,7 +1634,7 @@ void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter)
 /* Find location and index of corresponding voxel in moving image.  
    Return 1 if corresponding voxel lies within the moving image, 
    return 0 if outside the moving image.  */
-static inline int
+int
 bspline_find_correspondence 
 (
  float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
@@ -1670,20 +1672,6 @@ clamp_linear_interpolate_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
 			      &mijk_r[2], &li_frac_1[2], &li_frac_2[2]);
 }
 
-#define CLAMP_LINEAR_INTERPOLATE_3D(mijk, mijk_f, mijk_r, li_frac_1,	\
-				    li_frac_2, moving)			\
-    do {								\
-	clamp_linear_interpolate (mijk[0], moving->dim[0]-1,		\
-				  &mijk_f[0], &mijk_r[0],		\
-				  &li_frac_1[0], &li_frac_2[0]);	\
-	clamp_linear_interpolate (mijk[1], moving->dim[1]-1,		\
-				  &mijk_f[1], &mijk_r[1],		\
-				  &li_frac_1[1], &li_frac_2[1]);	\
-	clamp_linear_interpolate (mijk[2], moving->dim[2]-1,		\
-				  &mijk_f[2], &mijk_r[2],		\
-				  &li_frac_1[2], &li_frac_2[2]);	\
-    } while (0)
-
 static inline float 
 bspline_li_value (float fx1, float fx2, float fy1, float fy2, 
 		  float fz1, float fz2, int mvf, 
@@ -1706,24 +1694,6 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 
     return m_val;
 }
-
-#define BSPLINE_LI_VALUE(m_val, fx1, fx2, fy1, fy2, fz1, fz2, mvf, \
-			 m_img, moving)				   \
-    do {							   \
-	float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;		   \
-	float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;		   \
-								   \
-	m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];		   \
-	m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];		   \
-	m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];		\
-	m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];	\
-	m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]]; \
-	m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1]; \
-	m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]]; \
-	m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1]; \
-	m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1		\
-		+ m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;		\
-    } while (0)
 
 static inline void
 bspline_mi_hist_add_pvi_8 (
@@ -2210,7 +2180,7 @@ bspline_score_l_mi (BSPLINE_Parms *parms,
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -2343,7 +2313,7 @@ bspline_score_l_mi (BSPLINE_Parms *parms,
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute coordinate of fixed image voxel */
 		fv = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -2676,7 +2646,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Find correspondence in moving image */
 		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
@@ -2780,7 +2750,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Find linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, fixed->dim);
@@ -2900,7 +2870,7 @@ bspline_warp (
 		/* Get B-spline deformation vector */
 		pidx = INDEX_OF (p, bxf->rdims);
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix_b_inline (dxyz, bxf, pidx, qidx);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, vout->dim);
@@ -3323,7 +3293,7 @@ bspline_score_h_mse (
 		    idx_fixed = INDEX_OF (crds_fixed, fixed->dim);
 
 		    // Calc. deformation vector (dxyz) for voxel
-		    bspline_interp_pix_b_inline (dxyz, bxf, idx_tile, idx_local);
+		    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
 
 		    // Calc. moving image coordinate from the deformation vector
 		    rc = bspline_find_correspondence (phys_moving,
@@ -3552,7 +3522,7 @@ bspline_score_g_mse (
 		    idx_fixed = INDEX_OF (crds_fixed, fixed->dim);
 
 		    // Calc. deformation vector (dxyz) for voxel
-		    bspline_interp_pix_b_inline (dxyz, bxf, idx_tile, idx_local);
+		    bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
 
 		    // Calc. moving image coordinate from the deformation vector
 		    rc = bspline_find_correspondence (phys_moving,
@@ -3710,24 +3680,28 @@ bspline_score (BSPLINE_Parms *parms,
 
     if (parms->metric == BMET_MSE) {
 	switch (parms->implementation) {
+#if defined (commentout)
 	case 'a':
-//	    bspline_score_a_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_a_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'b':
-//	    bspline_score_b_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_b_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#endif
 	case 'c':
-//	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#if defined (commentout)
 	case 'd':
-//	    bspline_score_d_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_d_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'e':
-//	    bspline_score_e_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_e_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'f':
-//	    bspline_score_f_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_score_f_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#endif
 	case 'g':
 	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;

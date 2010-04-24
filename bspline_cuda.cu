@@ -2247,6 +2247,30 @@ extern "C" void bspline_cuda_j_stage_2 (
     int smemSize = 512 * sizeof(float);
     // ----------------------------------------------------------
 
+#if defined (commentout)
+#endif
+    /* Compute score on cpu for debugging */
+    {
+	int i;
+	float *cpu_score = (float*) malloc (dev_ptrs->score_size);
+	int num_ele = dev_ptrs->score_size / sizeof (float);
+	double sse = 0.0;
+	FILE *fp;
+
+	cudaMemcpy (cpu_score, dev_ptrs->score, dev_ptrs->score_size, 
+	    cudaMemcpyDeviceToHost);
+	for (i = 0; i < num_ele; i++) {
+	    sse += (double) cpu_score[i];
+	}
+	sse /= 128480.;
+	printf ("CPU computed score as %f\n", sse);
+	
+	fp = fopen ("gpu_score.txt", "wb");
+	for (i = 0; i < num_ele; i++) {
+	    fprintf (fp, "%f\n", cpu_score[i]);
+	}
+	fclose (fp);
+    }
 
     // --- BEGIN KERNEL EXECUTION -------------------------------
     sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
@@ -2810,7 +2834,7 @@ __global__ void kernel_pad(
  *
  * @author: James A. Shackleford
  */
-__global__ void kernel_bspline_mse_2_condense_64_texfetch(
+__global__ void kernel_bspline_mse_2_condense_64_texfetch (
     float* cond_x,		// Return: condensed dc_dv_x values
     float* cond_y,		// Return: condensed dc_dv_y values
     float* cond_z,		// Return: condensed dc_dv_z values
@@ -3714,9 +3738,9 @@ kernel_bspline_mse_2_reduce (
 
     // END OF KERNEL 
 }
-////////////////////////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
 // KERNEL: bspline_cuda_score_j_mse_kernel1()
 //
 // This is idential to bspline_cuda_score_g_mse_kernel1() except it generates
@@ -3725,7 +3749,7 @@ kernel_bspline_mse_2_reduce (
 // This removes the need for deinterleaving the dc_dv stream before running
 // the CUDA condense_64() kernel, which removes CUDA_deinterleave() from the
 // execution chain.
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 __global__ void
 bspline_cuda_score_j_mse_kernel1 
 (
@@ -3747,7 +3771,7 @@ bspline_cuda_score_j_mse_kernel1
     int3   roi_offset,     // Position of first vox in ROI (in vox)
     int3   vox_per_rgn,    // Knot spacing (in vox)
     int3   rdims,          // # of regions in (x,y,z)
-    int3   cdims,
+    int3   cdims,          // # of control points in (x,y,z)
     int    pad,
     float  *skipped        // # of voxels that fell outside the ROI
 )
@@ -3978,7 +4002,7 @@ bspline_cuda_score_j_mse_kernel1
 		    fy2 = 1.0f;
 		}
 		fy1 = 1.0f - fy2;
-				
+
 		// Clamp and intepolate along the Z axis.
 		mov_ijk_floor.z = (int) (mov_ijk.z);
 		// rintf = single instruction round
@@ -5544,10 +5568,9 @@ extern "C" void CUDA_pad(
     // ----------------------------------------------------------
 	
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // STUB: CUDA_bspline_mse_score_dc_dv()
 //
 // KERNELS INVOKED:
@@ -5555,7 +5578,7 @@ extern "C" void CUDA_pad(
 //
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 extern "C" void CUDA_bspline_mse_score_dc_dv (
     Dev_Pointers_Bspline* dev_ptrs,
     BSPLINE_Xform* bxf,
@@ -5645,13 +5668,10 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
     for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
 	num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
 	smemSize = 12 * sizeof(float) * threads_per_block;
-
 	sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
-	for (i = sqrt_num_blocks; i < 65535; i++)
-	{
-	    if (num_blocks % i == 0)
-	    {
+	for (i = sqrt_num_blocks; i < 65535; i++) {
+	    if (num_blocks % i == 0) {
 		Grid_x = i;
 		Grid_y = num_blocks / Grid_x;
 		found_flag = 1;
@@ -5663,7 +5683,6 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	    break;
 	}
     }
-
 
     // Were we able to find a valid exec config?
     if (Grid_x == 0) {
@@ -5680,8 +5699,6 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
     dim3 dimBlock1(threads_per_block, 1, 1);
-    // ----------------------
-
 
     // --- BEGIN KERNEL EXECUTION ---
     //	cudaEvent_t start, stop;
@@ -5726,27 +5743,21 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	roi_dim,		// Region of Intrest Dimenions
 	roi_offset,		// Region of Intrest Offset
 	vox_per_rgn,		// Voxels per Region
-	rdims,			// 
-	cdims,
+	rdims,                  // # of regions in (x,y,z)
+	cdims,                  // # of control points in (x,y,z)
 	tile_padding,
 	dev_ptrs->skipped);
 
     //	cudaEventRecord (stop, 0);	
     //	cudaEventSynchronize (stop);
-
     //	cudaEventElapsedTime (&time, start, stop);
-
     //	cudaEventDestroy (start);
     //	cudaEventDestroy (stop);
-
     //	printf("\n[%f ms] MSE & dc_dv\n", time);
-    // ------------------------------
-
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 // STUB: CUDA_bspline_mse_2_condense_64_texfetch()
 //
 // KERNELS INVOKED:
@@ -5754,7 +5765,7 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 //
 // AUTHOR: James Shackleford
 //   DATE: September 16th, 2009
-////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 void CUDA_bspline_mse_2_condense_64_texfetch (
     Dev_Pointers_Bspline* dev_ptrs,
     int* vox_per_rgn,

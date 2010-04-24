@@ -301,6 +301,22 @@ bspline_interpolate_vf (Volume* interp,
 /* Used internally */
 void
 bspline_interp_pix (float out[3], BSPLINE_Xform *bxf, int p[3], int qidx);
+void
+bspline_interp_pix_b (
+    float out[3], 
+    BSPLINE_Xform* bxf, 
+    int pidx, 
+    int qidx
+);
+int
+bspline_find_correspondence 
+(
+ float *mxyz,             /* Output: xyz coordinates in moving image (mm) */
+ float *mijk,             /* Output: ijk indices in moving image (vox) */
+ const float *fxyz,       /* Input:  xyz coordinates in fixed image (mm) */
+ const float *dxyz,       /* Input:  displacement from fixed to moving (mm) */
+ const Volume *moving     /* Input:  moving image */
+);
 
 void
 bspline_update_grad (
