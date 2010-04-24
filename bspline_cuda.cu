@@ -249,7 +249,10 @@ extern "C" void CUDA_bspline_MI_a_hist_fix (
 	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_fix() configuration!\n");
 	exit(0);
     } else {
-	//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -369,7 +372,10 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
 	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_mov() configuration!\n");
 	exit(0);
     } else {
-	//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -503,7 +509,10 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
 	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_jnt() configuration!\n");
 	exit(0);
     } else {
-	//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -1481,11 +1490,13 @@ extern "C" void bspline_cuda_j_stage_1 (
     Dev_Pointers_Bspline* dev_ptrs)
 {
     // Reset our "voxels fallen outside" counter
-    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->skipped");
+    cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    checkCUDAError ("cudaMemset(): dev_ptrs->skipped");
+    cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
+    checkCUDAError ("cudaMemset(): dev_ptrs->score");
 
     // Calculate the score and dc_dv
-    CUDA_bspline_mse_score_dc_dv(dev_ptrs, bxf, fixed, moving);
+    CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
@@ -1508,7 +1519,8 @@ extern "C" void bspline_cuda_j_stage_1 (
 
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64_texfetch(dev_ptrs, bxf->vox_per_rgn, num_tiles);
+    CUDA_bspline_mse_2_condense_64_texfetch (dev_ptrs, bxf->vox_per_rgn, 
+	num_tiles);
 
     /*
     // Stop timing the kernel
@@ -1536,7 +1548,7 @@ extern "C" void bspline_cuda_j_stage_1 (
     checkCUDAError("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
 
     /*
     // Stop timing the kernel
@@ -1690,7 +1702,10 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
-	//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -1783,7 +1798,7 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64(dev_ptrs, bxf->vox_per_rgn, num_tiles);
+    CUDA_bspline_mse_2_condense_64 (dev_ptrs, bxf->vox_per_rgn, num_tiles);
 
     // Stop timing the kernel
     cudaEventRecord (stop, 0);
@@ -1807,7 +1822,7 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
     checkCUDAError("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
 
     // Stop timing the kernel
     cudaEventRecord (stop, 0);
@@ -1930,7 +1945,10 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
     printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
     exit(0);
     } else {
-    //		printf("\nExecuting bspline_cuda_score_g_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -2174,7 +2192,7 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 //
 // bspline_cuda_final_steps_f()
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void bspline_cuda_j_stage_2(
+extern "C" void bspline_cuda_j_stage_2 (
     BSPLINE_Parms* parms, 
     BSPLINE_Xform* bxf,
     Volume* fixed,
@@ -3629,7 +3647,8 @@ __global__ void kernel_bspline_mse_2_condense(
 // AUTHOR: James Shackleford
 // DATE  : August 27th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-__global__ void kernel_bspline_mse_2_reduce(
+__global__ void
+kernel_bspline_mse_2_reduce (
     float* grad,		// Return: interleaved dc_dp values
     float* cond_x,		// Input : condensed dc_dv_x values
     float* cond_y,		// Input : condensed dc_dv_y values
@@ -3735,7 +3754,7 @@ bspline_cuda_score_j_mse_kernel1
 {
     extern __shared__ float sdata[]; 
 	
-    int3   coord_in_volume;   // Index of the voxel in the fixed image
+    int3   fix_ijk;           // Index of the voxel in the fixed image (vox)
     int3   p;		      // Index of the tile within the volume (vox)
     int3   q;		      // Offset within the tile (measured in voxels)
     int    fv;		      // Index of voxel in linear image array
@@ -3754,8 +3773,7 @@ bspline_cuda_score_j_mse_kernel1
     int3 mov_ijk_floor;
     float3 mov_ijk_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
-    int    mvf;
-    //    int    mvr;	// (Deprecated: See below)
+    int mvf;
     float m_val;
     float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
     float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
@@ -3793,32 +3811,32 @@ bspline_cuda_score_j_mse_kernel1
     if (threadIdxInGrid < (fix_dim.x * fix_dim.y * fix_dim.z))
     {
 	// Calculate the x, y, and z coordinate of the voxel within the volume.
-	coord_in_volume.z = threadIdxInGrid / (fix_dim.x * fix_dim.y);
-	coord_in_volume.y = (threadIdxInGrid 
-	    - (coord_in_volume.z * fix_dim.x * fix_dim.y)) / fix_dim.x;
-	coord_in_volume.x = threadIdxInGrid 
-	    - coord_in_volume.z * fix_dim.x * fix_dim.y 
-	    - (coord_in_volume.y * fix_dim.x);
+	fix_ijk.z = threadIdxInGrid / (fix_dim.x * fix_dim.y);
+	fix_ijk.y = (threadIdxInGrid 
+	    - (fix_ijk.z * fix_dim.x * fix_dim.y)) / fix_dim.x;
+	fix_ijk.x = threadIdxInGrid 
+	    - fix_ijk.z * fix_dim.x * fix_dim.y 
+	    - (fix_ijk.y * fix_dim.x);
 			
 	// Calculate the x, y, and z offsets of the tile that 
 	// contains this voxel.
-	p.x = coord_in_volume.x / vox_per_rgn.x;
-	p.y = coord_in_volume.y / vox_per_rgn.y;
-	p.z = coord_in_volume.z / vox_per_rgn.z;
-				
+	p.x = fix_ijk.x / vox_per_rgn.x;
+	p.y = fix_ijk.y / vox_per_rgn.y;
+	p.z = fix_ijk.z / vox_per_rgn.z;
+
 	// Calculate the x, y, and z offsets of the voxel within the tile.
-	q.x = coord_in_volume.x - p.x * vox_per_rgn.x;
-	q.y = coord_in_volume.y - p.y * vox_per_rgn.y;
-	q.z = coord_in_volume.z - p.z * vox_per_rgn.z;
+	q.x = fix_ijk.x - p.x * vox_per_rgn.x;
+	q.y = fix_ijk.y - p.y * vox_per_rgn.y;
+	q.z = fix_ijk.z - p.z * vox_per_rgn.z;
 
 	// If the voxel lies outside of the region of interest, do nothing.
-	if (coord_in_volume.x <= (roi_offset.x + roi_dim.x) || 
-	    coord_in_volume.y <= (roi_offset.y + roi_dim.y) ||
-	    coord_in_volume.z <= (roi_offset.z + roi_dim.z)) {
+	if (fix_ijk.x < (roi_offset.x + roi_dim.x) || 
+	    fix_ijk.y < (roi_offset.y + roi_dim.y) ||
+	    fix_ijk.z < (roi_offset.z + roi_dim.z)) {
 
 	    // Compute the linear index of fixed image voxel.
-	    fv = (coord_in_volume.z * fix_dim.x * fix_dim.y) 
-		+ (coord_in_volume.y * fix_dim.x) + coord_in_volume.x;
+	    fv = (fix_ijk.z * fix_dim.x * fix_dim.y) 
+		+ (fix_ijk.y * fix_dim.x) + fix_ijk.x;
 
 	    //-----------------------------------------------------------------
 	    // Calculate the B-Spline deformation vector.
@@ -3898,9 +3916,9 @@ bspline_cuda_score_j_mse_kernel1
 	    //-----------------------------------------------------------------
 
 	    // Calculate the position of the voxel (in mm)
-	    fix_xyz.x = fix_origin.x + (fix_spacing.x * coord_in_volume.x);
-	    fix_xyz.y = fix_origin.y + (fix_spacing.y * coord_in_volume.y);
-	    fix_xyz.z = fix_origin.z + (fix_spacing.z * coord_in_volume.z);
+	    fix_xyz.x = fix_origin.x + (fix_spacing.x * fix_ijk.x);
+	    fix_xyz.y = fix_origin.y + (fix_spacing.y * fix_ijk.y);
+	    fix_xyz.z = fix_origin.z + (fix_spacing.z * fix_ijk.z);
 			
 	    // Calculate the corresponding voxel in the moving image (in mm)
 	    mov_xyz.x = fix_xyz.x + d.x;
@@ -3919,7 +3937,7 @@ bspline_cuda_score_j_mse_kernel1
 		|| (mov_ijk.z < -0.5) || (mov_ijk.z > (mov_dim.z - 0.5)))
 	    {
 		// Count voxel as outside the ROI
-		skipped[threadIdxInGrid]++;	
+		skipped[threadIdxInGrid]++;
 
 	    } else {
 
@@ -3949,7 +3967,7 @@ bspline_cuda_score_j_mse_kernel1
 		// rintf = single instruction round
 		mov_ijk_round.y = rintf (mov_ijk.y);
 		fy2 = mov_ijk.y - mov_ijk_floor.y;
-		if(mov_ijk_floor.y < 0){
+		if (mov_ijk_floor.y < 0) {
 		    mov_ijk_floor.y = 0;
 		    mov_ijk_round.y = 0;
 		    fy2 = 0.0f;
@@ -3966,7 +3984,7 @@ bspline_cuda_score_j_mse_kernel1
 		// rintf = single instruction round
 		mov_ijk_round.z = rintf (mov_ijk.z);
 		fz2 = mov_ijk.z - mov_ijk_floor.z;
-		if(mov_ijk_floor.z < 0){
+		if (mov_ijk_floor.z < 0) {
 		    mov_ijk_floor.z = 0;
 		    mov_ijk_round.z = 0;
 		    fz2 = 0.0f;
@@ -3977,14 +3995,12 @@ bspline_cuda_score_j_mse_kernel1
 		    fz2 = 1.0;
 		}
 		fz1 = 1.0f - fz2;
-				
+
 		//-----------------------------------------------------------
 		// Compute moving image intensity using linear interpolation.
 		//-----------------------------------------------------------
-
-		mvf = (mov_ijk_floor.z * mov_dim.y 
-		    + mov_ijk_floor.y) * mov_dim.x 
-		    + mov_ijk_floor.x;
+		mvf = (mov_ijk_floor.z * mov_dim.y + mov_ijk_floor.y) 
+		    * mov_dim.x + mov_ijk_floor.x;
 
 		m_x1y1z1 = fx1 * fy1 * fz1 * TEX_REF (moving_image, mvf);
 		m_x2y1z1 = fx2 * fy1 * fz1 * TEX_REF (moving_image, mvf + 1);
@@ -4033,7 +4049,6 @@ bspline_cuda_score_j_mse_kernel1
 		dc_dv_element_y[0] = diff * big_fat_grad[1];
 		dc_dv_element_z[0] = diff * big_fat_grad[2];
 
-				
 		// This code does not work for large image volumes > 512x512x170
 		//		dc_dv_element_x[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
 		//		dc_dv_element_y[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
@@ -5659,8 +5674,7 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
-	printf ("Executing bspline_cuda_score_j_mse_kernel1()\n"
-	    "Grid [%i,%i], %d threads_per_block.\n", 
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
 	    Grid_x, Grid_y, threads_per_block);
     }
 
@@ -5691,7 +5705,7 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
 
     /* GCS ??? */
-    if (tile_padding == 64) tile_padding = 0;
+    //if (tile_padding == 64) tile_padding = 0;
     printf ("tile_padding = %d\n", tile_padding);
 
     bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
@@ -5741,7 +5755,7 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 // AUTHOR: James Shackleford
 //   DATE: September 16th, 2009
 ////////////////////////////////////////////////////////////////////////////////
-void CUDA_bspline_mse_2_condense_64_texfetch(
+void CUDA_bspline_mse_2_condense_64_texfetch (
     Dev_Pointers_Bspline* dev_ptrs,
     int* vox_per_rgn,
     int num_tiles)
@@ -6011,7 +6025,7 @@ void CUDA_bspline_mse_2_condense(
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void CUDA_bspline_mse_2_reduce(
+extern "C" void CUDA_bspline_mse_2_reduce (
     Dev_Pointers_Bspline* dev_ptrs,
     int num_knots)
 {

@@ -3561,7 +3561,8 @@ bspline_score_g_mse (
 			dxyz,
 			moving);
 
-		    // Return code is 0 if voxel is pushed outside of moving image
+		    // Return code is 0 if voxel is pushed outside of 
+		    // moving image
 		    if (!rc) continue;
 
 		    // Compute linear interpolation fractions
