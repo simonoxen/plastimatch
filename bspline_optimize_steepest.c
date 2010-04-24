@@ -53,6 +53,7 @@ bspline_optimize_steepest_trace(
     char filename[20];
     float *grad_backup;
     float score_backup;
+    float coeff_init;
 
     if (parms->debug) {
 	fp = fopen("scores.txt", "w");
@@ -63,7 +64,7 @@ bspline_optimize_steepest_trace(
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
-	    alpha = 10.0f;
+	    alpha = 1.0f;
 	    printf ("Using large alpha_0 (%f)\n", alpha);
     }
 #endif
@@ -265,7 +266,7 @@ bspline_optimize_steepest_trust (
 	    // cases, but do to the efficiency of
 	    // this optimizer it takes quite a few
 	    // iterations (at least 50).
-	    alpha = 50.0f;
+	    alpha = 1.0f;
 	    printf ("Using large alpha_0 (%f)\n", alpha);
     }
 #endif
@@ -487,10 +488,10 @@ bspline_optimize_steepest (
 	bspline_optimize_steepest_naive (
 	    bxf, bst, parms, fixed, moving, moving_grad);
     } else {
-	bspline_optimize_steepest_trust (
-	    bxf, bst, parms, fixed, moving, moving_grad);
-//	DEBUG
-//	bspline_optimize_steepest_trace (
+//	bspline_optimize_steepest_trust (
 //	    bxf, bst, parms, fixed, moving, moving_grad);
+//	DEBUG
+	bspline_optimize_steepest_trace (
+	    bxf, bst, parms, fixed, moving, moving_grad);
     }
 }
