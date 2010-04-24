@@ -143,7 +143,7 @@ bspline_optimize_steepest_trace(
 	/* Give a little feedback to the user */
 	bspline_display_coeff_stats (bxf);
 	logfile_printf ("                    "
-	    "GR %6.2f NEW_A %6.2f ACCEPT? %d\n", gr, alpha, accept_step);
+	    "GR %6.2f NEW_A %6.4f ACCEPT? %d\n", gr, alpha, accept_step);
 
 	/* Save some debugging information */
 	bspline_save_debug_state (parms, bst, bxf);
