@@ -598,7 +598,8 @@ void bspline_cuda_MI_a (
 // FUNCTION: bspline_cuda_score_j_mse()
 //
 ////////////////////////////////////////////////////////////////////////////////
-void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
+void bspline_cuda_score_j_mse (
+    BSPLINE_Parms* parms,
     Bspline_state *bst,
     BSPLINE_Xform* bxf,
     Volume* fixed,
@@ -606,8 +607,6 @@ void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
     Volume* moving_grad,
     Dev_Pointers_Bspline* dev_ptrs)
 {
-
-
     // --- DECLARE LOCAL VARIABLES ------------------------------
     BSPLINE_Score* ssd;		// Holds the SSD "Score" information
     int num_vox;		// Holds # of voxels in the fixed volume
