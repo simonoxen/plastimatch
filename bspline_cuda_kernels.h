@@ -79,27 +79,28 @@ __device__ float obtain_spline_basis_function(float one_over_six,
 __global__ void
 bspline_cuda_score_j_mse_kernel1 
 (
- float  *dc_dv_x,	// OUTPUT
- float  *dc_dv_y,	// OUTPUT
- float  *dc_dv_z,	// OUTPUT
- float  *score,		// OUTPUT
- float  *coeff,		// INPUT
- float  *fixed_image,	// INPUT
- float  *moving_image,	// INPUT
- float  *moving_grad,	// INPUT
- int3   volume_dim,	// x, y, z dimensions of the volume in voxels
- float3 img_origin,	// Image origin (in mm)
- float3 img_spacing,	// Image spacing (in mm)
- float3 img_offset,	// Offset corresponding to the region of interest
- int3   roi_offset,	// Position of first vox in ROI (in vox)
- int3   roi_dim,	// Dimension of ROI (in vox)
- int3   vox_per_rgn,	// Knot spacing (in vox)
- float3 pix_spacing,	// Dimensions of a single voxel (in mm)
- int3   rdims,		// # of regions in (x,y,z)
- int3   cdims,
- int	pad,
- float*   skipped);
-
+    float  *dc_dv_x,       // OUTPUT
+    float  *dc_dv_y,       // OUTPUT
+    float  *dc_dv_z,       // OUTPUT
+    float  *score,         // OUTPUT
+    float  *coeff,         // INPUT
+    float  *fixed_image,   // INPUT
+    float  *moving_image,  // INPUT
+    float  *moving_grad,   // INPUT
+    int3   fix_dim,        // Size of fixed image (vox)
+    float3 fix_origin,     // Origin of fixed image (mm)
+    float3 fix_spacing,    // Spacing of fixed image (mm)
+    int3   mov_dim,        // Size of moving image (vox)
+    float3 mov_origin,     // Origin of moving image (mm)
+    float3 mov_spacing,    // Spacing of moving image (mm)
+    int3   roi_dim,        // Dimension of ROI (in vox)
+    int3   roi_offset,     // Position of first vox in ROI (in vox)
+    int3   vox_per_rgn,    // Knot spacing (in vox)
+    int3   rdims,          // # of regions in (x,y,z)
+    int3   cdims,
+    int    pad,
+    float  *skipped        // # of voxels that fell outside the ROI
+);
 
 __global__ void sum_reduction_kernel
 (

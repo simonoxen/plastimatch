@@ -29,7 +29,6 @@ texture<float, 1> tex_dc_dv;
 texture<float, 1> tex_grad;
 
 
-
 ////////////////////////////////////////////////////////////
 // Note that disabling textures may not
 // always work.  Not all GPU kernel functions
@@ -47,8 +46,6 @@ texture<float, 1> tex_grad;
     (array[index])
 #endif
 ////////////////////////////////////////////////////////////
-
-
 
 
 /**
@@ -85,9 +82,6 @@ test_kernel
 	dz[threadIdxInGrid] = (float)threadIdxInGrid;
     }
 }
-
-
-
 
 extern "C" void bspline_cuda_init_MI_a (
     Dev_Pointers_Bspline* dev_ptrs,
@@ -290,7 +284,6 @@ extern "C" void CUDA_bspline_MI_a_hist_fix (
 
     checkCUDAError ("kernel hist_fix_merge");
 }
-			
 
 
 extern "C" void CUDA_bspline_MI_a_hist_mov (
@@ -424,7 +417,6 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
 
     checkCUDAError ("kernel hist_mov_merge");
 }
-
 
 
 extern "C" void CUDA_bspline_MI_a_hist_jnt (
@@ -1392,10 +1384,6 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
 }
 
 
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Merge Partial/Segmented Histograms
 //
@@ -1609,41 +1597,43 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
     cdims.y = bxf->cdims[1];
     cdims.z = bxf->cdims[2];
 
-    // Dimensions of the volume (in voxels)
-    int3 volume_dim;		
-    volume_dim.x = fixed->dim[0]; 
-    volume_dim.y = fixed->dim[1];
-    volume_dim.z = fixed->dim[2];
+    // Fixed image header
+    int3 fix_dim;
+    fix_dim.x = fixed->dim[0]; 
+    fix_dim.y = fixed->dim[1];
+    fix_dim.z = fixed->dim[2];
 
-    // Number of voxels per region
-    int3 vox_per_rgn;		
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
+    float3 fix_origin;		
+    fix_origin.x = (float) bxf->img_origin[0];
+    fix_origin.y = (float) bxf->img_origin[1];
+    fix_origin.z = (float) bxf->img_origin[2];
 
-    // Image origin (in mm)
-    float3 img_origin;		
-    img_origin.x = (float)bxf->img_origin[0];
-    img_origin.y = (float)bxf->img_origin[1];
-    img_origin.z = (float)bxf->img_origin[2];
+    float3 fix_spacing;
+    fix_spacing.x = (float) bxf->img_spacing[0];
+    fix_spacing.y = (float) bxf->img_spacing[1];
+    fix_spacing.z = (float) bxf->img_spacing[2];
 
-    // Image spacing (in mm)
-    float3 img_spacing;     
-    img_spacing.x = (float)bxf->img_spacing[0];
-    img_spacing.y = (float)bxf->img_spacing[1];
-    img_spacing.z = (float)bxf->img_spacing[2];
+    // Moving image header
+    int3 mov_dim;		
+    mov_dim.x = moving->dim[0]; 
+    mov_dim.y = moving->dim[1];
+    mov_dim.z = moving->dim[2];
 
-    // Image offset
-    float3 img_offset;     
-    img_offset.x = (float)moving->offset[0];
-    img_offset.y = (float)moving->offset[1];
-    img_offset.z = (float)moving->offset[2];
+    float3 mov_origin;
+    mov_origin.x = (float) moving->offset[0];
+    mov_origin.y = (float) moving->offset[1];
+    mov_origin.z = (float) moving->offset[2];
 
-    // Pixel spacing
-    float3 pix_spacing;     
-    pix_spacing.x = (float)moving->pix_spacing[0];
-    pix_spacing.y = (float)moving->pix_spacing[1];
-    pix_spacing.z = (float)moving->pix_spacing[2];
+    float3 mov_spacing;
+    mov_spacing.x = (float) moving->pix_spacing[0];
+    mov_spacing.y = (float) moving->pix_spacing[1];
+    mov_spacing.z = (float) moving->pix_spacing[2];
+
+    // Dimension of ROI (in vox)
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];	
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
 
     // Position of first vox in ROI (in vox)
     int3 roi_offset;        
@@ -1651,11 +1641,11 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
     roi_offset.y = bxf->roi_offset[1];
     roi_offset.z = bxf->roi_offset[2];
 
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];	
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
+    // Number of voxels per region
+    int3 vox_per_rgn;		
+    vox_per_rgn.x = bxf->vox_per_rgn[0];
+    vox_per_rgn.y = bxf->vox_per_rgn[1];
+    vox_per_rgn.z = bxf->vox_per_rgn[2];
 
 
     // JAS 10.15.2009
@@ -1740,14 +1730,15 @@ extern "C" void bspline_cuda_i_stage_1 (Volume* fixed,
 	dev_ptrs->fixed_image,	// Addr of fixed_image on GPU
 	dev_ptrs->moving_image,	// Addr of moving_image on GPU
 	dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-	volume_dim,		// Volume Dimensions
-	img_origin,		// Origin
-	img_spacing,		// Voxel Spacing
-	img_offset,		// Image Offset
-	roi_offset,		// Region of Intrest Offset
+	fix_dim,                // Size of fixed image (vox)
+	fix_origin,             // Origin of fixed image (mm)
+	fix_spacing,            // Spacing of fixed image (mm)
+	mov_dim,                // Size of moving image (vox)
+	mov_origin,             // Origin of moving image (mm)
+	mov_spacing,            // Spacing of moving image (mm)
 	roi_dim,		// Region of Intrest Dimenions
+	roi_offset,		// Region of Intrest Offset
 	vox_per_rgn,		// Voxels per Region
-	pix_spacing,		// Pixel Spacing
 	rdims,			// 
 	cdims,
 	tile_padding,
@@ -3719,52 +3710,55 @@ __global__ void kernel_bspline_mse_2_reduce(
 __global__ void
 bspline_cuda_score_j_mse_kernel1 
 (
-    float  *dc_dv_x,	// OUTPUT
-    float  *dc_dv_y,	// OUTPUT
-    float  *dc_dv_z,	// OUTPUT
-    float  *score,		// OUTPUT
-    float  *coeff,		// INPUT
-    float  *fixed_image,	// INPUT
-    float  *moving_image,	// INPUT
-    float  *moving_grad,	// INPUT
-    int3   volume_dim,	// x, y, z dimensions of the volume in voxels
-    float3 img_origin,	// Image origin (in mm)
-    float3 img_spacing,	// Image spacing (in mm)
-    float3 img_offset,	// Offset corresponding to the region of interest
-    int3   roi_offset,	// Position of first vox in ROI (in vox)
-    int3   roi_dim,	// Dimension of ROI (in vox)
-    int3   vox_per_rgn,	// Knot spacing (in vox)
-    float3 pix_spacing,	// Dimensions of a single voxel (in mm)
-    int3   rdims,		// # of regions in (x,y,z)
+    float  *dc_dv_x,       // OUTPUT
+    float  *dc_dv_y,       // OUTPUT
+    float  *dc_dv_z,       // OUTPUT
+    float  *score,         // OUTPUT
+    float  *coeff,         // INPUT
+    float  *fixed_image,   // INPUT
+    float  *moving_image,  // INPUT
+    float  *moving_grad,   // INPUT
+    int3   fix_dim,        // Size of fixed image (vox)
+    float3 fix_origin,     // Origin of fixed image (mm)
+    float3 fix_spacing,    // Spacing of fixed image (mm)
+    int3   mov_dim,        // Size of moving image (vox)
+    float3 mov_origin,     // Origin of moving image (mm)
+    float3 mov_spacing,    // Spacing of moving image (mm)
+    int3   roi_dim,        // Dimension of ROI (in vox)
+    int3   roi_offset,     // Position of first vox in ROI (in vox)
+    int3   vox_per_rgn,    // Knot spacing (in vox)
+    int3   rdims,          // # of regions in (x,y,z)
     int3   cdims,
     int    pad,
-    float  *skipped)	// # of voxels that fell outside the ROI
+    float  *skipped        // # of voxels that fell outside the ROI
+)
 {
     extern __shared__ float sdata[]; 
 	
-    int3   coord_in_volume; // Coordinate of the voxel in the volume (x,y,z)
-    int3   p;		       // Index of the tile within the volume (x,y,z)
-    int3   q;		       // Offset within the tile (measured in voxels)
-    int    fv;				// Index of voxel in linear image array
-    int    pidx;			// Index into c_lut
-    int    qidx;			// Index into q_lut
-    int    cidx;			// Index into the coefficient table
+    int3   coord_in_volume;   // Index of the voxel in the fixed image
+    int3   p;		      // Index of the tile within the volume (vox)
+    int3   q;		      // Offset within the tile (measured in voxels)
+    int    fv;		      // Index of voxel in linear image array
+    int    pidx;	      // Index into c_lut
+    int    qidx;	      // Index into q_lut
+    int    cidx;	      // Index into the coefficient table
 
-    float  P;				
-    float3 N;				// Multiplier values
-    float3 d;				// B-spline deformation vector
+    float  P;
+    float3 N;		      // Multiplier values
+    float3 d;		      // B-spline deformation vector
     float  diff;
 
-    float3 distance_from_image_origin;
-    float3 displacement_in_mm; 
-    float3 displacement_in_vox;
-    int3 displacement_in_vox_floor;
-    float3 displacement_in_vox_round;
+    float3 fix_xyz;           // Physical position of fixed image voxel (mm)
+    float3 mov_xyz;           // Physical position of corresponding vox (mm)
+    float3 mov_ijk;           // Index of corresponding vox (vox)
+    int3 mov_ijk_floor;
+    float3 mov_ijk_round;
     float  fx1, fx2, fy1, fy2, fz1, fz2;
     int    mvf;
     //    int    mvr;	// (Deprecated: See below)
-    float  m_val;
-    float  m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1, m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
 	
     float* dc_dv_element_x;
     float* dc_dv_element_y;
@@ -3776,14 +3770,18 @@ bspline_cuda_score_j_mse_kernel1
     // Calculate the total number of threads in each thread block.
     int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
 
-    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+    // Next, calculate the index of the thread in its thread block, 
+    // in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) 
+	+ (blockDim.x * threadIdx.y) + threadIdx.x;
 
-    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+    // Finally, calculate the index of the thread in the grid, 
+    // based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) 
+	+ threadIdxInBlock;
 
-    // Allocate memory for the spline coefficients evaluated at indices 0, 1, 2, and 3 in the 
-    // X, Y, and Z directions
+    // Allocate memory for the spline coefficients evaluated at 
+    // indices 0, 1, 2, and 3 in the X, Y, and Z directions
     float *A = &sdata[12*threadIdxInBlock + 0];
     float *B = &sdata[12*threadIdxInBlock + 4];
     float *C = &sdata[12*threadIdxInBlock + 8];
@@ -3792,14 +3790,18 @@ bspline_cuda_score_j_mse_kernel1
     float one_over_six = 1.0f/6.0f;
 
     // If the voxel lies outside the volume, do nothing.
-    if(threadIdxInGrid < (volume_dim.x * volume_dim.y * volume_dim.z))
-    {	
+    if (threadIdxInGrid < (fix_dim.x * fix_dim.y * fix_dim.z))
+    {
 	// Calculate the x, y, and z coordinate of the voxel within the volume.
-	coord_in_volume.z = threadIdxInGrid / (volume_dim.x * volume_dim.y);
-	coord_in_volume.y = (threadIdxInGrid - (coord_in_volume.z * volume_dim.x * volume_dim.y)) / volume_dim.x;
-	coord_in_volume.x = threadIdxInGrid - coord_in_volume.z * volume_dim.x * volume_dim.y - (coord_in_volume.y * volume_dim.x);
+	coord_in_volume.z = threadIdxInGrid / (fix_dim.x * fix_dim.y);
+	coord_in_volume.y = (threadIdxInGrid 
+	    - (coord_in_volume.z * fix_dim.x * fix_dim.y)) / fix_dim.x;
+	coord_in_volume.x = threadIdxInGrid 
+	    - coord_in_volume.z * fix_dim.x * fix_dim.y 
+	    - (coord_in_volume.y * fix_dim.x);
 			
-	// Calculate the x, y, and z offsets of the tile that contains this voxel.
+	// Calculate the x, y, and z offsets of the tile that 
+	// contains this voxel.
 	p.x = coord_in_volume.x / vox_per_rgn.x;
 	p.y = coord_in_volume.y / vox_per_rgn.y;
 	p.z = coord_in_volume.z / vox_per_rgn.z;
@@ -3810,18 +3812,19 @@ bspline_cuda_score_j_mse_kernel1
 	q.z = coord_in_volume.z - p.z * vox_per_rgn.z;
 
 	// If the voxel lies outside of the region of interest, do nothing.
-	if(coord_in_volume.x <= (roi_offset.x + roi_dim.x) || 
+	if (coord_in_volume.x <= (roi_offset.x + roi_dim.x) || 
 	    coord_in_volume.y <= (roi_offset.y + roi_dim.y) ||
 	    coord_in_volume.z <= (roi_offset.z + roi_dim.z)) {
 
 	    // Compute the linear index of fixed image voxel.
-	    fv = (coord_in_volume.z * volume_dim.x * volume_dim.y) + (coord_in_volume.y * volume_dim.x) + coord_in_volume.x;
+	    fv = (coord_in_volume.z * fix_dim.x * fix_dim.y) 
+		+ (coord_in_volume.y * fix_dim.x) + coord_in_volume.x;
 
 	    //-----------------------------------------------------------------
 	    // Calculate the B-Spline deformation vector.
 	    //-----------------------------------------------------------------
 
-	    // pidx is the tile index for the tile the current voxel falls within.
+	    // pidx is the tile index for the tile of the current voxel
 	    pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
 	    dc_dv_element_x = &dc_dv_x[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
 	    dc_dv_element_y = &dc_dv_y[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
@@ -3868,12 +3871,13 @@ bspline_cuda_score_j_mse_kernel1
 
 	    // Compute the B-spline interpolant for the voxel
 	    int3 t;
-	    for(t.z = 0; t.z < 4; t.z++) {
-		for(t.y = 0; t.y < 4; t.y++) {
-		    for(t.x = 0; t.x < 4; t.x++) {
+	    for (t.z = 0; t.z < 4; t.z++) {
+		for (t.y = 0; t.y < 4; t.y++) {
+		    for (t.x = 0; t.x < 4; t.x++) {
 
 			// Calculate the index into the coefficients array.
-			cidx = 3 * ((p.z + t.z) * cdims.x * cdims.y + (p.y + t.y) * cdims.x + (p.x + t.x));
+			cidx = 3 * ((p.z + t.z) * cdims.x * cdims.y 
+			    + (p.y + t.y) * cdims.x + (p.x + t.x));
 
 			// Fetch the values for P, Ni, Nj, and Nk.
 			P   = A[t.x] * B[t.y] * C[t.z];
@@ -3893,121 +3897,121 @@ bspline_cuda_score_j_mse_kernel1
 	    // Find correspondence in the moving image.
 	    //-----------------------------------------------------------------
 
-	    // Calculate the distance of the voxel from the origin (in mm) along the x, y and z axes.
-	    distance_from_image_origin.x = img_origin.x + (pix_spacing.x * coord_in_volume.x);
-	    distance_from_image_origin.y = img_origin.y + (pix_spacing.y * coord_in_volume.y);
-	    distance_from_image_origin.z = img_origin.z + (pix_spacing.z * coord_in_volume.z);
+	    // Calculate the position of the voxel (in mm)
+	    fix_xyz.x = fix_origin.x + (fix_spacing.x * coord_in_volume.x);
+	    fix_xyz.y = fix_origin.y + (fix_spacing.y * coord_in_volume.y);
+	    fix_xyz.z = fix_origin.z + (fix_spacing.z * coord_in_volume.z);
 			
-	    // Calculate the displacement of the voxel (in mm) in the x, y, and z directions.
-	    displacement_in_mm.x = distance_from_image_origin.x + d.x;
-	    displacement_in_mm.y = distance_from_image_origin.y + d.y;
-	    displacement_in_mm.z = distance_from_image_origin.z + d.z;
+	    // Calculate the corresponding voxel in the moving image (in mm)
+	    mov_xyz.x = fix_xyz.x + d.x;
+	    mov_xyz.y = fix_xyz.y + d.y;
+	    mov_xyz.z = fix_xyz.z + d.z;
 
 	    // Calculate the displacement value in terms of voxels.
-	    displacement_in_vox.x = (displacement_in_mm.x - img_offset.x) / pix_spacing.x;
-	    displacement_in_vox.y = (displacement_in_mm.y - img_offset.y) / pix_spacing.y;
-	    displacement_in_vox.z = (displacement_in_mm.z - img_offset.z) / pix_spacing.z;
+	    mov_ijk.x = (mov_xyz.x - mov_origin.x) / mov_spacing.x;
+	    mov_ijk.y = (mov_xyz.y - mov_origin.y) / mov_spacing.y;
+	    mov_ijk.z = (mov_xyz.z - mov_origin.z) / mov_spacing.z;
 
-	    // Check if the displaced voxel lies outside the region of interest.
-	    if ((displacement_in_vox.x < -0.5) || (displacement_in_vox.x > (volume_dim.x - 0.5)) || 
-		(displacement_in_vox.y < -0.5) || (displacement_in_vox.y > (volume_dim.y - 0.5)) || 
-		(displacement_in_vox.z < -0.5) || (displacement_in_vox.z > (volume_dim.z - 0.5))) {
+	    // Check if the displaced voxel lies outside the 
+	    // region of interest.
+	    if ((mov_ijk.x < -0.5) || (mov_ijk.x > (mov_dim.x - 0.5)) 
+		|| (mov_ijk.y < -0.5) || (mov_ijk.y > (mov_dim.y - 0.5)) 
+		|| (mov_ijk.z < -0.5) || (mov_ijk.z > (mov_dim.z - 0.5)))
+	    {
+		// Count voxel as outside the ROI
+		skipped[threadIdxInGrid]++;	
 
-		skipped[threadIdxInGrid]++;	// Count voxel as outside the ROI
-	    }
-	    else {
+	    } else {
 
-		//-----------------------------------------------------------------
+		//-----------------------------------------------------------
 		// Compute interpolation fractions.
-		//-----------------------------------------------------------------
+		//-----------------------------------------------------------
 
 		// Clamp and interpolate along the X axis.
-		displacement_in_vox_floor.x = (int)(displacement_in_vox.x);
-		displacement_in_vox_round.x = rintf(displacement_in_vox.x);	// Single instruction round
-		fx2 = displacement_in_vox.x - displacement_in_vox_floor.x;
-		if(displacement_in_vox_floor.x < 0){
-		    displacement_in_vox_floor.x = 0;
-		    displacement_in_vox_round.x = 0;
+		mov_ijk_floor.x = (int) (mov_ijk.x);
+		// rintf = single instruction round
+		mov_ijk_round.x = rintf (mov_ijk.x);
+		fx2 = mov_ijk.x - mov_ijk_floor.x;
+		if (mov_ijk_floor.x < 0) {
+		    mov_ijk_floor.x = 0;
+		    mov_ijk_round.x = 0;
 		    fx2 = 0.0f;
 		}
-		else if(displacement_in_vox_floor.x >= (volume_dim.x - 1)){
-		    displacement_in_vox_floor.x = volume_dim.x - 2;
-		    displacement_in_vox_round.x = volume_dim.x - 1;
+		else if (mov_ijk_floor.x >= (mov_dim.x - 1)) {
+		    mov_ijk_floor.x = mov_dim.x - 2;
+		    mov_ijk_round.x = mov_dim.x - 1;
 		    fx2 = 1.0f;
 		}
 		fx1 = 1.0f - fx2;
 
 		// Clamp and interpolate along the Y axis.
-		displacement_in_vox_floor.y = (int)(displacement_in_vox.y);
-		displacement_in_vox_round.y = rintf(displacement_in_vox.y);	// Single instruction round
-		fy2 = displacement_in_vox.y - displacement_in_vox_floor.y;
-		if(displacement_in_vox_floor.y < 0){
-		    displacement_in_vox_floor.y = 0;
-		    displacement_in_vox_round.y = 0;
+		mov_ijk_floor.y = (int) (mov_ijk.y);
+		// rintf = single instruction round
+		mov_ijk_round.y = rintf (mov_ijk.y);
+		fy2 = mov_ijk.y - mov_ijk_floor.y;
+		if(mov_ijk_floor.y < 0){
+		    mov_ijk_floor.y = 0;
+		    mov_ijk_round.y = 0;
 		    fy2 = 0.0f;
 		}
-		else if(displacement_in_vox_floor.y >= (volume_dim.y - 1)){
-		    displacement_in_vox_floor.y = volume_dim.y - 2;
-		    displacement_in_vox_round.y = volume_dim.y - 1;
+		else if (mov_ijk_floor.y >= (mov_dim.y - 1)) {
+		    mov_ijk_floor.y = mov_dim.y - 2;
+		    mov_ijk_round.y = mov_dim.y - 1;
 		    fy2 = 1.0f;
 		}
 		fy1 = 1.0f - fy2;
 				
 		// Clamp and intepolate along the Z axis.
-		displacement_in_vox_floor.z = (int)(displacement_in_vox.z);
-		displacement_in_vox_round.z = rintf(displacement_in_vox.z);	// Single instruction round
-		fz2 = displacement_in_vox.z - displacement_in_vox_floor.z;
-		if(displacement_in_vox_floor.z < 0){
-		    displacement_in_vox_floor.z = 0;
-		    displacement_in_vox_round.z = 0;
+		mov_ijk_floor.z = (int) (mov_ijk.z);
+		// rintf = single instruction round
+		mov_ijk_round.z = rintf (mov_ijk.z);
+		fz2 = mov_ijk.z - mov_ijk_floor.z;
+		if(mov_ijk_floor.z < 0){
+		    mov_ijk_floor.z = 0;
+		    mov_ijk_round.z = 0;
 		    fz2 = 0.0f;
 		}
-		else if(displacement_in_vox_floor.z >= (volume_dim.z - 1)){
-		    displacement_in_vox_floor.z = volume_dim.z - 2;
-		    displacement_in_vox_round.z = volume_dim.z - 1;
+		else if (mov_ijk_floor.z >= (mov_dim.z - 1)) {
+		    mov_ijk_floor.z = mov_dim.z - 2;
+		    mov_ijk_round.z = mov_dim.z - 1;
 		    fz2 = 1.0;
 		}
 		fz1 = 1.0f - fz2;
 				
-		//-----------------------------------------------------------------
+		//-----------------------------------------------------------
 		// Compute moving image intensity using linear interpolation.
-		//-----------------------------------------------------------------
+		//-----------------------------------------------------------
 
-		mvf = (displacement_in_vox_floor.z * volume_dim.y + displacement_in_vox_floor.y) * volume_dim.x + displacement_in_vox_floor.x;
+		mvf = (mov_ijk_floor.z * mov_dim.y 
+		    + mov_ijk_floor.y) * mov_dim.x 
+		    + mov_ijk_floor.x;
 
 		m_x1y1z1 = fx1 * fy1 * fz1 * TEX_REF (moving_image, mvf);
 		m_x2y1z1 = fx2 * fy1 * fz1 * TEX_REF (moving_image, mvf + 1);
-		m_x1y2z1 = fx1 * fy2 * fz1 * TEX_REF (moving_image, mvf + volume_dim.x);
-		m_x2y2z1 = fx2 * fy2 * fz1 * TEX_REF (moving_image, mvf + volume_dim.x + 1);
-		m_x1y1z2 = fx1 * fy1 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x);
-		m_x2y1z2 = fx2 * fy1 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + 1);
-		m_x1y2z2 = fx1 * fy2 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x);
-		m_x2y2z2 = fx2 * fy2 * fz2 * TEX_REF (moving_image, mvf + volume_dim.y * volume_dim.x + volume_dim.x + 1);
+		m_x1y2z1 = fx1 * fy2 * fz1 * TEX_REF (moving_image, mvf + mov_dim.x);
+		m_x2y2z1 = fx2 * fy2 * fz1 * TEX_REF (moving_image, mvf + mov_dim.x + 1);
+		m_x1y1z2 = fx1 * fy1 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x);
+		m_x2y1z2 = fx2 * fy1 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + 1);
+		m_x1y2z2 = fx1 * fy2 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + mov_dim.x);
+		m_x2y2z2 = fx2 * fy2 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + mov_dim.x + 1);
 
 		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
-		//-----------------------------------------------------------------
 		// Compute intensity difference.
-		//-----------------------------------------------------------------
-
 #if PLM_DONT_INVERT_GRADIENT
 		diff = m_val - TEX_REF (fixed_image, fv);
 #else
 		diff = TEX_REF (fixed_image, fv) - m_val;
 #endif
-				
-		//-----------------------------------------------------------------
-		// Accumulate the score.
-		//-----------------------------------------------------------------
 
+		// Accumulate the score.
 		score[threadIdxInGrid] = (diff * diff);
 
-		//-----------------------------------------------------------------
+		//-----------------------------------------------------------
 		// Compute dc_dv for this offset
-		//-----------------------------------------------------------------
-				
+		//-----------------------------------------------------------
 		// Compute spatial gradient using nearest neighbors.
-		//		mvr = ((((int)displacement_in_vox_round.z * volume_dim.y) + (int)displacement_in_vox_round.y) * volume_dim.x) + (int)displacement_in_vox_round.x;
+		//		mvr = ((((int)mov_ijk_round.z * mov_dim.y) + (int)mov_ijk_round.y) * mov_dim.x) + (int)mov_ijk_round.x;
 		// The above is commented out because mvr becomes too large
 		// to be used as a GPU texture reference index.  See below
 		// for the workaround using offsets
@@ -4019,9 +4023,11 @@ bspline_cuda_score_j_mse_kernel1
 		// order to reduce the size of the index.
 		float* big_fat_grad;
 
-		big_fat_grad = &moving_grad[3*(int)displacement_in_vox_round.z * volume_dim.y * volume_dim.x];
-		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.y * volume_dim.x];
-		big_fat_grad = &big_fat_grad[3*(int)displacement_in_vox_round.x];
+		big_fat_grad = &moving_grad[
+		    3 * (int) mov_ijk_round.z * mov_dim.y * mov_dim.x];
+		big_fat_grad = &big_fat_grad[
+		    3 * (int) mov_ijk_round.y * mov_dim.x];
+		big_fat_grad = &big_fat_grad[3 * (int) mov_ijk_round.x];
 
 		dc_dv_element_x[0] = diff * big_fat_grad[0];
 		dc_dv_element_y[0] = diff * big_fat_grad[1];
@@ -5558,41 +5564,43 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
     cdims.y = bxf->cdims[1];
     cdims.z = bxf->cdims[2];
 
-    // Dimensions of the volume (in voxels)
-    int3 volume_dim;		
-    volume_dim.x = fixed->dim[0]; 
-    volume_dim.y = fixed->dim[1];
-    volume_dim.z = fixed->dim[2];
+    // Fixed image header
+    int3 fix_dim;
+    fix_dim.x = fixed->dim[0]; 
+    fix_dim.y = fixed->dim[1];
+    fix_dim.z = fixed->dim[2];
 
-    // Number of voxels per region
-    int3 vox_per_rgn;		
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
+    float3 fix_origin;		
+    fix_origin.x = (float) bxf->img_origin[0];
+    fix_origin.y = (float) bxf->img_origin[1];
+    fix_origin.z = (float) bxf->img_origin[2];
 
-    // Image origin (in mm)
-    float3 img_origin;		
-    img_origin.x = (float)bxf->img_origin[0];
-    img_origin.y = (float)bxf->img_origin[1];
-    img_origin.z = (float)bxf->img_origin[2];
+    float3 fix_spacing;
+    fix_spacing.x = (float) bxf->img_spacing[0];
+    fix_spacing.y = (float) bxf->img_spacing[1];
+    fix_spacing.z = (float) bxf->img_spacing[2];
 
-    // Image spacing (in mm)
-    float3 img_spacing;     
-    img_spacing.x = (float)bxf->img_spacing[0];
-    img_spacing.y = (float)bxf->img_spacing[1];
-    img_spacing.z = (float)bxf->img_spacing[2];
+    // Moving image header
+    int3 mov_dim;		
+    mov_dim.x = moving->dim[0]; 
+    mov_dim.y = moving->dim[1];
+    mov_dim.z = moving->dim[2];
 
-    // Image offset
-    float3 img_offset;     
-    img_offset.x = (float)moving->offset[0];
-    img_offset.y = (float)moving->offset[1];
-    img_offset.z = (float)moving->offset[2];
+    float3 mov_origin;
+    mov_origin.x = (float) moving->offset[0];
+    mov_origin.y = (float) moving->offset[1];
+    mov_origin.z = (float) moving->offset[2];
 
-    // Pixel spacing
-    float3 pix_spacing;     
-    pix_spacing.x = (float)moving->pix_spacing[0];
-    pix_spacing.y = (float)moving->pix_spacing[1];
-    pix_spacing.z = (float)moving->pix_spacing[2];
+    float3 mov_spacing;
+    mov_spacing.x = (float) moving->pix_spacing[0];
+    mov_spacing.y = (float) moving->pix_spacing[1];
+    mov_spacing.z = (float) moving->pix_spacing[2];
+
+    // Dimension of ROI (in vox)
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];	
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
 
     // Position of first vox in ROI (in vox)
     int3 roi_offset;        
@@ -5600,11 +5608,11 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
     roi_offset.y = bxf->roi_offset[1];
     roi_offset.z = bxf->roi_offset[2];
 
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];	
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
+    // Number of voxels per region
+    int3 vox_per_rgn;		
+    vox_per_rgn.x = bxf->vox_per_rgn[0];
+    vox_per_rgn.y = bxf->vox_per_rgn[1];
+    vox_per_rgn.z = bxf->vox_per_rgn[2];
 
     // --- INITIALIZE GRID ---
     int i;
@@ -5651,7 +5659,9 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
-	//		printf("\nExecuting bspline_cuda_score_j_mse_kernel1() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+	printf ("Executing bspline_cuda_score_j_mse_kernel1()\n"
+	    "Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -5677,7 +5687,12 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
     cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
     checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
 
-    int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+    int tile_padding = 64 - 
+	((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+
+    /* GCS ??? */
+    if (tile_padding == 64) tile_padding = 0;
+    printf ("tile_padding = %d\n", tile_padding);
 
     bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
 	dev_ptrs->dc_dv_x,	// Addr of dc_dv_x on GPU
@@ -5688,14 +5703,15 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	dev_ptrs->fixed_image,	// Addr of fixed_image on GPU
 	dev_ptrs->moving_image,	// Addr of moving_image on GPU
 	dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-	volume_dim,		// Volume Dimensions
-	img_origin,		// Origin
-	img_spacing,		// Voxel Spacing
-	img_offset,		// Image Offset
-	roi_offset,		// Region of Intrest Offset
+	fix_dim,                // Size of fixed image (vox)
+	fix_origin,             // Origin of fixed image (mm)
+	fix_spacing,            // Spacing of fixed image (mm)
+	mov_dim,                // Size of moving image (vox)
+	mov_origin,             // Origin of moving image (mm)
+	mov_spacing,            // Spacing of moving image (mm)
 	roi_dim,		// Region of Intrest Dimenions
+	roi_offset,		// Region of Intrest Offset
 	vox_per_rgn,		// Voxels per Region
-	pix_spacing,		// Pixel Spacing
 	rdims,			// 
 	cdims,
 	tile_padding,
