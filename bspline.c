@@ -1956,12 +1956,12 @@ bspline_mi_hist_add_pvi_6 (
 //
 // In the x-direction
 //
-//  dP / dv_x = 1 or -1 (approaching or departing)
+//  dP / dv_x = v_y*v_z or -v_y*v_z (approaching or departing)
 //
 // and likewise for v_y and v_z.
 //
-// Therefore dC_dv_x = - dS_dP ( departing )
-//       or          = + dS_dP (approaching)
+// Therefore dC_dv_x = -v_y*v_z * dS_dP ( departing )
+//       or          = +v_y*v_z * dS_dP (approaching)
 //
 //
 // The 8-neighborhood is configured as such:
@@ -2004,7 +2004,9 @@ bspline_mi_pvi_8_dc_dv (
     int fv,                        /* Input */
     int mvf,                       /* Input */
     float mijk[3],                 /* Input */
-    float num_vox_f                /* Input */
+    float num_vox_f,               /* Input */
+    float li_1[3],                 /* Input */
+    float li_2[3]                  /* Input */
 )
 {
     long j_idxs[2];
@@ -2022,6 +2024,7 @@ bspline_mi_pvi_8_dc_dv (
     int n1, n2, n3, n4, n5, n6, n7, n8;
     int idx_fbin, idx_mbin, idx_jbin;
     int offset_fbin;
+    float dw1[3], dw2[3], dw3[3], dw4[3], dw5[3], dw6[3], dw7[3], dw8[3];
 
     dc_dv[0] = dc_dv[1] = dc_dv[2] = 0.0f;
 
@@ -2035,6 +2038,39 @@ bspline_mi_pvi_8_dc_dv (
     n7 = n1 + moving->dim[0]*moving->dim[1] + moving->dim[0];
     n8 = n1 + moving->dim[0]*moving->dim[1] + moving->dim[0] + 1;
 
+    // Pre-compute differential PV slices
+    dw1[0] = - li_1[1] * li_1[2];
+    dw1[1] = - li_1[0] * li_1[2];
+    dw1[2] = - li_1[0] * li_1[1];
+
+    dw2[0] = + li_1[1] * li_1[2];
+    dw2[1] = - li_2[0] * li_1[2];
+    dw2[2] = - li_2[0] * li_1[1];
+
+    dw3[0] = - li_1[1] * li_2[2];
+    dw3[1] = - li_1[0] * li_2[2];
+    dw3[2] = + li_1[0] * li_1[1];
+
+    dw4[0] = + li_1[1] * li_2[2];
+    dw4[1] = - li_2[0] * li_2[2];
+    dw4[2] = + li_2[0] * li_1[1];
+
+    dw5[0] = - li_2[1] * li_1[2];
+    dw5[1] = + li_1[0] * li_1[2];
+    dw5[2] = - li_1[0] * li_2[1];
+
+    dw6[0] = + li_2[1] * li_1[2];
+    dw6[1] = + li_2[0] * li_1[2];
+    dw6[2] = - li_2[0] * li_2[1];
+
+    dw7[0] = - li_2[1] * li_2[2];
+    dw7[1] = + li_1[0] * li_2[2];
+    dw7[2] = + li_2[0] * li_2[1];
+
+    dw8[0] = + li_2[1] * li_2[2];
+    dw8[1] = + li_2[0] * li_2[2];
+    dw8[2] = + li_2[0] * li_2[1];
+
     // Fixed image voxel's histogram index
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
     offset_fbin = idx_fbin * mi_hist->moving.bins;
@@ -2044,9 +2080,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= - dS_dP;
-    	dc_dv[1] -= - dS_dP;
-    	dc_dv[2] -= - dS_dP;
+    	dc_dv[0] -= dw1[0] * dS_dP;
+    	dc_dv[1] -= dw1[1] * dS_dP;
+    	dc_dv[2] -= dw1[2] * dS_dP;
     }
 
     // Partial Volume w2
@@ -2054,9 +2090,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= + dS_dP;
-    	dc_dv[1] -= - dS_dP;
-    	dc_dv[2] -= - dS_dP;
+    	dc_dv[0] -= dw2[0] * dS_dP;
+    	dc_dv[1] -= dw2[1] * dS_dP;
+    	dc_dv[2] -= dw2[2] * dS_dP;
     }
 
     // Partial Volume w3
@@ -2064,9 +2100,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= - dS_dP;
-    	dc_dv[1] -= + dS_dP;
-    	dc_dv[2] -= - dS_dP;
+    	dc_dv[0] -= dw3[0] * dS_dP;
+    	dc_dv[1] -= dw3[1] * dS_dP;
+    	dc_dv[2] -= dw3[2] * dS_dP;
     }
 
     // Partial Volume w4
@@ -2074,9 +2110,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= + dS_dP;
-    	dc_dv[1] -= + dS_dP;
-    	dc_dv[2] -= - dS_dP;
+    	dc_dv[0] -= dw4[0] * dS_dP;
+    	dc_dv[1] -= dw4[1] * dS_dP;
+    	dc_dv[2] -= dw4[2] * dS_dP;
     }
 
     // Partial Volume w5
@@ -2084,9 +2120,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= - dS_dP;
-    	dc_dv[1] -= - dS_dP;
-    	dc_dv[2] -= + dS_dP;
+    	dc_dv[0] -= dw5[0] * dS_dP;
+    	dc_dv[1] -= dw5[1] * dS_dP;
+    	dc_dv[2] -= dw5[2] * dS_dP;
     }
 
     // Partial Volume w6
@@ -2094,9 +2130,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= + dS_dP;
-    	dc_dv[1] -= - dS_dP;
-    	dc_dv[2] -= + dS_dP;
+    	dc_dv[0] -= dw6[0] * dS_dP;
+    	dc_dv[1] -= dw6[1] * dS_dP;
+    	dc_dv[2] -= dw6[2] * dS_dP;
     }
 
     // Partial Volume w7
@@ -2104,9 +2140,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= - dS_dP;
-    	dc_dv[1] -= + dS_dP;
-    	dc_dv[2] -= + dS_dP;
+    	dc_dv[0] -= dw7[0] * dS_dP;
+    	dc_dv[1] -= dw7[1] * dS_dP;
+    	dc_dv[2] -= dw7[2] * dS_dP;
     }
 
     // Partial Volume w8
@@ -2114,9 +2150,9 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
-    	dc_dv[0] -= + dS_dP;
-    	dc_dv[1] -= + dS_dP;
-    	dc_dv[2] -= + dS_dP;
+    	dc_dv[0] -= dw8[0] * dS_dP;
+    	dc_dv[1] -= dw8[1] * dS_dP;
+    	dc_dv[2] -= dw8[2] * dS_dP;
     }
 
     dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
@@ -3009,7 +3045,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 		mvf = INDEX_OF (mijk_f, moving->dim);
 
 		bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
-		    fv, mvf, mijk, num_vox_f);
+		    fv, mvf, mijk, num_vox_f, li_1, li_2);
 
 #if defined (commentout)
 		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
