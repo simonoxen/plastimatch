@@ -31,6 +31,14 @@ IF (CUDA_FOUND)
   ENDIF (NOT CUDA_PROBE_NOT_CAPABLE)
 ENDIF (CUDA_FOUND)
 
+## Drr cuda is not yet working.  Don't run the tests.
+SET (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "drr-cuda"
+  "drr-cuda-stats"
+  "drr-cuda-check"
+)
+
 ## If we didn't get dicom test data, don't run dicom tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
   SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -75,6 +83,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 
+## If we didn't compile with cuda, don't run these tests
 IF (NOT RUN_CUDA_TESTS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -90,6 +99,7 @@ IF (NOT RUN_CUDA_TESTS)
     )
 ENDIF (NOT RUN_CUDA_TESTS)
 
+## If we didn't compile with brook, don't run these tests
 IF (NOT BROOK_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
