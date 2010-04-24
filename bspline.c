@@ -3863,7 +3863,6 @@ bspline_score (BSPLINE_Parms *parms,
 	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
-    
 }
 
 void

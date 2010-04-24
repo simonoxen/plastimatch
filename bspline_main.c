@@ -99,39 +99,39 @@ main (int argc, char* argv[])
 	}
     }
 
-	/* Assuming vector field has been created, update warped landmarks*/
+    /* Assuming vector field has been created, update warped landmarks*/
     if (options.fixed_landmarks && options.moving_landmarks) {
-		printf("Creating warped landmarks\n");
-		bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
-		if (options.warped_landmarks)
-			bspline_landmarks_write_file( options.warped_landmarks, "warped", 
-					parms->landmarks->warped_landmarks, 
-					parms->landmarks->num_landmarks,  fixed->offset );
-	}
+	printf("Creating warped landmarks\n");
+	bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
+	if (options.warped_landmarks)
+	    bspline_landmarks_write_file( options.warped_landmarks, "warped", 
+		parms->landmarks->warped_landmarks, 
+		parms->landmarks->num_landmarks,  fixed->offset );
+    }
 
-	/* If using radial basis functions, find coeffs and update vector field */
-	if (parms->rbf_radius>0) {
-		printf("Radial basis functions requested, radius %.2f\n", parms->rbf_radius);
+    /* If using radial basis functions, find coeffs and update vector field */
+    if (parms->rbf_radius>0) {
+	printf("Radial basis functions requested, radius %.2f\n", parms->rbf_radius);
 	if (!vector_field) {
-		printf("Sorry, vector field must be present for RBF. Please use -O or -V\n");
+	    printf("Sorry, vector field must be present for RBF. Please use -O or -V\n");
 	} else {
-		printf ("Warping image before RBF.\n");
-		moving_warped = vf_warp (0, moving, vector_field);
-		write_mha ("wnorbf.mha", moving_warped);
-		if ( parms->landmarks->num_landmarks < 1 ) {
+	    printf ("Warping image before RBF.\n");
+	    moving_warped = vf_warp (0, moving, vector_field);
+	    write_mha ("wnorbf.mha", moving_warped);
+	    if ( parms->landmarks->num_landmarks < 1 ) {
 		printf("Sorry, no landmarks found\n");
-		} else {
+	    } else {
 		/* Do actual RBF adjustment */
 		bspline_rbf_find_coeffs( vector_field, parms );
 		bspline_rbf_update_vector_field( vector_field, parms );
 		bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
 		if (options.warped_landmarks)
-			bspline_landmarks_write_file( options.warped_landmarks, "warp_and_rbf", 
-					parms->landmarks->warped_landmarks, 
-					parms->landmarks->num_landmarks,  fixed->offset );
-		}
+		    bspline_landmarks_write_file( options.warped_landmarks, "warp_and_rbf", 
+			parms->landmarks->warped_landmarks, 
+			parms->landmarks->num_landmarks,  fixed->offset );
+	    }
 	}
-	}
+    }
 
     //printf("%f",moving_warped->dim[1]);
     /* Create warped output image and save */

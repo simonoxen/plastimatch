@@ -2248,7 +2248,6 @@ extern "C" void bspline_cuda_j_stage_2 (
     // ----------------------------------------------------------
 
 #if defined (commentout)
-#endif
     /* Compute score on cpu for debugging */
     {
 	int i;
@@ -2271,6 +2270,7 @@ extern "C" void bspline_cuda_j_stage_2 (
 	}
 	fclose (fp);
     }
+#endif
 
     // --- BEGIN KERNEL EXECUTION -------------------------------
     sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
@@ -3970,8 +3970,7 @@ bspline_cuda_score_j_mse_kernel1
 		//-----------------------------------------------------------
 
 		// Clamp and interpolate along the X axis.
-		mov_ijk_floor.x = (int) (mov_ijk.x);
-		// rintf = single instruction round
+		mov_ijk_floor.x = (int) floorf (mov_ijk.x);
 		mov_ijk_round.x = rintf (mov_ijk.x);
 		fx2 = mov_ijk.x - mov_ijk_floor.x;
 		if (mov_ijk_floor.x < 0) {
@@ -3987,8 +3986,7 @@ bspline_cuda_score_j_mse_kernel1
 		fx1 = 1.0f - fx2;
 
 		// Clamp and interpolate along the Y axis.
-		mov_ijk_floor.y = (int) (mov_ijk.y);
-		// rintf = single instruction round
+		mov_ijk_floor.y = (int) floorf (mov_ijk.y);
 		mov_ijk_round.y = rintf (mov_ijk.y);
 		fy2 = mov_ijk.y - mov_ijk_floor.y;
 		if (mov_ijk_floor.y < 0) {
@@ -4004,8 +4002,7 @@ bspline_cuda_score_j_mse_kernel1
 		fy1 = 1.0f - fy2;
 
 		// Clamp and intepolate along the Z axis.
-		mov_ijk_floor.z = (int) (mov_ijk.z);
-		// rintf = single instruction round
+		mov_ijk_floor.z = (int) floorf (mov_ijk.z);
 		mov_ijk_round.z = rintf (mov_ijk.z);
 		fz2 = mov_ijk.z - mov_ijk_floor.z;
 		if (mov_ijk_floor.z < 0) {
@@ -5693,8 +5690,10 @@ extern "C" void CUDA_bspline_mse_score_dc_dv (
 	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
+#if defined (commentout)
 	printf ("Grid [%i,%i], %d threads_per_block.\n", 
 	    Grid_x, Grid_y, threads_per_block);
+#endif
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);

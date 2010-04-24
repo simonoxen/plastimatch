@@ -61,7 +61,7 @@ bspline_score_c_mse (
 
     if (parms->debug) {
 	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "w");
+	fp = fopen (debug_fn, "wb");
     }
 
     plm_timer_start (&timer);
@@ -93,7 +93,9 @@ bspline_score_c_mse (
 						  dxyz, moving);
 
 		/* If voxel is not inside moving image */
-		if (!rc) continue;
+		if (!rc) {
+		    continue;
+		}
 
 		/* Compute interpolation fractions */
 		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
@@ -114,7 +116,11 @@ bspline_score_c_mse (
 		fv = INDEX_OF (fijk, fixed->dim);
 
 		/* Compute intensity difference */
+#if PLM_DONT_INVERT_GRADIENT
+		diff = m_val - f_img[fv];
+#else
 		diff = f_img[fv] - m_val;
+#endif
 
 		/* Compute spatial gradient using nearest neighbors */
 		mvr = INDEX_OF (mijk_r, moving->dim);
