@@ -2039,37 +2039,37 @@ bspline_mi_pvi_8_dc_dv (
     n8 = n1 + moving->dim[0]*moving->dim[1] + moving->dim[0] + 1;
 
     // Pre-compute differential PV slices
-    dw1[0] = - li_1[1] * li_1[2];
-    dw1[1] = - li_1[0] * li_1[2];
-    dw1[2] = - li_1[0] * li_1[1];
+    dw1[0] = (  -1 ) * li_1[1] * li_1[2];
+    dw1[1] = li_1[0] * (  -1 ) * li_1[2];
+    dw1[2] = li_1[0] * li_1[1] * (  -1 );
 
-    dw2[0] = + li_1[1] * li_1[2];
-    dw2[1] = - li_2[0] * li_1[2];
-    dw2[2] = - li_2[0] * li_1[1];
+    dw2[0] = (  +1 ) * li_1[1] * li_1[2];
+    dw2[1] = li_2[0] * (  -1 ) * li_1[2];
+    dw2[2] = li_2[0] * li_1[1] * (  -1 );
 
-    dw3[0] = - li_2[1] * li_1[2];
-    dw3[1] = + li_1[0] * li_1[2];
-    dw3[2] = - li_1[0] * li_2[1];
+    dw3[0] = (  -1 ) * li_2[1] * li_1[2];
+    dw3[1] = li_1[0] * (  +1 ) * li_1[2];
+    dw3[2] = li_1[0] * li_2[1] * (  -1 );
 
-    dw4[0] = + li_2[1] * li_1[2];
-    dw4[1] = + li_2[0] * li_1[2];
-    dw4[2] = - li_2[0] * li_2[1];
+    dw4[0] = (  +1 ) * li_2[1] * li_1[2];
+    dw4[1] = li_2[0] * (  +1 ) * li_1[2];
+    dw4[2] = li_2[0] * li_2[1] * (  -1 );
 
-    dw5[0] = - li_1[1] * li_2[2];
-    dw5[1] = - li_1[0] * li_2[2];
-    dw5[2] = + li_1[0] * li_1[1];
+    dw5[0] = (  -1 ) * li_1[1] * li_2[2];
+    dw5[1] = li_1[0] * (  -1 ) * li_2[2];
+    dw5[2] = li_1[0] * li_1[1] * (  +1 );
 
-    dw6[0] = + li_1[1] * li_2[2];
-    dw6[1] = - li_2[0] * li_2[2];
-    dw6[2] = + li_2[0] * li_1[1];
+    dw6[0] = (  +1 ) * li_1[1] * li_2[2];
+    dw6[1] = li_2[0] * (  -1 ) * li_2[2];
+    dw6[2] = li_2[0] * li_1[1] * (  +1 );
 
-    dw7[0] = - li_2[1] * li_2[2];
-    dw7[1] = + li_1[0] * li_2[2];
-    dw7[2] = + li_1[0] * li_2[1];
+    dw7[0] = (  -1 ) * li_2[1] * li_2[2];
+    dw7[1] = li_1[0] * (  +1 ) * li_2[2];
+    dw7[2] = li_1[0] * li_2[1] * (  +1 );
 
-    dw8[0] = + li_2[1] * li_2[2];
-    dw8[1] = + li_2[0] * li_2[2];
-    dw8[2] = + li_2[0] * li_2[1];
+    dw8[0] = (  +1 ) * li_2[1] * li_2[2];
+    dw8[1] = li_2[0] * (  +1 ) * li_2[2];
+    dw8[2] = li_2[0] * li_2[1] * (  +1 );
 
     // Fixed image voxel's histogram index
     idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
@@ -2083,6 +2083,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw1[0] * dS_dP;
     	dc_dv[1] -= dw1[1] * dS_dP;
     	dc_dv[2] -= dw1[2] * dS_dP;
+//	printf ("n1: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w2
@@ -2093,6 +2094,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw2[0] * dS_dP;
     	dc_dv[1] -= dw2[1] * dS_dP;
     	dc_dv[2] -= dw2[2] * dS_dP;
+//	printf ("n2: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w3
@@ -2103,6 +2105,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw3[0] * dS_dP;
     	dc_dv[1] -= dw3[1] * dS_dP;
     	dc_dv[2] -= dw3[2] * dS_dP;
+//	printf ("n3: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w4
@@ -2113,6 +2116,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw4[0] * dS_dP;
     	dc_dv[1] -= dw4[1] * dS_dP;
     	dc_dv[2] -= dw4[2] * dS_dP;
+//	printf ("n4: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w5
@@ -2123,6 +2127,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw5[0] * dS_dP;
     	dc_dv[1] -= dw5[1] * dS_dP;
     	dc_dv[2] -= dw5[2] * dS_dP;
+//	printf ("n5: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w6
@@ -2133,6 +2138,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw6[0] * dS_dP;
     	dc_dv[1] -= dw6[1] * dS_dP;
     	dc_dv[2] -= dw6[2] * dS_dP;
+//	printf ("n6: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w7
@@ -2143,6 +2149,7 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw7[0] * dS_dP;
     	dc_dv[1] -= dw7[1] * dS_dP;
     	dc_dv[2] -= dw7[2] * dS_dP;
+//	printf ("n7: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
     // Partial Volume w8
@@ -2153,11 +2160,28 @@ bspline_mi_pvi_8_dc_dv (
     	dc_dv[0] -= dw8[0] * dS_dP;
     	dc_dv[1] -= dw8[1] * dS_dP;
     	dc_dv[2] -= dw8[2] * dS_dP;
+//	printf ("n8: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
-    dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
-    dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
-    dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
+    dc_dv[0] = dc_dv[0] / num_vox_f / moving->pix_spacing[0];
+    dc_dv[1] = dc_dv[1] / num_vox_f / moving->pix_spacing[1];
+    dc_dv[2] = dc_dv[2] / num_vox_f / moving->pix_spacing[2];
+
+
+#if defined (commentout)
+    printf ("dw1 [ %2.5f %2.5f %2.5f ]\n", dw1[0], dw1[1], dw1[2]);
+    printf ("dw2 [ %2.5f %2.5f %2.5f ]\n", dw2[0], dw2[1], dw2[2]);
+    printf ("dw3 [ %2.5f %2.5f %2.5f ]\n", dw3[0], dw3[1], dw3[2]);
+    printf ("dw4 [ %2.5f %2.5f %2.5f ]\n", dw4[0], dw4[1], dw4[2]);
+    printf ("dw5 [ %2.5f %2.5f %2.5f ]\n", dw5[0], dw5[1], dw5[2]);
+    printf ("dw6 [ %2.5f %2.5f %2.5f ]\n", dw6[0], dw6[1], dw6[2]);
+    printf ("dw7 [ %2.5f %2.5f %2.5f ]\n", dw7[0], dw7[1], dw7[2]);
+    printf ("dw8 [ %2.5f %2.5f %2.5f ]\n\n", dw8[0], dw8[1], dw8[2]);
+
+
+    printf ("S [ %2.5f %2.5f %2.5f ]\n\n\n", dc_dv[0], dc_dv[1], dc_dv[2]);
+    exit(0);
+#endif
 }
 
 static inline void
@@ -2205,9 +2229,9 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[0] = - fxqs[1] * dS_dP;
-    dc_dv[1] = - fyqs[1] * dS_dP;
-    dc_dv[2] = - fzqs[1] * dS_dP;
+    dc_dv[0] += - fxqs[1] * dS_dP;
+    dc_dv[1] += - fyqs[1] * dS_dP;
+    dc_dv[2] += - fzqs[1] * dS_dP;
 #else
     dc_dv[0] -= - fxqs[1] * dS_dP;
     dc_dv[1] -= - fyqs[1] * dS_dP;
@@ -2220,7 +2244,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[0] = - fxqs[0] * dS_dP;
+    dc_dv[0] += - fxqs[0] * dS_dP;
 #else
     dc_dv[0] -= - fxqs[0] * dS_dP;
 #endif
@@ -2231,7 +2255,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[0] = - fxqs[2] * dS_dP;
+    dc_dv[0] += - fxqs[2] * dS_dP;
 #else
     dc_dv[0] -= - fxqs[2] * dS_dP;
 #endif
@@ -2242,7 +2266,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[1] = - fyqs[0] * dS_dP;
+    dc_dv[1] += - fyqs[0] * dS_dP;
 #else
     dc_dv[1] -= - fyqs[0] * dS_dP;
 #endif
@@ -2253,7 +2277,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[1] = - fyqs[2] * dS_dP;
+    dc_dv[1] += - fyqs[2] * dS_dP;
 #else
     dc_dv[1] -= - fyqs[2] * dS_dP;
 #endif
@@ -2264,7 +2288,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[2] = - fzqs[0] * dS_dP;
+    dc_dv[2] += - fzqs[0] * dS_dP;
 #else
     dc_dv[2] -= - fzqs[0] * dS_dP;
 #endif
@@ -2275,7 +2299,7 @@ bspline_mi_pvi_6_dc_dv (
     dS_dP = compute_dS_dP (j_hist, f_hist, m_hist, j_idxs, f_idxs, m_idxs, 
 	num_vox_f, fxs, ssd->score, debug);
 #if PLM_DONT_INVERT_GRADIENT
-    dc_dv[2] = - fzqs[2] * dS_dP;
+    dc_dv[2] += - fzqs[2] * dS_dP;
 #else
     dc_dv[2] -= - fzqs[2] * dS_dP;
 #endif
