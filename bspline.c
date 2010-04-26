@@ -2080,9 +2080,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw1[0] * dS_dP;
+    	dc_dv[1] += dw1[1] * dS_dP;
+    	dc_dv[2] += dw1[2] * dS_dP;
+#else
     	dc_dv[0] -= dw1[0] * dS_dP;
     	dc_dv[1] -= dw1[1] * dS_dP;
     	dc_dv[2] -= dw1[2] * dS_dP;
+#endif
 //	printf ("n1: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2091,9 +2097,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw2[0] * dS_dP;
+    	dc_dv[1] += dw2[1] * dS_dP;
+    	dc_dv[2] += dw2[2] * dS_dP;
+#else
     	dc_dv[0] -= dw2[0] * dS_dP;
     	dc_dv[1] -= dw2[1] * dS_dP;
     	dc_dv[2] -= dw2[2] * dS_dP;
+#endif
 //	printf ("n2: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2102,9 +2114,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw3[0] * dS_dP;
+    	dc_dv[1] += dw3[1] * dS_dP;
+    	dc_dv[2] += dw3[2] * dS_dP;
+#else
     	dc_dv[0] -= dw3[0] * dS_dP;
     	dc_dv[1] -= dw3[1] * dS_dP;
     	dc_dv[2] -= dw3[2] * dS_dP;
+#endif
 //	printf ("n3: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2113,9 +2131,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw4[0] * dS_dP;
+    	dc_dv[1] += dw4[1] * dS_dP;
+    	dc_dv[2] += dw4[2] * dS_dP;
+#else
     	dc_dv[0] -= dw4[0] * dS_dP;
     	dc_dv[1] -= dw4[1] * dS_dP;
     	dc_dv[2] -= dw4[2] * dS_dP;
+#endif
 //	printf ("n4: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2124,9 +2148,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw5[0] * dS_dP;
+    	dc_dv[1] += dw5[1] * dS_dP;
+    	dc_dv[2] += dw5[2] * dS_dP;
+#else
     	dc_dv[0] -= dw5[0] * dS_dP;
     	dc_dv[1] -= dw5[1] * dS_dP;
     	dc_dv[2] -= dw5[2] * dS_dP;
+#endif
 //	printf ("n5: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2135,9 +2165,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw6[0] * dS_dP;
+    	dc_dv[1] += dw6[1] * dS_dP;
+    	dc_dv[2] += dw6[2] * dS_dP;
+#else
     	dc_dv[0] -= dw6[0] * dS_dP;
     	dc_dv[1] -= dw6[1] * dS_dP;
     	dc_dv[2] -= dw6[2] * dS_dP;
+#endif
 //	printf ("n6: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2146,9 +2182,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw7[0] * dS_dP;
+    	dc_dv[1] += dw7[1] * dS_dP;
+    	dc_dv[2] += dw7[2] * dS_dP;
+#else
     	dc_dv[0] -= dw7[0] * dS_dP;
     	dc_dv[1] -= dw7[1] * dS_dP;
     	dc_dv[2] -= dw7[2] * dS_dP;
+#endif
 //	printf ("n7: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
@@ -2157,9 +2199,15 @@ bspline_mi_pvi_8_dc_dv (
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > 0.0001) {
     	dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - ssd->score;
+#if PLM_DONT_INVERT_GRADIENT
+    	dc_dv[0] += dw8[0] * dS_dP;
+    	dc_dv[1] += dw8[1] * dS_dP;
+    	dc_dv[2] += dw8[2] * dS_dP;
+#else
     	dc_dv[0] -= dw8[0] * dS_dP;
     	dc_dv[1] -= dw8[1] * dS_dP;
     	dc_dv[2] -= dw8[2] * dS_dP;
+#endif
 //	printf ("n8: %2.5f\t[ %2.5f ]\n", dS_dP, dc_dv[0]);
     }
 
