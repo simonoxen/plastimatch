@@ -3435,7 +3435,11 @@ bspline_score_k_mse
 
 
 		/* Compute intensity difference */
+#if PLM_DONT_INVERT_GRADIENT
+		diff = m_img[mv] - f_img[fv];
+#else
 		diff = f_img[fv] - m_img[mv];
+#endif
 
 		/* Compute spatial gradient using nearest neighbors */
 		dc_dv[0] = diff * m_grad[3*mv+0];  /* x component */
@@ -3986,25 +3990,27 @@ bspline_score (BSPLINE_Parms *parms,
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 	switch (parms->implementation) {
+#if defined (commentout)
 	case 'c':
-//	    bspline_cuda_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_cuda_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'd':
-//	    bspline_cuda_score_d_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_cuda_score_d_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'e':
-//	    bspline_cuda_score_e_mse_v2 (parms, bst, bxf, fixed, moving, moving_grad);
+	    bspline_cuda_score_e_mse_v2 (parms, bst, bxf, fixed, moving, moving_grad);
 	    //bspline_cuda_score_e_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    break;
 	case 'f':
-//	    bspline_cuda_score_f_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_cuda_score_f_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'g':
-//	    bspline_cuda_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
-//	    break;
+	    bspline_cuda_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
 	case 'h':
-//	    bspline_cuda_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
-//	    break;
+	    bspline_cuda_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    break;
+#endif
 	case 'i':
 	    bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
@@ -4071,7 +4077,6 @@ bspline_score (BSPLINE_Parms *parms,
     if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MI)) {
 	switch (parms->implementation) {
 	case 'c':
-	case 'd':
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'l':
