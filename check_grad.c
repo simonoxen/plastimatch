@@ -2,10 +2,11 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <time.h>
 #include "bspline.h"
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
@@ -46,6 +47,14 @@ check_gradient (
 	    fixed->dim,
 	    options->vox_per_rgn
 	);
+	if (options->random) {
+	    srand (time (0));
+	    for (i = 0; i < bxf->num_coeff; i++) {
+		bxf->coeff[i] = options->random_range[0]
+		    + (options->random_range[1] - options->random_range[0])
+		    * rand () / (double) RAND_MAX;
+	    }
+	}
     }
     bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
 

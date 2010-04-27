@@ -25,7 +25,7 @@ print_usage (void)
 	"                           line profile. (default=fwd)\n"
 	" -e step                 Step size (default is 1e-4)\n"
 	" -l \"min max\"            Min, max range for line profile (default \"0 30\")\n"
-	//	" -L infile               Use a different direction than the gradient\n"
+	" -R \"min max\"          Random starting point (coeff between min, max)\n"
 	" -X infile               Input bspline coefficients\n"
 	" -O file                 Output file\n"
     );
@@ -152,6 +152,17 @@ check_grad_opts_parse_args (Check_grad_opts* options,
 	    }
 	    i++;
 	    options->output_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-R")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g %g", 
+		&options->random_range[0],
+		&options->random_range[1]);
+	    if (rc != 2) {
+		printf ("Error parsing -R option.\n");
+		print_usage ();
+	    }
+	    options->random = 1;
 	}
         else if (!strcmp (argv[i], "-l")) {
 	    i++;

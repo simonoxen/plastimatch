@@ -24,6 +24,8 @@ struct check_grad_opts {
     int line_range[2];
     int vox_per_rgn[3];
     int process;
+    int random;
+    float random_range[2];
     BSPLINE_Parms parms;
 };
 
