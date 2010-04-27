@@ -44,11 +44,7 @@ bspline_optimize_nlopt_score (
 
     /* Copy gradient out */
     for (i = 0; i < bod->bxf->num_coeff; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 	grad[i] = (double) bod->bst->ssd.grad[i];
-#else
-	grad[i] = - (double) bod->bst->ssd.grad[i];
-#endif
     }
 
     /* Return cost */

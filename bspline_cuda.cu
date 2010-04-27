@@ -4035,11 +4035,7 @@ bspline_cuda_score_j_mse_kernel1
 		m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
 
 		// Compute intensity difference.
-#if PLM_DONT_INVERT_GRADIENT
 		diff = m_val - TEX_REF (fixed_image, fv);
-#else
-		diff = TEX_REF (fixed_image, fv) - m_val;
-#endif
 
 		// Accumulate the score.
 		score[threadIdxInGrid] = (diff * diff);

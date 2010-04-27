@@ -256,11 +256,7 @@ bspline_optimize_lbfgsb
 	    /* Copy from C to fortran (float -> double) */
 	    f = ssd->score;
 	    for (i = 0; i < NMAX; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 		g[i] = ssd->grad[i];
-#else
-		g[i] = - ssd->grad[i];
-#endif
 	    }
 
 	    /* Check # iterations */

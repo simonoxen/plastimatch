@@ -29,7 +29,6 @@
 
 /* User options */
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
-#cmakedefine PLM_DONT_INVERT_GRADIENT 1
 
 /* Did we find fortran? */
 #if (FORTRAN_COMPILER_FOUND || HAVE_F2C_LIBRARY)

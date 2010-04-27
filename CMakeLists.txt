@@ -45,7 +45,6 @@ SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
 
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-SET (PLM_DONT_INVERT_GRADIENT OFF CACHE BOOL "Fix problem that gradients are inverted")
 
 SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 

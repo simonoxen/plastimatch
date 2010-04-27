@@ -93,13 +93,8 @@ bspline_optimize_steepest_trace(
     ssd_grad_norm = sqrt (ssd_grad_norm);
     htg = 0.0;
     for (i = 0; i < bxf->num_coeff; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 	h[i] = - ssd->grad[i] / ssd_grad_norm;
 	htg -= h[i] * ssd->grad[i];
-#else
-	h[i] = ssd->grad[i] / ssd_grad_norm;
-	htg += h[i] * ssd->grad[i];
-#endif
     }
 
     /* Give a little feedback to the user */
@@ -196,13 +191,8 @@ bspline_optimize_steepest_trace(
 	ssd_grad_norm = sqrt (ssd_grad_norm);
 	htg = 0.0;
 	for (i = 0; i < bxf->num_coeff; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 	    h[i] = - ssd->grad[i] / ssd_grad_norm;
 	    htg -= h[i] * ssd->grad[i];
-#else
-	    h[i] = ssd->grad[i] / ssd_grad_norm;
-	    htg += h[i] * ssd->grad[i];
-#endif
 	}
 	old_score = bst->ssd.score;
     }
@@ -282,13 +272,8 @@ bspline_optimize_steepest_trust (
     ssd_grad_norm = sqrt (ssd_grad_norm);
     htg = 0.0;
     for (i = 0; i < bxf->num_coeff; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 	h[i] = - ssd->grad[i] / ssd_grad_norm;
 	htg -= h[i] * ssd->grad[i];
-#else
-	h[i] = ssd->grad[i] / ssd_grad_norm;
-	htg += h[i] * ssd->grad[i];
-#endif
     }
 
     /* Give a little feedback to the user */
@@ -352,13 +337,8 @@ bspline_optimize_steepest_trust (
 	ssd_grad_norm = sqrt (ssd_grad_norm);
 	htg = 0.0;
 	for (i = 0; i < bxf->num_coeff; i++) {
-#if PLM_DONT_INVERT_GRADIENT
 	    h[i] = - ssd->grad[i] / ssd_grad_norm;
 	    htg -= h[i] * ssd->grad[i];
-#else
-	    h[i] = ssd->grad[i] / ssd_grad_norm;
-	    htg += h[i] * ssd->grad[i];
-#endif
 	}
 	old_score = bst->ssd.score;
     }

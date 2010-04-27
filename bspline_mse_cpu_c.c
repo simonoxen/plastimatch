@@ -116,11 +116,7 @@ bspline_score_c_mse (
 		fv = INDEX_OF (fijk, fixed->dim);
 
 		/* Compute intensity difference */
-#if PLM_DONT_INVERT_GRADIENT
 		diff = m_val - f_img[fv];
-#else
-		diff = f_img[fv] - m_val;
-#endif
 
 		/* Compute spatial gradient using nearest neighbors */
 		mvr = INDEX_OF (mijk_r, moving->dim);
