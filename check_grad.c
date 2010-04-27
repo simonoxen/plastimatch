@@ -80,7 +80,7 @@ check_gradient (
 
 	    /* Already computed for i = 0 */
 	    if (i == 0) {
-		fprintf (fp, "%4d, %10.10f\n", i, score);
+		fprintf (fp, "%4d, %12.12f\n", i, score);
 		continue;
 	    }
 
@@ -93,7 +93,7 @@ check_gradient (
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%4d, %10.10f\n", i, bst->ssd.score);
+	    fprintf (fp, "%4d, %12.12f\n", i, bst->ssd.score);
 
 	    // JAS 04.19.2010
 	    // This loop could take a while to exit.  This will
@@ -105,7 +105,8 @@ check_gradient (
     } else {
 	/* Loop through directions */
 	for (i = 0; i < bxf->num_coeff; i++) {
-	    /* Take a step in this direction */ for (j = 0; j < bxf->num_coeff; j++) {
+	    /* Take a step in this direction */
+	    for (j = 0; j < bxf->num_coeff; j++) {
 		bxf->coeff[j] = x[j];
 	    }
 	    bxf->coeff[i] = bxf->coeff[i] + options->step_size;
@@ -114,10 +115,10 @@ check_gradient (
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	
 	    /* Stash score difference in grad_fd */
-	    grad_fd[i] = (score - bst->ssd.score) / options->step_size;
+	    grad_fd[i] = (bst->ssd.score - score) / options->step_size;
 
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%10.10f %10.10f\n", grad[i], grad_fd[i]);
+	    fprintf (fp, "%12.12f %12.12f\n", grad[i], grad_fd[i]);
 	}
     }
 

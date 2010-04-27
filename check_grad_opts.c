@@ -25,6 +25,7 @@ print_usage (void)
 	"                           line profile. (default=fwd)\n"
 	" -e step                 Step size (default is 1e-4)\n"
 	" -l \"min max\"            Min, max range for line profile (default \"0 30\")\n"
+	//	" -L infile               Use a different direction than the gradient\n"
 	" -X infile               Input bspline coefficients\n"
 	" -O file                 Output file\n"
     );
