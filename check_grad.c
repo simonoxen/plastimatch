@@ -80,7 +80,7 @@ check_gradient (
 
 	    /* Already computed for i = 0 */
 	    if (i == 0) {
-		fprintf (fp, "%d, %10.10f\n", i, score);
+		fprintf (fp, "%4d, %10.10f\n", i, score);
 		continue;
 	    }
 
@@ -93,7 +93,7 @@ check_gradient (
 	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	
 	    /* Compute difference between grad and grad_fd */
-	    fprintf (fp, "%d, %10.10f\n", i, bst->ssd.score);
+	    fprintf (fp, "%4d, %10.10f\n", i, bst->ssd.score);
 
 	    // JAS 04.19.2010
 	    // This loop could take a while to exit.  This will
