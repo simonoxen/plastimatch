@@ -42,16 +42,16 @@ bspline_landmarks_destroy (Bspline_landmarks* blm)
     if (blm->landvox_warp) {
 	free (blm->landvox_warp);
     }
-	if (blm->warped_landmarks) {
+    if (blm->warped_landmarks) {
 	free (blm->warped_landmarks);
-	}
-	if (blm->rbf_coeff) {
+    }
+    if (blm->rbf_coeff) {
 	free (blm->rbf_coeff);
-	}
-	if (blm->landmark_dxyz) {
+    }
+    if (blm->landmark_dxyz) {
 	free (blm->landmark_dxyz);
-	}
-	free (blm);
+    }
+    free (blm);
 }
 
 static void
