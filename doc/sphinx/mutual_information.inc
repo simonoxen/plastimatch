@@ -1,3 +1,6 @@
+Mutual information
+------------------
+
 The intensity :math:`a` of a voxel located at coordinates
 (:math:`\textbf{x}`) within the fixed image :math:`F` is given
 by:
