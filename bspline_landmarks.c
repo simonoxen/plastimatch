@@ -105,8 +105,8 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 
     // Save position of landmarks in voxels for vector field calculation
     // GCS: I think we only need fixed
-	// NSh: No. Moving landmarks must be used for v.f. calculation
-	// since it is the moving image which is warped after registration
+    // NSh: No. Moving landmarks must be used for v.f. calculation
+    // since it is the moving image which is warped after registration
     blm->landvox_mov = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
@@ -125,7 +125,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	}
     }
 
-	blm->landvox_fix = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
+    blm->landvox_fix = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_fix[i*3 + d] 
@@ -143,13 +143,13 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	}
     }
 
-	//re-basing landmarks to the origin of fixed image
+    //re-basing landmarks to the origin of fixed image
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
-		blm->fixed_landmarks[i*3 + d] -= fixed->offset[d];
-		blm->moving_landmarks[i*3 + d] -= moving->offset[d];
-		}
+	    blm->fixed_landmarks[i*3 + d] -= fixed->offset[d];
+	    blm->moving_landmarks[i*3 + d] -= moving->offset[d];
 	}
+    }
     printf ("Adjusting complete.\n");
 }
 
@@ -176,11 +176,11 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
     blm->moving_landmarks = moving_landmarks;
     blm->fixed_landmarks = fixed_landmarks;
 
-	blm->warped_landmarks = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
-	blm->landvox_warp = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
-	// just in case even if RBF are not used
-	blm->rbf_coeff = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
-	blm->landmark_dxyz = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+    blm->warped_landmarks = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+    blm->landvox_warp = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
+    // just in case even if RBF are not used
+    blm->rbf_coeff = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
+    blm->landmark_dxyz = (float *)malloc( 3 * num_fixed_landmarks * sizeof(float));
 
     printf ("Found %d landmark(s) from fixed to moving image\n", 
 	blm->num_landmarks);
@@ -190,22 +190,22 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
 
 void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset)
 {
-FILE *fp;
-int lidx;
-fp = fopen(fn,"w");
+    FILE *fp;
+    int lidx;
+    fp = fopen(fn,"w");
     if (!fp) {
 	print_and_exit ("cannot write landmarks to file: %s\n", fn);
     }
-fprintf(fp,"# name = %s\n",title);
+    fprintf(fp,"# name = %s\n",title);
 
-/* Changing LPS to RAS and shifting */
-for(lidx=0;lidx<n;lidx++)
-fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-		-offset[0]-coords[0+3*lidx], 
-		-offset[1]-coords[1+3*lidx],  
-		 offset[2]+coords[2+3*lidx] );
+    /* Changing LPS to RAS and shifting */
+    for(lidx=0;lidx<n;lidx++)
+	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+	    -offset[0]-coords[0+3*lidx], 
+	    -offset[1]-coords[1+3*lidx],  
+	    offset[2]+coords[2+3*lidx] );
 
-fclose(fp);
+    fclose(fp);
 }
 
 /*
@@ -228,7 +228,7 @@ bspline_landmarks_score_b (
     int lidx;
     FILE *fp, *fp2;
     float land_score, land_grad_coeff, land_rawdist;
-	int ri, rj, rk;
+    int ri, rj, rk;
     int fi, fj, fk;
     int mi, mj, mk;
     float fx, fy, fz;
@@ -237,24 +237,24 @@ bspline_landmarks_score_b (
     int q[3];
     float dxyz[3];
     int qidx;
-	int d;
-	float diff[3];
-	float l_dist;
-	float dc_dv[3];
-	float dd, *dd_min;  //minimum distance between a displaced voxel in moving and landvox_mov
-	int *land_p, *land_q;
+    int d;
+    float diff[3];
+    float l_dist;
+    float dc_dv[3];
+    float dd, *dd_min;  //minimum distance between a displaced voxel in moving and landvox_mov
+    int *land_p, *land_q;
 
-	land_score = 0;
+    land_score = 0;
     land_rawdist = 0;
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
-	dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
+    dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
+    for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
-	land_p = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
-	land_q = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
+    land_p = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
+    land_q = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
 
-	for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	p[2] = rk / bxf->vox_per_rgn[2];
 	q[2] = rk % bxf->vox_per_rgn[2];
 	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
@@ -263,86 +263,86 @@ bspline_landmarks_score_b (
 	    q[1] = rj % bxf->vox_per_rgn[1];
 	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
 	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
-			p[0] = ri / bxf->vox_per_rgn[0];
-			q[0] = ri % bxf->vox_per_rgn[0];
-			fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
-			/* Get B-spline deformation vector */
-			qidx = INDEX_OF (q, bxf->vox_per_rgn);
-			bspline_interp_pix (dxyz, bxf, p, qidx);
+		/* Get B-spline deformation vector */
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		bspline_interp_pix (dxyz, bxf, p, qidx);
 
-			/* Find correspondence in moving image */
-			mx = fx + dxyz[0];
-			mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
-			if (mi < 0 || mi >= moving->dim[0]) continue;
-			my = fy + dxyz[1];
-			mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
-			if (mj < 0 || mj >= moving->dim[1]) continue;
-			mz = fz + dxyz[2];
-			mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
-			if (mk < 0 || mk >= moving->dim[2]) continue;
+		/* Find correspondence in moving image */
+		mx = fx + dxyz[0];
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		if (mi < 0 || mi >= moving->dim[0]) continue;
+		my = fy + dxyz[1];
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
+		if (mj < 0 || mj >= moving->dim[1]) continue;
+		mz = fz + dxyz[2];
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		if (mk < 0 || mk >= moving->dim[2]) continue;
 
-			// Storing p and q for (mi,mj,mk) nearest to landvox_mov
-			// Typically there is an exact match, but for large vector field gradients
-			// a voxel can be missed. Also, if multiple voxels map into a landmark,
-			// use just one of them to avoid multiple counting in the score.
-			for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
-				dd = (mi - blm->landvox_mov[lidx*3+0]) * (mi - blm->landvox_mov[lidx*3+0])
-					+(mj - blm->landvox_mov[lidx*3+1]) * (mj - blm->landvox_mov[lidx*3+1])
-					+(mk - blm->landvox_mov[lidx*3+2]) * (mk - blm->landvox_mov[lidx*3+2]);
-				if (dd < dd_min[lidx]) { 
-									dd_min[lidx]=dd;   
-									for (d = 0; d < 3; d++) { 
-									land_p[lidx*3+d]=p[d];  
-									land_q[lidx*3+d]=q[d]; 
-									}
-								} 
-				}
+		// Storing p and q for (mi,mj,mk) nearest to landvox_mov
+		// Typically there is an exact match, but for large vector field gradients
+		// a voxel can be missed. Also, if multiple voxels map into a landmark,
+		// use just one of them to avoid multiple counting in the score.
+		for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
+		    dd = (mi - blm->landvox_mov[lidx*3+0]) * (mi - blm->landvox_mov[lidx*3+0])
+			+(mj - blm->landvox_mov[lidx*3+1]) * (mj - blm->landvox_mov[lidx*3+1])
+			+(mk - blm->landvox_mov[lidx*3+2]) * (mk - blm->landvox_mov[lidx*3+2]);
+		    if (dd < dd_min[lidx]) { 
+			dd_min[lidx]=dd;   
+			for (d = 0; d < 3; d++) { 
+			    land_p[lidx*3+d]=p[d];  
+			    land_q[lidx*3+d]=q[d]; 
 			}
+		    } 
 		}
+	    }
 	}
+    }
 
-//displacing the landmarks and writing them out.
+    //displacing the landmarks and writing them out.
     fp  = fopen("warplist_b.fcsv","w");
     fp2 = fopen("distlist_b.dat","w");
     fprintf(fp,"# name = warped\n");
 
-	for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
+    for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
 
-		printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
+	printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
 
-		if (dd_min[lidx]>10) logfile_printf("Landmark WARNING: landmark far from nearest voxel\n");
+	if (dd_min[lidx]>10) logfile_printf("Landmark WARNING: landmark far from nearest voxel\n");
 
-		for (d = 0; d < 3; d++) p[d] = land_p[3*lidx+d];
-		for (d = 0; d < 3; d++) q[d] = land_q[3*lidx+d];
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
-		bspline_interp_pix (dxyz, bxf, p, qidx);
+	for (d = 0; d < 3; d++) p[d] = land_p[3*lidx+d];
+	for (d = 0; d < 3; d++) q[d] = land_q[3*lidx+d];
+	qidx = INDEX_OF (q, bxf->vox_per_rgn);
+	bspline_interp_pix (dxyz, bxf, p, qidx);
 
-		//actually move the moving landmark; note the minus sign
-		for (d = 0; d < 3; d++) blm->warped_landmarks[3*lidx+d] = blm->moving_landmarks[3*lidx + d] - dxyz[d];
-		for (d = 0; d < 3; d++) diff[d] = blm->fixed_landmarks[3*lidx+d]-blm->warped_landmarks[3*lidx+d];
-		l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
-		land_score += l_dist;
-		land_rawdist += sqrt(l_dist);
-		for (d = 0; d < 3; d++) dc_dv[d] = -land_grad_coeff * diff[d]; 
-		bspline_update_grad (bst, bxf, p, qidx, dc_dv);
+	//actually move the moving landmark; note the minus sign
+	for (d = 0; d < 3; d++) blm->warped_landmarks[3*lidx+d] = blm->moving_landmarks[3*lidx + d] - dxyz[d];
+	for (d = 0; d < 3; d++) diff[d] = blm->fixed_landmarks[3*lidx+d]-blm->warped_landmarks[3*lidx+d];
+	l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
+	land_score += l_dist;
+	land_rawdist += sqrt(l_dist);
+	for (d = 0; d < 3; d++) dc_dv[d] = -land_grad_coeff * diff[d]; 
+	bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
-		// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
-				fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-								-fixed->offset[0]-blm->warped_landmarks[0+3*lidx], 
-								-fixed->offset[1]-blm->warped_landmarks[1+3*lidx],  
-								 fixed->offset[2]+blm->warped_landmarks[2+3*lidx] );
-				fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
-	}
+	// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
+	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+	    -fixed->offset[0]-blm->warped_landmarks[0+3*lidx], 
+	    -fixed->offset[1]-blm->warped_landmarks[1+3*lidx],  
+	    fixed->offset[2]+blm->warped_landmarks[2+3*lidx] );
+	fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
+    }
 
     fclose(fp);
     fclose(fp2);
 
-	free(dd_min);
-	free(land_p);
-	free(land_q);
+    free(dd_min);
+    free(land_p);
+    free(land_q);
 
-	land_score = land_score * parms->landmark_stiffness / blm->num_landmarks;
+    land_score = land_score * parms->landmark_stiffness / blm->num_landmarks;
     printf ("        LM DIST %.4f COST %.4f\n", land_rawdist, land_score);
     ssd->score += land_score;
 }
@@ -415,15 +415,15 @@ bspline_landmarks_score_a (
         land_rawdist += sqrt(l_dist);
 
         // calculating gradients
-        dc_dv[0] = land_grad_coeff * diff[0];
-        dc_dv[1] = land_grad_coeff * diff[1];
-        dc_dv[2] = land_grad_coeff * diff[2];
+        dc_dv[0] = - land_grad_coeff * diff[0];
+        dc_dv[1] = - land_grad_coeff * diff[1];
+        dc_dv[2] = - land_grad_coeff * diff[2];
         bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
 	/* Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS */
         fprintf (fp, "W%d,%f,%f,%f,1,1\n", lidx, -mxyz[0], -mxyz[1], mxyz[2]);
         fprintf (fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
-	}
+    }
     fclose(fp);
     fclose(fp2);
 
@@ -441,10 +441,10 @@ bspline_landmarks_score (
     Volume *moving
 )
 {
-if (parms->landmark_implementation=='b') 
-		bspline_landmarks_score_b (parms, bst, bxf, fixed, moving);
-else //default is 'a'
-		bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
+    if (parms->landmark_implementation=='b') 
+	bspline_landmarks_score_b (parms, bst, bxf, fixed, moving);
+    else //default is 'a'
+	bspline_landmarks_score_a (parms, bst, bxf, fixed, moving);
 }
 
 /*
@@ -454,75 +454,75 @@ LW = warped landmark
 We must solve LW + u(LW) = LM to get new LW, corresponding to current vector field.
 */
 void bspline_landmarks_warp(
-	Volume *vector_field, 
-	BSPLINE_Parms *parms,
-	BSPLINE_Xform* bxf, 
+    Volume *vector_field, 
+    BSPLINE_Parms *parms,
+    BSPLINE_Xform* bxf, 
     Volume *fixed, 
     Volume *moving)
 {
-Bspline_landmarks *blm = parms->landmarks;
-int ri, rj, rk;
-int fi, fj, fk;
-int mi, mj, mk;
-float fx, fy, fz;
-float mx, my, mz;
-int i,d,fv, lidx;
-float dd, *vf, dxyz[3], *dd_min;
+    Bspline_landmarks *blm = parms->landmarks;
+    int ri, rj, rk;
+    int fi, fj, fk;
+    int mi, mj, mk;
+    float fx, fy, fz;
+    float mx, my, mz;
+    int i,d,fv, lidx;
+    float dd, *vf, dxyz[3], *dd_min;
 
-if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
-		print_and_exit("Sorry, this type of vector field is not supported in landmarks_warp\n");	
-	vf = (float *)vector_field->img;
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported in landmarks_warp\n");	
+    vf = (float *)vector_field->img;
 
-	dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
+    dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
+    for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
-	for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
 	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
 	    fy = bxf->img_origin[1] + bxf->img_spacing[1] * fj;
 	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
-			fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
+		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
-			fv = fk * vector_field->dim[0] * vector_field->dim[1] + fj * vector_field->dim[0] +fi ;
+		fv = fk * vector_field->dim[0] * vector_field->dim[1] + fj * vector_field->dim[0] +fi ;
 
-			for(d=0;d<3;d++) dxyz[d] = vf[3*fv+d];
+		for(d=0;d<3;d++) dxyz[d] = vf[3*fv+d];
 
-			/* Find correspondence in moving image */
-			mx = fx + dxyz[0];
-			mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
-			if (mi < 0 || mi >= moving->dim[0]) continue;
-			my = fy + dxyz[1];
-			mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
-			if (mj < 0 || mj >= moving->dim[1]) continue;
-			mz = fz + dxyz[2];
-			mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
-			if (mk < 0 || mk >= moving->dim[2]) continue;
+		/* Find correspondence in moving image */
+		mx = fx + dxyz[0];
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		if (mi < 0 || mi >= moving->dim[0]) continue;
+		my = fy + dxyz[1];
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
+		if (mj < 0 || mj >= moving->dim[1]) continue;
+		mz = fz + dxyz[2];
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		if (mk < 0 || mk >= moving->dim[2]) continue;
 
-			//saving vector field in a voxel which is the closest to landvox_mov
-			//after being displaced by the vector field
-			for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
-				dd = (mi - blm->landvox_mov[lidx*3+0]) * (mi - blm->landvox_mov[lidx*3+0])
-					+(mj - blm->landvox_mov[lidx*3+1]) * (mj - blm->landvox_mov[lidx*3+1])
-					+(mk - blm->landvox_mov[lidx*3+2]) * (mk - blm->landvox_mov[lidx*3+2]);
-				if (dd < dd_min[lidx]) { 
-									dd_min[lidx]=dd;   
-									for(d=0;d<3;d++) blm->landmark_dxyz[3*lidx+d] = vf[3*fv+d];
-									}
-				} 
-				}
-			}
-		}
-
-for(i=0;i<blm->num_landmarks;i++)  {
-	for(d=0; d<3; d++) 
-	blm->warped_landmarks[3*i+d] = blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
+		//saving vector field in a voxel which is the closest to landvox_mov
+		//after being displaced by the vector field
+		for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
+		    dd = (mi - blm->landvox_mov[lidx*3+0]) * (mi - blm->landvox_mov[lidx*3+0])
+			+(mj - blm->landvox_mov[lidx*3+1]) * (mj - blm->landvox_mov[lidx*3+1])
+			+(mk - blm->landvox_mov[lidx*3+2]) * (mk - blm->landvox_mov[lidx*3+2]);
+		    if (dd < dd_min[lidx]) { 
+			dd_min[lidx]=dd;   
+			for(d=0;d<3;d++) blm->landmark_dxyz[3*lidx+d] = vf[3*fv+d];
+		    }
+		} 
+	    }
 	}
+    }
 
-/* calculate voxel positions of warped landmarks  
- landmarks are stored internally without offsets.
- Offsets are used only when reading/writing landmarks form/to files
-*/
-	for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
+    for(i=0;i<blm->num_landmarks;i++)  {
+	for(d=0; d<3; d++) 
+	    blm->warped_landmarks[3*i+d] = blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
+    }
+
+    /* calculate voxel positions of warped landmarks  
+       landmarks are stored internally without offsets.
+       Offsets are used only when reading/writing landmarks form/to files
+    */
+    for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_warp[lidx*3 + d] 
 		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] /*- fixed->offset[d]*/ )
@@ -535,8 +535,8 @@ for(i=0;i<blm->num_landmarks;i++)  {
 		    "Location in vox = %d\n"
 		    "Image boundary in vox = (%d %d)\n",
 		    lidx, d, blm->landvox_warp[lidx*3 + d], 0, fixed->dim[d]-1);
-			}
-		} 
-	}
+	    }
+	} 
+    }
 }
 
