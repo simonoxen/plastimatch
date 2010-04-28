@@ -226,14 +226,14 @@ PLM_ADD_TEST (
   "bspline-mi-c-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;c;-M;mi;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
+  "-a;steepest;-m;10;-f;c;-M;mi;-O;bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
   )
 ADD_TEST (bspline-mi-c-1-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
   "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.310"
-  "-DUPPER_THRESH=-0.308"
+  "-DLOWER_THRESH=-0.529"
+  "-DUPPER_THRESH=-0.528"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -249,8 +249,8 @@ ADD_TEST (bspline-mi-c-2-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
   "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.033"
-  "-DUPPER_THRESH=-0.031"
+  "-DLOWER_THRESH=-0.028"
+  "-DUPPER_THRESH=-0.026"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -580,21 +580,21 @@ ADD_TEST (
   )
 
 PLM_ADD_TEST (
-  "plm-bspline-single-f" 
+  "plm-bspline-single-h" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-f.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-bspline-single-h.txt"
   )
 PLM_ADD_TEST (
-  "plm-bspline-single-f-stats"
+  "plm-bspline-single-h-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;plm-bspline-single-f-img.mha"
+  "stats;--input;plm-bspline-single-h-img.mha"
   )
 ADD_TEST (
-  "plm-bspline-single-f-check"
+  "plm-bspline-single-h-check"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-f-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
   "-DLOWER_THRESH=-750.0"
   "-DUPPER_THRESH=-748.5"

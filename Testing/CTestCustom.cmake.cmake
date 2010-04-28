@@ -39,13 +39,6 @@ SET (CTEST_CUSTOM_TESTS_IGNORE
   "drr-cuda-check"
 )
 
-## MI is not yet working.  Don't run the tests.
-SET (CTEST_CUSTOM_TESTS_IGNORE
-  ${CTEST_CUSTOM_TESTS_IGNORE}
-  "bspline-mi-c-1-check"
-  "bspline-mi-c-2-check"
-)
-
 ## If we didn't get dicom test data, don't run dicom tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
   SET (CTEST_CUSTOM_TESTS_IGNORE

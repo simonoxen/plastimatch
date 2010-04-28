@@ -1,16 +1,16 @@
 [GLOBAL]
 fixed=synth-1.mha
 moving=synth-2.mha
-vf_out=plm-bspline-single-f-vf.mha
-xform_out=plm-bspline-single-f-xf.txt
-img_out=plm-bspline-single-f-img.mha
+vf_out=plm-bspline-single-h-vf.mha
+xform_out=plm-bspline-single-h-xf.txt
+img_out=plm-bspline-single-h-img.mha
 
 [STAGE]
 xform=bspline
 optim=lbfgsb
 impl=plastimatch
 threading=single
-alg_flavor=f
+alg_flavor=h
 max_its=5
 convergence_tol=3
 grad_tol=0.1
