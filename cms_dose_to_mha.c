@@ -6,7 +6,8 @@
 
 
 #define XIO_VERSION_450       1
-#define XIO_VERSION_UNKNOWN   2
+#define XIO_VERSION_421       2
+#define XIO_VERSION_UNKNOWN   3
 
 /* function to perform endian swaps when going from Big-Endian
  * to little-endian or vice-versa
@@ -82,13 +83,16 @@ main (int argc, char *argv[])
     fgets (buf, 1024, ifp);
     if (!strncmp (buf, "006d101e", strlen("006d101e"))) {
 	xio_version = XIO_VERSION_450;
+    } else if (!strncmp (buf, "004f101e", strlen("004f101e"))) {
+	xio_version = XIO_VERSION_421;
     } else {
 	xio_version = XIO_VERSION_UNKNOWN;
     }
 
     /* Get dose scale factor */
     found = 0;
-    if (xio_version == XIO_VERSION_450) {
+    if (xio_version == XIO_VERSION_450 
+	|| xio_version == XIO_VERSION_421) {
 	float dummy;
 
 	/* Skip line 2 */
