@@ -22,6 +22,7 @@ print_usage (void)
 	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
 	" -src \"x y z\"      ...\n"
 	" -iso \"x y z\"      ...\n"
+	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
     );
     exit (1);
@@ -31,12 +32,15 @@ void
 proton_dose_opts_init (Proton_dose_options* options)
 {
     options->threading = THREADING_CPU;
-    options->src[0] = 2000.0f;
+    options->src[0] = -2000.0f;
     options->src[1] = 0.0f;
     options->src[2] = 0.0f;
     options->isocenter[0] = 0.0f;
     options->isocenter[1] = 0.0f;
     options->isocenter[2] = 0.0f;
+    options->vup[0] = 0.0f;
+    options->vup[1] = 0.0f;
+    options->vup[2] = 1.0f;
 
     options->scale = 1.0f;
     options->input_fn = 0;
@@ -84,6 +88,16 @@ parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->isocenter[0],
 		&options->isocenter[1], 
 		&options->isocenter[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-vup")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f %f %f", 
+		&options->vup[0],
+		&options->vup[1], 
+		&options->vup[2]);
 	    if (rc != 3) {
 		print_usage ();
 	    }

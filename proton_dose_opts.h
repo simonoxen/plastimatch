@@ -12,6 +12,7 @@ struct proton_dose_options {
 
     float src[3];                    /* Beam source */
     float isocenter[3];              /* Beam target */
+    float vup[3];                    /* Aperture orientation */
 
     float scale;
     char* input_fn;

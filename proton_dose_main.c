@@ -18,17 +18,22 @@
 int
 main (int argc, char* argv[])
 {
-    Volume* vol;
+    Volume *ct, *dose;
     Proton_dose_options options;
 
     parse_args (&options, argc, argv);
 
-    vol = read_mha (options.input_fn);
-    if (!vol) return -1;
+    ct = read_mha (options.input_fn);
+    if (!ct) return -1;
 
-    volume_convert_to_float (vol);
+    volume_convert_to_float (ct);
 
-    volume_destroy (vol);
+    dose = volume_clone_empty (ct);
+
+    proton_dose_compute (dose, ct, &options);
+
+    volume_destroy (ct);
+    volume_destroy (dose);
     printf ("Done.\n");
     return 0;
 }
