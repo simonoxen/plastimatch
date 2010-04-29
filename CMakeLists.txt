@@ -822,6 +822,10 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
     pqt_main_window.ui
     )
 ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
+SET (PROTON_DOSE_SRC
+	proton_dose_main.c 
+	proton_dose_opts.c proton_dose_opts.h
+	)
 SET (RTOG_TO_MHA_SRC
 	rtog_to_mha.cxx
 	exchkeys.cxx exchkeys.h
@@ -989,6 +993,8 @@ PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}"
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
+PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
 PLM_ADD_EXECUTABLE (vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")

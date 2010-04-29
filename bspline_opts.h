@@ -24,7 +24,7 @@ struct BSPLINE_Options_struct {
     char* fixed_landmarks;
     char* moving_landmarks;
     char* warped_landmarks;
-	char* method;
+    char* method;
     float landmark_stiffness;
     float young_modulus;
     int vox_per_rgn[3];
