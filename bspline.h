@@ -378,6 +378,7 @@ bspline_save_debug_state
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
 
+
 #if defined __cplusplus
 }
 #endif
