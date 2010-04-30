@@ -33,7 +33,7 @@ struct callback_data {
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
    is 0.22 cm^2 per gram.  Thus, we scale by 0.022 per mm
    http://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/water.html  */
-float
+static float
 attenuation_lookup_hu (float pix_density)
 {
     const double min_hu = -800.0;
@@ -45,7 +45,7 @@ attenuation_lookup_hu (float pix_density)
     }
 }
 
-float
+static float
 attenuation_lookup (float pix_density)
 {
     return attenuation_lookup_hu (pix_density);
@@ -70,7 +70,7 @@ drr_preprocess_attenuation (Volume* vol)
 }
 
 void
-drr_trace_ray_callback (
+drr_ray_trace_callback (
     void *callback_data, 
     int vox_index, 
     double vox_len, 
@@ -92,7 +92,7 @@ drr_trace_ray_callback (
 }
 
 double                            /* Return value: intensity of ray */
-drr_trace_ray_exact (
+drr_ray_trace_exact (
     Volume *vol,                  /* Input: volume */
     Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
     double *p1in,                 /* Input: start point for ray */
@@ -102,7 +102,7 @@ drr_trace_ray_exact (
     Callback_data cd;
     memset (&cd, 0, sizeof (Callback_data));
 
-    ray_trace_exact (vol, vol_limit, &drr_trace_ray_callback, &cd, 
+    ray_trace_exact (vol, vol_limit, &drr_ray_trace_callback, &cd, 
 	p1in, p2in);
     return cd.accum;
 }
@@ -151,7 +151,7 @@ drr_render_volume_perspective (
     vec3_scale3 (tmp, incr_c, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
 
-    /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 
+    /* drr_ray_trace uses p1 & p2, p1 is the camera, p2 is in the 
        direction of the ray */
     vec3_copy (p1, pmat->cam);
 
@@ -199,11 +199,7 @@ drr_render_volume_perspective (
 	    switch (options->interpolation) {
 	    case INTERPOLATION_NONE:
 		/* DRR_MSD is disabled */
-#if defined (commentout)
-		value = drr_trace_ray_nointerp (vol, &vol_limit, 
-		    p1, p2, 0);
-#endif
-		value = drr_trace_ray_exact (vol, &vol_limit, p1, p2);
+		value = drr_ray_trace_exact (vol, &vol_limit, p1, p2);
 		break;
 	    case INTERPOLATION_TRILINEAR_EXACT:
 		value = drr_trace_ray_trilin_exact (vol, p1, p2);

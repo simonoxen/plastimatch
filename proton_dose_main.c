@@ -32,6 +32,8 @@ main (int argc, char* argv[])
 
     proton_dose_compute (dose, ct, &options);
 
+    write_mha (options.output_fn, dose);
+
     volume_destroy (ct);
     volume_destroy (dose);
     printf ("Done.\n");

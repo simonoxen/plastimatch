@@ -5,15 +5,62 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "drr.h"
 #include "math_util.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
+#include "ray_trace_exact.h"
 #include "volume.h"
 #include "volume_limit.h"
 
+typedef struct callback_data Callback_data;
+struct callback_data {
+    Volume *dose_vol;           /* Output image */
+    double accum;               /* Accumulated intensity */
+};
+
+static float
+attenuation_lookup_weq (float density)
+{
+    const double min_hu = -1000.0;
+    if (density <= min_hu) {
+	return 0.0;
+    } else {
+	return ((density + 1000.0)/1000.0);
+    }
+}
+
+static float
+attenuation_lookup (float density)
+{
+    return attenuation_lookup_weq (density);
+}
+
 void
-proton_dose_trace_ray (
+proton_dose_ray_trace_callback (
+    void *callback_data, 
+    int vox_index, 
+    double vox_len, 
+    float vox_value
+)
+{
+    Callback_data *cd = (Callback_data *) callback_data;
+    float *dose_img = (float*) cd->dose_vol->img;
+
+#if defined (DRR_PREPROCESS_ATTENUATION)
+    cd->accum += vox_len * vox_value;
+#if defined (DEBUG_INTENSITIES)
+    printf ("len: %10g dens: %10g acc: %10g\n", 
+	vox_len, vox_density, cd->accum);
+#endif
+#else
+    cd->accum += vox_len * attenuation_lookup (vox_value);
+#endif
+
+    dose_img[vox_index] = cd->accum;
+}
+
+void
+proton_dose_ray_trace_exact (
     Volume *dose_vol,
     Volume *ct_vol,
     Volume_limit *vol_limit,
@@ -21,7 +68,7 @@ proton_dose_trace_ray (
     double *p2 
 )
 {
-    double step_len = 1e-2;
+    Callback_data cd;
     double ray[3];
     double ip1[3];
     double ip2[3];
@@ -40,6 +87,11 @@ proton_dose_trace_ray (
     printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
     printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+
+    memset (&cd, 0, sizeof (Callback_data));
+    cd.dose_vol = dose_vol;
+    ray_trace_exact (ct_vol, vol_limit, 
+	&proton_dose_ray_trace_callback, &cd, ip1, ip2);
 }
 
 void
@@ -112,7 +164,7 @@ proton_dose_compute (
     /* Compute volume boundary box */
     volume_limit_set (&ct_limit, ct_vol);
 
-    for (r = 0; r < 1; r++) {
+    for (r = 0; r < ires[0]; r++) {
 	int c;
 	double r_tgt[3];
 	double tmp[3];
@@ -123,12 +175,12 @@ proton_dose_compute (
 	vec3_scale3 (tmp, incr_r, (double) r);
 	vec3_add2 (r_tgt, tmp);
 
-	for (c = 0; c < 1; c++) {
+	for (c = 0; c < ires[1]; c++) {
 	    
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
-	    proton_dose_trace_ray (dose_vol, ct_vol, &ct_limit, p1, p2);
+	    proton_dose_ray_trace_exact (dose_vol, ct_vol, &ct_limit, p1, p2);
 	}
     }
 }
