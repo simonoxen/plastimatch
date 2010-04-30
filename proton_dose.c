@@ -12,6 +12,8 @@
 #include "volume.h"
 #include "volume_limit.h"
 
+//#define VERBOSE 1
+
 typedef struct callback_data Callback_data;
 struct callback_data {
     Volume *dose_vol;           /* Output image */
@@ -77,16 +79,18 @@ proton_dose_ray_trace_exact (
     vec3_normalize1 (ray);
 
     /* Test if ray intersects volume and create intersection points */
-    if (!volume_limit_clip_ray (vol_limit, ip1, ip2, p1, p2)) {
+    if (!volume_limit_clip_ray (vol_limit, ip1, ip2, p1, ray)) {
 	return;
     }
 
+#if VERBOSE
     printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
 
     printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
     printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+#endif
 
     memset (&cd, 0, sizeof (Callback_data));
     cd.dose_vol = dose_vol;
@@ -127,12 +131,12 @@ proton_dose_compute (
     proj_matrix_get_pdn (pmat, pdn);
     proj_matrix_get_prt (pmat, prt);
 
-    /* Compute position of image center in room coordinates */
+    /* Compute position of aperture in room coordinates */
     vec3_scale3 (tmp, nrm, - pmat->sid);
     vec3_add3 (ic_room, pmat->cam, tmp);
 
     /* Compute incremental change in 3d position for each change 
-       in panel row/column. */
+       in aperture row/column. */
     vec3_scale3 (incr_c, prt, ps[1]);
     vec3_scale3 (incr_r, pdn, ps[0]);
 
@@ -156,14 +160,12 @@ proton_dose_compute (
     printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
     printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
     printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
-    printf ("IMG WDW: %d %d %d %d\n", 
-	options->image_window[0], options->image_window[1], 
-	options->image_window[2], options->image_window[3]);
 #endif
 
     /* Compute volume boundary box */
     volume_limit_set (&ct_limit, ct_vol);
 
+    //    ires[0] = ires[1] = 1;
     for (r = 0; r < ires[0]; r++) {
 	int c;
 	double r_tgt[3];
