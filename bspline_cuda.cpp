@@ -622,10 +622,11 @@ void bspline_cuda_MI_a (
 	plm_timer_start (&timer0);
 #ifdef CPU_HISTS
 	num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
+	printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 	// Invoke Parallel Prefix Scan driven GPU HIST kernel set
+	printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
-	printf (" * hists: %9.3f s\n", plm_timer_report(&timer0));
 
 	// if using double histograms for accumulation
 	// copy their contents over to floating histograms
@@ -641,6 +642,9 @@ void bspline_cuda_MI_a (
 	// dump histogram images?
 	if (parms->xpm_hist_dump) {
 		dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+	}
+
+	if (parms->debug) {
 		dump_hist (mi_hist, bst->it);
 	}
 
@@ -648,22 +652,22 @@ void bspline_cuda_MI_a (
 	plm_timer_start (&timer0);
 #ifdef CPU_SCORE
 	 ssd->score = CPU_MI_Score(mi_hist, num_vox);
+	printf (" * score: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 	// Doing this on the GPU may be silly.
-	// (Probably best done on the CPU while waiting for the gradient
-	// to complete on the GPU)
 	// GPU_MI_Score_a();
+	printf (" * score: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
-	printf (" * score: %9.3f s\n", plm_timer_report(&timer0));
 
 	// compute gradient
 	plm_timer_start (&timer0);
 #ifdef CPU_GRAD
 	CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
+	printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 	CUDA_MI_Grad_a(bst->ssd.grad, dev_ptrs, mi_hist, fixed, moving, bxf, (float)num_vox, ssd->score);
+	printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
-	printf (" *  grad: %9.3f s\n", plm_timer_report(&timer0));
 
 
 	interval = plm_timer_report (&timer);

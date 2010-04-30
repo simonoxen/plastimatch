@@ -740,7 +740,16 @@ extern "C" void CUDA_MI_Grad_a (
     cudaMemcpy(dev_ptrs->f_hist, mi_hist->f_hist, dev_ptrs->f_hist_size, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ptrs->m_hist, mi_hist->m_hist, dev_ptrs->m_hist_size, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ptrs->j_hist, mi_hist->j_hist, dev_ptrs->j_hist_size, cudaMemcpyHostToDevice);
-    checkCUDAError("CUDA_MI_Grad_a(): Unable to copy histograms to GPU!");
+       checkCUDAError("CUDA_MI_Grad_a(): Unable to copy histograms to GPU!");
+
+    // Initial dc_dv streams
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+       checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+       checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+       checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+    
 
     int3 vpr;
     vpr.x = bxf->vox_per_rgn[0];
@@ -793,34 +802,46 @@ extern "C" void CUDA_MI_Grad_a (
     roi_offset.y = bxf->roi_offset[1];
     roi_offset.z = bxf->roi_offset[2];
 
+
     // --- INITIALIZE GRID ---
     int i;
     int Grid_x = 0;
     int Grid_y = 0;
-    int threads_per_block = 32;
+    int threads_per_block = 128;
     int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+    int sqrt_num_blocks;
+    int num_blocks;
+    int smemSize;
+    int found_flag = 0;
 
-    // -----
     // Search for a valid execution configuration
     // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+    for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
+	num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	smemSize = 12 * sizeof(float) * threads_per_block;
+	sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
-    for (i = sqrt_num_blocks; i < 65535; i++)
-    {
-	if (num_blocks % i == 0)
-	{
-	    Grid_x = i;
-	    Grid_y = num_blocks / Grid_x;
+	for (i = sqrt_num_blocks; i < 65535; i++) {
+	    if (num_blocks % i == 0) {
+		Grid_x = i;
+		Grid_y = num_blocks / Grid_x;
+		found_flag = 1;
+		break;
+	    }
+	}
+
+	if (found_flag == 1) {
 	    break;
 	}
     }
-    // -----
-
 
     // Were we able to find a valid exec config?
     if (Grid_x == 0) {
-	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_dc_dv_a() configuration!\n");
+	// If this happens we should consider falling back to a
+	// CPU implementation, using a different CUDA algorithm,
+	// or padding the input dc_dv stream to work with this
+	// CUDA algorithm.
+	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
 #if defined (commentout)
@@ -831,8 +852,10 @@ extern "C" void CUDA_MI_Grad_a (
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
     dim3 dimBlock1(threads_per_block, 1, 1);
-    //	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
-    // ----------------------
+
+
+
+
     int tile_padding = 64 - ((vpr.x * vpr.y * vpr.z) % 64);
 
     // Launch kernel with one thread per voxel
@@ -867,16 +890,6 @@ extern "C" void CUDA_MI_Grad_a (
 	num_vox_f,
 	score,
 	tile_padding);
-
-#if defined (commentout)
-	float* dc_dv_x = (float*)malloc (dev_ptrs->dc_dv_x_size); 	 
-	cudaMemcpy(dc_dv_x, dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size, cudaMemcpyDeviceToHost); 	 
-	  	 
-	int zz; 	 
-	for(zz = 0; zz < (dev_ptrs->dc_dv_x_size / sizeof(float)); zz++) 	 
-	printf ("[%5i] %3.9f\n", zz, dc_dv_x[zz]); 	 
-	exit(0);
-#endif
 
 
     ////////////////////////////////
@@ -1900,16 +1913,16 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     q.x = r.x - p.x * vpr.x;
     q.y = r.y - p.y * vpr.y;
     q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
 
     f.x = img_origin.x + img_spacing.x * r.x;
     f.y = img_origin.y + img_spacing.y * r.y;
     f.z = img_origin.z + img_spacing.z * r.z;
     // --------------------------------------------------------
 
-    if (f.x > (roi_offset.x + roi_dim.x) ||
-        f.y > (roi_offset.y + roi_dim.y) ||
-	f.z > (roi_offset.z + roi_dim.z))
+    if (r.x > (roi_offset.x + roi_dim.x) ||
+        r.y > (roi_offset.y + roi_dim.y) ||
+	r.z > (roi_offset.z + roi_dim.z))
     {
 	    return;
     }
@@ -2179,15 +2192,13 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float* dc_dv_element_z;
     int pidx, qidx;
 
-    pidx = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
-    dc_dv_element_x = &dc_dv_x[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
-    dc_dv_element_y = &dc_dv_y[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
-    dc_dv_element_z = &dc_dv_z[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
+    dc_dv_element_x = &dc_dv_x[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
+    dc_dv_element_y = &dc_dv_y[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
+    dc_dv_element_z = &dc_dv_z[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
 
-    qidx = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
-    dc_dv_element_x = &dc_dv_element_x[qidx];
-    dc_dv_element_y = &dc_dv_element_y[qidx];
-    dc_dv_element_z = &dc_dv_element_z[qidx];
+    dc_dv_element_x = &dc_dv_element_x[q.w];
+    dc_dv_element_y = &dc_dv_element_y[q.w];
+    dc_dv_element_z = &dc_dv_element_z[q.w];
 
     dc_dv_element_x[0] = dc_dv.x;
     dc_dv_element_y[0] = dc_dv.y;
