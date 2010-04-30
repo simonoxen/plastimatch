@@ -16,26 +16,11 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "readmha.h"
+#include "volume_limit.h"
 #include "timer.h"
 
 //#define ULTRA_VERBOSE 1
 //#define VERBOSE 1
-
-typedef enum point_location Point_location;
-enum point_location {
-    POINTLOC_LEFT,
-    POINTLOC_INSIDE,
-    POINTLOC_RIGHT,
-};
-
-typedef struct volume_limit Volume_limit;
-struct volume_limit {
-    /* upper and lower limits of volume, including tolerances */
-    double limits[2];
-
-    /* dir == 0 if limits go from low to high */
-    int dir;
-};
 
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
    is 0.22 cm^2 per gram.  Thus, we scale by 0.022 per mm
@@ -114,28 +99,6 @@ drr_degeneracy_test (double* plane, double* ray)
     return dp;
 }
 
-Point_location
-drr_test_boundary (Volume_limit* vol_limit, double x)
-{
-    if (vol_limit->dir == 0) {
-	if (x < vol_limit->limits[0]) {
-	    return POINTLOC_LEFT;
-	} else if (x > vol_limit->limits[1]) {
-	    return POINTLOC_RIGHT;
-	} else {
-	    return POINTLOC_INSIDE;
-	}
-    } else {
-	if (x > vol_limit->limits[0]) {
-	    return POINTLOC_LEFT;
-	} else if (x < vol_limit->limits[1]) {
-	    return POINTLOC_RIGHT;
-	} else {
-	    return POINTLOC_INSIDE;
-	}
-    }
-}
-
 void
 drr_trace_init_loopvars_nointerp (
     int* ai,           /* Output */
@@ -187,87 +150,29 @@ drr_trace_init (
     double *al_z,
     double *len,
     Volume* vol, 
-    Volume_limit vol_limits[3], 
+    Volume_limit *vol_limit,
     double* p1, 
     double* p2 
 )
 {
     int d;
-    Point_location ploc[3][2];
-    double alpha[3][2];
-    double alpha_in, alpha_out;
     double ray[3];
-    double ips[2][4];
+    double ip1[3];
+    double ip2[3];
+    //double ips[2][4];
 
-    /* For each of 3 dimensions: x, y, and z */
-    for (d = 0; d < 3; d++) {
-	ploc[d][0] = drr_test_boundary (&vol_limits[d], p1[d]);
-	ploc[d][1] = drr_test_boundary (&vol_limits[d], p2[d]);
-	/* Reject segments which don't intersect the volume in this dimension */
-	if (ploc[d][0] == POINTLOC_LEFT && ploc[d][1] == POINTLOC_LEFT) return 0;
-	if (ploc[d][0] == POINTLOC_RIGHT && ploc[d][1] == POINTLOC_RIGHT) return 0;
-    }
-
-#if defined (ULTRA_VERBOSE)
-    printf ("vol_limit[*][0] = %g %g %g\n", vol_limits[0].limits[0], 
-	vol_limits[1].limits[0], vol_limits[2].limits[0]);
-    printf ("vol_limit[*][1] = %g %g %g\n", vol_limits[0].limits[1], 
-	vol_limits[1].limits[1], vol_limits[2].limits[1]);
-    printf ("ploc[*][0]: %d %d %d\n", ploc[0][0], ploc[1][0], ploc[2][0]);
-    printf ("ploc[*][1]: %d %d %d\n", ploc[0][1], ploc[1][1], ploc[2][1]);
-#endif
-
-    /* If we made it here, all three dimensions have some range of alpha
-       where they intersects the volume.  However, these alphas might 
-       not overlap.  We compute the alphas, then test overlapping 
-       alphas to find the segment range within the volume.  */
-    for (d = 0; d < 3; d++) {
-	if (ploc[d][0] == POINTLOC_LEFT) {
-	    alpha[d][0] = (vol_limits[d].limits[0] - p1[d]) / (p2[d] - p1[d]);
-	} else if (ploc[d][0] == POINTLOC_RIGHT) {
-	    alpha[d][0] = (p1[d] - vol_limits[d].limits[1]) / (p1[d] - p2[d]);
-	} else {
-	    alpha[d][0] = 0.0;
-	}
-	if (ploc[d][1] == POINTLOC_LEFT) {
-	    alpha[d][1] = (vol_limits[d].limits[0] - p1[d]) / (p2[d] - p1[d]);
-	} else if (ploc[d][1] == POINTLOC_RIGHT) {
-	    alpha[d][1] = (p1[d] - vol_limits[d].limits[1]) / (p1[d] - p2[d]);
-	} else {
-	    alpha[d][1] = 1.0;
-	}
-    }
-
-    /* alpha_in is the alpha where the segment enters the boundary, and 
-       alpha_out is where it exits the boundary.  */
-    alpha_in = alpha[0][0];
-    alpha_out = alpha[0][1];
-    for (d = 1; d < 3; d++) {
-	if (alpha_in < alpha[d][0]) alpha_in = alpha[d][0];
-	if (alpha_out > alpha[d][1]) alpha_out = alpha[d][1];
-    }
-#if defined (ULTRA_VERBOSE)
-    printf ("alpha[*][0] = %g %g %g\n", alpha[0][0], alpha[1][0], alpha[2][0]);
-    printf ("alpha[*][1] = %g %g %g\n", alpha[0][1], alpha[1][1], alpha[2][1]);
-    printf ("alpha in/out = %g %g\n", alpha_in, alpha_out);
-#endif
-
-    /* If exit is before entrance, the segment does not intersect the volume */
-    if (alpha_out - alpha_in < DRR_LEN_TOLERANCE) {
+    /* Test if ray intersects volume */
+    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
 	return 0;
     }
 
     /* Create the volume intersection points */
     vec3_sub3 (ray, p2, p1);
-    for (d = 0; d < 3; d++) {
-	ips[0][d] = p1[d] + alpha_in * ray[d];
-	ips[1][d] = p1[d] + alpha_out * ray[d];
-    }
     vec3_normalize1 (ray);
 
 #if defined (ULTRA_VERBOSE)
-    printf ("ips[0] = %g %g %g\n", ips[0][0], ips[0][1], ips[0][2]);
-    printf ("ips[1] = %g %g %g\n", ips[1][0], ips[1][1], ips[1][2]);
+    printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
+    printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
 #endif
 
@@ -279,17 +184,17 @@ drr_trace_init (
        al_x    // length between voxel crossings
     */
     drr_trace_init_loopvars_nointerp (ai_x, aixdir, ao_x, al_x, 
-	ips[0][0],
+	ip1[0],
 	ray[0], 
 	vol->offset[0], 
 	vol->pix_spacing[0]);
     drr_trace_init_loopvars_nointerp (ai_y, aiydir, ao_y, al_y, 
-	ips[0][1],
+	ip1[1],
 	ray[1], 
 	vol->offset[1], 
 	vol->pix_spacing[1]);
     drr_trace_init_loopvars_nointerp (ai_z, aizdir, ao_z, al_z, 
-	ips[0][2], 
+	ip1[2], 
 	ray[2], 
 	vol->offset[2], 
 	vol->pix_spacing[2]);
@@ -300,17 +205,17 @@ drr_trace_init (
     printf ("aiz = %d aizdir = %d aoz = %g alz = %g\n", *ai_z, *aizdir, *ao_z, *al_z);
 #endif
 
-    *len = vec3_dist(&ips[0][0],&ips[1][0]);
+    *len = vec3_dist (ip1, ip2);
     return 1;
 }
 
 double                            /* Return value: intensity of ray */
 drr_trace_ray_nointerp (
-    Volume* vol,                  /* Input: volume */
-    Volume_limit vol_limits[3],   /* Input: min/max coordinates of volume */
-    double* p1in,                 /* Input: start point for ray */
-    double* p2in,                 /* Input: end point for ray */
-    FILE* msd_fp                  /* Not used */
+    Volume *vol,                  /* Input: volume */
+    Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
+    double *p1in,                 /* Input: start point for ray */
+    double *p2in,                 /* Input: end point for ray */
+    FILE *msd_fp                  /* Not used */
 )
 {
     /* Variable notation:
@@ -351,7 +256,11 @@ drr_trace_ray_nointerp (
 	    &al_y, 
 	    &al_z,
 	    &len,
-	    vol, vol_limits, p1in, p2in)) {
+	    vol, 
+	    vol_limit, 
+	    p1in, 
+	    p2in))
+    {
 	return 0.0;
     }
 
@@ -432,7 +341,7 @@ drr_render_volume_perspective (
     double incr_r[3];
     double incr_c[3];
     double tmp[3];
-    Volume_limit vol_limits[3];
+    Volume_limit vol_limit;
     double nrm[3], pdn[3], prt[3];
     int r;
     Proj_matrix *pmat = proj->pmat;
@@ -476,20 +385,7 @@ drr_render_volume_perspective (
 #endif
 
     /* Compute volume boundary box */
-    for (d = 0; d < 3; d++) {
-	vol_limits[d].limits[0] = vol->offset[d] - 0.5 * vol->pix_spacing[d];
-	vol_limits[d].limits[1] = vol_limits[d].limits[0] 
-	    + vol->dim[d] * vol->pix_spacing[d];
-	if (vol_limits[d].limits[0] <= vol_limits[d].limits[1]) {
-	    vol_limits[d].dir = 0;
-	    vol_limits[d].limits[0] += DRR_BOUNDARY_TOLERANCE;
-	    vol_limits[d].limits[1] -= DRR_BOUNDARY_TOLERANCE;
-	} else {
-	    vol_limits[d].dir = 1;
-	    vol_limits[d].limits[0] -= DRR_BOUNDARY_TOLERANCE;
-	    vol_limits[d].limits[1] += DRR_BOUNDARY_TOLERANCE;
-	}
-    }
+    volume_limit_set (&vol_limit, vol);
 
     /* Compute the drr pixels */
 #pragma omp parallel for
@@ -518,7 +414,7 @@ drr_render_volume_perspective (
 	    switch (options->interpolation) {
 	    case INTERPOLATION_NONE:
 		/* DRR_MSD is disabled */
-		value = drr_trace_ray_nointerp (vol, vol_limits, 
+		value = drr_trace_ray_nointerp (vol, &vol_limit, 
 		    p1, p2, 0);
 		break;
 	    case INTERPOLATION_TRILINEAR_EXACT:
