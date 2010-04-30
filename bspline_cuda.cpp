@@ -20,7 +20,7 @@
 
 #define CPU_HISTS
 #define CPU_SCORE
-#define CPU_GRAD
+//#define CPU_GRAD
 
 /***********************************************************************
  * A few of the CPU functions are reproduced here for testing purposes.
@@ -662,15 +662,13 @@ void bspline_cuda_MI_a (
 #ifdef CPU_GRAD
 	CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
 #else
-	// GPU_MI_Grad_a();
+	CUDA_MI_Grad_a(bst->ssd.grad, dev_ptrs, mi_hist, fixed, moving, bxf, (float)num_vox, ssd->score);
 #endif
 	printf (" *  grad: %9.3f s\n", plm_timer_report(&timer0));
 
 
 	interval = plm_timer_report (&timer);
 	report_score ("MI", bxf, bst, num_vox, interval);
-
-	exit(0);
 }
 ////////////////////////////////////////////////////////////////////////////////
 

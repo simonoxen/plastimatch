@@ -180,4 +180,35 @@ __global__ void kernel_bspline_MI_a_hist_fix_merge (
  float *f_hist_seg,
  long num_seg_hist);
 
+
+__global__ void kernel_bspline_MI_dc_dv_a (
+    float* dc_dv_x,	// OUTPUT: dC / dv (x-component)
+    float* dc_dv_y,	// OUTPUT: dC / dv (y-component)
+    float* dc_dv_z,	// OUTPUT: dC / dv (z-component)
+    float* f_hist,      // INPUT:  fixed histogram
+    float* m_hist,	// INPUT: moving histogram
+    float* j_hist,      // INPUT:  joint histogram
+    float* f_img,	// INPUT:  fixed image voxels
+    float* m_img,	// INPUT: moving image voxels
+    float f_offset,	// INPUT:  fixed histogram offset 
+    float m_offset,	// INPUT: moving histogram offset
+    float f_delta,	// INPUT:  fixed histogram delta
+    float m_delta,	// INPUT: moving histogram delta
+    long f_bins,        // INPUT: #  fixed histogram bins
+    long m_bins,	// INPUT: # moving histogram bins
+    int3 vpr,		// INPUT: voxels per region
+    int3 fdim,		// INPUT:  fixed image dimensions
+    int3 mdim,		// INPUT: moving image dimensions
+    int3 rdim,		// INPUT: region dimensions
+    float3 img_origin,	// INPUT: image origin
+    float3 img_spacing,	// INPUT: image spacing
+    float3 mov_offset,	// INPUT: moving image offset
+    float3 mov_ps,	// INPUT: moving image pixel spacing
+    int* c_lut,		// INPUT: coefficient lut
+    float* q_lut,	// INPUT: bspline product lut
+    float* coeff,	// INPUT: coefficient array
+    float num_vox_f,	// INPUT: # of voxels
+    float score);	// INPUT: evaluated MI cost function
+
+
 #endif

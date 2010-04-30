@@ -93,6 +93,8 @@ extern "C" void bspline_cuda_init_MI_a (
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
+    printf ("Allocating GPU Memory");
+
     // input volumes
     dev_ptrs->fixed_image_size = fixed->npix * sizeof(float);
     dev_ptrs->moving_image_size = moving->npix * sizeof(float);
@@ -173,6 +175,163 @@ extern "C" void bspline_cuda_init_MI_a (
     // grad
     dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
     cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
+
+    // dc_dv_x, dc_dv_y, and dc_dv_z
+    int num_voxels = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+
+    int3 vol_dim;
+    vol_dim.x = fixed->dim[0];
+    vol_dim.y = fixed->dim[1];
+    vol_dim.z = fixed->dim[2];
+
+    int3 tile_dim;
+    tile_dim.x = bxf->vox_per_rgn[0];
+    tile_dim.y = bxf->vox_per_rgn[1];
+    tile_dim.z = bxf->vox_per_rgn[2];
+
+    int4 num_tile;
+    num_tile.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tile.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tile.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tile.w = num_tile.x * num_tile.y * num_tile.z;
+
+    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    dev_ptrs->dc_dv_x_size = ((tile_bytes + tile_padding) * num_tile.w) * sizeof(float);
+    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
+    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
+
+    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+
+
+    // cond_x y and z
+    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
+
+    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+
+    // tile offset lut  (needed by condense_64_texfetch)
+    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
+
+    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
+    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+
+    free (offsets);
+
+    // knot lut (needed by condense_64_texfetch)
+    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
+
+    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
+    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
+
+    int i,j;
+    for (i = 0; i < num_tiles; i++)
+    {
+	find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
+	for (j = 0; j < 64; j++)
+	    LUT_Knot[64*i + j] = local_set_of_64[j];
+    }
+    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
+
+    free (local_set_of_64);
+    free (LUT_Knot);
+
+
+    // --- GENERATE B-SPLINE LOOK UP TABLE ----------------------
+    dev_ptrs->LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
+    dev_ptrs->LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
+    dev_ptrs->LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
+    float* LUT_Bspline_x = (float*)malloc(dev_ptrs->LUT_Bspline_x_size);
+    float* LUT_Bspline_y = (float*)malloc(dev_ptrs->LUT_Bspline_y_size);
+    float* LUT_Bspline_z = (float*)malloc(dev_ptrs->LUT_Bspline_z_size);
+
+    for (j = 0; j < 4; j++)
+    {
+	for (i = 0; i < bxf->vox_per_rgn[0]; i++)
+	    LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
+
+	for (i = 0; i < bxf->vox_per_rgn[1]; i++)
+	    LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
+
+	for (i = 0; i < bxf->vox_per_rgn[2]; i++)
+	    LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
+    }
+	
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+
+    cudaMemcpy(dev_ptrs->LUT_Bspline_x, LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_y, LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_z, LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size, cudaMemcpyHostToDevice);
+    printf(".");
+
+    free (LUT_Bspline_x);
+    free (LUT_Bspline_y);
+    free (LUT_Bspline_z);
+
+    cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+    printf(".");
+
+
+
+    printf (" done.\n");
+
 }
 
 
@@ -567,6 +726,242 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
 					
 }
 
+extern "C" void CUDA_MI_Grad_a (
+    float* host_grad,
+    Dev_Pointers_Bspline *dev_ptrs,
+    BSPLINE_MI_Hist* mi_hist,
+    Volume* fixed,
+    Volume* moving,
+    BSPLINE_Xform *bxf,
+    float num_vox_f,
+    float score)
+{
+    // Initialize histogram memory on GPU
+    cudaMemcpy(dev_ptrs->f_hist, mi_hist->f_hist, dev_ptrs->f_hist_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_ptrs->m_hist, mi_hist->m_hist, dev_ptrs->m_hist_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_ptrs->j_hist, mi_hist->j_hist, dev_ptrs->j_hist_size, cudaMemcpyHostToDevice);
+    checkCUDAError("CUDA_MI_Grad_a(): Unable to copy histograms to GPU!");
+
+    int3 vpr;
+    vpr.x = bxf->vox_per_rgn[0];
+    vpr.y = bxf->vox_per_rgn[1];
+    vpr.z = bxf->vox_per_rgn[2];
+
+    int3 fdim;
+    fdim.x = fixed->dim[0];
+    fdim.y = fixed->dim[1];
+    fdim.z = fixed->dim[2];
+
+    int3 mdim;
+    mdim.x = moving->dim[0];
+    mdim.y = moving->dim[1];
+    mdim.z = moving->dim[2];
+	
+    int3 rdim;
+    rdim.x = bxf->rdims[0];
+    rdim.y = bxf->rdims[1];
+    rdim.z = bxf->rdims[2];
+
+    float3 img_origin;
+    img_origin.x = bxf->img_origin[0];
+    img_origin.y = bxf->img_origin[1];
+    img_origin.z = bxf->img_origin[2];
+	
+    float3 img_spacing;     
+    img_spacing.x = bxf->img_spacing[0];
+    img_spacing.y = bxf->img_spacing[1];
+    img_spacing.z = bxf->img_spacing[2];
+
+
+    float3 mov_offset;     
+    mov_offset.x = moving->offset[0];
+    mov_offset.y = moving->offset[1];
+    mov_offset.z = moving->offset[2];
+
+    float3 mov_ps;
+    mov_ps.x = moving->pix_spacing[0];
+    mov_ps.y = moving->pix_spacing[1];
+    mov_ps.z = moving->pix_spacing[2];
+	
+
+    // --- INITIALIZE GRID ---
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int threads_per_block = 32;
+    int num_threads = fixed->npix;
+    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+
+    // -----
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++)
+    {
+	if (num_blocks % i == 0)
+	{
+	    Grid_x = i;
+	    Grid_y = num_blocks / Grid_x;
+	    break;
+	}
+    }
+    // -----
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_dc_dv_a() configuration!\n");
+	exit(0);
+    } else {
+#if defined (commentout)
+	printf ("Grid [%i,%i], %d threads_per_block.\n", 
+	    Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    dim3 dimGrid1(Grid_x, Grid_y, 1);
+    dim3 dimBlock1(threads_per_block, 1, 1);
+    //	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
+    // ----------------------
+
+    // Launch kernel with one thread per voxel
+    kernel_bspline_MI_dc_dv_a <<<dimGrid1, dimBlock1>>> (
+	dev_ptrs->dc_dv_x,
+       	dev_ptrs->dc_dv_y,
+	dev_ptrs->dc_dv_z,	
+	dev_ptrs->f_hist,
+	dev_ptrs->m_hist,
+	dev_ptrs->j_hist,
+	dev_ptrs->fixed_image,
+	dev_ptrs->moving_image,
+	mi_hist->fixed.offset,
+	mi_hist->moving.offset,
+	1.0f/mi_hist->fixed.delta,
+	1.0f/mi_hist->moving.delta,
+	mi_hist->fixed.bins,
+	mi_hist->moving.bins,
+	vpr,
+	fdim,
+	mdim,
+	rdim,
+	img_origin,
+	img_spacing,
+	mov_offset,
+	mov_ps,
+	dev_ptrs->c_lut,
+	dev_ptrs->q_lut,
+	dev_ptrs->coeff,
+	num_vox_f,
+	score);
+
+#if defined (commentout)
+    float* dc_dv_x = (float*)malloc (dev_ptrs->dc_dv_x_size);
+    cudaMemcpy(dc_dv_x, dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size, cudaMemcpyDeviceToHost);
+
+    int zz;
+    for(zz = 0; zz < (dev_ptrs->dc_dv_x_size / sizeof(float)); zz++)
+	    printf ("[%5i] %3.9f\n", zz, dc_dv_x[zz]);
+#endif
+
+
+    ////////////////////////////////
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_MI_dc_dv_a()");
+
+    // Clear out the condensed dc_dv streams
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+    
+    // Invoke kernel condense
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_mse_2_condense_64_texfetch (dev_ptrs, bxf->vox_per_rgn, 
+	num_tiles);
+    
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense_64_texfetch()");
+
+    // Clear out the gradient
+    cudaMemset(dev_ptrs->grad, 1, dev_ptrs->grad_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->grad");
+
+    // Invoke kernel reduce
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+    /////////////////////////////////////////////////////////////
+    /////////////////////// CALCULATE ///////////////////////////
+    ////////////// GRAD, GRAD NORM *AND* GRAD MEAN //////////////
+    /////////////////////////////////////////////////////////////
+
+
+    // --- RE-INITIALIZE GRID -----------------------------------
+    Grid_x = 0;
+    Grid_y = 0;
+    int num_elems = bxf->num_coeff;
+    //	num_blocks = (int)ceil(num_elems / 512.0);
+    num_blocks = (num_elems + 511) / 512;
+	
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++)
+    {
+	if (num_blocks % i == 0)
+	{
+	    Grid_x = i;
+	    Grid_y = num_blocks / Grid_x;
+	    break;
+	}
+    }
+    // *****
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+	// If this happens we should consider falling back to a
+	// CPU implementation, using a different CUDA algorithm,
+	// or padding the input dc_dv stream to work with this
+	// CUDA algorithm.
+	printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+	exit(0);
+    } else {
+	//		printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid2(Grid_x, Grid_y, 1);
+    dim3 dimBlock2(128, 2, 2);
+    // ----------------------------------------------------------
+	
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>>(
+	dev_ptrs->grad,
+	(int)num_vox_f,
+	num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] bspline_cuda_update_grad_kernel");
+    // ----------------------------------------------------------
+
+
+    // --- RETREIVE THE GRAD FROM GPU ---------------------------
+    cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
+    checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
+    // ----------------------------------------------------------
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1462,6 +1857,382 @@ __global__ void kernel_bspline_MI_a_hist_fix_merge (
 
     // Done.
 }
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Computes dC/dv for MI using PVI-8 interpolation
+//
+//                 --- Neightborhood of 8 ---
+//
+////////////////////////////////////////////////////////////////////////////////
+__global__ void kernel_bspline_MI_dc_dv_a (
+    float* dc_dv_x,	// OUTPUT: dC / dv (x-component)
+    float* dc_dv_y,	// OUTPUT: dC / dv (y-component)
+    float* dc_dv_z,	// OUTPUT: dC / dv (z-component)
+    float* f_hist,      // INPUT:  fixed histogram
+    float* m_hist,	// INPUT: moving histogram
+    float* j_hist,      // INPUT:  joint histogram
+    float* f_img,	// INPUT:  fixed image voxels
+    float* m_img,	// INPUT: moving image voxels
+    float f_offset,	// INPUT:  fixed histogram offset 
+    float m_offset,	// INPUT: moving histogram offset
+    float f_delta,	// INPUT:  fixed histogram delta
+    float m_delta,	// INPUT: moving histogram delta
+    long f_bins,        // INPUT: #  fixed histogram bins
+    long m_bins,	// INPUT: # moving histogram bins
+    int3 vpr,		// INPUT: voxels per region
+    int3 fdim,		// INPUT:  fixed image dimensions
+    int3 mdim,		// INPUT: moving image dimensions
+    int3 rdim,		// INPUT: region dimensions
+    float3 img_origin,	// INPUT: image origin
+    float3 img_spacing,	// INPUT: image spacing
+    float3 mov_offset,	// INPUT: moving image offset
+    float3 mov_ps,	// INPUT: moving image pixel spacing
+    int* c_lut,		// INPUT: coefficient lut
+    float* q_lut,	// INPUT: bspline product lut
+    float* coeff,	// INPUT: coefficient array
+    float num_vox_f,	// INPUT: # of voxels
+    float score)	// INPUT: evaluated MI cost function
+{
+    // -- Setup Thread Attributes -----------------------------
+    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+    // --------------------------------------------------------
+
+	
+    // -- Only process threads that map to voxels -------------
+    if (thread_idxg > fdim.x * fdim.y * fdim.z)
+	return;
+    // --------------------------------------------------------
+
+
+    // -- Variables used by correspondence --------------------
+    // -- (Block verified) ------------------------------------
+    int3 r;		// Voxel index (global)
+    int4 q;		// Voxel index (local)
+    int4 p;		// Tile index
+
+
+    float3 f;		// Distance from origin (in mm )
+    float3 m;		// Voxel Displacement   (in mm )
+    float3 n;		// Voxel Displacement   (in vox)
+    float3 d;		// Deformation vector
+
+    int3 n_f;		// Voxel Displacement floor
+    int3 n_r;		// Voxel Displacement round
+
+    int fv;		// fixed voxel
+    int mvf;		// moving voxel (floor)
+    //   ----    ----    ----    ----    ----    ----    ----    
+	
+    fv = thread_idxg;
+
+    r.z = thread_idxg / (fdim.x * fdim.y);
+    r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
+    r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+	
+    p.x = r.x / vpr.x;
+    p.y = r.y / vpr.y;
+    p.z = r.z / vpr.z;
+    p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
+
+    q.x = r.x - p.x * vpr.x;
+    q.y = r.y - p.y * vpr.y;
+    q.z = r.z - p.z * vpr.z;
+    q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+
+    f.x = img_origin.x + img_spacing.x * r.x;
+    f.y = img_origin.y + img_spacing.y * r.y;
+    f.z = img_origin.z + img_spacing.z * r.z;
+    // --------------------------------------------------------
+
+
+    // -- Compute deformation vector --------------------------
+    int cidx;
+    float P;
+
+    d.x = 0.0f;
+    d.y = 0.0f;
+    d.z = 0.0f;
+
+    for (int k=0; k < 64; k++)
+    {
+	// Texture Version
+	P = tex1Dfetch (tex_q_lut, 64*q.w + k);
+	cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
+
+	d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
+	d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
+	d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
+
+
+	// Global Memory Version
+	//		P = q_lut[64*q.w + k];
+	//		cidx = 3 * c_lut[64*p.w + k];
+	//
+	//		d.x += P * coeff[cidx + 0];
+	//		d.y += P * coeff[cidx + 1];
+	//		d.z += P * coeff[cidx + 2];
+    }
+    // --------------------------------------------------------
+
+
+    // -- Correspondence --------------------------------------
+    // -- (Block verified) ------------------------------------
+    m.x = f.x + d.x;
+    m.y = f.y + d.y;
+    m.z = f.z + d.z;
+
+    // n.x = m.i  etc
+    n.x = (m.x - mov_offset.x) / mov_ps.x;
+    n.y = (m.y - mov_offset.y) / mov_ps.y;
+    n.z = (m.z - mov_offset.z) / mov_ps.z;
+
+    if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
+	n.y < -0.5 || n.y > mdim.y - 0.5 ||
+	n.z < -0.5 || n.z > mdim.z - 0.5)
+    {
+	// -->> skipped voxel logic here <<--
+	// if (!rc) continue [in the cpu code]
+	return;
+    }
+
+    n_f.x = (int) floorf (n.x);
+    n_f.y = (int) floorf (n.y);
+    n_f.z = (int) floorf (n.z);
+
+    n_r.x = rintf (n.x);
+    n_r.y = rintf (n.y);
+    n_r.z = rintf (n.z);
+
+    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+    // --------------------------------------------------------
+
+
+    // -- Compute coordinates of 8 nearest neighbors ----------
+    int n1, n2, n3, n4;
+    int n5, n6, n7, n8;
+
+    n1 = mvf;
+    n2 = n1 + 1;
+    n3 = n1 + mdim.x;
+    n4 = n1 + mdim.x + 1;
+    n5 = n1 + mdim.x * mdim.y;
+    n6 = n1 + mdim.x * mdim.y + 1;
+    n7 = n1 + mdim.x * mdim.y + mdim.x;
+    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    // --------------------------------------------------------
+
+
+    // -- Compute tri-linear interpolation weights ------------
+    float3 li_1;
+    float3 li_2;
+
+    li_2.x = n.x - n_f.x;
+    if (n_f.x < 0) {
+	    n_f.x = 0;
+	    n_r.x = 0;
+	    li_2.x = 0;
+    }
+    else if (n_f.x >= (mdim.x - 1)) {
+	    n_f.x = n.x - 2;
+	    n_r.x = n.x - 1;
+	    li_2.x = 1.0f;
+    }
+    li_1.x = 1.0f - li_2.x;
+
+
+    li_2.y = n.y - n_f.y;
+    if (n_f.y < 0) {
+	    n_f.y = 0;
+	    n_r.y = 0;
+	    li_2.y = 0;
+    }
+    else if (n_f.y >= (mdim.y - 1)) {
+	    n_f.y = n.y - 2;
+	    n_r.y = n.y - 1;
+	    li_2.y = 1.0f;
+    }
+    li_1.y = 1.0f - li_2.y;
+
+
+    li_2.z = n.z - n_f.z;
+    if (n_f.z < 0) {
+	    n_f.z = 0;
+	    n_r.z = 0;
+	    li_2.z = 0;
+    }
+    else if (n_f.z >= (mdim.z - 1)) {
+	    n_f.z = n.z - 2;
+	    n_r.z = n.z - 1;
+	    li_2.z = 1.0f;
+    }
+    li_1.z = 1.0f - li_2.z;
+    // --------------------------------------------------------
+
+
+
+    // -- Compute differential PV slices ----------------------
+    float3 dw1, dw2, dw3, dw4;
+    float3 dw5, dw6, dw7, dw8;
+
+    dw1.x =  -1.0f * li_1.y * li_1.z;
+    dw1.y = li_1.x *  -1.0f * li_1.z;
+    dw1.z = li_1.x * li_1.y *  -1.0f;
+
+    dw2.x =  +1.0f * li_1.y * li_1.z;
+    dw2.y = li_2.x *  -1.0f * li_1.z;
+    dw2.z = li_2.x * li_1.y *  -1.0f;
+
+    dw3.x =  -1.0f * li_2.y * li_1.z;
+    dw3.y = li_1.x *  +1.0f * li_1.z;
+    dw3.z = li_1.x * li_2.y *  -1.0f;
+
+    dw4.x =  +1.0f * li_2.y * li_1.z;
+    dw4.y = li_2.x *  +1.0f * li_1.z;
+    dw4.z = li_2.x * li_2.y *  -1.0f;
+
+    dw5.x =  -1.0f * li_1.y * li_2.z;
+    dw5.y = li_1.x *  -1.0f * li_2.z;
+    dw5.z = li_1.x * li_1.y *  +1.0f;
+
+    dw6.x =  +1.0f * li_1.y * li_2.z;
+    dw6.y = li_2.x *  -1.0f * li_2.z;
+    dw6.z = li_2.x * li_1.y *  +1.0f;
+
+    dw7.x =  -1.0f * li_2.y * li_2.z;
+    dw7.y = li_1.x *  +1.0f * li_2.z;
+    dw7.z = li_1.x * li_2.y *  +1.0f;
+
+    dw8.x =  +1.0f * li_2.y * li_2.z;
+    dw8.y = li_2.x *  +1.0f * li_2.z;
+    dw8.z = li_2.x * li_2.y *  +1.0f;
+    // --------------------------------------------------------
+
+    __syncthreads();
+
+    // -- Read from histograms and compute dC/dp_j * dp_j/dv --
+    float dS_dP;
+    float3 dc_dv;
+    int idx_fbin, offset_fbin;
+    int idx_mbin;
+    int idx_jbin;
+
+    dc_dv.x = 0.0f;
+    dc_dv.y = 0.0f;
+    dc_dv.z = 0.0f;
+
+    idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
+    offset_fbin = idx_fbin * m_bins;
+
+    // PV w1
+    idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw1.x * dS_dP;
+	    dc_dv.y -= dw1.y * dS_dP;
+	    dc_dv.z -= dw1.z * dS_dP;
+    }
+
+    // PV w2
+    idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw2.x * dS_dP;
+	    dc_dv.y -= dw2.y * dS_dP;
+	    dc_dv.z -= dw2.z * dS_dP;
+    }
+
+    // PV w3
+    idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw3.x * dS_dP;
+	    dc_dv.y -= dw3.y * dS_dP;
+	    dc_dv.z -= dw3.z * dS_dP;
+    }
+
+    // PV w4
+    idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw4.x * dS_dP;
+	    dc_dv.y -= dw4.y * dS_dP;
+	    dc_dv.z -= dw4.z * dS_dP;
+    }
+
+    // PV w5
+    idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw5.x * dS_dP;
+	    dc_dv.y -= dw5.y * dS_dP;
+	    dc_dv.z -= dw5.z * dS_dP;
+    }
+
+    // PV w6
+    idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw6.x * dS_dP;
+	    dc_dv.y -= dw6.y * dS_dP;
+	    dc_dv.z -= dw6.z * dS_dP;
+    }
+
+    // PV w7
+    idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw7.x * dS_dP;
+	    dc_dv.y -= dw7.y * dS_dP;
+	    dc_dv.z -= dw7.z * dS_dP;
+    }
+
+    // PV w8
+    idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (j_hist[idx_jbin] > 0.0001f) {
+	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+	    dc_dv.x -= dw8.x * dS_dP;
+	    dc_dv.y -= dw8.y * dS_dP;
+	    dc_dv.z -= dw8.z * dS_dP;
+    }
+    // --------------------------------------------------------
+
+
+    // -- Convert from voxels to mm ---------------------------
+    dc_dv.x = dc_dv.x / mov_ps.x;
+    dc_dv.y = dc_dv.y / mov_ps.y;
+    dc_dv.z = dc_dv.z / mov_ps.z;
+    // --------------------------------------------------------
+
+    __syncthreads();
+
+    // -- Finally, write out dc_dv ----------------------------
+    dc_dv_x[fv] = dc_dv.x;
+    dc_dv_y[fv] = dc_dv.y;
+    dc_dv_z[fv] = dc_dv.z;
+    // --------------------------------------------------------
+
+
+    //NOTE:
+    // fv = thread_idxg
+    // fi = r.x
+    // fj = r.y
+    // fk = r.z
+}
+
 
 
 
@@ -2843,9 +3614,9 @@ __global__ void kernel_bspline_mse_2_condense_64_texfetch (
     float* dc_dv_z,		// Input : dc_dv_z values
     int* LUT_Tile_Offsets,	// Input : tile offsets
     int* LUT_Knot,		// Input : linear knot indicies
-    int pad,		// Input : amount of tile padding
+    int pad,			// Input : amount of tile padding
     int4 tile_dim,		// Input : dims of tiles
-    float one_over_six)	// Input : Precomputed since GPU division is slow
+    float one_over_six)		// Input : Precomputed since GPU division is slow
 {
     int tileOffset;
     int voxel_cluster;
