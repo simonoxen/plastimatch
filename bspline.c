@@ -1710,38 +1710,6 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
     return m_val;
 }
 
-// bspline_mi_hist_add_pvi_8 ()
-/////////////////////////////////////////////////
-// JAS 04.24.2010
-//
-// The 8-neighborhood is configured as such:
-//  (in this example v originates at n1)
-//
-//                         x
-//                        --->
-// Upper Layer:   n1 *---------------* n2   |
-//              |    |  w8   |  w7   |      |
-//             z|    |-------v-------|      |
-//              V    |  w4   |  w3   |      |
-//                n5 *---------------* n6   |
-//                                          |
-//                         x                | y
-//                        --->              |
-// Lower Layer:   n3 *---------------* n4   |
-//              |    |  w6   |  w5   |      |
-//             z|    |-------v-------|      |
-//              V    |  w2   |  w1   |      V
-//                n7 *---------------* n8
-//
-// where w1 = (1 - v_x) * (1 - v_y) * (1 - v_z)
-//       w2 = (    v_x) * (1 - v_y) * (1 - v_z)
-//       w3 = (1 - v_x) * (    v_y) * (1 - v_z)
-//       w4 = (    v_x) * (    v_y) * (1 - v_z)
-//       w5 = (1 - v_x) * (1 - v_y) * (    v_z)
-//       w6 = (    v_x) * (1 - v_y) * (    v_z)
-//       w7 = (1 - v_x) * (    v_y) * (    v_z)
-//       w8 = (    v_x) * (    v_y) * (    v_z)
-/////////////////////////////////////////////////
 static inline void
 bspline_mi_hist_add_pvi_8 (
     BSPLINE_MI_Hist* mi_hist, 
@@ -1927,82 +1895,6 @@ bspline_mi_hist_add_pvi_6 (
    The pixel size component is constant, so we can post-multiply.
    1/N is constant, so post-multiply.
    ----------------------------------------------------------------------- */
-
-
-
-
-// bspline_mi_pvi_8_dc_dv ()
-////////////////////////////////////////////////
-// JAS 04.24.2010
-//
-// Note that dC / dv = (dC / dP) * (dP / dv)
-//
-// where C is the cost function
-//       P is the joint histogram
-//       v is the displacement vector
-//
-// dC / dP = (1/N) * Sum( ln( (N*P) / (M*F) ) - C )
-//
-// over all bins corresponding to the 8-neighborhood
-//
-// where N is the number of voxels
-//       M is the moving histogram
-//       F is the fixed histogram
-//
-// When using PVI:
-//
-//   P = v_x * v_y * v_z        (ex. P = w8)
-//
-//   when approaching, or
-//
-//   P = (1 - v_x) * v_y * v_z  (ex. P = w7)
-//
-//   when departing, etc
-//
-// where v_x is the x-component of the deformation vector
-//       v_y is the y-component
-//       v_z is the z-component
-//
-// In the x-direction
-//
-//  dP / dv_x = v_y*v_z or -v_y*v_z (approaching or departing)
-//
-// and likewise for v_y and v_z.
-//
-// Therefore dC_dv_x = -v_y*v_z * dS_dP ( departing )
-//       or          = +v_y*v_z * dS_dP (approaching)
-//
-//
-// The 8-neighborhood is configured as such:
-//  (in this example v originates at n1)
-//
-//                         x
-//                        --->
-// Upper Layer:   n1 *---------------* n2   |
-//              |    |  w8   |  w7   |      |
-//             z|    |-------v-------|      |
-//              V    |  w4   |  w3   |      |
-//                n5 *---------------* n6   |
-//                                          |
-//                         x                | y
-//                        --->              |
-// Lower Layer:   n3 *---------------* n4   |
-//              |    |  w6   |  w5   |      |
-//             z|    |-------v-------|      |
-//              V    |  w2   |  w1   |      V
-//                n7 *---------------* n8
-//
-// where w1 = (1 - v_x) * (1 - v_y) * (1 - v_z)
-//       w2 = (    v_x) * (1 - v_y) * (1 - v_z)
-//       w3 = (1 - v_x) * (    v_y) * (1 - v_z)
-//       w4 = (    v_x) * (    v_y) * (1 - v_z)
-//       w5 = (1 - v_x) * (1 - v_y) * (    v_z)
-//       w6 = (    v_x) * (1 - v_y) * (    v_z)
-//       w7 = (1 - v_x) * (    v_y) * (    v_z)
-//       w8 = (    v_x) * (    v_y) * (    v_z)
-//
-// ...and yet, there still remains an error somewhere.
-//
 static inline void
 bspline_mi_pvi_8_dc_dv (
     float dc_dv[3],                /* Output */
