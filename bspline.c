@@ -184,7 +184,7 @@ bspline_state_create (
     {
 	printf ("Using non-zero initial coefficients\n");
 	for (i = 0; i < bxf->num_coeff; i++)
-		bxf->coeff[i] = 0.3f;
+		bxf->coeff[i] = 0.5f;
     }
 
     return bst;
