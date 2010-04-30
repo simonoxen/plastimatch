@@ -155,7 +155,6 @@ drr_trace_init (
     double* p2 
 )
 {
-    int d;
     double ray[3];
     double ip1[3];
     double ip2[3];
@@ -330,7 +329,6 @@ drr_render_volume_perspective (
     Drr_options *options
 )
 {
-    int d;
     double p1[3];
 #if defined (VERBOSE)
     int rows = options->image_window[1] - options->image_window[0] + 1;

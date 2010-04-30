@@ -126,6 +126,9 @@ volume_limit_clip_segment (
     double alpha_in, alpha_out;
     int d;
 
+    /* Compute the ray */
+    vec3_sub3 (ray, p2, p1);
+
     for (d = 0; d < 3; d++) {
 	ploc[d][0] = test_boundary (vol_limit, d, p1[d]);
 	ploc[d][1] = test_boundary (vol_limit, d, p2[d]);
@@ -139,20 +142,22 @@ volume_limit_clip_segment (
 	}
     }
 
-#if defined (ULTRA_VERBOSE)
-    printf ("vol_limit[*][0] = %g %g %g\n", vol_limits[0].limits[0], 
-	vol_limits[1].limits[0], vol_limits[2].limits[0]);
-    printf ("vol_limit[*][1] = %g %g %g\n", vol_limits[0].limits[1], 
-	vol_limits[1].limits[1], vol_limits[2].limits[1]);
-    printf ("ploc[*][0]: %d %d %d\n", ploc[0][0], ploc[1][0], ploc[2][0]);
-    printf ("ploc[*][1]: %d %d %d\n", ploc[0][1], ploc[1][1], ploc[2][1]);
-#endif
-
     /* If we made it here, all three dimensions have some range of alpha
        where they intersects the volume.  However, these alphas might 
        not overlap.  We compute the alphas, then test overlapping 
        alphas to find the segment range within the volume.  */
-    for (d = 0; d < 3; d++) {
+    for (d = 0; d < 3; d++)
+    {
+	/* If ray is parallel to grid, location must be inside */
+	if (fabs(ray[d]) < DRR_LEN_TOLERANCE) {
+	    if (ploc[d][0] != POINTLOC_INSIDE) {
+		return 0;
+	    }
+	    alpha[d][0] = - DBL_MAX;
+	    alpha[d][1] = + DBL_MAX;
+	    continue;
+	}
+
 	if (ploc[d][0] == POINTLOC_LEFT) {
 	    alpha[d][0] = (vol_limit->limits[d][0] - p1[d]) / (p2[d] - p1[d]);
 	} else if (ploc[d][0] == POINTLOC_RIGHT) {
@@ -189,7 +194,6 @@ volume_limit_clip_segment (
     }
 
     /* Create the volume intersection points */
-    vec3_sub3 (ray, p2, p1);
     for (d = 0; d < 3; d++) {
 	ip1[d] = p1[d] + alpha_in * ray[d];
 	ip2[d] = p1[d] + alpha_out * ray[d];
