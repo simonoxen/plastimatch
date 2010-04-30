@@ -32,7 +32,85 @@ test_boundary (Volume_limit* vol_limit, int d, double x)
     }
 }
 
-/* Return 1 if line segment intersects boundary */
+/* Return 1 if ray intersects volume */
+int
+volume_limit_clip_ray (
+    Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */
+    double *ip1,                /* OUTPUT: Intersection point 1 */
+    double *ip2,                /* OUTPUT: Intersection point 2 */
+    double *p1,                 /* INPUT:  Starting point of ray */
+    double *ray                 /* INPUT:  Direction of ray */
+)
+{
+    Point_location ploc[3];
+    double p2[3];
+    double alpha[3][2];
+    double alpha_in, alpha_out;
+    int d;
+
+    /* Make a second point in direction of ray */
+    vec3_add3 (p2, p1, ray);
+    
+    /* Compute point location */
+    for (d = 0; d < 3; d++) {
+	ploc[d] = test_boundary (vol_limit, d, p1[d]);
+    }
+
+    /* Compute alphas */
+    for (d = 0; d < 3; d++) {
+	/* If ray is parallel to grid, location must be inside */
+	if (fabs(ray[d]) < DRR_LEN_TOLERANCE) {
+	    if (ploc[d] != POINTLOC_INSIDE) {
+		return 0;
+	    }
+	    alpha[d][0] = - DBL_MAX;
+	    alpha[d][1] = + DBL_MAX;
+	    continue;
+	}
+
+	/* General configuration */
+	alpha[d][0] = (vol_limit->limits[d][0] - p1[d]) / ray[d];
+	alpha[d][1] = (vol_limit->limits[d][1] - p1[d]) / ray[d];
+
+	/* Sort alpha */
+	if (alpha[d][0] > alpha[d][1]) {
+	    double temp = alpha[d][1];
+	    alpha[d][1] = alpha[d][0];
+	    alpha[d][0] = temp;
+	}
+    }
+
+    /* Check if alpha values overlap in all three dimensions.
+       alpha_in is the minimum alpha, where the ray enters the volume.
+       alpha_out is where it exits the volume. */
+    alpha_in = alpha[0][0];
+    alpha_out = alpha[0][1];
+    for (d = 1; d < 3; d++) {
+	if (alpha_in < alpha[d][0]) alpha_in = alpha[d][0];
+	if (alpha_out > alpha[d][1]) alpha_out = alpha[d][1];
+    }
+#if defined (ULTRA_VERBOSE)
+    printf ("alpha[*][0] = %g %g %g\n", alpha[0][0], alpha[1][0], alpha[2][0]);
+    printf ("alpha[*][1] = %g %g %g\n", alpha[0][1], alpha[1][1], alpha[2][1]);
+    printf ("alpha in/out = %g %g\n", alpha_in, alpha_out);
+#endif
+
+    /* If exit is before entrance, the segment does not intersect the volume */
+    if (alpha_out - alpha_in < DRR_LEN_TOLERANCE) {
+	return 0;
+    }
+
+    /* Create the volume intersection points */
+    vec3_sub3 (ray, p2, p1);
+    for (d = 0; d < 3; d++) {
+	ip1[d] = p1[d] + alpha_in * ray[d];
+	ip2[d] = p1[d] + alpha_out * ray[d];
+    }
+
+    return 1;
+}
+
+/* Return 1 if line segment intersects volume */
 int
 volume_limit_clip_segment (
     Volume_limit *vol_limit,    /* INPUT:  The bounding box to clip to */

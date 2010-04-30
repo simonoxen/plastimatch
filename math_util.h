@@ -5,6 +5,7 @@
 #define _math_util_h_
 
 #include "plm_config.h"
+#include <float.h>
 #include <math.h>
 #include <string.h>
 
@@ -20,7 +21,9 @@
 #ifndef M_TWOPI
 #define M_TWOPI         (M_PI * 2.0)
 #endif
-
+#ifndef DBL_MAX
+#define DBL_MAX         (1E+37)
+#endif
 
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((long)((x)+0.5)) : (long)(-(-(x)+0.5)))

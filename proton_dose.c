@@ -14,23 +14,40 @@
 
 void
 proton_dose_trace_ray (
-    Volume* dose_vol,
-    Volume* ct_vol,
-    double* p1, 
-    double* p2 
+    Volume *dose_vol,
+    Volume *ct_vol,
+    Volume_limit *vol_limit,
+    double *p1, 
+    double *p2 
 )
 {
     double step_len = 1e-2;
+    double ray[3];
+    double ip1[3];
+    double ip2[3];
+
+    /* Test if ray intersects volume */
+    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
+	return;
+    }
+
+    /* Create the volume intersection points */
+    vec3_sub3 (ray, p2, p1);
+    vec3_normalize1 (ray);
 
     printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
+
+    printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
+    printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
+    printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
 }
 
 void
 proton_dose_compute (
-    Volume* dose_vol,
-    Volume* ct_vol,
-    Proton_dose_options* options
+    Volume *dose_vol,
+    Volume *ct_vol,
+    Proton_dose_options *options
 )
 {
     int d;
@@ -113,7 +130,7 @@ proton_dose_compute (
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
-	    proton_dose_trace_ray (dose_vol, ct_vol, p1, p2);
+	    proton_dose_trace_ray (dose_vol, ct_vol, &ct_limit, p1, p2);
 	}
     }
 }
