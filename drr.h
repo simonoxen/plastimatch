@@ -24,6 +24,7 @@
 #if defined __cplusplus
 extern "C" {
 #endif
+
 gpuit_EXPORT
 void
 drr_render_volume_perspective (

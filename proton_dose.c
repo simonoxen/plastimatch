@@ -5,11 +5,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "drr.h"
 #include "math_util.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
 #include "volume.h"
+#include "volume_limit.h"
 
+void
+proton_dose_trace_ray (
+    Volume* dose_vol,
+    Volume* ct_vol,
+    double* p1, 
+    double* p2 
+)
+{
+    double step_len = 1e-2;
+
+    printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
+    printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
+}
 
 void
 proton_dose_compute (
@@ -18,15 +33,16 @@ proton_dose_compute (
     Proton_dose_options* options
 )
 {
+    int d;
     int r;
     double p1[3];
-    double p2[3];
     double ap_dist = 1000.;
     double nrm[3], pdn[3], prt[3], tmp[3];
     double ic_room[3];
     double ul_room[3];
     double incr_r[3];
     double incr_c[3];
+    Volume_limit ct_limit;
 
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
@@ -78,6 +94,9 @@ proton_dose_compute (
 	options->image_window[2], options->image_window[3]);
 #endif
 
+    /* Compute volume boundary box */
+    volume_limit_set (&ct_limit, ct_vol);
+
     for (r = 0; r < 1; r++) {
 	int c;
 	double r_tgt[3];
@@ -91,6 +110,10 @@ proton_dose_compute (
 
 	for (c = 0; c < 1; c++) {
 	    
+	    vec3_scale3 (tmp, incr_c, (double) c);
+	    vec3_add3 (p2, r_tgt, tmp);
+
+	    proton_dose_trace_ray (dose_vol, ct_vol, p1, p2);
 	}
     }
 }

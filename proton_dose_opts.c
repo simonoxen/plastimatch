@@ -48,7 +48,7 @@ proton_dose_opts_init (Proton_dose_options* options)
 }
 
 void
-parse_args (Proton_dose_options* options, int argc, char* argv[])
+proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 {
     int i, rc;
 

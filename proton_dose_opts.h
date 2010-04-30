@@ -19,6 +19,7 @@ struct proton_dose_options {
     char* output_fn;
 };
 
-void parse_args (Proton_dose_options* options, int argc, char* argv[]);
+void proton_dose_parse_args (Proton_dose_options* options, 
+    int argc, char* argv[]);
 
 #endif

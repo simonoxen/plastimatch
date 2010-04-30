@@ -506,6 +506,7 @@ SET (GPUIT_LIBRARY_SRC
   vf.c vf.h
   vf_stats.c vf_stats.h 
   volume.c volume.h
+  volume_limit.c volume_limit.h
   xpm.c xpm.h
   )
 

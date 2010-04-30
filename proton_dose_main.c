@@ -21,7 +21,7 @@ main (int argc, char* argv[])
     Volume *ct, *dose;
     Proton_dose_options options;
 
-    parse_args (&options, argc, argv);
+    proton_dose_parse_args (&options, argc, argv);
 
     ct = read_mha (options.input_fn);
     if (!ct) return -1;
