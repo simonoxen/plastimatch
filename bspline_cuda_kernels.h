@@ -204,6 +204,8 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float3 img_spacing,	// INPUT: image spacing
     float3 mov_offset,	// INPUT: moving image offset
     float3 mov_ps,	// INPUT: moving image pixel spacing
+    int3 roi_dim,	// INPUT: ROI dimensions
+    int3 roi_offset,	// INPUT: ROI Offset
     int* c_lut,		// INPUT: coefficient lut
     float* q_lut,	// INPUT: bspline product lut
     float* coeff,	// INPUT: coefficient array

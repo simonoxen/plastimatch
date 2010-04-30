@@ -783,6 +783,15 @@ extern "C" void CUDA_MI_Grad_a (
     mov_ps.y = moving->pix_spacing[1];
     mov_ps.z = moving->pix_spacing[2];
 	
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];	
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
+
+    int3 roi_offset;        
+    roi_offset.x = bxf->roi_offset[0];
+    roi_offset.y = bxf->roi_offset[1];
+    roi_offset.z = bxf->roi_offset[2];
 
     // --- INITIALIZE GRID ---
     int i;
@@ -850,12 +859,24 @@ extern "C" void CUDA_MI_Grad_a (
 	img_spacing,
 	mov_offset,
 	mov_ps,
+	roi_dim,
+	roi_offset,
 	dev_ptrs->c_lut,
 	dev_ptrs->q_lut,
 	dev_ptrs->coeff,
 	num_vox_f,
 	score,
 	tile_padding);
+
+#if defined (commentout)
+	float* dc_dv_x = (float*)malloc (dev_ptrs->dc_dv_x_size); 	 
+	cudaMemcpy(dc_dv_x, dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size, cudaMemcpyDeviceToHost); 	 
+	  	 
+	int zz; 	 
+	for(zz = 0; zz < (dev_ptrs->dc_dv_x_size / sizeof(float)); zz++) 	 
+	printf ("[%5i] %3.9f\n", zz, dc_dv_x[zz]); 	 
+	exit(0);
+#endif
 
 
     ////////////////////////////////
@@ -1823,6 +1844,8 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float3 img_spacing,	// INPUT: image spacing
     float3 mov_offset,	// INPUT: moving image offset
     float3 mov_ps,	// INPUT: moving image pixel spacing
+    int3 roi_dim,	// INPUT: ROI dimensions
+    int3 roi_offset,	// INPUT: ROI Offset
     int* c_lut,		// INPUT: coefficient lut
     float* q_lut,	// INPUT: bspline product lut
     float* coeff,	// INPUT: coefficient array
@@ -1884,6 +1907,12 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     f.z = img_origin.z + img_spacing.z * r.z;
     // --------------------------------------------------------
 
+    if (f.x > (roi_offset.x + roi_dim.x) ||
+        f.y > (roi_offset.y + roi_dim.y) ||
+	f.z > (roi_offset.z + roi_dim.z))
+    {
+	    return;
+    }
 
     // -- Compute deformation vector --------------------------
     int cidx;
@@ -1938,14 +1967,56 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     n_f.x = (int) floorf (n.x);
     n_f.y = (int) floorf (n.y);
     n_f.z = (int) floorf (n.z);
+    // --------------------------------------------------------
 
-    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+
+
+    // -- Compute tri-linear interpolation weights ------------
+    float3 li_1;
+    float3 li_2;
+
+    li_2.x = n.x - n_f.x;
+    if (n_f.x < 0) {
+	    n_f.x = 0;
+	    li_2.x = 0.0f;
+    }
+    else if (n_f.x >= (mdim.x - 1)) {
+	    n_f.x = mdim.x - 2;
+	    li_2.x = 1.0f;
+    }
+    li_1.x = 1.0f - li_2.x;
+
+
+    li_2.y = n.y - n_f.y;
+    if (n_f.y < 0) {
+	    n_f.y = 0;
+	    li_2.y = 0.0f;
+    }
+    else if (n_f.y >= (mdim.y - 1)) {
+	    n_f.y = mdim.y - 2;
+	    li_2.y = 1.0f;
+    }
+    li_1.y = 1.0f - li_2.y;
+
+
+    li_2.z = n.z - n_f.z;
+    if (n_f.z < 0) {
+	    n_f.z = 0;
+	    li_2.z = 0.0f;
+    }
+    else if (n_f.z >= (mdim.z - 1)) {
+	    n_f.z = mdim.z - 2;
+	    li_2.z = 1.0f;
+    }
+    li_1.z = 1.0f - li_2.z;
     // --------------------------------------------------------
 
 
     // -- Compute coordinates of 8 nearest neighbors ----------
     int n1, n2, n3, n4;
     int n5, n6, n7, n8;
+
+    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
 
     n1 = mvf;
     n2 = n1 + 1;
@@ -1956,48 +2027,6 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     n7 = n1 + mdim.x * mdim.y + mdim.x;
     n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
     // --------------------------------------------------------
-
-
-    // -- Compute tri-linear interpolation weights ------------
-    float3 li_1;
-    float3 li_2;
-
-    li_2.x = n.x - floorf(n.x);
-    if (n_f.x < 0) {
-	    n_f.x = 0;
-	    li_2.x = 0;
-    }
-    else if (n_f.x >= (mdim.x - 1)) {
-	    n_f.x = n.x - 2;
-	    li_2.x = 1.0f;
-    }
-    li_1.x = 1.0f - li_2.x;
-
-
-    li_2.y = n.y - floorf(n.y);
-    if (n_f.y < 0) {
-	    n_f.y = 0;
-	    li_2.y = 0;
-    }
-    else if (n_f.y >= (mdim.y - 1)) {
-	    n_f.y = n.y - 2;
-	    li_2.y = 1.0f;
-    }
-    li_1.y = 1.0f - li_2.y;
-
-
-    li_2.z = n.z - floorf(n.z);
-    if (n_f.z < 0) {
-	    n_f.z = 0;
-	    li_2.z = 0;
-    }
-    else if (n_f.z >= (mdim.z - 1)) {
-	    n_f.z = n.z - 2;
-	    li_2.z = 1.0f;
-    }
-    li_1.z = 1.0f - li_2.z;
-    // --------------------------------------------------------
-
 
 
     // -- Compute differential PV slices ----------------------
@@ -2056,7 +2085,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w1
     idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw1.x * dS_dP;
 	    dc_dv.y -= dw1.y * dS_dP;
@@ -2066,7 +2095,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w2
     idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw2.x * dS_dP;
 	    dc_dv.y -= dw2.y * dS_dP;
@@ -2076,7 +2105,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w3
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw3.x * dS_dP;
 	    dc_dv.y -= dw3.y * dS_dP;
@@ -2086,7 +2115,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w4
     idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw4.x * dS_dP;
 	    dc_dv.y -= dw4.y * dS_dP;
@@ -2096,7 +2125,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w5
     idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw5.x * dS_dP;
 	    dc_dv.y -= dw5.y * dS_dP;
@@ -2106,7 +2135,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w6
     idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw6.x * dS_dP;
 	    dc_dv.y -= dw6.y * dS_dP;
@@ -2116,7 +2145,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w7
     idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw7.x * dS_dP;
 	    dc_dv.y -= dw7.y * dS_dP;
@@ -2126,7 +2155,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w8
     idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.0001f) {
+    if (j_hist[idx_jbin] > 0.000001f) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw8.x * dS_dP;
 	    dc_dv.y -= dw8.y * dS_dP;
