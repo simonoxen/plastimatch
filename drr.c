@@ -15,9 +15,17 @@
 #include "drr_trilin.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
+#include "ray_trace_exact.h"
 #include "readmha.h"
 #include "volume_limit.h"
 #include "timer.h"
+
+typedef struct callback_data Callback_data;
+struct callback_data {
+    double accum;               /* Accumulated intensity */
+    int num_pix;                /* Number of pixels traversed */
+};
+
 
 //#define ULTRA_VERBOSE 1
 //#define VERBOSE 1
@@ -62,262 +70,41 @@ drr_preprocess_attenuation (Volume* vol)
 }
 
 void
-init_multispectral (float* bins)
-{
-    memset (bins, 0, DRR_MSD_NUM_BINS*sizeof(float));
-}
-
-unsigned char
-bin_multispectral (short pix_density)
-{
-    const short density_min = -800;
-    const unsigned short pix_divisor = 1800 / DRR_MSD_NUM_BINS;
-
-    pix_density -= density_min;
-    if (pix_density < 0) return 0;
-    pix_density /= pix_divisor;
-    if (pix_density >= DRR_MSD_NUM_BINS) return DRR_MSD_NUM_BINS-1;
-    return (unsigned char) pix_density;
-}
-
-void
-accumulate_multispectral (float* bins, double pix_len, short pix_density)
-{
-    bins[bin_multispectral(pix_density)] += pix_len;
-}
-
-void
-dump_multispectral (FILE* msd_fp, float* bins)
-{
-    fwrite (bins, sizeof(float), DRR_MSD_NUM_BINS, msd_fp);
-}
-
-double
-drr_degeneracy_test (double* plane, double* ray)
-{
-    double dp = fabs(vec4_dot(plane, ray));
-    return dp;
-}
-
-void
-drr_trace_init_loopvars_nointerp (
-    int* ai,           /* Output */
-    int* aidir,        /* Output */
-    double* ao,        /* Output */
-    double* al,        /* Output */
-    double pt,         /* Input: initial intersection of ray with volume */
-    double ry,         /* Input: normalized direction of ray */
-    double offset,     /* Input: origin of volume */
-    double samp        /* Input: pixel spacing of volume */
+drr_trace_ray_callback (
+    void *callback_data, 
+    int vox_index, 
+    double vox_len, 
+    float vox_value
 )
 {
-#if (ULTRA_VERBOSE)
-    printf ("pt/ry/off/samp: %g %g %g %g\n", pt, ry, offset, samp);
+    Callback_data *cd = (Callback_data *) callback_data;
+
+#if defined (DRR_PREPROCESS_ATTENUATION)
+    cd->accum += vox_len * vox_value;
+#if defined (DEBUG_INTENSITIES)
+    printf ("len: %10g dens: %10g acc: %10g\n", 
+	vox_len, vox_density, cd->accum);
 #endif
-    if (ry > 0) {
-	*aidir = 1;
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = samp - ((pt - offset + 0.5 * samp) - (*ai) * samp);
-    } else {
-	*aidir = -1;
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = samp - ((*ai+1) * samp - (pt - offset + 0.5 * samp));
-    }
-    if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
-	*ao = *ao / fabs(ry);
-	*al = samp / fabs(ry);
-    } else {
-	*ao = DRR_HUGE_DOUBLE;
-	*al = DRR_HUGE_DOUBLE;
-    }
-}
-
-/* Initialize loop variables.  Returns 1 if the segment intersects 
-   the volume, and 0 if the segment does not intersect. */
-int
-drr_trace_init (
-    int *ai_x,
-    int *ai_y,
-    int *ai_z,
-    int *aixdir, 
-    int *aiydir, 
-    int *aizdir,
-    double *ao_x, 
-    double *ao_y, 
-    double *ao_z,
-    double *al_x, 
-    double *al_y, 
-    double *al_z,
-    double *len,
-    Volume* vol, 
-    Volume_limit *vol_limit,
-    double* p1, 
-    double* p2 
-)
-{
-    double ray[3];
-    double ip1[3];
-    double ip2[3];
-    //double ips[2][4];
-
-    /* Test if ray intersects volume */
-    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
-	return 0;
-    }
-
-    /* Create the volume intersection points */
-    vec3_sub3 (ray, p2, p1);
-    vec3_normalize1 (ray);
-
-#if defined (ULTRA_VERBOSE)
-    printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
-    printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
-    printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+#else
+    accum += vox_len * attenuation_lookup (vox_value);
 #endif
-
-    /* We'll go from p1 to p2 */
-    /* Variable notation:
-       ai_x    // index of x
-       aixdir  // x indices moving up or down?
-       ao_x    // absolute length to next voxel crossing
-       al_x    // length between voxel crossings
-    */
-    drr_trace_init_loopvars_nointerp (ai_x, aixdir, ao_x, al_x, 
-	ip1[0],
-	ray[0], 
-	vol->offset[0], 
-	vol->pix_spacing[0]);
-    drr_trace_init_loopvars_nointerp (ai_y, aiydir, ao_y, al_y, 
-	ip1[1],
-	ray[1], 
-	vol->offset[1], 
-	vol->pix_spacing[1]);
-    drr_trace_init_loopvars_nointerp (ai_z, aizdir, ao_z, al_z, 
-	ip1[2], 
-	ray[2], 
-	vol->offset[2], 
-	vol->pix_spacing[2]);
-
-#if defined (ULTRA_VERBOSE)
-    printf ("aix = %d aixdir = %d aox = %g alx = %g\n", *ai_x, *aixdir, *ao_x, *al_x);
-    printf ("aiy = %d aiydir = %d aoy = %g aly = %g\n", *ai_y, *aiydir, *ao_y, *al_y);
-    printf ("aiz = %d aizdir = %d aoz = %g alz = %g\n", *ai_z, *aizdir, *ao_z, *al_z);
-#endif
-
-    *len = vec3_dist (ip1, ip2);
-    return 1;
+    cd->num_pix++;
 }
 
 double                            /* Return value: intensity of ray */
-drr_trace_ray_nointerp (
+drr_trace_ray_exact (
     Volume *vol,                  /* Input: volume */
     Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
     double *p1in,                 /* Input: start point for ray */
-    double *p2in,                 /* Input: end point for ray */
-    FILE *msd_fp                  /* Not used */
+    double *p2in                  /* Input: end point for ray */
 )
 {
-    /* Variable notation:
-       ai_x     index of x
-       aixdir   x indices moving up or down?
-       ao_x     absolute length to next voxel crossing
-       al_x     length between voxel crossings
-    */
-    int ai_x, ai_y, ai_z;
-    int aixdir, aiydir, aizdir;
-    double ao_x, ao_y, ao_z;
-    double al_x, al_y, al_z;
+    Callback_data cd;
+    memset (&cd, 0, sizeof (Callback_data));
 
-    double len;                       /* Total length of ray within volume */
-    double aggr_len = 0.0;            /* Length traced so far */
-    double accum = 0.0;               /* Accumulated intensity */
-    int num_pix = 0;                  /* Number of pixels traversed */
-    float msd_bins[DRR_MSD_NUM_BINS]; /* Not used */
-
-    float* img = (float*) vol->img;
-
-#if defined (ULTRA_VERBOSE)
-    printf ("p1in: %f %f %f\n", p1in[0], p1in[1], p1in[2]);
-    printf ("p2in: %f %f %f\n", p2in[0], p2in[1], p2in[2]);
-#endif
-
-    if (!drr_trace_init (
-	    &ai_x,
-	    &ai_y,
-	    &ai_z,
-	    &aixdir, 
-	    &aiydir, 
-	    &aizdir,
-	    &ao_x, 
-	    &ao_y, 
-	    &ao_z,
-	    &al_x, 
-	    &al_y, 
-	    &al_z,
-	    &len,
-	    vol, 
-	    vol_limit, 
-	    p1in, 
-	    p2in))
-    {
-	return 0.0;
-    }
-
-    if (msd_fp) {
-	init_multispectral (msd_bins);
-    }
-
-    /* We'll go from p1 to p2 */
-    do {
-	float* zz = (float*) &img[ai_z*vol->dim[0]*vol->dim[1]];
-	float pix_density;
-	double pix_len;
-#if defined (ULTRA_VERBOSE)
-	printf ("(%d %d %d) (%g,%g,%g)\n",ai_x,ai_y,ai_z,ao_x,ao_y,ao_z);
-	printf ("aggr_len = %g, len = %g\n", aggr_len, len);
-	fflush (stdout);
-#endif
-	pix_density = zz[ai_y*vol->dim[0]+ai_x];
-	if ((ao_x < ao_y) && (ao_x < ao_z)) {
-	    pix_len = ao_x;
-	    aggr_len += ao_x;
-	    ao_y -= ao_x;
-	    ao_z -= ao_x;
-	    ao_x = al_x;
-	    ai_x += aixdir;
-	} else if ((ao_y < ao_z)) {
-	    pix_len = ao_y;
-	    aggr_len += ao_y;
-	    ao_x -= ao_y;
-	    ao_z -= ao_y;
-	    ao_y = al_y;
-	    ai_y += aiydir;
-	} else {
-	    pix_len = ao_z;
-	    aggr_len += ao_z;
-	    ao_x -= ao_z;
-	    ao_y -= ao_z;
-	    ao_z = al_z;
-	    ai_z += aizdir;
-	}
-#if defined (DRR_PREPROCESS_ATTENUATION)
-	accum += pix_len * pix_density;
-#if defined (DEBUG_INTENSITIES)
-	printf ("len: %10g dens: %10g acc: %10g\n", 
-	    pix_len, pix_density, accum);
-#endif
-#else
-	accum += pix_len * attenuation_lookup (pix_density);
-#endif
-	if (msd_fp) {
-	    accumulate_multispectral (msd_bins, pix_len, pix_density);
-	}
-	num_pix++;
-    } while (aggr_len+DRR_LEN_TOLERANCE < len);
-    if (msd_fp) {
-	dump_multispectral (msd_fp, msd_bins);
-    }
-    return accum;
+    ray_trace_exact (vol, vol_limit, &drr_trace_ray_callback, &cd, 
+	p1in, p2in);
+    return cd.accum;
 }
 
 void
@@ -412,8 +199,11 @@ drr_render_volume_perspective (
 	    switch (options->interpolation) {
 	    case INTERPOLATION_NONE:
 		/* DRR_MSD is disabled */
+#if defined (commentout)
 		value = drr_trace_ray_nointerp (vol, &vol_limit, 
 		    p1, p2, 0);
+#endif
+		value = drr_trace_ray_exact (vol, &vol_limit, p1, p2);
 		break;
 	    case INTERPOLATION_TRILINEAR_EXACT:
 		value = drr_trace_ray_trilin_exact (vol, p1, p2);

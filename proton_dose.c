@@ -26,14 +26,13 @@ proton_dose_trace_ray (
     double ip1[3];
     double ip2[3];
 
-    /* Test if ray intersects volume */
-    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, p1, p2)) {
-	return;
-    }
-
-    /* Create the volume intersection points */
     vec3_sub3 (ray, p2, p1);
     vec3_normalize1 (ray);
+
+    /* Test if ray intersects volume and create intersection points */
+    if (!volume_limit_clip_ray (vol_limit, ip1, ip2, p1, p2)) {
+	return;
+    }
 
     printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
@@ -50,7 +49,6 @@ proton_dose_compute (
     Proton_dose_options *options
 )
 {
-    int d;
     int r;
     double p1[3];
     double ap_dist = 1000.;

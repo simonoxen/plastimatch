@@ -498,7 +498,8 @@ SET (GPUIT_LIBRARY_SRC
   proj_image.c proj_image.h
   proj_image_dir.c proj_image_dir.h
   proj_matrix.c proj_matrix.h 
-  proton_dose.c proton_dose.h
+  proton_dose.c proton_dose.h 
+  ray_trace_exact.c ray_trace_exact.h 
   string_util.c string_util.h
   readmha.c readmha.h
   threading.h
