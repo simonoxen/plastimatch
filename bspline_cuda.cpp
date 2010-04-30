@@ -617,7 +617,6 @@ void bspline_cuda_MI_a (
 	// ----------------------------------------------------------
 
 	plm_timer_start (&timer);	// <=== START TIMING HERE
-	printf ("PROFILE\n");
 	
 	// generate histograms
 	plm_timer_start (&timer0);

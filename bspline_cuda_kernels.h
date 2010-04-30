@@ -208,7 +208,8 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float* q_lut,	// INPUT: bspline product lut
     float* coeff,	// INPUT: coefficient array
     float num_vox_f,	// INPUT: # of voxels
-    float score);	// INPUT: evaluated MI cost function
+    float score,	// INPUT: evaluated MI cost function
+    int pad);		// INPUT: Tile Paddign
 
 
 #endif

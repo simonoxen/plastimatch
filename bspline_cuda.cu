@@ -824,6 +824,7 @@ extern "C" void CUDA_MI_Grad_a (
     dim3 dimBlock1(threads_per_block, 1, 1);
     //	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
     // ----------------------
+    int tile_padding = 64 - ((vpr.x * vpr.y * vpr.z) % 64);
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_dc_dv_a <<<dimGrid1, dimBlock1>>> (
@@ -853,16 +854,8 @@ extern "C" void CUDA_MI_Grad_a (
 	dev_ptrs->q_lut,
 	dev_ptrs->coeff,
 	num_vox_f,
-	score);
-
-#if defined (commentout)
-    float* dc_dv_x = (float*)malloc (dev_ptrs->dc_dv_x_size);
-    cudaMemcpy(dc_dv_x, dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size, cudaMemcpyDeviceToHost);
-
-    int zz;
-    for(zz = 0; zz < (dev_ptrs->dc_dv_x_size / sizeof(float)); zz++)
-	    printf ("[%5i] %3.9f\n", zz, dc_dv_x[zz]);
-#endif
+	score,
+	tile_padding);
 
 
     ////////////////////////////////
@@ -888,7 +881,7 @@ extern "C" void CUDA_MI_Grad_a (
     checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense_64_texfetch()");
 
     // Clear out the gradient
-    cudaMemset(dev_ptrs->grad, 1, dev_ptrs->grad_size);
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
     checkCUDAError("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
@@ -1834,7 +1827,8 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float* q_lut,	// INPUT: bspline product lut
     float* coeff,	// INPUT: coefficient array
     float num_vox_f,	// INPUT: # of voxels
-    float score)	// INPUT: evaluated MI cost function
+    float score,	// INPUT: evaluated MI cost function
+    int pad)		// INPUT: Tile padding
 {
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
@@ -1864,7 +1858,6 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float3 d;		// Deformation vector
 
     int3 n_f;		// Voxel Displacement floor
-    int3 n_r;		// Voxel Displacement round
 
     int fv;		// fixed voxel
     int mvf;		// moving voxel (floor)
@@ -1872,9 +1865,9 @@ __global__ void kernel_bspline_MI_dc_dv_a (
 	
     fv = thread_idxg;
 
-    r.z = thread_idxg / (fdim.x * fdim.y);
-    r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+    r.z = fv / (fdim.x * fdim.y);
+    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
+    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
 	
     p.x = r.x / vpr.x;
     p.y = r.y / vpr.y;
@@ -1946,10 +1939,6 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     n_f.y = (int) floorf (n.y);
     n_f.z = (int) floorf (n.z);
 
-    n_r.x = rintf (n.x);
-    n_r.y = rintf (n.y);
-    n_r.z = rintf (n.z);
-
     mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
     // --------------------------------------------------------
 
@@ -1973,43 +1962,37 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float3 li_1;
     float3 li_2;
 
-    li_2.x = n.x - n_f.x;
+    li_2.x = n.x - floorf(n.x);
     if (n_f.x < 0) {
 	    n_f.x = 0;
-	    n_r.x = 0;
 	    li_2.x = 0;
     }
     else if (n_f.x >= (mdim.x - 1)) {
 	    n_f.x = n.x - 2;
-	    n_r.x = n.x - 1;
 	    li_2.x = 1.0f;
     }
     li_1.x = 1.0f - li_2.x;
 
 
-    li_2.y = n.y - n_f.y;
+    li_2.y = n.y - floorf(n.y);
     if (n_f.y < 0) {
 	    n_f.y = 0;
-	    n_r.y = 0;
 	    li_2.y = 0;
     }
     else if (n_f.y >= (mdim.y - 1)) {
 	    n_f.y = n.y - 2;
-	    n_r.y = n.y - 1;
 	    li_2.y = 1.0f;
     }
     li_1.y = 1.0f - li_2.y;
 
 
-    li_2.z = n.z - n_f.z;
+    li_2.z = n.z - floorf(n.z);
     if (n_f.z < 0) {
 	    n_f.z = 0;
-	    n_r.z = 0;
 	    li_2.z = 0;
     }
     else if (n_f.z >= (mdim.z - 1)) {
 	    n_f.z = n.z - 2;
-	    n_r.z = n.z - 1;
 	    li_2.z = 1.0f;
     }
     li_1.z = 1.0f - li_2.z;
@@ -2160,10 +2143,26 @@ __global__ void kernel_bspline_MI_dc_dv_a (
 
     __syncthreads();
 
+
     // -- Finally, write out dc_dv ----------------------------
-    dc_dv_x[fv] = dc_dv.x;
-    dc_dv_y[fv] = dc_dv.y;
-    dc_dv_z[fv] = dc_dv.z;
+    float* dc_dv_element_x;
+    float* dc_dv_element_y;
+    float* dc_dv_element_z;
+    int pidx, qidx;
+
+    pidx = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
+    dc_dv_element_x = &dc_dv_x[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
+    dc_dv_element_y = &dc_dv_y[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
+    dc_dv_element_z = &dc_dv_z[((vpr.x * vpr.y * vpr.z) + pad) * pidx];
+
+    qidx = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
+    dc_dv_element_x = &dc_dv_element_x[qidx];
+    dc_dv_element_y = &dc_dv_element_y[qidx];
+    dc_dv_element_z = &dc_dv_element_z[qidx];
+
+    dc_dv_element_x[0] = dc_dv.x;
+    dc_dv_element_y[0] = dc_dv.y;
+    dc_dv_element_z[0] = dc_dv.z;
     // --------------------------------------------------------
 
 
