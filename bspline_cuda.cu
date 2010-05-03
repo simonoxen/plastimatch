@@ -340,7 +340,7 @@ extern "C" void bspline_cuda_init_MI_a (
 }
 
 
-extern "C" void CUDA_bspline_MI_a_hist (
+extern "C" int CUDA_bspline_MI_a_hist (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -349,7 +349,7 @@ extern "C" void CUDA_bspline_MI_a_hist (
 {
     // check to see if we get atomic operations
     // for GPU memory
-#ifndef CUDA_NO_SM_12_ATOMIC_INTRINSICS
+#ifdef CUDA_NO_SM_12_ATOMIC_INTRINSICS
     printf ("\n******************* FATAL ERROR *******************\n");
     printf ("   Atomic memory operations not supported by GPU!\n");
     printf ("     A GPU of Compute Capability 1.2 or greater\n");
@@ -358,17 +358,21 @@ extern "C" void CUDA_bspline_MI_a_hist (
     exit(0);
 #endif
 
+    // JAS 05.03.2010
+    // !! There is an issue here with a_hist_fix.  It *should*
+    // be computing the correspondance as well and only binning
+    // values that fall within the moving image.  Currently,
+    // the amount of MI decreases(!) as the optimizer runs.  This
+    // is probably the cause.
+
     // Generate the fixed histogram (48 ms)
     CUDA_bspline_MI_a_hist_fix (dev_ptrs, mi_hist, fixed);
-    cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
 
     // Generate the moving histogram (150 ms)
     CUDA_bspline_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
-    cudaMemcpy (mi_hist->m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
 
-    // Generate the joint histogram (??.?? ms) -- not written
-    CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
-    cudaMemcpy (mi_hist->j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
+    // Generate the joint histogram (~600 ms)
+    return CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
 }
 
 
@@ -379,8 +383,10 @@ extern "C" void CUDA_bspline_MI_a_hist_fix (
     Volume* fixed)
 {
     // Initialize histogram memory on GPU
-    cudaMemset(dev_ptrs->f_hist_seg, 0, dev_ptrs->f_hist_seg_size);
+//    cudaMemset(dev_ptrs->f_hist_seg, 0, dev_ptrs->f_hist_seg_size);
+//    checkCUDAError ("Failed to initialize f_hist_seg");
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
+    checkCUDAError ("Failed to initialize f_hist");
 
     // --- INITIALIZE GRID ---
     int i;
@@ -423,14 +429,20 @@ extern "C" void CUDA_bspline_MI_a_hist_fix (
     dim3 dimBlock1(threads_per_block, 1, 1);
     // ----------------------
 
+    dev_ptrs->f_hist_seg_size = dev_ptrs->f_hist_size * num_blocks;
+    cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
+    checkCUDAError ("Failed to allocate memory for f_hist_seg");
+    cudaMemset(dev_ptrs->f_hist_seg, 0, dev_ptrs->f_hist_seg_size);
+    checkCUDAError ("Failed to initialize f_hist_seg");
+
+
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_fix <<<dimGrid1, dimBlock1, smemSize>>> (
 	dev_ptrs->f_hist_seg,
 	dev_ptrs->fixed_image,
 	mi_hist->fixed.offset,
 	1.0f/mi_hist->fixed.delta,
-	mi_hist->fixed.bins,
-	threads_per_block);
+	mi_hist->fixed.bins);
 					
     checkCUDAError ("kernel hist_fix");
     int num_sub_hists = num_blocks;
@@ -450,6 +462,12 @@ extern "C" void CUDA_bspline_MI_a_hist_fix (
 	num_sub_hists);
 
     checkCUDAError ("kernel hist_fix_merge");
+
+    cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+    checkCUDAError ("Unable to copy fixed histograms from GPU to CPU!\n");
+
+    cudaFree (dev_ptrs->f_hist_seg);
+    checkCUDAError ("Error freeing sub-histograms from GPU memory!\n");
 }
 
 
@@ -461,8 +479,8 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
     BSPLINE_Xform *bxf)
 {
     // Initialize histogram memory on GPU
-    cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
     cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
+    checkCUDAError ("Failed to initialize memory for m_hist");
 
     int3 vpr;
     vpr.x = bxf->vox_per_rgn[0];
@@ -547,10 +565,17 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
     //	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
     // ----------------------
 
+
+    dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
+    cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
+    checkCUDAError ("Failed to allocate memory for m_hist_seg");
+    cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
+    checkCUDAError ("Failed to initialize memory for m_hist_seg");
+
+
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_mov <<<dimGrid1, dimBlock1, smemSize>>> (
 	dev_ptrs->m_hist_seg,		// partial histogram (moving image)
-	dev_ptrs->fixed_image,		// fixed  image voxels
 	dev_ptrs->moving_image,		// moving image voxels
 	mi_hist->moving.offset,		// histogram offset
 	1.0f/mi_hist->moving.delta,	// histogram delta
@@ -565,8 +590,7 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
 	mov_ps,				// moving image pixel spacing
 	dev_ptrs->c_lut,		// DEBUG
 	dev_ptrs->q_lut,		// DEBUG
-	dev_ptrs->coeff,		// DEBUG
-	threads_per_block);		// # threads (to be removed)
+	dev_ptrs->coeff);		// DEBUG
 
     checkCUDAError ("kernel hist_mov");
 
@@ -586,10 +610,17 @@ extern "C" void CUDA_bspline_MI_a_hist_mov (
 	num_sub_hists);
 
     checkCUDAError ("kernel hist_mov_merge");
+
+    cudaMemcpy (mi_hist->m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
+    checkCUDAError ("Unable to copy moving histograms from GPU to CPU!\n");
+
+    cudaFree (dev_ptrs->m_hist_seg);
+    checkCUDAError ("Error freeing sub-histograms from GPU memory!\n");
+
 }
 
 
-extern "C" void CUDA_bspline_MI_a_hist_jnt (
+extern "C" int CUDA_bspline_MI_a_hist_jnt (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -597,7 +628,6 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
     BSPLINE_Xform *bxf)
 {
     // Initialize histogram memory on GPU
-    cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist, 0, dev_ptrs->j_hist_size);
 
     int3 vpr;
@@ -640,37 +670,58 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
     mov_ps.y = moving->pix_spacing[1];
     mov_ps.z = moving->pix_spacing[2];
 	
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];	
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
+
+    int3 roi_offset;        
+    roi_offset.x = bxf->roi_offset[0];
+    roi_offset.y = bxf->roi_offset[1];
+    roi_offset.z = bxf->roi_offset[2];
+
+
     int num_bins = (int)mi_hist->fixed.bins * (int)mi_hist->moving.bins;
+
 
     // --- INITIALIZE GRID ---
     int i;
     int Grid_x = 0;
     int Grid_y = 0;
-    int threads_per_block = 32;
+    int threads_per_block = 128;
     int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = num_bins * sizeof(float);
+    int sqrt_num_blocks;
+    int num_blocks;
+    int smemSize;
+    int found_flag = 0;
 
-    // -----
     // Search for a valid execution configuration
     // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+    for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
+	num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+	sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
-    for (i = sqrt_num_blocks; i < 65535; i++)
-    {
-	if (num_blocks % i == 0)
-	{
-	    Grid_x = i;
-	    Grid_y = num_blocks / Grid_x;
+	for (i = sqrt_num_blocks; i < 65535; i++) {
+	    if (num_blocks % i == 0) {
+		Grid_x = i;
+		Grid_y = num_blocks / Grid_x;
+		found_flag = 1;
+		break;
+	    }
+	}
+
+	if (found_flag == 1) {
 	    break;
 	}
     }
-    // -----
-
 
     // Were we able to find a valid exec config?
     if (Grid_x == 0) {
-	printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_jnt() configuration!\n");
+	// If this happens we should consider falling back to a
+	// CPU implementation, using a different CUDA algorithm,
+	// or padding the input dc_dv stream to work with this
+	// CUDA algorithm.
+	printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
 	exit(0);
     } else {
 #if defined (commentout)
@@ -681,21 +732,26 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
     dim3 dimBlock1(threads_per_block, 1, 1);
-    //	printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
     // ----------------------
+
+    dev_ptrs->j_hist_seg_size = dev_ptrs->j_hist_size * num_blocks;
+    cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
+    cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
+    checkCUDAError ("Failed to allocate memory for j_hist_seg");
+    smemSize = 2 * num_bins * sizeof(float);
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
-	dev_ptrs->j_hist,		// partial histogram (moving image)
-	//			dev_ptrs->j_hist_seg,		// partial histogram (moving image)
+	dev_ptrs->skipped,		// # voxels that map outside moving
+	dev_ptrs->j_hist_seg,		// partial histogram (moving image)
 	dev_ptrs->fixed_image,		// fixed  image voxels
 	dev_ptrs->moving_image,		// moving image voxels
 	mi_hist->fixed.offset,		// fixed histogram offset
 	mi_hist->moving.offset,		// moving histogram offset
 	1.0f/mi_hist->fixed.delta,	// fixed histogram delta
 	1.0f/mi_hist->moving.delta,	// moving histogram delta
+	mi_hist->fixed.bins,		// # fixed bins
 	mi_hist->moving.bins,		// # moving bins
-	num_bins,	 		// # joint bins
 	vpr,				// voxels per region
 	fdim,				// fixed  image dimensions
 	mdim,				// moving image dimensions
@@ -704,31 +760,138 @@ extern "C" void CUDA_bspline_MI_a_hist_jnt (
 	img_spacing,			// image spacing
 	mov_offset,			// moving image offset
 	mov_ps,				// moving image pixel spacing
+	roi_dim,			// region dims
+	roi_offset,			// region offset
 	dev_ptrs->c_lut,		// DEBUG
 	dev_ptrs->q_lut,		// DEBUG
-	dev_ptrs->coeff,		// DEBUG
-	threads_per_block);		// # threads (to be removed)
+	dev_ptrs->coeff);		// DEBUG
 
-    checkCUDAError ("kernel hist_mov");
+    checkCUDAError ("kernel hist_jnt");
 
-    /*
-      int num_sub_hists = num_blocks;
 
-      // Merge sub-histograms
-      threads_per_block = 512;
-      dim3 dimGrid2 (num_bins, 1, 1);
-      dim3 dimBlock2 (threads_per_block, 1, 1);
-      smemSize = 512 * sizeof(float);
+
+#if defined (commentout)
+    // Merge sub-histograms
+    float* j_hist_seg = (float*)malloc(dev_ptrs->j_hist_seg_size);
+    cudaMemcpy(j_hist_seg, dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size, cudaMemcpyDeviceToHost);
+    int i_bin, i_hist;
+    for (i_bin = 0; i_bin < (mi_hist->fixed.bins * mi_hist->moving.bins); i_bin++) {
+	    for (i_hist = 0; i_hist < num_blocks; i_hist++) {
+		mi_hist->j_hist[i_bin] += j_hist_seg[i_bin + i_hist*mi_hist->fixed.bins*mi_hist->moving.bins];
+	    }
+    }
+    free (j_hist_seg);
+#endif
+
+    // Merge sub-histograms
+    threads_per_block = 512;
+    dim3 dimGrid2 (num_bins, 1, 1);
+    dim3 dimBlock2 (threads_per_block, 1, 1);
+    smemSize = 512 * sizeof(float);
+
+    // this kernel can be ran with any thread-block size
+    int num_sub_hists = num_blocks;
+    kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+	dev_ptrs->j_hist,
+	dev_ptrs->j_hist_seg,
+	num_sub_hists);
+
+    checkCUDAError ("kernel hist_jnt_merge");
+
+    cudaMemcpy (mi_hist->j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
+    checkCUDAError ("Unable to copy joint histograms from GPU to CPU!");
+
+    cudaFree (dev_ptrs->j_hist_seg);
+    checkCUDAError ("Error freeing sub-histograms from GPU memory!");
+
+
+
+
+    // Use the # of skipped voxels to compute the num_voxels
+    // --- INITIALIZE GRID --------------------------------------
+    Grid_x = 0;
+    Grid_y = 0;
+    int num_elems = fdim.x * fdim.y * fdim.z;
+    //	int num_blocks = (int)ceil(num_elems / 512.0);
+    num_blocks = (num_elems + 511) / 512;
 	
-      // this kernel can be ran with any thread-block size
-      kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-      dev_ptrs->j_hist,
-      dev_ptrs->j_hist_seg,
-      num_sub_hists);
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
-      checkCUDAError ("kernel hist_jnt_merge");
-    */
-					
+    for (i = sqrt_num_blocks; i < 65535; i++)
+    {
+	if (num_blocks % i == 0)
+	{
+	    Grid_x = i;
+	    Grid_y = num_blocks / Grid_x;
+	    break;
+	}
+    }
+    // *****
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+	// If this happens we should consider falling back to a
+	// CPU implementation, using a different CUDA algorithm,
+	// or padding the input dc_dv stream to work with this
+	// CUDA algorithm.
+	printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+	exit(0);
+    } else {
+	//		printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    dim3 dimBlock(128, 2, 2);
+    smemSize = 512 * sizeof(float);
+    // ----------------------------------------------------------
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
+	dev_ptrs->skipped,
+	dev_ptrs->skipped,
+	num_elems
+    );
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
+	dev_ptrs->skipped,
+	dev_ptrs->skipped,
+	num_elems
+    );
+    // ----------------------------------------------------------
+
+    float skipped;
+    int num_vox;
+    cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
+
+    num_vox = (fdim.x * fdim.y * fdim.z) - skipped;
+    // -------------------------
+
+
+
+
+    // Now, we back compute bin 0,0 for the joint histogram
+    int j = 0;
+    for (i = 1; i < mi_hist->fixed.bins * mi_hist->moving.bins; i++)
+	    j += mi_hist->j_hist[i];
+
+    mi_hist->j_hist[0] = num_vox - j;
+
+
+
+    return num_vox;
+
 }
 
 
@@ -870,7 +1033,7 @@ extern "C" int CUDA_MI_Hist_a (
     cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
 
-    smemSize = (mi_hist->fixed.bins + mi_hist->moving.bins +
+    smemSize = 2*(mi_hist->fixed.bins + mi_hist->moving.bins +
     		(mi_hist->fixed.bins * mi_hist->moving.bins))
 		* sizeof(unsigned int);
 
@@ -951,7 +1114,6 @@ extern "C" int CUDA_MI_Hist_a (
 	    f_total += mi_hist->f_hist[i_bin];
     }
     printf ("Total: %f\n", f_total);
-
     // >>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<
 
     cudaFree(dev_ptrs->f_hist_seg);
@@ -1260,14 +1422,14 @@ __global__ void kernel_bspline_MI_a_hist_fix (
     float* fixed,
     float offset,
     float delta,
-    long bins,
-    int nthreads)
+    long bins)
 {
     int bin;
     int stride;
 
 
     // -- Setup Thread Attributes -----------------------------
+    int nthreads = (blockDim.x * blockDim.y * blockDim.z);
     int blockIdxInGrid = (gridDim.x * blockIdx.y) + blockIdx.x;
     int blockOffset = blockIdxInGrid * blockDim.x;
     int voxel_idx = blockOffset + threadIdx.x;
@@ -1282,7 +1444,7 @@ __global__ void kernel_bspline_MI_a_hist_fix (
     // --------------------------------------------------------
 
     __syncthreads();
-	
+
     // -- Accumulate Into Segmented Histograms ----------------
     for (int chunk=0; chunk < 1; chunk++)
     {
@@ -1339,10 +1501,9 @@ __global__ void kernel_bspline_MI_a_hist_fix (
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void kernel_bspline_MI_a_hist_mov (
     float* m_hist_seg,	// partial histogram (moving image)
-    float* fixed,		// fixed  image voxels
-    float* moving,		// moving image voxels
-    float offset,		// histogram offset
-    float delta,		// histogram delta
+    float* m_img,	// moving image voxels
+    float offset,	// histogram offset
+    float delta,	// histogram delta
     long bins,		// # histogram bins
     int3 vpr,		// voxels per region
     int3 fdim,		// fixed  image dimensions
@@ -1351,24 +1512,11 @@ __global__ void kernel_bspline_MI_a_hist_mov (
     float3 img_origin,	// image origin
     float3 img_spacing,	// image spacing
     float3 mov_offset,	// moving image offset
-    float3 mov_ps,		// moving image pixel spacing
+    float3 mov_ps,	// moving image pixel spacing
     int* c_lut,		// DEBUG
-    float* q_lut,		// DEBUG
-    float* coeff,		// DEBUG
-    int nthreads)		// # threads (to be removed)
+    float* q_lut,	// DEBUG
+    float* coeff)	// DEBUG
 {
-    // -- Initialize Shared Memory ----------------------------
-    // Amount: 32 * # bins
-    extern __shared__ float s_Moving[];
-
-    for (long i=0; i < bins; i++)
-	s_Moving[threadIdx.x + i*nthreads] = 0.0f;
-    // --------------------------------------------------------
-
-
-    __syncthreads();
-
-
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
 
@@ -1377,24 +1525,29 @@ __global__ void kernel_bspline_MI_a_hist_mov (
     int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
     // --------------------------------------------------------
 
-	
+    // -- Initialize Shared Memory ----------------------------
+    // Amount: 32 * # bins
+    extern __shared__ float s_Moving[];
+
+    for (long i=0; i < bins; i++)
+	s_Moving[threadIdx.x + i*threadsPerBlock] = 0.0f;
+    // --------------------------------------------------------
+
+
+    __syncthreads();
+
+
     // -- Only process threads that map to voxels -------------
     if (thread_idxg > fdim.x * fdim.y * fdim.z)
 	return;
     // --------------------------------------------------------
 
 
-    // -- Variables used by histogram -------------------------
-    long bin;
-    //	int  stride;
-    // --------------------------------------------------------
-
-
     // -- Variables used by correspondence --------------------
     // -- (Block verified) ------------------------------------
-    int3 r;			// Voxel index (global)
-    int4 q;			// Voxel index (local)
-    int4 p;			// Tile index
+    int3 r;		// Voxel index (global)
+    int4 q;		// Voxel index (local)
+    int4 p;		// Tile index
 
 
     float3 f;		// Distance from origin (in mm )
@@ -1402,21 +1555,17 @@ __global__ void kernel_bspline_MI_a_hist_mov (
     float3 n;		// Voxel Displacement   (in vox)
     float3 d;		// Deformation vector
 
-    int3 miqs;		// PVI - 6 NBH
-    int3 mjqs;		//    Moving image pixel coords
-    int3 mkqs;
+    int3 n_f;		// Voxel Displacement floor
 
-    float3 fxqs;		// PVI - 6 NBH
-    float3 fyqs;		//    Interpolant fraction
-    float3 fzqs;
-    int mvf;
-
-
+    int fv;		// fixed voxel
+    int mvf;		// moving voxel (floor)
     //   ----    ----    ----    ----    ----    ----    ----    
 	
-    r.z = thread_idxg / (fdim.x * fdim.y);
-    r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+    fv = thread_idxg;
+
+    r.z = fv / (fdim.x * fdim.y);
+    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
+    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
 	
     p.x = r.x / vpr.x;
     p.y = r.y / vpr.y;
@@ -1426,13 +1575,21 @@ __global__ void kernel_bspline_MI_a_hist_mov (
     q.x = r.x - p.x * vpr.x;
     q.y = r.y - p.y * vpr.y;
     q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
 
     f.x = img_origin.x + img_spacing.x * r.x;
     f.y = img_origin.y + img_spacing.y * r.y;
     f.z = img_origin.z + img_spacing.z * r.z;
     // --------------------------------------------------------
 
+#if defined (commentout)
+    if (r.x > (roi_offset.x + roi_dim.x) ||
+        r.y > (roi_offset.y + roi_dim.y) ||
+	r.z > (roi_offset.z + roi_dim.z))
+    {
+	    return;
+    }
+#endif
 
     // -- Compute deformation vector --------------------------
     int cidx;
@@ -1479,162 +1636,142 @@ __global__ void kernel_bspline_MI_a_hist_mov (
 	n.y < -0.5 || n.y > mdim.y - 0.5 ||
 	n.z < -0.5 || n.z > mdim.z - 0.5)
     {
+	// Voxel doesn't map into the moving
+	//   image.  We should do something
+	//   special.
+
 	// -->> skipped voxel logic here <<--
+	// if (!rc) continue [in the cpu code]
+//	skipped[thread_idxg]++;
 	return;
     }
+
+    n_f.x = (int) floorf (n.x);
+    n_f.y = (int) floorf (n.y);
+    n_f.z = (int) floorf (n.z);
     // --------------------------------------------------------
 
 
-    // -- Compute quadratic interpolation fractions -----------
-    float t, t2, t22;
-    float marf;
-    long mari;
 
-    // --- - x - ---
-    marf = (float)(n.x + 0.5);
-    mari = (long)(n.x + 0.5);
-    t = n.x - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
+    // -- Compute tri-linear interpolation weights ------------
+    float3 li_1;
+    float3 li_2;
 
-    // Generate fxqs
-    fxqs.x = t22;
-    //	fxqs.y = 1 - (t2 + t + 0.5);
-    fxqs.y = - t2 + t + 0.5;
-    fxqs.z = t22 - t + 0.5;
+    li_2.x = n.x - n_f.x;
+    if (n_f.x < 0) {
+	    n_f.x = 0;
+	    li_2.x = 0.0f;
+    }
+    else if (n_f.x >= (mdim.x - 1)) {
+	    n_f.x = mdim.x - 2;
+	    li_2.x = 1.0f;
+    }
+    li_1.x = 1.0f - li_2.x;
 
-    // Generate miqs
-    miqs.x = mari - 1;
-    miqs.y = mari;
-    miqs.z = mari + 1;
 
-    // --- - y - ---
-    marf = (float)(n.y + 0.5);
-    mari = (long)(n.y + 0.5);
-    t = n.y - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
+    li_2.y = n.y - n_f.y;
+    if (n_f.y < 0) {
+	    n_f.y = 0;
+	    li_2.y = 0.0f;
+    }
+    else if (n_f.y >= (mdim.y - 1)) {
+	    n_f.y = mdim.y - 2;
+	    li_2.y = 1.0f;
+    }
+    li_1.y = 1.0f - li_2.y;
 
-    // Generate fxqs
-    fyqs.x = t22;
-    //	fyqs.y = 1 - (t2 + t + 0.5);
-    fyqs.y = - t2 + t + 0.5;
-    fyqs.z = t22 - t + 0.5;
 
-    // Generate miqs
-    mjqs.x = mari - 1;
-    mjqs.y = mari;
-    mjqs.z = mari + 1;
-
-	
-    // --- - z - ---
-    marf = (float)(n.z + 0.5);
-    mari = (long)(n.z + 0.5);
-    t = n.z - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
-
-    // Generate fxqs
-    fzqs.x = t22;
-    //	fzqs.y = 1 - (t2 + t + 0.5);
-    fzqs.y = - t2 + t + 0.5;
-    fzqs.z = t22 - t + 0.5;
-
-    // Generate miqs
-    mkqs.x = mari - 1;
-    mkqs.y = mari;
-    mkqs.z = mari + 1;
-
-    // --- Bounds checking
-    if (miqs.x < 0) miqs.x = 0;
-    if (miqs.y < 0) miqs.y = 0;
-    if (miqs.z < 0) miqs.z = 0;
-    if (mjqs.x < 0) mjqs.x = 0;	
-    if (mjqs.y < 0) mjqs.y = 0;
-    if (mjqs.z < 0) mjqs.z = 0;
-    if (mkqs.x < 0) mkqs.x = 0;
-    if (mkqs.y < 0) mkqs.y = 0;
-    if (mkqs.z < 0) mkqs.z = 0;
+    li_2.z = n.z - n_f.z;
+    if (n_f.z < 0) {
+	    n_f.z = 0;
+	    li_2.z = 0.0f;
+    }
+    else if (n_f.z >= (mdim.z - 1)) {
+	    n_f.z = mdim.z - 2;
+	    li_2.z = 1.0f;
+    }
+    li_1.z = 1.0f - li_2.z;
     // --------------------------------------------------------
+
+
+    // -- Compute coordinates of 8 nearest neighbors ----------
+    int n1, n2, n3, n4;
+    int n5, n6, n7, n8;
+
+    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+
+    n1 = mvf;
+    n2 = n1 + 1;
+    n3 = n1 + mdim.x;
+    n4 = n1 + mdim.x + 1;
+    n5 = n1 + mdim.x * mdim.y;
+    n6 = n1 + mdim.x * mdim.y + 1;
+    n7 = n1 + mdim.x * mdim.y + mdim.x;
+    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    // --------------------------------------------------------
+
+
+    // -- Compute differential PV slices ----------------------
+    float w1, w2, w3, w4;
+    float w5, w6, w7, w8;
+
+    w1 = li_1.x * li_1.y * li_1.z;
+    w2 = li_2.x * li_1.y * li_1.z;
+    w3 = li_1.x * li_2.y * li_1.z;
+    w4 = li_2.x * li_2.y * li_1.z;
+    w5 = li_1.x * li_1.y * li_2.z;
+    w6 = li_2.x * li_1.y * li_2.z;
+    w7 = li_1.x * li_2.y * li_2.z;
+    w8 = li_2.x * li_2.y * li_2.z;
+    // --------------------------------------------------------
+
+
 
     __syncthreads();
 
     // -- Accumulate Into Segmented Histograms ----------------
-    float midx;
-    float mf_1, mf_2;
-    float amt;
+    int idx_mbin;
+    int m_mem;
 
+    // PV 1
+    idx_mbin = (int) floorf ((m_img[n1] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w1;
 
+    // PV 2
+    idx_mbin = (int) floorf ((m_img[n2] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w2;
 
-    // --- -- - BIN #1 - -- ---
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fxqs.y + fyqs.y + fzqs.y);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 3
+    idx_mbin = (int) floorf ((m_img[n3] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w3;
 
-    // --- -- - BIN #2 - -- ---
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fxqs.x);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 4
+    idx_mbin = (int) floorf ((m_img[n4] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w4;
 
-    // --- -- - BIN #3 - -- ---
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.z;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fxqs.z);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 5
+    idx_mbin = (int) floorf ((m_img[n5] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w5;
 
-    // --- -- - BIN #4 - -- ---
-    mvf = (mkqs.y * mdim.y + mjqs.x) * mdim.x + miqs.y;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fyqs.x);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 6
+    idx_mbin = (int) floorf ((m_img[n6] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w6;
 
-    // --- -- - BIN #5 - -- ---
-    mvf = (mkqs.y * mdim.y + mjqs.z) * mdim.x + miqs.y;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fyqs.z);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 7
+    idx_mbin = (int) floorf ((m_img[n7] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w7;
 
-    // --- -- - BIN #6 - -- ---
-    mvf = (mkqs.x * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fzqs.x);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
-
-    // --- -- - BIN #7 - -- ---
-    mvf = (mkqs.z * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    midx = (moving[mvf] - offset) * delta;
-    bin = (long)(midx);
-    mf_1 = midx - (float)((int)midx);
-    mf_2 = 1.0f - mf_1;
-    amt = (1.0/3.0) * (fzqs.z);
-    s_Moving[threadIdx.x + bin*nthreads] += mf_1 * amt;
-    s_Moving[threadIdx.x + (bin+1)*nthreads] += mf_2 * amt;
+    // PV 8
+    idx_mbin = (int) floorf ((m_img[n8] - offset) * delta);
+    m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+    s_Moving[m_mem] += w8;
     // --------------------------------------------------------
 
     __syncthreads();
@@ -1650,12 +1787,12 @@ __global__ void kernel_bspline_MI_a_hist_mov (
 	// bank conflicts, which reasult in half
 	// warp difergence / serialization.
 	const int startPos = (threadIdx.x & 0x0F);
-	const int offset   = threadIdx.x * nthreads;
+	const int offset   = threadIdx.x * threadsPerBlock;
 
-	for (int i=0, accumPos = startPos; i < nthreads; i++)
+	for (int i=0, accumPos = startPos; i < threadsPerBlock; i++)
 	{
 	    sum += s_Moving[offset + accumPos];
-	    if (++accumPos == nthreads)
+	    if (++accumPos == threadsPerBlock)
 		accumPos = 0;
 	}
 
@@ -1687,43 +1824,30 @@ __global__ void kernel_bspline_MI_a_hist_mov (
 //
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void kernel_bspline_MI_a_hist_jnt (
-    float* j_hist_seg,	// partial histogram (joint)
-    float* fixed,		// fixed  image voxels
-    float* moving,		// moving image voxels
-    float f_offset,		// fixed histogram offset
-    float m_offset,		// moving histogram offset
-    float f_delta,		// fixed histogram delta
-    float m_delta,		// moving histogram delta
-    long m_bins,		// # moving histogram bins
-    long j_bins,		// # joint  histogram bins
-    int3 vpr,		// voxels per region
-    int3 fdim,		// fixed  image dimensions
-    int3 mdim,		// moving image dimensions
-    int3 rdim,		//       region dimensions
-    float3 img_origin,	// image origin
-    float3 img_spacing,	// image spacing
-    float3 mov_offset,	// moving image offset
-    float3 mov_ps,		// moving image pixel spacing
-    int* c_lut,		// DEBUG
-    float* q_lut,		// DEBUG
-    float* coeff,		// DEBUG
-    int nthreads)		// # threads (to be removed)
+    float* skipped,	// OUTPUT:   # of skipped voxels
+    float* j_hist,      // OUTPUT:  joint histogram
+    float* f_img,	// INPUT:  fixed image voxels
+    float* m_img,	// INPUT: moving image voxels
+    float f_offset,	// INPUT:  fixed histogram offset 
+    float m_offset,	// INPUT: moving histogram offset
+    float f_delta,	// INPUT:  fixed histogram delta
+    float m_delta,	// INPUT: moving histogram delta
+    long f_bins,        // INPUT: #  fixed histogram bins
+    long m_bins,	// INPUT: # moving histogram bins
+    int3 vpr,		// INPUT: voxels per region
+    int3 fdim,		// INPUT:  fixed image dimensions
+    int3 mdim,		// INPUT: moving image dimensions
+    int3 rdim,		// INPUT: region dimensions
+    float3 img_origin,	// INPUT: image origin
+    float3 img_spacing,	// INPUT: image spacing
+    float3 mov_offset,	// INPUT: moving image offset
+    float3 mov_ps,	// INPUT: moving image pixel spacing
+    int3 roi_dim,	// INPUT: ROI dimensions
+    int3 roi_offset,	// INPUT: ROI Offset
+    int* c_lut,		// INPUT: coefficient lut
+    float* q_lut,	// INPUT: bspline product lut
+    float* coeff)	// INPUT: coefficient array
 {
-    // -- Initialize Shared Memory ----------------------------
-    // Amount: (# fixed bins) * (# moving bins)
-    extern __shared__ float s_Joint[];
-
-    long clusters = (j_bins + 31) / 32;
-
-    for (long i=0; i < clusters; i++)
-	if (threadIdx.x + 32*i < j_bins)
-	    s_Joint[threadIdx.x + 32*i] = 0.0f;
-    // --------------------------------------------------------
-
-
-    __syncthreads();
-
-
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
 
@@ -1732,7 +1856,27 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
     int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
     // --------------------------------------------------------
 
-	
+    // -- Initial shared memory for locks ---------------------
+    extern __shared__ float shared_mem[]; 
+
+    float* j_locks = (float*)shared_mem;
+    int total_smem = f_bins * m_bins;
+
+    float* sj_hist = (float*)&j_locks[f_bins * m_bins];
+    total_smem += f_bins * m_bins;
+
+
+    int b = (total_smem + threadsPerBlock - 1) / threadsPerBlock;
+
+    int i;
+    for (i = 0; i < b; i++)
+    {
+	if ( (thread_idxl + i*threadsPerBlock) < total_smem )
+        	shared_mem[thread_idxl + i*threadsPerBlock] = 0.0f;
+    }
+    // --------------------------------------------------------
+
+
     // -- Only process threads that map to voxels -------------
     if (thread_idxg > fdim.x * fdim.y * fdim.z)
 	return;
@@ -1741,9 +1885,9 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
 
     // -- Variables used by correspondence --------------------
     // -- (Block verified) ------------------------------------
-    int3 r;			// Voxel index (global)
-    int4 q;			// Voxel index (local)
-    int4 p;			// Tile index
+    int3 r;		// Voxel index (global)
+    int4 q;		// Voxel index (local)
+    int4 p;		// Tile index
 
 
     float3 f;		// Distance from origin (in mm )
@@ -1751,21 +1895,17 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
     float3 n;		// Voxel Displacement   (in vox)
     float3 d;		// Deformation vector
 
-    int3 miqs;		// PVI - 6 NBH
-    int3 mjqs;		//    Moving image pixel coords
-    int3 mkqs;
+    int3 n_f;		// Voxel Displacement floor
 
-    float3 fxqs;		// PVI - 6 NBH
-    float3 fyqs;		//    Interpolant fraction
-    float3 fzqs;
-    int mvf;
-
-
+    int fv;		// fixed voxel
+    int mvf;		// moving voxel (floor)
     //   ----    ----    ----    ----    ----    ----    ----    
 	
-    r.z = thread_idxg / (fdim.x * fdim.y);
-    r.y = (thread_idxg - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = thread_idxg - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+    fv = thread_idxg;
+
+    r.z = fv / (fdim.x * fdim.y);
+    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
+    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
 	
     p.x = r.x / vpr.x;
     p.y = r.y / vpr.y;
@@ -1775,13 +1915,21 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
     q.x = r.x - p.x * vpr.x;
     q.y = r.y - p.y * vpr.y;
     q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y * q.y) * vpr.x) + q.x;
+    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
 
     f.x = img_origin.x + img_spacing.x * r.x;
     f.y = img_origin.y + img_spacing.y * r.y;
     f.z = img_origin.z + img_spacing.z * r.z;
     // --------------------------------------------------------
 
+#if defined (commentout)
+    if (r.x > (roi_offset.x + roi_dim.x) ||
+        r.y > (roi_offset.y + roi_dim.y) ||
+	r.z > (roi_offset.z + roi_dim.z))
+    {
+	    return;
+    }
+#endif
 
     // -- Compute deformation vector --------------------------
     int cidx;
@@ -1828,248 +1976,269 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
 	n.y < -0.5 || n.y > mdim.y - 0.5 ||
 	n.z < -0.5 || n.z > mdim.z - 0.5)
     {
+	// Voxel doesn't map into the moving
+	//   image.  We should do something
+	//   special.
+
 	// -->> skipped voxel logic here <<--
+	// if (!rc) continue [in the cpu code]
+	skipped[thread_idxg]++;
 	return;
     }
+
+    n_f.x = (int) floorf (n.x);
+    n_f.y = (int) floorf (n.y);
+    n_f.z = (int) floorf (n.z);
     // --------------------------------------------------------
 
 
-    // -- Compute quadratic interpolation fractions -----------
-    float t, t2, t22;
-    float marf;
-    long mari;
 
-    // --- - x - ---
-    marf = (float)(n.x + 0.5);
-    mari = (long)(n.x + 0.5);
-    t = n.x - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
+    // -- Compute tri-linear interpolation weights ------------
+    float3 li_1;
+    float3 li_2;
 
-    // Generate fxqs
-    fxqs.x = t22;
-    //	fxqs.y = 1 - (t2 + t + 0.5);
-    fxqs.y = - t2 + t + 0.5;
-    fxqs.z = t22 - t + 0.5;
+    li_2.x = n.x - n_f.x;
+    if (n_f.x < 0) {
+	    n_f.x = 0;
+	    li_2.x = 0.0f;
+    }
+    else if (n_f.x >= (mdim.x - 1)) {
+	    n_f.x = mdim.x - 2;
+	    li_2.x = 1.0f;
+    }
+    li_1.x = 1.0f - li_2.x;
 
-    // Generate miqs
-    miqs.x = mari - 1;
-    miqs.y = mari;
-    miqs.z = mari + 1;
 
-    // --- - y - ---
-    marf = (float)(n.y + 0.5);
-    mari = (long)(n.y + 0.5);
-    t = n.y - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
+    li_2.y = n.y - n_f.y;
+    if (n_f.y < 0) {
+	    n_f.y = 0;
+	    li_2.y = 0.0f;
+    }
+    else if (n_f.y >= (mdim.y - 1)) {
+	    n_f.y = mdim.y - 2;
+	    li_2.y = 1.0f;
+    }
+    li_1.y = 1.0f - li_2.y;
 
-    // Generate fxqs
-    fyqs.x = t22;
-    //	fyqs.y = 1 - (t2 + t + 0.5);
-    fyqs.y = - t2 + t + 0.5;
-    fyqs.z = t22 - t + 0.5;
 
-    // Generate miqs
-    mjqs.x = mari - 1;
-    mjqs.y = mari;
-    mjqs.z = mari + 1;
-
-	
-    // --- - z - ---
-    marf = (float)(n.z + 0.5);
-    mari = (long)(n.z + 0.5);
-    t = n.z - marf;
-    t2 = t * t;
-    t22 = 0.5 * t2;
-
-    // Generate fxqs
-    fzqs.x = t22;
-    //	fzqs.y = 1 - (t2 + t + 0.5);
-    fzqs.y = - t2 + t + 0.5;
-    fzqs.z = t22 - t + 0.5;
-
-    // Generate miqs
-    mkqs.x = mari - 1;
-    mkqs.y = mari;
-    mkqs.z = mari + 1;
-
-    // --- Bounds checking
-    if (miqs.x < 0) miqs.x = 0;
-    if (miqs.y < 0) miqs.y = 0;
-    if (miqs.z < 0) miqs.z = 0;
-    if (mjqs.x < 0) mjqs.x = 0;	
-    if (mjqs.y < 0) mjqs.y = 0;
-    if (mjqs.z < 0) mjqs.z = 0;
-    if (mkqs.x < 0) mkqs.x = 0;
-    if (mkqs.y < 0) mkqs.y = 0;
-    if (mkqs.z < 0) mkqs.z = 0;
+    li_2.z = n.z - n_f.z;
+    if (n_f.z < 0) {
+	    n_f.z = 0;
+	    li_2.z = 0.0f;
+    }
+    else if (n_f.z >= (mdim.z - 1)) {
+	    n_f.z = mdim.z - 2;
+	    li_2.z = 1.0f;
+    }
+    li_1.z = 1.0f - li_2.z;
     // --------------------------------------------------------
 
-    __syncthreads();
 
-    // -- Accumulate Into Segmented Histograms ----------------
-    long m_bin;
-    long f_bin;
-    long j_bin;
-    float midx;
-    float fidx;
-    float mf_1, mf_2;
-    float amt;
+    // -- Compute coordinates of 8 nearest neighbors ----------
+    int n1, n2, n3, n4;
+    int n5, n6, n7, n8;
+
+    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+
+    n1 = mvf;
+    n2 = n1 + 1;
+    n3 = n1 + mdim.x;
+    n4 = n1 + mdim.x + 1;
+    n5 = n1 + mdim.x * mdim.y;
+    n6 = n1 + mdim.x * mdim.y + 1;
+    n7 = n1 + mdim.x * mdim.y + mdim.x;
+    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    // --------------------------------------------------------
 
 
-    // NOTE: j_bin+1 can really fuck us here
-    //       if bin is equal to the last bin
-    //       in the histogram.
-    //
-    //  ***: Implement bin bound checking
-    //       -AND- go back and do it for
-    //       fixed and moving hists as well
-    // --- -- - BIN #1 - -- ---
-    amt = (1.0/3.0) * (fxqs.y + fyqs.y + fzqs.y);
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
+    // -- Compute differential PV slices ----------------------
+    float w1, w2, w3, w4;
+    float w5, w6, w7, w8;
 
-    // --- -- - BIN #2 - -- ---
-    amt = (1.0/3.0) * (fxqs.x);
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.x;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
-
-    // --- -- - BIN #3 - -- ---
-    amt = (1.0/3.0) * (fxqs.z);
-    mvf = (mkqs.y * mdim.y + mjqs.y) * mdim.x + miqs.z;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
-
-    // --- -- - BIN #4 - -- ---
-    amt = (1.0/3.0) * (fyqs.x);
-    mvf = (mkqs.y * mdim.y + mjqs.x) * mdim.x + miqs.y;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
-
-    // --- -- - BIN #5 - -- ---
-    amt = (1.0/3.0) * (fyqs.z);
-    mvf = (mkqs.y * mdim.y + mjqs.z) * mdim.x + miqs.y;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
-
-    // --- -- - BIN #6 - -- ---
-    amt = (1.0/3.0) * (fzqs.x);
-    mvf = (mkqs.x * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
-
-    // --- -- - BIN #7 - -- ---
-    amt = (1.0/3.0) * (fzqs.z);
-    mvf = (mkqs.z * mdim.y + mjqs.y) * mdim.x + miqs.y;
-    fidx = (fixed[thread_idxg] - f_offset) * f_delta;
-    midx = (moving[mvf] - m_offset) * m_delta;
-    f_bin = (long)(fidx);
-    m_bin = (long)(midx);
-    j_bin = (f_bin * m_bins) + m_bin;
-    mf_1 = midx - (float)((long)midx);
-    mf_2 = 1.0f - mf_1;
-    j_hist_seg[j_bin + 0] += mf_1 * amt;
-    j_hist_seg[j_bin + 1] += mf_2 * amt;
-    //	s_Joint[j_bin + 0] += mf_1 * amt;
-    //	s_Joint[j_bin + 1] += mf_2 * amt;
+    w1 = li_1.x * li_1.y * li_1.z;
+    w2 = li_2.x * li_1.y * li_1.z;
+    w3 = li_1.x * li_2.y * li_1.z;
+    w4 = li_2.x * li_2.y * li_1.z;
+    w5 = li_1.x * li_1.y * li_2.z;
+    w6 = li_2.x * li_1.y * li_2.z;
+    w7 = li_1.x * li_2.y * li_2.z;
+    w8 = li_2.x * li_2.y * li_2.z;
     // --------------------------------------------------------
 
     __syncthreads();
 
-    // -- Write per Block Histograms out -----------------------
-    // NOTE: Because our joint histogram is so big & shared
-    //       memory is only 16KB, we only have 1 warp per
-    //       thread block.  This means that here we don't
-    //       need to merge per warp histograms (there is only 1),
-    //       we just need to write it out to global memory.
 
-    //	for (int i=0; i < j_bins; i++)
-    //		j_hist_seg[blockIdxInGrid*j_bins + i] = s_Joint[i];
+    // -- Read from histograms and compute dC/dp_j * dp_j/dv --
+    bool success;
+    int idx_fbin, offset_fbin;
+    int idx_mbin;
+    int idx_jbin;
+    int j_mem;
+    long j_bins = f_bins * m_bins;
 
-    //	for (long i=0; i < clusters; i++)
-    //		if (threadIdx.x + 32*i < j_bins)
-    //			j_hist_seg[blockIdxInGrid*j_bins + 32*i] = s_Joint[threadIdx.x + 32*i];
+    long j_stride = blockIdxInGrid * j_bins;
 
-    /*
-      for (long i=0; i < clusters; i++)
-      if (threadIdx.x + 32*i < j_bins)
-      j_hist_seg[blockIdxInGrid*j_bins + 32*i+threadIdx.x] += s_Joint[threadIdx.x + 32*i];
-    */
+    // Calculate fixed bin offset into joint
+    idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
+    offset_fbin = idx_fbin * m_bins;
 
-    for (int i=0; i < j_bins; i++)
-	j_hist_seg[i] += s_Joint[i];
+    // Add PV w1 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (idx_jbin != 0)
+    {
+	    success = false;
+	    j_mem = j_stride + idx_jbin;
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w1;
+			   j_hist[j_mem] += w1;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+    	}
+    }
 
+    // Add PV w2 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (idx_jbin != 0)
+    {
+	    success = false;
+	    j_mem = j_stride + idx_jbin;
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w2;
+			   j_hist[j_mem] += w2;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
 
+    // Add PV w3 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    if (idx_jbin != 0)
+    {
+	    success = false;
+	    j_mem = j_stride + idx_jbin;
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w3;
+			   j_hist[j_mem] += w3;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+    // Add PV w4 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    success = false;
+    j_mem = j_stride + idx_jbin;
+    if (idx_jbin != 0)
+    {
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w4;
+			   j_hist[j_mem] += w4;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+    // Add PV w5 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    success = false;
+    j_mem = j_stride + idx_jbin;
+    if (idx_jbin != 0)
+    {
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w5;
+			   j_hist[j_mem] += w5;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+    // Add PV w6 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    success = false;
+    j_mem = j_stride + idx_jbin;
+    if (idx_jbin != 0)
+    {
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w6;
+			   j_hist[j_mem] += w6;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+    // Add PV w7 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    success = false;
+    j_mem = j_stride + idx_jbin;
+    if (idx_jbin != 0)
+    {
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w7;
+			   j_hist[j_mem] += w7;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+    // Add PV w8 to moving & joint histograms
+    idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
+    idx_jbin = offset_fbin + idx_mbin;
+    success = false;
+    j_mem = j_stride + idx_jbin;
+    if (idx_jbin != 0)
+    {
+	    while (!success) {
+		    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+			   success = true;
+//			   sj_hist[idx_jbin] += w8;
+			   j_hist[j_mem] += w8;
+			   atomicExch(&j_locks[idx_jbin], 0.0f);
+		    }
+		    __threadfence();
+	    }
+    }
+
+#if defined (commentout)
+    // Almost done...
+    // Moving the histogram from shared to global memory
+    b = (j_bins + threadsPerBlock - 1) / threadsPerBlock;
+    for (i = 0; i < b; i++)
+    {
+	if ( (thread_idxl + i*threadsPerBlock) < j_bins )
+        	j_hist[thread_idxl + j_stride] = sj_hist[thread_idxl + i*threadsPerBlock];
+    }
+#endif
     // --------------------------------------------------------
 
-    // Done.
-    // We now have (num_thread_blocks) partial histograms that
-    // need to be merged.  This will be done with another
-    // kernel to be ran immediately following the completion
-    // of this kernel.
 
-    //NOTE:
-    // fv = thread_idxg
-    // fi = r.x
-    // fj = r.y
-    // fk = r.z
 }
 
 
@@ -2161,6 +2330,8 @@ __global__ void kernel_bspline_MI_a_hist_fix_merge (
 //       j_hist:   num_blocks * f_bins * m_bins * sizeof(float)
 //      skipped:   num_threads_in_grid * sizeof(float)
 //
+//       ... GPU global memory.
+//
 // IMPORTANT:
 //       This kernel is incomplete and should not be used.
 //       Parallel prefix scanning and sum reduction still need
@@ -2206,20 +2377,26 @@ __global__ void kernel_bspline_MI_hists_a (
     // --------------------------------------------------------
 
     // -- Initial shared memory for locks ---------------------
-    extern __shared__ unsigned int shared_mem[]; 
+    extern __shared__ float shared_mem[]; 
 
-    unsigned int* f_locks = (unsigned int*)shared_mem;
-    unsigned int* m_locks = (unsigned int*)&f_locks[f_bins];
-    unsigned int* j_locks = (unsigned int*)&m_locks[m_bins];
-
+    float* f_locks = (float*)shared_mem;
+    float* m_locks = (float*)&f_locks[f_bins];
+    float* j_locks = (float*)&m_locks[m_bins];
     int total_smem = f_bins + m_bins + (f_bins * m_bins);
+
+    float* sf_hist = (float*)&j_locks[f_bins*m_bins];
+    float* sm_hist = (float*)&sf_hist[f_bins];
+    float* sj_hist = (float*)&sm_hist[m_bins];
+    total_smem += f_bins + m_bins + (f_bins * m_bins);
+
+
     int b = (total_smem + threadsPerBlock - 1) / threadsPerBlock;
 
     int i;
     for (i = 0; i < b; i++)
     {
 	if ( (thread_idxl + i*threadsPerBlock) < total_smem )
-        	shared_mem[thread_idxl + i*threadsPerBlock] = 0u;
+        	shared_mem[thread_idxl + i*threadsPerBlock] = 0.0f;
     }
     // --------------------------------------------------------
 
@@ -2431,16 +2608,27 @@ __global__ void kernel_bspline_MI_hists_a (
     f_mem = idx_fbin + f_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&f_locks[idx_fbin], 1u) == 0u) {
-		    f_hist[f_mem]++;
+	    if (atomicExch(&f_locks[idx_fbin], 1.0f) == 0.0f) {
+		    sf_hist[idx_fbin]++;
 		    success = true;
 		    // release the lock
-		    atomicExch(&f_locks[idx_fbin], 0u);
+		    atomicExch(&f_locks[idx_fbin], 0.0f);
 	    }
 	    __threadfence();
     }
 
+    __syncthreads();
 
+    b = (f_bins + threadsPerBlock - 1) / threadsPerBlock;
+
+    for (i = 0; i < b; i++)
+    {
+	if ( (thread_idxl + i*threadsPerBlock) < f_bins )
+        	f_hist[thread_idxl + f_stride] = sf_hist[thread_idxl + i*threadsPerBlock];
+    }
+
+
+#if defined (commentout)
     offset_fbin = idx_fbin * m_bins;
 
     // Add PV w1 to moving & joint histograms
@@ -2450,19 +2638,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w1;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w1;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2474,19 +2662,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w2;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w2;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2498,19 +2686,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w3;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w3;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2523,19 +2711,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w4;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w4;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2548,19 +2736,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w5;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w5;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2572,19 +2760,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w6;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w6;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2596,19 +2784,19 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w7;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w7;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
@@ -2620,23 +2808,23 @@ __global__ void kernel_bspline_MI_hists_a (
     j_mem = idx_jbin + j_stride;
     success = false;
     while (!success) {
-	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+	    if (atomicExch(&m_locks[idx_mbin], 1.0f) == 0.0f) {
 		   m_hist[m_mem] += w8;
 		   success = true;
-		   atomicExch(&m_locks[idx_mbin], 0u);
+		   atomicExch(&m_locks[idx_mbin], 0.0f);
 	    }
 	    __threadfence();
     }
     success = false;
     while (!success) {
-	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+	    if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
 		   success = true;
 		   j_hist[j_mem] += w8;
-		   atomicExch(&j_locks[idx_jbin], 0u);
+		   atomicExch(&j_locks[idx_jbin], 0.0f);
 	    }
 	    __threadfence();
     }
-
+#endif
     // --------------------------------------------------------
 }
 
@@ -2902,9 +3090,12 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     int idx_mbin;
     int idx_jbin;
 
+    float ht = 0.000001f;
+
     dc_dv.x = 0.0f;
     dc_dv.y = 0.0f;
     dc_dv.z = 0.0f;
+
 
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
     offset_fbin = idx_fbin * m_bins;
@@ -2912,7 +3103,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w1
     idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw1.x * dS_dP;
 	    dc_dv.y -= dw1.y * dS_dP;
@@ -2922,7 +3113,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w2
     idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw2.x * dS_dP;
 	    dc_dv.y -= dw2.y * dS_dP;
@@ -2932,7 +3123,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w3
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw3.x * dS_dP;
 	    dc_dv.y -= dw3.y * dS_dP;
@@ -2942,7 +3133,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w4
     idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw4.x * dS_dP;
 	    dc_dv.y -= dw4.y * dS_dP;
@@ -2952,7 +3143,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w5
     idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw5.x * dS_dP;
 	    dc_dv.y -= dw5.y * dS_dP;
@@ -2962,7 +3153,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w6
     idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw6.x * dS_dP;
 	    dc_dv.y -= dw6.y * dS_dP;
@@ -2972,7 +3163,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w7
     idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw7.x * dS_dP;
 	    dc_dv.y -= dw7.y * dS_dP;
@@ -2982,7 +3173,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     // PV w8
     idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    if (j_hist[idx_jbin] > 0.000001f) {
+    if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
 	    dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
 	    dc_dv.x -= dw8.x * dS_dP;
 	    dc_dv.y -= dw8.y * dS_dP;

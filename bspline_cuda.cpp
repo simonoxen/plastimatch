@@ -447,7 +447,7 @@ int CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,	// OUTPUT: Histograms
 static float
 CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 {
-#ifdef DOUBLE_HISTS
+#if defined (DOUBLE_HISTS) && defined (CPU_HISTS)
     double* f_hist = mi_hist->f_hist_d;
     double* m_hist = mi_hist->m_hist_d;
     double* j_hist = mi_hist->j_hist_d;
@@ -460,12 +460,16 @@ CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     int i, j, v;
     double fnv = (double) num_vox;
     double score = 0;
+#if defined (DOUBLE_HISTS) && defined (CPU_HISTS)
     double hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
+#else
+    float hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
+#endif
 
     /* Compute cost */
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
-	    if (j_hist[v] > hist_thresh) {
+	    if (j_hist[v] > hist_thresh && f_hist[i] > hist_thresh && m_hist[j] > hist_thresh) {
 		score -= j_hist[v] * logf (fnv * j_hist[v] / (m_hist[j] * f_hist[i]));
 	    }
 	}
@@ -624,8 +628,8 @@ void bspline_cuda_MI_a (
 	num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
 	printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
-	// Invoke Parallel Prefix Scan driven GPU HIST kernel set
-	num_vox = CUDA_MI_Hist_a (mi_hist, bxf, fixed, moving, dev_ptrs);
+//	num_vox = CUDA_MI_Hist_a (mi_hist, bxf, fixed, moving, dev_ptrs);
+	num_vox = CUDA_bspline_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
 	printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
 
@@ -653,7 +657,7 @@ void bspline_cuda_MI_a (
 	// compute score
 	plm_timer_start (&timer0);
 #ifdef CPU_SCORE
-	 ssd->score = CPU_MI_Score(mi_hist, num_vox);
+	ssd->score = CPU_MI_Score(mi_hist, num_vox);
 	printf (" * score: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 	// Doing this on the GPU may be silly.

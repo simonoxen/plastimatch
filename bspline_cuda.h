@@ -446,13 +446,13 @@ extern "C" {
     
     void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform* bxf, BSPLINE_Parms* parms);
 
-    void CUDA_bspline_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    int CUDA_bspline_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
 
     void CUDA_bspline_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed);
     
     void CUDA_bspline_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
     
-    void CUDA_bspline_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    int CUDA_bspline_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
 
     int CUDA_MI_Hist_a ( BSPLINE_MI_Hist* mi_hist, BSPLINE_Xform *bxf, Volume* fixed, Volume* moving, Dev_Pointers_Bspline *dev_ptrs);
     

@@ -127,52 +127,52 @@ __global__ void kernel_bspline_MI_a_hist_fix
  float *fixed,
  float offset,
  float delta,
- long bins,
- int nthreads);
+ long bins);
+
 
 __global__ void kernel_bspline_MI_a_hist_mov (
- float* m_hist_seg,	// partial histogram (moving image)
- float* fixed,		// fixed  image voxels
- float* moving,		// moving image voxels
- float offset,		// histogram offset
- float delta,		// histogram delta
- long bins,		// # histogram bins
- int3 vpr,		// voxels per region
- int3 fdim,		// fixed  image dimensions
- int3 mdim,		// moving image dimensions
- int3 rdim,		//       region dimensions
- float3 img_origin,	// image origin
- float3 img_spacing,	// image spacing
- float3 mov_offset,	// moving image offset
- float3 mov_ps,		// moving image pixel spacing
- int* c_lut,		// DEBUG
- float* q_lut,		// DEBUG
- float* coeff,		// DEBUG
- int nthreads);		// # threads (to be removed)
+    float* m_hist_seg,	// partial histogram (moving image)
+    float* m_img,	// moving image voxels
+    float offset,	// histogram offset
+    float delta,	// histogram delta
+    long bins,		// # histogram bins
+    int3 vpr,		// voxels per region
+    int3 fdim,		// fixed  image dimensions
+    int3 mdim,		// moving image dimensions
+    int3 rdim,		//       region dimensions
+    float3 img_origin,	// image origin
+    float3 img_spacing,	// image spacing
+    float3 mov_offset,	// moving image offset
+    float3 mov_ps,	// moving image pixel spacing
+    int* c_lut,	
+    float* q_lut,
+    float* coeff);
 
 
 __global__ void kernel_bspline_MI_a_hist_jnt (
- float* j_hist_seg,	// partial histogram (joint)
- float* fixed,		// fixed  image voxels
- float* moving,		// moving image voxels
- float f_offset,	// fixed histogram offset
- float m_offset,	// moving histogram offset
- float f_delta,		// fixed histogram delta
- float m_delta,		// moving histogram delta
- long m_bins,		// # moving histogram bins
- long j_bins,		// # joint  histogram bins
- int3 vpr,		// voxels per region
- int3 fdim,		// fixed  image dimensions
- int3 mdim,		// moving image dimensions
- int3 rdim,		//       region dimensions
- float3 img_origin,	// image origin
- float3 img_spacing,	// image spacing
- float3 mov_offset,	// moving image offset
- float3 mov_ps,		// moving image pixel spacing
- int* c_lut,		// DEBUG
- float* q_lut,		// DEBUG
- float* coeff,		// DEBUG
- int nthreads);		// # threads (to be removed)
+    float* skipped,	// OUTPUT:   # of skipped voxels
+    float* j_hist,      // OUTPUT:  joint histogram
+    float* f_img,	// INPUT:  fixed image voxels
+    float* m_img,	// INPUT: moving image voxels
+    float f_offset,	// INPUT:  fixed histogram offset 
+    float m_offset,	// INPUT: moving histogram offset
+    float f_delta,	// INPUT:  fixed histogram delta
+    float m_delta,	// INPUT: moving histogram delta
+    long f_bins,        // INPUT: #  fixed histogram bins
+    long m_bins,	// INPUT: # moving histogram bins
+    int3 vpr,		// INPUT: voxels per region
+    int3 fdim,		// INPUT:  fixed image dimensions
+    int3 mdim,		// INPUT: moving image dimensions
+    int3 rdim,		// INPUT: region dimensions
+    float3 img_origin,	// INPUT: image origin
+    float3 img_spacing,	// INPUT: image spacing
+    float3 mov_offset,	// INPUT: moving image offset
+    float3 mov_ps,	// INPUT: moving image pixel spacing
+    int3 roi_dim,	// INPUT: ROI dimensions
+    int3 roi_offset,	// INPUT: ROI Offset
+    int* c_lut,		// INPUT: coefficient lut
+    float* q_lut,	// INPUT: bspline product lut
+    float* coeff);	// INPUT: coefficient array
 
 
 __global__ void kernel_bspline_MI_a_hist_fix_merge (
