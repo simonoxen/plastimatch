@@ -123,6 +123,7 @@ void xpm_write (xpm_struct* xpm, char* xpm_file)
 		fprintf(stderr, "Error: Cannot write open XPM file for writing\n");
 
 	// Construct the XPM header
+	fprintf(fp, "/* XPM */\n");
 	fprintf(fp, "static char * plm_xpm[] = {\n");
 	fprintf(fp, "/* width  height  colors  cpp */\n");
 	fprintf(fp, "\"%i %i %i %i\",\n\n", xpm->width, xpm->height, xpm->num_colors, xpm->cpp);
