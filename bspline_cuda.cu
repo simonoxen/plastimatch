@@ -739,6 +739,7 @@ extern "C" int CUDA_MI_Hist_a (
     Volume* moving,
     Dev_Pointers_Bspline *dev_ptrs)
 {
+
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
     cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
@@ -869,9 +870,12 @@ extern "C" int CUDA_MI_Hist_a (
     cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
 
+    smemSize = (mi_hist->fixed.bins + mi_hist->moving.bins +
+    		(mi_hist->fixed.bins * mi_hist->moving.bins))
+		* sizeof(unsigned int);
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_hists_a <<<dimGrid1, dimBlock1>>> (
+    kernel_bspline_MI_hists_a <<<dimGrid1, dimBlock1, smemSize>>> (
 	dev_ptrs->skipped,
 	dev_ptrs->f_hist_seg,
 	dev_ptrs->m_hist_seg,
@@ -908,7 +912,6 @@ extern "C" int CUDA_MI_Hist_a (
     // I'm not asking for too much trouble, so I'm
     // going to do this part on the CPU until I can
     // verify that everything else is working properly.
-
     float* f_hist_seg = (float*)malloc(dev_ptrs->f_hist_seg_size);
     float* m_hist_seg = (float*)malloc(dev_ptrs->m_hist_seg_size);
     float* j_hist_seg = (float*)malloc(dev_ptrs->j_hist_seg_size);
@@ -942,12 +945,12 @@ extern "C" int CUDA_MI_Hist_a (
 	    }
     }
 
-    float m_total = 0;
-    for (i_bin = 0; i_bin < mi_hist->moving.bins; i_bin++) {
-	    printf ("%f\n", mi_hist->m_hist[i_bin]);
-	    m_total += mi_hist->m_hist[i_bin];
+    float f_total = 0;
+    for (i_bin = 0; i_bin < mi_hist->fixed.bins; i_bin++) {
+	    printf ("%f\n", mi_hist->f_hist[i_bin]);
+	    f_total += mi_hist->f_hist[i_bin];
     }
-    printf ("Total: %f\n", m_total);
+    printf ("Total: %f\n", f_total);
 
     // >>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -2198,7 +2201,25 @@ __global__ void kernel_bspline_MI_hists_a (
     int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
     // --------------------------------------------------------
 
-	
+    // -- Initial shared memory for locks ---------------------
+    extern __shared__ unsigned int shared_mem[]; 
+
+    unsigned int* f_locks = (unsigned int*)shared_mem;
+    unsigned int* m_locks = (unsigned int*)&f_locks[f_bins];
+    unsigned int* j_locks = (unsigned int*)&m_locks[m_bins];
+
+    int total_smem = f_bins + m_bins + (f_bins * m_bins);
+    int b = (total_smem + threadsPerBlock - 1) / threadsPerBlock;
+
+    int i;
+    for (i = 0; i < b; i++)
+    {
+	if ( (thread_idxl + i*threadsPerBlock) < total_smem )
+        	shared_mem[thread_idxl + i*threadsPerBlock] = 0u;
+    }
+    // --------------------------------------------------------
+
+
     // -- Only process threads that map to voxels -------------
     if (thread_idxg > fdim.x * fdim.y * fdim.z)
 	return;
@@ -2244,12 +2265,14 @@ __global__ void kernel_bspline_MI_hists_a (
     f.z = img_origin.z + img_spacing.z * r.z;
     // --------------------------------------------------------
 
+#if defined (commentout)
     if (r.x > (roi_offset.x + roi_dim.x) ||
         r.y > (roi_offset.y + roi_dim.y) ||
 	r.z > (roi_offset.z + roi_dim.z))
     {
 	    return;
     }
+#endif
 
     // -- Compute deformation vector --------------------------
     int cidx;
@@ -2296,10 +2319,14 @@ __global__ void kernel_bspline_MI_hists_a (
 	n.y < -0.5 || n.y > mdim.y - 0.5 ||
 	n.z < -0.5 || n.z > mdim.z - 0.5)
     {
+	// Voxel doesn't map into the moving
+	//   image.  We should do something
+	//   special.
+
 	// -->> skipped voxel logic here <<--
 	// if (!rc) continue [in the cpu code]
-//	skipped[thread_idxg]++;
-	return;
+	skipped[thread_idxg]++;
+//	return;
     }
 
     n_f.x = (int) floorf (n.x);
@@ -2384,9 +2411,11 @@ __global__ void kernel_bspline_MI_hists_a (
     __syncthreads();
 
     // -- Read from histograms and compute dC/dp_j * dp_j/dv --
+    bool success;
     int idx_fbin, offset_fbin;
     int idx_mbin;
     int idx_jbin;
+    int f_mem, m_mem, j_mem;
     long j_bins = f_bins * m_bins;
 
     long f_stride = blockIdxInGrid * f_bins;
@@ -2395,57 +2424,215 @@ __global__ void kernel_bspline_MI_hists_a (
 
     // Deal with the fixed histogram 1st
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
-    f_hist[idx_fbin + f_stride]++;
+    f_mem = idx_fbin + f_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&f_locks[idx_fbin], 1u) == 0u) {
+		    f_hist[f_mem]++;
+		    success = true;
+		    // release the lock
+		    atomicExch(&f_locks[idx_fbin], 0u);
+	    }
+	    __threadfence();
+    }
+
 
     offset_fbin = idx_fbin * m_bins;
 
     // Add PV w1 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w1;
-    j_hist[idx_jbin + j_stride] += w1;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w1;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w1;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
 
     // Add PV w2 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w2;
-    j_hist[idx_jbin + j_stride] += w2;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w2;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w2;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
 
     // Add PV w3 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w3;
-    j_hist[idx_jbin + j_stride] += w3;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w3;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w3;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
+
 
     // Add PV w4 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w4;
-    j_hist[idx_jbin + j_stride] += w4;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w4;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w4;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
+
 
     // Add PV w5 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w5;
-    j_hist[idx_jbin + j_stride] += w5;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w5;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w5;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
 
     // Add PV w6 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w6;
-    j_hist[idx_jbin + j_stride] += w6;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w6;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w6;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
 
     // Add PV w7 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w7;
-    j_hist[idx_jbin + j_stride] += w7;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w7;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w7;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
 
     // Add PV w8 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    m_hist[idx_mbin + m_stride] += w8;
-    j_hist[idx_jbin + j_stride] += w8;
+    m_mem = idx_mbin + m_stride;
+    j_mem = idx_jbin + j_stride;
+    success = false;
+    while (!success) {
+	    if (atomicExch(&m_locks[idx_mbin], 1u) == 0u) {
+		   m_hist[m_mem] += w8;
+		   success = true;
+		   atomicExch(&m_locks[idx_mbin], 0u);
+	    }
+	    __threadfence();
+    }
+    success = false;
+    while (!success) {
+	    if (atomicExch(&j_locks[idx_jbin], 1u) == 0u) {
+		   success = true;
+		   j_hist[j_mem] += w8;
+		   atomicExch(&j_locks[idx_jbin], 0u);
+	    }
+	    __threadfence();
+    }
+
     // --------------------------------------------------------
 }
 

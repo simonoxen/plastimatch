@@ -126,6 +126,7 @@ struct dev_pointers_bspline
     int* c_lut;
     float* q_lut;
 
+
     // These hold the size of the
     // chucks of memory we allocated
     // that each start at the addresses

@@ -197,6 +197,12 @@ IF (CUDA_FOUND)
     )
 ENDIF(CUDA_FOUND)
 
+# JAS 05.02.2010
+# Enable atomic memory operations for GPU
+#   Must be enabled in this fashion
+#   due to an issue with FindCUDA.cmake
+SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_12)
+
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
 ##  http://www.cmake.org/Wiki/CMake_RPATH_handling

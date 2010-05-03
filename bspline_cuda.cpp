@@ -625,12 +625,14 @@ void bspline_cuda_MI_a (
 	printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 	// Invoke Parallel Prefix Scan driven GPU HIST kernel set
+	num_vox = CUDA_MI_Hist_a (mi_hist, bxf, fixed, moving, dev_ptrs);
 	printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
 
 	// if using double histograms for accumulation
 	// copy their contents over to floating histograms
-#ifdef DOUBLE_HISTS
+
+#if defined (DOUBLE_HISTS) && defined (CPU_HISTS)
     for (i=0; i < mi_hist->fixed.bins; i++)
     	f_hist[i] = (float)f_hist_d[i];
     for (i=0; i < mi_hist->moving.bins; i++)
