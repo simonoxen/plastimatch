@@ -1042,15 +1042,19 @@ extern "C" int CUDA_MI_Hist_a (
 }
 
 extern "C" void CUDA_MI_Grad_a (
-    float* host_grad,
-    Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
+    Bspline_state *bst,
+    BSPLINE_Xform *bxf,
     Volume* fixed,
     Volume* moving,
-    BSPLINE_Xform *bxf,
     float num_vox_f,
-    float score)
+    Dev_Pointers_Bspline *dev_ptrs)
 {
+
+    BSPLINE_Score* ssd = &bst->ssd;
+    float* host_grad = ssd->grad;
+    float score = ssd->score;
+
     // Initialize histogram memory on GPU
     cudaMemcpy(dev_ptrs->f_hist, mi_hist->f_hist, dev_ptrs->f_hist_size, cudaMemcpyHostToDevice);
     cudaMemcpy(dev_ptrs->m_hist, mi_hist->m_hist, dev_ptrs->m_hist_size, cudaMemcpyHostToDevice);

@@ -667,7 +667,7 @@ void bspline_cuda_MI_a (
 	CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
 	printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
-	CUDA_MI_Grad_a(bst->ssd.grad, dev_ptrs, mi_hist, fixed, moving, bxf, (float)num_vox, ssd->score);
+	CUDA_MI_Grad_a(mi_hist, bst, bxf, fixed, moving, (float)num_vox, dev_ptrs);
 	printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
 

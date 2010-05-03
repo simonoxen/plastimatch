@@ -456,7 +456,7 @@ extern "C" {
 
     int CUDA_MI_Hist_a ( BSPLINE_MI_Hist* mi_hist, BSPLINE_Xform *bxf, Volume* fixed, Volume* moving, Dev_Pointers_Bspline *dev_ptrs);
     
-    void CUDA_MI_Grad_a ( float* host_grad, Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf, float num_vox_f, float score);
+    void CUDA_MI_Grad_a ( BSPLINE_MI_Hist* mi_hist, Bspline_state *bst, BSPLINE_Xform *bxf, Volume* fixed, Volume* moving, float num_vox_f, Dev_Pointers_Bspline *dev_ptrs);
 
     //
     // -------------------------------------------------------------------
