@@ -959,6 +959,13 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
 ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
 
+IF (Slicer3_DIR)
+  INCLUDE_DIRECTORIES (
+    ${Slicer3_Libs_INCLUDE_DIRS}
+    ${Slicer3_Base_INCLUDE_DIRS}
+    )
+ENDIF (Slicer3_DIR)
+
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
