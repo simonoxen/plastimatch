@@ -108,14 +108,17 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     /* The following keywords are only allowed in stages */
     else if (!strcmp (key, "xform")) {
 	if (section == 0) goto error_not_global;
-	if (!strcmp(val,"rigid") || !strcmp(val,"versor")) {
+	if (!strcmp (val,"translation")) {
+	    stage->xform_type = STAGE_TRANSFORM_TRANSLATION;
+	}
+	else if (!strcmp(val,"rigid") || !strcmp(val,"versor")) {
 	    stage->xform_type = STAGE_TRANSFORM_VERSOR;
+	}
+	else if (!strcmp (val,"quaternion")) {
+	    stage->xform_type = STAGE_TRANSFORM_QUATERNION;
 	}
 	else if (!strcmp (val,"affine")) {
 	    stage->xform_type = STAGE_TRANSFORM_AFFINE;
-	}
-	else if (!strcmp (val,"translation")) {
-	    stage->xform_type = STAGE_TRANSFORM_TRANSLATION;
 	}
 	else if (!strcmp (val,"bspline")) {
 	    stage->xform_type = STAGE_TRANSFORM_BSPLINE;

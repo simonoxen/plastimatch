@@ -13,6 +13,7 @@
 #include "itkMultiResolutionImageRegistrationMethod.h"
 #include "itkImageRegistrationMethod.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
+#include "itkQuaternionRigidTransformGradientDescentOptimizer.h"
 #include "itkAmoebaOptimizer.h"
 #include "itkLBFGSOptimizer.h"
 #include "itkLBFGSBOptimizer.h"
@@ -25,59 +26,9 @@
 typedef itk::AmoebaOptimizer AmoebaOptimizerType;
 typedef itk::RegularStepGradientDescentOptimizer RSGOptimizerType;
 typedef itk::VersorRigid3DTransformOptimizer VersorOptimizerType;
+typedef itk::QuaternionRigidTransformGradientDescentOptimizer QuatOptimizerType;
 typedef itk::LBFGSOptimizer LBFGSOptimizerType;
 typedef itk::LBFGSBOptimizer LBFGSBOptimizerType;
-
-void
-optimizer_update_settings (RegistrationType::Pointer registration, 
-			   Stage_Parms* stage)
-{
-    if (stage->optim_type == OPTIMIZATION_AMOEBA) {
-	typedef AmoebaOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-        optimizer->SetMaximumNumberOfIterations(stage->max_its);
-	double val = optimizer->GetCachedValue();
-	printf ("VAL = %10.2f\n", val);
-    }
-    else if (stage->optim_type == OPTIMIZATION_RSG) {
-	typedef RSGOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-	printf ("Updating Optimizer: ss=%g\n",optimizer->GetCurrentStepLength());
-	optimizer->SetMaximumStepLength(2.0);
-	optimizer->SetMinimumStepLength(0.25);
-	optimizer->SetNumberOfIterations(stage->max_its);
-	double val = optimizer->GetValue();
-	printf ("VAL = %10.2f\n", val);
-    }
-    else if (stage->optim_type == OPTIMIZATION_VERSOR) {
-	typedef VersorOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-	printf ("Updating Optimizer: ss=%g\n",optimizer->GetCurrentStepLength());
-	optimizer->SetMaximumStepLength(2.0);
-	optimizer->SetMinimumStepLength(0.25);
-	optimizer->SetNumberOfIterations(stage->max_its);
-	double val = optimizer->GetValue();
-	printf ("VAL = %10.2f\n", val);
-    }
-    else if (stage->optim_type == OPTIMIZATION_LBFGS) {
-	typedef LBFGSOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-	optimizer->SetMaximumNumberOfFunctionEvaluations (stage->max_its);
-    }
-    else if (stage->optim_type == OPTIMIZATION_LBFGSB) {
-	typedef LBFGSBOptimizerType * OptimizerPointer;
-	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
-			   registration->GetOptimizer());
-	optimizer->SetMaximumNumberOfIterations (stage->max_its);
-	optimizer->SetMaximumNumberOfEvaluations (stage->max_its);
-    } else {
-        print_and_exit ("Error: Unknown optimizer value.\n");
-    }
-}
 
 void
 optimizer_set_max_iterations (RegistrationType::Pointer registration, 
@@ -98,7 +49,14 @@ optimizer_set_max_iterations (RegistrationType::Pointer registration,
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+
 			   registration->GetOptimizer());
+	optimizer->SetNumberOfIterations(its);
+    }
+    else if (stage->optim_type == OPTIMIZATION_QUAT) {
+	typedef QuatOptimizerType * OptimizerPointer;
+	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+	    registration->GetOptimizer());
 	optimizer->SetNumberOfIterations(its);
     }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
@@ -136,6 +94,12 @@ optimizer_get_value (RegistrationType::Pointer registration,
     }
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
+	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+			   registration->GetOptimizer());
+	return optimizer->GetValue();
+    }
+    else if (stage->optim_type == OPTIMIZATION_QUAT) {
+	typedef QuatOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
 	return optimizer->GetValue();
@@ -181,6 +145,14 @@ optimizer_get_step_length (RegistrationType::Pointer registration,
 			   registration->GetOptimizer());
 	return optimizer->GetCurrentStepLength();
     }
+    else if (stage->optim_type == OPTIMIZATION_QUAT) {
+#if defined (commentout)
+	typedef QuatOptimizerType * OptimizerPointer;
+	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+			   registration->GetOptimizer());
+#endif
+	return -1.0;
+    }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
 #if defined (commentout)
 	typedef LBFGSOptimizerType * OptimizerPointer;
@@ -220,6 +192,12 @@ optimizer_get_current_iteration (RegistrationType::Pointer registration,
     }
     else if (stage->optim_type == OPTIMIZATION_VERSOR) {
 	typedef VersorOptimizerType * OptimizerPointer;
+	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+			   registration->GetOptimizer());
+	return optimizer->GetCurrentIteration();
+    }
+    else if (stage->optim_type == OPTIMIZATION_QUAT) {
+	typedef QuatOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
 			   registration->GetOptimizer());
 	return optimizer->GetCurrentIteration();
@@ -265,6 +243,12 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
 			   registration->GetOptimizer());
 	return optimizer->GetCurrentPosition();
     }
+    else if (stage->optim_type == OPTIMIZATION_QUAT) {
+	typedef QuatOptimizerType * OptimizerPointer;
+	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
+			   registration->GetOptimizer());
+	return optimizer->GetCurrentPosition();
+    }
     else if (stage->optim_type == OPTIMIZATION_LBFGS) {
 	typedef LBFGSOptimizerType * OptimizerPointer;
 	OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(
@@ -284,7 +268,7 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
 
 void
 set_optimization_amoeba (RegistrationType::Pointer registration, 
-		         Stage_Parms* stage)
+    Stage_Parms* stage)
 {
     AmoebaOptimizerType::Pointer optimizer = AmoebaOptimizerType::New();
     optimizer->SetParametersConvergenceTolerance(stage->amoeba_parameter_tol);
@@ -311,6 +295,16 @@ set_optimization_versor (RegistrationType::Pointer registration,
     VersorOptimizerType::Pointer optimizer = VersorOptimizerType::New();
     optimizer->SetMaximumStepLength(stage->max_step);
     optimizer->SetMinimumStepLength(stage->min_step);
+    optimizer->SetNumberOfIterations(stage->max_its);
+    registration->SetOptimizer(optimizer);
+}
+
+void
+set_optimization_quat (RegistrationType::Pointer registration, 
+    Stage_Parms* stage)
+{
+    QuatOptimizerType::Pointer optimizer = QuatOptimizerType::New();
+    optimizer->SetLearningRate(0.001);
     optimizer->SetNumberOfIterations(stage->max_its);
     registration->SetOptimizer(optimizer);
 }
@@ -414,6 +408,28 @@ set_optimization_scales_versor (RegistrationType::Pointer registration,
 }
 
 void
+set_optimization_scales_quaternion (
+    RegistrationType::Pointer registration, 
+    Stage_Parms* stage)
+{
+    double rotation_scale, translation_scale;
+    itk::Array<double> optimizerScales(7);
+
+    rotation_scale = 1.0;
+    translation_scale = 1.0 / 10000.0;
+
+    optimizerScales[0] = rotation_scale;
+    optimizerScales[1] = rotation_scale;
+    optimizerScales[2] = rotation_scale;
+    optimizerScales[3] = rotation_scale;
+    optimizerScales[4] = translation_scale;
+    optimizerScales[5] = translation_scale;
+    optimizerScales[6] = translation_scale;
+
+    registration->GetOptimizer()->SetScales(optimizerScales);
+}
+
+void
 set_optimization_scales_affine (RegistrationType::Pointer registration, 
 				Stage_Parms* stage)
 {
@@ -441,11 +457,18 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 
 void
 set_optimization (RegistrationType::Pointer registration,
-		  Stage_Parms* stage)
+    Stage_Parms* stage)
 {
-    if ((stage->xform_type == STAGE_TRANSFORM_TRANSLATION) && 
-		(stage->optim_type == OPTIMIZATION_VERSOR)) 
-			stage->optim_type = OPTIMIZATION_RSG;
+    if (stage->xform_type == STAGE_TRANSFORM_QUATERNION)
+    {
+	stage->optim_type = OPTIMIZATION_QUAT;
+    }
+    else if (stage->optim_type == OPTIMIZATION_VERSOR
+	&& (stage->xform_type == STAGE_TRANSFORM_TRANSLATION
+	    || stage->xform_type == STAGE_TRANSFORM_AFFINE))
+    {
+	stage->optim_type = OPTIMIZATION_RSG;
+    }
 
     switch (stage->optim_type) {
     case OPTIMIZATION_AMOEBA:
@@ -456,6 +479,9 @@ set_optimization (RegistrationType::Pointer registration,
 	break;
     case OPTIMIZATION_VERSOR:
 	set_optimization_versor(registration,stage);
+	break;
+    case OPTIMIZATION_QUAT:
+	set_optimization_quat(registration,stage);
 	break;
     case OPTIMIZATION_LBFGS:
 	set_optimization_lbfgs(registration,stage);
@@ -470,6 +496,9 @@ set_optimization (RegistrationType::Pointer registration,
 	break;
     case STAGE_TRANSFORM_VERSOR:
 	set_optimization_scales_versor (registration, stage);
+	break;
+    case STAGE_TRANSFORM_QUATERNION:
+	set_optimization_scales_quaternion (registration, stage);
 	break;
     case STAGE_TRANSFORM_AFFINE:
 	set_optimization_scales_affine (registration, stage);

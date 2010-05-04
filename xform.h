@@ -6,6 +6,7 @@
 
 #include "itkTranslationTransform.h"
 #include "itkVersorRigid3DTransform.h"
+#include "itkQuaternionRigidTransform.h"
 #include "itkAffineTransform.h"
 #include "itkBSplineDeformableTransform.h"
 #include "itkThinPlateSplineKernelTransform.h"
@@ -23,18 +24,20 @@ enum XFormInternalType {
     XFORM_NONE			= 0,
     XFORM_ITK_TRANSLATION	= 1,
     XFORM_ITK_VERSOR		= 2,
-    XFORM_ITK_AFFINE		= 3,
-    XFORM_ITK_BSPLINE		= 4,
-    XFORM_ITK_TPS		= 5,
-    XFORM_ITK_VECTOR_FIELD	= 6,
-    XFORM_GPUIT_BSPLINE		= 7,
-    XFORM_GPUIT_VECTOR_FIELD	= 8
+    XFORM_ITK_QUATERNION	= 3,
+    XFORM_ITK_AFFINE		= 4,
+    XFORM_ITK_BSPLINE		= 5,
+    XFORM_ITK_TPS		= 6,
+    XFORM_ITK_VECTOR_FIELD	= 7,
+    XFORM_GPUIT_BSPLINE		= 8,
+    XFORM_GPUIT_VECTOR_FIELD	= 9
 };
 
 
 /* itk basic transforms */
 typedef itk::TranslationTransform < double, Dimension > TranslationTransformType;
 typedef itk::VersorRigid3DTransform < double > VersorTransformType;
+typedef itk::QuaternionRigidTransform < double > QuaternionTransformType;
 typedef itk::AffineTransform < double, Dimension > AffineTransformType;
 
 /* itk B-spline transforms */
@@ -66,6 +69,7 @@ public:
     TranslationTransformType::Pointer m_trn;
     VersorTransformType::Pointer m_vrs;
     AffineTransformType::Pointer m_aff;
+    QuaternionTransformType::Pointer m_quat;
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
     TPSTransformType::Pointer m_itk_tps;
@@ -86,6 +90,7 @@ public:
 	m_type = xf.m_type;
 	m_trn = xf.m_trn;
 	m_vrs = xf.m_vrs;
+	m_quat = xf.m_quat;
 	m_aff = xf.m_aff;
 	m_itk_vf = xf.m_itk_vf;
 	m_itk_bsp = xf.m_itk_bsp;
@@ -105,6 +110,7 @@ public:
 	m_type = XFORM_NONE;
 	m_trn = 0;
 	m_vrs = 0;
+	m_quat = 0;
 	m_aff = 0;
 	m_itk_bsp = 0;
 	m_itk_tps = 0;
@@ -122,6 +128,12 @@ public:
 	    print_and_exit ("Typecast error in get_vrs ()\n");
 	}
 	return m_vrs;
+    }
+    QuaternionTransformType::Pointer get_quat () {
+	if (m_type != XFORM_ITK_QUATERNION) {
+	    print_and_exit ("Typecast error in get_quat()\n");
+	}
+	return m_quat;
     }
     AffineTransformType::Pointer get_aff () {
 	if (m_type != XFORM_ITK_AFFINE) {
@@ -169,6 +181,11 @@ public:
 	m_type = XFORM_ITK_VERSOR;
 	m_vrs = vrs;
     }
+    void set_quat (QuaternionTransformType::Pointer quat) {
+	clear ();
+	m_type = XFORM_ITK_QUATERNION;
+	m_quat = quat;
+    }
     void set_aff (AffineTransformType::Pointer aff) {
 	clear ();
 	m_type = XFORM_ITK_AFFINE;
@@ -205,6 +222,7 @@ plastimatch1_EXPORT void load_xform (Xform *xf, char* fn);
 plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
 void xform_to_trn (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
+void xform_to_quat (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_aff (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 plastimatch1_EXPORT DeformationFieldType::Pointer 
 xform_gpuit_vf_to_itk_vf (

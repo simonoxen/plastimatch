@@ -8,6 +8,7 @@
 #include "itkArray.h"
 #include "itkResampleImageFilter.h"
 #include "itkBSplineResampleImageFunction.h"
+#include "itkTransformFileWriter.h"
 #include "xform.h"
 #include "plm_registration.h"
 #include "plm_image.h"
@@ -301,6 +302,27 @@ load_gpuit_bsp (Xform *xf, char* fn)
     xf->set_gpuit_bsp (bxf);
 }
 
+template< class T >
+static void
+itk_xform_save (T transform, char *filename)
+{
+    typedef itk::TransformFileWriter TransformWriterType;
+    TransformWriterType::Pointer outputTransformWriter;
+	
+    outputTransformWriter= TransformWriterType::New();
+    outputTransformWriter->SetFileName( filename );
+    outputTransformWriter->SetInput( transform );
+    try
+    {
+	outputTransformWriter->Update();
+    }
+    catch (itk::ExceptionObject &err)
+    {
+	std::cerr << err << std::endl;
+	print_and_exit ("Error writing file: %s\n", filename);
+    }
+}
+
 void
 save_xform_translation (TranslationTransformType::Pointer transform, char* filename)
 {
@@ -315,6 +337,8 @@ save_xform_translation (TranslationTransformType::Pointer transform, char* filen
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
+
+    itk_xform_save (transform, filename);
 }
 
 void
@@ -406,12 +430,18 @@ save_xform (Xform *xf, char* fn)
     switch (xf->m_type) {
     case XFORM_ITK_TRANSLATION:
 	save_xform_translation (xf->get_trn(), fn);
+	//itk_xform_save (xf->get_trn(), fn);
 	break;
     case XFORM_ITK_VERSOR:
 	save_xform_versor (xf->get_vrs(), fn);
+	//itk_xform_save (xf->get_vrs(), fn);
+	break;
+    case XFORM_ITK_QUATERNION:
+	itk_xform_save (xf->get_quat(), fn);
 	break;
     case XFORM_ITK_AFFINE:
 	save_xform_affine (xf->get_aff(), fn);
+	//itk_xform_save (xf->get_aff(), fn);
 	break;
     case XFORM_ITK_BSPLINE:
 	save_xform_itk_bsp (xf->get_bsp(), fn);
@@ -499,6 +529,13 @@ init_versor_default (Xform *xf_out)
 }
 
 static void
+init_quaternion_default (Xform *xf_out)
+{
+    QuaternionTransformType::Pointer quat = QuaternionTransformType::New();
+    xf_out->set_quat (quat);
+}
+
+static void
 init_affine_default (Xform *xf_out)
 {
     AffineTransformType::Pointer aff = AffineTransformType::New();
@@ -527,6 +564,14 @@ xform_trn_to_aff (Xform *xf_out, Xform* xf_in)
 {
     init_affine_default (xf_out);
     xf_out->get_aff()->SetOffset(xf_in->get_trn()->GetOffset());
+}
+
+void
+xform_vrs_to_quat (Xform *xf_out, Xform* xf_in)
+{
+    init_quaternion_default (xf_out);
+    xf_out->get_quat()->SetMatrix(xf_in->get_vrs()->GetRotationMatrix());
+    xf_out->get_quat()->SetOffset(xf_in->get_vrs()->GetOffset());
 }
 
 void
@@ -1351,6 +1396,7 @@ xform_to_trn (Xform *xf_out,
 	*xf_out = *xf_in;
 	break;
     case XFORM_ITK_VERSOR:
+    case XFORM_ITK_QUATERNION:
     case XFORM_ITK_AFFINE:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
@@ -1383,6 +1429,7 @@ xform_to_vrs (Xform *xf_out,
 	*xf_out = *xf_in;
 	break;
     case XFORM_ITK_AFFINE:
+    case XFORM_ITK_QUATERNION:
     case XFORM_ITK_BSPLINE:
     case XFORM_ITK_TPS:
     case XFORM_ITK_VECTOR_FIELD:
@@ -1391,6 +1438,38 @@ xform_to_vrs (Xform *xf_out,
     case XFORM_GPUIT_BSPLINE:
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, gpuit xforms not fully implemented\n");
+	break;
+    default:
+	print_and_exit ("Program error.  Bad xform type.\n");
+	break;
+    }
+}
+
+void
+xform_to_quat (Xform *xf_out, 
+    Xform *xf_in, 
+    Plm_image_header *pih)
+{
+    switch (xf_in->m_type) {
+    case XFORM_NONE:
+	init_quaternion_default (xf_out);
+	break;
+    case XFORM_ITK_TRANSLATION:
+	print_and_exit ("Sorry, couldn't convert to quaternion\n");
+	break;
+    case XFORM_ITK_VERSOR:
+	xform_vrs_to_quat (xf_out, xf_in);
+	break;
+    case XFORM_ITK_QUATERNION:
+	*xf_out = *xf_in;
+	break;
+    case XFORM_ITK_AFFINE:
+    case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
+    case XFORM_ITK_VECTOR_FIELD:
+    case XFORM_GPUIT_BSPLINE:
+    case XFORM_GPUIT_VECTOR_FIELD:
+	print_and_exit ("Sorry, couldn't convert to quaternion\n");
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");
@@ -1412,6 +1491,9 @@ xform_to_aff (Xform *xf_out,
 	break;
     case XFORM_ITK_VERSOR:
 	xform_vrs_to_aff (xf_out, xf_in);
+	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to aff\n");
 	break;
     case XFORM_ITK_AFFINE:
 	*xf_out = *xf_in;
@@ -1449,6 +1531,9 @@ xform_to_itk_bsp (Xform *xf_out,
 	break;
     case XFORM_ITK_VERSOR:
 	xform_vrs_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
+	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to itk bspline\n");
 	break;
     case XFORM_ITK_AFFINE:
 	xform_aff_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
@@ -1492,6 +1577,9 @@ xform_to_itk_bsp_nobulk (
     case XFORM_ITK_VERSOR:
 	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
 	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to itk bspline nobulk\n");
+	break;
     case XFORM_ITK_AFFINE:
 	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
 	break;
@@ -1530,6 +1618,9 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 	break;
     case XFORM_ITK_VERSOR:
 	vf = xform_itk_any_to_itk_vf (xf_in->get_vrs(), pih);
+	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to itk vf\n");
 	break;
     case XFORM_ITK_AFFINE:
 	vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
@@ -1579,6 +1670,9 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
     case XFORM_ITK_VERSOR:
 	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to gpuit bsp\n");
+	break;
     case XFORM_ITK_AFFINE:
 	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
@@ -1617,6 +1711,9 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 	break;
     case XFORM_ITK_VERSOR:
 	print_and_exit ("Sorry, itk_versor to gpuit_vf not implemented\n");
+	break;
+    case XFORM_ITK_QUATERNION:
+	print_and_exit ("Sorry, couldn't convert to gpuit vf\n");
 	break;
     case XFORM_ITK_AFFINE:
 	print_and_exit ("Sorry, itk_affine to gpuit_vf not implemented\n");

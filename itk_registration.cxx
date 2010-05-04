@@ -443,6 +443,19 @@ set_transform_versor (RegistrationType::Pointer registration,
 }
 
 void
+set_transform_quaternion (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    Xform *xf_in,
+    Stage_Parms* stage)
+{
+    Plm_image_header pih;
+    pih.set_from_itk_image (registration->GetFixedImage());
+    xform_to_quat (xf_out, xf_in, &pih);
+    registration->SetTransform (xf_out->get_quat());
+}
+
+void
 set_transform_affine (RegistrationType::Pointer registration,
 			Xform *xf_out,
 			Xform *xf_in,
@@ -481,6 +494,9 @@ set_transform (RegistrationType::Pointer registration,
 	break;
     case STAGE_TRANSFORM_VERSOR:
 	set_transform_versor (registration, xf_out, xf_in, stage);
+	break;
+    case STAGE_TRANSFORM_QUATERNION:
+	set_transform_quaternion (registration, xf_out, xf_in, stage);
 	break;
     case STAGE_TRANSFORM_AFFINE:
 	set_transform_affine (registration, xf_out, xf_in, stage);
@@ -540,6 +556,13 @@ set_xf_out (Xform *xf_out,
 	    typedef VersorTransformType * XfPtr;
 	    XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
 	    xf_out->set_vrs (transform);
+	}
+	break;
+    case STAGE_TRANSFORM_QUATERNION:
+	{
+	    typedef QuaternionTransformType * XfPtr;
+	    XfPtr transform = static_cast<XfPtr>(registration->GetTransform());
+	    xf_out->set_quat (transform);
 	}
 	break;
     case STAGE_TRANSFORM_AFFINE:
@@ -618,44 +641,43 @@ do_itk_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
 void
 do_itk_center_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
 {
-	
-	typedef itk::CenteredTransformInitializer < VersorTransformType, FloatImageType, FloatImageType > TransformInitializerType;
-	RegistrationType::Pointer registration = RegistrationType::New();
+    typedef itk::CenteredTransformInitializer < VersorTransformType, FloatImageType, FloatImageType > TransformInitializerType;
+    RegistrationType::Pointer registration = RegistrationType::New();
 
     /* Subsample fixed & moving images */
     //FloatImageType::Pointer fixed_ss
-	   // = subsample_image (regd->fixed_image->itk_float(), 
-			 //      stage->resolution[0], 
-			 //      stage->resolution[1], 
-			 //      stage->resolution[2], 
-			 //      stage->background_val);
+    // = subsample_image (regd->fixed_image->itk_float(), 
+    //      stage->resolution[0], 
+    //      stage->resolution[1], 
+    //      stage->resolution[2], 
+    //      stage->background_val);
     //FloatImageType::Pointer moving_ss
-	   // = subsample_image (regd->moving_image->itk_float(), 
-			 //      stage->resolution[0], 
-			 //      stage->resolution[1], 
-			 //      stage->resolution[2], 
-			 //      stage->background_val);
+    // = subsample_image (regd->moving_image->itk_float(), 
+    //      stage->resolution[0], 
+    //      stage->resolution[1], 
+    //      stage->resolution[2], 
+    //      stage->background_val);
 
     registration->SetFixedImage (regd->fixed_image->itk_float());
     registration->SetMovingImage (regd->moving_image->itk_float());
 
-	VersorTransformType::Pointer trn= VersorTransformType::New();
-	TransformInitializerType::Pointer initializer = TransformInitializerType::New();
+    VersorTransformType::Pointer trn = VersorTransformType::New();
+    TransformInitializerType::Pointer initializer = TransformInitializerType::New();
 	
 	
     initializer->SetTransform(trn);
     initializer->SetFixedImage(registration->GetFixedImage());
     initializer->SetMovingImage(registration->GetMovingImage());
-	initializer->GeometryOn();
+    initializer->GeometryOn();
 
 	
-	std::cout << "Calling Initialize Transform" << std::endl;
-	initializer->InitializeTransform();
-	std::cout << "Initialization done." << std::endl;
-   // std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
-	registration->SetTransform(trn);
-	set_xf_out (xf_out, registration, stage);
+    std::cout << "Calling Initialize Transform" << std::endl;
+    initializer->InitializeTransform();
+    std::cout << "Initialization done." << std::endl;
+    // std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
+    registration->SetTransform(trn);
+    set_xf_out (xf_out, registration, stage);
 
-	//initializer->Delete();
-	std::cout << "Centering..." << std::endl;
+    //initializer->Delete();
+    std::cout << "Centering..." << std::endl;
 }
