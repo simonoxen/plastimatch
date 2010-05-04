@@ -225,7 +225,7 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 
 #if defined (commentout)
     /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir) {
+    if (dicom_dir[0] != '\0') {
 	gs.load (dicom_dir);
 	gs.get_best_ct ();
 	if (gs.m_have_ct) {

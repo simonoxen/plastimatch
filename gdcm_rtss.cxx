@@ -331,7 +331,7 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     printf ("Hello from gdcm_rtss_save\n");
 
     /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir) {
+    if (dicom_dir[0] != '\0') {
 	gs.load (dicom_dir);
 	gs.get_best_ct ();
 	if (gs.m_have_ct) {
