@@ -121,13 +121,24 @@ __global__ void bspline_cuda_update_grad_kernel
  int num_vox,
  int num_elems);
 
-__global__ void kernel_bspline_MI_a_hist_fix
-(
- float *f_hist_seg,
- float *fixed,
- float offset,
- float delta,
- long bins);
+
+__global__ void kernel_bspline_MI_a_hist_fix (
+    float* f_hist_seg,	// partial histogram (moving image)
+    float* f_img,	// moving image voxels
+    float offset,	// histogram offset
+    float delta,	// histogram delta
+    long bins,		// # histogram bins
+    int3 vpr,		// voxels per region
+    int3 fdim,		// fixed  image dimensions
+    int3 mdim,		// moving image dimensions
+    int3 rdim,		//       region dimensions
+    float3 img_origin,	// image origin
+    float3 img_spacing,	// image spacing
+    float3 mov_offset,	// moving image offset
+    float3 mov_ps,	// moving image pixel spacing
+    int* c_lut,		// DEBUG
+    float* q_lut,	// DEBUG
+    float* coeff);	// DEBUG
 
 
 __global__ void kernel_bspline_MI_a_hist_mov (

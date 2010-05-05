@@ -89,8 +89,8 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
     parms->mi_hist.j_hist = 0;
-    parms->mi_hist.fixed.bins = 40;
-    parms->mi_hist.moving.bins = 40;
+    parms->mi_hist.fixed.bins = 20;
+    parms->mi_hist.moving.bins = 20;
 }
 
 void
