@@ -1,199 +1,320 @@
+/* This program is used to convert from mha to an XiO dose file, given another XiO dose file as template */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "plm_config.h"
 #include "plm_int.h"
 
-/* function to perform endian swaps when going from Big-Endian
- * to little-endian or vice-versa
- */
-void int_endian(int *arg)
-{ char lenbuf[4];
-  char tmpc;
-  memcpy(lenbuf,(const char *)arg,4);
-  tmpc=lenbuf[0]; lenbuf[0]=lenbuf[3]; lenbuf[3]=tmpc;
-  tmpc=lenbuf[1]; lenbuf[1]=lenbuf[2]; lenbuf[2]=tmpc;
-  memcpy((char *)arg,lenbuf,4);
+#define XIO_VERSION_450       1
+#define XIO_VERSION_421       2
+#define XIO_VERSION_UNKNOWN   3
+
+#define XIO_DATATYPE_UINT32     5
+
+// Swap endianness of 32-bit integer
+void
+int_endian (int *arg)
+{
+    char lenbuf[4];
+    char tmpc;
+    memcpy (lenbuf, (const char *) arg, 4);
+    tmpc = lenbuf[0]; lenbuf[0] = lenbuf[3]; lenbuf[3] = tmpc;
+    tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
+    memcpy ((char *) arg, lenbuf, 4);
 }
 
 int
 main (int argc, char *argv[])
 {
-    FILE *ifp; FILE *ofp;FILE *ifp2; 
+    FILE *ifp; FILE *ofp; FILE *ifp2;
 
-    long offset; //deleteme when done debugging (along with offset).
+    char buf[1024];
 
-    char *mode = {"rc"}; /*rt vs. rc */
-    char myarray[200];
-    char prevline[200];
-    char currentline[200];
     char *result = NULL;
+    size_t read_result;
+
     int i; int j; int k;
-    double CMS_rx; double CMS_ry; double CMS_rz;	double MHA_rx; double MHA_ry; double MHA_rz;
+    double CMS_rx; double CMS_ry; double CMS_rz; double MHA_rx; double MHA_ry; double MHA_rz;
     double CMS_ox; double CMS_oy; double CMS_oz; double MHA_ox; double MHA_oy; double MHA_oz;
     int CMS_nPtsX; int CMS_nPtsY; int CMS_nPtsZ; int MHA_nPtsX; int MHA_nPtsY; int MHA_nPtsZ;
-    double MHA_dx; double MHA_dy; double MHA_dz;//element spacing
-    double MHA_startX; double MHA_startY; double MHA_startZ; //offset (top left corner of first slice)
+    double MHA_dx; double MHA_dy; double MHA_dz; // Element spacing
+    double MHA_startX; double MHA_startY; double MHA_startZ; // Offset (top left corner of first slice)
 
-    int dose; short dose2;
+    u8 header;
+    u32 dose; float dose2;
 
-    int o, p, q, l, m, n;
-    int ***data;
+    int o, p, q;
+    u32 ***data;
 
-    printf ("Size of int = %lu\n", sizeof(int));
+    int rc;
+    int dummy;
 
-    l = 520; n = 520; m = 520;
+    // XiO header info
+    int xio_version;
+    int xio_sources;
+    double xio_dose_scalefactor, xio_dose_weight;
+    int xio_datatype;
+    // Dimensions
+    double rx; double ry; double rz;
+    double ox; double oy; double oz;
+    int nx; int ny; int nz;
 
-    data = malloc (l*sizeof(int**));
-    for (o=0; o<l; o++)
-    {
-	data[o] = malloc (m*sizeof(int*));
-	for (p=0; p<m; p++)
-	{
-	    data[o][p] = malloc (n*sizeof(int));
-	    for (q=0; q<n; q++)
-	    {
-		data[o][p][q] = 0;
-	    }
-	}
+    long header_size;
+
+    if (argc != 4) {
+        printf ("Usage: mha2cms.c mhafile.mha newdosename dosetemplate");
+        exit (0);
     }
 
-
-    if(argc!=4){
-	printf("Usage: mha2cms.c mhafile.mha newdosename dosetemplate");
-	exit(0);}
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
-    //ifp = fopen("dose1.mha", mode);
-    ifp = fopen(argv[1], mode);
-    //////////////////////////////////////////////////////////
-    //////////////////////////////////////////////////////////
+    // Open input file
+    ifp = fopen (argv[1], "rb");
 
     if (ifp == NULL) {
-	fprintf(stderr, "Can't open input file in.list!\n");
-	exit(1);
+        fprintf (stderr, "ERROR: Cannot open input file.\n");
+        exit (1);
     }
 
+//  *** PARSE MHA HEADER ***
 
-    for(i = 0; i < 12; i++){
-	fgets(myarray, sizeof(char)*500, ifp);
-	//printf("LINE: %s",array);
-	result = strstr(myarray,"DimSize");
-	if (result !=NULL){
-	    result = strtok(result," ");
-	    result = strtok(NULL," "); //skip the stuff before the equal sign
-	    result = strtok(NULL," ");
-	    MHA_nPtsX = atoi(result);
-	    result = strtok(NULL," ");
-	    MHA_nPtsY = atoi(result);
-	    result = strtok(NULL," ");
-	    MHA_nPtsZ = atoi(result);
-	    printf("MHA nPts (x,y,z) are: %d%s%d%s%d\n", MHA_nPtsX,",",MHA_nPtsY,",",MHA_nPtsZ);
-	}
+    printf ("\n*** MHA HEADER\n");
 
-	result = strstr(myarray,"ElementSpacing");
-	if (result !=NULL){
-	    result = strtok(result," ");
-	    result = strtok(NULL," "); //skip the stuff before the equal sign
-	    result = strtok(NULL," ");
-	    MHA_dx = atof(result);
-	    result = strtok(NULL," ");
-	    MHA_dy = atof(result);
-	    result = strtok(NULL," ");
-	    MHA_dz = atof(result);
-	    printf("MHA_dimSpacings (x,y,z) are: %f%s%f%s%f\n", MHA_dx,",",MHA_dy,",",MHA_dz);
-	}
+    for (i = 0; i < 12; i++) {
+        fgets (buf, sizeof(buf), ifp);
 
-	result = strstr(myarray,"Offset");
-	if (result !=NULL){
-	    result = strtok(result," ");
-	    result = strtok(NULL," "); //skip the stuff before the equal sign
-	    result = strtok(NULL," ");
-	    MHA_startX = atof(result);
-	    result = strtok(NULL," ");
-	    MHA_startY = atof(result);
-	    result = strtok(NULL," ");
-	    MHA_startZ = atof(result);
-	    printf("MHA_startCoords (x,y,z) is: %f%s%f%s%f\n", MHA_startX,",",MHA_startY,",",MHA_startZ);
-	}
+        result = strstr (buf, "DimSize");
+        if (result != NULL) {
+            result = strtok (result, " ");
+            result = strtok (NULL, " "); // Skip the stuff before the equal sign
+            result = strtok (NULL, " ");
+            MHA_nPtsX = atoi (result);
+            result = strtok (NULL, " ");
+            MHA_nPtsY = atoi (result);
+            result = strtok (NULL, " ");
+            MHA_nPtsZ = atoi (result);
+            printf ("MHA nPts (x,y,z) are: %d%s%d%s%d\n", MHA_nPtsX, ",", MHA_nPtsY, ",", MHA_nPtsZ);
+        }
+
+        result = strstr (buf, "ElementSpacing");
+        if (result != NULL) {
+            result = strtok (result, " ");
+            result = strtok (NULL, " "); // Skip the stuff before the equal sign
+            result = strtok (NULL, " ");
+            MHA_dx = atof (result);
+            result = strtok (NULL, " ");
+            MHA_dy = atof (result);
+            result = strtok (NULL, " ");
+            MHA_dz = atof (result);
+            printf ("MHA_dimSpacings (x,y,z) are: %f%s%f%s%f\n", MHA_dx, ",", MHA_dy, ",", MHA_dz);
+        }
+
+        result = strstr (buf, "Offset");
+        if (result != NULL) {
+            result = strtok (result, " ");
+            result = strtok (NULL, " "); //skip the stuff before the equal sign
+            result = strtok (NULL, " ");
+            MHA_startX = atof (result);
+            result = strtok (NULL, " ");
+            MHA_startY = atof (result);
+            result = strtok (NULL, " ");
+            MHA_startZ = atof (result);
+            printf ("MHA_startCoords (x,y,z) is: %f%s%f%s%f\n", MHA_startX, ",", MHA_startY, ",", MHA_startZ);
+        }
     }
 
+    MHA_rx = MHA_dx * (MHA_nPtsX - 1); CMS_rx = MHA_rx;
+    MHA_ry = MHA_dy * (MHA_nPtsY - 1); CMS_rz = MHA_ry;
+    MHA_rz = MHA_dz * (MHA_nPtsZ - 1); CMS_ry = MHA_rz;
+    printf ("MHA_ranges (x,y,z) are: %f%s%f%s%f\n", MHA_rx, ",", MHA_ry, ",", MHA_rz);
+    printf ("CMS_ranges (x,y,z) are: %f%s%f%s%f\n", CMS_rx, ",", CMS_ry, ",", CMS_rz);
 
-    MHA_rx = MHA_dx*(MHA_nPtsX-1); CMS_rx=MHA_rx; 
-    MHA_ry = MHA_dy*(MHA_nPtsY-1); CMS_rz=MHA_ry; 
-    MHA_rz = MHA_dz*(MHA_nPtsZ-1); CMS_ry=MHA_rz;	
-    printf("MHA_ranges (x,y,z) are: %f%s%f%s%f\n", MHA_rx,",",MHA_ry,",",MHA_rz);
-    printf("CMS_ranges (x,y,z) are: %f%s%f%s%f\n", CMS_rx,",",CMS_ry,",",CMS_rz);
+    MHA_ox = MHA_startX + MHA_rx / 2;
+    MHA_oy = MHA_startY + MHA_ry / 2;
+    MHA_oz = MHA_startZ + MHA_rz / 2;
 
-    MHA_ox = MHA_startX + MHA_rx/2;
-    MHA_oy = MHA_startY + MHA_ry/2;
-    MHA_oz = MHA_startZ + MHA_rz/2;
-
-    CMS_nPtsX=MHA_nPtsX; CMS_nPtsY=MHA_nPtsZ; CMS_nPtsZ=MHA_nPtsY;
-    CMS_ox=MHA_ox; CMS_oy=MHA_oz; CMS_oz = -MHA_oy;
+    CMS_nPtsX = MHA_nPtsX; CMS_nPtsY = MHA_nPtsZ; CMS_nPtsZ = MHA_nPtsY;
+    CMS_ox = MHA_ox; CMS_oy = MHA_oz; CMS_oz = -MHA_oy;
 
     //KeyLine = '0,'+str(CMS_rx)+','+str(CMS_rz)+','+str(CMS_ry)+','+str(CMS_ox)+','+str(CMS_oz)+','+str(CMS_oy)+','+str(CMS_nxPts)+','+str(CMS_nzPts)+','+str(CMS_nyPts)
-    printf("Keyline is: %s%f%s%f%s%f%s%f%s%f%s%f%s%d%s%d%s%d\n","0,",CMS_rx,",",CMS_rz,",",CMS_ry,",",CMS_ox,",",CMS_oz,",",CMS_oy,",",CMS_nPtsX,",",CMS_nPtsZ,",",CMS_nPtsY);
+    printf ("Keyline is: %s%f%s%f%s%f%s%f%s%f%s%f%s%d%s%d%s%d\n", "0,", CMS_rx, ",", CMS_rz, ",", CMS_ry, ",", CMS_ox, ",", CMS_oz, ",", CMS_oy, ",", CMS_nPtsX, ",", CMS_nPtsZ, ",", CMS_nPtsY);
 
+//  *** PARSE DOSE TEMPLATE ***
 
-    offset = ftell (ifp);
-    printf ("My offset is %ld\n", offset);
-    printf ("This far from the end %d\n", MHA_nPtsX*MHA_nPtsY*MHA_nPtsZ*2);
-    //MHA_nPtsX = 262; MHA_nPtsY = 154; MHA_nPtsZ = 193;
-    fseek (ifp, -MHA_nPtsX*MHA_nPtsY*MHA_nPtsZ*2, SEEK_END);
-	
-    for(k = 0; k < MHA_nPtsZ; k++){
-	for(j = 0; j < MHA_nPtsY; j++){
-	    for(i = 0; i < MHA_nPtsX; i++){ 
-		fread(&dose2, 2, 1, ifp);
-		dose=dose2;
-		int_endian(&dose);
-		data[i][k][j]=dose;  //doesn't really matter what order i,j,k in this line is in b/c it just serves as a unique identifier for each term. what matters is the order that its read/written
-	    }
-	}
-    }
-
-
-    offset = ftell (ifp);
-    printf ("My offset is %ld\n", offset); 
-    fclose(ifp);
-
-    ofp = fopen(argv[2], "w");
-    if (ofp==NULL) {
-	printf ("Error: can't create file for writing.\n");
-	return 1;
-    }
-
-    ifp2 = fopen(argv[3], "rt");
+    ifp2 = fopen (argv[3], "rb");
     if (!ifp2) {
-	fclose (ofp);
-	printf ("Error: can't open file for read\n");
-	return 1;
+        printf ("Error: Cannot open dose template for reading.\n");
+        return 1;
     }
 
-    //currentline=str(0);
-    //prevline="empty";
-    for (i = 0; i < 50; i++) {
-	fgets(myarray, sizeof(char)*500, ifp2);
-	printf("LINE: %s",myarray);
-	strcpy(currentline,myarray);
-	printf("LINE2: %s\n",currentline);
-	//currentline=myarray;}
-	if(((currentline[0]=='0')&&(currentline[1]=='\n'))&&((prevline[0]=='0')&&(prevline[1]=='\n'))){
-	    fprintf(ofp,currentline);
-	    printf("Found two zeros!\n");
-	    break;}
-	fprintf(ofp,currentline);
-	strcpy(prevline,currentline);}
+    printf ("\n*** DOSE TEMPLATE HEADER\n");
 
-    for(k = 0; k < MHA_nPtsZ; k++){  
-	for(j = MHA_nPtsY-1; j >= 0; j--){ //going through the CMS Z
-	    for(i = 0; i < MHA_nPtsX; i++){ 
-		fwrite(&(data[i][k][j]), 4, 1, ofp);
-	    }
-	}
+    // Line 1: XiO file format version
+    fgets (buf, 1024, ifp2);
+    if (!strncmp (buf, "006d101e", strlen ("006d101e"))) {
+        xio_version = XIO_VERSION_450;
+    } else if (!strncmp (buf, "004f101e", strlen ("004f101e"))) {
+        xio_version = XIO_VERSION_421;
+    } else {
+        xio_version = XIO_VERSION_UNKNOWN;
     }
-    fclose(ofp);
-    fclose(ifp2);
+
+    if (xio_version != XIO_VERSION_450
+        && xio_version != XIO_VERSION_421) {
+        printf ("WARNING: Unknown XiO file format version: %s\n", buf);
+    }
+
+    // Skipping line
+    fgets (buf, 1024, ifp2);
+
+    // Line 2: Number of subplans or beams
+    fgets (buf, 1024, ifp2);
+    rc = sscanf (buf, "%1d", &xio_sources);
+
+    if (rc != 1) {
+        fprintf (stderr, "ERROR: Cannot parse sources/subplans: %s\n", buf);
+        fclose (ifp);
+        fclose (ifp2);
+        exit (1);
+    }
+
+    printf ("Dose file is a sum of %d sources/subplans:\n", xio_sources);
+
+    // One line for each source/subplan
+    for (i = 1; i <= xio_sources; i++) {
+        fgets (buf, 1024, ifp2);
+        printf ("Source/subplan %d: %s", i, buf);
+    }
+
+    // Dose normalization info
+    fgets (buf, 1024, ifp2);
+
+    rc = sscanf (buf, "%lf,%lf", &xio_dose_scalefactor, &xio_dose_weight);
+
+    if (rc != 2) {
+        fprintf (stderr, "ERROR: Cannot parse dose normalization: %s\n", buf);
+        exit (1);
+    }
+
+    printf ("Dose scale factor = %f\n", xio_dose_scalefactor);
+    printf ("Dose weight = %f\n", xio_dose_weight);
+
+    // Skipping line
+    fgets (buf, 1024, ifp2);
+
+    // Data type
+    fgets (buf, 1024, ifp2);
+    rc = sscanf (buf, "%1d", &xio_datatype);
+
+    if (rc != 1) {
+        fprintf (stderr, "ERROR: Cannot parse datatype: %s\n", buf);
+        exit (1);
+    }
+
+    if (xio_datatype != XIO_DATATYPE_UINT32) {
+        fprintf (stderr, "ERROR: Only unsigned 32-bit integer data is currently supported: %s\n", buf);
+        exit (1);
+    }
+
+    // Dose cube definition
+    fgets (buf, 1024, ifp2);
+
+    rc = sscanf (buf, "%d,%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
+                 &dummy, &rx, &ry, &rz, &ox, &oy, &oz, &nx, &nz, &ny);
+
+    if (rc != 10) {
+        fprintf (stderr, "ERROR: Cannot parse dose dose cube definition: %s\n", buf);
+        exit (1);
+    }
+
+    printf ("rx = %lf, ry = %lf, rz = %lf\n", rx, ry, rz);
+    printf ("ox = %lf, oy = %lf, oz = %lf\n", ox, oy, oz);
+    printf ("nx = %d, ny = %d, nz = %d\n", nx, ny, nz);
+
+    printf ("\n");
+
+    // Skip rest of header
+    fseek (ifp2, -nx * ny * nz * sizeof(dose), SEEK_END);
+    header_size = ftell (ifp2);
+
+//  *** READ MHA DOSE CUBE ***
+
+    // Allocate memory for dose cube
+    data = malloc (MHA_nPtsX * sizeof(float**));
+    for (o = 0; o < MHA_nPtsX; o++) {
+        data[o] = malloc (MHA_nPtsZ * sizeof(float*));
+        for (p = 0; p < MHA_nPtsZ; p++) {
+            data[o][p] = malloc (MHA_nPtsY * sizeof(float));
+            for (q = 0; q < MHA_nPtsY; q++) {
+                data[o][p][q] = 0;
+            }
+        }
+    }
+
+    // Read dose cube
+
+    printf ("Reading dose cube...");
+
+    fseek (ifp, -MHA_nPtsX * MHA_nPtsY * MHA_nPtsZ * sizeof(dose2), SEEK_END);
+
+    for (k = 0; k < MHA_nPtsZ; k++) {
+        for (j = 0; j < MHA_nPtsY; j++) {
+            for (i = 0; i < MHA_nPtsX; i++) {
+                read_result = fread (&dose2, sizeof(dose2), 1, ifp);
+                if (read_result != 1) {
+                    printf ("FAILED.\n");
+                    fprintf (stderr, "ERROR: Cannot read dose cube.\n");
+                    exit (1);
+                }
+                dose = dose2 / xio_dose_weight / xio_dose_scalefactor;
+                int_endian (&dose); // mha is little endian, XiO is big endian
+                data[i][k][j] = dose;
+            }
+        }
+    }
+
+    printf ("Done.\n");
+
+    fclose (ifp);
+
+//  *** WRITE XIO HEADER FROM DOSE TEMPLATE ***
+
+    ofp = fopen (argv[2], "wb");
+    if (ofp == NULL) {
+        printf ("ERROR: Cannot create output file for writing.\n");
+        return 1;
+    }
+
+    printf ("Writing XiO header from dose template, size is %ld...", header_size);
+
+    fseek (ifp2, 0, SEEK_SET);
+
+    for (i = 0; i < header_size; i++) {
+        read_result = fread (&header, sizeof(header), 1, ifp2);
+        if (read_result != 1) {
+            printf ("FAILED.\n");
+            fprintf (stderr, "ERROR: Cannot read dose template header.\n");
+            exit (1);
+        }
+        fwrite (&header, sizeof(header), 1, ofp);
+    }
+
+    printf ("Done.\n");
+
+//  *** WRITE DOSE CUBE FROM MHA FILE ***
+
+    printf ("Writing dose cube...");
+
+    for (k = 0; k < MHA_nPtsZ; k++) {
+        for (j = MHA_nPtsY - 1; j >= 0; j--) { // Going through the CMS Z
+            for (i = 0; i < MHA_nPtsX; i++) {
+                fwrite (&(data[i][k][j]), sizeof(u32), 1, ofp);
+            }
+        }
+    }
+
+    printf ("Done.\n");
+
+    fclose (ofp);
+    fclose (ifp2);
+
     return 0;
 }
