@@ -686,7 +686,15 @@ xform_vrs_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
     xf_out->get_bsp()->SetBulkTransform (xf_in->get_vrs());
 }
-
+static void
+xform_quat_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
+			    const Plm_image_header* pih,
+			    float* grid_spac)
+{
+    init_itk_bsp_default (xf_out);
+    itk_bsp_set_grid_img (xf_out, pih, grid_spac);
+    xf_out->get_bsp()->SetBulkTransform (xf_in->get_quat());
+}
 static void
 xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 			    const Plm_image_header* pih,
@@ -1533,7 +1541,7 @@ xform_to_itk_bsp (Xform *xf_out,
 	xform_vrs_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to itk bspline\n");
+	xform_quat_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_AFFINE:
 	xform_aff_to_itk_bsp_bulk (xf_out, xf_in, pih, grid_spac);
@@ -1578,7 +1586,7 @@ xform_to_itk_bsp_nobulk (
 	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to itk bspline nobulk\n");
+	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_AFFINE:
 	xform_any_to_itk_bsp_nobulk (xf_out, xf_in, pih, grid_spac);
@@ -1620,7 +1628,7 @@ xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih)
 	vf = xform_itk_any_to_itk_vf (xf_in->get_vrs(), pih);
 	break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to itk vf\n");
+	vf = xform_itk_any_to_itk_vf (xf_in->get_quat(), pih);
 	break;
     case XFORM_ITK_AFFINE:
 	vf = xform_itk_any_to_itk_vf (xf_in->get_aff(), pih);
@@ -1671,7 +1679,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_QUATERNION:
-	print_and_exit ("Sorry, couldn't convert to gpuit bsp\n");
+	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
 	break;
     case XFORM_ITK_AFFINE:
 	xform_any_to_gpuit_bsp (xf_out, xf_in, pih, grid_spac);
