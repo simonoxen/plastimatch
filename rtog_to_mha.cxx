@@ -358,7 +358,7 @@ load_rtog_header (RTOG_Header* rtog_header, Program_Parms* parms)
     RTOG_Line rtog_line;
     int imtype = -1;
     int imno = -1;
-    float last_z;
+    float last_z = -100000.0;
     char fn[BUFLEN];
     char key[BUFLEN], val[BUFLEN];
     STRUCTURE* curr_struct = 0;
@@ -828,9 +828,9 @@ void
 load_structure (STRUCTURE* structure, Program_Parms* parms)
 {
     int nlev, scan_no, nseg, npts;
-    Cxt_polyline_Slice* curr_ps;
-    Cxt_polyline* curr_pl;
-    int curr_pt;
+    Cxt_polyline_Slice* curr_ps = 0;
+    Cxt_polyline* curr_pl = 0;
+    int curr_pt = 0;
     char buf[BUFLEN];
     float x, y, z;
 
