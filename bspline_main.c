@@ -6,7 +6,6 @@
     http://en.wikipedia.org/wiki/B-spline
     http://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/surface/bspline-construct.html
     http://graphics.idav.ucdavis.edu/education/CAGDNotes/Quadratic-B-Spline-Surface-Refinement/Quadratic-B-Spline-Surface-Refinement.html
-
     ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
@@ -119,9 +118,10 @@ main (int argc, char* argv[])
 
     /* If using radial basis functions, find coeffs and update vector field */
     if (parms->rbf_radius>0) {
-	printf("Radial basis functions requested, radius %.2f\n", parms->rbf_radius);
+	printf ("Radial basis functions requested, radius %.2f\n", 
+	    parms->rbf_radius);
 	if (!vector_field) {
-	    printf("Sorry, vector field must be present for RBF. Please use -O or -V\n");
+	    printf ("Sorry, vector field must be present for RBF. Please use -O or -V\n");
 	} else {
 	    printf ("Warping image before RBF.\n");
 	    moving_warped = vf_warp (0, moving, vector_field);
@@ -132,7 +132,8 @@ main (int argc, char* argv[])
 		/* Do actual RBF adjustment */
 		bspline_rbf_find_coeffs( vector_field, parms );
 		bspline_rbf_update_vector_field( vector_field, parms );
-		bspline_landmarks_warp (vector_field, parms, bxf, fixed, moving );
+		bspline_landmarks_warp (vector_field, parms, bxf, 
+		    fixed, moving);
 		if (options.warped_landmarks)
 		    bspline_landmarks_write_file (
 			options.warped_landmarks, "warp_and_rbf", 
