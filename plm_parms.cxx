@@ -324,7 +324,37 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
+    else if (!strcmp (key, "young_modulus")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%g", &stage->young_modulus) != 1) {
+	    goto error_exit;
+	}
+    }
+    else if (!strcmp (key, "landmark_stiffness")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%g", &stage->landmark_stiffness) != 1) {
+	    goto error_exit;
+	}
+	}	
+    else if (!strcmp (key, "landmark_flavor")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%c", &stage->landmark_flavor) != 1) {
+	    goto error_exit;
+	}
+    }	
+	else if (!strcmp (key, "fixed_landmarks")) {
+	if (section == 0) goto error_not_global;
+	strncpy (stage->fixed_landmarks_fn, val, _MAX_PATH);
+	}
+    else if (!strcmp (key, "moving_landmarks")) {
+	if (section == 0) goto error_not_global;
+	strncpy (stage->moving_landmarks_fn, val, _MAX_PATH);
+	}
+	else if (!strcmp (key, "warped_landmarks")) {
+	if (section == 0) goto error_not_global;
+	strncpy (stage->warped_landmarks_fn, val, _MAX_PATH);
+	}
+	else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
 		&(stage->fixed_subsample_rate[0]), 

@@ -106,7 +106,7 @@ main (int argc, char* argv[])
 	if (options.warped_landmarks)
 	    bspline_landmarks_write_file( options.warped_landmarks, "warped", 
 		parms->landmarks->warped_landmarks, 
-		parms->landmarks->num_landmarks,  fixed->offset );
+		parms->landmarks->num_landmarks );
     }
 
     /* If using radial basis functions, find coeffs and update vector field */

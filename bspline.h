@@ -63,6 +63,13 @@ struct BSPLINE_Xform_struct {
     int* c_lut;                  /* Lookup table for control point indices */
     int* qidx_lut;               /* Lookup volume for region offset */
     float* q_lut;                /* Lookup table for influence multipliers */
+
+	float* q_dxdyz_lut;          /* Lookup table for influence of dN1/dx*dN2/dy*N3 */
+	float* q_xdydz_lut;          /* Lookup table for influence of N1*dN2/dy*dN3/dz */
+	float* q_dxydz_lut;          /* Lookup table for influence of dN1/dx*N2*dN3/dz */
+	float* q_d2xyz_lut;          /* Lookup table for influence of (d2N1/dx2)*N2*N3 */
+	float* q_xd2yz_lut;          /* Lookup table for influence of N1*(d2N2/dy2)*N3 */
+	float* q_xyd2z_lut;          /* Lookup table for influence of N1*N2*(d2N3/dz2) */
 };
 
 typedef struct BSPLINE_Score_struct BSPLINE_Score;

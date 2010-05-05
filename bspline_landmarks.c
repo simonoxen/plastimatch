@@ -142,15 +142,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	    }
 	}
     }
-
-    //re-basing landmarks to the origin of fixed image
-    for (i = 0; i < blm->num_landmarks; i++) {
-	for (d = 0; d < 3; d++) {
-	    blm->fixed_landmarks[i*3 + d] -= fixed->offset[d];
-	    blm->moving_landmarks[i*3 + d] -= moving->offset[d];
-	}
-    }
-    printf ("Adjusting complete.\n");
+  printf ("Adjusting complete.\n");
 }
 
 Bspline_landmarks*
@@ -188,7 +180,7 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
     return blm;
 }
 
-void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset)
+void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n )
 {
     FILE *fp;
     int lidx;
@@ -198,12 +190,12 @@ void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, 
     }
     fprintf(fp,"# name = %s\n",title);
 
-    /* Changing LPS to RAS and shifting */
-    for(lidx=0;lidx<n;lidx++)
-	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-	    -offset[0]-coords[0+3*lidx], 
-	    -offset[1]-coords[1+3*lidx],  
-	    offset[2]+coords[2+3*lidx] );
+/* Changing LPS to RAS */
+for(lidx=0;lidx<n;lidx++)
+fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+		-coords[0+3*lidx], 
+		-coords[1+3*lidx],  
+		+coords[2+3*lidx] );
 
     fclose(fp);
 }
@@ -248,8 +240,10 @@ bspline_landmarks_score_b (
     land_rawdist = 0;
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
-    dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-    for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
+	logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
+
+	dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
+	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
     land_p = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
     land_q = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
@@ -309,7 +303,7 @@ bspline_landmarks_score_b (
 
     for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
 
-	printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
+		//printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
 
 	if (dd_min[lidx]>10) logfile_printf("Landmark WARNING: landmark far from nearest voxel\n");
 
@@ -324,16 +318,16 @@ bspline_landmarks_score_b (
 	l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
 	land_score += l_dist;
 	land_rawdist += sqrt(l_dist);
-	for (d = 0; d < 3; d++) dc_dv[d] = -land_grad_coeff * diff[d]; 
+	for (d = 0; d < 3; d++) dc_dv[d] = land_grad_coeff * diff[d]; 
 	bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
-	// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
-	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-	    -fixed->offset[0]-blm->warped_landmarks[0+3*lidx], 
-	    -fixed->offset[1]-blm->warped_landmarks[1+3*lidx],  
-	    fixed->offset[2]+blm->warped_landmarks[2+3*lidx] );
-	fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
-    }
+		// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
+				fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+								-blm->warped_landmarks[0+3*lidx], 
+								-blm->warped_landmarks[1+3*lidx],  
+								+blm->warped_landmarks[2+3*lidx] );
+				fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
+	}
 
     fclose(fp);
     fclose(fp2);
@@ -372,6 +366,8 @@ bspline_landmarks_score_a (
     land_score = 0;
     land_rawdist = 0;
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
+
+	logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
 
     fp  = fopen("warplist_a.fcsv","w");
     fp2 = fopen("distlist_a.dat","w");
@@ -518,14 +514,11 @@ void bspline_landmarks_warp(
 	    blm->warped_landmarks[3*i+d] = blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
     }
 
-    /* calculate voxel positions of warped landmarks  
-       landmarks are stored internally without offsets.
-       Offsets are used only when reading/writing landmarks form/to files
-    */
-    for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
+/* calculate voxel positions of warped landmarks  */
+	for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_warp[lidx*3 + d] 
-		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] /*- fixed->offset[d]*/ )
+		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] - fixed->offset[d] )
 		    / fixed->pix_spacing[d]);
 	    if (blm->landvox_warp[lidx*3 + d] < 0 
 		|| blm->landvox_warp[lidx*3 + d] >= fixed->dim[d])

@@ -89,12 +89,18 @@ public:
     float grid_spac[3];  // absolute grid spacing in mm in x,y,z directions
     int grid_method;     // num control points (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
-    /* Output files */
+    float young_modulus; // regularization (cost of vector field gradient)
+	float landmark_stiffness; //strength of attraction between landmarks
+	char landmark_flavor;
+	char fixed_landmarks_fn[_MAX_PATH]; //fixed landmarks filename
+	char moving_landmarks_fn[_MAX_PATH]; //moving landmarks filename
+	/* Output files */
     int img_out_fmt;
     int img_out_type;
     char img_out_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
+	char warped_landmarks_fn[_MAX_PATH];
 
 public:
     Stage_Parms () {
@@ -146,12 +152,17 @@ public:
 	grid_spac[2] = 20.; 
 	grid_method = 1;     // by default goes to the absolute spacing
 	histoeq = 0;         // by default, don't do it
+	young_modulus = 0;
+	landmark_stiffness = 0;
 	/* Output files */
 	img_out_fmt = IMG_OUT_FMT_AUTO;
 	img_out_type = IMG_OUT_TYPE_AUTO;
 	*img_out_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
+	*fixed_landmarks_fn = 0;
+	*moving_landmarks_fn = 0;
+	*warped_landmarks_fn = 0;
     }
     Stage_Parms (Stage_Parms& s) {
 	/* Copy all the parameters except the file names */
@@ -160,6 +171,11 @@ public:
 	*img_out_fn = 0;
 	*xf_out_fn = 0;
 	*vf_out_fn = 0;
+	young_modulus = 0;
+	landmark_stiffness = 0;
+	/*	*fixed_landmarks_fn = 0;
+	*moving_landmarks_fn =0;
+	*warped_landmarks_fn =0;*/
     }
 };
 

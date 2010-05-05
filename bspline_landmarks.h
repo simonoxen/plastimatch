@@ -45,7 +45,7 @@ void bspline_landmarks_warp (
     Volume *fixed, 
     Volume *moving);
 
-void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n, float *offset);
+void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n);
 
 #if defined __cplusplus
 }
