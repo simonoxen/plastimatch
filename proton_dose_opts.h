@@ -15,8 +15,10 @@ struct proton_dose_options {
     float vup[3];                    /* Aperture orientation */
 
     float scale;
+    float ray_step;                  /* Uniform ray step size (mm) */
     char* input_fn;
     char* output_fn;
+    int debug;
 };
 
 void proton_dose_parse_args (Proton_dose_options* options, 

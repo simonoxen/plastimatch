@@ -506,6 +506,7 @@ SET (GPUIT_LIBRARY_SRC
   proj_matrix.c proj_matrix.h 
   proton_dose.c proton_dose.h 
   ray_trace_exact.c ray_trace_exact.h 
+  ray_trace_uniform.c ray_trace_uniform.h 
   string_util.c string_util.h
   readmha.c readmha.h
   threading.h

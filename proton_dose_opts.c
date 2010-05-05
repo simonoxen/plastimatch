@@ -24,6 +24,7 @@ print_usage (void)
 	" -iso \"x y z\"      ...\n"
 	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
+	" -u step           Uniform step (in mm) along ray trace\n"
     );
     exit (1);
 }
@@ -43,8 +44,10 @@ proton_dose_opts_init (Proton_dose_options* options)
     options->vup[2] = 1.0f;
 
     options->scale = 1.0f;
+    options->ray_step = 1.0f;
     options->input_fn = 0;
     options->output_fn = 0;
+    options->debug = 0;
 }
 
 void
@@ -108,6 +111,16 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	    if (rc != 1) {
 		print_usage ();
 	    }
+	}
+	else if (!strcmp (argv[i], "-u")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f" , &options->ray_step);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+        else if (!strcmp (argv[i], "--debug")) {
+	    options->debug = 1;
 	}
 	else {
 	    print_usage ();
