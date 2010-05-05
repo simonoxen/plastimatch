@@ -86,7 +86,11 @@ main (int argc, char* argv[])
     }
 
     /* Create vector field from bspline coefficients and save */
-    if (options.output_vf_fn || options.output_warped_fn) {
+    if (options.output_vf_fn 
+	|| options.output_warped_fn 
+	|| (options.warped_landmarks && options.fixed_landmarks 
+	    && options.moving_landmarks))
+    {
 	printf ("Creating vector field.\n");
 	vector_field = volume_create (fixed->dim, fixed->offset, 
 	    fixed->pix_spacing,
@@ -100,13 +104,17 @@ main (int argc, char* argv[])
     }
 
     /* Assuming vector field has been created, update warped landmarks*/
-    if (options.fixed_landmarks && options.moving_landmarks) {
-	printf("Creating warped landmarks\n");
-	bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
-	if (options.warped_landmarks)
+    if (options.warped_landmarks && options.fixed_landmarks 
+	&& options.moving_landmarks)
+    {
+	printf ("Creating warped landmarks\n");
+	bspline_landmarks_warp (vector_field, parms, bxf, fixed, moving);
+	if (options.warped_landmarks) {
+	    printf("Writing warped landmarks\n");
 	    bspline_landmarks_write_file( options.warped_landmarks, "warped", 
 		parms->landmarks->warped_landmarks, 
 		parms->landmarks->num_landmarks );
+	}
     }
 
     /* If using radial basis functions, find coeffs and update vector field */

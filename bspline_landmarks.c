@@ -449,7 +449,7 @@ Output goes into warped_landmarks and landvox_warp
 LW = warped landmark
 We must solve LW + u(LW) = LM to get new LW, corresponding to current vector field.
 */
-void bspline_landmarks_warp(
+void bspline_landmarks_warp (
     Volume *vector_field, 
     BSPLINE_Parms *parms,
     BSPLINE_Xform* bxf, 
@@ -465,12 +465,12 @@ void bspline_landmarks_warp(
     int i,d,fv, lidx;
     float dd, *vf, dxyz[3], *dd_min;
 
-    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
-	print_and_exit("Sorry, this type of vector field is not supported in landmarks_warp\n");	
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED)
+	print_and_exit ("Sorry, this type of vector field is not supported in landmarks_warp\n");	
     vf = (float *)vector_field->img;
 
     dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-    for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
+    for (d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
     for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
 	fz = bxf->img_origin[2] + bxf->img_spacing[2] * fk;
@@ -479,9 +479,10 @@ void bspline_landmarks_warp(
 	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
-		fv = fk * vector_field->dim[0] * vector_field->dim[1] + fj * vector_field->dim[0] +fi ;
+		fv = fk * vector_field->dim[0] * vector_field->dim[1] 
+		    + fj * vector_field->dim[0] +fi ;
 
-		for(d=0;d<3;d++) dxyz[d] = vf[3*fv+d];
+		for (d=0;d<3;d++) dxyz[d] = vf[3*fv+d];
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
@@ -496,30 +497,34 @@ void bspline_landmarks_warp(
 
 		//saving vector field in a voxel which is the closest to landvox_mov
 		//after being displaced by the vector field
-		for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
+		for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
 		    dd = (mi - blm->landvox_mov[lidx*3+0]) * (mi - blm->landvox_mov[lidx*3+0])
 			+(mj - blm->landvox_mov[lidx*3+1]) * (mj - blm->landvox_mov[lidx*3+1])
 			+(mk - blm->landvox_mov[lidx*3+2]) * (mk - blm->landvox_mov[lidx*3+2]);
 		    if (dd < dd_min[lidx]) { 
 			dd_min[lidx]=dd;   
-			for(d=0;d<3;d++) blm->landmark_dxyz[3*lidx+d] = vf[3*fv+d];
+			for (d=0;d<3;d++) {
+			    blm->landmark_dxyz[3*lidx+d] = vf[3*fv+d];
+			}
 		    }
 		} 
 	    }
 	}
     }
 
-    for(i=0;i<blm->num_landmarks;i++)  {
-	for(d=0; d<3; d++) 
-	    blm->warped_landmarks[3*i+d] = blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
+    for (i=0;i<blm->num_landmarks;i++)  {
+	for (d=0; d<3; d++) {
+	    blm->warped_landmarks[3*i+d] 
+		= blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
+	}
     }
 
-/* calculate voxel positions of warped landmarks  */
-	for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
+    /* calculate voxel positions of warped landmarks  */
+    for (lidx = 0; lidx < blm->num_landmarks; lidx++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_warp[lidx*3 + d] 
-		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] - fixed->offset[d] )
-		    / fixed->pix_spacing[d]);
+		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] 
+			- fixed->offset[d]) / fixed->pix_spacing[d]);
 	    if (blm->landvox_warp[lidx*3 + d] < 0 
 		|| blm->landvox_warp[lidx*3 + d] >= fixed->dim[d])
 	    {
