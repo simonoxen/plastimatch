@@ -190,12 +190,12 @@ void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n )
     }
     fprintf(fp,"# name = %s\n",title);
 
-/* Changing LPS to RAS */
-for(lidx=0;lidx<n;lidx++)
-fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-		-coords[0+3*lidx], 
-		-coords[1+3*lidx],  
-		+coords[2+3*lidx] );
+    /* Changing LPS to RAS */
+    for(lidx=0;lidx<n;lidx++)
+	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+	    -coords[0+3*lidx], 
+	    -coords[1+3*lidx],  
+	    +coords[2+3*lidx] );
 
     fclose(fp);
 }

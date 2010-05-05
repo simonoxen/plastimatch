@@ -124,11 +124,12 @@ main (int argc, char* argv[])
 		/* Do actual RBF adjustment */
 		bspline_rbf_find_coeffs( vector_field, parms );
 		bspline_rbf_update_vector_field( vector_field, parms );
-		bspline_landmarks_warp( vector_field, parms, bxf, fixed, moving );
+		bspline_landmarks_warp (vector_field, parms, bxf, fixed, moving );
 		if (options.warped_landmarks)
-		    bspline_landmarks_write_file( options.warped_landmarks, "warp_and_rbf", 
+		    bspline_landmarks_write_file (
+			options.warped_landmarks, "warp_and_rbf", 
 			parms->landmarks->warped_landmarks, 
-			parms->landmarks->num_landmarks,  fixed->offset );
+			parms->landmarks->num_landmarks);
 	    }
 	}
     }
