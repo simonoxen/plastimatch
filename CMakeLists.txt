@@ -23,6 +23,7 @@ INCLUDE (CTest)
 INCLUDE (CheckFunctionExists)
 INCLUDE (CheckIncludeFiles)
 INCLUDE (CheckTypeSize)
+INCLUDE (TestBigEndian)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
 INCLUDE (InstallRequiredSystemLibraries)
@@ -120,6 +121,7 @@ CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 # C/C++ 32/64
 CHECK_TYPE_SIZE("unsigned int"    CMAKE_SIZEOF_UINT)
 CHECK_TYPE_SIZE("unsigned long"   CMAKE_SIZEOF_ULONG)
+TEST_BIG_ENDIAN(CMAKE_WORDS_BIGENDIAN)
 
 # Fortran
 IF (NOT MINGW)
