@@ -16,27 +16,39 @@
 
 static void
 plm_warp_itk (
-    Plm_image *im_warped,                  /* Output */
-    DeformationFieldType::Pointer *vf,    /* Output */
-    Xform *xf_in,                         /* Input */
-    Plm_image_header *pih,                  /* Input */
-    Plm_image *im_in,                      /* Input */
+    Plm_image *im_warped,                    /* Output (optional) */
+    DeformationFieldType::Pointer *vf_out,   /* Output (optional) */
+    Xform *xf_in,                            /* Input */
+    Plm_image_header *pih,                   /* Input */
+    Plm_image *im_in,                        /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
 {
     Xform xform_tmp;
-    printf ("Running: plm_warp_itk\n");
-    printf ("Creating vf...\n");
-    xform_to_itk_vf (&xform_tmp, xf_in, pih);
-    *vf = xform_tmp.get_itk_vf ();
+    DeformationFieldType::Pointer vf;
 
+    /* Create an itk vector field from xf_in */
+    xform_to_itk_vf (&xform_tmp, xf_in, pih);
+    vf = xform_tmp.get_itk_vf ();
+
+    /* If caller wants the vf, we assign it here */
+    if (vf_out) {
+	*vf_out = vf;
+    }
+
+    /* If caller only wants the vf, we are done */
+    if (!im_warped) {
+	return;
+    }
+
+    /* Warp the image */
     printf ("Warping...\n");
     switch (im_in->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	im_warped->m_itk_uchar = itk_warp_image (
 	    im_in->m_itk_uchar, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<unsigned char>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
@@ -45,7 +57,7 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_SHORT:
 	im_warped->m_itk_short = itk_warp_image (
 	    im_in->m_itk_short, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<short>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
@@ -54,7 +66,7 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_USHORT:
 	im_warped->m_itk_ushort = itk_warp_image (
 	    im_in->m_itk_ushort, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<unsigned short>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_USHORT;
@@ -63,7 +75,7 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_ULONG:
 	im_warped->m_itk_uint32 = itk_warp_image (
 	    im_in->m_itk_uint32, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<uint32_t>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_ULONG;
@@ -72,7 +84,7 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_FLOAT:
 	im_warped->m_itk_float = itk_warp_image (
 	    im_in->m_itk_float, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<float>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
@@ -81,7 +93,7 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_DOUBLE:
 	im_warped->m_itk_double = itk_warp_image (
 	    im_in->m_itk_double, 
-	    *vf, 
+	    vf, 
 	    interp_lin, 
 	    static_cast<double>(default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_DOUBLE;
@@ -98,11 +110,11 @@ plm_warp_itk (
 /* Native warping (only gpuit bspline + float) */
 static void
 plm_warp_native (
-    Plm_image *im_warped,                  /* Output */
+    Plm_image *im_warped,                 /* Output */
     DeformationFieldType::Pointer *vf,    /* Output */
     Xform *xf_in,                         /* Input */
-    Plm_image_header *pih,                  /* Input */
-    Plm_image *im_in,                      /* Input */
+    Plm_image_header *pih,                /* Input */
+    Plm_image *im_in,                     /* Input */
     float default_val,     /* Input:  Value for pixels without match */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
 )
@@ -111,7 +123,7 @@ plm_warp_native (
     Xform vf_tmp;
     BSPLINE_Xform* bxf_in = xf_in->get_gpuit_bsp ();
     Volume *vf_out = 0;     /* Output vector field */
-    Volume *v_out = 0;       /* Output warped image */
+    Volume *v_out = 0;      /* Output warped image */
     int dim[3];
     float origin[3];
     float spacing[3];
@@ -162,11 +174,11 @@ plm_warp_native (
 
 void
 plm_warp (
-    Plm_image *im_warped,   /* Output: Output image */
+    Plm_image *im_warped,  /* Output: Output image */
     DeformationFieldType::Pointer* vf,    /* Output: Output vf (optional) */
     Xform *xf_in,          /* Input:  Input image warped by this xform */
-    Plm_image_header *pih,   /* Input:  Size of output image */
-    Plm_image *im_in,       /* Input:  Input image */
+    Plm_image_header *pih, /* Input:  Size of output image */
+    Plm_image *im_in,      /* Input:  Input image */
     float default_val,     /* Input:  Value for pixels without match */
     int use_itk,           /* Input:  Force use of itk (1) or not (0) */
     int interp_lin         /* Input:  Trilinear (1) or nn (0) */
