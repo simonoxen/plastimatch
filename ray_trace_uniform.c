@@ -26,12 +26,6 @@ ray_trace_uniform (
 	float ray_step			// INPUT: Uniform ray step size
 )
 {
-	// Performed by the function:
-	//    1) Take a step along ray
-	//    2) Convert location on ray to CT Vol coordinates
-	//    3) Invoke callback, passing CT Vol coords
-	//    3) Rinse & repeat until ip2 is reached.
-
 	double uv[3];
 	double ipx[3];
 	double ps[3];

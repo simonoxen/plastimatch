@@ -83,8 +83,6 @@ proton_dose_ray_trace_callback (
     cd->accum += vox_len * attenuation_lookup (vox_value);
 
     depth_img[ap_area*step_num + ap_idx] = cd->accum;
-
-//    printf ("%f\n", depth_img[ap_area*step_num + ap_idx]);
 }
 
 void
@@ -128,13 +126,13 @@ proton_dose_ray_trace (
     cd.depth_vol = depth_vol;
     cd.ap_idx = ap_idx;
 
-    ray_trace_uniform (ct_vol,				// INPUT: CT Volume
+    ray_trace_uniform (ct_vol,				// INPUT: CT volume
 		vol_limit, 				// INPUT: CT volume bounding box
-		&proton_dose_ray_trace_callback,	// INPUT: Step Action Function
+		&proton_dose_ray_trace_callback,	// INPUT: step action cbFunction
 		&cd,					// INPUT: callback data
-		ip1,					// INPUT: Ray Starting Point
-		ip2,					// INPUT: Ray Ending Point
-		options->ray_step);			// INPUT: Uniform ray step size
+		ip1,					// INPUT: ray starting point
+		ip2,					// INPUT: ray ending point
+		options->ray_step);			// INPUT: uniform ray step size
 }
 
 void

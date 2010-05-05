@@ -25,6 +25,7 @@ print_usage (void)
 	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
 	" -u step           Uniform step (in mm) along ray trace\n"
+	" --debug           Create various debug files\n"
     );
     exit (1);
 }
