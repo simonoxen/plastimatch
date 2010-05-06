@@ -19,10 +19,12 @@ public:
     char output_cxt_fn[_MAX_PATH];
     float x_adj;
     float y_adj;
+    Xio_patient_position pt_position;
 
 public:
     Program_parms () {
 	memset (this, 0, sizeof(Program_parms));
+	this->pt_position = UNKNOWN;
     }
 };
 
@@ -33,6 +35,7 @@ print_usage (void)
 	    "Optional:\n"
 	    "    --dicom-dir=directory\n"
 	    "    --output=filename\n"
+	    "    --patient-position=(hfs|hfp)\n"
 	    "    -x-adj=float\n"
 	    "    -y-adj=float\n");
 }
@@ -43,14 +46,15 @@ parse_args (Program_parms* parms, int argc, char* argv[])
     int ch, rc;
 
     static struct option longopts[] = {
-	{ "dicom-dir",      required_argument,      NULL,           1 },
-	{ "dicom_dir",      required_argument,      NULL,           1 },
-	{ "output",	    required_argument,      NULL,           2 },
-	{ "x-adj",	    required_argument,      NULL,           3 },
-	{ "x_adj",	    required_argument,      NULL,           3 },
-	{ "y-adj",	    required_argument,      NULL,           4 },
-	{ "y_adj",	    required_argument,      NULL,           4 },
-	{ NULL,             0,                      NULL,           0 }
+	{ "dicom-dir",		required_argument,      NULL,           1 },
+	{ "dicom_dir",		required_argument,      NULL,           1 },
+	{ "output",		required_argument,      NULL,           2 },
+	{ "patient-position",	required_argument,      NULL,           3 },
+	{ "x-adj",		required_argument,      NULL,           4 },
+	{ "x_adj",		required_argument,      NULL,           4 },
+	{ "y-adj",		required_argument,      NULL,           5 },
+	{ "y_adj",		required_argument,      NULL,           5 },
+	{ NULL,			0,                      NULL,           0 }
     };
 
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
@@ -62,13 +66,27 @@ parse_args (Program_parms* parms, int argc, char* argv[])
 	    strncpy (parms->output_cxt_fn, optarg, _MAX_PATH);
 	    break;
 	case 3:
+	    parms->pt_position = xio_io_patient_position(optarg);
+
+	    if (parms->pt_position == FFS || parms->pt_position == FFP) {
+		fprintf (stderr,
+		   "Error.  Feet-first patient positions not yet implemented.");
+		exit (1);
+	    }
+
+	    if (parms->pt_position == UNKNOWN) {
+		fprintf (stderr, "Error.  Unknown patient position, should be (hfs|hfp|ffs|ffp).");
+		exit (1);
+	    }
+	    break;
+	case 4:
 	    rc = sscanf (optarg, "%f", &parms->x_adj);
 	    if (rc != 1) {
 		fprintf (stderr, "Error.  --x-adj requires a floating point argument.");
 		exit (1);
 	    }
 	    break;
-	case 4:
+	case 5:
 	    rc = sscanf (optarg, "%f", &parms->y_adj);
 	    if (rc != 1) {
 		fprintf (stderr, "Error.  --y-adj requires a floating point argument.");
@@ -99,7 +117,7 @@ do_xio_to_cxt (Program_parms *parms)
     Cxt_structure_list cxt;
 
     /* Load from xio */
-    xio_structures_load (&cxt, parms->xio_dir, parms->x_adj, parms->y_adj);
+    xio_structures_load (&cxt, parms->xio_dir, parms->x_adj, parms->y_adj, parms->pt_position);
 
     /* Set dicom uids, etc. */
     if (parms->dicom_dir[0]) {

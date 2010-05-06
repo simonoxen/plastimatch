@@ -109,7 +109,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 
 static void
 add_cms_structure (Cxt_structure_list *structures, const char *filename, 
-		   float z_loc, float x_adj, float y_adj)
+		   float z_loc, float x_adj, float y_adj, Xio_patient_position pt_position)
 {
     FILE *fp;
     char buf[1024];
@@ -199,8 +199,13 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 		    print_and_exit ("Error parsing file %s (points) %s\n", 
 				    filename, &buf[line_loc]);
 		}
-		curr_polyline->x[point_idx] = x + x_adj;
-		curr_polyline->y[point_idx] = - y + y_adj;
+		if (pt_position == UNKNOWN || pt_position == HFS) {
+		    curr_polyline->x[point_idx] = x + x_adj;
+		    curr_polyline->y[point_idx] = - y + y_adj;
+		} else if (pt_position == HFP) {
+		    curr_polyline->x[point_idx] = - x - x_adj;
+		    curr_polyline->y[point_idx] = y - y_adj;
+		}
 		curr_polyline->z[point_idx] = z_loc;
 		point_idx ++;
 		line_loc += this_loc;
@@ -231,13 +236,19 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 
    5) So, in the above example, we should set --x-adj=-1.6, to translate 
       the structures from XiO coordinates to Dicom.
+
+   -----
+
+   The patient position is currently also set manually.
+   This determines the transformation from the XiO X,Y,Z axis to DICOM LPI.
 */
 void
 xio_structures_load (
     Cxt_structure_list *structures, 
     char *input_dir, 
     float x_adj,
-    float y_adj
+    float y_adj,
+    Xio_patient_position pt_position
 )
 {
     
@@ -269,7 +280,7 @@ xio_structures_load (
 	const char *filename = (*it).first.c_str();
 	float z_loc = atof ((*it).second.c_str());
 	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (structures, filename, z_loc, x_adj, y_adj);
+	add_cms_structure (structures, filename, z_loc, x_adj, y_adj, pt_position);
 	++it;
     }
 

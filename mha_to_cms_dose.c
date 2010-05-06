@@ -11,6 +11,33 @@
 
 #define XIO_DATATYPE_UINT32     5
 
+enum Xio_patient_position {
+    UNKNOWN,
+    HFS,
+    HFP,
+    FFS,
+    FFP,
+};
+
+enum Xio_patient_position
+xio_io_patient_position (
+    const char *pt_position_str
+)
+{
+    // Convert string to patient position
+    if (!strcmp (pt_position_str, "hfs")) {
+        return HFS;
+    } else if (!strcmp (pt_position_str, "hfp")) {
+        return HFP;
+    } else if (!strcmp (pt_position_str, "ffs")) {
+        return FFS;
+    } else if (!strcmp (pt_position_str, "ffp")) {
+        return FFP;
+    } else {
+	return UNKNOWN;
+    }
+}
+
 // Swap endianness of 32-bit integer
 void
 int_endian (int *arg)
@@ -59,10 +86,12 @@ main (int argc, char *argv[])
     double ox; double oy; double oz;
     int nx; int ny; int nz;
 
+    enum Xio_patient_position pt_position;
+
     long header_size;
 
-    if (argc != 4) {
-        printf ("Usage: mha2cms.c mhafile.mha newdosename dosetemplate");
+    if (argc != 5) {
+        printf ("Usage: mha2cms.c mhafile.mha newdosename dosetemplate patientposition");
         exit (0);
     }
 
@@ -72,6 +101,19 @@ main (int argc, char *argv[])
     if (ifp == NULL) {
         fprintf (stderr, "ERROR: Cannot open input file.\n");
         exit (1);
+    }
+
+    // Patient position
+    pt_position = xio_io_patient_position(argv[4]);
+
+    if (pt_position == FFS || pt_position == FFP) {
+	fprintf (stderr, "ERROR: Feet-first patient positions not yet implemented.\n");
+	exit (1);
+    }
+
+    if (pt_position == UNKNOWN) {
+	fprintf (stderr, "ERROR: Unknown patient position, should be (hfs|hfp|ffs|ffp).\n");
+	exit (1);
     }
 
 //  *** PARSE MHA HEADER ***
@@ -132,10 +174,15 @@ main (int argc, char *argv[])
     MHA_oz = MHA_startZ + MHA_rz / 2;
 
     CMS_nPtsX = MHA_nPtsX; CMS_nPtsY = MHA_nPtsZ; CMS_nPtsZ = MHA_nPtsY;
-    CMS_ox = MHA_ox; CMS_oy = MHA_oz; CMS_oz = -MHA_oy;
 
-    //KeyLine = '0,'+str(CMS_rx)+','+str(CMS_rz)+','+str(CMS_ry)+','+str(CMS_ox)+','+str(CMS_oz)+','+str(CMS_oy)+','+str(CMS_nxPts)+','+str(CMS_nzPts)+','+str(CMS_nyPts)
-    printf ("Keyline is: %s%f%s%f%s%f%s%f%s%f%s%f%s%d%s%d%s%d\n", "0,", CMS_rx, ",", CMS_rz, ",", CMS_ry, ",", CMS_ox, ",", CMS_oz, ",", CMS_oy, ",", CMS_nPtsX, ",", CMS_nPtsZ, ",", CMS_nPtsY);
+    if (pt_position == HFS) {
+	CMS_ox = MHA_ox; CMS_oy = MHA_oz; CMS_oz = -MHA_oy;
+    } else if (pt_position == HFP) {
+	CMS_ox = MHA_ox / 2; CMS_oy = MHA_oz; CMS_oz = MHA_oy;
+    }
+
+    printf ("MHA_offets (x,y,z) are: %f%s%f%s%f\n", MHA_ox, ",", MHA_oy, ",", MHA_oz);
+    printf ("CMS_offsets (x,y,z) are: %f%s%f%s%f\n", CMS_ox, ",", CMS_oy, ",", CMS_oz);
 
 //  *** PARSE DOSE TEMPLATE ***
 
@@ -303,12 +350,22 @@ main (int argc, char *argv[])
 
     printf ("Writing dose cube...");
 
-    for (k = 0; k < MHA_nPtsZ; k++) {
-        for (j = MHA_nPtsY - 1; j >= 0; j--) { // Going through the CMS Z
-            for (i = 0; i < MHA_nPtsX; i++) {
-                fwrite (&(data[i][k][j]), sizeof(u32), 1, ofp);
-            }
-        }
+    if (pt_position == HFS) {
+	for (k = 0; k < MHA_nPtsZ; k++) {
+	    for (j = MHA_nPtsY - 1; j >= 0; j--) { // Going through the CMS Z
+		for (i = 0; i < MHA_nPtsX; i++) {
+		    fwrite (&(data[i][k][j]), sizeof(u32), 1, ofp);
+		}	    
+	    }
+	}
+    } else if (pt_position == HFP) {
+	for (k = 0; k < MHA_nPtsZ; k++) {
+	    for (j = 0; j < MHA_nPtsY; j++) { // Going through the CMS Z
+		for (i = MHA_nPtsX - 1; i >= 0; i--) {
+		    fwrite (&(data[i][k][j]), sizeof(u32), 1, ofp);
+		}	    
+	    }
+	}
     }
 
     printf ("Done.\n");

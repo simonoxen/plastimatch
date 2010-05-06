@@ -14,6 +14,15 @@ enum Xio_version {
     XIO_VERSION_4_33_02,       /* Older MGH photon Xio */
 };
 
+enum Xio_patient_position {
+    UNKNOWN,
+    HFS,
+    HFP,
+    FFS,
+    FFP,
+};
+
+
 plastimatch1_EXPORT 
 void
 xio_io_get_file_names (
@@ -22,4 +31,9 @@ xio_io_get_file_names (
     const char *regular_expression
 );
 
+plastimatch1_EXPORT 
+Xio_patient_position
+xio_io_patient_position (
+    const char *pt_position_str
+);
 #endif

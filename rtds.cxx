@@ -54,7 +54,7 @@ Rtds::load_xio (char *xio_dir)
     /* Load the structure set */
     this->m_cxt = cxt_create ();
     printf ("calling xio_structures_load\n");
-    xio_structures_load (this->m_cxt, xsd->path, 0, 0);
+    xio_structures_load (this->m_cxt, xsd->path, 0, 0, UNKNOWN);
 
     /* Copy geometry from Xio CT to structures */
     printf ("calling cxt_set_geometry_from_plm_image\n");

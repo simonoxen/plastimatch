@@ -90,3 +90,22 @@ xio_io_get_file_names (
 		  lt_pair_alphabetic_string_string());
     }
 }
+
+enum Xio_patient_position
+xio_io_patient_position (
+    const char *pt_position_str
+)
+{
+    // Convert string to patient position
+    if (!strncmp (pt_position_str, "hfs")) {
+        return HFS;
+    } else if (!strcmp (pt_position_str, "hfp")) {
+        return HFP;
+    } else if (!strcmp (pt_position_str, "ffs")) {
+        return FFS;
+    } else if (!strcmp (pt_position_str, "ffp")) {
+        return FFP;
+    } else {
+	return UNKNOWN;
+    }
+}

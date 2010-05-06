@@ -11,6 +11,33 @@
 
 #define XIO_DATATYPE_UINT32     5
 
+enum Xio_patient_position {
+    UNKNOWN,
+    HFS,
+    HFP,
+    FFS,
+    FFP,
+};
+
+enum Xio_patient_position
+xio_io_patient_position (
+    const char *pt_position_str
+)
+{
+    // Convert string to patient position
+    if (!strcmp (pt_position_str, "hfs")) {
+        return HFS;
+    } else if (!strcmp (pt_position_str, "hfp")) {
+        return HFP;
+    } else if (!strcmp (pt_position_str, "ffs")) {
+        return FFS;
+    } else if (!strcmp (pt_position_str, "ffp")) {
+        return FFP;
+    } else {
+	return UNKNOWN;
+    }
+}
+
 // Swap endianness of 32-bit integer
 void
 int_endian (int *arg)
@@ -58,8 +85,10 @@ main (int argc, char *argv[])
     // Offset (top left corner of first slice)
     double topx; double topy; double topz;
 
-    if (argc != 3) {
-        printf ("Usage: cms_dose_to_mha cmsdose outputfile.mha\n");
+    enum Xio_patient_position pt_position;
+
+    if (argc != 4) {
+        printf ("Usage: cms_dose_to_mha cmsdose outputfile.mha patientposition\n");
         exit (0);
     }
 
@@ -68,6 +97,19 @@ main (int argc, char *argv[])
     if (ifp == NULL) {
         fprintf (stderr, "ERROR: Cannot open input file.\n");
         exit (1);
+    }
+
+    // Patient position
+    pt_position = xio_io_patient_position(argv[3]);
+
+    if (pt_position == FFS || pt_position == FFP) {
+	fprintf (stderr, "ERROR: Feet-first patient positions not yet implemented.\n");
+	exit (1);
+    }
+
+    if (pt_position == UNKNOWN) {
+	fprintf (stderr, "ERROR: Unknown patient position, should be (hfs|hfp|ffs|ffp).\n");
+	exit (1);
     }
 
     // Line 1: XiO file format version
@@ -156,9 +198,15 @@ main (int argc, char *argv[])
     dz = rz / (nz - 1);
 
     // Calculate offset
-    topx = ox - (rx / 2);
-    topy = oy - (ry / 2);
-    topz = -oz - (rz / 2);
+    if (pt_position == HFS) {
+	topx = ox - (rx / 2);
+	topy = oy - (ry / 2);
+	topz = -oz - (rz / 2);
+    } else if (pt_position == HFP) {
+	topx = ox * 2 - (rx / 2);
+	topy = oy - (ry / 2);
+	topz = oz - (rz / 2);
+    }
 
     // Skip rest of header
     fseek (ifp, -nx * ny * nz * sizeof(dose), SEEK_END);
@@ -228,12 +276,22 @@ main (int argc, char *argv[])
     fprintf (ofp, "ElementDataFile = LOCAL\n");
 
     // Write dose cube
-    for (j = 0; j < ny; j++) {
-        for (k = nz - 1; k >= 0; k--) {
-            for (i = 0; i < nx; i++) {
-                fwrite (&(data[k][j][i]), sizeof(float), 1, ofp);
-            }
-        }
+    if (pt_position == HFS) {
+	for (j = 0; j < ny; j++) {
+	    for (k = nz - 1; k >= 0; k--) {
+		for (i = 0; i < nx; i++) {
+		    fwrite (&(data[k][j][i]), sizeof(float), 1, ofp);
+		}
+	    }
+	}
+    } else if (pt_position == HFP) {
+	for (j = 0; j < ny; j++) {
+	    for (k = 0; k < nz; k++) {
+		for (i = nx - 1; i >= 0; i--) {
+		    fwrite (&(data[k][j][i]), sizeof(float), 1, ofp);
+		}
+	    }
+	}
     }
 
     fclose (ofp);

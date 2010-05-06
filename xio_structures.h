@@ -10,7 +10,7 @@
 
 plastimatch1_EXPORT void
 xio_structures_load (Cxt_structure_list *structures, char *input_dir, 
-		     float x_adj, float y_adj);
+		     float x_adj, float y_adj, Xio_patient_position pt_position);
 plastimatch1_EXPORT 
 void
 xio_structures_save (
