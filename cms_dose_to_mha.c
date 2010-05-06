@@ -164,11 +164,11 @@ main (int argc, char *argv[])
     fseek (ifp, -nx * ny * nz * sizeof(dose), SEEK_END);
 
     // Allocate memory for dose cube
-    data = malloc (nz * sizeof(double**));
+    data = malloc (nz * sizeof(float**));
     for (o = 0; o < nz; o++) {
-        data[o] = malloc (ny * sizeof(double*));
+        data[o] = malloc (ny * sizeof(float*));
         for (p = 0; p < ny; p++) {
-            data[o][p] = malloc (nx * sizeof(double));
+            data[o][p] = malloc (nx * sizeof(float));
             for (q = 0; q < nx; q++) {
                 data[o][p][q] = 0;
             }
