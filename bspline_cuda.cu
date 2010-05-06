@@ -396,6 +396,990 @@ bspline_cuda_init_MI_a (
 
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_initialize_j()
+// 
+// Initialize the GPU to execute bspline_cuda_score_j_mse().
+//
+// AUTHOR: James Shackleford
+// DATE  : September 17, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    BSPLINE_Xform* bxf,
+    BSPLINE_Parms* parms)
+{
+    // Keep track of how much memory we allocated
+    // in the GPU global memory.
+    long unsigned GPU_Memory_Bytes = 0;
+
+    // Tell the user we are busy copying information
+    // to the device memory.
+    printf ("Copying data to GPU global memory\n");
+
+    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
+
+    // Allocate memory in the GPU Global memory for the fixed
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->fixed_image. (fixed_image is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->fixed_image_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc ((void**)&dev_ptrs->fixed_image, 
+    dev_ptrs->fixed_image_size);
+    checkCUDAError ("Failed to allocate memory for fixed image");
+    printf(".");
+
+
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy (dev_ptrs->fixed_image, fixed->img, 
+    dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
+    checkCUDAError ("Failed to copy fixed image to GPU");
+    printf(".");
+
+
+    // Bind this to a texture reference
+    cudaBindTexture (0, tex_fixed_image, dev_ptrs->fixed_image, 
+    dev_ptrs->fixed_image_size);
+    checkCUDAError ("Failed to bind dev_ptrs->fixed_image to texture reference!");
+    printf(".");
+    
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_image. (moving_image is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->moving_image_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    checkCUDAError("Failed to allocate memory for moving image");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+    checkCUDAError("Failed to copy moving image to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving grad
+    // volume's data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_grad. (moving_grad is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->moving_grad_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    checkCUDAError("Failed to allocate memory for moving grad");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    // (Note the pointer dereference)
+    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+    checkCUDAError("Failed to copy moving grad to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_grad, dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // coefficient LUT. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->coeff. (coeff is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->coeff_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
+    checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
+    checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->coeff_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->score_size = sizeof(float) * fixed->npix;
+    dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
+
+    // Allocate memory in the GPU Global memory for the 
+    // "Score". The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->score. (scoreis a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->score_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->skipped, dev_ptrs->skipped_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
+    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->score_size;
+    GPU_Memory_Bytes += dev_ptrs->skipped_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad. (grad is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->grad_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
+    checkCUDAError("Failed to bind dev_ptrs->grad to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad_temp. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad_temp. (grad_temp is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->grad_temp_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    //int num_voxels = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+
+    int3 vol_dim;
+    vol_dim.x = fixed->dim[0];
+    vol_dim.y = fixed->dim[1];
+    vol_dim.z = fixed->dim[2];
+
+    int3 tile_dim;
+    tile_dim.x = bxf->vox_per_rgn[0];
+    tile_dim.y = bxf->vox_per_rgn[1];
+    tile_dim.z = bxf->vox_per_rgn[2];
+
+    int4 num_tile;
+    num_tile.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tile.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tile.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tile.w = num_tile.x * num_tile.y * num_tile.z;
+
+    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    dev_ptrs->dc_dv_x_size = ((tile_bytes + tile_padding) * num_tile.w) * sizeof(float);
+    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
+    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
+
+    // Allocate memory in the GPU Global memory for the 
+    // deinterleaved dc_dv arrays. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->dc_dv_X. 
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->dc_dv_x_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
+    printf(".");
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->dc_dv_y_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
+    printf(".");
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->dc_dv_z_size,
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+
+    // Increment the GPU memory byte counter
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
+    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+
+    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    //  int pad = 64 - (vox_per_tile % 64);
+
+    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->LUT_Offsets_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
+    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+
+    free (offsets);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
+    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
+
+    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
+    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
+
+    int i,j;
+    for (i = 0; i < num_tiles; i++)
+    {
+    find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
+    for (j = 0; j < 64; j++)
+        LUT_Knot[64*i + j] = local_set_of_64[j];
+    }
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->LUT_Knot_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
+
+    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    //  checkCUDAError("cudaBindTexture(): dev_ptrs->LUT_Knot");
+
+    free (local_set_of_64);
+    free (LUT_Knot);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
+    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->cond_x_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
+    printf(".");
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->cond_y_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
+    printf(".");
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->cond_z_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
+    // ----------------------------------------------------------
+
+    // --- GENERATE B-SPLINE LOOK UP TABLE ----------------------
+    dev_ptrs->LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
+    dev_ptrs->LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
+    dev_ptrs->LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
+    float* LUT_Bspline_x = (float*)malloc(dev_ptrs->LUT_Bspline_x_size);
+    float* LUT_Bspline_y = (float*)malloc(dev_ptrs->LUT_Bspline_y_size);
+    float* LUT_Bspline_z = (float*)malloc(dev_ptrs->LUT_Bspline_z_size);
+
+    for (j = 0; j < 4; j++)
+    {
+    for (i = 0; i < bxf->vox_per_rgn[0]; i++)
+        LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
+
+    for (i = 0; i < bxf->vox_per_rgn[1]; i++)
+        LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
+
+    for (i = 0; i < bxf->vox_per_rgn[2]; i++)
+        LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
+    }
+    
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->LUT_Bspline_x_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->LUT_Bspline_y_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+    (long unsigned) dev_ptrs->LUT_Bspline_z_size, 
+    GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
+
+    cudaMemcpy(dev_ptrs->LUT_Bspline_x, LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_y, LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_z, LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size, cudaMemcpyHostToDevice);
+    printf(".");
+
+    free (LUT_Bspline_x);
+    free (LUT_Bspline_y);
+    free (LUT_Bspline_z);
+
+    cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+    printf(".");
+
+    // ----------------------------------------------------------
+
+    // Inform user we are finished.
+    printf("done.\n");
+
+    // Report global memory allocation.
+    printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_initialize_i()
+// 
+// Initialize the GPU to execute bspline_cuda_score_i_mse().
+//
+// AUTHOR: James Shackleford
+// DATE  : September 16, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    BSPLINE_Xform* bxf,
+    BSPLINE_Parms* parms)
+{
+    // Keep track of how much memory we allocated
+    // in the GPU global memory.
+    int GPU_Memory_Bytes = 0;
+    //  int temp;
+
+    // Tell the user we are busy copying information
+    // to the device memory.
+    printf("Copying data to GPU global memory");
+
+    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
+
+    // Allocate memory in the GPU Global memory for the fixed
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->fixed_image. (fixed_image is a pointer)
+    cudaMalloc((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
+    checkCUDAError("Failed to allocate memory for fixed image");
+    printf(".");
+
+
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->fixed_image, fixed->img, dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
+    checkCUDAError("Failed to copy fixed image to GPU");
+    printf(".");
+
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_fixed_image, dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
+    checkCUDAError("Failed to bind dev_ptrs->fixed_image to texture reference!");
+    printf(".");
+    
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_image. (moving_image is a pointer)
+    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    checkCUDAError("Failed to allocate memory for moving image");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+    checkCUDAError("Failed to copy moving image to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving grad
+    // volume's data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_grad. (moving_grad is a pointer)
+    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    checkCUDAError("Failed to allocate memory for moving grad");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    // (Note the pointer dereference)
+    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+    checkCUDAError("Failed to copy moving grad to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_grad, dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // coefficient LUT. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->coeff. (coeff is a pointer)
+    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
+    checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
+    checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->coeff_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->score_size = sizeof(float) * fixed->npix;
+
+    // Allocate memory in the GPU Global memory for the 
+    // "Score". The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->score. (scoreis a pointer)
+    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->score_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE dc_dv IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->dc_dv_size = 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
+    * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
+
+    // Allocate memory in the GPU Global memory for dc_dv
+    // The pointer to this area of GPU global memory will
+    // be returned and placed into dev_ptrs->dc_dv. (dc_dv is a pointer)
+    cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    checkCUDAError("Failed to bind dev_ptrs->dc_dv to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad. (grad is a pointer)
+    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
+    checkCUDAError("Failed to bind dev_ptrs->grad to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad_temp. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad_temp. (grad_temp is a pointer)
+    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->dc_dv_x_size = dev_ptrs->dc_dv_size / 3;
+    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
+    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
+
+    // Allocate memory in the GPU Global memory for the 
+    // deinterleaved dc_dv arrays. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->dc_dv_X. 
+    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
+    printf(".");
+    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
+    printf(".");
+    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
+    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+
+    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    //  int pad = 64 - (vox_per_tile % 64);
+
+    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
+
+    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
+    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+
+    free (offsets);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
+    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
+
+    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
+    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
+
+    int i,j;
+    for (i = 0; i < num_tiles; i++) {
+        find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
+        for (j = 0; j < 64; j++) {
+            LUT_Knot[64*i + j] = local_set_of_64[j];
+        }
+    }
+    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
+    checkCUDAError("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
+
+    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    //  checkCUDAError("cudaBindTexture(): dev_ptrs->LUT_Knot");
+
+    free (local_set_of_64);
+    free (LUT_Knot);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
+    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
+
+    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
+    // ----------------------------------------------------------
+
+    // Inform user we are finished.
+    printf("done.\n");
+
+    // Report global memory allocation.
+    printf("  Allocated: %d MB\n", GPU_Memory_Bytes / 1048576);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_j()
+//
+// AUTHOR: James Shackleford
+// DATE  : September 11th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs)
+{
+    cudaUnbindTexture(tex_fixed_image);
+    cudaUnbindTexture(tex_moving_image);
+    cudaUnbindTexture(tex_moving_grad);
+    cudaUnbindTexture(tex_coeff);
+    cudaUnbindTexture(tex_grad);
+    cudaUnbindTexture(tex_LUT_Offsets);
+    cudaUnbindTexture(tex_LUT_Bspline_x);
+    cudaUnbindTexture(tex_LUT_Bspline_y);
+    cudaUnbindTexture(tex_LUT_Bspline_z);
+    
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->LUT_Offsets);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->LUT_Bspline_x);
+    cudaFree(dev_ptrs->LUT_Bspline_y);
+    cudaFree(dev_ptrs->LUT_Bspline_z);
+    cudaFree(dev_ptrs->skipped);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_i()
+//
+// AUTHOR: James Shackleford
+// DATE  : September 11th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs)
+{
+
+    cudaUnbindTexture(tex_LUT_Offsets);
+
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->dc_dv);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->LUT_Offsets);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_h()
+//
+// AUTHOR: James Shackleford
+// DATE  : September 11th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_h(Dev_Pointers_Bspline* dev_ptrs)
+{
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->dc_dv);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->LUT_Offsets);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
 
 extern "C" int
 CUDA_bspline_MI_a_hist (
@@ -1020,6 +2004,1781 @@ CUDA_MI_Grad_a (
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
     checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
     // ----------------------------------------------------------
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_deinterleave()
+//
+// KERNELS INVOKED:
+//   kernel_deinterleave()
+//
+// AUTHOR: James Shackleford
+//   DATE: 22 July, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_deinterleave(
+    int num_values,
+    float* input,
+    float* out_x,
+    float* out_y,
+    float* out_z)
+{
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 3;    // This cannot be changed.
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_values + threads_per_block - 1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+    
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_deinterleave() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_deinterleave() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    int smemSize = 2*threads_per_block*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_deinterleave<<<dimGrid, dimBlock, smemSize>>>(
+        num_values,
+        input,
+        out_x,
+        out_y,
+        out_z);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_deinterleave()");
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_pad_64()
+//
+// KERNELS INVOKED:
+//   kernel_pad_64()
+//
+// AUTHOR: James Shackleford
+//   DATE: 16 September, 2009
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_pad_64(
+    float** input,
+    int* vol_dims,
+    int* tile_dims)
+{
+
+    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
+    int3 vol_dim;
+    vol_dim.x = vol_dims[0];
+    vol_dim.y = vol_dims[1];
+    vol_dim.z = vol_dims[2];
+
+    int3 tile_dim;
+    tile_dim.x = tile_dims[0];
+    tile_dim.y = tile_dims[1];
+    tile_dim.z = tile_dims[2];
+
+    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
+
+    int4 num_tiles;
+    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
+
+    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
+    // ----------------------------------------------------------
+
+
+
+    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
+    float* tmp_output;
+    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
+    cudaMemset(tmp_output, 0, output_size*sizeof(float));
+    // ----------------------------------------------------------
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 4;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_pad_64() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_pad_64<<<dimGrid, dimBlock>>>(
+        *input,
+        tmp_output,
+        vol_dim,
+        tile_dim);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_pad()");
+
+
+    // --- RETURN -----------------------------------------------
+    cudaFree( *input );
+    *input = tmp_output;
+    // ----------------------------------------------------------
+    
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_pad()
+//
+// KERNELS INVOKED:
+//   kernel_pad()
+//
+// AUTHOR: James Shackleford
+//   DATE: 10 September, 2009
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_pad(
+    float** input,
+    int* vol_dims,
+    int* tile_dims)
+{
+
+    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
+    int3 vol_dim;
+    vol_dim.x = vol_dims[0];
+    vol_dim.y = vol_dims[1];
+    vol_dim.z = vol_dims[2];
+
+    int3 tile_dim;
+    tile_dim.x = tile_dims[0];
+    tile_dim.y = tile_dims[1];
+    tile_dim.z = tile_dims[2];
+
+    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
+
+    int4 num_tiles;
+    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
+
+    int tile_padding = 32 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 32);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
+    // ----------------------------------------------------------
+
+
+
+    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
+    float* tmp_output;
+    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
+    cudaMemset(tmp_output, 0, output_size*sizeof(float));
+    // ----------------------------------------------------------
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 4;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_pad() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_pad<<<dimGrid, dimBlock>>>(
+        *input,
+        tmp_output,
+        vol_dim,
+        tile_dim);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_pad()");
+
+
+    // --- RETURN -----------------------------------------------
+    cudaFree( *input );
+    *input = tmp_output;
+    // ----------------------------------------------------------
+    
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_score_dc_dv()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_reduce()
+//
+// AUTHOR: James Shackleford
+//   DATE: 19 August, 2009
+//////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_bspline_mse_score_dc_dv (
+    Dev_Pointers_Bspline* dev_ptrs,
+    BSPLINE_Xform* bxf,
+    Volume* fixed,
+    Volume* moving)
+{
+    GPU_Bspline_Data gbd;   
+
+    build_gbd (&gbd, bxf, fixed, moving);
+
+    // --- INITIALIZE GRID ---
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int threads_per_block = 128;
+    int num_threads = fixed->npix;
+    int sqrt_num_blocks;
+    int num_blocks;
+    int smemSize;
+    int found_flag = 0;
+
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
+    num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+    smemSize = 12 * sizeof(float) * threads_per_block;
+    sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+        for (i = sqrt_num_blocks; i < 65535; i++) {
+            if (num_blocks % i == 0) {
+                Grid_x = i;
+                Grid_y = num_blocks / Grid_x;
+                found_flag = 1;
+                break;
+            }
+        }
+
+        if (found_flag == 1) {
+            break;
+        }
+    }
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+        exit(0);
+    } else {
+#if defined (commentout)
+        printf ("Grid [%i,%i], %d threads_per_block.\n", 
+            Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    dim3 dimGrid1(Grid_x, Grid_y, 1);
+    dim3 dimBlock1(threads_per_block, 1, 1);
+
+    // --- BEGIN KERNEL EXECUTION ---
+    //  cudaEvent_t start, stop;
+    //  float time;
+
+    //  cudaEventCreate(&start);
+    //  cudaEventCreate(&stop);
+
+    //  cudaEventRecord (start, 0); 
+
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
+
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
+
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+
+    int tile_padding = 64 - 
+    ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
+
+    /* GCS ??? */
+    //if (tile_padding == 64) tile_padding = 0;
+    //printf ("tile_padding = %d\n", tile_padding);
+
+    bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
+        dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
+        dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
+        dev_ptrs->dc_dv_z,      // Addr of dc_dv_z on GPU
+        dev_ptrs->score,        // Addr of score on GPU
+        dev_ptrs->coeff,        // Addr of coeff on GPU
+        dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
+        dev_ptrs->moving_image, // Addr of moving_image on GPU
+        dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
+        gbd.fix_dim,                // Size of fixed image (vox)
+        gbd.img_origin,             // Origin of fixed image (mm)
+        gbd.img_spacing,            // Spacing of fixed image (mm)
+        gbd.mov_dim,                // Size of moving image (vox)
+        gbd.mov_offset,             // Origin of moving image (mm)
+        gbd.mov_spacing,            // Spacing of moving image (mm)
+        gbd.roi_dim,                // Region of Intrest Dimenions
+        gbd.roi_offset,             // Region of Intrest Offset
+        gbd.vox_per_rgn,            // Voxels per Region
+        gbd.rdims,                  // # of regions in (x,y,z)
+        gbd.cdims,                  // # of control points in (x,y,z)
+        tile_padding,
+        dev_ptrs->skipped);
+
+    //  cudaEventRecord (stop, 0);  
+    //  cudaEventSynchronize (stop);
+    //  cudaEventElapsedTime (&time, start, stop);
+    //  cudaEventDestroy (start);
+    //  cudaEventDestroy (stop);
+    //  printf("\n[%f ms] MSE & dc_dv\n", time);
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_condense_64_texfetch()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_condense_64()
+//
+// AUTHOR: James Shackleford
+//   DATE: September 16th, 2009
+//////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_2_condense_64_texfetch (
+    Dev_Pointers_Bspline* dev_ptrs,
+    int* vox_per_rgn,
+    int num_tiles)
+{
+    int4 vox_per_region;
+    vox_per_region.x = vox_per_rgn[0];
+    vox_per_region.y = vox_per_rgn[1];
+    vox_per_region.z = vox_per_rgn[2];
+    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+
+    int pad = 64 - (vox_per_region.w % 64);
+
+    vox_per_region.w += pad;
+
+    // --- INITIALIZE GRID --------------------------------------
+    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
+    // WITH # WARPS PER THREAD BLOCK = 1
+    int i;
+    int warps_per_block = 2;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = num_tiles;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64_texfetch() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    //  int smemSize = 384*sizeof(float);
+    int smemSize = 576*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
+
+    kernel_bspline_mse_2_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
+        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
+        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
+        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
+        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
+        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
+        dev_ptrs->LUT_Offsets,  // Input : tile offsets
+        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
+        pad,                    // Input : amount of tile padding
+        vox_per_region,         // Input : dims of tiles
+        (float)1/6);            // Input : GPU Division is slow
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_condense_64()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_condense_64()
+//
+// AUTHOR: James Shackleford
+//   DATE: September 16th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_2_condense_64(
+    Dev_Pointers_Bspline* dev_ptrs,
+    int* vox_per_rgn,
+    int num_tiles)
+{
+    int4 vox_per_region;
+    vox_per_region.x = vox_per_rgn[0];
+    vox_per_region.y = vox_per_rgn[1];
+    vox_per_region.z = vox_per_rgn[2];
+    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+
+    int pad = 64 - (vox_per_region.w % 64);
+
+    vox_per_region.w += pad;
+
+    // --- INITIALIZE GRID --------------------------------------
+    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
+    // WITH # WARPS PER THREAD BLOCK = 1
+    int i;
+    int warps_per_block = 2;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = num_tiles;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    int smemSize = 384*sizeof(float);
+    //  int smemSize = 288*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
+
+    kernel_bspline_mse_2_condense_64<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
+        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
+        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
+        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
+        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
+        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
+        dev_ptrs->LUT_Offsets,  // Input : tile offsets
+        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
+        pad,                    // Input : amount of tile padding
+        vox_per_region,         // Input : dims of tiles
+        (float)1/6);            // Input : GPU Division is slow
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_condense()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_condense()
+//
+// AUTHOR: James Shackleford
+//   DATE: 19 August, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_2_condense(
+    Dev_Pointers_Bspline* dev_ptrs,
+    int* vox_per_rgn,
+    int num_tiles)
+{
+    int4 vox_per_region;
+    vox_per_region.x = vox_per_rgn[0];
+    vox_per_region.y = vox_per_rgn[1];
+    vox_per_region.z = vox_per_rgn[2];
+    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+
+    int pad = 32 - (vox_per_region.w % 32);
+
+
+    // --- INITIALIZE GRID --------------------------------------
+    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
+    // WITH # WARPS PER THREAD BLOCK = 1
+    int i;
+    int warps_per_block = 1;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_tiles+warps_per_block-1) / warps_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    int smemSize = 384*sizeof(float);
+    //  int smemSize = 288*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
+
+    kernel_bspline_mse_2_condense<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
+        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
+        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
+        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
+        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
+        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
+        dev_ptrs->LUT_Offsets,  // Input : tile offsets
+        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
+        pad,                    // Input : amount of tile padding
+        vox_per_region,         // Input : dims of tiles
+        (float)1/6);            // Input : GPU Division is slow
+}
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_reduce()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_reduce()
+//
+// AUTHOR: James Shackleford
+//   DATE: 19 August, 2009
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_bspline_mse_2_reduce (
+    Dev_Pointers_Bspline* dev_ptrs,
+    int num_knots)
+{
+
+    // --- INITIALIZE GRID --------------------------------------
+    // LAUNCH KERNEL WITH # THREAD BLOCKS = # KNOTS / 32
+    // WITH # WARPS PER THREAD BLOCK = 2
+    int i;
+    int warps_per_block = 2;
+    int knots_per_block = 1;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_knots+knots_per_block-1) / knots_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_reduce() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    int smemSize = 195*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    //  printf("\nLaunching REDUCE with %i threadblocks\n", num_blocks);
+
+    kernel_bspline_mse_2_reduce<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->grad,     // Return: interleaved dc_dp values
+        dev_ptrs->cond_x,   // Input : condensed dc_dv_x values
+        dev_ptrs->cond_y,   // Input : condensed dc_dv_y values
+        dev_ptrs->cond_z);  // Input : condensed dc_dv_z values
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation J.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see bspline_cuda_score_j_mse_kernel1()
+ * @see CUDA_bspline_mse_2_condense_64_texfetch()
+ * @see CUDA_bspline_mse_2_reduce()
+ *
+ * @author James A. Shackleford
+ */
+extern "C" void
+bspline_cuda_j_stage_1 (
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    BSPLINE_Xform* bxf,
+    BSPLINE_Parms* parms,
+    Dev_Pointers_Bspline* dev_ptrs)
+{
+    // Reset our "voxels fallen outside" counter
+    cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    checkCUDAError ("cudaMemset(): dev_ptrs->skipped");
+    cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
+    checkCUDAError ("cudaMemset(): dev_ptrs->score");
+
+    // Calculate the score and dc_dv
+    CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
+
+    // Clear out the condensed dc_dv streams
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+    /*
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+    */
+
+    // Invoke kernel condense
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_mse_2_condense_64_texfetch (dev_ptrs,
+                                             bxf->vox_per_rgn, 
+                                             num_tiles);
+
+    /*
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Condense\n", time);
+    */
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+    /*
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+    */
+
+    // Clear out the gradient
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->grad");
+
+    // Invoke kernel reduce
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+
+    /*
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Reduce\n\n", time);
+    */
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+}
+
+
+
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation I.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see bspline_cuda_score_g_mse_kernel1()
+ * @see CUDA_deinterleave()
+ * @see CUDA_pad_64()
+ * @see CUDA_bspline_mse_2_condense_64_texfetch()
+ * @see CUDA_bspline_mse_2_reduce()
+ *
+ */
+extern "C" void
+bspline_cuda_i_stage_1 (Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    BSPLINE_Xform* bxf,
+    BSPLINE_Parms* parms,
+    Dev_Pointers_Bspline* dev_ptrs)
+{
+
+    // JAS 10.15.2009
+    // TODO: A structure similar to the BSpline_Xform
+    //       that uses float3s needs to be used here
+    //       to clean up the code.
+
+    // Dimensions of the volume (in tiles)
+    int3 rdims;         
+    rdims.x = bxf->rdims[0];
+    rdims.y = bxf->rdims[1];
+    rdims.z = bxf->rdims[2];
+
+    // Number of knots
+    int3 cdims;
+    cdims.x = bxf->cdims[0];
+    cdims.y = bxf->cdims[1];
+    cdims.z = bxf->cdims[2];
+
+    // Fixed image header
+    int3 fix_dim;
+    fix_dim.x = fixed->dim[0]; 
+    fix_dim.y = fixed->dim[1];
+    fix_dim.z = fixed->dim[2];
+
+    float3 fix_origin;      
+    fix_origin.x = (float) bxf->img_origin[0];
+    fix_origin.y = (float) bxf->img_origin[1];
+    fix_origin.z = (float) bxf->img_origin[2];
+
+    float3 fix_spacing;
+    fix_spacing.x = (float) bxf->img_spacing[0];
+    fix_spacing.y = (float) bxf->img_spacing[1];
+    fix_spacing.z = (float) bxf->img_spacing[2];
+
+    // Moving image header
+    int3 mov_dim;       
+    mov_dim.x = moving->dim[0]; 
+    mov_dim.y = moving->dim[1];
+    mov_dim.z = moving->dim[2];
+
+    float3 mov_origin;
+    mov_origin.x = (float) moving->offset[0];
+    mov_origin.y = (float) moving->offset[1];
+    mov_origin.z = (float) moving->offset[2];
+
+    float3 mov_spacing;
+    mov_spacing.x = (float) moving->pix_spacing[0];
+    mov_spacing.y = (float) moving->pix_spacing[1];
+    mov_spacing.z = (float) moving->pix_spacing[2];
+
+    // Dimension of ROI (in vox)
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];    
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
+
+    // Position of first vox in ROI (in vox)
+    int3 roi_offset;        
+    roi_offset.x = bxf->roi_offset[0];
+    roi_offset.y = bxf->roi_offset[1];
+    roi_offset.z = bxf->roi_offset[2];
+
+    // Number of voxels per region
+    int3 vox_per_rgn;       
+    vox_per_rgn.x = bxf->vox_per_rgn[0];
+    vox_per_rgn.y = bxf->vox_per_rgn[1];
+    vox_per_rgn.z = bxf->vox_per_rgn[2];
+
+
+    // JAS 10.15.2009
+    // TODO: The following blocked off section needs
+    //       to be turned into its own function.
+    // ------------------------------------------------
+    // ------------------------------------------------
+
+    // --- INITIALIZE GRID ---
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int threads_per_block = 128;
+    int num_threads = fixed->npix;
+    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+    int smemSize = 12 * sizeof(float) * threads_per_block;
+
+
+    // -----
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // -----
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+        exit(0);
+    } else {
+#if defined (commentout)
+        printf ("Grid [%i,%i], %d threads_per_block.\n", 
+            Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    dim3 dimGrid1(Grid_x, Grid_y, 1);
+    dim3 dimBlock1(threads_per_block, 1, 1);
+    // ----------------------
+
+
+    // --- BEGIN KERNEL EXECUTION ---
+    cudaEvent_t start, stop;
+    float time;
+
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord (start, 0); 
+
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
+
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
+
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+
+    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->skipped");
+
+    int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+
+    bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
+        dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
+        dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
+        dev_ptrs->dc_dv_z,      // Addr of dc_dv_z on GPU
+        dev_ptrs->score,        // Addr of score on GPU
+        dev_ptrs->coeff,        // Addr of coeff on GPU
+        dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
+        dev_ptrs->moving_image, // Addr of moving_image on GPU
+        dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
+        fix_dim,                // Size of fixed image (vox)
+        fix_origin,             // Origin of fixed image (mm)
+        fix_spacing,            // Spacing of fixed image (mm)
+        mov_dim,                // Size of moving image (vox)
+        mov_origin,             // Origin of moving image (mm)
+        mov_spacing,            // Spacing of moving image (mm)
+        roi_dim,                // Region of Intrest Dimenions
+        roi_offset,             // Region of Intrest Offset
+        vox_per_rgn,            // Voxels per Region
+        rdims,                  // 
+        cdims,
+        tile_padding,
+        dev_ptrs->skipped);
+
+    cudaEventRecord (stop, 0);  
+    cudaEventSynchronize (stop);
+
+    cudaEventElapsedTime (&time, start, stop);
+
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+
+    printf("\n[%f ms] MSE & dc_dv\n", time);
+    // ------------------------------
+
+    // END: Needs to be turned into its own function.
+    // ----------------------------------------------------------
+    // ----------------------------------------------------------
+
+
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
+
+    // Clear out the condensed dc_dv streams
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+
+
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+
+    // Invoke kernel condense
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_mse_2_condense_64 (dev_ptrs, bxf->vox_per_rgn, num_tiles);
+
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Condense\n", time);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+
+    // Clear out the gradient
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->grad");
+
+    // Invoke kernel reduce
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Reduce\n\n", time);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+    // END OF FUNCTION
+
+    // ORIGIONAL i STARTS HERE.
+    // Replaced with a version of j that performs on the fly
+    // calculations instead of using a LUT for B-Spline coefficients.
+    //
+    // The following is maintained for reference purposes.
+    /*
+    // --- INITIALIZE LOCAL VARIABLES ---------------------------
+
+    // Dimensions of the volume (in tiles)
+    int3 rdims;         
+    rdims.x = bxf->rdims[0];
+    rdims.y = bxf->rdims[1];
+    rdims.z = bxf->rdims[2];
+
+    // Number of knots
+    int3 cdims;
+    cdims.x = bxf->cdims[0];
+    cdims.y = bxf->cdims[1];
+    cdims.z = bxf->cdims[2];
+
+    // Dimensions of the volume (in voxels)
+    int3 volume_dim;        
+    volume_dim.x = fixed->dim[0]; 
+    volume_dim.y = fixed->dim[1];
+    volume_dim.z = fixed->dim[2];
+
+    // Number of voxels per region
+    int3 vox_per_rgn;       
+    vox_per_rgn.x = bxf->vox_per_rgn[0];
+    vox_per_rgn.y = bxf->vox_per_rgn[1];
+    vox_per_rgn.z = bxf->vox_per_rgn[2];
+
+    // Image origin (in mm)
+    float3 img_origin;      
+    img_origin.x = (float)bxf->img_origin[0];
+    img_origin.y = (float)bxf->img_origin[1];
+    img_origin.z = (float)bxf->img_origin[2];
+
+    // Image spacing (in mm)
+    float3 img_spacing;     
+    img_spacing.x = (float)bxf->img_spacing[0];
+    img_spacing.y = (float)bxf->img_spacing[1];
+    img_spacing.z = (float)bxf->img_spacing[2];
+
+    // Image offset
+    float3 img_offset;     
+    img_offset.x = (float)moving->offset[0];
+    img_offset.y = (float)moving->offset[1];
+    img_offset.z = (float)moving->offset[2];
+
+    // Pixel spacing
+    float3 pix_spacing;     
+    pix_spacing.x = (float)moving->pix_spacing[0];
+    pix_spacing.y = (float)moving->pix_spacing[1];
+    pix_spacing.z = (float)moving->pix_spacing[2];
+
+    // Position of first vox in ROI (in vox)
+    int3 roi_offset;        
+    roi_offset.x = bxf->roi_offset[0];
+    roi_offset.y = bxf->roi_offset[1];
+    roi_offset.z = bxf->roi_offset[2];
+
+    // Dimension of ROI (in vox)
+    int3 roi_dim;           
+    roi_dim.x = bxf->roi_dim[0];    
+    roi_dim.y = bxf->roi_dim[1];
+    roi_dim.z = bxf->roi_dim[2];
+    // ----------------------------------------------------------
+
+
+    // --- INITIALIZE GRID -------------------------------------
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int threads_per_block = 128;
+    int num_threads = fixed->npix;
+    //  int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
+    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+    int smemSize = 12 * sizeof(float) * threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++)
+    {
+    if (num_blocks % i == 0)
+    {
+    Grid_x = i;
+    Grid_y = num_blocks / Grid_x;
+    break;
+    }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+    // If this happens we should consider falling back to a
+    // CPU implementation, using a different CUDA algorithm,
+    // or padding the input dc_dv stream to work with this
+    // CUDA algorithm.
+    printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
+    exit(0);
+    } else {
+#if defined (commentout)
+    printf ("Grid [%i,%i], %d threads_per_block.\n", 
+        Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    dim3 dimGrid1(Grid_x, Grid_y, 1);
+
+
+    //  dim3 dimGrid1(num_blocks / 128, 128, 1);
+    dim3 dimBlock1(threads_per_block, 1, 1);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    // (a.k.a: bspline_cuda_score_g_mse_kernel1)
+
+    cudaEvent_t start, stop;
+    float time;
+
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord (start, 0); 
+
+
+    // For now we are using the legacy g_mse_kernel1
+    // later to be replaced with h_mse_kernel1
+    bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
+    dev_ptrs->dc_dv,    // Addr of dc_dv on GPU
+    dev_ptrs->score,    // Addr of score on GPU
+    dev_ptrs->coeff,    // Addr of coeff on GPU
+    dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
+    dev_ptrs->moving_image, // Addr of moving_image on GPU
+    dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
+    volume_dim,     // Volume Dimensions
+    img_origin,     // Origin
+    img_spacing,        // Voxel Spacing
+    img_offset,     // Image Offset
+    roi_offset,     // Region of Intrest Offset
+    roi_dim,        // Region of Intrest Dimenions
+    vox_per_rgn,        // Voxels per Region
+    pix_spacing,        // Pixel Spacing
+    rdims,          // 
+    cdims);         // 
+
+    cudaEventRecord (stop, 0);  
+    cudaEventSynchronize (stop);
+
+    cudaEventElapsedTime (&time, start, stop);
+
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+
+    printf("\n[%f ms] G Part 1\n", time);
+    // ----------------------------------------------------------
+
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
+    // ----------------------------------------------------------
+    
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    // &&&&&&&&&&&&&&&&&&&&& PART 2 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventCreate(&start);                                    //!!
+    cudaEventCreate(&stop);                                     //!!
+    cudaEventRecord (start, 0);                                 //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // ----------------------------------------------------------
+    // * Glue Code 1
+    //    [GPU] Generate 3 seperate Row-Major dc_dv volumes
+    //          One for X, one for Y, and one for Z
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
+
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
+
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
+
+    CUDA_deinterleave(dev_ptrs->dc_dv_size/sizeof(float),
+    dev_ptrs->dc_dv,
+    dev_ptrs->dc_dv_x,
+    dev_ptrs->dc_dv_y,
+    dev_ptrs->dc_dv_z);
+
+    // Release dc_dv on the card so we have enough memory
+    // (We will have to re-allocate dc_dv before we return)
+    //  cudaUnbindTexture (tex_dc_dv);
+    //  cudaFree( dev_ptrs->dc_dv );
+    // ----------------------------------------------------------
+
+    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventRecord (stop, 0);                                  //!!
+    cudaEventSynchronize (stop);                                //!!
+    cudaEventElapsedTime (&time, start, stop);                  //!!
+    cudaEventDestroy (start);                                   //!!
+    cudaEventDestroy (stop);                                    //!!
+    printf("[%f ms] Deinterleaving\n", time);                   //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventCreate(&start);                                    //!!
+    cudaEventCreate(&stop);                                     //!!
+    cudaEventRecord (start, 0);                                 //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    // ----------------------------------------------------------
+    // * Glue Code 2
+    //    [GPU] Convert the 3 deinterleaved row-major
+    //          data streams into 3 32-byte aligned
+    //          tiled streams.
+    CUDA_pad_64(&dev_ptrs->dc_dv_x,
+    fixed->dim,
+    bxf->vox_per_rgn);
+
+    CUDA_pad_64(&dev_ptrs->dc_dv_y,
+    fixed->dim,
+    bxf->vox_per_rgn);
+
+    CUDA_pad_64(&dev_ptrs->dc_dv_z,
+    fixed->dim,
+    bxf->vox_per_rgn);
+    // ----------------------------------------------------------
+
+    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventRecord (stop, 0);                                  //!!
+    cudaEventSynchronize (stop);                                //!!
+    cudaEventElapsedTime (&time, start, stop);                  //!!
+    cudaEventDestroy (start);                                   //!!
+    cudaEventDestroy (stop);                                    //!!
+    printf("[%f ms] Data Padding\n", time);                     //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // ----------------------------------------------------------
+    // * Setup 3
+    //     Clear out the condensed dc_dv streams
+    
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
+    // ----------------------------------------------------------
+
+
+    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventCreate(&start);                                    //!!
+    cudaEventCreate(&stop);                                     //!!
+    cudaEventRecord (start, 0);                                 //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    // --- INVOKE KERNEL CONDENSE -------------------------------
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_mse_2_condense_64(dev_ptrs, bxf->vox_per_rgn, num_tiles);
+    //  CPU_bspline_mse_2_condense(dev_ptrs, bxf->vox_per_rgn, bxf->cdims, bxf->rdims, num_tiles);
+    // ----------------------------------------------------------
+
+    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventRecord (stop, 0);                                  //!!
+    cudaEventSynchronize (stop);                                //!!
+    cudaEventElapsedTime (&time, start, stop);                  //!!
+    cudaEventDestroy (start);                                   //!!
+    cudaEventDestroy (stop);                                    //!!
+    printf("[%f ms] Condense\n", time);                         //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+    // ----------------------------------------------------------
+
+    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventCreate(&start);                                    //!!
+    cudaEventCreate(&stop);                                     //!!
+    cudaEventRecord (start, 0);                                 //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+    // --- INVOKE KERNEL CONDENSE -------------------------------
+    CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
+    //  CPU_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
+    // ----------------------------------------------------------
+
+
+    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    cudaEventRecord (stop, 0);                                  //!!
+    cudaEventSynchronize (stop);                                //!!
+    cudaEventElapsedTime (&time, start, stop);                  //!!
+    cudaEventDestroy (start);                                   //!!
+    cudaEventDestroy (stop);                                    //!!
+    printf("[%f ms] Reduce\n\n", time);                         //!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+    // ----------------------------------------------------------
+
+
+    // --- PUT dc_dv BACK THE WAY WE FOUND IT -------------------
+    // This is some disabled LOW-MEM code.  We don't need
+    // to de-allocate and re-allocate dc_dv, but we can if
+    // we are in dire need for more memory.  The re-allocation
+    // process is a little slow, so we waste a little memory
+    // here in a trade off for speed.
+
+    // Re-Allocate dev_ptrs->dc_dv
+    //  cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    //  cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
+    //  cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    // ----------------------------------------------------------
+
+    */
+    // END OF REFERENCE CODE
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: bspline_cuda_j_stage_2()
+//
+// KERNELS INVOKED:
+//   sum_reduction_kernel()
+//   sum_reduction_last_step_kernel()
+//   bspline_cuda_update_grad_kernel()
+//   bspline_cuda_compute_grad_mean_kernel()
+//   sum_reduction_last_step_kernel()
+//   bspline_cuda_compute_grad_norm_kernel
+//   sum_reduction_last_step_kernel()
+//
+// bspline_cuda_final_steps_f()
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+bspline_cuda_j_stage_2 (
+    BSPLINE_Parms* parms, 
+    BSPLINE_Xform* bxf,
+    Volume* fixed,
+    int*   vox_per_rgn,
+    int*   volume_dim,
+    float* host_score,
+    float* host_grad,
+    float* host_grad_mean,
+    float* host_grad_norm,
+    Dev_Pointers_Bspline* dev_ptrs,
+    int *num_vox)
+{
+
+    // --- INITIALIZE GRID --------------------------------------
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
+    //  int num_blocks = (int)ceil(num_elems / 512.0);
+    int num_blocks = (num_elems + 511) / 512;
+    
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    int i;
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    dim3 dimBlock(128, 2, 2);
+    int smemSize = 512 * sizeof(float);
+    // ----------------------------------------------------------
+
+#if defined (commentout)
+    /* Compute score on cpu for debugging */
+    {
+    int i;
+    float *cpu_score = (float*) malloc (dev_ptrs->score_size);
+    int num_ele = dev_ptrs->score_size / sizeof (float);
+    double sse = 0.0;
+    FILE *fp;
+
+    cudaMemcpy (cpu_score, dev_ptrs->score, dev_ptrs->score_size, 
+        cudaMemcpyDeviceToHost);
+    for (i = 0; i < num_ele; i++) {
+        sse += (double) cpu_score[i];
+    }
+    sse /= 128480.;
+    printf ("CPU computed score as %f\n", sse);
+    
+    fp = fopen ("gpu_score.txt", "wb");
+    for (i = 0; i < num_ele; i++) {
+        fprintf (fp, "%f\n", cpu_score[i]);
+    }
+    fclose (fp);
+    }
+#endif
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
+        dev_ptrs->score,
+        dev_ptrs->score,
+        num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
+        dev_ptrs->score,
+        dev_ptrs->score,
+        num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    // ----------------------------------------------------------
+
+
+    // --- RETREIVE THE SCORE FROM GPU --------------------------
+    cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
+    checkCUDAError("Failed to copy score from GPU to host");
+    // ----------------------------------------------------------
+
+
+    //  for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
+    //      skipped[0] += skipped[i];
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
+        dev_ptrs->skipped,
+        dev_ptrs->skipped,
+        num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
+        dev_ptrs->skipped,
+        dev_ptrs->skipped,
+        num_elems);
+    // ----------------------------------------------------------
+
+    float skipped;
+    cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
+
+    *num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped;
+
+    *host_score = *host_score / *num_vox;
+
+    /////////////////////////////////////////////////////////////
+    /////////////////////// CALCULATE ///////////////////////////
+    ////////////// GRAD, GRAD NORM *AND* GRAD MEAN //////////////
+    /////////////////////////////////////////////////////////////
+
+
+    // --- RE-INITIALIZE GRID -----------------------------------
+    Grid_x = 0;
+    Grid_y = 0;
+    num_elems = bxf->num_coeff;
+    //  num_blocks = (int)ceil(num_elems / 512.0);
+    num_blocks = (num_elems + 511) / 512;
+    
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid2(Grid_x, Grid_y, 1);
+    dim3 dimBlock2(128, 2, 2);
+    smemSize = 512 * sizeof(float);
+    // ----------------------------------------------------------
+    
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>> (
+        dev_ptrs->grad,
+        *num_vox,
+        num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] bspline_cuda_update_grad_kernel");
+    // ----------------------------------------------------------
+
+
+    // --- RETREIVE THE GRAD FROM GPU ---------------------------
+    cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
+    checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
+    // ----------------------------------------------------------
+
+    // The following is unnecessary since report_score()
+    // calculates the grad mean & norm from grad[] anyway.
+    /*
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
+    dev_ptrs->grad,
+    dev_ptrs->grad_temp,
+    num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] bspline_cuda_grad_mean_kernel()");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
+    dev_ptrs->grad_temp,
+    dev_ptrs->grad_temp,
+    num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    // ----------------------------------------------------------
+
+
+    // --- RETREIVE THE GRAD MEAN FROM GPU ----------------------
+    cudaMemcpy(host_grad_mean, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
+    checkCUDAError("Failed to copy grad_mean from GPU to host");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    bspline_cuda_compute_grad_norm_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
+    dev_ptrs->grad,
+    dev_ptrs->grad_temp,
+    num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] bspline_cuda_compute_grad_norm_kernel()");
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
+    dev_ptrs->grad_temp,
+    dev_ptrs->grad_temp,
+    num_elems);
+    // ----------------------------------------------------------
+
+
+    // --- PREPARE FOR NEXT KERNEL ------------------------------
+    cudaThreadSynchronize();
+    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    // ----------------------------------------------------------
+
+
+    // --- RETREIVE THE GRAD NORM FROM GPU ----------------------
+    cudaMemcpy(host_grad_norm, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
+    checkCUDAError("Failed to copy grad_norm from GPU to host");
+    // ----------------------------------------------------------
+    */
 }
 
 
@@ -2429,1013 +5188,6 @@ kernel_bspline_MI_dc_dv_a (
 
 
 
-/**
- * Calculates the B-spline score and gradient using CUDA implementation J.
- *
- * @param fixed The fixed volume
- * @param moving The moving volume
- * @param moving_grad The spatial gradient of the moving volume
- * @param bxf Pointer to the B-spline Xform
- * @param parms Pointer to the B-spline parameters
- * @param dev_ptrs Pointer the GPU device pointers
- *
- * @see bspline_cuda_score_j_mse_kernel1()
- * @see CUDA_bspline_mse_2_condense_64_texfetch()
- * @see CUDA_bspline_mse_2_reduce()
- *
- * @author James A. Shackleford
- */
-extern "C" void
-bspline_cuda_j_stage_1 (
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    BSPLINE_Xform* bxf,
-    BSPLINE_Parms* parms,
-    Dev_Pointers_Bspline* dev_ptrs)
-{
-    // Reset our "voxels fallen outside" counter
-    cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-    checkCUDAError ("cudaMemset(): dev_ptrs->skipped");
-    cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
-    checkCUDAError ("cudaMemset(): dev_ptrs->score");
-
-    // Calculate the score and dc_dv
-    CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
-
-    // Clear out the condensed dc_dv streams
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-
-    /*
-    // Start timing the kernel
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord (start, 0);
-    */
-
-    // Invoke kernel condense
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64_texfetch (dev_ptrs,
-                                             bxf->vox_per_rgn, 
-                                             num_tiles);
-
-    /*
-    // Stop timing the kernel
-    cudaEventRecord (stop, 0);
-    cudaEventSynchronize (stop);
-    cudaEventElapsedTime (&time, start, stop);
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-    printf("[%f ms] Condense\n", time);
-    */
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-
-    /*
-    // Start timing the kernel
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord (start, 0);
-    */
-
-    // Clear out the gradient
-    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->grad");
-
-    // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
-
-    /*
-    // Stop timing the kernel
-    cudaEventRecord (stop, 0);
-    cudaEventSynchronize (stop);
-    cudaEventElapsedTime (&time, start, stop);
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-    printf("[%f ms] Reduce\n\n", time);
-    */
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-}
-
-
-
-/**
- * Calculates the B-spline score and gradient using CUDA implementation I.
- *
- * @param fixed The fixed volume
- * @param moving The moving volume
- * @param moving_grad The spatial gradient of the moving volume
- * @param bxf Pointer to the B-spline Xform
- * @param parms Pointer to the B-spline parameters
- * @param dev_ptrs Pointer the GPU device pointers
- *
- * @see bspline_cuda_score_g_mse_kernel1()
- * @see CUDA_deinterleave()
- * @see CUDA_pad_64()
- * @see CUDA_bspline_mse_2_condense_64_texfetch()
- * @see CUDA_bspline_mse_2_reduce()
- *
- */
-extern "C" void
-bspline_cuda_i_stage_1 (Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    BSPLINE_Xform* bxf,
-    BSPLINE_Parms* parms,
-    Dev_Pointers_Bspline* dev_ptrs)
-{
-
-    // JAS 10.15.2009
-    // TODO: A structure similar to the BSpline_Xform
-    //       that uses float3s needs to be used here
-    //       to clean up the code.
-
-    // Dimensions of the volume (in tiles)
-    int3 rdims;         
-    rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
-
-    // Number of knots
-    int3 cdims;
-    cdims.x = bxf->cdims[0];
-    cdims.y = bxf->cdims[1];
-    cdims.z = bxf->cdims[2];
-
-    // Fixed image header
-    int3 fix_dim;
-    fix_dim.x = fixed->dim[0]; 
-    fix_dim.y = fixed->dim[1];
-    fix_dim.z = fixed->dim[2];
-
-    float3 fix_origin;      
-    fix_origin.x = (float) bxf->img_origin[0];
-    fix_origin.y = (float) bxf->img_origin[1];
-    fix_origin.z = (float) bxf->img_origin[2];
-
-    float3 fix_spacing;
-    fix_spacing.x = (float) bxf->img_spacing[0];
-    fix_spacing.y = (float) bxf->img_spacing[1];
-    fix_spacing.z = (float) bxf->img_spacing[2];
-
-    // Moving image header
-    int3 mov_dim;       
-    mov_dim.x = moving->dim[0]; 
-    mov_dim.y = moving->dim[1];
-    mov_dim.z = moving->dim[2];
-
-    float3 mov_origin;
-    mov_origin.x = (float) moving->offset[0];
-    mov_origin.y = (float) moving->offset[1];
-    mov_origin.z = (float) moving->offset[2];
-
-    float3 mov_spacing;
-    mov_spacing.x = (float) moving->pix_spacing[0];
-    mov_spacing.y = (float) moving->pix_spacing[1];
-    mov_spacing.z = (float) moving->pix_spacing[2];
-
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-
-    // Position of first vox in ROI (in vox)
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
-    // Number of voxels per region
-    int3 vox_per_rgn;       
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
-
-
-    // JAS 10.15.2009
-    // TODO: The following blocked off section needs
-    //       to be turned into its own function.
-    // ------------------------------------------------
-    // ------------------------------------------------
-
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = 12 * sizeof(float) * threads_per_block;
-
-
-    // -----
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // -----
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    // ----------------------
-
-
-    // --- BEGIN KERNEL EXECUTION ---
-    cudaEvent_t start, stop;
-    float time;
-
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord (start, 0); 
-
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
-
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
-
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
-
-    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->skipped");
-
-    int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
-
-    bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
-        dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
-        dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
-        dev_ptrs->dc_dv_z,      // Addr of dc_dv_z on GPU
-        dev_ptrs->score,        // Addr of score on GPU
-        dev_ptrs->coeff,        // Addr of coeff on GPU
-        dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
-        dev_ptrs->moving_image, // Addr of moving_image on GPU
-        dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-        fix_dim,                // Size of fixed image (vox)
-        fix_origin,             // Origin of fixed image (mm)
-        fix_spacing,            // Spacing of fixed image (mm)
-        mov_dim,                // Size of moving image (vox)
-        mov_origin,             // Origin of moving image (mm)
-        mov_spacing,            // Spacing of moving image (mm)
-        roi_dim,                // Region of Intrest Dimenions
-        roi_offset,             // Region of Intrest Offset
-        vox_per_rgn,            // Voxels per Region
-        rdims,                  // 
-        cdims,
-        tile_padding,
-        dev_ptrs->skipped);
-
-    cudaEventRecord (stop, 0);  
-    cudaEventSynchronize (stop);
-
-    cudaEventElapsedTime (&time, start, stop);
-
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-
-    printf("\n[%f ms] MSE & dc_dv\n", time);
-    // ------------------------------
-
-    // END: Needs to be turned into its own function.
-    // ----------------------------------------------------------
-    // ----------------------------------------------------------
-
-
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
-
-    // Clear out the condensed dc_dv streams
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-
-
-    // Start timing the kernel
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord (start, 0);
-
-    // Invoke kernel condense
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64 (dev_ptrs, bxf->vox_per_rgn, num_tiles);
-
-    // Stop timing the kernel
-    cudaEventRecord (stop, 0);
-    cudaEventSynchronize (stop);
-    cudaEventElapsedTime (&time, start, stop);
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-    printf("[%f ms] Condense\n", time);
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-
-    // Start timing the kernel
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord (start, 0);
-
-    // Clear out the gradient
-    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->grad");
-
-    // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
-
-    // Stop timing the kernel
-    cudaEventRecord (stop, 0);
-    cudaEventSynchronize (stop);
-    cudaEventElapsedTime (&time, start, stop);
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-    printf("[%f ms] Reduce\n\n", time);
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-
-    // END OF FUNCTION
-
-    // ORIGIONAL i STARTS HERE.
-    // Replaced with a version of j that performs on the fly
-    // calculations instead of using a LUT for B-Spline coefficients.
-    //
-    // The following is maintained for reference purposes.
-    /*
-    // --- INITIALIZE LOCAL VARIABLES ---------------------------
-
-    // Dimensions of the volume (in tiles)
-    int3 rdims;         
-    rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
-
-    // Number of knots
-    int3 cdims;
-    cdims.x = bxf->cdims[0];
-    cdims.y = bxf->cdims[1];
-    cdims.z = bxf->cdims[2];
-
-    // Dimensions of the volume (in voxels)
-    int3 volume_dim;        
-    volume_dim.x = fixed->dim[0]; 
-    volume_dim.y = fixed->dim[1];
-    volume_dim.z = fixed->dim[2];
-
-    // Number of voxels per region
-    int3 vox_per_rgn;       
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
-
-    // Image origin (in mm)
-    float3 img_origin;      
-    img_origin.x = (float)bxf->img_origin[0];
-    img_origin.y = (float)bxf->img_origin[1];
-    img_origin.z = (float)bxf->img_origin[2];
-
-    // Image spacing (in mm)
-    float3 img_spacing;     
-    img_spacing.x = (float)bxf->img_spacing[0];
-    img_spacing.y = (float)bxf->img_spacing[1];
-    img_spacing.z = (float)bxf->img_spacing[2];
-
-    // Image offset
-    float3 img_offset;     
-    img_offset.x = (float)moving->offset[0];
-    img_offset.y = (float)moving->offset[1];
-    img_offset.z = (float)moving->offset[2];
-
-    // Pixel spacing
-    float3 pix_spacing;     
-    pix_spacing.x = (float)moving->pix_spacing[0];
-    pix_spacing.y = (float)moving->pix_spacing[1];
-    pix_spacing.z = (float)moving->pix_spacing[2];
-
-    // Position of first vox in ROI (in vox)
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-    // ----------------------------------------------------------
-
-
-    // --- INITIALIZE GRID -------------------------------------
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    //  int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = 12 * sizeof(float) * threads_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++)
-    {
-    if (num_blocks % i == 0)
-    {
-    Grid_x = i;
-    Grid_y = num_blocks / Grid_x;
-    break;
-    }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-    // If this happens we should consider falling back to a
-    // CPU implementation, using a different CUDA algorithm,
-    // or padding the input dc_dv stream to work with this
-    // CUDA algorithm.
-    printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
-    exit(0);
-    } else {
-#if defined (commentout)
-    printf ("Grid [%i,%i], %d threads_per_block.\n", 
-        Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-
-
-    //  dim3 dimGrid1(num_blocks / 128, 128, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    // (a.k.a: bspline_cuda_score_g_mse_kernel1)
-
-    cudaEvent_t start, stop;
-    float time;
-
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord (start, 0); 
-
-
-    // For now we are using the legacy g_mse_kernel1
-    // later to be replaced with h_mse_kernel1
-    bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
-    dev_ptrs->dc_dv,    // Addr of dc_dv on GPU
-    dev_ptrs->score,    // Addr of score on GPU
-    dev_ptrs->coeff,    // Addr of coeff on GPU
-    dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
-    dev_ptrs->moving_image, // Addr of moving_image on GPU
-    dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-    volume_dim,     // Volume Dimensions
-    img_origin,     // Origin
-    img_spacing,        // Voxel Spacing
-    img_offset,     // Image Offset
-    roi_offset,     // Region of Intrest Offset
-    roi_dim,        // Region of Intrest Dimenions
-    vox_per_rgn,        // Voxels per Region
-    pix_spacing,        // Pixel Spacing
-    rdims,          // 
-    cdims);         // 
-
-    cudaEventRecord (stop, 0);  
-    cudaEventSynchronize (stop);
-
-    cudaEventElapsedTime (&time, start, stop);
-
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-
-    printf("\n[%f ms] G Part 1\n", time);
-    // ----------------------------------------------------------
-
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
-    // ----------------------------------------------------------
-    
-    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    // &&&&&&&&&&&&&&&&&&&&& PART 2 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // ----------------------------------------------------------
-    // * Glue Code 1
-    //    [GPU] Generate 3 seperate Row-Major dc_dv volumes
-    //          One for X, one for Y, and one for Z
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
-
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
-
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
-
-    CUDA_deinterleave(dev_ptrs->dc_dv_size/sizeof(float),
-    dev_ptrs->dc_dv,
-    dev_ptrs->dc_dv_x,
-    dev_ptrs->dc_dv_y,
-    dev_ptrs->dc_dv_z);
-
-    // Release dc_dv on the card so we have enough memory
-    // (We will have to re-allocate dc_dv before we return)
-    //  cudaUnbindTexture (tex_dc_dv);
-    //  cudaFree( dev_ptrs->dc_dv );
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Deinterleaving\n", time);                   //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
-    // ----------------------------------------------------------
-    // * Glue Code 2
-    //    [GPU] Convert the 3 deinterleaved row-major
-    //          data streams into 3 32-byte aligned
-    //          tiled streams.
-    CUDA_pad_64(&dev_ptrs->dc_dv_x,
-    fixed->dim,
-    bxf->vox_per_rgn);
-
-    CUDA_pad_64(&dev_ptrs->dc_dv_y,
-    fixed->dim,
-    bxf->vox_per_rgn);
-
-    CUDA_pad_64(&dev_ptrs->dc_dv_z,
-    fixed->dim,
-    bxf->vox_per_rgn);
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Data Padding\n", time);                     //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // ----------------------------------------------------------
-    // * Setup 3
-    //     Clear out the condensed dc_dv streams
-    
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-    // ----------------------------------------------------------
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // --- INVOKE KERNEL CONDENSE -------------------------------
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64(dev_ptrs, bxf->vox_per_rgn, num_tiles);
-    //  CPU_bspline_mse_2_condense(dev_ptrs, bxf->vox_per_rgn, bxf->cdims, bxf->rdims, num_tiles);
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Condense\n", time);                         //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-    // ----------------------------------------------------------
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // --- INVOKE KERNEL CONDENSE -------------------------------
-    CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-    //  CPU_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-    // ----------------------------------------------------------
-
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Reduce\n\n", time);                         //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-    // ----------------------------------------------------------
-
-
-    // --- PUT dc_dv BACK THE WAY WE FOUND IT -------------------
-    // This is some disabled LOW-MEM code.  We don't need
-    // to de-allocate and re-allocate dc_dv, but we can if
-    // we are in dire need for more memory.  The re-allocation
-    // process is a little slow, so we waste a little memory
-    // here in a trade off for speed.
-
-    // Re-Allocate dev_ptrs->dc_dv
-    //  cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    //  cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
-    //  cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    // ----------------------------------------------------------
-
-    */
-    // END OF REFERENCE CODE
-
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_j_stage_2()
-//
-// KERNELS INVOKED:
-//   sum_reduction_kernel()
-//   sum_reduction_last_step_kernel()
-//   bspline_cuda_update_grad_kernel()
-//   bspline_cuda_compute_grad_mean_kernel()
-//   sum_reduction_last_step_kernel()
-//   bspline_cuda_compute_grad_norm_kernel
-//   sum_reduction_last_step_kernel()
-//
-// bspline_cuda_final_steps_f()
-////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-bspline_cuda_j_stage_2 (
-    BSPLINE_Parms* parms, 
-    BSPLINE_Xform* bxf,
-    Volume* fixed,
-    int*   vox_per_rgn,
-    int*   volume_dim,
-    float* host_score,
-    float* host_grad,
-    float* host_grad_mean,
-    float* host_grad_norm,
-    Dev_Pointers_Bspline* dev_ptrs,
-    int *num_vox)
-{
-
-    // --- INITIALIZE GRID --------------------------------------
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
-    //  int num_blocks = (int)ceil(num_elems / 512.0);
-    int num_blocks = (num_elems + 511) / 512;
-    
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    int i;
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    dim3 dimBlock(128, 2, 2);
-    int smemSize = 512 * sizeof(float);
-    // ----------------------------------------------------------
-
-#if defined (commentout)
-    /* Compute score on cpu for debugging */
-    {
-    int i;
-    float *cpu_score = (float*) malloc (dev_ptrs->score_size);
-    int num_ele = dev_ptrs->score_size / sizeof (float);
-    double sse = 0.0;
-    FILE *fp;
-
-    cudaMemcpy (cpu_score, dev_ptrs->score, dev_ptrs->score_size, 
-        cudaMemcpyDeviceToHost);
-    for (i = 0; i < num_ele; i++) {
-        sse += (double) cpu_score[i];
-    }
-    sse /= 128480.;
-    printf ("CPU computed score as %f\n", sse);
-    
-    fp = fopen ("gpu_score.txt", "wb");
-    for (i = 0; i < num_ele; i++) {
-        fprintf (fp, "%f\n", cpu_score[i]);
-    }
-    fclose (fp);
-    }
-#endif
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
-        dev_ptrs->score,
-        dev_ptrs->score,
-        num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
-        dev_ptrs->score,
-        dev_ptrs->score,
-        num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
-    // ----------------------------------------------------------
-
-
-    // --- RETREIVE THE SCORE FROM GPU --------------------------
-    cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
-    checkCUDAError("Failed to copy score from GPU to host");
-    // ----------------------------------------------------------
-
-
-    //  for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
-    //      skipped[0] += skipped[i];
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
-        dev_ptrs->skipped,
-        dev_ptrs->skipped,
-        num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
-        dev_ptrs->skipped,
-        dev_ptrs->skipped,
-        num_elems);
-    // ----------------------------------------------------------
-
-    float skipped;
-    cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
-
-    *num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped;
-
-    *host_score = *host_score / *num_vox;
-
-    /////////////////////////////////////////////////////////////
-    /////////////////////// CALCULATE ///////////////////////////
-    ////////////// GRAD, GRAD NORM *AND* GRAD MEAN //////////////
-    /////////////////////////////////////////////////////////////
-
-
-    // --- RE-INITIALIZE GRID -----------------------------------
-    Grid_x = 0;
-    Grid_y = 0;
-    num_elems = bxf->num_coeff;
-    //  num_blocks = (int)ceil(num_elems / 512.0);
-    num_blocks = (num_elems + 511) / 512;
-    
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid2(Grid_x, Grid_y, 1);
-    dim3 dimBlock2(128, 2, 2);
-    smemSize = 512 * sizeof(float);
-    // ----------------------------------------------------------
-    
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>> (
-        dev_ptrs->grad,
-        *num_vox,
-        num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] bspline_cuda_update_grad_kernel");
-    // ----------------------------------------------------------
-
-
-    // --- RETREIVE THE GRAD FROM GPU ---------------------------
-    cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
-    checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
-    // ----------------------------------------------------------
-
-    // The following is unnecessary since report_score()
-    // calculates the grad mean & norm from grad[] anyway.
-    /*
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    bspline_cuda_compute_grad_mean_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
-    dev_ptrs->grad,
-    dev_ptrs->grad_temp,
-    num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] bspline_cuda_grad_mean_kernel()");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
-    dev_ptrs->grad_temp,
-    dev_ptrs->grad_temp,
-    num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
-    // ----------------------------------------------------------
-
-
-    // --- RETREIVE THE GRAD MEAN FROM GPU ----------------------
-    cudaMemcpy(host_grad_mean, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
-    checkCUDAError("Failed to copy grad_mean from GPU to host");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    bspline_cuda_compute_grad_norm_kernel<<<dimGrid2, dimBlock2, smemSize>>>(
-    dev_ptrs->grad,
-    dev_ptrs->grad_temp,
-    num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] bspline_cuda_compute_grad_norm_kernel()");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_last_step_kernel<<<dimGrid2, dimBlock2>>>(
-    dev_ptrs->grad_temp,
-    dev_ptrs->grad_temp,
-    num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_sum_reduction_last_step()");
-    // ----------------------------------------------------------
-
-
-    // --- RETREIVE THE GRAD NORM FROM GPU ----------------------
-    cudaMemcpy(host_grad_norm, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
-    checkCUDAError("Failed to copy grad_norm from GPU to host");
-    // ----------------------------------------------------------
-    */
-}
 
 
 
@@ -5048,41 +6800,6 @@ bspline_cuda_score_j_mse_kernel1
 
 
 
-/******************************************************
-* This function computes the spline basis function at 
-* index 0, 1, 2, or 3 for a voxel 
-Author: Naga Kandasamy
-Date: 07 July 2009
-*******************************************************/
-
-__device__ float
-obtain_spline_basis_function (float one_over_six,
-    int t_idx, 
-    int vox_idx, 
-    int vox_per_rgn)
-{
-    float i = (float)vox_idx / vox_per_rgn;
-    float C;
-                        
-    switch(t_idx) {
-    case 0:
-        C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
-        break;
-    case 1:
-        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i            + 4.0);
-        break;
-    case 2:
-        C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
-        break;
-    case 3:
-        C = one_over_six * (+ 1.0 * i*i*i);
-        break;
-    }
-
-    return C;
-}
-
-
 /***********************************************************************
  * bspline_cuda_update_grad_kernel
  *
@@ -5209,989 +6926,6 @@ sum_reduction_last_step_kernel(
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_initialize_j()
-// 
-// Initialize the GPU to execute bspline_cuda_score_j_mse().
-//
-// AUTHOR: James Shackleford
-// DATE  : September 17, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    BSPLINE_Xform* bxf,
-    BSPLINE_Parms* parms)
-{
-    // Keep track of how much memory we allocated
-    // in the GPU global memory.
-    long unsigned GPU_Memory_Bytes = 0;
-
-    // Tell the user we are busy copying information
-    // to the device memory.
-    printf ("Copying data to GPU global memory\n");
-
-    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
-
-    // Allocate memory in the GPU Global memory for the fixed
-    // volume's voxel data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->fixed_image. (fixed_image is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->fixed_image_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc ((void**)&dev_ptrs->fixed_image, 
-    dev_ptrs->fixed_image_size);
-    checkCUDAError ("Failed to allocate memory for fixed image");
-    printf(".");
-
-
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    cudaMemcpy (dev_ptrs->fixed_image, fixed->img, 
-    dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
-    checkCUDAError ("Failed to copy fixed image to GPU");
-    printf(".");
-
-
-    // Bind this to a texture reference
-    cudaBindTexture (0, tex_fixed_image, dev_ptrs->fixed_image, 
-    dev_ptrs->fixed_image_size);
-    checkCUDAError ("Failed to bind dev_ptrs->fixed_image to texture reference!");
-    printf(".");
-    
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
-    // ----------------------------------------------------------
-
-
-    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
-
-    // Allocate memory in the GPU Global memory for the moving
-    // volume's voxel data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->moving_image. (moving_image is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->moving_image_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
-    checkCUDAError("Failed to allocate memory for moving image");
-    printf(".");
-    
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
-    checkCUDAError("Failed to copy moving image to GPU");
-    printf(".");
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
-    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
-    // ----------------------------------------------------------
-
-
-    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
-
-    // Allocate memory in the GPU Global memory for the moving grad
-    // volume's data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->moving_grad. (moving_grad is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->moving_grad_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
-    checkCUDAError("Failed to allocate memory for moving grad");
-    printf(".");
-    
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    // (Note the pointer dereference)
-    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
-    checkCUDAError("Failed to copy moving grad to GPU");
-    printf(".");
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_moving_grad, dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
-    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // coefficient LUT. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->coeff. (coeff is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->coeff_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
-    checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
-    printf(".");
-
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
-    checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->coeff_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->score_size = sizeof(float) * fixed->npix;
-    dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
-
-    // Allocate memory in the GPU Global memory for the 
-    // "Score". The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->score. (scoreis a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->score_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
-    printf(".");
-
-    cudaMalloc((void**)&dev_ptrs->skipped, dev_ptrs->skipped_size);
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
-    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->score_size;
-    GPU_Memory_Bytes += dev_ptrs->skipped_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // grad. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->grad. (grad is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->grad_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
-    printf(".");
-
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
-    checkCUDAError("Failed to bind dev_ptrs->grad to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->grad_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // grad_temp. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->grad_temp. (grad_temp is a pointer)
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->grad_temp_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    //int num_voxels = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
-
-    int3 vol_dim;
-    vol_dim.x = fixed->dim[0];
-    vol_dim.y = fixed->dim[1];
-    vol_dim.z = fixed->dim[2];
-
-    int3 tile_dim;
-    tile_dim.x = bxf->vox_per_rgn[0];
-    tile_dim.y = bxf->vox_per_rgn[1];
-    tile_dim.z = bxf->vox_per_rgn[2];
-
-    int4 num_tile;
-    num_tile.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
-    num_tile.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
-    num_tile.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
-    num_tile.w = num_tile.x * num_tile.y * num_tile.z;
-
-    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
-    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
-
-    dev_ptrs->dc_dv_x_size = ((tile_bytes + tile_padding) * num_tile.w) * sizeof(float);
-    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
-    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
-
-    // Allocate memory in the GPU Global memory for the 
-    // deinterleaved dc_dv arrays. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->dc_dv_X. 
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->dc_dv_x_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
-    printf(".");
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->dc_dv_y_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
-    printf(".");
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->dc_dv_z_size,
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-
-    // Increment the GPU memory byte counter
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
-    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
-
-    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    //  int pad = 64 - (vox_per_tile % 64);
-
-    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
-
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->LUT_Offsets_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
-    printf(".");
-
-    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
-    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
-
-    free (offsets);
-
-    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
-    // ----------------------------------------------------------
-
-    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
-    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
-
-    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
-    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
-
-    int i,j;
-    for (i = 0; i < num_tiles; i++)
-    {
-    find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
-    for (j = 0; j < 64; j++)
-        LUT_Knot[64*i + j] = local_set_of_64[j];
-    }
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->LUT_Knot_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
-    printf(".");
-
-    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
-
-    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
-    //  checkCUDAError("cudaBindTexture(): dev_ptrs->LUT_Knot");
-
-    free (local_set_of_64);
-    free (LUT_Knot);
-
-    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
-    // ----------------------------------------------------------
-
-    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
-    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
-    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
-    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
-
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->cond_x_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
-    printf(".");
-
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->cond_y_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
-    printf(".");
-
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->cond_z_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
-    printf(".");
-
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-
-    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
-    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
-    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
-    // ----------------------------------------------------------
-
-    // --- GENERATE B-SPLINE LOOK UP TABLE ----------------------
-    dev_ptrs->LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
-    dev_ptrs->LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
-    dev_ptrs->LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
-    float* LUT_Bspline_x = (float*)malloc(dev_ptrs->LUT_Bspline_x_size);
-    float* LUT_Bspline_y = (float*)malloc(dev_ptrs->LUT_Bspline_y_size);
-    float* LUT_Bspline_z = (float*)malloc(dev_ptrs->LUT_Bspline_z_size);
-
-    for (j = 0; j < 4; j++)
-    {
-    for (i = 0; i < bxf->vox_per_rgn[0]; i++)
-        LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
-
-    for (i = 0; i < bxf->vox_per_rgn[1]; i++)
-        LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
-
-    for (i = 0; i < bxf->vox_per_rgn[2]; i++)
-        LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
-    }
-    
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->LUT_Bspline_x_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
-    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->LUT_Bspline_y_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
-    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
-#if VERBOSE
-    printf ("Trying to allocate %lu (%lu already allocated)\n",
-    (long unsigned) dev_ptrs->LUT_Bspline_z_size, 
-    GPU_Memory_Bytes);
-#endif
-    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
-    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
-
-    cudaMemcpy(dev_ptrs->LUT_Bspline_x, LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size, cudaMemcpyHostToDevice);
-    printf(".");
-    cudaMemcpy(dev_ptrs->LUT_Bspline_y, LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size, cudaMemcpyHostToDevice);
-    printf(".");
-    cudaMemcpy(dev_ptrs->LUT_Bspline_z, LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size, cudaMemcpyHostToDevice);
-    printf(".");
-
-    free (LUT_Bspline_x);
-    free (LUT_Bspline_y);
-    free (LUT_Bspline_z);
-
-    cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
-    printf(".");
-    cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
-    printf(".");
-    cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
-    printf(".");
-
-    // ----------------------------------------------------------
-
-    // Inform user we are finished.
-    printf("done.\n");
-
-    // Report global memory allocation.
-    printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
-
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_initialize_i()
-// 
-// Initialize the GPU to execute bspline_cuda_score_i_mse().
-//
-// AUTHOR: James Shackleford
-// DATE  : September 16, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    BSPLINE_Xform* bxf,
-    BSPLINE_Parms* parms)
-{
-    // Keep track of how much memory we allocated
-    // in the GPU global memory.
-    int GPU_Memory_Bytes = 0;
-    //  int temp;
-
-    // Tell the user we are busy copying information
-    // to the device memory.
-    printf("Copying data to GPU global memory");
-
-    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
-
-    // Allocate memory in the GPU Global memory for the fixed
-    // volume's voxel data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->fixed_image. (fixed_image is a pointer)
-    cudaMalloc((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
-    checkCUDAError("Failed to allocate memory for fixed image");
-    printf(".");
-
-
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    cudaMemcpy( dev_ptrs->fixed_image, fixed->img, dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
-    checkCUDAError("Failed to copy fixed image to GPU");
-    printf(".");
-
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_fixed_image, dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
-    checkCUDAError("Failed to bind dev_ptrs->fixed_image to texture reference!");
-    printf(".");
-    
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
-    // ----------------------------------------------------------
-
-
-    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
-
-    // Allocate memory in the GPU Global memory for the moving
-    // volume's voxel data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->moving_image. (moving_image is a pointer)
-    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
-    checkCUDAError("Failed to allocate memory for moving image");
-    printf(".");
-    
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
-    checkCUDAError("Failed to copy moving image to GPU");
-    printf(".");
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
-    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
-    // ----------------------------------------------------------
-
-
-    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
-
-    // Allocate memory in the GPU Global memory for the moving grad
-    // volume's data. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->moving_grad. (moving_grad is a pointer)
-    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
-    checkCUDAError("Failed to allocate memory for moving grad");
-    printf(".");
-    
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    // (Note the pointer dereference)
-    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
-    checkCUDAError("Failed to copy moving grad to GPU");
-    printf(".");
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_moving_grad, dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
-    checkCUDAError("Failed to bind dev_ptrs->moving_image to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // coefficient LUT. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->coeff. (coeff is a pointer)
-    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
-    checkCUDAError("Failed to allocate memory for dev_ptrs->coeff");
-    printf(".");
-
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
-    checkCUDAError("Failed to bind dev_ptrs->coeff to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->coeff_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->score_size = sizeof(float) * fixed->npix;
-
-    // Allocate memory in the GPU Global memory for the 
-    // "Score". The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->score. (scoreis a pointer)
-    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->score_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE dc_dv IN GPU GLOBAL -------------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->dc_dv_size = 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
-    * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
-
-    // Allocate memory in the GPU Global memory for dc_dv
-    // The pointer to this area of GPU global memory will
-    // be returned and placed into dev_ptrs->dc_dv. (dc_dv is a pointer)
-    cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    checkCUDAError("Failed to bind dev_ptrs->dc_dv to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // grad. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->grad. (grad is a pointer)
-    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
-    printf(".");
-
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-
-    // Bind this to a texture reference
-    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
-    checkCUDAError("Failed to bind dev_ptrs->grad to texture reference!");
-    printf(".");
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->grad_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
-
-    // Allocate memory in the GPU Global memory for the 
-    // grad_temp. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->grad_temp. (grad_temp is a pointer)
-    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
-    dev_ptrs->dc_dv_x_size = dev_ptrs->dc_dv_size / 3;
-    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
-    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
-
-    // Allocate memory in the GPU Global memory for the 
-    // deinterleaved dc_dv arrays. The pointer to this area of GPU
-    // global memory will be returned and placed into
-    // dev_parms->dc_dv_X. 
-    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_x");
-    printf(".");
-    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_y");
-    printf(".");
-    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->dc_dv_z");
-    printf(".");
-
-    // Cuda does not automatically zero out malloc()ed blocks
-    // of memory that have been allocated in GPU global
-    // memory.  So, we zero them out ourselves.
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
-    // ----------------------------------------------------------
-
-
-    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
-    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
-
-    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    //  int pad = 64 - (vox_per_tile % 64);
-
-    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
-
-    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Offsets");
-    printf(".");
-
-    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
-    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
-
-    free (offsets);
-
-    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
-    // ----------------------------------------------------------
-
-    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
-    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
-
-    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
-    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
-
-    int i,j;
-    for (i = 0; i < num_tiles; i++) {
-        find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
-        for (j = 0; j < 64; j++) {
-            LUT_Knot[64*i + j] = local_set_of_64[j];
-        }
-    }
-    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->LUT_Knot");
-    printf(".");
-
-    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
-    checkCUDAError("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
-
-    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
-    //  checkCUDAError("cudaBindTexture(): dev_ptrs->LUT_Knot");
-
-    free (local_set_of_64);
-    free (LUT_Knot);
-
-    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
-    // ----------------------------------------------------------
-
-    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
-    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
-    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
-    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
-
-    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_x");
-    printf(".");
-
-    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_y");
-    printf(".");
-
-    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMalloc(): dev_ptrs->cond_z");
-    printf(".");
-
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-
-    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
-    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
-    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
-    // ----------------------------------------------------------
-
-    // Inform user we are finished.
-    printf("done.\n");
-
-    // Report global memory allocation.
-    printf("  Allocated: %d MB\n", GPU_Memory_Bytes / 1048576);
-
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_clean_up_j()
-//
-// AUTHOR: James Shackleford
-// DATE  : September 11th, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs)
-{
-    cudaUnbindTexture(tex_fixed_image);
-    cudaUnbindTexture(tex_moving_image);
-    cudaUnbindTexture(tex_moving_grad);
-    cudaUnbindTexture(tex_coeff);
-    cudaUnbindTexture(tex_grad);
-    cudaUnbindTexture(tex_LUT_Offsets);
-    cudaUnbindTexture(tex_LUT_Bspline_x);
-    cudaUnbindTexture(tex_LUT_Bspline_y);
-    cudaUnbindTexture(tex_LUT_Bspline_z);
-    
-    cudaFree(dev_ptrs->fixed_image);
-    cudaFree(dev_ptrs->moving_image);
-    cudaFree(dev_ptrs->moving_grad);
-    cudaFree(dev_ptrs->coeff);
-    cudaFree(dev_ptrs->score);
-    cudaFree(dev_ptrs->grad);
-    cudaFree(dev_ptrs->grad_temp);
-    cudaFree(dev_ptrs->dc_dv_x);
-    cudaFree(dev_ptrs->dc_dv_y);
-    cudaFree(dev_ptrs->dc_dv_z);
-    cudaFree(dev_ptrs->LUT_Offsets);
-    cudaFree(dev_ptrs->LUT_Knot);
-    cudaFree(dev_ptrs->cond_x);
-    cudaFree(dev_ptrs->cond_y);
-    cudaFree(dev_ptrs->cond_z);
-    cudaFree(dev_ptrs->LUT_Bspline_x);
-    cudaFree(dev_ptrs->LUT_Bspline_y);
-    cudaFree(dev_ptrs->LUT_Bspline_z);
-    cudaFree(dev_ptrs->skipped);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_clean_up_i()
-//
-// AUTHOR: James Shackleford
-// DATE  : September 11th, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs)
-{
-
-    cudaUnbindTexture(tex_LUT_Offsets);
-
-    cudaFree(dev_ptrs->fixed_image);
-    cudaFree(dev_ptrs->moving_image);
-    cudaFree(dev_ptrs->moving_grad);
-    cudaFree(dev_ptrs->coeff);
-    cudaFree(dev_ptrs->score);
-    cudaFree(dev_ptrs->dc_dv);
-    cudaFree(dev_ptrs->dc_dv_x);
-    cudaFree(dev_ptrs->dc_dv_y);
-    cudaFree(dev_ptrs->dc_dv_z);
-    cudaFree(dev_ptrs->cond_x);
-    cudaFree(dev_ptrs->cond_y);
-    cudaFree(dev_ptrs->cond_z);
-    cudaFree(dev_ptrs->grad);
-    cudaFree(dev_ptrs->grad_temp);
-    cudaFree(dev_ptrs->LUT_Knot);
-    cudaFree(dev_ptrs->LUT_Offsets);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_clean_up_h()
-//
-// AUTHOR: James Shackleford
-// DATE  : September 11th, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-bspline_cuda_clean_up_h(Dev_Pointers_Bspline* dev_ptrs)
-{
-    cudaFree(dev_ptrs->fixed_image);
-    cudaFree(dev_ptrs->moving_image);
-    cudaFree(dev_ptrs->moving_grad);
-    cudaFree(dev_ptrs->coeff);
-    cudaFree(dev_ptrs->score);
-    cudaFree(dev_ptrs->dc_dv);
-    cudaFree(dev_ptrs->dc_dv_x);
-    cudaFree(dev_ptrs->dc_dv_y);
-    cudaFree(dev_ptrs->dc_dv_z);
-    cudaFree(dev_ptrs->cond_x);
-    cudaFree(dev_ptrs->cond_y);
-    cudaFree(dev_ptrs->cond_z);
-    cudaFree(dev_ptrs->grad);
-    cudaFree(dev_ptrs->grad_temp);
-    cudaFree(dev_ptrs->LUT_Knot);
-    cudaFree(dev_ptrs->LUT_Offsets);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_cuda_h_push_coeff_lut()
@@ -6240,770 +6974,6 @@ bspline_cuda_h_clear_grad(Dev_Pointers_Bspline* dev_ptrs)
 ////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_deinterleave()
-//
-// KERNELS INVOKED:
-//   kernel_deinterleave()
-//
-// AUTHOR: James Shackleford
-//   DATE: 22 July, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-CUDA_deinterleave(
-    int num_values,
-    float* input,
-    float* out_x,
-    float* out_y,
-    float* out_z)
-{
-
-    // --- INITIALIZE GRID --------------------------------------
-    int i;
-    int warps_per_block = 3;    // This cannot be changed.
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_values + threads_per_block - 1) / threads_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-    
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_deinterleave() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_deinterleave() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    int smemSize = 2*threads_per_block*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    kernel_deinterleave<<<dimGrid, dimBlock, smemSize>>>(
-        num_values,
-        input,
-        out_x,
-        out_y,
-        out_z);
-    // ----------------------------------------------------------
-
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_deinterleave()");
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_pad_64()
-//
-// KERNELS INVOKED:
-//   kernel_pad_64()
-//
-// AUTHOR: James Shackleford
-//   DATE: 16 September, 2009
-////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-CUDA_pad_64(
-    float** input,
-    int* vol_dims,
-    int* tile_dims)
-{
-
-    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
-    int3 vol_dim;
-    vol_dim.x = vol_dims[0];
-    vol_dim.y = vol_dims[1];
-    vol_dim.z = vol_dims[2];
-
-    int3 tile_dim;
-    tile_dim.x = tile_dims[0];
-    tile_dim.y = tile_dims[1];
-    tile_dim.z = tile_dims[2];
-
-    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
-
-    int4 num_tiles;
-    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
-    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
-    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
-    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
-
-    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
-    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
-
-    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
-    // ----------------------------------------------------------
-
-
-
-    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
-    float* tmp_output;
-    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
-    cudaMemset(tmp_output, 0, output_size*sizeof(float));
-    // ----------------------------------------------------------
-
-    // --- INITIALIZE GRID --------------------------------------
-    int i;
-    int warps_per_block = 4;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_pad_64() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    kernel_pad_64<<<dimGrid, dimBlock>>>(
-        *input,
-        tmp_output,
-        vol_dim,
-        tile_dim);
-    // ----------------------------------------------------------
-
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_pad()");
-
-
-    // --- RETURN -----------------------------------------------
-    cudaFree( *input );
-    *input = tmp_output;
-    // ----------------------------------------------------------
-    
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_pad()
-//
-// KERNELS INVOKED:
-//   kernel_pad()
-//
-// AUTHOR: James Shackleford
-//   DATE: 10 September, 2009
-////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-CUDA_pad(
-    float** input,
-    int* vol_dims,
-    int* tile_dims)
-{
-
-    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
-    int3 vol_dim;
-    vol_dim.x = vol_dims[0];
-    vol_dim.y = vol_dims[1];
-    vol_dim.z = vol_dims[2];
-
-    int3 tile_dim;
-    tile_dim.x = tile_dims[0];
-    tile_dim.y = tile_dims[1];
-    tile_dim.z = tile_dims[2];
-
-    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
-
-    int4 num_tiles;
-    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
-    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
-    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
-    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
-
-    int tile_padding = 32 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 32);
-    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
-
-    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
-    // ----------------------------------------------------------
-
-
-
-    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
-    float* tmp_output;
-    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
-    cudaMemset(tmp_output, 0, output_size*sizeof(float));
-    // ----------------------------------------------------------
-
-    // --- INITIALIZE GRID --------------------------------------
-    int i;
-    int warps_per_block = 4;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_pad() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    kernel_pad<<<dimGrid, dimBlock>>>(
-        *input,
-        tmp_output,
-        vol_dim,
-        tile_dim);
-    // ----------------------------------------------------------
-
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_pad()");
-
-
-    // --- RETURN -----------------------------------------------
-    cudaFree( *input );
-    *input = tmp_output;
-    // ----------------------------------------------------------
-    
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_score_dc_dv()
-//
-// KERNELS INVOKED:
-//   kernel_bspline_mse_2_reduce()
-//
-// AUTHOR: James Shackleford
-//   DATE: 19 August, 2009
-//////////////////////////////////////////////////////////////////////////////
-extern "C" void
-CUDA_bspline_mse_score_dc_dv (
-    Dev_Pointers_Bspline* dev_ptrs,
-    BSPLINE_Xform* bxf,
-    Volume* fixed,
-    Volume* moving)
-{
-    GPU_Bspline_Data gbd;   
-
-    build_gbd (&gbd, bxf, fixed, moving);
-
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    int sqrt_num_blocks;
-    int num_blocks;
-    int smemSize;
-    int found_flag = 0;
-
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
-    num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    smemSize = 12 * sizeof(float) * threads_per_block;
-    sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-        for (i = sqrt_num_blocks; i < 65535; i++) {
-            if (num_blocks % i == 0) {
-                Grid_x = i;
-                Grid_y = num_blocks / Grid_x;
-                found_flag = 1;
-                break;
-            }
-        }
-
-        if (found_flag == 1) {
-            break;
-        }
-    }
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-
-    // --- BEGIN KERNEL EXECUTION ---
-    //  cudaEvent_t start, stop;
-    //  float time;
-
-    //  cudaEventCreate(&start);
-    //  cudaEventCreate(&stop);
-
-    //  cudaEventRecord (start, 0); 
-
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
-
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
-
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
-
-    int tile_padding = 64 - 
-    ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
-
-    /* GCS ??? */
-    //if (tile_padding == 64) tile_padding = 0;
-    //printf ("tile_padding = %d\n", tile_padding);
-
-    bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
-        dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
-        dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
-        dev_ptrs->dc_dv_z,      // Addr of dc_dv_z on GPU
-        dev_ptrs->score,        // Addr of score on GPU
-        dev_ptrs->coeff,        // Addr of coeff on GPU
-        dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
-        dev_ptrs->moving_image, // Addr of moving_image on GPU
-        dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-        gbd.fix_dim,                // Size of fixed image (vox)
-        gbd.img_origin,             // Origin of fixed image (mm)
-        gbd.img_spacing,            // Spacing of fixed image (mm)
-        gbd.mov_dim,                // Size of moving image (vox)
-        gbd.mov_offset,             // Origin of moving image (mm)
-        gbd.mov_spacing,            // Spacing of moving image (mm)
-        gbd.roi_dim,                // Region of Intrest Dimenions
-        gbd.roi_offset,             // Region of Intrest Offset
-        gbd.vox_per_rgn,            // Voxels per Region
-        gbd.rdims,                  // # of regions in (x,y,z)
-        gbd.cdims,                  // # of control points in (x,y,z)
-        tile_padding,
-        dev_ptrs->skipped);
-
-    //  cudaEventRecord (stop, 0);  
-    //  cudaEventSynchronize (stop);
-    //  cudaEventElapsedTime (&time, start, stop);
-    //  cudaEventDestroy (start);
-    //  cudaEventDestroy (stop);
-    //  printf("\n[%f ms] MSE & dc_dv\n", time);
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_condense_64_texfetch()
-//
-// KERNELS INVOKED:
-//   kernel_bspline_mse_2_condense_64()
-//
-// AUTHOR: James Shackleford
-//   DATE: September 16th, 2009
-//////////////////////////////////////////////////////////////////////////////
-void
-CUDA_bspline_mse_2_condense_64_texfetch (
-    Dev_Pointers_Bspline* dev_ptrs,
-    int* vox_per_rgn,
-    int num_tiles)
-{
-    int4 vox_per_region;
-    vox_per_region.x = vox_per_rgn[0];
-    vox_per_region.y = vox_per_rgn[1];
-    vox_per_region.z = vox_per_rgn[2];
-    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
-
-    int pad = 64 - (vox_per_region.w % 64);
-
-    vox_per_region.w += pad;
-
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 2;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = num_tiles;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64_texfetch() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    //  int smemSize = 384*sizeof(float);
-    int smemSize = 576*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
-
-    kernel_bspline_mse_2_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
-        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
-        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
-        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
-        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
-        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
-        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
-        dev_ptrs->LUT_Offsets,  // Input : tile offsets
-        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
-        pad,                    // Input : amount of tile padding
-        vox_per_region,         // Input : dims of tiles
-        (float)1/6);            // Input : GPU Division is slow
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_condense_64()
-//
-// KERNELS INVOKED:
-//   kernel_bspline_mse_2_condense_64()
-//
-// AUTHOR: James Shackleford
-//   DATE: September 16th, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-CUDA_bspline_mse_2_condense_64(
-    Dev_Pointers_Bspline* dev_ptrs,
-    int* vox_per_rgn,
-    int num_tiles)
-{
-    int4 vox_per_region;
-    vox_per_region.x = vox_per_rgn[0];
-    vox_per_region.y = vox_per_rgn[1];
-    vox_per_region.z = vox_per_rgn[2];
-    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
-
-    int pad = 64 - (vox_per_region.w % 64);
-
-    vox_per_region.w += pad;
-
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 2;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = num_tiles;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    int smemSize = 384*sizeof(float);
-    //  int smemSize = 288*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
-
-    kernel_bspline_mse_2_condense_64<<<dimGrid, dimBlock, smemSize>>>(
-        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
-        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
-        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
-        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
-        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
-        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
-        dev_ptrs->LUT_Offsets,  // Input : tile offsets
-        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
-        pad,                    // Input : amount of tile padding
-        vox_per_region,         // Input : dims of tiles
-        (float)1/6);            // Input : GPU Division is slow
-}
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_condense()
-//
-// KERNELS INVOKED:
-//   kernel_bspline_mse_2_condense()
-//
-// AUTHOR: James Shackleford
-//   DATE: 19 August, 2009
-////////////////////////////////////////////////////////////////////////////////
-void
-CUDA_bspline_mse_2_condense(
-    Dev_Pointers_Bspline* dev_ptrs,
-    int* vox_per_rgn,
-    int num_tiles)
-{
-    int4 vox_per_region;
-    vox_per_region.x = vox_per_rgn[0];
-    vox_per_region.y = vox_per_rgn[1];
-    vox_per_region.z = vox_per_rgn[2];
-    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
-
-    int pad = 32 - (vox_per_region.w % 32);
-
-
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 1;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_tiles+warps_per_block-1) / warps_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    int smemSize = 384*sizeof(float);
-    //  int smemSize = 288*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
-
-    kernel_bspline_mse_2_condense<<<dimGrid, dimBlock, smemSize>>>(
-        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
-        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
-        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
-        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
-        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
-        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
-        dev_ptrs->LUT_Offsets,  // Input : tile offsets
-        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
-        pad,                    // Input : amount of tile padding
-        vox_per_region,         // Input : dims of tiles
-        (float)1/6);            // Input : GPU Division is slow
-}
-////////////////////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_reduce()
-//
-// KERNELS INVOKED:
-//   kernel_bspline_mse_2_reduce()
-//
-// AUTHOR: James Shackleford
-//   DATE: 19 August, 2009
-////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-CUDA_bspline_mse_2_reduce (
-    Dev_Pointers_Bspline* dev_ptrs,
-    int num_knots)
-{
-
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # KNOTS / 32
-    // WITH # WARPS PER THREAD BLOCK = 2
-    int i;
-    int warps_per_block = 2;
-    int knots_per_block = 1;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_knots+knots_per_block-1) / knots_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_reduce() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    int smemSize = 195*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching REDUCE with %i threadblocks\n", num_blocks);
-
-    kernel_bspline_mse_2_reduce<<<dimGrid, dimBlock, smemSize>>>(
-        dev_ptrs->grad,     // Return: interleaved dc_dp values
-        dev_ptrs->cond_x,   // Input : condensed dc_dv_x values
-        dev_ptrs->cond_y,   // Input : condensed dc_dv_y values
-        dev_ptrs->cond_z);  // Input : condensed dc_dv_z values
-
-}
-////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -7044,6 +7014,42 @@ CPU_obtain_spline_basis_function (
     return C;
 }
 ////////////////////////////////////////////////////////////////////////////////
+
+
+/******************************************************
+* This function computes the spline basis function at 
+* index 0, 1, 2, or 3 for a voxel 
+Author: Naga Kandasamy
+Date: 07 July 2009
+*******************************************************/
+
+__device__ float
+obtain_spline_basis_function (float one_over_six,
+    int t_idx, 
+    int vox_idx, 
+    int vox_per_rgn)
+{
+    float i = (float)vox_idx / vox_per_rgn;
+    float C;
+                        
+    switch(t_idx) {
+    case 0:
+        C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
+        break;
+    case 1:
+        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i            + 4.0);
+        break;
+    case 2:
+        C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
+        break;
+    case 3:
+        C = one_over_six * (+ 1.0 * i*i*i);
+        break;
+    }
+
+    return C;
+}
+
 
 
 
