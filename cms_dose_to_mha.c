@@ -139,7 +139,7 @@ main (int argc, char *argv[])
     fgets (buf, sizeof(buf), ifp);
 
     rc = sscanf (buf, "%d,%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
-                 &dummy, &rx, &ry, &rz, &ox, &oy, &oz, &nx, &nz, &ny);
+                 &dummy, &rx, &rz, &ry, &ox, &oz, &oy, &nx, &nz, &ny);
 
     if (rc != 10) {
         fprintf (stderr, "ERROR: Cannot parse dose dose cube definition: %s\n", buf);
