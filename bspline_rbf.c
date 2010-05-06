@@ -71,7 +71,13 @@ Output:
 On exit, first n components of x is the minimum found, 
 funcval[0] is the value of function at the minimum
 */
-void minimize_nelder_mead(float *x, float *funcval, int n, float(*func)(float *, int, void *), void *params )
+void minimize_nelder_mead (
+    float *x, 
+    float *funcval, 
+    int n, 
+    float(*func) (float *, int, void *), 
+    void *params
+)
 {
     int iter=0;
     int i,j;
@@ -141,7 +147,8 @@ void minimize_nelder_mead(float *x, float *funcval, int n, float(*func)(float *,
 // radial basis function
 // center and x,y,z are in voxels
 // radius is in mm
-float rbf_value( int *center, int x, int y, int z, float radius, float *pix_spacing )
+float rbf_value (int *center, int x, int y, int z, 
+    float radius, float *pix_spacing)
 {
     float val, r, dx,dy,dz;
 
@@ -156,15 +163,19 @@ float rbf_value( int *center, int x, int y, int z, float radius, float *pix_spac
     return val;
 }
 
-
 /*
 LF + u(LF) + alpha*rbf(LF,LF) = LM  (one landmark, 1D)
 Solve for alpha; LF=fixed landmark, LM=moving landmark,
 LW=warped landmark (moving displaced by u(x)).
 RBFs are centered on fixed landmarks
 */
-float bspline_rbf_score( float *trial_rbf_coeff,  int num_rbf_coeff, Rbf_parms *rbf_par)
+float bspline_rbf_score (
+    float *trial_rbf_coeff,  
+    int num_rbf_coeff, 
+    void *score_data
+)
 {
+    Rbf_parms *rbf_par = (Rbf_parms *) score_data;
     BSPLINE_Parms *parms = rbf_par->bparms;
     Bspline_landmarks *blm;
     float rbfv, ds,score=0;
@@ -281,19 +292,34 @@ bspline_rbf_update_vector_field (
     rbf_vox_origin = blm->landvox_fix;
 
     //RBF contributions added to vector field
-    for(lidx=0;lidx<blm->num_landmarks;lidx++) {
-	for(fk = rbf_vox_origin[2+3*lidx] - dr; fk< rbf_vox_origin[2+3*lidx] + dr; fk++)
-	    for(fj = rbf_vox_origin[1+3*lidx] - dr; fj< rbf_vox_origin[1+3*lidx] + dr; fj++)
-		for(fi = rbf_vox_origin[0+3*lidx] - dr; fi< rbf_vox_origin[0+3*lidx] + dr; fi++) {
+    for (lidx=0; lidx < blm->num_landmarks; lidx++) {
+	for (fk = rbf_vox_origin[2+3*lidx] - dr; fk < rbf_vox_origin[2+3*lidx] + dr; fk++) {
+	    for (fj = rbf_vox_origin[1+3*lidx] - dr; fj < rbf_vox_origin[1+3*lidx] + dr; fj++) {
+		for (fi = rbf_vox_origin[0+3*lidx] - dr; fi < rbf_vox_origin[0+3*lidx] + dr; fi++) {
 		    if (fi < 0 || fi >= vector_field->dim[0]) continue;
 		    if (fj < 0 || fj >= vector_field->dim[1]) continue;
 		    if (fk < 0 || fk >= vector_field->dim[2]) continue;
 
-		    fv = fk * vector_field->dim[0] * vector_field->dim[1] + fj * vector_field->dim[0] + fi ;
+		    fv = fk * vector_field->dim[0] * vector_field->dim[1] 
+			+ fj * vector_field->dim[0] + fi;
 			
-		    rbf = rbf_value( rbf_vox_origin+3*lidx,  fi,fj,fk, parms->rbf_radius, vector_field->pix_spacing );  
+		    rbf = rbf_value (rbf_vox_origin+3*lidx,  
+			fi, fj, fk, 
+			parms->rbf_radius, 
+			vector_field->pix_spacing);
 
-		    for(d=0;d<3;d++) vf[3*fv+d] += ( blm->rbf_coeff[3*lidx+d]* rbf );
+		    for(d=0;d<3;d++) {
+			vf[3*fv+d] += blm->rbf_coeff[3*lidx+d]* rbf;
+#if defined (commentout)
+			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
+			    lidx, 
+			    fi, fj, fk, 
+			    blm->rbf_coeff[3*lidx+d], rbf, 
+			    blm->rbf_coeff[3*lidx+d] * rbf);
+#endif
+		    }
 		}
+	    }
+	}
     }
 }

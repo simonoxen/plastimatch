@@ -96,10 +96,6 @@ main (int argc, char* argv[])
 	    PT_VF_FLOAT_INTERLEAVED, 
 	    fixed->direction_cosines, 0);
 	bspline_interpolate_vf (vector_field, bxf);
-	if (options.output_vf_fn) {
-	    printf ("Writing vector field.\n");
-	    write_mha (options.output_vf_fn, vector_field);
-	}
     }
 
     /* Assuming vector field has been created, update warped landmarks*/
@@ -143,7 +139,6 @@ main (int argc, char* argv[])
 	}
     }
 
-    //printf("%f",moving_warped->dim[1]);
     /* Create warped output image and save */
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
@@ -154,6 +149,12 @@ main (int argc, char* argv[])
 	} else {
 	    printf ("Sorry, couldn't create warped image.\n");
 	}
+    }
+
+    /* Write the vector field */
+    if (options.output_vf_fn) {
+	printf ("Writing vector field.\n");
+	write_mha (options.output_vf_fn, vector_field);
     }
 
     /* Free memory */

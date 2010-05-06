@@ -60,6 +60,7 @@ vf_analyze_strain (Volume* vol)
     float* img = (float*) vol->img;
     float total_energy, max_energy;
     float min_dilation, max_dilation;
+    int min_dilation_loc[3];
 
     const float LAME_MU = 1.0f;
     const float LAME_NU = 1.0f;
@@ -119,10 +120,20 @@ vf_analyze_strain (Volume* vol)
 		if (first) {
 		    min_dilation = dilation;
 		    max_dilation = dilation;
+		    min_dilation_loc[0] = i;
+		    min_dilation_loc[1] = j;
+		    min_dilation_loc[2] = k;
 		    first = 0;
 		} else {
-		    if (dilation < min_dilation) min_dilation = dilation;
-		    else if (dilation > max_dilation) max_dilation = dilation;
+		    if (dilation < min_dilation) {
+			min_dilation = dilation;
+			min_dilation_loc[0] = i;
+			min_dilation_loc[1] = j;
+			min_dilation_loc[2] = k;
+		    }
+		    else if (dilation > max_dilation) {
+			max_dilation = dilation;
+		    }
 		}
 	    }
 	}
@@ -130,4 +141,6 @@ vf_analyze_strain (Volume* vol)
 
     printf ("Energy: MINDIL %g MAXDIL %g MAXSTRAIN %g TOTSTRAIN %g\n", 
 	min_dilation, max_dilation, max_energy, total_energy);
+    printf ("Min dilation at: (%d %d %d)\n", 
+	min_dilation_loc[0], min_dilation_loc[1], min_dilation_loc[2]);
 }
