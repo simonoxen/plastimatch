@@ -45,6 +45,9 @@ texture<float, 1> tex_grad;
 #define TEX_REF(array,index) \
     (array[index])
 #endif
+
+#define GRID_LIMIT_X 65535
+#define GRID_LIMIT_Y 65535
 ////////////////////////////////////////////////////////////
 
 typedef struct gpu_bspline_data GPU_Bspline_Data;
@@ -69,6 +72,7 @@ struct gpu_bspline_data
 };
 
 
+// Constructs the GPU Bspline Data structure
 void
 build_gbd (
     GPU_Bspline_Data* gbd,
@@ -100,6 +104,155 @@ build_gbd (
     }
     
 }
+
+
+// Builds execution configurations for kernels that
+// assign one thread per element (1tpe).
+int
+build_exec_conf_1tpe (
+    dim3 *dimGrid,          // OUTPUT: Grid  dimensions
+    dim3 *dimBlock,         // OUTPUT: Block dimensions
+    int num_threads,        // INPUT: Total # of threads
+    int threads_per_block,  // INPUT: Threads per block
+    bool negotiate          // INPUT: Is threads per block negotiable?
+)
+{
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+    int sqrt_num_blocks;
+    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
+
+    if (negotiate) {
+        int found_flag = 0;
+        int j = 0;
+
+        // Search for a valid execution configuration for the required # of blocks.
+        // Block size has been specified as changable.  This helps if the
+        // number of blocks required is a prime number > 65535.  Changing the
+        // # of threads per block will change the # of blocks... which hopefully
+        // won't be prime again.
+        for (j = threads_per_block; j > 32; j -= 32) {
+            num_blocks = (num_threads + j - 1) / j;
+            sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+            for (i = sqrt_num_blocks; i < GRID_LIMIT_X; i++) {
+                if (num_blocks % i == 0) {
+                    Grid_x = i;
+                    Grid_y = num_blocks / Grid_x;
+                    found_flag = 1;
+                    break;
+                }
+            }
+
+            if (found_flag == 1) {
+                threads_per_block = j;
+                break;
+            }
+        }
+
+    } else {
+
+        // Search for a valid execution configuration for the required # of blocks.
+        // The calling algorithm has specifed that # of threads per block
+        // is non negotiable.
+        sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+        for (i = sqrt_num_blocks; i < GRID_LIMIT_X; i++) {
+            if (num_blocks % i == 0) {
+                Grid_x = i;
+                Grid_y = num_blocks / Grid_x;
+                break;
+            }
+        }
+    }
+
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        printf ("\n");
+        printf ("[GPU KERNEL PANIC] Unable to find suitable execution configuration!");
+        printf ("Terminating...\n");
+        exit (0);
+    } else {
+        // callback function could be added
+        // to arguments and called here if you need
+        // to do something fancy upon success.
+#if VERBOSE
+        printf ("Grid [%i,%i], %d threads_per_block.\n", 
+            Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    // Pass configuration back by reference
+    dimGrid->x = Grid_x;
+    dimGrid->y = Grid_y;
+    dimGrid->z = 1;
+
+    dimBlock->x = threads_per_block;
+    dimBlock->y = 1;
+    dimBlock->z = 1;
+
+    // Return the # of blocks we decided on just
+    // in case we need it later to allocate shared memory, etc.
+    return num_blocks;
+}
+
+// Builds execution configurations for kernels that
+// assign one block per element (1bpe).
+void
+build_exec_conf_1bpe (
+    dim3 *dimGrid,          // OUTPUT: Grid  dimensions
+    dim3 *dimBlock,         // OUTPUT: Block dimensions
+    int num_blocks,         // INPUT: Number of blocks
+    int threads_per_block)  // INPUT: Threads per block
+{
+    int i;
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    // Search for a valid execution configuration for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        printf ("\n");
+        printf ("[GPU KERNEL PANIC] Unable to find suitable execution configuration!");
+        printf ("Terminating...\n");
+        exit (0);
+    } else {
+        // callback function could be added
+        // to arguments and called here if you need
+        // to do something fancy upon success.
+#if VERBOSE
+        printf ("Grid [%i,%i], %d threads_per_block.\n", 
+            Grid_x, Grid_y, threads_per_block);
+#endif
+    }
+
+    // Pass configuration back by reference
+    dimGrid->x = Grid_x;
+    dimGrid->y = Grid_y;
+    dimGrid->z = 1;
+
+    dimBlock->x = threads_per_block;
+    dimBlock->y = 1;
+    dimBlock->z = 1;
+
+}
+    
+
+
 
 /**
  * A simple kernel used to ensure that CUDA is working correctly.
@@ -1422,6 +1575,10 @@ CUDA_bspline_MI_a_hist_fix (
     Volume* moving,
     BSPLINE_Xform *bxf)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
+    int num_blocks;
+
     GPU_Bspline_Data gbd; 
     build_gbd (&gbd, bxf, fixed, moving);
 
@@ -1429,46 +1586,15 @@ CUDA_bspline_MI_a_hist_fix (
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
     checkCUDAError ("Failed to initialize memory for f_hist");
 
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 32;
-    int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = threads_per_block * mi_hist->fixed.bins * sizeof(float);
+    num_blocks = 
+    build_exec_conf_1tpe (
+        &dimGrid,          // OUTPUT: Grid  dimensions
+        &dimBlock,         // OUTPUT: Block dimensions
+        fixed->npix,       // INPUT: Total # of threads
+        32,                // INPUT: Threads per block
+        false);            // INPUT: Is threads per block negotiable?
 
-    // -----
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // -----
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_mov() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    //  printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
-    // ----------------------
-
+    int smemSize = dimBlock.x * mi_hist->fixed.bins * sizeof(float);
 
     dev_ptrs->f_hist_seg_size = mi_hist->fixed.bins * num_blocks * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
@@ -1478,7 +1604,7 @@ CUDA_bspline_MI_a_hist_fix (
 
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_a_hist_fix <<<dimGrid1, dimBlock1, smemSize>>> (
+    kernel_bspline_MI_a_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
     dev_ptrs->f_hist_seg,       // partial histogram (moving image)
     dev_ptrs->fixed_image,      // moving image voxels
     mi_hist->fixed.offset,      // histogram offset
@@ -1502,9 +1628,8 @@ CUDA_bspline_MI_a_hist_fix (
 
 
     // Merge sub-histograms
-    threads_per_block = 512;
     dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
-    dim3 dimBlock2 (threads_per_block, 1, 1);
+    dim3 dimBlock2 (512, 1, 1);
     smemSize = 512 * sizeof(float);
     
     // this kernel can be ran with any thread-block size
@@ -1532,6 +1657,10 @@ CUDA_bspline_MI_a_hist_mov (
     Volume* moving,
     BSPLINE_Xform *bxf)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
+    int num_blocks;
+
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
 
@@ -1539,46 +1668,15 @@ CUDA_bspline_MI_a_hist_mov (
     cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
     checkCUDAError ("Failed to initialize memory for m_hist");
     
+    num_blocks = 
+    build_exec_conf_1tpe (
+        &dimGrid,          // OUTPUT: Grid  dimensions
+        &dimBlock,         // OUTPUT: Block dimensions
+        fixed->npix,       // INPUT: Total # of threads
+        32,                // INPUT: Threads per block
+        false);            // INPUT: Is threads per block negotiable?
 
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 32;
-    int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = threads_per_block * mi_hist->fixed.bins * sizeof(float);
-
-    // -----
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // -----
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        printf("\n[ERROR] Unable to find suitable kernel_bspline_MI_a_hist_mov() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    //  printf ("  -- GRID: %i, %i\n", Grid_x, Grid_y);
-    // ----------------------
+    int smemSize = dimBlock.x * mi_hist->moving.bins * sizeof(float);
 
 
     dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
@@ -1589,7 +1687,7 @@ CUDA_bspline_MI_a_hist_mov (
 
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_a_hist_mov <<<dimGrid1, dimBlock1, smemSize>>> (
+    kernel_bspline_MI_a_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
             dev_ptrs->m_hist_seg,       // partial histogram (moving image)
             dev_ptrs->moving_image,     // moving image voxels
             mi_hist->moving.offset,     // histogram offset
@@ -1613,9 +1711,8 @@ CUDA_bspline_MI_a_hist_mov (
 
 
     // Merge sub-histograms
-    threads_per_block = 512;
-    dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
-    dim3 dimBlock2 (threads_per_block, 1, 1);
+    dim3 dimGrid2 (mi_hist->moving.bins, 1, 1);
+    dim3 dimBlock2 (512, 1, 1);
     smemSize = 512 * sizeof(float);
     
     // this kernel can be ran with any thread-block size
@@ -2322,59 +2419,20 @@ CUDA_bspline_mse_score_dc_dv (
     Volume* fixed,
     Volume* moving)
 {
+    dim3 dimGrid1;
+    dim3 dimBlock1;
     GPU_Bspline_Data gbd;   
 
     build_gbd (&gbd, bxf, fixed, moving);
 
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    int sqrt_num_blocks;
-    int num_blocks;
-    int smemSize;
-    int found_flag = 0;
+    build_exec_conf_1tpe (
+        &dimGrid1,          // OUTPUT: Grid  dimensions
+        &dimBlock1,         // OUTPUT: Block dimensions
+        fixed->npix,        // INPUT: Total # of threads
+        192,                // INPUT: Threads per block
+        true);              // INPUT: Is threads per block negotiable?
 
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    for (threads_per_block = 192; threads_per_block > 32; threads_per_block -= 32) {
-    num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    smemSize = 12 * sizeof(float) * threads_per_block;
-    sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-        for (i = sqrt_num_blocks; i < 65535; i++) {
-            if (num_blocks % i == 0) {
-                Grid_x = i;
-                Grid_y = num_blocks / Grid_x;
-                found_flag = 1;
-                break;
-            }
-        }
-
-        if (found_flag == 1) {
-            break;
-        }
-    }
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
+    int smemSize = 12 * sizeof(float) * dimBlock1.x;
 
     // --- BEGIN KERNEL EXECUTION ---
     //  cudaEvent_t start, stop;
@@ -2448,6 +2506,9 @@ CUDA_bspline_mse_2_condense_64_texfetch (
     int* vox_per_rgn,
     int num_tiles)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
+
     int4 vox_per_region;
     vox_per_region.x = vox_per_rgn[0];
     vox_per_region.y = vox_per_rgn[1];
@@ -2458,53 +2519,13 @@ CUDA_bspline_mse_2_condense_64_texfetch (
 
     vox_per_region.w += pad;
 
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 2;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_tiles,        // INPUT: Number of blocks
+        64);              // INPUT: Threads per block
 
-    int num_blocks = num_tiles;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64_texfetch() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    //  int smemSize = 384*sizeof(float);
     int smemSize = 576*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
 
     kernel_bspline_mse_2_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
@@ -2538,6 +2559,9 @@ CUDA_bspline_mse_2_condense_64(
     int* vox_per_rgn,
     int num_tiles)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
+
     int4 vox_per_region;
     vox_per_region.x = vox_per_rgn[0];
     vox_per_region.y = vox_per_rgn[1];
@@ -2548,53 +2572,13 @@ CUDA_bspline_mse_2_condense_64(
 
     vox_per_region.w += pad;
 
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 2;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_tiles,        // INPUT: Number of blocks
+        64);              // INPUT: Threads per block
 
-    int num_blocks = num_tiles;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense_64() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
     int smemSize = 384*sizeof(float);
-    //  int smemSize = 288*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
 
     kernel_bspline_mse_2_condense_64<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
@@ -2628,6 +2612,9 @@ CUDA_bspline_mse_2_condense(
     int* vox_per_rgn,
     int num_tiles)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
+
     int4 vox_per_region;
     vox_per_region.x = vox_per_rgn[0];
     vox_per_region.y = vox_per_rgn[1];
@@ -2636,54 +2623,14 @@ CUDA_bspline_mse_2_condense(
 
     int pad = 32 - (vox_per_region.w % 32);
 
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_tiles,        // INPUT: Number of blocks
+        32);              // INPUT: Threads per block
 
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # TILES
-    // WITH # WARPS PER THREAD BLOCK = 1
-    int i;
-    int warps_per_block = 1;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    int num_blocks = (num_tiles+warps_per_block-1) / warps_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_condense() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
     int smemSize = 384*sizeof(float);
-    //  int smemSize = 288*sizeof(float);
-    // ----------------------------------------------------------
 
-
-    //  printf("\nLaunching CONDENSE with %i threadblocks\n", num_blocks);
 
     kernel_bspline_mse_2_condense<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
@@ -2714,61 +2661,22 @@ CUDA_bspline_mse_2_reduce (
     Dev_Pointers_Bspline* dev_ptrs,
     int num_knots)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
 
-    // --- INITIALIZE GRID --------------------------------------
-    // LAUNCH KERNEL WITH # THREAD BLOCKS = # KNOTS / 32
-    // WITH # WARPS PER THREAD BLOCK = 2
-    int i;
-    int warps_per_block = 2;
-    int knots_per_block = 1;
-    int threads_per_block = 32*warps_per_block;
-    dim3 dimBlock(threads_per_block, 1, 1);
-    int Grid_x = 0;
-    int Grid_y = 0;
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_knots,        // INPUT: Number of blocks
+        64);              // INPUT: Threads per block
 
-    int num_blocks = (num_knots+knots_per_block-1) / knots_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable CUDA_bspline_mse_2_reduce() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
     int smemSize = 195*sizeof(float);
-    // ----------------------------------------------------------
-
-
-    //  printf("\nLaunching REDUCE with %i threadblocks\n", num_blocks);
 
     kernel_bspline_mse_2_reduce<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->grad,     // Return: interleaved dc_dp values
         dev_ptrs->cond_x,   // Input : condensed dc_dv_x values
         dev_ptrs->cond_y,   // Input : condensed dc_dv_y values
         dev_ptrs->cond_z);  // Input : condensed dc_dv_z values
-
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2903,60 +2811,20 @@ bspline_cuda_i_stage_1 (
     BSPLINE_Parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
+    dim3 dimGrid1;
+    dim3 dimBlock1;
+
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
 
+    build_exec_conf_1tpe (
+        &dimGrid1,          // OUTPUT: Grid  dimensions
+        &dimBlock1,         // OUTPUT: Block dimensions
+        fixed->npix,        // INPUT: Total # of threads
+        128,                // INPUT: Threads per block
+        false);             // INPUT: Is threads per block negotiable?
 
-    // JAS 10.15.2009
-    // TODO: The following blocked off section needs
-    //       to be turned into its own function.
-    // ------------------------------------------------
-    // ------------------------------------------------
-
-    // --- INITIALIZE GRID ---
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = 12 * sizeof(float) * threads_per_block;
-
-
-    // -----
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // -----
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
-        exit(0);
-    } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    // ----------------------
-
+    int smemSize = 12 * sizeof(float) * dimBlock1.x;
 
     // --- BEGIN KERNEL EXECUTION ---
     cudaEvent_t start, stop;
@@ -3113,45 +2981,20 @@ bspline_cuda_j_stage_2 (
     Dev_Pointers_Bspline* dev_ptrs,
     int *num_vox)
 {
+    dim3 dimGrid;
+    dim3 dimBlock;
 
-    // --- INITIALIZE GRID --------------------------------------
-    int Grid_x = 0;
-    int Grid_y = 0;
     int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
-    //  int num_blocks = (int)ceil(num_elems / 512.0);
     int num_blocks = (num_elems + 511) / 512;
-    
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
 
-    int i;
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_blocks,       // INPUT: Number of blocks
+        512);             // INPUT: Threads per block
 
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
+    int smemSize = 512*sizeof(float);
 
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    dim3 dimBlock(128, 2, 2);
-    int smemSize = 512 * sizeof(float);
-    // ----------------------------------------------------------
 
 #if defined (commentout)
     /* Compute score on cpu for debugging */
@@ -3249,47 +3092,18 @@ bspline_cuda_j_stage_2 (
     /////////////////////////////////////////////////////////////
 
 
-    // --- RE-INITIALIZE GRID -----------------------------------
-    Grid_x = 0;
-    Grid_y = 0;
     num_elems = bxf->num_coeff;
-    //  num_blocks = (int)ceil(num_elems / 512.0);
     num_blocks = (num_elems + 511) / 512;
+
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_blocks,       // INPUT: Number of blocks
+        512);             // INPUT: Threads per block
+
     
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid2(Grid_x, Grid_y, 1);
-    dim3 dimBlock2(128, 2, 2);
-    smemSize = 512 * sizeof(float);
-    // ----------------------------------------------------------
-    
-
     // --- BEGIN KERNEL EXECUTION -------------------------------
-    bspline_cuda_update_grad_kernel<<<dimGrid2, dimBlock2>>> (
+    bspline_cuda_update_grad_kernel<<<dimGrid, dimBlock>>> (
         dev_ptrs->grad,
         *num_vox,
         num_elems);

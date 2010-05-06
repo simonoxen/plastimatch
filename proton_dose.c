@@ -127,12 +127,12 @@ proton_dose_ray_trace (
     cd.ap_idx = ap_idx;
 
     ray_trace_uniform (ct_vol,              // INPUT: CT volume
-        vol_limit,              // INPUT: CT volume bounding box
+        vol_limit,                          // INPUT: CT volume bounding box
         &proton_dose_ray_trace_callback,    // INPUT: step action cbFunction
-        &cd,                    // INPUT: callback data
-        ip1,                    // INPUT: ray starting point
-        ip2,                    // INPUT: ray ending point
-        options->ray_step);         // INPUT: uniform ray step size
+        &cd,                                // INPUT: callback data
+        ip1,                                // INPUT: ray starting point
+        ip2,                                // INPUT: ray ending point
+        options->ray_step);                 // INPUT: uniform ray step size
 }
 
 void
