@@ -97,7 +97,7 @@ xio_io_patient_position (
 )
 {
     // Convert string to patient position
-    if (!strncmp (pt_position_str, "hfs")) {
+    if (!strcmp (pt_position_str, "hfs")) {
         return HFS;
     } else if (!strcmp (pt_position_str, "hfp")) {
         return HFP;
