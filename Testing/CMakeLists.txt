@@ -226,14 +226,14 @@ PLM_ADD_TEST (
   "bspline-mi-c-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;c;-M;mi;-O;bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
+  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
   )
 ADD_TEST (bspline-mi-c-1-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
   "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.529"
-  "-DUPPER_THRESH=-0.528"
+  "-DLOWER_THRESH=-0.800"
+  "-DUPPER_THRESH=-0.796"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -241,7 +241,7 @@ PLM_ADD_TEST (
   "bspline-mi-c-2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/bspline
-  "-a;steepest;-m;10;-f;c;-M;mi;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/rect-2.mha"
+  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.mha;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/rect-2.mha"
   )
 ## Without DOUBLE_HIST defined, output is 0.031
 ## With DOUBLE_HIST defined, output is 0.032
@@ -249,8 +249,8 @@ ADD_TEST (bspline-mi-c-2-check
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
   "-DREGEX=^MI\\\\[  10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.028"
-  "-DUPPER_THRESH=-0.026"
+  "-DLOWER_THRESH=-0.035"
+  "-DUPPER_THRESH=-0.031"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
