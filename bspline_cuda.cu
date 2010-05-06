@@ -47,6 +47,59 @@ texture<float, 1> tex_grad;
 #endif
 ////////////////////////////////////////////////////////////
 
+typedef struct gpu_bspline_data GPU_Bspline_Data;
+struct gpu_bspline_data
+{
+    // bxf items
+    int3 rdims;         
+    int3 cdims;
+    float3 img_origin;      
+    float3 img_spacing;
+    int3 roi_dim;           
+    int3 roi_offset;        
+    int3 vox_per_rgn;       
+
+    // fixed volume items
+    int3 fix_dim;
+
+    // moving volume items
+    int3 mov_dim;       
+    float3 mov_offset;
+    float3 mov_spacing;
+};
+
+
+void
+build_gbd (
+    GPU_Bspline_Data* gbd,
+    BSPLINE_Xform* bxf,
+    Volume* fixed,
+    Volume* moving)
+{
+    if (bxf != NULL) {
+        // populate bxf entries
+        memcpy (&gbd->rdims, bxf->rdims, 3*sizeof(int));
+        memcpy (&gbd->cdims, bxf->cdims, 3*sizeof(int));
+        memcpy (&gbd->img_origin, bxf->img_origin, 3*sizeof(float));
+        memcpy (&gbd->img_spacing, bxf->img_spacing, 3*sizeof(float));
+        memcpy (&gbd->roi_dim, bxf->roi_dim, 3*sizeof(int));
+        memcpy (&gbd->roi_offset, bxf->roi_offset, 3*sizeof(int));
+        memcpy (&gbd->vox_per_rgn, bxf->vox_per_rgn, 3*sizeof(int));
+    }
+
+    if (fixed != NULL) {
+        // populate fixed volume entries
+        memcpy (&gbd->fix_dim, fixed->dim, 3*sizeof(int));
+    }
+
+    if (moving != NULL) {
+        // populate moving volume entries
+        memcpy (&gbd->mov_dim, moving->dim, 3*sizeof(int));
+        memcpy (&gbd->mov_offset, moving->offset, 3*sizeof(float));
+        memcpy (&gbd->mov_spacing, moving->pix_spacing, 3*sizeof(float));
+    }
+    
+}
 
 /**
  * A simple kernel used to ensure that CUDA is working correctly.
@@ -385,51 +438,12 @@ CUDA_bspline_MI_a_hist_fix (
     Volume* moving,
     BSPLINE_Xform *bxf)
 {
+    GPU_Bspline_Data gbd; 
+    build_gbd (&gbd, bxf, fixed, moving);
+
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
     checkCUDAError ("Failed to initialize memory for f_hist");
-
-    int3 vpr;
-    vpr.x = bxf->vox_per_rgn[0];
-    vpr.y = bxf->vox_per_rgn[1];
-    vpr.z = bxf->vox_per_rgn[2];
-
-    int3 fdim;
-    fdim.x = fixed->dim[0];
-    fdim.y = fixed->dim[1];
-    fdim.z = fixed->dim[2];
-
-    int3 mdim;
-    mdim.x = moving->dim[0];
-    mdim.y = moving->dim[1];
-    mdim.z = moving->dim[2];
-    
-    int3 rdim;
-    rdim.x = bxf->rdims[0];
-    rdim.y = bxf->rdims[1];
-    rdim.z = bxf->rdims[2];
-
-    float3 img_origin;
-    img_origin.x = bxf->img_origin[0];
-    img_origin.y = bxf->img_origin[1];
-    img_origin.z = bxf->img_origin[2];
-    
-    float3 img_spacing;     
-    img_spacing.x = bxf->img_spacing[0];
-    img_spacing.y = bxf->img_spacing[1];
-    img_spacing.z = bxf->img_spacing[2];
-
-
-    float3 mov_offset;     
-    mov_offset.x = moving->offset[0];
-    mov_offset.y = moving->offset[1];
-    mov_offset.z = moving->offset[2];
-
-    float3 mov_ps;
-    mov_ps.x = moving->pix_spacing[0];
-    mov_ps.y = moving->pix_spacing[1];
-    mov_ps.z = moving->pix_spacing[2];
-    
 
     // --- INITIALIZE GRID ---
     int i;
@@ -486,17 +500,17 @@ CUDA_bspline_MI_a_hist_fix (
     mi_hist->fixed.offset,      // histogram offset
     1.0f/mi_hist->fixed.delta,  // histogram delta
     mi_hist->fixed.bins,        // # histogram bins
-    vpr,                // voxels per region
-    fdim,               // fixed  image dimensions
-    mdim,               // moving image dimensions
-    rdim,               //       region dimensions
-    img_origin,         // image origin
-    img_spacing,            // image spacing
-    mov_offset,         // moving image offset
-    mov_ps,             // moving image pixel spacing
-    dev_ptrs->c_lut,        // DEBUG
-    dev_ptrs->q_lut,        // DEBUG
-    dev_ptrs->coeff);       // DEBUG
+    gbd.vox_per_rgn,            // voxels per region
+    gbd.fix_dim,                // fixed  image dimensions
+    gbd.mov_dim,                // moving image dimensions
+    gbd.rdims,                  //       region dimensions
+    gbd.img_origin,             // image origin
+    gbd.img_spacing,            // image spacing
+    gbd.mov_offset,             // moving image offset
+    gbd.mov_spacing,            // moving image pixel spacing
+    dev_ptrs->c_lut,            // DEBUG
+    dev_ptrs->q_lut,            // DEBUG
+    dev_ptrs->coeff);           // DEBUG
 
     checkCUDAError ("kernel hist_mov");
 
@@ -534,49 +548,12 @@ CUDA_bspline_MI_a_hist_mov (
     Volume* moving,
     BSPLINE_Xform *bxf)
 {
+    GPU_Bspline_Data gbd;
+    build_gbd (&gbd, bxf, fixed, moving);
+
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
     checkCUDAError ("Failed to initialize memory for m_hist");
-
-    int3 vpr;
-    vpr.x = bxf->vox_per_rgn[0];
-    vpr.y = bxf->vox_per_rgn[1];
-    vpr.z = bxf->vox_per_rgn[2];
-
-    int3 fdim;
-    fdim.x = fixed->dim[0];
-    fdim.y = fixed->dim[1];
-    fdim.z = fixed->dim[2];
-
-    int3 mdim;
-    mdim.x = moving->dim[0]; mdim.y = moving->dim[1];
-    mdim.z = moving->dim[2];
-    
-    int3 rdim;
-    rdim.x = bxf->rdims[0];
-    rdim.y = bxf->rdims[1];
-    rdim.z = bxf->rdims[2];
-
-    float3 img_origin;
-    img_origin.x = bxf->img_origin[0];
-    img_origin.y = bxf->img_origin[1];
-    img_origin.z = bxf->img_origin[2];
-    
-    float3 img_spacing;     
-    img_spacing.x = bxf->img_spacing[0];
-    img_spacing.y = bxf->img_spacing[1];
-    img_spacing.z = bxf->img_spacing[2];
-
-
-    float3 mov_offset;     
-    mov_offset.x = moving->offset[0];
-    mov_offset.y = moving->offset[1];
-    mov_offset.z = moving->offset[2];
-
-    float3 mov_ps;
-    mov_ps.x = moving->pix_spacing[0];
-    mov_ps.y = moving->pix_spacing[1];
-    mov_ps.z = moving->pix_spacing[2];
     
 
     // --- INITIALIZE GRID ---
@@ -634,14 +611,14 @@ CUDA_bspline_MI_a_hist_mov (
             mi_hist->moving.offset,     // histogram offset
             1.0f/mi_hist->moving.delta, // histogram delta
             mi_hist->moving.bins,       // # histogram bins
-            vpr,                        // voxels per region
-            fdim,                       // fixed  image dimensions
-            mdim,                       // moving image dimensions
-            rdim,                       //       region dimensions
-            img_origin,                 // image origin
-            img_spacing,                // image spacing
-            mov_offset,                 // moving image offset
-            mov_ps,                     // moving image pixel spacing
+            gbd.vox_per_rgn,            // voxels per region
+            gbd.fix_dim,                // fixed  image dimensions
+            gbd.mov_dim,                // moving image dimensions
+            gbd.rdims,                  //       region dimensions
+            gbd.img_origin,             // image origin
+            gbd.img_spacing,            // image spacing
+            gbd.mov_offset,             // moving image offset
+            gbd.mov_spacing,            // moving image pixel spacing
             dev_ptrs->c_lut,            // DEBUG
             dev_ptrs->q_lut,            // DEBUG
             dev_ptrs->coeff);           // DEBUG
@@ -682,58 +659,11 @@ CUDA_bspline_MI_a_hist_jnt (
     Volume* moving,
     BSPLINE_Xform *bxf)
 {
+    GPU_Bspline_Data gbd;
+    build_gbd (&gbd, bxf, fixed, moving);
+
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->j_hist, 0, dev_ptrs->j_hist_size);
-
-    int3 vpr;
-    vpr.x = bxf->vox_per_rgn[0];
-    vpr.y = bxf->vox_per_rgn[1];
-    vpr.z = bxf->vox_per_rgn[2];
-
-    int3 fdim;
-    fdim.x = fixed->dim[0];
-    fdim.y = fixed->dim[1];
-    fdim.z = fixed->dim[2];
-
-    int3 mdim;
-    mdim.x = moving->dim[0];
-    mdim.y = moving->dim[1];
-    mdim.z = moving->dim[2]; 
-    int3 rdim;
-    rdim.x = bxf->rdims[0];
-    rdim.y = bxf->rdims[1];
-    rdim.z = bxf->rdims[2];
-
-    float3 img_origin;
-    img_origin.x = bxf->img_origin[0];
-    img_origin.y = bxf->img_origin[1];
-    img_origin.z = bxf->img_origin[2];
-    
-    float3 img_spacing;     
-    img_spacing.x = bxf->img_spacing[0];
-    img_spacing.y = bxf->img_spacing[1];
-    img_spacing.z = bxf->img_spacing[2];
-
-
-    float3 mov_offset;     
-    mov_offset.x = moving->offset[0];
-    mov_offset.y = moving->offset[1];
-    mov_offset.z = moving->offset[2];
-
-    float3 mov_ps;
-    mov_ps.x = moving->pix_spacing[0];
-    mov_ps.y = moving->pix_spacing[1];
-    mov_ps.z = moving->pix_spacing[2];
-    
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
 
 
     int num_bins = (int)mi_hist->fixed.bins * (int)mi_hist->moving.bins;
@@ -807,16 +737,16 @@ CUDA_bspline_MI_a_hist_jnt (
             1.0f/mi_hist->moving.delta, // moving histogram delta
             mi_hist->fixed.bins,        // # fixed bins
             mi_hist->moving.bins,       // # moving bins
-            vpr,                        // voxels per region
-            fdim,                       // fixed  image dimensions
-            mdim,                       // moving image dimensions
-            rdim,                       //       region dimensions
-            img_origin,                 // image origin
-            img_spacing,                // image spacing
-            mov_offset,                 // moving image offset
-            mov_ps,                     // moving image pixel spacing
-            roi_dim,                    // region dims
-            roi_offset,                 // region offset
+            gbd.vox_per_rgn,            // voxels per region
+            gbd.fix_dim,                // fixed  image dimensions
+            gbd.mov_dim,                // moving image dimensions
+            gbd.rdims,                  //       region dimensions
+            gbd.img_origin,             // image origin
+            gbd.img_spacing,            // image spacing
+            gbd.mov_offset,             // moving image offset
+            gbd.mov_spacing,            // moving image pixel spacing
+            gbd.roi_dim,                // region dims
+            gbd.roi_offset,             // region offset
             dev_ptrs->c_lut,            // DEBUG
             dev_ptrs->q_lut,            // DEBUG
             dev_ptrs->coeff);           // DEBUG
@@ -853,7 +783,7 @@ CUDA_bspline_MI_a_hist_jnt (
     // --- INITIALIZE GRID --------------------------------------
     Grid_x = 0;
     Grid_y = 0;
-    int num_elems = fdim.x * fdim.y * fdim.z;
+    int num_elems = gbd.fix_dim.x * gbd.fix_dim.y * gbd.fix_dim.z;
     //  int num_blocks = (int)ceil(num_elems / 512.0);
     num_blocks = (num_elems + 511) / 512;
     
@@ -914,7 +844,7 @@ CUDA_bspline_MI_a_hist_jnt (
     int num_vox;
     cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
 
-    num_vox = (fdim.x * fdim.y * fdim.z) - skipped;
+    num_vox = (gbd.fix_dim.x * gbd.fix_dim.y * gbd.fix_dim.z) - skipped;
     // -------------------------
 
 
@@ -1248,6 +1178,9 @@ CUDA_MI_Grad_a (
     float num_vox_f,
     Dev_Pointers_Bspline *dev_ptrs)
 {
+    GPU_Bspline_Data gbd;
+    build_gbd (&gbd, bxf, fixed, moving);
+
 
     BSPLINE_Score* ssd = &bst->ssd;
     float* host_grad = ssd->grad;
@@ -1267,58 +1200,6 @@ CUDA_MI_Grad_a (
     cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
        checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
     
-
-    int3 vpr;
-    vpr.x = bxf->vox_per_rgn[0];
-    vpr.y = bxf->vox_per_rgn[1];
-    vpr.z = bxf->vox_per_rgn[2];
-
-    int3 fdim;
-    fdim.x = fixed->dim[0];
-    fdim.y = fixed->dim[1];
-    fdim.z = fixed->dim[2];
-
-    int3 mdim;
-    mdim.x = moving->dim[0];
-    mdim.y = moving->dim[1];
-    mdim.z = moving->dim[2];
-    
-    int3 rdim;
-    rdim.x = bxf->rdims[0];
-    rdim.y = bxf->rdims[1];
-    rdim.z = bxf->rdims[2];
-
-    float3 img_origin;
-    img_origin.x = bxf->img_origin[0];
-    img_origin.y = bxf->img_origin[1];
-    img_origin.z = bxf->img_origin[2];
-    
-    float3 img_spacing;     
-    img_spacing.x = bxf->img_spacing[0];
-    img_spacing.y = bxf->img_spacing[1];
-    img_spacing.z = bxf->img_spacing[2];
-
-
-    float3 mov_offset;     
-    mov_offset.x = moving->offset[0];
-    mov_offset.y = moving->offset[1];
-    mov_offset.z = moving->offset[2];
-
-    float3 mov_ps;
-    mov_ps.x = moving->pix_spacing[0];
-    mov_ps.y = moving->pix_spacing[1];
-    mov_ps.z = moving->pix_spacing[2];
-    
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
 
     // --- INITIALIZE GRID ---
     int i;
@@ -1369,7 +1250,7 @@ CUDA_MI_Grad_a (
     dim3 dimBlock1(threads_per_block, 1, 1);
 
 
-    int tile_padding = 64 - ((vpr.x * vpr.y * vpr.z) % 64);
+    int tile_padding = 64 - ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_dc_dv_a <<<dimGrid1, dimBlock1>>> (
@@ -1387,16 +1268,16 @@ CUDA_MI_Grad_a (
         1.0f/mi_hist->moving.delta,
         mi_hist->fixed.bins,
         mi_hist->moving.bins,
-        vpr,
-        fdim,
-        mdim,
-        rdim,
-        img_origin,
-        img_spacing,
-        mov_offset,
-        mov_ps,
-        roi_dim,
-        roi_offset,
+        gbd.vox_per_rgn,
+        gbd.fix_dim,
+        gbd.mov_dim,
+        gbd.rdims,
+        gbd.img_origin,
+        gbd.img_spacing,
+        gbd.mov_offset,
+        gbd.mov_spacing,
+        gbd.roi_dim,
+        gbd.roi_offset,
         dev_ptrs->c_lut,
         dev_ptrs->q_lut,
         dev_ptrs->coeff,
@@ -7494,72 +7375,9 @@ CUDA_bspline_mse_score_dc_dv (
     Volume* fixed,
     Volume* moving)
 {
-    // JAS 10.15.2009
-    // TODO: A structure similar to the BSpline_Xform
-    //       that uses float3s needs to be used here
-    //       to clean up the code.  Perhaps...
+    GPU_Bspline_Data gbd;   
 
-    // Dimensions of the volume (in tiles)
-    int3 rdims;         
-    rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
-
-    // Number of knots
-    int3 cdims;
-    cdims.x = bxf->cdims[0];
-    cdims.y = bxf->cdims[1];
-    cdims.z = bxf->cdims[2];
-
-    // Fixed image header
-    int3 fix_dim;
-    fix_dim.x = fixed->dim[0]; 
-    fix_dim.y = fixed->dim[1];
-    fix_dim.z = fixed->dim[2];
-
-    float3 fix_origin;      
-    fix_origin.x = (float) bxf->img_origin[0];
-    fix_origin.y = (float) bxf->img_origin[1];
-    fix_origin.z = (float) bxf->img_origin[2];
-
-    float3 fix_spacing;
-    fix_spacing.x = (float) bxf->img_spacing[0];
-    fix_spacing.y = (float) bxf->img_spacing[1];
-    fix_spacing.z = (float) bxf->img_spacing[2];
-
-    // Moving image header
-    int3 mov_dim;       
-    mov_dim.x = moving->dim[0]; 
-    mov_dim.y = moving->dim[1];
-    mov_dim.z = moving->dim[2];
-
-    float3 mov_origin;
-    mov_origin.x = (float) moving->offset[0];
-    mov_origin.y = (float) moving->offset[1];
-    mov_origin.z = (float) moving->offset[2];
-
-    float3 mov_spacing;
-    mov_spacing.x = (float) moving->pix_spacing[0];
-    mov_spacing.y = (float) moving->pix_spacing[1];
-    mov_spacing.z = (float) moving->pix_spacing[2];
-
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-
-    // Position of first vox in ROI (in vox)
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
-    // Number of voxels per region
-    int3 vox_per_rgn;       
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
+    build_gbd (&gbd, bxf, fixed, moving);
 
     // --- INITIALIZE GRID ---
     int i;
@@ -7630,11 +7448,11 @@ CUDA_bspline_mse_score_dc_dv (
     checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
 
     int tile_padding = 64 - 
-    ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+    ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
 
     /* GCS ??? */
     //if (tile_padding == 64) tile_padding = 0;
-    printf ("tile_padding = %d\n", tile_padding);
+    //printf ("tile_padding = %d\n", tile_padding);
 
     bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
         dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
@@ -7645,17 +7463,17 @@ CUDA_bspline_mse_score_dc_dv (
         dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
         dev_ptrs->moving_image, // Addr of moving_image on GPU
         dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-        fix_dim,                // Size of fixed image (vox)
-        fix_origin,             // Origin of fixed image (mm)
-        fix_spacing,            // Spacing of fixed image (mm)
-        mov_dim,                // Size of moving image (vox)
-        mov_origin,             // Origin of moving image (mm)
-        mov_spacing,            // Spacing of moving image (mm)
-        roi_dim,                // Region of Intrest Dimenions
-        roi_offset,             // Region of Intrest Offset
-        vox_per_rgn,            // Voxels per Region
-        rdims,                  // # of regions in (x,y,z)
-        cdims,                  // # of control points in (x,y,z)
+        gbd.fix_dim,                // Size of fixed image (vox)
+        gbd.img_origin,             // Origin of fixed image (mm)
+        gbd.img_spacing,            // Spacing of fixed image (mm)
+        gbd.mov_dim,                // Size of moving image (vox)
+        gbd.mov_offset,             // Origin of moving image (mm)
+        gbd.mov_spacing,            // Spacing of moving image (mm)
+        gbd.roi_dim,                // Region of Intrest Dimenions
+        gbd.roi_offset,             // Region of Intrest Offset
+        gbd.vox_per_rgn,            // Voxels per Region
+        gbd.rdims,                  // # of regions in (x,y,z)
+        gbd.cdims,                  // # of control points in (x,y,z)
         tile_padding,
         dev_ptrs->skipped);
 
