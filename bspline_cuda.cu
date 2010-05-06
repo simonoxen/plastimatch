@@ -2895,80 +2895,16 @@ bspline_cuda_j_stage_1 (
  *
  */
 extern "C" void
-bspline_cuda_i_stage_1 (Volume* fixed,
+bspline_cuda_i_stage_1 (
+    Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
     BSPLINE_Xform* bxf,
     BSPLINE_Parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
-
-    // JAS 10.15.2009
-    // TODO: A structure similar to the BSpline_Xform
-    //       that uses float3s needs to be used here
-    //       to clean up the code.
-
-    // Dimensions of the volume (in tiles)
-    int3 rdims;         
-    rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
-
-    // Number of knots
-    int3 cdims;
-    cdims.x = bxf->cdims[0];
-    cdims.y = bxf->cdims[1];
-    cdims.z = bxf->cdims[2];
-
-    // Fixed image header
-    int3 fix_dim;
-    fix_dim.x = fixed->dim[0]; 
-    fix_dim.y = fixed->dim[1];
-    fix_dim.z = fixed->dim[2];
-
-    float3 fix_origin;      
-    fix_origin.x = (float) bxf->img_origin[0];
-    fix_origin.y = (float) bxf->img_origin[1];
-    fix_origin.z = (float) bxf->img_origin[2];
-
-    float3 fix_spacing;
-    fix_spacing.x = (float) bxf->img_spacing[0];
-    fix_spacing.y = (float) bxf->img_spacing[1];
-    fix_spacing.z = (float) bxf->img_spacing[2];
-
-    // Moving image header
-    int3 mov_dim;       
-    mov_dim.x = moving->dim[0]; 
-    mov_dim.y = moving->dim[1];
-    mov_dim.z = moving->dim[2];
-
-    float3 mov_origin;
-    mov_origin.x = (float) moving->offset[0];
-    mov_origin.y = (float) moving->offset[1];
-    mov_origin.z = (float) moving->offset[2];
-
-    float3 mov_spacing;
-    mov_spacing.x = (float) moving->pix_spacing[0];
-    mov_spacing.y = (float) moving->pix_spacing[1];
-    mov_spacing.z = (float) moving->pix_spacing[2];
-
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-
-    // Position of first vox in ROI (in vox)
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
-    // Number of voxels per region
-    int3 vox_per_rgn;       
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
+    GPU_Bspline_Data gbd;
+    build_gbd (&gbd, bxf, fixed, moving);
 
 
     // JAS 10.15.2009
@@ -3043,7 +2979,7 @@ bspline_cuda_i_stage_1 (Volume* fixed,
     cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
     checkCUDAError("cudaMemset(): dev_ptrs->skipped");
 
-    int tile_padding = 64 - ((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) % 64);
+    int tile_padding = 64 - ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
 
     bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
         dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
@@ -3054,17 +2990,17 @@ bspline_cuda_i_stage_1 (Volume* fixed,
         dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
         dev_ptrs->moving_image, // Addr of moving_image on GPU
         dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-        fix_dim,                // Size of fixed image (vox)
-        fix_origin,             // Origin of fixed image (mm)
-        fix_spacing,            // Spacing of fixed image (mm)
-        mov_dim,                // Size of moving image (vox)
-        mov_origin,             // Origin of moving image (mm)
-        mov_spacing,            // Spacing of moving image (mm)
-        roi_dim,                // Region of Intrest Dimenions
-        roi_offset,             // Region of Intrest Offset
-        vox_per_rgn,            // Voxels per Region
-        rdims,                  // 
-        cdims,
+        gbd.fix_dim,            // Size of fixed image (vox)
+        gbd.img_origin,         // Origin of fixed image (mm)
+        gbd.img_spacing,        // Spacing of fixed image (mm)
+        gbd.mov_dim,            // Size of moving image (vox)
+        gbd.mov_offset,         // Origin of moving image (mm)
+        gbd.mov_spacing,        // Spacing of moving image (mm)
+        gbd.roi_dim,            // Region of Intrest Dimenions
+        gbd.roi_offset,         // Region of Intrest Offset
+        gbd.vox_per_rgn,        // Voxels per Region
+        gbd.rdims,              // 
+        gbd.cdims,
         tile_padding,
         dev_ptrs->skipped);
 
@@ -3144,344 +3080,6 @@ bspline_cuda_i_stage_1 (Volume* fixed,
     // Prepare for the next kernel
     cudaThreadSynchronize();
     checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-
-    // END OF FUNCTION
-
-    // ORIGIONAL i STARTS HERE.
-    // Replaced with a version of j that performs on the fly
-    // calculations instead of using a LUT for B-Spline coefficients.
-    //
-    // The following is maintained for reference purposes.
-    /*
-    // --- INITIALIZE LOCAL VARIABLES ---------------------------
-
-    // Dimensions of the volume (in tiles)
-    int3 rdims;         
-    rdims.x = bxf->rdims[0];
-    rdims.y = bxf->rdims[1];
-    rdims.z = bxf->rdims[2];
-
-    // Number of knots
-    int3 cdims;
-    cdims.x = bxf->cdims[0];
-    cdims.y = bxf->cdims[1];
-    cdims.z = bxf->cdims[2];
-
-    // Dimensions of the volume (in voxels)
-    int3 volume_dim;        
-    volume_dim.x = fixed->dim[0]; 
-    volume_dim.y = fixed->dim[1];
-    volume_dim.z = fixed->dim[2];
-
-    // Number of voxels per region
-    int3 vox_per_rgn;       
-    vox_per_rgn.x = bxf->vox_per_rgn[0];
-    vox_per_rgn.y = bxf->vox_per_rgn[1];
-    vox_per_rgn.z = bxf->vox_per_rgn[2];
-
-    // Image origin (in mm)
-    float3 img_origin;      
-    img_origin.x = (float)bxf->img_origin[0];
-    img_origin.y = (float)bxf->img_origin[1];
-    img_origin.z = (float)bxf->img_origin[2];
-
-    // Image spacing (in mm)
-    float3 img_spacing;     
-    img_spacing.x = (float)bxf->img_spacing[0];
-    img_spacing.y = (float)bxf->img_spacing[1];
-    img_spacing.z = (float)bxf->img_spacing[2];
-
-    // Image offset
-    float3 img_offset;     
-    img_offset.x = (float)moving->offset[0];
-    img_offset.y = (float)moving->offset[1];
-    img_offset.z = (float)moving->offset[2];
-
-    // Pixel spacing
-    float3 pix_spacing;     
-    pix_spacing.x = (float)moving->pix_spacing[0];
-    pix_spacing.y = (float)moving->pix_spacing[1];
-    pix_spacing.z = (float)moving->pix_spacing[2];
-
-    // Position of first vox in ROI (in vox)
-    int3 roi_offset;        
-    roi_offset.x = bxf->roi_offset[0];
-    roi_offset.y = bxf->roi_offset[1];
-    roi_offset.z = bxf->roi_offset[2];
-
-    // Dimension of ROI (in vox)
-    int3 roi_dim;           
-    roi_dim.x = bxf->roi_dim[0];    
-    roi_dim.y = bxf->roi_dim[1];
-    roi_dim.z = bxf->roi_dim[2];
-    // ----------------------------------------------------------
-
-
-    // --- INITIALIZE GRID -------------------------------------
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int threads_per_block = 128;
-    int num_threads = fixed->npix;
-    //  int num_blocks = (int)ceil(num_threads / (float)threads_per_block);
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-    int smemSize = 12 * sizeof(float) * threads_per_block;
-
-
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++)
-    {
-    if (num_blocks % i == 0)
-    {
-    Grid_x = i;
-    Grid_y = num_blocks / Grid_x;
-    break;
-    }
-    }
-    // *****
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-    // If this happens we should consider falling back to a
-    // CPU implementation, using a different CUDA algorithm,
-    // or padding the input dc_dv stream to work with this
-    // CUDA algorithm.
-    printf("\n[ERROR] Unable to find suitable bspline_cuda_score_g_mse_kernel1() configuration!\n");
-    exit(0);
-    } else {
-#if defined (commentout)
-    printf ("Grid [%i,%i], %d threads_per_block.\n", 
-        Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    dim3 dimGrid1(Grid_x, Grid_y, 1);
-
-
-    //  dim3 dimGrid1(num_blocks / 128, 128, 1);
-    dim3 dimBlock1(threads_per_block, 1, 1);
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    // (a.k.a: bspline_cuda_score_g_mse_kernel1)
-
-    cudaEvent_t start, stop;
-    float time;
-
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-
-    cudaEventRecord (start, 0); 
-
-
-    // For now we are using the legacy g_mse_kernel1
-    // later to be replaced with h_mse_kernel1
-    bspline_cuda_score_g_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
-    dev_ptrs->dc_dv,    // Addr of dc_dv on GPU
-    dev_ptrs->score,    // Addr of score on GPU
-    dev_ptrs->coeff,    // Addr of coeff on GPU
-    dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
-    dev_ptrs->moving_image, // Addr of moving_image on GPU
-    dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
-    volume_dim,     // Volume Dimensions
-    img_origin,     // Origin
-    img_spacing,        // Voxel Spacing
-    img_offset,     // Image Offset
-    roi_offset,     // Region of Intrest Offset
-    roi_dim,        // Region of Intrest Dimenions
-    vox_per_rgn,        // Voxels per Region
-    pix_spacing,        // Pixel Spacing
-    rdims,          // 
-    cdims);         // 
-
-    cudaEventRecord (stop, 0);  
-    cudaEventSynchronize (stop);
-
-    cudaEventElapsedTime (&time, start, stop);
-
-    cudaEventDestroy (start);
-    cudaEventDestroy (stop);
-
-    printf("\n[%f ms] G Part 1\n", time);
-    // ----------------------------------------------------------
-
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_g_mse_1");
-    // ----------------------------------------------------------
-    
-    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    // &&&&&&&&&&&&&&&&&&&&& PART 2 &&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    // &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // ----------------------------------------------------------
-    // * Glue Code 1
-    //    [GPU] Generate 3 seperate Row-Major dc_dv volumes
-    //          One for X, one for Y, and one for Z
-    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_x");
-
-    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_y");
-
-    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->dc_dv_z");
-
-    CUDA_deinterleave(dev_ptrs->dc_dv_size/sizeof(float),
-    dev_ptrs->dc_dv,
-    dev_ptrs->dc_dv_x,
-    dev_ptrs->dc_dv_y,
-    dev_ptrs->dc_dv_z);
-
-    // Release dc_dv on the card so we have enough memory
-    // (We will have to re-allocate dc_dv before we return)
-    //  cudaUnbindTexture (tex_dc_dv);
-    //  cudaFree( dev_ptrs->dc_dv );
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Deinterleaving\n", time);                   //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
-    // ----------------------------------------------------------
-    // * Glue Code 2
-    //    [GPU] Convert the 3 deinterleaved row-major
-    //          data streams into 3 32-byte aligned
-    //          tiled streams.
-    CUDA_pad_64(&dev_ptrs->dc_dv_x,
-    fixed->dim,
-    bxf->vox_per_rgn);
-
-    CUDA_pad_64(&dev_ptrs->dc_dv_y,
-    fixed->dim,
-    bxf->vox_per_rgn);
-
-    CUDA_pad_64(&dev_ptrs->dc_dv_z,
-    fixed->dim,
-    bxf->vox_per_rgn);
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Data Padding\n", time);                     //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // ----------------------------------------------------------
-    // * Setup 3
-    //     Clear out the condensed dc_dv streams
-    
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_x");
-
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_y");
-
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
-    // ----------------------------------------------------------
-
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // --- INVOKE KERNEL CONDENSE -------------------------------
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64(dev_ptrs, bxf->vox_per_rgn, num_tiles);
-    //  CPU_bspline_mse_2_condense(dev_ptrs, bxf->vox_per_rgn, bxf->cdims, bxf->rdims, num_tiles);
-    // ----------------------------------------------------------
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Condense\n", time);                         //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-    // ----------------------------------------------------------
-
-    // !!! START TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventCreate(&start);                                    //!!
-    cudaEventCreate(&stop);                                     //!!
-    cudaEventRecord (start, 0);                                 //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-    // --- INVOKE KERNEL CONDENSE -------------------------------
-    CUDA_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-    //  CPU_bspline_mse_2_reduce(dev_ptrs, bxf->num_knots);
-    // ----------------------------------------------------------
-
-
-    // !!! STOP TIMING THE KERNEL !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    cudaEventRecord (stop, 0);                                  //!!
-    cudaEventSynchronize (stop);                                //!!
-    cudaEventElapsedTime (&time, start, stop);                  //!!
-    cudaEventDestroy (start);                                   //!!
-    cudaEventDestroy (stop);                                    //!!
-    printf("[%f ms] Reduce\n\n", time);                         //!!
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
-    // ----------------------------------------------------------
-
-
-    // --- PUT dc_dv BACK THE WAY WE FOUND IT -------------------
-    // This is some disabled LOW-MEM code.  We don't need
-    // to de-allocate and re-allocate dc_dv, but we can if
-    // we are in dire need for more memory.  The re-allocation
-    // process is a little slow, so we waste a little memory
-    // here in a trade off for speed.
-
-    // Re-Allocate dev_ptrs->dc_dv
-    //  cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    //  cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
-    //  cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
-    // ----------------------------------------------------------
-
-    */
-    // END OF REFERENCE CODE
 
 }
 ////////////////////////////////////////////////////////////////////////////////
