@@ -178,6 +178,17 @@ IF (NOT SQLITE_FOUND)
 ENDIF (NOT SQLITE_FOUND)
 
 ##-----------------------------------------------------------------------------
+##  Use local liblbfgs if not found
+##-----------------------------------------------------------------------------
+IF (NOT LIBLBFGS_FOUND)
+  ADD_SUBDIRECTORY (libs/liblbfgs-1.9)
+  SET (LIBLBFGS_INCLUDE_DIR libs/liblbfgs-1.9/include)
+  SET (LIBLBFGS_LIBRARIES lbfgs)
+  LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
+  SET (LIBLBFGS_FOUND TRUE)
+ENDIF (NOT LIBLBFGS_FOUND)
+
+##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
 IF (MINGW)
@@ -424,12 +435,12 @@ IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   ENDIF(UNIX)
 ENDIF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
-IF (LIBLBFGS_FOUND)
+#IF (LIBLBFGS_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${LIBLBFGS_LIBRARIES}
     )
-ENDIF (LIBLBFGS_FOUND)
+#ENDIF (LIBLBFGS_FOUND)
 
 IF (NLOPT_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
@@ -575,12 +586,12 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
     )
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
-IF (LIBLBFGS_FOUND)
+#IF (LIBLBFGS_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
     )
-ENDIF (LIBLBFGS_FOUND)
+#ENDIF (LIBLBFGS_FOUND)
 
 IF(F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC
@@ -940,9 +951,9 @@ IF(DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF(DCMTK_FOUND)
 
-IF (LIBLBFGS_FOUND)
+#IF (LIBLBFGS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
-ENDIF (LIBLBFGS_FOUND)
+#ENDIF (LIBLBFGS_FOUND)
 
 IF(PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
