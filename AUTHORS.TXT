@@ -1,0 +1,12 @@
+Plastimatch is a collaborative effort.  Contributors include:
+
+MGH: Greg Sharp, Ziji Wu, Marta Peroni, Justin Lee, Rui Li, 
+    Nadya Shusharina, Joost Verburg
+
+Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy, 
+    James Shackleford
+
+OHSU: Anthony Eden, Junan Zhang
+
+If you have contributed to plastimatch, and you would like to add your 
+name, please email to Greg Sharp, gcsharp a@t partners dot org.
