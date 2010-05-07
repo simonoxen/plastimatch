@@ -73,6 +73,8 @@ public:
     /* Versor & RSG optimizer */
     float max_step;
     float min_step;
+	/* Quaternion optimizer */
+	float learn_rate;
     /* Mattes mutual information */
     int mi_histogram_bins;
     int mi_num_spatial_samples;
@@ -130,6 +132,8 @@ public:
 	/* Versor & RSG optimizer */
 	max_step = 10.0;
 	min_step = 0.5;
+	/* Quaternion optimizer */
+	learn_rate = 0.01 ;
 	/* Mattes mutual information */
 	mi_histogram_bins = 20;
 	mi_num_spatial_samples = 10000;

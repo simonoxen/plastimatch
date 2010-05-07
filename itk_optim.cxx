@@ -304,7 +304,8 @@ set_optimization_quat (RegistrationType::Pointer registration,
     Stage_Parms* stage)
 {
     QuatOptimizerType::Pointer optimizer = QuatOptimizerType::New();
-    optimizer->SetLearningRate(0.001);
+    optimizer->SetLearningRate(stage->learn_rate);
+	std::cout << "Learning Rate was set to : " << optimizer->GetLearningRate() <<std::endl;
     optimizer->SetNumberOfIterations(stage->max_its);
     registration->SetOptimizer(optimizer);
 }

@@ -256,6 +256,12 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
+	else if (!strcmp (key, "learn_rate")) {
+	if (section == 0) goto error_not_global;
+	if (sscanf (val, "%g", &stage->learn_rate) != 1) {
+	    goto error_exit;
+	}
+    }
     else if (!strcmp (key, "grad_tol")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%g", &stage->grad_tol) != 1) {
