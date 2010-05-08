@@ -687,13 +687,6 @@ IF (CUDA_FOUND)
     ${CUDA_PROBE_WRAPPERS}
     )
 ENDIF (CUDA_FOUND)
-SET (CXT_APPLY_DICOM_SRC
-  cxt_apply_dicom_main.cxx)
-SET (CXT_TO_DICOM_RTSS_SRC 
-  cxt_to_dicom_rtss.cxx)
-SET (CXT_TO_MHA_SRC
-  cxt_to_mha_main.cxx
-  )
 SET (DEMONS_SRC
 	demons_main.c
 	demons_opts.c demons_opts.h
@@ -708,8 +701,6 @@ SET (DICE_STATS_SRC
 	)
 SET (DICOM_SERIES_TEST_SRC
   dicom_series_test.cxx)
-SET (DICOM_RTSS_TO_CXT_SRC 
-  dicom_rtss_to_cxt.cxx)
 SET (DICOM_UID_SRC
 	dicom_uid_main.cxx
 	dicom_uid.cxx
@@ -877,9 +868,6 @@ SET (VF_TO_VVF_SRC
 SET (XF_TO_XF_SRC
 	xf_to_xf_main.cxx xf_to_xf_main.h
 	)
-SET (XIO_TO_CXT_SRC
-	xio_to_cxt.cxx
-	)
 SET (XF_TO_EMPIREFMT_SRC
 	xf_to_empirefmt.cxx
 	)
@@ -887,10 +875,6 @@ SET (XF_TO_EMPIREFMT_SRC
 
 CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
 IF (NOT HAVE_GETOPT_LONG)
-    SET (CXT_APPLY_DICOM_SRC ${CXT_APPLY_DICOM_SRC} getopt_long.c getopt.h)
-    SET (CXT_TO_DICOM_RTSS_SRC ${CXT_TO_DICOM_RTSS_SRC} getopt_long.c getopt.h)
-    SET (CXT_TO_MHA_SRC ${CXT_TO_MHA_SRC} getopt_long.c getopt.h)
-    SET (DICOM_RTSS_TO_CXT_SRC ${DICOM_RTSS_TO_CXT_SRC} getopt_long.c getopt.h)
     SET (DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
     SET (MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
     SET (PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
@@ -899,7 +883,6 @@ IF (NOT HAVE_GETOPT_LONG)
     SET (COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
     SET (SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
     SET (VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
-    SET (XIO_TO_CXT_SRC ${XIO_TO_CXT_SRC} getopt_long.c getopt.h)
     SET (XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
 ENDIF (NOT HAVE_GETOPT_LONG)
 
@@ -1035,24 +1018,12 @@ PLM_ADD_EXECUTABLE (vox_to_mha vox_to_mha.c "" "")
 IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (cxt_apply_dicom "${CXT_APPLY_DICOM_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (cxt_to_dicom_rtss "${CXT_TO_DICOM_RTSS_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (cxt_to_mha "${CXT_TO_MHA_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF(ITK_USE_REVIEW)
 
   PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (dicom_to_mha dicom_to_mha.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (mha_to_dicom mha_to_dicom.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (dicom_rtss_to_cxt "${DICOM_RTSS_TO_CXT_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
@@ -1109,8 +1080,6 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE (xf_to_xf "${XF_TO_XF_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (xio_to_cxt "${XIO_TO_CXT_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
 ENDIF(ITK_FOUND)
 
