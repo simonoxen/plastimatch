@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _add_main_h_
-#define _add_main_h_
+#ifndef _pcmd_add_h_
+#define _pcmd_add_h_
 
 #include "plm_config.h"
 

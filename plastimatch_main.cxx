@@ -10,22 +10,21 @@
 #else
 #include "getopt.h"
 #endif
-#include "add_main.h"
-#include "adjust_main.h"
-#include "compare_main.h"
-#include "crop_main.h"
-#include "diff_main.h"
-#include "dvh_main.h"
-#include "mask_main.h"
+#include "pcmd_add.h"
+#include "pcmd_adjust.h"
+#include "pcmd_compare.h"
+#include "pcmd_crop.h"
+#include "pcmd_diff.h"
+#include "pcmd_dvh.h"
+#include "pcmd_mask.h"
 #include "pcmd_header.h"
 #include "pcmd_segment.h"
+#include "pcmd_resample.h"
+#include "pcmd_stats.h"
+#include "pcmd_warp.h"
 #include "plm_registration.h"
 #include "plm_stages.h"
 #include "plm_version.h"
-#include "resample_main.h"
-#include "stats_main.h"
-#include "warp_main.h"
-
 
 /* GCS FIX: "segment" is a hidden option until it works */
 static void

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _stats_main_h_
-#define _stats_main_h_
+#ifndef _pcmd_mask_h_
+#define _pcmd_mask_h_
 
 #include "plm_config.h"
 #include <string.h>
@@ -10,15 +10,21 @@
 #include "plm_path.h"
 #include "itk_image.h"
 
-class Stats_parms {
+class Mask_Parms {
 public:
-    char mha_in_fn[_MAX_PATH];
+    char input_fn[_MAX_PATH];
+    char output_fn[_MAX_PATH];
+    char mask_fn[_MAX_PATH];
+    int negate_mask;
+    float mask_value;
+    int output_dicom;
+    Plm_image_type output_type;
 public:
-    Stats_parms () {
-	memset (this, 0, sizeof(Stats_parms));
+    Mask_Parms () {
+	memset (this, 0, sizeof(Mask_Parms));
     }
 };
 
-void do_command_stats (int argc, char *argv[]);
+void do_command_mask (int argc, char *argv[]);
 
 #endif

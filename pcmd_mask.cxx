@@ -5,7 +5,7 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
-#include "mask_main.h"
+#include "pcmd_mask.h"
 #include "mask_mha.h"
 #include "plm_image.h"
 

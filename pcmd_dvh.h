@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _dvh_main_h_
-#define _dvh_main_h_
+#ifndef _pcmd_dvh_h_
+#define _pcmd_dvh_h_
 
 #include "plm_config.h"
 #include "plm_path.h"

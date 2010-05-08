@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _diff_main_h_
-#define _diff_main_h_
+#ifndef _pcmd_diff_h_
+#define _pcmd_diff_h_
 
 #include "plm_config.h"
 #include <string.h>

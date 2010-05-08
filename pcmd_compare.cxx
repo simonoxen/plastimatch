@@ -6,7 +6,7 @@
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
-#include "compare_main.h"
+#include "pcmd_compare.h"
 #include "plm_image.h"
 #include "itk_image.h"
 

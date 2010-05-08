@@ -7,7 +7,7 @@
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
 
-#include "dvh_main.h"
+#include "pcmd_dvh.h"
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_int.h"

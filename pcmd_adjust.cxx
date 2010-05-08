@@ -5,7 +5,7 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
-#include "adjust_main.h"
+#include "pcmd_adjust.h"
 #include "plm_image.h"
 
 static void

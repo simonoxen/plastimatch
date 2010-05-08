@@ -11,7 +11,7 @@
 #include "itkVectorLinearInterpolateImageFunction.h"
 #include "getopt.h"
 #include "plm_path.h"
-#include "warp_main.h"
+#include "pcmd_warp.h"
 #include "itk_image.h"
 
 typedef unsigned short ushort;

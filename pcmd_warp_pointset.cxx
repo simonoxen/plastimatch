@@ -2,7 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "warp_main.h"
+#include "pcmd_warp.h"
 #include "itk_pointset.h"
 #include "xform.h"
 

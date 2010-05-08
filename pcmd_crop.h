@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _compare_main_h_
-#define _compare_main_h_
+#ifndef _pcmd_crop_h_
+#define _pcmd_crop_h_
 
 #include "plm_config.h"
 #include <string.h>
@@ -10,16 +10,17 @@
 #include "plm_path.h"
 #include "itk_image.h"
 
-class Compare_parms {
+class Crop_Parms {
 public:
-    char img_in_1_fn[_MAX_PATH];
-    char img_in_2_fn[_MAX_PATH];
+    char img_in_fn[_MAX_PATH];
+    char img_out_fn[_MAX_PATH];
+    int crop_vox[6];
 public:
-    Compare_parms () {
-	memset (this, 0, sizeof(Compare_parms));
+    Crop_Parms () {
+	memset (this, 0, sizeof(Crop_Parms));
     }
 };
 
-void do_command_compare (int argc, char *argv[]);
+void do_command_crop (int argc, char *argv[]);
 
 #endif

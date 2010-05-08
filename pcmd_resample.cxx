@@ -10,7 +10,7 @@
 #include "itk_image.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
-#include "resample_main.h"
+#include "pcmd_resample.h"
 #include "resample_mha.h"
 
 void

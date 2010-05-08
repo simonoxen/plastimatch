@@ -790,22 +790,22 @@ SET (PATIENT_MASK_SRC
 	patient_mask.cxx
 	)
 SET (PLASTIMATCH_SRC
-	add_main.cxx add_main.h
-	adjust_main.cxx adjust_main.h
-	compare_main.cxx compare_main.h
-	crop_main.cxx crop_main.h
-	diff_main.cxx diff_main.h
-	dvh_main.cxx dvh_main.h
-	pcmd_header.cxx pcmd_header.h
-	pcmd_segment.cxx pcmd_segment.h
-	mask_main.cxx mask_main.h
-	plastimatch_main.cxx
-	resample_main.cxx resample_main.h
-	stats_main.cxx stats_main.h
- 	warp_dij_main.cxx 
-	warp_main.cxx warp_main.h 
- 	warp_pointset_main.cxx 
-	)
+  pcmd_add.cxx pcmd_add.h
+  pcmd_adjust.cxx pcmd_adjust.h
+  pcmd_compare.cxx pcmd_compare.h
+  pcmd_crop.cxx pcmd_crop.h
+  pcmd_diff.cxx pcmd_diff.h
+  pcmd_dvh.cxx pcmd_dvh.h
+  pcmd_header.cxx pcmd_header.h
+  pcmd_segment.cxx pcmd_segment.h
+  pcmd_mask.cxx pcmd_mask.h
+  plastimatch_main.cxx
+  pcmd_resample.cxx pcmd_resample.h
+  pcmd_stats.cxx pcmd_stats.h
+  pcmd_warp_dij.cxx 
+  pcmd_warp.cxx pcmd_warp.h 
+  pcmd_warp_pointset.cxx 
+  )
 SET (PLASTIMATCH_SLICER_SRC
         plastimatch-slicer.cxx
 	)

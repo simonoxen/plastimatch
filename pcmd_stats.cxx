@@ -9,7 +9,7 @@
 #include "plm_file_format.h"
 #include "proj_image.h"
 #include "readmha.h"
-#include "stats_main.h"
+#include "pcmd_stats.h"
 #include "vf_stats.h"
 
 static void

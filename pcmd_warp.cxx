@@ -16,7 +16,7 @@
 #include "print_and_exit.h"
 #include "rtds.h"
 #include "rtds_warp.h"
-#include "warp_main.h"
+#include "pcmd_warp.h"
 #include "xform.h"
 #include "xio_structures.h"
 
