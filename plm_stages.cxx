@@ -87,6 +87,12 @@ set_fixed_image_region_global (Registration_Data* regd)
     } else if (use_magic_value) {
 	FloatImageType::RegionType::IndexType valid_index;
 	FloatImageType::RegionType::SizeType valid_size;
+	valid_index[0] = 0;
+	valid_index[1] = 0;
+	valid_index[2] = 0;
+	valid_size[0] = 1;
+	valid_size[1] = 1;
+	valid_size[2] = 1;
 
 	/* Make sure the image is ITK float */
 	FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();

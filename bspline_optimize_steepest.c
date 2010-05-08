@@ -53,7 +53,6 @@ bspline_optimize_steepest_trace(
     char filename[20];
     float *grad_backup;
     float score_backup;
-    float coeff_init;
 
     if (parms->debug) {
 	fp = fopen("scores.txt", "w");

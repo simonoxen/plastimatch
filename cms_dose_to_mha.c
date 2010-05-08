@@ -40,7 +40,7 @@ xio_io_patient_position (
 
 // Swap endianness of 32-bit integer
 void
-int_endian (int *arg)
+int_endian (uint32_t *arg)
 {
     char lenbuf[4];
     char tmpc;
@@ -57,7 +57,6 @@ main (int argc, char *argv[])
 
     char buf[1024];
 
-    char *result = NULL;
     size_t read_result;
 
     int i, j, k;
@@ -65,7 +64,7 @@ main (int argc, char *argv[])
 
     float ***data;
 
-    u32 dose;
+    uint32_t dose;
     float normalized_dose;
 
     int rc;

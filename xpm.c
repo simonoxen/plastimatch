@@ -82,33 +82,35 @@ int xpm_remove_color(xpm_struct* xpm, char color_code)
 
 int xpm_draw (xpm_struct* xpm, xpm_brush* brush)
 {
-	int i, j;
-	int x1,x2,y1,y2;
+    int i, j;
+    int x1,x2,y1,y2;
 
-	// Which brush, son?
-	switch (brush->type) {
-		case XPM_BOX:
-			// Define bounds
-			x1 = brush->x_pos;
-			x2 = brush->x_pos + brush->width;
-			y1 = brush->y_pos;
-			y2 = brush->y_pos + brush->height;
+    // Which brush, son?
+    switch (brush->type) {
+    case XPM_BOX:
+	// Define bounds
+	x1 = brush->x_pos;
+	x2 = brush->x_pos + brush->width;
+	y1 = brush->y_pos;
+	y2 = brush->y_pos + brush->height;
 
-			// Bound checking
-			if ( (x1 < 0) || (x2 > xpm->width) )
-				return 1;
+	// Bound checking
+	if ( (x1 < 0) || (x2 > xpm->width) )
+	    return 1;
 
-			if ( (y1 < 0) || (y2 > xpm->height) )
-				return 1;
+	if ( (y1 < 0) || (y2 > xpm->height) )
+	    return 1;
 
-			// Draw the box
-			for (j=y1; j<y2; j++)
-				for (i=x1; i<x2; i++)
-					xpm->img[j * xpm->width + i] = brush->color;
-		break;
-	}
+	// Draw the box
+	for (j=y1; j<y2; j++)
+	    for (i=x1; i<x2; i++)
+		xpm->img[j * xpm->width + i] = brush->color;
+	break;
+    case XPM_CIRCLE:
+	break;
+    }
 
-	return 0;
+    return 0;
 }
 
 void xpm_write (xpm_struct* xpm, char* xpm_file)

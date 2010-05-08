@@ -2062,10 +2062,6 @@ bspline_mi_pvi_8_dc_dv (
     float li_2[3]                  /* Input */
 )
 {
-    long j_idxs[2];
-    long m_idxs[2];
-    long f_idxs[1];
-    float fxs[2];
     float dS_dP;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
@@ -2073,7 +2069,6 @@ bspline_mi_pvi_8_dc_dv (
     float* m_hist = mi_hist->m_hist;
     float* j_hist = mi_hist->j_hist;
     BSPLINE_Score* ssd = &bst->ssd;
-    int debug = 0;
     int n1, n2, n3, n4, n5, n6, n7, n8;
     int idx_fbin, idx_mbin, idx_jbin;
     int offset_fbin;

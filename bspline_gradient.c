@@ -183,8 +183,8 @@ bspline_gradient_score_from_prerendered (
     float dxyz[3];
     int qidx;
     //float diff[3];
-    float dc_dv[3];
-    float dux_dx[3];
+    //float dc_dv[3];
+    //float dux_dx[3];
     int num_vox, nv;
     int d,d1,d2,k;
     Timer timer;

@@ -291,6 +291,9 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 	FloatImageType::RegionType valid_region;
 	FloatImageType::RegionType::IndexType valid_index;
 	FloatImageType::RegionType::SizeType valid_size;
+	valid_index[0] = 0;
+	valid_index[1] = 0;
+	valid_index[2] = 0;
 	valid_size[0] = 1;
 	valid_size[1] = 1;
 	valid_size[2] = 1;

@@ -113,7 +113,7 @@ int main (int argc, char* argv[])
     // component to the corresponding binary files
     typedef itk::ImageRegionConstIterator< DeformationFieldType > RegionIteratorType;
 
-    fprintf(stdout, "requested region size %d %d %d\n",
+    fprintf (stdout, "requested region size %ld %ld %ld\n",
         vf->GetRequestedRegion().GetSize()[0],
         vf->GetRequestedRegion().GetSize()[1],
         vf->GetRequestedRegion().GetSize()[2]);
