@@ -40,6 +40,7 @@ load_pep (char* filename)
     char* ptoken;
     char linebuf[128];
     FILE* fp = fopen (filename, "r");
+    Proton_Energy_Profile *pep;
 
     if (!fp) {
         printf ("Error reading proton energy profile.\n");
@@ -51,7 +52,7 @@ load_pep (char* filename)
     // 00001037 ??
     
     // Allocate the pep
-    Proton_Energy_Profile* pep =
+    pep =
         (Proton_Energy_Profile*)malloc(sizeof(Proton_Energy_Profile));
 
     pep->dmax = 0.0f;
