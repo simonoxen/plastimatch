@@ -81,7 +81,6 @@ MACRO (PLM_ADD_EXECUTABLE
   IF (NOT BUILD_AGAINST_SLICER3)
     ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
     TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
-
     IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
       SET_TARGET_PROPERTIES(${TARGET_NAME} 
 	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
@@ -96,19 +95,25 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
   GENERATECLP (${TARGET_SRC} ${TARGET_NAME}.xml)
-
   ADD_EXECUTABLE (${TARGET_NAME} ${TARGET_SRC})
   TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
-
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
     SET_TARGET_PROPERTIES (${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
-
   SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
   SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
-
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
+
+MACRO (PLM_ADD_SLICER_MODULE 
+    TARGET_NAME TARGET_SRC TARGET_LIBS)
+
+  #GENERATELM (TARGET_SRC ${TARGET_NAME}.xml)
+  ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+  SLICER3_SET_MODULES_OUTPUT_PATH (${TARGET_NAME})
+  #SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
+ENDMACRO (PLM_ADD_SLICER_MODULE)
 
 ##-----------------------------------------------------------------------------
 ##  Search for include files
@@ -1126,16 +1131,10 @@ IF (Slicer3_DIR)
       ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
       ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
       )
-
-    GENERATELM (PlastimatchLoadable_SRCS 
-      PlastimatchLoadable.xml)
-
-    set (lib_name PlastimatchLoadable)
-    add_library (${lib_name}
-      ${PlastimatchLoadable_SRCS}
-      ${PlastimatchLoadable_TCL_SRCS}
-      )
-    slicer3_set_modules_output_path (${lib_name})
+    GENERATELM (PlastimatchLoadable_SRCS PlastimatchLoadable.xml)
+    PLM_ADD_SLICER_MODULE (PlastimatchLoadable
+      "${PlastimatchLoadable_SRCS}" 
+      "${PLASTIMATCH_LIBS}")
   ENDIF (PLM_BUILD_SLICER_LOADABLE)
 ENDIF (Slicer3_DIR)
 

@@ -1,25 +1,13 @@
-/*=auto=========================================================================
-
-Portions (c) Copyright 2005 Brigham and Women's Hospital (BWH) All Rights Reserved.
-
-See Doc/copyright/copyright.txt
-or http://www.slicer.org/copyright/copyright.txt for details.
-
-Program:   3D Slicer
-Module:    $RCSfile: vtkPlastimatchLoadableGUI.cxx,v $
-Date:      $Date: 2006/03/17 15:10:10 $
-Version:   $Revision: 1.2 $
-
-=========================================================================auto=*/
-
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <string>
 #include <iostream>
 #include <sstream>
 
 #include "vtkObjectFactory.h"
-
 #include "vtkPlastimatchLoadableGUI.h"
-
 #include "vtkCommand.h"
 #include "vtkKWApplication.h"
 #include "vtkKWWidget.h"
@@ -41,14 +29,14 @@ Version:   $Revision: 1.2 $
 //------------------------------------------------------------------------------
 vtkPlastimatchLoadableGUI* vtkPlastimatchLoadableGUI::New()
 {
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkPlastimatchLoadableGUI");
-  if(ret)
-    {
-      return (vtkPlastimatchLoadableGUI*)ret;
+    // First try to create the object from the vtkObjectFactory
+    vtkObject* ret = vtkObjectFactory::CreateInstance (
+	"vtkPlastimatchLoadableGUI");
+    if (ret) {
+	return (vtkPlastimatchLoadableGUI*) ret;
     }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkPlastimatchLoadableGUI;
+    // If the factory was unable to create the object, then create it here.
+    return new vtkPlastimatchLoadableGUI;
 }
 
 
@@ -120,22 +108,22 @@ void vtkPlastimatchLoadableGUI::PrintSelf(ostream& os, vtkIndent indent)
 //---------------------------------------------------------------------------
 void vtkPlastimatchLoadableGUI::AddGUIObservers ( ) 
 {
-  this->ConductanceScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
-  this->ConductanceScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->ConductanceScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->ConductanceScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
 
-  this->TimeStepScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
-  this->TimeStepScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->TimeStepScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->TimeStepScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
 
-  this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
-  this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
 
-  this->VolumeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
+    this->VolumeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
 
-  this->OutVolumeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
+    this->OutVolumeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
 
-  this->GADNodeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
+    this->GADNodeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
 
-  this->ApplyButton->AddObserver (vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->ApplyButton->AddObserver (vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand );
 }
 
 
@@ -164,88 +152,88 @@ void vtkPlastimatchLoadableGUI::RemoveGUIObservers ( )
 
 
 //---------------------------------------------------------------------------
-void vtkPlastimatchLoadableGUI::ProcessGUIEvents ( vtkObject *caller,
-                                           unsigned long event,
-                                           void *callData ) 
+void 
+vtkPlastimatchLoadableGUI::ProcessGUIEvents (
+    vtkObject *caller,
+    unsigned long event,
+    void *callData ) 
 {
+    vtkKWScaleWithEntry *s = vtkKWScaleWithEntry::SafeDownCast(caller);
+    vtkKWMenu *v = vtkKWMenu::SafeDownCast(caller);
+    vtkKWPushButton *b = vtkKWPushButton::SafeDownCast(caller);
+    vtkSlicerNodeSelectorWidget *selector = vtkSlicerNodeSelectorWidget::SafeDownCast(caller);
 
-  vtkKWScaleWithEntry *s = vtkKWScaleWithEntry::SafeDownCast(caller);
-  vtkKWMenu *v = vtkKWMenu::SafeDownCast(caller);
-  vtkKWPushButton *b = vtkKWPushButton::SafeDownCast(caller);
-  vtkSlicerNodeSelectorWidget *selector = vtkSlicerNodeSelectorWidget::SafeDownCast(caller);
-
-  if ( s == this->ConductanceScale && event == vtkKWScale::ScaleValueChangedEvent ) 
+    if ( s == this->ConductanceScale && event == vtkKWScale::ScaleValueChangedEvent ) 
     {
-    this->UpdateMRML();
+	this->UpdateMRML();
     }
-  else if (s == this->TimeStepScale && event == vtkKWScale::ScaleValueChangedEvent ) 
+    else if (s == this->TimeStepScale && event == vtkKWScale::ScaleValueChangedEvent ) 
     {
-    this->UpdateMRML();
+	this->UpdateMRML();
     }
-  else if (s == this->NumberOfIterationsScale && event == vtkKWScale::ScaleValueChangedEvent ) 
+    else if (s == this->NumberOfIterationsScale && event == vtkKWScale::ScaleValueChangedEvent ) 
     {
-    this->UpdateMRML();
+	this->UpdateMRML();
     }
-  else if (selector == this->VolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent &&
-    this->VolumeSelector->GetSelected() != NULL) 
+    else if (selector == this->VolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent &&
+	this->VolumeSelector->GetSelected() != NULL) 
     { 
-    this->UpdateMRML();
+	this->UpdateMRML();
     }
-  else if (selector == this->OutVolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent  &&
-    this->OutVolumeSelector->GetSelected() != NULL) 
+    else if (selector == this->OutVolumeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent  &&
+	this->OutVolumeSelector->GetSelected() != NULL) 
     { 
-    this->UpdateMRML();
+	this->UpdateMRML();
     }
-  if (selector == this->GADNodeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent  &&
-    this->GADNodeSelector->GetSelected() != NULL) 
+    if (selector == this->GADNodeSelector && event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent  &&
+	this->GADNodeSelector->GetSelected() != NULL) 
     { 
-    vtkMRMLPlastimatchLoadableNode* n = vtkMRMLPlastimatchLoadableNode::SafeDownCast(this->GADNodeSelector->GetSelected());
-    this->Logic->SetAndObservePlastimatchLoadableNode(n);
-    vtkSetAndObserveMRMLNodeMacro( this->PlastimatchLoadableNode, n);
-    this->UpdateGUI();
+	vtkMRMLPlastimatchLoadableNode* n = vtkMRMLPlastimatchLoadableNode::SafeDownCast(this->GADNodeSelector->GetSelected());
+	this->Logic->SetAndObservePlastimatchLoadableNode(n);
+	vtkSetAndObserveMRMLNodeMacro( this->PlastimatchLoadableNode, n);
+	this->UpdateGUI();
     }
-  else if (b == this->ApplyButton && event == vtkKWPushButton::InvokedEvent ) 
+    else if (b == this->ApplyButton && event == vtkKWPushButton::InvokedEvent ) 
     {
-    this->UpdateMRML();
-    this->Logic->Apply();
+	this->UpdateMRML();
+	this->Logic->Apply();
     }
-  
 }
 
 //---------------------------------------------------------------------------
 void vtkPlastimatchLoadableGUI::UpdateMRML ()
 {
-  vtkMRMLPlastimatchLoadableNode* n = this->GetPlastimatchLoadableNode();
-  if (n == NULL)
+    vtkMRMLPlastimatchLoadableNode* n = this->GetPlastimatchLoadableNode();
+    if (n == NULL)
     {
-    // no parameter node selected yet, create new
-    this->GADNodeSelector->SetSelectedNew("vtkMRMLPlastimatchLoadableNode");
-    this->GADNodeSelector->ProcessNewNodeCommand("vtkMRMLPlastimatchLoadableNode", "GADParameters");
-    n = vtkMRMLPlastimatchLoadableNode::SafeDownCast(this->GADNodeSelector->GetSelected());
+	// no parameter node selected yet, create new
+	this->GADNodeSelector->SetSelectedNew("vtkMRMLPlastimatchLoadableNode");
+	this->GADNodeSelector->ProcessNewNodeCommand("vtkMRMLPlastimatchLoadableNode", "GADParameters");
+	n = vtkMRMLPlastimatchLoadableNode::SafeDownCast(this->GADNodeSelector->GetSelected());
 
-    // set an observe new node in Logic
-    this->Logic->SetAndObservePlastimatchLoadableNode(n);
-    vtkSetAndObserveMRMLNodeMacro(this->PlastimatchLoadableNode, n);
-   }
-
-  // save node parameters for Undo
-  this->GetLogic()->GetMRMLScene()->SaveStateForUndo(n);
-
-  // set node parameters from GUI widgets
-  n->SetConductance(this->ConductanceScale->GetValue());
-  
-  n->SetTimeStep(this->TimeStepScale->GetValue());
-  
-  n->SetNumberOfIterations((int)floor(this->NumberOfIterationsScale->GetValue()));
-  
-  if (this->VolumeSelector->GetSelected() != NULL)
-    {
-    n->SetInputVolumeRef(this->VolumeSelector->GetSelected()->GetID());
+	// set an observe new node in Logic
+	this->Logic->SetAndObservePlastimatchLoadableNode(n);
+	vtkSetAndObserveMRMLNodeMacro(this->PlastimatchLoadableNode, n);
     }
 
-  if (this->OutVolumeSelector->GetSelected() != NULL)
+    // save node parameters for Undo
+    this->GetLogic()->GetMRMLScene()->SaveStateForUndo(n);
+
+    // set node parameters from GUI widgets
+    n->SetConductance(this->ConductanceScale->GetValue());
+  
+    n->SetTimeStep(this->TimeStepScale->GetValue());
+  
+    n->SetNumberOfIterations((int)floor(this->NumberOfIterationsScale->GetValue()));
+  
+    if (this->VolumeSelector->GetSelected() != NULL)
     {
-    n->SetOutputVolumeRef(this->OutVolumeSelector->GetSelected()->GetID());
+	n->SetInputVolumeRef(this->VolumeSelector->GetSelected()->GetID());
+    }
+
+    if (this->OutVolumeSelector->GetSelected() != NULL)
+    {
+	n->SetOutputVolumeRef(this->OutVolumeSelector->GetSelected()->GetID());
     }
 }
 
