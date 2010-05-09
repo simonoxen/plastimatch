@@ -25,6 +25,83 @@ struct callback_data {
     double accum;       /* Accumulated intensity */
 };
 
+typedef struct proton_energy_profile Proton_Energy_Profile;
+struct proton_energy_profile {
+    float* depth;       /* depth array (mm) */
+    float* energy;      /* energy array */
+    float dmax;         /* maximum depth */
+    int num_samp;       /* size of arrays */
+};
+
+static Proton_Energy_Profile* 
+load_pep (char* filename)
+{
+    int i,j;
+    char* ptoken;
+    char linebuf[128];
+    FILE* fp = fopen (filename, "r");
+
+    if (!fp) {
+        printf ("Error reading proton energy profile.\n");
+        printf ("Terminating...\n");
+        exit(0);
+    }
+
+    // Need to check for a magic number here!!
+    // 00001037 ??
+    
+    // Allocate the pep
+    Proton_Energy_Profile* pep =
+        (Proton_Energy_Profile*)malloc(sizeof(Proton_Energy_Profile));
+
+    pep->dmax = 0.0f;
+
+    // Skip the first 4 lines
+    for (i=0; i < 4; i++) {
+        fgets (linebuf, 128, fp);
+    }
+
+    // Line 5 contains the # of samples
+    fgets (linebuf, 128, fp);
+    sscanf (linebuf, "%i", &pep->num_samp);
+
+    pep->depth = (float*)malloc (pep->num_samp*sizeof(float));
+    pep->energy = (float*)malloc (pep->num_samp*sizeof(float));
+    
+    memset (pep->depth, 0, pep->num_samp*sizeof(float));
+    memset (pep->energy, 0, pep->num_samp*sizeof(float));
+
+    // Load in the depths
+    // There are 10 samples per line
+    for (i = 0, j = 0; i < (pep->num_samp / 10) + 1; i++) {
+        fgets (linebuf, 128, fp);
+
+        ptoken = strtok (linebuf, ",\n\0");
+
+        while (ptoken) {
+            pep->depth[j] = strtof (ptoken, NULL);
+            ptoken = strtok (NULL, ",\n\0");
+            j++;
+        }
+    }
+    pep->dmax = pep->depth[j-1];
+
+    // Load in the energies
+    // There are 10 samples per line
+    for (i = 0, j = 0; i < (pep->num_samp / 10) + 1; i++) {
+        fgets (linebuf, 128, fp);
+
+        ptoken = strtok (linebuf, ",\n\0");
+
+        while (ptoken) {
+            pep->energy[j++] = strtof (ptoken, NULL);
+            ptoken = strtok (NULL, ",\n\0");
+        }
+    }
+
+    return pep;
+}
+
 static float
 attenuation_lookup_weq (float density)
 {
@@ -208,6 +285,7 @@ proton_dose_compute (
     /* Create the depth volume */
     depth_vol = create_depth_vol (ct_vol->dim, ires, options->ray_step);
 
+    /* Scan through the aperture */
     //    ires[0] = ires[1] = 1;
     for (r = 0; r < ires[0]; r++) {
         int c;
@@ -234,6 +312,17 @@ proton_dose_compute (
                                    options);
         }
     }
+
+    // load proton energy profile specified on commandline
+    Proton_Energy_Profile* pep = load_pep (options->input_pep_fn);
+
+#if defined (commentout)
+    for (r = 0; r < pep->num_samp; r++) {
+        printf ("[%2.2f] %f\n", pep->depth[r], pep->energy[r]);
+    }
+
+    printf ("dmax: %f\n", pep->dmax);
+#endif
 
     if (options->debug) {
         write_mha("depth_vol.mha", depth_vol);

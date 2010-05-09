@@ -16,6 +16,7 @@ struct proton_dose_options {
 
     float scale;
     float ray_step;                  /* Uniform ray step size (mm) */
+    char* input_pep_fn;              /* Proton energy profile */
     char* input_fn;
     char* output_fn;
     int debug;

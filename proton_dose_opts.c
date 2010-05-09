@@ -25,6 +25,7 @@ print_usage (void)
 	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
 	" -u step           Uniform step (in mm) along ray trace\n"
+    " -p filename       Proton dose energy profile\n"
 	" --debug           Create various debug files\n"
     );
     exit (1);
@@ -47,6 +48,7 @@ proton_dose_opts_init (Proton_dose_options* options)
     options->scale = 1.0f;
     options->ray_step = 1.0f;
     options->input_fn = 0;
+    options->input_pep_fn = 0;
     options->output_fn = 0;
     options->debug = 0;
 }
@@ -62,18 +64,18 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-A")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
+		    fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		    exit(1);
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
 		|| !strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU"))
 	    {
-		options->threading = THREADING_CUDA;
+		    options->threading = THREADING_CUDA;
 	    }
 	    else {
-		options->threading = THREADING_CPU;
+		    options->threading = THREADING_CPU;
 	    }
 	}
 	else if (!strcmp (argv[i], "-src")) {
@@ -83,7 +85,7 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->src[1], 
 		&options->src[2]);
 	    if (rc != 3) {
-		print_usage ();
+		    print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-iso")) {
@@ -93,7 +95,7 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->isocenter[1], 
 		&options->isocenter[2]);
 	    if (rc != 3) {
-		print_usage ();
+		    print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-vup")) {
@@ -103,24 +105,32 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->vup[1], 
 		&options->vup[2]);
 	    if (rc != 3) {
-		print_usage ();
+		    print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-s")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->scale);
 	    if (rc != 1) {
-		print_usage ();
+		    print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-u")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f" , &options->ray_step);
 	    if (rc != 1) {
-		print_usage ();
+		    print_usage ();
 	    }
 	}
-        else if (!strcmp (argv[i], "--debug")) {
+    else if (!strcmp (argv[i], "-p")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+	    	fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		    exit(1);
+	    }
+	    i++;
+	    options->input_pep_fn = strdup (argv[i]);
+    }
+    else if (!strcmp (argv[i], "--debug")) {
 	    options->debug = 1;
 	}
 	else {
@@ -132,6 +142,14 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
     if (i+1 >= argc) {
 	print_usage ();
     }
+
+    if (!options->input_pep_fn) {
+        printf ("  Must specify a proton energy profile (-p switch)\n");
+        printf ("  Terminating...\n\n");
+        exit(1);
+    }
+
+
     options->input_fn = argv[i];
     options->output_fn = argv[i+1];
 }
