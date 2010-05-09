@@ -40,6 +40,7 @@ SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
+SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL "Build slicer loadable module")
 
 SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
@@ -1108,6 +1109,36 @@ IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
     INSTALL(TARGETS mondoshot DESTINATION bin)
   ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+
+
+##-----------------------------------------------------------------------------
+##  Slicer loadable module (testing)
+##-----------------------------------------------------------------------------
+set (PlastimatchLoadable_SRCS
+  vtkPlastimatchLoadableLogic.cxx
+  vtkPlastimatchLoadableGUI.cxx
+  vtkMRMLPlastimatchLoadableNode.cxx
+  )
+
+IF (Slicer3_DIR)
+  IF (PLM_BUILD_SLICER_LOADABLE)
+    CONFIGURE_FILE (
+      ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
+      ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
+      )
+
+    GENERATELM (PlastimatchLoadable_SRCS 
+      PlastimatchLoadable.xml)
+
+    set (lib_name PlastimatchLoadable)
+    add_library (${lib_name}
+      ${PlastimatchLoadable_SRCS}
+      ${PlastimatchLoadable_TCL_SRCS}
+      )
+    slicer3_set_modules_output_path (${lib_name})
+  ENDIF (PLM_BUILD_SLICER_LOADABLE)
+ENDIF (Slicer3_DIR)
+
 
 ##-----------------------------------------------------------------------------
 ##  Additional install files
