@@ -4,6 +4,7 @@
 #ifndef _check_grad_opts_h_
 #define _check_grad_opts_h_
 
+#include "plm_config.h"
 #include "bspline.h"
 
 #define CHECK_GRAD_PROCESS_FWD        1
@@ -29,9 +30,17 @@ struct check_grad_opts {
     BSPLINE_Parms parms;
 };
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 gpuit_EXPORT
 void
 check_grad_opts_parse_args (Check_grad_opts* options, 
     int argc, char* argv[]);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

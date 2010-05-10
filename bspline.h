@@ -332,6 +332,7 @@ bspline_update_grad (
     BSPLINE_Xform* bxf, 
     int p[3], int qidx, float dc_dv[3]);
 
+gpuit_EXPORT
 void
 bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving);
 
@@ -341,6 +342,7 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
 void
 bspline_display_coeff_stats (BSPLINE_Xform* bxf);
 
+gpuit_EXPORT
 void
 bspline_score (BSPLINE_Parms *parms, 
 	       Bspline_state *bst,

@@ -23,9 +23,11 @@ struct bspline_landmarks {
 extern "C" {
 #endif
 
+gpuit_EXPORT
 Bspline_landmarks*
 bspline_landmarks_load (char *fixed_fn, char *moving_fn);
 
+gpuit_EXPORT
 void
 bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving);
 
@@ -38,6 +40,7 @@ bspline_landmarks_score (
     Volume *moving
 );
 
+gpuit_EXPORT
 void bspline_landmarks_warp (
 	Volume *vector_field, 
 	BSPLINE_Parms *parms,
@@ -45,6 +48,7 @@ void bspline_landmarks_warp (
     Volume *fixed, 
     Volume *moving);
 
+gpuit_EXPORT
 void bspline_landmarks_write_file( char *fn, char *title, float *coords, int n);
 
 #if defined __cplusplus

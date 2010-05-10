@@ -59,6 +59,7 @@ gpuit_EXPORT
 void vf_convert_to_interleaved (Volume* ref);
 void vf_convert_to_planar (Volume* ref, int min_size);
 void vf_pad_planar (Volume* vol, int size);
+gpuit_EXPORT
 Volume* volume_clone_empty (Volume* ref);
 gpuit_EXPORT
 Volume* volume_clone (Volume* ref);

@@ -10,8 +10,10 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void bspline_rbf_find_coeffs( Volume *vector_field, BSPLINE_Parms *parms );
 
+gpuit_EXPORT
 void bspline_rbf_update_vector_field( Volume *vector_field,	BSPLINE_Parms *parms );
 
 #if defined __cplusplus
