@@ -30,8 +30,82 @@ struct proton_energy_profile {
     float* depth;       /* depth array (mm) */
     float* energy;      /* energy array */
     float dmax;         /* maximum depth */
+    float emax;         /* max energy */
     int num_samp;       /* size of arrays */
 };
+
+static double
+rgdepth_lookup (
+        int* ijk,
+        Volume* depth_vol
+)
+{
+    int idx;
+    float* d_img = (float*) depth_vol->img;
+
+    idx = INDEX_OF (ijk, depth_vol->dim);
+
+    return d_img[idx];
+}
+
+static float
+energy_lookup (
+    float depth,
+    Proton_Energy_Profile* pep
+)
+{
+    int i;
+    float energy = 0.0f;
+
+    /* Sanity check */
+    if (depth < 0 || depth > pep->dmax) {
+        return 0.0f;
+    }
+
+    /* Find index into profile arrays */
+    for (i = 0; i < pep->num_samp; i++) {
+        if (pep->depth[i] > depth) {
+            i--;
+            break;
+        } else if (pep->depth[i] == depth) {
+            return pep->energy[i];
+        }
+    }
+
+
+    /* Use index to lookup and interpolate energy */
+    if (i >= 0 || i < pep->num_samp) {
+        // linear interpolation
+        energy = pep->energy[i]
+                + (depth - pep->depth[i])
+                * ((pep->energy[i+1] - pep->energy[i]) / (pep->depth[i+1] - pep->depth[i]));
+    } else {
+        // this should never happen, failsafe
+        energy = 0.0f;
+    }
+
+    return energy;   
+}
+
+static void
+dump_pep (Proton_Energy_Profile* pep)
+{
+    FILE* fp;
+
+    int i;
+
+    fp = fopen ("dump_pep.txt", "w");
+
+    for (i = 0; i < pep->num_samp; i++) {
+       fprintf (fp, "[%3.2f] %3.2f\n", pep->depth[i], pep->energy[i]);
+    }
+
+    fprintf (fp, "    dmax: %3.2f\n", pep->dmax);
+    fprintf (fp, "    emax: %3.2f\n", pep->emax);
+    fprintf (fp, "num_samp: %i\n", pep->num_samp);
+
+    fclose (fp);
+}
 
 static Proton_Energy_Profile* 
 load_pep (char* filename)
@@ -52,10 +126,7 @@ load_pep (char* filename)
     // 00001037 ??
     
     // Allocate the pep
-    pep =
-        (Proton_Energy_Profile*)malloc(sizeof(Proton_Energy_Profile));
-
-    pep->dmax = 0.0f;
+    pep = (Proton_Energy_Profile*)malloc(sizeof(Proton_Energy_Profile));
 
     // Skip the first 4 lines
     for (i=0; i < 4; i++) {
@@ -80,14 +151,12 @@ load_pep (char* filename)
         ptoken = strtok (linebuf, ",\n\0");
 
         while (ptoken) {
-	    /* MSVC does not have strtof */
-            pep->depth[j] = (float) strtod (ptoken, NULL);
-            //pep->depth[j] = strtof (ptoken, NULL);
+            pep->depth[j++] = (float) strtod (ptoken, NULL);
             ptoken = strtok (NULL, ",\n\0");
-            j++;
         }
     }
     pep->dmax = pep->depth[j-1];
+    pep->emax = 0.0f;
 
     // Load in the energies
     // There are 10 samples per line
@@ -97,10 +166,12 @@ load_pep (char* filename)
         ptoken = strtok (linebuf, ",\n\0");
 
         while (ptoken) {
-	    /* MSVC does not have strtof */
-            pep->energy[j++] = (float) strtod (ptoken, NULL);
-            //pep->energy[j++] = strtof (ptoken, NULL);
+            pep->energy[j] = (float) strtod (ptoken, NULL);
+            if (pep->energy[j] > pep->emax) {
+                pep->emax = pep->energy[j];
+            }
             ptoken = strtok (NULL, ",\n\0");
+            j++;
         }
     }
 
@@ -177,6 +248,7 @@ proton_dose_ray_trace (
     double *p2, 
     int* ires,
     int ap_idx,
+    double* depth_offset,
     Proton_dose_options *options
 )
 {
@@ -202,6 +274,10 @@ proton_dose_ray_trace (
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
 #endif
 
+    /* store the distance from aperture to CT_vol for later */
+    depth_offset[ap_idx] = vec3_dist (p2, ip1);
+
+    /* perform ray trace */
     cd.accum = 0.0f;
     cd.ires = ires;
     cd.dose_vol = dose_vol;
@@ -228,14 +304,21 @@ proton_dose_compute (
     int ap_idx;
 
     int r;
+    int ct_ijk[3];
+    double ap_xy[3], ap_xyz[3];
+    double ct_xyz[3];
     double p1[3];
     double ap_dist = 1000.;
     double nrm[3], pdn[3], prt[3], tmp[3];
     double ic_room[3];
     double ul_room[3];
+    double br_room[3];
     double incr_r[3];
     double incr_c[3];
     Volume_limit ct_limit;
+
+    double *depth_offset;
+    float* dose_img = (float*) dose_vol->img;
 
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
@@ -270,8 +353,15 @@ proton_dose_compute (
     vec3_scale3 (tmp, incr_c, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
 
+    /* Get position of the bottom right pixel on panel */
+    vec3_copy (br_room, ul_room);
+    vec3_scale3 (tmp, incr_r, (double) (ires[0] - 1));
+    vec3_add2 (br_room, tmp);
+    vec3_scale3 (tmp, incr_c, (double) (ires[1] - 1));
+    vec3_add2 (br_room, tmp);
+
     /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 
-       direction of the ray */
+       direction of the ray inside the aperture plane*/
     vec3_copy (p1, pmat->cam);
 
 #if defined (VERBOSE)
@@ -283,6 +373,7 @@ proton_dose_compute (
     printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
     printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
     printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+    printf ("BR_ROOM: %g %g %g\n", br_room[0], br_room[1], br_room[2]);
 #endif
 
     /* Compute volume boundary box */
@@ -290,6 +381,13 @@ proton_dose_compute (
 
     /* Create the depth volume */
     depth_vol = create_depth_vol (ct_vol->dim, ires, options->ray_step);
+
+    /* Load proton energy profile specified on commandline */
+    pep = load_pep (options->input_pep_fn);
+
+    /* Holds distance from aperture to CT_vol entry point for each ray */
+    depth_offset = (double*) malloc (ires[0] * ires[1] * sizeof(double));
+
 
     /* Scan through the aperture */
     //    ires[0] = ires[1] = 1;
@@ -315,22 +413,78 @@ proton_dose_compute (
                                    ct_vol, &ct_limit,
                                    p1, p2,
                                    ires, ap_idx,
+                                   depth_offset,
                                    options);
         }
     }
 
-    // load proton energy profile specified on commandline
-    pep = load_pep (options->input_pep_fn);
-
-#if defined (commentout)
-    for (r = 0; r < pep->num_samp; r++) {
-        printf ("[%2.2f] %f\n", pep->depth[r], pep->energy[r]);
-    }
-
-    printf ("dmax: %f\n", pep->dmax);
-#endif
 
     if (options->debug) {
         write_mha("depth_vol.mha", depth_vol);
+        dump_pep (pep);
     }
+
+
+    /* Scan through CT Volume */
+    for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
+        for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
+            for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
+                int dv_ijk[3];
+                int ap_x, ap_y, idx;
+                double depth, depth_rg;
+                double dose;
+                
+                /* Transform vol index into space coords */
+                ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->pix_spacing[0]);
+                ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->pix_spacing[1]);
+                ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->pix_spacing[2]);
+
+                /* Back project the voxel to the aperture plane */
+                mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+
+                ap_x = ROUND_INT (pmat->ic[0] + ap_xy[0] / ap_xy[2]);
+                ap_y = ROUND_INT (pmat->ic[1] + ap_xy[1] / ap_xy[2]);
+
+                /* Only handle voxels that were hit by the beam */
+                if (ap_x < 0 || ap_x >= ires[0] ||
+                    ap_y < 0 || ap_y >= ires[1]) {
+                    continue;
+                }
+
+                ap_idx = ap_y * ires[0] + ap_x;
+
+                /* Convert aperture indices into space coords */
+                vec3_copy (ap_xyz, ic_room);
+                vec3_scale3 (tmp, incr_r, ap_x);
+                vec3_add2 (ap_xyz, tmp);
+                vec3_scale3 (tmp, incr_c, ap_y);
+                vec3_add2 (ap_xyz, tmp);
+
+                /* Compute depth from aperture to voxel */
+                depth = vec3_dist (ap_xyz, ct_xyz);
+                depth -= depth_offset[ap_idx];
+                
+                /* Compute indices into radiographic depth_vol */
+                dv_ijk[0] = ap_x;
+                dv_ijk[1] = ap_y;
+                dv_ijk[2] = depth / options->ray_step;
+
+                /* Retrieve the radiographic depth */
+                depth_rg = rgdepth_lookup (dv_ijk, depth_vol);
+
+                /* Lookup the dose at this radiographic depth */
+                dose = energy_lookup (depth_rg, pep);
+
+
+                /* Insert the dose into the dose volume */
+                idx = INDEX_OF (ct_ijk, dose_vol->dim);
+                dose_img[idx] = dose;
+
+            }
+        }
+    }
+
+
+    free (pep);
+    volume_destroy (depth_vol);
 }

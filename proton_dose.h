@@ -8,6 +8,11 @@
 #include "proton_dose_opts.h"
 #include "volume.h"
 
+
+#define INDEX_OF(ijk, dim) \
+    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
+
+
 #if defined __cplusplus
 extern "C" {
 #endif
