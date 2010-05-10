@@ -80,7 +80,9 @@ load_pep (char* filename)
         ptoken = strtok (linebuf, ",\n\0");
 
         while (ptoken) {
-            pep->depth[j] = strtof (ptoken, NULL);
+	    /* MSVC does not have strtof */
+            pep->depth[j] = (float) strtod (ptoken, NULL);
+            //pep->depth[j] = strtof (ptoken, NULL);
             ptoken = strtok (NULL, ",\n\0");
             j++;
         }
@@ -95,7 +97,9 @@ load_pep (char* filename)
         ptoken = strtok (linebuf, ",\n\0");
 
         while (ptoken) {
-            pep->energy[j++] = strtof (ptoken, NULL);
+	    /* MSVC does not have strtof */
+            pep->energy[j++] = (float) strtod (ptoken, NULL);
+            //pep->energy[j++] = strtof (ptoken, NULL);
             ptoken = strtok (NULL, ",\n\0");
         }
     }
@@ -241,6 +245,7 @@ proton_dose_compute (
     double ic[2] = { 4.5, 4.5 };
     double ps[2] = { 1., 1. };
     int ires[2] = { 10, 10 };
+    Proton_Energy_Profile* pep;
 
     pmat = proj_matrix_create ();
     proj_matrix_set (pmat, cam, tgt, vup, ap_dist, ic, ps, ires);
@@ -315,7 +320,7 @@ proton_dose_compute (
     }
 
     // load proton energy profile specified on commandline
-    Proton_Energy_Profile* pep = load_pep (options->input_pep_fn);
+    pep = load_pep (options->input_pep_fn);
 
 #if defined (commentout)
     for (r = 0; r < pep->num_samp; r++) {
