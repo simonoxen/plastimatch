@@ -19,6 +19,7 @@
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
 #include "pcmd_segment.h"
+#include "pcmd_slice.h"
 #include "pcmd_resample.h"
 #include "pcmd_stats.h"
 #include "pcmd_warp.h"
@@ -47,8 +48,9 @@ print_usage (int return_code)
 	"  mask        "
 	"  register    "
 	"  resample    "
-	"  stats       "
+	"  slice       "
 	"\n"
+	"  stats       "
 	"  warp        "
 	"\n"
 	"\n"
@@ -127,6 +129,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "segment")) {
 	do_command_segment (argc, argv);
+    }
+    else if (!strcmp (command, "slice")) {
+	do_command_slice (argc, argv);
     }
     else if (!strcmp (command, "stats")) {
 	do_command_stats (argc, argv);

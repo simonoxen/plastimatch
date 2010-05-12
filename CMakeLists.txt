@@ -803,14 +803,15 @@ SET (PLASTIMATCH_SRC
   pcmd_diff.cxx pcmd_diff.h
   pcmd_dvh.cxx pcmd_dvh.h
   pcmd_header.cxx pcmd_header.h
-  pcmd_segment.cxx pcmd_segment.h
   pcmd_mask.cxx pcmd_mask.h
-  plastimatch_main.cxx
   pcmd_resample.cxx pcmd_resample.h
+  pcmd_segment.cxx pcmd_segment.h
+  pcmd_slice.cxx pcmd_slice.h 
   pcmd_stats.cxx pcmd_stats.h
   pcmd_warp_dij.cxx 
   pcmd_warp.cxx pcmd_warp.h 
   pcmd_warp_pointset.cxx 
+  plastimatch_main.cxx
   )
 SET (PLASTIMATCH_SLICER_SRC
         plastimatch-slicer.cxx
