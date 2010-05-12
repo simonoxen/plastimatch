@@ -15,6 +15,8 @@
 #include "readmha.h"
 
 //#define VERBOSE 1
+#define DOSE_DIRECT
+//#define DOSE_GAUSS
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -34,18 +36,68 @@ struct proton_energy_profile {
     int num_samp;       /* size of arrays */
 };
 
+
 static double
-rgdepth_lookup (
-        int* ijk,
-        Volume* depth_vol
+gaus_kernel (
+    double* g_pos,
+    double* ct_xyz,
+    double sigma
 )
 {
-    int idx;
+    double x; 
+    double weight;
+    double pi;
+    double denom;
+    double sigma2;
+
+    pi = 3.14159265f;
+    sigma2 = sigma * sigma;
+
+    denom = 2.0 * pi * sigma2;
+    denom = sqrt (denom);
+    denom = 1.0 / denom;
+
+    /* Compute x for Gaussian kernel */
+    x = vec3_dist (g_pos, ct_xyz);
+
+    weight = denom * exp ( (-x*x) / (2*sigma2) );
+
+    return weight;
+}
+
+
+static double
+rgdepth_lookup (
+        Volume* depth_vol,
+        int ap_x,
+        int ap_y,
+        double dist,
+        float ray_step
+)
+{
+    int idx1, idx2;
+    int ijk[3];
+    double rg1, rg2, rgdepth;
     float* d_img = (float*) depth_vol->img;
 
-    idx = INDEX_OF (ijk, depth_vol->dim);
+    ijk[0] = ap_x;
+    ijk[1] = ap_y;
+    ijk[2] = dist / ray_step;
 
-    return d_img[idx];
+    /* Depth behind point */
+    idx1 = INDEX_OF (ijk, depth_vol->dim);
+    rg1 = d_img[idx1];
+
+    /* Depth in front of point */
+    ijk[2]++;
+    idx2 = INDEX_OF (ijk, depth_vol->dim);
+    rg2 = d_img[idx2];
+
+    dist = dist - floorf (dist);
+    
+    rgdepth = rg1 + dist * (rg2 - rg1);
+
+    return rgdepth;
 }
 
 static float
@@ -85,6 +137,230 @@ energy_lookup (
     }
 
     return energy;   
+}
+
+
+static double
+get_rgdepth (
+    double* ct_xyz,
+    double* depth_offset,
+    Volume* depth_vol,
+    Proton_Energy_Profile* pep,
+    Proj_matrix *pmat,
+    int* ires,
+    double* ic_room,
+    double* incr_r,
+    double* incr_c,
+    Proton_dose_options *options
+)
+{
+    int ap_x, ap_y, ap_idx;
+    double ap_xy[3], ap_xyz[3], tmp[3];
+    double dist, depth_rg;
+
+    /* Back project the voxel to the aperture plane */
+    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+
+    ap_x = ROUND_INT (pmat->ic[0] + ap_xy[0] / ap_xy[2]);
+    ap_y = ROUND_INT (pmat->ic[1] + ap_xy[1] / ap_xy[2]);
+
+    /* Only handle voxels that were hit by the beam */
+    if (ap_x < 0 || ap_x >= ires[0] ||
+        ap_y < 0 || ap_y >= ires[1]) {
+        return -1;
+    }
+
+    ap_idx = ap_y * ires[0] + ap_x;
+
+    /* Convert aperture indices into space coords */
+    vec3_copy (ap_xyz, ic_room);
+    vec3_scale3 (tmp, incr_r, ap_x);
+    vec3_add2 (ap_xyz, tmp);
+    vec3_scale3 (tmp, incr_c, ap_y);
+    vec3_add2 (ap_xyz, tmp);
+
+    /* Compute distance from aperture to voxel */
+    dist = vec3_dist (ap_xyz, ct_xyz);
+    dist -= depth_offset[ap_idx];
+                
+    /* Retrieve the radiographic depth */
+    depth_rg = rgdepth_lookup (depth_vol,
+                               ap_x, ap_y,
+                               dist,
+                               options->ray_step);
+
+    return depth_rg;
+}
+
+static double
+dose_direct (
+    double* ct_xyz,
+    double* depth_offset,
+    Volume* depth_vol,
+    Proton_Energy_Profile* pep,
+    Proj_matrix *pmat,
+    int* ires,
+    double* ic_room,
+    double* incr_r,
+    double* incr_c,
+    Proton_dose_options *options
+)
+{
+    double depth_rg;
+    double dose;
+
+    depth_rg = get_rgdepth (ct_xyz, depth_offset,
+                            depth_vol, pep,
+                            pmat, ires, ic_room,
+                            incr_r, incr_c,
+                            options);
+
+    if (depth_rg < 0.0) {
+        return 0.0;
+    }
+
+    /* Lookup the dose at this radiographic depth */
+    dose = energy_lookup (depth_rg, pep);
+    
+    return dose;
+
+}
+
+static double
+dose_scatter (
+    double* ct_xyz,
+    double* depth_offset,
+    Volume* depth_vol,
+    Proton_Energy_Profile* pep,
+    Proj_matrix *pmat,
+    int* ires,
+    double* ic_room,
+    double* incr_r,
+    double* incr_c,
+    double* prt,
+    double* pdn,
+    Proton_dose_options *options
+)
+{
+
+    /* Account for small angle scattering */
+
+
+    double depth_rg;
+    double sigma;
+    double search_dist;
+    double g_step;
+
+    int g_x, g_y;
+    double g_start[3];
+    double g_incr_x[3];
+    double g_incr_y[3];
+    double tmp[3];
+    double dose = 0.0f;
+
+    /* Get RGD so we can define the gaussian search */
+    depth_rg = get_rgdepth (ct_xyz, depth_offset,
+                            depth_vol, pep,
+                            pmat, ires, ic_room,
+                            incr_r, incr_c,
+                            options);
+
+    if (depth_rg < 0.0) {
+        return 0.0;
+    }
+
+
+    /* For now we are not considering several items in the beam path,
+     * so we will approximate the Gaussian bandwidth as linearly
+     * related to the radiographic depth.
+     */
+    sigma = depth_rg;
+
+    /* The bandwidth is the "spread" of the Gaussian dispersion in
+     * millimeters.  The plan is to start and end our search
+     * 3*sigma from the voxel of interest in both directions
+     * orthogonal with respect to the proton beam.
+     */
+    search_dist = 3.0*sigma;
+
+    /* We will maintain a uniform sampling along these Gaussian kernel functions
+     * in the interest of accuracy.  This will, however, result in slower
+     * execution as the beam depth increases.
+     */
+    g_step = 1.0;  // millimeters
+
+    vec3_scale3 (g_incr_x, prt, g_step);
+    vec3_scale3 (g_incr_y, pdn, g_step);
+
+    /* Get ready to scan the scatter radius */
+    vec3_copy (g_start, ct_xyz);
+    vec3_scale3 (tmp, prt, - search_dist);  // x
+    vec3_add2 (g_start, tmp);
+    vec3_scale3 (tmp, pdn, - search_dist);  // y
+    vec3_add2 (g_start, tmp);
+
+
+    /* Step along y-dim parallel to aperture plane */
+    for (g_y = 0; g_y < (int)(2.0*search_dist / g_step); g_y++) {
+        double g_pos[3];
+        double tmp[3];
+
+        vec3_copy (g_pos, g_start);
+        vec3_scale3 (tmp, g_incr_y, (double) g_y);
+        vec3_add2 (g_pos, tmp);
+
+        /* Step along x-dim parallel to aperture plane */
+        for (g_x = 0; g_x < (int)(2.0*search_dist / g_step); g_x++) {
+            double scatter[3];
+            double weight;
+            double d;
+
+            vec3_scale3 (tmp, g_incr_x, (double) g_x);
+            vec3_add3 (scatter, g_pos, tmp);
+
+            d = dose_direct (scatter, depth_offset,
+                            depth_vol, pep,
+                            pmat, ires, ic_room,
+                            incr_r, incr_c,
+                            options);
+
+            weight = gaus_kernel (scatter, ct_xyz, sigma);
+
+            d *= weight;
+
+            dose += d;
+        }
+    }
+
+
+#if defined (commentout)
+    /* Step along y-dim parallel to aperture plane */
+    for (g_y = 0; g_y < (int)(2.0*search_dist / g_step); g_y++) {
+        double g_pos[3];
+        double tmp[3];
+        double weight;
+        double d;
+
+        vec3_copy (g_pos, g_start);
+        vec3_scale3 (tmp, g_incr_y, (double) g_y);
+        vec3_add2 (g_pos, tmp);
+
+        d = dose_direct (g_pos, depth_offset,
+                         depth_vol, pep,
+                         pmat, ires, ic_room,
+                         incr_r, incr_c,
+                         options);
+
+        weight = gaus_kernel (g_pos, ct_xyz, sigma);
+
+        d *= weight;
+
+        dose += d;
+    }
+#endif
+
+    return dose;    
+
 }
 
 static void
@@ -202,6 +478,11 @@ create_depth_vol (
     float ray_step  // uniform ray step size
 )
 {
+    /* TODO: Currently allocates too much
+     * memory and is theoretically unsound.
+     * Work in mm *then* convert to voxels.
+     */
+
     int dv_dims[3];
     float dv_off[3] = {0.0f, 0.0f, 0.0f};
     float dv_ps[3] = {1.0f, 1.0f, 1.0f};
@@ -320,6 +601,7 @@ proton_dose_compute (
     double *depth_offset;
     float* dose_img = (float*) dose_vol->img;
 
+
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
     double tgt[3] = { options->isocenter[0], options->isocenter[1], 
@@ -429,51 +711,31 @@ proton_dose_compute (
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                int dv_ijk[3];
-                int ap_x, ap_y, idx;
-                double depth, depth_rg;
                 double dose;
+                int idx;
                 
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->pix_spacing[0]);
                 ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->pix_spacing[1]);
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->pix_spacing[2]);
 
-                /* Back project the voxel to the aperture plane */
-                mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+#if defined (DOSE_DIRECT)
+                dose = dose_direct (ct_xyz, depth_offset,
+                                    depth_vol, pep,
+                                    pmat, ires, ic_room,
+                                    incr_r, incr_c,
+                                    options);
+#endif
 
-                ap_x = ROUND_INT (pmat->ic[0] + ap_xy[0] / ap_xy[2]);
-                ap_y = ROUND_INT (pmat->ic[1] + ap_xy[1] / ap_xy[2]);
 
-                /* Only handle voxels that were hit by the beam */
-                if (ap_x < 0 || ap_x >= ires[0] ||
-                    ap_y < 0 || ap_y >= ires[1]) {
-                    continue;
-                }
-
-                ap_idx = ap_y * ires[0] + ap_x;
-
-                /* Convert aperture indices into space coords */
-                vec3_copy (ap_xyz, ic_room);
-                vec3_scale3 (tmp, incr_r, ap_x);
-                vec3_add2 (ap_xyz, tmp);
-                vec3_scale3 (tmp, incr_c, ap_y);
-                vec3_add2 (ap_xyz, tmp);
-
-                /* Compute depth from aperture to voxel */
-                depth = vec3_dist (ap_xyz, ct_xyz);
-                depth -= depth_offset[ap_idx];
-                
-                /* Compute indices into radiographic depth_vol */
-                dv_ijk[0] = ap_x;
-                dv_ijk[1] = ap_y;
-                dv_ijk[2] = depth / options->ray_step;
-
-                /* Retrieve the radiographic depth */
-                depth_rg = rgdepth_lookup (dv_ijk, depth_vol);
-
-                /* Lookup the dose at this radiographic depth */
-                dose = energy_lookup (depth_rg, pep);
+#if defined (DOSE_GAUSS)
+                dose = dose_scatter (ct_xyz, depth_offset,
+                                     depth_vol, pep,
+                                     pmat, ires, ic_room,
+                                     incr_r, incr_c,
+                                     prt, pdn,
+                                     options);
+#endif
 
 
                 /* Insert the dose into the dose volume */
