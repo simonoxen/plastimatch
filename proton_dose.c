@@ -39,12 +39,11 @@ struct proton_energy_profile {
 
 static double
 gaus_kernel (
-    double* g_pos,
+    double x,
     double* ct_xyz,
     double sigma
 )
 {
-    double x; 
     double weight;
     double pi;
     double denom;
@@ -53,14 +52,11 @@ gaus_kernel (
     pi = 3.14159265f;
     sigma2 = sigma * sigma;
 
-    denom = 2.0 * pi * sigma2;
+    denom = 2.0f * pi * sigma2;
     denom = sqrt (denom);
-    denom = 1.0 / denom;
+    denom = 1.0f / denom;
 
-    /* Compute x for Gaussian kernel */
-    x = vec3_dist (g_pos, ct_xyz);
-
-    weight = denom * exp ( (-x*x) / (2*sigma2) );
+    weight = denom * exp ( (-1*x*x) / (2.0f*sigma2) );
 
     return weight;
 }
@@ -84,6 +80,7 @@ rgdepth_lookup (
     ijk[1] = ap_y;
     ijk[2] = dist / ray_step;
 
+#if defined (commentout)
     /* Depth behind point */
     idx1 = INDEX_OF (ijk, depth_vol->dim);
     rg1 = d_img[idx1];
@@ -98,6 +95,10 @@ rgdepth_lookup (
     rgdepth = rg1 + dist * (rg2 - rg1);
 
     return rgdepth;
+#endif
+
+    return d_img[INDEX_OF (ijk, depth_vol->dim)];
+
 }
 
 static float
@@ -215,8 +216,8 @@ dose_direct (
                             incr_r, incr_c,
                             options);
 
-    if (depth_rg < 0.0) {
-        return 0.0;
+    if (depth_rg < 0.0f) {
+        return 0.0f;
     }
 
     /* Lookup the dose at this radiographic depth */
@@ -258,7 +259,8 @@ dose_scatter (
     double tmp[3];
     double dose = 0.0f;
 
-    /* Get RGD so we can define the gaussian search */
+#if defined (commentout)
+    /* NOTE: This is incorrect */
     depth_rg = get_rgdepth (ct_xyz, depth_offset,
                             depth_vol, pep,
                             pmat, ires, ic_room,
@@ -268,13 +270,15 @@ dose_scatter (
     if (depth_rg < 0.0) {
         return 0.0;
     }
+#endif
 
 
     /* For now we are not considering several items in the beam path,
      * so we will approximate the Gaussian bandwidth as linearly
      * related to the radiographic depth.
      */
-    sigma = depth_rg;
+//    sigma = depth_rg;
+    sigma = 1.0f;   // << kludge
 
     /* The bandwidth is the "spread" of the Gaussian dispersion in
      * millimeters.  The plan is to start and end our search
@@ -301,7 +305,7 @@ dose_scatter (
 
 
     /* Step along y-dim parallel to aperture plane */
-    for (g_y = 0; g_y < (int)(2.0*search_dist / g_step); g_y++) {
+    for (g_y = 0; g_y < (int)((2.0*search_dist / g_step)+1); g_y++) {
         double g_pos[3];
         double tmp[3];
 
@@ -310,10 +314,12 @@ dose_scatter (
         vec3_add2 (g_pos, tmp);
 
         /* Step along x-dim parallel to aperture plane */
-        for (g_x = 0; g_x < (int)(2.0*search_dist / g_step); g_x++) {
+        for (g_x = 0; g_x < (int)((2.0*search_dist / g_step)+1); g_x++) {
             double scatter[3];
             double weight;
             double d;
+            double proj_xy[2];
+            double sctoct[3];
 
             vec3_scale3 (tmp, g_incr_x, (double) g_x);
             vec3_add3 (scatter, g_pos, tmp);
@@ -324,40 +330,33 @@ dose_scatter (
                             incr_r, incr_c,
                             options);
 
-            weight = gaus_kernel (scatter, ct_xyz, sigma);
+            /* Define a vector from scatterer to destination voxel */
+            vec3_sub3 (sctoct, scatter, ct_xyz);
 
+            /* Project this vector onto the x and y axis of our new coordinate system */
+            proj_xy[0] = vec3_dot (sctoct, prt);
+            proj_xy[1] = vec3_dot (sctoct, pdn);
+            
+            /* Gaussian kernel x-component */
+            weight = gaus_kernel (proj_xy[0], ct_xyz, sigma);
             d *= weight;
 
-            dose += d;
-        }
-    }
+            /* Gaussian kernel y-component */
+            weight = gaus_kernel (proj_xy[1], ct_xyz, sigma);
+            d *= weight;
 
+            /* Add to total dose for our target voxel */
+            dose += d;
 
 #if defined (commentout)
-    /* Step along y-dim parallel to aperture plane */
-    for (g_y = 0; g_y < (int)(2.0*search_dist / g_step); g_y++) {
-        double g_pos[3];
-        double tmp[3];
-        double weight;
-        double d;
+            if (vec3_dist (scatter, ct_xyz) == 0) {
 
-        vec3_copy (g_pos, g_start);
-        vec3_scale3 (tmp, g_incr_y, (double) g_y);
-        vec3_add2 (g_pos, tmp);
-
-        d = dose_direct (g_pos, depth_offset,
-                         depth_vol, pep,
-                         pmat, ires, ic_room,
-                         incr_r, incr_c,
-                         options);
-
-        weight = gaus_kernel (g_pos, ct_xyz, sigma);
-
-        d *= weight;
-
-        dose += d;
-    }
+                printf ("< %f %f %f > [%f %f %f] \t %f \t %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2],
+                                                     scatter[0], scatter[1], scatter[2]);
+            }
 #endif
+        }
+    }
 
     return dose;    
 
@@ -729,6 +728,7 @@ proton_dose_compute (
 
 
 #if defined (DOSE_GAUSS)
+//                printf ("\n<<< VOXEL: %i >>>\n", idx);
                 dose = dose_scatter (ct_xyz, depth_offset,
                                      depth_vol, pep,
                                      pmat, ires, ic_room,
