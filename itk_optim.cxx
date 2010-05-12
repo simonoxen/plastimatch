@@ -419,6 +419,13 @@ set_optimization_scales_quaternion (
     rotation_scale = 1.0;
     translation_scale = 1.0 / 10000.0;
 
+    /* GCS FIX: Changing the scale fudge_factor is one way to avoid 
+       ITK "Too many samples..." problem */
+    //double fudge_factor = 1000000.0;
+    double fudge_factor = 1.0;
+    rotation_scale = rotation_scale * fudge_factor;
+    translation_scale = translation_scale * fudge_factor;
+
     optimizerScales[0] = rotation_scale;
     optimizerScales[1] = rotation_scale;
     optimizerScales[2] = rotation_scale;
