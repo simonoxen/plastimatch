@@ -82,7 +82,6 @@ vf_analyze_strain (Volume* vol)
     for (k = 1; k < vol->dim[2]-1; k++) {
 	for (j = 1; j < vol->dim[1]-1; j++) {
 	    for (i = 1; i < vol->dim[0]-1; i++) {
-		printf ("k,j,i = (%d,%d,%d)\n", k, j, i);
 		int vin = volume_index (vol->dim, i-1, j, k);
 		int vip = volume_index (vol->dim, i+1, j, k);
 		int vjn = volume_index (vol->dim, i, j-1, k);
@@ -90,35 +89,22 @@ vf_analyze_strain (Volume* vol)
 		int vkn = volume_index (vol->dim, i, j, k-1);
 		int vkp = volume_index (vol->dim, i, j, k+1);
 
-		printf ("1\n");
 		float* din = &img[3*vin];
-		printf ("2\n");
 		float* dip = &img[3*vip];
-		printf ("3\n");
 		float* djn = &img[3*vjn];
-		printf ("4\n");
 		float* djp = &img[3*vjp];
-		printf ("5\n");
 		float* dkn = &img[3*vkn];
-		printf ("6\n");
 		float* dkp = &img[3*vkp];
-		printf ("7\n");
 
-		printf ("vip =  %d\n", vip);
 		float dui_di = (0.5 / di) * (dip[0] - din[0]);
-		printf ("8\n");
 		float duj_di = (0.5 / di) * (dip[1] - din[1]);
 		float duk_di = (0.5 / di) * (dip[2] - din[2]);
-		printf ("10\n");
 		float dui_dj = (0.5 / dj) * (djp[0] - djn[0]);
 		float duj_dj = (0.5 / dj) * (djp[1] - djn[1]);
-		printf ("12\n");
 		float duk_dj = (0.5 / dj) * (djp[2] - djn[2]);
 		float dui_dk = (0.5 / dk) * (dkp[0] - dkn[0]);
-		printf ("14\n");
 		float duj_dk = (0.5 / dk) * (dkp[1] - dkn[1]);
 		float duk_dk = (0.5 / dk) * (dkp[2] - dkn[2]);
-		printf ("16\n");
 		
 		float e_ii = dui_di;
 		float e_jj = duj_dj;
@@ -136,8 +122,6 @@ vf_analyze_strain (Volume* vol)
 
 		total_energy += energy;
 		if (energy > max_energy) max_energy = energy;
-
-		printf ("17\n");
 
 		if (first) {
 		    min_dilation = dilation;
