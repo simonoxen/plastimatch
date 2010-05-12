@@ -35,7 +35,7 @@ struct volume
 extern "C" {
 #endif
 gpuit_EXPORT
-int volume_index (int* dims, int k, int j, int i);
+int volume_index (int* dims, int i, int j, int k);
 gpuit_EXPORT
 Volume*
 volume_create (

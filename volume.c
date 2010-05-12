@@ -1,15 +1,15 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
+#include "math_util.h"
 #include "plm_int.h"
 #include "volume.h"
 
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)	  \
     {                                             \
@@ -374,13 +374,13 @@ volume_resample_float (Volume* vol_in, int* dim,
 
     for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
 	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
-	zidx = round_int (z_in);
+	zidx = ROUND_INT (z_in);
 	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
 	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
-	    yidx = round_int (y_in);
+	    yidx = ROUND_INT (y_in);
 	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0], v++) {
 		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
-		xidx = round_int (x_in);
+		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    val = default_val;
 		} else {
@@ -415,13 +415,13 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
 
     for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
 	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
-	zidx = round_int (z_in);
+	zidx = ROUND_INT (z_in);
 	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
 	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
-	    yidx = round_int (y_in);
+	    yidx = ROUND_INT (y_in);
 	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0]) {
 		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
-		xidx = round_int (x_in);
+		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    val = default_val;
 		} else {
@@ -456,13 +456,13 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
 
     for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
 	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
-	zidx = round_int (z_in);
+	zidx = ROUND_INT (z_in);
 	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
 	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
-	    yidx = round_int (y_in);
+	    yidx = ROUND_INT (y_in);
 	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0], v++) {
 		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
-		xidx = round_int (x_in);
+		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    for (d = 0; d < 3; d++) {
 			out_img[d][v] = 0.0;		/* Default value */
@@ -820,7 +820,10 @@ volume_axial2coronal (Volume* ref)
   
     for (k=0;k<ref->dim[2];k++) {
 	for (j=0;j<ref->dim[1];j++) {
-	    memcpy ((float*)vout->img+volume_index (vout->dim, 0, (vout->dim[1]-1-k), j), (float*)ref->img+volume_index (ref->dim, 0, j, k), ref->dim[0]*ref->pix_size);
+	    memcpy ((float*)vout->img 
+		+ volume_index (vout->dim, 0, (vout->dim[1]-1-k), j), 
+		(float*)ref->img 
+		+ volume_index (ref->dim, 0, j, k), ref->dim[0]*ref->pix_size);
 	}
     }
 
@@ -846,7 +849,10 @@ volume_axial2sagittal (Volume* ref)
     for (k=0;k<ref->dim[2];k++) {
 	for (j=0;j<ref->dim[1];j++) {
 	    for (i=0;i<ref->dim[0];i++) {
-		memcpy ((float*)vout->img+volume_index (vout->dim, j, (vout->dim[1]-1-k), i), (float*)ref->img+volume_index (ref->dim, i, j, k), ref->pix_size);
+		memcpy ((float*)vout->img
+		    + volume_index (vout->dim, j, (vout->dim[1]-1-k), i), 
+		    (float*)ref->img 
+		    + volume_index (ref->dim, i, j, k), ref->pix_size);
 	    }
 	}
     }
