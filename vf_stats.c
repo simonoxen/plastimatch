@@ -77,8 +77,6 @@ vf_analyze_strain (Volume* vol)
     total_energy = 0.0f;
     max_energy = 0.0f;
 
-    printf ("Starting loop.\n");
-
     for (k = 1; k < vol->dim[2]-1; k++) {
 	for (j = 1; j < vol->dim[1]-1; j++) {
 	    for (i = 1; i < vol->dim[0]-1; i++) {
