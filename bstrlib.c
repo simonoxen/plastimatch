@@ -2744,9 +2744,9 @@ struct genBstrList g;
    I've just gone ahead and put it in. */
 extern int vsnprintf (char *buf, size_t count, const char *format, va_list arg);
 #endif
+#endif
 
 #define exvsnprintf(r,b,n,f,a) {r = vsnprintf (b,n,f,a);}
-#endif
 #endif
 #endif
 
