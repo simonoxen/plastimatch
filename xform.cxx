@@ -10,30 +10,30 @@
 #include "itkBSplineResampleImageFunction.h"
 #include "itkTransformFileWriter.h"
 #include "itkTransformFileReader.h"
-#include "xform.h"
+#include "bspline.h"
+#include "math_util.h"
 #include "plm_registration.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "resample_mha.h"
 #include "print_and_exit.h"
-#include "volume.h"
-#include "bspline.h"
 #include "readmha.h"
-
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+#include "resample_mha.h"
+#include "volume.h"
+#include "xform.h"
 
 static void init_itk_bsp_default (Xform *xf);
 static void
 itk_bsp_set_grid (Xform *xf,
-	    const BsplineTransformType::OriginType bsp_origin,
-	    const BsplineTransformType::SpacingType bsp_spacing,
-	    const BsplineTransformType::RegionType bsp_region,
-	    const BsplineTransformType::DirectionType bsp_direction);
+    const BsplineTransformType::OriginType bsp_origin,
+    const BsplineTransformType::SpacingType bsp_spacing,
+    const BsplineTransformType::RegionType bsp_region,
+    const BsplineTransformType::DirectionType bsp_direction);
 static void
 itk_bsp_set_grid_img (Xform *xf,
-	      const Plm_image_header* pih,
-	      float* grid_spac);
+    const Plm_image_header* pih,
+    float* grid_spac);
 static void load_gpuit_bsp (Xform *xf, char* fn);
+static void itk_xform_load (Xform *xf, char* fn);
 
 /* -----------------------------------------------------------------------
    Utility functions
@@ -125,6 +125,9 @@ load_xform (Xform *xf, char* fn)
 	xf->set_aff (aff);
 	fclose (fp);
     } else if (strcmp_alt (buf, "#Insight Transform File V1.0") == 0) {
+	fclose(fp);
+	itk_xform_load (xf, fn);
+	
 	//float f;
 	//int p, s, s1, rc;
 	//int num_parms = 12;
@@ -156,61 +159,12 @@ load_xform (Xform *xf, char* fn)
 	//} else {
 	//    aff->SetParameters(xfp);
 
-  typedef itk::TransformFileReader::TransformListType * TransformListType;  
-  QuaternionTransformType::Pointer quatTransf= QuaternionTransformType::New();
-  AffineTransformType::Pointer affineTransf= AffineTransformType::New();
-
-
-  itk::TransformFileReader::Pointer transfReader;
-  transfReader = itk::TransformFileReader::New();
-  transfReader->SetFileName(fn);
-  
-  try
-    {
-    transfReader->Update();
-    }
-  catch( itk::ExceptionObject & excp )
-    {
-
-    print_and_exit ("Error while reading the transform file\n");
-    }
- 
-  TransformListType transfList = transfReader->GetTransformList();
-  std::cout << "Number of transforms = " << transfList->size() << std::endl;
-
-  itk::TransformFileReader::TransformListType::const_iterator itTrasf = transfList->begin();
-  //TransformType::Pointer transform_read = TransformType::New();
-  if(!strcmp((*itTrasf)->GetNameOfClass(),"QuaternionRigidTransform"))
-    {
-		
-  QuaternionTransformType::InputPointType cor;
-  cor.Fill(12);
-  quatTransf->SetCenter(cor);
-    quatTransf = static_cast<QuaternionTransformType*>((*itTrasf).GetPointer());
-    //quatTransf->Print(std::cout);
-	xf->set_quat(quatTransf);
-    }
-  else if (!strcmp((*itTrasf)->GetNameOfClass(),"AffineTransform"))
-    {
-		
-  AffineTransformType::InputPointType cor;
-  cor.Fill(12);
-  affineTransf->SetCenter(cor);
-    affineTransf = static_cast<AffineTransformType*>((*itTrasf).GetPointer());
-    //affineTransf->Print(std::cout);
-	xf->set_aff(affineTransf);
-    }
-fclose(fp);
-
-
-
-
-//#if defined (commentout)
-//	    std::cout << "Initial affine parms = " << aff << std::endl;
-//#endif
-//	}
-//	xf->set_aff (aff);
-//	fclose (fp);
+	//#if defined (commentout)
+	//	    std::cout << "Initial affine parms = " << aff << std::endl;
+	//#endif
+	//	}
+	//	xf->set_aff (aff);
+	//	fclose (fp);
     } else if (strcmp_alt (buf, "ObjectType = MGH_XFORM_BSPLINE") == 0) {
 	int s[3];
 	float p[3];
@@ -374,6 +328,76 @@ itk_xform_save (T transform, char *filename)
     }
 }
 
+static void
+itk_xform_load (Xform *xf, char* fn)
+{
+    /* Load from file to into reader */
+    itk::TransformFileReader::Pointer transfReader;
+    transfReader = itk::TransformFileReader::New();
+    transfReader->SetFileName(fn);
+    try {
+	transfReader->Update();
+    }
+    catch( itk::ExceptionObject & excp ) {
+	print_and_exit ("Error reading ITK transform file: %s\n", fn);
+    }
+ 
+    /* Confirm that there is only one xform in the file */
+    typedef itk::TransformFileReader::TransformListType* TransformListType;
+    TransformListType transfList = transfReader->GetTransformList();
+    std::cout << "Number of transforms = " << transfList->size() << std::endl;
+    if (transfList->size() != 1) {
+	print_and_exit ("Error. ITK transform file has multiple "
+	    "transforms: %s\n", fn);
+    }
+
+    /* Deduce transform type, and copy into Xform structure */
+    itk::TransformFileReader::TransformListType::const_iterator 
+	itTrasf = transfList->begin();
+    if (!strcmp((*itTrasf)->GetNameOfClass(), "TranslationTransform")) {
+	TranslationTransformType::Pointer itk_xf
+	    = TranslationTransformType::New();
+	itk_xf = static_cast<TranslationTransformType*>(
+	    (*itTrasf).GetPointer());
+	xf->set_trn (itk_xf);
+    }
+    else if (!strcmp((*itTrasf)->GetNameOfClass(), "VersorRigid3DTransform"))
+    {
+	VersorTransformType::Pointer itk_xf
+	    = VersorTransformType::New();
+	VersorTransformType::InputPointType cor;
+	cor.Fill(12);
+	itk_xf->SetCenter(cor);
+	itk_xf = static_cast<VersorTransformType*>(
+	    (*itTrasf).GetPointer());
+	xf->set_vrs (itk_xf);
+    }
+    else if (!strcmp((*itTrasf)->GetNameOfClass(), "QuaternionRigidTransform"))
+    {
+	QuaternionTransformType::Pointer quatTransf 
+	    = QuaternionTransformType::New();
+	QuaternionTransformType::InputPointType cor;
+	cor.Fill(12);
+	quatTransf->SetCenter(cor);
+	quatTransf = static_cast<QuaternionTransformType*>(
+	    (*itTrasf).GetPointer());
+	//quatTransf->Print(std::cout);
+	xf->set_quat (quatTransf);
+    }
+    else if (!strcmp((*itTrasf)->GetNameOfClass(), "AffineTransform"))
+    {
+	AffineTransformType::Pointer affineTransf
+	    = AffineTransformType::New();
+	AffineTransformType::InputPointType cor;
+	cor.Fill(12);
+	affineTransf->SetCenter(cor);
+	affineTransf = static_cast<AffineTransformType*>(
+	    (*itTrasf).GetPointer());
+	//affineTransf->Print(std::cout);
+	xf->set_aff (affineTransf);
+    }
+}
+
 void
 save_xform_translation (TranslationTransformType::Pointer transform, char* filename)
 {
@@ -388,8 +412,6 @@ save_xform_translation (TranslationTransformType::Pointer transform, char* filen
 	fprintf (fp, "%g\n", transform->GetParameters()[i]);
     }
     fclose (fp);
-
-    itk_xform_save (transform, filename);
 }
 
 void
@@ -480,19 +502,19 @@ save_xform (Xform *xf, char* fn)
 {
     switch (xf->m_type) {
     case XFORM_ITK_TRANSLATION:
-	save_xform_translation (xf->get_trn(), fn);
-	//itk_xform_save (xf->get_trn(), fn);
+	//save_xform_translation (xf->get_trn(), fn);
+	itk_xform_save (xf->get_trn(), fn);
 	break;
     case XFORM_ITK_VERSOR:
-	save_xform_versor (xf->get_vrs(), fn);
-	//itk_xform_save (xf->get_vrs(), fn);
+	//save_xform_versor (xf->get_vrs(), fn);
+	itk_xform_save (xf->get_vrs(), fn);
 	break;
     case XFORM_ITK_QUATERNION:
 	itk_xform_save (xf->get_quat(), fn);
 	break;
     case XFORM_ITK_AFFINE:
-	save_xform_affine (xf->get_aff(), fn);
-	//itk_xform_save (xf->get_aff(), fn);
+	//save_xform_affine (xf->get_aff(), fn);
+	itk_xform_save (xf->get_aff(), fn);
 	break;
     case XFORM_ITK_BSPLINE:
 	save_xform_itk_bsp (xf->get_bsp(), fn);
@@ -1317,7 +1339,7 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 	roi_offset[d] = 0;
 	roi_dim[d] = img_dim[d];
 	/* Compute vox_per_rgn */
-	vox_per_rgn[d] = round_int (grid_spac[d] / img_spacing[d]);
+	vox_per_rgn[d] = ROUND_INT (grid_spac[d] / img_spacing[d]);
 	if (vox_per_rgn[d] < 4) {
 	    printf ("Warning: vox_per_rgn was less than 4.\n");
 	    vox_per_rgn[d] = 4;
