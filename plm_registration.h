@@ -73,8 +73,8 @@ public:
     /* Versor & RSG optimizer */
     float max_step;
     float min_step;
-	/* Quaternion optimizer */
-	float learn_rate;
+    /* Quaternion optimizer */
+    float learn_rate;
     /* Mattes mutual information */
     int mi_histogram_bins;
     int mi_num_spatial_samples;
@@ -92,17 +92,17 @@ public:
     int grid_method;     // num control points (0) or absolute spacing (1)
     int histoeq;         // histogram matching flag on (1) or off (0)
     float young_modulus; // regularization (cost of vector field gradient)
-	float landmark_stiffness; //strength of attraction between landmarks
-	char landmark_flavor;
-	char fixed_landmarks_fn[_MAX_PATH]; //fixed landmarks filename
-	char moving_landmarks_fn[_MAX_PATH]; //moving landmarks filename
-	/* Output files */
+    float landmark_stiffness; //strength of attraction between landmarks
+    char landmark_flavor;
+    char fixed_landmarks_fn[_MAX_PATH]; //fixed landmarks filename
+    char moving_landmarks_fn[_MAX_PATH]; //moving landmarks filename
+    /* Output files */
     int img_out_fmt;
     int img_out_type;
     char img_out_fn[_MAX_PATH];
     char xf_out_fn[_MAX_PATH];
     char vf_out_fn[_MAX_PATH];
-	char warped_landmarks_fn[_MAX_PATH];
+    char warped_landmarks_fn[_MAX_PATH];
 
 public:
     Stage_Parms () {
@@ -178,8 +178,8 @@ public:
 	young_modulus = 0;
 	landmark_stiffness = 0;
 	/*	*fixed_landmarks_fn = 0;
-	*moving_landmarks_fn =0;
-	*warped_landmarks_fn =0;*/
+	 *moving_landmarks_fn =0;
+	 *warped_landmarks_fn =0;*/
     }
 };
 
