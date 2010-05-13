@@ -16,6 +16,8 @@
 #include "print_and_exit.h"
 #include "timer.h"
 
+//#define USE_FAST_CODE 1
+
 /*internal use only - get k-th component (k=0,1,2) of 
 the vector field at location r using pre-rendered vf */
 static float f2( int k, int r[3], float  *vf, int *dims )
@@ -28,7 +30,8 @@ static float f2( int k, int r[3], float  *vf, int *dims )
 /*
 first derivative of the vector field du_i/dx_i using pre-rendered vf
 calculated at position r[3] = (ri rj rk) in voxels */
-float bspline_gradient_1st_derivative(  int i,  int r[3], float h[3], float *vf, int *dims )
+float bspline_gradient_1st_derivative (
+    int i,  int r[3], float h[3], float *vf, int *dims )
 {
     int r1[3], r2[3];
     int d;
@@ -78,27 +81,35 @@ or (derive1,derive2)th element of the Hessian of the i-th component of the vecto
 Vector field is in mm, so we must divide by the product of img_spacings.
 */
 void
-bspline_gradient_hessian_component(float out[3], BSPLINE_Xform* bxf, int p[3], int qidx, int derive1, int derive2)
+bspline_gradient_hessian_component (
+    float out[3], 
+    BSPLINE_Xform* bxf, 
+    int p[3], 
+    int qidx, 
+    int derive1, 
+    int derive2
+)
 {
     int i, j, k, m;
     int cidx;
     float* q_lut;
-	float h;
+    float h;
 
-	h =  1./( bxf->img_spacing[derive1] * bxf->img_spacing[derive2] );
+    h =  1./( bxf->img_spacing[derive1] * bxf->img_spacing[derive2] );
+    //h =  1.0;
 
-	if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
-	if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
-	if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
+    if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
+    if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
+    if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
 
-	if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
-	if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
 	
-	if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
-	if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
 
-	if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
-	if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
 
     out[0] = out[1] = out[2] = 0;
     m = 0;
@@ -106,12 +117,42 @@ bspline_gradient_hessian_component(float out[3], BSPLINE_Xform* bxf, int p[3], i
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
 		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-			+ (p[1] + j) * bxf->cdims[0]
-			+ (p[0] + i);
+		    + (p[1] + j) * bxf->cdims[0]
+		    + (p[0] + i);
 		cidx = cidx * 3;
 		out[0] += q_lut[m] * bxf->coeff[cidx+0] * h;
 		out[1] += q_lut[m] * bxf->coeff[cidx+1] * h;
 		out[2] += q_lut[m] * bxf->coeff[cidx+2] * h;
+		m ++;
+	    }
+	}
+    }
+}
+
+void
+bspline_gradient_hessian_component_b (
+    float out[3], 
+    BSPLINE_Xform* bxf, 
+    int p[3], 
+    int qidx, 
+    float *q_lut
+)
+{
+    int i, j, k, m;
+    int cidx;
+
+    out[0] = out[1] = out[2] = 0;
+    m = 0;
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+		    + (p[1] + j) * bxf->cdims[0]
+		    + (p[0] + i);
+		cidx = cidx * 3;
+		out[0] += q_lut[m] * bxf->coeff[cidx+0];
+		out[1] += q_lut[m] * bxf->coeff[cidx+1];
+		out[2] += q_lut[m] * bxf->coeff[cidx+2];
 		m ++;
 	    }
 	}
@@ -123,33 +164,70 @@ void
 bspline_gradient_hessian_update_grad (
     Bspline_state *bst, 
     BSPLINE_Xform* bxf, 
-    int p[3], int qidx, float dc_dv[3], int derive1, int derive2)
+    int p[3], 
+    int qidx, 
+    float dc_dv[3], 
+    int derive1, 
+    int derive2
+)
 {
     BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
     float* q_lut;
 
-	if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
-	if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
-	if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
+    if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
+    if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
+    if (derive1==2 && derive2==2) q_lut = &bxf->q_xyd2z_lut[qidx*64];
 
-	if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
-	if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==0 && derive2==1) q_lut = &bxf->q_dxdyz_lut[qidx*64];
+    if (derive1==1 && derive2==0) q_lut = &bxf->q_dxdyz_lut[qidx*64];
 	
-	if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
-	if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==0 && derive2==2) q_lut = &bxf->q_dxydz_lut[qidx*64];
+    if (derive1==2 && derive2==0) q_lut = &bxf->q_dxydz_lut[qidx*64];
 
-	if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
-	if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==1 && derive2==2) q_lut = &bxf->q_xdydz_lut[qidx*64];
+    if (derive1==2 && derive2==1) q_lut = &bxf->q_xdydz_lut[qidx*64];
 
     m = 0;
     for (k = 0; k < 4; k++) {
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
 		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
-			+ (p[1] + j) * bxf->cdims[0]
-			+ (p[0] + i);
+		    + (p[1] + j) * bxf->cdims[0]
+		    + (p[0] + i);
+		cidx = cidx * 3;
+		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
+		ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
+		ssd->grad[cidx+2] += dc_dv[2] * q_lut[m];
+		m ++;
+	    }
+	}
+    }
+}
+
+
+void
+bspline_gradient_hessian_update_grad_b (
+    Bspline_state *bst, 
+    BSPLINE_Xform* bxf, 
+    int p[3], 
+    int qidx, 
+    float dc_dv[3], 
+    float *q_lut
+)
+{
+    BSPLINE_Score* ssd = &bst->ssd;
+    int i, j, k, m;
+    int cidx;
+
+    m = 0;
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+		    + (p[1] + j) * bxf->cdims[0]
+		    + (p[0] + i);
 		cidx = cidx * 3;
 		ssd->grad[cidx+0] += dc_dv[0] * q_lut[m];
 		ssd->grad[cidx+1] += dc_dv[1] * q_lut[m];
@@ -276,6 +354,33 @@ bspline_gradient_score_from_prerendered (
     ssd->score += grad_score;
 }
 
+static double
+update_score_and_grad (
+    Bspline_state *bst, 
+    BSPLINE_Xform* bxf, 
+    int p[3], 
+    int qidx, 
+    float grad_coeff, 
+    float *qlut
+)
+{
+    int d3;
+    float dxyz[3];
+    float dc_dv[3];
+    double score = 0.0;
+
+    bspline_gradient_hessian_component_b (dxyz, bxf, p, qidx, qlut);
+
+    for (d3=0; d3<3; d3++) {
+	score += (dxyz[d3]*dxyz[d3]);
+	dc_dv[d3] = grad_coeff * dxyz[d3];
+    }
+
+    bspline_gradient_hessian_update_grad_b (bst, bxf, p, qidx, dc_dv, qlut);
+
+    return score;
+}
+
 void
 bspline_gradient_score (
     BSPLINE_Parms *parms, 
@@ -286,56 +391,79 @@ bspline_gradient_score (
 )
 {
     BSPLINE_Score* ssd = &bst->ssd;
-    float grad_score;
-	int ri, rj, rk;
-	int fi, fj, fk;
+    double grad_score;
+    int ri, rj, rk;
+    int fi, fj, fk;
     int p[3];
     int q[3];
     float dxyz[3];
     int qidx;
-	float dc_dv[3];
-	int num_vox;
-	int d1,d2,d3;
-	Timer timer;
-	double interval;
-	float grad_coeff;
-	float raw_score;
+    float dc_dv[3];
+    int num_vox;
+    int d1,d2,d3;
+    Timer timer;
+    double interval;
+    float grad_coeff;
+    float raw_score;
 
     grad_score = 0;
-	num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
-	grad_coeff = parms->young_modulus  /num_vox;  
+    num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
+    grad_coeff = parms->young_modulus / num_vox;
 
-	plm_timer_start (&timer);
+    plm_timer_start (&timer);
 
-	printf("---- YOUNG MODULUS %f\n", parms->young_modulus);
+    printf("---- YOUNG MODULUS %f\n", parms->young_modulus);
 
-	for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
-		p[2] = rk / bxf->vox_per_rgn[2];
-		q[2] = rk % bxf->vox_per_rgn[2];
-		for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
-			p[1] = rj / bxf->vox_per_rgn[1];
-			q[1] = rj % bxf->vox_per_rgn[1];
-	        for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
-			p[0] = ri / bxf->vox_per_rgn[0];
-			q[0] = ri % bxf->vox_per_rgn[0];
+    for (rk = 0, fk = bxf->roi_offset[2]; rk < bxf->roi_dim[2]; rk++, fk++) {
+	p[2] = rk / bxf->vox_per_rgn[2];
+	q[2] = rk % bxf->vox_per_rgn[2];
+	for (rj = 0, fj = bxf->roi_offset[1]; rj < bxf->roi_dim[1]; rj++, fj++) {
+	    p[1] = rj / bxf->vox_per_rgn[1];
+	    q[1] = rj % bxf->vox_per_rgn[1];
+	    for (ri = 0, fi = bxf->roi_offset[0]; ri < bxf->roi_dim[0]; ri++, fi++) {
+		p[0] = ri / bxf->vox_per_rgn[0];
+		q[0] = ri % bxf->vox_per_rgn[0];
 			
-			qidx = INDEX_OF (q, bxf->vox_per_rgn);
-			
-			for(d1=0;d1<3;d1++)
-			for(d2=d1;d2<3;d2++) { //six different components only
-				bspline_gradient_hessian_component (dxyz, bxf, p, qidx, d1, d2);
-				//dxyz[i] = du_i/(dx_d1 dx_d2)
-				//if (d1!=d2) { for(d3=0;d3<3;d3++) dxyz[d3]*=2.; }
-				for(d3=0;d3<3;d3++) grad_score += (dxyz[d3]*dxyz[d3]);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+#if defined (USE_FAST_CODE)
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_d2xyz_lut[qidx*64]);
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_xd2yz_lut[qidx*64]);
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_xyd2z_lut[qidx*64]);
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_dxdyz_lut[qidx*64]);
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_dxydz_lut[qidx*64]);
+		grad_score += update_score_and_grad (
+		    bst, bxf, p, qidx, grad_coeff, 
+		    &bxf->q_xdydz_lut[qidx*64]);
+#else
+		for (d1=0;d1<3;d1++) {
+		    for (d2=d1;d2<3;d2++) { //six different components only
+			bspline_gradient_hessian_component (
+			    dxyz, bxf, p, qidx, d1, d2);
+			//dxyz[i] = du_i/(dx_d1 dx_d2)
+			//if (d1!=d2) { for(d3=0;d3<3;d3++) dxyz[d3]*=2.; }
+			for(d3=0;d3<3;d3++) grad_score += (dxyz[d3]*dxyz[d3]);
 	
-				dc_dv[0] = grad_coeff * dxyz[0];
-				dc_dv[1] = grad_coeff * dxyz[1];
-				dc_dv[2] = grad_coeff * dxyz[2];
+			dc_dv[0] = grad_coeff * dxyz[0];
+			dc_dv[1] = grad_coeff * dxyz[1];
+			dc_dv[2] = grad_coeff * dxyz[2];
 
-				bspline_gradient_hessian_update_grad (bst, bxf, p, qidx, dc_dv, d1, d2);
-				}			
-			}	
+			bspline_gradient_hessian_update_grad (
+			    bst, bxf, p, qidx, dc_dv, d1, d2);
+		    }
 		}
+
+#endif
+	    }
 	}
 
 	interval = plm_timer_report (&timer);
@@ -343,4 +471,5 @@ bspline_gradient_score (
 	grad_score *= (parms->young_modulus / num_vox);
 	printf ("        GRAD_COST %.4f   RAW_GRAD %.4f   [%.3f secs]\n", grad_score, raw_score, interval);
 	ssd->score += grad_score;
+    }
 }

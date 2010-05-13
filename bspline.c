@@ -756,49 +756,49 @@ bspline_xform_initialize
 
 void bspline_xform_create_qlut_grad 
 (
- BSPLINE_Xform* bxf,         /* Output: bxf with new LUTs */
-  float img_spacing[3],       /* Image spacing (in mm) */
-  int vox_per_rgn[3])         /* Knot spacing (in vox) */
+    BSPLINE_Xform* bxf,         /* Output: bxf with new LUTs */
+    float img_spacing[3],       /* Image spacing (in mm) */
+    int vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
     int i, j, k, p;
     int tx, ty, tz;
     float *A, *B, *C;
-	float *Ax, *By, *Cz, *Axx, *Byy, *Czz;
-	int q_lut_size;
+    float *Ax, *By, *Cz, *Axx, *Byy, *Czz;
+    int q_lut_size;
 
-	q_lut_size = sizeof(float) * bxf->vox_per_rgn[0] 
-				  * bxf->vox_per_rgn[1] 
-				  * bxf->vox_per_rgn[2] 
-				  * 64;
-	logfile_printf("Creating gradient multiplier LUTs, %d bytes each\n", q_lut_size);
+    q_lut_size = sizeof(float) * bxf->vox_per_rgn[0] 
+	* bxf->vox_per_rgn[1] 
+	* bxf->vox_per_rgn[2] 
+	* 64;
+    logfile_printf("Creating gradient multiplier LUTs, %d bytes each\n", q_lut_size);
 
     bxf->q_dxdyz_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_dxdyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    if (!bxf->q_dxdyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 	
-	bxf->q_xdydz_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_xdydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    bxf->q_xdydz_lut = (float*) malloc ( q_lut_size );
+    if (!bxf->q_xdydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-	bxf->q_dxydz_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_dxydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    bxf->q_dxydz_lut = (float*) malloc ( q_lut_size );
+    if (!bxf->q_dxydz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 	
-	bxf->q_d2xyz_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_d2xyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    bxf->q_d2xyz_lut = (float*) malloc ( q_lut_size );
+    if (!bxf->q_d2xyz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-	bxf->q_xd2yz_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_xd2yz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    bxf->q_xd2yz_lut = (float*) malloc ( q_lut_size );
+    if (!bxf->q_xd2yz_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
-	bxf->q_xyd2z_lut = (float*) malloc ( q_lut_size );
-	if (!bxf->q_xyd2z_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
+    bxf->q_xyd2z_lut = (float*) malloc ( q_lut_size );
+    if (!bxf->q_xyd2z_lut) print_and_exit ("Error allocating memory for q_grad_lut\n");
 
     A = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     B = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     C = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
 
-	Ax = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
+    Ax = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     By = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     Cz = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
 
-	Axx = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
+    Axx = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[0] * 4);
     Byy = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[1] * 4);
     Czz = (float*) malloc (sizeof(float) * bxf->vox_per_rgn[2] * 4);
 
@@ -821,7 +821,7 @@ void bspline_xform_create_qlut_grad
 	Axx[i*4+1]=(1.0/6.0) * (+18.0 * t1 - 12.0                    );
 	Axx[i*4+2]=(1.0/6.0) * (-18.0 * t1 + 6.0                     );
 	Axx[i*4+3]=(1.0/6.0) * (+ 6.0 * t1);
-	}
+    }
     for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
 	float jj = ((float) j) / bxf->vox_per_rgn[1];
 	float t3 = jj*jj*jj;
@@ -841,7 +841,7 @@ void bspline_xform_create_qlut_grad
 	Byy[j*4+1]=(1.0/6.0) * (+18.0 * t1 - 12.0                    );
 	Byy[j*4+2]=(1.0/6.0) * (-18.0 * t1 + 6.0                     );
 	Byy[j*4+3]=(1.0/6.0) * (+ 6.0 * t1);
-	}
+    }
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	float kk = ((float) k) / bxf->vox_per_rgn[2];
 	float t3 = kk*kk*kk;
@@ -861,7 +861,7 @@ void bspline_xform_create_qlut_grad
 	Czz[k*4+1]=(1.0/6.0) * (+18.0 * t1 - 12.0                    );
 	Czz[k*4+2]=(1.0/6.0) * (-18.0 * t1 + 6.0                     );
 	Czz[k*4+3]=(1.0/6.0) * (+ 6.0 * t1);
-	}
+    }
 
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
@@ -871,15 +871,15 @@ void bspline_xform_create_qlut_grad
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
 				
-				bxf->q_dxdyz_lut[p] = Ax[i*4+tx] * By[j*4+ty] * C[k*4+tz];
-				bxf->q_xdydz_lut[p] = A[i*4+tx] * By[j*4+ty] * Cz[k*4+tz];
-				bxf->q_dxydz_lut[p] = Ax[i*4+tx] * B[j*4+ty] * Cz[k*4+tz];
+			    bxf->q_dxdyz_lut[p] = Ax[i*4+tx] * By[j*4+ty] * C[k*4+tz];
+			    bxf->q_xdydz_lut[p] = A[i*4+tx] * By[j*4+ty] * Cz[k*4+tz];
+			    bxf->q_dxydz_lut[p] = Ax[i*4+tx] * B[j*4+ty] * Cz[k*4+tz];
 
-				bxf->q_d2xyz_lut[p] = Axx[i*4+tx] * B[j*4+ty] * C[k*4+tz];
-				bxf->q_xd2yz_lut[p] = A[i*4+tx] * Byy[j*4+ty] * C[k*4+tz];
-				bxf->q_xyd2z_lut[p] = A[i*4+tx] * B[j*4+ty] * Czz[k*4+tz];
+			    bxf->q_d2xyz_lut[p] = Axx[i*4+tx] * B[j*4+ty] * C[k*4+tz];
+			    bxf->q_xd2yz_lut[p] = A[i*4+tx] * Byy[j*4+ty] * C[k*4+tz];
+			    bxf->q_xyd2z_lut[p] = A[i*4+tx] * B[j*4+ty] * Czz[k*4+tz];
 
-			p++;
+			    p++;
 			}
 		    }
 		}
@@ -889,7 +889,7 @@ void bspline_xform_create_qlut_grad
     free (C);
     free (B);
     free (A);
-	free (Ax); free(By); free(Cz); free(Axx); free(Byy); free(Czz);
+    free (Ax); free(By); free(Cz); free(Axx); free(Byy); free(Czz);
 }
 
 /* -----------------------------------------------------------------------
