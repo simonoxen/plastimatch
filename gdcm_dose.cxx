@@ -15,6 +15,8 @@
 #include "cxt.h"
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
+#include "plm_image.h"
+#include "plm_image_type.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
@@ -221,7 +223,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     Gdcm_series gs;
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
-    gdcm::FileHelper gdcm_file_helper (gf);
     std::string s;
     Plm_image_header plh;
 
@@ -415,20 +416,27 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* We need to convert image to uint16_t, but first we need to 
        scale it.  I'll use the value from XiO: 0.004 */
     float dose_scale = 0.004;
-
+    Plm_image *tmp = pli->clone ();
+    tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+    Volume *vol = (Volume*) tmp->m_gpuit;
+    volume_scale (vol, 1 / dose_scale);
+    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT16);
+    vol = (Volume*) tmp->m_gpuit;
 
     /* DoseGridScaling */
     s = gdcm::Util::Format ("%g", dose_scale);
     gf->InsertValEntry (s, 0x3004, 0x000e);
-
-    /* GCS FIX: Convert the Plm_image to 16U */
-
-#if defined (commentout)
-    gdcm_file_helper->SetImageData (userPixels, userPixelsLength);
-#endif
+    /* PixelData */
+    gdcm::FileHelper gfh (gf);
+    gfh.SetImageData ((uint8_t*) vol->img, vol->npix * vol->pix_size);
 
     /* Do the actual writing out to file */
-    gf->WriteContent (fp, gdcm::ExplicitVR);
+    gfh.WriteDcmExplVR (dose_fn);
+    //gf->WriteContent (fp, gdcm::ExplicitVR);
+
+    /* Do I need to close if I have a file helper??? */
     fp->close();
+
     delete fp;
+    delete tmp;
 }

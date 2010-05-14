@@ -8,6 +8,7 @@
 #include <math.h>
 #include "math_util.h"
 #include "plm_int.h"
+#include "print_and_exit.h"
 #include "volume.h"
 
 
@@ -78,6 +79,9 @@ volume_create (
     case PT_SHORT:
 	vol->pix_size = sizeof(short);
 	break;
+    case PT_UINT16:
+	vol->pix_size = sizeof(uint16_t);
+	break;
     case PT_UINT32:
 	vol->pix_size = sizeof(uint32_t);
 	break;
@@ -142,6 +146,7 @@ volume_clone (Volume* ref)
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
+    case PT_UINT16:
     case PT_UINT32:
     case PT_FLOAT:
     case PT_VF_FLOAT_INTERLEAVED:
@@ -180,11 +185,14 @@ volume_convert_to_float (Volume* ref)
     case PT_SHORT:
 	CONVERT_VOLUME (short, float, PT_FLOAT);
 	break;
-    case PT_FLOAT:
-	/* Nothing to do */
+    case PT_UINT16:
+	CONVERT_VOLUME (uint16_t, float, PT_FLOAT);
 	break;
     case PT_UINT32:
 	CONVERT_VOLUME (uint32_t, float, PT_FLOAT);
+	break;
+    case PT_FLOAT:
+	/* Nothing to do */
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -207,15 +215,47 @@ volume_convert_to_short (Volume* ref)
     case PT_SHORT:
 	/* Nothing to do */
 	break;
+    case PT_UINT16:
+    case PT_UINT32:
+	fprintf (stderr, "Sorry, UINT16/UINT32 to SHORT is not implemented\n");
+	exit (-1);
+	break;
     case PT_FLOAT:
 	CONVERT_VOLUME (float, short, PT_SHORT);
 	break;
-    case PT_UINT32:
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to SHORT\n");
+	exit (-1);
+	break;
+    }
+}
+
+void
+volume_convert_to_uint16 (Volume* ref)
+{
+    switch (ref->pix_type) {
+    case PT_UCHAR:
+    case PT_SHORT:
+	fprintf (stderr, "Sorry, UCHAR/SHORT to UINT16 is not implemented\n");
+	exit (-1);
+	break;
+    case PT_UINT16:
+	/* Nothing to do */
+	break;
+    case PT_UINT32:
+	fprintf (stderr, "Sorry, UINT32 to UINT16 is not implemented\n");
+	break;
+    case PT_FLOAT:
+	CONVERT_VOLUME (float, uint16_t, PT_UINT32);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+    case PT_VF_FLOAT_PLANAR:
+    default:
+	/* Can't convert this */
+	fprintf (stderr, "Sorry, unsupported conversion to UINT32\n");
 	exit (-1);
 	break;
     }
@@ -230,11 +270,15 @@ volume_convert_to_uint32 (Volume* ref)
 	fprintf (stderr, "Sorry, UCHAR/SHORT to UINT32 is not implemented\n");
 	exit (-1);
 	break;
-    case PT_FLOAT:
-	CONVERT_VOLUME (float, uint32_t, PT_UINT32);
+    case PT_UINT16:
+	fprintf (stderr, "Sorry, UINT16 to UINT32 is not implemented\n");
+	exit (-1);
 	break;
     case PT_UINT32:
 	/* Nothing to do */
+	break;
+    case PT_FLOAT:
+	CONVERT_VOLUME (float, uint32_t, PT_UINT32);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
@@ -278,6 +322,7 @@ vf_convert_to_interleaved (Volume* vf)
 	break;
     case PT_UCHAR:
     case PT_SHORT:
+    case PT_UINT16:
     case PT_UINT32:
     case PT_FLOAT:
     default:
@@ -518,6 +563,22 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
 	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->pix_spacing[d] + 0.5 * pix_spacing[d]);
     }
     return volume_resample (vol_in, dim, offset, pix_spacing);
+}
+
+void
+volume_scale (Volume* vol, float scale)
+{
+    int i;
+    float *img;
+
+    if (vol->pix_type != PT_FLOAT) {
+	print_and_exit ("volume_scale required PT_FLOAT type.\n");
+    }
+
+    img = vol->img;
+    for (i = 0; i < vol->npix; i++) {
+	img[i] = img[i] * scale;
+    }
 }
 
 void

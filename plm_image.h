@@ -53,6 +53,8 @@ private:
     plastimatch1_EXPORT
     void convert_to_gpuit_short ();
     plastimatch1_EXPORT
+    void convert_to_gpuit_uint16 ();
+    plastimatch1_EXPORT
     void convert_to_gpuit_uint32 ();
     plastimatch1_EXPORT
     void convert_to_gpuit_float ();

@@ -48,15 +48,15 @@ Plm_image::clone (void)
 	pli->m_itk_float = this->m_itk_float;
 	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
-	pli->m_itk_float = this->m_itk_float;
-	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT16:
     case PLM_IMG_TYPE_GPUIT_UINT32:
     case PLM_IMG_TYPE_GPUIT_FLOAT:
+    case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
 	pli->m_gpuit = (void*) volume_clone ((Volume*) this->m_gpuit);
 	break;
     default:
-	print_and_exit ("Unhandled image type in Plm_image::save_short_dicom"
+	print_and_exit ("Unhandled image type in Plm_image::clone"
 			" (type = %d)\n", this->m_type);
 	break;
     }
@@ -222,6 +222,7 @@ Plm_image::save_short_dicom (char* fname)
 	this->convert_to_itk_float ();
 	itk_image_save_short_dicom (this->m_itk_float, fname, this->m_patient_pos);
 	break;
+    case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
 	print_and_exit ("Unhandled image type in Plm_image::save_short_dicom"
 			" (type = %d)\n", this->m_type);
@@ -268,6 +269,7 @@ Plm_image::save_image (const char* fname)
 	this->convert_to_itk_float ();
 	itk_image_save (this->m_itk_float, fname);
 	break;
+    case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
 	print_and_exit ("Unhandled image type in Plm_image::save_image"
 			" (type = %d)\n", this->m_type);
@@ -291,6 +293,10 @@ Plm_image::set_gpuit (volume *v)
     case PT_SHORT:
 	m_original_type = PLM_IMG_TYPE_GPUIT_SHORT;
 	m_type = PLM_IMG_TYPE_GPUIT_SHORT;
+	break;
+    case PT_UINT16:
+	m_original_type = PLM_IMG_TYPE_GPUIT_UINT16;
+	m_type = PLM_IMG_TYPE_GPUIT_UINT16;
 	break;
     case PT_UINT32:
 	m_original_type = PLM_IMG_TYPE_GPUIT_UINT32;
@@ -610,6 +616,27 @@ Plm_image::convert_to_gpuit_short ()
 }
 
 void
+Plm_image::convert_to_gpuit_uint16 ()
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+	return;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	volume_convert_to_uint16 ((Volume *) this->m_gpuit);
+	return;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_ITK_UCHAR:
+    case PLM_IMG_TYPE_ITK_SHORT:
+    case PLM_IMG_TYPE_ITK_ULONG:
+    case PLM_IMG_TYPE_ITK_FLOAT:
+    default:
+	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	return;
+    }
+}
+
+void
 Plm_image::convert_to_gpuit_uint32 ()
 {
     switch (this->m_type) {
@@ -697,6 +724,9 @@ Plm_image::convert (Plm_image_type new_type)
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->convert_to_gpuit_short ();
+	break;
+    case PLM_IMG_TYPE_GPUIT_UINT16:
+	this->convert_to_gpuit_uint16 ();
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
 	this->convert_to_gpuit_uint32 ();

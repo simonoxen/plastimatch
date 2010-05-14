@@ -10,6 +10,7 @@ enum Volume_pixel_type {
     PT_UNDEFINED,
     PT_UCHAR,
     PT_SHORT,
+    PT_UINT16,
     PT_UINT32,
     PT_FLOAT,
     PT_VF_FLOAT_INTERLEAVED,
@@ -20,14 +21,14 @@ typedef struct volume Volume;
 struct volume
 {
     int dim[3];			// x, y, z Dims
-    int npix;			// # of pixels in volume
+    int npix;			// # of voxels in volume
 				// = dim[0] * dim[1] * dim[2] 
     float offset[3];
     float pix_spacing[3];	// voxel spacing
     float direction_cosines[9];
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
-    int pix_size;		// (Unused?)
+    int pix_size;		// # bytes per voxel
     void* img;			// Voxel Data
 };
 
@@ -54,6 +55,9 @@ gpuit_EXPORT
 void volume_convert_to_short (Volume* ref);
 gpuit_EXPORT
 void
+volume_convert_to_uint16 (Volume* ref);
+gpuit_EXPORT
+void
 volume_convert_to_uint32 (Volume* ref);
 gpuit_EXPORT
 void vf_convert_to_interleaved (Volume* ref);
@@ -72,6 +76,8 @@ gpuit_EXPORT
 Volume* volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing);
 gpuit_EXPORT
 Volume* volume_subsample (Volume* vol_in, int* sampling_rate);
+gpuit_EXPORT
+void volume_scale (Volume *vol, float scale);
 gpuit_EXPORT
 void vf_print_stats (Volume* vol);
 gpuit_EXPORT
