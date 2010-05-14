@@ -78,7 +78,6 @@ float bspline_gradient_2nd_derivative( int k, int i, int j,  int r[3], float h[3
 /* out[i] = 2nd derivative of i-th component (i=0,1,2<->x,y,z) of the vector field
 with respect to variables derive1 and derive2 (0,1,2<->x,y,z),
 or (derive1,derive2)th element of the Hessian of the i-th component of the vector field 
-Vector field is in mm, so we must divide by the product of img_spacings.
 */
 void
 bspline_gradient_hessian_component (
@@ -93,10 +92,6 @@ bspline_gradient_hessian_component (
     int i, j, k, m;
     int cidx;
     float* q_lut;
-    float h;
-
-    h =  1./( bxf->img_spacing[derive1] * bxf->img_spacing[derive2] );
-    //h =  1.0;
 
     if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
     if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
@@ -120,9 +115,9 @@ bspline_gradient_hessian_component (
 		    + (p[1] + j) * bxf->cdims[0]
 		    + (p[0] + i);
 		cidx = cidx * 3;
-		out[0] += q_lut[m] * bxf->coeff[cidx+0] * h;
-		out[1] += q_lut[m] * bxf->coeff[cidx+1] * h;
-		out[2] += q_lut[m] * bxf->coeff[cidx+2] * h;
+		out[0] += q_lut[m] * bxf->coeff[cidx+0] ;
+		out[1] += q_lut[m] * bxf->coeff[cidx+1] ;
+		out[2] += q_lut[m] * bxf->coeff[cidx+2] ;
 		m ++;
 	    }
 	}
@@ -361,6 +356,7 @@ update_score_and_grad (
     int p[3], 
     int qidx, 
     float grad_coeff, 
+	float weight, // 2 or 1 for cross/non-cross derivatives
     float *qlut
 )
 {
@@ -372,8 +368,8 @@ update_score_and_grad (
     bspline_gradient_hessian_component_b (dxyz, bxf, p, qidx, qlut);
 
     for (d3=0; d3<3; d3++) {
-	score += (dxyz[d3]*dxyz[d3]);
-	dc_dv[d3] = grad_coeff * dxyz[d3];
+	score += weight * (dxyz[d3]*dxyz[d3]);
+	dc_dv[d3] = weight * grad_coeff * dxyz[d3];
     }
 
     bspline_gradient_hessian_update_grad_b (bst, bxf, p, qidx, dc_dv, qlut);
@@ -405,6 +401,7 @@ bspline_gradient_score (
     double interval;
     float grad_coeff;
     float raw_score;
+	float weight;
 
     grad_score = 0;
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];
@@ -427,22 +424,22 @@ bspline_gradient_score (
 		qidx = INDEX_OF (q, bxf->vox_per_rgn);
 #if defined (USE_FAST_CODE)
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_d2xyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_xd2yz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 1,
 		    &bxf->q_xyd2z_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_dxdyz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_dxydz_lut[qidx*64]);
 		grad_score += update_score_and_grad (
-		    bst, bxf, p, qidx, grad_coeff, 
+		    bst, bxf, p, qidx, grad_coeff, 2,
 		    &bxf->q_xdydz_lut[qidx*64]);
 #else
 		for (d1=0;d1<3;d1++) {
@@ -450,12 +447,12 @@ bspline_gradient_score (
 			bspline_gradient_hessian_component (
 			    dxyz, bxf, p, qidx, d1, d2);
 			//dxyz[i] = du_i/(dx_d1 dx_d2)
-			//if (d1!=d2) { for(d3=0;d3<3;d3++) dxyz[d3]*=2.; }
-			for(d3=0;d3<3;d3++) grad_score += (dxyz[d3]*dxyz[d3]);
+			if (d1!=d2) weight = 2 ; else weight = 1;
+			for(d3=0;d3<3;d3++) grad_score += weight*(dxyz[d3]*dxyz[d3]);
 	
-			dc_dv[0] = grad_coeff * dxyz[0];
-			dc_dv[1] = grad_coeff * dxyz[1];
-			dc_dv[2] = grad_coeff * dxyz[2];
+			dc_dv[0] = weight * grad_coeff * dxyz[0];
+			dc_dv[1] = weight * grad_coeff * dxyz[1];
+			dc_dv[2] = weight * grad_coeff * dxyz[2];
 
 			bspline_gradient_hessian_update_grad (
 			    bst, bxf, p, qidx, dc_dv, d1, d2);
