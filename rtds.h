@@ -50,6 +50,7 @@ public:
     void load_xio (char *xio_dir, char *dicom_dir);
     plastimatch1_EXPORT
     void load_ss_img (char *ss_img, char *ss_list);
+    void load_dose_img (char *dose_img);
     void save_dicom (char *dicom_dir);
     void convert_ss_img_to_cxt (void);
 };

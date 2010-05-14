@@ -15,21 +15,15 @@ case $CNAME in
 	export PATH=$PATH:/cygdrive/c/gcs6/build/plastimatch-cygwin
 	;;
     "physics.mgh.harvard.edu")
-	export PATH=$PATH:/home/gcs6/build/plastimatch-3.16.0
-	export PATH=$PATH:/home/gcs6/projects/plastimatch/cttools
-	;;
-    "fantasy")
-	export PATH=$PATH:/home/gcs6/build/plastimatch-3.12.0
-	export PATH=$PATH:/home/gcs6/projects/plastimatch/cttools
+	export PATH=$PATH:$HOME/build/plastimatch-3.16.0
+	export PATH=$PATH:$HOME/projects/plastimatch/cttools
 	;;
     "gelato")
-	#export PATH=$PATH:$HOME/build/plastimatch-3.16.0
-	#export PATH=$PATH:$HOME/work/plastimatch/cttools
 	export PATH=$PATH:$HOME/build/plastimatch-3.18.0
 	export PATH=$PATH:$HOME/work/plastimatch/cttools
 	;;
     "wormwood")
-	export PATH=$PATH:$HOME/build/plastimatch-3.16.0
+	export PATH=$PATH:$HOME/build/plastimatch-3.18.0
 	export PATH=$PATH:$HOME/projects/plastimatch/cttools
 	;;
     "redfish")

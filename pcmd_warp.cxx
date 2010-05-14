@@ -42,6 +42,7 @@ print_usage (char* command)
 	"    --input-ss-img=filename    (for structures)\n"
 	"    --input-ss-list=filename   (for structures)\n"
 	"    --prune-empty              (for structures)\n"
+	"    --input-dose-img=filename  (for rt dose)\n"
 	"\n"
 	"    --output-cxt=filename      (for structures)\n"
 	"    --output-dicom=directory   (for image and structures)\n"
@@ -111,6 +112,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output-dij",     required_argument,      NULL,           27 },
 	{ "input_ss_img",   required_argument,      NULL,           28 },
 	{ "input-ss-img",   required_argument,      NULL,           28 },
+	{ "input_dose_img", required_argument,      NULL,           29 },
+	{ "input-dose-img", required_argument,      NULL,           29 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -233,6 +236,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 28:
 	    strncpy (parms->input_ss_img, optarg, _MAX_PATH);
+	    break;
+	case 29:
+	    strncpy (parms->input_dose_img, optarg, _MAX_PATH);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

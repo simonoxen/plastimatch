@@ -99,6 +99,17 @@ Rtds::load_ss_img (char *ss_img, char *ss_list)
 }
 
 void
+Rtds::load_dose_img (char *dose_img)
+{
+    if (this->m_dose) {
+	delete this->m_dose;
+    }
+    if (dose_img) {
+	this->m_dose = plm_image_load_native (dose_img);
+    }
+}
+
+void
 Rtds::save_dicom (char *dicom_dir)
 {
     if (this->m_img) {

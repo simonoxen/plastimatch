@@ -6,8 +6,9 @@
 #include "plm_int.h"
 
 #define XIO_VERSION_450       1
-#define XIO_VERSION_421       2
-#define XIO_VERSION_UNKNOWN   3
+#define XIO_VERSION_433       2
+#define XIO_VERSION_421       3
+#define XIO_VERSION_UNKNOWN   4
 
 #define XIO_DATATYPE_UINT32     5
 
@@ -115,6 +116,8 @@ main (int argc, char *argv[])
     fgets (buf, sizeof(buf), ifp);
     if (!strncmp (buf, "006d101e", strlen ("006d101e"))) {
         xio_version = XIO_VERSION_450;
+    } else if (!strncmp (buf, "0062101e", strlen ("0062101e"))) {
+        xio_version = XIO_VERSION_433;
     } else if (!strncmp (buf, "004f101e", strlen ("004f101e"))) {
         xio_version = XIO_VERSION_421;
     } else {
@@ -122,14 +125,23 @@ main (int argc, char *argv[])
     }
 
     if (xio_version != XIO_VERSION_450
-        && xio_version != XIO_VERSION_421) {
+        && xio_version != XIO_VERSION_433
+        && xio_version != XIO_VERSION_421)
+    {
         printf ("WARNING: Unknown XiO file format version: %s\n", buf);
     }
 
     // Skipping line
     fgets (buf, sizeof(buf), ifp);
 
-    // Line 2: Number of subplans or beams
+    if (xio_version == XIO_VERSION_433 || 
+	xio_version == XIO_VERSION_450)
+    {
+	/* Skip line */
+	fgets (buf, sizeof(buf), ifp);
+    }
+
+    // Number of subplans or beams
     fgets (buf, sizeof(buf), ifp);
     rc = sscanf (buf, "%1d", &xio_sources);
 

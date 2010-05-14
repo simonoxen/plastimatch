@@ -113,6 +113,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_ss_img[0]) {
 	rtds->load_ss_img (parms->input_ss_img, parms->input_ss_list);
     }
+
+    if (parms->input_dose_img[0]) {
+	rtds->load_dose_img (parms->input_dose_img);
+    }
 }
 
 static void
