@@ -64,8 +64,6 @@ gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
 {
     int i, rc;
     gdcm::File *gdcm_file = new gdcm::File;
-    gdcm::SeqEntry *seq;
-    gdcm::SQItem *item;
     Gdcm_series gs;
     std::string tmp;
     float ipp[3];
@@ -223,22 +221,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 
     printf ("Hello from gdcm_dose_save\n");
 
-#if defined (commentout)
-    /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir[0] != '\0') {
-	gs.load (dicom_dir);
-	gs.get_best_ct ();
-	if (gs.m_have_ct) {
-	    int d;
-	    structures->have_geometry = 1;
-	    for (d = 0; d < 3; d++) {
-		structures->offset[d] = gs.m_origin[d];
-		structures->dim[d] = gs.m_dim[d];
-		structures->spacing[d] = gs.m_spacing[d];
-	    }
-	}
-    }
-
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.
@@ -253,7 +235,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
-
     /* From Chang-Yu Wang: 
        Some dicom validation toolkit (such as DVTK dicom editor)
        required the TransferSyntaxUID tag, and commenting out 
@@ -268,39 +249,27 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     gf->InsertValEntry (current_time, 0x0008, 0x0013);
     /* InstanceCreatorUID */
     gf->InsertValEntry (PLM_UID_PREFIX, 0x0008, 0x0014);
-    /* SOPClassUID = RTStructureSetStorage */
-    gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0008, 0x0016);
+    /* SOPClassUID = RTDoseStorage */
+    gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.2", 0x0008, 0x0016);
     /* SOPInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 			0x0008, 0x0018);
     /* StudyDate */
     gf->InsertValEntry ("20000101", 0x0008, 0x0020);
-    /* SeriesDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0021);
-    /* AcquisitionDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0022);
-    /* ContentDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0023);
     /* StudyTime */
     gf->InsertValEntry ("120000", 0x0008, 0x0030);
     /* AccessionNumber */
     gf->InsertValEntry ("", 0x0008, 0x0050);
     /* Modality */
-    gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
+    gf->InsertValEntry ("RTDOSE", 0x0008, 0x0060);
     /* Manufacturer */
     gf->InsertValEntry ("MGH", 0x0008, 0x0070);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
-    /* ReferringPhysiciansAddress */
-    gf->InsertValEntry ("", 0x0008, 0x0092);
-    /* ReferringPhysiciansTelephoneNumbers */
-    gf->InsertValEntry ("", 0x0008, 0x0094);
-    /* StationName */
-    gf->InsertValEntry ("", 0x0008, 0x1010);
-    /* SeriesDescription */
-    gf->InsertValEntry ("Plastimatch structure set", 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
+
+#if defined (commentout)
     /* PatientsName */
     if (structures->patient_name) {
 	gf->InsertValEntry ((const char*) structures->patient_name->data, 
@@ -315,8 +284,16 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     } else {
 	gf->InsertValEntry ("", 0x0010, 0x0020);
     }
+#endif
+    /* PatientsName */
+    gf->InsertValEntry ("", 0x0010, 0x0010);
+    /* PatientID */
+    gf->InsertValEntry ("", 0x0010, 0x0020);
+
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
+
+#if defined (commentout)
     /* PatientsSex */
     if (structures->patient_sex) {
 	gf->InsertValEntry ((const char*) structures->patient_sex->data, 
@@ -324,10 +301,16 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     } else {
 	gf->InsertValEntry ("", 0x0010, 0x0040);
     }
+#endif
+    /* PatientsSex */
+    gf->InsertValEntry ("", 0x0010, 0x0040);
+
+    /* SliceThickness */
+    gf->InsertValEntry ("", 0x0018, 0x0050);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
-    /* PatientPosition */
-    // gf->InsertValEntry (xxx, 0x0018, 0x5100);
+
+#if defined (commentout)
     /* StudyInstanceUID */
     if (structures->ct_study_uid) {
 	gf->InsertValEntry ((const char*) structures->ct_study_uid->data, 
@@ -335,9 +318,16 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     } else {
 	gf->InsertValEntry ("", 0x0020, 0x000d);
     }
+#endif
+    /* StudyInstanceUID */
+    gf->InsertValEntry ("", 0x0020, 0x000d);
+
+
     /* SeriesInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 			0x0020, 0x000e);
+
+#if defined (commentout)
     /* StudyID */
     if (structures->study_id) {
 	gf->InsertValEntry ((const char*) structures->study_id->data, 
@@ -345,19 +335,30 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     } else {
 	gf->InsertValEntry ("", 0x0020, 0x0010);
     }
+#endif
+    /* StudyID */
+    gf->InsertValEntry ("", 0x0020, 0x0010);
+
     /* SeriesNumber */
-    gf->InsertValEntry ("103", 0x0020, 0x0011);
+    gf->InsertValEntry ("", 0x0020, 0x0011);
     /* InstanceNumber */
     gf->InsertValEntry ("1", 0x0020, 0x0013);
-    /* StructureSetLabel */
-    gf->InsertValEntry ("AutoSS", 0x3006, 0x0002);
-    /* StructureSetName */
-    gf->InsertValEntry ("AutoSS", 0x3006, 0x0004);
-    /* StructureSetDate */
-    gf->InsertValEntry (current_date, 0x3006, 0x0008);
-    /* StructureSetTime */
-    gf->InsertValEntry (current_time, 0x3006, 0x0009);
 
+    /* GCS FIX */
+    /* ImagePositionPatient */
+    gf->InsertValEntry ("0\\0\\0", 0x0020, 0x0032);
+    /* ImageOrientationPatient */
+    gf->InsertValEntry ("1\\0\\0\\0\\1\\0", 0x0020, 0x0037);
+
+    /* GCS FIX */
+    /* FrameOfReferenceUID */
+    gf->InsertValEntry ("XXX.XXX.XXXXXXX", 0x0020, 0x0052);
+
+    /* SamplesPerPixel */
+    gf->InsertValEntry ("1", 0x0028, 0x0002);
+
+
+#if defined (commentout)
     /* ----------------------------------------------------------------- */
     /*     Part 2  -- UID's for CT series                                */
     /* ----------------------------------------------------------------- */
@@ -558,9 +559,10 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a6);
     }
 
+#endif
+
     /* Do the actual writing out to file */
     gf->WriteContent (fp, gdcm::ExplicitVR);
     fp->close();
     delete fp;
-#endif
 }

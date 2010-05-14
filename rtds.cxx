@@ -7,6 +7,7 @@
 #include <string.h>
 #include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
+#include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "rtds.h"
 #include "xio_ct.h"
@@ -102,6 +103,11 @@ Rtds::save_dicom (char *dicom_dir)
 {
     if (this->m_img) {
 	this->m_img->save_short_dicom (dicom_dir);
+    }
+    if (this->m_dose) {
+	char fn[_MAX_PATH];
+	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "dose.dcm");
+	gdcm_dose_save (this->m_dose, fn);
     }
 }
 

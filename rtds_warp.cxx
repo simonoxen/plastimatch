@@ -281,9 +281,8 @@ save_ss_output (Rtds *rtds,  Xform *xf,
     }
 
     if (parms->output_dicom[0]) {
-	cxt_adjust_structure_names (rtds->m_cxt);
-
 	char fn[_MAX_PATH];
+	cxt_adjust_structure_names (rtds->m_cxt);
 	snprintf (fn, _MAX_PATH, "%s/%s", parms->output_dicom, "ss.dcm");
 	gdcm_rtss_save (rtds->m_cxt, fn, parms->dicom_dir);
     }
