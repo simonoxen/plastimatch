@@ -216,12 +216,16 @@ gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
 void
 gdcm_dose_save (Plm_image *pli, char *dose_fn)
 {
-    int i, j, k;
+    int i;
     gdcm::File *gf = new gdcm::File ();
     Gdcm_series gs;
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
     gdcm::FileHelper gdcm_file_helper (gf);
+    std::string s;
+    Plm_image_header plh;
+
+    plh.set_from_plm_image (pli);
 
     printf ("Hello from gdcm_dose_save: fn = %s\n", dose_fn);
 
@@ -340,38 +344,45 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     gf->InsertValEntry ("", 0x0020, 0x0011);
     /* InstanceNumber */
     gf->InsertValEntry ("1", 0x0020, 0x0013);
+    /* ImagePositionPatient */
+    s = gdcm::Util::Format ("%g\\%g\\%g", plh.m_origin[0], 
+	plh.m_origin[1], plh.m_origin[2]);
+    gf->InsertValEntry (s, 0x0020, 0x0032);
 
     /* GCS FIX */
-    /* ImagePositionPatient */
-    gf->InsertValEntry ("0\\0\\0", 0x0020, 0x0032);
     /* ImageOrientationPatient */
     gf->InsertValEntry ("1\\0\\0\\0\\1\\0", 0x0020, 0x0037);
 
     /* GCS FIX */
+#if defined (commentout)
     /* FrameOfReferenceUID */
     gf->InsertValEntry ("XXX.XXX.XXXXXXX", 0x0020, 0x0052);
+#endif
 
     /* SamplesPerPixel */
     gf->InsertValEntry ("1", 0x0028, 0x0002);
     /* PhotometricInterpretation */
     gf->InsertValEntry ("MONOCHROME2", 0x0028, 0x0004);
-
-    /* GCS FIX (Num frames == # slices) */
     /* NumberOfFrames */
-    gf->InsertValEntry ("", 0x0028, 0x0008);
+    s = gdcm::Util::Format ("%d", plh.Size(2));
+    gf->InsertValEntry (s, 0x0028, 0x0008);
 
     /* FrameIncrementPointer */
-    //gf->InsertValEntry ("3004,000c", 0x0028, 0x0009);
+    /* Note: InsertValEntry doesn't work for AT value representations
+       gf->InsertValEntry ("3004,000c", 0x0028, 0x0009); */
     uint16_t fip[2] = { 0x3004, 0x000c };
     gf->InsertBinEntry ((uint8_t*)fip, 4, 0x0028, 0x0009, std::string("AT"));
 
-    /* GCS FIX */
     /* Rows */
-    gf->InsertValEntry ("", 0x0028, 0x0010);
+    s = gdcm::Util::Format ("%d", plh.Size(0));
+    gf->InsertValEntry (s, 0x0028, 0x0010);
     /* Columns */
-    gf->InsertValEntry ("", 0x0028, 0x0011);
+    s = gdcm::Util::Format ("%d", plh.Size(1));
+    gf->InsertValEntry (s, 0x0028, 0x0011);
     /* PixelSpacing */
-    gf->InsertValEntry ("5\\5", 0x0028, 0x0030);
+    s = gdcm::Util::Format ("%g\\%g", plh.m_spacing[0], plh.m_spacing[1]);
+    gf->InsertValEntry (s, 0x0028, 0x0030);
+
     /* BitsAllocated */
     gf->InsertValEntry ("16", 0x0028, 0x0100);
     /* BitsStored */
@@ -390,15 +401,25 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* DoseSummationType */
     gf->InsertValEntry ("PLAN", 0x3004, 0x000a);
 
-    /* GCS FIX -- variable length */
     /* GridFrameOffsetVector */
-    gf->InsertValEntry ("0\\5\\10\\...", 0x3004, 0x000c);
+    s = gdcm::Util::Format ("%g", plh.m_origin[2]);
+    for (i = 1; i < plh.Size(2); i++) {
+	s += gdcm::Util::Format ("\\%g", 
+	    plh.m_origin[2] + i * plh.m_spacing[2]);
+    }
+    gf->InsertValEntry (s, 0x3004, 0x000c);
 
-    /* GCS FIX -- need to scale before converting to int */
+    /* GCS FIX:
+       Leave ReferencedRTPlanSequence empty (until I can cross reference) */
+
+    /* We need to convert image to uint16_t, but first we need to 
+       scale it.  I'll use the value from XiO: 0.004 */
+    float dose_scale = 0.004;
+
+
     /* DoseGridScaling */
-    gf->InsertValEntry ("0.004", 0x3004, 0x000e);
-
-    /* Leave ReferencedRTPlanSequence empty (until I can cross reference) */
+    s = gdcm::Util::Format ("%g", dose_scale);
+    gf->InsertValEntry (s, 0x3004, 0x000e);
 
     /* GCS FIX: Convert the Plm_image to 16U */
 

@@ -87,6 +87,9 @@ public:
 	m_patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 
+    plastimatch1_EXPORT
+    Plm_image* clone (void);
+
     /* Loading */
     plastimatch1_EXPORT
     void load_native (const char* fname);

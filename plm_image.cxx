@@ -19,6 +19,52 @@
 #include "volume.h"
 
 /* -----------------------------------------------------------------------
+   Cloning
+   ----------------------------------------------------------------------- */
+Plm_image*
+Plm_image::clone (void)
+{
+    Plm_image *pli = new Plm_image;
+    if (!pli) return 0;
+
+    pli->m_original_type = this->m_original_type;
+    pli->m_type = this->m_type;
+    pli->m_patient_pos = this->m_patient_pos;
+
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	pli->m_itk_uchar = this->m_itk_uchar;
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	pli->m_itk_short = this->m_itk_short;
+	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	pli->m_itk_ushort = this->m_itk_ushort;
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	pli->m_itk_uint32 = this->m_itk_uint32;
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	pli->m_itk_float = this->m_itk_float;
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	pli->m_itk_float = this->m_itk_float;
+	break;
+    case PLM_IMG_TYPE_GPUIT_SHORT:
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	pli->m_gpuit = (void*) volume_clone ((Volume*) this->m_gpuit);
+	break;
+    default:
+	print_and_exit ("Unhandled image type in Plm_image::save_short_dicom"
+			" (type = %d)\n", this->m_type);
+	break;
+    }
+
+    return pli;
+}
+
+/* -----------------------------------------------------------------------
    Loading
    ----------------------------------------------------------------------- */
 Plm_image*
@@ -55,6 +101,10 @@ Plm_image::load_native (const char* fname)
 	    called deduce_file_type in warp_main() */
 	load_native_dicom (fname);
 	return;
+    }
+
+    if (!file_exists (fname)) {
+	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
     itk__GetImageType (fname, pixelType, componentType);
