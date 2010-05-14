@@ -9,7 +9,7 @@
 #include <math.h>
 
 #include "bspline.h"
-#include "bspline_gradient.h"
+#include "bspline_regularize.h"
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "math_util.h"
@@ -30,7 +30,7 @@ static float f2( int k, int r[3], float  *vf, int *dims )
 /*
 first derivative of the vector field du_i/dx_i using pre-rendered vf
 calculated at position r[3] = (ri rj rk) in voxels */
-float bspline_gradient_1st_derivative (
+float bspline_regularize_1st_derivative (
     int i,  int r[3], float h[3], float *vf, int *dims )
 {
     int r1[3], r2[3];
@@ -46,7 +46,7 @@ float bspline_gradient_1st_derivative (
 /* second derivative of k-th component of vector field wrt x_i and x_j, 
 d2u_k/(dx_i dx_j) calculated at position r[3] = (ri rj rk) in voxels 
 using pre-rendered vf */
-float bspline_gradient_2nd_derivative( int k, int i, int j,  int r[3], float h[3], float *vf, int *dims )
+float bspline_regularize_2nd_derivative( int k, int i, int j,  int r[3], float h[3], float *vf, int *dims )
 {
     int r1[3], r2[3], r3[3], r4[3], r5[3], r6[3];
     int d;
@@ -80,7 +80,7 @@ with respect to variables derive1 and derive2 (0,1,2<->x,y,z),
 or (derive1,derive2)th element of the Hessian of the i-th component of the vector field 
 */
 void
-bspline_gradient_hessian_component (
+bspline_regularize_hessian_component (
     float out[3], 
     BSPLINE_Xform* bxf, 
     int p[3], 
@@ -125,7 +125,7 @@ bspline_gradient_hessian_component (
 }
 
 void
-bspline_gradient_hessian_component_b (
+bspline_regularize_hessian_component_b (
     float out[3], 
     BSPLINE_Xform* bxf, 
     int p[3], 
@@ -156,7 +156,7 @@ bspline_gradient_hessian_component_b (
 
 
 void
-bspline_gradient_hessian_update_grad (
+bspline_regularize_hessian_update_grad (
     Bspline_state *bst, 
     BSPLINE_Xform* bxf, 
     int p[3], 
@@ -203,7 +203,7 @@ bspline_gradient_hessian_update_grad (
 
 
 void
-bspline_gradient_hessian_update_grad_b (
+bspline_regularize_hessian_update_grad_b (
     Bspline_state *bst, 
     BSPLINE_Xform* bxf, 
     int p[3], 
@@ -235,7 +235,7 @@ bspline_gradient_hessian_update_grad_b (
 
 
 void
-bspline_gradient_score_from_prerendered (
+bspline_regularize_score_from_prerendered (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
     BSPLINE_Xform* bxf, 
@@ -311,7 +311,7 @@ bspline_gradient_score_from_prerendered (
 		rvec[0]=ri; rvec[1]=rj; rvec[2]=rk;
 
 		//			for(d=0;d<3;d++)
-		//				dux_dx[d] = bspline_gradient_1st_derivative(d, rvec, bxf->img_spacing, vf, fixed->dim);
+		//				dux_dx[d] = bspline_regularize_1st_derivative(d, rvec, bxf->img_spacing, vf, fixed->dim);
 
 		//			for(d=0;d<3;d++) grad_score += (dux_dx[d]*dux_dx[d]);
 		num_vox++;
@@ -320,7 +320,7 @@ bspline_gradient_score_from_prerendered (
 		    for(d1=0;d1<3;d1++)
 			for(d2=0;d2<3;d2++)
 			{
-			    du = bspline_gradient_2nd_derivative( k, d1, d2, rvec, bxf->img_spacing, vf, fixed->dim);
+			    du = bspline_regularize_2nd_derivative( k, d1, d2, rvec, bxf->img_spacing, vf, fixed->dim);
 			    grad_score += (du*du); 
 			}
 
@@ -331,7 +331,7 @@ bspline_gradient_score_from_prerendered (
 
 		//			for(k=0;k<3;k++)
 		//			for(d=0;d<3;d++)
-		//			dc_dv[k] += dux_dx[d] * bspline_gradient_2nd_derivative( k, d, d, rvec, bxf->img_spacing, vf, fixed->dim);
+		//			dc_dv[k] += dux_dx[d] * bspline_regularize_2nd_derivative( k, d, d, rvec, bxf->img_spacing, vf, fixed->dim);
 
 		//			for(d=0;d<3;d++)
 		//			dc_dv[d] *= (parms->young_modulus/nv);
@@ -365,20 +365,20 @@ update_score_and_grad (
     float dc_dv[3];
     double score = 0.0;
 
-    bspline_gradient_hessian_component_b (dxyz, bxf, p, qidx, qlut);
+    bspline_regularize_hessian_component_b (dxyz, bxf, p, qidx, qlut);
 
     for (d3=0; d3<3; d3++) {
 	score += weight * (dxyz[d3]*dxyz[d3]);
 	dc_dv[d3] = weight * grad_coeff * dxyz[d3];
     }
 
-    bspline_gradient_hessian_update_grad_b (bst, bxf, p, qidx, dc_dv, qlut);
+    bspline_regularize_hessian_update_grad_b (bst, bxf, p, qidx, dc_dv, qlut);
 
     return score;
 }
 
 void
-bspline_gradient_score (
+bspline_regularize_score (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
     BSPLINE_Xform* bxf, 
@@ -444,7 +444,7 @@ bspline_gradient_score (
 #else
 		for (d1=0;d1<3;d1++) {
 		    for (d2=d1;d2<3;d2++) { //six different components only
-			bspline_gradient_hessian_component (
+			bspline_regularize_hessian_component (
 			    dxyz, bxf, p, qidx, d1, d2);
 			//dxyz[i] = du_i/(dx_d1 dx_d2)
 			if (d1!=d2) weight = 2 ; else weight = 1;
@@ -454,7 +454,7 @@ bspline_gradient_score (
 			dc_dv[1] = weight * grad_coeff * dxyz[1];
 			dc_dv[2] = weight * grad_coeff * dxyz[2];
 
-			bspline_gradient_hessian_update_grad (
+			bspline_regularize_hessian_update_grad (
 			    bst, bxf, p, qidx, dc_dv, d1, d2);
 		    }
 		}

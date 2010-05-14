@@ -499,7 +499,7 @@ ENDIF (BROOK_FOUND)
 SET (GPUIT_LIBRARY_SRC
   bspline.c bspline.h
   bspline_rbf.c bspline_rbf.h
-  bspline_gradient.c bspline_gradient.h
+  bspline_regularize.c bspline_regularize.h
   bspline_landmarks.c bspline_landmarks.h
   bspline_macros.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h

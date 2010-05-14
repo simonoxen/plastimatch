@@ -38,7 +38,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_gradient.h"
+#include "bspline_regularize.h"
 #include "bspline_landmarks.h"
 #include "bspline_macros.h"
 #include "bspline_optimize.h"
@@ -3248,7 +3248,7 @@ bspline_score (BSPLINE_Parms *parms,
     /* Add vector field score/gradient to image score/gradient */
     if (parms->young_modulus) {
 	printf ("comuting regularization\n");
-	bspline_gradient_score (parms, bst, bxf, fixed, moving);
+	bspline_regularize_score (parms, bst, bxf, fixed, moving);
     }
 
     /* Add landmark score/gradient to image score/gradient */
