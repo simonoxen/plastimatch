@@ -13,6 +13,7 @@
 #include "itkImageSeriesWriter.h"
 #include "itk_dicom.h"
 #include "logfile.h"
+#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -239,7 +240,7 @@ make_anon_patient_id (void)
 }
 
 void
-itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name)
+itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name, Plm_image_patient_position patient_pos)
 {
     typedef itk::GDCMImageIO ImageIOType;
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
@@ -292,7 +293,10 @@ itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name)
     encapsulate (dict, "0010|0040", "O");
 
     /* PatientPosition */
-    encapsulate (dict, "0018|5100", "HFS");
+    if ( (patient_pos == PATIENT_POSITION_UNKNOWN) || (patient_pos == PATIENT_POSITION_HFS) )
+	encapsulate (dict, "0018|5100", "HFS");
+    else if (patient_pos == PATIENT_POSITION_HFP)
+	encapsulate (dict, "0018|5100", "HFP");
 
     /* StudyId */
     encapsulate (dict, "0020|0010", "10001");

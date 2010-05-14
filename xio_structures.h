@@ -6,11 +6,9 @@
 
 #include "plm_config.h"
 #include "cxt_io.h"
-#include "xio_io.h"
 
 plastimatch1_EXPORT void
-xio_structures_load (Cxt_structure_list *structures, char *input_dir, 
-		     float x_adj, float y_adj, Xio_patient_position pt_position);
+xio_structures_load (Cxt_structure_list *structures, char *input_dir);
 plastimatch1_EXPORT 
 void
 xio_structures_save (
@@ -18,5 +16,7 @@ xio_structures_save (
     Xio_version xio_version, 
     char *output_dir
 );
+plastimatch1_EXPORT void
+xio_structures_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir);
 
 #endif

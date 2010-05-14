@@ -6,7 +6,8 @@
 
 #include "plm_config.h"
 #include "itk_image.h"
-#include "plm_image.h"
+#include "plm_image_type.h"
+#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "volume.h"
 
@@ -19,6 +20,7 @@ public:
 
     Plm_image_type m_original_type;
     Plm_image_type m_type;
+    Plm_image_patient_position m_patient_pos;
 
     /* The actual image is one of the following. */
     UCharImageType::Pointer m_itk_uchar;
@@ -67,6 +69,7 @@ public:
 	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
+	m_patient_pos = PATIENT_POSITION_UNKNOWN;
     }
     void free () {
 	switch (m_type) {
@@ -81,6 +84,7 @@ public:
 	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
 	m_gpuit = 0;
+	m_patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 
     /* Loading */

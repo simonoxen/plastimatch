@@ -334,15 +334,6 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     if (dicom_dir[0] != '\0') {
 	gs.load (dicom_dir);
 	gs.get_best_ct ();
-	if (gs.m_have_ct) {
-	    int d;
-	    structures->have_geometry = 1;
-	    for (d = 0; d < 3; d++) {
-		structures->offset[d] = gs.m_origin[d];
-		structures->dim[d] = gs.m_dim[d];
-		structures->spacing[d] = gs.m_spacing[d];
-	    }
-	}
     }
 
 

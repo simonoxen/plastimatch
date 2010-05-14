@@ -8,6 +8,7 @@
 #include "getopt.h"
 #include "itk_image.h"
 #include "plm_image.h"
+#include "plm_image_patient_position.h"
 #include "plm_path.h"
 
 static void
@@ -63,7 +64,7 @@ add_main (int argc, char *argv[])
     {
 	std::cout << "output dicom to " << outFile << std::endl;
 	// Dicom
-	itk_image_save_short_dicom (tmp, outFile);
+	itk_image_save_short_dicom (tmp, outFile, UNKNOWN);
     }
     else
     {

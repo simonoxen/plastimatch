@@ -14,10 +14,18 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
+#include "gdcmFile.h"
+#include "gdcmFileHelper.h"
+#include "gdcmGlobal.h"
+#include "gdcmSeqEntry.h"
+#include "gdcmSQItem.h"
+#include "gdcmUtil.h"
 
 #include "cxt.h"
+#include "gdcm_series.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
+#include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "xio_ct.h"
 #include "xio_io.h"
@@ -200,26 +208,6 @@ xio_ct_create_volume (
     printf ("Image dim: %d %d %d\n", v->dim[0], v->dim[1], v->dim[2]);
 }
 
-/* The x_adj, and y_adj are currently done manually, until I get experience 
-   to do automatically.  Here is how I think it is done:
-   
-   1) Open any of the .CT files
-   2) Look for the lines like this:
-
-        0
-        230.000,230.000
-        512,512,16
-
-   3) The (230,230) values are the location of the isocenter within the 
-      slice relative to the upper left pixel.  
-   4) The cxt file will normally get assigned an OFFSET field based 
-      on the ImagePatientPosition from the dicom set, such as:
-
-        OFFSET -231.6 -230 -184.5
-
-   5) So, in the above example, we should set --x-adj=-1.6, to translate 
-      the structures from XiO coordinates to Dicom.
-*/
 void
 xio_ct_load (Plm_image *pli, char *input_dir)
 {
@@ -296,4 +284,51 @@ xio_ct_load (Plm_image *pli, char *input_dir)
 	++i;
 	++it;
     }
+}
+
+void
+xio_ct_apply_dicom_dir (Plm_image *pli, char *dicom_dir)
+{
+    /* Apply geometry and anatomical orientation from DICOM to XiO CT volume */
+
+    Gdcm_series gs;
+    std::string tmp;
+    Plm_image_patient_position patient_pos = PATIENT_POSITION_UNKNOWN;
+
+    Volume *v;
+    v = (Volume*) pli->m_gpuit;
+
+    if (!dicom_dir) {
+	return;
+    }
+
+    gs.load (dicom_dir);
+    gs.get_best_ct ();
+    if (!gs.m_have_ct) {
+	return;
+    }
+    gdcm::File* file = gs.get_ct_slice ();
+
+    /* Set new geometry */
+    int d;
+    for (d = 0; d < 3; d++) {
+	v->offset[d] = gs.m_origin[d];
+	v->dim[d] = gs.m_dim[d];
+	v->pix_spacing[d] = gs.m_spacing[d];
+    }
+
+    /* Set patient position */
+    tmp = file->GetEntryValue (0x0018, 0x5100);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	patient_pos = plm_image_patient_position_parse (tmp.c_str());
+    }
+
+    pli->m_patient_pos = patient_pos;
+
+    /* Set direction cosines */
+    if (patient_pos == PATIENT_POSITION_HFP) {
+	v->direction_cosines[0] = -1.0f;
+	v->direction_cosines[4] = -1.0f;
+    }
+
 }

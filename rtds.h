@@ -47,7 +47,7 @@ public:
 	}
     }
     void load_dicom_dir (char *dicom_dir);
-    void load_xio (char *xio_dir);
+    void load_xio (char *xio_dir, char *dicom_dir);
     plastimatch1_EXPORT
     void load_ss_img (char *ss_img, char *ss_list);
     void save_dicom (char *dicom_dir);

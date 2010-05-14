@@ -10,5 +10,8 @@
 plastimatch1_EXPORT 
 void
 xio_ct_load (Plm_image *plm, char *input_dir);
+plastimatch1_EXPORT 
+void
+xio_ct_apply_dicom_dir (Plm_image *plm, char *dicom_dir);
 
 #endif

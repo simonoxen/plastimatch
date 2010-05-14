@@ -84,7 +84,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->load_dicom_dir (parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
-	    rtds->load_xio (parms->input_fn);
+	    rtds->load_xio (parms->input_fn, parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
@@ -282,7 +282,10 @@ save_ss_output (Rtds *rtds,  Xform *xf,
 
     if (parms->output_dicom[0]) {
 	cxt_adjust_structure_names (rtds->m_cxt);
-	gdcm_rtss_save (rtds->m_cxt, parms->output_dicom, parms->dicom_dir);
+
+	char fn[_MAX_PATH];
+	snprintf (fn, _MAX_PATH, "%s/%s", parms->output_dicom, "ss.dcm");
+	gdcm_rtss_save (rtds->m_cxt, fn, parms->dicom_dir);
     }
 }
 

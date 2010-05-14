@@ -632,6 +632,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
  	plm_file_format.cxx plm_file_format.h 
 	plm_image.cxx plm_image.h 
 	plm_image_header.cxx plm_image_header.h 
+	plm_image_patient_position.cxx plm_image_patient_position.h 
 	plm_image_type.cxx plm_image_type.h 
 	plm_int.h
 	plm_parms.cxx 

@@ -14,14 +14,30 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
+#include "gdcmFile.h"
+#include "gdcmFileHelper.h"
+#include "gdcmGlobal.h"
+#include "gdcmSeqEntry.h"
+#include "gdcmSQItem.h"
+#include "gdcmUtil.h"
 
 #include "cxt.h"
-#include "file_util.h"
+#include "gdcm_series.h"
 #include "math_util.h"
+#include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
 #include "xio_io.h"
 #include "xio_structures.h"
+
+/* Gdcm has a broken header file gdcmCommon.h, which defines C99 types 
+   (e.g. int32_t) when missing on MSVC.  However, it does so in an incorrect 
+   way that conflicts with plm_int.h (which also fixes missing C99 types).  
+   The workaround is to separately define the functions in file_util.h 
+   that we need. */
+extern "C"
+gpuit_EXPORT
+void make_directory_recursive (const char *dirname);
 
 
 /* This is a comment */
@@ -109,7 +125,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 
 static void
 add_cms_structure (Cxt_structure_list *structures, const char *filename, 
-		   float z_loc, float x_adj, float y_adj, Xio_patient_position pt_position)
+		   float z_loc)
 {
     FILE *fp;
     char buf[1024];
@@ -199,13 +215,9 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 		    print_and_exit ("Error parsing file %s (points) %s\n", 
 				    filename, &buf[line_loc]);
 		}
-		if (pt_position == UNKNOWN || pt_position == HFS) {
-		    curr_polyline->x[point_idx] = x + x_adj;
-		    curr_polyline->y[point_idx] = - y + y_adj;
-		} else if (pt_position == HFP) {
-		    curr_polyline->x[point_idx] = - x - x_adj;
-		    curr_polyline->y[point_idx] = y - y_adj;
-		}
+
+		curr_polyline->x[point_idx] = x;
+		curr_polyline->y[point_idx] = -y;
 		curr_polyline->z[point_idx] = z_loc;
 		point_idx ++;
 		line_loc += this_loc;
@@ -217,38 +229,10 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
     fclose (fp);
 }
 
-/* The x_adj, and y_adj are currently done manually, until I get experience 
-   to do automatically.  Here is how I think it is done:
-   
-   1) Open any of the .CT files
-   2) Look for the lines like this:
-
-        0
-        230.000,230.000
-        512,512,16
-
-   3) The (230,230) values are the location of the isocenter within the 
-      slice relative to the upper left pixel.  
-   4) The cxt file will normally get assigned an OFFSET field based 
-      on the ImagePatientPosition from the dicom set, such as:
-
-        OFFSET -231.6 -230 -184.5
-
-   5) So, in the above example, we should set --x-adj=-1.6, to translate 
-      the structures from XiO coordinates to Dicom.
-
-   -----
-
-   The patient position is currently also set manually.
-   This determines the transformation from the XiO X,Y,Z axis to DICOM LPI.
-*/
 void
 xio_structures_load (
     Cxt_structure_list *structures, 
-    char *input_dir, 
-    float x_adj,
-    float y_adj,
-    Xio_patient_position pt_position
+    char *input_dir
 )
 {
     
@@ -280,7 +264,7 @@ xio_structures_load (
 	const char *filename = (*it).first.c_str();
 	float z_loc = atof ((*it).second.c_str());
 	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (structures, filename, z_loc, x_adj, y_adj, pt_position);
+	add_cms_structure (structures, filename, z_loc);
 	++it;
     }
 
@@ -410,4 +394,76 @@ xio_structures_save (
 	fprintf (fp, "0\n0\n0\nBart\n");
 	fclose (fp);
     }
+}
+
+void
+xio_structures_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
+{
+    /* Transform from XiO coordinates to DICOM LPS */
+
+    int i, j, k;
+    Gdcm_series gs;
+    std::string tmp;
+    Plm_image_patient_position patient_pos = PATIENT_POSITION_UNKNOWN;
+    float x_original_offset, y_original_offset;
+
+    if (!dicom_dir) {
+	return;
+    }
+
+    gs.load (dicom_dir);
+    gs.get_best_ct ();
+    if (!gs.m_have_ct) {
+	return;
+    }
+    gdcm::File* file = gs.get_ct_slice ();
+
+    /* Get original geometry */
+    if (structures->have_geometry == 1) {
+	x_original_offset = structures->offset[0];
+	y_original_offset = structures->offset[1];
+    } else {
+	x_original_offset = gs.m_origin[0];
+	y_original_offset = gs.m_origin[1];
+    }
+
+    /* Set new geometry */
+    int d;
+    structures->have_geometry = 1;
+    for (d = 0; d < 3; d++) {
+	structures->offset[d] = gs.m_origin[d];
+	structures->dim[d] = gs.m_dim[d];
+	structures->spacing[d] = gs.m_spacing[d];
+    }
+
+    /* Patient position */
+    tmp = file->GetEntryValue (0x0018, 0x5100);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	patient_pos = plm_image_patient_position_parse (tmp.c_str());
+    }
+
+    /* Transform coordinates */
+    for (i = 0; i < structures->num_structures; i++) {
+	Cxt_structure *curr_structure = &structures->slist[i];
+	for (j = 0; j < curr_structure->num_contours; j++) {
+	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    for (k = 0; k < curr_polyline->num_vertices; k++) {
+
+		if ( (patient_pos == PATIENT_POSITION_UNKNOWN)
+		   || (patient_pos == PATIENT_POSITION_HFS) ) {
+		   curr_polyline->x[k] = curr_polyline->x[k] +
+			(structures->offset[0] - x_original_offset);
+		   curr_polyline->y[k] = curr_polyline->y[k] +
+			(structures->offset[1] - y_original_offset);
+		} else if (patient_pos == PATIENT_POSITION_HFP) {
+		   curr_polyline->x[k] = - curr_polyline->x[k] +
+			(structures->offset[0] + x_original_offset);
+		   curr_polyline->y[k] = - curr_polyline->y[k] +
+			(structures->offset[1] + y_original_offset);
+		}
+
+	    }
+	}
+    }
+
 }

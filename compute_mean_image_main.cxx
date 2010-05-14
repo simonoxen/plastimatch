@@ -38,6 +38,7 @@
 #include "itk_dicom.h"
 #include "getopt.h"
 #include "file_util.h"
+#include "plm_image_patient_position.h"
 
 /* local functions used in itk_image.cxx -- 
   package to a separate plm_utils.h and plm_utils.cxx might be a better
@@ -132,7 +133,7 @@ void compute_average(char **imageList, int nImages, char *outFile)
 	{
 	    std::cout << "output dicom to " << outFile << std::endl;
 	    // Dicom
-	    itk_image_save_short_dicom (tmp, outFile);
+	    itk_image_save_short_dicom (tmp, outFile, PATIENT_POSITION_UNKNOWN);
 	}
     else
 	{
