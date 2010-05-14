@@ -356,9 +356,12 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
        required the TransferSyntaxUID tag, and commenting out 
        gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_rtss.cxx 
        will cause failure to read in. */
-
+    /* GCS FIX: The above might be true for DVTK, but dcmdump doesn't 
+       like it.  There must be a better way to set TransferSyntaxUID */
+#if defined (commentout)
     /* TransferSyntaxUID */
     gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
+#endif
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
     /* InstanceCreationTime */

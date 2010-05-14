@@ -246,7 +246,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->input_fn[0] && !parms->input_ss_img[0]) {
+    if (!parms->input_fn[0] && !parms->input_ss_img[0] 
+	&& !parms->input_dose_img[0])
+    {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);
     }

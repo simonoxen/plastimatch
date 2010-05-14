@@ -219,7 +219,7 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
-    printf ("Hello from gdcm_dose_save\n");
+    printf ("Hello from gdcm_dose_save: fn = %s\n", dose_fn);
 
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
@@ -235,14 +235,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
-    /* From Chang-Yu Wang: 
-       Some dicom validation toolkit (such as DVTK dicom editor)
-       required the TransferSyntaxUID tag, and commenting out 
-       gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_dose.cxx 
-       will cause failure to read in. */
-
-    /* TransferSyntaxUID */
-    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
     /* InstanceCreationTime */
