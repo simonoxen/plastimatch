@@ -50,6 +50,9 @@ vtkPlastimatchLoadableGUI::vtkPlastimatchLoadableGUI()
     this->MovingVolumeSelector = vtkSlicerNodeSelectorWidget::New();
     this->OutVolumeSelector = vtkSlicerNodeSelectorWidget::New();
     this->GADNodeSelector = vtkSlicerNodeSelectorWidget::New();
+#if defined (commentout)
+    this->CostFunctionButtonSet = vtkKWRadioButtonSetWithLabel::New();
+#endif
     this->ApplyButton = vtkKWPushButton::New();
 
     this->Logic = NULL;
@@ -95,6 +98,13 @@ vtkPlastimatchLoadableGUI::~vtkPlastimatchLoadableGUI()
         this->GADNodeSelector->Delete();
         this->GADNodeSelector = NULL;
     }
+#if defined (commentout)
+    if (this->CostFunctionButtonSet) {
+        this->CostFunctionButtonSet->SetParent(NULL);
+        this->CostFunctionButtonSet->Delete();
+        this->CostFunctionButtonSet = NULL;
+    }
+#endif
     if ( this->ApplyButton ) {
         this->ApplyButton->SetParent(NULL);
         this->ApplyButton->Delete();
@@ -122,7 +132,9 @@ void vtkPlastimatchLoadableGUI::AddGUIObservers ( )
     this->TimeStepScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
 
     this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueStartChangingEvent, (vtkCommand *)this->GUICallbackCommand );
-    this->NumberOfIterationsScale->AddObserver (vtkKWScale::ScaleValueChangedEvent, (vtkCommand *)this->GUICallbackCommand );
+    this->NumberOfIterationsScale->AddObserver (
+	vtkKWScale::ScaleValueChangedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
 
     this->FixedVolumeSelector->AddObserver (
 	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
@@ -132,14 +144,20 @@ void vtkPlastimatchLoadableGUI::AddGUIObservers ( )
 	(vtkCommand *)this->GUICallbackCommand);
     this->OutVolumeSelector->AddObserver (
 	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
-	(vtkCommand *)this->GUICallbackCommand );
+	(vtkCommand *)this->GUICallbackCommand);
+    this->GADNodeSelector->AddObserver (
+	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
+#if defined (commentout)
+    /* Name of event??? */
+    this->CostFunctionButtonSet->AddObserver (
+	vtkKWRadioButtonSetWithLabel::NodeSelectedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
+#endif
 
-    this->GADNodeSelector->AddObserver (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
-
-    this->ApplyButton->AddObserver (vtkKWPushButton::InvokedEvent, (vtkCommand *)this->GUICallbackCommand );
-
+    this->ApplyButton->AddObserver (vtkKWPushButton::InvokedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
 }
-
 
 
 //---------------------------------------------------------------------------
@@ -164,10 +182,20 @@ void vtkPlastimatchLoadableGUI::RemoveGUIObservers ( )
 	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
 	(vtkCommand *)this->GUICallbackCommand);
 
-    this->GADNodeSelector->RemoveObservers (vtkSlicerNodeSelectorWidget::NodeSelectedEvent, (vtkCommand *)this->GUICallbackCommand );  
+    this->GADNodeSelector->RemoveObservers (
+	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
 
-    this->ApplyButton->RemoveObservers ( vtkKWPushButton::InvokedEvent,  (vtkCommand *)this->GUICallbackCommand );
+#if defined (commentout)
+    /* Name of event??? */
+    this->CostFunctionButtonSet->RemoveObservers (
+	vtkKWRadioButtonSetWithLabel::NodeSelectedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
+#endif
 
+    this->ApplyButton->RemoveObservers (
+	vtkKWPushButton::InvokedEvent, 
+	(vtkCommand *)this->GUICallbackCommand);
 }
 
 
@@ -203,13 +231,13 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
     else if (selector == this->OutVolumeSelector 
 	&& event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent 
 	&& this->OutVolumeSelector->GetSelected() != NULL)
-    { 
+    {
 	this->UpdateMRML();
     }
     else if (selector == this->FixedVolumeSelector 
 	&& event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent 
 	&& this->FixedVolumeSelector->GetSelected() != NULL)
-    { 
+    {
 	this->UpdateMRML();
     }
     else if (selector == this->MovingVolumeSelector 
@@ -221,7 +249,7 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
     else if (selector == this->GADNodeSelector 
 	&& event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent 
 	&& this->GADNodeSelector->GetSelected() != NULL)
-    { 
+    {
 	vtkMRMLPlastimatchLoadableNode* n 
 	    = vtkMRMLPlastimatchLoadableNode::SafeDownCast(
 		this->GADNodeSelector->GetSelected());
@@ -229,6 +257,14 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
 	vtkSetAndObserveMRMLNodeMacro( this->PlastimatchLoadableNode, n);
 	this->UpdateGUI();
     }
+#if defined (commentout)
+    /* Name of event??? */
+    else if (selector == this->CostFunctionButtonSet
+	&& event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent 
+	&& this->GADNodeSelector->GetSelected() != NULL)
+    {
+    }
+#endif
     else if (b == this->ApplyButton 
 	&& event == vtkKWPushButton::InvokedEvent)
     {
@@ -236,6 +272,7 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
 	this->Logic->Apply();
     }
 }
+
 
 //---------------------------------------------------------------------------
 void vtkPlastimatchLoadableGUI::UpdateMRML ()
@@ -282,15 +319,12 @@ void vtkPlastimatchLoadableGUI::UpdateMRML ()
 //---------------------------------------------------------------------------
 void vtkPlastimatchLoadableGUI::UpdateGUI ()
 {
-  vtkMRMLPlastimatchLoadableNode* n = this->GetPlastimatchLoadableNode();
-  if (n != NULL)
-    {
-    // set GUI widgest from parameter node
-    this->ConductanceScale->SetValue(n->GetConductance());
-    
-    this->TimeStepScale->SetValue(n->GetTimeStep());
-    
-    this->NumberOfIterationsScale->SetValue(n->GetNumberOfIterations());
+    vtkMRMLPlastimatchLoadableNode* n = this->GetPlastimatchLoadableNode();
+    if (n != NULL) {
+	// set GUI widgest from parameter node
+	this->ConductanceScale->SetValue(n->GetConductance());
+	this->TimeStepScale->SetValue(n->GetTimeStep());
+	this->NumberOfIterationsScale->SetValue(n->GetNumberOfIterations());
     }
 }
 
@@ -301,7 +335,8 @@ void vtkPlastimatchLoadableGUI::ProcessMRMLEvents (
     void *callData
 )
 {
-    // if parameter node has been changed externally, update GUI widgets with new values
+    // if parameter node has been changed externally, update GUI widgets 
+    // with new values
     vtkMRMLPlastimatchLoadableNode* node 
 	= vtkMRMLPlastimatchLoadableNode::SafeDownCast(caller);
     if (node != NULL && this->GetPlastimatchLoadableNode() == node)
@@ -314,10 +349,11 @@ void vtkPlastimatchLoadableGUI::ProcessMRMLEvents (
 //---------------------------------------------------------------------------
 void vtkPlastimatchLoadableGUI::BuildGUI ( ) 
 {
-    vtkSlicerApplication *app = (vtkSlicerApplication *)this->GetApplication();
+    vtkSlicerApplication *app 
+	= (vtkSlicerApplication *) this->GetApplication();
     vtkMRMLPlastimatchLoadableNode* gadNode 
 	= vtkMRMLPlastimatchLoadableNode::New();
-    this->Logic->GetMRMLScene()->RegisterNodeClass(gadNode);
+    this->Logic->GetMRMLScene()->RegisterNodeClass (gadNode);
     gadNode->Delete();
 
     this->UIPanel->AddPage ("PlastimatchLoadable", 
@@ -430,6 +466,22 @@ void vtkPlastimatchLoadableGUI::BuildGUI ( )
     app->Script("pack %s -side top -anchor e -padx 20 -pady 4", 
 	this->OutVolumeSelector->GetWidgetName());
 
+#if defined (commentout)
+    this->CostFunctionButtonSet->SetParent (controlFrame->GetFrame());
+    this->CostFunctionButtonSet->Create();
+    this->CostFunctionButtonSet->SetLabelWidth(8);
+    this->CostFunctionButtonSet->SetLabelText("CRC: ");
+    this->CostFunctionButtonSet->GetWidget()->PackHorizontallyOn();
+    vtkKWRadioButton* bt0 
+	= this->CostFunctionButtonSet->GetWidget()->AddWidget(0);
+    vtkKWRadioButton* bt1 
+	= this->CostFunctionButtonSet->GetWidget()->AddWidget(1);
+    bt0->SetText("Check");
+    bt1->SetText("Ignore");
+    bt0->SelectedStateOn();
+    this->Script("pack %s -side left -anchor w -fill x -padx 2 -pady 2", 
+	this->CostFunctionButtonSet->GetWidgetName());
+#endif
 
     this->ApplyButton->SetParent( moduleFrame->GetFrame() );
     this->ApplyButton->Create();
