@@ -88,10 +88,12 @@ class VTK_EXAMPLELOADABLEMODULE_EXPORT vtkPlastimatchLoadableGUI
     vtkKWScaleWithEntry* ConductanceScale;
     vtkKWScaleWithEntry* TimeStepScale;
     vtkKWScaleWithEntry* NumberOfIterationsScale;
-    vtkSlicerNodeSelectorWidget* VolumeSelector;
     vtkSlicerNodeSelectorWidget* OutVolumeSelector;
     vtkSlicerNodeSelectorWidget* GADNodeSelector;
     vtkKWPushButton* ApplyButton;
+
+    vtkSlicerNodeSelectorWidget* FixedVolumeSelector;
+    vtkSlicerNodeSelectorWidget* MovingVolumeSelector;
   
     vtkPlastimatchLoadableLogic *Logic;
     vtkMRMLPlastimatchLoadableNode* PlastimatchLoadableNode;

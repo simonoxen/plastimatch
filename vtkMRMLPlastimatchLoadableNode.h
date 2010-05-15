@@ -26,77 +26,82 @@
 
 class vtkImageData;
 
-class VTK_EXAMPLELOADABLEMODULE_EXPORT vtkMRMLPlastimatchLoadableNode : public vtkMRMLNode
+class VTK_EXAMPLELOADABLEMODULE_EXPORT vtkMRMLPlastimatchLoadableNode 
+    : public vtkMRMLNode
 {
-  public:
-  static vtkMRMLPlastimatchLoadableNode *New();
-  vtkTypeMacro(vtkMRMLPlastimatchLoadableNode,vtkMRMLNode);
-  void PrintSelf(ostream& os, vtkIndent indent);
+ public:
+    static vtkMRMLPlastimatchLoadableNode *New();
+    vtkTypeMacro(vtkMRMLPlastimatchLoadableNode,vtkMRMLNode);
+    void PrintSelf(ostream& os, vtkIndent indent);
 
-  // Description:
-  // Create instance of a GAD node.
-  virtual vtkMRMLNode* CreateNodeInstance();
+    // Description:
+    // Create instance of a GAD node.
+    virtual vtkMRMLNode* CreateNodeInstance();
 
-  // Description:
-  // Set node attributes from name/value pairs
-  virtual void ReadXMLAttributes( const char** atts);
+    // Description:
+    // Set node attributes from name/value pairs
+    virtual void ReadXMLAttributes( const char** atts);
 
-  // Description:
-  // Write this node's information to a MRML file in XML format.
-  virtual void WriteXML(ostream& of, int indent);
+    // Description:
+    // Write this node's information to a MRML file in XML format.
+    virtual void WriteXML(ostream& of, int indent);
 
-  // Description:
-  // Copy the node's attributes to this object
-  virtual void Copy(vtkMRMLNode *node);
+    // Description:
+    // Copy the node's attributes to this object
+    virtual void Copy(vtkMRMLNode *node);
 
-  // Description:
-  // Get unique node XML tag name (like Volume, Model)
-  virtual const char* GetNodeTagName() {return "GADParameters";};
+    // Description:
+    // Get unique node XML tag name (like Volume, Model)
+    virtual const char* GetNodeTagName() {return "GADParameters";};
 
-  // Description:
-  // Get/Set Number of iterations (module parameter)
-  vtkGetMacro(NumberOfIterations, int);
-  vtkSetMacro(NumberOfIterations, int);
+    // Description:
+    // Get/Set Number of iterations (module parameter)
+    vtkGetMacro(NumberOfIterations, int);
+    vtkSetMacro(NumberOfIterations, int);
 
-  // Description:
-  // Get/Set Conductance (module parameter)
-  vtkGetMacro(Conductance, double);
-  vtkSetMacro(Conductance, double);
+    // Description:
+    // Get/Set Conductance (module parameter)
+    vtkGetMacro(Conductance, double);
+    vtkSetMacro(Conductance, double);
 
-  // Description:
-  // Get/Set time step (module parameter)
-  vtkGetMacro(TimeStep, double);
-  vtkSetMacro(TimeStep, double);
+    // Description:
+    // Get/Set time step (module parameter)
+    vtkGetMacro(TimeStep, double);
+    vtkSetMacro(TimeStep, double);
  
-  // Description:
-  // Get/Set input volume MRML Id
-  vtkGetStringMacro(InputVolumeRef);
-  vtkSetStringMacro(InputVolumeRef);
+    // Description:
+    // Get/Set fixed volume MRML Id
+    vtkGetStringMacro(FixedVolumeRef);
+    vtkSetStringMacro(FixedVolumeRef);
   
-  // Description:
-  // Get/Set output volume MRML Id
-  vtkGetStringMacro(OutputVolumeRef);
-  vtkSetStringMacro(OutputVolumeRef);
+    // Description:
+    // Get/Set moving volume MRML Id
+    vtkGetStringMacro(MovingVolumeRef);
+    vtkSetStringMacro(MovingVolumeRef);
+  
+    // Description:
+    // Get/Set output volume MRML Id
+    vtkGetStringMacro(OutputVolumeRef);
+    vtkSetStringMacro(OutputVolumeRef);
 
-  // Description:
-  // Update the stored reference to another node in the scene
-  virtual void UpdateReferenceID(const char *oldID, const char *newID);
+    // Description:
+    // Update the stored reference to another node in the scene
+    virtual void UpdateReferenceID(const char *oldID, const char *newID);
 
  
-protected:
-  vtkMRMLPlastimatchLoadableNode();
-  ~vtkMRMLPlastimatchLoadableNode();
-  vtkMRMLPlastimatchLoadableNode(const vtkMRMLPlastimatchLoadableNode&);
-  void operator=(const vtkMRMLPlastimatchLoadableNode&);
+ protected:
+    vtkMRMLPlastimatchLoadableNode();
+    ~vtkMRMLPlastimatchLoadableNode();
+    vtkMRMLPlastimatchLoadableNode(const vtkMRMLPlastimatchLoadableNode&);
+    void operator=(const vtkMRMLPlastimatchLoadableNode&);
 
-  double Conductance;
-  double TimeStep;
-  int NumberOfIterations;
-  
-  char* InputVolumeRef;
-  char* OutputVolumeRef;
+    double Conductance;
+    double TimeStep;
+    int NumberOfIterations;
 
+    char* OutputVolumeRef;
+    char* FixedVolumeRef;
+    char* MovingVolumeRef;
 };
 
 #endif
-

@@ -642,6 +642,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	plm_image_type.cxx plm_image_type.h 
 	plm_int.h
 	plm_parms.cxx 
+	plm_register_loadable.cxx plm_register_loadable.h 
 	plm_registration.h 
 	plm_stages.cxx plm_stages.h 
 	plm_version.h 
@@ -1144,11 +1145,12 @@ IF (Slicer3_DIR)
     vtk_wrap_tcl3 (PlastimatchLoadable
       PlastimatchLoadable_TCL_SRCS 
       "${PlastimatchLoadable_SRCS}" "")
+    #MESSAGE (STATUS "TCL SOURCES: ${PlastimatchLoadable_TCL_SRCS}")
 
     GENERATELM (PlastimatchLoadable_SRCS PlastimatchLoadable.xml)
 
     PLM_ADD_SLICER_MODULE (PlastimatchLoadable
-      "${PlastimatchLoadable_SRCS}" 
+      "${PlastimatchLoadable_SRCS};${PlastimatchLoadable_TCL_SRCS}" 
       "${PLASTIMATCH_LIBS}")
 
     IF (COMMENTOUT)

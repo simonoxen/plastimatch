@@ -11,111 +11,132 @@ Date:      $Date: 2006/03/17 15:10:10 $
 Version:   $Revision: 1.2 $
 
 =========================================================================auto=*/
-
 #include <string>
 #include <iostream>
 #include <sstream>
-
 #include "vtkObjectFactory.h"
-
 #include "vtkPlastimatchLoadableLogic.h"
 #include "vtkITKGradientAnisotropicDiffusionImageFilter.h"
 #include "vtkPlastimatchLoadable.h"
-
 #include "vtkMRMLScene.h"
 #include "vtkMRMLScalarVolumeNode.h"
+#include "plm_register_loadable.h"
 
 vtkPlastimatchLoadableLogic* vtkPlastimatchLoadableLogic::New()
 {
-  // First try to create the object from the vtkObjectFactory
-  vtkObject* ret = vtkObjectFactory::CreateInstance("vtkPlastimatchLoadableLogic");
-  if(ret)
-    {
-      return (vtkPlastimatchLoadableLogic*)ret;
+    // First try to create the object from the vtkObjectFactory
+    vtkObject* ret = vtkObjectFactory::CreateInstance (
+	"vtkPlastimatchLoadableLogic");
+    if (ret) {
+	return (vtkPlastimatchLoadableLogic*)ret;
     }
-  // If the factory was unable to create the object, then create it here.
-  return new vtkPlastimatchLoadableLogic;
+    // If the factory was unable to create the object, then create it here.
+    return new vtkPlastimatchLoadableLogic;
 }
 
 
 //----------------------------------------------------------------------------
 vtkPlastimatchLoadableLogic::vtkPlastimatchLoadableLogic()
 {
-  this->PlastimatchLoadableNode = NULL;
+    this->PlastimatchLoadableNode = NULL;
 }
 
 //----------------------------------------------------------------------------
 vtkPlastimatchLoadableLogic::~vtkPlastimatchLoadableLogic()
 {
-  vtkSetMRMLNodeMacro(this->PlastimatchLoadableNode, NULL);
+    vtkSetMRMLNodeMacro(this->PlastimatchLoadableNode, NULL);
 }
 
 //----------------------------------------------------------------------------
 void vtkPlastimatchLoadableLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
-  
 }
 
 void vtkPlastimatchLoadableLogic::Apply()
 {
-
-  // check if MRML node is present 
-  if (this->PlastimatchLoadableNode == NULL)
+    // check if MRML node is present 
+    if (this->PlastimatchLoadableNode == NULL)
     {
-    vtkErrorMacro("No input PlastimatchLoadableNode found");
-    return;
+	vtkErrorMacro("No input PlastimatchLoadableNode found");
+	return;
     }
   
-  // find input volume
-    vtkMRMLScalarVolumeNode *inVolume = vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->PlastimatchLoadableNode->GetInputVolumeRef()));
-  if (inVolume == NULL)
+    // find fixed volume
+    vtkMRMLScalarVolumeNode *fixed_volume 
+	= vtkMRMLScalarVolumeNode::SafeDownCast (
+	    this->GetMRMLScene()->GetNodeByID (
+		this->PlastimatchLoadableNode->GetFixedVolumeRef()));
+    if (fixed_volume == NULL)
     {
-    vtkErrorMacro("No input volume found");
-    return;
+	vtkErrorMacro("No fixed volume found");
+	return;
     }
   
-  // find output volume
-  vtkMRMLScalarVolumeNode *outVolume =  vtkMRMLScalarVolumeNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->PlastimatchLoadableNode->GetOutputVolumeRef()));
-  if (outVolume == NULL)
+    // find moving volume
+    vtkMRMLScalarVolumeNode *moving_volume 
+	= vtkMRMLScalarVolumeNode::SafeDownCast (
+	    this->GetMRMLScene()->GetNodeByID (
+		this->PlastimatchLoadableNode->GetMovingVolumeRef()));
+    if (moving_volume == NULL)
     {
-    vtkErrorMacro("No output volume found with id= " << this->PlastimatchLoadableNode->GetOutputVolumeRef());
-    return;
+	vtkErrorMacro("No moving volume found");
+	return;
+    }
+  
+    // find output volume
+    vtkMRMLScalarVolumeNode *outVolume 
+	=  vtkMRMLScalarVolumeNode::SafeDownCast (
+	    this->GetMRMLScene()->GetNodeByID (
+		this->PlastimatchLoadableNode->GetOutputVolumeRef()));
+    if (outVolume == NULL)
+    {
+	vtkErrorMacro("No output volume found with id= " 
+	    << this->PlastimatchLoadableNode->GetOutputVolumeRef());
+	return;
     }
 
-  // copy RASToIJK matrix, and other attributes from input to output
-  std::string name (outVolume->GetName());
-  std::string id (outVolume->GetID());
+    // copy RASToIJK matrix, and other attributes from input to output
+    std::string name (outVolume->GetName());
+    std::string id (outVolume->GetID());
 
-  outVolume->CopyOrientation(inVolume);
-  outVolume->SetAndObserveTransformNodeID(inVolume->GetTransformNodeID());
+#if defined (commentout)
+    plm_register_loadable (fixed_volume->GetImageData(),
+	moving_volume->GetImageData());
+#endif
+    plm_register_loadable ();
 
-  outVolume->SetName(name.c_str());
-  //outVolume->SetID(id.c_str());
+    outVolume->CopyOrientation (fixed_volume);
+    outVolume->SetAndObserveTransformNodeID (
+	fixed_volume->GetTransformNodeID());
+    outVolume->SetName(name.c_str());
+    //outVolume->SetID(id.c_str());
 
-  // create filter
-  //vtkITKGradientAnisotropicDiffusionImageFilter* filter = vtkITKGradientAnisotropicDiffusionImageFilter::New();
-  this->GradientAnisotropicDiffusionImageFilter = vtkITKGradientAnisotropicDiffusionImageFilter::New();
+#if defined (commentout)
+    // create filter
+    //vtkITKGradientAnisotropicDiffusionImageFilter* filter = vtkITKGradientAnisotropicDiffusionImageFilter::New();
+    this->GradientAnisotropicDiffusionImageFilter = vtkITKGradientAnisotropicDiffusionImageFilter::New();
 
-  // set filter input and parameters
-  this->GradientAnisotropicDiffusionImageFilter->SetInput(inVolume->GetImageData());
+    // set filter input and parameters
+    this->GradientAnisotropicDiffusionImageFilter->SetInput(inVolume->GetImageData());
 
-  this->GradientAnisotropicDiffusionImageFilter->SetConductanceParameter(this->PlastimatchLoadableNode->GetConductance());
-  this->GradientAnisotropicDiffusionImageFilter->SetNumberOfIterations(this->PlastimatchLoadableNode->GetNumberOfIterations());
-  this->GradientAnisotropicDiffusionImageFilter->SetTimeStep(this->PlastimatchLoadableNode->GetTimeStep()); 
+    this->GradientAnisotropicDiffusionImageFilter->SetConductanceParameter(this->PlastimatchLoadableNode->GetConductance());
+    this->GradientAnisotropicDiffusionImageFilter->SetNumberOfIterations(this->PlastimatchLoadableNode->GetNumberOfIterations());
+    this->GradientAnisotropicDiffusionImageFilter->SetTimeStep(this->PlastimatchLoadableNode->GetTimeStep()); 
 
-  // run the filter
-  this->GradientAnisotropicDiffusionImageFilter->Update();
+    // run the filter
+    this->GradientAnisotropicDiffusionImageFilter->Update();
 
-  // set ouput of the filter to VolumeNode's ImageData
-  // TODO FIX the bug of the image is deallocated unless we do DeepCopy
-  vtkImageData* image = vtkImageData::New(); 
-  image->DeepCopy( this->GradientAnisotropicDiffusionImageFilter->GetOutput() );
-  outVolume->SetAndObserveImageData(image);
-  image->Delete();
-  outVolume->SetModifiedSinceRead(1);
+    // set ouput of the filter to VolumeNode's ImageData
+    // TODO FIX the bug of the image is deallocated unless we do DeepCopy
+    vtkImageData* image = vtkImageData::New(); 
+    image->DeepCopy( this->GradientAnisotropicDiffusionImageFilter->GetOutput() );
+    outVolume->SetAndObserveImageData(image);
+    image->Delete();
+    outVolume->SetModifiedSinceRead(1);
 
-  //outVolume->SetImageData(this->GradientAnisotropicDiffusionImageFilter->GetOutput());
+    //outVolume->SetImageData(this->GradientAnisotropicDiffusionImageFilter->GetOutput());
 
-  // delete the filter
-  this->GradientAnisotropicDiffusionImageFilter->Delete();
+    // delete the filter
+    this->GradientAnisotropicDiffusionImageFilter->Delete();
+#endif
 }
