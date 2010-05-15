@@ -4,10 +4,10 @@
 #ifndef _plm_int_h_
 #define _plm_int_h_
 
-#ifndef _MSC_VER
-#include <stdint.h>
-#else
+#if (_MSC_VER < 1600)
 #include "msinttypes/stdint.h"
+#else
+#include <stdint.h>
 #endif
 
 typedef int8_t   s8;
