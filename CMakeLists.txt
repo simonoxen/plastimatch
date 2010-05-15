@@ -110,7 +110,13 @@ MACRO (PLM_ADD_SLICER_MODULE
 
   #GENERATELM (TARGET_SRC ${TARGET_NAME}.xml)
   ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
-  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+  TARGET_LINK_LIBRARIES (${TARGET_NAME} 
+    ${Slicer3_Libs_LIBRARIES}
+    ${Slicer3_Base_LIBRARIES}
+    ${KWWidgets_LIBRARIES}
+    ${ITK_LIBRARIES}
+    ${TARGET_LIBS})
+
   SLICER3_SET_MODULES_OUTPUT_PATH (${TARGET_NAME})
   #SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 ENDMACRO (PLM_ADD_SLICER_MODULE)
@@ -1121,11 +1127,6 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (testing)
 ##-----------------------------------------------------------------------------
-set (PlastimatchLoadable_SRCS
-  vtkPlastimatchLoadableLogic.cxx
-  vtkPlastimatchLoadableGUI.cxx
-  vtkMRMLPlastimatchLoadableNode.cxx
-  )
 
 IF (Slicer3_DIR)
   IF (PLM_BUILD_SLICER_LOADABLE)
@@ -1133,10 +1134,37 @@ IF (Slicer3_DIR)
       ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
       ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
       )
+
+    set (PlastimatchLoadable_SRCS
+      vtkPlastimatchLoadableLogic.cxx
+      vtkPlastimatchLoadableGUI.cxx
+      vtkMRMLPlastimatchLoadableNode.cxx
+      )
+    include("${VTK_CMAKE_DIR}/vtkWrapTcl.cmake")
+    vtk_wrap_tcl3 (PlastimatchLoadable
+      PlastimatchLoadable_TCL_SRCS 
+      "${PlastimatchLoadable_SRCS}" "")
+
     GENERATELM (PlastimatchLoadable_SRCS PlastimatchLoadable.xml)
+
     PLM_ADD_SLICER_MODULE (PlastimatchLoadable
       "${PlastimatchLoadable_SRCS}" 
       "${PLASTIMATCH_LIBS}")
+
+    IF (COMMENTOUT)
+    ADD_LIBRARY (PlastimatchLoadable
+      ${PlastimatchLoadable_SRCS}
+      ${PlastimatchLoadable_TCL_SRCS})
+    SLICER3_SET_MODULES_OUTPUT_PATH (PlastimatchLoadable)
+    TARGET_LINK_LIBRARIES (PlastimatchLoadable
+      ${Slicer3_Libs_LIBRARIES}
+      ${Slicer3_Base_LIBRARIES}
+      ${KWWidgets_LIBRARIES}
+      ${ITK_LIBRARIES})
+    #      ${PLASTIMATCH_LIBS})
+    SLICER3_INSTALL_MODULES (PlastimatchLoadable)
+    ENDIF (COMMENTOUT)
+
   ENDIF (PLM_BUILD_SLICER_LOADABLE)
 ENDIF (Slicer3_DIR)
 

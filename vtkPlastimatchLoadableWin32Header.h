@@ -22,7 +22,7 @@
 #include <vtkPlastimatchLoadableConfigure.h>
 
 #if defined(WIN32) && !defined(VTKSLICER_STATIC)
-#if defined(ExampleLoadableModule_EXPORTS)
+#if defined(PlastimatchLoadable_EXPORTS)
 #define VTK_EXAMPLELOADABLEMODULE_EXPORT __declspec( dllexport ) 
 #else
 #define VTK_EXAMPLELOADABLEMODULE_EXPORT __declspec( dllimport ) 
