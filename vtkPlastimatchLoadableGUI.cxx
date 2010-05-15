@@ -18,6 +18,8 @@
 #include "vtkKWEntryWithLabel.h"
 #include "vtkKWMenuButtonWithLabel.h"
 #include "vtkKWMenuButton.h"
+#include "vtkKWRadioButton.h"
+#include "vtkKWRadioButtonSetWithLabel.h"
 #include "vtkKWScale.h"
 #include "vtkKWMenu.h"
 #include "vtkKWEntry.h"
@@ -50,9 +52,7 @@ vtkPlastimatchLoadableGUI::vtkPlastimatchLoadableGUI()
     this->MovingVolumeSelector = vtkSlicerNodeSelectorWidget::New();
     this->OutVolumeSelector = vtkSlicerNodeSelectorWidget::New();
     this->GADNodeSelector = vtkSlicerNodeSelectorWidget::New();
-#if defined (commentout)
     this->CostFunctionButtonSet = vtkKWRadioButtonSetWithLabel::New();
-#endif
     this->ApplyButton = vtkKWPushButton::New();
 
     this->Logic = NULL;
@@ -98,13 +98,11 @@ vtkPlastimatchLoadableGUI::~vtkPlastimatchLoadableGUI()
         this->GADNodeSelector->Delete();
         this->GADNodeSelector = NULL;
     }
-#if defined (commentout)
     if (this->CostFunctionButtonSet) {
         this->CostFunctionButtonSet->SetParent(NULL);
         this->CostFunctionButtonSet->Delete();
         this->CostFunctionButtonSet = NULL;
     }
-#endif
     if ( this->ApplyButton ) {
         this->ApplyButton->SetParent(NULL);
         this->ApplyButton->Delete();
@@ -148,12 +146,12 @@ void vtkPlastimatchLoadableGUI::AddGUIObservers ( )
     this->GADNodeSelector->AddObserver (
 	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
 	(vtkCommand *)this->GUICallbackCommand);
-#if defined (commentout)
-    /* Name of event??? */
-    this->CostFunctionButtonSet->AddObserver (
-	vtkKWRadioButtonSetWithLabel::NodeSelectedEvent, 
+    this->CostFunctionButtonSet->GetWidget()->GetWidget(0)->AddObserver (
+	vtkKWRadioButton::SelectedStateChangedEvent,
 	(vtkCommand *)this->GUICallbackCommand);
-#endif
+    this->CostFunctionButtonSet->GetWidget()->GetWidget(1)->AddObserver (
+	vtkKWRadioButton::SelectedStateChangedEvent,
+	(vtkCommand *)this->GUICallbackCommand);
 
     this->ApplyButton->AddObserver (vtkKWPushButton::InvokedEvent, 
 	(vtkCommand *)this->GUICallbackCommand);
@@ -186,12 +184,12 @@ void vtkPlastimatchLoadableGUI::RemoveGUIObservers ( )
 	vtkSlicerNodeSelectorWidget::NodeSelectedEvent, 
 	(vtkCommand *)this->GUICallbackCommand);
 
-#if defined (commentout)
-    /* Name of event??? */
-    this->CostFunctionButtonSet->RemoveObservers (
-	vtkKWRadioButtonSetWithLabel::NodeSelectedEvent, 
+    this->CostFunctionButtonSet->GetWidget()->GetWidget(0)->RemoveObservers (
+	vtkKWRadioButton::SelectedStateChangedEvent,
 	(vtkCommand *)this->GUICallbackCommand);
-#endif
+    this->CostFunctionButtonSet->GetWidget()->GetWidget(1)->RemoveObservers (
+	vtkKWRadioButton::SelectedStateChangedEvent,
+	(vtkCommand *)this->GUICallbackCommand);
 
     this->ApplyButton->RemoveObservers (
 	vtkKWPushButton::InvokedEvent, 
@@ -257,14 +255,45 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
 	vtkSetAndObserveMRMLNodeMacro( this->PlastimatchLoadableNode, n);
 	this->UpdateGUI();
     }
+
 #if defined (commentout)
-    /* Name of event??? */
-    else if (selector == this->CostFunctionButtonSet
-	&& event == vtkSlicerNodeSelectorWidget::NodeSelectedEvent 
-	&& this->GADNodeSelector->GetSelected() != NULL)
+    else if ((this->CostFunctionButtonSet->GetWidget()->GetWidget(0)
+	    == vtkKWRadioButton::SafeDownCast(caller))
+	&& event == vtkKWRadioButton::SelectedStateChangedEvent
+	&& (this->CostFunctionButtonSet->GetWidget()
+	    ->GetWidget(0)->GetSelectedState() == 1))
     {
+	int selected = this->ConnectorList->GetWidget()->GetIndexOfFirstSelectedRow();
+	if (selected >= 0 && selected < (int)this->ConnectorNodeList.size())
+	{
+	    vtkMRMLPlastimatchLoadableNode* n 
+		= vtkMRMLPlastimatchLoadableNode::SafeDownCast(
+		    = vtkMRMLIGTLConnectorNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->ConnectorNodeList[selected]));
+	    if (connector)
+	    {
+		connector->SetCostFunction(1);
+	    }
+	}
+    }
+    else if ((this->CostFunctionButtonSet->GetWidget()->GetWidget(1)
+	    == vtkKWRadioButton::SafeDownCast(caller))
+	&& event == vtkKWRadioButton::SelectedStateChangedEvent
+	&& (this->CostFunctionButtonSet->GetWidget()
+	    ->GetWidget(1)->GetSelectedState() == 1))
+    {
+	int selected = this->ConnectorList->GetWidget()->GetIndexOfFirstSelectedRow();
+	if (selected >= 0 && selected < (int)this->ConnectorNodeList.size())
+	{
+	    vtkMRMLIGTLConnectorNode* connector
+		= vtkMRMLIGTLConnectorNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(this->ConnectorNodeList[selected]));
+	    if (connector)
+	    {
+		connector->SetCostFunction(0);
+	    }
+	}
     }
 #endif
+
     else if (b == this->ApplyButton 
 	&& event == vtkKWPushButton::InvokedEvent)
     {
@@ -453,7 +482,8 @@ void vtkPlastimatchLoadableGUI::BuildGUI ( )
     app->Script("pack %s -side top -anchor e -padx 20 -pady 4", 
 	this->MovingVolumeSelector->GetWidgetName());
 
-    this->OutVolumeSelector->SetNodeClass("vtkMRMLScalarVolumeNode", NULL, NULL, "GADVolumeOut");
+    this->OutVolumeSelector->SetNodeClass(
+	"vtkMRMLScalarVolumeNode", NULL, NULL, "GADVolumeOut");
     this->OutVolumeSelector->SetNewNodeEnabled(1);
     this->OutVolumeSelector->SetParent( moduleFrame->GetFrame() );
     this->OutVolumeSelector->Create();
@@ -462,12 +492,12 @@ void vtkPlastimatchLoadableGUI::BuildGUI ( )
 
     this->OutVolumeSelector->SetBorderWidth(2);
     this->OutVolumeSelector->SetLabelText( "Output Volume: ");
-    this->OutVolumeSelector->SetBalloonHelpString("select an output volume from the current mrml scene.");
+    this->OutVolumeSelector->SetBalloonHelpString(
+	"select an output volume from the current mrml scene.");
     app->Script("pack %s -side top -anchor e -padx 20 -pady 4", 
 	this->OutVolumeSelector->GetWidgetName());
 
-#if defined (commentout)
-    this->CostFunctionButtonSet->SetParent (controlFrame->GetFrame());
+    this->CostFunctionButtonSet->SetParent (moduleFrame->GetFrame());
     this->CostFunctionButtonSet->Create();
     this->CostFunctionButtonSet->SetLabelWidth(8);
     this->CostFunctionButtonSet->SetLabelText("CRC: ");
@@ -481,7 +511,6 @@ void vtkPlastimatchLoadableGUI::BuildGUI ( )
     bt0->SelectedStateOn();
     this->Script("pack %s -side left -anchor w -fill x -padx 2 -pady 2", 
 	this->CostFunctionButtonSet->GetWidgetName());
-#endif
 
     this->ApplyButton->SetParent( moduleFrame->GetFrame() );
     this->ApplyButton->Create();

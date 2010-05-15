@@ -10,11 +10,13 @@
 #include "vtkMRMLScene.h"
 #include "vtkPlastimatchLoadableLogic.h"
 
-class vtkSlicerSliceWidget;
 class vtkKWFrame;
-class vtkKWScaleWithEntry;
 class vtkKWPushButton;
+class vtkKWRadioButtonSet;
+class vtkKWRadioButtonSetWithLabel;
+class vtkKWScaleWithEntry;
 class vtkSlicerNodeSelectorWidget;
+class vtkSlicerSliceWidget;
 
 class VTK_EXAMPLELOADABLEMODULE_EXPORT vtkPlastimatchLoadableGUI 
     : public vtkSlicerModuleGUI
@@ -90,6 +92,7 @@ class VTK_EXAMPLELOADABLEMODULE_EXPORT vtkPlastimatchLoadableGUI
     vtkKWScaleWithEntry* NumberOfIterationsScale;
     vtkSlicerNodeSelectorWidget* OutVolumeSelector;
     vtkSlicerNodeSelectorWidget* GADNodeSelector;
+    vtkKWRadioButtonSetWithLabel* CostFunctionButtonSet;
     vtkKWPushButton* ApplyButton;
 
     vtkSlicerNodeSelectorWidget* FixedVolumeSelector;
