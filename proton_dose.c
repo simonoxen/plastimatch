@@ -16,8 +16,8 @@
 
 //#define VERBOSE 1
 //#define PROGRESS 1
-#define DOSE_DIRECT
-//#define DOSE_GAUSS
+//#define DOSE_DIRECT
+#define DOSE_GAUSS
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -36,29 +36,141 @@ struct proton_energy_profile {
     int num_samp;       /* size of arrays */
 };
 
+/* This function is used to rotate a
+ * point about a ray in an orbit
+ * perpendicular to the ray.  It is assumed
+ * that the arbitrary axis of rotation (ray)
+ * originates at the Cartesian origin.
+ */
+static void
+rotate_point_3D (
+    double *xyz_new,    /* rotated point */
+    double *xyz,        /* point to rotate */
+    double t,           /* angle of rotation */
+    double *ray         /* axis of rotation */
+)
+{
+    double u[3];
+    double v[3];
+    double w[3];
+    double tmp[3] = {0.0, 0.0, 1.0};
+
+    double M[12];
+
+    /* Generate coordinate system */
+    vec3_copy (w, ray);
+    vec3_normalize1 (w);
+    vec3_cross (v, w, tmp);
+    vec3_normalize1 (v);
+    vec3_cross (u, v, w);
+
+    /* Build the composite matrix
+     *   -- Axis rotation: W coincident Z
+     *   -- Rotates about Z by theta radians
+     *   -- Undoes axis rotation (Z -> W)
+     */
+    M[4*0 + 0] = u[0]*u[0]*cos(t) + u[0]*v[0]*sin(t) - u[0]*v[0]*sin(t) + v[0]*v[0]*cos(t) + w[0]*w[0];
+    M[4*0 + 1] = u[0]*u[1]*cos(t) + u[0]*v[1]*sin(t) - u[1]*v[0]*sin(t) + v[0]*v[1]*cos(t) + w[0]*w[1];
+    M[4*0 + 2] = u[0]*u[2]*cos(t) + u[0]*v[2]*sin(t) - u[2]*v[0]*sin(t) + v[0]*v[2]*cos(t) + w[0]*w[2];
+    M[4*0 + 3] = 0;
+
+    M[4*1 + 0] = u[1]*u[0]*cos(t) + u[1]*v[0]*sin(t) - u[0]*v[1]*sin(t) + v[1]*v[0]*cos(t) + w[1]*w[0];
+    M[4*1 + 1] = u[1]*u[1]*cos(t) + u[1]*v[1]*sin(t) - u[1]*v[1]*sin(t) + v[1]*v[1]*cos(t) + w[1]*w[1]; 
+    M[4*1 + 2] = u[1]*u[2]*cos(t) + u[1]*v[2]*sin(t) - u[2]*v[1]*sin(t) + v[1]*v[2]*cos(t) + w[1]*w[2]; 
+    M[4*1 + 3] = 0;
+
+    M[4*2 + 0] = u[2]*u[0]*cos(t) + u[2]*v[0]*sin(t) - u[0]*v[2]*sin(t) + v[2]*v[0]*cos(t) + w[2]*w[0];
+    M[4*2 + 1] = u[2]*u[1]*cos(t) + u[2]*v[1]*sin(t) - u[1]*v[2]*sin(t) + v[2]*v[1]*cos(t) + w[2]*w[1];
+    M[4*2 + 2] = u[2]*u[2]*cos(t) + u[2]*v[2]*sin(t) - u[2]*v[2]*sin(t) + v[2]*v[2]*cos(t) + w[2]*w[2];
+    M[4*2 + 3] = 0;
+
+#if defined (commentout)
+    M[4*3 + 0] = 0;
+    M[4*3 + 1] = 0;
+    M[4*3 + 2] = 0;
+    M[4*3 + 3] = 1;
+#endif
+
+    /* Apply rotation transform */
+    mat43_mult_vec3(xyz_new, M, xyz);
+}
+
+static inline void
+display_progress (
+    float is,
+    float of
+) 
+{
+    printf (" [%3i%%]\b\b\b\b\b\b\b",
+           (int)floorf((is/of)*100.0f));
+    fflush (stdout);
+}
+
+static void 
+debug_voxel (double r,             /* current radius */
+             double t,             /* current angle */
+             double rgdepth,       /* radiographic depth */
+             double d,             /* dose from scatter_xyz */
+             double* scatter_xyz,  /* space coordinates of scatterer */
+             double* ct_xyz,       /* voxel receiving dose */
+             double w,             /* gaussian weight (x) */
+             double d0,            /* unweighted d */
+             double sigma,         /* Gauss kernel stdev */
+             double dose           /* aggr dose @ ct_xyz */
+)
+{
+    FILE* fp;
+
+    fp = fopen ("dump_voxel.txt", "a");
+
+    fprintf (fp, "r,t: [%3.3f %1.3f] \t rgdepth: %2.3f \t d: %4.1f \t dist: %3.3f \t w: %1.4f \t d0: %4.3f \t sigma: %1.4f\t dose: %4.4f\n",
+            r, t, rgdepth, d, vec3_dist(scatter_xyz, ct_xyz), w, d0, sigma, dose);
+
+    fclose (fp);
+}
+#if defined (commentout)
+#endif
+
+/* This needs to be filled in with the
+ * actual Highland approximation.
+ *
+ * Right now this is just a normalization
+ */
+static double
+highland (double rgdepth,
+          Proton_Energy_Profile* pep
+)
+{
+    return 3.0*(rgdepth - pep->depth[0]) / (pep->dmax - pep->depth[0]);
+}
 
 static double
 gaus_kernel (
-    double x,
+    double* p,
     double* ct_xyz,
     double sigma
 )
 {
-    double weight;
-    double pi;
+    double w1, w2;
     double denom;
     double sigma2;
 
-    pi = 3.14159265f;
+    // kludge to prevent evaluations 
+    // greater than 1
+    if (sigma < 0.4) {
+        sigma = 0.4;
+    }
+
     sigma2 = sigma * sigma;
 
-    denom = 2.0f * pi * sigma2;
+    denom = 2.0f * M_PI * sigma2;
     denom = sqrt (denom);
     denom = 1.0f / denom;
 
-    weight = denom * exp ( (-1*x*x) / (2.0f*sigma2) );
+    w1 = denom * exp ( (-1.0*p[0]*p[0]) / (2.0f*sigma2) );
+    w2 = denom * exp ( (-1.0*p[1]*p[1]) / (2.0f*sigma2) );
 
-    return weight;
+    return w1 * w2;
 }
 
 
@@ -75,6 +187,10 @@ rgdepth_lookup (
     int ijk[3];
     double rg1, rg2, rgdepth;
     float* d_img = (float*) depth_vol->img;
+
+    if (dist < 0) {
+        return d_img[0];
+    }
 
     ijk[0] = ap_x;
     ijk[1] = ap_y;
@@ -156,7 +272,7 @@ get_rgdepth (
 {
     int ap_x, ap_y, ap_idx;
     double ap_xy[3], ap_xyz[3], tmp[3];
-    double dist, depth_rg;
+    double dist, rgdepth;
 
     /* Back project the voxel to the aperture plane */
     mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
@@ -184,12 +300,12 @@ get_rgdepth (
     dist -= depth_offset[ap_idx];
 
     /* Retrieve the radiographic depth */
-    depth_rg = rgdepth_lookup (depth_vol,
+    rgdepth = rgdepth_lookup (depth_vol,
                                ap_x, ap_y,
                                dist,
                                options->ray_step);
 
-    return depth_rg;
+    return rgdepth;
 }
 
 /* This function should probably be marked for
@@ -209,10 +325,10 @@ dose_direct (
     Proton_dose_options *options
 )
 {
-    double depth_rg;
+    double rgdepth;
     double dose;
 
-    depth_rg = get_rgdepth (ct_xyz,         /* voxel to dose */
+    rgdepth = get_rgdepth (ct_xyz,         /* voxel to dose */
                             depth_offset,   /* ap to ct_vol dist */
                             depth_vol,      /* radiographic depths */
                             pep,            /* proton energy profile */
@@ -224,12 +340,12 @@ dose_direct (
                             options);       /* contains uniform step size along rays */
 
     /* The voxel was not hit directly by the beam */
-    if (depth_rg < 0.0f) {
+    if (rgdepth < 0.0f) {
         return 0.0f;
     }
 
     /* Lookup the dose at this radiographic depth */
-    dose = energy_lookup (depth_rg, pep);
+    dose = energy_lookup (rgdepth, pep);
     
     return dose;
 
@@ -238,6 +354,7 @@ dose_direct (
 static double
 dose_scatter (
     double* ct_xyz,
+    int* ct_ijk,            // DEBUG
     double* depth_offset,
     Volume* depth_vol,
     Proton_Energy_Profile* pep,
@@ -252,213 +369,128 @@ dose_scatter (
 )
 {
 
-    /* Accounts for 1st order small angle scattering
-     *
-     *   We do this by defining a "scatter plane" that
-     *   is centered on the voxel we want to find the
-     *   total dose for (direct + scattered dose).
-     *
-     *   The scatter plane's coordinates are transformed
-     *   such that it is parallel to the aperture plane
-     *   and normal to the proton beam.
-     */
+    /* Accounts for 1st order small angle scattering */
 
-
-    /* NOTES:
-     *   -- ct_xyz[3] contains the 3D real space coordinates
-     *      of the voxel being hit *directly* by the proton beam.
-     *
-     *   -- anything with the sp_ prefix defines the scattering
-     *      plane surrounding the ct_xyz voxel.
-     *
-     *   -- scatter[3] contains the 3D real space coordinates
-     *      of the current voxel under consideration within
-     *      the scattering plane defined by sp_
-     *
-     *   -- sctoct[3] is a vector originating at scatter[3]
-     *      and ending at ct_xyz[3].  This is needed to
-     *      evaluate the Gaussian kernel, which is used to
-     *      appropriately weight the contribution of scatter[3]
-     *      @ ct_xyz[3].
-     */
-
-    double depth_rg;
+    double rgdepth;
     double sigma;
-    double search_dist;
 
-    /* scatter plane un-transformed */
-    int sp_xy[2];    // 2D coordinate in scatter plane
-    double sp_step;  // step size in both x & y
-    int sp_dim;      // width = height of scatter plane
+    double r, t;
+    double r_step, t_step;
+    double r_max;
 
-    /* scatter plain transformed */
-    double sp_start[3];   // upper left point in scatter plane
-    double sp_incr_x[3];  // x-direction increment vector
-    double sp_incr_y[3];  // y-direction increment vector
 
-    double tmp[3];
+    double sp_pos[3] = {0.0, 0.0, 0.0};
+    double scatter_xyz[4] = {0.0, 0.0, 0.0, 1.0};
+    double proj_xy[2] = {0.0, 0.0};
+    double sctoct[3] = {0.0, 0.0, 0.0};
+    double tmp[3] = {0.0, 0.0, 0.0};
+
+
+    double d = 0.0f;
     double dose = 0.0f;
+    double w, d0;   // debug
 
-    int sane;
+#if defined (commentout)
+    int debug = 0;
+
+//    int watch_ijk[3] = {0, 255, 67};  // entry
+    int watch_ijk[3] = {134, 256, 67};  // bragg peak
+//    int watch_ijk[3] = {23, 255, 67};    // "stem"
+
+    if (ct_ijk[0] == watch_ijk[0] &&
+        ct_ijk[1] == watch_ijk[1] &&
+        ct_ijk[2] == watch_ijk[2]) {
+
+        printf ("Watching voxel [%i %i %i]\n", watch_ijk[0], watch_ijk[1], watch_ijk[2]);
+        debug = 1;
+    }
+#endif 
 
     /* Get approximation for scatterer search radius
      * NOTE: This is not used to define the Gaussian
      */
-    depth_rg = get_rgdepth (ct_xyz, depth_offset,
+    rgdepth = get_rgdepth (ct_xyz, depth_offset,
                             depth_vol, pep,
                             pmat, ires, ap_ul,
                             incr_r, incr_c,
                             options);
 
-    /* If the voxel was not hit *directly* by the beam,
-     * there is still a chance that it was hit by
-     * scatterers generated by a neighbor who *was*
-     * hit directly by the beam.  As a result, we cannot
-     * obtain a resonable estimate, so we assume the
-     * largest scattering radius.
+    /* If the voxel was not hit *directly* by the beam, there is still a
+     * chance that it was hit by scatterers generated by a neighbor who
+     * *was* * hit directly by the beam.  As a result, we cannot obtain
+     * a resonable estimate, so we assume the largest scattering radius.
      */
-    if (depth_rg < 0.0) {
-//        depth_rg = pep->dmax; // for accuracy
-        return 0.0f;            // for speed
+    if (rgdepth < 0.0) {
+        if (options->detail == 0) {
+            rgdepth = pep->dmax;
+        } else if (options->detail == 1) {
+            /* User wants to ignore "scatter only" dose */
+            return 0.0f;
+        } else {
+            rgdepth = pep->dmax;
+        }
     }
 
+    sigma = highland (rgdepth, pep);
+    r_max = 3.0*sigma;
 
-    /* For now we are not considering several items in the beam path,
-     * so we will approximate the Gaussian bandwidth as linearly
-     * related to the radiographic depth.
-     */
-    sigma = floorf (depth_rg);
+    r_step = 1.00;          // mm
+    t_step = M_PI / 8.0f;   // radians
 
-    /* We must define a neighborhood around the voxel for which
-     * are computing the dose.  All voxels falling within this
-     * neighborhood will be checked for dose contributions. This
-     * neighborhood is defined as a plane called the "scatter plane."
-     * 
-     * The plan is to start and end our search 3*sigma from the
-     * voxel of interest in both directions.
-     */
-    search_dist = 3.0*sigma;
-
-    /* We will maintain a uniform sampling along these Gaussian
-     * kernel functions in the interest of accuracy.  This will,
-     * however, result in slower execution as the beam depth
-     * increases.  We can "fix" this later for speed.
-     */
-    sp_step = 1.00;
-
-    /* calc. steps in transformed scatter plane */
-    vec3_scale3 (sp_incr_x, prt, sp_step);
-    vec3_scale3 (sp_incr_y, pdn, sp_step);
-
-    /* Scan the scatter plane starting from the top left */
-    vec3_copy (sp_start, ct_xyz);
-    vec3_scale3 (tmp, prt, - search_dist);  // x
-    vec3_add2 (sp_start, tmp);
-    vec3_scale3 (tmp, pdn, - search_dist);  // y
-    vec3_add2 (sp_start, tmp);
-
-    /* define dimenions of untransformed scatter plane */
-    sp_dim = 2*((search_dist + sp_step - 1) / sp_step);
-
-    
-#if defined (commentout)
-    sane = 0;
-#endif
-    /* Step along y-dim of scatter plane */
-    for (sp_xy[1] = 0; sp_xy[1] < sp_dim; sp_xy[1]++) {
-        double sp_pos[3];
-        double tmp[3];
-
-        vec3_copy (sp_pos, sp_start);
-        vec3_scale3 (tmp, sp_incr_y, (double) sp_xy[1]);
+    /* Step radius */
+    for (r = 0; r < r_max; r += r_step) {
+        vec3_copy (sp_pos, ct_xyz);
+        vec3_scale3 (tmp, pdn, r);
         vec3_add2 (sp_pos, tmp);
 
-        /* Step along x-dim of scatter plane */
-        for (sp_xy[0] = 0; sp_xy[0] < sp_dim; sp_xy[0]++) {
-            double scatter[3];
-            double d;
-            double proj_xy[2];
-            double sctoct[3];
+        /* Step angle */
+        for (t = 0.0f; t < 2.0*M_PI; t += t_step) {
 
-            vec3_scale3 (tmp, sp_incr_x, (double) sp_xy[0]);
-            vec3_add3 (scatter, sp_pos, tmp);
-
-#if defined (commentout)
-            /* Sanity check
-             *   If we somehow step over the origin,
-             *   any dose contributed by the beam directly
-             *   interacting with the voxel will be neglected.
-             */
-            if (vec3_dist (scatter, ct_xyz) < 1.0f) {
-                sane = 1;
-            }
-#endif
+            rotate_point_3D (scatter_xyz, sp_pos, t, ct_xyz);
 
             /* neighbor (or self) hit by proton beam? */
-            depth_rg = get_rgdepth (scatter,
+            rgdepth = get_rgdepth (scatter_xyz,
                                     depth_offset,
                                     depth_vol, pep,
                                     pmat, ires, ap_ul,
                                     incr_r, incr_c,
                                     options);
 
-            if (depth_rg < 0.0f) {
-                /*
-                 * Neighbor (or self) not hit directly by beam,
-                 * so no dose contribution
-                 */
+            if (rgdepth < 0.0f) {
                 continue;
-
             } else {
-                /* 
-                 * Lookup the dose at neighbor (or self's)
-                 * radiographic depth
-                 */
-                d = energy_lookup (depth_rg, pep);
+                d = energy_lookup (rgdepth, pep);
+//                d0 = d; // DEBUG
             }
 
-            /* 
-             * define a vector from the scatterer to
-             * destination voxel at which we are computing
-             * the dose.
-             *
-             * in the event this distance is zero, we are
-             * accumulating the dose contribution due to the
-             * proton beam itself -- not from a scatterer.
-             */
-            vec3_sub3 (sctoct, scatter, ct_xyz);
+            vec3_sub3 (sctoct, scatter_xyz, ct_xyz);
 
-            /*
-             * project this vector onto the x and y axis
-             * of the transformed scatter plane's
-             * coordinate system.
-             */
             proj_xy[0] = vec3_dot (sctoct, prt);
             proj_xy[1] = vec3_dot (sctoct, pdn);
 
+            sigma = highland (rgdepth, pep);
 
-            /*
-             * the width (or scatterng intensity) of the
-             * gaussian kernel function is related to
-             * the radiographic depth of the scatterer.
-             */
-            sigma = depth_rg;
-            
-            /* apply the gaussian kernel as two 1D operations */
-            d *= gaus_kernel (proj_xy[0], ct_xyz, sigma);
-            d *= gaus_kernel (proj_xy[1], ct_xyz, sigma);
+            /* weight by gaussian kernel */
+            w = gaus_kernel (proj_xy, ct_xyz, sigma);
+            d *= w;
 
             /* Add to total dose for our target voxel */
             dose += d;
-        }
-    }
 
 #if defined (commentout)
-    if (!sane) {
-        printf ("\nSanity check failed!\nTerminating...\n\n");
-        exit(0);
-    }
+            if (debug) {
+                debug_voxel (r, t, rgdepth, d, scatter_xyz, ct_xyz,
+                             w, d0, sigma, dose);
+            }
 #endif
+
+            /* Don't spin at the origin! */
+            if (r == 0) {
+                break;
+            }
+
+        }
+    }
 
     return dose;    
 
@@ -687,8 +719,7 @@ proton_dose_compute (
 
     int r;
     int ct_ijk[3];
-    double ap_xy[3], ap_xyz[3];
-    double ct_xyz[3];
+    double ct_xyz[4];
     double p1[3];
     double ap_dist = 1000.;
     double nrm[3], pdn[3], prt[3], tmp[3];
@@ -701,6 +732,7 @@ proton_dose_compute (
 
     double *depth_offset;
     float* dose_img = (float*) dose_vol->img;
+    int idx;
 
 
     Proj_matrix *pmat;
@@ -816,12 +848,12 @@ proton_dose_compute (
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
                 double dose;
-                int idx;
                 
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->pix_spacing[0]);
                 ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->pix_spacing[1]);
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->pix_spacing[2]);
+                ct_xyz[3] = (double) 1.0;
 
 #if defined (DOSE_DIRECT)
                 dose = dose_direct (ct_xyz,         /* voxel to dose */
@@ -839,6 +871,7 @@ proton_dose_compute (
 
 #if defined (DOSE_GAUSS)
                 dose = dose_scatter (ct_xyz,        /* voxel to dose */
+                                     ct_ijk,
                                      depth_offset,  /* ap to ct_vol dist */
                                      depth_vol,     /* radiographic depths */
                                      pep,           /* proton energy profile */
@@ -856,18 +889,10 @@ proton_dose_compute (
                 idx = INDEX_OF (ct_ijk, dose_vol->dim);
                 dose_img[idx] = dose;
 
-#if PROGRESS
-                /* Report Progress -- slows things down (terribly)*/
-                printf (" [%3i%%] %i voxels remaining                \r",
-                    (int)floorf((((float)idx/(float)ct_vol->npix)*100.0f)),
-                    ct_vol->npix - idx);
-                fflush (stdout);
-#endif
             }
         }
+        display_progress ((float)idx, (float)ct_vol->npix);
     }
-    printf ("\n");
-
 
     free (pep);
     volume_destroy (depth_vol);

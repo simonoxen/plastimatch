@@ -20,6 +20,10 @@ struct proton_dose_options {
     char* input_fn;
     char* output_fn;
     int debug;
+
+    /* Speed hacks */
+    int detail;           /* 0 = full detail */
+                          /* 1 = only consider voxels in beam path */
 };
 
 void proton_dose_parse_args (Proton_dose_options* options, 

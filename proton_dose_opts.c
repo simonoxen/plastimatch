@@ -24,6 +24,7 @@ print_usage (void)
 	" -iso \"x y z\"      ...\n"
 	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
+    " -d detail         0 = full, 1 = beam path only (default=0)\n"
 	" -u step           Uniform step (in mm) along ray trace\n"
     " -p filename       Proton dose energy profile\n"
 	" --debug           Create various debug files\n"
@@ -51,6 +52,8 @@ proton_dose_opts_init (Proton_dose_options* options)
     options->input_pep_fn = 0;
     options->output_fn = 0;
     options->debug = 0;
+
+    options->detail = 0;
 }
 
 void
@@ -118,6 +121,13 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-u")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f" , &options->ray_step);
+	    if (rc != 1) {
+		    print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-d")) {
+	    i++;
+	    rc = sscanf (argv[i], "%i" , &options->detail);
 	    if (rc != 1) {
 		    print_usage ();
 	    }

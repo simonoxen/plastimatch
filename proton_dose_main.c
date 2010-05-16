@@ -28,6 +28,9 @@ main (int argc, char* argv[])
 
     volume_convert_to_float (ct);
 
+    printf ("Cogitating... ");
+    fflush(stdout);
+
     dose = volume_clone_empty (ct);
 
     proton_dose_compute (dose, ct, &options);
@@ -36,6 +39,6 @@ main (int argc, char* argv[])
 
     volume_destroy (ct);
     volume_destroy (dose);
-    printf ("Done.\n");
+    printf ("done.  \n\n");
     return 0;
 }
