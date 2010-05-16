@@ -4,7 +4,7 @@
 #ifndef _plm_int_h_
 #define _plm_int_h_
 
-#if (_MSC_VER < 1600)
+#if defined (_WIN32) && (_MSC_VER < 1600)
 #include "msinttypes/stdint.h"
 #else
 #include <stdint.h>
