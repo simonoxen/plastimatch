@@ -112,11 +112,17 @@ Rtds::load_dose_img (char *dose_img)
 void
 Rtds::save_dicom (char *dicom_dir)
 {
+    char fn[_MAX_PATH];
+
     if (this->m_img) {
 	this->m_img->save_short_dicom (dicom_dir);
     }
+    if (this->m_cxt) {	
+	cxt_adjust_structure_names (this->m_cxt);
+	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "ss.dcm");
+	gdcm_rtss_save (this->m_cxt, fn, dicom_dir);
+    }
     if (this->m_dose) {
-	char fn[_MAX_PATH];
 	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "dose.dcm");
 	gdcm_dose_save (this->m_dose, fn);
     }
