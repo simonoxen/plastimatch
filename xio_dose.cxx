@@ -237,8 +237,8 @@ xio_dose_load_cube (
     v = (Volume*) pli->m_gpuit;
     cube_img_normalize = (float*) v->img;
 
-    /* Normalize dose */
-    volume_scale (v, xdh->dose_weight * xdh->dose_scale_factor);
+    /* Normalize dose. Factor 0.01 is to convert from cGy to Gy */
+    volume_scale (v, xdh->dose_weight * xdh->dose_scale_factor * 0.01);
 
     fclose (fp);
 }

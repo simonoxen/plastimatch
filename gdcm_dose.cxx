@@ -411,7 +411,11 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
        Leave ReferencedRTPlanSequence empty (until I can cross reference) */
 
     /* We need to convert image to uint16_t, but first we need to 
-       scale it.  I'll use the value from XiO: 0.004 */
+       scale it.  I'll use the value from XiO: 0.004
+    /* FIX: The maximum dose that will fit in a 16-bit unsigned integer with
+       this scaling is 262 Gy. Higher values will wrap around without warning.
+       Perhaps the scaling could be adjusted automatically to maximize use
+       of the available integer range. */
     float dose_scale = 0.004;
     Plm_image *tmp = pli->clone ();
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
