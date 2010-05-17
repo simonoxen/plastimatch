@@ -351,17 +351,10 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /*     Part 1  -- General header                                     */
     /* ----------------------------------------------------------------- */
 
-    /* From Chang-Yu Wang: 
-       Some dicom validation toolkit (such as DVTK dicom editor)
-       required the TransferSyntaxUID tag, and commenting out 
-       gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010); in gdcm_rtss.cxx 
-       will cause failure to read in. */
-    /* GCS FIX: The above might be true for DVTK, but dcmdump doesn't 
-       like it.  There must be a better way to set TransferSyntaxUID */
-#if defined (commentout)
-    /* TransferSyntaxUID */
-    gf->InsertValEntry ("ISO_IR 100", 0x0002, 0x0010);
-#endif
+    /* FIX: DICOM file meta information cannot be stored when writing with
+       Document::WriteContent(). So there's no TransferSyntaxUID etc.
+       We need a better workaround for the gdcm bug. */
+
     /* InstanceCreationDate */
     gf->InsertValEntry (current_date, 0x0008, 0x0012);
     /* InstanceCreationTime */
@@ -375,12 +368,6 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 			0x0008, 0x0018);
     /* StudyDate */
     gf->InsertValEntry ("20000101", 0x0008, 0x0020);
-    /* SeriesDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0021);
-    /* AcquisitionDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0022);
-    /* ContentDate */
-    gf->InsertValEntry ("20000101", 0x0008, 0x0023);
     /* StudyTime */
     gf->InsertValEntry ("120000", 0x0008, 0x0030);
     /* AccessionNumber */
@@ -391,10 +378,6 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     gf->InsertValEntry ("MGH", 0x0008, 0x0070);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
-    /* ReferringPhysiciansAddress */
-    gf->InsertValEntry ("", 0x0008, 0x0092);
-    /* ReferringPhysiciansTelephoneNumbers */
-    gf->InsertValEntry ("", 0x0008, 0x0094);
     /* StationName */
     gf->InsertValEntry ("", 0x0008, 0x1010);
     /* SeriesDescription */

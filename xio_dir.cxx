@@ -17,6 +17,7 @@
 #include "plm_config.h"
 #include "print_and_exit.h"
 #include "xio_dir.h"
+#include "xio_plan.h"
 
 /* -----------------------------------------------------------------------
    Private functions
@@ -34,8 +35,10 @@ is_xio_patient_dir (std::string dir)
 	std::string curr_file = itk_dir.GetFile(i);
 	std::string curr_path = dir + "/" + itk_dir.GetFile(i);
 	
-	if (curr_file == "anatomy") return 1;
-	if (curr_file == "plan")  return 1;
+	if (itksys::SystemTools::FileIsDirectory (curr_path.c_str())) {
+	    if (curr_file == "anatomy") return 1;
+	    if (curr_file == "plan")  return 1;
+	}
     }
     return 0;
 }
@@ -63,6 +66,28 @@ is_xio_studyset_dir (std::string dir)
     return 0;
 }
 
+static int
+is_xio_plan_dir (std::string dir)
+{
+    itksys::Directory itk_dir;
+    if (!itk_dir.Load (dir.c_str())) {
+	return 0;
+    }
+
+    /* A plan directory has a plan file */
+    for (unsigned long i = 0; i < itk_dir.GetNumberOfFiles(); i++) {
+	std::string curr_file = itk_dir.GetFile(i);
+	std::string curr_path = dir + "/" + itk_dir.GetFile(i);
+
+	if (itksys::SystemTools::FileIsDirectory (curr_path.c_str())) {
+	    continue;
+	}
+
+	if (curr_file == "plan") return 1;
+    }
+    return 0;
+}
+
 static Xio_patient_dir*
 xio_dir_add_patient_dir (Xio_dir *xd, std::string dir)
 {
@@ -74,8 +99,10 @@ xio_dir_add_patient_dir (Xio_dir *xd, std::string dir)
 
     strncpy (xpd->path, dir.c_str(), _MAX_PATH);
     xpd->num_studyset_dir = 0;
+    xpd->num_plan_dir = 0;
     xpd->studyset_dir = 0;
-    
+    xpd->plan_dir = 0;
+
     return xpd;
 }
 
@@ -96,21 +123,49 @@ xio_patient_dir_add_studyset_dir (
 }
 
 static void
+xio_patient_dir_add_plan_dir (
+    Xio_patient_dir *xpd,
+    std::string plan_path
+)
+{
+    Xio_plan_dir *xtpd;
+
+    xpd->plan_dir = (Xio_plan_dir*) realloc (xpd->plan_dir, 
+	(xpd->num_plan_dir+1) * sizeof (Xio_plan_dir));
+    xtpd = &xpd->plan_dir[xpd->num_plan_dir];
+    xpd->num_plan_dir ++;
+
+    strncpy (xtpd->path, plan_path.c_str(), _MAX_PATH);
+}
+
+static void
 xio_patient_dir_analyze (Xio_patient_dir *xpd)
 {
     itksys::Directory itk_dir;
+    std::string plan_path = std::string(xpd->path) + "/plan";
     std::string studyset_path = std::string(xpd->path) + "/anatomy/studyset";
-    
-    if (!itk_dir.Load (studyset_path.c_str())) {
-	return;
+
+    if (itk_dir.Load (studyset_path.c_str())) {
+	for (unsigned long i = 0; i < itk_dir.GetNumberOfFiles(); i++) {
+	    std::string curr_file = itk_dir.GetFile(i);
+	    std::string curr_path = studyset_path + "/" + itk_dir.GetFile(i);
+
+	    if (is_xio_studyset_dir (curr_path)) {
+		printf ("Adding xsd: %s\n", curr_path.c_str());
+		xio_patient_dir_add_studyset_dir (xpd, curr_path);
+	    }
+	}
     }
-    for (unsigned long i = 0; i < itk_dir.GetNumberOfFiles(); i++) {
-	std::string curr_file = itk_dir.GetFile(i);
-	std::string curr_path = studyset_path + "/" + itk_dir.GetFile(i);
-	
-	if (is_xio_studyset_dir (curr_path)) {
-	    printf ("Adding xsd: %s\n", curr_path.c_str());
-	    xio_patient_dir_add_studyset_dir (xpd, curr_path);
+
+    if (itk_dir.Load (plan_path.c_str())) {
+	for (unsigned long i = 0; i < itk_dir.GetNumberOfFiles(); i++) {
+	    std::string curr_file = itk_dir.GetFile(i);
+	    std::string curr_path = plan_path + "/" + itk_dir.GetFile(i);
+
+	    if (is_xio_plan_dir (curr_path)) {
+		printf ("Adding xtpd: %s\n", curr_path.c_str());
+		xio_patient_dir_add_plan_dir (xpd, curr_path);
+	    }
 	}
     }
 }
@@ -132,9 +187,18 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
 	return;
     }
 
+    /* Look for plan directories.
+       GCS FIX: Each plan counts as a separate patient */
+    else if (is_xio_plan_dir (dir)) {
+
+	Xio_patient_dir *xpd
+	    = xio_dir_add_patient_dir (xd, dir);
+	xio_patient_dir_add_plan_dir (xpd, dir);
+	return;
+    }
+
     /* Look for studyset directories.  
-       GCS FIX: Each studyset counts as a separate patient 
-       GCS FIX: Look for plan directories too. */
+       GCS FIX: Each studyset counts as a separate patient */
     else if (is_xio_studyset_dir (dir)) {
 	Xio_patient_dir *xpd
 	    = xio_dir_add_patient_dir (xd, dir);
@@ -195,4 +259,64 @@ xio_dir_destroy (Xio_dir* xd)
 	free (xd->patient_dir);
     }
     free (xd);
+}
+
+Xio_studyset_dir*
+xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd)
+{
+    char studyset[_MAX_PATH];
+    Xio_studyset_dir *xsd;
+    int i = 0, j = 0;
+    char *result;
+    char plan_dir[_MAX_PATH];
+    char patient_dir[_MAX_PATH];
+
+    xsd = (Xio_studyset_dir*) malloc (sizeof (Xio_studyset_dir));
+    
+    if (is_xio_plan_dir (xtpd->path)) {
+
+	/* Get studyset name from plan */
+	std::string plan_file = std::string(xtpd->path) + "/plan";
+	xio_plan_get_studyset (plan_file.c_str(), studyset);
+		result = studyset;
+	while (*result != '\0') {
+	    printf("a = %d", *result);
+	    result++;
+	}
+	/* Obtain patient directory from plan directory */
+
+	/* Backslash to slash */
+	result = xtpd->path;
+	while (*result != '\0') {
+	    if (*result == '\\') *result = '/';
+	    result++;
+	}
+
+	/* Find components of path */
+	strncpy(plan_dir, xtpd->path, _MAX_PATH);
+	result = strtok(plan_dir, "/");
+        while (result != NULL) {
+	    result = strtok(NULL, "/");
+	    i++;
+	}
+
+	/* Go up two directories */
+	strncpy(plan_dir, xtpd->path, _MAX_PATH);
+	if (i >= 2) {
+	    result = strtok(plan_dir, "/");
+	    for (j = 1; j <= i - 2; j++) {
+		result = strtok(NULL, "/");
+	    }
+	}
+	strncpy(patient_dir, xtpd->path, result - plan_dir - 1);
+	patient_dir[result - plan_dir - 1] = '\0';
+
+	/* Set studyset directory */
+	std::string studyset_path = std::string(patient_dir) +
+	    "/anatomy/studyset/" + std::string(studyset);
+	strncpy(xsd->path, studyset_path.c_str(), _MAX_PATH);
+
+    }
+
+    return xsd;
 }

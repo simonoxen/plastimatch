@@ -232,15 +232,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 
     make_directory_recursive (dose_fn);
 
-    /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
-       which does not have a (7fe0,0000) PixelDataGroupLength element.
-       Therefore we have to write using Document::WriteContent() */
-    std::ofstream *fp;
-    fp = new std::ofstream (dose_fn, std::ios::out | std::ios::binary);
-    if (*fp == NULL) {
-	fprintf (stderr, "Error opening file for write: %s\n", dose_fn);
-	return;
-    }
     
     /* ----------------------------------------------------------------- */
     /*     Part 1  -- General header                                     */
@@ -350,9 +341,15 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 	plh.m_origin[1], plh.m_origin[2]);
     gf->InsertValEntry (s, 0x0020, 0x0032);
 
-    /* GCS FIX */
     /* ImageOrientationPatient */
-    gf->InsertValEntry ("1\\0\\0\\0\\1\\0", 0x0020, 0x0037);
+    s = gdcm::Util::Format ("%g\\%g\\%g\\%g\\%g\\%g",
+	plh.m_direction[0][0],
+	plh.m_direction[0][1],
+	plh.m_direction[0][2],
+	plh.m_direction[1][0],
+	plh.m_direction[1][1],
+	plh.m_direction[1][2]);
+    gf->InsertValEntry (s, 0x0020, 0x0037);
 
     /* GCS FIX */
 #if defined (commentout)
@@ -375,10 +372,10 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     gf->InsertBinEntry ((uint8_t*)fip, 4, 0x0028, 0x0009, std::string("AT"));
 
     /* Rows */
-    s = gdcm::Util::Format ("%d", plh.Size(0));
+    s = gdcm::Util::Format ("%d", plh.Size(1));
     gf->InsertValEntry (s, 0x0028, 0x0010);
     /* Columns */
-    s = gdcm::Util::Format ("%d", plh.Size(1));
+    s = gdcm::Util::Format ("%d", plh.Size(0));
     gf->InsertValEntry (s, 0x0028, 0x0011);
     /* PixelSpacing */
     s = gdcm::Util::Format ("%g\\%g", plh.m_spacing[0], plh.m_spacing[1]);
@@ -432,11 +429,6 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 
     /* Do the actual writing out to file */
     gfh.WriteDcmExplVR (dose_fn);
-    //gf->WriteContent (fp, gdcm::ExplicitVR);
 
-    /* Do I need to close if I have a file helper??? */
-    fp->close();
-
-    delete fp;
     delete tmp;
 }

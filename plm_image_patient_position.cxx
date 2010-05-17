@@ -11,9 +11,12 @@ plm_image_patient_position_parse (const char* string)
 {
     if (!strcmp (string,"HFS ")) {
 	return PATIENT_POSITION_HFS;
-    }
-    else if (!strcmp (string,"HFP ")) {
+    } else if (!strcmp (string,"HFP ")) {
 	return PATIENT_POSITION_HFP;
+    } else if (!strcmp (string,"FFS ")) {
+	return PATIENT_POSITION_FFS;
+    } else if (!strcmp (string,"FFP ")) {
+	return PATIENT_POSITION_FFP;
     } else {
 	return PATIENT_POSITION_UNKNOWN;
     }

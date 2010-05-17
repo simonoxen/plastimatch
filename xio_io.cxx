@@ -54,6 +54,7 @@ xio_io_get_file_names (
 
     // Process all files in the directory
     itksys::Directory fileDir;
+
     if (!fileDir.Load (input_dir)) {
 	printf ("Error\n");exit (-1);
     }

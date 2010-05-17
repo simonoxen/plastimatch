@@ -27,6 +27,7 @@
 #include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
+#include "xio_ct.h"
 #include "xio_io.h"
 #include "xio_structures.h"
 
@@ -397,71 +398,26 @@ xio_structures_save (
 }
 
 void
-xio_structures_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
+xio_structures_apply_transform (Cxt_structure_list *structures, Xio_ct_transform *transform)
 {
-    /* Transform from XiO coordinates to DICOM LPS */
-
     int i, j, k;
-    Gdcm_series gs;
-    std::string tmp;
-    Plm_image_patient_position patient_pos = PATIENT_POSITION_UNKNOWN;
-    float x_original_offset, y_original_offset;
 
-    if (!dicom_dir) {
-	return;
-    }
+    /* Set offsets */
+    structures->offset[0] = (structures->offset[0] * transform->direction_cosines[0])
+	+ transform->x_offset;
+    structures->offset[1] = (structures->offset[1] * transform->direction_cosines[4])
+	+ transform->y_offset;
 
-    gs.load (dicom_dir);
-    gs.get_best_ct ();
-    if (!gs.m_have_ct) {
-	return;
-    }
-    gdcm::File* file = gs.get_ct_slice ();
-
-    /* Get original geometry */
-    if (structures->have_geometry == 1) {
-	x_original_offset = structures->offset[0];
-	y_original_offset = structures->offset[1];
-    } else {
-	x_original_offset = gs.m_origin[0];
-	y_original_offset = gs.m_origin[1];
-    }
-
-    /* Set new geometry */
-    int d;
-    structures->have_geometry = 1;
-    for (d = 0; d < 3; d++) {
-	structures->offset[d] = gs.m_origin[d];
-	structures->dim[d] = gs.m_dim[d];
-	structures->spacing[d] = gs.m_spacing[d];
-    }
-
-    /* Patient position */
-    tmp = file->GetEntryValue (0x0018, 0x5100);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	patient_pos = plm_image_patient_position_parse (tmp.c_str());
-    }
-
-    /* Transform coordinates */
+    /* Transform structures */
     for (i = 0; i < structures->num_structures; i++) {
 	Cxt_structure *curr_structure = &structures->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
-
-		if ( (patient_pos == PATIENT_POSITION_UNKNOWN)
-		   || (patient_pos == PATIENT_POSITION_HFS) ) {
-		   curr_polyline->x[k] = curr_polyline->x[k] +
-			(structures->offset[0] - x_original_offset);
-		   curr_polyline->y[k] = curr_polyline->y[k] +
-			(structures->offset[1] - y_original_offset);
-		} else if (patient_pos == PATIENT_POSITION_HFP) {
-		   curr_polyline->x[k] = - curr_polyline->x[k] +
-			(structures->offset[0] + x_original_offset);
-		   curr_polyline->y[k] = - curr_polyline->y[k] +
-			(structures->offset[1] + y_original_offset);
-		}
-
+		curr_polyline->x[k] = (curr_polyline->x[k] + transform->x_offset)
+		    * transform->direction_cosines[0];
+		curr_polyline->y[k] = (curr_polyline->y[k] + transform->y_offset)
+		    * transform->direction_cosines[4];
 	    }
 	}
     }

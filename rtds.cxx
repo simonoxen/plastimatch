@@ -12,6 +12,7 @@
 #include "rtds.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
+#include "xio_dose.h"
 #include "xio_io.h"
 #include "xio_structures.h"
 
@@ -28,6 +29,10 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
     Xio_dir *xd;
     Xio_patient_dir *xpd;
     Xio_studyset_dir *xsd;
+    Xio_plan_dir *xtpd;
+
+    Xio_ct_transform *transform;
+    transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
 
     xd = xio_dir_create (xio_dir);
 
@@ -40,41 +45,78 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
 	printf ("Warning: multiple patients found in xio directory.\n"
 	    "Defaulting to first directory: %s\n", xpd->path);
     }
-    if (xpd->num_studyset_dir <= 0) {
-	print_and_exit ("Error, xio patient has no studyset.");
-    }
-    xsd = &xpd->studyset_dir[0];
-    if (xpd->num_studyset_dir > 1) {
-	printf ("Warning: multiple studyset found in xio patient directory.\n"
+
+    if (xpd->num_plan_dir > 0) {
+
+	/* When plans exist, load the first plan */
+	xtpd = &xpd->plan_dir[0];
+	if (xpd->num_studyset_dir > 1) {
+	    printf ("Warning: multiple plans found in xio patient directory.\n"
+		"Defaulting to first directory: %s\n", xtpd->path);
+	}
+
+	/* Load the summed XiO dose file */
+	this->m_dose = new Plm_image ();
+	printf ("calling xio_dose_load\n");
+	std::string xio_dose_file = std::string(xtpd->path) + "/dose.1";
+	xio_dose_load (this->m_dose, xio_dose_file.c_str());
+
+	/* Find studyset associated with plan */
+	xsd = xio_plan_dir_get_studyset_dir (xtpd);
+
+    } else {
+
+	/* No plans exist, load only studyset */
+
+	if (xpd->num_studyset_dir <= 0) {
+	    print_and_exit ("Error, xio patient has no studyset.");
+	}
+
+	printf ("Warning: no plans found, only loading studyset.");
+
+	xsd = &xpd->studyset_dir[0];
+	if (xpd->num_studyset_dir > 1) {
+	    printf ("Warning: multiple studyset found in xio patient directory.\n"
 	    "Defaulting to first directory: %s\n", xsd->path);
+	}
+
     }
 
-    /* Load the XiO CT images */
+    /* Load the XiO studyset CT images */
     this->m_img = new Plm_image;
+    printf ("calling xio_ct_load\n");
+    printf("path is :: %s\n", xsd->path);
     xio_ct_load (this->m_img, xsd->path);
 
-    /* Load the XiO structure set */
+    /* Load the XiO studyset structure set */
     this->m_cxt = cxt_create ();
     printf ("calling xio_structures_load\n");
     xio_structures_load (this->m_cxt, xsd->path);
 
     /* Apply XiO CT geometry to structures */
-    printf ("calling cxt_set_geometry_from_plm_image\n");
-    cxt_set_geometry_from_plm_image (this->m_cxt, this->m_img);
+    if (this->m_cxt) {
+	printf ("calling cxt_set_geometry_from_plm_image\n");
+	cxt_set_geometry_from_plm_image (this->m_cxt, this->m_img);
+    }
 
     /* If a directory with original DICOM CT is provided,
        the UIDs of the matching slices will be added to structures
        and the coordinates will be transformed from XiO to DICOM LPS. */
 
-    if (dicom_dir[0]) {
-	/* Transform CT from XiO coordiantes to DICOM LPS */
-	xio_ct_apply_dicom_dir (this->m_img, dicom_dir);
+    if (dicom_dir[0] && this->m_img) {
+	/* Determine transformation based on XiO CT */
+	xio_ct_get_transform_from_dicom_dir (this->m_img, transform, dicom_dir);
 
-	/* Transform structures from XiO coordinates to DICOM LPS */
-	xio_structures_apply_dicom_dir (this->m_cxt, dicom_dir);
-
-	/* Associate structures with DICOM */
-	cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
+	if (this->m_img) {
+	    xio_ct_apply_transform (this->m_img, transform);
+	}
+	if (this->m_cxt) {
+	    xio_structures_apply_transform (this->m_cxt, transform);
+	    cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
+	}
+	if (this->m_dose) {
+	    xio_dose_apply_transform (this->m_dose, transform);
+	}
     }
 }
 

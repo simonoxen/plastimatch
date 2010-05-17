@@ -657,7 +657,9 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	tps.cxx tps.h
 	xio_ct.cxx xio_ct.h
 	xio_dir.cxx xio_dir.h
+	xio_dose.cxx xio_dose.h
 	xio_io.cxx xio_io.h
+	xio_plan.cxx xio_plan.h
 	xio_structures.cxx xio_structures.h
 	xform.cxx xform.h 
 	)
