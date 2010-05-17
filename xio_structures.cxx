@@ -414,10 +414,12 @@ xio_structures_apply_transform (Cxt_structure_list *structures, Xio_ct_transform
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
-		curr_polyline->x[k] = (curr_polyline->x[k] + transform->x_offset)
-		    * transform->direction_cosines[0];
-		curr_polyline->y[k] = (curr_polyline->y[k] + transform->y_offset)
-		    * transform->direction_cosines[4];
+		curr_polyline->x[k] =
+		    (curr_polyline->x[k] * transform->direction_cosines[0])
+		    + transform->x_offset;
+		curr_polyline->y[k] =
+		    (curr_polyline->y[k] * transform->direction_cosines[4])
+		    + transform->y_offset;
 	    }
 	}
     }
