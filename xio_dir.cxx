@@ -267,55 +267,27 @@ xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd)
     char studyset[_MAX_PATH];
     Xio_studyset_dir *xsd;
     int i = 0, j = 0;
-    char *result;
-    char plan_dir[_MAX_PATH];
-    char patient_dir[_MAX_PATH];
+    char *plan_dir;
+    char *patient_dir;
 
     xsd = (Xio_studyset_dir*) malloc (sizeof (Xio_studyset_dir));
     
     if (is_xio_plan_dir (xtpd->path)) {
-
 	/* Get studyset name from plan */
 	std::string plan_file = std::string(xtpd->path) + "/plan";
 	xio_plan_get_studyset (plan_file.c_str(), studyset);
-		result = studyset;
-	while (*result != '\0') {
-	    printf("a = %d", *result);
-	    result++;
-	}
+
 	/* Obtain patient directory from plan directory */
-
-	/* Backslash to slash */
-	result = xtpd->path;
-	while (*result != '\0') {
-	    if (*result == '\\') *result = '/';
-	    result++;
-	}
-
-	/* Find components of path */
-	strncpy(plan_dir, xtpd->path, _MAX_PATH);
-	result = strtok(plan_dir, "/");
-        while (result != NULL) {
-	    result = strtok(NULL, "/");
-	    i++;
-	}
-
-	/* Go up two directories */
-	strncpy(plan_dir, xtpd->path, _MAX_PATH);
-	if (i >= 2) {
-	    result = strtok(plan_dir, "/");
-	    for (j = 1; j <= i - 2; j++) {
-		result = strtok(NULL, "/");
-	    }
-	}
-	strncpy(patient_dir, xtpd->path, result - plan_dir - 1);
-	patient_dir[result - plan_dir - 1] = '\0';
+	plan_dir = file_util_dirname(xtpd->path);
+	patient_dir = file_util_dirname(plan_dir);
 
 	/* Set studyset directory */
 	std::string studyset_path = std::string(patient_dir) +
 	    "/anatomy/studyset/" + std::string(studyset);
 	strncpy(xsd->path, studyset_path.c_str(), _MAX_PATH);
 
+	free (plan_dir);
+	free (patient_dir);
     }
 
     return xsd;
