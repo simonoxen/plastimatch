@@ -31,9 +31,6 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
     Xio_studyset_dir *xsd;
     Xio_plan_dir *xtpd;
 
-    Xio_ct_transform *transform;
-    transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
-
     xd = xio_dir_create (xio_dir);
 
     if (xd->num_patient_dir <= 0) {
@@ -59,6 +56,7 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
 	this->m_dose = new Plm_image ();
 	printf ("calling xio_dose_load\n");
 	std::string xio_dose_file = std::string(xtpd->path) + "/dose.1";
+	strncpy(this->m_xio_dose_input, xio_dose_file.c_str(), _MAX_PATH);
 	xio_dose_load (this->m_dose, xio_dose_file.c_str());
 
 	/* Find studyset associated with plan */
@@ -105,17 +103,18 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
 
     if (dicom_dir[0] && this->m_img) {
 	/* Determine transformation based on XiO CT */
-	xio_ct_get_transform_from_dicom_dir (this->m_img, transform, dicom_dir);
+	xio_ct_get_transform_from_dicom_dir (this->m_img,
+	    this->m_xio_transform, dicom_dir);
 
 	if (this->m_img) {
-	    xio_ct_apply_transform (this->m_img, transform);
+	    xio_ct_apply_transform (this->m_img, this->m_xio_transform);
 	}
 	if (this->m_cxt) {
-	    xio_structures_apply_transform (this->m_cxt, transform);
+	    xio_structures_apply_transform (this->m_cxt, this->m_xio_transform);
 	    cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
 	}
 	if (this->m_dose) {
-	    xio_dose_apply_transform (this->m_dose, transform);
+	    xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
 	}
     }
 }
@@ -148,6 +147,19 @@ Rtds::load_dose_img (char *dose_img)
     }
     if (dose_img) {
 	this->m_dose = plm_image_load_native (dose_img);
+    }
+}
+
+void
+Rtds::load_dose_xio (char *dose_xio)
+{
+    if (this->m_dose) {
+	delete this->m_dose;
+    }
+    if (dose_xio) {
+	strncpy(this->m_xio_dose_input, dose_xio, _MAX_PATH);
+	this->m_dose = new Plm_image ();
+	xio_dose_load (this->m_dose, dose_xio);
     }
 }
 

@@ -7,13 +7,13 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <fstream>
 
 #include <itksys/SystemTools.hxx>
 #include <itksys/Directory.hxx>
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
-#include "bstrlib.h"
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
 #include "gdcmGlobal.h"
@@ -41,14 +41,16 @@ struct xio_dose_header {
     float spacing[3];
     double dose_scale_factor;
     double dose_weight;
+    int header_size;
+    int header_pos_start_geometry;
+    int header_pos_end_geometry;
 };
 
 static void
 xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
 {
     FILE *fp;
-    struct bStream * bs;
-    bstring line1 = bfromcstr ("");
+
     int i;
     int rc;
     int dummy;
@@ -66,94 +68,100 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     /* Offset */
     double topx; double topy; double topz;
 
-    fp = fopen (filename, "r");
+    char line1[1024];
+
+    fp = fopen (filename, "rb");
     if (!fp) {
 	print_and_exit ("Error opening file %s for read\n", filename);
     }
 
-    bs = bsopen ((bNread) fread, fp);
-
     /* XiO file format version */
-    bsreadln (line1, bs, '\n');
+    fgets (line1, sizeof(line1), fp);
 
-    if (!strncmp ((char*) line1->data, "006d101e", strlen ("006d101e"))) {
+    if (!strncmp (line1, "006d101e", strlen ("006d101e"))) {
         xio_dose_version = XIO_VERSION_4_5_0;
-    } else if (!strncmp ((char*) line1->data, "0062101e", strlen ("0062101e"))) {
+    } else if (!strncmp (line1, "0062101e", strlen ("0062101e"))) {
         xio_dose_version = XIO_VERSION_4_33_02;
-    } else if (!strncmp ((char*) line1->data, "004f101e", strlen ("004f101e"))) {
+    } else if (!strncmp (line1, "004f101e", strlen ("004f101e"))) {
         xio_dose_version = XIO_VERSION_4_2_1;
     } else {
         xio_dose_version = XIO_VERSION_UNKNOWN;
     }
 
     if (xio_dose_version == XIO_VERSION_UNKNOWN) {
-        print_and_exit ("Error. Unknown XiO file format version: %s\n", line1->data);
+        print_and_exit ("Error. Unknown XiO file format version: %s\n", line1);
     }
 
     /* Skip line */
-    bsreadln (line1, bs, '\n');
+    fgets (line1, sizeof(line1), fp);
 
     if (xio_dose_version == XIO_VERSION_4_33_02 || xio_dose_version == XIO_VERSION_4_5_0)
     {
 	/* Skip line */
-	bsreadln (line1, bs, '\n');
+	fgets (line1, sizeof(line1), fp);
     }
 
     /* Number of subplans or beams */
-    bsreadln (line1, bs, '\n');
-    rc = sscanf ((char*) line1->data, "%1d", &xio_sources);
+    fgets (line1, sizeof(line1), fp);
+    rc = sscanf (line1, "%1d", &xio_sources);
 
     if (rc != 1) {
-        print_and_exit ("Error. Cannot parse sources/subplans: %s\n", line1->data);
+        print_and_exit ("Error. Cannot parse sources/subplans: %s\n", line1);
     }
 
     printf ("Dose file is a sum of %d sources/subplans:\n", xio_sources);
 
     /* One line for each source/subplan */
     for (i = 1; i <= xio_sources; i++) {
-        bsreadln (line1, bs, '\n');
-        printf ("Source/subplan %d: %s", i, line1->data);
+        fgets (line1, sizeof(line1), fp);
+        printf ("Source/subplan %d: %s", i, line1);
     }
 
     /* Dose normalization info */
-    bsreadln (line1, bs, '\n');
-    rc = sscanf ((char*) line1->data, "%lf,%lf", &xio_dose_scalefactor, &xio_dose_weight);
+    fgets (line1, sizeof(line1), fp);
+    rc = sscanf (line1, "%lf,%lf", &xio_dose_scalefactor, &xio_dose_weight);
 
     if (rc != 2) {
-        print_and_exit ("Error. Cannot parse dose normalization: %s\n", line1->data);
+        print_and_exit ("Error. Cannot parse dose normalization: %s\n", line1);
     }
 
     printf ("Dose scale factor = %f\n", xio_dose_scalefactor);
     printf ("Dose weight = %f\n", xio_dose_weight);
 
     /* Skip line */
-    bsreadln (line1, bs, '\n');
+    fgets (line1, sizeof(line1), fp);
 
     /* Data type */
-    bsreadln (line1, bs, '\n');
-    rc = sscanf ((char*) line1->data, "%1d", &xio_dose_datatype);
+    fgets (line1, sizeof(line1), fp);
+    rc = sscanf (line1, "%1d", &xio_dose_datatype);
 
     if (rc != 1) {
-        print_and_exit ("Error. Cannot parse datatype: %s\n", line1->data);
+        print_and_exit ("Error. Cannot parse datatype: %s\n", line1);
     }
 
     if (xio_dose_datatype != XIO_DATATYPE_UINT32) {
-        print_and_exit ("Error. Only unsigned 32-bit integer data is currently supported: %s\n", line1->data);
+        print_and_exit ("Error. Only unsigned 32-bit integer data is currently supported: %s\n", line1);
     }
 
-    /* Dose cube definition */
-    bsreadln (line1, bs, '\n');
+    /* Set start position of geometry */
+    xdh->header_pos_start_geometry = ftell(fp);
 
-    rc = sscanf ((char*) line1->data, "%d,%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
+    /* Dose cube definition */
+    fgets (line1, sizeof(line1), fp);
+
+    rc = sscanf (line1, "%d,%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d",
                  &dummy, &rx, &rz, &ry, &ox, &oz, &oy, &nx, &nz, &ny);
 
     if (rc != 10) {
-        print_and_exit ("Error. Cannot parse dose cube definition: %s\n", line1->data);
+        print_and_exit ("Error. Cannot parse dose cube definition: %s\n", line1);
     }
 
     printf ("rx = %lf, ry = %lf, rz = %lf\n", rx, ry, rz);
     printf ("ox = %lf, oy = %lf, oz = %lf\n", ox, oy, oz);
     printf ("nx = %d, ny = %d, nz = %d\n", nx, ny, nz);
+
+    /* Set end position of geometry */
+    xdh->header_pos_end_geometry = ftell(fp);
 
     /* Calculate element spacing */
     dx = rx / (nx - 1);
@@ -181,9 +189,13 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     xdh->dose_scale_factor = xio_dose_scalefactor;
     xdh->dose_weight = xio_dose_weight;
 
-    /* Clean up */
-    bdestroy (line1);
-    bsclose (bs);
+    /* Get size of full header */
+    rc = fseek(fp, - nx * ny * nz * sizeof(unsigned int), SEEK_END);
+    if (rc == -1) {
+	print_and_exit ("Error seeking backward when reading XiO dose header\n");
+    }
+    xdh->header_size = ftell(fp);
+
     fclose (fp);
 }
 
@@ -266,6 +278,144 @@ xio_dose_load (Plm_image *pli, const char *filename)
     xio_dose_load_header(&xdh, filename);
     xio_dose_create_volume(pli, &xdh);
     xio_dose_load_cube(pli, &xdh, filename);
+}
+
+void
+xio_dose_save (
+    Plm_image *pli,  
+    Xio_ct_transform *transform,
+    const char *filename,
+    const char *filename_template
+)
+{
+    /* Because XiO dose files can contain huge amounts of information,
+       most of which is not used by plastimatch, the only feasible
+       saving method is to copy over the header from the input dose file.
+       This means that saving XiO dose is only possible when the input
+       is also XiO dose.
+
+       The line in the dose header that defines is geometry will be
+       adjusted to the new geometry */
+
+    FILE *fp, *fpt;
+
+    int i;
+
+    char header;
+    size_t result;
+
+    Xio_dose_header xdh;
+
+    Volume *v;
+    Volume *v_write;
+    v = (Volume*) pli->m_gpuit;
+
+    /* Dose cube definition */
+    double rx; double ry; double rz;
+    double ox; double oy; double oz;
+    int nx; int ny; int nz;
+
+    fp = fopen (filename, "wb");
+    if (!fp) {
+	print_and_exit ("Error opening file %s for write\n", filename);
+    }
+
+    fpt = fopen (filename_template, "rb");
+    if (!fpt) {
+	print_and_exit ("Error opening file %s for read\n", filename_template);
+    }
+
+    xio_dose_load_header(&xdh, filename_template);
+
+    /* Write first part of header */
+    for (i = 0; i < xdh.header_size; i++) {
+        result = fread (&header, sizeof(header), 1, fpt);
+        if (result != 1) {
+            print_and_exit ("Error. Cannot read dose template header (1).\n");
+        }
+        fwrite (&header, sizeof(header), 1, fp);
+    }
+
+    /* Write dose cube definition */
+    rx = v->pix_spacing[0] * (v->dim[0] - 1);
+    ry = v->pix_spacing[2] * (v->dim[2] - 1);
+    rz = v->pix_spacing[1] * (v->dim[1] - 1);
+
+    ox = (v->offset[0] + (rx / 2)) - transform->x_offset;
+    oy = (v->offset[2] + (ry / 2)) - transform->y_offset;
+    oz = - (v->offset[1] + (rz / 2));
+
+    if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
+	 (transform->patient_pos == PATIENT_POSITION_UNKNOWN) ) {
+	ox =   ox * v->direction_cosines[0];
+	oy =   oy * v->direction_cosines[8];
+	oz =   oz * v->direction_cosines[4];
+    } else if (transform->patient_pos == PATIENT_POSITION_HFP) {
+	ox = - ox * v->direction_cosines[0];
+	oy =   oy * v->direction_cosines[8];
+	oz = - oz * v->direction_cosines[4];
+    } else if (transform->patient_pos == PATIENT_POSITION_FFS) {
+	ox = - ox * v->direction_cosines[0];
+	oy = - oy * v->direction_cosines[8];
+	oz =  oz * v->direction_cosines[4];
+    } else if (transform->patient_pos == PATIENT_POSITION_FFP) {
+	ox =   ox * v->direction_cosines[0];
+	oy = - oy * v->direction_cosines[8];
+	oz = - oz * v->direction_cosines[4];
+    }
+
+    nx = v->dim[0];
+    ny = v->dim[2];
+    nz = v->dim[1];
+
+    fprintf (fp, "%d,%lf,%lf,%lf,%lf,%lf,%lf,%d,%d,%d\n",
+	0, rx, rz, ry, ox, oz, oy, nx, nz, ny);
+
+    /* Write second part of header */
+    fseek (fpt, xdh.header_pos_end_geometry, SEEK_SET);
+    for (i = 0; i < xdh.header_size - xdh.header_pos_end_geometry; i++) {
+        result = fread (&header, sizeof(header), 1, fpt);
+        if (result != 1) {
+            print_and_exit ("Error. Cannot read dose template header (2).\n");
+        }
+        fwrite (&header, sizeof(header), 1, fp);
+    }
+
+    /* Convert dose to floating point */
+    Plm_image *tmp = pli->clone ();
+    tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
+    v_write = (Volume*) tmp->m_gpuit;
+
+    /* Apply normalization backwards */
+    volume_scale (v_write, 1 / (xdh.dose_weight * xdh.dose_scale_factor * 0.01));
+
+    /* Convert to unsigned 32-bit integer */
+    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT32);
+    v_write = (Volume*) tmp->m_gpuit;
+    unsigned int *cube_img_write = (unsigned int*) v_write->img;
+
+    /* Switch big-endian to little-endian */
+    for (i = 0; i < v->dim[0] * v->dim[1] * v->dim[2]; i++) {
+	char lenbuf[4];
+	char tmpc;
+	memcpy (lenbuf, (char*) &cube_img_write[i], 4);
+	tmpc = lenbuf[0]; lenbuf[0] = lenbuf[3]; lenbuf[3] = tmpc;
+	tmpc = lenbuf[1]; lenbuf[1] = lenbuf[2]; lenbuf[2] = tmpc;
+	memcpy ((char*) &cube_img_write[i], lenbuf, 4);
+    }
+
+    /* Write dose cube */
+    /* FIX: This assumes pixel data has not been flipped after import */
+    result = fwrite (cube_img_write, sizeof(unsigned int),
+	v->dim[0] * v->dim[1] * v->dim[2], fp);
+    if (result != v->dim[0] * v->dim[1] * v->dim[2]) {
+	print_and_exit ("Error. Cannot write dose cube to %s.\n", filename);
+    }
+
+    fclose(fp);
+    fclose(fpt);
+
+    delete tmp;
 }
 
 void

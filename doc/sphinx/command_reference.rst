@@ -110,17 +110,20 @@ The command line usage is given as follows::
       --dif=filename             (for dij)
       --input-ss-img=filename    (for structures)
       --prune-empty              (for structures)
+      --input-dose-img=filename  (for rt dose)
+      --input-dose-xio=filename  (for XiO rt dose)
 
       --output-cxt=filename      (for structures)
       --output-dicom=directory   (for image and structures)
       --output-dij=filename      (for dij)
+      --output-dose-img          (for rt dose)
       --output-img=filename      (for image)
       --output-labelmap=filename (for structures)
       --output-prefix=string     (for structures)
       --output-ss-img=filename   (for structures)
       --output-ss-list=filename  (for structures)
       --output-vf=filename       (for vector field)
-      --output-xio=directory     (for structures)
+      --output-xio=directory     (for rt dose and structures)
 
 Examples
 ^^^^^^^^

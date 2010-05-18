@@ -12,6 +12,7 @@
 #include "plm_warp.h"
 #include "rtds_warp.h"
 #include "ss_img_extract.h"
+#include "xio_dose.h"
 #include "xio_structures.h"
 
 static void
@@ -116,6 +117,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     if (parms->input_dose_img[0]) {
 	rtds->load_dose_img (parms->input_dose_img);
+    }
+
+    if (parms->input_dose_xio[0]) {
+	rtds->load_dose_xio (parms->input_dose_xio);
     }
 }
 
@@ -279,7 +284,8 @@ save_ss_output (Rtds *rtds,  Xform *xf,
     if (parms->output_xio_dirname[0]) {
 	printf ("Saving xio format...\n");
 	xio_structures_save (rtds->m_cxt, 
-	    parms->output_xio_version, 
+	    rtds->m_xio_transform,
+	    parms->output_xio_version,
 	    parms->output_xio_dirname);
 	printf ("Done.\n");
     }
@@ -360,13 +366,30 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output image */
-    /* FIX: It should be possible to save both CT and dose */
     if (parms->output_img[0] && rtds->m_img) {
 	printf ("Saving image...\n");
 	rtds->m_img->convert_and_save (parms->output_img, parms->output_type);
-    } else if (parms->output_img[0] && rtds->m_dose) {
-	printf ("Saving image...\n");
-	rtds->m_dose->convert_and_save (parms->output_img, parms->output_type);
+    }
+
+    /* Save output dose image */
+    if (parms->output_dose_img[0] && rtds->m_dose) {
+	printf ("Saving dose image...\n");
+	rtds->m_dose->convert_and_save (parms->output_dose_img, parms->output_type);
+    }
+
+    /* Save output XiO dose */
+    if (parms->output_xio_dirname[0] && rtds->m_xio_dose_input[0] && rtds->m_dose) {
+	printf ("Saving xio dose...\n");
+
+	char fn[_MAX_PATH];
+	snprintf (fn, _MAX_PATH, "%s/%s", parms->output_xio_dirname, "dose");
+
+	xio_dose_save (rtds->m_dose, rtds->m_xio_transform, fn, rtds->m_xio_dose_input);
+    }
+
+    if (parms->output_dose_img[0] && rtds->m_img) {
+	printf ("Saving dose image...\n");
+	rtds->m_dose->convert_and_save (parms->output_dose_img, parms->output_type);
     }
 
     /* Save output vector field */

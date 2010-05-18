@@ -43,17 +43,19 @@ print_usage (char* command)
 	"    --input-ss-list=filename   (for structures)\n"
 	"    --prune-empty              (for structures)\n"
 	"    --input-dose-img=filename  (for rt dose)\n"
+	"    --input-dose-xio=filename  (for XiO rt dose)\n"
 	"\n"
 	"    --output-cxt=filename      (for structures)\n"
 	"    --output-dicom=directory   (for image and structures)\n"
 	"    --output-dij=filename      (for dij)\n"
+	"    --output-dose-img=filename (for rt dose)\n"
 	"    --output-img=filename      (for image)\n"
 	"    --output-labelmap=filename (for structures)\n"
 	"    --output-prefix=string     (for structures)\n"
 	"    --output-ss-img=filename   (for structures)\n"
 	"    --output-ss-list=filename  (for structures)\n"
 	"    --output-vf=filename       (for vector field)\n"
-	"    --output-xio=directory     (for structures)\n"
+	"    --output-xio=directory     (for rt dose and structures)\n"
 	,
 	command);
     exit (-1);
@@ -114,6 +116,10 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "input-ss-img",   required_argument,      NULL,           28 },
 	{ "input_dose_img", required_argument,      NULL,           29 },
 	{ "input-dose-img", required_argument,      NULL,           29 },
+	{ "input_dose_xio", required_argument,      NULL,           30 },
+	{ "input-dose-xio", required_argument,      NULL,           30 },
+	{ "output_dose_img", required_argument,     NULL,           31 },
+	{ "output-dose-img", required_argument,     NULL,           31 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -240,6 +246,12 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	case 29:
 	    strncpy (parms->input_dose_img, optarg, _MAX_PATH);
 	    break;
+	case 30:
+	    strncpy (parms->input_dose_xio, optarg, _MAX_PATH);
+	    break;
+	case 31:
+	    strncpy (parms->output_dose_img, optarg, _MAX_PATH);
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");
 	    print_usage (argv[1]);
@@ -247,7 +259,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	}
     }
     if (!parms->input_fn[0] && !parms->input_ss_img[0] 
-	&& !parms->input_dose_img[0])
+	&& !parms->input_dose_img[0] && !parms->input_dose_xio[0])
     {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);

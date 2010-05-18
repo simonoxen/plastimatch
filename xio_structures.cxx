@@ -305,8 +305,9 @@ format_xio_filename (char *fn, char *output_dir, float z_loc)
 
 void
 xio_structures_save (
-    Cxt_structure_list *cxt, 
-    Xio_version xio_version, 
+    Cxt_structure_list *cxt,
+    Xio_ct_transform *transform,
+    Xio_version xio_version,
     char *output_dir
 )
 {
@@ -356,7 +357,19 @@ xio_structures_save (
     /* Write WC files */
     for (z = 0; z < cxt->dim[2]; z++) {
 	char fn[_MAX_PATH];
-	float z_loc = cxt->offset[2] + z * cxt->spacing[2];
+
+	float z_offset;
+
+	if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
+	     (transform->patient_pos == PATIENT_POSITION_HFP) ||
+	     (transform->patient_pos == PATIENT_POSITION_UNKNOWN) ) {
+	    z_offset = cxt->offset[2];
+	} else if ( (transform->patient_pos == PATIENT_POSITION_FFS) ||
+	     (transform->patient_pos == PATIENT_POSITION_FFP) ) {
+	    z_offset = - cxt->offset[2];
+	}
+
+	float z_loc = z_offset + z * cxt->spacing[2];
 	format_xio_filename (fn, output_dir, z_loc);
 	//sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
 	fp = fopen (fn, "w");
@@ -378,8 +391,10 @@ xio_structures_save (
 		fprintf (fp, "%d\n", i+1);
 		for (k = 0; k < curr_polyline->num_vertices; k++) {
 		    fprintf (fp, "%6.1f,%6.1f", 
-			curr_polyline->x[k], 
-			- curr_polyline->y[k]);
+			curr_polyline->x[k] * transform->direction_cosines[0]
+			    - transform->x_offset,
+			curr_polyline->y[k] * transform->direction_cosines[4]
+			    - transform->y_offset);
 		    if ((k+1) % 5 == 0) {
 			fprintf (fp, "\n");
 		    }

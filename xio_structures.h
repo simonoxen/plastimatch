@@ -14,6 +14,7 @@ plastimatch1_EXPORT
 void
 xio_structures_save (
     Cxt_structure_list *cxt, 
+    Xio_ct_transform *transform, 
     Xio_version xio_version, 
     char *output_dir
 );

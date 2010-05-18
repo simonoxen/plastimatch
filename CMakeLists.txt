@@ -680,9 +680,6 @@ SET (CHECK_GRAD_SRC
   check_grad.c
   check_grad_opts.c check_grad_opts.h 
   )
-SET (CMS_DOSE_TO_MHA_SRC
-	cms_dose_to_mha.c
-	)
 SET (COMPUTE_DISTANCE_SRC
 	compute_distance.cxx compute_distance.h
 	closest_point.cxx 
@@ -781,9 +778,6 @@ SET (ITK_TPS_WARP_SRC
 	)
 SET (MASK_MHA_SRC
 	mask_mha_main.cxx
-	)
-SET (MHA_TO_CMS_DOSE_SRC
-	mha_to_cms_dose.c
 	)
 SET (MHA_TO_RTOG_DOSE_SRC
 	mha_to_rtog_dose.cxx
@@ -1012,7 +1006,6 @@ PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}"
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE (cms_dose_to_mha "${CMS_DOSE_TO_MHA_SRC}" "" "")
 PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
@@ -1021,7 +1014,6 @@ PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
-PLM_ADD_EXECUTABLE (mha_to_cms_dose mha_to_cms_dose.c "" "")
 PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
