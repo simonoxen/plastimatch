@@ -122,6 +122,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_dose_xio[0]) {
 	rtds->load_dose_xio (parms->input_dose_xio);
     }
+
+    if (parms->input_dose_ast[0]) {
+	rtds->load_dose_astroid (parms->input_dose_ast);
+    }
 }
 
 static void

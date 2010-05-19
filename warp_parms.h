@@ -19,6 +19,7 @@ public:
     char input_ss_list[_MAX_PATH];
     char input_dose_img[_MAX_PATH];
     char input_dose_xio[_MAX_PATH];
+    char input_dose_ast[_MAX_PATH];
     char vf_in_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     char fixed_im_fn[_MAX_PATH];

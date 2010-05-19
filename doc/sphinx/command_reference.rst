@@ -112,6 +112,7 @@ The command line usage is given as follows::
       --prune-empty              (for structures)
       --input-dose-img=filename  (for rt dose)
       --input-dose-xio=filename  (for XiO rt dose)
+      --input-dose-ast=filename  (for Astroid rt dose)
 
       --output-cxt=filename      (for structures)
       --output-dicom=directory   (for image and structures)

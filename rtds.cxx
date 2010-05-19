@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "astroid_dose.h"
 #include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
 #include "gdcm_dose.h"
@@ -160,6 +161,20 @@ Rtds::load_dose_xio (char *dose_xio)
 	strncpy(this->m_xio_dose_input, dose_xio, _MAX_PATH);
 	this->m_dose = new Plm_image ();
 	xio_dose_load (this->m_dose, dose_xio);
+	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
+    }
+}
+
+void
+Rtds::load_dose_astroid (char *dose_astroid)
+{
+    if (this->m_dose) {
+	delete this->m_dose;
+    }
+    if (dose_astroid) {
+	this->m_dose = new Plm_image ();
+	astroid_dose_load (this->m_dose, dose_astroid);
+	astroid_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 

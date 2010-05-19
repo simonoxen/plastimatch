@@ -612,6 +612,7 @@ IF(F2C_LIBRARY)
 ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
+	astroid_dose.cxx astroid_dose.h
 	cxt_apply_dicom.cxx cxt_apply_dicom.h 
 	cxt.cxx cxt.h 
 	cxt_io.cxx cxt_io.h 

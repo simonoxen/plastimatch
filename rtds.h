@@ -71,6 +71,7 @@ public:
     void load_ss_img (char *ss_img, char *ss_list);
     void load_dose_img (char *dose_img);
     void load_dose_xio (char *dose_xio);
+    void load_dose_astroid (char *dose_astroid);
     void save_dicom (char *dicom_dir);
     void convert_ss_img_to_cxt (void);
 };
