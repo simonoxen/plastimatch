@@ -34,7 +34,6 @@ struct check_grad_opts {
 extern "C" {
 #endif
 
-gpuit_EXPORT
 void
 check_grad_opts_parse_args (Check_grad_opts* options, 
     int argc, char* argv[]);
