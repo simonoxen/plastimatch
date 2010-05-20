@@ -103,7 +103,7 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
 
     /* Number of subplans or beams */
     fgets (line1, sizeof(line1), fp);
-    rc = sscanf (line1, "%1d", &xio_sources);
+    rc = sscanf (line1, "%d", &xio_sources);
 
     if (rc != 1) {
         print_and_exit ("Error. Cannot parse sources/subplans: %s\n", line1);
