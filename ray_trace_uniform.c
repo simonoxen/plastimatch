@@ -60,7 +60,7 @@ ray_trace_uniform (
         ipx[1] = ip1[1] + uv[1] * pt;
         ipx[2] = ip1[2] + uv[2] * pt;
 
-        // Compute CT Volume coordinates @ point
+        // Compute CT Volume indices @ point
         ai[0] = (int) floor ((ipx[0] - vol->offset[0] + 0.5 * ps[0]) / ps[0]);
         ai[1] = (int) floor ((ipx[1] - vol->offset[1] + 0.5 * ps[1]) / ps[1]);
         ai[2] = (int) floor ((ipx[2] - vol->offset[2] + 0.5 * ps[2]) / ps[2]);
