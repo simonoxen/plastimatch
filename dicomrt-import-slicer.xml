@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Plastimatch</category>
-  <title>DicomRT Structure Import</title>
-  <description>DicomRT Structure Set Import</description>
+  <title>DICOM-RT Structure Import</title>
+  <description>DICOM-RT Structure Set Import</description>
   <version>0.0</version>
   <documentation-url></documentation-url>
   <license>BSD-style</license>
@@ -13,11 +13,11 @@
     <description>Input/output parameters</description>
     <file>
       <name>input_dicomrt_ss</name>
-      <label>Input DicomRT SS</label>
+      <label>Input DICOM-RT SS</label>
       <channel>input</channel>
       <index>0</index>
       <default>None</default>
-      <description>Input DicomRT Structure Set</description>
+      <description>Input DICOM-RT Structure Set</description>
     </file>
     <image>
       <name>reference_vol</name>
