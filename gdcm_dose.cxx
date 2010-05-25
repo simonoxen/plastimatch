@@ -177,7 +177,7 @@ gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
     gdcm::FileHelper gdcm_file_helper (gdcm_file);
     unsigned short* image_data 
 	= (unsigned short*) gdcm_file_helper.GetImageData ();
-    size_t image_data_size = gdcm_file_helper.GetImageDataSize();
+    //size_t image_data_size = gdcm_file_helper.GetImageDataSize();
     if (strcmp (gdcm_file->GetPixelType().c_str(), "16U")) {
 	print_and_exit ("Error RTDOSE not type 16U (type=%s)\n",
 	    gdcm_file->GetPixelType().c_str());
@@ -412,7 +412,7 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
 
     /* We need to convert image to uint16_t, but first we need to 
        scale it.  I'll use the value from XiO: 0.004
-    /* FIX: The maximum dose that will fit in a 16-bit unsigned integer with
+       FIX: The maximum dose that will fit in a 16-bit unsigned integer with
        this scaling is 262 Gy. Higher values will wrap around without warning.
        Perhaps the scaling could be adjusted automatically to maximize use
        of the available integer range. */

@@ -11,16 +11,16 @@
 #include "itkMutualInformationImageToImageMetric.h"
 #include "itkRegularStepGradientDescentOptimizer.h"
 
-#define USE_GCS_METRIC 1
+//#define USE_GCS_METRIC 1
 
 #if defined(ITK_USE_OPTIMIZED_REGISTRATION_METHODS)
 #include "itkOptMattesMutualInformationImageToImageMetric.h"
 #include "itkOptMeanSquaresImageToImageMetric.h"
 #else
 #include "itkMattesMutualInformationImageToImageMetric.h"
+#include "itkMeanSquaresImageToImageMetric.h"
 #if (USE_GCS_METRIC)
 #include "gcs_metric.h"
-#include "itkMeanSquaresImageToImageMetric.h"
 #else
 #endif
 #endif
@@ -63,6 +63,7 @@ public:
 protected:
     Optimization_Observer() {
 	m_stage = 0;
+	plm_timer_start (&timer);
     };
 public:
     Stage_Parms* m_stage;
@@ -76,12 +77,12 @@ public:
 	m_stage = stage;
     }
 
-    void Execute(itk::Object * caller, const itk::EventObject & event) {
+    void Execute (itk::Object * caller, const itk::EventObject & event) {
         Execute((const itk::Object *) caller, event);
 	plm_timer_start (&timer);
     }
 
-    void Execute(const itk::Object * object,
+    void Execute (const itk::Object * object,
 		 const itk::EventObject & event) {
 	if (typeid(event) == typeid(itk::StartEvent)) {
 	    last_value = -1.0;
@@ -92,7 +93,7 @@ public:
 	    std::cout << std::endl;
 	    plm_timer_start (&timer);
 	}
-	if (typeid(event) == typeid(itk::InitializeEvent)) {
+	else if (typeid(event) == typeid(itk::InitializeEvent)) {
 	    std::cout << "InitializeEvent: ";
 	    std::cout << std::endl;
 	    plm_timer_start (&timer);
@@ -110,7 +111,7 @@ public:
 	}
 	else if (typeid(event) == typeid(itk::FunctionAndGradientEvaluationIterationEvent)) {
 	    double duration;
-
+	    
 	    std::cout << "VAL+GRAD ";
 	    double val = optimizer_get_value(m_registration, m_stage);
 
