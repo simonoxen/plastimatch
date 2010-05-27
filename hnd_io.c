@@ -4,7 +4,6 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <malloc.h>
 #include "file_util.h"
 #include "hnd_io.h"
 #include "math_util.h"
