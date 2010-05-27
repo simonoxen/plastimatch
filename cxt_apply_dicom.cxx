@@ -31,7 +31,7 @@ cxt_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
     }
 
     gs.load (dicom_dir);
-    gs.get_best_ct ();
+    gs.digest_files ();
     if (!gs.m_have_ct) {
 	return;
     }

@@ -651,6 +651,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	render_polyline.cxx render_polyline.h
 	resample_mha.cxx resample_mha.h 
 	rtds.cxx rtds.h
+	rtds_dicom.cxx rtds_dicom.h
 	rtds_warp.cxx rtds_warp.h
 	slice_extract.cxx slice_extract.h
 	ss_img_extract.cxx ss_img_extract.h

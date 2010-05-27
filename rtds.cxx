@@ -5,12 +5,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "astroid_dose.h"
 #include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "rtds.h"
+#include "rtds_dicom.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
@@ -20,8 +22,14 @@
 void
 Rtds::load_dicom_dir (char *dicom_dir)
 {
+    /* Use existing itk reader for the image.
+       This is required because the native dicom reader doesn't yet 
+       handle things like MR. */
     this->m_img = plm_image_load_native (dicom_dir);
-    
+
+#if defined (commentout)
+#endif
+    rtds_dicom_load (this, dicom_dir);
 }
 
 void

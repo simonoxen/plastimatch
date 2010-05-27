@@ -408,7 +408,7 @@ xio_dose_save (
     /* FIX: This assumes pixel data has not been flipped after import */
     result = fwrite (cube_img_write, sizeof(unsigned int),
 	v->dim[0] * v->dim[1] * v->dim[2], fp);
-    if (result != v->dim[0] * v->dim[1] * v->dim[2]) {
+    if (result != (size_t) (v->dim[0] * v->dim[1] * v->dim[2])) {
 	print_and_exit ("Error. Cannot write dose cube to %s.\n", filename);
     }
 

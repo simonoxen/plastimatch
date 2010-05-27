@@ -65,7 +65,7 @@ gdcm_dose_probe (char *dose_fn)
 }
 
 Plm_image*
-gdcm_dose_load (Plm_image *pli, char *dose_fn, char *dicom_dir)
+gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 {
     int i, rc;
     gdcm::File *gdcm_file = new gdcm::File;

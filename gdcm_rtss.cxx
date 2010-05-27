@@ -55,7 +55,11 @@ gdcm_rtss_probe (char *rtss_fn)
 }
 
 void
-gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
+gdcm_rtss_load (
+    Cxt_structure_list *structures, 
+    const char *rtss_fn, 
+    const char *dicom_dir
+)
 {
     gdcm::File *rtss_file = new gdcm::File;
     gdcm::SeqEntry *seq;
@@ -89,7 +93,7 @@ gdcm_rtss_load (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
 	printf ("Successful load\n");
 	free (dir);
     }
-    gs.get_best_ct ();
+    gs.digest_files ();
     if (gs.m_have_ct) {
 	int d;
 	structures->have_geometry = 1;
@@ -333,9 +337,8 @@ gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
     /* Got the RT struct.  Try to load the corresponding CT. */
     if (dicom_dir[0] != '\0') {
 	gs.load (dicom_dir);
-	gs.get_best_ct ();
+	gs.digest_files ();
     }
-
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.

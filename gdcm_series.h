@@ -16,8 +16,8 @@ public:
     Gdcm_series ();
     ~Gdcm_series ();
 
-    void load (char *dicom_dir);
-    void get_best_ct (void);
+    void load (const char *dicom_dir);
+    void digest_files (void);
     void get_slice_info (int *slice_no, bstring *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
 
@@ -25,6 +25,8 @@ public:
 
     int m_have_ct;
     gdcm::FileList *m_ct_file_list;
+    gdcm::FileList *m_rtdose_file_list;
+    gdcm::FileList *m_rtstruct_file_list;
     int m_dim[3];
     double m_origin[3];
     double m_spacing[3];

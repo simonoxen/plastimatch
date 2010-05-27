@@ -94,7 +94,7 @@ Gdcm_series::~Gdcm_series (void)
 }
 
 void
-Gdcm_series::load (char *dicom_dir)
+Gdcm_series::load (const char *dicom_dir)
 {
     bool recursive = false;
 
@@ -107,7 +107,6 @@ Gdcm_series::load (char *dicom_dir)
 
     //gdcm_shelper->Print ();
 
-
     gdcm::FileList *file_list = this->m_gsh2->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
 	if (file_list->size()) {	
@@ -119,9 +118,6 @@ Gdcm_series::load (char *dicom_dir)
 	    std::string id = this->m_gsh2->
 		    CreateUniqueSeriesIdentifier(file).c_str();
 	    printf ("id = %s\n", id.c_str());
-
-	    /* Iterate through files, and print the ipp */
-	    print_series_ipp (file_list);
 #endif
 	}
 	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();
@@ -130,7 +126,7 @@ Gdcm_series::load (char *dicom_dir)
 }
 
 void
-Gdcm_series::get_best_ct (void)
+Gdcm_series::digest_files (void)
 {
     int d;
     for (d = 0; d < 3; d++) {
@@ -181,6 +177,17 @@ Gdcm_series::get_best_ct (void)
 		    }
 		    
 		}
+	    }
+	    else if (modality == std::string ("RTDOSE")) {
+		printf ("Found RTDOSE!\n");
+		this->m_rtdose_file_list = file_list;
+	    }
+	    else if (modality == std::string ("RTPLAN")) {
+		//printf ("Found RTPLAN!\n");
+	    }
+	    else if (modality == std::string ("RTSTRUCT")) {
+		printf ("Found RTSTRUCT!\n");
+		this->m_rtstruct_file_list = file_list;
 	    }
 	}
 	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();

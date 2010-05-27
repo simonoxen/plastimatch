@@ -288,7 +288,9 @@ xio_ct_load (Plm_image *pli, char *input_dir)
 
 void
 xio_ct_get_transform_from_dicom_dir (
-Plm_image *pli, Xio_ct_transform *transform, char *dicom_dir
+    Plm_image *pli, 
+    Xio_ct_transform *transform, 
+    char *dicom_dir
 )
 {
     /* Use original XiO CT geometry and a DICOM directory to determine
@@ -309,7 +311,7 @@ Plm_image *pli, Xio_ct_transform *transform, char *dicom_dir
     }
 
     gs.load (dicom_dir);
-    gs.get_best_ct ();
+    gs.digest_files ();
     if (!gs.m_have_ct) {
 	return;
     }
