@@ -716,43 +716,6 @@ bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // ----------------------------------------------------------
 
 
-    // --- ALLOCATE INDEX LUT IN GPU GLOBAL ---------------------
-    dev_ptrs->c_lut_size = sizeof(int) 
-    * bxf->rdims[0] 
-    * bxf->rdims[1] 
-    * bxf->rdims[2] 
-    * 64;
-
-    cudaMalloc((void**)&dev_ptrs->c_lut, dev_ptrs->c_lut_size);
-        checkCUDAError("Failed to allocate memory for c_LUT");
-    cudaMemcpy(dev_ptrs->c_lut, bxf->c_lut, dev_ptrs->c_lut_size, cudaMemcpyHostToDevice);
-        checkCUDAError("Failed to copy index c_LUT to GPU");
-    cudaBindTexture(0, tex_c_lut, dev_ptrs->c_lut, dev_ptrs->c_lut_size);
-        checkCUDAError("Failed to bind tex_c_lut to texture");
-    printf(".");
-    GPU_Memory_Bytes += dev_ptrs->c_lut_size;
-    // ----------------------------------------------------------
-
-    // --- ALLOCATE MULTIPLIER LUT IN GPU GLOBAL ----------------
-    dev_ptrs->q_lut_size = sizeof(float)
-    * bxf->vox_per_rgn[0]
-    * bxf->vox_per_rgn[1]
-    * bxf->vox_per_rgn[2]
-    * 64;
-
-    cudaMalloc((void**)&dev_ptrs->q_lut, dev_ptrs->q_lut_size);
-        checkCUDAError("Failed to allocate memory for q_LUT");
-
-    cudaMemcpy(dev_ptrs->q_lut, bxf->q_lut, dev_ptrs->q_lut_size, cudaMemcpyHostToDevice);
-        checkCUDAError("Failed to copy multiplier q_LUT to GPU");
-
-    cudaBindTexture(0, tex_q_lut, dev_ptrs->q_lut, dev_ptrs->q_lut_size);
-        checkCUDAError("Failed to bind tex_q_lut to texture");
-
-    printf(".");
-    GPU_Memory_Bytes += dev_ptrs->q_lut_size;
-    // ----------------------------------------------------------
-
     // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
     // Calculate space requirements for the allocation
     // and tuck it away for later...
@@ -2540,6 +2503,7 @@ CUDA_bspline_mse_score_dc_dv (
             gbd.fix_dim,
             gbd.mov_dim,
             gbd.rdims,
+            gbd.cdims,
             gbd.vox_per_rgn,
             gbd.img_origin,
             gbd.img_spacing,
@@ -5967,9 +5931,8 @@ kernel_bspline_mse_2_reduce (
  * The code now also shares more similarities with
  * the CPU code.  So, now if you know one you know the other.
  *
- * This is a *hair* (0.5% on my GTX 285) faster than
+ * This is about 6.5% faster (on my GTX 285) than
  *   bspline_cuda_score_j_mse_kernel1()
- * 
  */
 __global__ void
 kernel_bspline_mse_score_dc_dv (
@@ -5984,6 +5947,7 @@ kernel_bspline_mse_score_dc_dv (
     int3 fdim,          // fixed  image dimensions
     int3 mdim,          // moving image dimensions
     int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
     int3 vpr,           // voxels per region
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
@@ -6021,7 +5985,7 @@ kernel_bspline_mse_score_dc_dv (
             fv, fdim, vpr, rdim, img_origin, img_spacing);
 
     int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, vpr, p, q);
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
     if (fell_out) {
         skipped[fv]++;
@@ -6050,6 +6014,10 @@ kernel_bspline_mse_score_dc_dv (
 // This removes the need for deinterleaving the dc_dv stream before running
 // the CUDA condense_64() kernel, which removes CUDA_deinterleave() from the
 // execution chain.
+//
+// This function is potentially depricated by:
+//    kernel_bspline_mse_score_dc_dv()
+// and should probably be marked for relocation to bspline_cuda_old.cu
 //////////////////////////////////////////////////////////////////////////////
 __global__ void
 bspline_cuda_score_j_mse_kernel1 
@@ -6704,6 +6672,7 @@ find_correspondence (
    float3 mov_offset,
    float3 mov_ps,
    int3 mdim,
+   int3 cdim,
    int3 vpr,
    int4 p,
    int4 q
@@ -6725,7 +6694,8 @@ find_correspondence (
                 A = tex1Dfetch (tex_LUT_Bspline_x, i * vpr.x + q.x);
                 P = A * B * C;
 
-                cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + z);
+                cidx = 3 * ((p.z + k) * cdim.x * cdim.y 
+                            + (p.y + j) * cdim.x + (p.x + i));
 
                 d->x += P * tex1Dfetch (tex_coeff, cidx + 0);
                 d->y += P * tex1Dfetch (tex_coeff, cidx + 1);

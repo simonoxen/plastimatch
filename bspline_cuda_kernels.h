@@ -279,6 +279,7 @@ kernel_bspline_mse_score_dc_dv (
     int3 fdim,          // fixed  image dimensions
     int3 mdim,          // moving image dimensions
     int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
     int3 vpr,           // voxels per region
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
@@ -307,6 +308,7 @@ find_correspondence (
    float3 mov_offset,
    float3 mov_ps,
    int3 mdim,
+   int3 cdim,
    int3 vpr,
    int4 p,
    int4 q
