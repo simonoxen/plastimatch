@@ -266,5 +266,89 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float score,	// INPUT: evaluated MI cost function
     int pad);		// INPUT: Tile Paddign
 
+__global__ void
+kernel_bspline_mse_score_dc_dv (
+    float* score,       // OUTPUT
+    float* skipped,     // OUTPUT
+    float* dc_dv_x,     // OUTPUT
+    float* dc_dv_y,     // OUTPUT
+    float* dc_dv_z,     // OUTPUT
+    float* f_img,       // fixed image voxels
+    float* m_img,       // moving image voxels
+    float* m_grad,      // moving image gradient
+    int3 fdim,          // fixed  image dimensions
+    int3 mdim,          // moving image dimensions
+    int3 rdim,          //       region dimensions
+    int3 vpr,           // voxels per region
+    float3 img_origin,  // image origin
+    float3 img_spacing, // image spacing
+    float3 mov_offset,  // moving image offset
+    float3 mov_ps,      // moving image pixel spacing
+    int pad);           // tile padding
+
+
+__device__ inline void
+clamp_linear_interpolate_3d (
+    float3* n,
+    int3* n_f,
+    int3* n_r,
+    float3* li_1,
+    float3* li_2,
+    int3 mdim
+);
+
+
+__device__ inline int
+find_correspondence (
+   float3 *d,
+   float3 *m,
+   float3 *n,
+   float3 f,
+   float3 mov_offset,
+   float3 mov_ps,
+   int3 mdim,
+   int3 vpr,
+   int4 p,
+   int4 q
+);
+
+
+__device__ inline float
+get_moving_value (
+    int3 n_f,
+    int3 mdim,
+    float3 li_1,
+    float3 li_2
+);
+
+
+__device__ inline void
+setup_indices (
+    int4 *p,
+    int4 *q,
+    float3 *f,
+    int fv,
+    int3 fdim,
+    int3 vpr,
+    int3 rdim,
+    float3 img_origin,
+    float3 img_spacing
+);
+
+
+__device__ inline void
+write_dc_dv (
+    float* dc_dv_x,
+    float* dc_dv_y,
+    float* dc_dv_z,
+    float* m_grad,
+    float diff,
+    int3 n_r,
+    int3 mdim,
+    int3 vpr,
+    int pad,
+    int4 p,
+    int4 q
+);
 
 #endif

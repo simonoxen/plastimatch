@@ -80,7 +80,7 @@ render_slice_polyline (
     unsigned char* imgp;
     Edge** edge_table;
     Edge* edge_list;	    /* Global edge list */
-    Edge* ael;		    /* Active edge list */
+    Edge* ael;  		    /* Active edge list */
     int i;
     float *x, *y;           /* vertices in pixel coordinates */
 

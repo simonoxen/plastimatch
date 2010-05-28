@@ -716,6 +716,43 @@ bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     // ----------------------------------------------------------
 
 
+    // --- ALLOCATE INDEX LUT IN GPU GLOBAL ---------------------
+    dev_ptrs->c_lut_size = sizeof(int) 
+    * bxf->rdims[0] 
+    * bxf->rdims[1] 
+    * bxf->rdims[2] 
+    * 64;
+
+    cudaMalloc((void**)&dev_ptrs->c_lut, dev_ptrs->c_lut_size);
+        checkCUDAError("Failed to allocate memory for c_LUT");
+    cudaMemcpy(dev_ptrs->c_lut, bxf->c_lut, dev_ptrs->c_lut_size, cudaMemcpyHostToDevice);
+        checkCUDAError("Failed to copy index c_LUT to GPU");
+    cudaBindTexture(0, tex_c_lut, dev_ptrs->c_lut, dev_ptrs->c_lut_size);
+        checkCUDAError("Failed to bind tex_c_lut to texture");
+    printf(".");
+    GPU_Memory_Bytes += dev_ptrs->c_lut_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE MULTIPLIER LUT IN GPU GLOBAL ----------------
+    dev_ptrs->q_lut_size = sizeof(float)
+    * bxf->vox_per_rgn[0]
+    * bxf->vox_per_rgn[1]
+    * bxf->vox_per_rgn[2]
+    * 64;
+
+    cudaMalloc((void**)&dev_ptrs->q_lut, dev_ptrs->q_lut_size);
+        checkCUDAError("Failed to allocate memory for q_LUT");
+
+    cudaMemcpy(dev_ptrs->q_lut, bxf->q_lut, dev_ptrs->q_lut_size, cudaMemcpyHostToDevice);
+        checkCUDAError("Failed to copy multiplier q_LUT to GPU");
+
+    cudaBindTexture(0, tex_q_lut, dev_ptrs->q_lut, dev_ptrs->q_lut_size);
+        checkCUDAError("Failed to bind tex_q_lut to texture");
+
+    printf(".");
+    GPU_Memory_Bytes += dev_ptrs->q_lut_size;
+    // ----------------------------------------------------------
+
     // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
     // Calculate space requirements for the allocation
     // and tuck it away for later...
@@ -2432,7 +2469,9 @@ CUDA_bspline_mse_score_dc_dv (
         192,                // INPUT: Threads per block
         true);              // INPUT: Is threads per block negotiable?
 
+#if defined (commentout)
     int smemSize = 12 * sizeof(float) * dimBlock1.x;
+#endif
 
     // --- BEGIN KERNEL EXECUTION ---
     //  cudaEvent_t start, stop;
@@ -2459,6 +2498,12 @@ CUDA_bspline_mse_score_dc_dv (
     //if (tile_padding == 64) tile_padding = 0;
     //printf ("tile_padding = %d\n", tile_padding);
 
+    /* JAS 05.27.2010
+     * This kernel has been depricated in
+     * favor of kernel_bspline_mse_score_dc_dv()
+     * and is marked to be moved into bspline_cuda_old.cu
+     */
+#if defined (commentout)
     bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
         dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
         dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
@@ -2481,6 +2526,26 @@ CUDA_bspline_mse_score_dc_dv (
         gbd.cdims,                  // # of control points in (x,y,z)
         tile_padding,
         dev_ptrs->skipped);
+#endif
+
+    kernel_bspline_mse_score_dc_dv <<<dimGrid1, dimBlock1>>> (
+            dev_ptrs->score,
+            dev_ptrs->skipped,
+            dev_ptrs->dc_dv_x,
+            dev_ptrs->dc_dv_y,
+            dev_ptrs->dc_dv_z,
+            dev_ptrs->fixed_image,
+            dev_ptrs->moving_image,
+            dev_ptrs->moving_grad,
+            gbd.fix_dim,
+            gbd.mov_dim,
+            gbd.rdims,
+            gbd.vox_per_rgn,
+            gbd.img_origin,
+            gbd.img_spacing,
+            gbd.mov_offset,
+            gbd.mov_spacing,
+            tile_padding);
 
     //  cudaEventRecord (stop, 0);  
     //  cudaEventSynchronize (stop);
@@ -5874,6 +5939,108 @@ kernel_bspline_mse_2_reduce (
 }
 
 
+/* JAS 05.27.2010
+ * 
+ * This kernel was written as an intended replacement for
+ * bspline_cuda_score_j_mse_kernel1().  The intended goal
+ * was to produce a kernel with neater notation and code
+ * structure that also shared the LUT_Bspline_x,y,z textured
+ * lookup table that is utilized by the hyper-fast gradient
+ * kernel kernel_bspline_mse_2_condense_64_texfetch().
+ * 
+ * It should be noted that the LUT_Bspline texture differs
+ * from the CPU based q_lut in both structure and philosophy.
+ * LUT_Bspline is three separate look-up-tables which contain
+ * the pre-computed basis function values in each dimension,
+ * whereas the q_lut has already pre-multiplied all of these
+ * results.  For the GPU, the q-LUT requires in too many memory
+ * load operations, even when employing the cacheing mechanisms
+ * provided by textures.  The LUT_Bspline textures rely on the GPU
+ * to perform these multiplications, thus achieving superior
+ * run times.
+ *
+ * This code was authored with the intention of unifying the
+ * design philosophy of the MSE B-spline GPU implementation,
+ * which was spurred by my attempts to write the upcoming
+ * GPU Gems 4 chapter.
+ *
+ * The code now also shares more similarities with
+ * the CPU code.  So, now if you know one you know the other.
+ *
+ * This is a *hair* (0.5% on my GTX 285) faster than
+ *   bspline_cuda_score_j_mse_kernel1()
+ * 
+ */
+__global__ void
+kernel_bspline_mse_score_dc_dv (
+    float* score,       // OUTPUT
+    float* skipped,     // OUTPUT
+    float* dc_dv_x,     // OUTPUT
+    float* dc_dv_y,     // OUTPUT
+    float* dc_dv_z,     // OUTPUT
+    float* f_img,       // fixed image voxels
+    float* m_img,       // moving image voxels
+    float* m_grad,      // moving image gradient
+    int3 fdim,          // fixed  image dimensions
+    int3 mdim,          // moving image dimensions
+    int3 rdim,          //       region dimensions
+    int3 vpr,           // voxels per region
+    float3 img_origin,  // image origin
+    float3 img_spacing, // image spacing
+    float3 mov_offset,  // moving image offset
+    float3 mov_ps,      // moving image pixel spacing
+    int pad             // tile padding
+)
+{
+    /* Setup Thread Attributes */
+    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+
+    /* Only process threads that map to voxels */
+    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
+        return;
+    }
+
+    int4 p;     // Tile index
+    int4 q;     // Local Voxel index (within tile)
+    float3 f;   // Distance from origin (in mm )
+
+    float3 m;   // Voxel Displacement   (in mm )
+    float3 n;   // Voxel Displacement   (in vox)
+    int3 n_f;   // Voxel Displacement floor
+    int3 n_r;   // Voxel Displacement round
+    float3 d;   // Deformation vector
+    int fv;     // fixed voxel
+    
+    fv = thread_idxg;
+
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
+
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, vpr, p, q);
+
+    if (fell_out) {
+        skipped[fv]++;
+        return;
+    }
+
+    float3 li_1, li_2;
+    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
+
+    float m_val = get_moving_value (n_f, mdim, li_1, li_2);
+
+    float diff = m_val - tex1Dfetch(tex_fixed_image, fv);
+    score[fv] = diff * diff;
+
+    write_dc_dv (dc_dv_x, dc_dv_y, dc_dv_z,
+            m_grad, diff, n_r, mdim, vpr, pad, p, q);
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // KERNEL: bspline_cuda_score_j_mse_kernel1()
 //
@@ -6449,7 +6616,7 @@ obtain_spline_basis_function (float one_over_six,
         C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
         break;
     case 1:
-        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i            + 4.0);
+        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
         break;
     case 2:
         C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
@@ -6463,6 +6630,253 @@ obtain_spline_basis_function (float one_over_six,
 }
 
 
+__device__ inline void
+clamp_linear_interpolate_3d (
+    float3* n,
+    int3* n_f,
+    int3* n_r,
+    float3* li_1,
+    float3* li_2,
+    int3 mdim
+)
+{
+    /* x-dimension */
+    n_f->x = (int) floorf (n->x);
+    n_r->x = (int) rintf (n->x);
+
+    li_2->x = n->x - n_f->x;
+    if (n_f->x < 0) {
+        n_f->x = 0;
+        n_r->x = 0;
+        li_2->x = 0.0f;
+    }
+    else if (n_f->x >= (mdim.x - 1)) {
+        n_f->x = mdim.x - 2;
+        n_r->x = mdim.x - 1;
+        li_2->x = 1.0f;
+    }
+    li_1->x = 1.0f - li_2->x;
+
+
+    /* y-dimension */
+    n_f->y = (int) floorf (n->y);
+    n_r->y = (int) rintf (n->y);
+
+    li_2->y = n->y - n_f->y;
+    if (n_f->y < 0) {
+        n_f->y = 0;
+        n_r->y = 0;
+        li_2->y = 0.0f;
+    }
+    else if (n_f->y >= (mdim.y - 1)) {
+        n_f->y = mdim.y - 2;
+        n_r->y = mdim.y - 1;
+        li_2->y = 1.0f;
+    }
+    li_1->y = 1.0f - li_2->y;
+
+
+    /* z-dimension */
+    n_f->z = (int) floorf (n->z);
+    n_r->z = (int) rintf (n->z);
+
+    li_2->z = n->z - n_f->z;
+    if (n_f->z < 0) {
+        n_f->z = 0;
+        n_r->z = 0;
+        li_2->z = 0.0f;
+    }
+    else if (n_f->z >= (mdim.z - 1)) {
+        n_f->z = mdim.z - 2;
+        n_r->z = mdim.z - 1;
+        li_2->z = 1.0f;
+    }
+    li_1->z = 1.0f - li_2->z;
+}
+
+
+__device__ inline int
+find_correspondence (
+   float3 *d,
+   float3 *m,
+   float3 *n,
+   float3 f,
+   float3 mov_offset,
+   float3 mov_ps,
+   int3 mdim,
+   int3 vpr,
+   int4 p,
+   int4 q
+)
+{
+    int i, j, k, z, cidx;
+    float A,B,C,P;
+
+    d->x = 0.0f;
+    d->y = 0.0f;
+    d->z = 0.0f;
+
+    z = 0;
+    for (k = 0; k < 4; k++) {
+    C = tex1Dfetch (tex_LUT_Bspline_x, k * vpr.z + q.z);
+        for (j = 0; j < 4; j++) {
+        B = tex1Dfetch (tex_LUT_Bspline_x, j * vpr.y + q.y);
+            for (i = 0; i < 4; i++) {
+                A = tex1Dfetch (tex_LUT_Bspline_x, i * vpr.x + q.x);
+                P = A * B * C;
+
+                cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + z);
+
+                d->x += P * tex1Dfetch (tex_coeff, cidx + 0);
+                d->y += P * tex1Dfetch (tex_coeff, cidx + 1);
+                d->z += P * tex1Dfetch (tex_coeff, cidx + 2);
+
+                z++;
+            }
+        }
+    }
+    // --------------------------------------------------------
+
+
+    // -- Correspondence --------------------------------------
+    m->x = f.x + d->x;  // Displacement in mm
+    m->y = f.y + d->y;
+    m->z = f.z + d->z;
+
+    // Displacement in voxels
+    n->x = (m->x - mov_offset.x) / mov_ps.x;
+    n->y = (m->y - mov_offset.y) / mov_ps.y;
+    n->z = (m->z - mov_offset.z) / mov_ps.z;
+
+    if (n->x < -0.5 || n->x > mdim.x - 0.5 ||
+        n->y < -0.5 || n->y > mdim.y - 0.5 ||
+        n->z < -0.5 || n->z > mdim.z - 0.5)
+    {
+        return 1;
+    }
+    return 0;
+    // --------------------------------------------------------
+}
+
+__device__ inline float
+get_moving_value (
+    int3 n_f,
+    int3 mdim,
+    float3 li_1,
+    float3 li_2
+)
+{
+    // -- Compute coordinates of 8 nearest neighbors ----------
+    int mvf;               // moving voxel (floor)
+    int n1, n2, n3, n4;    // neighbors
+    int n5, n6, n7, n8;
+    
+    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+
+    n1 = mvf;
+    n2 = n1 + 1;
+    n3 = n1 + mdim.x;
+    n4 = n1 + mdim.x + 1;
+    n5 = n1 + mdim.x * mdim.y;
+    n6 = n1 + mdim.x * mdim.y + 1;
+    n7 = n1 + mdim.x * mdim.y + mdim.x;
+    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    // --------------------------------------------------------
+
+
+    // -- Compute Moving Image Intensity ----------------------
+    float w1, w2, w3, w4;
+    float w5, w6, w7, w8;
+
+    w1 = li_1.x * li_1.y * li_1.z * tex1Dfetch(tex_moving_image, n1);
+    w2 = li_2.x * li_1.y * li_1.z * tex1Dfetch(tex_moving_image, n2);
+    w3 = li_1.x * li_2.y * li_1.z * tex1Dfetch(tex_moving_image, n3);
+    w4 = li_2.x * li_2.y * li_1.z * tex1Dfetch(tex_moving_image, n4);
+    w5 = li_1.x * li_1.y * li_2.z * tex1Dfetch(tex_moving_image, n5);
+    w6 = li_2.x * li_1.y * li_2.z * tex1Dfetch(tex_moving_image, n6);
+    w7 = li_1.x * li_2.y * li_2.z * tex1Dfetch(tex_moving_image, n7);
+    w8 = li_2.x * li_2.y * li_2.z * tex1Dfetch(tex_moving_image, n8);
+
+    return w1 + w2 + w3 + w4 + w5 + w6 + w7 + w8;
+    // --------------------------------------------------------
+
+}
+
+
+__device__ inline void
+setup_indices (
+    int4 *p,
+    int4 *q,
+    float3 *f,
+    int fv,
+    int3 fdim,
+    int3 vpr,
+    int3 rdim,
+    float3 img_origin,
+    float3 img_spacing
+)
+{
+    /* Setup Global Voxel Indices */
+    int3 r;     // Voxel index (global)
+    r.z = fv / (fdim.x * fdim.y);
+    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
+    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
+    
+    /* Setup Tile Indicies */
+    p->x = r.x / vpr.x;
+    p->y = r.y / vpr.y;
+    p->z = r.z / vpr.z;
+    p->w = ((p->z * rdim.y + p->y) * rdim.x) + p->x;
+
+    /* Setup Local Voxel Indices */
+    q->x = r.x - p->x * vpr.x;
+    q->y = r.y - p->y * vpr.y;
+    q->z = r.z - p->z * vpr.z;
+    q->w = ((q->z * vpr.y + q->y) * vpr.x) + q->x;
+
+    /* Set up fixed image coordinates (mm) */
+    f->x = img_origin.x + img_spacing.x * r.x;
+    f->y = img_origin.y + img_spacing.y * r.y;
+    f->z = img_origin.z + img_spacing.z * r.z;
+}
+
+
+__device__ inline void
+write_dc_dv (
+    float* dc_dv_x,
+    float* dc_dv_y,
+    float* dc_dv_z,
+    float* m_grad,
+    float diff,
+    int3 n_r,
+    int3 mdim,
+    int3 vpr,
+    int pad,
+    int4 p,
+    int4 q
+)
+{
+    float* m_grad_element;
+    float* dc_dv_element_x;
+    float* dc_dv_element_y;
+    float* dc_dv_element_z;
+
+    m_grad_element = &m_grad[3 * n_r.z * mdim.y * mdim.x];
+    m_grad_element = &m_grad_element[3 * n_r.y * mdim.x];
+    m_grad_element = &m_grad_element[3 * n_r.x];
+
+    dc_dv_element_x = &dc_dv_x[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
+    dc_dv_element_y = &dc_dv_y[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
+    dc_dv_element_z = &dc_dv_z[((vpr.x * vpr.y * vpr.z) + pad) * p.w];
+
+    dc_dv_element_x = &dc_dv_element_x[q.w];
+    dc_dv_element_y = &dc_dv_element_y[q.w];
+    dc_dv_element_z = &dc_dv_element_z[q.w];
+
+    dc_dv_element_x[0] = diff * m_grad_element[0];
+    dc_dv_element_y[0] = diff * m_grad_element[1];
+    dc_dv_element_z[0] = diff * m_grad_element[2];
+}
 
 
 /***********************************************************************
