@@ -454,7 +454,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-d"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-img;plm-convert-dicom-d.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;plm-convert-dicom-d.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-d-stats"
