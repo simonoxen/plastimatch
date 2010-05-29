@@ -65,6 +65,7 @@ public:
 	    delete m_dose;
 	}
     }
+    plastimatch1_EXPORT
     void load_dicom_dir (char *dicom_dir);
     void load_xio (char *xio_dir, char *dicom_dir);
     plastimatch1_EXPORT
