@@ -45,3 +45,29 @@ rtds_dicom_load (Rtds *rtds, const char *dicom_dir)
 	gdcm_rtss_load (rtds->m_cxt, filename.c_str(), dicom_dir);
     }
 }
+
+void
+rtds_patient_pos_from_dicom_dir (Rtds *rtds, const char *dicom_dir)
+{
+    Gdcm_series gs;
+    std::string tmp;
+
+    if (!dicom_dir) {
+	return;
+    }
+
+    gs.load (dicom_dir);
+    gs.digest_files ();
+    if (!gs.m_have_ct) {
+	return;
+    }
+    gdcm::File* file = gs.get_ct_slice ();
+
+    /* Get patient position */
+    tmp = file->GetEntryValue (0x0018, 0x5100);
+    if (tmp != gdcm::GDCM_UNFOUND) {
+	rtds->m_img->m_patient_pos = plm_image_patient_position_parse (tmp.c_str());
+    } else {
+	rtds->m_img->m_patient_pos =  PATIENT_POSITION_UNKNOWN;
+    }
+}

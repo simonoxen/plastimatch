@@ -322,16 +322,8 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[i] = 0.0f;
     }
 
-    /* Set patient position */
-    tmp = file->GetEntryValue (0x0018, 0x5100);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	transform->patient_pos = plm_image_patient_position_parse (tmp.c_str());
-    } else {
-	transform->patient_pos = PATIENT_POSITION_UNKNOWN;
-    }
-
-    if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
-	(transform->patient_pos == PATIENT_POSITION_UNKNOWN) ) {
+    if ( (pli->m_patient_pos == PATIENT_POSITION_HFS) ||
+	(pli->m_patient_pos == PATIENT_POSITION_UNKNOWN) ) {
 
 	/* Offsets */
 	transform->x_offset = v->offset[0] - gs.m_origin[0];
@@ -342,7 +334,7 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[4] = 1.0f;
 	transform->direction_cosines[8] = 1.0f;
 
-    } else if (transform->patient_pos == PATIENT_POSITION_HFP) {
+    } else if (pli->m_patient_pos == PATIENT_POSITION_HFP) {
 
 	/* Offsets */
 	transform->x_offset = v->offset[0] + gs.m_origin[0];
@@ -353,7 +345,7 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[4] = -1.0f;
 	transform->direction_cosines[8] = 1.0f;
 
-    } else if (transform->patient_pos == PATIENT_POSITION_FFS) {
+    } else if (pli->m_patient_pos == PATIENT_POSITION_FFS) {
 
 	/* Offsets */
 	transform->x_offset = v->offset[0] + gs.m_origin[0];
@@ -364,7 +356,7 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[4] = 1.0f;
 	transform->direction_cosines[8] = -1.0f;
 
-    } else if (transform->patient_pos == PATIENT_POSITION_FFP) {
+    } else if (pli->m_patient_pos == PATIENT_POSITION_FFP) {
 
 	/* Offsets */
 	transform->x_offset = v->offset[0] - gs.m_origin[0];
@@ -380,15 +372,53 @@ xio_ct_get_transform_from_dicom_dir (
 }
 
 void
+xio_ct_get_transform (
+    Plm_image *pli, 
+    Xio_ct_transform *transform
+)
+{
+    /* Use patient position to determine the transformation from XiO CT
+       coordinates to DICOM coordinates. Only the direction cosines
+       are modified, the original will remain the same.
+       Because structures and dose in XiO are defined relative to CT
+       geometry, the transform can be applied to those as well. */
+
+    if ( (pli->m_patient_pos == PATIENT_POSITION_HFS) ||
+	(pli->m_patient_pos == PATIENT_POSITION_UNKNOWN) ) {
+
+	transform->direction_cosines[0] = 1.0f;
+	transform->direction_cosines[4] = 1.0f;
+	transform->direction_cosines[8] = 1.0f;
+
+    } else if (pli->m_patient_pos == PATIENT_POSITION_HFP) {
+
+	transform->direction_cosines[0] = -1.0f;
+	transform->direction_cosines[4] = -1.0f;
+	transform->direction_cosines[8] = 1.0f;
+
+    } else if (pli->m_patient_pos == PATIENT_POSITION_FFS) {
+
+	transform->direction_cosines[0] = -1.0f;
+	transform->direction_cosines[4] = 1.0f;
+	transform->direction_cosines[8] = -1.0f;
+
+    } else if (pli->m_patient_pos == PATIENT_POSITION_FFP) {
+
+	transform->direction_cosines[0] = 1.0f;
+	transform->direction_cosines[4] = -1.0f;
+	transform->direction_cosines[8] = -1.0f;
+
+    }
+
+}
+
+void
 xio_ct_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 {
     int i;
 
     Volume *v;
     v = (Volume*) pli->m_gpuit;
-
-    /* Set patient position */
-    pli->m_patient_pos = transform->patient_pos;
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;

@@ -67,7 +67,11 @@ public:
     }
     plastimatch1_EXPORT
     void load_dicom_dir (char *dicom_dir);
-    void load_xio (char *xio_dir, char *dicom_dir);
+    void load_xio (
+	char *xio_dir,
+	char *dicom_dir,
+	Plm_image_patient_position patient_pos
+    );
     plastimatch1_EXPORT
     void load_ss_img (char *ss_img, char *ss_list);
     void load_dose_img (char *dose_img);

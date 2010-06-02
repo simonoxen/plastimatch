@@ -83,11 +83,10 @@ Plm_image::load_native_dicom (const char* fname)
 {
     /* GCS FIX: We don't yet have a way of getting original pixel type 
 	for dicom.  Force SHORT */
+    /* FIX: Patient position / direction cosines not set */
     this->m_itk_short = itk_image_load_short (fname, 0);
     this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
     this->m_type = PLM_IMG_TYPE_ITK_SHORT;
-    /* JMV FIX: Also need to get patient position from dicom. */
-    this->m_patient_pos = PATIENT_POSITION_UNKNOWN;
 }
 
 void

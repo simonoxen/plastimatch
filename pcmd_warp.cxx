@@ -12,6 +12,7 @@
 #include "getopt.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
+#include "plm_image_patient_position.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
 #include "rtds.h"
@@ -36,6 +37,7 @@ print_usage (char* command)
 	"    --default-val=number\n"
 	"    --output-type={uchar,short,float,...}\n"
 	"    --algorithm=itk\n"
+	"    --patient-pos={hfs,hfp,ffs,ffp}\n"
 	"    --dicom-dir=directory      (for structure association)\n"
 	"    --ctatts=filename          (for dij)\n"
 	"    --dif=filename             (for dij)\n"
@@ -123,6 +125,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output-dose-img", required_argument,     NULL,           31 },
 	{ "input_dose_ast", required_argument,      NULL,           32 },
 	{ "input-dose-ast", required_argument,      NULL,           32 },
+	{ "patient_pos",    required_argument,      NULL,           33 },
+	{ "patient-pos",    required_argument,      NULL,           33 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -257,6 +261,13 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 32:
 	    strncpy (parms->input_dose_ast, optarg, _MAX_PATH);
+	    break;
+	case 33:
+	    parms->patient_pos = plm_image_patient_position_parse (optarg);
+	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN) {
+		fprintf (stderr, "Error.  Unknown patient position {hfs,hfp,ffs,ffp}.\n");
+		print_usage (argv[1]);
+	    }
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

@@ -105,6 +105,7 @@ The command line usage is given as follows::
       --default-val=number
       --output-type={uchar,short,float,...}
       --algorithm=itk
+      --patient-pos={hfs,hfp,ffs,ffp}
       --dicom-dir=directory      (for structure association)
       --ctatts=filename          (for dij)
       --dif=filename             (for dij)

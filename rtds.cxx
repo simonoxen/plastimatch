@@ -11,6 +11,7 @@
 #include "cxt_extract.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#include "plm_image_patient_position.h"
 #include "rtds.h"
 #include "rtds_dicom.h"
 #include "xio_ct.h"
@@ -27,13 +28,15 @@ Rtds::load_dicom_dir (char *dicom_dir)
        handle things like MR. */
     this->m_img = plm_image_load_native (dicom_dir);
 
-#if defined (commentout)
-#endif
     rtds_dicom_load (this, dicom_dir);
 }
 
 void
-Rtds::load_xio (char *xio_dir, char *dicom_dir)
+Rtds::load_xio (
+    char *xio_dir,
+    char *dicom_dir,
+    Plm_image_patient_position patient_pos
+)
 {
     Xio_dir *xd;
     Xio_patient_dir *xpd;
@@ -106,25 +109,47 @@ Rtds::load_xio (char *xio_dir, char *dicom_dir)
 	cxt_set_geometry_from_plm_image (this->m_cxt, this->m_img);
     }
 
+    /* Set patient position for XiO CT */
+    if (this->m_img) {
+	if (patient_pos == PATIENT_POSITION_UNKNOWN && dicom_dir[0]) {
+	    rtds_patient_pos_from_dicom_dir (this, dicom_dir);
+	} else {
+	    this->m_img->m_patient_pos = patient_pos;
+	}
+    }
+
     /* If a directory with original DICOM CT is provided,
-       the UIDs of the matching slices will be added to structures
-       and the coordinates will be transformed from XiO to DICOM LPS. */
+       the structures will be associated with the original CT UIDs.
+       The coordinates will be transformed from XiO to DICOM LPS
+       with the same origin as the original CT.
 
-    if (dicom_dir[0] && this->m_img) {
-	/* Determine transformation based on XiO CT */
-	xio_ct_get_transform_from_dicom_dir (this->m_img,
-	    this->m_xio_transform, dicom_dir);
+       Otherwise, the XiO CT will be saved as DICOM and the structures
+       will be associated to those slices. The coordinates will be
+       transformed to DICOM LPS based on the --patient-pos command
+       line parameter and the origin will remain the same. */
 
-	if (this->m_img) {
-	    xio_ct_apply_transform (this->m_img, this->m_xio_transform);
-	}
-	if (this->m_cxt) {
-	    xio_structures_apply_transform (this->m_cxt, this->m_xio_transform);
-	    cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
-	}
-	if (this->m_dose) {
-	    xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
-	}
+    if (this->m_img && dicom_dir[0]) {
+	/* Determine transformation based original DICOM */
+	xio_ct_get_transform_from_dicom_dir (
+	    this->m_img, this->m_xio_transform, dicom_dir);
+    } else {
+	/* Determine transformation based on patient position */
+	xio_ct_get_transform (this->m_img, this->m_xio_transform);
+    }
+
+    if (this->m_img) {
+	xio_ct_apply_transform (this->m_img, this->m_xio_transform);
+    }
+    if (this->m_cxt) {
+	xio_structures_apply_transform (this->m_cxt, this->m_xio_transform);
+    }
+    if (this->m_dose) {
+	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
+    }
+
+    /* Set UIDs etc. */
+    if (dicom_dir[0] && this->m_cxt) {
+	cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
     }
 }
 
@@ -196,6 +221,11 @@ Rtds::save_dicom (char *dicom_dir)
     }
     if (this->m_cxt) {	
 	cxt_adjust_structure_names (this->m_cxt);
+	if (this->m_img && !this->m_cxt->ct_study_uid) {
+	    /* No structure association available.
+	       Associate with DICOM output */
+	    cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
+	}
 	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "ss.dcm");
 	gdcm_rtss_save (this->m_cxt, fn, dicom_dir);
     }

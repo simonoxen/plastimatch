@@ -10,6 +10,7 @@
 #include "gdcm_rtss.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
+#include "rtds_dicom.h"
 #include "rtds_warp.h"
 #include "ss_img_extract.h"
 #include "xio_dose.h"
@@ -80,12 +81,17 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
+	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN && parms->dicom_dir[0]) {
+		rtds_patient_pos_from_dicom_dir (rtds, parms->dicom_dir);
+	    } else {
+		rtds->m_img->m_patient_pos = parms->patient_pos;
+	    }
 	    break;
 	case PLM_FILE_FMT_DICOM_DIR:
 	    rtds->load_dicom_dir (parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
-	    rtds->load_xio (parms->input_fn, parms->dicom_dir);
+	    rtds->load_xio (parms->input_fn, parms->dicom_dir, parms->patient_pos);
 	    break;
 	case PLM_FILE_FMT_DIJ:
 	    print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");

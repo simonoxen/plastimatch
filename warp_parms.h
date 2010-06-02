@@ -8,6 +8,7 @@
 #include <string.h>
 #include "plm_file_format.h"
 #include "plm_image_type.h"
+#include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "xio_io.h"
 
@@ -52,6 +53,7 @@ public:
     Xio_version output_xio_version;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */
+    Plm_image_patient_position patient_pos;
 
 public:
     Warp_parms () {
@@ -62,6 +64,7 @@ public:
 	output_xio_version = XIO_VERSION_4_2_1;
 	prune_empty = 0;
 	use_itk = 0;
+	patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 };
 
