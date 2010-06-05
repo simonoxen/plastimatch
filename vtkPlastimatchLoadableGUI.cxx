@@ -206,7 +206,7 @@ vtkPlastimatchLoadableGUI::ProcessGUIEvents (
 )
 {
     vtkKWScaleWithEntry *s = vtkKWScaleWithEntry::SafeDownCast(caller);
-    vtkKWMenu *v = vtkKWMenu::SafeDownCast(caller);
+    //vtkKWMenu *v = vtkKWMenu::SafeDownCast(caller);
     vtkKWPushButton *b = vtkKWPushButton::SafeDownCast(caller);
     vtkSlicerNodeSelectorWidget *selector 
 	= vtkSlicerNodeSelectorWidget::SafeDownCast(caller);

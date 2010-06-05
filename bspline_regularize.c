@@ -349,6 +349,7 @@ bspline_regularize_score_from_prerendered (
     ssd->score += grad_score;
 }
 
+#if defined (USE_FAST_CODE)
 static double
 update_score_and_grad (
     Bspline_state *bst, 
@@ -356,7 +357,7 @@ update_score_and_grad (
     int p[3], 
     int qidx, 
     float grad_coeff, 
-	float weight, // 2 or 1 for cross/non-cross derivatives
+    float weight, // 2 or 1 for cross/non-cross derivatives
     float *qlut
 )
 {
@@ -376,6 +377,7 @@ update_score_and_grad (
 
     return score;
 }
+#endif
 
 void
 bspline_regularize_score (

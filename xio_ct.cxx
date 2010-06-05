@@ -315,7 +315,6 @@ xio_ct_get_transform_from_dicom_dir (
     if (!gs.m_have_ct) {
 	return;
     }
-    gdcm::File* file = gs.get_ct_slice ();
 
     /* Initialize */
     for (i = 0; i <= 8; i++) {
@@ -366,9 +365,7 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[0] = 1.0f;
 	transform->direction_cosines[4] = -1.0f;
 	transform->direction_cosines[8] = -1.0f;
-
     }
-
 }
 
 void

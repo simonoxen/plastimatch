@@ -266,7 +266,6 @@ xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd)
 {
     char studyset[_MAX_PATH];
     Xio_studyset_dir *xsd;
-    int i = 0, j = 0;
     char *plan_dir;
     char *patient_dir;
 

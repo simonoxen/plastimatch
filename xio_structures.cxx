@@ -358,7 +358,7 @@ xio_structures_save (
     for (z = 0; z < cxt->dim[2]; z++) {
 	char fn[_MAX_PATH];
 
-	float z_offset;
+	float z_offset = 0.0f;
 
 	if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
 	     (transform->patient_pos == PATIENT_POSITION_HFP) ||

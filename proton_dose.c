@@ -392,9 +392,10 @@ dose_scatter (
 
     double d = 0.0f;
     double dose = 0.0f;
-    double w, d0;   // debug
+    double w;
 
 #if defined (DEBUG_VOXEL)
+    double d0;
     int debug = 0;
 
 //    int watch_ijk[3] = {0, 255, 67};  // entry
