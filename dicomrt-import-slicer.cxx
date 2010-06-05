@@ -18,12 +18,25 @@ main (int argc, char * argv [])
     Warp_parms parms;
     Rtds rtds;
 
+    /* Required input */
     strcpy (parms.input_fn, input_dicomrt_ss.c_str());
-    strcpy (parms.output_labelmap_fn, output_labelmap.c_str());
-    strcpy (parms.fixed_im_fn, reference_vol.c_str());
+
+    /* Optional inputs */
+    if (output_labelmap.compare ("None") != 0) {
+	strcpy (parms.output_labelmap_fn, output_labelmap.c_str());
+    }
+    if (output_dose.compare ("None") != 0) {
+	strcpy (parms.output_dose_img, output_dose.c_str());
+    }
+    if (output_image.compare ("None") != 0) {
+	strcpy (parms.output_img, output_image.c_str());
+    }
+    if (reference_vol.compare ("None") != 0) {
+	strcpy (parms.fixed_im_fn, reference_vol.c_str());
+    }
 
     /* Process warp */
-    file_type = PLM_FILE_FMT_DICOM_RTSS;
+    file_type = PLM_FILE_FMT_DICOM_DIR;
     rtds_warp (&rtds, file_type, &parms);
 
     return EXIT_SUCCESS;

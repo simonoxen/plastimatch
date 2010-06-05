@@ -81,7 +81,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
-	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN && parms->dicom_dir[0]) {
+	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN 
+		&& parms->dicom_dir[0])
+	    {
 		rtds_patient_pos_from_dicom_dir (rtds, parms->dicom_dir);
 	    } else {
 		rtds->m_img->m_patient_pos = parms->patient_pos;
@@ -91,10 +93,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->load_dicom_dir (parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
-	    rtds->load_xio (parms->input_fn, parms->dicom_dir, parms->patient_pos);
+	    rtds->load_xio (parms->input_fn, parms->dicom_dir, 
+		parms->patient_pos);
 	    break;
 	case PLM_FILE_FMT_DIJ:
-	    print_and_exit ("Warping dij files requires ctatts_in, dif_in files\n");
+	    print_and_exit (
+		"Warping dij files requires ctatts_in, dif_in files\n");
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_cxt = cxt_create ();
@@ -384,22 +388,27 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output dose image */
     if (parms->output_dose_img[0] && rtds->m_dose) {
 	printf ("Saving dose image...\n");
-	rtds->m_dose->convert_and_save (parms->output_dose_img, parms->output_type);
+	rtds->m_dose->convert_and_save (parms->output_dose_img, 
+	    parms->output_type);
     }
 
     /* Save output XiO dose */
-    if (parms->output_xio_dirname[0] && rtds->m_xio_dose_input[0] && rtds->m_dose) {
+    if (parms->output_xio_dirname[0] 
+	&& rtds->m_xio_dose_input[0] && rtds->m_dose)
+    {
 	printf ("Saving xio dose...\n");
 
 	char fn[_MAX_PATH];
 	snprintf (fn, _MAX_PATH, "%s/%s", parms->output_xio_dirname, "dose");
 
-	xio_dose_save (rtds->m_dose, rtds->m_xio_transform, fn, rtds->m_xio_dose_input);
+	xio_dose_save (rtds->m_dose, rtds->m_xio_transform, fn, 
+	    rtds->m_xio_dose_input);
     }
 
     if (parms->output_dose_img[0] && rtds->m_img) {
 	printf ("Saving dose image...\n");
-	rtds->m_dose->convert_and_save (parms->output_dose_img, parms->output_type);
+	rtds->m_dose->convert_and_save (
+	    parms->output_dose_img, parms->output_type);
     }
 
     /* Save output vector field */

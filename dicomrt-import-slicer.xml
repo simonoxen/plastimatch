@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Plastimatch</category>
-  <title>DICOM-RT Structure Import</title>
-  <description>DICOM-RT Structure Set Import</description>
+  <title>DICOM / DICOM-RT Import</title>
+  <description>DICOM / DICOM-RT Import</description>
   <version>0.0</version>
   <documentation-url></documentation-url>
   <license>BSD-style</license>
@@ -13,27 +13,43 @@
     <description>Input/output parameters</description>
     <file>
       <name>input_dicomrt_ss</name>
-      <label>Input DICOM-RT SS</label>
+      <label>Input DICOM directory</label>
       <channel>input</channel>
       <index>0</index>
       <default>None</default>
-      <description>Input DICOM-RT Structure Set</description>
+      <description>Directory containing DICOM images, RT structure set, and/or RT dose</description>
     </file>
     <image>
+      <longflag>reference_vol</longflag>
       <name>reference_vol</name>
-      <label>Reference Volume (to set size)</label>
+      <label>Reference Volume (optional, to set size)</label>
       <channel>input</channel>
-      <index>1</index>
       <default>None</default>
-      <description>Reference Volume (to set size)</description>
+      <description>Reference Volume (optional, to set size)</description>
+    </image>
+    <image>
+      <longflag>output_image</longflag>
+      <name>output_image</name>
+      <label>Output Image</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output Image</description>
     </image>
     <image type="label">
+      <longflag>output_labelmap</longflag>
       <name>output_labelmap</name>
       <label>Output Labelmap</label>
       <channel>output</channel>
-      <index>2</index>
       <default>None</default>
       <description>Output Labelmap</description>
+    </image>
+    <image>
+      <longflag>output_dose</longflag>
+      <name>output_dose</name>
+      <label>Output Dose Image</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output Dose Image</description>
     </image>
   </parameters>
 </executable>
