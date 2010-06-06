@@ -625,6 +625,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
 	gdcm_series_helper_2.cxx gdcm_series_helper_2.h
 	gpuit_bspline.cxx gpuit_bspline.h 
 	gpuit_demons.cxx gpuit_demons.h 
+	itkAndConstantToImageFilter.h
 	itk_crop.cxx itk_crop.h 
 	itk_demons.cxx itk_demons.h 
 	itk_dicom.cxx itk_dicom.h 
@@ -1122,20 +1123,18 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 
 
 ##-----------------------------------------------------------------------------
-##  Slicer loadable module (testing)
+##  Slicer loadable module (in development)
 ##-----------------------------------------------------------------------------
-
 IF (Slicer3_DIR)
   IF (PLM_BUILD_SLICER_LOADABLE)
     CONFIGURE_FILE (
       ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
       ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
       )
-
     set (PlastimatchLoadable_SRCS
-      vtkPlastimatchLoadableLogic.cxx
-      vtkPlastimatchLoadableGUI.cxx
-      vtkMRMLPlastimatchLoadableNode.cxx
+      vtkPlastimatchLoadableLogic.cxx 
+      vtkPlastimatchLoadableGUI.cxx 
+      vtkMRMLPlastimatchLoadableNode.cxx 
       )
     include("${VTK_CMAKE_DIR}/vtkWrapTcl.cmake")
     vtk_wrap_tcl3 (PlastimatchLoadable

@@ -21,6 +21,8 @@ Version:   $Revision: 1.2 $
 #include "vtkMRMLScene.h"
 #include "vtkMRMLScalarVolumeNode.h"
 #include "plm_register_loadable.h"
+#include "itkImage.h"
+#include "itkVTKImageToImageFilter.h"
 
 vtkPlastimatchLoadableLogic* vtkPlastimatchLoadableLogic::New()
 {
@@ -50,6 +52,45 @@ vtkPlastimatchLoadableLogic::~vtkPlastimatchLoadableLogic()
 //----------------------------------------------------------------------------
 void vtkPlastimatchLoadableLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
+}
+
+void
+plm_register_loadable_wrapper (
+    vtkImageData* fixed_vtk, 
+    vtkImageData* moving_vtk
+)
+{
+    typedef itk::Image<float,3> ImageType;
+    typedef itk::VTKImageToImageFilter<ImageType> ConnectorType;
+    
+    ConnectorType::Pointer connector = ConnectorType::New();
+
+    connector->SetInput (fixed_vtk);
+    connector->Update ();
+    ImageType::ConstPointer fixed_itk = connector->GetOutput ();
+
+#if defined (commentout)
+    FILE *fp = fopen ("/tmp/plm_register_loadable.txt", "a");
+    fprintf (fp, "[dims vtk] = %d %d %d\n", 
+	fixed_vtk->GetDimensions()[0], 
+	fixed_vtk->GetDimensions()[1], 
+	fixed_vtk->GetDimensions()[2]);
+    fprintf (fp, "[dims itk 1] = %d %d %d\n", 
+	fixed_itk->GetLargestPossibleRegion().GetSize()[0],
+	fixed_itk->GetLargestPossibleRegion().GetSize()[1],
+	fixed_itk->GetLargestPossibleRegion().GetSize()[2]);
+    fprintf (fp, "[dims itk 2] = %d %d %d\n", 
+	fixed_itk_2->GetLargestPossibleRegion().GetSize()[0],
+	fixed_itk_2->GetLargestPossibleRegion().GetSize()[1],
+	fixed_itk_2->GetLargestPossibleRegion().GetSize()[2]);
+    fclose (fp);
+#endif
+
+    connector->SetInput (moving_vtk);
+    connector->Update ();
+    ImageType::ConstPointer moving_itk = connector->GetOutput ();
+
+    plm_register_loadable (fixed_itk, moving_itk);
 }
 
 void vtkPlastimatchLoadableLogic::Apply()
@@ -99,11 +140,8 @@ void vtkPlastimatchLoadableLogic::Apply()
     std::string name (outVolume->GetName());
     std::string id (outVolume->GetID());
 
-#if defined (commentout)
-    plm_register_loadable (fixed_volume->GetImageData(),
+    plm_register_loadable_wrapper (fixed_volume->GetImageData(),
 	moving_volume->GetImageData());
-#endif
-    plm_register_loadable ();
 
     outVolume->CopyOrientation (fixed_volume);
     outVolume->SetAndObserveTransformNodeID (
