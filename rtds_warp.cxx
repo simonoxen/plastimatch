@@ -17,8 +17,12 @@
 #include "xio_structures.h"
 
 static void
-compose_prefix_fn (char *fn, int max_path, char *structure_name, 
-    Warp_parms *parms)
+compose_prefix_fn (
+    char *fn, 
+    int max_path, 
+    char *structure_name, 
+    Warp_parms *parms
+)
 {
     snprintf (fn, max_path, "%s_%s.%s",
 	parms->output_prefix, structure_name, "mha");
