@@ -50,6 +50,9 @@ texture<float, 1> tex_grad;
 #define GRID_LIMIT_Y 65535
 ////////////////////////////////////////////////////////////
 
+// Uncomment to include profiling code for MSE CUDA flavor J
+//#define PROFILE_J
+
 typedef struct gpu_bspline_data GPU_Bspline_Data;
 struct gpu_bspline_data
 {
@@ -2735,14 +2738,39 @@ bspline_cuda_j_stage_1 (
     BSPLINE_Parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
+#if defined (PROFILE_J)
+    cudaEvent_t start, stop;
+    float time;
+#endif
+
     // Reset our "voxels fallen outside" counter
     cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
     checkCUDAError ("cudaMemset(): dev_ptrs->skipped");
     cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
     checkCUDAError ("cudaMemset(): dev_ptrs->score");
 
+
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
+
+
     // Calculate the score and dc_dv
     CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
+
+
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] score & dc_dv\n", time);
+#endif
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
@@ -2756,12 +2784,13 @@ bspline_cuda_j_stage_1 (
     cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
     checkCUDAError("cudaMemset(): dev_ptrs->cond_z");
 
-    /*
+
+#if defined (PROFILE_J)
     // Start timing the kernel
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord (start, 0);
-    */
+#endif
 
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
@@ -2769,7 +2798,7 @@ bspline_cuda_j_stage_1 (
                                              bxf->vox_per_rgn, 
                                              num_tiles);
 
-    /*
+#if defined (PROFILE_J)
     // Stop timing the kernel
     cudaEventRecord (stop, 0);
     cudaEventSynchronize (stop);
@@ -2777,18 +2806,18 @@ bspline_cuda_j_stage_1 (
     cudaEventDestroy (start);
     cudaEventDestroy (stop);
     printf("[%f ms] Condense\n", time);
-    */
+#endif
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
     checkCUDAError("[Kernel Panic!] kernel_bspline_mse_2_condense()");
 
-    /*
+#if defined (PROFILE_J)
     // Start timing the kernel
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord (start, 0);
-    */
+#endif
 
     // Clear out the gradient
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
@@ -2797,7 +2826,7 @@ bspline_cuda_j_stage_1 (
     // Invoke kernel reduce
     CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
 
-    /*
+#if defined (PROFILE_J)
     // Stop timing the kernel
     cudaEventRecord (stop, 0);
     cudaEventSynchronize (stop);
@@ -2805,7 +2834,7 @@ bspline_cuda_j_stage_1 (
     cudaEventDestroy (start);
     cudaEventDestroy (stop);
     printf("[%f ms] Reduce\n\n", time);
-    */
+#endif
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
@@ -3010,6 +3039,13 @@ bspline_cuda_j_stage_2 (
     Dev_Pointers_Bspline* dev_ptrs,
     int *num_vox)
 {
+
+#if defined (PROFILE_J)
+    cudaEvent_t start, stop;
+    float time;
+#endif
+
+
     dim3 dimGrid;
     dim3 dimBlock;
 
@@ -3050,6 +3086,14 @@ bspline_cuda_j_stage_2 (
     }
 #endif
 
+
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
+
     // --- BEGIN KERNEL EXECUTION -------------------------------
     sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->score,
@@ -3063,6 +3107,15 @@ bspline_cuda_j_stage_2 (
     checkCUDAError("[Kernel Panic!] kernel_sum_reduction()");
     // ----------------------------------------------------------
 
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] score reduction\n", time);
+#endif
 
     // --- BEGIN KERNEL EXECUTION -------------------------------
     sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
@@ -3078,10 +3131,38 @@ bspline_cuda_j_stage_2 (
     // ----------------------------------------------------------
 
 
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
+
     // --- RETREIVE THE SCORE FROM GPU --------------------------
     cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
     checkCUDAError("Failed to copy score from GPU to host");
     // ----------------------------------------------------------
+
+
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] score memcpy\n", time);
+#endif
+
+
+
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
+
 
 
     //  for (i = 1; i < (dev_ptrs->skipped_size / sizeof(int)); i++)
@@ -3115,6 +3196,18 @@ bspline_cuda_j_stage_2 (
 
     *host_score = *host_score / *num_vox;
 
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] skipped reduction\n", time);
+#endif
+
+
+
     /////////////////////////////////////////////////////////////
     /////////////////////// CALCULATE ///////////////////////////
     ////////////// GRAD, GRAD NORM *AND* GRAD MEAN //////////////
@@ -3130,6 +3223,13 @@ bspline_cuda_j_stage_2 (
         num_blocks,       // INPUT: Number of blocks
         512);             // INPUT: Threads per block
 
+
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
     
     // --- BEGIN KERNEL EXECUTION -------------------------------
     bspline_cuda_update_grad_kernel<<<dimGrid, dimBlock>>> (
@@ -3139,16 +3239,45 @@ bspline_cuda_j_stage_2 (
     // ----------------------------------------------------------
 
 
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] gradient update\n", time);
+#endif
+
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
     checkCUDAError("[Kernel Panic!] bspline_cuda_update_grad_kernel");
     // ----------------------------------------------------------
 
 
+#if defined (PROFILE_J)
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+#endif
+
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
     checkCUDAError("Failed to copy dev_ptrs->grad to CPU");
     // ----------------------------------------------------------
+
+
+#if defined (PROFILE_J)
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] gradient memcpy\n", time);
+#endif
+
 
     // The following is unnecessary since report_score()
     // calculates the grad mean & norm from grad[] anyway.
