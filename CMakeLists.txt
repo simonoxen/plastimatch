@@ -725,6 +725,9 @@ SET (DICOM_UID_SRC
 SET (DICOMRT_IMPORT_SLICER_SRC
         dicomrt-import-slicer.cxx
 	)
+SET (DISTANCE_MAP_SRC
+	distance_map.cxx
+	)
 SET (DRR_SRC
 	drr_main.c 
 	drr_opts.c drr_opts.h
@@ -1043,6 +1046,8 @@ IF(ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
       "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   ENDIF (Slicer3_DIR)
+  PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
+    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   IF (ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
       "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
