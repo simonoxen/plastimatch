@@ -9,6 +9,7 @@ Documentation:
    drr
    cbct
    utility_programs
+   3d_slicer_integration
    dicom_conformance
    technical_reference
    other_toolkits

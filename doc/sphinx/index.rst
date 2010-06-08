@@ -20,8 +20,8 @@ and positron emission tomography (PET). Software features include:
 * Landmark-based deformable registration using radial basis functions 
   for local corrections
 * Broad support for 3D image file formats (using ITK), including 
-  Dicom, Nifti, NRRD, MetaImage, and Analyze
-* Dicom and DicomRT import and export
+  DICOM, Nifti, NRRD, MetaImage, and Analyze
+* DICOM and DICOM-RT import and export
 * XiO import and export
 * Plugin to 3D Slicer
 
