@@ -153,7 +153,7 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 {
     int d, i, j, k, v;
     float* img = (float*) vol->img;
-    uint* maskimg = (uint*) mask->img;
+    int* maskimg = (int*) mask->img;
     float mean_av[3], mean_v[3];
     float mins[3];
     float maxs[3];
@@ -167,7 +167,7 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 	for (j = 0; j < vol->dim[1]; j++) {
 	    for (i = 0; i < vol->dim[0]; i++, v++) {
 		float* dxyz = &img[3*v];
-                uint*  maskval = &maskimg(3*v);
+                int*  maskval = &maskimg[3*v];
                 if (maskval[0] > 0 || maskval[1] > 0 || maskval[2] > 0) {
 		    for (d = 0; d < 3; d++) {
 		        mean_v[d] += dxyz[d];
@@ -198,8 +198,9 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
 {
     int i, j, k;
     float* img = (float*) vol->img;
-    float total_energy, max_energy;
+    int* maskimg = (int*) mask->img;
     float min_dilation, max_dilation;
+    float total_energy, max_energy;
 
     const float LAME_MU = 1.0f;
     const float LAME_NU = 1.0f;
@@ -222,19 +223,19 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
 		int vkn = volume_index (vol->dim, k-1, j, i);
 		int vkp = volume_index (vol->dim, k+1, j, i);
 
-                uint* maskval_in = & maskimg[3*vin];
-                uint* maskval_ip = & maskimg[3*vip];
-                uint* maskval_jn = & maskimg[3*vjn];
-                uint* maskval_jp = & maskimg[3*vjp];
-                uint* maskval_kn = & maskimg[3*vkn];
-                uint* maskval_kp = & maskimg[3*vkp];
+                int* maskval_in = &maskimg[3*vin];
+                int* maskval_ip = &maskimg[3*vip];
+                int* maskval_jn = &maskimg[3*vjn];
+                int* maskval_jp = &maskimg[3*vjp];
+                int* maskval_kn = &maskimg[3*vkn];
+                int* maskval_kp = &maskimg[3*vkp];
 
-                if ( ( ( maskval_in[0] > 0 || maskval_in[1] > 0 maskval_in[2] > 0 ) && 
-                       ( maskval_ip[0] > 0 || maskval_ip[1] > 0 maskval_ip[2] > 0 ) ) &&
-                     ( ( maskval_jn[0] > 0 || maskval_jn[1] > 0 maskval_jn[2] > 0 ) && 
-                       ( maskval_jp[0] > 0 || maskval_jp[1] > 0 maskval_jp[2] > 0 ) ) &&
-                     ( ( maskval_jn[0] > 0 || maskval_jn[1] > 0 maskval_jn[2] > 0 ) && 
-                       ( maskval_jp[0] > 0 || maskval_jp[1] > 0 maskval_jp[2] > 0 ) ) ) {
+                if ( ( ( maskval_in[0] > 0 || maskval_in[1] > 0 || maskval_in[2] > 0 ) && 
+                       ( maskval_ip[0] > 0 || maskval_ip[1] > 0 || maskval_ip[2] > 0 ) ) &&
+                     ( ( maskval_jn[0] > 0 || maskval_jn[1] > 0 || maskval_jn[2] > 0 ) && 
+                       ( maskval_jp[0] > 0 || maskval_jp[1] > 0 || maskval_jp[2] > 0 ) ) &&
+                     ( ( maskval_kn[0] > 0 || maskval_kn[1] > 0 || maskval_kn[2] > 0 ) && 
+                       ( maskval_kp[0] > 0 || maskval_kp[1] > 0 || maskval_kp[2] > 0 ) ) ) {
 
 		    float* din = &img[3*vin];
 		    float* dip = &img[3*vip];

@@ -20,7 +20,7 @@
 /* Thresholds for finding patient & couch */
 const short T1 = -300;
 const short T2 = -500;
-const short T3 = -700;
+const short T3 = -1000;
 
 class Patient_Mask_Parms {
 public:
@@ -275,19 +275,19 @@ do_patient_mask (Patient_Mask_Parms* opts)
 
     /* Zero out the couch */
     remove_couch (i2, patient_bottom);
-    //save_image (i2, "tmp0.mha");
+//    save_image (i2, "tmp0.mha");
 
     /* Erode and dilate */
     i2 = erode_and_dilate (i2);
-    //save_image (i2, "tmp1.mha");
+//    save_image (i2, "tmp1.mha");
 
     /* Compute connected components */
     i2 = get_largest_connected_component (i2);
-    //save_image (i2, "tmp2.mha");
+//    save_image (i2, "tmp2.mha");
 
     /* Invert the image */
     invert_image (i2);
-    //save_image (i2, "tmp3.mha");
+//    save_image (i2, "tmp3.mha");
 
     /* Fill holes: Redo connected components on the (formerly) black parts */
     i2 = get_largest_connected_component (i2);
