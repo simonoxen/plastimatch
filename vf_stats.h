@@ -18,6 +18,12 @@ gpuit_EXPORT
 void
 vf_analyze_strain (Volume* vol);
 
+void
+vf_analyze_mask (Volume* vol, Volume* mask);
+
+void
+vf_analyze_strain_mask (Volume* vol, Volume* mask);
+
 #if defined __cplusplus
 }
 #endif
