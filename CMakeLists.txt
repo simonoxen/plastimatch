@@ -34,11 +34,13 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
-SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build Cuda test program")
+SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build CUDA test program")
+SET (PLM_BUILD_FANN_TEST OFF CACHE BOOL "Build fann test program")
 SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
 SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
+
 SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL "Build slicer loadable module")
 
@@ -165,6 +167,7 @@ INCLUDE (PLM_FindSubversion.cmake)
 
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
+FIND_PACKAGE (Fann)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 FIND_PACKAGE (OpenCL)
@@ -1231,6 +1234,15 @@ IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
   PLM_ADD_EXECUTABLE (cuda_test "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "")
   SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 ENDIF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+
+# Test executable -- fann
+IF (PLM_BUILD_FANN_TEST AND FANN_FOUND)
+  SET (FANN_TEST_SRC fann_test.c)
+  SET (FANN_TEST_LIBS 
+    ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
+  PLM_ADD_EXECUTABLE (fann_test "${FANN_TEST_SRC}" "${FANN_TEST_LIBS}" 
+    "${OPENMP_LDFLAGS}")
+ENDIF (PLM_BUILD_FANN_TEST AND FANN_FOUND)
 
 # Test executable -- nlopt
 IF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
