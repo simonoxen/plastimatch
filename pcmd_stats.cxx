@@ -18,6 +18,7 @@ stats_vf_main (Stats_parms* parms)
     Volume* vol;
 
     vol = read_mha (parms->mha_in_fn);
+
     if (!vol) {
 	fprintf (stderr, "Sorry, couldn't open file \"%s\" for read.\n", 
 	    parms->mha_in_fn);
@@ -31,9 +32,21 @@ stats_vf_main (Stats_parms* parms)
 	volume_destroy (vol);
 	exit (-1);
     }
-    vf_analyze (vol);
-    vf_analyze_strain (vol);
-    volume_destroy (vol);
+
+    if (parms->mask_fn[0] == '\0') {
+    	vf_analyze (vol);
+    	vf_analyze_strain (vol);
+    	volume_destroy (vol);
+    }
+    else {
+	Volume* mask = read_mha (parms->mask_fn);
+	vf_analyze (vol); 
+	vf_analyze_strain (vol);
+	vf_analyze_mask (vol, mask);
+	vf_analyze_strain_mask (vol, mask);
+	volume_destroy (vol);
+	volume_destroy (mask);
+    }
 }
 
 static void
@@ -115,6 +128,11 @@ stats_parse_args (Stats_parms* parms, int argc, char* argv[])
 	switch (ch) {
 	case 2:
 	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    parms->mask_fn[0] = '\0';
+	    break;
+	case 3:
+	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    strncpy (parms->mask_fn, optarg, _MAX_PATH);
 	    break;
 	default:
 	    break;
@@ -128,6 +146,12 @@ stats_parse_args (Stats_parms* parms, int argc, char* argv[])
 	    printf ("Error: must specify input file\n");
 	    stats_print_usage ();
 	}
+    }
+    
+    if (!parms->mask_fn[0]) {
+	optind ++;
+        if (optind < argc) 
+	   strncpy(parms->mask_fn, argv[optind], _MAX_PATH);
     }
 }
 

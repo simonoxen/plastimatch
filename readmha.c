@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include "plm_path.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -113,7 +114,9 @@ read_mha_internal (
 	fprintf (stderr, "File %s not found\n", filename);
 	return 0;
     }
-    
+   
+    fprintf(stdout, "reading %s\n", filename);
+ 
     vol  = (Volume*) malloc (sizeof(Volume));
     vol->pix_size = -1;
     vol->pix_type = PT_UNDEFINED;
@@ -166,11 +169,12 @@ read_mha_internal (
 	    continue;
 	}
     }
+
     if (vol->pix_size <= 0) {
 	printf ("Oops, couldn't interpret mha data type\n");
 	exit (-1);
     }
-
+        
     if (mh5) {
 	fseek(fp, 512, SEEK_SET);
     }
@@ -180,6 +184,7 @@ read_mha_internal (
 	printf ("Oops, out of memory\n");
 	exit (-1);
     }
+
     rc = fread (vol->img, vol->pix_size, vol->npix, fp);
     if (rc != vol->npix) {
 	printf ("Oops, bad read from file (%d)\n", rc);
@@ -188,6 +193,7 @@ read_mha_internal (
     fclose (fp);
 
     return vol;
+    
 }
 
 /* Return 1 if filename ends in ".mh5" */
@@ -200,6 +206,7 @@ is_mh5 (char* filename)
     if (!strcmp (&filename[len-4], ".MH5")) return 1;
     return 0;
 }
+
 
 /* -----------------------------------------------------------------------
    Public functions
@@ -222,4 +229,6 @@ read_mha (char* filename)
     } else {
 	return read_mha_internal (filename, 0);
     }
+    
+
 }

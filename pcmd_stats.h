@@ -13,6 +13,7 @@
 class Stats_parms {
 public:
     char mha_in_fn[_MAX_PATH];
+    char mask_fn[_MAX_PATH];
 public:
     Stats_parms () {
 	memset (this, 0, sizeof(Stats_parms));

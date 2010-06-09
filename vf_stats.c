@@ -152,8 +152,9 @@ void
 vf_analyze_mask (Volume* vol, Volume *mask)
 {
     int d, i, j, k, v;
+    int mask_npixels = 0;
     float* img = (float*) vol->img;
-    int* maskimg = (int*) mask->img;
+    unsigned char* maskimg = (unsigned char*) mask->img;
     float mean_av[3], mean_v[3];
     float mins[3];
     float maxs[3];
@@ -167,8 +168,9 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 	for (j = 0; j < vol->dim[1]; j++) {
 	    for (i = 0; i < vol->dim[0]; i++, v++) {
 		float* dxyz = &img[3*v];
-                int*  maskval = &maskimg[3*v];
-                if (maskval[0] > 0 || maskval[1] > 0 || maskval[2] > 0) {
+                unsigned int maskval = (unsigned int) maskimg[v];
+                if (maskval > 0) {
+		    mask_npixels ++;
 		    for (d = 0; d < 3; d++) {
 		        mean_v[d] += dxyz[d];
 		        mean_av[d] += fabs(dxyz[d]);
@@ -183,8 +185,8 @@ vf_analyze_mask (Volume* vol, Volume *mask)
 	}
     }
     for (d = 0; d < 3; d++) {
-	mean_v[d] /= vol->npix;
-	mean_av[d] /= vol->npix;
+	mean_v[d] /= mask_npixels;
+	mean_av[d] /= mask_npixels;
     }
 
     printf ("Min within mask:       %10.3f %10.3f %10.3f\n", mins[0], mins[1], mins[2]);
@@ -198,7 +200,7 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
 {
     int i, j, k;
     float* img = (float*) vol->img;
-    int* maskimg = (int*) mask->img;
+    unsigned char*  maskimg = (unsigned char*) mask->img;
     float min_dilation, max_dilation;
     float total_energy, max_energy;
 
@@ -213,29 +215,29 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
     total_energy = 0.0f;
     max_energy = 0.0f;
 
+    printf ("di = %f dj = %f dk = %f \n", di, dj, dk);
+    printf ("vol->dim %d %d %d\n", vol->dim[0], vol->dim[1], vol->dim[2]);
     for (k = 1; k < vol->dim[2]-1; k++) {
 	for (j = 1; j < vol->dim[1]-1; j++) {
 	    for (i = 1; i < vol->dim[0]-1; i++) {
-		int vin = volume_index (vol->dim, k, j, i-1);
-		int vip = volume_index (vol->dim, k, j, i+1);
-		int vjn = volume_index (vol->dim, k, j-1, i);
-		int vjp = volume_index (vol->dim, k, j+1, i);
-		int vkn = volume_index (vol->dim, k-1, j, i);
-		int vkp = volume_index (vol->dim, k+1, j, i);
+		int vin = volume_index (vol->dim, i-1, j, k);
+		int vip = volume_index (vol->dim, i+1, j, k);
+		int vjn = volume_index (vol->dim, i, j-1, k);
+		int vjp = volume_index (vol->dim, i, j+1, k);
+		int vkn = volume_index (vol->dim, i, j, k-1);
+		int vkp = volume_index (vol->dim, i, j, k+1);
 
-                int* maskval_in = &maskimg[3*vin];
-                int* maskval_ip = &maskimg[3*vip];
-                int* maskval_jn = &maskimg[3*vjn];
-                int* maskval_jp = &maskimg[3*vjp];
-                int* maskval_kn = &maskimg[3*vkn];
-                int* maskval_kp = &maskimg[3*vkp];
+                unsigned int  maskval_in = (unsigned int) maskimg[vin];
+                unsigned int  maskval_ip = (unsigned int) maskimg[vip];
+                unsigned int  maskval_jn = (unsigned int) maskimg[vjn];
+                unsigned int  maskval_jp = (unsigned int) maskimg[vjp];
+                unsigned int  maskval_kn = (unsigned int) maskimg[vkn];
+                unsigned int  maskval_kp = (unsigned int) maskimg[vkp];
 
-                if ( ( ( maskval_in[0] > 0 || maskval_in[1] > 0 || maskval_in[2] > 0 ) && 
-                       ( maskval_ip[0] > 0 || maskval_ip[1] > 0 || maskval_ip[2] > 0 ) ) &&
-                     ( ( maskval_jn[0] > 0 || maskval_jn[1] > 0 || maskval_jn[2] > 0 ) && 
-                       ( maskval_jp[0] > 0 || maskval_jp[1] > 0 || maskval_jp[2] > 0 ) ) &&
-                     ( ( maskval_kn[0] > 0 || maskval_kn[1] > 0 || maskval_kn[2] > 0 ) && 
-                       ( maskval_kp[0] > 0 || maskval_kp[1] > 0 || maskval_kp[2] > 0 ) ) ) {
+
+                if ( ( maskval_in > 0  &&  maskval_ip > 0 )  &&
+                     ( maskval_jn > 0  &&  maskval_jp > 0 ) &&
+                     ( maskval_kn > 0  &&  maskval_kp > 0 ) ) {
 
 		    float* din = &img[3*vin];
 		    float* dip = &img[3*vip];
@@ -253,7 +255,7 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
 		    float dui_dk = (0.5 / dk) * (dkp[0] - dkn[0]);
 		    float duj_dk = (0.5 / dk) * (dkp[1] - dkn[1]);
 		    float duk_dk = (0.5 / dk) * (dkp[2] - dkn[2]);
-		
+
 		    float e_ii = dui_di;
 		    float e_jj = duj_dj;
 		    float e_kk = duk_dk;
