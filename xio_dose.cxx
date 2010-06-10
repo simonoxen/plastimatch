@@ -14,15 +14,9 @@
 #include <itksys/RegularExpression.hxx>
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
-#include "gdcmFile.h"
-#include "gdcmFileHelper.h"
-#include "gdcmGlobal.h"
-#include "gdcmSeqEntry.h"
-#include "gdcmSQItem.h"
-#include "gdcmUtil.h"
 
 #include "cxt.h"
-#include "gdcm_series.h"
+#include "file_util.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
@@ -315,6 +309,7 @@ xio_dose_save (
     double ox; double oy; double oz;
     int nx; int ny; int nz;
 
+    make_directory_recursive (filename);
     fp = fopen (filename, "wb");
     if (!fp) {
 	print_and_exit ("Error opening file %s for write\n", filename);
