@@ -149,7 +149,7 @@ CUDA_reconstruct_conebeam (
     Fdk_options *options
 )
 {
-    // Thead Block Dimensions
+    // Thread Block Dimensions
     int tBlock_x = 16;
     int tBlock_y = 4;
     int tBlock_z = 4;

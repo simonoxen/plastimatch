@@ -42,7 +42,7 @@
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
 void checkCUDAError(const char *msg);
-__global__ void kernel_drr (float * dev_vol,  int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
+__global__ void kernel_drr_i3 (float * dev_vol,  int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
 
 
 
@@ -52,8 +52,9 @@ texture<float, 1, cudaReadModeElementType> tex_matrix;
 texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
 
+
 // uses 3D textures and pre-calculated coefs to accelerate DRR generation.
-void kernel_drr (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
+void kernel_drr_i3 (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
 {
     // CUDA 2.0 does not allow for a 3D grid, which severely
     // limits the manipulation of large 3D arrays of data.  The
@@ -67,17 +68,73 @@ void kernel_drr (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad
 
     unsigned int tid = threadIdx.x;
 
-    /* Get coordinates of this image pixel */
-    x = blockIdx.x * blockDim.x + threadIdx.x;
-    y = blockIdx.y * blockDim.y + threadIdx.y;
+    x = blockIdx.x;
+    y = blockIdx.y;
+    xy7=7*(y*img_dim.x+x);
+	
+    if (abs(tex1Dfetch(tex_matrix, 5))>abs(tex1Dfetch(tex_matrix, 4))) {
+	vp.x=vol_offset.x+threadIdx.x*vol_pix_spacing.x;
+	vp.y=tex1Dfetch(tex_coef, xy7)*vp.x+tex1Dfetch(tex_coef, xy7+1);
+	vp.z=tex1Dfetch(tex_coef, xy7+4)*vp.x
+	    +tex1Dfetch(tex_coef, xy7+5)*vp.y+tex1Dfetch(tex_coef, xy7+6);
 
-    /* Compute ray */
-    
-    /* (TBD) */
+	i=  threadIdx.x;
+	j=  __float2int_rd((vp.y-vol_offset.y)/vol_pix_spacing.y);
+	k=  __float2int_rd((vp.z-vol_offset.z)/vol_pix_spacing.z);
 
-    /* Loop through ray */
+	//if (j<0||j>=vol_dim.y||k<0||k>=vol_dim.z)
+	if ((i-vol_dim.x/2)*(i-vol_dim.x/2)+(j-vol_dim.y/2)*(j-vol_dim.y/2)
+	    > vol_dim.y*vol_dim.y/4||k<0||k>=vol_dim.z) 
+	{
+	    sdata[tid]=0.0f;
+	} else {
+	    vol=tex3D(tex_3Dvol,i,j,k);
+	    sdata[tid]=(vol+1000.0f);
+	}
+    } else {
+	vp.y=vol_offset.y+threadIdx.x*vol_pix_spacing.y;
+	vp.x=tex1Dfetch(tex_coef, xy7+2)*vp.y+tex1Dfetch(tex_coef, xy7+3);
+	vp.z=tex1Dfetch(tex_coef, xy7+4)*vp.x
+	    +tex1Dfetch(tex_coef, xy7+5)*vp.y+tex1Dfetch(tex_coef, xy7+6);
+	j=  threadIdx.x;
+	i=  __float2int_rd((vp.x-vol_offset.x)/vol_pix_spacing.x);
+	k=  __float2int_rd((vp.z-vol_offset.z)/vol_pix_spacing.z);
 
-    dev_img[y*img_dim.x + y] = x;
+	if ((i-vol_dim.x/2)*(i-vol_dim.x/2)+(j-vol_dim.y/2)*(j-vol_dim.y/2)
+	    > vol_dim.y*vol_dim.y/4||k<0||k>=vol_dim.z)
+	{
+	    sdata[tid]=0.0f;
+	} else {
+	    vol=tex3D(tex_3Dvol,i,j,k);
+	    sdata[tid]=(vol+1000.0f);
+	}
+    }
+
+    __syncthreads();
+
+    // do reduction in shared mem
+    for(unsigned int s=blockDim.x/2; s>32; s>>=1) 
+    {
+        if (tid < s)
+            sdata[tid] += sdata[tid + s];
+        __syncthreads();
+    }
+
+#ifndef __DEVICE_EMULATION__
+    if (tid < 32)
+#endif
+    {
+        sdata[tid] += sdata[tid + 32]; EMUSYNC;
+        sdata[tid] += sdata[tid + 16]; EMUSYNC;
+        sdata[tid] += sdata[tid +  8]; EMUSYNC;
+        sdata[tid] += sdata[tid +  4]; EMUSYNC;
+        sdata[tid] += sdata[tid +  2]; EMUSYNC;
+        sdata[tid] += sdata[tid +  1]; EMUSYNC;
+    }
+
+    // write result for this block to global mem
+    if (tid == 0) 
+	dev_img[blockIdx.x*img_dim.y + blockIdx.y] = sdata[0];
 }
 
 void*
@@ -178,11 +235,13 @@ drr_cuda_render_volume_perspective (
 {
     Timer timer, total_timer;
     double time_kernel = 0;
+    double time_io = 0;
     int i;
 
     // CUDA device pointers
     Drr_cuda_state *state = (Drr_cuda_state*) void_state;
     Drr_kernel_args *kargs = state->kargs;
+    float *host_coef = state->host_coef;
 
     // Start the timer
     plm_timer_start (&total_timer);
@@ -202,29 +261,72 @@ drr_cuda_render_volume_perspective (
 	kargs->matrix[i] = (float) proj->pmat->matrix[i];
     }
 
-    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
-	cudaMemcpyHostToDevice);
-    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+    // Precalculate coeff
+    int xy7;
+    double *matrix = proj->pmat->matrix;
+    for (int x = 0; x < proj->dim[0] ; x++) {
+	for (int y = 0; y < proj->dim[1] ; y++) {
+	    xy7 = 7 * (y * proj->dim[0] + x);
 
-    // Thread Block Dimensions
-    int tBlock_x = 16;
-    int tBlock_y = 16;
+#if defined (commentout)
+	    host_coef[xy7]  =((y-ic[1])*proj->pmat->matrix[8]-proj->pmat->matrix[4])/(proj->pmat->matrix[5]-(y-ic[1])*proj->pmat->matrix[9]);
+	    host_coef[xy7+2]=((y-ic[1])*proj->pmat->matrix[9]-proj->pmat->matrix[5])/(proj->pmat->matrix[4]-(y-ic[1])*proj->pmat->matrix[8]);
+	    host_coef[xy7+1]=(y-ic[1])*proj->pmat->matrix[11]/(proj->pmat->matrix[5]-(y-ic[1])*proj->pmat->matrix[9]);
+	    host_coef[xy7+3]=(y-ic[1])*proj->pmat->matrix[11]/(proj->pmat->matrix[4]-(y-ic[1])*proj->pmat->matrix[8]);
+	    host_coef[xy7+4]=(x-ic[0])*proj->pmat->matrix[8]/proj->pmat->matrix[2];
+	    host_coef[xy7+5]=(x-ic[0])*proj->pmat->matrix[9]/proj->pmat->matrix[2];
+	    host_coef[xy7+6]=(x-ic[0])*proj->pmat->matrix[11]/proj->pmat->matrix[2];
+#endif
 
-    // Each element in the image gets 1 thread
-    int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
-    int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
-    dim3 dimGrid  = dim3(blocksInX, blocksInY);
-    dim3 dimBlock = dim3(tBlock_x, tBlock_y);
+	    host_coef[xy7]   = (y * matrix[8] - matrix[4])
+		/ (matrix[5] - y * matrix[9]);
+	    host_coef[xy7+2] = (y * matrix[9] - matrix[5])
+		/ (matrix[4] - y * matrix[8]);
+	    host_coef[xy7+1] = y * matrix[11]
+		/ (matrix[5] - y * matrix[9]);
+	    host_coef[xy7+3] = y * matrix[11]
+		/ (matrix[4] - y * matrix[8]);
+	    host_coef[xy7+4] = x * matrix[8] / matrix[2];
+	    host_coef[xy7+5] = x * matrix[9] / matrix[2];
+	    host_coef[xy7+6] = x * matrix[11] / matrix[2];
+	}
+    }
 
-    // Note: proj->img AND proj->matrix are passed via texture memory
-
-    //int smemSize = vol->dim[0]  * sizeof(float);
-
-    printf ("Preprocessing time: %f secs\n", plm_timer_report (&timer));
+    time_io += plm_timer_report (&timer);
     plm_timer_start (&timer);
 
+    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+	cudaMemcpyHostToDevice);
+
+    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+
+    cudaMemcpy (state->dev_coef, host_coef, 
+	7 * proj->dim[0] * proj->dim[1] * sizeof(float), 
+	cudaMemcpyHostToDevice);
+
+    cudaBindTexture (0, tex_coef, state->dev_coef, 
+	7 * proj->dim[0] * proj->dim[1] * sizeof(float));
+
+    // Thead Block Dimensions
+    int tBlock_x = vol->dim[0];
+    int tBlock_y = 1;
+    int tBlock_z = 1;
+
+    // Each element in the volume (each voxel) gets 1 thread
+    int blocksInX = proj->dim[0];
+    int blocksInY = proj->dim[1];
+    dim3 dimGrid  = dim3(blocksInX, blocksInY);
+    dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+
     // Invoke ze kernel  \(^_^)/
-    kernel_drr<<< dimGrid, dimBlock>>> (
+    // Note: proj->img AND proj->matrix are passed via texture memory
+
+    int smemSize = vol->dim[0]  * sizeof(float);
+
+    plm_timer_start (&timer);
+
+    //-------------------------------------
+    kernel_drr_i3<<< dimGrid, dimBlock, smemSize>>> (
 	state->dev_img, 
 	kargs->img_dim,
 	kargs->ic,
@@ -234,9 +336,6 @@ drr_cuda_render_volume_perspective (
 	kargs->vol_offset,
 	kargs->vol_dim,
 	kargs->vol_pix_spacing);
-
-    printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
-    plm_timer_start (&timer);
 
     checkCUDAError("Kernel Panic!");
 
@@ -275,3 +374,11 @@ void checkCUDAError(const char *msg)
         exit(EXIT_FAILURE);
     }                         
 }
+///////////////////////////////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////
+// Vim Editor Settings ////////////////////////////////////////////////////
+// vim:ts=8:sw=8:cindent:nowrap
+///////////////////////////////////////////////////////////////////////////
