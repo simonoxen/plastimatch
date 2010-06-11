@@ -33,8 +33,8 @@ print_usage (void)
 	" -w \"r1 r2 c1 c2\"  Only produce image for pixes in window (in pix)\n"
 	" -t outformat      Select output format: pgm, pfm or raw\n"
 	" -S                Output multispectral output files\n"
-	" -i exact          Use exact trilinear interpolation\n"
-	" -i approx         Use approximate trilinear interpolation\n"
+	//" -i algorithm      Choose algorithm {exact,uniform,tri_exact,tri_approx}\n"
+	" -i algorithm      Choose algorithm {exact,uniform}\n"
 	" -o \"o1 o2 o3\"     Set isocenter position\n"
 	" -I infile         Set the input file in mha format\n"
 	" -O outprefix      Generate output files using the specified prefix\n"
@@ -75,7 +75,7 @@ drr_opts_init (Drr_options* options)
     options->exponential_mapping = 0;
     options->output_format= OUTPUT_FORMAT_PFM;
     options->multispectral = 0;
-    options->interpolation = INTERPOLATION_NONE;
+    options->algorithm = DRR_ALGORITHM_EXACT;
 }
 
 void
@@ -242,9 +242,13 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-i")) {
 	    i++;
 	    if (!strcmp(argv[i], "exact")) {
-		options->interpolation = INTERPOLATION_TRILINEAR_EXACT;
-	    } else if (!strcmp(argv[i], "approx")) {
-		options->interpolation = INTERPOLATION_TRILINEAR_APPROX;
+		options->algorithm = DRR_ALGORITHM_EXACT;
+	    } else if (!strcmp(argv[i], "tri_exact")) {
+		options->algorithm = DRR_ALGORITHM_TRILINEAR_EXACT;
+	    } else if (!strcmp(argv[i], "tri_approx")) {
+		options->algorithm = DRR_ALGORITHM_TRILINEAR_APPROX;
+	    } else if (!strcmp(argv[i], "uniform")) {
+		options->algorithm = DRR_ALGORITHM_UNIFORM;
 	    } else {
 		print_usage ();
 	    }

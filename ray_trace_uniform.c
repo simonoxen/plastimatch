@@ -21,14 +21,15 @@ ray_trace_uniform (
     Volume_limit* vol_limit,      // INPUT: CT volume bounding box
     Ray_trace_callback callback,  // INPUT: Step Action Function
     void* callback_data,          // INPUT: callback data
-    double* ip1,                  // INPUT: Ray Starting Point
-    double* ip2,                  // INPUT: Ray Ending Point
+    double* ip1in,                // INPUT: Ray Starting Point
+    double* ip2in,                // INPUT: Ray Ending Point
     float ray_step                // INPUT: Uniform ray step size
 )
 {
     double uv[3];
     double ipx[3];
     double ps[3];
+    double ip1[3], ip2[2];
 
     int ai[3];
 
@@ -39,6 +40,11 @@ ray_trace_uniform (
     int z;
 
     float* img = (float*) vol->img;
+
+    /* Test if ray intersects volume */
+    if (!volume_limit_clip_segment (vol_limit, ip1, ip2, ip1in, ip2in)) {
+	return;
+    }
 
     ps[0] = vol->pix_spacing[0];
     ps[1] = vol->pix_spacing[1];

@@ -37,9 +37,19 @@
 #define OPTION_EXPONENTIAL_STRING "exponential"
 #define OPTION_EXPONENTIAL 'e'
 
+enum drr_algorithm {
+    DRR_ALGORITHM_EXACT,
+    DRR_ALGORITHM_TRILINEAR_EXACT,
+    DRR_ALGORITHM_TRILINEAR_APPROX,
+    DRR_ALGORITHM_UNIFORM
+};
+typedef enum drr_algorithm Drr_algorithm;
+
+#if defined (commentout)
 #define INTERPOLATION_NONE                0
 #define INTERPOLATION_TRILINEAR_EXACT     1
 #define INTERPOLATION_TRILINEAR_APPROX    2
+#endif
 
 #define OUTPUT_FORMAT_PFM                 0
 #define OUTPUT_FORMAT_PGM                 1
@@ -70,7 +80,7 @@ struct drr_options {
     int exponential_mapping;
     int output_format;
     int multispectral;
-    int interpolation;
+    Drr_algorithm algorithm;
     char* input_file;
     char* output_prefix;
 };

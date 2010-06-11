@@ -13,9 +13,11 @@
 #include "drr_cuda.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
+#include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "ray_trace_exact.h"
+#include "ray_trace_uniform.h"
 #include "readmha.h"
 #include "volume_limit.h"
 #include "timer.h"
@@ -29,6 +31,7 @@ struct callback_data {
 
 //#define ULTRA_VERBOSE 1
 //#define VERBOSE 1
+//#define DEBUG_INTENSITIES 1
 
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
    is 0.22 cm^2 per gram.  Thus, we scale by 0.022 per mm
@@ -82,8 +85,8 @@ drr_ray_trace_callback (
 #if defined (DRR_PREPROCESS_ATTENUATION)
     cd->accum += vox_len * vox_value;
 #if defined (DEBUG_INTENSITIES)
-    printf ("len: %10g dens: %10g acc: %10g\n", 
-	vox_len, vox_density, cd->accum);
+    printf ("idx: %d len: %10g dens: %10g acc: %10g\n", 
+	vox_index, vox_len, vox_value, cd->accum);
 #endif
 #else
     accum += vox_len * attenuation_lookup (vox_value);
@@ -104,6 +107,35 @@ drr_ray_trace_exact (
 
     ray_trace_exact (vol, vol_limit, &drr_ray_trace_callback, &cd, 
 	p1in, p2in);
+    return cd.accum;
+}
+
+double                            /* Return value: intensity of ray */
+drr_ray_trace_uniform (
+    Volume *vol,                  /* Input: volume */
+    Volume_limit *vol_limit,      /* Input: min/max coordinates of volume */
+    double *p1in,                 /* Input: start point for ray */
+    double *p2in                  /* Input: end point for ray */
+)
+{
+    Callback_data cd;
+    float ray_step;
+
+    memset (&cd, 0, sizeof (Callback_data));
+
+    /* Set ray_step proportional to voxel size */
+    ray_step = vol->pix_spacing[0];
+    if (vol->dim[1] < ray_step) ray_step = vol->pix_spacing[1];
+    if (vol->dim[2] < ray_step) ray_step = vol->pix_spacing[2];
+    ray_step *= 0.75;
+
+#if defined (commentout)
+    printf ("p1 = %f %f %f\n", p1in[0], p1in[1], p1in[2]);
+    printf ("p2 = %f %f %f\n", p2in[0], p2in[1], p2in[2]);
+#endif
+
+    ray_trace_uniform (vol, vol_limit, &drr_ray_trace_callback, &cd, 
+	p1in, p2in, ray_step);
     return cd.accum;
 }
 
@@ -196,16 +228,22 @@ drr_render_volume_perspective (
 	    vec3_scale3 (tmp, incr_c, (double) c);
 	    vec3_add3 (p2, r_tgt, tmp);
 
-	    switch (options->interpolation) {
-	    case INTERPOLATION_NONE:
+	    switch (options->algorithm) {
+	    case DRR_ALGORITHM_EXACT:
 		/* DRR_MSD is disabled */
 		value = drr_ray_trace_exact (vol, &vol_limit, p1, p2);
 		break;
-	    case INTERPOLATION_TRILINEAR_EXACT:
+	    case DRR_ALGORITHM_TRILINEAR_EXACT:
 		value = drr_trace_ray_trilin_exact (vol, p1, p2);
 		break;
-	    case INTERPOLATION_TRILINEAR_APPROX:
+	    case DRR_ALGORITHM_TRILINEAR_APPROX:
 		value = drr_trace_ray_trilin_approx (vol, p1, p2);
+		break;
+	    case DRR_ALGORITHM_UNIFORM:
+		value = drr_ray_trace_uniform (vol, &vol_limit, p1, p2);
+		break;
+	    default:
+		print_and_exit ("Error, unknown drr algorithm\n");
 		break;
 	    }
 	    value = value / 10;     /* Translate from pixels to cm*gm */
