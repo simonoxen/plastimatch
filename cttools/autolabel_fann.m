@@ -22,5 +22,6 @@ for i = 1:length(sid)
         fprintf (fp, "%f ", data(i,j));
     end
     fprintf (fp, "\n%f\n", (sid(i) / 6) - 1);
+                    %fprintf (fp, "\n%f\n", sid(i));
 end
 fclose (fp);
