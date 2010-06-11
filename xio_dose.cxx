@@ -74,6 +74,9 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
 
     if (!strncmp (line1, "006d101e", strlen ("006d101e"))) {
         xio_dose_version = XIO_VERSION_4_5_0;
+    } else if (!strncmp (line1, "006a101e", strlen ("006a101e"))) {
+	/* ?? */
+        xio_dose_version = XIO_VERSION_4_33_02;
     } else if (!strncmp (line1, "0062101e", strlen ("0062101e"))) {
         xio_dose_version = XIO_VERSION_4_33_02;
     } else if (!strncmp (line1, "004f101e", strlen ("004f101e"))) {
