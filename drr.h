@@ -31,7 +31,7 @@ drr_render_volume_perspective (
     Proj_image *proj,
     Volume *vol, 
     double ps[2], 
-    char *multispectral_fn, 
+    void *dev_state, 
     Drr_options *options
 );
 gpuit_EXPORT

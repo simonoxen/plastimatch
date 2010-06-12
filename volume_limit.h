@@ -16,12 +16,12 @@ struct volume_limit {
     int dir[3];
 };
 
-typedef enum point_location Point_location;
 enum point_location {
     POINTLOC_LEFT,
     POINTLOC_INSIDE,
     POINTLOC_RIGHT,
 };
+typedef enum point_location Point_location;
 
 #if defined __cplusplus
 extern "C" {

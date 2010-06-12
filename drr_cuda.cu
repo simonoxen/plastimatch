@@ -36,6 +36,7 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "proj_image.h"
+#include "ray_trace_exact.h"
 #include "volume.h"
 #include "timer.h"
 
@@ -77,7 +78,8 @@ void kernel_drr (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad
 
     /* Loop through ray */
 
-    dev_img[y*img_dim.x + y] = x;
+    /* Write output pixel value */
+    dev_img[y*img_dim.x + x] = x;
 }
 
 void*
@@ -167,12 +169,15 @@ drr_cuda_state_destroy (
 }
 
 void
-drr_cuda_render_volume_perspective (
-    Proj_image *proj,
-    void *void_state,
+drr_cuda_ray_trace_image (
+    Proj_image *proj, 
     Volume *vol, 
-    double ps[2], 
-    char *multispectral_fn, 
+    Volume_limit *vol_limit, 
+    double p1[3], 
+    double ul_room[3], 
+    double incr_r[3], 
+    double incr_c[3], 
+    void *dev_state, 
     Drr_options *options
 )
 {
@@ -181,7 +186,7 @@ drr_cuda_render_volume_perspective (
     int i;
 
     // CUDA device pointers
-    Drr_cuda_state *state = (Drr_cuda_state*) void_state;
+    Drr_cuda_state *state = (Drr_cuda_state*) dev_state;
     Drr_kernel_args *kargs = state->kargs;
 
     // Start the timer

@@ -8,13 +8,11 @@
 #include "drr_opts.h"
 #include "proj_image.h"
 #include "volume.h"
+#include "volume_limit.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
-
-int CUDA_DRR3 (Volume *vol, Drr_options *options);
-int CUDA_DRR (Volume *vol, Drr_options *options);
 
 void*
 drr_cuda_state_create (
@@ -28,12 +26,15 @@ drr_cuda_state_destroy (
 );
 
 void
-drr_cuda_render_volume_perspective (
-    Proj_image *proj,
-    void *state,
+drr_cuda_ray_trace_image (
+    Proj_image *proj, 
     Volume *vol, 
-    double ps[2], 
-    char *multispectral_fn, 
+    Volume_limit *vol_limit, 
+    double p1[3], 
+    double ul_room[3], 
+    double incr_r[3], 
+    double incr_c[3], 
+    void *dev_state, 
     Drr_options *options
 );
 

@@ -140,19 +140,85 @@ drr_ray_trace_uniform (
 }
 
 void
-drr_render_volume_perspective (
-    Proj_image *proj,
+drr_ray_trace_image (
+    Proj_image *proj, 
     Volume *vol, 
-    double ps[2], 
-    char *multispectral_fn, 
+    Volume_limit *vol_limit, 
+    double p1[3], 
+    double ul_room[3], 
+    double incr_r[3], 
+    double incr_c[3], 
     Drr_options *options
 )
 {
-    double p1[3];
+    int r;
 #if defined (VERBOSE)
     int rows = options->image_window[1] - options->image_window[0] + 1;
 #endif
     int cols = options->image_window[3] - options->image_window[2] + 1;
+
+    /* Compute the drr pixels */
+#pragma omp parallel for
+    for (r=options->image_window[0]; r<=options->image_window[1]; r++) {
+	int c;
+	double r_tgt[3];
+	double tmp[3];
+	double p2[3];
+
+	//if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
+	vec3_copy (r_tgt, ul_room);
+	vec3_scale3 (tmp, incr_r, (double) r);
+	vec3_add2 (r_tgt, tmp);
+
+	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
+	    double value;
+	    int idx = c - options->image_window[2] 
+		+ (r - options->image_window[0]) * cols;
+
+#if defined (VERBOSE)
+	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
+#endif
+	    vec3_scale3 (tmp, incr_c, (double) c);
+	    vec3_add3 (p2, r_tgt, tmp);
+
+	    switch (options->algorithm) {
+	    case DRR_ALGORITHM_EXACT:
+		value = drr_ray_trace_exact (vol, vol_limit, p1, p2);
+		break;
+	    case DRR_ALGORITHM_TRILINEAR_EXACT:
+		value = drr_trace_ray_trilin_exact (vol, p1, p2);
+		break;
+	    case DRR_ALGORITHM_TRILINEAR_APPROX:
+		value = drr_trace_ray_trilin_approx (vol, p1, p2);
+		break;
+	    case DRR_ALGORITHM_UNIFORM:
+		value = drr_ray_trace_uniform (vol, vol_limit, p1, p2);
+		break;
+	    default:
+		print_and_exit ("Error, unknown drr algorithm\n");
+		break;
+	    }
+	    value = value / 10;     /* Translate from pixels to cm*gm */
+	    if (options->exponential_mapping) {
+		value = exp(-value);
+	    }
+	    value = value * options->scale;   /* User requested scaling */
+
+	    proj->img[idx] = (float) value;
+	}
+    }
+}
+
+void
+drr_render_volume_perspective (
+    Proj_image *proj,
+    Volume *vol, 
+    double ps[2], 
+    void *dev_state, 
+    Drr_options *options
+)
+{
+    double p1[3];
     double ic_room[3];
     double ul_room[3];
     double incr_r[3];
@@ -160,7 +226,6 @@ drr_render_volume_perspective (
     double tmp[3];
     Volume_limit vol_limit;
     double nrm[3], pdn[3], prt[3];
-    int r;
     Proj_matrix *pmat = proj->pmat;
 
     proj_matrix_get_nrm (pmat, nrm);
@@ -204,55 +269,25 @@ drr_render_volume_perspective (
     /* Compute volume boundary box */
     volume_limit_set (&vol_limit, vol);
 
-    /* Compute the drr pixels */
-#pragma omp parallel for
-    for (r=options->image_window[0]; r<=options->image_window[1]; r++) {
-	int c;
-	double r_tgt[3];
-	double tmp[3];
-	double p2[3];
-
-	//if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
-	vec3_copy (r_tgt, ul_room);
-	vec3_scale3 (tmp, incr_r, (double) r);
-	vec3_add2 (r_tgt, tmp);
-
-	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
-	    double value;
-	    int idx = c - options->image_window[2] 
-		+ (r - options->image_window[0]) * cols;
-
-#if defined (VERBOSE)
-	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
+    /* Trace the set of rays */
+    switch (options->threading) {
+    case THREADING_BROOK:
+    case THREADING_CUDA:
+#if CUDA_FOUND
+	printf ("Calling drr_cuda_render_volume_perspective\n");
+	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
+	    p1, ul_room, incr_r, incr_c, dev_state, options);
+	break;
+#else
+	/* Fall through */
 #endif
-	    vec3_scale3 (tmp, incr_c, (double) c);
-	    vec3_add3 (p2, r_tgt, tmp);
 
-	    switch (options->algorithm) {
-	    case DRR_ALGORITHM_EXACT:
-		/* DRR_MSD is disabled */
-		value = drr_ray_trace_exact (vol, &vol_limit, p1, p2);
-		break;
-	    case DRR_ALGORITHM_TRILINEAR_EXACT:
-		value = drr_trace_ray_trilin_exact (vol, p1, p2);
-		break;
-	    case DRR_ALGORITHM_TRILINEAR_APPROX:
-		value = drr_trace_ray_trilin_approx (vol, p1, p2);
-		break;
-	    case DRR_ALGORITHM_UNIFORM:
-		value = drr_ray_trace_uniform (vol, &vol_limit, p1, p2);
-		break;
-	    default:
-		print_and_exit ("Error, unknown drr algorithm\n");
-		break;
-	    }
-	    value = value / 10;     /* Translate from pixels to cm*gm */
-	    if (options->exponential_mapping) {
-		value = exp(-value);
-	    }
-	    value = value * options->scale;   /* User requested scaling */
-
-	    proj->img[idx] = (float) value;
-	}
+    case THREADING_CPU:
+	drr_ray_trace_image (proj, vol, &vol_limit, 
+	    p1, ul_room, incr_r, incr_c, options);
+	break;
     }
+    // -------------- //
+
+
 }

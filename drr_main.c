@@ -91,24 +91,8 @@ create_matrix_and_drr (
     }
     sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
 
-    switch (options->threading) {
-    case THREADING_BROOK:
-    case THREADING_CUDA:
-#if CUDA_FOUND
-	printf ("Calling drr_cuda_render_volume_perspective\n");
-	drr_cuda_render_volume_perspective (
-	    proj, dev_state, vol, ps, multispectral_fn, options);
-	//CUDA_DRR3 (vol, &options);
-	break;
-#else
-	/* Fall through */
-#endif
+    drr_render_volume_perspective (proj, vol, ps, dev_state, options);
 
-    case THREADING_CPU:
-	drr_render_volume_perspective (
-	    proj, vol, ps, multispectral_fn, options);
-	break;
-    }
     proj_image_save (proj, img_fn, mat_fn);
 }
 
