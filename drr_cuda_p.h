@@ -15,11 +15,13 @@ struct drr_kernel_args
     float sad;
     float sid;
     float scale;
+    float3 p1;
+    float3 ul_room;
     float3 vol_offset;
     int3 vol_dim;
     float3 vol_pix_spacing;
     float matrix[12];
-    char padding[4]; //for data alignment
+    //char padding[4]; //for data alignment << ?
     //padding to 128Bytes
 };
 

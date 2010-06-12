@@ -77,7 +77,15 @@ void kernel_drr (
     y = blockIdx.y * blockDim.y + threadIdx.y;
 
     /* Compute ray */
-    
+#if defined (commentout)
+    vec3_copy (r_tgt, ul_room);
+    vec3_scale3 (tmp, incr_r, (double) r);
+    vec3_add2 (r_tgt, tmp);
+    int idx = c - options->image_window[2] 
+	+ (r - options->image_window[0]) * cols;
+    vec3_scale3 (tmp, incr_c, (double) c);
+    vec3_add3 (p2, r_tgt, tmp);
+#endif
     /* (TBD) */
 
     /* Loop through ray */
@@ -197,7 +205,7 @@ drr_cuda_ray_trace_image (
     plm_timer_start (&total_timer);
     plm_timer_start (&timer);
 
-    // Load dynamic kernel arguments
+    // Load dynamic kernel arguments (different for each projection)
     kargs->img_dim.x = proj->dim[0];
     kargs->img_dim.y = proj->dim[1];
     kargs->ic.x = proj->pmat->ic[0];
@@ -210,6 +218,12 @@ drr_cuda_ray_trace_image (
     for (i = 0; i < 12; i++) {
 	kargs->matrix[i] = (float) proj->pmat->matrix[i];
     }
+    kargs->p1.x = p1[0];
+    kargs->p1.y = p1[1];
+    kargs->p1.z = p1[2];
+    kargs->ul_room.x = ul_room[0];
+    kargs->ul_room.y = ul_room[1];
+    kargs->ul_room.z = ul_room[2];
 
     cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
 	cudaMemcpyHostToDevice);

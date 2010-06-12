@@ -287,7 +287,4 @@ drr_render_volume_perspective (
 	    p1, ul_room, incr_r, incr_c, options);
 	break;
     }
-    // -------------- //
-
-
 }
