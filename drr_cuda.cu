@@ -30,6 +30,7 @@
 #include <math.h>
 #include <cuda.h>
 
+#include "cuda_utils.h"
 #include "drr_cuda.h"
 #include "drr_cuda_p.h"
 #include "drr_opts.h"
@@ -40,11 +41,8 @@
 #include "volume.h"
 #include "timer.h"
 
-
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-void checkCUDAError(const char *msg);
 __global__ void kernel_drr (float * dev_vol,  int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
-
 
 
 // T E X T U R E S ////////////////////////////////////////////////////////
@@ -54,12 +52,18 @@ texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
 
 // uses 3D textures and pre-calculated coefs to accelerate DRR generation.
-void kernel_drr (float * dev_img, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing)
+void kernel_drr (
+    float * dev_img, 
+    int2 img_dim, 
+    float2 ic, 
+    float3 nrm, 
+    float sad, 
+    float scale, 
+    float3 vol_offset, 
+    int3 vol_dim, 
+    float3 vol_pix_spacing
+)
 {
-    // CUDA 2.0 does not allow for a 3D grid, which severely
-    // limits the manipulation of large 3D arrays of data.  The
-    // following code is a hack to bypass this implementation
-    // limitation.
     extern __shared__ float sdata[];
     float3 vp;
     int i,j,k;
@@ -145,7 +149,7 @@ drr_cuda_state_create (
     cudaMalloc ((void**) &state->dev_coef, 
 	7 * options->image_resolution[0] * options->image_resolution[1] 
 	* sizeof(float));
-    checkCUDAError ("Unable to allocate coef devmem");
+    cuda_utils_check_error ("Unable to allocate coef devmem");
     state->host_coef = (float*) malloc (
 	7 * options->image_resolution[0] * options->image_resolution[1] 
 	* sizeof(float));
@@ -243,7 +247,7 @@ drr_cuda_ray_trace_image (
     printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
     plm_timer_start (&timer);
 
-    checkCUDAError("Kernel Panic!");
+    cuda_utils_check_error("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
     // CUDA kernel calls are asynchronous...
@@ -265,18 +269,5 @@ drr_cuda_ray_trace_image (
     cudaMemcpy (proj->img, state->dev_img, 
 	proj->dim[0] * proj->dim[1] * sizeof(float), 
 	cudaMemcpyDeviceToHost);
-    checkCUDAError("Error: Unable to retrieve data volume.");
-}
-
-
-///////////////////////////////////////////////////////////////////////////
-// FUNCTION: checkCUDAError() /////////////////////////////////////////////
-void checkCUDAError(const char *msg)
-{
-    cudaError_t err = cudaGetLastError();
-    if ( cudaSuccess != err) 
-    {
-        fprintf(stderr, "CUDA ERROR: %s (%s).\n", msg, cudaGetErrorString( err) );
-        exit(EXIT_FAILURE);
-    }                         
+    cuda_utils_check_error("Error: Unable to retrieve data volume.");
 }

@@ -32,6 +32,7 @@
 /*****************
 * FDK  #includes *
 *****************/
+#include "cuda_utils.h"
 #include "fdk_cuda_p.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
@@ -48,8 +49,6 @@
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-void checkCUDAError(const char *msg);
-
 __global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
 ///////////////////////////////////////////////////////////////////////////
 
@@ -224,7 +223,7 @@ CUDA_reconstruct_conebeam (
 
     cudaMalloc( (void**)&dev_vol, vol_size_malloc);
     cudaMemset( (void *) dev_vol, 0, vol_size_malloc);	
-    checkCUDAError("Unable to allocate data volume");
+    cuda_utils_check_error("Unable to allocate data volume");
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
@@ -317,7 +316,7 @@ CUDA_reconstruct_conebeam (
 	    kargs->vol_pix_spacing,
 	    blocksInY,
 	    1.0f/(float)blocksInY);
-	checkCUDAError("Kernel Panic!");
+	cuda_utils_check_error("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
 	// CUDA kernel calls are asynchronous...
@@ -343,7 +342,7 @@ CUDA_reconstruct_conebeam (
     // Copy reconstructed volume from device to host
     cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, 
 	cudaMemcpyDeviceToHost);
-    checkCUDAError ("Error: Unable to retrieve data volume.");
+    cuda_utils_check_error ("Error: Unable to retrieve data volume.");
 
 	
     // Report total time
@@ -374,27 +373,3 @@ CUDA_reconstruct_conebeam (
 
     return 0;
 }
-//}
-///////////////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////////////
-// FUNCTION: checkCUDAError() /////////////////////////////////////////////
-void checkCUDAError(const char *msg)
-{
-    cudaError_t err = cudaGetLastError();
-    if( cudaSuccess != err) 
-    {
-        fprintf(stderr, "CUDA ERROR: %s (%s).\n", msg, cudaGetErrorString( err) );
-        exit(EXIT_FAILURE);
-    }                         
-}
-///////////////////////////////////////////////////////////////////////////
-
-
-
-///////////////////////////////////////////////////////////////////////////
-// Vim Editor Settings ////////////////////////////////////////////////////
-// vim:ts=8:sw=8:cindent:nowrap
-///////////////////////////////////////////////////////////////////////////

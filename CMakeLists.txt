@@ -565,9 +565,12 @@ IF(CUDA_FOUND)
     bspline_cuda.cpp
     bspline_cuda.cu
     bspline_cuda.h
+    cuda_utils.cu
+    cuda_utils.h
     )
   CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
-    bspline_cuda.cu)
+    bspline_cuda.cu 
+    cuda_utils.cu)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ${BSPLINE_CUDA_WRAPPERS}
