@@ -567,7 +567,7 @@ bspline_cuda_MI_a (
     BSPLINE_Score* ssd; // Holds the SSD "Score" information
     int num_vox;        // Holds # of voxels in the fixed volume
     Timer timer;
-    Timer timer0;
+    //Timer timer0;
     double interval;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     float* f_hist = mi_hist->f_hist;
@@ -581,7 +581,7 @@ bspline_cuda_MI_a (
     static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer
     FILE* fp = NULL;        // File Pointer to Debug File
-    int i;                  // Good ol' i
+    //int i;                  // Good ol' i
     // ----------------------------------------------------------
 
 

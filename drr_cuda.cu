@@ -36,6 +36,7 @@
 #include "drr_opts.h"
 #include "file_util.h"
 #include "math_util.h"
+#include "plm_cuda_math.h"
 #include "proj_image.h"
 #include "ray_trace_exact.h"
 #include "volume.h"
@@ -46,43 +47,6 @@ texture<float, 1, cudaReadModeElementType> tex_img;
 texture<float, 1, cudaReadModeElementType> tex_matrix;
 texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
-
-/* Inline functions */
-inline __host__ __device__ 
-float3 operator+ (float3 a, float3 b)
-{
-    return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
-}
-inline __host__ __device__ 
-float3 operator- (float3 a, float3 b)
-{
-    return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
-}
-inline __host__ __device__ 
-float3 operator* (float a, float3 b)
-{
-    return make_float3(a * b.x, a * b.y, a * b.z);
-}
-inline __host__ __device__ 
-float3 operator* (float3 a, float3 b)
-{
-    return make_float3(a.x * b.x, a.y * b.y, a.z * b.z);
-}
-inline __host__ __device__ 
-float3 operator/ (float a, float3 b)
-{
-    return make_float3(a / b.x, a / b.y, a / b.z);
-}
-inline __host__ __device__ 
-int3 operator< (float3 a, float b)
-{
-    return make_int3 (a.x < b, a.y < b, a.z < b);
-}
-inline __host__ __device__ 
-float3 fabsf3 (float3 a)
-{
-    return make_float3 (fabsf(a.x), fabsf(a.y), fabsf(a.z));
-}
 
 #define DRR_LEN_TOLERANCE 1e-6
 
@@ -98,6 +62,7 @@ volume_limit_clip_segment (
 )
 {
     float3 ray, inv_ray;
+    float alpha_in, alpha_out;
     float3 alpha_low, alpha_high;
     int3 ploc;
     int3 is_parallel;
@@ -150,8 +115,19 @@ volume_limit_clip_segment (
 	alpha_high.z = + FLT_MAX;
     }
 
-    /* Sort alpha values */
-    
+    /* Sort alpha */
+    sortf3 (&alpha_low, &alpha_high);
+
+    /* Check if alpha values overlap in all three dimensions.
+       alpha_in is the minimum alpha, where the ray enters the volume.
+       alpha_out is where it exits the volume. */
+    alpha_in = fmaxf(alpha_low.x, fmaxf (alpha_low.y, alpha_low.z));
+    alpha_out = fminf(alpha_high.x, fminf (alpha_high.y, alpha_high.z));
+
+    /* If exit is before entrance, the segment does not intersect the volume */
+    if (alpha_out - alpha_in < DRR_LEN_TOLERANCE) {
+	return 0;
+    }
 
     return 1;
 }
