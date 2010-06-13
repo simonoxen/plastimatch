@@ -270,6 +270,10 @@ ADD_TEST (bspline-mi-c-2-check
 
 ## -------------------------------------------------------------------------
 ## drr
+##   drr-a   synth-1.mha (normal image), exact
+##   drr-b   synth-1.mha (normal image), uniform
+##   drr-c   synth-7.mha (negative spacing), exact
+##   drr-d   synth-7.mha (negative spacing), uniform
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "drr-a"
@@ -287,6 +291,72 @@ ADD_TEST (
   "drr-a-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-a-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "drr-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/drr
+  "-a;20;-O;drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
+  )
+PLM_ADD_TEST (
+  "drr-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;drr-b/out_0010.pfm"
+  )
+ADD_TEST (
+  "drr-b-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-b-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "drr-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/drr
+  "-a;20;-O;drr-c/out_;${PLM_TESTING_BUILD_DIR}/synth-7.mha"
+  )
+PLM_ADD_TEST (
+  "drr-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;drr-c/out_0010.pfm"
+  )
+ADD_TEST (
+  "drr-c-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-c-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "drr-d"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/drr
+  "-a;20;-O;drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/synth-7.mha"
+  )
+PLM_ADD_TEST (
+  "drr-d-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
+  "stats;--input;drr-d/out_0010.pfm"
+  )
+ADD_TEST (
+  "drr-d-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-d-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=0.045"
   "-DUPPER_THRESH=0.055"

@@ -34,6 +34,9 @@ ENDIF (CUDA_FOUND)
 ## Drr cuda is not yet working.  Don't run the tests.
 SET (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
+  "drr-d"
+  "drr-d-stats"
+  "drr-d-check"
   "drr-cuda"
   "drr-cuda-stats"
   "drr-cuda-check"
