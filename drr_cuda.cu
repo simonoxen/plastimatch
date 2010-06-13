@@ -41,24 +41,44 @@
 #include "volume.h"
 #include "timer.h"
 
-// P R O T O T Y P E S ////////////////////////////////////////////////////
-__global__ void kernel_drr (float * dev_vol,  int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing);
-
-
-// T E X T U R E S ////////////////////////////////////////////////////////
+/* Textures */
 texture<float, 1, cudaReadModeElementType> tex_img;
 texture<float, 1, cudaReadModeElementType> tex_matrix;
 texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
 
+/* Inline functions */
+inline __host__ __device__ 
+float3 operator+ (float3 a, float3 b)
+{
+    return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+inline __host__ __device__ 
+float3 operator* (float a, float3 b)
+{
+    return make_float3(a * b.x, a * b.y, a * b.z);
+}
+inline __host__ __device__ 
+float3 operator* (float3 a, float3 b)
+{
+    return make_float3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+
 // uses 3D textures and pre-calculated coefs to accelerate DRR generation.
-void kernel_drr (
+__global__ void
+kernel_drr (
     float * dev_img, 
     int2 img_dim, 
     float2 ic, 
     float3 nrm, 
     float sad, 
     float scale, 
+    float3 p1, 
+    float3 ul_room, 
+    float3 incr_r, 
+    float3 incr_c, 
+    float4 image_window, 
     float3 vol_offset, 
     int3 vol_dim, 
     float3 vol_pix_spacing
@@ -66,32 +86,38 @@ void kernel_drr (
 {
     extern __shared__ float sdata[];
     float3 vp;
+    float3 p2;
     int i,j,k;
-    int x,y,xy7;
+    int r, c;
     float vol;
-
     unsigned int tid = threadIdx.x;
+    int idx;
+    float outval;
+    float3 r_tgt, tmp;
+    int cols;
 
     /* Get coordinates of this image pixel */
-    x = blockIdx.x * blockDim.x + threadIdx.x;
-    y = blockIdx.y * blockDim.y + threadIdx.y;
+    c = blockIdx.x * blockDim.x + threadIdx.x;
+    r = blockIdx.y * blockDim.y + threadIdx.y;
 
     /* Compute ray */
-#if defined (commentout)
-    vec3_copy (r_tgt, ul_room);
-    vec3_scale3 (tmp, incr_r, (double) r);
-    vec3_add2 (r_tgt, tmp);
-    int idx = c - options->image_window[2] 
-	+ (r - options->image_window[0]) * cols;
-    vec3_scale3 (tmp, incr_c, (double) c);
-    vec3_add3 (p2, r_tgt, tmp);
-#endif
-    /* (TBD) */
+    r_tgt = ul_room;
+    tmp = r * incr_r;
+    r_tgt = r_tgt + tmp;
+    tmp = c * incr_c;
+    p2 = r_tgt + tmp;
+
+    /* Compute output location */
+    cols = image_window.w - image_window.z + 1;
+    idx = (c - image_window.z) + (r - image_window.x) * cols;
+
+    /* Clip ray to volume */
+    
 
     /* Loop through ray */
 
     /* Write output pixel value */
-    dev_img[y*img_dim.x + x] = x;
+    dev_img[r*img_dim.x + c] = outval;
 }
 
 void*
@@ -224,6 +250,18 @@ drr_cuda_ray_trace_image (
     kargs->ul_room.x = ul_room[0];
     kargs->ul_room.y = ul_room[1];
     kargs->ul_room.z = ul_room[2];
+    kargs->incr_r.x = incr_r[0];
+    kargs->incr_r.y = incr_r[1];
+    kargs->incr_r.z = incr_r[2];
+    kargs->incr_c.x = incr_c[0];
+    kargs->incr_c.y = incr_c[1];
+    kargs->incr_c.z = incr_c[2];
+    kargs->image_window.x = options->image_window[0];
+    kargs->image_window.y = options->image_window[1];
+    kargs->image_window.z = options->image_window[2];
+    kargs->image_window.w = options->image_window[3];
+
+    printf ("ul_room = %f %f %f\n", ul_room[0], ul_room[1], ul_room[2]);
 
     cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
 	cudaMemcpyHostToDevice);
@@ -254,6 +292,11 @@ drr_cuda_ray_trace_image (
 	kargs->nrm,
 	kargs->sad,
 	kargs->scale,
+	kargs->p1, 
+	kargs->ul_room, 
+	kargs->incr_r, 
+	kargs->incr_c, 
+	kargs->image_window, 
 	kargs->vol_offset,
 	kargs->vol_dim,
 	kargs->vol_pix_spacing);

@@ -17,6 +17,9 @@ struct drr_kernel_args
     float scale;
     float3 p1;
     float3 ul_room;
+    float3 incr_r;
+    float3 incr_c;
+    float4 image_window;
     float3 vol_offset;
     int3 vol_dim;
     float3 vol_pix_spacing;
