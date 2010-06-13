@@ -54,6 +54,11 @@ float3 operator+ (float3 a, float3 b)
     return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
 inline __host__ __device__ 
+float3 operator- (float3 a, float3 b)
+{
+    return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+inline __host__ __device__ 
 float3 operator* (float a, float3 b)
 {
     return make_float3(a * b.x, a * b.y, a * b.z);
@@ -63,9 +68,95 @@ float3 operator* (float3 a, float3 b)
 {
     return make_float3(a.x * b.x, a.y * b.y, a.z * b.z);
 }
+inline __host__ __device__ 
+float3 operator/ (float a, float3 b)
+{
+    return make_float3(a / b.x, a / b.y, a / b.z);
+}
+inline __host__ __device__ 
+int3 operator< (float3 a, float b)
+{
+    return make_int3 (a.x < b, a.y < b, a.z < b);
+}
+inline __host__ __device__ 
+float3 fabsf3 (float3 a)
+{
+    return make_float3 (fabsf(a.x), fabsf(a.y), fabsf(a.z));
+}
 
+#define DRR_LEN_TOLERANCE 1e-6
 
-// uses 3D textures and pre-calculated coefs to accelerate DRR generation.
+/* From volume_limit.c */
+__device__ int
+volume_limit_clip_segment (
+    float3 lower_limit,         /* INPUT:  The bounding box to clip to */
+    float3 upper_limit,         /* INPUT:  The bounding box to clip to */
+    float3 *ip1,                /* OUTPUT: Intersection point 1 */
+    float3 *ip2,                /* OUTPUT: Intersection point 2 */
+    float3 p1,                  /* INPUT:  Line segment point 1 */
+    float3 p2                   /* INPUT:  Line segment point 2 */
+)
+{
+    float3 ray, inv_ray;
+    float3 alpha_low, alpha_high;
+    int3 ploc;
+    int3 is_parallel;
+
+    ray = p2 - p1;
+    inv_ray = 1.0f / ray;
+
+    /* Find intersection configuration of ray base */
+    /* -1 is POINTLOC_LEFT, 0 is POINTLOC_INSIDE, 1 is POINTLOC_RIGHT */
+    ploc = make_int3 (-1, -1, -1);
+    if (p1.x > upper_limit.x) {
+	ploc.x = 1;
+    } else if (p1.x > lower_limit.x) {
+	ploc.x = 0;
+    }
+    if (p1.y > upper_limit.y) {
+	ploc.y = 1;
+    } else if (p1.y > lower_limit.y) {
+	ploc.y = 0;
+    }
+    if (p1.z > upper_limit.z) {
+	ploc.z = 1;
+    } else if (p1.z > lower_limit.z) {
+	ploc.z = 0;
+    }
+
+    /* Check if ray parallel to grid */
+    is_parallel = fabsf3(ray) < DRR_LEN_TOLERANCE;
+
+    /* Compute alphas for general configuration */
+    alpha_low = (lower_limit - p1) * inv_ray;
+    alpha_high = (upper_limit - p1) * inv_ray;
+
+    /* Check case where ray is parallel to grid.  If any dimension is 
+       parallel to grid, then p1 must be inside slap, otherwise there 
+       is no intersection of segment and cube. */
+    if (is_parallel.x) {
+	if (!ploc.x) return 0;
+	alpha_low.x = - FLT_MAX;
+	alpha_high.x = + FLT_MAX;
+    }
+    if (is_parallel.y) {
+	if (!ploc.y) return 0;
+	alpha_low.y = - FLT_MAX;
+	alpha_high.y = + FLT_MAX;
+    }
+    if (is_parallel.z) {
+	if (!ploc.z) return 0;
+	alpha_low.z = - FLT_MAX;
+	alpha_high.z = + FLT_MAX;
+    }
+
+    /* Sort alpha values */
+    
+
+    return 1;
+}
+
+/* Main DRR function */
 __global__ void
 kernel_drr (
     float * dev_img, 
