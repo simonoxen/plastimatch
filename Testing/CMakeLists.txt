@@ -272,21 +272,21 @@ ADD_TEST (bspline-mi-c-2-check
 ## drr
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "drr"
+  "drr-a"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/drr
-  "-a;20;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
+  "-a;20;-O;drr-a/out_;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
   )
 PLM_ADD_TEST (
-  "drr-stats"
+  "drr-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;out_0010.pfm"
+  "stats;--input;drr-a/out_0010.pfm"
   )
 ADD_TEST (
-  "drr-check"
+  "drr-a-check"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-a-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=0.045"
   "-DUPPER_THRESH=0.055"
@@ -325,13 +325,13 @@ PLM_ADD_TEST (
   "fdk-cpu"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR};-f;none;-a;0 19;-O;fdk_cpu_output.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-a;0 19;-O;fdk-cpu.mha"
   )
 PLM_ADD_TEST (
   "fdk-cpu-stats"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/plastimatch
-  "stats;--input;fdk_cpu_output.mha"
+  "stats;--input;fdk-cpu.mha"
   )
 ADD_TEST (
   "fdk-cpu-check"
