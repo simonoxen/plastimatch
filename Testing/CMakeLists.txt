@@ -36,47 +36,61 @@ SET (SYNTH_MHA_SIZE 38)
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
+##   synth-1.mha   Centered gauss
+##   synth-2.mha   Off-center gauss
+##   synth-3.mha   Uchar sphere, bg=0, fg=255
+##   synth-4.mha   Inverted gauss
+##   synth-5.mha   Rect
+##   synth-6.mha   Inverged rect
+##   synth-7.mha   Gauss with inverted pixel spacing
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "synth-test-1"
+  "synth-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;synth-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-test-2"
+  "synth-2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;synth-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-test-3"
+  "synth-3"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;synth-3.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-test-4"
+  "synth-4"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;synth-4.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-test-5"
+  "synth-5"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
 PLM_ADD_TEST (
-  "synth-test-6"
+  "synth-6"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  )
+
+PLM_ADD_TEST (
+  "synth-7"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
+  "--output;synth-7.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 ## -------------------------------------------------------------------------
