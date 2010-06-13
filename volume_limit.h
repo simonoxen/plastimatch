@@ -10,9 +10,10 @@
 typedef struct volume_limit Volume_limit;
 struct volume_limit {
     /* upper and lower limits of volume, including tolerances */
-    double limits[3][2];
+    double lower_limit[3];
+    double upper_limit[3];
 
-    /* dir == 0 if limits go from low to high */
+    /* dir == 0 if lower_limit corresponds to lower index */
     int dir[3];
 };
 

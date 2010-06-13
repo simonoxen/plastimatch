@@ -7,7 +7,7 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-#define ULTRA_VERBOSE 1
+//#define ULTRA_VERBOSE 1
 
 #define DRR_BOUNDARY_TOLERANCE 1e-6
 #define DRR_LEN_TOLERANCE 1e-6
@@ -15,22 +15,12 @@
 static Point_location
 test_boundary (Volume_limit* vol_limit, int d, double x)
 {
-    if (vol_limit->dir[d] == 0) {
-	if (x < vol_limit->limits[d][0]) {
-	    return POINTLOC_LEFT;
-	} else if (x > vol_limit->limits[d][1]) {
-	    return POINTLOC_RIGHT;
-	} else {
-	    return POINTLOC_INSIDE;
-	}
+    if (x < vol_limit->lower_limit[d]) {
+	return POINTLOC_LEFT;
+    } else if (x > vol_limit->upper_limit[d]) {
+	return POINTLOC_RIGHT;
     } else {
-	if (x > vol_limit->limits[d][0]) {
-	    return POINTLOC_LEFT;
-	} else if (x < vol_limit->limits[d][1]) {
-	    return POINTLOC_RIGHT;
-	} else {
-	    return POINTLOC_INSIDE;
-	}
+	return POINTLOC_INSIDE;
     }
 }
 
@@ -71,8 +61,8 @@ volume_limit_clip_ray (
 	}
 
 	/* General configuration */
-	alpha[d][0] = (vol_limit->limits[d][0] - p1[d]) / ray[d];
-	alpha[d][1] = (vol_limit->limits[d][1] - p1[d]) / ray[d];
+	alpha[d][0] = (vol_limit->lower_limit[d] - p1[d]) / ray[d];
+	alpha[d][1] = (vol_limit->upper_limit[d] - p1[d]) / ray[d];
 
 	/* Sort alpha */
 	if (alpha[d][0] > alpha[d][1]) {
@@ -124,7 +114,7 @@ volume_limit_clip_segment (
 {
     Point_location ploc[3][2];
     double ray[3];
-    double alpha[3][2];
+    double alpha_lo[3], alpha_hi[3];
     double alpha_in, alpha_out;
     int d;
 
@@ -155,38 +145,46 @@ volume_limit_clip_segment (
 	    if (ploc[d][0] != POINTLOC_INSIDE) {
 		return 0;
 	    }
-	    alpha[d][0] = - DBL_MAX;
-	    alpha[d][1] = + DBL_MAX;
+	    alpha_lo[d] = - DBL_MAX;
+	    alpha_hi[d] = + DBL_MAX;
 	    continue;
 	}
 
-	if (ploc[d][0] == POINTLOC_LEFT) {
-	    alpha[d][0] = (vol_limit->limits[d][0] - p1[d]) / (p2[d] - p1[d]);
-	} else if (ploc[d][0] == POINTLOC_RIGHT) {
-	    alpha[d][0] = (p1[d] - vol_limit->limits[d][1]) / (p1[d] - p2[d]);
-	} else {
-	    alpha[d][0] = 0.0;
+	alpha_lo[d] = (vol_limit->lower_limit[d] - p1[d]) / ray[d];
+	alpha_hi[d] = (vol_limit->upper_limit[d] - p1[d]) / ray[d];
+
+	/* Sort alphas */
+	if (alpha_hi[d] < alpha_lo[d]) {
+	    double tmp = alpha_hi[d];
+	    alpha_hi[d] = alpha_lo[d];
+	    alpha_lo[d] = tmp;
 	}
-	if (ploc[d][1] == POINTLOC_LEFT) {
-	    alpha[d][1] = (vol_limit->limits[d][0] - p1[d]) / (p2[d] - p1[d]);
-	} else if (ploc[d][1] == POINTLOC_RIGHT) {
-	    alpha[d][1] = (p1[d] - vol_limit->limits[d][1]) / (p1[d] - p2[d]);
-	} else {
-	    alpha[d][1] = 1.0;
-	}
+
+	/* Clip alphas to segment */
+	if (alpha_lo[d] < 0.0) alpha_lo[d] = 0.0;
+	if (alpha_lo[d] > 1.0) alpha_lo[d] = 1.0;
+	if (alpha_hi[d] < 0.0) alpha_hi[d] = 0.0;
+	if (alpha_hi[d] > 1.0) alpha_hi[d] = 1.0;
     }
 
     /* alpha_in is the alpha where the segment enters the boundary, and 
        alpha_out is where it exits the boundary.  */
-    alpha_in = alpha[0][0];
-    alpha_out = alpha[0][1];
+    alpha_in = alpha_lo[0];
+    alpha_out = alpha_hi[0];
     for (d = 1; d < 3; d++) {
-	if (alpha_in < alpha[d][0]) alpha_in = alpha[d][0];
-	if (alpha_out > alpha[d][1]) alpha_out = alpha[d][1];
+	if (alpha_in < alpha_lo[d]) alpha_in = alpha_lo[d];
+	if (alpha_out > alpha_hi[d]) alpha_out = alpha_hi[d];
     }
 #if defined (ULTRA_VERBOSE)
-    printf ("alpha[*][0] = %g %g %g\n", alpha[0][0], alpha[1][0], alpha[2][0]);
-    printf ("alpha[*][1] = %g %g %g\n", alpha[0][1], alpha[1][1], alpha[2][1]);
+    printf ("p1 = %g %g %g\n", p1[0], p1[1], p1[2]);
+    printf ("p2 = %g %g %g\n", p2[0], p2[1], p2[2]);
+    printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+    printf ("lower_lim = %g %g %g\n", vol_limit->lower_limit[0], 
+	vol_limit->lower_limit[1], vol_limit->lower_limit[2]);
+    printf ("upper_lim = %g %g %g\n", vol_limit->upper_limit[0], 
+	vol_limit->upper_limit[1], vol_limit->upper_limit[2]);
+    printf ("alpha_lo = %g %g %g\n", alpha_lo[0], alpha_lo[1], alpha_lo[2]);
+    printf ("alpha_hi = %g %g %g\n", alpha_hi[0], alpha_hi[1], alpha_hi[2]);
     printf ("alpha in/out = %g %g\n", alpha_in, alpha_out);
 #endif
 
@@ -211,17 +209,20 @@ volume_limit_set (Volume_limit *vol_limit, Volume *vol)
 
     /* Compute volume boundary box */
     for (d = 0; d < 3; d++) {
-	vol_limit->limits[d][0] = vol->offset[d] - 0.5 * vol->pix_spacing[d];
-	vol_limit->limits[d][1] = vol_limit->limits[d][0] 
+	vol_limit->lower_limit[d] = vol->offset[d] - 0.5 * vol->pix_spacing[d];
+	vol_limit->upper_limit[d] = vol_limit->lower_limit[d]
 	    + vol->dim[d] * vol->pix_spacing[d];
-	if (vol_limit->limits[d][0] <= vol_limit->limits[d][1]) {
+	if (vol_limit->lower_limit[d] <= vol_limit->upper_limit[d]) {
 	    vol_limit->dir[d] = 0;
-	    vol_limit->limits[d][0] += DRR_BOUNDARY_TOLERANCE;
-	    vol_limit->limits[d][1] -= DRR_BOUNDARY_TOLERANCE;
 	} else {
+	    double tmp;
 	    vol_limit->dir[d] = 1;
-	    vol_limit->limits[d][0] -= DRR_BOUNDARY_TOLERANCE;
-	    vol_limit->limits[d][1] += DRR_BOUNDARY_TOLERANCE;
+	    /* Swap limits */
+	    tmp = vol_limit->lower_limit[d];
+	    vol_limit->lower_limit[d] = vol_limit->upper_limit[d];
+	    vol_limit->upper_limit[d] = tmp;
 	}
+	vol_limit->lower_limit[d] += DRR_BOUNDARY_TOLERANCE;
+	vol_limit->upper_limit[d] -= DRR_BOUNDARY_TOLERANCE;
     }
 }

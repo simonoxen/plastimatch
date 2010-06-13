@@ -134,5 +134,4 @@ static inline void mat_mult_mat (double* m1,
     }
 }
 
-
 #endif
