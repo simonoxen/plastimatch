@@ -149,7 +149,7 @@ kernel_drr (
     float3 ul_room, 
     float3 incr_r, 
     float3 incr_c, 
-    float4 image_window, 
+    int4 image_window, 
     float3 lower_limit, 
     float3 upper_limit, 
     float3 vol_offset, 
@@ -324,22 +324,11 @@ drr_cuda_ray_trace_image (
     kargs->ul_room.x = ul_room[0];
     kargs->ul_room.y = ul_room[1];
     kargs->ul_room.z = ul_room[2];
-    kargs->incr_r.x = incr_r[0];
-    kargs->incr_r.y = incr_r[1];
-    kargs->incr_r.z = incr_r[2];
-    kargs->incr_c.x = incr_c[0];
-    kargs->incr_c.y = incr_c[1];
-    kargs->incr_c.z = incr_c[2];
-    kargs->image_window.x = options->image_window[0];
-    kargs->image_window.y = options->image_window[1];
-    kargs->image_window.z = options->image_window[2];
-    kargs->image_window.w = options->image_window[3];
-    kargs->lower_limit.x = vol_limit->limits[0][0];
-    kargs->lower_limit.y = vol_limit->limits[1][0];
-    kargs->lower_limit.z = vol_limit->limits[2][0];
-    kargs->upper_limit.x = vol_limit->limits[0][1];
-    kargs->upper_limit.y = vol_limit->limits[1][1];
-    kargs->upper_limit.z = vol_limit->limits[2][1];
+    kargs->incr_r = make_float3 (incr_r);
+    kargs->incr_c = make_float3 (incr_c);
+    kargs->image_window = make_int4 (options->image_window);
+    kargs->lower_limit = make_float3 (vol_limit->lower_limit);
+    kargs->upper_limit = make_float3 (vol_limit->upper_limit);
 
     printf ("ul_room = %f %f %f\n", ul_room[0], ul_room[1], ul_room[2]);
 

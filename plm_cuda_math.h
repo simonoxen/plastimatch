@@ -7,6 +7,56 @@
 #include "plm_config.h"
 #include <cuda.h>
 
+/* Host to device operators */
+inline __host__
+float2
+make_float2 (float *a)
+{
+    return make_float2 (a[0], a[1]);
+}
+
+inline __host__
+float2
+make_float2 (double *a)
+{
+    return make_float2 (a[0], a[1]);
+}
+
+inline __host__
+float3
+make_float3 (float *a)
+{
+    return make_float3 (a[0], a[1], a[2]);
+}
+
+inline __host__
+float3
+make_float3 (double *a)
+{
+    return make_float3 (a[0], a[1], a[2]);
+}
+
+inline __host__
+int4
+make_int4 (int *a)
+{
+    return make_int4 (a[0], a[1], a[2], a[3]);
+}
+
+inline __host__
+float4
+make_float4 (float *a)
+{
+    return make_float4 (a[0], a[1], a[2], a[3]);
+}
+
+inline __host__
+float4
+make_float4 (double *a)
+{
+    return make_float4 (a[0], a[1], a[2], a[3]);
+}
+
 /* Overloaded operators */
 inline __host__ __device__ 
 float3 
