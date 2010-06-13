@@ -129,6 +129,10 @@ volume_limit_clip_segment (
 	return 0;
     }
 
+    /* Compute the volume intersection points */
+    *ip1 = p1 + alpha_in * ray;
+    *ip2 = p2 + alpha_out * ray;
+
     return 1;
 }
 
@@ -146,18 +150,17 @@ kernel_drr (
     float3 incr_r, 
     float3 incr_c, 
     float4 image_window, 
+    float3 lower_limit, 
+    float3 upper_limit, 
     float3 vol_offset, 
     int3 vol_dim, 
     float3 vol_pix_spacing
 )
 {
     extern __shared__ float sdata[];
-    float3 vp;
     float3 p2;
-    int i,j,k;
+    float3 ip1, ip2;
     int r, c;
-    float vol;
-    unsigned int tid = threadIdx.x;
     int idx;
     float outval;
     float3 r_tgt, tmp;
@@ -179,7 +182,11 @@ kernel_drr (
     idx = (c - image_window.z) + (r - image_window.x) * cols;
 
     /* Clip ray to volume */
-    
+    if (volume_limit_clip_segment (lower_limit, upper_limit, 
+	    &ip1, &ip2, p1, p2) == 0)
+    {
+	outval = 0;
+    }
 
     /* Loop through ray */
 
@@ -327,6 +334,12 @@ drr_cuda_ray_trace_image (
     kargs->image_window.y = options->image_window[1];
     kargs->image_window.z = options->image_window[2];
     kargs->image_window.w = options->image_window[3];
+    kargs->lower_limit.x = vol_limit->limits[0][0];
+    kargs->lower_limit.y = vol_limit->limits[1][0];
+    kargs->lower_limit.z = vol_limit->limits[2][0];
+    kargs->upper_limit.x = vol_limit->limits[0][1];
+    kargs->upper_limit.y = vol_limit->limits[1][1];
+    kargs->upper_limit.z = vol_limit->limits[2][1];
 
     printf ("ul_room = %f %f %f\n", ul_room[0], ul_room[1], ul_room[2]);
 
@@ -364,6 +377,8 @@ drr_cuda_ray_trace_image (
 	kargs->incr_r, 
 	kargs->incr_c, 
 	kargs->image_window, 
+	kargs->lower_limit,
+	kargs->upper_limit,
 	kargs->vol_offset,
 	kargs->vol_dim,
 	kargs->vol_pix_spacing);

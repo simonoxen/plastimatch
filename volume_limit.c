@@ -102,7 +102,7 @@ volume_limit_clip_ray (
 	return 0;
     }
 
-    /* Create the volume intersection points */
+    /* Compute the volume intersection points */
     vec3_sub3 (ray, p2, p1);
     for (d = 0; d < 3; d++) {
 	ip1[d] = p1[d] + alpha_in * ray[d];

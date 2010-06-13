@@ -20,6 +20,8 @@ struct drr_kernel_args
     float3 incr_r;
     float3 incr_c;
     float4 image_window;
+    float3 lower_limit;
+    float3 upper_limit;
     float3 vol_offset;
     int3 vol_dim;
     float3 vol_pix_spacing;
