@@ -8,48 +8,60 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+#include "drr.h"
 #include "math_util.h"
 #include "ray_trace_exact.h"
 #include "timer.h"
 #include "volume.h"
 #include "volume_limit.h"
 
-//#define ULTRA_VERBOSE 1
-#define DRR_STRIDE_TOLERANCE 1e-10
-#define DRR_HUGE_DOUBLE DBL_MAX
-#define DRR_LEN_TOLERANCE 1e-6
-
 void
 ray_trace_exact_init_loopvars (
-    int* ai,           /* Output */
-    int* aidir,        /* Output */
-    double* ao,        /* Output */
-    double* al,        /* Output */
-    double pt,         /* Input: initial intersection of ray with volume */
-    double ry,         /* Input: normalized direction of ray */
-    double offset,     /* Input: origin of volume */
-    double samp        /* Input: pixel spacing of volume */
+    int* ai,           /* Output: index */
+    int* aidir,        /* Output: are indices moving up or down? */
+    double* ao,        /* Output: absolute length to next voxel crossing */
+    double* al,        /* Output: length between voxel crossings */
+    double pt,         /* Input:  initial intersection of ray with volume */
+    double ry,         /* Input:  normalized direction of ray */
+    double offset,     /* Input:  origin of volume */
+    double samp        /* Input:  pixel spacing of volume */
 )
 {
-#if (ULTRA_VERBOSE)
+#if (DRR_VERBOSE)
     printf ("pt/ry/off/samp: %g %g %g %g\n", pt, ry, offset, samp);
 #endif
-    if (ry > 0) {
-	*aidir = 1;
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = samp - ((pt - offset + 0.5 * samp) - (*ai) * samp);
-    } else {
-	*aidir = -1;
-        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
-        *ao = samp - ((*ai+1) * samp - (pt - offset + 0.5 * samp));
-    }
+
+    *aidir = SIGN (ry) * SIGN (samp);
+    *ai = ROUND_INT ((pt - offset) / samp);
+    *ao = SIGN (ry) 
+	* (((*ai) * samp + offset) + (SIGN (ry) * 0.5 * fabs (samp)) - pt);
+
     if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
 	*ao = *ao / fabs(ry);
-	*al = samp / fabs(ry);
+	*al = fabs(samp) / fabs(ry);
     } else {
 	*ao = DRR_HUGE_DOUBLE;
 	*al = DRR_HUGE_DOUBLE;
     }
+
+#if defined (commentout)
+    if (ry > 0) {
+	*aidir = 1 * SIGN (samp);
+        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
+        *ao = fabs(samp - ((pt - offset + 0.5 * samp) - (*ai) * samp));
+    } else {
+	*aidir = -1 * SIGN (samp);
+        *ai = (int) floor ((pt - offset + 0.5 * samp) / samp);
+        *ao = fabs(samp - ((*ai+1) * samp - (pt - offset + 0.5 * samp)));
+    }
+    if (fabs(ry) > DRR_STRIDE_TOLERANCE) {
+	*ao = *ao / fabs(ry);
+	*al = fabs(samp) / fabs(ry);
+    } else {
+	*ao = DRR_HUGE_DOUBLE;
+	*al = DRR_HUGE_DOUBLE;
+    }
+#endif
 }
 
 /* Initialize loop variables.  Returns 1 if the segment intersects 
@@ -89,7 +101,7 @@ ray_trace_exact_init (
     vec3_sub3 (ray, p2, p1);
     vec3_normalize1 (ray);
 
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
     printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
@@ -121,7 +133,7 @@ ray_trace_exact_init (
 	vol->offset[2], 
 	vol->pix_spacing[2]);
 
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("aix = %d aixdir = %d aox = %g alx = %g\n", 
 	*ai_x, *aixdir, *ao_x, *al_x);
     printf ("aiy = %d aiydir = %d aoy = %g aly = %g\n", 
@@ -158,7 +170,7 @@ ray_trace_exact (
     double aggr_len = 0.0;            /* Length traced so far */
     float* img = (float*) vol->img;
 
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("p1in: %f %f %f\n", p1in[0], p1in[1], p1in[2]);
     printf ("p2in: %f %f %f\n", p2in[0], p2in[1], p2in[2]);
 #endif
@@ -194,7 +206,7 @@ ray_trace_exact (
 	    + ai_y*vol->dim[0] 
 	    + ai_x;
 
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_ULTRA_VERBOSE)
 	printf ("(%d %d %d) (%g,%g,%g)\n",ai_x,ai_y,ai_z,ao_x,ao_y,ao_z);
 	printf ("aggr_len = %g, len = %g\n", aggr_len, len);
 	fflush (stdout);

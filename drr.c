@@ -29,8 +29,6 @@ struct callback_data {
 };
 
 
-//#define ULTRA_VERBOSE 1
-//#define VERBOSE 1
 //#define DEBUG_INTENSITIES 1
 
 /* According to NIST, the mass attenuation coefficient of H2O at 50 keV
@@ -152,7 +150,7 @@ drr_ray_trace_image (
 )
 {
     int r;
-#if defined (VERBOSE)
+#if defined (DRR_VERBOSE)
     int rows = options->image_window[1] - options->image_window[0] + 1;
 #endif
     int cols = options->image_window[3] - options->image_window[2] + 1;
@@ -175,7 +173,7 @@ drr_ray_trace_image (
 	    int idx = c - options->image_window[2] 
 		+ (r - options->image_window[0]) * cols;
 
-#if defined (VERBOSE)
+#if defined (DRR_VERBOSE)
 	    printf ("Row: %4d/%d  Col:%4d/%d\n", r, rows, c, cols);
 #endif
 	    vec3_scale3 (tmp, incr_c, (double) c);
@@ -252,7 +250,7 @@ drr_render_volume_perspective (
        direction of the ray */
     vec3_copy (p1, pmat->cam);
 
-#if defined (VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("NRM: %g %g %g\n", nrm[0], nrm[1], nrm[2]);
     printf ("PDN: %g %g %g\n", pdn[0], pdn[1], pdn[2]);
     printf ("PRT: %g %g %g\n", prt[0], prt[1], prt[2]);

@@ -3,14 +3,13 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
+#include "drr.h"          /* For DRR_VERBOSE */
 #include "math_util.h"
 #include "volume.h"
 #include "volume_limit.h"
 
-//#define ULTRA_VERBOSE 1
-
-#define DRR_BOUNDARY_TOLERANCE 1e-6
-#define DRR_LEN_TOLERANCE 1e-6
+//#define DRR_BOUNDARY_TOLERANCE 1e-6
+//#define DRR_LEN_TOLERANCE 1e-6
 
 static Point_location
 test_boundary (Volume_limit* vol_limit, int d, double x)
@@ -81,7 +80,7 @@ volume_limit_clip_ray (
 	if (alpha_in < alpha[d][0]) alpha_in = alpha[d][0];
 	if (alpha_out > alpha[d][1]) alpha_out = alpha[d][1];
     }
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("alpha[*][0] = %g %g %g\n", alpha[0][0], alpha[1][0], alpha[2][0]);
     printf ("alpha[*][1] = %g %g %g\n", alpha[0][1], alpha[1][1], alpha[2][1]);
     printf ("alpha in/out = %g %g\n", alpha_in, alpha_out);
@@ -175,7 +174,7 @@ volume_limit_clip_segment (
 	if (alpha_in < alpha_lo[d]) alpha_in = alpha_lo[d];
 	if (alpha_out > alpha_hi[d]) alpha_out = alpha_hi[d];
     }
-#if defined (ULTRA_VERBOSE)
+#if defined (DRR_VERBOSE)
     printf ("p1 = %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("p2 = %g %g %g\n", p2[0], p2[1], p2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
@@ -213,10 +212,10 @@ volume_limit_set (Volume_limit *vol_limit, Volume *vol)
 	vol_limit->upper_limit[d] = vol_limit->lower_limit[d]
 	    + vol->dim[d] * vol->pix_spacing[d];
 	if (vol_limit->lower_limit[d] <= vol_limit->upper_limit[d]) {
-	    vol_limit->dir[d] = 0;
+	    vol_limit->dir[d] = 1;
 	} else {
 	    double tmp;
-	    vol_limit->dir[d] = 1;
+	    vol_limit->dir[d] = -1;
 	    /* Swap limits */
 	    tmp = vol_limit->lower_limit[d];
 	    vol_limit->lower_limit[d] = vol_limit->upper_limit[d];

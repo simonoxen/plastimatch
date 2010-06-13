@@ -31,6 +31,8 @@
 /* Returns double data type -- note MSVC does not have C99 round(). */
 #define ROUND(x) ((double) (ROUND_INT(x)))
 
+/* Returns +1 or -1, depeding on sign.  Zero yeilds +1. */
+#define SIGN(x) (((x) >= 0) ? (+1) : (-1))
 
 /* Primatives */
 static inline void vec3_add2 (double* v1, const double* v2) {
