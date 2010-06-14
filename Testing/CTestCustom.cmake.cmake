@@ -37,9 +37,6 @@ SET (CTEST_CUSTOM_TESTS_IGNORE
   "drr-d"
   "drr-d-stats"
   "drr-d-check"
-  "drr-cuda"
-  "drr-cuda-stats"
-  "drr-cuda-check"
 )
 
 ## If we didn't get dicom test data, don't run dicom tests

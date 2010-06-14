@@ -263,9 +263,6 @@ drr_cuda_state_create (
     cudaMalloc ((void**) &state->dev_matrix, 12 * sizeof(float));
     cudaMalloc ((void**) &state->dev_kargs, sizeof(Drr_kernel_args));
 
-    printf ("printf state = %p\n", state);
-    printf ("printf state->kargs = %p\n", state->kargs);
-
     kargs->vol_offset = make_float3 (vol->offset);
     kargs->vol_dim = make_int3 (vol->dim);
     kargs->vol_spacing = make_float3 (vol->pix_spacing);
@@ -314,9 +311,6 @@ drr_cuda_state_create (
 	* sizeof(float));
     cuda_utils_check_error ("Failed to allocate dev_img.\n");
 
-    printf ("dev_img = %p (%d %d)\n", state->dev_img, 
-	options->image_resolution[0], options->image_resolution[1]);
-
     return (void*) state;
 }
 
@@ -349,7 +343,7 @@ drr_cuda_ray_trace_image (
 )
 {
     Timer timer, total_timer;
-    double time_kernel = 0;
+    //    double time_kernel = 0;
     int i;
 
     // CUDA device pointers
@@ -385,8 +379,6 @@ drr_cuda_ray_trace_image (
     kargs->lower_limit = make_float3 (vol_limit->lower_limit);
     kargs->upper_limit = make_float3 (vol_limit->upper_limit);
 
-    printf ("ul_room = %f %f %f\n", ul_room[0], ul_room[1], ul_room[2]);
-
     cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
 	cudaMemcpyHostToDevice);
     cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
@@ -396,8 +388,8 @@ drr_cuda_ray_trace_image (
     int tBlock_y = 16;
 
     // Each element in the image gets 1 thread
-    int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
-    int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
+    int blocksInX = (proj->dim[0]+tBlock_x-1)/tBlock_x;
+    int blocksInY = (proj->dim[1]+tBlock_y-1)/tBlock_y;
     dim3 dimGrid  = dim3(blocksInX, blocksInY);
     dim3 dimBlock = dim3(tBlock_x, tBlock_y);
 
@@ -425,10 +417,6 @@ drr_cuda_ray_trace_image (
 	kargs->vol_offset,
 	kargs->vol_dim,
 	kargs->vol_spacing);
-
-    printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
-    plm_timer_start (&timer);
-
     cuda_utils_check_error ("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
@@ -439,15 +427,15 @@ drr_cuda_ray_trace_image (
     cudaThreadSynchronize();
 #endif
 
-    time_kernel += plm_timer_report (&timer);
+    //cudaThreadSynchronize();
+    //printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
+    //time_kernel += plm_timer_report (&timer);
 
     // Unbind the image and projection matrix textures
     //cudaUnbindTexture (tex_img);
     cudaUnbindTexture (tex_matrix);
 
     // Copy reconstructed volume from device to host
-    printf ("dev_img = %p (%d %d)\n", state->dev_img, 
-	proj->dim[0], proj->dim[1]);
     cudaMemcpy (proj->img, state->dev_img, 
 	proj->dim[0] * proj->dim[1] * sizeof(float), 
 	cudaMemcpyDeviceToHost);
