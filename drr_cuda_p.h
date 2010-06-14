@@ -33,10 +33,11 @@ struct drr_kernel_args
 typedef struct drr_cuda_state Drr_cuda_state;
 struct drr_cuda_state
 {
-    Drr_kernel_args *kargs;
+    Drr_kernel_args *kargs;         // Holds kernel parameters on host
     Drr_kernel_args *dev_kargs;     // Holds kernel parameters on device
+    float *dev_vol;	            // Holds volume on device
     float *dev_img;	            // Holds image pixels on device
-    float *dev_matrix;
+    float *dev_matrix;              // Holds projection matrix on device
 };
 
 #endif

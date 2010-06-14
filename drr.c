@@ -196,7 +196,7 @@ drr_ray_trace_image (
 		print_and_exit ("Error, unknown drr algorithm\n");
 		break;
 	    }
-	    value = value / 10;     /* Translate from pixels to cm*gm */
+	    value = value / 10;     /* Translate from mm pixels to cm*gm */
 	    if (options->exponential_mapping) {
 		value = exp(-value);
 	    }

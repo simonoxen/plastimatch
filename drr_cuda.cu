@@ -45,7 +45,8 @@
 /* Textures */
 texture<float, 1, cudaReadModeElementType> tex_img;
 texture<float, 1, cudaReadModeElementType> tex_matrix;
-texture<float, 3, cudaReadModeElementType> tex_3Dvol;
+//texture<float, 3, cudaReadModeElementType> tex_vol;
+texture<float, 1, cudaReadModeElementType> tex_vol;
 
 #define DRR_LEN_TOLERANCE 1e-6
 
@@ -139,44 +140,66 @@ volume_limit_clip_segment (
 __device__ 
 float
 ray_trace_uniform (
-    float3 ip1,                /* INPUT: Intersection point 1 */
-    float3 ip2                 /* INPUT: Intersection point 2 */
+    float *dev_vol,           /* Output: the rendered drr */
+    float3 vol_offset,        /* Input:  volume geometry */
+    int3 vol_dim,             /* Input:  volume resolution */
+    float3 vol_spacing,       /* Input:  volume voxel spacing */
+    float3 ip1,               /* Input:  intersection point 1 */
+    float3 ip2                /* Input:  intersection point 2 */
 )
 {
     float3 ray = normalize (ip2 - ip1);
-    float step_length = 0.1;
-    float3 p;
+    float step_length = 0.1f;
+    float3 inv_spacing = 1.0f / vol_spacing;
+    float acc = 0.0f;
     int step;
 
-#define MAX_STEPS 100
+#define MAX_STEPS 10000
 
-    //ray = normalize (ray);
     for (step = 0; step < MAX_STEPS; step++) {
-	p = ip1 + step * step_length * ray;
-	
+	float3 ipx;
+	int3 ai;
+	int idx;
+
+	/* Find 3-D location for this sample */
+	ipx = ip1 + step * step_length * ray;
+
+	/* Find 3D index of sample within 3D volume */
+	ai = make_int3 (floorf3 (((ipx - vol_offset) 
+		    + 0.5 * vol_spacing) * inv_spacing));
+
+	/* Find linear index within 3D volume */
+        idx = ((ai.z * vol_dim.y + ai.y) * vol_dim.x) + ai.x;
+
+	if (ai.x >= 0 && ai.y >= 0 && ai.z >= 0 &&
+	    ai.x < vol_dim.x && ai.y < vol_dim.y && ai.z < vol_dim.z)
+	{
+	    acc += step_length * tex1Dfetch (tex_vol, idx);
+	}
     }
-    return 2.5;
+    return acc;
 }
 
 /* Main DRR function */
 __global__ void
 kernel_drr (
-    float * dev_img, 
-    int2 img_dim, 
-    float2 ic, 
-    float3 nrm, 
-    float sad, 
-    float scale, 
-    float3 p1, 
-    float3 ul_room, 
-    float3 incr_r, 
-    float3 incr_c, 
-    int4 image_window, 
-    float3 lower_limit, 
-    float3 upper_limit, 
-    float3 vol_offset, 
-    int3 vol_dim, 
-    float3 vol_pix_spacing
+    float *dev_img,           /* Output: the rendered drr */
+    int2 img_dim,             /* Input:  size of output image */
+    float *dev_vol,           /* Input:  the input volume */
+    float2 ic,                /* Input:  image center */
+    float3 nrm,               /* Input:  normal vector */
+    float sad,                /* Input:  source-axis distance */
+    float scale,              /* Input:  user defined scale */
+    float3 p1,                /* Input:  3-D loc, source */
+    float3 ul_room,           /* Input:  3-D loc, upper-left pixel of panel */
+    float3 incr_r,            /* Input:  3-D distance between pixels in row */
+    float3 incr_c,            /* Input:  3-D distance between pixels in col */
+    int4 image_window,        /* Input:  sub-window of image to render */
+    float3 lower_limit,       /* Input:  lower bounding box of volume */
+    float3 upper_limit,       /* Input:  upper bounding box of volume */
+    float3 vol_offset,        /* Input:  volume geometry */
+    int3 vol_dim,             /* Input:  volume resolution */
+    float3 vol_spacing        /* Input:  volume voxel spacing */
 )
 {
     extern __shared__ float sdata[];
@@ -184,10 +207,10 @@ kernel_drr (
     float3 p2;
     float3 ip1, ip2;
     int r, c;
-    int idx;
+    //int idx;
     float outval;
     float3 r_tgt, tmp;
-    int cols;
+    //int cols;
 
     /* Get coordinates of this image pixel */
     c = blockIdx.x * blockDim.x + threadIdx.x;
@@ -201,21 +224,25 @@ kernel_drr (
     p2 = r_tgt + tmp;
 
     /* Compute output location */
-    cols = image_window.w - image_window.z + 1;
-    idx = (c - image_window.z) + (r - image_window.x) * cols;
+    //cols = image_window.w - image_window.z + 1;
+    //idx = (c - image_window.z) + (r - image_window.x) * cols;
 
     /* Clip ray to volume */
     if (volume_limit_clip_segment (lower_limit, upper_limit, 
 	    &ip1, &ip2, p1, p2) == 0)
     {
-	outval = 0;
+	outval = 0.0f;
     } else {
-	outval = ray_trace_uniform (ip1, ip2);
+	outval = ray_trace_uniform (dev_vol, vol_offset, vol_dim, vol_spacing, 
+	    ip1, ip2);
     }
 
     /* Write output pixel value */
     if (r < img_dim.x && c < img_dim.y) {
-	dev_img[r*img_dim.x + c] = outval;
+	/* Translate from mm voxels to cm*gm */
+	outval = 0.1 * outval;
+	/* Add to image */
+	dev_img[r*img_dim.x + c] = scale * outval;
     }
 }
 
@@ -274,10 +301,19 @@ drr_cuda_state_create (
     cudaMemcpy3D (&cpy_params);
 #endif
 
+    cudaMalloc ((void**) &state->dev_vol, vol->npix * sizeof (float));
+    cuda_utils_check_error ("Failed to allocate dev_vol.");
+    cudaMemcpy (state->dev_vol, vol->img, vol->npix * sizeof (float), 
+	cudaMemcpyHostToDevice);
+    cuda_utils_check_error ("Failed to memcpy dev_vol host to device.");
+    cudaBindTexture (0, tex_vol, state->dev_vol, vol->npix * sizeof (float));
+    cuda_utils_check_error ("Failed to bind state->dev_vol to texture.");
+
     cudaMalloc ((void**) &state->dev_img, 
 	options->image_resolution[0] * options->image_resolution[1] 
 	* sizeof(float));
-    cuda_utils_check_error ("Unable to allocate dev_img\n");
+    cuda_utils_check_error ("Failed to allocate dev_img.\n");
+
     printf ("dev_img = %p (%d %d)\n", state->dev_img, 
 	options->image_resolution[0], options->image_resolution[1]);
 
@@ -291,6 +327,8 @@ drr_cuda_state_destroy (
 {
     Drr_cuda_state *state = (Drr_cuda_state*) void_state;
     
+    cudaUnbindTexture (tex_vol);
+    cudaFree (state->dev_vol);
     cudaFree (state->dev_img);
     cudaFree (state->dev_kargs);
     cudaFree (state->dev_matrix);
@@ -363,21 +401,20 @@ drr_cuda_ray_trace_image (
     dim3 dimGrid  = dim3(blocksInX, blocksInY);
     dim3 dimBlock = dim3(tBlock_x, tBlock_y);
 
-    // Note: proj->img AND proj->matrix are passed via texture memory
-
     //int smemSize = vol->dim[0]  * sizeof(float);
 
     printf ("Preprocessing time: %f secs\n", plm_timer_report (&timer));
     plm_timer_start (&timer);
 
     // Invoke ze kernel  \(^_^)/
-    kernel_drr<<< dimGrid, dimBlock>>> (
+    kernel_drr<<< dimGrid, dimBlock >>> (
 	state->dev_img, 
-	kargs->img_dim,
+	kargs->img_dim, 
+	state->dev_vol, 
 	kargs->ic,
 	kargs->nrm,
 	kargs->sad,
-	kargs->scale,
+	options->scale, 
 	kargs->p1, 
 	kargs->ul_room, 
 	kargs->incr_r, 
@@ -392,7 +429,7 @@ drr_cuda_ray_trace_image (
     printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
     plm_timer_start (&timer);
 
-    cuda_utils_check_error("Kernel Panic!");
+    cuda_utils_check_error ("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
     // CUDA kernel calls are asynchronous...

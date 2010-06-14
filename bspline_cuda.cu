@@ -1485,7 +1485,6 @@ bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs)
 void
 bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs)
 {
-
     cudaUnbindTexture(tex_LUT_Offsets);
 
     cudaFree(dev_ptrs->fixed_image);
@@ -1591,13 +1590,12 @@ CUDA_bspline_MI_a_hist_fix (
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
     cuda_utils_check_error ("Failed to initialize memory for f_hist");
 
-    num_blocks = 
-    build_exec_conf_1tpe (
-        &dimGrid,          // OUTPUT: Grid  dimensions
-        &dimBlock,         // OUTPUT: Block dimensions
-        fixed->npix,       // INPUT: Total # of threads
-        32,                // INPUT: Threads per block
-        false);            // INPUT: Is threads per block negotiable?
+    num_blocks = build_exec_conf_1tpe (
+	&dimGrid,          // OUTPUT: Grid  dimensions
+	&dimBlock,         // OUTPUT: Block dimensions
+	fixed->npix,       // INPUT: Total # of threads
+	32,                // INPUT: Threads per block
+	false);            // INPUT: Is threads per block negotiable?
 
     int smemSize = dimBlock.x * mi_hist->fixed.bins * sizeof(float);
 
@@ -1610,27 +1608,26 @@ CUDA_bspline_MI_a_hist_fix (
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
-    dev_ptrs->f_hist_seg,       // partial histogram (moving image)
-    dev_ptrs->fixed_image,      // moving image voxels
-    mi_hist->fixed.offset,      // histogram offset
-    1.0f/mi_hist->fixed.delta,  // histogram delta
-    mi_hist->fixed.bins,        // # histogram bins
-    gbd.vox_per_rgn,            // voxels per region
-    gbd.fix_dim,                // fixed  image dimensions
-    gbd.mov_dim,                // moving image dimensions
-    gbd.rdims,                  //       region dimensions
-    gbd.img_origin,             // image origin
-    gbd.img_spacing,            // image spacing
-    gbd.mov_offset,             // moving image offset
-    gbd.mov_spacing,            // moving image pixel spacing
-    dev_ptrs->c_lut,            // DEBUG
-    dev_ptrs->q_lut,            // DEBUG
-    dev_ptrs->coeff);           // DEBUG
+	dev_ptrs->f_hist_seg,       // partial histogram (moving image)
+	dev_ptrs->fixed_image,      // moving image voxels
+	mi_hist->fixed.offset,      // histogram offset
+	1.0f/mi_hist->fixed.delta,  // histogram delta
+	mi_hist->fixed.bins,        // # histogram bins
+	gbd.vox_per_rgn,            // voxels per region
+	gbd.fix_dim,                // fixed  image dimensions
+	gbd.mov_dim,                // moving image dimensions
+	gbd.rdims,                  //       region dimensions
+	gbd.img_origin,             // image origin
+	gbd.img_spacing,            // image spacing
+	gbd.mov_offset,             // moving image offset
+	gbd.mov_spacing,            // moving image pixel spacing
+	dev_ptrs->c_lut,            // DEBUG
+	dev_ptrs->q_lut,            // DEBUG
+	dev_ptrs->coeff);           // DEBUG
 
     cuda_utils_check_error ("kernel hist_mov");
 
     int num_sub_hists = num_blocks;
-
 
     // Merge sub-histograms
     dim3 dimGrid2 (mi_hist->fixed.bins, 1, 1);
@@ -1639,13 +1636,14 @@ CUDA_bspline_MI_a_hist_fix (
     
     // this kernel can be ran with any thread-block size
     kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-    dev_ptrs->f_hist,
-    dev_ptrs->f_hist_seg,
-    num_sub_hists);
+	dev_ptrs->f_hist,
+	dev_ptrs->f_hist_seg,
+	num_sub_hists);
 
     cuda_utils_check_error ("kernel hist_fix_merge");
 
-    cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, 
+	cudaMemcpyDeviceToHost);
     cuda_utils_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
 
     cudaFree (dev_ptrs->f_hist_seg);
@@ -1674,12 +1672,12 @@ CUDA_bspline_MI_a_hist_mov (
     cuda_utils_check_error ("Failed to initialize memory for m_hist");
     
     num_blocks = 
-    build_exec_conf_1tpe (
-        &dimGrid,          // OUTPUT: Grid  dimensions
-        &dimBlock,         // OUTPUT: Block dimensions
-        fixed->npix,       // INPUT: Total # of threads
-        32,                // INPUT: Threads per block
-        false);            // INPUT: Is threads per block negotiable?
+	build_exec_conf_1tpe (
+	    &dimGrid,          // OUTPUT: Grid  dimensions
+	    &dimBlock,         // OUTPUT: Block dimensions
+	    fixed->npix,       // INPUT: Total # of threads
+	    32,                // INPUT: Threads per block
+	    false);            // INPUT: Is threads per block negotiable?
 
     int smemSize = dimBlock.x * mi_hist->moving.bins * sizeof(float);
 
@@ -1693,22 +1691,22 @@ CUDA_bspline_MI_a_hist_mov (
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
-            dev_ptrs->m_hist_seg,       // partial histogram (moving image)
-            dev_ptrs->moving_image,     // moving image voxels
-            mi_hist->moving.offset,     // histogram offset
-            1.0f/mi_hist->moving.delta, // histogram delta
-            mi_hist->moving.bins,       // # histogram bins
-            gbd.vox_per_rgn,            // voxels per region
-            gbd.fix_dim,                // fixed  image dimensions
-            gbd.mov_dim,                // moving image dimensions
-            gbd.rdims,                  //       region dimensions
-            gbd.img_origin,             // image origin
-            gbd.img_spacing,            // image spacing
-            gbd.mov_offset,             // moving image offset
-            gbd.mov_spacing,            // moving image pixel spacing
-            dev_ptrs->c_lut,            // DEBUG
-            dev_ptrs->q_lut,            // DEBUG
-            dev_ptrs->coeff);           // DEBUG
+	dev_ptrs->m_hist_seg,       // partial histogram (moving image)
+	dev_ptrs->moving_image,     // moving image voxels
+	mi_hist->moving.offset,     // histogram offset
+	1.0f/mi_hist->moving.delta, // histogram delta
+	mi_hist->moving.bins,       // # histogram bins
+	gbd.vox_per_rgn,            // voxels per region
+	gbd.fix_dim,                // fixed  image dimensions
+	gbd.mov_dim,                // moving image dimensions
+	gbd.rdims,                  //       region dimensions
+	gbd.img_origin,             // image origin
+	gbd.img_spacing,            // image spacing
+	gbd.mov_offset,             // moving image offset
+	gbd.mov_spacing,            // moving image pixel spacing
+	dev_ptrs->c_lut,            // DEBUG
+	dev_ptrs->q_lut,            // DEBUG
+	dev_ptrs->coeff);           // DEBUG
 
     cuda_utils_check_error ("kernel hist_mov");
 
@@ -1722,9 +1720,9 @@ CUDA_bspline_MI_a_hist_mov (
     
     // this kernel can be ran with any thread-block size
     kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-    dev_ptrs->m_hist,
-    dev_ptrs->m_hist_seg,
-    num_sub_hists);
+	dev_ptrs->m_hist,
+	dev_ptrs->m_hist_seg,
+	num_sub_hists);
 
     cuda_utils_check_error ("kernel hist_mov_merge");
 

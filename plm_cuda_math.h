@@ -64,6 +64,14 @@ make_float4 (double *a)
     return make_float4 (a[0], a[1], a[2], a[3]);
 }
 
+/* Device type conversion */
+inline __device__
+int3
+make_int3 (float3 a)
+{
+    return make_int3 (a.x, a.y, a.z);
+}
+
 /* Overloaded operators */
 inline __host__ __device__ 
 float3 
@@ -102,6 +110,20 @@ operator/ (float a, float3 b)
 
 inline __host__ __device__ 
 int3
+operator< (int3 a, int3 b)
+{
+    return make_int3 (a.x < b.x, a.y < b.y, a.z < b.z);
+}
+
+inline __host__ __device__ 
+int3
+operator< (float3 a, float3 b)
+{
+    return make_int3 (a.x < b.x, a.y < b.y, a.z < b.z);
+}
+
+inline __host__ __device__ 
+int3
 operator< (float3 a, float b)
 {
     return make_int3 (a.x < b, a.y < b, a.z < b);
@@ -128,6 +150,13 @@ float3
 fabsf3 (float3 a)
 {
     return make_float3 (fabsf(a.x), fabsf(a.y), fabsf(a.z));
+}
+
+inline __host__ __device__ 
+float3
+floorf3 (float3 a)
+{
+    return make_float3 (floorf(a.x), floorf(a.y), floorf(a.z));
 }
 
 inline __host__ __device__
