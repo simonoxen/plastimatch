@@ -24,7 +24,7 @@ struct drr_kernel_args
     float3 upper_limit;
     float3 vol_offset;
     int3 vol_dim;
-    float3 vol_pix_spacing;
+    float3 vol_spacing;
     float matrix[12];
     //char padding[4]; //for data alignment << ?
     //padding to 128Bytes
@@ -37,8 +37,6 @@ struct drr_cuda_state
     Drr_kernel_args *dev_kargs;     // Holds kernel parameters on device
     float *dev_img;	            // Holds image pixels on device
     float *dev_matrix;
-    float *dev_coef;
-    float *host_coef;
 };
 
 #endif

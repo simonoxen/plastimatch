@@ -9,6 +9,20 @@
 
 /* Host to device operators */
 inline __host__
+int3
+make_int3 (int *a)
+{
+    return make_int3 (a[0], a[1], a[2]);
+}
+
+inline __host__
+int4
+make_int4 (int *a)
+{
+    return make_int4 (a[0], a[1], a[2], a[3]);
+}
+
+inline __host__
 float2
 make_float2 (float *a)
 {
@@ -34,13 +48,6 @@ float3
 make_float3 (double *a)
 {
     return make_float3 (a[0], a[1], a[2]);
-}
-
-inline __host__
-int4
-make_int4 (int *a)
-{
-    return make_int4 (a[0], a[1], a[2], a[3]);
 }
 
 inline __host__
@@ -101,6 +108,21 @@ operator< (float3 a, float b)
 }
 
 /* Misc functions */
+inline __host__ __device__ 
+float 
+dot (float3 a, float3 b)
+{ 
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline __host__ __device__ 
+float3 
+normalize (float3 v)
+{
+    float inv_len = 1.0f / sqrtf(dot(v, v));
+    return inv_len * v;
+}
+
 inline __host__ __device__ 
 float3
 fabsf3 (float3 a)

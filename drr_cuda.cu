@@ -45,7 +45,6 @@
 /* Textures */
 texture<float, 1, cudaReadModeElementType> tex_img;
 texture<float, 1, cudaReadModeElementType> tex_matrix;
-texture<float, 1, cudaReadModeElementType> tex_coef;
 texture<float, 3, cudaReadModeElementType> tex_3Dvol;
 
 #define DRR_LEN_TOLERANCE 1e-6
@@ -136,6 +135,29 @@ volume_limit_clip_segment (
     return 1;
 }
 
+/* From volume_limit.c */
+__device__ 
+float
+ray_trace_uniform (
+    float3 ip1,                /* INPUT: Intersection point 1 */
+    float3 ip2                 /* INPUT: Intersection point 2 */
+)
+{
+    float3 ray = normalize (ip2 - ip1);
+    float step_length = 0.1;
+    float3 p;
+    int step;
+
+#define MAX_STEPS 100
+
+    //ray = normalize (ray);
+    for (step = 0; step < MAX_STEPS; step++) {
+	p = ip1 + step * step_length * ray;
+	
+    }
+    return 2.5;
+}
+
 /* Main DRR function */
 __global__ void
 kernel_drr (
@@ -158,6 +180,7 @@ kernel_drr (
 )
 {
     extern __shared__ float sdata[];
+
     float3 p2;
     float3 ip1, ip2;
     int r, c;
@@ -186,12 +209,14 @@ kernel_drr (
 	    &ip1, &ip2, p1, p2) == 0)
     {
 	outval = 0;
+    } else {
+	outval = ray_trace_uniform (ip1, ip2);
     }
 
-    /* Loop through ray */
-
     /* Write output pixel value */
-    dev_img[r*img_dim.x + c] = outval;
+    if (r < img_dim.x && c < img_dim.y) {
+	dev_img[r*img_dim.x + c] = outval;
+    }
 }
 
 void*
@@ -214,16 +239,14 @@ drr_cuda_state_create (
     printf ("printf state = %p\n", state);
     printf ("printf state->kargs = %p\n", state->kargs);
 
-    kargs->vol_offset.x = vol->offset[0];
-    kargs->vol_offset.y = vol->offset[1];
-    kargs->vol_offset.z = vol->offset[2];
-    kargs->vol_dim.x = vol->dim[0];
-    kargs->vol_dim.y = vol->dim[1];
-    kargs->vol_dim.z = vol->dim[2];
-    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
-    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
-    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+    kargs->vol_offset = make_float3 (vol->offset);
+    kargs->vol_dim = make_int3 (vol->dim);
+    kargs->vol_spacing = make_float3 (vol->pix_spacing);
 
+#if defined (commentout)
+    /* The below code is Junan's.  Presumably this way can be better 
+       for using hardware linear interpolation, but for now I'm going 
+       to follow Tony's method. */
     // prepare texture
     cudaChannelFormatDesc ca_descriptor;
     cudaExtent ca_extent;
@@ -249,19 +272,15 @@ drr_cuda_state_create (
 	ca_extent.width * sizeof(float), ca_extent.width , ca_extent.height);
 
     cudaMemcpy3D (&cpy_params);
+#endif
 
     cudaMalloc ((void**) &state->dev_img, 
 	options->image_resolution[0] * options->image_resolution[1] 
 	* sizeof(float));
+    cuda_utils_check_error ("Unable to allocate dev_img\n");
+    printf ("dev_img = %p (%d %d)\n", state->dev_img, 
+	options->image_resolution[0], options->image_resolution[1]);
 
-    cudaMalloc ((void**) &state->dev_coef, 
-	7 * options->image_resolution[0] * options->image_resolution[1] 
-	* sizeof(float));
-    cuda_utils_check_error ("Unable to allocate coef devmem");
-    state->host_coef = (float*) malloc (
-	7 * options->image_resolution[0] * options->image_resolution[1] 
-	* sizeof(float));
-		
     return (void*) state;
 }
 
@@ -275,8 +294,6 @@ drr_cuda_state_destroy (
     cudaFree (state->dev_img);
     cudaFree (state->dev_kargs);
     cudaFree (state->dev_matrix);
-    cudaFree (state->dev_coef);
-    free (state->host_coef);
     free (state->kargs);
 }
 
@@ -370,7 +387,7 @@ drr_cuda_ray_trace_image (
 	kargs->upper_limit,
 	kargs->vol_offset,
 	kargs->vol_dim,
-	kargs->vol_pix_spacing);
+	kargs->vol_spacing);
 
     printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
     plm_timer_start (&timer);
@@ -388,12 +405,12 @@ drr_cuda_ray_trace_image (
     time_kernel += plm_timer_report (&timer);
 
     // Unbind the image and projection matrix textures
-    //cudaUnbindTexture( tex_img );
+    //cudaUnbindTexture (tex_img);
     cudaUnbindTexture (tex_matrix);
-    cudaUnbindTexture (tex_coef);
 
     // Copy reconstructed volume from device to host
-    //cudaMemcpy( vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost );
+    printf ("dev_img = %p (%d %d)\n", state->dev_img, 
+	proj->dim[0], proj->dim[1]);
     cudaMemcpy (proj->img, state->dev_img, 
 	proj->dim[0] * proj->dim[1] * sizeof(float), 
 	cudaMemcpyDeviceToHost);
