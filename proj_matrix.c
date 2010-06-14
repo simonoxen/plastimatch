@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "file_util.h"
 #include "math_util.h"
 #include "proj_matrix.h"
 #include "volume.h"
@@ -51,6 +52,7 @@ proj_matrix_save (
     if (!fn) return;
     if (!pmat) return;
 
+    make_directory_recursive (fn);
     fp = fopen (fn, "w");
     if (!fp) {
 	fprintf (stderr, "Error opening %s for write\n", fn);

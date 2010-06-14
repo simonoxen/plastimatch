@@ -107,7 +107,7 @@ make_directory_recursive (const char *dirname)
     tmp = strdup (dirname);
     p = tmp;
     while (*p) {
-	if (ISSLASH (*p)) {
+	if (ISSLASH (*p) && p != tmp) {
 	    *p = 0;
 	    make_directory (tmp);
 	    *p = '/';

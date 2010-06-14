@@ -60,6 +60,7 @@ create_matrix_and_drr (
 	options->vup[1],
 	options->vup[2] };
     double sid = options->sid;
+    Timer timer;
 
     /* Set ic = image center (in pixels), and ps = pixel size (in mm)
        Note: pixels are numbered from 0 to ires-1 */
@@ -93,7 +94,9 @@ create_matrix_and_drr (
 
     drr_render_volume_perspective (proj, vol, ps, dev_state, options);
 
+    plm_timer_start (&timer);
     proj_image_save (proj, img_fn, mat_fn);
+    printf ("I/O time: %f sec\n", plm_timer_report (&timer));
 }
 
 /* All distances in mm */

@@ -272,7 +272,6 @@ drr_render_volume_perspective (
     case THREADING_BROOK:
     case THREADING_CUDA:
 #if CUDA_FOUND
-	printf ("Calling drr_cuda_render_volume_perspective\n");
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
 	break;

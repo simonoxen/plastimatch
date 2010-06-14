@@ -43,8 +43,8 @@
 #include "timer.h"
 
 /* Textures */
-texture<float, 1, cudaReadModeElementType> tex_img;
-texture<float, 1, cudaReadModeElementType> tex_matrix;
+//texture<float, 1, cudaReadModeElementType> tex_img;
+//texture<float, 1, cudaReadModeElementType> tex_matrix;
 //texture<float, 3, cudaReadModeElementType> tex_vol;
 texture<float, 1, cudaReadModeElementType> tex_vol;
 
@@ -260,7 +260,7 @@ drr_cuda_state_create (
     memset (state, 0, sizeof(Drr_cuda_state));
 
     state->kargs = kargs = (Drr_kernel_args*) malloc (sizeof(Drr_kernel_args));
-    cudaMalloc ((void**) &state->dev_matrix, 12 * sizeof(float));
+    //cudaMalloc ((void**) &state->dev_matrix, 12 * sizeof(float));
     cudaMalloc ((void**) &state->dev_kargs, sizeof(Drr_kernel_args));
 
     kargs->vol_offset = make_float3 (vol->offset);
@@ -325,7 +325,7 @@ drr_cuda_state_destroy (
     cudaFree (state->dev_vol);
     cudaFree (state->dev_img);
     cudaFree (state->dev_kargs);
-    cudaFree (state->dev_matrix);
+    //cudaFree (state->dev_matrix);
     free (state->kargs);
 }
 
@@ -342,17 +342,16 @@ drr_cuda_ray_trace_image (
     Drr_options *options
 )
 {
-    Timer timer, total_timer;
+    //Timer timer;
     //    double time_kernel = 0;
-    int i;
+    //    int i;
 
     // CUDA device pointers
     Drr_cuda_state *state = (Drr_cuda_state*) dev_state;
     Drr_kernel_args *kargs = state->kargs;
 
     // Start the timer
-    plm_timer_start (&total_timer);
-    plm_timer_start (&timer);
+    //plm_timer_start (&timer);
 
     // Load dynamic kernel arguments (different for each projection)
     kargs->img_dim.x = proj->dim[0];
@@ -364,9 +363,9 @@ drr_cuda_ray_trace_image (
     kargs->nrm.z = proj->pmat->nrm[2];
     kargs->sad = proj->pmat->sad;
     kargs->sid = proj->pmat->sid;
-    for (i = 0; i < 12; i++) {
-	kargs->matrix[i] = (float) proj->pmat->matrix[i];
-    }
+    //for (i = 0; i < 12; i++) {
+    //kargs->matrix[i] = (float) proj->pmat->matrix[i];
+    //}
     kargs->p1.x = p1[0];
     kargs->p1.y = p1[1];
     kargs->p1.z = p1[2];
@@ -378,10 +377,11 @@ drr_cuda_ray_trace_image (
     kargs->image_window = make_int4 (options->image_window);
     kargs->lower_limit = make_float3 (vol_limit->lower_limit);
     kargs->upper_limit = make_float3 (vol_limit->upper_limit);
+    kargs->scale = options->scale;
 
-    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
-	cudaMemcpyHostToDevice);
-    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+    //cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+    //cudaMemcpyHostToDevice);
+    //cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
 
     // Thread Block Dimensions
     int tBlock_x = 16;
@@ -395,8 +395,8 @@ drr_cuda_ray_trace_image (
 
     //int smemSize = vol->dim[0]  * sizeof(float);
 
-    printf ("Preprocessing time: %f secs\n", plm_timer_report (&timer));
-    plm_timer_start (&timer);
+    //printf ("Preprocessing time: %f secs\n", plm_timer_report (&timer));
+    //plm_timer_start (&timer);
 
     // Invoke ze kernel  \(^_^)/
     kernel_drr<<< dimGrid, dimBlock >>> (
@@ -406,7 +406,7 @@ drr_cuda_ray_trace_image (
 	kargs->ic,
 	kargs->nrm,
 	kargs->sad,
-	options->scale, 
+	kargs->scale, 
 	kargs->p1, 
 	kargs->ul_room, 
 	kargs->incr_r, 
@@ -429,11 +429,6 @@ drr_cuda_ray_trace_image (
 
     //cudaThreadSynchronize();
     //printf ("Kernel time: %f secs\n", plm_timer_report (&timer));
-    //time_kernel += plm_timer_report (&timer);
-
-    // Unbind the image and projection matrix textures
-    //cudaUnbindTexture (tex_img);
-    cudaUnbindTexture (tex_matrix);
 
     // Copy reconstructed volume from device to host
     cudaMemcpy (proj->img, state->dev_img, 
