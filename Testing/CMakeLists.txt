@@ -420,7 +420,7 @@ PLM_ADD_TEST (
   "fdk-brook"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR};-f;none;-A;brook;-a;0 19;-O;fdk_brook_output.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;brook;-a;0 19;-O;fdk_brook_output.mha"
   )
 PLM_ADD_TEST (
   "fdk-brook-stats"
@@ -445,7 +445,7 @@ PLM_ADD_TEST (
   "fdk-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR};-f;none;-A;cuda;-a;0 19;-O;fdk_cuda_output.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;fdk_cuda_output.mha"
   )
 PLM_ADD_TEST (
   "fdk-cuda-stats"
