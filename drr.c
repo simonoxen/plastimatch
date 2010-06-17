@@ -82,7 +82,7 @@ drr_ray_trace_callback (
 
 #if defined (DRR_PREPROCESS_ATTENUATION)
     cd->accum += vox_len * vox_value;
-#if defined (DEBUG_INTENSITIES)
+#if defined (DRR_DEBUG_CALLBACK)
     printf ("idx: %d len: %10g dens: %10g acc: %10g\n", 
 	vox_index, vox_len, vox_value, cd->accum);
 #endif

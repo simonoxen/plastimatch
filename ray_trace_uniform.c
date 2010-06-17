@@ -29,7 +29,8 @@ ray_trace_uniform (
     double uv[3];
     double ipx[3];
     double ps[3];
-    double ip1[3], ip2[2];
+    double ip1[3];
+    double ip2[3];
 
     int ai[3];
 
@@ -73,7 +74,7 @@ ray_trace_uniform (
 
         idx = ((ai[2]*vol->dim[1] + ai[1]) * vol->dim[0]) + ai[0];
         pix_density = img[idx];
-    
+
         // I am passing the current step along the ray (z) through
         // vox_index here... not exactly great but not horrible.
         (*callback) (callback_data, z++, ray_step, pix_density);

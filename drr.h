@@ -21,6 +21,7 @@
 #define DRR_PREPROCESS_ATTENUATION 1
 
 //#define DRR_VERBOSE 1
+//#define DRR_DEBUG_CALLBACK 1
 //#define DRR_ULTRA_VERBOSE 1
 
 #if defined __cplusplus
