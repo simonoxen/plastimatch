@@ -6126,7 +6126,7 @@ kernel_bspline_mse_score_dc_dv (
 
     float m_val = get_moving_value (n_f, mdim, li_1, li_2);
 
-    float diff = m_val - tex1Dfetch(tex_fixed_image, fv);
+    float diff = m_val - f_img[fv]; //tex1Dfetch(tex_fixed_image, fv);
     score[fv] = diff * diff;
 
     write_dc_dv (dc_dv_x, dc_dv_y, dc_dv_z,
