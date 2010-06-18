@@ -1,15 +1,16 @@
 1.5.0
 
-*  DicomRT Dose import
-*  DicomRT Dose export
-*  Xio CT import
-*  Xio CT, SS export
-*  GPU-accelerated proton dose calculation
-*  Standalone GUI
-*  RBF regularization
+*  DicomRT Dose import (done)
+*  DicomRT Dose export (done)
+*  Xio CT import (done)
+*  Xio CT export (deferred)
+*  Xio SS export (done)
+*  GPU-accelerated proton dose calculation (todo)
+*  Standalone GUI (todo)
+*  RBF regularization (todo)
 
 1.6.0
 
-*  GPU-accelerated MI
-*  B-spline regularization
-*  TPS regularization
+*  GPU-accelerated MI (done)
+*  B-spline regularization (todo)
+*  TPS regularization (todo)

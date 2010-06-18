@@ -1,0 +1,273 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include "drr_opts.h"
+#include "math_util.h"
+
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
+void
+print_usage (void)
+{
+    printf (
+	"Usage: bragg_curve [options]\n"
+	"Options:\n"
+	" -O output_file    Write output to a file\n"
+    );
+    exit (1);
+}
+
+void
+drr_opts_init (Drr_options* options)
+{
+    options->threading = THREADING_CPU;
+    options->image_resolution[0] = 128;
+    options->image_resolution[1] = 128;
+    options->image_size[0] = 600;
+    options->image_size[1] = 600;
+    options->isocenter[0] = 0.0f;
+    options->isocenter[1] = 0.0f;
+    options->isocenter[2] = 0.0f;
+    options->have_image_center = 0;
+    options->have_image_window = 0;
+    options->have_angle_diff = 0;
+    options->num_angles = 1;
+    options->angle_diff = 1.0f;
+
+    options->have_nrm = 0;
+    options->nrm[0] = 1.0f;
+    options->nrm[1] = 0.0f;
+    options->nrm[2] = 0.0f;
+    options->vup[0] = 0.0f;
+    options->vup[1] = 0.0f;
+    options->vup[2] = 1.0f;
+
+    options->sad = 1000.0f;
+    options->sid = 1630.0f;
+    options->scale = 1.0f;
+    options->input_file = 0;
+    options->output_prefix = "out_";
+    options->exponential_mapping = 0;
+    options->output_format= OUTPUT_FORMAT_PFM;
+    options->multispectral = 0;
+    options->algorithm = DRR_ALGORITHM_EXACT;
+}
+
+void
+set_image_parms (Drr_options* options)
+{
+    if (!options->have_image_center) {
+	options->image_center[0] = (options->image_resolution[0]-1)/2.0;
+	options->image_center[1] = (options->image_resolution[1]-1)/2.0;
+    }
+    if (!options->have_image_window) {
+	options->image_window[0] = 0;
+	options->image_window[1] = options->image_resolution[0] - 1;
+	options->image_window[2] = 0;
+	options->image_window[3] = options->image_resolution[1] - 1;
+    }
+    if (options->have_angle_diff) {
+	options->angle_diff *= (float) (M_TWOPI / 360.0);
+    } else {
+	options->angle_diff = M_TWOPI / options->num_angles;
+    }
+}
+
+void
+parse_args (Drr_options* options, int argc, char* argv[])
+{
+    int i, rc;
+
+    drr_opts_init (options);
+    for (i = 1; i < argc; i++) {
+	//printf ("ARG[%d] = %s\n", i, argv[i]);
+	if (argv[i][0] != '-') break;
+	if (!strcmp (argv[i], "-A")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
+		options->threading = THREADING_BROOK;
+	    } 
+	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
+		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		options->threading = THREADING_CUDA;
+	    }
+	    else {
+		options->threading = THREADING_CPU;
+	    }
+	}
+	else if (!strcmp (argv[i], "-r")) {
+	    i++;
+	    rc = sscanf (argv[i], "%d %d", &options->image_resolution[0], 
+		&options->image_resolution[1]);
+	    if (rc == 1) {
+		options->image_resolution[1] = options->image_resolution[0];
+	    } else if (rc != 2) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-I")) {
+	    i++;
+	    options->input_file = strdup (argv[i]);
+	}
+	else if (!strcmp (argv[i], "-O")) {
+	    i++;
+	    options->output_prefix = strdup (argv[i]);
+	}
+	else if (!strcmp (argv[i], "-a")) {
+	    i++;
+	    rc = sscanf (argv[i], "%d" , &options->num_angles);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-N")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g" , &options->angle_diff);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	    options->have_angle_diff = 1;
+	}
+	else if (!strcmp (argv[i], "-nrm")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f %f %f", &options->nrm[0],
+		&options->nrm[1], &options->nrm[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	    options->have_nrm = 1;
+	}
+	else if (!strcmp (argv[i], "-vup")) {
+	    i++;
+	    rc = sscanf (argv[i], "%f %f %f", &options->vup[0],
+		&options->vup[1], &options->vup[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-s")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g" , &options->scale);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-t")) {
+	    i++;
+	    if (!strcmp (argv[i], "pfm")) {
+		options->output_format = OUTPUT_FORMAT_PFM;
+	    }
+	    else if (!strcmp (argv[i], "pgm")) {
+		options->output_format = OUTPUT_FORMAT_PGM;
+	    }
+	    else if (!strcmp (argv[i], "raw")) {
+		options->output_format = OUTPUT_FORMAT_RAW;
+	    }
+	    else {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-c")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g %g", &options->image_center[0],
+		&options->image_center[1]);
+	    if (rc == 1) {
+		options->image_center[1] = options->image_center[0];
+	    } else if (rc != 2) {
+		print_usage ();
+	    }
+	    options->have_image_center = 1;
+	}
+	else if (!strcmp (argv[i], "-z")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g %g", &options->image_size[0],
+		&options->image_size[1]);
+	    if (rc == 1) {
+		options->image_size[1] = options->image_size[0];
+	    } else if (rc != 2) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-g")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g %g", &options->sad, &options->sid);
+	    if (rc != 2) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-w")) {
+	    i++;
+	    rc = sscanf (argv[i], "%d %d %d %d",
+		&options->image_window[0],
+		&options->image_window[1],
+		&options->image_window[2],
+		&options->image_window[3]);
+	    if (rc == 2) {
+		options->image_window[2] = options->image_window[0];
+		options->image_window[3] = options->image_window[1];
+	    } else if (rc != 4) {
+		print_usage ();
+	    }
+	    options->have_image_window = 1;
+	}
+	else if (!strcmp (argv[i], "-i")) {
+	    i++;
+	    if (!strcmp(argv[i], "exact")) {
+		options->algorithm = DRR_ALGORITHM_EXACT;
+	    } else if (!strcmp(argv[i], "tri_exact")) {
+		options->algorithm = DRR_ALGORITHM_TRILINEAR_EXACT;
+	    } else if (!strcmp(argv[i], "tri_approx")) {
+		options->algorithm = DRR_ALGORITHM_TRILINEAR_APPROX;
+	    } else if (!strcmp(argv[i], "uniform")) {
+		options->algorithm = DRR_ALGORITHM_UNIFORM;
+	    } else {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-o")) {
+	    i++;
+	    rc = sscanf (argv[i], "%g %g %g" , 
+		&options->isocenter[0],
+		&options->isocenter[1],
+		&options->isocenter[2]);
+	    if (rc != 3) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-S")) {
+	    options->multispectral = 1;
+	}
+	else if (!strcmp (argv[i], "-e")) {
+	    options->exponential_mapping = 1;
+	}
+	else {
+	    print_usage ();
+	    break;
+	}
+    }
+
+    if (!options->input_file) {
+	if (i < argc) {
+	    options->input_file = strdup (argv[i++]);
+	}
+    }
+    if (i < argc) {
+	print_usage ();
+    }
+    if (!options->input_file) {
+	print_usage ();
+    }
+
+    set_image_parms (options);
+}

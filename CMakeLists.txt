@@ -594,6 +594,7 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
   SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	lbfgsb_2_1.f
+	mpbdv.for
 	)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
@@ -618,60 +619,60 @@ IF(F2C_LIBRARY)
 ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
-	astroid_dose.cxx astroid_dose.h
-	cxt_apply_dicom.cxx cxt_apply_dicom.h 
-	cxt.cxx cxt.h 
-	cxt_io.cxx cxt_io.h 
-	cxt_to_mha.cxx cxt_to_mha.h 
-	demographics.cxx demographics.h 
-	gcs_metric.h gcs_metric.hxx 
-	gdcm_dose.cxx gdcm_dose.h
-	gdcm_rtss.cxx gdcm_rtss.h
-	gdcm_series.cxx gdcm_series.h
-	gdcm_series_helper_2.cxx gdcm_series_helper_2.h
-	gpuit_bspline.cxx gpuit_bspline.h 
-	gpuit_demons.cxx gpuit_demons.h 
-	itkAndConstantToImageFilter.h
-	itk_crop.cxx itk_crop.h 
-	itk_demons.cxx itk_demons.h 
-	itk_dicom.cxx itk_dicom.h 
-	itk_image.cxx itk_image.h 
-	itk_image_cast.cxx itk_image_cast.h 
-	itk_pointset.cxx itk_pointset.h
-	itk_optim.cxx itk_optim.h 
-	itk_registration.cxx itk_registration.h 
-	itk_tps.cxx itk_tps.h
-	itk_warp.cxx itk_warp.h 
-	mask_mha.cxx mask_mha.h 
- 	plm_file_format.cxx plm_file_format.h 
-	plm_image.cxx plm_image.h 
-	plm_image_header.cxx plm_image_header.h 
-	plm_image_patient_position.cxx plm_image_patient_position.h 
-	plm_image_type.cxx plm_image_type.h 
-	plm_int.h
-	plm_parms.cxx 
-	plm_register_loadable.cxx plm_register_loadable.h 
-	plm_registration.h 
-	plm_stages.cxx plm_stages.h 
-	plm_version.h 
-	plm_warp.cxx plm_warp.h 
-	render_polyline.cxx render_polyline.h
-	resample_mha.cxx resample_mha.h 
-	rtds.cxx rtds.h
-	rtds_dicom.cxx rtds_dicom.h
-	rtds_warp.cxx rtds_warp.h
-	slice_extract.cxx slice_extract.h
-	ss_img_extract.cxx ss_img_extract.h
-	synthetic_mha.cxx synthetic_mha.h
-	tps.cxx tps.h
-	xio_ct.cxx xio_ct.h
-	xio_dir.cxx xio_dir.h
-	xio_dose.cxx xio_dose.h
-	xio_io.cxx xio_io.h
-	xio_plan.cxx xio_plan.h
-	xio_structures.cxx xio_structures.h
-	xform.cxx xform.h 
-	)
+  astroid_dose.cxx astroid_dose.h
+  cxt_apply_dicom.cxx cxt_apply_dicom.h 
+  cxt.cxx cxt.h 
+  cxt_io.cxx cxt_io.h 
+  cxt_to_mha.cxx cxt_to_mha.h 
+  demographics.cxx demographics.h 
+  gcs_metric.h gcs_metric.hxx 
+  gdcm_dose.cxx gdcm_dose.h
+  gdcm_rtss.cxx gdcm_rtss.h
+  gdcm_series.cxx gdcm_series.h
+  gdcm_series_helper_2.cxx gdcm_series_helper_2.h
+  gpuit_bspline.cxx gpuit_bspline.h 
+  gpuit_demons.cxx gpuit_demons.h 
+  itkAndConstantToImageFilter.h
+  itk_crop.cxx itk_crop.h 
+  itk_demons.cxx itk_demons.h 
+  itk_dicom.cxx itk_dicom.h 
+  itk_image.cxx itk_image.h 
+  itk_image_cast.cxx itk_image_cast.h 
+  itk_pointset.cxx itk_pointset.h
+  itk_optim.cxx itk_optim.h 
+  itk_registration.cxx itk_registration.h 
+  itk_tps.cxx itk_tps.h
+  itk_warp.cxx itk_warp.h 
+  mask_mha.cxx mask_mha.h 
+  plm_file_format.cxx plm_file_format.h 
+  plm_image.cxx plm_image.h 
+  plm_image_header.cxx plm_image_header.h 
+  plm_image_patient_position.cxx plm_image_patient_position.h 
+  plm_image_type.cxx plm_image_type.h 
+  plm_int.h
+  plm_parms.cxx 
+  plm_register_loadable.cxx plm_register_loadable.h 
+  plm_registration.h 
+  plm_stages.cxx plm_stages.h 
+  plm_version.h 
+  plm_warp.cxx plm_warp.h 
+  render_polyline.cxx render_polyline.h
+  resample_mha.cxx resample_mha.h 
+  rtds.cxx rtds.h
+  rtds_dicom.cxx rtds_dicom.h
+  rtds_warp.cxx rtds_warp.h
+  slice_extract.cxx slice_extract.h
+  ss_img_extract.cxx ss_img_extract.h
+  synthetic_mha.cxx synthetic_mha.h
+  tps.cxx tps.h
+  xio_ct.cxx xio_ct.h
+  xio_dir.cxx xio_dir.h
+  xio_dose.cxx xio_dose.h
+  xio_io.cxx xio_io.h
+  xio_plan.cxx xio_plan.h
+  xio_structures.cxx xio_structures.h
+  xform.cxx xform.h 
+  )
 
 IF(ITK_USE_REVIEW)
   SET (PLASTIMATCH_LIBRARY_SRC
@@ -682,26 +683,30 @@ ENDIF(ITK_USE_REVIEW)
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
+SET (BRAGG_CURVE_SRC
+  bragg_curve_main.c 
+  bragg_curve_opts.c bragg_curve_opts.h
+  )
 SET (BSPLINE_SRC
-	bspline_main.c 
-	)
+  bspline_main.c 
+  )
 SET (CHECK_GRAD_SRC
   check_grad.c
   check_grad_opts.c check_grad_opts.h 
   )
 SET (COMPUTE_DISTANCE_SRC
-	compute_distance.cxx compute_distance.h
-	closest_point.cxx 
-	read_obj.cxx
-	)
+  compute_distance.cxx compute_distance.h
+  closest_point.cxx 
+  read_obj.cxx
+  )
 SET (COMPUTE_MEAN_IMAGE_SRC
-	compute_mean_image_main.cxx
-	)
+  compute_mean_image_main.cxx
+  )
 SET (CUDA_PROBE_SRC
-	cuda_probe_main.c
-	cuda_probe.cu
-	cuda_probe.h
-	)
+  cuda_probe_main.c
+  cuda_probe.cu
+  cuda_probe.h
+  )
 IF (CUDA_FOUND)
   CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
   SET (CUDA_PROBE_SRC
@@ -710,34 +715,34 @@ IF (CUDA_FOUND)
     )
 ENDIF (CUDA_FOUND)
 SET (DEMONS_SRC
-	demons_main.c
-	demons_opts.c demons_opts.h
-	)
+  demons_main.c
+  demons_opts.c demons_opts.h
+  )
 SET (DEMONS_CUDA_SRC
-	readmha.c readmha.h
-	volume.c volume.h
-	)
+  readmha.c readmha.h
+  volume.c volume.h
+  )
 SET (DICE_STATS_SRC
-	contour_statistics.cxx contour_statistics.h
-	dice_statistics.cxx 
-	)
+  contour_statistics.cxx contour_statistics.h
+  dice_statistics.cxx 
+  )
 SET (DICOM_SERIES_TEST_SRC
   dicom_series_test.cxx)
 SET (DICOM_UID_SRC
-	dicom_uid_main.cxx
-	dicom_uid.cxx
-	dicom_uid.h
-	)
+  dicom_uid_main.cxx
+  dicom_uid.cxx
+  dicom_uid.h
+  )
 SET (DICOMRT_IMPORT_SLICER_SRC
-        dicomrt-import-slicer.cxx
-	)
+  dicomrt-import-slicer.cxx
+  )
 SET (DISTANCE_MAP_SRC
-	distance_map.cxx
-	)
+  distance_map.cxx
+  )
 SET (DRR_SRC
-	drr_main.c 
-	drr_opts.c drr_opts.h
-	)
+  drr_main.c 
+  drr_opts.c drr_opts.h
+  )
 IF (CUDA_FOUND)
   CUDA_COMPILE (CUDA_WRAPPERS drr_cuda.cu)
   SET (DRR_SRC
@@ -748,17 +753,17 @@ IF (CUDA_FOUND)
 ENDIF (CUDA_FOUND)
 
 SET (EXTRACT_CONTOUR_SRC
-	extract_contour.cxx
-	)
+  extract_contour.cxx
+  )
 SET (FINDSCU_SRC
-	findscu.cc
-	)
+  findscu.cc
+  )
 SET (FDK_SRC
-        fdk_main.c 
-	fdk_opts.c fdk_opts.h
-	fdk_utils.c fdk_utils.h
-	bowtie_correction.c bowtie_correction.h
-	)
+  fdk_main.c 
+  fdk_opts.c fdk_opts.h
+  fdk_utils.c fdk_utils.h
+  bowtie_correction.c bowtie_correction.h
+  )
 IF (CUDA_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -783,34 +788,31 @@ IF (CUDA_FOUND)
 ENDIF (CUDA_FOUND)
 
 SET (HND_TO_PFM_SRC
-	hnd_to_pfm.c
-	)
+  hnd_to_pfm.c
+  )
 SET (ITK_TPS_WARP_SRC
-        itk_tps_warp_main.cxx 
-	)
+  itk_tps_warp_main.cxx 
+  )
 SET (MASK_MHA_SRC
-	mask_mha_main.cxx
-	)
+  mask_mha_main.cxx
+  )
 SET (MHA_TO_RTOG_DOSE_SRC
-	mha_to_rtog_dose.cxx
-	)
+  mha_to_rtog_dose.cxx
+  )
 SET (MONDOSHOT_SRC
-	dicom_uid.cxx
-	dicom_uid.h
-	mondoshot_dicom.cpp
-	mondoshot_dicom.h
-	mondoshot_main.cpp
-	mondoshot_main.h
-	)
+  dicom_uid.cxx dicom_uid.h
+  mondoshot_dicom.cpp mondoshot_dicom.h
+  mondoshot_main.cpp mondoshot_main.h
+  )
 SET (MONDOSHOT_RELAY_SRC
-	mondoshot_relay_main.cpp
-	)
+  mondoshot_relay_main.cpp
+  )
 SET (MOVESCU_SRC
-	movescu.cc
-	)
+  movescu.cc
+  )
 SET (PATIENT_MASK_SRC
-	patient_mask.cxx
-	)
+  patient_mask.cxx
+  )
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -830,24 +832,24 @@ SET (PLASTIMATCH_SRC
   plastimatch_main.cxx
   )
 SET (PLASTIMATCH_SLICER_SRC
-        plastimatch-slicer.cxx
-	)
+  plastimatch-slicer.cxx
+  )
 SET (PLASTIMATCH_SLICER_TPS_SRC
-        plastimatch-slicer-tps.cxx
-	)
+  plastimatch-slicer-tps.cxx
+  )
 SET (PLASTIMATCH_QT_SRC
-#        pqt_application.cxx pqt_application.h
-	pqt_data_source_dialog.cxx pqt_data_source_dialog.h
-	pqt_data_source_list_model.cxx pqt_data_source_list_model.h
-	pqt_database.cxx pqt_database.h
-	pqt_findscu.cxx pqt_findscu.h
-        pqt_main.cxx
-	pqt_main_window.cxx pqt_main_window.h
-	pqt_patient_list_model.cxx pqt_patient_list_model.h
-	)
+  # pqt_application.cxx pqt_application.h
+  pqt_data_source_dialog.cxx pqt_data_source_dialog.h
+  pqt_data_source_list_model.cxx pqt_data_source_list_model.h
+  pqt_database.cxx pqt_database.h
+  pqt_findscu.cxx pqt_findscu.h
+  pqt_main.cxx
+  pqt_main_window.cxx pqt_main_window.h
+  pqt_patient_list_model.cxx pqt_patient_list_model.h
+  )
 IF (QT4_FOUND AND QT_QTSQL_FOUND)
   QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
-#    pqt_application.h
+    #    pqt_application.h
     pqt_data_source_dialog.h
     pqt_data_source_list_model.h
     pqt_main_window.h 
@@ -859,41 +861,41 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
     )
 ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
 SET (PROTON_DOSE_SRC
-	proton_dose_main.c 
-	proton_dose_opts.c proton_dose_opts.h
-	)
+  proton_dose_main.c 
+  proton_dose_opts.c proton_dose_opts.h
+  )
 SET (RTOG_TO_MHA_SRC
-	rtog_to_mha.cxx
-	exchkeys.cxx exchkeys.h
-	)
+  exchkeys.cxx exchkeys.h
+  rtog_to_mha.cxx
+  )
 SET (SHUFFLE_MHA_SRC
-	shuffle_mha_main.cxx
-	)
+  shuffle_mha_main.cxx
+  )
 SET (SYNTHETIC_MHA_SRC
-	synthetic_mha_main.cxx synthetic_mha_main.h
-	)
+  synthetic_mha_main.cxx synthetic_mha_main.h
+  )
 SET (TPS_WARP_SRC
-        tps_warp_main.cxx
-        tps_warp_opts.cxx tps_warp_opts.h
-	)
+  tps_warp_main.cxx
+  tps_warp_opts.cxx tps_warp_opts.h
+  )
 SET (VF_COMPARE_SRC
-	vf_compare.c
-	)
+  vf_compare.c
+  )
 SET (VF_COMPOSE_SRC
-	vf_compose.cxx
-	)
+  vf_compose.cxx
+  )
 SET (VF_INVERT_SRC
-	vf_invert.cxx
-	)
+  vf_invert.cxx
+  )
 SET (VF_TO_VVF_SRC
-	vf_to_vvf.cxx
-	)
+  vf_to_vvf.cxx
+  )
 SET (XF_TO_XF_SRC
-	xf_to_xf_main.cxx xf_to_xf_main.h
-	)
+  xf_to_xf_main.cxx xf_to_xf_main.h
+  )
 SET (XF_TO_EMPIREFMT_SRC
-	xf_to_empirefmt.cxx
-	)
+  xf_to_empirefmt.cxx
+  )
 
 
 CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
@@ -1014,6 +1016,10 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
+IF (CMAKE_Fortran_COMPILER_WORKS)
+  PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
+    "${OPENMP_LDFLAGS}")
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
