@@ -17,10 +17,10 @@ vf_analyze (Volume* vol);
 gpuit_EXPORT 
 void
 vf_analyze_strain (Volume* vol);
-
+gpuit_EXPORT 
 void
 vf_analyze_mask (Volume* vol, Volume* mask);
-
+gpuit_EXPORT 
 void
 vf_analyze_strain_mask (Volume* vol, Volume* mask);
 
