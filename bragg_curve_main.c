@@ -21,37 +21,41 @@ pbdv_ (
     doublereal* pdf,
     doublereal* pdd);
 
+/* Note: Inputs to this function are in mm, but internal computations 
+   are done in cm. */
 double
-bragg_curve (double z)
+bragg_curve (
+    double E_0,         /* in MeV */
+    double sigma_E0,    /* in MeV */
+    double z            /* in mm */
+)
 {
-    doublereal v, x, dv[100], dp[100], pdf, pdd;
-
-    /* Note: cm, not mm! */
+    doublereal v, x, dv[100], dp[100], pdd;
+    doublereal D_v_1, D_v_2;
     double p = 1.77;
     double alpha = 0.0022;
-    double R_0 = 20.0;
-    double E_0 = R_0 / alpha;
-    double beta = 0.012;
-    double gamma = 0.6;
+    double R_0 = alpha * pow (E_0, p);
     double sigma_mono = 0.012 * pow (R_0, 0.935);
-    double sigma_E0 = 0.01 * E_0;
+    //double sigma_E0 = 0.01 * E_0;
     double epsilon = 0.1;
 
-    double sigma_2 = sigma_mono * sigma_mono 
+    double sigma_squared = sigma_mono * sigma_mono 
 	+ (sigma_E0 * sigma_E0 * alpha * alpha * p * p 
 	    * pow (E_0 * E_0, (p - 2)));
-    double sigma = sqrt (sigma_2);
+    double sigma = sqrt (sigma_squared);
     
-    double rr = R_0 - z;  /* rr = residual range */
-
+    double rr;
     double bragg;
 
-    //printf ("sigma = (%f,%f,%f)\n", sigma_mono, sigma_E0, sigma);
+    /* Convert z from mm to cm */
+    z = 0.1 * z;
 
-    //sigma = sigma_E0;
+    /* Compute residual range (rr) */
+    rr = R_0 - z;
 
-    /* Use Dhat */
-    if (rr > 10 * sigma) {
+    /* Use approximation Dhat in plateau region due to instability
+       of computing parabolic cylinder function for large x */
+    if (rr > 10.0 * sigma) {
 	bragg = 1 / (1 + 0.012 * R_0) 
 	    * (17.93 * pow (rr, -0.435)
 		+ (0.444 + 31.7 * epsilon / R_0) * pow (rr, 0.565));
@@ -62,48 +66,57 @@ bragg_curve (double z)
     bragg = exp (- (rr * rr) / (4 * sigma * sigma)) * pow (sigma, 0.565)
 	/ (1 + 0.012 * R_0);
 
-    /* D_v in term 2 */
+    /* D_v of -0.565 */
     v = - 0.565;
     x = - rr / sigma;
-    printf ("x = %f\n", x);
-    pbdv_ (&v, &x, dv, dp, &pdf, &pdd);
-#if defined (commentout)
-    printf ("PCF_(%f) (%f) = (%f %f %f %f)\n",
-	v, x, dv, dp, pdf, pdd);
-#endif
+    pbdv_ (&v, &x, dv, dp, &D_v_1, &pdd);
     
-    /* Term 2 of eqn 29 */
-    bragg = bragg * (11.26 / sigma) * pdf;
-
-    /* D_v in term 3 */
+    /* D_v of -1.565 */
     v = - 1.565;
     x = - rr / sigma;
-    pbdv_ (&v, &x, dv, dp, &pdf, &pdd);
-#if defined (commentout)
-    printf ("PCF_(%f) (%f) = (%f %f %f %f)\n",
-	v, x, dv, dp, pdf, pdd);
-#endif
+    pbdv_ (&v, &x, dv, dp, &D_v_2, &pdd);
     
-    /* term 3 of eqn 29 */
-    bragg = bragg + (0.157 + 11.26 * epsilon / R_0) * pdf;
+    /* Term 2 of eqn 29 */
+    bragg = bragg * ((11.26 / sigma) * D_v_1
+	+ (0.157 + 11.26 * epsilon / R_0) * D_v_2);
 
-    //return bragg;
-    return x;
+    return bragg;
 }
 
 int
 main (int argc, char* argv[])
 {
     Bragg_curve_options options;
+    FILE *fp = 0;
     double z;
 
-    //parse_args (&options, argc, argv);
+    parse_args (&options, argc, argv);
     //printf ("sigma = %f\n", sigma);
 
-    for (z = 15.00; z < 30.0; z += 1) {
-	printf ("%f %f\n", z, bragg_curve (z));
+    /* Set z max */
+    if (!options.have_z_max) {
+	double p = 1.77;
+	double alpha = 0.0022;
+	double R_0 = alpha * pow (options.E_0, p);
+	options.z_max = 10 * 1.1 * R_0;
     }
 
-    printf ("Done.\n");
+    /* Set sigma E0 */
+    if (!options.have_e_sigma) {
+	options.e_sigma = 0.01 * options.E_0;
+    }
+
+    if (options.output_file) {
+	fp = fopen (options.output_file, "w");
+    } else {
+	fp = stdout;
+    }
+    for (z = 0.0; z < options.z_max; z += options.z_spacing) {
+	fprintf (fp, "%f %f\n", z, 
+	    bragg_curve (options.E_0, options.e_sigma, z));
+    }
+    if (options.output_file) {
+	fclose (fp);
+    }
     return 0;
 }
