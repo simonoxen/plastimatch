@@ -204,6 +204,11 @@ IF (NOT LIBLBFGS_FOUND)
 ENDIF (NOT LIBLBFGS_FOUND)
 
 ##-----------------------------------------------------------------------------
+##  Only use local specfun
+##-----------------------------------------------------------------------------
+ADD_SUBDIRECTORY (libs/specfun)
+
+##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
 IF (MINGW)
@@ -437,6 +442,13 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
+IF (CMAKE_Fortran_COMPILER_WORKS AND NOT F2C_LIBRARY)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    specfun
+    )
+ENDIF (CMAKE_Fortran_COMPILER_WORKS AND NOT F2C_LIBRARY)
+
 IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -594,7 +606,7 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
   SET (GPUIT_LIBRARY_SRC
 	${GPUIT_LIBRARY_SRC}
 	lbfgsb_2_1.f
-	mpbdv.for
+	#mpbdv.for
 	)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
@@ -1017,6 +1029,7 @@ ENDIF (ITK_FOUND)
 ##  Executable targets
 ##-----------------------------------------------------------------------------
 IF (CMAKE_Fortran_COMPILER_WORKS)
+  
   PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
     "${OPENMP_LDFLAGS}")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)

@@ -715,3 +715,25 @@ liblbfgs (libs/liblbfgs-1.9/*)
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
+
+------------------------------------------------------------------------
+specfun (libs/specfun)
+
+  ****************************************
+  *           DISK TO ACCOMPANY          *
+  *   COMPUTATION OF SPECIAL FUNCTIONS   *
+  *                                      *
+  *   Shanjie Zhang and Jianming Jin     *
+  *                                      *
+  *   Copyright 1996 by John Wiley &     *
+  *              Sons, Inc.              *
+  ****************************************
+
+  All the programs and subroutines contained in this archive are
+  copyrighted. However, we give permission to the user who downloads
+  these routines to incorporate any of these routines into his or her
+  programs provided that the copyright is acknowledged.
+
+  This usage statement was copied from the web site on Friday, Jun 18, 2010:
+    http://jin.ece.uiuc.edu/routines/routines.html
+

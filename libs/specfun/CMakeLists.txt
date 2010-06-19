@@ -1,0 +1,11 @@
+PROJECT (specfun)
+
+# We only need this one
+SET (SPECFUN_LIBRARY_SRC
+  mpbdv.for
+  )
+
+IF (CMAKE_Fortran_COMPILER_WORKS)
+  ADD_LIBRARY (specfun STATIC ${SPECFUN_LIBRARY_SRC})
+  INSTALL (TARGETS specfun DESTINATION lib)
+ENDIF (CMAKE_Fortran_COMPILER_WORKS)
