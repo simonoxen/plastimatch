@@ -1331,16 +1331,25 @@ ENDMACRO (PLM_ADD_TEST)
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
 # in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
-CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+CONFIGURE_FILE (
+  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
   ${CMAKE_BINARY_DIR}/CTestCustom.cmake
   @ONLY)
-CONFIGURE_FILE (${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+CONFIGURE_FILE (
+  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
   ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
   @ONLY)
 
 IF (PLM_BUILD_TESTING)
   ENABLE_TESTING ()
   ADD_SUBDIRECTORY (Testing)
+
+  # Copy the lconv script
+  CONFIGURE_FILE (
+    "${CMAKE_SOURCE_DIR}/run_lcov.sh" 
+    "${CMAKE_BINARY_DIR}/run_lcov.sh"
+    COPYONLY)
+
 ENDIF (PLM_BUILD_TESTING)
 
 ##-----------------------------------------------------------------------------
