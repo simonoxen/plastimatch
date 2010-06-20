@@ -825,6 +825,7 @@ SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
   pcmd_compare.cxx pcmd_compare.h
+  pcmd_compose.cxx pcmd_compose.h
   pcmd_crop.cxx pcmd_crop.h
   pcmd_diff.cxx pcmd_diff.h
   pcmd_dvh.cxx pcmd_dvh.h

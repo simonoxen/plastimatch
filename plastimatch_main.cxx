@@ -13,6 +13,7 @@
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_compare.h"
+#include "pcmd_compose.h"
 #include "pcmd_crop.h"
 #include "pcmd_diff.h"
 #include "pcmd_dvh.h"
@@ -40,16 +41,17 @@ print_usage (int return_code)
 	"  crop        "
 	"  compare     "
 	"\n"
+	"  compose     "
 	"  convert     "
 	"  diff        "
 	"  dvh         "
-	"  header      "
 	"\n"
+	"  header      "
 	"  mask        "
 	"  register    "
 	"  resample    "
-	"  slice       "
 	"\n"
+	"  slice       "
 	"  stats       "
 	"  warp        "
 	"\n"
@@ -105,6 +107,9 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */
 	do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "compose")) {
+	do_command_compose (argc, argv);
     }
     else if (!strcmp (command, "crop")) {
 	do_command_crop (argc, argv);
