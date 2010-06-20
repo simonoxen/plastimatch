@@ -689,6 +689,9 @@ bspline_cuda_MI_a (
 
     interval = plm_timer_report (&timer);
     report_score ("MI", bxf, bst, num_vox, interval);
+    if (parms->debug) {
+	fclose (fp);
+    }
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -725,8 +728,8 @@ bspline_cuda_score_j_mse (
     ssd = &bst->ssd;
     
     if (parms->debug) {
-    sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-    fp = fopen (debug_fn, "w");
+	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
     }
     // ----------------------------------------------------------
 
@@ -746,31 +749,31 @@ bspline_cuda_score_j_mse (
 
     // Populate the score, dc_dv, and gradient
     bspline_cuda_j_stage_1(
-    fixed,
-    moving,
-    moving_grad,
-    bxf,
-    parms,
-    dev_ptrs);
+	fixed,
+	moving,
+	moving_grad,
+	bxf,
+	parms,
+	dev_ptrs);
 
 
     // Calculate the score and gradient
     // via sum reduction
     bspline_cuda_j_stage_2(
-    parms,
-    bxf,
-    fixed,
-    bxf->vox_per_rgn,
-    fixed->dim,
-    &(ssd->score),
-    bst->ssd.grad, //ssd->grad,
-    &ssd_grad_mean,
-    &ssd_grad_norm,
-    dev_ptrs,
-    &num_vox);
+	parms,
+	bxf,
+	fixed,
+	bxf->vox_per_rgn,
+	fixed->dim,
+	&(ssd->score),
+	bst->ssd.grad, //ssd->grad,
+	&ssd_grad_mean,
+	&ssd_grad_norm,
+	dev_ptrs,
+	&num_vox);
 
     if (parms->debug) {
-    fclose (fp);
+	fclose (fp);
     }
 
     // --- USER FEEDBACK ----------------------------------------

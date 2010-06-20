@@ -171,8 +171,6 @@ bspline_state_create (
     Volume *moving, 
     Volume *moving_grad)
 {
-    int i;
-
     Bspline_state *bst = (Bspline_state*) malloc (sizeof (Bspline_state));
     memset (bst, 0, sizeof (Bspline_state));
     bst->ssd.grad = (float*) malloc (bxf->num_coeff * sizeof(float));
@@ -182,9 +180,12 @@ bspline_state_create (
 
     if (parms->metric == BMET_MI)
     {
+	int i;
+
 	printf ("Using non-zero initial coefficients\n");
-	for (i = 0; i < bxf->num_coeff; i++)
-		bxf->coeff[i] = 0.5f;
+	for (i = 0; i < bxf->num_coeff; i++) {
+	    bxf->coeff[i] = 0.5f;
+	}
     }
 
     return bst;
@@ -2500,10 +2501,7 @@ bspline_score_c_mi (BSPLINE_Parms *parms,
 	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
 	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
 	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
-		int debug;
 		int rc;
-
-		debug = 0;
 
 		p[0] = rijk[0] / bxf->vox_per_rgn[0];
 		q[0] = rijk[0] % bxf->vox_per_rgn[0];

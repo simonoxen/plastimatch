@@ -187,7 +187,7 @@ compare_main (Compare_parms* parms)
     file_type_2 = plm_file_format_deduce (parms->img_in_2_fn);
 
     if (file_type_1 == PLM_FILE_FMT_VF 
-	&& file_type_1 == PLM_FILE_FMT_VF)
+	&& file_type_2 == PLM_FILE_FMT_VF)
     {
 	vf_compare (parms);
     }

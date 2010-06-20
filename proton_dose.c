@@ -594,6 +594,7 @@ load_pep (char* filename)
         }
     }
 
+    fclose (fp);
     return pep;
 }
 
@@ -747,7 +748,7 @@ proton_dose_compute (
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
     double tgt[3] = { options->isocenter[0], options->isocenter[1], 
-              options->isocenter[2] };
+		      options->isocenter[2] };
     double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
     double ic[2] = { 4.5, 4.5 };
     double ps[2] = { 1., 1. };
@@ -826,14 +827,14 @@ proton_dose_compute (
             ap_idx = c * ires[0] + r;
         
             proton_dose_ray_trace (depth_vol,    /* O: radiographic depths */
-                                   depth_offset, /* O: aperture to vol dists */
-                                   ct_vol,       /* I: CT volume */
-                                   &ct_limit,    /* I: CT bounding region */
-                                   p1,           /* I: @ source */
-                                   p2,           /* I: @ aperture */
-                                   ires,         /* I: ray cast resolution */
-                                   ap_idx,       /* I: linear index of ray in ap */
-                                   options);
+		depth_offset, /* O: aperture to vol dists */
+		ct_vol,       /* I: CT volume */
+		&ct_limit,    /* I: CT bounding region */
+		p1,           /* I: @ source */
+		p2,           /* I: @ aperture */
+		ires,         /* I: ray cast resolution */
+		ap_idx,       /* I: linear index of ray in ap */
+		options);
         }
     }
 
@@ -858,32 +859,32 @@ proton_dose_compute (
 
 #if defined (DOSE_DIRECT)
                 dose = dose_direct (ct_xyz,         /* voxel to dose */
-                                    depth_offset,   /* ap to ct_vol dist */
-                                    depth_vol,      /* radiographic depths */
-                                    pep,            /* proton energy profile */
-                                    pmat,           /* projection matrix */
-                                    ires,           /* ray cast resolution */
-                                    ul_room,        /* aperture upper-left */
-                                    incr_r,         /* 3D ray row increment */
-                                    incr_c,         /* 3D ray col increment */
-                                    options);       /* options->ray_step */
+		    depth_offset,   /* ap to ct_vol dist */
+		    depth_vol,      /* radiographic depths */
+		    pep,            /* proton energy profile */
+		    pmat,           /* projection matrix */
+		    ires,           /* ray cast resolution */
+		    ul_room,        /* aperture upper-left */
+		    incr_r,         /* 3D ray row increment */
+		    incr_c,         /* 3D ray col increment */
+		    options);       /* options->ray_step */
 #endif
 
 
 #if defined (DOSE_GAUSS)
                 dose = dose_scatter (ct_xyz,        /* voxel to dose */
-                                     ct_ijk,
-                                     depth_offset,  /* ap to ct_vol dist */
-                                     depth_vol,     /* radiographic depths */
-                                     pep,           /* proton energy profile */
-                                     pmat,          /* projection matrix */
-                                     ires,          /* ray cast resolution */
-                                     ul_room,       /* aperture upper-left */
-                                     incr_r,        /* 3D ray row increment */
-                                     incr_c,        /* 3D ray col increment */
-                                     prt,           /* x-dir in ap plane uv */
-                                     pdn,           /* y-dir in ap plane uv */
-                                     options);      /* options->ray_step */
+		    ct_ijk,
+		    depth_offset,  /* ap to ct_vol dist */
+		    depth_vol,     /* radiographic depths */
+		    pep,           /* proton energy profile */
+		    pmat,          /* projection matrix */
+		    ires,          /* ray cast resolution */
+		    ul_room,       /* aperture upper-left */
+		    incr_r,        /* 3D ray row increment */
+		    incr_c,        /* 3D ray col increment */
+		    prt,           /* x-dir in ap plane uv */
+		    pdn,           /* y-dir in ap plane uv */
+		    options);      /* options->ray_step */
 #endif
 
                 /* Insert the dose into the dose volume */
@@ -896,5 +897,6 @@ proton_dose_compute (
     }
 
     free (pep);
+    free (depth_offset);
     volume_destroy (depth_vol);
 }

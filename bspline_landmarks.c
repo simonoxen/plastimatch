@@ -240,10 +240,10 @@ bspline_landmarks_score_b (
     land_rawdist = 0;
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
-	logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
+    logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
 
-	dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
-	for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
+    dd_min = (float *)malloc( blm->num_landmarks * sizeof(float));
+    for(d=0;d<blm->num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
 
     land_p = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
     land_q = (int *)malloc( 3* blm->num_landmarks * sizeof(int));
@@ -303,7 +303,7 @@ bspline_landmarks_score_b (
 
     for( lidx = 0; lidx < blm->num_landmarks; lidx++) {
 
-		//printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
+	//printf("at landmark %d: dd %.1f  dxyz  %.2f %.2f %.2f\n", lidx, dd_min[lidx], dxyz[0],dxyz[1],dxyz[2] );
 
 	if (dd_min[lidx]>10) logfile_printf("Landmark WARNING: landmark far from nearest voxel\n");
 
@@ -321,13 +321,13 @@ bspline_landmarks_score_b (
 	for (d = 0; d < 3; d++) dc_dv[d] = land_grad_coeff * diff[d]; 
 	bspline_update_grad (bst, bxf, p, qidx, dc_dv);
 
-		// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
-				fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
-								-blm->warped_landmarks[0+3*lidx], 
-								-blm->warped_landmarks[1+3*lidx],  
-								+blm->warped_landmarks[2+3*lidx] );
-				fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
-	}
+	// Note: Slicer landmarks are in RAS coordinates. Change LPS to RAS 
+	fprintf(fp, "W%d,%f,%f,%f,1,1\n", lidx,
+	    -blm->warped_landmarks[0+3*lidx], 
+	    -blm->warped_landmarks[1+3*lidx],  
+	    +blm->warped_landmarks[2+3*lidx] );
+	fprintf(fp2,"W%d %.3f\n", lidx, sqrt(l_dist));
+    }
 
     fclose(fp);
     fclose(fp2);
@@ -536,5 +536,6 @@ void bspline_landmarks_warp (
 	    }
 	} 
     }
+    free (dd_min);
 }
 

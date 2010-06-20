@@ -176,6 +176,7 @@ bspline_optimize_steepest_trace(
 		fprintf (trace, "%d, %10.10f\n", i, bst->ssd.score);
 		fflush(trace);
 	}
+	fclose (trace);
 
 	printf ("Finished Capturing Gradient.\n\n");
 	memcpy (ssd->grad, grad_backup, bxf->num_coeff * sizeof(float));
@@ -204,6 +205,7 @@ bspline_optimize_steepest_trace(
 	fclose (fp);
     }
     
+    free (grad_backup);
     free (x);
     free (h);
 }

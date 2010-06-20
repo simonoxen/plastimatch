@@ -106,6 +106,7 @@ main (int argc, char * argv [])
     /* Go back to beginning of file */
     Registration_Parms regp;
     if (plm_parms_process_command_file (&regp, fp) < 0) {
+	fclose (fp);
 	return EXIT_FAILURE;
     }
 

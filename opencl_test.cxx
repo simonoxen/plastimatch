@@ -219,7 +219,7 @@ initializeCL(void)
                 break;
             }
         }
-        delete platforms;
+        delete[] platforms;
     }
 
     /* 
