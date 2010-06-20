@@ -16,7 +16,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "resample_mha.h"
 #include "volume.h"
 #include "xform.h"

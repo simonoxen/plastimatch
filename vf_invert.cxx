@@ -6,14 +6,15 @@
 #include "itkImage.h"
 #include "itkInverseDeformationFieldImageFilter.h"
 #include "itkIterativeInverseDeformationFieldImageFilter.h"
+
 #include "getopt.h"
-#include "vf_invert.h"
-#include "plm_image_header.h"
 #include "itk_image.h"
+#include "mha_io.h"
+#include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "xform.h"
+#include "vf_invert.h"
 #include "volume.h"
-#include "readmha.h"
+#include "xform.h"
 
 #define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 

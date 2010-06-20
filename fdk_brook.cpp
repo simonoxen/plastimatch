@@ -13,9 +13,9 @@
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "math_util.h"
+#include "mha_io.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "readmha.h"
 #include "timer.h"
 #include "volume.h"
 

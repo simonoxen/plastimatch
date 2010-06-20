@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "math_util.h"
+#include "mha_io.h"
 #include "proj_matrix.h"
 #include "proton_dose.h"
 #include "ray_trace_exact.h"
 #include "ray_trace_uniform.h"
 #include "volume.h"
 #include "volume_limit.h"
-#include "readmha.h"
 
 //#define VERBOSE 1
 //#define PROGRESS 1

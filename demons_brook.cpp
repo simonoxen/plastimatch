@@ -7,14 +7,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+#include "convolution_brook_kernel.h"
+#include "demons_brook_kernel.h"
 #include "demons_opts.h"
 #include "demons_misc.h"
+#include "mha_io.h"
 #include "timer.h"
 #include "volume.h"
-#include "readmha.h"
-#include "demons_brook_kernel.h"
-#include "convolution_brook_kernel.h"
-
 
 /* Function computes the image gradient in the x, y, and z directions for the static image */
 float**

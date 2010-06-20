@@ -8,10 +8,10 @@
 
 #include "getopt.h"
 #include "itk_image.h"
+#include "mha_io.h"
 #include "pcmd_compare.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
-#include "readmha.h"
 
 void
 vf_analyze (Volume* vol1, Volume* vol2)

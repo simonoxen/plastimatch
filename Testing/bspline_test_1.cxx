@@ -1,18 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
-#include "volume.h"
-#include "readmha.h"
-#include "bspline_opts.h"
+
 #include "bspline.h"
-#if defined (HAVE_F2C_LIBRARY)
-#include "bspline_optimize_lbfgsb.h"
-#endif
+#include "bspline_opts.h"
+#include "mha_io.h"
+#include "volume.h"
 
 int
 main (int argc, char* argv[])

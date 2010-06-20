@@ -8,13 +8,14 @@
 #if defined (_WIN32)
 #include <windows.h>
 #endif
-#include "volume.h"
-#include "readmha.h"
+
 #include "bspline_opts.h"
 #include "bspline.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
 #include "cuda_utils.h"
+#include "mha_io.h"
+#include "volume.h"
 
 // Define file-scope textures
 texture<float, 1, cudaReadModeElementType> tex_fixed_image;

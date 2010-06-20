@@ -18,10 +18,10 @@
 #include "fdk_utils.h"
 #include "file_util.h"
 #include "math_util.h"
+#include "mha_io.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "readmha.h"
 #include "timer.h"
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 

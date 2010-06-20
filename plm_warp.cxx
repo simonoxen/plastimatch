@@ -6,11 +6,11 @@
 
 #include "itk_image.h"
 #include "itk_warp.h"
+#include "mha_io.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
-#include "readmha.h"
 #include "volume.h"
 #include "xform.h"
 

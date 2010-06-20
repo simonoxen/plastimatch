@@ -8,7 +8,7 @@
 #include <math.h>
 #include <time.h>
 #include "math_util.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "tps_warp_opts.h"
 
 int

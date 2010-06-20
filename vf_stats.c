@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "readmha.h"
+#include "mha_io.h"
 #include "vf_stats.h"
 
 void

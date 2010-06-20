@@ -11,7 +11,7 @@
 
 #include "fdk_opts.h"
 #include "math_util.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "volume.h"
 
 #ifndef DEGTORAD

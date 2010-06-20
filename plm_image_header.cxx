@@ -6,11 +6,12 @@
 #include <string.h>
 #include <time.h>
 #include "itkImageRegionIterator.h"
+
+#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "readmha.h"
-#include "volume.h"
 #include "print_and_exit.h"
+#include "volume.h"
 
 /* -----------------------------------------------------------------------
    Image header conversion

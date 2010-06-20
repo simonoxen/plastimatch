@@ -10,7 +10,7 @@
 #include <io.h>        // windows //
 #endif
 #include "fwrite_block.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "string_util.h"
 #include "volume.h"
 

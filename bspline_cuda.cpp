@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,15 +9,15 @@
 #if defined (_WIN32)
 #include <windows.h>
 #endif
-#include "plm_config.h"
-#include "volume.h"
-#include "readmha.h"
-#include "timer.h"
-#include "bspline_optimize_lbfgsb.h"
-#include "bspline_macros.h"
-#include "bspline_opts.h"
+
 #include "bspline.h"
 #include "bspline_cuda.h"
+#include "bspline_macros.h"
+#include "bspline_optimize_lbfgsb.h"
+#include "bspline_opts.h"
+#include "mha_io.h"
+#include "timer.h"
+#include "volume.h"
 
 //#define CPU_HISTS
 #define CPU_SCORE

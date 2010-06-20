@@ -12,7 +12,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #endif
 #include "check_grad_opts.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "vf.h"
 
 void

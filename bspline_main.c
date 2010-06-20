@@ -19,7 +19,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #endif
 #include "bspline_opts.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "vf.h"
 
 int

@@ -12,10 +12,10 @@
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
+#include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
-#include "readmha.h"
 #include "volume.h"
 
 /* -----------------------------------------------------------------------

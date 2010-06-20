@@ -10,9 +10,9 @@
 #include "bspline_landmarks.h"
 #include "logfile.h"
 #include "math_util.h"
+#include "mha_io.h"
 #include "plm_image_header.h"
 #include "plm_registration.h"
-#include "readmha.h"
 #include "volume.h"
 #include "xform.h"
 

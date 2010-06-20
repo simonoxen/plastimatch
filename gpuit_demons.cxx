@@ -5,18 +5,20 @@
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
+
+#include "demons.h"
+#include "mha_io.h"
 #include "plm_config.h"
 #include "plm_registration.h"
-#include "xform.h"
-#include "readmha.h"
 #include "volume.h"
-#include "demons.h"
+#include "xform.h"
 
 void
-do_gpuit_demons_stage_internal (Registration_Data* regd, 
-				    Xform *xf_out, 
-				    Xform *xf_in, 
-				    Stage_Parms* stage)
+do_gpuit_demons_stage_internal (
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Stage_Parms* stage)
 {
     int d;
     DEMONS_Parms parms;
@@ -31,10 +33,10 @@ do_gpuit_demons_stage_internal (Registration_Data* regd,
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
     printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
-	    stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
-	    stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
-	    stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
-	    );
+	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
+	stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
+	stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
+    );
     moving_ss = volume_subsample (moving, stage->moving_subsample_rate);
     fixed_ss = volume_subsample (fixed, stage->fixed_subsample_rate);
 
@@ -62,11 +64,11 @@ do_gpuit_demons_stage_internal (Registration_Data* regd,
     case THREADING_SINGLE:
     case THREADING_OPENMP:
 	vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
-			 "CPU", &parms);
+	    "CPU", &parms);
 	break;
     case THREADING_BROOK:
 	vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
-			 "GPU", &parms);
+	    "GPU", &parms);
 	break;
     case THREADING_CUDA:
 	print_and_exit ("Cuda demons not yet implemented.\n");
@@ -84,12 +86,13 @@ do_gpuit_demons_stage_internal (Registration_Data* regd,
 }
 
 void
-do_gpuit_demons_stage (Registration_Data* regd, 
-			 Xform *xf_out, 
-			 Xform *xf_in,
-			 Stage_Parms* stage)
+do_gpuit_demons_stage (
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    Xform *xf_in,
+    Stage_Parms* stage)
 {
     do_gpuit_demons_stage_internal (regd, xf_out, xf_in, stage);
-//    printf ("Deformation stats (out)\n");
-//    deformation_stats (xf_out->get_itk_vf());
+    //    printf ("Deformation stats (out)\n");
+    //    deformation_stats (xf_out->get_itk_vf());
 }

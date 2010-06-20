@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include "demons.h"
 #include "demons_opts.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "vf.h"
 #include "volume.h"
 

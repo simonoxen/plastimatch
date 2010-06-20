@@ -41,7 +41,6 @@ SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 
-SET (PLM_BUILD_DEMONS_CUDA OFF CACHE BOOL "Build cuda version of demons")
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL "Build slicer loadable module")
 
 SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
@@ -541,6 +540,7 @@ SET (GPUIT_LIBRARY_SRC
   hnd_io.c hnd_io.h
   logfile.c logfile.h
   math_util.h
+  mha_io.c mha_io.h
   print_and_exit.c print_and_exit.h 
   proj_image.c proj_image.h
   proj_image_dir.c proj_image_dir.h
@@ -549,7 +549,6 @@ SET (GPUIT_LIBRARY_SRC
   ray_trace_exact.c ray_trace_exact.h 
   ray_trace_uniform.c ray_trace_uniform.h 
   string_util.c string_util.h
-  readmha.c readmha.h
   threading.h
   timer.c timer.h
   vf.c vf.h
@@ -730,10 +729,6 @@ ENDIF (CUDA_FOUND)
 SET (DEMONS_SRC
   demons_main.c
   demons_opts.c demons_opts.h
-  )
-SET (DEMONS_CUDA_SRC
-  readmha.c readmha.h
-  volume.c volume.h
   )
 SET (DICE_STATS_SRC
   contour_statistics.cxx contour_statistics.h
@@ -1122,10 +1117,6 @@ ENDIF(ITK_FOUND)
 
 # several executables require cuda
 IF (CUDA_FOUND)
-  IF (PLM_BUILD_DEMONS_CUDA)
-    PLM_ADD_EXECUTABLE (demons_cuda "${DEMONS_CUDA_SRC}" 
-      "${GPUIT_LIBRARIES}" "")
-  ENDIF (PLM_BUILD_DEMONS_CUDA)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF (CUDA_FOUND)
 

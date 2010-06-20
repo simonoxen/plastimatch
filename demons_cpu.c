@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "readmha.h"
-#include "volume.h"
 #include "demons_opts.h"
 #include "demons_misc.h"
+#include "mha_io.h"
 #include "timer.h"
+#include "volume.h"
 
 int
 round_int (float f)

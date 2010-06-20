@@ -10,7 +10,7 @@
 #include "fdk_utils.h"
 #include "file_util.h"
 #include "proj_image.h"
-#include "readmha.h"
+#include "mha_io.h"
 #include "ramp_filter.h"
 #include "volume.h"
 

@@ -1,11 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
 #if defined (WIN32)
 #include <direct.h>
 #define mkdir(a,b) _mkdir(a)
@@ -13,8 +13,9 @@
 #else
 #include <limits.h>
 #endif
+
 #include "getopt.h"
-#include "readmha.h"
+#include "mha_io.h"
 
 class Program_Parms {
 public:

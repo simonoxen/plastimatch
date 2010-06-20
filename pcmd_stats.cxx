@@ -6,9 +6,9 @@
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
 #include "itk_image.h"
+#include "mha_io.h"
 #include "plm_file_format.h"
 #include "proj_image.h"
-#include "readmha.h"
 #include "pcmd_stats.h"
 #include "vf_stats.h"
 

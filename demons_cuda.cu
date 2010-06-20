@@ -9,10 +9,8 @@
 
 // includes, project
 #include <cutil.h>
-//#include "readmha.cpp"
-//#include "mghdrr.h"
+#include "mha_io.h"
 #include "volume.h"
-#include "readmha.h"
 
 // includes, kernels
 #include <demon_cuda_kernel.cu>
