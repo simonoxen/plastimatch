@@ -55,18 +55,19 @@ static void
 vf_compare (Compare_parms* parms)
 {
     int d;
-    char *vf1_fn, *vf2_fn;
     Volume *vol1, *vol2;
 
     vol1 = read_mha (parms->img_in_1_fn);
     if (!vol1) {
 	fprintf (stderr, 
-	    "Sorry, couldn't open file \"%s\" for read.\n", vf1_fn);
+	    "Sorry, couldn't open file \"%s\" for read.\n", 
+	    parms->img_in_1_fn);
 	exit (-1);
     }
     if (vol1->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
-	    "interleaved float vector field.\n", vf1_fn);
+	    "interleaved float vector field.\n", 
+	    parms->img_in_1_fn);
 	fprintf (stderr, "Type = %d\n", vol1->pix_type);
 	exit (-1);
     }
@@ -74,12 +75,14 @@ vf_compare (Compare_parms* parms)
     vol2 = read_mha (parms->img_in_2_fn);
     if (!vol2) {
 	fprintf (stderr, 
-	    "Sorry, couldn't open file \"%s\" for read.\n", vf2_fn);
+	    "Sorry, couldn't open file \"%s\" for read.\n", 
+	    parms->img_in_2_fn);
 	exit (-1);
     }
     if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
 	fprintf (stderr, "Sorry, file \"%s\" is not an "
-	    "interleaved float vector field.\n", vf2_fn);
+	    "interleaved float vector field.\n", 
+	    parms->img_in_2_fn);
 	fprintf (stderr, "Type = %d\n", vol2->pix_type);
 	exit (-1);
     }
