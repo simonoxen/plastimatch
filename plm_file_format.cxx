@@ -110,13 +110,16 @@ plm_file_format_string (Plm_file_format file_type)
 {
     switch (file_type) {
     case PLM_FILE_FMT_NO_FILE:
-	return "No such file";
+	return "No file";
 	break;
     case PLM_FILE_FMT_UNKNOWN:
 	return "Unknown";
 	break;
     case PLM_FILE_FMT_IMG:
 	return "Image";
+	break;
+    case PLM_FILE_FMT_VF:
+	return "Vector field";
 	break;
     case PLM_FILE_FMT_DIJ:
 	return "Dij matrix";
@@ -128,7 +131,7 @@ plm_file_format_string (Plm_file_format file_type)
 	return "Cxt file";
 	break;
     case PLM_FILE_FMT_DICOM_DIR:
-	return "Dicom directory";
+	return "DICOM directory";
 	break;
     case PLM_FILE_FMT_XIO_DIR:
 	return "XiO directory";
@@ -138,6 +141,12 @@ plm_file_format_string (Plm_file_format file_type)
 	break;
     case PLM_FILE_FMT_PROJ_IMG:
 	return "Projection image";
+	break;
+    case PLM_FILE_FMT_DICOM_RTSS:
+	return "DICOM-RT SS";
+	break;
+    case PLM_FILE_FMT_DICOM_DOSE:
+	return "DICOM-RT dose";
 	break;
     default:
 	return "Unknown/default";

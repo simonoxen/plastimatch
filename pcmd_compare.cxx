@@ -5,13 +5,101 @@
 #include <time.h>
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
+
 #include "getopt.h"
-#include "pcmd_compare.h"
-#include "plm_image.h"
 #include "itk_image.h"
+#include "pcmd_compare.h"
+#include "plm_file_format.h"
+#include "plm_image.h"
+#include "readmha.h"
+
+void
+vf_analyze (Volume* vol1, Volume* vol2)
+{
+    int d, i, j, k, v;
+    float* img1 = (float*) vol1->img;
+    float* img2 = (float*) vol2->img;
+    float max_vlen2 = 0.0f;
+    int max_vlen_idx_lin = 0;
+    int max_vlen_idx[3] = { 0, 0, 0 };
+
+    for (v = 0, k = 0; k < vol1->dim[2]; k++) {
+	for (j = 0; j < vol1->dim[1]; j++) {
+	    for (i = 0; i < vol1->dim[0]; i++, v++) {
+		float* dxyz1 = &img1[3*v];
+		float* dxyz2 = &img2[3*v];
+		float diff[3];
+		float vlen2 = 0.0f;
+		for (d = 0; d < 3; d++) {
+		    diff[d] = dxyz2[d] - dxyz1[d];
+		    vlen2 += diff[d] * diff[d];
+		}
+		if (vlen2 > max_vlen2) {
+		    max_vlen2 = vlen2;
+		    max_vlen_idx_lin = v;
+		    max_vlen_idx[0] = i;
+		    max_vlen_idx[1] = j;
+		    max_vlen_idx[2] = k;
+		}
+	    }
+	}
+    }
+
+    printf ("Max diff idx:  %4d %4d %4d [%d]\n", max_vlen_idx[0], max_vlen_idx[1], max_vlen_idx[2], max_vlen_idx_lin);
+    printf ("Vol 1:         %10.3f %10.3f %10.3f\n", img1[3*max_vlen_idx_lin], img1[3*max_vlen_idx_lin+1], img1[3*max_vlen_idx_lin+2]);
+    printf ("Vol 2:         %10.3f %10.3f %10.3f\n", img2[3*max_vlen_idx_lin], img2[3*max_vlen_idx_lin+1], img2[3*max_vlen_idx_lin+2]);
+    printf ("Vec len diff:  %10.3f\n", sqrt(max_vlen2));
+}
 
 static void
-compare_main (Compare_parms* parms)
+vf_compare (Compare_parms* parms)
+{
+    int d;
+    char *vf1_fn, *vf2_fn;
+    Volume *vol1, *vol2;
+
+    vol1 = read_mha (parms->img_in_1_fn);
+    if (!vol1) {
+	fprintf (stderr, 
+	    "Sorry, couldn't open file \"%s\" for read.\n", vf1_fn);
+	exit (-1);
+    }
+    if (vol1->pix_type != PT_VF_FLOAT_INTERLEAVED) {
+	fprintf (stderr, "Sorry, file \"%s\" is not an "
+	    "interleaved float vector field.\n", vf1_fn);
+	fprintf (stderr, "Type = %d\n", vol1->pix_type);
+	exit (-1);
+    }
+
+    vol2 = read_mha (parms->img_in_2_fn);
+    if (!vol2) {
+	fprintf (stderr, 
+	    "Sorry, couldn't open file \"%s\" for read.\n", vf2_fn);
+	exit (-1);
+    }
+    if (vol2->pix_type != PT_VF_FLOAT_INTERLEAVED) {
+	fprintf (stderr, "Sorry, file \"%s\" is not an "
+	    "interleaved float vector field.\n", vf2_fn);
+	fprintf (stderr, "Type = %d\n", vol2->pix_type);
+	exit (-1);
+    }
+
+    for (d = 0; d < 3; d++) {
+	if (vol1->dim[d] != vol2->dim[d]) {
+	    fprintf (stderr, "Can't compare.  "
+		"Files have different dimensions.\n");
+	    exit (-1);
+	}
+    }
+
+    vf_analyze (vol1, vol2);
+
+    volume_destroy (vol1);
+    volume_destroy (vol2);
+}
+
+static void
+img_compare (Compare_parms* parms)
 {
     Plm_image *img1, *img2;
 
@@ -90,9 +178,29 @@ compare_main (Compare_parms* parms)
 }
 
 static void
+compare_main (Compare_parms* parms)
+{
+    Plm_file_format file_type_1, file_type_2;
+
+    /* What is the input file type? */
+    file_type_1 = plm_file_format_deduce (parms->img_in_1_fn);
+    file_type_2 = plm_file_format_deduce (parms->img_in_2_fn);
+
+    if (file_type_1 == PLM_FILE_FMT_VF 
+	&& file_type_1 == PLM_FILE_FMT_VF)
+    {
+	vf_compare (parms);
+    }
+    else
+    {
+	img_compare (parms);
+    }
+}
+
+static void
 compare_print_usage (void)
 {
-    printf ("Usage: plastimatch compare image_in_1 image_in_2\n"
+    printf ("Usage: plastimatch compare file_1 file_2\n"
 	    );
     exit (-1);
 }

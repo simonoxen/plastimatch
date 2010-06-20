@@ -891,9 +891,6 @@ SET (TPS_WARP_SRC
   tps_warp_main.cxx
   tps_warp_opts.cxx tps_warp_opts.h
   )
-SET (VF_COMPARE_SRC
-  vf_compare.c
-  )
 SET (VF_COMPOSE_SRC
   vf_compose.cxx
   )
@@ -1048,8 +1045,6 @@ PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
-PLM_ADD_EXECUTABLE (vf_compare "${VF_COMPARE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (vf_to_vvf "${VF_TO_VVF_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (vf3d_to_mha vf3d_to_mha.c "" "")
