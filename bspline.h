@@ -64,12 +64,12 @@ struct BSPLINE_Xform_struct {
     int* qidx_lut;               /* Lookup volume for region offset */
     float* q_lut;                /* Lookup table for influence multipliers */
 
-	float* q_dxdyz_lut;          /* Lookup table for influence of dN1/dx*dN2/dy*N3 */
-	float* q_xdydz_lut;          /* Lookup table for influence of N1*dN2/dy*dN3/dz */
-	float* q_dxydz_lut;          /* Lookup table for influence of dN1/dx*N2*dN3/dz */
-	float* q_d2xyz_lut;          /* Lookup table for influence of (d2N1/dx2)*N2*N3 */
-	float* q_xd2yz_lut;          /* Lookup table for influence of N1*(d2N2/dy2)*N3 */
-	float* q_xyd2z_lut;          /* Lookup table for influence of N1*N2*(d2N3/dz2) */
+    float* q_dxdyz_lut;          /* Lookup table for influence of dN1/dx*dN2/dy*N3 */
+    float* q_xdydz_lut;          /* Lookup table for influence of N1*dN2/dy*dN3/dz */
+    float* q_dxydz_lut;          /* Lookup table for influence of dN1/dx*N2*dN3/dz */
+    float* q_d2xyz_lut;          /* Lookup table for influence of (d2N1/dx2)*N2*N3 */
+    float* q_xd2yz_lut;          /* Lookup table for influence of N1*(d2N2/dy2)*N3 */
+    float* q_xyd2z_lut;          /* Lookup table for influence of N1*N2*(d2N3/dz2) */
 };
 
 typedef struct BSPLINE_Score_struct BSPLINE_Score;
@@ -228,10 +228,10 @@ struct BSPLINE_Parms_struct {
 
     struct bspline_landmarks* landmarks;  /* The landmarks themselves */
     float landmark_stiffness;    /* Attraction of landmarks (0 == no attraction) */
-	char landmark_implementation; /*Landmark score implementation, 'a' or 'b' */
+    char landmark_implementation; /*Landmark score implementation, 'a' or 'b' */
 
-	float young_modulus;  /* Penalty for having large gradient of the vector field */
-	float rbf_radius;   /* Radius of RBF; if rbf_radius>0, RBF are used */
+    float young_modulus;  /* Penalty for having large gradient of the vector field */
+    float rbf_radius;   /* Radius of RBF; if rbf_radius>0, RBF are used */
 };
 
 /* -----------------------------------------------------------------------
