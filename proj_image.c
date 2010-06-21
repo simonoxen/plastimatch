@@ -110,7 +110,6 @@ pfm_load (Proj_image *proj, char* img_filename)
     if (strncmp(buf, "Pf", 2)) {
 	fprintf (stderr, "Couldn't parse file %s as an image [1]\n",
 		 img_filename);
-	printf (buf);
 	exit (-1);
     }
 

@@ -37,7 +37,7 @@ digest_file_list (
     double spacing[3])
 {
     int loop = 0;
-    double prev_z;
+    double prev_z = 0.0;
 
     // For all the files of a SingleSerieUID File set
     for (gdcm::FileList::iterator it =  file_list->begin();

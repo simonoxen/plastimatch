@@ -143,7 +143,8 @@ img_compare (Compare_parms* parms)
     FloatIteratorType it (diff, diff->GetRequestedRegion ());
 
     int first = 1;
-    float min_val, max_val;
+    float min_val = 0.0;
+    float max_val = 0.0;
     int num = 0, num_dif = 0;
     double ave = 0.0;
     double mae = 0.0;

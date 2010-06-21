@@ -67,7 +67,7 @@
    and unsigned integers -- these should be revisited occasionally 
    to check for actual bugs. */
 /* Unfortunately, the below doesn't actually work.  We still get warnings. */
-#pragma GCC diagnostic ignored "-Wsign-conversion"
+/* #pragma GCC diagnostic ignored "-Wsign-conversion" */
 #endif
 
 #if _MSC_VER
