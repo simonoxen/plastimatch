@@ -10,9 +10,7 @@
 
 #include "bspline.h"
 #include "bspline_optimize.h"
-#if (LIBLBFGS_FOUND)
 #include "bspline_optimize_liblbfgs.h"
-#endif
 #include "bspline_optimize_lbfgsb.h"
 #if (NLOPT_FOUND)
 #include "bspline_optimize_nlopt.h"
@@ -24,7 +22,6 @@
 #include "print_and_exit.h"
 #include "volume.h"
 #include "xpm.h"
-
 
 void
 bspline_optimize (
@@ -49,20 +46,18 @@ bspline_optimize (
 	bspline_optimize_lbfgsb (bxf, bst, parms, fixed, moving, moving_grad);
 #else
 	logfile_printf (
-	    "LBFGSB not compiled for this platform (no fortran compiler, "
-	    "no f2c library).\n  Reverting to steepest descent.\n"
+	    "Plastimatch was not compiled against Nocedal LBFGSB.\n"
+	    "Reverting to liblbfgs.\n"
 	);
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
+	bspline_optimize_liblbfgs (&bod);
 #endif
 	break;
     case BOPT_STEEPEST:
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
+      bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
 	break;
-#if (LIBLBFGS_FOUND)
     case BOPT_LIBLBFGS:
 	bspline_optimize_liblbfgs (&bod);
 	break;
-#endif
 #if (NLOPT_FOUND)
     case BOPT_NLOPT_LBFGS:
 	bspline_optimize_nlopt (&bod, NLOPT_LD_LBFGS);
@@ -80,12 +75,12 @@ bspline_optimize (
     case BOPT_NLOPT_PTN_1:
 	logfile_printf (
 	    "Plastimatch was not compiled against NLopt.\n"
-	    "Reverting to steepest descent.\n"
+	    "Reverting to liblbfgs.\n"
 	);
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
+	bspline_optimize_liblbfgs (&bod);
 #endif
     default:
-	bspline_optimize_steepest (bxf, bst, parms, fixed, moving, moving_grad);
+	bspline_optimize_liblbfgs (&bod);
 	break;
     }
 }
