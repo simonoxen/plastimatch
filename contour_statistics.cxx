@@ -5,7 +5,7 @@
 
 void print_usage (void)
 {
-	printf ("Usage: contour_statistics \n");
+	printf ("Usage: dice_stats \n");
 	printf ("  mode (options: global, experts)  ");
 	printf ("  file1  ");
 	printf ("  file2  ");
@@ -33,9 +33,9 @@ int main(int argc, char* argv[])
 		reference = itk_image_load_uchar(argv[2], 0);
 		warped = itk_image_load_uchar(argv[3], 0);
 	}else if(strcmp("experts",argv[1])==0){
-		ex_1 = itk_image_load_uchar(argv[2], 0);
-		ex_2 = itk_image_load_uchar(argv[3], 0);
-		ex_3 = itk_image_load_uchar(argv[4], 0);
+		//ex_1 = itk_image_load_uchar(argv[2], 0);
+		//ex_2 = itk_image_load_uchar(argv[3], 0);
+		//ex_3 = itk_image_load_uchar(argv[4], 0);
 	}else{
 		fprintf(stderr,"Sorry! you typed in the wrong mode");
 		print_usage();
@@ -60,9 +60,9 @@ int main(int argc, char* argv[])
 	}
 
 	if(strcmp("global",argv[1])==0){
-		do_dice_global(reference, warped, output);
+		do_dice_global(reference, warped, output, static_cast<unsigned char>(0));
 	}else if(strcmp("experts",argv[1])==0){
-		do_dice_expert(ex_1, ex_2, ex_3, output);
+		//do_dice_expert(ex_1, ex_2, ex_3, output);
 	}
 	return 0;
 }

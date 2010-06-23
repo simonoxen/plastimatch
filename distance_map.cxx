@@ -10,8 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "plm_config.h"
-#include "itk_image.h"
 //#include "itkDanielssonDistanceMapImageFilter.h"
 #include "itkSignedMaurerDistanceMapImageFilter.h"
 #include "itkImage.h"
@@ -20,9 +18,15 @@
 #include "itkRescaleIntensityImageFilter.h"
 #include "itkSubtractImageFilter.h"
 
-typedef UCharImageType InputImageType;
+
+typedef  unsigned char                   InputPixelType;
+typedef  float                 OutputPixelType;
+typedef itk::Image< InputPixelType,  3 > InputImageType;
+typedef itk::Image< OutputPixelType, 3 > OutputImageType;
+
+//typedef UCharImageType InputImageType;
 //typedef FloatImageType OutputImageType; 
-typedef FloatImageType OutputImageType; 
+//typedef FloatImageType OutputImageType; 
 typedef itk::ImageFileReader< InputImageType  >  ReaderType;
 typedef itk::ImageFileReader< OutputImageType  >  ReaderDistanceType;
 typedef itk::ImageFileWriter< OutputImageType >  WriterType;
@@ -33,22 +37,38 @@ void print_usage (void)
 {
 	std::cerr << "Usage: distance_map inputImageFile1 outputDistanceMapImageFile1 " <<std::endl;
 	std::cerr << std::endl;
+	std::cerr << "[UseSquaredDistance(1,0) UseImageSpacing(1,0) UseInsideIsPositive(1,0)]"<<std::endl;
+    std::cerr << std::endl;
 	std::cerr << "[inputImageFile2 outputDistanceMapImageFile2 DifferenceImage]"<<std::endl;
     std::cerr << std::endl;
 	std::cerr << "This function computes the distance map of the input file(s) according to Maurer implementation" << std::endl;
-	std::cerr << "Only Binary inputs are allowed. The inside of the contours are going to have negative distance values" << std::endl;
+	std::cerr << "Only Binary inputs are allowed. Default parameters include squared distance set to false, image spacing is not used and the inside of the contours is set to negative (-> first 3 optional parms set to 0)" << std::endl;
 	exit (-1);
 }
 
-void compute_distance_map(char* infn, char* outfn){
+void compute_distance_map(char* infn, char* outfn, int dist, int img, int inside){
 	WriterType::Pointer writer = WriterType::New();
 	FilterType::Pointer filter = FilterType::New();
 	ReaderType::Pointer reader = ReaderType::New();
 
 	reader->SetFileName( infn );
 	writer->SetFileName( outfn );
-	filter->SetSquaredDistance( false ); 
-	filter->SetUseImageSpacing( false ); 
+	if(dist==0)
+		filter->SetSquaredDistance( false ); 
+	else
+		filter->SetSquaredDistance( true ); 
+
+	if (img==0)
+		filter->SetUseImageSpacing( false ); 
+	else
+		filter->SetUseImageSpacing( true ); 
+
+	if (inside==0)
+		filter->SetInsideIsPositive( false );
+	else
+		filter->SetInsideIsPositive( true );
+
+	filter->SetNumberOfThreads(2);
   
 	filter->SetInput(reader->GetOutput());
 	filter->Update();
@@ -77,7 +97,7 @@ void compare_distance_map(char* img1fn ,char* img2fn,char* outfn){
 
 int main( int argc, char * argv[] )
 {
-	InputImageType::Pointer img=InputImageType::New();
+	//InputImageType::Pointer img=InputImageType::New();
 	//ImgType::Pointer warped=ImgType::New();
 
 	char* inputImageFile1Name;
@@ -85,28 +105,57 @@ int main( int argc, char * argv[] )
 	char* outputDistanceMap1Name;
 	char* outputDistanceMap2Name;
 	char* outputDifferenceImageName;
+	int dist=0;
+	int imgSpac=0;
+	int inside=0;
   
 	if( argc < 3 ){
 	  print_usage();
-	}else if (argc <4){
-		inputImageFile1Name  = argv[1];    
-		outputDistanceMap1Name = argv[2];
-		//img=itk_image_load_uchar (inputImageFile1Name, 0);
-		//compute_distance_map(img, outputDistanceMap1Name);
-		compute_distance_map(inputImageFile1Name, outputDistanceMap1Name);
+	//}else if (argc <4){
+	//	inputImageFile1Name  = argv[1];    
+	//	outputDistanceMap1Name = argv[2];
+	//	//img=itk_image_load_uchar (inputImageFile1Name, 0);
+	//	//compute_distance_map(img, outputDistanceMap1Name);
+	//	compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,0,0,0);
 
 	}else{
 		inputImageFile1Name  = argv[1];    
 		outputDistanceMap1Name = argv[2];
-		inputImageFile2Name = argv[3];
-		outputDistanceMap2Name = argv[4];
-		outputDifferenceImageName = argv[5];
-		compute_distance_map(inputImageFile1Name, outputDistanceMap1Name);
-		std::cout << "saved first output" << std::endl;
-		compute_distance_map(inputImageFile2Name, outputDistanceMap2Name);
-		std::cout << "saved second output" << std::endl;
-		compare_distance_map(outputDistanceMap1Name,outputDistanceMap2Name,outputDifferenceImageName);
-		std::cout << "saved difference output" << std::endl;
+		if (argc<4){
+			dist=0;
+			imgSpac=0;
+			inside=0;
+		}else if (argc ==4){
+			dist=atoi(argv[3]);
+			imgSpac=0;
+			inside=0;
+		}else if (argc==5){
+			dist=atoi(argv[3]);
+			imgSpac=atoi(argv[4]);
+			inside=0;
+		}else if (argc==6){
+			dist=atoi(argv[3]);
+			imgSpac=atoi(argv[4]);
+			inside=atoi(argv[5]);
+		}else{
+			dist=atoi(argv[3]);
+			imgSpac=atoi(argv[4]);
+			inside=atoi(argv[5]);
+			inputImageFile2Name = argv[6];
+			outputDistanceMap2Name = argv[7];
+			outputDifferenceImageName = argv[8];
+		}
+
+		if(argc<7){
+			compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);
+		}else{
+			compute_distance_map(inputImageFile1Name, outputDistanceMap1Name,dist,imgSpac,inside);	
+			std::cout << "saved first output" << std::endl;
+			compute_distance_map(inputImageFile2Name, outputDistanceMap2Name,dist,imgSpac,inside);
+			std::cout << "saved second output" << std::endl;
+			compare_distance_map(outputDistanceMap1Name,outputDistanceMap2Name,outputDifferenceImageName);
+			std::cout << "saved difference output" << std::endl;
+		}
 
 	}
 

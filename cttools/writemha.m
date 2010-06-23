@@ -55,6 +55,10 @@ switch(lower(type))
   fprintf (fp,'ElementType = MET_SHORT\n');
   fprintf (fp,'ElementDataFile = LOCAL\n');
   fwrite (fp,A,'int16');
+ case 'ushort'
+  fprintf (fp,'ElementType = MET_USHORT\n');
+  fprintf (fp,'ElementDataFile = LOCAL\n');
+  fwrite (fp,A,'uint16');
  case 'float'
   fprintf (fp,'ElementType = MET_FLOAT\n');
   fprintf (fp,'ElementDataFile = LOCAL\n');
