@@ -66,7 +66,7 @@ float do_dice_global(typename itk::Image<T,Dimension>::Pointer reference,
 	TP=TN=FP=FN=0;
 	get_image_header(dim, offset, spacing, reference);
 
-	typename ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
+	ItTypeVolPixel it(reference, reference->GetLargestPossibleRegion());
 
 	while(!it.IsAtEnd())
 	{
