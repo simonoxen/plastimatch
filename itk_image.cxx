@@ -53,6 +53,8 @@ itk__GetImageType (std::string fileName,
 #if _MSC_VER
 	ex;    /* Suppress compiler warning on windows */
 #endif
+	printf ("ITK exception.\n");
+	std::cout << ex << std::endl;
     }
 }
 
@@ -228,8 +230,8 @@ itk_image_load_any (const char* fname,
 	case itk::ImageIOBase::UNKNOWNCOMPONENTTYPE:
 	default:
 	    fprintf (stderr, 
-		     "Error: unhandled file type for loading image %s\n",
-		     fname);
+		"Error: unhandled file type for loading image (%d) %s\n", 
+		componentType, fname);
 	    exit (-1);
 	    break;
 	}

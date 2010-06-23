@@ -14,17 +14,29 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void*
 drr_cuda_state_create (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
+gpuit_EXPORT
 void
 drr_cuda_state_destroy (
     void *void_state
 );
 
+void*
+drr_cuda_state_create_cu (
+    Proj_image *proj,
+    Volume *vol,
+    Drr_options *options
+);
+void
+drr_cuda_state_destroy_cu (
+    void *void_state
+);
 void
 drr_cuda_ray_trace_image (
     Proj_image *proj, 

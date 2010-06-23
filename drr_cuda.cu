@@ -247,7 +247,7 @@ kernel_drr (
 }
 
 void*
-drr_cuda_state_create (
+drr_cuda_state_create_cu (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
@@ -315,7 +315,7 @@ drr_cuda_state_create (
 }
 
 void
-drr_cuda_state_destroy (
+drr_cuda_state_destroy_cu (
     void *void_state
 )
 {

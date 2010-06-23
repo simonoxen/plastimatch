@@ -49,7 +49,10 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-ITK 3.16.0 (or higher) is recommended.
+ITK 3.16.0 is recommended for Windows.  ITK 3.18.0 is not 
+recommended due to a bug in reading NRRD files.
+
+ITK 3.16.0 or ITK 3.18.0 is recommended for other platforms.
 
 When you build ITK, the following settings are recommended:
 

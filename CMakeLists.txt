@@ -587,6 +587,15 @@ IF(CUDA_FOUND)
     ${GPUIT_LIBRARY_SRC}
     ${BSPLINE_CUDA_WRAPPERS}
     )
+  CUDA_COMPILE (DRR_CUDA_WRAPPERS drr_cuda.cu)
+  SET (GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    ${DRR_CUDA_WRAPPERS}
+    drr_cuda.cpp 
+    drr_cuda.cu 
+    drr_cuda.h 
+    drr_cuda_p.h 
+    )
 ENDIF(CUDA_FOUND)
 
 IF (FFTW_FOUND)
@@ -751,15 +760,6 @@ SET (DRR_SRC
   drr_main.c 
   drr_opts.c drr_opts.h
   )
-IF (CUDA_FOUND)
-  CUDA_COMPILE (CUDA_WRAPPERS drr_cuda.cu)
-  SET (DRR_SRC
-    ${DRR_SRC}
-    ${CUDA_WRAPPERS}
-    drr_cuda.cu drr_cuda.h drr_cuda_p.h 
-    )
-ENDIF (CUDA_FOUND)
-
 SET (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
@@ -775,7 +775,9 @@ SET (FDK_SRC
 IF (CUDA_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
-    fdk_cuda.cu fdk_cuda.h
+    fdk_cuda.cu 
+    fdk_cuda_p.h
+    fdk_cuda.h
     )
 ENDIF (CUDA_FOUND)
 
@@ -1231,6 +1233,7 @@ ENDIF (NOT BUILD_AGAINST_SLICER3)
 IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
   CUDA_COMPILE (CUDA_TEST_WRAPPERS cuda_test.cu)
   SET (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
+  MESSAGE (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
   PLM_ADD_EXECUTABLE (cuda_test "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "")
   SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
 ENDIF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)

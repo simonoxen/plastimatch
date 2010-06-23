@@ -10,6 +10,7 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void
 cuda_utils_check_error (const char *msg);
 
