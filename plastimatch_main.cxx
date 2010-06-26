@@ -30,6 +30,12 @@
 
 /* GCS FIX: "segment" is a hidden option until it works */
 static void
+print_version (void)
+{
+    printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
+}
+
+static void
 print_usage (int return_code)
 {
     printf ("plastimatch version %s\n", PLASTIMATCH_VERSION_STRING);
@@ -95,7 +101,9 @@ do_command (int argc, char* argv[])
     }
     command = argv[1];
 
-    if (!strcmp (command, "add")) {
+    if (!strcmp (command, "--version")) {
+	print_version ();
+    } else if (!strcmp (command, "add")) {
 	do_command_add (argc, argv);
     }
     else if (!strcmp (command, "adjust")) {
