@@ -1,5 +1,4 @@
-Plastimatch Software License Software License ("Software License")
-Version 1.0
+Plastimatch Software License ("Software License") Version 1.0
 
 This Software License covers downloads from the Plastimatch project
 ("Plastimatch") maintained by The General Hospital Corporation
