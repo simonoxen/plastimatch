@@ -62,8 +62,8 @@ proj_image_dir_find_pattern (
 	    pid->img_pat = (char*) malloc (
 		strlen (pid->dir) + 1 + strlen (prefix) 
 		+ strlen (num_pat) + strlen (suffix) + 1);
-	    sprintf (pid->img_pat, "%s/%s%s%s", 
-		pid->dir, prefix, num_pat, suffix);
+	    sprintf (pid->img_pat, "%s/%s%s%s", pid->dir, 
+		prefix, num_pat, suffix);
 
 	    /* Done! */
 	    break;
@@ -109,6 +109,22 @@ proj_image_dir_load_filenames (
     }
 
     dir_list_destroy (dir_list);
+}
+
+static void
+proj_image_dir_harden_filenames (
+    Proj_image_dir *pid
+)
+{
+    int i;
+
+    for (i = 0; i < pid->num_proj_images; i++) {
+	char img_file[_MAX_PATH];
+	char *entry = pid->proj_image_list[i];
+	snprintf (img_file, _MAX_PATH, "%s/%s", pid->dir, entry);
+	pid->proj_image_list[i] = strdup (img_file);
+	free (entry);
+    }
 }
 
 static void
@@ -165,6 +181,9 @@ proj_image_dir_create (char *dir)
     /* Found images, try to find pattern */
     proj_image_dir_find_pattern (pid);
 
+    /* Convert relative paths to absolute paths */
+    proj_image_dir_harden_filenames (pid);
+
     return pid;
 }
 
@@ -178,7 +197,7 @@ proj_image_dir_select (Proj_image_dir *pid, int first, int skip, int last)
     }
 
     proj_image_dir_clear_filenames (pid);
-    for (i = first; i < last; i += skip) {
+    for (i = first; i <= last; i += skip) {
 	char img_file[_MAX_PATH];
 	snprintf (img_file, _MAX_PATH, pid->img_pat, i);
 	if (file_exists (img_file)) {
