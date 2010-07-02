@@ -163,15 +163,12 @@ CUDA_reconstruct_conebeam (
     // Size of volume Malloc
     int vol_size_malloc = (vol->dim[0]*vol->dim[1]*vol->dim[2])*sizeof(float);
 
-    /* Parse the input directory */
-    
-
     // Structure for passing arugments to kernel: (See fdk_cuda.h)
     kernel_args_fdk *kargs;
     kargs = (kernel_args_fdk *) malloc(sizeof(kernel_args_fdk));
 
     Proj_image* cbi;
-    int image_num;
+    int num_imgs = proj_dir->num_proj_images;
     int i;
 
     // CUDA device pointers
@@ -182,9 +179,7 @@ CUDA_reconstruct_conebeam (
     cudaMalloc( (void**)&dev_matrix, 12*sizeof(float) );
     cudaMalloc( (void**)&dev_kargs, sizeof(kernel_args_fdk) );
 
-    // Calculate the scale
-    image_num = 1 + (options->last_img - options->first_img) / options->skip_img;
-    float scale = (float) (sqrt(3.0) / (double) image_num);
+    float scale = (float) (sqrt(3.0) / (double) num_imgs);
     scale = scale * options->scale;
 
     // Load static kernel arguments
@@ -239,24 +234,22 @@ CUDA_reconstruct_conebeam (
     printf("========================================\n\n");
 
     // Start working
-    printf("Processing...");
+    printf("Processing...\n");
 #endif
 
     // This is just to retrieve the 2D image dimensions
-    cbi = proj_image_dir_load_image (proj_dir, options->first_img);
-    cudaMalloc( (void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float)); 
+    cbi = proj_image_dir_load_image (proj_dir, 0);
+    cudaMalloc ((void**)&dev_img, cbi->dim[0]*cbi->dim[1]*sizeof(float));
     proj_image_destroy (cbi);
 
     // Project each image into the volume one at a time
-    for (image_num = options->first_img;
-	 image_num <= options->last_img;
-	 image_num += options->skip_img) {
+    for (i = 0; i < proj_dir->num_proj_images; i++) {
 
 	// Load the current image
 #if defined (TIME_KERNEL)
 	plm_timer_start (&timer);
 #endif
-	cbi = proj_image_dir_load_image (proj_dir, image_num);
+	cbi = proj_image_dir_load_image (proj_dir, i);
 #if defined (TIME_KERNEL)
 	io_time += plm_timer_report (&timer);
 #endif
@@ -270,7 +263,6 @@ CUDA_reconstruct_conebeam (
 	    filter_time += plm_timer_report (&timer);
 #endif
 	}
-	
 
 	// Load dynamic kernel arguments
 	kargs->img_dim.x = cbi->dim[0];
@@ -282,8 +274,8 @@ CUDA_reconstruct_conebeam (
 	kargs->nrm.z = cbi->pmat->nrm[2];
 	kargs->sad = cbi->pmat->sad;
 	kargs->sid = cbi->pmat->sid;
-	for(i=0; i<12; i++) {
-	    kargs->matrix[i] = (float)cbi->pmat->matrix[i];
+	for (int j = 0; j < 12; j++) {
+	    kargs->matrix[j] = (float)cbi->pmat->matrix[j];
 	}
 
 	// Copy image pixel data & projection matrix to device Global Memory
@@ -299,6 +291,9 @@ CUDA_reconstruct_conebeam (
 	// Free the current image 
 	proj_image_destroy ( cbi );
 
+#if defined (VERBOSE)
+	printf ("Starting the kernel\n");
+#endif
 #if defined (TIME_KERNEL)
 	plm_timer_start (&timer);
 #endif

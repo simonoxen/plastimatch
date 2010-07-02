@@ -34,6 +34,7 @@ void
 set_default_options (Fdk_options* options)
 {
     options->threading = THREADING_CPU;
+    options->image_range_requested = 0;
     options->first_img = 0;
     options->last_img = 119;
     options->skip_img = 1;
@@ -92,6 +93,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
+	    options->image_range_requested = 1;
 	    rc = sscanf (argv[i], "%d %d %d" , 
 			 &options->first_img,
 			 &options->skip_img,

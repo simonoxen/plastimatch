@@ -27,9 +27,12 @@ enum Fdk_filter_type {
 typedef struct fdk_options Fdk_options;
 struct fdk_options {
     enum Threading threading;
+
+    int image_range_requested;
     int first_img;
     int skip_img;
     int last_img;
+
     int resolution[3];
     float vol_size[3];
 

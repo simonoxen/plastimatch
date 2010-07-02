@@ -10,6 +10,7 @@
 #include "file_util.h"
 #include "hnd_io.h"
 #include "math_util.h"
+#include "plm_path.h"
 #include "proj_image.h"
 #include "ramp_filter.h"
 #include "volume.h"
@@ -423,6 +424,18 @@ proj_image_load (
     char* mat_filename
 )
 {
+    char tmp[_MAX_PATH];
+
+    /* If not specified, try to guess the mat_filename */
+    if (!mat_filename) {
+	strncpy (tmp, img_filename, _MAX_PATH);
+	strip_extension (tmp);
+	strncat (tmp, ".txt", _MAX_PATH);
+	if (file_exists (tmp)) {
+	    mat_filename = tmp;
+	}
+    }
+
     if (extension_is (img_filename, ".pfm")) {
 	return proj_image_load_pfm (img_filename, mat_filename);
     }

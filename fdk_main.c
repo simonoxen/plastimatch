@@ -423,25 +423,20 @@ reconstruct_conebeam (
 )
 {
     int i;
-    int num_imgs;
+    int num_imgs = proj_dir->num_proj_images;
     float scale;
-    Timer timer;
-    double backproject_time = 0.0;
     double filter_time = 0.0;
+    double backproject_time = 0.0;
     double io_time = 0.0;
-
-    num_imgs = 1 + (options->last_img - options->first_img)
-	/ options->skip_img;
+    Proj_image* cbi;
+    Timer timer;
 
     scale = (float) (sqrt(3) / (double) num_imgs);
     scale = scale * options->scale;
 
-    for (i = options->first_img; 
-	 i <= options->last_img; 
-	 i += options->skip_img)
-    {
-	Proj_image* cbi;
+    for (i = 0; i < num_imgs; i++) {
 	printf ("Processing image %d\n", i);
+
 	plm_timer_start (&timer);
 	cbi = proj_image_dir_load_image (proj_dir, i);
 	io_time += plm_timer_report (&timer);
@@ -463,6 +458,7 @@ reconstruct_conebeam (
 
 	proj_image_destroy (cbi);
     }
+
     printf ("I/O time (total) = %g\n", io_time);
     printf ("I/O time (per image) = %g\n", io_time / num_imgs);
     printf ("Filter time = %g\n", filter_time);
@@ -507,6 +503,12 @@ main (int argc, char* argv[])
     if (!proj_dir) {
 	print_and_exit ("Error: couldn't find input files in directory %s\n",
 	    options.input_dir);
+    }
+
+    /* Choose subset of input files if requested */
+    if (options.image_range_requested) {
+	proj_image_dir_select (proj_dir, options.first_img, 
+	    options.skip_img, options.last_img);
     }
 
     /* Allocate memory */
