@@ -58,7 +58,18 @@ want the DRR and FDK programs, you don't need it.  Get ITK from here:
 
   http://itk.org/
 
-ITK 3.16.0 (or higher) is recommended.
+Be careful of versions when using ITK.  Plastimatch recommends the 
+following:
+
++--------------------+-----------------------------+---------------------------+
+|ITK Version         |Windows                      |Linux                      |
++====================+=============================+===========================+
+|3.14.0              |Not recommended              |Not recommended            |
++--------------------+-----------------------------+---------------------------+
+|3.16.0              |Recommended                  |Recommended                |
++--------------------+-----------------------------+---------------------------+
+|3.18.0              |Not recommended              |Recommended                |
++--------------------+-----------------------------+---------------------------+
 
 When you build ITK, the following settings are recommended::
 
@@ -69,8 +80,8 @@ When you build ITK, the following settings are recommended::
   ITK_USE_REVIEW                            ON
   ITK_USE_OPTIMIZED_REGITRATION_METHODS     ON
 
-Fortran or f2c (recommended)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Fortran (recommended)
+^^^^^^^^^^^^^^^^^^^^^
 Fortran (or f2c) is required if you want to run B-Spline registration with 
 LBFGSB optimization.  
 For windows, we recommend the f2c library, which is already 

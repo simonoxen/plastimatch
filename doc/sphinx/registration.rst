@@ -20,7 +20,7 @@ B-spline registration, create a command file like this::
   threading=openmp
   max_its=30
   grid_spac=100 100 100
-  res=4 2 2
+  res=4 4 2
 
 Then, run the registration like this::
 
@@ -43,7 +43,7 @@ Like this::
   threading=openmp
   max_its=30
   grid_spac=100 100 100
-  res=4 2 2
+  res=4 4 2
 
   [STAGE]
   max_its=30
@@ -73,7 +73,7 @@ You can do this with the following example::
   xform=translation
   optim=rsg
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 6-DOF registration (rigid)
 --------------------------
@@ -89,7 +89,7 @@ The following example performs a rigid registration::
   xform=rigid
   optim=versor
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 12-DOF registration (affine)
 ----------------------------
@@ -106,7 +106,7 @@ The following example performs an affine registration::
   xform=affine
   optim=rsg
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 Demons registration
 -------------------
@@ -123,7 +123,7 @@ The following example performs a demons registration::
   xform=vf
   optim=demons
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 The demons code has several parameters which can be optimized.
 The following example illustrates their use::
@@ -171,7 +171,7 @@ The following example performs a B-spline registration::
   xform=bspline
   optim=lbfgsb
   max_its=30
-  res=4 2 2
+  res=4 4 2
   # B-spline grid spacing (in mm)
   grid_spac=30 30 30
 
@@ -215,7 +215,7 @@ implementation::
   optim=demons
   impl=itk
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 
 Mutual information
@@ -237,7 +237,7 @@ mutual information metric with the B-spline transform::
   impl=plastimatch
   metric=mi
   max_its=30
-  res=4 2 2
+  res=4 4 2
 
 Output options
 --------------

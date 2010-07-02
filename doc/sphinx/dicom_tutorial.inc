@@ -1,14 +1,11 @@
 DICOM tutorial
-==============
+--------------
 So, you want to learn about dicom, eh?
 
 The only good reference I could find on the web is the DICOM standard.  
 You need this, so download it now.
 
 http://medical.nema.org/
-
-DICOM file format
------------------
 
 Preamble and header
 ~~~~~~~~~~~~~~~~~~~
