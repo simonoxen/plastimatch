@@ -1269,17 +1269,21 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
     "${CMAKE_BINARY_DIR}/opencl_test.cl"
     )
   SET (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
+  #SET (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${GPUIT_LIBRARIES})
   PLM_ADD_EXECUTABLE (opencl_test "${OPENCL_TEST_SRC}" 
     "${OPENCL_TEST_LIBS}" "")
   #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
 
   ## I don't yet know how to bundle the .cl file within the executable.
   ## Therefore, copy the .cl into binary directory.
-  ADD_CUSTOM_COMMAND (OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl"
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-    "${CMAKE_SOURCE_DIR}/opencl_test.cl" "${CMAKE_BINARY_DIR}/opencl_test.cl"
+    "${CMAKE_SOURCE_DIR}/opencl_test.cl" 
+    "${CMAKE_BINARY_DIR}/opencl_test.cl" 
+    #MAIN_DEPENDENCY opencl_test 
     DEPENDS "${CMAKE_SOURCE_DIR}/opencl_test.cl")
-  ADD_DEPENDENCIES (opencl_test "${CMAKE_BINARY_DIR}/opencl_test.cl")
+  #ADD_DEPENDENCIES (opencl_test opencl_test.cl)
 ENDIF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
 
 # Test executable -- openmp

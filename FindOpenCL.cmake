@@ -3,7 +3,10 @@
 ##  http://forums.nvidia.com/index.php?showtopic=97795
 ##  Version: Oct 5, 2009
 ##  Downloaded: Nov 14, 2009
+##  Modified by GCS
 ##-----------------------------------------------------------------------------
+
+## AMD/ATI
 set(ENV_ATISTREAMSDKROOT $ENV{ATISTREAMSDKROOT})
 if(ENV_ATISTREAMSDKROOT)
   find_path(
@@ -13,27 +16,30 @@ if(ENV_ATISTREAMSDKROOT)
     NO_DEFAULT_PATH
     )
 
-  if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
-    if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      set(
-        OPENCL_LIB_SEARCH_PATH
-        ${OPENCL_LIB_SEARCH_PATH}
-        $ENV{ATISTREAMSDKROOT}/lib/x86
-        )
-    else(CMAKE_SIZEOF_VOID_P EQUAL 4)
-      set(
-        OPENCL_LIB_SEARCH_PATH
-        ${OPENCL_LIB_SEARCH_PATH}
-        $ENV{ATISTREAMSDKROOT}/lib/x86_64
-        )
-    endif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  endif("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+  ## Both windows and linux follow this directory structure.  Not sure 
+  ## about darwin.
+  if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(
+      OPENCL_LIB_SEARCH_PATH
+      ${OPENCL_LIB_SEARCH_PATH}
+      $ENV{ATISTREAMSDKROOT}/lib/x86
+      )
+  else(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(
+      OPENCL_LIB_SEARCH_PATH
+      ${OPENCL_LIB_SEARCH_PATH}
+      $ENV{ATISTREAMSDKROOT}/lib/x86_64
+      )
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+
   find_library(
     OPENCL_LIBRARY
     NAMES OpenCL
     PATHS ${OPENCL_LIB_SEARCH_PATH}
     NO_DEFAULT_PATH
     )
+
+## NVIDIA
 else(ENV_ATISTREAMSDKROOT)
   find_path(
     OPENCL_INCLUDE_DIR
