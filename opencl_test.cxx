@@ -100,7 +100,8 @@
 int
 initializeHost(void)
 {
-    width				= 256;
+    //width				= 256;
+    width				= 128;
     input				= NULL;
     output				= NULL;
     multiplier			= 2;
@@ -234,7 +235,7 @@ initializeCL(void)
     // Create an OpenCL context
     /////////////////////////////////////////////////////////////////
     context = clCreateContextFromType(cprops, 
-	CL_DEVICE_TYPE_CPU, 
+	CL_DEVICE_TYPE_GPU, 
 	NULL, 
 	NULL, 
 	&status);
