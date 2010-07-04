@@ -12,6 +12,7 @@
 #include "file_util.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#include "mc_dose.h"
 #include "plm_image_patient_position.h"
 #include "rtds.h"
 #include "rtds_dicom.h"
@@ -221,6 +222,19 @@ Rtds::load_dose_astroid (char *dose_astroid)
 	this->m_dose = new Plm_image ();
 	astroid_dose_load (this->m_dose, dose_astroid);
 	astroid_dose_apply_transform (this->m_dose, this->m_xio_transform);
+    }
+}
+
+void
+Rtds::load_dose_mc (char *dose_mc)
+{
+    if (this->m_dose) {
+	delete this->m_dose;
+    }
+    if (dose_mc) {
+	this->m_dose = new Plm_image ();
+	mc_dose_load (this->m_dose, dose_mc);
+	mc_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 

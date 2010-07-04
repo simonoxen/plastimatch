@@ -140,6 +140,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (parms->input_dose_ast[0]) {
 	rtds->load_dose_astroid (parms->input_dose_ast);
     }
+
+    if (parms->input_dose_mc[0]) {
+	rtds->load_dose_mc (parms->input_dose_mc);
+    }
 }
 
 static void

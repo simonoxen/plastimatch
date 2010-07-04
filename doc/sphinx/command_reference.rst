@@ -114,6 +114,7 @@ The command line usage is given as follows::
       --input-dose-img=filename  (for rt dose)
       --input-dose-xio=filename  (for XiO rt dose)
       --input-dose-ast=filename  (for Astroid rt dose)
+      --input-dose-mc=filename   (for Monte Carlo 3ddose rt dose)
 
       --output-cxt=filename      (for structures)
       --output-dicom=directory   (for image and structures)

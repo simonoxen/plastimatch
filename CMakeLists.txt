@@ -670,6 +670,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_tps.cxx itk_tps.h
   itk_warp.cxx itk_warp.h 
   mask_mha.cxx mask_mha.h 
+  mc_dose.cxx mc_dose.h
   plm_file_format.cxx plm_file_format.h 
   plm_image.cxx plm_image.h 
   plm_image_header.cxx plm_image_header.h 

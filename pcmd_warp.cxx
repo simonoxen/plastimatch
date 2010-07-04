@@ -47,6 +47,7 @@ print_usage (char* command)
 	"    --input-dose-img=filename  (for rt dose)\n"
 	"    --input-dose-xio=filename  (for XiO rt dose)\n"
 	"    --input-dose-ast=filename  (for Astroid rt dose)\n"
+	"    --input-dose-mc=filename   (for Monte Carlo 3ddose rt dose)\n"
 	"\n"
 	"    --output-cxt=filename      (for structures)\n"
 	"    --output-dicom=directory   (for image and structures)\n"
@@ -127,6 +128,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "input-dose-ast", required_argument,      NULL,           32 },
 	{ "patient_pos",    required_argument,      NULL,           33 },
 	{ "patient-pos",    required_argument,      NULL,           33 },
+	{ "input_dose_mc",  required_argument,      NULL,           34 },
+	{ "input-dose-mc",  required_argument,      NULL,           34 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -269,6 +272,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 		print_usage (argv[1]);
 	    }
 	    break;
+	case 34:
+	    strncpy (parms->input_dose_mc, optarg, _MAX_PATH);
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");
 	    print_usage (argv[1]);
@@ -277,7 +283,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
     }
     if (!parms->input_fn[0] && !parms->input_ss_img[0] 
 	&& !parms->input_dose_img[0] && !parms->input_dose_xio[0]
-	&& !parms->input_dose_ast[0])
+	&& !parms->input_dose_ast[0] && !parms->input_dose_mc[0])
     {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);
