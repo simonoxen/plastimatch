@@ -9,6 +9,7 @@
 #include "plm_registration.h"
 #include "plm_stages.h"
 
+#undef PLM_SLICER_HARDCODED_FILENAME
 int 
 main (int argc, char * argv [])
 {
@@ -22,8 +23,25 @@ main (int argc, char * argv [])
 #endif
     FILE* fp = fopen (parms_fn, "w+");
 #else
-    FILE* fp = tmpfile ();
+
+#if defined (_WIN32)
+    /* tmpfile is broken on windows.  It tries to create the 
+	temorary files in the root directory where it doesn't 
+	have permissions. 
+	http://msdn.microsoft.com/en-us/library/x8x7sakw(VS.80).aspx */
+
+    char *parms_fn = _tempnam (0, "plastimatch_");
+    FILE *fp = fopen (parms_fn, "wb+");
+    printf ("parms_fn = %s\n", parms_fn);
+#else
+    FILE *fp = tmpfile ();
 #endif
+#endif
+
+    if (!fp) {
+	fprintf (stderr, "Sorry, plastimatch couldn't create tmpfile.\n");
+	exit (-1);
+    }
 
     fprintf (fp,
 	"[GLOBAL]\n"
@@ -113,6 +131,10 @@ main (int argc, char * argv [])
     }
 
     fclose (fp);
+
+#if !defined (PLM_SLICER_HARDCODED_FILENAME) && defined (_WIN32)
+    _rmtmp ();
+#endif
 
     do_registration (&regp);
     return EXIT_SUCCESS;

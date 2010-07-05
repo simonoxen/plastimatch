@@ -429,15 +429,14 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 }
 
 int
-get_command_file_line (FILE* fp, Registration_Parms* regp)
+plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
 {
     char buf_ori[BUFLEN];    /* An extra copy for diagnostics */
     char buf[BUFLEN];
     char *p, *key, *val;
     int section = 0;
 
-    while (1) {
-	if (!fgets (buf,BUFLEN,fp)) return 0;
+    while (fgets (buf, BUFLEN, fp)) {
 	strcpy (buf_ori,buf);
 	p = buf;
 	p += strspn (p, " \t\n\r");
@@ -475,18 +474,6 @@ get_command_file_line (FILE* fp, Registration_Parms* regp)
 		printf ("Parse error: %s\n", buf_ori);
 		return -1;
 	    }
-	}
-    }
-    return 0;
-}
-
-int
-plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
-{
-    /* Loop through file, parsing each line, and adding it to regp */
-    while (!feof(fp)) {
-	if (get_command_file_line (fp, regp) < 0) {
-	    return -1;
 	}
     }
     return 0;
