@@ -42,6 +42,7 @@ SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL "Build slicer loadable module")
+SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL "Use hardcoded filename instead of tmpfile()")
 
 SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
 SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")

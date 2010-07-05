@@ -14,14 +14,16 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
+#if defined (PLM_SLICER_HARDCODED_FILENAME)
 #if defined (_WIN32)
     char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
 #else
     char* parms_fn = "/tmp/plastimatch-slicer-parms.txt";
 #endif
-
     FILE* fp = fopen (parms_fn, "w+");
-    //FILE* fp = tmpfile ();
+#else
+    FILE* fp = tmpfile ();
+#endif
 
     fprintf (fp,
 	"[GLOBAL]\n"

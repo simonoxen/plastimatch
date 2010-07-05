@@ -29,6 +29,7 @@
 #cmakedefine BUILD_AGAINST_SLICER3 1
 
 /* User options */
+#cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
 
 /* Did we find fortran? */
