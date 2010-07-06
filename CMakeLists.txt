@@ -5,8 +5,7 @@
 ##-----------------------------------------------------------------------------
 PROJECT (plastimatch)
 
-## FindCUDA requires 2.6.2 or higher
-CMAKE_MINIMUM_REQUIRED (VERSION 2.6.2)
+CMAKE_MINIMUM_REQUIRED (VERSION 2.6.0)
 
 ## Tell CMake to be quiet
 CMAKE_POLICY (SET CMP0003 NEW)
@@ -219,6 +218,11 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 ##-----------------------------------------------------------------------------
 IF (MINGW)
   # Cuda doesn't work with mingw at all
+  SET (CUDA_FOUND FALSE)
+ELSEIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} 
+    VERSION_LESS 2.6.2)
+  # FindCuda requires CMake 2.6.2
+  MESSAGE (STATUS "VERSION IS ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}")
   SET (CUDA_FOUND FALSE)
 ELSE (MINGW)
   # In cmake 2.8, use stock findcuda.  Otherwise, use included one.
