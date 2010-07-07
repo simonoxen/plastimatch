@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "plm_path.h"
+#include "resample_mha.h"
 
 enum Dvh_units {
     DVH_UNITS_GY,
@@ -20,6 +21,8 @@ public:
     char output_csv[_MAX_PATH];
     enum Dvh_units input_units;
     int cumulative;
+	int num_bins;
+	float bin_width;
 public:
     Dvh_parms () {
 	input_ss_img[0] = 0;
@@ -28,6 +31,8 @@ public:
 	output_csv[0] = 0;
 	input_units = DVH_UNITS_GY;
 	cumulative = 0;
+	num_bins=256;
+	bin_width=1;
     }
 };
 
