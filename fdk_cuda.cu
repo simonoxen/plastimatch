@@ -38,14 +38,10 @@
 #include "fdk_utils.h"
 #include "math_util.h"
 #include "mha_io.h"
+#include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "volume.h"
-
-/*********************
-* High Res Win Timer *
-*********************/
-#include "timer.h"
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////

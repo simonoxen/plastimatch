@@ -6,22 +6,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "opencl_utils.h"
+#include "plm_timer.h"
 #include "print_and_exit.h"
 
-void
-opencl_print_devices (void)
+cl_platform_id
+opencl_select_platform (void)
 {
     cl_int status = 0;
     cl_uint num_platforms;
+    cl_platform_id platform = NULL;
+
     status = clGetPlatformIDs (0, NULL, &num_platforms);
     if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clGetPlatformIDs\n");
     }
     if (num_platforms > 0) {
         unsigned int i;
-        cl_platform_id* platforms = (cl_platform_id*) malloc (
+        cl_platform_id* platform_list = (cl_platform_id*) malloc (
 	    sizeof (cl_platform_id) * num_platforms);
-        status = clGetPlatformIDs (num_platforms, platforms, NULL);
+        status = clGetPlatformIDs (num_platforms, platform_list, NULL);
 	if (status != CL_SUCCESS) {
 	    print_and_exit ("Error in clGetPlatformIDs\n");
 	}
@@ -29,15 +32,17 @@ opencl_print_devices (void)
         for (i = 0; i < num_platforms; i++) {
 	    char pbuff[100];
             status = clGetPlatformInfo (
-		platforms[i],
+		platform_list[i],
 		CL_PLATFORM_VENDOR,
 		sizeof (pbuff),
 		pbuff,
 		NULL);
+	    platform = platform_list[i];
 	    printf ("OpenCL platform [%d] = %s\n", i, pbuff);
-	}	
-	free (platforms);
+	}
+	free (platform_list);
     }
+    return platform;
 }
 
 void
@@ -46,10 +51,25 @@ opencl_open_device (Opencl_device *ocl_dev)
     cl_int status = 0;
     size_t device_list_size;
     cl_device_id *devices;
+    cl_platform_id platform;
+    cl_context_properties cps[3];
+    cl_context_properties* cprops;
+    Timer timer;
+
+    /* Select platform */
+    platform = opencl_select_platform ();
+    if (platform) {
+	cps[0] = CL_CONTEXT_PLATFORM;
+	cps[1] = (cl_context_properties) platform;
+	cps[2] = 0;
+	cprops = cps;
+    } else {
+	cprops = NULL;
+    }
 
     /* Create context */
     ocl_dev->context = clCreateContextFromType (
-	NULL, 
+	cprops, 
 	CL_DEVICE_TYPE_GPU, 
 	NULL, 
 	NULL, 

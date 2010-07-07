@@ -13,8 +13,8 @@
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "math_util.h"
+#include "plm_timer.h"
 #include "print_and_exit.h"
-#include "timer.h"
 
 //#define USE_FAST_CODE 1
 

@@ -32,8 +32,8 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_registration.h"
+#include "plm_timer.h"
 #include "resample_mha.h"
-#include "timer.h"
 #include "xform.h"
 
 #if !defined (ITK_USE_OPTIMIZED_REGISTRATION_METHODS) && defined (USE_GCS_METRIC)

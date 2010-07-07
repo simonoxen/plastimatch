@@ -9,7 +9,7 @@
 #include "math_util.h"
 #include "plm_int.h"
 #include "print_and_exit.h"
-#include "timer.h"
+#include "plm_timer.h"
 
 #define HND_INTENSITY_MAX (139000)
 

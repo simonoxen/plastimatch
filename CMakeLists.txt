@@ -567,7 +567,7 @@ SET (GPUIT_LIBRARY_SRC
   ray_trace_uniform.c ray_trace_uniform.h 
   string_util.c string_util.h
   threading.c threading.h
-  timer.c timer.h
+  plm_timer.c plm_timer.h
   vf.c vf.h
   vf_stats.c vf_stats.h 
   volume.c volume.h

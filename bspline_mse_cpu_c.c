@@ -9,7 +9,7 @@
 #include <math.h>
 #include "bspline.h"
 #include "bspline_mse_cpu_c.h"
-#include "timer.h"
+#include "plm_timer.h"
 
 /* Mean-squared error version of implementation "C" */
 /* Implementation "C" is slower than "B", but yields a smoother cost function 

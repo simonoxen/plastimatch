@@ -22,7 +22,7 @@
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "timer.h"
+#include "plm_timer.h"
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */

@@ -9,11 +9,11 @@
 #include <omp.h>
 #endif
 #include "math_util.h"
+#include "mha_io.h"
+#include "plm_timer.h"
 #include "proton_dose.h"
 #include "proton_dose_opts.h"
 #include "proj_matrix.h"
-#include "mha_io.h"
-#include "timer.h"
 
 int
 main (int argc, char* argv[])

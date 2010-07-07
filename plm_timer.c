@@ -4,7 +4,7 @@
 #include "plm_config.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "timer.h"
+#include "plm_timer.h"
 
 static double
 plm_timer_get_time (Timer *timer)

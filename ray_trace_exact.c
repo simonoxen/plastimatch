@@ -10,8 +10,8 @@
 #endif
 #include "drr.h"
 #include "math_util.h"
+#include "plm_timer.h"
 #include "ray_trace_exact.h"
-#include "timer.h"
 #include "volume.h"
 #include "volume_limit.h"
 

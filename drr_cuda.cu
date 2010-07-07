@@ -37,10 +37,10 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_cuda_math.h"
+#include "plm_timer.h"
 #include "proj_image.h"
 #include "ray_trace_exact.h"
 #include "volume.h"
-#include "timer.h"
 
 /* Textures */
 //texture<float, 1, cudaReadModeElementType> tex_img;

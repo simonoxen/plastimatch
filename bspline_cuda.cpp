@@ -16,7 +16,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "mha_io.h"
-#include "timer.h"
+#include "plm_timer.h"
 #include "volume.h"
 
 //#define CPU_HISTS

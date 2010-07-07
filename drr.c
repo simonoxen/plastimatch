@@ -14,13 +14,13 @@
 #include "drr_trilin.h"
 #include "math_util.h"
 #include "mha_io.h"
+#include "plm_timer.h"
 #include "print_and_exit.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "ray_trace_exact.h"
 #include "ray_trace_uniform.h"
 #include "volume_limit.h"
-#include "timer.h"
 
 typedef struct callback_data Callback_data;
 struct callback_data {

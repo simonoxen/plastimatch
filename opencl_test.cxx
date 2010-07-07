@@ -89,8 +89,8 @@
 
    ============================================================ */
 #include "plm_config.h"
+#include "plm_timer.h"
 #include "opencl_test.h"
-#include "timer.h"
 
 /*
  * \brief Host Initialization 

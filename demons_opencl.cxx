@@ -11,8 +11,8 @@
 #include "demons_misc.h"
 #include "mha_io.h"
 #include "opencl_utils.h"
+#include "plm_timer.h"
 #include "print_and_exit.h"
-#include "timer.h"
 #include "volume.h"
 
 Volume*
@@ -25,6 +25,7 @@ demons_opencl (
 {
     Opencl_device ocl_dev;
     opencl_open_device (&ocl_dev);
+    opencl_close_device (&ocl_dev);
     exit (0);
     return 0;
 }

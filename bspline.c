@@ -48,8 +48,8 @@
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_path.h"
+#include "plm_timer.h"
 #include "print_and_exit.h"
-#include "timer.h"
 #include "volume.h"
 #include "xpm.h"
 

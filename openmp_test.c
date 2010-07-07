@@ -8,7 +8,7 @@
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
-#include "timer.h"
+#include "plm_timer.h"
 
 #define LOOP1 2000
 #define LOOP2 20000

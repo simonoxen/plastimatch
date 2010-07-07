@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _timer_h_
-#define _timer_h_
+#ifndef _plm_timer_h_
+#define _plm_timer_h_
 
 #include "plm_config.h"
 #ifdef _WIN32

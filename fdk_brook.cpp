@@ -16,7 +16,7 @@
 #include "mha_io.h"
 #include "proj_image.h"
 #include "proj_image_dir.h"
-#include "timer.h"
+#include "plm_timer.h"
 #include "volume.h"
 
 #include "fdk_brook_kernel.cpp"
