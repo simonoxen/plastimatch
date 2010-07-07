@@ -9,6 +9,7 @@
 #include "plm_config.h"
 #include "plm_path.h"
 #include "plm_image.h"
+#include "threading.h"
 
 #define STAGE_TRANSFORM_NONE                0
 #define STAGE_TRANSFORM_TRANSLATION	    1
@@ -33,11 +34,6 @@
 #define IMPLEMENTATION_ITK		    1
 #define IMPLEMENTATION_PLASTIMATCH          2
 
-#define THREADING_SINGLE                    0
-#define THREADING_OPENMP                    1
-#define THREADING_BROOK                     2
-#define THREADING_CUDA                      3
-
 #define METRIC_NONE			    0
 #define METRIC_MSE			    1
 #define METRIC_MI			    2
@@ -58,7 +54,7 @@ public:
     int optim_type;
     int impl_type;
     char alg_flavor;
-    int threading_type;
+    Threading threading_type;
     int metric_type;
     int fixed_subsample_rate[3];   /* In voxels */
     int moving_subsample_rate[3];  /* In voxels */
@@ -112,8 +108,7 @@ public:
 	//impl_type = IMPLEMENTATION_ITK;
 	impl_type = IMPLEMENTATION_NONE;
 	alg_flavor = 0;
-	//threading_type = THREADING_SINGLE;
-	threading_type = THREADING_OPENMP;
+	threading_type = THREADING_CPU_OPENMP;
 	metric_type = METRIC_MSE;
 	fixed_subsample_rate[0] = 4;
 	fixed_subsample_rate[1] = 4;

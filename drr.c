@@ -271,6 +271,7 @@ drr_render_volume_perspective (
     switch (options->threading) {
     case THREADING_BROOK:
     case THREADING_CUDA:
+    case THREADING_OPENCL:
 #if CUDA_FOUND
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
@@ -279,7 +280,8 @@ drr_render_volume_perspective (
 	/* Fall through */
 #endif
 
-    case THREADING_CPU:
+    case THREADING_CPU_SINGLE:
+    case THREADING_CPU_OPENMP:
 	drr_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, options);
 	break;

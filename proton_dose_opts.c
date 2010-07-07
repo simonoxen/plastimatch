@@ -35,7 +35,7 @@ print_usage (void)
 void
 proton_dose_opts_init (Proton_dose_options* options)
 {
-    options->threading = THREADING_CPU;
+    options->threading = THREADING_CPU_OPENMP;
     options->src[0] = -2000.0f;
     options->src[1] = 0.0f;
     options->src[2] = 0.0f;
@@ -67,18 +67,18 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	if (argv[i][0] != '-') break;
 	if (!strcmp (argv[i], "-A")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		    fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		    exit(1);
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
 	    }
 	    i++;
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")
 		|| !strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU"))
 	    {
-		    options->threading = THREADING_CUDA;
+		options->threading = THREADING_CUDA;
 	    }
 	    else {
-		    options->threading = THREADING_CPU;
+		options->threading = THREADING_CPU_OPENMP;
 	    }
 	}
 	else if (!strcmp (argv[i], "-src")) {
@@ -88,7 +88,7 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->src[1], 
 		&options->src[2]);
 	    if (rc != 3) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-iso")) {
@@ -98,7 +98,7 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->isocenter[1], 
 		&options->isocenter[2]);
 	    if (rc != 3) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-vup")) {
@@ -108,39 +108,39 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		&options->vup[1], 
 		&options->vup[2]);
 	    if (rc != 3) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-s")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->scale);
 	    if (rc != 1) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-u")) {
 	    i++;
 	    rc = sscanf (argv[i], "%f" , &options->ray_step);
 	    if (rc != 1) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
 	else if (!strcmp (argv[i], "-d")) {
 	    i++;
 	    rc = sscanf (argv[i], "%i" , &options->detail);
 	    if (rc != 1) {
-		    print_usage ();
+		print_usage ();
 	    }
 	}
-    else if (!strcmp (argv[i], "-p")) {
+	else if (!strcmp (argv[i], "-p")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 	    	fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		    exit(1);
+		exit(1);
 	    }
 	    i++;
 	    options->input_pep_fn = strdup (argv[i]);
-    }
-    else if (!strcmp (argv[i], "--debug")) {
+	}
+	else if (!strcmp (argv[i], "--debug")) {
 	    options->debug = 1;
 	}
 	else {

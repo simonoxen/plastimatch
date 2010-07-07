@@ -181,13 +181,13 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     else if (!strcmp (key, "threading")) {
 	if (section == 0) goto error_not_global;
 	if (!strcmp(val,"single")) {
-	    stage->threading_type = THREADING_SINGLE;
+	    stage->threading_type = THREADING_CPU_SINGLE;
 	}
 	else if (!strcmp(val,"openmp")) {
 #if (OPENMP_FOUND)
-	    stage->threading_type = THREADING_OPENMP;
+	    stage->threading_type = THREADING_CPU_OPENMP;
 #else
-	    stage->threading_type = THREADING_SINGLE;
+	    stage->threading_type = THREADING_CPU_SINGLE;
 #endif
 	}
 	else if (!strcmp(val,"brook")) {
@@ -197,9 +197,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 #if (CUDA_FOUND)
 	    stage->threading_type = THREADING_CUDA;
 #elif (OPENMP_FOUND)
-	    stage->threading_type = THREADING_OPENMP;
+	    stage->threading_type = THREADING_CPU_OPENMP;
 #else
-	    stage->threading_type = THREADING_SINGLE;
+	    stage->threading_type = THREADING_CPU_SINGLE;
 #endif
 	}
 	else {

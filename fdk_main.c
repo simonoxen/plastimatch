@@ -523,10 +523,12 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
+    case THREADING_OPENCL:
 	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 #endif
-    case THREADING_CPU:
+    case THREADING_CPU_SINGLE:
+    case THREADING_CPU_OPENMP:
     default:
 	reconstruct_conebeam (vol, proj_dir, &options);
     }

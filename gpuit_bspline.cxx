@@ -85,7 +85,7 @@ do_gpuit_bspline_stage_internal (
 	print_and_exit ("Undefined metric type in gpuit_bspline\n");
     }
     switch (stage->threading_type) {
-    case THREADING_SINGLE:
+    case THREADING_CPU_SINGLE:
 	if (stage->alg_flavor == 0) {
 	    parms.implementation = 'h';
 	} else {
@@ -93,7 +93,7 @@ do_gpuit_bspline_stage_internal (
 	}
 	parms.threading = BTHR_CPU;
 	break;
-    case THREADING_OPENMP:
+    case THREADING_CPU_OPENMP:
 	if (stage->alg_flavor == 0) {
 	    parms.implementation = 'g';
 	} else {

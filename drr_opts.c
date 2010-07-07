@@ -45,7 +45,7 @@ print_usage (void)
 void
 drr_opts_init (Drr_options* options)
 {
-    options->threading = THREADING_CPU;
+    options->threading = THREADING_CPU_OPENMP;
     options->image_resolution[0] = 128;
     options->image_resolution[1] = 128;
     options->image_size[0] = 600;
@@ -121,7 +121,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
 		options->threading = THREADING_CUDA;
 	    }
 	    else {
-		options->threading = THREADING_CPU;
+		options->threading = THREADING_CPU_OPENMP;
 	    }
 	}
 	else if (!strcmp (argv[i], "-r")) {

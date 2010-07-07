@@ -30,9 +30,11 @@ allocate_gpu_memory (
     switch (options->threading) {
     case THREADING_BROOK:
     case THREADING_CUDA:
+    case THREADING_OPENCL:
 	return drr_cuda_state_create (proj, vol, options);
+    case THREADING_CPU_SINGLE:
+    case THREADING_CPU_OPENMP:
     default:
-    case THREADING_CPU:
 	return 0;
     }
 #else

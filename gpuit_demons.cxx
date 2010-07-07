@@ -61,8 +61,8 @@ do_gpuit_demons_stage_internal (
 
     /* Run demons */
     switch (stage->threading_type) {
-    case THREADING_SINGLE:
-    case THREADING_OPENMP:
+    case THREADING_CPU_SINGLE:
+    case THREADING_CPU_OPENMP:
 	vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
 	    "CPU", &parms);
 	break;

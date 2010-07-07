@@ -33,7 +33,7 @@ print_usage (void)
 void 
 set_default_options (Fdk_options* options)
 {
-    options->threading = THREADING_CPU;
+    options->threading = THREADING_CPU_OPENMP;
     options->image_range_requested = 0;
     options->first_img = 0;
     options->last_img = 119;
@@ -84,7 +84,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		options->threading = THREADING_CUDA;
 	    }
 	    else {
-		options->threading = THREADING_CPU;
+		options->threading = THREADING_CPU_OPENMP;
 	    }
 	}
 	else if (!strcmp (argv[i], "-a")) {
