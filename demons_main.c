@@ -38,9 +38,11 @@ main (int argc, char* argv[])
     }
 
     /* GCS FIX: This limitation only applies to brook version */
-    if (fixed->dim[0] % 4 != 0) {
-	printf("\nX dimension must be divisible by 4.  Exiting.\n");
-	exit(-1);
+    if (threading_parse (options.method) == THREADING_BROOK) {
+	if (fixed->dim[0] % 4 != 0) {
+	    printf("\nX dimension must be divisible by 4.  Exiting.\n");
+	    exit(-1);
+	}
     }
 
     volume_convert_to_float (moving);
