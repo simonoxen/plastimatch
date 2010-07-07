@@ -68,6 +68,7 @@ opencl_open_device (Opencl_device *ocl_dev)
     }
 
     /* Create context */
+    plm_timer_start (&timer);
     ocl_dev->context = clCreateContextFromType (
 	cprops, 
 	CL_DEVICE_TYPE_GPU, 
@@ -77,8 +78,10 @@ opencl_open_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) {  
 	print_and_exit ("Error in clCreateContextFromType\n");
     }
+    printf ("Create context: %f sec\n", plm_timer_report (&timer));
 
     /* Get size of device list */
+    plm_timer_start (&timer);
     status = clGetContextInfo (
 	ocl_dev->context, 
 	CL_CONTEXT_DEVICES, 
@@ -104,8 +107,10 @@ opencl_open_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clGetContextInfo\n");
     }
+    printf ("Get context info: %f sec\n", plm_timer_report (&timer));
 
     /* Create OpenCL command queue */
+    plm_timer_start (&timer);
     ocl_dev->command_queue = clCreateCommandQueue (
 	ocl_dev->context, 
 	devices[0], 
@@ -114,6 +119,7 @@ opencl_open_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clCreateCommandQueue\n");
     }
+    printf ("Create command queue: %f sec\n", plm_timer_report (&timer));
 }
 
 void
