@@ -57,7 +57,7 @@ typedef enum drr_algorithm Drr_algorithm;
 
 typedef struct drr_options Drr_options;
 struct drr_options {
-    enum Threading threading;
+    Threading threading;
     int image_resolution[2];         /* In pixels */
     float image_size[2];             /* In mm */
     int have_image_center;           /* Was image_center spec'd in options? */

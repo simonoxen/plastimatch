@@ -559,7 +559,7 @@ SET (GPUIT_LIBRARY_SRC
   ray_trace_exact.c ray_trace_exact.h 
   ray_trace_uniform.c ray_trace_uniform.h 
   string_util.c string_util.h
-  threading.h
+  threading.c threading.h
   timer.c timer.h
   vf.c vf.h
   vf_stats.c vf_stats.h 
@@ -635,6 +635,13 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
     plm_fortran.h plm_f2c_win32.h
     )
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
+
+IF (OPENCL_FOUND)
+  SET (GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    demons_opencl.cxx
+    )
+ENDIF (OPENCL_FOUND)
 
 #IF (LIBLBFGS_FOUND)
   SET (GPUIT_LIBRARY_SRC

@@ -4,12 +4,28 @@
 #ifndef _threading_h_
 #define _threading_h_
 
-enum Threading {
-    THREADING_CPU_SINGLE,
-    THREADING_CPU_OPENMP,
-    THREADING_BROOK,
-    THREADING_CUDA,
-    THREADING_OPENCL
-};
+#include "plm_config.h"
+
+/* GCS: You can't use enum types in mixed C / C++ code, because they 
+   are not required to have the same size.  Therefore, revert to #defines */
+typedef int Threading;
+#define THREADING_UNKNOWN         0
+#define THREADING_CPU_SINGLE      1
+#define THREADING_CPU_OPENMP      2
+#define THREADING_BROOK           3
+#define THREADING_CUDA            4
+#define THREADING_OPENCL          5
+
+#if defined __cplusplus
+extern "C" {
+#endif
+
+gpuit_EXPORT
+Threading
+threading_parse (const char *string);
+
+#if defined __cplusplus
+}
+#endif
 
 #endif

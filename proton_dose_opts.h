@@ -8,7 +8,7 @@
 
 typedef struct proton_dose_options Proton_dose_options;
 struct proton_dose_options {
-    enum Threading threading;
+    Threading threading;
 
     float src[3];                    /* Beam source */
     float isocenter[3];              /* Beam target */

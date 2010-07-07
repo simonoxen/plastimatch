@@ -60,22 +60,8 @@ do_gpuit_demons_stage_internal (
     }
 
     /* Run demons */
-    switch (stage->threading_type) {
-    case THREADING_CPU_SINGLE:
-    case THREADING_CPU_OPENMP:
-	vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
-	    "CPU", &parms);
-	break;
-    case THREADING_BROOK:
-	vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
-	    "GPU", &parms);
-	break;
-    case THREADING_CUDA:
-	print_and_exit ("Cuda demons not yet implemented.\n");
-	break;
-    default:
-	print_and_exit ("Undefined threading type in gpuit_demons\n");
-    }
+    vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
+	stage->threading_type, &parms);
 
     /* Do something with output vector field */
     xf_out->set_gpuit_vf (vf_out);

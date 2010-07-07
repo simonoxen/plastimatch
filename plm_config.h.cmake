@@ -22,6 +22,7 @@
 #cmakedefine FFTW_FOUND 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
+#cmakedefine OPENCL_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
 #cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1

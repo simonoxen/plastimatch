@@ -48,7 +48,9 @@ main (int argc, char* argv[])
     moving_grad = volume_make_gradient (moving);
     //write_mha ("moving_grad.mha", moving_grad);
 
-    vector_field = demons (fixed, moving, moving_grad, 0, options.method, &options.parms);
+    vector_field = demons (fixed, moving, moving_grad, 0, 
+	threading_parse (options.method), 
+	&options.parms);
 
     vf_print_stats (vector_field);
 
