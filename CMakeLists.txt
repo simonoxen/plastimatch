@@ -647,6 +647,7 @@ IF (OPENCL_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     demons_opencl.cxx
+    opencl_utils.cxx opencl_utils.h
     )
 ENDIF (OPENCL_FOUND)
 
