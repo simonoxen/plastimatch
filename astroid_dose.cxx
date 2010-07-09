@@ -109,8 +109,7 @@ astroid_dose_load_cube (
     FILE *fp;
     Volume *v;
     unsigned int *cube_img_read;
-    float *cube_img_normalize;
-    int i, rc;
+    int i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
     cube_img_read = (unsigned int*) v->img;
@@ -140,13 +139,29 @@ astroid_dose_load_cube (
 	memcpy ((char*) &cube_img_read[i], lenbuf, 4);
     }
 
+    /* Flip XiO Z axis */
+    Volume* vflip;
+    vflip = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+
+    for (k=0;k<v->dim[2];k++) {
+	for (j=0;j<v->dim[1];j++) {
+	    for (i=0;i<v->dim[0];i++) {
+		memcpy ((float*)vflip->img
+		    + volume_index (vflip->dim, i, (vflip->dim[1]-1-j), k), 
+		    (float*)v->img 
+		    + volume_index (v->dim, i, j, k), v->pix_size);
+	    }
+	}
+    }
+
+    pli->set_gpuit (vflip);
+    volume_destroy (v);
+
     /* Convert volume to float for more accurate normalization */
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-    v = (Volume*) pli->m_gpuit;
-    cube_img_normalize = (float*) v->img;
 
     /* Convert from cGy to Gy */
-    volume_scale (v, 0.01);
+    volume_scale (vflip, 0.01);
 
     fclose (fp);
 }
