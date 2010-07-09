@@ -111,7 +111,7 @@ mc_dose_load_cube (
 
     /* Read dose cube */
     for (int z=0; z < mcdh->dim[2]; z++) {
-	for (int y=mcdh->dim[1]-1; y >= 0; y--) {
+	for (int y=0; y < mcdh->dim[1]; y++) {
 	    for (int x=0; x < mcdh->dim[0]; x++) {
 		if (input >> value) {
 		    cube_img_read[x + y*mcdh->dim[0]

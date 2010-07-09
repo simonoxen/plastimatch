@@ -206,8 +206,7 @@ xio_dose_load_cube (
     FILE *fp;
     Volume *v;
     unsigned int *cube_img_read;
-    float *cube_img_normalize;
-    int i, rc;
+    int i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
     cube_img_read = (unsigned int*) v->img;
@@ -241,13 +240,29 @@ xio_dose_load_cube (
 	memcpy ((char*) &cube_img_read[i], lenbuf, 4);
     }
 
+    /* Flip XiO Z axis */
+    Volume* vflip;
+    vflip = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+
+    for (k=0;k<v->dim[2];k++) {
+	for (j=0;j<v->dim[1];j++) {
+	    for (i=0;i<v->dim[0];i++) {
+		memcpy ((float*)vflip->img
+		    + volume_index (vflip->dim, i, (vflip->dim[1]-1-j), k), 
+		    (float*)v->img 
+		    + volume_index (v->dim, i, j, k), v->pix_size);
+	    }
+	}
+    }
+
+    pli->set_gpuit (vflip);
+    volume_destroy (v);
+
     /* Convert volume to float for more accurate normalization */
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-    v = (Volume*) pli->m_gpuit;
-    cube_img_normalize = (float*) v->img;
 
     /* Normalize dose. Factor 0.01 is to convert from cGy to Gy */
-    volume_scale (v, xdh->dose_weight * xdh->dose_scale_factor * 0.01);
+    volume_scale (vflip, xdh->dose_weight * xdh->dose_scale_factor * 0.01);
 
     fclose (fp);
 }
@@ -296,7 +311,7 @@ xio_dose_save (
 
     FILE *fp, *fpt;
 
-    int i;
+    int i, j, k;
 
     char header;
     size_t result;
@@ -304,7 +319,6 @@ xio_dose_save (
     Xio_dose_header xdh;
 
     Volume *v;
-    Volume *v_write;
     v = (Volume*) pli->m_gpuit;
 
     /* Dose cube definition */
@@ -379,21 +393,34 @@ xio_dose_save (
         fwrite (&header, sizeof(header), 1, fp);
     }
 
-    /* Convert dose to floating point */
-    Plm_image *tmp = pli->clone ();
-    tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
-    v_write = (Volume*) tmp->m_gpuit;
+    /* Create new volume for output */
+    Volume* v_write;
+    v_write = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+
+    /* Clone volume and flip XiO Z axis */
+    for (k=0;k<v->dim[2];k++) {
+	for (j=0;j<v->dim[1];j++) {
+	    for (i=0;i<v->dim[0];i++) {
+		memcpy ((float*)v_write->img
+		    + volume_index (v_write->dim, i, (v_write->dim[1]-1-j), k), 
+		    (float*)v->img 
+		    + volume_index (v->dim, i, j, k), v->pix_size);
+	    }
+	}
+    }
+
+    /* Convert to floating point */
+    volume_convert_to_float (v_write);
 
     /* Apply normalization backwards */
     volume_scale (v_write, 1 / (xdh.dose_weight * xdh.dose_scale_factor * 0.01));
 
     /* Convert to unsigned 32-bit integer */
-    tmp->convert (PLM_IMG_TYPE_GPUIT_UINT32);
-    v_write = (Volume*) tmp->m_gpuit;
+    volume_convert_to_uint32 (v_write);
     unsigned int *cube_img_write = (unsigned int*) v_write->img;
 
-    /* Switch big-endian to little-endian */
-    for (i = 0; i < v->dim[0] * v->dim[1] * v->dim[2]; i++) {
+    /* Switch little-endian to big-endian */
+    for (i = 0; i < v_write->dim[0] * v_write->dim[1] * v_write->dim[2]; i++) {
 	char lenbuf[4];
 	char tmpc;
 	memcpy (lenbuf, (char*) &cube_img_write[i], 4);
@@ -403,17 +430,17 @@ xio_dose_save (
     }
 
     /* Write dose cube */
-    /* FIX: This assumes pixel data has not been flipped after import */
+    /* FIX: Not taking direction cosines into account */
     result = fwrite (cube_img_write, sizeof(unsigned int),
-	v->dim[0] * v->dim[1] * v->dim[2], fp);
-    if (result != (size_t) (v->dim[0] * v->dim[1] * v->dim[2])) {
+	v_write->dim[0] * v_write->dim[1] * v_write->dim[2], fp);
+    if (result != (size_t) (v_write->dim[0] * v_write->dim[1] * v_write->dim[2])) {
 	print_and_exit ("Error. Cannot write dose cube to %s.\n", filename);
     }
 
     fclose(fp);
     fclose(fpt);
 
-    delete tmp;
+    volume_destroy (v_write);
 }
 
 void
