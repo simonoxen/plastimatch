@@ -6,8 +6,11 @@
 
 #include "plm_config.h"
 #if (OPENCL_FOUND)
-
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 
 typedef struct opencl_device Opencl_device;
 struct opencl_device {

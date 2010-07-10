@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <CL/cl.h>
 #include "demons_opts.h"
 #include "demons_misc.h"
 #include "mha_io.h"

@@ -93,10 +93,11 @@ jurisdiction and venue of these courts.
 #ifndef TEMPLATE_H_
 #define TEMPLATE_H_
 
-
-
-
+#ifdef __APPLE__
+#include <OpenCL/cl.h>
+#else
 #include <CL/cl.h>
+#endif
 #include <string.h>
 #include <cstdlib>
 #include <iostream>
