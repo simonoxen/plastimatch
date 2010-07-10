@@ -619,6 +619,16 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch register
 ## -------------------------------------------------------------------------
+IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+  # For Nocedal optimizer
+  SET (PLM_BSPLINE_TEST_LOWER_THRESH "-750.0")
+  SET (PLM_BSPLINE_TEST_UPPER_THRESH "-748.5")
+ELSE (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+  # For Liblbfgs optimizer
+  SET (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
+  SET (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
+ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+
 PLM_ADD_TEST (
   "plm-itk-translation"
   ""
@@ -658,8 +668,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-750.0"
-  "-DUPPER_THRESH=-748.5"
+  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -680,8 +690,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-750.0"
-  "-DUPPER_THRESH=-748.5"
+  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -702,8 +712,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-750.0"
-  "-DUPPER_THRESH=-748.5"
+  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
@@ -724,8 +734,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-750.0"
-  "-DUPPER_THRESH=-748.5"
+  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
