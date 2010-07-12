@@ -19,6 +19,8 @@ uses are reserved.
 +---------------+---------------------------------------+
 |Y = 2          |Clinical data                          |
 +---------------+---------------------------------------+
+|Y = 3          |Anonymzed data                         |
++---------------+---------------------------------------+
 |Z              |Up to 33 digits and dots               |
 +---------------+---------------------------------------+
 
@@ -28,6 +30,12 @@ Mondoshot uses the following scheme:
 |Y = 1.200.ZZZZZZZZZZZ      |Non-clinical               |
 +---------------------------+---------------------------+
 |Y = 2.200.ZZZZZZZZZZZ      |Clinical                   |
++---------------------------+---------------------------+
+
+The following subrange is reserved for anonymized data:
+
++---------------------------+---------------------------+
+|Y = 3.ZZZZZZZZZZZZZZZ      |All anonymzied data        |
 +---------------------------+---------------------------+
 
 NOTE: Plastimatch uses two different dicom engines.  GDCM for itk-related
