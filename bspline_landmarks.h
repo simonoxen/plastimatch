@@ -35,7 +35,7 @@ void
 bspline_landmarks_score (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Volume *fixed, 
     Volume *moving
 );
@@ -44,7 +44,7 @@ gpuit_EXPORT
 void bspline_landmarks_warp (
 	Volume *vector_field, 
 	BSPLINE_Parms *parms,
-	BSPLINE_Xform* bxf, 
+	Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving);
 

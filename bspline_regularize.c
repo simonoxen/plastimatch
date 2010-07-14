@@ -82,7 +82,7 @@ or (derive1,derive2)th element of the Hessian of the i-th component of the vecto
 void
 bspline_regularize_hessian_component (
     float out[3], 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
     int derive1, 
@@ -127,7 +127,7 @@ bspline_regularize_hessian_component (
 void
 bspline_regularize_hessian_component_b (
     float out[3], 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
     float *q_lut
@@ -158,7 +158,7 @@ bspline_regularize_hessian_component_b (
 void
 bspline_regularize_hessian_update_grad (
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
     float dc_dv[3], 
@@ -205,7 +205,7 @@ bspline_regularize_hessian_update_grad (
 void
 bspline_regularize_hessian_update_grad_b (
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
     float dc_dv[3], 
@@ -238,7 +238,7 @@ void
 bspline_regularize_score_from_prerendered (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )
@@ -353,7 +353,7 @@ bspline_regularize_score_from_prerendered (
 static double
 update_score_and_grad (
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], 
     int qidx, 
     float grad_coeff, 
@@ -383,7 +383,7 @@ void
 bspline_regularize_score (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )

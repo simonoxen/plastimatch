@@ -103,7 +103,7 @@ public:
 	    if (m_type == XFORM_GPUIT_VECTOR_FIELD) {
 		volume_destroy ((Volume*) m_gpuit);
 	    } else {
-		bspline_xform_free ((BSPLINE_Xform*) m_gpuit);
+		bspline_xform_free ((Bspline_xform*) m_gpuit);
 	    }
 	    m_gpuit = 0;
 	}
@@ -159,11 +159,11 @@ public:
 	}
 	return m_itk_vf;
     }
-    BSPLINE_Xform* get_gpuit_bsp () {
+    Bspline_xform* get_gpuit_bsp () {
 	if (m_type != XFORM_GPUIT_BSPLINE) {
 	    print_and_exit ("Typecast error in get_gpuit_bsp()\n");
 	}
-	return (BSPLINE_Xform*) m_gpuit;
+	return (Bspline_xform*) m_gpuit;
     }
     Volume* get_gpuit_vf () {
 	if (m_type != XFORM_GPUIT_VECTOR_FIELD) {
@@ -206,7 +206,7 @@ public:
 	m_type = XFORM_ITK_VECTOR_FIELD;
 	m_itk_vf = vf;
     }
-    void set_gpuit_bsp (BSPLINE_Xform* xgb) {
+    void set_gpuit_bsp (Bspline_xform* xgb) {
 	clear ();
 	m_type = XFORM_GPUIT_BSPLINE;
 	m_gpuit = (void*) xgb;

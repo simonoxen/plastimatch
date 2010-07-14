@@ -32,7 +32,7 @@
 */
 void
 bspline_optimize_steepest_trace(
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 
@@ -221,7 +221,7 @@ bspline_optimize_steepest_trace(
 */
 void
 bspline_optimize_steepest_trust (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 
@@ -360,7 +360,7 @@ bspline_optimize_steepest_trust (
    doing any sort of line search. */
 void
 bspline_optimize_steepest_naive (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 
@@ -446,7 +446,7 @@ bspline_optimize_steepest_naive (
 
 void
 bspline_optimize_steepest (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 

@@ -14,7 +14,7 @@ extern "C" {
 
 void
 bspline_optimize_steepest (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 

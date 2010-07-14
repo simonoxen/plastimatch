@@ -45,8 +45,8 @@ enum BsplineMetric {
     BMET_MI
 };
 
-typedef struct BSPLINE_Xform_struct BSPLINE_Xform;
-struct BSPLINE_Xform_struct {
+typedef struct Bspline_xform_struct Bspline_xform;
+struct Bspline_xform_struct {
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
@@ -244,12 +244,12 @@ gpuit_EXPORT
 void bspline_parms_set_default (BSPLINE_Parms* parms);
 
 gpuit_EXPORT
-void bspline_xform_set_default (BSPLINE_Xform* bxf);
+void bspline_xform_set_default (Bspline_xform* bxf);
 
 gpuit_EXPORT
 Bspline_state *
 bspline_state_create (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 
     Volume *moving, 
@@ -258,7 +258,7 @@ bspline_state_create (
 gpuit_EXPORT
 void
 bspline_xform_initialize (
-    BSPLINE_Xform* bxf,	         /* Output: bxf is initialized */
+    Bspline_xform* bxf,	         /* Output: bxf is initialized */
     float img_origin[3],         /* Image origin (in mm) */
     float img_spacing[3],        /* Image spacing (in mm) */
     int img_dim[3],              /* Image size (in vox) */
@@ -267,7 +267,7 @@ bspline_xform_initialize (
     int vox_per_rgn[3]);	 /* Knot spacing (in vox) */
 
 gpuit_EXPORT
-void bspline_xform_free (BSPLINE_Xform* bxf);
+void bspline_xform_free (Bspline_xform* bxf);
 
 gpuit_EXPORT
 void bspline_parms_free (BSPLINE_Parms* parms);
@@ -281,7 +281,7 @@ void
 bspline_warp (
     Volume *vout,         /* Output image (already sized and allocated) */
     Volume *vf_out,       /* Output vf (already sized and allocated, can be null) */
-    BSPLINE_Xform* bxf,   /* Bspline transform coefficients */
+    Bspline_xform* bxf,   /* Bspline transform coefficients */
     Volume *moving,       /* Input image */
     int linear_interp,    /* 1 = trilinear, 0 = nearest neighbors */
     float default_val     /* Fill in this value outside of image */
@@ -289,30 +289,30 @@ bspline_warp (
 
 gpuit_EXPORT
 void bspline_run_optimization (
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Bspline_state **bst,
     BSPLINE_Parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad);
 gpuit_EXPORT
-BSPLINE_Xform* read_bxf (char* filename);
+Bspline_xform* read_bxf (char* filename);
 
 gpuit_EXPORT
-void write_bxf (char* filename, BSPLINE_Xform* bxf);
+void write_bxf (char* filename, Bspline_xform* bxf);
 
 gpuit_EXPORT
 void
 bspline_interpolate_vf (Volume* interp, 
-			BSPLINE_Xform* bxf);
+			Bspline_xform* bxf);
 
 /* Used internally */
 void
-bspline_interp_pix (float out[3], BSPLINE_Xform *bxf, int p[3], int qidx);
+bspline_interp_pix (float out[3], Bspline_xform *bxf, int p[3], int qidx);
 void
 bspline_interp_pix_b (
     float out[3], 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int pidx, 
     int qidx
 );
@@ -329,7 +329,7 @@ bspline_find_correspondence
 void
 bspline_update_grad (
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], int qidx, float dc_dv[3]);
 
 gpuit_EXPORT
@@ -337,16 +337,16 @@ void
 bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving);
 
 void
-bspline_set_coefficients (BSPLINE_Xform* bxf, float val);
+bspline_set_coefficients (Bspline_xform* bxf, float val);
 
 void
-bspline_display_coeff_stats (BSPLINE_Xform* bxf);
+bspline_display_coeff_stats (Bspline_xform* bxf);
 
 gpuit_EXPORT
 void
 bspline_score (BSPLINE_Parms *parms, 
 	       Bspline_state *bst,
-	       BSPLINE_Xform* bxf, 
+	       Bspline_xform* bxf, 
 	       Volume *fixed, 
 	       Volume *moving, 
 	       Volume *moving_grad);
@@ -356,7 +356,7 @@ clamp_linear_interpolate (float ma, int dmax, int* maf, int* mar,
 			  float* fa1, float* fa2);
 
 void
-bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
+bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
 		       int pidx, int qidx, float dc_dv[3]);
 int* calc_offsets (int* tile_dims, int* cdims);
 
@@ -365,25 +365,25 @@ void
 dump_hist (BSPLINE_MI_Hist* mi_hist, int it);
 
 void
-report_score (char *alg, BSPLINE_Xform *bxf, 
+report_score (char *alg, Bspline_xform *bxf, 
 	      Bspline_state *bst, int num_vox, double timing);
 
 /* Debugging routines */
 void
-dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn);
+dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, char* fn);
 
 void
-dump_coeff (BSPLINE_Xform* bxf, char* fn);
+dump_coeff (Bspline_xform* bxf, char* fn);
 
 void
-dump_luts (BSPLINE_Xform* bxf);
+dump_luts (Bspline_xform* bxf);
 
 void
 bspline_save_debug_state 
 (
  BSPLINE_Parms *parms, 
  Bspline_state *bst, 
- BSPLINE_Xform* bxf
+ Bspline_xform* bxf
  );
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);

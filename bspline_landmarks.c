@@ -210,7 +210,7 @@ void
 bspline_landmarks_score_b (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )
@@ -352,7 +352,7 @@ void
 bspline_landmarks_score_a (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )
@@ -432,7 +432,7 @@ void
 bspline_landmarks_score (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving
 )
@@ -452,7 +452,7 @@ We must solve LW + u(LW) = LM to get new LW, corresponding to current vector fie
 void bspline_landmarks_warp (
     Volume *vector_field, 
     BSPLINE_Parms *parms,
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving)
 {

@@ -34,7 +34,7 @@
 void
 bspline_interp_pix_b (
     float out[3], 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int pidx, 
     int qidx
 )
@@ -349,7 +349,7 @@ bspline_mi_pvi_8_dc_dv (
 }
 
 inline void
-bspline_update_grad_b_inline (Bspline_state* bst, BSPLINE_Xform* bxf, 
+bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf, 
              int pidx, int qidx, float dc_dv[3])
 {
     BSPLINE_Score* ssd = &bst->ssd;
@@ -376,7 +376,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, BSPLINE_Xform* bxf,
 ////////////////////////////////////////////////////////////////////////////////
 int
 CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
-    BSPLINE_Xform *bxf,                 //  INPUT: Bspline X-Form
+    Bspline_xform *bxf,                 //  INPUT: Bspline X-Form
     Volume* fixed,                      //  INPUT: Fixed Image
    Volume* moving)                      //  INPUT: Moving Image
 {
@@ -480,7 +480,7 @@ CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 void
 CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
         Bspline_state *bst,     //  INPUT: Bspline State
-        BSPLINE_Xform *bxf,     //  INPUT: Bspline X-Form
+        Bspline_xform *bxf,     //  INPUT: Bspline X-Form
         Volume* fixed,          //  INPUT: Fixed Image
         Volume* moving,         //  INPUT: Moving Image
         float num_vox_f)        //  INPUT: Number of voxels
@@ -557,7 +557,7 @@ void
 bspline_cuda_MI_a (
     BSPLINE_Parms *parms,
     Bspline_state *bst,
-    BSPLINE_Xform *bxf,
+    Bspline_xform *bxf,
     Volume *fixed,
     Volume *moving,
     Volume *moving_grad,
@@ -705,7 +705,7 @@ void
 bspline_cuda_score_j_mse (
     BSPLINE_Parms* parms,
     Bspline_state *bst,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
@@ -790,7 +790,7 @@ void
 bspline_cuda_score_i_mse (
     BSPLINE_Parms* parms,
     Bspline_state *bst,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,

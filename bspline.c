@@ -94,11 +94,11 @@ bspline_parms_set_default (BSPLINE_Parms* parms)
 }
 
 void
-bspline_xform_set_default (BSPLINE_Xform* bxf)
+bspline_xform_set_default (Bspline_xform* bxf)
 {
     int d;
 
-    memset (bxf, 0, sizeof (BSPLINE_Xform));
+    memset (bxf, 0, sizeof (Bspline_xform));
 
     for (d = 0; d < 3; d++) {
 	bxf->img_origin[d] = 0.0f;
@@ -114,7 +114,7 @@ bspline_xform_set_default (BSPLINE_Xform* bxf)
 static void
 bspline_cuda_state_create (
     Bspline_state *bst,           /* Modified in routine */
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms *parms,
     Volume *fixed, 
     Volume *moving, 
@@ -165,7 +165,7 @@ bspline_cuda_state_create (
 
 Bspline_state *
 bspline_state_create (
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 
     Volume *moving, 
@@ -192,7 +192,7 @@ bspline_state_create (
 }
 
 void
-write_bxf (char* filename, BSPLINE_Xform* bxf)
+write_bxf (char* filename, Bspline_xform* bxf)
 {
     FILE* fp;
 	
@@ -237,10 +237,10 @@ write_bxf (char* filename, BSPLINE_Xform* bxf)
     fclose (fp);
 }
 
-BSPLINE_Xform* 
+Bspline_xform* 
 read_bxf (char* filename)
 {
-    BSPLINE_Xform* bxf;
+    Bspline_xform* bxf;
     char buf[1024];
     FILE* fp;
     int rc;
@@ -255,7 +255,7 @@ read_bxf (char* filename)
     if (!fp) return 0;
 
     /* Initialize parms */
-    bxf = (BSPLINE_Xform*) malloc (sizeof(BSPLINE_Xform));
+    bxf = (Bspline_xform*) malloc (sizeof(Bspline_xform));
     bspline_xform_set_default (bxf);
 
     /* Skip first line */
@@ -425,7 +425,7 @@ log_parms (BSPLINE_Parms* parms)
 }
 
 static void
-log_bxf_header (BSPLINE_Xform* bxf)
+log_bxf_header (Bspline_xform* bxf)
 {
     logfile_printf ("BSPLINE XFORM HEADER\n");
     logfile_printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
@@ -434,7 +434,7 @@ log_bxf_header (BSPLINE_Xform* bxf)
 }
 
 void
-dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
+dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
@@ -445,7 +445,7 @@ dump_gradient (BSPLINE_Xform* bxf, BSPLINE_Score* ssd, char* fn)
 }
 
 void
-dump_coeff (BSPLINE_Xform* bxf, char* fn)
+dump_coeff (Bspline_xform* bxf, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
@@ -456,7 +456,7 @@ dump_coeff (BSPLINE_Xform* bxf, char* fn)
 }
 
 void
-dump_luts (BSPLINE_Xform* bxf)
+dump_luts (Bspline_xform* bxf)
 {
     int i, j, k, p;
     int tx, ty, tz;
@@ -559,7 +559,7 @@ dump_hist (BSPLINE_MI_Hist* mi_hist, int it)
 }
 
 void
-bspline_display_coeff_stats (BSPLINE_Xform* bxf)
+bspline_display_coeff_stats (Bspline_xform* bxf)
 {
     float cf_min, cf_avg, cf_max;
     int i;
@@ -580,7 +580,7 @@ void
 bspline_save_debug_state (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf
+    Bspline_xform* bxf
 )
 {
     char fn[1024];
@@ -603,7 +603,7 @@ bspline_save_debug_state (
 }
 
 void
-bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
+bspline_set_coefficients (Bspline_xform* bxf, float val)
 {
     int i;
 
@@ -615,7 +615,7 @@ bspline_set_coefficients (BSPLINE_Xform* bxf, float val)
 void
 bspline_xform_initialize 
 (
- BSPLINE_Xform* bxf,         /* Output: bxf is initialized */
+ Bspline_xform* bxf,         /* Output: bxf is initialized */
  float img_origin[3],        /* Image origin (in mm) */
  float img_spacing[3],       /* Image spacing (in mm) */
  int img_dim[3],             /* Image size (in vox) */
@@ -757,7 +757,7 @@ bspline_xform_initialize
 
 void bspline_xform_create_qlut_grad 
 (
-    BSPLINE_Xform* bxf,         /* Output: bxf with new LUTs */
+    Bspline_xform* bxf,         /* Output: bxf with new LUTs */
     float img_spacing[3],       /* Image spacing (in mm) */
     int vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
@@ -902,7 +902,7 @@ void bspline_xform_create_qlut_grad
 /* GCS -- Is there an implicit assumption that the roi_origin > 0? */
 void
 bspline_xform_extend (
-    BSPLINE_Xform* bxf,	     /* Output: bxf is initialized */
+    Bspline_xform* bxf,	     /* Output: bxf is initialized */
     int new_roi_offset[3],   /* Position of first vox in ROI (in vox) */
     int new_roi_dim[3]	     /* Dimension of ROI (in vox) */
 )
@@ -1027,7 +1027,7 @@ bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
 }
 
 void
-bspline_xform_free (BSPLINE_Xform* bxf)
+bspline_xform_free (Bspline_xform* bxf)
 {
     free (bxf->coeff);
     free (bxf->q_lut);
@@ -1035,7 +1035,7 @@ bspline_xform_free (BSPLINE_Xform* bxf)
 }
 
 void
-bspline_xform_free_qlut_grad (BSPLINE_Xform* bxf)
+bspline_xform_free_qlut_grad (Bspline_xform* bxf)
 {
 	free (bxf->q_dxdyz_lut);
 	free (bxf->q_dxydz_lut);
@@ -1206,7 +1206,7 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 }
 
 void
-bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
+bspline_interp_pix (float out[3], Bspline_xform* bxf, int p[3], int qidx)
 {
     int i, j, k, m;
     int cidx;
@@ -1233,7 +1233,7 @@ bspline_interp_pix (float out[3], BSPLINE_Xform* bxf, int p[3], int qidx)
 void
 bspline_interp_pix_b (
     float out[3], 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int pidx, 
     int qidx
 )
@@ -1260,7 +1260,7 @@ bspline_interp_pix_b (
 
 void
 bspline_interpolate_vf (Volume* interp, 
-			BSPLINE_Xform* bxf)
+			Bspline_xform* bxf)
 {
     int i, j, k, v;
     int p[3];
@@ -1293,7 +1293,7 @@ bspline_interpolate_vf (Volume* interp,
 void
 bspline_update_grad (
     Bspline_state *bst, 
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     int p[3], int qidx, float dc_dv[3])
 {
     BSPLINE_Score* ssd = &bst->ssd;
@@ -1319,7 +1319,7 @@ bspline_update_grad (
 }
 
 inline void
-bspline_update_grad_b_inline (Bspline_state* bst, BSPLINE_Xform* bxf, 
+bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
     BSPLINE_Score* ssd = &bst->ssd;
@@ -1343,7 +1343,7 @@ bspline_update_grad_b_inline (Bspline_state* bst, BSPLINE_Xform* bxf,
 }
 
 void
-bspline_update_grad_b (Bspline_state* bst, BSPLINE_Xform* bxf, 
+bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
 		     int pidx, int qidx, float dc_dv[3])
 {
     BSPLINE_Score* ssd = &bst->ssd;
@@ -1552,7 +1552,7 @@ compute_dS_dP (
 }
 
 void
-report_score (char *alg, BSPLINE_Xform *bxf, 
+report_score (char *alg, Bspline_xform *bxf, 
 	      Bspline_state *bst, int num_vox, double timing)
 {
     int i;
@@ -2328,7 +2328,7 @@ bspline_mi_pvi_6_dc_dv (
 static void
 bspline_score_c_mi (BSPLINE_Parms *parms, 
     Bspline_state *bst,
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad)
@@ -2563,7 +2563,7 @@ void
 bspline_warp (
     Volume *vout,       /* Output image (sized and allocated) */
     Volume *vf_out,     /* Output vf (sized and allocated, can be null) */
-    BSPLINE_Xform* bxf, /* Bspline transform coefficients */
+    Bspline_xform* bxf, /* Bspline transform coefficients */
     Volume *moving,     /* Input image */
     int linear_interp,  /* 1 = trilinear, 0 = nearest neighbors */
     float default_val   /* Fill in this value outside of image */
@@ -2705,7 +2705,7 @@ void
 bspline_score_h_mse (
     BSPLINE_Parms *parms,
     Bspline_state *bst, 
-    BSPLINE_Xform *bxf,
+    Bspline_xform *bxf,
     Volume *fixed,
     Volume *moving,
     Volume *moving_grad)
@@ -2929,7 +2929,7 @@ void
 bspline_score_g_mse (
     BSPLINE_Parms *parms,
     Bspline_state *bst, 
-    BSPLINE_Xform *bxf,
+    Bspline_xform *bxf,
     Volume *fixed,
     Volume *moving,
     Volume *moving_grad)
@@ -3142,7 +3142,7 @@ bspline_score_g_mse (
 void
 bspline_score (BSPLINE_Parms *parms, 
 	       Bspline_state *bst,
-	       BSPLINE_Xform* bxf, 
+	       Bspline_xform* bxf, 
 	       Volume *fixed, 
 	       Volume *moving, 
 	       Volume *moving_grad)
@@ -3258,7 +3258,7 @@ bspline_score (BSPLINE_Parms *parms,
 
 void
 bspline_run_optimization (
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Bspline_state **bst_in, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 

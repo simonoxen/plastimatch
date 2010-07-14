@@ -27,7 +27,7 @@ main (int argc, char* argv[])
 {
     BSPLINE_Options options;
     BSPLINE_Parms *parms = &options.parms;
-    BSPLINE_Xform *bxf;
+    Bspline_xform *bxf;
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;
     Volume *moving_warped = 0;
@@ -62,7 +62,7 @@ main (int argc, char* argv[])
     if (options.input_xf_fn) {
 	bxf = read_bxf (options.input_xf_fn);
     } else {
-	bxf = (BSPLINE_Xform*) malloc (sizeof (BSPLINE_Xform));
+	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
 	bspline_xform_initialize (
 	    bxf,
 	    fixed->offset,

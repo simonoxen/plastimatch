@@ -27,7 +27,7 @@ check_gradient (
     float score;
     Bspline_state *bst;
     FILE *fp;
-    BSPLINE_Xform *bxf;
+    Bspline_xform *bxf;
     int roi_offset[3];
     BSPLINE_Parms* parms = &options->parms;
 
@@ -37,7 +37,7 @@ check_gradient (
     if (options->input_xf_fn) {
 	bxf = read_bxf (options->input_xf_fn);
     } else {
-	bxf = (BSPLINE_Xform*) malloc (sizeof (BSPLINE_Xform));
+	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
 	bspline_xform_initialize (
 	    bxf,
 	    fixed->offset,

@@ -15,7 +15,7 @@
 int
 main (int argc, char* argv[])
 {
-    BSPLINE_Xform *bxf;
+    Bspline_xform *bxf;
 
     if (argc != 3) {
 	printf ("Error, invalid arguments\n");

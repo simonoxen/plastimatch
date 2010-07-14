@@ -25,7 +25,7 @@
 
 void
 bspline_optimize (
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Bspline_state *bst, 
     BSPLINE_Parms *parms, 
     Volume *fixed, 

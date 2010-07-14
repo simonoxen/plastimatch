@@ -44,7 +44,7 @@ extern "C" {
     void bspline_cuda_MI_a (
 		BSPLINE_Parms *parms,
 		Bspline_state *bst,
-		BSPLINE_Xform *bxf,
+		Bspline_xform *bxf,
 		Volume *fixed,
 		Volume *moving,
 		Volume *moving_grad,
@@ -57,14 +57,14 @@ extern "C" {
     void bspline_cuda_j_stage_1 (Volume* fixed,
 				Volume* moving,
 				Volume* moving_grad,
-				BSPLINE_Xform* bxf,
+				Bspline_xform* bxf,
 				BSPLINE_Parms* parms,
 				Dev_Pointers_Bspline* dev_ptrs);
 
 
     void bspline_cuda_score_j_mse(BSPLINE_Parms* parms,
 			  			Bspline_state *bst,
-						BSPLINE_Xform* bxf,
+						Bspline_xform* bxf,
 						Volume* fixed,
 						Volume* moving,
 						Volume* moving_grad,
@@ -74,7 +74,7 @@ extern "C" {
 
     void bspline_cuda_score_i_mse(BSPLINE_Parms* parms,
 			  			Bspline_state *bst,
-						BSPLINE_Xform* bxf,
+						Bspline_xform* bxf,
 						Volume* fixed,
 						Volume* moving,
 						Volume* moving_grad,
@@ -83,7 +83,7 @@ extern "C" {
 
     void bspline_cuda_score_h_mse(BSPLINE_Parms* parms,
 			  			Bspline_state *bst,
-						BSPLINE_Xform* bxf,
+						Bspline_xform* bxf,
 						Volume* fixed,
 						Volume* moving,
 						Volume* moving_grad,
@@ -93,7 +93,7 @@ extern "C" {
     void bspline_cuda_score_g_mse(
 				  BSPLINE_Parms *parms, 
 				  Bspline_state *bst,
-				  BSPLINE_Xform* bxf, 
+				  Bspline_xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
@@ -101,7 +101,7 @@ extern "C" {
     void bspline_cuda_score_f_mse(
 				  BSPLINE_Parms *parms, 
 				  Bspline_state *bst,
-				  BSPLINE_Xform* bxf, 
+				  Bspline_xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
@@ -109,7 +109,7 @@ extern "C" {
     void bspline_cuda_score_e_mse_v2(
 				     BSPLINE_Parms *parms, 
 				     Bspline_state *bst,
-				     BSPLINE_Xform* bxf, 
+				     Bspline_xform* bxf, 
 				     Volume *fixed, 
 				     Volume *moving, 
 				     Volume *moving_grad);
@@ -117,7 +117,7 @@ extern "C" {
     void bspline_cuda_score_e_mse(
 				  BSPLINE_Parms *parms, 
 				  Bspline_state *bst,
-				  BSPLINE_Xform* bxf, 
+				  Bspline_xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
@@ -125,7 +125,7 @@ extern "C" {
     void bspline_cuda_score_d_mse(
 				  BSPLINE_Parms *parms, 
 				  Bspline_state *bst,
-				  BSPLINE_Xform* bxf, 
+				  Bspline_xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
@@ -133,7 +133,7 @@ extern "C" {
     void bspline_cuda_score_c_mse(
 				  BSPLINE_Parms *parms, 
 				  Bspline_state *bst,
-				  BSPLINE_Xform* bxf, 
+				  Bspline_xform* bxf, 
 				  Volume *fixed, 
 				  Volume *moving, 
 				  Volume *moving_grad);
@@ -155,7 +155,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_i_mse().
@@ -164,7 +164,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_h_mse().
@@ -173,7 +173,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
     //
     // Initialize the GPU to execute bspline_cuda_score_g_mse().
@@ -181,7 +181,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_f_mse().
@@ -189,7 +189,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_e_mse_v2().
@@ -197,7 +197,7 @@ extern "C" {
 				      Volume *fixed,
 				      Volume *moving,
 				      Volume *moving_grad,
-				      BSPLINE_Xform *bxf,
+				      Bspline_xform *bxf,
 				      BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_e_mse().
@@ -205,7 +205,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_d_mse().
@@ -213,7 +213,7 @@ extern "C" {
 				   Volume *fixed,
 				   Volume *moving,
 				   Volume *moving_grad,
-				   BSPLINE_Xform *bxf,
+				   Bspline_xform *bxf,
 				   BSPLINE_Parms *parms);
 
     // Allocate memory on the GPU and copy all necessary data to the GPU.
@@ -221,11 +221,11 @@ extern "C" {
 				 Volume *fixed,
 				 Volume *moving,
 				 Volume *moving_grad,
-				 BSPLINE_Xform *bxf,
+				 Bspline_xform *bxf,
 				 BSPLINE_Parms *parms);
 
     void bspline_cuda_copy_coeff_lut(
-				     BSPLINE_Xform *bxf);
+				     Bspline_xform *bxf);
 
     void bspline_cuda_copy_grad_to_host(
 					float* host_grad);
@@ -234,7 +234,7 @@ extern "C" {
 		   Volume* fixed,
 		   Volume* moving,
 		   Volume* moving_grad,
-		   BSPLINE_Xform* bxf,
+		   Bspline_xform* bxf,
 		   BSPLINE_Parms* parms,
 		   Dev_Pointers_Bspline* dev_ptrs);
 
@@ -243,7 +243,7 @@ extern "C" {
 		   Volume* fixed,
 		   Volume* moving,
 		   Volume* moving_grad,
-		   BSPLINE_Xform* bxf,
+		   Bspline_xform* bxf,
 		   BSPLINE_Parms* parms,
 		   Dev_Pointers_Bspline* dev_ptrs);
 
@@ -252,7 +252,7 @@ extern "C" {
 					      Volume *fixed,
 					      Volume *moving,
 					      Volume *moving_grad,
-					      BSPLINE_Xform *bxf,
+					      Bspline_xform *bxf,
 					      BSPLINE_Parms *parms,
 					      int run_low_mem_version, 
 					      int debug);
@@ -261,21 +261,21 @@ extern "C" {
 					      Volume *fixed,
 					      Volume *moving,
 					      Volume *moving_grad,
-					      BSPLINE_Xform *bxf,
+					      Bspline_xform *bxf,
 					      BSPLINE_Parms *parms);
 
     void bspline_cuda_calculate_score_e(
 					Volume *fixed,
 					Volume *moving,
 					Volume *moving_grad,
-					BSPLINE_Xform *bxf,
+					Bspline_xform *bxf,
 					BSPLINE_Parms *parms);
 
     void bspline_cuda_run_kernels_e_v2(
 				       Volume *fixed,
 				       Volume *moving,
 				       Volume *moving_grad,
-				       BSPLINE_Xform *bxf,
+				       Bspline_xform *bxf,
 				       BSPLINE_Parms *parms,
 				       int sidx0,
 				       int sidx1,
@@ -285,7 +285,7 @@ extern "C" {
 				    Volume *fixed,
 				    Volume *moving,
 				    Volume *moving_grad,
-				    BSPLINE_Xform *bxf,
+				    Bspline_xform *bxf,
 				    BSPLINE_Parms *parms,
 				    int sidx0,
 				    int sidx1,
@@ -295,7 +295,7 @@ extern "C" {
 				    Volume *fixed,
 				    Volume *moving,
 				    Volume *moving_grad,
-				    BSPLINE_Xform *bxf,
+				    Bspline_xform *bxf,
 				    BSPLINE_Parms *parms,
 				    int p0,
 				    int p1,
@@ -305,7 +305,7 @@ extern "C" {
 				    Volume *fixed,
 				    Volume *moving,
 				    Volume *moving_grad,
-				    BSPLINE_Xform *bxf,
+				    Bspline_xform *bxf,
 				    BSPLINE_Parms *parms,
 				    float *host_diff,
 				    float *host_dc_dv_x,
@@ -326,7 +326,7 @@ extern "C" {
 
     void bspline_cuda_j_stage_2(
 			BSPLINE_Parms* parms,
-			BSPLINE_Xform* bxf,
+			Bspline_xform* bxf,
 			Volume* fixed,
 			int* vox_per_rgn,
 			int* volume_dim,
@@ -340,7 +340,7 @@ extern "C" {
 
     void bspline_cuda_h_stage_2(
 			BSPLINE_Parms* parms,
-			BSPLINE_Xform* bxf,
+			Bspline_xform* bxf,
 			Volume* fixed,
 			int* vox_per_rgn,
 			int* volume_dim,
@@ -353,7 +353,7 @@ extern "C" {
 
     void bspline_cuda_final_steps_f(
 				    BSPLINE_Parms* parms, 
-				    BSPLINE_Xform* bxf,
+				    Bspline_xform* bxf,
 				    Volume *fixed,
 				    int   *vox_per_rgn,
 				    int   *volume_dim,
@@ -364,7 +364,7 @@ extern "C" {
 
     void bspline_cuda_final_steps_e_v2(
 				       BSPLINE_Parms* parms, 
-				       BSPLINE_Xform* bxf,
+				       Bspline_xform* bxf,
 				       Volume *fixed,
 				       int   *vox_per_rgn,
 				       int   *volume_dim,
@@ -375,7 +375,7 @@ extern "C" {
 
     void bspline_cuda_final_steps_e(
 				    BSPLINE_Parms* parms, 
-				    BSPLINE_Xform* bxf,
+				    Bspline_xform* bxf,
 				    Volume *fixed,
 				    int   *vox_per_rgn,
 				    int   *volume_dim,
@@ -386,7 +386,7 @@ extern "C" {
 
     void bspline_cuda_final_steps_d(
 				    BSPLINE_Parms* parms, 
-				    BSPLINE_Xform* bxf,
+				    Bspline_xform* bxf,
 				    Volume *fixed,
 				    int   *vox_per_rgn,
 				    int   *volume_dim,
@@ -398,7 +398,7 @@ extern "C" {
     void bspline_cuda_calculate_gradient_c (
 					    BSPLINE_Parms* parms, 
 					    Bspline_state* bst,
-					    BSPLINE_Xform* bxf,
+					    Bspline_xform* bxf,
 					    Volume *fixed,
 					    float *host_grad_norm,
 					    float *host_grad_mean);
@@ -417,7 +417,7 @@ extern "C" {
 
     void bspline_cuda_clean_up();
 
-    void bspline_cuda_h_push_coeff_lut(Dev_Pointers_Bspline* dev_ptrs, BSPLINE_Xform* bxf);
+    void bspline_cuda_h_push_coeff_lut(Dev_Pointers_Bspline* dev_ptrs, Bspline_xform* bxf);
     
     void bspline_cuda_h_clear_score(Dev_Pointers_Bspline* dev_ptrs);
     
@@ -429,7 +429,7 @@ extern "C" {
 
     void CUDA_pad( float** input, int* vol_dims, int* tile_dims);
 
-    void CUDA_bspline_mse_score_dc_dv( Dev_Pointers_Bspline* dev_ptrs, BSPLINE_Xform* bxf, Volume* fixed, Volume* moving);
+    void CUDA_bspline_mse_score_dc_dv( Dev_Pointers_Bspline* dev_ptrs, Bspline_xform* bxf, Volume* fixed, Volume* moving);
 
     void CUDA_bspline_mse_2_condense_64_texfetch( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
@@ -444,19 +444,19 @@ extern "C" {
 					  int vox_per_rgn);
     
     
-    void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, BSPLINE_Xform* bxf, BSPLINE_Parms* parms);
+    void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, Bspline_xform* bxf, BSPLINE_Parms* parms);
 
-    int CUDA_bspline_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    int CUDA_bspline_MI_a_hist ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, Bspline_xform *bxf);
 
-    void CUDA_bspline_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    void CUDA_bspline_MI_a_hist_fix ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, Bspline_xform *bxf);
     
-    void CUDA_bspline_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    void CUDA_bspline_MI_a_hist_mov ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, Bspline_xform *bxf);
     
-    int CUDA_bspline_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, BSPLINE_Xform *bxf);
+    int CUDA_bspline_MI_a_hist_jnt ( Dev_Pointers_Bspline *dev_ptrs, BSPLINE_MI_Hist* mi_hist, Volume* fixed, Volume* moving, Bspline_xform *bxf);
 
-    int CUDA_MI_Hist_a ( BSPLINE_MI_Hist* mi_hist, BSPLINE_Xform *bxf, Volume* fixed, Volume* moving, Dev_Pointers_Bspline *dev_ptrs);
+    int CUDA_MI_Hist_a ( BSPLINE_MI_Hist* mi_hist, Bspline_xform *bxf, Volume* fixed, Volume* moving, Dev_Pointers_Bspline *dev_ptrs);
     
-    void CUDA_MI_Grad_a ( BSPLINE_MI_Hist* mi_hist, Bspline_state *bst, BSPLINE_Xform *bxf, Volume* fixed, Volume* moving, float num_vox_f, Dev_Pointers_Bspline *dev_ptrs);
+    void CUDA_MI_Grad_a ( BSPLINE_MI_Hist* mi_hist, Bspline_state *bst, Bspline_xform *bxf, Volume* fixed, Volume* moving, float num_vox_f, Dev_Pointers_Bspline *dev_ptrs);
 
     //
     // -------------------------------------------------------------------

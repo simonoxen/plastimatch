@@ -296,7 +296,7 @@ load_xform (Xform *xf, char* fn)
 static void
 load_gpuit_bsp (Xform *xf, char* fn)
 {
-    BSPLINE_Xform* bxf;
+    Bspline_xform* bxf;
 
     bxf = read_bxf (fn);
     if (!bxf) {
@@ -1052,7 +1052,7 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 	BsplineTransformType::OriginType& bsp_origin,	    /* Output */
 	BsplineTransformType::SpacingType& bsp_spacing,	    /* Output */
 	BsplineTransformType::RegionType& bsp_region,  /* Output */
-	BSPLINE_Xform* bxf)			    /* Input */
+	Bspline_xform* bxf)			    /* Input */
 {
     BsplineTransformType::SizeType bsp_size;
 
@@ -1070,7 +1070,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-    BSPLINE_Xform* bxf = xf_in->get_gpuit_bsp();
+    Bspline_xform* bxf = xf_in->get_gpuit_bsp();
 
     BsplineTransformType::OriginType bsp_origin;
     BsplineTransformType::SpacingType bsp_spacing;
@@ -1113,7 +1113,7 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-//    BSPLINE_Xform* bxf = xf_in->get_gpuit_bsp();
+//    Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Xform xf_tmp;
     OriginType img_origin_old;
     SpacingType img_spacing_old;
@@ -1318,11 +1318,11 @@ xform_gpuit_vf_to_itk_vf (
 /* -----------------------------------------------------------------------
    Conversion to gpuit_bsp
    ----------------------------------------------------------------------- */
-static BSPLINE_Xform*
+static Bspline_xform*
 create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 {
     int d;
-    BSPLINE_Xform* bxf = (BSPLINE_Xform*) malloc (sizeof(BSPLINE_Xform));
+    Bspline_xform* bxf = (Bspline_xform*) malloc (sizeof(Bspline_xform));
     float img_origin[3];
     float img_spacing[3];
     int img_dim[3];
@@ -1358,7 +1358,7 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
     ImageRegionType roi;
 
     /* Initialize gpuit bspline data structure */
-    BSPLINE_Xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
+    Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
     if (xf_in->m_type != XFORM_NONE) {
 	/* Output ROI is going to be whole image */
@@ -1395,7 +1395,7 @@ xform_gpuit_bsp_to_gpuit_bsp (
     ImageRegionType roi;
 
     /* Initialize gpuit bspline data structure */
-    BSPLINE_Xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
+    Bspline_xform* bxf_new = create_gpuit_bxf (pih, grid_spac);
 
     /* Output ROI is going to be whole image */
     roi = pih->m_region;
@@ -1431,7 +1431,7 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* pix_s
 Volume*
 xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* pix_spacing)
 {
-    BSPLINE_Xform* bxf = xf_in->get_gpuit_bsp();
+    Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
 
     /* GCS FIX: Need direction cosines */

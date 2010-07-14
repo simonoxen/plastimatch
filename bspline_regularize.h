@@ -14,7 +14,7 @@ void
 bspline_regularize_score (
     BSPLINE_Parms *parms, 
     Bspline_state *bst, 
-    BSPLINE_Xform *bxf, 
+    Bspline_xform *bxf, 
     Volume *fixed, 
     Volume *moving
 );

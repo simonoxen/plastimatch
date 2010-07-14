@@ -78,7 +78,7 @@ Plm_image_header::set_from_gpuit (
 }
 
 void
-Plm_image_header::set_from_gpuit_bspline (BSPLINE_Xform *bxf)
+Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
 {
     this->set_from_gpuit (
 	bxf->img_origin,

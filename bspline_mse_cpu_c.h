@@ -16,7 +16,7 @@ void
 bspline_score_c_mse (
     BSPLINE_Parms *parms, 
     Bspline_state *bst,
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad

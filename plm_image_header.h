@@ -34,7 +34,7 @@ public:
 		    int gpuit_dim[3],
 		    float gpuit_direction_cosines[9]);
     void plastimatch1_EXPORT 
-    set_from_gpuit_bspline (BSPLINE_Xform *bxf);
+    set_from_gpuit_bspline (Bspline_xform *bxf);
     void plastimatch1_EXPORT 
     set_from_plm_image (Plm_image *pli);
     template<class T> 

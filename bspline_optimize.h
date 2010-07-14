@@ -11,7 +11,7 @@
 typedef struct bspline_optimize_data Bspline_optimize_data;
 struct bspline_optimize_data
 {
-    BSPLINE_Xform* bxf;
+    Bspline_xform* bxf;
     Bspline_state *bst;
     BSPLINE_Parms *parms;
     Volume *fixed;
@@ -25,7 +25,7 @@ extern "C" {
 
 void
 bspline_optimize (
-    BSPLINE_Xform* bxf, 
+    Bspline_xform* bxf, 
     Bspline_state *bst,
     BSPLINE_Parms *parms, 
     Volume *fixed, 

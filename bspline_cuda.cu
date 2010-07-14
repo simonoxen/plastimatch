@@ -82,7 +82,7 @@ struct gpu_bspline_data
 void
 build_gbd (
     GPU_Bspline_Data* gbd,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     Volume* fixed,
     Volume* moving)
 {
@@ -300,7 +300,7 @@ bspline_cuda_init_MI_a (
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms* parms)
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -568,7 +568,7 @@ bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms* parms)
 {
     // Keep track of how much memory we allocated
@@ -1078,7 +1078,7 @@ bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms* parms)
 {
     // Keep track of how much memory we allocated
@@ -1545,7 +1545,7 @@ CUDA_bspline_MI_a_hist (
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
     Volume* moving,
-    BSPLINE_Xform* bxf)
+    Bspline_xform* bxf)
 {
     // check to see if we get atomic operations
     // for GPU memory
@@ -1578,7 +1578,7 @@ CUDA_bspline_MI_a_hist_fix (
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
     Volume* moving,
-    BSPLINE_Xform *bxf)
+    Bspline_xform *bxf)
 {
     dim3 dimGrid;
     dim3 dimBlock;
@@ -1659,7 +1659,7 @@ CUDA_bspline_MI_a_hist_mov (
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
     Volume* moving,
-    BSPLINE_Xform *bxf)
+    Bspline_xform *bxf)
 {
     dim3 dimGrid;
     dim3 dimBlock;
@@ -1742,7 +1742,7 @@ CUDA_bspline_MI_a_hist_jnt (
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
     Volume* moving,
-    BSPLINE_Xform *bxf)
+    Bspline_xform *bxf)
 {
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
@@ -1952,7 +1952,7 @@ extern "C" void
 CUDA_MI_Grad_a (
     BSPLINE_MI_Hist* mi_hist,
     Bspline_state *bst,
-    BSPLINE_Xform *bxf,
+    Bspline_xform *bxf,
     Volume* fixed,
     Volume* moving,
     float num_vox_f,
@@ -2419,7 +2419,7 @@ CUDA_pad(
 extern "C" void
 CUDA_bspline_mse_score_dc_dv (
     Dev_Pointers_Bspline* dev_ptrs,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     Volume* fixed,
     Volume* moving)
 {
@@ -2735,7 +2735,7 @@ bspline_cuda_j_stage_1 (
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
@@ -2866,7 +2866,7 @@ bspline_cuda_i_stage_1 (
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     BSPLINE_Parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
@@ -3029,7 +3029,7 @@ bspline_cuda_i_stage_1 (
 extern "C" void
 bspline_cuda_j_stage_2 (
     BSPLINE_Parms* parms, 
-    BSPLINE_Xform* bxf,
+    Bspline_xform* bxf,
     Volume* fixed,
     int*   vox_per_rgn,
     int*   volume_dim,
@@ -6612,7 +6612,7 @@ sum_reduction_last_step_kernel(
 // the next iteration of score calculation.
 ////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_h_push_coeff_lut(Dev_Pointers_Bspline* dev_ptrs, BSPLINE_Xform* bxf)
+bspline_cuda_h_push_coeff_lut(Dev_Pointers_Bspline* dev_ptrs, Bspline_xform* bxf)
 {
     // Copy the coefficient LUT to the GPU.
     cudaMemcpy(dev_ptrs->coeff, bxf->coeff, dev_ptrs->coeff_size, cudaMemcpyHostToDevice);
