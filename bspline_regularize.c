@@ -236,7 +236,7 @@ bspline_regularize_hessian_update_grad_b (
 
 void
 bspline_regularize_score_from_prerendered (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     Volume *fixed, 
@@ -381,7 +381,7 @@ update_score_and_grad (
 
 void
 bspline_regularize_score (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     Volume *fixed, 

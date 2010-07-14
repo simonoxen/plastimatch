@@ -65,9 +65,9 @@
    Initialization and teardown
    ----------------------------------------------------------------------- */
 void
-bspline_parms_set_default (BSPLINE_Parms* parms)
+bspline_parms_set_default (Bspline_parms* parms)
 {
-    memset (parms, 0, sizeof(BSPLINE_Parms));
+    memset (parms, 0, sizeof(Bspline_parms));
     parms->threading = BTHR_CPU;
     parms->optimization = BOPT_LBFGSB;
     parms->metric = BMET_MSE;
@@ -115,7 +115,7 @@ static void
 bspline_cuda_state_create (
     Bspline_state *bst,           /* Modified in routine */
     Bspline_xform* bxf,
-    BSPLINE_Parms *parms,
+    Bspline_parms *parms,
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad)
@@ -166,7 +166,7 @@ bspline_cuda_state_create (
 Bspline_state *
 bspline_state_create (
     Bspline_xform *bxf, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad)
@@ -418,7 +418,7 @@ void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
    Debugging routines
    ----------------------------------------------------------------------- */
 static void
-log_parms (BSPLINE_Parms* parms)
+log_parms (Bspline_parms* parms)
 {
     logfile_printf ("BSPLINE PARMS\n");
     logfile_printf ("max_its = %d\n", parms->max_its);
@@ -578,7 +578,7 @@ bspline_display_coeff_stats (Bspline_xform* bxf)
 
 void
 bspline_save_debug_state (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf
 )
@@ -1011,7 +1011,7 @@ bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 }
 
 void
-bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving)
+bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving)
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
     mi_hist->m_hist = (float*) malloc (sizeof (float) * mi_hist->moving.bins);
@@ -1046,7 +1046,7 @@ bspline_xform_free_qlut_grad (Bspline_xform* bxf)
 }
 
 void
-bspline_parms_free (BSPLINE_Parms* parms)
+bspline_parms_free (Bspline_parms* parms)
 {
     if (parms->mi_hist.j_hist) {
 	free (parms->mi_hist.f_hist);
@@ -2326,7 +2326,7 @@ bspline_mi_pvi_6_dc_dv (
    ----------------------------------------------------------------------- */
 /* Mutual information version of implementation "C" */
 static void
-bspline_score_c_mi (BSPLINE_Parms *parms, 
+bspline_score_c_mi (Bspline_parms *parms, 
     Bspline_state *bst,
     Bspline_xform *bxf, 
     Volume *fixed, 
@@ -2703,7 +2703,7 @@ bspline_warp (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_h_mse (
-    BSPLINE_Parms *parms,
+    Bspline_parms *parms,
     Bspline_state *bst, 
     Bspline_xform *bxf,
     Volume *fixed,
@@ -2927,7 +2927,7 @@ bspline_score_h_mse (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_score_g_mse (
-    BSPLINE_Parms *parms,
+    Bspline_parms *parms,
     Bspline_state *bst, 
     Bspline_xform *bxf,
     Volume *fixed,
@@ -3140,7 +3140,7 @@ bspline_score_g_mse (
 }
 
 void
-bspline_score (BSPLINE_Parms *parms, 
+bspline_score (Bspline_parms *parms, 
 	       Bspline_state *bst,
 	       Bspline_xform* bxf, 
 	       Volume *fixed, 
@@ -3260,7 +3260,7 @@ void
 bspline_run_optimization (
     Bspline_xform* bxf, 
     Bspline_state **bst_in, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad)

@@ -209,8 +209,8 @@ struct BSPLINE_MI_Hist_struct {
 };
 #endif
 
-typedef struct BSPLINE_Parms_struct BSPLINE_Parms;
-struct BSPLINE_Parms_struct {
+typedef struct Bspline_parms_struct Bspline_parms;
+struct Bspline_parms_struct {
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
@@ -241,7 +241,7 @@ struct BSPLINE_Parms_struct {
 extern "C" {
 #endif
 gpuit_EXPORT
-void bspline_parms_set_default (BSPLINE_Parms* parms);
+void bspline_parms_set_default (Bspline_parms* parms);
 
 gpuit_EXPORT
 void bspline_xform_set_default (Bspline_xform* bxf);
@@ -250,7 +250,7 @@ gpuit_EXPORT
 Bspline_state *
 bspline_state_create (
     Bspline_xform *bxf, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad);
@@ -270,7 +270,7 @@ gpuit_EXPORT
 void bspline_xform_free (Bspline_xform* bxf);
 
 gpuit_EXPORT
-void bspline_parms_free (BSPLINE_Parms* parms);
+void bspline_parms_free (Bspline_parms* parms);
 
 gpuit_EXPORT
 void
@@ -291,7 +291,7 @@ gpuit_EXPORT
 void bspline_run_optimization (
     Bspline_xform* bxf, 
     Bspline_state **bst,
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad);
@@ -334,7 +334,7 @@ bspline_update_grad (
 
 gpuit_EXPORT
 void
-bspline_initialize_mi (BSPLINE_Parms* parms, Volume* fixed, Volume* moving);
+bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving);
 
 void
 bspline_set_coefficients (Bspline_xform* bxf, float val);
@@ -344,7 +344,7 @@ bspline_display_coeff_stats (Bspline_xform* bxf);
 
 gpuit_EXPORT
 void
-bspline_score (BSPLINE_Parms *parms, 
+bspline_score (Bspline_parms *parms, 
 	       Bspline_state *bst,
 	       Bspline_xform* bxf, 
 	       Volume *fixed, 
@@ -381,7 +381,7 @@ dump_luts (Bspline_xform* bxf);
 void
 bspline_save_debug_state 
 (
- BSPLINE_Parms *parms, 
+ Bspline_parms *parms, 
  Bspline_state *bst, 
  Bspline_xform* bxf
  );

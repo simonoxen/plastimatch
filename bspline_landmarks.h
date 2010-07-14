@@ -12,11 +12,11 @@ struct bspline_landmarks {
     float *fixed_landmarks;
     float *moving_landmarks;
     float *warped_landmarks; //moving landmarks displaced by current vector field
-	int *landvox_mov;
-	int *landvox_fix;
-	int *landvox_warp;
-	float *rbf_coeff;
-	float *landmark_dxyz; //temporary array used in RBF
+    int *landvox_mov;
+    int *landvox_fix;
+    int *landvox_warp;
+    float *rbf_coeff;
+    float *landmark_dxyz; //temporary array used in RBF
 };
 
 #if defined __cplusplus
@@ -33,7 +33,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 
 void
 bspline_landmarks_score (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform *bxf, 
     Volume *fixed, 
@@ -43,7 +43,7 @@ bspline_landmarks_score (
 gpuit_EXPORT
 void bspline_landmarks_warp (
 	Volume *vector_field, 
-	BSPLINE_Parms *parms,
+	Bspline_parms *parms,
 	Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving);

@@ -24,7 +24,7 @@ do_gpuit_bspline_stage_internal (
     Xform *xf_in, 
     Stage_Parms* stage)
 {
-    BSPLINE_Parms parms;
+    Bspline_parms parms;
     Plm_image_header pih;
 
     logfile_printf ("Converting fixed\n");

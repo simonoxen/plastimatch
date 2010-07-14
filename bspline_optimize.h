@@ -13,7 +13,7 @@ struct bspline_optimize_data
 {
     Bspline_xform* bxf;
     Bspline_state *bst;
-    BSPLINE_Parms *parms;
+    Bspline_parms *parms;
     Volume *fixed;
     Volume *moving;
     Volume *moving_grad;
@@ -27,7 +27,7 @@ void
 bspline_optimize (
     Bspline_xform* bxf, 
     Bspline_state *bst,
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad);

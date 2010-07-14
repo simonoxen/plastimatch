@@ -51,16 +51,6 @@ typedef itk::BSplineDeformableTransform <
 
 typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, Dimension> TPSTransformType;
 
-#if defined (commentout)
-typedef struct Xform_GPUIT_Bspline_struct Xform_GPUIT_Bspline;
-struct Xform_GPUIT_Bspline_struct {
-public:
-    BSPLINE_Parms parms;
-//    float img_origin[3];         /* Position of first vox in ROI (in mm) */
-//    float img_spacing[3];    /* Size of voxels (in mm) */
-};
-#endif
-
 class Xform {
 public:
     XFormInternalType m_type;

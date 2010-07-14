@@ -20,7 +20,7 @@
 typedef struct rbf_params Rbf_parms;
 struct rbf_params { // used to pass information to bspline_rbf_score
     float radius;    // radius of the RBF
-    BSPLINE_Parms *bparms;
+    Bspline_parms *bparms;
     Volume *vector_field;
 };
 
@@ -176,7 +176,7 @@ float bspline_rbf_score (
 )
 {
     Rbf_parms *rbf_par = (Rbf_parms *) score_data;
-    BSPLINE_Parms *parms = rbf_par->bparms;
+    Bspline_parms *parms = rbf_par->bparms;
     Bspline_landmarks *blm;
     float rbfv, ds,score=0;
     int i,j,d,d1, rbfcenter[3];
@@ -214,7 +214,7 @@ to have a single data pathway
 Output:
 parms->blm->rbf_coeff contains RBF coefficients
 */
-void bspline_rbf_find_coeffs( Volume *vector_field, BSPLINE_Parms *parms )
+void bspline_rbf_find_coeffs( Volume *vector_field, Bspline_parms *parms )
 {
     Bspline_landmarks *blm = parms->landmarks;
     float *rbf_simplex, *scores, *vf;
@@ -269,7 +269,7 @@ landmark_dxyz is not updated by this function
 void
 bspline_rbf_update_vector_field (
     Volume *vector_field,
-    BSPLINE_Parms *parms 
+    Bspline_parms *parms 
 )
 {
     Bspline_landmarks *blm = parms->landmarks;

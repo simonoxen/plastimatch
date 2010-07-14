@@ -37,7 +37,7 @@ check_grad_opts_parse_args (Check_grad_opts* options,
     int argc, char* argv[])
 {
     int d, i, rc;
-    BSPLINE_Parms* parms = &options->parms;
+    Bspline_parms* parms = &options->parms;
 
     /* Set default options */
     memset (options, 0, sizeof (Check_grad_opts));

@@ -26,7 +26,7 @@ int
 main (int argc, char* argv[])
 {
     BSPLINE_Options options;
-    BSPLINE_Parms *parms = &options.parms;
+    Bspline_parms *parms = &options.parms;
     Bspline_xform *bxf;
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;

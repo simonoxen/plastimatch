@@ -12,7 +12,7 @@ extern "C" {
 
 void
 bspline_regularize_score (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform *bxf, 
     Volume *fixed, 

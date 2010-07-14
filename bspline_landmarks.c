@@ -208,7 +208,7 @@ Mar 30 2010 - NSh
 */
 void
 bspline_landmarks_score_b (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     Volume *fixed, 
@@ -350,7 +350,7 @@ diff = ( F + dx - M )
 */
 void
 bspline_landmarks_score_a (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     Volume *fixed, 
@@ -430,7 +430,7 @@ bspline_landmarks_score_a (
 
 void
 bspline_landmarks_score (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst, 
     Bspline_xform* bxf, 
     Volume *fixed, 
@@ -451,7 +451,7 @@ We must solve LW + u(LW) = LM to get new LW, corresponding to current vector fie
 */
 void bspline_landmarks_warp (
     Volume *vector_field, 
-    BSPLINE_Parms *parms,
+    Bspline_parms *parms,
     Bspline_xform* bxf, 
     Volume *fixed, 
     Volume *moving)

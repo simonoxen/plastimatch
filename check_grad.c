@@ -29,7 +29,7 @@ check_gradient (
     FILE *fp;
     Bspline_xform *bxf;
     int roi_offset[3];
-    BSPLINE_Parms* parms = &options->parms;
+    Bspline_parms* parms = &options->parms;
 
     /* Allocate memory and build lookup tables */
     printf ("Allocating lookup tables\n");

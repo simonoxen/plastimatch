@@ -145,7 +145,7 @@ bspline_optimize_lbfgsb (
 {
     Bspline_xform *bxf = bod->bxf;
     Bspline_state *bst = bod->bst;
-    BSPLINE_Parms *parms = bod->parms;
+    Bspline_parms *parms = bod->parms;
     Volume *fixed = bod->fixed;
     Volume *moving = bod->moving;
     Volume *moving_grad = bod->moving_grad;

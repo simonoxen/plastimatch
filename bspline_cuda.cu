@@ -301,7 +301,7 @@ bspline_cuda_init_MI_a (
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    BSPLINE_Parms* parms)
+    Bspline_parms* parms)
 {
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
@@ -569,7 +569,7 @@ bspline_cuda_initialize_j(Dev_Pointers_Bspline* dev_ptrs,
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    BSPLINE_Parms* parms)
+    Bspline_parms* parms)
 {
     // Keep track of how much memory we allocated
     // in the GPU global memory.
@@ -1079,7 +1079,7 @@ bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    BSPLINE_Parms* parms)
+    Bspline_parms* parms)
 {
     // Keep track of how much memory we allocated
     // in the GPU global memory.
@@ -2736,7 +2736,7 @@ bspline_cuda_j_stage_1 (
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    BSPLINE_Parms* parms,
+    Bspline_parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
 #if defined (PROFILE_J)
@@ -2867,7 +2867,7 @@ bspline_cuda_i_stage_1 (
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    BSPLINE_Parms* parms,
+    Bspline_parms* parms,
     Dev_Pointers_Bspline* dev_ptrs)
 {
     dim3 dimGrid1;
@@ -3028,7 +3028,7 @@ bspline_cuda_i_stage_1 (
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" void
 bspline_cuda_j_stage_2 (
-    BSPLINE_Parms* parms, 
+    Bspline_parms* parms, 
     Bspline_xform* bxf,
     Volume* fixed,
     int*   vox_per_rgn,

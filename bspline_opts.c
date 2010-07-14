@@ -47,7 +47,7 @@ void
 bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 {
     int d, i, rc;
-    BSPLINE_Parms* parms = &options->parms;
+    Bspline_parms* parms = &options->parms;
 
     memset (options, 0, sizeof (BSPLINE_Options));
     for (d = 0; d < 3; d++) {

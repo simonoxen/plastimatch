@@ -17,7 +17,7 @@
    and nearest neighbor interpolation of gradient */
 void
 bspline_score_c_mse (
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Bspline_state *bst,
     Bspline_xform* bxf, 
     Volume *fixed, 

@@ -27,7 +27,7 @@ struct check_grad_opts {
     int process;
     int random;
     float random_range[2];
-    BSPLINE_Parms parms;
+    Bspline_parms parms;
 };
 
 #if defined __cplusplus

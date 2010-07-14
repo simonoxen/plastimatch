@@ -555,7 +555,7 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_cuda_MI_a (
-    BSPLINE_Parms *parms,
+    Bspline_parms *parms,
     Bspline_state *bst,
     Bspline_xform *bxf,
     Volume *fixed,
@@ -703,7 +703,7 @@ bspline_cuda_MI_a (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_cuda_score_j_mse (
-    BSPLINE_Parms* parms,
+    Bspline_parms* parms,
     Bspline_state *bst,
     Bspline_xform* bxf,
     Volume* fixed,
@@ -788,7 +788,7 @@ bspline_cuda_score_j_mse (
 ////////////////////////////////////////////////////////////////////////////////
 void
 bspline_cuda_score_i_mse (
-    BSPLINE_Parms* parms,
+    Bspline_parms* parms,
     Bspline_state *bst,
     Bspline_xform* bxf,
     Volume* fixed,

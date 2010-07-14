@@ -35,7 +35,7 @@ void
 bspline_optimize_steepest_trace(
     Bspline_xform *bxf, 
     Bspline_state *bst, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad
@@ -224,7 +224,7 @@ void
 bspline_optimize_steepest_trust (
     Bspline_xform *bxf, 
     Bspline_state *bst, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad
@@ -363,7 +363,7 @@ void
 bspline_optimize_steepest_naive (
     Bspline_xform *bxf, 
     Bspline_state *bst, 
-    BSPLINE_Parms *parms, 
+    Bspline_parms *parms, 
     Volume *fixed, 
     Volume *moving, 
     Volume *moving_grad
@@ -452,7 +452,7 @@ bspline_optimize_steepest (
 {
     Bspline_xform *bxf = bod->bxf;
     Bspline_state *bst = bod->bst;
-    BSPLINE_Parms *parms = bod->parms;
+    Bspline_parms *parms = bod->parms;
     Volume *fixed = bod->fixed;
     Volume *moving = bod->moving;
     Volume *moving_grad = bod->moving_grad;
