@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "bspline_opts.h"
 #include "bspline.h"
+#include "bspline_optimize.h"
+#include "bspline_opts.h"
 #include "logfile.h"
 #include "plm_fortran.h"
 #include "volume.h"
@@ -138,15 +139,16 @@ SAVEME ()
 #endif
 
 void
-bspline_optimize_lbfgsb 
-(
- Bspline_xform* bxf, 
- Bspline_state* bst,
- BSPLINE_Parms *parms, 
- Volume *fixed, 
- Volume *moving, 
- Volume *moving_grad)
+bspline_optimize_lbfgsb (
+    Bspline_optimize_data *bod
+)
 {
+    Bspline_xform *bxf = bod->bxf;
+    Bspline_state *bst = bod->bst;
+    BSPLINE_Parms *parms = bod->parms;
+    Volume *fixed = bod->fixed;
+    Volume *moving = bod->moving;
+    Volume *moving_grad = bod->moving_grad;
     BSPLINE_Score* ssd = &bst->ssd;
     char task[60], csave[60];
     logical lsave[4];

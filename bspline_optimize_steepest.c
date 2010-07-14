@@ -15,6 +15,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_optimize.h"
 #include "bspline_optimize_steepest.h"
 #include "bspline_opts.h"
 #include "logfile.h"
@@ -446,14 +447,16 @@ bspline_optimize_steepest_naive (
 
 void
 bspline_optimize_steepest (
-    Bspline_xform *bxf, 
-    Bspline_state *bst, 
-    BSPLINE_Parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad
+    Bspline_optimize_data *bod
 )
 {
+    Bspline_xform *bxf = bod->bxf;
+    Bspline_state *bst = bod->bst;
+    BSPLINE_Parms *parms = bod->parms;
+    Volume *fixed = bod->fixed;
+    Volume *moving = bod->moving;
+    Volume *moving_grad = bod->moving_grad;
+
     const int USE_NAIVE = 0;
 
     if (USE_NAIVE) {

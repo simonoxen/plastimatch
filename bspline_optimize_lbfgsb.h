@@ -6,18 +6,15 @@
 
 #include <stdio.h>
 #include "bspline.h"
+#include "bspline_optimize.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 void
 bspline_optimize_lbfgsb (
-		Bspline_xform* bxf, 
-		Bspline_state* bst,
-		BSPLINE_Parms *parms, 
-		Volume *fixed, 
-		Volume *moving, 
-		Volume *moving_grad);
+    Bspline_optimize_data *bod
+);
 #if defined __cplusplus
 }
 #endif

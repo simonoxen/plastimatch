@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "bspline.h"
+#include "bspline_optimize.h"
 #include "volume.h"
 
 #if defined __cplusplus
@@ -14,12 +15,7 @@ extern "C" {
 
 void
 bspline_optimize_steepest (
-    Bspline_xform *bxf, 
-    Bspline_state *bst, 
-    BSPLINE_Parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad
+    Bspline_optimize_data *bod
 );
 
 #if defined __cplusplus
