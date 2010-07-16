@@ -19,7 +19,7 @@
 
 #include "getopt.h"
 #include "itk_image.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 #include "resample_mha.h"
 #include "xform.h"
 

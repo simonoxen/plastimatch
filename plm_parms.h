@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _plm_registration_h_
-#define _plm_registration_h_
+#ifndef _plm_parms_h_
+#define _plm_parms_h_
 
 #include <stdlib.h>
 #include <ctype.h>

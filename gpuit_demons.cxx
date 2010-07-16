@@ -9,7 +9,7 @@
 #include "demons.h"
 #include "mha_io.h"
 #include "plm_config.h"
-#include "plm_registration.h"
+#include "plm_stages.h"
 #include "volume.h"
 #include "xform.h"
 

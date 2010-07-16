@@ -10,9 +10,9 @@
 #else
 #include "getopt.h"
 #endif
-#include "plm_registration.h"
 #include "itk_image.h"
 #include "itk_optim.h"
+#include "plm_parms.h"
 #include "xform.h"
 
 #define BUFLEN 2048

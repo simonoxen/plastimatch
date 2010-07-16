@@ -12,7 +12,7 @@
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_image_header.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 #include "volume.h"
 #include "xform.h"
 

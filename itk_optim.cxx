@@ -19,7 +19,7 @@
 #include "itkLBFGSBOptimizer.h"
 
 #include "itk_registration.h"
-#include "plm_registration.h"
+#include "plm_stages.h"
 #include "print_and_exit.h"
 
 /* Types of optimizers */

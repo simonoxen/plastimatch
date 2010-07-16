@@ -24,7 +24,7 @@
 #include "pcmd_resample.h"
 #include "pcmd_stats.h"
 #include "pcmd_warp.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_version.h"
 

@@ -31,7 +31,7 @@
 #include "itk_warp.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 #include "plm_timer.h"
 #include "resample_mha.h"
 #include "xform.h"

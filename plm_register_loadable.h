@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include "itk_image.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 
 /* -----------------------------------------------------------------------
    Public functions

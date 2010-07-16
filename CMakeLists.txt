@@ -691,15 +691,15 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_warp.cxx itk_warp.h 
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
+  plm_api.cxx plm_api.h 
   plm_file_format.cxx plm_file_format.h 
   plm_image.cxx plm_image.h 
   plm_image_header.cxx plm_image_header.h 
   plm_image_patient_position.cxx plm_image_patient_position.h 
   plm_image_type.cxx plm_image_type.h 
   plm_int.h
-  plm_parms.cxx 
+  plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
-  plm_registration.h 
   plm_stages.cxx plm_stages.h 
   plm_version.h 
   plm_warp.cxx plm_warp.h 

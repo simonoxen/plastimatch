@@ -7,7 +7,7 @@
 
 #include "plm_config.h"
 #include "itk_registration.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 
 void
 set_optimization (RegistrationType::Pointer registration,

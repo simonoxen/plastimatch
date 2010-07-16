@@ -17,7 +17,7 @@
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 #include "plm_stages.h"
 #include "plm_warp.h"
 #include "resample_mha.h"

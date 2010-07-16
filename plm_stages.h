@@ -5,7 +5,7 @@
 #define _plm_stages_h_
 
 #include "plm_config.h"
-#include "plm_registration.h"
+#include "plm_parms.h"
 
 /* -----------------------------------------------------------------------
    Public functions
