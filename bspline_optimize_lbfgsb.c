@@ -155,7 +155,6 @@ bspline_optimize_lbfgsb (
     integer n, m, iprint, *nbd, *iwa, isave[44];
     doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
     integer i;
-    int num_ls = 0;	/* # line searches */
     int NMAX, MMAX;
     FILE *fp;
     //    double best_score;
@@ -220,8 +219,9 @@ bspline_optimize_lbfgsb (
 		    task[0], task[1], task[2], task[3], task[4], 
 		    task[5], task[6], task[7], task[8], task[9]);
 
-    /* Initialize # iterations (1 iteration = 1 function eval) */
+    /* Initialize # iterations, # function evaluations */
     bst->it = 0;
+    bst->feval = 0;
 
     if (parms->debug) {
 	fp = fopen ("scores.txt", "w");
@@ -261,15 +261,16 @@ bspline_optimize_lbfgsb (
 		g[i] = ssd->grad[i];
 	    }
 
-	    /* Check # iterations */
-	    if (bst->it >= parms->max_its) break;
-	    bst->it ++;
+	    /* Check # feval */
+	    if (bst->feval >= parms->max_feval) break;
+	    bst->feval ++;
 
 	} else if (memcmp (task, "NEW_X", strlen ("NEW_X")) == 0) {
 	    /* Optimizer has completed a line search. */
-	    /* Check convergence tolerance */
-	    ++num_ls;
-	    //logfile_printf ("Score: %g, Best: %g, Its: (%d,%d)\n", ssd->score, best_score, num_ls, bst->it);
+
+	    /* Check iterations */
+	    if (bst->it >= parms->max_its) break;
+	    bst->it ++;
 
 	} else {
 	    break;

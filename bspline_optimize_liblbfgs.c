@@ -60,7 +60,9 @@ progress(
     int k,
     int ls)
 {
-    printf("Iteration %d:\n", k);
+    Bspline_optimize_data *bod = (Bspline_optimize_data*) instance;
+
+    printf("Iteration %d, %d:\n", k, ls);
     printf("  fx = %f, x[0] = %f, x[1] = %f\n", fx, x[0], x[1]);
     printf("  xnorm = %f, gnorm = %f, step = %f\n", xnorm, gnorm, step);
     printf("\n");

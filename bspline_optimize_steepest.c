@@ -42,18 +42,20 @@ bspline_optimize_steepest_trace(
 )
 {
     BSPLINE_Score* ssd = &bst->ssd;
-    int i,j;
+    int i;
     float alpha = 1.0f;
     float ssd_grad_norm;
     float old_score;
-    FILE *fp,*trace;
-    float *x;           /* Start of line search */
-    float *h;           /* Search direction */
+    FILE *fp;
     double htg;
     int success;
-    char filename[20];
     float *grad_backup;
+    int j;
+    FILE *trace;
+    char filename[20];
     float score_backup;
+    float *x;           /* Start of line search */
+    float *h;           /* Search direction */
 
     if (parms->debug) {
 	fp = fopen("scores.txt", "w");
@@ -64,8 +66,8 @@ bspline_optimize_steepest_trace(
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
-	    alpha = 1.0f;
-	    printf ("Using alpha_0 (%f)\n", alpha);
+	alpha = 1.0f;
+	printf ("Using alpha_0 (%f)\n", alpha);
     }
 #endif
 
@@ -76,6 +78,7 @@ bspline_optimize_steepest_trace(
 
     /* Set iteration */
     bst->it = 0;
+    bst->feval = 0;
     success = 0;
     memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
 
@@ -105,12 +108,12 @@ bspline_optimize_steepest_trace(
 	fprintf (fp, "%f\n", ssd->score);
     }
 
-    while (bst->it < parms->max_its) {
+    while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
 	double gr;
 	int accept_step = 0;
 
-	/* Update iteration number */
-	bst->it ++;
+	/* Update num function evaluations */
+	bst->feval ++;
 
 	/* Compute new search location */
 	for (i = 0; i < bxf->num_coeff; i++) {
@@ -146,9 +149,12 @@ bspline_optimize_steepest_trace(
 	    fprintf (fp, "%f\n", ssd->score);
 	}
 
-	/* If score was reduced, we accept the line search */
+	/* If score was reduced, we accept the line search (fall through). 
+	   Otherwise, we reduce trust region (continue). */
 	if (!accept_step) continue;
 
+	/* Update iteration number */
+	bst->it ++;
 
 	// At this point we have a good set of coefficients that
 	// minimize the cost function.
@@ -159,30 +165,29 @@ bspline_optimize_steepest_trace(
 	memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
 	memcpy (grad_backup, ssd->grad, bxf->num_coeff * sizeof(float));
 	score_backup = ssd->score;
-	sprintf(filename, "grad_%04i.csv", success);
+	sprintf (filename, "grad_%04i.csv", success);
 	trace = fopen(filename, "w");
 	printf ("Capturing Gradient (grad_%04i.csv)\n", success);
 
 	// For each step along the gradient
 	for (i = -35; i < 35; i++) {
 
-		for (j = 0; j < bxf->num_coeff; j++) {
-			bxf->coeff[j] = x[j] + i * 1 * h[j];
-		}
+	    for (j = 0; j < bxf->num_coeff; j++) {
+		bxf->coeff[j] = x[j] + i * 1 * h[j];
+	    }
 
-		/* Get score */
-		printf ("\t");
-		bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
+	    /* Get score */
+	    printf ("\t");
+	    bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
 	
-		fprintf (trace, "%d, %10.10f\n", i, bst->ssd.score);
-		fflush(trace);
+	    fprintf (trace, "%d, %10.10f\n", i, bst->ssd.score);
+	    fflush(trace);
 	}
 	fclose (trace);
 
 	printf ("Finished Capturing Gradient.\n\n");
 	memcpy (ssd->grad, grad_backup, bxf->num_coeff * sizeof(float));
 	ssd->score = score_backup;
-
 
 	/* Start new line search */
 	ssd_grad_norm = 0;
@@ -260,6 +265,7 @@ bspline_optimize_steepest_trust (
 
     /* Set iteration */
     bst->it = 0;
+    bst->feval = 0;
     memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
 
     /* Get score and gradient */
@@ -286,12 +292,12 @@ bspline_optimize_steepest_trust (
 	fprintf (fp, "%f\n", ssd->score);
     }
 
-    while (bst->it < parms->max_its) {
+    while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
 	double gr;
 	int accept_step = 0;
 
-	/* Update iteration number */
-	bst->it ++;
+	/* Update num function evaluations */
+	bst->feval ++;
 
 	/* Compute new search location */
 	for (i = 0; i < bxf->num_coeff; i++) {
@@ -329,6 +335,9 @@ bspline_optimize_steepest_trust (
 
 	/* If score was reduced, we accept the line search */
 	if (!accept_step) continue;
+
+	/* Update iteration number */
+	bst->it ++;
 
 	/* Start new line search */
 	memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
@@ -385,6 +394,7 @@ bspline_optimize_steepest_naive (
 
     /* Set iteration */
     bst->it = 0;
+    bst->feval = 0;
 
     /* Get score and gradient */
     bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
@@ -407,10 +417,11 @@ bspline_optimize_steepest_naive (
 	fprintf (fp, "%f\n", ssd->score);
     }
 
-    while (bst->it < parms->max_its) {
+    while (bst->it < parms->max_its && bst->feval < parms->max_feval) {
 
-	/* Update iteration number */
+	/* Update num iterations & num function evaluations */
 	bst->it ++;
+	bst->feval ++;
 
 	logfile_printf ("Beginning iteration %d, gamma = %g\n", bst->it, gamma);
 

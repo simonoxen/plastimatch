@@ -115,6 +115,7 @@ do_gpuit_bspline_stage_internal (
 	print_and_exit ("Undefined impl type in gpuit_bspline\n");
     }
     parms.max_its = stage->max_its;
+    parms.max_feval = stage->max_its;
     parms.mi_hist.fixed.bins = stage->mi_histogram_bins;
     parms.mi_hist.moving.bins = stage->mi_histogram_bins;
 	parms.young_modulus = stage->young_modulus;

@@ -173,7 +173,8 @@ struct dev_pointers_bspline
 
 typedef struct bspline_state Bspline_state;
 struct bspline_state {
-    int it;
+    int it;                              /* Number of iterations */
+    int feval;                           /* Number of function evaluations */
     BSPLINE_Score ssd;                   /* Score and Gradient  */
     Dev_Pointers_Bspline* dev_ptrs;      /* GPU Device Pointers */
 };
@@ -214,7 +215,8 @@ struct Bspline_parms_struct {
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
-    int max_its;
+    int max_its;                 /* Max iterations (line searches) */
+    int max_feval;               /* Max function evaluations */
     int debug;                   /* Create grad & histogram files */
     char implementation;         /* Implementation ('a', 'b', etc.) */
     double convergence_tol;      /* When to stop iterations based on score */

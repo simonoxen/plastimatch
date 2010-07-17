@@ -73,6 +73,7 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->metric = BMET_MSE;
     parms->implementation = '\0';
     parms->max_its = 10;
+    parms->max_feval = 10;
     parms->convergence_tol = 0.1;
     parms->convergence_tol_its = 4;
     parms->debug = 0;
@@ -422,6 +423,7 @@ log_parms (Bspline_parms* parms)
 {
     logfile_printf ("BSPLINE PARMS\n");
     logfile_printf ("max_its = %d\n", parms->max_its);
+    logfile_printf ("max_feval = %d\n", parms->max_feval);
 }
 
 static void
@@ -1552,8 +1554,12 @@ compute_dS_dP (
 }
 
 void
-report_score (char *alg, Bspline_xform *bxf, 
-	      Bspline_state *bst, int num_vox, double timing)
+report_score (
+    char *alg, 
+    Bspline_xform *bxf, 
+    Bspline_state *bst, 
+    int num_vox, 
+    double timing)
 {
     int i;
     float ssd_grad_norm, ssd_grad_mean;
@@ -1570,15 +1576,16 @@ report_score (char *alg, Bspline_xform *bxf,
     // MI scores are between 0 and 1
     // The extra decimal point resolution helps in seeing
     // if the optimizer is performing adequately.
-    if (!strcmp (alg, "MI"))
-    {
-	    logfile_printf ("%s[%4d] %1.8f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
-		    ssd_grad_norm, timing);
+    if (!strcmp (alg, "MI")) {
+	logfile_printf (
+	    "%s[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
+	    ssd_grad_norm, timing);
     } else {
-	    logfile_printf ("%s[%4d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
-		    alg, bst->it, bst->ssd.score, num_vox, ssd_grad_mean, 
-		    ssd_grad_norm, timing);
+	logfile_printf (
+	    "%s[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
+	    ssd_grad_norm, timing);
     }
 }
 
