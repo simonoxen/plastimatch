@@ -505,7 +505,9 @@ SET (GPUIT_LIBRARY_DEPENDENCIES
   ${MATH_LIB}
   )
 
-SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
+# GPUIT_LIBRARIES with RBF linear system now needs ITK's svd solver
+# NSh 7-17-2010
+SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES} ${ITK_LIBRARIES})
 
 SET (PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
@@ -536,7 +538,7 @@ ENDIF (BROOK_FOUND)
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_SRC
   bspline.c bspline.h
-  bspline_rbf.c bspline_rbf.h
+  bspline_rbf.cxx bspline_rbf.h
   bspline_regularize.c bspline_regularize.h
   bspline_landmarks.c bspline_landmarks.h
   bspline_macros.h

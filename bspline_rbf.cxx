@@ -17,6 +17,14 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
+#include <iostream>
+#include "vnl/vnl_matrix_fixed.h"
+#include "vnl/vnl_matrix.h"
+#include "vnl/vnl_vector.h"
+#include "vnl/vnl_vector_fixed.h"
+#include "vnl/algo/vnl_svd.h"
+#include "vnl/vnl_sample.h"
+
 typedef struct rbf_params Rbf_parms;
 struct rbf_params { // used to pass information to bspline_rbf_score
     float radius;    // radius of the RBF
@@ -208,13 +216,94 @@ float bspline_rbf_score (
     return score;
 }
 
+// find RBF coeff by solving the linear equations using ITK's SVD routine
+// Output:
+// parms->blm->rbf_coeff contains RBF coefficients
+void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
+{
+	Bspline_landmarks *blm = parms->landmarks;
+    float *vf;
+	float rbfv;
+	int i, j, d, fv, rbfcenter[3];
+
+	typedef vnl_matrix <double> Vnl_matrix;
+    typedef vnl_svd <double> SVDSolverType;
+    Vnl_matrix A, b;
+
+    Rbf_parms *rbf_par;
+
+    rbf_par = (Rbf_parms *)malloc( sizeof(Rbf_parms));
+    rbf_par->radius = parms->rbf_radius;
+    rbf_par->bparms = parms;
+    rbf_par->vector_field = vector_field;
+
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported\n");
+
+    //fill in vector field at fixed landmark location
+    vf = (float*) vector_field->img;
+
+    for(i=0;i<blm->num_landmarks;i++) {
+	fv = blm->landvox_fix[3*i+2] * vector_field->dim[0] * vector_field->dim[1] 
+	    +blm->landvox_fix[3*i+1] * vector_field->dim[0] 
+	    +blm->landvox_fix[3*i+0] ;
+
+	for(d=0;d<3;d++) blm->landmark_dxyz[3*i+d] = vf[3*fv+d];
+    }
+
+	A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
+    A.set_identity ();
+
+    b.set_size (3 * blm->num_landmarks, 1);
+    b.fill (0.0);
+
+	// right-hand side
+    for(i=0;i<blm->num_landmarks;i++) 
+		for(d=0;d<3;d++) 	
+		    b(3*i +d, 0) = -(blm->fixed_landmarks[3*i+d] + blm->landmark_dxyz[3*i+d] - blm->moving_landmarks[3*i+d] );
+
+	// matrix
+    for(i=0;i<blm->num_landmarks;i++) {
+    for(j=0;j<blm->num_landmarks;j++) {
+
+	for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*j+d];
+	
+	rbfv = rbf_value( rbfcenter, 
+			blm->landvox_fix[3*i+0],
+		    blm->landvox_fix[3*i+1],
+		    blm->landvox_fix[3*i+2], 
+		    rbf_par->radius,
+		    rbf_par->vector_field->pix_spacing );
+
+	for(d=0;d<3;d++)
+		A(3*i+d, 3*j+d) = rbfv ;
+
+	}
+	}
+
+    A.print (std::cout);
+    b.print (std::cout);
+
+    SVDSolverType svd (A, 1e-8);
+    Vnl_matrix x = svd.solve (b);
+
+    x.print (std::cout);
+
+    for(i=0;i<3*blm->num_landmarks;i++) blm->rbf_coeff[i] = x(i,0);
+
+    printf("rbf coeff from optimize:  %.3f  %.3f  %.3f   dist unkn\n", 
+	blm->rbf_coeff[0], blm->rbf_coeff[1], blm->rbf_coeff[2] );
+
+}
+
+
 /*
 Optimization procedure is used even if no regularization required,
 to have a single data pathway
 Output:
 parms->blm->rbf_coeff contains RBF coefficients
 */
-void bspline_rbf_find_coeffs( Volume *vector_field, Bspline_parms *parms )
+void bspline_rbf_find_coeffs_NM( Volume *vector_field, Bspline_parms *parms )
 {
     Bspline_landmarks *blm = parms->landmarks;
     float *rbf_simplex, *scores, *vf;
