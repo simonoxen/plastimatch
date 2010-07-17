@@ -112,6 +112,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	    if (rc != 1) {
 		print_usage ();
 	    }
+	    parms->max_feval = parms->max_its;
 	}
 	else if (!strcmp (argv[i], "-M")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

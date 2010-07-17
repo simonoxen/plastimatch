@@ -26,8 +26,8 @@ evaluate (
     const int n,
     const lbfgsfloatval_t step)
 {
-    int i;
     Bspline_optimize_data *bod = (Bspline_optimize_data*) instance;
+    int i;
     
     /* Copy x in */
     for (i = 0; i < bod->bxf->num_coeff; i++) {
@@ -43,6 +43,9 @@ evaluate (
 	g[i] = (lbfgsfloatval_t) bod->bst->ssd.grad[i];
     }
 
+    /* Increment num function evals */
+    bod->bst->feval ++;
+
     /* Return cost */
     return (lbfgsfloatval_t) bod->bst->ssd.score;
 }
@@ -56,16 +59,21 @@ progress(
     const lbfgsfloatval_t xnorm,
     const lbfgsfloatval_t gnorm,
     const lbfgsfloatval_t step,
-    int n,
-    int k,
-    int ls)
+    int n,                        /* Size of input vector */
+    int k,                        /* Iteration number */
+    int ls                        /* feval within this iteration */
+)
 {
     Bspline_optimize_data *bod = (Bspline_optimize_data*) instance;
 
-    printf("Iteration %d, %d:\n", k, ls);
-    printf("  fx = %f, x[0] = %f, x[1] = %f\n", fx, x[0], x[1]);
-    printf("  xnorm = %f, gnorm = %f, step = %f\n", xnorm, gnorm, step);
-    printf("\n");
+    logfile_printf (
+	"                      XN %9.3f GN %9.3f ST %9.3f\n", 
+	xnorm, gnorm, step);
+    bod->bst->it = k;
+    if (bod->bst->it > bod->parms->max_its
+	|| bod->bst->feval > bod->parms->max_feval) {
+	return 1;
+    }
     return 0;
 }
 
