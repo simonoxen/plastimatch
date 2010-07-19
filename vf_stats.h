@@ -19,6 +19,12 @@ void
 vf_analyze_strain (Volume* vol);
 gpuit_EXPORT 
 void
+vf_analyze_jacobian (Volume* vol);
+gpuit_EXPORT 
+void
+vf_analyze_second_deriv (Volume* vol);
+gpuit_EXPORT 
+void
 vf_analyze_mask (Volume* vol, Volume* mask);
 gpuit_EXPORT 
 void

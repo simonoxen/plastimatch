@@ -36,12 +36,16 @@ stats_vf_main (Stats_parms* parms)
     if (parms->mask_fn[0] == '\0') {
     	vf_analyze (vol);
     	vf_analyze_strain (vol);
-    	volume_destroy (vol);
+		vf_analyze_jacobian (vol);
+		vf_analyze_second_deriv (vol);
+		volume_destroy (vol);
     }
     else {
 	Volume* mask = read_mha (parms->mask_fn);
 	vf_analyze (vol); 
 	vf_analyze_strain (vol);
+	vf_analyze_jacobian (vol);
+	vf_analyze_second_deriv (vol);
 	vf_analyze_mask (vol, mask);
 	vf_analyze_strain_mask (vol, mask);
 	volume_destroy (vol);

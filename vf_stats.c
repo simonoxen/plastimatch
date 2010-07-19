@@ -149,6 +149,208 @@ vf_analyze_strain (Volume* vol)
 }
 
 void
+vf_analyze_jacobian (Volume* vol)
+{
+    int i, j, k;
+    float* img = (float*) vol->img;
+    float min_jacobian, max_jacobian, min_abs_jacobian;
+    int min_abs_jacobian_loc[3];
+
+    float di = vol->pix_spacing[0];
+    float dj = vol->pix_spacing[1];
+    float dk = vol->pix_spacing[2];
+    int first = 1;
+
+    for (k = 1; k < vol->dim[2]-1; k++) {
+	for (j = 1; j < vol->dim[1]-1; j++) {
+	    for (i = 1; i < vol->dim[0]-1; i++) {
+		int vin = volume_index (vol->dim, i-1, j, k);
+		int vip = volume_index (vol->dim, i+1, j, k);
+		int vjn = volume_index (vol->dim, i, j-1, k);
+		int vjp = volume_index (vol->dim, i, j+1, k);
+		int vkn = volume_index (vol->dim, i, j, k-1);
+		int vkp = volume_index (vol->dim, i, j, k+1);
+
+		float* din = &img[3*vin];
+		float* dip = &img[3*vip];
+		float* djn = &img[3*vjn];
+		float* djp = &img[3*vjp];
+		float* dkn = &img[3*vkn];
+		float* dkp = &img[3*vkp];
+
+		float dui_di = (0.5 / di) * (dip[0] - din[0]);
+		float duj_di = (0.5 / di) * (dip[1] - din[1]);
+		float duk_di = (0.5 / di) * (dip[2] - din[2]);
+		float dui_dj = (0.5 / dj) * (djp[0] - djn[0]);
+		float duj_dj = (0.5 / dj) * (djp[1] - djn[1]);
+		float duk_dj = (0.5 / dj) * (djp[2] - djn[2]);
+		float dui_dk = (0.5 / dk) * (dkp[0] - dkn[0]);
+		float duj_dk = (0.5 / dk) * (dkp[1] - dkn[1]);
+		float duk_dk = (0.5 / dk) * (dkp[2] - dkn[2]);
+		
+		float jacobian = 
+			+dui_di * ( duj_dj * duk_dk - duj_dk * duk_dj  ) 
+			-dui_dj * ( duj_di * duk_dk - duj_dk * duk_di  )
+			+dui_dk * ( duj_di * duk_dj - duj_dj * duk_di  )	;
+			// absolute value not taken to detect possible sign changes
+
+
+		if (first) {
+			max_jacobian = jacobian;
+			min_jacobian = jacobian;
+			min_abs_jacobian = fabs(jacobian);
+		    min_abs_jacobian_loc[0] = i;
+		    min_abs_jacobian_loc[1] = j;
+		    min_abs_jacobian_loc[2] = k;
+		    first = 0;
+		} else {
+		    if (fabs(jacobian) < min_abs_jacobian) {
+			min_abs_jacobian = fabs(jacobian);
+			min_abs_jacobian_loc[0] = i;
+			min_abs_jacobian_loc[1] = j;
+			min_abs_jacobian_loc[2] = k;
+		    };
+		    if (jacobian > max_jacobian) max_jacobian = jacobian;
+		  	if (jacobian < min_jacobian) min_jacobian = jacobian;
+		}
+
+	    }
+	}
+    }
+
+    printf ("Jacobian: MINJAC %g MAXJAC %g MINABSJAC %g\n", 
+	min_jacobian, max_jacobian, min_abs_jacobian);
+    printf ("Min abs jacobian at: (%d %d %d)\n", 
+	min_abs_jacobian_loc[0], min_abs_jacobian_loc[1], min_abs_jacobian_loc[2]);
+}
+
+void
+vf_analyze_second_deriv (Volume* vol)
+{
+    int i, j, k;
+    float* img = (float*) vol->img;
+    
+	float min_sec_der, max_sec_der, total_sec_der=0.;
+    int max_sec_der_loc[3];
+
+    float di = vol->pix_spacing[0];
+    float dj = vol->pix_spacing[1];
+    float dk = vol->pix_spacing[2];
+    int first = 1;
+
+    for (k = 1; k < vol->dim[2]-1; k++) {
+	for (j = 1; j < vol->dim[1]-1; j++) {
+	    for (i = 1; i < vol->dim[0]-1; i++) {
+		
+		int v_o = volume_index (vol->dim, i, j, k);
+
+		int vin = volume_index (vol->dim, i-1, j, k);
+		int vip = volume_index (vol->dim, i+1, j, k);
+		int vjn = volume_index (vol->dim, i, j-1, k);
+		int vjp = volume_index (vol->dim, i, j+1, k);
+		int vkn = volume_index (vol->dim, i, j, k-1);
+		int vkp = volume_index (vol->dim, i, j, k+1);
+		
+		int vijp = volume_index (vol->dim, i+1, j+1, k);
+		int vijn = volume_index (vol->dim, i-1, j-1, k);
+		int vikp = volume_index (vol->dim, i+1, j, k+1);
+		int vikn = volume_index (vol->dim, i-1, j, k-1);
+		int vjkp = volume_index (vol->dim, i, j+1, k+1);
+		int vjkn = volume_index (vol->dim, i, j-1, k-1);
+
+		float* d_o = &img[3*v_o];
+
+		float* din = &img[3*vin];
+		float* dip = &img[3*vip];
+		float* djn = &img[3*vjn];
+		float* djp = &img[3*vjp];
+		float* dkn = &img[3*vkn];
+		float* dkp = &img[3*vkp];
+
+		float *dijp = &img[3*vijp];
+		float *dijn = &img[3*vijn];
+		float *dikp = &img[3*vikp];
+		float *dikn = &img[3*vikn];
+		float *djkp = &img[3*vjkp];
+		float *djkn = &img[3*vjkn];
+
+		float d2ui_didi = (1./ di) * ( dip[0] - 2 * d_o[0] + din[0] );
+		float d2ui_djdj = (1./ dj) * ( djp[0] - 2 * d_o[0] + djn[0] );
+		float d2ui_dkdk = (1./ dk) * ( dkp[0] - 2 * d_o[0] + dkn[0] );
+		float d2ui_didj = (0.5 / (di*dj))*
+			( ( dijp[0] + dijn[0] - 2. * d_o[0] ) - 
+			  ( dip[0] + din[0] + djp[0] + djn[0]) );
+		float d2ui_didk = (0.5 / (di*dk))*
+			( ( dikp[0] + dikn[0] - 2. * d_o[0] ) - 
+			  ( dip[0] + din[0] + dkp[0] + dkn[0]) );
+		float d2ui_djdk = (0.5 / (dj*dk))*
+			( ( djkp[0] + djkn[0] - 2. * d_o[0] ) - 
+			  ( djp[0] + djn[0] + dkp[0] + dkn[0]) );
+
+		float d2uj_didi = (1./ di) * ( dip[1] - 2 * d_o[1] + din[1] );
+		float d2uj_djdj = (1./ dj) * ( djp[1] - 2 * d_o[1] + djn[1] );
+		float d2uj_dkdk = (1./ dk) * ( dkp[1] - 2 * d_o[1] + dkn[1] );
+		float d2uj_didj = (0.5 / (di*dj))*
+			( ( dijp[1] + dijn[1] - 2. * d_o[1] ) - 
+			  ( dip[1] + din[1] + djp[1] + djn[1]) );
+		float d2uj_didk = (0.5 / (di*dk))*
+			( ( dikp[1] + dikn[1] - 2. * d_o[1] ) - 
+			  ( dip[1] + din[1] + dkp[1] + dkn[1]) );
+		float d2uj_djdk = (0.5 / (dj*dk))*
+			( ( djkp[1] + djkn[1] - 2. * d_o[1] ) - 
+			  ( djp[1] + djn[1] + dkp[1] + dkn[1]) );
+
+		float d2uk_didi = (1./ di) * ( dip[2] - 2 * d_o[2] + din[2] );
+		float d2uk_djdj = (1./ dj) * ( djp[2] - 2 * d_o[2] + djn[2] );
+		float d2uk_dkdk = (1./ dk) * ( dkp[2] - 2 * d_o[2] + dkn[2] );
+		float d2uk_didj = (0.5 / (di*dj))*
+			( ( dijp[2] + dijn[2] - 2. * d_o[2] ) - 
+			  ( dip[2] + din[2] + djp[2] + djn[2]) );
+		float d2uk_didk = (0.5 / (di*dk))*
+			( ( dikp[2] + dikn[2] - 2. * d_o[2] ) - 
+			  ( dip[2] + din[2] + dkp[2] + dkn[2]) );
+		float d2uk_djdk = (0.5 / (dj*dk))*
+			( ( djkp[2] + djkn[2] - 2. * d_o[2] ) - 
+			  ( djp[2] + djn[2] + dkp[2] + dkn[2]) );
+
+		float second_deriv_sq =
+			d2ui_didi*d2ui_didi + d2ui_djdj*d2ui_djdj + d2ui_dkdk*d2ui_dkdk +
+			2*(d2ui_didj*d2ui_didj + d2ui_didk*d2ui_didk + d2ui_djdk*d2ui_djdk) +
+			d2uj_didi*d2uj_didi + d2uj_djdj*d2uj_djdj + d2uj_dkdk*d2uj_dkdk +
+			2*(d2uj_didj*d2uj_didj + d2uj_didk*d2uj_didk + d2uj_djdk*d2uj_djdk) +
+			d2uk_didi*d2uk_didi + d2uk_djdj*d2uk_djdj + d2uk_dkdk*d2uk_dkdk +
+			2*(d2uk_didj*d2uk_didj + d2uk_didk*d2uk_didk + d2uk_djdk*d2uk_djdk) ;
+
+		total_sec_der += second_deriv_sq;
+
+		if (first) {
+			max_sec_der = second_deriv_sq;
+			min_sec_der = second_deriv_sq;
+			max_sec_der_loc[0] = i;
+		    max_sec_der_loc[1] = j;
+		    max_sec_der_loc[2] = k;
+		    first = 0;
+		} else {
+		    if (second_deriv_sq > max_sec_der) {
+				max_sec_der = second_deriv_sq;
+				max_sec_der_loc[0] = i;
+				max_sec_der_loc[1] = j;
+				max_sec_der_loc[2] = k;
+				};
+		  	if (second_deriv_sq < min_sec_der) min_sec_der = second_deriv_sq;
+		}
+
+	    }
+	}
+    }
+
+    printf ("Second derivatives: MINSECDER %g MAXSECDER %g TOTSECDER %g\n", 
+	min_sec_der, max_sec_der, total_sec_der);
+    printf ("Max second derivative: (%d %d %d)\n", 
+	max_sec_der_loc[0], max_sec_der_loc[1], max_sec_der_loc[2]);
+}
+
+void
 vf_analyze_mask (Volume* vol, Volume *mask)
 {
     int d, i, j, k, v;
