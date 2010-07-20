@@ -178,22 +178,22 @@ vf_analyze_jacobian (Volume* vol)
 		float* dkn = &img[3*vkn];
 		float* dkp = &img[3*vkp];
 
-		float dui_di = (0.5 / di) * (dip[0] - din[0]);
+		// for a zero or constant field u, jacobian must be 1.
+		float dui_di = 1 + (0.5 / di) * (dip[0] - din[0]);
 		float duj_di = (0.5 / di) * (dip[1] - din[1]);
 		float duk_di = (0.5 / di) * (dip[2] - din[2]);
 		float dui_dj = (0.5 / dj) * (djp[0] - djn[0]);
-		float duj_dj = (0.5 / dj) * (djp[1] - djn[1]);
+		float duj_dj = 1 + (0.5 / dj) * (djp[1] - djn[1]);
 		float duk_dj = (0.5 / dj) * (djp[2] - djn[2]);
 		float dui_dk = (0.5 / dk) * (dkp[0] - dkn[0]);
 		float duj_dk = (0.5 / dk) * (dkp[1] - dkn[1]);
-		float duk_dk = (0.5 / dk) * (dkp[2] - dkn[2]);
+		float duk_dk = 1 + (0.5 / dk) * (dkp[2] - dkn[2]);
 		
 		float jacobian = 
 			+dui_di * ( duj_dj * duk_dk - duj_dk * duk_dj  ) 
 			-dui_dj * ( duj_di * duk_dk - duj_dk * duk_di  )
 			+dui_dk * ( duj_di * duk_dj - duj_dj * duk_di  )	;
 			// absolute value not taken to detect possible sign changes
-
 
 		if (first) {
 			max_jacobian = jacobian;
