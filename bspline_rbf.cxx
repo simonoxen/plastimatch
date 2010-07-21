@@ -167,8 +167,9 @@ float rbf_value (int *center, int x, int y, int z,
     r = r / radius;
 
     if (r>1) return 0.;
-    val = (1-r)*(1-r)*(1-r)*(1-r)*(4*r+1.); // Wendland
-    return val;
+ //   val = (1-r)*(1-r)*(1-r)*(1-r)*(4*r+1.); // Wendland
+	val = exp( -r*r );   
+	return val;
 }
 
 /*
@@ -374,7 +375,7 @@ bspline_rbf_update_vector_field (
     if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");
 
-    dr = parms->rbf_radius+1;
+    dr = 3*parms->rbf_radius+1;
     vf = (float*) vector_field->img;
     //where are the centers?
     //rbf_vox_origin = blm->landvox_warp;
