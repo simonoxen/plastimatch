@@ -166,7 +166,7 @@ float rbf_value (int *center, int x, int y, int z,
     r = sqrt( dx*dx + dy*dy + dz*dz);
     r = r / radius;
 
-    if (r>1) return 0.;
+ //   if (r>1) return 0.;
  //   val = (1-r)*(1-r)*(1-r)*(1-r)*(4*r+1.); // Wendland
 	val = exp( -r*r );   
 	return val;
