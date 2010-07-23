@@ -219,6 +219,7 @@ struct Bspline_parms_struct {
     int max_feval;               /* Max function evaluations */
     int debug;                   /* Create grad & histogram files */
     char implementation;         /* Implementation ('a', 'b', etc.) */
+    int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     double convergence_tol;      /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */

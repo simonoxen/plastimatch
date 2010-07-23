@@ -92,6 +92,8 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->mi_hist.j_hist = 0;
     parms->mi_hist.fixed.bins = 20;
     parms->mi_hist.moving.bins = 20;
+
+    parms->gpuid = 0;
 }
 
 void

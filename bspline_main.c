@@ -19,6 +19,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #endif
 #include "bspline_opts.h"
+#include "bspline_cuda.h"
 #include "mha_io.h"
 #include "vf.h"
 
@@ -34,6 +35,10 @@ main (int argc, char* argv[])
     int roi_offset[3];
 
     bspline_opts_parse_args (&options, argc, argv);
+
+#if (CUDA_FOUND)
+    CUDA_selectgpu (parms->gpuid);
+#endif
 
     fixed = read_mha (options.fixed_fn);
     if (!fixed) exit (-1);
