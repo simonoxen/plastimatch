@@ -19,7 +19,9 @@
 #include "bspline_optimize_lbfgsb.h"
 #endif
 #include "bspline_opts.h"
+#if (CUDA_FOUND)
 #include "bspline_cuda.h"
+#endif
 #include "mha_io.h"
 #include "vf.h"
 
