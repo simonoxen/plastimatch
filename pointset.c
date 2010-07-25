@@ -22,7 +22,7 @@ pointset_create (void)
 }
 
 void
-pointset_destroy (Pointset* ps)
+pointset_destroy (Pointset *ps)
 {
     if (ps->points) {
 	free (ps->points);

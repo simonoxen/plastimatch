@@ -13,6 +13,7 @@
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "math_util.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 
 Bspline_landmarks*
@@ -28,10 +29,10 @@ void
 bspline_landmarks_destroy (Bspline_landmarks* blm)
 {
     if (blm->fixed_landmarks) {
-	free (blm->fixed_landmarks);
+	pointset_destroy (blm->fixed_landmarks);
     }
     if (blm->moving_landmarks) {
-	free (blm->moving_landmarks);
+	pointset_destroy (blm->moving_landmarks);
     }
     if (blm->landvox_mov) {
 	free (blm->landvox_mov);
@@ -54,6 +55,7 @@ bspline_landmarks_destroy (Bspline_landmarks* blm)
     free (blm);
 }
 
+#if defined (commentout)
 static void
 bspline_landmarks_load_file (float **landmarks, int *num_landmarks, char *fn)
 {
@@ -97,6 +99,7 @@ bspline_landmarks_load_file (float **landmarks, int *num_landmarks, char *fn)
     }
     fclose (fp);
 }
+#endif
 
 void
 bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
@@ -110,9 +113,9 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
     blm->landvox_mov = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
-	    blm->landvox_mov[i*3 + d] 
-		= ROUND_INT ((blm->moving_landmarks[i*3 + d] - moving->offset[d])
-		    / moving->pix_spacing[d]);
+	    blm->landvox_mov[i*3 + d] = ROUND_INT (
+		(blm->moving_landmarks->points[3*d + i]
+		    - moving->offset[d]) / moving->pix_spacing[d]);
 	    if (blm->landvox_mov[i*3 + d] < 0 
 		|| blm->landvox_mov[i*3 + d] >= moving->dim[d])
 	    {
@@ -128,9 +131,9 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
     blm->landvox_fix = (int*) malloc (3 * blm->num_landmarks * sizeof(int));
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
-	    blm->landvox_fix[i*3 + d] 
-		= ROUND_INT ((blm->fixed_landmarks[i*3 + d] - fixed->offset[d])
-		    / fixed->pix_spacing[d]);
+	    blm->landvox_fix[i*3 + d] = ROUND_INT (
+		(blm->fixed_landmarks->points[i*3 + d] 
+		    - fixed->offset[d])	/ fixed->pix_spacing[d]);
 	    if (blm->landvox_fix[i*3 + d] < 0 
 		|| blm->landvox_fix[i*3 + d] >= fixed->dim[d])
 	    {
@@ -142,20 +145,24 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	    }
 	}
     }
-  printf ("Adjusting complete.\n");
+    printf ("Adjusting complete.\n");
 }
 
 Bspline_landmarks*
 bspline_landmarks_load (char *fixed_fn, char *moving_fn)
 {
     int num_fixed_landmarks, num_moving_landmarks;
-    float *fixed_landmarks, *moving_landmarks;
+    Pointset *fixed_landmarks, *moving_landmarks;
     Bspline_landmarks *blm;
 
+    fixed_landmarks = pointset_load (fixed_fn);
+    moving_landmarks = pointset_load (moving_fn);
+#if defined (commentout)
     bspline_landmarks_load_file (&fixed_landmarks, &num_fixed_landmarks, 
 	fixed_fn);
     bspline_landmarks_load_file (&moving_landmarks, &num_moving_landmarks, 
 	moving_fn);
+#endif
 
     if (num_fixed_landmarks != num_moving_landmarks) {
 	print_and_exit ("Error. Different number of landmarks in files: "
@@ -313,8 +320,14 @@ bspline_landmarks_score_b (
 	bspline_interp_pix (dxyz, bxf, p, qidx);
 
 	//actually move the moving landmark; note the minus sign
-	for (d = 0; d < 3; d++) blm->warped_landmarks[3*lidx+d] = blm->moving_landmarks[3*lidx + d] - dxyz[d];
-	for (d = 0; d < 3; d++) diff[d] = blm->fixed_landmarks[3*lidx+d]-blm->warped_landmarks[3*lidx+d];
+	for (d = 0; d < 3; d++) {
+	    blm->warped_landmarks[3*lidx+d] 
+		= blm->moving_landmarks->points[3*lidx + d] - dxyz[d];
+	}
+	for (d = 0; d < 3; d++) {
+	    diff[d] = blm->fixed_landmarks->points[3*lidx+d]
+		-blm->warped_landmarks[3*lidx+d];
+	}
 	l_dist = diff[0]*diff[0] + diff[1]*diff[1] + diff[2]*diff[2];
 	land_score += l_dist;
 	land_rawdist += sqrt(l_dist);
@@ -367,7 +380,7 @@ bspline_landmarks_score_a (
     land_rawdist = 0;
     land_grad_coeff = parms->landmark_stiffness / blm->num_landmarks;
 
-	logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
+    logfile_printf("landmark stiffness is %f\n", parms->landmark_stiffness);
 
     fp  = fopen("warplist_a.fcsv","w");
     fp2 = fopen("distlist_a.dat","w");
@@ -393,8 +406,8 @@ bspline_landmarks_score_a (
         bspline_interp_pix (dxyz, bxf, p, qidx);
 
 	for (d = 0; d < 3; d++) {
-	    mxyz[d] = blm->fixed_landmarks[lidx*3+d] + dxyz[d];
-	    diff[d] = blm->moving_landmarks[lidx*3+d] - mxyz[d];
+	    mxyz[d] = blm->fixed_landmarks->points[lidx*3+d] + dxyz[d];
+	    diff[d] = blm->moving_landmarks->points[lidx*3+d] - mxyz[d];
 	}
 
 #if defined (commentout)
@@ -515,7 +528,8 @@ void bspline_landmarks_warp (
     for (i=0;i<blm->num_landmarks;i++)  {
 	for (d=0; d<3; d++) {
 	    blm->warped_landmarks[3*i+d] 
-		= blm->moving_landmarks[3*i+d] - blm->landmark_dxyz[3*i+d];
+		= blm->moving_landmarks->points[3*i+d]
+		- blm->landmark_dxyz[3*i+d];
 	}
     }
 

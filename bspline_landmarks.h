@@ -5,12 +5,14 @@
 #define _bspline_landmarks_h_
 
 #include "plm_config.h"
+#include "pointset.h"
 
 typedef struct bspline_landmarks Bspline_landmarks;
 struct bspline_landmarks {
     int num_landmarks;
-    float *fixed_landmarks;
-    float *moving_landmarks;
+    
+    Pointset *fixed_landmarks;
+    Pointset *moving_landmarks;
     float *warped_landmarks; //moving landmarks displaced by current vector field
     int *landvox_mov;
     int *landvox_fix;

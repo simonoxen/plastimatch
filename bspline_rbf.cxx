@@ -194,7 +194,9 @@ float bspline_rbf_score (
 
     for(i=0;i<blm->num_landmarks;i++) {
 	for(d1=0;d1<3;d1++) {	
-	    ds = blm->fixed_landmarks[3*i+d1] + blm->landmark_dxyz[3*i+d1] - blm->moving_landmarks[3*i+d1];
+	    ds = blm->fixed_landmarks->points[3*i+d1] 
+		+ blm->landmark_dxyz[3*i+d1] 
+		- blm->moving_landmarks->points[3*i+d1];
 
 	    for(j=0;j<blm->num_landmarks;j++) {
 		//where are the centers?
@@ -222,12 +224,12 @@ float bspline_rbf_score (
 // parms->blm->rbf_coeff contains RBF coefficients
 void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 {
-	Bspline_landmarks *blm = parms->landmarks;
+    Bspline_landmarks *blm = parms->landmarks;
     float *vf;
-	float rbfv;
-	int i, j, d, fv, rbfcenter[3];
+    float rbfv;
+    int i, j, d, fv, rbfcenter[3];
 
-	typedef vnl_matrix <double> Vnl_matrix;
+    typedef vnl_matrix <double> Vnl_matrix;
     typedef vnl_svd <double> SVDSolverType;
     Vnl_matrix A, b;
 
@@ -252,35 +254,40 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 	for(d=0;d<3;d++) blm->landmark_dxyz[3*i+d] = vf[3*fv+d];
     }
 
-	A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
+    A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
     A.set_identity ();
 
     b.set_size (3 * blm->num_landmarks, 1);
     b.fill (0.0);
 
-	// right-hand side
-    for(i=0;i<blm->num_landmarks;i++) 
-		for(d=0;d<3;d++) 	
-		    b(3*i +d, 0) = -(blm->fixed_landmarks[3*i+d] + blm->landmark_dxyz[3*i+d] - blm->moving_landmarks[3*i+d] );
-
-	// matrix
+    // right-hand side
     for(i=0;i<blm->num_landmarks;i++) {
-    for(j=0;j<blm->num_landmarks;j++) {
+	for(d=0;d<3;d++) {
+	    b (3*i +d, 0) = 
+		-(blm->fixed_landmarks->points[3*i+d] 
+		    + blm->landmark_dxyz[3*i+d] 
+		    - blm->moving_landmarks->points[3*i+d]);
+	}
+    }
 
-	for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*j+d];
+    // matrix
+    for(i=0;i<blm->num_landmarks;i++) {
+	for(j=0;j<blm->num_landmarks;j++) {
+
+	    for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*j+d];
 	
-	rbfv = rbf_value( rbfcenter, 
-			blm->landvox_fix[3*i+0],
-		    blm->landvox_fix[3*i+1],
-		    blm->landvox_fix[3*i+2], 
-		    rbf_par->radius,
-		    rbf_par->vector_field->pix_spacing );
+	    rbfv = rbf_value( rbfcenter, 
+		blm->landvox_fix[3*i+0],
+		blm->landvox_fix[3*i+1],
+		blm->landvox_fix[3*i+2], 
+		rbf_par->radius,
+		rbf_par->vector_field->pix_spacing );
 
-	for(d=0;d<3;d++)
+	    for(d=0;d<3;d++)
 		A(3*i+d, 3*j+d) = rbfv ;
 
 	}
-	}
+    }
 
     A.print (std::cout);
     b.print (std::cout);

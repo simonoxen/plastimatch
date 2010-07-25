@@ -19,6 +19,9 @@ extern "C" {
 gpuit_EXPORT
 Pointset*
 pointset_load (char *fn);
+gpuit_EXPORT
+void
+pointset_destroy (Pointset *ps);
 
 #if defined __cplusplus
 }
