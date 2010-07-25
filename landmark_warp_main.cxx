@@ -14,20 +14,20 @@
 int
 main (int argc, char *argv[])
 {
-    Tps_options options;
+    Landmark_warp_options options;
     Tps_xform *tps;
     Volume *moving;
     Volume *vf_out = 0;
     Volume *warped_out = 0;
 
-    tps_warp_opts_parse_args (&options, argc, argv);
+    landmark_warp_opts_parse_args (&options, argc, argv);
 
     printf ("Loading xform\n");
-    tps = tps_xform_load (options.tps_xf_fn);
+    tps = tps_xform_load (options.input_xform_fn);
     if (!tps) exit (-1);
 
     printf ("Reading mha\n");
-    moving = read_mha (options.moving_image_fn);
+    moving = read_mha (options.input_moving_image_fn);
     if (!moving) exit (-1);
 
     printf ("Converting volume to float\n");
@@ -44,7 +44,7 @@ main (int argc, char *argv[])
     } else {
 	vf_out = 0;
     }
-    if (options.output_warped_fn) {
+    if (options.output_warped_image_fn) {
 	printf ("Creating output vol\n");
 	warped_out = volume_create (
 	    tps->img_dim, 
@@ -63,9 +63,9 @@ main (int argc, char *argv[])
 	printf ("Writing output vf.\n");
 	write_mha (options.output_vf_fn, vf_out);
     }
-    if (options.output_warped_fn) {
+    if (options.output_warped_image_fn) {
 	printf ("Writing output vol.\n");
-	write_mha (options.output_warped_fn, warped_out);
+	write_mha (options.output_warped_image_fn, warped_out);
     }
 
     printf ("Finished.\n");

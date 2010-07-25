@@ -7,16 +7,18 @@
 #include "plm_config.h"
 #include "tps.h"
 
-typedef struct tps_options Tps_options;
-struct tps_options {
-    char *tps_xf_fn;
-    char *moving_image_fn;
-    char *output_warped_fn;
+typedef struct landmark_warp_options Landmark_warp_options;
+struct landmark_warp_options {
+    char *input_moving_landmarks_fn;
+    char *input_fixed_landmarks_fn;
+    char *input_vf_fn;
+    char *input_xform_fn;
+    char *input_moving_image_fn;
+    char *output_warped_image_fn;
     char *output_vf_fn;
-    char *moving_landmarks_fn;
-    char *fixed_landmarks_fn;
+    float *rbf_radius;
 };
 
-void tps_warp_opts_parse_args (Tps_options* options, int argc, char* argv[]);
+void landmark_warp_opts_parse_args (Landmark_warp_options* options, int argc, char* argv[]);
 
 #endif

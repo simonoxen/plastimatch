@@ -22,11 +22,11 @@
 typedef struct tps_parms TPS_parms;
 struct tps_parms {
     char* reference;
-	char* target;
-	char* fixed;
-	char* moving;
-	char* warped;
-	char* vf;
+    char* target;
+    char* fixed;
+    char* moving;
+    char* warped;
+    char* vf;
 };
 
 template<class T>
