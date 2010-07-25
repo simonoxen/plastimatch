@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "tps_warp_opts.h"
+#include "landmark_warp_opts.h"
 
 #ifndef NULL
 #define NULL ((void*)0)
@@ -56,7 +56,7 @@ tps_warp_opts_parse_args (Tps_options* options, int argc, char* argv[])
 	print_usage ();
     }
     options->tps_xf_fn = argv[i];
-    options->moving_fn = argv[i+1];
+    options->moving_image_fn = argv[i+1];
     printf ("TPS XF = %s\n", options->tps_xf_fn);
-    printf ("Moving = %s\n", options->moving_fn);
+    printf ("Moving = %s\n", options->moving_image_fn);
 }

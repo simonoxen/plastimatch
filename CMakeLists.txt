@@ -33,6 +33,7 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
+# Building little test programs
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build CUDA test program")
 SET (PLM_BUILD_FANN_TEST OFF CACHE BOOL "Build fann test program")
 SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
@@ -40,16 +41,23 @@ SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 
-SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL "Build slicer loadable module")
-SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL "Use hardcoded filename instead of tmpfile()")
+# Compile and link options
+SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL 
+  "Build slicer loadable module")
+SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL 
+  "Use hardcoded filename instead of tmpfile()")
+SET (PLM_INSTALL_RPATH ON CACHE BOOL 
+  "Add full RPATH to install")
+SET (PLM_LINK_MSVCRT ON CACHE BOOL 
+  "Link against MSVCRT instead of LIBMCT")
+SET (PLM_SLICER3_DIR ON CACHE PATH 
+  "Directory of Slicer3-Build")
+SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
+  "Build plastimatch as shared library")
 
-SET (PLM_INSTALL_RPATH ON CACHE BOOL "Add full RPATH to install")
-SET (PLM_LINK_MSVCRT ON CACHE BOOL "Link against MSVCRT instead of LIBMCT")
-SET (PLM_SLICER3_DIR ON CACHE PATH "Directory of Slicer3-Build")
-
-SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL "Build plastimatch as shared library")
-
-SET (PLM_BUILD_TESTING ON CACHE BOOL "Enable regression testing")
+# Regression testing
+SET (PLM_BUILD_TESTING ON CACHE BOOL 
+  "Enable regression testing")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
   "Regression tests for seldom used b-spline implementations")
 SET (PLM_TEST_DICOM OFF CACHE BOOL 
@@ -507,7 +515,9 @@ SET (GPUIT_LIBRARY_DEPENDENCIES
 
 # GPUIT_LIBRARIES with RBF linear system now needs ITK's svd solver
 # NSh 7-17-2010
-SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES} ${ITK_LIBRARIES})
+#SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES} ${ITK_LIBRARIES})
+
+SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 
 SET (PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
@@ -538,7 +548,6 @@ ENDIF (BROOK_FOUND)
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_SRC
   bspline.c bspline.h
-  bspline_rbf.cxx bspline_rbf.h
   bspline_regularize.c bspline_regularize.h
   bspline_landmarks.c bspline_landmarks.h
   bspline_macros.h
@@ -668,6 +677,7 @@ ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
+  bspline_rbf.cxx bspline_rbf.h
   cxt_apply_dicom.cxx cxt_apply_dicom.h 
   cxt.cxx cxt.h 
   cxt_io.cxx cxt_io.h 
@@ -903,6 +913,10 @@ SET (PROTON_DOSE_SRC
   proton_dose_main.c 
   proton_dose_opts.c proton_dose_opts.h
   )
+SET (LANDMARK_WARP_SRC
+  landmark_warp_main.cxx
+  landmark_warp_opts.cxx landmark_warp_opts.h
+  )
 SET (RTOG_TO_MHA_SRC
   exchkeys.cxx exchkeys.h
   rtog_to_mha.cxx
@@ -912,10 +926,6 @@ SET (SHUFFLE_MHA_SRC
   )
 SET (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx synthetic_mha_main.h
-  )
-SET (TPS_WARP_SRC
-  tps_warp_main.cxx
-  tps_warp_opts.cxx tps_warp_opts.h
   )
 SET (VF_COMPOSE_SRC
   vf_compose.cxx
@@ -1127,7 +1137,7 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (tps_warp "${TPS_WARP_SRC}" 
+  PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")

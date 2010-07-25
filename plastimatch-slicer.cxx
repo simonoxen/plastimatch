@@ -6,7 +6,6 @@
 #include <iostream>
 #include <vector>
 #include "plastimatch-slicerCLP.h"
-#include "plm_registration.h"
 #include "plm_stages.h"
 
 #undef PLM_SLICER_HARDCODED_FILENAME

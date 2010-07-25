@@ -9,7 +9,7 @@
 #include <time.h>
 #include "math_util.h"
 #include "mha_io.h"
-#include "tps_warp_opts.h"
+#include "landmark_warp_opts.h"
 
 int
 main (int argc, char *argv[])
@@ -27,7 +27,7 @@ main (int argc, char *argv[])
     if (!tps) exit (-1);
 
     printf ("Reading mha\n");
-    moving = read_mha (options.moving_fn);
+    moving = read_mha (options.moving_image_fn);
     if (!moving) exit (-1);
 
     printf ("Converting volume to float\n");

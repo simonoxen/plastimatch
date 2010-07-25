@@ -119,6 +119,7 @@ main (int argc, char* argv[])
 	}
     }
 
+#if defined (commentout)
     /* If using radial basis functions, find coeffs and update vector field */
     if (parms->rbf_radius>0) {
 	printf ("Radial basis functions requested, radius %.2f\n", 
@@ -145,6 +146,7 @@ main (int argc, char* argv[])
 	    }
 	}
     }
+#endif
 
     /* Create warped output image and save */
     if (options.output_warped_fn) {
