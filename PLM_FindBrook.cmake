@@ -8,8 +8,6 @@
 ######################################################
 SET(BROOK_FOUND FOOBAR)
 
-MESSAGE(STATUS "Looking for brook")
-
 IF(NOT BROOKDIR)
   FIND_PATH(BROOKDIR common.mk
     PATH $ENV{BROOKDIR}
@@ -114,3 +112,8 @@ MARK_AS_ADVANCED(
   D3DX9_LIBRARY
   D3D9_LIBRARY)
 
+IF (BROOK_FOUND)
+  MESSAGE (STATUS "Looking for brook - found.")
+ELSE (BROOK_FOUND)
+  MESSAGE (STATUS "Looking for brook - not found.")
+ENDIF (BROOK_FOUND)

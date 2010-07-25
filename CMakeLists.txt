@@ -291,11 +291,6 @@ IF (wxWidgets_FOUND)
 ELSE (wxWidgets_FOUND)
   MESSAGE (STATUS "Looking for wxWidgets - not found.")
 ENDIF (wxWidgets_FOUND)
-IF (DCMTK_FOUND)
-  MESSAGE (STATUS "Looking for dcmtk - found.")
-ELSE (DCMTK_FOUND)
-  MESSAGE (STATUS "Looking for dcmtk - not found.")
-ENDIF (DCMTK_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Slicer front-ends

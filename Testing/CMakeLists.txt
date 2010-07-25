@@ -464,6 +464,16 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## landmark_warp
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "landmark-warp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/landmark_warp
+  "-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: ct only
 ##   plm convert dicom b: rtss only, with dicom-dir reference
@@ -950,17 +960,6 @@ ADD_TEST (
   "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
-
-## -------------------------------------------------------------------------
-## tps_warp
-## -------------------------------------------------------------------------
-PLM_ADD_TEST (
-  "tps-warp" 
-  ""
-  ${PLM_PLASTIMATCH_PATH_HACK}/tps_warp
-  "-V;${PLM_TESTING_BUILD_DIR}/tps-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/tps-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
-  )
-
 
 ## -------------------------------------------------------------------------
 ## xf_to_xf

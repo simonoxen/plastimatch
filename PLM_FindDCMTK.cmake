@@ -216,3 +216,8 @@ IF( NOT DCMTK_FOUND )
 #  MARK_AS_ADVANCED( DCMTK_DIR )
 ENDIF( NOT DCMTK_FOUND )
 
+IF (DCMTK_FOUND)
+  MESSAGE (STATUS "Looking for dcmtk - found.")
+ELSE (DCMTK_FOUND)
+  MESSAGE (STATUS "Looking for dcmtk - not found.")
+ENDIF (DCMTK_FOUND)
