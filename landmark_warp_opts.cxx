@@ -90,7 +90,7 @@ landmark_warp_opts_parse_args (Landmark_warp_options* options,
 	    break;
 	}
     }
-    if (i+1 >= argc) {
+    if (i >= argc) {
 	print_usage ();
     }
     options->input_moving_image_fn = argv[i];

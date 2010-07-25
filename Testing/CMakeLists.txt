@@ -470,7 +470,7 @@ PLM_ADD_TEST (
   "landmark-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/landmark_warp
-  "-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-x;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
   )
 
 ## -------------------------------------------------------------------------
