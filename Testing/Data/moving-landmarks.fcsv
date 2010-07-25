@@ -1,0 +1,22 @@
+# Fiducial List file /home/gsharp/kkk/moving-landmarks.fcsv
+# version = 2
+# name = moving-landmarks
+# numPoints = 4
+# symbolScale = 5
+# symbolType = 12
+# visibility = 1
+# textScale = 4.5
+# color = 0.4,1,1
+# selectedColor = 1,0.5,0.5
+# opacity = 1
+# ambient = 0
+# diffuse = 1
+# specular = 0
+# power = 1
+# locked = 0
+# numberingScheme = 0
+# columns = label,x,y,z,sel,vis
+m1,6.42784,-1.86647,2.2271,1,1
+m2,-23.5038,-1.86647,-5.16566,1,1
+m3,-11.423,14.9025,-1.3791,1,1
+m4,-11.423,-18.4551,-1.3791,1,1
