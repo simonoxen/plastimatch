@@ -7,6 +7,12 @@
 #include "plm_config.h"
 #include "tps.h"
 
+enum Landmark_warp_algorithm {
+    LANDMARK_WARP_ALGORITHM_ITK_TPS,
+    LANDMARK_WARP_ALGORITHM_RBF_GCS,
+    LANDMARK_WARP_ALGORITHM_RBF_NSH
+};
+
 typedef struct landmark_warp_options Landmark_warp_options;
 struct landmark_warp_options {
     char *input_moving_landmarks_fn;
@@ -16,7 +22,8 @@ struct landmark_warp_options {
     char *input_moving_image_fn;
     char *output_warped_image_fn;
     char *output_vf_fn;
-    float *rbf_radius;
+    Landmark_warp_algorithm algorithm;
+    float rbf_radius;
 };
 
 void landmark_warp_opts_parse_args (Landmark_warp_options* options, int argc, char* argv[]);

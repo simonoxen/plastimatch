@@ -24,20 +24,45 @@ print_usage (void)
 	"  -x infile                  Input landmark xform\n"
 	"  -O outfile                 Output warped image\n"
 	"  -V outfile                 Output vector field\n"
+	"  -a algorithm               Either \"itk\", \"gcs\", or \"nsh\""
+	"  -r float                   Radius of RBFs"
     );
     exit (1);
 }
 
 void
-landmark_warp_opts_parse_args (Landmark_warp_options* options, 
+landmark_warp_opts_parse_args (
+    Landmark_warp_options* options, 
     int argc, char* argv[])
 {
     int i;
     memset (options, 0, sizeof (Landmark_warp_options));
+    options->algorithm = LANDMARK_WARP_ALGORITHM_RBF_GCS;
+    options->rbf_radius = 50.0f;   /* 5 cm default size */
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;
-        if (!strcmp (argv[i], "-f")) {
+        if (!strcmp (argv[i], "-a")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    if (!strcmp(argv[i], "itk") || !strcmp(argv[i], "ITK")) {
+		options->algorithm = LANDMARK_WARP_ALGORITHM_ITK_TPS;
+	    }
+	    else if (!strcmp(argv[i], "gcs") || !strcmp(argv[i], "GCS")) {
+		options->algorithm = LANDMARK_WARP_ALGORITHM_RBF_GCS;
+	    }
+	    else if (!strcmp(argv[i], "nsh") || !strcmp(argv[i], "NSH")) {
+		options->algorithm = LANDMARK_WARP_ALGORITHM_RBF_NSH;
+	    }
+	    else {
+		printf ("Warning, unknown algorithm.  Defauling to GCS\n");
+		options->algorithm = LANDMARK_WARP_ALGORITHM_RBF_GCS;
+	    }
+	}
+        else if (!strcmp (argv[i], "-f")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
 		exit(1);
