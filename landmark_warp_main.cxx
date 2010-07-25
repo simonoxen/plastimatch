@@ -14,9 +14,13 @@
 
 /* How do the algorithms load their point data (currently)?
    plastimatch warp pointset   - PointSetType
+                                 itk_pointset.h
    itk_tps_warp                - TPS_parms + PointSetType (equivalent)
+                                 itk_tps.h
    GCS (landmark warp)         - Tps_xform (includes alpha, alpha * dist)
+                                 tps.h
    NSH (bspline_rbf)           - Bspline_landmarks (includes warped lm, others)
+                                 bspline_landmarks.h
 */
 static void
 load_landmarks (Landmark_warp_options *options)
