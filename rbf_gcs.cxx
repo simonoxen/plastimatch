@@ -17,7 +17,7 @@
 
 #include "logfile.h"
 #include "print_and_exit.h"
-#include "tps.h"
+#include "rbf_gcs.h"
 #include "vf.h"
 #include "volume.h"
 
@@ -161,7 +161,7 @@ tps_xform_save (Tps_xform *tps, char *fn)
 #endif
 
 void
-tps_xform_free (Tps_xform *tps)
+tps_xform_destroy (Tps_xform *tps)
 {
     free (tps->tps_nodes);
     free (tps);

@@ -37,7 +37,7 @@ tps_xform_load (char* fn);
 plastimatch1_EXPORT void
 tps_xform_save (Tps_xform *tps_xform, char *fn);
 plastimatch1_EXPORT void
-tps_xform_free (Tps_xform *tps_xform);
+tps_xform_destroy (Tps_xform *tps_xform);
 
 plastimatch1_EXPORT float
 tps_default_alpha (float src[3], float tgt[3]);

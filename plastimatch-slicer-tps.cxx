@@ -9,7 +9,7 @@
 
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "tps.h"
+#include "rbf_gcs.h"
 
 int 
 main (int argc, char * argv [])

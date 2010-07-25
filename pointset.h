@@ -20,8 +20,15 @@ gpuit_EXPORT
 Pointset*
 pointset_load (char *fn);
 gpuit_EXPORT
+Pointset *
+pointset_create (void);
+gpuit_EXPORT
 void
 pointset_destroy (Pointset *ps);
+
+gpuit_EXPORT
+void
+pointset_resize (Pointset *ps, int new_size);
 
 #if defined __cplusplus
 }

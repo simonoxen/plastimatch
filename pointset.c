@@ -71,8 +71,7 @@ pointset_load_fcsv (char *fn)
 	    print_and_exit ("Error parsing landmark file: %s\n", fn);
 	}
 	ps->num_points ++;
-	ps->points = (float*) realloc (ps->points, 
-	    3 * (ps->num_points) * sizeof(float));
+	pointset_resize (ps, ps->num_points);
 
 	/* Note: Slicer landmarks are in RAS coordinates. 
 	   Change RAS to LPS (note that LPS == ITK RAI). */
@@ -115,8 +114,12 @@ pointset_load_txt (char *fn)
 	    print_and_exit ("Error parsing landmark file: %s\n", fn);
 	}
 	ps->num_points ++;
-	ps->points = (float*) realloc (ps->points, 
-	    3 * (ps->num_points) * sizeof(float));
+	pointset_resize (ps, ps->num_points);
+
+	/* Assume LPS */
+	ps->points[(ps->num_points-1)*3 + 0] = lm[0];
+	ps->points[(ps->num_points-1)*3 + 1] = lm[1];
+	ps->points[(ps->num_points-1)*3 + 2] = lm[2];
     }
     fclose (fp);
 
@@ -135,4 +138,12 @@ pointset_load (char *fn)
     /* If that doesn't work, try loading ASCII */
     ps = pointset_load_txt (fn);
     return ps;
+}
+
+void
+pointset_resize (Pointset *ps, int new_size)
+{
+    ps->num_points = new_size;
+    ps->points = (float*) realloc (ps->points, 
+	    3 * (ps->num_points) * sizeof(float));
 }

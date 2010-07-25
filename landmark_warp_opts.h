@@ -5,7 +5,6 @@
 #define _landmark_warp_opts_h_
 
 #include "plm_config.h"
-#include "tps.h"
 
 enum Landmark_warp_algorithm {
     LANDMARK_WARP_ALGORITHM_ITK_TPS,
@@ -15,8 +14,8 @@ enum Landmark_warp_algorithm {
 
 typedef struct landmark_warp_options Landmark_warp_options;
 struct landmark_warp_options {
-    char *input_moving_landmarks_fn;
     char *input_fixed_landmarks_fn;
+    char *input_moving_landmarks_fn;
     char *input_vf_fn;
     char *input_xform_fn;
     char *input_moving_image_fn;

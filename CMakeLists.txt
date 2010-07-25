@@ -695,8 +695,9 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
-  itk_tps.cxx itk_tps.h
+  itk_tps.cxx itk_tps.h 
   itk_warp.cxx itk_warp.h 
+  landmark_warp.cxx landmark_warp.h 
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
   plm_api.cxx plm_api.h 
@@ -711,6 +712,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_stages.cxx plm_stages.h 
   plm_version.h 
   plm_warp.cxx plm_warp.h 
+  rbf_gcs.cxx rbf_gcs.h
   render_polyline.cxx render_polyline.h
   resample_mha.cxx resample_mha.h 
   rtds.cxx rtds.h
@@ -719,7 +721,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   slice_extract.cxx slice_extract.h
   ss_img_extract.cxx ss_img_extract.h
   synthetic_mha.cxx synthetic_mha.h
-  tps.cxx tps.h
   xio_ct.cxx xio_ct.h
   xio_dir.cxx xio_dir.h
   xio_dose.cxx xio_dose.h
