@@ -80,7 +80,7 @@ main (int argc, char * argv [])
 
     /* Clean up */
     delete pli_moving;
-    tps_xform_free (tps);
+    tps_xform_destroy (tps);
 
     return EXIT_SUCCESS;
 }
