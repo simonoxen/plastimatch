@@ -218,6 +218,143 @@ float bspline_rbf_score (
 
     return score;
 }
+// find RBF coeff by solving the linear equations using ITK's SVD routine
+// using analytical regularization of Gaussian exp(-r*r) RBFs to minimize
+// the sum of squares of second derivatives.
+// Output:
+// parms->blm->rbf_coeff contains RBF coefficients
+void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms)
+{
+    Bspline_landmarks *blm = parms->landmarks;
+    float *vf;
+    float rbfv;
+    int i, j, d, fv, rbfcenter[3];
+
+	//begin regularization
+	float rbf_young_modulus = 1.;
+	float rbf_prefactor, reg_term, r2, tmp;
+	int d1;
+	//end regularization
+
+    typedef vnl_matrix <double> Vnl_matrix;
+    typedef vnl_svd <double> SVDSolverType;
+    Vnl_matrix A, b;
+
+    Rbf_parms *rbf_par;
+
+    rbf_par = (Rbf_parms *)malloc( sizeof(Rbf_parms));
+    rbf_par->radius = parms->rbf_radius;
+    rbf_par->bparms = parms;
+    rbf_par->vector_field = vector_field;
+
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported\n");
+
+    //fill in vector field at fixed landmark location
+    vf = (float*) vector_field->img;
+
+    for(i=0;i<blm->num_landmarks;i++) {
+	fv = blm->landvox_fix[3*i+2] * vector_field->dim[0] * vector_field->dim[1] 
+	    +blm->landvox_fix[3*i+1] * vector_field->dim[0] 
+	    +blm->landvox_fix[3*i+0] ;
+
+	for(d=0;d<3;d++) blm->landmark_dxyz[3*i+d] = vf[3*fv+d];
+    }
+
+    A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
+    A.set_identity ();
+
+    b.set_size (3 * blm->num_landmarks, 1);
+    b.fill (0.0);
+
+    // right-hand side
+    for(i=0;i<blm->num_landmarks;i++) {
+	for(d=0;d<3;d++) {
+	    b (3*i +d, 0) = 
+		-(blm->fixed_landmarks->points[3*i+d] 
+		    + blm->landmark_dxyz[3*i+d] 
+		    - blm->moving_landmarks->points[3*i+d]);
+	}
+    }
+
+    // matrix
+    for(i=0;i<blm->num_landmarks;i++) {
+	for(j=0;j<blm->num_landmarks;j++) {
+
+	    for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*j+d];
+	
+	    rbfv = rbf_value( rbfcenter, 
+		blm->landvox_fix[3*i+0],
+		blm->landvox_fix[3*i+1],
+		blm->landvox_fix[3*i+2], 
+		rbf_par->radius,
+		rbf_par->vector_field->pix_spacing );
+
+	    for(d=0;d<3;d++)
+		A(3*i+d, 3*j+d) = rbfv ;
+
+	}
+    }
+
+
+	//begin regularization
+	//add extra terms to the matrix
+	rbf_prefactor = sqrt(M_PI/2.)*sqrt(M_PI/2.)*sqrt(M_PI/2.)/rbf_par->radius;
+	for(d=0;d<3;d++)
+	{
+		for(i=0;i<blm->num_landmarks;i++) 
+		{
+			for(j=0;j<blm->num_landmarks;j++)
+			{
+
+			tmp = A(3*i+d, 3*j+d);
+			reg_term = 0.;			
+			
+			for(d1=0;d1<3;d1++) rbfcenter[d1] = blm->landvox_fix[3*j+d1];
+			rbfv = rbf_value( rbfcenter, 
+				blm->landvox_fix[3*i+0],
+				blm->landvox_fix[3*i+1],
+				blm->landvox_fix[3*i+2], 
+				rbf_par->radius,
+				rbf_par->vector_field->pix_spacing );
+
+			if (i==j) { reg_term = rbf_prefactor * 15.; }
+			else
+			{
+				// distance between landmarks i,j in mm
+				r2 = (blm->landvox_fix[3*i+0]-blm->landvox_fix[3*j+0])*
+					 rbf_par->vector_field->pix_spacing[0]*
+					 rbf_par->vector_field->pix_spacing[0] +
+					 (blm->landvox_fix[3*i+1]-blm->landvox_fix[3*j+1])*
+					 rbf_par->vector_field->pix_spacing[1]*
+					 rbf_par->vector_field->pix_spacing[1] +
+					 (blm->landvox_fix[3*i+2]-blm->landvox_fix[3*j+2])*
+					 rbf_par->vector_field->pix_spacing[2]*
+					 rbf_par->vector_field->pix_spacing[2];
+
+				r2 = r2 / (rbf_par->radius * rbf_par->radius );
+				reg_term = rbf_prefactor * exp(-r2) * (6. + (r2-3.)*(r2-3.));
+			}
+			A(3*i+d,3*j+d) = tmp + reg_term * rbf_young_modulus / rbfv;
+			}
+		}
+	}
+	//end regularization
+
+    A.print (std::cout);
+    b.print (std::cout);
+
+    SVDSolverType svd (A, 1e-8);
+    Vnl_matrix x = svd.solve (b);
+
+    x.print (std::cout);
+
+    for(i=0;i<3*blm->num_landmarks;i++) blm->rbf_coeff[i] = x(i,0);
+
+    printf("rbf coeff from optimize:  %.3f  %.3f  %.3f   dist unkn\n", 
+	blm->rbf_coeff[0], blm->rbf_coeff[1], blm->rbf_coeff[2] );
+
+}
 
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // Output:
