@@ -335,7 +335,7 @@ void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms
 				r2 = r2 / (rbf_par->radius * rbf_par->radius );
 				reg_term = rbf_prefactor * exp(-r2) * (6. + (r2-3.)*(r2-3.));
 			}
-			A(3*i+d,3*j+d) = tmp + reg_term * rbf_young_modulus / rbfv;
+			A(3*i+d,3*j+d) = tmp + 0.5 * reg_term * rbf_young_modulus / rbfv;
 			}
 		}
 	}
