@@ -262,7 +262,8 @@ void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms
     }
 
     A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
-    A.set_identity ();
+//    A.set_identity ();
+	A.fill(0.);
 
     b.set_size (3 * blm->num_landmarks, 1);
     b.fill (0.0);
@@ -323,17 +324,20 @@ void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms
 			{
 				// distance between landmarks i,j in mm
 				r2 = (blm->landvox_fix[3*i+0]-blm->landvox_fix[3*j+0])*
+					 (blm->landvox_fix[3*i+0]-blm->landvox_fix[3*j+0])*
 					 rbf_par->vector_field->pix_spacing[0]*
 					 rbf_par->vector_field->pix_spacing[0] +
 					 (blm->landvox_fix[3*i+1]-blm->landvox_fix[3*j+1])*
+					 (blm->landvox_fix[3*i+1]-blm->landvox_fix[3*j+1])*
 					 rbf_par->vector_field->pix_spacing[1]*
 					 rbf_par->vector_field->pix_spacing[1] +
+					 (blm->landvox_fix[3*i+2]-blm->landvox_fix[3*j+2])*
 					 (blm->landvox_fix[3*i+2]-blm->landvox_fix[3*j+2])*
 					 rbf_par->vector_field->pix_spacing[2]*
 					 rbf_par->vector_field->pix_spacing[2];
 
 				r2 = r2 / (rbf_par->radius * rbf_par->radius );
-				reg_term = rbf_prefactor * exp(-r2) * (6. + (r2-3.)*(r2-3.));
+				reg_term = rbf_prefactor * exp(-r2/2.) * (6. + (r2-3.)*(r2-3.));
 			}
 			A(3*i+d,3*j+d) = tmp + 0.5 * reg_term * rbf_young_modulus / rbfv;
 			}
