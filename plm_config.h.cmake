@@ -32,7 +32,7 @@
 /* User options */
 #cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
-#cmakedefine PLM_LINK_GPUIT_ITK
+#cmakedefine PLM_MONOLITHIC_LIBRARY
 
 /* Did we find fortran? */
 #if (FORTRAN_COMPILER_FOUND || HAVE_F2C_LIBRARY)

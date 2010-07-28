@@ -119,7 +119,7 @@ main (int argc, char* argv[])
 	}
     }
 
-#if defined (PLM_LINK_GPUIT_ITK)
+#if defined (PLM_MONOLITHIC_LIBRARY)
     /* If using radial basis functions, find coeffs and update vector field */
     if (parms->rbf_radius>0) {
 	printf ("Radial basis functions requested, radius %.2f\n", 
