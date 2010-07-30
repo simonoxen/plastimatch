@@ -16,21 +16,6 @@ IF (NOT CMAKE_BUILD_TYPE)
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
 ##-----------------------------------------------------------------------------
-##  Include files
-##-----------------------------------------------------------------------------
-INCLUDE (CTest)
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckIncludeFiles)
-INCLUDE (CheckTypeSize)
-INCLUDE (TestBigEndian)
-
-# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
-INCLUDE (InstallRequiredSystemLibraries)
-
-# http://www.cmake.org/Bug/view.php?id=9220
-INCLUDE (language_support.cmake)
-
-##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 # Building little test programs
@@ -66,6 +51,21 @@ SET (PLM_TEST_DICOM OFF CACHE BOOL
   "Regression tests for dicom, dicomrt (downloads extra test data)")
 SET (PLM_TEST_XIO OFF CACHE BOOL 
   "Regression tests for xio file exchange (downloads extra test data)")
+
+##-----------------------------------------------------------------------------
+##  Include files
+##-----------------------------------------------------------------------------
+INCLUDE (CTest)
+INCLUDE (CheckFunctionExists)
+INCLUDE (CheckIncludeFiles)
+INCLUDE (CheckTypeSize)
+INCLUDE (TestBigEndian)
+
+# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
+INCLUDE (InstallRequiredSystemLibraries)
+
+# http://www.cmake.org/Bug/view.php?id=9220
+INCLUDE (language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
@@ -180,6 +180,7 @@ FIND_PACKAGE (Fann)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 FIND_PACKAGE (OpenCL)
+FIND_PACKAGE (RTK)
 FIND_PACKAGE (SQLite)
 
 ##-----------------------------------------------------------------------------
