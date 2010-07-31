@@ -157,6 +157,10 @@ bspline_landmarks_load (char *fixed_fn, char *moving_fn)
 
     fixed_landmarks = pointset_load (fixed_fn);
     moving_landmarks = pointset_load (moving_fn);
+
+	num_fixed_landmarks = fixed_landmarks->num_points;
+	num_moving_landmarks = moving_landmarks->num_points;
+
 #if defined (commentout)
     bspline_landmarks_load_file (&fixed_landmarks, &num_fixed_landmarks, 
 	fixed_fn);

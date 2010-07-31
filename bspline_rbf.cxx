@@ -223,7 +223,7 @@ float bspline_rbf_score (
 // the sum of squares of second derivatives.
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
-void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms)
+void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 {
     Bspline_landmarks *blm = parms->landmarks;
     float *vf;
@@ -363,7 +363,7 @@ void bspline_rbf_find_coeffs_with_reg(Volume *vector_field, Bspline_parms *parms
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
-void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
+void bspline_rbf_find_coeffs_noreg(Volume *vector_field, Bspline_parms *parms)
 {
     Bspline_landmarks *blm = parms->landmarks;
     float *vf;
