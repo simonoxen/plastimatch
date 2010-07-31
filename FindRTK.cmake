@@ -5,35 +5,13 @@
 #  RTK_LIBRARIES   - List of libraries when using RTK
 #  RTK_FOUND       - True if RTK found
 
-FIND_PATH (RTK_DIR rtkramp
-  DOC "directory containing RTK linking")
+IF (NOT RTK_DIR)
+  FIND_PATH (RTK_DIR RTKconfig.cmake
+    $ENV{RTK_DIR}
+    DOC "directory containing RTK build files")
+ENDIF (NOT RTK_DIR)
 
-IF (RTK_INCLUDE_DIR)
-  # Already in cache, be silent
-  SET (RTK_FIND_QUIETLY TRUE)
-ENDIF (RTK_INCLUDE_DIR)
-
-FIND_PATH (RTK_INCLUDE_DIR rtk.h
-  ${RTK_DIR}
-  )
-
-SET (RTK_NAMES rtkIO
-  ${RTK_DIR}
-  )
-FIND_LIBRARY (RTK_LIBRARY NAMES ${RTK_NAMES})
-
-# handle the QUIETLY and REQUIRED arguments and set RTK_FOUND to TRUE if 
-# all listed variables are TRUE
-
-INCLUDE (FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS (RTK DEFAULT_MSG 
-  RTK_LIBRARY 
-  RTK_INCLUDE_DIR)
-
-IF (RTK_FOUND)
-  SET (RTK_LIBRARIES ${RTK_LIBRARY})
-ELSE (RTK_FOUND)
-  SET (RTK_LIBRARIES)
-ENDIF (RTK_FOUND)
-
-MARK_AS_ADVANCED (RTK_LIBRARY RTK_INCLUDE_DIR)
+IF (RTK_DIR)
+  SET (RTK_FOUND 1)
+  INCLUDE (${RTK_DIR}/RTKconfig.cmake)
+ENDIF (RTK_DIR)
