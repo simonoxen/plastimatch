@@ -5,15 +5,21 @@
 #  RTK_LIBRARIES   - List of libraries when using RTK
 #  RTK_FOUND       - True if RTK found
 
+FIND_PATH (RTK_DIR rtkramp
+  DOC "directory containing RTK linking")
 
 IF (RTK_INCLUDE_DIR)
   # Already in cache, be silent
   SET (RTK_FIND_QUIETLY TRUE)
 ENDIF (RTK_INCLUDE_DIR)
 
-FIND_PATH (RTK_INCLUDE_DIR rtk.h)
+FIND_PATH (RTK_INCLUDE_DIR rtk.h
+  ${RTK_DIR}
+  )
 
-SET (RTK_NAMES rtkIO)
+SET (RTK_NAMES rtkIO
+  ${RTK_DIR}
+  )
 FIND_LIBRARY (RTK_LIBRARY NAMES ${RTK_NAMES})
 
 # handle the QUIETLY and REQUIRED arguments and set RTK_FOUND to TRUE if 

@@ -15,6 +15,9 @@ IF (NOT CMAKE_BUILD_TYPE)
   SET (CMAKE_BUILD_TYPE Release)
 ENDIF (NOT CMAKE_BUILD_TYPE)
 
+## My modules override CMake defaults
+SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
@@ -173,8 +176,6 @@ INCLUDE (PLM_FindDCMTK.cmake)
 INCLUDE (PLM_FindFFTW.cmake)
 INCLUDE (PLM_FindSubversion.cmake)
 #INCLUDE(FindPantheios.cmake)
-
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (Liblbfgs)

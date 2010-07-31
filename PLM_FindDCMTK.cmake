@@ -19,18 +19,41 @@
 #   libtiff4-dev
 #   libwrap0-dev
 
-INCLUDE(FindThreads)
-INCLUDE(FindPNG)
-INCLUDE(FindTIFF)
-INCLUDE(FindZLIB)
 INCLUDE(CheckLibraryExists)
+INCLUDE(FindThreads)
+
+FIND_PACKAGE (ZLIB)
+IF (ZLIB_FOUND)
+  MESSAGE (STATUS "Looking for ZLIB - found")
+ELSE (ZLIB_FOUND)
+  MESSAGE (STATUS "Looking for ZLIB - not found")
+ENDIF (ZLIB_FOUND)
+
+FIND_PACKAGE (PNG)
+IF (PNG_FOUND)
+  MESSAGE (STATUS "Looking for PNG - found")
+ELSE (PNG_FOUND)
+  MESSAGE (STATUS "Looking for PNG - not found")
+ENDIF (PNG_FOUND)
+
+FIND_PACKAGE (TIFF)
+IF (TIFF_FOUND)
+  MESSAGE (STATUS "Looking for TIFF - found")
+ELSE (TIFF_FOUND)
+  MESSAGE (STATUS "Looking for TIFF - not found")
+ENDIF (TIFF_FOUND)
 
 FIND_LIBRARY (SSL_LIBRARY ssl)
-MESSAGE (STATUS "SSL LIBRARY is ${SSL_LIBRARY}")
+IF (SSL_LIBRARY)
+  MESSAGE (STATUS "Looking for SSL - found: ${SSL_LIBRARY}")
+ELSE (SSL_LIBRARY)
+  MESSAGE (STATUS "Looking for SSL - not found")
+ENDIF (SSL_LIBRARY)
 
-FIND_PATH(DCMTK_INCLUDE_DIR dcmtk/config/osconfig.h
-	${DCMTK_DIR}/include
-	)
+FIND_PATH (
+  DCMTK_INCLUDE_DIR dcmtk/config/osconfig.h
+  ${DCMTK_DIR}/include
+  )
 
 #FIND_PATH( DCMTK_config_INCLUDE_DIR osconfig.h
 #  ${DCMTK_DIR}/config/include
