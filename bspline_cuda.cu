@@ -3948,6 +3948,7 @@ kernel_bspline_MI_a_hist_mov (
 //                 --- Neightborhood of 6 ---
 //
 ////////////////////////////////////////////////////////////////////////////////
+#ifndef CUDA_NO_SM_12_ATOMIC_INTRINSICS
 __global__ void
 kernel_bspline_MI_a_hist_jnt (
     float* skipped, // OUTPUT:   # of skipped voxels
@@ -4355,6 +4356,7 @@ kernel_bspline_MI_a_hist_jnt (
 
 
 }
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////
