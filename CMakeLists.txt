@@ -256,7 +256,16 @@ ENDIF(CUDA_FOUND)
 # Enable atomic memory operations for GPU
 #   Must be enabled in this fashion
 #   due to an issue with FindCUDA.cmake
-SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_12)
+#SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_11)
+
+# JAS 05.02.2010
+# The CUDA build trajectory does not
+#   support mixed compute capability
+#   in a way that is compatible with
+#   the current code structure.  Shared
+#   memory atomics have been temp disabled
+#   until we extend the build system
+SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix

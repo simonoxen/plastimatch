@@ -51,6 +51,11 @@ texture<float, 1> tex_grad;
 
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
+
+// To enable MI uncomment the line below and set
+// -arch=sm_12 within CMakeLists.txt
+//#define COMPILE_MI
+
 ////////////////////////////////////////////////////////////
 
 // Uncomment to include profiling code for MSE CUDA flavor J
@@ -1613,15 +1618,16 @@ CUDA_bspline_MI_a_hist (
 {
     // check to see if we get atomic operations
     // for GPU memory
-#ifdef CUDA_NO_SM_12_ATOMIC_INTRINSICS
-    printf ("\n******************* FATAL ERROR *******************\n");
-    printf ("   Atomic memory operations not supported by GPU!\n");
+#if !defined (COMPILE_MI)
+    printf ("\n*******************   NOTICE  *******************\n");
+    printf ("     GPU Accelerated MI must be enabled by\n");
+    printf ("     uncommenting line 57 in bspline_cuda.cu\n");
+    printf ("\n");
     printf ("     A GPU of Compute Capability 1.2 or greater\n");
     printf ("     is required to for GPU accelerated MI\n");
     printf ("***************************************************\n\n");
     exit(0);
-#endif
-
+#else
     cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
 
     // Generate the fixed histogram (48 ms)
@@ -1632,6 +1638,7 @@ CUDA_bspline_MI_a_hist (
 
     // Generate the joint histogram (~600 ms)
     return CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
+#endif
 }
 
 
@@ -1858,10 +1865,8 @@ CUDA_bspline_MI_a_hist_jnt (
         printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
         exit(0);
     } else {
-#if defined (commentout)
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
+//        printf ("Grid [%i,%i], %d threads_per_block.\n", 
+//            Grid_x, Grid_y, threads_per_block);
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
@@ -1874,6 +1879,7 @@ CUDA_bspline_MI_a_hist_jnt (
     cuda_utils_check_error ("Failed to allocate memory for j_hist_seg");
     smemSize = 2 * num_bins * sizeof(float);
 
+#if defined (COMPILE_MI)
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
             dev_ptrs->skipped,      // # voxels that map outside moving
@@ -1899,6 +1905,7 @@ CUDA_bspline_MI_a_hist_jnt (
             dev_ptrs->c_lut,            // DEBUG
             dev_ptrs->q_lut,            // DEBUG
             dev_ptrs->coeff);           // DEBUG
+#endif
 
     cuda_utils_check_error ("kernel hist_jnt");
 
@@ -3948,7 +3955,7 @@ kernel_bspline_MI_a_hist_mov (
 //                 --- Neightborhood of 6 ---
 //
 ////////////////////////////////////////////////////////////////////////////////
-#ifndef CUDA_NO_SM_12_ATOMIC_INTRINSICS
+#if defined (COMPILE_MI)
 __global__ void
 kernel_bspline_MI_a_hist_jnt (
     float* skipped, // OUTPUT:   # of skipped voxels
