@@ -24,9 +24,10 @@ print_usage (void)
 	"  -x infile                  Input landmark xform\n"
 	"  -O outfile                 Output warped image\n"
 	"  -V outfile                 Output vector field\n"
-	"  -a algorithm               Either \"itk\", \"gcs\", or \"nsh\""
-	"  -r float                   Radius of RBFs"
-    );
+	"  -a algorithm               Either \"itk\", \"gcs\", or \"nsh\"\n"
+	"  -r float                   Radius of RBFs\n"
+	"  -Y float                   Young modulus for RBF regularization\n"
+	);
     exit (1);
 }
 
@@ -39,6 +40,7 @@ landmark_warp_opts_parse_args (
     memset (options, 0, sizeof (Landmark_warp_options));
     options->algorithm = LANDMARK_WARP_ALGORITHM_RBF_GCS;
     options->rbf_radius = 50.0f;   /* 5 cm default size */
+	options->rbf_young_modulus = 0.0f; /* default is no regularization */
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;

@@ -86,6 +86,7 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->young_modulus = 0.0;
 	
     parms->rbf_radius = 0.0;
+	parms->rbf_young_modulus = 0.0;
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;

@@ -231,7 +231,7 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
     int i, j, d, fv, rbfcenter[3];
 
 	//begin regularization
-	float rbf_young_modulus = 1.;
+	float rbf_young_modulus = parms->rbf_young_modulus;
 	float rbf_prefactor, reg_term, r2, tmp;
 	int d1;
 	//end regularization
@@ -246,6 +246,8 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
     rbf_par->radius = parms->rbf_radius;
     rbf_par->bparms = parms;
     rbf_par->vector_field = vector_field;
+
+	printf("Finding RBF coeffs, radius %.2f, Young modulus %e\n", parms->rbf_radius, parms->rbf_young_modulus);
 
     if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");
@@ -345,8 +347,8 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 	}
 	//end regularization
 
-    A.print (std::cout);
-    b.print (std::cout);
+//    A.print (std::cout);
+//    b.print (std::cout);
 
     SVDSolverType svd (A, 1e-8);
     Vnl_matrix x = svd.solve (b);
@@ -357,7 +359,6 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 
     printf("rbf coeff from optimize:  %.3f  %.3f  %.3f   dist unkn\n", 
 	blm->rbf_coeff[0], blm->rbf_coeff[1], blm->rbf_coeff[2] );
-
 }
 
 // find RBF coeff by solving the linear equations using ITK's SVD routine

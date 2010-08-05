@@ -23,6 +23,7 @@ struct landmark_warp_options {
     char *output_vf_fn;
     Landmark_warp_algorithm algorithm;
     float rbf_radius;
+	float rbf_young_modulus;
 };
 
 void landmark_warp_opts_parse_args (Landmark_warp_options* options, int argc, char* argv[]);

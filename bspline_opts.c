@@ -42,7 +42,8 @@ print_usage (void)
     " -F landm_implementation    Landmark implementation: a or b (default is a)\n"
     " --young-modulus float      Young modulus (cost of vector field gradient)\n"
     " --rbf-radius float         Apply radial basis functions with a given radius\n"
-    " --list-gpu                 Enumerates available GPU IDs and displays details\n"
+	" --rbf-young-modulus float  RBF Young modulus (cost of RBF vf second derivative)\n"
+	" --list-gpu                 Enumerates available GPU IDs and displays details\n"
     " --debug                    Create various debug files\n"
     );
     exit (1);
@@ -295,7 +296,18 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
         print_usage ();
         }
     }
-    else if (!strcmp (argv[i], "--list-gpu")) {
+    else if (!strcmp (argv[i], "--rbf-young-modulus")) {
+        if (i == (argc-1) || argv[i+1][0] == '-') {
+        fprintf(stderr, "option %s requires an argument\n", argv[i]);
+        exit(1);
+        }
+        i++;
+        rc = sscanf (argv[i], "%g", &parms->rbf_young_modulus);
+        if (rc != 1) {
+        print_usage ();
+        }
+    }
+	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)
         printf ("Enumerating available GPUs:\n\n");
         CUDA_listgpu ();
