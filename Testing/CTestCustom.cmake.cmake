@@ -3,6 +3,7 @@ SET (CUDA_FOUND @CUDA_FOUND@)
 SET (BROOK_FOUND @BROOK_FOUND@)
 SET (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
 SET (PLM_TEST_DICOM @PLM_TEST_DICOM@)
+SET (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 SET (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
 SET (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 
@@ -31,13 +32,13 @@ IF (CUDA_FOUND)
   ENDIF (NOT CUDA_PROBE_NOT_CAPABLE)
 ENDIF (CUDA_FOUND)
 
-## Drr cuda is not yet working.  Don't run the tests.
-SET (CTEST_CUSTOM_TESTS_IGNORE
-  ${CTEST_CUSTOM_TESTS_IGNORE}
-  "drr-d"
-  "drr-d-stats"
-  "drr-d-check"
-)
+## If we don't have a fortran compiler, don't test bragg_curve
+IF (NOT CMAKE_Fortran_COMPILER_WORKS)
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "bragg-curve"
+    )
+ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS)
 
 ## If we didn't get dicom test data, don't run dicom tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")

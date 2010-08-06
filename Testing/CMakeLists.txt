@@ -40,8 +40,8 @@ SET (SYNTH_MHA_SIZE 38)
 ##   synth-2.mha   Off-center gauss
 ##   synth-3.mha   Uchar sphere, bg=0, fg=255
 ##   synth-4.mha   Inverted gauss
-##   synth-5.mha   Rect
-##   synth-6.mha   Inverged rect
+##   rect-1.mha   Inverged rect
+##   rect-2.mha   Rect
 ##   synth-7.mha   Gauss with inverted pixel spacing
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
@@ -73,14 +73,14 @@ PLM_ADD_TEST (
   )
 
 PLM_ADD_TEST (
-  "synth-5"
+  "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
 PLM_ADD_TEST (
-  "synth-6"
+  "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH_HACK}/synthetic_mha
   "--output;rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
@@ -959,6 +959,27 @@ ADD_TEST (
   "-DLOWER_THRESH=-661.5"
   "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+## -------------------------------------------------------------------------
+## bragg-curve
+## proton-dose
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "bragg-curve"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/bragg_curve
+  "-O;${PLM_TESTING_BUILD_DIR}/bragg-curve.txt"
+  )
+ADD_TEST (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
+  "${PLM_TESTING_DATA_DIR}/bragg-curve.txt"
+  "${PLM_TESTING_BUILD_DIR}/bragg-curve.txt")
+
+PLM_ADD_TEST (
+  "proton-dose"
+  ""
+  ${PLM_PLASTIMATCH_PATH_HACK}/proton_dose
+  "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
   )
 
 ## -------------------------------------------------------------------------
