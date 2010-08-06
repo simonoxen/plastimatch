@@ -28,8 +28,8 @@ struct callback_data {
     double accum;       /* Accumulated intensity */
 };
 
-typedef struct proton_energy_profile Proton_Energy_Profile;
-struct proton_energy_profile {
+typedef struct proton_depth_dose Proton_Depth_Dose;
+struct proton_depth_dose {
     float* depth;       /* depth array (mm) */
     float* energy;      /* energy array */
     float dmax;         /* maximum depth */
@@ -113,16 +113,17 @@ display_progress (
 
 #if defined (DEBUG_VOXEL)
 static void 
-debug_voxel (double r,             /* current radius */
-             double t,             /* current angle */
-             double rgdepth,       /* radiographic depth */
-             double d,             /* dose from scatter_xyz */
-             double* scatter_xyz,  /* space coordinates of scatterer */
-             double* ct_xyz,       /* voxel receiving dose */
-             double w,             /* gaussian weight (x) */
-             double d0,            /* unweighted d */
-             double sigma,         /* Gauss kernel stdev */
-             double dose           /* aggr dose @ ct_xyz */
+debug_voxel (
+    double r,             /* current radius */
+    double t,             /* current angle */
+    double rgdepth,       /* radiographic depth */
+    double d,             /* dose from scatter_xyz */
+    double* scatter_xyz,  /* space coordinates of scatterer */
+    double* ct_xyz,       /* voxel receiving dose */
+    double w,             /* gaussian weight (x) */
+    double d0,            /* unweighted d */
+    double sigma,         /* Gauss kernel stdev */
+    double dose           /* aggr dose @ ct_xyz */
 )
 {
     FILE* fp;
@@ -130,7 +131,7 @@ debug_voxel (double r,             /* current radius */
     fp = fopen ("dump_voxel.txt", "a");
 
     fprintf (fp, "r,t: [%3.3f %1.3f] \t rgdepth: %2.3f \t d: %4.1f \t dist: %3.3f \t w: %1.4f \t d0: %4.3f \t sigma: %1.4f\t dose: %4.4f\n",
-            r, t, rgdepth, d, vec3_dist(scatter_xyz, ct_xyz), w, d0, sigma, dose);
+	r, t, rgdepth, d, vec3_dist(scatter_xyz, ct_xyz), w, d0, sigma, dose);
 
     fclose (fp);
 }
@@ -142,11 +143,12 @@ debug_voxel (double r,             /* current radius */
  * Right now this is just a normalization
  */
 static double
-highland (double rgdepth,
-          Proton_Energy_Profile* pep
+highland (
+    double rgdepth,
+    Proton_Depth_Dose* pep
 )
 {
-    return 3.0*(rgdepth - pep->depth[0]) / (pep->dmax - pep->depth[0]);
+    return 3.0 * (rgdepth - pep->depth[0]) / (pep->dmax - pep->depth[0]);
 }
 
 static double
@@ -228,7 +230,7 @@ lookup_rgdepth (
 static float
 lookup_energy (
     float depth,
-    Proton_Energy_Profile* pep
+    Proton_Depth_Dose* pep
 )
 {
     int i;
@@ -323,7 +325,7 @@ dose_direct (
     double* ct_xyz,             /* voxel to dose */
     double* depth_offset,       /* ap to ct_vol dist */
     Volume* depth_vol,          /* radiographic depths */
-    Proton_Energy_Profile* pep, /* proton energy profile */
+    Proton_Depth_Dose* pep, /* proton energy profile */
     Proj_matrix *pmat,          /* projection matrix */
     int* ires,                  /* ray cast resolution */
     double* ap_ul,              /* aperture upper-left */
@@ -335,15 +337,16 @@ dose_direct (
     double rgdepth;
     double dose;
 
-    rgdepth = get_rgdepth (ct_xyz,         /* voxel to dose */
-                            depth_offset,   /* ap to ct_vol dist */
-                            depth_vol,      /* radiographic depths */
-                            pmat,           /* projection matrix */
-                            ires,           /* ray cast resolution */
-                            ap_ul,          /* aperture upper-left 3D coord */
-                            incr_r,         /* distance between ray rows @ aperture */
-                            incr_c,         /* distance between ray cols @ aperture */
-                            options);       /* contains uniform step size along rays */
+    rgdepth = get_rgdepth (
+	ct_xyz,         /* voxel to dose */
+	depth_offset,   /* ap to ct_vol dist */
+	depth_vol,      /* radiographic depths */
+	pmat,           /* projection matrix */
+	ires,           /* ray cast resolution */
+	ap_ul,          /* aperture upper-left 3D coord */
+	incr_r,         /* distance between ray rows @ aperture */
+	incr_c,         /* distance between ray cols @ aperture */
+	options);       /* contains uniform step size along rays */
 
     /* The voxel was not hit directly by the beam */
     if (rgdepth < 0.0f) {
@@ -364,7 +367,7 @@ dose_scatter (
     int* ct_ijk,            // DEBUG
     double* depth_offset,
     Volume* depth_vol,
-    Proton_Energy_Profile* pep,
+    Proton_Depth_Dose* pep,
     Proj_matrix *pmat,
     int* ires,
     double* ap_ul,
@@ -398,9 +401,9 @@ dose_scatter (
     double d0;
     int debug = 0;
 
-//    int watch_ijk[3] = {0, 255, 67};  // entry
+    //    int watch_ijk[3] = {0, 255, 67};  // entry
     int watch_ijk[3] = {134, 256, 67};  // bragg peak
-//    int watch_ijk[3] = {23, 255, 67};    // "stem"
+    //    int watch_ijk[3] = {23, 255, 67};    // "stem"
 
     if (ct_ijk[0] == watch_ijk[0] &&
         ct_ijk[1] == watch_ijk[1] &&
@@ -414,11 +417,12 @@ dose_scatter (
     /* Get approximation for scatterer search radius
      * NOTE: This is not used to define the Gaussian
      */
-    rgdepth = get_rgdepth (ct_xyz, depth_offset,
-                            depth_vol,
-                            pmat, ires, ap_ul,
-                            incr_r, incr_c,
-                            options);
+    rgdepth = get_rgdepth (
+	ct_xyz, depth_offset,
+	depth_vol,
+	pmat, ires, ap_ul,
+	incr_r, incr_c,
+	options);
 
     /* If the voxel was not hit *directly* by the beam, there is still a
      * chance that it was hit by scatterers generated by a neighbor who
@@ -452,17 +456,17 @@ dose_scatter (
         for (t = 0.0f; t < 2.0*M_PI; t += t_step) {
 
             rotate_about_ray (scatter_xyz,  // O: new xyz coordinate
-                              sp_pos,       // I: init xyz coordinate
-                              t,            // I: angle of rotation
-                              ct_xyz);      // I: axis of rotation
+		sp_pos,       // I: init xyz coordinate
+		t,            // I: angle of rotation
+		ct_xyz);      // I: axis of rotation
 
             /* neighbor (or self) hit by proton beam? */
             rgdepth = get_rgdepth (scatter_xyz,
-                                    depth_offset,
-                                    depth_vol,
-                                    pmat, ires, ap_ul,
-                                    incr_r, incr_c,
-                                    options);
+		depth_offset,
+		depth_vol,
+		pmat, ires, ap_ul,
+		incr_r, incr_c,
+		options);
 
             if (rgdepth < 0.0f) {
                 continue;
@@ -490,7 +494,7 @@ dose_scatter (
 #if defined (DEBUG_VOXEL)
             if (debug) {
                 debug_voxel (r, t, rgdepth, d, scatter_xyz, ct_xyz,
-                             w, d0, sigma, dose);
+		    w, d0, sigma, dose);
             }
 #endif
 
@@ -507,7 +511,7 @@ dose_scatter (
 }
 
 static void
-dump_pep (Proton_Energy_Profile* pep)
+dump_pep (Proton_Depth_Dose* pep)
 {
     FILE* fp;
 
@@ -526,14 +530,53 @@ dump_pep (Proton_Energy_Profile* pep)
     fclose (fp);
 }
 
-static Proton_Energy_Profile* 
-load_pep (char* filename)
+static Proton_Depth_Dose* 
+load_pep_txt (char* filename)
+{
+    char linebuf[128];
+    FILE* fp = fopen (filename, "r");
+    Proton_Depth_Dose *pep;
+
+    if (!fp) {
+        printf ("Error reading proton energy profile.\n");
+        printf ("Terminating...\n");
+        exit(0);
+    }
+
+    // Allocate the pep
+    pep = (Proton_Depth_Dose*) malloc (sizeof(Proton_Depth_Dose));
+    memset (pep, 0, sizeof (Proton_Depth_Dose));
+
+    while (fgets (linebuf, 128, fp)) {
+	float range, dose;
+	if (2 != sscanf (linebuf, "%f %f", &range, &dose)) {
+	    break;
+	}
+	pep->num_samp ++;
+	pep->depth = (float*) realloc (
+	    pep->depth, pep->num_samp * sizeof(float));
+	pep->energy = (float*) realloc (
+	    pep->energy, pep->num_samp * sizeof(float));
+	pep->depth [pep->num_samp-1] = range;
+	pep->energy [pep->num_samp-1] = dose;
+	pep->dmax = range;         /* Assume entries are sorted */
+	if (pep->emax < dose) {
+	    pep->emax = dose;
+	}
+    }
+
+    fclose (fp);
+    return pep;
+}
+
+static Proton_Depth_Dose* 
+load_pep_xio (char* filename)
 {
     int i,j;
     char* ptoken;
     char linebuf[128];
     FILE* fp = fopen (filename, "r");
-    Proton_Energy_Profile *pep;
+    Proton_Depth_Dose *pep;
 
     if (!fp) {
         printf ("Error reading proton energy profile.\n");
@@ -545,7 +588,7 @@ load_pep (char* filename)
     // 00001037 ??
     
     // Allocate the pep
-    pep = (Proton_Energy_Profile*)malloc(sizeof(Proton_Energy_Profile));
+    pep = (Proton_Depth_Dose*)malloc(sizeof(Proton_Depth_Dose));
 
     // Skip the first 4 lines
     for (i=0; i < 4; i++) {
@@ -596,6 +639,28 @@ load_pep (char* filename)
 
     fclose (fp);
     return pep;
+}
+
+static Proton_Depth_Dose* 
+load_pep (char* filename)
+{
+    FILE* fp = fopen (filename, "r");
+    char linebuf[128];
+
+    if (!fp) {
+        printf ("Error reading proton energy profile.\n");
+        printf ("Terminating...\n");
+        exit(0);
+    }
+
+    fgets (linebuf, 128, fp);
+    fclose (fp);
+
+    if (!strncmp (linebuf, "00001037", strlen ("00001037"))) {
+	return load_pep_xio (filename);
+    } else {
+	return load_pep_txt (filename);
+    }
 }
 
 static float
@@ -753,7 +818,7 @@ proton_dose_compute (
     double ic[2] = { 4.5, 4.5 };
     double ps[2] = { 1., 1. };
     int ires[2] = { 10, 10 };
-    Proton_Energy_Profile* pep;
+    Proton_Depth_Dose* pep;
 
     pmat = proj_matrix_create ();
     proj_matrix_set (pmat, cam, tgt, vup, ap_dist, ic, ps, ires);
@@ -858,7 +923,8 @@ proton_dose_compute (
                 ct_xyz[3] = (double) 1.0;
 
 #if defined (DOSE_DIRECT)
-                dose = dose_direct (ct_xyz,         /* voxel to dose */
+                dose = dose_direct (
+		    ct_xyz,         /* voxel to dose */
 		    depth_offset,   /* ap to ct_vol dist */
 		    depth_vol,      /* radiographic depths */
 		    pep,            /* proton energy profile */
@@ -872,7 +938,8 @@ proton_dose_compute (
 
 
 #if defined (DOSE_GAUSS)
-                dose = dose_scatter (ct_xyz,        /* voxel to dose */
+                dose = dose_scatter (
+		    ct_xyz,        /* voxel to dose */
 		    ct_ijk,
 		    depth_offset,  /* ap to ct_vol dist */
 		    depth_vol,     /* radiographic depths */
