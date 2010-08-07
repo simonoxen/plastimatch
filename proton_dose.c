@@ -399,9 +399,10 @@ dose_scatter (
     double dose = 0.0f;
     double w;
 
+    int debug = 0;
+
 #if defined (DEBUG_VOXEL)
     double d0;
-    int debug = 0;
 
     //    int watch_ijk[3] = {0, 255, 67};  // entry
     //int watch_ijk[3] = {134, 256, 67};  // bragg peak
