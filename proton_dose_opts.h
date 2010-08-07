@@ -10,6 +10,7 @@ typedef struct proton_dose_options Proton_dose_options;
 struct proton_dose_options {
     Threading threading;
 
+    char flavor;                     /* Which algorithm? */
     float src[3];                    /* Beam source */
     float isocenter[3];              /* Beam target */
     float vup[3];                    /* Aperture orientation */

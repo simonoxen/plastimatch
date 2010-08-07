@@ -20,13 +20,14 @@ print_usage (void)
 	"Usage: proton_dose [options] infile outfile\n"
 	"Options:\n"
 	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
+	" -f implementation One of {a,b,c}\n"
 	" -src \"x y z\"      ...\n"
 	" -iso \"x y z\"      ...\n"
 	" -vup \"x y z\"      ...\n"
 	" -s scale          Scale the intensity of the output file\n"
-    " -d detail         0 = full, 1 = beam path only (default=0)\n"
+	" -d detail         0 = full, 1 = beam path only (default=0)\n"
 	" -u step           Uniform step (in mm) along ray trace\n"
-    " -p filename       Proton dose energy profile\n"
+	" -p filename       Proton dose energy profile\n"
 	" --debug           Create various debug files\n"
     );
     exit (1);
@@ -36,6 +37,7 @@ void
 proton_dose_opts_init (Proton_dose_options* options)
 {
     options->threading = THREADING_CPU_OPENMP;
+    options->flavor = 'a';
     options->src[0] = -2000.0f;
     options->src[1] = 0.0f;
     options->src[2] = 0.0f;
@@ -111,6 +113,34 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
+	else if (!strcmp (argv[i], "-d")) {
+	    i++;
+	    rc = sscanf (argv[i], "%i" , &options->detail);
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-f")) {
+	    i++;
+	    rc = sscanf (argv[i], "%c" , &options->flavor);
+	    if (rc < 'a' || rc > 'z') {
+		fprintf (stderr, 
+		    "option %s must be a character beween 'a' and 'z'\n", 
+		    argv[i]);
+		exit (1);
+	    }
+	    if (rc != 1) {
+		print_usage ();
+	    }
+	}
+	else if (!strcmp (argv[i], "-p")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+	    	fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->input_pep_fn = strdup (argv[i]);
+	}
 	else if (!strcmp (argv[i], "-s")) {
 	    i++;
 	    rc = sscanf (argv[i], "%g" , &options->scale);
@@ -124,21 +154,6 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	    if (rc != 1) {
 		print_usage ();
 	    }
-	}
-	else if (!strcmp (argv[i], "-d")) {
-	    i++;
-	    rc = sscanf (argv[i], "%i" , &options->detail);
-	    if (rc != 1) {
-		print_usage ();
-	    }
-	}
-	else if (!strcmp (argv[i], "-p")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-	    	fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    options->input_pep_fn = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "--debug")) {
 	    options->debug = 1;
@@ -158,7 +173,6 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
         printf ("  Terminating...\n\n");
         exit(1);
     }
-
 
     options->input_fn = argv[i];
     options->output_fn = argv[i+1];
