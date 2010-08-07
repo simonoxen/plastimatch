@@ -580,6 +580,7 @@ SET (GPUIT_LIBRARY_SRC
   logfile.c logfile.h
   math_util.h
   mha_io.c mha_io.h
+  rpl_volume.c rpl_volume.h
   pointset.c pointset.h 
   print_and_exit.c print_and_exit.h 
   proj_image.c proj_image.h
