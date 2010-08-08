@@ -11,7 +11,7 @@ typedef struct rpl_volume Rpl_volume;
 struct rpl_volume {
     Volume *vol;
     double *depth_offset;
-    double p1[3];
+    double cam[3];
     double ap_ul_room[3];
     double incr_r[3];
     double incr_c[3];
@@ -27,7 +27,7 @@ Rpl_volume*
 rpl_volume_create (
     Volume* ct_vol,       // ct volume
     int ires[2],          // aperture dimensions
-    double p1[3],         // position of source
+    double cam[3],        // position of source
     double ap_ul_room[3], // position of aperture in room coords
     double incr_r[3],     // change in room coordinates for each ap pixel
     double incr_c[3],     // change in room coordinates for each ap pixel

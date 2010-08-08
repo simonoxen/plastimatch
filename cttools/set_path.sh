@@ -23,7 +23,7 @@ case $CNAME in
 	export PATH=$PATH:$HOME/work/plastimatch/cttools
 	;;
     "wormwood")
-	export PATH=$PATH:$HOME/build/plastimatch-3.18.0
+	export PATH=$PATH:$HOME/build/plastimatch-3.20.0
 	export PATH=$PATH:$HOME/projects/plastimatch/cttools
 	;;
     "redfish")

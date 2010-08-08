@@ -31,7 +31,6 @@
 
 //#define VERBOSE 1
 //#define PROGRESS 1
-//#define DOSE_DIRECT
 #define DEBUG_VOXEL 1
 #define DOSE_GAUSS 1
 
@@ -328,74 +327,6 @@ get_rgdepth (
     return rgdepth;
 }
 
-/* Lookup radiological path length from depth_vol.  Note, we do not 
-   clip to the aperture.  This lets scatter locations find the nearest 
-   pencil beams. */
-static void
-get_depth_vol_idx (
-    double *dv_ijk,        /* O: The 3d index of the voxel within depth vol */
-    double* ct_xyz,        /* I: location of voxel in world space */
-    double* depth_offset,  /* I: distance to first slice of depth_vol */
-    Volume* depth_vol,     /* I: the volume of RPL values */
-    Proj_matrix *pmat,
-    int* ires,
-    double* ap_ul,
-    double* incr_r,
-    double* incr_c,
-    Proton_dose_options *options
-)
-{
-    int ap_x, ap_y, ap_idx;
-    double ap_xy[3], ap_xyz[3], tmp[3];
-    double dist;
-    //double rgdepth;
-
-    /* Back project the voxel to the aperture plane */
-    mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
-
-    /* Compute x & y coordinates */
-    dv_ijk[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
-    dv_ijk[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
-
-    /* Find real-world position on aperture plane */
-    vec3_copy (ap_xyz, ap_ul);
-    vec3_scale3 (tmp, incr_r, dv_ijk[0]);
-    vec3_add2 (ap_xyz, tmp);
-    vec3_scale3 (tmp, incr_c, dv_ijk[1]);
-    vec3_add2 (ap_xyz, tmp);
-
-    /* Compute distance from aperture to voxel */
-    dist = vec3_dist (ap_xyz, ct_xyz);
-
-    /* GCS FIX:::: 
-       The depth_volume has a different depth_offset for each ray.
-       This makes hong algorithm implementation more complex.
-       Therefore, at least we should move depth_volume to a separate 
-       structure to simplify coding, and perhaps also make a second 
-       implementation of depth_volume with uniform depth_offset.
-    */
-
-    /* Find aperture index of the ray */
-    ap_x = ROUND_INT (dv_ijk[0]);
-    ap_y = ROUND_INT (dv_ijk[1]);
-
-#if defined (commentout)
-    /* Only handle voxels that were hit by the beam */
-    if (ap_x < 0 || ap_x >= ires[0] ||
-        ap_y < 0 || ap_y >= ires[1]) {
-        return -1;
-    }
-#endif
-
-    ap_idx = ap_y * ires[0] + ap_x;
-
-    /* Subtract distance from aperture to depth volume */
-    dist -= depth_offset[ap_idx];
-
-    /* Convert mm to index */
-    dv_ijk[2] = dist / options->ray_step;
-}
-
 /* This function should probably be marked for
  * deletion once dose_scatter() is working properly.
  * GCS: This funcion is useful for debugging.  Let's keep it as flavor 'a'.
@@ -426,11 +357,18 @@ dose_direct (
         return 0.0f;
     }
 
+#if defined (commentout)
+    if (ct_xyz[1] > 0.0 && ct_xyz[1] < 2.0 
+	&& ct_xyz[2] > 0.0 && ct_xyz[2] < 2.0) {
+	printf ("(%f %f %f) %f\n", ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+	    rgdepth);
+    }
+#endif
+
     /* Lookup the dose at this radiographic depth */
     dose = lookup_energy (rgdepth, pep);
     
     return dose;
-
 }
 
 /* Accounts for small angle scattering due to Columbic interactions */
@@ -920,23 +858,6 @@ load_pep (char* filename)
     }
 }
 
-static float
-lookup_attenuation_weq (float density)
-{
-    const double min_hu = -1000.0;
-    if (density <= min_hu) {
-        return 0.0;
-    } else {
-        return ((density + 1000.0)/1000.0);
-    }
-}
-
-static float
-lookup_attenuation (float density)
-{
-    return lookup_attenuation_weq (density);
-}
-
 void
 proton_dose_compute (
     Volume *dose_vol,
@@ -945,9 +866,7 @@ proton_dose_compute (
 )
 {
     Rpl_volume* rpl_vol;
-    int ap_idx;
 
-    int r;
     int ct_ijk[3];
     double ct_xyz[4];
     double p1[3];
@@ -1014,7 +933,7 @@ proton_dose_compute (
     pep = load_pep (options->input_pep_fn);
 
     /* Create the depth volume */
-    rpl_vol = rpl_volume_create (ct_vol, ires, p1, ul_room, 
+    rpl_vol = rpl_volume_create (ct_vol, ires, pmat->cam, ul_room, 
 	incr_r, incr_c, options->ray_step);
 
     /* Scan through aperture to fill in rpl_volume */
@@ -1023,6 +942,7 @@ proton_dose_compute (
     if (options->debug) {
 	rpl_volume_save (rpl_vol, "depth_vol.mha");
         dump_pep (pep);
+	proj_matrix_debug (pmat);
     }
 
     /* Scan through CT Volume */

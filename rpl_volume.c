@@ -15,6 +15,8 @@
 #include "volume.h"
 #include "volume_limit.h"
 
+//#define VERBOSE 1
+
 typedef struct callback_data Callback_data;
 struct callback_data {
     Rpl_volume* rpl_vol;    /* Radiographic depth volume */
@@ -88,11 +90,13 @@ rpl_volume_get_rgdepth (
 
     /* Back project the voxel to the aperture plane */
     mat43_mult_vec3 (ap_xy, pmat->matrix, ct_xyz);
+    ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
+    ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
 
-    ap_x = ROUND_INT (pmat->ic[0] + ap_xy[0] / ap_xy[2]);
-    ap_y = ROUND_INT (pmat->ic[1] + ap_xy[1] / ap_xy[2]);
+    ap_x = ROUND_INT (ap_xy[0]);
+    ap_y = ROUND_INT (ap_xy[1]);
 
-    /* Only handle voxels that were hit by the beam */
+    /* Only handle voxels inside the (square) aperture */
     if (ap_x < 0 || ap_x >= ires[0] ||
         ap_y < 0 || ap_y >= ires[1]) {
         return -1;
@@ -210,7 +214,7 @@ Rpl_volume*
 rpl_volume_create (
     Volume* ct_vol,       // ct volume
     int ires[2],          // aperture dimensions
-    double p1[3],         // position of source
+    double cam[3],        // position of source
     double ap_ul_room[3], // position of aperture in room coords
     double incr_r[3],     // change in room coordinates for each ap pixel
     double incr_c[3],     // change in room coordinates for each ap pixel
@@ -228,6 +232,7 @@ rpl_volume_create (
     memset (rvol, 0, sizeof (Rpl_volume));
 
     /* Copy over input fields */
+    memcpy (rvol->cam, cam, 3 * sizeof(double));
     memcpy (rvol->ap_ul_room, ap_ul_room, 3 * sizeof(double));
     memcpy (rvol->incr_r, incr_r, 3 * sizeof(double));
     memcpy (rvol->incr_c, incr_c, 3 * sizeof(double));
@@ -316,17 +321,19 @@ proton_dose_ray_trace (
 	return;
     }
 
+    /* store the distance from aperture to CT_vol for later */
+    rpl_vol->depth_offset[ap_idx] = vec3_dist (p2, ip1);
+
 #if VERBOSE
+    printf ("ap_idx: %d\n", ap_idx);
     printf ("P1: %g %g %g\n", p1[0], p1[1], p1[2]);
     printf ("P2: %g %g %g\n", p2[0], p2[1], p2[2]);
 
     printf ("ip1 = %g %g %g\n", ip1[0], ip1[1], ip1[2]);
     printf ("ip2 = %g %g %g\n", ip2[0], ip2[1], ip2[2]);
     printf ("ray = %g %g %g\n", ray[0], ray[1], ray[2]);
+    printf ("off = %g\n", rpl_vol->depth_offset[ap_idx]);
 #endif
-
-    /* store the distance from aperture to CT_vol for later */
-    rpl_vol->depth_offset[ap_idx] = vec3_dist (p2, ip1);
 
     /* init callback data for this ray */
     cd.accum = 0.0f;
@@ -388,7 +395,7 @@ rpl_volume_compute (
 		rpl_vol,      /* O: radiographic depths */
 		ct_vol,       /* I: CT volume */
 		&ct_limit,    /* I: CT bounding region */
-		rpl_vol->p1,  /* I: @ source */
+		rpl_vol->cam, /* I: @ source */
 		p2,           /* I: @ aperture */
 		ires,         /* I: ray cast resolution */
 		ap_idx        /* I: linear index of ray in ap */

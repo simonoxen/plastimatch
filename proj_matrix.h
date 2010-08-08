@@ -50,6 +50,12 @@ proj_matrix_set (
 
 gpuit_EXPORT
 void
+proj_matrix_debug (
+    Proj_matrix *pmat
+);
+
+gpuit_EXPORT
+void
 proj_matrix_get_nrm (
     Proj_matrix *pmat,
     double nrm[3]

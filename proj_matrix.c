@@ -41,23 +41,13 @@ proj_matrix_destroy (Proj_matrix* pmat)
     free (pmat);
 }
 
+static
 void
-proj_matrix_save (
+proj_matrix_write (
     Proj_matrix *pmat,
-    const char *fn
+    FILE *fp
 )
 {
-    FILE *fp;
-
-    if (!fn) return;
-    if (!pmat) return;
-
-    make_directory_recursive (fn);
-    fp = fopen (fn, "w");
-    if (!fp) {
-	fprintf (stderr, "Error opening %s for write\n", fn);
-	exit (-1);
-    }
     fprintf (fp, "%18.8e %18.8e\n", pmat->ic[0], pmat->ic[1]);
     fprintf (fp,
 	"%18.8e %18.8e %18.8e %18.8e\n" 
@@ -99,6 +89,36 @@ proj_matrix_save (
 	pmat->intrinsic[8], pmat->intrinsic[9], 
 	pmat->intrinsic[10], pmat->intrinsic[11]
     );
+}
+
+void
+proj_matrix_debug (
+    Proj_matrix *pmat
+)
+{
+    proj_matrix_write (pmat, stdout);
+}
+
+void
+proj_matrix_save (
+    Proj_matrix *pmat,
+    const char *fn
+)
+{
+    FILE *fp;
+
+    if (!fn) return;
+    if (!pmat) return;
+
+    make_directory_recursive (fn);
+    fp = fopen (fn, "w");
+    if (!fp) {
+	fprintf (stderr, "Error opening %s for write\n", fn);
+	exit (-1);
+    }
+
+    proj_matrix_write (pmat, fp);
+
     fclose (fp);
 }
 
