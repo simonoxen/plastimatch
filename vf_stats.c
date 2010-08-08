@@ -278,39 +278,39 @@ vf_analyze_second_deriv (Volume* vol)
 		float d2ui_djdj = (1./ dj) * ( djp[0] - 2 * d_o[0] + djn[0] );
 		float d2ui_dkdk = (1./ dk) * ( dkp[0] - 2 * d_o[0] + dkn[0] );
 		float d2ui_didj = (0.5 / (di*dj))*
-			( ( dijp[0] + dijn[0] - 2. * d_o[0] ) - 
+			( ( dijp[0] + dijn[0] + 2. * d_o[0] ) - 
 			  ( dip[0] + din[0] + djp[0] + djn[0]) );
 		float d2ui_didk = (0.5 / (di*dk))*
-			( ( dikp[0] + dikn[0] - 2. * d_o[0] ) - 
+			( ( dikp[0] + dikn[0] + 2. * d_o[0] ) - 
 			  ( dip[0] + din[0] + dkp[0] + dkn[0]) );
 		float d2ui_djdk = (0.5 / (dj*dk))*
-			( ( djkp[0] + djkn[0] - 2. * d_o[0] ) - 
+			( ( djkp[0] + djkn[0] + 2. * d_o[0] ) - 
 			  ( djp[0] + djn[0] + dkp[0] + dkn[0]) );
 
 		float d2uj_didi = (1./ di) * ( dip[1] - 2 * d_o[1] + din[1] );
 		float d2uj_djdj = (1./ dj) * ( djp[1] - 2 * d_o[1] + djn[1] );
 		float d2uj_dkdk = (1./ dk) * ( dkp[1] - 2 * d_o[1] + dkn[1] );
 		float d2uj_didj = (0.5 / (di*dj))*
-			( ( dijp[1] + dijn[1] - 2. * d_o[1] ) - 
+			( ( dijp[1] + dijn[1] + 2. * d_o[1] ) - 
 			  ( dip[1] + din[1] + djp[1] + djn[1]) );
 		float d2uj_didk = (0.5 / (di*dk))*
-			( ( dikp[1] + dikn[1] - 2. * d_o[1] ) - 
+			( ( dikp[1] + dikn[1] + 2. * d_o[1] ) - 
 			  ( dip[1] + din[1] + dkp[1] + dkn[1]) );
 		float d2uj_djdk = (0.5 / (dj*dk))*
-			( ( djkp[1] + djkn[1] - 2. * d_o[1] ) - 
+			( ( djkp[1] + djkn[1] + 2. * d_o[1] ) - 
 			  ( djp[1] + djn[1] + dkp[1] + dkn[1]) );
 
 		float d2uk_didi = (1./ di) * ( dip[2] - 2 * d_o[2] + din[2] );
 		float d2uk_djdj = (1./ dj) * ( djp[2] - 2 * d_o[2] + djn[2] );
 		float d2uk_dkdk = (1./ dk) * ( dkp[2] - 2 * d_o[2] + dkn[2] );
 		float d2uk_didj = (0.5 / (di*dj))*
-			( ( dijp[2] + dijn[2] - 2. * d_o[2] ) - 
+			( ( dijp[2] + dijn[2] + 2. * d_o[2] ) - 
 			  ( dip[2] + din[2] + djp[2] + djn[2]) );
 		float d2uk_didk = (0.5 / (di*dk))*
-			( ( dikp[2] + dikn[2] - 2. * d_o[2] ) - 
+			( ( dikp[2] + dikn[2] + 2. * d_o[2] ) - 
 			  ( dip[2] + din[2] + dkp[2] + dkn[2]) );
 		float d2uk_djdk = (0.5 / (dj*dk))*
-			( ( djkp[2] + djkn[2] - 2. * d_o[2] ) - 
+			( ( djkp[2] + djkn[2] + 2. * d_o[2] ) - 
 			  ( djp[2] + djn[2] + dkp[2] + dkn[2]) );
 
 		float second_deriv_sq =
