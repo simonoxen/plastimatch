@@ -33,15 +33,13 @@ IF (CUDA_FOUND)
 ENDIF (CUDA_FOUND)
 
 # drr-d, landmark-warp doen't work yet
-IF (NOT CMAKE_Fortran_COMPILER_WORKS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
-    ${CTEST_CUSTOM_TESTS_IGNORE}
-    "drr-d"
-    "drr-d-stats"
-    "drr-d-check"
-    "landmark-warp"
-    )
-ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS)
+SET (CTEST_CUSTOM_TESTS_IGNORE
+  ${CTEST_CUSTOM_TESTS_IGNORE}
+  "drr-d"
+  "drr-d-stats"
+  "drr-d-check"
+  "landmark-warp"
+  )
 
 ## If we don't have a fortran compiler, don't test bragg_curve
 IF (NOT CMAKE_Fortran_COMPILER_WORKS)
