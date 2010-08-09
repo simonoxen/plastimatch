@@ -8,7 +8,7 @@
    The program will compose the vector fields according to the masks 
    and leave zero vectors for the area that is outside both masks.
 */
-
+#include "plm_config.h"
 #include <fstream>
 #include <string>
 

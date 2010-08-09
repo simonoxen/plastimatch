@@ -5,7 +5,7 @@
 #ifdef __BORLANDC__
 #define ITK_LEAN_AND_MEAN
 #endif
-
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

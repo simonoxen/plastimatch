@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* This is an alternate version of merge_affine_vector_field (gcs, 3/3/05) */
+#include "plm_config.h"
 #include <fstream>
 #include <string>
 
