@@ -82,7 +82,7 @@ rpl_volume_get_rgdepth (
     int ap_x, ap_y, ap_idx;
     double ap_xy[3], ap_xyz[3], tmp[3];
     double dist, rgdepth;
-    int ires[0];
+    int ires[2];
 
     /* A couple of abbreviations */
     ires[0] = rpl_vol->vol->dim[0];
@@ -359,7 +359,7 @@ rpl_volume_compute (
 )
 {
     int r;
-    int ires[0];
+    int ires[2];
     Volume_limit ct_limit;
 
     /* A couple of abbreviations */
