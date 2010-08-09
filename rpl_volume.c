@@ -117,10 +117,10 @@ rpl_volume_get_rgdepth (
 
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (
-	rpl_vol, 
-	ap_x, ap_y,
-	dist,
-	rpl_vol->ray_step);
+    rpl_vol, 
+    ap_x, ap_y,
+    dist,
+    rpl_vol->ray_step);
 
     return rgdepth;
 }
@@ -318,7 +318,7 @@ proton_dose_ray_trace (
 
     /* Test if ray intersects volume and create intersection points */
     if (!volume_limit_clip_ray (vol_limit, ip1, ip2, p1, ray)) {
-	return;
+        return;
     }
 
     /* store the distance from aperture to CT_vol for later */
@@ -343,7 +343,7 @@ proton_dose_ray_trace (
 
     /* get radiographic depth along ray */
     ray_trace_uniform (
-	ct_vol,                             // INPUT: CT volume
+        ct_vol,                             // INPUT: CT volume
         vol_limit,                          // INPUT: CT volume bounding box
         &proton_dose_ray_trace_callback,    // INPUT: step action cbFunction
         &cd,                                // INPUT: callback data
@@ -382,24 +382,24 @@ rpl_volume_compute (
         vec3_add2 (r_tgt, tmp);
 
         for (c = 0; c < ires[1]; c++) {
-	    int ap_idx;
+            int ap_idx;
 
-	    /* Compute index of aperture pixel */
-	    ap_idx = c * ires[0] + r;
+            /* Compute index of aperture pixel */
+            ap_idx = c * ires[0] + r;
 
-	    /* Compute p2 = 3d coordinates of point on aperture */
+            /* Compute p2 = 3d coordinates of point on aperture */
             vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);
             vec3_add3 (p2, r_tgt, tmp);
 
             proton_dose_ray_trace (
-		rpl_vol,      /* O: radiographic depths */
-		ct_vol,       /* I: CT volume */
-		&ct_limit,    /* I: CT bounding region */
-		rpl_vol->cam, /* I: @ source */
-		p2,           /* I: @ aperture */
-		ires,         /* I: ray cast resolution */
-		ap_idx        /* I: linear index of ray in ap */
-	    );
+                rpl_vol,      /* O: radiographic depths */
+                ct_vol,       /* I: CT volume */
+                &ct_limit,    /* I: CT bounding region */
+                rpl_vol->cam, /* I: @ source */
+                p2,           /* I: @ aperture */
+                ires,         /* I: ray cast resolution */
+                ap_idx        /* I: linear index of ray in ap */
+                );
         }
     }
 }
@@ -435,7 +435,7 @@ proton_dose_compute (
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
     double tgt[3] = { options->isocenter[0], options->isocenter[1], 
-		      options->isocenter[2] };
+                      options->isocenter[2] };
     double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
     double ic[2] = { 4.5, 4.5 };
     double ps[2] = { 1., 1. };
@@ -510,52 +510,52 @@ proton_dose_compute (
                 ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->pix_spacing[2]);
                 ct_xyz[3] = (double) 1.0;
 
-		switch (options->flavor) {
-		case 'a':
-		    dose = dose_direct (
-			ct_xyz,         /* voxel to dose */
-			depth_offset,   /* ap to ct_vol dist */
-			depth_vol,      /* radiographic depths */
-			pep,            /* proton energy profile */
-			pmat,           /* projection matrix */
-			ires,           /* ray cast resolution */
-			ul_room,        /* aperture upper-left */
-			incr_r,         /* 3D ray row increment */
-			incr_c,         /* 3D ray col increment */
-			options);       /* options->ray_step */
-		    break;
-		case 'b':
-		    dose = dose_scatter (
-			ct_xyz,        /* voxel to dose */
-			ct_ijk,        /* index of voxel */
-			depth_offset,  /* ap to ct_vol dist */
-			depth_vol,     /* radiographic depths */
-			pep,           /* proton energy profile */
-			pmat,          /* projection matrix */
-			ires,          /* ray cast resolution */
-			ul_room,       /* aperture upper-left */
-			incr_r,        /* 3D ray row increment */
-			incr_c,        /* 3D ray col increment */
-			prt,           /* x-dir in ap plane uv */
-			pdn,           /* y-dir in ap plane uv */
-			options);      /* options->ray_step */
-		    break;
-		case 'c':
-		    dose = dose_hong (
-			ct_xyz,        /* voxel to dose */
-			ct_ijk,        /* index of voxel */
-			depth_offset,  /* ap to ct_vol dist */
-			depth_vol,     /* radiographic depths */
-			pep,           /* proton energy profile */
-			pmat,          /* projection matrix */
-			ires,          /* ray cast resolution */
-			ul_room,       /* aperture upper-left */
-			incr_r,        /* 3D ray row increment */
-			incr_c,        /* 3D ray col increment */
-			prt,           /* x-dir in ap plane uv */
-			pdn,           /* y-dir in ap plane uv */
-			options);      /* options->ray_step */
-		}
+                switch (options->flavor) {
+                case 'a':
+                    dose = dose_direct (
+                    ct_xyz,         /* voxel to dose */
+                    depth_offset,   /* ap to ct_vol dist */
+                    depth_vol,      /* radiographic depths */
+                    pep,            /* proton energy profile */
+                    pmat,           /* projection matrix */
+                    ires,           /* ray cast resolution */
+                    ul_room,        /* aperture upper-left */
+                    incr_r,         /* 3D ray row increment */
+                    incr_c,         /* 3D ray col increment */
+                    options);       /* options->ray_step */
+                    break;
+                case 'b':
+                    dose = dose_scatter (
+                    ct_xyz,        /* voxel to dose */
+                    ct_ijk,        /* index of voxel */
+                    depth_offset,  /* ap to ct_vol dist */
+                    depth_vol,     /* radiographic depths */
+                    pep,           /* proton energy profile */
+                    pmat,          /* projection matrix */
+                    ires,          /* ray cast resolution */
+                    ul_room,       /* aperture upper-left */
+                    incr_r,        /* 3D ray row increment */
+                    incr_c,        /* 3D ray col increment */
+                    prt,           /* x-dir in ap plane uv */
+                    pdn,           /* y-dir in ap plane uv */
+                    options);      /* options->ray_step */
+                    break;
+                case 'c':
+                    dose = dose_hong (
+                    ct_xyz,        /* voxel to dose */
+                    ct_ijk,        /* index of voxel */
+                    depth_offset,  /* ap to ct_vol dist */
+                    depth_vol,     /* radiographic depths */
+                    pep,           /* proton energy profile */
+                    pmat,          /* projection matrix */
+                    ires,          /* ray cast resolution */
+                    ul_room,       /* aperture upper-left */
+                    incr_r,        /* 3D ray row increment */
+                    incr_c,        /* 3D ray col increment */
+                    prt,           /* x-dir in ap plane uv */
+                    pdn,           /* y-dir in ap plane uv */
+                    options);      /* options->ray_step */
+                }
 
                 /* Insert the dose into the dose volume */
                 idx = INDEX_OF (ct_ijk, dose_vol->dim);
