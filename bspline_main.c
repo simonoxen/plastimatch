@@ -33,7 +33,8 @@ main (int argc, char* argv[])
     Bspline_xform *bxf;
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;
-    Volume *moving_warped = 0;
+	Volume *zero_vector_field = 0;
+	Volume *moving_warped = 0;
     int roi_offset[3];
 
     bspline_opts_parse_args (&options, argc, argv);
@@ -143,7 +144,17 @@ main (int argc, char* argv[])
 			options.warped_landmarks, "warp_and_rbf", 
 			parms->landmarks->warped_landmarks, 
 			parms->landmarks->num_landmarks);
-	    }
+
+		/* Creating and writing vector field only from RBF (for test only) */
+		zero_vector_field = volume_create (fixed->dim, fixed->offset, 
+	    fixed->pix_spacing,
+	    PT_VF_FLOAT_INTERLEAVED, 
+	    fixed->direction_cosines, 0);
+		bspline_rbf_update_vector_field( zero_vector_field, parms );
+		printf ("Writing RBF-only vector field.\n");
+		write_mha ("nsh-vf-rbf-only.mha", zero_vector_field);
+		volume_destroy (zero_vector_field);
+		}
 	}
     }
 #endif

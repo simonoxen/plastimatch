@@ -344,8 +344,9 @@ vf_analyze_second_deriv (Volume* vol)
 	}
     }
 
-    printf ("Second derivatives: MINSECDER %g MAXSECDER %g TOTSECDER %g\n", 
-	min_sec_der, max_sec_der, total_sec_der);
+    printf ("Second derivatives: MINSECDER %g MAXSECDER %g TOTSECDER %g INTSECDER %g\n", 
+	min_sec_der, max_sec_der, total_sec_der,
+	total_sec_der * (vol->pix_spacing[0]*vol->pix_spacing[1]*vol->pix_spacing[2]) );
     printf ("Max second derivative: (%d %d %d)\n", 
 	max_sec_der_loc[0], max_sec_der_loc[1], max_sec_der_loc[2]);
 }

@@ -218,6 +218,62 @@ float bspline_rbf_score (
 
     return score;
 }
+
+/*
+Analytic expression for the integral of squared second derivatives
+of the vector field of a single Gaussian RBF of radius c
+*/
+static float rbf_gauss_secderiv_self(float c)
+{
+float factor = 1.968701243; // pow( M_PI/2, 3./2);
+return 15*factor/c;
+} 
+  
+/*
+Analytic expression for the integral of squared second derivatives
+of the vector field of two Gaussian RBFs of radii c,
+separated by squared distance a2 = (x1-x2)*(x1-x2)+...
+(one-half of the overlap integral only).
+*/
+static float rbf_gauss_secderiv_cross(float c, float a2)
+{
+float factor = 1.968701243; // pow( M_PI/2, 3./2);
+return factor/c*exp(-a2/(2*c*c))*(-10. + ( a2/(c*c)-5.)*(a2/(c*c)-5.) );
+}
+
+static void bspline_rbf_analytic_integral( Bspline_parms *parms, float *pix_spacing )
+{
+Bspline_landmarks *blm = parms->landmarks;
+int i,j,d;
+float a2, s = 0.;
+
+for(i=0;i<blm->num_landmarks;i++)
+for(d=0;d<3;d++)
+	s += blm->rbf_coeff[3*i+d] * blm->rbf_coeff[3*i+d] *
+		rbf_gauss_secderiv_self( parms->rbf_radius );
+
+if (blm->num_landmarks>1)
+for(i=0;i<blm->num_landmarks;i++)
+for(j=i+1;j<blm->num_landmarks;j++)
+for(d=0;d<3;d++)
+{
+		a2 = (blm->landvox_fix[3*i+0]-blm->landvox_fix[3*j+0])*
+					 (blm->landvox_fix[3*i+0]-blm->landvox_fix[3*j+0])*
+					 pix_spacing[0] * pix_spacing[0] +
+					 (blm->landvox_fix[3*i+1]-blm->landvox_fix[3*j+1])*
+					 (blm->landvox_fix[3*i+1]-blm->landvox_fix[3*j+1])*
+					 pix_spacing[1] * pix_spacing[1] +
+					 (blm->landvox_fix[3*i+2]-blm->landvox_fix[3*j+2])*
+					 (blm->landvox_fix[3*i+2]-blm->landvox_fix[3*j+2])*
+					  pix_spacing[2] * pix_spacing[2];
+	
+		s += 2. * blm->rbf_coeff[3*i+d] * blm->rbf_coeff[3*j+d] *
+		rbf_gauss_secderiv_cross( parms->rbf_radius, a2 );
+}
+
+printf("Analytic INTSECDER: %g\n", s);
+}
+
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // using analytical regularization of Gaussian exp(-r*r) RBFs to minimize
 // the sum of squares of second derivatives.
@@ -299,7 +355,6 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 	}
     }
 
-
 	//begin regularization
 	//add extra terms to the matrix
 	rbf_prefactor = sqrt(M_PI/2.)*sqrt(M_PI/2.)*sqrt(M_PI/2.)/rbf_par->radius;
@@ -339,9 +394,9 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 					 rbf_par->vector_field->pix_spacing[2];
 
 				r2 = r2 / (rbf_par->radius * rbf_par->radius );
-				reg_term = rbf_prefactor * exp(-r2/2.) * (6. + (r2-3.)*(r2-3.));
+				reg_term = rbf_prefactor * exp(-r2/2.) * (-10 + (r2-5.)*(r2-5.));
 			}
-			A(3*i+d,3*j+d) = tmp + 0.5 * reg_term * rbf_young_modulus / rbfv;
+			A(3*i+d,3*j+d) = tmp + reg_term * rbf_young_modulus / rbfv;
 			}
 		}
 	}
@@ -356,6 +411,8 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
     x.print (std::cout);
 
     for(i=0;i<3*blm->num_landmarks;i++) blm->rbf_coeff[i] = x(i,0);
+
+	bspline_rbf_analytic_integral( parms, rbf_par->vector_field->pix_spacing );
 
     printf("rbf coeff from optimize:  %.3f  %.3f  %.3f   dist unkn\n", 
 	blm->rbf_coeff[0], blm->rbf_coeff[1], blm->rbf_coeff[2] );
