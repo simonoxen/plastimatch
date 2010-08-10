@@ -15,6 +15,8 @@
 #include "volume.h"
 #include "volume_limit.h"
 
+//#define UNIFIED_DEPTH_OFFSET 1
+
 //#define VERBOSE 1
 
 typedef struct callback_data Callback_data;
@@ -113,7 +115,11 @@ rpl_volume_get_rgdepth (
 
     /* Compute distance from aperture to voxel */
     dist = vec3_dist (ap_xyz, ct_xyz);
+#if UNIFIED_DEPTH_OFFSET
+    dist -= rpl_vol->depth_offset[0];
+#else
     dist -= rpl_vol->depth_offset[ap_idx];
+#endif
 
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (
@@ -239,8 +245,13 @@ rpl_volume_create (
     rvol->ray_step = (double) ray_step;
 
     /* Holds distance from aperture to CT_vol entry point for each ray */
+#if UNIFIED_DEPTH_OFFSET
+    rvol->depth_offset = (double*) malloc (sizeof(double));
+    rvol->depth_offset[0] = 0.0;
+#else
     rvol->depth_offset = (double*) malloc (ires[0] * ires[1] * sizeof(double));
     memset (rvol->depth_offset, 0, ires[0] * ires[1] * sizeof(double));
+#endif
 
     ct_dims_mm[0] = ct_vol->dim[0] * ct_vol->pix_spacing[0];
     ct_dims_mm[1] = ct_vol->dim[1] * ct_vol->pix_spacing[1];
@@ -321,8 +332,10 @@ proton_dose_ray_trace (
         return;
     }
 
+#if (!UNIFIED_DEPTH_OFFSET)
     /* store the distance from aperture to CT_vol for later */
     rpl_vol->depth_offset[ap_idx] = vec3_dist (p2, ip1);
+#endif
 
 #if VERBOSE
     printf ("ap_idx: %d\n", ap_idx);
@@ -353,7 +366,109 @@ proton_dose_ray_trace (
 }
 
 void
-rpl_volume_compute (
+rpl_volume_compute_unified (
+    Rpl_volume *rpl_vol,   /* I/O: this gets filled in with depth info */
+    Volume *ct_vol         /* I:   the ct volume */
+)
+{
+    int r;
+    int ires[2];
+    Volume_limit ct_limit;
+
+    /* A couple of abbreviations */
+    ires[0] = rpl_vol->vol->dim[0];
+    ires[1] = rpl_vol->vol->dim[1];
+
+    /* Compute volume boundary box */
+    volume_limit_set (&ct_limit, ct_vol);
+
+    /* Make two passes through the aperture grid.  The first pass 
+       is used to find the offset_depth.  The second pass actually 
+       traces the rays. */
+
+    /* Scan through the aperture -- first pass */
+    rpl_vol->depth_offset[0] = 0.0;
+    for (r = 0; r < ires[0]; r++) {
+        int c;
+        double r_tgt[3];
+        double tmp[3];
+        double p2[3];
+
+        //if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
+        vec3_copy (r_tgt, rpl_vol->ap_ul_room);
+        vec3_scale3 (tmp, rpl_vol->incr_r, (double) r);
+        vec3_add2 (r_tgt, tmp);
+
+        for (c = 0; c < ires[1]; c++) {
+            int ap_idx;
+	    double ray[3];
+	    double ip1[3];
+	    double ip2[3];
+	    double dist;
+
+            /* Compute index of aperture pixel */
+            ap_idx = c * ires[0] + r;
+
+            /* Compute p2 = 3d coordinates of point on aperture */
+            vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);
+            vec3_add3 (p2, r_tgt, tmp);
+
+	    /* Define unit vector in ray direction */
+	    vec3_sub3 (ray, p2, rpl_vol->cam);
+	    vec3_normalize1 (ray);
+
+	    /* Test if ray intersects volume and create intersection points */
+	    if (!volume_limit_clip_ray (&ct_limit, ip1, ip2, 
+		    rpl_vol->cam, ray))
+	    {
+		return;
+	    }
+
+	    /* store the distance from aperture to CT_vol for later */
+	    dist = vec3_dist (p2, ip1);
+	    if (dist > rpl_vol->depth_offset[0]) {
+		rpl_vol->depth_offset[0] = dist;
+	    }
+        }
+    }
+
+    /* Scan through the aperture -- second pass */
+    for (r = 0; r < ires[0]; r++) {
+        int c;
+        double r_tgt[3];
+        double tmp[3];
+        double p2[3];
+
+        //if (r % 50 == 0) printf ("Row: %4d/%d\n", r, rows);
+        vec3_copy (r_tgt, rpl_vol->ap_ul_room);
+        vec3_scale3 (tmp, rpl_vol->incr_r, (double) r);
+        vec3_add2 (r_tgt, tmp);
+
+        for (c = 0; c < ires[1]; c++) {
+            int ap_idx;
+
+            /* Compute index of aperture pixel */
+            ap_idx = c * ires[0] + r;
+
+            /* Compute p2 = 3d coordinates of point on aperture */
+            vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);
+            vec3_add3 (p2, r_tgt, tmp);
+
+            proton_dose_ray_trace (
+                rpl_vol,      /* O: radiographic depths */
+                ct_vol,       /* I: CT volume */
+                &ct_limit,    /* I: CT bounding region */
+                rpl_vol->cam, /* I: @ source */
+                p2,           /* I: @ aperture */
+                ires,         /* I: ray cast resolution */
+                ap_idx        /* I: linear index of ray in ap */
+                );
+        }
+    }
+}
+
+void
+rpl_volume_compute_separate (
     Rpl_volume *rpl_vol,   /* I/O: this gets filled in with depth info */
     Volume *ct_vol         /* I:   the ct volume */
 )
@@ -404,170 +519,15 @@ rpl_volume_compute (
     }
 }
 
-#if defined (commentout)
 void
-proton_dose_compute (
-    Volume *dose_vol,
-    Volume *ct_vol,
-    Proton_dose_options *options
+rpl_volume_compute (
+    Rpl_volume *rpl_vol,   /* I/O: this gets filled in with depth info */
+    Volume *ct_vol         /* I:   the ct volume */
 )
 {
-    Volume* depth_vol;
-    int ap_idx;
-
-    int r;
-    int ct_ijk[3];
-    double ct_xyz[4];
-    double p1[3];
-    double ap_dist = 1000.;
-    double nrm[3], pdn[3], prt[3], tmp[3];
-    double ic_room[3];
-    double ul_room[3];
-    double incr_r[3];
-    double incr_c[3];
-    Volume_limit ct_limit;
-
-    double *depth_offset;
-    float* dose_img = (float*) dose_vol->img;
-    int idx;
-
-
-    Proj_matrix *pmat;
-    double cam[3] = { options->src[0], options->src[1], options->src[2] };
-    double tgt[3] = { options->isocenter[0], options->isocenter[1], 
-                      options->isocenter[2] };
-    double vup[3] = { options->vup[0], options->vup[1], options->vup[2] };
-    double ic[2] = { 4.5, 4.5 };
-    double ps[2] = { 1., 1. };
-    int ires[2] = { 10, 10 };
-    Proton_Depth_Dose* pep;
-
-    pmat = proj_matrix_create ();
-    proj_matrix_set (pmat, cam, tgt, vup, ap_dist, ic, ps, ires);
-
-    proj_matrix_get_nrm (pmat, nrm);
-    proj_matrix_get_pdn (pmat, pdn);
-    proj_matrix_get_prt (pmat, prt);
-
-    /* Compute position of aperture in room coordinates */
-    vec3_scale3 (tmp, nrm, - pmat->sid);
-    vec3_add3 (ic_room, pmat->cam, tmp);
-
-    /* Compute incremental change in 3d position for each change 
-       in aperture row/column. */
-    vec3_scale3 (incr_c, prt, ps[1]);
-    vec3_scale3 (incr_r, pdn, ps[0]);
-
-    /* Get position of upper left pixel on panel */
-    vec3_copy (ul_room, ic_room);
-    vec3_scale3 (tmp, incr_r, - pmat->ic[0]);
-    vec3_add2 (ul_room, tmp);
-    vec3_scale3 (tmp, incr_c, - pmat->ic[1]);
-    vec3_add2 (ul_room, tmp);
-
-    /* drr_trace_ray uses p1 & p2, p1 is the camera, p2 is in the 
-       direction of the ray inside the aperture plane*/
-    vec3_copy (p1, pmat->cam);
-
-#if VERBOSE
-    printf ("NRM: %g %g %g\n", nrm[0], nrm[1], nrm[2]);
-    printf ("PDN: %g %g %g\n", pdn[0], pdn[1], pdn[2]);
-    printf ("PRT: %g %g %g\n", prt[0], prt[1], prt[2]);
-    printf ("CAM: %g %g %g\n", pmat->cam[0], pmat->cam[1], pmat->cam[2]);
-    printf ("ICR: %g %g %g\n", ic_room[0], ic_room[1], ic_room[2]);
-    printf ("INCR_C: %g %g %g\n", incr_c[0], incr_c[1], incr_c[2]);
-    printf ("INCR_R: %g %g %g\n", incr_r[0], incr_r[1], incr_r[2]);
-    printf ("UL_ROOM: %g %g %g\n", ul_room[0], ul_room[1], ul_room[2]);
+#if UNIFIED_DEPTH_OFFSET
+    rpl_volume_compute_unified (rpl_vol, ct_vol);
+#else
+    rpl_volume_compute_separate (rpl_vol, ct_vol);
 #endif
-
-    /* Compute volume boundary box */
-    volume_limit_set (&ct_limit, ct_vol);
-
-    /* Create the depth volume */
-    depth_vol = create_depth_vol (ct_vol, ires, options->ray_step);
-
-    /* Load proton energy profile specified on commandline */
-    pep = load_pep (options->input_pep_fn);
-
-    /* Holds distance from aperture to CT_vol entry point for each ray */
-    depth_offset = (double*) malloc (ires[0] * ires[1] * sizeof(double));
-
-    if (options->debug) {
-        write_mha("depth_vol.mha", depth_vol);
-        dump_pep (pep);
-    }
-
-
-    /* Scan through CT Volume */
-    for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
-        for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
-            for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                double dose;
-                
-                /* Transform vol index into space coords */
-                ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->pix_spacing[0]);
-                ct_xyz[1] = (double) (ct_vol->offset[1] + ct_ijk[1] * ct_vol->pix_spacing[1]);
-                ct_xyz[2] = (double) (ct_vol->offset[2] + ct_ijk[2] * ct_vol->pix_spacing[2]);
-                ct_xyz[3] = (double) 1.0;
-
-                switch (options->flavor) {
-                case 'a':
-                    dose = dose_direct (
-                    ct_xyz,         /* voxel to dose */
-                    depth_offset,   /* ap to ct_vol dist */
-                    depth_vol,      /* radiographic depths */
-                    pep,            /* proton energy profile */
-                    pmat,           /* projection matrix */
-                    ires,           /* ray cast resolution */
-                    ul_room,        /* aperture upper-left */
-                    incr_r,         /* 3D ray row increment */
-                    incr_c,         /* 3D ray col increment */
-                    options);       /* options->ray_step */
-                    break;
-                case 'b':
-                    dose = dose_scatter (
-                    ct_xyz,        /* voxel to dose */
-                    ct_ijk,        /* index of voxel */
-                    depth_offset,  /* ap to ct_vol dist */
-                    depth_vol,     /* radiographic depths */
-                    pep,           /* proton energy profile */
-                    pmat,          /* projection matrix */
-                    ires,          /* ray cast resolution */
-                    ul_room,       /* aperture upper-left */
-                    incr_r,        /* 3D ray row increment */
-                    incr_c,        /* 3D ray col increment */
-                    prt,           /* x-dir in ap plane uv */
-                    pdn,           /* y-dir in ap plane uv */
-                    options);      /* options->ray_step */
-                    break;
-                case 'c':
-                    dose = dose_hong (
-                    ct_xyz,        /* voxel to dose */
-                    ct_ijk,        /* index of voxel */
-                    depth_offset,  /* ap to ct_vol dist */
-                    depth_vol,     /* radiographic depths */
-                    pep,           /* proton energy profile */
-                    pmat,          /* projection matrix */
-                    ires,          /* ray cast resolution */
-                    ul_room,       /* aperture upper-left */
-                    incr_r,        /* 3D ray row increment */
-                    incr_c,        /* 3D ray col increment */
-                    prt,           /* x-dir in ap plane uv */
-                    pdn,           /* y-dir in ap plane uv */
-                    options);      /* options->ray_step */
-                }
-
-                /* Insert the dose into the dose volume */
-                idx = INDEX_OF (ct_ijk, dose_vol->dim);
-                dose_img[idx] = dose;
-
-            }
-        }
-        display_progress ((float)idx, (float)ct_vol->npix);
-    }
-
-    free (pep);
-    free (depth_offset);
-    volume_destroy (depth_vol);
 }
-#endif
