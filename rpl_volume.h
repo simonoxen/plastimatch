@@ -10,6 +10,7 @@
 typedef struct rpl_volume Rpl_volume;
 struct rpl_volume {
     Volume *vol;
+    Proj_matrix *pmat;
     double *depth_offset;
     double cam[3];
     double ap_ul_room[3];
@@ -26,6 +27,7 @@ gpuit_EXPORT
 Rpl_volume*
 rpl_volume_create (
     Volume* ct_vol,       // ct volume
+    Proj_matrix *pmat,    // projection matrix from source to aperture
     int ires[2],          // aperture dimensions
     double cam[3],        // position of source
     double ap_ul_room[3], // position of aperture in room coords
@@ -49,8 +51,7 @@ gpuit_EXPORT
 double
 rpl_volume_get_rgdepth (
     Rpl_volume *rpl_vol,   /* I: volume of radiological depths */
-    double* ct_xyz,        /* I: location of voxel in world space */
-    Proj_matrix *pmat
+    double* ct_xyz         /* I: location of voxel in world space */
 );
 
 #if defined __cplusplus

@@ -28,6 +28,10 @@ Proj_matrix*
 proj_matrix_create ();
 
 gpuit_EXPORT 
+Proj_matrix*
+proj_matrix_clone (Proj_matrix* pmat_in);
+
+gpuit_EXPORT 
 void
 proj_matrix_init (Proj_matrix* matrix);
 

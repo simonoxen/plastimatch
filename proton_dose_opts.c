@@ -123,10 +123,10 @@ proton_dose_parse_args (Proton_dose_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-f")) {
 	    i++;
 	    rc = sscanf (argv[i], "%c" , &options->flavor);
-	    if (rc < 'a' || rc > 'z') {
+	    if (rc != 1 || options->flavor < 'a' || options->flavor > 'z') {
 		fprintf (stderr, 
 		    "option %s must be a character beween 'a' and 'z'\n", 
-		    argv[i]);
+		    argv[i-1]);
 		exit (1);
 	    }
 	    if (rc != 1) {

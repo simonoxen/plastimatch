@@ -35,6 +35,20 @@ proj_matrix_create (void)
     return pmat;
 }
 
+Proj_matrix*
+proj_matrix_clone (Proj_matrix* pmat_in)
+{
+    Proj_matrix *pmat;
+    
+    pmat = proj_matrix_create ();
+    if (!pmat) return 0;
+
+    /* No dynamically allocated memory in proj_matrix */
+    memcpy (pmat, pmat_in, sizeof (Proj_matrix));
+
+    return pmat;
+}
+
 void
 proj_matrix_destroy (Proj_matrix* pmat)
 {
