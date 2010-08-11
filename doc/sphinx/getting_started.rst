@@ -248,23 +248,24 @@ Then build as follows:
 
 
 Special Instructions For Linux Systems Using gcc-4.4
-----------------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Due to an incompatibility between the Nvidia CUDA Compiler (nvcc) and versions
-of the GNU C Compiler (gcc) greater than 4.3, Linux users must ensure that
-gcc-4.3 is available and that nvcc is set to use it.  If your system already
-uses version 4.3 of gcc by default (run gcc --version to check), you may ignore
-these instructions.
+These instructions are for Linux users who desire GPU acceleration via CUDA.
+Due to an incompatibility between the Nvidia CUDA Compiler (nvcc) and version
+4.4 of the GNU C Compiler (gcc), Linux users must ensure that gcc-4.3 is
+available and that nvcc is set to use it.  If your system already uses version
+4.3 of gcc by default (run gcc --version to check), you may ignore these
+instructions.
 
 Debian/Ubuntu users may install gcc version 4.3 by running the following from
 the command console:
 
   $ sudo apt-get install gcc-4.3
 
-Within the CMake curses frontend (ccmake) hit 't' to toggle advanced mode ON.
-You will be presented with many new flags.  Scroll down using the arrow keys
-until you find CUDA_NVCC_FLAGS.  Once CUDA_NVCC_FLAGS is selected, hit enter
-and type the following into the field:
+Now, within the CMake curses frontend (ccmake) hit 't' to toggle advanced mode
+ON.  You will be presented with many new flags.  Scroll down using the arrow
+keys until you find CUDA_NVCC_FLAGS.  Once CUDA_NVCC_FLAGS is selected, hit
+enter and type the following into the field:
 
   --compiler-bindir=PATH_TO_GCC_4.3
 
