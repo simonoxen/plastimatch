@@ -17,13 +17,16 @@
 
 //#define UNIFIED_DEPTH_OFFSET 1
 
-//#define VERBOSE 1
+#define VERBOSE 1
 
 typedef struct callback_data Callback_data;
 struct callback_data {
     Rpl_volume* rpl_vol;    /* Radiographic depth volume */
     int* ires;              /* Aperture Dimensions */
     int ap_idx;             /* Current Aperture Coord */
+#if UNIFIED_DEPTH_OFFSET
+    int step_offset;        /* Number of steps before first ray sample */
+#endif
     double accum;           /* Accumulated intensity */
 };
 
@@ -299,7 +302,11 @@ proton_dose_ray_trace_callback (
     float *depth_img = (float*) rpl_vol->vol->img;
     int ap_idx = cd->ap_idx;
     int ap_area = cd->ires[0] * cd->ires[1];
+#if UNIFIED_DEPTH_OFFSET
+    int step_num = vox_index + cd->step_offset;
+#else
     int step_num = vox_index;
+#endif
 
     cd->accum += vox_len * lookup_attenuation (vox_value);
 
@@ -309,13 +316,13 @@ proton_dose_ray_trace_callback (
 static
 void
 proton_dose_ray_trace (
-    Rpl_volume *rpl_vol, 
-    Volume *ct_vol,
-    Volume_limit *vol_limit,
-    double *p1, 
-    double *p2, 
-    int* ires,
-    int ap_idx
+    Rpl_volume *rpl_vol,         /* O: radiographic depths */
+    Volume *ct_vol,              /* I: CT volume */
+    Volume_limit *vol_limit,     /* I: CT bounding region */
+    double *p1,                  /* I: @ source */
+    double *p2,                  /* I: @ aperture */
+    int* ires,                   /* I: ray cast resolution */
+    int ap_idx                   /* I: linear index of ray in ap */
 )
 {
     Callback_data cd;
@@ -354,7 +361,32 @@ proton_dose_ray_trace (
     cd.rpl_vol = rpl_vol;
     cd.ap_idx = ap_idx;
 
+#if (UNIFIED_DEPTH_OFFSET)
+    /* account for distance between depth_offset and intersection with 
+       volume boundary */
+    {
+	double tmp[3];
+	double dist;
+	int num_steps;
+
+	/* Compute distance from depth_offset to volume boundary */
+	dist = vec3_dist (ip1, p2);
+	printf ("dist = %g, depth_off = %g\n", 
+	    dist, rpl_vol->depth_offset[0]);
+	dist = dist - rpl_vol->depth_offset[0];
+
+	/* Figure out how many steps to first step within volume */
+	cd.step_offset = (int) ceil (dist / rpl_vol->ray_step);
+	printf ("step_offset = %d\n", cd.step_offset);
+	
+	/* Find location of first step within volume */
+	vec3_scale3 (tmp, ray, num_steps * (double) rpl_vol->ray_step);
+	vec3_add2 (ip1, tmp);
+    }
+#endif
+
     /* get radiographic depth along ray */
+    printf ("Tracing ray...\n");
     ray_trace_uniform (
         ct_vol,                             // INPUT: CT volume
         vol_limit,                          // INPUT: CT volume bounding box
@@ -387,7 +419,7 @@ rpl_volume_compute_unified (
        traces the rays. */
 
     /* Scan through the aperture -- first pass */
-    rpl_vol->depth_offset[0] = 0.0;
+    rpl_vol->depth_offset[0] = DBL_MAX;
     for (r = 0; r < ires[0]; r++) {
         int c;
         double r_tgt[3];
@@ -426,7 +458,7 @@ rpl_volume_compute_unified (
 
 	    /* store the distance from aperture to CT_vol for later */
 	    dist = vec3_dist (p2, ip1);
-	    if (dist > rpl_vol->depth_offset[0]) {
+	    if (dist < rpl_vol->depth_offset[0]) {
 		rpl_vol->depth_offset[0] = dist;
 	    }
         }
