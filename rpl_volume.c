@@ -33,26 +33,24 @@ struct callback_data {
 static double
 lookup_rgdepth (
     Rpl_volume *rpl_vol, 
-    int ap_x,
-    int ap_y,
-    double dist,
-    float ray_step
+    int ap_ij[2], 
+    double dist
 )
 {
     int idx1, idx2;
     int ijk[3];
-    double rg1, rg2, rgdepth;
+    double rg1, rg2, rgdepth, frac;
     float* d_img = (float*) rpl_vol->vol->img;
 
     if (dist < 0) {
-        return d_img[0];
+        return 0.0;
     }
 
-    ijk[0] = ap_x;
-    ijk[1] = ap_y;
-    ijk[2] = (int)floorf(dist / ray_step);
+    ijk[0] = ap_ij[0];
+    ijk[1] = ap_ij[1];
+    ijk[2] = (int) floorf (dist / rpl_vol->ray_step);
 
-    /* Depth behind point */
+    /* Depth to step before point */
     idx1 = INDEX_OF (ijk, rpl_vol->vol->dim);
     if (idx1 < rpl_vol->vol->npix) {
         rg1 = d_img[idx1];
@@ -60,18 +58,23 @@ lookup_rgdepth (
         return 0.0f;
     }
 
-    /* Depth in front of point */
+    /* Fraction from step before point to point */
+    frac = (dist - ijk[2] * rpl_vol->ray_step) / rpl_vol->ray_step;
+    
+    /* Depth to step after point */
     ijk[2]++;
     idx2 = INDEX_OF (ijk, rpl_vol->vol->dim);
     if (idx2 < rpl_vol->vol->npix) {
         rg2 = d_img[idx2];
     } else {
-        rg2 = 0.0f;
+        rg2 = d_img[idx1];
     }
 
-    dist = dist - floorf (dist);
-    
-    rgdepth = rg1 + dist * (rg2 - rg1);
+    printf ("%g - %d * %g / %g = %g\n", dist, ijk[2], rpl_vol->ray_step, 
+	rpl_vol->ray_step, frac);
+
+    /* Radiographic depth, interpolated in depth only */
+    rgdepth = rg1 + frac * (rg2 - rg1);
 
     return rgdepth;
 }
@@ -83,11 +86,20 @@ rpl_volume_get_rgdepth (
     double* ct_xyz         /* I: location of voxel in world space */
 )
 {
-    int ap_x, ap_y, ap_idx;
+    int ap_ij[2], ap_idx;
     double ap_xy[3], ap_xyz[3], tmp[3];
     double dist, rgdepth;
     int ires[2];
     Proj_matrix *pmat;
+    int debug = 0;
+
+    /* For debugging */
+    if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
+	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
+	&& (ct_xyz[2] > 3 && ct_xyz[2] < -5))
+    {
+	debug = 1;
+    }
 
     /* A couple of abbreviations */
     ires[0] = rpl_vol->vol->dim[0];
@@ -99,22 +111,22 @@ rpl_volume_get_rgdepth (
     ap_xy[0] = pmat->ic[0] + ap_xy[0] / ap_xy[2];
     ap_xy[1] = pmat->ic[1] + ap_xy[1] / ap_xy[2];
 
-    ap_x = ROUND_INT (ap_xy[0]);
-    ap_y = ROUND_INT (ap_xy[1]);
+    ap_ij[0] = ROUND_INT (ap_xy[0]);
+    ap_ij[1] = ROUND_INT (ap_xy[1]);
 
     /* Only handle voxels inside the (square) aperture */
-    if (ap_x < 0 || ap_x >= ires[0] ||
-        ap_y < 0 || ap_y >= ires[1]) {
+    if (ap_ij[0] < 0 || ap_ij[0] >= ires[0] ||
+        ap_ij[1] < 0 || ap_ij[1] >= ires[1]) {
         return -1;
     }
 
-    ap_idx = ap_y * ires[0] + ap_x;
+    ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
 
     /* Convert aperture indices into space coords */
     vec3_copy (ap_xyz, rpl_vol->ap_ul_room);
-    vec3_scale3 (tmp, rpl_vol->incr_r, ap_x);
+    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[0]);
     vec3_add2 (ap_xyz, tmp);
-    vec3_scale3 (tmp, rpl_vol->incr_c, ap_y);
+    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[1]);
     vec3_add2 (ap_xyz, tmp);
 
     /* Compute distance from aperture to voxel */
@@ -126,11 +138,7 @@ rpl_volume_get_rgdepth (
 #endif
 
     /* Retrieve the radiographic depth */
-    rgdepth = lookup_rgdepth (
-    rpl_vol, 
-    ap_x, ap_y,
-    dist,
-    rpl_vol->ray_step);
+    rgdepth = lookup_rgdepth (rpl_vol, ap_ij, dist);
 
     return rgdepth;
 }
@@ -245,6 +253,13 @@ proton_dose_ray_trace_callback (
 #endif
 
     cd->accum += vox_len * lookup_attenuation (vox_value);
+
+#if defined (commentout)
+    if (ap_idx == 99 || ap_idx == 90) {
+	printf ("%d %4d: %20g %20g\n", ap_idx, step_num, 
+	    vox_value, cd->accum);
+    }
+#endif
 
     depth_img[ap_area*step_num + ap_idx] = cd->accum;
 }
