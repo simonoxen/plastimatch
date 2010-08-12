@@ -61,6 +61,11 @@ lookup_rgdepth (
     /* Fraction from step before point to point */
     frac = (dist - ijk[2] * rpl_vol->ray_step) / rpl_vol->ray_step;
     
+#if defined (commentout)
+    printf ("(%g - %d * %g) / %g = %g\n", dist, ijk[2], rpl_vol->ray_step, 
+	rpl_vol->ray_step, frac);
+#endif
+
     /* Depth to step after point */
     ijk[2]++;
     idx2 = INDEX_OF (ijk, rpl_vol->vol->dim);
@@ -69,9 +74,6 @@ lookup_rgdepth (
     } else {
         rg2 = d_img[idx1];
     }
-
-    printf ("%g - %d * %g / %g = %g\n", dist, ijk[2], rpl_vol->ray_step, 
-	rpl_vol->ray_step, frac);
 
     /* Radiographic depth, interpolated in depth only */
     rgdepth = rg1 + frac * (rg2 - rg1);
@@ -96,7 +98,7 @@ rpl_volume_get_rgdepth (
     /* For debugging */
     if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
 	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
-	&& (ct_xyz[2] > 3 && ct_xyz[2] < -5))
+	&& (ct_xyz[2] > -5 && ct_xyz[2] < 3))
     {
 	debug = 1;
     }
@@ -139,6 +141,13 @@ rpl_volume_get_rgdepth (
 
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (rpl_vol, ap_ij, dist);
+
+    if (debug) {
+	printf ("(%g %g %g) -> (%d %d %g) -> %g\n", 
+	    ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+	    ap_ij[0], ap_ij[1], dist, 
+	    rgdepth);
+    }
 
     return rgdepth;
 }
