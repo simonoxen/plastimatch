@@ -142,9 +142,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (parms->input_dose_mc[0]) {
-	printf ("Trying to load mc\n");
 	rtds->load_dose_mc (parms->input_dose_mc);
-	printf ("Done trying to load mc\n");
     }
 }
 

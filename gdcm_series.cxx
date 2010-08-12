@@ -84,6 +84,9 @@ Gdcm_series::Gdcm_series (void)
 {
     this->m_gsh2 = 0;
     this->m_have_ct = 0;
+    this->m_ct_file_list = 0;
+    this->m_rtdose_file_list = 0;
+    this->m_rtstruct_file_list = 0;
 }
 
 Gdcm_series::~Gdcm_series (void)
