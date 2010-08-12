@@ -39,10 +39,6 @@ plm_file_format_deduce (char* path)
 	return PLM_FILE_FMT_NO_FILE;
     }
     
-    if (!file_exists (path)) {
-	return PLM_FILE_FMT_NO_FILE;
-    }
-    
     if (itksys::SystemTools::FileIsDirectory (path)) {
 
 	if (is_xio_directory (path)) {
@@ -53,6 +49,10 @@ plm_file_format_deduce (char* path)
 	return PLM_FILE_FMT_DICOM_DIR;
     }
 
+    if (!file_exists (path)) {
+	return PLM_FILE_FMT_NO_FILE;
+    }
+    
     ext = itksys::SystemTools::GetFilenameLastExtension (std::string (path));
 
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".txt")) {
