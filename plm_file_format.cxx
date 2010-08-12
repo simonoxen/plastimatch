@@ -34,6 +34,14 @@ Plm_file_format
 plm_file_format_deduce (char* path)
 {
     std::string ext;
+
+    if (!path || !path[0]) {
+	return PLM_FILE_FMT_NO_FILE;
+    }
+    
+    if (!file_exists (path)) {
+	return PLM_FILE_FMT_NO_FILE;
+    }
     
     if (itksys::SystemTools::FileIsDirectory (path)) {
 
