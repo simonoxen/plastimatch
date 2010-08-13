@@ -17,7 +17,7 @@
 
 #define UNIFIED_DEPTH_OFFSET 1
 
-#define VERBOSE 1
+//#define VERBOSE 1
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -96,12 +96,14 @@ rpl_volume_get_rgdepth (
     int debug = 0;
 
     /* For debugging */
+#if defined (commentout)
     if ((ct_xyz[0] > -198 && ct_xyz[0] < -196)
 	&& (ct_xyz[1] > 132 && ct_xyz[1] < 134)
-	&& (ct_xyz[2] > -5 && ct_xyz[2] < 3))
+	&& (ct_xyz[2] > -6 && ct_xyz[2] < 6))
     {
 	debug = 1;
     }
+#endif
 
     /* A couple of abbreviations */
     ires[0] = rpl_vol->vol->dim[0];
@@ -116,6 +118,10 @@ rpl_volume_get_rgdepth (
     ap_ij[0] = ROUND_INT (ap_xy[0]);
     ap_ij[1] = ROUND_INT (ap_xy[1]);
 
+    if (debug) {
+	printf ("ap_xy = %g %g\n", ap_xy[0], ap_xy[1]);
+    }
+
     /* Only handle voxels inside the (square) aperture */
     if (ap_ij[0] < 0 || ap_ij[0] >= ires[0] ||
         ap_ij[1] < 0 || ap_ij[1] >= ires[1]) {
@@ -126,10 +132,14 @@ rpl_volume_get_rgdepth (
 
     /* Convert aperture indices into space coords */
     vec3_copy (ap_xyz, rpl_vol->ap_ul_room);
-    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[0]);
+    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[0]);
     vec3_add2 (ap_xyz, tmp);
-    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[1]);
+    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[1]);
     vec3_add2 (ap_xyz, tmp);
+
+    if (debug) {
+	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
+    }
 
     /* Compute distance from aperture to voxel */
     dist = vec3_dist (ap_xyz, ct_xyz);
@@ -139,12 +149,21 @@ rpl_volume_get_rgdepth (
     dist -= rpl_vol->depth_offset[ap_idx];
 #endif
 
+    /* GCS FIX: This is a hack.  There is something wrong with 
+       how the row/col indexing of the aperture is defined. 
+       So here I swap the rows & cols to get the correct lookup 
+       from the rpl_vol.  */
+    { int tmp; tmp = ap_ij[0]; ap_ij[0] = ap_ij[1]; ap_ij[1] = tmp; }
+
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (rpl_vol, ap_ij, dist);
 
     if (debug) {
-	printf ("(%g %g %g) -> (%d %d %g) -> %g\n", 
+	printf ("(%g %g %g / %g %g %g) -> (%d %d %g) -> %g\n", 
 	    ct_xyz[0], ct_xyz[1], ct_xyz[2], 
+	    (ct_xyz[0] + 249) / 2,
+	    (ct_xyz[1] + 249) / 2,
+	    (ct_xyz[2] + 249) / 2,
 	    ap_ij[0], ap_ij[1], dist, 
 	    rgdepth);
     }
@@ -332,19 +351,25 @@ proton_dose_ray_trace (
 
 	/* Compute distance from depth_offset to volume boundary */
 	dist = vec3_dist (ip1, p2);
+#if defined (commentout)
 	printf ("dist = %g, depth_off = %g\n", 
 	    dist, rpl_vol->depth_offset[0]);
+#endif
 	dist = dist - rpl_vol->depth_offset[0];
 
 	/* Figure out how many steps to first step within volume */
 	cd.step_offset = (int) ceil (dist / rpl_vol->ray_step);
+#if defined (commentout)
 	printf ("step_offset = %d\n", cd.step_offset);
+#endif
 	
 	/* Find location of first step within volume */
 	vec3_scale3 (tmp, ray, rpl_vol->depth_offset[0] 
 	    + cd.step_offset * (double) rpl_vol->ray_step);
 	vec3_add3 (ip1, p2, tmp);
+#if defined (commentout)
 	printf ("ip1 (adj) = (%f, %f, %f)\n", ip1[0], ip1[1], ip1[2]);
+#endif
     }
 #endif
 
@@ -419,7 +444,9 @@ rpl_volume_compute_unified (
 
 	    /* store the distance from aperture to CT_vol for later */
 	    dist = vec3_dist (p2, ip1);
+#if defined (commentout)
 	    printf ("(%d,%d) dist = %f\n", r, c, dist);
+#endif
 	    if (dist < rpl_vol->depth_offset[0]) {
 		rpl_vol->depth_offset[0] = dist;
 	    }
@@ -448,7 +475,9 @@ rpl_volume_compute_unified (
             vec3_scale3 (tmp, rpl_vol->incr_c, (double) c);
             vec3_add3 (p2, r_tgt, tmp);
 
+#if defined (commentout)
 	    printf ("Tracing ray (%d,%d)\n", r, c);
+#endif
             proton_dose_ray_trace (
                 rpl_vol,      /* O: radiographic depths */
                 ct_vol,       /* I: CT volume */

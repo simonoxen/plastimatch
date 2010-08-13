@@ -29,9 +29,9 @@
 #include "volume.h"
 #include "volume_limit.h"
 
-#define VERBOSE 1
+//#define VERBOSE 1
 //#define PROGRESS 1
-#define DEBUG_VOXEL 1
+//#define DEBUG_VOXEL 1
 //#define DOSE_GAUSS 1
 
 typedef struct proton_depth_dose Proton_Depth_Dose;
