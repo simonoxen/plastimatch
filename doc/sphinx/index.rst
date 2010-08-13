@@ -44,6 +44,7 @@ For more information:
 
 * `Download page (svn) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=AccessInfo>`_
 * `License (BSD-style) <http://forge.abcd.harvard.edu/gf/project/plastimatch/scmsvn/?action=browse&path=%2F*checkout*%2Fplastimatch%2Ftrunk%2FLICENSE.TXT&revision=1>`_
+* `E-mail list <http://groups.google.com/group/plastimatch>`_ (new!)
 
 Documentation:
 

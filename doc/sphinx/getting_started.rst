@@ -1,16 +1,19 @@
 Getting started
 ====================
 
+Getting help
+------------
+
+Don't panic!  If you have problems downloading or installing plastimatch, 
+please send an email to our list.
+
+  http://groups.google.com/group/plastimatch
+
 Downloading the code
 --------------------
 
 The recommended method for downloading plastimatch is to use subversion
 to download the source, and compile from source.  
-If you aren't yet familiar with subversion, you can read about it on the 
-subversion web site:
-
-  http://subversion.tigris.org/
-
 To download using subversion, use the following command::
 
   $ svn co http://forge.abcd.harvard.edu/svn/plastimatch/plastimatch/trunk plastimatch
@@ -70,6 +73,8 @@ following:
 +--------------------+-----------------------------+---------------------------+
 |3.18.0              |Not recommended              |Recommended                |
 +--------------------+-----------------------------+---------------------------+
+|3.20.0              |Recommended                  |Recommended                |
++--------------------+-----------------------------+---------------------------+
 
 When you build ITK, the following settings are recommended::
 
@@ -98,10 +103,11 @@ Cuda is needed if you want GPU acceleration for FDK and B-Spline
 registration.  Install all three components: driver, toolkit, and SDK.
 The following versions of CUDA are known to work::
 
-  CUDA 2.1              Status unknown
+  CUDA 2.1              Not tested
   CUDA 2.2              Works
   CUDA 2.3              Works
   CUDA 3.0              Works
+  CUDA 3.1              Not tested
 
 Download CUDA from here:
 
