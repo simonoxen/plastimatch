@@ -1,6 +1,8 @@
-# Check if SSE instructions are available on the machine where
-# the project is compiled.
-    
+# Some additional handeling should be added here so that the
+# SSE2_FLAGS are set for the correct compiler.  Currently
+# only works with gcc
+SET (SSE2_FLAGS "-msse2")
+
 # LINUX: We check for SSE extensions using a RegEx on /proc/cpuinfo
 IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
@@ -11,18 +13,18 @@ IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
     STRING(REGEX REPLACE "^.*(sse2).*$" "\\1" SSE_THERE ${CPUINFO})
     STRING(COMPARE EQUAL "sse2" "${SSE_THERE}" SSE2_TRUE)
     IF (SSE2_TRUE)
-        set(SSE2_FOUND true CACHE BOOL "SSE2 Available")
+        SET(SSE2_FOUND true CACHE BOOL "SSE2 Available")
     ELSE (SSE2_TRUE)
-        set(SSE2_FOUND false CACHE BOOL "SSE2 Available")
+        SET(SSE2_FOUND false CACHE BOOL "SSE2 Available")
     ENDIF (SSE2_TRUE)
     
     # Check for SSSE3
     STRING(REGEX REPLACE "^.*(ssse3).*$" "\\1" SSE_THERE ${CPUINFO})
     STRING(COMPARE EQUAL "ssse3" "${SSE_THERE}" SSSE3_TRUE)
     IF (SSSE3_TRUE)
-        set(SSSE3_FOUND true CACHE BOOL "SSSE3 Available")
+        SET(SSSE3_FOUND true CACHE BOOL "SSSE3 Available")
     ELSE (SSSE3_TRUE)
-        set(SSSE3_FOUND false CACHE BOOL "SSSE3 Available")
+        SET(SSSE3_FOUND false CACHE BOOL "SSSE3 Available")
     ENDIF (SSSE3_TRUE)
     
     # Check for SSE4.1
@@ -42,9 +44,9 @@ ELSEIF(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     STRING(REGEX REPLACE "^.*(SSE2).*$" "\\1" SSE_THERE ${CPUINFO})
     STRING(COMPARE EQUAL "SSE2" "${SSE_THERE}" SSE2_TRUE)
     IF (SSE2_TRUE)
-        set(SSE2_FOUND true CACHE BOOL "SSE2 Available")
+        SET(SSE2_FOUND true CACHE BOOL "SSE2 Available")
     ELSE (SSE2_TRUE)
-        set(SSE2_FOUND false CACHE BOOL "SSE2 Available")
+        SET(SSE2_FOUND false CACHE BOOL "SSE2 Available")
     ENDIF (SSE2_TRUE)
 
     # Check for SSSE3
@@ -79,17 +81,19 @@ ELSE(CMAKE_SYSTEM_NAME MATCHES "Linux")
 ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
 
 
-#if(NOT SSE2_FOUND)
-#    MESSAGE(STATUS "Could not find hardware support for SSSE3 on this machine.")
-#endif(NOT SSSE3_FOUND)
+IF (SSE2_FOUND)
+    MESSAGE(STATUS "SSE2_FLAGS \"${SSE2_FLAGS}\"")
+ELSE (SSE2_FOUND)
+    MESSAGE(STATUS "CPU does not support SSE2.")
+ENDIF(SSE2_FOUND)
     
-#if(NOT SSSE3_FOUND)
+#IF(NOT SSSE3_FOUND)
 #    MESSAGE(STATUS "Could not find hardware support for SSSE3 on this machine.")
-#endif(NOT SSSE3_FOUND)
+#ENDIF(NOT SSSE3_FOUND)
 
-#if(NOT SSE4_1_FOUND)
+#IF(NOT SSE4_1_FOUND)
 #    MESSAGE(STATUS "Could not find hardware support for SSE4.1 on this machine.")
-#endif(NOT SSE4_1_FOUND)
+#ENDIF(NOT SSE4_1_FOUND)
 
     
 # Put these in the advanced toggles

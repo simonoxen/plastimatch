@@ -984,7 +984,24 @@ IF(OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+
 ENDIF(OPENMP_FOUND)
+
+IF(SSE2_FOUND)
+# JAS 08.19.2010 - Unfortunately, this doesn't work.
+#  SET_PROPERTY(
+#      SOURCE bspline.c
+#      APPEND PROPERTY COMPILE_DEFINITIONS ${SSE2_FLAGS}
+#      )
+
+# So, we ask CMake more forcefully to add additional compile flags
+    GET_SOURCE_FILE_PROPERTY(OLD_FLAGS bspline.c COMPILE_FLAGS)
+    IF(OLD_FLAGS MATCHES "NONE")
+        SET(OLD_FLAGS "")
+    ENDIF(OLD_FLAGS MATCHES "NONE")
+    SET_SOURCE_FILES_PROPERTIES(bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
+ENDIF(SSE2_FOUND)
+
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
