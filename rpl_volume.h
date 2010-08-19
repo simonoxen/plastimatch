@@ -38,15 +38,18 @@ rpl_volume_create (
 gpuit_EXPORT 
 void
 rpl_volume_destroy (Rpl_volume *rpl_vol);
+
 gpuit_EXPORT 
 void
 rpl_volume_save (Rpl_volume *rpl_vol, char *filename);
+
 gpuit_EXPORT 
 void
 rpl_volume_compute (
     Rpl_volume *rpl_vol,   /* I/O: this gets filled in with depth info */
     Volume *ct_vol         /* I:   the ct volume */
 );
+
 gpuit_EXPORT 
 double
 rpl_volume_get_rgdepth (

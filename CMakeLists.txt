@@ -163,6 +163,9 @@ INCLUDE (PLM_FindF2C.cmake)
 # OpenMP
 INCLUDE (PLM_FindOpenMP.cmake)
 
+# SSE Extensions
+INCLUDE (PLM_FindSSE.cmake)
+
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
@@ -258,7 +261,7 @@ ENDIF(CUDA_FOUND)
 #   due to an issue with FindCUDA.cmake
 #SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_11)
 
-# JAS 05.02.2010
+# JAS 08.08.2010
 # The CUDA build trajectory does not
 #   support mixed compute capability
 #   in a way that is compatible with
@@ -266,6 +269,7 @@ ENDIF(CUDA_FOUND)
 #   memory atomics have been temp disabled
 #   until we extend the build system
 SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
+
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
