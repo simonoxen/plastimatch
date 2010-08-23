@@ -3529,8 +3529,14 @@ bspline_score (Bspline_parms *parms,
 	    bspline_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	case 'i':
+#if defined (SSE2_FOUND)
 	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+#else
+        printf ("Not compiled with SSE2 extensions! (Using flavor g).\n");
+	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#endif
 	default:
 	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
