@@ -274,6 +274,75 @@ for(d=0;d<3;d++)
 printf("Analytic INTSECDER: %g\n", s);
 }
 
+/*
+Test RBF solution by calculating the residual error 
+of landmark matching 
+*/
+static void bspline_rbf_test_solution(Volume *vector_field, Bspline_parms *parms)
+{
+Bspline_landmarks *blm = parms->landmarks;
+float *vf;
+float totdist, dx, dist, maxdist; 
+int i, j, d, dd, fv, rbfcenter[3];
+
+Rbf_parms *rbf_par;
+
+rbf_par = (Rbf_parms *)malloc( sizeof(Rbf_parms));
+rbf_par->radius = parms->rbf_radius;
+rbf_par->bparms = parms;
+rbf_par->vector_field = vector_field;
+
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported\n");
+
+    //fill in vector field at fixed landmark location
+    vf = (float*) vector_field->img;
+
+    for(i=0;i<blm->num_landmarks;i++) {
+	fv = blm->landvox_fix[3*i+2] * vector_field->dim[0] * vector_field->dim[1] 
+	    +blm->landvox_fix[3*i+1] * vector_field->dim[0] 
+	    +blm->landvox_fix[3*i+0] ;
+
+	for(d=0;d<3;d++) blm->landmark_dxyz[3*i+d] = vf[3*fv+d];
+    }
+
+printf("Testing the solution\n");
+maxdist = -1;
+totdist = 0;
+for(i=0;i<blm->num_landmarks;i++)
+{
+dist = 0;
+for(d = 0; d<3; d++)
+{
+	dx = blm->fixed_landmarks->points[3*i+d] 
+		    + blm->landmark_dxyz[3*i+d] 
+			- blm->moving_landmarks->points[3*i+d];
+for(j=0;j<blm->num_landmarks;j++)
+{
+
+    for(dd=0;dd<3;dd++) rbfcenter[dd] = blm->landvox_fix[3*j+dd];
+	dx += blm->rbf_coeff[3*j+d]* rbf_value( rbfcenter, 
+				blm->landvox_fix[3*i+0],
+				blm->landvox_fix[3*i+1],
+				blm->landvox_fix[3*i+2], 
+				rbf_par->radius,
+				rbf_par->vector_field->pix_spacing );
+					
+}
+dist = dist + dx*dx;
+}
+dist = sqrt(dist);
+totdist += dist;
+if (dist>maxdist) maxdist = dist;
+//printf("L%2d  %f\n", i, dist);
+}
+
+totdist/=blm->num_landmarks;
+
+printf("Landmark mismatch: AVERAGE %f, MAX %f\n", totdist, maxdist);
+}
+
+
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // using analytical regularization of Gaussian exp(-r*r) RBFs to minimize
 // the sum of squares of second derivatives.
@@ -405,7 +474,7 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
 //    A.print (std::cout);
 //    b.print (std::cout);
 
-    SVDSolverType svd (A, 1e-8);
+    SVDSolverType svd (A, 1e-6);
     Vnl_matrix x = svd.solve (b);
 
     x.print (std::cout);
@@ -413,9 +482,23 @@ void bspline_rbf_find_coeffs(Volume *vector_field, Bspline_parms *parms)
     for(i=0;i<3*blm->num_landmarks;i++) blm->rbf_coeff[i] = x(i,0);
 
 	bspline_rbf_analytic_integral( parms, rbf_par->vector_field->pix_spacing );
+	bspline_rbf_test_solution( vector_field, parms);
 
-    printf("rbf coeff from optimize:  %.3f  %.3f  %.3f   dist unkn\n", 
-	blm->rbf_coeff[0], blm->rbf_coeff[1], blm->rbf_coeff[2] );
+/* checking the matrix solution*/
+	float dx, totdx = 0;
+	for(i=0;i<3*blm->num_landmarks;i++)
+	{
+	dx = (blm->fixed_landmarks->points[i] 
+		    + blm->landmark_dxyz[i] 
+		    - blm->moving_landmarks->points[i]);
+	for(j=0;j<3*blm->num_landmarks;j++)
+		dx += A(i,j)*blm->rbf_coeff[j];
+	totdx += dx*dx;
+	}
+	totdx = sqrt(totdx)/(3*blm->num_landmarks);
+	printf("SVD residual error %f\n", totdx);
+
+
 }
 
 // find RBF coeff by solving the linear equations using ITK's SVD routine
@@ -491,7 +574,7 @@ void bspline_rbf_find_coeffs_noreg(Volume *vector_field, Bspline_parms *parms)
     A.print (std::cout);
     b.print (std::cout);
 
-    SVDSolverType svd (A, 1e-8);
+    SVDSolverType svd (A, 1e-6);
     Vnl_matrix x = svd.solve (b);
 
     x.print (std::cout);
