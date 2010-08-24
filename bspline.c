@@ -2965,6 +2965,7 @@ bspline_score_i_mse (
 
     }   // end openmp parallel
 
+    _mm_free (q_lut_a16);
 
     // "Reduce"
     // NOTE: Could be SSE optimized.
