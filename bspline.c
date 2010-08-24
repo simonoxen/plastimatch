@@ -2742,6 +2742,11 @@ bspline_score_i_mse (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
+    /* Setup the q_lut... SSE style (16 byte aligned) */
+    int q_lut_size = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * 64; 
+    float* q_lut_a16 = (float*) _mm_malloc (q_lut_size * sizeof(float), 16);
+    memcpy (q_lut_a16, bxf->q_lut, q_lut_size * sizeof(float));
+ 
     int idx_knot;
     int idx_set;
     int i;
@@ -2795,8 +2800,6 @@ bspline_score_i_mse (
 	float sets_y[64];
 	float sets_z[64];
     int ii;
-
-    
 
     __m128 m_sets_x[16], m_sets_y[16], m_sets_z[16];
 	__m128 m_qlut, m_dc_dv[3], m_tmp, m_set_copy;
@@ -2888,9 +2891,9 @@ bspline_score_i_mse (
 		    num_vox++;
 
 		    // Compute dc_dv
-		    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
-		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
-		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
+            dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
+            dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
+            dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
             // Load into SSE vectors
             m_dc_dv[0] = _mm_set1_ps    (dc_dv[0]);
@@ -2898,14 +2901,12 @@ bspline_score_i_mse (
             m_dc_dv[2] = _mm_set1_ps    (dc_dv[2]);
 
 		    // Initialize q_lut
-		    q_lut = &bxf->q_lut[64*idx_local];
+            q_lut = &q_lut_a16[64*idx_local];
 
 		    // Condense dc_dv @ current voxel index
             // Using SSE we now have 16 sets of 4 subsets
-		    for (set_num = 0; set_num < 16; set_num++) {
-
-                m_qlut = _mm_setr_ps   (q_lut[4*set_num+0], q_lut[4*set_num+1],
-                                        q_lut[4*set_num+2], q_lut[4*set_num+3]);
+            for (set_num = 0; set_num < 16; set_num++) {
+                m_qlut = _mm_load_ps (q_lut + 4*set_num);
 
                 m_tmp = _mm_mul_ps     (m_qlut, m_dc_dv[0]);
                 m_sets_x[set_num] = _mm_add_ps   (m_sets_x[set_num], m_tmp);
@@ -2915,11 +2916,11 @@ bspline_score_i_mse (
 
                 m_tmp = _mm_mul_ps     (m_qlut, m_dc_dv[2]);
                 m_sets_z[set_num] = _mm_add_ps   (m_sets_z[set_num], m_tmp);
-		    }
+            }
 
-		}
-	    }
-	}
+        }
+        }
+    }
 
     // Bring the condensed tiles out of SSE land
     // and back into "normal" land so we can use them.
@@ -3394,10 +3395,11 @@ bspline_score_g_mse (
 					
 		    // Condense dc_dv @ current voxel index
 		    for (set_num = 0; set_num < 64; set_num++) {
-			sets_x[set_num] += dc_dv[0] * q_lut[set_num];
-			sets_y[set_num] += dc_dv[1] * q_lut[set_num];
-			sets_z[set_num] += dc_dv[2] * q_lut[set_num];
+		    	sets_x[set_num] += dc_dv[0] * q_lut[set_num];
+		    	sets_y[set_num] += dc_dv[1] * q_lut[set_num];
+		    	sets_z[set_num] += dc_dv[2] * q_lut[set_num];
 		    }
+
 		}
 	    }
 	}
