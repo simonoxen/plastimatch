@@ -59,6 +59,19 @@ find_package_handle_standard_args(
   OPENCL_LIBRARY OPENCL_INCLUDE_DIR
   )
 
+
+# JAS 08.24.2010
+# Set OPENCL_FOUND for plm_config.h
+if (OPENCL_INCLUDE_DIR MATCHES "NONE")
+    SET (OPENCL_FOUND false CACHE BOOL "Do we have OpenCL?")
+else (OPENCL_INCLUDE_DIR MATCHES "NONE")
+    if (OPENCL_LIBRARY MATCHES "NONE")
+        SET (OPENCL_FOUND false CACHE BOOL "Do we have OpenCL?")
+    else (OPENCL_LIBRARY MATCHES "NONE")
+        SET (OPENCL_FOUND true CACHE BOOL "Do we have OpenCL?")
+    endif (OPENCL_LIBRARY MATCHES "NONE")
+endif (OPENCL_INCLUDE_DIR MATCHES "NONE")
+
 if(OPENCL_FOUND)
   set(OPENCL_LIBRARIES ${OPENCL_LIBRARY})
 else(OPENCL_FOUND)
@@ -68,4 +81,4 @@ endif(OPENCL_FOUND)
 mark_as_advanced(
   OPENCL_INCLUDE_DIR
   OPENCL_LIBRARY
-  )
+)
