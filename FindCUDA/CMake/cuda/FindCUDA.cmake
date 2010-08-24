@@ -228,27 +228,6 @@ cmake_policy(PUSH)
 cmake_minimum_required(VERSION 2.6.2)
 cmake_policy(POP)
 
-# JAS 08.24.2010
-# nvcc does not work with gcc-4.4
-# So, we check the gcc version and attempt to
-# tell nvcc to use gcc-4.3 if it exists, otherwise
-# we complain.
-IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
-#    IF(CMAKE_COMPILER_IS_GNUCC MATCHES TRUE)
-        # Get the gcc version number
-        EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
-
-        # Get major and minor revs
-        STRING(REGEX REPLACE "([0-9]+)[0-9]+[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
-        STRING(REGEX REPLACE "[0-9]+([0-9]+)[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
-        STRING(REGEX REPLACE "[0-9]+[0-9]+([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
-
-        MESSAGE(STATUS "FindCUDA: GCC Version ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
-
-#    ENDIF(CMAKE_COMPILER_IS_GNUCC MATCHES TRUE)
-ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
-
-
 
 # This macro helps us find the location of helper files we will need the full path to
 macro(CUDA_FIND_HELPER_FILE _name _extension)
