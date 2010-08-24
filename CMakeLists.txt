@@ -271,6 +271,46 @@ ENDIF(CUDA_FOUND)
 SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
 
 
+# JAS 08.24.2010
+# nvcc does not work with gcc-4.4
+# So, we check the gcc version and attempt to
+# tell nvcc to use gcc-4.3 if it exists, otherwise
+# we complain and kill CMake with a fatal error.
+IF(CUDA_FOUND)
+    IF(CMAKE_SYSTEM_NAME MATCHES "Linux")
+        IF(CMAKE_COMPILER_IS_GNUCC)
+
+            # Get the gcc version number
+            EXEC_PROGRAM(gcc ARGS "-dumpversion" OUTPUT_VARIABLE GCCVER)
+
+            # Get major and minor revs
+            STRING(REGEX REPLACE "([0-9]+).[0-9]+.[0-9]+" "\\1" GCCVER_MAJOR "${GCCVER}")
+            STRING(REGEX REPLACE "[0-9]+.([0-9]+).[0-9]+" "\\1" GCCVER_MINOR "${GCCVER}")
+            STRING(REGEX REPLACE "[0-9]+.[0-9]+.([0-9]+)" "\\1" GCCVER_PATCH "${GCCVER}")
+
+            MESSAGE(STATUS "nvcc-fix: GCC Version is ${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}")
+
+            IF(GCCVER_MAJOR MATCHES "4")
+                IF(GCCVER_MINOR MATCHES "4")
+                    MESSAGE(STATUS "nvcc-fix: Found gcc-4.4...  searching for gcc-4.3")
+                    EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43)
+
+                    IF(GCC43 STREQUAL "")
+                        MESSAGE(FATAL_ERROR "nvcc-fix: Please install gcc-4.3 for nvcc \(CUDA\).")
+                    ELSE(GCC43 STREQUAL "")
+                        MESSAGE(STATUS "nvcc-fix: Found gcc-4.3.  Telling nvcc to use it!")
+                        MESSAGE(STATUS "nvcc-fix: CUDA_NVCC_FLAGS set to \"--compiler-bindir=${GCC43}\"")
+                        SET (CUDA_NVCC_FLAGS "--compiler-bindir=${GCC43}")
+                    ENDIF(GCC43 STREQUAL "")
+                ENDIF(GCCVER_MINOR MATCHES "4")
+            ENDIF(GCCVER_MAJOR MATCHES "4")
+
+
+        ENDIF(CMAKE_COMPILER_IS_GNUCC)
+    ENDIF(CMAKE_SYSTEM_NAME MATCHES "Linux")
+ENDIF(CUDA_FOUND)
+
+
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
 ##  http://www.cmake.org/Wiki/CMake_RPATH_handling
