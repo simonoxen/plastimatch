@@ -40,7 +40,9 @@ main (int argc, char* argv[])
     bspline_opts_parse_args (&options, argc, argv);
 
 #if (CUDA_FOUND)
-    CUDA_selectgpu (parms->gpuid);
+    if (parms->threading == BTHR_CUDA) {
+        CUDA_selectgpu (parms->gpuid);
+    }
 #endif
 
     fixed = read_mha (options.fixed_fn);
