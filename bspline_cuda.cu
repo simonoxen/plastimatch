@@ -54,7 +54,7 @@ texture<float, 1> tex_grad;
 
 // To enable MI uncomment the line below and set
 // -arch=sm_12 within CMakeLists.txt
-//#define COMPILE_MI
+#define COMPILE_MI
 
 ////////////////////////////////////////////////////////////
 
@@ -145,6 +145,31 @@ void CUDA_selectgpu (int gpuid)
         exit (0);
     }
 }
+
+// Returns the value held in __CUDA_ARCH__
+// __CUDA_ARCH__ is only accessable in GPU code
+// This allows us to use the compute capability
+// in CPU code.
+int CUDA_getarch (int gpuid)
+{
+    int num_gpus;
+    int cores_per_sm;
+    cudaDeviceProp props;
+
+    cudaGetDeviceCount(&num_gpus);
+
+    if (gpuid < num_gpus) {
+        cudaGetDeviceProperties(&props, gpuid);
+
+        return 100*props.major + 10*props.minor;
+
+    } else {
+        /* Invalid GPU ID specified */
+        return -1;
+    }
+}
+
+
 
 
 // Constructs the GPU Bspline Data structure
@@ -1616,18 +1641,6 @@ CUDA_bspline_MI_a_hist (
     Volume* moving,
     Bspline_xform* bxf)
 {
-    // check to see if we get atomic operations
-    // for GPU memory
-#if !defined (COMPILE_MI)
-    printf ("\n*******************   NOTICE  *******************\n");
-    printf ("     GPU Accelerated MI must be enabled by\n");
-    printf ("     uncommenting line 57 in bspline_cuda.cu\n");
-    printf ("\n");
-    printf ("     A GPU of Compute Capability 1.2 or greater\n");
-    printf ("     is required to for GPU accelerated MI\n");
-    printf ("***************************************************\n\n");
-    exit(0);
-#else
     cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
 
     // Generate the fixed histogram (48 ms)
@@ -1638,7 +1651,6 @@ CUDA_bspline_MI_a_hist (
 
     // Generate the joint histogram (~600 ms)
     return CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
-#endif
 }
 
 
@@ -3955,7 +3967,6 @@ kernel_bspline_MI_a_hist_mov (
 //                 --- Neightborhood of 6 ---
 //
 ////////////////////////////////////////////////////////////////////////////////
-#if defined (COMPILE_MI)
 __global__ void
 kernel_bspline_MI_a_hist_jnt (
     float* skipped, // OUTPUT:   # of skipped voxels
@@ -3982,6 +3993,12 @@ kernel_bspline_MI_a_hist_jnt (
     float* q_lut,   // INPUT: bspline product lut
     float* coeff)   // INPUT: coefficient array
 {
+/* This code requires compute capability 1.2 or greater.
+ * DO NOT compile it for lesser targer architectures or
+ * nvcc will complain and stop the build; thus the #if
+ */
+#if defined (__CUDA_ARCH__) && __CUDA_ARCH__ >= 120
+
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
 
@@ -4361,9 +4378,8 @@ kernel_bspline_MI_a_hist_jnt (
 #endif
     // --------------------------------------------------------
 
-
+#endif // __CUDA_ARCH__
 }
-#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////

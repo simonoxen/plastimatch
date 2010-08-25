@@ -462,6 +462,8 @@ extern "C" {
 
     void CUDA_listgpu ();
 
+    int CUDA_getarch (int gpuid);
+
     //
     // -------------------------------------------------------------------
 

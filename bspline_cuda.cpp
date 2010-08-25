@@ -586,6 +586,21 @@ bspline_cuda_MI_a (
     // ----------------------------------------------------------
 
 
+    // --- CHECK COMPUTE CAPABILITY (NEED SHARED ATOMICS) -------
+    if (CUDA_getarch(parms->gpuid) < 120) {
+
+        printf ("\n*******************   NOTICE  *******************\n");
+        printf ("     A GPU of Compute Capability 1.2 or greater\n");
+        printf ("     is required to for GPU accelerated MI\n");
+        printf ("\n");
+        printf ("     Unfortunately, your current GPU does not\n");
+        printf ("     satisfy this requirement.  Sorry.\n");
+        printf ("***************************************************\n\n");
+        exit(0);
+    }
+    // ----------------------------------------------------------
+
+
     // --- INITIALIZE LOCAL VARIABLES ---------------------------
     ssd = &bst->ssd;
     
