@@ -255,28 +255,22 @@ IF (CUDA_FOUND)
     )
 ENDIF(CUDA_FOUND)
 
-# JAS 05.02.2010
-# Enable atomic memory operations for GPU
-#   Must be enabled in this fashion
-#   due to an issue with FindCUDA.cmake
-SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} -arch=sm_11)
-
-# JAS 08.08.2010
-# The CUDA build trajectory does not
-#   support mixed compute capability
-#   in a way that is compatible with
-#   the current code structure.  Shared
-#   memory atomics have been temp disabled
-#   until we extend the build system
-#SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS})
+# JAS 08.25.2010
+#   Check to make sure nvcc has gcc-4.3 for compiling.
+#   This script will modify CUDA_NVCC_FLAGS if system default is not gcc-4.3
+INCLUDE (PLM_nvcc-check.cmake)
 
 
 # JAS 08.25.2010
-#   Check to make sure nvcc has gcc-4.3
-#   to use for compiling.  This script
-#   will modify CUDA_NVCC_FLAGS if system
-#   default gcc is not 4.3
-INCLUDE (PLM_nvcc-check.cmake)
+#   Build code for all known compute capabilities
+SET (CUDA_NVCC_FLAGS
+        ${CUDA_NVCC_FLAGS}
+        -gencode arch=compute_10,code=sm_10
+        -gencode arch=compute_11,code=sm_11
+        -gencode arch=compute_12,code=sm_12
+        -gencode arch=compute_20,code=sm_20
+    )
+
 
 
 ##-----------------------------------------------------------------------------
