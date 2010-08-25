@@ -36,7 +36,7 @@ IF(CUDA_FOUND)
                     EXEC_PROGRAM(which ARGS "gcc-4.3" OUTPUT_VARIABLE GCC43)
 
                     IF(GCC43 STREQUAL "")
-                        MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3 for nvcc \(CUDA\).")
+                        MESSAGE(FATAL_ERROR "nvcc-check: Please install gcc-4.3, it is needed by nvcc \(CUDA\).\nNote that gcc-4.3 can be installed side-by-side with your current version of gcc (${GCCVER_MAJOR}.${GCCVER_MINOR}.${GCCVER_PATCH}).\nYou need not replace your current version of gcc; just make gcc-4.3 available as well so that nvcc can use it.\nDebian/Ubuntu users with root privilages may simply enter the following at a terminal prompt:\n  sudo apt-get install gcc-4.3\n")
                     ELSE(GCC43 STREQUAL "")
                         MESSAGE(STATUS "nvcc-check: Found gcc-4.3... telling nvcc to use it!")
                         MESSAGE(STATUS "nvcc-check: CUDA_NVCC_FLAGS set to \"${CUDA_NVCC_FLAGS} --compiler-bindir=${GCC43}\"")
