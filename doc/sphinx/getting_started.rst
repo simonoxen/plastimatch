@@ -252,6 +252,16 @@ Then build as follows:
 #. Navigate to the plastimatch binary directory
 #. Type "make"
 
+   Users with multicore systems can speed up the process of compiling
+   plastimatch considerably by invoking make with the -j option.  For
+   example, a user with a dual-core system would type:
+
+   make -j 2
+
+   whereas a user with a quad-core system would type:
+
+   make -j 4
+
 
 .. Special Instructions For Linux Systems Using gcc-4.4
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
