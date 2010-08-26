@@ -2708,7 +2708,7 @@ bspline_warp (
 //
 // SSE vectorization is also utilized.
 //
-// ** BETA **
+// ** This is the fastest know CPU implmentation for multi core **
 //
 // AUTHOR: James A. Shackleford
 // DATE: 08.19.2010
@@ -2738,9 +2738,9 @@ bspline_score_i_mse (
     double interval;
 
     size_t cond_size = 64*bxf->num_knots*sizeof(float);
-    float* cond_x = (float*)malloc(cond_size);
-    float* cond_y = (float*)malloc(cond_size);
-    float* cond_z = (float*)malloc(cond_size);
+    float* cond_x = (float*) _mm_malloc(cond_size, 16);
+    float* cond_y = (float*) _mm_malloc(cond_size, 16);
+    float* cond_z = (float*) _mm_malloc(cond_size, 16);
 
     /* Setup the q_lut... SSE style (16 byte aligned) */
     int q_lut_size = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2] * 64; 
@@ -2803,6 +2803,9 @@ bspline_score_i_mse (
 
     __m128 m_sets_x[16], m_sets_y[16], m_sets_z[16];
     __m128 m_qlut, m_dc_dv[3], m_tmp;
+#if defined (commentout)
+    __m128 m_grad[3], m_cond[3];
+#endif
 
 
     int* k_lut = (int*)malloc(64*sizeof(int));
@@ -2910,13 +2913,25 @@ bspline_score_i_mse (
 
                 m_tmp = _mm_mul_ps     (m_qlut, m_dc_dv[0]);
                 m_sets_x[set_num] = _mm_add_ps   (m_sets_x[set_num], m_tmp);
+            }
+
+            for (set_num = 0; set_num < 16; set_num++) {
+                m_qlut = _mm_load_ps (q_lut + 4*set_num);
 
                 m_tmp = _mm_mul_ps     (m_qlut, m_dc_dv[1]);
                 m_sets_y[set_num] = _mm_add_ps   (m_sets_y[set_num], m_tmp);
+            }
+
+            for (set_num = 0; set_num < 16; set_num++) {
+                m_qlut = _mm_load_ps (q_lut + 4*set_num);
 
                 m_tmp = _mm_mul_ps     (m_qlut, m_dc_dv[2]);
                 m_sets_z[set_num] = _mm_add_ps   (m_sets_z[set_num], m_tmp);
             }
+            // ^ JAS 08.26.2010
+            // Three separate for loops are faster than one
+            // monolithic loop when doing these operations using SSE
+            // due to there only being 8 128-bit SSE registers.
 
         }
         }
@@ -2968,13 +2983,20 @@ bspline_score_i_mse (
     _mm_free (q_lut_a16);
 
     // "Reduce"
-    // NOTE: Could be SSE optimized.
+    // TODO: SSE optimization
     for (idx_knot = 0; idx_knot < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); idx_knot++) {
         for(idx_set = 0; idx_set < 64; idx_set++) {
             ssd->grad[3*idx_knot + 0] += cond_x[64*idx_knot + idx_set];
             ssd->grad[3*idx_knot + 1] += cond_y[64*idx_knot + idx_set];
             ssd->grad[3*idx_knot + 2] += cond_z[64*idx_knot + idx_set];
         }
+        
+#if defined (commentout)
+        for (set_num = 0; set_num < 16; set_num++) {
+            m_cond[0] = _mm_load_ps (cond_x + 64*idx_knot + idx_set);
+            m_grad[0] = _mm_add_ps   (m_grad[0], m_cond[0]);
+        }
+#endif
     }
 
     free (cond_x);
@@ -3227,6 +3249,7 @@ bspline_score_h_mse (
 // used.  The tile "condense" method is demonstrated.
 //
 // ** This is the fastest know CPU implmentation for multi core **
+//    (That does not require SSE)
 //
 // AUTHOR: James A. Shackleford
 // DATE: 11.22.2009
@@ -3537,12 +3560,19 @@ bspline_score (Bspline_parms *parms,
 	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 #else
-        printf ("Not compiled with SSE2 extensions! (Using flavor g).\n");
-	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
+        printf ("A CPU with SSE2 is required to use implementation i\n");
+        printf ("Exiting...\n\n");
+        exit(0);
 	    break;
 #endif
 	default:
+#if defined (SSE2_FOUND)
+	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#else
 	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+#endif
 	    break;
 	}
     }
