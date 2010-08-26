@@ -644,9 +644,10 @@ void bspline_rbf_find_coeffs_NM( Volume *vector_field, Bspline_parms *parms )
 /*
 Adds RBF contributions to the vector field
 landmark_dxyz is not updated by this function
+Version for RBF with local support
 */
 void
-bspline_rbf_update_vector_field (
+bspline_rbf_update_vector_field_truncated (
     Volume *vector_field,
     Bspline_parms *parms 
 )
@@ -678,6 +679,65 @@ bspline_rbf_update_vector_field (
 		    if (fi < 0 || fi >= vector_field->dim[0]) continue;
 		    if (fj < 0 || fj >= vector_field->dim[1]) continue;
 		    if (fk < 0 || fk >= vector_field->dim[2]) continue;
+
+		    fv = fk * vector_field->dim[0] * vector_field->dim[1] 
+			+ fj * vector_field->dim[0] + fi;
+			
+		    rbf = rbf_value (rbf_vox_origin+3*lidx,  
+			fi, fj, fk, 
+			parms->rbf_radius, 
+			vector_field->pix_spacing);
+
+		    for(d=0;d<3;d++) {
+			vf[3*fv+d] += blm->rbf_coeff[3*lidx+d]* rbf;
+#if defined (commentout)
+			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
+			    lidx, 
+			    fi, fj, fk, 
+			    blm->rbf_coeff[3*lidx+d], rbf, 
+			    blm->rbf_coeff[3*lidx+d] * rbf);
+#endif
+		    }
+		}
+	    }
+	}
+    }
+}
+
+/*
+Adds RBF contributions to the vector field
+landmark_dxyz is not updated by this function
+Version without truncation: scan over the entire vf
+and add up all RBFs in each voxel
+*/
+void
+bspline_rbf_update_vector_field (
+    Volume *vector_field,
+    Bspline_parms *parms 
+)
+{
+    Bspline_landmarks *blm = parms->landmarks;
+    int lidx, d, fv;
+    int fi, fj, fk;
+    int *rbf_vox_origin;
+    float *vf;
+    float rbf;
+
+    printf("RBF, updating the vector field\n");
+
+    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported\n");
+
+    vf = (float*) vector_field->img;
+	rbf_vox_origin = blm->landvox_fix;
+
+    //RBF contributions added to vector field
+
+    for ( fk = 0; fk < vector_field->dim[2];  fk++) {
+	for ( fj = 0; fj < vector_field->dim[1];  fj++) {
+	for ( fi = 0; fi < vector_field->dim[0];  fi++) {
+		
+		for (lidx=0; lidx < blm->num_landmarks; lidx++) {
 
 		    fv = fk * vector_field->dim[0] * vector_field->dim[1] 
 			+ fj * vector_field->dim[0] + fi;
