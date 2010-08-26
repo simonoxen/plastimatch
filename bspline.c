@@ -2999,9 +2999,9 @@ bspline_score_i_mse (
 #endif
     }
 
-    free (cond_x);
-    free (cond_y);
-    free (cond_z);
+    _mm_free (cond_x);
+    _mm_free (cond_y);
+    _mm_free (cond_z);
 
     ssd->score = score_tile / num_vox;
 
