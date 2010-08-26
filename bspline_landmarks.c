@@ -114,7 +114,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
     for (i = 0; i < blm->num_landmarks; i++) {
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_mov[i*3 + d] = ROUND_INT (
-		(blm->moving_landmarks->points[3*d + i]
+		(blm->moving_landmarks->points[3*i + d]
 		    - moving->offset[d]) / moving->pix_spacing[d]);
 	    if (blm->landvox_mov[i*3 + d] < 0 
 		|| blm->landvox_mov[i*3 + d] >= moving->dim[d])
