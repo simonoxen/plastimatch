@@ -153,7 +153,6 @@ void CUDA_selectgpu (int gpuid)
 int CUDA_getarch (int gpuid)
 {
     int num_gpus;
-    int cores_per_sm;
     cudaDeviceProp props;
 
     cudaGetDeviceCount(&num_gpus);
