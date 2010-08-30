@@ -191,12 +191,9 @@ typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
 struct BSPLINE_MI_Hist_struct {
     BSPLINE_MI_Hist_Parms moving;
     BSPLINE_MI_Hist_Parms fixed;
-    float* m_hist;
-    float* f_hist;
-    float* j_hist;
-    double* m_hist_d;
-    double* f_hist_d;
-    double* j_hist_d;
+    double* m_hist;
+    double* f_hist;
+    double* j_hist;
 
 };
 #else

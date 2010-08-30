@@ -12,6 +12,12 @@
 #include "bspline.h"
 #include "cuda.h"
 
+/* B-Spline CUDA MI Switches */
+//#define MI_HISTS_CPU
+//#define MI_GRAD_CPU
+#define MI_SCORE_CPU
+
+
 #if defined __cplusplus
 extern "C" {
 #endif

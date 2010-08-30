@@ -1719,15 +1719,33 @@ CUDA_bspline_MI_a_hist_fix (
     
     // this kernel can be ran with any thread-block size
     kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-	dev_ptrs->f_hist,
-	dev_ptrs->f_hist_seg,
-	num_sub_hists);
+                	dev_ptrs->f_hist,
+                	dev_ptrs->f_hist_seg,
+                	num_sub_hists);
 
     cuda_utils_check_error ("kernel hist_fix_merge");
 
-    cudaMemcpy (mi_hist->f_hist, dev_ptrs->f_hist, dev_ptrs->f_hist_size, 
-	cudaMemcpyDeviceToHost);
+    /* copy result back to host
+     *   -- Note CPU uses doubles whereas the GPU uses floats
+     *      due to lack of double precision floats.  This is okay
+     *      since the GPU's ability to add small numbers to large
+     *      using single precision is more accurate than the CPU.
+     *   
+     *   -- However, this does result in the little bit of nastiness
+     *      found below.  We copy these back to the CPU for the score
+     *      computation, which the CPU completes very quickly.
+     */
+    float* f_hist_f = (float*)malloc(dev_ptrs->f_hist_size);
+
+    cudaMemcpy (f_hist_f, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
     cuda_utils_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
+
+    /* type cast to CPU friendly double */
+    for (int i=0; i< mi_hist->fixed.bins; i++) {
+        mi_hist->f_hist[i] = (double)f_hist_f[i];
+    }
+
+    free (f_hist_f);
 
     cudaFree (dev_ptrs->f_hist_seg);
     cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!\n");
@@ -1809,8 +1827,27 @@ CUDA_bspline_MI_a_hist_mov (
 
     cuda_utils_check_error ("kernel hist_mov_merge");
 
-    cudaMemcpy (mi_hist->m_hist, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
+    /* copy result back to host
+     *   -- Note CPU uses doubles whereas the GPU uses floats
+     *      due to lack of double precision floats.  This is okay
+     *      since the GPU's ability to add small numbers to large
+     *      using single precision is more accurate than the CPU.
+     *   
+     *   -- However, this does result in the little bit of nastiness
+     *      found below.  We copy these back to the CPU for the score
+     *      computation, which the CPU completes very quickly.
+     */
+    float* m_hist_f = (float*)malloc(dev_ptrs->m_hist_size);
+
+    cudaMemcpy (m_hist_f, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
     cuda_utils_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
+
+    /* type cast to CPU friendly double */
+    for (int i=0; i< mi_hist->moving.bins; i++) {
+        mi_hist->m_hist[i] = (double)m_hist_f[i];
+    }
+
+    free (m_hist_f);
 
     cudaFree (dev_ptrs->m_hist_seg);
     cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!\n");
@@ -1890,7 +1927,6 @@ CUDA_bspline_MI_a_hist_jnt (
     cuda_utils_check_error ("Failed to allocate memory for j_hist_seg");
     smemSize = 2 * num_bins * sizeof(float);
 
-#if defined (COMPILE_MI)
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
             dev_ptrs->skipped,      // # voxels that map outside moving
@@ -1916,7 +1952,6 @@ CUDA_bspline_MI_a_hist_jnt (
             dev_ptrs->c_lut,            // DEBUG
             dev_ptrs->q_lut,            // DEBUG
             dev_ptrs->coeff);           // DEBUG
-#endif
 
     cuda_utils_check_error ("kernel hist_jnt");
 
@@ -1937,8 +1972,28 @@ CUDA_bspline_MI_a_hist_jnt (
 
     cuda_utils_check_error ("kernel hist_jnt_merge");
 
-    cudaMemcpy (mi_hist->j_hist, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy joint histograms from GPU to CPU!");
+    /* copy result back to host
+     *   -- Note CPU uses doubles whereas the GPU uses floats
+     *      due to lack of double precision floats.  This is okay
+     *      since the GPU's ability to add small numbers to large
+     *      using single precision is more accurate than the CPU.
+     *   
+     *   -- However, this does result in the little bit of nastiness
+     *      found below.  We copy these back to the CPU for the score
+     *      computation, which the CPU completes very quickly.
+     */
+    float* j_hist_f = (float*)malloc(dev_ptrs->j_hist_size);
+
+    cudaMemcpy (j_hist_f, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
+    cuda_utils_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
+
+    /* type cast to CPU friendly double */
+    for (int i=0; i< mi_hist->moving.bins * mi_hist->fixed.bins; i++) {
+        mi_hist->j_hist[i] = (double)j_hist_f[i];
+    }
+
+    free (j_hist_f);
+
 
     cudaFree (dev_ptrs->j_hist_seg);
     cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!");
@@ -2049,10 +2104,36 @@ CUDA_MI_Grad_a (
     float score = ssd->score;
 
     // Initialize histogram memory on GPU
-    cudaMemcpy(dev_ptrs->f_hist, mi_hist->f_hist, dev_ptrs->f_hist_size, cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_ptrs->m_hist, mi_hist->m_hist, dev_ptrs->m_hist_size, cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_ptrs->j_hist, mi_hist->j_hist, dev_ptrs->j_hist_size, cudaMemcpyHostToDevice);
-       cuda_utils_check_error("CUDA_MI_Grad_a(): Unable to copy histograms to GPU!");
+    // (only necessary if histograms are CPU generated)
+#if defined (MI_HIST_CPU)
+    float* f_hist_f = (float*)malloc(dev_ptrs->f_hist_size);
+    float* m_hist_f = (float*)malloc(dev_ptrs->m_hist_size);
+    float* j_hist_f = (float*)malloc(dev_ptrs->j_hist_size);
+
+    cudaMemcpy (f_hist_f, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
+    cuda_utils_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
+    cudaMemcpy (m_hist_f, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
+    cuda_utils_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
+    cudaMemcpy (j_hist_f, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
+    cuda_utils_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
+
+    /* type cast to CPU friendly double */
+    for (int i=0; i< mi_hist->fixed.bins; i++) {
+        mi_hist->f_hist[i] = (double)f_hist_f[i];
+    }
+
+    for (int i=0; i< mi_hist->moving.bins; i++) {
+        mi_hist->m_hist[i] = (double)m_hist_f[i];
+    }
+
+    for (int i=0; i< mi_hist->fixed.bin * mi_hist->moving.bins; i++) {
+        mi_hist->j_hist[i] = (double)j_hist_f[i];
+    }
+
+    free (f_hist_f);
+    free (m_hist_f);
+    free (j_hist_f);
+#endif
 
     // Initial dc_dv streams
     cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);

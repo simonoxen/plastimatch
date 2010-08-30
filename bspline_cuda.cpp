@@ -19,9 +19,6 @@
 #include "plm_timer.h"
 #include "volume.h"
 
-//#define CPU_HISTS
-#define CPU_SCORE
-//#define CPU_GRAD
 
 /***********************************************************************
  * A few of the CPU functions are reproduced here for testing purposes.
@@ -101,14 +98,9 @@ bspline_mi_hist_add_pvi_8 (
     int offset_fbin;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
-#ifdef DOUBLE_HISTS
-    double *f_hist = mi_hist->f_hist_d;
-    double *m_hist = mi_hist->m_hist_d;
-    double *j_hist = mi_hist->j_hist_d;
-#else
-    printf ("DOUBLE_HISTS must be enabled to use PV8.\n");
-    exit(0);
-#endif
+    double *f_hist = mi_hist->f_hist;
+    double *m_hist = mi_hist->m_hist;
+    double *j_hist = mi_hist->j_hist;
 
     w1 = li_1[0] * li_1[1] * li_1[2];   // Partial Volume w1
     w2 = li_2[0] * li_1[1] * li_1[2];   // Partial Volume w2
@@ -205,9 +197,9 @@ bspline_mi_pvi_8_dc_dv (
     float dS_dP;
     float* f_img = (float*) fixed->img;
     float* m_img = (float*) moving->img;
-    float* f_hist = mi_hist->f_hist;
-    float* m_hist = mi_hist->m_hist;
-    float* j_hist = mi_hist->j_hist;
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
     BSPLINE_Score* ssd = &bst->ssd;
     int n1, n2, n3, n4, n5, n6, n7, n8;
     int idx_fbin, idx_mbin, idx_jbin;
@@ -372,6 +364,28 @@ bspline_update_grad_b_inline (Bspline_state* bst, Bspline_xform* bxf,
     }
 }
 
+static void display_hist_totals (BSPLINE_MI_Hist *mi_hist)
+{
+    int i;
+    double tmp = 0;
+
+    for (i=0, tmp=0; i < mi_hist->fixed.bins; i++) {
+        tmp += mi_hist->f_hist[i];
+    }
+    printf ("f_hist total: %f\n", tmp);
+
+    for (i=0, tmp=0; i < mi_hist->moving.bins; i++) {
+        tmp += mi_hist->m_hist[i];
+    }
+    printf ("m_hist total: %f\n", tmp);
+
+    for (i=0, tmp=0; i < mi_hist->moving.bins * mi_hist->fixed.bins; i++) {
+        tmp += mi_hist->j_hist[i];
+    }
+    printf ("j_hist total: %f\n", tmp);
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 int
@@ -449,15 +463,9 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
 static float
 CPU_MI_Score (BSPLINE_MI_Hist* mi_hist, int num_vox)
 {
-#if defined (DOUBLE_HISTS) && defined (CPU_HISTS)
-    double* f_hist = mi_hist->f_hist_d;
-    double* m_hist = mi_hist->m_hist_d;
-    double* j_hist = mi_hist->j_hist_d;
-#else
-    float* f_hist = mi_hist->f_hist;
-    float* m_hist = mi_hist->m_hist;
-    float* j_hist = mi_hist->j_hist;
-#endif
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
 
     int i, j, v;
     double fnv = (double) num_vox;
@@ -571,14 +579,9 @@ bspline_cuda_MI_a (
     //Timer timer0;
     double interval;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
-    float* f_hist = mi_hist->f_hist;
-    float* m_hist = mi_hist->m_hist;
-    float* j_hist = mi_hist->j_hist;
-#ifdef DOUBLE_HISTS
-    double* f_hist_d = mi_hist->f_hist_d;
-    double* m_hist_d = mi_hist->m_hist_d;
-    double* j_hist_d = mi_hist->j_hist_d;
-#endif
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
     static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer
     FILE* fp = NULL;        // File Pointer to Debug File
@@ -612,14 +615,9 @@ bspline_cuda_MI_a (
 
     //
     // --- INITIALIZE CPU MEMORY --------------------------------
-    memset(f_hist, 0, mi_hist->fixed.bins * sizeof (float));
-    memset(m_hist, 0, mi_hist->moving.bins * sizeof (float));
-    memset(j_hist, 0, mi_hist->moving.bins * mi_hist->fixed.bins * sizeof (float));
-#ifdef DOUBLE_HISTS
-    memset(f_hist_d, 0, mi_hist->fixed.bins * sizeof (double));
-    memset(m_hist_d, 0, mi_hist->moving.bins * sizeof (double));
-    memset(j_hist_d, 0, mi_hist->moving.bins * mi_hist->fixed.bins * sizeof (double));
-#endif
+    memset(f_hist, 0, mi_hist->fixed.bins * sizeof (double));
+    memset(m_hist, 0, mi_hist->moving.bins * sizeof (double));
+    memset(j_hist, 0, mi_hist->moving.bins * mi_hist->fixed.bins * sizeof (double));
     // ----------------------------------------------------------
 
     // --- INITIALIZE GPU MEMORY --------------------------------
@@ -632,25 +630,13 @@ bspline_cuda_MI_a (
     
     // generate histograms
 //  plm_timer_start (&timer0);
-#ifdef CPU_HISTS
+#if defined (MI_HISTS_CPU)
     num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
 //  printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
 //  num_vox = CUDA_MI_Hist_a (mi_hist, bxf, fixed, moving, dev_ptrs);
     num_vox = CUDA_bspline_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
 //  printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
-#endif
-
-    // if using double histograms for accumulation
-    // copy their contents over to floating histograms
-
-#if defined (DOUBLE_HISTS) && defined (CPU_HISTS)
-    for (i=0; i < mi_hist->fixed.bins; i++)
-        f_hist[i] = (float)f_hist_d[i];
-    for (i=0; i < mi_hist->moving.bins; i++)
-        m_hist[i] = (float)m_hist_d[i];
-    for (i=0; i < mi_hist->moving.bins * mi_hist->fixed.bins; i++)
-        j_hist[i] = (float)j_hist_d[i];
 #endif
 
     // dump histogram images?
@@ -662,26 +648,15 @@ bspline_cuda_MI_a (
         dump_hist (mi_hist, bst->it);
     }
 
+
 #if defined (commentout)
-    int zz;
-    double tmp;
-    tmp = 0;
-    for (zz=0; zz < mi_hist->fixed.bins; zz++) {tmp += f_hist[zz]; }
-    printf ("f_hist total: %f\n", tmp);
-    tmp = 0;
-    for (zz=0; zz < mi_hist->moving.bins; zz++) { tmp += m_hist[zz]; }
-    printf ("m_hist total: %f\n", tmp);
-    tmp = 0;
-    for (zz=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) {
-        tmp += j_hist[zz];
-    }
-    printf ("j_hist total: %f\n", tmp);
+    display_hist_totals (mi_hist);
 #endif
 
 
     // compute score
 //  plm_timer_start (&timer0);
-#ifdef CPU_SCORE
+#if defined (MI_SCORE_CPU)
     ssd->score = CPU_MI_Score(mi_hist, num_vox);
 //  printf (" * score: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
@@ -693,7 +668,7 @@ bspline_cuda_MI_a (
 
     // compute gradient
 //  plm_timer_start (&timer0);
-#ifdef CPU_GRAD
+#if defined (MI_GRAD_CPU)
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
 //  printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
