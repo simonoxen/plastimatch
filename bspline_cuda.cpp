@@ -613,12 +613,14 @@ bspline_cuda_MI_a (
     }
     // ----------------------------------------------------------
 
-    //
+
+#if defined (MI_HISTS_CPU) || defined (MI_SCORE_CPU)
     // --- INITIALIZE CPU MEMORY --------------------------------
     memset(f_hist, 0, mi_hist->fixed.bins * sizeof (double));
     memset(m_hist, 0, mi_hist->moving.bins * sizeof (double));
     memset(j_hist, 0, mi_hist->moving.bins * mi_hist->fixed.bins * sizeof (double));
     // ----------------------------------------------------------
+#endif
 
     // --- INITIALIZE GPU MEMORY --------------------------------
     bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
@@ -662,7 +664,6 @@ bspline_cuda_MI_a (
 #else
     // Doing this on the GPU may be silly.
     // The CPU generally completes this computation extremely quickly
-    // GPU_MI_Score_a();
 //  printf (" * score: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
 

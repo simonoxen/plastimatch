@@ -17,8 +17,8 @@
 
 #define COORDS_FROM_INDEX(ijk, idx, dim) \
 	ijk[2] = idx / (dim[0] * dim[1]);	\
-	ijk[1] = (idx_tile - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
-	ijk[0] = idx_tile - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
+	ijk[1] = (idx - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
+	ijk[0] = idx - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
 
 /* -----------------------------------------------------------------------
    Types

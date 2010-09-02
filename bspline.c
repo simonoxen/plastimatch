@@ -1192,6 +1192,35 @@ mi_hist_score (BSPLINE_MI_Hist* mi_hist, int num_vox)
     return (float) score;
 }
 
+
+/* This algorithm uses a un-normalized score. */
+static float
+mi_hist_score_omp (BSPLINE_MI_Hist* mi_hist, int num_vox)
+{
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+
+    int f_bin, m_bin, j_bin;
+    double fnv = (double) num_vox;
+    double score = 0;
+    double hist_thresh = 0.001 / (mi_hist->moving.bins * mi_hist->fixed.bins);
+
+    /* Compute cost */
+#pragma omp parallel for reduction(-:score)
+    for (j_bin=0; j_bin < (mi_hist->fixed.bins * mi_hist->moving.bins); j_bin++) {
+        m_bin = j_bin % mi_hist->moving.bins;
+        f_bin = j_bin / mi_hist->moving.bins;
+        
+        if (j_hist[j_bin] > hist_thresh) {
+            score -= j_hist[j_bin] * logf(fnv * j_hist[j_bin] / (m_hist[m_bin] * f_hist[f_bin]));
+        }
+    }
+
+    score = score / fnv;
+    return (float) score;
+}
+
 void
 bspline_interp_pix (float out[3], Bspline_xform* bxf, int p[3], int qidx)
 {
@@ -1352,6 +1381,65 @@ bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf,
 	}
     }
 }
+
+
+void
+bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
+                          int qidx, float* dc_dv, Bspline_xform* bxf)
+{
+    int sidx;   // set index
+
+    /* Initialize q_lut */
+    float* q_lut = &bxf->q_lut[64*qidx];
+
+    /* Condense dc_dv & commit to sets for tile */
+    for (sidx=0; sidx<64; sidx++) {
+        sets_x[sidx] += dc_dv[0] * q_lut[sidx];
+        sets_y[sidx] += dc_dv[1] * q_lut[sidx];
+        sets_z[sidx] += dc_dv[2] * q_lut[sidx];
+    }
+}
+
+
+void
+bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
+                        float* sets_x, float* sets_y, float* sets_z,
+                        int pidx, Bspline_xform* bxf)
+{
+        int sidx, kidx;
+        int* k_lut = (int*)malloc(64*sizeof(int));
+
+        /* Generate the knot index lut */
+        find_knots (k_lut, pidx, bxf->rdims, bxf->cdims);
+
+        /* Rackem' Up */
+        for (sidx=0; sidx<64; sidx++) {
+            kidx = k_lut[sidx];
+
+            cond_x[ (64*kidx) + sidx ] = sets_x[sidx];
+            cond_y[ (64*kidx) + sidx ] = sets_y[sidx];
+            cond_z[ (64*kidx) + sidx ] = sets_z[sidx];
+        }
+
+        free (k_lut);
+}
+
+
+void
+bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
+                   Bspline_xform* bxf, BSPLINE_Score* ssd)
+{
+    int kidx, sidx;
+
+    for (kidx=0; kidx < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); kidx++) {
+        for (sidx=0; sidx<64; sidx++) {
+            ssd->grad[3*kidx + 0] += cond_x[64*kidx + sidx];
+            ssd->grad[3*kidx + 1] += cond_y[64*kidx + sidx];
+            ssd->grad[3*kidx + 2] += cond_z[64*kidx + sidx];
+        }
+    }
+}
+
 
 /* Clipping is done using clamping.  You should have "air" as the outside
    voxel so pixels can be clamped to air.  */
@@ -2206,6 +2294,292 @@ bspline_mi_pvi_6_dc_dv (
 
 
 
+/* B-Spline Registration using Mutual Information
+ * Implementation D
+ *   -- Uses OpenMP for Cost & dc_dv computation
+ *   -- Uses methods introduced in bspline_score_g_mse
+ *        to compute dc_dp more rapidly.
+ */
+static void
+bspline_score_d_mi (Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform *bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &bst->ssd;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    int rijk[3];
+    float diff;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    int num_vox;
+    float num_vox_f;
+    int pidx;
+    Timer timer;
+    float m_val;
+
+    int fijk[3], fv;
+    float mijk[3];
+    float fxyz[3];
+    float mxyz[3];
+    int mijk_f[3], mvf;      /* Floor */
+    int mijk_r[3];           /* Round */
+    int p[3];
+    int q[3];
+    float dxyz[3];
+    int qidx;
+    float li_1[3];           /* Fraction of interpolant in lower index */
+    float li_2[3];           /* Fraction of interpolant in upper index */
+
+    float mse_score = 0.0f;
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+    static int it = 0;
+    char debug_fn[1024];
+    FILE* fp;
+    int zz;
+
+    int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+
+    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+    int kidx, sidx;
+
+
+    if (parms->debug) {
+	sprintf (debug_fn, "dump_mi_%02d.txt", it++);
+	fp = fopen (debug_fn, "w");
+    }
+
+    plm_timer_start (&timer);
+
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+    num_vox = 0;
+
+    /* PASS 1 - Accumulate histogram */
+    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
+    p[2] = rijk[2] / bxf->vox_per_rgn[2];
+    q[2] = rijk[2] % bxf->vox_per_rgn[2];
+    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+    for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+        p[1] = rijk[1] / bxf->vox_per_rgn[1];
+        q[1] = rijk[1] % bxf->vox_per_rgn[1];
+        fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+        for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+            int rc;
+            p[0] = rijk[0] / bxf->vox_per_rgn[0];
+            q[0] = rijk[0] % bxf->vox_per_rgn[0];
+            fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+
+            /* Get B-spline deformation vector */
+            pidx = INDEX_OF (p, bxf->rdims);
+            qidx = INDEX_OF (q, bxf->vox_per_rgn);
+            bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+            /* Find correspondence in moving image */
+            rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
+                dxyz, moving);
+
+            /* If voxel is not inside moving image */
+            if (!rc) continue;
+
+            CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+                li_1, li_2, moving);
+
+            /* Find linear index of fixed image voxel */
+            fv = INDEX_OF (fijk, fixed->dim);
+
+            /* Find linear index of "corner voxel" in moving image */
+            mvf = INDEX_OF (mijk_f, moving->dim);
+
+            /* Compute moving image intensity using linear interpolation */
+            /* Macro is slightly faster than function */
+            // NOTE: Not used by MI PVI8
+            BSPLINE_LI_VALUE (m_val, 
+                li_1[0], li_2[0],
+                li_1[1], li_2[1],
+                li_1[2], li_2[2],
+                mvf, m_img, moving);
+
+#if defined (commentout)
+            /* LINEAR INTERPOLATION */
+            bspline_mi_hist_add (mi_hist, f_img[fv], m_val, 1.0);
+#endif
+
+            /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+            bspline_mi_hist_add_pvi_8 (mi_hist, fixed, moving, 
+                fv, mvf, li_1, li_2);
+
+#if defined (commentout)
+            /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+            bspline_mi_hist_add_pvi_6 (mi_hist, fixed, moving, 
+                fv, mvf, mijk);
+#endif
+
+            /* Compute intensity difference */
+            diff = m_val - f_img[fv];
+            mse_score += diff * diff;
+            num_vox ++;
+        }
+    }
+    }
+
+
+    /* Draw histogram images if user wants them */
+    if (parms->xpm_hist_dump) {
+        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+    }
+
+    /* Display histrogram stats in debug mode */
+    if (parms->debug) {
+        double tmp;
+        for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
+            tmp += f_hist[zz];
+        }
+        printf ("f_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins; zz++) {
+            tmp += m_hist[zz];
+        }
+        printf ("m_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) {
+            tmp += j_hist[zz];
+        }
+        printf ("j_hist total: %f\n", tmp);
+    }
+
+    /* Compute score */
+    ssd->score = mi_hist_score_omp (mi_hist, num_vox);
+    num_vox_f = (float) num_vox;
+
+    /* PASS 2 - Compute Gradient (Parallel across tiles) */
+#pragma omp parallel for
+    for (pidx=0; pidx < num_tiles; pidx++) {
+        int rc;
+        int fijk[3], fv;
+        float mijk[3];
+        float fxyz[3];
+        float mxyz[3];
+        int mijk_f[3], mvf;      /* Floor */
+        int mijk_r[3];           /* Round */
+        int p[3];
+        int q[3];
+        float dxyz[3];
+        int qidx;
+        float li_1[3];           /* Fraction of interpolant in lower index */
+        float li_2[3];           /* Fraction of interpolant in upper index */
+        float dc_dv[3];
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+
+        /* Get tile indices from linear index */
+        COORDS_FROM_INDEX (p, pidx, bxf->rdims);
+
+        /* Serial through the voxels in a tile */
+        for (q[2]=0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+            for (q[1]=0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+                for (q[0]=0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+                    float* q_lut;
+                    
+                    /* Construct coordinates into fixed image volume */
+                    fijk[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0]*p[0] + q[0];
+                    fijk[1] = bxf->roi_offset[1] + bxf->vox_per_rgn[1]*p[1] + q[1];
+                    fijk[2] = bxf->roi_offset[2] + bxf->vox_per_rgn[2]*p[2] + q[2];
+                    
+                    /* Check to make sure the indices are valid (inside volume) */
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0]) { continue; }
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
+
+                    /* Compute space coordinates of fixed image voxel */
+                    fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+                    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+                    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+
+                    /* Construct the linear index within tile space */
+                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+
+                    /* Compute deformation vector (dxyz) for voxel */
+                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+                    /* Find correspondence in moving image */
+                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+
+                    /* If voxel is not inside moving image */
+                    if (!rc) continue;
+
+                    /* Get tri-linear interpolation fractions */
+                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+                                                 li_1, li_2,
+                                                 moving);
+                    
+                    /* Constrcut the fixed image linear index within volume space */
+                    fv = INDEX_OF (fijk, fixed->dim);
+
+                    /* Find linear index the corner voxel used to identifiy the
+                     * neighborhood of the moving image voxels corresponding
+                     * to the current fixed image voxel */
+                    mvf = INDEX_OF (mijk_f, moving->dim);
+
+                    /* Compute dc_dv */
+                    bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+                        fv, mvf, mijk, num_vox_f, li_1, li_2);
+
+                    /* Update condensed tile sets */
+                    bspline_update_sets (sets_x, sets_y, sets_z,
+                                         qidx, dc_dv, bxf);
+                }
+            }
+        }   // tile
+
+        /* We now have a tile of condensed dc_dv values (64 values).
+         * Let's put each one in the proper slot within the control
+         * point bin its belogs to */
+        bspline_sort_sets (cond_x, cond_y, cond_z,
+                           sets_x, sets_y, sets_z,
+                           pidx, bxf);
+    }   // openmp
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_make_grad (cond_x, cond_y, cond_z,
+                       bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+
+    if (parms->debug) {
+        fclose (fp);
+    }
+
+    mse_score = mse_score / num_vox;
+
+    report_score ("MI", bxf, bst, num_vox, plm_timer_report (&timer));
+}
+
+
+
 /* Mutual information version of implementation "C" */
 static void
 bspline_score_c_mi (Bspline_parms *parms, 
@@ -3041,45 +3415,26 @@ bspline_score_h_mse (
 		    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
 		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
 		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
-					
-		    // Initialize q_lut
-		    q_lut = &bxf->q_lut[64*idx_local];
-					
-		    // Condense dc_dv @ current voxel index
-		    for (set_num = 0; set_num < 64; set_num++) {
-			sets_x[set_num] += dc_dv[0] * q_lut[set_num];
-			sets_y[set_num] += dc_dv[1] * q_lut[set_num];
-			sets_z[set_num] += dc_dv[2] * q_lut[set_num];
-		    }
+
+            /* Generate condensed tile */
+            bspline_update_sets (sets_x, sets_y, sets_z,
+                                 idx_local, dc_dv, bxf);
 		}
 	    }
 	}
 		
 	// The tile is now condensed.  Now we will put it in the
 	// proper slot within the control point bin that it belong to.
-					
-	// Generate k_lut
-	find_knots(k_lut, idx_tile, bxf->rdims, bxf->cdims);
+    bspline_sort_sets (cond_x, cond_y, cond_z,
+                       sets_x, sets_y, sets_z,
+                       idx_tile, bxf);
 
-	for (set_num = 0; set_num < 64; set_num++) {
-	    int knot_num = k_lut[set_num];
 
-	    cond_x[ (64*knot_num) + (63 - set_num) ] = sets_x[set_num];
-	    cond_y[ (64*knot_num) + (63 - set_num) ] = sets_y[set_num];
-	    cond_z[ (64*knot_num) + (63 - set_num) ] = sets_z[set_num];
-	}
-
-	free (k_lut);
     }
 
-    // "Reduce"
-    for (idx_knot = 0; idx_knot < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); idx_knot++) {
-	for(idx_set = 0; idx_set < 64; idx_set++) {
-	    ssd->grad[3*idx_knot + 0] += cond_x[64*idx_knot + idx_set];
-	    ssd->grad[3*idx_knot + 1] += cond_y[64*idx_knot + idx_set];
-	    ssd->grad[3*idx_knot + 2] += cond_z[64*idx_knot + idx_set];
-	}
-    }
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -3088,7 +3443,7 @@ bspline_score_h_mse (
     ssd->score = score_tile / num_vox;
 
     for (i = 0; i < bxf->num_coeff; i++) {
-	ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
+        ssd->grad[i] = 2 * ssd->grad[i] / num_vox;
     }
 
     interval = plm_timer_report (&timer);
@@ -3268,46 +3623,24 @@ bspline_score_g_mse (
 		    dc_dv[0] = diff * m_grad[3 * idx_moving_round + 0];
 		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
 		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
-					
-		    // Initialize q_lut
-		    q_lut = &bxf->q_lut[64*idx_local];
-					
-		    // Condense dc_dv @ current voxel index
-		    for (set_num = 0; set_num < 64; set_num++) {
-		    	sets_x[set_num] += dc_dv[0] * q_lut[set_num];
-		    	sets_y[set_num] += dc_dv[1] * q_lut[set_num];
-		    	sets_z[set_num] += dc_dv[2] * q_lut[set_num];
-		    }
 
+            /* Generate condensed tile */
+            bspline_update_sets (sets_x, sets_y, sets_z,
+                                 idx_local, dc_dv, bxf);
 		}
 	    }
 	}
-		
+
 	// The tile is now condensed.  Now we will put it in the
 	// proper slot within the control point bin that it belong to.
-					
-	// Generate k_lut
-	find_knots(k_lut, idx_tile, bxf->rdims, bxf->cdims);
-
-	for (set_num = 0; set_num < 64; set_num++) {
-	    int knot_num = k_lut[set_num];
-
-	    cond_x[ (64*knot_num) + (63 - set_num) ] = sets_x[set_num];
-	    cond_y[ (64*knot_num) + (63 - set_num) ] = sets_y[set_num];
-	    cond_z[ (64*knot_num) + (63 - set_num) ] = sets_z[set_num];
-	}
-
-	free (k_lut);
+    bspline_sort_sets (cond_x, cond_y, cond_z,
+                       sets_x, sets_y, sets_z,
+                       idx_tile, bxf);
     }
 
-    // "Reduce"
-    for (idx_knot = 0; idx_knot < (bxf->cdims[0] * bxf->cdims[1] * bxf->cdims[2]); idx_knot++) {
-	for(idx_set = 0; idx_set < 64; idx_set++) {
-	    ssd->grad[3*idx_knot + 0] += cond_x[64*idx_knot + idx_set];
-	    ssd->grad[3*idx_knot + 1] += cond_y[64*idx_knot + idx_set];
-	    ssd->grad[3*idx_knot + 2] += cond_z[64*idx_knot + idx_set];
-	}
-    }
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_make_grad (cond_x, cond_y, cond_z, bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -3420,13 +3753,7 @@ bspline_score (Bspline_parms *parms,
 	    break;
 #endif
 	default:
-#if defined (SSE2_FOUND)
-	    bspline_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-#else
 	    bspline_score_g_mse (parms, bst, bxf, fixed, moving, moving_grad);
-	    break;
-#endif
 	    break;
 	}
     }
@@ -3436,8 +3763,11 @@ bspline_score (Bspline_parms *parms,
 	case 'c':
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
+    case 'd':
+	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
+        break;
 	default:
-	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 	}
     }
