@@ -2349,7 +2349,6 @@ bspline_score_d_mi (Bspline_parms *parms,
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    int kidx, sidx;
 
 
     if (parms->debug) {
@@ -2498,7 +2497,6 @@ bspline_score_d_mi (Bspline_parms *parms,
         for (q[2]=0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
             for (q[1]=0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
                 for (q[0]=0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
-                    float* q_lut;
                     
                     /* Construct coordinates into fixed image volume */
                     fijk[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0]*p[0] + q[0];
@@ -3285,8 +3283,6 @@ bspline_score_h_mse (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    int idx_knot;
-    int idx_set;
     int i;
 
     // Start timing the code
@@ -3304,7 +3300,6 @@ bspline_score_h_mse (
     // Serial across tiles
     for (idx_tile = 0; idx_tile < num_tiles; idx_tile++) {
 	int rc;
-	int set_num;
 
 	int crds_tile[3];
 	int crds_local[3];
@@ -3332,8 +3327,6 @@ bspline_score_h_mse (
 	float sets_y[64];
 	float sets_z[64];
 
-	int* k_lut = (int*)malloc(64*sizeof(int));
-
 	memset(sets_x, 0, 64*sizeof(float));
 	memset(sets_y, 0, 64*sizeof(float));
 	memset(sets_z, 0, 64*sizeof(float));
@@ -3345,7 +3338,6 @@ bspline_score_h_mse (
 	for (crds_local[2] = 0; crds_local[2] < bxf->vox_per_rgn[2]; crds_local[2]++) {
 	    for (crds_local[1] = 0; crds_local[1] < bxf->vox_per_rgn[1]; crds_local[1]++) {
 		for (crds_local[0] = 0; crds_local[0] < bxf->vox_per_rgn[0]; crds_local[0]++) {
-		    float* q_lut;
 					
 		    // Construct coordinates into fixed image volume
 		    crds_fixed[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0] * crds_tile[0] + crds_local[0];
@@ -3491,8 +3483,6 @@ bspline_score_g_mse (
     float* cond_y = (float*)malloc(cond_size);
     float* cond_z = (float*)malloc(cond_size);
 
-    int idx_knot;
-    int idx_set;
     int i;
 
     // Start timing the code
@@ -3511,7 +3501,6 @@ bspline_score_g_mse (
 #pragma omp parallel for reduction (+:num_vox,score_tile)
     for (idx_tile = 0; idx_tile < num_tiles; idx_tile++) {
 	int rc;
-	int set_num;
 
 	int crds_tile[3];
 	int crds_local[3];
@@ -3539,8 +3528,6 @@ bspline_score_g_mse (
 	float sets_y[64];
 	float sets_z[64];
 
-	int* k_lut = (int*)malloc(64*sizeof(int));
-
 	memset(sets_x, 0, 64*sizeof(float));
 	memset(sets_y, 0, 64*sizeof(float));
 	memset(sets_z, 0, 64*sizeof(float));
@@ -3552,7 +3539,6 @@ bspline_score_g_mse (
 	for (crds_local[2] = 0; crds_local[2] < bxf->vox_per_rgn[2]; crds_local[2]++) {
 	    for (crds_local[1] = 0; crds_local[1] < bxf->vox_per_rgn[1]; crds_local[1]++) {
 		for (crds_local[0] = 0; crds_local[0] < bxf->vox_per_rgn[0]; crds_local[0]++) {
-		    float* q_lut;
 					
 		    // Construct coordinates into fixed image volume
 		    crds_fixed[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0] * crds_tile[0] + crds_local[0];
