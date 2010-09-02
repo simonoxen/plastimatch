@@ -148,6 +148,7 @@ main (int argc, char* argv[])
 			parms->landmarks->num_landmarks);
 
 		/* Creating and writing vector field only from RBF (for test only) */
+		/*
 		zero_vector_field = volume_create (fixed->dim, fixed->offset, 
 	    fixed->pix_spacing,
 	    PT_VF_FLOAT_INTERLEAVED, 
@@ -156,6 +157,7 @@ main (int argc, char* argv[])
 		printf ("Writing RBF-only vector field.\n");
 		write_mha ("nsh-vf-rbf-only.mha", zero_vector_field);
 		volume_destroy (zero_vector_field);
+		*/
 		}
 	}
     }
