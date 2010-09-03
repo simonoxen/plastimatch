@@ -31,7 +31,7 @@ plastimatch1_EXPORT
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures,
+    Cxt_structure_list *cxt,
     bool want_prefix_imgs,
     bool want_labelmap,
     bool want_ss_img
@@ -40,13 +40,13 @@ plastimatch1_EXPORT
 bool
 cxt_to_mha_process_next (
     Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
+    Cxt_structure_list *cxt
 );
 plastimatch1_EXPORT
 const char*
 cxt_to_mha_current_name (
     Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
+    Cxt_structure_list *cxt
 );
 plastimatch1_EXPORT
 Cxt_to_mha_state*

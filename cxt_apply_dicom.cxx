@@ -20,7 +20,7 @@
 #include "print_and_exit.h"
 
 void
-cxt_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
+cxt_apply_dicom_dir (Cxt_structure_list *cxt, char *dicom_dir)
 {
     int i, j;
     Gdcm_series gs;
@@ -39,52 +39,52 @@ cxt_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir)
 
     /* Add geometry */
     int d;
-    structures->have_geometry = 1;
+    cxt->have_geometry = 1;
     for (d = 0; d < 3; d++) {
-	structures->offset[d] = gs.m_origin[d];
-	structures->dim[d] = gs.m_dim[d];
-	structures->spacing[d] = gs.m_spacing[d];
+	cxt->offset[d] = gs.m_origin[d];
+	cxt->dim[d] = gs.m_dim[d];
+	cxt->spacing[d] = gs.m_spacing[d];
     }
 
     /* PatientName */
     tmp = file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_name = bfromcstr (tmp.c_str());
+	cxt->patient_name = bfromcstr (tmp.c_str());
     }
 
     /* PatientID */
     tmp = file->GetEntryValue (0x0010, 0x0020);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_id = bfromcstr (tmp.c_str());
+	cxt->patient_id = bfromcstr (tmp.c_str());
     }
 
     /* PatientSex */
     tmp = file->GetEntryValue (0x0010, 0x0040);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->patient_sex = bfromcstr (tmp.c_str());
+	cxt->patient_sex = bfromcstr (tmp.c_str());
     }
 
     /* StudyID */
     tmp = file->GetEntryValue (0x0020, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	structures->study_id = bfromcstr (tmp.c_str());
+	cxt->study_id = bfromcstr (tmp.c_str());
     }
 
     /* StudyInstanceUID */
     tmp = file->GetEntryValue (0x0020, 0x000d);
-    structures->ct_study_uid = bfromcstr (tmp.c_str());
+    cxt->ct_study_uid = bfromcstr (tmp.c_str());
 
     /* SeriesInstanceUID */
     tmp = file->GetEntryValue (0x0020, 0x000e);
-    structures->ct_series_uid = bfromcstr (tmp.c_str());
+    cxt->ct_series_uid = bfromcstr (tmp.c_str());
 	
     /* FrameOfReferenceUID */
     tmp = file->GetEntryValue (0x0020, 0x0052);
-    structures->ct_fref_uid = bfromcstr (tmp.c_str());
+    cxt->ct_fref_uid = bfromcstr (tmp.c_str());
 
     /* slice numbers and slice uids */
-    for (i = 0; i < structures->num_structures; i++) {
-	Cxt_structure *curr_structure = &structures->slist[i];
+    for (i = 0; i < cxt->num_structures; i++) {
+	Cxt_structure *curr_structure = &cxt->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices <= 0) {

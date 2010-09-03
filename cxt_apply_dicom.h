@@ -13,7 +13,7 @@ extern "C" {
 
 plastimatch1_EXPORT
 void
-cxt_apply_dicom_dir (Cxt_structure_list *structures, char *dicom_dir);
+cxt_apply_dicom_dir (Cxt_structure_list *cxt, char *dicom_dir);
 
 #if defined __cplusplus
 }

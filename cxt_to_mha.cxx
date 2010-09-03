@@ -21,7 +21,7 @@
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,       /* Output */
-    Cxt_structure_list *structures,    /* Input */
+    Cxt_structure_list *cxt,    /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img                   /* Input */
@@ -29,7 +29,7 @@ cxt_to_mha_init (
 {
     int slice_voxels;
 
-    slice_voxels = structures->dim[0] * structures->dim[1];
+    slice_voxels = cxt->dim[0] * cxt->dim[1];
 
     ctm_state->want_prefix_imgs = want_prefix_imgs;
     ctm_state->want_labelmap = want_labelmap;
@@ -41,8 +41,8 @@ cxt_to_mha_init (
     /* Create output volume for mask image.  This is reused for each 
        structure */
     ctm_state->uchar_vol 
-	= volume_create (structures->dim, structures->offset, 
-	    structures->spacing, PT_UCHAR, 0, 0);
+	= volume_create (cxt->dim, cxt->offset, 
+	    cxt->spacing, PT_UCHAR, 0, 0);
     if (ctm_state->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
     }
@@ -50,8 +50,8 @@ cxt_to_mha_init (
     /* Create output volume for labelmap */
     ctm_state->labelmap_vol = 0;
     if (want_labelmap) {
-	ctm_state->labelmap_vol = volume_create (structures->dim, 
-	    structures->offset, structures->spacing, PT_UINT32, 0, 0);
+	ctm_state->labelmap_vol = volume_create (cxt->dim, 
+	    cxt->offset, cxt->spacing, PT_UINT32, 0, 0);
 	if (ctm_state->labelmap_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
@@ -60,8 +60,8 @@ cxt_to_mha_init (
     /* Create output volume for ss_img */
     ctm_state->ss_img_vol = 0;
     if (want_ss_img) {
-	ctm_state->ss_img_vol = volume_create (structures->dim, 
-	    structures->offset, structures->spacing, PT_UINT32, 0, 0);
+	ctm_state->ss_img_vol = volume_create (cxt->dim, 
+	    cxt->offset, cxt->spacing, PT_UINT32, 0, 0);
 	if (ctm_state->ss_img_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
@@ -76,7 +76,7 @@ cxt_to_mha_init (
 bool
 cxt_to_mha_process_next (
     Cxt_to_mha_state *ctm_state,       /* In/out */
-    Cxt_structure_list *structures     /* In/out */
+    Cxt_structure_list *cxt     /* In/out */
 )
 {
     Cxt_structure* curr_structure;
@@ -85,16 +85,16 @@ cxt_to_mha_process_next (
     int slice_voxels;
 
     /* If done, return false */
-    if (ctm_state->curr_struct_no >= structures->num_structures) {
-	ctm_state->curr_struct_no = structures->num_structures + 1;
+    if (ctm_state->curr_struct_no >= cxt->num_structures) {
+	ctm_state->curr_struct_no = cxt->num_structures + 1;
 	return false;
     }
     
-    curr_structure = &structures->slist[ctm_state->curr_struct_no];
-    slice_voxels = structures->dim[0] * structures->dim[1];
+    curr_structure = &cxt->slist[ctm_state->curr_struct_no];
+    slice_voxels = cxt->dim[0] * cxt->dim[1];
 
-    memset (uchar_img, 0, structures->dim[0] * structures->dim[1] 
-		* structures->dim[2] * sizeof(unsigned char));
+    memset (uchar_img, 0, cxt->dim[0] * cxt->dim[1] 
+		* cxt->dim[2] * sizeof(unsigned char));
 
     /* Loop through polylines in this structure */
     for (int i = 0; i < curr_structure->num_contours; i++) {
@@ -108,9 +108,9 @@ cxt_to_mha_process_next (
 	/* Render contour to binary */
 	memset (ctm_state->acc_img, 0, slice_voxels * sizeof(unsigned char));
 	render_slice_polyline (ctm_state->acc_img, 
-	    structures->dim, 
-	    structures->spacing, 
-	    structures->offset,
+	    cxt->dim, 
+	    cxt->spacing, 
+	    cxt->offset,
 	    curr_contour->num_vertices, 
 	    curr_contour->x, curr_contour->y);
 
@@ -158,12 +158,12 @@ cxt_to_mha_process_next (
 const char*
 cxt_to_mha_current_name (
     Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *structures
+    Cxt_structure_list *cxt
 )
 {
-    if (ctm_state->curr_struct_no < structures->num_structures + 1) {
+    if (ctm_state->curr_struct_no < cxt->num_structures + 1) {
 	Cxt_structure *curr_structure;
-	curr_structure = &structures->slist[ctm_state->curr_struct_no-1];
+	curr_structure = &cxt->slist[ctm_state->curr_struct_no-1];
 	return curr_structure->name;
     } else {
 	return "";
