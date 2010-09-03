@@ -160,11 +160,6 @@ Rtds::load_xio (
     if (this->m_dose) {
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
-
-    /* Set UIDs etc. */
-    if (dicom_dir[0] && this->m_cxt) {
-	cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
-    }
 }
 
 void

@@ -56,24 +56,6 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
 }
 
 static void
-convert_ss_img_to_cxt (Rtds *rtds, Warp_parms *parms)
-{
-    if (!rtds->m_ss_img) {
-	return;
-    }
-
-    /* Convert image to cxt */
-    rtds->convert_ss_img_to_cxt ();
-
-    /* Set UIDs */
-    if (parms->dicom_dir[0]) {
-	printf ("Parsing dicom...\n");
-	cxt_apply_dicom_dir (rtds->m_cxt, parms->dicom_dir);
-	printf ("Done.\n");
-    }
-}
-
-static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     if (parms->input_fn[0]) {
@@ -362,8 +344,15 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     printf ("PIH is:\n");
     pih.print ();
 
-    /* Convert ss_img to cxt, etc */
-    convert_ss_img_to_cxt (rtds, parms);
+    /* Convert ss_img to cxt */
+    if (rtds->m_ss_img) {
+	rtds->convert_ss_img_to_cxt ();
+    }
+
+    /* Set UIDs, patient name, etc. */
+    if (parms->dicom_dir[0] && rtds->m_cxt) {
+	cxt_apply_dicom_dir (rtds->m_cxt, parms->dicom_dir);
+    }
 
     /* Delete empty structures */
     if (parms->prune_empty && rtds->m_cxt) {
@@ -413,6 +402,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->m_xio_dose_input);
     }
 
+    /* Save dose as ITK image */
     if (parms->output_dose_img[0] && rtds->m_img) {
 	printf ("Saving dose image...\n");
 	rtds->m_dose->convert_and_save (
