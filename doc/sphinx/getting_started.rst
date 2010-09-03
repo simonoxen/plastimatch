@@ -230,6 +230,13 @@ Also, some versions of cmake seem to have a bug where they do not
 correctly set the options for CMAKE_C_FLAGS_DEBUG, CMAKE_C_FLAGS_RELEASE, 
 and so on.  If this happens, you can copy these values from the CXX options.
 
+Special instructions for Visual Studio 2010
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The CUDA compiler nvcc is not compatible with Visual Studio 2010.
+That is why we use Visual Studo 2008.  But, if you 
+insist on using VS 2010, there are some workarounds
+(Google is your friend).
+
 Compiling plastimatch (Unix)
 ----------------------------
 
