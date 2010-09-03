@@ -97,21 +97,27 @@ The f2c library may be used if no fortran compiler is available.
 
   http://www.netlib.org/f2c/
 
-Cuda (recommended)
+CUDA (recommended)
 ^^^^^^^^^^^^^^^^^^
-Cuda is needed if you want GPU acceleration for FDK and B-Spline 
-registration.  Install all three components: driver, toolkit, and SDK.
-The following versions of CUDA are known to work::
+CUDA is needed if you want GPU acceleration for FDK and B-Spline registration.
+Installation of the driver and toolkit components is required.  The SDK is
+optional.
 
-  CUDA 2.1              Not tested
-  CUDA 2.2              Works
-  CUDA 2.3              Works
-  CUDA 3.0              Works
+Please note that CUDA is constantly evolving in order to provide new
+high performance computing features. Because Plastimatch tends to utilize new
+features as they become available, your CUDA drivers and toolkit need to be
+relatively current.  The following table will help you with selecting the
+correct CUDA version to install/upgrade::
+
+  CUDA 2.1              Deprecated
+  CUDA 2.2              Deprecated
+  CUDA 2.3              Deprecated
+  CUDA 3.0              Recommended
   CUDA 3.1              Not tested
 
 Download CUDA from here:
 
-  http://www.nvidia.com/object/cuda_get.html
+  http://developer.nvidia.com/object/cuda_archive.html
 
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
@@ -269,6 +275,10 @@ Then build as follows:
 
    make -j 4
 
+
+.. JAS 09.03.2010
+.. The below has been commented out because it is now automatically
+.. performed by my PLM_nvcc-check.cmake script.
 
 .. Special Instructions For Linux Systems Using gcc-4.4
    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
