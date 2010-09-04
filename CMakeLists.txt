@@ -229,6 +229,13 @@ ADD_SUBDIRECTORY (libs/specfun)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 
 ##-----------------------------------------------------------------------------
+##  Only use local bstrlib
+##-----------------------------------------------------------------------------
+ADD_SUBDIRECTORY (libs/bstrlib-05122010)
+SET (BSTRLIB_INCLUDE_DIR libs/bstrlib-05122010)
+LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+
+##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
 IF (MINGW)
@@ -435,6 +442,14 @@ ENDIF (UNIX)
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_DEPENDENCIES "")
 
+# Required
+SET (GPUIT_LIBRARY_DEPENDENCIES
+  ${GPUIT_LIBRARY_DEPENDENCIES}
+  ${LIBLBFGS_LIBRARIES}
+  bstrlib
+  )
+
+# Optional
 IF (BROOK_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -444,6 +459,7 @@ IF (BROOK_FOUND)
     )
 ENDIF (BROOK_FOUND)
 
+# Optional
 IF(CUDA_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -451,12 +467,14 @@ IF(CUDA_FOUND)
     )
 ENDIF(CUDA_FOUND)
 
+# Optional
 IF (FFTW_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES 
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${FFTW_LIBRARIES})
 ENDIF (FFTW_FOUND)
 
+# Optional
 IF (CMAKE_Fortran_COMPILER_WORKS)
   # It would seem that mixed-language programs need to set compiler and 
   # linker flags manually
@@ -474,6 +492,7 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
+# Optional
 IF (CMAKE_Fortran_COMPILER_WORKS)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -481,6 +500,7 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
     )
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
+# Optional
 IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -494,13 +514,7 @@ IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
   ENDIF(UNIX)
 ENDIF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
-#IF (LIBLBFGS_FOUND)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${LIBLBFGS_LIBRARIES}
-    )
-#ENDIF (LIBLBFGS_FOUND)
-
+# Optional
 IF (NLOPT_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -508,6 +522,7 @@ IF (NLOPT_FOUND)
     )
 ENDIF (NLOPT_FOUND)
 
+# Optional
 IF (OPENCL_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -515,6 +530,7 @@ IF (OPENCL_FOUND)
     )
 ENDIF (OPENCL_FOUND)
 
+# Optional
 IF (OPENMP_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -522,6 +538,7 @@ IF (OPENMP_FOUND)
     )
 ENDIF (OPENMP_FOUND)
 
+# Required
 SET (GPUIT_LIBRARY_DEPENDENCIES
   ${GPUIT_LIBRARY_DEPENDENCIES}
   ${MATH_LIB}
@@ -573,7 +590,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_nlopt.c bspline_optimize_nlopt.h
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
-  bstrlib.c bstrlib.h
+  #bstrlib.c bstrlib.h
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
@@ -1024,6 +1041,8 @@ ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 ##-----------------------------------------------------------------------------
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+INCLUDE_DIRECTORIES (AFTER ${BSTRLIB_INCLUDE_DIR})
+INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 
 IF(BROOK_FOUND)
@@ -1039,9 +1058,10 @@ IF(DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF(DCMTK_FOUND)
 
-#IF (LIBLBFGS_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
-#ENDIF (LIBLBFGS_FOUND)
+IF(FFTW_FOUND)
+  INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
+  LINK_DIRECTORIES (${FFTWDIR})
+ENDIF(FFTW_FOUND)
 
 IF (OPENCL_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
@@ -1051,15 +1071,6 @@ IF(PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
   INCLUDE_DIRECTORIES (AFTER ${PANTHEIOS_INCLUDE_DIR})
 ENDIF(PANTHEIOS_FOUND)
-
-IF(wxWidgets_FOUND)
-  INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
-ENDIF(wxWidgets_FOUND)
-
-IF(FFTW_FOUND)
-  INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
-  LINK_DIRECTORIES (${FFTWDIR})
-ENDIF(FFTW_FOUND)
 
 IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
@@ -1071,6 +1082,10 @@ IF (Slicer3_DIR)
     ${Slicer3_Base_INCLUDE_DIRS}
     )
 ENDIF (Slicer3_DIR)
+
+IF(wxWidgets_FOUND)
+  INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
+ENDIF(wxWidgets_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
