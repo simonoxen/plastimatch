@@ -9,7 +9,9 @@
 
 class Demographics {
 public:
+    plastimatch1_EXPORT
     Demographics ();
+    plastimatch1_EXPORT
     ~Demographics ();
 
 public:
