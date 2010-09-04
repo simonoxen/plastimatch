@@ -17,7 +17,7 @@
 #include "xio_dir.h"
 
 static int
-is_xio_directory (char* path)
+is_xio_directory (const char* path)
 {
     Xio_dir *xd = xio_dir_create (path);
     if (xio_dir_num_patients (xd) > 0) {
@@ -31,7 +31,7 @@ is_xio_directory (char* path)
 }
 
 Plm_file_format
-plm_file_format_deduce (char* path)
+plm_file_format_deduce (const char* path)
 {
     std::string ext;
 

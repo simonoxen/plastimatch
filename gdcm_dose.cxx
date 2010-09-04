@@ -44,7 +44,7 @@ void make_directory_recursive (const char *dirname);
 
 /* This function probes whether or not the file is a dicom dose format */
 bool
-gdcm_dose_probe (char *dose_fn)
+gdcm_dose_probe (const char *dose_fn)
 {
     gdcm::File *gdcm_file = new gdcm::File;
     std::string tmp;

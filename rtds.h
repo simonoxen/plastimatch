@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "cxt_io.h"
+#include "demographics.h"
 #include "plm_image.h"
 #include "xio_ct.h"
 
@@ -22,6 +23,8 @@ public:
 					    template for XiO dose saving. */
     Xio_ct_transform *m_xio_transform;    /* Transformation from XiO to DICOM
 					    coordinates */
+    Demographics demographics;
+
 public:
     Rtds () {
 	int i;

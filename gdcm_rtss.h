@@ -13,7 +13,7 @@ extern "C" {
 
 plastimatch1_EXPORT
 bool
-gdcm_rtss_probe (char *rtss_fn);
+gdcm_rtss_probe (const char *rtss_fn);
 plastimatch1_EXPORT
 void
 gdcm_rtss_load (

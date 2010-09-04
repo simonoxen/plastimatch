@@ -5,7 +5,7 @@
 #define _demographics_h_
 
 #include "plm_config.h"
-#include "bstrlib.h"
+#include "bstrwrap.h"
 
 class Demographics {
 public:
@@ -13,9 +13,9 @@ public:
     ~Demographics ();
 
 public:
-    bstring m_patient_name;
-    bstring m_patient_id;
-    bstring m_patient_sex;
+    CBString m_patient_name;
+    CBString m_patient_id;
+    CBString m_patient_sex;
 };
 
 #if defined __cplusplus

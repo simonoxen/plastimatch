@@ -13,7 +13,7 @@ extern "C" {
 
 plastimatch1_EXPORT
 bool
-gdcm_dose_probe (char *dose_fn);
+gdcm_dose_probe (const char *dose_fn);
 plastimatch1_EXPORT
 Plm_image*
 gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir);

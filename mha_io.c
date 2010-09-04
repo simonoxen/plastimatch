@@ -99,7 +99,7 @@ write_mha_internal (
 
 static Volume* 
 read_mha_internal (
-    char* filename,          /* Input: filename to read from */
+    const char* filename,    /* Input: filename to read from */
     int mh5                  /* Input: force 512 byte header */
 )
 {
@@ -198,7 +198,7 @@ read_mha_internal (
 
 /* Return 1 if filename ends in ".mh5" */
 static int 
-is_mh5 (char* filename)
+is_mh5 (const char* filename)
 {
     int len = strlen (filename);
     if (len < 4) return 0;
@@ -222,7 +222,7 @@ write_mha (char* filename, Volume* vol)
 }
 
 Volume* 
-read_mha (char* filename)
+read_mha (const char* filename)
 {
     if (is_mh5 (filename)) {
 	return read_mha_internal (filename, 1);

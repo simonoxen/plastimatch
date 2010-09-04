@@ -36,7 +36,7 @@ struct xio_dir {
 
 plastimatch1_EXPORT
 Xio_dir*
-xio_dir_create (char *input_dir);
+xio_dir_create (const char *input_dir);
 
 plastimatch1_EXPORT
 void

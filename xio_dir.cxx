@@ -222,7 +222,7 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
    Public functions
    ----------------------------------------------------------------------- */
 Xio_dir*
-xio_dir_create (char *input_dir)
+xio_dir_create (const char *input_dir)
 {
     Xio_dir *xd;
     xd = (Xio_dir*) malloc (sizeof (Xio_dir));

@@ -279,7 +279,7 @@ mat_load_by_img_filename (Proj_image* proj, char* img_filename)
 }
 
 static Proj_image* 
-proj_image_load_pfm (char* img_filename, char* mat_filename)
+proj_image_load_pfm (const char* img_filename, char* mat_filename)
 {
     Proj_image* proj;
 
@@ -300,7 +300,7 @@ proj_image_load_pfm (char* img_filename, char* mat_filename)
 }
 
 static Proj_image* 
-proj_image_load_raw (char* img_filename, char* mat_filename)
+proj_image_load_raw (const char* img_filename, char* mat_filename)
 {
     Proj_image* proj;
 
@@ -321,7 +321,7 @@ proj_image_load_raw (char* img_filename, char* mat_filename)
 }
 
 static Proj_image* 
-proj_image_load_hnd (char* img_filename)
+proj_image_load_hnd (const char* img_filename)
 {
     Proj_image* proj;
 
@@ -420,7 +420,7 @@ proj_image_stats (Proj_image *proj)
 
 Proj_image* 
 proj_image_load (
-    char* img_filename,
+    const char* img_filename,
     char* mat_filename
 )
 {

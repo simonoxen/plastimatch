@@ -34,7 +34,7 @@ char* file_util_dirname (const char *filename);
 
 /* This function probes whether or not the file is a dicom rtss format */
 bool
-gdcm_rtss_probe (char *rtss_fn)
+gdcm_rtss_probe (const char *rtss_fn)
 {
     gdcm::File *rtss_file = new gdcm::File;
     std::string tmp;

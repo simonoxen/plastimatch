@@ -10,14 +10,14 @@
 
 Demographics::Demographics ()
 {
-    this->m_patient_name = 0;
-    this->m_patient_id = 0;
-    this->m_patient_sex = 0;
+    //this->m_patient_name = 0;
+    //this->m_patient_id = 0;
+    //this->m_patient_sex = 0;
 }
 
 Demographics::~Demographics ()
 {
-    bdestroy (this->m_patient_name);
-    bdestroy (this->m_patient_id);
-    bdestroy (this->m_patient_sex);
+    //bdestroy (this->m_patient_name);
+    //bdestroy (this->m_patient_id);
+    //bdestroy (this->m_patient_sex);
 }

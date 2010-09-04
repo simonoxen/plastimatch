@@ -7,17 +7,14 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "itk_image.h"
+#include "plm_path.h"
 
 class Stats_parms {
 public:
-    char mha_in_fn[_MAX_PATH];
-    char mask_fn[_MAX_PATH];
-public:
-    Stats_parms () {
-	memset (this, 0, sizeof(Stats_parms));
-    }
+    CBString img_in_fn;
+    CBString mask_fn;
 };
 
 void do_command_stats (int argc, char *argv[]);

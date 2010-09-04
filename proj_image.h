@@ -43,7 +43,7 @@ proj_image_load_and_filter (
 gpuit_EXPORT 
 Proj_image* 
 proj_image_load (
-    char* img_filename,
+    const char* img_filename,
     char* mat_filename
 );
 
