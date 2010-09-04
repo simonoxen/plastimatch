@@ -80,7 +80,7 @@ hnd_set_proj_matrix (
    Public functions
    ----------------------------------------------------------------------- */
 void
-hnd_load (Proj_image *proj, char *fn)
+hnd_load (Proj_image *proj, const char *fn)
 {
     Hnd_header hnd;
     FILE *fp;

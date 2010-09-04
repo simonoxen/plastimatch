@@ -7,21 +7,24 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "itk_image.h"
 
 class Mask_Parms {
 public:
-    char input_fn[_MAX_PATH];
-    char output_fn[_MAX_PATH];
-    char mask_fn[_MAX_PATH];
-    int negate_mask;
+    CBString input_fn;
+    CBString output_fn;
+    CBString mask_fn;
+    bool negate_mask;
     float mask_value;
-    int output_dicom;
+    bool output_dicom;
     Plm_image_type output_type;
 public:
     Mask_Parms () {
-	memset (this, 0, sizeof(Mask_Parms));
+	negate_mask = false;
+	mask_value = 0.;
+	output_dicom = false;
+	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };
 

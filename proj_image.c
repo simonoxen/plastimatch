@@ -19,7 +19,7 @@
    Private functions
    ----------------------------------------------------------------------- */
 static void
-raw_load (Proj_image *proj, char* img_filename)
+raw_load (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     size_t rc;
@@ -92,7 +92,7 @@ raw_save (Proj_image *proj, char* img_filename)
 }
 
 static void
-pfm_load (Proj_image *proj, char* img_filename)
+pfm_load (Proj_image *proj, const char* img_filename)
 {
     FILE* fp;
     char buf[1024];
@@ -264,7 +264,7 @@ mat_load (Proj_image *proj, char* mat_filename)
 }
 
 static void
-mat_load_by_img_filename (Proj_image* proj, char* img_filename)
+mat_load_by_img_filename (Proj_image* proj, const char* img_filename)
 {
     /* No mat file, so try to find automatically */
     int img_filename_len = strlen (img_filename);

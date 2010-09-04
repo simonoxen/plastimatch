@@ -6,32 +6,29 @@
 
 #include "plm_config.h"
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "plm_image_type.h"
 
 class Resample_parms {
 public:
-    char mha_in_fn[_MAX_PATH];
-    char mha_out_fn[_MAX_PATH];
-    char input_fixed[_MAX_PATH];
+    CBString img_in_fn;
+    CBString img_out_fn;
+    CBString fixed_fn;
     Plm_image_type output_type;
     float origin[3];
-    int have_origin;
+    bool have_origin;
     float spacing[3];
-    int have_spacing;
+    bool have_spacing;
     int size[3];
-    int have_size;
+    bool have_size;
     int subsample[3];
-    int have_subsample;
+    bool have_subsample;
     float default_val;
-    int have_default_val;
+    bool have_default_val;
     int adjust;
-    int interp_lin;
+    bool interp_lin;
 public:
     Resample_parms () {
-	*mha_in_fn = 0;
-	*mha_out_fn = 0;
-	*input_fixed = 0;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 	for (int i = 0; i < 3; i++) {
 	    origin[i] = 0.0;
@@ -39,14 +36,14 @@ public:
 	    size[i] = 0;
 	    subsample[i] = 0;
 	}
-	have_origin = 0;
-	have_spacing = 0;
-	have_size = 0;
-	have_subsample = 0;
+	have_origin = false;
+	have_spacing = false;
+	have_size = false;
+	have_subsample = false;
 	default_val = 0.0;
-	have_default_val = 0;
+	have_default_val = false;
 	adjust = 0;
-	interp_lin=1;
+	interp_lin=true;
     }
 };
 

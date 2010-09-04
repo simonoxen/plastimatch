@@ -14,7 +14,7 @@ crop_main (Crop_Parms* parms)
 {
     Plm_image plm_image;
 
-    plm_image.load_native (parms->img_in_fn);
+    plm_image.load_native ((const char*) parms->img_in_fn);
 
     switch (plm_image.m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
@@ -38,7 +38,9 @@ crop_main (Crop_Parms* parms)
 	break;
     }
 
-    plm_image.convert_and_save (parms->img_out_fn, plm_image.m_type);
+    plm_image.convert_and_save (
+	(const char*) parms->img_out_fn, 
+	plm_image.m_type);
 }
 
 static void
@@ -67,10 +69,10 @@ crop_parse_args (Crop_Parms* parms, int argc, char* argv[])
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
-	    strncpy (parms->img_in_fn, optarg, _MAX_PATH);
+	    parms->img_in_fn = optarg;
 	    break;
 	case 3:
-	    strncpy (parms->img_out_fn, optarg, _MAX_PATH);
+	    parms->img_out_fn = optarg;
 	    break;
 	case 4:
 	    if (sscanf (optarg, 
@@ -90,7 +92,7 @@ crop_parse_args (Crop_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->img_in_fn[0] || !parms->img_out_fn[0]) {
+    if (parms->img_in_fn.length() == 0 || parms->img_out_fn.length() == 0) {
 	printf ("Error: must specify --input and --output\n");
 	crop_print_usage ();
     }

@@ -15,15 +15,15 @@ diff_main (Diff_parms* parms)
 {
     Plm_image *img1, *img2;
 
-    img1 = plm_image_load_native (parms->img_in_1_fn);
+    img1 = plm_image_load_native ((const char*) parms->img_in_1_fn);
     if (!img1) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-		       parms->img_in_1_fn);
+	    (const char*) parms->img_in_1_fn);
     }
-    img2 = plm_image_load_native (parms->img_in_2_fn);
+    img2 = plm_image_load_native ((const char*) parms->img_in_2_fn);
     if (!img2) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-		       parms->img_in_2_fn);
+	    (const char*) parms->img_in_2_fn);
     }
 
     if (!Plm_image::compare_headers (img1, img2)) {
@@ -48,7 +48,7 @@ diff_main (Diff_parms* parms)
     }
     FloatImageType::Pointer diff = sub_filter->GetOutput ();
 
-    itk_image_save_float (diff, parms->img_out_fn);
+    itk_image_save_float (diff, (const char*) parms->img_out_fn);
 }
 
 static void
@@ -66,9 +66,9 @@ diff_parse_args (Diff_parms* parms, int argc, char* argv[])
 	diff_print_usage ();
     }
     
-    strncpy (parms->img_in_1_fn, argv[2], _MAX_PATH);
-    strncpy (parms->img_in_2_fn, argv[3], _MAX_PATH);
-    strncpy (parms->img_out_fn, argv[4], _MAX_PATH);
+    parms->img_in_1_fn = argv[2];
+    parms->img_in_2_fn = argv[3];
+    parms->img_out_fn = argv[4];
 }
 
 void

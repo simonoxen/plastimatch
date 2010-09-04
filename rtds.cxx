@@ -163,7 +163,7 @@ Rtds::load_xio (
 }
 
 void
-Rtds::load_ss_img (char *ss_img, char *ss_list)
+Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 {
     /* Load ss_img */
     if (this->m_ss_img) {
@@ -183,7 +183,7 @@ Rtds::load_ss_img (char *ss_img, char *ss_list)
 }
 
 void
-Rtds::load_dose_img (char *dose_img)
+Rtds::load_dose_img (const char *dose_img)
 {
     if (this->m_dose) {
 	delete this->m_dose;

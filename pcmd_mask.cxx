@@ -13,10 +13,10 @@ static void
 mask_main (Mask_Parms* parms)
 {
     Plm_image *img;
-    img = plm_image_load_native (parms->input_fn);
+    img = plm_image_load_native ((const char*) parms->input_fn);
     if (!img) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-		       parms->input_fn);
+	    (const char*) parms->input_fn);
     }
 
     UCharImageType::Pointer mask = itk_image_load_uchar (parms->mask_fn, 0);
@@ -48,12 +48,12 @@ mask_main (Mask_Parms* parms)
     }
 
     if (parms->output_dicom) {
-	img->save_short_dicom (parms->output_fn);
+	img->save_short_dicom ((const char*) parms->output_fn);
     } else {
 	if (parms->output_type) {
 	    img->convert (parms->output_type);
 	}
-	img->save_image (parms->output_fn);
+	img->save_image ((const char*) parms->output_fn);
     }
 
     delete img;
@@ -98,16 +98,16 @@ mask_parse_args (Mask_Parms* parms, int argc, char* argv[])
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
-	    strncpy (parms->input_fn, optarg, _MAX_PATH);
+	    parms->input_fn = optarg;
 	    break;
 	case 3:
-	    strncpy (parms->output_fn, optarg, _MAX_PATH);
+	    parms->output_fn = optarg;
 	    break;
 	case 4:
-	    strncpy (parms->mask_fn, optarg, _MAX_PATH);
+	    parms->mask_fn = optarg;
 	    break;
 	case 5:
-	    parms->negate_mask = 1;
+	    parms->negate_mask = true;
 	    break;
 	case 6:
 	    if (sscanf (optarg, "%f", &parms->mask_value) != 1) {
@@ -117,9 +117,10 @@ mask_parse_args (Mask_Parms* parms, int argc, char* argv[])
 	    break;
 	case 7:
 	    if (!strcmp (optarg, "dicom")) {
-		parms->output_dicom = 1;
+		parms->output_dicom = true;
 	    } else {
-		fprintf (stderr, "Error.  --output-format option only supports dicom.\n");
+		fprintf (stderr, 
+		    "Error.  --output-format option only supports dicom.\n");
 		mask_print_usage ();
 	    }
 	    break;
@@ -133,7 +134,10 @@ mask_parse_args (Mask_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->input_fn[0] || !parms->output_fn[0] || !parms->mask_fn[0]) {
+    if (parms->input_fn.length() == 0 
+	|| parms->output_fn.length() == 0 
+	|| parms->mask_fn.length() == 0)
+    {
 	printf ("Error: must specify --input, --output, and --mask\n");
 	mask_print_usage ();
     }

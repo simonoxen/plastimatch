@@ -5,7 +5,7 @@
 #define _pcmd_dvh_h_
 
 #include "plm_config.h"
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "resample_mha.h"
 
 enum Dvh_units {
@@ -15,20 +15,16 @@ enum Dvh_units {
 
 class Dvh_parms {
 public:
-    char input_ss_img[_MAX_PATH];
-    char input_ss_list[_MAX_PATH];
-    char input_dose[_MAX_PATH];
-    char output_csv[_MAX_PATH];
+    CBString input_ss_img_fn;
+    CBString input_ss_list_fn;
+    CBString input_dose_fn;
+    CBString output_csv_fn;
     enum Dvh_units input_units;
     int cumulative;
-	int num_bins;
-	float bin_width;
+    int num_bins;
+    float bin_width;
 public:
     Dvh_parms () {
-	input_ss_img[0] = 0;
-	input_ss_list[0] = 0;
-	input_dose[0] = 0;
-	output_csv[0] = 0;
 	input_units = DVH_UNITS_GY;
 	cumulative = 0;
 	num_bins=256;

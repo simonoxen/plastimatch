@@ -7,18 +7,14 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "itk_image.h"
 
 class Diff_parms {
 public:
-    char img_in_1_fn[_MAX_PATH];
-    char img_in_2_fn[_MAX_PATH];
-    char img_out_fn[_MAX_PATH];
-public:
-    Diff_parms () {
-	memset (this, 0, sizeof(Diff_parms));
-    }
+    CBString img_in_1_fn;
+    CBString img_in_2_fn;
+    CBString img_out_fn;
 };
 
 void do_command_diff (int argc, char *argv[]);

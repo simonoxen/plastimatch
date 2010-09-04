@@ -15,7 +15,7 @@ header_main (Header_parms* parms)
     Plm_image pli;
     Plm_image_header pih;
 
-    pli.load_native (parms->mha_in_fn);
+    pli.load_native ((const char*) parms->img_in_fn);
     pih.set_from_plm_image (&pli);
     pih.print ();
 }
@@ -40,16 +40,16 @@ header_parse_args (Header_parms* parms, int argc, char* argv[])
     while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
-	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    parms->img_in_fn = optarg;
 	    break;
 	default:
 	    break;
 	}
     }
-    if (!parms->mha_in_fn[0]) {
+    if (parms->img_in_fn.length() == 0) {
 	optind ++;   /* Skip plastimatch command argument */
 	if (optind < argc) {
-	    strncpy (parms->mha_in_fn, argv[optind], _MAX_PATH);
+	    parms->img_in_fn = argv[optind];
 	} else {
 	    printf ("Error: must specify input file\n");
 	    header_print_usage ();

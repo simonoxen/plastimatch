@@ -22,7 +22,8 @@ slice_main (Slice_parms* parms)
     int d;
 
     /* Load image */
-    pli = plm_image_load (parms->img_in_fn, PLM_IMG_TYPE_ITK_FLOAT);
+    pli = plm_image_load ((const char*) parms->img_in_fn, 
+	PLM_IMG_TYPE_ITK_FLOAT);
 
     /* Compute dimensions of thumbnail */
     pih.set_from_plm_image (pli);
@@ -49,7 +50,7 @@ slice_main (Slice_parms* parms)
 	pli->m_itk_float, origin, spacing, dim, -1000, 1);
 
     /* Save the output file */
-    pli->save_image (parms->img_out_fn);
+    pli->save_image ((const char*) parms->img_out_fn);
 
     delete (pli);
 }
@@ -88,7 +89,7 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
     while ((ch = getopt_long (argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 1:
-	    strncpy (parms->img_in_fn, optarg, _MAX_PATH);
+	    parms->img_in_fn = optarg;
 	    break;
 	case 2:
 	    rc = sscanf (optarg, "%d", &parms->thumbnail_dim);
@@ -105,7 +106,7 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 4:
-	    strncpy (parms->img_out_fn, optarg, _MAX_PATH);
+	    parms->img_out_fn = optarg;
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%f", &parms->slice_loc);
@@ -119,10 +120,10 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->img_in_fn[0]) {
+    if (parms->img_in_fn.length() == 0) {
 	optind ++;   /* Skip plastimatch command argument */
 	if (optind < argc) {
-	    strncpy (parms->img_in_fn, argv[optind], _MAX_PATH);
+	    parms->img_in_fn = argv[optind];
 	} else {
 	    printf ("Error: must specify input file\n");
 	    slice_print_usage ();

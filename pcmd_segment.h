@@ -7,18 +7,17 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 
 class Segment_parms {
 public:
-    char img_in_fn[_MAX_PATH];
-    char img_out_fn[_MAX_PATH];
+    CBString img_in_fn;
+    CBString img_out_fn;
     int thumbnail_dim;
     float thumbnail_spacing;
 public:
     Segment_parms () {
-	img_in_fn[0] = 0;
-	strcpy (img_out_fn, "thumb.mhd");
+	img_out_fn = "thumb.mhd";
 	thumbnail_dim = 16;
 	thumbnail_spacing = 30.0;
     }

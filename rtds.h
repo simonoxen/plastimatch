@@ -76,8 +76,8 @@ public:
 	Plm_image_patient_position patient_pos
     );
     plastimatch1_EXPORT
-    void load_ss_img (char *ss_img, char *ss_list);
-    void load_dose_img (char *dose_img);
+    void load_ss_img (const char *ss_img, const char *ss_list);
+    void load_dose_img (const char *dose_img);
     void load_dose_xio (char *dose_xio);
     void load_dose_astroid (char *dose_astroid);
     void load_dose_mc (char *dose_mc);

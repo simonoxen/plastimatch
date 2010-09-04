@@ -12,10 +12,10 @@ static void
 compose_main (Compose_parms* parms)
 {
     Plm_image *img;
-    img = plm_image_load_native (parms->input_1);
+    img = plm_image_load_native (parms->xf_in_1_fn);
     if (!img) {
 	print_and_exit ("Error: could not open '%s' for read\n",
-		       parms->input_1);
+	    (const char*) parms->xf_in_1_fn);
     }
 
     delete img;
@@ -37,29 +37,13 @@ print_usage (void)
 static void
 compose_parse_args (Compose_parms* parms, int argc, char* argv[])
 {
-    int ch;
-    static struct option longopts[] = {
-	{ NULL,             0,                      NULL,           0 }
-    };
-
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	default:
-	    break;
-	}
-    }
-
-    if (optind < argc) {
-	strncpy (parms->input_1, argv[optind++], _MAX_PATH);
-    }
-    if (optind < argc) {
-	strncpy (parms->input_2, argv[optind++], _MAX_PATH);
-    }
-    if (optind < argc) {
-	strncpy (parms->output_fn, argv[optind++], _MAX_PATH);
-    } else {
+    if (argc != 5) {
 	print_usage ();
     }
+    
+    parms->xf_in_1_fn = argv[2];
+    parms->xf_in_2_fn = argv[3];
+    parms->xf_out_fn = argv[4];
 }
 
 void

@@ -14,6 +14,10 @@ Int32ImageType::Pointer load_dicom_int32 (const char *dicom_dir);
 UInt32ImageType::Pointer load_dicom_uint32 (const char *dicom_dir);
 FloatImageType::Pointer load_dicom_float (const char *dicom_dir);
 
-void itk_dicom_save (ShortImageType::Pointer short_img, char* dir_name, Plm_image_patient_position);
+void
+itk_dicom_save (
+    ShortImageType::Pointer short_img, 
+    const char* dir_name, 
+    Plm_image_patient_position patient_pos);
 
 #endif

@@ -100,7 +100,7 @@ public:
     void load_native_dicom (const char* fname);
     /* Saving */
     plastimatch1_EXPORT
-    void save_short_dicom (char* fname);
+    void save_short_dicom (const char* fname);
     plastimatch1_EXPORT
     void save_image (const char* fname);
     plastimatch1_EXPORT
@@ -139,7 +139,7 @@ public:
    Public functions
    ----------------------------------------------------------------------- */
 plastimatch1_EXPORT
-Plm_image* plm_image_load (char* fname, Plm_image_type type);
+Plm_image* plm_image_load (const char* fname, Plm_image_type type);
 plastimatch1_EXPORT
 Plm_image* plm_image_load_native (const char* fname);
 plastimatch1_EXPORT

@@ -7,15 +7,11 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 
 class Header_parms {
 public:
-    char mha_in_fn[_MAX_PATH];
-public:
-    Header_parms () {
-	memset (this, 0, sizeof(Header_parms));
-    }
+    CBString img_in_fn;
 };
 
 void

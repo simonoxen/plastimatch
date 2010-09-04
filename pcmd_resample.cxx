@@ -31,28 +31,6 @@ print_usage (void)
 }
 
 void
-shift_pet_values (FloatImageType::Pointer image)
-{
-    printf ("Shifting values for pet...\n");
-    typedef itk::ImageRegionIterator< FloatImageType > IteratorType;
-    ShortImageType::RegionType region = image->GetLargestPossibleRegion();
-    IteratorType it (image, region);
-    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	float f = it.Get();
-	f = f - 100;
-	if (f < 0) {
-	    f = f * 10;
-	} else if (f > 0x4000) {
-	    f = 0x4000 + (f - 0x4000) / 2;
-	}
-	if (f > 0x07FFF) {
-	    f = 0x07FFF;
-	}
-	it.Set(f);
-    }
-}
-
-void
 fix_invalid_pixels_with_shift (ShortImageType::Pointer image)
 {
     typedef itk::ImageRegionIterator< ShortImageType > IteratorType;
@@ -103,7 +81,7 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 1:
-	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
+	    parms->img_out_fn = optarg;
 	    break;
 	case 2:
 	    parms->output_type = plm_image_type_parse (optarg);
@@ -112,10 +90,10 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 3:
-	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    parms->img_in_fn = optarg;
 	    break;
 	case 4:
-	    strncpy (parms->input_fixed, optarg, _MAX_PATH);
+	    parms->fixed_fn = optarg;
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%d %d %d", &(parms->subsample[0]), 
@@ -124,7 +102,7 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 		printf ("Subsampling option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_subsample = 1;
+	    parms->have_subsample = true;
 	    break;
 	case 6:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->origin[0]), 
@@ -133,7 +111,7 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 		printf ("Origin option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_origin = 1;
+	    parms->have_origin = true;
 	    break;
 	case 7:
 	    rc = sscanf (optarg, "%g %g %g", &(parms->spacing[0]), 
@@ -142,7 +120,7 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 		printf ("Spacing option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_spacing = 1;
+	    parms->have_spacing = true;
 	    break;
 	case 8:
 	    rc = sscanf (optarg, "%d %d %d", &(parms->size[0]), 
@@ -151,13 +129,13 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 		printf ("Size option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_size = 1;
+	    parms->have_size = true;
 	    break;
 	case 9:
 	    if (!strcmp (optarg, "nn")) {
-		parms->interp_lin = 0;
+		parms->interp_lin = false;
 	    } else if (!strcmp (optarg, "linear")) {
-		parms->interp_lin = 1;
+		parms->interp_lin = true;
 	    } else {
 		fprintf (stderr, 
 			 "Interpolation must be either nn or linear.\n");
@@ -170,13 +148,13 @@ parse_args (Resample_parms* parms, int argc, char* argv[])
 		printf ("Default value option must have one arguments\n");
 		exit (1);
 	    }
-	    parms->have_default_val = 1;
+	    parms->have_default_val = true;
 	    break;
 	default:
 	    break;
 	}
     }
-    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
+    if (parms->img_in_fn.length() == 0 || parms->img_out_fn.length() == 0) {
 	printf ("Error: must specify --input and --output\n");
 	print_usage();
     }
@@ -190,11 +168,11 @@ do_resample_itk (Resample_parms* parms, T img)
 	return subsample_image (img, parms->subsample[0], parms->subsample[1], 
 			       parms->subsample[2], parms->default_val);
     }
-    else if (parms->input_fixed[0]) {
+    else if (parms->fixed_fn.length() != 0) {
 	/* use the spacing of user-supplied fixed image */
 	Plm_image_header pih;
 	FloatImageType::Pointer fixed = itk_image_load_float (
-	    parms->input_fixed, 0);
+	    (const char*) parms->fixed_fn, 0);
 	pih.set_from_itk_image (fixed);
 	return resample_image (img, &pih, parms->default_val, 
 	    parms->interp_lin);
@@ -214,7 +192,7 @@ void
 resample_main_itk_vf (Resample_parms* parms)
 {
     DeformationFieldType::Pointer input_field 
-	    = itk_image_load_float_field (parms->mha_in_fn);
+	= itk_image_load_float_field ((const char*) parms->img_in_fn);
 
     if (parms->have_subsample) {
 	print_and_exit ("Error. Subsample not supported for vector field.\n");
@@ -225,7 +203,7 @@ resample_main_itk_vf (Resample_parms* parms)
 	input_field = vector_resample_image (input_field, parms->origin, 
 					     parms->spacing, parms->size);
     }
-    itk_image_save (input_field, parms->mha_out_fn);
+    itk_image_save (input_field, (const char*) parms->img_out_fn);
 }
 
 void
@@ -235,7 +213,7 @@ resample_main (Resample_parms* parms)
 
     Plm_file_format file_format;
 
-    file_format = plm_file_format_deduce (parms->mha_in_fn);
+    file_format = plm_file_format_deduce ((const char*) parms->img_in_fn);
 
     /* Vector fields are templated differently, so do them separately */
     if (file_format == PLM_FILE_FMT_VF) {
@@ -243,7 +221,7 @@ resample_main (Resample_parms* parms)
 	return;
     }
 
-    plm_image.load_native (parms->mha_in_fn);
+    plm_image.load_native ((const char*) parms->img_in_fn);
 
     if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
 	parms->output_type = plm_image.m_type;
@@ -275,7 +253,9 @@ resample_main (Resample_parms* parms)
 	break;
     }
 
-    plm_image.convert_and_save (parms->mha_out_fn, parms->output_type);
+    plm_image.convert_and_save (
+	(const char*) parms->img_out_fn, 
+	parms->output_type);
 }
 
 void

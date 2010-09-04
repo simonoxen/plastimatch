@@ -158,7 +158,7 @@ Plm_image::load_native (const char* fname)
 }
 
 Plm_image*
-plm_image_load (char* fname, Plm_image_type type)
+plm_image_load (const char* fname, Plm_image_type type)
 {
     Plm_image *ri = new Plm_image;
     if (!ri) return 0;
@@ -187,7 +187,7 @@ plm_image_load (char* fname, Plm_image_type type)
    Saving
    ----------------------------------------------------------------------- */
 void
-Plm_image::save_short_dicom (char* fname)
+Plm_image::save_short_dicom (const char* fname)
 {
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:

@@ -7,13 +7,13 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "plm_path.h"
+#include "bstrwrap.h"
 #include "itk_image.h"
 
 class Adjust_Parms {
 public:
-    char mha_in_fn[_MAX_PATH];
-    char mha_out_fn[_MAX_PATH];
+    CBString img_in_fn;
+    CBString img_out_fn;
     float truncate_above;
     bool have_truncate_above;
     float truncate_below;
@@ -29,11 +29,17 @@ public:
     float norm_dose_per_fx;
     bool have_ab_scale;
 
-    int output_dicom;
+    bool output_dicom;
     Plm_image_type output_type;
 public:
     Adjust_Parms () {
-	memset (this, 0, sizeof(Adjust_Parms));
+	have_truncate_above = false;
+	have_truncate_below = false;
+	have_stretch = false;
+	have_scale = false;
+	have_ab_scale = false;
+	output_dicom = false;
+	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };
 

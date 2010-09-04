@@ -7,21 +7,24 @@
 #include "plm_config.h"
 #include <string.h>
 #include <stdlib.h>
-#include "itk_image.h"
-#include "plm_path.h"
+#include "bstrwrap.h"
+#include "plm_image_type.h"
 
 class Compose_parms {
 public:
-    char input_1[_MAX_PATH];
-    char input_2[_MAX_PATH];
-    char output_fn[_MAX_PATH];
-    int negate_mask;
+    CBString xf_in_1_fn;
+    CBString xf_in_2_fn;
+    CBString xf_out_fn;
+    bool negate_mask;
     float mask_value;
-    int output_dicom;
+    bool output_dicom;
     Plm_image_type output_type;
 public:
     Compose_parms () {
-	memset (this, 0, sizeof(Compose_parms));
+	negate_mask = false;
+	mask_value = 0.;
+	output_dicom = false;
+	output_type = PLM_IMG_TYPE_UNDEFINED;
     }
 };
 

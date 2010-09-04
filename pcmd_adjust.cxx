@@ -14,8 +14,9 @@ adjust_main (Adjust_Parms* parms)
 {
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
 
-    Plm_image *plm_image = plm_image_load (parms->mha_in_fn, 
-					  PLM_IMG_TYPE_ITK_FLOAT);
+    Plm_image *plm_image = plm_image_load (
+	(const char*) parms->img_in_fn, 
+	PLM_IMG_TYPE_ITK_FLOAT);
     FloatImageType::Pointer img = plm_image->m_itk_float;
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
@@ -81,12 +82,13 @@ adjust_main (Adjust_Parms* parms)
     }
 
     if (parms->output_dicom) {
-	itk_image_save_short_dicom (img, parms->mha_out_fn, PATIENT_POSITION_UNKNOWN);
+	itk_image_save_short_dicom (
+	    img, (const char*) parms->img_out_fn, PATIENT_POSITION_UNKNOWN);
     } else {
 	if (parms->output_type) {
 	    plm_image->convert (parms->output_type);
 	}
-	plm_image->save_image (parms->mha_out_fn);
+	plm_image->save_image ((const char*) parms->img_out_fn);
     }
 
     delete plm_image;
@@ -136,10 +138,10 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	int rc;
 	switch (ch) {
 	case 2:
-	    strncpy (parms->mha_in_fn, optarg, _MAX_PATH);
+	    parms->img_in_fn = optarg;
 	    break;
 	case 3:
-	    strncpy (parms->mha_out_fn, optarg, _MAX_PATH);
+	    parms->img_out_fn = optarg;
 	    break;
 	case 4:
 	    if (sscanf (optarg, "%f", &parms->truncate_above) != 1) {
@@ -198,7 +200,7 @@ adjust_parse_args (Adjust_Parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->mha_in_fn[0] || !parms->mha_out_fn[0]) {
+    if (parms->img_in_fn.length() == 0 || parms->img_out_fn.length() == 0) {
 	printf ("Error: must specify --input and --output\n");
 	adjust_print_usage ();
     }
