@@ -290,7 +290,7 @@ void
 xio_ct_get_transform_from_dicom_dir (
     Plm_image *pli, 
     Xio_ct_transform *transform, 
-    char *dicom_dir
+    const char *dicom_dir
 )
 {
     /* Use original XiO CT geometry and a DICOM directory to determine

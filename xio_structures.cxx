@@ -274,7 +274,7 @@ xio_structures_load (
 
 /* This is idiotic */
 static void
-format_xio_filename (char *fn, char *output_dir, float z_loc)
+format_xio_filename (char *fn, const char *output_dir, float z_loc)
 {
     int neg;
     int z_round, z_ones, z_tenths;
@@ -308,7 +308,7 @@ xio_structures_save (
     Cxt_structure_list *cxt,
     Xio_ct_transform *transform,
     Xio_version xio_version,
-    char *output_dir
+    const char *output_dir
 )
 {
     FILE *fp;

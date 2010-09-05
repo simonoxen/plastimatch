@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <time.h>
 
+#include "bstring_util.h"
 #include "cxt_io.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
@@ -139,13 +140,13 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
     while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
 	switch (ch) {
 	case 2:
-	    strncpy (parms->input_fn, optarg, _MAX_PATH);
+	    parms->input_fn = optarg;
 	    break;
 	case 3:
-	    strncpy (parms->output_img, optarg, _MAX_PATH);
+	    parms->output_img_fn = optarg;
 	    break;
 	case 4:
-	    strncpy (parms->vf_in_fn, optarg, _MAX_PATH);
+	    parms->vf_in_fn = optarg;
 	    break;
 	case 5:
 	    if (sscanf (optarg, "%f", &parms->default_val) != 1) {
@@ -154,13 +155,13 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 6:
-	    strncpy (parms->xf_in_fn, optarg, _MAX_PATH);
+	    parms->xf_in_fn = optarg;
 	    break;
 	case 7:
-	    strncpy (parms->fixed_im_fn, optarg, _MAX_PATH);
+	    parms->fixed_im_fn = optarg;
 	    break;
 	case 8:
-	    strncpy (parms->output_vf, optarg, _MAX_PATH);
+	    parms->output_vf_fn = optarg;
 	    break;
 	case 9:
 	    if (!strcmp (optarg, "nn")) {
@@ -197,13 +198,13 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    have_dims = 1;
 	    break;
 	case 13:
-	    strncpy (parms->output_dicom, optarg, _MAX_PATH);
+	    parms->output_dicom = optarg;
 	    break;
 	case 14:
-	    strncpy (parms->ctatts_in_fn, optarg, _MAX_PATH);
+	    parms->ctatts_in_fn = optarg;
 	    break;
 	case 15:
-	    strncpy (parms->dif_in_fn, optarg, _MAX_PATH);
+	    parms->dif_in_fn = optarg;
 	    break;
 	case 16:
 	    if (!strcmp (optarg, "itk")) {
@@ -221,49 +222,49 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 18:
-	    strncpy (parms->dicom_dir, optarg, _MAX_PATH);
+	    parms->dicom_dir = optarg;
 	    break;
 	case 19:
-	    strncpy (parms->output_prefix, optarg, _MAX_PATH);
+	    parms->output_prefix = optarg;
 	    break;
 	case 20:
-	    strncpy (parms->output_labelmap_fn, optarg, _MAX_PATH);
+	    parms->output_labelmap_fn = optarg;
 	    break;
 	case 21:
-	    strncpy (parms->output_ss_img, optarg, _MAX_PATH);
+	    parms->output_ss_img_fn = optarg;
 	    break;
 	case 22:
-	    strncpy (parms->output_ss_list, optarg, _MAX_PATH);
+	    parms->output_ss_list_fn = optarg;
 	    break;
 	case 23:
-	    strncpy (parms->output_cxt, optarg, _MAX_PATH);
+	    parms->output_cxt_fn = optarg;
 	    break;
 	case 24:
 	    parms->prune_empty = 1;
 	    break;
 	case 25:
-	    strncpy (parms->output_xio_dirname, optarg, _MAX_PATH);
+	    parms->output_xio_dirname = optarg;
 	    break;
 	case 26:
-	    strncpy (parms->input_ss_list, optarg, _MAX_PATH);
+	    parms->input_ss_list_fn = optarg;
 	    break;
 	case 27:
-	    strncpy (parms->output_dij, optarg, _MAX_PATH);
+	    parms->output_dij_fn = optarg;
 	    break;
 	case 28:
-	    strncpy (parms->input_ss_img, optarg, _MAX_PATH);
+	    parms->input_ss_img_fn = optarg;
 	    break;
 	case 29:
-	    strncpy (parms->input_dose_img, optarg, _MAX_PATH);
+	    parms->input_dose_img_fn = optarg;
 	    break;
 	case 30:
-	    strncpy (parms->input_dose_xio, optarg, _MAX_PATH);
+	    parms->input_dose_xio_fn = optarg;
 	    break;
 	case 31:
-	    strncpy (parms->output_dose_img, optarg, _MAX_PATH);
+	    parms->output_dose_img_fn = optarg;
 	    break;
 	case 32:
-	    strncpy (parms->input_dose_ast, optarg, _MAX_PATH);
+	    parms->input_dose_ast_fn = optarg;
 	    break;
 	case 33:
 	    parms->patient_pos = plm_image_patient_position_parse (optarg);
@@ -273,7 +274,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 34:
-	    strncpy (parms->input_dose_mc, optarg, _MAX_PATH);
+	    parms->input_dose_mc_fn = optarg;
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");
@@ -281,9 +282,12 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (!parms->input_fn[0] && !parms->input_ss_img[0] 
-	&& !parms->input_dose_img[0] && !parms->input_dose_xio[0]
-	&& !parms->input_dose_ast[0] && !parms->input_dose_mc[0])
+    if (bstring_empty (&parms->input_fn)
+	&& bstring_empty (&parms->input_ss_img_fn)
+	&& bstring_empty (&parms->input_dose_img_fn)
+	&& bstring_empty (&parms->input_dose_xio_fn)
+	&& bstring_empty (&parms->input_dose_ast_fn)
+	&& bstring_empty (&parms->input_dose_mc_fn))
     {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);
@@ -301,8 +305,10 @@ do_command_warp (int argc, char* argv[])
     warp_parse_args (&parms, argc, argv);
 
     /* Dij matrices are a special case */
-    if (parms.output_dij[0]) {
-	if (parms.ctatts_in_fn[0] && parms.dif_in_fn[0]) {
+    if (bstring_not_empty (&parms.output_dij_fn)) {
+	if (bstring_not_empty (&parms.ctatts_in_fn)
+	    && bstring_not_empty (&parms.dif_in_fn))
+	{
 	    warp_dij_main (&parms);
 	    return;
 	} else {
@@ -311,7 +317,7 @@ do_command_warp (int argc, char* argv[])
     }
 
     /* What is the input file type? */
-    file_type = plm_file_format_deduce (parms.input_fn);
+    file_type = plm_file_format_deduce ((const char*) parms.input_fn);
 
     /* Pointsets are a special case */
     if (file_type == PLM_FILE_FMT_POINTSET) {

@@ -324,7 +324,10 @@ gdcm_rtss_load (
 }
 
 void
-gdcm_rtss_save (Cxt_structure_list *structures, char *rtss_fn, char *dicom_dir)
+gdcm_rtss_save (
+    Cxt_structure_list *structures, 
+    char *rtss_fn, 
+    const char *dicom_dir)
 {
     int i, j, k;
     gdcm::File *gf = new gdcm::File ();

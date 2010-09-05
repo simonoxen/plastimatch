@@ -18,7 +18,7 @@ extern "C" {
 
 gpuit_EXPORT
 Pointset*
-pointset_load (char *fn);
+pointset_load (const char *fn);
 gpuit_EXPORT
 Pointset *
 pointset_create (void);

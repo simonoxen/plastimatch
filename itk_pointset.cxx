@@ -11,7 +11,7 @@
 
 template<class T>
 void
-pointset_load (T pointset, char* fn)
+itk_pointset_load (T pointset, const char* fn)
 {
     typedef typename T::ObjectType PointSetType;
     typedef typename PointSetType::PointType PointType;
@@ -48,7 +48,7 @@ pointset_load (T pointset, char* fn)
 
 template<class T>
 T
-pointset_warp (T ps_in, Xform* xf)
+itk_pointset_warp (T ps_in, Xform* xf)
 {
     typedef typename T::ObjectType PointSetType;
     typedef typename PointSetType::PointType PointType;
@@ -77,7 +77,7 @@ pointset_warp (T ps_in, Xform* xf)
 
 template<class T>
 void
-pointset_debug (T pointset)
+itk_pointset_debug (T pointset)
 {
     typedef typename T::ObjectType PointSetType;
     typedef typename PointSetType::PointType PointType;
@@ -96,6 +96,6 @@ pointset_debug (T pointset)
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void pointset_debug (PointSetType::Pointer pointset);
-template plastimatch1_EXPORT void pointset_load (PointSetType::Pointer pointset, char* fn);
-template plastimatch1_EXPORT PointSetType::Pointer pointset_warp (PointSetType::Pointer ps_in, Xform* xf);
+template plastimatch1_EXPORT void itk_pointset_debug (PointSetType::Pointer pointset);
+template plastimatch1_EXPORT void itk_pointset_load (PointSetType::Pointer pointset, const char* fn);
+template plastimatch1_EXPORT PointSetType::Pointer itk_pointset_warp (PointSetType::Pointer ps_in, Xform* xf);

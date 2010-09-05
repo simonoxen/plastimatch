@@ -713,6 +713,7 @@ ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
+  bstring_util.cxx bstring_util.h
   bspline_rbf.cxx bspline_rbf.h
   cxt_apply_dicom.cxx cxt_apply_dicom.h 
   cxt.cxx cxt.h 

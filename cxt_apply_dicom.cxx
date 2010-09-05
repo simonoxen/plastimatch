@@ -20,7 +20,7 @@
 #include "print_and_exit.h"
 
 void
-cxt_apply_dicom_dir (Cxt_structure_list *cxt, char *dicom_dir)
+cxt_apply_dicom_dir (Cxt_structure_list *cxt, const char *dicom_dir)
 {
     int i, j;
     Gdcm_series gs;

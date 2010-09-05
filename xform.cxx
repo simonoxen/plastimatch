@@ -32,8 +32,8 @@ static void
 itk_bsp_set_grid_img (Xform *xf,
     const Plm_image_header* pih,
     float* grid_spac);
-static void load_gpuit_bsp (Xform *xf, char* fn);
-static void itk_xform_load (Xform *xf, char* fn);
+static void load_gpuit_bsp (Xform *xf, const char* fn);
+static void itk_xform_load (Xform *xf, const char* fn);
 
 /* -----------------------------------------------------------------------
    Utility functions
@@ -63,7 +63,7 @@ get_parms (FILE* fp, itk::Array<double>* parms, int num_parms)
    Load/save functions
    ----------------------------------------------------------------------- */
 void
-load_xform (Xform *xf, char* fn)
+load_xform (Xform *xf, const char* fn)
 {
     char buf[1024];
     FILE* fp;
@@ -294,7 +294,7 @@ load_xform (Xform *xf, char* fn)
 }
 
 static void
-load_gpuit_bsp (Xform *xf, char* fn)
+load_gpuit_bsp (Xform *xf, const char* fn)
 {
     Bspline_xform* bxf;
 
@@ -329,7 +329,7 @@ itk_xform_save (T transform, char *filename)
 }
 
 static void
-itk_xform_load (Xform *xf, char* fn)
+itk_xform_load (Xform *xf, const char* fn)
 {
     /* Load from file to into reader */
     itk::TransformFileReader::Pointer transfReader;

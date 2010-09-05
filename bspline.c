@@ -241,7 +241,7 @@ write_bxf (char* filename, Bspline_xform* bxf)
 }
 
 Bspline_xform* 
-read_bxf (char* filename)
+read_bxf (const char* filename)
 {
     Bspline_xform* bxf;
     char buf[1024];

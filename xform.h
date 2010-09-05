@@ -208,7 +208,7 @@ public:
     }
 };
 
-plastimatch1_EXPORT void load_xform (Xform *xf, char* fn);
+plastimatch1_EXPORT void load_xform (Xform *xf, const char* fn);
 plastimatch1_EXPORT void save_xform (Xform *xf, char* fn);
 void xform_to_trn (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);
 void xform_to_vrs (Xform *xf_out, Xform *xf_in, Plm_image_header* pih);

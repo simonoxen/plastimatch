@@ -297,7 +297,7 @@ void bspline_run_optimization (
     Volume *moving, 
     Volume *moving_grad);
 gpuit_EXPORT
-Bspline_xform* read_bxf (char* filename);
+Bspline_xform* read_bxf (const char* filename);
 
 gpuit_EXPORT
 void write_bxf (char* filename, Bspline_xform* bxf);

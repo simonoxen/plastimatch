@@ -23,9 +23,9 @@
 #include "xio_structures.h"
 
 void
-Rtds::load_dicom_dir (char *dicom_dir)
+Rtds::load_dicom_dir (const char *dicom_dir)
 {
-    char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
+    const char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
 
     /* Use existing itk reader for the image.
        This is required because the native dicom reader doesn't yet 
@@ -41,14 +41,14 @@ Rtds::load_dicom_dir (char *dicom_dir)
     rtds_dicom_load (this, dicom_dir_tmp);
 
     if (dicom_dir_tmp != dicom_dir) {
-	free (dicom_dir_tmp);
+	free ((void*) dicom_dir_tmp);
     }
 }
 
 void
 Rtds::load_xio (
-    char *xio_dir,
-    char *dicom_dir,
+    const char *xio_dir,
+    const char *dicom_dir,
     Plm_image_patient_position patient_pos
 )
 {
@@ -194,7 +194,7 @@ Rtds::load_dose_img (const char *dose_img)
 }
 
 void
-Rtds::load_dose_xio (char *dose_xio)
+Rtds::load_dose_xio (const char *dose_xio)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -208,7 +208,7 @@ Rtds::load_dose_xio (char *dose_xio)
 }
 
 void
-Rtds::load_dose_astroid (char *dose_astroid)
+Rtds::load_dose_astroid (const char *dose_astroid)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -221,7 +221,7 @@ Rtds::load_dose_astroid (char *dose_astroid)
 }
 
 void
-Rtds::load_dose_mc (char *dose_mc)
+Rtds::load_dose_mc (const char *dose_mc)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -234,7 +234,7 @@ Rtds::load_dose_mc (char *dose_mc)
 }
 
 void
-Rtds::save_dicom (char *dicom_dir)
+Rtds::save_dicom (const char *dicom_dir)
 {
     char fn[_MAX_PATH];
 

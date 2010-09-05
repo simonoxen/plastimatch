@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+
+#include "bstring_util.h"
 #include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
 #include "cxt_to_mha.h"
@@ -25,7 +27,7 @@ compose_prefix_fn (
 )
 {
     snprintf (fn, max_path, "%s_%s.%s",
-	parms->output_prefix, structure_name, "mha");
+	(const char*) parms->output_prefix, structure_name, "mha");
 }
 
 static void
@@ -58,17 +60,17 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
 static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
-    if (parms->input_fn[0]) {
+    if (bstring_not_empty (&parms->input_fn)) {
 	switch (file_type) {
 	case PLM_FILE_FMT_NO_FILE:
 	    print_and_exit ("Could not open input file %s for read\n",
-		parms->input_fn);
+		(const char*) parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_UNKNOWN:
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
 	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN 
-		&& parms->dicom_dir[0])
+		&& bstring_not_empty (&parms->dicom_dir))
 	    {
 		rtds_patient_pos_from_dicom_dir (rtds, parms->dicom_dir);
 	    } else {
@@ -76,10 +78,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    }
 	    break;
 	case PLM_FILE_FMT_DICOM_DIR:
-	    rtds->load_dicom_dir (parms->input_fn);
+	    rtds->load_dicom_dir ((const char*) parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_XIO_DIR:
-	    rtds->load_xio (parms->input_fn, parms->dicom_dir, 
+	    rtds->load_xio (
+		(const char*) parms->input_fn, 
+		(const char*) parms->dicom_dir, 
 		parms->patient_pos);
 	    break;
 	case PLM_FILE_FMT_DIJ:
@@ -88,56 +92,68 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_cxt = cxt_create ();
-	    gdcm_rtss_load (rtds->m_cxt, parms->input_fn, parms->dicom_dir);
+	    gdcm_rtss_load (
+		rtds->m_cxt, 
+		(const char*) parms->input_fn, 
+		(const char*) parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_DICOM_DOSE:
-	    rtds->m_dose = gdcm_dose_load (0, parms->input_fn, 
-		parms->dicom_dir);
+	    rtds->m_dose = gdcm_dose_load (
+		0, 
+		(const char*) parms->input_fn, 
+		(const char*) parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_cxt = cxt_create ();
-	    cxt_load (rtds->m_cxt, parms->input_fn);
+	    cxt_load (rtds->m_cxt, (const char*) parms->input_fn);
 	    break;
 	default:
 	    print_and_exit (
 		"Sorry, don't know how to convert/warp input type %s (%s)\n",
 		plm_file_format_string (file_type),
-		parms->input_fn);
+		(const char*) parms->input_fn);
 	    break;
 	}
     }
 
-    if (parms->input_ss_img[0]) {
-	rtds->load_ss_img (parms->input_ss_img, parms->input_ss_list);
+    if (bstring_not_empty (&parms->input_ss_img_fn)) {
+	rtds->load_ss_img (
+	    (const char*) parms->input_ss_img_fn, 
+	    (const char*) parms->input_ss_list_fn);
     }
 
-    if (parms->input_dose_img[0]) {
-	rtds->load_dose_img (parms->input_dose_img);
+    if (bstring_not_empty (&parms->input_dose_img_fn)) {
+	rtds->load_dose_img ((const char*) parms->input_dose_img_fn);
     }
 
-    if (parms->input_dose_xio[0]) {
-	rtds->load_dose_xio (parms->input_dose_xio);
+    if (bstring_not_empty (&parms->input_dose_xio_fn)) {
+	rtds->load_dose_xio ((const char*) parms->input_dose_xio_fn);
     }
 
-    if (parms->input_dose_ast[0]) {
-	rtds->load_dose_astroid (parms->input_dose_ast);
+    if (bstring_not_empty (&parms->input_dose_ast_fn)) {
+	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn);
     }
 
-    if (parms->input_dose_mc[0]) {
-	rtds->load_dose_mc (parms->input_dose_mc);
+    if (bstring_not_empty (&parms->input_dose_mc_fn)) {
+	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn);
     }
 }
 
 static void
-rasterize_ss_img (Rtds *rtds, Xform *xf, 
-    Plm_image_header *pih, Warp_parms *parms)
+rasterize_ss_img (
+    Rtds *rtds, 
+    Xform *xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms)
 {
     /* If we have need to create image outputs, or if we have to 
        warp something, then we need to rasterize the volume */
     /* GCS FIX: If there is an input m_ss_img, we still do this 
        because we might need the labelmap */
-    if (parms->output_labelmap_fn[0] || parms->output_ss_img[0]
-	|| parms->xf_in_fn[0] || parms->output_prefix[0])
+    if (bstring_not_empty (&parms->output_labelmap_fn)
+	|| bstring_not_empty (&parms->output_ss_img_fn)
+	|| bstring_not_empty (&parms->xf_in_fn)
+	|| bstring_not_empty (&parms->output_prefix))
     {
 	/* Rasterize structure sets */
 	Cxt_to_mha_state *ctm_state;
@@ -170,7 +186,7 @@ rasterize_ss_img (Rtds *rtds, Xform *xf,
     cxt_to_mha_init (&ctm_state, cxt, true, true, true);
     while (cxt_to_mha_process_next (&ctm_state, cxt)) {
 	/* Write out prefix images */
-	if (parms->output_prefix[0]) {
+	if (bstring_not_empty (&parms->output_prefix)) {
 	    char fn[_MAX_PATH];
 	    strcpy (fn, parms->output_prefix);
 	    strcat (fn, "_");
@@ -184,13 +200,16 @@ rasterize_ss_img (Rtds *rtds, Xform *xf,
 }
 
 static void
-warp_ss_img (Rtds *rtds, Xform *xf, 
-    Plm_image_header *pih, Warp_parms *parms)
+warp_ss_img (
+    Rtds *rtds, 
+    Xform *xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms)
 {
     /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
        not included in output. */
     /* If we are warping, warp rasterized image(s) */
-    if (parms->xf_in_fn[0]) {
+    if (bstring_not_empty (&parms->xf_in_fn)) {
 	Plm_image *tmp;
 
 	tmp = new Plm_image;
@@ -215,31 +234,31 @@ save_ss_img (Rtds *rtds, Xform *xf,
     Plm_image_header *pih, Warp_parms *parms)
 {
     /* Write out labelmap, ss_img */
-    if (parms->output_labelmap_fn[0]) {
+    if (bstring_not_empty (&parms->output_labelmap_fn)) {
 	printf ("Writing labelmap.\n");
 	rtds->m_labelmap->save_image (parms->output_labelmap_fn);
 	printf ("Done.\n");
     }
-    if (parms->output_ss_img[0]) {
+    if (bstring_not_empty (&parms->output_ss_img_fn)) {
 	printf ("Writing ss img.\n");
-	rtds->m_ss_img->save_image (parms->output_ss_img);
+	rtds->m_ss_img->save_image ((const char*) parms->output_ss_img_fn);
 	printf ("Done.\n");
     }
 
     /* Write out prefix images .. */
-    if (parms->output_prefix[0]) {
+    if (bstring_not_empty (&parms->output_prefix)) {
 	printf ("Writing prefix images.\n");
 	prefix_output_save (rtds, parms);
 	printf ("Done.\n");
     }
 
     /* Write out list of structure names */
-    if (parms->output_ss_list[0]) {
+    if (bstring_not_empty (&parms->output_ss_list_fn)) {
 	printf ("Writing ss list.\n");
 	int i;
 	FILE *fp;
-	make_directory_recursive (parms->output_ss_list);
-	fp = fopen (parms->output_ss_list, "w");
+	make_directory_recursive ((const char*) parms->output_ss_list_fn);
+	fp = fopen ((const char*) parms->output_ss_list_fn, "w");
 	for (i = 0; i < rtds->m_cxt->num_structures; i++) {
 	    Cxt_structure *curr_structure;
 	    curr_structure = &rtds->m_cxt->slist[i];
@@ -257,7 +276,7 @@ save_ss_img (Rtds *rtds, Xform *xf,
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is  wasting users time. */
-    if (parms->xf_in_fn[0]) {
+    if (bstring_not_empty (&parms->xf_in_fn)) {
 	printf ("Re-extracting cxt.\n");
 	cxt_free_all_polylines (rtds->m_cxt);
 	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
@@ -268,8 +287,11 @@ save_ss_img (Rtds *rtds, Xform *xf,
 }
 
 static void
-save_ss_output (Rtds *rtds,  Xform *xf, 
-    Plm_image_header *pih, Warp_parms *parms)
+save_ss_output (
+    Rtds *rtds,  
+    Xform *xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms)
 {
     if (!rtds->m_cxt) {
 	return;
@@ -281,16 +303,16 @@ save_ss_output (Rtds *rtds,  Xform *xf,
 
     save_ss_img (rtds, xf, pih, parms);
 
-    if (parms->output_cxt[0]) {
-	cxt_save (rtds->m_cxt, parms->output_cxt, false);
+    if (bstring_not_empty (&parms->output_cxt_fn)) {
+	cxt_save (rtds->m_cxt, (const char*) parms->output_cxt_fn, false);
     }
 
-    if (parms->output_xio_dirname[0]) {
+    if (bstring_not_empty (&parms->output_xio_dirname)) {
 	printf ("Saving xio format...\n");
 	xio_structures_save (rtds->m_cxt, 
 	    rtds->m_xio_transform,
 	    parms->output_xio_version,
-	    parms->output_xio_dirname);
+	    (const char*) parms->output_xio_dirname);
 	printf ("Done.\n");
     }
 }
@@ -306,13 +328,13 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     load_input_files (rtds, file_type, parms);
 
     /* Load transform */
-    if (parms->xf_in_fn[0]) {
-	printf ("Loading xform (%s)\n", parms->xf_in_fn);
-	load_xform (&xform, parms->xf_in_fn);
+    if (bstring_not_empty (&parms->xf_in_fn)) {
+	printf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
+	load_xform (&xform, (const char*) parms->xf_in_fn);
     }
 
     /* Try to guess the proper dimensions and spacing for output image */
-    if (parms->fixed_im_fn[0]) {
+    if (bstring_not_empty (&parms->fixed_im_fn)) {
 	/* use the spacing of user-supplied fixed image */
 	FloatImageType::Pointer fixed = itk_image_load_float (
 	    parms->fixed_im_fn, 0);
@@ -350,8 +372,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Set UIDs, patient name, etc. */
-    if (parms->dicom_dir[0] && rtds->m_cxt) {
-	cxt_apply_dicom_dir (rtds->m_cxt, parms->dicom_dir);
+    if (bstring_not_empty (&parms->dicom_dir) && rtds->m_cxt) {
+	cxt_apply_dicom_dir (rtds->m_cxt, (const char*) parms->dicom_dir);
     }
 
     /* Delete empty structures */
@@ -365,8 +387,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Warp the image and create vf */
-    if (rtds->m_img && parms->xf_in_fn[0] 
-	&& (parms->output_img[0] || parms->output_vf[0]))
+    if (rtds->m_img 
+	&& bstring_not_empty (&parms->xf_in_fn)
+	&& (bstring_not_empty (&parms->output_img_fn)
+	    || bstring_not_empty (&parms->output_vf_fn)))
     {
 	Plm_image *im_out;
 	im_out = new Plm_image;
@@ -377,49 +401,58 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Save output image */
-    if (parms->output_img[0] && rtds->m_img) {
+    if (bstring_not_empty (&parms->output_img_fn) && rtds->m_img) {
 	printf ("Saving image...\n");
-	rtds->m_img->convert_and_save (parms->output_img, parms->output_type);
+	rtds->m_img->convert_and_save (
+	    (const char*) parms->output_img_fn, 
+	    parms->output_type);
     }
 
     /* Save output dose image */
-    if (parms->output_dose_img[0] && rtds->m_dose) {
+    if (bstring_not_empty (&parms->output_dose_img_fn) && rtds->m_dose) {
 	printf ("Saving dose image...\n");
-	rtds->m_dose->convert_and_save (parms->output_dose_img, 
+	rtds->m_dose->convert_and_save (
+	    (const char*) parms->output_dose_img_fn, 
 	    parms->output_type);
     }
 
     /* Save output XiO dose */
-    if (parms->output_xio_dirname[0] 
-	&& rtds->m_xio_dose_input[0] && rtds->m_dose)
+    if (bstring_not_empty (&parms->output_xio_dirname)
+	&& rtds->m_xio_dose_input
+	&& rtds->m_dose)
     {
+	CBString fn;
+
 	printf ("Saving xio dose...\n");
-
-	char fn[_MAX_PATH];
-	snprintf (fn, _MAX_PATH, "%s/%s", parms->output_xio_dirname, "dose");
-
-	xio_dose_save (rtds->m_dose, rtds->m_xio_transform, fn, 
+	fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
+	xio_dose_save (
+	    rtds->m_dose, 
+	    rtds->m_xio_transform, 
+	    (const char*) fn, 
 	    rtds->m_xio_dose_input);
     }
 
     /* Save dose as ITK image */
-    if (parms->output_dose_img[0] && rtds->m_img) {
+    if (bstring_not_empty (&parms->output_dose_img_fn) && rtds->m_img) {
 	printf ("Saving dose image...\n");
 	rtds->m_dose->convert_and_save (
-	    parms->output_dose_img, parms->output_type);
+	    (const char*) parms->output_dose_img_fn, 
+	    parms->output_type);
     }
 
     /* Save output vector field */
-    if (parms->xf_in_fn[0] && parms->output_vf[0]) {
+    if (bstring_not_empty (&parms->xf_in_fn) 
+	&& bstring_not_empty (&parms->output_vf_fn))
+    {
 	printf ("Saving vf...\n");
-	itk_image_save (vf, parms->output_vf);
+	itk_image_save (vf, (const char*) parms->output_vf_fn);
     }
 
     /* Warp and save output structure set */
     save_ss_output (rtds, &xform, &pih, parms);
 
     /* Save dicom */
-    if (parms->output_dicom[0]) {
-	rtds->save_dicom (parms->output_dicom);
+    if (bstring_not_empty (&parms->output_dicom)) {
+	rtds->save_dicom ((const char*) parms->output_dicom);
     }
 }

@@ -6,41 +6,42 @@
 
 #include "plm_config.h"
 #include <string.h>
+#include "bstrwrap.h"
+
 #include "plm_file_format.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
-#include "plm_path.h"
 #include "xio_io.h"
 
 class Warp_parms {
 public:
     /* Input files */
-    char input_fn[_MAX_PATH];
-    char input_ss_img[_MAX_PATH];
-    char input_ss_list[_MAX_PATH];
-    char input_dose_img[_MAX_PATH];
-    char input_dose_xio[_MAX_PATH];
-    char input_dose_ast[_MAX_PATH];
-    char input_dose_mc[_MAX_PATH];
-    char vf_in_fn[_MAX_PATH];
-    char xf_in_fn[_MAX_PATH];
-    char fixed_im_fn[_MAX_PATH];
-    char ctatts_in_fn[_MAX_PATH];
-    char dif_in_fn[_MAX_PATH];
-    char dicom_dir[_MAX_PATH];
+    CBString input_fn;
+    CBString input_ss_img_fn;
+    CBString input_ss_list_fn;
+    CBString input_dose_img_fn;
+    CBString input_dose_xio_fn;
+    CBString input_dose_ast_fn;
+    CBString input_dose_mc_fn;
+    CBString vf_in_fn;
+    CBString xf_in_fn;
+    CBString fixed_im_fn;
+    CBString ctatts_in_fn;
+    CBString dif_in_fn;
+    CBString dicom_dir;
 
     /* Output files */
-    char output_cxt[_MAX_PATH];
-    char output_dicom[_MAX_PATH];
-    char output_dij[_MAX_PATH];
-    char output_dose_img[_MAX_PATH];
-    char output_img[_MAX_PATH];
-    char output_labelmap_fn[_MAX_PATH];
-    char output_prefix[_MAX_PATH];
-    char output_ss_img[_MAX_PATH];
-    char output_ss_list[_MAX_PATH];
-    char output_vf[_MAX_PATH];
-    char output_xio_dirname[_MAX_PATH];
+    CBString output_cxt_fn;
+    CBString output_dicom;
+    CBString output_dij_fn;
+    CBString output_dose_img_fn;
+    CBString output_img_fn;
+    CBString output_labelmap_fn;
+    CBString output_prefix;
+    CBString output_ss_img_fn;
+    CBString output_ss_list_fn;
+    CBString output_vf_fn;
+    CBString output_xio_dirname;
 
     /* Geometry options */
     float offset[3];
@@ -58,7 +59,6 @@ public:
 
 public:
     Warp_parms () {
-	memset (this, 0, sizeof(Warp_parms));
 	default_val = 0.0f;
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;

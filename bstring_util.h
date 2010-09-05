@@ -1,22 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _cxt_apply_dicom_h_
-#define _cxt_apply_dicom_h_
+#ifndef _bstring_util_h_
+#define _bstring_util_h_
 
 #include "plm_config.h"
-#include "cxt_io.h"
+#include "bstrwrap.h"
 
-#if defined __cplusplus
-extern "C" {
-#endif
+plastimatch1_EXPORT 
+bool
+bstring_empty (CBString *cbstring);
 
-plastimatch1_EXPORT
-void
-cxt_apply_dicom_dir (Cxt_structure_list *cxt, const char *dicom_dir);
-
-#if defined __cplusplus
-}
-#endif
+plastimatch1_EXPORT 
+bool
+bstring_not_empty (CBString *cbstring);
 
 #endif

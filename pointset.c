@@ -31,7 +31,7 @@ pointset_destroy (Pointset *ps)
 }
 
 static Pointset *
-pointset_load_fcsv (char *fn)
+pointset_load_fcsv (const char *fn)
 {
     FILE *fp;
     Pointset *ps;
@@ -85,7 +85,7 @@ pointset_load_fcsv (char *fn)
 }
 
 static Pointset *
-pointset_load_txt (char *fn)
+pointset_load_txt (const char *fn)
 {
     FILE *fp;
     Pointset *ps;
@@ -127,7 +127,7 @@ pointset_load_txt (char *fn)
 }
 
 Pointset*
-pointset_load (char *fn)
+pointset_load (const char *fn)
 {
     Pointset *ps;
 

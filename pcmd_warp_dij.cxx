@@ -112,7 +112,7 @@ dif_parse_error (void)
 }
 
 void
-load_dif (Dif* dif, char* dif_in)
+load_dif (Dif* dif, const char* dif_in)
 {
     int i;
     float f;
@@ -188,7 +188,7 @@ load_dif (Dif* dif, char* dif_in)
 }
 
 void
-load_ctatts (Ctatts* ctatts, char* ctatts_in)
+load_ctatts (Ctatts* ctatts, const char* ctatts_in)
 {
     int i;
     float f;
@@ -537,9 +537,12 @@ warp_pencil_beam (DeformationFieldType::Pointer vf,
 }
 
 void
-convert_vector_field (DeformationFieldType::Pointer vf, 
-		      Ctatts* ctatts, Dif* dif,
-		      char* dij_in, char* dij_out)
+convert_vector_field (
+    DeformationFieldType::Pointer vf, 
+    Ctatts* ctatts, 
+    Dif* dif,
+    const char* dij_in, 
+    const char* dij_out)
 {
     int i;
     FILE *fp_in, *fp_out;
@@ -590,9 +593,9 @@ warp_dij_main (Warp_parms* parms)
     vf = itk_image_load_float_field (parms->vf_in_fn);
 
     printf ("Loading ctatts and dif...\n");
-    load_ctatts (&ctatts, parms->ctatts_in_fn);
-    load_dif (&dif, parms->dif_in_fn);
+    load_ctatts (&ctatts, (const char*) parms->ctatts_in_fn);
+    load_dif (&dif, (const char*) parms->dif_in_fn);
 
     convert_vector_field (vf, &ctatts, &dif, parms->input_fn, 
-	parms->output_dij);
+	(const char*) parms->output_dij_fn);
 }

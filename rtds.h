@@ -69,19 +69,19 @@ public:
 	}
     }
     plastimatch1_EXPORT
-    void load_dicom_dir (char *dicom_dir);
+    void load_dicom_dir (const char *dicom_dir);
     void load_xio (
-	char *xio_dir,
-	char *dicom_dir,
+	const char *xio_dir,
+	const char *dicom_dir,
 	Plm_image_patient_position patient_pos
     );
     plastimatch1_EXPORT
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
-    void load_dose_xio (char *dose_xio);
-    void load_dose_astroid (char *dose_astroid);
-    void load_dose_mc (char *dose_mc);
-    void save_dicom (char *dicom_dir);
+    void load_dose_xio (const char *dose_xio);
+    void load_dose_astroid (const char *dose_astroid);
+    void load_dose_mc (const char *dose_mc);
+    void save_dicom (const char *dicom_dir);
     void convert_ss_img_to_cxt (void);
 };
 

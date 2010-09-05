@@ -23,7 +23,7 @@ void
 xio_ct_get_transform_from_dicom_dir (
     Plm_image *plm,
     Xio_ct_transform *transform,
-    char *dicom_dir
+    const char *dicom_dir
 );
 plastimatch1_EXPORT 
 void xio_ct_get_transform (Plm_image *plm, Xio_ct_transform *transform);
