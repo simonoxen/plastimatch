@@ -171,7 +171,7 @@ save_output (
 {
     if (xf_out_fn[0]) {
 	logfile_printf ("Writing transformation ...\n");
-	save_xform (xf_out, xf_out_fn);
+	xform_save (xf_out, xf_out_fn);
     }
 
     if (img_out_fn[0] || vf_out_fn[0]) {
@@ -310,7 +310,7 @@ do_registration (Registration_Parms* regp)
 
     /* Load initial guess of xform */
     if (regp->xf_in_fn[0]) {
-	load_xform (xf_out, regp->xf_in_fn);
+	xform_load (xf_out, regp->xf_in_fn);
     }
     timer1.Stop();
 

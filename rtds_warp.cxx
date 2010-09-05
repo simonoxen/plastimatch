@@ -330,7 +330,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Load transform */
     if (bstring_not_empty (&parms->xf_in_fn)) {
 	printf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
-	load_xform (&xform, (const char*) parms->xf_in_fn);
+	xform_load (&xform, (const char*) parms->xf_in_fn);
     }
 
     /* Try to guess the proper dimensions and spacing for output image */

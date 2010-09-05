@@ -54,7 +54,7 @@ int main (int argc, char* argv[])
         return 1;
     }
 
-    load_xform (&xf_in, argv[1]);
+    xform_load (&xf_in, argv[1]);
     img_fixed = itk_image_load_float (argv[2], 0);
     xform_to_itk_vf (&xf_out, &xf_in, img_fixed);
     vf = xf_out.get_itk_vf();

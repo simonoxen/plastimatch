@@ -63,7 +63,7 @@ get_parms (FILE* fp, itk::Array<double>* parms, int num_parms)
    Load/save functions
    ----------------------------------------------------------------------- */
 void
-load_xform (Xform *xf, const char* fn)
+xform_load (Xform *xf, const char* fn)
 {
     char buf[1024];
     FILE* fp;
@@ -398,8 +398,9 @@ itk_xform_load (Xform *xf, const char* fn)
     }
 }
 
+#if defined (commentout)
 void
-save_xform_translation (TranslationTransformType::Pointer transform, char* filename)
+xform_save_translation (TranslationTransformType::Pointer transform, char* filename)
 {
     FILE* fp = fopen (filename,"w");
     if (!fp) {
@@ -415,7 +416,7 @@ save_xform_translation (TranslationTransformType::Pointer transform, char* filen
 }
 
 void
-save_xform_versor (VersorTransformType::Pointer transform, char* filename)
+xform_save_versor (VersorTransformType::Pointer transform, char* filename)
 {
     FILE* fp = fopen (filename,"w");
     if (!fp) {
@@ -431,7 +432,7 @@ save_xform_versor (VersorTransformType::Pointer transform, char* filename)
 }
 
 void
-save_xform_affine (AffineTransformType::Pointer transform, char* filename)
+xform_save_affine (AffineTransformType::Pointer transform, char* filename)
 {
     FILE* fp = fopen (filename,"w");
     if (!fp) {
@@ -445,9 +446,10 @@ save_xform_affine (AffineTransformType::Pointer transform, char* filename)
     }
     fclose (fp);
 }
+#endif
 
 void
-save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
+xform_save_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 {
     FILE* fp = fopen (filename,"w");
     if (!fp) {
@@ -498,26 +500,23 @@ save_xform_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 }
 
 void
-save_xform (Xform *xf, char* fn)
+xform_save (Xform *xf, char* fn)
 {
     switch (xf->m_type) {
     case XFORM_ITK_TRANSLATION:
-	//save_xform_translation (xf->get_trn(), fn);
 	itk_xform_save (xf->get_trn(), fn);
 	break;
     case XFORM_ITK_VERSOR:
-	//save_xform_versor (xf->get_vrs(), fn);
 	itk_xform_save (xf->get_vrs(), fn);
 	break;
     case XFORM_ITK_QUATERNION:
 	itk_xform_save (xf->get_quat(), fn);
 	break;
     case XFORM_ITK_AFFINE:
-	//save_xform_affine (xf->get_aff(), fn);
 	itk_xform_save (xf->get_aff(), fn);
 	break;
     case XFORM_ITK_BSPLINE:
-	save_xform_itk_bsp (xf->get_bsp(), fn);
+	xform_save_itk_bsp (xf->get_bsp(), fn);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	itk_image_save (xf->get_itk_vf(), fn);

@@ -19,7 +19,7 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
     Xform xf_in, xf_out;
     Plm_image_header pih;
 
-    load_xform (&xf_in, parms->xf_in_fn);
+    xform_load (&xf_in, parms->xf_in_fn);
     pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);
 
     switch (parms->xf_out_type) {
@@ -83,7 +83,7 @@ xf_to_xf_main (Xf_To_Xf_Parms* parms)
 	print_and_exit ("Program error.  Bad xform type.\n");
 	break;
     }
-    save_xform (&xf_out, parms->xf_out_fn);
+    xform_save (&xf_out, parms->xf_out_fn);
 }
 
 void

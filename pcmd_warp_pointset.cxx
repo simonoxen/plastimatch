@@ -15,7 +15,7 @@ warp_pointset_main (Warp_parms* parms)
     itk_pointset_load (ps_in, (const char*) parms->input_fn);
     itk_pointset_debug (ps_in);
 
-    load_xform (&xf, parms->xf_in_fn);
+    xform_load (&xf, parms->xf_in_fn);
 
     PointSetType::Pointer ps_out = itk_pointset_warp (ps_in, &xf);
     itk_pointset_debug (ps_out);
