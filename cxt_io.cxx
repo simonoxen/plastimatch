@@ -374,7 +374,7 @@ cxt_save (
 	}
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->id, 
-	    (bstring_empty (&curr_structure->color) 
+	    (bstring_empty (curr_structure->color) 
 		? "255\\0\\0"
 		: (const char*) curr_structure->color), 
 	    (const char*) curr_structure->name);

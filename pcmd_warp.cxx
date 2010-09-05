@@ -282,12 +282,12 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (bstring_empty (&parms->input_fn)
-	&& bstring_empty (&parms->input_ss_img_fn)
-	&& bstring_empty (&parms->input_dose_img_fn)
-	&& bstring_empty (&parms->input_dose_xio_fn)
-	&& bstring_empty (&parms->input_dose_ast_fn)
-	&& bstring_empty (&parms->input_dose_mc_fn))
+    if (bstring_empty (parms->input_fn)
+	&& bstring_empty (parms->input_ss_img_fn)
+	&& bstring_empty (parms->input_dose_img_fn)
+	&& bstring_empty (parms->input_dose_xio_fn)
+	&& bstring_empty (parms->input_dose_ast_fn)
+	&& bstring_empty (parms->input_dose_mc_fn))
     {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);
@@ -305,9 +305,9 @@ do_command_warp (int argc, char* argv[])
     warp_parse_args (&parms, argc, argv);
 
     /* Dij matrices are a special case */
-    if (bstring_not_empty (&parms.output_dij_fn)) {
-	if (bstring_not_empty (&parms.ctatts_in_fn)
-	    && bstring_not_empty (&parms.dif_in_fn))
+    if (bstring_not_empty (parms.output_dij_fn)) {
+	if (bstring_not_empty (parms.ctatts_in_fn)
+	    && bstring_not_empty (parms.dif_in_fn))
 	{
 	    warp_dij_main (&parms);
 	    return;

@@ -9,10 +9,10 @@
 
 plastimatch1_EXPORT 
 bool
-bstring_empty (CBString *cbstring);
+bstring_empty (const CBString& cbstring);
 
 plastimatch1_EXPORT 
 bool
-bstring_not_empty (CBString *cbstring);
+bstring_not_empty (const CBString& cbstring);
 
 #endif

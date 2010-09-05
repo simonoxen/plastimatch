@@ -562,7 +562,7 @@ gdcm_rtss_save (
 	roic_seq->AddSQItem (roic_item, i+1);
 	
 	/* ROIDisplayColor */
-	if (bstring_empty (&curr_structure->color)) {
+	if (bstring_empty (curr_structure->color)) {
 	    roic_item->InsertValEntry (
 		(const char*) curr_structure->color, 0x3006, 0x002a);
 	} else {

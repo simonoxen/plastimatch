@@ -6,13 +6,13 @@
 #include "bstring_util.h"
 
 bool
-bstring_empty (CBString *cbstring)
+bstring_empty (const CBString& cbstring)
 {
-    return cbstring->length() == 0;
+    return cbstring.length() == 0;
 }
 
 bool
-bstring_not_empty (CBString *cbstring)
+bstring_not_empty (const CBString& cbstring)
 {
-    return cbstring->length() != 0;
+    return cbstring.length() != 0;
 }
