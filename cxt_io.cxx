@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bstrlib.h"
+
+#include "bstring_util.h"
 #include "cxt_io.h"
 #include "file_util.h"
 #include "math_util.h"
@@ -49,8 +50,8 @@ cxt_load_ss_list (Cxt_structure_list* cxt, const char* xorlist_fn)
             exit (-1);
         }
 
-	Cxt_structure *curr_structure 
-	    = cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
+	Cxt_structure *curr_structure = cxt_add_structure (
+	    cxt, CBString (name), CBString (color), struct_id);
 	curr_structure->bit = struct_id;
     }
 
@@ -186,24 +187,7 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
         if (rc != 3) {
             break;
         }
-
-#if defined (commentout)
-        structures->num_structures++;
-        structures->slist = (Cxt_structure*) 
-		realloc (structures->slist,
-			 structures->num_structures * sizeof(Cxt_structure));
-
-        curr_structure = &structures->slist[structures->num_structures - 1];
-        strcpy (curr_structure->name, name);
-
-        curr_structure->id = struct_id;
-        curr_structure->color = bfromcstr (color);
-        curr_structure->num_contours = 0;
-        curr_structure->pslist = 0;
-        printf ("Cxt_structure: %s\n", curr_structure->name);
-#endif
-
-	cxt_add_structure (cxt, name, bfromcstr (color), struct_id);
+	cxt_add_structure (cxt, CBString (name), CBString (color), struct_id);
     }
 
     /* Part 3: Contour info */
@@ -317,7 +301,9 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
 }
 
 void
-cxt_save (Cxt_structure_list* cxt, const char* cxt_fn,
+cxt_save (
+    Cxt_structure_list* cxt, 
+    const char* cxt_fn,
     bool prune_empty)
 {
     int i;
@@ -388,9 +374,10 @@ cxt_save (Cxt_structure_list* cxt, const char* cxt_fn,
 	}
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->id, 
-	    (curr_structure->color 
-		? (const char*) curr_structure->color->data : "255\\0\\0"), 
-	    curr_structure->name);
+	    (bstring_empty (&curr_structure->color) 
+		? "255\\0\\0"
+		: (const char*) curr_structure->color), 
+	    (const char*) curr_structure->name);
     }
     fprintf (fp, "END_OF_ROI_NAMES\n");
 

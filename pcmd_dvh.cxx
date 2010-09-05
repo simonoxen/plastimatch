@@ -142,7 +142,7 @@ dvh_main (Dvh_parms* parms)
     fprintf (fp, "Dose (cGy)");
     for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
 	Cxt_structure *curr_structure = &rtds.m_ss_list->slist[sno];
-	fprintf (fp, ",%s", curr_structure->name);
+	fprintf (fp, ",%s", (const char*) curr_structure->name);
     }
     fprintf (fp, "\n");
     for (bin = 0; bin < parms->num_bins; bin++) {

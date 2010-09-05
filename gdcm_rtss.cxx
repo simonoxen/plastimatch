@@ -11,6 +11,7 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
+#include "bstring_util.h"
 #include "cxt.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
@@ -203,7 +204,8 @@ gdcm_rtss_load (
 	if (1 != sscanf (roi_number.c_str(), "%d", &structure_id)) {
 	    continue;
 	}
-	cxt_add_structure (structures, roi_name.c_str(), 0, structure_id);
+	cxt_add_structure (structures, 
+	    CBString (roi_name.c_str()), CBString (), structure_id);
     }
 
     /* ROIContourSequence */
@@ -535,14 +537,14 @@ gdcm_rtss_save (
 				    0x3006, 0x0022);
 	/* ReferencedFrameOfReferenceUID */
 	if (structures->ct_fref_uid) {
-	    ssroi_item->InsertValEntry ((const char*) 
-					structures->ct_fref_uid->data, 
-					0x3006, 0x0024);
+	    ssroi_item->InsertValEntry (
+		(const char*) structures->ct_fref_uid->data, 0x3006, 0x0024);
 	} else {
 	    ssroi_item->InsertValEntry ("", 0x3006, 0x0024);
 	}
 	/* ROIName */
-	ssroi_item->InsertValEntry (structures->slist[i].name, 0x3006, 0x0026);
+	ssroi_item->InsertValEntry (
+	    (const char*) structures->slist[i].name, 0x3006, 0x0026);
 	/* ROIGenerationAlgorithm */
 	ssroi_item->InsertValEntry ("", 0x3006, 0x0036);
     }
@@ -560,10 +562,9 @@ gdcm_rtss_save (
 	roic_seq->AddSQItem (roic_item, i+1);
 	
 	/* ROIDisplayColor */
-	if (curr_structure->color) {
-	    roic_item->InsertValEntry ((const char*) 
-				       curr_structure->color->data,
-				       0x3006, 0x002a);
+	if (bstring_empty (&curr_structure->color)) {
+	    roic_item->InsertValEntry (
+		(const char*) curr_structure->color, 0x3006, 0x002a);
 	} else {
 	    roic_item->InsertValEntry ("255\\0\\0", 0x3006, 0x002a);
 	}
@@ -640,7 +641,8 @@ gdcm_rtss_save (
 				     ("%d", curr_structure->id),
 				     0x3006, 0x0084);
 	/* ROIObservationLabel */
-	rtroio_item->InsertValEntry (curr_structure->name, 0x3006, 0x0085);
+	rtroio_item->InsertValEntry (
+	    (const char*) curr_structure->name, 0x3006, 0x0085);
 	/* RTROIInterpretedType */
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a4);
 	/* ROIInterpreter */

@@ -28,8 +28,11 @@ cxt_init (Cxt_structure_list* cxt)
 
 /* Add structure (if it doesn't already exist) */
 Cxt_structure*
-cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
-    bstring color, int structure_id)
+cxt_add_structure (
+    Cxt_structure_list *cxt, 
+    const CBString& structure_name, 
+    const CBString& color, 
+    int structure_id)
 {
     Cxt_structure* new_structure;
 
@@ -45,11 +48,12 @@ cxt_add_structure (Cxt_structure_list* cxt, const char *structure_name,
     new_structure = &cxt->slist[cxt->num_structures - 1];
 
     memset (new_structure, 0, sizeof(Cxt_structure));
-    strncpy (new_structure->name, structure_name, CXT_BUFLEN);
-    new_structure->name[CXT_BUFLEN-1] = 0;
+    //new_structure->name = *structure_name;
+    new (&new_structure->name) CBString (structure_name);
     new_structure->id = structure_id;
     new_structure->bit = -1;
-    new_structure->color = color;
+    //new_structure->color = *color;
+    new (&new_structure->color) CBString (color);
     new_structure->num_contours = 0;
     new_structure->pslist = 0;
     return new_structure;
@@ -102,7 +106,7 @@ cxt_debug (Cxt_structure_list* cxt)
         curr_structure = &cxt->slist[i];
 	printf ("%d %d %s (%p) (%d contours)", 
 	    i, curr_structure->id, 
-	    curr_structure->name, 
+	    (const char*) curr_structure->name, 
 	    curr_structure->pslist,
 	    curr_structure->num_contours
 	);
@@ -128,15 +132,12 @@ cxt_adjust_structure_names (Cxt_structure_list* cxt)
 
     for (i = 0; i < cxt->num_structures; i++) {
         curr_structure = &cxt->slist[i];
-	for (j = 0; j < CXT_BUFLEN; j++) {
-	    if (!curr_structure->name[j]) {
-		break;
-	    }
-
+	for (j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
-		printf ("Substituted in name %s\n", curr_structure->name);
+		printf ("Substituted in name %s\n", 
+		    (const char*) curr_structure->name);
 	    }
 	}
     }
@@ -180,14 +181,14 @@ static void
 cxt_structure_free (Cxt_structure* structure)
 {
     int i;
-    bdestroy (structure->color);
+    structure->color.~CBString();
     for (i = 0; i < structure->num_contours; i++) {
 	cxt_polyline_free (&structure->pslist[i]);
     }
     free (structure->pslist);
 
-    structure->name[0] = 0;
-    structure->color = 0;
+    structure->name.~CBString();
+    structure->color.~CBString();
     structure->id = -1;
     structure->num_contours = 0;
     structure->pslist = 0;

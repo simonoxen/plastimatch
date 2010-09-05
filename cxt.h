@@ -5,10 +5,13 @@
 #define _cxt_h_
 
 #include "plm_config.h"
-#include "bstrlib.h"
-#define CXT_BUFLEN 2048
+#include "bstrwrap.h"
+
+#include "demographics.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+
+#define CXT_BUFLEN 2048
 
 typedef struct cxt_polyline Cxt_polyline;
 struct cxt_polyline {
@@ -22,8 +25,8 @@ struct cxt_polyline {
 
 typedef struct cxt_structure Cxt_structure;
 struct cxt_structure {
-    char name[CXT_BUFLEN];
-    bstring color;
+    CBString name;
+    CBString color;
     int id;                    /* Used for import/export (must be >= 1) */
     int bit;                   /* Used for ss-img (-1 for no bit) */
     int num_contours;
@@ -32,6 +35,7 @@ struct cxt_structure {
 
 typedef struct cxt_structure_list Cxt_structure_list;
 struct cxt_structure_list {
+    Demographics demographics;
     bstring ct_study_uid;
     bstring ct_series_uid;
     bstring ct_fref_uid;
@@ -59,8 +63,11 @@ void
 cxt_init (Cxt_structure_list* structures);
 plastimatch1_EXPORT
 Cxt_structure*
-cxt_add_structure (Cxt_structure_list* structures, const char *structure_name,
-		   bstring color, int structure_id);
+cxt_add_structure (
+    Cxt_structure_list *cxt, 
+    const CBString& structure_name, 
+    const CBString& color, 
+    int structure_id);
 plastimatch1_EXPORT
 Cxt_polyline*
 cxt_add_polyline (Cxt_structure* structure);

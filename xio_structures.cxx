@@ -109,7 +109,8 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	}
 
 	/* Add structure */
-	cxt_add_structure (structures, (char*) line1->data, 0, structure_id);
+	cxt_add_structure (structures, 
+	    CBString ((const char*) line1->data), CBString(), structure_id);
 
 	/* Skip extra lines */
 	for (int i = 0; i < skip_lines; i++) {
@@ -342,7 +343,7 @@ xio_structures_save (
 	/* Class 0 is "patient", class 1 is "Int" */
 	int structure_class = (i == 0) ? 0 : 1;
 	/* Name */
-	fprintf (fp, "%s\n", curr_structure->name);
+	fprintf (fp, "%s\n", (const char*) curr_structure->name);
 	/* Structure no, density, ??, class [, date] */
 	fprintf (fp, "%d,1.000000,0,%d%s\n", 
 	    i+1, structure_class, 

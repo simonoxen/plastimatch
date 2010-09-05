@@ -97,7 +97,7 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs,
 	int k = 1;
 	while (cxt_find_structure_by_id (cxt, k)) k++;
 	/* Add the structure */
-	cxt_add_structure (cxt, "Unknown structure", 0, k);
+	cxt_add_structure (cxt, CBString ("Unknown structure"), CBString(), k);
     }
 
     /* Loop through slices */

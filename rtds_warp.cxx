@@ -20,14 +20,15 @@
 
 static void
 compose_prefix_fn (
-    char *fn, 
-    int max_path, 
-    char *structure_name, 
+    CBString *fn, 
+    const CBString *structure_name, 
     Warp_parms *parms
 )
 {
-    snprintf (fn, max_path, "%s_%s.%s",
-	(const char*) parms->output_prefix, structure_name, "mha");
+    fn->format ("%s_%s.%s", 
+	(const char*) parms->output_prefix, 
+	(const char*) (*structure_name), 
+	"mha");
 }
 
 static void
@@ -43,17 +44,20 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
 
     /* Use m_cxt or m_ss_list ?? */
     for (i = 0; i < rtds->m_cxt->num_structures; i++) {
+	CBString fn;
 	Cxt_structure *curr_structure = &rtds->m_cxt->slist[i];
 	int bit = curr_structure->bit;
+
 	if (bit == -1) continue;
 
 	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	UCharImageType::Pointer prefix_img = ss_img_extract (
 	    rtds->m_ss_img->m_itk_uint32, bit);
-	char fn[_MAX_PATH];
-	compose_prefix_fn (fn, _MAX_PATH, curr_structure->name, parms);
-	printf ("Trying to save prefix image: [%d,%d], %s\n", i, bit, fn);
-	itk_image_save (prefix_img, fn);
+
+	compose_prefix_fn (&fn, &curr_structure->name, parms);
+	printf ("Trying to save prefix image: [%d,%d], %s\n", 
+	    i, bit, (const char*) fn);
+	itk_image_save (prefix_img, (const char*) fn);
     }
 }
 
@@ -262,12 +266,12 @@ save_ss_img (Rtds *rtds, Xform *xf,
 	for (i = 0; i < rtds->m_cxt->num_structures; i++) {
 	    Cxt_structure *curr_structure;
 	    curr_structure = &rtds->m_cxt->slist[i];
-	    fprintf (fp, "%d|%s|%s\n",
+	    fprintf (fp, "%d|%s|%s\n", 
 		curr_structure->bit, 
-		(curr_structure->color 
-		    ? (const char*) curr_structure->color->data 
-		    : "255\\0\\0"),
-		curr_structure->name);
+		(bstring_empty (&curr_structure->color) 
+		    ? "255\\0\\0"
+		    : (const char*) curr_structure->color),
+		(const char*) curr_structure->name);
 	}
 	fclose (fp);
 	printf ("Done.\n");
