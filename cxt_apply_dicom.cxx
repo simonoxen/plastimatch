@@ -49,19 +49,19 @@ cxt_apply_dicom_dir (Cxt_structure_list *cxt, const char *dicom_dir)
     /* PatientName */
     tmp = file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->patient_name = bfromcstr (tmp.c_str());
+	cxt->m_demographics.m_patient_name = tmp.c_str();
     }
 
     /* PatientID */
     tmp = file->GetEntryValue (0x0010, 0x0020);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->patient_id = bfromcstr (tmp.c_str());
+	cxt->m_demographics.m_patient_id = tmp.c_str();
     }
 
     /* PatientSex */
     tmp = file->GetEntryValue (0x0010, 0x0040);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->patient_sex = bfromcstr (tmp.c_str());
+	cxt->m_demographics.m_patient_sex = tmp.c_str();
     }
 
     /* StudyID */

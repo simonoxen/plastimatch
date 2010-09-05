@@ -35,13 +35,10 @@ struct cxt_structure {
 
 typedef struct cxt_structure_list Cxt_structure_list;
 struct cxt_structure_list {
-    Demographics demographics;
+    Demographics m_demographics;
     bstring ct_study_uid;
     bstring ct_series_uid;
     bstring ct_fref_uid;
-    bstring patient_name;
-    bstring patient_id;
-    bstring patient_sex;
     bstring study_id;
     int have_geometry;
     int dim[3];

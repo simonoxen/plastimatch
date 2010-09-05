@@ -113,13 +113,13 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
             break;
         }
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    cxt->patient_name = bstrcpy (val);
+	    cxt->m_demographics.m_patient_name = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    cxt->patient_id = bstrcpy (val);
+	    cxt->m_demographics.m_patient_id = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    cxt->patient_sex = bstrcpy (val);
+	    cxt->m_demographics.m_patient_sex = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
 	    cxt->study_id = bstrcpy (val);
@@ -336,22 +336,25 @@ cxt_save (
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
-    if (cxt->patient_name) {
-	fprintf (fp, "PATIENT_NAME %s\n", cxt->patient_name->data);
+    if (bstring_not_empty (cxt->m_demographics.m_patient_name)) {
+	fprintf (fp, "PATIENT_NAME %s\n", 
+	    (const char*) cxt->m_demographics.m_patient_name);
     } else {
 	fprintf (fp, "PATIENT_NAME\n");
     }
-    if (cxt->patient_id) {
-	fprintf (fp, "PATIENT_ID %s\n", cxt->patient_id->data);
+    if (bstring_not_empty (cxt->m_demographics.m_patient_id)) {
+	fprintf (fp, "PATIENT_ID %s\n", 
+	    (const char*) cxt->m_demographics.m_patient_id);
     } else {
 	fprintf (fp, "PATIENT_ID\n");
     }
-    if (cxt->patient_sex) {
-	fprintf (fp, "PATIENT_SEX %s\n", cxt->patient_sex->data);
+    if (bstring_not_empty (cxt->m_demographics.m_patient_sex)) {
+	fprintf (fp, "PATIENT_SEX %s\n", 
+	    (const char*) cxt->m_demographics.m_patient_sex);
     } else {
 	fprintf (fp, "PATIENT_SEX\n");
     }
-    if (cxt->patient_sex) {
+    if (cxt->study_id) {
 	fprintf (fp, "STUDY_ID %s\n", cxt->study_id->data);
     } else {
 	fprintf (fp, "STUDY_ID\n");

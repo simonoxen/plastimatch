@@ -24,6 +24,7 @@ void
 cxt_init (Cxt_structure_list* cxt)
 {
     memset (cxt, 0, sizeof (Cxt_structure_list));
+    new (&cxt->m_demographics) Demographics ();
 }
 
 /* Add structure (if it doesn't already exist) */
@@ -247,10 +248,8 @@ cxt_free (Cxt_structure_list* cxt)
     int i;
 
     bdestroy (cxt->ct_series_uid);
-    bdestroy (cxt->patient_name);
-    bdestroy (cxt->patient_id);
-    bdestroy (cxt->patient_sex);
     bdestroy (cxt->study_id);
+    cxt->m_demographics.~Demographics();
 
     for (i = 0; i < cxt->num_structures; i++) {
 	cxt_structure_free (&cxt->slist[i]);
