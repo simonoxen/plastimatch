@@ -10,7 +10,7 @@
 #include "itk_image.h"
 #include "xform.h"
 
-typedef itk::PointSet< float, 3 > PointSetType;
+typedef itk::PointSet< float, 3 > FloatPointSetType;
 
 template<class T> void itk_pointset_load (T pointset, const char* fn);
 template<class T> T itk_pointset_warp (T ps_in, Xform* xf);

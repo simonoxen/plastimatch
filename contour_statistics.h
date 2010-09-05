@@ -21,7 +21,7 @@
 /* =======================================================================*
     Definitions
  * =======================================================================*/
-typedef UCharImageType ImgType;
+//typedef UCharImageType ImgType;
 //typedef itk::Image<unsigned char, 2>	intImgType;
 
 

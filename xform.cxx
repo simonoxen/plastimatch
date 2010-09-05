@@ -398,56 +398,6 @@ itk_xform_load (Xform *xf, const char* fn)
     }
 }
 
-#if defined (commentout)
-void
-xform_save_translation (TranslationTransformType::Pointer transform, char* filename)
-{
-    FILE* fp = fopen (filename,"w");
-    if (!fp) {
-	printf ("Error: Couldn't open file %s for write\n", filename);
-	return;
-    }
-
-    fprintf (fp,"ObjectType = MGH_XFORM_TRANSLATION\n");
-    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
-	fprintf (fp, "%g\n", transform->GetParameters()[i]);
-    }
-    fclose (fp);
-}
-
-void
-xform_save_versor (VersorTransformType::Pointer transform, char* filename)
-{
-    FILE* fp = fopen (filename,"w");
-    if (!fp) {
-	printf ("Error: Couldn't open file %s for write\n", filename);
-	return;
-    }
-
-    fprintf (fp,"ObjectType = MGH_XFORM_VERSOR\n");
-    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
-	fprintf (fp, "%g\n", transform->GetParameters()[i]);
-    }
-    fclose (fp);
-}
-
-void
-xform_save_affine (AffineTransformType::Pointer transform, char* filename)
-{
-    FILE* fp = fopen (filename,"w");
-    if (!fp) {
-	printf ("Error: Couldn't open file %s for write\n", filename);
-	return;
-    }
-
-    fprintf (fp,"ObjectType = MGH_XFORM_AFFINE\n");
-    for (unsigned int i = 0; i < transform->GetNumberOfParameters(); i++) {
-	fprintf (fp, "%g\n", transform->GetParameters()[i]);
-    }
-    fclose (fp);
-}
-#endif
-
 void
 xform_save_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 {
