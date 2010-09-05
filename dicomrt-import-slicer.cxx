@@ -19,20 +19,20 @@ main (int argc, char * argv [])
     Rtds rtds;
 
     /* Required input */
-    strcpy (parms.input_fn, input_dicomrt_ss.c_str());
+    parms.input_fn = input_dicomrt_ss.c_str();
 
     /* Optional inputs */
     if (output_labelmap.compare ("None") != 0) {
-	strcpy (parms.output_labelmap_fn, output_labelmap.c_str());
+	parms.output_labelmap_fn = output_labelmap.c_str();
     }
     if (output_dose.compare ("None") != 0) {
-	strcpy (parms.output_dose_img, output_dose.c_str());
+	parms.output_dose_img_fn = output_dose.c_str();
     }
     if (output_image.compare ("None") != 0) {
-	strcpy (parms.output_img, output_image.c_str());
+	parms.output_img_fn = output_image.c_str();
     }
     if (reference_vol.compare ("None") != 0) {
-	strcpy (parms.fixed_im_fn, reference_vol.c_str());
+	parms.fixed_im_fn = reference_vol.c_str();
     }
 
     /* Process warp */
