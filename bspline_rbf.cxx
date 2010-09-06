@@ -348,7 +348,11 @@ static void bspline_rbf_find_coeffs_reg(Volume *vector_field, Bspline_parms *par
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
-static void bspline_rbf_find_coeffs_noreg(Volume *vector_field, Bspline_parms *parms)
+static void 
+bspline_rbf_find_coeffs_noreg (
+    Volume *vector_field, 
+    Bspline_parms *parms
+)
 {
     Bspline_landmarks *blm = parms->landmarks;
     float *vf;

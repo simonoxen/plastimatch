@@ -953,7 +953,7 @@ SET (PROTON_DOSE_SRC
   )
 SET (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
-  landmark_warp_opts.cxx landmark_warp_opts.h
+  landmark_warp_args.cxx landmark_warp_args.h
   )
 SET (RTOG_TO_MHA_SRC
   exchkeys.cxx exchkeys.h

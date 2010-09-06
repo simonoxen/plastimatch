@@ -38,7 +38,7 @@ landmark_warp_destroy (Landmark_warp *lw)
 /* GCS FIX: Oops.  This doesn't work because tps_xform is c++ code.
    If needed, we need to separate out Tps_xform as a separate c file. */
 Landmark_warp*
-landmark_warp_load_xform (char *fn)
+landmark_warp_load_xform (const char *fn)
 {
 #if defined (commentout)
     Landmark_warp *lw;
@@ -75,7 +75,7 @@ landmark_warp_load_xform (char *fn)
 }
 
 Landmark_warp*
-landmark_warp_load_pointsets (char *fixed_lm_fn, char *moving_lm_fn)
+landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn)
 {
     Landmark_warp *lw;
 

@@ -26,10 +26,10 @@ gpuit_EXPORT void
 landmark_warp_destroy (Landmark_warp *lw);
 gpuit_EXPORT 
 Landmark_warp*
-landmark_warp_load_xform (char *fn);
+landmark_warp_load_xform (const char *fn);
 gpuit_EXPORT 
 Landmark_warp*
-landmark_warp_load_pointsets (char *fixed_lm_fn, char *moving_lm_fn);
+landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn);
 
 #if defined __cplusplus
 }

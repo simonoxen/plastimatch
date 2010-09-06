@@ -7,10 +7,11 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include "bstring_util.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "landmark_warp.h"
-#include "landmark_warp_opts.h"
+#include "landmark_warp_args.h"
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "rbf_gcs.h"
@@ -28,7 +29,7 @@
 
 #if defined (commentout)
 static void
-do_landmark_warp_gcs (Landmark_warp_options *parms)
+do_landmark_warp_gcs (Landmark_warp_args *parms)
 {
     Tps_xform *tps;
     Volume *moving;
@@ -86,20 +87,20 @@ do_landmark_warp_gcs (Landmark_warp_options *parms)
 #endif
 
 static Landmark_warp*
-load_input_files (Landmark_warp_options *parms)
+load_input_files (Landmark_warp_args *parms)
 {
     Landmark_warp *lw = 0;
 
     /* Load the landmark data */
-    if (parms->input_xform_fn) {
-	lw = landmark_warp_load_xform (parms->input_xform_fn);
+    if (bstring_not_empty (parms->input_xform_fn)) {
+	lw = landmark_warp_load_xform ((const char*) parms->input_xform_fn);
     }
-    else if (parms->input_fixed_landmarks_fn 
-	&& parms->input_moving_landmarks_fn)
+    else if (bstring_not_empty (parms->input_fixed_landmarks_fn) 
+	&& bstring_not_empty (parms->input_moving_landmarks_fn))
     {
 	lw = landmark_warp_load_pointsets (
-	    parms->input_fixed_landmarks_fn, 
-	    parms->input_moving_landmarks_fn);
+	    (const char*) parms->input_fixed_landmarks_fn, 
+	    (const char*) parms->input_moving_landmarks_fn);
     }
     if (!lw) {
 	print_and_exit ("Error, landmarks were not loaded successfully.\n");
@@ -109,19 +110,19 @@ load_input_files (Landmark_warp_options *parms)
     lw->m_img = plm_image_load_native (parms->input_moving_image_fn);
     if (!lw->m_img) {
 	print_and_exit ("Error reading moving file: %s\n", 
-	    parms->input_moving_image_fn);
+	    (const char*) parms->input_moving_image_fn);
     }
     return lw;
 }
 
 static void
-do_landmark_warp (Landmark_warp_options *parms)
+do_landmark_warp (Landmark_warp_args *parms)
 {
     Landmark_warp *lw;
 
     lw = load_input_files (parms);
 
-    switch (parms->algorithm) {
+    switch (parms->m_algorithm) {
     case LANDMARK_WARP_ALGORITHM_ITK_TPS:
 	break;
     case LANDMARK_WARP_ALGORITHM_RBF_NSH:
@@ -136,9 +137,9 @@ do_landmark_warp (Landmark_warp_options *parms)
 int
 main (int argc, char *argv[])
 {
-    Landmark_warp_options parms;
+    Landmark_warp_args parms;
 
-    landmark_warp_opts_parse_args (&parms, argc, argv);
+    parms.parse_args (argc, argv);
     do_landmark_warp (&parms);
     return 0;
 }
