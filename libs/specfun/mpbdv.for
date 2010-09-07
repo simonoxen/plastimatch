@@ -1,52 +1,52 @@
-        PROGRAM MPBDV
-C
-C       =========================================================
-C       Purpose: This program computes the parabolic cylinder 
-C                functions Dv(x) and their derivatives using
-C                subroutine PBDV
-C       Input:   x --- Argument of Dv(x)
-C                v --- Order of Dv(x)
-C       Output:  DV(na) --- Dn+v0(x)
-C                DP(na) --- Dn+v0'(x)
-C                ( na = |n|, n = int(v), v0 = v-n, |v0| < 1
-C                  n = 0,ס1,ס2,תתת, |n| ף 100 )
-C                PDF --- Dv(x)
-C                PDD --- Dv'(x)
-C       Example: v = 5.5,  x =10.0,  v0 = 0.5,  n = 0,1,...,5
-C
-C                  n+v0      Dv(x)           Dv'(x)
-C                ---------------------------------------
-C                  0.5   .43971930D-10  -.21767183D-09
-C                  1.5   .43753148D-09  -.21216995D-08
-C                  2.5   .43093569D-08  -.20452956D-07
-C                  3.5   .41999741D-07  -.19491595D-06
-C                  4.5   .40491466D-06  -.18355745D-05
-C                  5.5   .38601477D-05  -.17073708D-04
-C
-C                Dv(x)= .38601477D-05,  Dv'(x)=-.17073708D-04
-C       =========================================================
-C
-        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
-        DIMENSION DV(0:100),DP(0:100)
-        WRITE(*,*)'Please enter v and  x '
-        READ(*,*)V,X
-        WRITE(*,20)V,X
-        NV=INT(V)
-        V0=V-NV
-        NA=ABS(NV)
-        CALL PBDV(V,X,DV,DP,PDF,PDD)
-        WRITE(*,*)
-        WRITE(*,*)'   v       Dv(x)           Dv''(x)'
-        WRITE(*,*)'---------------------------------------'
-        DO 10 K=0,NA
-           VK=K*ISIGN(1,NV)+V0
-10         WRITE(*,30)VK,DV(K),DP(K)
-        WRITE(*,*)
-        WRITE(*,40)V,PDF,PDD
-20      FORMAT(1X,'v =',F6.2,',    ','x =',F6.2)
-30      FORMAT(1X,F5.1,2D16.8)
-40      FORMAT(1X,'v =',F5.1,',  Dv(x)=',D14.8,',   Dv''(x)=',D14.8)
-        END
+c$$$        PROGRAM MPBDV
+c$$$C
+c$$$C       =========================================================
+c$$$C       Purpose: This program computes the parabolic cylinder 
+c$$$C                functions Dv(x) and their derivatives using
+c$$$C                subroutine PBDV
+c$$$C       Input:   x --- Argument of Dv(x)
+c$$$C                v --- Order of Dv(x)
+c$$$C       Output:  DV(na) --- Dn+v0(x)
+c$$$C                DP(na) --- Dn+v0'(x)
+c$$$C                ( na = |n|, n = int(v), v0 = v-n, |v0| < 1
+c$$$C                  n = 0,ס1,ס2,תתת, |n| ף 100 )
+c$$$C                PDF --- Dv(x)
+c$$$C                PDD --- Dv'(x)
+c$$$C       Example: v = 5.5,  x =10.0,  v0 = 0.5,  n = 0,1,...,5
+c$$$C
+c$$$C                  n+v0      Dv(x)           Dv'(x)
+c$$$C                ---------------------------------------
+c$$$C                  0.5   .43971930D-10  -.21767183D-09
+c$$$C                  1.5   .43753148D-09  -.21216995D-08
+c$$$C                  2.5   .43093569D-08  -.20452956D-07
+c$$$C                  3.5   .41999741D-07  -.19491595D-06
+c$$$C                  4.5   .40491466D-06  -.18355745D-05
+c$$$C                  5.5   .38601477D-05  -.17073708D-04
+c$$$C
+c$$$C                Dv(x)= .38601477D-05,  Dv'(x)=-.17073708D-04
+c$$$C       =========================================================
+c$$$C
+c$$$        IMPLICIT DOUBLE PRECISION (A-H,O-Z)
+c$$$        DIMENSION DV(0:100),DP(0:100)
+c$$$        WRITE(*,*)'Please enter v and  x '
+c$$$        READ(*,*)V,X
+c$$$        WRITE(*,20)V,X
+c$$$        NV=INT(V)
+c$$$        V0=V-NV
+c$$$        NA=ABS(NV)
+c$$$        CALL PBDV(V,X,DV,DP,PDF,PDD)
+c$$$        WRITE(*,*)
+c$$$        WRITE(*,*)'   v       Dv(x)           Dv''(x)'
+c$$$        WRITE(*,*)'---------------------------------------'
+c$$$        DO 10 K=0,NA
+c$$$           VK=K*ISIGN(1,NV)+V0
+c$$$10         WRITE(*,30)VK,DV(K),DP(K)
+c$$$        WRITE(*,*)
+c$$$        WRITE(*,40)V,PDF,PDD
+c$$$20      FORMAT(1X,'v =',F6.2,',    ','x =',F6.2)
+c$$$30      FORMAT(1X,F5.1,2D16.8)
+c$$$40      FORMAT(1X,'v =',F5.1,',  Dv(x)=',D14.8,',   Dv''(x)=',D14.8)
+c$$$        END
 
 
         SUBROUTINE PBDV(V,X,DV,DP,PDF,PDD)
