@@ -201,6 +201,24 @@ Rtss::adjust_structure_names (void)
 }
 
 void
+cxt_adjust_name (CBString *name_out, const CBString *name_in)
+{
+    int i;
+
+    *name_out = *name_in;
+
+    /* GE Adv sim doesn't like names with strange punctuation. */
+    /* 3D Slicer color table doesn't allow spaces */
+    for (i = 0; i < name_in->length(); i++) {
+	if (isalnum ((*name_in)[i])) {
+	    (*name_out)[i] = (*name_in)[i];
+	} else {
+	    (*name_out)[i] = '_';
+	}
+    }
+}
+
+void
 Rtss::prune_empty (void)
 {
     int i;

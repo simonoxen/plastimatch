@@ -131,6 +131,9 @@ cxt_add_polyline (Cxt_structure* structure);
 plastimatch1_EXPORT
 void
 cxt_structure_rgb (const Cxt_structure *structure, int *r, int *g, int *b);
+plastimatch1_EXPORT
+void
+cxt_adjust_name (CBString *name_out, const CBString *name_in);
 
 #if defined __cplusplus
 }

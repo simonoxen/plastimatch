@@ -86,7 +86,7 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
 void
 ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
 {
-    int i;
+    int i, color_no;
     FILE *fp;
 	
     make_directory_recursive (colormap_fn);
@@ -98,18 +98,42 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
 
     fprintf (fp, 
 	"# Color table file %s\n"
-	"# %d values\n",
-	colormap_fn, cxt->num_structures);
+	"# %d values\n"
+	"0 Background 0 0 0 255\n",
+	colormap_fn, cxt->num_structures + 1);
+
+    /* Colormap should match labelmap.  This means that filled structures
+       are numbered before empty structures.  We accomplish this by running 
+       two passes: filled structures, then empty structures. */
+    color_no = 0;
+    for (i = 0; i < cxt->num_structures; i++) {
+	int r, g, b;
+	Cxt_structure *curr_structure;
+	CBString adjusted_name;
+
+	curr_structure = &cxt->slist[i];
+	if (curr_structure->bit >= 0) {
+	    cxt_structure_rgb (curr_structure, &r, &g, &b);
+	    cxt_adjust_name (&adjusted_name, &curr_structure->name);
+	    fprintf (fp, "%d %s %d %d %d 255\n", 
+		curr_structure->bit + 1, (const char*) adjusted_name, r, g, b);
+	    color_no = curr_structure->bit + 1;
+	}
+    }
 
     for (i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
 	Cxt_structure *curr_structure;
+	CBString adjusted_name;
+
 	curr_structure = &cxt->slist[i];
-	cxt_structure_rgb (curr_structure, &r, &g, &b);
-	fprintf (fp, "%d %s %d %d %d 255\n", 
-	    curr_structure->id, 
-	    (const char*) curr_structure->name, 
-	    r, g, b);
+	if (curr_structure->bit == -1) {
+	    cxt_structure_rgb (curr_structure, &r, &g, &b);
+	    cxt_adjust_name (&adjusted_name, &curr_structure->name);
+	    fprintf (fp, "%d %s %d %d %d 255\n", 
+		color_no + 1, (const char*) adjusted_name, r, g, b);
+	    color_no ++;
+	}
     }
     fclose (fp);
 }
