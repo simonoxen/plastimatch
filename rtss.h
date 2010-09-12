@@ -47,7 +47,9 @@ public:
     int num_structures;
     Cxt_structure *slist;
 public:
+    plastimatch1_EXPORT
     Rtss ();
+    plastimatch1_EXPORT
     ~Rtss ();
     void init (void);
     void clear (void);
