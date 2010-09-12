@@ -12,53 +12,6 @@
 #include "math_util.h"
 #include "plm_image_header.h"
 
-Cxt_structure_list*
-cxt_load_ss_list (Cxt_structure_list* cxt, const char* xorlist_fn)
-{
-    FILE* fp;
-
-    fp = fopen (xorlist_fn, "r");
-
-    if (!fp) {
-	fprintf (stderr, 
-		 "Could not open xorlist file for read: %s\n", xorlist_fn);
-        exit (-1);
-    }
-
-    if (!cxt) {
-	cxt = cxt_create ();
-    }
-
-    /* Part 2: Structures info */
-    while (1) {
-        char color[CXT_BUFLEN];
-        char name[CXT_BUFLEN];
-        char buf[CXT_BUFLEN];
-	int struct_id;
-        char *p;
-        int rc;
-
-        p = fgets (buf, CXT_BUFLEN, fp);
-        if (!p) {
-	    break;
-        }
-        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
-        if (rc != 3) {
-            fprintf (stderr, 
-		     "Error. xorlist file not formatted correctly: %s\n",
-		     xorlist_fn);
-            exit (-1);
-        }
-
-	Cxt_structure *curr_structure = cxt_add_structure (
-	    cxt, CBString (name), CBString (color), struct_id);
-	curr_structure->bit = struct_id;
-    }
-
-    fclose (fp);
-    return cxt;
-}
-
 void
 cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
 {

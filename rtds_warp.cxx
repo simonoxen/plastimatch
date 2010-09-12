@@ -15,6 +15,7 @@
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
 #include "ss_img_extract.h"
+#include "ss_list_io.h"
 #include "xio_dose.h"
 #include "xio_structures.h"
 
@@ -259,22 +260,8 @@ save_ss_img (Rtds *rtds, Xform *xf,
     /* Write out list of structure names */
     if (bstring_not_empty (parms->output_ss_list_fn)) {
 	printf ("Writing ss list.\n");
-	int i;
-	FILE *fp;
-	make_directory_recursive ((const char*) parms->output_ss_list_fn);
-	fp = fopen ((const char*) parms->output_ss_list_fn, "w");
-	for (i = 0; i < rtds->m_cxt->num_structures; i++) {
-	    Cxt_structure *curr_structure;
-	    curr_structure = &rtds->m_cxt->slist[i];
-	    fprintf (fp, "%d|%s|%s\n", 
-		curr_structure->bit, 
-		(bstring_empty (curr_structure->color) 
-		    ? "255\\0\\0"
-		    : (const char*) curr_structure->color),
-		(const char*) curr_structure->name);
-	}
-	fclose (fp);
-	printf ("Done.\n");
+
+	ss_list_save (rtds->m_cxt, parms->output_ss_list_fn);
     }
 
     /* If we are warping, re-extract polylines into cxt */

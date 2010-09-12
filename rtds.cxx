@@ -16,6 +16,7 @@
 #include "plm_image_patient_position.h"
 #include "rtds.h"
 #include "rtds_dicom.h"
+#include "ss_list_io.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
@@ -178,7 +179,7 @@ Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 	cxt_destroy (this->m_ss_list);
     }
     if (ss_list) {
-	this->m_ss_list = cxt_load_ss_list (0, ss_list);
+	this->m_ss_list = ss_list_load (0, ss_list);
     }
 }
 
@@ -272,7 +273,7 @@ Rtds::convert_ss_img_to_cxt (void)
     cxt_set_geometry_from_plm_image (this->m_cxt, this->m_ss_img);
 
     /* Extract polylines */
-	num_structs = this->m_ss_list->num_structures;
+    num_structs = this->m_ss_list->num_structures;
     /* Image type must be uint32_t for cxt_extract */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 

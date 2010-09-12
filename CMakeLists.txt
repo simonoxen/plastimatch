@@ -761,6 +761,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   rtds_warp.cxx rtds_warp.h
   slice_extract.cxx slice_extract.h
   ss_img_extract.cxx ss_img_extract.h
+  ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
   xio_ct.cxx xio_ct.h
   xio_dir.cxx xio_dir.h
