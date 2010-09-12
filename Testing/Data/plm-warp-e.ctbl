@@ -1,0 +1,24 @@
+# Color table file /home/gsharp/build/plastimatch-3.20.0/Testing/plm-warp-e.ctbl
+# 22 values
+0 Background 0 0 0 255
+1 Patient 255 0 0 255
+2 Tumor 255 0 0 255
+3 R_Lung 255 0 0 255
+4 L_Lung 255 0 0 255
+5 Spinal_Cord 255 0 0 255
+6 Planning_vol_1 255 0 0 255
+7 Treatment_vol 255 0 0 255
+8 Target_vol__1 255 0 0 255
+9 Target_vol__2 255 0 0 255
+10 Target_vol__3_ 255 0 0 255
+11 Esophagus 255 0 0 255
+12 Trachea 255 0 0 255
+13 Bronchus 255 0 0 255
+14 L_Breast 255 0 0 255
+15 R_Breast 255 0 0 255
+16 Rib 255 0 0 255
+17 Vertebral_Body 255 0 0 255
+18 Sternum 255 0 0 255
+19 Lymph_node 255 0 0 255
+20 Heart 255 0 0 255
+21 IMC 255 0 0 255

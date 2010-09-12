@@ -942,6 +942,11 @@ ADD_TEST (
   ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss-list.txt"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt")
+ADD_TEST (
+  "plm-warp-e-check-6"
+  ${CMAKE_COMMAND} -E compare_files
+  "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl")
 
 PLM_ADD_TEST (
   "plm-warp-f" 

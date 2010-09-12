@@ -88,6 +88,8 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     "plm-warp-e-check-3"
     "plm-warp-e-stats-4"
     "plm-warp-e-check-4"
+    "plm-warp-e-check-5"
+    "plm-warp-e-check-6"
     "plm-warp-f"
     "plm-warp-f-stats-1"
     "plm-warp-f-check-1"
