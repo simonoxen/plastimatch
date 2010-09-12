@@ -13,7 +13,7 @@
 #include "plm_image_header.h"
 
 void
-cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
+cxt_load (Rtss* cxt, const char* cxt_fn)
 {
     FILE* fp;
     Cxt_polyline* curr_contour;
@@ -66,25 +66,25 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
             break;
         }
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    cxt->m_demographics.m_patient_name = (const char*) val->data;
+	    cxt->m_demographics->m_patient_name = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    cxt->m_demographics.m_patient_id = (const char*) val->data;
+	    cxt->m_demographics->m_patient_id = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    cxt->m_demographics.m_patient_sex = (const char*) val->data;
+	    cxt->m_demographics->m_patient_sex = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
-	    cxt->study_id = bstrcpy (val);
+	    cxt->study_id = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "CT_STUDY_UID")) {
-	    cxt->ct_study_uid = bstrcpy (val);
+	    cxt->ct_study_uid = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
-	    cxt->ct_series_uid = bstrcpy (val);
+	    cxt->ct_series_uid = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-	    cxt->ct_fref_uid = bstrcpy (val);
+	    cxt->ct_fref_uid = (const char*) val->data;
 	}
         else if (biseqcstr (tag, "OFFSET")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
@@ -140,7 +140,7 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
         if (rc != 3) {
             break;
         }
-	cxt_add_structure (cxt, CBString (name), CBString (color), struct_id);
+	cxt->add_structure (CBString (name), CBString (color), struct_id);
     }
 
     /* Part 3: Contour info */
@@ -183,7 +183,7 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
 	}
         fgetc (fp);
 
-        curr_structure = cxt_find_structure_by_id (cxt, struct_id);
+        curr_structure = cxt->find_structure_by_id (struct_id);
 
 	/* If there is no header line for this structure, we will 
 	   skip all contours for the structure. */
@@ -255,7 +255,7 @@ cxt_load (Cxt_structure_list* cxt, const char* cxt_fn)
 
 void
 cxt_save (
-    Cxt_structure_list* cxt, 
+    Rtss* cxt, 
     const char* cxt_fn,
     bool prune_empty)
 {
@@ -268,57 +268,57 @@ cxt_save (
     fp = fopen (cxt_fn, "wb");
     if (!fp) {
 	fprintf (stderr, 
-		 "Could not open contour file for write: %s\n", cxt_fn);
+	    "Could not open contour file for write: %s\n", cxt_fn);
         exit (-1);
     }
 
     /* Part 1: Dicom info */
-    if (cxt->ct_series_uid) {
-	fprintf (fp, "CT_SERIES_UID %s\n", cxt->ct_series_uid->data);
+    if (bstring_not_empty (cxt->ct_series_uid)) {
+	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) cxt->ct_series_uid);
     } else {
 	fprintf (fp, "CT_SERIES_UID\n");
     }
-    if (cxt->ct_study_uid) {
-	fprintf (fp, "CT_STUDY_UID %s\n", cxt->ct_study_uid->data);
+    if (bstring_not_empty (cxt->ct_study_uid)) {
+	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) cxt->ct_study_uid);
     } else {
 	fprintf (fp, "CT_STUDY_UID\n");
     }
-    if (cxt->ct_fref_uid) {
+    if (bstring_not_empty (cxt->ct_fref_uid)) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
-		 cxt->ct_fref_uid->data);
+	    (const char*) cxt->ct_fref_uid);
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
-    if (bstring_not_empty (cxt->m_demographics.m_patient_name)) {
+    if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
 	fprintf (fp, "PATIENT_NAME %s\n", 
-	    (const char*) cxt->m_demographics.m_patient_name);
+	    (const char*) cxt->m_demographics->m_patient_name);
     } else {
 	fprintf (fp, "PATIENT_NAME\n");
     }
-    if (bstring_not_empty (cxt->m_demographics.m_patient_id)) {
+    if (bstring_not_empty (cxt->m_demographics->m_patient_id)) {
 	fprintf (fp, "PATIENT_ID %s\n", 
-	    (const char*) cxt->m_demographics.m_patient_id);
+	    (const char*) cxt->m_demographics->m_patient_id);
     } else {
 	fprintf (fp, "PATIENT_ID\n");
     }
-    if (bstring_not_empty (cxt->m_demographics.m_patient_sex)) {
+    if (bstring_not_empty (cxt->m_demographics->m_patient_sex)) {
 	fprintf (fp, "PATIENT_SEX %s\n", 
-	    (const char*) cxt->m_demographics.m_patient_sex);
+	    (const char*) cxt->m_demographics->m_patient_sex);
     } else {
 	fprintf (fp, "PATIENT_SEX\n");
     }
-    if (cxt->study_id) {
-	fprintf (fp, "STUDY_ID %s\n", cxt->study_id->data);
+    if (bstring_not_empty (cxt->study_id)) {
+	fprintf (fp, "STUDY_ID %s\n", (const char*) cxt->study_id);
     } else {
 	fprintf (fp, "STUDY_ID\n");
     }
     if (cxt->have_geometry) {
 	fprintf (fp, "OFFSET %g %g %g\n", cxt->offset[0],
-		 cxt->offset[1], cxt->offset[2]);
+	    cxt->offset[1], cxt->offset[2]);
 	fprintf (fp, "DIMENSION %d %d %d\n", cxt->dim[0], 
-		 cxt->dim[1], cxt->dim[2]);
+	    cxt->dim[1], cxt->dim[2]);
 	fprintf (fp, "SPACING %g %g %g\n", cxt->spacing[0], 
-		 cxt->spacing[1], cxt->spacing[2]);
+	    cxt->spacing[1], cxt->spacing[2]);
     }
 
     /* Part 2: Structures info */
@@ -351,7 +351,7 @@ cxt_save (
 	    /* struct_no|contour_thickness|num_points|slice_no|slice_uid|points */
 	    /* I don't think contour thickness is used. */
 	    fprintf (fp, "%d||%d|", curr_structure->id, 
-		     curr_polyline->num_vertices);
+		curr_polyline->num_vertices);
 	    /* slice_no and slice_uid are optional */
 	    if (curr_polyline->slice_no >= 0) {
 		fprintf (fp, "%d|", curr_polyline->slice_no);

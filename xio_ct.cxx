@@ -21,12 +21,12 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt.h"
 #include "gdcm_series.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "xio_ct.h"
 #include "xio_io.h"
 #include "xio_structures.h"

@@ -12,15 +12,15 @@
 #include "gdcmUtil.h"
 
 #include "cxt_apply_dicom.h"
-#include "cxt.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 
 void
-cxt_apply_dicom_dir (Cxt_structure_list *cxt, const char *dicom_dir)
+cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 {
     int i, j;
     Gdcm_series gs;
@@ -49,38 +49,38 @@ cxt_apply_dicom_dir (Cxt_structure_list *cxt, const char *dicom_dir)
     /* PatientName */
     tmp = file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics.m_patient_name = tmp.c_str();
+	cxt->m_demographics->m_patient_name = tmp.c_str();
     }
 
     /* PatientID */
     tmp = file->GetEntryValue (0x0010, 0x0020);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics.m_patient_id = tmp.c_str();
+	cxt->m_demographics->m_patient_id = tmp.c_str();
     }
 
     /* PatientSex */
     tmp = file->GetEntryValue (0x0010, 0x0040);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics.m_patient_sex = tmp.c_str();
+	cxt->m_demographics->m_patient_sex = tmp.c_str();
     }
 
     /* StudyID */
     tmp = file->GetEntryValue (0x0020, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->study_id = bfromcstr (tmp.c_str());
+	cxt->study_id = tmp.c_str();
     }
 
     /* StudyInstanceUID */
     tmp = file->GetEntryValue (0x0020, 0x000d);
-    cxt->ct_study_uid = bfromcstr (tmp.c_str());
+    cxt->ct_study_uid = tmp.c_str();
 
     /* SeriesInstanceUID */
     tmp = file->GetEntryValue (0x0020, 0x000e);
-    cxt->ct_series_uid = bfromcstr (tmp.c_str());
+    cxt->ct_series_uid = tmp.c_str();
 	
     /* FrameOfReferenceUID */
     tmp = file->GetEntryValue (0x0020, 0x0052);
-    cxt->ct_fref_uid = bfromcstr (tmp.c_str());
+    cxt->ct_fref_uid = tmp.c_str();
 
     /* slice numbers and slice uids */
     for (i = 0; i < cxt->num_structures; i++) {

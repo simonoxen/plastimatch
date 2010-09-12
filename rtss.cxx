@@ -5,161 +5,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "bstrlib.h"
-#include "cxt.h"
+
+#include "bstring_util.h"
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "rtss.h"
 
-Cxt_structure_list*
-cxt_create (void)
+Rtss::Rtss ()
 {
-    Cxt_structure_list *cxt;
-    cxt = (Cxt_structure_list*) malloc (sizeof (Cxt_structure_list));
-    cxt_init (cxt);
-    return cxt;
+    this->init ();
+}
+
+Rtss::~Rtss ()
+{
+    this->clear ();
 }
 
 void
-cxt_init (Cxt_structure_list* cxt)
+Rtss::init (void)
 {
-    memset (cxt, 0, sizeof (Cxt_structure_list));
-    new (&cxt->m_demographics) Demographics ();
-}
-
-/* Add structure (if it doesn't already exist) */
-Cxt_structure*
-cxt_add_structure (
-    Cxt_structure_list *cxt, 
-    const CBString& structure_name, 
-    const CBString& color, 
-    int structure_id)
-{
-    Cxt_structure* new_structure;
-
-    new_structure = cxt_find_structure_by_id (cxt, structure_id);
-    if (new_structure) {
-	return new_structure;
-    }
-
-    cxt->num_structures++;
-    cxt->slist = (Cxt_structure*) 
-	    realloc (cxt->slist, 
-		     cxt->num_structures * sizeof(Cxt_structure));
-    new_structure = &cxt->slist[cxt->num_structures - 1];
-
-    memset (new_structure, 0, sizeof(Cxt_structure));
-    //new_structure->name = *structure_name;
-    new (&new_structure->name) CBString (structure_name);
-    new_structure->id = structure_id;
-    new_structure->bit = -1;
-    //new_structure->color = *color;
-    new (&new_structure->color) CBString (color);
-    new_structure->num_contours = 0;
-    new_structure->pslist = 0;
-    return new_structure;
-}
-
-Cxt_polyline*
-cxt_add_polyline (Cxt_structure* structure)
-{
-    Cxt_polyline* new_polyline;
-
-    structure->num_contours++;
-    structure->pslist = (Cxt_polyline*) 
-	realloc (structure->pslist, structure->num_contours 
-		 * sizeof(Cxt_polyline));
-
-    new_polyline = &structure->pslist[structure->num_contours - 1];
-    memset (new_polyline, 0, sizeof(Cxt_polyline));
-    return new_polyline;
-}
-
-Cxt_structure*
-cxt_find_structure_by_id (Cxt_structure_list* cxt, int structure_id)
-{
-    int i;
-
-    for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure* curr_structure;
-	curr_structure = &cxt->slist[i];
-	if (curr_structure->id == structure_id) {
-	    return curr_structure;
-	}
-    }
-    return 0;
-}
-
-void
-cxt_debug (Cxt_structure_list* cxt)
-{
-    int i;
-    Cxt_structure* curr_structure;
-
-    printf ("dim = %d %d %d\n", 
-	cxt->dim[0], cxt->dim[1], cxt->dim[2]);
-    printf ("offset = %g %g %g\n", 
-	cxt->offset[0], cxt->offset[1], cxt->offset[2]);
-    printf ("spacing = %g %g %g\n", 
-	cxt->spacing[0], cxt->spacing[1], cxt->spacing[2]);
-
-    for (i = 0; i < cxt->num_structures; i++) {
-        curr_structure = &cxt->slist[i];
-	printf ("%d %d %s (%p) (%d contours)", 
-	    i, curr_structure->id, 
-	    (const char*) curr_structure->name, 
-	    curr_structure->pslist,
-	    curr_structure->num_contours
-	);
-	if (curr_structure->num_contours) {
-	    if (curr_structure->pslist[0].num_vertices) {
-		printf (" [%f,%f,%f,...]",
-		    curr_structure->pslist[0].x[0],
-		    curr_structure->pslist[0].y[0],
-		    curr_structure->pslist[0].z[0]);
-	    } else {
-		printf (" <no vertices>");
-	    }
-	}
-	printf ("\n");
-    }
-}
-
-void
-cxt_adjust_structure_names (Cxt_structure_list* cxt)
-{
-    int i, j;
-    Cxt_structure* curr_structure;
-
-    for (i = 0; i < cxt->num_structures; i++) {
-        curr_structure = &cxt->slist[i];
-	for (j = 0; j < curr_structure->name.length(); j++) {
-	    /* GE Adv sim doesn't like names with strange punctuation. */
-	    if (! isalnum (curr_structure->name[j])) {
-		curr_structure->name[j] = '_';
-		printf ("Substituted in name %s\n", 
-		    (const char*) curr_structure->name);
-	    }
-	}
-    }
-}
-
-void
-cxt_prune_empty (Cxt_structure_list* cxt)
-{
-    int i;
-
-    for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure* curr_structure;
-	curr_structure = &cxt->slist[i];
-	if (curr_structure->num_contours == 0) {
-	    memcpy (curr_structure, 
-		&cxt->slist[cxt->num_structures-1],
-		sizeof (Cxt_structure));
-	    cxt->num_structures --;
-	    i --;
-	}
-    }
+    this->m_demographics = new Demographics;
+    this->have_geometry = 0;
+    this->num_structures = 0;
+    this->slist = 0;
 }
 
 static void
@@ -195,27 +64,193 @@ cxt_structure_free (Cxt_structure* structure)
     structure->pslist = 0;
 }
 
+void
+Rtss::clear (void)
+{
+    int i;
+
+    this->ct_study_uid = "";
+    this->ct_series_uid = "";
+    this->ct_fref_uid = "";
+    this->study_id = "";
+    delete this->m_demographics;
+
+    for (i = 0; i < this->num_structures; i++) {
+	cxt_structure_free (&this->slist[i]);
+    }
+    free (this->slist);
+
+    this->init ();
+}
+
+
+/* Add structure (if it doesn't already exist) */
+Cxt_structure*
+Rtss::add_structure (
+    const CBString& structure_name, 
+    const CBString& color, 
+    int structure_id)
+{
+    Cxt_structure* new_structure;
+
+    new_structure = this->find_structure_by_id (structure_id);
+    if (new_structure) {
+	return new_structure;
+    }
+
+    this->num_structures++;
+    this->slist = (Cxt_structure*) 
+	    realloc (this->slist, 
+		     this->num_structures * sizeof(Cxt_structure));
+    new_structure = &this->slist[this->num_structures - 1];
+
+    memset (new_structure, 0, sizeof(Cxt_structure));
+    //new_structure->name = *structure_name;
+    new (&new_structure->name) CBString (structure_name);
+    new_structure->id = structure_id;
+    new_structure->bit = -1;
+    //new_structure->color = *color;
+    new (&new_structure->color) CBString (color);
+    new_structure->num_contours = 0;
+    new_structure->pslist = 0;
+    return new_structure;
+}
+
+Cxt_polyline*
+cxt_add_polyline (Cxt_structure* structure)
+{
+    Cxt_polyline* new_polyline;
+
+    structure->num_contours++;
+    structure->pslist = (Cxt_polyline*) 
+	realloc (structure->pslist, structure->num_contours 
+		 * sizeof(Cxt_polyline));
+
+    new_polyline = &structure->pslist[structure->num_contours - 1];
+    memset (new_polyline, 0, sizeof(Cxt_polyline));
+    return new_polyline;
+}
+
+Cxt_structure*
+Rtss::find_structure_by_id (int structure_id)
+{
+    int i;
+
+    for (i = 0; i < this->num_structures; i++) {
+	Cxt_structure* curr_structure;
+	curr_structure = &this->slist[i];
+	if (curr_structure->id == structure_id) {
+	    return curr_structure;
+	}
+    }
+    return 0;
+}
+
+void
+Rtss::debug (void)
+{
+    int i;
+    Cxt_structure* curr_structure;
+
+    printf ("dim = %d %d %d\n", 
+	this->dim[0], this->dim[1], this->dim[2]);
+    printf ("offset = %g %g %g\n", 
+	this->offset[0], this->offset[1], this->offset[2]);
+    printf ("spacing = %g %g %g\n", 
+	this->spacing[0], this->spacing[1], this->spacing[2]);
+
+    for (i = 0; i < this->num_structures; i++) {
+        curr_structure = &this->slist[i];
+	printf ("%d %d %s (%p) (%d contours)", 
+	    i, curr_structure->id, 
+	    (const char*) curr_structure->name, 
+	    curr_structure->pslist, 
+	    curr_structure->num_contours
+	);
+	if (curr_structure->num_contours) {
+	    if (curr_structure->pslist[0].num_vertices) {
+		printf (" [%f,%f,%f,...]",
+		    curr_structure->pslist[0].x[0],
+		    curr_structure->pslist[0].y[0],
+		    curr_structure->pslist[0].z[0]);
+	    } else {
+		printf (" <no vertices>");
+	    }
+	}
+	printf ("\n");
+    }
+}
+
+void
+Rtss::adjust_structure_names (void)
+{
+    int i, j;
+    Cxt_structure* curr_structure;
+
+    for (i = 0; i < this->num_structures; i++) {
+        curr_structure = &this->slist[i];
+	for (j = 0; j < curr_structure->name.length(); j++) {
+	    /* GE Adv sim doesn't like names with strange punctuation. */
+	    if (! isalnum (curr_structure->name[j])) {
+		curr_structure->name[j] = '_';
+		printf ("Substituted in name %s\n", 
+		    (const char*) curr_structure->name);
+	    }
+	}
+    }
+}
+
+void
+Rtss::prune_empty (void)
+{
+    int i;
+
+    for (i = 0; i < this->num_structures; i++) {
+	Cxt_structure* curr_structure;
+	curr_structure = &this->slist[i];
+	if (curr_structure->num_contours == 0) {
+	    memcpy (curr_structure, 
+		&this->slist[this->num_structures-1],
+		sizeof (Cxt_structure));
+	    this->num_structures --;
+	    i --;
+	}
+    }
+}
+
+void
+cxt_structure_rgb (const Cxt_structure *structure, int *r, int *g, int *b)
+{
+    *r = 255;
+    *g = 0;
+    *b = 0;
+    if (bstring_empty (structure->color)) {
+	return;
+    }
+
+    /* Ignore return code -- unparsed values will remain unassigned */
+    sscanf (structure->color, "%d %d %d", r, g, b);
+}
+
 /* Copy structure name, id, color, but not contents */
-Cxt_structure_list*
-cxt_clone_empty (
-    Cxt_structure_list* cxt_out, 
-    Cxt_structure_list* cxt_in
+Rtss*
+Rtss::clone_empty (
+    Rtss* cxt_out
 )
 {
     int i;
 
     /* Initialize output cxt */
     if (cxt_out) {
-	cxt_free (cxt_out);
+	cxt_out->clear ();
     } else {
-	cxt_out = cxt_create ();
+	cxt_out = new Rtss;
     }
 
-    for (i = 0; i < cxt_in->num_structures; i++) {
-	Cxt_structure *old_structure = &cxt_in->slist[i];
-	Cxt_structure *new_structure = cxt_add_structure (
-	    cxt_out, old_structure->name,
-	    old_structure->color, old_structure->id);
+    for (i = 0; i < this->num_structures; i++) {
+	Cxt_structure *old_structure = &this->slist[i];
+	Cxt_structure *new_structure = cxt_out->add_structure (
+	    old_structure->name, old_structure->color, old_structure->id);
 
 	/* Copy bit */
 	new_structure->bit = old_structure->bit;
@@ -226,12 +261,12 @@ cxt_clone_empty (
 
 /* Clear the polylines, but keep structure name, id, color */
 void
-cxt_free_all_polylines (Cxt_structure_list* cxt)
+Rtss::free_all_polylines (void)
 {
     int i;
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (i = 0; i < this->num_structures; i++) {
 	int j;
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Cxt_structure *curr_structure = &this->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    cxt_polyline_free (&curr_structure->pslist[j]);
 	}
@@ -243,38 +278,14 @@ cxt_free_all_polylines (Cxt_structure_list* cxt)
 }
 
 void
-cxt_free (Cxt_structure_list* cxt)
-{
-    int i;
-
-    bdestroy (cxt->ct_series_uid);
-    bdestroy (cxt->study_id);
-    cxt->m_demographics.~Demographics();
-
-    for (i = 0; i < cxt->num_structures; i++) {
-	cxt_structure_free (&cxt->slist[i]);
-    }
-    free (cxt->slist);
-
-    cxt_init (cxt);
-}
-
-void
-cxt_destroy (Cxt_structure_list* cxt)
-{
-    cxt_free (cxt);
-    free (cxt);
-}
-
-void
-cxt_apply_geometry (Cxt_structure_list* cxt)
+Rtss::apply_geometry (void)
 {
     int i, j;
 
-    if (!cxt->have_geometry) return;
+    if (!this->have_geometry) return;
 
-    for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+    for (i = 0; i < this->num_structures; i++) {
+	Cxt_structure *curr_structure = &this->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices == 0) {
@@ -282,8 +293,8 @@ cxt_apply_geometry (Cxt_structure_list* cxt)
 		continue;
 	    }
 	    float z = curr_polyline->z[0];
-	    int slice_idx = ROUND_INT((z - cxt->offset[2]) / cxt->spacing[2]);
-	    if (slice_idx < 0 || slice_idx >= cxt->dim[2]) {
+	    int slice_idx = ROUND_INT((z - this->offset[2]) / this->spacing[2]);
+	    if (slice_idx < 0 || slice_idx >= this->dim[2]) {
 		curr_polyline->slice_no = -1;
 	    } else {
 		curr_polyline->slice_no = slice_idx;
@@ -293,26 +304,24 @@ cxt_apply_geometry (Cxt_structure_list* cxt)
 }
 
 void
-cxt_set_geometry_from_plm_image_header (
-    Cxt_structure_list* cxt,
+Rtss::set_geometry_from_plm_image_header (
     Plm_image_header *pih
 )
 {
-    pih->get_gpuit_origin (cxt->offset);
-    pih->get_gpuit_spacing (cxt->spacing);
-    pih->get_gpuit_dim (cxt->dim);
-    cxt->have_geometry = 1;
+    pih->get_gpuit_origin (this->offset);
+    pih->get_gpuit_spacing (this->spacing);
+    pih->get_gpuit_dim (this->dim);
+    this->have_geometry = 1;
 
-    cxt_apply_geometry (cxt);
+    this->apply_geometry ();
 }
 
 void
-cxt_set_geometry_from_plm_image (
-    Cxt_structure_list* cxt, 
+Rtss::set_geometry_from_plm_image (
     Plm_image *pli
 )
 {
     Plm_image_header pih;
     pih.set_from_plm_image (pli);
-    cxt_set_geometry_from_plm_image_header (cxt, &pih);
+    this->set_geometry_from_plm_image_header (&pih);
 }

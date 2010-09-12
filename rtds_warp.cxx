@@ -96,7 +96,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		"Warping dij files requires ctatts_in, dif_in files\n");
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
-	    rtds->m_cxt = cxt_create ();
+	    rtds->m_cxt = new Rtss;
 	    gdcm_rtss_load (
 		rtds->m_cxt, 
 		(const char*) parms->input_fn, 
@@ -109,7 +109,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
-	    rtds->m_cxt = cxt_create ();
+	    rtds->m_cxt = new Rtss;
 	    cxt_load (rtds->m_cxt, (const char*) parms->input_fn);
 	    break;
 	default:
@@ -240,40 +240,35 @@ save_ss_img (Rtds *rtds, Xform *xf,
 {
     /* Write out labelmap, ss_img */
     if (bstring_not_empty (parms->output_labelmap_fn)) {
-	printf ("Writing labelmap.\n");
 	rtds->m_labelmap->save_image (parms->output_labelmap_fn);
-	printf ("Done.\n");
     }
     if (bstring_not_empty (parms->output_ss_img_fn)) {
-	printf ("Writing ss img.\n");
 	rtds->m_ss_img->save_image ((const char*) parms->output_ss_img_fn);
-	printf ("Done.\n");
     }
 
     /* Write out prefix images .. */
     if (bstring_not_empty (parms->output_prefix)) {
-	printf ("Writing prefix images.\n");
 	prefix_output_save (rtds, parms);
-	printf ("Done.\n");
     }
 
     /* Write out list of structure names */
     if (bstring_not_empty (parms->output_ss_list_fn)) {
-	printf ("Writing ss list.\n");
-
 	ss_list_save (rtds->m_cxt, parms->output_ss_list_fn);
+    }
+
+    /* Write out 3D Slicer color table */
+    if (bstring_not_empty (parms->output_colormap_fn)) {
+	ss_list_save_colormap (rtds->m_cxt, parms->output_colormap_fn);
     }
 
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
-       Otherwise it is  wasting users time. */
+       Otherwise it is wasting users time. */
     if (bstring_not_empty (parms->xf_in_fn)) {
-	printf ("Re-extracting cxt.\n");
-	cxt_free_all_polylines (rtds->m_cxt);
+	rtds->m_cxt->free_all_polylines ();
 	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	cxt_extract (rtds->m_cxt, rtds->m_ss_img->m_itk_uint32, 
 	    rtds->m_cxt->num_structures, true);
-	printf ("Done.\n");
     }
 }
 
@@ -369,12 +364,12 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Delete empty structures */
     if (parms->prune_empty && rtds->m_cxt) {
-	cxt_prune_empty (rtds->m_cxt);
+	rtds->m_cxt->prune_empty ();
     }
 
     /* Set the geometry */
     if (rtds->m_cxt) {
-	cxt_set_geometry_from_plm_image_header (rtds->m_cxt, &pih);
+	rtds->m_cxt->set_geometry_from_plm_image_header (&pih);
     }
 
     /* Warp the image and create vf */

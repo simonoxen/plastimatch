@@ -14,9 +14,9 @@
 class Rtds {
 public:
     Plm_image *m_img;                    /* CT image */
-    Cxt_structure_list *m_cxt;           /* Structure set in polyline form */
+    Rtss *m_cxt;                         /* Structure set in polyline form */
     Plm_image *m_ss_img;                 /* Structure set in bitmap form */
-    Cxt_structure_list *m_ss_list;       /* Names of structures/bitmap form */
+    Rtss *m_ss_list;                     /* Names of structures/bitmap form */
     Plm_image *m_labelmap;               /* Structure set in bitmap form */
     Plm_image *m_dose;                   /* RT dose */
     char m_xio_dose_input[_MAX_PATH];    /* Input XiO dose file to use as 
@@ -53,13 +53,13 @@ public:
 	    delete m_img;
 	}
 	if (m_cxt) {
-	    cxt_destroy (m_cxt);
+	    delete m_cxt;
 	}
 	if (m_ss_img) {
 	    delete m_ss_img;
 	}
 	if (m_ss_list) {
-	    cxt_destroy (m_ss_list);
+	    delete m_ss_list;
 	}
 	if (m_labelmap) {
 	    delete m_labelmap;

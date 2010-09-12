@@ -5,18 +5,21 @@
 #define _ss_list_io_h_
 
 #include "plm_config.h"
-#include "cxt.h"
+#include "rtss.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
 plastimatch1_EXPORT
-Cxt_structure_list*
-ss_list_load (Cxt_structure_list* cxt, const char* ss_list_fn);
+Rtss*
+ss_list_load (Rtss* cxt, const char* ss_list_fn);
 plastimatch1_EXPORT
 void
-ss_list_save (Cxt_structure_list* cxt, const char* cxt_fn);
+ss_list_save (Rtss* cxt, const char* cxt_fn);
+plastimatch1_EXPORT
+void
+ss_list_save_colormap (Rtss* cxt, const char* colormap_fn);
 
 #if defined __cplusplus
 }

@@ -21,12 +21,12 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt.h"
 #include "gdcm_series.h"
 #include "math_util.h"
 #include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "xio_ct.h"
 #include "xio_io.h"
 #include "xio_structures.h"
@@ -44,7 +44,7 @@ void make_directory_recursive (const char *dirname);
 /* This is a comment */
 
 static void
-add_cms_contournames (Cxt_structure_list *structures, const char *filename)
+add_cms_contournames (Rtss *rtss, const char *filename)
 {
     FILE *fp;
     struct bStream * bs;
@@ -109,8 +109,8 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 	}
 
 	/* Add structure */
-	cxt_add_structure (structures, 
-	    CBString ((const char*) line1->data), CBString(), structure_id);
+	rtss->add_structure (CBString ((const char*) line1->data), 
+	    CBString(), structure_id);
 
 	/* Skip extra lines */
 	for (int i = 0; i < skip_lines; i++) {
@@ -126,7 +126,7 @@ add_cms_contournames (Cxt_structure_list *structures, const char *filename)
 }
 
 static void
-add_cms_structure (Cxt_structure_list *structures, const char *filename, 
+add_cms_structure (Rtss *rtss, const char *filename, 
 		   float z_loc)
 {
     FILE *fp;
@@ -180,7 +180,7 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 	}
 
 	/* Look up the cxt structure for this id */
-	curr_structure = cxt_find_structure_by_id (structures, structure_id);
+	curr_structure = rtss->find_structure_by_id (structure_id);
 	if (!curr_structure) {
 	    print_and_exit ("Couldn't reference structure with id %d\n", 
 			    structure_id);
@@ -233,11 +233,10 @@ add_cms_structure (Cxt_structure_list *structures, const char *filename,
 
 void
 xio_structures_load (
-    Cxt_structure_list *structures, 
+    Rtss *rtss, 
     char *input_dir
 )
 {
-    
     const char *filename_re = "^T\\.([-\\.0-9]*)\\.WC$";
 
     /* Get the index file */
@@ -256,8 +255,8 @@ xio_structures_load (
     }
 
     /* Load the index file */
-    cxt_init (structures);
-    add_cms_contournames (structures, index_file.c_str());
+    rtss->init ();
+    add_cms_contournames (rtss, index_file.c_str());
 
     /* Iterate through filenames, adding data to CXT */
     std::vector<std::pair<std::string,std::string> >::iterator it;
@@ -266,11 +265,11 @@ xio_structures_load (
 	const char *filename = (*it).first.c_str();
 	float z_loc = atof ((*it).second.c_str());
 	printf ("File: %s, Loc: %f\n", filename, z_loc);
-	add_cms_structure (structures, filename, z_loc);
+	add_cms_structure (rtss, filename, z_loc);
 	++it;
     }
 
-    cxt_debug (structures);
+    rtss->debug ();
 }
 
 /* This is idiotic */
@@ -306,7 +305,7 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
 
 void
 xio_structures_save (
-    Cxt_structure_list *cxt,
+    Rtss *cxt,
     Xio_ct_transform *transform,
     Xio_version xio_version,
     const char *output_dir
@@ -414,19 +413,19 @@ xio_structures_save (
 }
 
 void
-xio_structures_apply_transform (Cxt_structure_list *structures, Xio_ct_transform *transform)
+xio_structures_apply_transform (Rtss *rtss, Xio_ct_transform *transform)
 {
     int i, j, k;
 
     /* Set offsets */
-    structures->offset[0] = (structures->offset[0] * transform->direction_cosines[0])
+    rtss->offset[0] = (rtss->offset[0] * transform->direction_cosines[0])
 	+ transform->x_offset;
-    structures->offset[1] = (structures->offset[1] * transform->direction_cosines[4])
+    rtss->offset[1] = (rtss->offset[1] * transform->direction_cosines[4])
 	+ transform->y_offset;
 
     /* Transform structures */
-    for (i = 0; i < structures->num_structures; i++) {
-	Cxt_structure *curr_structure = &structures->slist[i];
+    for (i = 0; i < rtss->num_structures; i++) {
+	Cxt_structure *curr_structure = &rtss->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {

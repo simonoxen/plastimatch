@@ -5,18 +5,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "plm_int.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkContourExtractor2DImageFilter.h"
 #include "itkImage.h"
-#include "itk_image.h"
 #include "itkImageLinearIteratorWithIndex.h"
-#include "slice_extract.h"
 #include "itkAndConstantToImageFilter.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "cxt.h"
+
 #include "cxt_extract.h"
+#include "itk_image.h"
+#include "plm_int.h"
+#include "rtss.h"
+#include "slice_extract.h"
 
 #if defined (commentout)
 static bool
@@ -70,7 +71,7 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 */
 template<class T>
 void
-cxt_extract (Cxt_structure_list *cxt, T image, int num_structs, 
+cxt_extract (Rtss *cxt, T image, int num_structs, 
     bool check_cxt_bits)
 {
     typedef typename T::ObjectType ImageType;
@@ -95,9 +96,9 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs,
     for (int j = cxt->num_structures; j < num_structs; j++) {
 	/* Get a free id */
 	int k = 1;
-	while (cxt_find_structure_by_id (cxt, k)) k++;
+	while (cxt->find_structure_by_id (k)) k++;
 	/* Add the structure */
-	cxt_add_structure (cxt, CBString ("Unknown structure"), CBString(), k);
+	cxt->add_structure (CBString ("Unknown structure"), CBString(), k);
     }
 
     /* Loop through slices */
@@ -202,4 +203,4 @@ cxt_extract (Cxt_structure_list *cxt, T image, int num_structs,
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Cxt_structure_list *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template plastimatch1_EXPORT void cxt_extract (Rtss *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

@@ -56,6 +56,7 @@ print_usage (char* command)
 	"    --output-dose-img=filename (for rt dose)\n"
 	"    --output-img=filename      (for image)\n"
 	"    --output-labelmap=filename (for structures)\n"
+	"    --output-colormap=filename (for structures)\n"
 	"    --output-prefix=string     (for structures)\n"
 	"    --output-ss-img=filename   (for structures)\n"
 	"    --output-ss-list=filename  (for structures)\n"
@@ -131,6 +132,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "patient-pos",    required_argument,      NULL,           33 },
 	{ "input_dose_mc",  required_argument,      NULL,           34 },
 	{ "input-dose-mc",  required_argument,      NULL,           34 },
+	{ "output_colormap",required_argument,      NULL,           35 },
+	{ "output-colormap",required_argument,      NULL,           35 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -275,6 +278,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 34:
 	    parms->input_dose_mc_fn = optarg;
+	    break;
+	case 35:
+	    parms->output_colormap_fn = optarg;
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

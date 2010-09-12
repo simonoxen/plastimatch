@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "cxt_io.h"
+#include "rtss.h"
 
 #if defined __cplusplus
 extern "C" {
@@ -17,14 +18,14 @@ gdcm_rtss_probe (const char *rtss_fn);
 plastimatch1_EXPORT
 void
 gdcm_rtss_load (
-    Cxt_structure_list *cxt, 
+    Rtss *cxt, 
     const char *rtss_fn, 
     const char *dicom_dir
 );
 plastimatch1_EXPORT
 void
 gdcm_rtss_save (
-    Cxt_structure_list *cxt, 
+    Rtss *cxt, 
     char *rtss_fn, 
     const char *dicom_dir);
 

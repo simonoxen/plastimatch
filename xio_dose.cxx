@@ -15,12 +15,12 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 
-#include "cxt.h"
 #include "file_util.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "xio_ct.h"
 #include "xio_dose.h"
 #include "xio_io.h"

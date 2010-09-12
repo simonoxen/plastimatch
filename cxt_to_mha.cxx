@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
+
 #include "cxt_io.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
@@ -21,7 +22,7 @@
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,       /* Output */
-    Cxt_structure_list *cxt,    /* Input */
+    Rtss *cxt,                         /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img                   /* Input */
@@ -76,7 +77,7 @@ cxt_to_mha_init (
 bool
 cxt_to_mha_process_next (
     Cxt_to_mha_state *ctm_state,       /* In/out */
-    Cxt_structure_list *cxt     /* In/out */
+    Rtss *cxt                          /* In/out */
 )
 {
     Cxt_structure* curr_structure;
@@ -87,6 +88,7 @@ cxt_to_mha_process_next (
     /* If done, return false */
     if (ctm_state->curr_struct_no >= cxt->num_structures) {
 	ctm_state->curr_struct_no = cxt->num_structures + 1;
+	printf ("   --> (returning false)\n");
 	return false;
     }
     
@@ -107,12 +109,14 @@ cxt_to_mha_process_next (
 
 	/* Render contour to binary */
 	memset (ctm_state->acc_img, 0, slice_voxels * sizeof(unsigned char));
-	render_slice_polyline (ctm_state->acc_img, 
+	render_slice_polyline (
+	    ctm_state->acc_img, 
 	    cxt->dim, 
 	    cxt->spacing, 
 	    cxt->offset,
 	    curr_contour->num_vertices, 
-	    curr_contour->x, curr_contour->y);
+	    curr_contour->x, 
+	    curr_contour->y);
 
 	/* Copy from acc_img into mask image */
 	if (ctm_state->want_prefix_imgs) {
@@ -152,13 +156,14 @@ cxt_to_mha_process_next (
 	curr_structure->bit = ctm_state->curr_bit;
 	ctm_state->curr_bit ++;
     }
+
     return true;
 }
 
 const char*
 cxt_to_mha_current_name (
     Cxt_to_mha_state *ctm_state,
-    Cxt_structure_list *cxt
+    Rtss *cxt
 )
 {
     if (ctm_state->curr_struct_no < cxt->num_structures + 1) {
@@ -187,7 +192,7 @@ cxt_to_mha_free (Cxt_to_mha_state *ctm_state)
 
 Cxt_to_mha_state*
 cxt_to_mha_create (
-    Cxt_structure_list *cxt
+    Rtss *cxt
 )
 {
     Cxt_to_mha_state *ctm_state = new Cxt_to_mha_state;

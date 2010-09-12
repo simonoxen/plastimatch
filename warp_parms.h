@@ -31,6 +31,7 @@ public:
     CBString dicom_dir;
 
     /* Output files */
+    CBString output_colormap_fn;
     CBString output_cxt_fn;
     CBString output_dicom;
     CBString output_dij_fn;

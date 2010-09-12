@@ -12,7 +12,6 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt.h"
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
 #include "plm_image.h"
@@ -20,6 +19,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 #include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */

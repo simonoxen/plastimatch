@@ -9,16 +9,16 @@
 #include "xio_ct.h"
 
 plastimatch1_EXPORT void
-xio_structures_load (Cxt_structure_list *structures, char *input_dir);
+xio_structures_load (Rtss *structures, char *input_dir);
 plastimatch1_EXPORT 
 void
 xio_structures_save (
-    Cxt_structure_list *cxt, 
+    Rtss *cxt, 
     Xio_ct_transform *transform, 
     Xio_version xio_version, 
     const char *output_dir
 );
 plastimatch1_EXPORT void
-xio_structures_apply_transform (Cxt_structure_list *structures, Xio_ct_transform *transform);
+xio_structures_apply_transform (Rtss *structures, Xio_ct_transform *transform);
 
 #endif

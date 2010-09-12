@@ -875,7 +875,7 @@ PLM_ADD_TEST (
   "plm-warp-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl"
   )
 PLM_ADD_TEST (
   "plm-warp-e-stats-1"

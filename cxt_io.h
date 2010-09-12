@@ -5,22 +5,21 @@
 #define _cxt_io_h_
 
 #include "plm_config.h"
-#include "cxt.h"
+#include "rtss.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
 plastimatch1_EXPORT
-Cxt_structure_list*
-cxt_load_ss_list (Cxt_structure_list* cxt, const char* xorlist_fn);
+Rtss*
+cxt_load_ss_list (Rtss* cxt, const char* xorlist_fn);
 plastimatch1_EXPORT
 void
-cxt_load (Cxt_structure_list* cxt, const char* cxt_fn);
+cxt_load (Rtss* cxt, const char* cxt_fn);
 plastimatch1_EXPORT
 void
-cxt_save (Cxt_structure_list* cxt, const char* cxt_fn, 
-	   bool prune_empty);
+cxt_save (Rtss* cxt, const char* cxt_fn, bool prune_empty);
 
 #if defined __cplusplus
 }

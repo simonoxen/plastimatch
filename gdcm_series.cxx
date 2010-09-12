@@ -13,13 +13,13 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt.h"
 #include "gdcm_series.h"
 #include "gdcm_series_helper_2.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "rtss.h"
 
 void
 gdcm_series_test (char *dicom_dir)

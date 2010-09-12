@@ -41,7 +41,7 @@ rtds_dicom_load (Rtds *rtds, const char *dicom_dir)
     if (gs.m_rtstruct_file_list) {
 	gdcm::File *file = (*(gs.m_rtstruct_file_list))[0];
 	const std::string& filename = file->GetFileName();
-	rtds->m_cxt = cxt_create ();
+	rtds->m_cxt = new Rtss;
 	gdcm_rtss_load (rtds->m_cxt, filename.c_str(), dicom_dir);
     }
 }
