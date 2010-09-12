@@ -1,5 +1,3 @@
-# Color table file /home/gsharp/build/plastimatch-3.20.0/Testing/plm-warp-e.ctbl
-# 22 values
 0 Background 0 0 0 255
 1 Patient 255 0 0 255
 2 Tumor 255 0 0 255

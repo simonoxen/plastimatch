@@ -97,8 +97,8 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     }
 
     fprintf (fp, 
-	"# Color table file %s\n"
-	"# %d values\n"
+	//	"# Color table file %s\n"
+	//	"# %d values\n"
 	"0 Background 0 0 0 255\n",
 	colormap_fn, cxt->num_structures + 1);
 
