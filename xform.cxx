@@ -298,7 +298,7 @@ load_gpuit_bsp (Xform *xf, const char* fn)
 {
     Bspline_xform* bxf;
 
-    bxf = read_bxf (fn);
+    bxf = read_bxf ((char*)fn);
     if (!bxf) {
 	print_and_exit ("Error loading bxf format file: %s\n", fn);
     }
