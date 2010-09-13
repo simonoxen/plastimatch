@@ -96,11 +96,7 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
 	    "Could not open colormap file for write: %s\n", colormap_fn);
     }
 
-    fprintf (fp, 
-	//	"# Color table file %s\n"
-	//	"# %d values\n"
-	"0 Background 0 0 0 255\n",
-	colormap_fn, cxt->num_structures + 1);
+    fprintf (fp, "0 Background 0 0 0 255\n");
 
     /* Colormap should match labelmap.  This means that filled structures
        are numbered before empty structures.  We accomplish this by running 
