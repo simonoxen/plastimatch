@@ -194,7 +194,9 @@ struct BSPLINE_MI_Hist_struct {
     double* m_hist;
     double* f_hist;
     double* j_hist;
-
+    int big_fbin;        // fullest bin (fixed)
+    int big_mbin;        // fullest bin (moving)
+    int big_jbin;        // fullest bin (joint)
 };
 #else
 typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
@@ -297,7 +299,7 @@ void bspline_run_optimization (
     Volume *moving, 
     Volume *moving_grad);
 gpuit_EXPORT
-Bspline_xform* read_bxf (const char* filename);
+Bspline_xform* read_bxf (char* filename);
 
 gpuit_EXPORT
 void write_bxf (char* filename, Bspline_xform* bxf);
