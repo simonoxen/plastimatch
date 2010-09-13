@@ -184,30 +184,18 @@ struct BSPLINE_MI_Hist_Parms_struct {
     long bins;
     float offset;
     float delta;
+    int big_bin;    // fullest bin
 };
 
-#ifdef DOUBLE_HISTS
 typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
 struct BSPLINE_MI_Hist_struct {
     BSPLINE_MI_Hist_Parms moving;
     BSPLINE_MI_Hist_Parms fixed;
+    BSPLINE_MI_Hist_Parms joint;    // JAS: for big_bin
     double* m_hist;
     double* f_hist;
     double* j_hist;
-    int big_fbin;        // fullest bin (fixed)
-    int big_mbin;        // fullest bin (moving)
-    int big_jbin;        // fullest bin (joint)
 };
-#else
-typedef struct BSPLINE_MI_Hist_struct BSPLINE_MI_Hist;
-struct BSPLINE_MI_Hist_struct {
-    BSPLINE_MI_Hist_Parms moving;
-    BSPLINE_MI_Hist_Parms fixed;
-    float* m_hist;
-    float* f_hist;
-    float* j_hist;
-};
-#endif
 
 typedef struct Bspline_parms_struct Bspline_parms;
 struct Bspline_parms_struct {

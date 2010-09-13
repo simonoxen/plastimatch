@@ -93,8 +93,15 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
     parms->mi_hist.j_hist = 0;
+
     parms->mi_hist.fixed.bins = 20;
     parms->mi_hist.moving.bins = 20;
+    parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
+                              * parms->mi_hist.moving.bins;
+
+    parms->mi_hist.fixed.big_bin = 0;
+    parms->mi_hist.moving.big_bin = 0;
+    parms->mi_hist.joint.big_bin = 0;
 
     parms->gpuid = 0;
 }
@@ -990,6 +997,33 @@ bspline_xform_extend (
 }
 
 static void
+bspline_initialize_mi_bigbin (double* hist, BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+{
+    int i, idx_bin;
+    float* img = (float*) vol->img;
+
+    if (!img) {
+        logfile_printf ("ERROR: trying to pre-scan empty image!\n");
+        exit (-1);
+    }
+
+    /* build a quick histogram */
+    for (i=0; i<vol->npix; i++) {
+        idx_bin = floor ((img[i] - hparms->offset) / hparms->delta);
+        hist[idx_bin]++;
+    }
+
+    /* look for biggest bin */
+    for(i=0; i<hparms->bins; i++) {
+        if (hist[i] > hist[hparms->big_bin]) {
+            hparms->big_bin = i;
+        }
+    }
+//    printf ("big_bin: %i\n", hparms->big_bin);
+    
+}
+
+static void
 bspline_initialize_mi_vol (BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
 {
     int i;
@@ -1025,11 +1059,14 @@ bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving)
     bspline_initialize_mi_vol (&mi_hist->fixed, fixed);
 
     /* Initialize biggest bin trackers for OpenMP MI */
-    mi_hist->big_mbin = 0;
-    mi_hist->big_jbin = 0;
-    // Note: If these are wrong, MI flavor e will correct them
-    //       after the first pass.
-    // TODO: Do some quick image scans here to more intelligently estimate these.
+    bspline_initialize_mi_bigbin (mi_hist->f_hist, &mi_hist->fixed, fixed);
+    bspline_initialize_mi_bigbin (mi_hist->m_hist, &mi_hist->moving, moving);
+
+    /* This estimate /could/ be wrong for certain image sets */
+    /* Will be auto corrected after first evaluation if incorrect */
+    mi_hist->joint.big_bin = mi_hist->fixed.big_bin
+                           * mi_hist->moving.bins
+                           + mi_hist->moving.big_bin;
 }
 
 void
@@ -2014,13 +2051,13 @@ bspline_mi_hist_add_pvi_8_omp (
         idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
         idx_jbin = offset_fbin + idx_mbin;
 
-        if (idx_mbin != mi_hist->big_mbin) {
+        if (idx_mbin != mi_hist->moving.big_bin) {
             omp_set_lock(&m_locks[idx_mbin]);
             m_hist[idx_mbin] += w[idx_pv];
             omp_unset_lock(&m_locks[idx_mbin]);
         }
 
-        if (idx_jbin != mi_hist->big_jbin) {
+        if (idx_jbin != mi_hist->joint.big_bin) {
             omp_set_lock(&j_locks[idx_jbin]);
             j_hist[idx_jbin] += w[idx_pv];
             omp_unset_lock(&j_locks[idx_jbin]);
@@ -2535,8 +2572,8 @@ bspline_score_e_mi (Bspline_parms *parms,
 
     /* Compute num_vox and find fullest fixed hist bin */
     for(i=0; i<mi_hist->fixed.bins; i++) {
-        if (f_hist[i] > f_hist[mi_hist->big_fbin]) {
-            mi_hist->big_fbin = i;
+        if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
+            mi_hist->fixed.big_bin = i;
         }
         num_vox += f_hist[i];
     }
@@ -2545,19 +2582,17 @@ bspline_score_e_mi (Bspline_parms *parms,
     for(i=0; i<mi_hist->moving.bins; i++) {
         mhis += m_hist[i];
     }
-    m_hist[mi_hist->big_mbin] = (double)num_vox - mhis;
-//    printf ("[%f mhis   %i big_mbin   %f val]\n", mhis, mi_hist->big_mbin, m_hist[mi_hist->big_mbin]);
+    m_hist[mi_hist->moving.big_bin] = (double)num_vox - mhis;
 
 
     /* Look for the biggest moving histogram bin */
-    printf ("big_mbin [%i -> ", mi_hist->big_mbin);
+//    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
     for(i=0; i<mi_hist->moving.bins; i++) {
-//        printf ("[%i] %f\n", i, m_hist[i]);
-        if (m_hist[i] > m_hist[mi_hist->big_mbin]) {
-            mi_hist->big_mbin = i;
+        if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
+            mi_hist->moving.big_bin = i;
         }
     }
-    printf ("%i]\n", mi_hist->big_mbin);
+//    printf ("%i]\n", mi_hist->moving.big_bin);
 
 
     /* Fill in the missing jnt hist bin */
@@ -2566,19 +2601,19 @@ bspline_score_e_mi (Bspline_parms *parms,
             jhis += j_hist[j*mi_hist->moving.bins + i];
         }
     }
-    j_hist[mi_hist->big_jbin] = (double)num_vox - jhis;
+    j_hist[mi_hist->joint.big_bin] = (double)num_vox - jhis;
 
     
     /* Look for the biggest joint histogram bin */
-    printf ("big_jbin [%i -> ", mi_hist->big_jbin);
+//    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
     for(j=0; j<mi_hist->fixed.bins; j++) {
         for(i=0; i<mi_hist->moving.bins; i++) {
-            if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->big_jbin]) {
-                mi_hist->big_jbin = j*mi_hist->moving.bins + i;
+            if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
+                mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
             }
         }
     }
-    printf ("%i]\n", mi_hist->big_jbin);
+//    printf ("%i]\n", mi_hist->joint.big_bin);
     
 
 
