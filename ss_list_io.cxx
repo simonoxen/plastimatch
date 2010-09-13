@@ -63,7 +63,7 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
     FILE *fp;
 	
     make_directory_recursive (ss_list_fn);
-    fp = fopen (ss_list_fn, "w");
+    fp = fopen (ss_list_fn, "wb");
     if (!fp) {
 	print_and_exit (
 	    "Could not open ss_list file for write: %s\n", ss_list_fn);
@@ -90,7 +90,7 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     FILE *fp;
 	
     make_directory_recursive (colormap_fn);
-    fp = fopen (colormap_fn, "w");
+    fp = fopen (colormap_fn, "wb");
     if (!fp) {
 	print_and_exit (
 	    "Could not open colormap file for write: %s\n", colormap_fn);
