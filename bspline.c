@@ -2424,6 +2424,7 @@ bspline_mi_pvi_6_dc_dv (
  *   -- Uses methods introduced in bspline_score_g_mse
  *        to compute dc_dp more rapidly.
  */
+#if (OPENMP_FOUND)
 static void
 bspline_score_e_mi (Bspline_parms *parms, 
     Bspline_state *bst,
@@ -2561,6 +2562,7 @@ bspline_score_e_mi (Bspline_parms *parms,
                     mvf = INDEX_OF (mijk_f, moving->dim);
 
                     /* Add to histogram */
+
                     bspline_mi_hist_add_pvi_8_omp (mi_hist, fixed, moving, 
                                                    fv, mvf, li_1, li_2,
                                                    f_locks, m_locks, j_locks);
@@ -2773,7 +2775,7 @@ bspline_score_e_mi (Bspline_parms *parms,
 
     report_score ("MI", bxf, bst, num_vox, plm_timer_report (&timer));
 }
-
+#endif
 
 
 /* B-Spline Registration using Mutual Information
@@ -4235,7 +4237,9 @@ bspline_score (Bspline_parms *parms,
 	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
         break;
     case 'e':
+#if (OPENMP_FOUND)
 	    bspline_score_e_mi (parms, bst, bxf, fixed, moving, moving_grad);
+#endif
         break;
 	default:
 	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
