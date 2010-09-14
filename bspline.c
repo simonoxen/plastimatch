@@ -1990,6 +1990,7 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
 
 /* Used locks to make histogram writes
  * thread safe when employing multi-core */
+#if (OPENMP_FOUND)
 static inline void
 bspline_mi_hist_add_pvi_8_omp (
     BSPLINE_MI_Hist* mi_hist, 
@@ -2064,7 +2065,7 @@ bspline_mi_hist_add_pvi_8_omp (
         }
     }
 }
-
+#endif
 
 
 static inline void
