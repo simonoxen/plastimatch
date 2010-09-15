@@ -479,6 +479,7 @@ PLM_ADD_TEST (
 ##   plm convert dicom b: rtss only, with dicom-dir reference
 ##   plm convert dicom c: rtss only, with fixed image reference
 ##   plm convert dicom d: dose only, native sampling rate
+##   plm convert dicom e: input xio dicom, output plastimatch dicom
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-convert-dicom-a"
@@ -564,6 +565,18 @@ ADD_TEST (
   "-DLOWER_THRESH=42.1"
   "-DUPPER_THRESH=42.2"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-e" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-f" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dicom"
   )
 
 ## -------------------------------------------------------------------------
