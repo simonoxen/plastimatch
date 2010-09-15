@@ -28,8 +28,8 @@ main (int argc, char* argv[])
 
     volume_convert_to_float (ct);
 
-    printf ("Cogitating... ");
-    fflush(stdout);
+    //printf ("Cogitating... ");
+    //fflush(stdout);
 
     dose = volume_clone_empty (ct);
 

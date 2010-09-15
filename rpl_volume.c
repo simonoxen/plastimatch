@@ -128,6 +128,7 @@ rpl_volume_get_rgdepth (
         return -1;
     }
 
+#if defined (commentout)
     ap_idx = ap_ij[1] * ires[0] + ap_ij[0];
 
     /* Convert aperture indices into space coords */
@@ -154,6 +155,28 @@ rpl_volume_get_rgdepth (
        So here I swap the rows & cols to get the correct lookup 
        from the rpl_vol.  */
     { int tmp; tmp = ap_ij[0]; ap_ij[0] = ap_ij[1]; ap_ij[1] = tmp; }
+#endif
+
+    ap_idx = ap_ij[0] * ires[1] + ap_ij[1];
+
+    /* Convert aperture indices into space coords */
+    vec3_copy (ap_xyz, rpl_vol->ap_ul_room);
+    vec3_scale3 (tmp, rpl_vol->incr_r, ap_xy[0]);
+    vec3_add2 (ap_xyz, tmp);
+    vec3_scale3 (tmp, rpl_vol->incr_c, ap_xy[1]);
+    vec3_add2 (ap_xyz, tmp);
+
+    if (debug) {
+	printf ("ap_xyz = %g %g %g\n", ap_xyz[0], ap_xyz[1], ap_xyz[2]);
+    }
+
+    /* Compute distance from aperture to voxel */
+    dist = vec3_dist (ap_xyz, ct_xyz);
+#if UNIFIED_DEPTH_OFFSET
+    dist -= rpl_vol->depth_offset[0];
+#else
+    dist -= rpl_vol->depth_offset[ap_idx];
+#endif
 
     /* Retrieve the radiographic depth */
     rgdepth = lookup_rgdepth (rpl_vol, ap_ij, dist);
