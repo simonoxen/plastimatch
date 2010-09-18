@@ -207,19 +207,19 @@ xform_load (Xform *xf, const char* fn)
 #if defined (commentout)
 		std::cout << "Bulk affine = " << aff;
 #endif
-		xf->get_bsp()->SetBulkTransform (aff);
+		xf->get_itk_bsp()->SetBulkTransform (aff);
 	    } else if (num_parm == 6) {
 		vrs->SetParameters(xfp);
 #if defined (commentout)
 		std::cout << "Bulk versor = " << vrs;
 #endif
-		xf->get_bsp()->SetBulkTransform (vrs);
+		xf->get_itk_bsp()->SetBulkTransform (vrs);
 	    } else if (num_parm == 3) {
 		trn->SetParameters(xfp);
 #if defined (commentout)
 		std::cout << "Bulk translation = " << trn;
 #endif
-		xf->get_bsp()->SetBulkTransform (trn);
+		xf->get_itk_bsp()->SetBulkTransform (trn);
 	    } else {
 		print_and_exit ("Error loading bulk transform\n");
 	    }
@@ -260,7 +260,7 @@ xform_load (Xform *xf, const char* fn)
 	itk_bsp_set_grid (xf, bsp_origin, bsp_spacing, bsp_region, bsp_direction);
 
 	/* Read bspline coefficients from file */
-	const unsigned int num_parms = xf->get_bsp()->GetNumberOfParameters();
+	const unsigned int num_parms = xf->get_itk_bsp()->GetNumberOfParameters();
 	BsplineTransformType::ParametersType bsp_coeff;
 	bsp_coeff.SetSize (num_parms);
 	for (unsigned int i = 0; i < num_parms; i++) {
@@ -276,7 +276,7 @@ xform_load (Xform *xf, const char* fn)
 	fclose (fp);
 
 	/* Copy into bsp structure */
-	xf->get_bsp()->SetParametersByValue (bsp_coeff);
+	xf->get_itk_bsp()->SetParametersByValue (bsp_coeff);
 
     } else if (strcmp_alt(buf,"MGH_GPUIT_BSP <experimental>")==0) {
 	fclose (fp);
@@ -466,7 +466,7 @@ xform_save (Xform *xf, char* fn)
 	itk_xform_save (xf->get_aff(), fn);
 	break;
     case XFORM_ITK_BSPLINE:
-	xform_save_itk_bsp (xf->get_bsp(), fn);
+	xform_save_itk_bsp (xf->get_itk_bsp(), fn);
 	break;
     case XFORM_ITK_VECTOR_FIELD:
 	itk_image_save (xf->get_itk_vf(), fn);
@@ -632,13 +632,13 @@ itk_bsp_set_grid (Xform *xf,
 #endif
 
     /* Set grid specifications to bsp struct */
-    xf->get_bsp()->SetGridSpacing (bsp_spacing);
-    xf->get_bsp()->SetGridOrigin (bsp_origin);
-    xf->get_bsp()->SetGridRegion (bsp_region);
-    xf->get_bsp()->SetIdentity ();
+    xf->get_itk_bsp()->SetGridSpacing (bsp_spacing);
+    xf->get_itk_bsp()->SetGridOrigin (bsp_origin);
+    xf->get_itk_bsp()->SetGridRegion (bsp_region);
+    xf->get_itk_bsp()->SetIdentity ();
 
     /* GCS FIX: Assume direction cosines orthogonal */
-    xf->get_bsp()->SetGridDirection (bsp_direction);
+    xf->get_itk_bsp()->SetGridDirection (bsp_direction);
 
     /* SetGridRegion automatically initializes internal coefficients to zero */
 }
@@ -696,7 +696,7 @@ xform_trn_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-    xf_out->get_bsp()->SetBulkTransform (xf_in->get_trn());
+    xf_out->get_itk_bsp()->SetBulkTransform (xf_in->get_trn());
 }
 
 static void
@@ -706,7 +706,7 @@ xform_vrs_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-    xf_out->get_bsp()->SetBulkTransform (xf_in->get_vrs());
+    xf_out->get_itk_bsp()->SetBulkTransform (xf_in->get_vrs());
 }
 static void
 xform_quat_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
@@ -715,7 +715,7 @@ xform_quat_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-    xf_out->get_bsp()->SetBulkTransform (xf_in->get_quat());
+    xf_out->get_itk_bsp()->SetBulkTransform (xf_in->get_quat());
 }
 static void
 xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
@@ -724,7 +724,7 @@ xform_aff_to_itk_bsp_bulk (Xform *xf_out, Xform* xf_in,
 {
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-    xf_out->get_bsp()->SetBulkTransform (xf_in->get_aff());
+    xf_out->get_itk_bsp()->SetBulkTransform (xf_in->get_aff());
 }
 
 /* Convert xf to vector field to bspline */
@@ -742,7 +742,7 @@ xform_any_to_itk_bsp_nobulk (
     /* Set bsp grid parameters in xf_out */
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
-    BsplineTransformType::Pointer bsp_out = xf_out->get_bsp();
+    BsplineTransformType::Pointer bsp_out = xf_out->get_itk_bsp();
 
     /* Create temporary array for output coefficients */
     const unsigned int num_parms = bsp_out->GetNumberOfParameters();
@@ -828,7 +828,7 @@ itk_bsp_extend_to_region (Xform* xf,
     int d, old_idx;
     unsigned long i, j, k;
     int extend_needed = 0;
-    BsplineTransformType::Pointer bsp = xf->get_bsp();
+    BsplineTransformType::Pointer bsp = xf->get_itk_bsp();
     BsplineTransformType::OriginType bsp_origin = bsp->GetGridOrigin();
     BsplineTransformType::RegionType bsp_region = bsp->GetGridRegion();
     BsplineTransformType::RegionType::SizeType bsp_size = bsp->GetGridRegion().GetSize();
@@ -921,17 +921,17 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 		      const Plm_image_header* pih,
 		      float* grid_spac)
 {
-    BsplineTransformType::Pointer bsp_old = xf_in->get_bsp();
+    BsplineTransformType::Pointer bsp_old = xf_in->get_itk_bsp();
 
     init_itk_bsp_default (xf_out);
     itk_bsp_set_grid_img (xf_out, pih, grid_spac);
 
     /* Need to copy the bulk transform */
-    BsplineTransformType::Pointer bsp_out = xf_out->get_bsp();
+    BsplineTransformType::Pointer bsp_out = xf_out->get_itk_bsp();
     bsp_out->SetBulkTransform (bsp_old->GetBulkTransform());
 
     /* Create temporary array for output coefficients */
-    const unsigned int num_parms = xf_out->get_bsp()->GetNumberOfParameters();
+    const unsigned int num_parms = xf_out->get_itk_bsp()->GetNumberOfParameters();
     BsplineTransformType::ParametersType bsp_coeff;
     bsp_coeff.SetSize (num_parms);
 
@@ -1036,7 +1036,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
     /* RMK: bulk transform is Identity (not supported by GPUIT) */
 
     /* Create temporary array for output coefficients */
-    const unsigned int num_parms = xf_out->get_bsp()->GetNumberOfParameters();
+    const unsigned int num_parms = xf_out->get_itk_bsp()->GetNumberOfParameters();
     BsplineTransformType::ParametersType bsp_coeff;
     bsp_coeff.SetSize (num_parms);
 
@@ -1050,7 +1050,7 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
     }
 
     /* Fixate coefficients into bsp structure */
-    xf_out->get_bsp()->SetParametersByValue (bsp_coeff);
+    xf_out->get_itk_bsp()->SetParametersByValue (bsp_coeff);
 }
 
 /* If grid_spac is null, then don't resample */
@@ -1145,7 +1145,7 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 
     /* Deep copy of itk_bsp */
     for (d = 0; d < 3; d++) {
-	grid_spac[d] = xf_in->get_bsp()->GetGridSpacing()[d];
+	grid_spac[d] = xf_in->get_itk_bsp()->GetGridSpacing()[d];
     }
     xform_itk_bsp_to_itk_bsp (&xf_tmp, xf_in, pih, grid_spac);
 
@@ -1153,7 +1153,7 @@ xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
     itk_bsp_extend_to_region (&xf_tmp, pih, &pih->m_region);
 
     /* Convert extended bsp to vf */
-    return xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+    return xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
 }
 
 static DeformationFieldType::Pointer 
@@ -1192,7 +1192,7 @@ xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
 
     /* Render to vector field */
     printf ("xform_itk_any_to_itk_vf\n");
-    itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_bsp(), pih);
+    itk_vf = xform_itk_any_to_itk_vf (xf_tmp.get_itk_bsp(), pih);
 
     return itk_vf;
 }
@@ -1320,7 +1320,7 @@ xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 	int k = 0;
 	for (int d = 0; d < 3; d++) {
 	    for (int i = 0; i < bxf_new->num_knots; i++) {
-		bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
+		bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
 		k++;
 	    }
 	}
@@ -1356,7 +1356,7 @@ xform_gpuit_bsp_to_gpuit_bsp (
     int k = 0;
     for (int d = 0; d < 3; d++) {
 	for (int i = 0; i < bxf_new->num_knots; i++) {
-	    bxf_new->coeff[3*i+d] = xf_tmp.get_bsp()->GetParameters()[k];
+	    bxf_new->coeff[3*i+d] = xf_tmp.get_itk_bsp()->GetParameters()[k];
 	    k++;
 	}
     }

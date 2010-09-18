@@ -131,9 +131,9 @@ public:
 	}
 	return m_aff;
     }
-    BsplineTransformType::Pointer get_bsp () {
+    BsplineTransformType::Pointer get_itk_bsp () {
 	if (m_type != XFORM_ITK_BSPLINE) {
-	    print_and_exit ("Typecast error in get_bsp()\n");
+	    print_and_exit ("Typecast error in get_itk_bsp()\n");
 	}
 	return m_itk_bsp;
     }

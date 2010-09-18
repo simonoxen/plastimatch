@@ -482,7 +482,7 @@ set_transform_bspline (RegistrationType::Pointer registration,
 
     /* GCS FIX: Need to set ROI from registration->GetFixedImageRegion(), */
     xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
-    registration->SetTransform (xf_out->get_bsp());
+    registration->SetTransform (xf_out->get_itk_bsp());
 }
 
 void

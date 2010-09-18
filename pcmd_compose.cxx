@@ -2,23 +2,109 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <stdio.h>
 #include <time.h>
 #include "itkImageRegionIterator.h"
+#include "itkVectorLinearInterpolateImageFunction.h"
+
+#include "itk_image.h"
 #include "getopt.h"
 #include "pcmd_compose.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
+#include "xform.h"
+
+void
+vf_compose (
+    DeformationFieldType::Pointer vf1,
+    DeformationFieldType::Pointer vf2,
+    DeformationFieldType::Pointer vf_out
+)
+{
+    vf_out->SetRegions (vf1->GetBufferedRegion());
+    vf_out->SetOrigin (vf1->GetOrigin());
+    vf_out->SetSpacing (vf1->GetSpacing());
+    vf_out->Allocate();
+
+    /* No one should ever have to write code like this */
+    typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;
+    FieldIterator vf1_it (vf1, vf1->GetBufferedRegion());
+    FieldIterator vf_out_it (vf_out, vf_out->GetBufferedRegion());
+    DeformationFieldType::IndexType index;
+    FloatPointType point_1, point_2, point_3;
+    typedef itk::Vector< float, Dimension > VectorType;
+    VectorType displacement_1;
+    typedef itk::VectorLinearInterpolateImageFunction < 
+	DeformationFieldType, float > VectorInterpolatorType;
+    VectorInterpolatorType::Pointer interpolator = VectorInterpolatorType::New();
+    interpolator->SetInputImage (vf2);
+    VectorInterpolatorType::OutputType displacement_2;
+    VectorType displacement_3;
+
+    vf1_it.GoToBegin();
+    vf_out_it.GoToBegin();
+    while (!vf1_it.IsAtEnd()) {
+	index = vf1_it.GetIndex();
+//	printf ("%d %d %d\n", index[0], index[1], index[2]); fflush(stdout);
+	vf1->TransformIndexToPhysicalPoint (index, point_1);
+	displacement_1 = vf1_it.Get ();
+	for (int r = 0; r < 3; r++) {
+	    point_2[r] = point_1[r] + displacement_1[r];
+	}
+        if (interpolator->IsInsideBuffer (point_2)) {
+	    displacement_2 = interpolator->Evaluate (point_2);
+	    for (int r = 0; r < 3; r++) {
+		point_3[r] = point_2[r] + displacement_2[r];
+		displacement_3[r] = point_3[r] - point_1[r];
+	    }
+	    vf_out_it.Set (displacement_3);
+	} else {
+	    for (int r = 0; r < 3; r++) {
+		displacement_3[r] = 0.0;
+	    }
+	    vf_out_it.Set (displacement_3);
+	}
+	++vf_out_it;
+	++vf1_it;
+    }
+}
+
+static void
+convert_to_itk_vf (Xform *xf)
+{
+    Plm_image_header pih;
+
+    switch (xf->m_type) {
+    case XFORM_ITK_VECTOR_FIELD:
+	/* Do nothing */
+	break;
+    case XFORM_GPUIT_BSPLINE:
+	pih.set_from_gpuit_bspline (xf->get_gpuit_bsp());
+	xform_to_itk_vf (xf, xf, &pih);
+	break;
+    default:
+	/* Not yet handled */
+	print_and_exit (
+	    "Sorry, only B-spline or Vector field types can be composed\n");
+	break;
+    }
+}
 
 static void
 compose_main (Compose_parms* parms)
 {
-    Plm_image *img;
-    img = plm_image_load_native (parms->xf_in_1_fn);
-    if (!img) {
-	print_and_exit ("Error: could not open '%s' for read\n",
-	    (const char*) parms->xf_in_1_fn);
-    }
+    Xform xf1, xf2;
 
-    delete img;
+    xform_load (&xf1, parms->xf_in_1_fn);
+    convert_to_itk_vf (&xf1);
+    xform_load (&xf2, parms->xf_in_2_fn);
+    convert_to_itk_vf (&xf2);
+
+    DeformationFieldType::Pointer vf_out = DeformationFieldType::New();
+
+    vf_compose (xf1.get_itk_vf(), xf2.get_itk_vf(), vf_out);
+
+    itk_image_save (vf_out, parms->xf_out_fn);
 }
 
 static void
