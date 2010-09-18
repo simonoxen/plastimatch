@@ -1,6 +1,6 @@
 [GLOBAL]
-fixed=synth-1.mha
-moving=synth-2.mha
+fixed=gauss-1.mha
+moving=gauss-2.mha
 vf_out=plm-itk-translation-vf.mha
 xform_out=plm-itk-translation-xf.txt
 img_out=plm-itk-translation-img.mha

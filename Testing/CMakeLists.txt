@@ -36,61 +36,69 @@ SET (SYNTH_MHA_SIZE 38)
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
-##   synth-1.mha   Centered gauss
-##   synth-2.mha   Off-center gauss
-##   synth-3.mha   Uchar sphere, bg=0, fg=255
-##   synth-4.mha   Inverted gauss
-##   rect-1.mha   Inverged rect
-##   rect-2.mha   Rect
-##   synth-7.mha   Gauss with inverted pixel spacing
+##   gauss-1.mha   Centered gauss
+##   gauss-2.mha   Off-center gauss
+##   gauss-3.mha   Inverted gauss
+##   gauss-4.mha   Gauss with inverted pixel spacing
+##   gauss-5.mha   Even more off-center gauss
+##   rect-1.mha    Inverted rect
+##   rect-2.mha    Standard rect
+##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "synth-1"
+  "gauss-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;synth-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-2"
+  "gauss-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;synth-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-3"
+  "gauss-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;synth-3.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-3.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
-  "synth-4"
+  "gauss-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;synth-4.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-4.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "gauss-5"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
 PLM_ADD_TEST (
   "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
-  "synth-7"
+  "sphere-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;synth-7.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
   )
 
 ## -------------------------------------------------------------------------
@@ -120,7 +128,7 @@ PLM_ADD_TEST (
   "bspline-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-a-check
   ${CMAKE_COMMAND} 
@@ -135,7 +143,7 @@ PLM_ADD_TEST (
   "bspline-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-b-check
   ${CMAKE_COMMAND} 
@@ -150,7 +158,7 @@ PLM_ADD_TEST (
   "bspline-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-c-check
   ${CMAKE_COMMAND} 
@@ -165,7 +173,7 @@ PLM_ADD_TEST (
   "bspline-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-d-check
   ${CMAKE_COMMAND} 
@@ -180,7 +188,7 @@ PLM_ADD_TEST (
   "bspline-e"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-e-check
   ${CMAKE_COMMAND} 
@@ -195,7 +203,7 @@ PLM_ADD_TEST (
   "bspline-f"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-f-check
   ${CMAKE_COMMAND} 
@@ -210,7 +218,7 @@ PLM_ADD_TEST (
   "bspline-g"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-g-check
   ${CMAKE_COMMAND} 
@@ -225,7 +233,7 @@ PLM_ADD_TEST (
   "bspline-h"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;h;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-a;steepest;-m;10;-f;h;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 ADD_TEST (bspline-h-check
   ${CMAKE_COMMAND} 
@@ -240,7 +248,7 @@ PLM_ADD_TEST (
   "bspline-mi-c-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
-  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/synth-1.mha;${PLM_TESTING_BUILD_DIR}/synth-4.mha"
+  "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-3.mha"
   )
 ADD_TEST (bspline-mi-c-1-check
   ${CMAKE_COMMAND} 
@@ -270,16 +278,16 @@ ADD_TEST (bspline-mi-c-2-check
 
 ## -------------------------------------------------------------------------
 ## drr
-##   drr-a   synth-1.mha (normal image), exact
-##   drr-b   synth-1.mha (normal image), uniform
-##   drr-c   synth-7.mha (negative spacing), exact
-##   drr-d   synth-7.mha (negative spacing), uniform
+##   drr-a   gauss-1.mha (normal image), exact
+##   drr-b   gauss-1.mha (normal image), uniform
+##   drr-c   gauss-4.mha (negative spacing), exact
+##   drr-d   gauss-4.mha (negative spacing), uniform
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "drr-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-a/out_;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
+  "-a;20;-O;drr-a/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-a-stats"
@@ -301,7 +309,7 @@ PLM_ADD_TEST (
   "drr-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
+  "-a;20;-O;drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-b-stats"
@@ -323,7 +331,7 @@ PLM_ADD_TEST (
   "drr-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-c/out_;${PLM_TESTING_BUILD_DIR}/synth-7.mha"
+  "-a;20;-O;drr-c/out_;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
 PLM_ADD_TEST (
   "drr-c-stats"
@@ -345,7 +353,7 @@ PLM_ADD_TEST (
   "drr-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/synth-7.mha"
+  "-a;20;-O;drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
 PLM_ADD_TEST (
   "drr-d-stats"
@@ -370,7 +378,7 @@ PLM_ADD_TEST (
   "drr-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-cuda/out_;${PLM_TESTING_BUILD_DIR}/synth-1.mha"
+  "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-cuda/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-cuda-stats"
@@ -470,7 +478,7 @@ PLM_ADD_TEST (
   "landmark-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-x;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_BUILD_DIR}/synth-2.mha"
+  "-x;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
 
 ## -------------------------------------------------------------------------
@@ -763,13 +771,117 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch compose
+##   This test uses registers from gauss-1 to gauss-2 which are done above, 
+##   and composes with results from an registration from gauss-2 to 
+##   gauss-5.  The composed vf should be correctly align gauss-1 to gauss-5.
+##   
+##   plm-register-compose    Make vf for testing composition
+##   plm-compose-a           Compose translation and vector field
+##   plm-compose-b           Compose vector field and vector field
+##   plm-compose-c           Compose bspline and vector field
+##   
+##   Remark: these tests are correct, in the sense that they work as 
+##   implemented.  Transformation vectors which are not defined are 
+##   set to zero in plastimatch, and this causes artifacts in the composed 
+##   vector field.
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-register-compose" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-compose.txt"
+  )
+PLM_ADD_TEST (
+  "plm-compose-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compose;plm-itk-translation-xf.txt;plm-register-compose-vf.mha;plm-compose-a-vf.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-a-warp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-a-warp.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-compose-a-vf.mha"
+  )
+ADD_TEST (
+  "plm-compose-a-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-a-stats.stdout.txt"
+  "-DREGEX=Mean: *([-0-9.]*)"
+  "-DLOWER_THRESH=13.1"
+  "-DUPPER_THRESH=13.3"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-compose-b" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compose;plm-itk-translation-vf.mha;plm-register-compose-vf.mha;plm-compose-b-vf.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-b-warp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-b-warp.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-compose-b-vf.mha"
+  )
+ADD_TEST (
+  "plm-compose-b-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-b-stats.stdout.txt"
+  "-DREGEX=Mean: *([-0-9.]*)"
+  "-DLOWER_THRESH=13.1"
+  "-DUPPER_THRESH=13.3"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "plm-compose-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compose;plm-bspline-single-h-xf.txt;plm-register-compose-vf.mha;plm-compose-c-vf.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-c-warp" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-c-warp.mha"
+  )
+PLM_ADD_TEST (
+  "plm-compose-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-compose-c-vf.mha"
+  )
+ADD_TEST (
+  "plm-compose-c-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-c-stats.stdout.txt"
+  "-DREGEX=Mean: *([-0-9.]*)"
+  "-DLOWER_THRESH=12.4"
+  "-DUPPER_THRESH=12.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch resample
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-resample-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "resample;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
+  "resample;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-resample-a.mha;--input-type;float;--output-type;float;--subsample;2 2 2"
   )
 
 ## -------------------------------------------------------------------------
@@ -785,7 +897,7 @@ PLM_ADD_TEST (
   "plm-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
   )
 PLM_ADD_TEST (
   "plm-warp-a-stats"
@@ -807,7 +919,7 @@ PLM_ADD_TEST (
   "plm-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
   )
 PLM_ADD_TEST (
   "plm-warp-b-stats-1"
@@ -844,7 +956,7 @@ PLM_ADD_TEST (
   "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
   )
 PLM_ADD_TEST (
   "plm-warp-c-stats"
@@ -866,7 +978,7 @@ PLM_ADD_TEST (
   "plm-warp-d" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/synth-3.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
   )
 PLM_ADD_TEST (
   "plm-warp-d-stats"

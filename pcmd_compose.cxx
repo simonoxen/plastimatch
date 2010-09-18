@@ -120,8 +120,8 @@ compose_main (Compose_parms* parms)
     Xform xf1, xf2;
 
     xform_load (&xf1, parms->xf_in_1_fn);
-    convert_to_itk_vf (&xf1, &xf2);
     xform_load (&xf2, parms->xf_in_2_fn);
+    convert_to_itk_vf (&xf1, &xf2);
     convert_to_itk_vf (&xf2, &xf1);
 
     DeformationFieldType::Pointer vf_out = DeformationFieldType::New();
