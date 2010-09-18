@@ -70,24 +70,48 @@ vf_compose (
 }
 
 static void
-convert_to_itk_vf (Xform *xf)
+convert_to_itk_vf (
+    Xform *this_xf,     /* I/O: The xform to convert */
+    Xform *another_xf   /* I:   The other xform, which helps guessing size */
+)
 {
     Plm_image_header pih;
 
-    switch (xf->m_type) {
+    /* Guess size for rendering vector field */
+    switch (this_xf->m_type) {
+    case XFORM_ITK_TRANSLATION:
+    case XFORM_ITK_VERSOR:
+    case XFORM_ITK_QUATERNION:
+    case XFORM_ITK_AFFINE:
+    case XFORM_ITK_BSPLINE:
+	switch (another_xf->m_type) {
+	case XFORM_ITK_VECTOR_FIELD:
+	    pih.set_from_itk_image (another_xf->get_itk_vf());
+	    break;
+	case XFORM_GPUIT_BSPLINE:
+	    pih.set_from_gpuit_bspline (another_xf->get_gpuit_bsp());
+	    break;
+	default:
+	    print_and_exit (
+		"Sorry, couldn't guess size to render vf.\n");
+	    break;
+	}
+	break;
     case XFORM_ITK_VECTOR_FIELD:
 	/* Do nothing */
-	break;
+	return;
     case XFORM_GPUIT_BSPLINE:
-	pih.set_from_gpuit_bspline (xf->get_gpuit_bsp());
-	xform_to_itk_vf (xf, xf, &pih);
+	pih.set_from_gpuit_bspline (this_xf->get_gpuit_bsp());
 	break;
+    case XFORM_ITK_TPS:
+    case XFORM_GPUIT_VECTOR_FIELD:
     default:
 	/* Not yet handled */
 	print_and_exit (
-	    "Sorry, only B-spline or Vector field types can be composed\n");
+	    "Sorry, couldn't convert xf to vf.\n");
 	break;
     }
+    xform_to_itk_vf (this_xf, this_xf, &pih);
 }
 
 static void
@@ -96,9 +120,9 @@ compose_main (Compose_parms* parms)
     Xform xf1, xf2;
 
     xform_load (&xf1, parms->xf_in_1_fn);
-    convert_to_itk_vf (&xf1);
+    convert_to_itk_vf (&xf1, &xf2);
     xform_load (&xf2, parms->xf_in_2_fn);
-    convert_to_itk_vf (&xf2);
+    convert_to_itk_vf (&xf2, &xf1);
 
     DeformationFieldType::Pointer vf_out = DeformationFieldType::New();
 

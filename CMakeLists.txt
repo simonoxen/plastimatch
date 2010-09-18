@@ -966,9 +966,6 @@ SET (SHUFFLE_MHA_SRC
 SET (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx synthetic_mha_main.h
   )
-SET (VF_COMPOSE_SRC
-  vf_compose.cxx
-  )
 SET (VF_INVERT_SRC
   vf_invert.cxx
   )
@@ -1165,8 +1162,6 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (merge2 merge2.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (patient_mask "${PATIENT_MASK_SRC}"
@@ -1194,8 +1189,6 @@ IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
-  PLM_ADD_EXECUTABLE (vf_compose "${VF_COMPOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
   PLM_ADD_EXECUTABLE (vf_invert "${VF_INVERT_SRC}"
     "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
