@@ -68,9 +68,9 @@ else(OPENCL_FOUND)
   set(OPENCL_LIBRARIES)
 endif(OPENCL_FOUND)
 
-if(OPENCL_FOUND)
+if(MINGW)
   set(OPENCL_FOUND FALSE)
-endif(OPENCL_FOUND)
+endif(MINGW)
 
 mark_as_advanced(
   OPENCL_INCLUDE_DIR
