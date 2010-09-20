@@ -25,6 +25,13 @@ IF (PLM_TEST_DICOM)
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 ENDIF (PLM_TEST_DICOM)
 
+IF (PLM_TEST_FDK_VARIAN)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/varian-catphan.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/varian-catphan")
+ENDIF (PLM_TEST_FDK_VARIAN)
+
 IF (PLM_TEST_XIO)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
@@ -287,7 +294,7 @@ PLM_ADD_TEST (
   "drr-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-a/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
+  "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-a/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-a-stats"
@@ -309,7 +316,7 @@ PLM_ADD_TEST (
   "drr-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
+  "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-b-stats"
@@ -331,7 +338,7 @@ PLM_ADD_TEST (
   "drr-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-c/out_;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
+  "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-c/out_;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
 PLM_ADD_TEST (
   "drr-c-stats"
@@ -353,7 +360,7 @@ PLM_ADD_TEST (
   "drr-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-a;20;-O;drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
+  "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
 PLM_ADD_TEST (
   "drr-d-stats"
@@ -397,38 +404,83 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
-## fdk cpu
+## fdk - all tests using fdk filtered backprojection
+##   fdk-cpu-a   CPU reconstruction of synthetic data
+##   fdk-cpu-b   CPU reconstruction of Varian data, no filtering
+##   fdk-cpu-c   CPU reconstruction of Varian data, fftw filtering
+##   fdk-brook   GPU reconstruction of synthetic data using BROOK
+##   fdk-cuda-a  GPU reconstruction of synthetic data using CUDA
+##   fdk-cuda-b  GPU reconstruction of Varian data using CUDA
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "fdk-cpu"
+  "fdk-cpu-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-a;0 19;-O;fdk-cpu.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.mha"
   )
 PLM_ADD_TEST (
-  "fdk-cpu-stats"
+  "fdk-cpu-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;fdk-cpu.mha"
+  "stats;--input;fdk-cpu-a.mha"
   )
 ADD_TEST (
-  "fdk-cpu-check"
+  "fdk-cpu-a-check"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-a-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=-987.5"
   "-DUPPER_THRESH=-986.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+PLM_ADD_TEST (
+  "fdk-cpu-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;none;-a;0 20 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-b.mha"
+  )
+PLM_ADD_TEST (
+  "fdk-cpu-b-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;fdk-cpu-b.mha"
+  )
+ADD_TEST (
+  "fdk-cpu-b-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-b-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-821.5"
+  "-DUPPER_THRESH=-820.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "fdk-cpu-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;ramp;-a;0 10 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-c.mha"
+  )
+PLM_ADD_TEST (
+  "fdk-cpu-c-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;fdk-cpu-c.mha"
+  )
+ADD_TEST (
+  "fdk-cpu-c-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-c-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-990.0"
+  "-DUPPER_THRESH=-989.0"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
-## -------------------------------------------------------------------------
-## fdk brook
-## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-brook"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;brook;-a;0 19;-O;fdk_brook_output.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;brook;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk_brook_output.mha"
   )
 PLM_ADD_TEST (
   "fdk-brook-stats"
@@ -446,25 +498,22 @@ ADD_TEST (
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
-## -------------------------------------------------------------------------
-## fdk cuda
-## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "fdk-cuda"
+  "fdk-cuda-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;fdk_cuda_output.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-cuda-a.mha"
   )
 PLM_ADD_TEST (
-  "fdk-cuda-stats"
+  "fdk-cuda-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;fdk_cuda_output.mha"
+  "stats;--input;fdk-cuda-a.mha"
   )
 ADD_TEST (
-  "fdk-cuda-check"
+  "fdk-cuda-a-check"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-a-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=-987.5"
   "-DUPPER_THRESH=-986.5"

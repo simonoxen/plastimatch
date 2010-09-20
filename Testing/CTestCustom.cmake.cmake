@@ -1,11 +1,12 @@
 
-SET (CUDA_FOUND @CUDA_FOUND@)
 SET (BROOK_FOUND @BROOK_FOUND@)
+SET (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
+SET (CUDA_FOUND @CUDA_FOUND@)
+SET (FFTW_FOUND @FFTW_FOUND@)
+SET (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 SET (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
 SET (PLM_TEST_DICOM @PLM_TEST_DICOM@)
-SET (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
 SET (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
-SET (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 
 #SET (REDUCED_TEST ON)
 SET (REDUCED_TEST OFF)
@@ -98,6 +99,29 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 
+## If we didn't get varian fdk test data, don't run these tests
+IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "fdk-cpu-b"
+    "fdk-cpu-b-stats"
+    "fdk-cpu-b-check"
+    "fdk-cpu-c"
+    "fdk-cpu-c-stats"
+    "fdk-cpu-c-check"
+    )
+ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
+
+## If we don't have fftw, don't run these tests
+IF (NOT FFTW_FOUND)
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "fdk-cpu-c"
+    "fdk-cpu-c-stats"
+    "fdk-cpu-c-check"
+    )
+ENDIF (NOT FFTW_FOUND)
+
 ## If we didn't compile with cuda, don't run these tests
 IF (NOT RUN_CUDA_TESTS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -105,9 +129,9 @@ IF (NOT RUN_CUDA_TESTS)
     "drr-cuda"
     "drr-cuda-stats"
     "drr-cuda-check"
-    "fdk-cuda"
-    "fdk-cuda-stats"
-    "fdk-cuda-check"
+    "fdk-cuda-a"
+    "fdk-cuda-a-stats"
+    "fdk-cuda-a-check"
     "plm-bspline-cuda" 
     "plm-bspline-cuda-stats" 
     "plm-bspline-cuda-check" 
@@ -184,12 +208,18 @@ IF (REDUCED_TEST)
     "drr-c"
     "drr-c-stats"
     "drr-c-check"
-    "fdk-cpu"
-    "fdk-cpu-stats"
-    "fdk-cpu-check"
-    "fdk-cuda"
-    "fdk-cuda-stats"
-    "fdk-cuda-check"
+    "fdk-cpu-a"
+    "fdk-cpu-a-stats"
+    "fdk-cpu-a-check"
+    "fdk-cpu-b"
+    "fdk-cpu-b-stats"
+    "fdk-cpu-b-check"
+    "fdk-cpu-c"
+    "fdk-cpu-c-stats"
+    "fdk-cpu-c-check"
+    "fdk-cuda-a"
+    "fdk-cuda-a-stats"
+    "fdk-cuda-a-check"
 
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"
