@@ -108,7 +108,9 @@ Gdcm_series::load (const char *dicom_dir)
     this->m_gsh2->SetUseSeriesDetails (true);
     this->m_gsh2->SetDirectory (dicom_dir, recursive);
 
-    //gdcm_shelper->Print ();
+#if defined (commentout)
+#endif
+    this->m_gsh2->Print ();
 
     gdcm::FileList *file_list = this->m_gsh2->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
@@ -125,7 +127,6 @@ Gdcm_series::load (const char *dicom_dir)
 	}
 	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();
     }
-
 }
 
 void
@@ -151,6 +152,10 @@ Gdcm_series::digest_files (void)
 	    gdcm::File *file = (*file_list)[0];
 	    std::string id = this->m_gsh2->
 		    CreateUniqueSeriesIdentifier(file).c_str();
+
+	    printf ("id = %s\n", id.c_str());
+#if defined (commentout)
+#endif
 
 	    /* Is this a CT? */
 	    std::string modality = file->GetEntryValue (0x0008, 0x0060);
@@ -191,6 +196,9 @@ Gdcm_series::digest_files (void)
 	    else if (modality == std::string ("RTSTRUCT")) {
 		printf ("Found RTSTRUCT!\n");
 		this->m_rtstruct_file_list = file_list;
+	    }
+	    else {
+		printf ("Found unknown modality %s\n", modality.c_str());
 	    }
 	}
 	file_list = this->m_gsh2->GetNextSingleSerieUIDFileSet();

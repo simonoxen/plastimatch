@@ -10,6 +10,7 @@
 #include "gdcmSeqEntry.h"
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
+#include "gdcmDocEntrySet.h"
 
 #include "bstring_util.h"
 #include "gdcm_rtss.h"
@@ -323,6 +324,49 @@ gdcm_rtss_load (
     printf ("Loading complete.\n");
     delete rtss_file;
 }
+
+#if defined (commentout)
+/* GCS: I had to copy from gdcm::Document because the function is protected. */
+int Document::ComputeGroup0002Length( /*FileType filetype*/ ) 
+{
+   uint16_t gr;
+   std::string vr;
+   
+   int groupLength = 0;
+   bool found0002 = false;   
+  
+   // for each zero-level Tag in the DCM Header
+   DocEntry *entry = GetFirstEntry();
+   while( entry )
+   {
+      gr = entry->GetGroup();
+
+      if ( gr == 0x0002 )
+      {
+         found0002 = true;
+
+         if ( entry->GetElement() != 0x0000 )
+         {
+            vr = entry->GetVR();
+
+            //if ( (vr == "OB")||(vr == "OW")||(vr == "UT")||(vr == "SQ"))
+            // (no SQ, OW, UT in group 0x0002;)
+               if ( vr == "OB" ) 
+               {
+                  // explicit VR AND (OB, OW, SQ, UT) : 4 more bytes
+                  groupLength +=  4;
+               }
+            groupLength += 2 + 2 + 4 + entry->GetLength();   
+         }
+      }
+      else if (found0002 )
+         break;
+
+      entry = GetNextEntry();
+   }
+   return groupLength; 
+}
+#endif
 
 void
 gdcm_rtss_save (
@@ -644,6 +688,18 @@ gdcm_rtss_save (
 	/* ROIInterpreter */
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a6);
     }
+
+#if defined (commentout)
+    /* GCS: I copied this from gdcm::File::Write */
+    // Entry : 0002|0000 = group length -> recalculated
+    gdcm::ValEntry *e0000 = gf->GetValEntry (0x0002,0x0000);
+    if (e0000) {
+	printf ("Got e0000!!!!\n");
+	itksys_ios::ostringstream sLen;
+	sLen << gf->ComputeGroup0002L1ength( );
+	e0000->SetValue(sLen.str());
+    }
+#endif
 
     /* Do the actual writing out to file */
     gf->WriteContent (fp, gdcm::ExplicitVR);

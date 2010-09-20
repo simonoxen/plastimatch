@@ -90,29 +90,32 @@ void SerieHelper2::ClearAll()
  */
 void SerieHelper2::AddFileName(std::string const &filename)
 {
-   // Create a DICOM file
-   File *header = new File ();
-   header->SetLoadMode(LoadMode);
-   header->SetFileName( filename ); 
-   header->Load();
+    // Create a DICOM file
+    File *header = new File ();
+    header->SetLoadMode(LoadMode);
+    header->SetFileName( filename ); 
+    
+    printf ("------  AddFileName (%s)\n", filename.c_str());
 
-   /* GCS: Sept 12, 2009.  gdcm::File::IsReadable() is too strict about 
-	which tags are required.  Therefore non-image files such as 
-	dicomrt will not show up in the list of series.  */
-   if (header->IsParsable())
-   {
-      if ( !AddFile( header ) )
-      {
-         // at least one rule was unmatched we need to deallocate the file:
-         delete header;
-      }
-   }
-   else
-   {
-       printf ("Header not readable: %s\n", filename.c_str());
-      gdcmWarningMacro("Could not read file: " << filename );
-      delete header;
-   }
+    header->Load();
+
+    /* GCS: Sept 12, 2009.  gdcm::File::IsReadable() is too strict about 
+       which tags are required.  Therefore non-image files such as 
+       dicomrt will not show up in the list of series.  */
+    if (header->IsParsable())
+    {
+	if ( !AddFile( header ) )
+	{
+	    // at least one rule was unmatched we need to deallocate the file:
+	    delete header;
+	}
+    }
+    else
+    {
+	printf ("Header not readable: %s\n", filename.c_str());
+	gdcmWarningMacro("Could not read file: " << filename );
+	delete header;
+    }
 }
 
 /**
@@ -136,52 +139,55 @@ void SerieHelper2::AddFileName(std::string const &filename)
  */
 bool SerieHelper2::AddFile(File *header)
 {
-   int allrules = 1;
-   // First step the user has defined a set of rules for the DICOM 
-   // he is looking for.
-   // make sure the file correspond to his set of rules:
+    int allrules = 1;
+    // First step the user has defined a set of rules for the DICOM 
+    // he is looking for.
+    // make sure the file correspond to his set of rules:
 
-   std::string s;
-   for(SerieExRestrictions::iterator it2 = ExRestrictions.begin();
-     it2 != ExRestrictions.end();
-     ++it2)
-   {
-      const ExRule &r = *it2;
-      s = header->GetEntryValue( r.group, r.elem );
-      if ( !Util::CompareDicomString(s, r.value.c_str(), r.op) )
-      {
-	  printf ("Failed comparison: 0x%04x 0x%04x\n", r.group, r.elem);
-         // Argh ! This rule is unmatched; let's just quit
-         allrules = 0;
-         break;
-      }
-   }
+    std::string debug_string = header->GetEntryValue (0x0010, 0x0010);
+    printf ("Patient ID = %s\n", debug_string.c_str());
 
-   if ( allrules ) // all rules are respected:
-   {
-      // Allright! we have a found a DICOM that matches the user expectation. 
-      // Let's add it to the specific 'id' which by default is uid (Serie UID)
-      // but can be `refined` by user with more paramater (see AddRestriction(g,e))
+    std::string s;
+    for(SerieExRestrictions::iterator it2 = ExRestrictions.begin();
+	it2 != ExRestrictions.end();
+	++it2)
+    {
+	const ExRule &r = *it2;
+	s = header->GetEntryValue( r.group, r.elem );
+	if ( !Util::CompareDicomString(s, r.value.c_str(), r.op) )
+	{
+	    printf ("Failed comparison: 0x%04x 0x%04x\n", r.group, r.elem);
+	    // Argh ! This rule is unmatched; let's just quit
+	    allrules = 0;
+	    break;
+	}
+    }
+
+    if ( allrules ) // all rules are respected:
+    {
+	// Allright! we have a found a DICOM that matches the user expectation. 
+	// Let's add it to the specific 'id' which by default is uid (Serie UID)
+	// but can be `refined` by user with more paramater (see AddRestriction(g,e))
  
-      std::string id = CreateUniqueSeriesIdentifier( header );
-      // if id == GDCM_UNFOUND then consistently we should find GDCM_UNFOUND
-      // no need here to do anything special
+	std::string id = CreateUniqueSeriesIdentifier( header );
+	// if id == GDCM_UNFOUND then consistently we should find GDCM_UNFOUND
+	// no need here to do anything special
  
-      if ( SingleSerieUIDFileSetHT.count(id) == 0 )
-      {
-         gdcmDebugMacro(" New Serie UID :[" << id << "]");
-         // create a std::list in 'id' position
-         SingleSerieUIDFileSetHT[id] = new FileList;
-      }
-      // Current Serie UID and DICOM header seems to match add the file:
-      SingleSerieUIDFileSetHT[id]->push_back( header );
-   }
-   else
-   {
-      // one rule not matched, tell user:
-      return false;
-   }
-   return true;
+	if ( SingleSerieUIDFileSetHT.count(id) == 0 )
+	{
+	    gdcmDebugMacro(" New Serie UID :[" << id << "]");
+	    // create a std::list in 'id' position
+	    SingleSerieUIDFileSetHT[id] = new FileList;
+	}
+	// Current Serie UID and DICOM header seems to match add the file:
+	SingleSerieUIDFileSetHT[id]->push_back( header );
+    }
+    else
+    {
+	// one rule not matched, tell user:
+	return false;
+    }
+    return true;
 }
 
 /**
