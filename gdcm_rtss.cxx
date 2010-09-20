@@ -4,13 +4,15 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "gdcmDocEntry.h"
+#include "gdcmDocEntrySet.h"
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
 #include "gdcmGlobal.h"
 #include "gdcmSeqEntry.h"
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
-#include "gdcmDocEntrySet.h"
+#include "gdcmValEntry.h"
 
 #include "bstring_util.h"
 #include "gdcm_rtss.h"
@@ -325,48 +327,47 @@ gdcm_rtss_load (
     delete rtss_file;
 }
 
-#if defined (commentout)
 /* GCS: I had to copy from gdcm::Document because the function is protected. */
-int Document::ComputeGroup0002Length( /*FileType filetype*/ ) 
+int
+plm_ComputeGroup0002Length (gdcm::File *gf)
 {
-   uint16_t gr;
-   std::string vr;
+    uint16_t gr;
+    std::string vr;
    
-   int groupLength = 0;
-   bool found0002 = false;   
+    int groupLength = 0;
+    bool found0002 = false;   
   
-   // for each zero-level Tag in the DCM Header
-   DocEntry *entry = GetFirstEntry();
-   while( entry )
-   {
-      gr = entry->GetGroup();
+    // for each zero-level Tag in the DCM Header
+    gdcm::DocEntry *entry = gf->GetFirstEntry();
+    while( entry )
+    {
+	gr = entry->GetGroup();
 
-      if ( gr == 0x0002 )
-      {
-         found0002 = true;
+	if ( gr == 0x0002 )
+	{
+	    found0002 = true;
 
-         if ( entry->GetElement() != 0x0000 )
-         {
-            vr = entry->GetVR();
+	    if ( entry->GetElement() != 0x0000 )
+	    {
+		vr = entry->GetVR();
 
-            //if ( (vr == "OB")||(vr == "OW")||(vr == "UT")||(vr == "SQ"))
-            // (no SQ, OW, UT in group 0x0002;)
-               if ( vr == "OB" ) 
-               {
-                  // explicit VR AND (OB, OW, SQ, UT) : 4 more bytes
-                  groupLength +=  4;
-               }
-            groupLength += 2 + 2 + 4 + entry->GetLength();   
-         }
-      }
-      else if (found0002 )
-         break;
+		//if ( (vr == "OB")||(vr == "OW")||(vr == "UT")||(vr == "SQ"))
+		// (no SQ, OW, UT in group 0x0002;)
+		if ( vr == "OB" ) 
+		{
+		    // explicit VR AND (OB, OW, SQ, UT) : 4 more bytes
+		    groupLength +=  4;
+		}
+		groupLength += 2 + 2 + 4 + entry->GetLength();   
+	    }
+	}
+	else if (found0002 )
+	    break;
 
-      entry = GetNextEntry();
-   }
-   return groupLength; 
+	entry = gf->GetNextEntry();
+    }
+    return groupLength; 
 }
-#endif
 
 void
 gdcm_rtss_save (
@@ -689,17 +690,28 @@ gdcm_rtss_save (
 	rtroio_item->InsertValEntry ("", 0x3006, 0x00a6);
     }
 
-#if defined (commentout)
+    /* Create DICOM meta-information header -- gdcm suxxors :P */
+    gf->InsertValEntry ("0", 0x0002, 0x0000);
+    uint8_t fmiv[2] = { 0x00, 0x01 };
+    gf->InsertBinEntry (fmiv, 2, 0x0002, 0x0001, std::string("OB"));
+    gf->InsertValEntry ("1.2.840.10008.5.1.4.1.1.481.3", 0x0002, 0x0002);
+    gf->InsertValEntry (gf->GetEntryValue (0x0008, 0x0018), 0x0002, 0x0003);
+    // Implicit VR Little Endian = "1.2.840.10008.1.2"
+    // Explicit VR Little Endian = "1.2.840.10008.1.2.1"
+    gf->InsertValEntry ("1.2.840.10008.1.2.1", 0x0002, 0x0010);
+    gf->InsertValEntry (std::string (PLM_UID_PREFIX) + ".101" , 
+	0x0002, 0x0012);
+    /* NB: (0002,0013) only allows up to 16 characters */
+    gf->InsertValEntry (std::string("Plastimatch 1.4"), 0x0002, 0x0013);
+
+    /* Calculate size of meta-information header */
     /* GCS: I copied this from gdcm::File::Write */
-    // Entry : 0002|0000 = group length -> recalculated
     gdcm::ValEntry *e0000 = gf->GetValEntry (0x0002,0x0000);
     if (e0000) {
-	printf ("Got e0000!!!!\n");
 	itksys_ios::ostringstream sLen;
-	sLen << gf->ComputeGroup0002L1ength( );
+	sLen << plm_ComputeGroup0002Length (gf);
 	e0000->SetValue(sLen.str());
     }
-#endif
 
     /* Do the actual writing out to file */
     gf->WriteContent (fp, gdcm::ExplicitVR);

@@ -109,8 +109,8 @@ Gdcm_series::load (const char *dicom_dir)
     this->m_gsh2->SetDirectory (dicom_dir, recursive);
 
 #if defined (commentout)
-#endif
     this->m_gsh2->Print ();
+#endif
 
     gdcm::FileList *file_list = this->m_gsh2->GetFirstSingleSerieUIDFileSet ();
     while (file_list) {
@@ -153,8 +153,8 @@ Gdcm_series::digest_files (void)
 	    std::string id = this->m_gsh2->
 		    CreateUniqueSeriesIdentifier(file).c_str();
 
-	    printf ("id = %s\n", id.c_str());
 #if defined (commentout)
+	    printf ("id = %s\n", id.c_str());
 #endif
 
 	    /* Is this a CT? */

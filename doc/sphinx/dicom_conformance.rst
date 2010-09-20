@@ -1,4 +1,4 @@
-Dicom conformance
+DICOM conformance
 =================
 
 This section is under development.
@@ -19,24 +19,26 @@ uses are reserved.
 +---------------+---------------------------------------+
 |Y = 2          |Clinical data                          |
 +---------------+---------------------------------------+
-|Y = 3          |Anonymzed data                         |
+|Y = 3          |Anonymized data                        |
++---------------+---------------------------------------+
+|Y = 101        |ImplementationClassUID in meta         |
+|               |information header                     |
 +---------------+---------------------------------------+
 |Z              |Up to 33 digits and dots               |
 +---------------+---------------------------------------+
 
 Mondoshot uses the following scheme:
 
-+---------------------------+---------------------------+
-|Y = 1.200.ZZZZZZZZZZZ      |Non-clinical               |
-+---------------------------+---------------------------+
-|Y = 2.200.ZZZZZZZZZZZ      |Clinical                   |
-+---------------------------+---------------------------+
++--------------------------------+---------------------------+
+|suffix = 1.200.ZZZZZZZZZZZ      |Non-clinical               |
++--------------------------------+---------------------------+
+|suffix = 2.200.ZZZZZZZZZZZ      |Clinical                   |
++--------------------------------+---------------------------+
 
-The following subrange is reserved for anonymized data:
-
-+---------------------------+---------------------------+
-|Y = 3.ZZZZZZZZZZZZZZZ      |All anonymzied data        |
-+---------------------------+---------------------------+
+For the subrange used by the ImplementationClassUID tag, 
+i.e. DICOM tag (0002, 0010) in the meta-information header, 
+the string ZZZZ is used to mark the plastimatch version number.
+If th string ZZZZ is blank, the version is unknown.
 
 NOTE: Plastimatch uses two different dicom engines.  GDCM for itk-related
 routines, and DCMTK for non-itk routines (dicom_uid.exe,
@@ -100,12 +102,12 @@ Frame of Reference Module
 |Indicator          |               |               |                    |
 +-------------------+---------------+---------------+--------------------+
 
-Dicom RT structure sets
+DICOM RT structure sets
 -----------------------
 
 To be written.
 
-Dicom RT dose
+DICOM RT dose
 -------------
 
 To be written.

@@ -41,6 +41,7 @@ Value length
 ~~~~~~~~~~~~
 The value length is either a 2 or 4 byte unsigned integer.  
 It is 2 bytes if there is an explicit VR, otherwise it is 4 bytes.
+If there is no meta-information header, this choice is ambiguous.  
 
 Explicit and implicit VR
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -52,3 +53,13 @@ The dictionary maps (group,element) pairs to VR values.
 The application describes whether it will use implicit or explicit VR 
 in the application header.  A special case is made of the sequence tags
 (fffe,e000), (fffe,e00d), and (fffe,e0dd) which are always implicit VR.
+
+Meta-information header
+~~~~~~~~~~~~~~~~~~~~~~~
+Because the data elements can be explicit or implicit VR, and because 
+the data can be either little-endian or big-endian, DICOM uses 
+the data elements in group 0002 to explain these ambiguities.  
+The data in this group is called the meta-information header.
+
+Explanation of the meta information header is described in 
+section 10 of the standard.
