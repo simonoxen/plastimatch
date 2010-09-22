@@ -355,8 +355,8 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* InstanceNumber */
     gf->InsertValEntry ("1", 0x0020, 0x0013);
     /* ImagePositionPatient */
-    s = gdcm::Util::Format ("%g\\%g\\%g", plh.m_origin[0], 
-	plh.m_origin[1], plh.m_origin[2]);
+    s = gdcm::Util::Format ("%g\\%g\\%g", 
+	plh.m_origin[0], plh.m_origin[1], plh.m_origin[2]);
     gf->InsertValEntry (s, 0x0020, 0x0032);
 
     /* ImageOrientationPatient */
@@ -418,10 +418,9 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     gf->InsertValEntry ("PLAN", 0x3004, 0x000a);
 
     /* GridFrameOffsetVector */
-    s = gdcm::Util::Format ("%g", plh.m_origin[2]);
+    s = std::string ("0");
     for (i = 1; i < plh.Size(2); i++) {
-	s += gdcm::Util::Format ("\\%g", 
-	    plh.m_origin[2] + i * plh.m_spacing[2]);
+	s += gdcm::Util::Format ("\\%g", i * plh.m_spacing[2]);
     }
     gf->InsertValEntry (s, 0x3004, 0x000c);
 
