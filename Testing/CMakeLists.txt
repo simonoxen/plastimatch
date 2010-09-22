@@ -627,13 +627,28 @@ PLM_ADD_TEST (
   "plm-convert-dicom-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dose-img;plm-convert-dicom-e-dose-img.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-f" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dicom"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dicom;--output-dose-img;plm-convert-dicom-f-dose-img.mha"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-f-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dose-img.mha;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dose-img.mha"
+  )
+ADD_TEST (
+  "plm-convert-dicom-f-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-stats.stdout.txt"
+  "-DREGEX=MAE *([-0-9.]*)"
+  "-DLOWER_THRESH=0.000"
+  "-DUPPER_THRESH=0.005"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------

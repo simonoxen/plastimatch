@@ -1,0 +1,41 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include "itkImage.h"
+#include "itkOrientImageFilter.h"
+
+#include "itk_image.h"
+
+/* -----------------------------------------------------------------------
+   Statistics like min, max, etc.
+   ----------------------------------------------------------------------- */
+template<class T> 
+void
+itk_image_stats (T img, double *min_val, double *max_val, double *avg, int *num)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::ImageRegionIterator< ImageType > IteratorType;
+    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
+    IteratorType it (img, rg);
+
+    int first = 1;
+    double sum = 0.0;
+
+    *num = 0;
+    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	double v = (double) it.Get();
+	if (first) {
+	    *min_val = *max_val = v;
+	    first = 0;
+	}
+	if (*min_val > v) *min_val = v;
+	if (*max_val < v) *max_val = v;
+	sum += v;
+	(*num) ++;
+    }
+    *avg = sum / (*num);
+}
+
+/* Explicit instantiations */
+template plastimatch1_EXPORT void itk_image_stats (FloatImageType::Pointer, double*, double*, double*, int*);

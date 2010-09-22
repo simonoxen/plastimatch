@@ -14,6 +14,7 @@
 
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
+#include "itk_image_stats.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_uid_prefix.h"
@@ -428,13 +429,26 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
        Leave ReferencedRTPlanSequence empty (until I can cross reference) */
 
     /* We need to convert image to uint16_t, but first we need to 
-       scale it.  I'll use the value from XiO: 0.004
-       FIX: The maximum dose that will fit in a 16-bit unsigned integer with
-       this scaling is 262 Gy. Higher values will wrap around without warning.
-       Perhaps the scaling could be adjusted automatically to maximize use
-       of the available integer range. */
-    float dose_scale = 0.004;
+       scale it.  The maximum dose needs to fit in a 16-bit unsigned 
+       integer.  Older versions of plastimatch set the dose_scale to a 
+       fixed value of 0.04 (based on the fact that this number was found 
+       in the XiO sample).  With this scaling, the maximum dose is 262 Gy. 
+       Now we compute an appropriate scaling factor based on the maximum 
+       dose. */
+
+    /* Copy the image so we don't corrupt the original */
     Plm_image *tmp = pli->clone ();
+    /* Find the maximum value in the image */
+    double min_val, max_val, avg;
+    int num;
+    tmp->convert (PLM_IMG_TYPE_ITK_FLOAT);
+    itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, &num);
+#ifndef UINT16_T_MAX
+#define UINT16_T_MAX (0xffff)
+#endif
+    //float dose_scale = 0.04;
+    float dose_scale = 10.0 * max_val / UINT16_T_MAX;
+    /* Scale the image and convert to uint16_t */
     tmp->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
     Volume *vol = (Volume*) tmp->m_gpuit;
     volume_scale (vol, 1 / dose_scale);

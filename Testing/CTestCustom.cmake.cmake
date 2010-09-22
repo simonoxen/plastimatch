@@ -235,6 +235,8 @@ IF (REDUCED_TEST)
     "plm-convert-dicom-d-check"
     "plm-convert-dicom-e"
     "plm-convert-dicom-f"
+    "plm-convert-dicom-f-stats"
+    "plm-convert-dicom-f-check"
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"

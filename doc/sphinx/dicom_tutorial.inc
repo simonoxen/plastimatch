@@ -63,3 +63,10 @@ The data in this group is called the meta-information header.
 
 Explanation of the meta information header is described in 
 section 10 of the standard.
+
+DICOM RT
+~~~~~~~~
+These are extra IODs (information objects) defined in the DICOM standard: 
+RT Image, RT Plan, RT Dose, and RT Structure Set.
+
+Explanation of DICOM RT is found in section 3 of the standard.

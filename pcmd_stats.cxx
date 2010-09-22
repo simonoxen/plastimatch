@@ -4,8 +4,10 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+
 #include "getopt.h"
 #include "itk_image.h"
+#include "itk_image_stats.h"
 #include "mha_io.h"
 #include "plm_file_format.h"
 #include "proj_image.h"
@@ -75,6 +77,7 @@ stats_img_main (Stats_parms* parms)
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
 
+#if defined (commentout)
     int first = 1;
     float min_val, max_val;
     int num = 0;
@@ -94,6 +97,14 @@ stats_img_main (Stats_parms* parms)
 
     printf ("MIN %f AVE %f MAX %f NUM %d\n",
 	    min_val, (float) (sum / num), max_val, num);
+#endif
+
+    double min_val, max_val, avg;
+    int num;
+    itk_image_stats (img, &min_val, &max_val, &avg, &num);
+
+    printf ("MIN %f AVE %f MAX %f NUM %d\n", 
+	(float) min_val, (float) avg, (float) max_val, num);
 }
 
 static void
