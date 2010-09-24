@@ -7,8 +7,9 @@
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
 
-#include "pcmd_dvh.h"
+#include "bstring_util.h"
 #include "itk_image.h"
+#include "pcmd_dvh.h"
 #include "plm_image.h"
 #include "plm_int.h"
 #include "rtds.h"
@@ -245,10 +246,10 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	    break;
 	}
     }
-    if (parms->input_ss_img_fn.length() == 0 
-	|| parms->input_ss_list_fn.length() == 0
-	|| !parms->input_dose_fn.length() == 0
-	|| !parms->output_csv_fn.length() == 0)
+    if (bstring_empty (parms->input_ss_img_fn)
+	|| bstring_empty (parms->input_ss_list_fn)
+	|| bstring_empty (parms->input_dose_fn)
+	|| bstring_empty (parms->output_csv_fn))
     {
 	fprintf (stderr, 
 	    "Error.  Must specify input for dose, ss_img, and output file.\n");
