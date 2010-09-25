@@ -1,6 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef _AUTOTUNE_OPENCL_H_
 #define _AUTOTUNE_OPENCL_H_
 
+#include "plm_config.h"
 #include <math.h>
 #include "opencl_utils.h"
 
@@ -10,7 +14,7 @@
 extern "C" {
 #endif
 
-void divideWork(cl_device_id *devices, cl_uint device_count, int dimensions, size_t work_per_device[MAX_GPU_COUNT][3], size_t *work_total);
+void gpuit_EXPORT divideWork(cl_device_id *devices, cl_uint device_count, int dimensions, size_t work_per_device[MAX_GPU_COUNT][3], size_t *work_total);
 
 #if defined __cplusplus
 }
