@@ -203,15 +203,19 @@ main (int argc, char* argv[])
 
     volume_convert_to_float (vol);
 
-	if (options.threading != THREADING_OPENCL) {
-#if defined (DRR_PREPROCESS_ATTENUATION)
-    drr_preprocess_attenuation (vol);
+    switch (options.threading) {
+#if OPENCL_FOUND
+    case THREADING_OPENCL:
+	preprocess_attenuation_and_drr_render_volume_cl (vol, &options);
+	break;
 #endif
-
-    drr_render_volume (vol, &options);
-} else {
-	preprocess_attenuation_and_drr_render_volume_cl(vol, &options);
-}
+    default:
+#if defined (DRR_PREPROCESS_ATTENUATION)
+	drr_preprocess_attenuation (vol);
+#endif
+	drr_render_volume (vol, &options);
+	break;
+    }
 
     volume_destroy (vol);
     printf ("Done.\n");
