@@ -114,7 +114,7 @@ dvh_main (Dvh_parms* parms)
 	}
 
 	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	    Cxt_structure *curr_structure = &rtds.m_ss_list->slist[sno];
+	    Rtss_structure *curr_structure = rtds.m_ss_list->slist[sno];
 		    
 	    /* Is this pixel in the current structure? */
 	    uint32_t in_struct = s & (1 << curr_structure->bit);
@@ -142,7 +142,7 @@ dvh_main (Dvh_parms* parms)
     FILE *fp = fopen (parms->output_csv_fn, "w");
     fprintf (fp, "Dose (cGy)");
     for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	Cxt_structure *curr_structure = &rtds.m_ss_list->slist[sno];
+	Rtss_structure *curr_structure = rtds.m_ss_list->slist[sno];
 	fprintf (fp, ",%s", (const char*) curr_structure->name);
     }
     fprintf (fp, "\n");

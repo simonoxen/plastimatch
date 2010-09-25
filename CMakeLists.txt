@@ -762,6 +762,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   rtds_dicom.cxx rtds_dicom.h
   rtds_warp.cxx rtds_warp.h
   rtss.cxx rtss.h 
+  rtss_structure.cxx rtss_structure.h 
   slice_extract.cxx slice_extract.h
   ss_img_extract.cxx ss_img_extract.h
   ss_list_io.cxx ss_list_io.h

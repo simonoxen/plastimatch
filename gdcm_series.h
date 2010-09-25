@@ -7,7 +7,7 @@
 #include "plm_config.h"
 #include <vector>
 #include <map>
-#include "bstrlib.h"
+#include "bstrwrap.h"
 #include "gdcm_series_helper_2.h"
 
 class Gdcm_series 
@@ -18,7 +18,7 @@ public:
 
     void load (const char *dicom_dir);
     void digest_files (void);
-    void get_slice_info (int *slice_no, bstring *ct_slice_uid, float z);
+    void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
 
     gdcm::SerieHelper2 *m_gsh2;

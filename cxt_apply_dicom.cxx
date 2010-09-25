@@ -84,9 +84,9 @@ cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 
     /* slice numbers and slice uids */
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
-	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 	    if (curr_polyline->num_vertices <= 0) {
 		continue;
 	    }

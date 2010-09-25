@@ -217,7 +217,7 @@ gdcm_rtss_load (
 	std::string roi_display_color, referenced_roi_number;
 	gdcm::SeqEntry *c_seq;
 	gdcm::SQItem *c_item;
-	Cxt_structure *curr_structure;
+	Rtss_structure *curr_structure;
 
 	/* Get id and color */
 	referenced_roi_number = item->GetEntryValue (0x3006,0x0084);
@@ -245,7 +245,7 @@ gdcm_rtss_load (
 		std::string contour_geometric_type;
 		std::string contour_data;
 		std::string number_of_contour_points;
-		Cxt_polyline *curr_polyline;
+		Rtss_polyline *curr_polyline;
 
 		/* Grab data from dicom */
 		contour_geometric_type = c_item->GetEntryValue (0x3006,0x0042);
@@ -270,9 +270,9 @@ gdcm_rtss_load (
 		}
 
 		/* Create a new polyline for this structure */
-		curr_polyline = cxt_add_polyline (curr_structure);
+		curr_polyline = curr_structure->add_polyline ();
 		curr_polyline->slice_no = -1;
-		curr_polyline->ct_slice_uid = 0;
+		//curr_polyline->ct_slice_uid = "";
 		curr_polyline->num_vertices = num_points;
 		curr_polyline->x = (float*) malloc (num_points * sizeof(float));
 		curr_polyline->y = (float*) malloc (num_points * sizeof(float));
@@ -574,7 +574,7 @@ gdcm_rtss_save (
 	ssroi_seq->AddSQItem (ssroi_item, i+1);
 	/* ROINumber */
 	ssroi_item->InsertValEntry (gdcm::Util::Format 
-	    ("%d", cxt->slist[i].id),
+	    ("%d", cxt->slist[i]->id),
 	    0x3006, 0x0022);
 	/* ReferencedFrameOfReferenceUID */
 	if (bstring_not_empty (cxt->ct_fref_uid)) {
@@ -585,7 +585,7 @@ gdcm_rtss_save (
 	}
 	/* ROIName */
 	ssroi_item->InsertValEntry (
-	    (const char*) cxt->slist[i].name, 0x3006, 0x0026);
+	    (const char*) cxt->slist[i]->name, 0x3006, 0x0026);
 	/* ROIGenerationAlgorithm */
 	ssroi_item->InsertValEntry ("", 0x3006, 0x0036);
     }
@@ -597,7 +597,7 @@ gdcm_rtss_save (
     /* ROIContourSequence */
     gdcm::SeqEntry *roic_seq = gf->InsertSeqEntry (0x3006, 0x0039);
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *roic_item 
 	    = new gdcm::SQItem (roic_seq->GetDepthLevel());
 	roic_seq->AddSQItem (roic_item, i+1);
@@ -612,17 +612,17 @@ gdcm_rtss_save (
 	/* ContourSequence */
 	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
 	for (j = 0; j < curr_structure->num_contours; j++) {
-	    Cxt_polyline *curr_contour = &curr_structure->pslist[j];
+	    Rtss_polyline *curr_contour = curr_structure->pslist[j];
 	    if (curr_contour->num_vertices <= 0) continue;
 
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
-	    if (! curr_contour->ct_slice_uid) continue;
+	    if (bstring_empty (curr_contour->ct_slice_uid)) continue;
 
 	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
 	    c_seq->AddSQItem (c_item, j+1);
 	    /* ContourImageSequence */
-	    if (curr_contour->ct_slice_uid) {
+	    if (bstring_not_empty (curr_contour->ct_slice_uid)) {
 		gdcm::SeqEntry *ci_seq 
 		    = c_item->InsertSeqEntry (0x3006, 0x0016);
 		gdcm::SQItem *ci_item 
@@ -632,8 +632,8 @@ gdcm_rtss_save (
 		ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
 		    0x0008, 0x1150);
 		/* ReferencedSOPInstanceUID */
-		ci_item->InsertValEntry ((const char*) 
-		    curr_contour->ct_slice_uid->data, 
+		ci_item->InsertValEntry (
+		    (const char*) curr_contour->ct_slice_uid,
 		    0x0008, 0x1155);
 	    }
 	    /* ContourGeometricType */
@@ -669,7 +669,7 @@ gdcm_rtss_save (
     /* RTROIObservationsSequence */
     gdcm::SeqEntry *rtroio_seq = gf->InsertSeqEntry (0x3006, 0x0080);
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *rtroio_item 
 	    = new gdcm::SQItem (rtroio_seq->GetDepthLevel());
 	rtroio_seq->AddSQItem (rtroio_item, i+1);

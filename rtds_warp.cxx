@@ -46,7 +46,7 @@ prefix_output_save (Rtds *rtds, Warp_parms *parms)
     /* Use m_cxt or m_ss_list ?? */
     for (i = 0; i < rtds->m_cxt->num_structures; i++) {
 	CBString fn;
-	Cxt_structure *curr_structure = &rtds->m_cxt->slist[i];
+	Rtss_structure *curr_structure = rtds->m_cxt->slist[i];
 	int bit = curr_structure->bit;
 
 	if (bit == -1) continue;

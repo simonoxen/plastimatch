@@ -16,7 +16,7 @@ void
 cxt_load (Rtss* cxt, const char* cxt_fn)
 {
     FILE* fp;
-    Cxt_polyline* curr_contour;
+    Rtss_polyline* curr_contour;
 
     float val_x = 0;
     float val_y = 0;
@@ -121,6 +121,7 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
     }
 
     /* Part 2: Structures info */
+    printf ("Starting structure parsing\n");
     while (1) {
         char color[CXT_BUFLEN];
         char name[CXT_BUFLEN];
@@ -144,13 +145,14 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
     }
 
     /* Part 3: Contour info */
+    printf ("Starting contour parsing\n");
     while (1) {
 	int k;
 	int num_pt;
 	int struct_id = 0;
 	int slice_idx;
 	char slice_uid[1024];
-	Cxt_structure* curr_structure;
+	Rtss_structure* curr_structure;
 
 	/* Structure id */
         if (1 != fscanf (fp, " %d", &struct_id)) {
@@ -193,18 +195,13 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
 	    continue;
 	}
 
-	++ (curr_structure->num_contours);
-        curr_structure->pslist = (Cxt_polyline*) 
-		realloc (curr_structure->pslist, 
-			 curr_structure->num_contours * sizeof(Cxt_polyline));
-	
-        curr_contour = &curr_structure->pslist[curr_structure->num_contours-1];
+        curr_contour = curr_structure->add_polyline ();
         curr_contour->num_vertices = num_pt;
         curr_contour->slice_no = slice_idx;
 	if (slice_uid[0]) {
-	    curr_contour->ct_slice_uid = bfromcstr (slice_uid);
+	    curr_contour->ct_slice_uid = slice_uid;
 	} else {
-	    curr_contour->ct_slice_uid = 0;
+	    curr_contour->ct_slice_uid = "";
 	}
 
         curr_contour->x = (float*) malloc (num_pt * sizeof(float));
@@ -245,6 +242,7 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
         slice_idx = 0;
         num_pt = 0;
     }
+    printf ("Mostly done.\n");
     fclose (fp);
     return;
  not_successful:
@@ -324,7 +322,7 @@ cxt_save (
     /* Part 2: Structures info */
     fprintf (fp, "ROI_NAMES\n");
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
@@ -340,13 +338,13 @@ cxt_save (
     /* Part 3: Contour info */
     for (i = 0; i < cxt->num_structures; i++) {
 	int j;
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	if (prune_empty && curr_structure->num_contours <= 0) {
 	    continue;
 	}
 	for (j = 0; j < curr_structure->num_contours; j++) {
 	    int k;
-	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 
 	    /* struct_no|contour_thickness|num_points|slice_no|slice_uid|points */
 	    /* I don't think contour thickness is used. */
@@ -358,8 +356,8 @@ cxt_save (
 	    } else {
 		fprintf (fp, "|");
 	    }
-	    if (curr_polyline->ct_slice_uid) {
-		fprintf (fp, "%s|", curr_polyline->ct_slice_uid->data);
+	    if (bstring_not_empty (curr_polyline->ct_slice_uid)) {
+		fprintf (fp, "%s|", (const char*) curr_polyline->ct_slice_uid);
 	    } else {
 		fprintf (fp, "|");
 	    }

@@ -149,8 +149,8 @@ add_cms_structure (Rtss *rtss, const char *filename,
 	int rc;
 	int structure_id, num_points;
 	int point_idx, remaining_points;
-	Cxt_structure *curr_structure;
-	Cxt_polyline *curr_polyline;
+	Rtss_structure *curr_structure;
+	Rtss_polyline *curr_polyline;
 
 	/* Get num points */
 	fgets (buf, 1024, fp);
@@ -187,7 +187,7 @@ add_cms_structure (Rtss *rtss, const char *filename,
 	}
 
 	printf ("[%f %d %d]\n", z_loc, structure_id, num_points);
-	curr_polyline = cxt_add_polyline (curr_structure);
+	curr_polyline = curr_structure->add_polyline ();
 	curr_polyline->slice_no = -1;
 	curr_polyline->num_vertices = num_points;
 	curr_polyline->x = (float*) malloc (num_points * sizeof(float));
@@ -336,7 +336,7 @@ xio_structures_save (
     fprintf (fp, "%d\n", cxt->num_structures);
 
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure = cxt->slist[i];
 	int color = 1 + (i % 8);
 	int pen = 1;
 	/* Class 0 is "patient", class 1 is "Int" */
@@ -381,9 +381,9 @@ xio_structures_save (
 	/* GCS FIX: These seem to be min/max */
 	fprintf (fp, "-158.1,-135.6, 147.7,  81.6\n");
 	for (i = 0; i < cxt->num_structures; i++) {
-	    Cxt_structure *curr_structure = &cxt->slist[i];
+	    Rtss_structure *curr_structure = cxt->slist[i];
 	    for (j = 0; j < curr_structure->num_contours; j++) {
-		Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+		Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 		if (z != curr_polyline->slice_no) {
 		    continue;
 		}
@@ -425,9 +425,9 @@ xio_structures_apply_transform (Rtss *rtss, Xio_ct_transform *transform)
 
     /* Transform structures */
     for (i = 0; i < rtss->num_structures; i++) {
-	Cxt_structure *curr_structure = &rtss->slist[i];
+	Rtss_structure *curr_structure = rtss->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
-	    Cxt_polyline *curr_polyline = &curr_structure->pslist[j];
+	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
 	    for (k = 0; k < curr_polyline->num_vertices; k++) {
 		curr_polyline->x[k] =
 		    (curr_polyline->x[k] * transform->direction_cosines[0])

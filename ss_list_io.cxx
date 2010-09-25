@@ -47,7 +47,7 @@ ss_list_load (Rtss* cxt, const char* ss_list_fn)
             exit (-1);
         }
 
-	Cxt_structure *curr_structure = cxt->add_structure (
+	Rtss_structure *curr_structure = cxt->add_structure (
 	    CBString (name), CBString (color), struct_id);
 	curr_structure->bit = struct_id;
     }
@@ -70,8 +70,8 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
     }
 
     for (i = 0; i < cxt->num_structures; i++) {
-	Cxt_structure *curr_structure;
-	curr_structure = &cxt->slist[i];
+	Rtss_structure *curr_structure;
+	curr_structure = cxt->slist[i];
 	fprintf (fp, "%d|%s|%s\n", 
 	    curr_structure->bit, 
 	    (bstring_empty (curr_structure->color) 
@@ -104,13 +104,13 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
     color_no = 0;
     for (i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
-	Cxt_structure *curr_structure;
+	Rtss_structure *curr_structure;
 	CBString adjusted_name;
 
-	curr_structure = &cxt->slist[i];
+	curr_structure = cxt->slist[i];
 	if (curr_structure->bit >= 0) {
-	    cxt_structure_rgb (curr_structure, &r, &g, &b);
-	    cxt_adjust_name (&adjusted_name, &curr_structure->name);
+	    curr_structure->structure_rgb (&r, &g, &b);
+	    Rtss_structure::adjust_name (&adjusted_name, &curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
 		curr_structure->bit + 1, (const char*) adjusted_name, r, g, b);
 	    color_no = curr_structure->bit + 1;
@@ -119,13 +119,13 @@ ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
 
     for (i = 0; i < cxt->num_structures; i++) {
 	int r, g, b;
-	Cxt_structure *curr_structure;
+	Rtss_structure *curr_structure;
 	CBString adjusted_name;
 
-	curr_structure = &cxt->slist[i];
+	curr_structure = cxt->slist[i];
 	if (curr_structure->bit == -1) {
-	    cxt_structure_rgb (curr_structure, &r, &g, &b);
-	    cxt_adjust_name (&adjusted_name, &curr_structure->name);
+	    curr_structure->structure_rgb (&r, &g, &b);
+	    Rtss_structure::adjust_name (&adjusted_name, &curr_structure->name);
 	    fprintf (fp, "%d %s %d %d %d 255\n", 
 		color_no + 1, (const char*) adjusted_name, r, g, b);
 	    color_no ++;

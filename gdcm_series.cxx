@@ -206,7 +206,7 @@ Gdcm_series::digest_files (void)
 }
 
 void
-Gdcm_series::get_slice_info (int *slice_no, bstring *ct_slice_uid, float z)
+Gdcm_series::get_slice_info (int *slice_no, CBString *ct_slice_uid, float z)
 {
     if (!this->m_have_ct) {
 	return;
@@ -226,7 +226,7 @@ Gdcm_series::get_slice_info (int *slice_no, bstring *ct_slice_uid, float z)
     
     std::string slice_uid = file->GetEntryValue (0x0008, 0x0018);
 
-    (*ct_slice_uid) = bfromcstr (slice_uid.c_str());
+    (*ct_slice_uid) = slice_uid.c_str();
 }
 
 gdcm::File*

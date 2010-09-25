@@ -119,7 +119,7 @@ cxt_extract (Rtss *cxt, T image, int num_structs,
 	for (int j = 0; j < num_structs; j++)
 	{
 	    /* And the current slice with the mask for this structure */
-	    Cxt_structure *curr_structure = &cxt->slist[j];
+	    Rtss_structure *curr_structure = cxt->slist[j];
 
 	    /* Choose the bit value for this structure */
 	    uint32_t val;
@@ -171,8 +171,7 @@ cxt_extract (Rtss *cxt, T image, int num_structs,
 	    {
 		ContourFilterType::VertexListConstPointer vertices 
 			= contour_filter->GetOutput(i)->GetVertexList();
-		Cxt_polyline *curr_polyline 
-			= cxt_add_polyline (curr_structure);
+		Rtss_polyline *curr_polyline = curr_structure->add_polyline ();
 
 		curr_polyline->num_vertices = vertices->Size();
 		curr_polyline->x = (float*) 

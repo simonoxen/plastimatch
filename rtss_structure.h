@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_h_
-#define _rtss_h_
+#ifndef _rtss_structure_h_
+#define _rtss_structure_h_
 
 #include "plm_config.h"
 #include "bstrwrap.h"
@@ -10,44 +10,43 @@
 #include "demographics.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-#include "rtss_structure.h"
 
 #define CXT_BUFLEN 2048
 
-class Rtss {
+class Rtss_polyline {
 public:
-    Demographics *m_demographics;
-    CBString ct_study_uid;
-    CBString ct_series_uid;
-    CBString ct_fref_uid;
-    CBString study_id;
-    int have_geometry;
-    int dim[3];
-    float spacing[3];
-    float offset[3];
-    int num_structures;
-    Rtss_structure **slist;
+    int slice_no;
+    CBString ct_slice_uid;
+    int num_vertices;
+    float* x;
+    float* y;
+    float* z;
 public:
     plastimatch1_EXPORT
-    Rtss ();
+    Rtss_polyline ();
     plastimatch1_EXPORT
-    ~Rtss ();
-    void init (void);
-    void clear (void);
-    Rtss_structure* add_structure (
-	const CBString& structure_name, 
-	const CBString& color, 
-	int structure_id);
-    Rtss_structure* find_structure_by_id (int structure_id);
-    void debug (void);
-    void adjust_structure_names (void);
-    void prune_empty (void);
-    Rtss* clone_empty (Rtss* cxt_out);
+    ~Rtss_polyline ();
+};
+
+class Rtss_structure {
+public:
+    CBString name;
+    CBString color;
+    int id;                    /* Used for import/export (must be >= 1) */
+    int bit;                   /* Used for ss-img (-1 for no bit) */
+    int num_contours;
+    Rtss_polyline** pslist;
+public:
     plastimatch1_EXPORT
-    void free_all_polylines (void);
-    void apply_geometry (void);
-    void set_geometry_from_plm_image_header (Plm_image_header *pih);
-    void set_geometry_from_plm_image (Plm_image *pli);
+    Rtss_structure ();
+    plastimatch1_EXPORT
+    ~Rtss_structure ();
+
+    void clear ();
+    Rtss_polyline* add_polyline ();
+    void structure_rgb (int *r, int *g, int *b) const;
+
+    static void adjust_name (CBString *name_out, const CBString *name_in);
 };
 
 #if defined __cplusplus
@@ -107,7 +106,9 @@ cxt_set_geometry_from_plm_image (
     Cxt_structure_list* structures,
     Plm_image *pli
 );
+#endif
 
+#if defined (commentout)
 plastimatch1_EXPORT
 Cxt_polyline*
 cxt_add_polyline (Cxt_structure* structure);

@@ -80,8 +80,7 @@ cxt_to_mha_process_next (
     Rtss *cxt                          /* In/out */
 )
 {
-    Cxt_structure* curr_structure;
-    Cxt_polyline* curr_contour;
+    Rtss_structure* curr_structure;
     unsigned char* uchar_img = (unsigned char*) ctm_state->uchar_vol->img;
     int slice_voxels;
 
@@ -92,7 +91,7 @@ cxt_to_mha_process_next (
 	return false;
     }
     
-    curr_structure = &cxt->slist[ctm_state->curr_struct_no];
+    curr_structure = cxt->slist[ctm_state->curr_struct_no];
     slice_voxels = cxt->dim[0] * cxt->dim[1];
 
     memset (uchar_img, 0, cxt->dim[0] * cxt->dim[1] 
@@ -100,9 +99,10 @@ cxt_to_mha_process_next (
 
     /* Loop through polylines in this structure */
     for (int i = 0; i < curr_structure->num_contours; i++) {
+	Rtss_polyline* curr_contour;
 	unsigned char* uchar_slice;
 
-	curr_contour = &curr_structure->pslist[i];
+	curr_contour = curr_structure->pslist[i];
 	if (curr_contour->slice_no == -1) {
 	    continue;
 	}
@@ -167,8 +167,8 @@ cxt_to_mha_current_name (
 )
 {
     if (ctm_state->curr_struct_no < cxt->num_structures + 1) {
-	Cxt_structure *curr_structure;
-	curr_structure = &cxt->slist[ctm_state->curr_struct_no-1];
+	Rtss_structure *curr_structure;
+	curr_structure = cxt->slist[ctm_state->curr_struct_no-1];
 	return curr_structure->name;
     } else {
 	return "";
