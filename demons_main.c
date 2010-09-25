@@ -47,8 +47,10 @@ main (int argc, char* argv[])
 
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
-    moving_grad = volume_make_gradient (moving);
-    //write_mha ("moving_grad.mha", moving_grad);
+    if (threading_parse (options.method) != THREADING_OPENCL) {
+	moving_grad = volume_make_gradient (moving);
+	//write_mha ("moving_grad.mha", moving_grad);
+    }
 
     vector_field = demons (fixed, moving, moving_grad, 0, 
 	threading_parse (options.method), 
@@ -64,7 +66,9 @@ main (int argc, char* argv[])
 
     volume_destroy (fixed);
     volume_destroy (moving);
-    volume_destroy (moving_grad);
+    if (threading_parse (options.method) != THREADING_OPENCL) {
+	volume_destroy (moving_grad);
+    }
     volume_destroy (vector_field);
 
     return 0;

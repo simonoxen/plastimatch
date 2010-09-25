@@ -646,7 +646,7 @@ IF(CUDA_FOUND)
     cuda_utils.cu
     cuda_utils.h
     )
-  CUDA_COMPILE(BSPLINE_CUDA_WRAPPERS 
+  CUDA_COMPILE (BSPLINE_CUDA_WRAPPERS 
     bspline_cuda.cu 
     cuda_utils.cu)
   SET (GPUIT_LIBRARY_SRC
@@ -661,6 +661,12 @@ IF(CUDA_FOUND)
     drr_cuda.cu 
     drr_cuda.h 
     drr_cuda_p.h 
+    )
+  CUDA_COMPILE (DEMONS_CUDA_WRAPPERS demons_cuda.cu)
+  SET (GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    ${DEMONS_CUDA_WRAPPERS}
+    demons_cuda.cu
     )
 ENDIF(CUDA_FOUND)
 
@@ -695,7 +701,7 @@ ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 IF (OPENCL_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
-    demons_opencl.cxx
+    demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
     opencl_utils.cxx opencl_utils.h
     )
 ENDIF (OPENCL_FOUND)

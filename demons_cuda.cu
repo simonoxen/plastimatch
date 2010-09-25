@@ -1,643 +1,655 @@
 /* -----------------------------------------------------------------------
-   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
-   ----------------------------------------------------------------------- */
-// includes, system
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
+See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+----------------------------------------------------------------------- */
+/*
+CUDA includes
+*/
+#include <cuda.h>
+#include "cuda_utils.h"
 
-// includes, project
-#include <cutil.h>
-#include "mha_io.h"
+
+/*
+Demons includes
+*/
+#include <stdio.h>
+#include "volume.h"
+#include "demons_opts.h"
+#include "demons_misc.h"
+#include "plm_timer.h"
 #include "volume.h"
 
-// includes, kernels
-#include <demon_cuda_kernel.cu>
 
-////////////////////////////////////////////////////////////////////////////////
-// declaration, forward
-void runDemon( int argc, char** argv);
-float** computeNabla(Volume * vol1);
-float** estimate_vector_field(Volume* vol1,Volume *vol2,float** der,int n_iter);
-Volume* compute_intensity_differences(Volume* vol, Volume* warped);
-float* create_ker(float coeff, int kx);
-Volume* warp_image(Volume* vol, float** vec);
+/*
+Constants
+*/
+#define BLOCK_SIZE 256
 
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
-int
-main( int argc, char** argv) 
+
+/*
+Texture Memory
+*/
+texture<float, 1, cudaReadModeElementType> tex_fixed;
+texture<float, 1, cudaReadModeElementType> tex_moving;
+texture<float, 1, cudaReadModeElementType> tex_grad;
+texture<float, 1, cudaReadModeElementType> tex_grad_mag;
+texture<float, 1, cudaReadModeElementType> tex_vf_est;
+texture<float, 1, cudaReadModeElementType> tex_vf_smooth;
+
+
+/*
+Constant Memory
+*/
+__constant__ int c_dim[3];
+__constant__ int c_moving_dim[3];
+__constant__ float c_pix_spacing_div2[3];
+__constant__ float c_f2mo[3];
+__constant__ float c_f2ms[3];
+__constant__ float c_invmps[3];
+
+
+/*
+Constant Memory Functions
+*/
+void setConstantDimension(int *h_dim)
 {
-    runDemon( argc, argv);
-
-    //CUT_EXIT(argc, argv);
+	cudaMemcpyToSymbol(c_dim, h_dim, sizeof(int3));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-//! Execute Demons algorithm on CUDA
-////////////////////////////////////////////////////////////////////////////////
-void
-runDemon( int argc, char** argv) 
+void setConstantMovingDimension(int *h_moving_dim)
 {
-#if defined (commentout)
-    // declare variables
-	Volume* vol1;
-    Volume* vol2;
-	Volume* diff_before;
-    Volume* diff_after;
-    Volume* temp;
+	cudaMemcpyToSymbol(c_moving_dim, h_moving_dim, sizeof(int3));
+}
 
-	char* infile1;
-    char* infile2;
+void setConstantPixelSpacing(float *h_pix_spacing_div2)
+{
+	cudaMemcpyToSymbol(c_pix_spacing_div2, h_pix_spacing_div2, sizeof(float3));
+}
 
-	float** der;
-	float** vec;
+void setConstantF2mo(float *h_f2mo)
+{
+	cudaMemcpyToSymbol(c_f2mo, h_f2mo, sizeof(float3));
+}
 
-    // create timer
-    unsigned int timer;
-    cutCreateTimer(&timer);
+void setConstantF2ms(float *h_f2ms)
+{
+	cudaMemcpyToSymbol(c_f2ms, h_f2ms, sizeof(float3));
+}
 
-    // check input arguments
-	if(argc != 4){
-		printf("Usage: demon_j.exe <filename1> <filename2> n_iter \n");
-		printf("filename1 is the static image \n");
-		printf("filename2 is the moving image \n");
-		exit(1);
-	}
-    
-    // read the image and create first volume
-	infile1 = argv[1];
-	printf("Reading file: %s \n", infile1);
-    vol1 = read_mha(infile1);
-
-    // read the image and create second volume
-	infile2 = argv[2];
-	printf("Reading file: %s \n", infile2);
-    vol2 = read_mha(infile2);
-
-    // read number of iterations as an int
-	int n_iter = atoi(argv[3]);
-
-    // make sure the two volumes are same size
-	if(vol1->npix != vol2->npix){
-		printf("Files are of different sizes.....Exiting\n");
-		exit(1);
-	}
-
-    // detect and check device
-    CUT_CHECK_DEVICE();
-
-    //compute initial difference between volumes
-    diff_before = compute_intensity_differences(vol1,vol2);
-	write_mha("differences_before_registration.mha",diff_before);
-
-    // compute partial derivative of static volume using gpu
-    der = computeNabla(vol1);
-
-    // estimate vector field using gpu
-    cutStartTimer(timer);
-    vec = estimate_vector_field(vol1,vol2,der,n_iter);
-    cutStopTimer(timer);
-    printf("\nTime to estimate vector field = %f s \n",cutGetTimerValue(timer)/1000);
-    cutDeleteTimer(timer);
-
-    // create and write warped volume
-	temp = warp_image(vol2, vec);
-	write_mha("warped.mha", temp);
-	
-	// compute differences between original and warped volume
-	diff_after = compute_intensity_differences(vol1, temp);
-	write_mha("differences_after_registration.mha",diff_after);
-
-    //free memory
-    free(der);
-    free(vec);
-    free(diff_before);
-    free(diff_after);
-    free(temp);
-    free(vol1);
-    free(vol2);
-#endif
+void setConstantInvmps(float *h_invmps)
+{
+	cudaMemcpyToSymbol(c_invmps, h_invmps, sizeof(float3));
 }
 
 
-Volume* 
-compute_intensity_differences(Volume* vol, Volume* warped)
+/*
+Device Functions
+*/
+__device__ int volume_index_cuda (int *dims, int i, int j, int k)
 {
-	Volume* temp = (Volume*)malloc(sizeof(Volume));
-	if(!temp){
-		printf("Memory allocation failed for volume...Exiting\n");
-		exit(1);
-	}
-	
-	for(int i=0;i<3; i++){
-		temp->dim[i] = vol->dim[i];
-		temp->offset[i] = vol->offset[i];
-		temp->pix_spacing[i] = vol->pix_spacing[i];
-	}
-
-	temp->npix = vol->npix;
-	temp->pix_type = vol->pix_type;
-	temp->xmax = vol->xmax;
-	temp->xmin = vol->xmin;
-	temp->ymax = vol->ymax;
-	temp->ymin = vol->ymin;
-	temp->zmax = vol->zmax;
-	temp->zmin = vol->zmin;
-
-	temp->img = (void*)malloc(sizeof(short)*temp->npix);
-	memset (temp->img, -1200, sizeof(short)*temp->npix);
-
-	int p = 0; // Voxel index
-
-	short* temp2 = (short*)vol->img;
-	short* temp1 = (short*)warped->img;
-	short* temp3 = (short*)temp->img;
-
-	for(int i=0; i < vol->dim[2]; i++)
-		for(int j=0; j < vol->dim[1]; j++)
-			for(int k=0; k < vol->dim[0]; k++){
-				temp3[p] = (temp2[p] - temp1[p]) - 1200;
-				p++;
-			}
-
-	return temp;
+	return i + (dims[0] * (j + dims[1] * k));
 }
 
 
-float* 
-create_ker(float coeff, int kx){
-	int i,j=0;
-	float sum = 0.0;
-	int num = 2*kx+1;
+/*
+Kernels
+*/
+__global__ void calculate_gradient_magnitude_image_kernel (float *grad_mag, int blockY, float invBlockY)
+{
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int x = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int y = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int z = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-	float* ker = (float*)malloc(sizeof(float)*num);
-	if(!ker){
-		printf("Allocation failed 5.....Exiting\n");
-		exit(-1);
-	}
+	if (x >= c_dim[0] || y >= c_dim[1] || z >= c_dim[2])
+		return;
 
-	for(i = -kx; i <= kx; i++){
-		ker[j] = exp(((float(-(i*i)))/(2*coeff*coeff)));
-		sum = sum + ker[j];
-		j++;
-	}
-	
-	for( i = 0; i < num; i++){
-		ker[i] = ker[i]/sum;
-	}
-	printf("\n");
-	return ker;
+	long v = (z * c_dim[1] * c_dim[0]) + (y * c_dim[0]) + x;
+	long v3 = v * 3;
+
+	float vox_grad_x = tex1Dfetch(tex_grad, v3);
+	float vox_grad_y = tex1Dfetch(tex_grad, v3 + 1);
+	float vox_grad_z = tex1Dfetch(tex_grad, v3 + 2);
+
+	grad_mag[v] = vox_grad_x * vox_grad_x + vox_grad_y * vox_grad_y + vox_grad_z * vox_grad_z;
 }
 
-
-Volume* 
-warp_image(Volume* vol, float** vec)
+__global__ void estimate_kernel (float *vf_est_img, float *ssd, int *inliers, float homog, float denominator_eps, float accel, int blockY, float invBlockY)
 {
-	int i,x,y,z;
-	int tempx1,tempy1,tempz1,jump;
-	Volume* temp = (Volume*)malloc(sizeof(Volume));
-	if(!temp){
-		printf("Memory allocation failed for temporary volume...Exiting\n");
-		exit(1);
-	}
-	
-	for(i=0;i<3; i++){
-		temp->dim[i] = vol->dim[i];
-		temp->offset[i] = vol->offset[i];
-		temp->pix_spacing[i] = vol->pix_spacing[i];
-	}
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int j = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int k = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-	temp->npix = vol->npix;
-	temp->pix_type = vol->pix_type;
-	temp->xmax = vol->xmax;
-	temp->xmin = vol->xmin;
-	temp->ymax = vol->ymax;
-	temp->ymin = vol->ymin;
-	temp->zmax = vol->zmax;
-	temp->zmin = vol->zmin;
+	if (i >= c_dim[0] || j >= c_dim[1] || k >= c_dim[2])
+		return;
 
-	temp->img = (void*)malloc(sizeof(short)*temp->npix);
-	memset (temp->img, -1000, sizeof(short)*temp->npix);
+	long fv = (k * c_dim[1] * c_dim[0]) + (j * c_dim[0]) + i;
+	long f3v = 3 * fv;
 
-	short* temp2 = (short*)temp->img;
-	short* temp1 = (short*)vol->img;
+	float mi = c_f2mo[0] + i * c_f2ms[0];
+	float mj = c_f2mo[1] + j * c_f2ms[1];
+	float mk = c_f2mo[2] + k * c_f2ms[2];
 
-	i = 0;
+	/* Find correspondence with nearest neighbor interpolation & boundary checking */
+	int mz = __float2int_rn(mk + c_invmps[2] * tex1Dfetch(tex_vf_smooth, f3v + 2));	/* pixels (moving) */
+	if (mz < 0 || mz >= c_moving_dim[2])
+		return;
 
-	for(z=0; z < vol->dim[2]; z++)
-		for(y=0; y < vol->dim[1]; y++)
-			for(x=0; x < vol->dim[0]; x++){
-				tempx1 = (x + (int)vec[0][i]);
-				tempy1 = (y + (int)vec[1][i]);
-				tempz1 = (z + (int)vec[2][i]);
+	int my = __float2int_rn(mj + c_invmps[1] * tex1Dfetch(tex_vf_smooth, f3v + 1));	/* pixels (moving) */
+	if (my < 0 || my >= c_moving_dim[1])
+		return;
 
-				jump = i + (int)vec[0][i] + 
-					((int)vec[1][i])*vol->dim[0] + 
-					((int)vec[2][i])*vol->dim[0]*vol->dim[1];				
-				
-				if(!(tempx1 < 0 || tempx1 > vol->dim[0]-1 || tempy1 < 0 || tempy1 > vol->dim[1]-1 || 
-					tempz1 < 0 || tempz1 > vol->dim[2]-1)){
+	int mx = __float2int_rn(mi + c_invmps[0] * tex1Dfetch(tex_vf_smooth, f3v));		/* pixels (moving) */
+	if (mx < 0 || mx >= c_moving_dim[0])
+		return;
 
-					temp2[i] = temp1[jump];
-				}
-				else{
-					temp2[i] = temp1[i];
-				}
-				i++;
-			}
-	return temp;
+	int mv = (mz * c_moving_dim[1] + my) * c_moving_dim[0] + mx;
+	int m3v = 3 * mv;
+
+	/* Find image difference at this correspondence */
+	float diff = tex1Dfetch(tex_fixed, fv) - tex1Dfetch(tex_moving, mv);		/* intensity */
+
+	/* Compute denominator */
+	float denom = tex1Dfetch(tex_grad_mag, mv) + homog * diff * diff;		/* intensity^2 per mm^2 */
+
+	/* Compute SSD for statistics */
+	inliers[fv] = 1;
+	ssd[fv] = diff * diff;
+
+	/* Threshold the denominator to stabilize estimation */
+	if (denom < denominator_eps) 
+		return;
+
+	/* Compute new estimate of displacement */
+	float mult = accel * diff / denom;					/* per intensity^2 */
+	vf_est_img[f3v] += mult * tex1Dfetch(tex_grad, m3v);			/* mm */
+	vf_est_img[f3v + 1] += mult * tex1Dfetch(tex_grad, m3v + 1);
+	vf_est_img[f3v + 2] += mult * tex1Dfetch(tex_grad, m3v + 2);
 }
 
-
-float**
-computeNabla(Volume* vol1) 
+template <class T> __global__ void reduction(T *vectorData, int totalElements)
 {
-#if defined (commentout)
-    // assign dimensions
-	float3 vol1_dimensions;
-	vol1_dimensions.x = (float)vol1->dim[0];
-	vol1_dimensions.y = (float)vol1->dim[1];
-	vol1_dimensions.z = (float)vol1->dim[2];
-    int size = vol1->npix;
-    int tex_blocks_per_x = (int)ceil((double)vol1_dimensions.x/4);
-    int tex_size = (int)ceil(sqrt((double)size/4.0));
+	__shared__ T vector[BLOCK_SIZE * 2];
 
-    // create host copy of image
-    short* temp=(short*)vol1->img;
-    float* h_array=(float*)malloc(size*sizeof(float));
-    for(int i=0;i<size;i++)
-        h_array[i]=(float)temp[i];
+	/* Find position in vector */
+	int threadID = threadIdx.x;
+	int blockID = blockIdx.x;
+	int xInVector = BLOCK_SIZE * blockID * 2 + threadID;
 
-    // create texture and copy host image onto texture    
-    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 32, 32, 32, cudaChannelFormatKindFloat);
-    cudaArray* cu_array;
-    CUDA_SAFE_CALL( cudaMallocArray( &cu_array, &channelDesc, tex_size,tex_size)); 
-    CUDA_SAFE_CALL( cudaMemcpyToArray( cu_array, 0, 0, h_array, size*sizeof(float), cudaMemcpyHostToDevice));
-        
-    // set texture parameters
-    tex.addressMode[0] = cudaAddressModeClamp;
-    tex.addressMode[1] = cudaAddressModeClamp;
-    tex.filterMode = cudaFilterModePoint;
-    tex.normalized = false;    // access with normalized texture coordinates
+	vector[threadID] = (xInVector < totalElements) ? vectorData[xInVector] : 0;
+	vector[threadID + BLOCK_SIZE] = (xInVector + BLOCK_SIZE < totalElements) ? vectorData[xInVector + BLOCK_SIZE] : 0;
+	__syncthreads();
 
-    // Bind the array to the texture
-    CUDA_SAFE_CALL( cudaBindTexture( tex, cu_array, channelDesc));
+	/* Calculate partial sum */
+	for (int stride = BLOCK_SIZE; stride > 0; stride >>= 1) {
+		if (threadID < stride)
+			vector[threadID] += vector[threadID + stride];
+		__syncthreads();
+	}
+	__syncthreads();
 
-    // setup execution parameters for an arbitrary sized volume
-    dim3 threads(16,4,4);
-    unsigned int blocks_in_y = ceil((double)(vol1_dimensions.x/4)/(double)threads.x);
-    unsigned int y_in_z = ceil((double)vol1_dimensions.y/(double)threads.y);
-    unsigned int rows_of_z = ceil((double)vol1_dimensions.z/(double)threads.z);
-    dim3 grid(blocks_in_y * y_in_z,rows_of_z,1);
-    
-    // allocate device result memory
-    float* d_odata;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &d_odata, size*sizeof(float)));
-    
-    // allocate host result memory
-    float** h_result;
-    h_result = (float**)malloc(3*sizeof(float*));
-    h_result[0] = (float*)malloc(size*sizeof(float));
-    h_result[1] = (float*)malloc(size*sizeof(float));
-    h_result[2] = (float*)malloc(size*sizeof(float));
-
-    // compute nabla_x
-    compute_nabla_x<<<grid,threads>>>(d_odata, vol1_dimensions, size,tex_size,tex_blocks_per_x, vol1->pix_spacing[0]);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    CUDA_SAFE_CALL( cudaMemcpy( h_result[0], d_odata, size*sizeof(float),cudaMemcpyDeviceToHost) );
-
-    // compute nabla_y
-    compute_nabla_y<<<grid,threads>>>(d_odata, vol1_dimensions, size,tex_size,tex_blocks_per_x, vol1->pix_spacing[1]);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    CUDA_SAFE_CALL( cudaMemcpy( h_result[1], d_odata, size*sizeof(float),cudaMemcpyDeviceToHost) );
-
-    // compute nabla_z
-    compute_nabla_z<<<grid,threads>>>(d_odata, vol1_dimensions, size,tex_size,tex_blocks_per_x, vol1->pix_spacing[2]);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    CUDA_SAFE_CALL( cudaMemcpy( h_result[2], d_odata, size*sizeof(float),cudaMemcpyDeviceToHost) );
-
-    free(h_array);
-    CUDA_SAFE_CALL(cudaFree(d_odata));
-    CUDA_SAFE_CALL(cudaFreeArray(cu_array));
-    return h_result;
-
-#endif
-    return 0;
+	if (threadID == 0)
+		vectorData[blockID] = vector[0];
 }
 
-
-float**
-estimate_vector_field(Volume* vol1,Volume *vol2,float** der,int n_iter)
+__global__ void vf_convolve_x_kernel (float *vf_out, float *ker, int half_width, int blockY, float invBlockY)
 {
-#if defined (commentout)
-    // estimate vector field host code
+	int i, i1;		/* i is the offset in the vf */
+	int j, j1, j2;	/* j is the index of the kernel */
+	int d;			/* d is the vector field direction */
 
-    // declare important host variables
-	int i,iter,p;
-	float **vec;
-    unsigned int size = vol1->npix;
-    iter = n_iter;
-    float* temp_holder;
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int x = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int y = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int z = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-	float3 dimen;
-	dimen.x = (float)vol1->dim[0];
-	dimen.y = (float)vol1->dim[1];
-	dimen.z = (float)vol1->dim[2];
+	if (x >= c_dim[0] || y >= c_dim[1] || z >= c_dim[2])
+		return;
 
-    float3 spacing;
-    spacing.x = vol1->pix_spacing[0];
-    spacing.y = vol1->pix_spacing[1];
-    spacing.z = vol1->pix_spacing[2];
+	long v3 = 3 * ((z * c_dim[1] * c_dim[0]) + (y * c_dim[0]) + x);
 
-    // create timer
-    unsigned int timer;
-    cutCreateTimer(&timer);
-
-	/* Allocate memory for the static and moving images */
-	float* temp1 = (float*)malloc(sizeof(float)*size);
-	if(!temp1){
-		printf("Couldn't allocate memory for image 1...Exiting\n");
-		exit(-1);
+	j1 = x - half_width;
+	j2 = x + half_width;
+	if (j1 < 0) j1 = 0;
+	if (j2 >= c_dim[0]) {
+		j2 = c_dim[0] - 1;
 	}
+	i1 = j1 - x;
+	j1 = j1 - x + half_width;
+	j2 = j2 - x + half_width;
 
-	float* temp2 = (float*)malloc(sizeof(float)*size);
-	if(!temp2){
-		printf("Couldn't allocate memory for image 2...Exiting\n");
-		exit(-1);
-	}
-
-	short* temp_vol1 = (short*)vol1->img;
-	short* temp_vol2 = (short*)vol2->img;
-
-	for(p=0; p < vol1->npix; p++){
-		temp1[p] = (float)temp_vol1[p];
-		temp2[p] = (float)temp_vol2[p];
-	}
-
-	/* Allocate memory for the vector or displacement fields */
-	vec = (float**)malloc(3*sizeof(float*));
-	if(!vec){
-		printf("Memory allocation failed for stage 1 for current velocity..........Exiting\n");
-		exit(1);
-	}
-	for(i=0; i < 3; i++){
-		vec[i] = (float*)malloc(sizeof(float)*size);
-		if(!vec[i]){
-			printf("Memory allocation failed for stage 2, dimension %d for current velocity..........Exiting\n",i);
-			exit(1);
+	long index;
+	for (d = 0; d < 3; d++) {
+		float sum = 0.0;
+		for (i = i1, j = j1; j <= j2; i++, j++) {
+			index = v3 + (3 * i) + d;
+			sum += ker[j] * tex1Dfetch(tex_vf_est, index);
 		}
+		vf_out[v3 + d] = sum;
 	}
+}
 
-    /* Allocate memory for statistics */
-    // block_id = (float*)malloc(sizeof(float)*size);
-	int* thread_id = (int*)malloc(sizeof(int)*size);
-    int* voxel_id = (int*)malloc(sizeof(int)*size);
+__global__ void vf_convolve_y_kernel (float *vf_out, float *ker, int half_width, int blockY, float invBlockY)
+{
+	int i, i1;		/* i is the offset in the vf */
+	int j, j1, j2;	/* j is the index of the kernel */
+	int d;			/* d is the vector field direction */
 
-    // create a length 3 smoothing kernel
-    float* ker;
-    ker = create_ker( 1.0, 1);
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int x = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int y = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int z = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-    // ALLOCATE DEVICE MEMORY
+	if (x >= c_dim[0] || y >= c_dim[1] || z >= c_dim[2])
+		return;
 
-    // NK: Allocate streams for statistics on the device 
-    // float *block_id_on_device; 
-    // CUDA_SAFE_CALL( cudaMalloc( (void**) &block_id_on_device, sizeof(float)*size));
-    int *thread_id_on_device;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &thread_id_on_device, sizeof(int)*size));
-    int *voxel_id_on_device;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &voxel_id_on_device, sizeof(int)*size));
+	long v3 = 3 * ((z * c_dim[1] * c_dim[0]) + (y * c_dim[0]) + x);
 
-    // allocate current vector on device
-    float* vec_st_x;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &vec_st_x, sizeof(float)*size));
-    float* vec_st_y;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &vec_st_y, sizeof(float)*size));
-    float* vec_st_z;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &vec_st_z, sizeof(float)*size));
+	j1 = y - half_width;
+	j2 = y + half_width;
+	if (j1 < 0) j1 = 0;
+	if (j2 >= c_dim[1]) {
+		j2 = c_dim[1] - 1;
+	}
+	i1 = j1 - y;
+	j1 = j1 - y + half_width;
+	j2 = j2 - y + half_width;
 
-    // allocate previous vector on device
-    float* pre_vec_st_x;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &pre_vec_st_x, sizeof(float)*size));
-    float* pre_vec_st_y;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &pre_vec_st_y, sizeof(float)*size));
-    float* pre_vec_st_z;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &pre_vec_st_z, sizeof(float)*size));
+	long index;
+	for (d = 0; d < 3; d++) {
+		float sum = 0.0;
+		for (i = i1, j = j1; j <= j2; i++, j++) {
+			index = v3 + (3 * i * c_dim[0]) + d;
+			sum += ker[j] * tex1Dfetch(tex_vf_smooth, index);
+		}
+		vf_out[v3 + d] = sum;
+	}
+}
 
-    // allocate nabla on device
-    float* nabla_x;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &nabla_x, sizeof(float)*size));
-    float* nabla_y;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &nabla_y, sizeof(float)*size));
-    float* nabla_z;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &nabla_z, sizeof(float)*size));
+__global__ void vf_convolve_z_kernel (float *vf_out, float *ker, int half_width, int blockY, float invBlockY)
+{
+	int i, i1;		/* i is the offset in the vf */
+	int j, j1, j2;	/* j is the index of the kernel */
+	int d;			/* d is the vector field direction */
 
-    // allocate images on device
-    float* static_image;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &static_image, sizeof(float)*size));
-    float* moving_image;
-    CUDA_SAFE_CALL( cudaMalloc( (void**) &moving_image, sizeof(float)*size));
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int x = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int y = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int z = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-    // COPY HOST MEMORY TO DEVICE
+	if (x >= c_dim[0] || y >= c_dim[1] || z >= c_dim[2])
+		return;
 
-    // create texture formats: channelDesc returns a float, channelDesc4 returns a float4
-    cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc(32, 0, 0, 0, cudaChannelFormatKindFloat);
-    cudaChannelFormatDesc channelDesc4 = cudaCreateChannelDesc(32, 32, 32, 32, cudaChannelFormatKindFloat);
+	long v3 = 3 * ((z * c_dim[1] * c_dim[0]) + (y * c_dim[0]) + x);
 
-    // copy nabla and bind to texture
-    CUDA_SAFE_CALL( cudaMemcpy( nabla_x, der[0], size*sizeof(float), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaBindTexture( tex_nabla_x, nabla_x, channelDesc, sizeof(float)*size,0));
+	j1 = z - half_width;
+	j2 = z + half_width;
+	if (j1 < 0) j1 = 0;
+	if (j2 >= c_dim[2]) {
+		j2 = c_dim[2] - 1;
+	}
+	i1 = j1 - z;
+	j1 = j1 - z + half_width;
+	j2 = j2 - z + half_width;
 
-    CUDA_SAFE_CALL( cudaMemcpy( nabla_y, der[1], size*sizeof(float), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaBindTexture( tex_nabla_y, nabla_y, channelDesc,sizeof(float)*size,0));
+	long index;
+	for (d = 0; d < 3; d++) {
+		float sum = 0.0;
+		for (i = i1, j = j1; j <= j2; i++, j++) {
+			index = v3 + (3 * i * c_dim[0] * c_dim[1]) + d;
+			sum += ker[j] * tex1Dfetch(tex_vf_est, index);
+		}
+		vf_out[v3 + d] = sum;
+	}
+}
 
-    CUDA_SAFE_CALL( cudaMemcpy( nabla_z, der[2], size*sizeof(float), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaBindTexture( tex_nabla_z, nabla_z, channelDesc,sizeof(float)*size,0));
+__global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, float invBlockY)
+{
+	/* Find position in volume */
+	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+	int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+	int j = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+	int k = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-    // copy images and bind to texture
-    CUDA_SAFE_CALL( cudaMemcpy( static_image, temp1, size*sizeof(float), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaBindTexture( tex_static_image, static_image, channelDesc,sizeof(float)*size,0));
-    
-    CUDA_SAFE_CALL( cudaMemcpy( moving_image, temp2, size*sizeof(float), cudaMemcpyHostToDevice) );
-    CUDA_SAFE_CALL( cudaBindTexture( tex_moving_image, moving_image, channelDesc,sizeof(float)*size,0));
+	if (i >= c_dim[0] || j >= c_dim[1] || k >= c_dim[2])
+		return;
 
+	/* p is prev, n is next */
+	int i_p = (i == 0) ? 0 : i - 1;
+	int i_n = (i == c_dim[0] - 1) ? c_dim[0] - 1 : i + 1;
+	int j_p = (j == 0) ? 0 : j - 1;
+	int j_n = (j == c_dim[1] - 1) ? c_dim[1] - 1 : j + 1;
+	int k_p = (k == 0) ? 0 : k - 1;
+	int k_n = (k == c_dim[2] - 1) ? c_dim[2] - 1 : k + 1;
 
-    // initialize device vectors pre_vec and vec and vectors for holding stats
-    dim3 threads_i(16,16,1);
-    dim3 grid_i(16,(int)ceil(((double)size)/((double)(256*16))),1);
-    
-    // k_initial_vector<<<grid_i,threads_i>>>(block_id, size);
-    // CUT_CHECK_ERROR("Kernel execution failed");
-    k_initial_vector_nk<<<grid_i,threads_i>>>(thread_id_on_device, size);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    k_initial_vector_nk<<<grid_i,threads_i>>>(voxel_id_on_device, size);
-    CUT_CHECK_ERROR("Kernel execution failed");
+	long v3 = 3 * ((k * c_dim[1] * c_dim[0]) + (j * c_dim[0]) + i);
 
-    k_initial_vector<<<grid_i,threads_i>>>(vec_st_x, size);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    k_initial_vector<<<grid_i,threads_i>>>(vec_st_y, size);
-    CUT_CHECK_ERROR("Kernel execution failed");
-    k_initial_vector<<<grid_i,threads_i>>>(vec_st_z, size);
-    CUT_CHECK_ERROR("Kernel execution failed");
+	long gi = v3;
+	long gj = v3 + 1;
+	long gk = v3 + 2;
 
-    // setup execution parameters
-    dim3 threads(2, 16, 2);
-    unsigned int blocks_in_y = ceil((double)dimen.x/(double)threads.x);
-    unsigned int y_in_z = ceil((double)dimen.x/(double)threads.y);
-    unsigned int rows_of_z = ceil((double)dimen.z/(double)threads.z);
-    dim3 grid(blocks_in_y * y_in_z,rows_of_z,1);
+	int idx_p, idx_n;
+	idx_p = volume_index_cuda (c_dim, i_p, j, k);
+	idx_n = volume_index_cuda (c_dim, i_n, j, k);
+	out_img[gi] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[0];
 
-    // set up execution parameters for filter kernel
-    int x_dimf = (int)dimen.x/4;
-    dim3 threadsf(16,4,4);
-    int x_in_yf = (int)ceil((double)x_dimf/threadsf.x);
-    int y_in_zf = (int)ceil((double)dimen.y/threadsf.y);
-    int z_totf = (int)ceil((double)dimen.z/threadsf.z);
-    dim3 gridf(x_in_yf*y_in_zf,z_totf,1);
+	idx_p = volume_index_cuda (c_dim, i, j_p, k);
+	idx_n = volume_index_cuda (c_dim, i, j_n, k);
+	out_img[gj] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[1];
 
-    for(int i=0;i<iter;i++)
-    {
-        printf(".");
-
-        cutStartTimer(timer);
-        // estimate vector field
-        /* k_evf<<<grid,threads>>>(vec_st_x,
-                                vec_st_y,
-                                vec_st_z, 
-					            dimen,
-                                spacing,
-					            size);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        cutStopTimer(timer);
-        */
-
-        k_evf_nk<<<grid,threads>>>(vec_st_x,
-                                vec_st_y,
-                                vec_st_z,
-                                thread_id_on_device,
-                                voxel_id_on_device, 
-					            dimen,
-                                spacing,
-					            size);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        cutStopTimer(timer);
-
-        //smooth vector field
-
-        // smooth x direction of vec_st_x, vec_st_y and vec_st_z
-        // bind data to be filtered to tex_filter, write out filtered data, unbind texture
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_x, channelDesc4,sizeof(float)*size,0));
-        gaussian_x<<<gridf,threadsf>>>(pre_vec_st_x, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_y, channelDesc4,sizeof(float)*size,0));
-        gaussian_x<<<gridf,threadsf>>>(pre_vec_st_y, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_z, channelDesc4,sizeof(float)*size,0));
-        gaussian_x<<<gridf,threadsf>>>(pre_vec_st_z, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        //smooth y direction of vector
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, pre_vec_st_x, channelDesc4,sizeof(float)*size,0));
-        gaussian_y<<<gridf,threadsf>>>(vec_st_x, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, pre_vec_st_y, channelDesc4,sizeof(float)*size,0));
-        gaussian_y<<<gridf,threadsf>>>(vec_st_y, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, pre_vec_st_z, channelDesc4,sizeof(float)*size,0));
-        gaussian_y<<<gridf,threadsf>>>(vec_st_z, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        // smooth z direction of vector
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_x, channelDesc4,sizeof(float)*size,0));
-        gaussian_z<<<gridf,threadsf>>>(pre_vec_st_x, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_y, channelDesc4,sizeof(float)*size,0));
-        gaussian_z<<<gridf,threadsf>>>(pre_vec_st_y, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        CUDA_SAFE_CALL( cudaBindTexture( tex_filter, vec_st_z, channelDesc4,sizeof(float)*size,0));
-        gaussian_z<<<gridf,threadsf>>>(pre_vec_st_z, dimen, x_in_yf, y_in_zf, ker[0], ker[1], ker[0]+ker[1]);
-        CUT_CHECK_ERROR("Kernel execution failed");
-        CUDA_SAFE_CALL( cudaUnbindTexture(tex_filter));
-
-        // swap pointers between vex_st and pre_vec_st for next iteration
-        temp_holder=vec_st_x;
-        vec_st_x=pre_vec_st_x;
-        pre_vec_st_x=temp_holder;
-        temp_holder=vec_st_y;
-        vec_st_y=pre_vec_st_y;
-        pre_vec_st_y=temp_holder;
-        temp_holder=vec_st_z;
-        vec_st_z=pre_vec_st_z;
-        pre_vec_st_z=temp_holder;
-    }
-    printf("\nevf_texture time = %f \n",cutGetTimerValue(timer)/1000);
-    cutDeleteTimer(timer);
-
-    // convert vector from mm to voxels
-    k_convert<<<grid,threads>>>(vec_st_x, vec_st_y,vec_st_z,pre_vec_st_x, pre_vec_st_y,pre_vec_st_z,
-                                vol1->pix_spacing[0],vol1->pix_spacing[1],vol1->pix_spacing[2], dimen);
-   
-    // copy results from device to host
-    CUDA_SAFE_CALL( cudaMemcpy( vec[0], pre_vec_st_x, sizeof(float)*size,cudaMemcpyDeviceToHost) );
-    CUDA_SAFE_CALL( cudaMemcpy( vec[1], pre_vec_st_y, sizeof(float)*size,cudaMemcpyDeviceToHost) );
-    CUDA_SAFE_CALL( cudaMemcpy( vec[2], pre_vec_st_z, sizeof(float)*size,cudaMemcpyDeviceToHost) );
-
-    // copy stats from device to host
-    CUDA_SAFE_CALL( cudaMemcpy( thread_id, thread_id_on_device, sizeof(int)*size,cudaMemcpyDeviceToHost) );
-    CUDA_SAFE_CALL( cudaMemcpy( voxel_id, voxel_id_on_device, sizeof(int)*size,cudaMemcpyDeviceToHost) );
-
-    for(i = 0; i < 64; i++)
-       printf("Thread %d ---> Voxel %d \n", thread_id[i], voxel_id[i]); 
-    getchar();
-    
-    // unbind textures
-    CUDA_SAFE_CALL( cudaUnbindTexture(tex_nabla_x));
-    CUDA_SAFE_CALL( cudaUnbindTexture(tex_nabla_y));
-    CUDA_SAFE_CALL( cudaUnbindTexture(tex_nabla_z));
-    CUDA_SAFE_CALL( cudaUnbindTexture(tex_moving_image));
-    CUDA_SAFE_CALL( cudaUnbindTexture(tex_static_image));
-
-    // cleanup memory
-    free(temp1);
-    free(temp2);
-    free(thread_id);
-    free(voxel_id);
-
-    CUDA_SAFE_CALL(cudaFree(thread_id_on_device));
-    CUDA_SAFE_CALL(cudaFree(voxel_id_on_device));
-
-    CUDA_SAFE_CALL(cudaFree(vec_st_x));
-    CUDA_SAFE_CALL(cudaFree(vec_st_y));
-    CUDA_SAFE_CALL(cudaFree(vec_st_z));
-    CUDA_SAFE_CALL(cudaFree(pre_vec_st_x));
-    CUDA_SAFE_CALL(cudaFree(pre_vec_st_y));
-    CUDA_SAFE_CALL(cudaFree(pre_vec_st_z));
-    CUDA_SAFE_CALL(cudaFree(nabla_x));
-    CUDA_SAFE_CALL(cudaFree(nabla_y));
-    CUDA_SAFE_CALL(cudaFree(nabla_z));
-    CUDA_SAFE_CALL(cudaFree(static_image));
-    CUDA_SAFE_CALL(cudaFree(moving_image));
-
-    return vec;
-#endif
-    return 0;
+	idx_p = volume_index_cuda (c_dim, i, j, k_p);
+	idx_n = volume_index_cuda (c_dim, i, j, k_n);
+	out_img[gk] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[2];
 }
 
 
+/*
+Host
+*/
+Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms)
+{
+	int i;
+	int	it;						/* Iterations */
+	float f2mo[3];				/* Offset difference (in cm) from fixed to moving */
+	float f2ms[3];				/* Slope to convert fixed to moving */
+	float invmps[3];			/* 1/pixel spacing of moving image */
+	float *kerx, *kery, *kerz;
+	int fw[3];
+	double diff_run, gpu_time, kernel_time;
+	Volume *vf_est, *vf_smooth;
+	int inliers;
+	float ssd;
+	Timer timer, gpu_timer, kernel_timer;
 
+	int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
+	int *d_inliers;
+	float total_runtime, pix_spacing_div2[3];
+	float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;
+	dim3 block, grid, reductionGrid;
+
+	/* Allocate memory for vector fields */
+	if (vf_init) {
+		/* If caller has an initial estimate, we copy it */
+		vf_smooth = volume_clone(vf_init);
+		vf_convert_to_interleaved(vf_smooth);
+	} else {
+		/* Otherwise initialize to zero */
+		vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+	}
+	vf_est = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+
+	/* Initialize GPU timers */
+	gpu_time = 0;
+	kernel_time = 0;
+	
+	/* Determine GPU execution environment */
+	threadX = BLOCK_SIZE;
+	threadY = 1;
+	threadZ = 1;
+	blockX = (fixed->dim[0] + threadX - 1) / threadX;
+	blockY = (fixed->dim[1] + threadY - 1) / threadY;
+	blockZ = (fixed->dim[2] + threadZ - 1) / threadZ;
+	block = dim3(threadX, threadY, threadZ);
+	grid = dim3(blockX, blockY * blockZ);
+
+	/*
+	Calculate Moving Gradient
+	*/
+	for (i = 0; i < 3; i++)
+		pix_spacing_div2[i] = 0.5 / moving->pix_spacing[i];
+
+	/* Determine size of device memory */
+	vol_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(float);
+	interleaved_vol_size = 3 * fixed->dim[0] * fixed->dim[1] * fixed->dim[2] * sizeof(float);
+	inlier_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(int);
+
+	/* Allocate device memory */
+	plm_timer_start(&gpu_timer);
+	cudaMalloc((void**)&d_vf_est, interleaved_vol_size);
+	cudaMalloc((void**)&d_vf_smooth, interleaved_vol_size);
+	cudaMalloc((void**)&d_fixed, vol_size);
+	cudaMalloc((void**)&d_moving, vol_size);
+	cudaMalloc((void**)&d_m_grad, interleaved_vol_size);
+	cudaMalloc((void**)&d_m_grad_mag, vol_size);
+	cudaMalloc((void**)&d_ssd, vol_size);
+	cudaMalloc((void**)&d_inliers, inlier_size);
+
+	/* Copy/Initialize device memory */
+	cudaMemcpy(d_vf_est, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_vf_smooth, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_fixed, fixed->img, vol_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_moving, moving->img, vol_size, cudaMemcpyHostToDevice);
+	cudaMemset(d_m_grad, 0, interleaved_vol_size);
+	cudaMemset(d_m_grad_mag, 0, vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	/* Set device constant memory */
+	setConstantDimension(fixed->dim);
+	setConstantMovingDimension(moving->dim);
+	setConstantPixelSpacing(pix_spacing_div2);
+
+	/* Bind device texture memory */
+	cudaBindTexture(0, tex_fixed, d_fixed, vol_size);
+	cudaBindTexture(0, tex_moving, d_moving, vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	/* Check for any errors prekernel execution */
+	cuda_utils_check_error("Error before kernel execution");
+
+	/* Call kernel */
+	plm_timer_start(&kernel_timer);
+	volume_calc_grad_kernel<<< grid, block>>>(d_m_grad, blockY, 1.0f / (float)blockY);
+	cudaThreadSynchronize();
+	kernel_time += plm_timer_report(&kernel_timer);
+
+	/* Check for any errors postkernel execution */
+	cuda_utils_check_error("Kernel execution failed");
+
+	/* Bind device texture memory */
+	plm_timer_start(&gpu_timer);
+	cudaBindTexture(0, tex_grad, d_m_grad, interleaved_vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	/*
+	Compute Demons
+	*/
+
+	/* Check for any errors prekernel execution */
+	cuda_utils_check_error("Error before kernel execution");
+
+	/* Call kernel */
+	plm_timer_start(&kernel_timer);
+	calculate_gradient_magnitude_image_kernel<<< grid, block>>>(d_m_grad_mag, blockY, 1.0f / (float)blockY);
+	cudaThreadSynchronize();
+	kernel_time += plm_timer_report(&kernel_timer);
+
+	/* Check for any errors postkernel execution */
+	cuda_utils_check_error("Kernel execution failed");
+
+	/* Validate filter widths */
+	validate_filter_widths (fw, parms->filter_width);
+
+	/* Create the seperable smoothing kernels for the x, y, and z directions */
+	kerx = create_ker(parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
+	kery = create_ker(parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
+	kerz = create_ker(parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
+	kernel_stats(kerx, kery, kerz, fw);
+
+	/* Compute some variables for converting pixel sizes / offsets */
+	for (i = 0; i < 3; i++) {
+		invmps[i] = 1 / moving->pix_spacing[i];
+		f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->pix_spacing[i];
+		f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
+	}
+
+	/* Allocate device memory */
+	plm_timer_start(&gpu_timer);
+	cudaMalloc((void**)&d_kerx, fw[0] * sizeof(float));
+	cudaMalloc((void**)&d_kery, fw[1] * sizeof(float));
+	cudaMalloc((void**)&d_kerz, fw[2] * sizeof(float));
+
+	/* Copy/Initialize device memory */
+	cudaMemcpy(d_kerx, kerx, fw[0] * sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_kery, kery, fw[1] * sizeof(float), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_kerz, kerz, fw[2] * sizeof(float), cudaMemcpyHostToDevice);
+
+	/* Set device constant memory */
+	setConstantF2ms(f2mo);
+	setConstantF2ms(f2ms);
+	setConstantInvmps(invmps);
+
+	/* Bind device texture memory */
+	cudaBindTexture(0, tex_grad_mag, d_m_grad_mag, vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	plm_timer_start(&timer);
+
+	/* Main loop through iterations */
+	for (it = 0; it < parms->max_its; it++) {
+		/* Estimate displacement, store into vf_est */
+		inliers = 0; ssd = 0.0;
+
+		/* Check for any errors prekernel execution */
+		cuda_utils_check_error("Error before kernel execution");
+
+		plm_timer_start(&gpu_timer);
+		cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
+		cudaMemset(d_ssd, 0, vol_size);
+		cudaMemset(d_inliers, 0, inlier_size);
+		gpu_time += plm_timer_report(&gpu_timer);
+
+		/* Call kernel */
+		plm_timer_start(&kernel_timer);
+		estimate_kernel<<< grid, block >>>(d_vf_est, d_ssd, d_inliers, parms->homog, parms->denominator_eps, parms->accel, blockY, 1.0f / (float)blockY);
+		cudaThreadSynchronize();
+		kernel_time += plm_timer_report(&kernel_timer);
+
+		/* Check for any errors postkernel execution */
+		cuda_utils_check_error("Kernel execution failed");
+
+		num_elements = moving->dim[0] * moving->dim[1] * moving->dim[2];
+		while (num_elements > 1) {
+			half_num_elements = num_elements / 2;
+			reductionBlocks = (half_num_elements + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+			/* Invoke kernels */
+			dim3 reductionGrid(reductionBlocks, 1);
+			plm_timer_start(&kernel_timer);
+			reduction<float><<< reductionGrid, block >>>(d_ssd, num_elements);
+			cudaThreadSynchronize();
+			reduction<int><<< reductionGrid, block >>>(d_inliers, num_elements);
+			cudaThreadSynchronize();
+			kernel_time += plm_timer_report(&kernel_timer);
+
+			/* Check for any errors postkernel execution */
+			cuda_utils_check_error("Kernel execution failed");
+
+			num_elements = reductionBlocks;
+		}
+
+		/* Smooth the estimate into vf_smooth.  The volumes are ping-ponged. */
+		plm_timer_start(&gpu_timer);
+		cudaUnbindTexture(tex_vf_smooth);
+		cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
+		cudaMemcpy(&ssd, d_ssd, sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(&inliers, d_inliers, sizeof(int), cudaMemcpyDeviceToHost);
+		gpu_time += plm_timer_report(&gpu_timer);
+
+		/* Print statistics */
+		printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
+
+		/* Check for any errors prekernel execution */
+		cuda_utils_check_error("Error before kernel execution");
+
+		/* Call kernel */
+		plm_timer_start(&kernel_timer);
+		vf_convolve_x_kernel<<< grid, block >>>(d_vf_smooth, d_kerx, fw[0] / 2, blockY, 1.0f / (float)blockY);
+		cudaThreadSynchronize();
+		kernel_time += plm_timer_report(&kernel_timer);
+
+		/* Check for any errors postkernel execution */
+		cuda_utils_check_error("Kernel execution failed");
+
+		plm_timer_start(&gpu_timer);
+		cudaUnbindTexture(tex_vf_est);
+		cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
+		gpu_time += plm_timer_report(&gpu_timer);
+
+		/* Call kernel */
+		plm_timer_start(&kernel_timer);
+		vf_convolve_y_kernel<<< grid, block >>>(d_vf_est, d_kery, fw[1] / 2, blockY, 1.0f / (float)blockY);
+		cudaThreadSynchronize();
+		kernel_time += plm_timer_report(&kernel_timer);
+
+		/* Check for any errors postkernel execution */
+		cuda_utils_check_error("Kernel execution failed");
+
+		plm_timer_start(&gpu_timer);
+		cudaUnbindTexture(tex_vf_smooth);
+		cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
+		gpu_time += plm_timer_report(&gpu_timer);
+
+		/* Call kernel */
+		plm_timer_start(&kernel_timer);
+		vf_convolve_z_kernel<<< grid, block >>>(d_vf_smooth, d_kerz, fw[2] / 2, blockY, 1.0f / (float)blockY);
+		cudaThreadSynchronize();
+		kernel_time += plm_timer_report(&kernel_timer);
+
+		/* Check for any errors postkernel execution */
+		cuda_utils_check_error("Kernel execution failed");
+
+		/* Ping pong between estimate and smooth in each iteration*/
+		d_swap = d_vf_est;
+		d_vf_est = d_vf_smooth;
+		d_vf_smooth = d_swap;
+	}
+
+	/* Copy final output from device to host */
+	plm_timer_start(&gpu_timer);
+	cudaMemcpy(vf_smooth->img, d_vf_est, interleaved_vol_size, cudaMemcpyDeviceToHost);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	free(kerx);
+	free(kery);
+	free(kerz);
+	volume_destroy(vf_est);
+
+	diff_run = plm_timer_report(&timer);
+	printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
+
+	/* Print statistics */
+	total_runtime = gpu_time + kernel_time;
+	printf("\nTransfer run time: %f ms\n", gpu_time * 1000);
+	printf("Kernel run time: %f ms\n", kernel_time * 1000);
+	printf("Total CUDA run time: %f s\n\n", total_runtime);
+
+	/* Unbind device texture memory */
+	cudaUnbindTexture(tex_vf_est);
+	cudaUnbindTexture(tex_grad_mag);
+	cudaUnbindTexture(tex_grad);
+	cudaUnbindTexture(tex_moving);
+	cudaUnbindTexture(tex_fixed);
+
+	/* Free device global memory */
+	cudaFree(d_vf_est);
+	cudaFree(d_vf_smooth);
+	cudaFree(d_moving);
+	cudaFree(d_fixed);
+	cudaFree(d_m_grad);
+	cudaFree(d_m_grad_mag);
+	cudaFree(d_ssd);
+	cudaFree(d_inliers);
+
+	return vf_smooth;
+}

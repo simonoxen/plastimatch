@@ -38,14 +38,16 @@ demons (
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
 	return demons_c (fixed, moving, moving_grad, vf_init, parms);
-    case THREADING_BROOK:
 #if BROOK_FOUND
+    case THREADING_BROOK:
 	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
 #endif
+#if BROOK_FOUND
     case THREADING_CUDA:
-	goto label_default;
-    case THREADING_OPENCL:
+	return demons_cuda (fixed, moving, moving_grad, vf_init, parms);
+#endif
 #if OPENCL_FOUND
+    case THREADING_OPENCL:
 	return demons_opencl (fixed, moving, moving_grad, vf_init, parms);
 #endif
     label_default:
