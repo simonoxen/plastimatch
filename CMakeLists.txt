@@ -50,8 +50,10 @@ SET (PLM_BUILD_TESTING ON CACHE BOOL
   "Enable regression testing")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
   "Regression tests for seldom used b-spline implementations")
-SET (PLM_TEST_DICOM OFF CACHE BOOL 
-  "Regression tests for dicom, dicomrt (downloads extra test data)")
+SET (PLM_TEST_DICOMRT_XIO OFF CACHE BOOL 
+  "Regression test for dicom, dicomrt (downloads extra test data)")
+SET (PLM_TEST_DICOMRT_PINNACLE OFF CACHE BOOL 
+  "Regression test for dicom, dicomrt (downloads extra test data)")
 SET (PLM_TEST_FDK_VARIAN OFF CACHE BOOL 
   "Regression tests for fdk reconstruction from Varian data (downloads extra test data)")
 SET (PLM_TEST_XIO OFF CACHE BOOL 

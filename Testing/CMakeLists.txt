@@ -18,12 +18,19 @@ MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   ENDIF (NOT EXISTS ${DOWNLOAD_DIR})
 ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 
-IF (PLM_TEST_DICOM)
+IF (PLM_TEST_DICOMRT_XIO)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-ENDIF (PLM_TEST_DICOM)
+ENDIF (PLM_TEST_DICOMRT_XIO)
+
+IF (PLM_TEST_DICOMRT_PINNACLE)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
+ENDIF (PLM_TEST_DICOMRT_PINNACLE)
 
 IF (PLM_TEST_FDK_VARIAN)
   PLM_DOWNLOAD_AND_EXTRACT (
