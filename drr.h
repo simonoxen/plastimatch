@@ -40,6 +40,8 @@ drr_render_volume_perspective (
 gpuit_EXPORT
 void
 drr_preprocess_attenuation (Volume* vol);
+gpuit_EXPORT
+void preprocess_attenuation_and_drr_render_volume_cl (Volume* vol, Drr_options* options);
 
 #if defined __cplusplus
 }

@@ -82,7 +82,9 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		     || !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
 		options->threading = THREADING_CUDA;
-	    }
+		} else if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")) {
+		options->threading = THREADING_OPENCL;
+		}
 	    else {
 		options->threading = THREADING_CPU_OPENMP;
 	    }

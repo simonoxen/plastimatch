@@ -701,7 +701,9 @@ ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 IF (OPENCL_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
+    autotune_opencl.cxx autotune_opencl.h
     demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
+    drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
     opencl_utils.cxx opencl_utils.h
     )
 ENDIF (OPENCL_FOUND)
@@ -859,6 +861,13 @@ SET (FDK_SRC
   fdk_utils.c fdk_utils.h
   bowtie_correction.c bowtie_correction.h
   )
+IF (BROOK_FOUND)
+  SET (FDK_SRC
+    ${FDK_SRC}
+    fdk_brook.cpp
+    fdk_brook_kernel.br
+    )
+ENDIF (BROOK_FOUND)
 IF (CUDA_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -867,14 +876,15 @@ IF (CUDA_FOUND)
     fdk_cuda.h
     )
 ENDIF (CUDA_FOUND)
-
-IF (BROOK_FOUND)
+IF (OPENCL_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
-    fdk_brook.cpp
-    fdk_brook_kernel.br
+    fdk_opencl.cxx 
+    fdk_opencl_p.h
+    fdk_opencl.h
+    fdk_opencl.cl
     )
-ENDIF (BROOK_FOUND)
+ENDIF (OPENCL_FOUND)
 
 IF (CUDA_FOUND)
   CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)

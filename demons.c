@@ -50,7 +50,6 @@ demons (
     case THREADING_OPENCL:
 	return demons_opencl (fixed, moving, moving_grad, vf_init, parms);
 #endif
-    label_default:
     default:
 	return demons_c (fixed, moving, moving_grad, vf_init, parms);
     }

@@ -14,6 +14,7 @@
 #include "bowtie_correction.h"
 #include "fdk_brook.h"
 #include "fdk_cuda.h"
+#include "fdk_opencl.h"
 #include "fdk_opts.h"
 #include "fdk_utils.h"
 #include "file_util.h"
@@ -523,8 +524,10 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
-    case THREADING_OPENCL:
-	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
+    CUDA_reconstruct_conebeam (vol, proj_dir, &options);
+	break;
+	case THREADING_OPENCL:
+	OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
 	break;
 #endif
     case THREADING_CPU_SINGLE:
