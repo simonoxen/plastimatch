@@ -7,6 +7,10 @@ because it does not require using the complicated command line interface.
 Furthermore, all of the 3D Slicer Extensions are pre-compiled, and 
 easy to download and use.  
 
+The following 3D Slicer binaries have been tested, and are known to work.
+
+* Windows 32-bit, Slicer3-3.6-2010-06-10-win32.exe
+
 Currently, there three different 3D Slicer Extensions.  They are 
 documented on the 3D Slicer web site.  
 
