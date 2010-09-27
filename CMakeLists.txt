@@ -44,8 +44,10 @@ SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL
   "Build plastimatch as shared library")
 SET (PLM_MONOLITHIC_LIBRARY OFF CACHE BOOL 
   "Link gpuit and plastimatch1 together")
-SET (PLM_USE_INCLUDED_F2C OFF CACHE BOOL 
-  "Use the f2c that is included with plastimatch")
+SET (PLM_PREFER_F2C OFF CACHE BOOL 
+  "Prefer using f2c over native fortran compiler")
+SET (PLM_PREFER_SYSTEM_F2C ON CACHE BOOL 
+  "Prefer the system f2c over the included f2c")
 
 # Regression testing
 SET (PLM_BUILD_TESTING ON CACHE BOOL 
@@ -151,11 +153,11 @@ CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 ##-----------------------------------------------------------------------------
 
 # C/C++ 32/64
-CHECK_TYPE_SIZE("unsigned int"    CMAKE_SIZEOF_UINT)
-CHECK_TYPE_SIZE("unsigned long"   CMAKE_SIZEOF_ULONG)
-TEST_BIG_ENDIAN(CMAKE_WORDS_BIGENDIAN)
+CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
+CHECK_TYPE_SIZE ("unsigned long"   CMAKE_SIZEOF_ULONG)
+TEST_BIG_ENDIAN (CMAKE_WORDS_BIGENDIAN)
 
-# Fortran
+# Always check for fortran, whether we use it or not
 IF (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
@@ -164,7 +166,27 @@ IF (NOT MINGW)
   # The FortranCInterface is not included on CMake 2.6.2
   # INCLUDE (FortranCInterface)
 ENDIF (NOT MINGW)
-INCLUDE (PLM_FindF2C.cmake)
+
+# Choose between f2c or fortran
+SET (PLM_USE_F2C FALSE)
+IF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
+  SET (PLM_USE_F2C TRUE)
+ENDIF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
+
+IF (PLM_USE_F2C)
+  # If the user wants the system f2c, check for it
+  IF (PLM_PREFER_SYSTEM_F2C)
+    INCLUDE (PLM_FindF2C.cmake)
+  ENDIF (PLM_PREFER_SYSTEM_F2C)
+
+  # If the user doesn't want system f2c, or didn't find it, build the 
+  # included f2c
+  IF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
+    ADD_SUBDIRECTORY (libs/libf2c)
+    SET (F2C_LIBRARY f2c1)
+    SET (F2C_INCLUDE_DIR libs/libf2c)
+  ENDIF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
+ENDIF (PLM_USE_F2C)
 
 # OpenMP
 INCLUDE (PLM_FindOpenMP.cmake)
@@ -240,20 +262,6 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 ADD_SUBDIRECTORY (libs/bstrlib-05122010)
 SET (BSTRLIB_INCLUDE_DIR libs/bstrlib-05122010)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
-
-##-----------------------------------------------------------------------------
-##  Use local libf2c
-##-----------------------------------------------------------------------------
-IF (PLM_USE_INCLUDED_F2C)
-  ADD_SUBDIRECTORY (libs/libf2c)
-  SET (LIBF2C_INCLUDE_DIR libs/libf2c)
-  SET (LIBF2C_LIBRARIES f2c1)
-  LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    f2c1
-    )
-ENDIF (PLM_USE_INCLUDED_F2C)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -494,8 +502,22 @@ IF (FFTW_FOUND)
     ${FFTW_LIBRARIES})
 ENDIF (FFTW_FOUND)
 
-# Optional
-IF (CMAKE_Fortran_COMPILER_WORKS)
+# Required - fortran or f2c
+IF (PLM_USE_F2C)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    ${F2C_LIBRARY}
+    )
+  IF(UNIX)
+    SET (GPUIT_LIBRARY_DEPENDENCIES
+      ${GPUIT_LIBRARY_DEPENDENCIES}
+      f2c_helper
+      )
+  ENDIF(UNIX)
+  ### GCS fix this...
+  ###
+  ### LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
+ELSE (PLM_USE_F2C)
   # It would seem that mixed-language programs need to set compiler and 
   # linker flags manually
   #   http://www.vtk.org/Wiki/CMakeForFortranExample
@@ -510,7 +532,7 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
       )
   ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran" 
     OR Fortran_COMPILER_NAME STREQUAL "f95")
-ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+ENDIF (PLM_USE_F2C)
 
 # Optional
 IF (CMAKE_Fortran_COMPILER_WORKS)
@@ -519,20 +541,6 @@ IF (CMAKE_Fortran_COMPILER_WORKS)
     specfun
     )
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
-
-# Optional
-IF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${F2C_LIBRARY}
-    )
-  IF(UNIX)
-    SET (GPUIT_LIBRARY_DEPENDENCIES
-      ${GPUIT_LIBRARY_DEPENDENCIES}
-      f2c_helper
-      )
-  ENDIF(UNIX)
-ENDIF(NOT CMAKE_Fortran_COMPILER_WORKS AND F2C_LIBRARY)
 
 # Optional
 IF (NLOPT_FOUND)

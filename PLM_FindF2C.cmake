@@ -1,6 +1,8 @@
 ##-----------------------------------------------------------------------------
 ##  Look for F2C library.
-##    (Only look for f2c if fortran not found)
+##  Set the following variables:
+##    F2C_LIBRARY
+##    F2C_INCLUDE_DIR
 ##-----------------------------------------------------------------------------
 ## http://readlist.com/lists/lists.sourceforge.net/mingw-users/0/3794.html
 SET (HAVE_F2C_LIBRARY FALSE)
@@ -46,4 +48,3 @@ FIND_LIBRARY(F2C_LIBRARY
 IF(F2C_LIBRARY)
   SET(HAVE_F2C_LIBRARY TRUE)
 ENDIF(F2C_LIBRARY)
-

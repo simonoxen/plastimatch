@@ -1,11 +1,10 @@
 ##-----------------------------------------------------------------------------
-##  Search for fortran compiler.  If not found, try to compile 
-##    using f2c.
+##  Search for fortran compiler.
+##  Set the following variables:
+##    CMAKE_Fortran_COMPILER_WORKS
+##    Fortran_COMPILER_NAME
 ##-----------------------------------------------------------------------------
 
-##-----------------------------------------------------------------------------
-##  Look for fortran.
-##-----------------------------------------------------------------------------
 ## The OPTIONAL keyword is broken for most versions of CMake 2.6
 ## This is a workaround.
 ##    http://public.kitware.com/Bug/view.php?id=9220
@@ -22,4 +21,3 @@ ELSE (CMAKE_Fortran_COMPILER_WORKS)
   SET (FORTRAN_COMPILER_FOUND FALSE)
   MESSAGE (STATUS "Looking for fortran compiler - not found.")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS)
-
