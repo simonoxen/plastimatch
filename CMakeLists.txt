@@ -44,6 +44,8 @@ SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL
   "Build plastimatch as shared library")
 SET (PLM_MONOLITHIC_LIBRARY OFF CACHE BOOL 
   "Link gpuit and plastimatch1 together")
+SET (PLM_USE_INCLUDED_F2C OFF CACHE BOOL 
+  "Use the f2c that is included with plastimatch")
 
 # Regression testing
 SET (PLM_BUILD_TESTING ON CACHE BOOL 
@@ -238,6 +240,20 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 ADD_SUBDIRECTORY (libs/bstrlib-05122010)
 SET (BSTRLIB_INCLUDE_DIR libs/bstrlib-05122010)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+
+##-----------------------------------------------------------------------------
+##  Use local libf2c
+##-----------------------------------------------------------------------------
+IF (PLM_USE_INCLUDED_F2C)
+  ADD_SUBDIRECTORY (libs/libf2c)
+  SET (LIBF2C_INCLUDE_DIR libs/libf2c)
+  SET (LIBF2C_LIBRARIES f2c1)
+  LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    f2c1
+    )
+ENDIF (PLM_USE_INCLUDED_F2C)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
