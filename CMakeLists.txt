@@ -191,6 +191,7 @@ IF (PLM_USE_F2C)
   # If the user doesn't want system f2c, or didn't find it, build the 
   # included f2c
   IF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
+    SET (PLM_USE_INCLUDED_F2C)
     ADD_SUBDIRECTORY (libs/libf2c)
     SET (F2C_LIBRARY f2c1)
     SET (F2C_INCLUDE_DIR libs/libf2c)
@@ -304,7 +305,6 @@ ENDIF(CUDA_FOUND)
 #   This script will modify CUDA_NVCC_FLAGS if system default is not gcc-4.3
 INCLUDE (PLM_nvcc-check.cmake)
 
-
 # JAS 08.25.2010
 #   Build code for all known compute capabilities
 SET (CUDA_NVCC_FLAGS
@@ -314,8 +314,6 @@ SET (CUDA_NVCC_FLAGS
         -gencode arch=compute_12,code=sm_12
         -gencode arch=compute_20,code=sm_20
     )
-
-
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
@@ -502,7 +500,13 @@ IF (FFTW_FOUND)
     ${FFTW_LIBRARIES})
 ENDIF (FFTW_FOUND)
 
-# Required - fortran or f2c
+# Required
+SET (GPUIT_LIBRARY_DEPENDENCIES
+  ${GPUIT_LIBRARY_DEPENDENCIES}
+  specfun
+  )
+
+# Required - your choice: fortran or f2c
 IF (PLM_USE_F2C)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -532,12 +536,6 @@ ELSE (PLM_USE_F2C)
   ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran" 
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (PLM_USE_F2C)
-
-# Required
-SET (GPUIT_LIBRARY_DEPENDENCIES
-  ${GPUIT_LIBRARY_DEPENDENCIES}
-  specfun
-  )
 
 # Optional
 IF (NLOPT_FOUND)
@@ -1085,6 +1083,12 @@ INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 INCLUDE_DIRECTORIES (AFTER ${BSTRLIB_INCLUDE_DIR})
 INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
+
+## Don't do the below.  A user-built f2c directory contains ctype.h, which 
+## conflicts with the C/C++ header of the same name.
+#IF (PLM_USE_F2C)
+#  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
+#ENDIF (PLM_USE_F2C)
 
 IF(BROOK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
