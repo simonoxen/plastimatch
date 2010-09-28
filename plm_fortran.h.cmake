@@ -25,6 +25,9 @@
 	  */
       #include "@F2C_INCLUDE_DIR@/f2c.h"
     #endif
+  #else
+    /* We're using a real fortran compiler.  Try the included f2c.h */
+    #include "@CMAKE_SOURCE_DIR@/libs/libf2c/f2c.h"
   #endif
 #endif /* UNIX */
 
