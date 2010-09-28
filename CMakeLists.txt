@@ -514,9 +514,8 @@ IF (PLM_USE_F2C)
       f2c_helper
       )
   ENDIF(UNIX)
-  ### GCS fix this...
-  ###
-  ### LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
+  # Apparently the below is not needed.
+  # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
 ELSE (PLM_USE_F2C)
   # It would seem that mixed-language programs need to set compiler and 
   # linker flags manually
@@ -534,13 +533,11 @@ ELSE (PLM_USE_F2C)
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (PLM_USE_F2C)
 
-# Optional
-IF (CMAKE_Fortran_COMPILER_WORKS)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    specfun
-    )
-ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+# Required
+SET (GPUIT_LIBRARY_DEPENDENCIES
+  ${GPUIT_LIBRARY_DEPENDENCIES}
+  specfun
+  )
 
 # Optional
 IF (NLOPT_FOUND)
@@ -703,12 +700,13 @@ IF (FFTW_FOUND)
    )
 ENDIF (FFTW_FOUND)
 
-IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
-  SET (GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
-	)
-ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+#IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+SET (GPUIT_LIBRARY_SRC
+  ${GPUIT_LIBRARY_SRC}
+  bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
+  )
+#ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+
 IF (PLM_USE_F2C)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
@@ -717,9 +715,9 @@ IF (PLM_USE_F2C)
     )
 ELSE (PLM_USE_F2C)
   SET (GPUIT_LIBRARY_SRC
-	${GPUIT_LIBRARY_SRC}
-	lbfgsb_2_1.f
-	)
+    ${GPUIT_LIBRARY_SRC}
+    lbfgsb_2_1.f
+    )
 ENDIF (PLM_USE_F2C)
 
 IF (OPENCL_FOUND)
@@ -1158,10 +1156,10 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-IF (CMAKE_Fortran_COMPILER_WORKS)
-  PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
-    "${OPENMP_LDFLAGS}")
-ENDIF (CMAKE_Fortran_COMPILER_WORKS)
+#IF (CMAKE_Fortran_COMPILER_WORKS)
+PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
+  "${OPENMP_LDFLAGS}")
+#ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
