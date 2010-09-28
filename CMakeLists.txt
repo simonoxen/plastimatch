@@ -149,6 +149,15 @@ ENDMACRO (PLM_ADD_SLICER_MODULE)
 CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
+##  Set the math library -- need this variable to configure libf2c
+##-----------------------------------------------------------------------------
+IF(UNIX)
+  SET (MATH_LIB -lm)
+ELSE(UNIX)
+  SET (MATH_LIB)
+ENDIF(UNIX)
+
+##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
 
@@ -327,15 +336,6 @@ IF (PLM_INSTALL_RPATH)
   # which point to directories outside the build tree to the install RPATH
   SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 ENDIF (PLM_INSTALL_RPATH)
-
-##-----------------------------------------------------------------------------
-##  Set the math library
-##-----------------------------------------------------------------------------
-IF(UNIX)
-  SET (MATH_LIB -lm)
-ELSE(UNIX)
-  SET (MATH_LIB)
-ENDIF(UNIX)
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found

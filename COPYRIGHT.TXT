@@ -534,7 +534,7 @@ RTOG format routines (exchkeys.h)
   http://itc.wustl.edu/Exchcode.html
 
 ------------------------------------------------------------------------
-F2C output (vcf2c_libcmt.lib, vcf2c_libcmt.lib)
+F2C (libs/libf2c, vcf2c_libcmt.lib, vcf2c_libcmt.lib)
 
   Copyright 1990 - 1997 by AT&T, Lucent Technologies and Bellcore.
 
