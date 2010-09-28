@@ -8,7 +8,7 @@
 #cmakedefine PLM_USE_INCLUDED_F2C
 
 #if defined (_WIN32)
-  #include "plm_f2c_win32.h"
+  #include "@CMAKE_SOURCE_DIR@/plm_f2c_win32.h"
 
 #else /* UNIX */
 
