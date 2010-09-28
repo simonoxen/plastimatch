@@ -191,7 +191,7 @@ IF (PLM_USE_F2C)
   # If the user doesn't want system f2c, or didn't find it, build the 
   # included f2c
   IF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
-    SET (PLM_USE_INCLUDED_F2C)
+    SET (PLM_USE_INCLUDED_F2C 1)
     ADD_SUBDIRECTORY (libs/libf2c)
     SET (F2C_LIBRARY f2c1)
     SET (F2C_INCLUDE_DIR libs/libf2c)
