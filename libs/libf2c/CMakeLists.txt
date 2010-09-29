@@ -64,6 +64,10 @@ TRY_RUN (
 
 ## Check exit code == 0 for running arithchk
 IF (NOT RUN_RESULT)
+  ## Cmake adds extra \r on windows.  This creates a file with lines 
+  ## like "Blah blah\r\r\n", which MSVC refuses to compile.
+  ## So we strip out the \r, to get lines like "Blah blah\r\n".
+  STRING (REGEX REPLACE "\r" "" ARITHCHK_STDOUT ${ARITHCHK_STDOUT})
   FILE (WRITE "${CMAKE_CURRENT_BINARY_DIR}/arith.h" ${ARITHCHK_STDOUT})
 ELSE (NOT RUN_RESULT)
   MESSAGE (FATAL_ERROR "Failed to create arith.h when building libf2c")

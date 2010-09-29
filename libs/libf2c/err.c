@@ -15,7 +15,7 @@ extern char *malloc();
 
 /* Compile this with -DNO_ISATTY if unistd.h does not exist or */
 /* if it does not define int isatty(int). */
-#ifdef NO_ISATTY
+#if defined _WIN32 || defined NO_ISATTY
 #define isatty(x) 0
 #else
 #include <unistd.h>

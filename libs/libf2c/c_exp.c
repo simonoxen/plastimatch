@@ -6,6 +6,10 @@ extern double exp(), cos(), sin();
  VOID c_exp(r, z) complex *r, *z;
 #else
 #undef abs
+/* GCS: MSVC9 math.h header redefines complex unless __STDC__ is defined */
+#if _WIN32
+#define __STDC__ 1
+#endif
 #include "math.h"
 #ifdef __cplusplus
 extern "C" {
