@@ -2450,6 +2450,7 @@ bspline_score_e_mi (Bspline_parms *parms,
     char debug_fn[1024];
     FILE* fp;
     int i, j, zz;
+	omp_lock_t *f_locks, *m_locks, *j_locks;
 
     int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
 
@@ -2476,9 +2477,9 @@ bspline_score_e_mi (Bspline_parms *parms,
     num_vox = 0;
 
     /* -- OpenMP locks for histograms --------------------- */
-    omp_lock_t* f_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * sizeof(omp_lock_t));
-    omp_lock_t* m_locks = (omp_lock_t*) malloc (mi_hist->moving.bins * sizeof(omp_lock_t));
-    omp_lock_t* j_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(omp_lock_t));
+    f_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * sizeof(omp_lock_t));
+    m_locks = (omp_lock_t*) malloc (mi_hist->moving.bins * sizeof(omp_lock_t));
+    j_locks = (omp_lock_t*) malloc (mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(omp_lock_t));
 
 #pragma omp parallel for
     for (i=0; i < mi_hist->fixed.bins; i++) {
