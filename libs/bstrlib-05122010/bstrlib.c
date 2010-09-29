@@ -2759,6 +2759,7 @@ struct genBstrList g;
 #ifdef __GNUC__
 /* Something is making gcc complain about this prototype not being here, so 
    I've just gone ahead and put it in. */
+/* GCS: This declaration causes build on osx to fail. */
 extern int vsnprintf (char *buf, size_t count, const char *format, va_list arg);
 #endif
 
