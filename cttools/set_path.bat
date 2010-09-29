@@ -27,8 +27,8 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="SNOWBALL" (
   echo Setting for SLUMBER
-  SET ITK_PATH=%HOME%\build\itk-3.16.0\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.16.0
+  SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.20.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="TORTOISE" (
   echo Setting for TORTOISE

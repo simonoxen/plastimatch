@@ -1160,10 +1160,8 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-#IF (CMAKE_Fortran_COMPILER_WORKS)
 PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
-#ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${OPENMP_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
