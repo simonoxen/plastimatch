@@ -65,6 +65,9 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
 	    bdestroy (val);
             break;
         }
+        else if (!val) {
+	    /* fall through */
+	}
         else if (biseqcstr (tag, "PATIENT_NAME")) {
 	    cxt->m_demographics->m_patient_name = (const char*) val->data;
 	}
