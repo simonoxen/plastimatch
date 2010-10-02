@@ -261,17 +261,23 @@ IF (NOT LIBLBFGS_FOUND)
 ENDIF (NOT LIBLBFGS_FOUND)
 
 ##-----------------------------------------------------------------------------
-##  Only use local specfun
-##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (libs/specfun)
-LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
-
-##-----------------------------------------------------------------------------
 ##  Only use local bstrlib
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY (libs/bstrlib-05122010)
 SET (BSTRLIB_INCLUDE_DIR libs/bstrlib-05122010)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+
+##-----------------------------------------------------------------------------
+##  Only use local nocedal
+##-----------------------------------------------------------------------------
+ADD_SUBDIRECTORY (libs/nocedal)
+LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+
+##-----------------------------------------------------------------------------
+##  Only use local specfun
+##-----------------------------------------------------------------------------
+ADD_SUBDIRECTORY (libs/specfun)
+LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
@@ -473,6 +479,8 @@ SET (GPUIT_LIBRARY_DEPENDENCIES
   ${GPUIT_LIBRARY_DEPENDENCIES}
   ${LIBLBFGS_LIBRARIES}
   bstrlib
+  nocedal
+  specfun
   )
 
 # Optional
@@ -499,12 +507,6 @@ IF (FFTW_FOUND)
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${FFTW_LIBRARIES})
 ENDIF (FFTW_FOUND)
-
-# Required
-SET (GPUIT_LIBRARY_DEPENDENCIES
-  ${GPUIT_LIBRARY_DEPENDENCIES}
-  specfun
-  )
 
 # Required - your choice: fortran or f2c
 IF (PLM_USE_F2C)
@@ -610,6 +612,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_macros.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h
   bspline_optimize.c bspline_optimize.h
+  bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
   bspline_optimize_nlopt.c bspline_optimize_nlopt.h
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
@@ -698,26 +701,6 @@ IF (FFTW_FOUND)
    )
 ENDIF (FFTW_FOUND)
 
-#IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
-SET (GPUIT_LIBRARY_SRC
-  ${GPUIT_LIBRARY_SRC}
-  bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
-  )
-#ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
-
-IF (PLM_USE_F2C)
-  SET (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    lbfgsb_2_1.c
-    plm_fortran.h plm_f2c_win32.h
-    )
-ELSE (PLM_USE_F2C)
-  SET (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    lbfgsb_2_1.f
-    )
-ENDIF (PLM_USE_F2C)
-
 IF (OPENCL_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
@@ -728,12 +711,10 @@ IF (OPENCL_FOUND)
     )
 ENDIF (OPENCL_FOUND)
 
-#IF (LIBLBFGS_FOUND)
-  SET (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
-    )
-#ENDIF (LIBLBFGS_FOUND)
+SET (GPUIT_LIBRARY_SRC
+  ${GPUIT_LIBRARY_SRC}
+  bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
+  )
 
 IF(F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC

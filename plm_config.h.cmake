@@ -25,7 +25,6 @@
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
-#cmakedefine HAVE_F2C_LIBRARY 1
 #cmakedefine HAVE_GETOPT_LONG 1
 #cmakedefine DCMTK_HAVE_CONFIG_H 1
 #cmakedefine BUILD_AGAINST_SLICER3 1
@@ -35,10 +34,8 @@
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine PLM_MONOLITHIC_LIBRARY
 
-/* Did we find fortran? */
-#if (FORTRAN_COMPILER_FOUND || HAVE_F2C_LIBRARY)
-  #define FORTRAN_FOUND 1
-#endif
+/* Did we find fortran? -- always true now. */
+#define FORTRAN_FOUND 1
 
 /* ITK attributes */
 #cmakedefine ITK_FOUND 1
