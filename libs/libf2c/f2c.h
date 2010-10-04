@@ -174,6 +174,14 @@ struct Namelist {
 	};
 typedef struct Namelist Namelist;
 
+/* These are defined in MSVC9 stdlib.h */
+#if defined min
+#undef min
+#endif
+#if defined max
+#undef max
+#endif
+
 #define abs(x) ((x) >= 0 ? (x) : -(x))
 #define dabs(x) (doublereal)abs(x)
 #define min(a,b) ((a) <= (b) ? (a) : (b))
