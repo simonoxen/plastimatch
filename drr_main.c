@@ -31,6 +31,7 @@ allocate_gpu_memory (
     switch (options->threading) {
     case THREADING_BROOK:
     case THREADING_CUDA:
+    cudaDetect ();
     case THREADING_OPENCL:
 	return drr_cuda_state_create (proj, vol, options);
     case THREADING_CPU_SINGLE:
@@ -128,7 +129,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
     pmat = proj->pmat;
 
     /* Allocate memory on the gpu device */
-    cudaDetect ();
     dev_state = allocate_gpu_memory (proj, vol, options);
 
     /* If nrm was specified, only create a single image */

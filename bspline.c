@@ -57,39 +57,6 @@
 #include "delayload.h"
 
 
-#if defined (commentout)
-
-#if defined (_WIN32)
-#include <windows.h>	// Only needed for LoadLibrary()
-
-// Needed when delay loading a DLL (nvcuda.dll in our case)
-#pragma comment(lib, "delayimp")
-#pragma comment(lib, "user32")
-#endif
-
-
-// TEST-- Check for CUDA runtime under Windows.
-// If this works, we should move this to its own object
-void
-cudaDetect()
-{
-#if defined (_WIN32)
-	if (LoadLibrary ("nvcuda.dll") == NULL) {
-		// Failure: CUDA runtime not available
-        printf ("cudaDetect says, \"nvcuda.dll NOT found!\"\n");
-        exit (0);
-	} else {
-        // do nothing...
-	}
-#else
-    // Assume linux users are compiling from source
-    // and won't attempt to run features they don't
-    // or can't utilize.
-#endif
-}
-#endif
-
-
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
 #if !defined (_M_IA64) && !defined (_M_AMD64) && defined (_WIN32)

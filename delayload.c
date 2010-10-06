@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-
+#include <stdio.h>
 #if defined (_WIN32)
 #include <windows.h>	// Only needed for LoadLibrary()
 #endif
