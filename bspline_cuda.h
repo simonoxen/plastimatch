@@ -464,6 +464,7 @@ extern "C" {
     
     void CUDA_MI_Grad_a ( BSPLINE_MI_Hist* mi_hist, Bspline_state *bst, Bspline_xform *bxf, Volume* fixed, Volume* moving, float num_vox_f, Dev_Pointers_Bspline *dev_ptrs);
 
+    gpuit_EXPORT
     void CUDA_selectgpu (int gpuid);
 
     void CUDA_listgpu ();
