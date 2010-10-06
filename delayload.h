@@ -9,14 +9,14 @@
 #pragma comment(lib, "user32")
 
 
-#if defined (_cplusplus)
+#if defined __cplusplus
 extern "C" {
 #endif
 
 gpuit_EXPORT
 void cudaDetect();
 
-#if defined (_cplusplus)
+#if defined __cplusplus
 }
 #endif
 
