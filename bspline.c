@@ -54,6 +54,41 @@
 #include "print_and_exit.h"
 #include "volume.h"
 #include "xpm.h"
+#include "delayload.h"
+
+
+#if defined (commentout)
+
+#if defined (_WIN32)
+#include <windows.h>	// Only needed for LoadLibrary()
+
+// Needed when delay loading a DLL (nvcuda.dll in our case)
+#pragma comment(lib, "delayimp")
+#pragma comment(lib, "user32")
+#endif
+
+
+// TEST-- Check for CUDA runtime under Windows.
+// If this works, we should move this to its own object
+void
+cudaDetect()
+{
+#if defined (_WIN32)
+	if (LoadLibrary ("nvcuda.dll") == NULL) {
+		// Failure: CUDA runtime not available
+        printf ("cudaDetect says, \"nvcuda.dll NOT found!\"\n");
+        exit (0);
+	} else {
+        // do nothing...
+	}
+#else
+    // Assume linux users are compiling from source
+    // and won't attempt to run features they don't
+    // or can't utilize.
+#endif
+}
+#endif
+
 
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
@@ -139,19 +174,17 @@ bspline_cuda_state_create (
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+    cudaDetect ();
 	switch (parms->implementation) {
 	case 'i':
 	case 'j':
 	case '\0':   /* Default */
 	    /* i and j use the same init and cleanup routines */
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, 
-		bxf, parms);
-	break;
-	default:
-	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", 
-		parms->implementation);
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, 
-		bxf, parms);
+    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+        break;
+    default:
+	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
+    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
 	}
     } 
@@ -3822,6 +3855,7 @@ bspline_score (Bspline_parms *parms,
 {
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+    cudaDetect ();
 	switch (parms->implementation) {
 #if defined (commentout)
 	case 'c':
@@ -3845,13 +3879,13 @@ bspline_score (Bspline_parms *parms,
 	    break;
 #endif
 	case 'i':
-	    bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+        bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	case 'j':
-	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+        bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	default:
-	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+        bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;

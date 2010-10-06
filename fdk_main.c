@@ -24,6 +24,40 @@
 #include "proj_image.h"
 #include "proj_image_dir.h"
 #include "plm_timer.h"
+#include "delayload.h"
+
+#if defined (commentout)
+
+#if defined (_WIN32)
+#include <windows.h>	// Only needed for LoadLibrary()
+
+// Needed when delay loading a DLL (nvcuda.dll in our case)
+#pragma comment(lib, "delayimp")
+#pragma comment(lib, "user32")
+#endif
+
+
+// TEST-- Check for CUDA runtime under Windows.
+// If this works, we should move this to its own object
+void
+cudaDetect()
+{
+#if defined (_WIN32)
+	if (LoadLibrary ("nvcuda.dll") == NULL) {
+		// Failure: CUDA runtime not available
+        printf ("cudaDetect says, \"nvcuda.dll NOT found!\"\n");
+        exit (0);
+	} else {
+        // do nothing...
+	}
+#else
+    // Assume linux users are compiling from source
+    // and won't attempt to run features they don't
+    // or can't utilize.
+#endif
+}
+
+#endif
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */
@@ -524,6 +558,7 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
+    cudaDetect ();
     CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 	case THREADING_OPENCL:

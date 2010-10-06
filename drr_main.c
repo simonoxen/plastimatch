@@ -18,6 +18,7 @@
 #include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
+#include "delayload.h"
 
 static void*
 allocate_gpu_memory (
@@ -127,6 +128,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     pmat = proj->pmat;
 
     /* Allocate memory on the gpu device */
+    cudaDetect ();
     dev_state = allocate_gpu_memory (proj, vol, options);
 
     /* If nrm was specified, only create a single image */

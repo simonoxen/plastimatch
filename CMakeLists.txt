@@ -646,6 +646,7 @@ SET (GPUIT_LIBRARY_SRC
   volume.c volume.h
   volume_limit.c volume_limit.h
   xpm.c xpm.h
+  delayload.c delayload.h
   )
 
 IF(BROOK_FOUND)
@@ -828,6 +829,7 @@ ENDIF (CUDA_FOUND)
 SET (DEMONS_SRC
   demons_main.c
   demons_opts.c demons_opts.h
+  delayload.c delayload.h
   )
 SET (DICE_STATS_SRC
   contour_statistics.cxx contour_statistics.h
@@ -849,6 +851,7 @@ SET (DISTANCE_MAP_SRC
 SET (DRR_SRC
   drr_main.c 
   drr_opts.c drr_opts.h
+  delayload.c delayload.h
   )
 SET (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
@@ -861,6 +864,7 @@ SET (FDK_SRC
   fdk_opts.c fdk_opts.h
   fdk_utils.c fdk_utils.h
   bowtie_correction.c bowtie_correction.h
+  delayload.c
   )
 IF (BROOK_FOUND)
   SET (FDK_SRC
@@ -1141,86 +1145,95 @@ ENDIF (ITK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
+
+# Consolidate linker flags
+SET (GPUIT_LDFLAGS "${OPENMP_LDFLAGS}")
+IF (WIN32)
+    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
+ENDIF (WIN32)
+MESSAGE (STATUS "GPUIT_LDFLAGS: ${GPUIT_LDFLAGS}")
+
+# Executable Target Definitions
 PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
-PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
+PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
 PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${OPENMP_LDFLAGS}")
+  "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
 
 IF(ITK_FOUND)
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF(ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
-      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+      "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF(ITK_USE_REVIEW)
 
   PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (Slicer3_DIR)
     PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
-      "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+      "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF (Slicer3_DIR)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
-      "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+      "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF (ITK_USE_REVIEW)
   PLM_ADD_EXECUTABLE (itk_tps_warp "${ITK_TPS_WARP_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (mask_mha "${MASK_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (merge_vfs merge_vector_fields.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (patient_mask "${PATIENT_MASK_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (Slicer3_DIR)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
-      "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+      "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
-      "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+      "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF (Slicer3_DIR)
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
     PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
-      "${PLASTIMATCH_QT_LIBRARIES}" "${OPENMP_LDFLAGS}")
+      "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_LDFLAGS}")
   ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
   PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (vf_invert "${VF_INVERT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (xf_to_xf "${XF_TO_XF_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${OPENMP_LDFLAGS}")
+    "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
 ENDIF(ITK_FOUND)
 
 # several executables require cuda

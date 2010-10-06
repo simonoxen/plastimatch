@@ -10,6 +10,7 @@
 #include "mha_io.h"
 #include "vf.h"
 #include "volume.h"
+#include "delayload.h"
 
 int
 main (int argc, char* argv[])
