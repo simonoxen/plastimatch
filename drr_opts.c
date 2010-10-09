@@ -32,7 +32,7 @@ print_usage (void)
 	" -z \"s1 s2\"        Set the physical size of imager (in mm)\n"
 	" -w \"r1 r2 c1 c2\"  Only produce image for pixes in window (in pix)\n"
 	" -t outformat      Select output format: pgm, pfm or raw\n"
-	" -S                Output multispectral output files\n"
+	//" -S                Output multispectral output files\n"
 	//" -i algorithm      Choose algorithm {exact,uniform,tri_exact,tri_approx}\n"
 	" -i algorithm      Choose algorithm {exact,uniform}\n"
 	" -o \"o1 o2 o3\"     Set isocenter position\n"
