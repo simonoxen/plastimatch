@@ -143,6 +143,18 @@ MACRO (PLM_ADD_SLICER_MODULE
   #SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 ENDMACRO (PLM_ADD_SLICER_MODULE)
 
+MACRO (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
+  ## I don't yet know how to bundle the .cl file within the executable.
+  ## Therefore, copy the .cl into binary directory.
+  SET (${SRCS} ${${SRCS}} "${CMAKE_BINARY_DIR}/${CL_FILE}")
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${CMAKE_BINARY_DIR}/${CL_FILE}"
+    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
+    "${CMAKE_SOURCE_DIR}/${CL_FILE}" 
+    "${CMAKE_BINARY_DIR}/${CL_FILE}" 
+    DEPENDS "${CMAKE_SOURCE_DIR}/${CL_FILE}")
+ENDMACRO (PLM_ADD_OPENCL_FILE)
+
 ##-----------------------------------------------------------------------------
 ##  Search for include files
 ##-----------------------------------------------------------------------------
@@ -710,6 +722,8 @@ IF (OPENCL_FOUND)
     drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
     opencl_utils.cxx opencl_utils.h
     )
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
 ENDIF (OPENCL_FOUND)
 
 SET (GPUIT_LIBRARY_SRC
@@ -889,6 +903,7 @@ IF (OPENCL_FOUND)
     fdk_opencl.h
     fdk_opencl.cl
     )
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
 ENDIF (OPENCL_FOUND)
 
 IF (CUDA_FOUND)
@@ -1258,7 +1273,6 @@ IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
   ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 
-
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
 ##-----------------------------------------------------------------------------
@@ -1402,9 +1416,7 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
     "${CMAKE_SOURCE_DIR}/opencl_test.cl" 
     "${CMAKE_BINARY_DIR}/opencl_test.cl" 
-    #MAIN_DEPENDENCY opencl_test 
     DEPENDS "${CMAKE_SOURCE_DIR}/opencl_test.cl")
-  #ADD_DEPENDENCIES (opencl_test opencl_test.cl)
 ENDIF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
 
 # Test executable -- openmp

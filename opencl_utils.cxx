@@ -85,7 +85,6 @@ cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID)
             // default to zeroeth platform if NVIDIA not found
             if(*clSelectedPlatformID == NULL)
             {
-                shrLog("WARNING: NVIDIA OpenCL platform not found - defaulting to first platform!\n\n");
                 *clSelectedPlatformID = clPlatformIDs[0];
             }
 

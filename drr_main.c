@@ -27,21 +27,22 @@ allocate_gpu_memory (
     Drr_options *options
 )
 {
-#if CUDA_FOUND
     switch (options->threading) {
-    case THREADING_BROOK:
+#if CUDA_FOUND
     case THREADING_CUDA:
-    cudaDetect ();
-    case THREADING_OPENCL:
+	cudaDetect ();
 	return drr_cuda_state_create (proj, vol, options);
+#endif
+#if OPENCL_FOUND
+    case THREADING_OPENCL:
+	return 0;
+	//return drr_cuda_state_create (proj, vol, options);
+#endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
     default:
 	return 0;
     }
-#else
-    return 0;
-#endif
 }
 
 static void
@@ -208,6 +209,7 @@ main (int argc, char* argv[])
     switch (options.threading) {
 #if OPENCL_FOUND
     case THREADING_OPENCL:
+	printf ("Using OpenCL !!!\n");
 	preprocess_attenuation_and_drr_render_volume_cl (vol, &options);
 	break;
 #endif

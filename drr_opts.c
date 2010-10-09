@@ -113,16 +113,22 @@ parse_args (Drr_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
-		options->threading = THREADING_BROOK;
-	    } 
-	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
+#if CUDA_FOUND
+	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
 		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
 		options->threading = THREADING_CUDA;
+		continue;
 	    }
-	    else {
-		options->threading = THREADING_CPU_OPENMP;
+#endif
+#if OPENCL_FOUND
+	    if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")
+		|| !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+		options->threading = THREADING_OPENCL;
+		continue;
 	    }
+#endif
+	    /* Default */
+	    options->threading = THREADING_CPU_OPENMP;
 	}
 	else if (!strcmp (argv[i], "-r")) {
 	    i++;
