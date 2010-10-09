@@ -241,9 +241,9 @@ drr_render_volume_perspective (
 
     /* Get position of upper left pixel on panel */
     vec3_copy (ul_room, ic_room);
-    vec3_scale3 (tmp, incr_r, - pmat->ic[0]);
+    vec3_scale3 (tmp, incr_r, - pmat->ic[1]);
     vec3_add2 (ul_room, tmp);
-    vec3_scale3 (tmp, incr_c, - pmat->ic[1]);
+    vec3_scale3 (tmp, incr_c, - pmat->ic[0]);
     vec3_add2 (ul_room, tmp);
 
     /* drr_ray_trace uses p1 & p2, p1 is the camera, p2 is in the 

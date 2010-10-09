@@ -66,8 +66,8 @@ raw_load (Proj_image *proj, const char* img_filename)
 	proj->dim[1] = 768;
 	break;
     case (2048*1536*sizeof(float)):
-	proj->dim[0] = 1024;
-	proj->dim[1] = 768;
+	proj->dim[0] = 2048;
+	proj->dim[1] = 1536;
 	break;
     default:
 	proj->dim[0] = 1024;
