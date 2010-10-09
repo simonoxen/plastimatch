@@ -339,7 +339,7 @@ itk_xform_load (Xform *xf, const char* fn)
 	transfReader->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << err << std::endl;
+	std::cerr << excp << std::endl;
 	print_and_exit ("Error reading ITK transform file: %s\n", fn);
     }
  
