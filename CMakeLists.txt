@@ -721,6 +721,7 @@ IF (OPENCL_FOUND)
     demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
     drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
     opencl_utils.cxx opencl_utils.h
+    opencl_utils_nvidia.cxx opencl_utils_nvidia.h
     )
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)

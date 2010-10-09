@@ -7,7 +7,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "opencl_utils.h"
 #include "autotune_opencl.h"
 #include "drr_opencl.h"
 #include "drr_opencl_p.h"
@@ -15,6 +14,8 @@
 #include "drr_opts.h"
 #include "file_util.h"
 #include "math_util.h"
+#include "opencl_utils.h"
+#include "opencl_utils_nvidia.h"
 #include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
@@ -334,22 +335,28 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     oclCheckError(error, CL_SUCCESS);
 
     /* Get devices of type GPU */
-    error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &device_count);
-    oclCheckError(error, CL_SUCCESS);
+    error = clGetDeviceIDs (platform, 
+	//CL_DEVICE_TYPE_GPU, 
+	CL_DEVICE_TYPE_ALL,
+	0, NULL, &device_count);
+    printf ("Device count == %d\n", device_count);
+    //oclCheckError(error, CL_SUCCESS);
 
     /* Make sure using no more than the maximum number of GPUs */
-    if (device_count > MAX_GPU_COUNT)
+    if (device_count > MAX_GPU_COUNT) {
 	device_count = MAX_GPU_COUNT;
+    }
 
-    devices = (cl_device_id *)malloc(device_count * sizeof(cl_device_id));
-    error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, device_count, devices, NULL);
-    oclCheckError(error, CL_SUCCESS);
+    devices = (cl_device_id *) malloc (device_count * sizeof(cl_device_id));
+    error = clGetDeviceIDs (platform, CL_DEVICE_TYPE_GPU, 
+	device_count, devices, NULL);
+    //oclCheckError(error, CL_SUCCESS);
 
     /* Create context properties */
     cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0};
 
     /* Calculate number of voxels per device */
-    divideWork(devices, device_count, 2, work_per_device, work_total);
+    divideWork (devices, device_count, 2, work_per_device, work_total);
 
     shrLog("Using %d device(s):\n", device_count);
 
@@ -361,7 +368,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
 	/* Device info */
 	device = oclGetDev(context[i], 0);
-	clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(device_name[i]), device_name[i], NULL);
+	clGetDeviceInfo (device, CL_DEVICE_NAME, sizeof(device_name[i]), device_name[i], NULL);
 	oclCheckError(error, CL_SUCCESS);
 	shrLog("\tDevice %d: %s handling %d x %d pixels\n", i, device_name[i], work_per_device[i][0], work_per_device[i][1]);
 
@@ -370,8 +377,22 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	oclCheckError(error, CL_SUCCESS);
     }
 
+#if defined (commentout)
+    /* GCS: Second try */
+    Opencl_device ocl_dev;
+    opencl_open_device (&ocl_dev);
+
+    
+    program = clCreateProgramWithSource (
+	context, 
+	1, 
+	&source,
+	sourceSize,
+	&status);
+#endif
+
     /* Program Setup */
-    char* source_path = shrFindFilePath("drr_opencl.cl", "");
+    char* source_path = shrFindFilePath ("drr_opencl.cl", "");
     oclCheckError (source_path != NULL, shrTRUE);
     char *source = oclLoadProgSource(source_path, "", &program_length);
     oclCheckError(source != NULL, shrTRUE);

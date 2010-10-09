@@ -5,9 +5,10 @@
 #define _delayload_h_
 
 // Needed for delay loading windows DLLs
+#if _WIN32
 #pragma comment(lib, "delayimp")
 #pragma comment(lib, "user32")
-
+#endif
 
 #if defined __cplusplus
 extern "C" {

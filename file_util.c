@@ -153,3 +153,41 @@ strip_extension (char* filename)
 	*p = 0;
     }
 }
+
+char* 
+file_load (const char* filename)
+{
+    FILE *fp;
+    long len;
+    size_t bytes_read;
+    char *buf;
+
+    fp = fopen (filename, "rb");
+    if (!fp) {
+	return 0;
+    }
+
+    /* Get file size */
+    fseek (fp, 0, SEEK_END); 
+    len = ftell (fp);
+    
+    /* Malloc the buffer */
+    buf = (char*) malloc (len * sizeof(char));
+    if (!buf) {
+	fclose (fp);
+	return 0;
+    }
+
+    /* Slurp the file into the buffer */
+    fseek (fp, 0, SEEK_SET);
+    bytes_read = fread (buf, sizeof(char), len, fp);
+    fclose (fp);
+
+    /* Check return code from fread() */
+    if (bytes_read != len) {
+	free (buf);
+	return 0;
+    }
+
+    return buf;
+}

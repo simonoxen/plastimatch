@@ -141,12 +141,12 @@ main (int argc, char* argv[])
 		bspline_rbf_update_vector_field( vector_field, parms );
 		bspline_landmarks_warp (vector_field, parms, bxf, 
 		    fixed, moving);
-		if (options.warped_landmarks)
+		if (options.warped_landmarks) {
 		    bspline_landmarks_write_file (
 			options.warped_landmarks, "warp_and_rbf", 
 			parms->landmarks->warped_landmarks, 
 			parms->landmarks->num_landmarks);
-
+		}
 		/* Creating and writing vector field only from RBF (for test only) */
 		/*
 		  zero_vector_field = volume_create (fixed->dim, fixed->offset, 
