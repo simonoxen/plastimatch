@@ -24,10 +24,11 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.16.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="SNOWBALL" (
-  echo Setting for SLUMBER
+  echo Setting for SNOWBALL
   SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
   SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.20.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
+  SET FFTW_PATH=%HOME%\build\fftw-3.2.2
 ) else if "%COMPUTERNAME%"=="TORTOISE" (
   echo Setting for TORTOISE
   SET ITK_PATH=%HOME%\build\vs2008\itk-3.16.0\bin\Release
@@ -48,6 +49,7 @@ SET PLASTIMATCH_PATH=%PLASTIMATCH_BASE%\Release
 @rem if NOT %DXSDK_UTILS_DIR%=="" PATH="%PATH%;%DXSDK_UTILS_DIR%"
 @rem if NOT "%DXSDK_UTILS_DIR%"=="" PATH=%PATH%;%DXSDK_UTILS_DIR%
 
+PATH=%PATH%;%FFTW_PATH%
 PATH=%PATH%;%ITK_PATH%
 PATH=%PATH%;%PLASTIMATCH_PATH%
 PATH=%PATH%;%CTTOOLS_PATH%
