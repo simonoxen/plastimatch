@@ -22,6 +22,8 @@
 #include "volume.h"
 #include "volume_limit.h"
 
+#if defined (commentout)
+
 /* Globals */
 cl_int error;					/* Use for error checking */
 cl_context context[MAX_GPU_COUNT];				/* Context from device */
@@ -276,9 +278,12 @@ void create_matrix_and_drr_cl (
 	printf("I/O time: %f sec\n", plm_timer_report(&timer));
 }
 
+#endif /* commentout */
+
 void preprocess_attenuation_and_drr_render_volume_cl (
     Volume* vol,
-    Drr_options* options)
+    Drr_options* options
+)
 {
     /* Declare all global memory buffers */
     cl_mem g_dev_vol[MAX_GPU_COUNT];
@@ -325,52 +330,13 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     Opencl_device ocl_dev;
     opencl_open_device (&ocl_dev);
-
     opencl_load_programs (&ocl_dev, "drr_opencl.cl");
-    printf ("load_program complete\n");
 
     return;
 
+#if defined (commentout)
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
-
-#if (!USE_GCS)
-    /* Program Setup */
-    char* source_path = shrFindFilePath ("drr_opencl.cl", "");
-    oclCheckError (source_path != NULL, shrTRUE);
-    char *source = oclLoadProgSource(source_path, "", &program_length);
-    oclCheckError(source != NULL, shrTRUE);
-
-    /* Create the program */
-    for (cl_uint i = 0; i < device_count; i++) {
-	program[i] = clCreateProgramWithSource (context[i], 1, 
-	    (const char **)&source, &program_length, &error);
-	for (int i = 0; i < 80; i++) {
-	    printf ("%c", source[i]);
-	}
-	printf ("\n");
-	oclCheckError(error, CL_SUCCESS);
-
-	/* Build the program */
-	error = clBuildProgram(program[i], 0, NULL, NULL, NULL, NULL);
-	if (error != CL_SUCCESS) {
-	    /* Write out standard error, Build Log and PTX, then return error */
-	    shrLogEx(LOGBOTH | ERRORMSG, error, STDERROR);
-	    oclLogBuildInfo(program[i], oclGetFirstDev(context[i]));
-	    oclLogPtx(program[i], oclGetFirstDev(context[i]), "fdk_opencl.ptx");
-	}
-    }
-
-    shrLog("\n");
-#endif
-
-#if (USE_GCS)
-    /* GCS: Temp hack */
-    cl_uint device_count = 1;
-    int i = 0;
-    /* Calculate number of voxels per device */
-    divideWork (devices, device_count, 2, work_per_device, work_total);
-#endif
 
     /***************************************************************/
 
@@ -403,7 +369,6 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	img_size_device[i] = pixels_per_device[i].z * sizeof(float);
     }
 
-#if defined (commentout)
     for (cl_uint i = 0; i < device_count; i++) {
 
 	/* Allocate global memory on all devices */
@@ -658,5 +623,5 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     shrLog("Done DRR_OPENCL...\n\n");
     shrLog("Total OpenCL run time: %f s\n", overall_runtime);
     printf("Total run time: %g s\n", plm_timer_report(&timer));
-#endif
+#endif /* commentout */
 }

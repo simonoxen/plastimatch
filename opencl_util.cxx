@@ -276,8 +276,8 @@ opencl_open_device (Opencl_device *ocl_dev)
        if platform is NULL here.  */
 
     /* Create contexts (there are two versions of this function: a, b) */
-    status = opencl_create_context_a (ocl_dev);
-    //status = opencl_create_context_b (ocl_dev);
+    //status = opencl_create_context_a (ocl_dev);
+    status = opencl_create_context_b (ocl_dev);
     if (status != CL_SUCCESS) {
 	return status;
     }
