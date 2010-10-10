@@ -143,7 +143,7 @@ Fortran (optional)
 Plastimatch requires fortran, which can be satisfied with either 
 a real fortran compiler, or with the f2c library.  If neither of these 
 are installed, plastimatch supplies its own version of f2c.  You can 
-hint which of these is used using the following CMake options:
+hint which of these is used using the following CMake options::
 
   Option                 Default      Description
   ------                 -------      ------------
@@ -293,11 +293,12 @@ Compiling the 3D Slicer extensions
 METHOD ONE:
 
 #. Build slicer from source.  Use slicer 3.6, not slicer 4.
+
    http://www.slicer.org/slicerWiki/index.php/Slicer3:Build_Instructions
 
    If you are on Vista, you need to turn off UAC.
    If you are on Vista or 7, you need to run cygwin as administrator
-   I suggest these options:
+   I suggest these options::
 
      ./Slicer3/Scripts/getbuildtest.tcl --release -t ""
 
@@ -315,9 +316,9 @@ METHOD ONE:
    Configure again.
    Generate.
 
-#. Build plastimatch.  You should find the plugins here: 
+#. Build plastimatch.  You should find the plugins here:
 
-   lib/Slicer3/Plugins/Release/*.exe
+   lib/Slicer3/Plugins/Release
 
 #. Fire up slicer.  You need to tell slicer where the plugins are located
 
@@ -333,22 +334,20 @@ METHOD TWO:
 
 #. Build 3D Slicer as described above.
 
-#. Use slicer's extension builder script to make the plugin
+#. Use slicer's extension builder script to make the plugin::
 
-   ./Slicer3/Scripts/extend.tcl --release -t "" plastimatch-slicer
+     ./Slicer3/Scripts/extend.tcl --release -t "" plastimatch-slicer
 
 #. You should find the plugins here:
 
-   Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release/*.exe
+   Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release
 
-#. Plugins get uploaded here:
+#. Plugins get uploaded here::
 
-   http://ext.slicer.org/trunk/15175-win32
+     http://ext.slicer.org/ext/trunk
 
-   The number 15175 refers to the svn version number of slicer
-
-   Note also, you can check the parent trunk to see if the build has 
-   been failing recently.
+   Your plugin gets put in one of the subdirectories, organized by 
+   the platform and the svn version number of slicer.  
 
 #. Add module path as described above -OR- download using extension manager
 
