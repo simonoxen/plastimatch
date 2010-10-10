@@ -115,8 +115,17 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
 	ocl_dev->device_count * sizeof(cl_command_queue));
     for (cl_uint i = 0; i < ocl_dev->device_count; i++)
     {
+	cl_uint cxt_no;
+
+	/* Find the right context depending if method a or b was used */
+	if (ocl_dev->context_count == 1) {
+	    cxt_no = 0;
+	} else {
+	    cxt_no = i;
+	}
+
 	ocl_dev->command_queues[i] = clCreateCommandQueue (
-	    ocl_dev->contexts[i], 
+	    ocl_dev->contexts[cxt_no], 
 	    ocl_dev->devices[i], 
 	    CL_QUEUE_PROFILING_ENABLE, 
 	    &status);
@@ -267,8 +276,8 @@ opencl_open_device (Opencl_device *ocl_dev)
        if platform is NULL here.  */
 
     /* Create contexts (there are two versions of this function: a, b) */
-    //status = opencl_create_context_a (ocl_dev);
-    status = opencl_create_context_b (ocl_dev);
+    status = opencl_create_context_a (ocl_dev);
+    //status = opencl_create_context_b (ocl_dev);
     if (status != CL_SUCCESS) {
 	return status;
     }
@@ -350,7 +359,6 @@ opencl_load_programs (
 )
 {
     cl_int status;
-    cl_program program;
     CBString *buf;
     const char *buf_cstr;
     size_t len;
@@ -371,7 +379,7 @@ opencl_load_programs (
 	    &len, 
 	    &status);
 	opencl_check_error (status, "Error calling clCreateProgramWithSource.");
-	
+
 	status = clBuildProgram (
 	    ocl_dev->programs[i], 
 	    ocl_dev->device_count, 
@@ -380,7 +388,7 @@ opencl_load_programs (
 	    NULL, 
 	    NULL);
 	if (status != CL_SUCCESS) {
-	    opencl_dump_build_log (ocl_dev, program);
+	    opencl_dump_build_log (ocl_dev, ocl_dev->programs[i]);
 	    opencl_check_error (status, "Error calling clBuildProgram.");
 	}
     }
@@ -414,10 +422,87 @@ opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
     printf ("Build log:\n%s\n", buf);
 }
 
-void
-opencl_check_error (cl_int return_code, const char *msg)
+const char*
+opencl_error_string (cl_int status)
 {
-    if (return_code != CL_SUCCESS) {
-        print_and_exit ("OPENCL ERROR: %s (%d).\n", msg, return_code);
+    static const char* error_strings[] = {
+        "CL_SUCCESS",
+        "CL_DEVICE_NOT_FOUND",
+        "CL_DEVICE_NOT_AVAILABLE",
+        "CL_COMPILER_NOT_AVAILABLE",
+        "CL_MEM_OBJECT_ALLOCATION_FAILURE",
+        "CL_OUT_OF_RESOURCES",
+        "CL_OUT_OF_HOST_MEMORY",
+        "CL_PROFILING_INFO_NOT_AVAILABLE",
+        "CL_MEM_COPY_OVERLAP",
+        "CL_IMAGE_FORMAT_MISMATCH",
+        "CL_IMAGE_FORMAT_NOT_SUPPORTED",
+        "CL_BUILD_PROGRAM_FAILURE",
+        "CL_MAP_FAILURE",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "",
+        "CL_INVALID_VALUE",
+        "CL_INVALID_DEVICE_TYPE",
+        "CL_INVALID_PLATFORM",
+        "CL_INVALID_DEVICE",
+        "CL_INVALID_CONTEXT",
+        "CL_INVALID_QUEUE_PROPERTIES",
+        "CL_INVALID_COMMAND_QUEUE",
+        "CL_INVALID_HOST_PTR",
+        "CL_INVALID_MEM_OBJECT",
+        "CL_INVALID_IMAGE_FORMAT_DESCRIPTOR",
+        "CL_INVALID_IMAGE_SIZE",
+        "CL_INVALID_SAMPLER",
+        "CL_INVALID_BINARY",
+        "CL_INVALID_BUILD_OPTIONS",
+        "CL_INVALID_PROGRAM",
+        "CL_INVALID_PROGRAM_EXECUTABLE",
+        "CL_INVALID_KERNEL_NAME",
+        "CL_INVALID_KERNEL_DEFINITION",
+        "CL_INVALID_KERNEL",
+        "CL_INVALID_ARG_INDEX",
+        "CL_INVALID_ARG_VALUE",
+        "CL_INVALID_ARG_SIZE",
+        "CL_INVALID_KERNEL_ARGS",
+        "CL_INVALID_WORK_DIMENSION",
+        "CL_INVALID_WORK_GROUP_SIZE",
+        "CL_INVALID_WORK_ITEM_SIZE",
+        "CL_INVALID_GLOBAL_OFFSET",
+        "CL_INVALID_EVENT_WAIT_LIST",
+        "CL_INVALID_EVENT",
+        "CL_INVALID_OPERATION",
+        "CL_INVALID_GL_OBJECT",
+        "CL_INVALID_BUFFER_SIZE",
+        "CL_INVALID_MIP_LEVEL",
+        "CL_INVALID_GLOBAL_WORK_SIZE",
+    };
+    status = -status;
+    if (status < 0 || status >= (cl_int) sizeof(error_strings)) {
+	return "";
+    }
+    return error_strings[status];
+}
+
+void
+opencl_check_error (cl_int status, const char *msg)
+{
+    if (status != CL_SUCCESS) {
+        print_and_exit ("OPENCL ERROR: %s (%d,%s).\n", 
+	    msg, status, opencl_error_string (status));
     }                         
 }
