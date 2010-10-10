@@ -112,7 +112,7 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     cl_int status = 0;
     cl_context_properties cps[3];
     cl_context_properties* cprops;
-    cl_uint device_list_size;
+    size_t device_list_size;
 
     if (ocl_dev->platform) {
 	cps[0] = CL_CONTEXT_PLATFORM;
