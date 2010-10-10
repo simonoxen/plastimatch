@@ -18,9 +18,10 @@
 
 typedef struct opencl_device Opencl_device;
 struct opencl_device {
-    cl_context context;
-    size_t device_list_size;
+    cl_platform_id platform;
+    cl_uint device_count;
     cl_device_id *devices;
+    cl_context context;
     cl_command_queue command_queue;
 };
 

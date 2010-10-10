@@ -336,13 +336,18 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Get the OpenCL platform */
     cl_platform_id platform;
-    error = oclGetPlatformID(&platform);
-    oclCheckError(error, CL_SUCCESS);
+    //error = oclGetPlatformID(&platform);
+    //oclCheckError(error, CL_SUCCESS);
+    platform = opencl_select_platform ();
+    if (!platform) {
+	printf ("No OpenCL platform found\n");
+	return;
+    }
 
     /* Get devices of type GPU */
     error = clGetDeviceIDs (platform, 
-	//CL_DEVICE_TYPE_GPU, 
-	CL_DEVICE_TYPE_ALL,
+	CL_DEVICE_TYPE_GPU, 
+	//CL_DEVICE_TYPE_ALL,
 	0, NULL, &device_count);
     printf ("Device count == %d\n", device_count);
     //oclCheckError(error, CL_SUCCESS);
@@ -386,7 +391,10 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 #if (USE_GCS)
     /* GCS: Second try */
     Opencl_device ocl_dev;
+    printf ("Hello world\n");
     opencl_open_device (&ocl_dev);
+
+    return;
 
     cl_program program;
     program = opencl_load_program (&ocl_dev, "drr_opencl.cl");

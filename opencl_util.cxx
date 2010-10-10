@@ -18,6 +18,37 @@
 //! Custom Utility Functions
 //////////////////////////////////////////////////////////////////////////////
 
+cl_int
+opencl_dump_platform_info (cl_platform_id platform)
+{
+    cl_int status;
+    char buf[100];
+
+    status = clGetPlatformInfo (
+	platform, 
+	CL_PLATFORM_NAME,
+	sizeof (buf),
+	buf,
+	NULL);
+    if (status != CL_SUCCESS) {
+	return status;
+    }
+    printf ("  Name = %s\n", buf);
+
+    status = clGetPlatformInfo (
+	platform, 
+	CL_PLATFORM_VENDOR,
+	sizeof (buf),
+	buf,
+	NULL);
+    if (status != CL_SUCCESS) {
+	return status;
+    }
+    printf ("  Vendor = %s\n", buf);
+
+    return CL_SUCCESS;
+}
+
 cl_platform_id
 opencl_select_platform (void)
 {
@@ -33,46 +64,102 @@ opencl_select_platform (void)
         unsigned int i;
         cl_platform_id* platform_list = (cl_platform_id*) malloc (
 	    sizeof (cl_platform_id) * num_platforms);
+	printf ("Found %d platforms\n", num_platforms);
         status = clGetPlatformIDs (num_platforms, platform_list, NULL);
 	if (status != CL_SUCCESS) {
 	    print_and_exit ("Error in clGetPlatformIDs\n");
 	}
 	
-        for (i = 0; i < num_platforms; i++) {
-	    char pbuff[100];
-            status = clGetPlatformInfo (
-		platform_list[i],
-		CL_PLATFORM_VENDOR,
-		sizeof (pbuff),
-		pbuff,
-		NULL);
-	    platform = platform_list[i];
-	    printf ("OpenCL platform [%d] = %s\n", i, pbuff);
+        for (i = 0; i < num_platforms; i++)
+	{
+	    printf ("OpenCL platform [%d]\n", i);
+	    status = opencl_dump_platform_info (platform_list[i]);
+	    if (status != CL_SUCCESS) continue;
+
+	    /* Choose first platform (?) */
+	    if (!platform) {
+		platform = platform_list[i];
+	    }
 	}
 	free (platform_list);
     }
     return platform;
 }
 
+
+cl_int
+opencl_enumerate_devices (Opencl_device *ocl_dev)
+{
+    cl_int status;
+    cl_device_id *devices;
+
+    /* Get number of devices of type GPU on this platform */
+    status = clGetDeviceIDs (
+	ocl_dev->platform, 
+	CL_DEVICE_TYPE_GPU, 
+	0, 
+	NULL, 
+	&ocl_dev->device_count);
+    if (status != CL_SUCCESS) return status;
+
+    printf ("Device count == %d\n", ocl_dev->device_count);
+
+    /* Get list of device ids */
+    devices = (cl_device_id *) malloc (
+	ocl_dev->device_count * sizeof(cl_device_id));
+    status = clGetDeviceIDs (
+	ocl_dev->platform, 
+	CL_DEVICE_TYPE_GPU, 
+	ocl_dev->device_count, 
+	devices, 
+	NULL);
+    if (status != CL_SUCCESS) {
+	free (devices);
+	return status;
+    }
+
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+	char device_name[256];
+	status = clGetDeviceInfo (
+	    devices[i], 
+	    CL_DEVICE_NAME, 
+	    sizeof(device_name), 
+	    device_name, 
+	    NULL);
+	opencl_check_error (status, "Error with clGetDeviceInfo()");
+
+	printf ("Device [%d] = %s\n", i, device_name);
+    }
+
+    /* What can I do with it once I have it??? */
+    free (devices);
+    return CL_SUCCESS;
+}
+
 void
 opencl_open_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
-    cl_platform_id platform;
     cl_context_properties cps[3];
     cl_context_properties* cprops;
     Timer timer;
+    size_t device_list_size;
+
+    printf ("In opencl_open_device\n");
 
     /* Select platform */
-    platform = opencl_select_platform ();
-    if (platform) {
+    ocl_dev->platform = opencl_select_platform ();
+    if (ocl_dev->platform) {
 	cps[0] = CL_CONTEXT_PLATFORM;
-	cps[1] = (cl_context_properties) platform;
+	cps[1] = (cl_context_properties) ocl_dev->platform;
 	cps[2] = 0;
 	cprops = cps;
     } else {
 	cprops = NULL;
     }
+
+    /* This doesn't do anything yet, just print out devices */
+    opencl_enumerate_devices (ocl_dev);
 
     /* Create context */
     plm_timer_start (&timer);
@@ -82,10 +169,10 @@ opencl_open_device (Opencl_device *ocl_dev)
 	NULL, 
 	NULL, 
 	&status);
-    if (status != CL_SUCCESS) {  
+    if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clCreateContextFromType\n");
     }
-    printf ("Create context: %f sec\n", plm_timer_report (&timer));
+    printf ("--\nCreate context: %f sec\n", plm_timer_report (&timer));
 
     /* Get size of device list */
     plm_timer_start (&timer);
@@ -94,27 +181,45 @@ opencl_open_device (Opencl_device *ocl_dev)
 	CL_CONTEXT_DEVICES, 
 	0, 
 	NULL, 
-	&ocl_dev->device_list_size);
+	&device_list_size);
     if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clGetContextInfo\n");
     }
-    if (ocl_dev->device_list_size == 0) {
+    if (device_list_size == 0) {
 	print_and_exit ("No devices found (clGetContextInfo)\n");
     }
 
-    ocl_dev->devices = (cl_device_id *) malloc (ocl_dev->device_list_size);
+    ocl_dev->device_count = device_list_size / sizeof(cl_device_id);
+    ocl_dev->devices = (cl_device_id *) malloc (device_list_size);
+
+    printf ("device_list_size = %d\n", device_list_size);
+    printf ("num_devices (inferred) = %d\n", ocl_dev->device_count);
 
     /* Get the device list data */
     status = clGetContextInfo (
 	ocl_dev->context, 
 	CL_CONTEXT_DEVICES, 
-	ocl_dev->device_list_size, 
+	device_list_size, 
 	ocl_dev->devices, 
 	NULL);
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clGetContextInfo\n");
     }
     printf ("Get context info: %f sec\n", plm_timer_report (&timer));
+
+    /* Print out a little status about the devices */
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+	char device_name[256];
+	status = clGetDeviceInfo (
+	    ocl_dev->devices[i], 
+	    CL_DEVICE_NAME, 
+	    sizeof(device_name), 
+	    device_name, 
+	    NULL);
+	opencl_check_error (status, "Error with clGetDeviceInfo()");
+
+	printf ("Device [%d] = %s\n", i, device_name);
+    }
 
     /* Create OpenCL command queue */
     plm_timer_start (&timer);
