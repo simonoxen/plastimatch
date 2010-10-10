@@ -529,6 +529,8 @@ main (int argc, char* argv[])
     cudaDetect ();
     CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
+#endif
+#if (OPENCL_FOUND)
 	case THREADING_OPENCL:
 	OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
 	break;
