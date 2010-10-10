@@ -19,6 +19,8 @@
 typedef struct opencl_device Opencl_device;
 struct opencl_device {
     cl_context context;
+    size_t device_list_size;
+    cl_device_id *devices;
     cl_command_queue command_queue;
 };
 
@@ -41,6 +43,15 @@ opencl_close_device (Opencl_device *ocl_dev);
 gpuit_EXPORT
 cl_ulong
 executionTime(cl_event &event);
+gpuit_EXPORT
+void
+opencl_check_error (cl_int return_code, const char *msg);
+gpuit_EXPORT
+cl_program
+opencl_load_program (
+    Opencl_device *ocl_dev, 
+    const char* filename
+);
 
 #if defined __cplusplus
 }

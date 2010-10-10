@@ -324,6 +324,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
      * STEP 1: Setup OpenCL											* 
      ****************************************************************/
 
+#if defined (commentout)
     /* Set logfile name and start logs */
     shrSetLogFileName ("drr_opencl.txt");
 
@@ -376,21 +377,20 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	command_queue[i] = clCreateCommandQueue(context[i], device, CL_QUEUE_PROFILING_ENABLE, &error);
 	oclCheckError(error, CL_SUCCESS);
     }
+#endif
 
-#if defined (commentout)
     /* GCS: Second try */
     Opencl_device ocl_dev;
     opencl_open_device (&ocl_dev);
 
-    
-    program = clCreateProgramWithSource (
-	context, 
-	1, 
-	&source,
-	sourceSize,
-	&status);
-#endif
+    cl_program program;
+    program = opencl_load_program (&ocl_dev, "drr_opencl.cl");
 
+    /* Calculate number of voxels per device */
+    divideWork (devices, device_count, 2, work_per_device, work_total);
+
+
+#if defined (commentout)
     /* Program Setup */
     char* source_path = shrFindFilePath ("drr_opencl.cl", "");
     oclCheckError (source_path != NULL, shrTRUE);
@@ -413,6 +413,14 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     }
 
     shrLog("\n");
+#endif
+
+    /* GCS: Temp hack */
+    cl_uint device_count = 1;
+    int i = 0;
+    /* Calculate number of voxels per device */
+    divideWork (devices, device_count, 2, work_per_device, work_total);
+
 
     /***************************************************************/
 
@@ -445,7 +453,9 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	img_size_device[i] = pixels_per_device[i].z * sizeof(float);
     }
 
+#if defined (commentout)
     for (cl_uint i = 0; i < device_count; i++) {
+#endif
 	/* Allocate global memory on all devices */
 	g_dev_vol[i] = clCreateBuffer(context[i],  CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, vol_size, NULL, &error);
 	oclCheckError(error, CL_SUCCESS);
@@ -475,9 +485,12 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	oclCheckError(error, CL_SUCCESS);
 
 	/* Create the drr kernel on all devices */
-	drr_kernel[i] = clCreateKernel(program[i], "kernel_drr", &error);
+	//drr_kernel[i] = clCreateKernel(program[i], "kernel_drr", &error);
+	drr_kernel[0] = clCreateKernel(program, "kernel_drr", &error);
 	oclCheckError(error, CL_SUCCESS);
+#if defined (commentout)
     }
+#endif
 
     /* Wait for all queues to finish */
     for (cl_uint i = 0; i < device_count; i++)
@@ -545,7 +558,8 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     /* Creates the kernel object */
     cl_kernel preprocess_kernel[MAX_GPU_COUNT];
     for (cl_uint i = 0; i < device_count; i++) {
-	preprocess_kernel[i] = clCreateKernel(program[i], "preprocess_attenuation_cl", &error);
+	//preprocess_kernel[i] = clCreateKernel(program[i], "preprocess_attenuation_cl", &error);
+	preprocess_kernel[i] = clCreateKernel (program, "preprocess_attenuation_cl", &error);
 	oclCheckError(error, CL_SUCCESS);
     }
 
@@ -686,7 +700,8 @@ void preprocess_attenuation_and_drr_render_volume_cl (
      ****************************************************************/
 
     for (cl_uint i = 0; i < device_count; i++) {
-	clReleaseProgram(program[i]);
+	//clReleaseProgram(program[i]);
+	clReleaseProgram(program);
 	clReleaseCommandQueue(command_queue[i]);
 	clReleaseContext(context[i]);
     }

@@ -58,8 +58,6 @@ void
 opencl_open_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
-    size_t device_list_size;
-    cl_device_id *devices;
     cl_platform_id platform;
     cl_context_properties cps[3];
     cl_context_properties* cprops;
@@ -96,22 +94,22 @@ opencl_open_device (Opencl_device *ocl_dev)
 	CL_CONTEXT_DEVICES, 
 	0, 
 	NULL, 
-	&device_list_size);
+	&ocl_dev->device_list_size);
     if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clGetContextInfo\n");
     }
-    if (device_list_size == 0) {
+    if (ocl_dev->device_list_size == 0) {
 	print_and_exit ("No devices found (clGetContextInfo)\n");
     }
 
-    devices = (cl_device_id *) malloc (device_list_size);
+    ocl_dev->devices = (cl_device_id *) malloc (ocl_dev->device_list_size);
 
     /* Get the device list data */
     status = clGetContextInfo (
 	ocl_dev->context, 
 	CL_CONTEXT_DEVICES, 
-	device_list_size, 
-	devices, 
+	ocl_dev->device_list_size, 
+	ocl_dev->devices, 
 	NULL);
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clGetContextInfo\n");
@@ -122,7 +120,7 @@ opencl_open_device (Opencl_device *ocl_dev)
     plm_timer_start (&timer);
     ocl_dev->command_queue = clCreateCommandQueue (
 	ocl_dev->context, 
-	devices[0], 
+	ocl_dev->devices[0], 
 	0, 
 	&status);
     if (status != CL_SUCCESS) { 
@@ -144,6 +142,7 @@ opencl_close_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clReleaseContext\n");
     }
+    free (ocl_dev->devices);
 }
 
 #if defined (commentout)
@@ -177,35 +176,6 @@ opencl_close_device (Opencl_device *ocl_dev)
 
 
 #if defined (commentout)
-    /////////////////////////////////////////////////////////////////
-    // Load CL file, build CL program object, create CL kernel object
-    /////////////////////////////////////////////////////////////////
-    const char * filename  = "opencl_test.cl";
-    std::string  sourceStr = convertToString(filename);
-    const char * source    = sourceStr.c_str();
-    size_t sourceSize[]    = { strlen(source) };
-
-    program = clCreateProgramWithSource(
-	context, 
-	1, 
-	&source,
-	sourceSize,
-	&status);
-    if(status != CL_SUCCESS) 
-    { 
-	std::cout<<
-	    "Error: Loading Binary into cl_program \
-			   (clCreateProgramWithBinary)\n";
-	return 1;
-    }
-
-    /* create a cl program executable for all the devices specified */
-    status = clBuildProgram(program, 1, devices, NULL, NULL, NULL);
-    if(status != CL_SUCCESS) 
-    { 
-	std::cout<<"Error: Building Program (clBuildProgram)\n";
-	return 1; 
-    }
 
     /* get a kernel object handle for a kernel with the given name */
     kernel = clCreateKernel(program, "templateKernel", &status);
@@ -244,9 +214,13 @@ opencl_load_program (
 	&buf_cstr, 
 	&len, 
 	&rc);
+    opencl_check_error (rc, "Error calling clCreateProgramWithSource.");
 
     /* Free the string with file contents */
     delete buf;
+
+    rc = clBuildProgram (program, 1, ocl_dev->devices, NULL, NULL, NULL);
+    opencl_check_error (rc, "Error calling clBuildProgram.");
 
     return program;
 }
