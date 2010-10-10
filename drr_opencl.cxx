@@ -147,7 +147,7 @@ void drr_render_volume_perspective_cl (
 
     /* Count device time */
     for (cl_uint i = 0; i < device_count; i++) {
-	img_total[i] += executionTime(img_event[i]);
+	img_total[i] += opencl_timer (img_event[i]);
     }
 
     /* Sets drr kernel arguments */
@@ -188,7 +188,7 @@ void drr_render_volume_perspective_cl (
 
     /* Count kernel time */
     for (cl_uint i = 0; i < device_count; i++)
-	drr_total[i] += executionTime(drr_event[i]);
+	drr_total[i] += opencl_timer (drr_event[i]);
 
     /* Copy img/multispectral from device to host */
     for (cl_uint i = 0; i < device_count; i++) {
@@ -202,7 +202,7 @@ void drr_render_volume_perspective_cl (
 
     /* Count device time */
     for (cl_uint i = 0; i < device_count; i++) {
-	img_total[i] += executionTime(img_event[i]);
+	img_total[i] += opencl_timer (img_event[i]);
     }
 }
 
@@ -394,12 +394,12 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     printf ("Hello world\n");
     opencl_open_device (&ocl_dev);
 
-    return;
-
     cl_program program;
     program = opencl_load_program (&ocl_dev, "drr_opencl.cl");
     //program = opencl_load_program (&ocl_dev, "opencl_test.cl");
     printf ("load_program complete\n");
+
+    return;
 
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
@@ -536,7 +536,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Count host to device time */
     for (cl_uint i = 0; i < device_count; i++)
-	vol_total[i] += executionTime(vol_event[i]);
+	vol_total[i] += opencl_timer (vol_event[i]);
 
 #if defined (DRR_PREPROCESS_ATTENUATION)
     /* Create variables for preprocess kernel and memory timing */
@@ -572,7 +572,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
 	/* Count host to device time */
 	for (cl_uint i = 0; i < device_count; i++)
-	    vol_total[i] += executionTime(vol_event[i]);
+	    vol_total[i] += opencl_timer (vol_event[i]);
     }
 
     /* Creates the kernel object */
@@ -611,7 +611,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Count kernel time */
     for (cl_uint i = 0; i < device_count; i++)
-	preprocess_total[i] += executionTime(preprocess_event[i]);
+	preprocess_total[i] += opencl_timer (preprocess_event[i]);
 
     /* Release kernels and memory */
     for (cl_uint i = 0; i < device_count; i++) {

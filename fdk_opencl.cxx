@@ -374,7 +374,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
 	/* Count host to device time */
 	for (cl_uint i = 0; i < device_count; i++)
-	    img_total[i] += executionTime(img_event[i]);
+	    img_total[i] += opencl_timer (img_event[i]);
 
 	/* Set fdk kernel arguments */
 	for (cl_uint i = 0; i < device_count; i++) {
@@ -412,7 +412,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
 	/* Count fdk kernel time */
 	for (cl_uint i = 0; i < device_count; i++) {
-	    fdk_total[i] += executionTime(fdk_event[i]);
+	    fdk_total[i] += opencl_timer (fdk_event[i]);
 	}
 
 	/* Free the current image */
@@ -442,7 +442,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
     /* Count hu kernel time */
     for (cl_uint i = 0; i < device_count; i++)
-	hu_total[i] += executionTime(hu_event[i]);
+	hu_total[i] += opencl_timer (hu_event[i]);
 
     /* Copy reconstructed volume from device to host */
     for (cl_uint i = 0; i < device_count; i++) {
@@ -456,7 +456,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
     /* Count device to host time */
     for (cl_uint i = 0; i < device_count; i++)
-	vol_total[i] += executionTime(vol_event[i]);
+	vol_total[i] += opencl_timer (vol_event[i]);
 
     for (cl_uint i = 0; i < device_count; i++) {
 	/* Release kernels */

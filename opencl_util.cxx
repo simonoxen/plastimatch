@@ -86,69 +86,34 @@ opencl_select_platform (void)
     return platform;
 }
 
-
-cl_int
-opencl_enumerate_devices (Opencl_device *ocl_dev)
+void
+opencl_dump_devices (Opencl_device *ocl_dev)
 {
     cl_int status;
-    cl_device_id *devices;
 
-    /* Get number of devices of type GPU on this platform */
-    status = clGetDeviceIDs (
-	ocl_dev->platform, 
-	CL_DEVICE_TYPE_GPU, 
-	0, 
-	NULL, 
-	&ocl_dev->device_count);
-    if (status != CL_SUCCESS) return status;
-
-    printf ("Device count == %d\n", ocl_dev->device_count);
-
-    /* Get list of device ids */
-    devices = (cl_device_id *) malloc (
-	ocl_dev->device_count * sizeof(cl_device_id));
-    status = clGetDeviceIDs (
-	ocl_dev->platform, 
-	CL_DEVICE_TYPE_GPU, 
-	ocl_dev->device_count, 
-	devices, 
-	NULL);
-    if (status != CL_SUCCESS) {
-	free (devices);
-	return status;
-    }
-
+    printf ("Num_devices = %d\n", ocl_dev->device_count);
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
 	char device_name[256];
 	status = clGetDeviceInfo (
-	    devices[i], 
+	    ocl_dev->devices[i], 
 	    CL_DEVICE_NAME, 
 	    sizeof(device_name), 
 	    device_name, 
 	    NULL);
 	opencl_check_error (status, "Error with clGetDeviceInfo()");
-
-	printf ("Device [%d] = %s\n", i, device_name);
+	printf ("    Device [%d] = %s\n", i, device_name);
     }
-
-    /* What can I do with it once I have it??? */
-    free (devices);
-    return CL_SUCCESS;
 }
 
-void
-opencl_open_device (Opencl_device *ocl_dev)
+/* Flavor a creates one context with multiple devices in it */
+cl_int
+opencl_create_context_a (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
     cl_context_properties cps[3];
     cl_context_properties* cprops;
-    Timer timer;
-    size_t device_list_size;
+    cl_uint device_list_size;
 
-    printf ("In opencl_open_device\n");
-
-    /* Select platform */
-    ocl_dev->platform = opencl_select_platform ();
     if (ocl_dev->platform) {
 	cps[0] = CL_CONTEXT_PLATFORM;
 	cps[1] = (cl_context_properties) ocl_dev->platform;
@@ -158,12 +123,10 @@ opencl_open_device (Opencl_device *ocl_dev)
 	cprops = NULL;
     }
 
-    /* This doesn't do anything yet, just print out devices */
-    opencl_enumerate_devices (ocl_dev);
-
-    /* Create context */
-    plm_timer_start (&timer);
-    ocl_dev->context = clCreateContextFromType (
+    /* Create context from platform */
+    ocl_dev->context_count = 1;
+    ocl_dev->contexts = (cl_context*) malloc (sizeof(cl_context));
+    ocl_dev->contexts[0] = clCreateContextFromType (
 	cprops, 
 	CL_DEVICE_TYPE_GPU, 
 	NULL, 
@@ -172,12 +135,10 @@ opencl_open_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) {
 	print_and_exit ("Error in clCreateContextFromType\n");
     }
-    printf ("--\nCreate context: %f sec\n", plm_timer_report (&timer));
 
     /* Get size of device list */
-    plm_timer_start (&timer);
     status = clGetContextInfo (
-	ocl_dev->context, 
+	ocl_dev->contexts[0], 
 	CL_CONTEXT_DEVICES, 
 	0, 
 	NULL, 
@@ -189,15 +150,11 @@ opencl_open_device (Opencl_device *ocl_dev)
 	print_and_exit ("No devices found (clGetContextInfo)\n");
     }
 
+    /* Get the device list data */
     ocl_dev->device_count = device_list_size / sizeof(cl_device_id);
     ocl_dev->devices = (cl_device_id *) malloc (device_list_size);
-
-    printf ("device_list_size = %d\n", device_list_size);
-    printf ("num_devices (inferred) = %d\n", ocl_dev->device_count);
-
-    /* Get the device list data */
     status = clGetContextInfo (
-	ocl_dev->context, 
+	ocl_dev->contexts[0], 
 	CL_CONTEXT_DEVICES, 
 	device_list_size, 
 	ocl_dev->devices, 
@@ -205,33 +162,112 @@ opencl_open_device (Opencl_device *ocl_dev)
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clGetContextInfo\n");
     }
-    printf ("Get context info: %f sec\n", plm_timer_report (&timer));
 
     /* Print out a little status about the devices */
-    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
-	char device_name[256];
-	status = clGetDeviceInfo (
-	    ocl_dev->devices[i], 
-	    CL_DEVICE_NAME, 
-	    sizeof(device_name), 
-	    device_name, 
-	    NULL);
-	opencl_check_error (status, "Error with clGetDeviceInfo()");
+    opencl_dump_devices (ocl_dev);
 
-	printf ("Device [%d] = %s\n", i, device_name);
-    }
-
-    /* Create OpenCL command queue */
-    plm_timer_start (&timer);
-    ocl_dev->command_queue = clCreateCommandQueue (
-	ocl_dev->context, 
+    /* Create command queue */
+    ocl_dev->command_queues = (cl_command_queue*) malloc (
+	sizeof(cl_command_queue));
+    ocl_dev->command_queues[0] = clCreateCommandQueue (
+	ocl_dev->contexts[0], 
 	ocl_dev->devices[0], 
 	0, 
 	&status);
     if (status != CL_SUCCESS) { 
 	print_and_exit ("Error in clCreateCommandQueue\n");
     }
-    printf ("Create command queue: %f sec\n", plm_timer_report (&timer));
+
+    return CL_SUCCESS;
+}
+
+/* Flavor b creates multiple contexts, each with one device */
+cl_int
+opencl_create_context_b (Opencl_device *ocl_dev)
+{
+    cl_int status;
+    cl_context_properties cps[3];
+    cl_context_properties* cprops;
+
+    if (ocl_dev->platform) {
+	cps[0] = CL_CONTEXT_PLATFORM;
+	cps[1] = (cl_context_properties) ocl_dev->platform;
+	cps[2] = 0;
+	cprops = cps;
+    } else {
+	cprops = NULL;
+    }
+
+    /* Get number of devices of type GPU on this platform */
+    status = clGetDeviceIDs (
+	ocl_dev->platform, 
+	CL_DEVICE_TYPE_GPU, 
+	0, 
+	NULL, 
+	&ocl_dev->device_count);
+    if (status != CL_SUCCESS) return status;
+
+    /* Get list of device ids */
+    ocl_dev->devices = (cl_device_id *) malloc (
+	ocl_dev->device_count * sizeof(cl_device_id));
+    status = clGetDeviceIDs (
+	ocl_dev->platform, 
+	CL_DEVICE_TYPE_GPU, 
+	ocl_dev->device_count, 
+	ocl_dev->devices, 
+	NULL);
+    if (status != CL_SUCCESS) {
+	return status;
+    }
+
+    /* Print out a little status about the devices */
+    opencl_dump_devices (ocl_dev);
+
+    /* Create context and command queue for each device */
+    ocl_dev->context_count = ocl_dev->device_count;
+    ocl_dev->contexts = (cl_context *) malloc (
+	ocl_dev->context_count * sizeof(cl_context));
+    ocl_dev->command_queues = (cl_command_queue *) malloc (
+	ocl_dev->context_count * sizeof(cl_command_queue));
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++)
+    {
+	ocl_dev->contexts[i] = clCreateContext (
+	    cprops, 
+	    1, 
+	    &ocl_dev->devices[i], 
+	    NULL, 
+	    NULL, 
+	    &status);
+	opencl_check_error (status, "clCreateContext");
+
+	ocl_dev->command_queues[i] = clCreateCommandQueue (
+	    ocl_dev->contexts[i], 
+	    ocl_dev->devices[i], 
+	    CL_QUEUE_PROFILING_ENABLE, 
+	    &status);
+	opencl_check_error (status, "clCreateContext");
+    }
+
+    return CL_SUCCESS;
+}
+
+void
+opencl_open_device (Opencl_device *ocl_dev)
+{
+    cl_int status = 0;
+
+    printf ("In opencl_open_device\n");
+
+    /* Select platform */
+    ocl_dev->platform = opencl_select_platform ();
+
+    /* ATI examples suggest you can try to create a context and 
+       command queue even if platform is NULL.  So we don't fail (yet) 
+       if platform is NULL here.  */
+
+    /* Create OpenCL context(s) and command queue(s) */
+    //status = opencl_create_context_a (ocl_dev);
+    status = opencl_create_context_b (ocl_dev);
 }
 
 void
@@ -239,15 +275,19 @@ opencl_close_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
 
-    status = clReleaseCommandQueue (ocl_dev->command_queue);
-    if (status != CL_SUCCESS) {
-	print_and_exit ("Error in clReleaseCommandQueue\n");
-    }
-    status = clReleaseContext (ocl_dev->context);
-    if (status != CL_SUCCESS) {
-	print_and_exit ("Error in clReleaseContext\n");
+    for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
+	status = clReleaseCommandQueue (ocl_dev->command_queues[i]);
+	if (status != CL_SUCCESS) {
+	    print_and_exit ("Error in clReleaseCommandQueue\n");
+	}
+	status = clReleaseContext (ocl_dev->contexts[i]);
+	if (status != CL_SUCCESS) {
+	    print_and_exit ("Error in clReleaseContext\n");
+	}
     }
     free (ocl_dev->devices);
+    free (ocl_dev->contexts);
+    free (ocl_dev->command_queues);
 }
 
 #if defined (commentout)
@@ -314,7 +354,7 @@ opencl_load_program (
     buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
     program = clCreateProgramWithSource (
-	ocl_dev->context, 
+	ocl_dev->contexts[0], 
 	1, 
 	&buf_cstr, 
 	&len, 
@@ -334,14 +374,17 @@ opencl_load_program (
     return program;
 }
 
-cl_ulong executionTime(cl_event &event)
+cl_ulong 
+opencl_timer (cl_event &event)
 {
-	cl_ulong start, end;
+    cl_ulong start, end;
 
-	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
-	clGetEventProfilingInfo(event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+    clGetEventProfilingInfo (
+	event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+    clGetEventProfilingInfo (
+	event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
 
-	return (end - start);
+    return (end - start);
 }
 
 void 

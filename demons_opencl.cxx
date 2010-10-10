@@ -268,7 +268,7 @@ demons_opencl (
 	clFinish(command_queue);
 
 	/* Calculate kernel runtime */
-	volume_calc_grad_total += executionTime(volume_calc_grad_event);
+	volume_calc_grad_total += opencl_timer (volume_calc_grad_event);
 
 	/* Create volume memory buffer on each device */
 	g_moving_grad_mag = clCreateBuffer(context, CL_MEM_WRITE_ONLY | CL_MEM_ALLOC_HOST_PTR, vol_size, NULL, &error);
@@ -300,9 +300,9 @@ demons_opencl (
 	clFinish(command_queue);
 
 	/* Calculate global/image copy runtime */
-	copy_total += executionTime(copy_x_event);
-	copy_total += executionTime(copy_y_event);
-	copy_total += executionTime(copy_z_event);
+	copy_total += opencl_timer (copy_x_event);
+	copy_total += opencl_timer (copy_y_event);
+	copy_total += opencl_timer (copy_z_event);
 
 	/*
 	Create gradient magnitude image 
@@ -327,7 +327,7 @@ demons_opencl (
 	clFinish(command_queue);
 
 	/* Calculate kernel runtime */
-	moving_grad_mag_total += executionTime(moving_grad_mag_event);
+	moving_grad_mag_total += opencl_timer (moving_grad_mag_event);
 
 	/* Create texture memory buffer on each device */
 	t_moving_grad_mag_img = clCreateImage3D(context, CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, &texture_format, moving->dim[0], moving->dim[1], moving->dim[2], 0, 0, NULL, &error);
@@ -355,7 +355,7 @@ demons_opencl (
 	oclCheckError(error, CL_SUCCESS);
 
 	/* Calculate global/image copy runtime */
-	copy_total += executionTime(copy_x_event);
+	copy_total += opencl_timer (copy_x_event);
 
 	/* Validate filter widths */
 	validate_filter_widths (fw, parms->filter_width);
@@ -550,12 +550,12 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate memory runtimes */
-		global_total += executionTime(global_x_event);
-		global_total += executionTime(global_x_event);
-		global_total += executionTime(global_x_event);
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
+		global_total += opencl_timer (global_x_event);
+		global_total += opencl_timer (global_x_event);
+		global_total += opencl_timer (global_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
 
 		/* Wait for command queue to finish */
 		clFinish(command_queue);
@@ -568,7 +568,7 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate kernel runtime */
-		estimate_total += executionTime(estimate_event);
+		estimate_total += opencl_timer (estimate_event);
 
 		num_elements = moving->dim[0] * moving->dim[1] * moving->dim[2];
 		while (num_elements > 1) {
@@ -585,7 +585,7 @@ demons_opencl (
 			clFinish(command_queue);
 
 			/* Calculate kernel runtime */
-			reduction_total += executionTime(reduction_event);
+			reduction_total += opencl_timer (reduction_event);
 
 			/* Invoke all kernels */
 			error = clEnqueueNDRangeKernel(command_queue, reduction_float_kernel, 1, NULL, &reduction_global_work_size, &reduction_local_work_size, 0, NULL, &reduction_event);
@@ -595,7 +595,7 @@ demons_opencl (
 			clFinish(command_queue);
 
 			/* Calculate kernel runtime */
-			reduction_total += executionTime(reduction_event);
+			reduction_total += opencl_timer (reduction_event);
 
 			num_elements = (num_elements + (2 * BLOCK_SIZE) - 1) / (BLOCK_SIZE * 2);
 		}
@@ -626,9 +626,9 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate memory runtimes */
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
 
 		/* Wait for command queue to finish */
 		clFinish(command_queue);
@@ -641,7 +641,7 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate kernel runtime */
-		convolve_total += executionTime(convolve_event);
+		convolve_total += opencl_timer (convolve_event);
 
 		/* Copy from global memory buffer to image memory buffer */
 		error = clEnqueueCopyBufferToImage(command_queue, g_vf_smooth_x_img, t_vf_smooth_x_img, 0, vol_origin, vol_region, 0, NULL, &copy_x_event);
@@ -653,9 +653,9 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate memory runtimes */
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
 
 		/* Wait for command queue to finish */
 		clFinish(command_queue);
@@ -668,7 +668,7 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate kernel runtime */
-		convolve_total += executionTime(convolve_event);
+		convolve_total += opencl_timer (convolve_event);
 
 		/* Create volume buffer */
 		error = clEnqueueCopyBufferToImage(command_queue, g_vf_est_x_img, t_vf_est_x_img, 0, vol_origin, vol_region, 0, NULL, &copy_x_event);
@@ -680,9 +680,9 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate memory runtimes */
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
-		copy_total += executionTime(copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
+		copy_total += opencl_timer (copy_x_event);
 
 		/* Wait for command queue to finish */
 		clFinish(command_queue);
@@ -695,7 +695,7 @@ demons_opencl (
 		clFinish(command_queue);
 
 		/* Calculate kernel runtime */
-		convolve_total += executionTime(convolve_event);
+		convolve_total += opencl_timer (convolve_event);
 	}
 
 	/* Copy global memory buffers to host on each device */
@@ -708,9 +708,9 @@ demons_opencl (
 	clFinish(command_queue);
 
 	/* Calculate memory runtimes */
-	global_total += executionTime(global_x_event);
-	global_total += executionTime(global_y_event);
-	global_total += executionTime(global_z_event);
+	global_total += opencl_timer (global_x_event);
+	global_total += opencl_timer (global_y_event);
+	global_total += opencl_timer (global_z_event);
 
 	/* Combine linear memory to interleaved  */
 	for (int i = 0; i < vf_smooth->npix; i++) {

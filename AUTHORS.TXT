@@ -4,7 +4,8 @@ MGH: Greg Sharp, Ziji Wu, Marta Peroni, Justin Lee, Rui Li,
     Nadya Shusharina, Joost Verburg
 
 Drexel: Nagarajan Kandasamy, Harman Singh, Christopher Sagedy, 
-    James Shackleford, Chatura Atapattu
+    James Shackleford, Chatura Atapattu, Dustin Houck, Ronald O'Brien, 
+    Michael Partel
 
 OHSU: Anthony Eden, Junan Zhang
 

@@ -21,8 +21,9 @@ struct opencl_device {
     cl_platform_id platform;
     cl_uint device_count;
     cl_device_id *devices;
-    cl_context context;
-    cl_command_queue command_queue;
+    cl_uint context_count;
+    cl_context *contexts;
+    cl_command_queue *command_queues;
 };
 
 #if defined __cplusplus
@@ -43,7 +44,7 @@ void
 opencl_close_device (Opencl_device *ocl_dev);
 gpuit_EXPORT
 cl_ulong
-executionTime(cl_event &event);
+opencl_timer (cl_event &event);
 gpuit_EXPORT
 void
 opencl_check_error (cl_int return_code, const char *msg);
