@@ -342,9 +342,9 @@ METHOD TWO:
 
    Slicer3-ext/plastimatch-slicer-build/lib/Slicer3/Plugins/Release
 
-#. Plugins get uploaded here::
+#. Plugins get uploaded here:
 
-     http://ext.slicer.org/ext/trunk
+   http://ext.slicer.org/ext/trunk
 
    Your plugin gets put in one of the subdirectories, organized by 
    the platform and the svn version number of slicer.  
