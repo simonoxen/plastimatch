@@ -378,15 +378,28 @@ opencl_load_programs (
 	    &buf_cstr, 
 	    &len, 
 	    &status);
-	opencl_check_error (status, "Error calling clCreateProgramWithSource.");
+	opencl_check_error (status, 
+	    "Error calling clCreateProgramWithSource.");
 
-	status = clBuildProgram (
-	    ocl_dev->programs[i], 
-	    ocl_dev->device_count, 
-	    ocl_dev->devices, 
-	    NULL, 
-	    NULL, 
-	    NULL);
+	/* Here we need to find the devices associated with this context,
+	   which depends on if method a or b was used. */
+	if (ocl_dev->context_count == 1) {
+	    status = clBuildProgram (
+		ocl_dev->programs[i], 
+		ocl_dev->device_count, 
+		ocl_dev->devices, 
+		NULL, 
+		NULL, 
+		NULL);
+	} else {
+	    status = clBuildProgram (
+		ocl_dev->programs[i], 
+		1, 
+		&ocl_dev->devices[i], 
+		NULL, 
+		NULL, 
+		NULL);
+	}
 	if (status != CL_SUCCESS) {
 	    opencl_dump_build_log (ocl_dev, ocl_dev->programs[i]);
 	    opencl_check_error (status, "Error calling clBuildProgram.");
