@@ -5,6 +5,7 @@
 #define _file_util_h_
 
 #include "plm_config.h"
+#include "bstrwrap.h"
 #include "plm_int.h"
 
 #if (_WIN32)
@@ -34,9 +35,12 @@ void strip_extension (char* filename);
 gpuit_EXPORT
 char*
 file_util_dirname (const char *filename);
+
+#if defined __cplusplus
 gpuit_EXPORT
-char* 
+CBString*
 file_load (const char* filename);
+#endif
 
 #if defined __cplusplus
 }

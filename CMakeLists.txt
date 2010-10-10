@@ -618,6 +618,7 @@ ENDIF (BROOK_FOUND)
 ##  GPUIT/PLASTIMATCH SOURCE FILES
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_SRC
+  bstring_util.cxx bstring_util.h
   bspline.c bspline.h
   bspline_regularize.c bspline_regularize.h
   bspline_landmarks.c bspline_landmarks.h
@@ -628,14 +629,13 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_nlopt.c bspline_optimize_nlopt.h
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
-  #bstrlib.c bstrlib.h
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
   dir_list.c dir_list.h
   drr.c drr.h
   drr_trilin.c drr_trilin.h
-  file_util.c file_util.h
+  file_util.cxx file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
   logfile.c logfile.h
@@ -740,7 +740,6 @@ ENDIF(F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
-  bstring_util.cxx bstring_util.h
   bspline_rbf.cxx bspline_rbf.h
   cxt_apply_dicom.cxx cxt_apply_dicom.h 
   cxt_io.cxx cxt_io.h 

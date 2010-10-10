@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #endif
 #include <sys/stat.h>
+
+#include "bstring_util.h"
 #include "file_util.h"
 
 #if (_WIN32)
@@ -154,40 +156,21 @@ strip_extension (char* filename)
     }
 }
 
-char* 
+CBString*
 file_load (const char* filename)
 {
     FILE *fp;
-    long len;
-    size_t bytes_read;
-    char *buf;
+    CBString *buf;
 
     fp = fopen (filename, "rb");
     if (!fp) {
 	return 0;
     }
 
-    /* Get file size */
-    fseek (fp, 0, SEEK_END); 
-    len = ftell (fp);
-    
-    /* Malloc the buffer */
-    buf = (char*) malloc (len * sizeof(char));
-    if (!buf) {
-	fclose (fp);
-	return 0;
-    }
-
     /* Slurp the file into the buffer */
-    fseek (fp, 0, SEEK_SET);
-    bytes_read = fread (buf, sizeof(char), len, fp);
+    buf = new CBString ();
+    buf->read ((bNread) fread, fp);
     fclose (fp);
-
-    /* Check return code from fread() */
-    if (bytes_read != len) {
-	free (buf);
-	return 0;
-    }
 
     return buf;
 }

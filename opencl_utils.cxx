@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>
+
+#include "bstring_util.h"
+#include "file_util.h"
 #include "opencl_utils.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
@@ -217,26 +220,35 @@ opencl_close_device (Opencl_device *ocl_dev)
 
 #endif
 
-char* 
+cl_program
 opencl_load_program (
     Opencl_device *ocl_dev, 
     const char* filename
 )
 {
-    char *buf;
+    cl_int rc;
+    cl_program program;
+    CBString *buf;
+    const char *buf_cstr;
+    size_t len;
 
-#if defined (commentout)
     /* Load the file contents into a string */
-    buf = file_load_with_len (filename, &len);
+    buf = file_load (filename);
 
     /* Do the OpenCL stuff */
+    buf_cstr = (const char*) buf;
+    len = (size_t) buf->length ();
     program = clCreateProgramWithSource (
 	ocl_dev->context, 
 	1, 
-	&source,
-	sourceSize,
-	&status);
-#endif
+	&buf_cstr, 
+	&len, 
+	&rc);
+
+    /* Free the string with file contents */
+    delete buf;
+
+    return program;
 }
 
 cl_ulong executionTime(cl_event &event)
