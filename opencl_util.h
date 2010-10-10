@@ -52,6 +52,9 @@ opencl_load_program (
     Opencl_device *ocl_dev, 
     const char* filename
 );
+gpuit_EXPORT
+void 
+opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program);
 
 #if defined __cplusplus
 }
