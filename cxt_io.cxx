@@ -247,6 +247,8 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
     }
     printf ("Mostly done.\n");
     fclose (fp);
+
+    cxt->debug ();
     return;
  not_successful:
     fclose (fp);
