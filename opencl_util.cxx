@@ -220,7 +220,7 @@ opencl_load_program (
     delete buf;
 
     rc = clBuildProgram (program, 1, ocl_dev->devices, NULL, NULL, NULL);
-    if (return_code != CL_SUCCESS) {
+    if (rc != CL_SUCCESS) {
 	opencl_dump_build_log (ocl_dev, program);
 	opencl_check_error (rc, "Error calling clBuildProgram.");
     }
@@ -242,7 +242,7 @@ void
 opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
 {
     char buf[16*1024];
-    clGetProgramBuildInfo (program, ocl_dev->device, CL_PROGRAM_BUILD_LOG, 
+    clGetProgramBuildInfo (program, ocl_dev->devices[0], CL_PROGRAM_BUILD_LOG, 
 	sizeof(buf), buf, NULL);
     printf ("Build log:\n%s\n", buf);
 }
