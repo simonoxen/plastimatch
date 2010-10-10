@@ -4,10 +4,10 @@ Getting started
 Getting help
 ------------
 
-Don't panic!  -Douglas Adams
+Don't panic!
 
 If you have problems downloading or installing plastimatch, 
-please send an email to our list.  We're friendly people.
+please send an email to our mailing list.  We're friendly people.
 
   http://groups.google.com/group/plastimatch
 

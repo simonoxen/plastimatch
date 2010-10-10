@@ -28,9 +28,7 @@ format.  The command line usage is::
   -z "s1 s2"        Set the physical size of imager (in mm)
   -w "r1 r2 c1 c2"  Only produce image for pixes in window (in pix)
   -t outformat      Select output format: pgm, pfm or raw
-  -S                Output multispectral output files
-  -i exact          Use exact trilinear interpolation
-  -i approx         Use approximate trilinear interpolation
+  -i algorithm      Choose algorithm {exact,uniform}
   -o "o1 o2 o3"     Set isocenter position
   -I infile         Set the input file in mha format
   -O outprefix      Generate output files using the specified prefix

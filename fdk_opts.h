@@ -43,12 +43,9 @@ struct fdk_options {
     char* output_file;
 
     int full_fan;            //Full_fan=1, Half_fan=0;
-    int coronal;
-    int sagittal;
-    char* sub_dir;
     char* Full_normCBCT_name;
     int Full_radius;
-    char*Half_normCBCT_name;
+    char* Half_normCBCT_name;
     int Half_radius;
 };
 

@@ -166,7 +166,7 @@ print_usage (void)
 	"   --input-ss-list file\n"
 	"   --input-dose file\n"
 	"   --output-csv file\n"
-	"   --input-uints {gy,cgy}\n"
+	"   --input-units {gy,cgy}\n"
 	"   --cumulative\n"
 	"   --num-bins\n"
 	"   --bin-width\n"

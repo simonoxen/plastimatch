@@ -22,10 +22,7 @@ print_usage (void)
 	" -z \"s1 s2 s3\"          Physical size of the reconstruction (in mm)\n"
 	" -I indir               The input directory\n"
 	" -O outfile             The output file\n"
-	" -sb \". (default)\" The subfolder with *.raw files\n"
-	" -F \"F(f)ull (default)\"  or \"H(alf)\"     Full/Half fan options\n"
-	" -cor                   Turn on Coronal output\n"
-	" -sag                   Turn on Sagittal output\n"
+        " -F {F,H}               Full or half fan bow-tie filter correction\n"
     );
     exit (1);
 }
@@ -50,9 +47,6 @@ set_default_options (Fdk_options* options)
     options->output_file = "output.mha";
 
     options->full_fan=1;
-    options->coronal=0;
-    options->sagittal=0;
-    options->sub_dir = ".";
     options->Full_normCBCT_name="Full_norm.mh5";
     options->Full_radius=120;
     options->Half_normCBCT_name="Half_norm.mh5";
@@ -110,9 +104,6 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	}
-	else if (!strcmp (argv[i], "-cor")) {
-	    options->coronal=1;
-	}
 	else if (!strcmp (argv[i], "-f")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
 		fprintf(stderr, "option %s requires an argument\n", argv[i]);
@@ -135,12 +126,15 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    if (!strcmp(argv[i],"FULL")||!strcmp(argv[i],"full")|!strcmp(argv[i],"Full"))
-		options->full_fan=1;
-	    else if (!strcmp(argv[i],"HALF")||!strcmp(argv[i],"half")||!strcmp(argv[i],"Half"))
-		options->full_fan=0;
-	    else 
+	    if (argv[i][0] == 'F' ||argv[i][0] == 'f') {
+		options->full_fan = 1;
+	    }
+	    else if (argv[i][0] == 'H' ||argv[i][0] == 'h') {
+		options->full_fan = 0;
+	    }
+	    else {
 		print_usage ();
+	    }
 	}
 	else if (!strcmp (argv[i], "-I")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -185,17 +179,6 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    if (rc != 1) {
 		print_usage ();
 	    }
-	}
-	else if (!strcmp (argv[i], "-sag")) {
-	    options->sagittal=1;
-	}
-	else if (!strcmp (argv[i], "-sb")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    options->sub_dir = strdup (argv[i]);
 	}
 	else if (!strcmp (argv[i], "-z")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

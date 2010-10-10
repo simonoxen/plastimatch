@@ -59,32 +59,3 @@ convert_to_hu (Volume* vol, Fdk_options* options)
     }
 }
 
-void
-write_coronal_sagittal (Fdk_options* options, Volume* vol)
-{
-    if (options->coronal) {
-	Volume *cor;
-	char fn[_MAX_PATH];
-
-	strcpy (fn, options->output_file);
-	strip_extension (fn);
-	strcat (fn, "-cor.mh5");
-
-	cor = volume_axial2coronal (vol);
-	write_mha (fn, cor);
-	volume_destroy (cor);
-    }
-
-    if (options->sagittal) {
-	Volume *sag;
-	char fn[_MAX_PATH];
-
-	strcpy (fn, options->output_file);
-	strip_extension (fn);
-	strcat (fn, "-sag.mh5");
-
-	sag = volume_axial2sagittal (vol);
-	write_mha (fn, sag);
-	volume_destroy (sag);
-    }
-}

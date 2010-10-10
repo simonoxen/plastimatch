@@ -15,7 +15,8 @@ static void
 print_usage (void)
 {
     printf (
-	"Usage: plastimatch add [options]"
+	//	"Usage: plastimatch add [options]"
+	"Usage: plastimatch add"
 	" input_file [input_file ...] output_file\n"
     );
     exit (1);

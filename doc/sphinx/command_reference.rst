@@ -12,16 +12,32 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
   $ plastimatch
-  plastimatch version 1.4-beta (1008)
+  plastimatch version 1.4-beta (1607)
   Usage: plastimatch command [options]
   Commands:
-    adjust        compare     
-    convert       diff        
-    mask          register    
-    resample      stats       
-    warp        
+    add           adjust        crop          compare     
+    compose       convert       diff          dvh         
+    header        mask          register      resample    
+    slice         stats         warp        
+
   For detailed usage of a specific command, type:
     plastimatch command
+
+plastimatch add
+---------------
+The *add* command is used to add one or more images together and create 
+an output image.
+
+The command line usage is given as follows::
+
+  Usage: plastimatch add input_file [input_file ...] output_file
+
+Example
+^^^^^^^
+To add together files 01.mha, 02.mha and 03.mha, and save the result 
+in the file output.mha, you can run the following command::
+
+  plastimatch add 01.mha 02.mha 03.mha output.mha
 
 plastimatch adjust
 ------------------
@@ -36,10 +52,12 @@ The command line usage is given as follows::
       --input=image_in
       --output=image_out
   Optional:
+      --output-type={uchar,short,ushort,ulong,float}
+      --scale="min max"
+      --ab-scale="ab nfx ndf"       (Alpha-beta scaling)
+      --stretch="min max"
       --truncate-above=value
       --truncate-below=value
-      --stretch="min max"
-      --output-type={uchar,short,ushort,ulong,float}
 
 Example
 ^^^^^^^
@@ -49,6 +67,31 @@ range [-1000,1000], and then map the intensities to the range [0,1]::
   plastimatch adjust --input infile.nrrd --output outfile.nrrd \
     --truncate-above 1000 --truncate-below -1000 \
     --stretch "0 1"
+
+plastimatch crop
+----------------
+The *crop* command crops out a rectangular portion of the input file, 
+and saves that portion to an output file.
+The command line usage is given as follows::
+
+  Usage: plastimatch crop [options]
+  Required:
+      --input=image_in
+      --output=image_out
+      --voxels="x-min x-max y-min y-max z-min z-max" (integers)
+
+The voxels are indexed starting at zero.
+In other words, if the size of the image is 
+:math:`M \times N \times P`,
+the x values should range between 0 and :math:`M-1`.
+
+Example
+^^^^^^^
+The following command selects the region of size 
+:math:`10 \times 10 \times 10`, with the first voxel of the output 
+image being at location (5,8,12) of the input image::
+
+  plastimatch crop --input in.mha --output out.mha --voxels "5 14 8 17 12 21"
 
 plastimatch compare
 -------------------
@@ -81,6 +124,34 @@ The reported statistics are interpreted as follows::
   DIF      Number of pixels with different intensities
   NUM      Total number of voxels in the difference image
 
+plastimatch compose
+-------------------
+The *compose* command is used to compose two transforms.  
+The command line usage is given as follows::
+
+  Usage: plastimatch compose file_1 file_2 outfile
+
+  Note:  file_1 is applied first, and then file_2.
+            outfile = file_2 o file_1
+            x -> x + file_2(x + file_1(x))
+
+The transforms can be of any type, including translation, rigid, affine, 
+itk B-spline, native B-spline, or vector fields.  
+The output file is always a vector field.  
+
+There is a further restriction that at least one of the input files 
+must be either a native B-spline or vector field.  This restriction 
+is required because that is how the resolution and voxel spacing 
+of the output vector field is chosen.
+
+Example
+^^^^^^^
+Suppose we want to compose a rigid transform (rigid.tfm) with a vector field
+(vf.mha), such that the output transform is equivalent to applying 
+the rigid transform first, and the vector field second.
+
+  platimatch rigid.tfm vf.mha composed_vf.mha
+
 .. _plastimatch_convert:
 
 plastimatch convert
@@ -110,6 +181,7 @@ The command line usage is given as follows::
       --ctatts=filename          (for dij)
       --dif=filename             (for dij)
       --input-ss-img=filename    (for structures)
+      --input-ss-list=filename   (for structures)
       --prune-empty              (for structures)
       --input-dose-img=filename  (for rt dose)
       --input-dose-xio=filename  (for XiO rt dose)
@@ -210,6 +282,53 @@ the result in outfile.nrrd::
 
   plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
 
+plastimatch dvh
+---------------
+The *dvh* command creates a dose value histogram (DVH) 
+from a given dose image and structure set image.  
+The command line usage is given as follows::
+
+  Usage: plastimatch dvh [options]
+     --input-ss-img file
+     --input-ss-list file
+     --input-dose file
+     --output-csv file
+     --input-units {gy,cgy}
+     --cumulative
+     --num-bins
+     --bin-width
+
+The required inputs are 
+--input-dose, 
+--input-ss-img, --input-ss-list, 
+and --output-csv.
+The units of the input dose must be either Gy or cGy.  
+DVH bin values will be generated for all structures found in the 
+structure set files.  The output will be generated as an ASCII 
+csv-format spreadsheet file, readable by OpenOffice.org or Microsoft Excel.
+
+The default is a differential (standard) histogram, rather than the 
+cumulative DVH which is most common in radiotherapy.  To create a cumulative 
+DVH, use the --cumulative option.  
+
+The default is to create 256 bins, each with a width of 1 Gy.  
+You can adjust these values using the --num-bins and --bin-width option.
+
+Example
+^^^^^^^
+To generate a DVH for a single 2 Gy fraction, we might choose 250 bins each of 
+width 1 cGy.  If the input dose is already specified in cGy, you would 
+use the following command::
+
+  plastimatch dvh \
+    --input-ss-img structures.mha \
+    --input-ss-list structures.txt \
+    --input-dose dose.mha \
+    --output-csv dvh.csv \
+    --input-units cgy \
+    --num-bins 250 \
+    --bin-width 1
+
 plastimatch mask
 ----------------
 The *mask* command is used to fill in a region of the image, as specified
@@ -273,6 +392,7 @@ The command line usage is given as follows::
   Required:   --input=file
               --output=file
   Optional:   --subsample="x y z"
+              --fixed=file
               --origin="x y z"
               --spacing="x y z"
               --size="x y z"
@@ -291,6 +411,34 @@ to a single voxel.  So for example, if we want to bin a cube of size
     --output outfile.nrrd \
     --subsample "3 3 1"
 
+plastimatch slice
+-----------------
+The *slice* command generates a two-dimensional thumbnail image of an 
+axial slice of the input volume.  The output image 
+is not required to correspond exactly to an integer slice number.  
+The location of the output image within the slice is always centered. 
+
+The command line usage is given as follows::
+
+  Usage: plastimatch slice [options] input-file
+  Options:
+    --input file
+    --output file
+    --thumbnail-dim size
+    --thumbnail-spacing size
+    --slice-loc location
+
+Example
+^^^^^^^
+We create a two-dimensional image with resolution 10 x 10 pixels,
+at axial location 0, and of size 20 x 20 mm::
+
+  plastimatch slice \
+    --input in.mha --output out.mha \
+    --thumbnail-dim 10 \
+    --thumbnail-spacing 2 \
+    --slice-loc 0
+
 plastimatch stats
 -----------------
 The plastimatch stats command displays a few basic statistics about the 
@@ -298,15 +446,16 @@ image onto the screen.
 
 The command line usage is given as follows::
 
-  Usage: plastimatch stats [options]
-  Required:
-      --input=image_in
+  Usage: plastimatch stats file [file ...]
+
+The input files can be either 2D projection images, 3D volumes, or 
+3D vector fields.
 
 Example
 ^^^^^^^
-The following command displays statistics for the file synth_1.mha. ::
+The following command displays statistics for the 3D volume synth_1.mha. ::
 
-  $ plastimatch stats --input synth_1.mha
+  $ plastimatch stats synth_1.mha
   MIN -999.915161 AVE -878.686035 MAX 0.000000 NUM 54872
 
 The reported statistics are interpreted as follows::
@@ -315,6 +464,41 @@ The reported statistics are interpreted as follows::
   AVE      Average intensity in image
   MAX      Maximum intensity in image
   NUM      Number of voxels in image
+
+Example
+^^^^^^^
+The following command displays statistics for the 3D vector field vf.mha::
+
+  $ plastimatch stats vf.mha
+  Min:            0.000     -0.119     -0.119
+  Mean:          13.200      0.593      0.593
+  Max:           21.250      1.488      1.488
+  Mean abs:      13.200      0.594      0.594
+  Energy: MINDIL -6.79753 MAXDIL 0.166026 MAXSTRAIN 41.5765 TOTSTRAIN 70849.7
+  Min dilation at: (29 19 19)
+  Jacobian: MINJAC -6.32835 MAXJAC 1.15443 MINABSJAC 0.360538
+  Min abs jacobian at: (28 36 36)
+  Second derivatives: MINSECDER 0 MAXSECDER 388.821 TOTSECDER 669219 INTSECDER 1.5245e+06
+  Max second derivative: (29 36 36)
+
+The rows corresponding to "Min, Mean, Max, and Mean abs" each 
+have three numbers, which correspond to the x, y, and z coordinates.  
+Therefore, they compute these statistics for each vector direction 
+separately.
+
+The remaining statistics are described as follows::
+
+  MINDIL        Minimum dilation
+  MAXDIL        Maximum dilation
+  MAXSTRAIN     Maximum strain
+  TOTSTRAIN     Total strain
+  MINJAC        Minimum Jacobian     
+  MAXJAC        Maximum Jacobian
+  MINABSJAC     Minimum absolute Jacobian
+  MINSECDER     Minimum second derivative
+  MAXSECDER     Maximum second derivative
+  TOTSECDER     Total second derivative
+  INTSECDER     Integral second derivative
 
 plastimatch warp
 ----------------
@@ -363,5 +547,3 @@ value for these areas using the --default-val option. ::
     --output outfile.nrrd \
     --xf bspline.txt \
     --default-val -1000
-
-

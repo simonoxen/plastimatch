@@ -553,7 +553,6 @@ main (int argc, char* argv[])
     /* Write output */
     printf ("Writing output volume(s)...\n");
     write_mha (options.output_file, vol);
-    write_coronal_sagittal (&options, vol);
 
     /* Free memory */
     volume_destroy (vol);

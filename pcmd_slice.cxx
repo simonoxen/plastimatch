@@ -59,7 +59,7 @@ static void
 slice_print_usage (void)
 {
     printf (
-	"Usage: plastimatch [options] slice input-file\n"
+	"Usage: plastimatch slice [options] input-file\n"
 	"Options:\n"
 	"  --input file\n"
 	"  --output file\n"
