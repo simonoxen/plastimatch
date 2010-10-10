@@ -301,7 +301,10 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Declare other OpenCL variables */
     cl_event vol_event[MAX_GPU_COUNT];
-    cl_ulong drr_total[MAX_GPU_COUNT], img_total[MAX_GPU_COUNT], vol_total[MAX_GPU_COUNT], preprocess_total[MAX_GPU_COUNT];
+    cl_ulong drr_total[MAX_GPU_COUNT];
+    cl_ulong img_total[MAX_GPU_COUNT];
+    cl_ulong vol_total[MAX_GPU_COUNT];
+    cl_ulong preprocess_total[MAX_GPU_COUNT];
     int4 pixels_per_device[MAX_GPU_COUNT];
     int2 pixel_offset[MAX_GPU_COUNT];
     int img_size_device[MAX_GPU_COUNT];
@@ -352,7 +355,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     devices = (cl_device_id *) malloc (device_count * sizeof(cl_device_id));
     error = clGetDeviceIDs (platform, CL_DEVICE_TYPE_GPU, 
 	device_count, devices, NULL);
-    //oclCheckError(error, CL_SUCCESS);
+    oclCheckError(error, CL_SUCCESS);
 
     /* Create context properties */
     cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0};
@@ -387,6 +390,8 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     cl_program program;
     program = opencl_load_program (&ocl_dev, "drr_opencl.cl");
+    //program = opencl_load_program (&ocl_dev, "opencl_test.cl");
+    printf ("load_program complete\n");
 
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
@@ -429,7 +434,6 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
 #endif
-
 
     /***************************************************************/
 

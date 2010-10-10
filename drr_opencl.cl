@@ -15,12 +15,7 @@
 /* Returns +1 or -1, depeding on sign.  Zero yeilds +1. */
 #define SIGN(x) (((x) >= 0) ? (+1) : (-1))
 
-enum point_location {
-    POINTLOC_LEFT,
-    POINTLOC_INSIDE,
-    POINTLOC_RIGHT,
-};
-typedef enum point_location Point_location;
+#if defined (commentout)
 
 struct volume_limit {
     /* upper and lower limits of volume, including tolerances */
@@ -31,6 +26,13 @@ struct volume_limit {
     int dir[3];
 };
 typedef struct volume_limit Volume_limit;
+
+enum point_location {
+    POINTLOC_LEFT,
+    POINTLOC_INSIDE,
+    POINTLOC_RIGHT,
+};
+typedef enum point_location Point_location;
 
 
 /*
@@ -473,6 +475,9 @@ float drr_trace_ray_nointerp_2009 (
     return accum;
 }
 
+#endif /* commentout */
+
+#if defined (commentout)
 /*
  * Summary: DRR Kernel
  * Parameters: Volume parameters
@@ -531,4 +536,27 @@ __kernel void kernel_drr (
     value *= scale;
 
     dev_img[img_idx] = value;
+}
+#endif
+
+__kernel void kernel_drr (
+    __global float *dev_vol,
+    __global float *dev_img,
+    __constant int *vol_dim,
+    __constant int2 *img_dim,
+    __constant float *offset, 
+    __constant float *pix_spacing,
+    //__constant Volume_limit *vol_limits,
+    __constant float *p1,
+    __constant float *ul_room,
+    __constant float *incr_r,
+    __constant float *incr_c,
+    __constant int4 *ndevice,
+    float scale,
+    int output_format,
+    int msd_fp,
+    int preprocess_attenuation,
+    int exponential_mapping,
+    int pixel_offset
+){
 }
