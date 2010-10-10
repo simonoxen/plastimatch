@@ -206,7 +206,7 @@ opencl_load_program (
     buf = file_load (filename);
 
     /* Do the OpenCL stuff */
-    buf_cstr = (const char*) buf;
+    buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
     program = clCreateProgramWithSource (
 	ocl_dev->context, 
@@ -241,7 +241,7 @@ cl_ulong executionTime(cl_event &event)
 void 
 opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
 {
-    char buf[16*1024];
+    char buf[10240];
     clGetProgramBuildInfo (program, ocl_dev->devices[0], CL_PROGRAM_BUILD_LOG, 
 	sizeof(buf), buf, NULL);
     printf ("Build log:\n%s\n", buf);

@@ -172,5 +172,10 @@ file_load (const char* filename)
     buf->read ((bNread) fread, fp);
     fclose (fp);
 
+    for (int i = 0; i < 20; i++) {
+	printf ("%c", (char) (*buf)[i]);
+    }
+    printf ("\n");
+
     return buf;
 }

@@ -320,11 +320,12 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /***************************************************************/
 
+    #define USE_GCS 1
+
     /**************************************************************** 
      * STEP 1: Setup OpenCL											* 
      ****************************************************************/
-
-#if defined (commentout)
+#if (!USE_GCS)
     /* Set logfile name and start logs */
     shrSetLogFileName ("drr_opencl.txt");
 
@@ -364,7 +365,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     /* Create context and command queue for each device */
     for (cl_uint i = 0; i < device_count; i++) {
 	/* Context */
-	context[i] = clCreateContext(properties, 1, &devices[i], NULL, NULL, &error);
+	context[i] = clCreateContext (properties, 1, &devices[i], NULL, NULL, &error);
 	oclCheckError(error, CL_SUCCESS);
 
 	/* Device info */
@@ -379,6 +380,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     }
 #endif
 
+#if (USE_GCS)
     /* GCS: Second try */
     Opencl_device ocl_dev;
     opencl_open_device (&ocl_dev);
@@ -388,9 +390,9 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
+#endif
 
-
-#if defined (commentout)
+#if (!USE_GCS)
     /* Program Setup */
     char* source_path = shrFindFilePath ("drr_opencl.cl", "");
     oclCheckError (source_path != NULL, shrTRUE);
@@ -399,7 +401,12 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /* Create the program */
     for (cl_uint i = 0; i < device_count; i++) {
-	program[i] = clCreateProgramWithSource(context[i], 1, (const char **)&source, &program_length, &error);
+	program[i] = clCreateProgramWithSource (context[i], 1, 
+	    (const char **)&source, &program_length, &error);
+	for (int i = 0; i < 80; i++) {
+	    printf ("%c", source[i]);
+	}
+	printf ("\n");
 	oclCheckError(error, CL_SUCCESS);
 
 	/* Build the program */
@@ -415,11 +422,13 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     shrLog("\n");
 #endif
 
+#if (USE_GCS)
     /* GCS: Temp hack */
     cl_uint device_count = 1;
     int i = 0;
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
+#endif
 
 
     /***************************************************************/
@@ -455,7 +464,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
 #if defined (commentout)
     for (cl_uint i = 0; i < device_count; i++) {
-#endif
+
 	/* Allocate global memory on all devices */
 	g_dev_vol[i] = clCreateBuffer(context[i],  CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, vol_size, NULL, &error);
 	oclCheckError(error, CL_SUCCESS);
@@ -488,9 +497,8 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	//drr_kernel[i] = clCreateKernel(program[i], "kernel_drr", &error);
 	drr_kernel[0] = clCreateKernel(program, "kernel_drr", &error);
 	oclCheckError(error, CL_SUCCESS);
-#if defined (commentout)
     }
-#endif
+
 
     /* Wait for all queues to finish */
     for (cl_uint i = 0; i < device_count; i++)
@@ -598,7 +606,7 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 	clReleaseKernel(preprocess_kernel[i]);
     }
 
-#endif
+#endif /* DRR_PREPROCESS_ATTENUATION */
 
     /* tgt is isocenter */
     double tgt[3] = { options->isocenter[0], options->isocenter[1], options->isocenter[2] };
@@ -709,4 +717,5 @@ void preprocess_attenuation_and_drr_render_volume_cl (
     shrLog("Done DRR_OPENCL...\n\n");
     shrLog("Total OpenCL run time: %f s\n", overall_runtime);
     printf("Total run time: %g s\n", plm_timer_report(&timer));
+#endif
 }
