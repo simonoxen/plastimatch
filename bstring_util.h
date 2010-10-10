@@ -7,11 +7,11 @@
 #include "plm_config.h"
 #include "bstrwrap.h"
 
-plastimatch1_EXPORT 
+gpuit_EXPORT 
 bool
 bstring_empty (const CBString& cbstring);
 
-plastimatch1_EXPORT 
+gpuit_EXPORT 
 bool
 bstring_not_empty (const CBString& cbstring);
 
