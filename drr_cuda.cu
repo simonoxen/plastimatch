@@ -30,7 +30,7 @@
 #include <math.h>
 #include <cuda.h>
 
-#include "cuda_utils.h"
+#include "cuda_util.h"
 #include "drr_cuda.h"
 #include "drr_cuda_p.h"
 #include "drr_opts.h"

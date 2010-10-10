@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda.h>
-#include "cuda_utils.h"
+#include "cuda_util.h"
 
 void cuda_utils_check_error (const char *msg)
 {

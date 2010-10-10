@@ -5,7 +5,7 @@ See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 CUDA includes
 */
 #include <cuda.h>
-#include "cuda_utils.h"
+#include "cuda_util.h"
 
 
 /*

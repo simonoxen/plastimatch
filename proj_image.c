@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "fdk_opts.h"
-#include "fdk_utils.h"
+#include "fdk_util.h"
 #include "file_util.h"
 #include "hnd_io.h"
 #include "math_util.h"

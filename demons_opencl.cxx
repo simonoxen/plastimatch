@@ -8,8 +8,8 @@
 #include <math.h>
 #include "demons_opts.h"
 #include "demons_misc.h"
-#include "opencl_utils.h"
-#include "opencl_utils_nvidia.h"
+#include "opencl_util.h"
+#include "opencl_util_nvidia.h"
 #include "plm_timer.h"
 #include "volume.h"
 #include "demons_opencl_p.h"

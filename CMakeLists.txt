@@ -680,12 +680,12 @@ IF(CUDA_FOUND)
     bspline_cuda.cpp
     bspline_cuda.cu
     bspline_cuda.h
-    cuda_utils.cu
-    cuda_utils.h
+    cuda_util.cu
+    cuda_util.h
     )
   CUDA_COMPILE (BSPLINE_CUDA_WRAPPERS 
     bspline_cuda.cu 
-    cuda_utils.cu)
+    cuda_util.cu)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ${BSPLINE_CUDA_WRAPPERS}
@@ -720,8 +720,8 @@ IF (OPENCL_FOUND)
     autotune_opencl.cxx autotune_opencl.h
     demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
     drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
-    opencl_utils.cxx opencl_utils.h
-    opencl_utils_nvidia.cxx opencl_utils_nvidia.h
+    opencl_util.cxx opencl_util.h
+    opencl_util_nvidia.cxx opencl_util_nvidia.h
     )
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
@@ -876,7 +876,7 @@ SET (FINDSCU_SRC
 SET (FDK_SRC
   fdk_main.c 
   fdk_opts.c fdk_opts.h
-  fdk_utils.c fdk_utils.h
+  fdk_util.c fdk_util.h
   bowtie_correction.c bowtie_correction.h
   delayload.c
   )

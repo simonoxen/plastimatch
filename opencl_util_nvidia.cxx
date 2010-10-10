@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <fstream>
 #include <iostream>
-#include "opencl_utils.h"
-#include "opencl_utils_nvidia.h"
+#include "opencl_util.h"
+#include "opencl_util_nvidia.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
 

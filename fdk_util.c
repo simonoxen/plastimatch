@@ -7,7 +7,7 @@
 #include <string.h>
 #include "plm_path.h"
 #include "fdk_opts.h"
-#include "fdk_utils.h"
+#include "fdk_util.h"
 #include "file_util.h"
 #include "proj_image.h"
 #include "mha_io.h"

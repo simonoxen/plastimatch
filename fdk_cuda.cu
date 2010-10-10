@@ -32,10 +32,10 @@
 /*****************
 * FDK  #includes *
 *****************/
-#include "cuda_utils.h"
+#include "cuda_util.h"
 #include "fdk_cuda_p.h"
 #include "fdk_opts.h"
-#include "fdk_utils.h"
+#include "fdk_util.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "plm_timer.h"

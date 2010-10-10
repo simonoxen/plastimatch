@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 #include <math.h>
-#include "opencl_utils.h"
+#include "opencl_util.h"
 
 #define MAX_GPU_COUNT 8
 

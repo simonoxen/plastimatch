@@ -13,7 +13,7 @@
 #include "bspline.h"
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
-#include "cuda_utils.h"
+#include "cuda_util.h"
 #include "mha_io.h"
 #include "volume.h"
 

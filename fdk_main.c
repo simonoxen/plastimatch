@@ -16,7 +16,7 @@
 #include "fdk_cuda.h"
 #include "fdk_opencl.h"
 #include "fdk_opts.h"
-#include "fdk_utils.h"
+#include "fdk_util.h"
 #include "file_util.h"
 #include "math_util.h"
 #include "mha_io.h"

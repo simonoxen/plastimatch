@@ -11,7 +11,7 @@
 #include <time.h>
 #include "fdk_brook.h"
 #include "fdk_opts.h"
-#include "fdk_utils.h"
+#include "fdk_util.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "proj_image.h"
