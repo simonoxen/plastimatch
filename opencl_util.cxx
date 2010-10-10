@@ -105,6 +105,28 @@ opencl_dump_devices (Opencl_device *ocl_dev)
     }
 }
 
+/* Create one command queue for each device */
+cl_int
+opencl_create_command_queues (Opencl_device *ocl_dev)
+{
+    cl_int status;
+
+    ocl_dev->command_queues = (cl_command_queue *) malloc (
+	ocl_dev->device_count * sizeof(cl_command_queue));
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++)
+    {
+	ocl_dev->command_queues[i] = clCreateCommandQueue (
+	    ocl_dev->contexts[i], 
+	    ocl_dev->devices[i], 
+	    CL_QUEUE_PROFILING_ENABLE, 
+	    &status);
+	if (status != CL_SUCCESS) {
+	    return status;
+	}
+    }
+    return CL_SUCCESS;
+}
+
 /* Flavor a creates one context with multiple devices in it */
 cl_int
 opencl_create_context_a (Opencl_device *ocl_dev)
@@ -166,18 +188,6 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     /* Print out a little status about the devices */
     opencl_dump_devices (ocl_dev);
 
-    /* Create command queue */
-    ocl_dev->command_queues = (cl_command_queue*) malloc (
-	sizeof(cl_command_queue));
-    ocl_dev->command_queues[0] = clCreateCommandQueue (
-	ocl_dev->contexts[0], 
-	ocl_dev->devices[0], 
-	0, 
-	&status);
-    if (status != CL_SUCCESS) { 
-	print_and_exit ("Error in clCreateCommandQueue\n");
-    }
-
     return CL_SUCCESS;
 }
 
@@ -227,8 +237,6 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     ocl_dev->context_count = ocl_dev->device_count;
     ocl_dev->contexts = (cl_context *) malloc (
 	ocl_dev->context_count * sizeof(cl_context));
-    ocl_dev->command_queues = (cl_command_queue *) malloc (
-	ocl_dev->context_count * sizeof(cl_command_queue));
     for (cl_uint i = 0; i < ocl_dev->device_count; i++)
     {
 	ocl_dev->contexts[i] = clCreateContext (
@@ -239,24 +247,17 @@ opencl_create_context_b (Opencl_device *ocl_dev)
 	    NULL, 
 	    &status);
 	opencl_check_error (status, "clCreateContext");
-
-	ocl_dev->command_queues[i] = clCreateCommandQueue (
-	    ocl_dev->contexts[i], 
-	    ocl_dev->devices[i], 
-	    CL_QUEUE_PROFILING_ENABLE, 
-	    &status);
-	opencl_check_error (status, "clCreateContext");
     }
 
     return CL_SUCCESS;
 }
 
-void
+cl_int
 opencl_open_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
 
-    printf ("In opencl_open_device\n");
+    memset (ocl_dev, 0, sizeof(Opencl_device));
 
     /* Select platform */
     ocl_dev->platform = opencl_select_platform ();
@@ -265,9 +266,16 @@ opencl_open_device (Opencl_device *ocl_dev)
        command queue even if platform is NULL.  So we don't fail (yet) 
        if platform is NULL here.  */
 
-    /* Create OpenCL context(s) and command queue(s) */
+    /* Create contexts (there are two versions of this function: a, b) */
     //status = opencl_create_context_a (ocl_dev);
     status = opencl_create_context_b (ocl_dev);
+    if (status != CL_SUCCESS) {
+	return status;
+    }
+
+    /* Create command queues */
+    status = opencl_create_command_queues (ocl_dev);
+    return status;
 }
 
 void
@@ -335,13 +343,13 @@ opencl_close_device (Opencl_device *ocl_dev)
 
 #endif
 
-cl_program
-opencl_load_program (
+void
+opencl_load_programs (
     Opencl_device *ocl_dev, 
     const char* filename
 )
 {
-    cl_int rc;
+    cl_int status;
     cl_program program;
     CBString *buf;
     const char *buf_cstr;
@@ -350,28 +358,35 @@ opencl_load_program (
     /* Load the file contents into a string */
     buf = file_load (filename);
 
-    /* Do the OpenCL stuff */
+    /* Load and compile the programs */
     buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
-    program = clCreateProgramWithSource (
-	ocl_dev->contexts[0], 
-	1, 
-	&buf_cstr, 
-	&len, 
-	&rc);
-    opencl_check_error (rc, "Error calling clCreateProgramWithSource.");
+    ocl_dev->programs = (cl_program*) malloc (
+	ocl_dev->context_count * sizeof(cl_program));
+    for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
+	ocl_dev->programs[i] = clCreateProgramWithSource (
+	    ocl_dev->contexts[i], 
+	    1, 
+	    &buf_cstr, 
+	    &len, 
+	    &status);
+	opencl_check_error (status, "Error calling clCreateProgramWithSource.");
+	
+	status = clBuildProgram (
+	    ocl_dev->programs[i], 
+	    ocl_dev->device_count, 
+	    ocl_dev->devices, 
+	    NULL, 
+	    NULL, 
+	    NULL);
+	if (status != CL_SUCCESS) {
+	    opencl_dump_build_log (ocl_dev, program);
+	    opencl_check_error (status, "Error calling clBuildProgram.");
+	}
+    }
 
     /* Free the string with file contents */
     delete buf;
-
-    rc = clBuildProgram (program, 1, ocl_dev->devices, 
-	NULL, NULL, NULL);
-    if (rc != CL_SUCCESS) {
-	opencl_dump_build_log (ocl_dev, program);
-	opencl_check_error (rc, "Error calling clBuildProgram.");
-    }
-
-    return program;
 }
 
 cl_ulong 

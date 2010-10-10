@@ -19,11 +19,14 @@
 typedef struct opencl_device Opencl_device;
 struct opencl_device {
     cl_platform_id platform;
-    cl_uint device_count;
-    cl_device_id *devices;
+
     cl_uint context_count;
     cl_context *contexts;
+
+    cl_uint device_count;
+    cl_device_id *devices;
     cl_command_queue *command_queues;
+    cl_program *programs;
 };
 
 #if defined __cplusplus
@@ -37,7 +40,7 @@ gpuit_EXPORT
 void
 opencl_print_devices (void);
 gpuit_EXPORT
-void
+cl_int
 opencl_open_device (Opencl_device *ocl_dev);
 gpuit_EXPORT
 void
@@ -49,8 +52,8 @@ gpuit_EXPORT
 void
 opencl_check_error (cl_int return_code, const char *msg);
 gpuit_EXPORT
-cl_program
-opencl_load_program (
+void
+opencl_load_programs (
     Opencl_device *ocl_dev, 
     const char* filename
 );

@@ -323,87 +323,16 @@ void preprocess_attenuation_and_drr_render_volume_cl (
 
     /***************************************************************/
 
-    #define USE_GCS 1
-
-    /**************************************************************** 
-     * STEP 1: Setup OpenCL											* 
-     ****************************************************************/
-#if (!USE_GCS)
-    /* Set logfile name and start logs */
-    shrSetLogFileName ("drr_opencl.txt");
-
-    shrLog("Starting DRR_OPENCL...\n\n"); 
-
-    /* Get the OpenCL platform */
-    cl_platform_id platform;
-    //error = oclGetPlatformID(&platform);
-    //oclCheckError(error, CL_SUCCESS);
-    platform = opencl_select_platform ();
-    if (!platform) {
-	printf ("No OpenCL platform found\n");
-	return;
-    }
-
-    /* Get devices of type GPU */
-    error = clGetDeviceIDs (platform, 
-	CL_DEVICE_TYPE_GPU, 
-	//CL_DEVICE_TYPE_ALL,
-	0, NULL, &device_count);
-    printf ("Device count == %d\n", device_count);
-    //oclCheckError(error, CL_SUCCESS);
-
-    /* Make sure using no more than the maximum number of GPUs */
-    if (device_count > MAX_GPU_COUNT) {
-	device_count = MAX_GPU_COUNT;
-    }
-
-    devices = (cl_device_id *) malloc (device_count * sizeof(cl_device_id));
-    error = clGetDeviceIDs (platform, CL_DEVICE_TYPE_GPU, 
-	device_count, devices, NULL);
-    oclCheckError(error, CL_SUCCESS);
-
-    /* Create context properties */
-    cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0};
-
-    /* Calculate number of voxels per device */
-    divideWork (devices, device_count, 2, work_per_device, work_total);
-
-    shrLog("Using %d device(s):\n", device_count);
-
-    /* Create context and command queue for each device */
-    for (cl_uint i = 0; i < device_count; i++) {
-	/* Context */
-	context[i] = clCreateContext (properties, 1, &devices[i], NULL, NULL, &error);
-	oclCheckError(error, CL_SUCCESS);
-
-	/* Device info */
-	device = oclGetDev(context[i], 0);
-	clGetDeviceInfo (device, CL_DEVICE_NAME, sizeof(device_name[i]), device_name[i], NULL);
-	oclCheckError(error, CL_SUCCESS);
-	shrLog("\tDevice %d: %s handling %d x %d pixels\n", i, device_name[i], work_per_device[i][0], work_per_device[i][1]);
-
-	/* Command queue */
-	command_queue[i] = clCreateCommandQueue(context[i], device, CL_QUEUE_PROFILING_ENABLE, &error);
-	oclCheckError(error, CL_SUCCESS);
-    }
-#endif
-
-#if (USE_GCS)
-    /* GCS: Second try */
     Opencl_device ocl_dev;
-    printf ("Hello world\n");
     opencl_open_device (&ocl_dev);
 
-    cl_program program;
-    program = opencl_load_program (&ocl_dev, "drr_opencl.cl");
-    //program = opencl_load_program (&ocl_dev, "opencl_test.cl");
+    opencl_load_programs (&ocl_dev, "drr_opencl.cl");
     printf ("load_program complete\n");
 
     return;
 
     /* Calculate number of voxels per device */
     divideWork (devices, device_count, 2, work_per_device, work_total);
-#endif
 
 #if (!USE_GCS)
     /* Program Setup */
