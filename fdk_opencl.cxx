@@ -47,6 +47,9 @@ Modified : ongoing
 #include "proj_image_dir.h"
 #include "volume.h"
 
+#undef MAX_GPU_COUNT
+#define MAX_GPU_COUNT 1
+
 /*
 * Summary:		This OpenCL stub function performs most of the IO and flow control.  
 				The actual back projection is performed by the OpenCL kernel "fdk_kernel()"
@@ -170,11 +173,11 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
     /* Get the OpenCL platform */
     error = oclGetPlatformID(&platform);
-    //oclCheckError(error, CL_SUCCESS);
+    oclCheckError(error, CL_SUCCESS);
 
     /* Get devices of type GPU */
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &device_count);
-    //oclCheckError(error, CL_SUCCESS);
+    oclCheckError(error, CL_SUCCESS);
 
     /* Make sure using no more than the maximum number of GPUs */
     if (device_count > MAX_GPU_COUNT)
@@ -182,7 +185,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 
     devices = (cl_device_id *)malloc(device_count * sizeof(cl_device_id));
     error = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, device_count, devices, NULL);
-    //oclCheckError(error, CL_SUCCESS);
+    oclCheckError(error, CL_SUCCESS);
 
     /* Create context properties */
     cl_context_properties properties[] = {CL_CONTEXT_PLATFORM, (cl_context_properties)platform, 0};
@@ -196,17 +199,17 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     for (cl_uint i = 0; i < device_count; i++) {
 	/* Context */
 	context[i] = clCreateContext(properties, 1, &devices[i], NULL, NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 
 	/* Device info */
 	device = oclGetDev(context[i], 0);
 	clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(device_name[i]), device_name[i], NULL);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	shrLog("\tDevice %d: %s handling %d x %d x %d voxels\n", i, device_name[i], work_per_device[i][0], work_per_device[i][1], work_per_device[i][2]);
 
 	/* Command queue */
 	command_queue[i] = clCreateCommandQueue(context[i], device, CL_QUEUE_PROFILING_ENABLE, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     shrLog("\n%u voxels in volume\n", vol->npix);
@@ -223,7 +226,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     /* Create the program */
     for (cl_uint i = 0; i < device_count; i++) {
 	program[i] = clCreateProgramWithSource(context[i], 1, (const char **)&source, &program_length, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 
 	/* Build the program */
 	error = clBuildProgram(program[i], 0, NULL, NULL, NULL, NULL);
@@ -274,33 +277,33 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     for (cl_uint i = 0; i < device_count; i++) {
 	/* Create volume buffer */
 	g_dev_vol[i] = clCreateBuffer(context[i], CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, voxels_per_device[i].w * sizeof(float), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 
 	/* Create texture/image memory buffers on device */
 	t_dev_img[i] = clCreateImage2D(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, &img_format, img_dim[0], img_dim[1], 0, NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 
 	/* Create constant memory buffers on device */
 	c_dev_matrix[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, matrix_size, NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_nrm[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float4), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_vol_offset[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float4), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_vol_pix_spacing[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float4), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_vol_dim[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int4), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_ic[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float2), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_img_dim[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int2), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_sad[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_scale[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(float), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	c_voxel_device[i] = clCreateBuffer(context[i], CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, sizeof(int4), NULL, &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     /* Wait for all queues to finish */
@@ -312,9 +315,9 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 	fdk_kernel[i] = clCreateKernel(program[i], "kernel_fdk", &error);
 	//fdk_kernel[i] = clCreateKernel(program[i], "kernel_fdk_bilinear", &error);
 	//fdk_kernel[i] = clCreateKernel(program[i], "kernel_fdk_bicubic", &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
 	hu_kernel[i] = clCreateKernel(program[i], "convert_to_hu_cl", &error);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     /* Initialize all timers */
@@ -352,7 +355,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 	for (cl_uint i = 0; i < device_count; i++) {
 	    /* Copy texture/image memory from host to device */
 	    error = clEnqueueWriteImage(command_queue[i], t_dev_img[i], CL_FALSE, img_origin, img_region, img_row_pitch, 0, cbi->img, 0, NULL, &img_event[i]);
-	    //oclCheckError(error, CL_SUCCESS);
+	    oclCheckError(error, CL_SUCCESS);
 
 	    /* Copy constant memory from host to device */
 	    error = clEnqueueWriteBuffer(command_queue[i], c_dev_matrix[i], CL_FALSE, 0, matrix_size, &kargs->matrix, 0, NULL, NULL);
@@ -365,7 +368,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 	    error |= clEnqueueWriteBuffer(command_queue[i], c_sad[i], CL_FALSE, 0, sizeof(float), &kargs->sad, 0, NULL, NULL);
 	    error |= clEnqueueWriteBuffer(command_queue[i], c_scale[i], CL_FALSE, 0, sizeof(float), &kargs->scale, 0, NULL, NULL);
 	    error |= clEnqueueWriteBuffer(command_queue[i], c_voxel_device[i], CL_FALSE, 0, sizeof(int4), &voxels_per_device[i], 0, NULL, NULL);
-	    //oclCheckError(error, CL_SUCCESS);
+	    oclCheckError(error, CL_SUCCESS);
 	}
 
 	/* Wait for all queues to finish */
@@ -391,7 +394,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 	    error |= clSetKernelArg(fdk_kernel[i], 10, sizeof(cl_mem), (void *) &c_scale[i]);
 	    error |= clSetKernelArg(fdk_kernel[i], 11, sizeof(cl_mem), (void *) &c_voxel_device[i]);
 	    error |= clSetKernelArg(fdk_kernel[i], 12, sizeof(int), &voxel_offset[i].x);
-	    //oclCheckError(error, CL_SUCCESS);
+	    oclCheckError(error, CL_SUCCESS);
 	}
 
 	/* Wait for all queues to finish */
@@ -402,7 +405,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
 	/* Invoke all fdk kernels */
 	for (cl_uint i = 0; i < device_count; i++) {
 	    error = clEnqueueNDRangeKernel(command_queue[i], fdk_kernel[i], 3, NULL, fdk_global_work_size[i], fdk_local_work_size[i], 0, NULL, &fdk_event[i]);
-	    //oclCheckError(error, CL_SUCCESS);
+	    oclCheckError(error, CL_SUCCESS);
 	}
 
 	/* Wait for fdk kernel to finish */
@@ -423,7 +426,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     for (cl_uint i = 0; i < device_count; i++) {
 	error = clSetKernelArg(hu_kernel[i], 0, sizeof(cl_mem), (void *) &g_dev_vol[i]);
 	error |= clSetKernelArg(hu_kernel[i], 1, sizeof(int), &voxels_per_device[i].w);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     /* Wait for all queues to finish */
@@ -433,7 +436,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     /* Invoke all hu kernels */
     for (cl_uint i = 0; i < device_count; i++) {
 	error = clEnqueueNDRangeKernel(command_queue[i], hu_kernel[i], 1, NULL, &hu_global_work_size[i], &hu_local_work_size[i], 0, NULL, &hu_event[i]);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     /* Waits for hu kernel to finish */
@@ -447,7 +450,7 @@ void OPENCL_reconstruct_conebeam_and_convert_to_hu (Volume *vol, Proj_image_dir 
     /* Copy reconstructed volume from device to host */
     for (cl_uint i = 0; i < device_count; i++) {
 	error = clEnqueueReadBuffer(command_queue[i], g_dev_vol[i], CL_FALSE, 0, voxels_per_device[i].w * sizeof(float), (float*)vol->img + voxel_offset[i].y, 0, NULL, &vol_event[i]);
-	//oclCheckError(error, CL_SUCCESS);
+	oclCheckError(error, CL_SUCCESS);
     }
 
     /* Waits for volume to finish copying */
