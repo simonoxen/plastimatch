@@ -52,6 +52,8 @@ SET (PLM_PREFER_SYSTEM_F2C ON CACHE BOOL
 # Regression testing
 SET (PLM_BUILD_TESTING ON CACHE BOOL 
   "Enable regression testing")
+SET (PLM_REDUCED_TESTS OFF CACHE BOOL 
+  "Run fewer tests (used when debugging tests)")
 SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
   "Regression tests for seldom used b-spline implementations")
 SET (PLM_TEST_DICOMRT_XIO OFF CACHE BOOL 
