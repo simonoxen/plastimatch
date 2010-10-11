@@ -66,6 +66,13 @@ SET (PLM_TEST_XIO OFF CACHE BOOL
   "Regression tests for xio file exchange (downloads extra test data)")
 
 ##-----------------------------------------------------------------------------
+##  Extra paths
+##-----------------------------------------------------------------------------
+SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
+SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
+SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
+
+##-----------------------------------------------------------------------------
 ##  Include files
 ##-----------------------------------------------------------------------------
 INCLUDE (CTest)
@@ -154,6 +161,14 @@ MACRO (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
     "${CMAKE_SOURCE_DIR}/${CL_FILE}" 
     "${CMAKE_BINARY_DIR}/${CL_FILE}" 
+    DEPENDS "${CMAKE_SOURCE_DIR}/${CL_FILE}")
+  ## Need in the testing directory too :(
+  SET (${SRCS} ${${SRCS}} "${PLM_TESTING_BUILD_DIR}/${CL_FILE}")
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${PLM_TESTING_BUILD_DIR}/${CL_FILE}"
+    COMMAND ${CMAKE_COMMAND} "-E" "copy" 
+    "${CMAKE_SOURCE_DIR}/${CL_FILE}" 
+    "${PLM_TESTING_BUILD_DIR}/${CL_FILE}" 
     DEPENDS "${CMAKE_SOURCE_DIR}/${CL_FILE}")
 ENDMACRO (PLM_ADD_OPENCL_FILE)
 
@@ -1448,10 +1463,6 @@ ENDIF (PLM_BUILD_QT_TEST AND QT4_FOUND)
 ##    no easy way to avoid this (i.e. no good suggestions 
 ##    on CMake/CTest email list.
 ##-----------------------------------------------------------------------------
-SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
-SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
-SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
-
 # Set the "hack" variables to find windows binaries (under Release subdir)
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (PLM_PLASTIMATCH_PATH 
