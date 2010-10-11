@@ -900,12 +900,13 @@ ENDIF (CUDA_FOUND)
 IF (OPENCL_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
+    fdk_opencl_old.cxx 
     fdk_opencl.cxx 
     fdk_opencl_p.h
     fdk_opencl.h
     fdk_opencl.cl
     )
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
+  PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
 ENDIF (OPENCL_FOUND)
 
 IF (CUDA_FOUND)
