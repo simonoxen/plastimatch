@@ -69,7 +69,7 @@ opencl_dump_device_info (cl_device_id device)
 	sizeof(param_string), 
 	param_string, 
 	NULL);
-    printf ("  CL_DEVICE_VERSION = %d\n", param_string);
+    printf ("  CL_DEVICE_VERSION = %s\n", param_string);
 
     opencl_device_info (
 	device, 
@@ -77,7 +77,7 @@ opencl_dump_device_info (cl_device_id device)
 	sizeof(param_string), 
 	param_string, 
 	NULL);
-    printf ("  CL_DRIVER_VERSION = %d\n", param_string);
+    printf ("  CL_DRIVER_VERSION = %s\n", param_string);
 
     opencl_device_info (
 	device, 
@@ -159,8 +159,6 @@ opencl_select_platform (void)
 void
 opencl_dump_devices (Opencl_device *ocl_dev)
 {
-    cl_int status;
-
     printf ("Num_devices = %d\n", ocl_dev->device_count);
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
 	printf ("OpenCL device [%d]\n", i);
