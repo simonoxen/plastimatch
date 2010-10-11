@@ -14,9 +14,79 @@
 #include "plm_timer.h"
 #include "print_and_exit.h"
 
-//////////////////////////////////////////////////////////////////////////////
-//! Custom Utility Functions
-//////////////////////////////////////////////////////////////////////////////
+void
+opencl_device_info (
+    cl_device_id device, 
+    cl_device_info param_name, 
+    size_t param_value_size,  
+    void *param_value,  
+    size_t *param_value_size_ret
+)
+{
+    cl_int status;
+    status = clGetDeviceInfo (
+	device, 
+	param_name, 
+	param_value_size,  
+	param_value,  
+	param_value_size_ret);
+    opencl_check_error (status, "clGetDeviceInfo");
+}
+
+void
+opencl_dump_device_info (cl_device_id device)
+{
+    char param_string[1024];
+    cl_bool param_bool;
+
+    opencl_device_info (
+	device, 
+	CL_DEVICE_VENDOR, 
+	sizeof(param_string), 
+	param_string, 
+	NULL);
+    printf ("  CL_DEVICE_VENDOR = %s\n", param_string);
+
+    opencl_device_info (
+	device, 
+	CL_DEVICE_NAME, 
+	sizeof(param_string), 
+	param_string, 
+	NULL);
+    printf ("  CL_DEVICE_NAME = %s\n", param_string);
+
+    opencl_device_info (
+	device, 
+	CL_DEVICE_AVAILABLE, 
+	sizeof (cl_bool), 
+	&param_bool, 
+	NULL);
+    printf ("  CL_DEVICE_AVAILABLE = %d\n", param_bool);
+
+    opencl_device_info (
+	device, 
+	CL_DEVICE_VERSION, 
+	sizeof(param_string), 
+	param_string, 
+	NULL);
+    printf ("  CL_DEVICE_VERSION = %d\n", param_string);
+
+    opencl_device_info (
+	device, 
+	CL_DRIVER_VERSION, 
+	sizeof(param_string), 
+	param_string, 
+	NULL);
+    printf ("  CL_DRIVER_VERSION = %d\n", param_string);
+
+    opencl_device_info (
+	device, 
+	CL_DEVICE_IMAGE_SUPPORT, 
+	sizeof (cl_bool), 
+	&param_bool, 
+	NULL);
+    printf ("  CL_DEVICE_IMAGE_SUPPORT = %d\n", param_bool);
+}
 
 cl_int
 opencl_dump_platform_info (cl_platform_id platform)
@@ -93,15 +163,8 @@ opencl_dump_devices (Opencl_device *ocl_dev)
 
     printf ("Num_devices = %d\n", ocl_dev->device_count);
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
-	char device_name[256];
-	status = clGetDeviceInfo (
-	    ocl_dev->devices[i], 
-	    CL_DEVICE_NAME, 
-	    sizeof(device_name), 
-	    device_name, 
-	    NULL);
-	opencl_check_error (status, "Error with clGetDeviceInfo()");
-	printf ("    Device [%d] = %s\n", i, device_name);
+	printf ("OpenCL device [%d]\n", i);
+	opencl_dump_device_info (ocl_dev->devices[i]);
     }
 }
 
