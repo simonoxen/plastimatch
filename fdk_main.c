@@ -532,7 +532,8 @@ main (int argc, char* argv[])
 #endif
 #if (OPENCL_FOUND)
     case THREADING_OPENCL:
-	OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
+	//OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
+	opencl_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 #endif
     case THREADING_CPU_SINGLE:
