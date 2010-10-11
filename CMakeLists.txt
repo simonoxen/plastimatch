@@ -1064,10 +1064,10 @@ ENDIF(SSE2_FOUND)
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
 ##-----------------------------------------------------------------------------
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.cmake
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.cmake
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 
 IF (CMAKE_Fortran_COMPILER_WORKS)
@@ -1484,11 +1484,11 @@ ENDMACRO (PLM_ADD_TEST)
 # Note: we need two copies, because unix users might run "make test" 
 # in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
 CONFIGURE_FILE (
-  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
   ${CMAKE_BINARY_DIR}/CTestCustom.cmake
   @ONLY)
 CONFIGURE_FILE (
-  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.cmake
+  ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
   ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
   @ONLY)
 

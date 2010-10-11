@@ -14,7 +14,7 @@ print_usage (void)
     printf (
 	"Usage: fdk [options]\n"
 	"Options:\n"
-	" -A hardware            Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	" -A hardware            One of \"cpu\", \"brook\" or \"cuda\" (default=cpu)\n"
 	" -a \"num ((num) num)\"   Use this range of images\n"
 	" -r \"r1 r2 r3\"          Set output resolution (in voxels)\n"
 	" -f filter              Either \"none\" or \"ramp\" (default=ramp)\n"
@@ -59,7 +59,7 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
     int i, rc;
 	
     if (argc < 2)
-	{ print_usage(); exit(1); }
+    { print_usage(); exit(1); }
 
     set_default_options (options);
     for (i = 1; i < argc; i++) {
@@ -70,18 +70,26 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
+#if BROOK_FOUND
 	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
 		options->threading = THREADING_BROOK;
+		continue;
 	    } 
-	    else if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")
-		     || !strcmp(argv[i], "gpu") || !strcmp(argv[i], "GPU")) {
+#endif
+#if CUDA_FOUND
+	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
 		options->threading = THREADING_CUDA;
-		} else if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")) {
-		options->threading = THREADING_OPENCL;
-		}
-	    else {
-		options->threading = THREADING_CPU_OPENMP;
+		continue;
 	    }
+#endif
+#if OPENCL_FOUND
+	    if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")) {
+		options->threading = THREADING_OPENCL;
+		continue;
+	    }
+#endif
+	    /* Default */
+	    options->threading = THREADING_CPU_OPENMP;
 	}
 	else if (!strcmp (argv[i], "-a")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {
@@ -91,9 +99,9 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    i++;
 	    options->image_range_requested = 1;
 	    rc = sscanf (argv[i], "%d %d %d" , 
-			 &options->first_img,
-			 &options->skip_img,
-			 &options->last_img);
+		&options->first_img,
+		&options->skip_img,
+		&options->last_img);
 	    if (rc == 1) {
 		options->last_img = options->first_img;
 		options->skip_img = 1;
@@ -159,9 +167,9 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%d %d %d", 
-			 &options->resolution[0], 
-			 &options->resolution[1],
-			 &options->resolution[2]);
+		&options->resolution[0], 
+		&options->resolution[1],
+		&options->resolution[2]);
 	    if (rc == 1) {
 		options->resolution[1] = options->resolution[0];
 		options->resolution[2] = options->resolution[0];
@@ -187,9 +195,9 @@ fdk_parse_args (Fdk_options* options, int argc, char* argv[])
 	    }
 	    i++;
 	    rc = sscanf (argv[i], "%g %g %g", 
-			 &options->vol_size[0],
-			 &options->vol_size[1],
-			 &options->vol_size[2]);
+		&options->vol_size[0],
+		&options->vol_size[1],
+		&options->vol_size[2]);
 	    if (rc == 1) {
 		options->vol_size[1] = options->vol_size[0];
 		options->vol_size[2] = options->vol_size[0];

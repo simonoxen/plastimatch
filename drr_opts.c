@@ -19,7 +19,7 @@ print_usage (void)
     printf (
 	"Usage: drr [options] [infile]\n"
 	"Options:\n"
-	" -A hardware       Either \"cpu\" or \"brook\" or \"cuda\" (default=cpu)\n"
+	" -A hardware       Either \"cpu\" or \"cuda\" (default=cpu)\n"
 	" -a num            Generate num equally spaced angles\n"
 	" -N ang            Difference between neighboring angles (in degrees)\n"
 	" -nrm \"x y z\"      Set the normal vector for the panel\n"

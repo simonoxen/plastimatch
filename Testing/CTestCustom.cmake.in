@@ -7,9 +7,10 @@ SET (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
 SET (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
 SET (PLM_TEST_DICOM @PLM_TEST_DICOM@)
 SET (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
+SET (OPENCL_FOUND @OPENCL_FOUND@)
 
-#SET (REDUCED_TEST ON)
-SET (REDUCED_TEST OFF)
+SET (REDUCED_TEST ON)
+#SET (REDUCED_TEST OFF)
 
 ## If we don't have functioning GPU, don't run cuda tests
 SET (RUN_CUDA_TESTS OFF)
@@ -32,6 +33,14 @@ IF (CUDA_FOUND)
     SET (RUN_CUDA_TESTS ON)
   ENDIF (NOT CUDA_PROBE_NOT_CAPABLE)
 ENDIF (CUDA_FOUND)
+
+## If we don't have functioning GPU, don't run opencl tests
+SET (RUN_OPENCL_TESTS OFF)
+IF (OPENCL_FOUND)
+  # We don't yet have an opencl_probe routine.  So always run opencl 
+  # tests if library installed.
+  SET (RUN_OPENCL_TESTS ON)
+ENDIF (OPENCL_FOUND)
 
 # drr-d, landmark-warp doen't work yet
 SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -140,6 +149,16 @@ IF (NOT RUN_CUDA_TESTS)
     )
 ENDIF (NOT RUN_CUDA_TESTS)
 
+## If we didn't compile with opencl, don't run these tests
+IF (NOT RUN_OPENCL_TESTS)
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "fdk-opencl-a"
+    "fdk-opencl-a-stats"
+    "fdk-opencl-a-check"
+    ) 
+ENDIF (NOT RUN_OPENCL_TESTS)
+
 ## If we didn't compile with brook, don't run these tests
 IF (NOT BROOK_FOUND)
   SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -210,6 +229,9 @@ IF (REDUCED_TEST)
     "drr-c"
     "drr-c-stats"
     "drr-c-check"
+    "drr-cuda"
+    "drr-cuda-stats"
+    "drr-cuda-check"
     "fdk-cpu-a"
     "fdk-cpu-a-stats"
     "fdk-cpu-a-check"
@@ -222,6 +244,9 @@ IF (REDUCED_TEST)
     "fdk-cuda-a"
     "fdk-cuda-a-stats"
     "fdk-cuda-a-check"
+#    "fdk-opencl-a"
+#    "fdk-opencl-a-stats"
+#    "fdk-opencl-a-check"
 
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"

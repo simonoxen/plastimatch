@@ -412,12 +412,13 @@ ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## fdk - all tests using fdk filtered backprojection
-##   fdk-cpu-a   CPU reconstruction of synthetic data
-##   fdk-cpu-b   CPU reconstruction of Varian data, no filtering
-##   fdk-cpu-c   CPU reconstruction of Varian data, fftw filtering
-##   fdk-brook   GPU reconstruction of synthetic data using BROOK
-##   fdk-cuda-a  GPU reconstruction of synthetic data using CUDA
-##   fdk-cuda-b  GPU reconstruction of Varian data using CUDA
+##   fdk-cpu-a     CPU reconstruction of synthetic data
+##   fdk-cpu-b     CPU reconstruction of Varian data, no filtering
+##   fdk-cpu-c     CPU reconstruction of Varian data, fftw filtering
+##   fdk-brook     GPU reconstruction of synthetic data using BROOK
+##   fdk-cuda-a    GPU reconstruction of synthetic data using CUDA
+##    [fdk-cuda-b  GPU reconstruction of Varian data using CUDA
+##   fdk-opencl-a  GPU reconstruction of synthetic data using OpenCL
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "fdk-cpu-a"
@@ -521,6 +522,28 @@ ADD_TEST (
   "fdk-cuda-a-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-a-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=-987.5"
+  "-DUPPER_THRESH=-986.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "fdk-opencl-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;opencl;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-opencl-a.mha"
+  )
+PLM_ADD_TEST (
+  "fdk-opencl-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;fdk-opencl-a.mha"
+  )
+ADD_TEST (
+  "fdk-opencl-a-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-opencl-a-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=-987.5"
   "-DUPPER_THRESH=-986.5"
