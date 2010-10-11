@@ -378,8 +378,9 @@ opencl_create_buffer (
     /* Create buffer on all contexts?? */
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
 	cl_int status = 0;
+	cl_mem dev_buf;
 	dev_buf = clCreateBuffer (
-	    context, 
+	    ocl_dev->contexts[i], 
 	    CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
 	    //sizeof(cl_uint) * width,
 	    buffer_size, 
