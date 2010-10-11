@@ -368,6 +368,27 @@ opencl_close_device (Opencl_device *ocl_dev)
     free (ocl_dev->command_queues);
 }
 
+void
+opencl_create_buffer (
+    Opencl_device *ocl_dev, 
+    size_t buffer_size, 
+    void *buffer
+)
+{
+    /* Create buffer on all contexts?? */
+    for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
+	cl_int status = 0;
+	dev_buf = clCreateBuffer (
+	    context, 
+	    CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+	    //sizeof(cl_uint) * width,
+	    buffer_size, 
+	    buffer, 
+	    &status);
+	opencl_check_error (status, "clCreateBuffer");
+    }
+}
+
 #if defined (commentout)
     /////////////////////////////////////////////////////////////////
     // Create OpenCL memory buffers
