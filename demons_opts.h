@@ -11,7 +11,6 @@ struct DEMONS_Options_struct {
     char* fixed_fn;
     char* moving_fn;
     char* output_fn;
-    char* method;
     DEMONS_Parms parms;
 };
 

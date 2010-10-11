@@ -47,6 +47,7 @@ do_gpuit_demons_stage_internal (
     parms.filter_std = stage->demons_std;
     parms.accel = stage->demons_acceleration;
     parms.homog = stage->demons_homogenization;
+    parms.threading = stage->threading_type;
     for (d = 0; d < 3; d++) {
 	parms.filter_width[d] = stage->demons_filter_width[d];
     }
@@ -60,8 +61,7 @@ do_gpuit_demons_stage_internal (
     }
 
     /* Run demons */
-    vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, 
-	stage->threading_type, &parms);
+    vf_out = demons (fixed_ss, moving_ss, moving_grad, vf_in, &parms);
 
     /* Do something with output vector field */
     xf_out->set_gpuit_vf (vf_out);

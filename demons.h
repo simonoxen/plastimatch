@@ -4,11 +4,14 @@
 #ifndef _demons_h_
 #define _demons_h_
 
+#include "plm_config.h"
+
 #include "threading.h"
 #include "volume.h"
 
 typedef struct DEMONS_Parms_struct DEMONS_Parms;
 struct DEMONS_Parms_struct {
+    Threading threading;
     float denominator_eps;
     float homog;
     float accel;
@@ -23,7 +26,7 @@ extern "C" {
 gpuit_EXPORT
 void demons_default_parms (DEMONS_Parms* parms);
 gpuit_EXPORT
-Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, Threading threading, DEMONS_Parms* parms);
+Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_brook (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_opencl (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);

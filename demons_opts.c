@@ -32,7 +32,6 @@ parse_args (DEMONS_Options* options, int argc, char* argv[])
     int i, rc;
     DEMONS_Parms* parms = &options->parms;
 
-    options->method = "CPU";
     options->output_fn = "output.mha";
     demons_default_parms (parms);
 
@@ -44,7 +43,26 @@ parse_args (DEMONS_Options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->method = argv[i];
+#if BROOK_FOUND
+	    if (!strcmp(argv[i], "brook") || !strcmp(argv[i], "BROOK")) {
+		parms->threading = THREADING_BROOK;
+		continue;
+	    } 
+#endif
+#if CUDA_FOUND
+	    if (!strcmp(argv[i], "cuda") || !strcmp(argv[i], "CUDA")) {
+		parms->threading = THREADING_CUDA;
+		continue;
+	    }
+#endif
+#if OPENCL_FOUND
+	    if (!strcmp(argv[i], "opencl") || !strcmp(argv[i], "OPENCL")) {
+		parms->threading = THREADING_OPENCL;
+		continue;
+	    }
+#endif
+	    /* Default */
+	    parms->threading = THREADING_CPU_OPENMP;
 	}
 	else if (!strcmp (argv[i], "-a")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

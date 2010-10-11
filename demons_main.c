@@ -39,7 +39,7 @@ main (int argc, char* argv[])
     }
 
     /* GCS FIX: This limitation only applies to brook version */
-    if (threading_parse (options.method) == THREADING_BROOK) {
+    if (options.parms.threading == THREADING_BROOK) {
 	if (fixed->dim[0] % 4 != 0) {
 	    printf("\nX dimension must be divisible by 4.  Exiting.\n");
 	    exit(-1);
@@ -48,13 +48,12 @@ main (int argc, char* argv[])
 
     volume_convert_to_float (moving);
     volume_convert_to_float (fixed);
-    if (threading_parse (options.method) != THREADING_OPENCL) {
+    if (options.parms.threading != THREADING_OPENCL) {
 	moving_grad = volume_make_gradient (moving);
 	//write_mha ("moving_grad.mha", moving_grad);
     }
 
     vector_field = demons (fixed, moving, moving_grad, 0, 
-	threading_parse (options.method), 
 	&options.parms);
 
     vf_print_stats (vector_field);
@@ -67,7 +66,7 @@ main (int argc, char* argv[])
 
     volume_destroy (fixed);
     volume_destroy (moving);
-    if (threading_parse (options.method) != THREADING_OPENCL) {
+    if (options.parms.threading != THREADING_OPENCL) {
 	volume_destroy (moving_grad);
     }
     volume_destroy (vector_field);
