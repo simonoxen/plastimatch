@@ -181,8 +181,8 @@ pgm_save (Proj_image *proj, char* img_filename)
 	"# Created by plastimatch\n"
 	"%d %d\n"
 	"65535\n",
-	proj->dim[1], 
-	proj->dim[0]
+	proj->dim[0],
+	proj->dim[1]
     );
 
     for (i = 0; i < proj->dim[0]*proj->dim[1]; i++) {
