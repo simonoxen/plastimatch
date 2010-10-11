@@ -1,3 +1,5 @@
+.. _proj_mat_file_format:
+
 Projection matrix file format
 -----------------------------
 

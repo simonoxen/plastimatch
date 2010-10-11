@@ -7,7 +7,8 @@ Documentation:
    command_reference
    registration
    drr
-   cbct
+   fdk
+   fdk_tutorial
    utility_programs
    3d_slicer_integration
    dicom_conformance

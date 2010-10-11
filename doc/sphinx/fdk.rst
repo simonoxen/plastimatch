@@ -24,10 +24,54 @@ The command line usage is::
    -z "s1 s2 s3"          Physical size of the reconstruction (in mm)
    -I indir               The input directory
    -O outfile             The output file
-   -sb ". (default)" The subfolder with *.raw files
-   -F {F,H}               Full or Half fan correction
-   -cor                   Turn on Coronal output
-   -sag                   Turn on Sagittal output
+   -F {F,H}               Full or half fan bow-tie filter correction
+
+The usage of the fdk program is best understood by following along 
+with the tutorial: :ref:`fdk_tutorial`.
+
+Input files
+-----------
+Three different formats of input files are supported.  These are:
+
+- Pfm format image files with geomtry txt files
+- Raw format image files with geomtry txt files
+- Varian hnd files
+
+The pfm and raw files are similar, in that they store the image as 
+an array of 4-byte little-endian floats.  The only difference is that 
+the pfm file has a header which stores the image size, and the raw file 
+does not.
+
+Each pfm or raw image file must have a geometry file in the same directory 
+with the .txt extension.  For example, if you want to use image_0000.pfm
+in a reconstruction, you should supply another file image_0000.txt 
+which contains the geometry.  
+A brief description of the geometry file format is given in 
+:ref:`proj_mat_file_format`.
+
+The sequence of files should be stored with the pattern:
+
+  XXXXYYYY.ZZZ
+
+where XXXX is a prefix, YYYY is a number, and .ZZZ is the extension 
+of a known type (either .hnd, .pfm, or .raw).
+
+For example the following would be a good directory layout for pfm files::
+
+  Files/image_00.pfm
+  Files/image_00.txt
+  Files/image_01.pfm
+  Files/image_01.txt
+  etc...
+
+The Varian hnd files should be stored in the original layout.  For example::
+
+  Files/ProjectionInfo.xml
+  Files/Scan0/Proj_0000.hnd
+  Files/Scan0/Proj_0001.hnd
+  etc...
+
+No geometry txt files are needed to reconstruct from Varian hnd format.
 
 Image geometry
 --------------
