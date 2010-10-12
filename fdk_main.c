@@ -50,6 +50,8 @@ get_pixel_value_c (Proj_image* cbi, double r, double c)
 inline float
 get_pixel_value_b (Proj_image* cbi, double r, double c)
 {
+//    get_pixel_value_b (cbi, ip[1], ip[0]);
+
     int rr, cc;
 
     rr = ROUND_INT(r);
@@ -438,28 +440,28 @@ reconstruct_conebeam (
     scale = scale * options->scale;
 
     for (i = 0; i < num_imgs; i++) {
-	printf ("Processing image %d\n", i);
+        printf ("Processing image %d\n", i);
 
-	plm_timer_start (&timer);
-	cbi = proj_image_dir_load_image (proj_dir, i);
-	io_time += plm_timer_report (&timer);
+        plm_timer_start (&timer);
+        cbi = proj_image_dir_load_image (proj_dir, i);
+        io_time += plm_timer_report (&timer);
 
-	if (options->filter == FDK_FILTER_TYPE_RAMP) {
-	    plm_timer_start (&timer);
-	    proj_image_filter (cbi);
-	    filter_time += plm_timer_report (&timer);
-	}
-	
-	// printf ("Projecting Image %d\n", i);
-	plm_timer_start (&timer);
-	// project_volume_onto_image_reference (vol, cbi, scale);
-	// project_volume_onto_image_a (vol, cbi, scale);
-	// project_volume_onto_image_b (vol, cbi, scale);
-	project_volume_onto_image_c (vol, cbi, scale);
-	// project_volume_onto_image_d (vol, cbi, scale);
-	backproject_time += plm_timer_report (&timer);
+        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+            plm_timer_start (&timer);
+            proj_image_filter (cbi);
+            filter_time += plm_timer_report (&timer);
+        }
+    
+        // printf ("Projecting Image %d\n", i);
+        plm_timer_start (&timer);
+        // project_volume_onto_image_reference (vol, cbi, scale);
+        // project_volume_onto_image_a (vol, cbi, scale);
+        // project_volume_onto_image_b (vol, cbi, scale);
+        project_volume_onto_image_c (vol, cbi, scale);
+        // project_volume_onto_image_d (vol, cbi, scale);
+        backproject_time += plm_timer_report (&timer);
 
-	proj_image_destroy (cbi);
+        proj_image_destroy (cbi);
     }
 
     printf ("I/O time (total) = %g\n", io_time);
