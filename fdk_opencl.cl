@@ -15,6 +15,7 @@ __kernel void convert_to_hu_cl(
 const sampler_t dev_img_sampler = CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_NONE | CLK_FILTER_NEAREST;
 #endif
 
+#if defined (commentout)
 // FDK kernel - no interpolation
 __kernel void kernel_fdk(
     __global float *dev_vol,
@@ -31,7 +32,6 @@ __kernel void kernel_fdk(
     __constant int4 *ndevice,
     int offset
 ) {
-#if defined (commentout)
     uint i = get_global_id(0);
     uint j = get_global_id(1);
     uint k = get_global_id(2);
@@ -379,5 +379,17 @@ __kernel void kernel_fdk_bicubic(
 
     // Place it into the volume
     dev_vol[vol_idx] = dev_vol_value + ((*scale) * s * intensity);
+}
 #endif
+
+__kernel void 
+kernel_1 (
+    __global  unsigned int * output,
+    __global  unsigned int * input,
+    const     unsigned int multiplier
+)
+{
+    uint tid = get_global_id(0);
+    
+    output[tid] = input[tid] * multiplier;
 }

@@ -3,10 +3,9 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <fstream>
-#include <iostream>
 
 #include "bstring_util.h"
 #include "file_util.h"
@@ -368,72 +367,47 @@ opencl_close_device (Opencl_device *ocl_dev)
     free (ocl_dev->command_queues);
 }
 
-void
-opencl_create_buffer (
+Opencl_buf* 
+opencl_buf_create (
     Opencl_device *ocl_dev, 
     size_t buffer_size, 
     void *buffer
 )
 {
-    /* Create buffer on all contexts?? */
+    /* Create one buffer per context? one buffer per device? 
+       For now we create one per context. */
+    Opencl_buf* ocl_buf = (Opencl_buf*) malloc (
+	ocl_dev->context_count * sizeof(Opencl_buf));
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
-	cl_int status = 0;
-	cl_mem dev_buf;
-	dev_buf = clCreateBuffer (
+	cl_int status;
+	ocl_buf[i] = clCreateBuffer (
 	    ocl_dev->contexts[i], 
 	    CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
-	    //sizeof(cl_uint) * width,
 	    buffer_size, 
 	    buffer, 
 	    &status);
 	opencl_check_error (status, "clCreateBuffer");
     }
+    return ocl_buf;
 }
 
-#if defined (commentout)
-    /////////////////////////////////////////////////////////////////
-    // Create OpenCL memory buffers
-    /////////////////////////////////////////////////////////////////
-    inputBuffer = clCreateBuffer (
-	context, 
-	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-	sizeof(cl_uint) * width,
-	input, 
-	&status);
-    if(status != CL_SUCCESS) 
-    { 
-	std::cout<<"Error: clCreateBuffer (inputBuffer)\n";
-	return 1;
+void
+opencl_kernel_create (
+    Opencl_device *ocl_dev, 
+    const char *kernel_name
+)
+{
+    ocl_dev->kernels = (cl_kernel*) malloc (
+	ocl_dev->device_count * sizeof(cl_kernel));
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+	cl_int status;
+	ocl_dev->kernels[i] = clCreateKernel (
+	    ocl_dev->programs[i], 
+	    kernel_name, 
+	    &status);
+	opencl_check_error (status, "clCreateKernel");
     }
-
-    outputBuffer = clCreateBuffer(
-	context, 
-	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR,
-	sizeof(cl_uint) * width,
-	output, 
-	&status);
-    if(status != CL_SUCCESS) 
-    { 
-	std::cout<<"Error: clCreateBuffer (outputBuffer)\n";
-	return 1;
-    }
-#endif
-
-
-#if defined (commentout)
-
-    /* get a kernel object handle for a kernel with the given name */
-    kernel = clCreateKernel(program, "templateKernel", &status);
-    if(status != CL_SUCCESS) 
-    {  
-	std::cout<<"Error: Creating Kernel from program. (clCreateKernel)\n";
-	return 1;
-    }
-
-    return 0;
 }
-
-#endif
 
 void
 opencl_load_programs (
@@ -453,8 +427,8 @@ opencl_load_programs (
     buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
     ocl_dev->programs = (cl_program*) malloc (
-	ocl_dev->context_count * sizeof(cl_program));
-    for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
+	ocl_dev->device_count * sizeof(cl_program));
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
 	ocl_dev->programs[i] = clCreateProgramWithSource (
 	    ocl_dev->contexts[i], 
 	    1, 
@@ -491,6 +465,65 @@ opencl_load_programs (
 
     /* Free the string with file contents */
     delete buf;
+}
+
+void
+opencl_set_kernel_args (
+    Opencl_device *ocl_dev, 
+    ...
+)
+{
+    va_list va;
+    cl_int status;
+    cl_uint arg_index;
+    size_t arg_size;
+    void* arg;
+
+    /* Set the arguments */
+    arg_index = 0;
+    va_start (va, ocl_dev);
+    while (arg_size = va_arg (va, size_t)) {
+	arg = va_arg (va, void*);
+
+	/* Here I would add the loop for each device... */
+	/* But instead just send to kernel 0 */
+	//printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
+
+	status = clSetKernelArg (
+	    ocl_dev->kernels[0], 
+	    arg_index ++, 
+	    arg_size, 
+	    arg);
+	opencl_check_error (status, "clSetKernelArg");
+    }
+    va_end (va);
+}
+
+void
+opencl_kernel_enqueue (
+    Opencl_device *ocl_dev, 
+    size_t global_work_size, 
+    size_t local_work_size
+)
+{
+    cl_event events[2];
+    cl_int status;
+
+    /* Add kernel to the queue */
+    status = clEnqueueNDRangeKernel (
+	ocl_dev->command_queues[0], 
+	ocl_dev->kernels[0], 
+	1, 
+	NULL, 
+	&global_work_size, 
+	&local_work_size, 
+	0, 
+	NULL, 
+	&events[0]);
+    opencl_check_error (status, "clEnqueueNDRangeKernel");
+
+    status = clWaitForEvents(1, &events[0]);
+    opencl_check_error (status, "clWaitForEvents");
 }
 
 cl_ulong 

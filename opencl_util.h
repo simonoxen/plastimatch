@@ -16,6 +16,8 @@
 //! Custom Utility Functions
 //////////////////////////////////////////////////////////////////////////////
 
+typedef cl_mem Opencl_buf;
+
 typedef struct opencl_device Opencl_device;
 struct opencl_device {
     cl_platform_id platform;
@@ -23,10 +25,12 @@ struct opencl_device {
     cl_uint context_count;
     cl_context *contexts;
 
+    /* Each of these have device_count entries */
     cl_uint device_count;
     cl_device_id *devices;
     cl_command_queue *command_queues;
     cl_program *programs;
+    cl_kernel *kernels;
 };
 
 #if defined __cplusplus
@@ -60,6 +64,33 @@ opencl_load_programs (
 gpuit_EXPORT
 void 
 opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program);
+
+gpuit_EXPORT
+Opencl_buf* 
+opencl_buf_create (
+    Opencl_device *ocl_dev, 
+    size_t buffer_size, 
+    void *buffer
+);
+gpuit_EXPORT
+void
+opencl_kernel_create (
+    Opencl_device *ocl_dev, 
+    const char *kernel_name
+);
+gpuit_EXPORT
+void
+opencl_set_kernel_args (
+    Opencl_device *ocl_dev, 
+    ...
+);
+gpuit_EXPORT
+void
+opencl_kernel_enqueue (
+    Opencl_device *ocl_dev, 
+    size_t global_work_size, 
+    size_t local_work_size
+);
 
 #if defined __cplusplus
 }
