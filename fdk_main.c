@@ -50,8 +50,6 @@ get_pixel_value_c (Proj_image* cbi, double r, double c)
 inline float
 get_pixel_value_b (Proj_image* cbi, double r, double c)
 {
-//    get_pixel_value_b (cbi, ip[1], ip[0]);
-
     int rr, cc;
 
     rr = ROUND_INT(r);

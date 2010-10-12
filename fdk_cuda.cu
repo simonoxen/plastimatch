@@ -7,14 +7,14 @@
 * Uncomment the line below to enable verbose output. *
 * Enabling this should not nerf performance.         *
 \****************************************************/
-#define VERBOSE
+//#define VERBOSE
 
 /**********************************************************\
 * Uncomment the line below to enable detailed performance  *
 * reporting.  This measurement alters the system, however, *
 * resulting in significantly slower kernel execution.      *
 \**********************************************************/
-#define TIME_KERNEL
+//#define TIME_KERNEL
 
 /*****************
 *  C   #includes *
