@@ -480,14 +480,14 @@ opencl_set_kernel_args (
     void* arg;
 
     /* Set the arguments */
-    arg_index = 0;
     va_start (va, ocl_dev);
-    while (arg_size = va_arg (va, size_t)) {
+    arg_index = 0;
+    while ((arg_size = va_arg (va, size_t)) != 0) {
 	arg = va_arg (va, void*);
 
 	/* Here I would add the loop for each device... */
 	/* But instead just send to kernel 0 */
-	//printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
+	printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
 
 	status = clSetKernelArg (
 	    ocl_dev->kernels[0], 
@@ -510,6 +510,7 @@ opencl_kernel_enqueue (
     cl_int status;
 
     /* Add kernel to the queue */
+    printf ("Trying clEnqueueNDRangeKernel...\n");
     status = clEnqueueNDRangeKernel (
 	ocl_dev->command_queues[0], 
 	ocl_dev->kernels[0], 
@@ -522,6 +523,7 @@ opencl_kernel_enqueue (
 	&events[0]);
     opencl_check_error (status, "clEnqueueNDRangeKernel");
 
+    printf ("Trying clWaitEvents...\n");
     status = clWaitForEvents(1, &events[0]);
     opencl_check_error (status, "clWaitForEvents");
 }

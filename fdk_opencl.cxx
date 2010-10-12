@@ -58,9 +58,8 @@ opencl_reconstruct_conebeam (
 	&ocl_buf_in[0], 
 	sizeof (cl_uint), 
 	&multiplier, 
-	0
+	(size_t) 0
     );
     opencl_kernel_enqueue (&ocl_dev, buf_entries, 1);
-
 
 }
