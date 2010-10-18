@@ -34,6 +34,7 @@ dvh_main (Dvh_parms* parms)
     int sno;
     Rtds rtds;
     int *hist;
+    int *struct_vox;
     int bin;
     float dose_vox[3];
     float ss_vox[3];
@@ -48,12 +49,15 @@ dvh_main (Dvh_parms* parms)
 
     /* Create histogram */
     std::cout << "Creating Histogram..." << std::endl;
-    std::cout << "Your Histogram will have " << parms->num_bins << " bins and they will be " << parms->bin_width << "Gy large" << std::endl;
+    printf ("Your Histogram will have %d bins and will be %f cGy large\n",
+	parms->num_bins, parms->bin_width);
     hist = (int*) malloc (sizeof(int) * rtds.m_ss_list->num_structures 
 	* parms->num_bins);
     memset (hist, 0, sizeof(int) * rtds.m_ss_list->num_structures 
 	* parms->num_bins);
-
+    struct_vox = (int*) malloc (sizeof(int) * rtds.m_ss_list->num_structures);
+    memset (struct_vox, 0, sizeof(int) * rtds.m_ss_list->num_structures);
+   
     /* Is voxel size the same? */
     std::cout << "checking voxel size..." << std::endl;
     dose_vox[0]=dose_img->GetSpacing()[0];
@@ -63,7 +67,10 @@ dvh_main (Dvh_parms* parms)
     ss_vox[1]=ss_img->GetSpacing()[1];
     ss_vox[2]=ss_img->GetSpacing()[2];
 
-    if (dose_vox[0]!=ss_vox[0] || dose_vox[1]!=ss_vox[1] || dose_vox[2]!=ss_vox[2]) {
+    if (dose_vox[0] != ss_vox[0] 
+	|| dose_vox[1] != ss_vox[1] 
+	|| dose_vox[2] != ss_vox[2])
+    {
 	std::cout << "dose voxel " << dose_vox[0] <<" "<< dose_vox[1] <<" "<< dose_vox[2] << std::endl;
 	std::cout << "ss voxel " << ss_vox[0] <<" "<< ss_vox[1] <<" "<< ss_vox[2] << std::endl;
 	std::cout << "Resampling" << std::endl;
@@ -119,8 +126,9 @@ dvh_main (Dvh_parms* parms)
 	    /* Is this pixel in the current structure? */
 	    uint32_t in_struct = s & (1 << curr_structure->bit);
 
-	    /* If so, update histogram */
+	    /* If so, update histogram & structure size */
 	    if (in_struct) {
+		struct_vox[sno] ++;
 		hist[bin*rtds.m_ss_list->num_structures + sno] ++;
 	    }
 	}
@@ -137,7 +145,6 @@ dvh_main (Dvh_parms* parms)
 	}
     }
 
-
     /* Save the csv file */
     FILE *fp = fopen (parms->output_csv_fn, "w");
     fprintf (fp, "Dose (cGy)");
@@ -150,7 +157,12 @@ dvh_main (Dvh_parms* parms)
 	fprintf (fp, "%g", bin * parms->bin_width);
 	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
 	    int val = hist[bin*rtds.m_ss_list->num_structures + sno];
-	    fprintf (fp, ",%d", val);
+	    if (parms->normalization == DVH_NORMALIZATION_PCT) {
+		float fval = ((float) val) / struct_vox[sno];
+		fprintf (fp, ",%f", fval);
+	    } else {
+		fprintf (fp, ",%d", val);
+	    }
 	}
 	fprintf (fp, "\n");
     }
@@ -168,8 +180,9 @@ print_usage (void)
 	"   --output-csv file\n"
 	"   --input-units {gy,cgy}\n"
 	"   --cumulative\n"
+	"   --normalization {pct,vox}\n"
 	"   --num-bins\n"
-	"   --bin-width\n"
+	"   --bin-width (in cGy)\n"
     );
     exit (-1);
 }
@@ -195,6 +208,7 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	{ "num-bins",       required_argument,      NULL,           8 },
 	{ "bin_width",      required_argument,      NULL,           9 },
 	{ "bin-width",      required_argument,      NULL,           9 },
+	{ "normalization",  required_argument,      NULL,           10 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -239,6 +253,20 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	case 9:
 	    rc = sscanf (optarg, "%f", &parms->bin_width);
 	    std::cout << "bin_width " << parms->bin_width << std::endl;
+	    break;
+	case 10:
+	    if (!strcmp (optarg, "percent") || !strcmp (optarg, "pct"))
+	    {
+		parms->normalization = DVH_NORMALIZATION_PCT;
+	    }
+	    else if (!strcmp (optarg, "voxels") || !strcmp (optarg, "vox"))
+	    {
+		parms->normalization = DVH_NORMALIZATION_VOX;
+	    }
+	    else {
+		fprintf (stderr, "Error.  Normalization must be pct or vox.\n");
+		print_usage ();
+	    }
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");
