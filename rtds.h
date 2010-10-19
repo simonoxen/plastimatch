@@ -8,6 +8,7 @@
 #include "cxt_io.h"
 #include "demographics.h"
 #include "plm_image.h"
+#include "ss_image.h"
 #include "xio_ct.h"
 
 /* rtds = RT data set */

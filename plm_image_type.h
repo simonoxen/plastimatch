@@ -24,6 +24,7 @@ enum Plm_image_type {
     PLM_IMG_TYPE_GPUIT_UINT32, 
     PLM_IMG_TYPE_GPUIT_FLOAT, 
     PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
+    PLM_IMG_TYPE_SS_IMAGE
 };
 
 plastimatch1_EXPORT
