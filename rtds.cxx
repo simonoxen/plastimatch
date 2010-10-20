@@ -115,14 +115,13 @@ Rtds::load_xio (
     xio_ct_load (this->m_img, xsd->path);
 
     /* Load the XiO studyset structure set */
-    this->m_cxt = new Rtss;
-    printf ("calling xio_structures_load\n");
-    xio_structures_load (this->m_cxt, xsd->path);
+    this->m_ss_image = new Ss_image;
+    this->m_ss_image->load_xio (xsd->path);
 
     /* Apply XiO CT geometry to structures */
-    if (this->m_cxt) {
+    if (this->m_ss_image->m_cxt) {
 	printf ("calling cxt_set_geometry_from_plm_image\n");
-	this->m_cxt->set_geometry_from_plm_image (this->m_img);
+	this->m_ss_image->m_cxt->set_geometry_from_plm_image (this->m_img);
     }
 
     /* Set patient position for XiO CT */
@@ -156,8 +155,9 @@ Rtds::load_xio (
     if (this->m_img) {
 	xio_ct_apply_transform (this->m_img, this->m_xio_transform);
     }
-    if (this->m_cxt) {
-	xio_structures_apply_transform (this->m_cxt, this->m_xio_transform);
+    if (this->m_ss_image->m_cxt) {
+	xio_structures_apply_transform (this->m_ss_image->m_cxt, 
+	    this->m_xio_transform);
     }
     if (this->m_dose) {
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
@@ -167,21 +167,8 @@ Rtds::load_xio (
 void
 Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    /* Load ss_img */
-    if (this->m_ss_img) {
-	delete this->m_ss_img;
-    }
-    if (ss_img) {
-	this->m_ss_img = plm_image_load_native (ss_img);
-    }
-
-    /* Load ss_list */
-    if (this->m_ss_list) {
-	delete this->m_ss_list;
-    }
-    if (ss_list) {
-	this->m_ss_list = ss_list_load (0, ss_list);
-    }
+    this->m_ss_image = new Ss_image;
+    this->m_ss_image->load (ss_img, ss_list);
 }
 
 void
@@ -238,52 +225,16 @@ Rtds::load_dose_mc (const char *dose_mc)
 void
 Rtds::save_dicom (const char *dicom_dir)
 {
-    char fn[_MAX_PATH];
-
     if (this->m_img) {
 	this->m_img->save_short_dicom (dicom_dir);
     }
-    if (this->m_cxt) {	
-	this->m_cxt->adjust_structure_names ();
-	if (this->m_img && bstring_not_empty (this->m_cxt->ct_study_uid)) {
-	    /* No structure association available.
-	       Associate with DICOM output */
-	    cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
-	}
-	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "ss.dcm");
-	gdcm_rtss_save (this->m_cxt, fn, dicom_dir);
+    if (this->m_ss_image) {
+	this->m_ss_image->save_gdcm_rtss (dicom_dir);
     }
     if (this->m_dose) {
+	char fn[_MAX_PATH];
 	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "dose.dcm");
 	gdcm_dose_save (this->m_dose, fn);
     }
 }
 
-void
-Rtds::convert_ss_img_to_cxt (void)
-{
-    int num_structs = -1;
-
-    /* Allocate memory for cxt */
-    if (this->m_cxt) {
-	delete this->m_cxt;
-    }
-    this->m_cxt = new Rtss;
-
-    /* Copy geometry from ss_img to cxt */
-    this->m_cxt->set_geometry_from_plm_image (this->m_ss_img);
-
-    /* Extract polylines */
-    num_structs = this->m_ss_list->num_structures;
-    /* Image type must be uint32_t for cxt_extract */
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-
-    /* Do extraction */
-    printf ("Running marching squares\n");
-    if (this->m_ss_list) {
-	this->m_cxt->clone_empty (this->m_ss_list);
-	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
-    } else {
-	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
-    }
-}

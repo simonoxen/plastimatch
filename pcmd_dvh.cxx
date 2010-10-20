@@ -45,18 +45,19 @@ dvh_main (Dvh_parms* parms)
     std::cout << "Loading..." << std::endl;
     load_input_files (&rtds, parms);
     FloatImageType::Pointer dose_img = rtds.m_dose->itk_float ();
-    UInt32ImageType::Pointer ss_img = rtds.m_ss_img->m_itk_uint32;
+    UInt32ImageType::Pointer ss_img = rtds.m_ss_image->get_ss_img();
+    Rtss *ss_list = rtds.m_ss_image->get_ss_list();
 
     /* Create histogram */
     std::cout << "Creating Histogram..." << std::endl;
     printf ("Your Histogram will have %d bins and will be %f cGy large\n",
 	parms->num_bins, parms->bin_width);
-    hist = (int*) malloc (sizeof(int) * rtds.m_ss_list->num_structures 
+    hist = (int*) malloc (sizeof(int) * ss_list->num_structures 
 	* parms->num_bins);
-    memset (hist, 0, sizeof(int) * rtds.m_ss_list->num_structures 
+    memset (hist, 0, sizeof(int) * ss_list->num_structures 
 	* parms->num_bins);
-    struct_vox = (int*) malloc (sizeof(int) * rtds.m_ss_list->num_structures);
-    memset (struct_vox, 0, sizeof(int) * rtds.m_ss_list->num_structures);
+    struct_vox = (int*) malloc (sizeof(int) * ss_list->num_structures);
+    memset (struct_vox, 0, sizeof(int) * ss_list->num_structures);
    
     /* Is voxel size the same? */
     std::cout << "checking voxel size..." << std::endl;
@@ -120,8 +121,8 @@ dvh_main (Dvh_parms* parms)
 	    bin = parms->num_bins - 1;
 	}
 
-	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	    Rtss_structure *curr_structure = rtds.m_ss_list->slist[sno];
+	for (sno = 0; sno < ss_list->num_structures; sno++) {
+	    Rtss_structure *curr_structure = ss_list->slist[sno];
 		    
 	    /* Is this pixel in the current structure? */
 	    uint32_t in_struct = s & (1 << curr_structure->bit);
@@ -129,18 +130,18 @@ dvh_main (Dvh_parms* parms)
 	    /* If so, update histogram & structure size */
 	    if (in_struct) {
 		struct_vox[sno] ++;
-		hist[bin*rtds.m_ss_list->num_structures + sno] ++;
+		hist[bin*ss_list->num_structures + sno] ++;
 	    }
 	}
     }
 
     /* Convert histogram to cumulative histogram */
     if (parms->cumulative) {
-	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
+	for (sno = 0; sno < ss_list->num_structures; sno++) {
 	    int cum = 0;
 	    for (bin = parms->num_bins - 1; bin >= 0; bin--) {
-		cum = cum + hist[bin*rtds.m_ss_list->num_structures + sno];
-		hist[bin*rtds.m_ss_list->num_structures + sno] = cum;
+		cum = cum + hist[bin*ss_list->num_structures + sno];
+		hist[bin*ss_list->num_structures + sno] = cum;
 	    }
 	}
     }
@@ -148,15 +149,15 @@ dvh_main (Dvh_parms* parms)
     /* Save the csv file */
     FILE *fp = fopen (parms->output_csv_fn, "w");
     fprintf (fp, "Dose (cGy)");
-    for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	Rtss_structure *curr_structure = rtds.m_ss_list->slist[sno];
+    for (sno = 0; sno < ss_list->num_structures; sno++) {
+	Rtss_structure *curr_structure = ss_list->slist[sno];
 	fprintf (fp, ",%s", (const char*) curr_structure->name);
     }
     fprintf (fp, "\n");
     for (bin = 0; bin < parms->num_bins; bin++) {
 	fprintf (fp, "%g", bin * parms->bin_width);
-	for (sno = 0; sno < rtds.m_ss_list->num_structures; sno++) {
-	    int val = hist[bin*rtds.m_ss_list->num_structures + sno];
+	for (sno = 0; sno < ss_list->num_structures; sno++) {
+	    int val = hist[bin*ss_list->num_structures + sno];
 	    if (parms->normalization == DVH_NORMALIZATION_PCT) {
 		float fval = ((float) val) / struct_vox[sno];
 		fprintf (fp, ",%f", fval);

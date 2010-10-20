@@ -315,6 +315,8 @@ xio_structures_save (
     int i, j, k, z;
     char fn[_MAX_PATH];
 
+    printf ("X_S_S: output_dir = %s\n", output_dir);
+
     if (!cxt->have_geometry) {
 	print_and_exit ("Sorry, can't output xio format without ct geometry\n");
     }

@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "cxt_io.h"
 #include "xio_ct.h"
+#include "xio_io.h"
 
 plastimatch1_EXPORT void
 xio_structures_load (Rtss *structures, char *input_dir);

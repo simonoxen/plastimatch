@@ -14,15 +14,12 @@
 /* rtds = RT data set */
 class Rtds {
 public:
-    Plm_image *m_img;                    /* CT image */
-    Rtss *m_cxt;                         /* Structure set in polyline form */
-    Plm_image *m_ss_img;                 /* Structure set in bitmap form */
-    Rtss *m_ss_list;                     /* Names of structures/bitmap form */
-    Plm_image *m_labelmap;               /* Structure set in bitmap form */
-    Plm_image *m_dose;                   /* RT dose */
-    char m_xio_dose_input[_MAX_PATH];    /* Input XiO dose file to use as 
+    Plm_image *m_img;                  /* CT image */
+    Ss_image *m_ss_image;              /* Structure set lossless bitmap form */
+    Plm_image *m_dose;                 /* RT dose */
+    char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
 					    template for XiO dose saving. */
-    Xio_ct_transform *m_xio_transform;    /* Transformation from XiO to DICOM
+    Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					    coordinates */
     Demographics demographics;
 
@@ -31,10 +28,7 @@ public:
 	int i;
 
 	m_img = 0;
-	m_ss_img = 0;
-	m_ss_list = 0;
-	m_labelmap = 0;
-	m_cxt = 0;
+	m_ss_image = 0;
 	m_dose = 0;
 	strcpy(m_xio_dose_input, "\0");
 
@@ -53,17 +47,8 @@ public:
 	if (m_img) {
 	    delete m_img;
 	}
-	if (m_cxt) {
-	    delete m_cxt;
-	}
-	if (m_ss_img) {
-	    delete m_ss_img;
-	}
-	if (m_ss_list) {
-	    delete m_ss_list;
-	}
-	if (m_labelmap) {
-	    delete m_labelmap;
+	if (m_ss_image) {
+	    delete m_ss_image;
 	}
 	if (m_dose) {
 	    delete m_dose;

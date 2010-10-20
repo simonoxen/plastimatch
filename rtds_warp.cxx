@@ -20,49 +20,6 @@
 #include "xio_structures.h"
 
 static void
-compose_prefix_fn (
-    CBString *fn, 
-    const CBString *structure_name, 
-    Warp_parms *parms
-)
-{
-    fn->format ("%s_%s.%s", 
-	(const char*) parms->output_prefix, 
-	(const char*) (*structure_name), 
-	"mha");
-}
-
-static void
-prefix_output_save (Rtds *rtds, Warp_parms *parms)
-{
-    int i;
-    Plm_image *ss_img;
-
-    ss_img = rtds->m_ss_img;
-    if (!ss_img) {
-	return;
-    }
-
-    /* Use m_cxt or m_ss_list ?? */
-    for (i = 0; i < rtds->m_cxt->num_structures; i++) {
-	CBString fn;
-	Rtss_structure *curr_structure = rtds->m_cxt->slist[i];
-	int bit = curr_structure->bit;
-
-	if (bit == -1) continue;
-
-	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-	UCharImageType::Pointer prefix_img = ss_img_extract (
-	    rtds->m_ss_img->m_itk_uint32, bit);
-
-	compose_prefix_fn (&fn, &curr_structure->name, parms);
-	printf ("Trying to save prefix image: [%d,%d], %s\n", 
-	    i, bit, (const char*) fn);
-	itk_image_save (prefix_img, (const char*) fn);
-    }
-}
-
-static void
 load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 {
     if (bstring_not_empty (parms->input_fn)) {
@@ -96,9 +53,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		"Warping dij files requires ctatts_in, dif_in files\n");
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
-	    rtds->m_cxt = new Rtss;
-	    gdcm_rtss_load (
-		rtds->m_cxt, 
+	    rtds->m_ss_image = new Ss_image;
+	    rtds->m_ss_image->load_gdcm_rtss (
 		(const char*) parms->input_fn, 
 		(const char*) parms->dicom_dir);
 	    break;
@@ -109,8 +65,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
-	    rtds->m_cxt = new Rtss;
-	    cxt_load (rtds->m_cxt, (const char*) parms->input_fn);
+	    rtds->m_ss_image = new Ss_image;
+	    rtds->m_ss_image->load_cxt (parms->input_fn);
 	    break;
 	default:
 	    print_and_exit (
@@ -145,130 +101,39 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 }
 
 static void
-rasterize_ss_img (
-    Rtds *rtds, 
-    Xform *xf, 
-    Plm_image_header *pih, 
-    Warp_parms *parms)
-{
-    /* If we have need to create image outputs, or if we have to 
-       warp something, then we need to rasterize the volume */
-    /* GCS FIX: If there is an input m_ss_img, we still do this 
-       because we might need the labelmap */
-    if (bstring_not_empty (parms->output_labelmap_fn)
-	|| bstring_not_empty (parms->output_ss_img_fn)
-	|| bstring_not_empty (parms->xf_in_fn)
-	|| bstring_not_empty (parms->output_prefix))
-    {
-	/* Rasterize structure sets */
-	Cxt_to_mha_state *ctm_state;
-	printf ("Rasterizing...\n");
-	ctm_state = cxt_to_mha_create (rtds->m_cxt);
-
-	/* Convert rasterized structure sets from vol to plm_image */
-	printf ("Converting...\n");
-	rtds->m_labelmap = new Plm_image;
-	rtds->m_labelmap->set_gpuit (ctm_state->labelmap_vol);
-	ctm_state->labelmap_vol = 0;
-	if (rtds->m_ss_img) {
-	    delete rtds->m_ss_img;
-	}
-	rtds->m_ss_img = new Plm_image;
-	rtds->m_ss_img->set_gpuit (ctm_state->ss_img_vol);
-	ctm_state->ss_img_vol = 0;
-
-	/* We're done with cxt_state now */
-	printf ("Destroying...\n");
-	cxt_to_mha_destroy (ctm_state);
-    }
-
-    printf ("Finished rasterization.\n");
-
-#if defined (commentout)
-    /* GCS NOTE: This code will create prefix files "on-the-fly".  
-       It is faster than what we do here, but can't work when we warp
-       the images. */
-    cxt_to_mha_init (&ctm_state, cxt, true, true, true);
-    while (cxt_to_mha_process_next (&ctm_state, cxt)) {
-	/* Write out prefix images */
-	if (bstring_not_empty (&parms->output_prefix)) {
-	    char fn[_MAX_PATH];
-	    strcpy (fn, parms->output_prefix);
-	    strcat (fn, "_");
-	    strcat (fn, cxt_to_mha_current_name (&ctm_state, cxt));
-	    strcat (fn, ".mha");
-	    plm_image_save_vol (fn, ctm_state.uchar_vol);
-	}
-    }
-#endif
-
-}
-
-static void
-warp_ss_img (
-    Rtds *rtds, 
-    Xform *xf, 
-    Plm_image_header *pih, 
-    Warp_parms *parms)
-{
-    /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
-       not included in output. */
-    /* If we are warping, warp rasterized image(s) */
-    if (bstring_not_empty (parms->xf_in_fn)) {
-	Plm_image *tmp;
-
-	tmp = new Plm_image;
-	plm_warp (tmp, 0, xf, pih, rtds->m_labelmap, 0, parms->use_itk, 0);
-	delete rtds->m_labelmap;
-	rtds->m_labelmap = tmp;
-	rtds->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
-
-	tmp = new Plm_image;
-	plm_warp (tmp, 0, xf, pih, rtds->m_ss_img, 0, parms->use_itk, 0);
-	delete rtds->m_ss_img;
-	rtds->m_ss_img = tmp;
-	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-
-	/* The cxt is obsolete, but we can't delete it because it 
-	   contains our "bits", used by prefix extraction.  */
-    }
-}
-
-static void
 save_ss_img (Rtds *rtds, Xform *xf, 
     Plm_image_header *pih, Warp_parms *parms)
 {
-    /* Write out labelmap, ss_img */
+    /* labelmap */
     if (bstring_not_empty (parms->output_labelmap_fn)) {
-	rtds->m_labelmap->save_image (parms->output_labelmap_fn);
+	rtds->m_ss_image->save_labelmap (parms->output_labelmap_fn);
     }
+
+    /* ss_img */
     if (bstring_not_empty (parms->output_ss_img_fn)) {
-	rtds->m_ss_img->save_image ((const char*) parms->output_ss_img_fn);
+	rtds->m_ss_image->save_ss_image (parms->output_ss_img_fn);
     }
 
-    /* Write out prefix images .. */
-    if (bstring_not_empty (parms->output_prefix)) {
-	prefix_output_save (rtds, parms);
-    }
-
-    /* Write out list of structure names */
+    /* list of structure names */
     if (bstring_not_empty (parms->output_ss_list_fn)) {
-	ss_list_save (rtds->m_cxt, parms->output_ss_list_fn);
+	rtds->m_ss_image->save_ss_list (parms->output_ss_list_fn);
     }
 
-    /* Write out 3D Slicer color table */
+    /* prefix images */
+    if (bstring_not_empty (parms->output_prefix)) {
+	rtds->m_ss_image->save_prefix (parms->output_prefix);
+    }
+
+    /* 3D Slicer color table */
     if (bstring_not_empty (parms->output_colormap_fn)) {
-	ss_list_save_colormap (rtds->m_cxt, parms->output_colormap_fn);
+	rtds->m_ss_image->save_colormap (parms->output_colormap_fn);
     }
 
     /* If we are warping, re-extract polylines into cxt */
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
     if (bstring_not_empty (parms->xf_in_fn)) {
-	rtds->m_cxt->free_all_polylines ();
-	rtds->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-	cxt_extract (rtds->m_cxt, rtds->m_ss_img->m_itk_uint32, 
-	    rtds->m_cxt->num_structures, true);
+	rtds->m_ss_image->cxt_re_extract ();
     }
 }
 
@@ -279,27 +144,41 @@ save_ss_output (
     Plm_image_header *pih, 
     Warp_parms *parms)
 {
-    if (!rtds->m_cxt) {
+    if (!rtds->m_ss_image) {
 	return;
     }
 
-    rasterize_ss_img (rtds, xf, pih, parms);
+    /* If we have need to create image outputs, or if we have to 
+       warp something, then we need to rasterize the volume */
+    /* GCS FIX: If there is an input m_ss_img, we still do this 
+       because we might need the labelmap */
+    if (bstring_not_empty (parms->output_labelmap_fn)
+	|| bstring_not_empty (parms->output_ss_img_fn)
+	|| bstring_not_empty (parms->xf_in_fn)
+	|| bstring_not_empty (parms->output_prefix))
+    {
+	rtds->m_ss_image->rasterize ();
+    }
 
-    warp_ss_img (rtds, xf, pih, parms);
+    /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
+       not included in output. */
+    if (bstring_not_empty (parms->xf_in_fn)) {
+	rtds->m_ss_image->warp (xf, pih, parms);
+    }
 
     save_ss_img (rtds, xf, pih, parms);
 
     if (bstring_not_empty (parms->output_cxt_fn)) {
-	cxt_save (rtds->m_cxt, (const char*) parms->output_cxt_fn, false);
+	rtds->m_ss_image->save_cxt (parms->output_cxt_fn, false);
     }
 
     if (bstring_not_empty (parms->output_xio_dirname)) {
-	printf ("Saving xio format...\n");
-	xio_structures_save (rtds->m_cxt, 
+	printf ("Output xio dirname = %s\n", 
+	    (const char*) parms->output_xio_dirname);
+	rtds->m_ss_image->save_xio (
 	    rtds->m_xio_transform,
 	    parms->output_xio_version,
-	    (const char*) parms->output_xio_dirname);
-	printf ("Done.\n");
+	    parms->output_xio_dirname);
     }
 }
 
@@ -334,13 +213,18 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     } else if (rtds->m_img) {
 	/* use the spacing of the input image */
 	pih.set_from_plm_image (rtds->m_img);
-    } else if (rtds->m_ss_img) {
+    } else if (rtds->m_ss_image) {
 	/* use the spacing of the input image */
-	pih.set_from_plm_image (rtds->m_ss_img);
-    } else if (rtds->m_cxt) {
+	if (rtds->m_ss_image->m_ss_img) {
+	    pih.set_from_plm_image (rtds->m_ss_image->m_ss_img);
+	}
 	/* use the spacing of the structure set */
-	pih.set_from_gpuit (rtds->m_cxt->offset, rtds->m_cxt->spacing, 
-	    rtds->m_cxt->dim, 0);
+	else if (rtds->m_ss_image->m_cxt) {
+	    pih.set_from_gpuit (
+		rtds->m_ss_image->m_cxt->offset, 
+		rtds->m_ss_image->m_cxt->spacing, 
+		rtds->m_ss_image->m_cxt->dim, 0);
+	}
     } else if (rtds->m_dose) {
 	/* use the spacing of dose */
 	pih.set_from_plm_image (rtds->m_dose);
@@ -352,24 +236,22 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     printf ("PIH is:\n");
     pih.print ();
 
-    /* Convert ss_img to cxt */
-    if (rtds->m_ss_img) {
-	rtds->convert_ss_img_to_cxt ();
-    }
+    if (rtds->m_ss_image) {
+	/* Convert ss_img to cxt */
+	rtds->m_ss_image->convert_ss_img_to_cxt ();
 
-    /* Set UIDs, patient name, etc. */
-    if (bstring_not_empty (parms->dicom_dir) && rtds->m_cxt) {
-	cxt_apply_dicom_dir (rtds->m_cxt, (const char*) parms->dicom_dir);
-    }
+	/* Set UIDs, patient name, etc. */
+	if (bstring_not_empty (parms->dicom_dir)) {
+	    rtds->m_ss_image->apply_dicom_dir (parms->dicom_dir);
+	}
 
-    /* Delete empty structures */
-    if (parms->prune_empty && rtds->m_cxt) {
-	rtds->m_cxt->prune_empty ();
-    }
+	/* Delete empty structures */
+	if (parms->prune_empty) {
+	    rtds->m_ss_image->prune_empty ();
+	}
 
-    /* Set the geometry */
-    if (rtds->m_cxt) {
-	rtds->m_cxt->set_geometry_from_plm_image_header (&pih);
+	/* Set the geometry */
+	rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
     }
 
     /* Warp the image and create vf */
