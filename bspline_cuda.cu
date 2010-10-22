@@ -403,16 +403,20 @@ bspline_cuda_init_MI_a (
     // input volumes
     dev_ptrs->fixed_image_size = fixed->npix * sizeof(float);
     dev_ptrs->moving_image_size = moving->npix * sizeof(float);
-    dev_ptrs->moving_grad_size = moving_grad->npix * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
         cuda_utils_check_error ("Failed to allocate memory for fixed image");
     cudaMalloc ((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
         cuda_utils_check_error ("Failed to allocate memory for moving image");
-    cudaMalloc ((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
-        cuda_utils_check_error ("Failed to allocate memory for moving grad");
     cudaMemcpy (dev_ptrs->fixed_image, fixed->img, dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
     cudaMemcpy (dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+
+    /* JAS 10.22.2010: MI does not use moving_grad for dC_dv computation */
+#if defined (commentout)
+    dev_ptrs->moving_grad_size = moving_grad->npix * sizeof(float);
+    cudaMalloc ((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+        cuda_utils_check_error ("Failed to allocate memory for moving grad");
     cudaMemcpy (dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+#endif
 
     // skipped voxels
     dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
@@ -6978,7 +6982,7 @@ find_correspondence (
 )
 {
     int i, j, k, z, cidx;
-    float A,B,C,P;
+    double A,B,C,P;
 
     d->x = 0.0f;
     d->y = 0.0f;
