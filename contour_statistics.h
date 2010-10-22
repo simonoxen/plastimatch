@@ -28,7 +28,7 @@
 
 //void do_dice_global(ImgType::Pointer reference, ImgType::Pointer warped, FILE* output);
 //void do_dice_expert(ImgType::Pointer ex_1, ImgType::Pointer ex_2, ImgType::Pointer ex_3, FILE* output);
-template<class T> float do_dice_global(typename itk::Image<T,Dimension>::Pointer reference, 
-									   typename itk::Image<T,Dimension>::Pointer warped, FILE* output, T);
+template<class T> float do_dice_global(typename itk::Image<T,3>::Pointer reference, 
+									   typename itk::Image<T,3>::Pointer warped, FILE* output, T);
 
 #endif

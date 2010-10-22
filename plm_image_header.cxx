@@ -22,8 +22,8 @@ gpuit_direction_from_itk (
     DirectionType* itk_direction
 )
 {
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
 	    gpuit_direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
 	}
     }
@@ -34,8 +34,8 @@ itk_direction_from_gpuit (
     DirectionType* itk_direction,
     float gpuit_direction_cosines[9])
 {
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
 	    (*itk_direction)[d1][d2] = gpuit_direction_cosines[d1*3+d2];
 	}
     }
@@ -45,8 +45,8 @@ void
 itk_direction_identity (
     DirectionType* itk_direction)
 {
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
 	    (*itk_direction)[d1][d2] = (float) (d1 == d2);
 	}
     }
@@ -62,7 +62,7 @@ Plm_image_header::set_from_gpuit (
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
 
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
 	m_origin[d1] = gpuit_origin[d1];
 	m_spacing[d1] = gpuit_spacing[d1];
 	itk_index[d1] = 0;
@@ -134,7 +134,7 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 void 
 Plm_image_header::get_gpuit_origin (float gpuit_origin[3])
 {
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	gpuit_origin[d] = m_origin[d];
     }
 }
@@ -142,7 +142,7 @@ Plm_image_header::get_gpuit_origin (float gpuit_origin[3])
 void 
 Plm_image_header::get_gpuit_spacing (float gpuit_spacing[3])
 {
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	gpuit_spacing[d] = m_spacing[d];
     }
 }
@@ -151,7 +151,7 @@ void
 Plm_image_header::get_gpuit_dim (int gpuit_dim[3])
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	gpuit_dim[d] = itk_size[d];
     }
 }
@@ -172,7 +172,7 @@ Plm_image_header::cvt_to_gpuit (float gpuit_origin[3],
     ImageRegionType::SizeType itk_size;
     itk_size = m_region.GetSize ();
 
-    for (int d1 = 0; d1 < Dimension; d1++) {
+    for (int d1 = 0; d1 < 3; d1++) {
 	gpuit_origin[d1] = m_origin[d1];
 	gpuit_spacing[d1] = m_spacing[d1];
 	gpuit_dim[d1] = itk_size[d1];
@@ -188,20 +188,20 @@ Plm_image_header::print (void) const
     itk_size = m_region.GetSize ();
 
     printf ("Origin =");
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	printf (" %g", m_origin[d]);
     }
     printf ("\nSize =");
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	printf (" %lu", itk_size[d]);
     }
     printf ("\nSpacing =");
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	printf (" %g", m_spacing[d]);
     }
     printf ("\nDirection =");
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
 	    printf (" %g", m_direction[d1][d2]);
 	}
     }
@@ -216,7 +216,7 @@ itk_roi_from_gpuit (
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
 
-    for (unsigned int d = 0; d < Dimension; d++) {
+    for (unsigned int d = 0; d < 3; d++) {
 	itk_index[d] = roi_offset[d];
 	itk_size[d] = roi_dim[d];
     }

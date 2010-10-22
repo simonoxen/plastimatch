@@ -955,7 +955,7 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	 is done to obtain the BSpline coefficient of the higher 
 	 resolution transform. */
     unsigned int counter = 0;
-    for (unsigned int k = 0; k < Dimension; k++) {
+    for (unsigned int k = 0; k < 3; k++) {
 	typedef BsplineTransformType::ImageType ParametersImageType;
 	typedef itk::ResampleImageFilter<ParametersImageType, ParametersImageType> ResamplerType;
 	ResamplerType::Pointer resampler = ResamplerType::New();
@@ -963,7 +963,7 @@ xform_itk_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
 	typedef itk::BSplineResampleImageFunction<ParametersImageType, double> FunctionType;
 	FunctionType::Pointer fptr = FunctionType::New();
 
-	typedef itk::IdentityTransform<double, Dimension> IdentityTransformType;
+	typedef itk::IdentityTransform<double, 3> IdentityTransformType;
 	IdentityTransformType::Pointer identity = IdentityTransformType::New();
 
 	resampler->SetInput (bsp_old->GetCoefficientImage()[k]);

@@ -407,8 +407,8 @@ show_image_stats (ImgP image)
     printf ("Spacing = %g %g %g\n", sp[0], sp[1], sp[2]);
     std::cout << "Size = " << sz[0] << " " << sz[1] << " " << sz[2] << std::endl;
     printf ("Direction Cosines =\n");
-    for (unsigned int d1 = 0; d1 < Dimension; d1++) {
-	for (unsigned int d2 = 0; d2 < Dimension; d2++) {
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
 	    printf (" %g", di[d1][d2]);
 	}
 	printf ("\n");

@@ -21,11 +21,11 @@
 //typedef itk::ImageMomentsCalculator<ImgType> MomentCalculatorType;
 
 template<class T>
-float do_dice_global(typename itk::Image<T,Dimension>::Pointer reference, 
-    typename itk::Image<T,Dimension>::Pointer warped, FILE* output, T)
+float do_dice_global(typename itk::Image<T,3>::Pointer reference, 
+    typename itk::Image<T,3>::Pointer warped, FILE* output, T)
 {
-    typedef typename itk::Image<T,Dimension> ImgType;
-    typedef typename itk::Image<T, 2> intImgType;
+    typedef typename itk::Image<T,3> ImgType;
+    typedef typename itk::Image<T,2> intImgType;
     typedef typename itk::ImageRegionIteratorWithIndex<ImgType> ItTypeVolPixel;
     typedef typename itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
     typedef typename itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;

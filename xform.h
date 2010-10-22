@@ -35,13 +35,13 @@ enum XFormInternalType {
 
 
 /* itk basic transforms */
-typedef itk::TranslationTransform < double, Dimension > TranslationTransformType;
+typedef itk::TranslationTransform < double, 3 > TranslationTransformType;
 typedef itk::VersorRigid3DTransform < double > VersorTransformType;
 typedef itk::QuaternionRigidTransform < double > QuaternionTransformType;
-typedef itk::AffineTransform < double, Dimension > AffineTransformType;
+typedef itk::AffineTransform < double, 3 > AffineTransformType;
 
 /* itk B-spline transforms */
-const unsigned int SplineDimension = Dimension;
+const unsigned int SplineDimension = 3;
 const unsigned int SplineOrder = 3;
 typedef double CoordinateRepType;
 typedef itk::BSplineDeformableTransform <
@@ -49,7 +49,9 @@ typedef itk::BSplineDeformableTransform <
 		    SplineDimension,
 		    SplineOrder > BsplineTransformType;
 
-typedef itk::ThinPlateSplineKernelTransform< CoordinateRepType, Dimension> TPSTransformType;
+/* itk thin-plate transforms */
+typedef itk::ThinPlateSplineKernelTransform < 
+    CoordinateRepType, 3 > TPSTransformType;
 
 class Xform {
 public:

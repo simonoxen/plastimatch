@@ -14,22 +14,26 @@
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
 
-/* We only deal with 3D images. */
-const unsigned int Dimension = 3;
+// const unsigned int Dimension = 3;
 
-typedef itk::Image < unsigned char, Dimension > UCharImageType;
-typedef itk::Image < short, Dimension > ShortImageType;
-typedef itk::Image < unsigned short, Dimension > UShortImageType;
+/* 4D images */
+typedef itk::Image < unsigned char, 4 > UCharImage4DType;
+
+/* 3D images */
+typedef itk::Image < unsigned char, 3 > UCharImageType;
+typedef itk::Image < short, 3 > ShortImageType;
+typedef itk::Image < unsigned short, 3 > UShortImageType;
 #if (CMAKE_SIZEOF_UINT == 4)
-typedef itk::Image < int, Dimension > Int32ImageType;
-typedef itk::Image < unsigned int, Dimension > UInt32ImageType;
+typedef itk::Image < int, 3 > Int32ImageType;
+typedef itk::Image < unsigned int, 3 > UInt32ImageType;
 #else
-typedef itk::Image < long, Dimension > Int32ImageType;
-typedef itk::Image < unsigned long, Dimension > UInt32ImageType;
+typedef itk::Image < long, 3 > Int32ImageType;
+typedef itk::Image < unsigned long, 3 > UInt32ImageType;
 #endif
-typedef itk::Image < float, Dimension > FloatImageType;
-typedef itk::Image < double, Dimension > DoubleImageType;
+typedef itk::Image < float, 3 > FloatImageType;
+typedef itk::Image < double, 3 > DoubleImageType;
 
+/* 2D images */
 typedef itk::Image < unsigned char, 2 > UCharImage2DType;
 typedef itk::Image < short, 2 > ShortImage2DType;
 typedef itk::Image < unsigned short, 2 > UShortImage2DType;
@@ -43,19 +47,22 @@ typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
 
-typedef itk::Point < float, Dimension > FloatPointType;
-typedef itk::Point < double, Dimension > DoublePointType;
+/* Points & vectors */
+typedef itk::Point < float, 3 > FloatPointType;
+typedef itk::Point < double, 3 > DoublePointType;
 
-typedef itk::Vector < float, Dimension > FloatVectorType;
-typedef itk::Vector < double, Dimension > DoubleVectorType;
+typedef itk::Vector < float, 3 > FloatVectorType;
+typedef itk::Vector < double, 3 > DoubleVectorType;
 
-typedef itk::Image < FloatVectorType, Dimension > DeformationFieldType;
+/* Vector field */
+typedef itk::Image < FloatVectorType, 3 > DeformationFieldType;
 
-typedef itk::Size < Dimension > SizeType;
-typedef itk::Point < double, Dimension >  OriginType;
-typedef itk::Vector < double, Dimension > SpacingType;
-typedef itk::Matrix<double, Dimension, Dimension> DirectionType;
-typedef itk::ImageRegion < Dimension > ImageRegionType;
+/* Other types */
+typedef itk::Size < 3 > SizeType;
+typedef itk::Point < double, 3 >  OriginType;
+typedef itk::Vector < double, 3 > SpacingType;
+typedef itk::Matrix<double, 3, 3> DirectionType;
+typedef itk::ImageRegion < 3 > ImageRegionType;
 
 /* -----------------------------------------------------------------------
    Function prototypes
