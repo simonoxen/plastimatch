@@ -95,6 +95,7 @@ Plm_image::load_native (const char* fname)
 {
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
+    int num_dimensions;
 
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
@@ -107,7 +108,7 @@ Plm_image::load_native (const char* fname)
 	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
-    itk__GetImageType (fname, pixelType, componentType);
+    itk_image_get_props (fname, pixelType, componentType, &num_dimensions);
 
     switch (componentType) {
     case itk::ImageIOBase::UCHAR:

@@ -24,7 +24,9 @@ tps_interp_main (TPS_parms* parms)
 
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
-    itk__GetImageType (parms->moving, pixelType, componentType);
+    int num_dimensions;
+    itk_image_get_props (parms->moving, pixelType, componentType, 
+	&num_dimensions);
     switch (componentType) {
     case itk::ImageIOBase::UCHAR:
 	{

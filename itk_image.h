@@ -75,9 +75,14 @@ plastimatch1_EXPORT UInt32ImageType::Pointer itk_image_load_uint32 (const char* 
 plastimatch1_EXPORT FloatImageType::Pointer itk_image_load_float (const char* fname, Plm_image_type* original_type);
 plastimatch1_EXPORT DeformationFieldType::Pointer itk_image_load_float_field (const char* fname);
 
-plastimatch1_EXPORT void itk__GetImageType (std::string fileName,
-			itk::ImageIOBase::IOPixelType &pixelType,
-			itk::ImageIOBase::IOComponentType &componentType);
+plastimatch1_EXPORT 
+void
+itk_image_get_props (
+    std::string fileName,
+    itk::ImageIOBase::IOPixelType &pixel_type,
+    itk::ImageIOBase::IOComponentType &component_type,
+    int *num_dimensions
+);
 
 template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 

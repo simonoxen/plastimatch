@@ -31,16 +31,18 @@
 /* -----------------------------------------------------------------------
     Functions
    ----------------------------------------------------------------------- */
-// This function is copied from Slicer3 (itkPluginUtilities.h)
-//   so it's available in case Slicer3 is not installed.
-// Get the PixelType and ComponentType from fileName
+// This function is copied and modified from Slicer3 (itkPluginUtilities.h)
 void
-itk__GetImageType (std::string fileName,
-		    itk::ImageIOBase::IOPixelType &pixel_type,
-		    itk::ImageIOBase::IOComponentType &component_type)
+itk_image_get_props (
+    std::string fileName,
+    itk::ImageIOBase::IOPixelType &pixel_type,
+    itk::ImageIOBase::IOComponentType &component_type,
+    int *num_dimensions
+)
 {
     pixel_type = itk::ImageIOBase::UNKNOWNPIXELTYPE;
     component_type = itk::ImageIOBase::UNKNOWNCOMPONENTTYPE;
+    *num_dimensions = 0;
     typedef itk::Image<short, 3> ImageType;
     itk::ImageFileReader<ImageType>::Pointer imageReader =
 	itk::ImageFileReader<ImageType>::New();
@@ -49,9 +51,10 @@ itk__GetImageType (std::string fileName,
 	imageReader->UpdateOutputInformation();
 	pixel_type = imageReader->GetImageIO()->GetPixelType();
 	component_type = imageReader->GetImageIO()->GetComponentType();
+	*num_dimensions = imageReader->GetImageIO()->GetNumberOfDimensions();
     } catch (itk::ExceptionObject &ex) {
 #if _MSC_VER
-	ex;    /* Suppress compiler warning on windows */
+	//ex;    /* Suppress compiler warning on windows */
 #endif
 	printf ("ITK exception.\n");
 	std::cout << ex << std::endl;
@@ -95,38 +98,6 @@ orient_image (T img)
 /* -----------------------------------------------------------------------
    Reading Image Headers
    ----------------------------------------------------------------------- */
-int
-get_mha_type (char* mha_fname)
-{
-    char buf[1024];
-    FILE* fp = fopen (mha_fname, "r");
-    if (!fp) {
-	printf ("Could not open mha file for read\n");
-	exit (-1);
-    }
-    while (fgets(buf,1024,fp)) {
-	if (!strcmp(buf, "ElementType = MET_SHORT\n")) {
-	    fclose (fp);
-	    return PLM_IMG_TYPE_ITK_SHORT;
-	} else if (!strcmp(buf, "ElementType = MET_USHORT\n")) {
-	    fclose (fp);
-	    return PLM_IMG_TYPE_ITK_USHORT;
-	} else if (!strcmp(buf, "ElementType = MET_UCHAR\n")) {
-	    fclose (fp);
-	    return PLM_IMG_TYPE_ITK_UCHAR;
-	} else if (!strcmp(buf, "ElementType = MET_FLOAT\n")) {
-	    fclose (fp);
-	    return PLM_IMG_TYPE_ITK_FLOAT;
-	} else if (!strncmp(buf,"ElementType",sizeof("ElementType"))) {
-	    printf ("No ElementType in mha file\n");
-	    exit (-1);
-	}
-    }
-    printf ("No ElementType in mha file\n");
-    exit (-1);
-    return 0;  /* Get rid of warning */
-}
-
 template<class T>
 void
 get_image_header (int dim[3], float offset[3], float spacing[3], T image)
@@ -184,9 +155,10 @@ set_original_type (Plm_image_type *original_type,
 
 template<class U>
 typename itk::Image< U, 3 >::Pointer
-itk_image_load_any (const char* fname,
-	  Plm_image_type* original_type, 
-	  U otype)
+itk_image_load_any (
+    const char* fname,
+    Plm_image_type* original_type, 
+    U otype)
 {
     if (!file_exists (fname)) {
 	print_and_exit ("Can't open file \"%s\" for read\n", fname);
@@ -194,10 +166,11 @@ itk_image_load_any (const char* fname,
 
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
+    int num_dimensions;
     try {
-	itk__GetImageType (fname, pixelType, componentType);
+	itk_image_get_props (fname, pixelType, componentType, &num_dimensions);
 	switch (componentType) {
-        case itk::ImageIOBase::UCHAR:
+	case itk::ImageIOBase::UCHAR:
 	    set_original_type (original_type, PLM_IMG_TYPE_ITK_UCHAR);
 	    return load_any_2 (fname, static_cast<unsigned char>(0), otype);
 	case itk::ImageIOBase::CHAR:

@@ -91,11 +91,12 @@ plm_file_format_deduce (const char* path)
 	return PLM_FILE_FMT_PROJ_IMG;
     }
 
-
     /* Maybe vector field? */
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
-    itk__GetImageType (std::string (path), pixelType, componentType);
+    int num_dimensions;
+    itk_image_get_props (std::string (path), pixelType, componentType, 
+	&num_dimensions);
     if (pixelType == itk::ImageIOBase::VECTOR) {
 	return PLM_FILE_FMT_VF;
     }
