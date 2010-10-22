@@ -85,9 +85,10 @@ public:
     void
     save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
 	const CBString &output_dir);
-
+    plastimatch1_EXPORT
     UInt32ImageType::Pointer
     get_ss_img (void);
+    plastimatch1_EXPORT
     Rtss *
     get_ss_list (void);
 
