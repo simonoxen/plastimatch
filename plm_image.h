@@ -23,6 +23,7 @@ public:
     Plm_image_patient_position m_patient_pos;
 
     /* The actual image is one of the following. */
+    UCharImage4DType::Pointer m_itk_uchar_4d;
     UCharImageType::Pointer m_itk_uchar;
     ShortImageType::Pointer m_itk_short;
     UShortImageType::Pointer m_itk_ushort;

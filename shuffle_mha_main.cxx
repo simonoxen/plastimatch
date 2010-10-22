@@ -2,14 +2,16 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /* Correct mha files which have incorrect patient orientations */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "plm_config.h"
-#include "itk_image.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
 #include "itkImageSliceIteratorWithIndex.h"
+#include "itk_image.h"
+#include "itk_image_save.h"
 
-int main (int argc, char* argv[])
+int 
+main (int argc, char* argv[])
 {
     if (argc != 3 && argc != 4) {
 	printf ("Usage: %s shuffle infile [outfile]\n", argv[0]);

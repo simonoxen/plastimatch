@@ -1,16 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/* Correct mha files which have incorrect patient orientations */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "plm_config.h"
-#include "math_util.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "synthetic_mha_main.h"
-#include "itk_image.h"
 #include "getopt.h"
+#include "itk_image.h"
+#include "itk_image_save.h"
+#include "math_util.h"
+#include "synthetic_mha_main.h"
 
 void
 do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)

@@ -6,8 +6,10 @@
 #include "itkResampleImageFilter.h"
 #include "itkCastImageFilter.h"
 #include "itkImageFileWriter.h"
+
 #include "getopt.h"
 #include "itk_image.h"
+#include "itk_image_save.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
 #include "pcmd_resample.h"

@@ -5,10 +5,12 @@
 #include <time.h>
 #include "itkSubtractImageFilter.h"
 #include "itkImageRegionIterator.h"
+
 #include "getopt.h"
+#include "itk_image.h"
+#include "itk_image_save.h"
 #include "pcmd_diff.h"
 #include "plm_image.h"
-#include "itk_image.h"
 
 static void
 diff_main (Diff_parms* parms)

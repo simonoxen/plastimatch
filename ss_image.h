@@ -18,6 +18,7 @@ public:
     Rtss *m_cxt;                  /* Structure set in polyline form */
     Plm_image *m_ss_img;          /* Structure set in lossless bitmap form */
     Plm_image *m_labelmap;        /* Structure set lossy bitmap form */
+
 public:
     Ss_image () {
 	m_ss_list = 0;

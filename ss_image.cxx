@@ -6,6 +6,7 @@
 #include "cxt_extract.h"
 #include "cxt_to_mha.h"
 #include "cxt_apply_dicom.h"
+#include "itk_image_save.h"
 #include "gdcm_rtss.h"
 #include "plm_warp.h"
 #include "rtss.h"

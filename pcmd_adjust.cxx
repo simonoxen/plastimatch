@@ -4,7 +4,9 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+
 #include "getopt.h"
+#include "itk_image_save.h"
 #include "pcmd_adjust.h"
 #include "plm_image.h"
 #include "plm_image_patient_position.h"

@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "itk_image_save.h"
 #include "itk_tps.h"
 #include "itk_warp.h"
 

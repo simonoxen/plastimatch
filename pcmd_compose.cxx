@@ -7,8 +7,9 @@
 #include "itkImageRegionIterator.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 
-#include "itk_image.h"
 #include "getopt.h"
+#include "itk_image.h"
+#include "itk_image_save.h"
 #include "pcmd_compose.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

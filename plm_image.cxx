@@ -12,6 +12,7 @@
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
+#include "itk_image_save.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -267,6 +268,9 @@ Plm_image::save_image (const char* fname)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
 	itk_image_save (this->m_itk_float, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_4D:
+	itk_image_save (this->m_itk_uchar_4d, fname);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:

@@ -10,6 +10,7 @@
 #include "file_util.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#include "itk_image_save.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
 #include "rtds_dicom.h"

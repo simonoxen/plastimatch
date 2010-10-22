@@ -33,12 +33,13 @@
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
 
-#include "plm_path.h"
-#include "itk_image.h"
 #include "itk_dicom.h"
-#include "getopt.h"
+#include "itk_image.h"
+#include "itk_image_save.h"
 #include "file_util.h"
+#include "getopt.h"
 #include "plm_image_patient_position.h"
+#include "plm_path.h"
 
 /* local functions used in itk_image.cxx -- 
   package to a separate plm_utils.h and plm_utils.cxx might be a better
