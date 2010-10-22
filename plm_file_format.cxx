@@ -92,13 +92,18 @@ plm_file_format_deduce (const char* path)
     }
 
     /* Maybe vector field? */
-    itk::ImageIOBase::IOPixelType pixelType;
-    itk::ImageIOBase::IOComponentType componentType;
+    itk::ImageIOBase::IOPixelType pixel_type;
+    itk::ImageIOBase::IOComponentType component_type;
     int num_dimensions;
-    itk_image_get_props (std::string (path), pixelType, componentType, 
+    itk_image_get_props (std::string (path), pixel_type, component_type, 
 	&num_dimensions);
-    if (pixelType == itk::ImageIOBase::VECTOR) {
+    if (pixel_type == itk::ImageIOBase::VECTOR) {
 	return PLM_FILE_FMT_VF;
+    }
+
+    /* Maybe ss_image? */
+    if (num_dimensions == 4 && component_type == itk::ImageIOBase::UCHAR) {
+	return PLM_FILE_FMT_SS_IMG_4D;
     }
 
     /* Maybe dicom rtss? */
@@ -120,46 +125,34 @@ plm_file_format_string (Plm_file_format file_type)
     switch (file_type) {
     case PLM_FILE_FMT_NO_FILE:
 	return "No file";
-	break;
     case PLM_FILE_FMT_UNKNOWN:
 	return "Unknown";
-	break;
     case PLM_FILE_FMT_IMG:
 	return "Image";
-	break;
     case PLM_FILE_FMT_VF:
 	return "Vector field";
-	break;
     case PLM_FILE_FMT_DIJ:
 	return "Dij matrix";
-	break;
     case PLM_FILE_FMT_POINTSET:
 	return "Pointset";
-	break;
     case PLM_FILE_FMT_CXT:
 	return "Cxt file";
-	break;
     case PLM_FILE_FMT_DICOM_DIR:
 	return "DICOM directory";
-	break;
     case PLM_FILE_FMT_XIO_DIR:
 	return "XiO directory";
-	break;
     case PLM_FILE_FMT_RTOG_DIR:
 	return "RTOG directory";
-	break;
     case PLM_FILE_FMT_PROJ_IMG:
 	return "Projection image";
-	break;
     case PLM_FILE_FMT_DICOM_RTSS:
 	return "DICOM-RT SS";
-	break;
     case PLM_FILE_FMT_DICOM_DOSE:
 	return "DICOM-RT dose";
-	break;
+    case PLM_FILE_FMT_SS_IMG_4D:
+	return "Structure set image";
     default:
 	return "Unknown/default";
-	break;
     }
 }
 
@@ -195,6 +188,9 @@ plm_file_format_parse (const char* string)
     }
     else if (!strcmp (string, "rtss") || !strcmp (string, "dicom-rtss")) {
 	return PLM_FILE_FMT_DICOM_RTSS;
+    }
+    else if (!strcmp (string, "ssimg")) {
+	return PLM_FILE_FMT_SS_IMG_4D;
     }
     else {
 	return PLM_FILE_FMT_UNKNOWN;

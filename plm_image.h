@@ -126,6 +126,8 @@ public:
     void convert_to_original_type (void);
     plastimatch1_EXPORT
     void convert_to_itk (void);
+    plastimatch1_EXPORT
+    void convert_to_itk_uchar_4d (void);
 
     /* metadata */
     plastimatch1_EXPORT

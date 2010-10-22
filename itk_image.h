@@ -83,6 +83,9 @@ itk_image_get_props (
     itk::ImageIOBase::IOComponentType &component_type,
     int *num_dimensions
 );
+void itk__GetImageType (std::string fileName,
+			itk::ImageIOBase::IOPixelType &pixelType,
+			itk::ImageIOBase::IOComponentType &componentType);
 
 template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
 

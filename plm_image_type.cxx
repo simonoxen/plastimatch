@@ -34,6 +34,9 @@ plm_image_type_parse (const char* string)
     else if (!strcmp (string,"vf")) {
 	return PLM_IMG_TYPE_ITK_FLOAT_FIELD;
     }
+    else if (!strcmp (string,"ssimg")) {
+	return PLM_IMG_TYPE_ITK_UCHAR_4D;
+    }
     else {
 	return PLM_IMG_TYPE_UNDEFINED;
     }

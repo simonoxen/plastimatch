@@ -101,11 +101,16 @@ Ss_image::save_ss_image (const CBString &ss_img_fn)
 {
     if (!this->m_ss_img) {
 	print_and_exit (
-	    "Whoh!  You're trying to write an image that does not exist.\n");
+	    "Error: save_ss_image() tried to write a non-existant file");
     }
-    printf ("Trying to write...? (%s)\n", (const char*) ss_img_fn);
+#if (PLM_USE_4D_SS_IMAGE)
+    /* Save as 4D uchar */
+    this->m_ss_img->convert_to_itk_uchar_4d ();
     this->m_ss_img->save_image ((const char*) ss_img_fn);
-    printf ("...? done.\n");
+#else
+    /* Save as 3D uint32 */
+    this->m_ss_img->save_image ((const char*) ss_img_fn);
+#endif
 }
 
 void

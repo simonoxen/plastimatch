@@ -12,6 +12,7 @@
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
+#include "itk_image_convert.h"
 #include "itk_image_save.h"
 #include "mha_io.h"
 #include "plm_image.h"
@@ -99,7 +100,7 @@ Plm_image::load_native (const char* fname)
 
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
-	    called deduce_file_type in warp_main() */
+	    called plm_file_format_deduce() in warp_main() */
 	load_native_dicom (fname);
 	return;
     }
@@ -560,6 +561,20 @@ Plm_image::convert_to_itk_float ()
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
+}
+
+void
+Plm_image::convert_to_itk_uchar_4d (void)
+{
+    switch (m_type) {
+    case PLM_IMG_TYPE_ITK_ULONG:
+	this->m_itk_uchar_4d = itk_image_convert_uchar_4d (this->m_itk_uint32);
+	this->m_itk_uint32 = 0;
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_uchar_4d()\n");
+	return;
+    }
 }
 
 void

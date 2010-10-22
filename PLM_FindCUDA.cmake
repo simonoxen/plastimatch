@@ -82,11 +82,14 @@ IF(CUDA_FOUND)
     SET(OUTFILE_BASE "${CMAKE_CURRENT_BINARY_DIR}/${PATH}/${HEAD}")
 ##    SET(OUTFILE "${OUTFILE_BASE}.obj")
     SET(OUTFILE "${OUTFILE_BASE}.cu.cpp")
-    IF(GPUIT_LINK_MSVCRT)
-      SET(XCOMPILER_OPTIONS "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD")
-    ELSE(GPUIT_LINK_MSVCRT)
-      SET(XCOMPILER_OPTIONS "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MT")
-    ENDIF(GPUIT_LINK_MSVCRT)
+
+    ## GCS: I'm pretty sure this is obsolete.  2010-10-21
+    # IF(GPUIT_LINK_MSVCRT)
+    #   SET(XCOMPILER_OPTIONS "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MD")
+    # ELSE(GPUIT_LINK_MSVCRT)
+    #   SET(XCOMPILER_OPTIONS "/EHsc,/W3,/nologo,/Wp64,/O2,/Zi,/MT")
+    # ENDIF(GPUIT_LINK_MSVCRT)
+
     ## This only makes a release target
     ADD_CUSTOM_COMMAND(
         OUTPUT "${OUTFILE}"

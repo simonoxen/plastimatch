@@ -20,6 +20,7 @@ enum Plm_file_format {
     PLM_FILE_FMT_PROJ_IMG,
     PLM_FILE_FMT_DICOM_RTSS,
     PLM_FILE_FMT_DICOM_DOSE,
+    PLM_FILE_FMT_SS_IMG_4D,
 };
 
 plastimatch1_EXPORT

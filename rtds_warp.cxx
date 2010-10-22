@@ -69,6 +69,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->m_ss_image = new Ss_image;
 	    rtds->m_ss_image->load_cxt (parms->input_fn);
 	    break;
+	case PLM_FILE_FMT_SS_IMG_4D:
 	default:
 	    print_and_exit (
 		"Sorry, don't know how to convert/warp input type %s (%s)\n",

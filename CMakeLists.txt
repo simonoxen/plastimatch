@@ -29,15 +29,19 @@ SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
 
+# Software options
+SET (PLM_USE_4D_SS_IMAGE OFF CACHE BOOL 
+  "Save structure sets as 4D ITK UCHAR images (in development)")
+SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL 
+  "Use hardcoded filename instead of tmpfile()")
+
 # Compile and link options
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL 
   "Build slicer loadable module")
-SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL 
-  "Use hardcoded filename instead of tmpfile()")
 SET (PLM_INSTALL_RPATH ON CACHE BOOL 
   "Add full RPATH to install")
-SET (PLM_LINK_MSVCRT ON CACHE BOOL 
-  "Link against MSVCRT instead of LIBMCT")
+# SET (PLM_LINK_MSVCRT ON CACHE BOOL 
+#   "Link against MSVCRT instead of LIBMCT")
 SET (PLM_SLICER3_DIR ON CACHE PATH 
   "Directory of Slicer3-Build")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
@@ -775,6 +779,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_dicom.cxx itk_dicom.h 
   itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
+  itk_image_convert.cxx itk_image_convert.h 
   itk_image_save.cxx itk_image_save.h 
   itk_image_stats.cxx itk_image_stats.h 
   itk_pointset.cxx itk_pointset.h
