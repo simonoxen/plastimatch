@@ -98,11 +98,14 @@ create_matrix_and_drr (
     }
     sprintf (multispectral_fn, "%s%04d.msd", options->output_prefix, a);
 
-    drr_render_volume_perspective (proj, vol, ps, dev_state, options);
-
-    plm_timer_start (&timer);
-    proj_image_save (proj, img_fn, mat_fn);
-    printf ("I/O time: %f sec\n", plm_timer_report (&timer));
+    if (options->geometry_only) {
+	proj_image_save (proj, 0, mat_fn);
+    } else {
+	drr_render_volume_perspective (proj, vol, ps, dev_state, options);
+	plm_timer_start (&timer);
+	proj_image_save (proj, img_fn, mat_fn);
+	printf ("I/O time: %f sec\n", plm_timer_report (&timer));
+    }
 }
 
 /* All distances in mm */
@@ -196,15 +199,19 @@ set_isocenter (Volume* vol, Drr_options* options)
 int
 main (int argc, char* argv[])
 {
-    Volume* vol;
+    Volume* vol = 0;
     Drr_options options;
 
     parse_args (&options, argc, argv);
 
-    vol = read_mha (options.input_file);
-    if (!vol) return -1;
-
-    volume_convert_to_float (vol);
+    if (options.geometry_only) {
+	options.threading = THREADING_CPU_SINGLE;
+    }
+    else {
+	vol = read_mha (options.input_file);
+	if (!vol) return -1;
+	volume_convert_to_float (vol);
+    }
 
     switch (options.threading) {
 #if OPENCL_FOUND
@@ -215,13 +222,17 @@ main (int argc, char* argv[])
 #endif
     default:
 #if defined (DRR_PREPROCESS_ATTENUATION)
-	drr_preprocess_attenuation (vol);
+	if (!options.geometry_only) {
+	    drr_preprocess_attenuation (vol);
+	}
 #endif
 	drr_render_volume (vol, &options);
 	break;
     }
 
-    volume_destroy (vol);
+    if (!options.geometry_only) {
+	volume_destroy (vol);
+    }
     printf ("Done.\n");
     return 0;
 }

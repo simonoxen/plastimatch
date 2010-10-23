@@ -455,17 +455,20 @@ proj_image_save (
     char *mat_filename
 )
 {
-    if (extension_is (img_filename, ".pfm")) {
-	pfm_save (proj, img_filename);
+    if (img_filename) {
+	if (extension_is (img_filename, ".pfm")) {
+	    pfm_save (proj, img_filename);
+	}
+	else if (extension_is (img_filename, ".raw")) {
+	    raw_save (proj, img_filename);
+	}
+	else if (extension_is (img_filename, ".pgm")) {
+	    pgm_save (proj, img_filename);
+	}
     }
-    else if (extension_is (img_filename, ".raw")) {
-	raw_save (proj, img_filename);
+    if (mat_filename) {
+	proj_matrix_save (proj->pmat, mat_filename);
     }
-    else if (extension_is (img_filename, ".pgm")) {
-	pgm_save (proj, img_filename);
-    }
-
-    proj_matrix_save (proj->pmat, mat_filename);
 }
 
 void

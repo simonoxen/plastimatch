@@ -18,8 +18,6 @@
 #define OPTION_ANGLE_DIFF 'A'
 #define OPTION_SCALE_STRING "scale"
 #define OPTION_SCALE 's'
-//#define OPTION_TRUE_PGM_STRING "true-pgm"
-//#define OPTION_TRUE_PGM 't'
 #define OPTION_OUTPUT_FORMAT_STRING "output-format"
 #define OPTION_OUTPUT_FORMAT 't'
 #define OPTION_IMAGE_CENTER_STRING "image-center"
@@ -82,6 +80,7 @@ struct drr_options {
     int multispectral;
     Drr_algorithm algorithm;
     char* input_file;
+    int geometry_only;
     char* output_prefix;
 };
 

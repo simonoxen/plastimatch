@@ -36,6 +36,7 @@ print_usage (void)
 	//" -i algorithm      Choose algorithm {exact,uniform,tri_exact,tri_approx}\n"
 	" -i algorithm      Choose algorithm {exact,uniform}\n"
 	" -o \"o1 o2 o3\"     Set isocenter position\n"
+	" -G                Create geometry files only, not drr images.\n"
 	" -I infile         Set the input file in mha format\n"
 	" -O outprefix      Generate output files using the specified prefix\n"
     );
@@ -76,6 +77,7 @@ drr_opts_init (Drr_options* options)
     options->output_format= OUTPUT_FORMAT_PFM;
     options->multispectral = 0;
     options->algorithm = DRR_ALGORITHM_EXACT;
+    options->geometry_only = 0;
 }
 
 void
@@ -286,6 +288,9 @@ parse_args (Drr_options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "-e")) {
 	    options->exponential_mapping = 1;
 	}
+	else if (!strcmp (argv[i], "-G")) {
+	    options->geometry_only = 1;
+	}
 	else {
 	    print_usage ();
 	    break;
@@ -300,7 +305,7 @@ parse_args (Drr_options* options, int argc, char* argv[])
     if (i < argc) {
 	print_usage ();
     }
-    if (!options->input_file) {
+    if (!options->input_file && !options->geometry_only) {
 	print_usage ();
     }
 
