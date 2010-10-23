@@ -40,10 +40,6 @@ SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL
   "Build slicer loadable module")
 SET (PLM_INSTALL_RPATH ON CACHE BOOL 
   "Add full RPATH to install")
-# SET (PLM_LINK_MSVCRT ON CACHE BOOL 
-#   "Link against MSVCRT instead of LIBMCT")
-SET (PLM_SLICER3_DIR ON CACHE PATH 
-  "Directory of Slicer3-Build")
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
   "Build plastimatch as shared library")
 SET (PLM_MONOLITHIC_LIBRARY OFF CACHE BOOL 
@@ -146,8 +142,8 @@ MACRO (PLM_ADD_SLICER_MODULE
   #GENERATELM (TARGET_SRC ${TARGET_NAME}.xml)
   ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
   TARGET_LINK_LIBRARIES (${TARGET_NAME} 
-    ${Slicer3_Libs_LIBRARIES}
-    ${Slicer3_Base_LIBRARIES}
+    ${Slicer_Libs_LIBRARIES}
+    ${Slicer_Base_LIBRARIES}
     ${KWWidgets_LIBRARIES}
     ${ITK_LIBRARIES}
     ${TARGET_LIBS})
@@ -386,30 +382,23 @@ ENDIF (wxWidgets_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Slicer front-ends
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (Slicer3 QUIET)
-
-#SET (Slicer3_DIR "" CACHE PATH "Build Slicer front-end for Plastimatch")
-IF (Slicer3_DIR)
-  MESSAGE (STATUS "Looking for Slicer3 - found " ${Slicer3_DIR})
-  FIND_PACKAGE (Slicer3 REQUIRED)
-  INCLUDE (${Slicer3_USE_FILE})
+FIND_PACKAGE (Slicer QUIET)
+IF (SLICER_FOUND)
+  IF (Slicer_USE_FILE)
+    INCLUDE ("${Slicer_USE_FILE}")
+  ENDIF (Slicer_USE_FILE)
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
   slicer3_set_default_install_prefix_for_external_projects ()
-  #  IF (BUILD_AGAINST_SLICER3)
-  #  ENDIF (BUILD_AGAINST_SLICER3)
-
+  
   #slicer3_enable_plugins_testing()
 
-ELSE (Slicer3_DIR)
-  MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF (Slicer3_DIR)
-
-# Slicer seems to require a shared library build
-IF (Slicer3_DIR)
+  # Slicer seems to require a shared library build
   SET (PLM_BUILD_SHARED_LIBS ON)
-ENDIF (Slicer3_DIR)
+ELSE (SLICER_FOUND)
+  MESSAGE (STATUS "Looking for Slicer3 - not found")
+ENDIF (SLICER_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
@@ -1146,12 +1135,12 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
 ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
 
-IF (Slicer3_DIR)
+IF (SLICER_FOUND)
   INCLUDE_DIRECTORIES (
-    ${Slicer3_Libs_INCLUDE_DIRS}
-    ${Slicer3_Base_INCLUDE_DIRS}
+    ${Slicer_Libs_INCLUDE_DIRS}
+    ${Slicer_Base_INCLUDE_DIRS}
     )
-ENDIF (Slicer3_DIR)
+ENDIF (SLICER_FOUND)
 
 IF(wxWidgets_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
@@ -1224,10 +1213,10 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF (Slicer3_DIR)
+  IF (Slicer_DIR)
     PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
       "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF (Slicer3_DIR)
+  ENDIF (Slicer_DIR)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (ITK_USE_REVIEW)
@@ -1246,12 +1235,12 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF (Slicer3_DIR)
+  IF (Slicer_DIR)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
       "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF (Slicer3_DIR)
+  ENDIF (Slicer_DIR)
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
@@ -1301,7 +1290,7 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
 ##-----------------------------------------------------------------------------
-IF (Slicer3_DIR)
+IF (Slicer_DIR)
   IF (PLM_BUILD_SLICER_LOADABLE)
     CONFIGURE_FILE (
       ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
@@ -1330,16 +1319,16 @@ IF (Slicer3_DIR)
       ${PlastimatchLoadable_TCL_SRCS})
     SLICER3_SET_MODULES_OUTPUT_PATH (PlastimatchLoadable)
     TARGET_LINK_LIBRARIES (PlastimatchLoadable
-      ${Slicer3_Libs_LIBRARIES}
-      ${Slicer3_Base_LIBRARIES}
-      ${KWWidgets_LIBRARIES}
-      ${ITK_LIBRARIES})
-    #      ${PLASTIMATCH_LIBS})
+	${Slicer_Libs_LIBRARIES}
+	${Slicer_Base_LIBRARIES}
+	${KWWidgets_LIBRARIES}
+	${ITK_LIBRARIES})
+      #      ${PLASTIMATCH_LIBS})
     SLICER3_INSTALL_MODULES (PlastimatchLoadable)
     ENDIF (COMMENTOUT)
 
   ENDIF (PLM_BUILD_SLICER_LOADABLE)
-ENDIF (Slicer3_DIR)
+ENDIF (Slicer_DIR)
 
 
 ##-----------------------------------------------------------------------------
