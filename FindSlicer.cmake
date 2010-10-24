@@ -4,8 +4,6 @@
 # The user should set Slicer_DIR to the directory containing either 
 # Slicer3Config.cmake or SlicerConfig.cmake
 #
-#  SLICER_INCLUDE_DIR - where to find include files
-#  SLICER_LIBRARIES   - list of libraries
 #  SLICER_FOUND       - true if found
 
 IF (SLICER_INCLUDE_DIR)
