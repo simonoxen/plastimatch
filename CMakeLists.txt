@@ -238,7 +238,7 @@ INCLUDE (PLM_FindSSE.cmake)
 ##-----------------------------------------------------------------------------
 INCLUDE (FindOpenGL)
 FIND_PACKAGE (wxWidgets)
-FIND_PACKAGE (Qt4 COMPONENTS QtCore QtGui OPTIONAL)
+FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 
 INCLUDE (PLM_FindBrook.cmake)
 INCLUDE (PLM_Etags.cmake)
@@ -260,11 +260,6 @@ FIND_PACKAGE (SQLite)
 IF (QT4_FOUND)
   MESSAGE (STATUS "Looking for Qt4 - found")
   INCLUDE (${QT_USE_FILE})
-  FIND_FILE (QFORMLAYOUT_LOCATION "QFormLayout.h" PATHS ${QT_INCLUDES})
-  IF (NOT ${QFORMLAYOUT_LOCATION})
-    MESSAGE (STATUS "Sorry, your Qt doesn't work for me")
-    SET (QT4_FOUND FALSE)
-  ENDIF (NOT ${QFORMLAYOUT_LOCATION})
 ELSE (QT4_FOUND)
   MESSAGE (STATUS "Looking for Qt4 - not found")
 ENDIF (QT4_FOUND)
@@ -1213,10 +1208,10 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF (Slicer_DIR)
+  IF (SLICER_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
       "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF (Slicer_DIR)
+  ENDIF (SLICER_FOUND)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (ITK_USE_REVIEW)
@@ -1235,12 +1230,12 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF (Slicer_DIR)
+  IF (SLICER_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
       "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF (Slicer_DIR)
+  ENDIF (SLICER_FOUND)
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
@@ -1290,8 +1285,14 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
 ##-----------------------------------------------------------------------------
-IF (Slicer_DIR)
-  IF (PLM_BUILD_SLICER_LOADABLE)
+IF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
+
+  SET (CMAKE_MODULE_PATH "${Slicer_DIR}/CMake" ${CMAKE_MODULE_PATH})
+  #INCLUDE ("${Slicer_CMAKE_DIR}/SlicerQTModuleMacros.cmake")
+  #INCLUDE ("${Slicer_CMAKE_DIR}/SlicerParseArgumentsMacro.cmake")
+  ADD_SUBDIRECTORY (slicer_loadable)
+
+  IF (COMMENTOUT)
     CONFIGURE_FILE (
       ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
       ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
@@ -1301,11 +1302,12 @@ IF (Slicer_DIR)
       vtkPlastimatchLoadableGUI.cxx 
       vtkMRMLPlastimatchLoadableNode.cxx 
       )
+
     include("${VTK_CMAKE_DIR}/vtkWrapTcl.cmake")
     vtk_wrap_tcl3 (PlastimatchLoadable
       PlastimatchLoadable_TCL_SRCS 
       "${PlastimatchLoadable_SRCS}" "")
-    #MESSAGE (STATUS "TCL SOURCES: ${PlastimatchLoadable_TCL_SRCS}")
+    MESSAGE (STATUS "TCL SOURCES: ${PlastimatchLoadable_TCL_SRCS}")
 
     GENERATELM (PlastimatchLoadable_SRCS PlastimatchLoadable.xml)
 
@@ -1313,7 +1315,6 @@ IF (Slicer_DIR)
       "${PlastimatchLoadable_SRCS};${PlastimatchLoadable_TCL_SRCS}" 
       "${PLASTIMATCH_LIBS}")
 
-    IF (COMMENTOUT)
     ADD_LIBRARY (PlastimatchLoadable
       ${PlastimatchLoadable_SRCS}
       ${PlastimatchLoadable_TCL_SRCS})
@@ -1325,11 +1326,9 @@ IF (Slicer_DIR)
 	${ITK_LIBRARIES})
       #      ${PLASTIMATCH_LIBS})
     SLICER3_INSTALL_MODULES (PlastimatchLoadable)
-    ENDIF (COMMENTOUT)
+  ENDIF (COMMENTOUT)
 
-  ENDIF (PLM_BUILD_SLICER_LOADABLE)
-ENDIF (Slicer_DIR)
-
+ENDIF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
 
 ##-----------------------------------------------------------------------------
 ##  Additional install files
