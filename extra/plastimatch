@@ -1,6 +1,5 @@
 # bash completion for plastimatch
 # James Shackleford (tshack@drexel.edu)
-# Last updated: Oct 24th, 2010
 
 # To use this file to enable command auto completion in bash:
 #   1) Copy this file to:
@@ -10,7 +9,6 @@
 #      $ . /etc/bash_completion
 #
 #   3) Enjoy!
-
 
 #have plastimatch &&
 _plastimatch() 
@@ -39,69 +37,128 @@ _plastimatch()
     opts_resample="--input --output --subsample --fixed --origin --spacing --size --output_type --interpolation --default_val"
     opts_slice="--input --output --thumbnail-dim --thumbnail-spacing --slice-loc"
     opts_stats=""
-    opts_warp="--input --xf --interpolation --fixed --offset --spacing ---dims --default-val --output-type --algorithm --patient-pos --dicom-dir --ctatts --dif --input-ss-img --input-ss-list --prune-empty --input-dose-img --input-dose-xio --input-dose-ast --input-dose-mc --output-cxt --output-dicom --output-dij --output-dose-img --output-labelmap --output-colormap --output-prefix --output-ss-img --output-ss-list --output-vf --output-xio"
+    opts_warp="--input --xf --interpolation --fixed --offset --spacing --dims --default-val --output-type --algorithm --patient-pos --dicom-dir --ctatts --dif --input-ss-img --input-ss-list --prune-empty --input-dose-img --input-dose-xio --input-dose-ast --input-dose-mc --output-cxt --output-dicom --output-dij --output-dose-img --output-labelmap --output-colormap --output-prefix --output-ss-img --output-ss-list --output-vf --output-xio"
 
  
     case "${command}" in
     add)
-        COMPREPLY=( $(compgen -W "${opts_add}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_add}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     adjust)
-        COMPREPLY=( $(compgen -W "${opts_adjust}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_adjust}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     crop)
-        COMPREPLY=( $(compgen -W "${opts_crop}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_crop}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     compare)
-        COMPREPLY=( $(compgen -W "${opts_compare}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_compare}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     compose)
-        COMPREPLY=( $(compgen -W "${opts_compose}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_compose}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     convert)
-        COMPREPLY=( $(compgen -W "${opts_convert}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_convert}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     diff)
-        COMPREPLY=( $(compgen -f ${cur}) )
-#        COMPREPLY=( $(compgen -W "${opts_diff}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_diff}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     dvh)
-        COMPREPLY=( $(compgen -W "${opts_dvh}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_dvh}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     header)
-        COMPREPLY=( $(compgen -W "${opts_header}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_header}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     mask)
-        COMPREPLY=( $(compgen -W "${opts_mask}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_mask}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     register)
-        COMPREPLY=( $(compgen -W "${opts_register}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_register}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     resample)
-        COMPREPLY=( $(compgen -W "${opts_resample}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_resample}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     slice)
-        COMPREPLY=( $(compgen -W "${opts_slice}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_slice}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     stats)
-        COMPREPLY=( $(compgen -W "${opts_stats}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_stats}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     warp)
-        COMPREPLY=( $(compgen -W "${opts_warp}" -- "${cur}") )
+        if [[ "$cur" == -* ]]; then
+            COMPREPLY=( $(compgen -W "${opts_warp}" -- "${cur}") )
+        else
+            _filedir 
+        fi
         return 0
         ;;
     *)
