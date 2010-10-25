@@ -1,0 +1,113 @@
+# bash completion for plastimatch
+# James Shackleford (tshack@drexel.edu)
+# Last updated: Oct 24th, 2010
+
+# To use this file to enable command auto completion in bash:
+#   1) Copy this file to:
+#      /etc/bash_completion.d/
+#
+#   2) Refresh the auto completion system by running:
+#      $ . /etc/bash_completion
+#
+#   3) Enjoy!
+
+
+#have plastimatch &&
+_plastimatch() 
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+#    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    command="${COMP_WORDS[1]}"
+
+    # main plastimatch commands
+    opts_main="add adjust crop compare compose convert diff dvh header mask register resample slice stats warp"
+
+    # specific options for the various commands
+    opts_add=""
+    opts_adjust="--input --output --output-type --scale --ab-scale --stretch --truncate-above --truncate-below"
+    opts_crop="--input --output --voxels"
+    opts_compare=""
+    opts_compose=""
+    opts_convert="--input --xf --interpolation --fixed --offset --spacing --dims --default-val --output-type --algorithm --patient-pos --dicom-dir --ctatts --dif --input-ss-img --input-ss-list --prune-empty --input-dose-img --input-dose-xio --input-dose-ast --input-dose-mc --output-cxt --output-dicom --output-dij --output-dose-img --output-img --output-labelmap --output-colormap --output-prefix --output-ss-img --output-ss-list --output-vf --output-xio"
+    opts_diff=""
+    opts_dvh="--input-ss-img --input-ss-list --input-dose --output-csv --input-uints --cumulative --num-bins --bin-width"
+    opts_header=""
+    opts_mask="--input --output --mask --negate-mask --mask-value --output-format --output-type"
+    opts_register=""
+    opts_resample="--input --output --subsample --fixed --origin --spacing --size --output_type --interpolation --default_val"
+    opts_slice="--input --output --thumbnail-dim --thumbnail-spacing --slice-loc"
+    opts_stats=""
+    opts_warp="--input --xf --interpolation --fixed --offset --spacing ---dims --default-val --output-type --algorithm --patient-pos --dicom-dir --ctatts --dif --input-ss-img --input-ss-list --prune-empty --input-dose-img --input-dose-xio --input-dose-ast --input-dose-mc --output-cxt --output-dicom --output-dij --output-dose-img --output-labelmap --output-colormap --output-prefix --output-ss-img --output-ss-list --output-vf --output-xio"
+
+ 
+    case "${command}" in
+    add)
+        COMPREPLY=( $(compgen -W "${opts_add}" -- "${cur}") )
+        return 0
+        ;;
+    adjust)
+        COMPREPLY=( $(compgen -W "${opts_adjust}" -- "${cur}") )
+        return 0
+        ;;
+    crop)
+        COMPREPLY=( $(compgen -W "${opts_crop}" -- "${cur}") )
+        return 0
+        ;;
+    compare)
+        COMPREPLY=( $(compgen -W "${opts_compare}" -- "${cur}") )
+        return 0
+        ;;
+    compose)
+        COMPREPLY=( $(compgen -W "${opts_compose}" -- "${cur}") )
+        return 0
+        ;;
+    convert)
+        COMPREPLY=( $(compgen -W "${opts_convert}" -- "${cur}") )
+        return 0
+        ;;
+    diff)
+        COMPREPLY=( $(compgen -f ${cur}) )
+#        COMPREPLY=( $(compgen -W "${opts_diff}" -- "${cur}") )
+        return 0
+        ;;
+    dvh)
+        COMPREPLY=( $(compgen -W "${opts_dvh}" -- "${cur}") )
+        return 0
+        ;;
+    header)
+        COMPREPLY=( $(compgen -W "${opts_header}" -- "${cur}") )
+        return 0
+        ;;
+    mask)
+        COMPREPLY=( $(compgen -W "${opts_mask}" -- "${cur}") )
+        return 0
+        ;;
+    register)
+        COMPREPLY=( $(compgen -W "${opts_register}" -- "${cur}") )
+        return 0
+        ;;
+    resample)
+        COMPREPLY=( $(compgen -W "${opts_resample}" -- "${cur}") )
+        return 0
+        ;;
+    slice)
+        COMPREPLY=( $(compgen -W "${opts_slice}" -- "${cur}") )
+        return 0
+        ;;
+    stats)
+        COMPREPLY=( $(compgen -W "${opts_stats}" -- "${cur}") )
+        return 0
+        ;;
+    warp)
+        COMPREPLY=( $(compgen -W "${opts_warp}" -- "${cur}") )
+        return 0
+        ;;
+    *)
+        COMPREPLY=( $(compgen -W "${opts_main}" "${cur}") )
+        return 0
+        ;;
+    esac
+}
+complete -F _plastimatch plastimatch
