@@ -57,7 +57,15 @@ grid_step=5
 # (do not edit this, please)
 test_vol_fix='./grid_fix_tmp.mha'
 test_vol_mov='./grid_mov_tmp.mha'
+machine=''
 
+# Get CPU model and # of cores
+# (Does not discriminate between real & HyperThreaded CPUs)
+get_machine ()
+{
+    local cpu_count=$(cat /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | wc -l)
+    machine="$(cat /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | uniq) ($cpu_count core)"
+}
 
 # Clean up temp volumes if user terminates
 # early via ctrl-c
@@ -107,6 +115,7 @@ disp_settings ()
 
     # Display banner
     echo "B-spline Grid Test v0.3"
+    echo "  Machine : $machine"
     echo "  Hardware: $hardware"
     echo "  Metric  : $metric"
     echo "  Flavors : ${#flavors[@]} ( $tmp)"
@@ -177,6 +186,7 @@ check_output ()
 }
 
 # check input and output file validity
+get_machine
 disp_settings
 check_input
 check_output
@@ -191,6 +201,7 @@ echo "Starting Test..."
 # Insert comment into CSV indicating test type
 echo "#B-spline execution time vs control grid size" >> $outfile
 echo "#volume size is constant: $vol_size x $vol_size x $vol_size" >> $outfile
+echo "#$machine" >> $outfile
 echo "#" >> $outfile
 
 # Print the field header to CSV file

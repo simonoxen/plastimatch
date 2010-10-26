@@ -21,7 +21,7 @@ synth_mha='/home/tshack/src/plastimatch/build/synthetic_mha'
 
 # Test Volume sizes
 min_size=100
-max_size=420
+max_size=1600
 size_step=10
 
 # Similarity Metric (mse, mi)
@@ -56,6 +56,14 @@ grid=15
 test_vol_fix='./size_fix_tmp.mha'
 test_vol_mov='./size_mov_tmp.mha'
 vol_size=0
+
+# Get CPU model and # of cores
+# (Does not discriminate between real & HyperThreaded CPUs)
+get_machine ()
+{
+    local cpu_count=$(cat /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | wc -l)
+    machine="$(cat /proc/cpuinfo | grep 'model name' | sed -e 's/.*: //' | uniq) ($cpu_count core)"
+}
 
 # Clean up temp volumes if user terminates
 # early via ctrl-c
@@ -105,6 +113,7 @@ disp_settings ()
 
     # Display banner
     echo "B-spline Volume Size Test v0.4"
+    echo "  Machine : $machine"
     echo "  Hardware: $hardware"
     echo "  Metric  : $metric"
     echo "  Flavors : ${#flavors[@]} ( $tmp)"
@@ -175,6 +184,7 @@ check_output ()
 }
 
 # check input and output file validity
+get_machine
 disp_settings
 check_input
 check_output
@@ -185,6 +195,7 @@ echo "Starting Test..."
 # Insert comment into CSV indicating test type
 echo "#B-spline execution time vs volume size" >> $outfile
 echo "#grid size is constant: $grid x $grid x $grid" >> $outfile
+echo "#$machine" >> $outfile
 echo "#" >> $outfile
 
 # Print the field header to CSV file
