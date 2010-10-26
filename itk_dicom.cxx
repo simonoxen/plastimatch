@@ -329,6 +329,12 @@ itk_dicom_save (
         warping.
     */
 
+    /* CERR requires slope and offset */
+    /* Rescale intercept */
+    encapsulate (dict, "0028|1052", "0");
+    /* Rescale slope */
+    encapsulate (dict, "0028|1053", "1");
+
     /* Can the series writer set Slice Location "0020,1041"? 
 	Yes it can.  The below code is adapted from:
 	http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
