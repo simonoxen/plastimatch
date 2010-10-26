@@ -2419,7 +2419,8 @@ bspline_mi_pvi_6_dc_dv (
 
 /* B-Spline Registration using Mutual Information
  * Implementation E (D is still faster)
- *   -- Histograms are OpenMP accelerated (currently, not a good thing)
+ *   -- Histograms are OpenMP accelerated
+ *      (only good on i7 core? really bad otherwise it seems...)
  *   -- Uses OpenMP for Cost & dc_dv computation
  *   -- Uses methods introduced in bspline_score_g_mse
  *        to compute dc_dp more rapidly.
@@ -2590,13 +2591,13 @@ bspline_score_e_mi (Bspline_parms *parms,
 
 
     /* Look for the biggest moving histogram bin */
-    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
+//    printf ("moving.big_bin [%i -> ", mi_hist->moving.big_bin);
     for(i=0; i<mi_hist->moving.bins; i++) {
         if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
             mi_hist->moving.big_bin = i;
         }
     }
-    printf ("%i]\n", mi_hist->moving.big_bin);
+//    printf ("%i]\n", mi_hist->moving.big_bin);
 
 
     /* Fill in the missing jnt hist bin */
@@ -2609,7 +2610,7 @@ bspline_score_e_mi (Bspline_parms *parms,
 
     
     /* Look for the biggest joint histogram bin */
-    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
+//    printf ("joint.big_bin [%i -> ", mi_hist->joint.big_bin);
     for(j=0; j<mi_hist->fixed.bins; j++) {
         for(i=0; i<mi_hist->moving.bins; i++) {
             if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
@@ -2617,7 +2618,7 @@ bspline_score_e_mi (Bspline_parms *parms,
             }
         }
     }
-    printf ("%i]\n", mi_hist->joint.big_bin);
+//    printf ("%i]\n", mi_hist->joint.big_bin);
     
 
 
