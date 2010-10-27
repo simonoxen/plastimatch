@@ -80,6 +80,56 @@ struct gpu_bspline_data
     float3 mov_spacing;
 };
 
+
+
+// This routine provides a method of more cleanly
+// allocating and populating GPU global memory.
+// Additionally, zero copy is handled eloquently
+// and seamlessly.
+//
+// James Shacleford
+// October 27th, 2010
+void
+gpu_alloc_copy (
+    void** gpu_addr,
+    void** cpu_addr,
+    size_t mem_size,
+    gpu_alloc_copy_mode mode
+)
+{
+    // If zero copying, this will hold the CPU memory address of
+    // the new pinned memory address in the CPU memory map.
+    // After CPU memory contents is relocated to this new pinned
+    // memory, this pointer will overwrite the original CPU
+    // pointer (cpu_addr).
+    void* pinned_host_mem;
+
+    if (mode == 1) {
+        // Allocate some pinned CPU memory for zero paging
+        cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
+        cuda_utils_check_error ("Failed to allocate pinned memory.");
+
+        // Relocate data to pinned memory
+        memcpy (pinned_host_mem, *cpu_addr, mem_size);
+        free (*cpu_addr);
+        *cpu_addr = pinned_host_mem;
+
+        // Get the address of the pinned page in the GPU memory map.
+        cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
+        cuda_utils_check_error ("Failed to map CPU memory to GPU.");
+    } else {
+        // Allcoated some global memory on the GPU
+        cudaMalloc ((void**)gpu_addr, mem_size);
+        cuda_utils_check_error ("Out of GPU memory.");
+
+        // Populate the allocated global GPU memory
+        cudaMemcpy (*gpu_addr, *cpu_addr, mem_size, cudaMemcpyHostToDevice);
+        cuda_utils_check_error ("Failed to copy fixed image to GPU");
+        printf(".");
+    }
+}
+
+
 void CUDA_listgpu ()
 {
     int num_gpus, i;
@@ -109,7 +159,6 @@ void CUDA_listgpu ()
         printf ("\n");
     }
 }
-
 
 // Selects the best GPU or the user specified
 // GPU as defiend on command line
@@ -165,8 +214,6 @@ int CUDA_getarch (int gpuid)
         return -1;
     }
 }
-
-
 
 
 // Constructs the GPU Bspline Data structure
@@ -674,49 +721,14 @@ bspline_cuda_initialize_j_zcpy (
     // in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
 
-    // Tell the user we are busy copying information
-    // to the device memory.
-    printf ("Copying data to GPU global memory\n");
 
-    // --- ZERO COPY FIXED IMAGE  -----------------------
-    // Calculate space requirements for the allocation
-    // and tuck it away for later...
+
     dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
+    gpu_alloc_copy ((void **)&dev_ptrs->fixed_image,
+                    (void **)&fixed->img,
+                    dev_ptrs->fixed_image_size,
+                    cudaZeroCopy);
 
-    // Allocate some pinned CPU memory for zero paging
-    cudaHostAlloc ((void **)&dev_ptrs->zph_fixed_image, dev_ptrs->fixed_image_size, cudaHostAllocMapped);
-
-    // This is a waste of memory, but currently necessary.
-    // Copy the fixed image from CPU memory to pinned & memory mapped CPU memory
-    memcpy (dev_ptrs->zph_fixed_image, fixed->img, dev_ptrs->fixed_image_size);
-
-    // Get the GPU pointer to the pinned CPU memory 
-    //   differs from CPU pointer but points to same memory
-    //   since the GPU has a different memory map from the CPU
-    cudaHostGetDevicePointer ((void **)&dev_ptrs->fixed_image, (void *)dev_ptrs->zph_fixed_image, 0);
-
-#if defined (commentout)
-    cudaMalloc ((void**)&dev_ptrs->fixed_image, 
-	dev_ptrs->fixed_image_size);
-    cuda_utils_check_error ("Failed to allocate memory for fixed image");
-    printf(".");
-
-
-    // Populate the newly allocated global GPU memory
-    // with the voxel data from our fixed volume.
-    cudaMemcpy (dev_ptrs->fixed_image, fixed->img, 
-	dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
-    cuda_utils_check_error ("Failed to copy fixed image to GPU");
-    printf(".");
-
-
-    printf(".");
-    
-
-    // Increment the GPU memory byte counter
-    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
-#endif
-    // ----------------------------------------------------------
 
 
     // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
@@ -2321,25 +2333,25 @@ CUDA_MI_Grad_a (
     
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64_texfetch (
+    CUDA_bspline_mse_condense_64_texfetch (
             dev_ptrs,
             bxf->vox_per_rgn, 
             num_tiles);
     
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense_64_texfetch()");
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense_64_texfetch()");
 
     // Clear out the gradient
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
     cuda_utils_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+    CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
@@ -2354,7 +2366,7 @@ CUDA_MI_Grad_a (
 // STUB: CUDA_bspline_mse_score_dc_dv()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_2_reduce()
+//   kernel_bspline_mse_reduce()
 //
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
@@ -2419,16 +2431,16 @@ CUDA_bspline_mse_score_dc_dv (
 
 
 //////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_condense_64_texfetch()
+// STUB: CUDA_bspline_mse_condense_64_texfetch()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_2_condense_64()
+//   kernel_bspline_mse_condense_64()
 //
 // AUTHOR: James Shackleford
 //   DATE: September 16th, 2009
 //////////////////////////////////////////////////////////////////////////////
 void
-CUDA_bspline_mse_2_condense_64_texfetch (
+CUDA_bspline_mse_condense_64_texfetch (
     Dev_Pointers_Bspline* dev_ptrs,
     int* vox_per_rgn,
     int num_tiles)
@@ -2454,7 +2466,7 @@ CUDA_bspline_mse_2_condense_64_texfetch (
 
     int smemSize = 576*sizeof(float);
 
-    kernel_bspline_mse_2_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
+    kernel_bspline_mse_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
         dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
         dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
@@ -2472,16 +2484,16 @@ CUDA_bspline_mse_2_condense_64_texfetch (
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_2_reduce()
+// STUB: CUDA_bspline_mse_reduce()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_2_reduce()
+//   kernel_bspline_mse_reduce()
 //
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" void
-CUDA_bspline_mse_2_reduce (
+CUDA_bspline_mse_reduce (
     Dev_Pointers_Bspline* dev_ptrs,
     int num_knots)
 {
@@ -2496,7 +2508,7 @@ CUDA_bspline_mse_2_reduce (
 
     int smemSize = 195*sizeof(float);
 
-    kernel_bspline_mse_2_reduce<<<dimGrid, dimBlock, smemSize>>>(
+    kernel_bspline_mse_reduce<<<dimGrid, dimBlock, smemSize>>>(
         dev_ptrs->grad,     // Return: interleaved dc_dp values
         dev_ptrs->cond_x,   // Input : condensed dc_dv_x values
         dev_ptrs->cond_y,   // Input : condensed dc_dv_y values
@@ -2516,8 +2528,8 @@ CUDA_bspline_mse_2_reduce (
  * @param dev_ptrs Pointer the GPU device pointers
  *
  * @see bspline_cuda_score_j_mse_kernel1()
- * @see CUDA_bspline_mse_2_condense_64_texfetch()
- * @see CUDA_bspline_mse_2_reduce()
+ * @see CUDA_bspline_mse_condense_64_texfetch()
+ * @see CUDA_bspline_mse_reduce()
  *
  * @author James A. Shackleford
  */
@@ -2586,7 +2598,7 @@ bspline_cuda_j_stage_1 (
 
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_2_condense_64_texfetch (dev_ptrs,
+    CUDA_bspline_mse_condense_64_texfetch (dev_ptrs,
                                              bxf->vox_per_rgn, 
                                              num_tiles);
 
@@ -2602,7 +2614,7 @@ bspline_cuda_j_stage_1 (
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 
 #if defined (PROFILE_J)
     // Start timing the kernel
@@ -2616,7 +2628,7 @@ bspline_cuda_j_stage_1 (
     cuda_utils_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+    CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
 
 #if defined (PROFILE_J)
     // Stop timing the kernel
@@ -2630,7 +2642,7 @@ bspline_cuda_j_stage_1 (
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 }
 
 
@@ -4409,7 +4421,7 @@ kernel_bspline_MI_dc_dv_a (
  * @author: James A. Shackleford
  */
 __global__ void
-kernel_bspline_mse_2_condense_64_texfetch (
+kernel_bspline_mse_condense_64_texfetch (
     float* cond_x,      // Return: condensed dc_dv_x values
     float* cond_y,      // Return: condensed dc_dv_y values
     float* cond_z,      // Return: condensed dc_dv_z values
@@ -4782,7 +4794,7 @@ kernel_bspline_mse_2_condense_64_texfetch (
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_bspline_mse_2_reduce()
+// KERNEL: kernel_bspline_mse_reduce()
 //
 // * Each threadblock contains only 2 warps.
 // * Each threadblock operates on 32 knots (1 at a time)
@@ -4799,7 +4811,7 @@ kernel_bspline_mse_2_condense_64_texfetch (
 // DATE  : August 27th, 2009
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_mse_2_reduce (
+kernel_bspline_mse_reduce (
     float* grad,        // Return: interleaved dc_dp values
     float* cond_x,      // Input : condensed dc_dv_x values
     float* cond_y,      // Input : condensed dc_dv_y values
@@ -4876,7 +4888,7 @@ kernel_bspline_mse_2_reduce (
  * was to produce a kernel with neater notation and code
  * structure that also shared the LUT_Bspline_x,y,z textured
  * lookup table that is utilized by the hyper-fast gradient
- * kernel kernel_bspline_mse_2_condense_64_texfetch().
+ * kernel kernel_bspline_mse_condense_64_texfetch().
  * 
  * It should be noted that the LUT_Bspline texture differs
  * from the CPU based q_lut in both structure and philosophy.

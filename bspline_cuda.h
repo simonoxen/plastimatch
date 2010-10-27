@@ -18,6 +18,13 @@
 #define MI_SCORE_CPU
 
 
+/* Used by gpu_alloc_copy () */
+enum gpu_alloc_copy_mode {
+    cudaGlobalMem,
+    cudaZeroCopy
+};
+
+
 #if defined __cplusplus
 extern "C" {
 #endif
@@ -448,13 +455,13 @@ extern "C" {
 
     void CUDA_bspline_mse_score_dc_dv( Dev_Pointers_Bspline* dev_ptrs, Bspline_xform* bxf, Volume* fixed, Volume* moving);
 
-    void CUDA_bspline_mse_2_condense_64_texfetch( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
+    void CUDA_bspline_mse_condense_64_texfetch( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
-    void CUDA_bspline_mse_2_condense_64( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
+    void CUDA_bspline_mse_condense_64( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
-    void CUDA_bspline_mse_2_condense( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
+    void CUDA_bspline_mse_condense( Dev_Pointers_Bspline* dev_ptrs, int* vox_per_rgn, int num_tiles);
 
-    void CUDA_bspline_mse_2_reduce( Dev_Pointers_Bspline* dev_ptrs, int num_knots);
+    void CUDA_bspline_mse_reduce( Dev_Pointers_Bspline* dev_ptrs, int num_knots);
 
     float CPU_obtain_spline_basis_function( int t_idx, 
 					  int vox_idx, 

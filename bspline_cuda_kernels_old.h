@@ -1,3 +1,69 @@
+__global__ void kernel_deinterleave(
+				int num_values,
+				float* input,
+				float* out_x,
+				float* out_y,
+				float* out_z);
+
+__global__ void kernel_pad_64(
+			float* input,
+			float* output,
+			int3 vol_dim,
+			int3 tile_dim);
+
+__global__ void kernel_pad(
+			float* input,
+			float* output,
+			int3 vol_dim,
+			int3 tile_dim);
+
+
+__global__ void kernel_row_to_tile_major(
+			float* input,
+			float* output,
+			int3 vol_dim,
+			int3 tile_dim);
+
+
+__global__ void
+bspline_cuda_score_j_mse_kernel1 
+(
+    float  *dc_dv_x,       // OUTPUT
+    float  *dc_dv_y,       // OUTPUT
+    float  *dc_dv_z,       // OUTPUT
+    float  *score,         // OUTPUT
+    float  *coeff,         // INPUT
+    float  *fixed_image,   // INPUT
+    float  *moving_image,  // INPUT
+    float  *moving_grad,   // INPUT
+    int3   fix_dim,        // Size of fixed image (vox)
+    float3 fix_origin,     // Origin of fixed image (mm)
+    float3 fix_spacing,    // Spacing of fixed image (mm)
+    int3   mov_dim,        // Size of moving image (vox)
+    float3 mov_origin,     // Origin of moving image (mm)
+    float3 mov_spacing,    // Spacing of moving image (mm)
+    int3   roi_dim,        // Dimension of ROI (in vox)
+    int3   roi_offset,     // Position of first vox in ROI (in vox)
+    int3   vox_per_rgn,    // Knot spacing (in vox)
+    int3   rdims,          // # of regions in (x,y,z)
+    int3   cdims,
+    int    pad,
+    float  *skipped        // # of voxels that fell outside the ROI
+);
+
+
+__global__ void kernel_bspline_mse_2_condense_64(
+				float* cond_x,		// Return: condensed dc_dv_x values
+				float* cond_y,		// Return: condensed dc_dv_y values
+				float* cond_z,		// Return: condensed dc_dv_z values
+				float* dc_dv_x,		// Input : dc_dv_x values
+				float* dc_dv_y,		// Input : dc_dv_y values
+				float* dc_dv_z,		// Input : dc_dv_z values
+				int* LUT_Tile_Offsets,	// Input : tile offsets
+				int* LUT_Knot,		// Input : linear knot indicies
+				int pad,		// Input : amount of tile padding
+				int4 tile_dim,		// Input : dims of tiles
+				float one_over_six);	// Input : Precomputed since GPU division is slow
 
 __global__ void kernel_bspline_mse_2_condense(
 				float* cond_x,		// Return: condensed dc_dv_x values
