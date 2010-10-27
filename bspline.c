@@ -147,7 +147,7 @@ bspline_cuda_state_create (
 	case 'i':
 	case 'j':
 	case '\0':   /* Default */
-	    /* i and j use the same init and cleanup routines */
+//        printf ("state_create: (%p)\n", &parms->gpu_zcpy);
     	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
         break;
     default:

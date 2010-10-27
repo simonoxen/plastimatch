@@ -164,8 +164,7 @@ extern "C" {
     void checkCUDAError(const char *msg);  
 
     // Initialize the GPU to execute bspline_cuda_score_j_mse().
-    // Uses zero copy for image volumes
-    void bspline_cuda_initialize_j_zcpy (
+    void bspline_cuda_initialize_j (
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
@@ -173,15 +172,6 @@ extern "C" {
         Bspline_xform* bxf,
         Bspline_parms* parms
     );
-    
-    // Initialize the GPU to execute bspline_cuda_score_j_mse().
-    void bspline_cuda_initialize_j(
-				   Dev_Pointers_Bspline *dev_ptrs,
-				   Volume *fixed,
-				   Volume *moving,
-				   Volume *moving_grad,
-				   Bspline_xform *bxf,
-				   Bspline_parms *parms);
 
     // Initialize the GPU to execute bspline_cuda_score_i_mse().
     void bspline_cuda_initialize_i(

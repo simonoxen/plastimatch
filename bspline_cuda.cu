@@ -750,6 +750,8 @@ bspline_cuda_initialize_j (
     // in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
 
+//    printf ("init_j: (%p)\n", &parms->gpu_zcpy);
+
     // Get GPU properties (can we zero-copy?)
     parms->gpu_zcpy = gpu_zero_copy_check (parms) && parms->gpu_zcpy;
     if (parms->gpu_zcpy) {

@@ -211,7 +211,6 @@ struct Bspline_parms_struct {
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
     void *data_on_gpu;           /* Pointer to structure encapsulating the data stored on the GPU */
     void *data_from_gpu;         /* Pointer to structure that stores the data returned from the GPU */
-    char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
     double lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
     double lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
 
@@ -222,7 +221,14 @@ struct Bspline_parms_struct {
     float young_modulus;  /* Penalty for having large gradient of the vector field */
     float rbf_radius;   /* Radius of RBF; if rbf_radius>0, RBF are used */
 	float rbf_young_modulus; /* Penalty for the large 2nd derivative of RBF vector field */
+
     int gpu_zcpy;                /* Use zero-copy when possible? */
+
+    // JAS 10.27.2010
+    // This guy /may/ be a trouble maker.  Struct members addresses
+    // seem to be offset incorrectly (+4) after this member wheen
+    // inside accessed within CUDA files.
+    char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
 };
 
 /* -----------------------------------------------------------------------
