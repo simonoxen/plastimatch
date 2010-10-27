@@ -35,6 +35,7 @@ print_usage (void)
     " -X infile                  Input bspline coefficients\n"
     " -x outfile                 Output bspline coefficients\n"
     " -O outfile                 Output warped image\n"
+    " -Z { on | off}             GPU Zero-Copy memory management (default=on)\n"
     " --fixed-landmarks file     Input fixed landmarks file\n"
     " --moving-landmarks file    Input moving landmarks file\n"
     " --warped-landmarks file    Output warped landmarks file\n"
@@ -109,6 +110,20 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
         rc = sscanf (argv[i], "%d" , &parms->gpuid);
         if (rc != 1) {
             print_usage ();
+        }
+    }
+    else if (!strcmp (argv[i], "-Z")) {
+        if (i == (argc-1) || argv[i+1][0] == '-') {
+        fprintf(stderr, "option %s requires an argument\n", argv[i]);
+        exit(1);
+        }
+        i++;
+        if (!strcmp(argv[i], "on")) {
+        parms->gpu_zcpy = 1;
+        } else if (!strcmp(argv[i], "off")) {
+        parms->gpu_zcpy = 0;
+        } else {
+        print_usage ();
         }
     }
     else if (!strcmp (argv[i], "-f")) {

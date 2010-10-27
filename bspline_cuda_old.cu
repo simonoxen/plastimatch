@@ -7639,6 +7639,514 @@ __global__ void bspline_cuda_compute_grad_norm_kernel(
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_initialize_j_orig()
+// 
+// Initialize the GPU to execute bspline_cuda_score_j_mse().
+// This is the origional version.  No zero copy of fanciness
+//
+// AUTHOR: James Shackleford
+// DATE  : September 17, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_initialize_j_orig (
+    Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    Bspline_xform* bxf,
+    Bspline_parms* parms)
+{
+    // Keep track of how much memory we allocated
+    // in the GPU global memory.
+    long unsigned GPU_Memory_Bytes = 0;
+
+    // Tell the user we are busy copying information
+    // to the device memory.
+    printf ("Copying data to GPU global memory\n");
+
+    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
+
+    // Allocate memory in the GPU Global memory for the fixed
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->fixed_image. (fixed_image is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->fixed_image_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc ((void**)&dev_ptrs->fixed_image, 
+	dev_ptrs->fixed_image_size);
+    cuda_utils_check_error ("Failed to allocate memory for fixed image");
+    printf(".");
+
+
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy (dev_ptrs->fixed_image, fixed->img, 
+	dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error ("Failed to copy fixed image to GPU");
+    printf(".");
+
+
+    printf(".");
+    
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_image. (moving_image is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->moving_image_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    cuda_utils_check_error("Failed to allocate memory for moving image");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("Failed to copy moving image to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving grad
+    // volume's data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_grad. (moving_grad is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->moving_grad_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    cuda_utils_check_error("Failed to allocate memory for moving grad");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    // (Note the pointer dereference)
+    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("Failed to copy moving grad to GPU");
+    printf(".");
+
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // coefficient LUT. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->coeff. (coeff is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->coeff_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
+    cuda_utils_check_error("Failed to allocate memory for dev_ptrs->coeff");
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->coeff_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->score_size = sizeof(float) * fixed->npix;
+    dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
+
+    // Allocate memory in the GPU Global memory for the 
+    // "Score". The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->score. (scoreis a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->score_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->skipped, dev_ptrs->skipped_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
+    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->score_size;
+    GPU_Memory_Bytes += dev_ptrs->skipped_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad. (grad is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->grad_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->grad to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_size;
+    // ----------------------------------------------------------
+
+
+#if defined (commentout)
+    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad_temp. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad_temp. (grad_temp is a pointer)
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->grad_temp_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
+    // ----------------------------------------------------------
+#endif
+
+
+    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    //int num_voxels = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+
+    int3 vol_dim;
+    vol_dim.x = fixed->dim[0];
+    vol_dim.y = fixed->dim[1];
+    vol_dim.z = fixed->dim[2];
+
+    int3 tile_dim;
+    tile_dim.x = bxf->vox_per_rgn[0];
+    tile_dim.y = bxf->vox_per_rgn[1];
+    tile_dim.z = bxf->vox_per_rgn[2];
+
+    int4 num_tile;
+    num_tile.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tile.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tile.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tile.w = num_tile.x * num_tile.y * num_tile.z;
+
+    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    dev_ptrs->dc_dv_x_size = ((tile_bytes + tile_padding) * num_tile.w) * sizeof(float);
+    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
+    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
+
+    // Allocate memory in the GPU Global memory for the 
+    // deinterleaved dc_dv arrays. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->dc_dv_X. 
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->dc_dv_x_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_x");
+    printf(".");
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->dc_dv_y_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_y");
+    printf(".");
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->dc_dv_z_size,
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_z");
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+
+    // Increment the GPU memory byte counter
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
+    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+
+    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    //  int pad = 64 - (vox_per_tile % 64);
+
+    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->LUT_Offsets_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->LUT_Offsets");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
+    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+
+    free (offsets);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
+    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
+
+    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
+    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
+
+    int i,j;
+    for (i = 0; i < num_tiles; i++)
+    {
+	find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
+	for (j = 0; j < 64; j++)
+	    LUT_Knot[64*i + j] = local_set_of_64[j];
+    }
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->LUT_Knot_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->LUT_Knot");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
+
+    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    //  cuda_utils_check_error("cudaBindTexture(): dev_ptrs->LUT_Knot");
+
+    free (local_set_of_64);
+    free (LUT_Knot);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
+    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->cond_x_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_x");
+    printf(".");
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->cond_y_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_y");
+    printf(".");
+
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->cond_z_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_z");
+
+    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
+    // ----------------------------------------------------------
+
+    // --- GENERATE B-SPLINE LOOK UP TABLE ----------------------
+    dev_ptrs->LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
+    dev_ptrs->LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
+    dev_ptrs->LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
+    float* LUT_Bspline_x = (float*)malloc(dev_ptrs->LUT_Bspline_x_size);
+    float* LUT_Bspline_y = (float*)malloc(dev_ptrs->LUT_Bspline_y_size);
+    float* LUT_Bspline_z = (float*)malloc(dev_ptrs->LUT_Bspline_z_size);
+
+    for (j = 0; j < 4; j++)
+    {
+	for (i = 0; i < bxf->vox_per_rgn[0]; i++)
+	    LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
+
+	for (i = 0; i < bxf->vox_per_rgn[1]; i++)
+	    LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
+
+	for (i = 0; i < bxf->vox_per_rgn[2]; i++)
+	    LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
+    }
+    
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->LUT_Bspline_x_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_x_size;
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->LUT_Bspline_y_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_y_size;
+#if VERBOSE
+    printf ("Trying to allocate %lu (%lu already allocated)\n",
+	(long unsigned) dev_ptrs->LUT_Bspline_z_size, 
+	GPU_Memory_Bytes);
+#endif
+    cudaMalloc((void**)&dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+    GPU_Memory_Bytes += dev_ptrs->LUT_Bspline_z_size;
+
+    cudaMemcpy(dev_ptrs->LUT_Bspline_x, LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_y, LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size, cudaMemcpyHostToDevice);
+    printf(".");
+    cudaMemcpy(dev_ptrs->LUT_Bspline_z, LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size, cudaMemcpyHostToDevice);
+    printf(".");
+
+    free (LUT_Bspline_x);
+    free (LUT_Bspline_y);
+    free (LUT_Bspline_z);
+
+    cudaBindTexture(0, tex_LUT_Bspline_x, dev_ptrs->LUT_Bspline_x, dev_ptrs->LUT_Bspline_x_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_y, dev_ptrs->LUT_Bspline_y, dev_ptrs->LUT_Bspline_y_size);
+    printf(".");
+    cudaBindTexture(0, tex_LUT_Bspline_z, dev_ptrs->LUT_Bspline_z, dev_ptrs->LUT_Bspline_z_size);
+    printf(".");
+
+    // ----------------------------------------------------------
+
+    // Inform user we are finished.
+    printf("done.\n");
+
+    // Report global memory allocation.
+    printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_cuda_initialize_i()
 // 
 // Initialize the GPU to execute bspline_cuda_score_i_mse().

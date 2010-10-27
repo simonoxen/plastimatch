@@ -106,6 +106,7 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->mi_hist.joint.big_bin = 0;
 
     parms->gpuid = 0;
+    parms->gpu_zcpy = 1;
 }
 
 void
@@ -147,12 +148,10 @@ bspline_cuda_state_create (
 	case 'j':
 	case '\0':   /* Default */
 	    /* i and j use the same init and cleanup routines */
-//    	bspline_cuda_initialize_j_zcpy (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
     	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
         break;
     default:
 	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
-//    	bspline_cuda_initialize_j_zcpy (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
     	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
 	}
@@ -1114,13 +1113,11 @@ bspline_state_destroy (
 
 #if (CUDA_FOUND)
     // JAS 10.27.2010
-    // CUDA zero-paging could have replaced the
-    // fixed, moving, or moving_grad pointers with
-    // pointers to pinned CPU memory, which must be
-    // freed using cudaFreeHost().  So, to prevent
-    // a segfault, we must free and NULLify these pointers
-    // before they are attempted to be free()ed in the
-    // standard fashion.  free(NULL) is okay!
+    // CUDA zero-paging could have replaced the fixed, moving, or moving_grad
+    // pointers with pointers to pinned CPU memory, which must be freed using
+    // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
+    // these pointers before they are attempted to be free()ed in the standard
+    // fashion.  Remember, free(NULL) is okay!
     bspline_cuda_clean_up_j (bst->dev_ptrs, fixed, moving, moving_grad);
 #endif
 
