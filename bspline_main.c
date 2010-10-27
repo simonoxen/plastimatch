@@ -88,8 +88,6 @@ main (int argc, char* argv[])
     printf ("Running optimization.\n");
     bspline_run_optimization (bxf, 0, parms, fixed, moving, moving_grad);
     printf ("Done running optimization.\n");
-    printf ("main: parms->gpu_zcpy = %i\n", parms->gpu_zcpy);
-
 
     /* Save output transform */
     if (options.output_xf_fn) {
