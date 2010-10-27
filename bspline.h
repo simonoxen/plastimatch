@@ -206,7 +206,6 @@ struct Bspline_parms_struct {
     int debug;                   /* Create grad & histogram files */
     char implementation;         /* Implementation ('a', 'b', etc.) */
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
-    int gpu_zcpy;                /* Use zero-copy when possible? */
     double convergence_tol;      /* When to stop iterations based on score */
     int convergence_tol_its;     /* How many iterations to check for convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
@@ -223,6 +222,7 @@ struct Bspline_parms_struct {
     float young_modulus;  /* Penalty for having large gradient of the vector field */
     float rbf_radius;   /* Radius of RBF; if rbf_radius>0, RBF are used */
 	float rbf_young_modulus; /* Penalty for the large 2nd derivative of RBF vector field */
+    int gpu_zcpy;                /* Use zero-copy when possible? */
 };
 
 /* -----------------------------------------------------------------------
