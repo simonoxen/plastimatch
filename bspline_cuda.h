@@ -9,6 +9,7 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#include "volume.h"
 #include "bspline.h"
 #include "cuda.h"
 
@@ -427,7 +428,12 @@ extern "C" {
 					    float *host_grad_norm,
 					    float *host_grad_mean);
 
-    void bspline_cuda_clean_up_j(Dev_Pointers_Bspline* dev_ptrs);
+    void bspline_cuda_clean_up_j (
+        Dev_Pointers_Bspline* dev_ptrs,
+        Volume* fixed,
+        Volume* moving,
+        Volume* moving_grad
+    );
 
     void bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs);
 

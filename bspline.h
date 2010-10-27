@@ -120,7 +120,6 @@ struct dev_pointers_bspline
     float* dc_dp_x;
     float* dc_dp_y;
     float* dc_dp_z;
-    float* grad_temp;
 
     int* LUT_Knot;
     int* LUT_NumTiles;
@@ -133,9 +132,6 @@ struct dev_pointers_bspline
     int* c_lut;
     float* q_lut;
 
-
-    // Zero Page Host Pointers
-    float* zph_fixed_image;
 
     // These hold the size of the
     // chucks of memory we allocated
@@ -268,7 +264,11 @@ void bspline_parms_free (Bspline_parms* parms);
 
 gpuit_EXPORT
 void
-bspline_state_destroy (Bspline_state *bst);
+bspline_state_destroy (
+    Bspline_state *bst,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad);
 
 gpuit_EXPORT
 void
