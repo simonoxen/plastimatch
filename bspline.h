@@ -134,6 +134,9 @@ struct dev_pointers_bspline
     float* q_lut;
 
 
+    // Zero Page Host Pointers
+    float* zph_fixed_image;
+
     // These hold the size of the
     // chucks of memory we allocated
     // that each start at the addresses

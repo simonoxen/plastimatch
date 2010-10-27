@@ -37,6 +37,1724 @@ float *gpu_grad;
 float *gpu_grad_temp;
 
 
+////////////////////////////////////////////
+////////////////////////////////////////////
+/// SIMPLY UNUSED UTILITY FUNCTIONS    /////
+///   STILL VERY GOOD, JUST UN-NEEDED  /////
+////////////////////////////////////////////
+////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_deinterleave()
+//
+// KERNELS INVOKED:
+//   kernel_deinterleave()
+//
+// AUTHOR: James Shackleford
+//   DATE: 22 July, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_deinterleave(
+    int num_values,
+    float* input,
+    float* out_x,
+    float* out_y,
+    float* out_z)
+{
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 3;    // This cannot be changed.
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_values + threads_per_block - 1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+    
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_deinterleave() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_deinterleave() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    int smemSize = 2*threads_per_block*sizeof(float);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_deinterleave<<<dimGrid, dimBlock, smemSize>>>(
+        num_values,
+        input,
+        out_x,
+        out_y,
+        out_z);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_deinterleave()");
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_pad_64()
+//
+// KERNELS INVOKED:
+//   kernel_pad_64()
+//
+// AUTHOR: James Shackleford
+//   DATE: 16 September, 2009
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_pad_64(
+    float** input,
+    int* vol_dims,
+    int* tile_dims)
+{
+
+    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
+    int3 vol_dim;
+    vol_dim.x = vol_dims[0];
+    vol_dim.y = vol_dims[1];
+    vol_dim.z = vol_dims[2];
+
+    int3 tile_dim;
+    tile_dim.x = tile_dims[0];
+    tile_dim.y = tile_dims[1];
+    tile_dim.z = tile_dims[2];
+
+    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
+
+    int4 num_tiles;
+    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
+
+    int tile_padding = 64 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 64);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
+    // ----------------------------------------------------------
+
+
+
+    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
+    float* tmp_output;
+    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
+    cudaMemset(tmp_output, 0, output_size*sizeof(float));
+    // ----------------------------------------------------------
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 4;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_pad_64() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_pad_64<<<dimGrid, dimBlock>>>(
+        *input,
+        tmp_output,
+        vol_dim,
+        tile_dim);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_pad()");
+
+
+    // --- RETURN -----------------------------------------------
+    cudaFree( *input );
+    *input = tmp_output;
+    // ----------------------------------------------------------
+    
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_pad()
+//
+// KERNELS INVOKED:
+//   kernel_pad()
+//
+// AUTHOR: James Shackleford
+//   DATE: 10 September, 2009
+////////////////////////////////////////////////////////////////////////////////
+extern "C" void
+CUDA_pad(
+    float** input,
+    int* vol_dims,
+    int* tile_dims)
+{
+
+    // --- CALCULATE THINGS NEEDED BY THIS STUB -----------------
+    int3 vol_dim;
+    vol_dim.x = vol_dims[0];
+    vol_dim.y = vol_dims[1];
+    vol_dim.z = vol_dims[2];
+
+    int3 tile_dim;
+    tile_dim.x = tile_dims[0];
+    tile_dim.y = tile_dims[1];
+    tile_dim.z = tile_dims[2];
+
+    int num_voxels = vol_dim.x * vol_dim.y * vol_dim.z;
+
+    int4 num_tiles;
+    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+    num_tiles.w = num_tiles.x * num_tiles.y * num_tiles.z;
+
+    int tile_padding = 32 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 32);
+    int tile_bytes = (tile_dim.x * tile_dim.y * tile_dim.z);
+
+    int output_size = (tile_bytes + tile_padding) * num_tiles.w;
+    // ----------------------------------------------------------
+
+
+
+    // --- ALLOCATE GPU GLOBAL MEMORY FOR OUTPUT ----------------
+    float* tmp_output;
+    cudaMalloc((void**)&tmp_output, output_size*sizeof(float));
+    cudaMemset(tmp_output, 0, output_size*sizeof(float));
+    // ----------------------------------------------------------
+
+    // --- INITIALIZE GRID --------------------------------------
+    int i;
+    int warps_per_block = 4;
+    int threads_per_block = 32*warps_per_block;
+    dim3 dimBlock(threads_per_block, 1, 1);
+    int Grid_x = 0;
+    int Grid_y = 0;
+
+    int num_blocks = (num_voxels+threads_per_block-1) / threads_per_block;
+
+
+    // *****
+    // Search for a valid execution configuration
+    // for the required # of blocks.
+    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
+
+    for (i = sqrt_num_blocks; i < 65535; i++) {
+        if (num_blocks % i == 0) {
+            Grid_x = i;
+            Grid_y = num_blocks / Grid_x;
+            break;
+        }
+    }
+    // *****
+
+
+    // Were we able to find a valid exec config?
+    if (Grid_x == 0) {
+        // If this happens we should consider falling back to a
+        // CPU implementation, using a different CUDA algorithm,
+        // or padding the input dc_dv stream to work with this
+        // CUDA algorithm.
+        printf("\n[ERROR] Unable to find suitable CUDA_pad() configuration!\n");
+        exit(0);
+    } else {
+    //      printf("\nExecuting CUDA_row_to_tile_major() with Grid [%i,%i]...\n", Grid_x, Grid_y);
+    }
+
+    dim3 dimGrid(Grid_x, Grid_y, 1);
+    // ----------------------------------------------------------
+
+
+    // --- BEGIN KERNEL EXECUTION -------------------------------
+    kernel_pad<<<dimGrid, dimBlock>>>(
+        *input,
+        tmp_output,
+        vol_dim,
+        tile_dim);
+    // ----------------------------------------------------------
+
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_pad()");
+
+
+    // --- RETURN -----------------------------------------------
+    cudaFree( *input );
+    *input = tmp_output;
+    // ----------------------------------------------------------
+    
+}
+
+
+/**
+ * Deinterleaves 3-interleaved data and generates three deinterleaved arrays.
+ *
+ * @param num_values Deprecated
+ * @param input Pointer to memory containing interleaved data
+ * @param out_x Pointer to memory containing the deinterleaved x-values
+ * @param out_y Pointer to memory containing the deinterleaved y-values
+ * @param out_z Pointer to memory containing the deinterleaved z-values
+ *
+ * @author James A. Shackleford
+ */
+__global__ void
+kernel_deinterleave(
+    int num_values,
+    float* input,
+    float* out_x,
+    float* out_y,
+    float* out_z)
+{
+    // Shared memory is allocated on a per block basis.
+    // (Allocate (2*96*sizeof(float)) memory when calling the kernel.)
+    extern __shared__ float shared_memory[]; 
+
+    float* sdata = (float*)shared_memory;       // float sdata[96];
+    float* sdata_x = (float*)&sdata[96];        // float sdata_x[32];
+    float* sdata_y = (float*)&sdata_x[32];      // float sdata_y[32];
+    float* sdata_z = (float*)&sdata_y[32];      // float sdata_z[32];
+
+
+    // Total shared memory allocation per block: 2*96*sizeof(float)
+    
+
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    // The total number of threads in each thread block.
+    int threadsPerBlock  = 96;
+
+    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = threadIdx.x;
+
+    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    // Used for determining Warp Number
+    int warpNumber = threadIdxInBlock / 32;
+
+    ///////////////////////////////////////
+    // We have 3 warps (96 threads).
+    // 96 threads is enough to pull down:
+    //   -- 32 X values
+    //   -- 32 Y values
+    //   -- 32 Z values
+    ////////////////////////////
+
+    // First, we will pull these 96 values into shared memory.
+    // At this point they will still be interleaved in shared memory
+    sdata[threadIdxInBlock] = input[threadIdxInGrid];
+    
+    __syncthreads();
+
+
+    // Second, each warp will diverge.  (This is okay because we
+    // are diverging along warp boundaries.)  Each warp will be
+    // responsible for deinterleaving 1/3 of the values stored in
+    // shared memory and copying them to one of 3 other areas
+    // in shared memory.
+    //   -- Warp 0 will grab the X values
+    //   -- Warp 1 will grab the Y values
+    //   -- Warp 2 will grab the Z values
+    switch (warpNumber)
+    {
+    case 0:
+        sdata_x[threadIdxInBlock] = sdata[3*threadIdxInBlock];
+        break;
+
+    case 1:
+        sdata_y[threadIdxInBlock - 32] = sdata[3*threadIdxInBlock - 95];
+        break;
+        
+    case 2:
+        sdata_z[threadIdxInBlock - 64] = sdata[3*threadIdxInBlock - 190];
+        break;
+    }
+
+    __syncthreads();
+
+
+    // Finally, each warp is now responsible for one of the coalesced
+    // X, Y, or Z streams in shared memory.  The job is to now
+    // move these contigious elements into global memory.
+    switch (warpNumber)
+    {
+    case 0:
+        out_x[threadIdxInBlock + 32*blockIdxInGrid] = sdata_x[threadIdxInBlock];
+        break;
+
+    case 1:
+        out_y[(threadIdxInBlock - 32) + 32*blockIdxInGrid] = sdata_y[threadIdxInBlock - 32];
+        break;
+        
+    case 2:
+        out_z[(threadIdxInBlock - 64) + 32*blockIdxInGrid] = sdata_z[threadIdxInBlock - 64];
+        break;
+    }
+
+}
+
+
+
+/**
+ * This kernel converts a row-major data stream into a 32-byte aligned
+ * tile-major stream.
+ *
+ * @warning Invoke with as many threads as there are elements in the row-major data.
+ *
+ * @param input Pointer to the input row-major data
+ * @param output Pointer to the output tiled data
+ * @param vol_dim Dimensions of the row-major data volume
+ * @param tile_dim Desired dimensions of the tiles
+ *
+ * @author James A. Shackleford
+ */
+__global__ void
+kernel_row_to_tile_major(
+    float* input,
+    float* output,
+    int3 vol_dim,
+    int3 tile_dim)
+{
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    // Calculate the total number of threads in each thread block.
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    if (threadIdxInGrid >= (vol_dim.x * vol_dim.y * vol_dim.z)) {
+        return;
+    }
+
+    // How many tiles do we need in the x, y, and z directions
+    // in order to accommodate the volume?
+    int3 num_tiles;
+    num_tiles.x = (vol_dim.x+tile_dim.x-1) / tile_dim.x;
+    num_tiles.y = (vol_dim.y+tile_dim.y-1) / tile_dim.y;
+    num_tiles.z = (vol_dim.z+tile_dim.z-1) / tile_dim.z;
+
+    // Setup shared memory
+    extern __shared__ float sdata[]; 
+
+    // We must first calculate where each tile will start in
+    // memory.  This is the same as saying the start of each tile
+    // in linear memory.  In linear memory, tiles are separated
+    // by buffers of unused data so that each tile starts at a
+    // 32-byte boundary.
+
+    // The first step will be to find by how much we must pad
+    // each tile so that it is divisible evenly by 32.
+    int tile_padding = 32 - ((tile_dim.x * tile_dim.y * tile_dim.z) % 32);
+
+    // Now each thread maps to one voxel in the row-major volume.
+    // We will use the threadIdx to figure out which tile
+    // the voxel we are operating on maps into in the tile-major
+    // volume.
+
+    // But first, we must find the [x,y,z] coordinates of the
+    // voxel we are operating on based on the threadIdxInGrid
+    // and the volume dimensions.
+    int3 vox_coord;
+    vox_coord.x = threadIdxInGrid % vol_dim.x;
+    vox_coord.y = ((threadIdxInGrid - vox_coord.x) / vol_dim.x) % vol_dim.y;
+    vox_coord.z = ((((threadIdxInGrid - vox_coord.x) / vol_dim.x) / vol_dim.y) % vol_dim.z);
+
+    // ...and now we can find the voxel's destination tile
+    // in the tile-major volume.
+    int4 dest_tile;
+    dest_tile.x = vox_coord.x / tile_dim.x;
+    dest_tile.y = vox_coord.y / tile_dim.y;
+    dest_tile.z = vox_coord.z / tile_dim.z;
+    
+    // ...and based on the destination tile [x,y,z] coordinates
+    // we find the *TILE's* absolute row-major offset (and store it
+    // into dest_tile.w).
+    dest_tile.w = num_tiles.x*num_tiles.y*dest_tile.z + num_tiles.x*dest_tile.y + dest_tile.x;
+
+    // Multiplying the destination tile number by the tile_padding
+    // tells us our padding offset for where the destination tile lives
+    // in linear memory.
+    int linear_mem_offset_pad = tile_padding * dest_tile.w;
+
+    // We can also find the linear memory offset of the tile
+    // due to all of the voxels contained within the tiles preceeding
+    // it.
+    int linear_mem_offset_tile = (tile_dim.x*tile_dim.y*tile_dim.z) * dest_tile.w;
+
+    // Now we can find the effective offset into linear
+    // memory for our tile.
+    int linear_mem_offset = linear_mem_offset_tile + linear_mem_offset_pad;
+
+    // Now that we have the linear offset of where our
+    // tile starts in linear memory (which will be on
+    // a 32-byte boundary btw), we can now focus on
+    // what the destination coordinates of our voxel
+    // will be within that tile.
+    
+    // We will call the voxel coordinates within the
+    // tile dest_coords.  The final location of our
+    // voxel in linear memory will be:
+    // linear_mem_offset + dest_coord.w
+    int4 dest_coord;
+    dest_coord.x = vox_coord.x - (dest_tile.x * tile_dim.x);
+    dest_coord.y = vox_coord.y - (dest_tile.y * tile_dim.y);
+    dest_coord.z = vox_coord.z - (dest_tile.z * tile_dim.z);
+    dest_coord.w = tile_dim.x*tile_dim.y*dest_coord.z + tile_dim.x*dest_coord.y + dest_coord.x;
+    
+    // We now, FINALLY, know where our row-major voxel
+    // maps to in linear memory for our 32-byte aligned
+    // tile-major volume!  \(^_^)/ YATTA! \(^_^)/
+    int linear_mem_idx = linear_mem_offset + dest_coord.w;
+
+
+    // Lets move it!
+    //  output[linear_mem_idx] = (float)threadIdxInGrid;    // Output Check
+    output[linear_mem_idx] = input[threadIdxInGrid];
+    
+
+    // Fin.
+}
+
+
+/**
+ * This kernel pads tiled data so that each tile is aligned to 64 byte boundaries
+ *
+ * @param input Pointer to tiled data
+ * @param output Pointer to padded tiled data
+ * @param vol_dim Dimensions of input data volume
+ * @param tile_dim Dimension of input data volume's tiles
+ *
+ * @author James A. Shackleford
+ */
+__global__ void
+kernel_pad_64(
+    float* input,
+    float* output,
+    int3 vol_dim,
+    int3 tile_dim)
+{
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    // Calculate the total number of threads in each thread block.
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    if (threadIdxInGrid >= (vol_dim.x * vol_dim.y * vol_dim.z)) {
+        return;
+    }
+
+    int num_elements = tile_dim.x * tile_dim.y * tile_dim.z;
+
+    // "Which tile am I handling," wondered the warp.
+    int tile_id = threadIdxInGrid / num_elements;
+    
+    // "Hmm... a pad," said the thread with intrigue.
+    int tile_padding = 64 - (num_elements % 64);
+
+    // "We'll need an offset as well," he said.
+    int offset = tile_id * (tile_padding + num_elements);
+
+    int idx = threadIdxInGrid - (tile_id * num_elements);
+
+    // This story sucks... let's just get this over with.
+    output[offset + idx] = input[threadIdxInGrid];
+    
+}
+
+
+
+/**
+ * This kernel pads tiled data so that each tile is aligned to 32 byte boundaries
+ *
+ * @param input Pointer to tiled data
+ * @param output Pointer to padded tiled data
+ * @param vol_dim Dimensions of input data volume
+ * @param tile_dim Dimension of input data volume's tiles
+ *
+ * @author James A. Shackleford
+ */
+__global__ void
+kernel_pad(
+    float* input,
+    float* output,
+    int3 vol_dim,
+    int3 tile_dim)
+{
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    // Calculate the total number of threads in each thread block.
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    if (threadIdxInGrid >= (vol_dim.x * vol_dim.y * vol_dim.z)) {
+        return;
+    }
+
+    int num_elements = tile_dim.x * tile_dim.y * tile_dim.z;
+
+    int tile_id = threadIdxInGrid / num_elements;
+    
+    int tile_padding = 32 - (num_elements % 32);
+
+    int offset = tile_id * (tile_padding + num_elements);
+
+    int idx = threadIdxInGrid - (tile_id * num_elements);
+
+    output[offset + idx] = input[threadIdxInGrid];
+    
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_condense_64()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_condense_64()
+//
+// AUTHOR: James Shackleford
+//   DATE: September 16th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_2_condense_64(
+    Dev_Pointers_Bspline* dev_ptrs,
+    int* vox_per_rgn,
+    int num_tiles)
+{
+    dim3 dimGrid;
+    dim3 dimBlock;
+
+    int4 vox_per_region;
+    vox_per_region.x = vox_per_rgn[0];
+    vox_per_region.y = vox_per_rgn[1];
+    vox_per_region.z = vox_per_rgn[2];
+    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+
+    int pad = 64 - (vox_per_region.w % 64);
+
+    vox_per_region.w += pad;
+
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_tiles,        // INPUT: Number of blocks
+        64);              // INPUT: Threads per block
+
+    int smemSize = 384*sizeof(float);
+
+    kernel_bspline_mse_2_condense_64<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
+        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
+        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
+        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
+        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
+        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
+        dev_ptrs->LUT_Offsets,  // Input : tile offsets
+        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
+        pad,                    // Input : amount of tile padding
+        vox_per_region,         // Input : dims of tiles
+        (float)1/6);            // Input : GPU Division is slow
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_2_condense()
+//
+// KERNELS INVOKED:
+//   kernel_bspline_mse_2_condense()
+//
+// AUTHOR: James Shackleford
+//   DATE: 19 August, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_2_condense(
+    Dev_Pointers_Bspline* dev_ptrs,
+    int* vox_per_rgn,
+    int num_tiles)
+{
+    dim3 dimGrid;
+    dim3 dimBlock;
+
+    int4 vox_per_region;
+    vox_per_region.x = vox_per_rgn[0];
+    vox_per_region.y = vox_per_rgn[1];
+    vox_per_region.z = vox_per_rgn[2];
+    vox_per_region.w = vox_per_region.x * vox_per_region.y * vox_per_region.z;
+
+    int pad = 32 - (vox_per_region.w % 32);
+
+    build_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_tiles,        // INPUT: Number of blocks
+        32);              // INPUT: Threads per block
+
+    int smemSize = 384*sizeof(float);
+
+
+    kernel_bspline_mse_2_condense<<<dimGrid, dimBlock, smemSize>>>(
+        dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
+        dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
+        dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
+        dev_ptrs->dc_dv_x,      // Input : dc_dv_x values
+        dev_ptrs->dc_dv_y,      // Input : dc_dv_y values
+        dev_ptrs->dc_dv_z,      // Input : dc_dv_z values
+        dev_ptrs->LUT_Offsets,  // Input : tile offsets
+        dev_ptrs->LUT_Knot,     // Input : linear knot indicies
+        pad,                    // Input : amount of tile padding
+        vox_per_region,         // Input : dims of tiles
+        (float)1/6);            // Input : GPU Division is slow
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+/**
+ * This kernel partially computes the gradient by generating condensed dc_dv values.
+ *
+ * @warning It is required that input data tiles be aligned to 64 byte boundaries.
+ *
+ * @see CUDA_pad_64()
+ * @see kernel_pad_64()
+ *
+ * @param cond_x Pointer to condensed dc_dv x-values
+ * @param cond_y Pointer to condensed dc_dv y-values
+ * @param cond_z Pointer to condensed dc_dv z-values
+ * @param dc_dv_x Pointer to dc_dv x-values
+ * @param dc_dv_y Pointer to dc_dv y-values
+ * @param dc_dv_z Pointer to dc_dv z-values
+ * @param LUT_Tile_Offsets Pointer to offset lookup table
+ * @param LUT_Knot Pointer to linear knot indices
+ * @param pad Amount of tile padding, in bytes
+ * @param tile_dim Dimensions of input volume tiles
+ * @param one_over_six The value 1/6
+ *
+ * @author: James A. Shackleford
+ */
+__global__ void
+kernel_bspline_mse_2_condense_64(
+    float* cond_x,          // Return: condensed dc_dv_x values
+    float* cond_y,          // Return: condensed dc_dv_y values
+    float* cond_z,          // Return: condensed dc_dv_z values
+    float* dc_dv_x,         // Input : dc_dv_x values
+    float* dc_dv_y,         // Input : dc_dv_y values
+    float* dc_dv_z,         // Input : dc_dv_z values
+    int* LUT_Tile_Offsets,  // Input : tile offsets
+    int* LUT_Knot,          // Input : linear knot indices
+    int pad,                // Input : amount of tile padding
+    int4 tile_dim,          // Input : dims of tiles
+    float one_over_six)     // Input : Precomputed since GPU division is slow
+{
+    // NOTES
+    // * Each threadblock contains 2 warps.
+    // * Each set of 2 warps operates on only one tile
+    // * Each tile is reduced to 64x3 single precision floating point values
+    // * Each of the 64 values consists of 3 floats [x,y,z]
+    // * Each of the 64 values relates to a different control knot
+    // * Each set of 3 floats (there are 64 sets) are placed into a stream
+    // * The stream is indexed into by an offset + [0,64].
+    // * The offset is the knot number that the set of 3 floats influences
+    // * Each warp will write to 64 different offsets
+
+    int tileOffset;
+    int voxel_cluster;
+    int voxel_idx;
+    float3 voxel_val;
+    int3 voxel_loc;
+    int4 tile_pos;
+    float A,B,C,D;
+
+
+    // -- Setup Thread Attributes -----------------------------
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    int myWarpId_inPair = threadIdxInGrid - 64*blockIdxInGrid;      // From 0 to 63
+    // --------------------------------------------------------
+
+
+    // -- Setup Shared Memory ---------------------------------
+    // -- SIZE: 3*threadsPerBlock*sizeof(float)
+    // --------------------------------------------------------
+    extern __shared__ float sdata[]; 
+    float* sBuffer_x = (float*)sdata;           // sBuffer_x[64]
+    float* sBuffer_y = (float*)&sBuffer_x[64];      // sBuffer_y[64]
+    float* sBuffer_z = (float*)&sBuffer_y[64];      // sBuffer_z[64]
+    float* sBuffer_redux_x = (float*)&sBuffer_z[64];    // sBuffer_redux_x[64]
+    float* sBuffer_redux_y = (float*)&sBuffer_redux_x[64];  // sBuffer_redux_y[64]
+    float* sBuffer_redux_z = (float*)&sBuffer_redux_y[64];  // sBuffer_redux_z[64]
+    // --------------------------------------------------------
+
+
+    // Clear Shared Memory!!
+    sBuffer_x[myWarpId_inPair] = 0;
+    sBuffer_y[myWarpId_inPair] = 0;
+    sBuffer_z[myWarpId_inPair] = 0;
+
+
+    // First, get the offset of where our tile starts in memory.
+    tileOffset = LUT_Tile_Offsets[blockIdxInGrid];
+
+    // Main Loop for Warp Work
+    // (Here we condense a tile into 64x3 floats)
+    for (voxel_cluster=0; voxel_cluster < tile_dim.w; voxel_cluster+=64)
+    {
+
+    // ----------------------------------------------------------
+    //                  STAGE 1 IN POWERPOINT
+    // ----------------------------------------------------------
+    // Second, we pulldown the current voxel cluster.
+    // Each thread in the warp pulls down 1 voxel (3 values)
+    // ----------------------------------------------------------
+    voxel_val.x = dc_dv_x[tileOffset + voxel_cluster + myWarpId_inPair];
+    voxel_val.y = dc_dv_y[tileOffset + voxel_cluster + myWarpId_inPair];
+    voxel_val.z = dc_dv_z[tileOffset + voxel_cluster + myWarpId_inPair];
+    // ----------------------------------------------------------
+
+    // Third, find the [x,y,z] location within the current tile
+    // for the voxel this thread is processing.
+    voxel_idx = (voxel_cluster + myWarpId_inPair);
+    voxel_loc.x = voxel_idx % tile_dim.x;
+    voxel_loc.y = ((voxel_idx - voxel_loc.x) / tile_dim.x) % tile_dim.y;
+    voxel_loc.z = (((voxel_idx - voxel_loc.x) / tile_dim.x) / tile_dim.y) % tile_dim.z;
+
+    // Fourth, we will perform all 64x3 calculations on the current voxel cluster.
+    // (Every thead in the warp will be doing this at the same time for its voxel)
+
+    tile_pos.w = 0; // Current tile position within [0,63]
+
+    for (tile_pos.z = 0; tile_pos.z < 4; tile_pos.z++)
+        for (tile_pos.y = 0; tile_pos.y < 4; tile_pos.y++)
+        for (tile_pos.x = 0; tile_pos.x < 4; tile_pos.x++)
+        {
+
+            // ---------------------------------------------------------------------------------
+            //                           STAGE 2 IN POWERPOINT
+            // ---------------------------------------------------------------------------------
+
+            // Clear Shared Memory!!
+            sBuffer_redux_x[myWarpId_inPair] = 0;
+            sBuffer_redux_y[myWarpId_inPair] = 0;
+            sBuffer_redux_z[myWarpId_inPair] = 0;
+
+            // Calculate the b-spline multiplier for this voxel @ this tile
+            // position relative to a given control knot.
+            A = obtain_spline_basis_function(one_over_six, tile_pos.x, voxel_loc.x, tile_dim.x);
+            B = obtain_spline_basis_function(one_over_six, tile_pos.y, voxel_loc.y, tile_dim.y);
+            C = obtain_spline_basis_function(one_over_six, tile_pos.z, voxel_loc.z, tile_dim.z);
+            D = A*B*C;
+
+            // Perform the multiplication and store to redux shared memory
+            sBuffer_redux_x[myWarpId_inPair] = voxel_val.x * D;
+            sBuffer_redux_y[myWarpId_inPair] = voxel_val.y * D;
+            sBuffer_redux_z[myWarpId_inPair] = voxel_val.z * D;
+            __syncthreads();
+
+            // All 64 dc_dv values in the current cluster have been processed
+            // for the current tile position (out of 64 total tile positions).
+                    
+            // We now perform a sum reduction on these 64 dc_dv values to
+            // condense the data down to one value.
+            for(unsigned int s = 32; s > 0; s >>= 1)
+            {
+            if (myWarpId_inPair < s)
+            {
+                sBuffer_redux_x[myWarpId_inPair] += sBuffer_redux_x[myWarpId_inPair + s];
+                sBuffer_redux_y[myWarpId_inPair] += sBuffer_redux_y[myWarpId_inPair + s];
+                sBuffer_redux_z[myWarpId_inPair] += sBuffer_redux_z[myWarpId_inPair + s];
+            }
+
+            // Wait for all threads in to complete the current tier.
+            __syncthreads();
+            }
+
+            // We then accumulate this single condensed value into the element of
+            // shared memory that correlates to the current tile position.
+            if (myWarpId_inPair == 0)
+            {
+            sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
+            sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
+            sBuffer_z[tile_pos.w] += sBuffer_redux_z[0];
+            }
+            __syncthreads();
+
+            // Continue to work on the current voxel cluster, but shift
+            // to the next tile position.
+            tile_pos.w++;
+            // ---------------------------------------------------------------------------------
+
+        } // LOOP: 64 B-Spline Values for current voxel_cluster
+
+    } // LOOP: voxel_clusters
+
+
+    // ----------------------------------------------------------
+    //                STAGE 3 IN POWERPOINT
+    // ----------------------------------------------------------
+    // By this point every voxel cluster within the tile has been
+    // processed for every possible tile position (there are 64).
+    //
+    // Now it is time to put these 64 condensed values in their
+    // proper places.  We will work off of myGlobalWarpNumber,
+    // which is equal to the tile index, and myWarpId, which is
+    // equal to the knot number [0,63].
+    // ----------------------------------------------------------
+    // HERE, EACH WARP OPERATES ON A SINGLE TILE'S SET OF 64!!
+    // ----------------------------------------------------------
+    tileOffset = 64*blockIdxInGrid;
+
+    tile_pos.x = 63 - myWarpId_inPair;
+
+    int knot_num;
+
+    knot_num = LUT_Knot[tileOffset + myWarpId_inPair];
+
+    cond_x[ (64*knot_num) + tile_pos.x ] = sBuffer_x[myWarpId_inPair];
+    cond_y[ (64*knot_num) + tile_pos.x ] = sBuffer_y[myWarpId_inPair];
+    cond_z[ (64*knot_num) + tile_pos.x ] = sBuffer_z[myWarpId_inPair];
+    // ----------------------------------------------------------
+
+    // Done with tile.
+
+    // END OF KERNEL
+}
+
+
+
+/**
+ * This kernel partially computes the gradient by generating condensed dc_dv values.
+ *
+ * @warning It is required that input data tiles be aligned to 32 byte boundaries.
+ *
+ * @see CUDA_pad_32()
+ * @see kernel_pad_32()
+ *
+ * @param cond_x Pointer to condensed dc_dv x-values
+ * @param cond_y Pointer to condensed dc_dv y-values
+ * @param cond_z Pointer to condensed dc_dv z-values
+ * @param dc_dv_x Pointer to dc_dv x-values
+ * @param dc_dv_y Pointer to dc_dv y-values
+ * @param dc_dv_z Pointer to dc_dv z-values
+ * @param LUT_Tile_Offsets Pointer to offset lookup table
+ * @param LUT_Knot Pointer to linear knot indices
+ * @param pad Amount of tile padding, in bytes
+ * @param tile_dim Dimensions of input volume tiles
+ * @param one_over_six The value 1/6
+ *
+ * @author: James A. Shackleford
+ */
+__global__ void
+kernel_bspline_mse_2_condense(
+    float* cond_x,      // Return: condensed dc_dv_x values
+    float* cond_y,      // Return: condensed dc_dv_y values
+    float* cond_z,      // Return: condensed dc_dv_z values
+    float* dc_dv_x,     // Input : dc_dv_x values
+    float* dc_dv_y,     // Input : dc_dv_y values
+    float* dc_dv_z,     // Input : dc_dv_z values
+    int* LUT_Tile_Offsets,  // Input : tile offsets
+    int* LUT_Knot,      // Input : linear knot indicies
+    int pad,        // Input : amount of tile padding
+    int4 tile_dim,      // Input : dims of tiles
+    float one_over_six) // Input : Precomputed since GPU division is slow
+{
+    // NOTES
+    // * Each threadblock contains only 1 warp.
+    // * Each warp operates on only one tile
+    // * Each tile is reduced to 64x3 single precision floating point values
+    // * Each of the 64 values consists of 3 floats [x,y,z]
+    // * Each of the 64 values relates to a different control knot
+    // * Each set of 3 floats (there are 64 sets) are placed into a stream
+    // * The stream is indexed into by an offset + [0,64].
+    // * The offset is the knot number that the set of 3 floats influences
+    // * Each warp will write to 64 different offsets
+
+    int tileOffset;
+    int voxel_cluster;
+    int voxel_idx;
+    float3 voxel_val;
+    int3 voxel_loc;
+    int4 tile_pos;
+    float A,B,C,D;
+
+
+    // -- Setup Thread Attributes -----------------------------
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
+
+    int myGlobalWarpNumber = threadIdxInGrid / 32;  // Tile #
+    int myWarpId = threadIdxInGrid - 32*myGlobalWarpNumber; // 0 to 31
+    // --------------------------------------------------------
+
+
+    // -- Setup Shared Memory ---------------------------------
+    // -- SIZE: 3*threadsPerBlock*sizeof(float)
+    // --------------------------------------------------------
+    extern __shared__ float sdata[]; 
+    float* sBuffer_x = (float*)sdata;           // sBuffer_x[64]
+    float* sBuffer_y = (float*)&sBuffer_x[64];      // sBuffer_y[64]
+    float* sBuffer_z = (float*)&sBuffer_y[64];      // sBuffer_z[64]
+    float* sBuffer_redux_x = (float*)&sBuffer_z[64];    // sBuffer_redux_x[32]
+    float* sBuffer_redux_y = (float*)&sBuffer_redux_x[32];  // sBuffer_redux_y[32]
+    float* sBuffer_redux_z = (float*)&sBuffer_redux_y[32];  // sBuffer_redux_z[32]
+    // --------------------------------------------------------
+
+
+    // Clear Shared Memory!!
+    sBuffer_x[myWarpId] = 0; sBuffer_x[myWarpId+32] = 0;
+    sBuffer_y[myWarpId] = 0; sBuffer_y[myWarpId+32] = 0;
+    sBuffer_z[myWarpId] = 0; sBuffer_z[myWarpId+32] = 0;
+
+
+    // First, get the offset of where our tile starts in memory.
+    //  tileOffset = tex1Dfetch(tex_LUT_Offsets, myGlobalWarpNumber);
+    tileOffset = LUT_Tile_Offsets[myGlobalWarpNumber];
+
+    // Main Loop for Warp Work
+    // (Here we condense a tile into 64x3 floats)
+    for (voxel_cluster=0; voxel_cluster < tile_dim.w; voxel_cluster+=32)
+    {
+
+    // ----------------------------------------------------------
+    //                  STAGE 1 IN POWERPOINT
+    // ----------------------------------------------------------
+    // Second, we pulldown the current voxel cluster.
+    // Each thread in the warp pulls down 1 voxel (3 values)
+    // ----------------------------------------------------------
+    voxel_val.x = dc_dv_x[tileOffset + voxel_cluster + myWarpId];
+    voxel_val.y = dc_dv_y[tileOffset + voxel_cluster + myWarpId];
+    voxel_val.z = dc_dv_z[tileOffset + voxel_cluster + myWarpId];
+    // ----------------------------------------------------------
+
+    // Third, find the [x,y,z] location within the current tile
+    // for the voxel this thread is processing.
+    voxel_idx = (voxel_cluster + myWarpId);
+    voxel_loc.x = voxel_idx % tile_dim.x;
+    voxel_loc.y = ((voxel_idx - voxel_loc.x) / tile_dim.x) % tile_dim.y;
+    voxel_loc.z = (((voxel_idx - voxel_loc.x) / tile_dim.x) / tile_dim.y) % tile_dim.z;
+
+    // Third, we will perform all 64x3 calculations on the current voxel cluster.
+    // (Every thead in the warp will be doing this at the same time for its voxel)
+
+    tile_pos.w = 0; // Current tile position within [0,63]
+
+    for (tile_pos.z = 0; tile_pos.z < 4; tile_pos.z++)
+        for (tile_pos.y = 0; tile_pos.y < 4; tile_pos.y++)
+        for (tile_pos.x = 0; tile_pos.x < 4; tile_pos.x++)
+        {
+
+            // ---------------------------------------------------------------------------------
+            //                           STAGE 2 IN POWERPOINT
+            // ---------------------------------------------------------------------------------
+
+            // Clear Shared Memory!!
+            sBuffer_redux_x[myWarpId] = 0;
+            sBuffer_redux_y[myWarpId] = 0;
+            sBuffer_redux_z[myWarpId] = 0;
+
+            // Calculate the b-spline multiplier for this voxel @ this tile
+            // position relative to a given control knot.
+            A = obtain_spline_basis_function(one_over_six, tile_pos.x, voxel_loc.x, tile_dim.x);
+            B = obtain_spline_basis_function(one_over_six, tile_pos.y, voxel_loc.y, tile_dim.y);
+            C = obtain_spline_basis_function(one_over_six, tile_pos.z, voxel_loc.z, tile_dim.z);
+            D = A*B*C;
+                    
+            // Perform the multiplication and store to redux shared memory
+            sBuffer_redux_x[myWarpId] = voxel_val.x * D;
+            sBuffer_redux_y[myWarpId] = voxel_val.y * D;
+            sBuffer_redux_z[myWarpId] = voxel_val.z * D;
+            __syncthreads();
+
+            // All 32 voxels in the current cluster have been processed
+            // for the current tile position (out of 64 total tile positions).
+                    
+            // We now perform a sum reduction on these 32 voxels to condense the
+            // data down to one value.
+            for(unsigned int s = 16; s > 0; s >>= 1)
+            {
+            if (myWarpId < s)
+            {
+                sBuffer_redux_x[myWarpId] += sBuffer_redux_x[myWarpId + s];
+                sBuffer_redux_y[myWarpId] += sBuffer_redux_y[myWarpId + s];
+                sBuffer_redux_z[myWarpId] += sBuffer_redux_z[myWarpId + s];
+            }
+
+            // Wait for all threads in to complete the current tier.
+            __syncthreads();
+            }
+
+            // We then accumulate this single condensed value into the element of
+            // shared memory that correlates to the current tile position.
+            if (myWarpId == 0)
+            {
+            sBuffer_x[tile_pos.w] += sBuffer_redux_x[0];
+            sBuffer_y[tile_pos.w] += sBuffer_redux_y[0];
+            sBuffer_z[tile_pos.w] += sBuffer_redux_z[0];
+            }
+            __syncthreads();
+
+            // Continue to work on the current voxel cluster, but shift
+            // to the next tile position.
+            tile_pos.w++;
+            // ---------------------------------------------------------------------------------
+
+        } // LOOP: 64 B-Spline Values for current voxel_cluster
+
+    } // LOOP: voxel_clusters
+
+
+    // ----------------------------------------------------------
+    //                STAGE 3 IN POWERPOINT
+    // ----------------------------------------------------------
+    // By this point every voxel cluster within the tile has been
+    // processed for every possible tile position (there are 64).
+    //
+    // Now it is time to put these 64 condensed values in their
+    // proper places.  We will work off of myGlobalWarpNumber,
+    // which is equal to the tile index, and myWarpId, which is
+    // equal to the knot number [0,63].
+    // ----------------------------------------------------------
+    // HERE, EACH WARP OPERATES ON A SINGLE TILE'S SET OF 64!!
+    // ----------------------------------------------------------
+    tileOffset = 64*myGlobalWarpNumber;
+
+    tile_pos.x = 63 - myWarpId;
+    tile_pos.y = 63 - (myWarpId + 32);
+
+    int knot_num;
+
+    knot_num = LUT_Knot[tileOffset + myWarpId];
+
+    cond_x[ (64*knot_num) + tile_pos.x ] = sBuffer_x[myWarpId];
+    cond_y[ (64*knot_num) + tile_pos.x ] = sBuffer_y[myWarpId];
+    cond_z[ (64*knot_num) + tile_pos.x ] = sBuffer_z[myWarpId];
+
+    knot_num = LUT_Knot[tileOffset + myWarpId + 32];
+
+    cond_x[ (64*knot_num) + tile_pos.y ] = sBuffer_x[myWarpId + 32];
+    cond_y[ (64*knot_num) + tile_pos.y ] = sBuffer_y[myWarpId + 32];
+    cond_z[ (64*knot_num) + tile_pos.y ] = sBuffer_z[myWarpId + 32];
+    // ----------------------------------------------------------
+
+    // Done with tile.
+
+    // END OF KERNEL
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // NOTE
+    // LUT_knot[64*numTiles] contains the linear knot indicies and is organized as follows:
+    //
+    //    Tile 0                               Tile 1                               Tile N
+    // +-----------+-----------+------------+-----------+-----------+------------+-----------+-----------+------------+
+    // | knot_idx0 |    ...    | knot_idx63 | knot_idx0 |    ...    | knot_idx63 | knot_idx0 |    ...    | knot_idx63 |
+    // +-----------+-----------+--=---------+-----------+-----------+------------+-----------+-----------+-----=------+
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+////////////////////////////////////////////
+////////////////////////////////////////////
+/// DEPRICATED REGISTRATION ALGORITHMS /////
+////////////////////////////////////////////
+////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////
+// KERNEL: bspline_cuda_score_j_mse_kernel1()
+//
+// This is idential to bspline_cuda_score_g_mse_kernel1() except it generates
+// three seperate dc_dv streams: dc_dv_x, dc_dv_y, and dc_dv_z.
+//
+// This removes the need for deinterleaving the dc_dv stream before running
+// the CUDA condense_64() kernel, which removes CUDA_deinterleave() from the
+// execution chain.
+//
+// This function is potentially depricated by:
+//    kernel_bspline_mse_score_dc_dv()
+// and should probably be marked for relocation to bspline_cuda_old.cu
+//////////////////////////////////////////////////////////////////////////////
+// 
+// !! REPLACED BY kernel_bspline_mse_score_dc_dv !!
+//
+__global__ void
+bspline_cuda_score_j_mse_kernel1 
+(
+    float  *dc_dv_x,       // OUTPUT
+    float  *dc_dv_y,       // OUTPUT
+    float  *dc_dv_z,       // OUTPUT
+    float  *score,         // OUTPUT
+    float  *coeff,         // INPUT
+    float  *fixed_image,   // INPUT
+    float  *moving_image,  // INPUT
+    float  *moving_grad,   // INPUT
+    int3   fix_dim,        // Size of fixed image (vox)
+    float3 fix_origin,     // Origin of fixed image (mm)
+    float3 fix_spacing,    // Spacing of fixed image (mm)
+    int3   mov_dim,        // Size of moving image (vox)
+    float3 mov_origin,     // Origin of moving image (mm)
+    float3 mov_spacing,    // Spacing of moving image (mm)
+    int3   roi_dim,        // Dimension of ROI (in vox)
+    int3   roi_offset,     // Position of first vox in ROI (in vox)
+    int3   vox_per_rgn,    // Knot spacing (in vox)
+    int3   rdims,          // # of regions in (x,y,z)
+    int3   cdims,          // # of control points in (x,y,z)
+    int    pad,
+    float  *skipped        // # of voxels that fell outside the ROI
+)
+{
+    extern __shared__ float sdata[]; 
+    
+    int3   fix_ijk;           // Index of the voxel in the fixed image (vox)
+    int3   p;             // Index of the tile within the volume (vox)
+    int3   q;             // Offset within the tile (measured in voxels)
+    int    fv;            // Index of voxel in linear image array
+    int    pidx;          // Index into c_lut
+    int    qidx;          // Index into q_lut
+    int    cidx;          // Index into the coefficient table
+
+    float  P;
+    float3 N;             // Multiplier values
+    float3 d;             // B-spline deformation vector
+    float  diff;
+
+    float3 fix_xyz;           // Physical position of fixed image voxel (mm)
+    float3 mov_xyz;           // Physical position of corresponding vox (mm)
+    float3 mov_ijk;           // Index of corresponding vox (vox)
+    int3 mov_ijk_floor;
+    float3 mov_ijk_round;
+    float  fx1, fx2, fy1, fy2, fz1, fz2;
+    int mvf;
+    float m_val;
+    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
+    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
+    
+    float* dc_dv_element_x;
+    float* dc_dv_element_y;
+    float* dc_dv_element_z;
+
+    // Calculate the index of the thread block in the grid.
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    // Calculate the total number of threads in each thread block.
+    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
+
+    // Next, calculate the index of the thread in its thread block, 
+    // in the range 0 to threadsPerBlock.
+    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) 
+    + (blockDim.x * threadIdx.y) + threadIdx.x;
+
+    // Finally, calculate the index of the thread in the grid, 
+    // based on the location of the block in the grid.
+    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) 
+    + threadIdxInBlock;
+
+    // Allocate memory for the spline coefficients evaluated at 
+    // indices 0, 1, 2, and 3 in the X, Y, and Z directions
+    float *A = &sdata[12*threadIdxInBlock + 0];
+    float *B = &sdata[12*threadIdxInBlock + 4];
+    float *C = &sdata[12*threadIdxInBlock + 8];
+    float ii, jj, kk;
+    float t1, t2, t3; 
+    float one_over_six = 1.0f/6.0f;
+
+    // If the voxel lies outside the volume, do nothing.
+    if (threadIdxInGrid < (fix_dim.x * fix_dim.y * fix_dim.z))
+    {
+    // Calculate the x, y, and z coordinate of the voxel within the volume.
+    fix_ijk.z = threadIdxInGrid / (fix_dim.x * fix_dim.y);
+    fix_ijk.y = (threadIdxInGrid 
+        - (fix_ijk.z * fix_dim.x * fix_dim.y)) / fix_dim.x;
+    fix_ijk.x = threadIdxInGrid 
+        - fix_ijk.z * fix_dim.x * fix_dim.y 
+        - (fix_ijk.y * fix_dim.x);
+            
+    // Calculate the x, y, and z offsets of the tile that 
+    // contains this voxel.
+    p.x = fix_ijk.x / vox_per_rgn.x;
+    p.y = fix_ijk.y / vox_per_rgn.y;
+    p.z = fix_ijk.z / vox_per_rgn.z;
+
+    // Calculate the x, y, and z offsets of the voxel within the tile.
+    q.x = fix_ijk.x - p.x * vox_per_rgn.x;
+    q.y = fix_ijk.y - p.y * vox_per_rgn.y;
+    q.z = fix_ijk.z - p.z * vox_per_rgn.z;
+
+    // If the voxel lies outside of the region of interest, do nothing.
+    if (fix_ijk.x < (roi_offset.x + roi_dim.x) || 
+        fix_ijk.y < (roi_offset.y + roi_dim.y) ||
+        fix_ijk.z < (roi_offset.z + roi_dim.z)) {
+
+        // Compute the linear index of fixed image voxel.
+        fv = (fix_ijk.z * fix_dim.x * fix_dim.y) 
+        + (fix_ijk.y * fix_dim.x) + fix_ijk.x;
+
+        //-----------------------------------------------------------------
+        // Calculate the B-Spline deformation vector.
+        //-----------------------------------------------------------------
+
+        // pidx is the tile index for the tile of the current voxel
+        pidx = ((p.z * rdims.y + p.y) * rdims.x) + p.x;
+        dc_dv_element_x = &dc_dv_x[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
+        dc_dv_element_y = &dc_dv_y[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
+        dc_dv_element_z = &dc_dv_z[((vox_per_rgn.x * vox_per_rgn.y * vox_per_rgn.z) + pad) * pidx];
+
+        // qidx is the local index of the voxel within the tile
+        qidx = ((q.z * vox_per_rgn.y + q.y) * vox_per_rgn.x) + q.x;
+        dc_dv_element_x = &dc_dv_element_x[qidx];
+        dc_dv_element_y = &dc_dv_element_y[qidx];
+        dc_dv_element_z = &dc_dv_element_z[qidx];
+
+        // Compute the q_lut values that pertain to this offset.
+        ii = ((float)q.x) / vox_per_rgn.x;
+        t3 = ii*ii*ii;
+        t2 = ii*ii;
+        t1 = ii;
+        A[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+        A[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+        A[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+        A[3] = one_over_six * (+ 1.0f * t3);
+
+        jj = ((float)q.y) / vox_per_rgn.y;
+        t3 = jj*jj*jj;
+        t2 = jj*jj;
+        t1 = jj;
+        B[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+        B[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+        B[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+        B[3] = one_over_six * (+ 1.0f * t3);
+
+        kk = ((float)q.z) / vox_per_rgn.z;
+        t3 = kk*kk*kk;
+        t2 = kk*kk;
+        t1 = kk;
+        C[0] = one_over_six * (- 1.0f * t3 + 3.0f * t2 - 3.0f * t1 + 1.0f);
+        C[1] = one_over_six * (+ 3.0f * t3 - 6.0f * t2             + 4.0f);
+        C[2] = one_over_six * (- 3.0f * t3 + 3.0f * t2 + 3.0f * t1 + 1.0f);
+        C[3] = one_over_six * (+ 1.0f * t3);
+
+        // Compute the deformation vector.
+        d.x = 0.0;
+        d.y = 0.0;
+        d.z = 0.0;
+
+        // Compute the B-spline interpolant for the voxel
+        int3 t;
+        for (t.z = 0; t.z < 4; t.z++) {
+            for (t.y = 0; t.y < 4; t.y++) {
+                for (t.x = 0; t.x < 4; t.x++) {
+
+                    // Calculate the index into the coefficients array.
+                    cidx = 3 * ((p.z + t.z) * cdims.x * cdims.y 
+                            + (p.y + t.y) * cdims.x + (p.x + t.x));
+
+                    // Fetch the values for P, Ni, Nj, and Nk.
+                    P   = A[t.x] * B[t.y] * C[t.z];
+                    N.x = TEX_REF (coeff, cidx + 0);
+                    N.y = TEX_REF (coeff, cidx + 1);
+                    N.z = TEX_REF (coeff, cidx + 2);
+            
+                    // Update the output (v) values.
+                    d.x += P * N.x;
+                    d.y += P * N.y;
+                    d.z += P * N.z;
+                }
+            }
+        }
+
+        //-----------------------------------------------------------------
+        // Find correspondence in the moving image.
+        //-----------------------------------------------------------------
+
+        // Calculate the position of the voxel (in mm)
+        fix_xyz.x = fix_origin.x + (fix_spacing.x * fix_ijk.x);
+        fix_xyz.y = fix_origin.y + (fix_spacing.y * fix_ijk.y);
+        fix_xyz.z = fix_origin.z + (fix_spacing.z * fix_ijk.z);
+            
+        // Calculate the corresponding voxel in the moving image (in mm)
+        mov_xyz.x = fix_xyz.x + d.x;
+        mov_xyz.y = fix_xyz.y + d.y;
+        mov_xyz.z = fix_xyz.z + d.z;
+
+        // Calculate the displacement value in terms of voxels.
+        mov_ijk.x = (mov_xyz.x - mov_origin.x) / mov_spacing.x;
+        mov_ijk.y = (mov_xyz.y - mov_origin.y) / mov_spacing.y;
+        mov_ijk.z = (mov_xyz.z - mov_origin.z) / mov_spacing.z;
+
+        // Check if the displaced voxel lies outside the 
+        // region of interest.
+        if ((mov_ijk.x < -0.5) || (mov_ijk.x > (mov_dim.x - 0.5)) 
+            || (mov_ijk.y < -0.5) || (mov_ijk.y > (mov_dim.y - 0.5)) 
+            || (mov_ijk.z < -0.5) || (mov_ijk.z > (mov_dim.z - 0.5)))
+        {
+            // Count voxel as outside the ROI
+            skipped[threadIdxInGrid]++;
+
+        } else {
+
+        //-----------------------------------------------------------
+        // Compute interpolation fractions.
+        //-----------------------------------------------------------
+
+        // Clamp and interpolate along the X axis.
+        mov_ijk_floor.x = (int) floorf (mov_ijk.x);
+        mov_ijk_round.x = rintf (mov_ijk.x);
+        fx2 = mov_ijk.x - mov_ijk_floor.x;
+        if (mov_ijk_floor.x < 0) {
+            mov_ijk_floor.x = 0;
+            mov_ijk_round.x = 0;
+            fx2 = 0.0f;
+        }
+        else if (mov_ijk_floor.x >= (mov_dim.x - 1)) {
+            mov_ijk_floor.x = mov_dim.x - 2;
+            mov_ijk_round.x = mov_dim.x - 1;
+            fx2 = 1.0f;
+        }
+        fx1 = 1.0f - fx2;
+
+        // Clamp and interpolate along the Y axis.
+        mov_ijk_floor.y = (int) floorf (mov_ijk.y);
+        mov_ijk_round.y = rintf (mov_ijk.y);
+        fy2 = mov_ijk.y - mov_ijk_floor.y;
+        if (mov_ijk_floor.y < 0) {
+            mov_ijk_floor.y = 0;
+            mov_ijk_round.y = 0;
+            fy2 = 0.0f;
+        }
+        else if (mov_ijk_floor.y >= (mov_dim.y - 1)) {
+            mov_ijk_floor.y = mov_dim.y - 2;
+            mov_ijk_round.y = mov_dim.y - 1;
+            fy2 = 1.0f;
+        }
+        fy1 = 1.0f - fy2;
+
+        // Clamp and intepolate along the Z axis.
+        mov_ijk_floor.z = (int) floorf (mov_ijk.z);
+        mov_ijk_round.z = rintf (mov_ijk.z);
+        fz2 = mov_ijk.z - mov_ijk_floor.z;
+        if (mov_ijk_floor.z < 0) {
+            mov_ijk_floor.z = 0;
+            mov_ijk_round.z = 0;
+            fz2 = 0.0f;
+        }
+        else if (mov_ijk_floor.z >= (mov_dim.z - 1)) {
+            mov_ijk_floor.z = mov_dim.z - 2;
+            mov_ijk_round.z = mov_dim.z - 1;
+            fz2 = 1.0;
+        }
+        fz1 = 1.0f - fz2;
+
+        //-----------------------------------------------------------
+        // Compute moving image intensity using linear interpolation.
+        //-----------------------------------------------------------
+        mvf = (mov_ijk_floor.z * mov_dim.y + mov_ijk_floor.y) 
+            * mov_dim.x + mov_ijk_floor.x;
+
+        m_x1y1z1 = fx1 * fy1 * fz1 * TEX_REF (moving_image, mvf);
+        m_x2y1z1 = fx2 * fy1 * fz1 * TEX_REF (moving_image, mvf + 1);
+        m_x1y2z1 = fx1 * fy2 * fz1 * TEX_REF (moving_image, mvf + mov_dim.x);
+        m_x2y2z1 = fx2 * fy2 * fz1 * TEX_REF (moving_image, mvf + mov_dim.x + 1);
+        m_x1y1z2 = fx1 * fy1 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x);
+        m_x2y1z2 = fx2 * fy1 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + 1);
+        m_x1y2z2 = fx1 * fy2 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + mov_dim.x);
+        m_x2y2z2 = fx2 * fy2 * fz2 * TEX_REF (moving_image, mvf + mov_dim.y * mov_dim.x + mov_dim.x + 1);
+
+        m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
+
+        // Compute intensity difference.
+        diff = m_val - TEX_REF (fixed_image, fv);
+
+        // Accumulate the score.
+        score[threadIdxInGrid] = (diff * diff);
+
+        //-----------------------------------------------------------
+        // Compute dc_dv for this offset
+        //-----------------------------------------------------------
+        // Compute spatial gradient using nearest neighbors.
+        //      mvr = ((((int)mov_ijk_round.z * mov_dim.y) + (int)mov_ijk_round.y) * mov_dim.x) + (int)mov_ijk_round.x;
+        // The above is commented out because mvr becomes too large
+        // to be used as a GPU texture reference index.  See below
+        // for the workaround using offsets
+
+        // tex1Dfetch() uses 27-bits for indexing, which results in an
+        // index overflow for large image volumes.  The following code
+        // removes the usage of the 1D texture reference and attempts
+        // to use several smaller indices and pointer arithmetic in
+        // order to reduce the size of the index.
+        float* big_fat_grad;
+
+        big_fat_grad = &moving_grad[
+            3 * (int) mov_ijk_round.z * mov_dim.y * mov_dim.x];
+        big_fat_grad = &big_fat_grad[
+            3 * (int) mov_ijk_round.y * mov_dim.x];
+        big_fat_grad = &big_fat_grad[3 * (int) mov_ijk_round.x];
+
+        dc_dv_element_x[0] = diff * big_fat_grad[0];
+        dc_dv_element_y[0] = diff * big_fat_grad[1];
+        dc_dv_element_z[0] = diff * big_fat_grad[2];
+
+        // This code does not work for large image volumes > 512x512x170
+        //      dc_dv_element_x[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 0);
+        //      dc_dv_element_y[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 1);
+        //      dc_dv_element_z[0] = diff * TEX_REF (moving_grad, 3 * (int)mvr + 2);
+        }
+    }
+    }
+}
+
+
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation I.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see bspline_cuda_score_g_mse_kernel1()
+ * @see CUDA_deinterleave()
+ * @see CUDA_pad_64()
+ * @see CUDA_bspline_mse_2_condense_64_texfetch()
+ * @see CUDA_bspline_mse_2_reduce()
+ *
+ */
+#if defined (commentout)
+extern "C" void
+bspline_cuda_i_stage_1 (
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    Bspline_xform* bxf,
+    Bspline_parms* parms,
+    Dev_Pointers_Bspline* dev_ptrs)
+{
+    dim3 dimGrid1;
+    dim3 dimBlock1;
+
+    GPU_Bspline_Data gbd;
+    build_gbd (&gbd, bxf, fixed, moving);
+
+    build_exec_conf_1tpe (
+        &dimGrid1,          // OUTPUT: Grid  dimensions
+        &dimBlock1,         // OUTPUT: Block dimensions
+        fixed->npix,        // INPUT: Total # of threads
+        128,                // INPUT: Threads per block
+        false);             // INPUT: Is threads per block negotiable?
+
+    int smemSize = 12 * sizeof(float) * dimBlock1.x;
+
+    // --- BEGIN KERNEL EXECUTION ---
+    cudaEvent_t start, stop;
+    float time;
+
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+
+    cudaEventRecord (start, 0); 
+
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_x");
+
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_y");
+
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_z");
+
+    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->skipped");
+
+    int tile_padding = 64 - ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
+
+    bspline_cuda_score_j_mse_kernel1<<<dimGrid1, dimBlock1, smemSize>>>(
+        dev_ptrs->dc_dv_x,      // Addr of dc_dv_x on GPU
+        dev_ptrs->dc_dv_y,      // Addr of dc_dv_y on GPU
+        dev_ptrs->dc_dv_z,      // Addr of dc_dv_z on GPU
+        dev_ptrs->score,        // Addr of score on GPU
+        dev_ptrs->coeff,        // Addr of coeff on GPU
+        dev_ptrs->fixed_image,  // Addr of fixed_image on GPU
+        dev_ptrs->moving_image, // Addr of moving_image on GPU
+        dev_ptrs->moving_grad,  // Addr of moving_grad on GPU
+        gbd.fix_dim,            // Size of fixed image (vox)
+        gbd.img_origin,         // Origin of fixed image (mm)
+        gbd.img_spacing,        // Spacing of fixed image (mm)
+        gbd.mov_dim,            // Size of moving image (vox)
+        gbd.mov_offset,         // Origin of moving image (mm)
+        gbd.mov_spacing,        // Spacing of moving image (mm)
+        gbd.roi_dim,            // Region of Intrest Dimenions
+        gbd.roi_offset,         // Region of Intrest Offset
+        gbd.vox_per_rgn,        // Voxels per Region
+        gbd.rdims,              // 
+        gbd.cdims,
+        tile_padding,
+        dev_ptrs->skipped);
+
+    cudaEventRecord (stop, 0);  
+    cudaEventSynchronize (stop);
+
+    cudaEventElapsedTime (&time, start, stop);
+
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+
+    printf("\n[%f ms] MSE & dc_dv\n", time);
+    // ------------------------------
+
+    // END: Needs to be turned into its own function.
+    // ----------------------------------------------------------
+    // ----------------------------------------------------------
+
+
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
+
+    // Clear out the condensed dc_dv streams
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_z");
+
+
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+
+    // Invoke kernel condense
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_mse_2_condense_64 (dev_ptrs, bxf->vox_per_rgn, num_tiles);
+
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Condense\n", time);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+    // Start timing the kernel
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord (start, 0);
+
+    // Clear out the gradient
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->grad");
+
+    // Invoke kernel reduce
+    CUDA_bspline_mse_2_reduce (dev_ptrs, bxf->num_knots);
+
+    // Stop timing the kernel
+    cudaEventRecord (stop, 0);
+    cudaEventSynchronize (stop);
+    cudaEventElapsedTime (&time, start, stop);
+    cudaEventDestroy (start);
+    cudaEventDestroy (stop);
+    printf("[%f ms] Reduce\n\n", time);
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_2_condense()");
+
+}
+////////////////////////////////////////////////////////////////////////////////
+#endif
+
+
+
 
 /**
  * Calculates the B-spline score and gradient using CUDA implementation H.
@@ -5919,6 +7637,372 @@ __global__ void bspline_cuda_compute_grad_norm_kernel(
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_initialize_i()
+// 
+// Initialize the GPU to execute bspline_cuda_score_i_mse().
+//
+// AUTHOR: James Shackleford
+// DATE  : September 16, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_initialize_i(Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    Bspline_xform* bxf,
+    Bspline_parms* parms)
+{
+    // Keep track of how much memory we allocated
+    // in the GPU global memory.
+    int GPU_Memory_Bytes = 0;
+    //  int temp;
+
+    // Tell the user we are busy copying information
+    // to the device memory.
+    printf("Copying data to GPU global memory");
+
+    // --- COPY FIXED IMAGE TO GPU GLOBAL -----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->fixed_image_size = fixed->npix * fixed->pix_size;
+
+    // Allocate memory in the GPU Global memory for the fixed
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->fixed_image. (fixed_image is a pointer)
+    cudaMalloc((void**)&dev_ptrs->fixed_image, dev_ptrs->fixed_image_size);
+    cuda_utils_check_error("Failed to allocate memory for fixed image");
+    printf(".");
+
+
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->fixed_image, fixed->img, dev_ptrs->fixed_image_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("Failed to copy fixed image to GPU");
+    printf(".");
+
+
+    printf(".");
+    
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->fixed_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING IMAGE TO GPU GLOBAL ----------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_image_size = moving->npix * moving->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving
+    // volume's voxel data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_image. (moving_image is a pointer)
+    cudaMalloc((void**)&dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    cuda_utils_check_error("Failed to allocate memory for moving image");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    cudaMemcpy( dev_ptrs->moving_image, moving->img, dev_ptrs->moving_image_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("Failed to copy moving image to GPU");
+    printf(".");
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_moving_image, dev_ptrs->moving_image, dev_ptrs->moving_image_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->moving_image to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_image_size;
+    // ----------------------------------------------------------
+
+
+    // --- COPY MOVING GRADIENT TO GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->moving_grad_size = moving_grad->npix * moving_grad->pix_size;
+
+    // Allocate memory in the GPU Global memory for the moving grad
+    // volume's data. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->moving_grad. (moving_grad is a pointer)
+    cudaMalloc((void**)&dev_ptrs->moving_grad, dev_ptrs->moving_grad_size);
+    cuda_utils_check_error("Failed to allocate memory for moving grad");
+    printf(".");
+    
+    // Populate the newly allocated global GPU memory
+    // with the voxel data from our fixed volume.
+    // (Note the pointer dereference)
+    cudaMemcpy( dev_ptrs->moving_grad, moving_grad->img, dev_ptrs->moving_grad_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("Failed to copy moving grad to GPU");
+    printf(".");
+
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->moving_grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE COEFFICIENT LUT IN GPU GLOBAL ---------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // coefficient LUT. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->coeff. (coeff is a pointer)
+    cudaMalloc((void**)&dev_ptrs->coeff, dev_ptrs->coeff_size);
+    cuda_utils_check_error("Failed to allocate memory for dev_ptrs->coeff");
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->coeff, 0, dev_ptrs->coeff_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_coeff, dev_ptrs->coeff, dev_ptrs->coeff_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->coeff_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE SCORE IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->score_size = sizeof(float) * fixed->npix;
+
+    // Allocate memory in the GPU Global memory for the 
+    // "Score". The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->score. (scoreis a pointer)
+    cudaMalloc((void**)&dev_ptrs->score, dev_ptrs->score_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->score_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE dc_dv IN GPU GLOBAL -------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->dc_dv_size = 3 * bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2]
+    * bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2] * sizeof(float);
+
+    // Allocate memory in the GPU Global memory for dc_dv
+    // The pointer to this area of GPU global memory will
+    // be returned and placed into dev_ptrs->dc_dv. (dc_dv is a pointer)
+    cudaMalloc((void**)&dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv, 0, dev_ptrs->dc_dv_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_dc_dv, dev_ptrs->dc_dv, dev_ptrs->dc_dv_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->dc_dv to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD IN GPU GLOBAL --------------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad. (grad is a pointer)
+    cudaMalloc((void**)&dev_ptrs->grad, dev_ptrs->grad_size);
+    printf(".");
+
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+
+    // Bind this to a texture reference
+    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
+    cuda_utils_check_error("Failed to bind dev_ptrs->grad to texture reference!");
+    printf(".");
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE GRAD_TEMP IN GPU GLOBAL ---------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->grad_temp_size = sizeof(float) * bxf->num_coeff;
+
+    // Allocate memory in the GPU Global memory for the 
+    // grad_temp. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->grad_temp. (grad_temp is a pointer)
+    cudaMalloc((void**)&dev_ptrs->grad_temp, dev_ptrs->grad_temp_size);
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->grad_temp, 0, dev_ptrs->grad_temp_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->grad_temp_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE dc_dv_x,y,z IN GPU GLOBAL -------------------
+    // Calculate space requirements for the allocation
+    // and tuck it away for later...
+    dev_ptrs->dc_dv_x_size = dev_ptrs->dc_dv_size / 3;
+    dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
+    dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
+
+    // Allocate memory in the GPU Global memory for the 
+    // deinterleaved dc_dv arrays. The pointer to this area of GPU
+    // global memory will be returned and placed into
+    // dev_parms->dc_dv_X. 
+    cudaMalloc((void**)&dev_ptrs->dc_dv_x, dev_ptrs->dc_dv_x_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_x");
+    printf(".");
+    cudaMalloc((void**)&dev_ptrs->dc_dv_y, dev_ptrs->dc_dv_y_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_y");
+    printf(".");
+    cudaMalloc((void**)&dev_ptrs->dc_dv_z, dev_ptrs->dc_dv_z_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->dc_dv_z");
+    printf(".");
+
+    // Cuda does not automatically zero out malloc()ed blocks
+    // of memory that have been allocated in GPU global
+    // memory.  So, we zero them out ourselves.
+    cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
+    cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
+    cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
+
+    // Increment the GPU memory byte counter
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+    // ----------------------------------------------------------
+
+
+    // --- ALLOCATE TILE OFFSET LUT IN GPU GLOBAL ---------------
+    int* offsets = calc_offsets(bxf->vox_per_rgn, bxf->cdims);
+
+    //  int vox_per_tile = bxf->vox_per_rgn[0] * bxf->vox_per_rgn[1] * bxf->vox_per_rgn[2];
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    //  int pad = 64 - (vox_per_tile % 64);
+
+    dev_ptrs->LUT_Offsets_size = num_tiles*sizeof(int);
+
+    cudaMalloc((void**)&dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->LUT_Offsets");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Offsets, offsets, dev_ptrs->LUT_Offsets_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("cudaMemcpy(): offsets --> dev_ptrs->LUT_Offsets");
+    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
+
+    free (offsets);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE KNOT LUT IN GPU GLOBAL ----------------------
+    dev_ptrs->LUT_Knot_size = 64*num_tiles*sizeof(int);
+
+    int* local_set_of_64 = (int*)malloc(64*sizeof(int));
+    int* LUT_Knot = (int*)malloc(dev_ptrs->LUT_Knot_size);
+
+    int i,j;
+    for (i = 0; i < num_tiles; i++) {
+        find_knots(local_set_of_64, i, bxf->rdims, bxf->cdims);
+        for (j = 0; j < 64; j++) {
+            LUT_Knot[64*i + j] = local_set_of_64[j];
+        }
+    }
+    cudaMalloc((void**)&dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->LUT_Knot");
+    printf(".");
+
+    cudaMemcpy(dev_ptrs->LUT_Knot, LUT_Knot, dev_ptrs->LUT_Knot_size, cudaMemcpyHostToDevice);
+    cuda_utils_check_error("cudaMemcpy(): LUT_Knot --> dev_ptrs->LUT_Knot");
+
+    //  cudaBindTexture(0, tex_LUT_Knot, dev_ptrs->LUT_Knot, dev_ptrs->LUT_Knot_size);
+    //  cuda_utils_check_error("cudaBindTexture(): dev_ptrs->LUT_Knot");
+
+    free (local_set_of_64);
+    free (LUT_Knot);
+
+    GPU_Memory_Bytes += dev_ptrs->LUT_Knot_size;
+    // ----------------------------------------------------------
+
+    // --- ALLOCATE CONDENSED dc_dv VECTORS IN GPU GLOBAL -------
+    dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
+    dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
+
+    cudaMalloc((void**)&dev_ptrs->cond_x, dev_ptrs->cond_x_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_x");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_y, dev_ptrs->cond_y_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_y");
+    printf(".");
+
+    cudaMalloc((void**)&dev_ptrs->cond_z, dev_ptrs->cond_z_size);
+    cuda_utils_check_error("cudaMalloc(): dev_ptrs->cond_z");
+    printf(".");
+
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_x");
+
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_y");
+
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_z");
+
+    GPU_Memory_Bytes += dev_ptrs->cond_x_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_y_size;
+    GPU_Memory_Bytes += dev_ptrs->cond_z_size;
+    // ----------------------------------------------------------
+
+    // Inform user we are finished.
+    printf("done.\n");
+
+    // Report global memory allocation.
+    printf("  Allocated: %d MB\n", GPU_Memory_Bytes / 1048576);
+
+}
+////////////////////////////////////////////////////////////////////////////////
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: bspline_cuda_initialize_h()
 // 
@@ -8940,6 +11024,69 @@ bspline_cuda_calculate_gradient_c
     if(cudaMemcpy(host_grad_norm, gpu_grad_temp, sizeof(float), cudaMemcpyDeviceToHost) != cudaSuccess)
 	checkCUDAError("Failed to copy grad_norm from GPU to host");
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_i()
+//
+// AUTHOR: James Shackleford
+// DATE  : September 11th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_i(Dev_Pointers_Bspline* dev_ptrs)
+{
+    cudaUnbindTexture(tex_LUT_Offsets);
+
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->dc_dv);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->LUT_Offsets);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_h()
+//
+// AUTHOR: James Shackleford
+// DATE  : September 11th, 2009
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_h(Dev_Pointers_Bspline* dev_ptrs)
+{
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->moving_grad);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->dc_dv);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->grad_temp);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->LUT_Offsets);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 
 /***********************************************************************

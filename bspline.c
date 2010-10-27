@@ -147,11 +147,11 @@ bspline_cuda_state_create (
 	case 'j':
 	case '\0':   /* Default */
 	    /* i and j use the same init and cleanup routines */
-    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+    	bspline_cuda_initialize_j_zcpy (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
         break;
     default:
 	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
-    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+    	bspline_cuda_initialize_j_zcpy (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
 	}
     } 
@@ -3845,10 +3845,10 @@ bspline_score (Bspline_parms *parms,
 	case 'h':
 	    bspline_cuda_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
-#endif
 	case 'i':
         bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
+#endif
 	case 'j':
         bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
