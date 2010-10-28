@@ -21,7 +21,7 @@ synth_mha='/home/tshack/src/plastimatch/build/synthetic_mha'
 
 # Test Volume sizes
 min_size=100
-max_size=1600
+max_size=560
 size_step=10
 
 # Similarity Metric (mse, mi)
