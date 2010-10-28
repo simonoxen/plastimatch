@@ -406,6 +406,20 @@ IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
 ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
+
+##-----------------------------------------------------------------------------
+# JAS 10.28.2010
+# nvcc automatically passed the flag -malign-double to gcc when compiling .cu
+# files.  This can be a problem when structs are shared between .c & .cu files on
+# 32-bit machines.  So, we pass -malign-double to gcc for .c files as well so
+# that everybody is using the same alignment.  -malign-double is automatically
+# passed to gcc for 64-bit architectures.
+##-----------------------------------------------------------------------------
+IF(CMAKE_COMPILER_IS_GNUCC)
+    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+    SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
+
 ##-----------------------------------------------------------------------------
 ##  Set default build type to "Release"
 ##-----------------------------------------------------------------------------
