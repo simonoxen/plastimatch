@@ -755,6 +755,8 @@ bspline_cuda_initialize_j (
     // Get GPU properties (can we zero-copy?)
     parms->gpu_zcpy = gpu_zero_copy_check (parms) && parms->gpu_zcpy;
     if (parms->gpu_zcpy) {
+        // Enable GPU to use pinned CPU memory
+        cudaSetDeviceFlags (cudaDeviceMapHost);
         printf ("GPU is using zero copy\n");
     }
 
