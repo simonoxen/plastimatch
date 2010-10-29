@@ -19,10 +19,15 @@
 #define MI_SCORE_CPU
 
 
-/* Used by gpu_alloc_copy () */
+/* Used by gpu_alloc_copy () & friends */
 enum gpu_alloc_copy_mode {
     cudaGlobalMem,
-    cudaZeroCopy
+    cudaZeroCopy,
+};
+
+enum gpu_alloc_fail_mode {
+    cudaAllocStern,
+    cudaAllocCasual
 };
 
 

@@ -128,45 +128,57 @@ gpu_alloc_copy (
     }
 }
 
-// LINKED LIST???
-//  cudaGlobalMem
-//  cudaZeroPageRemap
-//  cudaZeroPageExtend (for extending global, keep CPU side pointers in a SLL?)
+//TODO: Linked list in dev_ptrs to keep track
+//      of CPU side pointers to pinned memory
+//      for the purpose of freeing *properly*.
 void
-gpu_alloc_zero (
+gpu_alloc_vmem (
     void** gpu_addr,
-//    void** cpu_addr,
-    size_t mem_size
-//    gpu_alloc_copy_mode mode
+    size_t mem_size,
+    Dev_Pointers_Bspline* dev_ptrs
 )
 {
-#if defined (commentout)
     void* pinned_host_mem;
 
-    if (mode == cudaZeroCopy) {
-        // Allocate some pinned CPU memory for zero paging
-        cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
-        cuda_utils_check_error ("Failed to allocate pinned memory.");
+    // Allocate some pinned CPU memory for zero paging
+    cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
+    cuda_utils_check_error ("Failed to allocate pinned memory.");
 
-        // Relocate data to pinned memory
-        memset (pinned_host_mem, 0, mem_size);
-        *cpu_addr = pinned_host_mem;
+    // Clear out new pinned CPU memory
+    memset (pinned_host_mem, 0, mem_size);
 
-        // Get the address of the pinned page in the GPU memory map.
-        cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
-        cuda_utils_check_error ("Failed to map CPU memory to GPU.");
-    } else {
-#endif
-        // Allcoated some global memory on the GPU
-        cudaMalloc ((void**)gpu_addr, mem_size);
+    // Get the address of the pinned page in the GPU memory map.
+    cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
+    cuda_utils_check_error ("Failed to map CPU memory to GPU.");
+}
+
+
+
+int
+gpu_alloc_zero (
+    void** gpu_addr,
+    size_t mem_size,
+    gpu_alloc_fail_mode fail_mode
+)
+{
+    // Allcoated some global memory on the GPU
+    cudaMalloc ((void**)gpu_addr, mem_size);
+    if (fail_mode == cudaAllocStern) {
         cuda_utils_check_error ("Out of GPU memory.");
-
-        // Zero out the allocated global GPU memory
-        cudaMemset (*gpu_addr, 0, mem_size);
-        cuda_utils_check_error ("Failed to zero out GPU memory.");
-#if defined (commentout)
+    } else {
+        return cuda_utils_return_error ("Out of GPU memory.");
     }
-#endif
+
+    // Zero out the allocated global GPU memory
+    cudaMemset (*gpu_addr, 0, mem_size);
+    if (fail_mode == cudaAllocStern) {
+        cuda_utils_check_error ("Failed to zero out GPU memory.");
+    } else {
+        return cuda_utils_return_error ("Failed to zero out GPU memory.");
+    }
+
+    // Success
+    return 0;
 }
 
 int
@@ -496,11 +508,13 @@ bspline_cuda_init_MI_a (
     Bspline_xform* bxf,
     Bspline_parms* parms)
 {
+    int out_of_gmem;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
 
     // Keep track of how much memory we allocated
     // in the GPU global memory.
     long unsigned GPU_Memory_Bytes = 0;
+    long unsigned CPU_Pinned_Bytes = 0;
 
     printf ("Allocating GPU Memory\n");
 
@@ -520,6 +534,8 @@ bspline_cuda_init_MI_a (
                         (void **)&fixed->img,
                         dev_ptrs->fixed_image_size,
                         cudaZeroCopy);
+        CPU_Pinned_Bytes += dev_ptrs->fixed_image_size;
+        printf ("o");
     } else {
         gpu_alloc_copy ((void **)&dev_ptrs->fixed_image,
                         (void **)&fixed->img,
@@ -539,6 +555,8 @@ bspline_cuda_init_MI_a (
                         (void **)&moving->img,
                         dev_ptrs->moving_image_size,
                         cudaZeroCopy);
+        CPU_Pinned_Bytes += dev_ptrs->moving_image_size;
+        printf ("o");
     } else {
         gpu_alloc_copy ((void **)&dev_ptrs->moving_image,
                         (void **)&moving->img,
@@ -555,7 +573,8 @@ bspline_cuda_init_MI_a (
     // ----------------------------------------------------------
     dev_ptrs->skipped_size = sizeof(unsigned int);
     gpu_alloc_zero ((void**)&dev_ptrs->skipped_atomic,
-                    dev_ptrs->skipped_size);
+                    dev_ptrs->skipped_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->skipped_size;
     printf(".");
     // ----------------------------------------------------------
@@ -624,7 +643,8 @@ bspline_cuda_init_MI_a (
     // ----------------------------------------------------------
     dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
     gpu_alloc_zero ((void **)&dev_ptrs->coeff,
-                    dev_ptrs->coeff_size);
+                    dev_ptrs->coeff_size,
+                    cudaAllocStern);
 
     cudaBindTexture(0, tex_coeff,
                     dev_ptrs->coeff,
@@ -640,7 +660,8 @@ bspline_cuda_init_MI_a (
     // ----------------------------------------------------------
     dev_ptrs->score_size = sizeof(float) * fixed->npix;
     gpu_alloc_zero ((void **)&dev_ptrs->score,
-                    dev_ptrs->score_size);
+                    dev_ptrs->score_size,
+                    cudaAllocStern);
 
     GPU_Memory_Bytes += dev_ptrs->score_size;
     printf(".");
@@ -651,7 +672,8 @@ bspline_cuda_init_MI_a (
     // ----------------------------------------------------------
     dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
     gpu_alloc_zero ((void **)&dev_ptrs->grad,
-                    dev_ptrs->grad_size);
+                    dev_ptrs->grad_size,
+                    cudaAllocStern);
 
     GPU_Memory_Bytes += dev_ptrs->grad_size;
     printf(".");
@@ -660,6 +682,17 @@ bspline_cuda_init_MI_a (
 
 
     // dc_dv_x,  dc_dv_y,  and  dc_dv_z
+    //   Try to keep these in GPU memory for speed.  If there
+    //   is not enough GPU memory, we will move them to pinned
+    //   CPU memory as a last resort.
+    //
+    // NOTE: If spill over to CPU pinned memory occurs and the
+    //       user does not have a significantly large amount
+    //       of RAM, the linux kernel may decide that the bspline
+    //       process needs to die.  In this event the user will
+    //       just see "Killed" in the terminal.  There is no
+    //       way to trap this signal, so that is as user friendly
+    //       as it can get.
     // ----------------------------------------------------------
     int3 vol_dim;
     vol_dim.x = fixed->dim[0];
@@ -684,21 +717,68 @@ bspline_cuda_init_MI_a (
     dev_ptrs->dc_dv_y_size = dev_ptrs->dc_dv_x_size;
     dev_ptrs->dc_dv_z_size = dev_ptrs->dc_dv_x_size;
 
-
+    out_of_gmem = 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_x,
-                    dev_ptrs->dc_dv_x_size);
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
-    printf(".");
+                    dev_ptrs->dc_dv_x_size,
+                    cudaAllocCasual);
 
+    if (out_of_gmem) {
+        if (parms->gpu_zcpy) {
+            gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_x,
+                            dev_ptrs->dc_dv_x_size,
+                            dev_ptrs);
+            CPU_Pinned_Bytes += dev_ptrs->dc_dv_x_size;
+            printf ("o");
+        } else {
+            printf ("Completely out of memory!\n");
+            exit (0);
+        }
+    } else {
+        GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
+        printf(".");
+    }
+
+    out_of_gmem = 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_y,
-                    dev_ptrs->dc_dv_y_size);
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
-    printf(".");
+                    dev_ptrs->dc_dv_y_size,
+                    cudaAllocCasual);
 
+    if (out_of_gmem) {
+        if (parms->gpu_zcpy) {
+            gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_y,
+                            dev_ptrs->dc_dv_y_size,
+                            dev_ptrs);
+            CPU_Pinned_Bytes += dev_ptrs->dc_dv_y_size;
+            printf ("o");
+        } else {
+            printf ("Completely out of memory!\n");
+            exit (0);
+        }
+    } else {
+        GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
+        printf(".");
+    }
+
+    out_of_gmem = 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_z,
-                    dev_ptrs->dc_dv_z_size);
-    GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
-    printf(".");
+                    dev_ptrs->dc_dv_z_size,
+                    cudaAllocCasual);
+
+    if (out_of_gmem) {
+        if (parms->gpu_zcpy) {
+            gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_z,
+                            dev_ptrs->dc_dv_z_size,
+                            dev_ptrs);
+            CPU_Pinned_Bytes += dev_ptrs->dc_dv_z_size;
+            printf ("o");
+        } else {
+            printf ("Completely out of memory!\n");
+            exit (0);
+        }
+    } else {
+        GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
+        printf(".");
+    }
     // ----------------------------------------------------------
 
 
@@ -706,19 +786,22 @@ bspline_cuda_init_MI_a (
     // ----------------------------------------------------------
     dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_x,
-                    dev_ptrs->cond_x_size);
+                    dev_ptrs->cond_x_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_x_size;
     printf(".");
 
     dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_y,
-                    dev_ptrs->cond_y_size);
+                    dev_ptrs->cond_y_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_y_size;
     printf(".");
 
     dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_z,
-                    dev_ptrs->cond_z_size);
+                    dev_ptrs->cond_z_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_z_size;
     printf(".");
     // ----------------------------------------------------------
@@ -836,8 +919,10 @@ bspline_cuda_init_MI_a (
     printf (" done.\n");
 
     // Report global memory allocation.
-    printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
+    printf("  Allocated GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
+    printf("     Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
 
+#if defined (commentout)
     printf ("---------------------------\n");
     printf ("Skipped Voxels: %i MB\n", dev_ptrs->skipped_size / 1048576);
     printf ("         Score: %i MB\n", dev_ptrs->score_size / 1048576);
@@ -860,6 +945,7 @@ bspline_cuda_init_MI_a (
     printf ("B-spline LUT-y: %i KB\n", dev_ptrs->LUT_Bspline_y_size / 1024);
     printf ("B-spline LUT-z: %i KB\n", dev_ptrs->LUT_Bspline_z_size / 1024);
     printf ("---------------------------\n");
+#endif
 }
 
 
@@ -956,7 +1042,8 @@ bspline_cuda_initialize_j (
     // ----------------------------------------------------------
     dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
     gpu_alloc_zero ((void **)&dev_ptrs->coeff,
-                    dev_ptrs->coeff_size);
+                    dev_ptrs->coeff_size,
+                    cudaAllocStern);
 
     cudaBindTexture(0, tex_coeff,
                     dev_ptrs->coeff,
@@ -973,7 +1060,8 @@ bspline_cuda_initialize_j (
     // ----------------------------------------------------------
     dev_ptrs->score_size = sizeof(float) * fixed->npix;
     gpu_alloc_zero ((void **)&dev_ptrs->score,
-                    dev_ptrs->score_size);
+                    dev_ptrs->score_size,
+                    cudaAllocStern);
 
     GPU_Memory_Bytes += dev_ptrs->score_size;
     printf(".");
@@ -985,7 +1073,8 @@ bspline_cuda_initialize_j (
     // ----------------------------------------------------------
     dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
     gpu_alloc_zero ((void **)&dev_ptrs->skipped,
-                    dev_ptrs->skipped_size);
+                    dev_ptrs->skipped_size,
+                    cudaAllocStern);
 
     GPU_Memory_Bytes += dev_ptrs->skipped_size;
     printf(".");
@@ -997,7 +1086,8 @@ bspline_cuda_initialize_j (
     // ----------------------------------------------------------
     dev_ptrs->grad_size = sizeof(float) * bxf->num_coeff;
     gpu_alloc_zero ((void **)&dev_ptrs->grad,
-                    dev_ptrs->grad_size);
+                    dev_ptrs->grad_size,
+                    cudaAllocStern);
 
     cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
     cuda_utils_check_error("Failed to bind dev_ptrs->grad to texture reference!");
@@ -1033,17 +1123,20 @@ bspline_cuda_initialize_j (
 
 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_x,
-                    dev_ptrs->dc_dv_x_size);
+                    dev_ptrs->dc_dv_x_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->dc_dv_x_size;
     printf(".");
 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_y,
-                    dev_ptrs->dc_dv_y_size);
+                    dev_ptrs->dc_dv_y_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->dc_dv_y_size;
     printf(".");
 
     gpu_alloc_zero ((void **)&dev_ptrs->dc_dv_z,
-                    dev_ptrs->dc_dv_z_size);
+                    dev_ptrs->dc_dv_z_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->dc_dv_z_size;
     printf(".");
     // ----------------------------------------------------------
@@ -1103,19 +1196,22 @@ bspline_cuda_initialize_j (
     // ----------------------------------------------------------
     dev_ptrs->cond_x_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_x,
-                    dev_ptrs->cond_x_size);
+                    dev_ptrs->cond_x_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_x_size;
     printf(".");
 
     dev_ptrs->cond_y_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_y,
-                    dev_ptrs->cond_y_size);
+                    dev_ptrs->cond_y_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_y_size;
     printf(".");
 
     dev_ptrs->cond_z_size = 64*bxf->num_knots*sizeof(float);
     gpu_alloc_zero ((void **)&dev_ptrs->cond_z,
-                    dev_ptrs->cond_z_size);
+                    dev_ptrs->cond_z_size,
+                    cudaAllocStern);
     GPU_Memory_Bytes += dev_ptrs->cond_z_size;
     printf(".");
     // ----------------------------------------------------------

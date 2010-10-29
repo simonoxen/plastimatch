@@ -14,6 +14,11 @@ gpuit_EXPORT
 void
 cuda_utils_check_error (const char *msg);
 
+
+gpuit_EXPORT
+int
+cuda_utils_return_error (const char *msg);
+
 #if defined __cplusplus
 }
 #endif
