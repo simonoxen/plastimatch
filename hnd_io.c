@@ -170,6 +170,8 @@ hnd_load (Proj_image *proj, const char *fn)
     fread ((void *) &hnd.dGating4DInfoZ, sizeof(double), 1, fp);
     fread ((void *) &hnd.dGating4DInfoTime, sizeof(double), 1, fp);
 
+    printf ("%s %f\n",  fn, hnd.dCTProjectionAngle);
+
     pt_lut = (unsigned char*) malloc (
 	sizeof (unsigned char) * hnd.SizeX * hnd.SizeY);
     buf = (uint32_t*) malloc (
