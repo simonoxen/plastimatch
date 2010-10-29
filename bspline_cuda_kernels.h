@@ -93,7 +93,7 @@ __global__ void kernel_bspline_MI_a_hist_mov (
 
 
 __global__ void kernel_bspline_MI_a_hist_jnt (
-    float* skipped,	// OUTPUT:   # of skipped voxels
+    unsigned int* skipped,	// OUTPUT:   # of skipped voxels
     float* j_hist,      // OUTPUT:  joint histogram
     float* f_img,	// INPUT:  fixed image voxels
     float* m_img,	// INPUT: moving image voxels

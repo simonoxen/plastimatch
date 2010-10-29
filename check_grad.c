@@ -137,8 +137,8 @@ check_gradient (
     free (grad_fd);
     bspline_xform_free (bxf);
     free (bxf);
+    bspline_state_destroy (bst, parms, fixed, moving, moving_grad);
     bspline_parms_free (parms);
-    bspline_state_destroy (bst, fixed, moving, moving_grad);
 }
 
 int

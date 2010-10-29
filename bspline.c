@@ -1101,6 +1101,7 @@ bspline_parms_free (Bspline_parms* parms)
 void
 bspline_state_destroy (
     Bspline_state* bst,
+    Bspline_parms *parms, 
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad
@@ -1111,13 +1112,18 @@ bspline_state_destroy (
     }
 
 #if (CUDA_FOUND)
-    // JAS 10.27.2010
-    // CUDA zero-paging could have replaced the fixed, moving, or moving_grad
-    // pointers with pointers to pinned CPU memory, which must be freed using
-    // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
-    // these pointers before they are attempted to be free()ed in the standard
-    // fashion.  Remember, free(NULL) is okay!
-    bspline_cuda_clean_up_j (bst->dev_ptrs, fixed, moving, moving_grad);
+    if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+        // JAS 10.27.2010
+        // CUDA zero-paging could have replaced the fixed, moving, or moving_grad
+        // pointers with pointers to pinned CPU memory, which must be freed using
+        // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
+        // these pointers before they are attempted to be free()ed in the standard
+        // fashion.  Remember, free(NULL) is okay!
+        bspline_cuda_clean_up_mse_j (bst->dev_ptrs, fixed, moving, moving_grad);
+    }
+    else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+        bspline_cuda_clean_up_mi_a (bst->dev_ptrs, fixed, moving, moving_grad);
+    }
 #endif
 
     free (bst);
@@ -3987,6 +3993,6 @@ bspline_run_optimization (
     if (bst_in) {
 	*bst_in = bst;
     } else {
-	bspline_state_destroy (bst, fixed, moving, moving_grad);
+	bspline_state_destroy (bst, parms, fixed, moving, moving_grad);
     }
 }

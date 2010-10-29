@@ -418,7 +418,14 @@ extern "C" {
 					    float *host_grad_norm,
 					    float *host_grad_mean);
 
-    void bspline_cuda_clean_up_j (
+    void bspline_cuda_clean_up_mse_j (
+        Dev_Pointers_Bspline* dev_ptrs,
+        Volume* fixed,
+        Volume* moving,
+        Volume* moving_grad
+    );
+
+    void bspline_cuda_clean_up_mi_a (
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,

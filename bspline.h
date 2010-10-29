@@ -128,6 +128,7 @@ struct dev_pointers_bspline
     float* LUT_Bspline_y;
     float* LUT_Bspline_z;
     float* skipped;		// # of voxels that fell outside post warp
+    unsigned int* skipped_atomic;
 
     int* c_lut;
     float* q_lut;
@@ -268,6 +269,7 @@ gpuit_EXPORT
 void
 bspline_state_destroy (
     Bspline_state *bst,
+    Bspline_parms *parms,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad);

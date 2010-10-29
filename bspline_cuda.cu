@@ -128,12 +128,35 @@ gpu_alloc_copy (
     }
 }
 
+// LINKED LIST???
+//  cudaGlobalMem
+//  cudaZeroPageRemap
+//  cudaZeroPageExtend (for extending global, keep CPU side pointers in a SLL?)
 void
 gpu_alloc_zero (
     void** gpu_addr,
+//    void** cpu_addr,
     size_t mem_size
+//    gpu_alloc_copy_mode mode
 )
 {
+#if defined (commentout)
+    void* pinned_host_mem;
+
+    if (mode == cudaZeroCopy) {
+        // Allocate some pinned CPU memory for zero paging
+        cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
+        cuda_utils_check_error ("Failed to allocate pinned memory.");
+
+        // Relocate data to pinned memory
+        memset (pinned_host_mem, 0, mem_size);
+        *cpu_addr = pinned_host_mem;
+
+        // Get the address of the pinned page in the GPU memory map.
+        cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
+        cuda_utils_check_error ("Failed to map CPU memory to GPU.");
+    } else {
+#endif
         // Allcoated some global memory on the GPU
         cudaMalloc ((void**)gpu_addr, mem_size);
         cuda_utils_check_error ("Out of GPU memory.");
@@ -141,6 +164,9 @@ gpu_alloc_zero (
         // Zero out the allocated global GPU memory
         cudaMemset (*gpu_addr, 0, mem_size);
         cuda_utils_check_error ("Failed to zero out GPU memory.");
+#if defined (commentout)
+    }
+#endif
 }
 
 int
@@ -527,10 +553,9 @@ bspline_cuda_init_MI_a (
 
     // Skipped Voxels
     // ----------------------------------------------------------
-    dev_ptrs->skipped_size = sizeof(float) * fixed->npix;
-    gpu_alloc_zero ((void **)&dev_ptrs->skipped,
+    dev_ptrs->skipped_size = sizeof(unsigned int);
+    gpu_alloc_zero ((void**)&dev_ptrs->skipped_atomic,
                     dev_ptrs->skipped_size);
-
     GPU_Memory_Bytes += dev_ptrs->skipped_size;
     printf(".");
     // ----------------------------------------------------------
@@ -593,7 +618,6 @@ bspline_cuda_init_MI_a (
 
     cuda_utils_check_error("Failed to bind tex_c_lut to texture");
     // ----------------------------------------------------------
-
 
     
     // Coefficient LUT
@@ -808,13 +832,34 @@ bspline_cuda_init_MI_a (
     free (LUT_Bspline_z);
     // ----------------------------------------------------------
 
-
     // Inform user we are finished.
     printf (" done.\n");
 
     // Report global memory allocation.
     printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
 
+    printf ("---------------------------\n");
+    printf ("Skipped Voxels: %i MB\n", dev_ptrs->skipped_size / 1048576);
+    printf ("         Score: %i MB\n", dev_ptrs->score_size / 1048576);
+    printf ("       dc_dv_x: %i MB\n", dev_ptrs->dc_dv_x_size / 1048576);
+    printf ("       dc_dv_y: %i MB\n", dev_ptrs->dc_dv_y_size / 1048576);
+    printf ("       dc_dv_z: %i MB\n", dev_ptrs->dc_dv_z_size / 1048576);
+    printf ("        cond_x: %i MB\n", dev_ptrs->cond_x_size / 1048576);
+    printf ("        cond_y: %i MB\n", dev_ptrs->cond_y_size / 1048576);
+    printf ("        cond_z: %i MB\n", dev_ptrs->cond_z_size / 1048576);
+    printf ("    Fixed Hist: %i KB\n", dev_ptrs->f_hist_size / 1024);
+    printf ("   Moving Hist: %i KB\n", dev_ptrs->m_hist_size / 1024);
+    printf ("    Joint Hist: %i KB\n", dev_ptrs->j_hist_size / 1024);
+    printf ("         q-lut: %i KB\n", dev_ptrs->q_lut_size / 1024);
+    printf ("         c-lut: %i KB\n", dev_ptrs->c_lut_size / 1024);
+    printf ("     coeff-lut: %i KB\n", dev_ptrs->coeff_size / 1024);
+    printf ("      Gradient: %i KB\n", dev_ptrs->grad_size / 1024);
+    printf ("  Tile Offsets: %i KB\n", dev_ptrs->LUT_Offsets_size / 1024);
+    printf ("      Knot LUT: %i KB\n", dev_ptrs->LUT_Knot_size / 1024);
+    printf ("B-spline LUT-x: %i KB\n", dev_ptrs->LUT_Bspline_x_size / 1024);
+    printf ("B-spline LUT-y: %i KB\n", dev_ptrs->LUT_Bspline_y_size / 1024);
+    printf ("B-spline LUT-z: %i KB\n", dev_ptrs->LUT_Bspline_z_size / 1024);
+    printf ("---------------------------\n");
 }
 
 
@@ -1151,7 +1196,7 @@ bspline_cuda_initialize_j (
 // DATE  : September 11th, 2009
 ////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_clean_up_j (
+bspline_cuda_clean_up_mse_j (
     dev_pointers_bspline* dev_ptrs,
     volume* fixed,
     volume* moving,
@@ -1198,6 +1243,59 @@ bspline_cuda_clean_up_j (
 }
 
 
+////////////////////////////////////////////////////////////////////////////////
+// FUNCTION: bspline_cuda_clean_up_mi_a()
+//
+// AUTHOR: James Shackleford
+// DATE  : October 29th, 2010
+////////////////////////////////////////////////////////////////////////////////
+void
+bspline_cuda_clean_up_mi_a (
+    dev_pointers_bspline* dev_ptrs,
+    volume* fixed,
+    volume* moving,
+    volume* moving_grad
+)
+{
+    // Textures
+    cudaUnbindTexture(tex_coeff);
+    cudaUnbindTexture(tex_grad);
+    cudaUnbindTexture(tex_LUT_Offsets);
+    cudaUnbindTexture(tex_LUT_Bspline_x);
+    cudaUnbindTexture(tex_LUT_Bspline_y);
+    cudaUnbindTexture(tex_LUT_Bspline_z);
+
+    // Zero paged memory
+    cudaFreeHost (fixed->img);
+    if (cudaGetLastError() == cudaSuccess) { fixed->img = 0; }
+    cudaFreeHost (moving->img);
+    if (cudaGetLastError() == cudaSuccess) { moving->img = 0; }
+    
+    // Global Memory
+    cudaFree(dev_ptrs->fixed_image);
+    cudaFree(dev_ptrs->moving_image);
+    cudaFree(dev_ptrs->skipped);
+    cudaFree(dev_ptrs->f_hist);
+    cudaFree(dev_ptrs->m_hist);
+    cudaFree(dev_ptrs->j_hist);
+    cudaFree(dev_ptrs->q_lut);
+    cudaFree(dev_ptrs->c_lut);
+    cudaFree(dev_ptrs->coeff);
+    cudaFree(dev_ptrs->score);
+    cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
+    cudaFree(dev_ptrs->cond_x);
+    cudaFree(dev_ptrs->cond_y);
+    cudaFree(dev_ptrs->cond_z);
+    cudaFree(dev_ptrs->LUT_Offsets);
+    cudaFree(dev_ptrs->LUT_Knot);
+    cudaFree(dev_ptrs->LUT_Bspline_x);
+    cudaFree(dev_ptrs->LUT_Bspline_y);
+    cudaFree(dev_ptrs->LUT_Bspline_z);
+
+}
 
 
 extern "C" int
@@ -1208,7 +1306,7 @@ CUDA_bspline_MI_a_hist (
     Volume* moving,
     Bspline_xform* bxf)
 {
-    cudaMemset(dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    cudaMemset(dev_ptrs->skipped_atomic, 0, dev_ptrs->skipped_size);
 
     // Generate the fixed histogram (48 ms)
     CUDA_bspline_MI_a_hist_fix (dev_ptrs, mi_hist, fixed, moving, bxf);
@@ -1441,7 +1539,9 @@ CUDA_bspline_MI_a_hist_jnt (
     int num_bins = (int)mi_hist->fixed.bins * (int)mi_hist->moving.bins;
 
 
+    // ----------------------
     // --- INITIALIZE GRID ---
+    // ----------------------
     int i;
     int Grid_x = 0;
     int Grid_y = 0;
@@ -1474,30 +1574,27 @@ CUDA_bspline_MI_a_hist_jnt (
 
     // Were we able to find a valid exec config?
     if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
         printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
         exit(0);
     } else {
-//        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-//            Grid_x, Grid_y, threads_per_block);
+//        printf ("Grid [%i,%i], %d threads_per_block.\n", Grid_x, Grid_y, threads_per_block);
     }
 
     dim3 dimGrid1(Grid_x, Grid_y, 1);
     dim3 dimBlock1(threads_per_block, 1, 1);
+    // ----------------------
+    // ----------------------
     // ----------------------
 
     dev_ptrs->j_hist_seg_size = dev_ptrs->j_hist_size * num_blocks;
     cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
     cuda_utils_check_error ("Failed to allocate memory for j_hist_seg");
-    smemSize = 2 * num_bins * sizeof(float);
+    smemSize = (num_bins + 1) * sizeof(float);
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
-            dev_ptrs->skipped,      // # voxels that map outside moving
+            dev_ptrs->skipped_atomic,   // # voxels that map outside moving
             dev_ptrs->j_hist_seg,       // partial histogram (moving image)
             dev_ptrs->fixed_image,      // fixed  image voxels
             dev_ptrs->moving_image,     // moving image voxels
@@ -1521,6 +1618,7 @@ CUDA_bspline_MI_a_hist_jnt (
             dev_ptrs->q_lut,            // DEBUG
             dev_ptrs->coeff);           // DEBUG
 
+    cudaThreadSynchronize();
     cuda_utils_check_error ("kernel hist_jnt");
 
 
@@ -1534,9 +1632,9 @@ CUDA_bspline_MI_a_hist_jnt (
     // this kernel can be ran with any thread-block size
     int num_sub_hists = num_blocks;
     kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-    dev_ptrs->j_hist,
-    dev_ptrs->j_hist_seg,
-    num_sub_hists);
+            dev_ptrs->j_hist,
+            dev_ptrs->j_hist_seg,
+            num_sub_hists);
 
     cuda_utils_check_error ("kernel hist_jnt_merge");
 
@@ -1567,77 +1665,11 @@ CUDA_bspline_MI_a_hist_jnt (
     cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!");
 
 
-
-
-    // Use the # of skipped voxels to compute the num_voxels
-    // --- INITIALIZE GRID --------------------------------------
-    Grid_x = 0;
-    Grid_y = 0;
-    int num_elems = gbd.fix_dim.x * gbd.fix_dim.y * gbd.fix_dim.z;
-    //  int num_blocks = (int)ceil(num_elems / 512.0);
-    num_blocks = (num_elems + 511) / 512;
-    
-    // *****
-    // Search for a valid execution configuration
-    // for the required # of blocks.
-    sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++)
-    {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-    // *****
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        // If this happens we should consider falling back to a
-        // CPU implementation, using a different CUDA algorithm,
-        // or padding the input dc_dv stream to work with this
-        // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable sum_reduction_kernel() configuration!\n");
-        exit(0);
-    } else {
-    //      printf("\nExecuting sum_reduction_kernel() with Grid [%i,%i]...\n", Grid_x, Grid_y);
-    }
-
-    dim3 dimGrid(Grid_x, Grid_y, 1);
-    dim3 dimBlock(128, 2, 2);
-    smemSize = 512 * sizeof(float);
-    // ----------------------------------------------------------
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>>(
-            dev_ptrs->skipped,
-            dev_ptrs->skipped,
-            num_elems);
-    // ----------------------------------------------------------
-
-
-    // --- PREPARE FOR NEXT KERNEL ------------------------------
-    cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction()");
-    // ----------------------------------------------------------
-
-
-    // --- BEGIN KERNEL EXECUTION -------------------------------
-    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>>(
-            dev_ptrs->skipped,
-            dev_ptrs->skipped,
-            num_elems);
-    // ----------------------------------------------------------
-
-    float skipped;
+    // Get # of skipped voxels and compute num_vox 
+    unsigned int skipped;
     int num_vox;
-    cudaMemcpy(&skipped, dev_ptrs->skipped, sizeof(float), cudaMemcpyDeviceToHost);
-
+    cudaMemcpy(&skipped, dev_ptrs->skipped_atomic, sizeof(unsigned int), cudaMemcpyDeviceToHost);
     num_vox = (gbd.fix_dim.x * gbd.fix_dim.y * gbd.fix_dim.z) - skipped;
-    // -------------------------
-
-
 
 
     // Now, we back compute bin 0,0 for the joint histogram
@@ -2995,12 +3027,12 @@ kernel_bspline_MI_a_hist_mov (
 ////////////////////////////////////////////////////////////////////////////////
 // Generates the joint histogram
 //
-//                 --- Neightborhood of 6 ---
+//                 --- Neightborhood of 8 ---
 //
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
 kernel_bspline_MI_a_hist_jnt (
-    float* skipped, // OUTPUT:   # of skipped voxels
+    unsigned int* skipped,   // OUTPUT:   # of skipped voxels
     float* j_hist,      // OUTPUT:  joint histogram
     float* f_img,   // INPUT:  fixed image voxels
     float* m_img,   // INPUT: moving image voxels
@@ -3025,7 +3057,7 @@ kernel_bspline_MI_a_hist_jnt (
     float* coeff)   // INPUT: coefficient array
 {
 /* This code requires compute capability 1.2 or greater.
- * DO NOT compile it for lesser targer architectures or
+ * DO NOT compile it for lesser target architectures or
  * nvcc will complain and stop the build; thus the #if
  */
 #if defined (__CUDA_ARCH__) && __CUDA_ARCH__ >= 120
@@ -3043,10 +3075,6 @@ kernel_bspline_MI_a_hist_jnt (
 
     float* j_locks = (float*)shared_mem;
     int total_smem = f_bins * m_bins;
-
-//    float* sj_hist = (float*)&j_locks[f_bins * m_bins];
-//    total_smem += f_bins * m_bins;
-
 
     int b = (total_smem + threadsPerBlock - 1) / threadsPerBlock;
 
@@ -3144,7 +3172,7 @@ kernel_bspline_MI_a_hist_jnt (
 
 
     // -- Correspondence --------------------------------------
-    // -- (Block verified) ------------------------------------
+    bool success;
     m.x = f.x + d.x;
     m.y = f.y + d.y;
     m.z = f.z + d.z;
@@ -3160,8 +3188,8 @@ kernel_bspline_MI_a_hist_jnt (
     {
         // Voxel doesn't map into the moving image.
         // Don't bin anything and count the miss.
+        atomicAdd (skipped, 1);
 
-        skipped[thread_idxg]++;
         return;
     }
 
@@ -3171,6 +3199,7 @@ kernel_bspline_MI_a_hist_jnt (
     // --------------------------------------------------------
 
 
+    __syncthreads();
 
     // -- Compute tri-linear interpolation weights ------------
     float3 li_1;
@@ -3248,7 +3277,6 @@ kernel_bspline_MI_a_hist_jnt (
 
 
     // -- Read from histograms and compute dC/dp_j * dp_j/dv --
-    bool success;
     int idx_fbin, offset_fbin;
     int idx_mbin;
     int idx_jbin;

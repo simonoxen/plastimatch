@@ -11,7 +11,7 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./cpu_mi_size.csv"
+outfile="./gpu_mi_size_zcpy.csv"
 
 # Location of bspline executable
 bspline='/home/tshack/src/plastimatch/build/bspline'
@@ -29,9 +29,11 @@ metric='mi'
 
 # Hardware (cpu, cuda, etc)
 hardware='cpu'
+#hardware='cuda'
 
 # Algorithm flavors to test
 flavors=( c d e )
+#flavors=( j )
 
 # GPU Selection
 gpuid='0'
