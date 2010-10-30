@@ -58,8 +58,8 @@ case "$hostmachine" in
     | "slumber" \
     | "redfish")
         # These machines have build directory in path
-        bspline='bspline'
-	synth_mha='synthetic_mha'
+        bspline=bspline
+	synth_mha=synthetic_mha
 	;;
     *)
         # Unknown machine.  Use settings from above
@@ -144,6 +144,10 @@ check_input ()
 {
     echo Sanity Check:
 
+    # GCS: The below tests are not good, because the disallow using 
+    # the bspline that is in my path.
+    if [ `false` ]; then
+
     # check for bspline executable existance
     if [ -f $bspline ]
     then
@@ -161,6 +165,35 @@ check_input ()
     # check for synthetic_mha executable existance
     if [ -f $synth_mha ]
     then
+        echo " * synthetic_mha executable [  OK  ]"
+    else
+        echo " * synthetic_mha executable [ FAIL ]"
+        echo
+        echo Could not find synthetic_mha executable at specified location:
+        echo \'$synth_mha\'
+        echo Test Aborted.
+        echo
+        exit
+    fi
+    fi
+
+    # GCS: So instead, I suggest the below.  Both bspline and synthetic_mha 
+    # will return errno of 1 if executed with no arguments.  If command 
+    # not found, the OS will return errno of 127.
+    foo=`$bspline 2> /dev/null`
+    if [ $? = 1 ]; then
+        echo " * bspline executable [  OK  ]"
+    else
+        echo " * bspline executable       [ FAIL ]"
+        echo
+        echo Could not find bspline executable at specified location:
+        echo \'$bspline\'
+        echo Test Aborted.
+        echo
+        exit
+    fi
+    foo=`$synth_mha 2> /dev/null`
+    if [ $? = 1 ]; then
         echo " * synthetic_mha executable [  OK  ]"
     else
         echo " * synthetic_mha executable [ FAIL ]"
