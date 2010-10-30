@@ -414,11 +414,16 @@ ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 # 32-bit machines.  So, we pass -malign-double to gcc for .c files as well so
 # that everybody is using the same alignment.  -malign-double is automatically
 # passed to gcc for 64-bit architectures.
+# 
+# GCS 2010-10-30
+# -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
+# gives an error if it is used on x86_64.
 ##-----------------------------------------------------------------------------
-IF(CMAKE_COMPILER_IS_GNUCC)
+#MESSAGE (STATUS "CMAKE_SIZEOF_VOID_P is ${CMAKE_SIZEOF_VOID_P}")
+IF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
     SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-ENDIF(CMAKE_COMPILER_IS_GNUCC)
+ENDIF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 
 ##-----------------------------------------------------------------------------
 ##  Set default build type to "Release"
