@@ -11,7 +11,8 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./gpu_mi_size_zcpy.csv"
+outfile="./cpu_mi_size.csv"
+#outfile="./gpu_mi_size_zcpy.csv"
 
 # Location of bspline executable
 bspline='/home/tshack/src/plastimatch/build/bspline'
@@ -28,12 +29,12 @@ size_step=10
 metric='mi'
 
 # Hardware (cpu, cuda, etc)
-#hardware='cpu'
-hardware='cuda'
+hardware='cpu'
+#hardware='cuda'
 
 # Algorithm flavors to test
-#flavors=( c d e )
-flavors=( a )
+flavors=( c d e )
+#flavors=( a )
 
 # GPU Selection
 gpuid='0'
@@ -41,14 +42,29 @@ gpuid='0'
 # Bspline Grid (is cubic)
 # (i.e. 10 x 10 x 10)
 grid=15
+
+
+
+# Automatically set parameters for known machines
 ######################################
-
-
-
-
-
-
-
+hostmachine=`uname -n`
+case "$hostmachine" in
+    "physics.mgh.harvard.edu")
+        bspline="$HOME/build/plastimatch-3.18.0/bspline"
+	synth_mha="$HOME/build/plastimatch-3.18.0/synthetic_mha"
+	;;
+    "gelato" \
+    | "wormwood" \
+    | "slumber" \
+    | "redfish")
+        # These machines have build directory in path
+        bspline='bspline'
+	synth_mha='synthetic_mha'
+	;;
+    *)
+        # Unknown machine.  Use settings from above
+    ;;
+esac
 
 
 # ----- Please do not edit below this line. --------------------------
