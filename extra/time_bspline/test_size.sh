@@ -28,12 +28,12 @@ size_step=10
 metric='mi'
 
 # Hardware (cpu, cuda, etc)
-hardware='cpu'
-#hardware='cuda'
+#hardware='cpu'
+hardware='cuda'
 
 # Algorithm flavors to test
-flavors=( c d e )
-#flavors=( j )
+#flavors=( c d e )
+flavors=( a )
 
 # GPU Selection
 gpuid='0'

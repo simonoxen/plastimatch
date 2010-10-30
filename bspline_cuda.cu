@@ -166,7 +166,9 @@ gpu_alloc_zero (
     if (fail_mode == cudaAllocStern) {
         cuda_utils_check_error ("Out of GPU memory.");
     } else {
-        return cuda_utils_return_error ("Out of GPU memory.");
+        if (cuda_utils_return_error ("Out of GPU memory.")) {
+            return 1;
+        }
     }
 
     // Zero out the allocated global GPU memory
@@ -174,7 +176,9 @@ gpu_alloc_zero (
     if (fail_mode == cudaAllocStern) {
         cuda_utils_check_error ("Failed to zero out GPU memory.");
     } else {
-        return cuda_utils_return_error ("Failed to zero out GPU memory.");
+        if (cuda_utils_return_error ("Failed to zero out GPU memory.")) {
+            return 1;
+        }
     }
 
     // Success
@@ -1683,6 +1687,26 @@ CUDA_bspline_MI_a_hist_jnt (
     // ----------------------
 
     dev_ptrs->j_hist_seg_size = dev_ptrs->j_hist_size * num_blocks;
+
+#if defined (commentout)
+    printf ("Attempting to allocate j_hist_set (%i MB)\n", dev_ptrs->j_hist_seg_size/1048576);
+    int out_of_gmem = 
+    gpu_alloc_zero ((void **)&dev_ptrs->j_hist_seg,
+                    dev_ptrs->j_hist_seg_size,
+                    cudaAllocCasual);
+
+    if (out_of_gmem) {
+//        if (parms->gpu_zcpy) {
+            gpu_alloc_vmem ((void **)&dev_ptrs->j_hist_seg,
+                            dev_ptrs->j_hist_seg_size,
+                            dev_ptrs);
+//        } else {
+//            printf ("Failed to allocate memory for j_hist_seg\n");
+//            exit (0);
+//        }
+    }
+#endif
+
     cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
     cuda_utils_check_error ("Failed to allocate memory for j_hist_seg");
