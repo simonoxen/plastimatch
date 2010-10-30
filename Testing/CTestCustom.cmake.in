@@ -249,7 +249,7 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"
     "plm-convert-dicom-a-check"
-    "plm-convert-dicom-b"
+#    "plm-convert-dicom-b"
     "plm-convert-dicom-b-stats"
     "plm-convert-dicom-b-check"
     "plm-convert-dicom-c"

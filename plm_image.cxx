@@ -12,10 +12,10 @@
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
-#include "itk_image_convert.h"
 #include "itk_image_save.h"
 #include "mha_io.h"
 #include "plm_image.h"
+#include "plm_image_convert.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "volume.h"
@@ -320,96 +320,6 @@ Plm_image::set_gpuit (volume *v)
 /* -----------------------------------------------------------------------
    Conversion
    ----------------------------------------------------------------------- */
-template<class T, class U> 
-static T
-plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
-{
-    typedef typename T::ObjectType ImageType;
-    int i, d1, d2;
-    Volume* vol = (Volume*) pli->m_gpuit;
-    U* img = (U*) vol->img;
-    typename ImageType::SizeType sz;
-    typename ImageType::IndexType st;
-    typename ImageType::RegionType rg;
-    typename ImageType::PointType og;
-    typename ImageType::SpacingType sp;
-    typename ImageType::DirectionType dc;
-
-    /* Copy header & allocate data for itk */
-    for (d1 = 0; d1 < 3; d1++) {
-	st[d1] = 0;
-	sz[d1] = vol->dim[d1];
-	sp[d1] = vol->pix_spacing[d1];
-	og[d1] = vol->offset[d1];
-	for (d2 = 0; d2 < 3; d2++) {
-	    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
-	}
-    }
-    rg.SetSize (sz);
-    rg.SetIndex (st);
-
-    itk_img = ImageType::New();
-    itk_img->SetRegions (rg);
-    itk_img->SetOrigin (og);
-    itk_img->SetSpacing (sp);
-    itk_img->SetDirection (dc);
-
-    itk_img->Allocate();
-
-    /* Copy data into itk */
-    typedef itk::ImageRegionIterator< ImageType > IteratorType;
-    IteratorType it (itk_img, rg);
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	/* Type conversion: U -> itk happens here */
-	it.Set (img[i]);
-    }
-
-    /* Free gpuit data */
-    volume_destroy (vol);
-    pli->m_gpuit = 0;
-
-    return itk_img;
-}
-
-template<class T> 
-static void
-plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
-{
-    typedef typename T::ObjectType ImageType;
-    int i, d1;
-    typename ImageType::RegionType rg = img->GetLargestPossibleRegion ();
-    typename ImageType::PointType og = img->GetOrigin();
-    typename ImageType::SpacingType sp = img->GetSpacing();
-    typename ImageType::SizeType sz = rg.GetSize();
-    typename ImageType::DirectionType dc = img->GetDirection();
-
-    /* Copy header & allocate data for gpuit float */
-    int dim[3];
-    float offset[3];
-    float pix_spacing[3];
-    float direction_cosines[9];
-    for (d1 = 0; d1 < 3; d1++) {
-	dim[d1] = sz[d1];
-	offset[d1] = og[d1];
-	pix_spacing[d1] = sp[d1];
-    }
-    gpuit_direction_from_itk (direction_cosines, &dc);
-    Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 
-				 direction_cosines, 0);
-    float* vol_img = (float*) vol->img;
-
-    /* Copy data into gpuit */
-    typedef typename itk::ImageRegionIterator< ImageType > IteratorType;
-    IteratorType it (img, rg);
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	vol_img[i] = it.Get();
-    }
-
-    /* Set data type */
-    pli->m_gpuit = vol;
-    pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
-}
-
 void
 Plm_image::convert_to_itk_uchar (void)
 {
@@ -568,11 +478,18 @@ Plm_image::convert_to_itk_uchar_4d (void)
 {
     switch (m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->m_itk_uchar_4d = itk_image_convert_uchar_4d (this->m_itk_uint32);
+	this->m_itk_uchar_4d 
+	    = plm_image_convert_itk_to_itk_uchar_4d (this->m_itk_uint32);
 	this->m_itk_uint32 = 0;
 	break;
+    case PLM_IMG_TYPE_GPUIT_UINT32:
+	this->m_itk_uchar_4d = plm_image_convert_gpuit_to_itk_uchar_4d (
+	    this, (uint32_t) 0);
+	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_uchar_4d()\n");
+	print_and_exit (
+	    "Error: unhandled conversion to itk_uchar_4d() type=%d\n",
+	    m_type);
 	return;
     }
 }
