@@ -5,27 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
-#include "autotune_opencl.h"
-#include "fdk_opencl_p.h"
-#include "fdk_opts.h"
-#include "fdk_util.h"
-#include "math_util.h"
-#include "mha_io.h"
+#include "delayload.h"
+#include "opencl_probe.h"
 #include "opencl_util.h"
-#include "opencl_util_nvidia.h"
-#include "plm_timer.h"
-#include "proj_image.h"
-#include "proj_image_dir.h"
-#include "volume.h"
 
-void 
-opencl_reconstruct_conebeam (
-    Volume *vol, 
-    Proj_image_dir *proj_dir, 
-    Fdk_options *options
-)
+
+/* opencl_probe() 
+ * Return 1 if working device found, 0 if not found
+ */
+int 
+opencl_probe ()
 {
     Opencl_device ocl_dev;
     Opencl_buf *ocl_buf_in, *ocl_buf_out;
@@ -33,9 +23,16 @@ opencl_reconstruct_conebeam (
     cl_uint buf_size;
     cl_uint *buf_in, *buf_out;
     cl_uint multiplier = 2;
+    bool opencl_works;
+
+    /* Check for opencl runtime first */
+    opencl_works = delayload_opencl ();
+    if (!opencl_works) {
+	return 0;
+    }
 
     opencl_open_device (&ocl_dev);
-    opencl_load_programs (&ocl_dev, "fdk_opencl.cl");
+    opencl_load_programs (&ocl_dev, "opencl_probe.cl");
 
     buf_entries = 100;
     buf_size = buf_entries * sizeof (cl_uint);
@@ -64,8 +61,12 @@ opencl_reconstruct_conebeam (
 
     opencl_buf_read (&ocl_dev, ocl_buf_out, buf_size, buf_out);
 
+    opencl_works = 1;
     for (cl_uint i = 0; i < buf_entries; i++) {
-	printf ("%d ", buf_out[i]);
+	if (buf_out[i] != 2 * i) {
+	    opencl_works = 0;
+	}
     }
-    printf ("\n");
+
+    return opencl_works;
 }

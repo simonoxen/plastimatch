@@ -1,3 +1,6 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 // Sweep through all voxel values and renormalize them to the Hounsfield (hu) scale.
 #if defined (commentout)
 __kernel void convert_to_hu_cl(

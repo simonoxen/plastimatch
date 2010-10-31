@@ -74,6 +74,14 @@ opencl_buf_create (
 );
 gpuit_EXPORT
 void
+opencl_buf_read (
+    Opencl_device *ocl_dev, 
+    Opencl_buf* ocl_buf, 
+    size_t buffer_size, 
+    void *buffer
+);
+gpuit_EXPORT
+void
 opencl_kernel_create (
     Opencl_device *ocl_dev, 
     const char *kernel_name

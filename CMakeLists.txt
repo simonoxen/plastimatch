@@ -744,6 +744,7 @@ IF (OPENCL_FOUND)
     autotune_opencl.cxx autotune_opencl.h
     demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
     drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
+    opencl_probe.cxx opencl_probe.h opencl_probe.cl
     opencl_util.cxx opencl_util.h
     opencl_util_nvidia.cxx opencl_util_nvidia.h
     )
@@ -965,6 +966,12 @@ SET (MONDOSHOT_RELAY_SRC
 SET (MOVESCU_SRC
   movescu.cc
   )
+SET (OPENCL_PROBE_SRC
+  opencl_probe_main.c
+  )
+IF (OPENCL_FOUND)
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
+ENDIF (OPENCL_FOUND)
 SET (PATIENT_MASK_SRC
   patient_mask.cxx
   )
@@ -1279,10 +1286,16 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
 ENDIF(ITK_FOUND)
 
-# several executables require cuda
+# executables that require cuda
 IF (CUDA_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "")
 ENDIF (CUDA_FOUND)
+
+# executables that require opencl
+IF (OPENCL_FOUND)
+  PLM_ADD_EXECUTABLE (opencl_probe 
+    "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
+ENDIF (OPENCL_FOUND)
 
 # dicom_uid requires dcmtk
 IF(DCMTK_FOUND)

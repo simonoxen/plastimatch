@@ -8,23 +8,44 @@
 
 /* Note:
  * Any utility that plans to use GPU functions should
- * call this function 1st to make sure the CUDA runtime
- * is available.
+ * call this function to check if the CUDA or OpenCL runtimes
+ * are available.
+ * 
+ * Return 1 if runtime found, 0 if runtime not found.
  */
-void
-cudaDetect()
+
+int 
+delayload_cuda (void)
 {
 #if defined (_WIN32)
     if (LoadLibrary ("nvcuda.dll") == NULL) {
-	// Failure: CUDA runtime not available
-        printf ("cudaDetect says, \"nvcuda.dll NOT found!\"\n");
-        exit (0);
+        printf ("\"nvcuda.dll NOT found!\"\n");
+	return 0;
     } else {
-        // do nothing...
+	return 1;
     }
 #else
     // Assume linux users are compiling from source
     // and won't attempt to run features they don't
     // or can't utilize.
+    return 1;
+#endif
+}
+
+void
+delayload_opencl (void)
+{
+#if defined (_WIN32)
+    if (LoadLibrary ("opencl.dll") == NULL) {
+        printf ("\"opencl.dll NOT found!\"\n");
+	return 0;
+    } else {
+	return 1;
+    }
+#else
+    // Assume linux users are compiling from source
+    // and won't attempt to run features they don't
+    // or can't utilize.
+    return 1;
 #endif
 }

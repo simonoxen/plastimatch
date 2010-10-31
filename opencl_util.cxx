@@ -375,7 +375,8 @@ opencl_buf_create (
 )
 {
     /* Create one buffer per context? one buffer per device? 
-       For now we create one per context. */
+       For now we create one per context.  Each device buffer 
+       is a copy of the input buffer. */
     Opencl_buf* ocl_buf = (Opencl_buf*) malloc (
 	ocl_dev->context_count * sizeof(Opencl_buf));
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
@@ -389,6 +390,31 @@ opencl_buf_create (
 	opencl_check_error (status, "clCreateBuffer");
     }
     return ocl_buf;
+}
+
+void
+opencl_buf_read (
+    Opencl_device *ocl_dev, 
+    Opencl_buf* ocl_buf, 
+    size_t buffer_size, 
+    void *buffer
+)
+{
+    /* For reading back, only the top-level logic knows how to reassemble 
+       the data from different devices.  */
+    /* The below logic assumes only one device (for now).  */
+    cl_int status;
+    status = clEnqueueReadBuffer (
+	ocl_dev->command_queues[0], 
+	ocl_buf[0], 
+	CL_TRUE, 
+	0, 
+	buffer_size, 
+	buffer, 
+	0,
+	NULL,
+	NULL);
+    opencl_check_error (status, "clEnqueueReadBuffer");
 }
 
 void
@@ -526,6 +552,10 @@ opencl_kernel_enqueue (
     printf ("Trying clWaitEvents...\n");
     status = clWaitForEvents(1, &events[0]);
     opencl_check_error (status, "clWaitForEvents");
+
+    printf ("Trying clReleaseEvent...\n");
+    clReleaseEvent(events[0]);
+    printf ("OK so far.\n");
 }
 
 cl_ulong 

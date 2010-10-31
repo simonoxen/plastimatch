@@ -1,25 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _delayload_h_
-#define _delayload_h_
-
-// Needed for delay loading windows DLLs
-#if _WIN32
-#pragma comment(lib, "delayimp")
-#pragma comment(lib, "user32")
-#endif
+#ifndef _opencl_probe_h_
+#define _opencl_probe_h_
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
-gpuit_EXPORT
-int
-delayload_cuda (void);
-gpuit_EXPORT
-int
-delayload_opencl (void);
+int opencl_probe (void);
 
 #if defined __cplusplus
 }
