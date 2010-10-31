@@ -6,17 +6,17 @@
 ######################################################
 IF (FFTW_INCLUDE_DIR)
   # Already in cache, be silent
-  SET(FFTW_FIND_QUIETLY TRUE)
+  SET (FFTW_FIND_QUIETLY TRUE)
 ENDIF (FFTW_INCLUDE_DIR)
 
-IF(NOT FFTWDIR)
+IF (NOT FFTWDIR)
   # I think this only applies to windows
   FIND_PATH(FFTWDIR fftw3.h
     PATH $ENV{FFTWDIR}
     DOC "Root directory of fftw.")
 ENDIF(NOT FFTWDIR)
 
-FIND_PATH(FFTW_INCLUDE_DIR fftw3.h
+FIND_PATH (FFTW_INCLUDE_DIR fftw3.h
   ${FFTWDIR}
   /usr/local/include
   /usr/include

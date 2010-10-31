@@ -3,7 +3,7 @@
 ## Apparently this is how to make the CMake script return status
 ##   http://www.cmake.org/Wiki/CMake/C_Plugins_for_Loadable_Commands
 
-set(ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};${PLM_PLASTIMATCH_PATH};c:/Program Files/Microsoft DirectX SDK (June 2007)/Utilities/Bin/x86")
+set(ENV{PATH} "$ENV{PATH};${ITK_LIBRARY_PATH};${PLM_PLASTIMATCH_PATH};${PLM_FFTW_PATH};c:/Program Files/Microsoft DirectX SDK (June 2007)/Utilities/Bin/x86")
 
 # Only used for brook programs
 set(ENV{BRT_RUNTIME} "dx9")
