@@ -142,16 +142,16 @@ bspline_cuda_state_create (
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-    cudaDetect ();
+	delayload_cuda ();
 	switch (parms->implementation) {
 	case 'i':
 	case 'j':
 	case '\0':   /* Default */
-    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
         break;
-    default:
+	default:
 	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
-    	bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
 	    break;
 	}
     } 
@@ -3831,15 +3831,15 @@ bspline_score_g_mse (
 
 void
 bspline_score (Bspline_parms *parms, 
-	       Bspline_state *bst,
-	       Bspline_xform* bxf, 
-	       Volume *fixed, 
-	       Volume *moving, 
-	       Volume *moving_grad)
+    Bspline_state *bst,
+    Bspline_xform* bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
 {
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-    cudaDetect ();
+	delayload_cuda ();
 	switch (parms->implementation) {
 #if defined (commentout)
 	case 'c':
@@ -3862,14 +3862,14 @@ bspline_score (Bspline_parms *parms,
 	    bspline_cuda_score_h_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	case 'i':
-        bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    bspline_cuda_score_i_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 #endif
 	case 'j':
-        bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	default:
-        bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;
@@ -3928,18 +3928,18 @@ bspline_score (Bspline_parms *parms,
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 #if (OPENMP_FOUND)
-    case 'd':
+	case 'd':
 	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
-        break;
-    case 'e':
+	    break;
+	case 'e':
 	    bspline_score_e_mi (parms, bst, bxf, fixed, moving, moving_grad);
-        break;
+	    break;
 #endif
 	default:
 #if (OPENMP_FOUND)
 	    bspline_score_d_mi (parms, bst, bxf, fixed, moving, moving_grad);
 #else
-        printf ("OpenMP not available. Defaulting to single core...\n");
+	    printf ("OpenMP not available. Defaulting to single core...\n");
 	    bspline_score_c_mi (parms, bst, bxf, fixed, moving, moving_grad);
 #endif
 	    break;

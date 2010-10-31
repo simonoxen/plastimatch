@@ -526,12 +526,13 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
-	cudaDetect ();
+	delayload_cuda ();
 	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 #endif
 #if (OPENCL_FOUND)
     case THREADING_OPENCL:
+	delayload_opencl ();
 	//OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
 	opencl_reconstruct_conebeam (vol, proj_dir, &options);
 	break;

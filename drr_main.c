@@ -30,7 +30,7 @@ allocate_gpu_memory (
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
-	cudaDetect ();
+	delayload_cuda ();
 	return drr_cuda_state_create (proj, vol, options);
 #endif
 #if OPENCL_FOUND
