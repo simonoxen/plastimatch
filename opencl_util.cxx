@@ -549,14 +549,13 @@ opencl_set_kernel_args (
 
 	/* Here I would add the loop for each device... */
 	/* But instead just send to kernel 0 */
-	printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
+	//printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
 
 	status = clSetKernelArg (
 	    ocl_dev->kernels[0], 
 	    arg_index ++, 
 	    arg_size, 
 	    arg);
-	printf ("clSetKernelArg completed\n");
 	opencl_check_error (status, "clSetKernelArg");
     }
     va_end (va);
