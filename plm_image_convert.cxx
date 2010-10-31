@@ -7,6 +7,7 @@
 #include "itk_image.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "plm_int.h"
 
 template<class T, class U> 
 T
