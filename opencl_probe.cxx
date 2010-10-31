@@ -47,8 +47,12 @@ opencl_probe ()
 	buf_out[i] = 0;
     }
 
-    ocl_buf_in = opencl_buf_create (&ocl_dev, buf_size, buf_in);
-    ocl_buf_out = opencl_buf_create (&ocl_dev, buf_size, buf_out);
+    ocl_buf_in = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+	buf_size, buf_in);
+    ocl_buf_out = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+	buf_size, buf_out);
     opencl_kernel_create (&ocl_dev, "kernel_1");
 
     opencl_set_kernel_args (

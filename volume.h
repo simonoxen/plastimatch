@@ -20,7 +20,7 @@ enum Volume_pixel_type {
 typedef struct volume Volume;
 struct volume
 {
-    int dim[3];			// x, y, z Dims
+    int dim[3];		// x, y, z Dims
     int npix;			// # of voxels in volume
 				// = dim[0] * dim[1] * dim[2] 
     float offset[3];

@@ -69,6 +69,7 @@ gpuit_EXPORT
 Opencl_buf* 
 opencl_buf_create (
     Opencl_device *ocl_dev, 
+    cl_mem_flags flags, 
     size_t buffer_size, 
     void *buffer
 );

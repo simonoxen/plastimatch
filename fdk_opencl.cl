@@ -409,8 +409,22 @@ __kernel void
 kernel_2 (
     __global float *dev_vol,
     //__read_only float *dev_img,
-    __global float *dev_img
+    __global float *dev_img,
+    __constant float *dev_matrix,
+    __constant int *vol_dim
 )
 {
-    
+    uint id = get_global_id(0);
+    uint id_l = get_local_id(0);
+
+    int k = id / vol_dim[0] / vol_dim[1];
+    int j = (id - (k * vol_dim[0] * vol_dim[1])) / vol_dim[0];
+    int i = id - k * vol_dim[0] * vol_dim[1] - j * vol_dim[0];
+
+    if (k >= vol_dim[2]) {
+	return;
+    }
+
+    uint tmp = id * 10 + i;
+    dev_vol[id] = (float) i;
 }

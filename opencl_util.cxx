@@ -370,6 +370,7 @@ opencl_close_device (Opencl_device *ocl_dev)
 Opencl_buf* 
 opencl_buf_create (
     Opencl_device *ocl_dev, 
+    cl_mem_flags flags, 
     size_t buffer_size, 
     void *buffer
 )
@@ -381,23 +382,12 @@ opencl_buf_create (
 	ocl_dev->context_count * sizeof(Opencl_buf));
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
 	cl_int status;
-	if (buffer) {
-	    /* Create and copy contents */
 	    ocl_buf[i] = clCreateBuffer (
 		ocl_dev->contexts[i], 
-		CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+		flags, 
 		buffer_size, 
 		buffer, 
 		&status);
-	} else {
-	    /* Just create with correct size, don't set contents */
-	    ocl_buf[i] = clCreateBuffer (
-		ocl_dev->contexts[i], 
-		CL_MEM_READ_WRITE, 
-		buffer_size, 
-		buffer, 
-		&status);
-	}
 	opencl_check_error (status, "clCreateBuffer");
     }
     return ocl_buf;
