@@ -383,16 +383,34 @@ __kernel void kernel_fdk_bicubic(
     // Place it into the volume
     dev_vol[vol_idx] = dev_vol_value + ((*scale) * s * intensity);
 }
+
+__kernel void 
+kernel_fdk (
+    __global float *dev_vol,
+    __read_only image2d_t dev_img,
+    __constant float *dev_matrix,
+    __constant float4 *nrm,
+    __constant float4 *vol_offset,
+    __constant float4 *vol_pix_spacing,
+    __constant int4 *vol_dim,
+    __constant float2 *ic,
+    __constant int2 *img_dim,
+    __constant float *sad,
+    __constant float *scale,
+    __constant int4 *ndevice,
+    int offset
+)
+{
+    
+}
 #endif
 
 __kernel void 
-kernel_1 (
-    __global  unsigned int * output,
-    __global  unsigned int * input,
-    const     unsigned int multiplier
+kernel_2 (
+    __global float *dev_vol,
+    //__read_only float *dev_img,
+    __global float *dev_img
 )
 {
-    uint tid = get_global_id(0);
     
-    output[tid] = input[tid] * multiplier;
 }

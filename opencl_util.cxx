@@ -381,12 +381,23 @@ opencl_buf_create (
 	ocl_dev->context_count * sizeof(Opencl_buf));
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
 	cl_int status;
-	ocl_buf[i] = clCreateBuffer (
-	    ocl_dev->contexts[i], 
-	    CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
-	    buffer_size, 
-	    buffer, 
-	    &status);
+	if (buffer) {
+	    /* Create and copy contents */
+	    ocl_buf[i] = clCreateBuffer (
+		ocl_dev->contexts[i], 
+		CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+		buffer_size, 
+		buffer, 
+		&status);
+	} else {
+	    /* Just create with correct size, don't set contents */
+	    ocl_buf[i] = clCreateBuffer (
+		ocl_dev->contexts[i], 
+		CL_MEM_READ_WRITE, 
+		buffer_size, 
+		buffer, 
+		&status);
+	}
 	opencl_check_error (status, "clCreateBuffer");
     }
     return ocl_buf;
@@ -400,8 +411,8 @@ opencl_buf_read (
     void *buffer
 )
 {
-    /* For reading back, only the top-level logic knows how to reassemble 
-       the data from different devices.  */
+    /* For buffer read/write, only the top-level logic knows how to 
+       assign data to different devices.  */
     /* The below logic assumes only one device (for now).  */
     cl_int status;
     status = clEnqueueReadBuffer (
@@ -415,6 +426,31 @@ opencl_buf_read (
 	NULL,
 	NULL);
     opencl_check_error (status, "clEnqueueReadBuffer");
+}
+
+void
+opencl_buf_write (
+    Opencl_device *ocl_dev, 
+    Opencl_buf* ocl_buf, 
+    size_t buffer_size, 
+    void *buffer
+)
+{
+    /* For buffer read/write, only the top-level logic knows how to 
+       assign data to different devices.  */
+    /* The below logic assumes only one device (for now).  */
+    cl_int status;
+    status = clEnqueueWriteBuffer (
+	ocl_dev->command_queues[0], 
+	ocl_buf[0], 
+	CL_TRUE, 
+	0, 
+	buffer_size, 
+	buffer, 
+	0,
+	NULL,
+	NULL);
+    opencl_check_error (status, "clEnqueueWriteBuffer");
 }
 
 void

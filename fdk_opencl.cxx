@@ -28,44 +28,69 @@ opencl_reconstruct_conebeam (
 )
 {
     Opencl_device ocl_dev;
-    Opencl_buf *ocl_buf_in, *ocl_buf_out;
+    Opencl_buf *ocl_buf_vol;
+    Opencl_buf *ocl_buf_img;
     cl_uint buf_entries;
     cl_uint buf_size;
     cl_uint *buf_in, *buf_out;
     cl_uint multiplier = 2;
+    Proj_image *cbi;
+    int image_num;
 
+    /* Set up devices and kernels */
     opencl_open_device (&ocl_dev);
     opencl_load_programs (&ocl_dev, "fdk_opencl.cl");
+    opencl_kernel_create (&ocl_dev, "kernel_2");
 
-    buf_entries = 100;
-    buf_size = buf_entries * sizeof (cl_uint);
-    buf_in = (cl_uint*) malloc (buf_size);
-    buf_out = (cl_uint*) malloc (buf_size);
-    for (cl_uint i = 0; i < buf_entries; i++) {
-	buf_in[i] = i;
-	buf_out[i] = 0;
+    /* Retrieve 2D image to get dimensions */
+    cbi = proj_image_dir_load_image (proj_dir, 0);
+
+    /* Set up device memory */
+    ocl_buf_vol = opencl_buf_create (
+	&ocl_dev, vol->pix_size * vol->npix, vol->img);
+    ocl_buf_img = opencl_buf_create (
+	&ocl_dev, cbi->dim[1] * cbi->dim[0] * sizeof(float), 0);
+
+    /* Free cbi image */
+    proj_image_destroy (cbi);
+
+    /* Project each image into the volume one at a time */
+    for (image_num = options->first_img; 
+	 image_num < proj_dir->num_proj_images; 
+	 image_num++)
+    {
+	/* Load the current image and properties */
+	cbi = proj_image_dir_load_image(proj_dir, image_num);
+
+	/* Copy image bytes to device */
+	opencl_buf_write (&ocl_dev, ocl_buf_img, 
+	    cbi->dim[1] * cbi->dim[0] * sizeof(float), cbi->img);
+
+	/* Set fdk kernel arguments */
+	opencl_set_kernel_args (
+	    &ocl_dev, 
+	    sizeof (cl_mem), 
+	    &ocl_buf_vol[0], 
+	    sizeof (cl_mem), 
+	    &ocl_buf_img[0], 
+	    //	    sizeof (cl_uint), 
+	    //	    &multiplier, 
+	    (size_t) 0
+	);
+
+	/* Invoke kernel */
+	size_t global_work_size = 100;
+	size_t local_work_size = 100;
+	opencl_kernel_enqueue (&ocl_dev, global_work_size, local_work_size);
     }
 
-    ocl_buf_in = opencl_buf_create (&ocl_dev, buf_size, buf_in);
-    ocl_buf_out = opencl_buf_create (&ocl_dev, buf_size, buf_out);
-    opencl_kernel_create (&ocl_dev, "kernel_1");
-
-    opencl_set_kernel_args (
-	&ocl_dev, 
-	sizeof (cl_mem), 
-	&ocl_buf_out[0], 
-	sizeof (cl_mem), 
-	&ocl_buf_in[0], 
-	sizeof (cl_uint), 
-	&multiplier, 
-	(size_t) 0
-    );
-    opencl_kernel_enqueue (&ocl_dev, buf_entries, 1);
-
+#if defined (commentout)
+    /* Read back results */
     opencl_buf_read (&ocl_dev, ocl_buf_out, buf_size, buf_out);
 
     for (cl_uint i = 0; i < buf_entries; i++) {
 	printf ("%d ", buf_out[i]);
     }
     printf ("\n");
+#endif
 }
