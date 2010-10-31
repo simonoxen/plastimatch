@@ -556,6 +556,7 @@ opencl_set_kernel_args (
 	    arg_index ++, 
 	    arg_size, 
 	    arg);
+	printf ("clSetKernelArg completed\n");
 	opencl_check_error (status, "clSetKernelArg");
     }
     va_end (va);

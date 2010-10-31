@@ -23,6 +23,7 @@ opencl_probe ()
     cl_uint buf_size;
     cl_uint *buf_in, *buf_out;
     cl_uint multiplier = 2;
+    cl_int status;
     bool opencl_works;
 
     /* Check for opencl runtime first */
@@ -31,7 +32,10 @@ opencl_probe ()
 	return 0;
     }
 
-    opencl_open_device (&ocl_dev);
+    status = opencl_open_device (&ocl_dev);
+    if (status != CL_SUCCESS) {
+	return 0;
+    }
     opencl_load_programs (&ocl_dev, "opencl_probe.cl");
 
     buf_entries = 100;
