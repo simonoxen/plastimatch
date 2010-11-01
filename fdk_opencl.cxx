@@ -32,10 +32,16 @@ opencl_reconstruct_conebeam (
     Opencl_buf *ocl_buf_img;
     Opencl_buf *ocl_buf_matrix;
     Opencl_buf *ocl_buf_vol_dim;
+    Opencl_buf *ocl_buf_vol_offset;
+    Opencl_buf *ocl_buf_vol_spacing;
+    Opencl_buf *ocl_buf_img_dim;
+    Opencl_buf *ocl_buf_nrm;
+    Opencl_buf *ocl_buf_ic;
     cl_uint multiplier = 2;
     float *img = (float*) vol->img;
     Proj_image *cbi;
     int image_num;
+    float scale;
 
     /* Set up devices and kernels */
     opencl_open_device (&ocl_dev);
@@ -50,7 +56,7 @@ opencl_reconstruct_conebeam (
 	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
 	vol->pix_size * vol->npix, vol->img);
     ocl_buf_img = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY, 
+	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
 	cbi->dim[1] * cbi->dim[0] * sizeof(float), 0);
     ocl_buf_matrix = opencl_buf_create (&ocl_dev, 
 	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
@@ -58,6 +64,27 @@ opencl_reconstruct_conebeam (
     ocl_buf_vol_dim = opencl_buf_create (&ocl_dev, 
 	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
 	3 * sizeof(int), vol->dim);
+    ocl_buf_vol_offset = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+	3 * sizeof(float), vol->offset);
+    ocl_buf_vol_spacing = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+	3 * sizeof(float), vol->pix_spacing);
+    ocl_buf_img_dim = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+	2 * sizeof(int), cbi->dim);
+    ocl_buf_nrm = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+	3 * sizeof(float), 0);
+    ocl_buf_ic = opencl_buf_create (&ocl_dev, 
+	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+	2 * sizeof(float), 0);
+
+    /* Calculate the scale */
+    image_num = 1 + (options->last_img - options->first_img) 
+	/ options->skip_img;
+    scale = (float)(sqrt(3.0)/(double)image_num);
+    scale = scale * options->scale;
 
     /* Free cbi image */
     proj_image_destroy (cbi);
@@ -67,6 +94,9 @@ opencl_reconstruct_conebeam (
 	 image_num < proj_dir->num_proj_images; 
 	 image_num++)
     {
+	int i;
+	float matrix[12], nrm[3], ic[2], sad;
+
 	/* Load the current image and properties */
 	cbi = proj_image_dir_load_image(proj_dir, image_num);
 
@@ -74,32 +104,51 @@ opencl_reconstruct_conebeam (
 	opencl_buf_write (&ocl_dev, ocl_buf_img, 
 	    cbi->dim[1] * cbi->dim[0] * sizeof(float), cbi->img);
 
-	/* Copy matrix to device */
+	/* Copy matrix to device (convert from double to float) */
+	for (i = 0; i < 12; i++) {
+	    matrix[i] = cbi->pmat->matrix[i];
+	}
 	opencl_buf_write (&ocl_dev, ocl_buf_matrix, 
-	    12 * sizeof(float), cbi->pmat->matrix);
+	    12 * sizeof(float), matrix);
+
+	/* Copy ic to device (convert from double to float) */
+	ic[0] = cbi->pmat->ic[0];
+	ic[1] = cbi->pmat->ic[1];
+	opencl_buf_write (&ocl_dev, ocl_buf_ic, 2 * sizeof(float), ic);
+
+	/* Copy nrm to device (convert from double to float) */
+	nrm[0] = cbi->pmat->nrm[0];
+	nrm[1] = cbi->pmat->nrm[1];
+	nrm[2] = cbi->pmat->nrm[2];
+	opencl_buf_write (&ocl_dev, ocl_buf_nrm, 3 * sizeof(float), nrm);
+
+	/* Convert sad from double to float */
+	sad = cbi->pmat->sad;
 
 	/* Set fdk kernel arguments */
 	opencl_set_kernel_args (
 	    &ocl_dev, 
-	    sizeof (cl_mem), 
-	    &ocl_buf_vol[0], 
-	    sizeof (cl_mem), 
-	    &ocl_buf_img[0], 
-	    sizeof (cl_mem), 
-	    &ocl_buf_matrix[0], 
-	    sizeof (cl_mem), 
-	    &ocl_buf_vol_dim[0], 
-	    //	    sizeof (cl_uint), 
-	    //	    &multiplier, 
+	    sizeof (cl_mem), &ocl_buf_vol[0], 
+	    sizeof (cl_mem), &ocl_buf_img[0], 
+	    sizeof (cl_mem), &ocl_buf_matrix[0], 
+	    sizeof (cl_mem), &ocl_buf_vol_dim[0], 
+	    sizeof (cl_mem), &ocl_buf_vol_offset[0], 
+	    sizeof (cl_mem), &ocl_buf_vol_spacing[0], 
+	    sizeof (cl_mem), &ocl_buf_img_dim[0], 
+	    sizeof (cl_mem), &ocl_buf_nrm[0], 
+	    sizeof (cl_mem), &ocl_buf_ic[0], 
+	    sizeof (cl_float), &sad, 
+	    sizeof (cl_float), &scale,
 	    (size_t) 0
 	);
 
 	/* Compute workgroup size */
-	//size_t local_work_size = 512;
+	/* (Max local_work_size for my ATI RV710 is 128) */
 	size_t local_work_size = 128;
 	size_t global_work_size = (float) vol->npix;
 
 #if defined (commentout)
+	/* For debugging */
 	local_work_size = 4;
 	global_work_size = 8;
 #endif
@@ -112,6 +161,8 @@ opencl_reconstruct_conebeam (
     opencl_buf_read (&ocl_dev, ocl_buf_vol, 
 	vol->pix_size * vol->npix, vol->img);
 
+#if defined (commentout)
+    /* For debugging */
     int num_nonzero = 0;
     for (cl_uint i = 0; i < vol->npix; i++) {
 	if (img[i] != 0.0f) {
@@ -121,4 +172,5 @@ opencl_reconstruct_conebeam (
 	    }
 	}
     }
+#endif
 }

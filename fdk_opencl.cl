@@ -408,10 +408,16 @@ kernel_fdk (
 __kernel void 
 kernel_2 (
     __global float *dev_vol,
-    //__read_only float *dev_img,
     __global float *dev_img,
     __constant float *dev_matrix,
-    __constant int *vol_dim
+    __constant int *vol_dim,
+    __constant float *vol_offset,
+    __constant float *vol_spacing,
+    __constant int *img_dim,
+    __constant float *nrm,
+    __constant float *ic,
+    const float sad,
+    const float scale
 )
 {
     uint id = get_global_id(0);
@@ -425,6 +431,47 @@ kernel_2 (
 	return;
     }
 
-    uint tmp = id * 10 + i;
-    dev_vol[id] = (float) i;
+    // Get volume value from global memory
+    float dev_vol_value = dev_vol[id];
+
+    // Get (x,y,z) coordinates
+    float4 vp;
+    vp.x = vol_offset[0] + (i * vol_spacing[0]);
+    vp.y = vol_offset[1] + (j * vol_spacing[1]);
+    vp.z = vol_offset[2] + (k * vol_spacing[2]);
+
+    // Matrix multiplication
+    float4 ip;
+    ip.x = (dev_matrix[0] * vp.x) + (dev_matrix[1] * vp.y) + (dev_matrix[2] * vp.z) + dev_matrix[3];
+    ip.y = (dev_matrix[4] * vp.x) + (dev_matrix[5] * vp.y) + (dev_matrix[6] * vp.z) + dev_matrix[7];
+    ip.z = (dev_matrix[8] * vp.x) + (dev_matrix[9] * vp.y) + (dev_matrix[10] * vp.z) + dev_matrix[11];
+
+    // Change coordinate systems
+    ip.x = ic[0] + ip.x / ip.z;
+    ip.y = ic[1] + ip.y / ip.z;
+
+    // Retrieve pixel location from 2D image
+    int2 pos;
+    pos.y = convert_int_rtn (ip.x);
+    pos.x = convert_int_rtn (ip.y);
+
+    // Clip against image dimensions
+    if (pos.x < 0 || pos.x >= img_dim[0] || pos.y < 0 || pos.y >= img_dim[1])
+    {
+	return;
+    }
+
+    // Get pixel from image
+    //float4 voxel_data = read_imagef(dev_img, dev_img_sampler, pos);
+    float pix_val = dev_img[pos.y * img_dim[0] + pos.x];
+
+    // Get distance to voxel projected to panel normal 
+    float s = (nrm[0] * vp.x) + (nrm[1] * vp.y) + (nrm[2] * vp.z);
+
+    // Conebeam weighting factor
+    s = sad - s;
+    s = (sad * sad) / (s * s);
+
+    // Weight pixel and backproject into volume
+    dev_vol[id] = dev_vol_value + (scale * s * pix_val);
 }
