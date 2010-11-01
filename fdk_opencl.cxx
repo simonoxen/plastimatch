@@ -100,6 +100,11 @@ opencl_reconstruct_conebeam (
 	/* Load the current image and properties */
 	cbi = proj_image_dir_load_image(proj_dir, image_num);
 
+	/* Apply ramp filter */
+        if (options->filter == FDK_FILTER_TYPE_RAMP) {
+            proj_image_filter (cbi);
+        }
+
 	/* Copy image bytes to device */
 	opencl_buf_write (&ocl_dev, ocl_buf_img, 
 	    cbi->dim[1] * cbi->dim[0] * sizeof(float), cbi->img);
