@@ -562,7 +562,6 @@ opencl_kernel_enqueue (
     cl_int status;
 
     /* Add kernel to the queue */
-    printf ("Trying clEnqueueNDRangeKernel...\n");
     status = clEnqueueNDRangeKernel (
 	ocl_dev->command_queues[0], 
 	ocl_dev->kernels[0], 
@@ -575,13 +574,10 @@ opencl_kernel_enqueue (
 	&events[0]);
     opencl_check_error (status, "clEnqueueNDRangeKernel");
 
-    printf ("Trying clWaitEvents...\n");
     status = clWaitForEvents(1, &events[0]);
     opencl_check_error (status, "clWaitForEvents");
 
-    printf ("Trying clReleaseEvent...\n");
     clReleaseEvent(events[0]);
-    printf ("OK so far.\n");
 }
 
 cl_ulong 
