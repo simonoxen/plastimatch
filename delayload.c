@@ -32,7 +32,7 @@ delayload_cuda (void)
 #endif
 }
 
-void
+int 
 delayload_opencl (void)
 {
 #if defined (_WIN32)
