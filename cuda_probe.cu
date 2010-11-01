@@ -42,10 +42,11 @@ cuda_probe (void)
     cudaGetDeviceProperties (&props, 0);
     printf ("Compute Capability %d.%d\n", props.major, props.minor);
 
-    if (props.major == 1) {
-	/* GCS: Cuda 2.2 with Tesla returns compatibility 1.3 */
-	printf ("Device is presumed cuda capable.\n");
-	return 1;
+    if (props.major == 1 || props.major == 2) {
+    	/* GCS: Cuda 2.2 with Tesla returns compatibility 1.3 */
+        /* JAS: Tesla C2050 is compute capability 2.0 */
+    	printf ("Device is presumed cuda capable.\n");
+    	return 1;
     }
 
     // Unless proven otherwise, we assume no CUDA.
