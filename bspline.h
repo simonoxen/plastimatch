@@ -79,6 +79,16 @@ struct BSPLINE_Score_struct {
 };
 
 
+typedef struct vmem_entry Vmem_Entry;
+struct vmem_entry
+{
+    void* gpu_pointer;
+    void* cpu_pointer;
+
+    Vmem_Entry* next;
+};
+
+
 typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
 struct dev_pointers_bspline
 {
@@ -132,6 +142,8 @@ struct dev_pointers_bspline
 
     int* c_lut;
     float* q_lut;
+
+    Vmem_Entry* vmem_list;
 
 
     // These hold the size of the
