@@ -30,7 +30,11 @@ allocate_gpu_memory (
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
-	delayload_cuda ();
+	if (!delayload_cuda ()) {
+        // If we continue to attempt to use the CUDA runtime
+        // after failing to load the CUDA runtime, we crash.
+        exit (0);
+    }
 	return drr_cuda_state_create (proj, vol, options);
 #endif
 #if OPENCL_FOUND

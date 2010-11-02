@@ -526,7 +526,11 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
-	delayload_cuda ();
+	if (!delayload_cuda()) {
+        // If we continue to attempt to use the CUDA runtime
+        // after failing to load the CUDA runtime, we crash.
+        exit (0);
+    }
 	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 #endif

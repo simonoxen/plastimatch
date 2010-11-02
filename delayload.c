@@ -19,10 +19,11 @@ delayload_cuda (void)
 {
 #if defined (_WIN32)
     if (LoadLibrary ("nvcuda.dll") == NULL) {
-        printf ("\"nvcuda.dll NOT found!\"\n");
-	return 0;
+        printf ("Failed to load CUDA runtime!\n");
+        printf ("Please install the CUDA runtime to enable GPU acceleration.\n");
+        return 0;
     } else {
-	return 1;
+        return 1;
     }
 #else
     // Assume linux users are compiling from source
@@ -37,10 +38,10 @@ delayload_opencl (void)
 {
 #if defined (_WIN32)
     if (LoadLibrary ("opencl.dll") == NULL) {
-        printf ("\"opencl.dll NOT found!\"\n");
-	return 0;
+        printf ("opencl.dll not found!  Please install an OpenCL runtime.\n");
+        return 0;
     } else {
-	return 1;
+        return 1;
     }
 #else
     // Assume linux users are compiling from source

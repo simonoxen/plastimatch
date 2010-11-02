@@ -142,7 +142,11 @@ bspline_cuda_state_create (
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-	delayload_cuda ();
+	if (!delayload_cuda ()) {
+        // If we continue to attempt to use the CUDA runtime
+        // after failing to load the CUDA runtime, we crash.
+        exit (0);
+    }
 	switch (parms->implementation) {
 	case 'i':
 	case 'j':
@@ -3839,7 +3843,11 @@ bspline_score (Bspline_parms *parms,
 {
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-	delayload_cuda ();
+	if (!delayload_cuda ()) {
+        // If we continue to attempt to use the CUDA runtime
+        // after failing to load the CUDA runtime, we crash.
+        exit (0);
+    }
 	switch (parms->implementation) {
 #if defined (commentout)
 	case 'c':
