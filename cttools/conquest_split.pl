@@ -70,9 +70,9 @@ opendir(DIR, $indir);
 if ($use_no_phi) {
     @files = grep(/\-no\-phi\.v2$/,readdir(DIR));
 } else {
-    @files = grep(/.v2$/,readdir(DIR));
+#    @files = grep(/.v2$/,readdir(DIR));
+    @files = grep(/.dcm$/,readdir(DIR));
 }
-## @files = grep(/\-no\-phi\.v2$/,readdir(DIR));
 closedir(DIR);
 
 $f = File::Spec->catfile($indir, $files[1]);
@@ -100,6 +100,8 @@ foreach $file (@files) {
 }
 
 ## Use heuristics to identify series
+## GCS: These heuristics are good for scans from GE, but only if it 
+## was not anonymized on GE.  Descriptions are cleared by GE anon tool.
 foreach $k (keys %series_description_hash) {
     if ($series_hash{$k} > 500) {
 	$unsorted = $k;
@@ -160,107 +162,17 @@ print "AVE IP:         $ave_ip\n";
 print "STRUCTS:        $s103 $s105 $s107\n";
 print "--------------------\n";
 
-## Move files
+## Make parent dir
 mkpath($outdir);
 sleep 4;
 
-if ($free_breathing > 0) {
-    print "Moving free breathing\n";
-    $od = File::Spec->catfile($outdir, "free-breathing");
+foreach $series (keys %series_hash) {
+    $od = File::Spec->catfile($outdir, $series);
     my_mkdir ($od);
-    @move_files = grep(/_${free_breathing}_/,@files);
+    @move_files = grep(/_${series}_/,@files);
     for $file (@move_files) {
 	$f = File::Spec->catfile($indir,$file);
+	#print "MV $f $od\n";
 	&move_or_copy ($f, $od, $move_files);
     }
 }
-
-if ($s103 > 0) {
-    print "Moving 103\n";
-    $od = File::Spec->catfile($outdir, "103");
-    my_mkdir ($od);
-    @move_files = grep(/_${s103}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($s105 > 0) {
-    print "Moving 105\n";
-    $od = File::Spec->catfile($outdir, "105");
-    my_mkdir ($od);
-    @move_files = grep(/_${s105}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($s107 > 0) {
-    print "Moving 107\n";
-    $od = File::Spec->catfile($outdir, "107");
-    my_mkdir ($od);
-    @move_files = grep(/_${s107}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-for $i (0..9) {
-    print "Moving t$i\n";
-    $od = File::Spec->catfile($outdir, "t$i");
-    my_mkdir ($od);
-    $s = $sorted[$i];
-    @move_files = grep(/_${s}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($want_unsorted && $unsorted > 0) {
-    print "Moving unsorted\n";
-    $od = File::Spec->catfile($outdir, "unsorted");
-    my_mkdir ($od);
-    @move_files = grep(/_${unsorted}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($want_mip && $mip > 0) {
-    print "Moving mip\n";
-    $od = File::Spec->catfile($outdir, "mip");
-    my_mkdir ($od);
-    @move_files = grep(/_${mip}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($want_min_ip && $min_ip > 0) {
-    print "Moving min ip\n";
-    $od = File::Spec->catfile($outdir, "min_ip");
-    my_mkdir ($od);
-    @move_files = grep(/_${min_ip}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
-if ($want_ave_ip && $ave_ip > 0) {
-    print "Moving ave ip\n";
-    $od = File::Spec->catfile($outdir, "ave_ip");
-    my_mkdir ($od);
-    @move_files = grep(/_${ave_ip}_/,@files);
-    for $file (@move_files) {
-	$f = File::Spec->catfile($indir,$file);
-	&move_or_copy ($f, $od, $move_files);
-    }
-}
-
