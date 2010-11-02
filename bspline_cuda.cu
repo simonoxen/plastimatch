@@ -20,39 +20,14 @@
 // Define file-scope textures
 texture<float, 1, cudaReadModeElementType> tex_moving_image;
 texture<float, 1, cudaReadModeElementType> tex_coeff;
-texture<int, 1, cudaReadModeElementType>   tex_c_lut;
-texture<float, 1, cudaReadModeElementType> tex_q_lut;
-texture<int, 1, cudaReadModeElementType> tex_LUT_Offsets;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_x;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_y;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
-texture<float, 1> tex_dc_dv;
-texture<float, 1> tex_grad;
 
-
-////////////////////////////////////////////////////////////
-// Note that disabling textures may not
-// always work.  Not all GPU kernel functions
-// receive a global memory analog of their
-// texture references!
-
-#define USE_TEXTURES 1      // Textures Enabled
-//#define USE_TEXTURES 0    // Textures Disabled
-
-#if defined (USE_TEXTURES)
-#define TEX_REF(array,index) \
-    (tex1Dfetch(tex_ ## array, index))
-#else
-#define TEX_REF(array,index) \
-    (array[index])
-#endif
 
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
 
-// To enable MI uncomment the line below and set
-// -arch=sm_12 within CMakeLists.txt
-#define COMPILE_MI
 
 ////////////////////////////////////////////////////////////
 
@@ -729,53 +704,7 @@ bspline_cuda_init_MI_a (
     printf("...");
     // ----------------------------------------------------------
 
-#if defined (commentout)
-    // Multiplier LUT
-    // ----------------------------------------------------------
-    dev_ptrs->q_lut_size = sizeof(float)
-                         * bxf->vox_per_rgn[0]
-                         * bxf->vox_per_rgn[1]
-                         * bxf->vox_per_rgn[2]
-                         * 64;
 
-
-    gpu_alloc_copy ((void **)&dev_ptrs->q_lut,
-                    (void **)&bxf->q_lut,
-                    dev_ptrs->q_lut_size,
-                    cudaGlobalMem);
-
-    cudaBindTexture(0, tex_q_lut,
-                    dev_ptrs->q_lut,
-                    dev_ptrs->q_lut_size);
-
-    cuda_utils_check_error("Failed to bind tex_q_lut to texture");
-    // ----------------------------------------------------------
-#endif
-
-
-#if defined (commentout)
-    // Index LUT
-    // ----------------------------------------------------------
-    dev_ptrs->c_lut_size = sizeof(int) 
-                         * bxf->rdims[0] 
-                         * bxf->rdims[1] 
-                         * bxf->rdims[2] 
-                         * 64;
-
-    gpu_alloc_copy ((void **)&dev_ptrs->c_lut,
-                    (void **)&bxf->c_lut,
-                    dev_ptrs->c_lut_size,
-                    cudaGlobalMem);
-
-    cudaBindTexture(0, tex_c_lut,
-                    dev_ptrs->c_lut,
-                    dev_ptrs->c_lut_size);
-
-    cuda_utils_check_error("Failed to bind tex_c_lut to texture");
-    // ----------------------------------------------------------
-#endif
-
-    
     // Coefficient LUT
     // ----------------------------------------------------------
     dev_ptrs->coeff_size = sizeof(float) * bxf->num_coeff;
@@ -956,7 +885,6 @@ bspline_cuda_init_MI_a (
                     dev_ptrs->LUT_Offsets_size,
                     cudaGlobalMem);
 
-    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
     printf(".");
 
@@ -1230,7 +1158,6 @@ bspline_cuda_initialize_j (
                     dev_ptrs->grad_size,
                     cudaAllocStern);
 
-    cudaBindTexture(0, tex_grad, dev_ptrs->grad, dev_ptrs->grad_size);
     cuda_utils_check_error("Failed to bind dev_ptrs->grad to texture reference!");
     GPU_Memory_Bytes += dev_ptrs->grad_size;
     printf(".");
@@ -1295,7 +1222,6 @@ bspline_cuda_initialize_j (
                     dev_ptrs->LUT_Offsets_size,
                     cudaGlobalMem);
 
-    cudaBindTexture(0, tex_LUT_Offsets, dev_ptrs->LUT_Offsets, dev_ptrs->LUT_Offsets_size);
     GPU_Memory_Bytes += dev_ptrs->LUT_Offsets_size;
     printf(".");
 
@@ -1443,8 +1369,6 @@ bspline_cuda_clean_up_mse_j (
     // Textures
     cudaUnbindTexture(tex_moving_image);
     cudaUnbindTexture(tex_coeff);
-    cudaUnbindTexture(tex_grad);
-    cudaUnbindTexture(tex_LUT_Offsets);
     cudaUnbindTexture(tex_LUT_Bspline_x);
     cudaUnbindTexture(tex_LUT_Bspline_y);
     cudaUnbindTexture(tex_LUT_Bspline_z);
@@ -1496,8 +1420,6 @@ bspline_cuda_clean_up_mi_a (
 {
     // Textures
     cudaUnbindTexture(tex_coeff);
-    cudaUnbindTexture(tex_grad);
-    cudaUnbindTexture(tex_LUT_Offsets);
     cudaUnbindTexture(tex_LUT_Bspline_x);
     cudaUnbindTexture(tex_LUT_Bspline_y);
     cudaUnbindTexture(tex_LUT_Bspline_z);
@@ -3867,10 +3789,10 @@ kernel_bspline_mse_condense_64_texfetch (
 
     for (tile_pos.z = 0; tile_pos.z < 4; tile_pos.z++)
     {
-        C = TEX_REF(LUT_Bspline_z, tile_pos.z * tile_dim.z + voxel_loc.z);
+        C = tex1Dfetch(tex_LUT_Bspline_z, tile_pos.z * tile_dim.z + voxel_loc.z);
         for (tile_pos.y = 0; tile_pos.y < 4; tile_pos.y++)
         {
-        B = C * TEX_REF(LUT_Bspline_y, tile_pos.y * tile_dim.y + voxel_loc.y);
+        B = C * tex1Dfetch(tex_LUT_Bspline_y, tile_pos.y * tile_dim.y + voxel_loc.y);
         tile_pos.x = 0;
 
         // #### FIRST HALF ####
@@ -3882,7 +3804,7 @@ kernel_bspline_mse_condense_64_texfetch (
         // Calculate the b-spline multiplier for this voxel @ this tile
         // position relative to a given control knot.
         // ---------------------------------------------------------------------------------
-        A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+        A = B * tex1Dfetch(tex_LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
 
         // Perform the multiplication and store to redux shared memory
         sBuffer_redux_x[threadIdx.x] = voxel_val.x * A;
@@ -3892,7 +3814,7 @@ kernel_bspline_mse_condense_64_texfetch (
 
         // Calculate the b-spline multiplier for this voxel @ the next tile
         // position relative to a given control knot.
-        A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+        A = B * tex1Dfetch(tex_LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
 
         // Perform the multiplication and store to redux shared memory
         // for the second position
@@ -4006,7 +3928,7 @@ kernel_bspline_mse_condense_64_texfetch (
         // blocks of shared memory for reduction
         // ---------------------------------------------------------------------------------
         tile_pos.x++;
-        A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+        A = B * tex1Dfetch(tex_LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
 
         // Perform the multiplication and store to redux shared memory
         sBuffer_redux_x[threadIdx.x] = voxel_val.x * A;
@@ -4016,7 +3938,7 @@ kernel_bspline_mse_condense_64_texfetch (
 
         // Calculate the b-spline multiplier for this voxel @ the next tile
         // position relative to a given control knot.
-        A = B * TEX_REF(LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
+        A = B * tex1Dfetch(tex_LUT_Bspline_x, tile_pos.x * tile_dim.x + voxel_loc.x);
 
         // Perform the multiplication and store to redux shared memory
         // for the second position
@@ -4372,7 +4294,6 @@ bspline_cuda_update_grad_kernel(
     int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
 
     if(threadIdxInGrid < num_elems) {
-        //      grad[threadIdxInGrid] = 2.0 * tex1Dfetch(tex_grad, threadIdxInGrid) / num_vox;
         grad[threadIdxInGrid] = 2.0 * grad[threadIdxInGrid] / num_vox;
     }
 }
