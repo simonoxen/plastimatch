@@ -179,10 +179,28 @@ gpu_alloc_vmem (
     // initialize the new entry
     new_entry->gpu_pointer = *gpu_addr;
     new_entry->cpu_pointer = pinned_host_mem;
+    new_entry->size = mem_size;
 
     // insert new entry @ the head
     new_entry->next = dev_ptrs->vmem_list;
     dev_ptrs->vmem_list = new_entry;
+}
+
+// Returns the total amount of "virtual global"
+// (i.e. pinned CPU) memory. Perhaps useful.
+size_t
+gpu_tally_vmem (Dev_Pointers_Bspline* dev_ptrs)
+{
+    size_t total_vmem = 0;
+    Vmem_Entry* curr = dev_ptrs->vmem_list;
+
+    while (curr != NULL)
+    {
+        total_vmem += curr->size;
+        curr = curr->next;
+    }
+
+    return total_vmem;
 }
 
 // For debugging.  Just prints out the virtual
@@ -1035,8 +1053,9 @@ bspline_cuda_init_MI_a (
     printf (" done.\n");
 
     // Report global memory allocation.
-    printf("  Allocated GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
-    printf("     Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
+    printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
+    printf("          Virtual GPU Memory: %ld MB\n", gpu_tally_vmem (dev_ptrs) / 1048576);
+    printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
 
 
 #if defined (commentout)

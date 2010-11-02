@@ -85,6 +85,8 @@ struct vmem_entry
     void* gpu_pointer;
     void* cpu_pointer;
 
+    size_t size;
+
     Vmem_Entry* next;
 };
 
