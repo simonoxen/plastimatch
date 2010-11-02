@@ -64,6 +64,7 @@ __global__ void kernel_bspline_MI_a_hist_fix (
     int3 fdim,		// fixed  image dimensions
     int3 mdim,		// moving image dimensions
     int3 rdim,		//       region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,	// image origin
     float3 img_spacing,	// image spacing
     float3 mov_offset,	// moving image offset
@@ -83,6 +84,7 @@ __global__ void kernel_bspline_MI_a_hist_mov (
     int3 fdim,		// fixed  image dimensions
     int3 mdim,		// moving image dimensions
     int3 rdim,		//       region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,	// image origin
     float3 img_spacing,	// image spacing
     float3 mov_offset,	// moving image offset
@@ -107,6 +109,7 @@ __global__ void kernel_bspline_MI_a_hist_jnt (
     int3 fdim,		// INPUT:  fixed image dimensions
     int3 mdim,		// INPUT: moving image dimensions
     int3 rdim,		// INPUT: region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,	// INPUT: image origin
     float3 img_spacing,	// INPUT: image spacing
     float3 mov_offset,	// INPUT: moving image offset
@@ -172,6 +175,7 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     int3 fdim,		// INPUT:  fixed image dimensions
     int3 mdim,		// INPUT: moving image dimensions
     int3 rdim,		// INPUT: region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,	// INPUT: image origin
     float3 img_spacing,	// INPUT: image spacing
     float3 mov_offset,	// INPUT: moving image offset

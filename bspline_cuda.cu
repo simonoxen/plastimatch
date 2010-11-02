@@ -729,7 +729,7 @@ bspline_cuda_init_MI_a (
     printf("...");
     // ----------------------------------------------------------
 
-
+#if defined (commentout)
     // Multiplier LUT
     // ----------------------------------------------------------
     dev_ptrs->q_lut_size = sizeof(float)
@@ -750,8 +750,10 @@ bspline_cuda_init_MI_a (
 
     cuda_utils_check_error("Failed to bind tex_q_lut to texture");
     // ----------------------------------------------------------
+#endif
 
 
+#if defined (commentout)
     // Index LUT
     // ----------------------------------------------------------
     dev_ptrs->c_lut_size = sizeof(int) 
@@ -771,6 +773,7 @@ bspline_cuda_init_MI_a (
 
     cuda_utils_check_error("Failed to bind tex_c_lut to texture");
     // ----------------------------------------------------------
+#endif
 
     
     // Coefficient LUT
@@ -1584,11 +1587,11 @@ CUDA_bspline_MI_a_hist_fix (
     cuda_utils_check_error ("Failed to initialize memory for f_hist");
 
     num_blocks = build_exec_conf_1tpe (
-	&dimGrid,          // OUTPUT: Grid  dimensions
-	&dimBlock,         // OUTPUT: Block dimensions
-	fixed->npix,       // INPUT: Total # of threads
-	32,                // INPUT: Threads per block
-	false);            // INPUT: Is threads per block negotiable?
+        &dimGrid,          // OUTPUT: Grid  dimensions
+        &dimBlock,         // OUTPUT: Block dimensions
+        fixed->npix,       // INPUT: Total # of threads
+        32,                // INPUT: Threads per block
+        false);            // INPUT: Is threads per block negotiable?
 
     int smemSize = dimBlock.x * mi_hist->fixed.bins * sizeof(float);
 
@@ -1601,22 +1604,23 @@ CUDA_bspline_MI_a_hist_fix (
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
-	dev_ptrs->f_hist_seg,       // partial histogram (moving image)
-	dev_ptrs->fixed_image,      // moving image voxels
-	mi_hist->fixed.offset,      // histogram offset
-	1.0f/mi_hist->fixed.delta,  // histogram delta
-	mi_hist->fixed.bins,        // # histogram bins
-	gbd.vox_per_rgn,            // voxels per region
-	gbd.fix_dim,                // fixed  image dimensions
-	gbd.mov_dim,                // moving image dimensions
-	gbd.rdims,                  //       region dimensions
-	gbd.img_origin,             // image origin
-	gbd.img_spacing,            // image spacing
-	gbd.mov_offset,             // moving image offset
-	gbd.mov_spacing,            // moving image pixel spacing
-	dev_ptrs->c_lut,            // DEBUG
-	dev_ptrs->q_lut,            // DEBUG
-	dev_ptrs->coeff);           // DEBUG
+        dev_ptrs->f_hist_seg,       // partial histogram (moving image)
+        dev_ptrs->fixed_image,      // moving image voxels
+        mi_hist->fixed.offset,      // histogram offset
+        1.0f/mi_hist->fixed.delta,  // histogram delta
+        mi_hist->fixed.bins,        // # histogram bins
+        gbd.vox_per_rgn,            // voxels per region
+        gbd.fix_dim,                // fixed  image dimensions
+        gbd.mov_dim,                // moving image dimensions
+        gbd.rdims,                  //       region dimensions
+        gbd.cdims,                  // # control points in x,y,z
+        gbd.img_origin,             // image origin
+        gbd.img_spacing,            // image spacing
+        gbd.mov_offset,             // moving image offset
+        gbd.mov_spacing,            // moving image pixel spacing
+        dev_ptrs->c_lut,            // DEBUG
+        dev_ptrs->q_lut,            // DEBUG
+        dev_ptrs->coeff);           // DEBUG
 
     cuda_utils_check_error ("kernel hist_mov");
 
@@ -1702,22 +1706,23 @@ CUDA_bspline_MI_a_hist_mov (
 
     // Launch kernel with one thread per voxel
     kernel_bspline_MI_a_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
-	dev_ptrs->m_hist_seg,       // partial histogram (moving image)
-	dev_ptrs->moving_image,     // moving image voxels
-	mi_hist->moving.offset,     // histogram offset
-	1.0f/mi_hist->moving.delta, // histogram delta
-	mi_hist->moving.bins,       // # histogram bins
-	gbd.vox_per_rgn,            // voxels per region
-	gbd.fix_dim,                // fixed  image dimensions
-	gbd.mov_dim,                // moving image dimensions
-	gbd.rdims,                  //       region dimensions
-	gbd.img_origin,             // image origin
-	gbd.img_spacing,            // image spacing
-	gbd.mov_offset,             // moving image offset
-	gbd.mov_spacing,            // moving image pixel spacing
-	dev_ptrs->c_lut,            // DEBUG
-	dev_ptrs->q_lut,            // DEBUG
-	dev_ptrs->coeff);           // DEBUG
+        dev_ptrs->m_hist_seg,       // partial histogram (moving image)
+        dev_ptrs->moving_image,     // moving image voxels
+        mi_hist->moving.offset,     // histogram offset
+        1.0f/mi_hist->moving.delta, // histogram delta
+        mi_hist->moving.bins,       // # histogram bins
+        gbd.vox_per_rgn,            // voxels per region
+        gbd.fix_dim,                // fixed  image dimensions
+        gbd.mov_dim,                // moving image dimensions
+        gbd.rdims,                  //       region dimensions
+        gbd.cdims,                  // # control points in x,y,z
+        gbd.img_origin,             // image origin
+        gbd.img_spacing,            // image spacing
+        gbd.mov_offset,             // moving image offset
+        gbd.mov_spacing,            // moving image pixel spacing
+        dev_ptrs->c_lut,            // DEBUG
+        dev_ptrs->q_lut,            // DEBUG
+        dev_ptrs->coeff);           // DEBUG
 
     cuda_utils_check_error ("kernel hist_mov");
 
@@ -1731,9 +1736,9 @@ CUDA_bspline_MI_a_hist_mov (
     
     // this kernel can be ran with any thread-block size
     kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-	dev_ptrs->m_hist,
-	dev_ptrs->m_hist_seg,
-	num_sub_hists);
+        dev_ptrs->m_hist,
+        dev_ptrs->m_hist_seg,
+        num_sub_hists);
 
     cuda_utils_check_error ("kernel hist_mov_merge");
 
@@ -1872,6 +1877,7 @@ CUDA_bspline_MI_a_hist_jnt (
             gbd.fix_dim,                // fixed  image dimensions
             gbd.mov_dim,                // moving image dimensions
             gbd.rdims,                  //       region dimensions
+            gbd.cdims,                  // # control points in x,y,z
             gbd.img_origin,             // image origin
             gbd.img_spacing,            // image spacing
             gbd.mov_offset,             // moving image offset
@@ -2079,6 +2085,7 @@ CUDA_MI_Grad_a (
         gbd.fix_dim,
         gbd.mov_dim,
         gbd.rdims,
+        gbd.cdims,
         gbd.img_origin,
         gbd.img_spacing,
         gbd.mov_offset,
@@ -2782,6 +2789,7 @@ kernel_bspline_MI_a_hist_fix (
     int3 fdim,          // fixed  image dimensions
     int3 mdim,          // moving image dimensions
     int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
     float3 mov_offset,  // moving image offset
@@ -2817,10 +2825,7 @@ kernel_bspline_MI_a_hist_fix (
     }
     // --------------------------------------------------------
 
-
-    // -- Variables used by correspondence --------------------
-    // -- (Block verified) ------------------------------------
-    int3 r;     // Voxel index (global)
+    // --------------------------------------------------------
     int4 q;     // Voxel index (local)
     int4 p;     // Tile index
 
@@ -2831,87 +2836,16 @@ kernel_bspline_MI_a_hist_fix (
     float3 d;       // Deformation vector
 
     int fv;     // fixed voxel
-    //   ----    ----    ----    ----    ----    ----    ----    
+    // --------------------------------------------------------
     
     fv = thread_idxg;
 
-    r.z = fv / (fdim.x * fdim.y);
-    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
-    
-    p.x = r.x / vpr.x;
-    p.y = r.y / vpr.y;
-    p.z = r.z / vpr.z;
-    p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
 
-    q.x = r.x - p.x * vpr.x;
-    q.y = r.y - p.y * vpr.y;
-    q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
 
-    f.x = img_origin.x + img_spacing.x * r.x;
-    f.y = img_origin.y + img_spacing.y * r.y;
-    f.z = img_origin.z + img_spacing.z * r.z;
-    // --------------------------------------------------------
-
-#if defined (commentout)
-    if (r.x > (roi_offset.x + roi_dim.x) ||
-        r.y > (roi_offset.y + roi_dim.y) ||
-        r.z > (roi_offset.z + roi_dim.z))
-    {
-        return;
-    }
-#endif
-
-    // -- Compute deformation vector --------------------------
-    int cidx;
-    float P;
-
-    d.x = 0.0f;
-    d.y = 0.0f;
-    d.z = 0.0f;
-
-    for (int k=0; k < 64; k++) {
-        // Texture Version
-        P = tex1Dfetch (tex_q_lut, 64*q.w + k);
-        cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
-
-        d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
-        d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
-        d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
-
-    
-        // Global Memory Version
-        //      P = q_lut[64*q.w + k];
-        //      cidx = 3 * c_lut[64*p.w + k];
-        //
-        //      d.x += P * coeff[cidx + 0];
-        //      d.y += P * coeff[cidx + 1];
-        //      d.z += P * coeff[cidx + 2];
-    }
-    // --------------------------------------------------------
-
-    float val = 1;
-
-    // -- Correspondence --------------------------------------
-    // -- (Block verified) ------------------------------------
-    m.x = f.x + d.x;
-    m.y = f.y + d.y;
-    m.z = f.z + d.z;
-
-    // n.x = m.i  etc
-    n.x = (m.x - mov_offset.x) / mov_ps.x;
-    n.y = (m.y - mov_offset.y) / mov_ps.y;
-    n.z = (m.z - mov_offset.z) / mov_ps.z;
-
-    if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
-    n.y < -0.5 || n.y > mdim.y - 0.5 ||
-    n.z < -0.5 || n.z > mdim.z - 0.5)
-    {
-        // Voxel doesn't map into the moving image.  
-        val = 0;
-    }
-    // --------------------------------------------------------
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
     __syncthreads();
 
@@ -2921,7 +2855,7 @@ kernel_bspline_MI_a_hist_fix (
 
     idx_fbin = (int) floorf ((f_img[fv] - offset) * delta);
     f_mem = threadIdx.x + idx_fbin*threadsPerBlock;
-    s_Fixed[f_mem] += val;
+    s_Fixed[f_mem] += !fell_out;
     // --------------------------------------------------------
 
     __syncthreads();
@@ -2984,6 +2918,7 @@ kernel_bspline_MI_a_hist_mov (
     int3 fdim,          // fixed  image dimensions
     int3 mdim,          // moving image dimensions
     int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
     float3 mov_offset,  // moving image offset
@@ -3020,9 +2955,7 @@ kernel_bspline_MI_a_hist_mov (
     // --------------------------------------------------------
 
 
-    // -- Variables used by correspondence --------------------
-    // -- (Block verified) ------------------------------------
-    int3 r;     // Voxel index (global)
+    // --------------------------------------------------------
     int4 q;     // Voxel index (local)
     int4 p;     // Tile index
 
@@ -3030,140 +2963,27 @@ kernel_bspline_MI_a_hist_mov (
     float3 f;       // Distance from origin (in mm )
     float3 m;       // Voxel Displacement   (in mm )
     float3 n;       // Voxel Displacement   (in vox)
+    int3 n_f;   // Voxel Displacement floor
+    int3 n_r;   // Voxel Displacement round
     float3 d;       // Deformation vector
-
-    int3 n_f;       // Voxel Displacement floor
 
     int fv;     // fixed voxel
     int mvf;        // moving voxel (floor)
-    //   ----    ----    ----    ----    ----    ----    ----    
+    // --------------------------------------------------------
     
     fv = thread_idxg;
 
-    r.z = fv / (fdim.x * fdim.y);
-    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
-    
-    p.x = r.x / vpr.x;
-    p.y = r.y / vpr.y;
-    p.z = r.z / vpr.z;
-    p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
-
-    q.x = r.x - p.x * vpr.x;
-    q.y = r.y - p.y * vpr.y;
-    q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
-
-    f.x = img_origin.x + img_spacing.x * r.x;
-    f.y = img_origin.y + img_spacing.y * r.y;
-    f.z = img_origin.z + img_spacing.z * r.z;
-    // --------------------------------------------------------
-
-#if defined (commentout)
-    if (r.x > (roi_offset.x + roi_dim.x) ||
-        r.y > (roi_offset.y + roi_dim.y) ||
-        r.z > (roi_offset.z + roi_dim.z))
-    {
-        return;
-    }
-#endif
-
-    // -- Compute deformation vector --------------------------
-    int cidx;
-    float P;
-
-    d.x = 0.0f;
-    d.y = 0.0f;
-    d.z = 0.0f;
-
-    for (int k=0; k < 64; k++) {
-        // Texture Version
-        P = tex1Dfetch (tex_q_lut, 64*q.w + k);
-        cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
-
-        d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
-        d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
-        d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
 
 
-        // Global Memory Version
-        //      P = q_lut[64*q.w + k];
-        //      cidx = 3 * c_lut[64*p.w + k];
-        //
-        //      d.x += P * coeff[cidx + 0];
-        //      d.y += P * coeff[cidx + 1];
-        //      d.z += P * coeff[cidx + 2];
-    }
-    // --------------------------------------------------------
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
 
-    // -- Correspondence --------------------------------------
-    // -- (Block verified) ------------------------------------
-    m.x = f.x + d.x;
-    m.y = f.y + d.y;
-    m.z = f.z + d.z;
-
-    // n.x = m.i  etc
-    n.x = (m.x - mov_offset.x) / mov_ps.x;
-    n.y = (m.y - mov_offset.y) / mov_ps.y;
-    n.z = (m.z - mov_offset.z) / mov_ps.z;
-
-    if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
-        n.y < -0.5 || n.y > mdim.y - 0.5 ||
-        n.z < -0.5 || n.z > mdim.z - 0.5)
-    {
-        // Voxel doesn't map into the moving image.
-        // Don't add anything to histogram
-
-    } else {
-
-        n_f.x = (int) floorf (n.x);
-        n_f.y = (int) floorf (n.y);
-        n_f.z = (int) floorf (n.z);
-        // --------------------------------------------------------
-
-
-
-        // -- Compute tri-linear interpolation weights ------------
-        float3 li_1;
-        float3 li_2;
-
-        li_2.x = n.x - n_f.x;
-        if (n_f.x < 0) {
-            n_f.x = 0;
-            li_2.x = 0.0f;
-        }
-        else if (n_f.x >= (mdim.x - 1)) {
-            n_f.x = mdim.x - 2;
-            li_2.x = 1.0f;
-        }
-        li_1.x = 1.0f - li_2.x;
-
-
-        li_2.y = n.y - n_f.y;
-        if (n_f.y < 0) {
-            n_f.y = 0;
-            li_2.y = 0.0f;
-        }
-        else if (n_f.y >= (mdim.y - 1)) {
-            n_f.y = mdim.y - 2;
-            li_2.y = 1.0f;
-        }
-        li_1.y = 1.0f - li_2.y;
-
-
-        li_2.z = n.z - n_f.z;
-        if (n_f.z < 0) {
-            n_f.z = 0;
-            li_2.z = 0.0f;
-        }
-        else if (n_f.z >= (mdim.z - 1)) {
-            n_f.z = mdim.z - 2;
-            li_2.z = 1.0f;
-        }
-        li_1.z = 1.0f - li_2.z;
-        // --------------------------------------------------------
-
+    if (!fell_out) {
+        float3 li_1, li_2;
+        clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
         // -- Compute coordinates of 8 nearest neighbors ----------
         int n1, n2, n3, n4;
@@ -3195,7 +3015,6 @@ kernel_bspline_MI_a_hist_mov (
         w7 = li_1.x * li_2.y * li_2.z;
         w8 = li_2.x * li_2.y * li_2.z;
         // --------------------------------------------------------
-
 
 
         __syncthreads();
@@ -3310,6 +3129,7 @@ kernel_bspline_MI_a_hist_jnt (
     int3 fdim,      // INPUT:  fixed image dimensions
     int3 mdim,      // INPUT: moving image dimensions
     int3 rdim,      // INPUT: region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // INPUT: image origin
     float3 img_spacing, // INPUT: image spacing
     float3 mov_offset,  // INPUT: moving image offset
@@ -3358,9 +3178,7 @@ kernel_bspline_MI_a_hist_jnt (
     // --------------------------------------------------------
 
 
-    // -- Variables used by correspondence --------------------
-    // -- (Block verified) ------------------------------------
-    int3 r;     // Voxel index (global)
+    // --------------------------------------------------------
     int4 q;     // Voxel index (local)
     int4 p;     // Tile index
 
@@ -3371,145 +3189,36 @@ kernel_bspline_MI_a_hist_jnt (
     float3 d;       // Deformation vector
 
     int3 n_f;       // Voxel Displacement floor
+    int3 n_r;       // Voxel Displacement round
 
     int fv;     // fixed voxel
     int mvf;        // moving voxel (floor)
-    //   ----    ----    ----    ----    ----    ----    ----    
+    // --------------------------------------------------------
     
     fv = thread_idxg;
 
-    r.z = fv / (fdim.x * fdim.y);
-    r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
-    r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
-    
-    p.x = r.x / vpr.x;
-    p.y = r.y / vpr.y;
-    p.z = r.z / vpr.z;
-    p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
-
-    q.x = r.x - p.x * vpr.x;
-    q.y = r.y - p.y * vpr.y;
-    q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
-
-    f.x = img_origin.x + img_spacing.x * r.x;
-    f.y = img_origin.y + img_spacing.y * r.y;
-    f.z = img_origin.z + img_spacing.z * r.z;
-    // --------------------------------------------------------
-
-#if defined (commentout)
-    if (r.x > (roi_offset.x + roi_dim.x) ||
-        r.y > (roi_offset.y + roi_dim.y) ||
-        r.z > (roi_offset.z + roi_dim.z))
-    {
-        return;
-    }
-#endif
-
-    // -- Compute deformation vector --------------------------
-    int cidx;
-    float P;
-
-    d.x = 0.0f;
-    d.y = 0.0f;
-    d.z = 0.0f;
-
-    for (int k=0; k < 64; k++) {
-        // Texture Version
-        P = tex1Dfetch (tex_q_lut, 64*q.w + k);
-        cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
-
-        d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
-        d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
-        d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
 
 
-        // Global Memory Version
-        //      P = q_lut[64*q.w + k];
-        //      cidx = 3 * c_lut[64*p.w + k];
-        //
-        //      d.x += P * coeff[cidx + 0];
-        //      d.y += P * coeff[cidx + 1];
-        //      d.z += P * coeff[cidx + 2];
-    }
-    // --------------------------------------------------------
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
 
-    // -- Correspondence --------------------------------------
-    bool success;
-    m.x = f.x + d.x;
-    m.y = f.y + d.y;
-    m.z = f.z + d.z;
-
-    // n.x = m.i  etc
-    n.x = (m.x - mov_offset.x) / mov_ps.x;
-    n.y = (m.y - mov_offset.y) / mov_ps.y;
-    n.z = (m.z - mov_offset.z) / mov_ps.z;
-
-    if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
-        n.y < -0.5 || n.y > mdim.y - 0.5 ||
-        n.z < -0.5 || n.z > mdim.z - 0.5)
-    {
+    if (fell_out) {
         // Voxel doesn't map into the moving image.
         // Don't bin anything and count the miss.
         atomicAdd (skipped, 1);
-
         return;
     }
 
-    n_f.x = (int) floorf (n.x);
-    n_f.y = (int) floorf (n.y);
-    n_f.z = (int) floorf (n.z);
-    // --------------------------------------------------------
-
-
-    __syncthreads();
-
-    // -- Compute tri-linear interpolation weights ------------
-    float3 li_1;
-    float3 li_2;
-
-    li_2.x = n.x - n_f.x;
-    if (n_f.x < 0) {
-        n_f.x = 0;
-        li_2.x = 0.0f;
-    }
-    else if (n_f.x >= (mdim.x - 1)) {
-        n_f.x = mdim.x - 2;
-        li_2.x = 1.0f;
-    }
-    li_1.x = 1.0f - li_2.x;
-
-
-    li_2.y = n.y - n_f.y;
-    if (n_f.y < 0) {
-        n_f.y = 0;
-        li_2.y = 0.0f;
-    }
-    else if (n_f.y >= (mdim.y - 1)) {
-        n_f.y = mdim.y - 2;
-        li_2.y = 1.0f;
-    }
-    li_1.y = 1.0f - li_2.y;
-
-
-    li_2.z = n.z - n_f.z;
-    if (n_f.z < 0) {
-        n_f.z = 0;
-        li_2.z = 0.0f;
-    }
-    else if (n_f.z >= (mdim.z - 1)) {
-        n_f.z = mdim.z - 2;
-        li_2.z = 1.0f;
-    }
-    li_1.z = 1.0f - li_2.z;
-    // --------------------------------------------------------
-
+    float3 li_1, li_2;
+    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
     // -- Compute coordinates of 8 nearest neighbors ----------
     int n1, n2, n3, n4;
     int n5, n6, n7, n8;
-
+    
     mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
 
     n1 = mvf;
@@ -3539,8 +3248,8 @@ kernel_bspline_MI_a_hist_jnt (
 
     __syncthreads();
 
-
     // -- Read from histograms and compute dC/dp_j * dp_j/dv --
+    bool success;
     int idx_fbin, offset_fbin;
     int idx_mbin;
     int idx_jbin;
@@ -3562,7 +3271,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w1;
                j_hist[j_mem] += w1;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3579,7 +3287,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w2;
                j_hist[j_mem] += w2;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3596,7 +3303,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w3;
                j_hist[j_mem] += w3;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3613,7 +3319,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w4;
                j_hist[j_mem] += w4;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3630,7 +3335,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w5;
                j_hist[j_mem] += w5;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3647,7 +3351,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w6;
                j_hist[j_mem] += w6;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3664,7 +3367,6 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w7;
                j_hist[j_mem] += w7;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
@@ -3681,24 +3383,12 @@ kernel_bspline_MI_a_hist_jnt (
         while (!success) {
             if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
                success = true;
-//             sj_hist[idx_jbin] += w8;
                j_hist[j_mem] += w8;
                atomicExch(&j_locks[idx_jbin], 0.0f);
             }
             __threadfence();
         }
     }
-
-#if defined (commentout)
-    // Almost done...
-    // Moving the histogram from shared to global memory
-    b = (j_bins + threadsPerBlock - 1) / threadsPerBlock;
-    for (i = 0; i < b; i++) {
-        if ( (thread_idxl + i*threadsPerBlock) < j_bins ) {
-            j_hist[thread_idxl + j_stride] = sj_hist[thread_idxl + i*threadsPerBlock];
-        }
-    }
-#endif
     // --------------------------------------------------------
 
 #endif // __CUDA_ARCH__
@@ -3805,6 +3495,7 @@ kernel_bspline_MI_dc_dv_a (
     int3 fdim,          // INPUT:  fixed image dimensions
     int3 mdim,          // INPUT: moving image dimensions
     int3 rdim,          // INPUT: region dimensions
+    int3 cdim,          // # control points in x,y,z
     float3 img_origin,  // INPUT: image origin
     float3 img_spacing, // INPUT: image spacing
     float3 mov_offset,  // INPUT: moving image offset
@@ -3847,10 +3538,11 @@ kernel_bspline_MI_dc_dv_a (
     float3 d;       // Deformation vector
 
     int3 n_f;       // Voxel Displacement floor
+    int3 n_r;       // Voxel Displacement round
 
     int fv;     // fixed voxel
     int mvf;        // moving voxel (floor)
-    //   ----    ----    ----    ----    ----    ----    ----    
+    // --------------------------------------------------------
     
     fv = thread_idxg;
 
@@ -3858,20 +3550,8 @@ kernel_bspline_MI_dc_dv_a (
     r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
     r.x = fv - r.z * fdim.x * fdim.y - (r.y * fdim.x);
     
-    p.x = r.x / vpr.x;
-    p.y = r.y / vpr.y;
-    p.z = r.z / vpr.z;
-    p.w = ((p.z * rdim.y + p.y) * rdim.x) + p.x;
-
-    q.x = r.x - p.x * vpr.x;
-    q.y = r.y - p.y * vpr.y;
-    q.z = r.z - p.z * vpr.z;
-    q.w = ((q.z * vpr.y + q.y) * vpr.x) + q.x;
-
-    f.x = img_origin.x + img_spacing.x * r.x;
-    f.y = img_origin.y + img_spacing.y * r.y;
-    f.z = img_origin.z + img_spacing.z * r.z;
-    // --------------------------------------------------------
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
 
     if (r.x > (roi_offset.x + roi_dim.x) ||
         r.y > (roi_offset.y + roi_dim.y) ||
@@ -3880,103 +3560,16 @@ kernel_bspline_MI_dc_dv_a (
         return;
     }
 
-    // -- Compute deformation vector --------------------------
-    int cidx;
-    float P;
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
-    d.x = 0.0f;
-    d.y = 0.0f;
-    d.z = 0.0f;
-
-    for (int k=0; k < 64; k++)
-    {
-        // Texture Version
-        P = tex1Dfetch (tex_q_lut, 64*q.w + k);
-        cidx = 3 * tex1Dfetch (tex_c_lut, 64*p.w + k);
-
-        d.x += P * tex1Dfetch (tex_coeff, cidx + 0);
-        d.y += P * tex1Dfetch (tex_coeff, cidx + 1);
-        d.z += P * tex1Dfetch (tex_coeff, cidx + 2);
-
-
-        // Global Memory Version
-        //      P = q_lut[64*q.w + k];
-        //      cidx = 3 * c_lut[64*p.w + k];
-        //
-        //      d.x += P * coeff[cidx + 0];
-        //      d.y += P * coeff[cidx + 1];
-        //      d.z += P * coeff[cidx + 2];
-    }
-    // --------------------------------------------------------
-
-
-    // -- Correspondence --------------------------------------
-    // -- (Block verified) ------------------------------------
-    m.x = f.x + d.x;
-    m.y = f.y + d.y;
-    m.z = f.z + d.z;
-
-    // n.x = m.i  etc
-    n.x = (m.x - mov_offset.x) / mov_ps.x;
-    n.y = (m.y - mov_offset.y) / mov_ps.y;
-    n.z = (m.z - mov_offset.z) / mov_ps.z;
-
-    if (n.x < -0.5 || n.x > mdim.x - 0.5 ||
-        n.y < -0.5 || n.y > mdim.y - 0.5 ||
-        n.z < -0.5 || n.z > mdim.z - 0.5)
-    {
-        // -->> skipped voxel logic here <<--
-        // if (!rc) continue [in the cpu code]
+    if (fell_out) {
         return;
     }
 
-    n_f.x = (int) floorf (n.x);
-    n_f.y = (int) floorf (n.y);
-    n_f.z = (int) floorf (n.z);
-    // --------------------------------------------------------
 
-
-
-    // -- Compute tri-linear interpolation weights ------------
-    float3 li_1;
-    float3 li_2;
-
-    li_2.x = n.x - n_f.x;
-    if (n_f.x < 0) {
-        n_f.x = 0;
-        li_2.x = 0.0f;
-    }
-    else if (n_f.x >= (mdim.x - 1)) {
-        n_f.x = mdim.x - 2;
-        li_2.x = 1.0f;
-    }
-    li_1.x = 1.0f - li_2.x;
-
-
-    li_2.y = n.y - n_f.y;
-    if (n_f.y < 0) {
-        n_f.y = 0;
-        li_2.y = 0.0f;
-    }
-    else if (n_f.y >= (mdim.y - 1)) {
-        n_f.y = mdim.y - 2;
-        li_2.y = 1.0f;
-    }
-    li_1.y = 1.0f - li_2.y;
-
-
-    li_2.z = n.z - n_f.z;
-    if (n_f.z < 0) {
-        n_f.z = 0;
-        li_2.z = 0.0f;
-    }
-    else if (n_f.z >= (mdim.z - 1)) {
-        n_f.z = mdim.z - 2;
-        li_2.z = 1.0f;
-    }
-    li_1.z = 1.0f - li_2.z;
-    // --------------------------------------------------------
-
+    float3 li_1, li_2;
+    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
     // -- Compute coordinates of 8 nearest neighbors ----------
     int n1, n2, n3, n4;
