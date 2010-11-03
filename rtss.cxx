@@ -74,6 +74,7 @@ Rtss::add_structure (
 	= new Rtss_structure;
 
     new_structure->name = structure_name;
+    new_structure->name.trim();
     new_structure->id = structure_id;
     new_structure->bit = -1;
     new_structure->color = color;
