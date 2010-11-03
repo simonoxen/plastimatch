@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "volume.h"
+#include "cuda_mem.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
@@ -78,19 +79,6 @@ struct BSPLINE_Score_struct {
     float* grad;
 };
 
-
-typedef struct vmem_entry Vmem_Entry;
-struct vmem_entry
-{
-    void* gpu_pointer;
-    void* cpu_pointer;
-
-    size_t size;
-
-    Vmem_Entry* next;
-};
-
-
 typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
 struct dev_pointers_bspline
 {
@@ -129,9 +117,6 @@ struct dev_pointers_bspline
     float* cond_z;		// dc_dv_z (Condensed)
 
     float* grad;		// dc_dp
-    float* dc_dp_x;
-    float* dc_dp_y;
-    float* dc_dp_z;
 
     int* LUT_Knot;
     int* LUT_NumTiles;
@@ -141,9 +126,6 @@ struct dev_pointers_bspline
     float* LUT_Bspline_z;
     float* skipped;		// # of voxels that fell outside post warp
     unsigned int* skipped_atomic;
-
-    int* c_lut;
-    float* q_lut;
 
     Vmem_Entry* vmem_list;
 
@@ -180,10 +162,7 @@ struct dev_pointers_bspline
     size_t f_hist_seg_size;
     size_t m_hist_seg_size;
     size_t j_hist_seg_size;
-    size_t c_lut_size;
-    size_t q_lut_size;
 };
-
 
 typedef struct bspline_state Bspline_state;
 struct bspline_state {

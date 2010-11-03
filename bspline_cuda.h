@@ -9,9 +9,9 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#include <cuda.h>
 #include "volume.h"
 #include "bspline.h"
-#include "cuda.h"
 
 /* B-Spline CUDA MI Switches */
 //#define MI_HISTS_CPU
@@ -19,43 +19,11 @@
 #define MI_SCORE_CPU
 
 
-/* Used by gpu_alloc_copy () & friends */
-enum gpu_alloc_copy_mode {
-    cudaGlobalMem,
-    cudaZeroCopy,
-};
-
-enum gpu_alloc_fail_mode {
-    cudaAllocStern,
-    cudaAllocCasual
-};
 
 
 #if defined __cplusplus
 extern "C" {
 #endif
-
-// I don't think this is ever used...
-    typedef struct BSPLINE_CUDA_Data_struct BSPLINE_CUDA_Data;
-    struct BSPLINE_CUDA_Data_struct {
-	size_t image_size;
-	float *fixed_image;  // The fixed image
-	float *moving_image; // The moving image
-	float *moving_grad_x; // Streams to store the gradient of the moving image in the X, Y, and Z directions 
-	float *moving_grad_y; 
-	float *moving_grad_z; 
-	int   *c_lut; // The c_lut indicating which control knots affect voxels within a region
-	float *q_lut; // The q_lut indicating the distance of a voxel to each of the 64 control knots
-	float *coeff; // The coefficient stream indicating the x, y, z coefficients of each control knot
-	float *dx; // Streams to store voxel displacement/gradient values in the X, Y, and Z directions 
-	float *dy; 
-	float *dz; 
-	float *mvr; // Streams to store the mvr values 
-	float *diff; // Stream to store the correspondence values in the moving image---for debug purposes only
-	float *valid_voxel; // Stream to indicate if a voxel should take part in the score computation or not
-	float *partial_sum; // Stream for storing the partial sums during reductions 
-	float *sum_element;
-    };
 
     // -------------------------------------------------------------------
     // Prototypes: bspline_cuda.cpp 

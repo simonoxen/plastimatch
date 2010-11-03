@@ -717,15 +717,16 @@ IF(CUDA_FOUND)
     bspline_cuda.cpp
     bspline_cuda.cu
     bspline_cuda.h
-    cuda_util.cu
-    cuda_util.h
-    cuda_kernel_util.cu
-    cuda_kernel_util.h
+    cuda_util.cu cuda_util.h
+    cuda_kernel_util.cu cuda_kernel_util.h
+    cuda_mem.cu cuda_mem.h
     )
   CUDA_COMPILE (BSPLINE_CUDA_WRAPPERS 
     bspline_cuda.cu 
     cuda_util.cu
-    cuda_kernel_util.cu)
+    cuda_kernel_util.cu
+    cuda_mem.cu
+    )
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ${BSPLINE_CUDA_WRAPPERS}
