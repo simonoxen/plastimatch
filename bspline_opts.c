@@ -8,7 +8,7 @@
 #include "plm_config.h"
 #include "bspline_opts.h"
 #if (CUDA_FOUND)
-#include "bspline_cuda.h"
+#include "cuda_util.h"
 #endif
 
 #ifndef NULL

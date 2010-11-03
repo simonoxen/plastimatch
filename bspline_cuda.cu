@@ -14,6 +14,7 @@
 #include "bspline_cuda.h"
 #include "bspline_cuda_kernels.h"
 #include "cuda_util.h"
+#include "cuda_kernel_util.h"
 #include "mha_io.h"
 #include "volume.h"
 
@@ -24,9 +25,6 @@ texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_x;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_y;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
 
-
-#define GRID_LIMIT_X 65535
-#define GRID_LIMIT_Y 65535
 
 
 ////////////////////////////////////////////////////////////
@@ -82,7 +80,7 @@ gpu_alloc_copy (
     if (mode == cudaZeroCopy) {
         // Allocate some pinned CPU memory for zero paging
         cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
-        cuda_utils_check_error ("Failed to allocate pinned memory.");
+        CUDA_check_error ("Failed to allocate pinned memory.");
 
         // Relocate data to pinned memory
         memcpy (pinned_host_mem, *cpu_addr, mem_size);
@@ -91,15 +89,15 @@ gpu_alloc_copy (
 
         // Get the address of the pinned page in the GPU memory map.
         cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
-        cuda_utils_check_error ("Failed to map CPU memory to GPU.");
+        CUDA_check_error ("Failed to map CPU memory to GPU.");
     } else {
         // Allcoated some global memory on the GPU
         cudaMalloc ((void**)gpu_addr, mem_size);
-        cuda_utils_check_error ("Out of GPU memory.");
+        CUDA_check_error ("Out of GPU memory.");
 
         // Populate the allocated global GPU memory
         cudaMemcpy (*gpu_addr, *cpu_addr, mem_size, cudaMemcpyHostToDevice);
-        cuda_utils_check_error ("Failed to copy data to GPU");
+        CUDA_check_error ("Failed to copy data to GPU");
     }
 }
 
@@ -129,14 +127,14 @@ gpu_alloc_vmem (
 
     // Allocate some pinned CPU memory for zero paging
     cudaHostAlloc ((void **)&pinned_host_mem, mem_size, cudaHostAllocMapped);
-    cuda_utils_check_error ("Failed to allocate pinned memory.");
+    CUDA_check_error ("Failed to allocate pinned memory.");
 
     // Clear out new pinned CPU memory
     memset (pinned_host_mem, 0, mem_size);
 
     // Get the address of the pinned page in the GPU memory map.
     cudaHostGetDevicePointer ((void **)gpu_addr, (void *)pinned_host_mem, 0);
-    cuda_utils_check_error ("Failed to map CPU memory to GPU.");
+    CUDA_check_error ("Failed to map CPU memory to GPU.");
 
     // Now we will register this allocation with my gpu "virtual memory"
     // system.  CUDA requires that we free pinned CPU memory with the CPU
@@ -211,7 +209,7 @@ gpu_free_vmem (
     {
         if (curr->gpu_pointer == gpu_pointer) {
             cudaFreeHost (curr->cpu_pointer);
-            cuda_utils_check_error ("Failed to free virtual GPU memory.");
+            CUDA_check_error ("Failed to free virtual GPU memory.");
 
             if (prev == NULL) {
                 // we are removing the head
@@ -246,7 +244,7 @@ gpu_freeall_vmem (
     while (curr != NULL)
     {
         cudaFreeHost (curr->cpu_pointer);
-        cuda_utils_check_error ("Failed to free virtual GPU memory.");
+        CUDA_check_error ("Failed to free virtual GPU memory.");
 
         dev_ptrs->vmem_list = curr->next;
         free (curr);
@@ -268,9 +266,9 @@ gpu_alloc_zero (
     // Allcoated some global memory on the GPU
     cudaMalloc ((void**)gpu_addr, mem_size);
     if (fail_mode == cudaAllocStern) {
-        cuda_utils_check_error ("Out of GPU memory.");
+        CUDA_check_error ("Out of GPU memory.");
     } else {
-        if (cuda_utils_return_error ("Out of GPU memory.")) {
+        if (CUDA_detect_error()) {
             return 1;
         }
     }
@@ -278,9 +276,9 @@ gpu_alloc_zero (
     // Zero out the allocated global GPU memory
     cudaMemset (*gpu_addr, 0, mem_size);
     if (fail_mode == cudaAllocStern) {
-        cuda_utils_check_error ("Failed to zero out GPU memory.");
+        CUDA_check_error ("Failed to zero out GPU memory.");
     } else {
-        if (cuda_utils_return_error ("Failed to zero out GPU memory.")) {
+        if (CUDA_detect_error()) {
             return 1;
         }
     }
@@ -300,93 +298,6 @@ gpu_zero_copy_check (Bspline_parms* parms)
     } else {
         // GPU doest not support zero copy
         return 0;
-    }
-}
-
-
-
-void CUDA_listgpu ()
-{
-    int num_gpus, i;
-    int cores_per_sm;
-    cudaDeviceProp props;
-
-    cudaGetDeviceCount(&num_gpus);
-
-    for (i = 0; i < num_gpus; i++) {
-        cudaGetDeviceProperties(&props, i);
-        if (props.major == 1) {
-            cores_per_sm = 8;
-        } else if (props.major == 2) {
-            cores_per_sm = 32;
-        } else {
-            printf ("GPU Compute Capability: Unknown to Platimatch!\n");
-            return;
-        }
-
-        printf ("GPU ID %i:\n", i);
-        printf ("              Name: %s (%.2f GB)\n", props.name, props.totalGlobalMem / (float)(1024 * 1024 * 1024));
-        printf ("Compute Capability: %d.%d\n", props.major, props.minor);
-        printf ("     Shared Memory: %.1f MB\n", props.sharedMemPerBlock / (float)1024);
-        printf ("         Registers: %i\n", props.regsPerBlock);
-        printf ("        Clock Rate: %.2f MHz\n", props.clockRate / (float)(1024));
-        printf ("           # Cores: %d\n", props.multiProcessorCount * cores_per_sm);
-        printf ("\n");
-    }
-}
-
-// Selects the best GPU or the user specified
-// GPU as defiend on command line
-void CUDA_selectgpu (int gpuid)
-{
-    int num_gpus;
-    int cores_per_sm;
-    cudaDeviceProp props;
-
-    cudaGetDeviceCount(&num_gpus);
-
-    if (gpuid < num_gpus) {
-        cudaGetDeviceProperties(&props, gpuid);
-        if (props.major == 1) {
-            cores_per_sm = 8;
-        } else if (props.major == 2) {
-            cores_per_sm = 32;
-        } else {
-            printf ("Compute Capability: Unknown to Platimatch!\n");
-            return;
-        }
-
-        printf ("Using %s (%.2f GB)\n", props.name, props.totalGlobalMem / (float)(1024 * 1024 * 1024));
-        printf ("  - Compute Capability: %d.%d\n", props.major, props.minor);
-        printf ("  - # Multi-Processors: %d\n", props.multiProcessorCount);
-        printf ("  -    Number of Cores: %d\n", props.multiProcessorCount * cores_per_sm);
-        cudaSetDevice (gpuid);
-    } else {
-        printf ("\nInvalid GPU ID specified.  Choices are:\n\n");
-        CUDA_listgpu ();
-        exit (0);
-    }
-}
-
-// Returns the value held in __CUDA_ARCH__
-// __CUDA_ARCH__ is only accessable in GPU code
-// This allows us to use the compute capability
-// in CPU code.
-int CUDA_getarch (int gpuid)
-{
-    int num_gpus;
-    cudaDeviceProp props;
-
-    cudaGetDeviceCount(&num_gpus);
-
-    if (gpuid < num_gpus) {
-        cudaGetDeviceProperties(&props, gpuid);
-
-        return 100*props.major + 10*props.minor;
-
-    } else {
-        /* Invalid GPU ID specified */
-        return -1;
     }
 }
 
@@ -423,154 +334,6 @@ build_gbd (
     }
     
 }
-
-
-// Builds execution configurations for kernels that
-// assign one thread per element (1tpe).
-int
-build_exec_conf_1tpe (
-    dim3 *dimGrid,          // OUTPUT: Grid  dimensions
-    dim3 *dimBlock,         // OUTPUT: Block dimensions
-    int num_threads,        // INPUT: Total # of threads
-    int threads_per_block,  // INPUT: Threads per block
-    bool negotiate          // INPUT: Is threads per block negotiable?
-)
-{
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-    int sqrt_num_blocks;
-    int num_blocks = (num_threads + threads_per_block - 1) / threads_per_block;
-
-    if (negotiate) {
-        int found_flag = 0;
-        int j = 0;
-
-        // Search for a valid execution configuration for the required # of blocks.
-        // Block size has been specified as changable.  This helps if the
-        // number of blocks required is a prime number > 65535.  Changing the
-        // # of threads per block will change the # of blocks... which hopefully
-        // won't be prime again.
-        for (j = threads_per_block; j > 32; j -= 32) {
-            num_blocks = (num_threads + j - 1) / j;
-            sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-            for (i = sqrt_num_blocks; i < GRID_LIMIT_X; i++) {
-                if (num_blocks % i == 0) {
-                    Grid_x = i;
-                    Grid_y = num_blocks / Grid_x;
-                    found_flag = 1;
-                    break;
-                }
-            }
-
-            if (found_flag == 1) {
-                threads_per_block = j;
-                break;
-            }
-        }
-
-    } else {
-
-        // Search for a valid execution configuration for the required # of blocks.
-        // The calling algorithm has specifed that # of threads per block
-        // is non negotiable.
-        sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-        for (i = sqrt_num_blocks; i < GRID_LIMIT_X; i++) {
-            if (num_blocks % i == 0) {
-                Grid_x = i;
-                Grid_y = num_blocks / Grid_x;
-                break;
-            }
-        }
-    }
-
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        printf ("\n");
-        printf ("[GPU KERNEL PANIC] Unable to find suitable execution configuration!");
-        printf ("Terminating...\n");
-        exit (0);
-    } else {
-        // callback function could be added
-        // to arguments and called here if you need
-        // to do something fancy upon success.
-#if VERBOSE
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    // Pass configuration back by reference
-    dimGrid->x = Grid_x;
-    dimGrid->y = Grid_y;
-    dimGrid->z = 1;
-
-    dimBlock->x = threads_per_block;
-    dimBlock->y = 1;
-    dimBlock->z = 1;
-
-    // Return the # of blocks we decided on just
-    // in case we need it later to allocate shared memory, etc.
-    return num_blocks;
-}
-
-// Builds execution configurations for kernels that
-// assign one block per element (1bpe).
-void
-build_exec_conf_1bpe (
-    dim3 *dimGrid,          // OUTPUT: Grid  dimensions
-    dim3 *dimBlock,         // OUTPUT: Block dimensions
-    int num_blocks,         // INPUT: Number of blocks
-    int threads_per_block)  // INPUT: Threads per block
-{
-    int i;
-    int Grid_x = 0;
-    int Grid_y = 0;
-
-    // Search for a valid execution configuration for the required # of blocks.
-    int sqrt_num_blocks = (int)sqrt((float)num_blocks);
-
-    for (i = sqrt_num_blocks; i < 65535; i++) {
-        if (num_blocks % i == 0) {
-            Grid_x = i;
-            Grid_y = num_blocks / Grid_x;
-            break;
-        }
-    }
-
-
-    // Were we able to find a valid exec config?
-    if (Grid_x == 0) {
-        printf ("\n");
-        printf ("[GPU KERNEL PANIC] Unable to find suitable execution configuration!");
-        printf ("Terminating...\n");
-        exit (0);
-    } else {
-        // callback function could be added
-        // to arguments and called here if you need
-        // to do something fancy upon success.
-#if VERBOSE
-        printf ("Grid [%i,%i], %d threads_per_block.\n", 
-            Grid_x, Grid_y, threads_per_block);
-#endif
-    }
-
-    // Pass configuration back by reference
-    dimGrid->x = Grid_x;
-    dimGrid->y = Grid_y;
-    dimGrid->z = 1;
-
-    dimBlock->x = threads_per_block;
-    dimBlock->y = 1;
-    dimBlock->z = 1;
-
-}
-    
-
 
 
 /**
@@ -716,7 +479,7 @@ bspline_cuda_init_MI_a (
                     dev_ptrs->coeff,
                     dev_ptrs->coeff_size);
 
-    cuda_utils_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
+    CUDA_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
     GPU_Memory_Bytes += dev_ptrs->coeff_size;
     printf(".");
     // ----------------------------------------------------------
@@ -1082,7 +845,7 @@ bspline_cuda_initialize_j (
                     dev_ptrs->moving_image,
                     dev_ptrs->moving_image_size);
 
-    cuda_utils_check_error("Failed to bind dev_ptrs->moving_image to texture reference!");
+    CUDA_check_error("Failed to bind dev_ptrs->moving_image to texture reference!");
     GPU_Memory_Bytes += dev_ptrs->moving_image_size;
     printf(".");
     // ----------------------------------------------------------
@@ -1118,7 +881,7 @@ bspline_cuda_initialize_j (
                     dev_ptrs->coeff,
                     dev_ptrs->coeff_size);
 
-    cuda_utils_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
+    CUDA_check_error("Failed to bind dev_ptrs->coeff to texture reference!");
     GPU_Memory_Bytes += dev_ptrs->coeff_size;
     printf(".");
     // ----------------------------------------------------------
@@ -1158,7 +921,7 @@ bspline_cuda_initialize_j (
                     dev_ptrs->grad_size,
                     cudaAllocStern);
 
-    cuda_utils_check_error("Failed to bind dev_ptrs->grad to texture reference!");
+    CUDA_check_error("Failed to bind dev_ptrs->grad to texture reference!");
     GPU_Memory_Bytes += dev_ptrs->grad_size;
     printf(".");
     // ----------------------------------------------------------
@@ -1506,9 +1269,9 @@ CUDA_bspline_MI_a_hist_fix (
 
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->f_hist, 0, dev_ptrs->f_hist_size);
-    cuda_utils_check_error ("Failed to initialize memory for f_hist");
+    CUDA_check_error ("Failed to initialize memory for f_hist");
 
-    num_blocks = build_exec_conf_1tpe (
+    num_blocks = CUDA_exec_conf_1tpe (
         &dimGrid,          // OUTPUT: Grid  dimensions
         &dimBlock,         // OUTPUT: Block dimensions
         fixed->npix,       // INPUT: Total # of threads
@@ -1519,9 +1282,9 @@ CUDA_bspline_MI_a_hist_fix (
 
     dev_ptrs->f_hist_seg_size = mi_hist->fixed.bins * num_blocks * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->f_hist_seg, dev_ptrs->f_hist_seg_size);
-    cuda_utils_check_error ("Failed to allocate memory for f_hist_seg");
+    CUDA_check_error ("Failed to allocate memory for f_hist_seg");
     cudaMemset(dev_ptrs->f_hist_seg, 0, dev_ptrs->f_hist_seg_size);
-    cuda_utils_check_error ("Failed to initialize memory for f_hist_seg");
+    CUDA_check_error ("Failed to initialize memory for f_hist_seg");
 
 
     // Launch kernel with one thread per voxel
@@ -1544,7 +1307,7 @@ CUDA_bspline_MI_a_hist_fix (
         dev_ptrs->q_lut,            // DEBUG
         dev_ptrs->coeff);           // DEBUG
 
-    cuda_utils_check_error ("kernel hist_mov");
+    CUDA_check_error ("kernel hist_mov");
 
     int num_sub_hists = num_blocks;
 
@@ -1559,7 +1322,7 @@ CUDA_bspline_MI_a_hist_fix (
                 	dev_ptrs->f_hist_seg,
                 	num_sub_hists);
 
-    cuda_utils_check_error ("kernel hist_fix_merge");
+    CUDA_check_error ("kernel hist_fix_merge");
 
     /* copy result back to host
      *   -- Note CPU uses doubles whereas the GPU uses floats
@@ -1574,7 +1337,7 @@ CUDA_bspline_MI_a_hist_fix (
     float* f_hist_f = (float*)malloc(dev_ptrs->f_hist_size);
 
     cudaMemcpy (f_hist_f, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
 
     /* type cast to CPU friendly double */
     for (int i=0; i< mi_hist->fixed.bins; i++) {
@@ -1584,7 +1347,7 @@ CUDA_bspline_MI_a_hist_fix (
     free (f_hist_f);
 
     cudaFree (dev_ptrs->f_hist_seg);
-    cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!\n");
+    CUDA_check_error ("Error freeing sub-histograms from GPU memory!\n");
 
 }
 
@@ -1606,10 +1369,10 @@ CUDA_bspline_MI_a_hist_mov (
 
     // Initialize histogram memory on GPU
     cudaMemset(dev_ptrs->m_hist, 0, dev_ptrs->m_hist_size);
-    cuda_utils_check_error ("Failed to initialize memory for m_hist");
+    CUDA_check_error ("Failed to initialize memory for m_hist");
     
     num_blocks = 
-	build_exec_conf_1tpe (
+	CUDA_exec_conf_1tpe (
 	    &dimGrid,          // OUTPUT: Grid  dimensions
 	    &dimBlock,         // OUTPUT: Block dimensions
 	    fixed->npix,       // INPUT: Total # of threads
@@ -1621,9 +1384,9 @@ CUDA_bspline_MI_a_hist_mov (
 
     dev_ptrs->m_hist_seg_size = mi_hist->moving.bins * num_blocks * sizeof(float);
     cudaMalloc ((void**)&dev_ptrs->m_hist_seg, dev_ptrs->m_hist_seg_size);
-    cuda_utils_check_error ("Failed to allocate memory for m_hist_seg");
+    CUDA_check_error ("Failed to allocate memory for m_hist_seg");
     cudaMemset(dev_ptrs->m_hist_seg, 0, dev_ptrs->m_hist_seg_size);
-    cuda_utils_check_error ("Failed to initialize memory for m_hist_seg");
+    CUDA_check_error ("Failed to initialize memory for m_hist_seg");
 
 
     // Launch kernel with one thread per voxel
@@ -1646,7 +1409,7 @@ CUDA_bspline_MI_a_hist_mov (
         dev_ptrs->q_lut,            // DEBUG
         dev_ptrs->coeff);           // DEBUG
 
-    cuda_utils_check_error ("kernel hist_mov");
+    CUDA_check_error ("kernel hist_mov");
 
     int num_sub_hists = num_blocks;
 
@@ -1662,7 +1425,7 @@ CUDA_bspline_MI_a_hist_mov (
         dev_ptrs->m_hist_seg,
         num_sub_hists);
 
-    cuda_utils_check_error ("kernel hist_mov_merge");
+    CUDA_check_error ("kernel hist_mov_merge");
 
     /* copy result back to host
      *   -- Note CPU uses doubles whereas the GPU uses floats
@@ -1677,7 +1440,7 @@ CUDA_bspline_MI_a_hist_mov (
     float* m_hist_f = (float*)malloc(dev_ptrs->m_hist_size);
 
     cudaMemcpy (m_hist_f, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
 
     /* type cast to CPU friendly double */
     for (int i=0; i< mi_hist->moving.bins; i++) {
@@ -1687,7 +1450,7 @@ CUDA_bspline_MI_a_hist_mov (
     free (m_hist_f);
 
     cudaFree (dev_ptrs->m_hist_seg);
-    cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!\n");
+    CUDA_check_error ("Error freeing sub-histograms from GPU memory!\n");
 
 }
 
@@ -1780,7 +1543,7 @@ CUDA_bspline_MI_a_hist_jnt (
 
     cudaMalloc ((void**)&dev_ptrs->j_hist_seg, dev_ptrs->j_hist_seg_size);
     cudaMemset(dev_ptrs->j_hist_seg, 0, dev_ptrs->j_hist_seg_size);
-    cuda_utils_check_error ("Failed to allocate memory for j_hist_seg");
+    CUDA_check_error ("Failed to allocate memory for j_hist_seg");
     smemSize = (num_bins + 1) * sizeof(float);
 
     // Launch kernel with one thread per voxel
@@ -1811,7 +1574,7 @@ CUDA_bspline_MI_a_hist_jnt (
             dev_ptrs->coeff);           // DEBUG
 
     cudaThreadSynchronize();
-    cuda_utils_check_error ("kernel hist_jnt");
+    CUDA_check_error ("kernel hist_jnt");
 
 
 
@@ -1828,7 +1591,7 @@ CUDA_bspline_MI_a_hist_jnt (
             dev_ptrs->j_hist_seg,
             num_sub_hists);
 
-    cuda_utils_check_error ("kernel hist_jnt_merge");
+    CUDA_check_error ("kernel hist_jnt_merge");
 
     /* copy result back to host
      *   -- Note CPU uses doubles whereas the GPU uses floats
@@ -1843,7 +1606,7 @@ CUDA_bspline_MI_a_hist_jnt (
     float* j_hist_f = (float*)malloc(dev_ptrs->j_hist_size);
 
     cudaMemcpy (j_hist_f, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
 
     /* type cast to CPU friendly double */
     for (int i=0; i< mi_hist->moving.bins * mi_hist->fixed.bins; i++) {
@@ -1854,7 +1617,7 @@ CUDA_bspline_MI_a_hist_jnt (
 
 
     cudaFree (dev_ptrs->j_hist_seg);
-    cuda_utils_check_error ("Error freeing sub-histograms from GPU memory!");
+    CUDA_check_error ("Error freeing sub-histograms from GPU memory!");
 
 
     // Get # of skipped voxels and compute num_vox 
@@ -1903,11 +1666,11 @@ CUDA_MI_Grad_a (
     float* j_hist_f = (float*)malloc(dev_ptrs->j_hist_size);
 
     cudaMemcpy (f_hist_f, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
     cudaMemcpy (m_hist_f, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
     cudaMemcpy (j_hist_f, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
+    CUDA_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
 
     /* type cast to CPU friendly double */
     for (int i=0; i< mi_hist->fixed.bins; i++) {
@@ -1929,11 +1692,11 @@ CUDA_MI_Grad_a (
 
     // Initial dc_dv streams
     cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-       cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_x");
+       CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_x");
     cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-       cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_y");
+       CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_y");
     cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-       cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_z");
+       CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_z");
     
 
     // --- INITIALIZE GRID ---
@@ -2022,15 +1785,15 @@ CUDA_MI_Grad_a (
     ////////////////////////////////
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_MI_dc_dv_a()");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_MI_dc_dv_a()");
 
     // Clear out the condensed dc_dv streams
     cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_x");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_x");
     cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_y");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_y");
     cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_z");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_z");
     
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
@@ -2041,22 +1804,22 @@ CUDA_MI_Grad_a (
     
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense_64_texfetch()");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense_64_texfetch()");
 
     // Clear out the gradient
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->grad");
+    CUDA_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
     CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Failed to copy dev_ptrs->grad to CPU");
+    CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
     // ----------------------------------------------------------
 }
 
@@ -2085,7 +1848,7 @@ CUDA_bspline_mse_score_dc_dv (
 
     build_gbd (&gbd, bxf, fixed, moving);
 
-    build_exec_conf_1tpe (
+    CUDA_exec_conf_1tpe (
         &dimGrid1,          // OUTPUT: Grid  dimensions
         &dimBlock1,         // OUTPUT: Block dimensions
         fixed->npix,        // INPUT: Total # of threads
@@ -2098,13 +1861,13 @@ CUDA_bspline_mse_score_dc_dv (
 
     // --- BEGIN KERNEL EXECUTION ---
     cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_x");
+    CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_x");
 
     cudaMemset(dev_ptrs->dc_dv_y, 0, dev_ptrs->dc_dv_y_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_y");
+    CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_y");
 
     cudaMemset(dev_ptrs->dc_dv_z, 0, dev_ptrs->dc_dv_z_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->dc_dv_z");
+    CUDA_check_error("cudaMemset(): dev_ptrs->dc_dv_z");
 
     int tile_padding = 64 - 
     ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
@@ -2159,7 +1922,7 @@ CUDA_bspline_mse_condense_64_texfetch (
 
     vox_per_region.w += pad;
 
-    build_exec_conf_1bpe (
+    CUDA_exec_conf_1bpe (
         &dimGrid,         // OUTPUT: Grid  dimensions
         &dimBlock,        // OUTPUT: Block dimensions
         num_tiles,        // INPUT: Number of blocks
@@ -2201,7 +1964,7 @@ CUDA_bspline_mse_reduce (
     dim3 dimGrid;
     dim3 dimBlock;
 
-    build_exec_conf_1bpe (
+    CUDA_exec_conf_1bpe (
         &dimGrid,         // OUTPUT: Grid  dimensions
         &dimBlock,        // OUTPUT: Block dimensions
         num_knots,        // INPUT: Number of blocks
@@ -2250,9 +2013,9 @@ bspline_cuda_j_stage_1 (
 
     // Reset our "voxels fallen outside" counter
     cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-    cuda_utils_check_error ("cudaMemset(): dev_ptrs->skipped");
+    CUDA_check_error ("cudaMemset(): dev_ptrs->skipped");
     cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
-    cuda_utils_check_error ("cudaMemset(): dev_ptrs->score");
+    CUDA_check_error ("cudaMemset(): dev_ptrs->score");
 
 
 #if defined (PROFILE_J)
@@ -2279,15 +2042,15 @@ bspline_cuda_j_stage_1 (
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
 
     // Clear out the condensed dc_dv streams
     cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_x");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_x");
     cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_y");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_y");
     cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->cond_z");
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_z");
 
 
 #if defined (PROFILE_J)
@@ -2315,7 +2078,7 @@ bspline_cuda_j_stage_1 (
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 
 #if defined (PROFILE_J)
     // Start timing the kernel
@@ -2326,7 +2089,7 @@ bspline_cuda_j_stage_1 (
 
     // Clear out the gradient
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    cuda_utils_check_error("cudaMemset(): dev_ptrs->grad");
+    CUDA_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
     CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
@@ -2343,7 +2106,7 @@ bspline_cuda_j_stage_1 (
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
 }
 
 
@@ -2389,7 +2152,7 @@ bspline_cuda_j_stage_2 (
     int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
     int num_blocks = (num_elems + 511) / 512;
 
-    build_exec_conf_1bpe (
+    CUDA_exec_conf_1bpe (
         &dimGrid,         // OUTPUT: Grid  dimensions
         &dimBlock,        // OUTPUT: Block dimensions
         num_blocks,       // INPUT: Number of blocks
@@ -2441,7 +2204,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction()");
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction()");
     // ----------------------------------------------------------
 
 #if defined (PROFILE_J)
@@ -2464,7 +2227,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
     // ----------------------------------------------------------
 
 
@@ -2477,7 +2240,7 @@ bspline_cuda_j_stage_2 (
 
     // --- RETREIVE THE SCORE FROM GPU --------------------------
     cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Failed to copy score from GPU to host");
+    CUDA_check_error("Failed to copy score from GPU to host");
     // ----------------------------------------------------------
 
 
@@ -2515,7 +2278,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction()");
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction()");
     // ----------------------------------------------------------
 
 
@@ -2554,7 +2317,7 @@ bspline_cuda_j_stage_2 (
     num_elems = bxf->num_coeff;
     num_blocks = (num_elems + 511) / 512;
 
-    build_exec_conf_1bpe (
+    CUDA_exec_conf_1bpe (
         &dimGrid,         // OUTPUT: Grid  dimensions
         &dimBlock,        // OUTPUT: Block dimensions
         num_blocks,       // INPUT: Number of blocks
@@ -2588,7 +2351,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] bspline_cuda_update_grad_kernel");
+    CUDA_check_error("[Kernel Panic!] bspline_cuda_update_grad_kernel");
     // ----------------------------------------------------------
 
 
@@ -2601,7 +2364,7 @@ bspline_cuda_j_stage_2 (
 
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Failed to copy dev_ptrs->grad to CPU");
+    CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
     // ----------------------------------------------------------
 
 
@@ -2629,7 +2392,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] bspline_cuda_grad_mean_kernel()");
+    CUDA_check_error("[Kernel Panic!] bspline_cuda_grad_mean_kernel()");
     // ----------------------------------------------------------
 
 
@@ -2643,13 +2406,13 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
     // ----------------------------------------------------------
 
 
     // --- RETREIVE THE GRAD MEAN FROM GPU ----------------------
     cudaMemcpy(host_grad_mean, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Failed to copy grad_mean from GPU to host");
+    CUDA_check_error("Failed to copy grad_mean from GPU to host");
     // ----------------------------------------------------------
 
 
@@ -2663,7 +2426,7 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] bspline_cuda_compute_grad_norm_kernel()");
+    CUDA_check_error("[Kernel Panic!] bspline_cuda_compute_grad_norm_kernel()");
     // ----------------------------------------------------------
 
 
@@ -2677,13 +2440,13 @@ bspline_cuda_j_stage_2 (
 
     // --- PREPARE FOR NEXT KERNEL ------------------------------
     cudaThreadSynchronize();
-    cuda_utils_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction_last_step()");
     // ----------------------------------------------------------
 
 
     // --- RETREIVE THE GRAD NORM FROM GPU ----------------------
     cudaMemcpy(host_grad_norm, dev_ptrs->grad_temp, sizeof(float), cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Failed to copy grad_norm from GPU to host");
+    CUDA_check_error("Failed to copy grad_norm from GPU to host");
     // ----------------------------------------------------------
     */
 }
@@ -4401,7 +4164,7 @@ bspline_cuda_h_push_coeff_lut(Dev_Pointers_Bspline* dev_ptrs, Bspline_xform* bxf
 {
     // Copy the coefficient LUT to the GPU.
     cudaMemcpy(dev_ptrs->coeff, bxf->coeff, dev_ptrs->coeff_size, cudaMemcpyHostToDevice);
-    cuda_utils_check_error("[Kernel Panic!] Failed to copy coefficient LUT to GPU");
+    CUDA_check_error("[Kernel Panic!] Failed to copy coefficient LUT to GPU");
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -4416,7 +4179,7 @@ extern "C" void
 bspline_cuda_h_clear_score(Dev_Pointers_Bspline* dev_ptrs) 
 {
     cudaMemset(dev_ptrs->score, 0, dev_ptrs->score_size);
-    cuda_utils_check_error("Failed to clear the score stream on GPU\n");
+    CUDA_check_error("Failed to clear the score stream on GPU\n");
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -4431,7 +4194,7 @@ extern "C" void
 bspline_cuda_h_clear_grad(Dev_Pointers_Bspline* dev_ptrs) 
 {
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    cuda_utils_check_error("Failed to clear the grad stream on GPU\n");
+    CUDA_check_error("Failed to clear the grad stream on GPU\n");
 }
 ////////////////////////////////////////////////////////////////////////////////
 

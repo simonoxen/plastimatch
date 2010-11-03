@@ -4,6 +4,10 @@
 #ifndef _bspline_cuda_kernels_h_
 #define _bspline_cuda_kernels_h_
 
+// NOTE: Cannot be included in C or C++ files due to
+//       special CUDA types such as int4, dim3, etc.
+//       Can only be included in CUDA files.
+
 /* Function prototypes of kernels */
 __global__ void kernel_bspline_mse_condense_64_texfetch(
 				float* cond_x,		// Return: condensed dc_dv_x values

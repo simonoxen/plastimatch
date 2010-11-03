@@ -11,7 +11,10 @@
 #endif
 
 #include "bspline.h"
+#if (CUDA_FOUND)
 #include "bspline_cuda.h"
+#include "cuda_util.h"
+#endif
 #include "bspline_macros.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"

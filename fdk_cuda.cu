@@ -285,7 +285,7 @@ CUDA_reconstruct_conebeam (
 
     cudaMalloc( (void**)&dev_vol, vol_size_malloc);
     cudaMemset( (void *) dev_vol, 0, vol_size_malloc);  
-    cuda_utils_check_error("Unable to allocate data volume");
+    CUDA_check_error("Unable to allocate data volume");
 
 #if defined (VERBOSE)
     printf(" done.\n\n");
@@ -382,7 +382,7 @@ CUDA_reconstruct_conebeam (
             1.0f/(float)blocksInY
         );
 
-        cuda_utils_check_error("Kernel Panic!");
+        CUDA_check_error("Kernel Panic!");
 
         #if defined (TIME_KERNEL)
         // CUDA kernel calls are asynchronous...
@@ -412,7 +412,7 @@ CUDA_reconstruct_conebeam (
     
     // Copy reconstructed volume from device to host
     cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost);
-    cuda_utils_check_error ("Error: Unable to retrieve data volume.");
+    CUDA_check_error ("Error: Unable to retrieve data volume.");
 
     
     // Report total time

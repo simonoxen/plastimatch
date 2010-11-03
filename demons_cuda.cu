@@ -445,7 +445,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 	gpu_time += plm_timer_report(&gpu_timer);
 
 	/* Check for any errors prekernel execution */
-	cuda_utils_check_error("Error before kernel execution");
+	CUDA_check_error("Error before kernel execution");
 
 	/* Call kernel */
 	plm_timer_start(&kernel_timer);
@@ -454,7 +454,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 	kernel_time += plm_timer_report(&kernel_timer);
 
 	/* Check for any errors postkernel execution */
-	cuda_utils_check_error("Kernel execution failed");
+	CUDA_check_error("Kernel execution failed");
 
 	/* Bind device texture memory */
 	plm_timer_start(&gpu_timer);
@@ -466,7 +466,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 	*/
 
 	/* Check for any errors prekernel execution */
-	cuda_utils_check_error("Error before kernel execution");
+	CUDA_check_error("Error before kernel execution");
 
 	/* Call kernel */
 	plm_timer_start(&kernel_timer);
@@ -475,7 +475,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 	kernel_time += plm_timer_report(&kernel_timer);
 
 	/* Check for any errors postkernel execution */
-	cuda_utils_check_error("Kernel execution failed");
+	CUDA_check_error("Kernel execution failed");
 
 	/* Validate filter widths */
 	validate_filter_widths (fw, parms->filter_width);
@@ -521,7 +521,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		inliers = 0; ssd = 0.0;
 
 		/* Check for any errors prekernel execution */
-		cuda_utils_check_error("Error before kernel execution");
+		CUDA_check_error("Error before kernel execution");
 
 		plm_timer_start(&gpu_timer);
 		cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
@@ -536,7 +536,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		kernel_time += plm_timer_report(&kernel_timer);
 
 		/* Check for any errors postkernel execution */
-		cuda_utils_check_error("Kernel execution failed");
+		CUDA_check_error("Kernel execution failed");
 
 		num_elements = moving->dim[0] * moving->dim[1] * moving->dim[2];
 		while (num_elements > 1) {
@@ -553,7 +553,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 			kernel_time += plm_timer_report(&kernel_timer);
 
 			/* Check for any errors postkernel execution */
-			cuda_utils_check_error("Kernel execution failed");
+			CUDA_check_error("Kernel execution failed");
 
 			num_elements = reductionBlocks;
 		}
@@ -570,7 +570,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
 
 		/* Check for any errors prekernel execution */
-		cuda_utils_check_error("Error before kernel execution");
+		CUDA_check_error("Error before kernel execution");
 
 		/* Call kernel */
 		plm_timer_start(&kernel_timer);
@@ -579,7 +579,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		kernel_time += plm_timer_report(&kernel_timer);
 
 		/* Check for any errors postkernel execution */
-		cuda_utils_check_error("Kernel execution failed");
+		CUDA_check_error("Kernel execution failed");
 
 		plm_timer_start(&gpu_timer);
 		cudaUnbindTexture(tex_vf_est);
@@ -593,7 +593,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		kernel_time += plm_timer_report(&kernel_timer);
 
 		/* Check for any errors postkernel execution */
-		cuda_utils_check_error("Kernel execution failed");
+		CUDA_check_error("Kernel execution failed");
 
 		plm_timer_start(&gpu_timer);
 		cudaUnbindTexture(tex_vf_smooth);
@@ -607,7 +607,7 @@ Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume*
 		kernel_time += plm_timer_report(&kernel_timer);
 
 		/* Check for any errors postkernel execution */
-		cuda_utils_check_error("Kernel execution failed");
+		CUDA_check_error("Kernel execution failed");
 
 		/* Ping pong between estimate and smooth in each iteration*/
 		d_swap = d_vf_est;

@@ -298,17 +298,17 @@ drr_cuda_state_create_cu (
 #endif
 
     cudaMalloc ((void**) &state->dev_vol, vol->npix * sizeof (float));
-    cuda_utils_check_error ("Failed to allocate dev_vol.");
+    CUDA_check_error ("Failed to allocate dev_vol.");
     cudaMemcpy (state->dev_vol, vol->img, vol->npix * sizeof (float), 
 	cudaMemcpyHostToDevice);
-    cuda_utils_check_error ("Failed to memcpy dev_vol host to device.");
+    CUDA_check_error ("Failed to memcpy dev_vol host to device.");
     cudaBindTexture (0, tex_vol, state->dev_vol, vol->npix * sizeof (float));
-    cuda_utils_check_error ("Failed to bind state->dev_vol to texture.");
+    CUDA_check_error ("Failed to bind state->dev_vol to texture.");
 
     cudaMalloc ((void**) &state->dev_img, 
 	options->image_resolution[0] * options->image_resolution[1] 
 	* sizeof(float));
-    cuda_utils_check_error ("Failed to allocate dev_img.\n");
+    CUDA_check_error ("Failed to allocate dev_img.\n");
 
     return (void*) state;
 }
@@ -416,7 +416,7 @@ drr_cuda_ray_trace_image (
 	kargs->vol_offset,
 	kargs->vol_dim,
 	kargs->vol_spacing);
-    cuda_utils_check_error ("Kernel Panic!");
+    CUDA_check_error ("Kernel Panic!");
 
 #if defined (TIME_KERNEL)
     // CUDA kernel calls are asynchronous...
@@ -433,5 +433,5 @@ drr_cuda_ray_trace_image (
     cudaMemcpy (proj->img, state->dev_img, 
 	proj->dim[0] * proj->dim[1] * sizeof(float), 
 	cudaMemcpyDeviceToHost);
-    cuda_utils_check_error("Error: Unable to retrieve data volume.");
+    CUDA_check_error("Error: Unable to retrieve data volume.");
 }

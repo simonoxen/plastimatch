@@ -471,10 +471,7 @@ extern "C" {
 
     void CUDA_bspline_mse_reduce( Dev_Pointers_Bspline* dev_ptrs, int num_knots);
 
-    float CPU_obtain_spline_basis_function( int t_idx, 
-					  int vox_idx, 
-					  int vox_per_rgn);
-    
+    float CPU_obtain_spline_basis_function( int t_idx, int vox_idx, int vox_per_rgn); 
     
     void bspline_cuda_init_MI_a ( Dev_Pointers_Bspline* dev_ptrs, Volume* fixed, Volume* moving, Volume* moving_grad, Bspline_xform* bxf, Bspline_parms* parms);
 
@@ -489,13 +486,6 @@ extern "C" {
     int CUDA_MI_Hist_a ( BSPLINE_MI_Hist* mi_hist, Bspline_xform *bxf, Volume* fixed, Volume* moving, Dev_Pointers_Bspline *dev_ptrs);
     
     void CUDA_MI_Grad_a ( BSPLINE_MI_Hist* mi_hist, Bspline_state *bst, Bspline_xform *bxf, Volume* fixed, Volume* moving, float num_vox_f, Dev_Pointers_Bspline *dev_ptrs);
-
-    gpuit_EXPORT
-    void CUDA_selectgpu (int gpuid);
-
-    void CUDA_listgpu ();
-
-    int CUDA_getarch (int gpuid);
 
     //
     // -------------------------------------------------------------------
