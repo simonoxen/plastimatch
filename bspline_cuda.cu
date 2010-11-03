@@ -362,7 +362,7 @@ void CUDA_selectgpu (int gpuid)
         printf ("  -    Number of Cores: %d\n", props.multiProcessorCount * cores_per_sm);
         cudaSetDevice (gpuid);
     } else {
-        printf ("\nInvalid GPU ID specified.  Choices are:\n\n");
+        printf ("\nInvalid GPU ID specified (%i/%i).  Choices are:\n\n", gpuid, num_gpus);
         CUDA_listgpu ();
         exit (0);
     }
@@ -1042,6 +1042,7 @@ bspline_cuda_initialize_j (
     long unsigned GPU_Memory_Bytes = 0;
 
     printf ("Allocating GPU Memory");
+    printf ("init_j: (%i)\n", parms->gpuid);
 
     // Get GPU properties (can we zero-copy?)
     parms->gpu_zcpy = gpu_zero_copy_check (parms) && parms->gpu_zcpy;
@@ -2014,9 +2015,6 @@ CUDA_MI_Grad_a (
         gbd.mov_spacing,
         gbd.roi_dim,
         gbd.roi_offset,
-        dev_ptrs->c_lut,
-        dev_ptrs->q_lut,
-        dev_ptrs->coeff,
         num_vox_f,
         score,
         tile_padding);
@@ -3417,16 +3415,13 @@ kernel_bspline_MI_dc_dv_a (
     int3 fdim,          // INPUT:  fixed image dimensions
     int3 mdim,          // INPUT: moving image dimensions
     int3 rdim,          // INPUT: region dimensions
-    int3 cdim,          // # control points in x,y,z
+    int3 cdim,          // INPUT: # control points in x,y,z
     float3 img_origin,  // INPUT: image origin
     float3 img_spacing, // INPUT: image spacing
     float3 mov_offset,  // INPUT: moving image offset
     float3 mov_ps,      // INPUT: moving image pixel spacing
     int3 roi_dim,       // INPUT: ROI dimensions
     int3 roi_offset,    // INPUT: ROI Offset
-    int* c_lut,         // INPUT: coefficient lut
-    float* q_lut,       // INPUT: bspline product lut
-    float* coeff,       // INPUT: coefficient array
     float num_vox_f,    // INPUT: # of voxels
     float score,        // INPUT: evaluated MI cost function
     int pad)            // INPUT: Tile padding

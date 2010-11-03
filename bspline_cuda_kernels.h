@@ -182,9 +182,6 @@ __global__ void kernel_bspline_MI_dc_dv_a (
     float3 mov_ps,	// INPUT: moving image pixel spacing
     int3 roi_dim,	// INPUT: ROI dimensions
     int3 roi_offset,	// INPUT: ROI Offset
-    int* c_lut,		// INPUT: coefficient lut
-    float* q_lut,	// INPUT: bspline product lut
-    float* coeff,	// INPUT: coefficient array
     float num_vox_f,	// INPUT: # of voxels
     float score,	// INPUT: evaluated MI cost function
     int pad);		// INPUT: Tile Paddign
