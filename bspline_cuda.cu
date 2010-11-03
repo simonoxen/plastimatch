@@ -25,8 +25,23 @@ texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_x;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_y;
 texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
 
+#define gpu_init_vmem()                                             \
+    CUDA_init_vmem (&dev_ptrs->vmem_list)                            
 
+#define gpu_alloc_vmem(gpu_addr, mem_size)                          \
+    CUDA_alloc_vmem (gpu_addr, mem_size, &dev_ptrs->vmem_list)       
 
+#define gpu_tally_vmem()                                            \
+    CUDA_tally_vmem (&dev_ptrs->vmem_list)                           
+
+#define gpu_print_vmem()                                            \
+    CUDA_print_vmem (&dev_ptrs->vmem_list)                           
+
+#define gpu_free_vmem(gpu_addr)                                     \
+    CUDA_free_vmem (gpu_addr, &dev_ptrs->vmem_list)                  
+
+#define gpu_freeall_vmem()                                          \
+    CUDA_freeall_vmem (&dev_ptrs->vmem_list)                         
 ////////////////////////////////////////////////////////////
 
 // Uncomment to include profiling code for MSE CUDA flavor J
@@ -104,9 +119,9 @@ gpu_alloc_copy (
 // If you plan on using gpu_alloc_vmem() to extend
 // the GPU memory, then you must first call this.
 void
-gpu_init_vmem (dev_pointers_bspline* dev_ptrs)
+CUDA_init_vmem (Vmem_Entry** head)
 {
-    dev_ptrs->vmem_list = NULL;
+    *head = NULL;
 }
 
 // This function should only be used to supplement the GPU's
@@ -116,10 +131,10 @@ gpu_init_vmem (dev_pointers_bspline* dev_ptrs)
 // Cards already equiped with 4GB of global memory have a full
 // memory map and can therefore be extended no further!
 void
-gpu_alloc_vmem (
+CUDA_alloc_vmem (
     void** gpu_addr,
     size_t mem_size,
-    Dev_Pointers_Bspline* dev_ptrs
+    Vmem_Entry** head
 )
 {
     void* pinned_host_mem;
@@ -155,17 +170,17 @@ gpu_alloc_vmem (
     new_entry->size = mem_size;
 
     // insert new entry @ the head
-    new_entry->next = dev_ptrs->vmem_list;
-    dev_ptrs->vmem_list = new_entry;
+    new_entry->next = *head;
+    *head = new_entry;
 }
 
 // Returns the total amount of "virtual global"
 // (i.e. pinned CPU) memory. Perhaps useful.
 size_t
-gpu_tally_vmem (Dev_Pointers_Bspline* dev_ptrs)
+CUDA_tally_vmem (Vmem_Entry** head)
 {
     size_t total_vmem = 0;
-    Vmem_Entry* curr = dev_ptrs->vmem_list;
+    Vmem_Entry* curr = *head;
 
     while (curr != NULL)
     {
@@ -179,10 +194,10 @@ gpu_tally_vmem (Dev_Pointers_Bspline* dev_ptrs)
 // For debugging.  Just prints out the virtual
 // memory pointer association list.
 void
-gpu_print_vmem (Dev_Pointers_Bspline* dev_ptrs)
+CUDA_print_vmem (Vmem_Entry** head)
 {
     int i = 0;
-    Vmem_Entry* curr = dev_ptrs->vmem_list;
+    Vmem_Entry* curr = *head;
 
     while (curr != NULL)
     {
@@ -197,12 +212,12 @@ gpu_print_vmem (Dev_Pointers_Bspline* dev_ptrs)
 
 // Free GPU "virtual memory" via GPU mapped address.
 int
-gpu_free_vmem (
+CUDA_free_vmem (
     void* gpu_pointer,
-    Dev_Pointers_Bspline* dev_ptrs
+    Vmem_Entry** head
 )
 {
-    Vmem_Entry* curr = dev_ptrs->vmem_list;
+    Vmem_Entry* curr = *head;
     Vmem_Entry* prev = NULL;
 
     while (curr != NULL)
@@ -213,7 +228,7 @@ gpu_free_vmem (
 
             if (prev == NULL) {
                 // we are removing the head
-                dev_ptrs->vmem_list = curr->next;
+                *head = curr->next;
                 free (curr);
                 return 0;
             } else {
@@ -234,22 +249,22 @@ gpu_free_vmem (
 // Frees *ALL* GPU "virtual memory"
 // Returns number of freed entries
 int
-gpu_freeall_vmem (
-    Dev_Pointers_Bspline* dev_ptrs
+CUDA_freeall_vmem (
+    Vmem_Entry** head
 )
 {
     int i = 0;
-    Vmem_Entry* curr = dev_ptrs->vmem_list;
+    Vmem_Entry* curr = *head;
 
     while (curr != NULL)
     {
         cudaFreeHost (curr->cpu_pointer);
         CUDA_check_error ("Failed to free virtual GPU memory.");
 
-        dev_ptrs->vmem_list = curr->next;
+        *head = curr->next;
         free (curr);
 
-        curr = dev_ptrs->vmem_list;
+        curr = *head;
         i++;
     }
 
@@ -394,7 +409,7 @@ bspline_cuda_init_MI_a (
     if (parms->gpu_zcpy) {
         // Enable GPU to use pinned CPU memory
         cudaSetDeviceFlags (cudaDeviceMapHost);
-        gpu_init_vmem (dev_ptrs);
+        gpu_init_vmem ();
         printf ("GPU is using zero copy\n");
     }
 
@@ -554,8 +569,7 @@ bspline_cuda_init_MI_a (
     if (out_of_gmem) {
         if (parms->gpu_zcpy) {
             gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_x,
-                            dev_ptrs->dc_dv_x_size,
-                            dev_ptrs);
+                            dev_ptrs->dc_dv_x_size);
             CPU_Pinned_Bytes += dev_ptrs->dc_dv_x_size;
             printf ("o");
         } else {
@@ -575,8 +589,7 @@ bspline_cuda_init_MI_a (
     if (out_of_gmem) {
         if (parms->gpu_zcpy) {
             gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_y,
-                            dev_ptrs->dc_dv_y_size,
-                            dev_ptrs);
+                            dev_ptrs->dc_dv_y_size);
             CPU_Pinned_Bytes += dev_ptrs->dc_dv_y_size;
             printf ("o");
         } else {
@@ -596,8 +609,7 @@ bspline_cuda_init_MI_a (
     if (out_of_gmem) {
         if (parms->gpu_zcpy) {
             gpu_alloc_vmem ((void **)&dev_ptrs->dc_dv_z,
-                            dev_ptrs->dc_dv_z_size,
-                            dev_ptrs);
+                            dev_ptrs->dc_dv_z_size);
             CPU_Pinned_Bytes += dev_ptrs->dc_dv_z_size;
             printf ("o");
         } else {
@@ -748,13 +760,13 @@ bspline_cuda_init_MI_a (
 
     // Report global memory allocation.
     printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
-    printf("          Virtual GPU Memory: %ld MB\n", gpu_tally_vmem (dev_ptrs) / 1048576);
+    printf("          Virtual GPU Memory: %ld MB\n", gpu_tally_vmem () / 1048576);
     printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
 
 
 #if defined (commentout)
     printf ("---------------------------\n");
-    gpu_print_vmem (dev_ptrs);
+    gpu_print_vmem ();
     printf ("---------------------------\n");
     printf ("Skipped Voxels: %i MB\n", dev_ptrs->skipped_size / 1048576);
     printf ("         Score: %i MB\n", dev_ptrs->score_size / 1048576);
@@ -1194,13 +1206,13 @@ bspline_cuda_clean_up_mi_a (
     if (cudaGetLastError() == cudaSuccess) { moving->img = 0; }
 
     // Things that *could* have been allocated into gpu vmem
-    if (gpu_free_vmem (dev_ptrs->dc_dv_x, dev_ptrs)) {
+    if (gpu_free_vmem (dev_ptrs->dc_dv_x)) {
         cudaFree(dev_ptrs->dc_dv_x);
     }
-    if (gpu_free_vmem (dev_ptrs->dc_dv_y, dev_ptrs)) {
+    if (gpu_free_vmem (dev_ptrs->dc_dv_y)) {
         cudaFree(dev_ptrs->dc_dv_y);
     }
-    if (gpu_free_vmem (dev_ptrs->dc_dv_z, dev_ptrs)) {
+    if (gpu_free_vmem (dev_ptrs->dc_dv_z)) {
         cudaFree(dev_ptrs->dc_dv_z);
     }
     
@@ -1226,7 +1238,7 @@ bspline_cuda_clean_up_mi_a (
     cudaFree(dev_ptrs->LUT_Bspline_z);
 
     // Just to be safe (in case we missed something)
-    gpu_freeall_vmem (dev_ptrs);
+    gpu_freeall_vmem ();
 }
 
 
