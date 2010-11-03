@@ -362,7 +362,7 @@ void CUDA_selectgpu (int gpuid)
         printf ("  -    Number of Cores: %d\n", props.multiProcessorCount * cores_per_sm);
         cudaSetDevice (gpuid);
     } else {
-        printf ("\nInvalid GPU ID specified (%i/%i).  Choices are:\n\n", gpuid, num_gpus);
+        printf ("\nInvalid GPU ID specified.  Choices are:\n\n");
         CUDA_listgpu ();
         exit (0);
     }
@@ -1042,7 +1042,6 @@ bspline_cuda_initialize_j (
     long unsigned GPU_Memory_Bytes = 0;
 
     printf ("Allocating GPU Memory");
-    printf ("init_j: (%i)\n", parms->gpuid);
 
     // Get GPU properties (can we zero-copy?)
     parms->gpu_zcpy = gpu_zero_copy_check (parms) && parms->gpu_zcpy;
