@@ -36,8 +36,8 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="W0109966" (
   echo Setting for W0109966
-  SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\plastimatch-3.20.0
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
 ) else (
   echo "Sorry, couldn't recognize host"
