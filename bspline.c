@@ -106,7 +106,7 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->mi_hist.joint.big_bin = 0;
 
     parms->gpuid = 0;
-    parms->gpu_zcpy = 1;
+    parms->gpu_zcpy = 0;
 }
 
 void

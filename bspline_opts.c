@@ -35,7 +35,7 @@ print_usage (void)
     " -X infile                  Input bspline coefficients\n"
     " -x outfile                 Output bspline coefficients\n"
     " -O outfile                 Output warped image\n"
-    " -Z { on | off}             GPU Zero-Copy memory management (default=on)\n"
+    " -Z { on | off}             GPU Zero-Copy memory management (default=off)\n"
     " --fixed-landmarks file     Input fixed landmarks file\n"
     " --moving-landmarks file    Input moving landmarks file\n"
     " --warped-landmarks file    Output warped landmarks file\n"

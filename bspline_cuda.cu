@@ -1068,7 +1068,8 @@ CUDA_bspline_MI_a_hist_fix (
         gbd.mov_spacing,            // moving image pixel spacing
         dev_ptrs->coeff);           // DEBUG
 
-    CUDA_check_error ("kernel hist_mov");
+    cudaThreadSynchronize();
+    CUDA_check_error ("kernel hist_fix");
 
     int num_sub_hists = num_blocks;
 
@@ -1083,6 +1084,7 @@ CUDA_bspline_MI_a_hist_fix (
                 	dev_ptrs->f_hist_seg,
                 	num_sub_hists);
 
+    cudaThreadSynchronize();
     CUDA_check_error ("kernel hist_fix_merge");
 
     /* copy result back to host
