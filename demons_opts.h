@@ -10,7 +10,8 @@ typedef struct DEMONS_Options_struct DEMONS_Options;
 struct DEMONS_Options_struct {
     char* fixed_fn;
     char* moving_fn;
-    char* output_fn;
+    char* output_vf_fn;
+    char* output_img_fn;
     DEMONS_Parms parms;
 };
 

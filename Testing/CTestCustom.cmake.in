@@ -150,6 +150,8 @@ ENDIF (NOT FFTW_FOUND)
 IF (NOT RUN_CUDA_TESTS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "demons-cuda-a"
+    "demons-cuda-a-check"
     "drr-cuda"
     "drr-cuda-stats"
     "drr-cuda-check"
@@ -233,6 +235,12 @@ IF (PLM_REDUCED_TESTS)
     "bspline-mi-c-1-check"
     "bspline-mi-c-2"
     "bspline-mi-c-2-check"
+
+    "demons-a"
+    "demons-a-check"
+    "demons-cuda-a"
+    "demons-cuda-a-check"
+
     "drr-a"
     "drr-a-stats"
     "drr-a-check"
@@ -257,9 +265,9 @@ IF (PLM_REDUCED_TESTS)
     "fdk-cuda-a"
     "fdk-cuda-a-stats"
     "fdk-cuda-a-check"
-#    "fdk-opencl-a"
-#    "fdk-opencl-a-stats"
-#    "fdk-opencl-a-check"
+    "fdk-opencl-a"
+    "fdk-opencl-a-stats"
+    "fdk-opencl-a-check"
 
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"

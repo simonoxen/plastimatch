@@ -1,16 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include "plm_config.h"
+#include "delayload.h"
 #include "demons.h"
 #include "demons_opts.h"
 #include "mha_io.h"
 #include "vf.h"
+#include "vf_stats.h"
 #include "volume.h"
-#include "delayload.h"
 
 int
 main (int argc, char* argv[])
@@ -56,13 +57,17 @@ main (int argc, char* argv[])
     vector_field = demons (fixed, moving, moving_grad, 0, 
 	&options.parms);
 
-    vf_print_stats (vector_field);
+    vf_analyze (vector_field);
 
-    write_mha ("demons_vf.mha", vector_field);
+    if (options.output_vf_fn) {
+	write_mha (options.output_vf_fn, vector_field);
+    }
 
     warped = vf_warp (0, moving, vector_field);
 
-    write_mha ("warped.mha", warped);
+    if (options.output_img_fn) {
+	write_mha (options.output_img_fn, warped);
+    }
 
     volume_destroy (fixed);
     volume_destroy (moving);

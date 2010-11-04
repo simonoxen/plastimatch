@@ -12,17 +12,19 @@
 void
 print_usage (void)
 {
-    printf ("Usage: demons [options] fixed moving\n"
-	    "Options:\n"
-	    " -A algorithm               Either \"cpu\" or \"brook\" (default=cpu)\n"
-	    " -a accel                   Acceleration factor (default=1)\n"
-	    " -e denom_eps               Minimum allowed denominator magnitude (default=1)\n"
-	    " -f \"i j k\"             Width of smoothing kernel (voxels)\n"
-	    " -h homogenization          Cachier's alpha^2 homogenization (default=1)\n"
-	    " -m iterations              Maximum iterations (default=10)\n"
-	    " -s std                     Std dev (mm) of smoothing kernel (default=5)\n"
-	    " -O outfile                 The output file (vector field)\n"
-	    );
+    printf (
+	"Usage: demons [options] fixed moving\n"
+	"Options:\n"
+	" -A algorithm         Either \"cpu\" or \"brook\" (default=cpu)\n"
+	" -a accel             Acceleration factor (default=1)\n"
+	" -e denom_eps         Minimum allowed denominator magnitude (default=1)\n"
+	" -f \"i j k\"           Width of smoothing kernel (voxels)\n"
+	" -h homogenization    Cachier's alpha^2 homogenization (default=1)\n"
+	" -m iterations        Maximum iterations (default=10)\n"
+	" -s std               Std dev (mm) of smoothing kernel (default=5)\n"
+	" -O outfile           Output warped image file\n"
+	" -V outfile           Output vector field\n"
+    );
     exit (1);
 }
 
@@ -32,7 +34,8 @@ parse_args (DEMONS_Options* options, int argc, char* argv[])
     int i, rc;
     DEMONS_Parms* parms = &options->parms;
 
-    options->output_fn = "output.mha";
+    options->output_img_fn = 0;
+    options->output_vf_fn = 0;
     demons_default_parms (parms);
 
     for (i = 1; i < argc; i++) {
@@ -139,7 +142,15 @@ parse_args (DEMONS_Options* options, int argc, char* argv[])
 		exit(1);
 	    }
 	    i++;
-	    options->output_fn = strdup (argv[i]);
+	    options->output_img_fn = strdup (argv[i]);
+	}
+        else if (!strcmp (argv[i], "-V")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    options->output_vf_fn = strdup (argv[i]);
 	}
 	else {
 	    print_usage ();

@@ -291,6 +291,42 @@ ADD_TEST (bspline-mi-c-2-check
   )
 
 ## -------------------------------------------------------------------------
+## demons
+##   demons-a          gauss-1.mha, gauss-2.mha
+##   demons-cuda-a     gauss-1.mha, gauss-2.mha
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "demons-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/demons
+  "-m;50;-s;3;-f;5 5 5;-O;${PLM_TESTING_BUILD_DIR}/demons-a.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
+  )
+ADD_TEST (demons-a-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/demons-a.stdout.txt"
+  "-DREGEX=^Mean: *([0-9.]*)"
+  "-DLOWER_THRESH=2.1"
+  "-DUPPER_THRESH=2.2"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "demons-cuda-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/demons
+  "-A;cuda;-m;50;-s;3;-f;5 5 5;-O;${PLM_TESTING_BUILD_DIR}/demons-cuda-a.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
+  )
+ADD_TEST (demons-cuda-a-check
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/demons-cuda-a.stdout.txt"
+  "-DREGEX=^Mean: *([0-9.]*)"
+  "-DLOWER_THRESH=2.1"
+  "-DUPPER_THRESH=2.2"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+
+## -------------------------------------------------------------------------
 ## drr
 ##   drr-a   gauss-1.mha (normal image), exact
 ##   drr-b   gauss-1.mha (normal image), uniform
