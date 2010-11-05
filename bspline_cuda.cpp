@@ -563,16 +563,16 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
 }
     
 
-////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_MI_a (
+CUDA_bspline_mi_a (
     Bspline_parms *parms,
     Bspline_state *bst,
     Bspline_xform *bxf,
     Volume *fixed,
     Volume *moving,
     Volume *moving_grad,
-    Dev_Pointers_Bspline *dev_ptrs)
+    Dev_Pointers_Bspline *dev_ptrs
+)
 {
 
     // --- DECLARE LOCAL VARIABLES ------------------------------
@@ -639,7 +639,7 @@ bspline_cuda_MI_a (
     num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
 //  printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
-    num_vox = CUDA_bspline_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+    num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
 //  printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
     // ----------------------------------------------------------
@@ -677,7 +677,15 @@ bspline_cuda_MI_a (
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
 //  printf (" *  grad: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
-    CUDA_MI_Grad_a(mi_hist, bst, bxf, fixed, moving, (float)num_vox, dev_ptrs);
+    CUDA_bspline_mi_grad (
+        mi_hist,
+        bst,
+        bxf,
+        fixed,
+        moving,
+        (float)num_vox,
+        dev_ptrs
+    );
 //  printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
     // ----------------------------------------------------------
@@ -689,23 +697,19 @@ bspline_cuda_MI_a (
         fclose (fp);
     }
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_score_j_mse()
-//
-////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_score_j_mse (
+CUDA_bspline_mse_j (
     Bspline_parms* parms,
     Bspline_state *bst,
     Bspline_xform* bxf,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
-    Dev_Pointers_Bspline* dev_ptrs)
+    Dev_Pointers_Bspline* dev_ptrs
+)
 {
     // --- DECLARE LOCAL VARIABLES ------------------------------
     BSPLINE_Score* ssd;     // Holds the SSD "Score" information
@@ -740,18 +744,19 @@ bspline_cuda_score_j_mse (
     // --- LAUNCH STUB FUNCTIONS --------------------------------
 
     // Populate the score, dc_dv, and gradient
-    bspline_cuda_j_stage_1(
+    CUDA_bspline_mse_pt1 (
         fixed,
         moving,
         moving_grad,
         bxf,
         parms,
-        dev_ptrs);
+        dev_ptrs
+    );
 
 
     // Calculate the score and gradient
     // via sum reduction
-    bspline_cuda_j_stage_2(
+    CUDA_bspline_mse_pt2 (
         parms,
         bxf,
         fixed,
@@ -762,7 +767,8 @@ bspline_cuda_score_j_mse (
         &ssd_grad_mean,
         &ssd_grad_norm,
         dev_ptrs,
-        &num_vox);
+        &num_vox
+    );
 
     if (parms->debug) {
         fclose (fp);

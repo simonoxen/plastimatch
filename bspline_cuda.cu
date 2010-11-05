@@ -45,27 +45,6 @@ texture<float, 1, cudaReadModeElementType> tex_LUT_Bspline_z;
     CUDA_freeall_vmem (&dev_ptrs->vmem_list)                         
 ////////////////////////////////////////////////////////////
 
-typedef struct gpu_bspline_data GPU_Bspline_Data;
-struct gpu_bspline_data
-{
-    // bxf items
-    int3 rdims;         
-    int3 cdims;
-    float3 img_origin;      
-    float3 img_spacing;
-    int3 roi_dim;           
-    int3 roi_offset;        
-    int3 vox_per_rgn;       
-
-    // fixed volume items
-    int3 fix_dim;
-
-    // moving volume items
-    int3 mov_dim;       
-    float3 mov_offset;
-    float3 mov_spacing;
-};
-
 
 // Constructs the GPU Bspline Data structure
 void
@@ -100,49 +79,15 @@ build_gbd (
     
 }
 
-
-/**
- * A simple kernel used to ensure that CUDA is working correctly.
- *
- * @param dx Stores thread index of every executed thread.
- * @param dy Stores thread index of every executed thread.
- * @param dz Stores thread index of every executed thread.
- */
-__global__ void
-test_kernel
-(
-    int3 volume_dim,
-    float *dx,
-    float *dy,
-    float *dz)
-{
-    // Calculate the index of the thread block in the grid.
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    
-    // Calculate the total number of threads in each thread block.
-    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-    if (threadIdxInGrid < (volume_dim.x * volume_dim.y * volume_dim.z)) {
-        dx[threadIdxInGrid] = (float)threadIdxInGrid;
-        dy[threadIdxInGrid] = (float)threadIdxInGrid;
-        dz[threadIdxInGrid] = (float)threadIdxInGrid;
-    }
-}
-
-extern "C" void
-bspline_cuda_init_MI_a (
+void
+CUDA_bspline_mi_init_a (
     Dev_Pointers_Bspline* dev_ptrs,
     Volume* fixed,
     Volume* moving,
     Volume* moving_grad,
     Bspline_xform* bxf,
-    Bspline_parms* parms)
+    Bspline_parms* parms
+)
 {
     int out_of_gmem;
     BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
@@ -459,15 +404,15 @@ bspline_cuda_init_MI_a (
     for (j = 0; j < 4; j++)
     {
         for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-            LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
+            LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[0]);
         }
 
         for (i = 0; i < bxf->vox_per_rgn[1]; i++) {
-            LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
+            LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[1]);
         }
 
         for (i = 0; i < bxf->vox_per_rgn[2]; i++) {
-            LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
+            LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[2]);
         }
     }
 
@@ -543,17 +488,13 @@ bspline_cuda_init_MI_a (
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_initialize_j_zcpy()
-// 
-// Initialize the GPU to execute bspline_cuda_score_j_mse(),
-// but use some zero-copy for stuff like image volumes.
+// Initialize the GPU to execute CUDA MSE flavor 'j'
+// Updated to use zero copy when enabled and available
 //
 // AUTHOR: James Shackleford
 // DATE  : October 26, 2010
-////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_initialize_j (
+CUDA_bspline_mse_init_j (
     Dev_Pointers_Bspline* dev_ptrs,
     Volume* fixed,
     Volume* moving,
@@ -821,15 +762,15 @@ bspline_cuda_initialize_j (
     for (j = 0; j < 4; j++)
     {
         for (i = 0; i < bxf->vox_per_rgn[0]; i++) {
-            LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[0]);
+            LUT_Bspline_x[j*bxf->vox_per_rgn[0] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[0]);
         }
 
         for (i = 0; i < bxf->vox_per_rgn[1]; i++) {
-            LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[1]);
+            LUT_Bspline_y[j*bxf->vox_per_rgn[1] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[1]);
         }
 
         for (i = 0; i < bxf->vox_per_rgn[2]; i++) {
-            LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_spline_basis_function (j, i, bxf->vox_per_rgn[2]);
+            LUT_Bspline_z[j*bxf->vox_per_rgn[2] + i] = CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[2]);
         }
     }
 
@@ -874,17 +815,12 @@ bspline_cuda_initialize_j (
     printf("  Allocated: %ld MB\n", GPU_Memory_Bytes / 1048576);
 
 }
-////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_clean_up_j()
-//
 // AUTHOR: James Shackleford
 // DATE  : September 11th, 2009
-////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_clean_up_mse_j (
+CUDA_bspline_mse_cleanup_j (
     dev_pointers_bspline* dev_ptrs,
     volume* fixed,
     volume* moving,
@@ -929,14 +865,10 @@ bspline_cuda_clean_up_mse_j (
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: bspline_cuda_clean_up_mi_a()
-//
 // AUTHOR: James Shackleford
 // DATE  : October 29th, 2010
-////////////////////////////////////////////////////////////////////////////////
 void
-bspline_cuda_clean_up_mi_a (
+CUDA_bspline_mi_cleanup_a (
     dev_pointers_bspline* dev_ptrs,
     volume* fixed,
     volume* moving,
@@ -990,8 +922,8 @@ bspline_cuda_clean_up_mi_a (
 }
 
 
-extern "C" int
-CUDA_bspline_MI_a_hist (
+int
+CUDA_bspline_mi_hist (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -1001,19 +933,19 @@ CUDA_bspline_MI_a_hist (
     cudaMemset(dev_ptrs->skipped_atomic, 0, dev_ptrs->skipped_size);
 
     // Generate the fixed histogram (48 ms)
-    CUDA_bspline_MI_a_hist_fix (dev_ptrs, mi_hist, fixed, moving, bxf);
+    CUDA_bspline_mi_hist_fix (dev_ptrs, mi_hist, fixed, moving, bxf);
 
     // Generate the moving histogram (150 ms)
-    CUDA_bspline_MI_a_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
+    CUDA_bspline_mi_hist_mov (dev_ptrs, mi_hist, fixed, moving, bxf);
 
     // Generate the joint histogram (~600 ms)
-    return CUDA_bspline_MI_a_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
+    return CUDA_bspline_mi_hist_jnt (dev_ptrs, mi_hist, fixed, moving, bxf);
 }
 
 
 
-extern "C" void
-CUDA_bspline_MI_a_hist_fix (
+void
+CUDA_bspline_mi_hist_fix (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -1036,7 +968,8 @@ CUDA_bspline_MI_a_hist_fix (
         &dimBlock,         // OUTPUT: Block dimensions
         fixed->npix,       // INPUT: Total # of threads
         32,                // INPUT: Threads per block
-        false);            // INPUT: Is threads per block negotiable?
+        false              // INPUT: Is threads per block negotiable?
+    );
 
     int smemSize = dimBlock.x * mi_hist->fixed.bins * sizeof(float);
 
@@ -1048,7 +981,7 @@ CUDA_bspline_MI_a_hist_fix (
 
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_a_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
+    kernel_bspline_mi_hist_fix <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->f_hist_seg,       // partial histogram (moving image)
         dev_ptrs->fixed_image,      // moving image voxels
         mi_hist->fixed.offset,      // histogram offset
@@ -1062,11 +995,11 @@ CUDA_bspline_MI_a_hist_fix (
         gbd.img_origin,             // image origin
         gbd.img_spacing,            // image spacing
         gbd.mov_offset,             // moving image offset
-        gbd.mov_spacing,            // moving image pixel spacing
-        dev_ptrs->coeff);           // DEBUG
+        gbd.mov_spacing             // moving image pixel spacing
+    );
 
     cudaThreadSynchronize();
-    CUDA_check_error ("kernel hist_fix");
+    CUDA_check_error ("kernel_bspline_mi_hist_fix");
 
     int num_sub_hists = num_blocks;
 
@@ -1076,10 +1009,11 @@ CUDA_bspline_MI_a_hist_fix (
     smemSize = 512 * sizeof(float);
     
     // this kernel can be ran with any thread-block size
-    kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-                	dev_ptrs->f_hist,
-                	dev_ptrs->f_hist_seg,
-                	num_sub_hists);
+    kernel_bspline_mi_hist_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+        dev_ptrs->f_hist,
+        dev_ptrs->f_hist_seg,
+        num_sub_hists
+    );
 
     cudaThreadSynchronize();
     CUDA_check_error ("kernel hist_fix_merge");
@@ -1112,8 +1046,8 @@ CUDA_bspline_MI_a_hist_fix (
 }
 
 
-extern "C" void
-CUDA_bspline_MI_a_hist_mov (
+void
+CUDA_bspline_mi_hist_mov (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -1150,7 +1084,7 @@ CUDA_bspline_MI_a_hist_mov (
 
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_a_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
+    kernel_bspline_mi_hist_mov <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->m_hist_seg,       // partial histogram (moving image)
         dev_ptrs->moving_image,     // moving image voxels
         mi_hist->moving.offset,     // histogram offset
@@ -1164,9 +1098,10 @@ CUDA_bspline_MI_a_hist_mov (
         gbd.img_origin,             // image origin
         gbd.img_spacing,            // image spacing
         gbd.mov_offset,             // moving image offset
-        gbd.mov_spacing,            // moving image pixel spacing
-        dev_ptrs->coeff);           // DEBUG
+        gbd.mov_spacing             // moving image pixel spacing
+    );
 
+    cudaThreadSynchronize();
     CUDA_check_error ("kernel hist_mov");
 
     int num_sub_hists = num_blocks;
@@ -1178,12 +1113,14 @@ CUDA_bspline_MI_a_hist_mov (
     smemSize = 512 * sizeof(float);
     
     // this kernel can be ran with any thread-block size
-    kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+    kernel_bspline_mi_hist_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
         dev_ptrs->m_hist,
         dev_ptrs->m_hist_seg,
-        num_sub_hists);
+        num_sub_hists
+    );
 
-    CUDA_check_error ("kernel hist_mov_merge");
+    cudaThreadSynchronize();
+    CUDA_check_error ("kernel hist_merge");
 
     /* copy result back to host
      *   -- Note CPU uses doubles whereas the GPU uses floats
@@ -1213,8 +1150,8 @@ CUDA_bspline_MI_a_hist_mov (
 }
 
 
-extern "C" int
-CUDA_bspline_MI_a_hist_jnt (
+int
+CUDA_bspline_mi_hist_jnt (
     Dev_Pointers_Bspline *dev_ptrs,
     BSPLINE_MI_Hist* mi_hist,
     Volume* fixed,
@@ -1266,7 +1203,7 @@ CUDA_bspline_MI_a_hist_jnt (
 
     // Were we able to find a valid exec config?
     if (Grid_x == 0) {
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+        printf("\n[ERROR] Unable to find suitable kernel_bspline_mi_hist_jnt() configuration!\n");
         exit(0);
     } else {
 //        printf ("Grid [%i,%i], %d threads_per_block.\n", Grid_x, Grid_y, threads_per_block);
@@ -1304,7 +1241,7 @@ CUDA_bspline_MI_a_hist_jnt (
     smemSize = (num_bins + 1) * sizeof(float);
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_a_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
+    kernel_bspline_mi_hist_jnt <<<dimGrid1, dimBlock1, smemSize>>> (
             dev_ptrs->skipped_atomic,   // # voxels that map outside moving
             dev_ptrs->j_hist_seg,       // partial histogram (moving image)
             dev_ptrs->fixed_image,      // fixed  image voxels
@@ -1325,13 +1262,11 @@ CUDA_bspline_MI_a_hist_jnt (
             gbd.mov_offset,             // moving image offset
             gbd.mov_spacing,            // moving image pixel spacing
             gbd.roi_dim,                // region dims
-            gbd.roi_offset,             // region offset
-            dev_ptrs->coeff);           // DEBUG
+            gbd.roi_offset              // region offset
+    );
 
     cudaThreadSynchronize();
     CUDA_check_error ("kernel hist_jnt");
-
-
 
     // Merge sub-histograms
     threads_per_block = 512;
@@ -1341,11 +1276,13 @@ CUDA_bspline_MI_a_hist_jnt (
 
     // this kernel can be ran with any thread-block size
     int num_sub_hists = num_blocks;
-    kernel_bspline_MI_a_hist_fix_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
-            dev_ptrs->j_hist,
-            dev_ptrs->j_hist_seg,
-            num_sub_hists);
+    kernel_bspline_mi_hist_merge <<<dimGrid2 , dimBlock2, smemSize>>> (
+        dev_ptrs->j_hist,
+        dev_ptrs->j_hist_seg,
+        num_sub_hists
+    );
 
+    cudaThreadSynchronize();
     CUDA_check_error ("kernel hist_jnt_merge");
 
     /* copy result back to host
@@ -1395,15 +1332,16 @@ CUDA_bspline_MI_a_hist_jnt (
 }
 
 
-extern "C" void
-CUDA_MI_Grad_a (
+void
+CUDA_bspline_mi_grad (
     BSPLINE_MI_Hist* mi_hist,
     Bspline_state *bst,
     Bspline_xform *bxf,
     Volume* fixed,
     Volume* moving,
     float num_vox_f,
-    Dev_Pointers_Bspline *dev_ptrs)
+    Dev_Pointers_Bspline *dev_ptrs
+)
 {
     GPU_Bspline_Data gbd;
     build_gbd (&gbd, bxf, fixed, moving);
@@ -1490,7 +1428,7 @@ CUDA_MI_Grad_a (
         // CPU implementation, using a different CUDA algorithm,
         // or padding the input dc_dv stream to work with this
         // CUDA algorithm.
-        printf("\n[ERROR] Unable to find suitable bspline_cuda_score_j_mse_kernel1() configuration!\n");
+        printf("\n[ERROR] Unable to find suitable kernel_bspline_mi_dc_dv() configuration!\n");
         exit(0);
     } else {
 #if defined (commentout)
@@ -1506,7 +1444,7 @@ CUDA_MI_Grad_a (
     int tile_padding = 64 - ((gbd.vox_per_rgn.x * gbd.vox_per_rgn.y * gbd.vox_per_rgn.z) % 64);
 
     // Launch kernel with one thread per voxel
-    kernel_bspline_MI_dc_dv_a <<<dimGrid1, dimBlock1>>> (
+    kernel_bspline_mi_dc_dv <<<dimGrid1, dimBlock1>>> (
         dev_ptrs->dc_dv_x,
         dev_ptrs->dc_dv_y,
         dev_ptrs->dc_dv_z,  
@@ -1534,13 +1472,14 @@ CUDA_MI_Grad_a (
         gbd.roi_offset,
         num_vox_f,
         score,
-        tile_padding);
+        tile_padding
+    );
 
 
     ////////////////////////////////
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    CUDA_check_error("[Kernel Panic!] kernel_bspline_MI_dc_dv_a()");
+    CUDA_check_error("kernel_bspline_mi_dc_dv()");
 
     // Clear out the condensed dc_dv streams
     cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
@@ -1582,6 +1521,264 @@ CUDA_MI_Grad_a (
     // ----------------------------------------------------------
 }
 
+
+/**
+ * Calculates the B-spline score and gradient using CUDA implementation J.
+ *
+ * @param fixed The fixed volume
+ * @param moving The moving volume
+ * @param moving_grad The spatial gradient of the moving volume
+ * @param bxf Pointer to the B-spline Xform
+ * @param parms Pointer to the B-spline parameters
+ * @param dev_ptrs Pointer the GPU device pointers
+ *
+ * @see CUDA_bspline_mse_score_dc_dv()
+ * @see CUDA_bspline_condense ()
+ * @see CUDA_bspline_reduce()
+ *
+ * @author James A. Shackleford
+ */
+void
+CUDA_bspline_mse_pt1 (
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad,
+    Bspline_xform* bxf,
+    Bspline_parms* parms,
+    Dev_Pointers_Bspline* dev_ptrs)
+{
+#if defined (PROFILE_MSE)
+    cuda_timer my_timer;
+#endif
+
+
+    // Reset our "voxels fallen outside" counter
+    cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
+    CUDA_check_error ("cudaMemset(): dev_ptrs->skipped");
+    cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
+    CUDA_check_error ("cudaMemset(): dev_ptrs->score");
+
+
+#if defined (PROFILE_MSE)
+    CUDA_timer_start (&my_timer);
+#endif
+
+    // Calculate the score and dc_dv
+    CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
+
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] score & dc_dv\n", CUDA_timer_report (&my_timer));
+#endif
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
+
+    // Clear out the condensed dc_dv streams
+    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_x");
+    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_y");
+    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
+    CUDA_check_error("cudaMemset(): dev_ptrs->cond_z");
+
+
+#if defined (PROFILE_MSE)
+    CUDA_timer_start (&my_timer);
+#endif
+
+    // Invoke kernel condense
+    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
+    CUDA_bspline_condense (
+        dev_ptrs,
+        bxf->vox_per_rgn, 
+        num_tiles
+    );
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_bspline_mse_condense()");
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] condense\n", CUDA_timer_report (&my_timer));
+    CUDA_timer_start (&my_timer);
+#endif
+
+    // Clear out the gradient
+    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
+    CUDA_check_error("cudaMemset(): dev_ptrs->grad");
+
+    // Invoke kernel reduce
+    CUDA_bspline_reduce (dev_ptrs, bxf->num_knots);
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] reduce\n\n", CUDA_timer_report (&my_timer));
+#endif
+
+    // Prepare for the next kernel
+    cudaThreadSynchronize();
+    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+// STUB: CUDA_bspline_mse_pt2
+//
+// KERNELS INVOKED:
+//   kernel_sum_reduction_pt1()
+//   kernel_sum_reduction_pt2()
+//   kernel_bspline_grad_normalize()
+////////////////////////////////////////////////////////////////////////////////
+void
+CUDA_bspline_mse_pt2 (
+    Bspline_parms* parms, 
+    Bspline_xform* bxf,
+    Volume* fixed,
+    int*   vox_per_rgn,
+    int*   volume_dim,
+    float* host_score,
+    float* host_grad,
+    float* host_grad_mean,
+    float* host_grad_norm,
+    Dev_Pointers_Bspline* dev_ptrs,
+    int *num_vox)
+{
+
+#if defined (PROFILE_MSE)
+    cuda_timer my_timer;
+#endif
+
+
+    dim3 dimGrid;
+    dim3 dimBlock;
+
+    int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
+    int num_blocks = (num_elems + 511) / 512;
+
+    CUDA_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_blocks,       // INPUT: Number of blocks
+        512);             // INPUT: Threads per block
+
+    int smemSize = 512*sizeof(float);
+
+
+#if defined (PROFILE_MSE)
+    CUDA_timer_start (&my_timer);
+#endif
+
+    // --- REDUCE SCORE VECTOR DOWN TO SINGLE VALUE -------------
+    kernel_sum_reduction_pt1 <<<dimGrid, dimBlock, smemSize>>> (
+        dev_ptrs->score,
+        dev_ptrs->score,
+        num_elems
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_sum_reduction_pt1()");
+
+    kernel_sum_reduction_pt2 <<<dimGrid, dimBlock>>> (
+        dev_ptrs->score,
+        dev_ptrs->score,
+        num_elems
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_sum_reduction_pt2()");
+    // ----------------------------------------------------------
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] score reduction\n", CUDA_timer_report (&my_timer));
+    CUDA_timer_start (&my_timer);
+#endif
+
+    // --- RETREIVE THE SCORE FROM GPU --------------------------
+    cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
+    CUDA_check_error("Failed to copy score from GPU to host");
+    // ----------------------------------------------------------
+
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] score memcpy\n", CUDA_timer_report (&my_timer));
+    CUDA_timer_start (&my_timer);
+#endif
+
+
+    // --- REDUCE SKIPPED VECTOR DOWN TO SINGLE VALUE -----------
+    kernel_sum_reduction_pt1 <<<dimGrid, dimBlock, smemSize>>> (
+        dev_ptrs->skipped,
+        dev_ptrs->skipped,
+        num_elems
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction_pt1()");
+
+    kernel_sum_reduction_pt2 <<<dimGrid, dimBlock>>> (
+        dev_ptrs->skipped,
+        dev_ptrs->skipped,
+        num_elems
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_sum_reduction_pt2()");
+
+    float skipped;
+    cudaMemcpy (&skipped, dev_ptrs->skipped,
+        sizeof(float), cudaMemcpyDeviceToHost);
+    // ----------------------------------------------------------
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] skipped reduction\n", CUDA_timer_report (&my_timer));
+#endif
+
+    // --- COMPUTE # VOXELS & SCORE -----------------------------
+    *num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped;
+    *host_score = *host_score / *num_vox;
+    // ----------------------------------------------------------
+
+
+
+    // --- COMPUTE THE GRADIENT ---------------------------------
+    num_elems = bxf->num_coeff;
+    num_blocks = (num_elems + 511) / 512;
+
+    CUDA_exec_conf_1bpe (
+        &dimGrid,         // OUTPUT: Grid  dimensions
+        &dimBlock,        // OUTPUT: Block dimensions
+        num_blocks,       // INPUT: Number of blocks
+        512);             // INPUT: Threads per block
+
+
+#if defined (PROFILE_MSE)
+    CUDA_timer_start (&my_timer);
+#endif
+    
+    kernel_bspline_grad_normalize <<<dimGrid, dimBlock>>> (
+        dev_ptrs->grad,
+        *num_vox,
+        num_elems
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_bspline_grad_normalize()");
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] gradient update\n", CUDA_timer_report (&my_timer));
+    CUDA_timer_start (&my_timer);
+#endif
+
+    cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
+    CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
+
+
+#if defined (PROFILE_MSE)
+    printf("[%f ms] gradient memcpy\n", CUDA_timer_report (&my_timer));
+#endif
+    // ----------------------------------------------------------
+
+}
 
 
 
@@ -1743,267 +1940,6 @@ CUDA_bspline_reduce (
 ////////////////////////////////////////////////////////////////////////////////
 
 
-/**
- * Calculates the B-spline score and gradient using CUDA implementation J.
- *
- * @param fixed The fixed volume
- * @param moving The moving volume
- * @param moving_grad The spatial gradient of the moving volume
- * @param bxf Pointer to the B-spline Xform
- * @param parms Pointer to the B-spline parameters
- * @param dev_ptrs Pointer the GPU device pointers
- *
- * @see bspline_cuda_score_j_mse_kernel1()
- * @see CUDA_bspline_condense ()
- * @see CUDA_bspline_reduce()
- *
- * @author James A. Shackleford
- */
-extern "C" void
-bspline_cuda_j_stage_1 (
-    Volume* fixed,
-    Volume* moving,
-    Volume* moving_grad,
-    Bspline_xform* bxf,
-    Bspline_parms* parms,
-    Dev_Pointers_Bspline* dev_ptrs)
-{
-#if defined (PROFILE_MSE)
-    cuda_timer my_timer;
-#endif
-
-
-    // Reset our "voxels fallen outside" counter
-    cudaMemset (dev_ptrs->skipped, 0, dev_ptrs->skipped_size);
-    CUDA_check_error ("cudaMemset(): dev_ptrs->skipped");
-    cudaMemset (dev_ptrs->score, 0, dev_ptrs->score_size);
-    CUDA_check_error ("cudaMemset(): dev_ptrs->score");
-
-
-#if defined (PROFILE_MSE)
-    CUDA_timer_start (&my_timer);
-#endif
-
-    // Calculate the score and dc_dv
-    CUDA_bspline_mse_score_dc_dv (dev_ptrs, bxf, fixed, moving);
-
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] score & dc_dv\n", CUDA_timer_report (&my_timer));
-#endif
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    CUDA_check_error("[Kernel Panic!] kernel_bspline_g_mse_1");
-
-    // Clear out the condensed dc_dv streams
-    cudaMemset(dev_ptrs->cond_x, 0, dev_ptrs->cond_x_size);
-    CUDA_check_error("cudaMemset(): dev_ptrs->cond_x");
-    cudaMemset(dev_ptrs->cond_y, 0, dev_ptrs->cond_y_size);
-    CUDA_check_error("cudaMemset(): dev_ptrs->cond_y");
-    cudaMemset(dev_ptrs->cond_z, 0, dev_ptrs->cond_z_size);
-    CUDA_check_error("cudaMemset(): dev_ptrs->cond_z");
-
-
-#if defined (PROFILE_MSE)
-    CUDA_timer_start (&my_timer);
-#endif
-
-    // Invoke kernel condense
-    int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_condense (
-        dev_ptrs,
-        bxf->vox_per_rgn, 
-        num_tiles
-    );
-    cudaThreadSynchronize();
-    CUDA_check_error("kernel_bspline_mse_condense()");
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] condense\n", CUDA_timer_report (&my_timer));
-    CUDA_timer_start (&my_timer);
-#endif
-
-    // Clear out the gradient
-    cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
-    CUDA_check_error("cudaMemset(): dev_ptrs->grad");
-
-    // Invoke kernel reduce
-    CUDA_bspline_reduce (dev_ptrs, bxf->num_knots);
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] reduce\n\n", CUDA_timer_report (&my_timer));
-#endif
-
-    // Prepare for the next kernel
-    cudaThreadSynchronize();
-    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense()");
-}
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// STUB: bspline_cuda_j_stage_2()
-//
-// KERNELS INVOKED:
-//   sum_reduction_kernel()
-//   sum_reduction_last_step_kernel()
-//   bspline_cuda_update_grad_kernel()
-//   bspline_cuda_compute_grad_mean_kernel()
-//   sum_reduction_last_step_kernel()
-//   bspline_cuda_compute_grad_norm_kernel
-//   sum_reduction_last_step_kernel()
-//
-// bspline_cuda_final_steps_f()
-////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-bspline_cuda_j_stage_2 (
-    Bspline_parms* parms, 
-    Bspline_xform* bxf,
-    Volume* fixed,
-    int*   vox_per_rgn,
-    int*   volume_dim,
-    float* host_score,
-    float* host_grad,
-    float* host_grad_mean,
-    float* host_grad_norm,
-    Dev_Pointers_Bspline* dev_ptrs,
-    int *num_vox)
-{
-
-#if defined (PROFILE_MSE)
-    cuda_timer my_timer;
-#endif
-
-
-    dim3 dimGrid;
-    dim3 dimBlock;
-
-    int num_elems = volume_dim[0] * volume_dim[1] * volume_dim[2];
-    int num_blocks = (num_elems + 511) / 512;
-
-    CUDA_exec_conf_1bpe (
-        &dimGrid,         // OUTPUT: Grid  dimensions
-        &dimBlock,        // OUTPUT: Block dimensions
-        num_blocks,       // INPUT: Number of blocks
-        512);             // INPUT: Threads per block
-
-    int smemSize = 512*sizeof(float);
-
-
-#if defined (PROFILE_MSE)
-    CUDA_timer_start (&my_timer);
-#endif
-
-    // --- REDUCE SCORE VECTOR DOWN TO SINGLE VALUE -------------
-    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
-        dev_ptrs->score,
-        dev_ptrs->score,
-        num_elems);
-
-    cudaThreadSynchronize();
-    CUDA_check_error("kernel_sum_reduction()");
-
-    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
-        dev_ptrs->score,
-        dev_ptrs->score,
-        num_elems);
-
-    cudaThreadSynchronize();
-    CUDA_check_error("kernel_sum_reduction_last_step()");
-    // ----------------------------------------------------------
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] score reduction\n", CUDA_timer_report (&my_timer));
-    CUDA_timer_start (&my_timer);
-#endif
-
-    // --- RETREIVE THE SCORE FROM GPU --------------------------
-    cudaMemcpy(host_score, dev_ptrs->score,  sizeof(float), cudaMemcpyDeviceToHost);
-    CUDA_check_error("Failed to copy score from GPU to host");
-    // ----------------------------------------------------------
-
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] score memcpy\n", CUDA_timer_report (&my_timer));
-    CUDA_timer_start (&my_timer);
-#endif
-
-
-    // --- REDUCE SKIPPED VECTOR DOWN TO SINGLE VALUE -----------
-    sum_reduction_kernel<<<dimGrid, dimBlock, smemSize>>> (
-        dev_ptrs->skipped,
-        dev_ptrs->skipped,
-        num_elems);
-
-    cudaThreadSynchronize();
-    CUDA_check_error("[Kernel Panic!] kernel_sum_reduction()");
-
-    sum_reduction_last_step_kernel<<<dimGrid, dimBlock>>> (
-        dev_ptrs->skipped,
-        dev_ptrs->skipped,
-        num_elems);
-
-    cudaThreadSynchronize();
-    CUDA_check_error("kernel_sum_reduction_last_step()");
-
-    float skipped;
-    cudaMemcpy (&skipped, dev_ptrs->skipped,
-        sizeof(float), cudaMemcpyDeviceToHost);
-    // ----------------------------------------------------------
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] skipped reduction\n", CUDA_timer_report (&my_timer));
-#endif
-
-    // --- COMPUTE # VOXELS & SCORE -----------------------------
-    *num_vox = (volume_dim[0] * volume_dim[1] * volume_dim[2]) - skipped;
-    *host_score = *host_score / *num_vox;
-    // ----------------------------------------------------------
-
-
-
-    // --- COMPUTE THE GRADIENT ---------------------------------
-    num_elems = bxf->num_coeff;
-    num_blocks = (num_elems + 511) / 512;
-
-    CUDA_exec_conf_1bpe (
-        &dimGrid,         // OUTPUT: Grid  dimensions
-        &dimBlock,        // OUTPUT: Block dimensions
-        num_blocks,       // INPUT: Number of blocks
-        512);             // INPUT: Threads per block
-
-
-#if defined (PROFILE_MSE)
-    CUDA_timer_start (&my_timer);
-#endif
-    
-    bspline_cuda_update_grad_kernel<<<dimGrid, dimBlock>>> (
-        dev_ptrs->grad,
-        *num_vox,
-        num_elems
-    );
-
-    cudaThreadSynchronize();
-    CUDA_check_error("bspline_cuda_update_grad_kernel");
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] gradient update\n", CUDA_timer_report (&my_timer));
-    CUDA_timer_start (&my_timer);
-#endif
-
-    cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
-    CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
-
-
-#if defined (PROFILE_MSE)
-    printf("[%f ms] gradient memcpy\n", CUDA_timer_report (&my_timer));
-#endif
-    // ----------------------------------------------------------
-
-}
-
-
 ////////////////////////////////////////////////////////////////////////////////
 // Generates many sub-histograms of the moving image
 //
@@ -2013,7 +1949,7 @@ bspline_cuda_j_stage_2 (
 //       bank conflicts.
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_MI_a_hist_fix (
+kernel_bspline_mi_hist_fix (
     float* f_hist_seg,  // partial histogram (moving image)
     float* f_img,       // moving image voxels
     float offset,       // histogram offset
@@ -2027,8 +1963,8 @@ kernel_bspline_MI_a_hist_fix (
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
     float3 mov_offset,  // moving image offset
-    float3 mov_ps,      // moving image pixel spacing
-    float* coeff)       // DEBUG
+    float3 mov_ps       // moving image pixel spacing
+)
 {
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
@@ -2140,7 +2076,7 @@ kernel_bspline_MI_a_hist_fix (
 //       bank conflicts.
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_MI_a_hist_mov (
+kernel_bspline_mi_hist_mov (
     float* m_hist_seg,  // partial histogram (moving image)
     float* m_img,       // moving image voxels
     float offset,       // histogram offset
@@ -2154,8 +2090,8 @@ kernel_bspline_MI_a_hist_mov (
     float3 img_origin,  // image origin
     float3 img_spacing, // image spacing
     float3 mov_offset,  // moving image offset
-    float3 mov_ps,      // moving image pixel spacing
-    float* coeff)       // DEBUG
+    float3 mov_ps       // moving image pixel spacing
+)
 {
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
@@ -2342,29 +2278,29 @@ kernel_bspline_MI_a_hist_mov (
 //
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_MI_a_hist_jnt (
-    unsigned int* skipped,   // OUTPUT:   # of skipped voxels
-    float* j_hist,      // OUTPUT:  joint histogram
-    float* f_img,   // INPUT:  fixed image voxels
-    float* m_img,   // INPUT: moving image voxels
-    float f_offset, // INPUT:  fixed histogram offset 
-    float m_offset, // INPUT: moving histogram offset
-    float f_delta,  // INPUT:  fixed histogram delta
-    float m_delta,  // INPUT: moving histogram delta
-    long f_bins,        // INPUT: #  fixed histogram bins
-    long m_bins,    // INPUT: # moving histogram bins
-    int3 vpr,       // INPUT: voxels per region
-    int3 fdim,      // INPUT:  fixed image dimensions
-    int3 mdim,      // INPUT: moving image dimensions
-    int3 rdim,      // INPUT: region dimensions
-    int3 cdim,          // # control points in x,y,z
-    float3 img_origin,  // INPUT: image origin
-    float3 img_spacing, // INPUT: image spacing
-    float3 mov_offset,  // INPUT: moving image offset
-    float3 mov_ps,  // INPUT: moving image pixel spacing
-    int3 roi_dim,   // INPUT: ROI dimensions
-    int3 roi_offset,    // INPUT: ROI Offset
-    float* coeff)   // INPUT: coefficient array
+kernel_bspline_mi_hist_jnt (
+    unsigned int* skipped,  // OUTPUT:   # of skipped voxels
+    float* j_hist,          // OUTPUT:  joint histogram
+    float* f_img,           // INPUT:  fixed image voxels
+    float* m_img,           // INPUT: moving image voxels
+    float f_offset,         // INPUT:  fixed histogram offset 
+    float m_offset,         // INPUT: moving histogram offset
+    float f_delta,          // INPUT:  fixed histogram delta
+    float m_delta,          // INPUT: moving histogram delta
+    long f_bins,            // INPUT: #  fixed histogram bins
+    long m_bins,            // INPUT: # moving histogram bins
+    int3 vpr,               // INPUT: voxels per region
+    int3 fdim,              // INPUT:  fixed image dimensions
+    int3 mdim,              // INPUT: moving image dimensions
+    int3 rdim,              // INPUT: region dimensions
+    int3 cdim,              // INPUT: # control points in x,y,z
+    float3 img_origin,      // INPUT: image origin
+    float3 img_spacing,     // INPUT: image spacing
+    float3 mov_offset,      // INPUT: moving image offset
+    float3 mov_ps,          // INPUT: moving image pixel spacing
+    int3 roi_dim,           // INPUT: ROI dimensions
+    int3 roi_offset         // INPUT: ROI Offset
+)
 {
 /* This code requires compute capability 1.2 or greater.
  * DO NOT compile it for lesser target architectures or
@@ -2617,9 +2553,9 @@ kernel_bspline_MI_a_hist_jnt (
 ////////////////////////////////////////////////////////////////////////////////
 // Merge Partial/Segmented Histograms
 //
-//   This kernel is designed to be executed after k_bspline_cuda_MI_a_hist_fix 
+//   This kernel is designed to be executed after kernel_bspline_mi_hist_XXX ()
 //   has genereated many partial histograms (equal to the number of thread-
-//   blocks k_bspline_cuda_MI_a_hist_fix() was executed with).  Depending on
+//   blocks kernel_bspline_mi_hist_XXX () was executed with).  Depending on
 //   the image size, this could be as high as hundredes of thousands of
 //   partial histograms needing to be merged.
 //
@@ -2646,11 +2582,11 @@ kernel_bspline_MI_a_hist_jnt (
 //
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_MI_a_hist_fix_merge (
+kernel_bspline_mi_hist_merge (
     float *f_hist,
     float *f_hist_seg,
-    long num_seg_hist)
-
+    long num_seg_hist
+)
 {
     extern __shared__ float data[];
 
@@ -2695,7 +2631,7 @@ kernel_bspline_MI_a_hist_fix_merge (
 //
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_MI_dc_dv_a (
+kernel_bspline_mi_dc_dv (
     float* dc_dv_x,     // OUTPUT: dC / dv (x-component)
     float* dc_dv_y,     // OUTPUT: dC / dv (y-component)
     float* dc_dv_z,     // OUTPUT: dC / dv (z-component)
@@ -2723,7 +2659,8 @@ kernel_bspline_MI_dc_dv_a (
     int3 roi_offset,    // INPUT: ROI Offset
     float num_vox_f,    // INPUT: # of voxels
     float score,        // INPUT: evaluated MI cost function
-    int pad)            // INPUT: Tile padding
+    int pad             // INPUT: Tile padding
+)
 {
     // -- Setup Thread Attributes -----------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
@@ -2975,6 +2912,107 @@ kernel_bspline_MI_dc_dv_a (
     // fi = r.x
     // fj = r.y
     // fk = r.z
+}
+
+/* JAS 05.27.2010
+ * 
+ * This kernel was written as an intended replacement for
+ * bspline_cuda_score_j_mse_kernel1().  The intended goal
+ * was to produce a kernel with neater notation and code
+ * structure that also shared the LUT_Bspline_x,y,z textured
+ * lookup table that is utilized by the hyper-fast gradient
+ * kernel kernel_bspline_condense ().
+ * 
+ * It should be noted that the LUT_Bspline texture differs
+ * from the CPU based q_lut in both structure and philosophy.
+ * LUT_Bspline is three separate look-up-tables which contain
+ * the pre-computed basis function values in each dimension,
+ * whereas the q_lut has already pre-multiplied all of these
+ * results.  For the GPU, the q-LUT requires in too many memory
+ * load operations, even when employing the cacheing mechanisms
+ * provided by textures.  The LUT_Bspline textures rely on the GPU
+ * to perform these multiplications, thus achieving superior
+ * run times.
+ *
+ * This code was authored with the intention of unifying the
+ * design philosophy of the MSE B-spline GPU implementation,
+ * which was spurred by my attempts to write the upcoming
+ * GPU Gems 4 chapter.
+ *
+ * The code now also shares more similarities with
+ * the CPU code.  So, now if you know one you know the other.
+ *
+ * This is about 6.5% faster (on my GTX 285) than
+ *   bspline_cuda_score_j_mse_kernel1()
+ */
+__global__ void
+kernel_bspline_mse_score_dc_dv (
+    float* score,       // OUTPUT
+    float* skipped,     // OUTPUT
+    float* dc_dv_x,     // OUTPUT
+    float* dc_dv_y,     // OUTPUT
+    float* dc_dv_z,     // OUTPUT
+    float* f_img,       // fixed image voxels
+    float* m_img,       // moving image voxels
+    float* m_grad,      // moving image gradient
+    int3 fdim,          // fixed  image dimensions
+    int3 mdim,          // moving image dimensions
+    int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
+    int3 vpr,           // voxels per region
+    float3 img_origin,  // image origin
+    float3 img_spacing, // image spacing
+    float3 mov_offset,  // moving image offset
+    float3 mov_ps,      // moving image pixel spacing
+    int pad             // tile padding
+)
+{
+    /* Setup Thread Attributes */
+    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+
+    /* Only process threads that map to voxels */
+    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
+        return;
+    }
+
+    int4 p;     // Tile index
+    int4 q;     // Local Voxel index (within tile)
+    float3 f;   // Distance from origin (in mm )
+
+    float3 m;   // Voxel Displacement   (in mm )
+    float3 n;   // Voxel Displacement   (in vox)
+    int3 n_f;   // Voxel Displacement floor
+    int3 n_r;   // Voxel Displacement round
+    float3 d;   // Deformation vector
+    int fv;     // fixed voxel
+    
+    fv = thread_idxg;
+
+    setup_indices (&p, &q, &f,
+            fv, fdim, vpr, rdim, img_origin, img_spacing);
+
+    int fell_out = find_correspondence (&d, &m, &n,
+            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+
+    if (fell_out) {
+        skipped[fv]++;
+        return;
+    }
+
+    float3 li_1, li_2;
+    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
+
+    float m_val = get_moving_value (n_f, mdim, li_1, li_2);
+
+    float diff = m_val - f_img[fv];
+    score[fv] = diff * diff;
+
+    write_dc_dv (dc_dv_x, dc_dv_y, dc_dv_z,
+            m_grad, diff, n_r, mdim, vpr, pad, p, q);
 }
 
 
@@ -3459,119 +3497,14 @@ kernel_bspline_reduce (
 }
 
 
-/* JAS 05.27.2010
- * 
- * This kernel was written as an intended replacement for
- * bspline_cuda_score_j_mse_kernel1().  The intended goal
- * was to produce a kernel with neater notation and code
- * structure that also shared the LUT_Bspline_x,y,z textured
- * lookup table that is utilized by the hyper-fast gradient
- * kernel kernel_bspline_condense ().
- * 
- * It should be noted that the LUT_Bspline texture differs
- * from the CPU based q_lut in both structure and philosophy.
- * LUT_Bspline is three separate look-up-tables which contain
- * the pre-computed basis function values in each dimension,
- * whereas the q_lut has already pre-multiplied all of these
- * results.  For the GPU, the q-LUT requires in too many memory
- * load operations, even when employing the cacheing mechanisms
- * provided by textures.  The LUT_Bspline textures rely on the GPU
- * to perform these multiplications, thus achieving superior
- * run times.
- *
- * This code was authored with the intention of unifying the
- * design philosophy of the MSE B-spline GPU implementation,
- * which was spurred by my attempts to write the upcoming
- * GPU Gems 4 chapter.
- *
- * The code now also shares more similarities with
- * the CPU code.  So, now if you know one you know the other.
- *
- * This is about 6.5% faster (on my GTX 285) than
- *   bspline_cuda_score_j_mse_kernel1()
- */
+// This kernel normalizes each of the gradient values by the
+// number of voxels before the final gradient sum reduction.
 __global__ void
-kernel_bspline_mse_score_dc_dv (
-    float* score,       // OUTPUT
-    float* skipped,     // OUTPUT
-    float* dc_dv_x,     // OUTPUT
-    float* dc_dv_y,     // OUTPUT
-    float* dc_dv_z,     // OUTPUT
-    float* f_img,       // fixed image voxels
-    float* m_img,       // moving image voxels
-    float* m_grad,      // moving image gradient
-    int3 fdim,          // fixed  image dimensions
-    int3 mdim,          // moving image dimensions
-    int3 rdim,          //       region dimensions
-    int3 cdim,          // # control points in x,y,z
-    int3 vpr,           // voxels per region
-    float3 img_origin,  // image origin
-    float3 img_spacing, // image spacing
-    float3 mov_offset,  // moving image offset
-    float3 mov_ps,      // moving image pixel spacing
-    int pad             // tile padding
-)
-{
-    /* Setup Thread Attributes */
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-
-    /* Only process threads that map to voxels */
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
-        return;
-    }
-
-    int4 p;     // Tile index
-    int4 q;     // Local Voxel index (within tile)
-    float3 f;   // Distance from origin (in mm )
-
-    float3 m;   // Voxel Displacement   (in mm )
-    float3 n;   // Voxel Displacement   (in vox)
-    int3 n_f;   // Voxel Displacement floor
-    int3 n_r;   // Voxel Displacement round
-    float3 d;   // Deformation vector
-    int fv;     // fixed voxel
-    
-    fv = thread_idxg;
-
-    setup_indices (&p, &q, &f,
-            fv, fdim, vpr, rdim, img_origin, img_spacing);
-
-    int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
-
-    if (fell_out) {
-        skipped[fv]++;
-        return;
-    }
-
-    float3 li_1, li_2;
-    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
-
-    float m_val = get_moving_value (n_f, mdim, li_1, li_2);
-
-    float diff = m_val - f_img[fv];
-    score[fv] = diff * diff;
-
-    write_dc_dv (dc_dv_x, dc_dv_y, dc_dv_z,
-            m_grad, diff, n_r, mdim, vpr, pad, p, q);
-}
-
-
-/***********************************************************************
- * bspline_cuda_update_grad_kernel
- *
- * This kernel updates each of the gradient values before the final
- * sum reduction of the gradient stream.
- ***********************************************************************/
-__global__ void
-bspline_cuda_update_grad_kernel(
+kernel_bspline_grad_normalize (
     float *grad,
     int num_vox,
-    int num_elems)
+    int num_elems
+)
 {
     // Calculate the index of the thread block in the grid.
     int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
@@ -3591,20 +3524,17 @@ bspline_cuda_update_grad_kernel(
 }
 
 
-/***********************************************************************
- * sum_reduction_kernel
- *
- * This kernel will reduce a stream to a single value.  It will work for
- * a stream with an arbitrary number of elements.  It is the same as 
- * bspline_cuda_compute_score_kernel, with the exception that it assumes
- * all values in the stream are valid and should be included in the final
- * reduced value.
- ***********************************************************************/
+// This kernel will reduce a stream to a single value.  It will work for
+// a stream with an arbitrary number of elements.  It is the same as 
+// bspline_cuda_compute_score_kernel, with the exception that it assumes
+// all values in the stream are valid and should be included in the final
+// reduced value.
 __global__ void
-sum_reduction_kernel(
+kernel_sum_reduction_pt1 (
     float *idata, 
     float *odata, 
-    int   num_elems)
+    int   num_elems
+)
 {
     // Shared memory is allocated on a per block basis.  Therefore, only allocate 
     // (sizeof(data) * blocksize) memory when calling the kernel.
@@ -3649,17 +3579,14 @@ sum_reduction_kernel(
 }
 
 
-/***********************************************************************
- * sum_reduction_last_step_kernel
- *
- * This kernel sums together the remaining partial sums that are created
- * by the other sum reduction kernels.
- ***********************************************************************/
+// This kernel sums together the remaining partial sums that are created
+// by kernel_sum_reduction_pt1()
 __global__ void
-sum_reduction_last_step_kernel(
+kernel_sum_reduction_pt2 (
     float *idata,
     float *odata,
-    int   num_elems)
+    int num_elems
+)
 {
     // Calculate the index of the thread block in the grid.
     int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
@@ -3723,13 +3650,13 @@ CUDA_bspline_zero_grad (Dev_Pointers_Bspline* dev_ptrs)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// FUNCTION: CPU_obtain_spline_basis_function()
+// FUNCTION: CPU_obtain_bspline_basis_function()
 //
 // AUTHOR: James Shackleford
 // DATE  : 09.04.2009
 ////////////////////////////////////////////////////////////////////////////////
 float
-CPU_obtain_spline_basis_function (
+CPU_obtain_bspline_basis_function (
     int t_idx, 
     int vox_idx, 
     int vox_per_rgn)
@@ -3761,39 +3688,6 @@ CPU_obtain_spline_basis_function (
 ////////////////////////////////////////////////////////////////////////////////
 
 
-/******************************************************
-* This function computes the spline basis function at 
-* index 0, 1, 2, or 3 for a voxel 
-Author: Naga Kandasamy
-Date: 07 July 2009
-*******************************************************/
-
-__device__ float
-obtain_spline_basis_function (float one_over_six,
-    int t_idx, 
-    int vox_idx, 
-    int vox_per_rgn)
-{
-    float i = (float)vox_idx / vox_per_rgn;
-    float C;
-                        
-    switch(t_idx) {
-    case 0:
-        C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
-        break;
-    case 1:
-        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
-        break;
-    case 2:
-        C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
-        break;
-    case 3:
-        C = one_over_six * (+ 1.0 * i*i*i);
-        break;
-    }
-
-    return C;
-}
 
 
 __device__ inline void

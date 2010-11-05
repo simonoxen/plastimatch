@@ -444,3 +444,8 @@ __global__ void bspline_cuda_compute_grad_norm_kernel
  float *odata,
  int num_elems);
 
+
+__device__ float obtain_spline_basis_function(float one_over_six,
+						  int t_idx, 
+						  int vox_idx, 
+						  int vox_per_rgn);

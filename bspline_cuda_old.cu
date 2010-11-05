@@ -11730,3 +11730,38 @@ void bspline_cuda_clean_up_c()
     if(cudaFree(gpu_grad_temp) != cudaSuccess)
 	checkCUDAError("Failed to free memory for grad_temp");
 }
+
+
+/******************************************************
+* This function computes the spline basis function at 
+* index 0, 1, 2, or 3 for a voxel 
+Author: Naga Kandasamy
+Date: 07 July 2009
+*******************************************************/
+
+__device__ float
+obtain_spline_basis_function (float one_over_six,
+    int t_idx, 
+    int vox_idx, 
+    int vox_per_rgn)
+{
+    float i = (float)vox_idx / vox_per_rgn;
+    float C;
+                        
+    switch(t_idx) {
+    case 0:
+        C = one_over_six * (- 1.0 * i*i*i + 3.0 * i*i - 3.0 * i + 1.0);
+        break;
+    case 1:
+        C = one_over_six * (+ 3.0 * i*i*i - 6.0 * i*i           + 4.0);
+        break;
+    case 2:
+        C = one_over_six * (- 3.0 * i*i*i + 3.0 * i*i + 3.0 * i + 1.0);
+        break;
+    case 3:
+        C = one_over_six * (+ 1.0 * i*i*i);
+        break;
+    }
+
+    return C;
+}

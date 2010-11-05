@@ -138,44 +138,41 @@ bspline_cuda_state_create (
 {
 #if (CUDA_FOUND)
     Dev_Pointers_Bspline* dev_ptrs 
-	= (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
+        = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-	if (!delayload_cuda ()) {
-        // If we continue to attempt to use the CUDA runtime
-        // after failing to load the CUDA runtime, we crash.
-        exit (0);
-    }
-	switch (parms->implementation) {
-	case 'i':
-	case 'j':
-	case '\0':   /* Default */
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-        break;
-	default:
-	    printf ("Warning: option -f %c unavailble.  Switching to -f j\n", parms->implementation);
-	    bspline_cuda_initialize_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
-	    break;
-	}
+        if (!delayload_cuda ()) {
+            // If we continue to attempt to use the CUDA runtime
+            // after failing to load the CUDA runtime, we crash.
+            exit (0);
+        }
+        switch (parms->implementation) {
+        case 'j':
+        case '\0':   /* Default */
+            CUDA_bspline_mse_init_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            break;
+        default:
+            printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
+                    parms->implementation);
+            CUDA_bspline_mse_init_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            break;
+        }
     } 
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-	switch (parms->implementation) {
-	case 'a':
-	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, 
-		bxf, parms);
-	    break;
-	default:
-	    printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n",
-		parms->implementation);
-	    bspline_cuda_init_MI_a (dev_ptrs, fixed, moving, moving_grad, 
-		bxf, parms);
-	    break;
-	}
-
+        switch (parms->implementation) {
+        case 'a':
+            CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            break;
+        default:
+            printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n",
+            parms->implementation);
+            CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
+            break;
+        }
     }
     else {
-	printf ("No cuda initialization performed.\n");
+        printf ("No cuda initialization performed.\n");
     }
 #endif
 }
@@ -1123,10 +1120,10 @@ bspline_state_destroy (
         // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
         // these pointers before they are attempted to be free()ed in the standard
         // fashion.  Remember, free(NULL) is okay!
-        bspline_cuda_clean_up_mse_j (bst->dev_ptrs, fixed, moving, moving_grad);
+        CUDA_bspline_mse_cleanup_j (bst->dev_ptrs, fixed, moving, moving_grad);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
-        bspline_cuda_clean_up_mi_a (bst->dev_ptrs, fixed, moving, moving_grad);
+        CUDA_bspline_mi_cleanup_a (bst->dev_ptrs, fixed, moving, moving_grad);
     }
 #endif
 
@@ -3874,20 +3871,20 @@ bspline_score (Bspline_parms *parms,
 	    break;
 #endif
 	case 'j':
-	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	default:
-	    bspline_cuda_score_j_mse (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 	return;
     } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 	switch (parms->implementation) {
 	case 'a':
-	    bspline_cuda_MI_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+        CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
-	default:
-	    bspline_cuda_MI_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
+	default: 
+        CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
 
