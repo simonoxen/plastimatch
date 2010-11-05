@@ -7,6 +7,9 @@
 // NOTE: Cannot be included in C or C++ files due to
 //       special CUDA types such as int4, dim3, etc.
 //       Can only be included in CUDA files.
+//
+// NOTE: __device__ function definitions live in
+//       cuda_kernel_util.inc due to nvcc limitations.
 
 #include "plm_config.h"
 #include <cuda.h>
@@ -14,6 +17,9 @@
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
 
+template <typename T>
+__device__ inline void
+shared_memset (T* s, T c, int n);
 
 #if defined __cplusplus
 extern "C" {

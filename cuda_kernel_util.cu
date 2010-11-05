@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cuda.h>
-#include "cuda_util.h"
 #include "cuda_kernel_util.h"
+#include "cuda_util.h"
 
 // Builds execution configurations for kernels that
 // assign one thread per element (1tpe).

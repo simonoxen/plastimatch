@@ -592,7 +592,7 @@ bspline_cuda_MI_a (
     // ----------------------------------------------------------
 
 
-    // --- CHECK COMPUTE CAPABILITY (NEED SHARED ATOMICS) -------
+    // --- CHECK COMPUTE CAPABILITY (NEED SHARED/GLOBAL ATOMICS)-
     if (CUDA_getarch(parms->gpuid) < 120) {
 
         printf ("\n*******************   NOTICE  *******************\n");
@@ -633,16 +633,16 @@ bspline_cuda_MI_a (
 
     plm_timer_start (&timer);   // <=== START TIMING HERE
     
-    // generate histograms
+    // --- GENERATE HISTOGRMS -----------------------------------
 //  plm_timer_start (&timer0);
 #if defined (MI_HISTS_CPU)
     num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
 //  printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
 #else
-//  num_vox = CUDA_MI_Hist_a (mi_hist, bxf, fixed, moving, dev_ptrs);
     num_vox = CUDA_bspline_MI_a_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
 //  printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
+    // ----------------------------------------------------------
 
     // dump histogram images?
     if (parms->xpm_hist_dump) {
@@ -659,7 +659,7 @@ bspline_cuda_MI_a (
 #endif
 
 
-    // compute score
+    // --- COMPUTE SCORE ----------------------------------------
 //  plm_timer_start (&timer0);
 #if defined (MI_SCORE_CPU)
     ssd->score = CPU_MI_Score(mi_hist, num_vox);
@@ -669,8 +669,9 @@ bspline_cuda_MI_a (
     // The CPU generally completes this computation extremely quickly
 //  printf (" * score: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
+    // ----------------------------------------------------------
 
-    // compute gradient
+    // --- COMPUTE GRADIENT -------------------------------------
 //  plm_timer_start (&timer0);
 #if defined (MI_GRAD_CPU)
     CPU_MI_Grad(mi_hist, bst, bxf, fixed, moving, (float)num_vox);
@@ -679,12 +680,13 @@ bspline_cuda_MI_a (
     CUDA_MI_Grad_a(mi_hist, bst, bxf, fixed, moving, (float)num_vox, dev_ptrs);
 //  printf (" *  grad: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
 #endif
+    // ----------------------------------------------------------
 
 
     interval = plm_timer_report (&timer);
     report_score ("MI", bxf, bst, num_vox, interval);
     if (parms->debug) {
-	fclose (fp);
+        fclose (fp);
     }
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -707,29 +709,26 @@ bspline_cuda_score_j_mse (
 {
     // --- DECLARE LOCAL VARIABLES ------------------------------
     BSPLINE_Score* ssd;     // Holds the SSD "Score" information
-    int num_vox;        // Holds # of voxels in the fixed volume
+    int num_vox;            // Holds # of voxels in the fixed volume
     float ssd_grad_norm;    // Holds the SSD Gradient's Norm
     float ssd_grad_mean;    // Holds the SSD Gradient's Mean
     Timer timer;
 
-    static int it=0;    // Holds Iteration Number
+    static int it=0;        // Holds Iteration Number
     char debug_fn[1024];    // Debug message buffer
     FILE* fp = NULL;        // File Pointer to Debug File
     // ----------------------------------------------------------
-
 
     // --- INITIALIZE LOCAL VARIABLES ---------------------------
     ssd = &bst->ssd;
     
     if (parms->debug) {
-	sprintf (debug_fn, "dump_mse_%02d.txt", it++);
-	fp = fopen (debug_fn, "w");
+        sprintf (debug_fn, "dump_mse_%02d.txt", it++);
+        fp = fopen (debug_fn, "w");
     }
     // ----------------------------------------------------------
 
-
     plm_timer_start (&timer);   // <=== START TIMING HERE
-
     
     // --- INITIALIZE GPU MEMORY --------------------------------
     bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
@@ -738,36 +737,35 @@ bspline_cuda_score_j_mse (
     // ----------------------------------------------------------
 
 
-    
     // --- LAUNCH STUB FUNCTIONS --------------------------------
 
     // Populate the score, dc_dv, and gradient
     bspline_cuda_j_stage_1(
-	fixed,
-	moving,
-	moving_grad,
-	bxf,
-	parms,
-	dev_ptrs);
+        fixed,
+        moving,
+        moving_grad,
+        bxf,
+        parms,
+        dev_ptrs);
 
 
     // Calculate the score and gradient
     // via sum reduction
     bspline_cuda_j_stage_2(
-	parms,
-	bxf,
-	fixed,
-	bxf->vox_per_rgn,
-	fixed->dim,
-	&(ssd->score),
-	bst->ssd.grad, //ssd->grad,
-	&ssd_grad_mean,
-	&ssd_grad_norm,
-	dev_ptrs,
-	&num_vox);
+        parms,
+        bxf,
+        fixed,
+        bxf->vox_per_rgn,
+        fixed->dim,
+        &(ssd->score),
+        bst->ssd.grad, //ssd->grad,
+        &ssd_grad_mean,
+        &ssd_grad_norm,
+        dev_ptrs,
+        &num_vox);
 
     if (parms->debug) {
-	fclose (fp);
+        fclose (fp);
     }
 
     // --- USER FEEDBACK ----------------------------------------

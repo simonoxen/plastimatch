@@ -2592,14 +2592,7 @@ kernel_bspline_MI_a_hist_jnt (
     float* j_locks = (float*)shared_mem;
     int total_smem = f_bins * m_bins;
 
-    int b = (total_smem + threadsPerBlock - 1) / threadsPerBlock;
-
-    int i;
-    for (i = 0; i < b; i++) {
-        if ( (thread_idxl + i*threadsPerBlock) < total_smem ) {
-            shared_mem[thread_idxl + i*threadsPerBlock] = 0.0f;
-        }
-    }
+    shared_memset (shared_mem, 0.0f, total_smem);
     // --------------------------------------------------------
 
 
@@ -4275,3 +4268,9 @@ write_dc_dv (
     dc_dv_element_y[0] = diff * m_grad_element[1];
     dc_dv_element_z[0] = diff * m_grad_element[2];
 }
+
+// JAS 11.04.2010
+// nvcc has the limitation of not being able to use
+// functions from other object files.  So in order
+// to share device functions, we resort to this. :-/
+#include "cuda_kernel_util.inc"
