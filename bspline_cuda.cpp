@@ -626,9 +626,9 @@ bspline_cuda_MI_a (
 #endif
 
     // --- INITIALIZE GPU MEMORY --------------------------------
-    bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
-    bspline_cuda_h_clear_score(dev_ptrs);
-    bspline_cuda_h_clear_grad(dev_ptrs);
+    CUDA_bspline_push_coeff (dev_ptrs, bxf);
+    CUDA_bspline_zero_score (dev_ptrs);
+    CUDA_bspline_zero_grad  (dev_ptrs);
     // ----------------------------------------------------------
 
     plm_timer_start (&timer);   // <=== START TIMING HERE
@@ -731,9 +731,9 @@ bspline_cuda_score_j_mse (
     plm_timer_start (&timer);   // <=== START TIMING HERE
     
     // --- INITIALIZE GPU MEMORY --------------------------------
-    bspline_cuda_h_push_coeff_lut(dev_ptrs, bxf);
-    bspline_cuda_h_clear_score(dev_ptrs);
-    bspline_cuda_h_clear_grad(dev_ptrs);
+    CUDA_bspline_push_coeff (dev_ptrs, bxf);
+    CUDA_bspline_zero_score (dev_ptrs);
+    CUDA_bspline_zero_grad  (dev_ptrs);
     // ----------------------------------------------------------
 
 
@@ -758,7 +758,7 @@ bspline_cuda_score_j_mse (
         bxf->vox_per_rgn,
         fixed->dim,
         &(ssd->score),
-        bst->ssd.grad, //ssd->grad,
+        bst->ssd.grad,
         &ssd_grad_mean,
         &ssd_grad_norm,
         dev_ptrs,
