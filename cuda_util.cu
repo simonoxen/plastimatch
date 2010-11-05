@@ -8,6 +8,15 @@
 #include <cuda.h>
 #include "cuda_util.h"
 
+// NOTE: This file provides utility functions that do not use CUDA specific
+//       types as parameters; and can, therefore, be used from standard C or
+//       C++ files.
+//
+//       Helper functions that require parameters that use CUDA specific
+//       types (dim3, float4, etc) should be placed in 'cuda_kernel_util.cu'
+
+
+
 void
 CUDA_check_error (const char *msg)
 {

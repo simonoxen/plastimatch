@@ -9,6 +9,19 @@
 #include "cuda_kernel_util.h"
 #include "cuda_util.h"
 
+// NOTE: Helper functions in this file accept parameters that use CUDA specific
+//       types (dim3, float4, etc).  As a result, these helper functions can
+//       only be called from within other CUDA files (.cu)
+//
+//       The file 'cuda_util.cu' provides utility functions that do not use CUDA
+//       specific types as parameters; and can, therefore, be used from
+//       standard C or C++ files.
+//
+//       __device__ functions cannot be placed in here due to nvcc limitations.
+//       Please place __device__ functions in cuda_kernel_util.inc
+
+
+
 // Builds execution configurations for kernels that
 // assign one thread per element (1tpe).
 int

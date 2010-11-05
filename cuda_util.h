@@ -7,6 +7,14 @@
 #include "plm_config.h"
 #include <cuda.h>
 
+// NOTE: This file provides utility functions that do not use CUDA specific
+//       types as parameters; and can, therefore, be used from standard C or
+//       C++ files.
+//
+//       Helper functions that require parameters that use CUDA specific
+//       types (dim3, float4, etc) should be placed in 'cuda_kernel_util.h'
+
+
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
 
