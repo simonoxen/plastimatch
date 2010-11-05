@@ -1555,21 +1555,25 @@ CUDA_MI_Grad_a (
     
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_condense_64_texfetch (
-            dev_ptrs,
-            bxf->vox_per_rgn, 
-            num_tiles);
+    CUDA_bspline_condense (
+        dev_ptrs,
+        bxf->vox_per_rgn, 
+        num_tiles
+    );
     
     // Prepare for the next kernel
     cudaThreadSynchronize();
-    CUDA_check_error("[Kernel Panic!] kernel_bspline_mse_condense_64_texfetch()");
+    CUDA_check_error("kernel_bspline_condense ()");
 
     // Clear out the gradient
     cudaMemset(dev_ptrs->grad, 0, dev_ptrs->grad_size);
     CUDA_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
+    CUDA_bspline_reduce (
+        dev_ptrs,
+        bxf->num_knots
+    );
 
     // Prepare for the next kernel
     cudaThreadSynchronize();
@@ -1588,7 +1592,7 @@ CUDA_MI_Grad_a (
 // STUB: CUDA_bspline_mse_score_dc_dv()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_reduce()
+//   kernel_bspline_mse_score_dc_dv()
 //
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
@@ -1653,19 +1657,20 @@ CUDA_bspline_mse_score_dc_dv (
 
 
 //////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_condense_64_texfetch()
+// STUB: CUDA_bspline_condense ()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_condense_64()
+//   kernel_bspline_condense ()
 //
 // AUTHOR: James Shackleford
 //   DATE: September 16th, 2009
 //////////////////////////////////////////////////////////////////////////////
 void
-CUDA_bspline_mse_condense_64_texfetch (
+CUDA_bspline_condense (
     Dev_Pointers_Bspline* dev_ptrs,
     int* vox_per_rgn,
-    int num_tiles)
+    int num_tiles
+)
 {
     dim3 dimGrid;
     dim3 dimBlock;
@@ -1688,7 +1693,7 @@ CUDA_bspline_mse_condense_64_texfetch (
 
     int smemSize = 576*sizeof(float);
 
-    kernel_bspline_mse_condense_64_texfetch<<<dimGrid, dimBlock, smemSize>>>(
+    kernel_bspline_condense <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->cond_x,       // Return: condensed dc_dv_x values
         dev_ptrs->cond_y,       // Return: condensed dc_dv_y values
         dev_ptrs->cond_z,       // Return: condensed dc_dv_z values
@@ -1706,18 +1711,19 @@ CUDA_bspline_mse_condense_64_texfetch (
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// STUB: CUDA_bspline_mse_reduce()
+// STUB: CUDA_bspline_reduce()
 //
 // KERNELS INVOKED:
-//   kernel_bspline_mse_reduce()
+//   kernel_bspline_reduce()
 //
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
 ////////////////////////////////////////////////////////////////////////////////
-extern "C" void
-CUDA_bspline_mse_reduce (
+void
+CUDA_bspline_reduce (
     Dev_Pointers_Bspline* dev_ptrs,
-    int num_knots)
+    int num_knots
+)
 {
     dim3 dimGrid;
     dim3 dimBlock;
@@ -1730,11 +1736,12 @@ CUDA_bspline_mse_reduce (
 
     int smemSize = 195*sizeof(float);
 
-    kernel_bspline_mse_reduce<<<dimGrid, dimBlock, smemSize>>>(
+    kernel_bspline_reduce <<<dimGrid, dimBlock, smemSize>>> (
         dev_ptrs->grad,     // Return: interleaved dc_dp values
         dev_ptrs->cond_x,   // Input : condensed dc_dv_x values
         dev_ptrs->cond_y,   // Input : condensed dc_dv_y values
-        dev_ptrs->cond_z);  // Input : condensed dc_dv_z values
+        dev_ptrs->cond_z    // Input : condensed dc_dv_z values
+    );
 }
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1750,8 +1757,8 @@ CUDA_bspline_mse_reduce (
  * @param dev_ptrs Pointer the GPU device pointers
  *
  * @see bspline_cuda_score_j_mse_kernel1()
- * @see CUDA_bspline_mse_condense_64_texfetch()
- * @see CUDA_bspline_mse_reduce()
+ * @see CUDA_bspline_condense ()
+ * @see CUDA_bspline_reduce()
  *
  * @author James A. Shackleford
  */
@@ -1820,9 +1827,11 @@ bspline_cuda_j_stage_1 (
 
     // Invoke kernel condense
     int num_tiles = (bxf->cdims[0]-3) * (bxf->cdims[1]-3) * (bxf->cdims[2]-3);
-    CUDA_bspline_mse_condense_64_texfetch (dev_ptrs,
-                                             bxf->vox_per_rgn, 
-                                             num_tiles);
+    CUDA_bspline_condense (
+        dev_ptrs,
+        bxf->vox_per_rgn, 
+        num_tiles
+    );
 
 #if defined (PROFILE_J)
     // Stop timing the kernel
@@ -1850,7 +1859,7 @@ bspline_cuda_j_stage_1 (
     CUDA_check_error("cudaMemset(): dev_ptrs->grad");
 
     // Invoke kernel reduce
-    CUDA_bspline_mse_reduce (dev_ptrs, bxf->num_knots);
+    CUDA_bspline_reduce (dev_ptrs, bxf->num_knots);
 
 #if defined (PROFILE_J)
     // Stop timing the kernel
@@ -3207,18 +3216,18 @@ kernel_bspline_MI_dc_dv_a (
  * @author: James A. Shackleford
  */
 __global__ void
-kernel_bspline_mse_condense_64_texfetch (
-    float* cond_x,      // Return: condensed dc_dv_x values
-    float* cond_y,      // Return: condensed dc_dv_y values
-    float* cond_z,      // Return: condensed dc_dv_z values
-    float* dc_dv_x,     // Input : dc_dv_x values
-    float* dc_dv_y,     // Input : dc_dv_y values
-    float* dc_dv_z,     // Input : dc_dv_z values
+kernel_bspline_condense (
+    float* cond_x,          // Return: condensed dc_dv_x values
+    float* cond_y,          // Return: condensed dc_dv_y values
+    float* cond_z,          // Return: condensed dc_dv_z values
+    float* dc_dv_x,         // Input : dc_dv_x values
+    float* dc_dv_y,         // Input : dc_dv_y values
+    float* dc_dv_z,         // Input : dc_dv_z values
     int* LUT_Tile_Offsets,  // Input : tile offsets
-    int* LUT_Knot,      // Input : linear knot indicies
-    int pad,            // Input : amount of tile padding
-    int4 tile_dim,      // Input : dims of tiles
-    float one_over_six)     // Input : Precomputed since GPU division is slow
+    int* LUT_Knot,          // Input : linear knot indicies
+    int pad,                // Input : amount of tile padding
+    int4 tile_dim,          // Input : dims of tiles
+    float one_over_six)     // Input : Precomputed (GPU division is slow)
 {
     int tileOffset;
     int voxel_cluster;
@@ -3580,7 +3589,7 @@ kernel_bspline_mse_condense_64_texfetch (
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// KERNEL: kernel_bspline_mse_reduce()
+// KERNEL: kernel_bspline_reduce()
 //
 // * Each threadblock contains only 2 warps.
 // * Each threadblock operates on 32 knots (1 at a time)
@@ -3597,7 +3606,7 @@ kernel_bspline_mse_condense_64_texfetch (
 // DATE  : August 27th, 2009
 ////////////////////////////////////////////////////////////////////////////////
 __global__ void
-kernel_bspline_mse_reduce (
+kernel_bspline_reduce (
     float* grad,        // Return: interleaved dc_dp values
     float* cond_x,      // Input : condensed dc_dv_x values
     float* cond_y,      // Input : condensed dc_dv_y values
@@ -3662,8 +3671,6 @@ kernel_bspline_mse_reduce (
     if (threadIdx.x < 3) {
         grad[3*blockIdxInGrid + threadIdx.x] = sBuffer[threadIdx.x];
     }
-
-    // END OF KERNEL 
 }
 
 
@@ -3674,7 +3681,7 @@ kernel_bspline_mse_reduce (
  * was to produce a kernel with neater notation and code
  * structure that also shared the LUT_Bspline_x,y,z textured
  * lookup table that is utilized by the hyper-fast gradient
- * kernel kernel_bspline_mse_condense_64_texfetch().
+ * kernel kernel_bspline_condense ().
  * 
  * It should be noted that the LUT_Bspline texture differs
  * from the CPU based q_lut in both structure and philosophy.

@@ -174,7 +174,6 @@ extern "C" {
         Bspline_parms* parms
     );
 
-
     void
     bspline_cuda_clean_up_mse_j (
         Dev_Pointers_Bspline* dev_ptrs,
@@ -216,14 +215,14 @@ extern "C" {
     );
 
     void
-    CUDA_bspline_mse_condense_64_texfetch (
+    CUDA_bspline_condense (
         Dev_Pointers_Bspline* dev_ptrs,
         int* vox_per_rgn,
         int num_tiles
     );
 
     void
-    CUDA_bspline_mse_reduce (
+    CUDA_bspline_reduce (
         Dev_Pointers_Bspline* dev_ptrs,
         int num_knots
     );
