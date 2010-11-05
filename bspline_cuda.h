@@ -19,6 +19,9 @@
 //#define MI_GRAD_CPU
 #define MI_SCORE_CPU
 
+/* Uncomment to profile CUDA MSE */
+//#define PROFILE_MSE
+
 typedef struct dev_pointers_bspline Dev_Pointers_Bspline;
 struct dev_pointers_bspline
 {

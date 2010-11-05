@@ -153,3 +153,23 @@ CUDA_exec_conf_1bpe (
     dimBlock->z = 1;
 }
 
+void
+CUDA_timer_start (cuda_timer *timer)
+{
+    cudaEventCreate (&timer->start);
+    cudaEventCreate (&timer->stop);
+    cudaEventRecord (timer->start, 0);
+}
+
+// Returns time in milliseconds
+float
+CUDA_timer_report (cuda_timer *timer)
+{
+    float time;
+    cudaEventRecord (timer->stop, 0);
+    cudaEventSynchronize (timer->stop);
+    cudaEventElapsedTime (&time, timer->start, timer->stop);
+    cudaEventDestroy (timer->start);
+    cudaEventDestroy (timer->stop);
+    return time;
+}
