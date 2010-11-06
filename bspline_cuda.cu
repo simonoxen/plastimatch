@@ -455,13 +455,16 @@ CUDA_bspline_mi_init_a (
 
     // Report global memory allocation.
     printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
-    printf("          Virtual GPU Memory: %ld MB\n", VMEM_TALLY () / 1048576);
-    printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
-
+    if (parms->gpu_zcpy) {
+        printf("          Virtual GPU Memory: %ld MB\n", VMEM_TALLY () / 1048576);
+        printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
+    }
 
 #if defined (commentout)
-    printf ("---------------------------\n");
-    VMEM_PRINT ();
+    if (parms->gpu_zcpy) {
+        printf ("---------------------------\n");
+        VMEM_PRINT ();
+    }
     printf ("---------------------------\n");
     printf ("Skipped Voxels: %i MB\n", dev_ptrs->skipped_size / 1048576);
     printf ("         Score: %i MB\n", dev_ptrs->score_size / 1048576);
