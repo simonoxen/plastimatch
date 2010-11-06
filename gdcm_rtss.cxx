@@ -32,9 +32,10 @@
    way that conflicts with plm_int.h (which also fixes missing C99 types).  
    The workaround is to separately define the functions in flie_util.h 
    that we need. */
-extern "C"
-gpuit_EXPORT
+extern "C" gpuit_EXPORT
 char* file_util_dirname (const char *filename);
+extern "C" gpuit_EXPORT 
+void make_directory_recursive (const char *dirname);
 
 /* This function probes whether or not the file is a dicom rtss format */
 bool
@@ -392,6 +393,7 @@ gdcm_rtss_save (
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.
        Therefore we have to write using Document::WriteContent() */
+    make_directory_recursive (rtss_fn);
     std::ofstream *fp;
     fp = new std::ofstream (rtss_fn, std::ios::out | std::ios::binary);
     if (*fp == NULL) {
