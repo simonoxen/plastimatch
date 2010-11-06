@@ -40,6 +40,7 @@ Rtss::clear (void)
     this->ct_series_uid = "";
     this->ct_fref_uid = "";
     this->study_id = "";
+    this->ct_slice_uids.clear();
     delete this->m_demographics;
 
     for (i = 0; i < this->num_structures; i++) {

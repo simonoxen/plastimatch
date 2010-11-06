@@ -73,7 +73,7 @@ public:
     void
     save_cxt (const CBString &cxt_fn, bool prune_empty);
     void
-    save_gdcm_rtss (const char *dicom_dir);
+    save_gdcm_rtss (const char *output_dir, bool reload);
     void
     save_ss_image (const CBString &ss_img_fn);
     void

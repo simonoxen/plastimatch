@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <list>
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "gdcmFile.h"
@@ -169,11 +170,13 @@ Gdcm_series::digest_files (void)
 
 		/* Digest the USI */
 		digest_file_list (file_list, origin, dim, spacing);
+#if defined (commentout)
 		printf ("---- %s\n", id.c_str());
 		printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
 		printf ("OFF = %g %g %g\n", origin[0], origin[1], origin[2]);
 		printf ("SPA = %g %g %g\n", spacing[0], 
 			spacing[1], spacing[2]);
+#endif
 		
 		/* Pick the CT with the largest dim[2] */
 		if (dim[2] > this->m_dim[2]) {
@@ -227,6 +230,23 @@ Gdcm_series::get_slice_info (int *slice_no, CBString *ct_slice_uid, float z)
     std::string slice_uid = file->GetEntryValue (0x0008, 0x0018);
 
     (*ct_slice_uid) = slice_uid.c_str();
+}
+
+void
+Gdcm_series::get_slice_uids (std::list<CBString> *slice_uids)
+{
+    slice_uids->clear ();
+    if (!this->m_have_ct) {
+	return;
+    }
+
+    for (gdcm::FileList::iterator it =  this->m_ct_file_list->begin();
+	 it != this->m_ct_file_list->end(); 
+	 ++it)
+    {
+	std::string slice_uid = (*it)->GetEntryValue (0x0008, 0x0018);
+	slice_uids->push_back ((*it)->GetEntryValue (0x0008, 0x0018).c_str());
+    }
 }
 
 gdcm::File*

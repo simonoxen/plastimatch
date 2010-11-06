@@ -223,17 +223,18 @@ Rtds::load_dose_mc (const char *dose_mc)
 }
 
 void
-Rtds::save_dicom (const char *dicom_dir)
+Rtds::save_dicom (const char *output_dir)
 {
     if (this->m_img) {
-	this->m_img->save_short_dicom (dicom_dir);
+	this->m_img->save_short_dicom (output_dir);
     }
     if (this->m_ss_image) {
-	this->m_ss_image->save_gdcm_rtss (dicom_dir);
+	bool reload = this->m_img;
+	this->m_ss_image->save_gdcm_rtss (output_dir, reload);
     }
     if (this->m_dose) {
 	char fn[_MAX_PATH];
-	snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "dose.dcm");
+	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
 	gdcm_dose_save (this->m_dose, fn);
     }
 }

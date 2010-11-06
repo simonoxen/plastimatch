@@ -83,17 +83,19 @@ Ss_image::save_cxt (const CBString &cxt_fn, bool prune_empty)
 }
 
 void
-Ss_image::save_gdcm_rtss (const char *dicom_dir)
+Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
 {
     char fn[_MAX_PATH];
     this->m_cxt->adjust_structure_names ();
-    if (bstring_empty (this->m_cxt->ct_study_uid)) {
-	/* No structure association currently available.
-	   Associate with dicom_dir. */
-	cxt_apply_dicom_dir (this->m_cxt, dicom_dir);
+
+    /* If we have just written the CT files using the ITK writer, 
+       we need to associate the RTSS with it. */
+    if (reload || bstring_empty (this->m_cxt->ct_study_uid)) {
+	cxt_apply_dicom_dir (this->m_cxt, output_dir);
     }
-    snprintf (fn, _MAX_PATH, "%s/%s", dicom_dir, "ss.dcm");
-    gdcm_rtss_save (this->m_cxt, fn, dicom_dir);
+
+    snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
+    gdcm_rtss_save (this->m_cxt, fn);
 }
 
 void

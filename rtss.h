@@ -5,6 +5,7 @@
 #define _rtss_h_
 
 #include "plm_config.h"
+#include <list>
 #include "bstrwrap.h"
 
 #include "demographics.h"
@@ -21,6 +22,7 @@ public:
     CBString ct_series_uid;
     CBString ct_fref_uid;
     CBString study_id;
+    std::list<CBString> ct_slice_uids;
     int have_geometry;
     int dim[3];
     float spacing[3];

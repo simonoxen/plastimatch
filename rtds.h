@@ -67,7 +67,7 @@ public:
     void load_dose_xio (const char *dose_xio);
     void load_dose_astroid (const char *dose_astroid);
     void load_dose_mc (const char *dose_mc);
-    void save_dicom (const char *dicom_dir);
+    void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
 };
 

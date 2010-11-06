@@ -373,22 +373,24 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 void
 gdcm_rtss_save (
     Rtss *cxt, 
-    char *rtss_fn, 
-    const char *dicom_dir)
+    char *rtss_fn
+)
 {
-    int i, j, k;
+    int j, k;
     gdcm::File *gf = new gdcm::File ();
-    Gdcm_series gs;
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
     printf ("Hello from gdcm_rtss_save\n");
 
+#if defined (commentout)
+    Gdcm_series gs;
     /* Got the RT struct.  Try to load the corresponding CT. */
     if (dicom_dir[0] != '\0') {
 	gs.load (dicom_dir);
 	gs.digest_files ();
     }
+#endif
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.
@@ -539,6 +541,7 @@ gdcm_rtss_save (
     }
     /* ContourImageSequence */
     gdcm::SeqEntry *ci_seq = rtrseries_item->InsertSeqEntry (0x3006, 0x0016);
+#if defined (commentout)
     if (gs.m_have_ct) {
 	int i = 1;
 	gdcm::FileList *file_list = gs.m_ct_file_list;
@@ -563,6 +566,28 @@ gdcm_rtss_save (
 	printf ("Warning: CT not found. "
 	    "ContourImageSequence not generated.\n");
     }
+#endif
+    if (cxt->ct_slice_uids.empty()) {
+	printf ("Warning: CT not found. "
+	    "ContourImageSequence not generated.\n");
+    }
+    int i = 1;
+    for (std::list<CBString>::iterator it = cxt->ct_slice_uids.begin();
+	 it != cxt->ct_slice_uids.end();
+	 it++)
+    {
+	/* Get SOPInstanceUID of CT slice */
+	std::string tmp = (const char*) (*it);
+	/* Put item into sequence */
+	gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
+	ci_seq->AddSQItem (ci_item, i++);
+	/* ReferencedSOPClassUID = CTImageStorage */
+	ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
+	    0x0008, 0x1150);
+	/* Put ReferencedSOPInstanceUID into item */
+	ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
+    }
+	 
 
     /* ----------------------------------------------------------------- */
     /*     Part 3  -- Structure info                                     */
@@ -619,7 +644,10 @@ gdcm_rtss_save (
 
 	    /* GE -> XiO transfer does not work if contour does not have 
 	       corresponding slice uid */
-	    if (bstring_empty (curr_contour->ct_slice_uid)) continue;
+	    if (bstring_empty (curr_contour->ct_slice_uid)) {
+		printf ("Warning: Omitting contour (%d,%d)\n", i, j);
+		continue;
+	    }
 
 	    gdcm::SQItem *c_item = new gdcm::SQItem (c_seq->GetDepthLevel());
 	    c_seq->AddSQItem (c_item, j+1);

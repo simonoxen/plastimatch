@@ -5,8 +5,9 @@
 #define _gdcm_series_h_
 
 #include "plm_config.h"
-#include <vector>
 #include <map>
+#include <list>
+#include <vector>
 #include "bstrwrap.h"
 #include "gdcm_series_helper_2.h"
 
@@ -20,6 +21,7 @@ public:
     void digest_files (void);
     void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
+    void get_slice_uids (std::list<CBString> *slice_uids);
 
     gdcm::SerieHelper2 *m_gsh2;
 

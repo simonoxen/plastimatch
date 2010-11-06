@@ -82,7 +82,10 @@ cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
     tmp = file->GetEntryValue (0x0020, 0x0052);
     cxt->ct_fref_uid = tmp.c_str();
 
-    /* slice numbers and slice uids */
+    /* Slice uids */
+    gs.get_slice_uids (&cxt->ct_slice_uids);
+
+    /* Slice numbers and slice uids */
     for (i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	for (j = 0; j < curr_structure->num_contours; j++) {
@@ -90,9 +93,10 @@ cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 	    if (curr_polyline->num_vertices <= 0) {
 		continue;
 	    }
-	    gs.get_slice_info (&curr_polyline->slice_no,
-			       &curr_polyline->ct_slice_uid,
-			       curr_polyline->z[0]);
+	    gs.get_slice_info (
+		&curr_polyline->slice_no,
+		&curr_polyline->ct_slice_uid,
+		curr_polyline->z[0]);
 	}
     }
 }

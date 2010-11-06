@@ -131,16 +131,24 @@ save_ss_img (Rtds *rtds, Xform *xf,
 	rtds->m_ss_image->save_colormap (parms->output_colormap_fn);
     }
 
-    /* If we are warping, re-extract polylines into cxt */
-    /* GCS FIX: This is only necessary if we are outputting polylines. 
-       Otherwise it is wasting users time. */
-    if (bstring_not_empty (parms->xf_in_fn)) {
-	rtds->m_ss_image->cxt_re_extract ();
+    /* cxt */
+    if (bstring_not_empty (parms->output_cxt_fn)) {
+	rtds->m_ss_image->save_cxt (parms->output_cxt_fn, false);
+    }
+
+    /* xio */
+    if (bstring_not_empty (parms->output_xio_dirname)) {
+	printf ("Output xio dirname = %s\n", 
+	    (const char*) parms->output_xio_dirname);
+	rtds->m_ss_image->save_xio (
+	    rtds->m_xio_transform,
+	    parms->output_xio_version,
+	    parms->output_xio_dirname);
     }
 }
 
 static void
-save_ss_output (
+warp_and_save_ss (
     Rtds *rtds,  
     Xform *xf, 
     Plm_image_header *pih, 
@@ -162,26 +170,22 @@ save_ss_output (
 	rtds->m_ss_image->rasterize ();
     }
 
+    /* Do the warp */
     /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
        not included in output. */
     if (bstring_not_empty (parms->xf_in_fn)) {
 	rtds->m_ss_image->warp (xf, pih, parms);
     }
 
+    /* If we are warping, re-extract polylines into cxt */
+    /* GCS FIX: This is only necessary if we are outputting polylines. 
+       Otherwise it is wasting users time. */
+    if (bstring_not_empty (parms->xf_in_fn)) {
+	rtds->m_ss_image->cxt_re_extract ();
+    }
+
+    /* Save non-dicom formats, such as mha, cxt, xio */
     save_ss_img (rtds, xf, pih, parms);
-
-    if (bstring_not_empty (parms->output_cxt_fn)) {
-	rtds->m_ss_image->save_cxt (parms->output_cxt_fn, false);
-    }
-
-    if (bstring_not_empty (parms->output_xio_dirname)) {
-	printf ("Output xio dirname = %s\n", 
-	    (const char*) parms->output_xio_dirname);
-	rtds->m_ss_image->save_xio (
-	    rtds->m_xio_transform,
-	    parms->output_xio_version,
-	    parms->output_xio_dirname);
-    }
 }
 
 void
@@ -318,8 +322,16 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	itk_image_save (vf, (const char*) parms->output_vf_fn);
     }
 
-    /* Warp and save output structure set */
-    save_ss_output (rtds, &xform, &pih, parms);
+    /* Warp and save structure set (except dicom) */
+    warp_and_save_ss (rtds, &xform, &pih, parms);
+
+    /* In certain cases, we have to delay setting dicom uids 
+       (e.g. wait until after warping) */
+    /* GCS FIX: Sometimes dicom_dir is applied multiple times, 
+       such as when using dicom and xio input, which is inefficient. */
+    if (rtds->m_ss_image) {
+	rtds->m_ss_image->apply_dicom_dir (parms->dicom_dir);
+    }
 
     /* Save dicom */
     if (bstring_not_empty (parms->output_dicom)) {

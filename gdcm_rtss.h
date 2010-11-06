@@ -26,8 +26,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_save (
     Rtss *cxt, 
-    char *rtss_fn, 
-    const char *dicom_dir);
+    char *rtss_fn);
 
 #if defined __cplusplus
 }
