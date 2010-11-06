@@ -236,6 +236,7 @@ gdcm_rtss_load (
 	    printf ("Couldn't reference structure with id %d\n", structure_id);
 	    exit (-1);
 	}
+	curr_structure->set_color (roi_display_color.c_str());
 
 	/* ContourSequence */
 	c_seq = item->GetSeqEntry (0x3006,0x0040);

@@ -329,7 +329,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
        (e.g. wait until after warping) */
     /* GCS FIX: Sometimes dicom_dir is applied multiple times, 
        such as when using dicom and xio input, which is inefficient. */
-    if (rtds->m_ss_image) {
+    if (rtds->m_ss_image && bstring_not_empty (parms->dicom_dir)) {
 	rtds->m_ss_image->apply_dicom_dir (parms->dicom_dir);
     }
 

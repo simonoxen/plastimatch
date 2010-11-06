@@ -44,6 +44,7 @@ public:
 
     void clear ();
     Rtss_polyline* add_polyline ();
+    void set_color (const char* color_string);
     void structure_rgb (int *r, int *g, int *b) const;
 
     static void adjust_name (CBString *name_out, const CBString *name_in);

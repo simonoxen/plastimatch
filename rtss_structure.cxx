@@ -101,6 +101,24 @@ Rtss_structure::adjust_name (CBString *name_out, const CBString *name_in)
 }
 
 void
+Rtss_structure::set_color (const char* color_string)
+{
+    int r, g, b;
+    if (3 == sscanf (color_string, "%d %d %d", &r, &g, &b)) {
+	/* Parsed OK */
+    }
+    else if (3 == sscanf (color_string, "%d\\%d\\%d", &r, &g, &b)) {
+	/* Parsed OK */
+    } else {
+	r = 255;
+	g = 0;
+	b = 0;
+    }
+
+    this->color.format ("%d %d %d", r, g, b);
+}
+
+void
 Rtss_structure::structure_rgb (int *r, int *g, int *b) const
 {
     *r = 255;
