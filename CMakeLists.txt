@@ -17,6 +17,7 @@ ENDIF (NOT CMAKE_BUILD_TYPE)
 
 ## My modules override CMake defaults
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -65,6 +66,11 @@ SET (PLM_TEST_FDK_VARIAN OFF CACHE BOOL
   "Regression tests for fdk reconstruction from Varian data (downloads extra test data)")
 SET (PLM_TEST_XIO OFF CACHE BOOL 
   "Regression tests for xio file exchange (downloads extra test data)")
+
+##-----------------------------------------------------------------------------
+##  RTK is special.  We need to do this up front, to set the CMake path
+##-----------------------------------------------------------------------------
+FIND_PACKAGE (RTK)
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths
@@ -254,7 +260,6 @@ FIND_PACKAGE (NLopt)
 FIND_PACKAGE (Matlab)
 FIND_PACKAGE (Octave)
 FIND_PACKAGE (OpenCL)
-FIND_PACKAGE (RTK)
 FIND_PACKAGE (SQLite)
 
 ##-----------------------------------------------------------------------------
