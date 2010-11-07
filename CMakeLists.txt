@@ -235,33 +235,27 @@ IF (PLM_USE_F2C)
   ENDIF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
 ENDIF (PLM_USE_F2C)
 
-# OpenMP
-FIND_PACKAGE (OpenMP)
-
-# SSE Extensions
-INCLUDE (PLM_FindSSE.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
-INCLUDE (FindOpenGL)
-FIND_PACKAGE (wxWidgets)
-FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-
-INCLUDE (PLM_FindBrook.cmake)
-INCLUDE (PLM_Etags.cmake)
-INCLUDE (PLM_FindDCMTK.cmake)
-INCLUDE (PLM_FindFFTW.cmake)
-INCLUDE (PLM_FindSubversion.cmake)
-#INCLUDE(FindPantheios.cmake)
-
+FIND_PACKAGE (Brook)
+FIND_PACKAGE (Etags)
+FIND_PACKAGE (DCMTK)
 FIND_PACKAGE (Fann)
+FIND_PACKAGE (FFTW)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 FIND_PACKAGE (Matlab)
 FIND_PACKAGE (Octave)
 FIND_PACKAGE (OpenCL)
+FIND_PACKAGE (OpenGL)
+FIND_PACKAGE (OpenMP)
+FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 FIND_PACKAGE (SQLite)
+FIND_PACKAGE (SSE)           # SSE Extensions for CPU
+FIND_PACKAGE (Subversion)
+FIND_PACKAGE (wxWidgets)
 
 ##-----------------------------------------------------------------------------
 ##  QT requires including the use file
