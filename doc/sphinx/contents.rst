@@ -8,7 +8,8 @@ Documentation:
    registration
    drr
    fdk
-   fdk_tutorial
+   fdk_tutorial_i
+   fdk_tutorial_ii
    utility_programs
    3d_slicer_integration
    dicom_conformance

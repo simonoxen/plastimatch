@@ -1,3 +1,5 @@
+.. _drr:
+
 Digitally reconstructed radiographs (DRRs)
 ==========================================
 

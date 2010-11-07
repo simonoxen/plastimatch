@@ -1,14 +1,14 @@
-.. _fdk_tutorial:
+.. _fdk_tutorial_i:
 
-FDK Tutorial
-============
-This tutorial demonstrates the use of the FDK program.  It is highly 
-recommended to try this tutorial before attempting to reconstruct your 
-own images.  
+FDK Tutorial (Part I)
+=====================
+The FDK tutorial has two parts.  In Part I, you will learn the basic 
+command line options of the drr and fdk programs.  In Part II, you will 
+learn how to adapt these programs to a real CT scanner.
 
-The basic procedure we will follow is to generate synthetic X-ray projection 
-images using the drr program, and then reconstruct them using the fdk 
-program.  
+This is Part I of the FDK tutorial.  You will download sample data, 
+use the drr program to generate synthetic X-ray projections of the data, 
+and then reconstruct them using the fdk program.  
 
 Download the sample data
 ^^^^^^^^^^^^^^^^^^^^^^^^
