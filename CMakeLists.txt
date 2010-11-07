@@ -222,7 +222,7 @@ ENDIF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
 IF (PLM_USE_F2C)
   # If the user wants the system f2c, check for it
   IF (PLM_PREFER_SYSTEM_F2C)
-    INCLUDE (PLM_FindF2C.cmake)
+    FIND_PACKAGE (F2C)
   ENDIF (PLM_PREFER_SYSTEM_F2C)
 
   # If the user doesn't want system f2c, or didn't find it, build the 
@@ -236,7 +236,7 @@ IF (PLM_USE_F2C)
 ENDIF (PLM_USE_F2C)
 
 # OpenMP
-INCLUDE (PLM_FindOpenMP.cmake)
+FIND_PACKAGE (OpenMP)
 
 # SSE Extensions
 INCLUDE (PLM_FindSSE.cmake)
