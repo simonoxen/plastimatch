@@ -71,6 +71,7 @@ SET (PLM_TEST_XIO OFF CACHE BOOL
 ##  RTK is special.  We need to do this up front, to set the CMake path
 ##-----------------------------------------------------------------------------
 FIND_PACKAGE (RTK)
+SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths
