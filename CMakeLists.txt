@@ -601,6 +601,7 @@ ENDIF (PLM_MONOLITHIC_LIBRARY)
 
 SET (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
+
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
@@ -1082,7 +1083,6 @@ IF(SSE2_FOUND)
     SET_SOURCE_FILES_PROPERTIES(bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
 ENDIF(SSE2_FOUND)
 
-
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
 ##-----------------------------------------------------------------------------
@@ -1423,15 +1423,32 @@ ENDIF (PLM_BUILD_FANN_TEST AND FANN_FOUND)
 # Test executable -- mex
 IF (PLM_BUILD_MEX_TEST)
   IF (OCTAVE_FOUND)
-    ADD_CUSTOM_COMMAND(
+    ADD_CUSTOM_COMMAND (
       OUTPUT "${CMAKE_BINARY_DIR}/mex_test.mex"
       COMMAND ${OCTAVE_MKOCTFILE} --mex 
       -o "${CMAKE_BINARY_DIR}/mex_test.mex" 
       "${CMAKE_SOURCE_DIR}/mex_test.c"
       DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
-    ADD_CUSTOM_TARGET (mex_test
+    ADD_CUSTOM_TARGET (oct_mex_test
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
   ENDIF (OCTAVE_FOUND)
+  IF (MATLAB_FOUND)
+    FILE (WRITE "${CMAKE_BINARY_DIR}/mex_test.m"
+      "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
+    FILE (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
+      "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm
+       -r mex_test
+       RESULT_VARIABLE RESULT
+       OUTPUT_VARIABLE STDOUT
+       ERROR_VARIABLE STDERR)\n")
+    ADD_CUSTOM_COMMAND (
+      OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_LDEXTENSION}"
+      COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/mex_test.cmake"
+      DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
+    ADD_CUSTOM_TARGET (mat_mex_test
+      DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_LDEXTENSION}")
+    TARGET_LINK_LIBRARIES (mex_test ${MATLAB_LIBRARIES})
+  ENDIF (MATLAB_FOUND)
 ENDIF (PLM_BUILD_MEX_TEST)
 
 # Test executable -- nlopt
