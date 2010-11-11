@@ -940,6 +940,9 @@ SET (ITK_TPS_WARP_SRC
 SET (MASK_MHA_SRC
   mask_mha_main.cxx
   )
+SET (MEX_DRR_SRC
+  mex_drr.c
+  )
 SET (MHA_TO_RTOG_DOSE_SRC
   mha_to_rtog_dose.cxx
   )
@@ -1300,6 +1303,11 @@ IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
     INSTALL(TARGETS mondoshot DESTINATION bin)
   ENDIF (NOT BUILD_AGAINST_SLICER3)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+
+# matlab mex files
+IF (MATLAB_FOUND)
+  MEX_TARGET (mex_drr "${MEX_DRR_SRC}" "")
+ENDIF (MATLAB_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
