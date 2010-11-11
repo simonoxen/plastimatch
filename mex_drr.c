@@ -1,4 +1,7 @@
+#include "plm_config.h"
 #include "mex.h"
+
+#include "file_util.h"
      
 void
 mexFunction (int nlhs, mxArray *plhs[], int nrhs, 
@@ -12,5 +15,11 @@ mexFunction (int nlhs, mxArray *plhs[], int nrhs,
     data[1] = b_data[1];
     data[2] = b_data[2];
     data[3] = b_data[3];
+
+    /* This is just to test linking against the plastimatch library */
+    if (extension_is ("foo.pgm", "pgm")) {
+	data[3] = 100;
+    }
+    
     plhs[0] = v;
 }

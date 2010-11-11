@@ -1305,9 +1305,11 @@ IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 
 # matlab mex files
+IF (PLM_BUILD_MEX_TEST)
 IF (MATLAB_FOUND)
-  MEX_TARGET (mex_drr "${MEX_DRR_SRC}" "")
+  MEX_TARGET (mex_drr "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}")
 ENDIF (MATLAB_FOUND)
+ENDIF (PLM_BUILD_MEX_TEST)
 
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
