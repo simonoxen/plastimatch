@@ -456,7 +456,7 @@ CUDA_bspline_mi_init_a (
     // Report global memory allocation.
     printf("             Real GPU Memory: %ld MB\n", GPU_Memory_Bytes / 1048576);
     if (parms->gpu_zcpy) {
-        printf("          Virtual GPU Memory: %ld MB\n", VMEM_TALLY () / 1048576);
+        printf("          Virtual GPU Memory: %u MB\n", VMEM_TALLY () / 1048576);
         printf("Explicitly Pinned CPU Memory: %ld MB\n", CPU_Pinned_Bytes / 1048576);
     }
 
@@ -2407,16 +2407,10 @@ kernel_bspline_mi_hist_jnt (
     __syncthreads();
 
     // -- Read from histograms and compute dC/dp_j * dp_j/dv --
-    bool success;
     int idx_fbin, offset_fbin;
     int idx_mbin;
     int idx_jbin;
-    int j_mem;
     long j_bins = f_bins * m_bins;
-
-    long j_stride = blockIdxInGrid * j_bins;
-
-    float old;
 
     // Calculate fixed bin offset into joint
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
@@ -2426,40 +2420,14 @@ kernel_bspline_mi_hist_jnt (
     idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w1;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w1);
     }
 
     // Add PV w2 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w2;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w2);
     }
 
 
@@ -2467,127 +2435,49 @@ kernel_bspline_mi_hist_jnt (
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w3;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w3);
     }
 
     // Add PV w4 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w4;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w4);
     }
 
     // Add PV w5 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w5;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w5);
     }
 
     // Add PV w6 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w6;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w6);
     }
 
     // Add PV w7 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w7;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w7);
     }
 
     // Add PV w8 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
-#if __CUDA_ARCH__ >= 200
-        atomicAdd (&j_locks[idx_jbin], w1);
-#else
-        success = false;
-        while (!success) {
-            old = atomicExch(&j_locks[idx_jbin], -1.0f);
-            if (old != -1.0f) {
-               success = true;
-               old += w8;
-               atomicExch(&j_locks[idx_jbin], old);
-            }
-            __threadfence();
-        }
-#endif
+        atomic_add_float (&j_locks[idx_jbin], w8);
     }
-
     // --------------------------------------------------------
     __syncthreads();
 
 
     int idx;
+    long j_stride = blockIdxInGrid * j_bins;
     int chunks = (j_bins + threadsPerBlock - 1)/threadsPerBlock;
     for (int i=0; i<chunks; i++) {
         idx = threadIdx.x + i*threadsPerBlock;
@@ -3989,6 +3879,9 @@ write_dc_dv (
     dc_dv_element_y[0] = diff * m_grad_element[1];
     dc_dv_element_z[0] = diff * m_grad_element[2];
 }
+
+
+
 
 // JAS 11.04.2010
 // nvcc has the limitation of not being able to use

@@ -29,6 +29,11 @@ template <typename T>
 __device__ inline void
 shared_memset (T* s, T c, int n);
 
+__device__ inline void
+atomic_add_float (
+    float* addr,
+    float val
+);
 
 #if defined __cplusplus
 extern "C" {
