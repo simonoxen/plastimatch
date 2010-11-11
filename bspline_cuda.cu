@@ -2426,8 +2426,10 @@ kernel_bspline_mi_hist_jnt (
     idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
         success = false;
-        j_mem = j_stride + idx_jbin;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2437,14 +2439,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w2 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
         success = false;
-        j_mem = j_stride + idx_jbin;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2454,6 +2459,7 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
 
@@ -2461,8 +2467,10 @@ kernel_bspline_mi_hist_jnt (
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
         success = false;
-        j_mem = j_stride + idx_jbin;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2472,14 +2480,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w4 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    success = false;
-    j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
+        success = false;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2489,14 +2500,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w5 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    success = false;
-    j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
+        success = false;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2506,14 +2520,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w6 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    success = false;
-    j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
+        success = false;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2523,14 +2540,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w7 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    success = false;
-    j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
+        success = false;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2540,14 +2560,17 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // Add PV w8 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
-    success = false;
-    j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
+#if __CUDA_ARCH__ >= 200
+        atomicAdd (&j_locks[idx_jbin], w1);
+#else
+        success = false;
         while (!success) {
             old = atomicExch(&j_locks[idx_jbin], -1.0f);
             if (old != -1.0f) {
@@ -2557,6 +2580,7 @@ kernel_bspline_mi_hist_jnt (
             }
             __threadfence();
         }
+#endif
     }
 
     // --------------------------------------------------------
