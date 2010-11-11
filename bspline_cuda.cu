@@ -2416,6 +2416,8 @@ kernel_bspline_mi_hist_jnt (
 
     long j_stride = blockIdxInGrid * j_bins;
 
+    float old;
+
     // Calculate fixed bin offset into joint
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
     offset_fbin = idx_fbin * m_bins;
@@ -2427,10 +2429,11 @@ kernel_bspline_mi_hist_jnt (
         success = false;
         j_mem = j_stride + idx_jbin;
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w1;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w1;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2443,14 +2446,16 @@ kernel_bspline_mi_hist_jnt (
         success = false;
         j_mem = j_stride + idx_jbin;
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w2;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w2;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
     }
+
 
     // Add PV w3 to moving & joint histograms
     idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
@@ -2459,10 +2464,11 @@ kernel_bspline_mi_hist_jnt (
         success = false;
         j_mem = j_stride + idx_jbin;
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w3;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w3;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2475,10 +2481,11 @@ kernel_bspline_mi_hist_jnt (
     j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w4;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w4;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2491,10 +2498,11 @@ kernel_bspline_mi_hist_jnt (
     j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w5;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w5;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2507,10 +2515,11 @@ kernel_bspline_mi_hist_jnt (
     j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w6;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w6;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2523,10 +2532,11 @@ kernel_bspline_mi_hist_jnt (
     j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w7;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w7;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
@@ -2539,19 +2549,32 @@ kernel_bspline_mi_hist_jnt (
     j_mem = j_stride + idx_jbin;
     if (idx_jbin != 0) {
         while (!success) {
-            if (atomicExch(&j_locks[idx_jbin], 1.0f) == 0.0f) {
+            old = atomicExch(&j_locks[idx_jbin], -1.0f);
+            if (old != -1.0f) {
                success = true;
-               j_hist[j_mem] += w8;
-               atomicExch(&j_locks[idx_jbin], 0.0f);
+               old += w8;
+               atomicExch(&j_locks[idx_jbin], old);
             }
             __threadfence();
         }
     }
+
     // --------------------------------------------------------
+    __syncthreads();
+
+
+    int idx;
+    int chunks = (j_bins + threadsPerBlock - 1)/threadsPerBlock;
+    for (int i=0; i<chunks; i++) {
+        idx = threadIdx.x + i*threadsPerBlock;
+        if (idx < j_bins) {
+                j_hist[j_stride + idx] = j_locks[idx];
+        }
+    }
+
 
 #endif // __CUDA_ARCH__
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Merge Partial/Segmented Histograms
