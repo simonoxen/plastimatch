@@ -2374,34 +2374,32 @@ kernel_bspline_mi_hist_jnt (
     clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
     // -- Compute coordinates of 8 nearest neighbors ----------
-    int n1, n2, n3, n4;
-    int n5, n6, n7, n8;
+    int nn[8];
     
     mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
 
-    n1 = mvf;
-    n2 = n1 + 1;
-    n3 = n1 + mdim.x;
-    n4 = n1 + mdim.x + 1;
-    n5 = n1 + mdim.x * mdim.y;
-    n6 = n1 + mdim.x * mdim.y + 1;
-    n7 = n1 + mdim.x * mdim.y + mdim.x;
-    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    nn[0] = mvf;
+    nn[1] = nn[0] + 1;
+    nn[2] = nn[0] + mdim.x;
+    nn[3] = nn[0] + mdim.x + 1;
+    nn[4] = nn[0] + mdim.x * mdim.y;
+    nn[5] = nn[0] + mdim.x * mdim.y + 1;
+    nn[6] = nn[0] + mdim.x * mdim.y + mdim.x;
+    nn[7] = nn[0] + mdim.x * mdim.y + mdim.x + 1;
     // --------------------------------------------------------
 
 
     // -- Compute differential PV slices ----------------------
-    float w1, w2, w3, w4;
-    float w5, w6, w7, w8;
+    float w[8];
 
-    w1 = li_1.x * li_1.y * li_1.z;
-    w2 = li_2.x * li_1.y * li_1.z;
-    w3 = li_1.x * li_2.y * li_1.z;
-    w4 = li_2.x * li_2.y * li_1.z;
-    w5 = li_1.x * li_1.y * li_2.z;
-    w6 = li_2.x * li_1.y * li_2.z;
-    w7 = li_1.x * li_2.y * li_2.z;
-    w8 = li_2.x * li_2.y * li_2.z;
+    w[0] = li_1.x * li_1.y * li_1.z;
+    w[1] = li_2.x * li_1.y * li_1.z;
+    w[2] = li_1.x * li_2.y * li_1.z;
+    w[3] = li_2.x * li_2.y * li_1.z;
+    w[4] = li_1.x * li_1.y * li_2.z;
+    w[5] = li_2.x * li_1.y * li_2.z;
+    w[6] = li_1.x * li_2.y * li_2.z;
+    w[7] = li_2.x * li_2.y * li_2.z;
     // --------------------------------------------------------
 
     __syncthreads();
@@ -2416,61 +2414,15 @@ kernel_bspline_mi_hist_jnt (
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
     offset_fbin = idx_fbin * m_bins;
 
-    // Add PV w1 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w1);
-    }
-
-    // Add PV w2 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w2);
-    }
-
-
-    // Add PV w3 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w3);
-    }
-
-    // Add PV w4 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w4);
-    }
-
-    // Add PV w5 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w5);
-    }
-
-    // Add PV w6 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w6);
-    }
-
-    // Add PV w7 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w7);
-    }
-
-    // Add PV w8 to moving & joint histograms
-    idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
-    idx_jbin = offset_fbin + idx_mbin;
-    if (idx_jbin != 0) {
-        atomic_add_float (&j_locks[idx_jbin], w8);
+    // Maybe one day nvcc will be smart enough to honor this pragma...
+    // regardless, manual unrolling doesn't offer any visible speedup
+#pragma unroll
+    for (int i=0; i<8; i++) {
+        idx_mbin = (int) floorf ((m_img[nn[i]] - m_offset) * m_delta);
+        idx_jbin = offset_fbin + idx_mbin;
+        if (idx_jbin != 0) {
+            atomic_add_float (&j_locks[idx_jbin], w[i]);
+        }
     }
     // --------------------------------------------------------
     __syncthreads();

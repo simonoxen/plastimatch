@@ -63,15 +63,11 @@ atomic_add_float (
             old += val;
             atomicExch(addr, old);
         }
-            __threadfence();
+        __threadfence();
     }
 #else
-    /* JAS 2010.11.11
-       I don't think there is a way to do this
-       without memory atomics... so make sure that this case never happens.  We
-       just have it so that things will compile for the "old skool" CUDA
-       devices.
-    */
+    /* cannot be done on old CUDA devices
+     * this is just here to make the compiler happy */
     ;
 #endif
 }
