@@ -257,4 +257,17 @@ struct gpu_bspline_data
         int4 q
     );
 
+    __device__ inline void
+    get_nearest_neighbors (
+        int* nn,
+        int3 n_f,
+        int3 mdim
+    );
+
+    __device__ inline void
+    get_weights (
+        float* w,
+        float3 li_1,
+        float3 li_2
+    );
 #endif

@@ -2350,7 +2350,6 @@ kernel_bspline_mi_hist_jnt (
     int3 n_r;       // Voxel Displacement round
 
     int fv;     // fixed voxel
-    int mvf;        // moving voxel (floor)
     // --------------------------------------------------------
     
     fv = thread_idxg;
@@ -2373,36 +2372,13 @@ kernel_bspline_mi_hist_jnt (
     float3 li_1, li_2;
     clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
-    // -- Compute coordinates of 8 nearest neighbors ----------
     int nn[8];
-    
-    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+    get_nearest_neighbors (nn, n_f, mdim);
 
-    nn[0] = mvf;
-    nn[1] = nn[0] + 1;
-    nn[2] = nn[0] + mdim.x;
-    nn[3] = nn[0] + mdim.x + 1;
-    nn[4] = nn[0] + mdim.x * mdim.y;
-    nn[5] = nn[0] + mdim.x * mdim.y + 1;
-    nn[6] = nn[0] + mdim.x * mdim.y + mdim.x;
-    nn[7] = nn[0] + mdim.x * mdim.y + mdim.x + 1;
-    // --------------------------------------------------------
-
-
-    // -- Compute differential PV slices ----------------------
     float w[8];
+    get_weights (w, li_1, li_2);    // (a.k.a. partial volumes)
 
-    w[0] = li_1.x * li_1.y * li_1.z;
-    w[1] = li_2.x * li_1.y * li_1.z;
-    w[2] = li_1.x * li_2.y * li_1.z;
-    w[3] = li_2.x * li_2.y * li_1.z;
-    w[4] = li_1.x * li_1.y * li_2.z;
-    w[5] = li_2.x * li_1.y * li_2.z;
-    w[6] = li_1.x * li_2.y * li_2.z;
-    w[7] = li_2.x * li_2.y * li_2.z;
-    // --------------------------------------------------------
 
-    __syncthreads();
 
     // -- Read from histograms and compute dC/dp_j * dp_j/dv --
     int idx_fbin, offset_fbin;
@@ -3721,37 +3697,24 @@ get_moving_value (
 )
 {
     // -- Compute coordinates of 8 nearest neighbors ----------
-    int mvf;               // moving voxel (floor)
-    int n1, n2, n3, n4;    // neighbors
-    int n5, n6, n7, n8;
-    
-    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
-
-    n1 = mvf;
-    n2 = n1 + 1;
-    n3 = n1 + mdim.x;
-    n4 = n1 + mdim.x + 1;
-    n5 = n1 + mdim.x * mdim.y;
-    n6 = n1 + mdim.x * mdim.y + 1;
-    n7 = n1 + mdim.x * mdim.y + mdim.x;
-    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
+    int nn[8];
+    get_nearest_neighbors (nn, n_f, mdim);
     // --------------------------------------------------------
 
-
     // -- Compute Moving Image Intensity ----------------------
-    float w1, w2, w3, w4;
-    float w5, w6, w7, w8;
+    float w[8];
+    get_weights (w, li_1, li_2);
 
-    w1 = li_1.x * li_1.y * li_1.z * tex1Dfetch(tex_moving_image, n1);
-    w2 = li_2.x * li_1.y * li_1.z * tex1Dfetch(tex_moving_image, n2);
-    w3 = li_1.x * li_2.y * li_1.z * tex1Dfetch(tex_moving_image, n3);
-    w4 = li_2.x * li_2.y * li_1.z * tex1Dfetch(tex_moving_image, n4);
-    w5 = li_1.x * li_1.y * li_2.z * tex1Dfetch(tex_moving_image, n5);
-    w6 = li_2.x * li_1.y * li_2.z * tex1Dfetch(tex_moving_image, n6);
-    w7 = li_1.x * li_2.y * li_2.z * tex1Dfetch(tex_moving_image, n7);
-    w8 = li_2.x * li_2.y * li_2.z * tex1Dfetch(tex_moving_image, n8);
+    w[0] *= tex1Dfetch(tex_moving_image, nn[0]);
+    w[1] *= tex1Dfetch(tex_moving_image, nn[1]);
+    w[2] *= tex1Dfetch(tex_moving_image, nn[2]);
+    w[3] *= tex1Dfetch(tex_moving_image, nn[3]);
+    w[4] *= tex1Dfetch(tex_moving_image, nn[4]);
+    w[5] *= tex1Dfetch(tex_moving_image, nn[5]);
+    w[6] *= tex1Dfetch(tex_moving_image, nn[6]);
+    w[7] *= tex1Dfetch(tex_moving_image, nn[7]);
 
-    return w1 + w2 + w3 + w4 + w5 + w6 + w7 + w8;
+    return w[0] + w[1] + w[2] + w[3] + w[4] + w[5] + w[6] + w[7];
     // --------------------------------------------------------
 
 }
@@ -3833,6 +3796,39 @@ write_dc_dv (
 }
 
 
+__device__ inline void
+get_nearest_neighbors (
+    int* nn,
+    int3 n_f,
+    int3 mdim
+)
+{
+    nn[0] = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
+    nn[1] = nn[0] + 1;
+    nn[2] = nn[0] + mdim.x;
+    nn[3] = nn[0] + mdim.x + 1;
+    nn[4] = nn[0] + mdim.x * mdim.y;
+    nn[5] = nn[0] + mdim.x * mdim.y + 1;
+    nn[6] = nn[0] + mdim.x * mdim.y + mdim.x;
+    nn[7] = nn[0] + mdim.x * mdim.y + mdim.x + 1;
+}
+
+__device__ inline void
+get_weights (
+    float* w,
+    float3 li_1,
+    float3 li_2
+)
+{
+    w[0] = li_1.x * li_1.y * li_1.z;
+    w[1] = li_2.x * li_1.y * li_1.z;
+    w[2] = li_1.x * li_2.y * li_1.z;
+    w[3] = li_2.x * li_2.y * li_1.z;
+    w[4] = li_1.x * li_1.y * li_2.z;
+    w[5] = li_2.x * li_1.y * li_2.z;
+    w[6] = li_1.x * li_2.y * li_2.z;
+    w[7] = li_2.x * li_2.y * li_2.z;
+}
 
 
 // JAS 11.04.2010
