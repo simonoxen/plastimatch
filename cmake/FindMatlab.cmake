@@ -6,8 +6,7 @@ FIND_PROGRAM (MATLAB_EXE
 IF (MATLAB_EXE)
 
   MESSAGE (STATUS "Probing matlab capabilities")
-  FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab_2.m"
-    "mexext\nmatlabroot\nexit;")
+  IF (USE_MATLAB_PROBE)
   FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab.c"
     "#include \"mex.h\"
     void
@@ -27,7 +26,10 @@ IF (MATLAB_EXE)
     )
   STRING (REGEX MATCH "LDEXTENSION *= *([^ \n]*)" JUNK ${MATLAB_STDOUT})
   SET (MATLAB_LDEXTENSION "${CMAKE_MATCH_1}")
+  ENDIF (USE_MATLAB_PROBE)
 
+  FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab_2.m"
+    "disp(sprintf('mexext=%s',mexext));\nmatlabroot\nexit;")
   EXECUTE_PROCESS (COMMAND
     "${MATLAB_EXE}" -nosplash -nodisplay -r "probe_matlab_2"
     TIMEOUT 20
@@ -35,27 +37,41 @@ IF (MATLAB_EXE)
     OUTPUT_VARIABLE MATLAB_STDOUT
     ERROR_VARIABLE MATLAB_STDERR
     )
-  STRING (REGEX MATCH "ans *=[ \n]*([^\n]*)[ \n]*ans *=[ \n]*([^\n]*)" JUNK ${MATLAB_STDOUT})
-  SET (MATLAB_MEXEXT "${CMAKE_MATCH_1}")
-  SET (MATLAB_ROOT "${CMAKE_MATCH_2}")
+  IF (MATLAB_STDOUT)
+    STRING (REGEX MATCH "mexext *=[ ]*([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_MEXEXT "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "ans *=[ \n]*([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_ROOT "${CMAKE_MATCH_1}")
+  ENDIF (MATLAB_STDOUT)
 
-  MESSAGE (STATUS "Matlab stdout = ${MATLAB_STDOUT}")
+  #MESSAGE (STATUS "Matlab stdout = ${MATLAB_STDOUT}")
   MESSAGE (STATUS "Matlab root = ${MATLAB_ROOT}")
-  MESSAGE (STATUS "Mex extension (#1) = ${MATLAB_MEXEXT}")
-  MESSAGE (STATUS "Mex extension (#2) = ${MATLAB_LDEXTENSION}")
+  MESSAGE (STATUS "Mex extension = ${MATLAB_MEXEXT}")
+  #MESSAGE (STATUS "Mex extension (#2) = ${MATLAB_LDEXTENSION}")
+
   
-  IF (MATLAB_LDEXTENSION)
+  IF (MATLAB_MEXEXT)
     SET (MATLAB_FOUND 1)
-  ENDIF (MATLAB_LDEXTENSION)
+    SET (MATLAB_INCLUDE_DIRS "${MATLAB_ROOT}/extern/include")
+  ENDIF (MATLAB_MEXEXT)
 
 ENDIF (MATLAB_EXE)
 
+#######################################################################
 ## Macro for compiling mex files
+#######################################################################
 MACRO (MEX_TARGET
-    TARGET_NAME TARGET_SRC TARGET_LIBS)
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
+
+  ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+  IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES (${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
   IF (MATLAB_FOUND)
     FOREACH (F ${TARGET_SRC})
-    FOREACH (F ${TARGET_SRC})
+    ENDFOREACH (F ${TARGET_SRC})
   ENDIF (MATLAB_FOUND)
 ENDMACRO (MEX_TARGET)
 

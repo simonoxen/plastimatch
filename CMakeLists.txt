@@ -120,10 +120,10 @@ MACRO (PLM_ADD_EXECUTABLE
   IF (NOT BUILD_AGAINST_SLICER3)
     ADD_EXECUTABLE(${TARGET_NAME} ${TARGET_SRC})
     TARGET_LINK_LIBRARIES(${TARGET_NAME} ${TARGET_LIBS})
-    IF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+    IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
       SET_TARGET_PROPERTIES(${TARGET_NAME} 
 	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-    ENDIF(NOT ${TARGET_LDFLAGS} STREQUAL "")
+    ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
     # CXX linkage required for nlopt
     SET_TARGET_PROPERTIES (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
     INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
@@ -188,11 +188,11 @@ CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 ##-----------------------------------------------------------------------------
 ##  Set the math library -- need this variable to configure libf2c
 ##-----------------------------------------------------------------------------
-IF(UNIX)
+IF (UNIX)
   SET (MATH_LIB -lm)
-ELSE(UNIX)
+ELSE (UNIX)
   SET (MATH_LIB)
-ENDIF(UNIX)
+ENDIF (UNIX)
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
@@ -318,7 +318,7 @@ IF (CUDA_FOUND)
   CUDA_INCLUDE_DIRECTORIES (
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
-ENDIF(CUDA_FOUND)
+ENDIF (CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
@@ -416,18 +416,18 @@ ENDIF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
 ##  Unfortunately the below doesn't work.  It gets
 ##  reset by the ITK include.
 ##-----------------------------------------------------------------------------
-#IF(NOT CMAKE_BUILD_TYPE)
+#IF (NOT CMAKE_BUILD_TYPE)
 #  SET (CMAKE_BUILD_TYPE Release CACHE STRING
 #      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."	
 #      FORCE)
-#ENDIF(NOT CMAKE_BUILD_TYPE)
+#ENDIF (NOT CMAKE_BUILD_TYPE)
 
 ##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
 ##-----------------------------------------------------------------------------
 SET (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
-IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-  IF(Subversion_FOUND)
+IF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  IF (Subversion_FOUND)
     SET (PLASTIMATCH_EXPERIMENTAL TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS (
@@ -437,18 +437,18 @@ IF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
       OUTPUT_VARIABLE svn_version
       ERROR_VARIABLE svn_error
       )
-    IF(${svn_result} EQUAL 0)
+    IF (${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - found")
       SET (PLASTIMATCH_SVN_VERSION ${svn_version})
-    ELSE(${svn_result} EQUAL 0)
+    ELSE (${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - can't connect")
-    ENDIF(${svn_result} EQUAL 0)
-  ELSE(Subversion_FOUND)
+    ENDIF (${svn_result} EQUAL 0)
+  ELSE (Subversion_FOUND)
     MESSAGE(STATUS "Looking for version in svn - svn not found")
-  ENDIF(Subversion_FOUND)
-ELSE(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  ENDIF (Subversion_FOUND)
+ELSE (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   SET (PLASTIMATCH_EXPERIMENTAL FALSE)
-ENDIF(EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+ENDIF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 
 ##-----------------------------------------------------------------------------
 ##  ITK LIBRARY
@@ -515,12 +515,12 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 # Optional
-IF(CUDA_FOUND)
+IF (CUDA_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${CUDA_LIBRARIES}
     )
-ENDIF(CUDA_FOUND)
+ENDIF (CUDA_FOUND)
 
 # Optional
 IF (FFTW_FOUND)
@@ -535,12 +535,12 @@ IF (PLM_USE_F2C)
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${F2C_LIBRARY}
     )
-  IF(UNIX)
+  IF (UNIX)
     SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       f2c_helper
       )
-  ENDIF(UNIX)
+  ENDIF (UNIX)
   # Apparently the below is not needed.
   # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
 ELSE (PLM_USE_F2C)
@@ -671,7 +671,7 @@ SET (GPUIT_LIBRARY_SRC
   delayload.c delayload.h
   )
 
-IF(BROOK_FOUND)
+IF (BROOK_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     demons_brook.cpp
@@ -682,9 +682,9 @@ IF(BROOK_FOUND)
     convolution_brook_kernel_wrap.cpp
     convolution_brook_kernel.h
     )
-ENDIF(BROOK_FOUND)
+ENDIF (BROOK_FOUND)
 
-IF(CUDA_FOUND)
+IF (CUDA_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     bspline_cuda.cpp
@@ -719,7 +719,7 @@ IF(CUDA_FOUND)
     ${DEMONS_CUDA_WRAPPERS}
     demons_cuda.cu
     )
-ENDIF(CUDA_FOUND)
+ENDIF (CUDA_FOUND)
 
 IF (FFTW_FOUND)
   SET (GPUIT_LIBRARY_SRC
@@ -747,11 +747,11 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
   )
 
-IF(F2C_LIBRARY)
+IF (F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC
     main__.c
     )
-ENDIF(F2C_LIBRARY)
+ENDIF (F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
@@ -818,11 +818,11 @@ SET (PLASTIMATCH_LIBRARY_SRC
   xform.cxx xform.h 
   )
 
-IF(ITK_USE_REVIEW)
+IF (ITK_USE_REVIEW)
   SET (PLASTIMATCH_LIBRARY_SRC
     ${PLASTIMATCH_LIBRARY_SRC}
     cxt_extract.cxx cxt_extract.h)
-ENDIF(ITK_USE_REVIEW)
+ENDIF (ITK_USE_REVIEW)
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
@@ -1061,7 +1061,7 @@ ENDIF (NOT HAVE_GETOPT_LONG)
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
 ##-----------------------------------------------------------------------------
-IF(OPENMP_FOUND)
+IF (OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (bspline.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (drr.c
@@ -1071,9 +1071,9 @@ IF(OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 
-ENDIF(OPENMP_FOUND)
+ENDIF (OPENMP_FOUND)
 
-IF(SSE2_FOUND)
+IF (SSE2_FOUND)
 # JAS 08.19.2010 - Unfortunately, this doesn't work.
 #  SET_PROPERTY(
 #      SOURCE bspline.c
@@ -1082,11 +1082,11 @@ IF(SSE2_FOUND)
 
 # So, we ask CMake more forcefully to add additional compile flags
     GET_SOURCE_FILE_PROPERTY(OLD_FLAGS bspline.c COMPILE_FLAGS)
-    IF(OLD_FLAGS MATCHES "NONE")
+    IF (OLD_FLAGS MATCHES "NONE")
         SET(OLD_FLAGS "")
-    ENDIF(OLD_FLAGS MATCHES "NONE")
+    ENDIF (OLD_FLAGS MATCHES "NONE")
     SET_SOURCE_FILES_PROPERTIES(bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
-ENDIF(SSE2_FOUND)
+ENDIF (SSE2_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
@@ -1117,32 +1117,36 @@ INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 #  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
 #ENDIF (PLM_USE_F2C)
 
-IF(BROOK_FOUND)
+IF (BROOK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
-ENDIF(BROOK_FOUND)
+ENDIF (BROOK_FOUND)
 
-IF(CUDA_FOUND)
+IF (CUDA_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS})
   ##INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
-ENDIF(CUDA_FOUND)
+ENDIF (CUDA_FOUND)
 
-IF(DCMTK_FOUND)
+IF (DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
-ENDIF(DCMTK_FOUND)
+ENDIF (DCMTK_FOUND)
 
-IF(FFTW_FOUND)
+IF (FFTW_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
   LINK_DIRECTORIES (${FFTW_DIR})
-ENDIF(FFTW_FOUND)
+ENDIF (FFTW_FOUND)
 
 IF (OPENCL_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
 ENDIF (OPENCL_FOUND)
 
-IF(PANTHEIOS_FOUND)
+IF (MATLAB_FOUND)
+  INCLUDE_DIRECTORIES (AFTER ${MATLAB_INCLUDE_DIRS})
+ENDIF (MATLAB_FOUND)
+
+IF (PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
   INCLUDE_DIRECTORIES (AFTER ${PANTHEIOS_INCLUDE_DIR})
-ENDIF(PANTHEIOS_FOUND)
+ENDIF (PANTHEIOS_FOUND)
 
 IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
@@ -1155,9 +1159,9 @@ IF (SLICER_FOUND)
     )
 ENDIF (SLICER_FOUND)
 
-IF(wxWidgets_FOUND)
+IF (wxWidgets_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
-ENDIF(wxWidgets_FOUND)
+ENDIF (wxWidgets_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
@@ -1214,13 +1218,13 @@ PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}"
   "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
 
-IF(ITK_FOUND)
+IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF(ITK_USE_REVIEW)
+  IF (ITK_USE_REVIEW)
     PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF(ITK_USE_REVIEW)
+  ENDIF (ITK_USE_REVIEW)
 
   PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
@@ -1276,7 +1280,7 @@ IF(ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-ENDIF(ITK_FOUND)
+ENDIF (ITK_FOUND)
 
 # executables that require cuda
 IF (CUDA_FOUND)
@@ -1290,11 +1294,11 @@ IF (OPENCL_FOUND)
 ENDIF (OPENCL_FOUND)
 
 # dicom_uid requires dcmtk
-IF(DCMTK_FOUND)
+IF (DCMTK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_uid "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "")
   PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "")
   PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "")
-ENDIF(DCMTK_FOUND)
+ENDIF (DCMTK_FOUND)
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
 IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
@@ -1309,7 +1313,7 @@ ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
 # matlab mex files
 IF (PLM_BUILD_MEX_TEST)
 IF (MATLAB_FOUND)
-  MEX_TARGET (mex_drr "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}")
+  MEX_TARGET (mex_drr "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
 ENDIF (MATLAB_FOUND)
 ENDIF (PLM_BUILD_MEX_TEST)
 
@@ -1364,10 +1368,10 @@ ENDIF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
 ##-----------------------------------------------------------------------------
 ##  Additional install files
 ##-----------------------------------------------------------------------------
-IF(ITK_FOUND)
-  IF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+IF (ITK_FOUND)
+  IF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
-  ENDIF(EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+  ENDIF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
 
   INSTALL(FILES 
     "${CMAKE_SOURCE_DIR}/cttools/dicomrt_to_cxt.pl" 
@@ -1375,7 +1379,7 @@ IF(ITK_FOUND)
     "${CMAKE_SOURCE_DIR}/cttools/cxt_apply_uids.pl"
     "${CMAKE_SOURCE_DIR}/cttools/parse_cxt.pl"
     DESTINATION bin)
-ENDIF(ITK_FOUND)
+ENDIF (ITK_FOUND)
 
 IF (CUDA_FOUND)
   IF (UNIX)
@@ -1445,20 +1449,20 @@ IF (PLM_BUILD_MEX_TEST)
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
   ENDIF (OCTAVE_FOUND)
   IF (MATLAB_FOUND)
-    FILE (WRITE "${CMAKE_BINARY_DIR}/mex_test.m"
+    FILE (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
       "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
     FILE (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
       "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm
-       -r mex_test
+       -r compile_mex_test
        RESULT_VARIABLE RESULT
        OUTPUT_VARIABLE STDOUT
        ERROR_VARIABLE STDERR)\n")
     ADD_CUSTOM_COMMAND (
-      OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_LDEXTENSION}"
+      OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}"
       COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/mex_test.cmake"
       DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
     ADD_CUSTOM_TARGET (mat_mex_test
-      DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_LDEXTENSION}")
+      DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
     TARGET_LINK_LIBRARIES (mex_test ${MATLAB_LIBRARIES})
   ENDIF (MATLAB_FOUND)
 ENDIF (PLM_BUILD_MEX_TEST)
