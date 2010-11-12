@@ -6,30 +6,30 @@ FIND_PROGRAM (MATLAB_EXE
 IF (MATLAB_EXE)
 
   MESSAGE (STATUS "Probing matlab capabilities")
-  IF (USE_MATLAB_PROBE)
-  FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab.c"
-    "#include \"mex.h\"
-    void
-    mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
-    {
-    mxArray *v = mxCreateDoubleMatrix (1, 1, mxREAL);
-    double *data = mxGetPr (v);
-    *data = 1.23456789;
-    plhs[0] = v;
-    }")
-  EXECUTE_PROCESS (COMMAND
-    "${MATLAB_EXE}" -nosplash -nodisplay -r "mex -v probe_matlab.c;exit;"
-    TIMEOUT 20
-    RESULT_VARIABLE MATLAB_RESULT
-    OUTPUT_VARIABLE MATLAB_STDOUT
-    ERROR_VARIABLE MATLAB_STDERR
-    )
-  STRING (REGEX MATCH "LDEXTENSION *= *([^ \n]*)" JUNK ${MATLAB_STDOUT})
-  SET (MATLAB_LDEXTENSION "${CMAKE_MATCH_1}")
-  ENDIF (USE_MATLAB_PROBE)
 
+  FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab.c"
+"
+#include \"mex.h\"
+void
+mexFunction (int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
+{
+  mxArray *v = mxCreateDoubleMatrix (1, 1, mxREAL);
+  double *data = mxGetPr (v);
+  *data = 1.23456789;
+  plhs[0] = v;
+}
+"
+  )
   FILE (WRITE "${CMAKE_BINARY_DIR}/probe_matlab_2.m"
-    "disp(sprintf('mexext=%s',mexext));\nmatlabroot\nexit;")
+"
+disp(sprintf('mexext=%s',mexext));
+disp(sprintf('matlabroot=%s',matlabroot));
+%cpp_config = mex.getCompilerConfigurations('C++');
+%disp(sprintf('cxxflags=%s',cpp_config.Details.CompilerFlags));
+mex -v probe_matlab.c;
+exit;
+"
+  )
   EXECUTE_PROCESS (COMMAND
     "${MATLAB_EXE}" -nosplash -nodisplay -r "probe_matlab_2"
     TIMEOUT 20
@@ -40,15 +40,27 @@ IF (MATLAB_EXE)
   IF (MATLAB_STDOUT)
     STRING (REGEX MATCH "mexext *=[ ]*([^\n]*)" JUNK ${MATLAB_STDOUT})
     SET (MATLAB_MEXEXT "${CMAKE_MATCH_1}")
-    STRING (REGEX MATCH "ans *=[ \n]*([^\n]*)" JUNK ${MATLAB_STDOUT})
+    STRING (REGEX MATCH "matlabroot *=[ \n]*([^\n]*)" JUNK ${MATLAB_STDOUT})
     SET (MATLAB_ROOT "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "cxxflags *=[ \n]*([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_CXXFLAGS "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "CXXFLAGS *= *([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_CXXFLAGS "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "CXXLIBS *= *([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_CXXLIBS "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "LD *= *([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_LD "${CMAKE_MATCH_1}")
+    STRING (REGEX MATCH "LDFLAGS *= *([^\n]*)" JUNK ${MATLAB_STDOUT})
+    SET (MATLAB_LDFLAGS "${CMAKE_MATCH_1}")
   ENDIF (MATLAB_STDOUT)
 
   #MESSAGE (STATUS "Matlab stdout = ${MATLAB_STDOUT}")
   MESSAGE (STATUS "Matlab root = ${MATLAB_ROOT}")
-  MESSAGE (STATUS "Mex extension = ${MATLAB_MEXEXT}")
-  #MESSAGE (STATUS "Mex extension (#2) = ${MATLAB_LDEXTENSION}")
-
+  MESSAGE (STATUS "MEX extension = ${MATLAB_MEXEXT}")
+  MESSAGE (STATUS "MEX cxxflags = ${MATLAB_CXXFLAGS}")
+  MESSAGE (STATUS "MEX cxxlibs = ${MATLAB_CXXLIBS}")
+  MESSAGE (STATUS "MEX ld = ${MATLAB_LD}")
+  MESSAGE (STATUS "MEX ldflags = ${MATLAB_LDFLAGS}")
   
   IF (MATLAB_MEXEXT)
     SET (MATLAB_FOUND 1)
@@ -63,63 +75,21 @@ ENDIF (MATLAB_EXE)
 MACRO (MEX_TARGET
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
-  ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
-  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+  # GCS: This mostly works, except that "-framework OpenCL" 
+  # gives a link error when combined with 
+  # "-Wl,-syslibroot,/Developer/SDKs/MacOSX10.5.sdk" 
+  # It seems to work ok if I don't use ${MATLAB_LDFLAGS}
+  SET (MEX_COMPILE_TGT 
+    "${CMAKE_BINARY_DIR}/${TARGET_NAME}${MATLAB_LDEXTENSION}")
+  SET (MEX_COMPILE_SRC "${CMAKE_SOURCE_DIR}/${TARGET_SRC}")
+
+  ADD_LIBRARY (${TARGET_NAME} MODULE ${TARGET_SRC})
+  TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS} ${MATLAB_CXXLIBS})
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
     SET_TARGET_PROPERTIES (${TARGET_NAME} 
-      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+      PROPERTIES LINK_FLAGS "${TARGET_LDFLAGS}")
   ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
-  IF (MATLAB_FOUND)
-    FOREACH (F ${TARGET_SRC})
-    ENDFOREACH (F ${TARGET_SRC})
-  ENDIF (MATLAB_FOUND)
+  SET_TARGET_PROPERTIES (${TARGET_NAME} 
+    PROPERTIES PREFIX "" SUFFIX ".${MATLAB_MEXEXT}")
+
 ENDMACRO (MEX_TARGET)
-
-MACRO (MEX_TARGET_OLD
-    TARGET_NAME TARGET_SRC TARGET_LIBS)
-  IF (MATLAB_FOUND)
-    SET (MEX_COMPILE_CMD "compile_${TARGET_NAME}")
-    SET (MEX_COMPILE_M "${CMAKE_BINARY_DIR}/${MEX_COMPILE_CMD}.m")
-    SET (MEX_COMPILE_CMAKE "${CMAKE_BINARY_DIR}/${TARGET_NAME}.cmake")
-    SET (MEX_COMPILE_SRC "${CMAKE_SOURCE_DIR}/${TARGET_SRC}")
-    SET (MEX_COMPILE_TGT "${CMAKE_BINARY_DIR}/${TARGET_NAME}${MATLAB_LDEXTENSION}")
-    FILE (WRITE "${MEX_COMPILE_M}"
-      "mex")
-
-    GET_DIRECTORY_PROPERTY (INCLUDE_DIRS INCLUDE_DIRECTORIES)
-    FOREACH (DIR ${INCLUDE_DIRS})
-      FILE (APPEND "${MEX_COMPILE_M}"
-	" -I${DIR}")
-    ENDFOREACH (DIR ${INCLUDE_DIRECTORIES})
-
-    FILE (APPEND "${MEX_COMPILE_M}" " -L${CMAKE_BINARY_DIR}")
-    FILE (APPEND "${MEX_COMPILE_M}" " -L${CMAKE_BINARY_DIR}/libs/libf2c")
-    GET_DIRECTORY_PROPERTY (LINK_DIRS LINK_DIRECTORIES)
-    FOREACH (DIR ${LINK_DIRS})
-      FILE (APPEND "${MEX_COMPILE_M}"
-	" -L${DIR}")
-    ENDFOREACH (DIR ${LINK_DIRS})
-
-    FOREACH (LIB ${TARGET_LIBS})
-      FILE (APPEND "${MEX_COMPILE_M}"
-	" -l${LIB}")
-    ENDFOREACH (LIB ${TARGET_LIBS})
-
-    FILE (APPEND "${MEX_COMPILE_M}"
-      " \"${MEX_COMPILE_SRC}\";exit;\n")
-    FILE (WRITE "${MEX_COMPILE_CMAKE}"
-      "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm -nodisplay
-       -r ${MEX_COMPILE_CMD}
-       TIMEOUT 10
-       RESULT_VARIABLE RESULT
-       OUTPUT_VARIABLE STDOUT
-       ERROR_VARIABLE STDERR)\n")
-    ADD_CUSTOM_COMMAND (
-      OUTPUT "${MEX_COMPILE_TGT}"
-      COMMAND ${CMAKE_COMMAND} -P "${MEX_COMPILE_CMAKE}"
-      DEPENDS "${MEX_COMPILE_SRC}")
-    ADD_CUSTOM_TARGET (${TARGET_NAME}
-      DEPENDS "${MEX_COMPILE_TGT}")
-    #TARGET_LINK_LIBRARIES (${TARGET_NAME} ${MATLAB_LIBRARIES})
-  ENDIF (MATLAB_FOUND)
-ENDMACRO (MEX_TARGET_OLD)
