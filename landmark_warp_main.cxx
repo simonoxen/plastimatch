@@ -90,7 +90,43 @@ do_landmark_warp_gcs (Landmark_warp_args *parms)
 #endif
 
 static Landmark_warp*
-load_input_files (Landmark_warp_args *parms)
+load_input_files (args_info_landmark_warp *args_info)
+{
+    Landmark_warp *lw = 0;
+
+    /* Load the landmark data */
+    if (args_info->input_xform_arg) {
+	lw = landmark_warp_load_xform (args_info->input_xform_arg);
+	if (!lw) {
+	    print_and_exit ("Error, landmarks were not loaded successfully.\n");
+	}
+    }
+    else if (args_info->fixed_landmarks_arg && args_info->moving_landmarks_arg)
+    {
+	lw = landmark_warp_load_pointsets (
+	    args_info->fixed_landmarks_arg, 
+	    args_info->moving_landmarks_arg);
+	if (!lw) {
+	    print_and_exit ("Error, landmarks were not loaded successfully.\n");
+	}
+    } else {
+	print_and_exit (
+	    "Error.  Input landmarks must be specified using either the "
+	    "--input-xform option\nor the --fixed-landmarks and "
+	    "--moving-landmarks option.\n");
+    }
+
+    /* Load the input image */
+    lw->m_img = plm_image_load_native (args_info->input_image_arg);
+    if (!lw->m_img) {
+	print_and_exit ("Error reading moving file: %s\n", 
+	    (const char*) args_info->input_image_arg);
+    }
+    return lw;
+}
+
+static Landmark_warp*
+load_input_files_old (Landmark_warp_args *parms)
 {
     Landmark_warp *lw = 0;
 
@@ -119,11 +155,31 @@ load_input_files (Landmark_warp_args *parms)
 }
 
 static void
-do_landmark_warp (Landmark_warp_args *parms)
+do_landmark_warp (args_info_landmark_warp *args_info)
 {
     Landmark_warp *lw;
 
-    lw = load_input_files (parms);
+    lw = load_input_files (args_info);
+
+#if defined (commentout)
+    switch (parms->m_algorithm) {
+    case LANDMARK_WARP_ALGORITHM_ITK_TPS:
+	break;
+    case LANDMARK_WARP_ALGORITHM_RBF_NSH:
+	break;
+    case LANDMARK_WARP_ALGORITHM_RBF_GCS:
+    default:
+	break;
+    }
+#endif
+}
+
+static void
+do_landmark_warp_old (Landmark_warp_args *parms)
+{
+    Landmark_warp *lw;
+
+    lw = load_input_files_old (parms);
 
     switch (parms->m_algorithm) {
     case LANDMARK_WARP_ALGORITHM_ITK_TPS:
@@ -137,6 +193,12 @@ do_landmark_warp (Landmark_warp_args *parms)
 
 }
 
+static void
+check_arguments (args_info_landmark_warp *args_info)
+{
+    /* Nothing to check? */
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -144,7 +206,14 @@ main (int argc, char *argv[])
 
     GGO (landmark_warp, args_info);
 
-    parms.parse_args (argc, argv);
-    do_landmark_warp (&parms);
+    check_arguments (&args_info);
+
+    //parms.parse_args (argc, argv);
+    //do_landmark_warp (&parms);
+
+    do_landmark_warp (&args_info);
+
+    GGO_FREE (landmark_warp, args_info);
+
     return 0;
 }

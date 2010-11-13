@@ -1,5 +1,5 @@
 package "landmark_warp"
-version "1.4-beta"
+version "version 1.4-beta"
 #purpose "String of purpose."
 usage "landmark_warp [options]"
 #description "String of description."

@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_LANDMARK_WARP_VERSION
 /** @brief the program version */
-#define CMDLINE_PARSER_LANDMARK_WARP_VERSION "1.4-beta"
+#define CMDLINE_PARSER_LANDMARK_WARP_VERSION "version 1.4-beta"
 #endif
 
 /** @brief Where the command line options are stored */
