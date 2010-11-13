@@ -1,0 +1,31 @@
+package "landmark_warp"
+version "1.4-beta"
+#purpose "String of purpose."
+usage "landmark_warp [options]"
+#description "String of description."
+#args "--long-help -u --show-required --no-handle-error"
+args "-u --show-required --no-handle-error"
+#text "String of text"
+
+option "fixed-landmarks" f "Input fixed landmarks"
+       string typestr="filename" required
+option "moving-landmarks" m "Input moving landmarks"
+       string typestr="filename" required
+option "input-xform" x "Input landmark xform"
+       string typestr="filename" optional
+option "input-vf" v "Input vector field"
+       string typestr="filename" optional
+option "input-image" I "Input image to warp" 
+       string typestr="filename" optional
+option "output-image" O "Output warped image" 
+       string typestr="filename" optional
+option "output-vf" V "Output vector field" 
+       string typestr="filename" optional
+option "algorithm" a "Either \"itk\", \"gcs\", or \"nsh\""
+       string optional default="gcs"
+option "radius" r "Radius of radial basis function"
+       float optional default="0.0"
+option "stiffness" Y "Young modulus"
+       float optional default="0.0"
+option "config" - "Config file" 
+       string no hidden

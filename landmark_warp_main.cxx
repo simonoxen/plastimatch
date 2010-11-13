@@ -7,11 +7,14 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+
 #include "bstring_util.h"
 #include "math_util.h"
 #include "mha_io.h"
 #include "landmark_warp.h"
 #include "landmark_warp_args.h"
+#include "landmark_warp_ggo.h"
+#include "plm_ggo.h"
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "rbf_gcs.h"
@@ -138,6 +141,8 @@ int
 main (int argc, char *argv[])
 {
     Landmark_warp_args parms;
+
+    GGO (landmark_warp, args_info);
 
     parms.parse_args (argc, argv);
     do_landmark_warp (&parms);

@@ -266,6 +266,7 @@ FIND_PACKAGE (Etags)
 FIND_PACKAGE (DCMTK)
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (FFTW)
+FIND_PACKAGE (Gengetopt)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 IF (PLM_BUILD_MEX_TEST)
@@ -1021,9 +1022,12 @@ SET (PROTON_DOSE_SRC
   proton_dose_main.c 
   proton_dose_opts.c proton_dose_opts.h
   )
+WRAP_GGO (landmark_warp_GGO_C landmark_warp.ggo)
+MESSAGE (STATUS "landmark_warp_GGO_C = ${landmark_warp_GGO_C}")
 SET (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   landmark_warp_args.cxx landmark_warp_args.h
+  ${landmark_warp_GGO_C}
   )
 SET (RTOG_TO_MHA_SRC
   exchkeys.cxx exchkeys.h
