@@ -72,5 +72,37 @@ atomic_add_float (
 #endif
 }
 
+
+// JAS 2010.11.13
+// This is a useful function for copying the contents of shared memory to
+// global memory.  This sort of thing is incredibly useful because you can
+// organize your output within shared memory (which has no coalescence
+// requirements) and then copy the ordered output to global memory as a
+// series of blocks.  The global memory output will be the contents of each
+// thread block's shared memory -- one after another.
+template <typename T>
+__device__ inline void
+stog_memcpy (
+    T* global,
+    T* shared,
+    int set_size
+)
+{
+    int tpb = (blockDim.x * blockDim.y * blockDim.z);
+    int block_index = (gridDim.x * blockIdx.y) + blockIdx.x;
+
+    int idx;
+    int chunks = (set_size + tpb - 1) / tpb;
+    int offset = set_size * block_index;
+    for (int i=0; i<chunks; i++) {
+        idx = threadIdx.x + i*tpb;
+        if (idx < set_size) {
+            global[offset + idx] = shared[idx];
+        }
+    }
+}
+
+
+
 // Tell vim to use CUDA syntax highlighting
 // vim:ft=cuda:

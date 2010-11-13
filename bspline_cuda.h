@@ -294,6 +294,11 @@ extern "C" {
         Dev_Pointers_Bspline *dev_ptrs
     );
 
+    void
+    CUDA_bspline_interpolate_vf (
+        Volume* interp,
+        Bspline_xform* bxf
+    );
     //
     // -------------------------------------------------------------------
 

@@ -29,11 +29,22 @@ template <typename T>
 __device__ inline void
 shared_memset (T* s, T c, int n);
 
+
 __device__ inline void
 atomic_add_float (
     float* addr,
     float val
 );
+
+
+template <typename T>
+__device__ inline void
+stog_memcpy (
+    T* global,
+    T* shared,
+    int set_size
+);
+
 
 #if defined __cplusplus
 extern "C" {

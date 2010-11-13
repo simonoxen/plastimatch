@@ -62,6 +62,16 @@ struct gpu_bspline_data
         int num_elems
     );
 
+
+    __global__ void
+    kernel_bspline_interpolate_vf (
+        float* vf,
+        int3 fdim,
+        int3 rdim,
+        int3 cdim,
+        int3 vpr
+    );
+
     __global__ void
     kernel_sum_reduction_pt1 (
         float *idata, 
@@ -277,5 +287,15 @@ struct gpu_bspline_data
         float3 li_1,
         float3 li_2
     );
+
+    __device__ inline void
+    bspline_interpolate (
+        float3* d,
+        int3 cdim,
+        int3 vpr,
+        int4 p,
+        int4 q
+    );
+
 
 #endif

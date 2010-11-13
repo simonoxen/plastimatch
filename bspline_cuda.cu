@@ -1794,7 +1794,7 @@ CUDA_bspline_mse_pt2 (
 // AUTHOR: James Shackleford
 //   DATE: 19 August, 2009
 //////////////////////////////////////////////////////////////////////////////
-extern "C" void
+void
 CUDA_bspline_mse_score_dc_dv (
     Dev_Pointers_Bspline* dev_ptrs,
     Bspline_xform* bxf,
@@ -1941,6 +1941,152 @@ CUDA_bspline_reduce (
     );
 }
 ////////////////////////////////////////////////////////////////////////////////
+
+
+// JAS 2010.11.13
+// waiting for the cpu to generate large vector fields after a super fast
+// gpu driven registration was too troublesome.  this stub function is called
+// in the exact same fashion as the cpu equivalent, but is faster. ^_~
+void
+CUDA_bspline_interpolate_vf (
+    Volume* interp,
+    Bspline_xform* bxf
+)
+{
+    dim3 dimGrid;
+    dim3 dimBlock;
+
+    // Coefficient LUT
+    // ----------------------------------------------------------
+    float* coeff;
+    size_t coeff_size = sizeof(float) * bxf->num_coeff;
+
+    CUDA_alloc_copy ((void **)&coeff,
+                     (void **)&bxf->coeff,
+                     coeff_size,
+                     cudaGlobalMem);
+
+    cudaBindTexture(0, tex_coeff,
+                    coeff,
+                    coeff_size);
+
+    CUDA_check_error("Failed to bind coeff to texture reference!");
+
+
+    // Build B-spline LUTs & attach to textures
+    // ----------------------------------------------------------
+    size_t LUT_Bspline_x_size = 4*bxf->vox_per_rgn[0]* sizeof(float);
+    size_t LUT_Bspline_y_size = 4*bxf->vox_per_rgn[1]* sizeof(float);
+    size_t LUT_Bspline_z_size = 4*bxf->vox_per_rgn[2]* sizeof(float);
+
+    float* LUT_Bspline_x_cpu = (float*)malloc(LUT_Bspline_x_size);
+    float* LUT_Bspline_y_cpu = (float*)malloc(LUT_Bspline_y_size);
+    float* LUT_Bspline_z_cpu = (float*)malloc(LUT_Bspline_z_size);
+
+    for (int j = 0; j < 4; j++)
+    {
+        for (int i = 0; i < bxf->vox_per_rgn[0]; i++) {
+            LUT_Bspline_x_cpu[j*bxf->vox_per_rgn[0] + i] =
+                CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[0]);
+        }
+
+        for (int i = 0; i < bxf->vox_per_rgn[1]; i++) {
+            LUT_Bspline_y_cpu[j*bxf->vox_per_rgn[1] + i] =
+                CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[1]);
+        }
+
+        for (int i = 0; i < bxf->vox_per_rgn[2]; i++) {
+            LUT_Bspline_z_cpu[j*bxf->vox_per_rgn[2] + i] =
+                CPU_obtain_bspline_basis_function (j, i, bxf->vox_per_rgn[2]);
+        }
+    }
+
+    float *LUT_Bspline_x, *LUT_Bspline_y, *LUT_Bspline_z;
+
+    CUDA_alloc_copy ((void **)&LUT_Bspline_x,
+                     (void **)&LUT_Bspline_x_cpu,
+                     LUT_Bspline_x_size,
+                     cudaGlobalMem);
+
+    cudaBindTexture(0, tex_LUT_Bspline_x, LUT_Bspline_x, LUT_Bspline_x_size);
+
+    CUDA_alloc_copy ((void **)&LUT_Bspline_y,
+                     (void **)&LUT_Bspline_y_cpu,
+                     LUT_Bspline_y_size,
+                     cudaGlobalMem);
+
+    cudaBindTexture(0, tex_LUT_Bspline_y, LUT_Bspline_y, LUT_Bspline_y_size);
+
+    CUDA_alloc_copy ((void **)&LUT_Bspline_z,
+                     (void **)&LUT_Bspline_z_cpu,
+                     LUT_Bspline_z_size,
+                     cudaGlobalMem);
+
+    cudaBindTexture(0, tex_LUT_Bspline_z, LUT_Bspline_z, LUT_Bspline_z_size);
+
+    free (LUT_Bspline_x_cpu);
+    free (LUT_Bspline_y_cpu);
+    free (LUT_Bspline_z_cpu);
+
+
+    // Allocate some space on the GPU for the vector field
+    // ---------------------------------------------------------------
+    int3 vol_dim, rdim, cdim, vpr;
+    memcpy (&vol_dim, interp->dim, 3*sizeof(int));
+    memcpy (&rdim, bxf->rdims, 3*sizeof(int));
+    memcpy (&cdim, bxf->cdims, 3*sizeof(int));
+    memcpy (&vpr, bxf->vox_per_rgn, 3*sizeof(int));
+
+    float* vf;
+    size_t vf_size = vol_dim.x * vol_dim.y * vol_dim.z
+                   * 3*sizeof(float);
+
+    CUDA_alloc_zero ((void**)&vf, vf_size, cudaAllocStern);
+
+
+    // Kernel setup & execution
+    // ---------------------------------------------------------------
+    CUDA_exec_conf_1tpe (
+        &dimGrid,          // OUTPUT: Grid  dimensions
+        &dimBlock,         // OUTPUT: Block dimensions
+        interp->npix,      // INPUT: Total # of threads
+        192,               // INPUT: Threads per block
+        true);             // INPUT: Is threads per block negotiable?
+
+    size_t sMemSize = 3*(dimBlock.x*dimBlock.y*dimBlock.z) * sizeof(float);
+
+    kernel_bspline_interpolate_vf <<<dimGrid, dimBlock, sMemSize>>> (
+            vf,         // out
+            vol_dim,    // in
+            rdim,       // in
+            cdim,       // in
+            vpr         // in
+    );
+
+    cudaThreadSynchronize();
+    CUDA_check_error("kernel_bspline_interpolate_vf()");
+
+    cudaMemcpy(interp->img, vf, vf_size, cudaMemcpyDeviceToHost);
+    CUDA_check_error("error copying vf back to CPU");
+
+
+    // Clean up
+    // ---------------------------------------------------------------
+    cudaUnbindTexture(tex_coeff);
+    cudaUnbindTexture(tex_LUT_Bspline_x);
+    cudaUnbindTexture(tex_LUT_Bspline_y);
+    cudaUnbindTexture(tex_LUT_Bspline_z);
+
+    cudaFree(vf);
+    cudaFree(coeff);
+    cudaFree(LUT_Bspline_x);
+    cudaFree(LUT_Bspline_y);
+    cudaFree(LUT_Bspline_z);
+}
+
+
+
+
 
 
 // generates many sub-histograms of the fixed image
@@ -3222,6 +3368,55 @@ kernel_bspline_grad_normalize (
 }
 
 
+// JAS 2010.11.13
+// waiting for the cpu to generate large vector fields after a super fast
+// gpu driven registration was too troublesome.  this kernel function allows
+// us to also generate vector fields with the gpu.  much faster on my machine.
+__global__ void
+kernel_bspline_interpolate_vf (
+    float* vf,          // OUTPUT
+    int3 fdim,          // fixed  image dimensions
+    int3 rdim,          //       region dimensions
+    int3 cdim,          // # control points in x,y,z
+    int3 vpr            // voxels per region
+)
+{
+    /* Setup Thread Attributes */
+    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
+
+    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
+    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
+    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
+
+    extern __shared__ float shared_mem[]; 
+
+    /* Only process threads that map to voxels */
+    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+        int4 p;     // Tile index
+        int4 q;     // Local Voxel index (within tile)
+        float3 f;   // Distance from origin (in mm )
+        float3 d;   // Deformation vector
+        int fv;     // fixed voxel
+        float3 null = {0.0f, 0.0f, 0.0f};
+    
+        fv = thread_idxg;
+
+        setup_indices (&p, &q, &f,
+                fv, fdim, vpr, rdim, null, null);
+
+        bspline_interpolate (&d, cdim, vpr, p, q);
+
+        shared_mem[3*threadIdx.x + 0] = d.x;
+        shared_mem[3*threadIdx.x + 1] = d.y;
+        shared_mem[3*threadIdx.x + 2] = d.z;
+    }
+
+    __syncthreads();
+
+    stog_memcpy (vf, shared_mem, 3*threadsPerBlock);
+}
+
+
 // This kernel will reduce a stream to a single value.  It will work for
 // a stream with an arbitrary number of elements.  It is the same as 
 // bspline_cuda_compute_score_kernel, with the exception that it assumes
@@ -3468,35 +3663,8 @@ find_correspondence (
    int4 q
 )
 {
-    int i, j, k, z, cidx;
-    double A,B,C,P;
-
-    d->x = 0.0f;
-    d->y = 0.0f;
-    d->z = 0.0f;
-
-    z = 0;
-    for (k = 0; k < 4; k++) {
-    C = tex1Dfetch (tex_LUT_Bspline_x, k * vpr.z + q.z);
-        for (j = 0; j < 4; j++) {
-        B = tex1Dfetch (tex_LUT_Bspline_x, j * vpr.y + q.y);
-            for (i = 0; i < 4; i++) {
-                A = tex1Dfetch (tex_LUT_Bspline_x, i * vpr.x + q.x);
-                P = A * B * C;
-
-                cidx = 3 * ((p.z + k) * cdim.x * cdim.y 
-                            + (p.y + j) * cdim.x + (p.x + i));
-
-                d->x += P * tex1Dfetch (tex_coeff, cidx + 0);
-                d->y += P * tex1Dfetch (tex_coeff, cidx + 1);
-                d->z += P * tex1Dfetch (tex_coeff, cidx + 2);
-
-                z++;
-            }
-        }
-    }
-    // --------------------------------------------------------
-
+    // -- Get the deformation vector d ------------------------
+    bspline_interpolate (d, cdim, vpr, p, q);
 
     // -- Correspondence --------------------------------------
     m->x = f.x + d->x;  // Displacement in mm
@@ -3517,6 +3685,7 @@ find_correspondence (
     return 0;
     // --------------------------------------------------------
 }
+
 
 __device__ inline float
 get_moving_value (
@@ -3546,7 +3715,6 @@ get_moving_value (
 
     return w[0] + w[1] + w[2] + w[3] + w[4] + w[5] + w[6] + w[7];
     // --------------------------------------------------------
-
 }
 
 
@@ -3643,6 +3811,7 @@ get_nearest_neighbors (
     nn[7] = nn[0] + mdim.x * mdim.y + mdim.x + 1;
 }
 
+
 __device__ inline void
 get_weights (
     float* w,
@@ -3659,6 +3828,7 @@ get_weights (
     w[6] = li_1.x * li_2.y * li_2.z;
     w[7] = li_2.x * li_2.y * li_2.z;
 }
+
 
 __device__ inline void
 get_weight_derivatives (
@@ -3698,6 +3868,45 @@ get_weight_derivatives (
     dw[7].x =  +1.0f * li_2.y * li_2.z;
     dw[7].y = li_2.x *  +1.0f * li_2.z;
     dw[7].z = li_2.x * li_2.y *  +1.0f;
+}
+
+
+__device__ inline void
+bspline_interpolate (
+    float3* d,
+    int3 cdim,
+    int3 vpr,
+    int4 p,
+    int4 q
+)
+{
+    int i, j, k, z, cidx;
+    double A,B,C,P;
+
+    d->x = 0.0f;
+    d->y = 0.0f;
+    d->z = 0.0f;
+
+    z = 0;
+    for (k = 0; k < 4; k++) {
+    C = tex1Dfetch (tex_LUT_Bspline_z, k * vpr.z + q.z);
+        for (j = 0; j < 4; j++) {
+        B = tex1Dfetch (tex_LUT_Bspline_y, j * vpr.y + q.y);
+            for (i = 0; i < 4; i++) {
+                A = tex1Dfetch (tex_LUT_Bspline_x, i * vpr.x + q.x);
+                P = A * B * C;
+
+                cidx = 3 * ((p.z + k) * cdim.x * cdim.y 
+                            + (p.y + j) * cdim.x + (p.x + i));
+
+                d->x += P * tex1Dfetch (tex_coeff, cidx + 0);
+                d->y += P * tex1Dfetch (tex_coeff, cidx + 1);
+                d->z += P * tex1Dfetch (tex_coeff, cidx + 2);
+
+                z++;
+            }
+        }
+    }
 }
 
 // JAS 11.04.2010
