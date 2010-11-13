@@ -1943,14 +1943,7 @@ CUDA_bspline_reduce (
 ////////////////////////////////////////////////////////////////////////////////
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Generates many sub-histograms of the moving image
-//
-//                 --- Neightborhood of 8 ---
-//
-// NOTE: The main focus of this kernel is to avoid shared memory
-//       bank conflicts.
-////////////////////////////////////////////////////////////////////////////////
+// generates many sub-histograms of the fixed image
 __global__ void
 kernel_bspline_mi_hist_fix (
     float* f_hist_seg,  // partial histogram (moving image)
@@ -1984,62 +1977,46 @@ kernel_bspline_mi_hist_fix (
     for (long i=0; i < bins; i++) {
         s_Fixed[threadIdx.x + i*threadsPerBlock] = 0.0f;
     }
-    // --------------------------------------------------------
-
-
     __syncthreads();
-
-
-    // -- Only process threads that map to voxels -------------
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
-        return;
-    }
     // --------------------------------------------------------
 
-    // --------------------------------------------------------
-    int4 q;     // Voxel index (local)
-    int4 p;     // Tile index
 
-
-    float3 f;       // Distance from origin (in mm )
-    float3 m;       // Voxel Displacement   (in mm )
-    float3 n;       // Voxel Displacement   (in vox)
-    float3 d;       // Deformation vector
-
-    int fv;     // fixed voxel
-    // --------------------------------------------------------
+    // only process threads that map to voxels
+    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+        int4 q;     // Voxel index (local)
+        int4 p;     // Tile index
+        float3 f;   // Distance from origin (in mm )
+        float3 m;   // Voxel Displacement   (in mm )
+        float3 n;   // Voxel Displacement   (in vox)
+        float3 d;   // Deformation vector
+        int fv;     // fixed voxel
     
-    fv = thread_idxg;
+        fv = thread_idxg;
 
-    setup_indices (&p, &q, &f,
+        setup_indices (&p, &q, &f,
             fv, fdim, vpr, rdim, img_origin, img_spacing);
 
-
-    int fell_out = find_correspondence (&d, &m, &n,
+        int fell_out = find_correspondence (&d, &m, &n,
             f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
-    __syncthreads();
-
-    // -- Accumulate Into Segmented Histograms ----------------
-    int idx_fbin;
-    int f_mem;
-
-    idx_fbin = (int) floorf ((f_img[fv] - offset) * delta);
-    f_mem = threadIdx.x + idx_fbin*threadsPerBlock;
-    s_Fixed[f_mem] += !fell_out;
-    // --------------------------------------------------------
+        // accumulate into segmented histograms
+        int idx_fbin;
+        int f_mem;
+        idx_fbin = (int) floorf ((f_img[fv] - offset) * delta);
+        f_mem = threadIdx.x + idx_fbin*threadsPerBlock;
+        s_Fixed[f_mem] += !fell_out;
+    }
 
     __syncthreads();
 
-    // -- Merge Segmented Histograms --------------------------
+    // merge segmented histograms
     if (threadIdx.x < bins)
     {
         float sum = 0.0f;
 
-        // Stagger the starting shared memory bank
-        // access for each thread so as to prevent
-        // bank conflicts, which reasult in half
-        // warp difergence / serialization.
+        // Stagger the starting shared memory bank access for each thread so as
+        // to prevent bank conflicts, which reasult in half warp difergence /
+        // serialization.
         const int startPos = (threadIdx.x & 0x0F);
         const int offset   = threadIdx.x * threadsPerBlock;
 
@@ -2049,35 +2026,20 @@ kernel_bspline_mi_hist_fix (
                 accumPos = 0;
             }
         }
-
         f_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
-
     }
-    // --------------------------------------------------------
 
     // Done.
     // We now have (num_thread_blocks) partial histograms that
     // need to be merged.  This will be done with another
     // kernel to be ran immediately following the completion
     // of this kernel.
-
-    //NOTE:
-    // fv = thread_idxg
-    // fi = r.x
-    // fj = r.y
-    // fk = r.z
 }
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Generates many sub-histograms of the moving image
-//
-//                 --- Neightborhood of 8 ---
-//
-// NOTE: The main focus of this kernel is to avoid shared memory
-//       bank conflicts.
-////////////////////////////////////////////////////////////////////////////////
+// generates many sub-histograms of the moving image
+// this kernel uses an 8-neighborhood partial volume interpolation
 __global__ void
 kernel_bspline_mi_hist_mov (
     float* m_hist_seg,  // partial histogram (moving image)
@@ -2096,7 +2058,8 @@ kernel_bspline_mi_hist_mov (
     float3 mov_ps       // moving image pixel spacing
 )
 {
-    // -- Setup Thread Attributes -----------------------------
+    // setup thread attributes
+    // --------------------------------------------------------
     int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
 
     int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
@@ -2104,7 +2067,8 @@ kernel_bspline_mi_hist_mov (
     int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
     // --------------------------------------------------------
 
-    // -- Initialize Shared Memory ----------------------------
+    // initialize shared memory
+    // --------------------------------------------------------
     // Amount: 32 * # bins
     extern __shared__ float s_Moving[];
 
@@ -2113,138 +2077,64 @@ kernel_bspline_mi_hist_mov (
     }
     // --------------------------------------------------------
 
-
     __syncthreads();
 
+    // only process threads that map to voxels
+    // --------------------------------------------------------
+    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+        int4 q;     // Voxel index (local)
+        int4 p;     // Tile index
+        float3 f;   // Distance from origin (in mm )
+        float3 m;   // Voxel Displacement   (in mm )
+        float3 n;   // Voxel Displacement   (in vox)
+        int3 n_f;   // Voxel Displacement floor
+        int3 n_r;   // Voxel Displacement round
+        float3 d;   // Deformation vector
+        int fv;     // fixed voxel
+    
+        fv = thread_idxg;
 
-    // -- Only process threads that map to voxels -------------
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
-        return;
+        setup_indices (&p, &q, &f,
+                fv, fdim, vpr, rdim, img_origin, img_spacing);
+
+
+        int fell_out = find_correspondence (&d, &m, &n,
+                f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+
+        if (!fell_out) {
+            float3 li_1, li_2;
+            clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
+
+            int nn[8];
+            get_nearest_neighbors (nn, n_f, mdim);
+
+            float w[8];
+            get_weights (w, li_1, li_2);    // (a.k.a. partial volumes)
+
+            // Accumulate Into Segmented Histograms
+            int idx_mbin, m_mem;
+            #pragma unroll
+            for (int i=0; i<8; i++) {
+                idx_mbin = (int) floorf ((m_img[nn[i]] - offset) * delta);
+                m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+                s_Moving[m_mem] += w[i];
+            }
+        }
+
     }
     // --------------------------------------------------------
 
-
-    // --------------------------------------------------------
-    int4 q;     // Voxel index (local)
-    int4 p;     // Tile index
-
-
-    float3 f;       // Distance from origin (in mm )
-    float3 m;       // Voxel Displacement   (in mm )
-    float3 n;       // Voxel Displacement   (in vox)
-    int3 n_f;   // Voxel Displacement floor
-    int3 n_r;   // Voxel Displacement round
-    float3 d;       // Deformation vector
-
-    int fv;     // fixed voxel
-    int mvf;        // moving voxel (floor)
-    // --------------------------------------------------------
-    
-    fv = thread_idxg;
-
-    setup_indices (&p, &q, &f,
-            fv, fdim, vpr, rdim, img_origin, img_spacing);
-
-
-    int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
-
-
-    if (!fell_out) {
-        float3 li_1, li_2;
-        clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
-
-        // -- Compute coordinates of 8 nearest neighbors ----------
-        int n1, n2, n3, n4;
-        int n5, n6, n7, n8;
-    
-        mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
-
-        n1 = mvf;
-        n2 = n1 + 1;
-        n3 = n1 + mdim.x;
-        n4 = n1 + mdim.x + 1;
-        n5 = n1 + mdim.x * mdim.y;
-        n6 = n1 + mdim.x * mdim.y + 1;
-        n7 = n1 + mdim.x * mdim.y + mdim.x;
-        n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
-        // --------------------------------------------------------
-
-
-        // -- Compute differential PV slices ----------------------
-        float w1, w2, w3, w4;
-        float w5, w6, w7, w8;
-
-        w1 = li_1.x * li_1.y * li_1.z;
-        w2 = li_2.x * li_1.y * li_1.z;
-        w3 = li_1.x * li_2.y * li_1.z;
-        w4 = li_2.x * li_2.y * li_1.z;
-        w5 = li_1.x * li_1.y * li_2.z;
-        w6 = li_2.x * li_1.y * li_2.z;
-        w7 = li_1.x * li_2.y * li_2.z;
-        w8 = li_2.x * li_2.y * li_2.z;
-        // --------------------------------------------------------
-
-
-        __syncthreads();
-
-        // -- Accumulate Into Segmented Histograms ----------------
-        int idx_mbin;
-        int m_mem;
-
-        // PV 1
-        idx_mbin = (int) floorf ((m_img[n1] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w1;
-
-        // PV 2
-        idx_mbin = (int) floorf ((m_img[n2] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w2;
-
-        // PV 3
-        idx_mbin = (int) floorf ((m_img[n3] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w3;
-
-        // PV 4
-        idx_mbin = (int) floorf ((m_img[n4] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w4;
-
-        // PV 5
-        idx_mbin = (int) floorf ((m_img[n5] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w5;
-
-        // PV 6
-        idx_mbin = (int) floorf ((m_img[n6] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w6;
-
-        // PV 7
-        idx_mbin = (int) floorf ((m_img[n7] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w7;
-
-        // PV 8
-        idx_mbin = (int) floorf ((m_img[n8] - offset) * delta);
-        m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
-        s_Moving[m_mem] += w8;
-        // --------------------------------------------------------
-    }
-
     __syncthreads();
 
-    // -- Merge Segmented Histograms --------------------------
+    // merge segmented histograms
+    // --------------------------------------------------------
     if (threadIdx.x < bins)
     {
         float sum = 0.0f;
 
-        // Stagger the starting shared memory bank
-        // access for each thread so as to prevent
-        // bank conflicts, which reasult in half
-        // warp difergence / serialization.
+        // Stagger the starting shared memory bank access for each thread so as
+        // to prevent bank conflicts, which reasult in half warp difergence /
+        // serialization.
         const int startPos = (threadIdx.x & 0x0F);
         const int offset   = threadIdx.x * threadsPerBlock;
 
@@ -2256,21 +2146,13 @@ kernel_bspline_mi_hist_mov (
         }
 
         m_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
-
     }
     // --------------------------------------------------------
 
     // Done.
-    // We now have (num_thread_blocks) partial histograms that
-    // need to be merged.  This will be done with another
-    // kernel to be ran immediately following the completion
-    // of this kernel.
-
-    //NOTE:
-    // fv = thread_idxg
-    // fi = r.x
-    // fj = r.y
-    // fk = r.z
+    // We now have (num_thread_blocks) partial histograms that need to be
+    // merged.  This will be done with another kernel to be ran immediately
+    // following the completion of this kernel.
 }
 
 
@@ -2328,92 +2210,77 @@ kernel_bspline_mi_hist_jnt (
     shared_memset (shared_mem, 0.0f, total_smem);
     // --------------------------------------------------------
 
+    long j_bins; // # of joint histogram bins
+    j_bins = f_bins * m_bins;
 
     // -- Only process threads that map to voxels -------------
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
-        return;
-    }
-    // --------------------------------------------------------
-
-
-    // --------------------------------------------------------
-    int4 q;     // Voxel index (local)
-    int4 p;     // Tile index
-
-
-    float3 f;       // Distance from origin (in mm )
-    float3 m;       // Voxel Displacement   (in mm )
-    float3 n;       // Voxel Displacement   (in vox)
-    float3 d;       // Deformation vector
-
-    int3 n_f;       // Voxel Displacement floor
-    int3 n_r;       // Voxel Displacement round
-
-    int fv;     // fixed voxel
-    // --------------------------------------------------------
+    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+        int4 q;      // Voxel index (local)
+        int4 p;      // Tile index
+        float3 f;    // Distance from origin (in mm )
+        float3 m;    // Voxel Displacement   (in mm )
+        float3 n;    // Voxel Displacement   (in vox)
+        float3 d;    // Deformation vector
+        int3 n_f;    // Voxel Displacement floor
+        int3 n_r;    // Voxel Displacement round
+        int fv;      // fixed voxel
     
-    fv = thread_idxg;
+        fv = thread_idxg;
 
-    setup_indices (&p, &q, &f,
-            fv, fdim, vpr, rdim, img_origin, img_spacing);
+        setup_indices (&p, &q, &f,
+                fv, fdim, vpr, rdim, img_origin, img_spacing);
 
+        int fell_out = find_correspondence (&d, &m, &n,
+                f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
 
-    int fell_out = find_correspondence (&d, &m, &n,
-            f, mov_offset, mov_ps, mdim, cdim, vpr, p, q);
+        // did the voxel map into the moving image?
+        if (fell_out) {
+            atomicAdd (skipped, 1);
+        } else {
+            float3 li_1, li_2;
+            clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
+            int nn[8];
+            get_nearest_neighbors (nn, n_f, mdim);
 
-    if (fell_out) {
-        // Voxel doesn't map into the moving image.
-        // Don't bin anything and count the miss.
-        atomicAdd (skipped, 1);
-        return;
-    }
-
-    float3 li_1, li_2;
-    clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
-
-    int nn[8];
-    get_nearest_neighbors (nn, n_f, mdim);
-
-    float w[8];
-    get_weights (w, li_1, li_2);    // (a.k.a. partial volumes)
+            float w[8];
+            get_weights (w, li_1, li_2);    // (a.k.a. partial volumes)
 
 
+            // -- Read from histograms and compute dC/dp_j * dp_j/dv --
+            int idx_fbin, offset_fbin;
+            int idx_mbin;
+            int idx_jbin;
 
-    // -- Read from histograms and compute dC/dp_j * dp_j/dv --
-    int idx_fbin, offset_fbin;
-    int idx_mbin;
-    int idx_jbin;
-    long j_bins = f_bins * m_bins;
+            // Calculate fixed bin offset into joint
+            idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
+            offset_fbin = idx_fbin * m_bins;
 
-    // Calculate fixed bin offset into joint
-    idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
-    offset_fbin = idx_fbin * m_bins;
-
-    // Maybe one day nvcc will be smart enough to honor this pragma...
-    // regardless, manual unrolling doesn't offer any visible speedup
-#pragma unroll
-    for (int i=0; i<8; i++) {
-        idx_mbin = (int) floorf ((m_img[nn[i]] - m_offset) * m_delta);
-        idx_jbin = offset_fbin + idx_mbin;
-        if (idx_jbin != 0) {
-            atomic_add_float (&j_locks[idx_jbin], w[i]);
+            // Maybe one day nvcc will be smart enough to honor this pragma...
+            // regardless, manual unrolling doesn't offer any visible speedup
+            #pragma unroll
+            for (int i=0; i<8; i++) {
+                idx_mbin = (int) floorf ((m_img[nn[i]] - m_offset) * m_delta);
+                idx_jbin = offset_fbin + idx_mbin;
+                if (idx_jbin != 0) {
+                    atomic_add_float (&j_locks[idx_jbin], w[i]);
+                }
+            }
         }
     }
-    // --------------------------------------------------------
+
     __syncthreads();
 
-
+    // copy histogram segments from shared to global memory
     int idx;
     long j_stride = blockIdxInGrid * j_bins;
     int chunks = (j_bins + threadsPerBlock - 1)/threadsPerBlock;
     for (int i=0; i<chunks; i++) {
         idx = threadIdx.x + i*threadsPerBlock;
         if (idx < j_bins) {
-                j_hist[j_stride + idx] = j_locks[idx];
+            j_hist[j_stride + idx] = j_locks[idx];
         }
     }
-
 
 #endif // __CUDA_ARCH__
 }
@@ -2546,8 +2413,7 @@ kernel_bspline_mi_dc_dv (
     // --------------------------------------------------------
 
 
-    // -- Variables used by correspondence --------------------
-    // -- (Block verified) ------------------------------------
+    // --------------------------------------------------------
     int3 r;     // Voxel index (global)
     int4 q;     // Voxel index (local)
     int4 p;     // Tile index
@@ -2562,7 +2428,6 @@ kernel_bspline_mi_dc_dv (
     int3 n_r;       // Voxel Displacement round
 
     int fv;     // fixed voxel
-    int mvf;        // moving voxel (floor)
     // --------------------------------------------------------
     
     fv = thread_idxg;
@@ -2592,59 +2457,11 @@ kernel_bspline_mi_dc_dv (
     float3 li_1, li_2;
     clamp_linear_interpolate_3d (&n, &n_f, &n_r, &li_1, &li_2, mdim);
 
-    // -- Compute coordinates of 8 nearest neighbors ----------
-    int n1, n2, n3, n4;
-    int n5, n6, n7, n8;
+    int nn[8];
+    get_nearest_neighbors (nn, n_f, mdim);
 
-    mvf = (n_f.z * mdim.y + n_f.y) * mdim.x + n_f.x;
-
-    n1 = mvf;
-    n2 = n1 + 1;
-    n3 = n1 + mdim.x;
-    n4 = n1 + mdim.x + 1;
-    n5 = n1 + mdim.x * mdim.y;
-    n6 = n1 + mdim.x * mdim.y + 1;
-    n7 = n1 + mdim.x * mdim.y + mdim.x;
-    n8 = n1 + mdim.x * mdim.y + mdim.x + 1;
-    // --------------------------------------------------------
-
-
-    // -- Compute differential PV slices ----------------------
-    float3 dw1, dw2, dw3, dw4;
-    float3 dw5, dw6, dw7, dw8;
-
-    dw1.x =  -1.0f * li_1.y * li_1.z;
-    dw1.y = li_1.x *  -1.0f * li_1.z;
-    dw1.z = li_1.x * li_1.y *  -1.0f;
-
-    dw2.x =  +1.0f * li_1.y * li_1.z;
-    dw2.y = li_2.x *  -1.0f * li_1.z;
-    dw2.z = li_2.x * li_1.y *  -1.0f;
-
-    dw3.x =  -1.0f * li_2.y * li_1.z;
-    dw3.y = li_1.x *  +1.0f * li_1.z;
-    dw3.z = li_1.x * li_2.y *  -1.0f;
-
-    dw4.x =  +1.0f * li_2.y * li_1.z;
-    dw4.y = li_2.x *  +1.0f * li_1.z;
-    dw4.z = li_2.x * li_2.y *  -1.0f;
-
-    dw5.x =  -1.0f * li_1.y * li_2.z;
-    dw5.y = li_1.x *  -1.0f * li_2.z;
-    dw5.z = li_1.x * li_1.y *  +1.0f;
-
-    dw6.x =  +1.0f * li_1.y * li_2.z;
-    dw6.y = li_2.x *  -1.0f * li_2.z;
-    dw6.z = li_2.x * li_1.y *  +1.0f;
-
-    dw7.x =  -1.0f * li_2.y * li_2.z;
-    dw7.y = li_1.x *  +1.0f * li_2.z;
-    dw7.z = li_1.x * li_2.y *  +1.0f;
-
-    dw8.x =  +1.0f * li_2.y * li_2.z;
-    dw8.y = li_2.x *  +1.0f * li_2.z;
-    dw8.z = li_2.x * li_2.y *  +1.0f;
-    // --------------------------------------------------------
+    float3 dw[8];
+    get_weight_derivatives (dw, li_1, li_2);    // (a.k.a. partial volumes)
 
     __syncthreads();
 
@@ -2665,85 +2482,105 @@ kernel_bspline_mi_dc_dv (
     idx_fbin = (int) floorf ((f_img[fv] - f_offset) * f_delta);
     offset_fbin = idx_fbin * m_bins;
 
+    // JAS 2010.11.13
+    // nvcc is unable too honor "#pragma unroll" due to the conditional.
+    // Unrolling gives somewhat significant speed up for compute < 2.0 devices
+    // and a barely noticable speed up for 2.0 devices.
+#if defined (commentout)
+#pragma unroll
+    for (int i=0; i<8; i++) {
+        idx_mbin = (int) floorf ((m_img[nn[i]] - m_offset) * m_delta);
+        idx_jbin = offset_fbin + idx_mbin;
+        if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
+            dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
+            dc_dv.x -= dw[i].x * dS_dP;
+            dc_dv.y -= dw[i].y * dS_dP;
+            dc_dv.z -= dw[i].z * dS_dP;
+        }
+    }
+#endif
+
     // PV w1
-    idx_mbin = (int) floorf ((m_img[n1] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[0]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw1.x * dS_dP;
-        dc_dv.y -= dw1.y * dS_dP;
-        dc_dv.z -= dw1.z * dS_dP;
+        dc_dv.x -= dw[0].x * dS_dP;
+        dc_dv.y -= dw[0].y * dS_dP;
+        dc_dv.z -= dw[0].z * dS_dP;
     }
 
     // PV w2
-    idx_mbin = (int) floorf ((m_img[n2] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[1]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw2.x * dS_dP;
-        dc_dv.y -= dw2.y * dS_dP;
-        dc_dv.z -= dw2.z * dS_dP;
+        dc_dv.x -= dw[1].x * dS_dP;
+        dc_dv.y -= dw[1].y * dS_dP;
+        dc_dv.z -= dw[1].z * dS_dP;
     }
 
     // PV w3
-    idx_mbin = (int) floorf ((m_img[n3] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[2]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw3.x * dS_dP;
-        dc_dv.y -= dw3.y * dS_dP;
-        dc_dv.z -= dw3.z * dS_dP;
+        dc_dv.x -= dw[2].x * dS_dP;
+        dc_dv.y -= dw[2].y * dS_dP;
+        dc_dv.z -= dw[2].z * dS_dP;
     }
 
     // PV w4
-    idx_mbin = (int) floorf ((m_img[n4] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[3]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw4.x * dS_dP;
-        dc_dv.y -= dw4.y * dS_dP;
-        dc_dv.z -= dw4.z * dS_dP;
+        dc_dv.x -= dw[3].x * dS_dP;
+        dc_dv.y -= dw[3].y * dS_dP;
+        dc_dv.z -= dw[3].z * dS_dP;
     }
 
     // PV w5
-    idx_mbin = (int) floorf ((m_img[n5] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[4]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw5.x * dS_dP;
-        dc_dv.y -= dw5.y * dS_dP;
-        dc_dv.z -= dw5.z * dS_dP;
+        dc_dv.x -= dw[4].x * dS_dP;
+        dc_dv.y -= dw[4].y * dS_dP;
+        dc_dv.z -= dw[4].z * dS_dP;
     }
 
     // PV w6
-    idx_mbin = (int) floorf ((m_img[n6] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[5]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw6.x * dS_dP;
-        dc_dv.y -= dw6.y * dS_dP;
-        dc_dv.z -= dw6.z * dS_dP;
+        dc_dv.x -= dw[5].x * dS_dP;
+        dc_dv.y -= dw[5].y * dS_dP;
+        dc_dv.z -= dw[5].z * dS_dP;
     }
 
     // PV w7
-    idx_mbin = (int) floorf ((m_img[n7] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[6]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw7.x * dS_dP;
-        dc_dv.y -= dw7.y * dS_dP;
-        dc_dv.z -= dw7.z * dS_dP;
+        dc_dv.x -= dw[6].x * dS_dP;
+        dc_dv.y -= dw[6].y * dS_dP;
+        dc_dv.z -= dw[6].z * dS_dP;
     }
 
     // PV w8
-    idx_mbin = (int) floorf ((m_img[n8] - m_offset) * m_delta);
+    idx_mbin = (int) floorf ((m_img[nn[7]] - m_offset) * m_delta);
     idx_jbin = offset_fbin + idx_mbin;
     if (j_hist[idx_jbin] > ht && f_hist[idx_fbin] > ht && m_hist[idx_mbin] > ht) {
         dS_dP = logf((num_vox_f * j_hist[idx_jbin]) / (f_hist[idx_fbin] * m_hist[idx_mbin])) - score;
-        dc_dv.x -= dw8.x * dS_dP;
-        dc_dv.y -= dw8.y * dS_dP;
-        dc_dv.z -= dw8.z * dS_dP;
+        dc_dv.x -= dw[7].x * dS_dP;
+        dc_dv.y -= dw[7].y * dS_dP;
+        dc_dv.z -= dw[7].z * dS_dP;
     }
+#if defined (commentout)
+#endif
     // --------------------------------------------------------
 
 
@@ -2773,13 +2610,6 @@ kernel_bspline_mi_dc_dv (
     dc_dv_element_y[0] = dc_dv.y;
     dc_dv_element_z[0] = dc_dv.z;
     // --------------------------------------------------------
-
-
-    //NOTE:
-    // fv = thread_idxg
-    // fi = r.x
-    // fj = r.y
-    // fk = r.z
 }
 
 /* JAS 05.27.2010
@@ -3830,6 +3660,45 @@ get_weights (
     w[7] = li_2.x * li_2.y * li_2.z;
 }
 
+__device__ inline void
+get_weight_derivatives (
+    float3* dw,
+    float3 li_1,
+    float3 li_2
+)
+{
+    dw[0].x =  -1.0f * li_1.y * li_1.z;
+    dw[0].y = li_1.x *  -1.0f * li_1.z;
+    dw[0].z = li_1.x * li_1.y *  -1.0f;
+
+    dw[1].x =  +1.0f * li_1.y * li_1.z;
+    dw[1].y = li_2.x *  -1.0f * li_1.z;
+    dw[1].z = li_2.x * li_1.y *  -1.0f;
+
+    dw[2].x =  -1.0f * li_2.y * li_1.z;
+    dw[2].y = li_1.x *  +1.0f * li_1.z;
+    dw[2].z = li_1.x * li_2.y *  -1.0f;
+
+    dw[3].x =  +1.0f * li_2.y * li_1.z;
+    dw[3].y = li_2.x *  +1.0f * li_1.z;
+    dw[3].z = li_2.x * li_2.y *  -1.0f;
+
+    dw[4].x =  -1.0f * li_1.y * li_2.z;
+    dw[4].y = li_1.x *  -1.0f * li_2.z;
+    dw[4].z = li_1.x * li_1.y *  +1.0f;
+
+    dw[5].x =  +1.0f * li_1.y * li_2.z;
+    dw[5].y = li_2.x *  -1.0f * li_2.z;
+    dw[5].z = li_2.x * li_1.y *  +1.0f;
+
+    dw[6].x =  -1.0f * li_2.y * li_2.z;
+    dw[6].y = li_1.x *  +1.0f * li_2.z;
+    dw[6].z = li_1.x * li_2.y *  +1.0f;
+
+    dw[7].x =  +1.0f * li_2.y * li_2.z;
+    dw[7].y = li_2.x *  +1.0f * li_2.z;
+    dw[7].z = li_2.x * li_2.y *  +1.0f;
+}
 
 // JAS 11.04.2010
 // nvcc has the limitation of not being able to use

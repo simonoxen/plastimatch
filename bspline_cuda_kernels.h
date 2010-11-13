@@ -270,4 +270,12 @@ struct gpu_bspline_data
         float3 li_1,
         float3 li_2
     );
+
+    __device__ inline void
+    get_weight_derivatives (
+        float3* dw,
+        float3 li_1,
+        float3 li_2
+    );
+
 #endif
