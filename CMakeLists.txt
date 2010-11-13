@@ -68,12 +68,6 @@ SET (PLM_TEST_XIO OFF CACHE BOOL
   "Regression tests for xio file exchange (downloads extra test data)")
 
 ##-----------------------------------------------------------------------------
-##  RTK is special.  We need to do this up front, to set the CMake path
-##-----------------------------------------------------------------------------
-FIND_PACKAGE (RTK)
-SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
-
-##-----------------------------------------------------------------------------
 ##  Extra paths
 ##-----------------------------------------------------------------------------
 SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
@@ -94,6 +88,34 @@ INCLUDE (InstallRequiredSystemLibraries)
 
 # http://www.cmake.org/Bug/view.php?id=9220
 INCLUDE (language_support.cmake)
+
+##-----------------------------------------------------------------------------
+##  Slicer is special.  We do this up front, because RTK needs ITK path.
+##-----------------------------------------------------------------------------
+FIND_PACKAGE (Slicer QUIET)
+IF (SLICER_FOUND)
+  IF (Slicer_USE_FILE)
+    INCLUDE ("${Slicer_USE_FILE}")
+  ENDIF (Slicer_USE_FILE)
+
+  # Set reasonable default install prefix and output paths
+  # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
+  slicer3_set_default_install_prefix_for_external_projects ()
+  
+  #slicer3_enable_plugins_testing()
+
+  # Slicer seems to require a shared library build
+  SET (PLM_BUILD_SHARED_LIBS ON)
+ELSE (SLICER_FOUND)
+  MESSAGE (STATUS "Looking for Slicer3 - not found")
+ENDIF (SLICER_FOUND)
+
+##-----------------------------------------------------------------------------
+##  RTK is special.  We need to do this up front, because plastimatch 
+##  uses cmake files from RTK.
+##-----------------------------------------------------------------------------
+FIND_PACKAGE (RTK)
+SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
@@ -358,27 +380,6 @@ IF (OCTAVE_FOUND)
 ELSE (OCTAVE_FOUND)
   MESSAGE (STATUS "Looking for Octave - not found.")
 ENDIF (OCTAVE_FOUND)
-
-##-----------------------------------------------------------------------------
-##  Slicer front-ends
-##-----------------------------------------------------------------------------
-FIND_PACKAGE (Slicer QUIET)
-IF (SLICER_FOUND)
-  IF (Slicer_USE_FILE)
-    INCLUDE ("${Slicer_USE_FILE}")
-  ENDIF (Slicer_USE_FILE)
-
-  # Set reasonable default install prefix and output paths
-  # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-  slicer3_set_default_install_prefix_for_external_projects ()
-  
-  #slicer3_enable_plugins_testing()
-
-  # Slicer seems to require a shared library build
-  SET (PLM_BUILD_SHARED_LIBS ON)
-ELSE (SLICER_FOUND)
-  MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF (SLICER_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
