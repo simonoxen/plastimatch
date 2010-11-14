@@ -106,11 +106,15 @@ main (int argc, char* argv[])
 	    fixed->pix_spacing,
 	    PT_VF_FLOAT_INTERLEAVED, 
 	    fixed->direction_cosines, 0);
-    if (parms->threading == BTHR_CUDA) {
-        CUDA_bspline_interpolate_vf (vector_field, bxf);
-    } else {
-        bspline_interpolate_vf (vector_field, bxf);
-    }
+	if (parms->threading == BTHR_CUDA) {
+#if (CUDA_FOUND)
+	    CUDA_bspline_interpolate_vf (vector_field, bxf);
+#else
+	    bspline_interpolate_vf (vector_field, bxf);
+#endif
+	} else {
+	    bspline_interpolate_vf (vector_field, bxf);
+	}
     }
 
     /* Assuming vector field has been created, update warped landmarks*/
