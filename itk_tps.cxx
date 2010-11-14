@@ -2,13 +2,48 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "plm_image.h"
-#include "plm_image_header.h"
+
+#include "landmark_warp.h"
 #include "itk_image_save.h"
+#include "itk_pointset.h"
 #include "itk_tps.h"
 #include "itk_warp.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
 
 #define BUFLEN 2048
+
+template<class T>
+static typename itk::Image<T, 3>::Pointer
+do_tps_core (
+    typename itk::Image<T, 3>::Pointer mov_img, 
+    Plm_image_header *pih, 
+    DoublePointSetType::Pointer mov_lm, 
+    DoublePointSetType::Pointer fix_lm, 
+    T default_val
+)
+{
+    TpsTransformType::Pointer tps = TpsTransformType::New ();
+    Xform xform, xform_tmp;
+
+    /* Ugh.  ITK PointSet types are not convetable without cast??? */
+    tps->SetSourceLandmarks ((TpsTransformType::PointSetType::Pointer) fix_lm);
+    tps->SetTargetLandmarks ((TpsTransformType::PointSetType::Pointer) mov_lm);
+    tps->ComputeWMatrix ();
+
+    xform.set_itk_tps (tps);
+    xform_to_itk_vf (&xform_tmp, &xform, pih);
+
+    typename DeformationFieldType::Pointer vf = DeformationFieldType::New ();
+    vf = xform_tmp.get_itk_vf ();
+
+    printf ("Warping...\n");
+
+    typename itk::Image<T, 3>::Pointer im_warped 
+	= itk_warp_image (mov_img, vf, 1, default_val);
+
+    return im_warped;
+}
 
 template<class T>
 void
@@ -20,11 +55,9 @@ do_tps (
 )
 {
     typedef typename itk::Image<T, 3> ImgType;
-    typedef double CoordinateRepType;
-    typedef typename itk::ThinPlateSplineKernelTransform<CoordinateRepType, 3> TransformType;
-    typedef typename itk::Point<CoordinateRepType, 3 > PointType;
+    typedef typename itk::Point<double, 3 > PointType;
     typedef typename std::vector<PointType > PointArrayType;
-    typedef typename TransformType::PointSetType PointSetType;
+    typedef typename TpsTransformType::PointSetType PointSetType;
     typedef typename PointSetType::Pointer PointSetPointer;
     typedef typename PointSetType::PointIdentifier PointIdType;
 
@@ -78,7 +111,7 @@ do_tps (
     fclose (reference);
     fclose (target);
 
-    typename TransformType::Pointer tps = TransformType::New ();
+    TpsTransformType::Pointer tps = TpsTransformType::New ();
     tps->SetSourceLandmarks (sourceLandMarks);
     tps->SetTargetLandmarks (targetLandMarks);
     tps->ComputeWMatrix ();
@@ -97,6 +130,28 @@ do_tps (
     itk_image_save (im_warped, parms->warped);
     itk_image_save (vf, parms->vf);
 }
+
+void
+itk_tps_warp (
+    Landmark_warp *lw
+)
+{
+    printf ("Hello world\n");
+
+    /* Convert image to itk float */
+    if (lw->m_input_img) {
+	lw->m_input_img->itk_float ();
+    }
+
+    /* Convert pointsets to itk pointsets */
+    FloatPointSetType::Pointer mov_lm = 
+	itk_float_pointset_from_pointset (lw->m_moving_landmarks);
+    FloatPointSetType::Pointer fix_lm = 
+	itk_float_pointset_from_pointset (lw->m_fixed_landmarks);
+
+    /* Run ITK TPS warper */
+}
+
 
 /* Explicit instantiations */
 /* RMK: Visual studio 2005 without service pack requires <float> specifier

@@ -3,11 +3,49 @@
    ----------------------------------------------------------------------- */
 #include <stdio.h>
 #include "itk_pointset.h"
+#include "pointset.h"
 #include "print_and_exit.h"
+
 
 /* Don't get confused by the parameterization of the itk pointset.  The 
    PixelType is the "color" of the point, whereas the PointType is the 
    type used to represent the coordinate location */
+
+FloatPointSetType::Pointer
+itk_float_pointset_from_pointset (Pointset *ps)
+{
+    FloatPointSetType::Pointer itk_ps = FloatPointSetType::New ();
+    FloatPointSetType::PointsContainer::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    FloatPointIdType id = itk::NumericTraits< FloatPointIdType >::Zero;
+    for (int i = 0; i < ps->num_points; i++) {
+	FloatPointType p1;
+	p1[0] = ps->points[i*3+0];
+	p1[1] = ps->points[i*3+1];
+	p1[2] = ps->points[i*3+2];
+	itk_ps_c->InsertElement (id++, p1);
+    }
+    return itk_ps;
+}
+
+DoublePointSetType::Pointer
+itk_double_pointset_from_pointset (Pointset *ps)
+{
+    DoublePointSetType::Pointer itk_ps = DoublePointSetType::New ();
+    DoublePointSetType::PointsContainer::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    DoublePointIdType id = itk::NumericTraits< DoublePointIdType >::Zero;
+    for (int i = 0; i < ps->num_points; i++) {
+	DoublePointType p1;
+	p1[0] = ps->points[i*3+0];
+	p1[1] = ps->points[i*3+1];
+	p1[2] = ps->points[i*3+2];
+	itk_ps_c->InsertElement (id++, p1);
+    }
+    return itk_ps;
+}
 
 template<class T>
 void

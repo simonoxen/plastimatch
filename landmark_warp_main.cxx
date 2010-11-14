@@ -30,6 +30,12 @@
                                  bspline_landmarks.h
 */
 
+static void
+do_landmark_warp_itk_tps (Landmark_warp *lw)
+{
+    
+}
+
 #if defined (commentout)
 static void
 do_landmark_warp_gcs (Landmark_warp_args *parms)
@@ -117,39 +123,10 @@ load_input_files (args_info_landmark_warp *args_info)
     }
 
     /* Load the input image */
-    lw->m_img = plm_image_load_native (args_info->input_image_arg);
-    if (!lw->m_img) {
+    lw->m_input_img = plm_image_load_native (args_info->input_image_arg);
+    if (!lw->m_input_img) {
 	print_and_exit ("Error reading moving file: %s\n", 
 	    (const char*) args_info->input_image_arg);
-    }
-    return lw;
-}
-
-static Landmark_warp*
-load_input_files_old (Landmark_warp_args *parms)
-{
-    Landmark_warp *lw = 0;
-
-    /* Load the landmark data */
-    if (bstring_not_empty (parms->input_xform_fn)) {
-	lw = landmark_warp_load_xform ((const char*) parms->input_xform_fn);
-    }
-    else if (bstring_not_empty (parms->input_fixed_landmarks_fn) 
-	&& bstring_not_empty (parms->input_moving_landmarks_fn))
-    {
-	lw = landmark_warp_load_pointsets (
-	    (const char*) parms->input_fixed_landmarks_fn, 
-	    (const char*) parms->input_moving_landmarks_fn);
-    }
-    if (!lw) {
-	print_and_exit ("Error, landmarks were not loaded successfully.\n");
-    }
-
-    /* Load the input image */
-    lw->m_img = plm_image_load_native (parms->input_moving_image_fn);
-    if (!lw->m_img) {
-	print_and_exit ("Error reading moving file: %s\n", 
-	    (const char*) parms->input_moving_image_fn);
     }
     return lw;
 }
@@ -161,36 +138,14 @@ do_landmark_warp (args_info_landmark_warp *args_info)
 
     lw = load_input_files (args_info);
 
-#if defined (commentout)
-    switch (parms->m_algorithm) {
-    case LANDMARK_WARP_ALGORITHM_ITK_TPS:
-	break;
-    case LANDMARK_WARP_ALGORITHM_RBF_NSH:
-	break;
-    case LANDMARK_WARP_ALGORITHM_RBF_GCS:
+    switch (args_info->algorithm_arg) {
+    case algorithm_arg_itk:
+	do_landmark_warp_itk_tps (lw);
+    case algorithm_arg_nsh:
+    case algorithm_arg_gcs:
     default:
 	break;
     }
-#endif
-}
-
-static void
-do_landmark_warp_old (Landmark_warp_args *parms)
-{
-    Landmark_warp *lw;
-
-    lw = load_input_files_old (parms);
-
-    switch (parms->m_algorithm) {
-    case LANDMARK_WARP_ALGORITHM_ITK_TPS:
-	break;
-    case LANDMARK_WARP_ALGORITHM_RBF_NSH:
-	break;
-    case LANDMARK_WARP_ALGORITHM_RBF_GCS:
-    default:
-	break;
-    }
-
 }
 
 static void
@@ -202,14 +157,8 @@ check_arguments (args_info_landmark_warp *args_info)
 int
 main (int argc, char *argv[])
 {
-    Landmark_warp_args parms;
-
     GGO (landmark_warp, args_info);
-
     check_arguments (&args_info);
-
-    //parms.parse_args (argc, argv);
-    //do_landmark_warp (&parms);
 
     do_landmark_warp (&args_info);
 

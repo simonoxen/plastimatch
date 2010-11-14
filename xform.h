@@ -43,15 +43,12 @@ typedef itk::AffineTransform < double, 3 > AffineTransformType;
 /* itk B-spline transforms */
 const unsigned int SplineDimension = 3;
 const unsigned int SplineOrder = 3;
-typedef double CoordinateRepType;
 typedef itk::BSplineDeformableTransform <
-		    CoordinateRepType,
-		    SplineDimension,
-		    SplineOrder > BsplineTransformType;
+    double, SplineDimension, SplineOrder > BsplineTransformType;
 
 /* itk thin-plate transforms */
 typedef itk::ThinPlateSplineKernelTransform < 
-    CoordinateRepType, 3 > TPSTransformType;
+    double, 3 > TpsTransformType;
 
 class Xform {
 public:
@@ -64,7 +61,7 @@ public:
     QuaternionTransformType::Pointer m_quat;
     DeformationFieldType::Pointer m_itk_vf;
     BsplineTransformType::Pointer m_itk_bsp;
-    TPSTransformType::Pointer m_itk_tps;
+    TpsTransformType::Pointer m_itk_tps;
     void* m_gpuit;
 
 public:
@@ -139,7 +136,7 @@ public:
 	}
 	return m_itk_bsp;
     }
-    TPSTransformType::Pointer get_itk_tps () {
+    TpsTransformType::Pointer get_itk_tps () {
 	if (m_type != XFORM_ITK_TPS) {
 	    print_and_exit ("Typecast error in get_tps()\n");
 	}
@@ -188,7 +185,7 @@ public:
 	m_type = XFORM_ITK_BSPLINE;
 	m_itk_bsp = bsp;
     }
-    void set_itk_tps (TPSTransformType::Pointer tps) {
+    void set_itk_tps (TpsTransformType::Pointer tps) {
 	clear ();
 	m_type = XFORM_ITK_TPS;
 	m_itk_tps = tps;

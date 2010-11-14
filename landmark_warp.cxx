@@ -26,11 +26,11 @@ landmark_warp_create (void)
 void
 landmark_warp_destroy (Landmark_warp *lw)
 {
-    if (lw->moving) {
-	pointset_destroy (lw->moving);
+    if (lw->m_moving_landmarks) {
+	pointset_destroy (lw->m_moving_landmarks);
     }
-    if (lw->fixed) {
-	pointset_destroy (lw->fixed);
+    if (lw->m_fixed_landmarks) {
+	pointset_destroy (lw->m_fixed_landmarks);
     }
     free (lw);
 }
@@ -80,10 +80,10 @@ landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn)
     Landmark_warp *lw;
 
     lw = landmark_warp_create ();
-    lw->fixed = pointset_load (fixed_lm_fn);
-    lw->moving = pointset_load (moving_lm_fn);
+    lw->m_fixed_landmarks = pointset_load (fixed_lm_fn);
+    lw->m_moving_landmarks = pointset_load (moving_lm_fn);
 
-    if (!lw->fixed || !lw->moving) {
+    if (!lw->m_fixed_landmarks || !lw->m_moving_landmarks) {
 	landmark_warp_destroy (lw);
 	return 0;
     }

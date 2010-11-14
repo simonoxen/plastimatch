@@ -34,6 +34,8 @@ extern "C" {
 #define CMDLINE_PARSER_LANDMARK_WARP_VERSION "version 1.4-beta"
 #endif
 
+enum enum_algorithm { algorithm_arg_itk = 0 , algorithm_arg_gcs, algorithm_arg_nsh };
+
 /** @brief Where the command line options are stored */
 struct args_info_landmark_warp
 {
@@ -49,9 +51,9 @@ struct args_info_landmark_warp
   char * input_xform_arg;	/**< @brief Input landmark xform.  */
   char * input_xform_orig;	/**< @brief Input landmark xform original value given at command line.  */
   const char *input_xform_help; /**< @brief Input landmark xform help description.  */
-  char * input_vf_arg;	/**< @brief Input vector field.  */
-  char * input_vf_orig;	/**< @brief Input vector field original value given at command line.  */
-  const char *input_vf_help; /**< @brief Input vector field help description.  */
+  char * fixed_arg;	/**< @brief Fixed image (used to set size).  */
+  char * fixed_orig;	/**< @brief Fixed image (used to set size) original value given at command line.  */
+  const char *fixed_help; /**< @brief Fixed image (used to set size) help description.  */
   char * input_image_arg;	/**< @brief Input image to warp.  */
   char * input_image_orig;	/**< @brief Input image to warp original value given at command line.  */
   const char *input_image_help; /**< @brief Input image to warp help description.  */
@@ -61,15 +63,18 @@ struct args_info_landmark_warp
   char * output_vf_arg;	/**< @brief Output vector field.  */
   char * output_vf_orig;	/**< @brief Output vector field original value given at command line.  */
   const char *output_vf_help; /**< @brief Output vector field help description.  */
-  char * algorithm_arg;	/**< @brief Either \"itk\", \"gcs\", or \"nsh\" (default='gcs').  */
-  char * algorithm_orig;	/**< @brief Either \"itk\", \"gcs\", or \"nsh\" original value given at command line.  */
-  const char *algorithm_help; /**< @brief Either \"itk\", \"gcs\", or \"nsh\" help description.  */
+  enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='gcs').  */
+  char * algorithm_orig;	/**< @brief RBF warping algorithm  original value given at command line.  */
+  const char *algorithm_help; /**< @brief RBF warping algorithm  help description.  */
   float radius_arg;	/**< @brief Radius of radial basis function (default='0.0').  */
   char * radius_orig;	/**< @brief Radius of radial basis function original value given at command line.  */
   const char *radius_help; /**< @brief Radius of radial basis function help description.  */
   float stiffness_arg;	/**< @brief Young modulus (default='0.0').  */
   char * stiffness_orig;	/**< @brief Young modulus original value given at command line.  */
   const char *stiffness_help; /**< @brief Young modulus help description.  */
+  float default_value_arg;	/**< @brief Value to set for pixels with unknown value (default='0.0').  */
+  char * default_value_orig;	/**< @brief Value to set for pixels with unknown value original value given at command line.  */
+  const char *default_value_help; /**< @brief Value to set for pixels with unknown value help description.  */
   char * config_arg;	/**< @brief Config file.  */
   char * config_orig;	/**< @brief Config file original value given at command line.  */
   const char *config_help; /**< @brief Config file help description.  */
@@ -80,13 +85,14 @@ struct args_info_landmark_warp
   unsigned int fixed_landmarks_given ;	/**< @brief Whether fixed-landmarks was given.  */
   unsigned int moving_landmarks_given ;	/**< @brief Whether moving-landmarks was given.  */
   unsigned int input_xform_given ;	/**< @brief Whether input-xform was given.  */
-  unsigned int input_vf_given ;	/**< @brief Whether input-vf was given.  */
+  unsigned int fixed_given ;	/**< @brief Whether fixed was given.  */
   unsigned int input_image_given ;	/**< @brief Whether input-image was given.  */
   unsigned int output_image_given ;	/**< @brief Whether output-image was given.  */
   unsigned int output_vf_given ;	/**< @brief Whether output-vf was given.  */
   unsigned int algorithm_given ;	/**< @brief Whether algorithm was given.  */
   unsigned int radius_given ;	/**< @brief Whether radius was given.  */
   unsigned int stiffness_given ;	/**< @brief Whether stiffness was given.  */
+  unsigned int default_value_given ;	/**< @brief Whether default-value was given.  */
   unsigned int config_given ;	/**< @brief Whether config was given.  */
 
   char **inputs ; /**< @brief unamed options (options without names) */
@@ -242,6 +248,8 @@ int cmdline_parser_landmark_warp_config_file (const char *filename,
  */
 int cmdline_parser_landmark_warp_required (struct args_info_landmark_warp *args_info,
   const char *prog_name);
+
+extern const char *cmdline_parser_landmark_warp_algorithm_values[];  /**< @brief Possible values for algorithm. */
 
 
 #ifdef __cplusplus

@@ -11,9 +11,20 @@
 typedef struct landmark_warp Landmark_warp;
 struct landmark_warp
 {
-    Pointset *fixed;
-    Pointset *moving;
-    Plm_image *m_img;
+    /* Inputs */
+    Pointset *m_fixed_landmarks;
+    Pointset *m_moving_landmarks;
+    Plm_image *m_input_img;
+
+    /* Config */
+    float rbf_radius;
+    float young_modulus;
+
+    /* Outputs */
+    bool m_want_warped_img;
+    Plm_image *m_warped_img;
+    bool m_want_vf;
+    Plm_image *m_vf;
 };
 
 #if defined __cplusplus

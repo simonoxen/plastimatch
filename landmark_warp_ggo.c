@@ -37,13 +37,14 @@ const char *args_info_landmark_warp_full_help[] = {
   "  -f, --fixed-landmarks=filename\n                                Input fixed landmarks (mandatory)",
   "  -m, --moving-landmarks=filename\n                                Input moving landmarks (mandatory)",
   "  -x, --input-xform=filename    Input landmark xform",
-  "  -v, --input-vf=filename       Input vector field",
+  "  -F, --fixed=filename          Fixed image (used to set size)",
   "  -I, --input-image=filename    Input image to warp",
   "  -O, --output-image=filename   Output warped image",
   "  -V, --output-vf=filename      Output vector field",
-  "  -a, --algorithm=STRING        Either \"itk\", \"gcs\", or \"nsh\"  \n                                  (default=`gcs')",
+  "  -a, --algorithm=ENUM          RBF warping algorithm   (possible \n                                  values=\"itk\", \"gcs\", \"nsh\" \n                                  default=`gcs')",
   "  -r, --radius=FLOAT            Radius of radial basis function  \n                                  (default=`0.0')",
   "  -Y, --stiffness=FLOAT         Young modulus  (default=`0.0')",
+  "  -d, --default-value=FLOAT     Value to set for pixels with unknown value  \n                                  (default=`0.0')",
   "      --config=STRING           Config file",
     0
 };
@@ -64,15 +65,17 @@ init_help_array(void)
   args_info_landmark_warp_help[10] = args_info_landmark_warp_full_help[10];
   args_info_landmark_warp_help[11] = args_info_landmark_warp_full_help[11];
   args_info_landmark_warp_help[12] = args_info_landmark_warp_full_help[12];
-  args_info_landmark_warp_help[13] = 0; 
+  args_info_landmark_warp_help[13] = args_info_landmark_warp_full_help[13];
+  args_info_landmark_warp_help[14] = 0; 
   
 }
 
-const char *args_info_landmark_warp_help[14];
+const char *args_info_landmark_warp_help[15];
 
 typedef enum {ARG_NO
   , ARG_STRING
   , ARG_FLOAT
+  , ARG_ENUM
 } cmdline_parser_landmark_warp_arg_type;
 
 static
@@ -111,6 +114,8 @@ free_cmd_list(void)
 }
 
 
+const char *cmdline_parser_landmark_warp_algorithm_values[] = {"itk", "gcs", "nsh", 0}; /*< Possible values for algorithm. */
+
 static char *
 gengetopt_strdup (const char *s);
 
@@ -123,13 +128,14 @@ void clear_given (struct args_info_landmark_warp *args_info)
   args_info->fixed_landmarks_given = 0 ;
   args_info->moving_landmarks_given = 0 ;
   args_info->input_xform_given = 0 ;
-  args_info->input_vf_given = 0 ;
+  args_info->fixed_given = 0 ;
   args_info->input_image_given = 0 ;
   args_info->output_image_given = 0 ;
   args_info->output_vf_given = 0 ;
   args_info->algorithm_given = 0 ;
   args_info->radius_given = 0 ;
   args_info->stiffness_given = 0 ;
+  args_info->default_value_given = 0 ;
   args_info->config_given = 0 ;
 }
 
@@ -143,20 +149,22 @@ void clear_args (struct args_info_landmark_warp *args_info)
   args_info->moving_landmarks_orig = NULL;
   args_info->input_xform_arg = NULL;
   args_info->input_xform_orig = NULL;
-  args_info->input_vf_arg = NULL;
-  args_info->input_vf_orig = NULL;
+  args_info->fixed_arg = NULL;
+  args_info->fixed_orig = NULL;
   args_info->input_image_arg = NULL;
   args_info->input_image_orig = NULL;
   args_info->output_image_arg = NULL;
   args_info->output_image_orig = NULL;
   args_info->output_vf_arg = NULL;
   args_info->output_vf_orig = NULL;
-  args_info->algorithm_arg = gengetopt_strdup ("gcs");
+  args_info->algorithm_arg = algorithm_arg_gcs;
   args_info->algorithm_orig = NULL;
   args_info->radius_arg = 0.0;
   args_info->radius_orig = NULL;
   args_info->stiffness_arg = 0.0;
   args_info->stiffness_orig = NULL;
+  args_info->default_value_arg = 0.0;
+  args_info->default_value_orig = NULL;
   args_info->config_arg = NULL;
   args_info->config_orig = NULL;
   
@@ -173,14 +181,15 @@ void init_args_info(struct args_info_landmark_warp *args_info)
   args_info->fixed_landmarks_help = args_info_landmark_warp_full_help[3] ;
   args_info->moving_landmarks_help = args_info_landmark_warp_full_help[4] ;
   args_info->input_xform_help = args_info_landmark_warp_full_help[5] ;
-  args_info->input_vf_help = args_info_landmark_warp_full_help[6] ;
+  args_info->fixed_help = args_info_landmark_warp_full_help[6] ;
   args_info->input_image_help = args_info_landmark_warp_full_help[7] ;
   args_info->output_image_help = args_info_landmark_warp_full_help[8] ;
   args_info->output_vf_help = args_info_landmark_warp_full_help[9] ;
   args_info->algorithm_help = args_info_landmark_warp_full_help[10] ;
   args_info->radius_help = args_info_landmark_warp_full_help[11] ;
   args_info->stiffness_help = args_info_landmark_warp_full_help[12] ;
-  args_info->config_help = args_info_landmark_warp_full_help[13] ;
+  args_info->default_value_help = args_info_landmark_warp_full_help[13] ;
+  args_info->config_help = args_info_landmark_warp_full_help[14] ;
   
 }
 
@@ -279,18 +288,18 @@ cmdline_parser_landmark_warp_release (struct args_info_landmark_warp *args_info)
   free_string_field (&(args_info->moving_landmarks_orig));
   free_string_field (&(args_info->input_xform_arg));
   free_string_field (&(args_info->input_xform_orig));
-  free_string_field (&(args_info->input_vf_arg));
-  free_string_field (&(args_info->input_vf_orig));
+  free_string_field (&(args_info->fixed_arg));
+  free_string_field (&(args_info->fixed_orig));
   free_string_field (&(args_info->input_image_arg));
   free_string_field (&(args_info->input_image_orig));
   free_string_field (&(args_info->output_image_arg));
   free_string_field (&(args_info->output_image_orig));
   free_string_field (&(args_info->output_vf_arg));
   free_string_field (&(args_info->output_vf_orig));
-  free_string_field (&(args_info->algorithm_arg));
   free_string_field (&(args_info->algorithm_orig));
   free_string_field (&(args_info->radius_orig));
   free_string_field (&(args_info->stiffness_orig));
+  free_string_field (&(args_info->default_value_orig));
   free_string_field (&(args_info->config_arg));
   free_string_field (&(args_info->config_orig));
   
@@ -304,13 +313,54 @@ cmdline_parser_landmark_warp_release (struct args_info_landmark_warp *args_info)
   clear_given (args_info);
 }
 
+/**
+ * @param val the value to check
+ * @param values the possible values
+ * @return the index of the matched value:
+ * -1 if no value matched,
+ * -2 if more than one value has matched
+ */
+static int
+check_possible_values(const char *val, const char *values[])
+{
+  int i, found, last;
+  size_t len;
+
+  if (!val)   /* otherwise strlen() crashes below */
+    return -1; /* -1 means no argument for the option */
+
+  found = last = 0;
+
+  for (i = 0, len = strlen(val); values[i]; ++i)
+    {
+      if (strncmp(val, values[i], len) == 0)
+        {
+          ++found;
+          last = i;
+          if (strlen(values[i]) == len)
+            return i; /* exact macth no need to check more */
+        }
+    }
+
+  if (found == 1) /* one match: OK */
+    return last;
+
+  return (found ? -2 : -1); /* return many values or none matched */
+}
+
 
 static void
 write_into_file(FILE *outfile, const char *opt, const char *arg, const char *values[])
 {
-  FIX_UNUSED (values);
+  int found = -1;
   if (arg) {
-    fprintf(outfile, "%s=\"%s\"\n", opt, arg);
+    if (values) {
+      found = check_possible_values(arg, values);      
+    }
+    if (found >= 0)
+      fprintf(outfile, "%s=\"%s\" # %s\n", opt, arg, values[found]);
+    else
+      fprintf(outfile, "%s=\"%s\"\n", opt, arg);
   } else {
     fprintf(outfile, "%s\n", opt);
   }
@@ -340,8 +390,8 @@ cmdline_parser_landmark_warp_dump(FILE *outfile, struct args_info_landmark_warp 
     write_into_file(outfile, "moving-landmarks", args_info->moving_landmarks_orig, 0);
   if (args_info->input_xform_given)
     write_into_file(outfile, "input-xform", args_info->input_xform_orig, 0);
-  if (args_info->input_vf_given)
-    write_into_file(outfile, "input-vf", args_info->input_vf_orig, 0);
+  if (args_info->fixed_given)
+    write_into_file(outfile, "fixed", args_info->fixed_orig, 0);
   if (args_info->input_image_given)
     write_into_file(outfile, "input-image", args_info->input_image_orig, 0);
   if (args_info->output_image_given)
@@ -349,11 +399,13 @@ cmdline_parser_landmark_warp_dump(FILE *outfile, struct args_info_landmark_warp 
   if (args_info->output_vf_given)
     write_into_file(outfile, "output-vf", args_info->output_vf_orig, 0);
   if (args_info->algorithm_given)
-    write_into_file(outfile, "algorithm", args_info->algorithm_orig, 0);
+    write_into_file(outfile, "algorithm", args_info->algorithm_orig, cmdline_parser_landmark_warp_algorithm_values);
   if (args_info->radius_given)
     write_into_file(outfile, "radius", args_info->radius_orig, 0);
   if (args_info->stiffness_given)
     write_into_file(outfile, "stiffness", args_info->stiffness_orig, 0);
+  if (args_info->default_value_given)
+    write_into_file(outfile, "default-value", args_info->default_value_orig, 0);
   if (args_info->config_given)
     write_into_file(outfile, "config", args_info->config_orig, 0);
   
@@ -1118,7 +1170,18 @@ int update_arg(void *field, char **orig_field,
       return 1; /* failure */
     }
 
-  FIX_UNUSED (default_value);
+  if (possible_values && (found = check_possible_values((value ? value : default_value), possible_values)) < 0)
+    {
+      if (short_opt != '-')
+        fprintf (stderr, "%s: %s argument, \"%s\", for option `--%s' (`-%c')%s\n", 
+          package_name, (found == -2) ? "ambiguous" : "invalid", value, long_opt, short_opt,
+          (additional_error ? additional_error : ""));
+      else
+        fprintf (stderr, "%s: %s argument, \"%s\", for option `--%s'%s\n", 
+          package_name, (found == -2) ? "ambiguous" : "invalid", value, long_opt,
+          (additional_error ? additional_error : ""));
+      return 1; /* failure */
+    }
     
   if (field_given && *field_given && ! override)
     return 0;
@@ -1132,6 +1195,9 @@ int update_arg(void *field, char **orig_field,
   switch(arg_type) {
   case ARG_FLOAT:
     if (val) *((float *)field) = (float)strtod (val, &stop_char);
+    break;
+  case ARG_ENUM:
+    if (val) *((int *)field) = found;
     break;
   case ARG_STRING:
     if (val) {
@@ -1225,13 +1291,14 @@ cmdline_parser_landmark_warp_internal (
         { "fixed-landmarks",	1, NULL, 'f' },
         { "moving-landmarks",	1, NULL, 'm' },
         { "input-xform",	1, NULL, 'x' },
-        { "input-vf",	1, NULL, 'v' },
+        { "fixed",	1, NULL, 'F' },
         { "input-image",	1, NULL, 'I' },
         { "output-image",	1, NULL, 'O' },
         { "output-vf",	1, NULL, 'V' },
         { "algorithm",	1, NULL, 'a' },
         { "radius",	1, NULL, 'r' },
         { "stiffness",	1, NULL, 'Y' },
+        { "default-value",	1, NULL, 'd' },
         { "config",	1, NULL, 0 },
         { 0,  0, 0, 0 }
       };
@@ -1241,7 +1308,7 @@ cmdline_parser_landmark_warp_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hf:m:x:v:I:O:V:a:r:Y:", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hf:m:x:F:I:O:V:a:r:Y:d:", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1293,14 +1360,14 @@ cmdline_parser_landmark_warp_internal (
             goto failure;
         
           break;
-        case 'v':	/* Input vector field.  */
+        case 'F':	/* Fixed image (used to set size).  */
         
         
-          if (update_arg( (void *)&(args_info->input_vf_arg), 
-               &(args_info->input_vf_orig), &(args_info->input_vf_given),
-              &(local_args_info.input_vf_given), optarg, 0, 0, ARG_STRING,
+          if (update_arg( (void *)&(args_info->fixed_arg), 
+               &(args_info->fixed_orig), &(args_info->fixed_given),
+              &(local_args_info.fixed_given), optarg, 0, 0, ARG_STRING,
               check_ambiguity, override, 0, 0,
-              "input-vf", 'v',
+              "fixed", 'F',
               additional_error))
             goto failure;
         
@@ -1341,12 +1408,12 @@ cmdline_parser_landmark_warp_internal (
             goto failure;
         
           break;
-        case 'a':	/* Either \"itk\", \"gcs\", or \"nsh\".  */
+        case 'a':	/* RBF warping algorithm .  */
         
         
           if (update_arg( (void *)&(args_info->algorithm_arg), 
                &(args_info->algorithm_orig), &(args_info->algorithm_given),
-              &(local_args_info.algorithm_given), optarg, 0, "gcs", ARG_STRING,
+              &(local_args_info.algorithm_given), optarg, cmdline_parser_landmark_warp_algorithm_values, "gcs", ARG_ENUM,
               check_ambiguity, override, 0, 0,
               "algorithm", 'a',
               additional_error))
@@ -1373,6 +1440,18 @@ cmdline_parser_landmark_warp_internal (
               &(local_args_info.stiffness_given), optarg, 0, "0.0", ARG_FLOAT,
               check_ambiguity, override, 0, 0,
               "stiffness", 'Y',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'd':	/* Value to set for pixels with unknown value.  */
+        
+        
+          if (update_arg( (void *)&(args_info->default_value_arg), 
+               &(args_info->default_value_orig), &(args_info->default_value_given),
+              &(local_args_info.default_value_given), optarg, 0, "0.0", ARG_FLOAT,
+              check_ambiguity, override, 0, 0,
+              "default-value", 'd',
               additional_error))
             goto failure;
         
