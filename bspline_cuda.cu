@@ -2037,7 +2037,6 @@ CUDA_bspline_interpolate_vf (
     memcpy (&cdim, bxf->cdims, 3*sizeof(int));
     memcpy (&vpr, bxf->vox_per_rgn, 3*sizeof(int));
 
-    float* vf;
     size_t vf_size = interp->npix * 3*sizeof(float);
 
 
@@ -2054,13 +2053,14 @@ CUDA_bspline_interpolate_vf (
 
     int tpb = dimBlock.x * dimBlock.y * dimBlock.z;
 
-    size_t vf_gpu_size = tpb * num_blocks * 3*sizeof(float);
-    CUDA_alloc_zero ((void**)&vf, vf_gpu_size, cudaAllocStern);
+    size_t sMemSize = tpb * 3*sizeof(float);
+    size_t vf_gpu_size = sMemSize * num_blocks;
 
-    size_t sMemSize = (dimBlock.x*dimBlock.y*dimBlock.z) * 3*sizeof(float);
+    float* vf_gpu;
+    CUDA_alloc_zero ((void**)&vf_gpu, vf_gpu_size, cudaAllocStern);
 
     kernel_bspline_interpolate_vf <<<dimGrid, dimBlock, sMemSize>>> (
-            vf,         // out
+            vf_gpu,     // out
             vol_dim,    // in
             rdim,       // in
             cdim,       // in
@@ -2070,7 +2070,8 @@ CUDA_bspline_interpolate_vf (
     cudaThreadSynchronize();
     CUDA_check_error("kernel_bspline_interpolate_vf()");
 
-    cudaMemcpy(interp->img, vf, vf_size, cudaMemcpyDeviceToHost);
+    // notice that we don't copy the "garbage" at the end of gpu memory
+    cudaMemcpy(interp->img, vf_gpu, vf_size, cudaMemcpyDeviceToHost);
     CUDA_check_error("error copying vf back to CPU");
 
 
@@ -2081,7 +2082,7 @@ CUDA_bspline_interpolate_vf (
     cudaUnbindTexture(tex_LUT_Bspline_y);
     cudaUnbindTexture(tex_LUT_Bspline_z);
 
-    cudaFree(vf);
+    cudaFree(vf_gpu);
     cudaFree(coeff);
     cudaFree(LUT_Bspline_x);
     cudaFree(LUT_Bspline_y);
