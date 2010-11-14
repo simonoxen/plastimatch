@@ -2029,7 +2029,7 @@ CUDA_bspline_interpolate_vf (
     free (LUT_Bspline_z_cpu);
 
 
-    // Allocate some space on the GPU for the vector field
+    // Get things ready for the kernel
     // ---------------------------------------------------------------
     int3 vol_dim, rdim, cdim, vpr;
     memcpy (&vol_dim, interp->dim, 3*sizeof(int));
@@ -2038,14 +2038,13 @@ CUDA_bspline_interpolate_vf (
     memcpy (&vpr, bxf->vox_per_rgn, 3*sizeof(int));
 
     float* vf;
-    size_t vf_size = vol_dim.x * vol_dim.y * vol_dim.z
-                   * 3*sizeof(float);
+    size_t vf_size = interp->npix * 3*sizeof(float);
 
-    CUDA_alloc_zero ((void**)&vf, vf_size, cudaAllocStern);
 
 
     // Kernel setup & execution
     // ---------------------------------------------------------------
+    int num_blocks = 
     CUDA_exec_conf_1tpe (
         &dimGrid,          // OUTPUT: Grid  dimensions
         &dimBlock,         // OUTPUT: Block dimensions
@@ -2053,7 +2052,12 @@ CUDA_bspline_interpolate_vf (
         192,               // INPUT: Threads per block
         true);             // INPUT: Is threads per block negotiable?
 
-    size_t sMemSize = 3*(dimBlock.x*dimBlock.y*dimBlock.z) * sizeof(float);
+    int tpb = dimBlock.x * dimBlock.y * dimBlock.z;
+
+    size_t vf_gpu_size = tpb * num_blocks * 3*sizeof(float);
+    CUDA_alloc_zero ((void**)&vf, vf_gpu_size, cudaAllocStern);
+
+    size_t sMemSize = (dimBlock.x*dimBlock.y*dimBlock.z) * 3*sizeof(float);
 
     kernel_bspline_interpolate_vf <<<dimGrid, dimBlock, sMemSize>>> (
             vf,         // out
