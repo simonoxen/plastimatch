@@ -243,6 +243,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     pih.print ();
 
     if (rtds->m_ss_image) {
+
 	/* Convert ss_img to cxt */
 	rtds->m_ss_image->convert_ss_img_to_cxt ();
 

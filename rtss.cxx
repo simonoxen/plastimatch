@@ -176,7 +176,8 @@ Rtss::prune_empty (void)
 /* Copy structure name, id, color, but not contents */
 Rtss*
 Rtss::clone_empty (
-    Rtss* cxt_out
+    Rtss* cxt_out,
+    Rtss* cxt_in
 )
 {
     int i;
@@ -188,15 +189,14 @@ Rtss::clone_empty (
 	cxt_out = new Rtss;
     }
 
-    for (i = 0; i < this->num_structures; i++) {
-	Rtss_structure *old_structure = this->slist[i];
+    for (i = 0; i < cxt_in->num_structures; i++) {
+	Rtss_structure *old_structure = cxt_in->slist[i];
 	Rtss_structure *new_structure = cxt_out->add_structure (
 	    old_structure->name, old_structure->color, old_structure->id);
 
 	/* Copy bit */
 	new_structure->bit = old_structure->bit;
     }
-
     return cxt_out;
 }
 

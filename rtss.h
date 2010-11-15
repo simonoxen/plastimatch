@@ -44,7 +44,7 @@ public:
     void debug (void);
     void adjust_structure_names (void);
     void prune_empty (void);
-    Rtss* clone_empty (Rtss* cxt_out);
+    static Rtss* clone_empty (Rtss* cxt_out, Rtss* cxt_in);
     plastimatch1_EXPORT
     void free_all_polylines (void);
     void apply_geometry (void);

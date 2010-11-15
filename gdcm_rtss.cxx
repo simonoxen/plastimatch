@@ -542,32 +542,6 @@ gdcm_rtss_save (
     }
     /* ContourImageSequence */
     gdcm::SeqEntry *ci_seq = rtrseries_item->InsertSeqEntry (0x3006, 0x0016);
-#if defined (commentout)
-    if (gs.m_have_ct) {
-	int i = 1;
-	gdcm::FileList *file_list = gs.m_ct_file_list;
-	for (gdcm::FileList::iterator it =  file_list->begin();
-	     it != file_list->end(); 
-	     ++it)
-	{
-	    /* Get SOPInstanceUID of CT */
-	    std::string tmp = (*it)->GetEntryValue (0x0008, 0x0018);
-	    /* Put item into sequence */
-	    gdcm::SQItem *ci_item = new gdcm::SQItem (ci_seq->GetDepthLevel());
-	    ci_seq->AddSQItem (ci_item, i++);
-	    /* ReferencedSOPClassUID = CTImageStorage */
-	    ci_item->InsertValEntry ("1.2.840.10008.5.1.4.1.1.2", 
-		0x0008, 0x1150);
-	    /* Put ReferencedSOPInstanceUID */
-	    ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
-	}
-    }
-    else {
-	/* What to do here? */
-	printf ("Warning: CT not found. "
-	    "ContourImageSequence not generated.\n");
-    }
-#endif
     if (cxt->ct_slice_uids.empty()) {
 	printf ("Warning: CT not found. "
 	    "ContourImageSequence not generated.\n");

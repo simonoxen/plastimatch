@@ -86,6 +86,7 @@ void
 Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
 {
     char fn[_MAX_PATH];
+
     this->m_cxt->adjust_structure_names ();
 
     /* If we have just written the CT files using the ITK writer, 
@@ -95,6 +96,7 @@ Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
     }
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
+
     gdcm_rtss_save (this->m_cxt, fn);
 }
 
@@ -228,7 +230,7 @@ Ss_image::convert_ss_img_to_cxt (void)
     /* Do extraction */
     printf ("Running marching squares\n");
     if (this->m_ss_list) {
-	this->m_cxt->clone_empty (this->m_ss_list);
+	this->m_cxt = Rtss::clone_empty (this->m_cxt, this->m_ss_list);
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
     } else {
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
@@ -276,7 +278,7 @@ Ss_image::rasterize (void)
     cxt_to_mha_destroy (ctm_state);
 
     /* Clone the set of names */
-    this->m_ss_list = this->m_cxt->clone_empty (this->m_ss_list);
+    this->m_ss_list = Rtss::clone_empty (this->m_ss_list, this->m_cxt);
 
     printf ("Finished rasterization.\n");
 }
