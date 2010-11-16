@@ -21,7 +21,7 @@ public:
     void digest_files (void);
     void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
-    void get_slice_uids (std::list<CBString> *slice_uids);
+    void get_slice_uids (std::vector<CBString> *slice_uids);
 
     gdcm::SerieHelper2 *m_gsh2;
 

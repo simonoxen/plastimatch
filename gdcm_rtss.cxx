@@ -547,7 +547,7 @@ gdcm_rtss_save (
 	    "ContourImageSequence not generated.\n");
     }
     int i = 1;
-    for (std::list<CBString>::iterator it = cxt->ct_slice_uids.begin();
+    for (std::vector<CBString>::iterator it = cxt->ct_slice_uids.begin();
 	 it != cxt->ct_slice_uids.end();
 	 it++)
     {

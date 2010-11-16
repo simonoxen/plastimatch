@@ -209,7 +209,11 @@ Gdcm_series::digest_files (void)
 }
 
 void
-Gdcm_series::get_slice_info (int *slice_no, CBString *ct_slice_uid, float z)
+Gdcm_series::get_slice_info (
+    int *slice_no,                  /* Output */
+    CBString *ct_slice_uid,         /* Output */
+    float z                         /* Input */
+)
 {
     if (!this->m_have_ct) {
 	return;
@@ -233,7 +237,7 @@ Gdcm_series::get_slice_info (int *slice_no, CBString *ct_slice_uid, float z)
 }
 
 void
-Gdcm_series::get_slice_uids (std::list<CBString> *slice_uids)
+Gdcm_series::get_slice_uids (std::vector<CBString> *slice_uids)
 {
     slice_uids->clear ();
     if (!this->m_have_ct) {
