@@ -11,12 +11,12 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "cxt_apply_dicom.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "referenced_dicom_dir.h"
 #include "rtss.h"
 
 void
