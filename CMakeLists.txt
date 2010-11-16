@@ -758,7 +758,6 @@ ENDIF (F2C_LIBRARY)
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   bspline_rbf.cxx bspline_rbf.h
-  cxt_apply_dicom.cxx cxt_apply_dicom.h 
   cxt_io.cxx cxt_io.h 
   cxt_to_mha.cxx cxt_to_mha.h 
   demographics.cxx demographics.h 
@@ -799,6 +798,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_version.h 
   plm_warp.cxx plm_warp.h 
   rbf_gcs.cxx rbf_gcs.h
+  referenced_dicom_dir.cxx referenced_dicom_dir.h 
   render_polyline.cxx render_polyline.h
   resample_mha.cxx resample_mha.h 
   rtds.cxx rtds.h

@@ -28,7 +28,7 @@ public:
     CBString fixed_im_fn;
     CBString ctatts_in_fn;
     CBString dif_in_fn;
-    CBString dicom_dir;
+    CBString referenced_dicom_dir;
 
     /* Output files */
     CBString output_colormap_fn;

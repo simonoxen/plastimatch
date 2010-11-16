@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _cxt_apply_dicom_h_
-#define _cxt_apply_dicom_h_
+#ifndef _referenced_dicom_dir_h_
+#define _referenced_dicom_dir_h_
 
 #include "plm_config.h"
 #include "cxt_io.h"

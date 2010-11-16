@@ -4,7 +4,6 @@
 #include "plm_config.h"
 
 #include "bstring_util.h"
-#include "cxt_apply_dicom.h"
 #include "cxt_extract.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
@@ -13,6 +12,7 @@
 #include "itk_image_save.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
+#include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
 #include "ss_img_extract.h"
@@ -33,9 +33,9 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_IMG:
 	    rtds->m_img = plm_image_load_native (parms->input_fn);
 	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN 
-		&& bstring_not_empty (parms->dicom_dir))
+		&& bstring_not_empty (parms->referenced_dicom_dir))
 	    {
-		rtds_patient_pos_from_dicom_dir (rtds, parms->dicom_dir);
+		rtds_patient_pos_from_dicom_dir (rtds, parms->referenced_dicom_dir);
 	    } else {
 		rtds->m_img->m_patient_pos = parms->patient_pos;
 	    }
@@ -46,7 +46,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_XIO_DIR:
 	    rtds->load_xio (
 		(const char*) parms->input_fn, 
-		(const char*) parms->dicom_dir, 
+		(const char*) parms->referenced_dicom_dir, 
 		parms->patient_pos);
 	    break;
 	case PLM_FILE_FMT_DIJ:
@@ -57,13 +57,13 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->m_ss_image = new Ss_image;
 	    rtds->m_ss_image->load_gdcm_rtss (
 		(const char*) parms->input_fn, 
-		(const char*) parms->dicom_dir);
+		(const char*) parms->referenced_dicom_dir);
 	    break;
 	case PLM_FILE_FMT_DICOM_DOSE:
 	    rtds->m_dose = gdcm_dose_load (
 		0, 
 		(const char*) parms->input_fn, 
-		(const char*) parms->dicom_dir);
+		(const char*) parms->referenced_dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_ss_image = new Ss_image;
@@ -248,8 +248,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_ss_image->convert_ss_img_to_cxt ();
 
 	/* Set UIDs, patient name, etc. */
-	if (bstring_not_empty (parms->dicom_dir)) {
-	    rtds->m_ss_image->apply_dicom_dir (parms->dicom_dir);
+	if (bstring_not_empty (parms->referenced_dicom_dir)) {
+	    rtds->m_ss_image->apply_dicom_dir (parms->referenced_dicom_dir);
 	}
 
 	/* Delete empty structures */
@@ -328,10 +328,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* In certain cases, we have to delay setting dicom uids 
        (e.g. wait until after warping) */
-    /* GCS FIX: Sometimes dicom_dir is applied multiple times, 
+    /* GCS FIX: Sometimes referenced_dicom_dir is applied multiple times, 
        such as when using dicom and xio input, which is inefficient. */
-    if (rtds->m_ss_image && bstring_not_empty (parms->dicom_dir)) {
-	rtds->m_ss_image->apply_dicom_dir (parms->dicom_dir);
+    if (rtds->m_ss_image && bstring_not_empty (parms->referenced_dicom_dir)) {
+	rtds->m_ss_image->apply_dicom_dir (parms->referenced_dicom_dir);
     }
 
     /* Save dicom */

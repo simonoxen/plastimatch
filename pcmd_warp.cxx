@@ -39,7 +39,8 @@ print_usage (char* command)
 	"    --output-type={uchar,short,float,...}\n"
 	"    --algorithm=itk\n"
 	"    --patient-pos={hfs,hfp,ffs,ffp}\n"
-	"    --dicom-dir=directory      (for structure association)\n"
+	//	"    --dicom-dir=directory      (for structure association)\n"
+	"    --referenced-ct=directory  (for structure association)\n"
 	"    --ctatts=filename          (for dij)\n"
 	"    --dif=filename             (for dij)\n"
 	"    --input-ss-img=filename    (for structures)\n"
@@ -100,6 +101,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output_type",    required_argument,      NULL,           17 },
 	{ "dicom-dir",      required_argument,      NULL,           18 },
 	{ "dicom_dir",      required_argument,      NULL,           18 },
+	{ "referenced-ct",  required_argument,      NULL,           18 },
+	{ "referenced_ct",  required_argument,      NULL,           18 },
 	{ "output-prefix",  required_argument,      NULL,           19 },
 	{ "output_prefix",  required_argument,      NULL,           19 },
 	{ "output-labelmap",required_argument,      NULL,           20 },
@@ -225,7 +228,7 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 18:
-	    parms->dicom_dir = optarg;
+	    parms->referenced_dicom_dir = optarg;
 	    break;
 	case 19:
 	    parms->output_prefix = optarg;
