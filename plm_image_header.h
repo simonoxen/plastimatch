@@ -44,6 +44,12 @@ public:
 	m_region = image->GetLargestPossibleRegion ();
 	m_direction = image->GetDirection ();
     }
+    static void clone (Plm_image_header *dest, Plm_image_header *src) {
+	dest->m_origin = src->m_origin;
+	dest->m_spacing = src->m_spacing;
+	dest->m_region = src->m_region;
+	dest->m_direction = src->m_direction;
+    }
 
     void plastimatch1_EXPORT get_gpuit_origin (float gpuit_origin[3]);
     void plastimatch1_EXPORT get_gpuit_spacing (float gpuit_spacing[3]);

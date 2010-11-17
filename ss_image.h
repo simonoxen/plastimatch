@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "itk_image.h"
 #include "plm_image.h"
+#include "referenced_dicom_dir.h"
 #include "rtss.h"
 #include "warp_parms.h"
 #include "xform.h"
@@ -93,7 +94,7 @@ public:
     get_ss_list (void);
 
     void
-    apply_dicom_dir (const CBString &dicom_dir);
+    apply_dicom_dir (const Referenced_dicom_dir *rdd);
     void
     convert_ss_img_to_cxt (void);
     void

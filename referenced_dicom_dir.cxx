@@ -103,7 +103,7 @@ Referenced_dicom_dir::get_slice_info (
     int *slice_no,                  /* Output */
     CBString *ct_slice_uid,         /* Output */
     float z                         /* Input */
-)
+) const
 {
     if (!this->m_loaded) {
 	*slice_no = -1;
@@ -121,6 +121,7 @@ Referenced_dicom_dir::get_slice_info (
     (*ct_slice_uid) = this->m_ct_slice_uids[*slice_no];
 }
 
+#if defined (commentout)
 void
 cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 {
@@ -202,3 +203,4 @@ cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 	}
     }
 }
+#endif

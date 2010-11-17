@@ -55,6 +55,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_ss_image = new Ss_image;
+	    /* GCS FIX: This is where the dicom directory gets loaded twice. 
+	       We should (probably) remove this load */
 	    rtds->m_ss_image->load_gdcm_rtss (
 		(const char*) parms->input_fn, 
 		(const char*) parms->referenced_dicom_dir);
@@ -77,6 +79,11 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->input_fn);
 	    break;
 	}
+    }
+
+    if (bstring_not_empty (parms->referenced_dicom_dir)) {
+	printf ("Loading RDD\n");
+	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
     }
 
     if (bstring_not_empty (parms->input_ss_img_fn)) {
@@ -210,6 +217,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	FloatImageType::Pointer fixed = itk_image_load_float (
 	    parms->fixed_im_fn, 0);
 	pih.set_from_itk_image (fixed);
+    } else if (rtds->m_rdd && rtds->m_rdd->m_loaded) {
+	/* use spacing from referenced CT */
+	printf ("Setting PIH from RDD\n");
+	Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* use the spacing from input vector field */
 	pih.set_from_itk_image (xform.get_itk_vf());
@@ -242,25 +253,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     printf ("PIH is:\n");
     pih.print ();
 
-    if (rtds->m_ss_image) {
-
-	/* Convert ss_img to cxt */
-	rtds->m_ss_image->convert_ss_img_to_cxt ();
-
-	/* Set UIDs, patient name, etc. */
-	if (bstring_not_empty (parms->referenced_dicom_dir)) {
-	    rtds->m_ss_image->apply_dicom_dir (parms->referenced_dicom_dir);
-	}
-
-	/* Delete empty structures */
-	if (parms->prune_empty) {
-	    rtds->m_ss_image->prune_empty ();
-	}
-
-	/* Set the geometry */
-	rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
-    }
-
     /* Warp the image and create vf */
     if (rtds->m_img 
 	&& bstring_not_empty (parms->xf_in_fn)
@@ -283,8 +275,24 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    parms->output_type);
     }
 
+    /* Warp the dose image */
+    if (rtds->m_dose
+	&& bstring_not_empty (parms->xf_in_fn)
+	&& (bstring_not_empty (parms->output_dose_img_fn)
+	    || bstring_not_empty (parms->output_xio_dirname)))
+    {
+	printf ("Warping dose image...\n");
+	Plm_image *im_out;
+	im_out = new Plm_image;
+	plm_warp (im_out, 0, &xform, &pih, rtds->m_dose, 0, 
+	    parms->use_itk, 1);
+	delete rtds->m_dose;
+	rtds->m_dose = im_out;
+    }
+
     /* Save output dose image */
-    if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose) {
+    if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose)
+    {
 	printf ("Saving dose image...\n");
 	rtds->m_dose->convert_and_save (
 	    (const char*) parms->output_dose_img_fn, 
@@ -307,14 +315,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    rtds->m_xio_dose_input);
     }
 
-    /* Save dose as ITK image */
-    if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_img) {
-	printf ("Saving dose image...\n");
-	rtds->m_dose->convert_and_save (
-	    (const char*) parms->output_dose_img_fn, 
-	    parms->output_type);
-    }
-
     /* Save output vector field */
     if (bstring_not_empty (parms->xf_in_fn) 
 	&& bstring_not_empty (parms->output_vf_fn))
@@ -323,15 +323,36 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	itk_image_save (vf, (const char*) parms->output_vf_fn);
     }
 
+    /* Preprocess structure sets */
+    if (rtds->m_ss_image) {
+
+	/* Convert ss_img to cxt */
+	rtds->m_ss_image->convert_ss_img_to_cxt ();
+
+	/* Delete empty structures */
+	if (parms->prune_empty) {
+	    rtds->m_ss_image->prune_empty ();
+	}
+
+	/* Set the DICOM reference info */
+	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
+
+	/* Set the geometry */
+	rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
+    }
+
     /* Warp and save structure set (except dicom) */
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
+#if defined (commentout)
+#endif
     /* In certain cases, we have to delay setting dicom uids 
        (e.g. wait until after warping) */
     /* GCS FIX: Sometimes referenced_dicom_dir is applied multiple times, 
        such as when using dicom and xio input, which is inefficient. */
-    if (rtds->m_ss_image && bstring_not_empty (parms->referenced_dicom_dir)) {
-	rtds->m_ss_image->apply_dicom_dir (parms->referenced_dicom_dir);
+    /* GCS: Which cases are these?  (It does seem to solve problems...) */
+    if (rtds->m_ss_image && rtds->m_rdd) {
+	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
     }
 
     /* Save dicom */

@@ -18,11 +18,11 @@
 
 class Rtss {
 public:
-    Demographics *m_demographics;
     CBString ct_study_uid;
     CBString ct_series_uid;
     CBString ct_fref_uid;
     CBString study_id;
+    Demographics *m_demographics;
     std::vector<CBString> ct_slice_uids;
     int have_geometry;
     int dim[3];

@@ -25,7 +25,7 @@ public:
     Referenced_dicom_dir ();
     ~Referenced_dicom_dir ();
     void load (const char *dicom_dir);
-    void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
+    void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z) const;
 
 };
 
@@ -33,9 +33,11 @@ public:
 extern "C" {
 #endif
 
+#if defined (commentout)
 plastimatch1_EXPORT
 void
 cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir);
+#endif
 
 #if defined __cplusplus
 }

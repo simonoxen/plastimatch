@@ -89,10 +89,13 @@ Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
 
     this->m_cxt->adjust_structure_names ();
 
-    /* If we have just written the CT files using the ITK writer, 
-       we need to associate the RTSS with it. */
+    /* -if- we have just written the CT files using the ITK writer, 
+       -or if- we don't know the UID info from --dicom-dir 
+       -then- look in the output dir for a CT to associate UIDs. */
     if (reload || bstring_empty (this->m_cxt->ct_study_uid)) {
-	cxt_apply_dicom_dir (this->m_cxt, output_dir);
+	Referenced_dicom_dir rdd;
+	rdd.load (output_dir);
+	this->apply_dicom_dir (&rdd);
     }
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
@@ -195,10 +198,57 @@ Ss_image::get_ss_list (void)
 }
 
 void
-Ss_image::apply_dicom_dir (const CBString &dicom_dir)
+Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 {
-    if (this->m_cxt) {
-	cxt_apply_dicom_dir (this->m_cxt, (const char*) dicom_dir);
+    if (!this->m_cxt) {
+	return;
+    }
+
+    if (!rdd || !rdd->m_loaded) {
+	return;
+    }
+
+    /* Geometry */
+    for (int d = 0; d < 3; d++) {
+	this->m_cxt->offset[d] = rdd->m_pih.m_origin[d];
+	this->m_cxt->dim[d] = rdd->m_pih.Size(d);
+	this->m_cxt->spacing[d] = rdd->m_pih.m_spacing[d];
+    }
+
+    /* Demographics */
+    if (! this->m_cxt->m_demographics) {
+	this->m_cxt->m_demographics = new Demographics;
+    }
+    *(this->m_cxt->m_demographics) = rdd->m_demographics;
+
+    /* StudyID */
+    this->m_cxt->study_id = rdd->m_study_id;
+
+    /* StudyInstanceUID */
+    this->m_cxt->ct_study_uid = rdd->m_ct_study_uid;
+
+    /* SeriesInstanceUID */
+    this->m_cxt->ct_series_uid = rdd->m_ct_series_uid;
+	
+    /* FrameOfReferenceUID */
+    this->m_cxt->ct_fref_uid = rdd->m_ct_fref_uid;
+
+    /* Slice uids */
+    this->m_cxt->ct_slice_uids = rdd->m_ct_slice_uids;
+
+    /* Slice numbers and slice uids */
+    for (int i = 0; i < this->m_cxt->num_structures; i++) {
+	Rtss_structure *curr_structure = this->m_cxt->slist[i];
+	for (int j = 0; j < curr_structure->num_contours; j++) {
+	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    if (curr_polyline->num_vertices <= 0) {
+		continue;
+	    }
+	    rdd->get_slice_info (
+		&curr_polyline->slice_no,
+		&curr_polyline->ct_slice_uid,
+		curr_polyline->z[0]);
+	}
     }
 }
 

@@ -8,6 +8,7 @@
 #include "cxt_io.h"
 #include "demographics.h"
 #include "plm_image.h"
+#include "referenced_dicom_dir.h"
 #include "ss_image.h"
 #include "xio_ct.h"
 
@@ -21,7 +22,8 @@ public:
 					    template for XiO dose saving. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					    coordinates */
-    Demographics demographics;
+    Demographics demographics;         /* Patient name, patient id, etc. */
+    Referenced_dicom_dir *m_rdd;       /* UIDs for SS output */
 
 public:
     Rtds () {
@@ -30,7 +32,8 @@ public:
 	m_img = 0;
 	m_ss_image = 0;
 	m_dose = 0;
-	strcpy(m_xio_dose_input, "\0");
+	m_rdd = 0;
+	strcpy (m_xio_dose_input, "\0");
 
 	m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
 	m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
@@ -53,6 +56,9 @@ public:
 	if (m_dose) {
 	    delete m_dose;
 	}
+	if (m_rdd) {
+	    delete m_rdd;
+	}
     }
     plastimatch1_EXPORT
     void load_dicom_dir (const char *dicom_dir);
@@ -67,6 +73,7 @@ public:
     void load_dose_xio (const char *dose_xio);
     void load_dose_astroid (const char *dose_astroid);
     void load_dose_mc (const char *dose_mc);
+    void load_rdd (const char *rdd);
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
 };

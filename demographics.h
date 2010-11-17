@@ -18,6 +18,9 @@ public:
     CBString m_patient_name;
     CBString m_patient_id;
     CBString m_patient_sex;
+
+public:
+    
 };
 
 #if defined __cplusplus

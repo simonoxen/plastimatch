@@ -183,6 +183,13 @@ Rtds::load_dose_img (const char *dose_img)
 }
 
 void
+Rtds::load_rdd (const char *rdd)
+{
+    this->m_rdd = new Referenced_dicom_dir;
+    this->m_rdd->load (rdd);
+}
+
+void
 Rtds::load_dose_xio (const char *dose_xio)
 {
     if (this->m_dose) {
