@@ -62,14 +62,12 @@ gdcm_rtss_probe (const char *rtss_fn)
 void
 gdcm_rtss_load (
     Rtss_polyline_set *cxt, 
-    const char *rtss_fn, 
-    const char *dicom_dir
+    const char *rtss_fn
 )
 {
     gdcm::File *rtss_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
-    Gdcm_series gs;
     std::string tmp;
 
     rtss_file->SetMaxSizeLoadEntry (0xffff);
@@ -77,36 +75,11 @@ gdcm_rtss_load (
     rtss_file->SetLoadMode (0);
     rtss_file->Load();
 
-
     /* Modality -- better be RTSTRUCT */
     tmp = rtss_file->GetEntryValue (0x0008, 0x0060);
     if (strncmp (tmp.c_str(), "RTSTRUCT", strlen("RTSTRUCT"))) {
 	print_and_exit ("Error.  Input file not an RT structure set: %s\n",
 	    rtss_fn);
-    }
-
-    /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir && dicom_dir[0]) {
-	gs.load (dicom_dir);
-    } else {
-	/* Caller did not specify dicom_dir.  Try same directory as 
-	   rtss file */
-	printf ("rtss_fn = %s\n", rtss_fn);
-	char *dir = file_util_dirname (rtss_fn);
-	printf ("dir = %s\n", dir);
-	gs.load (dir);
-	printf ("Successful load\n");
-	free (dir);
-    }
-    gs.digest_files ();
-    if (gs.m_have_ct) {
-	int d;
-	cxt->have_geometry = 1;
-	for (d = 0; d < 3; d++) {
-	    cxt->offset[d] = gs.m_origin[d];
-	    cxt->dim[d] = gs.m_dim[d];
-	    cxt->spacing[d] = gs.m_spacing[d];
-	}
     }
 
     /* PatientName */
@@ -133,62 +106,40 @@ gdcm_rtss_load (
 	cxt->study_id = tmp.c_str();
     }
 
-    /* If caller specified dicom_dir, and we found a CT in the directory, 
-       get the uids from there */
-    if (dicom_dir && dicom_dir[0] && gs.m_have_ct) {
-	gdcm::File *ct_file = gs.get_ct_slice ();
-	
-	/* StudyInstanceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x000d);
-	cxt->ct_study_uid = tmp.c_str();
-	
-	/* SeriesInstanceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x000e);
-	cxt->ct_series_uid = tmp.c_str();
-	
+    /* StudyInstanceUID */
+    tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
+    cxt->ct_study_uid = tmp.c_str();
+
+    /* ReferencedFrameOfReferenceSequence */
+    gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
+    if (rfor_seq) {
+
 	/* FrameOfReferenceUID */
-	tmp = ct_file->GetEntryValue (0x0020, 0x0052);
-	cxt->ct_fref_uid = tmp.c_str();
-    } 
-
-    /* Otherwise get the UIDs from the RT structure set */
-    else {
-
-	/* StudyInstanceUID */
-	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
-	cxt->ct_study_uid = tmp.c_str();
-
-	/* ReferencedFrameOfReferenceSequence */
-	gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
-	if (rfor_seq) {
-
-	    /* FrameOfReferenceUID */
-	    item = rfor_seq->GetFirstSQItem ();
-	    if (item) {
-		tmp = item->GetEntryValue (0x0020,0x0052);
-		if (tmp != gdcm::GDCM_UNFOUND) {
-		    cxt->ct_fref_uid = tmp.c_str();
-		}
+	item = rfor_seq->GetFirstSQItem ();
+	if (item) {
+	    tmp = item->GetEntryValue (0x0020,0x0052);
+	    if (tmp != gdcm::GDCM_UNFOUND) {
+		cxt->ct_fref_uid = tmp.c_str();
+	    }
 	
-		/* RTReferencedStudySequence */
-		gdcm::SeqEntry *rtrstudy_seq 
-		    = item->GetSeqEntry (0x3006, 0x0012);
-		if (rtrstudy_seq) {
+	    /* RTReferencedStudySequence */
+	    gdcm::SeqEntry *rtrstudy_seq 
+		= item->GetSeqEntry (0x3006, 0x0012);
+	    if (rtrstudy_seq) {
 	
-		    /* RTReferencedSeriesSequence */
-		    item = rtrstudy_seq->GetFirstSQItem ();
-		    if (item) {
-			gdcm::SeqEntry *rtrseries_seq 
-			    = item->GetSeqEntry (0x3006, 0x0014);
-			if (rtrseries_seq) {
-			    item = rtrseries_seq->GetFirstSQItem ();
+		/* RTReferencedSeriesSequence */
+		item = rtrstudy_seq->GetFirstSQItem ();
+		if (item) {
+		    gdcm::SeqEntry *rtrseries_seq 
+			= item->GetSeqEntry (0x3006, 0x0014);
+		    if (rtrseries_seq) {
+			item = rtrseries_seq->GetFirstSQItem ();
 
-			    /* SeriesInstanceUID */
-			    if (item) {
-				tmp = item->GetEntryValue (0x0020, 0x000e);
-				if (tmp != gdcm::GDCM_UNFOUND) {
-				    cxt->ct_series_uid = tmp.c_str();
-				}
+			/* SeriesInstanceUID */
+			if (item) {
+			    tmp = item->GetEntryValue (0x0020, 0x000e);
+			    if (tmp != gdcm::GDCM_UNFOUND) {
+				cxt->ct_series_uid = tmp.c_str();
 			    }
 			}
 		    }
@@ -316,12 +267,6 @@ gdcm_rtss_load (
 		    }
 		    i = (i + 1) % 3;
 		}
-		/* Find matching CT slice at this z location */
-		if (gs.m_have_ct) {
-		    gs.get_slice_info (&curr_polyline->slice_no,
-			&curr_polyline->ct_slice_uid,
-			curr_polyline->z[0]);
-		}
 	    }
 	}
     }
@@ -383,15 +328,6 @@ gdcm_rtss_save (
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
     printf ("Hello from gdcm_rtss_save\n");
-
-#if defined (commentout)
-    Gdcm_series gs;
-    /* Got the RT struct.  Try to load the corresponding CT. */
-    if (dicom_dir[0] != '\0') {
-	gs.load (dicom_dir);
-	gs.digest_files ();
-    }
-#endif
 
     /* Due to a bug in gdcm, it is not possible to create a gdcmFile 
        which does not have a (7fe0,0000) PixelDataGroupLength element.

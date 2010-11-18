@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <set>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,8 @@
 #include "math_util.h"
 #include "plm_image_header.h"
 #include "rtss_polyline_set.h"
+
+#define SPACING_TOL 0.2    /* How close you need to be to be on the slice */
 
 Rtss_polyline_set::Rtss_polyline_set ()
 {
@@ -219,7 +222,114 @@ Rtss_polyline_set::free_all_polylines (void)
 }
 
 void
-Rtss_polyline_set::apply_geometry (void)
+Rtss_polyline_set::set_rasterization_geometry (void)
+{
+    int first = 1;
+    float min_x, max_x, min_y, max_y, min_z, max_z;
+    std::set<float> z_values;
+
+    /* Scan points to find image size, spacing */
+    for (int i = 0; i < this->num_structures; i++) {
+	Rtss_structure *curr_structure = this->slist[i];
+	for (int j = 0; j < curr_structure->num_contours; j++) {
+	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	    for (int k = 0; k < curr_polyline->num_vertices; k++) {
+		z_values.insert (curr_polyline->z[k]);
+		if (first) {
+		    min_x = max_x = curr_polyline->x[k];
+		    min_y = max_y = curr_polyline->y[k];
+		    min_z = max_z = curr_polyline->z[k];
+		    first = 0;
+		    continue;
+		}
+		if (curr_polyline->x[k] < min_x) {
+		    min_x = curr_polyline->x[k];
+		} else if (curr_polyline->x[k] > max_x) {
+		    max_x = curr_polyline->x[k];
+		}
+		if (curr_polyline->y[k] < min_y) {
+		    min_y = curr_polyline->y[k];
+		} else if (curr_polyline->y[k] > max_y) {
+		    max_y = curr_polyline->y[k];
+		}
+		if (curr_polyline->z[k] < min_z) {
+		    min_z = curr_polyline->z[k];
+		} else if (curr_polyline->z[k] > max_z) {
+		    max_z = curr_polyline->z[k];
+		}
+	    }
+	}
+    }
+
+    /* Use heuristics to set (x,y) values */
+    float range_x = max_x - min_x;
+    float range_y = max_y - min_y;
+    float range = range_x;
+    if (range_y > range) {
+	range = range_y;
+    }
+    range = range * 1.05;
+    this->rast_spacing[0] = this->rast_spacing[1] = range / 512;
+    this->rast_offset[0] = 0.5 * (max_x + min_x - range);
+    this->rast_offset[1] = 0.5 * (max_y + min_y - range);
+    this->rast_dim[0] = this->rast_dim[1] = 512;
+
+#if defined (commentout)
+    printf ("----Z VALUES-----\n");
+    for (std::set<float>::iterator it = z_values.begin(); 
+	 it != z_values.end(); 
+	 it++)
+    {
+	printf ("%f\n", *it);
+    }
+    printf ("---------\n");
+#endif
+
+    /* z value should be based on native slice spacing */
+    int have_spacing = 0;
+    float spacing;
+    float last_z = min_z;
+    for (std::set<float>::iterator it = z_values.begin(); 
+	 it != z_values.end(); 
+	 it++)
+    {
+	float this_z = *it;
+	float diff = this_z - last_z;
+	if (fabs (diff) < SPACING_TOL) {
+	    continue;
+	}
+	if (!have_spacing) {
+	    spacing = this_z - min_z;
+	    have_spacing = 1;
+	} else {
+	    if (fabs (diff - spacing) > SPACING_TOL) {
+		printf ("Warning, slice spacing of RTSS may be unequal\n");
+		printf ("%g - %g = %g vs. %g\n", 
+		    this_z, last_z, diff, spacing);
+	    }
+	}
+	last_z = this_z;
+    }
+    
+    this->rast_offset[2] = min_z;
+    if (have_spacing) {
+	this->rast_dim[2] = ROUND_INT ((max_z - min_z) / spacing);
+	this->rast_spacing[2] = spacing;
+    } else {
+	this->rast_dim[2] = 1;
+	this->rast_spacing[2] = 1;
+    }
+
+    printf ("rast_dim = %d %d %d\n", 
+	this->rast_dim[0], this->rast_dim[1], this->rast_dim[2]);
+    printf ("rast_offset = %g %g %g\n", 
+	this->rast_offset[0], this->rast_offset[1], this->rast_offset[2]);
+    printf ("rast_spacing = %g %g %g\n", 
+	this->rast_spacing[0], this->rast_spacing[1], this->rast_spacing[2]);
+}
+
+void
+Rtss_polyline_set::fix_polyline_slice_numbers (void)
 {
     int i, j;
 
@@ -244,90 +354,6 @@ Rtss_polyline_set::apply_geometry (void)
     }
 }
 
-#if defined (commentout)  /* To be written... - GCS */
-void
-cxt_apply_dicom_dir (Rtss_polyline_set *cxt, const char *dicom_dir)
-{
-    int i, j;
-    Gdcm_series gs;
-    std::string tmp;
-
-    if (!dicom_dir) {
-	return;
-    }
-
-    gs.load (dicom_dir);
-    gs.digest_files ();
-    if (!gs.m_have_ct) {
-	return;
-    }
-    gdcm::File* file = gs.get_ct_slice ();
-
-    /* Add geometry */
-    int d;
-    cxt->have_geometry = 1;
-    for (d = 0; d < 3; d++) {
-	cxt->offset[d] = gs.m_origin[d];
-	cxt->dim[d] = gs.m_dim[d];
-	cxt->spacing[d] = gs.m_spacing[d];
-    }
-
-    /* PatientName */
-    tmp = file->GetEntryValue (0x0010, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_name = tmp.c_str();
-    }
-
-    /* PatientID */
-    tmp = file->GetEntryValue (0x0010, 0x0020);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_id = tmp.c_str();
-    }
-
-    /* PatientSex */
-    tmp = file->GetEntryValue (0x0010, 0x0040);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_sex = tmp.c_str();
-    }
-
-    /* StudyID */
-    tmp = file->GetEntryValue (0x0020, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->study_id = tmp.c_str();
-    }
-
-    /* StudyInstanceUID */
-    tmp = file->GetEntryValue (0x0020, 0x000d);
-    cxt->ct_study_uid = tmp.c_str();
-
-    /* SeriesInstanceUID */
-    tmp = file->GetEntryValue (0x0020, 0x000e);
-    cxt->ct_series_uid = tmp.c_str();
-	
-    /* FrameOfReferenceUID */
-    tmp = file->GetEntryValue (0x0020, 0x0052);
-    cxt->ct_fref_uid = tmp.c_str();
-
-    /* Slice uids */
-    gs.get_slice_uids (&cxt->ct_slice_uids);
-
-    /* Slice numbers and slice uids */
-    for (i = 0; i < cxt->num_structures; i++) {
-	Rtss_structure *curr_structure = cxt->slist[i];
-	for (j = 0; j < curr_structure->num_contours; j++) {
-	    Rtss_polyline *curr_polyline = curr_structure->pslist[j];
-	    if (curr_polyline->num_vertices <= 0) {
-		continue;
-	    }
-	    gs.get_slice_info (
-		&curr_polyline->slice_no,
-		&curr_polyline->ct_slice_uid,
-		curr_polyline->z[0]);
-	}
-    }
-}
-#endif
-
 void
 Rtss_polyline_set::set_geometry_from_plm_image_header (
     Plm_image_header *pih
@@ -338,7 +364,7 @@ Rtss_polyline_set::set_geometry_from_plm_image_header (
     pih->get_gpuit_dim (this->dim);
     this->have_geometry = 1;
 
-    this->apply_geometry ();
+    this->fix_polyline_slice_numbers ();
 }
 
 void

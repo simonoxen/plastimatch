@@ -55,11 +55,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_ss_image = new Ss_image;
-	    /* GCS FIX: This is where the dicom directory gets loaded twice. 
-	       We should (probably) remove this load */
 	    rtds->m_ss_image->load_gdcm_rtss (
-		(const char*) parms->input_fn, 
-		(const char*) parms->referenced_dicom_dir);
+		(const char*) parms->input_fn);
 	    break;
 	case PLM_FILE_FMT_DICOM_DOSE:
 	    rtds->m_dose = gdcm_dose_load (
@@ -84,6 +81,13 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (bstring_not_empty (parms->referenced_dicom_dir)) {
 	printf ("Loading RDD\n");
 	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
+    } else {
+	/* Look for referenced CT in input directory */
+	if (bstring_not_empty (parms->input_fn)) {
+	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
+	    rtds->load_rdd (dirname);
+	    free (dirname);
+	}
     }
 
     if (bstring_not_empty (parms->input_ss_img_fn)) {
@@ -214,36 +218,47 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Try to guess the proper dimensions and spacing for output image */
     if (bstring_not_empty (parms->fixed_im_fn)) {
 	/* use the spacing of user-supplied fixed image */
+	printf ("Setting PIH from FIXED\n");
 	FloatImageType::Pointer fixed = itk_image_load_float (
 	    parms->fixed_im_fn, 0);
 	pih.set_from_itk_image (fixed);
-    } else if (rtds->m_rdd && rtds->m_rdd->m_loaded) {
-	/* use spacing from referenced CT */
-	printf ("Setting PIH from RDD\n");
-	Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* use the spacing from input vector field */
 	pih.set_from_itk_image (xform.get_itk_vf());
     } else if (xform.m_type == XFORM_GPUIT_BSPLINE) {
 	/* use the spacing from input bxf file */
+	printf ("Setting PIH from XFORM\n");
 	pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
+    } else if (rtds->m_rdd && rtds->m_rdd->m_loaded) {
+	/* use spacing from referenced CT */
+	printf ("Setting PIH from RDD\n");
+	Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
     } else if (rtds->m_img) {
 	/* use the spacing of the input image */
+	printf ("Setting PIH from M_IMG\n");
 	pih.set_from_plm_image (rtds->m_img);
     } else if (rtds->m_ss_image) {
 	/* use the spacing of the input image */
 	if (rtds->m_ss_image->m_ss_img) {
+	    printf ("Setting PIH from M_SS_IMG\n");
 	    pih.set_from_plm_image (rtds->m_ss_image->m_ss_img);
 	}
 	/* use the spacing of the structure set */
-	else if (rtds->m_ss_image->m_cxt) {
+	else if (rtds->m_ss_image->m_cxt && 
+	    rtds->m_ss_image->m_cxt->have_geometry)
+	{
 	    pih.set_from_gpuit (
 		rtds->m_ss_image->m_cxt->offset, 
 		rtds->m_ss_image->m_cxt->spacing, 
 		rtds->m_ss_image->m_cxt->dim, 0);
+	} else {
+	    /* out of options?  :( */
+	    print_and_exit (
+		"Sorry, I couldn't determine the output geometry\n");
 	}
     } else if (rtds->m_dose) {
 	/* use the spacing of dose */
+	printf ("Setting PIH from DOSE\n");
 	pih.set_from_plm_image (rtds->m_dose);
     } else {
 	/* out of options?  :( */
@@ -336,9 +351,12 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
 	/* Set the DICOM reference info */
 	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
-
-	/* Set the geometry */
+	
+	/* Set the output geometry */
 	rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
+
+	/* Set rasterization geometry */
+	rtds->m_ss_image->m_cxt->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */

@@ -274,11 +274,14 @@ xio_plan_dir_get_studyset_dir (Xio_plan_dir* xtpd)
     if (is_xio_plan_dir (xtpd->path)) {
 	/* Get studyset name from plan */
 	std::string plan_file = std::string(xtpd->path) + "/plan";
+	printf ("plan_file: %s\n", plan_file.c_str());
 	xio_plan_get_studyset (plan_file.c_str(), studyset);
 
 	/* Obtain patient directory from plan directory */
-	plan_dir = file_util_dirname(xtpd->path);
-	patient_dir = file_util_dirname(plan_dir);
+	plan_dir = file_util_parent (xtpd->path);
+	patient_dir = file_util_parent (plan_dir);
+	printf ("plan_dir: %s\n", plan_file.c_str());
+	printf ("patient_dir: %s\n", plan_file.c_str());
 
 	/* Set studyset directory */
 	std::string studyset_path = std::string(patient_dir) +

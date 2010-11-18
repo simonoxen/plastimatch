@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "cxt_io.h"
+#include "plm_image_header.h"
 #include "volume.h"
 
 class Cxt_to_mha_state {

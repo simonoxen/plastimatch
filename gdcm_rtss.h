@@ -19,8 +19,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_load (
     Rtss_polyline_set *cxt, 
-    const char *rtss_fn, 
-    const char *dicom_dir
+    const char *rtss_fn
 );
 plastimatch1_EXPORT
 void

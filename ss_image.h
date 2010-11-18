@@ -67,7 +67,7 @@ public:
     void
     load_xio (char *input_dir);
     void
-    load_gdcm_rtss (const char *input_fn, const char *dicom_dir);
+    load_gdcm_rtss (const char *input_fn);
 
     void
     save_colormap (const CBString &colormap_fn);

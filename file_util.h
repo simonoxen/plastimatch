@@ -35,6 +35,9 @@ void strip_extension (char* filename);
 gpuit_EXPORT
 char*
 file_util_dirname (const char *filename);
+gpuit_EXPORT
+char*
+file_util_parent (const char *filename);
 
 #if defined __cplusplus
 gpuit_EXPORT

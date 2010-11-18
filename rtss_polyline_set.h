@@ -25,9 +25,15 @@ public:
     Demographics *m_demographics;
     std::vector<CBString> ct_slice_uids;
     int have_geometry;
+    /* Output geometry */
     int dim[3];
     float spacing[3];
     float offset[3];
+    /* Rasterization geometry */
+    int rast_dim[3];
+    float rast_spacing[3];
+    float rast_offset[3];
+    /* Structures */
     int num_structures;
     Rtss_structure **slist;
 public:
@@ -49,7 +55,8 @@ public:
 	Rtss_polyline_set* cxt_in);
     plastimatch1_EXPORT
     void free_all_polylines (void);
-    void apply_geometry (void);
+    void fix_polyline_slice_numbers (void);
+    void set_rasterization_geometry (void);
     void set_geometry_from_plm_image_header (Plm_image_header *pih);
     void set_geometry_from_plm_image (Plm_image *pli);
 };

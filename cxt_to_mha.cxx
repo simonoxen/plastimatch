@@ -11,6 +11,7 @@
 #include "cxt_io.h"
 #include "cxt_to_mha.h"
 #include "file_util.h"
+#include "math_util.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
@@ -22,7 +23,7 @@
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,       /* Output */
-    Rtss_polyline_set *cxt,                         /* Input */
+    Rtss_polyline_set *cxt,            /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img                   /* Input */
@@ -30,7 +31,30 @@ cxt_to_mha_init (
 {
     int slice_voxels;
 
-    slice_voxels = cxt->dim[0] * cxt->dim[1];
+    /* GCS FIX: The rast_xxx are correct geometry for rasterization 
+       in some, but not all circumstances. 
+
+       We should use rast_xxx in the following cases:
+       (a) Warping
+       (b) No known output geometry
+       (c) Output geometry doesn't match slice locations
+
+       However, in the other cases we can directly convert to the 
+       output geometry without using rast_xxx, then resampling
+       to the output geometry.  These cases are common, such as 
+       a simple conversion of CT+RTSS to MHA.
+    */
+
+    /* This code forces the second case.  We should delete this 
+       code when the calling routine is smart enough to choose the 
+       rasterization geometry. */
+    for (int d = 0; d < 3; d++) {
+	cxt->rast_offset[d] = cxt->offset[d];
+	cxt->rast_spacing[d] = cxt->spacing[d];
+	cxt->rast_dim[d] = cxt->dim[d];
+    }
+
+    slice_voxels = cxt->rast_dim[0] * cxt->rast_dim[1];
 
     ctm_state->want_prefix_imgs = want_prefix_imgs;
     ctm_state->want_labelmap = want_labelmap;
@@ -42,8 +66,8 @@ cxt_to_mha_init (
     /* Create output volume for mask image.  This is reused for each 
        structure */
     ctm_state->uchar_vol 
-	= volume_create (cxt->dim, cxt->offset, 
-	    cxt->spacing, PT_UCHAR, 0, 0);
+	= volume_create (cxt->rast_dim, cxt->rast_offset, 
+	    cxt->rast_spacing, PT_UCHAR, 0, 0);
     if (ctm_state->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
     }
@@ -51,8 +75,8 @@ cxt_to_mha_init (
     /* Create output volume for labelmap */
     ctm_state->labelmap_vol = 0;
     if (want_labelmap) {
-	ctm_state->labelmap_vol = volume_create (cxt->dim, 
-	    cxt->offset, cxt->spacing, PT_UINT32, 0, 0);
+	ctm_state->labelmap_vol = volume_create (cxt->rast_dim, 
+	    cxt->rast_offset, cxt->rast_spacing, PT_UINT32, 0, 0);
 	if (ctm_state->labelmap_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
@@ -61,8 +85,8 @@ cxt_to_mha_init (
     /* Create output volume for ss_img */
     ctm_state->ss_img_vol = 0;
     if (want_ss_img) {
-	ctm_state->ss_img_vol = volume_create (cxt->dim, 
-	    cxt->offset, cxt->spacing, PT_UINT32, 0, 0);
+	ctm_state->ss_img_vol = volume_create (cxt->rast_dim, 
+	    cxt->rast_offset, cxt->rast_spacing, PT_UINT32, 0, 0);
 	if (ctm_state->ss_img_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
@@ -87,23 +111,28 @@ cxt_to_mha_process_next (
     /* If done, return false */
     if (ctm_state->curr_struct_no >= cxt->num_structures) {
 	ctm_state->curr_struct_no = cxt->num_structures + 1;
-	printf ("   --> (returning false)\n");
 	return false;
     }
     
     curr_structure = cxt->slist[ctm_state->curr_struct_no];
-    slice_voxels = cxt->dim[0] * cxt->dim[1];
+    slice_voxels = cxt->rast_dim[0] * cxt->rast_dim[1];
 
-    memset (uchar_img, 0, cxt->dim[0] * cxt->dim[1] 
-		* cxt->dim[2] * sizeof(unsigned char));
+    memset (uchar_img, 0, cxt->rast_dim[0] * cxt->rast_dim[1] 
+		* cxt->rast_dim[2] * sizeof(unsigned char));
 
     /* Loop through polylines in this structure */
     for (int i = 0; i < curr_structure->num_contours; i++) {
 	Rtss_polyline* curr_contour;
 	unsigned char* uchar_slice;
+	int slice_no;
 
 	curr_contour = curr_structure->pslist[i];
-	if (curr_contour->slice_no == -1) {
+	if (curr_contour->num_vertices == 0) {
+	    continue;
+	}
+	slice_no = ROUND_INT((curr_contour->z[0] - cxt->rast_offset[2]) 
+	    / cxt->rast_spacing[2]);
+	if (slice_no < 0 || slice_no >= cxt->rast_dim[2]) {
 	    continue;
 	}
 
@@ -111,16 +140,16 @@ cxt_to_mha_process_next (
 	memset (ctm_state->acc_img, 0, slice_voxels * sizeof(unsigned char));
 	render_slice_polyline (
 	    ctm_state->acc_img, 
-	    cxt->dim, 
-	    cxt->spacing, 
-	    cxt->offset,
+	    cxt->rast_dim, 
+	    cxt->rast_spacing, 
+	    cxt->rast_offset,
 	    curr_contour->num_vertices, 
 	    curr_contour->x, 
 	    curr_contour->y);
 
 	/* Copy from acc_img into mask image */
 	if (ctm_state->want_prefix_imgs) {
-	    uchar_slice = &uchar_img[curr_contour->slice_no * slice_voxels];
+	    uchar_slice = &uchar_img[slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		uchar_slice[k] ^= ctm_state->acc_img[k];
 	    }
@@ -131,7 +160,7 @@ cxt_to_mha_process_next (
 	    uint32_t* labelmap_img;
 	    uint32_t* uint32_slice;
 	    labelmap_img = (uint32_t*) ctm_state->labelmap_vol->img;
-	    uint32_slice = &labelmap_img[curr_contour->slice_no * slice_voxels];
+	    uint32_slice = &labelmap_img[slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		if (ctm_state->acc_img[k]) {
 		    uint32_slice[k] = ctm_state->curr_bit + 1;
@@ -142,7 +171,7 @@ cxt_to_mha_process_next (
 	    uint32_t* ss_img_img = 0;
 	    uint32_t* uint32_slice;
 	    ss_img_img = (uint32_t*) ctm_state->ss_img_vol->img;
-	    uint32_slice = &ss_img_img[curr_contour->slice_no * slice_voxels];
+	    uint32_slice = &ss_img_img[slice_no * slice_voxels];
 	    for (int k = 0; k < slice_voxels; k++) {
 		if (ctm_state->acc_img[k]) {
 		    uint32_slice[k] |= (1 << ctm_state->curr_bit);

@@ -119,9 +119,18 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+void
+trim_trailing_slashes (char *pathname)
+{
+    char *p = pathname + strlen (pathname) - 1;
+    while (p >= pathname && ISSLASH(*p)) {
+	*p = 0;
+    }
+}
+
 /* Caller must free memory */
 char*
-file_util_dirname (const char *filename)
+file_util_parent (const char *filename)
 {
     char *tmp = 0;
     char *p = 0, *q = 0;
@@ -129,6 +138,7 @@ file_util_dirname (const char *filename)
     if (!filename) return tmp;
 
     p = tmp = strdup (filename);
+    trim_trailing_slashes (p);
     while (*p) {
 	if (ISSLASH (*p)) {
 	    q = p;
@@ -143,6 +153,19 @@ file_util_dirname (const char *filename)
 	free (tmp);
 	return strdup (".");
     }
+}
+
+/* Caller must free memory */
+char*
+file_util_dirname (const char *filename)
+{
+    if (!filename) return 0;
+
+    if (is_directory (filename)) {
+	return strdup (filename);
+    }
+
+    return file_util_parent (filename);
 }
 
 void

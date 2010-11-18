@@ -56,10 +56,10 @@ Ss_image::load_cxt (const CBString &input_fn)
 }
 
 void
-Ss_image::load_gdcm_rtss (const char *input_fn, const char *dicom_dir)
+Ss_image::load_gdcm_rtss (const char *input_fn)
 {
     this->m_cxt = new Rtss_polyline_set;
-    gdcm_rtss_load (this->m_cxt, input_fn, dicom_dir);
+    gdcm_rtss_load (this->m_cxt, input_fn);
 }
 
 void
@@ -89,10 +89,9 @@ Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
 
     this->m_cxt->adjust_structure_names ();
 
-    /* -if- we have just written the CT files using the ITK writer, 
-       -or if- we don't know the UID info from --dicom-dir 
-       -then- look in the output dir for a CT to associate UIDs. */
-    if (reload || bstring_empty (this->m_cxt->ct_study_uid)) {
+    /* If we have just written the CT files using the ITK writer, 
+       then we look in the output dir for a CT to associate UIDs. */
+    if (reload) {
 	Referenced_dicom_dir rdd;
 	rdd.load (output_dir);
 	this->apply_dicom_dir (&rdd);
