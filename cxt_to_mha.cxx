@@ -22,7 +22,7 @@
 void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,       /* Output */
-    Rtss *cxt,                         /* Input */
+    Rtss_polyline_set *cxt,                         /* Input */
     bool want_prefix_imgs,             /* Input */
     bool want_labelmap,                /* Input */
     bool want_ss_img                   /* Input */
@@ -77,7 +77,7 @@ cxt_to_mha_init (
 bool
 cxt_to_mha_process_next (
     Cxt_to_mha_state *ctm_state,       /* In/out */
-    Rtss *cxt                          /* In/out */
+    Rtss_polyline_set *cxt                          /* In/out */
 )
 {
     Rtss_structure* curr_structure;
@@ -163,7 +163,7 @@ cxt_to_mha_process_next (
 const char*
 cxt_to_mha_current_name (
     Cxt_to_mha_state *ctm_state,
-    Rtss *cxt
+    Rtss_polyline_set *cxt
 )
 {
     if (ctm_state->curr_struct_no < cxt->num_structures + 1) {
@@ -192,7 +192,7 @@ cxt_to_mha_free (Cxt_to_mha_state *ctm_state)
 
 Cxt_to_mha_state*
 cxt_to_mha_create (
-    Rtss *cxt
+    Rtss_polyline_set *cxt
 )
 {
     Cxt_to_mha_state *ctm_state = new Cxt_to_mha_state;

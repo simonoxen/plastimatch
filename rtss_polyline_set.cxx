@@ -10,20 +10,20 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_image_header.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 
-Rtss::Rtss ()
+Rtss_polyline_set::Rtss_polyline_set ()
 {
     this->init ();
 }
 
-Rtss::~Rtss ()
+Rtss_polyline_set::~Rtss_polyline_set ()
 {
     this->clear ();
 }
 
 void
-Rtss::init (void)
+Rtss_polyline_set::init (void)
 {
     this->m_demographics = new Demographics;
     this->have_geometry = 0;
@@ -32,7 +32,7 @@ Rtss::init (void)
 }
 
 void
-Rtss::clear (void)
+Rtss_polyline_set::clear (void)
 {
     int i;
 
@@ -54,7 +54,7 @@ Rtss::clear (void)
 
 /* Add structure (if it doesn't already exist) */
 Rtss_structure*
-Rtss::add_structure (
+Rtss_polyline_set::add_structure (
     const CBString& structure_name, 
     const CBString& color, 
     int structure_id)
@@ -85,7 +85,7 @@ Rtss::add_structure (
 }
 
 Rtss_structure*
-Rtss::find_structure_by_id (int structure_id)
+Rtss_polyline_set::find_structure_by_id (int structure_id)
 {
     int i;
 
@@ -100,7 +100,7 @@ Rtss::find_structure_by_id (int structure_id)
 }
 
 void
-Rtss::debug (void)
+Rtss_polyline_set::debug (void)
 {
     int i;
     Rtss_structure* curr_structure;
@@ -135,7 +135,7 @@ Rtss::debug (void)
 }
 
 void
-Rtss::adjust_structure_names (void)
+Rtss_polyline_set::adjust_structure_names (void)
 {
     int i, j;
     Rtss_structure* curr_structure;
@@ -154,7 +154,7 @@ Rtss::adjust_structure_names (void)
 }
 
 void
-Rtss::prune_empty (void)
+Rtss_polyline_set::prune_empty (void)
 {
     int i;
 
@@ -174,10 +174,10 @@ Rtss::prune_empty (void)
 }
 
 /* Copy structure name, id, color, but not contents */
-Rtss*
-Rtss::clone_empty (
-    Rtss* cxt_out,
-    Rtss* cxt_in
+Rtss_polyline_set*
+Rtss_polyline_set::clone_empty (
+    Rtss_polyline_set* cxt_out,
+    Rtss_polyline_set* cxt_in
 )
 {
     int i;
@@ -186,7 +186,7 @@ Rtss::clone_empty (
     if (cxt_out) {
 	cxt_out->clear ();
     } else {
-	cxt_out = new Rtss;
+	cxt_out = new Rtss_polyline_set;
     }
 
     for (i = 0; i < cxt_in->num_structures; i++) {
@@ -202,7 +202,7 @@ Rtss::clone_empty (
 
 /* Clear the polylines, but keep structure name, id, color */
 void
-Rtss::free_all_polylines (void)
+Rtss_polyline_set::free_all_polylines (void)
 {
     int i;
     for (i = 0; i < this->num_structures; i++) {
@@ -219,7 +219,7 @@ Rtss::free_all_polylines (void)
 }
 
 void
-Rtss::apply_geometry (void)
+Rtss_polyline_set::apply_geometry (void)
 {
     int i, j;
 
@@ -246,7 +246,7 @@ Rtss::apply_geometry (void)
 
 #if defined (commentout)  /* To be written... - GCS */
 void
-cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
+cxt_apply_dicom_dir (Rtss_polyline_set *cxt, const char *dicom_dir)
 {
     int i, j;
     Gdcm_series gs;
@@ -329,7 +329,7 @@ cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir)
 #endif
 
 void
-Rtss::set_geometry_from_plm_image_header (
+Rtss_polyline_set::set_geometry_from_plm_image_header (
     Plm_image_header *pih
 )
 {
@@ -342,7 +342,7 @@ Rtss::set_geometry_from_plm_image_header (
 }
 
 void
-Rtss::set_geometry_from_plm_image (
+Rtss_polyline_set::set_geometry_from_plm_image (
     Plm_image *pli
 )
 {

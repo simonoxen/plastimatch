@@ -19,7 +19,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "referenced_dicom_dir.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 
 Referenced_dicom_dir::Referenced_dicom_dir ()
 {

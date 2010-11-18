@@ -9,7 +9,7 @@
 #include "gdcm_rtss.h"
 #include "plm_warp.h"
 #include "referenced_dicom_dir.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "ss_image.h"
 #include "ss_img_extract.h"
 #include "ss_list_io.h"
@@ -51,21 +51,21 @@ Ss_image::load (const char *ss_img, const char *ss_list)
 void
 Ss_image::load_cxt (const CBString &input_fn)
 {
-    this->m_cxt = new Rtss;
+    this->m_cxt = new Rtss_polyline_set;
     cxt_load (this->m_cxt, (const char*) input_fn);
 }
 
 void
 Ss_image::load_gdcm_rtss (const char *input_fn, const char *dicom_dir)
 {
-    this->m_cxt = new Rtss;
+    this->m_cxt = new Rtss_polyline_set;
     gdcm_rtss_load (this->m_cxt, input_fn, dicom_dir);
 }
 
 void
 Ss_image::load_xio (char *input_dir)
 {
-    this->m_cxt = new Rtss;
+    this->m_cxt = new Rtss_polyline_set;
     printf ("calling xio_structures_load\n");
     xio_structures_load (this->m_cxt, input_dir);
 }
@@ -188,7 +188,7 @@ Ss_image::get_ss_img (void)
     return this->m_ss_img->m_itk_uint32;
 }
 
-Rtss*
+Rtss_polyline_set*
 Ss_image::get_ss_list (void)
 {
     if (!this->m_ss_list) {
@@ -266,7 +266,7 @@ Ss_image::convert_ss_img_to_cxt (void)
     if (this->m_cxt) {
 	delete this->m_cxt;
     }
-    this->m_cxt = new Rtss;
+    this->m_cxt = new Rtss_polyline_set;
 
     /* Copy geometry from ss_img to cxt */
     this->m_cxt->set_geometry_from_plm_image (
@@ -280,7 +280,8 @@ Ss_image::convert_ss_img_to_cxt (void)
     /* Do extraction */
     printf ("Running marching squares\n");
     if (this->m_ss_list) {
-	this->m_cxt = Rtss::clone_empty (this->m_cxt, this->m_ss_list);
+	this->m_cxt = Rtss_polyline_set::clone_empty (
+	    this->m_cxt, this->m_ss_list);
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, true);
     } else {
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
@@ -328,7 +329,8 @@ Ss_image::rasterize (void)
     cxt_to_mha_destroy (ctm_state);
 
     /* Clone the set of names */
-    this->m_ss_list = Rtss::clone_empty (this->m_ss_list, this->m_cxt);
+    this->m_ss_list = Rtss_polyline_set::clone_empty (
+	this->m_ss_list, this->m_cxt);
 
     printf ("Finished rasterization.\n");
 }

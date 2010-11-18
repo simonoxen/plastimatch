@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _rtss_h_
-#define _rtss_h_
+#ifndef _rtss_polyline_set_h_
+#define _rtss_polyline_set_h_
 
 #include "plm_config.h"
 #include <list>
@@ -16,7 +16,7 @@
 
 #define CXT_BUFLEN 2048
 
-class Rtss {
+class Rtss_polyline_set {
 public:
     CBString ct_study_uid;
     CBString ct_series_uid;
@@ -32,9 +32,9 @@ public:
     Rtss_structure **slist;
 public:
     plastimatch1_EXPORT
-    Rtss ();
+    Rtss_polyline_set ();
     plastimatch1_EXPORT
-    ~Rtss ();
+    ~Rtss_polyline_set ();
     void init (void);
     void clear (void);
     Rtss_structure* add_structure (
@@ -45,7 +45,8 @@ public:
     void debug (void);
     void adjust_structure_names (void);
     void prune_empty (void);
-    static Rtss* clone_empty (Rtss* cxt_out, Rtss* cxt_in);
+    static Rtss_polyline_set* clone_empty (Rtss_polyline_set* cxt_out, 
+	Rtss_polyline_set* cxt_in);
     plastimatch1_EXPORT
     void free_all_polylines (void);
     void apply_geometry (void);

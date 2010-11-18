@@ -16,7 +16,7 @@
 #include "cxt_extract.h"
 #include "itk_image.h"
 #include "plm_int.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "slice_extract.h"
 
 #if defined (commentout)
@@ -71,7 +71,7 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 */
 template<class T>
 void
-cxt_extract (Rtss *cxt, T image, int num_structs, 
+cxt_extract (Rtss_polyline_set *cxt, T image, int num_structs, 
     bool check_cxt_bits)
 {
     typedef typename T::ObjectType ImageType;
@@ -202,4 +202,4 @@ cxt_extract (Rtss *cxt, T image, int num_structs,
 }
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT void cxt_extract (Rtss *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);
+template plastimatch1_EXPORT void cxt_extract (Rtss_polyline_set *cxt, UInt32ImageType::Pointer image, int num_structs, bool check_cxt_bits);

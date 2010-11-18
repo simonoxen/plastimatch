@@ -26,7 +26,7 @@
 #include "plm_image_patient_position.h"
 #include "plm_path.h"
 #include "print_and_exit.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "xio_ct.h"
 #include "xio_io.h"
 #include "xio_structures.h"
@@ -44,7 +44,7 @@ void make_directory_recursive (const char *dirname);
 /* This is a comment */
 
 static void
-add_cms_contournames (Rtss *rtss, const char *filename)
+add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
 {
     FILE *fp;
     struct bStream * bs;
@@ -126,7 +126,7 @@ add_cms_contournames (Rtss *rtss, const char *filename)
 }
 
 static void
-add_cms_structure (Rtss *rtss, const char *filename, 
+add_cms_structure (Rtss_polyline_set *rtss, const char *filename, 
 		   float z_loc)
 {
     FILE *fp;
@@ -233,7 +233,7 @@ add_cms_structure (Rtss *rtss, const char *filename,
 
 void
 xio_structures_load (
-    Rtss *rtss, 
+    Rtss_polyline_set *rtss, 
     char *input_dir
 )
 {
@@ -305,7 +305,7 @@ format_xio_filename (char *fn, const char *output_dir, float z_loc)
 
 void
 xio_structures_save (
-    Rtss *cxt,
+    Rtss_polyline_set *cxt,
     Xio_ct_transform *transform,
     Xio_version xio_version,
     const char *output_dir
@@ -415,7 +415,7 @@ xio_structures_save (
 }
 
 void
-xio_structures_apply_transform (Rtss *rtss, Xio_ct_transform *transform)
+xio_structures_apply_transform (Rtss_polyline_set *rtss, Xio_ct_transform *transform)
 {
     int i, j, k;
 

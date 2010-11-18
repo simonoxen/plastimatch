@@ -20,7 +20,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -61,7 +61,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 
 void
 gdcm_rtss_load (
-    Rtss *cxt, 
+    Rtss_polyline_set *cxt, 
     const char *rtss_fn, 
     const char *dicom_dir
 )
@@ -373,7 +373,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 
 void
 gdcm_rtss_save (
-    Rtss *cxt, 
+    Rtss_polyline_set *cxt, 
     char *rtss_fn
 )
 {

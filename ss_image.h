@@ -8,15 +8,15 @@
 #include "itk_image.h"
 #include "plm_image.h"
 #include "referenced_dicom_dir.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "warp_parms.h"
 #include "xform.h"
 #include "xio_ct.h"
 
 class Ss_image {
 public:
-    Rtss *m_ss_list;              /* Names of structures */
-    Rtss *m_cxt;                  /* Structure set in polyline form */
+    Rtss_polyline_set *m_ss_list; /* Names of structures */
+    Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */
     Plm_image *m_ss_img;          /* Structure set in lossless bitmap form */
     Plm_image *m_labelmap;        /* Structure set lossy bitmap form */
 
@@ -90,7 +90,7 @@ public:
     UInt32ImageType::Pointer
     get_ss_img (void);
     plastimatch1_EXPORT
-    Rtss *
+    Rtss_polyline_set *
     get_ss_list (void);
 
     void

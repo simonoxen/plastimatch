@@ -46,7 +46,7 @@ dvh_main (Dvh_parms* parms)
     load_input_files (&rtds, parms);
     FloatImageType::Pointer dose_img = rtds.m_dose->itk_float ();
     UInt32ImageType::Pointer ss_img = rtds.m_ss_image->get_ss_img();
-    Rtss *ss_list = rtds.m_ss_image->get_ss_list();
+    Rtss_polyline_set *ss_list = rtds.m_ss_image->get_ss_list();
 
     /* Create histogram */
     std::cout << "Creating Histogram..." << std::endl;

@@ -9,11 +9,11 @@
 #include "bstring_util.h"
 #include "file_util.h"
 #include "plm_image_header.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "ss_list_io.h"
 
-Rtss*
-ss_list_load (Rtss* cxt, const char* ss_list_fn)
+Rtss_polyline_set*
+ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
 {
     FILE* fp;
 
@@ -23,7 +23,7 @@ ss_list_load (Rtss* cxt, const char* ss_list_fn)
 	    "Could not open ss_list file for read: %s\n", ss_list_fn);
     }
     if (!cxt) {
-	cxt = new Rtss;
+	cxt = new Rtss_polyline_set;
     }
 
     /* Part 2: Structures info */
@@ -57,7 +57,7 @@ ss_list_load (Rtss* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save (Rtss* cxt, const char* ss_list_fn)
+ss_list_save (Rtss_polyline_set* cxt, const char* ss_list_fn)
 {
     int i;
     FILE *fp;
@@ -84,7 +84,7 @@ ss_list_save (Rtss* cxt, const char* ss_list_fn)
 }
 
 void
-ss_list_save_colormap (Rtss* cxt, const char* colormap_fn)
+ss_list_save_colormap (Rtss_polyline_set* cxt, const char* colormap_fn)
 {
     int i, color_no;
     FILE *fp;

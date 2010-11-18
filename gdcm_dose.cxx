@@ -20,7 +20,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "volume.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */

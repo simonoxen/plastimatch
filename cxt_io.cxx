@@ -13,7 +13,7 @@
 #include "plm_image_header.h"
 
 void
-cxt_load (Rtss* cxt, const char* cxt_fn)
+cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
@@ -258,7 +258,7 @@ cxt_load (Rtss* cxt, const char* cxt_fn)
 
 void
 cxt_save (
-    Rtss* cxt, 
+    Rtss_polyline_set* cxt, 
     const char* cxt_fn,
     bool prune_empty)
 {

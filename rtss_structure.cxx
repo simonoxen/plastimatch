@@ -10,7 +10,7 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "plm_image_header.h"
-#include "rtss.h"
+#include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
 Rtss_polyline::Rtss_polyline ()
