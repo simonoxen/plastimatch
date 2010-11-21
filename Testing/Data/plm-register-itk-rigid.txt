@@ -1,0 +1,25 @@
+[GLOBAL]
+fixed=rect-3.mha
+moving=rect-2.mha
+vf_out=plm-register-itk-rigid-vf.mha
+xform_out=plm-register-itk-rigid-xf.txt
+img_out=plm-register-itk-rigid-img.mha
+
+[STAGE]
+xform=rigid
+optim=versor
+impl=itk
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+res=2 2 2
+img_out=plm-register-itk-rigid-intermediate-img.mha
+
+[STAGE]
+xform=rigid
+optim=versor
+impl=itk
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+res=1 1 1

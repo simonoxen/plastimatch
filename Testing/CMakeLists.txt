@@ -55,8 +55,9 @@ SET (SYNTH_MHA_SIZE 38)
 ##   gauss-3.mha   Inverted gauss
 ##   gauss-4.mha   Gauss with inverted pixel spacing
 ##   gauss-5.mha   Even more off-center gauss
-##   rect-1.mha    Inverted rect
-##   rect-2.mha    Standard rect
+##   rect-1.mha    Inverted rect, centered
+##   rect-2.mha    Standard rect, off-center
+##   rect-3.mha    Standard rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
@@ -106,6 +107,13 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  )
+
+PLM_ADD_TEST (
+  "rect-3"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
@@ -799,21 +807,43 @@ ELSE (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
 ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
 
 PLM_ADD_TEST (
-  "plm-itk-translation"
+  "plm-register-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "${PLM_TESTING_DATA_DIR}/plm-itk-translation.txt"
+  "${PLM_TESTING_DATA_DIR}/plm-register-itk-translation.txt"
   )
 PLM_ADD_TEST (
-  "plm-itk-translation-stats"
+  "plm-register-itk-translation-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-itk-translation-img.mha"
+  "stats;--input;plm-register-itk-translation-img.mha"
   )
 ADD_TEST (
-  "plm-itk-translation-check"
+  "plm-register-itk-translation-check"
   ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-itk-translation-stats.stdout.txt"
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-637.0"
+  "-DUPPER_THRESH=-636.9"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "plm-register-itk-rigid"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-itk-rigid.txt"
+  )
+PLM_ADD_TEST (
+  "plm-register-itk-rigid-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-register-itk-rigid-img.mha"
+  )
+ADD_TEST (
+  "plm-register-itk-rigid-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
   "-DLOWER_THRESH=-637.0"
   "-DUPPER_THRESH=-636.9"
@@ -934,7 +964,7 @@ PLM_ADD_TEST (
   "plm-compose-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;plm-itk-translation-xf.txt;plm-register-compose-vf.mha;plm-compose-a-vf.mha"
+  "compose;plm-register-itk-translation-xf.txt;plm-register-compose-vf.mha;plm-compose-a-vf.mha"
   )
 PLM_ADD_TEST (
   "plm-compose-a-warp" 
@@ -961,7 +991,7 @@ PLM_ADD_TEST (
   "plm-compose-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "compose;plm-itk-translation-vf.mha;plm-register-compose-vf.mha;plm-compose-b-vf.mha"
+  "compose;plm-register-itk-translation-vf.mha;plm-register-compose-vf.mha;plm-compose-b-vf.mha"
   )
 PLM_ADD_TEST (
   "plm-compose-b-warp" 

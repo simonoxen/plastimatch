@@ -212,6 +212,7 @@ IF (PLM_REDUCED_TESTS)
     "gauss-5"
     "rect-1"
     "rect-2"
+    "rect-3"
     "sphere-1"
     "bspline-bxf"
     "bspline-bxf-check"
@@ -294,9 +295,12 @@ IF (PLM_REDUCED_TESTS)
 
     "plm-usage" 
 
-    "plm-itk-translation"
-    "plm-itk-translation-stats"
-    "plm-itk-translation-check"
+    "plm-register-itk-translation"
+    "plm-register-itk-translation-stats"
+    "plm-register-itk-translation-check"
+    "plm-register-itk-rigid"
+    "plm-register-itk-rigid-stats"
+    "plm-register-itk-rigid-check"
     "plm-bspline-single-c"
     "plm-bspline-single-c-stats" 
     "plm-bspline-single-c-check" 

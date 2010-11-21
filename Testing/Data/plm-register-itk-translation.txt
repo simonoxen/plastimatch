@@ -1,9 +1,9 @@
 [GLOBAL]
 fixed=gauss-1.mha
 moving=gauss-2.mha
-vf_out=plm-itk-translation-vf.mha
-xform_out=plm-itk-translation-xf.txt
-img_out=plm-itk-translation-img.mha
+vf_out=plm-register-itk-translation-vf.mha
+xform_out=plm-register-itk-translation-xf.txt
+img_out=plm-register-itk-translation-img.mha
 
 [STAGE]
 xform=translation
