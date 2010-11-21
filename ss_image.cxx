@@ -305,12 +305,13 @@ Ss_image::prune_empty (void)
 }
 
 void
-Ss_image::rasterize (void)
+Ss_image::rasterize (Plm_image_header *pih)
 {
     /* Rasterize structure sets */
     Cxt_to_mha_state *ctm_state;
+
     printf ("Rasterizing...\n");
-    ctm_state = cxt_to_mha_create (this->m_cxt);
+    ctm_state = cxt_to_mha_create (this->m_cxt, pih);
 
     /* Convert rasterized structure sets from vol to plm_image */
     printf ("Converting...\n");

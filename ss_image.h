@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "itk_image.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "referenced_dicom_dir.h"
 #include "rtss_polyline_set.h"
 #include "warp_parms.h"
@@ -102,7 +103,7 @@ public:
     void
     prune_empty (void);
     void
-    rasterize (void);
+    rasterize (Plm_image_header *pih);
     void
     set_geometry_from_plm_image_header (Plm_image_header *pih);
     void

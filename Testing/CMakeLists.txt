@@ -1181,8 +1181,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-3.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=0.68"
-  "-DUPPER_THRESH=0.69"
+  "-DLOWER_THRESH=0.67"
+  "-DUPPER_THRESH=0.68"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 PLM_ADD_TEST (

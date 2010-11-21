@@ -178,7 +178,28 @@ warp_and_save_ss (
 	|| bstring_not_empty (parms->xf_in_fn)
 	|| bstring_not_empty (parms->output_prefix))
     {
-	rtds->m_ss_image->rasterize ();
+
+	/* In the following cases, we should use the default 
+	   rasterization geometry (i.e. cxt->rast_xxx):
+	   (a) Warping
+	   (b) No known output geometry
+	   (c) Output geometry doesn't match slice locations
+
+	   GCS FIX: Only case (a) is handled.
+
+	   In the other cases we can directly rasterize to the output 
+	   geometry.
+	*/
+	Plm_image_header pih;
+	Rtss_polyline_set *cxt = rtds->m_ss_image->m_cxt;
+	if (bstring_not_empty (parms->xf_in_fn)) {
+	    pih.set_from_gpuit (cxt->rast_offset, 
+		cxt->rast_spacing, cxt->rast_dim, 0);
+	} else {
+	    pih.set_from_gpuit (cxt->offset, cxt->spacing, cxt->dim, 0);
+	}
+
+	rtds->m_ss_image->rasterize (&pih);
     }
 
     /* Do the warp */

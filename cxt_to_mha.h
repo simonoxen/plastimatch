@@ -15,6 +15,10 @@ public:
     bool want_labelmap;
     bool want_ss_img;
 
+    float origin[3];
+    float spacing[3];
+    int dim[3];
+
     unsigned char* acc_img;
     Volume* uchar_vol;
     Volume* labelmap_vol;
@@ -33,6 +37,7 @@ void
 cxt_to_mha_init (
     Cxt_to_mha_state *ctm_state,
     Rtss_polyline_set *cxt,
+    Plm_image_header *pih,
     bool want_prefix_imgs,
     bool want_labelmap,
     bool want_ss_img
@@ -52,7 +57,8 @@ cxt_to_mha_current_name (
 plastimatch1_EXPORT
 Cxt_to_mha_state*
 cxt_to_mha_create (
-    Rtss_polyline_set *cxt
+    Rtss_polyline_set *cxt,
+    Plm_image_header *pih
 );
 plastimatch1_EXPORT
 void

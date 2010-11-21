@@ -21,6 +21,19 @@ public:
     DirectionType m_direction;
 
 public:
+    Plm_image_header () {}
+    Plm_image_header (
+	float origin[3], float spacing[3], int dim[3])
+    {
+	this->set_from_gpuit (origin, spacing, dim, 0);
+    }
+    Plm_image_header (
+	float origin[3], float spacing[3],
+	int dim[3], float direction_cosines[9])
+    {
+	this->set_from_gpuit (origin, spacing, dim, direction_cosines);
+    }
+public:
     int Size (int d) const { return m_region.GetSize()[d]; }
 
 public:
