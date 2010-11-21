@@ -55,6 +55,7 @@ SET (SYNTH_MHA_SIZE 38)
 ##   gauss-3.mha   Inverted gauss
 ##   gauss-4.mha   Gauss with inverted pixel spacing
 ##   gauss-5.mha   Even more off-center gauss
+##   gauss-6.mha   Off-center gauss, in off-center world coordinates
 ##   rect-1.mha    Inverted rect, centered
 ##   rect-2.mha    Standard rect, off-center
 ##   rect-3.mha    Standard rect, centered
@@ -93,6 +94,13 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "gauss-6"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
@@ -805,6 +813,28 @@ ELSE (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   SET (PLM_BSPLINE_TEST_LOWER_THRESH "-706.0")
   SET (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
+
+PLM_ADD_TEST (
+  "plm-register-align-center"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-align-center.txt"
+  )
+PLM_ADD_TEST (
+  "plm-register-align-center-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "compare;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/plm-register-align-center-img.mha"
+  )
+ADD_TEST (
+  "plm-register-align-center-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-align-center-stats.stdout.txt"
+  "-DREGEX=MAE *([-0-9.]*)"
+  "-DLOWER_THRESH=-0.005"
+  "-DUPPER_THRESH=0.005"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
 
 PLM_ADD_TEST (
   "plm-register-itk-translation"
