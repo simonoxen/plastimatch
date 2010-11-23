@@ -8,6 +8,7 @@
 
 #include "threading.h"
 #include "volume.h"
+#include "delayload.h"
 
 typedef struct DEMONS_Parms_struct DEMONS_Parms;
 struct DEMONS_Parms_struct {
@@ -30,6 +31,8 @@ Volume* demons (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_i
 Volume* demons_c (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_brook (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 Volume* demons_opencl (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
+
+plmcuda_EXPORT
 Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms);
 #if defined __cplusplus
 }

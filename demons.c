@@ -9,6 +9,11 @@
 #include <math.h>
 #include "demons.h"
 #include "threading.h"
+#include "delayload.h"
+#include "volume.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 void
 demons_default_parms (DEMONS_Parms* parms)
@@ -34,22 +39,40 @@ demons (
     DEMONS_Parms* parms
 )
 {
+    Volume* tmp;
+
+// For Linux
+// Dynamically load CUDA extensions library
+#if CUDA_FOUND
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL_SPECIAL (demons_cuda, libplmcuda, Volume*);
+#endif
+#endif
+
     switch (parms->threading) {
 #if BROOK_FOUND
     case THREADING_BROOK:
-	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
+    	return demons_brook (fixed, moving, moving_grad, vf_init, parms);
 #endif
+
 #if CUDA_FOUND
     case THREADING_CUDA:
-	return demons_cuda (fixed, moving, moving_grad, vf_init, parms);
+    	if (!delayload_cuda ()) { exit (0); }
+        tmp = (Volume*)demons_cuda (fixed, moving, moving_grad, vf_init, parms);
+    #if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+        UNLOAD_LIBRARY (libplmcuda);
+    #endif
+        return tmp;
 #endif
+
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-	return demons_opencl (fixed, moving, moving_grad, vf_init, parms);
+        return demons_opencl (fixed, moving, moving_grad, vf_init, parms);
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
     default:
-	return demons_c (fixed, moving, moving_grad, vf_init, parms);
+        return demons_c (fixed, moving, moving_grad, vf_init, parms);
     }
 }

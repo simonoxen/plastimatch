@@ -9,19 +9,20 @@
 #include "proj_image.h"
 #include "volume.h"
 #include "volume_limit.h"
+#include "delayload.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
-gpuit_EXPORT
+plmcuda_EXPORT
 void*
 drr_cuda_state_create (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
-gpuit_EXPORT
+plmcuda_EXPORT
 void
 drr_cuda_state_destroy (
     void *void_state
@@ -37,6 +38,8 @@ void
 drr_cuda_state_destroy_cu (
     void *void_state
 );
+
+plmcuda_EXPORT
 void
 drr_cuda_ray_trace_image (
     Proj_image *proj, 

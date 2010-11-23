@@ -34,6 +34,7 @@
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine PLM_MONOLITHIC_LIBRARY 1
 #cmakedefine PLM_USE_4D_SS_IMAGE 1
+#cmakedefine PLM_USE_CUDA_PLUGIN 1
 
 /* Did we find fortran? -- always true now. */
 #define FORTRAN_FOUND 1

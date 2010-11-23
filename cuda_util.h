@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include <cuda.h>
+#include "delayload.h"
 
 // NOTE: This file provides utility functions that do not use CUDA specific
 //       types as parameters; and can, therefore, be used from standard C or
@@ -23,19 +24,19 @@
 extern "C" {
 #endif
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_check_error (const char *msg);
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_detect_error ();
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_listgpu ();
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_selectgpu (int gpuid);
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_getarch (int gpuid);
 
 

@@ -21,6 +21,10 @@
 #include "ray_trace_exact.h"
 #include "ray_trace_uniform.h"
 #include "volume_limit.h"
+#include "delayload.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 typedef struct callback_data Callback_data;
 struct callback_data {
@@ -226,6 +230,14 @@ drr_render_volume_perspective (
     double nrm[3], pdn[3], prt[3];
     Proj_matrix *pmat = proj->pmat;
 
+#if (CUDA_FOUND)
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
+#endif
+#endif
+
+
     proj_matrix_get_nrm (pmat, nrm);
     proj_matrix_get_pdn (pmat, pdn);
     proj_matrix_get_prt (pmat, prt);
@@ -273,8 +285,13 @@ drr_render_volume_perspective (
     case THREADING_CUDA:
     case THREADING_OPENCL:
 #if CUDA_FOUND
+    if (!delayload_cuda ()) { exit (0); }
+
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
 	break;
 #else
 	/* Fall through */

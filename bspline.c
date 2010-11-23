@@ -55,6 +55,9 @@
 #include "volume.h"
 #include "xpm.h"
 #include "delayload.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
@@ -137,16 +140,24 @@ bspline_cuda_state_create (
     Volume *moving_grad)
 {
 #if (CUDA_FOUND)
+
+// For Linux
+// Dynamically load CUDA extensions library
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmcuda);
+#endif
+
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-        if (!delayload_cuda ()) {
-            // If we continue to attempt to use the CUDA runtime
-            // after failing to load the CUDA runtime, we crash.
-            exit (0);
-        }
+
+        /* Be sure we loaded the CUDA plugin */
+        if (!delayload_cuda ()) { exit (0); }
+
         switch (parms->implementation) {
         case 'j':
         case '\0':   /* Default */
@@ -160,6 +171,10 @@ bspline_cuda_state_create (
         }
     } 
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+
+        /* Be sure we loaded the CUDA plugin */
+        if (!delayload_cuda ()) { exit (0); }
+
         switch (parms->implementation) {
         case 'a':
             CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
@@ -174,6 +189,13 @@ bspline_cuda_state_create (
     else {
         printf ("No cuda initialization performed.\n");
     }
+
+// For Linux
+// Unload CUDA extensions library
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
+
 #endif
 }
 
@@ -1113,7 +1135,19 @@ bspline_state_destroy (
     }
 
 #if (CUDA_FOUND)
+
+// For Linux
+// Dynamically load CUDA extensions library
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
+#endif
+
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
+        /* Be sure we loaded the CUDA plugin! */
+        if (!delayload_cuda ()) { exit (0); }
+
         // JAS 10.27.2010
         // CUDA zero-paging could have replaced the fixed, moving, or moving_grad
         // pointers with pointers to pinned CPU memory, which must be freed using
@@ -1123,11 +1157,18 @@ bspline_state_destroy (
         CUDA_bspline_mse_cleanup_j (bst->dev_ptrs, fixed, moving, moving_grad);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+        /* Be sure we loaded the CUDA plugin! */
+        if (!delayload_cuda ()) { exit (0); }
+
         CUDA_bspline_mi_cleanup_a (bst->dev_ptrs, fixed, moving, moving_grad);
     }
 #endif
 
     free (bst);
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
 }
 
 /* This function will split the amout to add between two bins (linear interp) 
@@ -3839,12 +3880,20 @@ bspline_score (Bspline_parms *parms,
     Volume *moving_grad)
 {
 #if (CUDA_FOUND)
+
+// For Linux
+// Dynamically load CUDA extensions library
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
+#endif
+
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-	if (!delayload_cuda ()) {
-        // If we continue to attempt to use the CUDA runtime
-        // after failing to load the CUDA runtime, we crash.
-        exit (0);
-    }
+
+    /* Be sure we loaded the CUDA plugin */
+	if (!delayload_cuda ()) { exit (0); }
+
 	switch (parms->implementation) {
 #if defined (commentout)
 	case 'c':
@@ -3963,6 +4012,10 @@ bspline_score (Bspline_parms *parms,
 	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
 }
 
 void

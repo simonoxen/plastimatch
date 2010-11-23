@@ -19,6 +19,9 @@
 #include "proj_image.h"
 #include "proj_matrix.h"
 #include "delayload.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 static void*
 allocate_gpu_memory (
@@ -29,14 +32,25 @@ allocate_gpu_memory (
 {
     switch (options->threading) {
 #if CUDA_FOUND
-    case THREADING_CUDA:
-	if (!delayload_cuda ()) {
-        // If we continue to attempt to use the CUDA runtime
-        // after failing to load the CUDA runtime, we crash.
-        exit (0);
-    }
-	return drr_cuda_state_create (proj, vol, options);
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
 #endif
+
+    void* tmp;
+
+    case THREADING_CUDA:
+	if (!delayload_cuda ()) { exit (0); }
+    tmp = drr_cuda_state_create (proj, vol, options);
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
+
+	return tmp;
+#endif
+
 #if OPENCL_FOUND
     case THREADING_OPENCL:
 	return 0;
@@ -122,6 +136,11 @@ drr_render_volume (Volume* vol, Drr_options* options)
     Timer timer;
     void *dev_state = 0;
 
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
+#endif
+
     /* tgt is isocenter */
     double tgt[3] = {
 	options->isocenter[0],
@@ -185,8 +204,14 @@ drr_render_volume (Volume* vol, Drr_options* options)
 
 #if CUDA_FOUND
     if (dev_state) {
-	drr_cuda_state_destroy (dev_state);
+    	if (!delayload_cuda ()) { exit (0); }
+    	drr_cuda_state_destroy (dev_state);
     }
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
+
 #endif
 
     printf ("Total time: %g secs\n", plm_timer_report (&timer));

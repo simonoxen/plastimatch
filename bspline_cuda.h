@@ -13,6 +13,7 @@
 #include "volume.h"
 #include "bspline.h"
 #include "cuda_mem.h"
+#include "delayload.h"
 
 /* B-Spline CUDA MI Switches */
 //#define MI_HISTS_CPU
@@ -112,6 +113,7 @@ extern "C" {
     // -------------------------------------------------------------------
     // Prototypes: bspline_cuda.cpp 
 
+    plmcuda_EXPORT
     void
     CUDA_bspline_mi_a (
         Bspline_parms *parms,
@@ -122,6 +124,7 @@ extern "C" {
         Volume *moving_grad,
         Dev_Pointers_Bspline *dev_ptrs);
 
+    plmcuda_EXPORT
     void
     CUDA_bspline_mse_j (
         Bspline_parms* parms,
@@ -167,6 +170,7 @@ extern "C" {
         int* num_vox
     );
 
+    plmcuda_EXPORT
     void
     CUDA_bspline_mse_init_j (
         Dev_Pointers_Bspline* dev_ptrs,
@@ -177,6 +181,7 @@ extern "C" {
         Bspline_parms* parms
     );
 
+    plmcuda_EXPORT
     void
     CUDA_bspline_mse_cleanup_j (
         Dev_Pointers_Bspline* dev_ptrs,
@@ -185,6 +190,7 @@ extern "C" {
         Volume* moving_grad
     );
 
+    plmcuda_EXPORT
     void 
     CUDA_bspline_mi_cleanup_a (
         Dev_Pointers_Bspline* dev_ptrs,
@@ -237,6 +243,21 @@ extern "C" {
         int vox_per_rgn
     ); 
     
+    void
+    CPU_find_knots (
+        int* knots,
+        int tile_num,
+        int* rdims,
+        int* cdims
+    );
+
+    int*
+    CPU_calc_offsets (
+        int* tile_dims,
+        int* cdims
+    );
+
+    plmcuda_EXPORT
     void
     CUDA_bspline_mi_init_a (
         Dev_Pointers_Bspline* dev_ptrs,
@@ -294,6 +315,7 @@ extern "C" {
         Dev_Pointers_Bspline *dev_ptrs
     );
 
+    plmcuda_EXPORT
     void
     CUDA_bspline_interpolate_vf (
         Volume* interp,

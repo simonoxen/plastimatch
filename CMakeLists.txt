@@ -38,6 +38,8 @@ SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL
   "Use hardcoded filename instead of tmpfile()")
 
 # Compile and link options
+SET (PLM_USE_CUDA_PLUGIN OFF CACHE BOOL
+  "Build CUDA support as a runtime loaded shared library")
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL 
   "Build slicer loadable module")
 SET (PLM_INSTALL_RPATH ON CACHE BOOL 
@@ -517,11 +519,34 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 # Optional
+# -----------------------------------------------
+# JAS 2010.11.19
+# New CUDA plugin stuff
+# -----------------------------------------------
 IF (CUDA_FOUND)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${CUDA_LIBRARIES}
+  IF (PLM_USE_CUDA_PLUGIN)      # << Use dynamic loading
+    IF (WIN32)
+      # Windows
+      SET (GPUIT_LIBRARY_DEPENDENCIES
+        ${GPUIT_LIBRARY_DEPENDENCIES}
+        plmcuda
+        # shared library: cuda extensions
+        # we tell windows to "delay load" this
+      )
+    ELSE (WIN32)
+      # Linux
+      SET (GPUIT_LIBRARY_DEPENDENCIES
+        ${GPUIT_LIBRARY_DEPENDENCIES}
+        # In linux we use dlfcn.h to load plmcula
+        # in the code @ runtime.
+      )
+    ENDIF (WIN32)
+  ELSE (PLM_USE_CUDA_PLUGIN)    # << use static linking
+    SET (GPUIT_LIBRARY_DEPENDENCIES
+      ${GPUIT_LIBRARY_DEPENDENCIES}
+      ${CUDA_LIBRARIES}
     )
+  ENDIF (PLM_USE_CUDA_PLUGIN)
 ENDIF (CUDA_FOUND)
 
 # Optional
@@ -605,6 +630,16 @@ ENDIF (PLM_MONOLITHIC_LIBRARY)
 
 SET (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
+#
+# JAS 2010.11.22
+# Since FDK is roadmapped to fork from plastimatch(?),
+# for now we don't have it use the plmcuda plugin.
+# Instead it uses direct linkage to the CUDA runtime
+# if build machine has CUDA.
+SET (FDK_LIBRARIES "${GPUIT_LIBRARIES}")
+IF (CUDA_FOUND)
+  SET (FDK_LIBRARIES "${FDK_LIBRARIES} ${CUDA_LIBRARIES}")
+ENDIF (CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
@@ -687,7 +722,55 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 IF (CUDA_FOUND)
-  SET (GPUIT_LIBRARY_SRC
+  IF (PLM_USE_CUDA_PLUGIN)      # << Dynamic loading
+    SET (PLM_CUDA_BSPLINE_SRC
+      bspline_cuda.cpp
+      bspline_cuda.cu
+      bspline_cuda.h
+      plm_timer.c         # for bspline_cuda.cpp
+      plm_timer.h         # for bspline_cuda.cpp
+      logfile.c           # for bspline_cuda.cpp
+      logfile.h           # for bspline_cuda.cpp
+    )
+
+    SET (PLM_CUDA_DRR_SRC
+      drr_cuda.cpp 
+      drr_cuda.cu 
+      drr_cuda.h 
+      drr_cuda_p.h 
+    )
+
+    SET (PLM_CUDA_DEMONS_SRC
+      demons_cuda.cu
+      demons_misc.c
+      demons_misc.h
+      volume.c            # for demons_cuda.cu
+      volume.h            # for demons_cuda.cu
+      print_and_exit.c    # for volume.c
+      print_and_exit.h    # for volume.c
+    )
+
+    SET (PLM_CUDA_COMMON
+      cuda_util.cu
+      cuda_util.h
+      cuda_kernel_util.cu
+      cuda_kernel_util.h
+      cuda_mem.cu
+      cuda_mem.h
+    )
+
+    SET (PLM_CUDA_LIBRARY_SRC
+      ${PLM_CUDA_BSPLINE_SRC}
+      ${PLM_CUDA_DRR_SRC}
+      ${PLM_CUDA_DEMONS_SRC}
+      ${PLM_CUDA_COMMON}
+    )
+
+    CUDA_ADD_LIBRARY(plmcuda SHARED
+        ${PLM_CUDA_LIBRARY_SRC}
+    )
+  ELSE (PLM_USE_CUDA_PLUGIN)        # << Static linking
+    SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     bspline_cuda.cpp
     bspline_cuda.cu
@@ -721,6 +804,7 @@ IF (CUDA_FOUND)
     ${DEMONS_CUDA_WRAPPERS}
     demons_cuda.cu
     )
+  ENDIF (PLM_USE_CUDA_PLUGIN)
 ENDIF (CUDA_FOUND)
 
 IF (FFTW_FOUND)
@@ -907,14 +991,27 @@ IF (BROOK_FOUND)
     fdk_brook_kernel.br
     )
 ENDIF (BROOK_FOUND)
+
 IF (CUDA_FOUND)
-  SET (FDK_SRC
-    ${FDK_SRC}
-    fdk_cuda.cu 
-    fdk_cuda_p.h
-    fdk_cuda.h
+  IF (PLM_USE_CUDA_PLUGIN)  # << FDK does not use cuda_plugin
+    SET (FDK_SRC            #    so compile in stuff it needs
+      ${FDK_SRC}            #    that now lives in plugin
+      fdk_cuda.cu 
+      fdk_cuda_p.h
+      fdk_cuda.h
+      cuda_util.cu
+      cuda_util.h
     )
+  ELSE (PLM_USE_CUDA_PLUGIN)   # << Static linking.  Everything
+    SET (FDK_SRC               #    links against GPUIT, which
+      ${FDK_SRC}               #    includes cuda_utils
+      fdk_cuda.cu 
+      fdk_cuda_p.h
+      fdk_cuda.h
+    )
+  ENDIF (PLM_USE_CUDA_PLUGIN)
 ENDIF (CUDA_FOUND)
+
 IF (OPENCL_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -928,7 +1025,12 @@ IF (OPENCL_FOUND)
 ENDIF (OPENCL_FOUND)
 
 IF (CUDA_FOUND)
-  CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+  IF (PLM_USE_CUDA_PLUGIN)
+    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu cuda_util.cu)
+  ELSE (PLM_USE_CUDA_PLUGIN)
+    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
+  ENDIF (PLM_USE_CUDA_PLUGIN)
+
   SET (FDK_SRC
     ${FDK_SRC}
     ${FDK_CUDA_WRAPPERS}
@@ -1200,7 +1302,13 @@ ENDIF (ITK_FOUND)
 # Consolidate linker flags
 SET (GPUIT_LDFLAGS "${OPENMP_LDFLAGS}")
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
+  IF (PLM_USE_CUDA_PLUGIN)
+    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
+  ELSE (PLM_USE_CUDA_PLUGIN)
+    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
+  ENDIF (PLM_USE_CUDA_PLUGIN)
+ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} -ldl")
 ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
 MESSAGE (STATUS "GPUIT_LDFLAGS: ${GPUIT_LDFLAGS}")
 
@@ -1215,7 +1323,11 @@ PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
   "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_LDFLAGS}")
-PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
+IF (PLM_USE_CUDA_PLUGIN)
+  PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${FDK_LIBRARIES}" "${GPUIT_LDFLAGS}")
+ELSE (PLM_USE_CUDA_PLUGIN)
+  PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
+ENDIF (PLM_USE_CUDA_PLUGIN)
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
@@ -1224,6 +1336,7 @@ PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "")
 
 IF (ITK_FOUND)
+  MESSAGE (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (ITK_USE_REVIEW)

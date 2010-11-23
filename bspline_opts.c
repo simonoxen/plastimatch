@@ -7,8 +7,12 @@
 #include <math.h>
 #include "plm_config.h"
 #include "bspline_opts.h"
+#include "delayload.h"
 #if (CUDA_FOUND)
 #include "cuda_util.h"
+#endif
+#ifndef _WIN32
+#include <dlfcn.h>
 #endif
 
 #ifndef NULL
@@ -55,6 +59,11 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 {
     int d, i, rc;
     Bspline_parms* parms = &options->parms;
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    LOAD_LIBRARY(libplmcuda);
+    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
+#endif
 
     memset (options, 0, sizeof (BSPLINE_Options));
     for (d = 0; d < 3; d++) {
@@ -325,9 +334,12 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
 	else if (!strcmp (argv[i], "--list-gpu")) {
 #if (CUDA_FOUND)
         printf ("Enumerating available GPUs:\n\n");
+        if (!delayload_cuda()) {
+            exit(0);
+        }
         CUDA_listgpu ();
 #else
-        printf ("\nCUDA not installed. GPU acceleration unavailable.\n\n");
+        printf ("\nPlastimatch was not compiled with CUDA support!\n\n");
 #endif
         exit (0);
     }
@@ -339,6 +351,11 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
     if (i+1 >= argc) {
     print_usage ();
     }
+
+
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    UNLOAD_LIBRARY (libplmcuda);
+#endif
 
     options->fixed_fn = argv[i];
     options->moving_fn = argv[i+1];
