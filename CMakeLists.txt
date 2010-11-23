@@ -636,9 +636,9 @@ SET (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 # for now we don't have it use the plmcuda plugin.
 # Instead it uses direct linkage to the CUDA runtime
 # if build machine has CUDA.
-SET (FDK_LIBRARIES "${GPUIT_LIBRARIES}")
+SET (FDK_LIBRARIES ${GPUIT_LIBRARIES})
 IF (CUDA_FOUND)
-  SET (FDK_LIBRARIES "${FDK_LIBRARIES} ${CUDA_LIBRARIES}")
+  SET (FDK_LIBRARIES ${FDK_LIBRARIES} ${CUDA_LIBRARIES})
 ENDIF (CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
