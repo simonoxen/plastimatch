@@ -18,6 +18,32 @@ MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   ENDIF (NOT EXISTS ${DOWNLOAD_DIR})
 ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 
+# JAS 2010.11.23
+# Tests will fail if the test binaries cannot find the cuda plugin.
+# So, we copy it into the testing directory.  I am absolutely 100%
+# sure that there must be better way of doing this.
+IF (PLM_USE_CUDA_PLUGIN)
+    IF (WIN32)
+        SET (CUDA_PLUGIN_FILE "plmcuda.dll")
+    ELSE (WIN32)
+        SET (CUDA_PLUGIN_FILE "libplmcuda.so")
+    ENDIF (WIN32)
+
+    ADD_CUSTOM_COMMAND (
+        OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+        COMMAND
+        ${CMAKE_COMMAND} "-E" "copy"
+        "${CMAKE_BINARY_DIR}/${CUDA_PLUGIN_FILE}"
+        "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+        DEPENDS plmcuda
+    )
+
+    ADD_CUSTOM_TARGET (plmcuda_tcpy ALL
+        DEPENDS "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+    )
+ENDIF (PLM_USE_CUDA_PLUGIN)
+
+
 IF (PLM_TEST_DICOMRT_XIO)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
