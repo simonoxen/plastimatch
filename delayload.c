@@ -2,20 +2,105 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include "delayload.h"
 #include <stdio.h>
+#include <string.h>
 #if defined (_WIN32)
 #include <windows.h>	// for LoadLibrary()
+#include <direct.h>     // for _getcwd()
+#define get_cwd _getcwd
 #else
 #include <dlfcn.h>      // for dlopen()
+#include <unistd.h>     // for getcwd()
+#define get_cwd getcwd
 #endif
 
 /* Note:
- * Any utility that plans to use GPU functions should
- * call this function to check if the CUDA or OpenCL runtimes
- * are available.
- * 
+ * Any utility that plans to use GPU functions should call the proper
+ * delayload_X function to check if the CUDA or OpenCL runtimes are available.
+ *
  * Return 1 if runtime found, 0 if runtime not found.
  */
+
+
+// This makes things read easier and also
+// gives me an entry point later if I need
+// to do something fancy.
+int find_lib (char* lib)
+{
+#if defined (_WIN32)
+    if (LoadLibrary (lib) != NULL) {
+        return 1;   /* Success */
+    } else {
+        return 0;   /* Failure */
+    }
+#else
+    if (dlopen_ex (lib) != NULL) {
+        return 1;   /* Success */
+    } else {
+        return 0;   /* Failure */
+    }
+#endif
+}
+
+
+// This is a small helper function that will search around
+// for the desired libraries... this is to help out users
+// that don't configure their system paths correctly.
+// Checks:
+//   * 1st: System Path / ld cache / etc
+//   * 2nd: Current Working Directory
+//   * 3rd: Default CUDA lib paths
+//
+//   Note: For Windows we ONLY check the current
+//         path since we are at the mercy of the
+//         link.exe /DELAYLOAD switch.  Libraries
+//         for Windows must, therefore, be found
+//         at compile time... which makes the
+//         Windows aspect of this a job for CMake.
+#if !defined (_WIN32)
+void* dlopen_ex (char* lib)
+{
+    char cwd[FILENAME_MAX];
+    char cudalib32[FILENAME_MAX];
+    char cudalib64[FILENAME_MAX];
+    char testing[8];
+
+    /* current working directory */
+    if (!get_cwd(cwd, sizeof(cwd))) {
+        cwd[0] = '\0';
+    }
+
+    strcat (cwd, "/");
+    strcat (cwd, lib);
+    cwd[FILENAME_MAX - 1] = '\0';
+
+    /* default cuda lib paths */
+    strcpy (cudalib32, "/usr/local/cuda/lib/");
+    strcat (cudalib32, lib);
+    strcpy (cudalib64, "/usr/local/cuda/lib64/");
+    strcat (cudalib64, lib);
+
+    /* Search in order */
+    if (dlopen (lib, RTLD_LAZY) != NULL) {
+        return dlopen (lib, RTLD_LAZY);
+    }
+    else if (dlopen (cwd, RTLD_LAZY) != NULL){
+        return dlopen (cwd, RTLD_LAZY);
+    }
+    else if (dlopen (cudalib32, RTLD_LAZY) != NULL){
+        return dlopen (cudalib32, RTLD_LAZY);
+    }
+    else if (dlopen (cudalib64, RTLD_LAZY) != NULL){
+        return dlopen (cudalib64, RTLD_LAZY);
+    }
+    else {
+        return NULL;   /* Failure */
+    }
+    
+}
+#endif
+
 
 // Note: We need special cases for Windows and POSIX compliant OSes
 int 
@@ -39,9 +124,9 @@ delayload_cuda (void)
     // the documentation and install the version of the toolkit that was used
     // to build the plastimatch CUDA plugin (plmcuda.dll) OR compile from
     // source.
-    if ( (LoadLibrary ("nvcuda.dll") == NULL)      /* CUDA Driver */
+    if (   !find_lib ("nvcuda.dll")     /* CUDA Driver */
 #if defined (PLM_USE_CUDA_PLUGIN)
-        || (LoadLibrary ("plmcuda.dll") == NULL)   /* PLM CUDA Plugin */
+        || !find_lib ("plmcuda.dll")    /* PLM CUDA Plugin */
 #endif
        ) {
         printf ("Failed to load CUDA runtime!\n");
@@ -67,10 +152,11 @@ delayload_cuda (void)
     // libcudart.so -> libcudart.so.3
     // libcudart.so.3 -> libcudart.so.3.0.14
     //
+    if (    !find_lib ("libcuda.so")         /* CUDA Driver */
+         || !find_lib ("libcudart.so")       /* CUDA RunTime */
 #if defined (PLM_USE_CUDA_PLUGIN)
-    if ( (dlopen ("libcuda.so", RTLD_LAZY) == NULL)    ||   /* CUDA Driver */
-         (dlopen ("libcudart.so", RTLD_LAZY) == NULL)  ||   /* CUDA RunTime */
-         (dlopen ("libplmcuda.so", RTLD_LAZY) == NULL)      /* PLM CUDA Plugin */
+         || !find_lib ("libplmcuda.so")      /* PLM CUDA Plugin */
+#endif
        ) {
         printf ("Failed to load CUDA runtime!\n");
         printf ("For GPU acceleration, please install:\n");
@@ -82,10 +168,6 @@ delayload_cuda (void)
         // success
         return 1;
     }
-#else
-    return 1;
-#endif
-
 #endif
 }
 

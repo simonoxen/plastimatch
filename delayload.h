@@ -27,7 +27,7 @@
 //       returns a null pointer.
 #if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     #define LOAD_LIBRARY(lib)                      \
-        void* lib = dlopen (#lib".so", RTLD_LAZY);  
+        void* lib = dlopen_ex (#lib".so");          
 #else
     #define LOAD_LIBRARY(lib)                      \
         ;
@@ -90,9 +90,13 @@ extern "C" {
 gpuit_EXPORT
 int
 delayload_cuda (void);
+
 gpuit_EXPORT
 int
 delayload_opencl (void);
+
+gpuit_EXPORT
+void* dlopen_ex (char* lib);
 
 #if defined __cplusplus
 }
