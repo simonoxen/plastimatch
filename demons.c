@@ -41,13 +41,9 @@ demons (
 {
     Volume* tmp;
 
-// For Linux
-// Dynamically load CUDA extensions library
 #if CUDA_FOUND
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL_SPECIAL (demons_cuda, libplmcuda, Volume*);
-#endif
 #endif
 
     switch (parms->threading) {
@@ -60,9 +56,7 @@ demons (
     case THREADING_CUDA:
     	if (!delayload_cuda ()) { exit (0); }
         tmp = (Volume*)demons_cuda (fixed, moving, moving_grad, vf_init, parms);
-    #if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
         UNLOAD_LIBRARY (libplmcuda);
-    #endif
         return tmp;
 #endif
 

@@ -140,23 +140,15 @@ bspline_cuda_state_create (
     Volume *moving_grad)
 {
 #if (CUDA_FOUND)
-
-// For Linux
-// Dynamically load CUDA extensions library
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmcuda);
-#endif
-
     Dev_Pointers_Bspline* dev_ptrs 
         = (Dev_Pointers_Bspline*) malloc (sizeof (Dev_Pointers_Bspline));
 
     bst->dev_ptrs = dev_ptrs;
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
-
         /* Be sure we loaded the CUDA plugin */
         if (!delayload_cuda ()) { exit (0); }
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_init_j, libplmcuda);
 
         switch (parms->implementation) {
         case 'j':
@@ -169,11 +161,15 @@ bspline_cuda_state_create (
             CUDA_bspline_mse_init_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
             break;
         }
+
+        UNLOAD_LIBRARY (libplmcuda);
     } 
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
         /* Be sure we loaded the CUDA plugin */
         if (!delayload_cuda ()) { exit (0); }
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_init_a, libplmcuda);
 
         switch (parms->implementation) {
         case 'a':
@@ -181,21 +177,16 @@ bspline_cuda_state_create (
             break;
         default:
             printf ("Warning: option -f %c unavailble.  Defaulting to -f a\n",
-            parms->implementation);
+                parms->implementation);
             CUDA_bspline_mi_init_a (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
             break;
         }
+
+        UNLOAD_LIBRARY (libplmcuda);
     }
     else {
         printf ("No cuda initialization performed.\n");
     }
-
-// For Linux
-// Unload CUDA extensions library
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
-
 #endif
 }
 
@@ -1131,19 +1122,10 @@ bspline_state_destroy (
 )
 {
     if (bst->ssd.grad) {
-	free (bst->ssd.grad);
+        free (bst->ssd.grad);
     }
 
 #if (CUDA_FOUND)
-
-// For Linux
-// Dynamically load CUDA extensions library
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
-#endif
-
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
         /* Be sure we loaded the CUDA plugin! */
         if (!delayload_cuda ()) { exit (0); }
@@ -1154,21 +1136,23 @@ bspline_state_destroy (
         // cudaFreeHost().  So, to prevent a segfault, we must free and NULL
         // these pointers before they are attempted to be free()ed in the standard
         // fashion.  Remember, free(NULL) is okay!
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
         CUDA_bspline_mse_cleanup_j (bst->dev_ptrs, fixed, moving, moving_grad);
+        UNLOAD_LIBRARY (libplmcuda);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
         /* Be sure we loaded the CUDA plugin! */
         if (!delayload_cuda ()) { exit (0); }
 
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
         CUDA_bspline_mi_cleanup_a (bst->dev_ptrs, fixed, moving, moving_grad);
+        UNLOAD_LIBRARY (libplmcuda);
     }
 #endif
 
     free (bst);
-
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 }
 
 /* This function will split the amout to add between two bins (linear interp) 
@@ -3880,19 +3864,12 @@ bspline_score (Bspline_parms *parms,
     Volume *moving_grad)
 {
 #if (CUDA_FOUND)
-
-// For Linux
-// Dynamically load CUDA extensions library
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
-#endif
-
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 
     /* Be sure we loaded the CUDA plugin */
 	if (!delayload_cuda ()) { exit (0); }
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mse_j, libplmcuda);
 
 	switch (parms->implementation) {
 #if defined (commentout)
@@ -3926,8 +3903,17 @@ bspline_score (Bspline_parms *parms,
 	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
 	    break;
 	}
+
+    UNLOAD_LIBRARY (libplmcuda);
 	return;
+
     } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+
+    /* Be sure we loaded the CUDA plugin */
+	if (!delayload_cuda ()) { exit (0); }
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (CUDA_bspline_mi_a, libplmcuda);
+
 	switch (parms->implementation) {
 	case 'a':
         CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, moving_grad, bst->dev_ptrs);
@@ -3937,6 +3923,7 @@ bspline_score (Bspline_parms *parms,
 	    break;
 	}
 
+    UNLOAD_LIBRARY (libplmcuda);
     }
 #endif
 
@@ -4012,10 +3999,6 @@ bspline_score (Bspline_parms *parms,
 	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
-
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 }
 
 void

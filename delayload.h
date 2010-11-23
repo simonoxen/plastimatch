@@ -4,6 +4,8 @@
 #ifndef _delayload_h_
 #define _delayload_h_
 
+#include "plm_config.h"
+
 // Needed for delay loading windows DLLs
 #if _WIN32
     #pragma comment(lib, "delayimp")
@@ -11,29 +13,60 @@
 #endif
 
 
+// JAS 2010.11.23
+// ------------------------------------------------------------
+// Because these macros contain declarations, their
+// usage is restricted under C89.  C89-GNU, C99, and
+// C++ are all cool with using these macros pretty
+// much anywhere... be careful inside switch statements.
+// Still, their usage will determine the portability of
+// plastimatch.
+
 // Note: if you attempt to load a library that
 //       does not exist or cannot be found, this
 //       returns a null pointer.
-#define LOAD_LIBRARY(lib)                      \
-    void* lib = dlopen (#lib".so", RTLD_LAZY);  
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    #define LOAD_LIBRARY(lib)                      \
+        void* lib = dlopen (#lib".so", RTLD_LAZY);  
+#else
+    #define LOAD_LIBRARY(lib)                      \
+        ;
+#endif
 
 // Note: if lib contains a null pointer here
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
-#define LOAD_SYMBOL(sym, lib)                  \
-    void (*sym)() = dlsym (lib, #sym);          
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    #define LOAD_SYMBOL(sym, lib)                  \
+        void (*sym)() = dlsym (lib, #sym);          
+#else
+    #define LOAD_SYMBOL(sym, lib)                  \
+        ;
+#endif
 
 // Note: if lib contains a null pointer here
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
-#define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
-    type (*sym)() = dlsym (lib, #sym);          
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
+        type (*sym)() = dlsym (lib, #sym);          
+#else
+    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
+        ;
+#endif
+// ------------------------------------------------------------
 
 // Note: if lib does not point to a valid open
 //       resource, then this will simply return
 //       a non-zero value.  No biggie.
-#define UNLOAD_LIBRARY(lib)                    \
-    dlclose (lib);                              
+#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+    #define UNLOAD_LIBRARY(lib)                    \
+        dlclose (lib);                              
+#else
+    #define UNLOAD_LIBRARY(lib)                    \
+        ;
+#endif
+
 
 // Note: Windows will not automatically export
 //       symbols for external linking, so we have

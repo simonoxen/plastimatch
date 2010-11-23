@@ -231,10 +231,6 @@ drr_render_volume_perspective (
     Proj_matrix *pmat = proj->pmat;
 
 #if (CUDA_FOUND)
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
-#endif
 #endif
 
 
@@ -279,19 +275,21 @@ drr_render_volume_perspective (
     /* Compute volume boundary box */
     volume_limit_set (&vol_limit, vol);
 
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
+
     /* Trace the set of rays */
     switch (options->threading) {
     case THREADING_BROOK:
     case THREADING_CUDA:
     case THREADING_OPENCL:
 #if CUDA_FOUND
-    if (!delayload_cuda ()) { exit (0); }
-
+    if (!delayload_cuda ()) {
+        exit (0);
+    } else {
+    }
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 	break;
 #else
 	/* Fall through */
@@ -303,4 +301,6 @@ drr_render_volume_perspective (
 	    p1, ul_room, incr_r, incr_c, options);
 	break;
     }
+
+    UNLOAD_LIBRARY (libplmcuda);
 }

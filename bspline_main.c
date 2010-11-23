@@ -42,22 +42,16 @@ main (int argc, char* argv[])
     Volume *moving_warped = 0;
     int roi_offset[3];
 
-// For Linux
-// Dynamically load CUDA extensions library
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (CUDA_selectgpu, libplmcuda);
-    LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
-#endif
 
     bspline_opts_parse_args (&options, argc, argv);
 
 #if (CUDA_FOUND)
     if (parms->threading == BTHR_CUDA) {
-        if (!delayload_cuda()) {
-            exit(0);
-        }
+        if (!delayload_cuda()) { exit(0); }
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_selectgpu, libplmcuda);
         CUDA_selectgpu (parms->gpuid);
+        UNLOAD_LIBRARY (libplmcuda);
     }
 #endif
 
@@ -123,7 +117,10 @@ main (int argc, char* argv[])
 	    fixed->direction_cosines, 0);
 	if (parms->threading == BTHR_CUDA) {
 #if (CUDA_FOUND)
+        LOAD_LIBRARY (libplmcuda);
+        LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
 	    CUDA_bspline_interpolate_vf (vector_field, bxf);
+        UNLOAD_LIBRARY (libplmcuda);
 #else
 	    bspline_interpolate_vf (vector_field, bxf);
 #endif
@@ -215,9 +212,6 @@ main (int argc, char* argv[])
     volume_destroy (moving_grad);
     volume_destroy (moving_warped);
     volume_destroy (vector_field);
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
 
     printf ("Done freeing memory\n");
 

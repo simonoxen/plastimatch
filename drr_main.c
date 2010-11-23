@@ -32,34 +32,29 @@ allocate_gpu_memory (
 {
     switch (options->threading) {
 #if CUDA_FOUND
-
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
-#endif
-
     void* tmp;
 
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
+
     case THREADING_CUDA:
-	if (!delayload_cuda ()) { exit (0); }
-    tmp = drr_cuda_state_create (proj, vol, options);
+        if (!delayload_cuda ()) { exit (0); }
+        tmp = drr_cuda_state_create (proj, vol, options);
 
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
-    UNLOAD_LIBRARY (libplmcuda);
-#endif
+        UNLOAD_LIBRARY (libplmcuda);
 
-	return tmp;
+        return tmp;
 #endif
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-	return 0;
-	//return drr_cuda_state_create (proj, vol, options);
+        return 0;
+        //return drr_cuda_state_create (proj, vol, options);
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
     default:
-	return 0;
+        return 0;
     }
 }
 
