@@ -10,7 +10,10 @@
 #include <windows.h>
 #endif
 
+#if !defined (PLM_USE_CUDA_PLUGIN)
 #include "bspline.h"
+#endif
+#include "logfile.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #include "cuda_util.h"
@@ -28,9 +31,76 @@
  * Once the CPU code is removed from the functions below, these
  * functions can be deleted.
  ***********************************************************************/
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+#define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
 
-#if defined (commentout)
+// JAS 2010.11.23
+// Sorry about this... these functions are reproductions of stuff that lives in
+// bspline.c  These common functions will need to be eventually moved to their
+// own object in order for linking to work nicely for shared libs...
+// (like the CUDA plugin)
+#if defined (PLM_USE_CUDA_PLUGIN)
+void
+clamp_linear_interpolate (
+    float ma,           /*  Input: (Unrounded) pixel coordinate (in vox) */
+    int dmax,		/*  Input: Maximum coordinate in this dimension */
+    int* maf,		/* Output: x, y, or z coord of "floor" pixel in moving img */
+    int* mar,		/* Output: x, y, or z coord of "round" pixel in moving img */
+    float* fa1,		/* Output: Fraction of interpolant for lower index voxel */
+    float* fa2		/* Output: Fraction of interpolant for upper index voxel */
+)
+{
+    float maff = floor(ma);
+    *maf = (int) maff;
+    *mar = ROUND_INT (ma);
+    *fa2 = ma - maff;
+    if (*maf < 0) {
+	*maf = 0;
+	*mar = 0;
+	*fa2 = 0.0f;
+    } else if (*maf >= dmax) {
+	*maf = dmax - 1;
+	*mar = dmax;
+	*fa2 = 1.0f;
+    }
+    *fa1 = 1.0f - *fa2;
+}
+
+void
+report_score (
+    char *alg, 
+    Bspline_xform *bxf, 
+    Bspline_state *bst, 
+    int num_vox, 
+    double timing)
+{
+    int i;
+    float ssd_grad_norm, ssd_grad_mean;
+
+    /* Normalize gradient */
+    ssd_grad_norm = 0;
+    ssd_grad_mean = 0;
+    for (i = 0; i < bxf->num_coeff; i++) {
+	ssd_grad_mean += bst->ssd.grad[i];
+	ssd_grad_norm += fabs (bst->ssd.grad[i]);
+    }
+
+    // JAS 04.19.2010
+    // MI scores are between 0 and 1
+    // The extra decimal point resolution helps in seeing
+    // if the optimizer is performing adequately.
+    if (!strcmp (alg, "MI")) {
+	logfile_printf (
+	    "%s[%2d,%3d] %1.8f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
+	    ssd_grad_norm, timing);
+    } else {
+	logfile_printf (
+	    "%s[%2d,%3d] %9.3f NV %6d GM %9.3f GN %9.3f [%9.3f secs]\n", 
+	    alg, bst->it, bst->feval, bst->ssd.score, num_vox, ssd_grad_mean, 
+	    ssd_grad_norm, timing);
+    }
+}
+
 void
 bspline_interp_pix_b (
     float out[3], 
@@ -646,11 +716,11 @@ CUDA_bspline_mi_a (
 
     // dump histogram images?
     if (parms->xpm_hist_dump) {
-        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+//        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
     }
 
     if (parms->debug) {
-        dump_hist (mi_hist, bst->it);
+//        dump_hist (mi_hist, bst->it);
     }
 
 

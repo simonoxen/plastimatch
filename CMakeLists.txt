@@ -1285,6 +1285,13 @@ ENDIF (F2C_LIBRARY AND UNIX)
 
 PLM_ADD_LIBRARY (gpuit "${GPUIT_LIBRARY_SRC}" "${GPUIT_LIBRARY_DEPENDENCIES}")
 
+# JAS 2010.11.23
+# Because the cuda plugin is loaded at runtime, CMake doesn't know
+# that it is needed by everything linked against gpuit.  So, we tell it.
+IF (PLM_USE_CUDA_PLUGIN AND CUDA_FOUND)
+    ADD_DEPENDENCIES (gpuit plmcuda)
+ENDIF (PLM_USE_CUDA_PLUGIN AND CUDA_FOUND)
+
 IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
   ## with the same name as the executable.  What happens is the executable 
