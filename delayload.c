@@ -39,9 +39,9 @@ delayload_cuda (void)
     // the documentation and install the version of the toolkit that was used
     // to build the plastimatch CUDA plugin (plmcuda.dll) OR compile from
     // source.
-    if ( (LoadLibrary ("nvcuda.dll") == NULL) ||    /* CUDA Driver */
+    if ( (LoadLibrary ("nvcuda.dll") == NULL)      /* CUDA Driver */
 #if defined (PLM_USE_CUDA_PLUGIN)
-         (LoadLibrary ("plmcuda.dll") == NULL)      /* PLM CUDA Plugin */
+        || (LoadLibrary ("plmcuda.dll") == NULL)   /* PLM CUDA Plugin */
 #endif
        ) {
         printf ("Failed to load CUDA runtime!\n");
