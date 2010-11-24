@@ -22,16 +22,18 @@ ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
 IF (PLM_USE_CUDA_PLUGIN)
+    # Because MSVC places stuff in /Release or /Debug, etc
+    SET (CUDA_PLUGIN_BIN_DIR
+        "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
+
     SET (CUDA_PLUGIN_FILE
         "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
-
-    #    MESSAGE (STATUS "SHACKFOO = ${CUDA_PLUGIN_FILE}")
 
     ADD_CUSTOM_COMMAND (
         OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
         COMMAND
         ${CMAKE_COMMAND} "-E" "copy"
-        "${CMAKE_BINARY_DIR}/${CUDA_PLUGIN_FILE}"
+        "${CUDA_PLUGIN_BIN_DIR}/${CUDA_PLUGIN_FILE}"
         "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
         DEPENDS plmcuda
     )
