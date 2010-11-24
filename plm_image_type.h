@@ -30,5 +30,8 @@ enum Plm_image_type {
 plastimatch1_EXPORT
 Plm_image_type
 plm_image_type_parse (const char* string);
+plastimatch1_EXPORT
+char* 
+plm_image_type_string (Plm_image_type type);
 
 #endif

@@ -46,6 +46,8 @@ private:
     plastimatch1_EXPORT
     void convert_to_itk_short ();
     plastimatch1_EXPORT
+    void convert_to_itk_ushort ();
+    plastimatch1_EXPORT
     void convert_to_itk_int32 (void);
     plastimatch1_EXPORT
     void convert_to_itk_uint32 ();

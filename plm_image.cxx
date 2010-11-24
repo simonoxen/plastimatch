@@ -375,6 +375,21 @@ Plm_image::convert_to_itk_short (void)
 }
 
 void
+Plm_image::convert_to_itk_ushort (void)
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_USHORT:
+	return;
+    default:
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_ushort\n",
+	    plm_image_type_string (this->m_type));
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_USHORT;
+}
+
+void
 Plm_image::convert_to_itk_int32 (void)
 {
     switch (this->m_type) {
@@ -413,6 +428,10 @@ Plm_image::convert_to_itk_uint32 (void)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
 	return;
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	this->m_itk_uint32 = cast_uint32 (this->m_itk_uchar);
+	this->m_itk_float = 0;
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->m_itk_uint32 = cast_uint32 (this->m_itk_float);
 	this->m_itk_float = 0;
@@ -434,7 +453,9 @@ Plm_image::convert_to_itk_uint32 (void)
 	    this, this->m_itk_uint32, (float) 0);
 	break;
     default:
-	print_and_exit ("Error: unhandled conversion to itk_uint32\n");
+	print_and_exit (
+	    "Error: unhandled conversion from %s to itk_uint32\n",
+	    plm_image_type_string (this->m_type));
 	return;
     }
     this->m_type = PLM_IMG_TYPE_ITK_ULONG;
