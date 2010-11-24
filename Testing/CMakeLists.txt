@@ -80,6 +80,8 @@ SET (SYNTH_MHA_SIZE 38)
 ##   gauss-4.mha   Gauss with inverted pixel spacing
 ##   gauss-5.mha   Even more off-center gauss
 ##   gauss-6.mha   Off-center gauss, in off-center world coordinates
+##   gauss-ushort-1.mha   Centered gauss, ushort
+##   gauss-ushort-2.mha   Off-center gauss, ushort
 ##   rect-1.mha    Inverted rect, centered
 ##   rect-2.mha    Standard rect, off-center
 ##   rect-3.mha    Standard rect, centered
@@ -125,6 +127,20 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "gauss-ushort-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "gauss-ushort-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
@@ -839,7 +855,10 @@ PLM_ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch register
+## plastimatch register (group 1)
+##   align-center
+##   itk-translation
+##   itk-rigid
 ## -------------------------------------------------------------------------
 IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   # For Nocedal optimizer
@@ -932,6 +951,14 @@ ADD_TEST (
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
+## -------------------------------------------------------------------------
+## plastimatch register (group 2)
+##   bspline-single-c
+##   bspline-single-h
+##   bspline-single-openmp
+##   bspline-single-cuda
+##   register-bspline-ushort
+## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-bspline-single-c" 
   ""
@@ -1014,6 +1041,28 @@ ADD_TEST (
   "plm-bspline-cuda-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "plm-register-bspline-ushort"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-ushort.txt"
+  )
+PLM_ADD_TEST (
+  "plm-register-bspline-ushort-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-register-bspline-ushort-img.mha"
+  )
+ADD_TEST (
+  "plm-register-bspline-ushort-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-stats.stdout.txt"
   "-DREGEX=AVE *([-0-9.]*)"
   "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
   "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
