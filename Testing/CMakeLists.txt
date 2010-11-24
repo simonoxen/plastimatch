@@ -20,14 +20,12 @@ ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 
 # JAS 2010.11.23
 # Tests will fail if the test binaries cannot find the cuda plugin.
-# So, we copy it into the testing directory.  I am absolutely 100%
-# sure that there must be better way of doing this.
+# So, we copy it into the testing directory.  This seems to work well.
 IF (PLM_USE_CUDA_PLUGIN)
-    IF (WIN32)
-        SET (CUDA_PLUGIN_FILE "plmcuda.dll")
-    ELSE (WIN32)
-        SET (CUDA_PLUGIN_FILE "libplmcuda.so")
-    ENDIF (WIN32)
+    SET (CUDA_PLUGIN_FILE
+        "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
+
+    #    MESSAGE (STATUS "SHACKFOO = ${CUDA_PLUGIN_FILE}")
 
     ADD_CUSTOM_COMMAND (
         OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
