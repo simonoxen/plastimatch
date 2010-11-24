@@ -214,6 +214,12 @@ template plastimatch1_EXPORT
 ShortImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, ShortImageType::Pointer itk_img, float);
 template plastimatch1_EXPORT 
+UShortImageType::Pointer
+plm_image_convert_gpuit_to_itk (Plm_image* pli, UShortImageType::Pointer itk_img, unsigned short);
+template plastimatch1_EXPORT 
+UShortImageType::Pointer
+plm_image_convert_gpuit_to_itk (Plm_image* pli, UShortImageType::Pointer itk_img, float);
+template plastimatch1_EXPORT 
 Int32ImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, Int32ImageType::Pointer itk_img, unsigned char);
 template plastimatch1_EXPORT 

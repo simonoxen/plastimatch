@@ -380,6 +380,10 @@ Plm_image::convert_to_itk_ushort (void)
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_USHORT:
 	return;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_ushort = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_ushort, (float) 0);
+	break;
     default:
 	print_and_exit (
 	    "Error: unhandled conversion from %s to itk_ushort\n",
@@ -670,6 +674,9 @@ Plm_image::convert (Plm_image_type new_type)
     case PLM_IMG_TYPE_ITK_SHORT:
 	this->convert_to_itk_short ();
 	break;
+    case PLM_IMG_TYPE_ITK_USHORT:
+	this->convert_to_itk_ushort ();
+	break;
     case PLM_IMG_TYPE_ITK_LONG:
 	this->convert_to_itk_int32 ();
 	break;
@@ -691,11 +698,11 @@ Plm_image::convert (Plm_image_type new_type)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_gpuit_float ();
 	break;
-    case PLM_IMG_TYPE_ITK_USHORT:
     default:
 	print_and_exit (
-	    "Unhandled image type in Plm_image::convert (%d -> %d)\n", 
-	    this->m_type, new_type);
+	    "Unhandled image type in Plm_image::convert (%s -> %s)\n", 
+	    plm_image_type_string (this->m_type),
+	    plm_image_type_string (new_type));
 	break;
     }
     this->m_type = new_type;
