@@ -982,7 +982,6 @@ SET (FDK_SRC
   fdk_opts.c fdk_opts.h
   fdk_util.c fdk_util.h
   bowtie_correction.c bowtie_correction.h
-  delayload.c
   )
 IF (BROOK_FOUND)
   SET (FDK_SRC

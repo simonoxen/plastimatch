@@ -22,7 +22,9 @@ public:
     //std::list<CBString> m_ct_slice_uids;
     std::vector<CBString> m_ct_slice_uids;
 public:
+    plastimatch1_EXPORT
     Referenced_dicom_dir ();
+    plastimatch1_EXPORT
     ~Referenced_dicom_dir ();
     void load (const char *dicom_dir);
     void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z) const;
