@@ -41,6 +41,9 @@ public:
     static int compare (Plm_image_header *pli1, Plm_image_header *pli2);
 
 public:
+    void plastimatch1_EXPORT set_origin (float origin[3]);
+    void plastimatch1_EXPORT set_spacing (float spacing[3]);
+    void plastimatch1_EXPORT set_dim (int dim[3]);
     void plastimatch1_EXPORT 
     set_from_gpuit (float gpuit_origin[3],
 		    float gpuit_spacing[3],

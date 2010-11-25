@@ -53,6 +53,35 @@ itk_direction_identity (
 }
 
 void
+Plm_image_header::set_origin (float origin[3])
+{
+    for (unsigned int d = 0; d < 3; d++) {
+	this->m_origin[d] = origin[d];
+    }
+}
+
+void
+Plm_image_header::set_spacing (float spacing[3])
+{
+    for (unsigned int d = 0; d < 3; d++) {
+	this->m_spacing[d] = spacing[d];
+    }
+}
+
+void
+Plm_image_header::set_dim (int dim[3])
+{
+    ImageRegionType::SizeType itk_size;
+    ImageRegionType::IndexType itk_index;
+    for (unsigned int d = 0; d < 3; d++) {
+	itk_index[d] = 0;
+	itk_size[d] = dim[d];
+    }
+    m_region.SetSize (itk_size);
+    m_region.SetIndex (itk_index);
+}
+
+void
 Plm_image_header::set_from_gpuit (
     float gpuit_origin[3],
     float gpuit_spacing[3],

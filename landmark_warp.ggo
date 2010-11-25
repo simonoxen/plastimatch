@@ -15,16 +15,24 @@ option "input-xform" x "Input landmark xform"
        string typestr="filename" optional
 #option "input-vf" v "Input vector field"
 #       string typestr="filename" optional
-option "fixed" F "Fixed image (used to set size)"
-       string typestr="filename" optional
 option "input-image" I "Input image to warp" 
        string typestr="filename" optional
 option "output-image" O "Output warped image" 
        string typestr="filename" optional
 option "output-vf" V "Output vector field" 
        string typestr="filename" optional
-#option "algorithm" a "Either \"itk\", \"gcs\", or \"nsh\""
-#       string optional default="gcs"
+
+## Output geometry
+option "origin" - "Output image offset"
+       string optional
+option "spacing" - "Output image spacing"
+       string optional
+option "dim" - "Output image dimension"
+       string optional
+option "fixed" F "Fixed image (match output size to this image)"
+       string typestr="filename" optional
+
+## Algorith options
 option "algorithm" a "RBF warping algorithm "
        enum values="itk","gcs","nsh" optional default="gcs"
 option "radius" r "Radius of radial basis function"

@@ -11,10 +11,9 @@
 #include "itkOrientedImage.h"
 #endif
 #include "itkImageIOBase.h"
+#include "itk_point.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
-
-// const unsigned int Dimension = 3;
 
 /* 4D images */
 typedef itk::Image < unsigned char, 4 > UCharImage4DType;
@@ -46,13 +45,6 @@ typedef itk::Image < unsigned long, 2 > UInt32Image2DType;
 #endif
 typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
-
-/* Points & vectors */
-typedef itk::Point < float, 3 > FloatPointType;
-typedef itk::Point < double, 3 > DoublePointType;
-
-typedef itk::Vector < float, 3 > FloatVectorType;
-typedef itk::Vector < double, 3 > DoubleVectorType;
 
 /* Vector field */
 typedef itk::Image < FloatVectorType, 3 > DeformationFieldType;

@@ -5,6 +5,7 @@
 
 #include "landmark_warp.h"
 #include "itk_image_save.h"
+#include "itk_point.h"
 #include "itk_pointset.h"
 #include "itk_tps.h"
 #include "itk_warp.h"
@@ -14,35 +15,39 @@
 #define BUFLEN 2048
 
 template<class T>
-static typename itk::Image<T, 3>::Pointer
+static void
 do_tps_core (
-    typename itk::Image<T, 3>::Pointer mov_img, 
-    Plm_image_header *pih, 
-    DoublePointSetType::Pointer mov_lm, 
-    DoublePointSetType::Pointer fix_lm, 
-    T default_val
+    Landmark_warp *lw,                         /* Input and output */
+    DoublePointSetType::Pointer mov_lm,        /* Input */
+    DoublePointSetType::Pointer fix_lm,        /* Input */
+    T default_val                              /* Input */
 )
 {
     TpsTransformType::Pointer tps = TpsTransformType::New ();
-    Xform xform, xform_tmp;
+    Xform xform_tps;
 
-    /* Ugh.  ITK PointSet types are not convetable without cast??? */
-    tps->SetSourceLandmarks ((TpsTransformType::PointSetType::Pointer) fix_lm);
-    tps->SetTargetLandmarks ((TpsTransformType::PointSetType::Pointer) mov_lm);
+    printf ("Setting landmarks to TPS\n");
+    tps->SetSourceLandmarks (fix_lm);
+    tps->SetTargetLandmarks (mov_lm);
+    printf ("Computing matrix\n");
     tps->ComputeWMatrix ();
 
-    xform.set_itk_tps (tps);
-    xform_to_itk_vf (&xform_tmp, &xform, pih);
+    printf ("Setting xform\n");
+    xform_tps.set_itk_tps (tps);
 
-    typename DeformationFieldType::Pointer vf = DeformationFieldType::New ();
-    vf = xform_tmp.get_itk_vf ();
+    printf ("Converting to VF\n");
+    lw->m_vf = new Xform;
+    xform_to_itk_vf (lw->m_vf, &xform_tps, &lw->m_pih);
 
     printf ("Warping...\n");
-
+    typename DeformationFieldType::Pointer vf = DeformationFieldType::New ();
+    vf = lw->m_vf->get_itk_vf ();
     typename itk::Image<T, 3>::Pointer im_warped 
-	= itk_warp_image (mov_img, vf, 1, default_val);
+	= itk_warp_image (lw->m_input_img->itk_float (), vf, 1, default_val);
 
-    return im_warped;
+    /* Set outputs */
+    lw->m_warped_img = new Plm_image;
+    lw->m_warped_img->set_itk (im_warped);
 }
 
 template<class T>
@@ -55,15 +60,13 @@ do_tps (
 )
 {
     typedef typename itk::Image<T, 3> ImgType;
-    typedef typename itk::Point<double, 3 > PointType;
-    typedef typename std::vector<PointType > PointArrayType;
     typedef typename TpsTransformType::PointSetType PointSetType;
     typedef typename PointSetType::Pointer PointSetPointer;
     typedef typename PointSetType::PointIdentifier PointIdType;
 
     Plm_image_header pih;
-    PointType p1;
-    PointType p2;
+    DoublePointType p1;
+    DoublePointType p2;
     char line[BUFLEN];
     Xform xform_tmp, xform;
     FILE* reference;
@@ -143,13 +146,31 @@ itk_tps_warp (
 	lw->m_input_img->itk_float ();
     }
 
+    printf ("Gonna convert pointsets\n");
+    pointset_debug (lw->m_fixed_landmarks);
+
     /* Convert pointsets to itk pointsets */
+    DoublePointSetType::Pointer mov_lm = 
+	itk_double_pointset_from_pointset (lw->m_moving_landmarks);
+    DoublePointSetType::Pointer fix_lm = 
+	itk_double_pointset_from_pointset (lw->m_fixed_landmarks);
+#if defined (commentout)
     FloatPointSetType::Pointer mov_lm = 
 	itk_float_pointset_from_pointset (lw->m_moving_landmarks);
     FloatPointSetType::Pointer fix_lm = 
 	itk_float_pointset_from_pointset (lw->m_fixed_landmarks);
+#endif
+
+    printf ("Conversion complete.\n");
+    itk_pointset_debug (fix_lm);
 
     /* Run ITK TPS warper */
+    do_tps_core (
+	lw, 
+	mov_lm, 
+	fix_lm, 
+	(float) 0
+    );
 }
 
 

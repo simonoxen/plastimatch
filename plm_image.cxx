@@ -286,7 +286,7 @@ Plm_image::save_image (const char* fname)
    Assignment
    ----------------------------------------------------------------------- */
 void 
-Plm_image::set_gpuit (volume *v)
+Plm_image::set_gpuit (Volume *v)
 {
     this->free ();
     m_gpuit = (void*) v;
@@ -315,6 +315,15 @@ Plm_image::set_gpuit (volume *v)
 	print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
 	break;
     }
+}
+
+void 
+Plm_image::set_itk (FloatImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
+    m_type = PLM_IMG_TYPE_ITK_FLOAT;
+    this->m_itk_float = img;
 }
 
 /* -----------------------------------------------------------------------

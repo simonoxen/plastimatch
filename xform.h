@@ -48,7 +48,10 @@ typedef itk::BSplineDeformableTransform <
 
 /* itk thin-plate transforms */
 typedef itk::ThinPlateSplineKernelTransform < 
-    double, 3 > TpsTransformType;
+    float, 3 > FloatTpsTransformType;
+typedef itk::ThinPlateSplineKernelTransform < 
+    double, 3 > DoubleTpsTransformType;
+typedef DoubleTpsTransformType TpsTransformType;
 
 class Xform {
 public:

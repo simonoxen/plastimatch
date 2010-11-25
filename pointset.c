@@ -147,3 +147,16 @@ pointset_resize (Pointset *ps, int new_size)
     ps->points = (float*) realloc (ps->points, 
 	    3 * (ps->num_points) * sizeof(float));
 }
+
+void
+pointset_debug (Pointset* ps)
+{
+    int i;
+    printf ("Pointset:\n");
+    for (i = 0; i < ps->num_points; i++) {
+	printf ("  %10f %10f %10f\n", 
+	    ps->points[i*3 + 0],
+	    ps->points[i*3 + 1],
+	    ps->points[i*3 + 2]);
+    }
+}

@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "pointset.h"
 
 typedef struct landmark_warp Landmark_warp;
@@ -15,16 +16,15 @@ struct landmark_warp
     Pointset *m_fixed_landmarks;
     Pointset *m_moving_landmarks;
     Plm_image *m_input_img;
+    Plm_image_header m_pih;
 
     /* Config */
     float rbf_radius;
     float young_modulus;
 
     /* Outputs */
-    bool m_want_warped_img;
     Plm_image *m_warped_img;
-    bool m_want_vf;
-    Plm_image *m_vf;
+    Xform *m_vf;
 };
 
 #if defined __cplusplus

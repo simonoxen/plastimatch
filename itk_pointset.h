@@ -6,14 +6,22 @@
 
 #include "plm_config.h"
 #include "itkPointSet.h"
+#include "itkDefaultStaticMeshTraits.h"
 
 #include "itk_image.h"
 #include "pointset.h"
 #include "xform.h"
 
-typedef itk::PointSet< float, 3 > FloatPointSetType;
+typedef itk::DefaultStaticMeshTraits< 
+    float, 3, 3, float, float > FloatPointSetTraitsType;
+typedef itk::PointSet< 
+    FloatPointType, 3, FloatPointSetTraitsType > FloatPointSetType;
 typedef FloatPointSetType::PointIdentifier FloatPointIdType;
-typedef itk::PointSet< double, 3 > DoublePointSetType;
+
+typedef itk::DefaultStaticMeshTraits< 
+    double, 3, 3, double, double > DoublePointSetTraitsType;
+typedef itk::PointSet< 
+    DoublePointType, 3, DoublePointSetTraitsType > DoublePointSetType;
 typedef DoublePointSetType::PointIdentifier DoublePointIdType;
 
 template<class T> void itk_pointset_load (T pointset, const char* fn);

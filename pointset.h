@@ -29,6 +29,9 @@ pointset_destroy (Pointset *ps);
 gpuit_EXPORT
 void
 pointset_resize (Pointset *ps, int new_size);
+gpuit_EXPORT
+void
+pointset_debug (Pointset* ps);
 
 #if defined __cplusplus
 }

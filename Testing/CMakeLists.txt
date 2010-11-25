@@ -658,13 +658,28 @@ ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
-## landmark_warp
+## landmark_warp a: slicer fcsv
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "landmark-warp" 
+  "landmark-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-x;${PLM_TESTING_DATA_DIR}/xf-tps-1.txt;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-vf.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
+  "-a;itk;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-vf.mha"
+  )
+PLM_ADD_TEST (
+  "landmark-warp-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;landmark-warp-a-img.mha"
+  )
+ADD_TEST (
+  "landmark-warp-a-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-860.5"
+  "-DUPPER_THRESH=-860.0"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
 ## -------------------------------------------------------------------------
@@ -1194,6 +1209,7 @@ PLM_ADD_TEST (
 ##   plm warp e: input = xio, multiple outputs
 ##   plm warp f: input = dicom, multiple outputs
 ##   plm warp g: xf = translation
+##   plm warp h: xf = translation, ushort images
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-warp-a" 

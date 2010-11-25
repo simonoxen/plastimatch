@@ -55,13 +55,12 @@ IF (OPENCL_FOUND)
   ENDIF (NOT OPENCL_PROBE_NOT_CAPABLE)
 ENDIF (OPENCL_FOUND)
 
-# drr-d, landmark-warp doen't work yet
+# drr-d doen't work yet
 SET (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
   "drr-d"
   "drr-d-stats"
   "drr-d-check"
-  "landmark-warp"
   )
 
 ## If we don't have a fortran compiler, don't test bragg_curve

@@ -51,9 +51,6 @@ struct args_info_landmark_warp
   char * input_xform_arg;	/**< @brief Input landmark xform.  */
   char * input_xform_orig;	/**< @brief Input landmark xform original value given at command line.  */
   const char *input_xform_help; /**< @brief Input landmark xform help description.  */
-  char * fixed_arg;	/**< @brief Fixed image (used to set size).  */
-  char * fixed_orig;	/**< @brief Fixed image (used to set size) original value given at command line.  */
-  const char *fixed_help; /**< @brief Fixed image (used to set size) help description.  */
   char * input_image_arg;	/**< @brief Input image to warp.  */
   char * input_image_orig;	/**< @brief Input image to warp original value given at command line.  */
   const char *input_image_help; /**< @brief Input image to warp help description.  */
@@ -63,6 +60,18 @@ struct args_info_landmark_warp
   char * output_vf_arg;	/**< @brief Output vector field.  */
   char * output_vf_orig;	/**< @brief Output vector field original value given at command line.  */
   const char *output_vf_help; /**< @brief Output vector field help description.  */
+  char * origin_arg;	/**< @brief Output image offset.  */
+  char * origin_orig;	/**< @brief Output image offset original value given at command line.  */
+  const char *origin_help; /**< @brief Output image offset help description.  */
+  char * spacing_arg;	/**< @brief Output image spacing.  */
+  char * spacing_orig;	/**< @brief Output image spacing original value given at command line.  */
+  const char *spacing_help; /**< @brief Output image spacing help description.  */
+  char * dim_arg;	/**< @brief Output image dimension.  */
+  char * dim_orig;	/**< @brief Output image dimension original value given at command line.  */
+  const char *dim_help; /**< @brief Output image dimension help description.  */
+  char * fixed_arg;	/**< @brief Fixed image (match output size to this image).  */
+  char * fixed_orig;	/**< @brief Fixed image (match output size to this image) original value given at command line.  */
+  const char *fixed_help; /**< @brief Fixed image (match output size to this image) help description.  */
   enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='gcs').  */
   char * algorithm_orig;	/**< @brief RBF warping algorithm  original value given at command line.  */
   const char *algorithm_help; /**< @brief RBF warping algorithm  help description.  */
@@ -85,10 +94,13 @@ struct args_info_landmark_warp
   unsigned int fixed_landmarks_given ;	/**< @brief Whether fixed-landmarks was given.  */
   unsigned int moving_landmarks_given ;	/**< @brief Whether moving-landmarks was given.  */
   unsigned int input_xform_given ;	/**< @brief Whether input-xform was given.  */
-  unsigned int fixed_given ;	/**< @brief Whether fixed was given.  */
   unsigned int input_image_given ;	/**< @brief Whether input-image was given.  */
   unsigned int output_image_given ;	/**< @brief Whether output-image was given.  */
   unsigned int output_vf_given ;	/**< @brief Whether output-vf was given.  */
+  unsigned int origin_given ;	/**< @brief Whether origin was given.  */
+  unsigned int spacing_given ;	/**< @brief Whether spacing was given.  */
+  unsigned int dim_given ;	/**< @brief Whether dim was given.  */
+  unsigned int fixed_given ;	/**< @brief Whether fixed was given.  */
   unsigned int algorithm_given ;	/**< @brief Whether algorithm was given.  */
   unsigned int radius_given ;	/**< @brief Whether radius was given.  */
   unsigned int stiffness_given ;	/**< @brief Whether stiffness was given.  */

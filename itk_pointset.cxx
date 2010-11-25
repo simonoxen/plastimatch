@@ -135,5 +135,6 @@ itk_pointset_debug (T pointset)
 
 /* Explicit instantiations */
 template plastimatch1_EXPORT void itk_pointset_debug (FloatPointSetType::Pointer pointset);
+template plastimatch1_EXPORT void itk_pointset_debug (DoublePointSetType::Pointer pointset);
 template plastimatch1_EXPORT void itk_pointset_load (FloatPointSetType::Pointer pointset, const char* fn);
 template plastimatch1_EXPORT FloatPointSetType::Pointer itk_pointset_warp (FloatPointSetType::Pointer ps_in, Xform* xf);
