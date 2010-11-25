@@ -1193,6 +1193,7 @@ PLM_ADD_TEST (
 ##   plm warp d: xf = bspline, algorithm = native, interp = nn
 ##   plm warp e: input = xio, multiple outputs
 ##   plm warp f: input = dicom, multiple outputs
+##   plm warp g: xf = translation
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-warp-a" 
@@ -1395,6 +1396,51 @@ ADD_TEST (
   "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+
+PLM_ADD_TEST (
+  "plm-warp-g" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-g-img.nrrd"
+  )
+PLM_ADD_TEST (
+  "plm-warp-g-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-g-img.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-g-check-1"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-g-stats-1.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-675.5"
+  "-DUPPER_THRESH=-674.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "plm-warp-h" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-h-img.nrrd"
+  )
+PLM_ADD_TEST (
+  "plm-warp-h-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-h-img.nrrd"
+  )
+ADD_TEST (
+  "plm-warp-h-check-1"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-h-stats-1.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=113.5"
+  "-DUPPER_THRESH=114.0"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
 
 ## -------------------------------------------------------------------------
 ## bragg-curve

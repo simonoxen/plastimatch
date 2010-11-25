@@ -42,6 +42,9 @@ plm_warp_itk (
 	return;
     }
 
+    /* Convert GPUIT images to ITK */
+    im_in->convert_to_itk ();
+
     /* Warp the image */
     printf ("Warping...\n");
     switch (im_in->m_type) {
@@ -102,7 +105,8 @@ plm_warp_itk (
     case PLM_IMG_TYPE_ITK_CHAR:
     case PLM_IMG_TYPE_ITK_LONG:
     default:
-	print_and_exit ("Unhandled case in plm_warp_itk()\n");
+	print_and_exit ("Unhandled case in plm_warp_itk (%s)\n",
+	    plm_image_type_string (im_in->m_type));
 	break;
     }
 }
