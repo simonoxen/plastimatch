@@ -274,8 +274,15 @@ IF (PLM_REDUCED_TESTS)
     "fdk-opencl-a-check"
 
     "landmark-warp-a"
-    "landmark-warp-a-stats"
-    "landmark-warp-a-check"
+    "landmark-warp-a-stats-1"
+    "landmark-warp-a-check-1"
+    "landmark-warp-a-stats-2"
+    "landmark-warp-a-check-2"
+    "landmark-warp-b"
+    "landmark-warp-b-stats-1"
+    "landmark-warp-b-check-1"
+    "landmark-warp-b-stats-2"
+    "landmark-warp-b-check-2"
 
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"
