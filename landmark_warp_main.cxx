@@ -37,64 +37,11 @@ do_landmark_warp_itk_tps (Landmark_warp *lw)
     itk_tps_warp (lw);
 }
 
-#if defined (commentout)
 static void
-do_landmark_warp_gcs (Landmark_warp_args *parms)
+do_landmark_warp_gcs (Landmark_warp *lw)
 {
-    Tps_xform *tps;
-    Volume *moving;
-    Volume *vf_out = 0;
-    Volume *warped_out = 0;
-
-    printf ("Loading xform\n");
-    tps = tps_xform_load (parms->input_xform_fn);
-    if (!tps) exit (-1);
-
-    printf ("Reading mha\n");
-    moving = read_mha (parms->input_moving_image_fn);
-    if (!moving) exit (-1);
-
-    printf ("Converting volume to float\n");
-    volume_convert_to_float (moving);
-
-    if (parms->output_vf_fn) {
-	printf ("Creating output vf\n");
-	vf_out = volume_create (
-	    tps->img_dim, 
-	    tps->img_origin, 
-	    tps->img_spacing, 
-	    PT_VF_FLOAT_INTERLEAVED, 
-	    0, 0);
-    } else {
-	vf_out = 0;
-    }
-    if (parms->output_warped_image_fn) {
-	printf ("Creating output vol\n");
-	warped_out = volume_create (
-	    tps->img_dim, 
-	    tps->img_origin, 
-	    tps->img_spacing, 
-	    PT_FLOAT, 
-	    0, 0);
-    } else {
-	warped_out = 0;
-    }
-	
-    printf ("Calling tps_warp...\n");
-    tps_warp (warped_out, vf_out, tps, moving, 1, -1000);
-    printf ("done!\n");
-    if (parms->output_vf_fn) {
-	printf ("Writing output vf.\n");
-	write_mha (parms->output_vf_fn, vf_out);
-    }
-    if (parms->output_warped_image_fn) {
-	printf ("Writing output vol.\n");
-	write_mha (parms->output_warped_image_fn, warped_out);
-    }
-
-    printf ("Finished.\n");
+    rbf_gcs_warp (lw);
 }
-#endif
 
 static Landmark_warp*
 load_input_files (args_info_landmark_warp *args_info)
@@ -204,8 +151,12 @@ do_landmark_warp (args_info_landmark_warp *args_info)
     switch (args_info->algorithm_arg) {
     case algorithm_arg_itk:
 	do_landmark_warp_itk_tps (lw);
+	break;
     case algorithm_arg_nsh:
+	break;
     case algorithm_arg_gcs:
+	do_landmark_warp_gcs (lw);
+	break;
     default:
 	break;
     }

@@ -17,14 +17,14 @@
    Image header conversion
    ----------------------------------------------------------------------- */
 void
-gpuit_direction_from_itk (
-    float gpuit_direction_cosines[9],
+direction_cosines_from_itk (
+    float direction_cosines[9],
     DirectionType* itk_direction
 )
 {
     for (unsigned int d1 = 0; d1 < 3; d1++) {
 	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    gpuit_direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
+	    direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
 	}
     }
 }
@@ -161,34 +161,34 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 }
 
 void 
-Plm_image_header::get_gpuit_origin (float gpuit_origin[3])
+Plm_image_header::get_origin (float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
-	gpuit_origin[d] = m_origin[d];
+	origin[d] = m_origin[d];
     }
 }
 
 void 
-Plm_image_header::get_gpuit_spacing (float gpuit_spacing[3])
+Plm_image_header::get_spacing (float spacing[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
-	gpuit_spacing[d] = m_spacing[d];
+	spacing[d] = m_spacing[d];
     }
 }
 
 void 
-Plm_image_header::get_gpuit_dim (int gpuit_dim[3])
+Plm_image_header::get_dim (int dim[3])
 {
     ImageRegionType::SizeType itk_size = m_region.GetSize ();
     for (unsigned int d = 0; d < 3; d++) {
-	gpuit_dim[d] = itk_size[d];
+	dim[d] = itk_size[d];
     }
 }
 
 void 
-Plm_image_header::get_gpuit_direction_cosines (float gpuit_direction_cosines[9])
+Plm_image_header::get_direction_cosines (float direction_cosines[9])
 {
-    gpuit_direction_from_itk (gpuit_direction_cosines, &m_direction);
+    direction_cosines_from_itk (direction_cosines, &m_direction);
 }
 
 #if defined (commentout)

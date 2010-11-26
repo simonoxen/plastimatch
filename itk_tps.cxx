@@ -154,12 +154,6 @@ itk_tps_warp (
 	itk_double_pointset_from_pointset (lw->m_moving_landmarks);
     DoublePointSetType::Pointer fix_lm = 
 	itk_double_pointset_from_pointset (lw->m_fixed_landmarks);
-#if defined (commentout)
-    FloatPointSetType::Pointer mov_lm = 
-	itk_float_pointset_from_pointset (lw->m_moving_landmarks);
-    FloatPointSetType::Pointer fix_lm = 
-	itk_float_pointset_from_pointset (lw->m_fixed_landmarks);
-#endif
 
     printf ("Conversion complete.\n");
     itk_pointset_debug (fix_lm);
@@ -169,7 +163,7 @@ itk_tps_warp (
 	lw, 
 	mov_lm, 
 	fix_lm, 
-	(float) 0
+	(float) lw->default_val
     );
 }
 

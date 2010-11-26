@@ -146,7 +146,7 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
 	offset[d1] = og[d1];
 	pix_spacing[d1] = sp[d1];
     }
-    gpuit_direction_from_itk (direction_cosines, &dc);
+    direction_cosines_from_itk (direction_cosines, &dc);
     Volume* vol = volume_create (dim, offset, pix_spacing, PT_FLOAT, 
 				 direction_cosines, 0);
     float* vol_img = (float*) vol->img;

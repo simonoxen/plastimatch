@@ -15,6 +15,7 @@
 #include "vnl/algo/vnl_svd.h"
 #include "vnl/vnl_sample.h"
 
+#include "landmark_warp.h"
 #include "logfile.h"
 #include "print_and_exit.h"
 #include "rbf_gcs.h"
@@ -28,6 +29,84 @@
 
 #define INDEX_OF(ijk, dim) \
     (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
+
+static void tps_xform_debug (Tps_xform *tps);
+
+void
+rbf_gcs_warp (Landmark_warp *lw)
+{
+    Tps_xform *tps;
+    Volume *moving;
+    Volume *vf_out = 0;
+    Volume *warped_out = 0;
+
+    printf ("Gonna convert pointsets\n");
+    pointset_debug (lw->m_fixed_landmarks);
+
+    /* Convert Landmark_warp to Tps_xform */
+    /* GCS FIX: this function should use lw directly */
+    tps = tps_xform_alloc ();
+
+    lw->m_pih.get_origin (tps->img_origin);
+    lw->m_pih.get_spacing (tps->img_spacing);
+    lw->m_pih.get_dim (tps->img_dim);
+
+    /* GCS FIX: Assume same number of points in both pointsets */
+    tps->num_tps_nodes = lw->m_fixed_landmarks->num_points;
+    tps->tps_nodes = (struct tps_node*) malloc (
+	tps->num_tps_nodes * sizeof (Tps_node));
+    for (int i = 0; i < tps->num_tps_nodes; i++) {
+	Tps_node *curr_node = &tps->tps_nodes[i];
+	curr_node->src[0] = lw->m_fixed_landmarks->points[i*3+0];
+	curr_node->src[1] = lw->m_fixed_landmarks->points[i*3+1];
+	curr_node->src[2] = lw->m_fixed_landmarks->points[i*3+2];
+	curr_node->tgt[0] = lw->m_moving_landmarks->points[i*3+0];
+	curr_node->tgt[1] = lw->m_moving_landmarks->points[i*3+1];
+	curr_node->tgt[2] = lw->m_moving_landmarks->points[i*3+2];
+	curr_node->alpha = tps_default_alpha (
+	    curr_node->src, curr_node->tgt);
+
+	/* Compute initial weights, based on distance and alpha */
+	curr_node->wxyz[2] = curr_node->tgt[2] - curr_node->src[2];
+	curr_node->wxyz[1] = curr_node->tgt[1] - curr_node->src[1];
+	curr_node->wxyz[0] = curr_node->tgt[0] - curr_node->src[0];
+
+    }
+
+    tps_xform_debug (tps);
+
+    printf ("Converting volume to float\n");
+    moving = lw->m_input_img->gpuit_float ();
+
+    printf ("Creating output vf\n");
+    vf_out = volume_create (
+	tps->img_dim, 
+	tps->img_origin, 
+	tps->img_spacing, 
+	PT_VF_FLOAT_INTERLEAVED, 
+	0, 0);
+
+    printf ("Creating output vol\n");
+    warped_out = volume_create (
+	tps->img_dim, 
+	tps->img_origin, 
+	tps->img_spacing, 
+	PT_FLOAT, 
+	0, 0);
+	
+    printf ("Calling tps_warp... (default = %f)\n", lw->default_val);
+    tps_warp (warped_out, vf_out, tps, moving, 1, lw->default_val);
+    printf ("done!\n");
+
+    /* Copy outputs to lw structure */
+    lw->m_vf = new Xform;
+    lw->m_vf->set_gpuit_vf (vf_out);
+    lw->m_warped_img = new Plm_image;
+    lw->m_warped_img->set_gpuit (warped_out);
+
+    tps_xform_destroy (tps);
+    printf ("Finished.\n");
+}
 
 Tps_xform*
 tps_xform_alloc (void)
@@ -167,7 +246,7 @@ tps_xform_destroy (Tps_xform *tps)
     free (tps);
 }
 
-void
+static void
 tps_xform_debug (Tps_xform *tps)
 {
     int i;

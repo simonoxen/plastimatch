@@ -143,10 +143,10 @@ plm_warp_native (
     xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
 
     /* Create output vf */
-    pih->get_gpuit_origin (origin);
-    pih->get_gpuit_spacing (spacing);
-    pih->get_gpuit_dim (dim);
-    pih->get_gpuit_direction_cosines (direction_cosines);
+    pih->get_origin (origin);
+    pih->get_spacing (spacing);
+    pih->get_dim (dim);
+    pih->get_direction_cosines (direction_cosines);
     if (vf) {
 	printf ("Creating output vf...\n");
 	vf_out = volume_create (dim, origin, spacing, PT_VF_FLOAT_INTERLEAVED,

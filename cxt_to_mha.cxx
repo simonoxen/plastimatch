@@ -32,9 +32,9 @@ cxt_to_mha_init (
 {
     int slice_voxels;
 
-    pih->get_gpuit_origin (ctm_state->origin);
-    pih->get_gpuit_spacing (ctm_state->spacing);
-    pih->get_gpuit_dim (ctm_state->dim);
+    pih->get_origin (ctm_state->origin);
+    pih->get_spacing (ctm_state->spacing);
+    pih->get_dim (ctm_state->dim);
 
     slice_voxels = ctm_state->dim[0] * ctm_state->dim[1];
 

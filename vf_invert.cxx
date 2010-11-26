@@ -67,9 +67,9 @@ vf_invert_main (Vf_Invert_Parms* parms)
 	FloatImageType::Pointer fixed = itk_image_load_float (
 	    parms->fixed_img_fn, 0);
 	pih.set_from_itk_image (fixed);
-	pih.get_gpuit_origin (parms->origin);
-	pih.get_gpuit_spacing (parms->spacing);
-	pih.get_gpuit_dim (parms->dim);
+	pih.get_origin (parms->origin);
+	pih.get_spacing (parms->spacing);
+	pih.get_dim (parms->dim);
 
 	pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);
     }

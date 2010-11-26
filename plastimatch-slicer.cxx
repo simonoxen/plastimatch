@@ -8,22 +8,21 @@
 #include "plastimatch-slicerCLP.h"
 #include "plm_stages.h"
 
-#undef PLM_SLICER_HARDCODED_FILENAME
 int 
 main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
 #if defined (PLM_SLICER_HARDCODED_FILENAME)
-#if defined (_WIN32)
+# if defined (_WIN32)
     char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-#else
+# else
     char* parms_fn = "/tmp/plastimatch-slicer-parms.txt";
-#endif
+# endif
     FILE* fp = fopen (parms_fn, "w+");
 #else
 
-#if defined (_WIN32)
+# if defined (_WIN32)
     /* tmpfile is broken on windows.  It tries to create the 
 	temorary files in the root directory where it doesn't 
 	have permissions. 
@@ -32,9 +31,9 @@ main (int argc, char * argv [])
     char *parms_fn = _tempnam (0, "plastimatch_");
     FILE *fp = fopen (parms_fn, "wb+");
     printf ("parms_fn = %s\n", parms_fn);
-#else
+# else
     FILE *fp = tmpfile ();
-#endif
+# endif
 #endif
 
     if (!fp) {

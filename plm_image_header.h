@@ -67,11 +67,11 @@ public:
 	dest->m_direction = src->m_direction;
     }
 
-    void plastimatch1_EXPORT get_gpuit_origin (float gpuit_origin[3]);
-    void plastimatch1_EXPORT get_gpuit_spacing (float gpuit_spacing[3]);
-    void plastimatch1_EXPORT get_gpuit_dim (int gpuit_dim[3]);
-    void plastimatch1_EXPORT get_gpuit_direction_cosines (
-	float gpuit_direction_cosines[9]);
+    void plastimatch1_EXPORT get_origin (float origin[3]);
+    void plastimatch1_EXPORT get_spacing (float spacing[3]);
+    void plastimatch1_EXPORT get_dim (int dim[3]);
+    void plastimatch1_EXPORT get_direction_cosines (
+	float direction_cosines[9]);
 
     void plastimatch1_EXPORT print (void) const;
     void plastimatch1_EXPORT get_image_center (float center[3]);
@@ -81,8 +81,8 @@ public:
    Global functions
    ----------------------------------------------------------------------- */
 void
-gpuit_direction_from_itk (
-    float gpuit_direction_cosines[9],
+direction_cosines_from_itk (
+    float direction_cosines[9],
     DirectionType* itk_direction
 );
 

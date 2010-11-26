@@ -1,9 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _tps_h_
-#define _tps_h_
+#ifndef _rbf_gcs_h_
+#define _rbf_gcs_h_
 
+#include "plm_config.h"
+#include "landmark_warp.h"
 #include "volume.h"
 
 /* Incremental TPS only */
@@ -52,6 +54,8 @@ tps_warp (
 );
 plastimatch1_EXPORT void
 tps_xform_reset_alpha_values (Tps_xform *tps);
+plastimatch1_EXPORT void
+rbf_gcs_warp (Landmark_warp *lw);
 
 #if defined __cplusplus
 }

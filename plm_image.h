@@ -120,9 +120,9 @@ public:
 	convert_to_itk_float ();
 	return m_itk_float;
     }
-    volume* gpuit_float () {
+    Volume* gpuit_float () {
 	convert_to_gpuit_float ();
-	return (volume*) m_gpuit;
+	return (Volume*) m_gpuit;
     }
     plastimatch1_EXPORT
     void convert (Plm_image_type new_type);

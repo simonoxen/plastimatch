@@ -225,7 +225,9 @@ void
 Rtss_polyline_set::set_rasterization_geometry (void)
 {
     int first = 1;
-    float min_x, max_x, min_y, max_y, min_z, max_z;
+    float min_x = 0.f, max_x = 0.f;
+    float min_y = 0.f, max_y = 0.f;
+    float min_z = 0.f, max_z = 0.f;
     std::set<float> z_values;
 
     /* Scan points to find image size, spacing */
@@ -287,7 +289,7 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 
     /* z value should be based on native slice spacing */
     int have_spacing = 0;
-    float spacing;
+    float spacing = 0.f;
     float last_z = min_z;
     for (std::set<float>::iterator it = z_values.begin(); 
 	 it != z_values.end(); 
@@ -359,9 +361,9 @@ Rtss_polyline_set::set_geometry_from_plm_image_header (
     Plm_image_header *pih
 )
 {
-    pih->get_gpuit_origin (this->offset);
-    pih->get_gpuit_spacing (this->spacing);
-    pih->get_gpuit_dim (this->dim);
+    pih->get_origin (this->offset);
+    pih->get_spacing (this->spacing);
+    pih->get_dim (this->dim);
     this->have_geometry = 1;
 
     this->fix_polyline_slice_numbers ();

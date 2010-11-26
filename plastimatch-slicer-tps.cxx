@@ -16,11 +16,11 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-#if defined (_WIN32)
+# if defined (_WIN32)
     char* fn = "C:/tmp/plastimatch-slicer-tps.txt";
-#else
+# else
     char* fn = "/tmp/plastimatch-slicer-tps.txt";
-#endif
+# endif
     FILE* fp = fopen (fn, "w");
 
     unsigned long num_fiducials = plmslc_fixed_fiducials.size();

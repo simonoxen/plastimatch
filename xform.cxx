@@ -1281,9 +1281,9 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
     int roi_dim[3];
     int vox_per_rgn[3];
 
-    pih->get_gpuit_origin (img_origin);
-    pih->get_gpuit_dim (img_dim);
-    pih->get_gpuit_spacing (img_spacing);
+    pih->get_origin (img_origin);
+    pih->get_dim (img_dim);
+    pih->get_spacing (img_spacing);
 
     for (d = 0; d < 3; d++) {
 	/* Old ROI was whole image */

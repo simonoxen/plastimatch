@@ -19,6 +19,7 @@ struct landmark_warp
     Plm_image_header m_pih;
 
     /* Config */
+    float default_val;
     float rbf_radius;
     float young_modulus;
 
