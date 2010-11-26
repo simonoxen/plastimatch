@@ -72,7 +72,7 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS)
     )
 ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS)
 
-## If we didn't get dicom test data, don't run dicom tests
+## If we didn't get XiO dicom-rt test data, don't run these tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
@@ -92,6 +92,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-dicom-f"
     "plm-convert-dicom-f-stats"
     "plm-convert-dicom-f-check"
+    "plm-convert-dicom-g"
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
