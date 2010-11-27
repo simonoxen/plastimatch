@@ -403,7 +403,7 @@ bspline_regularize_score (
     double interval;
     float grad_coeff;
     float raw_score;
-	float weight;
+    float weight;
 
     grad_score = 0;
     num_vox = bxf->roi_dim[0] * bxf->roi_dim[1] * bxf->roi_dim[2];

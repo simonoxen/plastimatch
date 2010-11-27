@@ -86,14 +86,15 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->debug = 0;
     parms->lbfgsb_factr = 1.0e+7;
     parms->lbfgsb_pgtol = 1.0e-5;
-    
+
+#if defined (commentout)
     parms->landmarks = 0;
     parms->landmark_stiffness = 1.0;
     parms->landmark_implementation = 'a';
     parms->young_modulus = 0.0;
-	
     parms->rbf_radius = 0.0;
-	parms->rbf_young_modulus = 0.0;
+    parms->rbf_young_modulus = 0.0;
+#endif
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
@@ -102,7 +103,7 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->mi_hist.fixed.bins = 20;
     parms->mi_hist.moving.bins = 20;
     parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
-                              * parms->mi_hist.moving.bins;
+	* parms->mi_hist.moving.bins;
 
     parms->mi_hist.fixed.big_bin = 0;
     parms->mi_hist.moving.big_bin = 0;
@@ -3987,18 +3988,19 @@ bspline_score (Bspline_parms *parms,
 	}
     }
 
-
     /* Add vector field score/gradient to image score/gradient */
     if (parms->young_modulus) {
 	printf ("comuting regularization\n");
 	bspline_regularize_score (parms, bst, bxf, fixed, moving);
     }
 
+#if defined (commentout)
     /* Add landmark score/gradient to image score/gradient */
     if (parms->landmarks) {
 	printf ("comuting landmarks\n");
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
+#endif
 }
 
 void

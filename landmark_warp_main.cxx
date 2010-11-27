@@ -18,6 +18,7 @@
 #include "plm_ggo.h"
 #include "pointset.h"
 #include "print_and_exit.h"
+#include "rbf_gauss.h"
 #include "rbf_gcs.h"
 
 /* How do the algorithms load their point data (currently)?
@@ -41,6 +42,12 @@ static void
 do_landmark_warp_gcs (Landmark_warp *lw)
 {
     rbf_gcs_warp (lw);
+}
+
+static void
+do_landmark_warp_nsh (Landmark_warp *lw)
+{
+    rbf_gauss_warp (lw);
 }
 
 static Landmark_warp*

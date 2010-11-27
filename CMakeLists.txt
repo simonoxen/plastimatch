@@ -667,7 +667,6 @@ ENDIF (BROOK_FOUND)
 SET (GPUIT_LIBRARY_SRC
   bstring_util.cxx bstring_util.h
   bspline.c bspline.h
-  bspline_regularize.c bspline_regularize.h
   bspline_landmarks.c bspline_landmarks.h
   bspline_macros.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h
@@ -676,6 +675,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_nlopt.c bspline_optimize_nlopt.h
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
+  bspline_regularize.c bspline_regularize.h
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
@@ -841,7 +841,6 @@ ENDIF (F2C_LIBRARY)
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
-  bspline_rbf.cxx bspline_rbf.h
   cxt_io.cxx cxt_io.h 
   cxt_to_mha.cxx cxt_to_mha.h 
   demographics.cxx demographics.h 
@@ -881,6 +880,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_stages.cxx plm_stages.h 
   plm_version.h 
   plm_warp.cxx plm_warp.h 
+  rbf_gauss.cxx rbf_gauss.h
   rbf_gcs.cxx rbf_gcs.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
   render_polyline.cxx render_polyline.h

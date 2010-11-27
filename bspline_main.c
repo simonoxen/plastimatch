@@ -13,8 +13,10 @@
 #include <string.h>
 #include <math.h>
 #include "bspline.h"
+#if defined (commentout)
 #include "bspline_landmarks.h"
 #include "bspline_rbf.h"
+#endif
 #if defined (HAVE_F2C_LIBRARY)
 #include "bspline_optimize_lbfgsb.h"
 #endif
@@ -38,7 +40,6 @@ main (int argc, char* argv[])
     Bspline_xform *bxf;
     Volume *moving, *fixed, *moving_grad;
     Volume *vector_field = 0;
-    Volume *zero_vector_field = 0;
     Volume *moving_warped = 0;
     int roi_offset[3];
 
@@ -66,12 +67,14 @@ main (int argc, char* argv[])
     printf ("Making gradient\n");
     moving_grad = volume_make_gradient (moving);
 
+#if defined (commentout)
     /* Load and adjust landmarks */
     if (options.fixed_landmarks && options.moving_landmarks) {
 	parms->landmarks = bspline_landmarks_load (
 	    options.fixed_landmarks, options.moving_landmarks);
 	bspline_landmarks_adjust (parms->landmarks, fixed, moving);
     }
+#endif
 
     /* Debug */
     //write_mha ("moving_grad.mha", moving_grad);
@@ -107,8 +110,11 @@ main (int argc, char* argv[])
     /* Create vector field from bspline coefficients and save */
     if (options.output_vf_fn 
 	|| options.output_warped_fn 
+#if defined (commentout)
 	|| (options.warped_landmarks && options.fixed_landmarks 
-	    && options.moving_landmarks))
+	    && options.moving_landmarks)
+#endif
+    )
     {
 	printf ("Creating vector field.\n");
 	vector_field = volume_create (fixed->dim, fixed->offset, 
@@ -117,10 +123,10 @@ main (int argc, char* argv[])
 	    fixed->direction_cosines, 0);
 	if (parms->threading == BTHR_CUDA) {
 #if (CUDA_FOUND)
-        LOAD_LIBRARY (libplmcuda);
-        LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
+	    LOAD_LIBRARY (libplmcuda);
+	    LOAD_SYMBOL (CUDA_bspline_interpolate_vf, libplmcuda);
 	    CUDA_bspline_interpolate_vf (vector_field, bxf);
-        UNLOAD_LIBRARY (libplmcuda);
+	    UNLOAD_LIBRARY (libplmcuda);
 #else
 	    bspline_interpolate_vf (vector_field, bxf);
 #endif
@@ -129,6 +135,7 @@ main (int argc, char* argv[])
 	}
     }
 
+#if defined (commentout)
     /* Assuming vector field has been created, update warped landmarks*/
     if (options.warped_landmarks && options.fixed_landmarks 
 	&& options.moving_landmarks)
@@ -182,6 +189,7 @@ main (int argc, char* argv[])
 	    }
 	}
     }
+#endif
 #endif
 
     /* Create warped output image and save */

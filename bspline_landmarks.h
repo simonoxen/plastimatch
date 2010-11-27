@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "pointset.h"
+#include "volume.h"
 
 typedef struct bspline_landmarks Bspline_landmarks;
 struct bspline_landmarks {

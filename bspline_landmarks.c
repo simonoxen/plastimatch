@@ -556,4 +556,3 @@ void bspline_landmarks_warp (
     }
     free (dd_min);
 }
-
