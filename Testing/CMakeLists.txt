@@ -740,7 +740,7 @@ PLM_ADD_TEST (
   "landmark-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
+  "-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha;-r;75"
   )
 PLM_ADD_TEST (
   "landmark-warp-c-stats-1"
@@ -768,8 +768,8 @@ ADD_TEST (
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-2.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=-1.55"
-  "-DUPPER_THRESH=-1.4"
+  "-DLOWER_THRESH=-1.6"
+  "-DUPPER_THRESH=-1.5"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
