@@ -531,5 +531,11 @@ rbf_gauss_warp (Landmark_warp *lw)
     printf ("Freeing coeff\n");
     free (coeff);
 
+    /* Copy outputs to lw structure */
+    lw->m_vf = new Xform;
+    lw->m_vf->set_gpuit_vf (vf_out);
+    lw->m_warped_img = new Plm_image;
+    lw->m_warped_img->set_gpuit (warped_out);
+
     printf ("Done with rbf_gauss_warp\n");
 }
