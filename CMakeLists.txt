@@ -961,7 +961,7 @@ SET (DICOM_UID_SRC
   dicom_uid.h
   )
 SET (DICOMRT_IMPORT_SLICER_SRC
-  dicomrt-import-slicer.cxx
+  plastimatch-slicer-dicomrt.cxx
   )
 SET (DISTANCE_MAP_SRC
   distance_map.cxx
@@ -1355,7 +1355,7 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (SLICER_FOUND)
-    PLM_ADD_SLICER_EXECUTABLE (dicomrt-import-slicer 
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-dicomrt
       "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF (SLICER_FOUND)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
