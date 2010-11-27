@@ -44,9 +44,9 @@ const char *args_info_landmark_warp_full_help[] = {
   "      --spacing=STRING          Output image spacing",
   "      --dim=STRING              Output image dimension",
   "  -F, --fixed=filename          Fixed image (match output size to this image)",
-  "  -a, --algorithm=ENUM          RBF warping algorithm   (possible \n                                  values=\"itk\", \"gcs\", \"nsh\" \n                                  default=`gcs')",
-  "  -r, --radius=FLOAT            Radius of radial basis function  \n                                  (default=`0.0')",
-  "  -Y, --stiffness=FLOAT         Young modulus  (default=`0.0')",
+  "  -a, --algorithm=ENUM          RBF warping algorithm   (possible \n                                  values=\"tps\", \"gauss\", \"cone\" \n                                  default=`cone')",
+  "  -r, --radius=FLOAT            Radius of radial basis function  \n                                  (default=`50.0')",
+  "  -Y, --stiffness=FLOAT         Young modulus  (default=`1.0')",
   "  -d, --default-value=FLOAT     Value to set for pixels with unknown value  \n                                  (default=`0.0')",
   "      --config=STRING           Config file",
     0
@@ -120,7 +120,7 @@ free_cmd_list(void)
 }
 
 
-const char *cmdline_parser_landmark_warp_algorithm_values[] = {"itk", "gcs", "nsh", 0}; /*< Possible values for algorithm. */
+const char *cmdline_parser_landmark_warp_algorithm_values[] = {"tps", "gauss", "cone", 0}; /*< Possible values for algorithm. */
 
 static char *
 gengetopt_strdup (const char *s);
@@ -172,11 +172,11 @@ void clear_args (struct args_info_landmark_warp *args_info)
   args_info->dim_orig = NULL;
   args_info->fixed_arg = NULL;
   args_info->fixed_orig = NULL;
-  args_info->algorithm_arg = algorithm_arg_gcs;
+  args_info->algorithm_arg = algorithm_arg_cone;
   args_info->algorithm_orig = NULL;
-  args_info->radius_arg = 0.0;
+  args_info->radius_arg = 50.0;
   args_info->radius_orig = NULL;
-  args_info->stiffness_arg = 0.0;
+  args_info->stiffness_arg = 1.0;
   args_info->stiffness_orig = NULL;
   args_info->default_value_arg = 0.0;
   args_info->default_value_orig = NULL;
@@ -1446,7 +1446,7 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->algorithm_arg), 
                &(args_info->algorithm_orig), &(args_info->algorithm_given),
-              &(local_args_info.algorithm_given), optarg, cmdline_parser_landmark_warp_algorithm_values, "gcs", ARG_ENUM,
+              &(local_args_info.algorithm_given), optarg, cmdline_parser_landmark_warp_algorithm_values, "cone", ARG_ENUM,
               check_ambiguity, override, 0, 0,
               "algorithm", 'a',
               additional_error))
@@ -1458,7 +1458,7 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->radius_arg), 
                &(args_info->radius_orig), &(args_info->radius_given),
-              &(local_args_info.radius_given), optarg, 0, "0.0", ARG_FLOAT,
+              &(local_args_info.radius_given), optarg, 0, "50.0", ARG_FLOAT,
               check_ambiguity, override, 0, 0,
               "radius", 'r',
               additional_error))
@@ -1470,7 +1470,7 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->stiffness_arg), 
                &(args_info->stiffness_orig), &(args_info->stiffness_given),
-              &(local_args_info.stiffness_given), optarg, 0, "0.0", ARG_FLOAT,
+              &(local_args_info.stiffness_given), optarg, 0, "1.0", ARG_FLOAT,
               check_ambiguity, override, 0, 0,
               "stiffness", 'Y',
               additional_error))

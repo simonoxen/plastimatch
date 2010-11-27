@@ -2,11 +2,19 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <math.h>
+#include <time.h>
+
+#include "vnl/vnl_matrix_fixed.h"
+#include "vnl/vnl_matrix.h"
+#include "vnl/vnl_vector.h"
+#include "vnl/vnl_vector_fixed.h"
+#include "vnl/algo/vnl_svd.h"
+#include "vnl/vnl_sample.h"
 
 #include "bspline.h"
 #include "bspline_landmarks.h"
@@ -16,15 +24,8 @@
 #include "math_util.h"
 #include "print_and_exit.h"
 #include "rbf_gauss.h"
+#include "vf.h"
 #include "volume.h"
-
-#include <iostream>
-#include "vnl/vnl_matrix_fixed.h"
-#include "vnl/vnl_matrix.h"
-#include "vnl/vnl_vector.h"
-#include "vnl/vnl_vector_fixed.h"
-#include "vnl/algo/vnl_svd.h"
-#include "vnl/vnl_sample.h"
 
 typedef struct rbf_params Rbf_parms;
 struct rbf_params { // used to pass information to bspline_rbf_score
@@ -33,28 +34,6 @@ struct rbf_params { // used to pass information to bspline_rbf_score
     Volume *vector_field;
 };
 
-
-// radial basis function
-// center and x,y,z are in voxels
-// radius is in mm
-#if defined (commentout)
-static float rbf_value (int *center, int x, int y, int z, 
-    float radius, float *pix_spacing)
-{
-    float val, r, dx,dy,dz;
-
-    dx = (center[0]-x)*pix_spacing[0];
-    dy = (center[1]-y)*pix_spacing[1];
-    dz = (center[2]-z)*pix_spacing[2];
-    r = sqrt( dx*dx + dy*dy + dz*dz);
-    r = r / radius;
-
-    //   if (r>1) return 0.;
-    //   val = (1-r)*(1-r)*(1-r)*(1-r)*(4*r+1.); // Wendland
-    val = exp( -r*r );   
-    return val;
-}
-#endif
 static float 
 rbf_value (float *rbf_center, float *loc, float radius)
 {
@@ -76,7 +55,7 @@ rbf_value (float *rbf_center, float *loc, float radius)
 Analytic expression for the integral of squared second derivatives
 of the vector field of a single Gaussian RBF of radius c
 */
-static float rbf_gauss_secderiv_self(float c)
+static float rbf_gauss_secderiv_self (float c)
 {
     float factor = 1.968701243; // pow( M_PI/2, 3./2);
     return 15*factor/c;
@@ -88,13 +67,14 @@ static float rbf_gauss_secderiv_self(float c)
   separated by squared distance a2 = (x1-x2)*(x1-x2)+...
   (one-half of the overlap integral only).
 */
-static float rbf_gauss_secderiv_cross(float c, float a2)
+static float rbf_gauss_secderiv_cross (float c, float a2)
 {
     float factor = 1.968701243; // pow( M_PI/2, 3./2);
     return factor/c*exp(-a2/(2*c*c))*(-10. + ( a2/(c*c)-5.)*(a2/(c*c)-5.) );
 }
 
-static float bspline_rbf_analytic_integral( Bspline_parms *parms, float *pix_spacing )
+static float 
+bspline_rbf_analytic_integral (Bspline_parms *parms, float *pix_spacing)
 {
     Bspline_landmarks *blm = parms->landmarks;
     int i,j,d;
@@ -202,123 +182,66 @@ static void bspline_rbf_test_solution(Volume *vector_field, Bspline_parms *parms
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
 static void 
-bspline_rbf_find_coeffs_reg (Bspline_parms *parms)
+bspline_rbf_find_coeffs_reg (
+    float *coeff,                  /* Output */
+    Landmark_warp *lw              /* Input */
+)
 {
-    Bspline_landmarks *blm = parms->landmarks;
-    float *vf;
     float rbfv1, rbfv2;
-    int i, j, k, d, fv;
-    float rbf_young_modulus = parms->rbf_young_modulus;
+    int i, j, k, d;
     float rbf_prefactor, reg_term, r2, tmp;
+    int num_landmarks = lw->m_fixed_landmarks->num_points;
 
     typedef vnl_matrix <double> Vnl_matrix;
     typedef vnl_svd <double> SVDSolverType;
     Vnl_matrix A, b;
 
-    Rbf_parms *rbf_par;
-
-    rbf_par = (Rbf_parms *)malloc( sizeof(Rbf_parms));
-    rbf_par->radius = parms->rbf_radius;
-    rbf_par->bparms = parms;
-#if defined (commentout)
-    rbf_par->vector_field = vector_field;
-#endif
-
     printf("Finding RBF coeffs, radius %.2f, Young modulus %e\n", 
-	parms->rbf_radius, parms->rbf_young_modulus);
+	lw->rbf_radius, lw->young_modulus);
 
-#if defined (commentout)
-    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
-	print_and_exit("Sorry, this type of vector field is not supported\n");
-
-    //fill in vector field at fixed landmark location
-    vf = (float*) vector_field->img;
-
-    for(i=0;i<blm->num_landmarks;i++) {
-	fv = blm->landvox_fix[3*i+2] * vector_field->dim[0] * vector_field->dim[1] 
-	    +blm->landvox_fix[3*i+1] * vector_field->dim[0] 
-	    +blm->landvox_fix[3*i+0] ;
-
-	for(d=0;d<3;d++) blm->landmark_dxyz[3*i+d] = vf[3*fv+d];
-    }
-#endif
-
-    A.set_size (3 * blm->num_landmarks, 3 * blm->num_landmarks);
+    A.set_size (3 * num_landmarks, 3 * num_landmarks);
     A.fill(0.);
 
-    b.set_size (3 * blm->num_landmarks, 1);
+    b.set_size (3 * num_landmarks, 1);
     b.fill (0.0);
 
     // right-hand side
-    for(i=0;i<blm->num_landmarks;i++) {
-	for(j=0;j<blm->num_landmarks;j++) {
-	
-#if defined (commentout)
-	    for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*i+d];
-#endif
-
+    for (i=0; i<num_landmarks; i++) {
+	for (j=0; j<num_landmarks; j++) {
 	    float rbf_center[3];
 	    for (d=0; d<3; d++) {
-		rbf_center[d] = blm->fixed_landmarks->points[3*i+d];
+		rbf_center[d] = lw->m_fixed_landmarks->points[3*i+d];
 	    }
 
-#if defined (commentout)
-	    rbfv1 = rbf_value( rbfcenter, 
-		blm->landvox_fix[3*j+0],
-		blm->landvox_fix[3*j+1],
-		blm->landvox_fix[3*j+2], 
-		rbf_par->radius,
-		rbf_par->vector_field->pix_spacing );
-#endif
 	    rbfv1 = rbf_value (rbf_center, 
-		&blm->fixed_landmarks->points[3*j], 
-		rbf_par->radius);
+		&lw->m_fixed_landmarks->points[3*j], 
+		lw->rbf_radius);
 		
-	    for(d=0;d<3;d++) {
-		b (3*i +d, 0) -= rbfv1* (blm->fixed_landmarks->points[3*j+d] 
-#if defined (commentout)
-		    + blm->landmark_dxyz[3*j+d] 
-#endif
-		    - blm->moving_landmarks->points[3*j+d]);
+	    for (d=0;d<3;d++) {
+		b (3*i +d, 0) -= rbfv1 
+		    * (lw->m_fixed_landmarks->points[3*j+d] 
+			- lw->m_moving_landmarks->points[3*j+d]);
 	    }
 	}
     }
 
     // matrix
-    for (i=0;i<blm->num_landmarks;i++) {
-	for (j=0;j<blm->num_landmarks;j++) {
+    for (i = 0; i < num_landmarks; i++) {
+	for (j = 0; j < num_landmarks; j++) {
 	    tmp = 0;
-	    for (k=0;k<blm->num_landmarks;k++) {
-
-#if defined (commentout)
-		for(d=0;d<3;d++) rbfcenter[d] = blm->landvox_fix[3*k+d];
-
-		rbfv1 = rbf_value( rbfcenter, 
-		    blm->landvox_fix[3*i+0],
-		    blm->landvox_fix[3*i+1],
-		    blm->landvox_fix[3*i+2], 
-		    rbf_par->radius,
-		    rbf_par->vector_field->pix_spacing );
-
-		rbfv2 = rbf_value( rbfcenter, 
-		    blm->landvox_fix[3*j+0],
-		    blm->landvox_fix[3*j+1],
-		    blm->landvox_fix[3*j+2], 
-		    rbf_par->radius,
-		    rbf_par->vector_field->pix_spacing );
-#endif
+	    for (k = 0; k < num_landmarks; k++) {
 
 		float rbf_center[3];
 		for (d=0; d<3; d++) {
-		    rbf_center[d] = blm->fixed_landmarks->points[3*k+d];
+		    rbf_center[d] = lw->m_fixed_landmarks->points[3*k+d];
 		}
 
 		rbfv1 = rbf_value (rbf_center, 
-		    &blm->fixed_landmarks->points[3*i], 
-		    rbf_par->radius);
+		    &lw->m_fixed_landmarks->points[3*i], 
+		    lw->rbf_radius);
 		rbfv2 = rbf_value (rbf_center, 
-		    &blm->fixed_landmarks->points[3*j], 
-		    rbf_par->radius);
+		    &lw->m_fixed_landmarks->points[3*j], 
+		    lw->rbf_radius);
 
 		tmp += rbfv1*rbfv2;
 	    }
@@ -331,15 +254,11 @@ bspline_rbf_find_coeffs_reg (Bspline_parms *parms)
 
 	}
     }
-
     //add regularization terms to the matrix
-    rbf_prefactor = sqrt(M_PI/2.)*sqrt(M_PI/2.)*sqrt(M_PI/2.)/rbf_par->radius;
-    for(d=0;d<3;d++)
-    {
-	for(i=0;i<blm->num_landmarks;i++) 
-	{
-	    for(j=0;j<blm->num_landmarks;j++)
-	    {
+    rbf_prefactor = sqrt(M_PI/2.)*sqrt(M_PI/2.)*sqrt(M_PI/2.)/lw->rbf_radius;
+    for (d=0;d<3;d++) {
+	for (i=0;i<num_landmarks;i++) {
+	    for (j=0;j<num_landmarks;j++) {
 
 		tmp = A(3*i+d, 3*j+d);
 		reg_term = 0.;			
@@ -349,21 +268,21 @@ bspline_rbf_find_coeffs_reg (Bspline_parms *parms)
 		}
 		else
 		{
-		    float dx = blm->fixed_landmarks->points[3*i+0]
-			- blm->fixed_landmarks->points[3*j+0];
-		    float dy = blm->fixed_landmarks->points[3*i+1]
-			- blm->fixed_landmarks->points[3*j+1];
-		    float dz = blm->fixed_landmarks->points[3*i+2]
-			- blm->fixed_landmarks->points[3*j+2];
+		    float dx = lw->m_fixed_landmarks->points[3*i+0]
+			- lw->m_fixed_landmarks->points[3*j+0];
+		    float dy = lw->m_fixed_landmarks->points[3*i+1]
+			- lw->m_fixed_landmarks->points[3*j+1];
+		    float dz = lw->m_fixed_landmarks->points[3*i+2]
+			- lw->m_fixed_landmarks->points[3*j+2];
 
-		    // distance between landmarks i,j in mm
+		    // r2 = sq distance between landmarks i,j in mm
 		    r2 = dx * dx + dy * dy + dz * dz;
-		    r2 = r2 / (rbf_par->radius * rbf_par->radius);
+		    r2 = r2 / (lw->rbf_radius * lw->rbf_radius);
 		    reg_term = rbf_prefactor * exp(-r2/2.) 
 			* (-10 + (r2-5.)*(r2-5.));
 		}
-		//	printf("i j d = %d %d %d  regterm = %f\n", i,j,d, reg_term);
-		A(3*i+d,3*j+d) = tmp + reg_term * rbf_young_modulus;
+		//printf("i j d = %d %d %d  regterm = %f\n", i,j,d, reg_term);
+		A (3*i+d,3*j+d) = tmp + reg_term * lw->young_modulus;
 	    }
 	}
     }
@@ -376,26 +295,25 @@ bspline_rbf_find_coeffs_reg (Bspline_parms *parms)
 
     //    x.print (std::cout);
 
-    for (i=0;i<3*blm->num_landmarks;i++) {
-	blm->rbf_coeff[i] = x(i,0);
+    for (i=0; i<3*num_landmarks; i++) {
+	coeff[i] = x(i,0);
     }
 
 #if defined (commentout)
     //checking the matrix solution
     float dx, totdx = 0;
-    for(i=0;i<3*blm->num_landmarks;i++)
+    for(i=0;i<3*num_landmarks;i++)
     {
 	dx = (blm->fixed_landmarks->points[i] 
 	    + blm->landmark_dxyz[i] 
 	    - blm->moving_landmarks->points[i]);
-	for(j=0;j<3*blm->num_landmarks;j++)
+	for(j=0;j<3*num_landmarks;j++)
 	    dx += A(i,j)*blm->rbf_coeff[j];
 	totdx += dx*dx;
     }
-    totdx = sqrt(totdx)/(3*blm->num_landmarks);
+    totdx = sqrt(totdx)/(3*num_landmarks);
     printf("SVD residual error %f\n", totdx);
 #endif
-
 }
 
 #if defined (commentout)
@@ -488,30 +406,33 @@ bspline_rbf_find_coeffs_noreg (
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
-void 
-bspline_rbf_find_coeffs (Volume *vector_field, Bspline_parms *parms)
+static void 
+bspline_rbf_find_coeffs (
+    float *coeff,                   /* Output */
+    Landmark_warp *lw               /* Input */
+)
 {
     float s;
 
-    bspline_rbf_find_coeffs_reg (parms);
+    bspline_rbf_find_coeffs_reg (coeff, lw);
     //bspline_rbf_find_coeffs_noreg(vector_field, parms);
 
-#if defined (commentout)
     int i;
-    for(i=0;i<parms->landmarks->num_landmarks;i++)
-	printf("coeff %d   %.4f %.4f %.4f\n",  i,
-	    parms->landmarks->rbf_coeff[3*i+0],
-	    parms->landmarks->rbf_coeff[3*i+1],
-	    parms->landmarks->rbf_coeff[3*i+2]);
-#endif
+    for (i=0; i < lw->m_fixed_landmarks->num_points; i++) {
+	printf("coeff %4d  %.4f %.4f %.4f\n",  i,
+	    coeff[3*i+0],
+	    coeff[3*i+1],
+	    coeff[3*i+2]);
+    }
+
+#if defined (commentout)
 
     //bspline_rbf_test_solution( vector_field, parms);
     s = bspline_rbf_analytic_integral( parms, vector_field->pix_spacing );
     printf("Analytic INTSECDER %f\n",s);
-
+#endif
 }
 
-#if defined (commentout)
 /*
 Adds RBF contributions to the vector field
 landmark_dxyz is not updated by this function
@@ -519,42 +440,43 @@ Version without truncation: scan over the entire vf
 and add up all RBFs in each voxel
 */
 void
-bspline_rbf_update_vector_field (
-    Volume *vector_field,
-    Bspline_parms *parms 
+rbf_gauss_update_vf (
+    Volume *vf,                  /* Modified */
+    Landmark_warp *lw,           /* Input */
+    float *coeff                 /* Input */
 )
 {
-    Bspline_landmarks *blm = parms->landmarks;
     int lidx, d, fv;
     int fi, fj, fk;
-    int *rbf_vox_origin;
-    float *vf;
+    float fxyz[3];
+    float *vf_img;
     float rbf;
+    int num_landmarks = lw->m_fixed_landmarks->num_points;
 
     printf("RBF, updating the vector field\n");
 
-    if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED )
+    if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");
 
-    vf = (float*) vector_field->img;
-    rbf_vox_origin = blm->landvox_fix;
+    vf_img = (float*) vf->img;
 
-    for ( fk = 0; fk < vector_field->dim[2];  fk++) {
-	for ( fj = 0; fj < vector_field->dim[1];  fj++) {
-	    for ( fi = 0; fi < vector_field->dim[0];  fi++) {
-		
-		for (lidx=0; lidx < blm->num_landmarks; lidx++) {
-
-		    fv = fk * vector_field->dim[0] * vector_field->dim[1] 
-			+ fj * vector_field->dim[0] + fi;
+    for (fk = 0; fk < vf->dim[2];  fk++) {
+	fxyz[2] = vf->offset[2] + fk * vf->pix_spacing[2];
+	for (fj = 0; fj < vf->dim[1];  fj++) {
+	    fxyz[1] = vf->offset[1] + fj * vf->pix_spacing[1];
+	    for (fi = 0; fi < vf->dim[0];  fi++) {
+		fxyz[0] = vf->offset[0] + fi * vf->pix_spacing[0];
+		for (lidx=0; lidx < num_landmarks; lidx++) {
+		    fv = fk * vf->dim[0] * vf->dim[1] 
+			+ fj * vf->dim[0] + fi;
 			
-		    rbf = rbf_value (rbf_vox_origin+3*lidx,  
-			fi, fj, fk, 
-			parms->rbf_radius, 
-			vector_field->pix_spacing);
+		    rbf = rbf_value (
+			&lw->m_fixed_landmarks->points[3*lidx], 
+			fxyz, 
+			lw->rbf_radius);
 
-		    for(d=0;d<3;d++) {
-			vf[3*fv+d] += blm->rbf_coeff[3*lidx+d]* rbf;
+		    for (d=0; d<3; d++) {
+			vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
 #if defined (commentout)
 			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
 			    lidx, 
@@ -568,36 +490,46 @@ bspline_rbf_update_vector_field (
 	}
     }
 }
-#endif
 
 void
 rbf_gauss_warp (Landmark_warp *lw)
 {
-    /* If using radial basis functions, find coeffs and update vector field */
+    float *coeff;
+    float origin[3], spacing[3];
+    int dim[3];
+    Volume *moving, *vf_out, *warped_out;
+
     printf ("Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
-    /* Do actual RBF adjustment */
-#if defined (commentout)
-    bspline_rbf_find_coeffs (vector_field, parms);
-    bspline_rbf_update_vector_field( vector_field, parms );
-    bspline_landmarks_warp (vector_field, parms, bxf, 
-	fixed, moving);
-    if (options.warped_landmarks) {
-	bspline_landmarks_write_file (
-	    options.warped_landmarks, "warp_and_rbf", 
-	    parms->landmarks->warped_landmarks, 
-	    parms->landmarks->num_landmarks);
-    }
-#endif
-    /* Creating and writing vector field only from RBF (for test only) */
-    /*
-      zero_vector_field = volume_create (fixed->dim, fixed->offset, 
-      fixed->pix_spacing,
-      PT_VF_FLOAT_INTERLEAVED, 
-      fixed->direction_cosines, 0);
-      bspline_rbf_update_vector_field( zero_vector_field, parms );
-      printf ("Writing RBF-only vector field.\n");
-      write_mha ("nsh-vf-rbf-only.mha", zero_vector_field);
-      volume_destroy (zero_vector_field);
-    */
+    /* Solve for RBF weights */
+    coeff = (float*) malloc (
+	3 * lw->m_fixed_landmarks->num_points * sizeof(float));
+    bspline_rbf_find_coeffs (coeff, lw);
+
+    /* Create output vector field */
+    printf ("Creating output vf\n");
+    lw->m_pih.get_origin (origin);
+    lw->m_pih.get_spacing (spacing);
+    lw->m_pih.get_dim (dim);
+    vf_out = volume_create (dim, origin, spacing, 
+	PT_VF_FLOAT_INTERLEAVED, 0, 0);
+
+    printf ("Rendering vector field\n");
+    rbf_gauss_update_vf (vf_out, lw, coeff);
+
+    /* Create output (warped) image */
+    printf ("Converting volume to float\n");
+    moving = lw->m_input_img->gpuit_float ();
+
+    printf ("Creating output vol\n");
+    warped_out = volume_create (dim, origin, spacing, 
+	PT_FLOAT, 0, 0);
+
+    printf ("Warping image\n");
+    vf_warp (warped_out, moving, vf_out);
+
+    printf ("Freeing coeff\n");
+    free (coeff);
+
+    printf ("Done with rbf_gauss_warp\n");
 }

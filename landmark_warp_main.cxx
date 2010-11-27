@@ -133,6 +133,9 @@ load_input_files (args_info_landmark_warp *args_info)
 	lw->m_pih.set_dim (d);
     }
 
+    lw->rbf_radius = args_info->radius_arg;
+    lw->young_modulus = args_info->stiffness_arg;
+
     return lw;
 }
 
@@ -156,12 +159,13 @@ do_landmark_warp (args_info_landmark_warp *args_info)
     lw = load_input_files (args_info);
 
     switch (args_info->algorithm_arg) {
-    case algorithm_arg_itk:
+    case algorithm_arg_tps:
 	do_landmark_warp_itk_tps (lw);
 	break;
-    case algorithm_arg_nsh:
+    case algorithm_arg_gauss:
+	do_landmark_warp_nsh (lw);
 	break;
-    case algorithm_arg_gcs:
+    case algorithm_arg_cone:
 	do_landmark_warp_gcs (lw);
 	break;
     default:

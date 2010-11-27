@@ -34,7 +34,7 @@ extern "C" {
 #define CMDLINE_PARSER_LANDMARK_WARP_VERSION "version 1.4-beta"
 #endif
 
-enum enum_algorithm { algorithm_arg_itk = 0 , algorithm_arg_gcs, algorithm_arg_nsh };
+enum enum_algorithm { algorithm_arg_tps = 0 , algorithm_arg_gauss, algorithm_arg_cone };
 
 /** @brief Where the command line options are stored */
 struct args_info_landmark_warp
@@ -72,13 +72,13 @@ struct args_info_landmark_warp
   char * fixed_arg;	/**< @brief Fixed image (match output size to this image).  */
   char * fixed_orig;	/**< @brief Fixed image (match output size to this image) original value given at command line.  */
   const char *fixed_help; /**< @brief Fixed image (match output size to this image) help description.  */
-  enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='gcs').  */
+  enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='cone').  */
   char * algorithm_orig;	/**< @brief RBF warping algorithm  original value given at command line.  */
   const char *algorithm_help; /**< @brief RBF warping algorithm  help description.  */
-  float radius_arg;	/**< @brief Radius of radial basis function (default='0.0').  */
+  float radius_arg;	/**< @brief Radius of radial basis function (default='50.0').  */
   char * radius_orig;	/**< @brief Radius of radial basis function original value given at command line.  */
   const char *radius_help; /**< @brief Radius of radial basis function help description.  */
-  float stiffness_arg;	/**< @brief Young modulus (default='0.0').  */
+  float stiffness_arg;	/**< @brief Young modulus (default='1.0').  */
   char * stiffness_orig;	/**< @brief Young modulus original value given at command line.  */
   const char *stiffness_help; /**< @brief Young modulus help description.  */
   float default_value_arg;	/**< @brief Value to set for pixels with unknown value (default='0.0').  */

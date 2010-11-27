@@ -659,13 +659,14 @@ ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## landmark_warp a: itk tps, slicer fcsv
-## landmark_warp b: gcs rbf, slicer fcsv
+## landmark_warp b: gcs cone rbf, slicer fcsv
+## landmark_warp c: nsh gauss rbf, slicer fcsv
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "landmark-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;itk;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-vf.mha"
+  "-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-vf.mha"
   )
 PLM_ADD_TEST (
   "landmark-warp-a-stats-1"
@@ -702,7 +703,7 @@ PLM_ADD_TEST (
   "landmark-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;gcs;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha"
+  "-a;cone;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha"
   )
 PLM_ADD_TEST (
   "landmark-warp-b-stats-1"
@@ -729,6 +730,43 @@ ADD_TEST (
   "landmark-warp-b-check-2"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-2.stdout.txt"
+  "-DREGEX=Mean: *([-0-9.]*)"
+  "-DLOWER_THRESH=-1.55"
+  "-DUPPER_THRESH=-1.4"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "landmark-warp-c" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/landmark_warp
+  "-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
+  )
+PLM_ADD_TEST (
+  "landmark-warp-c-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;landmark-warp-c-img.mha"
+  )
+ADD_TEST (
+  "landmark-warp-c-check-1"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-1.stdout.txt"
+  "-DREGEX=AVE *([-0-9.]*)"
+  "-DLOWER_THRESH=-992.0"
+  "-DUPPER_THRESH=-991.5"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+PLM_ADD_TEST (
+  "landmark-warp-c-stats-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;landmark-warp-c-vf.mha"
+  )
+ADD_TEST (
+  "landmark-warp-c-check-2"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-2.stdout.txt"
   "-DREGEX=Mean: *([-0-9.]*)"
   "-DLOWER_THRESH=-1.55"
   "-DUPPER_THRESH=-1.4"
