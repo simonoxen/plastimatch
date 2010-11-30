@@ -300,6 +300,10 @@ itk_dicom_save (
 	encapsulate (dict, "0018|5100", "HFS");
     else if (patient_pos == PATIENT_POSITION_HFP)
 	encapsulate (dict, "0018|5100", "HFP");
+    else if (patient_pos == PATIENT_POSITION_FFS)
+	encapsulate (dict, "0018|5100", "FFS");
+    else if (patient_pos == PATIENT_POSITION_FFP)
+	encapsulate (dict, "0018|5100", "FFP");
 
     /* StudyId */
     encapsulate (dict, "0020|0010", "10001");

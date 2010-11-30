@@ -70,7 +70,7 @@ public:
     plastimatch1_EXPORT
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
-    void load_dose_xio (const char *dose_xio);
+    void load_dose_xio (const char *dose_xio, Plm_image_patient_position patient_pos);
     void load_dose_astroid (const char *dose_astroid);
     void load_dose_mc (const char *dose_mc);
     void load_rdd (const char *rdd);

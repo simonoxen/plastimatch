@@ -124,13 +124,12 @@ Rtds::load_xio (
 	this->m_ss_image->m_cxt->set_geometry_from_plm_image (this->m_img);
     }
 
-    /* Set patient position for XiO CT */
-    if (this->m_img) {
-	if (patient_pos == PATIENT_POSITION_UNKNOWN && dicom_dir[0]) {
-	    rtds_patient_pos_from_dicom_dir (this, dicom_dir);
-	} else {
-	    this->m_img->m_patient_pos = patient_pos;
-	}
+    /* Set patient position */
+    if (patient_pos == PATIENT_POSITION_UNKNOWN && dicom_dir[0]) {
+	rtds_patient_pos_from_dicom_dir (this, dicom_dir);
+    } else {
+	if (this->m_img) this->m_img->m_patient_pos = patient_pos;
+	if (this->m_dose) this->m_dose->m_patient_pos = patient_pos;
     }
 
     /* If a directory with original DICOM CT is provided,
@@ -143,13 +142,15 @@ Rtds::load_xio (
        transformed to DICOM LPS based on the --patient-pos command
        line parameter and the origin will remain the same. */
 
-    if (this->m_img && dicom_dir[0]) {
-	/* Determine transformation based original DICOM */
-	xio_ct_get_transform_from_dicom_dir (
+    if (this->m_img) {
+	if (dicom_dir[0]) {
+	    /* Determine transformation based original DICOM */
+	    xio_ct_get_transform_from_dicom_dir (
 	    this->m_img, this->m_xio_transform, dicom_dir);
-    } else {
-	/* Determine transformation based on patient position */
-	xio_ct_get_transform (this->m_img, this->m_xio_transform);
+	} else {
+    	    /* Determine transformation based on patient position */
+	    xio_ct_get_transform (this->m_img, this->m_xio_transform);
+	}
     }
 
     if (this->m_img) {
@@ -190,7 +191,10 @@ Rtds::load_rdd (const char *rdd)
 }
 
 void
-Rtds::load_dose_xio (const char *dose_xio)
+Rtds::load_dose_xio (
+    const char *dose_xio,
+    Plm_image_patient_position patient_pos
+)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -199,6 +203,14 @@ Rtds::load_dose_xio (const char *dose_xio)
 	strncpy(this->m_xio_dose_input, dose_xio, _MAX_PATH);
 	this->m_dose = new Plm_image ();
 	xio_dose_load (this->m_dose, dose_xio);
+	this->m_dose->m_patient_pos = patient_pos;
+
+	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
+	    /* No transform determined previously, meaning we don't have XiO CT.
+	       Use patient position with XiO origin from dose file. */
+	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
+	}
+
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }

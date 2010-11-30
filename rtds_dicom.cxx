@@ -51,6 +51,7 @@ rtds_patient_pos_from_dicom_dir (Rtds *rtds, const char *dicom_dir)
 {
     Gdcm_series gs;
     std::string tmp;
+    Plm_image_patient_position patient_pos;
 
     if (!dicom_dir) {
 	return;
@@ -66,8 +67,11 @@ rtds_patient_pos_from_dicom_dir (Rtds *rtds, const char *dicom_dir)
     /* Get patient position */
     tmp = file->GetEntryValue (0x0018, 0x5100);
     if (tmp != gdcm::GDCM_UNFOUND) {
-	rtds->m_img->m_patient_pos = plm_image_patient_position_parse (tmp.c_str());
+	patient_pos = plm_image_patient_position_parse (tmp.c_str());
     } else {
-	rtds->m_img->m_patient_pos =  PATIENT_POSITION_UNKNOWN;
+	patient_pos = PATIENT_POSITION_UNKNOWN;
     }
+
+    if (rtds->m_img) rtds->m_img->m_patient_pos = patient_pos;
+    if (rtds->m_dose) rtds->m_dose->m_patient_pos = patient_pos;
 }
