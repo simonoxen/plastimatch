@@ -2030,6 +2030,88 @@ bspline_li_value (float fx1, float fx2, float fy1, float fy2,
     return m_val;
 }
 
+/* JAS 2010.11.30
+ * This is an intentionally bad idea and will be removed as soon the paper I'm
+ * writing sees some ink.
+ *
+ * Uses CRITICAL SECTIONS instead of locks to make histogram writes thread
+ * safe when employing multi-core */
+#if (OPENMP_FOUND)
+static inline void
+bspline_mi_hist_add_pvi_8_omp_crits (
+    BSPLINE_MI_Hist* mi_hist, 
+    Volume *fixed, 
+    Volume *moving, 
+    int fv, 
+    int mvf, 
+    float li_1[3],           /* Fraction of interpolant in lower index */
+    float li_2[3])           /* Fraction of interpolant in upper index */
+{
+    float w[8];
+    int n[8];
+    int idx_fbin, idx_mbin, idx_jbin, idx_pv;
+    int offset_fbin;
+    float* f_img = (float*) fixed->img;
+    float* m_img = (float*) moving->img;
+    double *f_hist = mi_hist->f_hist;
+    double *m_hist = mi_hist->m_hist;
+    double *j_hist = mi_hist->j_hist;
+
+
+    /* Compute partial volumes from trilinear interpolation weights */
+    w[0] = li_1[0] * li_1[1] * li_1[2];	// Partial Volume w0
+    w[1] = li_2[0] * li_1[1] * li_1[2];	// Partial Volume w1
+    w[2] = li_1[0] * li_2[1] * li_1[2];	// Partial Volume w2
+    w[3] = li_2[0] * li_2[1] * li_1[2];	// Partial Volume w3
+    w[4] = li_1[0] * li_1[1] * li_2[2];	// Partial Volume w4
+    w[5] = li_2[0] * li_1[1] * li_2[2];	// Partial Volume w5
+    w[6] = li_1[0] * li_2[1] * li_2[2];	// Partial Volume w6
+    w[7] = li_2[0] * li_2[1] * li_2[2];	// Partial Volume w7
+
+    /* Note that Sum(wN) for N within [0,7] should = 1 */
+
+    // Calculate Point Indices for 8 neighborhood
+    n[0] = mvf;
+    n[1] = n[0] + 1;
+    n[2] = n[0] + moving->dim[0];
+    n[3] = n[2] + 1;
+    n[4] = n[0] + moving->dim[0]*moving->dim[1];
+    n[5] = n[4] + 1;
+    n[6] = n[4] + moving->dim[0];
+    n[7] = n[6] + 1;
+
+    // Calculate fixed histogram bin and increment it
+    idx_fbin = floor ((f_img[fv] - mi_hist->fixed.offset) / mi_hist->fixed.delta);
+
+    #pragma omp critical (fixed_histogram)
+    {
+        f_hist[idx_fbin]++;
+    }
+
+    offset_fbin = idx_fbin * mi_hist->moving.bins;
+
+    // Add PV weights to moving & joint histograms   
+    for (idx_pv=0; idx_pv<8; idx_pv++) {
+
+        idx_mbin = floor ((m_img[n[idx_pv]] - mi_hist->moving.offset) / mi_hist->moving.delta);
+        idx_jbin = offset_fbin + idx_mbin;
+
+        if (idx_mbin != mi_hist->moving.big_bin) {
+            #pragma omp critical (moving_histogram)
+            {
+                m_hist[idx_mbin] += w[idx_pv];
+            }
+        }
+
+        if (idx_jbin != mi_hist->joint.big_bin) {
+            #pragma omp critical (joint_histogram)
+            {
+                j_hist[idx_jbin] += w[idx_pv];
+            }
+        }
+    }
+}
+#endif
 
 /* Used locks to make histogram writes
  * thread safe when employing multi-core */
@@ -2459,6 +2541,325 @@ bspline_mi_pvi_6_dc_dv (
 /* -----------------------------------------------------------------------
    Scoring functions
    ----------------------------------------------------------------------- */
+
+/* JAS 2010.11.30
+ * This is an intentionally bad idea and will be removed as soon the paper I'm
+ * writing sees some ink.
+ * 
+ * B-Spline Registration using Mutual Information
+ * Implementation F (not good... only for comparison to E)
+ *   -- Histograms are OpenMP accelerated
+ *      (using CRITICAL SECTIONS... just to show better performance with locks)
+ *   -- Uses OpenMP for Cost & dc_dv computation
+ *   -- Uses methods introduced in bspline_score_g_mse
+ *        to compute dc_dp more rapidly.
+ */
+#if (OPENMP_FOUND)
+static void
+bspline_score_f_mi (Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform *bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
+{
+    BSPLINE_Score* ssd = &bst->ssd;
+    BSPLINE_MI_Hist* mi_hist = &parms->mi_hist;
+    int pidx;
+    int num_vox;
+    float num_vox_f;
+    Timer timer;
+
+    float mse_score = 0.0f;
+    double* f_hist = mi_hist->f_hist;
+    double* m_hist = mi_hist->m_hist;
+    double* j_hist = mi_hist->j_hist;
+    static int it = 0;
+    double mhis = 0.0f;      /* Moving histogram incomplete sum */
+    double jhis = 0.0f;      /* Joint  histogram incomplete sum */
+    char debug_fn[1024];
+    FILE* fp;
+    int i, j, zz;
+
+    int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+
+    size_t cond_size = 64*bxf->num_knots*sizeof(float);
+    float* cond_x = (float*)malloc(cond_size);
+    float* cond_y = (float*)malloc(cond_size);
+    float* cond_z = (float*)malloc(cond_size);
+
+
+    if (parms->debug) {
+        sprintf (debug_fn, "dump_mi_%02d.txt", it++);
+        fp = fopen (debug_fn, "w");
+    }
+
+    plm_timer_start (&timer);
+
+    memset (ssd->grad, 0, bxf->num_coeff * sizeof(float));
+    memset (f_hist, 0, mi_hist->fixed.bins * sizeof(double));
+    memset (m_hist, 0, mi_hist->moving.bins * sizeof(double));
+    memset (j_hist, 0, mi_hist->fixed.bins * mi_hist->moving.bins * sizeof(double));
+    memset(cond_x, 0, cond_size);
+    memset(cond_y, 0, cond_size);
+    memset(cond_z, 0, cond_size);
+    num_vox = 0;
+
+    /* PASS 1 - Accumulate histogram */
+#pragma omp parallel for
+    for (pidx=0; pidx < num_tiles; pidx++) {
+        int rc;
+        int fijk[3], fv;
+        float mijk[3];
+        float fxyz[3];
+        float mxyz[3];
+        int mijk_f[3], mvf;      /* Floor */
+        int mijk_r[3];           /* Round */
+        int p[3];
+        int q[3];
+        float dxyz[3];
+        int qidx;
+        float li_1[3];           /* Fraction of interpolant in lower index */
+        float li_2[3];           /* Fraction of interpolant in upper index */
+
+        /* Get tile indices from linear index */
+        COORDS_FROM_INDEX (p, pidx, bxf->rdims);
+
+        /* Serial through the voxels in a tile */
+        for (q[2]=0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+            for (q[1]=0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+                for (q[0]=0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+                    
+                    /* Construct coordinates into fixed image volume */
+                    fijk[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0]*p[0] + q[0];
+                    fijk[1] = bxf->roi_offset[1] + bxf->vox_per_rgn[1]*p[1] + q[1];
+                    fijk[2] = bxf->roi_offset[2] + bxf->vox_per_rgn[2]*p[2] + q[2];
+                    
+                    /* Check to make sure the indices are valid (inside volume) */
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0]) { continue; }
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
+
+                    /* Compute space coordinates of fixed image voxel */
+                    fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+                    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+                    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+
+                    /* Construct the linear index within tile space */
+                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+
+                    /* Compute deformation vector (dxyz) for voxel */
+                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+                    /* Find correspondence in moving image */
+                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+
+                    /* If voxel is not inside moving image */
+                    if (!rc) continue;
+
+                    /* Get tri-linear interpolation fractions */
+                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+                                                 li_1, li_2,
+                                                 moving);
+                    
+                    /* Constrcut the fixed image linear index within volume space */
+                    fv = INDEX_OF (fijk, fixed->dim);
+
+                    /* Find linear index the corner voxel used to identifiy the
+                     * neighborhood of the moving image voxels corresponding
+                     * to the current fixed image voxel */
+                    mvf = INDEX_OF (mijk_f, moving->dim);
+
+                    /* Add to histogram */
+
+                    bspline_mi_hist_add_pvi_8_omp_crits (mi_hist, fixed, moving, 
+                                                   fv, mvf, li_1, li_2);
+                }
+            }
+        }   // tile
+    }   // openmp
+
+    /* Compute num_vox and find fullest fixed hist bin */
+    for(i=0; i<mi_hist->fixed.bins; i++) {
+        if (f_hist[i] > f_hist[mi_hist->fixed.big_bin]) {
+            mi_hist->fixed.big_bin = i;
+        }
+        num_vox += f_hist[i];
+    }
+
+    /* Fill in the missing histogram bin */
+    for(i=0; i<mi_hist->moving.bins; i++) {
+        mhis += m_hist[i];
+    }
+    m_hist[mi_hist->moving.big_bin] = (double)num_vox - mhis;
+
+
+    /* Look for the biggest moving histogram bin */
+    for(i=0; i<mi_hist->moving.bins; i++) {
+        if (m_hist[i] > m_hist[mi_hist->moving.big_bin]) {
+            mi_hist->moving.big_bin = i;
+        }
+    }
+
+
+    /* Fill in the missing jnt hist bin */
+    for(j=0; j<mi_hist->fixed.bins; j++) {
+        for(i=0; i<mi_hist->moving.bins; i++) {
+            jhis += j_hist[j*mi_hist->moving.bins + i];
+        }
+    }
+    j_hist[mi_hist->joint.big_bin] = (double)num_vox - jhis;
+
+    
+    /* Look for the biggest joint histogram bin */
+    for(j=0; j<mi_hist->fixed.bins; j++) {
+        for(i=0; i<mi_hist->moving.bins; i++) {
+            if (j_hist[j*mi_hist->moving.bins + i] > j_hist[mi_hist->joint.big_bin]) {
+                mi_hist->joint.big_bin = j*mi_hist->moving.bins + i;
+            }
+        }
+    }
+
+    /* Draw histogram images if user wants them */
+    if (parms->xpm_hist_dump) {
+        dump_xpm_hist (mi_hist, parms->xpm_hist_dump, bst->it);
+    }
+
+    /* Display histrogram stats in debug mode */
+    if (parms->debug) {
+        double tmp;
+        for (zz=0,tmp=0; zz < mi_hist->fixed.bins; zz++) {
+            tmp += f_hist[zz];
+        }
+        printf ("f_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins; zz++) {
+            tmp += m_hist[zz];
+        }
+        printf ("m_hist total: %f\n", tmp);
+
+        for (zz=0,tmp=0; zz < mi_hist->moving.bins * mi_hist->fixed.bins; zz++) {
+            tmp += j_hist[zz];
+        }
+        printf ("j_hist total: %f\n", tmp);
+    }
+
+    /* Compute score */
+    ssd->score = mi_hist_score_omp (mi_hist, num_vox);
+    num_vox_f = (float) num_vox;
+
+    /* PASS 2 - Compute Gradient (Parallel across tiles) */
+#pragma omp parallel for
+    for (pidx=0; pidx < num_tiles; pidx++) {
+        int rc;
+        int fijk[3], fv;
+        float mijk[3];
+        float fxyz[3];
+        float mxyz[3];
+        int mijk_f[3], mvf;      /* Floor */
+        int mijk_r[3];           /* Round */
+        int p[3];
+        int q[3];
+        float dxyz[3];
+        int qidx;
+        float li_1[3];           /* Fraction of interpolant in lower index */
+        float li_2[3];           /* Fraction of interpolant in upper index */
+        float dc_dv[3];
+        float sets_x[64];
+        float sets_y[64];
+        float sets_z[64];
+
+        memset(sets_x, 0, 64*sizeof(float));
+        memset(sets_y, 0, 64*sizeof(float));
+        memset(sets_z, 0, 64*sizeof(float));
+
+        /* Get tile indices from linear index */
+        COORDS_FROM_INDEX (p, pidx, bxf->rdims);
+
+        /* Serial through the voxels in a tile */
+        for (q[2]=0; q[2] < bxf->vox_per_rgn[2]; q[2]++) {
+            for (q[1]=0; q[1] < bxf->vox_per_rgn[1]; q[1]++) {
+                for (q[0]=0; q[0] < bxf->vox_per_rgn[0]; q[0]++) {
+                    
+                    /* Construct coordinates into fixed image volume */
+                    fijk[0] = bxf->roi_offset[0] + bxf->vox_per_rgn[0]*p[0] + q[0];
+                    fijk[1] = bxf->roi_offset[1] + bxf->vox_per_rgn[1]*p[1] + q[1];
+                    fijk[2] = bxf->roi_offset[2] + bxf->vox_per_rgn[2]*p[2] + q[2];
+                    
+                    /* Check to make sure the indices are valid (inside volume) */
+                    if (fijk[0] >= bxf->roi_offset[0] + bxf->roi_dim[0]) { continue; }
+                    if (fijk[1] >= bxf->roi_offset[1] + bxf->roi_dim[1]) { continue; }
+                    if (fijk[2] >= bxf->roi_offset[2] + bxf->roi_dim[2]) { continue; }
+
+                    /* Compute space coordinates of fixed image voxel */
+                    fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+                    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+                    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+
+                    /* Construct the linear index within tile space */
+                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+
+                    /* Compute deformation vector (dxyz) for voxel */
+                    bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+
+                    /* Find correspondence in moving image */
+                    rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+
+                    /* If voxel is not inside moving image */
+                    if (!rc) continue;
+
+                    /* Get tri-linear interpolation fractions */
+                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
+                                                 li_1, li_2,
+                                                 moving);
+                    
+                    /* Constrcut the fixed image linear index within volume space */
+                    fv = INDEX_OF (fijk, fixed->dim);
+
+                    /* Find linear index the corner voxel used to identifiy the
+                     * neighborhood of the moving image voxels corresponding
+                     * to the current fixed image voxel */
+                    mvf = INDEX_OF (mijk_f, moving->dim);
+
+                    /* Compute dc_dv */
+                    bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+                        fv, mvf, mijk, num_vox_f, li_1, li_2);
+
+                    /* Update condensed tile sets */
+                    bspline_update_sets (sets_x, sets_y, sets_z,
+                                         qidx, dc_dv, bxf);
+                }
+            }
+        }   // tile
+
+        /* We now have a tile of condensed dc_dv values (64 values).
+         * Let's put each one in the proper slot within the control
+         * point bin its belogs to */
+        bspline_sort_sets (cond_x, cond_y, cond_z,
+                           sets_x, sets_y, sets_z,
+                           pidx, bxf);
+    }   // openmp
+
+    /* Now we have a ton of bins and each bin's 64 slots are full.
+     * Let's sum each bin's 64 slots.  The result with be dc_dp. */
+    bspline_make_grad (cond_x, cond_y, cond_z,
+                       bxf, ssd);
+
+    free (cond_x);
+    free (cond_y);
+    free (cond_z);
+
+    if (parms->debug) {
+        fclose (fp);
+    }
+
+    mse_score = mse_score / num_vox;
+
+    report_score ("MI", bxf, bst, num_vox, plm_timer_report (&timer));
+}
+#endif
+
+
 
 /* B-Spline Registration using Mutual Information
  * Implementation E (D is still faster)
@@ -3975,6 +4376,9 @@ bspline_score (Bspline_parms *parms,
 	    break;
 	case 'e':
 	    bspline_score_e_mi (parms, bst, bxf, fixed, moving, moving_grad);
+	    break;
+    case 'f':
+	    bspline_score_f_mi (parms, bst, bxf, fixed, moving, moving_grad);
 	    break;
 #endif
 	default:
