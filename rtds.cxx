@@ -210,13 +210,15 @@ Rtds::load_dose_xio (
 	       Use patient position with XiO origin from dose file. */
 	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
 	}
-
 	xio_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 
 void
-Rtds::load_dose_astroid (const char *dose_astroid)
+Rtds::load_dose_astroid (
+    const char *dose_astroid,
+    Plm_image_patient_position patient_pos
+)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -224,12 +226,22 @@ Rtds::load_dose_astroid (const char *dose_astroid)
     if (dose_astroid) {
 	this->m_dose = new Plm_image ();
 	astroid_dose_load (this->m_dose, dose_astroid);
+	this->m_dose->m_patient_pos = patient_pos;
+
+	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
+	    /* No transform determined previously, meaning we don't have XiO CT.
+	       Use patient position with XiO origin from dose file. */
+	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
+	}
 	astroid_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }
 
 void
-Rtds::load_dose_mc (const char *dose_mc)
+Rtds::load_dose_mc (
+    const char *dose_mc,
+    Plm_image_patient_position patient_pos
+)
 {
     if (this->m_dose) {
 	delete this->m_dose;
@@ -237,6 +249,13 @@ Rtds::load_dose_mc (const char *dose_mc)
     if (dose_mc) {
 	this->m_dose = new Plm_image ();
 	mc_dose_load (this->m_dose, dose_mc);
+	this->m_dose->m_patient_pos = patient_pos;
+
+	if (this->m_xio_transform->patient_pos == PATIENT_POSITION_UNKNOWN) {
+	    /* No transform determined previously, meaning we don't have XiO CT.
+	       Use patient position with XiO origin from dose file. */
+	    xio_ct_get_transform (this->m_dose, this->m_xio_transform);
+	}
 	mc_dose_apply_transform (this->m_dose, this->m_xio_transform);
     }
 }

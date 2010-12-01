@@ -71,8 +71,8 @@ public:
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio, Plm_image_patient_position patient_pos);
-    void load_dose_astroid (const char *dose_astroid);
-    void load_dose_mc (const char *dose_mc);
+    void load_dose_astroid (const char *dose_astroid, Plm_image_patient_position patient_pos);
+    void load_dose_mc (const char *dose_mc, Plm_image_patient_position patient_pos);
     void load_rdd (const char *rdd);
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);

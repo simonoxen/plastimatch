@@ -321,6 +321,8 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[i] = 0.0f;
     }
 
+    transform->patient_pos = pli->m_patient_pos;
+
     if ( (pli->m_patient_pos == PATIENT_POSITION_HFS) ||
 	(pli->m_patient_pos == PATIENT_POSITION_UNKNOWN) ) {
 
@@ -380,6 +382,8 @@ xio_ct_get_transform (
        Because structures and dose in XiO are defined relative to CT
        geometry, the transform can be applied to those as well. */
 
+    transform->patient_pos = pli->m_patient_pos;
+
     if ( (pli->m_patient_pos == PATIENT_POSITION_HFS) ||
 	(pli->m_patient_pos == PATIENT_POSITION_UNKNOWN) ) {
 
@@ -416,6 +420,9 @@ xio_ct_apply_transform (Plm_image *pli, Xio_ct_transform *transform)
 
     Volume *v;
     v = (Volume*) pli->m_gpuit;
+
+    /* Set patient position */
+    pli->m_patient_pos = transform->patient_pos;
 
     /* Set offsets */
     v->offset[0] = (v->offset[0] * transform->direction_cosines[0]) + transform->x_offset;

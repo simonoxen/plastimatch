@@ -106,11 +106,13 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (bstring_not_empty (parms->input_dose_ast_fn)) {
-	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn);
+	rtds->load_dose_astroid ((const char*) parms->input_dose_ast_fn,
+	    parms->patient_pos);
     }
 
     if (bstring_not_empty (parms->input_dose_mc_fn)) {
-	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn);
+	rtds->load_dose_mc ((const char*) parms->input_dose_mc_fn,
+	    parms->patient_pos);
     }
 }
 
