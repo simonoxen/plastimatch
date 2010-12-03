@@ -115,9 +115,11 @@ ENDIF (SLICER_FOUND)
 ##-----------------------------------------------------------------------------
 ##  RTK is special.  We need to do this up front, because plastimatch 
 ##  uses cmake files from RTK.
+##
+##  GCS (Dec 2, 2010) - Don't do this.  RTK/github is unstable.
 ##-----------------------------------------------------------------------------
 FIND_PACKAGE (RTK)
-SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+##SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
