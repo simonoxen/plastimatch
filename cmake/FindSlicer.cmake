@@ -32,11 +32,11 @@ IF (SLICER_CONFIG_FILE)
   GET_FILENAME_COMPONENT (SLICER_CONFIG_FILE_DIR
     "${SLICER_CONFIG_FILE}" PATH)
   SET (Slicer_DIR "${SLICER_CONFIG_FILE_DIR}"
-    CACHE STRING "Directory with SlicerConfig.cmake or Slicer3Config.cmake"
+    CACHE PATH "Directory with SlicerConfig.cmake or Slicer3Config.cmake"
     FORCE)
 ELSE (SLICER_CONFIG_FILE)
   SET (Slicer_DIR "Slicer_DIR-NOTFOUND"
-    CACHE STRING "Directory with SlicerConfig.cmake or Slicer3Config.cmake"
+    CACHE PATH "Directory with SlicerConfig.cmake or Slicer3Config.cmake"
     FORCE)
 ENDIF (SLICER_CONFIG_FILE)
 

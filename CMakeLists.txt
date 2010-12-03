@@ -30,6 +30,7 @@ SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
 SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
 SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
 SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
+SET (PLM_BUILD_RTK OFF CACHE BOOL "Build RTK")
 
 # Software options
 SET (PLM_USE_4D_SS_IMAGE OFF CACHE BOOL 
@@ -118,8 +119,9 @@ ENDIF (SLICER_FOUND)
 ##
 ##  GCS (Dec 2, 2010) - Don't do this.  RTK/github is unstable.
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (RTK)
-##SET (CMAKE_MODULE_PATH "${RTK_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+IF (PLM_BUILD_RTK)
+  FIND_PACKAGE (RTK)
+ENDIF (PLM_BUILD_RTK)
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets

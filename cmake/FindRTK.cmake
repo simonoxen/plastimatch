@@ -18,9 +18,9 @@ IF (NOT RTK_SOURCE_DIR)
     DOC "directory containing RTK source files")
 ENDIF (NOT RTK_SOURCE_DIR)
 
-IF (NOT RTK_SOURCE_DIR)
-  MESSAGE (ERROR "Sorry, I couldn't find the RTK directory")
-ENDIF (NOT RTK_SOURCE_DIR)
+#IF (NOT RTK_SOURCE_DIR)
+#  MESSAGE (ERROR "Sorry, I couldn't find the RTK directory")
+#ENDIF (NOT RTK_SOURCE_DIR)
 
 # JAS 2010.11.23
 # Make life easier for people who only
