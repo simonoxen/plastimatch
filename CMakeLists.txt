@@ -93,37 +93,6 @@ INCLUDE (InstallRequiredSystemLibraries)
 INCLUDE (language_support.cmake)
 
 ##-----------------------------------------------------------------------------
-##  Slicer is special.  We do this up front, because RTK needs ITK path.
-##-----------------------------------------------------------------------------
-FIND_PACKAGE (Slicer QUIET)
-IF (SLICER_FOUND)
-  IF (Slicer_USE_FILE)
-    INCLUDE ("${Slicer_USE_FILE}")
-  ENDIF (Slicer_USE_FILE)
-
-  # Set reasonable default install prefix and output paths
-  # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-  slicer3_set_default_install_prefix_for_external_projects ()
-  
-  #slicer3_enable_plugins_testing()
-
-  # Slicer seems to require a shared library build
-  SET (PLM_BUILD_SHARED_LIBS ON)
-ELSE (SLICER_FOUND)
-  MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF (SLICER_FOUND)
-
-##-----------------------------------------------------------------------------
-##  RTK is special.  We need to do this up front, because plastimatch 
-##  uses cmake files from RTK.
-##
-##  GCS (Dec 2, 2010) - Don't do this.  RTK/github is unstable.
-##-----------------------------------------------------------------------------
-IF (PLM_BUILD_RTK)
-  FIND_PACKAGE (RTK)
-ENDIF (PLM_BUILD_RTK)
-
-##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 MACRO (PLM_ADD_LIBRARY 
@@ -263,26 +232,28 @@ IF (PLM_USE_F2C)
   ENDIF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
 ENDIF (PLM_USE_F2C)
 
-
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
 FIND_PACKAGE (Brook)
-FIND_PACKAGE (Etags)
 FIND_PACKAGE (DCMTK)
+FIND_PACKAGE (Etags)
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (FFTW)
 FIND_PACKAGE (Gengetopt)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 IF (PLM_BUILD_MEX_TEST)
-FIND_PACKAGE (Matlab)
+  FIND_PACKAGE (Matlab)
 ENDIF (PLM_BUILD_MEX_TEST)
 FIND_PACKAGE (Octave)
 FIND_PACKAGE (OpenCL)
 FIND_PACKAGE (OpenGL)
 FIND_PACKAGE (OpenMP)
 FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+IF (PLM_BUILD_RTK)
+  FIND_PACKAGE (RTK)
+ENDIF (PLM_BUILD_RTK)
 FIND_PACKAGE (SQLite)
 FIND_PACKAGE (SSE)           # SSE Extensions for CPU
 FIND_PACKAGE (Subversion)
@@ -348,6 +319,36 @@ IF (CUDA_FOUND)
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
 ENDIF (CUDA_FOUND)
+
+##-----------------------------------------------------------------------------
+##  Slicer
+##-----------------------------------------------------------------------------
+FIND_PACKAGE (Slicer QUIET)
+IF (SLICER_FOUND)
+  IF (Slicer_USE_FILE)
+    # Include USE file.  Strangely, the use file appends the 
+    # Slicer directories to our include path.  This causes nvcc.exe 
+    # to barf on windows, so we can't do this.
+    GET_DIRECTORY_PROPERTY (OLD_INCLUDE_DIR INCLUDE_DIRECTORIES)
+    SET_DIRECTORY_PROPERTIES (PROPERTIES INCLUDE_DIRECTORIES "")
+    INCLUDE ("${Slicer_USE_FILE}")
+    GET_DIRECTORY_PROPERTY (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
+    SET_DIRECTORY_PROPERTIES (PROPERTIES INCLUDE_DIRECTORIES
+      "${OLD_INCLUDE_DIR}")
+  ENDIF (Slicer_USE_FILE)
+
+  # Set reasonable default install prefix and output paths
+  # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
+  slicer3_set_default_install_prefix_for_external_projects ()
+  
+  #slicer3_enable_plugins_testing()
+
+  # Slicer seems to require a shared library build
+  SET (PLM_BUILD_SHARED_LIBS ON)
+ELSE (SLICER_FOUND)
+  MESSAGE (STATUS "Looking for Slicer3 - not found")
+ENDIF (SLICER_FOUND)
+
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
@@ -680,6 +681,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
   bspline_regularize.c bspline_regularize.h
+  delayload.c delayload.h
   demons.c demons.h
   demons_cpu.c
   demons_misc.c demons_misc.h
@@ -709,7 +711,6 @@ SET (GPUIT_LIBRARY_SRC
   volume.c volume.h
   volume_limit.c volume_limit.h
   xpm.c xpm.h
-  delayload.c delayload.h
   )
 
 IF (BROOK_FOUND)
@@ -964,16 +965,12 @@ SET (DICOM_UID_SRC
   dicom_uid.cxx
   dicom_uid.h
   )
-SET (DICOMRT_IMPORT_SLICER_SRC
-  plastimatch-slicer-dicomrt.cxx
-  )
 SET (DISTANCE_MAP_SRC
   distance_map.cxx
   )
 SET (DRR_SRC
   drr_main.c 
   drr_opts.c drr_opts.h
-  delayload.c delayload.h
   )
 SET (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
@@ -1099,6 +1096,9 @@ SET (PLASTIMATCH_SLICER_SRC
   )
 SET (PLASTIMATCH_SLICER_TPS_SRC
   plastimatch-slicer-tps.cxx
+  )
+SET (PLASTIMATCH_SLICER_DICOMRT_SRC
+  plastimatch-slicer-dicomrt.cxx
   )
 SET (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
@@ -1262,10 +1262,14 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
 ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
 
+
 IF (SLICER_FOUND)
-  INCLUDE_DIRECTORIES (
-    ${Slicer_Libs_INCLUDE_DIRS}
-    ${Slicer_Base_INCLUDE_DIRS}
+  MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Libs_INCLUDE_DIRS}")
+  MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Base_INCLUDE_DIRS}")
+  INCLUDE_DIRECTORIES (AFTER
+    ${SLICER_INCLUDE_DIRS}
+    #${Slicer_Libs_INCLUDE_DIRS}
+    #${Slicer_Base_INCLUDE_DIRS}
     )
 ENDIF (SLICER_FOUND)
 
@@ -1358,10 +1362,6 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  IF (SLICER_FOUND)
-    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-dicomrt
-      "${DICOMRT_IMPORT_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-  ENDIF (SLICER_FOUND)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   IF (ITK_USE_REVIEW)
@@ -1383,6 +1383,9 @@ IF (ITK_FOUND)
   IF (SLICER_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
       "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-dicomrt
+      "${PLASTIMATCH_SLICER_DICOMRT_SRC}" "${PLASTIMATCH_LIBS}" 
+      "${GPUIT_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
   ENDIF (SLICER_FOUND)

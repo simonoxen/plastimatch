@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include "dicomrt-import-slicerCLP.h"
+#include "plastimatch-slicer-dicomrtCLP.h"
 
 #include "plm_config.h"
 #include "plm_file_format.h"
