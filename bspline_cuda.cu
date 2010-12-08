@@ -2159,6 +2159,17 @@ kernel_bspline_mi_hist_fix (
 
     __syncthreads();
 
+    // JAS 2010.12.08
+    // s_Fixed looks like this:
+    // |<---- Bin 0 ---->|<---- Bin 1 ---->|<---- Bin 2 ---->|
+    // +-----------------+-----------------+-----------------+   etc...
+    // | t0 t1 t2 ... tN | t0 t1 t2 ... tN | t0 t1 t2 ... tN |
+    // +-----------------+-----------------+-----------------+
+    //
+    // Now, we want to merge the bins down to 1 value per bin from
+    // threadsPerBlock values per bin.
+
+
     // merge segmented histograms
     if (threadIdx.x < bins)
     {
@@ -2179,11 +2190,36 @@ kernel_bspline_mi_hist_fix (
         f_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
     }
 
-    // Done.
-    // We now have (num_thread_blocks) partial histograms that
-    // need to be merged.  This will be done with another
-    // kernel to be ran immediately following the completion
-    // of this kernel.
+    // JAS 2010.12.08
+    // What we have done is assign a thread to each bin, but
+    // the starting element within each bin has been staggered
+    // to minimize shared memory bank conflicts.
+    //
+    // If # of bins > # of shared memory banks, conflicts will
+    // occur, but are unavoidable and will at least be minimal.
+    //
+    // |<---- Bin 0 ---->|<---- Bin 1 ---->|<---- Bin 2 ---->|
+    // +-----------------+-----------------+-----------------+   etc...
+    // | t0 t1 t2 ... tN | t0 t1 t2 ... tN | t0 t1 t2 ... tN |
+    // +-----------------+-----------------+-----------------+
+    //   ^                    ^                    ^
+    //   | t0 start           | t1 start           | t2 start
+    //
+    // Note here that theadsPerBlock must be a multiple of the
+    // # of shared memory banks for this to work.  Either 16
+    // or 32 for 1.X and 2.X compute capability devices, respectively.
+    //
+    //
+    // Output to global memory is:
+    // |<---- Sub 0 ---->|<---- Sub 1 ---->|<---- Sub 2 ---->|
+    // +-----------------+-----------------+-----------------+   etc...
+    // | b0 b1 b2 ... bN | b0 b1 b2 ... bN | b0 b1 b2 ... bN |
+    // +-----------------+-----------------+-----------------+
+    //
+    // ...many histograms of non-overlapping image subregions.
+    // Sum up the sub-histograms to get the total image histogram.
+    // There are num_thread_blocks sub-histograms to merge, which
+    // is done by a subsequent kernel.
 }
 
 
