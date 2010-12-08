@@ -45,6 +45,7 @@ SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL
   "Build slicer loadable module")
 SET (PLM_INSTALL_RPATH ON CACHE BOOL 
   "Add full RPATH to install")
+OPTION (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
 SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
   "Build plastimatch as shared library")
 SET (PLM_MONOLITHIC_LIBRARY OFF CACHE BOOL 
