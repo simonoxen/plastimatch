@@ -211,7 +211,7 @@ else
         if ~ischar(s), break, end
         
         %% Convert line of text into numeric, store into variable "p"
-        commas = findstr (s, ",");
+        commas = findstr (s, ',');
         commas = [0, commas];
         p = zeros (1, 7);
         for i=1:length(commas)-1
