@@ -22,13 +22,19 @@ ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
 IF (PLM_USE_CUDA_PLUGIN)
-    # Because MSVC places stuff in /Release or /Debug, etc
+    # Because MSVC places stuff in Release/ or Debug/, etc
+    # CMAKE_CFG_INTDIR is "Release/" or "Debug/" for Windows or "/" for Linux
+    # In the Linux case, the extra "/" doesn't hurt anything.
     SET (CUDA_PLUGIN_BIN_DIR
         "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
 
+    # CMAKE_SHARED_LIBRARY_PREFIX is "" under Windows and "lib" under Linux
+    # CMAKE_SHARE_LIBRARY_SUFFIX is ".dll" under Windows and ".so" under Linux
     SET (CUDA_PLUGIN_FILE
         "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
+    # This tells CMake how to handle a target depending on
+    # "Testing/[lib]plmcuda[.dll/.so]"
     ADD_CUSTOM_COMMAND (
         OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
         COMMAND
@@ -38,9 +44,22 @@ IF (PLM_USE_CUDA_PLUGIN)
         DEPENDS plmcuda
     )
 
-    ADD_CUSTOM_TARGET (plmcuda_tcpy ALL
+    # The Phony target
+    # This is the Makefile equivalent of
+    # Testing/plmcuda.dll : plmcuda.dll      (Under Windows)  *OR*
+    # Testing/libplmcuda.so : libplmcuda.so  (Under Linux)
+    #
+    # The "rule" for handling this is the above custom command 
+    ADD_CUSTOM_TARGET (plmcuda_tcpy
         DEPENDS "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
     )
+
+    # When using the plmcuda plugin, GPUIT depends on it for GPU acceleration.
+    # So, we add it as a dependency here so that plmcuda plugin will be copied
+    # to Testing whenever the user builds GPUIT (or any target that depends on
+    # GPUIT, which is most targets).
+    ADD_DEPENDENCIES (gpuit plmcuda_tcpy)
+
 ENDIF (PLM_USE_CUDA_PLUGIN)
 
 
