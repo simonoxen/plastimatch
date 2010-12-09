@@ -14,4 +14,5 @@ Documentation:
    3d_slicer_integration
    dicom_conformance
    technical_reference
+   publications
    other_toolkits
