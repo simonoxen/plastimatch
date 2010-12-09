@@ -10,7 +10,7 @@
 #include <windows.h>
 #endif
 
-#if !defined (PLM_USE_CUDA_PLUGIN)
+#if !defined (PLM_USE_GPU_PLUGINS)
 #include "bspline.h"
 #endif
 #include "logfile.h"
@@ -38,7 +38,7 @@
 // bspline.c  These common functions will need to be eventually moved to their
 // own object in order for linking to work nicely for shared libs...
 // (like the CUDA plugin)
-#if defined (PLM_USE_CUDA_PLUGIN)
+#if defined (PLM_USE_GPU_PLUGINS)
 void
 clamp_linear_interpolate (
     float ma,           /*  Input: (Unrounded) pixel coordinate (in vox) */

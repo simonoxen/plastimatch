@@ -21,7 +21,7 @@ ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 # JAS 2010.11.23
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
-IF (PLM_USE_CUDA_PLUGIN)
+IF (PLM_USE_GPU_PLUGINS)
     # Because MSVC places stuff in Release/ or Debug/, etc
     # CMAKE_CFG_INTDIR is "Release/" or "Debug/" for Windows or "/" for Linux
     # In the Linux case, the extra "/" doesn't hurt anything.
@@ -60,7 +60,7 @@ IF (PLM_USE_CUDA_PLUGIN)
     # GPUIT, which is most targets).
     ADD_DEPENDENCIES (gpuit plmcuda_tcpy)
 
-ENDIF (PLM_USE_CUDA_PLUGIN)
+ENDIF (PLM_USE_GPU_PLUGINS)
 
 
 IF (PLM_TEST_DICOMRT_XIO)

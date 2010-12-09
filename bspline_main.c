@@ -43,7 +43,6 @@ main (int argc, char* argv[])
     Volume *moving_warped = 0;
     int roi_offset[3];
 
-
     bspline_opts_parse_args (&options, argc, argv);
 
 #if (CUDA_FOUND)

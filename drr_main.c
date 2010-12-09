@@ -131,10 +131,8 @@ drr_render_volume (Volume* vol, Drr_options* options)
     Timer timer;
     void *dev_state = 0;
 
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
-#endif
 
     /* tgt is isocenter */
     double tgt[3] = {
@@ -203,9 +201,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     	drr_cuda_state_destroy (dev_state);
     }
 
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     UNLOAD_LIBRARY (libplmcuda);
-#endif
 
 #endif
 

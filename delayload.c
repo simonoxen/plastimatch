@@ -125,7 +125,7 @@ delayload_cuda (void)
     // to build the plastimatch CUDA plugin (plmcuda.dll) OR compile from
     // source.
     if (   !find_lib ("nvcuda.dll")     /* CUDA Driver */
-#if defined (PLM_USE_CUDA_PLUGIN)
+#if defined (PLM_USE_GPU_PLUGINS)
         || !find_lib ("plmcuda.dll")    /* PLM CUDA Plugin */
 #endif
        ) {
@@ -154,7 +154,7 @@ delayload_cuda (void)
     //
     if (    !find_lib ("libcuda.so")         /* CUDA Driver */
          || !find_lib ("libcudart.so")       /* CUDA RunTime */
-#if defined (PLM_USE_CUDA_PLUGIN)
+#if defined (PLM_USE_GPU_PLUGINS)
          || !find_lib ("libplmcuda.so")      /* PLM CUDA Plugin */
 #endif
        ) {
@@ -166,6 +166,7 @@ delayload_cuda (void)
         return 0;
     } else {
         // success
+        printf ("GPU Plugins: Success!\n");
         return 1;
     }
 #endif

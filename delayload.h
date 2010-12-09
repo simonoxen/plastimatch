@@ -25,7 +25,7 @@
 // Note: if you attempt to load a library that
 //       does not exist or cannot be found, this
 //       returns a null pointer.
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
     #define LOAD_LIBRARY(lib)                      \
         void* lib = dlopen_ex (#lib".so");          
 #else
@@ -36,7 +36,7 @@
 // Note: if lib contains a null pointer here
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
     #define LOAD_SYMBOL(sym, lib)                  \
         void (*sym)() = dlsym (lib, #sym);          
 #else
@@ -47,7 +47,7 @@
 // Note: if lib contains a null pointer here
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
     #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
         type (*sym)() = dlsym (lib, #sym);          
 #else
@@ -56,12 +56,14 @@
 #endif
 // ------------------------------------------------------------
 
-// Note: if lib does not point to a valid open
-//       resource, then this will simply return
-//       a non-zero value.  No biggie.
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
+// JAS 2010.12.09
+// Despite what the man pages say, dlclose()ing NULL
+// was resulting in segfaults!  So, now we check 1st.
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
     #define UNLOAD_LIBRARY(lib)                    \
-        dlclose (lib);                              
+        if (lib != NULL) {                         \
+            dlclose (lib);                         \
+        }                                           
 #else
     #define UNLOAD_LIBRARY(lib)                    \
         ;

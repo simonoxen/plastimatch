@@ -39,7 +39,7 @@ SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL
   "Use hardcoded filename instead of tmpfile()")
 
 # Compile and link options
-SET (PLM_USE_CUDA_PLUGIN OFF CACHE BOOL
+SET (PLM_USE_GPU_PLUGINS OFF CACHE BOOL
   "Build CUDA support as a runtime loaded shared library")
 SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL 
   "Build slicer loadable module")
@@ -534,7 +534,7 @@ ENDIF (BROOK_FOUND)
 # New CUDA plugin stuff
 # -----------------------------------------------
 IF (CUDA_FOUND)
-  IF (PLM_USE_CUDA_PLUGIN)      # << Use dynamic loading
+  IF (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
     IF (WIN32)
       # Windows
       SET (GPUIT_LIBRARY_DEPENDENCIES
@@ -551,12 +551,12 @@ IF (CUDA_FOUND)
         # in the code @ runtime.
       )
     ENDIF (WIN32)
-  ELSE (PLM_USE_CUDA_PLUGIN)    # << use static linking
+  ELSE (PLM_USE_GPU_PLUGINS)    # << use static linking
     SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       ${CUDA_LIBRARIES}
     )
-  ENDIF (PLM_USE_CUDA_PLUGIN)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (CUDA_FOUND)
 
 # Optional
@@ -732,7 +732,7 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 IF (CUDA_FOUND)
-  IF (PLM_USE_CUDA_PLUGIN)      # << Dynamic loading
+  IF (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
     SET (PLM_CUDA_BSPLINE_SRC
       bspline_cuda.cpp
       bspline_cuda.cu
@@ -779,7 +779,7 @@ IF (CUDA_FOUND)
     CUDA_ADD_LIBRARY(plmcuda SHARED
         ${PLM_CUDA_LIBRARY_SRC}
     )
-  ELSE (PLM_USE_CUDA_PLUGIN)        # << Static linking
+  ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
     SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     bspline_cuda.cpp
@@ -814,7 +814,7 @@ IF (CUDA_FOUND)
     ${DEMONS_CUDA_WRAPPERS}
     demons_cuda.cu
     )
-  ENDIF (PLM_USE_CUDA_PLUGIN)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (CUDA_FOUND)
 
 IF (FFTW_FOUND)
@@ -998,7 +998,7 @@ IF (BROOK_FOUND)
 ENDIF (BROOK_FOUND)
 
 IF (CUDA_FOUND)
-  IF (PLM_USE_CUDA_PLUGIN)  # << FDK does not use cuda_plugin
+  IF (PLM_USE_GPU_PLUGINS)  # << FDK does not use cuda_plugin
     SET (FDK_SRC            #    so compile in stuff it needs
       ${FDK_SRC}            #    that now lives in plugin
       fdk_cuda.cu 
@@ -1007,14 +1007,14 @@ IF (CUDA_FOUND)
       cuda_util.cu
       cuda_util.h
     )
-  ELSE (PLM_USE_CUDA_PLUGIN)   # << Static linking.  Everything
+  ELSE (PLM_USE_GPU_PLUGINS)   # << Static linking.  Everything
     SET (FDK_SRC               #    links against GPUIT, which
       ${FDK_SRC}               #    includes cuda_utils
       fdk_cuda.cu 
       fdk_cuda_p.h
       fdk_cuda.h
     )
-  ENDIF (PLM_USE_CUDA_PLUGIN)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (CUDA_FOUND)
 
 IF (OPENCL_FOUND)
@@ -1030,11 +1030,11 @@ IF (OPENCL_FOUND)
 ENDIF (OPENCL_FOUND)
 
 IF (CUDA_FOUND)
-  IF (PLM_USE_CUDA_PLUGIN)
+  IF (PLM_USE_GPU_PLUGINS)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu cuda_util.cu)
-  ELSE (PLM_USE_CUDA_PLUGIN)
+  ELSE (PLM_USE_GPU_PLUGINS)
     CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-  ENDIF (PLM_USE_CUDA_PLUGIN)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 
   SET (FDK_SRC
     ${FDK_SRC}
@@ -1293,11 +1293,11 @@ ADD_SUBDIRECTORY (CUDA_tex_test)
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LDFLAGS "${OPENMP_LDFLAGS}")
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  IF (PLM_USE_CUDA_PLUGIN)
+  IF (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
-  ELSE (PLM_USE_CUDA_PLUGIN)
+  ELSE (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-  ENDIF (PLM_USE_CUDA_PLUGIN)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} -ldl")
 ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
@@ -1319,9 +1319,9 @@ PLM_ADD_LIBRARY (
 # JAS 2010.11.23
 # Because the cuda plugin is loaded at runtime, CMake doesn't know
 # that it is needed by everything linked against gpuit.  So, we tell it.
-IF (PLM_USE_CUDA_PLUGIN AND CUDA_FOUND)
+IF (PLM_USE_GPU_PLUGINS AND CUDA_FOUND)
     ADD_DEPENDENCIES (gpuit plmcuda)
-ENDIF (PLM_USE_CUDA_PLUGIN AND CUDA_FOUND)
+ENDIF (PLM_USE_GPU_PLUGINS AND CUDA_FOUND)
 
 IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -1351,11 +1351,11 @@ PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
   "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_LDFLAGS}")
-IF (PLM_USE_CUDA_PLUGIN)
+IF (PLM_USE_GPU_PLUGINS)
   PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${FDK_LIBRARIES}" "${GPUIT_LDFLAGS}")
-ELSE (PLM_USE_CUDA_PLUGIN)
+ELSE (PLM_USE_GPU_PLUGINS)
   PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_LDFLAGS}")
-ENDIF (PLM_USE_CUDA_PLUGIN)
+ENDIF (PLM_USE_GPU_PLUGINS)
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")

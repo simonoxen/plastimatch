@@ -60,10 +60,8 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
     int d, i, rc;
     Bspline_parms* parms = &options->parms;
 
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     LOAD_LIBRARY(libplmcuda);
-    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
-#endif
+//    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
 
     memset (options, 0, sizeof (BSPLINE_Options));
     for (d = 0; d < 3; d++) {
@@ -337,7 +335,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
         if (!delayload_cuda()) {
             exit(0);
         }
-        CUDA_listgpu ();
+//        CUDA_listgpu ();
 #else
         printf ("\nPlastimatch was not compiled with CUDA support!\n\n");
 #endif
@@ -352,10 +350,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
     print_usage ();
     }
 
-
-#if !defined(_WIN32) && defined(PLM_USE_CUDA_PLUGIN)
     UNLOAD_LIBRARY (libplmcuda);
-#endif
 
     options->fixed_fn = argv[i];
     options->moving_fn = argv[i+1];
