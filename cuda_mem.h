@@ -4,6 +4,8 @@
 #ifndef _cuda_mem_h_
 #define _cuda_mem_h_
 
+#include "plm_config.h"
+
 typedef struct vmem_entry Vmem_Entry;
 struct vmem_entry
 {

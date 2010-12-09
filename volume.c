@@ -11,7 +11,6 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
-
 #define CONVERT_VOLUME(old_type,new_type,new_type_enum)	  \
     {                                             \
     int v;                                        \
