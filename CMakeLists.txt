@@ -46,8 +46,8 @@ SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL
 SET (PLM_INSTALL_RPATH ON CACHE BOOL 
   "Add full RPATH to install")
 OPTION (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
-SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
-  "Build plastimatch as shared library")
+#SET (PLM_BUILD_SHARED_LIBS OFF CACHE BOOL 
+#  "Build plastimatch as shared library")
 SET (PLM_MONOLITHIC_LIBRARY OFF CACHE BOOL 
   "Link gpuit and plastimatch1 together")
 SET (PLM_PREFER_F2C OFF CACHE BOOL 
@@ -349,7 +349,7 @@ IF (SLICER_FOUND)
   #slicer3_enable_plugins_testing()
 
   # Slicer seems to require a shared library build
-  SET (PLM_BUILD_SHARED_LIBS ON)
+  #SET (PLM_BUILD_SHARED_LIBS ON)
 ELSE (SLICER_FOUND)
   MESSAGE (STATUS "Looking for Slicer3 - not found")
 ENDIF (SLICER_FOUND)
