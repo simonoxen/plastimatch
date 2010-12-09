@@ -97,7 +97,7 @@ INCLUDE (language_support.cmake)
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
 MACRO (PLM_ADD_LIBRARY 
-    TARGET_NAME TARGET_SRC TARGET_LIBS)
+    TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
   IF (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (${TARGET_NAME} STATIC ${TARGET_SRC})
@@ -110,6 +110,10 @@ MACRO (PLM_ADD_LIBRARY
       ARCHIVE DESTINATION lib)
   ENDIF (BUILD_AGAINST_SLICER3)
   TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
+  IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES(${TARGET_NAME} 
+      PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
+  ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
 ENDMACRO (PLM_ADD_LIBRARY)
     
 MACRO (PLM_ADD_EXECUTABLE 
@@ -1285,13 +1289,32 @@ ADD_SUBDIRECTORY (fatm/src)
 ADD_SUBDIRECTORY (CUDA_tex_test)
 
 ##-----------------------------------------------------------------------------
+##  Determine linker flags
+##-----------------------------------------------------------------------------
+SET (GPUIT_LDFLAGS "${OPENMP_LDFLAGS}")
+IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  IF (PLM_USE_CUDA_PLUGIN)
+    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
+  ELSE (PLM_USE_CUDA_PLUGIN)
+    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
+  ENDIF (PLM_USE_CUDA_PLUGIN)
+ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} -ldl")
+ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
+MESSAGE (STATUS "GPUIT_LDFLAGS: ${GPUIT_LDFLAGS}")
+
+##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
 IF (F2C_LIBRARY AND UNIX)
-  PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "")
+  PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
 ENDIF (F2C_LIBRARY AND UNIX)
 
-PLM_ADD_LIBRARY (gpuit "${GPUIT_LIBRARY_SRC}" "${GPUIT_LIBRARY_DEPENDENCIES}")
+PLM_ADD_LIBRARY (
+  gpuit 
+  "${GPUIT_LIBRARY_SRC}" 
+  "${GPUIT_LIBRARY_DEPENDENCIES}"
+  "${GPUIT_LDFLAGS}")
 
 # JAS 2010.11.23
 # Because the cuda plugin is loaded at runtime, CMake doesn't know
@@ -1306,26 +1329,16 @@ IF (ITK_FOUND)
   ## tries to create a temporary library with the same name.  [MSVC 2005]
   ## That is why the library is called plastimatch1 instead of plastimatch.
   SET (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-  PLM_ADD_LIBRARY (plastimatch1 "${PLASTIMATCH_LIBRARY_SRC}" 
-    "${PLASTIMATCH_LIBRARY_DEPENDENCIES}")
+  PLM_ADD_LIBRARY (
+    plastimatch1 
+    "${PLASTIMATCH_LIBRARY_SRC}"
+    "${PLASTIMATCH_LIBRARY_DEPENDENCIES}"
+    "")
 ENDIF (ITK_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-
-# Consolidate linker flags
-SET (GPUIT_LDFLAGS "${OPENMP_LDFLAGS}")
-IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  IF (PLM_USE_CUDA_PLUGIN)
-    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
-  ELSE (PLM_USE_CUDA_PLUGIN)
-    SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-  ENDIF (PLM_USE_CUDA_PLUGIN)
-ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  SET (GPUIT_LDFLAGS "${GPUIT_LDFLAGS} -ldl")
-ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-MESSAGE (STATUS "GPUIT_LDFLAGS: ${GPUIT_LDFLAGS}")
 
 # Executable Target Definitions
 PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
