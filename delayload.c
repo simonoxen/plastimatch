@@ -51,6 +51,7 @@ int find_lib (char* lib)
 //   * 1st: System Path / ld cache / etc
 //   * 2nd: Current Working Directory
 //   * 3rd: Default CUDA lib paths
+//   * 4th: OpenCL paths
 //
 //   Note: For Windows we ONLY check the current
 //         path since we are at the mercy of the
@@ -64,7 +65,7 @@ void* dlopen_ex (char* lib)
     char cwd[FILENAME_MAX];
     char cudalib32[FILENAME_MAX];
     char cudalib64[FILENAME_MAX];
-    char testing[8];
+    char libopencl[FILENAME_MAX];
 
     /* current working directory */
     if (!get_cwd(cwd, sizeof(cwd))) {
@@ -81,6 +82,10 @@ void* dlopen_ex (char* lib)
     strcpy (cudalib64, "/usr/local/cuda/lib64/");
     strcat (cudalib64, lib);
 
+    /* ubuntu opencl lib path (nvidia) */
+    strcpy (libopencl, "/usr/lib/nvidia-current/");
+    strcat (libopencl, lib);
+
     /* Search in order */
     if (dlopen (lib, RTLD_LAZY) != NULL) {
         return dlopen (lib, RTLD_LAZY);
@@ -93,6 +98,9 @@ void* dlopen_ex (char* lib)
     }
     else if (dlopen (cudalib64, RTLD_LAZY) != NULL){
         return dlopen (cudalib64, RTLD_LAZY);
+    }
+    else if (dlopen (libopencl, RTLD_LAZY) != NULL){
+        return dlopen (libopencl, RTLD_LAZY);
     }
     else {
         return NULL;   /* Failure */
@@ -133,7 +141,8 @@ delayload_cuda (void)
         printf ("For GPU acceleration, please install:\n");
         printf ("* the plastimatch GPU plugin\n");
         printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
-        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
         return 0;
     } else {
         // success
@@ -162,7 +171,8 @@ delayload_cuda (void)
         printf ("For GPU acceleration, please install:\n");
         printf ("* the plastimatch GPU plugin\n");
         printf ("* the CUDA Toolkit version needed by the GPU plugin\n\n");
-        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
         return 0;
     } else {
         // success
@@ -175,16 +185,25 @@ int
 delayload_opencl (void)
 {
 #if defined (_WIN32)
-    if (LoadLibrary ("opencl.dll") == NULL) {
-        printf ("opencl.dll not found!  Please install an OpenCL runtime.\n");
+    if (!find_lib ("opencl.dll")) {
+        printf ("Failed to load GPU Plugins (err: OpenCL)\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
         return 0;
     } else {
+        // success
         return 1;
     }
 #else
-    // Assume linux users are compiling from source
-    // and won't attempt to run features they don't
-    // or can't utilize.
-    return 1;
+    if (!find_lib ("libOpenCL.so")) {
+        printf ("Failed to load CUDA runtime! (err: OpenCL)\n");
+        printf ("Visit http://www.plastimatch.org/contents.html for more information.\n");
+        printf ("OR email <plastimatch@googlegroups.com> for support.\n\n");
+        return 0;
+    } else {
+        // success
+        return 1;
+    }
 #endif
+
 }

@@ -335,7 +335,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
         if (!delayload_cuda()) {
             exit(0);
         }
-//        CUDA_listgpu ();
+        CUDA_listgpu ();
 #else
         printf ("\nPlastimatch was not compiled with CUDA support!\n\n");
 #endif
