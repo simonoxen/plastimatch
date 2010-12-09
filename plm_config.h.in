@@ -100,4 +100,6 @@
 #define gpuit_EXPORT 
 #endif
 
+#undef BUILD_SHARED_LIBS
+
 #endif /* __plm_config_h__ */
