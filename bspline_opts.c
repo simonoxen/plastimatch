@@ -61,7 +61,7 @@ bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
     Bspline_parms* parms = &options->parms;
 
     LOAD_LIBRARY(libplmcuda);
-//    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
+    LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
 
     memset (options, 0, sizeof (BSPLINE_Options));
     for (d = 0; d < 3; d++) {
