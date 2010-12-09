@@ -166,7 +166,6 @@ delayload_cuda (void)
         return 0;
     } else {
         // success
-        printf ("GPU Plugins: Success!\n");
         return 1;
     }
 #endif
