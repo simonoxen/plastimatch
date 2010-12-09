@@ -6,6 +6,13 @@
 ##  Modified by GCS
 ##-----------------------------------------------------------------------------
 
+# JAS 2010.12.09
+# Option to not link against OpenCL libraries (for Linux)
+# This prevents ld from attempting to load libOpenCL.so upon execution,
+# which allows us do delay loading instead.  Only needed for Linux
+# The behavior of this is very similar to PLM_USE_CUDA_PLUGIN
+SET (PLM_OPENCL_DELAY OFF CACHE BOOL "Enable delay loading of OpenCL")
+
 ## AMD/ATI
 set(ENV_ATISTREAMSDKROOT $ENV{ATISTREAMSDKROOT})
 
@@ -62,11 +69,21 @@ find_package_handle_standard_args(
   OPENCL_LIBRARY OPENCL_INCLUDE_DIR
   )
 
-if(OPENCL_FOUND)
-  set(OPENCL_LIBRARIES ${OPENCL_LIBRARY})
-else(OPENCL_FOUND)
-  set(OPENCL_LIBRARIES)
-endif(OPENCL_FOUND)
+# JAS 2010.12.09
+# Edit to allow OpenCL to be delay loaded
+IF (OPENCL_FOUND)
+    IF (PLM_OPENCL_DELAY)
+        IF (WIN32)
+            SET (OPENCL_LIBRARIES ${OPENCL_LIBRARY})
+        ELSE (WIN32)
+            SET (OPENCL_LIBRARIES)
+        ENDIF (WIN32)
+    ELSE (PLM_OPENCL_DELAY)
+        SET (OPENCL_LIBRARIES ${OPENCL_LIBRARY})
+    ENDIF (PLM_OPENCL_DELAY)
+ELSE (OPENCL_FOUND)
+    SET (OPENCL_LIBRARIES)
+ENDIF (OPENCL_FOUND)
 
 if(MINGW)
   set(OPENCL_FOUND FALSE)
