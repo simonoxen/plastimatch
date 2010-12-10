@@ -94,7 +94,7 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     gdcm_file->SetLoadMode (0);
     gdcm_file->Load();
 
-	std::cout << " loading dose " << std::endl;
+    std::cout << " loading dose " << std::endl;
     /* Modality -- better be RTSTRUCT */
     tmp = gdcm_file->GetEntryValue (0x0008, 0x0060);
     if (strncmp (tmp.c_str(), "RTDOSE", strlen("RTDOSE"))) {
@@ -191,31 +191,30 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 
     /* Create Volume */
     Volume *vol = volume_create (dim, ipp, spacing, PT_FLOAT, 0, 0);
-	float *img = (float*) vol->img;
+    float *img = (float*) vol->img;
 
     /* PixelData */
     gdcm::FileHelper gdcm_file_helper (gdcm_file);
 
     //size_t image_data_size = gdcm_file_helper.GetImageDataSize();
     if (strcmp (gdcm_file->GetPixelType().c_str(), "16U")==0) {
-		    unsigned short* image_data = (unsigned short*) gdcm_file_helper.GetImageData();
-			dose_copy_raw (img, image_data, vol->npix, dose_scaling);
-	} else if (strcmp(gdcm_file->GetPixelType().c_str(),"32U")==0){
-		    unsigned long* image_data = (unsigned long*) gdcm_file_helper.GetImageData ();
-			dose_copy_raw (img, image_data, vol->npix, dose_scaling);
-	}else{
-		print_and_exit ("Error RTDOSE not type 16U and 32U (type=%s)\n",gdcm_file->GetPixelType().c_str());
+	unsigned short* image_data = (unsigned short*) gdcm_file_helper.GetImageData();
+	dose_copy_raw (img, image_data, vol->npix, dose_scaling);
+    } else if (strcmp(gdcm_file->GetPixelType().c_str(),"32U")==0){
+	printf ("Got 32U.\n");
+	uint32_t* image_data = (uint32_t*) gdcm_file_helper.GetImageData ();
+	dose_copy_raw (img, image_data, vol->npix, dose_scaling);
+    } else {
+	print_and_exit ("Error RTDOSE not type 16U and 32U (type=%s)\n",gdcm_file->GetPixelType().c_str());
     }
 
     /* GCS FIX: Do I need to do something about endian-ness? */
 
-
-
     /* Copy data to volume */
- //   float *img = (float*) vol->img;
- //   for (i = 0; i < vol->npix; i++) {
-	//img[i] = image_data[i] * dose_scaling;
- //   }
+    //   float *img = (float*) vol->img;
+    //   for (i = 0; i < vol->npix; i++) {
+    //img[i] = image_data[i] * dose_scaling;
+    //   }
 
     /* Bind volume to plm_image */
     pli->set_gpuit (vol);
