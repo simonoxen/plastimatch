@@ -46,6 +46,7 @@ print_usage (char* command)
 	"    --input-ss-img=filename    (for structures)\n"
 	"    --input-ss-list=filename   (for structures)\n"
 	"    --prune-empty              (for structures)\n"
+	"    --simplify-perc            (for structures)\n"
 	"    --input-dose-img=filename  (for rt dose)\n"
 	"    --input-dose-xio=filename  (for XiO rt dose)\n"
 	"    --input-dose-ast=filename  (for Astroid rt dose)\n"
@@ -137,6 +138,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "input-dose-mc",  required_argument,      NULL,           34 },
 	{ "output_colormap",required_argument,      NULL,           35 },
 	{ "output-colormap",required_argument,      NULL,           35 },
+	{ "simplify_perc", required_argument,	    NULL,           36 },
+	{ "simplify-perc", required_argument,	    NULL,           36 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -284,6 +287,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 35:
 	    parms->output_colormap_fn = optarg;
+	    break;
+	case 36:
+	    parms->simplify_perc = atoi(optarg);
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

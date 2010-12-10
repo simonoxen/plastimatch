@@ -15,6 +15,7 @@
 #include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
+#include "simplify_points.h"
 #include "ss_img_extract.h"
 #include "ss_list_io.h"
 #include "xio_dose.h"
@@ -386,6 +387,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Warp and save structure set (except dicom) */
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
+
 #if defined (commentout)
 #endif
     /* In certain cases, we have to delay setting dicom uids 
@@ -395,6 +397,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* GCS: Which cases are these?  (It does seem to solve problems...) */
     if (rtds->m_ss_image && rtds->m_rdd) {
 	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
+    }
+
+    if (parms->simplify_perc >0 && parms->simplify_perc<100) {
+	do_simplify(rtds,file_type,parms->simplify_perc);
     }
 
     /* Save dicom */

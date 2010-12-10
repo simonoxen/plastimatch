@@ -56,6 +56,7 @@ public:
     Xio_version output_xio_version;
     int prune_empty;             /* remove empty structures (1) or not (0) */
     int use_itk;                 /* force use of itk (1) or not (0) */
+    int simplify_perc;	 /* percentage of points to be purged */
     Plm_image_patient_position patient_pos;
 
 public:
