@@ -14,6 +14,7 @@
 #include "print_and_exit.h"
 #include "delayload.h"
 
+
 //#define dynload
 
 void
@@ -29,7 +30,7 @@ opencl_device_info (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetDeviceInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clGetDeviceInfo, libOpenCL, cl_int);
 #endif
 
     status = clGetDeviceInfo (
@@ -116,7 +117,7 @@ opencl_dump_platform_info (cl_platform_id platform)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetPlatformInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clGetPlatformInfo, libOpenCL, cl_int);
 #endif
 
     status = clGetPlatformInfo (
@@ -168,7 +169,7 @@ opencl_select_platform (void)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetPlatformIDs, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clGetPlatformIDs, libOpenCL, cl_int);
 #endif
 
     status = clGetPlatformIDs (0, NULL, &num_platforms);
@@ -244,7 +245,7 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clCreateCommandQueue, libOpenCL, cl_command_queue);
+    LOAD_SYMBOL_OPENCL (clCreateCommandQueue, libOpenCL, cl_command_queue);
 #endif
 
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
@@ -290,8 +291,8 @@ opencl_create_context_a (Opencl_device *ocl_dev)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clCreateContextFromType, libOpenCL, cl_context);
-    LOAD_SYMBOL_SPECIAL (clGetContextInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clCreateContextFromType, libOpenCL, cl_context);
+    LOAD_SYMBOL_OPENCL (clGetContextInfo, libOpenCL, cl_int);
 #endif
 
     if (ocl_dev->platform) {
@@ -382,8 +383,8 @@ opencl_create_context_b (Opencl_device *ocl_dev)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetDeviceIDs, libOpenCL, cl_int);
-    LOAD_SYMBOL_SPECIAL (clCreateContext, libOpenCL, cl_context);
+    LOAD_SYMBOL_OPENCL (clGetDeviceIDs, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clCreateContext, libOpenCL, cl_context);
 #endif
 
     if (ocl_dev->platform) {
@@ -493,8 +494,8 @@ opencl_close_device (Opencl_device *ocl_dev)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clReleaseCommandQueue, libOpenCL, cl_int); 
-    LOAD_SYMBOL_SPECIAL (clReleaseContext, libOpenCL, cl_int); 
+    LOAD_SYMBOL_OPENCL (clReleaseCommandQueue, libOpenCL, cl_int); 
+    LOAD_SYMBOL_OPENCL (clReleaseContext, libOpenCL, cl_int); 
 #endif
 
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
@@ -542,7 +543,7 @@ opencl_buf_create (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clCreateBuffer, libOpenCL, cl_mem); 
+    LOAD_SYMBOL_OPENCL (clCreateBuffer, libOpenCL, cl_mem); 
 #endif
 
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
@@ -581,7 +582,7 @@ opencl_buf_read (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clEnqueueReadBuffer, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clEnqueueReadBuffer, libOpenCL, cl_int);
 #endif
 
     status = clEnqueueReadBuffer (
@@ -618,7 +619,7 @@ opencl_buf_write (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clEnqueueWriteBuffer, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clEnqueueWriteBuffer, libOpenCL, cl_int);
 #endif
 
     status = clEnqueueWriteBuffer (
@@ -651,7 +652,7 @@ opencl_kernel_create (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clCreateKernel, libOpenCL, cl_kernel);
+    LOAD_SYMBOL_OPENCL (clCreateKernel, libOpenCL, cl_kernel);
 #endif
 
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
@@ -683,8 +684,8 @@ opencl_load_programs (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clCreateProgramWithSource, libOpenCL, cl_program);
-    LOAD_SYMBOL_SPECIAL (clBuildProgram, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clCreateProgramWithSource, libOpenCL, cl_program);
+    LOAD_SYMBOL_OPENCL (clBuildProgram, libOpenCL, cl_int);
 #endif
 
     /* Load the file contents into a string */
@@ -766,7 +767,7 @@ opencl_set_kernel_args (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clSetKernelArg, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clSetKernelArg, libOpenCL, cl_int);
 #endif
 
     while ((arg_size = va_arg (va, size_t)) != 0) {
@@ -805,8 +806,8 @@ opencl_kernel_enqueue (
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clEnqueueNDRangeKernel, libOpenCL, cl_int);
-    LOAD_SYMBOL_SPECIAL (clWaitForEvents, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clEnqueueNDRangeKernel, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clWaitForEvents, libOpenCL, cl_int);
 #endif
 
     /* Add kernel to the queue */
@@ -841,7 +842,7 @@ opencl_timer (cl_event &event)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetEventProfilingInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clGetEventProfilingInfo, libOpenCL, cl_int);
 #endif
 
     clGetEventProfilingInfo (
@@ -875,7 +876,7 @@ opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
 
 #if defined (dynload)
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_SPECIAL (clGetProgramBuildInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_OPENCL (clGetProgramBuildInfo, libOpenCL, cl_int);
 #endif
 
     rc = clGetProgramBuildInfo (

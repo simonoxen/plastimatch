@@ -9,6 +9,10 @@
 #include <dlfcn.h>
 #endif
 
+#if (OPENCL_FOUND)
+#include "delayload_opencl.h"
+#endif
+
 // Needed for delay loading windows DLLs
 #if _WIN32
     #pragma comment(lib, "delayimp")
@@ -52,7 +56,21 @@
 //       null function pointer.  Be careful pls.
 #if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
     #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
-        type (*sym)() = dlsym (lib, #sym);          
+        type (*sym)() = dlsym (lib, #sym);   
+#else
+    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
+        ;
+#endif
+
+
+// JAS 2010.12.10
+// OpenCL is special since the OpenCL dev stuff
+// doesn't include return typedefs... so we make them
+// oursevles (see delayload_opencl.h) and we have a
+// special casting dlsym() macro for it.
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
+    #define LOAD_SYMBOL_OPENCL(sym, lib, type)    \
+        sym = (__##sym *)dlsym (lib, #sym);   
 #else
     #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
         ;
