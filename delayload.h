@@ -5,6 +5,9 @@
 #define _delayload_h_
 
 #include "plm_config.h"
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 
 // Needed for delay loading windows DLLs
 #if _WIN32
