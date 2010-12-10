@@ -17,6 +17,13 @@
 #define GRID_LIMIT_X 65535
 #define GRID_LIMIT_Y 65535
 
+// JAS 2010.12.09
+// Frequently used thread based indexing methods
+// My attempt at standardizing CUDA threading across plastimatch (pls use these!)
+#define block_size        (blockDim.x * blockDim.y * blockDim.z)
+#define block_idx         ((gridDim.x * blockIdx.y) + blockIdx.x)
+#define thread_idx_local  ((((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x)
+#define thread_idx_global ((block_idx * block_size) + thread_idx_local)
 
 typedef struct cuda_timer_struct cuda_timer;
 struct cuda_timer_struct {

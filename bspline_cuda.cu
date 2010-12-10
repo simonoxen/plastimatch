@@ -1520,6 +1520,7 @@ CUDA_bspline_mi_grad (
     // --- RETREIVE THE GRAD FROM GPU ---------------------------
     cudaMemcpy(host_grad, dev_ptrs->grad, sizeof(float) * bxf->num_coeff, cudaMemcpyDeviceToHost);
     CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
+    CUDA_check_error("Failed to copy dev_ptrs->grad to CPU");
     // ----------------------------------------------------------
 }
 
@@ -2112,27 +2113,19 @@ kernel_bspline_mi_hist_fix (
     float3 mov_ps       // moving image pixel spacing
 )
 {
-    // -- Setup Thread Attributes -----------------------------
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-    // --------------------------------------------------------
-
     // -- Initialize Shared Memory ----------------------------
     // Amount: 32 * # bins
     extern __shared__ float s_Fixed[];
 
     for (long i=0; i < bins; i++) {
-        s_Fixed[threadIdx.x + i*threadsPerBlock] = 0.0f;
+        s_Fixed[threadIdx.x + i*block_size] = 0.0f;
     }
     __syncthreads();
     // --------------------------------------------------------
 
 
     // only process threads that map to voxels
-    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global <= fdim.x * fdim.y * fdim.z) {
         int4 q;     // Voxel index (local)
         int4 p;     // Tile index
         float3 f;   // Distance from origin (in mm )
@@ -2141,7 +2134,7 @@ kernel_bspline_mi_hist_fix (
         float3 d;   // Deformation vector
         int fv;     // fixed voxel
     
-        fv = thread_idxg;
+        fv = thread_idx_global;
 
         setup_indices (&p, &q, &f,
             fv, fdim, vpr, rdim, img_origin, img_spacing);
@@ -2153,7 +2146,7 @@ kernel_bspline_mi_hist_fix (
         int idx_fbin;
         int f_mem;
         idx_fbin = (int) floorf ((f_img[fv] - offset) * delta);
-        f_mem = threadIdx.x + idx_fbin*threadsPerBlock;
+        f_mem = threadIdx.x + idx_fbin*block_size;
         s_Fixed[f_mem] += !fell_out;
     }
 
@@ -2167,7 +2160,7 @@ kernel_bspline_mi_hist_fix (
     // +-----------------+-----------------+-----------------+
     //
     // Now, we want to merge the bins down to 1 value per bin from
-    // threadsPerBlock values per bin.
+    // block_size values per bin.
 
 
     // merge segmented histograms
@@ -2179,15 +2172,15 @@ kernel_bspline_mi_hist_fix (
         // to prevent bank conflicts, which reasult in half warp difergence /
         // serialization.
         const int startPos = (threadIdx.x & 0x0F);
-        const int offset   = threadIdx.x * threadsPerBlock;
+        const int offset   = threadIdx.x * block_size;
 
-        for (int i=0, accumPos = startPos; i < threadsPerBlock; i++) {
+        for (int i=0, accumPos = startPos; i < block_size; i++) {
             sum += s_Fixed[offset + accumPos];
-            if (++accumPos == threadsPerBlock) {
+            if (++accumPos == block_size) {
                 accumPos = 0;
             }
         }
-        f_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
+        f_hist_seg[block_idx*bins + threadIdx.x] = sum;
     }
 
     // JAS 2010.12.08
@@ -2244,22 +2237,13 @@ kernel_bspline_mi_hist_mov (
     float3 mov_ps       // moving image pixel spacing
 )
 {
-    // setup thread attributes
-    // --------------------------------------------------------
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-    // --------------------------------------------------------
-
     // initialize shared memory
     // --------------------------------------------------------
     // Amount: 32 * # bins
     extern __shared__ float s_Moving[];
 
     for (long i=0; i < bins; i++) {
-        s_Moving[threadIdx.x + i*threadsPerBlock] = 0.0f;
+        s_Moving[threadIdx.x + i*block_size] = 0.0f;
     }
     // --------------------------------------------------------
 
@@ -2267,7 +2251,7 @@ kernel_bspline_mi_hist_mov (
 
     // only process threads that map to voxels
     // --------------------------------------------------------
-    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global <= fdim.x * fdim.y * fdim.z) {
         int4 q;     // Voxel index (local)
         int4 p;     // Tile index
         float3 f;   // Distance from origin (in mm )
@@ -2278,7 +2262,7 @@ kernel_bspline_mi_hist_mov (
         float3 d;   // Deformation vector
         int fv;     // fixed voxel
     
-        fv = thread_idxg;
+        fv = thread_idx_global;
 
         setup_indices (&p, &q, &f,
                 fv, fdim, vpr, rdim, img_origin, img_spacing);
@@ -2302,7 +2286,7 @@ kernel_bspline_mi_hist_mov (
             #pragma unroll
             for (int i=0; i<8; i++) {
                 idx_mbin = (int) floorf ((m_img[nn[i]] - offset) * delta);
-                m_mem = threadIdx.x + idx_mbin*threadsPerBlock;
+                m_mem = threadIdx.x + idx_mbin*block_size;
                 s_Moving[m_mem] += w[i];
             }
         }
@@ -2321,16 +2305,16 @@ kernel_bspline_mi_hist_mov (
         // to prevent bank conflicts, which reasult in half warp difergence /
         // serialization.
         const int startPos = (threadIdx.x & 0x0F);
-        const int offset   = threadIdx.x * threadsPerBlock;
+        const int offset   = threadIdx.x * block_size;
 
-        for (int i=0, accumPos = startPos; i < threadsPerBlock; i++) {
+        for (int i=0, accumPos = startPos; i < block_size; i++) {
             sum += s_Moving[offset + accumPos];
-            if (++accumPos == threadsPerBlock) {
+            if (++accumPos == block_size) {
                 accumPos = 0;
             }
         }
 
-        m_hist_seg[blockIdxInGrid*bins + threadIdx.x] = sum;
+        m_hist_seg[block_idx*bins + threadIdx.x] = sum;
     }
     // --------------------------------------------------------
 
@@ -2378,14 +2362,6 @@ kernel_bspline_mi_hist_jnt (
  */
 #if defined (__CUDA_ARCH__) && __CUDA_ARCH__ >= 120
 
-    // -- Setup Thread Attributes -----------------------------
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-    // --------------------------------------------------------
-
     // -- Initial shared memory for locks ---------------------
     extern __shared__ float shared_mem[]; 
 
@@ -2399,7 +2375,7 @@ kernel_bspline_mi_hist_jnt (
     j_bins = f_bins * m_bins;
 
     // -- Only process threads that map to voxels -------------
-    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global <= fdim.x * fdim.y * fdim.z) {
         int4 q;      // Voxel index (local)
         int4 p;      // Tile index
         float3 f;    // Distance from origin (in mm )
@@ -2410,7 +2386,7 @@ kernel_bspline_mi_hist_jnt (
         int3 n_r;    // Voxel Displacement round
         int fv;      // fixed voxel
     
-        fv = thread_idxg;
+        fv = thread_idx_global;
 
         setup_indices (&p, &q, &f,
                 fv, fdim, vpr, rdim, img_origin, img_spacing);
@@ -2458,10 +2434,10 @@ kernel_bspline_mi_hist_jnt (
 
     // copy histogram segments from shared to global memory
     int idx;
-    long j_stride = blockIdxInGrid * j_bins;
-    int chunks = (j_bins + threadsPerBlock - 1)/threadsPerBlock;
+    long j_stride = block_idx * j_bins;
+    int chunks = (j_bins + block_size - 1)/block_size;
     for (int i=0; i<chunks; i++) {
-        idx = threadIdx.x + i*threadsPerBlock;
+        idx = threadIdx.x + i*block_size;
         if (idx < j_bins) {
             j_hist[j_stride + idx] = j_locks[idx];
         }
@@ -2582,17 +2558,8 @@ kernel_bspline_mi_dc_dv (
     int pad             // INPUT: Tile padding
 )
 {
-    // -- Setup Thread Attributes -----------------------------
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-    // --------------------------------------------------------
-
-    
     // -- Only process threads that map to voxels -------------
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global > fdim.x * fdim.y * fdim.z) {
         return;
     }
     // --------------------------------------------------------
@@ -2615,7 +2582,7 @@ kernel_bspline_mi_dc_dv (
     int fv;     // fixed voxel
     // --------------------------------------------------------
     
-    fv = thread_idxg;
+    fv = thread_idx_global;
 
     r.z = fv / (fdim.x * fdim.y);
     r.y = (fv - (r.z * fdim.x * fdim.y)) / fdim.x;
@@ -2850,15 +2817,8 @@ kernel_bspline_mse_score_dc_dv (
     int pad             // tile padding
 )
 {
-    /* Setup Thread Attributes */
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-
     /* Only process threads that map to voxels */
-    if (thread_idxg > fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global > fdim.x * fdim.y * fdim.z) {
         return;
     }
 
@@ -2873,7 +2833,7 @@ kernel_bspline_mse_score_dc_dv (
     float3 d;   // Deformation vector
     int fv;     // fixed voxel
     
-    fv = thread_idxg;
+    fv = thread_idx_global;
 
     setup_indices (&p, &q, &f,
             fv, fdim, vpr, rdim, img_origin, img_spacing);
@@ -2944,11 +2904,6 @@ kernel_bspline_condense (
     float A,B,C;
 
 
-    // -- Setup Thread Attributes -----------------------------
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    // --------------------------------------------------------
-
-
     // -- Setup Shared Memory ---------------------------------
     // -- SIZE: 9*64*sizeof(float)
     // --------------------------------------------------------
@@ -2972,7 +2927,7 @@ kernel_bspline_condense (
 
 
     // First, get the offset of where our tile starts in memory.
-    tileOffset = LUT_Tile_Offsets[blockIdxInGrid];
+    tileOffset = LUT_Tile_Offsets[block_idx];
 
     // Main Loop for Warp Work
     // (Here we condense a tile into 64x3 floats)
@@ -3274,7 +3229,7 @@ kernel_bspline_condense (
     // ----------------------------------------------------------
     // HERE, EACH WARP OPERATES ON A SINGLE TILE'S SET OF 64!!
     // ----------------------------------------------------------
-    tileOffset = 64*blockIdxInGrid;
+    tileOffset = 64*block_idx;
 
     tile_pos.x = 63 - threadIdx.x;
 
@@ -3318,10 +3273,6 @@ kernel_bspline_reduce (
     float* cond_y,      // Input : condensed dc_dv_y values
     float* cond_z)      // Input : condensed dc_dv_z values
 {
-    // -- Setup Thread Attributes -----------------------------
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    // --------------------------------------------------------
-
     // -- Setup Shared Memory ---------------------------------
     // -- SIZE: ((3*64)+3)*sizeof(float)
     // --------------------------------------------------------
@@ -3333,9 +3284,9 @@ kernel_bspline_reduce (
     // --------------------------------------------------------
 
     // Pull down the 64 condensed dc_dv values for the knot this warp pair is working on
-    sBuffer_redux_x[threadIdx.x] = cond_x[64*blockIdxInGrid + threadIdx.x];
-    sBuffer_redux_y[threadIdx.x] = cond_y[64*blockIdxInGrid + threadIdx.x];
-    sBuffer_redux_z[threadIdx.x] = cond_z[64*blockIdxInGrid + threadIdx.x];
+    sBuffer_redux_x[threadIdx.x] = cond_x[64*block_idx + threadIdx.x];
+    sBuffer_redux_y[threadIdx.x] = cond_y[64*block_idx + threadIdx.x];
+    sBuffer_redux_z[threadIdx.x] = cond_z[64*block_idx + threadIdx.x];
 
     // This thread barrier is very important!
     __syncthreads();
@@ -3375,7 +3326,7 @@ kernel_bspline_reduce (
 
 
     if (threadIdx.x < 3) {
-        grad[3*blockIdxInGrid + threadIdx.x] = sBuffer[threadIdx.x];
+        grad[3*block_idx + threadIdx.x] = sBuffer[threadIdx.x];
     }
 }
 
@@ -3389,20 +3340,8 @@ kernel_bspline_grad_normalize (
     int num_elems
 )
 {
-    // Calculate the index of the thread block in the grid.
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-
-    // Calculate the total number of threads in each thread block.
-    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-    if(threadIdxInGrid < num_elems) {
-        grad[threadIdxInGrid] = 2.0 * grad[threadIdxInGrid] / num_vox;
+    if (thread_idx_global < num_elems) {
+        grad[thread_idx_global] = 2.0 * grad[thread_idx_global] / num_vox;
     }
 }
 
@@ -3420,17 +3359,10 @@ kernel_bspline_interpolate_vf (
     int3 vpr            // voxels per region
 )
 {
-    /* Setup Thread Attributes */
-    int threadsPerBlock = (blockDim.x * blockDim.y * blockDim.z);
-
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-    int thread_idxl     = (((blockDim.y * threadIdx.z) + threadIdx.y) * blockDim.x) + threadIdx.x;
-    int thread_idxg     = (blockIdxInGrid * threadsPerBlock) + thread_idxl;
-
     extern __shared__ float shared_mem[]; 
 
     /* Only process threads that map to voxels */
-    if (thread_idxg <= fdim.x * fdim.y * fdim.z) {
+    if (thread_idx_global <= fdim.x * fdim.y * fdim.z) {
         int4 p;     // Tile index
         int4 q;     // Local Voxel index (within tile)
         float3 f;   // Distance from origin (in mm )
@@ -3438,7 +3370,7 @@ kernel_bspline_interpolate_vf (
         int fv;     // fixed voxel
         float3 null = {0.0f, 0.0f, 0.0f};
     
-        fv = thread_idxg;
+        fv = thread_idx_global;
 
         setup_indices (&p, &q, &f,
                 fv, fdim, vpr, rdim, null, null);
@@ -3452,7 +3384,7 @@ kernel_bspline_interpolate_vf (
 
     __syncthreads();
 
-    stog_memcpy (vf, shared_mem, 3*threadsPerBlock);
+    stog_memcpy (vf, shared_mem, 3*block_size);
 }
 
 
@@ -3472,32 +3404,21 @@ kernel_sum_reduction_pt1 (
     // (sizeof(data) * blocksize) memory when calling the kernel.
     extern __shared__ float sdata[];
   
-    // Calculate the index of the thread block in the grid.
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-  
-    // Calculate the total number of threads in each thread block.
-    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-  
-    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-  
-    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
     // Load data into shared memory.
-    if(threadIdxInGrid >= num_elems)
-    sdata[threadIdxInBlock] = 0.0;
-    else 
-    sdata[threadIdxInBlock] = idata[threadIdxInGrid];
+    if (thread_idx_global >= num_elems) {
+        sdata[thread_idx_local] = 0.0;
+    } else {
+        sdata[thread_idx_local] = idata[thread_idx_global];
+    }
 
     // Wait for all threads in the block to reach this point.
     __syncthreads();
   
     // Perform the reduction in shared memory.  Stride over the block and reduce
     // parts until it is down to a single value (stored in sdata[0]).
-    for(unsigned int s = threadsPerBlock / 2; s > 0; s >>= 1) {
-        if (threadIdxInBlock < s) {
-            sdata[threadIdxInBlock] += sdata[threadIdxInBlock + s];
+    for (unsigned int s = block_size / 2; s > 0; s >>= 1) {
+        if (thread_idx_local < s) {
+            sdata[thread_idx_local] += sdata[thread_idx_local + s];
         }
 
         // Wait for all threads to complete this stride.
@@ -3505,8 +3426,8 @@ kernel_sum_reduction_pt1 (
     }
   
     // Write the result for this block back to global memory.
-    if(threadIdxInBlock == 0) {
-        odata[threadIdxInGrid] = sdata[0];
+    if (thread_idx_local == 0) {
+        odata[thread_idx_global] = sdata[0];
     }
 }
 
@@ -3520,23 +3441,10 @@ kernel_sum_reduction_pt2 (
     int num_elems
 )
 {
-    // Calculate the index of the thread block in the grid.
-    int blockIdxInGrid  = (gridDim.x * blockIdx.y) + blockIdx.x;
-
-    // Calculate the total number of threads in each thread block.
-    int threadsPerBlock  = (blockDim.x * blockDim.y * blockDim.z);
-
-    // Next, calculate the index of the thread in its thread block, in the range 0 to threadsPerBlock.
-    int threadIdxInBlock = (blockDim.x * blockDim.y * threadIdx.z) + (blockDim.x * threadIdx.y) + threadIdx.x;
-
-    // Finally, calculate the index of the thread in the grid, based on the location of the block in the grid.
-    int threadIdxInGrid = (blockIdxInGrid * threadsPerBlock) + threadIdxInBlock;
-
-    if(threadIdxInGrid == 0) {
-    
+    if (thread_idx_global == 0) {
         float sum = 0.0;
         
-        for(int i = 0; i < num_elems; i += threadsPerBlock) {
+        for(int i = 0; i < num_elems; i += block_size) {
             sum += idata[i];
         }
 

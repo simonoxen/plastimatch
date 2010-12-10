@@ -26,15 +26,11 @@ shared_memset (
     int n
 )
 {
-    int tpb = (blockDim.x * blockDim.y * blockDim.z);
-    int idx = (((blockDim.y * threadIdx.z) + threadIdx.y)
-            * blockDim.x) + threadIdx.x;
-
-    int b = (n + tpb - 1) / tpb;
+    int b = (n + block_size - 1) / block_size;
 
     for (int i=0; i<b; i++) {
-        if ( (idx + i*tpb) < n ) {
-            s[idx + i*tpb] = c;
+        if ( (thread_idx_local + i*block_size) < n ) {
+            s[thread_idx_local + i*block_size] = c;
         }
     }
 }
@@ -88,14 +84,11 @@ stog_memcpy (
     int set_size
 )
 {
-    int tpb = (blockDim.x * blockDim.y * blockDim.z);
-    int block_index = (gridDim.x * blockIdx.y) + blockIdx.x;
-
     int idx;
-    int chunks = (set_size + tpb - 1) / tpb;
-    int offset = set_size * block_index;
+    int chunks = (set_size + block_size - 1) / block_size;
+    int offset = set_size * block_idx;
     for (int i=0; i<chunks; i++) {
-        idx = threadIdx.x + i*tpb;
+        idx = threadIdx.x + i*block_size;
         if (idx < set_size) {
             global[offset + idx] = shared[idx];
         }
