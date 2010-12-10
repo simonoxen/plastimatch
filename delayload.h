@@ -72,7 +72,7 @@
     #define LOAD_SYMBOL_OPENCL(sym, lib, type)    \
         sym = (__##sym *)dlsym (lib, #sym);   
 #else
-    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
+    #define LOAD_SYMBOL_OPENCL(sym, lib, type)    \
         ;
 #endif
 // ------------------------------------------------------------
