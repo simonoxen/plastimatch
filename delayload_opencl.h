@@ -17,12 +17,10 @@
 #define _delayload_opencl_h_
 
 
-#if (OPENCL_FOUND)
-#ifdef __APPLE__
+#if defined (__APPLE__)
 #include <OpenCL/cl.h>
 #else
 #include <CL/cl.h>
-#endif
 #endif
 
 

@@ -15,7 +15,7 @@
 #include "delayload.h"
 
 
-//#define dynload
+#define dynload
 
 void
 opencl_device_info (
