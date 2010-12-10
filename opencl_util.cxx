@@ -152,7 +152,7 @@ opencl_select_platform (void)
     cl_platform_id platform = NULL;
 
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL (clGetPlatformIDs, libOpenCL, cl_int);
+    LOAD_SYMBOL_SPECIAL (clGetPlatformIDs, libOpenCL, cl_int);
 
     status = clGetPlatformIDs (0, NULL, &num_platforms);
     if (status != CL_SUCCESS) {
@@ -220,7 +220,7 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
     );
 
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL (clCreateCommandQueue, libOpenCL, cl_command_queue);
+    LOAD_SYMBOL_SPECIAL (clCreateCommandQueue, libOpenCL, cl_command_queue);
 
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
         cl_uint cxt_no;
@@ -260,8 +260,8 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     size_t device_list_size;
 
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL (clCreateContextFromType, libOpenCL, cl_context);
-    LOAD_SYMBOL (clGetContextInfo, libOpenCL, cl_int);
+    LOAD_SYMBOL_SPECIAL (clCreateContextFromType, libOpenCL, cl_context);
+    LOAD_SYMBOL_SPECIAL (clGetContextInfo, libOpenCL, cl_int);
 
     if (ocl_dev->platform) {
         cps[0] = CL_CONTEXT_PLATFORM;
@@ -340,8 +340,8 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     cl_context_properties* cprops;
 
     LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL (clGetDeviceIDs, libOpenCL, cl_int);
-    LOAD_SYMBOL (clCreateContext, libOpenCL, cl_context);
+    LOAD_SYMBOL_SPECIAL (clGetDeviceIDs, libOpenCL, cl_int);
+    LOAD_SYMBOL_SPECIAL (clCreateContext, libOpenCL, cl_context);
 
     if (ocl_dev->platform) {
         cps[0] = CL_CONTEXT_PLATFORM;
