@@ -52,37 +52,72 @@ opencl_reconstruct_conebeam (
     cbi = proj_image_dir_load_image (proj_dir, 0);
 
     /* Set up device memory */
-    ocl_buf_vol = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
-	vol->pix_size * vol->npix, vol->img);
-    ocl_buf_img = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-	cbi->dim[1] * cbi->dim[0] * sizeof(float), 0);
-    ocl_buf_matrix = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-	12 * sizeof(float), 0);
-    ocl_buf_vol_dim = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-	3 * sizeof(int), vol->dim);
-    ocl_buf_vol_offset = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-	3 * sizeof(float), vol->offset);
-    ocl_buf_vol_spacing = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-	3 * sizeof(float), vol->pix_spacing);
-    ocl_buf_img_dim = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-	2 * sizeof(int), cbi->dim);
-    ocl_buf_nrm = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-	3 * sizeof(float), 0);
-    ocl_buf_ic = opencl_buf_create (&ocl_dev, 
-	CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-	2 * sizeof(float), 0);
+    ocl_buf_vol = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR, 
+        vol->pix_size * vol->npix,
+        vol->img
+    );
+
+    ocl_buf_img = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+        cbi->dim[1] * cbi->dim[0] * sizeof(float),
+        0
+    );
+
+    ocl_buf_matrix = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+        12 * sizeof(float),
+        0
+    );
+
+    ocl_buf_vol_dim = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        3 * sizeof(int),
+        vol->dim
+    );
+
+    ocl_buf_vol_offset = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        3 * sizeof(float),
+        vol->offset
+    );
+
+    ocl_buf_vol_spacing = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        3 * sizeof(float),
+        vol->pix_spacing
+    );
+
+    ocl_buf_img_dim = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        2 * sizeof(int),
+        cbi->dim
+    );
+
+    ocl_buf_nrm = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+        3 * sizeof(float),
+        0
+    );
+
+    ocl_buf_ic = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
+        2 * sizeof(float),
+        0
+    );
 
     /* Calculate the scale */
     image_num = 1 + (options->last_img - options->first_img) 
-	/ options->skip_img;
+        / options->skip_img;
     scale = (float)(sqrt(3.0)/(double)image_num);
     scale = scale * options->scale;
 

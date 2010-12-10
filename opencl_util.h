@@ -40,27 +40,34 @@ extern "C" {
 gpuit_EXPORT
 cl_platform_id
 opencl_select_platform (void);
+
 gpuit_EXPORT
 void
 opencl_print_devices (void);
+
 gpuit_EXPORT
 cl_int
 opencl_open_device (Opencl_device *ocl_dev);
+
 gpuit_EXPORT
 void
 opencl_close_device (Opencl_device *ocl_dev);
+
 gpuit_EXPORT
 cl_ulong
 opencl_timer (cl_event &event);
+
 gpuit_EXPORT
 void
 opencl_check_error (cl_int return_code, const char *msg);
+
 gpuit_EXPORT
 void
 opencl_load_programs (
     Opencl_device *ocl_dev, 
     const char* filename
 );
+
 gpuit_EXPORT
 void 
 opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program);
@@ -73,6 +80,7 @@ opencl_buf_create (
     size_t buffer_size, 
     void *buffer
 );
+
 gpuit_EXPORT
 void
 opencl_buf_read (
@@ -81,6 +89,7 @@ opencl_buf_read (
     size_t buffer_size, 
     void *buffer
 );
+
 gpuit_EXPORT
 void
 opencl_buf_write (
@@ -89,18 +98,21 @@ opencl_buf_write (
     size_t buffer_size, 
     void *buffer
 );
+
 gpuit_EXPORT
 void
 opencl_kernel_create (
     Opencl_device *ocl_dev, 
     const char *kernel_name
 );
+
 gpuit_EXPORT
 void
 opencl_set_kernel_args (
     Opencl_device *ocl_dev, 
     ...
 );
+
 gpuit_EXPORT
 void
 opencl_kernel_enqueue (

@@ -23,12 +23,20 @@ opencl_device_info (
 )
 {
     cl_int status;
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clGetDeviceInfo, libOpenCL, cl_int);
+
     status = clGetDeviceInfo (
-	device, 
-	param_name, 
-	param_value_size,  
-	param_value,  
-	param_value_size_ret);
+        device, 
+        param_name, 
+        param_value_size,  
+        param_value,  
+        param_value_size_ret
+    );
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     opencl_check_error (status, "clGetDeviceInfo");
 }
 
@@ -39,51 +47,57 @@ opencl_dump_device_info (cl_device_id device)
     cl_bool param_bool;
 
     opencl_device_info (
-	device, 
-	CL_DEVICE_VENDOR, 
-	sizeof(param_string), 
-	param_string, 
-	NULL);
+        device, 
+        CL_DEVICE_VENDOR, 
+        sizeof(param_string), 
+        param_string, 
+        NULL
+    );
     printf ("  CL_DEVICE_VENDOR = %s\n", param_string);
 
     opencl_device_info (
-	device, 
-	CL_DEVICE_NAME, 
-	sizeof(param_string), 
-	param_string, 
-	NULL);
+        device, 
+        CL_DEVICE_NAME, 
+        sizeof(param_string), 
+        param_string, 
+        NULL
+    );
     printf ("  CL_DEVICE_NAME = %s\n", param_string);
 
     opencl_device_info (
-	device, 
-	CL_DEVICE_AVAILABLE, 
-	sizeof (cl_bool), 
-	&param_bool, 
-	NULL);
+        device, 
+        CL_DEVICE_AVAILABLE, 
+        sizeof (cl_bool), 
+        &param_bool, 
+        NULL
+    );
     printf ("  CL_DEVICE_AVAILABLE = %d\n", param_bool);
 
     opencl_device_info (
-	device, 
-	CL_DEVICE_VERSION, 
-	sizeof(param_string), 
-	param_string, 
-	NULL);
+        device, 
+        CL_DEVICE_VERSION, 
+        sizeof(param_string), 
+        param_string, 
+        NULL
+    );
     printf ("  CL_DEVICE_VERSION = %s\n", param_string);
 
     opencl_device_info (
-	device, 
-	CL_DRIVER_VERSION, 
-	sizeof(param_string), 
-	param_string, 
-	NULL);
+        device, 
+        CL_DRIVER_VERSION, 
+        sizeof(param_string), 
+        param_string, 
+        NULL
+    );
     printf ("  CL_DRIVER_VERSION = %s\n", param_string);
 
     opencl_device_info (
-	device, 
-	CL_DEVICE_IMAGE_SUPPORT, 
-	sizeof (cl_bool), 
-	&param_bool, 
-	NULL);
+        device, 
+        CL_DEVICE_IMAGE_SUPPORT, 
+        sizeof (cl_bool), 
+        &param_bool, 
+        NULL
+    );
     printf ("  CL_DEVICE_IMAGE_SUPPORT = %d\n", param_bool);
 }
 
@@ -93,27 +107,39 @@ opencl_dump_platform_info (cl_platform_id platform)
     cl_int status;
     char buf[100];
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clGetPlatformInfo, libOpenCL, cl_int);
+
     status = clGetPlatformInfo (
-	platform, 
-	CL_PLATFORM_NAME,
-	sizeof (buf),
-	buf,
-	NULL);
+        platform, 
+        CL_PLATFORM_NAME,
+        sizeof (buf),
+        buf,
+        NULL
+    );
+
     if (status != CL_SUCCESS) {
-	return status;
+        UNLOAD_LIBRARY (libOpenCL);
+        return status;
     }
     printf ("  Name = %s\n", buf);
 
     status = clGetPlatformInfo (
-	platform, 
-	CL_PLATFORM_VENDOR,
-	sizeof (buf),
-	buf,
-	NULL);
+        platform, 
+        CL_PLATFORM_VENDOR,
+        sizeof (buf),
+        buf,
+        NULL
+    );
+
     if (status != CL_SUCCESS) {
-	return status;
+        UNLOAD_LIBRARY (libOpenCL);
+        return status;
     }
     printf ("  Vendor = %s\n", buf);
+
+    UNLOAD_LIBRARY (libOpenCL);
+
 
     return CL_SUCCESS;
 }
@@ -125,33 +151,50 @@ opencl_select_platform (void)
     cl_uint num_platforms;
     cl_platform_id platform = NULL;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL (clGetPlatformIDs, libOpenCL, cl_int);
+
     status = clGetPlatformIDs (0, NULL, &num_platforms);
     if (status != CL_SUCCESS) {
-	print_and_exit ("Error in clGetPlatformIDs\n");
+        UNLOAD_LIBRARY (libOpenCL);
+        print_and_exit ("Error in clGetPlatformIDs\n");
     }
+
     if (num_platforms > 0) {
         unsigned int i;
-        cl_platform_id* platform_list = (cl_platform_id*) malloc (
-	    sizeof (cl_platform_id) * num_platforms);
-	printf ("Found %d platforms\n", num_platforms);
-        status = clGetPlatformIDs (num_platforms, platform_list, NULL);
-	if (status != CL_SUCCESS) {
-	    print_and_exit ("Error in clGetPlatformIDs\n");
-	}
-	
-        for (i = 0; i < num_platforms; i++)
-	{
-	    printf ("OpenCL platform [%d]\n", i);
-	    status = opencl_dump_platform_info (platform_list[i]);
-	    if (status != CL_SUCCESS) continue;
 
-	    /* Choose first platform (?) */
-	    if (!platform) {
-		platform = platform_list[i];
-	    }
-	}
-	free (platform_list);
+        cl_platform_id* platform_list = (cl_platform_id*) malloc (
+            sizeof (cl_platform_id) * num_platforms
+        );
+
+        printf ("Found %d platforms\n", num_platforms);
+
+        status = clGetPlatformIDs (num_platforms, platform_list, NULL);
+
+        if (status != CL_SUCCESS) {
+            UNLOAD_LIBRARY (libOpenCL);
+            print_and_exit ("Error in clGetPlatformIDs\n");
+        }
+    
+        for (i = 0; i < num_platforms; i++) {
+            printf ("OpenCL platform [%d]\n", i);
+            status = opencl_dump_platform_info (platform_list[i]);
+
+            if (status != CL_SUCCESS) {
+                continue;
+            }
+
+            /* Choose first platform (?) */
+            if (!platform) {
+                platform = platform_list[i];
+            }
+        }
+
+        free (platform_list);
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     return platform;
 }
 
@@ -159,9 +202,10 @@ void
 opencl_dump_devices (Opencl_device *ocl_dev)
 {
     printf ("Num_devices = %d\n", ocl_dev->device_count);
+
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
-	printf ("OpenCL device [%d]\n", i);
-	opencl_dump_device_info (ocl_dev->devices[i]);
+        printf ("OpenCL device [%d]\n", i);
+        opencl_dump_device_info (ocl_dev->devices[i]);
     }
 }
 
@@ -172,27 +216,37 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
     cl_int status;
 
     ocl_dev->command_queues = (cl_command_queue *) malloc (
-	ocl_dev->device_count * sizeof(cl_command_queue));
-    for (cl_uint i = 0; i < ocl_dev->device_count; i++)
-    {
-	cl_uint cxt_no;
+        ocl_dev->device_count * sizeof(cl_command_queue)
+    );
 
-	/* Find the right context depending if method a or b was used */
-	if (ocl_dev->context_count == 1) {
-	    cxt_no = 0;
-	} else {
-	    cxt_no = i;
-	}
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL (clCreateCommandQueue, libOpenCL, cl_command_queue);
 
-	ocl_dev->command_queues[i] = clCreateCommandQueue (
-	    ocl_dev->contexts[cxt_no], 
-	    ocl_dev->devices[i], 
-	    CL_QUEUE_PROFILING_ENABLE, 
-	    &status);
-	if (status != CL_SUCCESS) {
-	    return status;
-	}
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+        cl_uint cxt_no;
+
+        /* Find the right context depending if method a or b was used */
+        if (ocl_dev->context_count == 1) {
+            cxt_no = 0;
+        } else {
+            cxt_no = i;
+        }
+
+        ocl_dev->command_queues[i] = clCreateCommandQueue (
+            ocl_dev->contexts[cxt_no], 
+            ocl_dev->devices[i], 
+            CL_QUEUE_PROFILING_ENABLE, 
+            &status
+        );
+
+        if (status != CL_SUCCESS) {
+            UNLOAD_LIBRARY (libOpenCL);
+            return status;
+        }
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     return CL_SUCCESS;
 }
 
@@ -205,57 +259,74 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     cl_context_properties* cprops;
     size_t device_list_size;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL (clCreateContextFromType, libOpenCL, cl_context);
+    LOAD_SYMBOL (clGetContextInfo, libOpenCL, cl_int);
+
     if (ocl_dev->platform) {
-	cps[0] = CL_CONTEXT_PLATFORM;
-	cps[1] = (cl_context_properties) ocl_dev->platform;
-	cps[2] = 0;
-	cprops = cps;
+        cps[0] = CL_CONTEXT_PLATFORM;
+        cps[1] = (cl_context_properties) ocl_dev->platform;
+        cps[2] = 0;
+        cprops = cps;
     } else {
-	cprops = NULL;
+        cprops = NULL;
     }
 
     /* Create context from platform */
     ocl_dev->context_count = 1;
     ocl_dev->contexts = (cl_context*) malloc (sizeof(cl_context));
     ocl_dev->contexts[0] = clCreateContextFromType (
-	cprops, 
-	CL_DEVICE_TYPE_GPU, 
-	NULL, 
-	NULL, 
-	&status);
+        cprops, 
+        CL_DEVICE_TYPE_GPU, 
+        NULL, 
+        NULL, 
+        &status
+    );
+
     if (status != CL_SUCCESS) {
-	print_and_exit ("Error in clCreateContextFromType\n");
+        UNLOAD_LIBRARY (libOpenCL);
+        print_and_exit ("Error in clCreateContextFromType\n");
     }
 
     /* Get size of device list */
     status = clGetContextInfo (
-	ocl_dev->contexts[0], 
-	CL_CONTEXT_DEVICES, 
-	0, 
-	NULL, 
-	&device_list_size);
+        ocl_dev->contexts[0], 
+        CL_CONTEXT_DEVICES, 
+        0, 
+        NULL, 
+        &device_list_size
+    );
+
     if (status != CL_SUCCESS) {
-	print_and_exit ("Error in clGetContextInfo\n");
+        UNLOAD_LIBRARY (libOpenCL);
+        print_and_exit ("Error in clGetContextInfo\n");
     }
+
     if (device_list_size == 0) {
-	print_and_exit ("No devices found (clGetContextInfo)\n");
+        UNLOAD_LIBRARY (libOpenCL);
+        print_and_exit ("No devices found (clGetContextInfo)\n");
     }
 
     /* Get the device list data */
     ocl_dev->device_count = device_list_size / sizeof(cl_device_id);
     ocl_dev->devices = (cl_device_id *) malloc (device_list_size);
     status = clGetContextInfo (
-	ocl_dev->contexts[0], 
-	CL_CONTEXT_DEVICES, 
-	device_list_size, 
-	ocl_dev->devices, 
-	NULL);
+        ocl_dev->contexts[0], 
+        CL_CONTEXT_DEVICES, 
+        device_list_size, 
+        ocl_dev->devices, 
+        NULL
+    );
+
     if (status != CL_SUCCESS) { 
-	print_and_exit ("Error in clGetContextInfo\n");
+        UNLOAD_LIBRARY (libOpenCL);
+        print_and_exit ("Error in clGetContextInfo\n");
     }
 
     /* Print out a little status about the devices */
     opencl_dump_devices (ocl_dev);
+
+    UNLOAD_LIBRARY (libOpenCL);
 
     return CL_SUCCESS;
 }
@@ -268,35 +339,49 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     cl_context_properties cps[3];
     cl_context_properties* cprops;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL (clGetDeviceIDs, libOpenCL, cl_int);
+    LOAD_SYMBOL (clCreateContext, libOpenCL, cl_context);
+
     if (ocl_dev->platform) {
-	cps[0] = CL_CONTEXT_PLATFORM;
-	cps[1] = (cl_context_properties) ocl_dev->platform;
-	cps[2] = 0;
-	cprops = cps;
+        cps[0] = CL_CONTEXT_PLATFORM;
+        cps[1] = (cl_context_properties) ocl_dev->platform;
+        cps[2] = 0;
+        cprops = cps;
     } else {
-	cprops = NULL;
+        cprops = NULL;
     }
 
     /* Get number of devices of type GPU on this platform */
     status = clGetDeviceIDs (
-	ocl_dev->platform, 
-	CL_DEVICE_TYPE_GPU, 
-	0, 
-	NULL, 
-	&ocl_dev->device_count);
-    if (status != CL_SUCCESS) return status;
+        ocl_dev->platform, 
+        CL_DEVICE_TYPE_GPU, 
+        0, 
+        NULL, 
+        &ocl_dev->device_count
+    );
+
+    if (status != CL_SUCCESS) {
+        UNLOAD_LIBRARY (libOpenCL);
+        return status;
+    }
 
     /* Get list of device ids */
     ocl_dev->devices = (cl_device_id *) malloc (
-	ocl_dev->device_count * sizeof(cl_device_id));
+        ocl_dev->device_count * sizeof(cl_device_id)
+    );
+
     status = clGetDeviceIDs (
-	ocl_dev->platform, 
-	CL_DEVICE_TYPE_GPU, 
-	ocl_dev->device_count, 
-	ocl_dev->devices, 
-	NULL);
+        ocl_dev->platform, 
+        CL_DEVICE_TYPE_GPU, 
+        ocl_dev->device_count, 
+        ocl_dev->devices, 
+        NULL
+    );
+
     if (status != CL_SUCCESS) {
-	return status;
+        UNLOAD_LIBRARY (libOpenCL);
+        return status;
     }
 
     /* Print out a little status about the devices */
@@ -305,18 +390,22 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     /* Create context and command queue for each device */
     ocl_dev->context_count = ocl_dev->device_count;
     ocl_dev->contexts = (cl_context *) malloc (
-	ocl_dev->context_count * sizeof(cl_context));
-    for (cl_uint i = 0; i < ocl_dev->device_count; i++)
-    {
-	ocl_dev->contexts[i] = clCreateContext (
-	    cprops, 
-	    1, 
-	    &ocl_dev->devices[i], 
-	    NULL, 
-	    NULL, 
-	    &status);
-	opencl_check_error (status, "clCreateContext");
+    ocl_dev->context_count * sizeof(cl_context));
+
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+        ocl_dev->contexts[i] = clCreateContext (
+            cprops, 
+            1, 
+            &ocl_dev->devices[i], 
+            NULL, 
+            NULL, 
+            &status
+        );
+
+        opencl_check_error (status, "clCreateContext");
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
 
     return CL_SUCCESS;
 }
@@ -339,11 +428,12 @@ opencl_open_device (Opencl_device *ocl_dev)
     //status = opencl_create_context_a (ocl_dev);
     status = opencl_create_context_b (ocl_dev);
     if (status != CL_SUCCESS) {
-	return status;
+        return status;
     }
 
     /* Create command queues */
     status = opencl_create_command_queues (ocl_dev);
+
     return status;
 }
 
@@ -352,19 +442,31 @@ opencl_close_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clReleaseCommandQueue, libOpenCL, cl_int); 
+    LOAD_SYMBOL_SPECIAL (clReleaseContext, libOpenCL, cl_int); 
+
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
-	status = clReleaseCommandQueue (ocl_dev->command_queues[i]);
-	if (status != CL_SUCCESS) {
-	    print_and_exit ("Error in clReleaseCommandQueue\n");
-	}
-	status = clReleaseContext (ocl_dev->contexts[i]);
-	if (status != CL_SUCCESS) {
-	    print_and_exit ("Error in clReleaseContext\n");
-	}
+        status = clReleaseCommandQueue (ocl_dev->command_queues[i]);
+
+        if (status != CL_SUCCESS) {
+            UNLOAD_LIBRARY (libOpenCL);
+            print_and_exit ("Error in clReleaseCommandQueue\n");
+        }
+
+        status = clReleaseContext (ocl_dev->contexts[i]);
+
+        if (status != CL_SUCCESS) {
+            UNLOAD_LIBRARY (libOpenCL);
+            print_and_exit ("Error in clReleaseContext\n");
+        }
     }
+
     free (ocl_dev->devices);
     free (ocl_dev->contexts);
     free (ocl_dev->command_queues);
+
+    UNLOAD_LIBRARY (libOpenCL);
 }
 
 Opencl_buf* 
@@ -379,17 +481,27 @@ opencl_buf_create (
        For now we create one per context.  Each device buffer 
        is a copy of the input buffer. */
     Opencl_buf* ocl_buf = (Opencl_buf*) malloc (
-	ocl_dev->context_count * sizeof(Opencl_buf));
+    ocl_dev->context_count * sizeof(Opencl_buf));
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clCreateBuffer, libOpenCL, cl_mem); 
+
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
-	cl_int status;
-	    ocl_buf[i] = clCreateBuffer (
-		ocl_dev->contexts[i], 
-		flags, 
-		buffer_size, 
-		buffer, 
-		&status);
-	opencl_check_error (status, "clCreateBuffer");
+        cl_int status;
+
+        ocl_buf[i] = clCreateBuffer (
+            ocl_dev->contexts[i], 
+            flags, 
+            buffer_size, 
+            buffer, 
+            &status
+        );
+
+        opencl_check_error (status, "clCreateBuffer");
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     return ocl_buf;
 }
 
@@ -405,16 +517,24 @@ opencl_buf_read (
        assign data to different devices.  */
     /* The below logic assumes only one device (for now).  */
     cl_int status;
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clEnqueueReadBuffer, libOpenCL, cl_int);
+
     status = clEnqueueReadBuffer (
-	ocl_dev->command_queues[0], 
-	ocl_buf[0], 
-	CL_TRUE, 
-	0, 
-	buffer_size, 
-	buffer, 
-	0,
-	NULL,
-	NULL);
+        ocl_dev->command_queues[0], 
+        ocl_buf[0], 
+        CL_TRUE, 
+        0, 
+        buffer_size, 
+        buffer, 
+        0,
+        NULL,
+        NULL
+    );
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     opencl_check_error (status, "clEnqueueReadBuffer");
 }
 
@@ -430,16 +550,24 @@ opencl_buf_write (
        assign data to different devices.  */
     /* The below logic assumes only one device (for now).  */
     cl_int status;
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clEnqueueWriteBuffer, libOpenCL, cl_int);
+
     status = clEnqueueWriteBuffer (
-	ocl_dev->command_queues[0], 
-	ocl_buf[0], 
-	CL_TRUE, 
-	0, 
-	buffer_size, 
-	buffer, 
-	0,
-	NULL,
-	NULL);
+        ocl_dev->command_queues[0], 
+        ocl_buf[0], 
+        CL_TRUE, 
+        0, 
+        buffer_size, 
+        buffer, 
+        0,
+        NULL,
+        NULL
+    );
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     opencl_check_error (status, "clEnqueueWriteBuffer");
 }
 
@@ -450,15 +578,23 @@ opencl_kernel_create (
 )
 {
     ocl_dev->kernels = (cl_kernel*) malloc (
-	ocl_dev->device_count * sizeof(cl_kernel));
+    ocl_dev->device_count * sizeof(cl_kernel));
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clCreateKernel, libOpenCL, cl_kernel);
+
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
-	cl_int status;
-	ocl_dev->kernels[i] = clCreateKernel (
-	    ocl_dev->programs[i], 
-	    kernel_name, 
-	    &status);
-	opencl_check_error (status, "clCreateKernel");
+        cl_int status;
+        ocl_dev->kernels[i] = clCreateKernel (
+            ocl_dev->programs[i], 
+            kernel_name, 
+            &status
+        );
+
+        opencl_check_error (status, "clCreateKernel");
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
 }
 
 void
@@ -472,6 +608,10 @@ opencl_load_programs (
     const char *buf_cstr;
     size_t len;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clCreateProgramWithSource, libOpenCL, cl_program);
+    LOAD_SYMBOL_SPECIAL (clBuildProgram, libOpenCL, cl_int);
+
     /* Load the file contents into a string */
     buf = file_load (filename);
 
@@ -479,41 +619,51 @@ opencl_load_programs (
     buf_cstr = (const char*) (*buf);
     len = (size_t) buf->length ();
     ocl_dev->programs = (cl_program*) malloc (
-	ocl_dev->device_count * sizeof(cl_program));
-    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
-	ocl_dev->programs[i] = clCreateProgramWithSource (
-	    ocl_dev->contexts[i], 
-	    1, 
-	    &buf_cstr, 
-	    &len, 
-	    &status);
-	opencl_check_error (status, 
-	    "Error calling clCreateProgramWithSource.");
+    ocl_dev->device_count * sizeof(cl_program));
 
-	/* Here we need to find the devices associated with this context,
-	   which depends on if method a or b was used. */
-	if (ocl_dev->context_count == 1) {
-	    status = clBuildProgram (
-		ocl_dev->programs[i], 
-		ocl_dev->device_count, 
-		ocl_dev->devices, 
-		NULL, 
-		NULL, 
-		NULL);
-	} else {
-	    status = clBuildProgram (
-		ocl_dev->programs[i], 
-		1, 
-		&ocl_dev->devices[i], 
-		NULL, 
-		NULL, 
-		NULL);
-	}
-	if (status != CL_SUCCESS) {
-	    opencl_dump_build_log (ocl_dev, ocl_dev->programs[i]);
-	    opencl_check_error (status, "Error calling clBuildProgram.");
-	}
+    for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
+
+        ocl_dev->programs[i] = clCreateProgramWithSource (
+            ocl_dev->contexts[i], 
+            1, 
+            &buf_cstr, 
+            &len, 
+            &status
+        );
+
+        opencl_check_error (status, 
+            "Error calling clCreateProgramWithSource.");
+
+        /* Here we need to find the devices associated with this context,
+           which depends on if method a or b was used. */
+        if (ocl_dev->context_count == 1) {
+            status = clBuildProgram (
+                ocl_dev->programs[i], 
+                ocl_dev->device_count, 
+                ocl_dev->devices, 
+                NULL, 
+                NULL, 
+                NULL
+            );
+        } else {
+            status = clBuildProgram (
+                ocl_dev->programs[i], 
+                1, 
+                &ocl_dev->devices[i], 
+                NULL, 
+                NULL, 
+                NULL
+            );
+        }
+
+        if (status != CL_SUCCESS) {
+            UNLOAD_LIBRARY (libOpenCL);
+            opencl_dump_build_log (ocl_dev, ocl_dev->programs[i]);
+            opencl_check_error (status, "Error calling clBuildProgram.");
+        }
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
 
     /* Free the string with file contents */
     delete buf;
@@ -534,20 +684,29 @@ opencl_set_kernel_args (
     /* Set the arguments */
     va_start (va, ocl_dev);
     arg_index = 0;
+
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clSetKernelArg, libOpenCL, cl_int);
+
     while ((arg_size = va_arg (va, size_t)) != 0) {
-	arg = va_arg (va, void*);
+        arg = va_arg (va, void*);
 
-	/* Here I would add the loop for each device... */
-	/* But instead just send to kernel 0 */
-	//printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
+        /* Here I would add the loop for each device... */
+        /* But instead just send to kernel 0 */
+        //printf ("OKE: %d %d %p\n", arg_index, arg_size, arg);
 
-	status = clSetKernelArg (
-	    ocl_dev->kernels[0], 
-	    arg_index ++, 
-	    arg_size, 
-	    arg);
-	opencl_check_error (status, "clSetKernelArg");
+        status = clSetKernelArg (
+            ocl_dev->kernels[0], 
+            arg_index++, 
+            arg_size, 
+            arg
+        );
+
+        opencl_check_error (status, "clSetKernelArg");
     }
+
+    UNLOAD_LIBRARY (libOpenCL);
+
     va_end (va);
 }
 
@@ -561,23 +720,31 @@ opencl_kernel_enqueue (
     cl_event events[2];
     cl_int status;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clEnqueueNDRangeKernel, libOpenCL, cl_int);
+    LOAD_SYMBOL_SPECIAL (clWaitForEvents, libOpenCL, cl_int);
+
     /* Add kernel to the queue */
     status = clEnqueueNDRangeKernel (
-	ocl_dev->command_queues[0], 
-	ocl_dev->kernels[0], 
-	1, 
-	NULL, 
-	&global_work_size, 
-	&local_work_size, 
-	0, 
-	NULL, 
-	&events[0]);
+        ocl_dev->command_queues[0], 
+        ocl_dev->kernels[0], 
+        1, 
+        NULL, 
+        &global_work_size, 
+        &local_work_size, 
+        0, 
+        NULL, 
+        &events[0]
+    )
+
     opencl_check_error (status, "clEnqueueNDRangeKernel");
 
     status = clWaitForEvents(1, &events[0]);
     opencl_check_error (status, "clWaitForEvents");
 
     clReleaseEvent(events[0]);
+
+    UNLOAD_LIBRARY (libOpenCL);
 }
 
 cl_ulong 
@@ -585,10 +752,26 @@ opencl_timer (cl_event &event)
 {
     cl_ulong start, end;
 
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clGetEventProfilingInfo, libOpenCL, cl_int);
+
     clGetEventProfilingInfo (
-	event, CL_PROFILING_COMMAND_END, sizeof(cl_ulong), &end, NULL);
+        event,
+        CL_PROFILING_COMMAND_END,
+        sizeof(cl_ulong),
+        &end,
+        NULL
+    );
+
     clGetEventProfilingInfo (
-	event, CL_PROFILING_COMMAND_START, sizeof(cl_ulong), &start, NULL);
+        event,
+        CL_PROFILING_COMMAND_START,
+        sizeof(cl_ulong),
+        &start,
+        NULL
+    );
+
+    UNLOAD_LIBRARY (libOpenCL);
 
     return (end - start);
 }
@@ -599,10 +782,22 @@ opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
     cl_int rc;
     char buf[10240];
 
-    rc = clGetProgramBuildInfo (program, ocl_dev->devices[0], 
-	CL_PROGRAM_BUILD_LOG, sizeof(buf), buf, NULL);
+    LOAD_LIBRARY (libOpenCL);
+    LOAD_SYMBOL_SPECIAL (clGetProgramBuildInfo, libOpenCL, cl_int);
+
+    rc = clGetProgramBuildInfo (
+        program,
+        ocl_dev->devices[0], 
+        CL_PROGRAM_BUILD_LOG,
+        sizeof(buf),
+        buf,
+        NULL
+    );
+
     opencl_check_error (rc, "clGetProgramBuildInfo");
     printf ("Build log:\n%s\n", buf);
+
+    UNLOAD_LIBRARY (libOpenCL);
 }
 
 const char*
@@ -675,9 +870,11 @@ opencl_error_string (cl_int status)
         "CL_INVALID_GLOBAL_WORK_SIZE",
     };
     status = -status;
+
     if (status < 0 || status >= (cl_int) sizeof(error_strings)) {
-	return "";
+        return "";
     }
+
     return error_strings[status];
 }
 
@@ -686,6 +883,6 @@ opencl_check_error (cl_int status, const char *msg)
 {
     if (status != CL_SUCCESS) {
         print_and_exit ("OPENCL ERROR: %s (%d,%s).\n", 
-	    msg, status, opencl_error_string (status));
+        msg, status, opencl_error_string (status));
     }                         
 }
