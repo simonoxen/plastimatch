@@ -23,6 +23,11 @@
 #include <CL/cl.h>
 #endif
 
+// Needed for delay loading windows DLLs
+#if _WIN32
+    #pragma comment(lib, "delayimp")
+    #pragma comment(lib, "user32")
+#endif
 
 #if defined __cplusplus
 extern "C" {
@@ -483,6 +488,19 @@ __clEnqueueBarrier(cl_command_queue /* command_queue */) CL_API_SUFFIX__VERSION_
 
 #if defined __cplusplus
 }
+#endif
+
+// JAS 2010.12.10
+// OpenCL is special since the OpenCL dev stuff
+// doesn't include return typedefs... so we make them
+// oursevles (see delayload_opencl.h) and we have a
+// special casting dlsym() macro for it.
+#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
+    #define LOAD_SYMBOL_OPENCL(sym, lib, type)    \
+        sym = (__##sym *)dlsym (lib, #sym);   
+#else
+    #define LOAD_SYMBOL_OPENCL(sym, lib, type)    \
+        ;
 #endif
 
 #endif

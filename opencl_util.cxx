@@ -13,6 +13,7 @@
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "delayload.h"
+#include "delayload_opencl.h"
 
 
 #define dynload
