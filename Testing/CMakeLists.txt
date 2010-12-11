@@ -110,25 +110,19 @@ IF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
 ENDIF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
 TARGET_LINK_LIBRARIES (bspline_test_1 ${GPUIT_LIBRARIES})
 
-ADD_EXECUTABLE (plm_registration_api_1 plm_registration_api_1.cxx)
+ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx)
 IF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES (plm_registration_api_1 
+  SET_TARGET_PROPERTIES (plm_drr_api_a 
     PROPERTIES LINK_FLAGS ${GPUIT_LDFLAGS})
 ENDIF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
-TARGET_LINK_LIBRARIES (plm_registration_api_1 ${PLASTIMATCH_LIBS})
+TARGET_LINK_LIBRARIES (plm_drr_api_a ${PLASTIMATCH_LIBS})
 
-IF (COMMENTOUT)
-SET(BSPLINE_TEST_LDFLAGS "")
-IF (NOT WIN32)
-    SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} -ldl")
-ELSE (NOT WIN32)
-    SET (BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} /DELAYLOAD:plmcuda.dll")
-ENDIF (NOT WIN32)
-
-IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-  SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} ${OPENMP_LDFLAGS}")
-ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-ENDIF (COMMENTOUT)
+ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx)
+IF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+  SET_TARGET_PROPERTIES (plm_registration_api_a 
+    PROPERTIES LINK_FLAGS ${GPUIT_LDFLAGS})
+ENDIF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+TARGET_LINK_LIBRARIES (plm_registration_api_a ${PLASTIMATCH_LIBS})
 
 
 ## -------------------------------------------------------------------------
@@ -1589,11 +1583,19 @@ ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## plm-api - Tests of plastimatch API
+##   plm drr api a:
+##   plm registration api a:
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
-  "plm-registration-api-1"
+  "plm-drr-api-a"
   ""
-  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_registration_api_1
+  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_drr_api_a
+  ""
+  )
+PLM_ADD_TEST (
+  "plm-registration-api-a"
+  ""
+  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_registration_api_a
   ""
   )
 
