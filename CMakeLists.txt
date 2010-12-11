@@ -864,7 +864,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
   plm_drr_api.cxx plm_drr_api.h 
-  plm_registration_api.cxx plm_registration_api.h 
   plm_file_format.cxx plm_file_format.h 
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 
@@ -874,6 +873,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_int.h
   plm_parms.cxx plm_parms.h 
   plm_register_loadable.cxx plm_register_loadable.h 
+  plm_registration_api.cxx plm_registration_api.h 
   plm_stages.cxx plm_stages.h 
   plm_version.h 
   plm_warp.cxx plm_warp.h 
@@ -1196,6 +1196,9 @@ ENDIF (SSE2_FOUND)
 ##-----------------------------------------------------------------------------
 CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
+
+CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_api_config.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/plm_api_config.h)
 
 CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)

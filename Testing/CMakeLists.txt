@@ -1,5 +1,8 @@
 PROJECT(PLM_Testing)
 
+## -------------------------------------------------------------------------
+## Download data sets
+## -------------------------------------------------------------------------
 MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   IF (NOT EXISTS ${DOWNLOAD_FILENAME})
     MESSAGE (STATUS "Downloading test data")
@@ -18,6 +21,40 @@ MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   ENDIF (NOT EXISTS ${DOWNLOAD_DIR})
 ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
 
+IF (PLM_TEST_DICOMRT_XIO)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+ENDIF (PLM_TEST_DICOMRT_XIO)
+
+IF (PLM_TEST_DICOMRT_PINNACLE)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
+ENDIF (PLM_TEST_DICOMRT_PINNACLE)
+
+IF (PLM_TEST_FDK_VARIAN)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/varian-catphan.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/varian-catphan")
+ENDIF (PLM_TEST_FDK_VARIAN)
+
+IF (PLM_TEST_XIO)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+ENDIF (PLM_TEST_XIO)
+
+## -------------------------------------------------------------------------
+## Copy plugin library
+##   GCS: N.b. I don't think this is necessary.  There is no need to 
+##   copy gpuit or plastimatch1 libraries.  Instead we set the extra path 
+##   as an argument to PLM_ADD_TEST.
+## -------------------------------------------------------------------------
 # JAS 2010.11.23
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
@@ -63,37 +100,36 @@ IF (PLM_USE_GPU_PLUGINS)
     ENDIF (CUDA_FOUND)
 ENDIF (PLM_USE_GPU_PLUGINS)
 
+## -------------------------------------------------------------------------
+## Test code targets
+## -------------------------------------------------------------------------
+ADD_EXECUTABLE (bspline_test_1 bspline_test_1.cxx)
+IF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+  SET_TARGET_PROPERTIES(bspline_test_1 
+    PROPERTIES LINK_FLAGS ${GPUIT_LDFLAGS})
+ENDIF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+TARGET_LINK_LIBRARIES (bspline_test_1 ${GPUIT_LIBRARIES})
 
+ADD_EXECUTABLE (plm_registration_api_1 plm_registration_api_1.cxx)
+IF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+  SET_TARGET_PROPERTIES (plm_registration_api_1 
+    PROPERTIES LINK_FLAGS ${GPUIT_LDFLAGS})
+ENDIF (NOT ${GPUIT_LDFLAGS} STREQUAL "")
+TARGET_LINK_LIBRARIES (plm_registration_api_1 ${PLASTIMATCH_LIBS})
 
-IF (PLM_TEST_DICOMRT_XIO)
-  PLM_DOWNLOAD_AND_EXTRACT (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-ENDIF (PLM_TEST_DICOMRT_XIO)
+IF (COMMENTOUT)
+SET(BSPLINE_TEST_LDFLAGS "")
+IF (NOT WIN32)
+    SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} -ldl")
+ELSE (NOT WIN32)
+    SET (BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} /DELAYLOAD:plmcuda.dll")
+ENDIF (NOT WIN32)
 
-IF (PLM_TEST_DICOMRT_PINNACLE)
-  PLM_DOWNLOAD_AND_EXTRACT (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
-ENDIF (PLM_TEST_DICOMRT_PINNACLE)
+IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
+  SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} ${OPENMP_LDFLAGS}")
+ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
+ENDIF (COMMENTOUT)
 
-IF (PLM_TEST_FDK_VARIAN)
-  PLM_DOWNLOAD_AND_EXTRACT (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/varian-catphan.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/varian-catphan")
-ENDIF (PLM_TEST_FDK_VARIAN)
-
-IF (PLM_TEST_XIO)
-  PLM_DOWNLOAD_AND_EXTRACT (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
-ENDIF (PLM_TEST_XIO)
-
-SET (SYNTH_MHA_SIZE 38)
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
@@ -110,6 +146,8 @@ SET (SYNTH_MHA_SIZE 38)
 ##   rect-3.mha    Standard rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ## -------------------------------------------------------------------------
+SET (SYNTH_MHA_SIZE 38)
+
 PLM_ADD_TEST (
   "gauss-1"
   ""
@@ -203,26 +241,6 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_TESTING_PATH}/bspline_test_1
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt"
   )
-
-ADD_EXECUTABLE(bspline_test_1 bspline_test_1.cxx)
-SET(BSPLINE_TEST_LDFLAGS "")
-
-IF (NOT WIN32)
-    SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} -ldl")
-ELSE (NOT WIN32)
-    SET (BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} /DELAYLOAD:plmcuda.dll")
-ENDIF (NOT WIN32)
-
-IF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-  SET(BSPLINE_TEST_LDFLAGS "${BSPLINE_TEST_LDFLAGS} ${OPENMP_LDFLAGS}")
-ENDIF(NOT ${OPENMP_LDFLAGS} STREQUAL "")
-
-IF(NOT ${BSPLINE_TEST_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES(bspline_test_1 PROPERTIES LINK_FLAGS ${BSPLINE_TEST_LDFLAGS})
-ENDIF(NOT ${BSPLINE_TEST_LDFLAGS} STREQUAL "")
-
-TARGET_LINK_LIBRARIES(bspline_test_1 ${GPUIT_LIBRARIES})
-
 ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt"
   "${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt")
@@ -1569,6 +1587,15 @@ ADD_TEST (
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
+## -------------------------------------------------------------------------
+## plm-api - Tests of plastimatch API
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-registration-api-1"
+  ""
+  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_registration_api_1
+  ""
+  )
 
 ## -------------------------------------------------------------------------
 ## bragg-curve
