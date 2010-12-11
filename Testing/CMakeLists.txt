@@ -432,10 +432,12 @@ ADD_TEST (demons-cuda-a-check
 
 ## -------------------------------------------------------------------------
 ## drr
-##   drr-a   gauss-1.mha (normal image), exact
-##   drr-b   gauss-1.mha (normal image), uniform
-##   drr-c   gauss-4.mha (negative spacing), exact
-##   drr-d   gauss-4.mha (negative spacing), uniform
+##   drr-a       gauss-1.mha (normal image), exact
+##   drr-b       gauss-1.mha (normal image), uniform
+##   drr-c       gauss-4.mha (negative spacing), exact
+##   drr-d       gauss-4.mha (negative spacing), uniform
+##   drr-cuda    gauss-1.mha, uniform
+##   drr-opencl  gauss-1.mha, uniform
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "drr-a"
@@ -525,9 +527,6 @@ ADD_TEST (
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
-## -------------------------------------------------------------------------
-## drr-cuda
-## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "drr-cuda"
   ""
@@ -544,6 +543,28 @@ ADD_TEST (
   "drr-cuda-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-cuda-stats.stdout.txt"
+  "-DREGEX=MAX *([-0-9.]*)"
+  "-DLOWER_THRESH=0.045"
+  "-DUPPER_THRESH=0.055"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+
+PLM_ADD_TEST (
+  "drr-opencl"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/drr
+  "-A;opencl;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
+  )
+PLM_ADD_TEST (
+  "drr-opencl-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_0010.pfm"
+  )
+ADD_TEST (
+  "drr-opencl-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-opencl-stats.stdout.txt"
   "-DREGEX=MAX *([-0-9.]*)"
   "-DLOWER_THRESH=0.045"
   "-DUPPER_THRESH=0.055"

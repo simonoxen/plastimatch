@@ -217,8 +217,8 @@ IF (PLM_REDUCED_TESTS)
     "rect-2"
     "rect-3"
     "sphere-1"
-#    "bspline-bxf"
-#    "bspline-bxf-check"
+    "bspline-bxf"
+    "bspline-bxf-check"
     "bspline-a"
     "bspline-a-check"
     "bspline-b"
@@ -392,6 +392,9 @@ IF (PLM_REDUCED_TESTS)
     "plm-warp-h" 
     "plm-warp-h-stats-1"
     "plm-warp-h-check-1"
+
+    "plm-drr-api-a"
+    "plm-registration-api-a"
 
     "bragg-curve"
     "bragg-curve-check"
