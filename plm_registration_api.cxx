@@ -6,5 +6,5 @@
 #include <string.h>
 #include <stdlib.h>
 #define PLM_INTERNAL
-#include "plm_api.h"
+#include "plm_registration_api.h"
 

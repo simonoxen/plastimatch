@@ -863,7 +863,8 @@ SET (PLASTIMATCH_LIBRARY_SRC
   landmark_warp.cxx landmark_warp.h 
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
-  plm_api.cxx plm_api.h 
+  plm_drr_api.cxx plm_drr_api.h 
+  plm_registration_api.cxx plm_registration_api.h 
   plm_file_format.cxx plm_file_format.h 
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 

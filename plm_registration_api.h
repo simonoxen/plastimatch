@@ -5,6 +5,7 @@
 #define _plm_api_h_
 
 #ifdef PLM_INTERNAL
+
 /* Internal definition of API */
 #include "plm_config.h"
 #include "itk_image.h"
@@ -16,7 +17,8 @@ struct plm_registration_context {
     char *command_string;
     int status;
 };
-#else
+
+#else /* PLM_INTERNAL */
 
 /* External users of API */
 # ifdef plastimatch1_EXPORTS
@@ -26,8 +28,8 @@ struct plm_registration_context {
 # endif
 
 typedef (void*) Plm_registration_context;
-#endif
 
+#endif /* PLM_INTERNAL */
 #if defined __cplusplus
 extern "C" {
 #endif

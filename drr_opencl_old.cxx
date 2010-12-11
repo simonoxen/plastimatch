@@ -286,9 +286,6 @@ void drr_opencl_render_volume (
     Drr_options* options
 )
 {
-    Opencl_device ocl_dev;
-
-#if defined (commentout)
     /* Declare all global memory buffers */
     cl_mem g_dev_vol[MAX_GPU_COUNT];
     cl_mem g_dev_img[MAX_GPU_COUNT];
@@ -321,7 +318,6 @@ void drr_opencl_render_volume (
     size_t drr_local_work_size[MAX_GPU_COUNT][2];
     size_t drr_global_work_size[MAX_GPU_COUNT][2];
     size_t work_per_device[MAX_GPU_COUNT][3];
-#endif
 
     /* Calculate dynamic size of memory buffers */
     int image_height = options->image_window[1] - options->image_window[0] + 1;
@@ -331,6 +327,7 @@ void drr_opencl_render_volume (
     int img_size = image_height * image_width * sizeof(float);
     size_t work_total[3] = {image_width, image_height, 0};
 
+    Opencl_device ocl_dev;
     opencl_open_device (&ocl_dev);
     opencl_load_programs (&ocl_dev, "drr_opencl.cl");
 

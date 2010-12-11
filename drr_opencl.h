@@ -1,13 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef _DRR_OPENCL_H_
 #define _DRR_OPENCL_H_
+#include "plm_config.h"
 
-/*****************
-*  C   #includes *
-*****************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
 #include "volume.h"
 #include "drr_opts.h"
 
