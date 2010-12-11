@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void drr_opencl_render_volume (Volume* vol, Drr_options* options);
 
 #if defined __cplusplus
