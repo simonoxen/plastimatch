@@ -134,63 +134,6 @@ main (int argc, char* argv[])
 	}
     }
 
-#if defined (commentout)
-    /* Assuming vector field has been created, update warped landmarks*/
-    if (options.warped_landmarks && options.fixed_landmarks 
-	&& options.moving_landmarks)
-    {
-	printf ("Creating warped landmarks\n");
-	bspline_landmarks_warp (vector_field, parms, bxf, fixed, moving);
-	if (options.warped_landmarks) {
-	    printf("Writing warped landmarks\n");
-	    bspline_landmarks_write_file( options.warped_landmarks, "warped", 
-		parms->landmarks->warped_landmarks, 
-		parms->landmarks->num_landmarks );
-	}
-    }
-
-#if defined (PLM_MONOLITHIC_LIBRARY)
-    /* If using radial basis functions, find coeffs and update vector field */
-    if (parms->rbf_radius>0) {
-	printf ("Radial basis functions requested, radius %.2f\n", 
-	    parms->rbf_radius);
-	if (!vector_field) {
-	    printf ("Sorry, vector field must be present for RBF. Please use -O or -V\n");
-	} else {
-	    printf ("Warping image before RBF.\n");
-	    moving_warped = vf_warp (0, moving, vector_field);
-	    write_mha ("wnorbf.mha", moving_warped);
-	    if ( parms->landmarks->num_landmarks < 1 ) {
-		printf("Sorry, no landmarks found\n");
-	    } else {
-		/* Do actual RBF adjustment */
-		bspline_rbf_find_coeffs( vector_field, parms );
-		bspline_rbf_update_vector_field( vector_field, parms );
-		bspline_landmarks_warp (vector_field, parms, bxf, 
-		    fixed, moving);
-		if (options.warped_landmarks) {
-		    bspline_landmarks_write_file (
-			options.warped_landmarks, "warp_and_rbf", 
-			parms->landmarks->warped_landmarks, 
-			parms->landmarks->num_landmarks);
-		}
-		/* Creating and writing vector field only from RBF (for test only) */
-		/*
-		  zero_vector_field = volume_create (fixed->dim, fixed->offset, 
-		  fixed->pix_spacing,
-		  PT_VF_FLOAT_INTERLEAVED, 
-		  fixed->direction_cosines, 0);
-		  bspline_rbf_update_vector_field( zero_vector_field, parms );
-		  printf ("Writing RBF-only vector field.\n");
-		  write_mha ("nsh-vf-rbf-only.mha", zero_vector_field);
-		  volume_destroy (zero_vector_field);
-		*/
-	    }
-	}
-    }
-#endif
-#endif
-
     /* Create warped output image and save */
     if (options.output_warped_fn) {
 	printf ("Warping image.\n");
