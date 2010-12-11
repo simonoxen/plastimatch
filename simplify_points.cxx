@@ -55,13 +55,14 @@ do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
     for(int j=0;j<num_structures;j++){
 	curr_struct=rtds->m_ss_image->m_cxt->slist[j];
 	for(int k=0;k<curr_struct->num_contours;k++){
+		int *index, *ordered_index;
 		gnr.restart();
 		curr_polyline=curr_struct->pslist[k];
 		PointSetSimplifyType::PointType curr_point;
 		PointsSimplifyContainer::Pointer points = PointsSimplifyContainer::New();
 		PointsSimplifyContainer::Pointer shuffled_points = PointsSimplifyContainer::New();
-		int index[curr_polyline->num_vertices];
-		int ordered_index[curr_polyline->num_vertices];	
+		index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
+		ordered_index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
 		
 		//extract vertices of the current contour and extract random indices
 		for(int j=0;j<curr_polyline->num_vertices;j++){
@@ -98,6 +99,8 @@ do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
 		new_polyline->y[first_index_to_remove]=curr_point[1];
 		new_polyline->z[first_index_to_remove]=curr_point[2];
 		curr_struct->pslist[k]=new_polyline;
+		free (index);
+		free (ordered_index);
 	}
     }
 }
