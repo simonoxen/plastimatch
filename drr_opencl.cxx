@@ -37,23 +37,12 @@ drr_opencl_ray_trace_image (
     Opencl_device ocl_dev;
     Opencl_buf *ocl_buf_img;
     Opencl_buf *ocl_buf_vol;
-    Opencl_buf *ocl_buf_vol_dim;
-    Opencl_buf *ocl_buf_vol_offset;
-    Opencl_buf *ocl_buf_vol_spacing;
-    Opencl_buf *ocl_buf_img_dim;
-    Opencl_buf *ocl_buf_ic;
-    Opencl_buf *ocl_buf_img_window;
-    Opencl_buf *ocl_buf_p1;
-    Opencl_buf *ocl_buf_ul_room;
-    Opencl_buf *ocl_buf_incr_r;
-    Opencl_buf *ocl_buf_incr_c;
-    Opencl_buf *ocl_buf_nrm;
-    Opencl_buf *ocl_buf_lower_limit;
-    Opencl_buf *ocl_buf_upper_limit;
 
     Proj_matrix *pmat = proj->pmat;
-    float tmp[3];
-    float sad;
+    cl_float2 ocl_ic;
+    cl_float4 ocl_p1, ocl_ul_room, ocl_incr_r, ocl_incr_c;
+    cl_float4 ocl_nrm, ocl_lower_limit, ocl_upper_limit;
+    cl_float ocl_sad;
 
     /* Set up devices and kernels */
     opencl_open_device (&ocl_dev);
@@ -75,146 +64,47 @@ drr_opencl_ray_trace_image (
         0
     );
 
-    ocl_buf_vol_dim = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        3 * sizeof(int),
-        vol->dim
-    );
-
-    ocl_buf_vol_offset = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        3 * sizeof(float),
-        vol->offset
-    );
-
-    ocl_buf_vol_spacing = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        3 * sizeof(float),
-        vol->pix_spacing
-    );
-
-    ocl_buf_img_dim = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        2 * sizeof(int),
-        proj->dim
-    );
-
-    ocl_buf_ic = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        2 * sizeof(float),
-	0
-    );
-
-    ocl_buf_img_window = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        4 * sizeof(int),
-	options->image_window
-    );
-
-    ocl_buf_p1 = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_ul_room = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_incr_r = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_incr_c = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_nrm = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_lower_limit = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
-    ocl_buf_upper_limit = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        3 * sizeof(float),
-	0
-    );
-
     /* Copy ic to device (convert from double to float) */
-    tmp[0] = proj->pmat->ic[0];
-    tmp[1] = proj->pmat->ic[1];
-    opencl_buf_write (&ocl_dev, ocl_buf_ic, 2 * sizeof(float), tmp);
+    ocl_ic.x = proj->pmat->ic[0];
+    ocl_ic.y = proj->pmat->ic[1];
 
     /* Copy p1 to device (convert from double to float) */
-    tmp[0] = p1[0];
-    tmp[1] = p1[1];
-    tmp[2] = p1[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_p1, 3 * sizeof(float), tmp);
+    ocl_p1.x = p1[0];
+    ocl_p1.y = p1[1];
+    ocl_p1.z = p1[2];
 
     /* Copy ul_room to device (convert from double to float) */
-    tmp[0] = ul_room[0];
-    tmp[1] = ul_room[1];
-    tmp[2] = ul_room[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_ul_room, 3 * sizeof(float), tmp);
+    ocl_ul_room.x = ul_room[0];
+    ocl_ul_room.y = ul_room[1];
+    ocl_ul_room.z = ul_room[2];
 
     /* Copy incr_r to device (convert from double to float) */
-    tmp[0] = incr_r[0];
-    tmp[1] = incr_r[1];
-    tmp[2] = incr_r[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_incr_r, 3 * sizeof(float), tmp);
+    ocl_incr_r.x = incr_r[0];
+    ocl_incr_r.y = incr_r[1];
+    ocl_incr_r.z = incr_r[2];
 
     /* Copy incr_c to device (convert from double to float) */
-    tmp[0] = incr_c[0];
-    tmp[1] = incr_c[1];
-    tmp[2] = incr_c[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_incr_c, 3 * sizeof(float), tmp);
+    ocl_incr_c.x = incr_c[0];
+    ocl_incr_c.y = incr_c[1];
+    ocl_incr_c.z = incr_c[2];
 
     /* Copy nrm to device (convert from double to float) */
-    tmp[0] = pmat->nrm[0];
-    tmp[1] = pmat->nrm[1];
-    tmp[2] = pmat->nrm[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_nrm, 3 * sizeof(float), tmp);
+    ocl_nrm.x = pmat->nrm[0];
+    ocl_nrm.y = pmat->nrm[1];
+    ocl_nrm.z = pmat->nrm[2];
 
     /* Copy lower_limit to device (convert from double to float) */
-    tmp[0] = vol_limit->lower_limit[0];
-    tmp[1] = vol_limit->lower_limit[1];
-    tmp[2] = vol_limit->lower_limit[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_lower_limit, 3 * sizeof(float), tmp);
+    ocl_lower_limit.x = vol_limit->lower_limit[0];
+    ocl_lower_limit.y = vol_limit->lower_limit[1];
+    ocl_lower_limit.z = vol_limit->lower_limit[2];
     
     /* Copy upper_limit to device (convert from double to float) */
-    tmp[0] = vol_limit->upper_limit[0];
-    tmp[1] = vol_limit->upper_limit[1];
-    tmp[2] = vol_limit->upper_limit[2];
-    opencl_buf_write (&ocl_dev, ocl_buf_upper_limit, 3 * sizeof(float), tmp);
+    ocl_upper_limit.x = vol_limit->upper_limit[0];
+    ocl_upper_limit.y = vol_limit->upper_limit[1];
+    ocl_upper_limit.z = vol_limit->upper_limit[2];
 
     /* Convert sad from double to float */
-    sad = proj->pmat->sad;
+    ocl_sad = proj->pmat->sad;
 
     /* Set drr kernel arguments */
     opencl_set_kernel_args (
@@ -225,16 +115,16 @@ drr_opencl_ray_trace_image (
 	sizeof (cl_float4), vol->offset, 
 	sizeof (cl_float4), vol->pix_spacing, 
 	sizeof (cl_int2), proj->dim, 
-	sizeof (cl_mem), &ocl_buf_ic[0], 
+	sizeof (cl_float2), &ocl_ic, 
 	sizeof (cl_int4), options->image_window, 
-	sizeof (cl_mem), &ocl_buf_p1[0], 
-	sizeof (cl_mem), &ocl_buf_ul_room[0], 
-	sizeof (cl_mem), &ocl_buf_incr_r[0], 
-	sizeof (cl_mem), &ocl_buf_incr_c[0], 
-	sizeof (cl_mem), &ocl_buf_nrm[0], 
-	sizeof (cl_mem), &ocl_buf_lower_limit[0], 
-	sizeof (cl_mem), &ocl_buf_upper_limit[0], 
-	sizeof (cl_float), &sad, 
+	sizeof (cl_float4), &ocl_p1,
+	sizeof (cl_float4), &ocl_ul_room,
+	sizeof (cl_float4), &ocl_incr_r,
+	sizeof (cl_float4), &ocl_incr_c,
+	sizeof (cl_float4), &ocl_nrm,
+	sizeof (cl_float4), &ocl_lower_limit,
+	sizeof (cl_float4), &ocl_upper_limit,
+	sizeof (cl_float), &ocl_sad, 
 	sizeof (cl_float), &options->scale,
 	(size_t) 0
     );

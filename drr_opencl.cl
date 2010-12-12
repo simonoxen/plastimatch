@@ -550,15 +550,15 @@ __kernel void kernel_drr (
     float4 vol_offset,             /* Input:  volume geometry */
     float4 vol_spacing,            /* Input:  volume voxel spacing */
     int2 img_dim,                  /* Input:  size of output image */
-    __constant float *ic,          /* Input:  image center */
+    float2 ic,                     /* Input:  image center */
     int4 img_window,               /* Input:  sub-window of image to render */
-    __constant float *p1,          /* Input:  3-D loc, source */
-    __constant float *ul_room,     /* Input:  3-D loc, upper-left pix panel */
-    __constant float *incr_r,      /* Input:  3-D dist between pixels in row */
-    __constant float *incr_c,      /* Input:  3-D dist between pixels in col */
-    __constant float *nrm,         /* Input:  normal vector */
-    __constant float *lower_limit, /* Input:  lower bounding box of volume */
-    __constant float *upper_limit, /* Input:  upper bounding box of volume */
+    float4 p1,                     /* Input:  3-D loc, source */
+    float4 ul_room,                /* Input:  3-D loc, upper-left pix panel */
+    float4 incr_r,                 /* Input:  3-D dist between pixels in row */
+    float4 incr_c,                 /* Input:  3-D dist between pixels in col */
+    float4 nrm,                    /* Input:  normal vector */
+    float4 lower_limit,            /* Input:  lower bounding box of volume */
+    float4 upper_limit,            /* Input:  upper bounding box of volume */
     const float sad,               /* Input:  source-axis distance */
     const float scale              /* Input:  user defined scale */
 ) {
