@@ -230,10 +230,6 @@ drr_render_volume_perspective (
     double nrm[3], pdn[3], prt[3];
     Proj_matrix *pmat = proj->pmat;
 
-#if (CUDA_FOUND)
-#endif
-
-
     proj_matrix_get_nrm (pmat, nrm);
     proj_matrix_get_pdn (pmat, pdn);
     proj_matrix_get_prt (pmat, prt);
@@ -282,13 +278,20 @@ drr_render_volume_perspective (
     switch (options->threading) {
     case THREADING_BROOK:
     case THREADING_CUDA:
-    case THREADING_OPENCL:
 #if CUDA_FOUND
-    if (!delayload_cuda ()) {
-        exit (0);
-    } else {
-    }
+	if (!delayload_cuda ()) {
+	    exit (0);
+	}
 	drr_cuda_ray_trace_image (proj, vol, &vol_limit, 
+	    p1, ul_room, incr_r, incr_c, dev_state, options);
+	break;
+#else
+	/* Fall through */
+#endif
+
+#if OPENCL_FOUND
+    case THREADING_OPENCL:
+	drr_opencl_ray_trace_image (proj, vol, &vol_limit, 
 	    p1, ul_room, incr_r, incr_c, dev_state, options);
 	break;
 #else

@@ -234,22 +234,13 @@ main (int argc, char* argv[])
 	volume_convert_to_float (vol);
     }
 
-    switch (options.threading) {
-#if OPENCL_FOUND
-    case THREADING_OPENCL:
-	printf ("Using OpenCL !!!\n");
-	drr_opencl_render_volume (vol, &options);
-	break;
-#endif
-    default:
 #if defined (DRR_PREPROCESS_ATTENUATION)
-	if (!options.geometry_only) {
-	    drr_preprocess_attenuation (vol);
-	}
-#endif
-	drr_render_volume (vol, &options);
-	break;
+    if (!options.geometry_only) {
+	drr_preprocess_attenuation (vol);
     }
+#endif
+
+    drr_render_volume (vol, &options);
 
     if (!options.geometry_only) {
 	volume_destroy (vol);

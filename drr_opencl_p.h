@@ -54,7 +54,4 @@ struct volume_limit_f {
 };
 typedef struct volume_limit_f Volume_limit_f;
 
-void drr_render_volume_perspective_cl(Proj_image *proj, Volume *vol, double ps[2], Drr_options *options, int img_size, int float3_size, cl_mem *g_dev_vol, cl_mem *g_dev_img, cl_mem *c_vol_dim, cl_mem *c_img_dim, cl_mem *c_offset, cl_mem *c_pix_spacing, cl_mem *c_vol_limits, cl_mem *c_p1, cl_mem *c_ul_room, cl_mem *c_incr_r, cl_mem *c_incr_c, cl_mem *c_pixel_device, cl_kernel *drr_kernel, cl_ulong *drr_total, cl_ulong *img_total, size_t drr_global_work_size[MAX_GPU_COUNT][2], size_t drr_local_work_size[MAX_GPU_COUNT][2], int4 *pixels_per_device, int2 *pixel_offset, int *img_size_device);
-void create_matrix_and_drr_cl(Volume* vol, Proj_image *proj, double cam[3], double tgt[3], double nrm[3], int a, Drr_options* options, int img_size, int float3_size, cl_mem *g_dev_vol, cl_mem *g_dev_img, cl_mem *c_vol_dim, cl_mem *c_img_dim, cl_mem *c_offset, cl_mem *c_pix_spacing, cl_mem *c_vol_limits, cl_mem *c_p1, cl_mem *c_ul_room, cl_mem *c_incr_r, cl_mem *c_incr_c, cl_mem *c_pixel_device, cl_kernel *drr_kernel, cl_ulong *drr_total, cl_ulong *img_total, size_t drr_global_work_size[MAX_GPU_COUNT][2], size_t drr_local_work_size[MAX_GPU_COUNT][2], int4 *pixels_per_device, int2 *pixel_offset, int *img_size_device);
-
 #endif
