@@ -538,18 +538,20 @@ __kernel void kernel_drr (
 }
 #endif
 
-/* GCS: Note, different ordering of arguments compared to cuda kernel */
+/* GCS Dec 12, 2010.  
+   A couple of points to consider when creating OpenCL kernels.
+   OpenCL 1.0 does not support int3, float3.
+   Maximum guaranteed support for 8 arguments in constant memory.
+*/
 __kernel void kernel_drr (
     __global float *dev_img,       /* Output: the rendered drr */
     __global float *dev_vol,       /* Input:  the input volume */
-    __constant int *vol_dim,       /* Input:  volume resolution */
-#if defined (commentout)
-    __constant float *vol_offset,  /* Input:  volume geometry */
-    __constant float *vol_spacing, /* Input:  volume voxel spacing */
-#endif
-    __constant int *img_dim,       /* Input:  size of output image */
+    int4 vol_dim,                  /* Input:  volume resolution */
+    float4 vol_offset,             /* Input:  volume geometry */
+    float4 vol_spacing,            /* Input:  volume voxel spacing */
+    int2 img_dim,                  /* Input:  size of output image */
     __constant float *ic,          /* Input:  image center */
-    __constant int *img_window,    /* Input:  sub-window of image to render */
+    int4 img_window,               /* Input:  sub-window of image to render */
     __constant float *p1,          /* Input:  3-D loc, source */
     __constant float *ul_room,     /* Input:  3-D loc, upper-left pix panel */
     __constant float *incr_r,      /* Input:  3-D dist between pixels in row */
@@ -557,15 +559,15 @@ __kernel void kernel_drr (
     __constant float *nrm,         /* Input:  normal vector */
     __constant float *lower_limit, /* Input:  lower bounding box of volume */
     __constant float *upper_limit, /* Input:  upper bounding box of volume */
-    float sad,                     /* Input:  source-axis distance */
-    float scale                    /* Input:  user defined scale */
+    const float sad,               /* Input:  source-axis distance */
+    const float scale              /* Input:  user defined scale */
 ) {
     uint id = get_global_id(0);
 
-    int row = id / img_dim[0];
-    int col = id - (row * img_dim[0]);
+    int row = id / img_dim.x;
+    int col = id - (row * img_dim.x);
 
-    if (row >= img_dim[0]) {
+    if (row >= img_dim.x) {
 	return;
     }
 
