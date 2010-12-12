@@ -39,7 +39,7 @@ opencl_reconstruct_conebeam (
     Opencl_buf *ocl_buf_ic;
     cl_uint multiplier = 2;
     float *img = (float*) vol->img;
-    Proj_image *cbi;
+    Proj_image *proj;
     int image_num;
     float scale;
 
@@ -49,7 +49,7 @@ opencl_reconstruct_conebeam (
     opencl_kernel_create (&ocl_dev, "kernel_2");
 
     /* Retrieve 2D image to get dimensions */
-    cbi = proj_image_dir_load_image (proj_dir, 0);
+    proj = proj_image_dir_load_image (proj_dir, 0);
 
     /* Set up device memory */
     ocl_buf_vol = opencl_buf_create (
@@ -62,7 +62,7 @@ opencl_reconstruct_conebeam (
     ocl_buf_img = opencl_buf_create (
         &ocl_dev, 
         CL_MEM_READ_ONLY | CL_MEM_ALLOC_HOST_PTR, 
-        cbi->dim[1] * cbi->dim[0] * sizeof(float),
+        proj->dim[1] * proj->dim[0] * sizeof(float),
         0
     );
 
@@ -98,7 +98,7 @@ opencl_reconstruct_conebeam (
         &ocl_dev, 
         CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
         2 * sizeof(int),
-        cbi->dim
+        proj->dim
     );
 
     ocl_buf_nrm = opencl_buf_create (
@@ -121,8 +121,8 @@ opencl_reconstruct_conebeam (
     scale = (float)(sqrt(3.0)/(double)image_num);
     scale = scale * options->scale;
 
-    /* Free cbi image */
-    proj_image_destroy (cbi);
+    /* Free proj image */
+    proj_image_destroy (proj);
 
     /* Project each image into the volume one at a time */
     for (image_num = options->first_img; 
@@ -133,37 +133,37 @@ opencl_reconstruct_conebeam (
 	float matrix[12], nrm[3], ic[2], sad;
 
 	/* Load the current image and properties */
-	cbi = proj_image_dir_load_image(proj_dir, image_num);
+	proj = proj_image_dir_load_image(proj_dir, image_num);
 
 	/* Apply ramp filter */
         if (options->filter == FDK_FILTER_TYPE_RAMP) {
-            proj_image_filter (cbi);
+            proj_image_filter (proj);
         }
 
 	/* Copy image bytes to device */
 	opencl_buf_write (&ocl_dev, ocl_buf_img, 
-	    cbi->dim[1] * cbi->dim[0] * sizeof(float), cbi->img);
+	    proj->dim[1] * proj->dim[0] * sizeof(float), proj->img);
 
 	/* Copy matrix to device (convert from double to float) */
 	for (i = 0; i < 12; i++) {
-	    matrix[i] = cbi->pmat->matrix[i];
+	    matrix[i] = proj->pmat->matrix[i];
 	}
 	opencl_buf_write (&ocl_dev, ocl_buf_matrix, 
 	    12 * sizeof(float), matrix);
 
 	/* Copy ic to device (convert from double to float) */
-	ic[0] = cbi->pmat->ic[0];
-	ic[1] = cbi->pmat->ic[1];
+	ic[0] = proj->pmat->ic[0];
+	ic[1] = proj->pmat->ic[1];
 	opencl_buf_write (&ocl_dev, ocl_buf_ic, 2 * sizeof(float), ic);
 
 	/* Copy nrm to device (convert from double to float) */
-	nrm[0] = cbi->pmat->nrm[0];
-	nrm[1] = cbi->pmat->nrm[1];
-	nrm[2] = cbi->pmat->nrm[2];
+	nrm[0] = proj->pmat->nrm[0];
+	nrm[1] = proj->pmat->nrm[1];
+	nrm[2] = proj->pmat->nrm[2];
 	opencl_buf_write (&ocl_dev, ocl_buf_nrm, 3 * sizeof(float), nrm);
 
 	/* Convert sad from double to float */
-	sad = cbi->pmat->sad;
+	sad = proj->pmat->sad;
 
 	/* Set fdk kernel arguments */
 	opencl_set_kernel_args (

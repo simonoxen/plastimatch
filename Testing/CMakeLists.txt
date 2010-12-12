@@ -553,7 +553,7 @@ PLM_ADD_TEST (
   "drr-opencl"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
-  "-A;opencl;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
+  "-A;opencl;-a;1;-O;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
 PLM_ADD_TEST (
   "drr-opencl-stats"

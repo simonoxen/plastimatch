@@ -1,10 +1,9 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #define DRR_HUGE_DOUBLE 1e10
 #define DRR_LEN_TOLERANCE 1e-6
 #define DRR_STRIDE_TOLERANCE 1e-10
-
-#define OUTPUT_FORMAT_PFM 0
-#define OUTPUT_FORMAT_PGM 1
-#define OUTPUT_FORMAT_RAW 2
 
 /* Returns integer data type */
 #define ROUND_INT(x) (((x) >= 0) ? ((int)((x)+0.5)) : (int)(-(-(x)+0.5)))
@@ -539,24 +538,36 @@ __kernel void kernel_drr (
 }
 #endif
 
+/* GCS: Note, different ordering of arguments compared to cuda kernel */
 __kernel void kernel_drr (
-    __global float *dev_vol,
-    __global float *dev_img,
-    __constant int *vol_dim,
-    __constant int2 *img_dim,
-    __constant float *offset, 
-    __constant float *pix_spacing,
-    //__constant Volume_limit *vol_limits,
-    __constant float *p1,
-    __constant float *ul_room,
-    __constant float *incr_r,
-    __constant float *incr_c,
-    __constant int4 *ndevice,
-    float scale,
-    int output_format,
-    int msd_fp,
-    int preprocess_attenuation,
-    int exponential_mapping,
-    int pixel_offset
-){
+    __global float *dev_img,       /* Output: the rendered drr */
+    __global float *dev_vol,       /* Input:  the input volume */
+    __constant int *vol_dim,       /* Input:  volume resolution */
+#if defined (commentout)
+    __constant float *vol_offset,  /* Input:  volume geometry */
+    __constant float *vol_spacing, /* Input:  volume voxel spacing */
+#endif
+    __constant int *img_dim,       /* Input:  size of output image */
+    __constant float *ic,          /* Input:  image center */
+    __constant int *img_window,    /* Input:  sub-window of image to render */
+    __constant float *p1,          /* Input:  3-D loc, source */
+    __constant float *ul_room,     /* Input:  3-D loc, upper-left pix panel */
+    __constant float *incr_r,      /* Input:  3-D dist between pixels in row */
+    __constant float *incr_c,      /* Input:  3-D dist between pixels in col */
+    __constant float *nrm,         /* Input:  normal vector */
+    __constant float *lower_limit, /* Input:  lower bounding box of volume */
+    __constant float *upper_limit, /* Input:  upper bounding box of volume */
+    float sad,                     /* Input:  source-axis distance */
+    float scale                    /* Input:  user defined scale */
+) {
+    uint id = get_global_id(0);
+
+    int row = id / img_dim[0];
+    int col = id - (row * img_dim[0]);
+
+    if (row >= img_dim[0]) {
+	return;
+    }
+
+    dev_img[id] = 2.0;
 }
