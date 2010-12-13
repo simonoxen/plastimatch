@@ -130,7 +130,7 @@ volume_limit_clip_segment (
 
     /* Compute the volume intersection points */
     *ip1 = p1 + alpha_in * ray;
-    *ip2 = p2 + alpha_out * ray;
+    *ip2 = p1 + alpha_out * ray;
 
     return 1;
 }

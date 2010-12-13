@@ -50,18 +50,18 @@ drr_opencl_ray_trace_image (
     opencl_kernel_create (&ocl_dev, "kernel_drr");
 
     /* Set up device memory */
-    ocl_buf_vol = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        vol->pix_size * vol->npix,
-        vol->img
-    );
-
     ocl_buf_img = opencl_buf_create (
         &ocl_dev, 
         CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 
         proj->dim[1] * proj->dim[0] * sizeof(float),
         0
+    );
+
+    ocl_buf_vol = opencl_buf_create (
+        &ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        vol->pix_size * vol->npix,
+        vol->img
     );
 
     /* Copy ic to device (convert from double to float) */

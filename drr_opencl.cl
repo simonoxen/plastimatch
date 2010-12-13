@@ -88,7 +88,7 @@ volume_limit_clip_segment (
 
     /* Compute the volume intersection points */
     *ip1 = p1 + alpha_in * ray;
-    *ip2 = p2 + alpha_out * ray;
+    *ip2 = p1 + alpha_out * ray;
 
     return 1;
 }
@@ -109,7 +109,6 @@ ray_trace_uniform (
     float acc = 0.0f;
     int step;
 
-    ip1.w = ip2.w = 0;
     ray = normalize (ip2 - ip1);
 
 #define MAX_STEPS 10000
@@ -123,7 +122,7 @@ ray_trace_uniform (
 	ipx = ip1 + step * step_length * ray;
 
 	/* Find 3D index of sample within 3D volume */
-	ai = floor (((ipx - vol_offset) 
+	ai = convert_int4_sat_rtn (((ipx - vol_offset) 
 		+ 0.5 * vol_spacing) * inv_spacing);
 
 	/* Find linear index within 3D volume */
@@ -133,10 +132,9 @@ ray_trace_uniform (
 	    ai.x < vol_dim.x && ai.y < vol_dim.y && ai.z < vol_dim.z)
 	{
 	    acc += step_length * dev_vol[idx];
-	    //idx = ((19 * vol_dim.y + 19) * vol_dim.x) + 19;
-	    //acc = step;
 	}
     }
+
     return acc;
 }
 
@@ -191,17 +189,18 @@ __kernel void kernel_drr (
     if (rc == 0) {
 	outval = 0.0f;
     } else {
+	ip1.w = 0;
+	ip2.w = 0;
 	outval = ray_trace_uniform (dev_vol, vol_offset, vol_dim, vol_spacing, 
 	    ip1, ip2);
-	outval = 1000;
     }
-
 
     /* Assign output value */
     if (r < img_dim.x && c < img_dim.y) {
 	/* Translate from mm voxels to cm*gm */
 	outval = 0.1 * outval;
 	/* Add to image */
+	//dev_img[r*img_dim.x+c] = scale * outval;
 	dev_img[id] = scale * outval;
     }
 }
