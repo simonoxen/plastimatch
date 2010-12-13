@@ -206,10 +206,8 @@ kernel_drr (
     float3 p2;
     float3 ip1, ip2;
     int r, c;
-    //int idx;
     float outval;
     float3 r_tgt, tmp;
-    //int cols;
 
     /* Get coordinates of this image pixel */
     c = blockIdx.x * blockDim.x + threadIdx.x;
