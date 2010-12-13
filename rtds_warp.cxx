@@ -222,9 +222,9 @@ warp_and_save_ss (
 
     /* If we need to reduce the number of points (aka if simplify-perc was set), */
     /* purge the excessive points...*/
-    if (parms->simplify_perc >0 && parms->simplify_perc<100) {
-	do_simplify(rtds,file_type,parms->simplify_perc);
-    }
+ //   if (parms->simplify_perc >0 && parms->simplify_perc<100) {
+//	do_simplify(rtds,file_type,parms->simplify_perc);
+//    }
 
     /* Save non-dicom formats, such as mha, cxt, xio */
     save_ss_img (rtds, xf, pih, parms);
@@ -404,7 +404,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_ss_image && rtds->m_rdd) {
 	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
     }
-
+    if (parms->simplify_perc >0 && parms->simplify_perc<100) {
+	do_simplify(rtds,file_type,parms->simplify_perc);
+    }
     /* Save dicom */
     if (bstring_not_empty (parms->output_dicom)) {
 	rtds->save_dicom ((const char*) parms->output_dicom);
