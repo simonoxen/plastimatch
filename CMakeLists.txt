@@ -1008,7 +1008,7 @@ ENDIF (CUDA_FOUND)
 IF (OPENCL_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
-    fdk_opencl_old.cxx 
+    #fdk_opencl_old.cxx 
     fdk_opencl.cxx 
     fdk_opencl_p.h
     fdk_opencl.h
