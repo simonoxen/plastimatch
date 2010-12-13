@@ -23,6 +23,8 @@ typedef itk::DefaultStaticMeshTraits<
 typedef itk::PointSet< 
     DoublePointType, 3, DoublePointSetTraitsType > DoublePointSetType;
 typedef DoublePointSetType::PointIdentifier DoublePointIdType;
+typedef itk::PointSet< short, 3 > ShortPointSetType;
+typedef ShortPointSetType::PointsContainer ShortPointsContainer;
 
 template<class T> void itk_pointset_load (T pointset, const char* fn);
 template<class T> T itk_pointset_warp (T ps_in, Xform* xf);

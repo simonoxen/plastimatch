@@ -8,24 +8,29 @@
 /* =======================================================================*
     Resorting method for the simplified vector of points
 * =======================================================================*/
-
-void
-bubble_sort(int *in, int num_elem){
-    int foo=0;
-    bool flag=false;
-    do{
-	flag=false;
-	for(int j=0; j< num_elem-1; j++){
-		if(in[j]>in[j+1]){
-		    foo=in[j];
-		    in[j]=in[j+1];
-		    in[j+1]=foo;
-		    flag=true;
-		}
-	}
-    }while(flag==true);
-
+int compare (const void * a, const void * b)
+{
+  return ( *(int*)a < *(int*)b );
 }
+
+
+
+//void
+//bubble_sort(int *in, int num_elem){
+//    int foo=0;
+//    bool flag=false;
+//    do{
+//	flag=false;
+//	for(int j=0; j< num_elem-1; j++){
+//		if(in[j]>in[j+1]){
+//		    foo=in[j];
+//		    in[j]=in[j+1];
+//		    in[j+1]=foo;
+//		    flag=true;
+//		}
+//	}
+//    }while(flag==true);
+//}
 
 /* =======================================================================*
     Actual function that simplifies the contours
@@ -58,12 +63,13 @@ do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
 		int *index, *ordered_index;
 		gnr.restart();
 		curr_polyline=curr_struct->pslist[k];
-		PointSetSimplifyType::PointType curr_point;
-		PointsSimplifyContainer::Pointer points = PointsSimplifyContainer::New();
-		PointsSimplifyContainer::Pointer shuffled_points = PointsSimplifyContainer::New();
-		index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
-		ordered_index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
-		
+		ShortPointSetType::PointType curr_point;
+		ShortPointsContainer::Pointer points = ShortPointsContainer::New();
+		ShortPointsContainer::Pointer shuffled_points = ShortPointsContainer::New();
+		//index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
+		//ordered_index = (int*) malloc (sizeof (int) * curr_polyline->num_vertices);
+		index = new int[curr_polyline->num_vertices];
+		ordered_index = new int[curr_polyline->num_vertices];
 		//extract vertices of the current contour and extract random indices
 		for(int j=0;j<curr_polyline->num_vertices;j++){
 			curr_point[0]=curr_polyline->x[j];
@@ -78,7 +84,8 @@ do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
 			ordered_index[pointId]=index[pointId];
 		}
 		//resorting of the points
-		bubble_sort(ordered_index,first_index_to_remove);
+		//bubble_sort(ordered_index,first_index_to_remove);
+		qsort(ordered_index,first_index_to_remove,sizeof(int),compare);
 		
 		Rtss_polyline *new_polyline=new Rtss_polyline();
 		new_polyline->num_vertices=first_index_to_remove;
