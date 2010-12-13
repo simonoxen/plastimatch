@@ -168,6 +168,9 @@ ENDIF (NOT RUN_CUDA_TESTS)
 IF (NOT RUN_OPENCL_TESTS)
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
+    "drr-opencl"
+    "drr-opencl-stats"
+    "drr-opencl-check"
     "fdk-opencl-a"
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
