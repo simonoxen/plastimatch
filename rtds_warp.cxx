@@ -325,7 +325,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_dose
 	&& bstring_not_empty (parms->xf_in_fn)
 	&& (bstring_not_empty (parms->output_dose_img_fn)
-	    || bstring_not_empty (parms->output_xio_dirname)))
+	    || bstring_not_empty (parms->output_xio_dirname)
+	    || bstring_not_empty (parms->output_dicom)))
     {
 	printf ("Warping dose image...\n");
 	Plm_image *im_out;
