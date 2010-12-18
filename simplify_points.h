@@ -20,6 +20,7 @@
 #include "vnl/vnl_random.h"
 
 plastimatch1_EXPORT 
-void do_simplify(Rtds *rtds, Plm_file_format file_type,int percentage);
+void do_simplify(Rtds *rtds, int percentage);
+//void do_simplify(Rtds *rtds, Plm_file_format file_type,int percentage);
 
 #endif

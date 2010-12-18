@@ -37,7 +37,8 @@ int compare (const void * a, const void * b)
 * =======================================================================*/
 
 void
-do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
+//do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
+do_simplify(Rtds *rtds, int percentage)
 {
     int num_structures=0;
     int first_index_to_remove=0;
@@ -50,10 +51,10 @@ do_simplify(Rtds *rtds, Plm_file_format file_type, int percentage)
     printf("Hello from simplify_points! \n You are going to delete %d percent of points from your dataset\n",percentage);
 
     /* Check file_type */
-    if (file_type != PLM_FILE_FMT_DICOM_RTSS) {
-    	printf("Error: the input file is not a dicom RT struct!");
-    	exit(-1);
-    }
+//    if (file_type != PLM_FILE_FMT_DICOM_RTSS) {
+//    	printf("Error: the input file is not a dicom RT struct!");
+//    	exit(-1);
+//    }
 
     num_structures=rtds->m_ss_image->m_cxt->num_structures;
 
