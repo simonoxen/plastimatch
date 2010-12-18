@@ -1,7 +1,10 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include "plastimatch-slicer-dicomrtCLP.h"
+#include "plastimatch_slicer_dicomrt_importCLP.h"
 
 #include "plm_config.h"
 #include "plm_file_format.h"

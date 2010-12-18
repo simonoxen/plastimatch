@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<executable>
+  <category>Plastimatch</category>
+  <title>DICOM / DICOM-RT Export</title>
+  <description>DICOM / DICOM-RT Export</description>
+  <version>0.0</version>
+  <documentation-url></documentation-url>
+  <license>BSD-style</license>
+  <contributor>Gregory C. Sharp and others</contributor>
+  <acknowledgements></acknowledgements>
+  <parameters>
+    <label>Input/Output</label>
+    <description>Input/output parameters</description>
+    <file>
+      <longflag>output_directory</longflag>
+      <name>output_directory</name>
+      <label>Output directory</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Directory to save DICOM and DICOM-RT images (required)</description>
+    </file>
+    <image>
+      <longflag>ct_image</longflag>
+      <name>ct_image</name>
+      <label>Image volume (optional)</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Image to save as CT (optional)</description>
+    </image>
+    <image>
+      <longflag>ss_image</longflag>
+      <name>ss_image</name>
+      <label>Structure set volume</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Image to save as Structure set (optional).  Note: this should be one bit per structure, not a labelmap.</description>
+    </image>
+    <image>
+      <longflag>dose_image</longflag>
+      <name>dose_image</name>
+      <label>Dose Volume</label>
+      <channel>input</channel>
+      <default>None</default>
+      <description>Dose image (optional)</description>
+    </image>
+  </parameters>
+</executable>

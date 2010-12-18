@@ -1090,8 +1090,11 @@ SET (PLASTIMATCH_SLICER_SRC
 SET (PLASTIMATCH_SLICER_TPS_SRC
   plastimatch-slicer-tps.cxx
   )
-SET (PLASTIMATCH_SLICER_DICOMRT_SRC
-  plastimatch-slicer-dicomrt.cxx
+SET (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
+  plastimatch_slicer_dicomrt_import.cxx
+  )
+SET (PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC
+  plastimatch_slicer_dicomrt_export.cxx
   )
 SET (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
@@ -1327,6 +1330,37 @@ IF (ITK_FOUND)
     "")
 ENDIF (ITK_FOUND)
 
+IF (WIN32 AND SLICER_FOUND)
+  # The slicer plugin on windows can't find its dll easily.  Copy these 
+  # over to the lib directory.
+  
+  SET (INDIR
+    "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
+  #"${CMAKE_BINARY_DIR}/Release")
+  SET (OUTDIR
+    "${CMAKE_BINARY_DIR}/${Slicer3_INSTALL_PLUGINS_BIN_DIR}/${CMAKE_CFG_INTDIR}")
+  #"${CMAKE_BINARY_DIR}/lib/Slicer3/Plugins/Release")
+  ADD_CUSTOM_TARGET (plastimatch_slicer_copy ALL
+    DEPENDS "${OUTDIR}/plastimatch1.dll" "${OUTDIR}/gpuit.dll" 
+    )
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${OUTDIR}/plastimatch1.dll"
+    COMMAND
+    ${CMAKE_COMMAND} "-E" "copy"
+    "${INDIR}/plastimatch1.dll"
+    "${OUTDIR}/plastimatch1.dll"
+    DEPENDS plastimatch1
+    )
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${OUTDIR}/gpuit.dll"
+    COMMAND
+    ${CMAKE_COMMAND} "-E" "copy"
+    "${INDIR}/gpuit.dll"
+    "${OUTDIR}/gpuit.dll"
+    DEPENDS gpuit
+    )
+ENDIF (WIN32 AND SLICER_FOUND)
+
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
@@ -1388,8 +1422,11 @@ IF (ITK_FOUND)
   IF (SLICER_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
       "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
-    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-dicomrt
-      "${PLASTIMATCH_SLICER_DICOMRT_SRC}" "${PLASTIMATCH_LIBS}" 
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_import
+      "${PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC}" "${PLASTIMATCH_LIBS}" 
+      "${GPUIT_LDFLAGS}")
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_export
+      "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_LDFLAGS}")
