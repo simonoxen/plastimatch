@@ -16,3 +16,4 @@ Documentation:
    technical_reference
    publications
    other_toolkits
+   data_sources
