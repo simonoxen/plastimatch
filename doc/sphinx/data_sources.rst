@@ -6,12 +6,12 @@ There is quite a bit of publicly available data for benchmarking.
 NCIA
   https://imaging.nci.nih.gov/ncia/login.jsf
 
-  Includes LIDC and RIDER database
+  Includes LIDC and RIDER databases of lung CT images
 
 ELCAP
   http://www.via.cornell.edu/lungdb.html
 
-  A database of lung images
+  A database of lung CT images
 
 DIR-Lab
   http://www.dir-lab.com/
@@ -23,17 +23,20 @@ POPI
 
   A single lung 4D-CT image with point landmark annotation and vector fields
 
-MIDAS
-  http://www.insight-journal.org/midas/
-
-  (Not exactly sure what is here...)
-
 RIRE
   http://www.insight-journal.org/rire/
 
   Brain MRI images with ground truth registrations
 
-Also a list of lists:
+MIDAS
+  http://www.insight-journal.org/midas/
+
+  Many image data sets
+
+Mammographic image analysis homepage
+  http://www.mammoimage.org/databases/
+
+  A list of mammography databases
 
 Cornell list:
   http://www.via.cornell.edu/databases/

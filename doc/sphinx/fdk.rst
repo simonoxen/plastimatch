@@ -27,7 +27,7 @@ The command line usage is::
    -F {F,H}               Full or half fan bow-tie filter correction
 
 The usage of the fdk program is best understood by following along 
-with the tutorial: :ref:`fdk_tutorial`.
+with the tutorials: :ref:`fdk_tutorial_i` and :ref:`fdk_tutorial_ii`.
 
 Input files
 -----------
