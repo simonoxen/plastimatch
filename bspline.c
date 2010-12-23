@@ -3748,15 +3748,24 @@ bspline_transform_point (
 
     /* Compute tile and offset within tile */
     for (d = 0; d < 3; d++) {
+	float img_ijk[3];         /* Voxel coordinate of point_in */
+	img_ijk[d] = (point_in[d] - bxf->img_origin[d]) / bxf->img_spacing[d];
 	p[d] = (int) floorf (
-	    (point_in[d] - bxf->roi_offset[d]) / bxf->grid_spac[d]);
+	    (img_ijk[d] - bxf->roi_offset[d]) / bxf->vox_per_rgn[d]);
 	/* If point lies outside of B-spline domain, return point_in */
 	if (p[d] < 0 || p[d] >= bxf->rdims[d]) {
+	    printf ("Unwarped point, outside roi: %f %f %f\n", 
+		point_out[0], point_out[1], point_out[2]);
 	    return;
 	}
-	q[d] = (point_in[d] - bxf->roi_offset[d] 
-	    - p[d] * bxf->grid_spac[d]) / bxf->grid_spac[d];
+	q[d] = ((img_ijk[d] - bxf->roi_offset[d])
+	    - p[d] * bxf->vox_per_rgn[d]) / bxf->vox_per_rgn[d];
     }
+
+#if defined (commentout)
+    printf ("p = [%d, %d, %d], q = [%f, %f, %f]\n", 
+	p[0], p[1], p[2], q[0], q[1], q[2]);
+#endif
 
     /* Compute basis function values for this offset */
     for (d = 0; d < 3; d++) {
@@ -3770,19 +3779,33 @@ bspline_transform_point (
     }
 
     /* Compute displacement vector and add to point_out */
+#if defined (commentout)
+    printf ("---\n");
+#endif
     for (k = 0; k < 4; k++) {
 	for (j = 0; j < 4; j++) {
 	    for (i = 0; i < 4; i++) {
-		int cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+		float ql;
+		int cidx;
+
+		cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
 		    + (p[1] + j) * bxf->cdims[0]
 		    + (p[0] + i);
 		cidx = cidx * 3;
+		ql = q_mini[0][i] * q_mini[1][j] * q_mini[2][k];
 
-		for (d = 0; d < 3; d++) {
-		    point_out[0] += q_mini[d][i] * bxf->coeff[cidx+0];
-		    point_out[1] += q_mini[d][j] * bxf->coeff[cidx+1];
-		    point_out[2] += q_mini[d][k] * bxf->coeff[cidx+2];
-		}
+#if defined (commentout)
+		printf ("(%f) + [%f] + [%f] = ", point_out[0],
+		    ql, bxf->coeff[cidx+0]);
+#endif
+
+		point_out[0] += ql * bxf->coeff[cidx+0];
+		point_out[1] += ql * bxf->coeff[cidx+1];
+		point_out[2] += ql * bxf->coeff[cidx+2];
+
+#if defined (commentout)
+		printf (" = (%f)\n", point_out[0]);
+#endif
 	    }
 	}
     }

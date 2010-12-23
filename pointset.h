@@ -20,6 +20,9 @@ gpuit_EXPORT
 Pointset*
 pointset_load (const char *fn);
 gpuit_EXPORT
+void
+pointset_save (Pointset* ps, const char *fn);
+gpuit_EXPORT
 Pointset *
 pointset_create (void);
 gpuit_EXPORT

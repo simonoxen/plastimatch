@@ -8,8 +8,9 @@
 #include <string.h>
 #include <math.h>
 
-#include "pointset.h"
+#include "file_util.h"
 #include "math_util.h"
+#include "pointset.h"
 #include "print_and_exit.h"
 
 Pointset*
@@ -138,6 +139,75 @@ pointset_load (const char *fn)
     /* If that doesn't work, try loading ASCII */
     ps = pointset_load_txt (fn);
     return ps;
+}
+
+static void
+pointset_save_txt (Pointset* ps, const char *fn)
+{
+    int i;
+    FILE *fp;
+
+    fp = fopen (fn, "w");
+    if (!fp) return;
+
+    for (i = 0; i < ps->num_points; i++) {
+	fprintf (fp, "%f %f %f\n", 
+	    ps->points[i*3+0], 
+	    ps->points[i*3+1], 
+	    ps->points[i*3+2]);
+    }
+    fclose (fp);
+}
+
+static void
+pointset_save_fcsv (Pointset* ps, const char *fn)
+{
+    int i;
+    FILE *fp;
+
+    fp = fopen (fn, "w");
+    if (!fp) return;
+
+    fprintf (fp, 
+	"# Fiducial List file %s\n"
+	"# version = 2\n"
+	"# name = plastimatch-fiducials\n"
+	"# numPoints = %d\n"
+	"# symbolScale = 5\n"
+	"# symbolType = 12\n"
+	"# visibility = 1\n"
+	"# textScale = 4.5\n"
+	"# color = 0.4,1,1\n"
+	"# selectedColor = 1,0.5,0.5\n"
+	"# opacity = 1\n"
+	"# ambient = 0\n"
+	"# diffuse = 1\n"
+	"# specular = 0\n"
+	"# power = 1\n"
+	"# locked = 0\n"
+	"# numberingScheme = 0\n"
+	"# columns = label,x,y,z,sel,vis\n",
+	fn, 
+	ps->num_points);
+
+    for (i = 0; i < ps->num_points; i++) {
+	fprintf (fp, "p-%03d,%f,%f,%f,1,1\n", 
+	    i,
+	    - ps->points[i*3+0], 
+	    - ps->points[i*3+1], 
+	    ps->points[i*3+2]);
+    }
+    fclose (fp);
+}
+
+void
+pointset_save (Pointset* ps, const char *fn)
+{
+    if (extension_is (fn, "fcsv")) {
+	pointset_save_fcsv (ps, fn);
+    } else {
+	pointset_save_txt (ps, fn);
+    }
 }
 
 void

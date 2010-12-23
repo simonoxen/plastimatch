@@ -59,6 +59,7 @@ print_usage (char* command)
 	"    --output-img=filename      (for image)\n"
 	"    --output-labelmap=filename (for structures)\n"
 	"    --output-colormap=filename (for structures)\n"
+	"    --output-pointset=filename (for pointsets, txt or fcsv)\n"
 	"    --output-prefix=string     (for structures)\n"
 	"    --output-ss-img=filename   (for structures)\n"
 	"    --output-ss-list=filename  (for structures)\n"
@@ -140,6 +141,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "output-colormap",required_argument,      NULL,           35 },
 	{ "simplify_perc", required_argument,	    NULL,           36 },
 	{ "simplify-perc", required_argument,	    NULL,           36 },
+	{ "output_pointset", required_argument,	    NULL,           37 },
+	{ "output-pointset", required_argument,	    NULL,           37 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -290,6 +293,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    break;
 	case 36:
 	    parms->simplify_perc = atoi(optarg);
+	    break;
+	case 37:
+	    parms->output_pointset_fn = optarg;
 	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");

@@ -2,8 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "pcmd_warp.h"
+
+#include "bstring_util.h"
 #include "itk_pointset.h"
+#include "pcmd_warp.h"
 #include "xform.h"
 
 void
@@ -19,8 +21,22 @@ warp_pointset_main (Warp_parms* parms)
 
     xform_load (&xf, parms->xf_in_fn);
 
-    FloatPointSetType::Pointer ps_in = itk_float_pointset_from_pointset (ps);
-    FloatPointSetType::Pointer ps_out = itk_pointset_warp (ps_in, &xf);
+    FloatPointSetType::Pointer itk_ps_in 
+	= itk_float_pointset_from_pointset (ps);
 
-    itk_pointset_debug (ps_out);
+    itk_pointset_debug (itk_ps_in);
+    printf ("---\n");
+
+    FloatPointSetType::Pointer itk_ps_out 
+	= itk_pointset_warp (itk_ps_in, &xf);
+
+    itk_pointset_debug (itk_ps_out);
+
+    if (bstring_not_empty (parms->output_pointset_fn)) {
+	Pointset *ps_out = pointset_from_itk_float_pointset (itk_ps_out);
+	pointset_save (ps_out, (const char*) parms->output_pointset_fn);
+	pointset_destroy (ps_out);
+    }
+
+    pointset_destroy (ps);
 }

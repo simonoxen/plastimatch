@@ -12,6 +12,31 @@
    PixelType is the "color" of the point, whereas the PointType is the 
    type used to represent the coordinate location */
 
+Pointset*
+pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
+{
+    typedef typename FloatPointSetType::PointsContainer PointsContainerType;
+    typedef typename PointsContainerType::Iterator PointsIteratorType;
+
+    Pointset *ps = pointset_create ();
+    PointsContainerType::Pointer itk_ps_c 
+	= itk_ps->GetPoints ();
+
+    PointsIteratorType it = itk_ps_c->Begin();
+    PointsIteratorType end = itk_ps_c->End();
+    unsigned int i = 0;
+    while (it != end) {
+	FloatPointType p = it.Value();
+	pointset_resize (ps, i + 1);
+	ps->points[i*3+0] = p[0];
+	ps->points[i*3+1] = p[1];
+	ps->points[i*3+2] = p[2];
+	++it;
+	++i;
+    }
+    return ps;
+}
+
 FloatPointSetType::Pointer
 itk_float_pointset_from_pointset (Pointset *ps)
 {

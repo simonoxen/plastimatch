@@ -1231,6 +1231,18 @@ ADD_TEST (
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
 
+
+## -------------------------------------------------------------------------
+## plastimatch register (group 3) - rect 2 & rect 3
+##   register-rect-bspline
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-register-rect-bspline" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-rect-bspline.txt"
+  )
+
 ## -------------------------------------------------------------------------
 ## plastimatch compose
 ##   This test uses registers from gauss-1 to gauss-2 which are done above, 
@@ -1347,12 +1359,20 @@ PLM_ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## plastimatch warp pointset
+##   plm warp pointset a:  xf = bspline, output fcsv
+##   plm warp pointset b:  xf = bspline, output txt
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-warp-pointset-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-register-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
+  )
+PLM_ADD_TEST (
+  "plm-warp-pointset-b" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-register-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-b.txt"
   )
 
 ## -------------------------------------------------------------------------

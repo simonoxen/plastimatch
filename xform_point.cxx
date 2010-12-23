@@ -12,6 +12,27 @@
    Transform points
    ----------------------------------------------------------------------- */
 void
+xform_point_transform_gpuit_bspline (
+    FloatPointType* itk_point_out, 
+    Xform* xf_in, 
+    FloatPointType itk_point_in
+)
+{
+    int d;
+    float point_in[3], point_out[3];
+
+    for (d = 0; d < 3; d++) {
+	point_in[d] = itk_point_in[d];
+    }
+
+    bspline_transform_point (point_out, xf_in->get_gpuit_bsp(), point_in, 1);
+
+    for (d = 0; d < 3; d++) {
+	(*itk_point_out)[d] = point_out[d];
+    }
+}
+
+void
 xform_point_transform_itk_vf (
     FloatPointType* point_out, 
     Xform* xf_in, 
@@ -60,6 +81,8 @@ xform_point_transform (
 	xform_point_transform_itk_vf (point_out, xf_in, point_in);
 	break;
     case XFORM_GPUIT_BSPLINE:
+	xform_point_transform_gpuit_bspline (point_out, xf_in, point_in);
+	break;
     case XFORM_GPUIT_VECTOR_FIELD:
     default:
 	print_and_exit (

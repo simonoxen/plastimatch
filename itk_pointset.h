@@ -31,5 +31,7 @@ template<class T> T itk_pointset_warp (T ps_in, Xform* xf);
 template<class T> void itk_pointset_debug (T pointset);
 FloatPointSetType::Pointer itk_float_pointset_from_pointset (Pointset *ps);
 DoublePointSetType::Pointer itk_double_pointset_from_pointset (Pointset *ps);
+Pointset*
+pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps);
 
 #endif
