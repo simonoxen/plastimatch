@@ -260,6 +260,10 @@ IF (PLM_REDUCED_TESTS)
     "drr-cuda"
     "drr-cuda-stats"
     "drr-cuda-check"
+    "drr-opencl"
+    "drr-opencl-stats"
+    "drr-opencl-check"
+
     "fdk-cpu-a"
     "fdk-cpu-a-stats"
     "fdk-cpu-a-check"

@@ -55,6 +55,10 @@ plm_file_format_deduce (const char* path)
     
     ext = itksys::SystemTools::GetFilenameLastExtension (std::string (path));
 
+    if (!itksys::SystemTools::Strucmp (ext.c_str(), ".fcsv")) {
+	return PLM_FILE_FMT_POINTSET;
+    }
+
     if (!itksys::SystemTools::Strucmp (ext.c_str(), ".txt")) {
 	/* Probe for pointset */
 	int rc;

@@ -900,6 +900,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   xio_plan.cxx xio_plan.h
   xio_structures.cxx xio_structures.h
   xform.cxx xform.h 
+  xform_point.cxx xform_point.h 
   )
 
 IF (ITK_USE_REVIEW)

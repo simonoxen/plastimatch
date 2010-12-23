@@ -1,11 +1,12 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include "itk_pointset.h"
 #include "pointset.h"
 #include "print_and_exit.h"
-
+#include "xform_point.h"
 
 /* Don't get confused by the parameterization of the itk pointset.  The 
    PixelType is the "color" of the point, whereas the PointType is the 
@@ -104,7 +105,7 @@ itk_pointset_warp (T ps_in, Xform* xf)
     unsigned int i = 0;
     while (it != end) {
 	PointType p = it.Value();
-        xform_transform_point (&tp, xf, p);
+        xform_point_transform (&tp, xf, p);
 	points_out->InsertElement (i, tp);
 	++it;
 	++i;

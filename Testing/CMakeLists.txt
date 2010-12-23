@@ -1346,6 +1346,16 @@ PLM_ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
+## plastimatch warp pointset
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-warp-pointset-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
+  )
+
+## -------------------------------------------------------------------------
 ## plastimatch warp
 ##   plm warp a: xf = bspline, algorithm = itk
 ##   plm warp b: xf = bspline, algorithm = native
