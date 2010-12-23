@@ -641,13 +641,13 @@ bspline_set_coefficients (Bspline_xform* bxf, float val)
 void
 bspline_xform_initialize 
 (
- Bspline_xform* bxf,         /* Output: bxf is initialized */
- float img_origin[3],        /* Image origin (in mm) */
- float img_spacing[3],       /* Image spacing (in mm) */
- int img_dim[3],             /* Image size (in vox) */
- int roi_offset[3],          /* Position of first vox in ROI (in vox) */
- int roi_dim[3],             /* Dimension of ROI (in vox) */
- int vox_per_rgn[3])         /* Knot spacing (in vox) */
+    Bspline_xform* bxf,         /* Output: bxf is initialized */
+    float img_origin[3],        /* Image origin (in mm) */
+    float img_spacing[3],       /* Image spacing (in mm) */
+    int img_dim[3],             /* Image size (in vox) */
+    int roi_offset[3],          /* Position of first vox in ROI (in vox) */
+    int roi_dim[3],             /* Dimension of ROI (in vox) */
+    int vox_per_rgn[3])         /* Knot spacing (in vox) */
 {
     int d;
     int i, j, k, p;
@@ -684,10 +684,10 @@ bspline_xform_initialize
 
     /* Create q_lut */
     bxf->q_lut = (float*) malloc (sizeof(float) 
-				  * bxf->vox_per_rgn[0] 
-				  * bxf->vox_per_rgn[1] 
-				  * bxf->vox_per_rgn[2] 
-				  * 64);
+	* bxf->vox_per_rgn[0] 
+	* bxf->vox_per_rgn[1] 
+	* bxf->vox_per_rgn[2] 
+	* 64);
     if (!bxf->q_lut) {
 	print_and_exit ("Error allocating memory for q_lut\n");
     }
@@ -705,9 +705,9 @@ bspline_xform_initialize
 	A[i*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
 	A[i*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
 	A[i*4+3] = (1.0/6.0) * (+ 1.0 * t3);
-	}
+    }
 
-	for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
+    for (j = 0; j < bxf->vox_per_rgn[1]; j++) {
 	float jj = ((float) j) / bxf->vox_per_rgn[1];
 	float t3 = jj*jj*jj;
 	float t2 = jj*jj;
@@ -716,9 +716,9 @@ bspline_xform_initialize
 	B[j*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
 	B[j*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
 	B[j*4+3] = (1.0/6.0) * (+ 1.0 * t3);
-	}
+    }
 
-	for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
+    for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
 	float kk = ((float) k) / bxf->vox_per_rgn[2];
 	float t3 = kk*kk*kk;
 	float t2 = kk*kk;
@@ -727,7 +727,7 @@ bspline_xform_initialize
 	C[k*4+1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
 	C[k*4+2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
 	C[k*4+3] = (1.0/6.0) * (+ 1.0 * t3);
-	}
+    }
 
     p = 0;
     for (k = 0; k < bxf->vox_per_rgn[2]; k++) {
@@ -737,7 +737,7 @@ bspline_xform_initialize
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
 			    bxf->q_lut[p++] = A[i*4+tx] * B[j*4+ty] * C[k*4+tz];
-				}
+			}
 		    }
 		}
 	    }
@@ -749,10 +749,10 @@ bspline_xform_initialize
 	
     /* Create c_lut */
     bxf->c_lut = (int*) malloc (sizeof(int) 
-				* bxf->rdims[0] 
-				* bxf->rdims[1] 
-				* bxf->rdims[2] 
-				* 64);
+	* bxf->rdims[0] 
+	* bxf->rdims[1] 
+	* bxf->rdims[2] 
+	* 64);
     p = 0;
     for (k = 0; k < bxf->rdims[2]; k++) {
 	for (j = 0; j < bxf->rdims[1]; j++) {
@@ -761,9 +761,9 @@ bspline_xform_initialize
 		    for (ty = 0; ty < 4; ty++) {
 			for (tx = 0; tx < 4; tx++) {
 			    bxf->c_lut[p++] = 
-				    + (k + tz) * bxf->cdims[0] * bxf->cdims[1]
-				    + (j + ty) * bxf->cdims[0] 
-				    + (i + tx);
+				+ (k + tz) * bxf->cdims[0] * bxf->cdims[1]
+				+ (j + ty) * bxf->cdims[0] 
+				+ (i + tx);
 			}
 		    }
 		}
@@ -3723,6 +3723,69 @@ bspline_score_c_mi (Bspline_parms *parms,
     mse_score = mse_score / num_vox;
 
     report_score ("MI", bxf, bst, num_vox, plm_timer_report (&timer));
+}
+
+/* This function uses the B-Spline coefficients to transform a point.  
+   The point need not lie exactly on a voxel, so we do not use the 
+   lookup table. */
+void
+bspline_transform_point (
+    float point_out[3], /* Output coordinate of point */
+    Bspline_xform* bxf, /* Bspline transform coefficients */
+    float point_in[3],  /* Input coordinate of point */
+    int linear_interp   /* 1 = trilinear, 0 = nearest neighbors */
+)
+{
+    int d, i, j, k;
+    int p[3];                    /* Index of tile */
+    float q[3];                  /* Fractional offset within tile */
+    float q_mini[3][4];          /* "miniature" q-lut, just for this point */
+
+    /* Default value is untransformed point */
+    for (d = 0; d < 3; d++) {
+	point_out[d] = point_in[d];
+    }
+
+    /* Compute tile and offset within tile */
+    for (d = 0; d < 3; d++) {
+	p[d] = (int) floorf (
+	    (point_in[d] - bxf->roi_offset[d]) / bxf->grid_spac[d]);
+	/* If point lies outside of B-spline domain, return point_in */
+	if (p[d] < 0 || p[d] >= bxf->rdims[d]) {
+	    return;
+	}
+	q[d] = (point_in[d] - bxf->roi_offset[d] 
+	    - p[d] * bxf->grid_spac[d]) / bxf->grid_spac[d];
+    }
+
+    /* Compute basis function values for this offset */
+    for (d = 0; d < 3; d++) {
+	float t3 = q[d]*q[d]*q[d];
+	float t2 = q[d]*q[d];
+	float t1 = q[d];
+	q_mini[d][0] = (1.0/6.0) * (- 1.0 * t3 + 3.0 * t2 - 3.0 * t1 + 1.0);
+	q_mini[d][1] = (1.0/6.0) * (+ 3.0 * t3 - 6.0 * t2            + 4.0);
+	q_mini[d][2] = (1.0/6.0) * (- 3.0 * t3 + 3.0 * t2 + 3.0 * t1 + 1.0);
+	q_mini[d][3] = (1.0/6.0) * (+ 1.0 * t3);
+    }
+
+    /* Compute displacement vector and add to point_out */
+    for (k = 0; k < 4; k++) {
+	for (j = 0; j < 4; j++) {
+	    for (i = 0; i < 4; i++) {
+		int cidx = (p[2] + k) * bxf->cdims[1] * bxf->cdims[0]
+		    + (p[1] + j) * bxf->cdims[0]
+		    + (p[0] + i);
+		cidx = cidx * 3;
+
+		for (d = 0; d < 3; d++) {
+		    point_out[0] += q_mini[d][i] * bxf->coeff[cidx+0];
+		    point_out[1] += q_mini[d][j] * bxf->coeff[cidx+1];
+		    point_out[2] += q_mini[d][k] * bxf->coeff[cidx+2];
+		}
+	    }
+	}
+    }
 }
 
 /* This only warps voxels within the ROI.  If you need the whole 
