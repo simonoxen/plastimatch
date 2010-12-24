@@ -28,6 +28,9 @@ main (int argc, char * argv [])
     if (output_labelmap.compare ("None") != 0) {
 	parms.output_labelmap_fn = output_labelmap.c_str();
     }
+    if (output_ss_img.compare ("None") != 0) {
+	parms.output_ss_img_fn = output_ss_img.c_str();
+    }
     if (output_dose.compare ("None") != 0) {
 	parms.output_dose_img_fn = output_dose.c_str();
     }

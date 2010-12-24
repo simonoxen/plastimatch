@@ -36,6 +36,14 @@
       <description>Output Image</description>
     </image>
     <image type="label">
+      <longflag>output_ss_img</longflag>
+      <name>output_ss_img</name>
+      <label>Output SS Image</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Output Structure Set Image</description>
+    </image>
+    <image type="label">
       <longflag>output_labelmap</longflag>
       <name>output_labelmap</name>
       <label>Output Labelmap</label>
