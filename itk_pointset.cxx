@@ -15,8 +15,8 @@
 Pointset*
 pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
 {
-    typedef typename FloatPointSetType::PointsContainer PointsContainerType;
-    typedef typename PointsContainerType::Iterator PointsIteratorType;
+    typedef FloatPointSetType::PointsContainer PointsContainerType;
+    typedef PointsContainerType::Iterator PointsIteratorType;
 
     Pointset *ps = pointset_create ();
     PointsContainerType::Pointer itk_ps_c 
