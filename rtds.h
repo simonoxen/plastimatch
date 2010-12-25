@@ -5,8 +5,10 @@
 #define _rtds_h_
 
 #include "plm_config.h"
+
 #include "cxt_io.h"
 #include "demographics.h"
+#include "gdcm_series.h"
 #include "plm_image.h"
 #include "referenced_dicom_dir.h"
 #include "ss_image.h"
@@ -18,13 +20,14 @@ public:
     Plm_image *m_img;                  /* CT image */
     Ss_image *m_ss_image;              /* Structure set lossless bitmap form */
     Plm_image *m_dose;                 /* RT dose */
-    char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
-					    template for XiO dose saving. */
+
+    Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
+    Referenced_dicom_dir *m_rdd;       /* UIDs for SS output */
+    Demographics demographics;         /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					    coordinates */
-    Demographics demographics;         /* Patient name, patient id, etc. */
-    Referenced_dicom_dir *m_rdd;       /* UIDs for SS output */
-
+    char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
+					    template for XiO dose saving. */
 public:
     Rtds () {
 	int i;
@@ -32,8 +35,8 @@ public:
 	m_img = 0;
 	m_ss_image = 0;
 	m_dose = 0;
+	m_gdcm_series = 0;
 	m_rdd = 0;
-	strcpy (m_xio_dose_input, "\0");
 
 	m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
 	m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
@@ -45,6 +48,8 @@ public:
 	m_xio_transform->direction_cosines[0] = 1;
 	m_xio_transform->direction_cosines[4] = 1;
 	m_xio_transform->direction_cosines[8] = 1;
+
+	strcpy (m_xio_dose_input, "\0");
     }
     ~Rtds () {
 	if (m_img) {
@@ -56,8 +61,14 @@ public:
 	if (m_dose) {
 	    delete m_dose;
 	}
+	if (m_gdcm_series) {
+	    delete m_gdcm_series;
+	}
 	if (m_rdd) {
 	    delete m_rdd;
+	}
+	if (m_xio_transform) {
+	    free (m_xio_transform);
 	}
     }
     plastimatch1_EXPORT

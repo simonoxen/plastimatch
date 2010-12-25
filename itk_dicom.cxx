@@ -49,17 +49,20 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 {
     typedef itk::GDCMImageIO ImageIOType;
     ImageIOType::Pointer dicomIO = ImageIOType::New();
-    rdr->SetImageIO( dicomIO );
+    rdr->SetImageIO (dicomIO);
 
     /* Read the filenames from the directory */
     typedef itk::GDCMSeriesFileNames NamesGeneratorType;
     NamesGeneratorType::Pointer nameGenerator = NamesGeneratorType::New();
-    nameGenerator->SetUseSeriesDetails (true);
-    //nameGenerator->SetUseSeriesDetails (false);
-    /* GCS: The following is optional.  Do we need it? */
-    // nameGenerator->AddSeriesRestriction("0008|0021" );
-    nameGenerator->SetDirectory (dicom_dir);
 
+    nameGenerator->SetUseSeriesDetails (true);
+
+    /* Reject RTDOSE, which can get interpreted as an image (and gets 
+       read incorretly anyway).  Dose is read by rtds.cxx instead. */
+    gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
+    gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
+
+    nameGenerator->SetDirectory (dicom_dir);
     try {
 	std::cout << std::endl << "The directory: " << std::endl;
 	std::cout << std::endl << dicom_dir << std::endl << std::endl;
@@ -87,9 +90,9 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 	    std::cout << seriesIdentifier << std::endl;
 
 	    /* Read the files */
-	    typedef std::vector< std::string >   FileNamesContainer;
+	    typedef std::vector< std::string > FileNamesContainer;
 	    FileNamesContainer fileNames;
-	    fileNames = nameGenerator->GetFileNames( seriesIdentifier );
+	    fileNames = nameGenerator->GetFileNames (seriesIdentifier);
 
 #if defined (commentout)
 	    /* Print out the file names */
@@ -101,7 +104,7 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
 	    }
 #endif
 
-	    rdr->SetFileNames( fileNames );
+	    rdr->SetFileNames (fileNames);
 	    try {
 		rdr->Update();
 		dicom_load_succeeded = true;

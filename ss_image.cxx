@@ -6,6 +6,7 @@
 #include "cxt_extract.h"
 #include "cxt_to_mha.h"
 #include "itk_image_save.h"
+#include "file_util.h"
 #include "gdcm_rtss.h"
 #include "plm_warp.h"
 #include "referenced_dicom_dir.h"
@@ -35,7 +36,7 @@ Ss_image::load (const char *ss_img, const char *ss_list)
     if (m_ss_img) {
 	delete this->m_ss_img;
     }
-    if (ss_img) {
+    if (ss_img && file_exists (ss_img)) {
 	this->m_ss_img = plm_image_load_native (ss_img);
     }
 
@@ -43,7 +44,8 @@ Ss_image::load (const char *ss_img, const char *ss_list)
     if (this->m_ss_list) {
 	delete this->m_ss_list;
     }
-    if (ss_list) {
+    if (ss_list && file_exists (ss_list)) {
+	printf ("Trying to load ss_list: %s\n", ss_list);
 	this->m_ss_list = ss_list_load (0, ss_list);
     }
 }

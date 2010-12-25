@@ -11,14 +11,14 @@
   <parameters>
     <label>Input/Output</label>
     <description>Input/output parameters</description>
-    <file>
+    <directory>
       <longflag>output_directory</longflag>
       <name>output_directory</name>
       <label>Output directory</label>
       <channel>input</channel>
       <default>None</default>
       <description>Directory to save DICOM and DICOM-RT images (required)</description>
-    </file>
+    </directory>
     <image>
       <longflag>ct_image</longflag>
       <name>ct_image</name>

@@ -29,16 +29,11 @@ Rtds::load_dicom_dir (const char *dicom_dir)
 {
     const char *dicom_dir_tmp;  /* In case dicom_dir is a file, not dir */
 
-    /* Use existing itk reader for the image.
-       This is required because the native dicom reader doesn't yet 
-       handle things like MR. */
-
     if (is_directory (dicom_dir)) {
 	dicom_dir_tmp = dicom_dir;
     } else {
 	dicom_dir_tmp = file_util_dirname (dicom_dir);
     }
-    this->m_img = plm_image_load_native (dicom_dir_tmp);
 
     rtds_dicom_load (this, dicom_dir_tmp);
 

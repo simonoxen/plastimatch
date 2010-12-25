@@ -85,6 +85,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     } else {
 	/* Look for referenced CT in input directory */
 	if (bstring_not_empty (parms->input_fn)) {
+	    printf ("Loading RDD\n");
 	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
 	    rtds->load_rdd (dirname);
 	    free (dirname);
@@ -307,6 +308,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     {
 	Plm_image *im_out;
 	im_out = new Plm_image;
+	printf (" - Warping m_img - \n");
 	plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
 	    parms->use_itk, parms->interp_lin);
 	delete rtds->m_img;
@@ -315,7 +317,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Save output image */
     if (bstring_not_empty (parms->output_img_fn) && rtds->m_img) {
-	printf ("Saving image...\n");
+	printf ("Saving m_img (%s)\n",
+	    (const char*) parms->output_img_fn);
 	rtds->m_img->convert_and_save (
 	    (const char*) parms->output_img_fn, 
 	    parms->output_type);
@@ -328,7 +331,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    || bstring_not_empty (parms->output_xio_dirname)
 	    || bstring_not_empty (parms->output_dicom)))
     {
-	printf ("Warping dose image...\n");
+	printf (" - Warping dose -\n");
 	Plm_image *im_out;
 	im_out = new Plm_image;
 	plm_warp (im_out, 0, &xform, &pih, rtds->m_dose, 0, 
@@ -340,7 +343,8 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output dose image */
     if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose)
     {
-	printf ("Saving dose image...\n");
+	printf ("Saving dose image (%s)\n", 
+	    (const char*) parms->output_dose_img_fn);
 	rtds->m_dose->convert_and_save (
 	    (const char*) parms->output_dose_img_fn, 
 	    parms->output_type);
