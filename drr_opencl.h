@@ -5,7 +5,6 @@
 #define _DRR_OPENCL_H_
 
 #include "plm_config.h"
-#include "plm_config.h"
 #include "drr_opts.h"
 #include "proj_image.h"
 #include "volume.h"

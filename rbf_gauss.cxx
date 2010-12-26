@@ -412,8 +412,6 @@ bspline_rbf_find_coeffs (
     Landmark_warp *lw               /* Input */
 )
 {
-    float s;
-
     bspline_rbf_find_coeffs_reg (coeff, lw);
     //bspline_rbf_find_coeffs_noreg(vector_field, parms);
 
@@ -426,6 +424,7 @@ bspline_rbf_find_coeffs (
     }
 
 #if defined (commentout)
+    float s;
 
     //bspline_rbf_test_solution( vector_field, parms);
     s = bspline_rbf_analytic_integral( parms, vector_field->pix_spacing );

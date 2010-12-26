@@ -10,6 +10,7 @@
 #endif
 #include "drr.h"
 #include "drr_cuda.h"
+#include "drr_opencl.h"
 #include "drr_opts.h"
 #include "drr_trilin.h"
 #include "math_util.h"
