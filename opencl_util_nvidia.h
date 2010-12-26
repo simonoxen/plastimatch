@@ -16,13 +16,6 @@
 //! Borrowed Utility Functions
 //////////////////////////////////////////////////////////////////////////////
 
-// reminders for output window and build log
-#ifdef _WIN32
-    #pragma message ("Note: including windows.h")
-    #pragma message ("Note: including math.h")
-    #pragma message ("Note: including assert.h")
-#endif
-
 // OS dependent includes
 #ifdef _WIN32
     // Headers needed for Windows
