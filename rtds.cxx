@@ -11,6 +11,7 @@
 #include "cxt_extract.h"
 #include "file_util.h"
 #include "gdcm_dose.h"
+#include "gdcm_series.h"
 #include "gdcm_rtss.h"
 #include "mc_dose.h"
 #include "plm_image_patient_position.h"
@@ -23,6 +24,52 @@
 #include "xio_dose.h"
 #include "xio_io.h"
 #include "xio_structures.h"
+
+Rtds::Rtds ()
+{
+    int i;
+
+    m_img = 0;
+    m_ss_image = 0;
+    m_dose = 0;
+    m_gdcm_series = 0;
+    m_rdd = 0;
+
+    m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
+    m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
+    m_xio_transform->x_offset = 0;
+    m_xio_transform->y_offset = 0;
+    for (i = 0; i <= 8; i++) {
+	m_xio_transform->direction_cosines[i] = 0;
+    }
+    m_xio_transform->direction_cosines[0] = 1;
+    m_xio_transform->direction_cosines[4] = 1;
+    m_xio_transform->direction_cosines[8] = 1;
+
+    strcpy (m_xio_dose_input, "\0");
+}
+
+Rtds::~Rtds ()
+{
+    if (m_img) {
+	delete m_img;
+    }
+    if (m_ss_image) {
+	delete m_ss_image;
+    }
+    if (m_dose) {
+	delete m_dose;
+    }
+    if (m_gdcm_series) {
+	delete m_gdcm_series;
+    }
+    if (m_rdd) {
+	delete m_rdd;
+    }
+    if (m_xio_transform) {
+	free (m_xio_transform);
+    }
+}
 
 void
 Rtds::load_dicom_dir (const char *dicom_dir)

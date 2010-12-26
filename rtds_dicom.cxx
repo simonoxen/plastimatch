@@ -11,6 +11,7 @@
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
+#include "gdcm_series_helper_2.h"
 #include "logfile.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"

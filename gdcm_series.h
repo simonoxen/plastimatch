@@ -9,7 +9,13 @@
 #include <list>
 #include <vector>
 #include "bstrwrap.h"
-#include "gdcm_series_helper_2.h"
+
+/* Forward declarations */
+namespace gdcm {
+    class File;
+    typedef std::vector<File* > FileList;
+    class SerieHelper2;
+};
 
 class Gdcm_series 
 {
