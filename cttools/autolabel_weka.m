@@ -1,4 +1,4 @@
-cd /home/gsharp/Dropbox/autolabel
+cd ([getenv('HOME'), '/Dropbox/autolabel']);
 
 data = [];
 pid = [];

@@ -1,4 +1,4 @@
-cd /home/gsharp/idata/autolabel
+cd ([getenv('HOME'), '/Dropbox/autolabel']);
 init_shogun
 
 lung = [];
