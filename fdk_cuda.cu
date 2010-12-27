@@ -205,6 +205,7 @@ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad,
 
 ///////////////////////////////////////////////////////////////////////////
 // FUNCTION: CUDA_reconstruct_conebeam() //////////////////////////////////
+#if defined (commentout)
 extern "C"
 int 
 CUDA_reconstruct_conebeam (
@@ -266,12 +267,12 @@ CUDA_reconstruct_conebeam (
     // Initialize Windows HighRes Timer
     Timer timer_total;
     double time_total = 0;
-    #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
     Timer timer;
     double backproject_time = 0.0;
     double filter_time = 0.0;
     double io_time = 0.0;
-    #endif
+#endif
 
     // Start timing total execution
     plm_timer_start (&timer_total);
@@ -292,9 +293,9 @@ CUDA_reconstruct_conebeam (
 
     // State the kernel execution parameters
     printf("kernel parameters:\n dimGrid: %u, %u "
-    "(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
-    dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
-    dimBlock.x, dimBlock.y, dimBlock.z);
+	"(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
+	dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
+	dimBlock.x, dimBlock.y, dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
     printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
     printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
@@ -312,26 +313,26 @@ CUDA_reconstruct_conebeam (
     // Project each image into the volume one at a time
     for (i = 0; i < proj_dir->num_proj_images; i++) {
         // Load the current image
-        #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
         plm_timer_start (&timer);
-        #endif
+#endif
 
         // load the next 2D projection
         cbi = proj_image_dir_load_image (proj_dir, i);
         pmat = cbi->pmat;
 
-        #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
         io_time += plm_timer_report (&timer);
-        #endif
+#endif
 
         if (options->filter == FDK_FILTER_TYPE_RAMP) {
-            #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
             plm_timer_start (&timer);
-            #endif
+#endif
             proj_image_filter (cbi);
-            #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
             filter_time += plm_timer_report (&timer);
-            #endif
+#endif
         }
 
         // Load dynamic kernel arguments
@@ -358,13 +359,13 @@ CUDA_reconstruct_conebeam (
         // Free the current image 
         proj_image_destroy ( cbi );
 
-        #if defined (VERBOSE)
+#if defined (VERBOSE)
         printf ("Executing kernel... ");
-        #endif
+#endif
 
-        #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
         plm_timer_start (&timer);
-        #endif
+#endif
 
         // Note: cbi->img AND cbi->matrix are passed via texture memory
         //-------------------------------------
@@ -384,31 +385,31 @@ CUDA_reconstruct_conebeam (
 
         CUDA_check_error("Kernel Panic!");
 
-        #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
         // CUDA kernel calls are asynchronous...
         // In order to accurately time the kernel
         // execution time we need to set a thread
         // barrier here after its execution.
         cudaThreadSynchronize();
-        #endif
+#endif
 
-        #if defined (VERBOSE)
+#if defined (VERBOSE)
         printf ("done.\n");
-        #endif
+#endif
 
         // Unbind the image and projection matrix textures
         cudaUnbindTexture (tex_img);
         cudaUnbindTexture (tex_matrix);
 
-        #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
         backproject_time += plm_timer_report (&timer);
-        #endif
+#endif
 
     } // next projection
 
-    #if defined (VERBOSE)
+#if defined (VERBOSE)
     printf(" done.\n\n");
-    #endif
+#endif
     
     // Copy reconstructed volume from device to host
     cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost);
@@ -419,20 +420,20 @@ CUDA_reconstruct_conebeam (
     time_total = plm_timer_report (&timer_total);
     printf ("========================================\n");
     printf ("[Total Execution Time: %.9fs ]\n", time_total);
-    #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
     printf ("I/O time = %g\n", io_time);
     printf ("Filter time = %g\n", filter_time);
     printf ("Backprojection time = %g\n", backproject_time);
-    #endif
+#endif
 
     int num_images = 1 + (options->last_img - options->first_img) 
-    / options->skip_img;
+	/ options->skip_img;
     printf ("[Average Projection Time: %.9fs ]\n", time_total / num_images);
-    #if defined (TIME_KERNEL)
+#if defined (TIME_KERNEL)
     printf ("I/O time = %g\n", io_time / num_images);
     printf ("Filter time = %g\n", filter_time / num_images);
     printf ("Backprojection time = %g\n", backproject_time / num_images);
-    #endif
+#endif
     printf ("========================================\n");
 
     // Cleanup
@@ -442,4 +443,194 @@ CUDA_reconstruct_conebeam (
     cudaFree (dev_vol); 
 
     return 0;
+}
+#endif
+
+void*
+fdk_cuda_state_create_cu (
+    Volume *vol, 
+    unsigned int image_npix, 
+    float scale, 
+    Fdk_options *options
+)
+{
+    Fdk_cuda_state *state;
+    Fdk_cuda_kernel_args *kargs;
+
+    // Thread Block Dimensions
+    int tBlock_x = 16;
+    int tBlock_y = 4;
+    int tBlock_z = 4;
+
+    // Each element in the volume (each voxel) gets 1 thread
+    int blocksInX = (vol->dim[0]+tBlock_x-1)/tBlock_x;
+    int blocksInY = (vol->dim[1]+tBlock_y-1)/tBlock_y;
+    int blocksInZ = (vol->dim[2]+tBlock_z-1)/tBlock_z;
+    //dim3 dimGrid  = dim3(blocksInX, blocksInY*blocksInZ);
+    //dim3 dimBlock = dim3(tBlock_x, tBlock_y, tBlock_z);
+
+    int vol_size_malloc = vol->npix * sizeof(float);
+
+#if defined (VERBOSE)
+    // First, we need to allocate memory on the host device
+    // for the 3D volume of voxels that will hold our reconstruction.
+    printf("========================================\n");
+    printf("Allocating %dMB of video memory...", vol_size_malloc/1048576);
+#endif
+
+    /* Allocate memory */
+    state = (Fdk_cuda_state*) malloc (sizeof (Fdk_cuda_state));
+    cudaMalloc ((void**) &state->dev_matrix, 12*sizeof(float));
+    cudaMalloc ((void**) &state->dev_kargs, sizeof(Fdk_cuda_kernel_args));
+    cudaMalloc ((void**) &state->dev_vol, vol_size_malloc);
+    cudaMemset ((void*) state->dev_vol, 0, vol_size_malloc);  
+    CUDA_check_error ("Unable to allocate memory for volume");
+    cudaMalloc ((void**) &state->dev_img, image_npix * sizeof(float));
+    CUDA_check_error ("Unable to allocate memory for projection image");
+
+#if defined (VERBOSE)
+    printf(" done.\n\n");
+#endif
+
+    /* Set grid and block size */
+    state->dimGrid = dim3 (blocksInX, blocksInY * blocksInZ);
+    state->dimBlock = dim3 (tBlock_x, tBlock_y, tBlock_z);
+    state->blocksInY = blocksInY;
+
+    /* Set static kernel arguments */
+    kargs = &state->kargs;
+    kargs->scale = scale;
+    kargs->vol_offset.x = vol->offset[0];
+    kargs->vol_offset.y = vol->offset[1];
+    kargs->vol_offset.z = vol->offset[2];
+    kargs->vol_dim.x = vol->dim[0];
+    kargs->vol_dim.y = vol->dim[1];
+    kargs->vol_dim.z = vol->dim[2];
+    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
+    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
+    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+
+#if defined (VERBOSE)
+    // State the kernel execution parameters
+    printf("kernel parameters:\n dimGrid: %u, %u "
+	"(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
+	dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
+	dimBlock.x, dimBlock.y, dimBlock.z);
+    printf("%u voxels in volume\n", vol->npix);
+    printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
+    printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
+    printf("========================================\n\n");
+#endif
+
+    return (void*) state;
+}
+
+void
+fdk_cuda_state_destroy_cu (
+    void *dev_state
+)
+{
+    Fdk_cuda_state *state = (Fdk_cuda_state*) dev_state;
+    cudaFree (state->dev_img);
+    cudaFree (state->dev_kargs);
+    cudaFree (state->dev_matrix);
+    cudaFree (state->dev_vol);
+    free (dev_state);
+}
+
+void
+fdk_cuda_queue_image_cu (
+    void *dev_state, 
+    int *dim, 
+    double *ic, 
+    double *nrm, 
+    double sad, 
+    double sid, 
+    double *matrix, 
+    float *img
+)
+{
+    Fdk_cuda_state *state = (Fdk_cuda_state*) dev_state;
+    Fdk_cuda_kernel_args *kargs = &state->kargs;
+
+    /* Set dynamic kernel arguments */
+    kargs->img_dim.x = dim[0];
+    kargs->img_dim.y = dim[1];
+    kargs->ic.x = ic[0];
+    kargs->ic.y = ic[1];
+    kargs->nrm.x = nrm[0];
+    kargs->nrm.y = nrm[1];
+    kargs->nrm.z = nrm[2];
+    kargs->sad = sad;
+    kargs->sid = sid;
+    for (int j = 0; j < 12; j++) {
+	kargs->matrix[j] = (float) matrix[j];
+    }
+
+    // Copy image pixel data & projection matrix to device Global Memory
+    // and then bind them to the texture hardware.
+    cudaMemcpy (state->dev_img, img, 
+	dim[0] * dim[1] * sizeof(float), 
+	cudaMemcpyHostToDevice);
+    cudaBindTexture (0, tex_img, state->dev_img, 
+	dim[0] * dim[1] * sizeof(float));
+    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
+	cudaMemcpyHostToDevice);
+    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+}
+
+
+void
+fdk_cuda_backproject_cu (void *dev_state)
+{
+    Fdk_cuda_state *state = (Fdk_cuda_state*) dev_state;
+    Fdk_cuda_kernel_args *kargs = &state->kargs;
+
+    // Note: cbi->img AND cbi->matrix are passed via texture memory
+    kernel_fdk <<< state->dimGrid, state->dimBlock >>> (
+	state->dev_vol,
+	kargs->img_dim,
+	kargs->ic,
+	kargs->nrm,
+	kargs->sad,
+	kargs->scale,
+	kargs->vol_offset,
+	kargs->vol_dim,
+	kargs->vol_pix_spacing,
+	state->blocksInY,
+	1.0f / (float) state->blocksInY
+    );
+
+    CUDA_check_error ("Kernel Panic!");
+
+#if FDK_CUDA_TIME_KERNEL
+    // CUDA kernel calls are asynchronous...
+    // In order to accurately time the kernel
+    // execution time we need to set a thread
+    // barrier here after its execution.
+    cudaThreadSynchronize();
+#endif
+
+#if defined (VERBOSE)
+    printf ("done.\n");
+#endif
+
+    // Unbind the image and projection matrix textures
+    cudaUnbindTexture (tex_img);
+    cudaUnbindTexture (tex_matrix);
+}
+
+void
+fdk_cuda_fetch_volume_cu (
+    void *dev_state, 
+    void *host_buf, 
+    unsigned int copy_size
+)
+{
+    Fdk_cuda_state *state = (Fdk_cuda_state*) dev_state;
+
+    // Copy reconstructed volume from device to host
+    //cudaMemcpy (vol->img, dev_vol, vol->npix * vol->pix_size, cudaMemcpyDeviceToHost);
+    cudaMemcpy (host_buf, state->dev_vol, copy_size, cudaMemcpyDeviceToHost);
+    CUDA_check_error ("Error: Unable to retrieve data volume.");
 }

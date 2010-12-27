@@ -627,16 +627,6 @@ SET (GPUIT_LIBRARIES gpuit ${GPUIT_LIBRARY_DEPENDENCIES})
 SET (PLASTIMATCH_LIBS plastimatch1 ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 SET (SLICER_PLUGIN_LIBS ${ITK_LIBRARIES} ${GPUIT_LIBRARY_DEPENDENCIES})
 
-# JAS 2010.11.22
-# Since FDK is roadmapped to fork from plastimatch(?),
-# for now we don't have it use the plmcuda plugin.
-# Instead it uses direct linkage to the CUDA runtime
-# if build machine has CUDA.
-SET (FDK_LIBRARIES ${GPUIT_LIBRARIES})
-IF (CUDA_FOUND)
-  SET (FDK_LIBRARIES ${FDK_LIBRARIES} ${CUDA_LIBRARIES})
-ENDIF (CUDA_FOUND)
-
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
@@ -728,14 +718,6 @@ IF (CUDA_FOUND)
       logfile.c           # for bspline_cuda.cpp
       logfile.h           # for bspline_cuda.cpp
     )
-
-    SET (PLM_CUDA_DRR_SRC
-      drr_cuda.cpp 
-      drr_cuda.cu 
-      drr_cuda.h 
-      drr_cuda_p.h 
-    )
-
     SET (PLM_CUDA_DEMONS_SRC
       demons_cuda.cu
       demons_misc.c
@@ -745,7 +727,18 @@ IF (CUDA_FOUND)
       print_and_exit.c    # for volume.c
       print_and_exit.h    # for volume.c
     )
-
+    SET (PLM_CUDA_DRR_SRC
+      drr_cuda.cpp 
+      drr_cuda.cu 
+      drr_cuda.h 
+      drr_cuda_p.h 
+    )
+    SET (PLM_CUDA_FDK_SRC
+      fdk_cuda.cpp 
+      fdk_cuda.cu 
+      fdk_cuda_p.h
+      fdk_cuda.h
+    )
     SET (PLM_CUDA_COMMON
       cuda_util.cu
       cuda_util.h
@@ -754,11 +747,11 @@ IF (CUDA_FOUND)
       cuda_mem.cu
       cuda_mem.h
     )
-
     SET (PLM_CUDA_LIBRARY_SRC
       ${PLM_CUDA_BSPLINE_SRC}
-      ${PLM_CUDA_DRR_SRC}
       ${PLM_CUDA_DEMONS_SRC}
+      ${PLM_CUDA_DRR_SRC}
+      ${PLM_CUDA_FDK_SRC}
       ${PLM_CUDA_COMMON}
     )
     CUDA_ADD_LIBRARY (plmcuda SHARED
@@ -784,6 +777,12 @@ IF (CUDA_FOUND)
       ${GPUIT_LIBRARY_SRC}
       ${BSPLINE_CUDA_WRAPPERS}
       )
+    CUDA_COMPILE (DEMONS_CUDA_WRAPPERS demons_cuda.cu)
+    SET (GPUIT_LIBRARY_SRC
+      ${GPUIT_LIBRARY_SRC}
+      ${DEMONS_CUDA_WRAPPERS}
+      demons_cuda.cu
+      )
     CUDA_COMPILE (DRR_CUDA_WRAPPERS drr_cuda.cu)
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
@@ -793,12 +792,15 @@ IF (CUDA_FOUND)
       drr_cuda.h 
       drr_cuda_p.h 
       )
-    CUDA_COMPILE (DEMONS_CUDA_WRAPPERS demons_cuda.cu)
+    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
-      ${DEMONS_CUDA_WRAPPERS}
-      demons_cuda.cu
-      )
+      ${FDK_CUDA_WRAPPERS}
+      fdk_cuda.cpp 
+      fdk_cuda.cu 
+      fdk_cuda_p.h
+      fdk_cuda.h
+    )
   ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (CUDA_FOUND)
 
@@ -973,6 +975,7 @@ SET (FINDSCU_SRC
   )
 SET (FDK_SRC
   fdk_main.c 
+  fdk.c fdk.h
   fdk_opts.c fdk_opts.h
   fdk_util.c fdk_util.h
   bowtie_correction.c bowtie_correction.h
@@ -985,26 +988,6 @@ IF (BROOK_FOUND)
     )
 ENDIF (BROOK_FOUND)
 
-IF (CUDA_FOUND)
-  IF (PLM_USE_GPU_PLUGINS)  # << FDK does not use cuda_plugin
-    SET (FDK_SRC            #    so compile in stuff it needs
-      ${FDK_SRC}            #    that now lives in plugin
-      fdk_cuda.cu 
-      fdk_cuda_p.h
-      fdk_cuda.h
-      cuda_util.cu
-      cuda_util.h
-    )
-  ELSE (PLM_USE_GPU_PLUGINS)   # << Static linking.  Everything
-    SET (FDK_SRC               #    links against GPUIT, which
-      ${FDK_SRC}               #    includes cuda_utils
-      fdk_cuda.cu 
-      fdk_cuda_p.h
-      fdk_cuda.h
-    )
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ENDIF (CUDA_FOUND)
-
 IF (OPENCL_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -1016,19 +999,6 @@ IF (OPENCL_FOUND)
     )
   PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
 ENDIF (OPENCL_FOUND)
-
-IF (CUDA_FOUND)
-  IF (PLM_USE_GPU_PLUGINS)
-    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu cuda_util.cu)
-  ELSE (PLM_USE_GPU_PLUGINS)
-    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-  ENDIF (PLM_USE_GPU_PLUGINS)
-
-  SET (FDK_SRC
-    ${FDK_SRC}
-    ${FDK_CUDA_WRAPPERS}
-    )
-ENDIF (CUDA_FOUND)
 
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
@@ -1284,23 +1254,32 @@ ADD_SUBDIRECTORY (CUDA_tex_test)
 
 ##-----------------------------------------------------------------------------
 ##  Determine linker flags
+##    GPUIT.DLL should link with GPUIT_LIB_LDFLAGS
+##    Executables should link with GPUIT_EXE_LDFLAGS or PLMCUDA_EXE_LDFLAGS
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIB_LDFLAGS "${OPENMP_LDFLAGS}")
 SET (GPUIT_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
+SET (PLMCUDA_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   IF (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
+    SET (PLMCUDA_EXE_LDFLAGS 
+      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll")
   ELSE (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
+    SET (PLMCUDA_EXE_LDFLAGS 
+      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll")
   ENDIF (PLM_USE_GPU_PLUGINS)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
   SET (GPUIT_EXE_LDFLAGS "${GPUIT_EXE_LDFLAGS} -ldl")
+  SET (PLMCUDA_EXE_LDFLAGS "${PLMCUDA_EXE_LDFLAGS} -ldl")
 ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
 MESSAGE (STATUS "GPUIT_LIB_LDFLAGS: ${GPUIT_LIB_LDFLAGS}")
 MESSAGE (STATUS "GPUIT_EXE_LDFLAGS: ${GPUIT_EXE_LDFLAGS}")
+MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 
 ##-----------------------------------------------------------------------------
 ##  Library targets
@@ -1374,20 +1353,15 @@ ENDIF (WIN32 AND SLICER_FOUND)
 PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}")
+  "${PLMCUDA_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}")
-IF (PLM_USE_GPU_PLUGINS)
-  PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${FDK_LIBRARIES}" 
-    "${GPUIT_EXE_LDFLAGS}")
-ELSE (PLM_USE_GPU_PLUGINS)
-  PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
-    "${GPUIT_EXE_LDFLAGS}")
-ENDIF (PLM_USE_GPU_PLUGINS)
+  "${PLMCUDA_EXE_LDFLAGS}")
+PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
+    "${PLMCUDA_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")
