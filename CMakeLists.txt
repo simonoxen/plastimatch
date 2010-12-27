@@ -1581,10 +1581,10 @@ IF (FFTW_FOUND)
   ENDIF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
 ENDIF (FFTW_FOUND)
 
-IF (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Release/plmcuda.dll")
-  INSTALL (FILES "${CMAKE_CURRENT_BINARY_DIR}/Release/plmcuda.dll" 
+IF (EXISTS "${CMAKE_BINARY_DIR}/Release/plmcuda.dll")
+  INSTALL (FILES "${CMAKE_BINARY_DIR}/Release/plmcuda.dll" 
     DESTINATION bin)
-ENDIF (EXISTS "${CMAKE_CURRENT_BINARY_DIR}/Release/plmcuda.dll")
+ENDIF (EXISTS "${CMAKE_BINARY_DIR}/Release/plmcuda.dll")
 
 IF (NOT BUILD_AGAINST_SLICER3)
   INSTALL (FILES 
