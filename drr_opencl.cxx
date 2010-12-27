@@ -75,12 +75,6 @@ drr_opencl_ray_trace_image (
     Drr_options *options
 )
 {
-#if defined (commentout)
-    Opencl_device ocl_dev;
-    Opencl_buf *ocl_buf_img;
-    Opencl_buf *ocl_buf_vol;
-#endif
-
     Drr_opencl_state *dev_state = (Drr_opencl_state*) dev_state_v;
     Proj_matrix *pmat = proj->pmat;
     cl_float2 ocl_ic;
