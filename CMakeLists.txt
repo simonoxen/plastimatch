@@ -651,6 +651,7 @@ ENDIF (BROOK_FOUND)
 ##  GPUIT/PLASTIMATCH SOURCE FILES
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIBRARY_SRC
+  bowtie_correction.c bowtie_correction.h
   bstring_util.cxx bstring_util.h
   bspline.c bspline.h
   bspline_landmarks.c bspline_landmarks.h
@@ -669,6 +670,7 @@ SET (GPUIT_LIBRARY_SRC
   dir_list.c dir_list.h
   drr.c drr.h
   drr_trilin.c drr_trilin.h
+  fdk.c fdk.h
   file_util.cxx file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
@@ -975,10 +977,8 @@ SET (FINDSCU_SRC
   )
 SET (FDK_SRC
   fdk_main.c 
-  fdk.c fdk.h
   fdk_opts.c fdk_opts.h
   fdk_util.c fdk_util.h
-  bowtie_correction.c bowtie_correction.h
   )
 IF (BROOK_FOUND)
   SET (FDK_SRC
@@ -1255,7 +1255,8 @@ ADD_SUBDIRECTORY (CUDA_tex_test)
 ##-----------------------------------------------------------------------------
 ##  Determine linker flags
 ##    GPUIT.DLL should link with GPUIT_LIB_LDFLAGS
-##    Executables should link with GPUIT_EXE_LDFLAGS or PLMCUDA_EXE_LDFLAGS
+##    Executables that call PLMCUDA functions should link PLMCUDA_EXE_LDFLAGS
+##    Other executables should link with GPUIT_EXE_LDFLAGS
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIB_LDFLAGS "${OPENMP_LDFLAGS}")
 SET (GPUIT_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
@@ -1265,12 +1266,12 @@ IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
-      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll")
+      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll")
   ELSE (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
-      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll")
+      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll")
   ENDIF (PLM_USE_GPU_PLUGINS)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
@@ -1361,7 +1362,7 @@ PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
-    "${PLMCUDA_EXE_LDFLAGS}")
+  "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}")
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "")

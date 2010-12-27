@@ -12,6 +12,7 @@
 extern "C" {
 #endif
 
+gpuit_EXPORT
 void
 bowtie_correction (Volume *vol, Fdk_options *options);
 

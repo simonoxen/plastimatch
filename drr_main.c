@@ -66,6 +66,9 @@ free_gpu_memory (
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
+
 	if (dev_state) {
 	    if (!delayload_cuda ()) { exit (0); }
 	    drr_cuda_state_destroy (dev_state);
@@ -165,9 +168,6 @@ drr_render_volume (Volume* vol, Drr_options* options)
 	options->isocenter[0],
 	options->isocenter[1],
 	options->isocenter[2] };
-
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
 
     plm_timer_start (&timer);
 
