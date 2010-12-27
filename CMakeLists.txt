@@ -1551,13 +1551,6 @@ IF (ITK_FOUND)
   IF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
   ENDIF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
-
-  INSTALL(FILES 
-    "${CMAKE_SOURCE_DIR}/cttools/dicomrt_to_cxt.pl" 
-    "${CMAKE_SOURCE_DIR}/cttools/dcm_image_uids.pl" 
-    "${CMAKE_SOURCE_DIR}/cttools/cxt_apply_uids.pl"
-    "${CMAKE_SOURCE_DIR}/cttools/parse_cxt.pl"
-    DESTINATION bin)
 ENDIF (ITK_FOUND)
 
 IF (CUDA_FOUND)
@@ -1580,8 +1573,13 @@ IF (CUDA_FOUND)
       INSTALL (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
     ENDIF (BUILD_AGAINST_SLICER3)
   ENDIF (EXISTS "${CUDART_FILE}")
-
 ENDIF (CUDA_FOUND)
+
+IF (FFTW_FOUND)
+  IF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
+    INSTALL (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
+  ENDIF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
+ENDIF (FFTW_FOUND)
 
 IF (NOT BUILD_AGAINST_SLICER3)
   INSTALL (FILES 
