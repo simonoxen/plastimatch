@@ -1,47 +1,18 @@
-#ifndef _DRR_OPENCL_P_H_
-#define _DRR_OPENCL_P_H_
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#ifndef _drr_opencl_p_h_
+#define _drr_opencl_p_h_
 
-#include "drr_opts.h"
-#include "math_util.h"
-#include "proj_image.h"
-#include "volume.h"
+#include "plm_config.h"
+#include "opencl_util.h"
 
-#define MAX_GPU_COUNT 8
-
-struct int2 {
-	int x;
-	int y;
-};
-
-struct int3 {
-	int x;
-	int y;
-	int z;
-};
-
-struct int4 {
-	int x;
-	int y;
-	int z;
-	int w;
-};
-
-struct float2 {
-	float x;
-	float y;
-};
-
-struct float3 {
-	float x;
-	float y;
-	float z;
-};
-
-struct float4 {
-	float x;
-	float y;
-	float z;
-	float w;
+typedef struct drr_opencl_state Drr_opencl_state;
+struct drr_opencl_state
+{
+    Opencl_device ocl_dev;
+    Opencl_buf *ocl_buf_img;
+    Opencl_buf *ocl_buf_vol;
 };
 
 struct volume_limit_f {

@@ -33,10 +33,9 @@ allocate_gpu_memory (
 {
     switch (options->threading) {
 #if CUDA_FOUND
-    void* tmp;
-
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
+	void* tmp;
+	LOAD_LIBRARY (libplmcuda);
+	LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
 
     case THREADING_CUDA:
         if (!delayload_cuda ()) { exit (0); }
@@ -49,13 +48,42 @@ allocate_gpu_memory (
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-        return 0;
-        //return drr_cuda_state_create (proj, vol, options);
+        return drr_opencl_state_create (proj, vol, options);
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
     default:
         return 0;
+    }
+}
+
+static void
+free_gpu_memory (
+    void *dev_state,
+    Drr_options *options
+)
+{
+    switch (options->threading) {
+#if CUDA_FOUND
+    case THREADING_CUDA:
+	if (dev_state) {
+	    if (!delayload_cuda ()) { exit (0); }
+	    drr_cuda_state_destroy (dev_state);
+	}
+	UNLOAD_LIBRARY (libplmcuda);
+	return;
+#endif
+#if OPENCL_FOUND
+    case THREADING_OPENCL:
+	if (dev_state) {
+	    drr_opencl_state_destroy (dev_state);
+	}
+	return;
+#endif
+    case THREADING_CPU_SINGLE:
+    case THREADING_CPU_OPENMP:
+    default:
+	return;
     }
 }
 
@@ -196,15 +224,7 @@ drr_render_volume (Volume* vol, Drr_options* options)
     }
     proj_image_destroy (proj);
 
-#if CUDA_FOUND
-    if (dev_state) {
-    	if (!delayload_cuda ()) { exit (0); }
-    	drr_cuda_state_destroy (dev_state);
-    }
-
-    UNLOAD_LIBRARY (libplmcuda);
-
-#endif
+    free_gpu_memory (dev_state, options);
 
     printf ("Total time: %g secs\n", plm_timer_report (&timer));
 }

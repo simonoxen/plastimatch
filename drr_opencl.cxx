@@ -21,6 +21,47 @@
 #include "volume.h"
 #include "volume_limit.h"
 
+void*
+drr_opencl_state_create (
+    Proj_image *proj,
+    Volume *vol,
+    Drr_options *options
+)
+{
+    Drr_opencl_state *dev_state;
+    dev_state = (Drr_opencl_state*) malloc (sizeof (Drr_opencl_state));
+
+    /* Set up devices and kernels */
+    opencl_open_device (&dev_state->ocl_dev);
+    opencl_load_programs (&dev_state->ocl_dev, "drr_opencl.cl");
+    opencl_kernel_create (&dev_state->ocl_dev, "kernel_drr");
+
+    /* Set up device memory */
+    dev_state->ocl_buf_img = opencl_buf_create (
+        &dev_state->ocl_dev, 
+        CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 
+        proj->dim[1] * proj->dim[0] * sizeof(float),
+        0
+    );
+
+    dev_state->ocl_buf_vol = opencl_buf_create (
+        &dev_state->ocl_dev, 
+        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
+        vol->pix_size * vol->npix,
+        vol->img
+    );
+
+    return (void*) dev_state;
+}
+
+void
+drr_opencl_state_destroy (void *dev_state)
+{
+    if (!dev_state) return;
+
+    free (dev_state);
+}
+
 void
 drr_opencl_ray_trace_image (
     Proj_image *proj, 
@@ -30,39 +71,22 @@ drr_opencl_ray_trace_image (
     double ul_room[3], 
     double incr_r[3], 
     double incr_c[3], 
-    void *dev_state, 
+    void *dev_state_v, 
     Drr_options *options
 )
 {
+#if defined (commentout)
     Opencl_device ocl_dev;
     Opencl_buf *ocl_buf_img;
     Opencl_buf *ocl_buf_vol;
+#endif
 
+    Drr_opencl_state *dev_state = (Drr_opencl_state*) dev_state_v;
     Proj_matrix *pmat = proj->pmat;
     cl_float2 ocl_ic;
     cl_float4 ocl_p1, ocl_ul_room, ocl_incr_r, ocl_incr_c;
     cl_float4 ocl_nrm, ocl_lower_limit, ocl_upper_limit;
     cl_float ocl_sad;
-
-    /* Set up devices and kernels */
-    opencl_open_device (&ocl_dev);
-    opencl_load_programs (&ocl_dev, "drr_opencl.cl");
-    opencl_kernel_create (&ocl_dev, "kernel_drr");
-
-    /* Set up device memory */
-    ocl_buf_img = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_WRITE | CL_MEM_ALLOC_HOST_PTR, 
-        proj->dim[1] * proj->dim[0] * sizeof(float),
-        0
-    );
-
-    ocl_buf_vol = opencl_buf_create (
-        &ocl_dev, 
-        CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
-        vol->pix_size * vol->npix,
-        vol->img
-    );
 
     /* Copy ic to device (convert from double to float) */
     ocl_ic.s[0] = proj->pmat->ic[0];
@@ -108,9 +132,9 @@ drr_opencl_ray_trace_image (
 
     /* Set drr kernel arguments */
     opencl_set_kernel_args (
-	&ocl_dev, 
-	sizeof (cl_mem), &ocl_buf_img[0], 
-	sizeof (cl_mem), &ocl_buf_vol[0], 
+	&dev_state->ocl_dev, 
+	sizeof (cl_mem), &dev_state->ocl_buf_img[0], 
+	sizeof (cl_mem), &dev_state->ocl_buf_vol[0], 
 	sizeof (cl_int4), vol->dim, 
 	sizeof (cl_float4), vol->offset, 
 	sizeof (cl_float4), vol->pix_spacing, 
@@ -135,9 +159,10 @@ drr_opencl_ray_trace_image (
     size_t global_work_size = (float) proj->dim[0] * proj->dim[1];
 
     /* Invoke kernel */
-    opencl_kernel_enqueue (&ocl_dev, global_work_size, local_work_size);
+    opencl_kernel_enqueue (&dev_state->ocl_dev, 
+	global_work_size, local_work_size);
 
     /* Read back results */
-    opencl_buf_read (&ocl_dev, ocl_buf_img, 
+    opencl_buf_read (&dev_state->ocl_dev, dev_state->ocl_buf_img, 
 	sizeof (float) * proj->dim[0] * proj->dim[1], proj->img);
 }
