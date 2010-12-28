@@ -27,6 +27,7 @@
 #include "plm_timer.h"
 #include "delayload.h"
 
+#if CUDA_FOUND
 int 
 CUDA_reconstruct_conebeam (
     Volume *vol, 
@@ -159,6 +160,7 @@ CUDA_reconstruct_conebeam (
 
     return 0;
 }
+#endif
 
 /* get_pixel_value_c seems to be no faster than get_pixel_value_b, 
    despite having two fewer compares. */
