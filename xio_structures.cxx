@@ -41,8 +41,6 @@ gpuit_EXPORT
 void make_directory_recursive (const char *dirname);
 
 
-/* This is a comment */
-
 static void
 add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
 {
@@ -97,8 +95,14 @@ add_cms_contournames (Rtss_polyline_set *rtss, const char *filename)
 		   We'll assume that everything went ok.  */
 		break;
 	    }
+	    /* GCS 2010-12-27: It's not just that version which does this.
+	       What happens it that XiO leaves garbage at the end of the 
+	       file.  The better way to handle this is probably to count 
+	       the number of structures and then stop. */
+#if defined (commentout)
 	    print_and_exit ("Error parsing contournames: "
 			    "contour id not found (%s)\n", line2->data);
+#endif
 	}
 
 	/* Xio structures can be zero.  This is possibly not tolerated 
