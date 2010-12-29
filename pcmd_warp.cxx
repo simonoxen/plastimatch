@@ -39,10 +39,10 @@ print_usage (char* command)
 	"    --output-type={uchar,short,float,...}\n"
 	"    --algorithm=itk\n"
 	"    --patient-pos={hfs,hfp,ffs,ffp}\n"
-	//	"    --dicom-dir=directory      (for structure association)\n"
 	"    --referenced-ct=directory  (for structure association)\n"
 	"    --ctatts=filename          (for dij)\n"
 	"    --dif=filename             (for dij)\n"
+	"    --input-cxt=filename       (for structures)\n"
 	"    --input-ss-img=filename    (for structures)\n"
 	"    --input-ss-list=filename   (for structures)\n"
 	"    --prune-empty              (for structures)\n"
@@ -143,6 +143,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	{ "simplify-perc", required_argument,	    NULL,           36 },
 	{ "output_pointset", required_argument,	    NULL,           37 },
 	{ "output-pointset", required_argument,	    NULL,           37 },
+	{ "input_cxt",       required_argument,	    NULL,           38 },
+	{ "input-cxt",       required_argument,	    NULL,           38 },
 	{ NULL,             0,                      NULL,           0 }
     };
 
@@ -297,6 +299,9 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	case 37:
 	    parms->output_pointset_fn = optarg;
 	    break;
+	case 38:
+	    parms->input_cxt_fn = optarg;
+	    break;
 	default:
 	    fprintf (stderr, "Error.  Unknown option.\n");
 	    print_usage (argv[1]);
@@ -308,7 +313,8 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	&& bstring_empty (parms->input_dose_img_fn)
 	&& bstring_empty (parms->input_dose_xio_fn)
 	&& bstring_empty (parms->input_dose_ast_fn)
-	&& bstring_empty (parms->input_dose_mc_fn))
+	&& bstring_empty (parms->input_dose_mc_fn)
+	&& bstring_empty (parms->input_cxt_fn))
     {
 	fprintf (stderr, "Error.  No input file specified..\n");
 	print_usage (argv[1]);

@@ -92,6 +92,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	}
     }
 
+    if (bstring_not_empty (parms->input_cxt_fn)) {
+	if (rtds->m_ss_image) delete rtds->m_ss_image;
+	rtds->m_ss_image = new Ss_image;
+	rtds->m_ss_image->load_cxt (parms->input_cxt_fn);
+    }
+
     if (bstring_not_empty (parms->input_ss_img_fn)) {
 	rtds->load_ss_img (
 	    (const char*) parms->input_ss_img_fn, 
