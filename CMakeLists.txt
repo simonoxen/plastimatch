@@ -1081,8 +1081,7 @@ SET (PLASTIMATCH_QT_SRC
 IF (QT4_FOUND AND QT_QTSQL_FOUND)
   QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
     #    pqt_application.h
-    pqt_data_source_dialog.hPLM_ADD_EXECUTABLE (dicom_info "${DICOM_INFO_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}")
+    pqt_data_source_dialog.h
     pqt_data_source_list_model.h
     pqt_main_window.h 
     pqt_patient_list_model.h
