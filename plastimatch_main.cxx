@@ -17,6 +17,7 @@
 #include "pcmd_crop.h"
 #include "pcmd_diff.h"
 #include "pcmd_dvh.h"
+#include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
 #include "pcmd_segment.h"
@@ -60,6 +61,7 @@ print_usage (int return_code)
 	"  slice       "
 	"  stats       "
 	"  warp        "
+	"  xio-dvh     "
 	"\n"
 	"\n"
 	"For detailed usage of a specific command, type:\n"
@@ -127,6 +129,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "dvh")) {
 	do_command_dvh (argc, argv);
+    }
+    else if (!strcmp (command, "xio-dvh")) {
+	do_command_xio_dvh (argc, argv);
     }
     else if (!strcmp (command, "header")) {
 	do_command_header (argc, argv);
