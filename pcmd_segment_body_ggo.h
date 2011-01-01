@@ -21,12 +21,12 @@ extern "C" {
 
 #ifndef CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE
 /** @brief the program name (used for printing errors) */
-#define CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE "pcmd_segment"
+#define CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE "plastimatch segment"
 #endif
 
 #ifndef CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE_NAME
 /** @brief the complete program name (used for help and version) */
-#define CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE_NAME "pcmd_segment"
+#define CMDLINE_PARSER_PCMD_SEGMENT_PACKAGE_NAME "plastimatch segment"
 #endif
 
 #ifndef CMDLINE_PARSER_PCMD_SEGMENT_VERSION

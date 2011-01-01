@@ -2,6 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 
+#define USE_SKIP_ARGS 1
+
 /* Shamelessly stolen and modified from RTK */
 #define GGO(ggo_filename, args_info, skip_args)				\
     args_info_##ggo_filename args_info;					\
@@ -9,7 +11,7 @@
 	int ggo_rc = 0;							\
 	char *tmp;							\
 									\
-	if (0) {\
+	if (USE_SKIP_ARGS) {						\
 	/* Skip arguments.  For example in the following command: */	\
 	/*   "plastimatch segment body [options]                  */	\
 	/* we would set skip_args to 2 to skip "segment body"     */	\
@@ -18,7 +20,7 @@
 	argv[skip_args] = tmp;						\
 	argv += skip_args;						\
 	argc -= skip_args;						\
-	}\
+	}								\
 									\
 	ggo_rc = cmdline_parser_##ggo_filename##2 (			\
 	    argc, argv, &args_info, 1, 1, 0);				\
@@ -40,14 +42,14 @@
 #define GGO_FREE(ggo_filename, args_info, skip_args)			\
     {									\
 	char *tmp;							\
-	if (0) {\
+	if (USE_SKIP_ARGS) {						\
 	/* Restore argc, argv */					\
 	argv -= skip_args;						\
 	tmp = argv[0];							\
 	argv[0] = argv[skip_args];					\
 	argv[skip_args] = tmp;						\
 	argc += skip_args;						\
-	}\
+	}								\
 									\
 	cmdline_parser_##ggo_filename##_free (&args_info);		\
     }
