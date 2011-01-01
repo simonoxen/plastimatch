@@ -13,7 +13,7 @@
 #include "resample_mha.h"
 
 static void
-do_segment_body (args_info_pcmd_segment *args_info)
+do_segment_body (args_info_pcmd_segment_body *args_info)
 {
 }
 
