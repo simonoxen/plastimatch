@@ -158,7 +158,10 @@ do_command (int argc, char* argv[])
 	do_command_warp (argc, argv);
     }
     else if (argc == 2) {
-	/* Older usage */
+	if (!file_exists (argv[1])) {
+	    print_usage (1);
+	}
+	/* Older usage, just "plastimatch parms.txt" */
 	do_command_register (argc, argv);
     }
     else {
