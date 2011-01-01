@@ -240,6 +240,7 @@ ENDIF (PLM_USE_F2C)
 ##-----------------------------------------------------------------------------
 FIND_PACKAGE (Brook)
 FIND_PACKAGE (DCMTK)
+FIND_PACKAGE (Dlib)
 FIND_PACKAGE (Etags)
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (FFTW)
