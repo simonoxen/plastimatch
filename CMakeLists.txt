@@ -1039,6 +1039,7 @@ ENDIF (OPENCL_FOUND)
 SET (PATIENT_MASK_SRC
   patient_mask.cxx
   )
+WRAP_GGO (pcmd_segment_GGO_C pcmd_segment.ggo)
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -1052,6 +1053,7 @@ SET (PLASTIMATCH_SRC
   pcmd_mask.cxx pcmd_mask.h
   pcmd_resample.cxx pcmd_resample.h
   pcmd_segment.cxx pcmd_segment.h
+  ${pcmd_segment_GGO_C}
   pcmd_slice.cxx pcmd_slice.h 
   pcmd_stats.cxx pcmd_stats.h
   pcmd_warp_dij.cxx 
@@ -1099,7 +1101,6 @@ SET (PROTON_DOSE_SRC
   proton_dose_opts.c proton_dose_opts.h
   )
 WRAP_GGO (landmark_warp_GGO_C landmark_warp.ggo)
-MESSAGE (STATUS "landmark_warp_GGO_C = ${landmark_warp_GGO_C}")
 SET (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   landmark_warp_args.cxx landmark_warp_args.h

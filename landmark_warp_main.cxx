@@ -184,12 +184,11 @@ check_arguments (args_info_landmark_warp *args_info)
 int
 main (int argc, char *argv[])
 {
-    GGO (landmark_warp, args_info);
+    GGO (landmark_warp, args_info, 0);
     check_arguments (&args_info);
 
     do_landmark_warp (&args_info);
 
-    GGO_FREE (landmark_warp, args_info);
-
+    GGO_FREE (landmark_warp, args_info, 0);
     return 0;
 }

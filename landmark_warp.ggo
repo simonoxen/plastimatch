@@ -32,7 +32,7 @@ option "dim" - "Output image dimension"
 option "fixed" F "Fixed image (match output size to this image)"
        string typestr="filename" optional
 
-## Algorith options
+## Algorithm options
 option "algorithm" a "RBF warping algorithm "
        enum values="tps","gauss","cone" optional default="cone"
 option "radius" r "Radius of radial basis function"
