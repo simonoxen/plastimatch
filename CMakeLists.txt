@@ -12,8 +12,10 @@ CMAKE_POLICY (SET CMP0003 NEW)
 
 ## Default to release
 IF (NOT CMAKE_BUILD_TYPE)
-  SET (CMAKE_BUILD_TYPE Release)
-ENDIF (NOT CMAKE_BUILD_TYPE)
+  SET (CMAKE_BUILD_TYPE "Release" CACHE STRING
+    "Choose the type of build, options are: Debug Release
+      RelWithDebInfo MinSizeRel." FORCE)
+ENDIF ()
 
 ## My modules override CMake defaults
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
@@ -24,6 +26,7 @@ SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ##-----------------------------------------------------------------------------
 # Building little test programs
 SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build CUDA test program")
+OPTION (PLM_BUILD_DLIB_TEST "Build plastimatch as shared library" OFF)
 SET (PLM_BUILD_FANN_TEST OFF CACHE BOOL "Build fann test program")
 SET (PLM_BUILD_MEX_TEST OFF CACHE BOOL "Build mex test program")
 SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
@@ -1213,6 +1216,10 @@ IF (DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF (DCMTK_FOUND)
 
+IF (DLIB_FOUND)
+  INCLUDE_DIRECTORIES (AFTER ${DLIB_INCLUDE_DIR})
+ENDIF ()
+
 IF (FFTW_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
   LINK_DIRECTORIES (${FFTW_DIR})
@@ -1585,23 +1592,31 @@ ENDIF (NOT BUILD_AGAINST_SLICER3)
 ##  Simple test files
 ##-----------------------------------------------------------------------------
 # Test executable -- cuda
-IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+IF (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
   CUDA_COMPILE (CUDA_TEST_WRAPPERS cuda_test.cu)
   SET (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
   MESSAGE (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
   PLM_ADD_EXECUTABLE (cuda_test 
     "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "" 0)
   SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
-ENDIF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+ENDIF ()
+
+# Test executable -- dlib
+IF (DLIB_FOUND AND PLM_BUILD_DLIB_TEST)
+  SET (DLIB_TEST_SRC dlib_test.cxx)
+  SET (DLIB_TEST_LIBS ${GPUIT_LIBRARIES} ${DLIB_LIBRARIES})
+  PLM_ADD_EXECUTABLE (dlib_test 
+    "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
+ENDIF ()
 
 # Test executable -- fann
-IF (PLM_BUILD_FANN_TEST AND FANN_FOUND)
+IF (FANN_FOUND AND PLM_BUILD_FANN_TEST)
   SET (FANN_TEST_SRC fann_test.c)
   SET (FANN_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
   PLM_ADD_EXECUTABLE (fann_test 
     "${FANN_TEST_SRC}" "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
-ENDIF (PLM_BUILD_FANN_TEST AND FANN_FOUND)
+ENDIF ()
 
 # Test executable -- mex
 IF (PLM_BUILD_MEX_TEST)
