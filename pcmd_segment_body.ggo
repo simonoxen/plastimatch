@@ -11,8 +11,8 @@ option "input" - "Input image to be segmented"
        string typestr="filename" required
 option "output" - "Binary mask image output"
        string typestr="filename" required
-option "bot" - "Location of patient bottom"
-       string optional
+option "bot" - "Location of patient bottom (in mm)"
+       float optional
 
 option "config" - "Config file" 
        string no hidden optional

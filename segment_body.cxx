@@ -17,12 +17,14 @@
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "plm_path.h"
+#include "segment_body.h"
 
 /* Thresholds for finding patient & couch */
 const short T1 = -300;
 const short T2 = -500;
 const short T3 = -1000;
 
+#if defined (commentout)
 class Patient_Mask_Parms {
 public:
     char mha_in_fn[_MAX_PATH];
@@ -323,4 +325,11 @@ main (int argc, char *argv[])
 
     printf ("Finished!\n");
     return 0;
+}
+
+#endif
+
+void
+Segment_body::do_segmentation ()
+{
 }

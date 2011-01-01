@@ -46,9 +46,9 @@ struct args_info_pcmd_segment_body
   char * output_arg;	/**< @brief Binary mask image output.  */
   char * output_orig;	/**< @brief Binary mask image output original value given at command line.  */
   const char *output_help; /**< @brief Binary mask image output help description.  */
-  char * bot_arg;	/**< @brief Location of patient bottom.  */
-  char * bot_orig;	/**< @brief Location of patient bottom original value given at command line.  */
-  const char *bot_help; /**< @brief Location of patient bottom help description.  */
+  float bot_arg;	/**< @brief Location of patient bottom (in mm).  */
+  char * bot_orig;	/**< @brief Location of patient bottom (in mm) original value given at command line.  */
+  const char *bot_help; /**< @brief Location of patient bottom (in mm) help description.  */
   char * config_arg;	/**< @brief Config file.  */
   char * config_orig;	/**< @brief Config file original value given at command line.  */
   const char *config_help; /**< @brief Config file help description.  */

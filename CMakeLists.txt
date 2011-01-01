@@ -892,6 +892,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   rtds_warp.cxx rtds_warp.h
   rtss_polyline_set.cxx rtss_polyline_set.h 
   rtss_structure.cxx rtss_structure.h 
+  segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
   ss_image.cxx ss_image.h
@@ -1036,9 +1037,6 @@ SET (OPENCL_PROBE_SRC
 IF (OPENCL_FOUND)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
 ENDIF (OPENCL_FOUND)
-SET (PATIENT_MASK_SRC
-  patient_mask.cxx
-  )
 WRAP_GGO (pcmd_segment_body_GGO_C pcmd_segment_body.ggo)
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
@@ -1131,7 +1129,6 @@ CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
 IF (NOT HAVE_GETOPT_LONG)
     SET (DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
     SET (MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
-    SET (PATIENT_MASK_SRC ${PATIENT_MASK_SRC} getopt_long.c getopt.h)
     SET (PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
     SET (RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
     SET (COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
@@ -1405,8 +1402,6 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (patient_mask "${PATIENT_MASK_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   IF (SLICER_FOUND)

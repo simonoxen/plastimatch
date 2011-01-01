@@ -36,7 +36,7 @@ const char *args_info_pcmd_segment_body_full_help[] = {
   "  -V, --version          Print version and exit",
   "      --input=filename   Input image to be segmented (mandatory)",
   "      --output=filename  Binary mask image output (mandatory)",
-  "      --bot=STRING       Location of patient bottom",
+  "      --bot=FLOAT        Location of patient bottom (in mm)",
   "      --config=STRING    Config file",
     0
 };
@@ -58,6 +58,7 @@ const char *args_info_pcmd_segment_body_help[7];
 
 typedef enum {ARG_NO
   , ARG_STRING
+  , ARG_FLOAT
 } cmdline_parser_pcmd_segment_body_arg_type;
 
 static
@@ -119,7 +120,6 @@ void clear_args (struct args_info_pcmd_segment_body *args_info)
   args_info->input_orig = NULL;
   args_info->output_arg = NULL;
   args_info->output_orig = NULL;
-  args_info->bot_arg = NULL;
   args_info->bot_orig = NULL;
   args_info->config_arg = NULL;
   args_info->config_orig = NULL;
@@ -234,7 +234,6 @@ cmdline_parser_pcmd_segment_body_release (struct args_info_pcmd_segment_body *ar
   free_string_field (&(args_info->input_orig));
   free_string_field (&(args_info->output_arg));
   free_string_field (&(args_info->output_orig));
-  free_string_field (&(args_info->bot_arg));
   free_string_field (&(args_info->bot_orig));
   free_string_field (&(args_info->config_arg));
   free_string_field (&(args_info->config_orig));
@@ -1061,6 +1060,9 @@ int update_arg(void *field, char **orig_field,
     val = possible_values[found];
 
   switch(arg_type) {
+  case ARG_FLOAT:
+    if (val) *((float *)field) = (float)strtod (val, &stop_char);
+    break;
   case ARG_STRING:
     if (val) {
       string_field = (char **)field;
@@ -1073,6 +1075,17 @@ int update_arg(void *field, char **orig_field,
     break;
   };
 
+  /* check numeric conversion */
+  switch(arg_type) {
+  case ARG_FLOAT:
+    if (val && !(stop_char && *stop_char == '\0')) {
+      fprintf(stderr, "%s: invalid numeric value: %s\n", package_name, val);
+      return 1; /* failure */
+    }
+    break;
+  default:
+    ;
+  };
 
   /* store the original value */
   switch(arg_type) {
@@ -1208,14 +1221,14 @@ cmdline_parser_pcmd_segment_body_internal (
               goto failure;
           
           }
-          /* Location of patient bottom.  */
+          /* Location of patient bottom (in mm).  */
           else if (strcmp (long_options[option_index].name, "bot") == 0)
           {
           
           
             if (update_arg( (void *)&(args_info->bot_arg), 
                  &(args_info->bot_orig), &(args_info->bot_given),
-                &(local_args_info.bot_given), optarg, 0, 0, ARG_STRING,
+                &(local_args_info.bot_given), optarg, 0, 0, ARG_FLOAT,
                 check_ambiguity, override, 0, 0,
                 "bot", '-',
                 additional_error))
