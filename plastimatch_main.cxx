@@ -10,6 +10,7 @@
 #else
 #include "getopt.h"
 #endif
+#include "file_util.h"
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_compare.h"
