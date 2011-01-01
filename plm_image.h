@@ -113,6 +113,8 @@ public:
     plastimatch1_EXPORT
     void set_gpuit (Volume *v);
     plastimatch1_EXPORT
+    void set_itk (UCharImageType::Pointer img);
+    plastimatch1_EXPORT
     void set_itk (FloatImageType::Pointer img);
 
     /* conversion */

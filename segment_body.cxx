@@ -24,27 +24,6 @@ const short T1 = -300;
 const short T2 = -500;
 const short T3 = -1000;
 
-#if defined (commentout)
-class Patient_Mask_Parms {
-public:
-    char mha_in_fn[_MAX_PATH];
-    char mha_out_fn[_MAX_PATH];
-    int pt_bot;
-public:
-    Patient_Mask_Parms () {
-	*mha_in_fn = 0;
-	*mha_out_fn = 0;
-	pt_bot = -1;
-    }
-};
-
-void
-print_usage (void)
-{
-    printf ("Usage: patient_mask input_mha output_mha [pt_bot]\n");
-    exit (1);
-}
-
 /* Return bottom image row (indexed starting at 0) containing a patient pixel */
 int
 find_patient_bottom (FloatImageType::Pointer i1)
@@ -254,6 +233,7 @@ invert_image (UCharImageType::Pointer i2)
     }
 }
 
+#if defined (commentout)
 void
 do_patient_mask (Patient_Mask_Parms* opts)
 {
@@ -332,4 +312,45 @@ main (int argc, char *argv[])
 void
 Segment_body::do_segmentation ()
 {
+    /* Convert input to float */
+    FloatImageType::Pointer i1 = this->img_in.itk_float();
+
+    /* Allocate output image (i2) */
+    UCharImageType::Pointer i2 = UCharImageType::New ();
+
+    /* Find patient */
+    int patient_bottom;
+    if (this->bot_given) {
+	patient_bottom = this->bot;
+    } else {
+	patient_bottom = find_patient_bottom (i1);
+    }
+
+    /* Threshold image */
+    i2 = threshold_patient (i1);
+
+    /* Zero out the couch */
+    remove_couch (i2, patient_bottom);
+    //    save_image (i2, "tmp0.mha");
+
+    /* Erode and dilate */
+    i2 = erode_and_dilate (i2);
+    //    save_image (i2, "tmp1.mha");
+
+    /* Compute connected components */
+    i2 = get_largest_connected_component (i2);
+    //    save_image (i2, "tmp2.mha");
+
+    /* Invert the image */
+    invert_image (i2);
+    //    save_image (i2, "tmp3.mha");
+
+    /* Fill holes: Redo connected components on the (formerly) black parts */
+    i2 = get_largest_connected_component (i2);
+
+    /* Invert the image */
+    invert_image (i2);
+
+    /* Return image to caller */
+    this->img_out.set_itk (i2);
 }

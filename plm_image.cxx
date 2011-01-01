@@ -318,6 +318,15 @@ Plm_image::set_gpuit (Volume *v)
 }
 
 void 
+Plm_image::set_itk (UCharImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
+    m_type = PLM_IMG_TYPE_ITK_UCHAR;
+    this->m_itk_uchar = img;
+}
+
+void 
 Plm_image::set_itk (FloatImageType::Pointer img)
 {
     this->free ();
