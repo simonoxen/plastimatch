@@ -1,6 +1,6 @@
 PROJECT (getopt)
 
-SET (GETOPT_SRC
+SET (GETOPT_LIBRARY_SRC
   getopt_long.c
   getopt.h
   )

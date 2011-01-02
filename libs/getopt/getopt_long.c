@@ -81,7 +81,6 @@ __FBSDID("$FreeBSD: /repoman/r/ncvs/src/lib/libc/stdlib/getopt_long.c,v 1.12 200
 #include "getopt.h"
 #include <stdlib.h>
 #include <string.h>
-#include "plm_config.h"
 
 #define REPLACE_GETOPT 1
 
