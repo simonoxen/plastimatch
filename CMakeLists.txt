@@ -599,6 +599,13 @@ ELSE (PLM_USE_F2C)
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (PLM_USE_F2C)
 
+IF (NOT HAVE_GETOPT_LONG)
+  SET (GPUIT_LIBRARY_DEPENDENCIES
+    ${GPUIT_LIBRARY_DEPENDENCIES}
+    getopt
+    )
+ENDIF ()
+
 # Optional
 IF (NLOPT_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
@@ -1128,17 +1135,9 @@ SET (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
 
-
 CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
 IF (NOT HAVE_GETOPT_LONG)
-    SET (DICOM_SERIES_TEST_SRC ${DICOM_SERIES_TEST_SRC} getopt_long.c getopt.h)
-    SET (MHA_TO_RTOG_DOSE_SRC ${MHA_TO_RTOG_DOSE_SRC} getopt_long.c getopt.h)
-    SET (PLASTIMATCH_SRC ${PLASTIMATCH_SRC} getopt_long.c getopt.h)
-    SET (RTOG_TO_MHA_SRC ${RTOG_TO_MHA_SRC} getopt_long.c getopt.h)
-    SET (COMPUTE_MEAN_IMAGE_SRC ${COMPUTE_MEAN_IMAGE_SRC} getopt_long.c getopt.h)
-    SET (SYNTHETIC_MHA_SRC ${SYNTHETIC_MHA_SRC} getopt_long.c getopt.h)
-    SET (VF_INVERT_SRC ${VF_INVERT_SRC} getopt_long.c getopt.h)
-    SET (XF_TO_XF_SRC ${XF_TO_XF_SRC} getopt_long.c getopt.h)
+  ADD_SUBDIRECTORY (libs/getopt)
 ENDIF (NOT HAVE_GETOPT_LONG)
 
 ##-----------------------------------------------------------------------------
@@ -1256,6 +1255,7 @@ ENDIF (SLICER_FOUND)
 IF (wxWidgets_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
 ENDIF (wxWidgets_FOUND)
+
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
@@ -1604,9 +1604,9 @@ ENDIF ()
 # Test executable -- dlib
 IF (DLIB_FOUND AND PLM_BUILD_DLIB_TEST)
   SET (DLIB_TEST_SRC dlib_test.cxx)
-  SET (DLIB_TEST_LIBS ${GPUIT_LIBRARIES} ${DLIB_LIBRARIES})
+  SET (DLIB_TEST_LIBS ${DLIB_LIBRARIES})
   PLM_ADD_EXECUTABLE (dlib_test 
-    "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
+    "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "" 0)
 ENDIF ()
 
 # Test executable -- fann

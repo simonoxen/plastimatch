@@ -7,15 +7,22 @@
 
 */
 
+#include "dlib/cmd_line_parser.h"
+int main(){ return 0; }
+
+#if defined (commentout)
 #include <iostream>
 #include <map>
 #include <vector>
 
-#include "dlib/svm.h"
+#include "dlib/compress_stream.h"
+#include "dlib/cmd_line_parser.h"
 #include "dlib/data_io.h"
+#include "dlib/svm.h"
 
-using namespace std;
 using namespace dlib;
+
+//typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 
 int main()
 {
@@ -28,34 +35,6 @@ int main()
 	sparse_samples, 
 	labels
     );
-
-#if defined (commentout)
-    std::vector<sample_type>::iterator it;
-    for (it = samples.begin(); 
-	 it != samples.end();
-	 it++)
-    {
-	sample_type& s = *it;
-	sample_type::iterator map_it;
-	for (map_it = s.begin();
-	     map_it != s.end();
-	     map_it++)
-	{
-	    unsigned long t = map_it->first;
-	    std::cout << t << " (" << map_it->second << ") ";
-	}
-	std::cout << std::endl;
-    }
-
-    std::vector<double>::iterator labels_it;
-    for (labels_it = labels.begin(); 
-	 labels_it != labels.end();
-	 labels_it++)
-    {
-	double t = (*labels_it);
-	std::cout << t << std::endl;
-    }
-#endif
 
     typedef matrix<sparse_sample_type::value_type::second_type,0,1> 
 	dense_sample_type;
@@ -71,7 +50,7 @@ int main()
     // below we are using a similar value computed from at most 2000 randomly selected
     // samples.
     const double gamma = 3.0 / compute_mean_squared_distance(randomly_subsample(dense_samples, 2000));
-    cout << "using gamma of " << gamma << endl;
+    std::cout << "using gamma of " << gamma << std::endl;
     trainer.set_kernel(kernel_type(gamma));
 
 #if defined (commentout)
@@ -84,7 +63,8 @@ int main()
     // it will give us back the LOO error.
     double loo_error;
     trainer.train(dense_samples, labels, loo_error);
-    cout << "mean squared LOO error: " << loo_error << endl;
+    std::cout << "mean squared LOO error: " << loo_error << std::endl;
     // Which outputs the following:
     // mean squared LOO error: 8.29563e-07
 }
+#endif
