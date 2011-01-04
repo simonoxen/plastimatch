@@ -250,7 +250,10 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "max_its")) {
+    else if (!strcmp (key, "iterations") 
+	|| !strcmp (key, "max_iterations")
+	|| !strcmp (key, "max_its"))
+    {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->max_its) != 1) {
 	    goto error_exit;
