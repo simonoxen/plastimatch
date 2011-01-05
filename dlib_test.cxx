@@ -17,17 +17,41 @@ using namespace dlib;
 
 typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 typedef std::map<unsigned long, double> sparse_sample_type;
-typedef matrix<sparse_sample_type::value_type::second_type,0,1> dense_sample_type;
+typedef matrix< sparse_sample_type::value_type::second_type,0,1
+		> dense_sample_type;
 
 static void
 parse_args (clp& parser, int argc, char* argv[])
 {
     try {
-        parser.add_option("a",
+	// Algorithm-independent options
+        parser.add_option ("a",
 	    "Choose the learning algorithm: {krls,krr,mlp,svr}.",1);
-        parser.add_option("h","Display this help message.");
-        parser.add_option("help","Display this help message.");
-        parser.add_option("in","A libsvm-formatted file to test.",1);
+        parser.add_option ("h","Display this help message.");
+        parser.add_option ("help","Display this help message.");
+        parser.add_option ("k",
+	    "Learning kernel (for krls,krr,svr methods): {lin,rbk}.",1);
+        parser.add_option ("in","A libsvm-formatted file to test.",1);
+        parser.add_option ("normalize",
+	    "Normalize the sample inputs to zero-mean unit variance?");
+
+	// Algorithm-specific options
+        parser.add_option ("rbk-gamma",
+	    "Width of radial basis kernels: {float}.",1);
+        parser.add_option ("krls-tolerance",
+	    "Numerical tolerance of krls linear dependency test: {float}.",1);
+        parser.add_option ("mlp-hidden-units",
+	    "Number of hidden units in mlp: {integer}.",1);
+        parser.add_option ("mlp-num-iterations",
+	    "Number of epochs to train the mlp: {integer}.",1);
+        parser.add_option ("svr-c",
+	    "SVR regularization parameter \"C\": "
+	    "{float}.",1);
+        parser.add_option ("svr-epsilon-insensitivity",
+	    "SVR fitting tolerance parameter: "
+	    "{float}.",1);
+
+	// Parse the command line arguments
         parser.parse(argc,argv);
 
 	// Check that options aren't given multiple times
@@ -61,14 +85,45 @@ parse_args (clp& parser, int argc, char* argv[])
     }
 }
 
-static void
-krls_test (
-    std::vector<dense_sample_type>& dense_samples,
-    std::vector<double>& labels
+static const char*
+get_kernel (
+    clp& parser
 )
 {
-    typedef radial_basis_kernel<dense_sample_type> kernel_type;
+    const char* kernel = "rbk";
+    if (parser.option ("k")) {
+	kernel = parser.option("k").argument().c_str();
+    }
+    return kernel;
+}
 
+static double
+get_rbk_gamma (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
+    // The radial_basis_kernel has a parameter called gamma that we 
+    // need to determine.  As a rule of thumb, a good gamma to try is 
+    // 1.0/(mean squared distance between your sample points).  So 
+    // below we are using a similar value computed from at most 2000
+    //  randomly selected samples.
+    double gamma;
+    if (parser.option ("rbk-gamma")) {
+	gamma = sa = parser.option("rbk-gamma").argument();
+    } else {
+	gamma = 3.0 / compute_mean_squared_distance (
+	    randomly_subsample (dense_samples, 2000));
+    }
+    return gamma;
+}
+
+static double
+get_krls_tolerance (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
     // Here we declare an instance of the krls object.  The first argument 
     // to the constructor is the kernel we wish to use.  The second is 
     // a parameter that determines the numerical accuracy with which 
@@ -77,11 +132,93 @@ krls_test (
     // algorithm to run slower.  You just have to play with it to 
     // decide what balance of speed and accuracy is right for your problem.
     // Here we have set it to 0.001.
-    krls<kernel_type> net(kernel_type(0.01),0.001);
+    double krls_tolerance = 0.001;
+    if (parser.option ("krls-tolerance")) {
+	krls_tolerance = sa = parser.option("krls-tolerance").argument();
+    }
+    return krls_tolerance;
+}
+
+static double
+get_mlp_hidden_units (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
+    int num_hidden = 5;
+    if (parser.option ("mlp-hidden-units")) {
+	num_hidden = sa = parser.option("mlp-hidden-units").argument();
+    }
+    return num_hidden;
+}
+
+static double
+get_mlp_num_iterations (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
+    int num_iterations = 5000;
+    if (parser.option ("mlp-num-iterations")) {
+	num_iterations = sa = parser.option("mlp-num-iterations").argument();
+    }
+    return num_iterations;
+}
+
+static double
+get_svr_c (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
+    // This parameter is the usual regularization parameter.  It determines
+    // the trade-off between trying to reduce the training error or 
+    // allowing more errors but hopefully improving the generalization 
+    // of the resulting function.  Larger values encourage exact fitting 
+    // while smaller values of C may encourage better generalization.
+    //double c = 10.;
+    double c = 1000.;
+    if (parser.option ("svr-c")) {
+	c = sa = parser.option("svr-c").argument();
+    }
+    return c;
+}
+
+static double
+get_svr_epsilon_insensitivity (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples
+)
+{
+    // Epsilon-insensitive regression means we do regression but stop 
+    // trying to fit a data point once it is "close enough" to its 
+    // target value.  This parameter is the value that controls what 
+    // we mean by "close enough".  In this case, I'm saying I'm happy 
+    // if the resulting regression function gets within 0.001 of the 
+    // target value.
+    double epsilon_insensitivity = 0.001;
+    if (parser.option ("svr-epsilon-insensitivity")) {
+	epsilon_insensitivity 
+	    = sa = parser.option("svr-epsilon-insensitivity").argument();
+    }
+    return epsilon_insensitivity;
+}
+
+static void
+krls_test (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<double>& labels
+)
+{
+    typedef radial_basis_kernel<dense_sample_type> kernel_type;
+
+    double gamma = get_rbk_gamma (parser, dense_samples);
+    double krls_tolerance = get_krls_tolerance (parser, dense_samples);
+    krls<kernel_type> net (kernel_type(gamma), krls_tolerance);
 
     // Split into training set and testing set
     float training_pct = 0.8;
-    randomize_samples(dense_samples, labels);
     unsigned int training_samples = (unsigned int) floor (
 	training_pct * dense_samples.size());
 
@@ -103,7 +240,8 @@ krls_test (
 }
 
 static void
-krr_test (
+krr_rbk_test (
+    clp& parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<double>& labels
 )
@@ -111,37 +249,62 @@ krr_test (
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     krr_trainer<kernel_type> trainer;
 
-    // Here we set the kernel we want to use for training.   The 
-    // radial_basis_kernel has a parameter called gamma that we need to 
-    // determine.  As a rule of thumb, a good gamma to try is 
-    // 1.0/(mean squared distance between your sample points).  So 
-    // below we are using a similar value computed from at most 2000
-    //  randomly selected samples.
-    const double gamma = 3.0 / 
-	compute_mean_squared_distance(randomly_subsample(dense_samples, 2000));
-    std::cout << "using gamma of " << gamma << std::endl;
+    double gamma = get_rbk_gamma (parser, dense_samples);
     trainer.set_kernel(kernel_type(gamma));
 
-    // The krr_trainer has the ability to tell us the leave-one-out 
-    // cross-validation accuracy.  The train() function has an optional 
-    // 3rd argument and if we give it a double it will give us back 
-    // the LOO error.
+    // LOO cross validation
     double loo_error;
     trainer.train(dense_samples, labels, loo_error);
     std::cout << "mean squared LOO error: " << loo_error << std::endl;
 }
 
 static void
+krr_lin_test (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<double>& labels
+)
+{
+    typedef linear_kernel<dense_sample_type> kernel_type;
+    krr_trainer<kernel_type> trainer;
+
+    // LOO cross validation
+    double loo_error;
+    trainer.train(dense_samples, labels, loo_error);
+    std::cout << "mean squared LOO error: " << loo_error << std::endl;
+}
+
+static void
+krr_test (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<double>& labels
+)
+{
+    const char* kernel = get_kernel (parser);
+
+    if (!strcmp (kernel, "lin")) {
+	krr_lin_test (parser, dense_samples, labels);
+    } else if (!strcmp (kernel, "rbk")) {
+	krr_rbk_test (parser, dense_samples, labels);
+    } else {
+	fprintf (stderr, "Unknown kernel type: %s\n", kernel);
+	exit (-1);
+    }
+}
+
+static void
 mlp_test (
+    clp& parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<double>& labels
 )
 {
     // Create a multi-layer perceptron network.
     const int num_input = dense_samples[0].size();
-    const int num_hidden = 5;
+    int num_hidden = get_mlp_hidden_units (parser, dense_samples);
     printf ("Creating ANN with size (%d, %d)\n", num_input, num_hidden);
-    mlp::kernel_1a_c net(num_input,num_hidden);
+    mlp::kernel_1a_c net (num_input, num_hidden);
 
     // Dlib barfs if output values are not normalized to [0,1]
     double label_min = *(std::min_element (labels.begin(), labels.end()));
@@ -153,15 +316,14 @@ mlp_test (
 
     // Split into training set and testing set
     float training_pct = 0.8;
-    randomize_samples(dense_samples, labels);
     unsigned int training_samples = (unsigned int) floor (
 	training_pct * dense_samples.size());
 
     // Dlib doesn't seem to come with any batch training functions for mlp.
     // Also, note that only backprop is supported.
-    const int num_iterations = 5000;
+    int num_iterations = get_mlp_num_iterations (parser, dense_samples);
     for (int i = 0; i < num_iterations; i++) {
-    for (unsigned int j = 0; j < training_samples; j++) {
+	for (unsigned int j = 0; j < training_samples; j++) {
 	    net.train (dense_samples[j], labels[j]);
 	}
     }
@@ -181,40 +343,25 @@ mlp_test (
 
 static void
 svr_test (
+    clp& parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<double>& labels
 )
 {
-    // Now we are making a typedef for the kind of kernel we want to use.  
-    // I picked the radial basis kernel because it only has one parameter 
-    // and generally gives good results without much fiddling.
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
-
-    // Now setup a SVR trainer object.  It has three parameters, the kernel and
-    // two parameters specific to SVR.  
     svr_trainer<kernel_type> trainer;
-    trainer.set_kernel(kernel_type(0.01));
 
-    // This parameter is the usual regularization parameter.  It determines
-    // the trade-off between trying to reduce the training error or 
-    // allowing more errors but hopefully improving the generalization 
-    // of the resulting function.  Larger values encourage exact fitting 
-    // while smaller values of C may encourage better generalization.
-    //trainer.set_c(10);
-    trainer.set_c(1000);
+    double gamma = get_rbk_gamma (parser, dense_samples);
+    trainer.set_kernel (kernel_type(gamma));
 
-    // Epsilon-insensitive regression means we do regression but stop 
-    // trying to fit a data point once it is "close enough" to its 
-    // target value.  This parameter is the value that controls what 
-    // we mean by "close enough".  In this case, I'm saying I'm happy 
-    // if the resulting regression function gets within 0.001 of the 
-    // target value.
-    trainer.set_epsilon_insensitivity(0.001);
+    double svr_c = get_svr_c (parser, dense_samples);
+    trainer.set_c (svr_c);
 
-    // We can also do 10-fold cross-validation and find the mean squared 
-    // error.  Note that we need to randomly shuffle the samples first.
-    // See the svm_ex.cpp for a discussion of why this is important.
-    randomize_samples(dense_samples, labels);
+    double epsilon_insensitivity = get_svr_epsilon_insensitivity (
+	parser, dense_samples);
+    trainer.set_epsilon_insensitivity (epsilon_insensitivity);
+
+    // 10-fold cross-validation
     std::cout 
 	<< "MSE (10-fold): "
 	<< cross_validate_regression_trainer(
@@ -223,7 +370,7 @@ svr_test (
 }
 
 int 
-main(int argc, char* argv[])
+main (int argc, char* argv[])
 {
     clp parser;
 
@@ -261,22 +408,34 @@ main(int argc, char* argv[])
 	<< "Each dense sample has size " << dense_samples[0].size() 
 	<< std::endl;
 
+    // Normalize inputs to N(0,1)
+    if (parser.option ("normalize")) {
+	vector_normalizer<dense_sample_type> normalizer;
+	normalizer.train (dense_samples);
+	for (unsigned long i = 0; i < dense_samples.size(); ++i) {
+	    dense_samples[i] = normalizer (dense_samples[i]);
+	}
+    }
+
+    // Randomize the order of the samples, labels
+    randomize_samples (dense_samples, labels);
+
     if (!option_alg) {
 	// Do KRR if user didn't specify an algorithm
 	std::cout << "No algorithm specified, default to KRR\n";
-	krr_test (dense_samples, labels);
+	krr_test (parser, dense_samples, labels);
     }
     else if (!strcmp (option_alg.argument().c_str(), "krls")) {
-	krls_test (dense_samples, labels);
+	krls_test (parser, dense_samples, labels);
     }
     else if (!strcmp (option_alg.argument().c_str(), "krr")) {
-	krr_test (dense_samples, labels);
+	krr_test (parser, dense_samples, labels);
     }
     else if (!strcmp (option_alg.argument().c_str(), "mlp")) {
-	mlp_test (dense_samples, labels);
+	mlp_test (parser, dense_samples, labels);
     }
     else if (!strcmp (option_alg.argument().c_str(), "svr")) {
-	svr_test (dense_samples, labels);
+	svr_test (parser, dense_samples, labels);
     }
     else {
 	fprintf (stderr, 
