@@ -599,7 +599,9 @@ ELSE (PLM_USE_F2C)
     OR Fortran_COMPILER_NAME STREQUAL "f95")
 ENDIF (PLM_USE_F2C)
 
+CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
 IF (NOT HAVE_GETOPT_LONG)
+  ADD_SUBDIRECTORY (libs/getopt)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     getopt
@@ -1134,11 +1136,6 @@ SET (XF_TO_XF_SRC
 SET (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
-
-CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
-IF (NOT HAVE_GETOPT_LONG)
-  ADD_SUBDIRECTORY (libs/getopt)
-ENDIF (NOT HAVE_GETOPT_LONG)
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
