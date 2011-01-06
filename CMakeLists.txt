@@ -1075,6 +1075,14 @@ SET (PLASTIMATCH_SRC
 SET (PLASTIMATCH_SLICER_SRC
   plastimatch-slicer.cxx
   )
+# NSh 1/3/2011
+# Plugin for landmark warping based on standalone warper
+# WRAP_GGO (landmark_warp_GGO_C landmark_warp.ggo)
+SET (PLASTIMATCH_SLICER_LANDWARP_SRC
+  plastimatch-slicer-landwarp.cxx
+#  landmark_warp_args.cxx landmark_warp_args.h
+#  ${landmark_warp_GGO_C}
+  )
 SET (PLASTIMATCH_SLICER_TPS_SRC
   plastimatch-slicer-tps.cxx
   )
@@ -1424,6 +1432,9 @@ IF (ITK_FOUND)
       "${GPUIT_EXE_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
       "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" 
+      "${GPUIT_EXE_LDFLAGS}")
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-landwarp 
+      "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
   ENDIF (SLICER_FOUND)
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
