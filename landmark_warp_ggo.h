@@ -33,7 +33,7 @@ extern "C" {
 /** @brief the program version */
 #define CMDLINE_PARSER_LANDMARK_WARP_VERSION "version 1.4-beta"
 #endif
-
+ 
 enum enum_algorithm { algorithm_arg_tps = 0 , algorithm_arg_gauss, algorithm_arg_cone };
 
 /** @brief Where the command line options are stored */

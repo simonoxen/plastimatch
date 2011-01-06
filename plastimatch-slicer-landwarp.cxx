@@ -306,6 +306,7 @@ args_info_landmark_warp args_info;
 	PARSE_ARGS;
 
 // write diagnostics just in case
+// NSh: A fresh install of Windows 7 does not have c:\tmp
 # if defined (_WIN32)
     char* fn = "C:/tmp/plastimatch-slicer-landwarp.txt";
 # else
@@ -352,14 +353,14 @@ args_info_landmark_warp args_info;
 // to temporary files for reading.
 
 # if defined (_WIN32)
-    char* fnfix = "C:/tmp/plmslc-landwarp-fixland.txt";
+    char* fnfix = "C:/tmp/plmslc-landwarp-fixland.fscv";
 # else
-    char* fnfix = "/tmp/plmslc-landwarp-fixland.txt";
+    char* fnfix = "/tmp/plmslc-landwarp-fixland.fcsv";
 # endif
 # if defined (_WIN32)
-    char* fnmov = "C:/tmp/plmslc-landwarp-movland.txt";
+    char* fnmov = "C:/tmp/plmslc-landwarp-movland.fcsv";
 # else
-    char* fnmov = "/tmp/plmslc-landwarp-movland.txt";
+    char* fnmov = "/tmp/plmslc-landwarp-movland.fcsv";
 # endif    
 
 	// filling in args_info
@@ -377,12 +378,18 @@ args_info_landmark_warp args_info;
 	num_fiducials = plmslc_landwarp_moving_fiducials.size();
     }
 
+	/* NSh: pointset_load_fcsv assumes RAS, as does Slicer.
+	For some reason, pointset_load_txt assumes LPS.
+	Thus, we write out Slicer-style .fcsv
+    */
+	fprintf(fpfix, "# Fiducial List file FIX\n");
+	fprintf(fpmov, "# Fiducial List file MOV\n");
 	for (unsigned long i = 0; i < num_fiducials; i++) {
-		fprintf(fpfix,"%f %f %f\n",
+		fprintf(fpfix,"FIX%d,%f,%f,%f,1,1\n", i,
 			plmslc_landwarp_fixed_fiducials[i][0],
 			plmslc_landwarp_fixed_fiducials[i][1],
 			plmslc_landwarp_fixed_fiducials[i][2] );
-		fprintf(fpmov,"%f %f %f\n",
+		fprintf(fpmov,"MOV%d,%f,%f,%f,1,1\n", i,
 			plmslc_landwarp_moving_fiducials[i][0],
 			plmslc_landwarp_moving_fiducials[i][1],
 			plmslc_landwarp_moving_fiducials[i][2] );
