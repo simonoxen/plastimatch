@@ -21,6 +21,7 @@ $want_mip = 1;
 $want_min_ip = 1;
 $want_ave_ip = 1;
 $want_unsorted = 1;
+$need_sleep = 0;
 
 ##$free_breathing = 3;
 $free_breathing = -1;
@@ -52,7 +53,7 @@ sub my_mkdir {
     my ($dirname) = @_;
     print "Trying to mkdir $dirname\n";
     mkdir $dirname;
-    sleep 4;
+    $need_sleep && sleep 4;
 }
 
 #####################################################################
@@ -70,8 +71,9 @@ opendir(DIR, $indir);
 if ($use_no_phi) {
     @files = grep(/\-no\-phi\.v2$/,readdir(DIR));
 } else {
-#    @files = grep(/.v2$/,readdir(DIR));
-    @files = grep(/.dcm$/,readdir(DIR));
+    @files = grep(/.v2$/,readdir(DIR));
+    rewinddir DIR;
+    @files = (@files, grep(/.dcm$/,readdir(DIR)));
 }
 closedir(DIR);
 
@@ -164,7 +166,7 @@ print "--------------------\n";
 
 ## Make parent dir
 mkpath($outdir);
-sleep 4;
+$need_sleep && sleep 4;
 
 foreach $series (keys %series_hash) {
     $od = File::Spec->catfile($outdir, $series);
