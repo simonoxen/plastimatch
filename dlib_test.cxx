@@ -20,6 +20,105 @@ typedef std::map<unsigned long, double> sparse_sample_type;
 typedef matrix< sparse_sample_type::value_type::second_type,0,1
 		> dense_sample_type;
 
+/* ---------------------------------------------------------------------
+   option_range class
+   --------------------------------------------------------------------- */
+struct option_range {
+public:
+    bool log_range;
+    float min_value;
+    float max_value;
+    float incr;
+public:
+    option_range () {
+	log_range = false;
+	min_value = 0;
+	max_value = 100;
+	incr = 10;
+    }
+    void set_option (clp& parser, std::string const& option, 
+	float default_val);
+    float get_min_value ();
+    float get_max_value ();
+    float get_next_value (float curr_val);
+};
+
+void
+option_range::set_option (
+    clp& parser,
+    std::string const& option, 
+    float default_val
+)
+{
+    int rc;
+
+    /* No option specified */
+    if (!parser.option (option)) {
+	log_range = 0;
+	min_value = default_val;
+	max_value = default_val;
+	incr = 1;
+	return;
+    }
+
+    /* Range specified */
+    rc = sscanf (parser.option(option).argument().c_str(), "%f:%f:%f", 
+	&min_value, &incr, &max_value);
+    if (rc == 3) {
+	log_range = 1;
+	return;
+    }
+
+    /* Single value specified */
+    if (rc == 1) {
+	log_range = 0;
+	max_value = min_value;
+	incr = 1;
+	return;
+    }
+
+    else {
+	std::cerr << "Error parsing option" << option << "\n";
+	exit (-1);
+    }
+}
+
+float 
+option_range::get_min_value ()
+{
+    if (log_range) {
+	return exp10 (min_value);
+    } else {
+	return min_value;
+    }
+}
+
+float 
+option_range::get_max_value ()
+{
+    if (log_range) {
+	return exp10 (max_value);
+    } else {
+	return max_value;
+    }
+}
+
+float 
+option_range::get_next_value (float curr_value)
+{
+    if (log_range) {
+	curr_value = log10 (curr_value);
+	curr_value += incr;
+	curr_value = exp10 (curr_value);
+    } else {
+	curr_value += incr;
+    }
+    return curr_value;
+}
+
+/* ---------------------------------------------------------------------
+   global functions
+   --------------------------------------------------------------------- */
 static void
 parse_args (clp& parser, int argc, char* argv[])
 {
@@ -50,6 +149,7 @@ parse_args (clp& parser, int argc, char* argv[])
         parser.add_option ("svr-epsilon-insensitivity",
 	    "SVR fitting tolerance parameter: "
 	    "{float}.",1);
+        parser.add_option ("verbose", "Use verbose trainers");
 
 	// Parse the command line arguments
         parser.parse(argc,argv);
@@ -97,46 +197,26 @@ get_kernel (
     return kernel;
 }
 
-static double
+static void
 get_rbk_gamma (
     clp& parser,
-    std::vector<dense_sample_type>& dense_samples
-)
-{
-    // The radial_basis_kernel has a parameter called gamma that we 
-    // need to determine.  As a rule of thumb, a good gamma to try is 
-    // 1.0/(mean squared distance between your sample points).  So 
-    // below we are using a similar value computed from at most 2000
-    //  randomly selected samples.
-    double gamma;
-    if (parser.option ("rbk-gamma")) {
-	gamma = sa = parser.option("rbk-gamma").argument();
-    } else {
-	gamma = 3.0 / compute_mean_squared_distance (
-	    randomly_subsample (dense_samples, 2000));
-    }
-    return gamma;
+    std::vector<dense_sample_type>& dense_samples,
+    option_range& range
+) {
+    float default_gamma = 3.0 / compute_mean_squared_distance (
+	randomly_subsample (dense_samples, 2000));
+    range.set_option (parser, "rbk-gamma", default_gamma);
 }
 
-static double
+static void
 get_krls_tolerance (
     clp& parser,
-    std::vector<dense_sample_type>& dense_samples
+    std::vector<dense_sample_type>& dense_samples, 
+    option_range& range
 )
 {
-    // Here we declare an instance of the krls object.  The first argument 
-    // to the constructor is the kernel we wish to use.  The second is 
-    // a parameter that determines the numerical accuracy with which 
-    // the object will perform part of the regression algorithm.  
-    // Generally smaller values give better results but cause the 
-    // algorithm to run slower.  You just have to play with it to 
-    // decide what balance of speed and accuracy is right for your problem.
-    // Here we have set it to 0.001.
-    double krls_tolerance = 0.001;
-    if (parser.option ("krls-tolerance")) {
-	krls_tolerance = sa = parser.option("krls-tolerance").argument();
-    }
-    return krls_tolerance;
+    float default_krls_tolerance = 0.001;
+    range.set_option (parser, "krls-tolerance", default_krls_tolerance);
 }
 
 static double
@@ -165,23 +245,15 @@ get_mlp_num_iterations (
     return num_iterations;
 }
 
-static double
+static void
 get_svr_c (
     clp& parser,
-    std::vector<dense_sample_type>& dense_samples
+    std::vector<dense_sample_type>& dense_samples, 
+    option_range& range
 )
 {
-    // This parameter is the usual regularization parameter.  It determines
-    // the trade-off between trying to reduce the training error or 
-    // allowing more errors but hopefully improving the generalization 
-    // of the resulting function.  Larger values encourage exact fitting 
-    // while smaller values of C may encourage better generalization.
-    //double c = 10.;
-    double c = 1000.;
-    if (parser.option ("svr-c")) {
-	c = sa = parser.option("svr-c").argument();
-    }
-    return c;
+    float default_svr_c = 1000.;
+    range.set_option (parser, "svr-c", default_svr_c);
 }
 
 static double
@@ -212,31 +284,45 @@ krls_test (
 )
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
+    option_range gamma_range, krls_tol_range;
 
-    double gamma = get_rbk_gamma (parser, dense_samples);
-    double krls_tolerance = get_krls_tolerance (parser, dense_samples);
-    krls<kernel_type> net (kernel_type(gamma), krls_tolerance);
+    get_rbk_gamma (parser, dense_samples, gamma_range);
+    get_krls_tolerance (parser, dense_samples, krls_tol_range);
 
     // Split into training set and testing set
     float training_pct = 0.8;
     unsigned int training_samples = (unsigned int) floor (
 	training_pct * dense_samples.size());
 
-    // Krls doesn't seem to come with any batch training function
-    for (unsigned int j = 0; j < training_samples; j++) {
-	net.train (dense_samples[j], labels[j]);
-    }
-
-    // Test the performance (sorry, no cross-validation)
-    double total_err = 0.0;
-    for (unsigned int j = training_samples + 1; j < dense_samples.size(); j++)
+    for (float krls_tol = krls_tol_range.get_min_value(); 
+	 krls_tol <= krls_tol_range.get_max_value();
+	 krls_tol = krls_tol_range.get_next_value (krls_tol))
     {
-	double diff = net(dense_samples[j]) - labels[j];
-	total_err += diff * diff;
+	for (float gamma = gamma_range.get_min_value(); 
+	     gamma <= gamma_range.get_max_value();
+	     gamma = gamma_range.get_next_value (gamma))
+	{
+	    krls<kernel_type> net (kernel_type(gamma), krls_tol);
+
+	    // Krls doesn't seem to come with any batch training function
+	    for (unsigned int j = 0; j < training_samples; j++) {
+		net.train (dense_samples[j], labels[j]);
+	    }
+
+	    // Test the performance (sorry, no cross-validation)
+	    double total_err = 0.0;
+	    for (unsigned int j = training_samples + 1; 
+		 j < dense_samples.size(); j++)
+	    {
+		double diff = net(dense_samples[j]) - labels[j];
+		total_err += diff * diff;
+	    }
+
+	    double testset_error = total_err 
+		/ (dense_samples.size() - training_samples);
+	    printf ("%3.6f %3.6f %3.9f\n", krls_tol, gamma, testset_error);
+	}
     }
-    std::cout 
-	<< "MSE (no cross-validation): " 
-	<< total_err / (dense_samples.size() - training_samples) << std::endl;
 }
 
 static void
@@ -248,14 +334,25 @@ krr_rbk_test (
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     krr_trainer<kernel_type> trainer;
+    option_range gamma_range;
 
-    double gamma = get_rbk_gamma (parser, dense_samples);
-    trainer.set_kernel(kernel_type(gamma));
+    get_rbk_gamma (parser, dense_samples, gamma_range);
 
-    // LOO cross validation
-    double loo_error;
-    trainer.train(dense_samples, labels, loo_error);
-    std::cout << "mean squared LOO error: " << loo_error << std::endl;
+    for (float gamma = gamma_range.get_min_value(); 
+	 gamma <= gamma_range.get_max_value();
+	 gamma = gamma_range.get_next_value (gamma))
+    {
+	// LOO cross validation
+	double loo_error;
+
+	if (parser.option("verbose")) {
+	    trainer.set_search_lambdas(logspace(-9, 4, 100));
+	    trainer.be_verbose();
+	}
+	trainer.set_kernel (kernel_type (gamma));
+	trainer.train (dense_samples, labels, loo_error);
+	printf ("%3.6f %3.9f\n", gamma, loo_error);
+    }
 }
 
 static void
@@ -350,23 +447,31 @@ svr_test (
 {
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     svr_trainer<kernel_type> trainer;
+    option_range gamma_range, svr_c_range;
 
-    double gamma = get_rbk_gamma (parser, dense_samples);
-    trainer.set_kernel (kernel_type(gamma));
-
-    double svr_c = get_svr_c (parser, dense_samples);
-    trainer.set_c (svr_c);
+    get_rbk_gamma (parser, dense_samples, gamma_range);
+    get_svr_c (parser, dense_samples, svr_c_range);
 
     double epsilon_insensitivity = get_svr_epsilon_insensitivity (
 	parser, dense_samples);
     trainer.set_epsilon_insensitivity (epsilon_insensitivity);
 
-    // 10-fold cross-validation
-    std::cout 
-	<< "MSE (10-fold): "
-	<< cross_validate_regression_trainer(
-	    trainer, dense_samples, labels, 10) 
-	<< std::endl;
+    for (float svr_c = svr_c_range.get_min_value(); 
+	 svr_c <= svr_c_range.get_max_value();
+	 svr_c = svr_c_range.get_next_value (svr_c))
+    {
+	trainer.set_c (svr_c);
+	for (float gamma = gamma_range.get_min_value(); 
+	     gamma <= gamma_range.get_max_value();
+	     gamma = gamma_range.get_next_value (gamma))
+	{
+	    double cv_error;
+	    trainer.set_kernel (kernel_type (gamma));
+	    cv_error = cross_validate_regression_trainer (trainer, 
+		dense_samples, labels, 10);
+	    printf ("%3.6f %3.6f %3.9f\n", svr_c, gamma, cv_error);
+	}
+    }
 }
 
 int 
@@ -425,16 +530,16 @@ main (int argc, char* argv[])
 	std::cout << "No algorithm specified, default to KRR\n";
 	krr_test (parser, dense_samples, labels);
     }
-    else if (!strcmp (option_alg.argument().c_str(), "krls")) {
+    else if (option_alg.argument() == "krls") {
 	krls_test (parser, dense_samples, labels);
     }
-    else if (!strcmp (option_alg.argument().c_str(), "krr")) {
+    else if (option_alg.argument() == "krr") {
 	krr_test (parser, dense_samples, labels);
     }
-    else if (!strcmp (option_alg.argument().c_str(), "mlp")) {
+    else if (option_alg.argument() == "mlp") {
 	mlp_test (parser, dense_samples, labels);
     }
-    else if (!strcmp (option_alg.argument().c_str(), "svr")) {
+    else if (option_alg.argument() == "svr") {
 	svr_test (parser, dense_samples, labels);
     }
     else {
