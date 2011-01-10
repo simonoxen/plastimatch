@@ -7,6 +7,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <math.h>
 
 #include "dlib/cmd_line_parser.h"
 #include "dlib/data_io.h"
@@ -19,6 +20,13 @@ typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 typedef std::map<unsigned long, double> sparse_sample_type;
 typedef matrix< sparse_sample_type::value_type::second_type,0,1
 		> dense_sample_type;
+
+/* exp10() is not in C/C++ standard */
+double
+exp10_ (double m)
+{
+    return exp (2.3025850929940456840179914546844 * m);
+}
 
 /* ---------------------------------------------------------------------
    option_range class
@@ -87,7 +95,7 @@ float
 option_range::get_min_value ()
 {
     if (log_range) {
-	return exp10 (min_value);
+	return exp10_ (min_value);
     } else {
 	return min_value;
     }
@@ -97,7 +105,7 @@ float
 option_range::get_max_value ()
 {
     if (log_range) {
-	return exp10 (max_value);
+	return exp10_ (max_value);
     } else {
 	return max_value;
     }
@@ -109,7 +117,7 @@ option_range::get_next_value (float curr_value)
     if (log_range) {
 	curr_value = log10 (curr_value);
 	curr_value += incr;
-	curr_value = exp10 (curr_value);
+	curr_value = exp10_ (curr_value);
     } else {
 	curr_value += incr;
     }
