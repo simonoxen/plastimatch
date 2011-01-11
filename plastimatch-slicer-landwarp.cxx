@@ -65,7 +65,7 @@ load_input_files (args_info_landmark_warp *args_info)
 {
     Landmark_warp *lw = 0;
 
-    /* Load the landmark data */
+    /* Load the landmark data 
     if (args_info->input_xform_arg) {
 	lw = landmark_warp_load_xform (args_info->input_xform_arg);
 	if (!lw) {
@@ -86,7 +86,7 @@ load_input_files (args_info_landmark_warp *args_info)
 	    "--input-xform option\nor the --fixed-landmarks and "
 	    "--moving-landmarks option.\n");
     }
-
+*/
 	/* Load the input image */
     lw->m_input_img = plm_image_load_native (args_info->input_image_arg);
     if (!lw->m_input_img) {
@@ -162,27 +162,17 @@ save_output_files (Landmark_warp *lw, args_info_landmark_warp *args_info)
 }
 
 static void
-do_landmark_warp (args_info_landmark_warp *args_info)
+do_landmark_warp (Landmark_warp *lw, const char *algorithm)
 {
-    Landmark_warp *lw;
-
-	lw = load_input_files (args_info);
-
-	switch (args_info->algorithm_arg) {
-    case algorithm_arg_tps:
+    if (!strcmp (algorithm, "tps")) {
 	do_landmark_warp_itk_tps (lw);
-	break;
-    case algorithm_arg_gauss:
-	do_landmark_warp_nsh (lw);
-	break;
-    case algorithm_arg_cone:
-	do_landmark_warp_gcs (lw);
-	break;
-    default:
-	break;
     }
-
-	save_output_files (lw, args_info);
+    else if (!strcmp (algorithm, "gauss")) {
+	do_landmark_warp_nsh (lw);
+    }
+    else {
+	do_landmark_warp_gcs (lw);
+    }
 }
 
 static void
@@ -195,25 +185,31 @@ check_arguments (args_info_landmark_warp *args_info)
 int
 main (int argc, char *argv[])
 {
-    args_info_landmark_warp args_info;
+//    args_info_landmark_warp args_info;
 	
     //PARSE_ARGS comes from ...CLP.h
     PARSE_ARGS;
 
-#if defined (commentout)
+//#if defined (commentout)
     Landmark_warp *lw = landmark_warp_create ();
 
-    lw->m_moving_image = plm_image_load_native (
+    lw->m_input_img = plm_image_load_native (
 	plmslc_landwarp_moving_volume.c_str());
     Plm_image *tmp = plm_image_load_native (
 	plmslc_landwarp_fixed_volume.c_str());
+printf ("Loaded images\n");
+    lw->m_pih.set_from_plm_image (tmp);
+printf ("Set pih\n");
+    lw->default_val=-1000;
+    lw->rbf_radius=plmslc_landwarp_rbf_radius;
+    lw->young_modulus=plmslc_landwarp_stiffness;
 
-    lm->m_pih.set_from_plm_image (tmp);
+   
 
-    destroy tmp;
-
-#endif
-
+    delete tmp;
+printf ("deleted temp image\n");
+//#endif
+/*
     memset( &args_info, 0, sizeof(args_info));
 
     // filling in args_info with data from Slicer
@@ -239,6 +235,8 @@ main (int argc, char *argv[])
 	args_info.algorithm_arg = algorithm_arg_gauss;
     if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"tps")) 
 	args_info.algorithm_arg = algorithm_arg_tps;
+
+
 
     // landmarks are passed from Slicer as lists, NOT filenames
     // However, do_landmark_warp uses pointset_load(char *fn)
@@ -266,7 +264,7 @@ main (int argc, char *argv[])
 
     // writing landmarks
     FILE* fpfix = fopen (fnfix, "w");
-    FILE* fpmov = fopen (fnmov, "w");
+    FILE* fpmov = fopen (fnmov, "w");*/
 
     unsigned long num_fiducials = plmslc_landwarp_fixed_fiducials.size();
     if (plmslc_landwarp_moving_fiducials.size() < num_fiducials) {
@@ -277,33 +275,45 @@ main (int argc, char *argv[])
        For some reason, pointset_load_txt assumes LPS.
        Thus, we write out Slicer-style .fcsv
     */
+    /*
     fprintf(fpfix, "# Fiducial List file FIX\n");
     fprintf(fpmov, "# Fiducial List file MOV\n");
-#if defined (commentout)
+*/
+
+//#if defined (commentout)
     Pointset *fix_ps = pointset_create ();
     Pointset *mov_ps = pointset_create ();
-#endif
+//#endif
     for (unsigned long i = 0; i < num_fiducials; i++) {
-	fprintf(fpfix,"FIX%d,%f,%f,%f,1,1\n", i,
+	/*fprintf(fpfix,"FIX%d,%f,%f,%f,1,1\n", i,
 	    plmslc_landwarp_fixed_fiducials[i][0],
 	    plmslc_landwarp_fixed_fiducials[i][1],
 	    plmslc_landwarp_fixed_fiducials[i][2] );
 	fprintf(fpmov,"MOV%d,%f,%f,%f,1,1\n", i,
 	    plmslc_landwarp_moving_fiducials[i][0],
 	    plmslc_landwarp_moving_fiducials[i][1],
-	    plmslc_landwarp_moving_fiducials[i][2] );
-#if defined (commentout)
-	pointset_add_point (mov_ps, 
-	    plmslc_landwarp_moving_fiducials[i]);
-	pointset_add_point (fix_ps, 
-	    plmslc_landwarp_fixed_fiducials[i]);
-#endif
+	    plmslc_landwarp_moving_fiducials[i][2] );*/
+//#if defined (commentout)
+printf ("going to add point\n"); 
+	float lm_fix[3] = { plmslc_landwarp_fixed_fiducials[i][0],  plmslc_landwarp_fixed_fiducials[i][1],  plmslc_landwarp_fixed_fiducials[i][2]};
+	pointset_add_point (fix_ps, lm_fix);
+    
+	float lm_mov[3] = { plmslc_landwarp_moving_fiducials[i][0],  plmslc_landwarp_moving_fiducials[i][1],  plmslc_landwarp_moving_fiducials[i][2]};
+	pointset_add_point (mov_ps, lm_mov);
+printf ("did add point\n");
+//#endif
     }
+
+    lw->m_fixed_landmarks = fix_ps;
+    lw->m_moving_landmarks = mov_ps;
+/*   
     fclose(fpfix);
     fclose(fpmov);
-
+*/
     //	check_arguments (&args_info);
-    do_landmark_warp (&args_info);
-
+    do_landmark_warp (lw, plmslc_landwarp_rbf_type.c_str());
+    if (lw->m_warped_img && plmslc_landwarp_warped_volume != "None") {
+	lw->m_warped_img->save_image (plmslc_landwarp_warped_volume.c_str());
+    }
     return EXIT_SUCCESS;
 }
