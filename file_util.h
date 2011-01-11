@@ -31,6 +31,8 @@ void make_directory (const char *dirname);
 gpuit_EXPORT
 void make_directory_recursive (const char *dirname);
 gpuit_EXPORT
+FILE* make_tempfile (void);
+gpuit_EXPORT
 void strip_extension (char* filename);
 gpuit_EXPORT
 char*

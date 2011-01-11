@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
+#include "file_util.h"
 #include "plastimatch-slicerCLP.h"
 #include "plm_stages.h"
 
@@ -22,6 +23,7 @@ main (int argc, char * argv [])
     FILE* fp = fopen (parms_fn, "w+");
 #else
 
+#if defined (commentout)
 # if defined (_WIN32)
     /* tmpfile is broken on windows.  It tries to create the 
 	temorary files in the root directory where it doesn't 
@@ -35,6 +37,9 @@ main (int argc, char * argv [])
     FILE *fp = tmpfile ();
 # endif
 #endif
+#endif
+
+    FILE *fp = make_tempfile ();
 
     if (!fp) {
 	fprintf (stderr, "Sorry, plastimatch couldn't create tmpfile.\n");

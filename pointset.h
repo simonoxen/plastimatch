@@ -34,6 +34,9 @@ void
 pointset_resize (Pointset *ps, int new_size);
 gpuit_EXPORT
 void
+pointset_add_point (Pointset *ps, float lm[3]);
+gpuit_EXPORT
+void
 pointset_debug (Pointset* ps);
 
 #if defined __cplusplus

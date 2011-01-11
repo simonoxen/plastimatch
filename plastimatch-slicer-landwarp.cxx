@@ -195,43 +195,57 @@ check_arguments (args_info_landmark_warp *args_info)
 int
 main (int argc, char *argv[])
 {
-	args_info_landmark_warp args_info;
+    args_info_landmark_warp args_info;
 	
-	//PARSE_ARGS comes from ...CLP.h
-	PARSE_ARGS;
+    //PARSE_ARGS comes from ...CLP.h
+    PARSE_ARGS;
 
-	memset( &args_info, 0, sizeof(args_info));
+#if defined (commentout)
+    Landmark_warp *lw = landmark_warp_create ();
 
-	// filling in args_info with data from Slicer
-	// plmslc_landwarp_nnnn come from .xml file via GenerateCLP and ..CLP.h
+    lw->m_moving_image = plm_image_load_native (
+	plmslc_landwarp_moving_volume.c_str());
+    Plm_image *tmp = plm_image_load_native (
+	plmslc_landwarp_fixed_volume.c_str());
 
-	args_info.input_image_arg = (char *)malloc(1024 * sizeof(char));
+    lm->m_pih.set_from_plm_image (tmp);
+
+    destroy tmp;
+
+#endif
+
+    memset( &args_info, 0, sizeof(args_info));
+
+    // filling in args_info with data from Slicer
+    // plmslc_landwarp_nnnn come from .xml file via GenerateCLP and ..CLP.h
+
+    args_info.input_image_arg = (char *)malloc(1024 * sizeof(char));
     strcpy(args_info.input_image_arg, plmslc_landwarp_moving_volume.c_str() );
 
-	args_info.fixed_arg = (char *)malloc(1024 * sizeof(char));
-	strcpy(args_info.fixed_arg, plmslc_landwarp_fixed_volume.c_str() );
+    args_info.fixed_arg = (char *)malloc(1024 * sizeof(char));
+    strcpy(args_info.fixed_arg, plmslc_landwarp_fixed_volume.c_str() );
 
-	args_info.output_image_arg = (char *)malloc(1024 * sizeof(char));
+    args_info.output_image_arg = (char *)malloc(1024 * sizeof(char));
     strcpy(args_info.output_image_arg, plmslc_landwarp_warped_volume.c_str() );
 
-	args_info.radius_arg = plmslc_landwarp_rbf_radius;
-	args_info.stiffness_arg = plmslc_landwarp_stiffness;
+    args_info.radius_arg = plmslc_landwarp_rbf_radius;
+    args_info.stiffness_arg = plmslc_landwarp_stiffness;
 
-	args_info.algorithm_arg = algorithm_arg_cone; //default
+    args_info.algorithm_arg = algorithm_arg_cone; //default
 
-	if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"cone")) 
-				args_info.algorithm_arg = algorithm_arg_cone;
-	if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"gauss")) 
-				args_info.algorithm_arg = algorithm_arg_gauss;
-	if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"tps")) 
-				args_info.algorithm_arg = algorithm_arg_tps;
+    if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"cone")) 
+	args_info.algorithm_arg = algorithm_arg_cone;
+    if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"gauss")) 
+	args_info.algorithm_arg = algorithm_arg_gauss;
+    if (!strcmp(plmslc_landwarp_rbf_type.c_str(),"tps")) 
+	args_info.algorithm_arg = algorithm_arg_tps;
 
-// landmarks are passed from Slicer as lists, NOT filenames
-// However, do_landmark_warp uses pointset_load(char *fn)
-// To reuse code from landmark_warp, write landmarks 
-// to temporary files for reading.
-// Note that in Windows C:\tmp must be created if it does not exist yet
-// Freshly installed of Windows XP and Windows 7 do not have C:\TMP
+    // landmarks are passed from Slicer as lists, NOT filenames
+    // However, do_landmark_warp uses pointset_load(char *fn)
+    // To reuse code from landmark_warp, write landmarks 
+    // to temporary files for reading.
+    // Note that in Windows C:\tmp must be created if it does not exist yet
+    // Freshly installed of Windows XP and Windows 7 do not have C:\TMP
 
 # if defined (_WIN32)
     char* fnfix = "C:/tmp/plmslc-landwarp-fixland.fscv";
@@ -244,42 +258,52 @@ main (int argc, char *argv[])
     char* fnmov = "/tmp/plmslc-landwarp-movland.fcsv";
 # endif    
 
-	// filling in args_info
-	args_info.fixed_landmarks_arg = (char *)malloc(1024 * sizeof(char));
+    // filling in args_info
+    args_info.fixed_landmarks_arg = (char *)malloc(1024 * sizeof(char));
     strcpy(args_info.fixed_landmarks_arg, fnfix );
-	args_info.moving_landmarks_arg = (char *)malloc(1024 * sizeof(char));
+    args_info.moving_landmarks_arg = (char *)malloc(1024 * sizeof(char));
     strcpy(args_info.moving_landmarks_arg, fnmov );
 
-	// writing landmarks
-	FILE* fpfix = fopen (fnfix, "w");
-	FILE* fpmov = fopen (fnmov, "w");
+    // writing landmarks
+    FILE* fpfix = fopen (fnfix, "w");
+    FILE* fpmov = fopen (fnmov, "w");
 
     unsigned long num_fiducials = plmslc_landwarp_fixed_fiducials.size();
     if (plmslc_landwarp_moving_fiducials.size() < num_fiducials) {
 	num_fiducials = plmslc_landwarp_moving_fiducials.size();
     }
 
-	/* NSh: pointset_load_fcsv assumes RAS, as does Slicer.
-	For some reason, pointset_load_txt assumes LPS.
-	Thus, we write out Slicer-style .fcsv
+    /* NSh: pointset_load_fcsv assumes RAS, as does Slicer.
+       For some reason, pointset_load_txt assumes LPS.
+       Thus, we write out Slicer-style .fcsv
     */
-	fprintf(fpfix, "# Fiducial List file FIX\n");
-	fprintf(fpmov, "# Fiducial List file MOV\n");
-	for (unsigned long i = 0; i < num_fiducials; i++) {
-		fprintf(fpfix,"FIX%d,%f,%f,%f,1,1\n", i,
-			plmslc_landwarp_fixed_fiducials[i][0],
-			plmslc_landwarp_fixed_fiducials[i][1],
-			plmslc_landwarp_fixed_fiducials[i][2] );
-		fprintf(fpmov,"MOV%d,%f,%f,%f,1,1\n", i,
-			plmslc_landwarp_moving_fiducials[i][0],
-			plmslc_landwarp_moving_fiducials[i][1],
-			plmslc_landwarp_moving_fiducials[i][2] );
-	}
-	fclose(fpfix);
-	fclose(fpmov);
+    fprintf(fpfix, "# Fiducial List file FIX\n");
+    fprintf(fpmov, "# Fiducial List file MOV\n");
+#if defined (commentout)
+    Pointset *fix_ps = pointset_create ();
+    Pointset *mov_ps = pointset_create ();
+#endif
+    for (unsigned long i = 0; i < num_fiducials; i++) {
+	fprintf(fpfix,"FIX%d,%f,%f,%f,1,1\n", i,
+	    plmslc_landwarp_fixed_fiducials[i][0],
+	    plmslc_landwarp_fixed_fiducials[i][1],
+	    plmslc_landwarp_fixed_fiducials[i][2] );
+	fprintf(fpmov,"MOV%d,%f,%f,%f,1,1\n", i,
+	    plmslc_landwarp_moving_fiducials[i][0],
+	    plmslc_landwarp_moving_fiducials[i][1],
+	    plmslc_landwarp_moving_fiducials[i][2] );
+#if defined (commentout)
+	pointset_add_point (mov_ps, 
+	    plmslc_landwarp_moving_fiducials[i]);
+	pointset_add_point (fix_ps, 
+	    plmslc_landwarp_fixed_fiducials[i]);
+#endif
+    }
+    fclose(fpfix);
+    fclose(fpmov);
 
-	//	check_arguments (&args_info);
+    //	check_arguments (&args_info);
     do_landmark_warp (&args_info);
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }

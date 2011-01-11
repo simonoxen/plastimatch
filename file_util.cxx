@@ -119,6 +119,24 @@ make_directory_recursive (const char *dirname)
     free (tmp);
 }
 
+FILE*
+make_tempfile (void)
+{
+# if defined (_WIN32)
+    /* tmpfile is broken on windows.  It tries to create the 
+	temorary files in the root directory where it doesn't 
+	have permissions. 
+	http://msdn.microsoft.com/en-us/library/x8x7sakw(VS.80).aspx */
+
+    char *parms_fn = _tempnam (0, "plastimatch_");
+    FILE *fp = fopen (parms_fn, "wb+");
+    printf ("parms_fn = %s\n", parms_fn);
+# else
+    FILE *fp = tmpfile ();
+# endif
+    return fp;
+}
+
 void
 trim_trailing_slashes (char *pathname)
 {
