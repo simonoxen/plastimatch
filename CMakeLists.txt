@@ -1083,9 +1083,9 @@ SET (PLASTIMATCH_SLICER_LANDWARP_SRC
 #  landmark_warp_args.cxx landmark_warp_args.h
 #  ${landmark_warp_GGO_C}
   )
-SET (PLASTIMATCH_SLICER_TPS_SRC
-  plastimatch-slicer-tps.cxx
-  )
+#SET (PLASTIMATCH_SLICER_TPS_SRC
+# plastimatch-slicer-tps.cxx
+#  )
 SET (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
   plastimatch_slicer_dicomrt_import.cxx
   )
@@ -1430,9 +1430,9 @@ IF (ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_export
       "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
-    #PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
-    #  "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" 
-    #  "${GPUIT_EXE_LDFLAGS}")
+ #  PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
+ #   "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" 
+ #  "${GPUIT_EXE_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-landwarp 
       "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")

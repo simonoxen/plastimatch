@@ -173,7 +173,7 @@ main (int argc, char *argv[])
     Plm_image *tmp = plm_image_load_native (
 	plmslc_landwarp_fixed_volume.c_str());
     lw->m_pih.set_from_plm_image (tmp);
-    lw->default_val=-1000;
+    lw->default_val=plmslc_landwarp_default_value;
     lw->rbf_radius=plmslc_landwarp_rbf_radius;
     lw->young_modulus=plmslc_landwarp_stiffness;
 

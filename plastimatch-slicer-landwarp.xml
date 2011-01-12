@@ -57,7 +57,6 @@
       <longflag>rbftype</longflag>
         <element>tps</element>
         <element>gauss</element>
-        <element>cone</element>
       <default>gauss</default>
       <description>Radial basis function to use</description>
     </string-enumeration>
@@ -75,5 +74,12 @@
      <default>0.0</default>
      <description>Regularization factor</description>
     </float>
-  </parameters>
+    <float>
+      <name>plmslc_landwarp_default_value</name>
+      <label>Default Pixel Value</label>
+      <longflag>defaultvalue</longflag>
+      <default>-1000.0</default>
+      <description>Default Pixel Intensity</description>
+    </float>
+    </parameters>
 </executable>
