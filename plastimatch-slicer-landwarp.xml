@@ -58,14 +58,14 @@
         <element>tps</element>
         <element>gauss</element>
         <element>cone</element>
-      <default>cone</default>
+      <default>gauss</default>
       <description>Radial basis function to use</description>
     </string-enumeration>
     <float>
      <name>plmslc_landwarp_rbf_radius</name>
      <label>RBF radius</label>
      <longflag>rbfradius</longflag>
-     <default>30.0</default>
+     <default>50.0</default>
      <description>Radius of the radial basis function</description>
     </float>
     <float>
