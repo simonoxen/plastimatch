@@ -141,6 +141,8 @@ parse_args (clp& parser, int argc, char* argv[])
         parser.add_option ("in","A libsvm-formatted file to test.",1);
         parser.add_option ("normalize",
 	    "Normalize the sample inputs to zero-mean unit variance?");
+        parser.add_option ("train-best",
+	    "Train and save a network using best parameters", 1);
 
 	// Algorithm-specific options
         parser.add_option ("rbk-gamma",
@@ -343,6 +345,8 @@ krr_rbk_test (
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     krr_trainer<kernel_type> trainer;
     option_range gamma_range;
+    double best_gamma = DBL_MAX;
+    float best_loo = FLT_MAX;
 
     get_rbk_gamma (parser, dense_samples, gamma_range);
 
@@ -359,7 +363,24 @@ krr_rbk_test (
 	}
 	trainer.set_kernel (kernel_type (gamma));
 	trainer.train (dense_samples, labels, loo_error);
-	printf ("%3.6f %3.9f\n", gamma, loo_error);
+	if (loo_error < best_loo) {
+	    best_loo = loo_error;
+	    best_gamma = gamma;
+	}
+	printf ("10^%f %9.6f\n", log10(gamma), loo_error);
+    }
+    printf ("Best result: gamma=10^%f (%g), loo_error=%9.6f\n",
+	log10(gamma), best_gamma, best_loo);
+    if (parser.option("train-best")) {
+	printf ("Training network with best parameters\n");
+	trainer.set_kernel (kernel_type (best_gamma));
+	decision_function<kernel_type> best_network = 
+	    trainer.train (dense_samples, labels);
+
+	std::ofstream fout (parser.option("train-best").argument().c_str(), 
+	    std::ios::binary);
+	serialize (best_network, fout);
+	fout.close();
     }
 }
 

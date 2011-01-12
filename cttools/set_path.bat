@@ -20,9 +20,9 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET CTTOOLS_PATH=c:\plastimatch\src\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="SLUMBER-SHARP" (
   echo Setting for SLUMBER
-  SET ITK_PATH=%HOME%\build\vs2008\itk-3.16.0\bin\Release
-  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.16.0
-  SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
+  SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.0\bin\Release
+  SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.0
+  SET CTTOOLS_PATH=%HOME%\work\plastimatch\cttools
 ) else if "%COMPUTERNAME%"=="SNOWBALL" (
   echo Setting for SNOWBALL
   SET ITK_PATH=%HOME%\build\itk-3.20.0\bin\Release
