@@ -18,7 +18,7 @@ using namespace dlib;
 
 typedef dlib::cmd_line_parser<char>::check_1a_c clp;
 typedef std::map<unsigned long, double> sparse_sample_type;
-typedef matrix< sparse_sample_type::value_type::second_type,0,1
+typedef dlib::matrix< sparse_sample_type::value_type::second_type,0,1
 		> dense_sample_type;
 
 /* exp10() is not in C/C++ standard */
@@ -369,8 +369,9 @@ krr_rbk_test (
 	}
 	printf ("10^%f %9.6f\n", log10(gamma), loo_error);
     }
+
     printf ("Best result: gamma=10^%f (%g), loo_error=%9.6f\n",
-	log10(gamma), best_gamma, best_loo);
+	log10(best_gamma), best_gamma, best_loo);
     if (parser.option("train-best")) {
 	printf ("Training network with best parameters\n");
 	trainer.set_kernel (kernel_type (best_gamma));

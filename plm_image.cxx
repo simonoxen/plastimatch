@@ -70,6 +70,17 @@ Plm_image::clone (void)
    Loading
    ----------------------------------------------------------------------- */
 Plm_image*
+plm_image_load (const char* fname, Plm_image_type type)
+{
+    Plm_image *ri = new Plm_image;
+    if (!ri) return 0;
+
+    ri->load (fname, type);
+
+    return ri;
+}
+
+Plm_image*
 plm_image_load_native (const char* fname)
 {
     Plm_image *pli = new Plm_image;
@@ -81,14 +92,24 @@ plm_image_load_native (const char* fname)
 }
 
 void
-Plm_image::load_native_dicom (const char* fname)
+Plm_image::load (const char* fname, Plm_image_type type)
 {
-    /* GCS FIX: We don't yet have a way of getting original pixel type 
-	for dicom.  Force SHORT */
-    /* FIX: Patient position / direction cosines not set */
-    this->m_itk_short = itk_image_load_short (fname, 0);
-    this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
-    this->m_type = PLM_IMG_TYPE_ITK_SHORT;
+    this->free ();
+    switch (type) {
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_type = type;
+	this->m_original_type = type;
+	this->m_gpuit = read_mha (fname);
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_type = type;
+	this->m_itk_float = itk_image_load_float (fname, 
+	    &this->m_original_type);
+	break;
+    default:
+	print_and_exit ("Unhandled image load in plm_image_load\n");
+	break;
+    }
 }
 
 void
@@ -160,31 +181,17 @@ Plm_image::load_native (const char* fname)
     }
 }
 
-Plm_image*
-plm_image_load (const char* fname, Plm_image_type type)
+void
+Plm_image::load_native_dicom (const char* fname)
 {
-    Plm_image *ri = new Plm_image;
-    if (!ri) return 0;
-
-    switch (type) {
-	case PLM_IMG_TYPE_GPUIT_FLOAT:
-	    ri->m_type = type;
-	    ri->m_original_type = type;
-	    ri->m_gpuit = read_mha (fname);
-	    break;
-	case PLM_IMG_TYPE_ITK_FLOAT:
-	    ri->m_type = type;
-	    //ri->m_itk_float = load_float (fname);
-	    //load_float (&ri->m_itk_float, &ri->m_original_type, fname);
-	    ri->m_itk_float = itk_image_load_float (fname, 
-		&ri->m_original_type);
-	    break;
-	default:
-	    print_and_exit ("Unhandled image load in plm_image_load\n");
-	    break;
-    }
-    return ri;
+    /* GCS FIX: We don't yet have a way of getting original pixel type 
+	for dicom.  Force SHORT */
+    /* FIX: Patient position / direction cosines not set */
+    this->m_itk_short = itk_image_load_short (fname, 0);
+    this->m_original_type = PLM_IMG_TYPE_ITK_SHORT;
+    this->m_type = PLM_IMG_TYPE_ITK_SHORT;
 }
+
 
 /* -----------------------------------------------------------------------
    Saving

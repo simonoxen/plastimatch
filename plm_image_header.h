@@ -33,6 +33,9 @@ public:
     {
 	this->set_from_gpuit (origin, spacing, dim, direction_cosines);
     }
+    Plm_image_header (Plm_image *pli) {
+	this->set_from_plm_image (pli);
+    }
 public:
     int Size (int d) const { return m_region.GetSize()[d]; }
 

@@ -13,6 +13,7 @@
 #include "file_util.h"
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
+#include "pcmd_autolabel.h"
 #include "pcmd_compare.h"
 #include "pcmd_compose.h"
 #include "pcmd_crop.h"
@@ -30,7 +31,7 @@
 #include "plm_stages.h"
 #include "plm_version.h"
 
-/* GCS FIX: "segment" is a hidden option until it works */
+/* GCS FIX: "autolabel", "segment" are hidden options until working */
 static void
 print_version (void)
 {
@@ -111,6 +112,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
+    }
+    else if (!strcmp (command, "autolabel")) {
+	do_command_autolabel (argc, argv);
     }
     else if (!strcmp (command, "compare")) {
 	do_command_compare (argc, argv);

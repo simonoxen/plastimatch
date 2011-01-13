@@ -64,38 +64,53 @@ private:
 
 public:
     Plm_image () {
-	clear ();
+	this->init ();
+    }
+    Plm_image (const char* fname) {
+	this->init ();
+	this->load_native (fname);
+    }
+    Plm_image (const char* fname, Plm_image_type type)
+    {
+	this->init ();
+	this->load (fname, type);
     }
     ~Plm_image () {
-	free ();
+	this->free ();
     }
 
-    void clear () {
-	m_type = PLM_IMG_TYPE_UNDEFINED;
+    void init () {
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
-	m_gpuit = 0;
+	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_patient_pos = PATIENT_POSITION_UNKNOWN;
+	m_gpuit = 0;
     }
     void free () {
-	switch (m_type) {
-	case PLM_IMG_TYPE_GPUIT_FLOAT:
-	case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
+	if (m_gpuit) {
 	    volume_destroy ((Volume*) m_gpuit);
-	    break;
-	default:
-	    /* GCS FIX: This doesn't actually free anything for itk. */
-	    break;
 	}
-	m_type = PLM_IMG_TYPE_UNDEFINED;
+
 	m_original_type = PLM_IMG_TYPE_UNDEFINED;
-	m_gpuit = 0;
+	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_patient_pos = PATIENT_POSITION_UNKNOWN;
+
+	m_itk_uchar_4d = 0;
+	m_itk_uchar = 0;
+	m_itk_short = 0;
+	m_itk_ushort = 0;
+	m_itk_int32 = 0;
+	m_itk_uint32 = 0;
+	m_itk_float = 0;
+	m_itk_double = 0;
+	m_gpuit = 0;
     }
 
     plastimatch1_EXPORT
     Plm_image* clone (void);
 
     /* Loading */
+    plastimatch1_EXPORT void
+    load (const char* fname, Plm_image_type type);
     plastimatch1_EXPORT
     void load_native (const char* fname);
     plastimatch1_EXPORT

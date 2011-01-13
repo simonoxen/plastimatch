@@ -912,6 +912,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   ss_img_extract.cxx ss_img_extract.h
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
+  thumbnail.cxx thumbnail.h
   xio_ct.cxx xio_ct.h
   xio_dir.cxx xio_dir.h
   xio_dose.cxx xio_dose.h
@@ -1072,6 +1073,12 @@ SET (PLASTIMATCH_SRC
   pcmd_warp_pointset.cxx 
   plastimatch_main.cxx
   )
+IF (DLIB_FOUND)
+SET (PLASTIMATCH_SRC
+  ${PLASTIMATCH_SRC}
+  pcmd_autolabel.cxx pcmd_autolabel.h
+  )
+ENDIF ()
 SET (PLASTIMATCH_SLICER_SRC
   plastimatch-slicer.cxx
   )
