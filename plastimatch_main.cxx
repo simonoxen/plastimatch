@@ -113,9 +113,11 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "adjust")) {
 	do_command_adjust (argc, argv);
     }
+#if (DLIB_FOUND)
     else if (!strcmp (command, "autolabel")) {
 	do_command_autolabel (argc, argv);
     }
+#endif
     else if (!strcmp (command, "compare")) {
 	do_command_compare (argc, argv);
     }

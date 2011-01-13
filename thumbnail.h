@@ -22,11 +22,17 @@ public:
     bool slice_loc_was_set;
 
 public:
+    plastimatch1_EXPORT
     Thumbnail ();
+    plastimatch1_EXPORT
     void set_input_image (Plm_image *pli);
+    plastimatch1_EXPORT
     void set_slice_loc (float slice_loc);
+    plastimatch1_EXPORT
     void set_thumbnail_dim (int thumb_dim);
+    plastimatch1_EXPORT
     void set_thumbnail_spacing (float thumb_spacing);
+    plastimatch1_EXPORT
     FloatImageType::Pointer make_thumbnail ();
 private:
     void set_internal_geometry (void);
