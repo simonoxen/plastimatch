@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <math.h>
+#include <float.h>
 
 #include "dlib/cmd_line_parser.h"
 #include "dlib/data_io.h"
