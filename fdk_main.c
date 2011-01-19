@@ -33,6 +33,10 @@ main (int argc, char* argv[])
     Fdk_options options;
     Volume* vol;
     Proj_image_dir *proj_dir;
+
+    LOAD_LIBRARY (libplmopencl);
+
+    LOAD_SYMBOL (opencl_reconstruct_conebeam, libplmopencl);
     
     /* Parse command line arguments */
     fdk_parse_args (&options, argc, argv);
@@ -62,20 +66,15 @@ main (int argc, char* argv[])
 #endif
 #if (CUDA_FOUND)
     case THREADING_CUDA:
-	if (!delayload_cuda()) {
-	    // If we continue to attempt to use the CUDA runtime
-	    // after failing to load the CUDA runtime, we crash.
-	    exit (0);
-	}
 	CUDA_reconstruct_conebeam (vol, proj_dir, &options);
 	break;
 #endif
 #if (OPENCL_FOUND)
     case THREADING_OPENCL:
-	delayload_opencl ();
-	//OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
-	opencl_reconstruct_conebeam (vol, proj_dir, &options);
-	break;
+    if (!delayload_opencl()) { exit (0); };
+    opencl_reconstruct_conebeam (vol, proj_dir, &options);
+    //OPENCL_reconstruct_conebeam_and_convert_to_hu (vol, proj_dir, &options);
+    break;
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
@@ -98,6 +97,8 @@ main (int argc, char* argv[])
 
     /* Free memory */
     volume_destroy (vol);
+
+    UNLOAD_LIBRARY (libplmopencl);
 
     printf(" done.\n\n");
 

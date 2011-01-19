@@ -31,12 +31,20 @@ allocate_gpu_memory (
     Drr_options *options
 )
 {
-    switch (options->threading) {
-#if CUDA_FOUND
 	void* tmp;
+
+#if CUDA_FOUND
 	LOAD_LIBRARY (libplmcuda);
 	LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
+#endif
 
+#if OPENCL_FOUND
+	LOAD_LIBRARY (libplmopencl);
+	LOAD_SYMBOL_SPECIAL (drr_opencl_state_create, libplmopencl, void*);
+#endif
+
+    switch (options->threading) {
+#if CUDA_FOUND
     case THREADING_CUDA:
         if (!delayload_cuda ()) { exit (0); }
         tmp = drr_cuda_state_create (proj, vol, options);
@@ -48,7 +56,11 @@ allocate_gpu_memory (
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-        return drr_opencl_state_create (proj, vol, options);
+        tmp = drr_opencl_state_create (proj, vol, options);
+
+        UNLOAD_LIBRARY (libplmopencl);
+
+        return tmp;
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:
@@ -63,11 +75,15 @@ free_gpu_memory (
     Drr_options *options
 )
 {
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
+
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL (drr_opencl_state_destroy, libplmopencl);
+
     switch (options->threading) {
 #if CUDA_FOUND
     case THREADING_CUDA:
-    LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL (drr_cuda_state_destroy, libplmcuda);
 
 	if (dev_state) {
 	    if (!delayload_cuda ()) { exit (0); }
@@ -81,6 +97,7 @@ free_gpu_memory (
 	if (dev_state) {
 	    drr_opencl_state_destroy (dev_state);
 	}
+    UNLOAD_LIBRARY (libplmopencl);
 	return;
 #endif
     case THREADING_CPU_SINGLE:

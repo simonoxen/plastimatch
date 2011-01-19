@@ -28,7 +28,7 @@
 #include "delayload.h"
 
 #if CUDA_FOUND
-int 
+void
 CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
@@ -51,6 +51,23 @@ CUDA_reconstruct_conebeam (
     double io_time = 0.0;
 #endif
 
+// JAS 2011.01.19
+// I don't quite understand why yet, but it seems that the CUDA plugin
+// somehow breaks fdk_cuda_state_create().  It seems to have something
+// to do with the liberal casting of Fdk_cuda_state* to void*.
+//
+// Needs testing on windows, but I feel that it will work out due to the
+// way Windows handles external symbol loading.
+//
+// Probably, only Linux is affected by this issue.
+
+    LOAD_LIBRARY (libplmcuda);
+    LOAD_SYMBOL_SPECIAL (fdk_cuda_state_create, libplmcuda, void*);
+    LOAD_SYMBOL (fdk_cuda_queue_image, libplmcuda);
+    LOAD_SYMBOL (fdk_cuda_fetch_volume, libplmcuda);
+    LOAD_SYMBOL (fdk_cuda_backproject, libplmcuda);
+    LOAD_SYMBOL (fdk_cuda_state_destroy, libplmcuda);
+
     // Start timing total execution
     plm_timer_start (&timer_total);
 
@@ -62,12 +79,15 @@ CUDA_reconstruct_conebeam (
     // This is just to retrieve the 2D image dimensions
     cbi = proj_image_dir_load_image (proj_dir, 0);
 
+    if (!delayload_cuda ()) { exit (0); }
+
     // Allocate memory on device
     dev_state = fdk_cuda_state_create (
-	vol, 
-	cbi->dim[0]*cbi->dim[1], 
-	scale, 
-	options);
+                    vol, 
+                    cbi->dim[0]*cbi->dim[1], 
+                    scale, 
+                    options
+                );
 
     // Free image (we will re-load it in the main loop)
     proj_image_destroy (cbi);
@@ -98,6 +118,7 @@ CUDA_reconstruct_conebeam (
         }
 
 	/* Send projection image to device */
+    if (!delayload_cuda ()) { exit (0); }
 	fdk_cuda_queue_image (
 	    dev_state, 
 	    cbi->dim, 
@@ -121,6 +142,7 @@ CUDA_reconstruct_conebeam (
 #endif
 
 	/* Execute backprojection kernel */
+    if (!delayload_cuda ()) { exit (0); }
 	fdk_cuda_backproject (dev_state);
 
 #if FDK_CUDA_TIME_KERNEL
@@ -134,11 +156,16 @@ CUDA_reconstruct_conebeam (
 #endif
 
     /* Retrieve reconstructed volume from device */
+    if (!delayload_cuda ()) { exit (0); }
     fdk_cuda_fetch_volume (dev_state, vol->img, vol->npix * vol->pix_size);
 
+
     /* Free memory on device */
+    if (!delayload_cuda ()) { exit (0); }
     fdk_cuda_state_destroy (dev_state);
     
+    UNLOAD_LIBRARY (libplmcuda);
+
     /* Report total time */
     time_total = plm_timer_report (&timer_total);
     printf ("========================================\n");
@@ -158,7 +185,6 @@ CUDA_reconstruct_conebeam (
 #endif
     printf ("========================================\n");
 
-    return 0;
 }
 #endif
 

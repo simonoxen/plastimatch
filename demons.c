@@ -41,10 +41,12 @@ demons (
 {
     Volume* tmp;
 
-#if CUDA_FOUND
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL_SPECIAL (demons_cuda, libplmcuda, Volume*);
-#endif
+
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL_SPECIAL (demons_opencl, libplmopencl, Volume*);
+
 
     switch (parms->threading) {
 #if BROOK_FOUND
@@ -62,7 +64,9 @@ demons (
 
 #if OPENCL_FOUND
     case THREADING_OPENCL:
-        return demons_opencl (fixed, moving, moving_grad, vf_init, parms);
+        tmp = demons_opencl (fixed, moving, moving_grad, vf_init, parms);
+        UNLOAD_LIBRARY (libplmopencl);
+        return tmp;
 #endif
     case THREADING_CPU_SINGLE:
     case THREADING_CPU_OPENMP:

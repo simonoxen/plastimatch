@@ -5,13 +5,15 @@
 #define _opencl_probe_h_
 
 #include "plm_config.h"
+#include "delayload.h"
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
-gpuit_EXPORT
-int opencl_probe (void);
+plmopencl_EXPORT
+int
+opencl_probe (void);
 
 #if defined __cplusplus
 }

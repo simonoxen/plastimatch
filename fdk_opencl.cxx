@@ -37,8 +37,8 @@ opencl_reconstruct_conebeam (
     Opencl_buf *ocl_buf_img_dim;
     Opencl_buf *ocl_buf_nrm;
     Opencl_buf *ocl_buf_ic;
-    cl_uint multiplier = 2;
-    float *img = (float*) vol->img;
+//    cl_uint multiplier = 2;
+//    float *img = (float*) vol->img;
     Proj_image *proj;
     int image_num;
     float scale;

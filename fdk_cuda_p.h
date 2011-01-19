@@ -27,7 +27,7 @@ typedef struct fdk_cuda_state Fdk_cuda_state;
 struct fdk_cuda_state
 {
     Fdk_cuda_kernel_args kargs;         // Host kernel args
-    Fdk_cuda_kernel_args  *dev_kargs;   // Device kernel args
+    Fdk_cuda_kernel_args *dev_kargs;    // Device kernel args
     float *dev_vol;                     // Device volume voxels
     float *dev_img;                     // Device image pixels
     float *dev_matrix;                  // Device projection matrix

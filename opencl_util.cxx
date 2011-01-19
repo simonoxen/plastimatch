@@ -16,8 +16,6 @@
 #include "delayload_opencl.h"
 
 
-#define dynload
-
 void
 opencl_device_info (
     cl_device_id device, 
@@ -29,11 +27,6 @@ opencl_device_info (
 {
     cl_int status;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetDeviceInfo, libOpenCL, cl_int);
-#endif
-
     status = clGetDeviceInfo (
         device, 
         param_name, 
@@ -41,10 +34,6 @@ opencl_device_info (
         param_value,  
         param_value_size_ret
     );
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     opencl_check_error (status, "clGetDeviceInfo");
 }
@@ -116,11 +105,6 @@ opencl_dump_platform_info (cl_platform_id platform)
     cl_int status;
     char buf[100];
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetPlatformInfo, libOpenCL, cl_int);
-#endif
-
     status = clGetPlatformInfo (
         platform, 
         CL_PLATFORM_NAME,
@@ -130,9 +114,6 @@ opencl_dump_platform_info (cl_platform_id platform)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         return status;
     }
     printf ("  Name = %s\n", buf);
@@ -146,17 +127,9 @@ opencl_dump_platform_info (cl_platform_id platform)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         return status;
     }
     printf ("  Vendor = %s\n", buf);
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
-
 
     return CL_SUCCESS;
 }
@@ -168,16 +141,8 @@ opencl_select_platform (void)
     cl_uint num_platforms;
     cl_platform_id platform = NULL;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetPlatformIDs, libOpenCL, cl_int);
-#endif
-
     status = clGetPlatformIDs (0, NULL, &num_platforms);
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         print_and_exit ("Error in clGetPlatformIDs\n");
     }
 
@@ -193,9 +158,6 @@ opencl_select_platform (void)
         status = clGetPlatformIDs (num_platforms, platform_list, NULL);
 
         if (status != CL_SUCCESS) {
-#if defined (dynload)
-            UNLOAD_LIBRARY (libOpenCL);
-#endif
             print_and_exit ("Error in clGetPlatformIDs\n");
         }
     
@@ -215,10 +177,6 @@ opencl_select_platform (void)
 
         free (platform_list);
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     return platform;
 }
@@ -244,11 +202,6 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
         ocl_dev->device_count * sizeof(cl_command_queue)
     );
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clCreateCommandQueue, libOpenCL, cl_command_queue);
-#endif
-
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
         cl_uint cxt_no;
 
@@ -267,16 +220,9 @@ opencl_create_command_queues (Opencl_device *ocl_dev)
         );
 
         if (status != CL_SUCCESS) {
-#if defined (dynload)
-            UNLOAD_LIBRARY (libOpenCL);
-#endif
             return status;
         }
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     return CL_SUCCESS;
 }
@@ -289,12 +235,6 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     cl_context_properties cps[3];
     cl_context_properties* cprops;
     size_t device_list_size;
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clCreateContextFromType, libOpenCL, cl_context);
-    LOAD_SYMBOL_OPENCL (clGetContextInfo, libOpenCL, cl_int);
-#endif
 
     if (ocl_dev->platform) {
         cps[0] = CL_CONTEXT_PLATFORM;
@@ -317,9 +257,6 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         print_and_exit ("Error in clCreateContextFromType\n");
     }
 
@@ -333,16 +270,10 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         print_and_exit ("Error in clGetContextInfo\n");
     }
 
     if (device_list_size == 0) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         print_and_exit ("No devices found (clGetContextInfo)\n");
     }
 
@@ -358,18 +289,11 @@ opencl_create_context_a (Opencl_device *ocl_dev)
     );
 
     if (status != CL_SUCCESS) { 
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         print_and_exit ("Error in clGetContextInfo\n");
     }
 
     /* Print out a little status about the devices */
     opencl_dump_devices (ocl_dev);
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     return CL_SUCCESS;
 }
@@ -381,12 +305,6 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     cl_int status;
     cl_context_properties cps[3];
     cl_context_properties* cprops;
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetDeviceIDs, libOpenCL, cl_int);
-    LOAD_SYMBOL_OPENCL (clCreateContext, libOpenCL, cl_context);
-#endif
 
     if (ocl_dev->platform) {
         cps[0] = CL_CONTEXT_PLATFORM;
@@ -407,9 +325,6 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         return status;
     }
 
@@ -427,9 +342,6 @@ opencl_create_context_b (Opencl_device *ocl_dev)
     );
 
     if (status != CL_SUCCESS) {
-#if defined (dynload)
-        UNLOAD_LIBRARY (libOpenCL);
-#endif
         return status;
     }
 
@@ -453,10 +365,6 @@ opencl_create_context_b (Opencl_device *ocl_dev)
 
         opencl_check_error (status, "clCreateContext");
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     return CL_SUCCESS;
 }
@@ -493,28 +401,16 @@ opencl_close_device (Opencl_device *ocl_dev)
 {
     cl_int status = 0;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clReleaseCommandQueue, libOpenCL, cl_int); 
-    LOAD_SYMBOL_OPENCL (clReleaseContext, libOpenCL, cl_int); 
-#endif
-
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
         status = clReleaseCommandQueue (ocl_dev->command_queues[i]);
 
         if (status != CL_SUCCESS) {
-#if defined (dynload)
-            UNLOAD_LIBRARY (libOpenCL);
-#endif
             print_and_exit ("Error in clReleaseCommandQueue\n");
         }
 
         status = clReleaseContext (ocl_dev->contexts[i]);
 
         if (status != CL_SUCCESS) {
-#if defined (dynload)
-            UNLOAD_LIBRARY (libOpenCL);
-#endif
             print_and_exit ("Error in clReleaseContext\n");
         }
     }
@@ -522,10 +418,6 @@ opencl_close_device (Opencl_device *ocl_dev)
     free (ocl_dev->devices);
     free (ocl_dev->contexts);
     free (ocl_dev->command_queues);
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 }
 
 Opencl_buf* 
@@ -542,11 +434,6 @@ opencl_buf_create (
     Opencl_buf* ocl_buf = (Opencl_buf*) malloc (
     ocl_dev->context_count * sizeof(Opencl_buf));
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clCreateBuffer, libOpenCL, cl_mem); 
-#endif
-
     for (cl_uint i = 0; i < ocl_dev->context_count; i++) {
         cl_int status;
 
@@ -560,10 +447,6 @@ opencl_buf_create (
 
         opencl_check_error (status, "clCreateBuffer");
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     return ocl_buf;
 }
@@ -581,11 +464,6 @@ opencl_buf_read (
     /* The below logic assumes only one device (for now).  */
     cl_int status;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clEnqueueReadBuffer, libOpenCL, cl_int);
-#endif
-
     status = clEnqueueReadBuffer (
         ocl_dev->command_queues[0], 
         ocl_buf[0], 
@@ -597,10 +475,6 @@ opencl_buf_read (
         NULL,
         NULL
     );
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     opencl_check_error (status, "clEnqueueReadBuffer");
 }
@@ -618,11 +492,6 @@ opencl_buf_write (
     /* The below logic assumes only one device (for now).  */
     cl_int status;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clEnqueueWriteBuffer, libOpenCL, cl_int);
-#endif
-
     status = clEnqueueWriteBuffer (
         ocl_dev->command_queues[0], 
         ocl_buf[0], 
@@ -634,10 +503,6 @@ opencl_buf_write (
         NULL,
         NULL
     );
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     opencl_check_error (status, "clEnqueueWriteBuffer");
 }
@@ -651,11 +516,6 @@ opencl_kernel_create (
     ocl_dev->kernels = (cl_kernel*) malloc (
     ocl_dev->device_count * sizeof(cl_kernel));
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clCreateKernel, libOpenCL, cl_kernel);
-#endif
-
     for (cl_uint i = 0; i < ocl_dev->device_count; i++) {
         cl_int status;
         ocl_dev->kernels[i] = clCreateKernel (
@@ -666,10 +526,6 @@ opencl_kernel_create (
 
         opencl_check_error (status, "clCreateKernel");
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 }
 
 void
@@ -682,12 +538,6 @@ opencl_load_programs (
     CBString *buf;
     const char *buf_cstr;
     size_t len;
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clCreateProgramWithSource, libOpenCL, cl_program);
-    LOAD_SYMBOL_OPENCL (clBuildProgram, libOpenCL, cl_int);
-#endif
 
     /* Load the file contents into a string */
     buf = file_load (filename);
@@ -734,17 +584,10 @@ opencl_load_programs (
         }
 
         if (status != CL_SUCCESS) {
-#if defined (dynload)
-            UNLOAD_LIBRARY (libOpenCL);
-#endif
             opencl_dump_build_log (ocl_dev, ocl_dev->programs[i]);
             opencl_check_error (status, "Error calling clBuildProgram.");
         }
     }
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 
     /* Free the string with file contents */
     delete buf;
@@ -766,11 +609,6 @@ opencl_set_kernel_args (
     va_start (va, ocl_dev);
     arg_index = 0;
 
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clSetKernelArg, libOpenCL, cl_int);
-#endif
-
     while ((arg_size = va_arg (va, size_t)) != 0) {
         arg = va_arg (va, void*);
 
@@ -788,10 +626,6 @@ opencl_set_kernel_args (
         opencl_check_error (status, "clSetKernelArg");
     }
 
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
-
     va_end (va);
 }
 
@@ -804,12 +638,6 @@ opencl_kernel_enqueue (
 {
     cl_event events[2];
     cl_int status;
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clEnqueueNDRangeKernel, libOpenCL, cl_int);
-    LOAD_SYMBOL_OPENCL (clWaitForEvents, libOpenCL, cl_int);
-#endif
 
     /* Add kernel to the queue */
     status = clEnqueueNDRangeKernel (
@@ -830,21 +658,12 @@ opencl_kernel_enqueue (
     opencl_check_error (status, "clWaitForEvents");
 
     clReleaseEvent(events[0]);
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 }
 
 cl_ulong 
 opencl_timer (cl_event &event)
 {
     cl_ulong start, end;
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetEventProfilingInfo, libOpenCL, cl_int);
-#endif
 
     clGetEventProfilingInfo (
         event,
@@ -862,10 +681,6 @@ opencl_timer (cl_event &event)
         NULL
     );
 
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
-
     return (end - start);
 }
 
@@ -874,11 +689,6 @@ opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
 {
     cl_int rc;
     char buf[10240];
-
-#if defined (dynload)
-    LOAD_LIBRARY (libOpenCL);
-    LOAD_SYMBOL_OPENCL (clGetProgramBuildInfo, libOpenCL, cl_int);
-#endif
 
     rc = clGetProgramBuildInfo (
         program,
@@ -891,10 +701,6 @@ opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program)
 
     opencl_check_error (rc, "clGetProgramBuildInfo");
     printf ("Build log:\n%s\n", buf);
-
-#if defined (dynload)
-    UNLOAD_LIBRARY (libOpenCL);
-#endif
 }
 
 const char*

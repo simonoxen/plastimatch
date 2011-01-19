@@ -16,6 +16,8 @@
 extern "C" {
 #endif
 
+// CUDA Plugin (plmcuda) interfaces ////////////
+
 plmcuda_EXPORT
 void*
 fdk_cuda_state_create (
@@ -24,11 +26,13 @@ fdk_cuda_state_create (
     float scale, 
     Fdk_options *options
 );
+
 plmcuda_EXPORT
 void
 fdk_cuda_state_destroy (
     void *void_state
 );
+
 plmcuda_EXPORT
 void
 fdk_cuda_queue_image (
@@ -41,9 +45,11 @@ fdk_cuda_queue_image (
     double *matrix, 
     float *img
 );
+
 plmcuda_EXPORT
 void
 fdk_cuda_backproject (void *dev_state);
+
 plmcuda_EXPORT
 void
 fdk_cuda_fetch_volume (
@@ -52,6 +58,9 @@ fdk_cuda_fetch_volume (
     unsigned int copy_size
 );
 
+////////////////////////////////////////////////
+
+
 void*
 fdk_cuda_state_create_cu (
     Volume *vol, 
@@ -59,10 +68,12 @@ fdk_cuda_state_create_cu (
     float scale, 
     Fdk_options *options
 );
+
 void
 fdk_cuda_state_destroy_cu (
     void *void_state
 );
+
 void
 fdk_cuda_queue_image_cu (
     void *dev_state, 
@@ -74,8 +85,10 @@ fdk_cuda_queue_image_cu (
     double *matrix, 
     float *img
 );
+
 void
 fdk_cuda_backproject_cu (void *dev_state);
+
 void
 fdk_cuda_fetch_volume_cu (
     void *dev_state, 

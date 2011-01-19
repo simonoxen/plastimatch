@@ -89,6 +89,12 @@
     #define plmcuda_EXPORT ;
 #endif
 
+#if _WIN32
+    #define plmopencl_EXPORT  \
+    __declspec(dllexport)    
+#else
+    #define plmopencl_EXPORT ;
+#endif
 
 #if defined __cplusplus
 extern "C" {

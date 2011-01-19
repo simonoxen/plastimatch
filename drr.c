@@ -275,6 +275,9 @@ drr_render_volume_perspective (
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL (drr_cuda_ray_trace_image, libplmcuda);
 
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL (drr_opencl_ray_trace_image, libplmopencl);
+
     /* Trace the set of rays */
     switch (options->threading) {
     case THREADING_BROOK:
@@ -307,4 +310,5 @@ drr_render_volume_perspective (
     }
 
     UNLOAD_LIBRARY (libplmcuda);
+    UNLOAD_LIBRARY (libplmopencl);
 }

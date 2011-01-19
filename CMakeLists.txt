@@ -561,6 +561,36 @@ IF (CUDA_FOUND)
   ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (CUDA_FOUND)
 
+# -----------------------------------------------
+# JAS 2011.01.13
+# New OpenCL plugin stuff (plmopencl)
+# -----------------------------------------------
+IF (OPENCL_FOUND)
+  IF (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
+    IF (WIN32)
+      # Windows
+      SET (GPUIT_LIBRARY_DEPENDENCIES
+        ${GPUIT_LIBRARY_DEPENDENCIES}
+        plmopencl
+        # shared library: cuda extensions
+        # we tell windows to "delay load" this
+      )
+    ELSE (WIN32)
+      # Linux
+      SET (GPUIT_LIBRARY_DEPENDENCIES
+        ${GPUIT_LIBRARY_DEPENDENCIES}
+        # In linux we use delayload.h to load plmopencl
+        # in the code @ runtime.
+      )
+    ENDIF (WIN32)
+  ELSE (PLM_USE_GPU_PLUGINS)    # << use static linking
+    SET (GPUIT_LIBRARY_DEPENDENCIES
+      ${GPUIT_LIBRARY_DEPENDENCIES}
+      ${OPENCL_LIBRARIES}
+    )
+  ENDIF (PLM_USE_GPU_PLUGINS)
+ENDIF (OPENCL_FOUND)
+
 # Optional
 IF (FFTW_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES 
@@ -615,14 +645,6 @@ IF (NLOPT_FOUND)
     ${NLOPT_LIBRARIES}
     )
 ENDIF (NLOPT_FOUND)
-
-# Optional
-IF (OPENCL_FOUND)
-  SET (GPUIT_LIBRARY_DEPENDENCIES
-    ${GPUIT_LIBRARY_DEPENDENCIES}
-    ${OPENCL_LIBRARIES}
-    )
-ENDIF (OPENCL_FOUND)
 
 # Optional
 IF (OPENMP_FOUND)
@@ -710,6 +732,12 @@ SET (GPUIT_LIBRARY_SRC
   volume_limit.c volume_limit.h
   xpm.c xpm.h
   )
+
+SET (FDK_SRC
+  fdk_main.c 
+  fdk_opts.c fdk_opts.h
+  fdk_util.c fdk_util.h
+)
 
 IF (BROOK_FOUND)
   SET (GPUIT_LIBRARY_SRC
@@ -828,19 +856,100 @@ IF (FFTW_FOUND)
    )
 ENDIF (FFTW_FOUND)
 
+## Define OpenCL Plugin (plmopencl)
 IF (OPENCL_FOUND)
-  SET (GPUIT_LIBRARY_SRC
-    ${GPUIT_LIBRARY_SRC}
-    autotune_opencl.cxx autotune_opencl.h
-    demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
-    drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
-    opencl_probe.cxx opencl_probe.h opencl_probe.cl
-    opencl_util.cxx opencl_util.h
-    opencl_util_nvidia.cxx opencl_util_nvidia.h
+  IF (PLM_USE_GPU_PLUGINS)          # << Dynamic linking
+    # DEMONS Acceleration
+    SET (PLM_OPENCL_DEMONS_SRC
+      demons_opencl.cxx
+      demons_opencl_p.h
+      demons_opencl.cl
     )
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
+    PLM_ADD_OPENCL_FILE (PLM_OPENCL_DEMONS_SRC demons_opencl.cl)
+
+    # DRR Acceleration
+    SET (PLM_OPENCL_DRR_SRC
+      drr_opencl.cxx
+      drr_opencl.h
+      drr_opencl_p.h
+      drr_opencl.cl
+    )
+    PLM_ADD_OPENCL_FILE (PLM_OPENCL_DRR_SRC drr_opencl.cl)
+
+    # FDK Acceleration
+    SET (PLM_OPENCL_FDK_SRC
+      fdk_opencl.cxx 
+      fdk_opencl_p.h
+      fdk_opencl.h
+      fdk_opencl.cl
+    )
+    PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
+
+    # Common Files
+    SET (PLM_OPENCL_COMMON
+      autotune_opencl.cxx
+      autotune_opencl.h
+      opencl_probe.cxx
+      opencl_probe.h
+      opencl_probe.cl
+      opencl_util.cxx
+      opencl_util.h
+      opencl_util_nvidia.cxx
+      opencl_util_nvidia.h
+      file_util.cxx
+      file_util.h
+    )
+
+    # Consolidate library components
+    SET (PLM_OPENCL_LIBRARY_SRC
+      ${PLM_OPENCL_DEMONS_SRC}
+      ${PLM_OPENCL_DRR_SRC}
+      ${PLM_OPENCL_FDK_SRC}
+      ${PLM_OPENCL_COMMON}
+    )
+
+    SET (PLM_OPENCL_LIBRARY_DEPENDENCIES
+       bstrlib  # for file_util.cxx
+    )
+
+    # OpenCL Plugin is ALWAYS shared!
+    ADD_LIBRARY (plmopencl SHARED
+        ${PLM_OPENCL_LIBRARY_SRC}
+    )
+
+    # Be sure to link against libOpenCL and other depends
+    TARGET_LINK_LIBRARIES (plmopencl
+        ${OPENCL_LIBRARIES}
+        ${PLM_OPENCL_LIBRARY_DEPENDENCIES}
+    )
+
+  ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
+    SET (GPUIT_LIBRARY_SRC
+      ${GPUIT_LIBRARY_SRC}
+      demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
+      drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
+      opencl_probe.cxx opencl_probe.h opencl_probe.cl
+      opencl_util.cxx opencl_util.h
+      opencl_util_nvidia.cxx opencl_util_nvidia.h
+    )
+    PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
+    PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
+
+    # FDK is not part of GPUIT...
+    #    so we handle it here as well
+    SET (FDK_SRC
+      ${FDK_SRC}
+      #fdk_opencl_old.cxx 
+      fdk_opencl.cxx 
+      fdk_opencl_p.h
+      fdk_opencl.h
+      fdk_opencl.cl
+    )
+    PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
+
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (OPENCL_FOUND)
+
 
 SET (GPUIT_LIBRARY_SRC
   ${GPUIT_LIBRARY_SRC}
@@ -995,11 +1104,6 @@ SET (EXTRACT_CONTOUR_SRC
 SET (FINDSCU_SRC
   findscu.cc
   )
-SET (FDK_SRC
-  fdk_main.c 
-  fdk_opts.c fdk_opts.h
-  fdk_util.c fdk_util.h
-  )
 IF (BROOK_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -1007,18 +1111,6 @@ IF (BROOK_FOUND)
     fdk_brook_kernel.br
     )
 ENDIF (BROOK_FOUND)
-
-IF (OPENCL_FOUND)
-  SET (FDK_SRC
-    ${FDK_SRC}
-    #fdk_opencl_old.cxx 
-    fdk_opencl.cxx 
-    fdk_opencl_p.h
-    fdk_opencl.h
-    fdk_opencl.cl
-    )
-  PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
-ENDIF (OPENCL_FOUND)
 
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
@@ -1048,6 +1140,7 @@ SET (MOVESCU_SRC
   )
 SET (OPENCL_PROBE_SRC
   opencl_probe_main.c
+  delayload.c
   )
 IF (OPENCL_FOUND)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
@@ -1292,14 +1385,14 @@ SET (PLMCUDA_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
 IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
   IF (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LIB_LDFLAGS 
-      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:opencl.dll")
+      "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
-      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll")
+      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
   ELSE (PLM_USE_GPU_PLUGINS)
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
-      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll")
+      "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
   ENDIF (PLM_USE_GPU_PLUGINS)
 ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
   SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
@@ -1324,11 +1417,17 @@ PLM_ADD_LIBRARY (
   "${GPUIT_LIB_LDFLAGS}")
 
 # JAS 2010.11.23
-# Because the cuda plugin is loaded at runtime, CMake doesn't know
-# that it is needed by everything linked against gpuit.  So, we tell it.
-IF (PLM_USE_GPU_PLUGINS AND CUDA_FOUND)
-  ADD_DEPENDENCIES (gpuit plmcuda)
-ENDIF (PLM_USE_GPU_PLUGINS AND CUDA_FOUND)
+# Because the plugins are loaded at runtime, CMake doesn't know
+# that they are needed by everything linked against gpuit.  So, we tell it.
+IF (PLM_USE_GPU_PLUGINS)
+  IF (CUDA_FOUND)
+    ADD_DEPENDENCIES (gpuit plmcuda)
+  ENDIF (CUDA_FOUND)
+  IF (OPENCL_FOUND)
+    ADD_DEPENDENCIES (gpuit plmopencl)
+  ENDIF (OPENCL_FOUND)
+ENDIF (PLM_USE_GPU_PLUGINS)
+
 
 IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -1477,8 +1576,13 @@ ENDIF (CUDA_FOUND)
 
 # executables that require opencl
 IF (OPENCL_FOUND)
-  PLM_ADD_EXECUTABLE (opencl_probe 
-    "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+  IF (PLM_USE_GPU_PLUGINS)
+    PLM_ADD_EXECUTABLE (opencl_probe 
+      "${OPENCL_PROBE_SRC}"  "${OPENCL_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+  ELSE (PLM_USE_GPU_PLUGINS)
+    PLM_ADD_EXECUTABLE (opencl_probe 
+      "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+  ENDIF (PLM_USE_GPU_PLUGINS)
 ENDIF (OPENCL_FOUND)
 
 # dicom_uid requires dcmtk

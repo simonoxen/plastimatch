@@ -23,7 +23,7 @@ reconstruct_conebeam (
 );
 
 gpuit_EXPORT
-int 
+void
 CUDA_reconstruct_conebeam (
     Volume *vol, 
     Proj_image_dir *proj_dir,
