@@ -498,7 +498,7 @@ rbf_gauss_warp (Landmark_warp *lw)
     int dim[3];
     Volume *moving, *vf_out, *warped_out;
 
-    printf ("Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
+    printf ("Gauss Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (

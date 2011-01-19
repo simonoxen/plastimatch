@@ -21,15 +21,12 @@
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "rbf_gauss.h"
+#include "rbf_wendland.h"
 #include "rbf_gcs.h"
 
 // this .h is generated from ...landwarp.xml file by GenerateCLP in Slicer3-build
 #include "plastimatch-slicer-landwarpCLP.h"
 
-/* 
-NSh: Code below, up until main() is verbatim landmark_warp_main.cxx, 
-unless marked debug or NSh
-*/
 
 /* How do the algorithms load their point data (currently)?
    plastimatch warp pointset   - PointSetType
@@ -49,16 +46,19 @@ do_landmark_warp_itk_tps (Landmark_warp *lw)
 }
 
 static void
-do_landmark_warp_gcs (Landmark_warp *lw)
+do_landmark_warp_wendland (Landmark_warp *lw)  
+//formerly ..._warp_gcs, now with Wendland instead of cone. Note dead code rbf_gcs_warp
 {
-    rbf_gcs_warp (lw);
+    rbf_wendland_warp (lw);
 }
 
 static void
-do_landmark_warp_nsh (Landmark_warp *lw)
+do_landmark_warp_gauss (Landmark_warp *lw)  //formerly do_landmark_warp_nsh
 {
-	rbf_gauss_warp (lw);
+   rbf_gauss_warp (lw);
 }
+
+
 
 static Landmark_warp*
 load_input_files (args_info_landmark_warp *args_info)
@@ -146,11 +146,15 @@ do_landmark_warp (Landmark_warp *lw, const char *algorithm)
 	do_landmark_warp_itk_tps (lw);
     }
     else if (!strcmp (algorithm, "gauss")) {
-	do_landmark_warp_nsh (lw);
+	do_landmark_warp_gauss (lw);
     }
-    else {
+    else if (!strcmp (algorithm, "wendland")) {
+	do_landmark_warp_gauss (lw);
+    }
+/*    else {
 	do_landmark_warp_gcs (lw);
     }
+*/
 }
 
 static void
@@ -187,6 +191,7 @@ main (int argc, char *argv[])
     /* NSh: pointset_load_fcsv assumes RAS, as does Slicer.
        For some reason, pointset_load_txt assumes LPS.
        Thus, we write out Slicer-style .fcsv
+       pointset_add_point assumes RAS
     */
 
     Pointset *fix_ps = pointset_create ();

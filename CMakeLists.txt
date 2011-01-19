@@ -896,6 +896,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_version.h 
   plm_warp.cxx plm_warp.h 
   rbf_gauss.cxx rbf_gauss.h
+  rbf_wendland.cxx rbf_wendland.h
   rbf_gcs.cxx rbf_gcs.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
   render_polyline.cxx render_polyline.h
