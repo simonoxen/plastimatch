@@ -149,7 +149,7 @@ do_landmark_warp (Landmark_warp *lw, const char *algorithm)
 	do_landmark_warp_gauss (lw);
     }
     else if (!strcmp (algorithm, "wendland")) {
-	do_landmark_warp_gauss (lw);
+	do_landmark_warp_wendland (lw);
     }
 /*    else {
 	do_landmark_warp_gcs (lw);
