@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "opencl_probe.h"
 #include "delayload.h"
 
 

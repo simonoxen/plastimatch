@@ -864,6 +864,10 @@ IF (OPENCL_FOUND)
       demons_opencl.cxx
       demons_opencl_p.h
       demons_opencl.cl
+      demons_misc.c
+      demons_misc.h
+      plm_timer.c         # for demons_opencl.cxx
+      plm_timer.h         # for demons_opencl.cxx
     )
     PLM_ADD_OPENCL_FILE (PLM_OPENCL_DEMONS_SRC demons_opencl.cl)
 
@@ -882,6 +886,16 @@ IF (OPENCL_FOUND)
       fdk_opencl_p.h
       fdk_opencl.h
       fdk_opencl.cl
+      proj_image.c      # for fdk_opencl
+      proj_image.h      # for fdk_opencl
+      proj_matrix.c     # for proj_image
+      proj_matrix.h     # for proj_image
+      proj_image_dir.c  # for proj_matrix
+      proj_image_dir.h  # for proj_matrix
+      dir_list.c        # for proj_image_dir
+      dir_list.h        # for proj_image_dir
+      hnd_io.c          # for dir_list
+      hnd_io.h          # for dir_list
     )
     PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
 
@@ -898,6 +912,10 @@ IF (OPENCL_FOUND)
       opencl_util_nvidia.h
       file_util.cxx
       file_util.h
+      volume.c            # for demons_opencl.cu
+      volume.h            # for demons_opencl.cu
+      print_and_exit.c    # for volume.c
+      print_and_exit.h    # for volume.c
     )
 
     # Consolidate library components
@@ -1577,8 +1595,13 @@ ENDIF (CUDA_FOUND)
 # executables that require opencl
 IF (OPENCL_FOUND)
   IF (PLM_USE_GPU_PLUGINS)
-    PLM_ADD_EXECUTABLE (opencl_probe 
-      "${OPENCL_PROBE_SRC}"  "${OPENCL_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+    IF (WIN32)
+      PLM_ADD_EXECUTABLE (opencl_probe 
+        "${OPENCL_PROBE_SRC}"  plmopencl "${GPUIT_EXE_LDFLAGS}" 1)
+    ELSE (WIN32)
+      PLM_ADD_EXECUTABLE (opencl_probe 
+        "${OPENCL_PROBE_SRC}"  "${OPENCL_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+    ENDIF (WIN32)
   ELSE (PLM_USE_GPU_PLUGINS)
     PLM_ADD_EXECUTABLE (opencl_probe 
       "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)

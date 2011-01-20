@@ -26,12 +26,6 @@ opencl_probe ()
     cl_int status;
     bool opencl_works;
 
-    /* Check for opencl runtime first */
-    opencl_works = delayload_opencl ();
-    if (!opencl_works) {
-	return 0;
-    }
-
     status = opencl_open_device (&ocl_dev);
     if (status != CL_SUCCESS) {
 	return 0;
