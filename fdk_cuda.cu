@@ -138,7 +138,19 @@ void kernel_fdk_gmem (
 
 
 __global__
-void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y)
+void kernel_fdk (
+    float *dev_vol,
+    int2 img_dim,
+    float2 ic,
+    float3 nrm,
+    float sad,
+    float scale,
+    float3 vol_offset,
+    int3 vol_dim,
+    float3 vol_pix_spacing,
+    unsigned int Blocks_Y,
+    float invBlocks_Y
+)
 {
     // CUDA 2.0 does not allow for a 3D grid, which severely
     // limits the manipulation of large 3D arrays of data.  The
@@ -512,11 +524,12 @@ fdk_cuda_state_create_cu (
 
 #if defined (VERBOSE)
     // State the kernel execution parameters
-    printf("kernel parameters:\n dimGrid: %u, %u "
-	"(Logical: %u, %u, %u)\n dimBlock: %u, %u, %u\n", 
-	dimGrid.x, dimGrid.y, dimGrid.x, blocksInY, blocksInZ, 
-	dimBlock.x, dimBlock.y, dimBlock.z);
+    printf("kernel parameters:\n dimGrid: %u, %u\n dimBlock: %u, %u, %u\n", 
+        state->dimGrid.x, state->dimGrid.y,
+        state->dimBlock.x, state->dimBlock.y, state->dimBlock.z);
     printf("%u voxels in volume\n", vol->npix);
+    printf ("options->last_img: %i\n", options->last_img);
+
     printf("%u projections to process\n", 1+(options->last_img - options->first_img) / options->skip_img);
     printf("%u Total Operations\n", vol->npix * (1+(options->last_img - options->first_img) / options->skip_img));
     printf("========================================\n\n");
@@ -563,20 +576,38 @@ fdk_cuda_queue_image_cu (
     kargs->nrm.z = nrm[2];
     kargs->sad = sad;
     kargs->sid = sid;
+
     for (int j = 0; j < 12; j++) {
-	kargs->matrix[j] = (float) matrix[j];
+        kargs->matrix[j] = (float) matrix[j];
     }
 
     // Copy image pixel data & projection matrix to device Global Memory
     // and then bind them to the texture hardware.
-    cudaMemcpy (state->dev_img, img, 
-	dim[0] * dim[1] * sizeof(float), 
-	cudaMemcpyHostToDevice);
-    cudaBindTexture (0, tex_img, state->dev_img, 
-	dim[0] * dim[1] * sizeof(float));
-    cudaMemcpy (state->dev_matrix, kargs->matrix, sizeof(kargs->matrix), 
-	cudaMemcpyHostToDevice);
-    cudaBindTexture (0, tex_matrix, state->dev_matrix, sizeof(kargs->matrix));
+    cudaMemcpy (
+        state->dev_img,
+        img, 
+        dim[0] * dim[1] * sizeof(float), 
+        cudaMemcpyHostToDevice
+    );
+
+    cudaBindTexture (0,
+        tex_img,
+        state->dev_img, 
+        dim[0] * dim[1] * sizeof(float)
+    );
+
+    cudaMemcpy (
+        state->dev_matrix,
+        kargs->matrix,
+        sizeof(kargs->matrix), 
+        cudaMemcpyHostToDevice
+    );
+
+    cudaBindTexture (0,
+        tex_matrix,
+        state->dev_matrix,
+        sizeof(kargs->matrix)
+    );
 }
 
 
@@ -585,20 +616,20 @@ fdk_cuda_backproject_cu (void *dev_state)
 {
     Fdk_cuda_state *state = (Fdk_cuda_state*) dev_state;
     Fdk_cuda_kernel_args *kargs = &state->kargs;
-
+    
     // Note: cbi->img AND cbi->matrix are passed via texture memory
     kernel_fdk <<< state->dimGrid, state->dimBlock >>> (
-	state->dev_vol,
-	kargs->img_dim,
-	kargs->ic,
-	kargs->nrm,
-	kargs->sad,
-	kargs->scale,
-	kargs->vol_offset,
-	kargs->vol_dim,
-	kargs->vol_pix_spacing,
-	state->blocksInY,
-	1.0f / (float) state->blocksInY
+        state->dev_vol,
+        kargs->img_dim,
+        kargs->ic,
+        kargs->nrm,
+        kargs->sad,
+        kargs->scale,
+        kargs->vol_offset,
+        kargs->vol_dim,
+        kargs->vol_pix_spacing,
+        state->blocksInY,
+        1.0f / (float) state->blocksInY
     );
 
     CUDA_check_error ("Kernel Panic!");

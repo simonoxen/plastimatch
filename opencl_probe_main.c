@@ -3,9 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "delayload.h"
-#include "opencl_probe.h"
+
 
 int
 main (int argc, char* argv[])

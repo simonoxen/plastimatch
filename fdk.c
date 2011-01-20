@@ -51,16 +51,6 @@ CUDA_reconstruct_conebeam (
     double io_time = 0.0;
 #endif
 
-// JAS 2011.01.19
-// I don't quite understand why yet, but it seems that the CUDA plugin
-// somehow breaks fdk_cuda_state_create().  It seems to have something
-// to do with the liberal casting of Fdk_cuda_state* to void*.
-//
-// Needs testing on windows, but I feel that it will work out due to the
-// way Windows handles external symbol loading.
-//
-// Probably, only Linux is affected by this issue.
-
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL_SPECIAL (fdk_cuda_state_create, libplmcuda, void*);
     LOAD_SYMBOL (fdk_cuda_queue_image, libplmcuda);
@@ -79,9 +69,6 @@ CUDA_reconstruct_conebeam (
     // This is just to retrieve the 2D image dimensions
     cbi = proj_image_dir_load_image (proj_dir, 0);
 
-    if (!delayload_cuda ()) { exit (0); }
-
-    // Allocate memory on device
     dev_state = fdk_cuda_state_create (
                     vol, 
                     cbi->dim[0]*cbi->dim[1], 

@@ -12,12 +12,20 @@
 
 #include "fdk.h"
 #include "fdk_cuda.h"
+#include "fdk_opts.h"
 
+
+// JAS 2011.01.20
+// I have changed the type of parameter "scale" from float to double.
+// When typed as float, parameter passing between gpuit and the plmcuda
+// plugin would fail and produce garbage within the function.  This is
+// a temporary kludge/fix.  We *should* be able to use parameters of type float
+// when communicating to the plugin.
 void*
 fdk_cuda_state_create (
     Volume *vol, 
     unsigned int image_npix, 
-    float scale, 
+    double scale, 
     Fdk_options *options
 )
 {

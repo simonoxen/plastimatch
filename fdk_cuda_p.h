@@ -4,6 +4,7 @@
 #ifndef _fdk_cuda_p_h_
 #define _fdk_cuda_p_h_
 
+#include <cuda.h>
 #include "fdk_cuda.h"
 
 typedef struct kernel_args_fdk Fdk_cuda_kernel_args;

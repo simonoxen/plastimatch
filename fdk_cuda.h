@@ -23,7 +23,7 @@ void*
 fdk_cuda_state_create (
     Volume *vol, 
     unsigned int image_npix, 
-    float scale, 
+    double scale, 
     Fdk_options *options
 );
 
