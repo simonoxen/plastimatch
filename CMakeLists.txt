@@ -1396,6 +1396,13 @@ ADD_SUBDIRECTORY (CUDA_tex_test)
 ##    GPUIT.DLL should link with GPUIT_LIB_LDFLAGS
 ##    Executables that call PLMCUDA functions should link PLMCUDA_EXE_LDFLAGS
 ##    Other executables should link with GPUIT_EXE_LDFLAGS
+##
+##  JAS 2011.01.21
+##    I have temporarily piggybacked OpenCL flags with CUDA flags.
+##    As a result PLMCUDA_EXE_FLAGS should probably be renamed to
+##    GPUPLUGIN_EXE_FLAGS or something of the like.  Probably unnecessary
+##    to separate OpenCL and CUDA linker flags since inapplicable /DELAYLOAD
+##    flags are automatically disregarded by the MS linker anyway.
 ##-----------------------------------------------------------------------------
 SET (GPUIT_LIB_LDFLAGS "${OPENMP_LDFLAGS}")
 SET (GPUIT_EXE_LDFLAGS "${OPENMP_LDFLAGS}")
@@ -1445,7 +1452,6 @@ IF (PLM_USE_GPU_PLUGINS)
     ADD_DEPENDENCIES (gpuit plmopencl)
   ENDIF (OPENCL_FOUND)
 ENDIF (PLM_USE_GPU_PLUGINS)
-
 
 IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -1503,11 +1509,11 @@ PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}"
 PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 0)
+  "${PLMCUDA_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 1)
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
-  "${GPUIT_EXE_LDFLAGS}" 1)
+  "${PLMCUDA_EXE_LDFLAGS}" 1)
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 1)
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "" 1)
@@ -1545,7 +1551,7 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
+    "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 1)
   IF (SLICER_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
       "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}")
