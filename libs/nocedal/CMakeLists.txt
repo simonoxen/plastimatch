@@ -26,4 +26,11 @@ IF (PLM_USE_F2C)
 ELSE (PLM_USE_F2C)
   ADD_LIBRARY (nocedal STATIC ${NOCEDAL_LIBRARY_FORTRAN_SRC})
 ENDIF (PLM_USE_F2C)
-INSTALL (TARGETS nocedal DESTINATION lib)
+
+## JAS 2011.01.24
+## I have disabled this INSTALL since it would be inappropriate
+## for our CPack packages to install libnocedal.a
+##
+IF (PLM_OLD_INSTALL_TARGETS)
+  INSTALL (TARGETS nocedal DESTINATION lib)
+ENDIF (PLM_OLD_INSTALL_TARGETS)

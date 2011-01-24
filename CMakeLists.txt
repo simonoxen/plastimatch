@@ -54,6 +54,10 @@ SET (PLM_PREFER_F2C OFF CACHE BOOL
 SET (PLM_PREFER_SYSTEM_F2C ON CACHE BOOL 
   "Prefer the system f2c over the included f2c")
 
+# Installer Options
+SET (PLM_OLD_INSTALL_TARGETS OFF CACHE BOOL
+  "Include old install targets such as static link libraries")
+
 # Regression testing
 SET (PLM_BUILD_TESTING ON CACHE BOOL 
   "Enable regression testing")
@@ -95,6 +99,13 @@ INCLUDE (language_support.cmake)
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
+
+## JAS 2011.01.24
+## I have commented out the INSTALL for the PLM_ADD_LIBRARY
+## macro since it was only serving to include static link
+## libraries in the CPack generated packages.
+## Namely: libplastimatch1.a, libgpuit.a, & libf2c_helper.a
+##
 MACRO (PLM_ADD_LIBRARY 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
@@ -103,10 +114,14 @@ MACRO (PLM_ADD_LIBRARY
     SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
   ELSE (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
-    INSTALL (TARGETS ${TARGET_NAME}
-      RUNTIME DESTINATION bin
-      LIBRARY DESTINATION lib
-      ARCHIVE DESTINATION lib)
+    ##
+    IF (PLM_OLD_INSTALL_TARGETS)
+      INSTALL (TARGETS ${TARGET_NAME}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib)
+    ENDIF (PLM_OLD_INSTALL_TARGETS)
+    ##
   ENDIF (BUILD_AGAINST_SLICER3)
   TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
@@ -802,6 +817,10 @@ IF (CUDA_FOUND)
     CUDA_ADD_LIBRARY (plmcuda SHARED
         ${PLM_CUDA_LIBRARY_SRC}
     )
+    INSTALL (TARGETS plmcuda
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+    )
   ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
@@ -939,6 +958,11 @@ IF (OPENCL_FOUND)
     TARGET_LINK_LIBRARIES (plmopencl
         ${OPENCL_LIBRARIES}
         ${PLM_OPENCL_LIBRARY_DEPENDENCIES}
+    )
+
+    INSTALL (TARGETS plmopencl
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
     )
 
   ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
@@ -1725,12 +1749,18 @@ IF (FFTW_FOUND)
   ENDIF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
 ENDIF (FFTW_FOUND)
 
-IF (EXISTS "${CMAKE_BINARY_DIR}/Release/plmcuda.dll")
-  INSTALL (FILES "${CMAKE_BINARY_DIR}/Release/plmcuda.dll" 
-    DESTINATION bin)
-ENDIF (EXISTS "${CMAKE_BINARY_DIR}/Release/plmcuda.dll")
-
+## JAS 2011.01.24
+## I have moved the documentation DESTINATION from
+## /usr/doc to /usr/share/doc/plastimatch/ for Linux/UNIX
 IF (NOT BUILD_AGAINST_SLICER3)
+  IF (UNIX)
+    # FHS compliant path for Linux/UNIX
+    SET(DOC_DESTINATION "share/doc/plastimatch")
+  ELSE (UNIX)
+    # Just throw TXTs into a doc folder for Windows
+    SET(DOC_DESTINATION "doc")
+  ENDIF (UNIX)
+
   INSTALL (FILES 
     COPYRIGHT.TXT
     INSTALL.TXT
@@ -1738,7 +1768,8 @@ IF (NOT BUILD_AGAINST_SLICER3)
     README.TXT
     README.BROOK.TXT
     REGISTRATION.TXT
-    DESTINATION doc)
+    DESTINATION ${DOC_DESTINATION}
+  )
 ENDIF (NOT BUILD_AGAINST_SLICER3)
 
 ##-----------------------------------------------------------------------------
@@ -1923,14 +1954,44 @@ ENDIF (PLM_BUILD_TESTING)
 ##-----------------------------------------------------------------------------
 ##  CPACK stuff
 ##  Note: "make package_source" to create tarball
+##
+##  JAS 2011.01.21
+##  Extended the CPack stuff here for DEBs.
+##
+##  To generate...
+##   * zip    : cpack -G ZIP <source tree>
+##   * deb    : cpack -G DEB <source tree>
+##   * tar.bz2: cpack -G TBZ2 <source tree>
+##
+##    ...from within your build directory
 ##-----------------------------------------------------------------------------
+
+## Default Generators
 SET (CPACK_GENERATOR "ZIP")
 SET (CPACK_SOURCE_GENERATOR "TBZ2")
+
+## Deb specific stuff
+SET (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
+SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+#SET (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
+SET (CPACK_DEBIAN_PACKAGE_SECTION "science")
+SET (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
+SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION "plastimatch\n Plastimatch is an open source software for deformable image
+    registration. It is designed for high-performance volumetric registration
+    of medical images, such as X-ray computed tomography, magnetic resonance
+    imaging, and positron emission tomography."
+)
+
+## General Stuff
+# Note: VERSION_PATCH tends to break package generation on my machine
+#       but I left it enabled anyway since it may work for you, Greg...
+SET (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
 SET (CPACK_PACKAGE_VERSION_MAJOR "1")
-SET (CPACK_PACKAGE_VERSION_MINOR "4-beta")
+SET (CPACK_PACKAGE_VERSION_MINOR "4-beta-exp")
 SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
 SET (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
 )
+
 INCLUDE (CPack)

@@ -15,4 +15,11 @@ SET (LIBLBFGS_LIBRARY_SRC
   )
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 ADD_LIBRARY (lbfgs STATIC ${LIBLBFGS_LIBRARY_SRC})
-INSTALL (TARGETS lbfgs DESTINATION lib)
+
+## JAS 2011.01.24
+## I have disabled this INSTALL since it would be inappropriate
+## for our CPack packages to install libsqlite3.a
+##
+IF (PLM_OLD_INSTALL_TARGETS)
+  INSTALL (TARGETS lbfgs DESTINATION lib)
+ENDIF (PLM_OLD_INSTALL_TARGETS)

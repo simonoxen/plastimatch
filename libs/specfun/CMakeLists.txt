@@ -28,4 +28,11 @@ IF (PLM_USE_F2C)
 ELSE (PLM_USE_F2C)
   ADD_LIBRARY (specfun STATIC ${SPECFUN_LIBRARY_FORTRAN_SRC})
 ENDIF (PLM_USE_F2C)
-INSTALL (TARGETS specfun DESTINATION lib)
+
+## JAS 2011.01.24
+## I have disabled this INSTALL since it would be inappropriate
+## for our CPack packages to install libspecfun.a
+##
+IF (PLM_OLD_INSTALL_TARGETS)
+  INSTALL (TARGETS specfun DESTINATION lib)
+ENDIF (PLM_OLD_INSTALL_TARGETS)
