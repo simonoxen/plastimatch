@@ -187,7 +187,7 @@ xio_dose_load_header (Xio_dose_header *xdh, const char *filename)
     xdh->dose_weight = xio_dose_weight;
 
     /* Get size of full header */
-    rc = fseek(fp, - nx * ny * nz * sizeof(unsigned int), SEEK_END);
+    rc = fseek(fp, - nx * ny * nz * sizeof (uint32_t), SEEK_END);
     if (rc == -1) {
 	print_and_exit ("Error seeking backward when reading XiO dose header\n");
     }
@@ -205,11 +205,11 @@ xio_dose_load_cube (
 {
     FILE *fp;
     Volume *v;
-    unsigned int *cube_img_read;
+    uint32_t *cube_img_read;
     int i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
-    cube_img_read = (unsigned int*) v->img;
+    cube_img_read = (uint32_t*) v->img;
 
     fp = fopen (filename, "rb");
     if (!fp) {
@@ -217,11 +217,13 @@ xio_dose_load_cube (
     }
 
     /* Read dose cube */
-    rc = fseek (fp, - v->dim[0] * v->dim[1] * v->dim[2] * sizeof(unsigned int), SEEK_END);
+    rc = fseek (fp, 
+	- v->dim[0] * v->dim[1] * v->dim[2] * sizeof(uint32_t), SEEK_END);
     if (rc == -1) {
 	print_and_exit ("Error seeking backward when reading image file\n");
     }
-    rc = fread (cube_img_read, sizeof(unsigned int), v->dim[0] * v->dim[1] * v->dim[2], fp);
+    rc = fread (cube_img_read, 
+	sizeof(uint32_t), v->dim[0] * v->dim[1] * v->dim[2], fp);
     if (rc != v->dim[0] * v->dim[1] * v->dim[2]) {
 	perror ("File error: ");
 	print_and_exit (
@@ -242,7 +244,8 @@ xio_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+    vflip = volume_create (v->dim, v->offset, v->pix_spacing, 
+	v->pix_type, v->direction_cosines, 0);
 
     for (k=0;k<v->dim[2];k++) {
 	for (j=0;j<v->dim[1];j++) {
@@ -256,7 +259,9 @@ xio_dose_load_cube (
     }
 
     pli->set_gpuit (vflip);
-    volume_destroy (v);
+
+    /* GCS 2011-01-24: No need to call volume_destroy(v) because set_gpuit() 
+       will destroy an existing volume */
 
     /* Convert volume to float for more accurate normalization */
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
@@ -287,9 +292,9 @@ xio_dose_load (Plm_image *pli, const char *filename)
 {
     Xio_dose_header xdh;
     
-    xio_dose_load_header(&xdh, filename);
-    xio_dose_create_volume(pli, &xdh);
-    xio_dose_load_cube(pli, &xdh, filename);
+    xio_dose_load_header (&xdh, filename);
+    xio_dose_create_volume (pli, &xdh);
+    xio_dose_load_cube (pli, &xdh, filename);
 }
 
 void
@@ -413,11 +418,12 @@ xio_dose_save (
     volume_convert_to_float (v_write);
 
     /* Apply normalization backwards */
-    volume_scale (v_write, 1 / (xdh.dose_weight * xdh.dose_scale_factor * 0.01));
+    volume_scale (v_write, 
+	1 / (xdh.dose_weight * xdh.dose_scale_factor * 0.01));
 
     /* Convert to unsigned 32-bit integer */
     volume_convert_to_uint32 (v_write);
-    unsigned int *cube_img_write = (unsigned int*) v_write->img;
+    uint32_t *cube_img_write = (uint32_t*) v_write->img;
 
     /* Switch little-endian to big-endian */
     for (i = 0; i < v_write->dim[0] * v_write->dim[1] * v_write->dim[2]; i++) {
@@ -431,7 +437,7 @@ xio_dose_save (
 
     /* Write dose cube */
     /* FIX: Not taking direction cosines into account */
-    result = fwrite (cube_img_write, sizeof(unsigned int),
+    result = fwrite (cube_img_write, sizeof(uint32_t),
 	v_write->dim[0] * v_write->dim[1] * v_write->dim[2], fp);
     if (result != (size_t) (v_write->dim[0] * v_write->dim[1] * v_write->dim[2])) {
 	print_and_exit ("Error. Cannot write dose cube to %s.\n", filename);

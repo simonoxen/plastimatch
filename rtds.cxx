@@ -128,6 +128,7 @@ Rtds::load_xio (
 	std::string xio_dose_file = std::string(xtpd->path) + "/dose.1";
 	strncpy(this->m_xio_dose_input, xio_dose_file.c_str(), _MAX_PATH);
 	xio_dose_load (this->m_dose, xio_dose_file.c_str());
+	printf ("finished call to xio_dose_load\n");
 
 	/* Find studyset associated with plan */
 	xsd = xio_plan_dir_get_studyset_dir (xtpd);
