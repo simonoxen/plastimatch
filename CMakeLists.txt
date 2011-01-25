@@ -1118,7 +1118,6 @@ ENDIF (CUDA_FOUND)
 SET (DEMONS_SRC
   demons_main.c
   demons_opts.c demons_opts.h
-  delayload.c delayload.h
   )
 SET (DICE_STATS_SRC
   contour_statistics.cxx contour_statistics.h
@@ -1182,7 +1181,6 @@ SET (MOVESCU_SRC
   )
 SET (OPENCL_PROBE_SRC
   opencl_probe_main.c
-  delayload.c
   )
 IF (OPENCL_FOUND)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
@@ -1620,23 +1618,13 @@ ENDIF (ITK_FOUND)
 IF (CUDA_FOUND)
   PLM_ADD_EXECUTABLE (cuda_probe 
     "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "" 1)
-ENDIF (CUDA_FOUND)
+ENDIF ()
 
 # executables that require opencl
 IF (OPENCL_FOUND)
-  IF (PLM_USE_GPU_PLUGINS)
-    IF (WIN32)
-      PLM_ADD_EXECUTABLE (opencl_probe 
-        "${OPENCL_PROBE_SRC}"  plmopencl "${GPUIT_EXE_LDFLAGS}" 1)
-    ELSE (WIN32)
-      PLM_ADD_EXECUTABLE (opencl_probe 
-        "${OPENCL_PROBE_SRC}"  "${OPENCL_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
-    ENDIF (WIN32)
-  ELSE (PLM_USE_GPU_PLUGINS)
-    PLM_ADD_EXECUTABLE (opencl_probe 
-      "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ENDIF (OPENCL_FOUND)
+  PLM_ADD_EXECUTABLE (opencl_probe 
+    "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 1)
+ENDIF ()
 
 # dicom_uid requires dcmtk
 IF (DCMTK_FOUND)
@@ -1644,25 +1632,23 @@ IF (DCMTK_FOUND)
     "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "" 1)
   PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
   PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
-ENDIF (DCMTK_FOUND)
+ENDIF ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
 IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  ADD_EXECUTABLE(mondoshot WIN32 ${MONDOSHOT_SRC})
-  TARGET_LINK_LIBRARIES(mondoshot ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES}
-    ${SQLITE_LIBRARIES})
+  ADD_EXECUTABLE (mondoshot WIN32 ${MONDOSHOT_SRC})
+  TARGET_LINK_LIBRARIES (mondoshot 
+    ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
   IF (NOT BUILD_AGAINST_SLICER3)
-    INSTALL(TARGETS mondoshot DESTINATION bin)
-  ENDIF (NOT BUILD_AGAINST_SLICER3)
-ENDIF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+    INSTALL (TARGETS mondoshot DESTINATION bin)
+  ENDIF ()
+ENDIF ()
 
 # matlab mex files
-IF (PLM_BUILD_MEX_TEST)
-IF (MATLAB_FOUND)
+IF (MATLAB_FOUND AND PLM_BUILD_MEX_TEST)
   MEX_TARGET (mex_drr 
     "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
-ENDIF (MATLAB_FOUND)
-ENDIF (PLM_BUILD_MEX_TEST)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
