@@ -1,12 +1,11 @@
-Other toolkits
-==============
+Other registration software
+===========================
 
 Plastimatch is not the only choice for deformable image registration.
 Please try out some of these other great software, and use 
 the ones which fit your needs.
 
-Open source toolkits
---------------------
+**Open source toolkits**
 
 The following software are available under open source licenses.
 
@@ -41,8 +40,7 @@ SPM
   License: GPL
 
 
-Restricted use toolkits
------------------------
+**Restricted use toolkits**
 
 The following software are available at no cost, but carry restrictions 
 on how they can be used.

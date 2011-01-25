@@ -1,5 +1,5 @@
-Technical reference
-===================
+Plastimatch Technical Reference
+===============================
 
 This section includes technical details for application developers.
 

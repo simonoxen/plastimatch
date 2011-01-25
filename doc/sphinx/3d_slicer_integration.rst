@@ -1,5 +1,5 @@
-3D Slicer Integration
-=====================
+3D Slicer plugin
+================
 
 Plastimatch is available as an Extension (plug-in) for 3D Slicer.  
 This is one of the easiest methods for using plastimatch, 

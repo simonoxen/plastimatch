@@ -382,9 +382,7 @@ specific parameters are available.
 |metric                |any+not         |mse         |Choices are: {mse, mi,     |
 |                      |demons+any      |            |mattes} when impl=itk,     |
 |                      |                |            |{mse, mi} when             |
-|                      |                |            |impl=plastimatch, and {mse}|
-|                      |                |            |for GPU-accelerated        |
-|                      |                |            |B-Spline                   |
+|                      |                |            |impl=plastimatch           |
 +----------------------+----------------+------------+---------------------------+
 |background_val        |any+any+any     |-999.0      |Units: image intensity     |
 |                      |                |            |                           |
@@ -444,4 +442,3 @@ specific parameters are available.
 |                      |plastimatch     |            |                           |
 |                      |                |            |                           |
 +----------------------+----------------+------------+---------------------------+
-

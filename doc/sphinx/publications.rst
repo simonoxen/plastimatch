@@ -1,8 +1,8 @@
 Publications
 ============
 
-Technical Publications
-----------------------
+**Technical Publications**
+
 The following references describe either technical details of plastimatch algorithms or validation studies which examine algorithm performance.
 
 James A Shackleford, Nagarajan Kandasamy, Gregory C Sharp, “On developing B-spline registration algorithms for multi-core processors,” Physics in Medicine and Biology, Vol 55, No 21, pp 6329-6351, Nov 7, 2010.
@@ -13,8 +13,8 @@ Ziji Wu, Eike Rietzel, Vlad Boldea, David Sarrut, Gregory C. Sharp, “Evaluatio
 
 Gregory Sharp, Nagarajan Kandasamy, Harman Singh, and Michael Folkert, “GPU-based streaming architectures for fast cone-beam CT image reconstruction and demons deformable registration,” Physics in Medicine and Biology, Vol 52, No 19, pp 5771-83, October 7, 2007.
 
-Medical Physics Studies
------------------------
+**Medical Physics Studies**
+
 The following references describe how plastimatch has been used in retrospective studies to answer medical physics questions.
 
 Shinichiro Mori, Nobuyuki Kanematsu, Hiroshi Asakura, Gregory C Sharp, Motoki Kumagai, Suguru Dobashi, Mio Nakajima, Naoyoshi Yamamoto, Susumu Kandatsu, Masayuki Baba, “Four-Dimensional Lung Treatment Planning in Layer-Stacking Carbon Ion Beam Treatment: Comparison of Layer-Stacking and Conventional Ungated/Gated Irradiation,” International Journal of Radiation Oncology, Biology, Physics, To appear.
