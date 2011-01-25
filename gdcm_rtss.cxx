@@ -541,12 +541,10 @@ gdcm_rtss_save (
 	roic_seq->AddSQItem (roic_item, i+1);
 	
 	/* ROIDisplayColor */
-	if (bstring_empty (curr_structure->color)) {
-	    roic_item->InsertValEntry (
-		(const char*) curr_structure->color, 0x3006, 0x002a);
-	} else {
-	    roic_item->InsertValEntry ("255\\0\\0", 0x3006, 0x002a);
-	}
+	CBString dcm_color;
+	curr_structure->get_dcm_color_string (&dcm_color);
+	roic_item->InsertValEntry ((const char*) dcm_color, 0x3006, 0x002a);
+
 	/* ContourSequence */
 	gdcm::SeqEntry *c_seq = roic_item->InsertSeqEntry (0x3006, 0x0040);
 	for (j = 0; j < curr_structure->num_contours; j++) {

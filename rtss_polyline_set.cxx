@@ -117,9 +117,12 @@ Rtss_polyline_set::debug (void)
 
     for (i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
-	printf ("%d %d %s (%p) (%d contours)", 
-	    i, curr_structure->id, 
+	printf ("%d %d %s [%s] (%p) (%d contours)", 
+	    i, 
+	    curr_structure->id, 
 	    (const char*) curr_structure->name, 
+	    bstring_empty (curr_structure->color) 
+	      ? "none" : (const char*) curr_structure->color, 
 	    curr_structure->pslist, 
 	    curr_structure->num_contours
 	);

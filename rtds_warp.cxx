@@ -404,9 +404,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Warp and save structure set (except dicom) */
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
-
-#if defined (commentout)
-#endif
     /* In certain cases, we have to delay setting dicom uids 
        (e.g. wait until after warping) */
     /* GCS FIX: Sometimes referenced_dicom_dir is applied multiple times, 
@@ -415,6 +412,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_ss_image && rtds->m_rdd) {
 	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
     }
+
     /* Save dicom */
     if (bstring_not_empty (parms->output_dicom)) {
 	rtds->save_dicom ((const char*) parms->output_dicom);

@@ -119,6 +119,14 @@ Rtss_structure::set_color (const char* color_string)
 }
 
 void
+Rtss_structure::get_dcm_color_string (CBString *dcm_color) const
+{
+    int r, g, b;
+    this->structure_rgb (&r, &g, &b);
+    dcm_color->format ("%d\\%d\\%d", r, g, b);
+}
+
+void
 Rtss_structure::structure_rgb (int *r, int *g, int *b) const
 {
     *r = 255;
