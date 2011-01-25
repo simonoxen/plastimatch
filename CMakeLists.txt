@@ -57,6 +57,8 @@ SET (PLM_PREFER_SYSTEM_F2C ON CACHE BOOL
 # Installer Options
 SET (PLM_OLD_INSTALL_TARGETS OFF CACHE BOOL
   "Include old install targets such as static link libraries")
+SET (PLM_PACKAGE_32BIT OFF CACHE BOOL
+  "Set this when building 32-bit packages on a 64-bit machine")
 
 # Regression testing
 SET (PLM_BUILD_TESTING ON CACHE BOOL 
@@ -73,6 +75,23 @@ SET (PLM_TEST_FDK_VARIAN OFF CACHE BOOL
   "Regression tests for fdk reconstruction from Varian data (downloads extra test data)")
 SET (PLM_TEST_XIO OFF CACHE BOOL 
   "Regression tests for xio file exchange (downloads extra test data)")
+
+
+##-----------------------------------------------------------------------------
+##  Detect 32-bit or 64-bit machine
+##-----------------------------------------------------------------------------
+IF (NOT APPLE)
+  IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    SET (HAVE_32_BIT TRUE)
+    SET (HAVE_64_BIT FALSE)
+    MESSAGE (STATUS "Machine is 32-bit")
+  ELSE (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    SET (HAVE_32_BIT FALSE)
+    SET (HAVE_64_BIT TRUE)
+    MESSAGE (STATUS "Machine is 64-bit")
+  ENDIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
+ENDIF (NOT APPLE)
+
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths
@@ -436,10 +455,10 @@ ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 # gives an error if it is used on x86_64.
 ##-----------------------------------------------------------------------------
 #MESSAGE (STATUS "CMAKE_SIZEOF_VOID_P is ${CMAKE_SIZEOF_VOID_P}")
-IF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
     SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-ENDIF (CMAKE_COMPILER_IS_GNUCC AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+ENDIF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
 
 ##-----------------------------------------------------------------------------
 ##  Set default build type to "Release"
@@ -1687,10 +1706,32 @@ ENDIF (ITK_FOUND)
 
 IF (CUDA_FOUND)
   IF (UNIX)
+    SET (CUDART_LINUX_VERSION "libcudart.so.3.0.14")
+    SET (CUDART_LINUX32 "${CUDA_TOOLKIT_ROOT_DIR}/lib/${CUDART_LINUX_VERSION}")
+    SET (CUDART_LINUX64 "${CUDA_TOOLKIT_ROOT_DIR}/lib64/${CUDART_LINUX_VERSION}")
+
+    IF (HAVE_32_BIT)
+      IF (EXISTS "${CUDART_LINUX32}")
+        SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
+      ENDIF (EXISTS "${CUDART_LINUX32}")
+    ENDIF (HAVE_32_BIT)
+
+    IF (HAVE_64_BIT)
+      IF (EXISTS "${CUDART_LINUX64}")
+        SET (CUDART_FILE_SRC "${CUDART_LINUX64}")
+      ENDIF (EXISTS "${CUDART_LINUX64}")
+    ENDIF (HAVE_64_BIT)
+
+    # Override for packagers building 32-bit packages on 64-bit machine
+    IF (PLM_PACKAGE_32BIT)
+      IF (EXISTS "${CUDART_LINUX32}")
+        SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
+      ENDIF (EXISTS "${CUDART_LINUX32}")
+    ENDIF (PLM_PACKAGE_32BIT)
+
     # Hard code to cuda 3.0 (runtime 3.0.14).  Note, we copy it first, because
     # otherwise CMake 2.6 will install a broken symbolic link
-    SET (CUDART_FILE_SRC "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so.3.0.14")
-    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/libcudart.so.3.0.14")
+    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/${CUDART_LINUX_VERSION}")
     IF (EXISTS "${CUDART_FILE_SRC}")
       EXECUTE_PROCESS (COMMAND
         ${CMAKE_COMMAND} "-E" "copy" 
@@ -1698,31 +1739,27 @@ IF (CUDA_FOUND)
       )
     ENDIF (EXISTS "${CUDART_FILE_SRC}")
   ELSE (UNIX)
-    ## JAS 2011.01.25
-    ## While this "works" with 32 & 64-bit Windows, it may produce problems
-    ## if the packaging machine has both 32 & 64-bit CUDA 3.0 Toolkits
-    ## installed. The presence of the 64-bit Toolkit will prevent the inclusion
-    ## of the 32-bit CUDA runtime in the generated package.  A good way of detecting
-    ## 64-bit Windows is needed if we are to distribute 64-bit Windows packages
-    ## routinely in order to prevent the packager from needing to uninstall and
-    ## reinstall different CUDA Toolkit versions.
     SET (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
     SET (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
 
-    IF (EXISTS "${CUDART_WIN32}")
-        IF (EXISTS "${CUDART_WIN64}")
-            MESSAGE (STATUS "WARNING: Detected 32-bit *AND* 64-bit CUDA Toolkits!")
-            MESSAGE (STATUS "WARNING: CPack will package the 64-bit CUDA Runtime")
-            SET (CUDART_FILE "${CUDART_WIN64}")
-        ELSE (EXISTS "${CUDART_WIN64}")
-            SET (CUDART_FILE "${CUDART_WIN32}")
-        ENDIF (EXISTS "${CUDART_WIN64}")
-    ENDIF (EXISTS "${CUDART_WIN32}")
+    IF (HAVE_32_BIT)
+      IF (EXISTS "${CUDART_WIN32}")
+        SET (CUDART_FILE "${CUDART_WIN32}")
+      ENDIF (EXISTS "${CUDART_WIN32}")
+    ENDIF (HAVE_32_BIT)
 
-    IF (EXISTS "${CUDART_WIN64}")
+    IF (HAVE_64_BIT)
+      IF (EXISTS "${CUDART_WIN64}")
         SET (CUDART_FILE "${CUDART_WIN64}")
-    ENDIF (EXISTS "${CUDART_WIN64}")
+      ENDIF (EXISTS "${CUDART_WIN64}")
+    ENDIF (HAVE_64_BIT)
 
+    # Override for packagers building 32-bit packages on 64-bit machine
+    IF (PLM_PACKAGE_32BIT)
+      IF (EXISTS "${CUDART_WIN32}")
+        SET (CUDART_FILE_SRC "${CUDART_WIN32}")
+      ENDIF (EXISTS "${CUDART_WIN32}")
+    ENDIF (PLM_PACKAGE_32BIT)
   ENDIF (UNIX)
 
   IF (EXISTS "${CUDART_FILE}")
@@ -1983,7 +2020,7 @@ SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION "plastimatch\n Plastimatch is an open sour
 SET (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
 SET (CPACK_PACKAGE_VERSION_MAJOR "1")
 SET (CPACK_PACKAGE_VERSION_MINOR "4-beta-exp")
-SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
+#SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
 SET (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
