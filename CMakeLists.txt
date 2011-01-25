@@ -899,25 +899,6 @@ IF (OPENCL_FOUND)
     )
     PLM_ADD_OPENCL_FILE (PLM_OPENCL_DRR_SRC drr_opencl.cl)
 
-    # FDK Acceleration
-    SET (PLM_OPENCL_FDK_SRC
-      fdk_opencl.cxx 
-      fdk_opencl_p.h
-      fdk_opencl.h
-      fdk_opencl.cl
-      proj_image.c      # for fdk_opencl
-      proj_image.h      # for fdk_opencl
-      proj_matrix.c     # for proj_image
-      proj_matrix.h     # for proj_image
-      proj_image_dir.c  # for proj_matrix
-      proj_image_dir.h  # for proj_matrix
-      dir_list.c        # for proj_image_dir
-      dir_list.h        # for proj_image_dir
-      hnd_io.c          # for dir_list
-      hnd_io.h          # for dir_list
-    )
-    PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
-
     # Common Files
     SET (PLM_OPENCL_COMMON
       autotune_opencl.cxx
@@ -941,7 +922,6 @@ IF (OPENCL_FOUND)
     SET (PLM_OPENCL_LIBRARY_SRC
       ${PLM_OPENCL_DEMONS_SRC}
       ${PLM_OPENCL_DRR_SRC}
-      ${PLM_OPENCL_FDK_SRC}
       ${PLM_OPENCL_COMMON}
     )
 
@@ -977,19 +957,17 @@ IF (OPENCL_FOUND)
     PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
     PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
 
-    # FDK is not part of GPUIT...
-    #    so we handle it here as well
-    SET (FDK_SRC
-      ${FDK_SRC}
-      #fdk_opencl_old.cxx 
-      fdk_opencl.cxx 
-      fdk_opencl_p.h
-      fdk_opencl.h
-      fdk_opencl.cl
-    )
-    PLM_ADD_OPENCL_FILE (FDK_SRC fdk_opencl.cl)
-
   ENDIF (PLM_USE_GPU_PLUGINS)
+
+  SET (GPUIT_LIBRARY_SRC
+    ${GPUIT_LIBRARY_SRC}
+    fdk_opencl.cxx 
+    fdk_opencl_p.h
+    fdk_opencl.h
+    fdk_opencl.cl
+    )
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
+
 ENDIF (OPENCL_FOUND)
 
 
