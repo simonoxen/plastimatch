@@ -2015,12 +2015,10 @@ SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION "plastimatch\n Plastimatch is an open sour
 )
 
 ## General Stuff
-# Note: VERSION_PATCH tends to break package generation on my machine
-#       but I left it enabled anyway since it may work for you, Greg...
 SET (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
 SET (CPACK_PACKAGE_VERSION_MAJOR "1")
-SET (CPACK_PACKAGE_VERSION_MINOR "4-beta-exp")
-#SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
+SET (CPACK_PACKAGE_VERSION_MINOR "4-beta")
+SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
 SET (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
