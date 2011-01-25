@@ -1687,20 +1687,51 @@ ENDIF (ITK_FOUND)
 
 IF (CUDA_FOUND)
   IF (UNIX)
-    # Hard code to cuda 2.2.  Note, we copy it first, because otherwise 
-    # CMake 2.6 will install a broken symbolic link
-    SET (CUDART_FILE_SRC "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so.2.2")
-    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/libcudart.so.2")
+    # Hard code to cuda 3.0 (runtime 3.0.14).  Note, we copy it first, because
+    # otherwise CMake 2.6 will install a broken symbolic link
+    SET (CUDART_FILE_SRC "${CUDA_TOOLKIT_ROOT_DIR}/lib/libcudart.so.3.0.14")
+    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/libcudart.so.3.0.14")
     IF (EXISTS "${CUDART_FILE_SRC}")
-      EXECUTE_PROCESS (COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-	"${CUDART_FILE_SRC}" "${CUDART_FILE}")
+      EXECUTE_PROCESS (COMMAND
+        ${CMAKE_COMMAND} "-E" "copy" 
+	    "${CUDART_FILE_SRC}" "${CUDART_FILE}"
+      )
     ENDIF (EXISTS "${CUDART_FILE_SRC}")
   ELSE (UNIX)
-    SET (CUDART_FILE "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart.dll")
+    ## JAS 2011.01.25
+    ## While this "works" with 32 & 64-bit Windows, it may produce problems
+    ## if the packaging machine has both 32 & 64-bit CUDA 3.0 Toolkits
+    ## installed. The presence of the 64-bit Toolkit will prevent the inclusion
+    ## of the 32-bit CUDA runtime in the generated package.  A good way of detecting
+    ## 64-bit Windows is needed if we are to distribute 64-bit Windows packages
+    ## routinely in order to prevent the packager from needing to uninstall and
+    ## reinstall different CUDA Toolkit versions.
+    SET (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
+    SET (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
+
+    IF (EXISTS "${CUDART_WIN32}")
+        IF (EXISTS "${CUDART_WIN64}")
+            MESSAGE (STATUS "WARNING: Detected 32-bit *AND* 64-bit CUDA Toolkits!")
+            MESSAGE (STATUS "WARNING: CPack will package the 64-bit CUDA Runtime")
+            SET (CUDART_FILE "${CUDART_WIN64}")
+        ELSE (EXISTS "${CUDART_WIN64}")
+            SET (CUDART_FILE "${CUDART_WIN32}")
+        ENDIF (EXISTS "${CUDART_WIN64}")
+    ENDIF (EXISTS "${CUDART_WIN32}")
+
+    IF (EXISTS "${CUDART_WIN64}")
+        SET (CUDART_FILE "${CUDART_WIN64}")
+    ENDIF (EXISTS "${CUDART_WIN64}")
+
   ENDIF (UNIX)
 
   IF (EXISTS "${CUDART_FILE}")
-    INSTALL (FILES "${CUDART_FILE}" DESTINATION bin)
+    IF (UNIX)
+      INSTALL (FILES "${CUDART_FILE}" DESTINATION lib)
+    ELSE (UNIX)
+      INSTALL (FILES "${CUDART_FILE}" DESTINATION bin)
+    ENDIF (UNIX)
+
     IF (BUILD_AGAINST_SLICER3)
       INSTALL (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
     ENDIF (BUILD_AGAINST_SLICER3)
