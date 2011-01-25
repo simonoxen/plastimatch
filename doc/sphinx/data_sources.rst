@@ -48,6 +48,12 @@ CMU computer vision list:
 
   A list of image databases (some are medical)
 
+BrainWeb:
+  http://mouldy.bic.mni.mcgill.ca/brainweb/
+
+  Synthetic MRI images
+
 Other unsorted stuff:
   http://peipa.essex.ac.uk/benchmark/databases/index.html#medical
+
   http://www.library.uthscsa.edu/find/databases.cfm?Category=Image%20Collections
