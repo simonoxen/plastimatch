@@ -20,6 +20,7 @@
 /* External libraries */
 #cmakedefine BROOK_FOUND 1
 #cmakedefine CUDA_FOUND 1
+#cmakedefine DLIB_FOUND 1
 #cmakedefine FFTW_FOUND 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
