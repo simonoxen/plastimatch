@@ -62,6 +62,10 @@ Thumbnail::set_thumbnail_spacing (float thumb_spacing)
 FloatImageType::Pointer 
 Thumbnail::make_thumbnail ()
 {
+    std::cout << pli->m_itk_float << std::endl;
+    printf ("origin: %g %g %g\n", origin[0], origin[1], origin[2]);
+    printf ("spacing: %g %g %g\n", spacing[0], spacing[1], spacing[2]);
+    printf ("dim: %d %d %d\n", dim[0], dim[1], dim[2]);
     /* Resample the image */
     return resample_image (pli->m_itk_float, origin, spacing, dim, -1000, 1);
 }

@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include "getopt.h"
+#include "itkImageRegionIterator.h"
 #include "dlib/data_io.h"
 #include "dlib/svm.h"
 
@@ -19,6 +20,9 @@ struct autolabel_parms {
     CBString output_fn;
     CBString network_fn;
 };
+
+/* ITK typedefs */
+typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 
 /* Dlib typedefs */
 typedef std::map < unsigned long, double > sparse_sample_type;
@@ -99,7 +103,9 @@ autolabel_main (int argc, char *argv[])
     /* Load network */
     dlib::decision_function<kernel_type> dlib_network;
     std::ifstream fin ((const char*) parms.network_fn, std::ios::binary);
+    printf ("Trying to deserialize...\n");
     deserialize (dlib_network, fin);
+    printf ("Done.\n");
 
     /* Load input image */
     Plm_image pli ((const char*) parms.input_fn, PLM_IMG_TYPE_ITK_FLOAT);
@@ -111,9 +117,28 @@ autolabel_main (int argc, char *argv[])
 
     Plm_image_header pih (&pli);
     for (int i = 0; i < pih.Size(2); i++) {
+
+
+	/* Create slice thumbnail */
 	float loc = pih.m_origin[2] + i * pih.m_spacing[2];
 	thumbnail.set_slice_loc (loc);
+	printf ("Trying to make thumbnail...\n");
 	FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
+
+	printf ("Trying to convert...\n");
+
+	/* Convert to dlib sample type */
+	dense_sample_type d;
+	FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
+	d(0) = 0;
+	for (int j = 0; j < 256; j++) {
+	    d(j+1) = it.Get();
+	    ++it;
+	}
+
+	/* Predict the value */
+	printf ("Trying to predict...\n");
+	printf ("%d -> %g\n", i, dlib_network (d));
     }
 }
 
