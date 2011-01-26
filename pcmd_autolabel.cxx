@@ -12,6 +12,7 @@
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_image_patient_position.h"
+#include "print_and_exit.h"
 #include "thumbnail.h"
 
 typedef struct autolabel_parms Autolabel_parms;
@@ -98,6 +99,7 @@ void
 autolabel_main (int argc, char *argv[])
 {
     Autolabel_parms parms;
+    FILE *fp;
 
     parse_args (&parms, argc, argv);
 
@@ -116,6 +118,13 @@ autolabel_main (int argc, char *argv[])
     thumbnail.set_thumbnail_dim (16);
     thumbnail.set_thumbnail_spacing (25.0f);
 
+    /* Open output file (txt format) */
+    fp = fopen ((const char*) parms.output_fn, "w");
+    if (!fp) {
+	print_and_exit ("Failure to open file for write: %s\n", 
+	    (const char*) parms.output_fn);
+    }
+
     Plm_image_header pih (&pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
@@ -133,8 +142,10 @@ autolabel_main (int argc, char *argv[])
 	}
 
 	/* Predict the value */
-	printf ("(%d,%g) %g\n", i, loc, dlib_network (d));
+	fprintf (fp, "%g %g\n", loc, dlib_network (d));
     }
+
+    fclose (fp);
 }
 
 void
