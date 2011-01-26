@@ -1,4 +1,5 @@
-cd ([getenv('HOME'), '/My Dropbox/autolabel']);
+cd ([getenv('HOME'), '/Dropbox/autolabel']);
+#cd ([getenv('HOME'), '/My Dropbox/autolabel']);
 
 data = [];
 pid = [];
@@ -19,7 +20,7 @@ fp = fopen ("t-spine-2/t-spine.libsvm", "w");
 for i = 1:length(sid)
     fprintf (fp, "%d", sid(i));
     for j = 1:size(data,2)
-        fprintf (fp, " %d:%f", j, data(i,j));
+        fprintf (fp, " %d:%f", j-1, data(i,j));
     end
     fprintf (fp, "\n");
 end

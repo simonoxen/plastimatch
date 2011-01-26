@@ -27,7 +27,7 @@ typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 /* Dlib typedefs */
 typedef std::map < unsigned long, double > sparse_sample_type;
 typedef dlib::matrix < 
-    sparse_sample_type::value_type::second_type, 257, 1
+    sparse_sample_type::value_type::second_type, 256, 1
     > dense_sample_type;
 typedef dlib::radial_basis_kernel < dense_sample_type > kernel_type;
 
@@ -127,9 +127,8 @@ autolabel_main (int argc, char *argv[])
 	/* Convert to dlib sample type */
 	dense_sample_type d;
 	FloatIteratorType it (thumb_img, thumb_img->GetLargestPossibleRegion());
-	d(0) = 0;
 	for (int j = 0; j < 256; j++) {
-	    d(j+1) = it.Get();
+	    d(j) = it.Get();
 	    ++it;
 	}
 

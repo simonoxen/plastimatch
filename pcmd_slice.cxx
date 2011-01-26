@@ -8,53 +8,18 @@
 #include "pcmd_slice.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
-//#include "resample_mha.h"
 #include "thumbnail.h"
 
 static void
 slice_main (Slice_parms* parms)
 {
     Plm_image *pli;
-#if defined (commentout)
-    Plm_image_header pih;
-    float origin[3];
-    float center[3];
-    float spacing[3];
-    int dim[3];
-    int d;
-    float slice_loc;
-#endif
 
     /* Load image */
     pli = plm_image_load ((const char*) parms->img_in_fn, 
 	PLM_IMG_TYPE_ITK_FLOAT);
 
-#if defined (commentout)
-    /* Compute dimensions of thumbnail */
-    pih.set_from_plm_image (pli);
-    pih.print ();
-
-    pih.get_image_center (center);
-    for (d = 0; d < 2; d++) {
-	origin[d] = center[d] 
-	    - parms->thumbnail_spacing * (parms->thumbnail_dim - 1) / 2;
-	spacing[d] = parms->thumbnail_spacing;
-	dim[d] = parms->thumbnail_dim;
-    }
-    if (parms->have_slice_loc) {
-	origin[2] = parms->slice_loc;
-    } else {
-	/* If user didn't specify slice location, use image center */
-	origin[2] = center[2];
-    }
-    spacing[2] = spacing[0];
-    dim[2] = 1;
-    
-    /* Resample the image */
-    pli->m_itk_float = resample_image (
-	pli->m_itk_float, origin, spacing, dim, -1000, 1);
-#endif
-    
+    /* Make thumbnail */
     Thumbnail thumbnail;
     thumbnail.set_input_image (pli);
     thumbnail.set_thumbnail_dim (parms->thumbnail_dim);
@@ -62,7 +27,6 @@ slice_main (Slice_parms* parms)
     if (parms->have_slice_loc) {
 	thumbnail.set_slice_loc (parms->slice_loc);
     }
-
     pli->m_itk_float = thumbnail.make_thumbnail ();
 
     /* Save the output file */

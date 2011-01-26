@@ -4,9 +4,11 @@ use File::Path;
 use File::Spec;
 use File::Spec::Functions;
 
-#$in_base = "c:/gcs6/My Dropbox/autolabel/t-spine-in/rider-lung";
-$in_base = "c:/gcs6/My Dropbox/autolabel/t-spine-in/rider-pilot";
-$out_base = "c:/gcs6/My Dropbox/autolabel/t-spine-2";
+#$dropbox_dir = "c:/gcs6/My Dropbox";
+$dropbox_dir = "/PHShome/gcs6/Dropbox";
+$in_base = "$dropbox_dir/autolabel/t-spine-in/rider-lung";
+#$in_base = "$dropbox_dir/autolabel/t-spine-in/rider-pilot";
+$out_base = "$dropbox_dir/autolabel/t-spine-2";
 
 sub parse_fcsv {
     ($fn) = @_;

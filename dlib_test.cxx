@@ -383,6 +383,10 @@ krr_rbk_test (
 	    std::ios::binary);
 	serialize (best_network, fout);
 	fout.close();
+
+	for (unsigned int j = 0; j < dense_samples.size(); j++) {
+	    printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
+	}
     }
 }
 
