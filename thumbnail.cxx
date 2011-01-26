@@ -32,6 +32,8 @@ void
 Thumbnail::set_input_image (Plm_image *pli)
 {
     Plm_image_header pih;
+
+    this->pli = pli;
     pih.get_image_center (this->center);
     if (!slice_loc_was_set) {
 	slice_loc = center[2];
@@ -43,6 +45,7 @@ void
 Thumbnail::set_slice_loc (float slice_loc)
 {
     this->slice_loc = slice_loc;
+    this->origin[2] = slice_loc;
 }
 
 void 
@@ -62,10 +65,6 @@ Thumbnail::set_thumbnail_spacing (float thumb_spacing)
 FloatImageType::Pointer 
 Thumbnail::make_thumbnail ()
 {
-    std::cout << pli->m_itk_float << std::endl;
-    printf ("origin: %g %g %g\n", origin[0], origin[1], origin[2]);
-    printf ("spacing: %g %g %g\n", spacing[0], spacing[1], spacing[2]);
-    printf ("dim: %d %d %d\n", dim[0], dim[1], dim[2]);
     /* Resample the image */
     return resample_image (pli->m_itk_float, origin, spacing, dim, -1000, 1);
 }

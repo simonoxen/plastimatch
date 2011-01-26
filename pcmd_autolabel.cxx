@@ -26,8 +26,9 @@ typedef itk::ImageRegionConstIterator< FloatImageType > FloatIteratorType;
 
 /* Dlib typedefs */
 typedef std::map < unsigned long, double > sparse_sample_type;
-typedef dlib::matrix < sparse_sample_type::value_type::second_type,0,1
-		 > dense_sample_type;
+typedef dlib::matrix < 
+    sparse_sample_type::value_type::second_type, 257, 1
+    > dense_sample_type;
 typedef dlib::radial_basis_kernel < dense_sample_type > kernel_type;
 
 static void
@@ -118,14 +119,10 @@ autolabel_main (int argc, char *argv[])
     Plm_image_header pih (&pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
-
 	/* Create slice thumbnail */
 	float loc = pih.m_origin[2] + i * pih.m_spacing[2];
 	thumbnail.set_slice_loc (loc);
-	printf ("Trying to make thumbnail...\n");
 	FloatImageType::Pointer thumb_img = thumbnail.make_thumbnail ();
-
-	printf ("Trying to convert...\n");
 
 	/* Convert to dlib sample type */
 	dense_sample_type d;
@@ -137,8 +134,7 @@ autolabel_main (int argc, char *argv[])
 	}
 
 	/* Predict the value */
-	printf ("Trying to predict...\n");
-	printf ("%d -> %g\n", i, dlib_network (d));
+	printf ("(%d,%g) %g\n", i, loc, dlib_network (d));
     }
 }
 
