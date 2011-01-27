@@ -108,11 +108,11 @@ astroid_dose_load_cube (
 {
     FILE *fp;
     Volume *v;
-    unsigned int *cube_img_read;
+    uint32_t *cube_img_read;
     int i, j, k, rc;
 
     v = (Volume*) pli->m_gpuit;
-    cube_img_read = (unsigned int*) v->img;
+    cube_img_read = (uint32_t*) v->img;
 
     fp = fopen (filename, "rb");
     if (!fp) {
@@ -120,7 +120,7 @@ astroid_dose_load_cube (
     }
 
     /* Read dose cube */
-    rc = fread (cube_img_read, sizeof(unsigned int), v->dim[0] * v->dim[1] * v->dim[2], fp);
+    rc = fread (cube_img_read, sizeof(uint32_t), v->dim[0] * v->dim[1] * v->dim[2], fp);
     if (rc != v->dim[0] * v->dim[1] * v->dim[2]) {
 	perror ("File error: ");
 	print_and_exit (
@@ -155,7 +155,6 @@ astroid_dose_load_cube (
     }
 
     pli->set_gpuit (vflip);
-    volume_destroy (v);
 
     /* Convert volume to float for more accurate normalization */
     pli->convert (PLM_IMG_TYPE_GPUIT_FLOAT);
