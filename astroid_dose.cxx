@@ -7,6 +7,7 @@
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
+#include "plm_int.h"
 #include "print_and_exit.h"
 #include "xio_ct.h"
 
