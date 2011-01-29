@@ -75,27 +75,6 @@
 #endif
 
 
-// Note: Windows will not automatically export
-//       symbols for external linking, so we have
-//       to tell it which symbols (DLL interface
-//       functions) to export.  gcc does not need
-//       this.  Without this, link.exe will not
-//       generate plmcuda.lib, which is needed to
-//       use plmcuda.dll
-#if _WIN32
-    #define plmcuda_EXPORT  \
-    __declspec(dllexport)    
-#else
-    #define plmcuda_EXPORT ;
-#endif
-
-#if _WIN32
-    #define plmopencl_EXPORT  \
-    __declspec(dllexport)    
-#else
-    #define plmopencl_EXPORT ;
-#endif
-
 #if defined __cplusplus
 extern "C" {
 #endif

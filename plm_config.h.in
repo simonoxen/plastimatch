@@ -94,10 +94,28 @@
 # else
 #  define plastimatch1_EXPORT __declspec(dllimport)
 # endif
+# ifdef plmcuda_EXPORTS
+#  define plmcuda_EXPORT __declspec(dllexport)
+# else
+#  define plmcuda_EXPORT __declspec(dllimport)
+# endif
+# ifdef plmopencl_EXPORTS
+#  define plmopencl_EXPORT __declspec(dllexport)
+# else
+#  define plmopencl_EXPORT __declspec(dllimport)
+# endif
+# ifdef plmsys_EXPORTS
+#  define plmsys_EXPORT __declspec(dllexport)
+# else
+#  define plmsys_EXPORT __declspec(dllimport)
+# endif
 #else
 /* unix needs nothing */
 #define gpuit_EXPORT 
 #define plastimatch1_EXPORT 
+#define plmcuda_EXPORT
+#define plmopencl_EXPORT
+#define plmsys_EXPORT
 #endif
 
 #undef BUILD_SHARED_LIBS
