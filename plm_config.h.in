@@ -84,20 +84,20 @@
 
 /* This code is for exporting symbols when building DLLs on windows */
 #if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS) || defined (PLM_BUILD_SHARED_LIBS)))
-# ifdef plastimatch1_EXPORTS
-#  define plastimatch1_EXPORT __declspec(dllexport)
-# else
-#  define plastimatch1_EXPORT __declspec(dllimport)
-# endif
 # ifdef gpuit_EXPORTS
 #  define gpuit_EXPORT __declspec(dllexport)
 # else
 #  define gpuit_EXPORT __declspec(dllimport)
 # endif
+# ifdef plastimatch1_EXPORTS
+#  define plastimatch1_EXPORT __declspec(dllexport)
+# else
+#  define plastimatch1_EXPORT __declspec(dllimport)
+# endif
 #else
 /* unix needs nothing */
-#define plastimatch1_EXPORT 
 #define gpuit_EXPORT 
+#define plastimatch1_EXPORT 
 #endif
 
 #undef BUILD_SHARED_LIBS

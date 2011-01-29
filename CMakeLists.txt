@@ -25,57 +25,58 @@ SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 # Building little test programs
-SET (PLM_BUILD_CUDA_TEST OFF CACHE BOOL "Build CUDA test program")
-OPTION (PLM_BUILD_DLIB_TEST "Build plastimatch as shared library" OFF)
-SET (PLM_BUILD_FANN_TEST OFF CACHE BOOL "Build fann test program")
-SET (PLM_BUILD_MEX_TEST OFF CACHE BOOL "Build mex test program")
-SET (PLM_BUILD_NLOPT_TEST OFF CACHE BOOL "Build NLopt test program")
-SET (PLM_BUILD_OPENCL_TEST OFF CACHE BOOL "Build OpenCL test program")
-SET (PLM_BUILD_OPENMP_TEST OFF CACHE BOOL "Build OpenMP test program")
-SET (PLM_BUILD_QT_TEST OFF CACHE BOOL "Build Qt test program")
-SET (PLM_BUILD_RTK OFF CACHE BOOL "Build RTK")
+OPTION (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
+OPTION (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
+OPTION (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
+OPTION (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
+OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
+OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
+OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
+OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 
 # Software options
-SET (PLM_USE_4D_SS_IMAGE OFF CACHE BOOL 
-  "Save structure sets as 4D ITK UCHAR images (in development)")
-SET (PLM_SLICER_HARDCODED_FILENAME OFF CACHE BOOL 
-  "Use hardcoded filename instead of tmpfile()")
+OPTION (PLM_USE_4D_SS_IMAGE 
+  "Save structure sets as 4D ITK UCHAR images (in development)" OFF)
+OPTION (PLM_SLICER_HARDCODED_FILENAME 
+  "Use hardcoded filename instead of tmpfile()" OFF)
 
 # Compile and link options
-SET (PLM_USE_GPU_PLUGINS OFF CACHE BOOL
-  "Build CUDA support as a runtime loaded shared library")
-SET (PLM_BUILD_SLICER_LOADABLE OFF CACHE BOOL 
-  "Build slicer loadable module")
-SET (PLM_INSTALL_RPATH ON CACHE BOOL 
-  "Add full RPATH to install")
-OPTION (BUILD_SHARED_LIBS "Build plastimatch as shared library" OFF)
-SET (PLM_PREFER_F2C OFF CACHE BOOL 
-  "Prefer using f2c over native fortran compiler")
-SET (PLM_PREFER_SYSTEM_F2C ON CACHE BOOL 
-  "Prefer the system f2c over the included f2c")
+OPTION (BUILD_SHARED_LIBS 
+  "Build plastimatch as shared library" OFF)
+OPTION (PLM_BUILD_RTK 
+  "Build RTK" OFF)
+OPTION (PLM_BUILD_SLICER_LOADABLE 
+  "Build slicer loadable module" OFF)
+OPTION (PLM_PREFER_F2C 
+  "Prefer using f2c over native fortran compiler" OFF)
+OPTION (PLM_PREFER_SYSTEM_F2C 
+  "Prefer the system f2c over the included f2c" ON)
+OPTION (PLM_USE_GPU_PLUGINS 
+  "Build CUDA support as a runtime loaded shared library" ON)
 
 # Installer Options
-SET (PLM_OLD_INSTALL_TARGETS OFF CACHE BOOL
-  "Include old install targets such as static link libraries")
-SET (PLM_PACKAGE_32BIT OFF CACHE BOOL
-  "Set this when building 32-bit packages on a 64-bit machine")
+OPTION (PLM_INSTALL_RPATH 
+  "Add full RPATH to install" ON)
+OPTION (PLM_OLD_INSTALL_TARGETS 
+  "Include old install targets such as static link libraries" OFF)
+OPTION (PLM_PACKAGE_32BIT 
+  "Set this when building 32-bit packages on a 64-bit machine" OFF)
 
 # Regression testing
-SET (PLM_BUILD_TESTING ON CACHE BOOL 
-  "Enable regression testing")
-SET (PLM_REDUCED_TESTS OFF CACHE BOOL 
-  "Run fewer tests (used when debugging tests)")
-SET (PLM_TEST_BSPLINE_FLAVORS OFF CACHE BOOL 
-  "Regression tests for seldom used b-spline implementations")
-SET (PLM_TEST_DICOMRT_XIO OFF CACHE BOOL 
-  "Regression test for dicom, dicomrt (downloads extra test data)")
-SET (PLM_TEST_DICOMRT_PINNACLE OFF CACHE BOOL 
-  "Regression test for dicom, dicomrt (downloads extra test data)")
-SET (PLM_TEST_FDK_VARIAN OFF CACHE BOOL 
-  "Regression tests for fdk reconstruction from Varian data (downloads extra test data)")
-SET (PLM_TEST_XIO OFF CACHE BOOL 
-  "Regression tests for xio file exchange (downloads extra test data)")
-
+OPTION (PLM_BUILD_TESTING 
+  "Enable regression testing" ON)
+OPTION (PLM_REDUCED_TESTS 
+  "Run fewer tests (used when debugging tests)" OFF)
+OPTION (PLM_TEST_BSPLINE_FLAVORS 
+  "Regression tests for seldom used b-spline implementations" OFF)
+OPTION (PLM_TEST_DICOMRT_XIO 
+  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
+OPTION (PLM_TEST_DICOMRT_PINNACLE 
+  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
+OPTION (PLM_TEST_FDK_VARIAN 
+  "Regression tests for fdk with Varian data (downloads extra test data)" OFF)
+OPTION (PLM_TEST_XIO 
+  "Regression tests for xio file exchange (downloads extra test data)" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Detect 32-bit or 64-bit machine
@@ -85,13 +86,12 @@ IF (NOT APPLE)
     SET (HAVE_32_BIT TRUE)
     SET (HAVE_64_BIT FALSE)
     MESSAGE (STATUS "Machine is 32-bit")
-  ELSE (CMAKE_SIZEOF_VOID_P EQUAL 4)
+  ELSE ()
     SET (HAVE_32_BIT FALSE)
     SET (HAVE_64_BIT TRUE)
     MESSAGE (STATUS "Machine is 64-bit")
-  ENDIF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-ENDIF (NOT APPLE)
-
+  ENDIF ()
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths
@@ -176,7 +176,7 @@ MACRO (PLM_ADD_SLICER_EXECUTABLE
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
     SET_TARGET_PROPERTIES (${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-  ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+  ENDIF ()
   SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
   SLICER3_INSTALL_PLUGINS (${TARGET_NAME})
 ENDMACRO (PLM_ADD_SLICER_EXECUTABLE)
@@ -234,7 +234,6 @@ ENDIF (UNIX)
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
-
 # C/C++ 32/64
 CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
 CHECK_TYPE_SIZE ("unsigned long"   CMAKE_SIZEOF_ULONG)
@@ -286,7 +285,7 @@ FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 IF (PLM_BUILD_MEX_TEST)
   FIND_PACKAGE (Matlab)
-ENDIF (PLM_BUILD_MEX_TEST)
+ENDIF ()
 FIND_PACKAGE (Octave)
 FIND_PACKAGE (OpenCL)
 FIND_PACKAGE (OpenGL)
@@ -294,7 +293,7 @@ FIND_PACKAGE (OpenMP)
 FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 IF (PLM_BUILD_RTK)
   FIND_PACKAGE (RTK)
-ENDIF (PLM_BUILD_RTK)
+ENDIF ()
 FIND_PACKAGE (SQLite)
 FIND_PACKAGE (SSE)           # SSE Extensions for CPU
 FIND_PACKAGE (Subversion)
@@ -306,9 +305,9 @@ FIND_PACKAGE (wxWidgets)
 IF (QT4_FOUND)
   MESSAGE (STATUS "Looking for Qt4 - found")
   INCLUDE (${QT_USE_FILE})
-ELSE (QT4_FOUND)
+ELSE ()
   MESSAGE (STATUS "Looking for Qt4 - not found")
-ENDIF (QT4_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local sqlite if not found
@@ -317,7 +316,7 @@ IF (NOT SQLITE_FOUND)
   ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
   SET (SQLITE_INCLUDE_DIR libs/sqlite-3.6.21)
   SET (SQLITE_LIBRARIES sqlite3)
-ENDIF (NOT SQLITE_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local liblbfgs if not found
@@ -328,7 +327,7 @@ IF (NOT LIBLBFGS_FOUND)
   SET (LIBLBFGS_LIBRARIES lbfgs)
   LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
   SET (LIBLBFGS_FOUND TRUE)
-ENDIF (NOT LIBLBFGS_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local bstrlib
@@ -359,7 +358,7 @@ IF (CUDA_FOUND)
   CUDA_INCLUDE_DIRECTORIES (
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
-ENDIF (CUDA_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Slicer
@@ -376,7 +375,7 @@ IF (SLICER_FOUND)
     GET_DIRECTORY_PROPERTY (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
     SET_DIRECTORY_PROPERTIES (PROPERTIES INCLUDE_DIRECTORIES
       "${OLD_INCLUDE_DIR}")
-  ENDIF (Slicer_USE_FILE)
+  ENDIF ()
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
@@ -388,8 +387,7 @@ IF (SLICER_FOUND)
   #SET (PLM_BUILD_SHARED_LIBS ON)
 ELSE (SLICER_FOUND)
   MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF (SLICER_FOUND)
-
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
@@ -397,38 +395,38 @@ ENDIF (SLICER_FOUND)
 ##-----------------------------------------------------------------------------
 IF (PLM_INSTALL_RPATH)
   # use, i.e. don't skip the full RPATH for the build tree
-  SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+  SET (CMAKE_SKIP_BUILD_RPATH  FALSE)
 
   # when building, don't use the install RPATH already
   # (but later on when installing)
-  SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+  SET (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
   # the RPATH to be used when installing
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  SET (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
   # add the automatically determined parts of the RPATH
   # which point to directories outside the build tree to the install RPATH
-  SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-ENDIF (PLM_INSTALL_RPATH)
+  SET (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
 ##-----------------------------------------------------------------------------
 IF (wxWidgets_FOUND)
   MESSAGE (STATUS "Looking for wxWidgets - found.")
-ELSE (wxWidgets_FOUND)
+ELSE ()
   MESSAGE (STATUS "Looking for wxWidgets - not found.")
-ENDIF (wxWidgets_FOUND)
+ENDIF ()
 IF (Matlab_FOUND)
   MESSAGE (STATUS "Looking for Matlab - found.")
-ELSE (Matlab_FOUND)
+ELSE ()
   MESSAGE (STATUS "Looking for Matlab - not found.")
-ENDIF (Matlab_FOUND)
+ENDIF ()
 IF (OCTAVE_FOUND)
   MESSAGE (STATUS "Looking for Octave - found.")
-ELSE (OCTAVE_FOUND)
+ELSE ()
   MESSAGE (STATUS "Looking for Octave - not found.")
-ENDIF (OCTAVE_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
@@ -439,8 +437,7 @@ IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
   SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
   SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
   SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 # JAS 10.28.2010
@@ -458,19 +455,7 @@ ENDIF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
     SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-ENDIF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-
-##-----------------------------------------------------------------------------
-##  Set default build type to "Release"
-##-----------------------------------------------------------------------------
-##  Unfortunately the below doesn't work.  It gets
-##  reset by the ITK include.
-##-----------------------------------------------------------------------------
-#IF (NOT CMAKE_BUILD_TYPE)
-#  SET (CMAKE_BUILD_TYPE Release CACHE STRING
-#      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."	
-#      FORCE)
-#ENDIF (NOT CMAKE_BUILD_TYPE)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
@@ -490,15 +475,15 @@ IF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     IF (${svn_result} EQUAL 0)
       MESSAGE(STATUS "Looking for version in svn - found")
       SET (PLASTIMATCH_SVN_VERSION ${svn_version})
-    ELSE (${svn_result} EQUAL 0)
+    ELSE ()
       MESSAGE(STATUS "Looking for version in svn - can't connect")
-    ENDIF (${svn_result} EQUAL 0)
-  ELSE (Subversion_FOUND)
+    ENDIF ()
+  ELSE ()
     MESSAGE(STATUS "Looking for version in svn - svn not found")
-  ENDIF (Subversion_FOUND)
-ELSE (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  ENDIF ()
+ELSE ()
   SET (PLASTIMATCH_EXPERIMENTAL FALSE)
-ENDIF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  ITK LIBRARY
@@ -511,12 +496,12 @@ IF (ITK_FOUND)
   IF (NOT ITK_USE_REVIEW)
     MESSAGE (FATAL_ERROR 
       "\nFatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
-  ENDIF (NOT ITK_USE_REVIEW)
+  ENDIF ()
 IF (ITK_USE_SYSTEM_GDCM)
     MESSAGE (FATAL_ERROR 
       "\nFatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
-  ENDIF (ITK_USE_SYSTEM_GDCM)
-ENDIF (ITK_FOUND)
+  ENDIF ()
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
@@ -529,8 +514,8 @@ IF (wxWidgets_FOUND)
       PROPERTIES COMPILE_FLAGS 
       ${wxWidgets_CXX_FLAGS}
       )
-  ENDIF (wxWidgets_CXX_FLAGS)
-ENDIF (wxWidgets_FOUND)
+  ENDIF ()
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  DCMTK LIBRARY
@@ -538,7 +523,7 @@ ENDIF (wxWidgets_FOUND)
 SET (DCMTK_HAVE_CONFIG_H FALSE)
 IF (UNIX)
   SET (DCMTK_HAVE_CONFIG_H TRUE)
-ENDIF (UNIX)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Figure out library dependencies
@@ -562,9 +547,8 @@ IF (BROOK_FOUND)
     ${OPENGL_LIBRARIES}
     ${DIRECTX_LIBRARIES}
     )
-ENDIF (BROOK_FOUND)
+ENDIF ()
 
-# Optional
 # -----------------------------------------------
 # JAS 2010.11.19
 # New CUDA plugin stuff
@@ -579,21 +563,21 @@ IF (CUDA_FOUND)
         # shared library: cuda extensions
         # we tell windows to "delay load" this
       )
-    ELSE (WIN32)
+    ELSE ()
       # Linux
       SET (GPUIT_LIBRARY_DEPENDENCIES
         ${GPUIT_LIBRARY_DEPENDENCIES}
         # In linux we use dlfcn.h to load plmcula
         # in the code @ runtime.
       )
-    ENDIF (WIN32)
-  ELSE (PLM_USE_GPU_PLUGINS)    # << use static linking
+    ENDIF ()
+  ELSE ()    # << use static linking
     SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       ${CUDA_LIBRARIES}
     )
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ENDIF (CUDA_FOUND)
+  ENDIF ()
+ENDIF ()
 
 # -----------------------------------------------
 # JAS 2011.01.13
@@ -609,28 +593,27 @@ IF (OPENCL_FOUND)
         # shared library: cuda extensions
         # we tell windows to "delay load" this
       )
-    ELSE (WIN32)
+    ELSE ()
       # Linux
       SET (GPUIT_LIBRARY_DEPENDENCIES
         ${GPUIT_LIBRARY_DEPENDENCIES}
         # In linux we use delayload.h to load plmopencl
         # in the code @ runtime.
       )
-    ENDIF (WIN32)
-  ELSE (PLM_USE_GPU_PLUGINS)    # << use static linking
+    ENDIF ()
+  ELSE ()    # << use static linking
     SET (GPUIT_LIBRARY_DEPENDENCIES
       ${GPUIT_LIBRARY_DEPENDENCIES}
       ${OPENCL_LIBRARIES}
     )
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ENDIF (OPENCL_FOUND)
+  ENDIF ()
+ENDIF ()
 
-# Optional
 IF (FFTW_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES 
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${FFTW_LIBRARIES})
-ENDIF (FFTW_FOUND)
+ENDIF ()
 
 # Required - your choice: fortran or f2c
 IF (PLM_USE_F2C)
@@ -643,10 +626,10 @@ IF (PLM_USE_F2C)
       ${GPUIT_LIBRARY_DEPENDENCIES}
       f2c_helper
       )
-  ENDIF (UNIX)
+  ENDIF ()
   # Apparently the below is not needed.
   # LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/libf2c)
-ELSE (PLM_USE_F2C)
+ELSE ()
   # It would seem that mixed-language programs need to set compiler and 
   # linker flags manually
   #   http://www.vtk.org/Wiki/CMakeForFortranExample
@@ -659,9 +642,8 @@ ELSE (PLM_USE_F2C)
       ${GPUIT_LIBRARY_DEPENDENCIES}
       gfortran
       )
-  ENDIF (Fortran_COMPILER_NAME STREQUAL "gfortran" 
-    OR Fortran_COMPILER_NAME STREQUAL "f95")
-ENDIF (PLM_USE_F2C)
+  ENDIF ()
+ENDIF ()
 
 CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
 IF (NOT HAVE_GETOPT_LONG)
@@ -672,7 +654,6 @@ IF (NOT HAVE_GETOPT_LONG)
     )
 ENDIF ()
 
-# Optional
 IF (NLOPT_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
@@ -680,15 +661,13 @@ IF (NLOPT_FOUND)
     )
 ENDIF (NLOPT_FOUND)
 
-# Optional
 IF (OPENMP_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${OPENMP_LIBRARIES}
     )
-ENDIF (OPENMP_FOUND)
+ENDIF ()
 
-# Required
 SET (GPUIT_LIBRARY_DEPENDENCIES
   ${GPUIT_LIBRARY_DEPENDENCIES}
   ${MATH_LIB}
@@ -716,7 +695,7 @@ IF (BROOK_FOUND)
   BRCC_FILE(toy_kernels.br)
   SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
-ENDIF (BROOK_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  GPUIT/PLASTIMATCH SOURCE FILES
@@ -784,7 +763,7 @@ IF (BROOK_FOUND)
     convolution_brook_kernel_wrap.cpp
     convolution_brook_kernel.h
     )
-ENDIF (BROOK_FOUND)
+ENDIF ()
 
 IF (CUDA_FOUND)
   IF (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
@@ -840,7 +819,7 @@ IF (CUDA_FOUND)
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
     )
-  ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
+  ELSE ()        # << Static linking
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       bspline_cuda.cpp
@@ -884,15 +863,15 @@ IF (CUDA_FOUND)
       fdk_cuda_p.h
       fdk_cuda.h
     )
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ENDIF (CUDA_FOUND)
+  ENDIF ()
+ENDIF ()
 
 IF (FFTW_FOUND)
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ramp_filter.c ramp_filter.h
    )
-ENDIF (FFTW_FOUND)
+ENDIF ()
 
 ## Define OpenCL Plugin (plmopencl)
 IF (OPENCL_FOUND)
@@ -964,7 +943,7 @@ IF (OPENCL_FOUND)
         LIBRARY DESTINATION lib
     )
 
-  ELSE (PLM_USE_GPU_PLUGINS)        # << Static linking
+  ELSE ()        # << Static linking
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
@@ -976,7 +955,7 @@ IF (OPENCL_FOUND)
     PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
     PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
 
-  ENDIF (PLM_USE_GPU_PLUGINS)
+  ENDIF ()
 
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
@@ -987,7 +966,7 @@ IF (OPENCL_FOUND)
     )
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
 
-ENDIF (OPENCL_FOUND)
+ENDIF ()
 
 
 SET (GPUIT_LIBRARY_SRC
@@ -999,10 +978,11 @@ IF (F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC
     main__.c
     )
-ENDIF (F2C_LIBRARY)
+ENDIF ()
 
 SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
+  cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
   cxt_to_mha.cxx cxt_to_mha.h 
   demographics.cxx demographics.h 
@@ -1072,12 +1052,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   xform_point.cxx xform_point.h 
   )
 
-IF (ITK_USE_REVIEW)
-  SET (PLASTIMATCH_LIBRARY_SRC
-    ${PLASTIMATCH_LIBRARY_SRC}
-    cxt_extract.cxx cxt_extract.h)
-ENDIF (ITK_USE_REVIEW)
-
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
@@ -1111,7 +1085,7 @@ IF (CUDA_FOUND)
     ${CUDA_PROBE_SRC}
     ${CUDA_PROBE_WRAPPERS}
     )
-ENDIF (CUDA_FOUND)
+ENDIF ()
 SET (DEMONS_SRC
   demons_main.c
   demons_opts.c demons_opts.h
@@ -1148,7 +1122,7 @@ IF (BROOK_FOUND)
     fdk_brook.cpp
     fdk_brook_kernel.br
     )
-ENDIF (BROOK_FOUND)
+ENDIF ()
 
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
@@ -1181,7 +1155,7 @@ SET (OPENCL_PROBE_SRC
   )
 IF (OPENCL_FOUND)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
-ENDIF (OPENCL_FOUND)
+ENDIF ()
 WRAP_GGO (pcmd_segment_body_GGO_C pcmd_segment_body.ggo)
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
@@ -1252,7 +1226,7 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
     pqt_data_source_dialog.ui
     pqt_main_window.ui
     )
-ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
+ENDIF ()
 SET (PROTON_DOSE_SRC
   proton_dose_main.c 
   proton_dose_opts.c proton_dose_opts.h
@@ -1296,7 +1270,7 @@ IF (OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 
-ENDIF (OPENMP_FOUND)
+ENDIF ()
 
 IF (SSE2_FOUND)
 # JAS 08.19.2010 - Unfortunately, this doesn't work.
@@ -1309,9 +1283,10 @@ IF (SSE2_FOUND)
     GET_SOURCE_FILE_PROPERTY(OLD_FLAGS bspline.c COMPILE_FLAGS)
     IF (OLD_FLAGS MATCHES "NONE")
         SET(OLD_FLAGS "")
-    ENDIF (OLD_FLAGS MATCHES "NONE")
-    SET_SOURCE_FILES_PROPERTIES(bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
-ENDIF (SSE2_FOUND)
+    ENDIF ()
+    SET_SOURCE_FILES_PROPERTIES (
+      bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
@@ -1324,11 +1299,6 @@ CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_api_config.h.in
 
 CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
-
-IF (CMAKE_Fortran_COMPILER_WORKS)
-  ##  Ideally I should do this if there is a real fortran compiler.
-  ##  create_fortran_c_interface ("" setulb(int i) ${CMAKE_CURRENT_BINARY_DIR}/plm_f2c.h)
-ENDIF (CMAKE_Fortran_COMPILER_WORKS)
 
 ##-----------------------------------------------------------------------------
 ##  INCLUDE DIRECTORIES
@@ -1347,16 +1317,16 @@ INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 
 IF (BROOK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
-ENDIF (BROOK_FOUND)
+ENDIF ()
 
 IF (CUDA_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS})
   ##INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
-ENDIF (CUDA_FOUND)
+ENDIF ()
 
 IF (DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
-ENDIF (DCMTK_FOUND)
+ENDIF ()
 
 IF (DLIB_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DLIB_INCLUDE_DIR})
@@ -1365,7 +1335,7 @@ ENDIF ()
 IF (FFTW_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
   LINK_DIRECTORIES (${FFTW_DIR})
-ENDIF (FFTW_FOUND)
+ENDIF ()
 
 IF (NOT HAVE_GETOPT_LONG)
   INCLUDE_DIRECTORIES (AFTER "${CMAKE_SOURCE_DIR}/libs/getopt")
@@ -1373,36 +1343,34 @@ ENDIF ()
 
 IF (OPENCL_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
-ENDIF (OPENCL_FOUND)
+ENDIF ()
 
 IF (MATLAB_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${MATLAB_INCLUDE_DIRS})
-ENDIF (MATLAB_FOUND)
+ENDIF ()
 
 IF (PANTHEIOS_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
   INCLUDE_DIRECTORIES (AFTER ${PANTHEIOS_INCLUDE_DIR})
-ENDIF (PANTHEIOS_FOUND)
+ENDIF ()
 
 IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
-ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
-
+ENDIF ()
 
 IF (SLICER_FOUND)
-  MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Libs_INCLUDE_DIRS}")
-  MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Base_INCLUDE_DIRS}")
+  #MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Libs_INCLUDE_DIRS}")
+  #MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Base_INCLUDE_DIRS}")
   INCLUDE_DIRECTORIES (AFTER
     ${SLICER_INCLUDE_DIRS}
     #${Slicer_Libs_INCLUDE_DIRS}
     #${Slicer_Base_INCLUDE_DIRS}
     )
-ENDIF (SLICER_FOUND)
+ENDIF ()
 
 IF (wxWidgets_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
-ENDIF (wxWidgets_FOUND)
-
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
@@ -1432,17 +1400,17 @@ IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
       "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:plmcuda.dll /DELAYLOAD:plmopencl.dll")
-  ELSE (PLM_USE_GPU_PLUGINS)
+  ELSE ()
     SET (GPUIT_LIB_LDFLAGS 
       "${GPUIT_LIB_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
     SET (PLMCUDA_EXE_LDFLAGS 
       "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
-  ENDIF (PLM_USE_GPU_PLUGINS)
-ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  ENDIF ()
+ELSE ()
   SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
   SET (GPUIT_EXE_LDFLAGS "${GPUIT_EXE_LDFLAGS} -ldl")
   SET (PLMCUDA_EXE_LDFLAGS "${PLMCUDA_EXE_LDFLAGS} -ldl")
-ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
+ENDIF ()
 MESSAGE (STATUS "GPUIT_LIB_LDFLAGS: ${GPUIT_LIB_LDFLAGS}")
 MESSAGE (STATUS "GPUIT_EXE_LDFLAGS: ${GPUIT_EXE_LDFLAGS}")
 MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
@@ -1452,7 +1420,7 @@ MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 IF (F2C_LIBRARY AND UNIX)
   PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
-ENDIF (F2C_LIBRARY AND UNIX)
+ENDIF ()
 
 PLM_ADD_LIBRARY (
   gpuit 
@@ -1466,11 +1434,11 @@ PLM_ADD_LIBRARY (
 IF (PLM_USE_GPU_PLUGINS)
   IF (CUDA_FOUND)
     ADD_DEPENDENCIES (gpuit plmcuda)
-  ENDIF (CUDA_FOUND)
+  ENDIF ()
   IF (OPENCL_FOUND)
     ADD_DEPENDENCIES (gpuit plmopencl)
-  ENDIF (OPENCL_FOUND)
-ENDIF (PLM_USE_GPU_PLUGINS)
+  ENDIF ()
+ENDIF ()
 
 IF (ITK_FOUND)
   ## Despite claims to the contrary, you are not allowed to have a library
@@ -1483,7 +1451,7 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBRARY_SRC}"
     "${PLASTIMATCH_LIBRARY_DEPENDENCIES}"
     "")
-ENDIF (ITK_FOUND)
+ENDIF ()
 
 IF (WIN32 AND SLICER_FOUND)
   # The slicer plugin on windows can't find its dll easily.  Copy these 
@@ -1514,13 +1482,11 @@ IF (WIN32 AND SLICER_FOUND)
     "${OUTDIR}/gpuit.dll"
     DEPENDS gpuit
     )
-ENDIF (WIN32 AND SLICER_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-
-# Executable Target Definitions
 PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
@@ -1544,10 +1510,8 @@ IF (ITK_FOUND)
   MESSAGE (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  IF (ITK_USE_REVIEW)
-    PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  ENDIF (ITK_USE_REVIEW)
+  PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
 
   PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
@@ -1557,10 +1521,8 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  IF (ITK_USE_REVIEW)
-    PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  ENDIF (ITK_USE_REVIEW)
+  PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (itk_tps_warp "${ITK_TPS_WARP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (mask_mha "${MASK_MHA_SRC}"
@@ -1580,19 +1542,16 @@ IF (ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_export
       "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
- #  PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-tps 
- #   "${PLASTIMATCH_SLICER_TPS_SRC}" "${PLASTIMATCH_LIBS}" 
- #  "${GPUIT_EXE_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-landwarp 
       "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
-  ENDIF (SLICER_FOUND)
+  ENDIF ()
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
     PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
-  ENDIF (QT4_FOUND AND QT_QTSQL_FOUND)
+  ENDIF ()
   PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
@@ -1609,7 +1568,7 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-ENDIF (ITK_FOUND)
+ENDIF ()
 
 # executables that require cuda
 IF (CUDA_FOUND)
@@ -1692,8 +1651,7 @@ IF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
       #      ${PLASTIMATCH_LIBS})
     SLICER3_INSTALL_MODULES (PlastimatchLoadable)
   ENDIF (COMMENTOUT)
-
-ENDIF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Additional install files
@@ -1702,7 +1660,7 @@ IF (ITK_FOUND)
   IF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
   ENDIF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
-ENDIF (ITK_FOUND)
+ENDIF ()
 
 IF (CUDA_FOUND)
   IF (UNIX)
@@ -1713,21 +1671,21 @@ IF (CUDA_FOUND)
     IF (HAVE_32_BIT)
       IF (EXISTS "${CUDART_LINUX32}")
         SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
-      ENDIF (EXISTS "${CUDART_LINUX32}")
-    ENDIF (HAVE_32_BIT)
+      ENDIF ()
+    ENDIF ()
 
     IF (HAVE_64_BIT)
       IF (EXISTS "${CUDART_LINUX64}")
         SET (CUDART_FILE_SRC "${CUDART_LINUX64}")
-      ENDIF (EXISTS "${CUDART_LINUX64}")
-    ENDIF (HAVE_64_BIT)
+      ENDIF ()
+    ENDIF ()
 
     # Override for packagers building 32-bit packages on 64-bit machine
     IF (PLM_PACKAGE_32BIT)
       IF (EXISTS "${CUDART_LINUX32}")
         SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
-      ENDIF (EXISTS "${CUDART_LINUX32}")
-    ENDIF (PLM_PACKAGE_32BIT)
+      ENDIF ()
+    ENDIF ()
 
     # Hard code to cuda 3.0 (runtime 3.0.14).  Note, we copy it first, because
     # otherwise CMake 2.6 will install a broken symbolic link
@@ -1737,49 +1695,49 @@ IF (CUDA_FOUND)
         ${CMAKE_COMMAND} "-E" "copy" 
 	    "${CUDART_FILE_SRC}" "${CUDART_FILE}"
       )
-    ENDIF (EXISTS "${CUDART_FILE_SRC}")
-  ELSE (UNIX)
+    ENDIF ()
+  ELSE ()
     SET (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
     SET (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
 
     IF (HAVE_32_BIT)
       IF (EXISTS "${CUDART_WIN32}")
         SET (CUDART_FILE "${CUDART_WIN32}")
-      ENDIF (EXISTS "${CUDART_WIN32}")
-    ENDIF (HAVE_32_BIT)
+      ENDIF ()
+    ENDIF ()
 
     IF (HAVE_64_BIT)
       IF (EXISTS "${CUDART_WIN64}")
         SET (CUDART_FILE "${CUDART_WIN64}")
-      ENDIF (EXISTS "${CUDART_WIN64}")
-    ENDIF (HAVE_64_BIT)
+      ENDIF ()
+    ENDIF ()
 
     # Override for packagers building 32-bit packages on 64-bit machine
     IF (PLM_PACKAGE_32BIT)
       IF (EXISTS "${CUDART_WIN32}")
         SET (CUDART_FILE_SRC "${CUDART_WIN32}")
-      ENDIF (EXISTS "${CUDART_WIN32}")
-    ENDIF (PLM_PACKAGE_32BIT)
-  ENDIF (UNIX)
+      ENDIF ()
+    ENDIF ()
+  ENDIF ()
 
   IF (EXISTS "${CUDART_FILE}")
     IF (UNIX)
       INSTALL (FILES "${CUDART_FILE}" DESTINATION lib)
-    ELSE (UNIX)
+    ELSE ()
       INSTALL (FILES "${CUDART_FILE}" DESTINATION bin)
-    ENDIF (UNIX)
+    ENDIF ()
 
     IF (BUILD_AGAINST_SLICER3)
       INSTALL (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
-    ENDIF (BUILD_AGAINST_SLICER3)
-  ENDIF (EXISTS "${CUDART_FILE}")
-ENDIF (CUDA_FOUND)
+    ENDIF ()
+  ENDIF ()
+ENDIF ()
 
 IF (FFTW_FOUND)
   IF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
     INSTALL (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
-  ENDIF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
-ENDIF (FFTW_FOUND)
+  ENDIF ()
+ENDIF ()
 
 ## JAS 2011.01.24
 ## I have moved the documentation DESTINATION from
@@ -1788,10 +1746,10 @@ IF (NOT BUILD_AGAINST_SLICER3)
   IF (UNIX)
     # FHS compliant path for Linux/UNIX
     SET(DOC_DESTINATION "share/doc/plastimatch")
-  ELSE (UNIX)
+  ELSE ()
     # Just throw TXTs into a doc folder for Windows
     SET(DOC_DESTINATION "doc")
-  ENDIF (UNIX)
+  ENDIF ()
 
   INSTALL (FILES 
     COPYRIGHT.TXT
@@ -1802,7 +1760,7 @@ IF (NOT BUILD_AGAINST_SLICER3)
     REGISTRATION.TXT
     DESTINATION ${DOC_DESTINATION}
   )
-ENDIF (NOT BUILD_AGAINST_SLICER3)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Simple test files
@@ -1845,7 +1803,7 @@ IF (PLM_BUILD_MEX_TEST)
       DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
     ADD_CUSTOM_TARGET (oct_mex_test
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
-  ENDIF (OCTAVE_FOUND)
+  ENDIF ()
   IF (MATLAB_FOUND)
     FILE (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
       "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
@@ -1862,8 +1820,8 @@ IF (PLM_BUILD_MEX_TEST)
     ADD_CUSTOM_TARGET (mat_mex_test
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
     TARGET_LINK_LIBRARIES (mex_test ${MATLAB_LIBRARIES})
-  ENDIF (MATLAB_FOUND)
-ENDIF (PLM_BUILD_MEX_TEST)
+  ENDIF ()
+ENDIF ()
 
 # Test executable -- nlopt
 IF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
@@ -1873,7 +1831,7 @@ IF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
   PLM_ADD_EXECUTABLE (nlopt_test "${NLOPT_TEST_SRC}" "${NLOPT_TEST_LIBS}" 
     "${OPENMP_LDFLAGS}" 0)
   SET_TARGET_PROPERTIES (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
-ENDIF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
+ENDIF ()
 
 # Test executable -- opencl
 IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
@@ -1894,20 +1852,20 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
     "${CMAKE_SOURCE_DIR}/opencl_test.cl" 
     "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     DEPENDS "${CMAKE_SOURCE_DIR}/opencl_test.cl")
-ENDIF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
+ENDIF ()
 
 # Test executable -- openmp
 IF (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
   SET (OPENMP_TEST_SRC openmp_test.c)
   PLM_ADD_EXECUTABLE (openmp_test "${OPENMP_TEST_SRC}" "${GPUIT_LIBRARIES}" 
     "${OPENMP_LDFLAGS}" 0)
-ENDIF (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
+ENDIF ()
 
 # Test executable -- qt
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
   PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
-ENDIF (PLM_BUILD_QT_TEST AND QT4_FOUND)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
@@ -1935,14 +1893,14 @@ IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
      -DPLM_PLASTIMATCH_PATH=${PLM_PLASTIMATCH_PATH})
   SET (PLM_FFTW_PATH_HACK 
      -DPLM_FFTW_PATH=${PLM_FFTW_PATH})
-ELSE (WIN32 AND NOT CYGWIN AND NOT MINGW)
+ELSE ()
   SET (PLM_PLASTIMATCH_PATH ${CMAKE_CURRENT_BINARY_DIR})
   SET (PLM_PLASTIMATCH_TESTING_PATH ${CMAKE_CURRENT_BINARY_DIR}/Testing)
   SET (PLM_FFTW_PATH "${FFTW_DIR}")
   SET (PLM_ITK_LIBRARY_PATH_HACK "")
   SET (PLM_PLASTIMATCH_PATH_HACK "")
   SET (PLM_FFTW_PATH_HACK "")
-ENDIF (WIN32 AND NOT CYGWIN AND NOT MINGW)
+ENDIF ()
 
 MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
   ADD_TEST (${TESTNAME} ${CMAKE_COMMAND} 
@@ -1957,7 +1915,7 @@ MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     "-DPARMS=${PARMS}"
     -P ${CMAKE_SOURCE_DIR}/RUN_CTEST.cmake
     )
-ENDMACRO (PLM_ADD_TEST)
+ENDMACRO ()
 
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
@@ -1980,8 +1938,7 @@ IF (PLM_BUILD_TESTING)
     "${CMAKE_SOURCE_DIR}/run_lcov.sh" 
     "${CMAKE_BINARY_DIR}/run_lcov.sh"
     COPYONLY)
-
-ENDIF (PLM_BUILD_TESTING)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  CPACK stuff
@@ -2006,17 +1963,18 @@ SET (CPACK_SOURCE_GENERATOR "TBZ2")
 SET (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
 IF (PLM_PACKAGE_32BIT)
   SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-ELSE (PLM_PACKAGE_32BIT)
+ELSE ()
   IF (HAVE_32_BIT)
     SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-  ELSE (HAVE_32_BIT)
+  ELSE ()
     SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  ENDIF (HAVE_32_BIT)
-ENDIF (PLM_PACKAGE_32BIT)
+  ENDIF ()
+ENDIF ()
 #SET (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
 SET (CPACK_DEBIAN_PACKAGE_SECTION "science")
 SET (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
-SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION "plastimatch\n Plastimatch is an open source software for deformable image
+SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
+  "plastimatch\n Plastimatch is an open source software for deformable image
     registration. It is designed for high-performance volumetric registration
     of medical images, such as X-ray computed tomography, magnetic resonance
     imaging, and positron emission tomography."
