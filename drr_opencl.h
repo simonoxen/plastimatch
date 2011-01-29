@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-plmopencl_EXPORT
+gpuit_EXPORT
 void*
 drr_opencl_state_create (
     Proj_image *proj,
@@ -23,11 +23,11 @@ drr_opencl_state_create (
     Drr_options *options
 );
 
-plmopencl_EXPORT
+gpuit_EXPORT
 void
 drr_opencl_state_destroy (void *dev_state);
 
-plmopencl_EXPORT
+gpuit_EXPORT
 void
 drr_opencl_ray_trace_image (
     Proj_image *proj, 

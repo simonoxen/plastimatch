@@ -37,42 +37,42 @@ struct opencl_device {
 extern "C" {
 #endif
 
-gpuit_EXPORT
+plmopencl_EXPORT
 cl_platform_id
 opencl_select_platform (void);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_print_devices (void);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 cl_int
 opencl_open_device (Opencl_device *ocl_dev);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_close_device (Opencl_device *ocl_dev);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 cl_ulong
 opencl_timer (cl_event &event);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_check_error (cl_int return_code, const char *msg);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_load_programs (
     Opencl_device *ocl_dev, 
     const char* filename
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void 
 opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program);
 
-gpuit_EXPORT
+plmopencl_EXPORT
 Opencl_buf* 
 opencl_buf_create (
     Opencl_device *ocl_dev, 
@@ -81,7 +81,7 @@ opencl_buf_create (
     void *buffer
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_buf_read (
     Opencl_device *ocl_dev, 
@@ -90,7 +90,7 @@ opencl_buf_read (
     void *buffer
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_buf_write (
     Opencl_device *ocl_dev, 
@@ -99,21 +99,21 @@ opencl_buf_write (
     void *buffer
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_kernel_create (
     Opencl_device *ocl_dev, 
     const char *kernel_name
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_set_kernel_args (
     Opencl_device *ocl_dev, 
     ...
 );
 
-gpuit_EXPORT
+plmopencl_EXPORT
 void
 opencl_kernel_enqueue (
     Opencl_device *ocl_dev, 

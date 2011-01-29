@@ -9,9 +9,9 @@
 #if defined __cplusplus
 extern "C" {
 #endif
-gpuit_EXPORT 
+plmsys_EXPORT 
 void print_and_wait (char* prompt_fmt, ...);
-gpuit_EXPORT 
+plmsys_EXPORT 
 void print_and_exit (char* prompt_fmt, ...);
 #if defined __cplusplus
 }

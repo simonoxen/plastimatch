@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-plmopencl_EXPORT
+gpuit_EXPORT
 void
 OPENCL_reconstruct_conebeam_and_convert_to_hu (
         Volume *vol,
@@ -22,7 +22,7 @@ OPENCL_reconstruct_conebeam_and_convert_to_hu (
         Fdk_options *options
 );
 
-plmopencl_EXPORT
+gpuit_EXPORT
 void 
 opencl_reconstruct_conebeam (
     Volume *vol, 

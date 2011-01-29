@@ -2,11 +2,9 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include "bstring_util.h"
 #include "file_util.h"
 #include "opencl_util.h"
@@ -14,7 +12,6 @@
 #include "print_and_exit.h"
 #include "delayload.h"
 #include "delayload_opencl.h"
-
 
 void
 opencl_device_info (

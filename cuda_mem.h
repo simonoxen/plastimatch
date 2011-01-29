@@ -33,7 +33,7 @@ enum cuda_alloc_fail_mode {
 extern "C" {
 #endif
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_alloc_copy (
     void** gpu_addr,
     void** cpu_addr,
@@ -41,39 +41,39 @@ CUDA_alloc_copy (
     enum cuda_alloc_copy_mode mode
 );
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_init_vmem (Vmem_Entry** head);
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_alloc_vmem (
     void** gpu_addr,
     size_t mem_size,
     Vmem_Entry** head
 );
 
-gpuit_EXPORT size_t
+plmcuda_EXPORT size_t
 CUDA_tally_vmem (Vmem_Entry** head);
 
-gpuit_EXPORT void
+plmcuda_EXPORT void
 CUDA_print_vmem (Vmem_Entry** head);
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_free_vmem (
     void* gpu_pointer,
     Vmem_Entry** head
 );
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_freeall_vmem (Vmem_Entry** head);
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_alloc_zero (
     void** gpu_addr,
     size_t mem_size,
     enum cuda_alloc_fail_mode fail_mode
 );
 
-gpuit_EXPORT int
+plmcuda_EXPORT int
 CUDA_zero_copy_check (int gpuid);
 
 

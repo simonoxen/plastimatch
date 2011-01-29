@@ -528,14 +528,14 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
-SET (GPUIT_LIBRARY_DEPENDENCIES "")
-
-# Required
-SET (GPUIT_LIBRARY_DEPENDENCIES
-  ${GPUIT_LIBRARY_DEPENDENCIES}
-  ${LIBLBFGS_LIBRARIES}
+SET (PLMSYS_LIBRARY_DEPENDENCIES 
   bstrlib
+  )
+
+SET (GPUIT_LIBRARY_DEPENDENCIES 
+  ${LIBLBFGS_LIBRARIES}
   nocedal
+  plmsys
   specfun
   )
 
@@ -549,10 +549,8 @@ IF (BROOK_FOUND)
     )
 ENDIF ()
 
-# -----------------------------------------------
 # JAS 2010.11.19
 # New CUDA plugin stuff
-# -----------------------------------------------
 IF (CUDA_FOUND)
   IF (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
     IF (WIN32)
@@ -579,10 +577,8 @@ IF (CUDA_FOUND)
   ENDIF ()
 ENDIF ()
 
-# -----------------------------------------------
 # JAS 2011.01.13
 # New OpenCL plugin stuff (plmopencl)
-# -----------------------------------------------
 IF (OPENCL_FOUND)
   IF (PLM_USE_GPU_PLUGINS)      # << Use dynamic loading
     IF (WIN32)
@@ -698,8 +694,15 @@ IF (BROOK_FOUND)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  GPUIT/PLASTIMATCH SOURCE FILES
+##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
+SET (PLMSYS_LIBRARY_SRC
+  file_util.cxx file_util.h
+  logfile.c logfile.h
+  plm_timer.c plm_timer.h
+  print_and_exit.c print_and_exit.h 
+  )
+
 SET (GPUIT_LIBRARY_SRC
   bowtie_correction.c bowtie_correction.h
   bstring_util.cxx bstring_util.h
@@ -708,6 +711,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_macros.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h
   bspline_optimize.c bspline_optimize.h
+  bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
   bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
   bspline_optimize_nlopt.c bspline_optimize_nlopt.h
   bspline_optimize_steepest.c bspline_optimize_steepest.h
@@ -721,15 +725,12 @@ SET (GPUIT_LIBRARY_SRC
   drr.c drr.h
   drr_trilin.c drr_trilin.h
   fdk.c fdk.h
-  file_util.cxx file_util.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
-  logfile.c logfile.h
   math_util.h
   mha_io.c mha_io.h
   rpl_volume.c rpl_volume.h
   pointset.c pointset.h 
-  print_and_exit.c print_and_exit.h 
   proj_image.c proj_image.h
   proj_image_dir.c proj_image_dir.h
   proj_matrix.c proj_matrix.h 
@@ -738,19 +739,12 @@ SET (GPUIT_LIBRARY_SRC
   ray_trace_uniform.c ray_trace_uniform.h 
   string_util.c string_util.h
   threading.c threading.h
-  plm_timer.c plm_timer.h
   vf.c vf.h
   vf_stats.c vf_stats.h 
   volume.c volume.h
   volume_limit.c volume_limit.h
   xpm.c xpm.h
   )
-
-SET (FDK_SRC
-  fdk_main.c 
-  fdk_opts.c fdk_opts.h
-  fdk_util.c fdk_util.h
-)
 
 IF (BROOK_FOUND)
   SET (GPUIT_LIBRARY_SRC
@@ -766,54 +760,30 @@ IF (BROOK_FOUND)
 ENDIF ()
 
 IF (CUDA_FOUND)
-  IF (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
-    SET (PLM_CUDA_BSPLINE_SRC
-      bspline_cuda.cpp
-      bspline_cuda.cu
-      bspline_cuda.h
-      plm_timer.c         # for bspline_cuda.cpp
-      plm_timer.h         # for bspline_cuda.cpp
-      logfile.c           # for bspline_cuda.cpp
-      logfile.h           # for bspline_cuda.cpp
+  SET (PLMCUDA_LIBRARY_SRC
+    bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
+    cuda_kernel_util.cu cuda_kernel_util.h
+    cuda_mem.cu cuda_mem.h
+    cuda_util.cu cuda_util.h
+    demons_cuda.cu demons_misc.c demons_misc.h
+    drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
+    fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
     )
-    SET (PLM_CUDA_DEMONS_SRC
-      demons_cuda.cu
-      demons_misc.c
-      demons_misc.h
+
+  IF (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
+    SET (PLMCUDA_LIBRARY_SRC
+      ${PLMCUDA_LIBRARY_SRC}
       volume.c            # for demons_cuda.cu
       volume.h            # for demons_cuda.cu
-      print_and_exit.c    # for volume.c
-      print_and_exit.h    # for volume.c
     )
-    SET (PLM_CUDA_DRR_SRC
-      drr_cuda.cpp 
-      drr_cuda.cu 
-      drr_cuda.h 
-      drr_cuda_p.h 
-    )
-    SET (PLM_CUDA_FDK_SRC
-      fdk_cuda.cpp 
-      fdk_cuda.cu 
-      fdk_cuda_p.h
-      fdk_cuda.h
-    )
-    SET (PLM_CUDA_COMMON
-      cuda_util.cu
-      cuda_util.h
-      cuda_kernel_util.cu
-      cuda_kernel_util.h
-      cuda_mem.cu
-      cuda_mem.h
-    )
-    SET (PLM_CUDA_LIBRARY_SRC
-      ${PLM_CUDA_BSPLINE_SRC}
-      ${PLM_CUDA_DEMONS_SRC}
-      ${PLM_CUDA_DRR_SRC}
-      ${PLM_CUDA_FDK_SRC}
-      ${PLM_CUDA_COMMON}
+    SET (PLMCUDA_LIBRARY_DEPENDENCIES
+      plmsys
     )
     CUDA_ADD_LIBRARY (plmcuda SHARED
-        ${PLM_CUDA_LIBRARY_SRC}
+        ${PLMCUDA_LIBRARY_SRC}
+    )
+    TARGET_LINK_LIBRARIES (plmcuda
+        ${PLMCUDA_LIBRARY_DEPENDENCIES}
     )
     INSTALL (TARGETS plmcuda
         RUNTIME DESTINATION bin
@@ -822,47 +792,21 @@ IF (CUDA_FOUND)
   ELSE ()        # << Static linking
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
-      bspline_cuda.cpp
-      bspline_cuda.cu
-      bspline_cuda.h
-      cuda_util.cu cuda_util.h
-      cuda_kernel_util.cu cuda_kernel_util.h
-      cuda_mem.cu cuda_mem.h
+      ${PLMCUDA_LIBRARY_SRC}
       )
-    CUDA_COMPILE (BSPLINE_CUDA_WRAPPERS 
+    CUDA_COMPILE (CUDA_WRAPPERS 
       bspline_cuda.cu 
       cuda_util.cu
       cuda_kernel_util.cu
       cuda_mem.cu
-      )
-    SET (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${BSPLINE_CUDA_WRAPPERS}
-      )
-    CUDA_COMPILE (DEMONS_CUDA_WRAPPERS demons_cuda.cu)
-    SET (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${DEMONS_CUDA_WRAPPERS}
       demons_cuda.cu
+      drr_cuda.cu
+      fdk_cuda.cu
       )
-    CUDA_COMPILE (DRR_CUDA_WRAPPERS drr_cuda.cu)
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
-      ${DRR_CUDA_WRAPPERS}
-      drr_cuda.cpp 
-      drr_cuda.cu 
-      drr_cuda.h 
-      drr_cuda_p.h 
+      ${CUDA_WRAPPERS}
       )
-    CUDA_COMPILE (FDK_CUDA_WRAPPERS fdk_cuda.cu)
-    SET (GPUIT_LIBRARY_SRC
-      ${GPUIT_LIBRARY_SRC}
-      ${FDK_CUDA_WRAPPERS}
-      fdk_cuda.cpp 
-      fdk_cuda.cu 
-      fdk_cuda_p.h
-      fdk_cuda.h
-    )
   ENDIF ()
 ENDIF ()
 
@@ -873,69 +817,36 @@ IF (FFTW_FOUND)
    )
 ENDIF ()
 
-## Define OpenCL Plugin (plmopencl)
 IF (OPENCL_FOUND)
+  ## Define OpenCL Plugin (plmopencl)
+  SET (PLMOPENCL_LIBRARY_SRC
+    autotune_opencl.cxx autotune_opencl.h
+    opencl_probe.cxx opencl_probe.h opencl_probe.cl
+    opencl_util.cxx opencl_util.h
+    opencl_util_nvidia.cxx opencl_util_nvidia.h
+    )
+
   IF (PLM_USE_GPU_PLUGINS)          # << Dynamic linking
-    # DEMONS Acceleration
-    SET (PLM_OPENCL_DEMONS_SRC
-      demons_opencl.cxx
-      demons_opencl_p.h
-      demons_opencl.cl
-      demons_misc.c
-      demons_misc.h
-      plm_timer.c         # for demons_opencl.cxx
-      plm_timer.h         # for demons_opencl.cxx
-    )
-    PLM_ADD_OPENCL_FILE (PLM_OPENCL_DEMONS_SRC demons_opencl.cl)
 
-    # DRR Acceleration
-    SET (PLM_OPENCL_DRR_SRC
-      drr_opencl.cxx
-      drr_opencl.h
-      drr_opencl_p.h
-      drr_opencl.cl
-    )
-    PLM_ADD_OPENCL_FILE (PLM_OPENCL_DRR_SRC drr_opencl.cl)
-
-    # Common Files
-    SET (PLM_OPENCL_COMMON
-      autotune_opencl.cxx
-      autotune_opencl.h
-      opencl_probe.cxx
-      opencl_probe.h
-      opencl_probe.cl
-      opencl_util.cxx
-      opencl_util.h
-      opencl_util_nvidia.cxx
-      opencl_util_nvidia.h
-      file_util.cxx
-      file_util.h
-      volume.c            # for demons_opencl.cu
-      volume.h            # for demons_opencl.cu
-      print_and_exit.c    # for volume.c
-      print_and_exit.h    # for volume.c
+    SET (PLMOPENCL_LIBRARY_SRC
+      ${PLMOPENCL_LIBRARY_SRC}
+      #volume.c            # for demons_opencl.cu
+      #volume.h            # for demons_opencl.cu
     )
 
-    # Consolidate library components
-    SET (PLM_OPENCL_LIBRARY_SRC
-      ${PLM_OPENCL_DEMONS_SRC}
-      ${PLM_OPENCL_DRR_SRC}
-      ${PLM_OPENCL_COMMON}
-    )
-
-    SET (PLM_OPENCL_LIBRARY_DEPENDENCIES
-       bstrlib  # for file_util.cxx
+    SET (PLMOPENCL_LIBRARY_DEPENDENCIES
+      plmsys
     )
 
     # OpenCL Plugin is ALWAYS shared!
     ADD_LIBRARY (plmopencl SHARED
-        ${PLM_OPENCL_LIBRARY_SRC}
+        ${PLMOPENCL_LIBRARY_SRC}
     )
 
     # Be sure to link against libOpenCL and other depends
     TARGET_LINK_LIBRARIES (plmopencl
         ${OPENCL_LIBRARIES}
-        ${PLM_OPENCL_LIBRARY_DEPENDENCIES}
+        ${PLMOPENCL_LIBRARY_DEPENDENCIES}
     )
 
     INSTALL (TARGETS plmopencl
@@ -944,35 +855,33 @@ IF (OPENCL_FOUND)
     )
 
   ELSE ()        # << Static linking
+
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
-      demons_opencl.cxx demons_opencl_p.h demons_opencl.cl
-      drr_opencl.cxx drr_opencl.h drr_opencl_p.h drr_opencl.cl
-      opencl_probe.cxx opencl_probe.h opencl_probe.cl
-      opencl_util.cxx opencl_util.h
-      opencl_util_nvidia.cxx opencl_util_nvidia.h
+      ${PLMOPENCL_LIBRARY_SRC}
     )
-    PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
-    PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
 
   ENDIF ()
 
   SET (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
+    demons_opencl.cxx
+    demons_opencl_p.h
+    demons_opencl.cl
+    drr_opencl.cxx
+    drr_opencl_p.h
+    drr_opencl.h
+    drr_opencl.cl
     fdk_opencl.cxx 
     fdk_opencl_p.h
     fdk_opencl.h
     fdk_opencl.cl
     )
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
+  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
 
 ENDIF ()
-
-
-SET (GPUIT_LIBRARY_SRC
-  ${GPUIT_LIBRARY_SRC}
-  bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
-  )
 
 IF (F2C_LIBRARY)
   SET (F2C_HELPER_LIBRARY_SRC
@@ -1113,9 +1022,11 @@ SET (DRR_SRC
 SET (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
-SET (FINDSCU_SRC
-  findscu.cc
-  )
+SET (FDK_SRC
+  fdk_main.c 
+  fdk_opts.c fdk_opts.h
+  fdk_util.c fdk_util.h
+)
 IF (BROOK_FOUND)
   SET (FDK_SRC
     ${FDK_SRC}
@@ -1123,7 +1034,9 @@ IF (BROOK_FOUND)
     fdk_brook_kernel.br
     )
 ENDIF ()
-
+SET (FINDSCU_SRC
+  findscu.cc
+  )
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
   )
@@ -1418,6 +1331,12 @@ MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
+PLM_ADD_LIBRARY (
+  plmsys
+  "${PLMSYS_LIBRARY_SRC}" 
+  "${PLMSYS_LIBRARY_DEPENDENCIES}"
+  "")
+
 IF (F2C_LIBRARY AND UNIX)
   PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
 ENDIF ()

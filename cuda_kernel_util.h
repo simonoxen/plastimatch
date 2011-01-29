@@ -57,8 +57,7 @@ stog_memcpy (
 extern "C" {
 #endif
 
-
-    gpuit_EXPORT
+    plmcuda_EXPORT
     int
     CUDA_exec_conf_1tpe (
         dim3 *dimGrid,          // OUTPUT: Grid  dimensions
@@ -68,7 +67,7 @@ extern "C" {
         bool negotiate          // INPUT: Is threads per block negotiable?
     );
 
-    gpuit_EXPORT
+    plmcuda_EXPORT
     void
     CUDA_exec_conf_1bpe (
         dim3 *dimGrid,           // OUTPUT: Grid  dimensions
@@ -77,13 +76,13 @@ extern "C" {
         int threads_per_block    //  INPUT: Threads per block
     );
 
-    gpuit_EXPORT
+    plmcuda_EXPORT
     void
     CUDA_timer_start (
         cuda_timer *timer
     );
 
-    gpuit_EXPORT
+    plmcuda_EXPORT
     float
     CUDA_timer_report (
         cuda_timer *timer

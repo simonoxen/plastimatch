@@ -28,6 +28,11 @@ drr_opencl_state_create (
     Drr_options *options
 )
 {
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL (opencl_open_device, libplmopencl);
+    LOAD_SYMBOL (opencl_load_programs, libplmopencl);
+    LOAD_SYMBOL (opencl_kernel_create, libplmopencl);
+
     Drr_opencl_state *dev_state;
     dev_state = (Drr_opencl_state*) malloc (sizeof (Drr_opencl_state));
 
@@ -51,6 +56,7 @@ drr_opencl_state_create (
         vol->img
     );
 
+    UNLOAD_LIBRARY (libplmopencl);
     return (void*) dev_state;
 }
 
@@ -75,6 +81,11 @@ drr_opencl_ray_trace_image (
     Drr_options *options
 )
 {
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL (opencl_set_kernel_args, libplmopencl);
+    LOAD_SYMBOL (opencl_kernel_enqueue, libplmopencl);
+    LOAD_SYMBOL (opencl_buf_read, libplmopencl);
+
     Drr_opencl_state *dev_state = (Drr_opencl_state*) dev_state_v;
     Proj_matrix *pmat = proj->pmat;
     cl_float2 ocl_ic;

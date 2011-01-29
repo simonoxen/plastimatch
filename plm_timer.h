@@ -22,9 +22,9 @@ struct timer_struct {
 #if defined __cplusplus
 extern "C" {
 #endif
-gpuit_EXPORT
+plmsys_EXPORT
 void plm_timer_start (Timer *timer);
-gpuit_EXPORT
+plmsys_EXPORT
 double plm_timer_report (Timer *timer);
 #if defined __cplusplus
 }

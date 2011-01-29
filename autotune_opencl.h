@@ -5,7 +5,6 @@
 #define _AUTOTUNE_OPENCL_H_
 
 #include "plm_config.h"
-#include <math.h>
 #include "opencl_util.h"
 
 #define MAX_GPU_COUNT 8
@@ -14,7 +13,15 @@
 extern "C" {
 #endif
 
-void gpuit_EXPORT divideWork(cl_device_id *devices, cl_uint device_count, int dimensions, size_t work_per_device[MAX_GPU_COUNT][3], size_t *work_total);
+plmopencl_EXPORT
+void 
+divideWork (
+    cl_device_id *devices, 
+    cl_uint device_count, 
+    int dimensions, 
+    size_t work_per_device[MAX_GPU_COUNT][3], 
+    size_t *work_total
+);
 
 #if defined __cplusplus
 }

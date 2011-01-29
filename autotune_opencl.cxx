@@ -2,9 +2,17 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <math.h>
 #include "autotune_opencl.h"
 
-void divideWork(cl_device_id *devices, cl_uint device_count, int dimensions, size_t work_per_device[MAX_GPU_COUNT][3], size_t *work_total)
+void 
+divideWork (
+    cl_device_id *devices, 
+    cl_uint device_count, 
+    int dimensions, 
+    size_t work_per_device[MAX_GPU_COUNT][3], 
+    size_t *work_total
+)
 {
     float compute_ratio;
     size_t allotted_work, total_allotted_work;

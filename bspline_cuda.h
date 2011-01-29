@@ -4,6 +4,7 @@
 #ifndef _bspline_cuda_h_
 #define _bspline_cuda_h_
 
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
