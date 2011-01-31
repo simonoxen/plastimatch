@@ -1,9 +1,6 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _DEMON_KERNEL_H_
-#define _DEMON_KERNEL_H_
-
 // declare texture reference for nabla computation
 texture<float4, 2, cudaReadModeElementType> tex;
 
@@ -679,6 +676,3 @@ __global__ void dummy_kernel()
 {
     //dummy kernel
 }
-        
-
-#endif //_DEMON_KERNEL_H_

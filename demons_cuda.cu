@@ -108,60 +108,74 @@ __global__ void calculate_gradient_magnitude_image_kernel (float *grad_mag, int 
 	grad_mag[v] = vox_grad_x * vox_grad_x + vox_grad_y * vox_grad_y + vox_grad_z * vox_grad_z;
 }
 
-__global__ void estimate_kernel (float *vf_est_img, float *ssd, int *inliers, float homog, float denominator_eps, float accel, int blockY, float invBlockY)
+__global__ void 
+estimate_kernel (
+    float *vf_est_img, 
+    float *ssd, 
+    int *inliers, 
+    float homog, 
+    float denominator_eps, 
+    float accel, 
+    int blockY, 
+    float invBlockY
+)
 {
-	/* Find position in volume */
-	int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
-	int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
-	int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
-	int j = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
-	int k = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
+    /* Find position in volume */
+    int blockIdx_z = __float2int_rd(blockIdx.y * invBlockY);
+    int blockIdx_y = blockIdx.y - __mul24(blockIdx_z, blockY);
+    int i = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+    int j = __mul24(blockIdx_y, blockDim.y) + threadIdx.y;
+    int k = __mul24(blockIdx_z, blockDim.z) + threadIdx.z;
 
-	if (i >= c_dim[0] || j >= c_dim[1] || k >= c_dim[2])
-		return;
+    if (i >= c_dim[0] || j >= c_dim[1] || k >= c_dim[2])
+	return;
 
-	long fv = (k * c_dim[1] * c_dim[0]) + (j * c_dim[0]) + i;
-	long f3v = 3 * fv;
+    long fv = (k * c_dim[1] * c_dim[0]) + (j * c_dim[0]) + i;
+    long f3v = 3 * fv;
 
-	float mi = c_f2mo[0] + i * c_f2ms[0];
-	float mj = c_f2mo[1] + j * c_f2ms[1];
-	float mk = c_f2mo[2] + k * c_f2ms[2];
+    float mi = c_f2mo[0] + i * c_f2ms[0];
+    float mj = c_f2mo[1] + j * c_f2ms[1];
+    float mk = c_f2mo[2] + k * c_f2ms[2];
 
-	/* Find correspondence with nearest neighbor interpolation & boundary checking */
-	int mz = __float2int_rn(mk + c_invmps[2] * tex1Dfetch(tex_vf_smooth, f3v + 2));	/* pixels (moving) */
-	if (mz < 0 || mz >= c_moving_dim[2])
-		return;
+    /* Find correspondence with nearest neighbor interpolation 
+       and boundary checking */
+    int mz = __float2int_rn (mk + c_invmps[2] 
+	* tex1Dfetch(tex_vf_smooth, f3v + 2));	/* pixels (moving) */
+    if (mz < 0 || mz >= c_moving_dim[2])
+	return;
 
-	int my = __float2int_rn(mj + c_invmps[1] * tex1Dfetch(tex_vf_smooth, f3v + 1));	/* pixels (moving) */
-	if (my < 0 || my >= c_moving_dim[1])
-		return;
+    int my = __float2int_rn (mj + c_invmps[1] 
+	* tex1Dfetch(tex_vf_smooth, f3v + 1));	/* pixels (moving) */
+    if (my < 0 || my >= c_moving_dim[1])
+	return;
 
-	int mx = __float2int_rn(mi + c_invmps[0] * tex1Dfetch(tex_vf_smooth, f3v));		/* pixels (moving) */
-	if (mx < 0 || mx >= c_moving_dim[0])
-		return;
+    int mx = __float2int_rn (mi + c_invmps[0] 
+	* tex1Dfetch(tex_vf_smooth, f3v));		/* pixels (moving) */
+    if (mx < 0 || mx >= c_moving_dim[0])
+	return;
 
-	int mv = (mz * c_moving_dim[1] + my) * c_moving_dim[0] + mx;
-	int m3v = 3 * mv;
+    int mv = (mz * c_moving_dim[1] + my) * c_moving_dim[0] + mx;
+    int m3v = 3 * mv;
 
-	/* Find image difference at this correspondence */
-	float diff = tex1Dfetch(tex_fixed, fv) - tex1Dfetch(tex_moving, mv);		/* intensity */
+    /* Find image difference at this correspondence */
+    float diff = tex1Dfetch(tex_fixed, fv) - tex1Dfetch(tex_moving, mv);		/* intensity */
 
-	/* Compute denominator */
-	float denom = tex1Dfetch(tex_grad_mag, mv) + homog * diff * diff;		/* intensity^2 per mm^2 */
+    /* Compute denominator */
+    float denom = tex1Dfetch(tex_grad_mag, mv) + homog * diff * diff;		/* intensity^2 per mm^2 */
 
-	/* Compute SSD for statistics */
-	inliers[fv] = 1;
-	ssd[fv] = diff * diff;
+    /* Compute SSD for statistics */
+    inliers[fv] = 1;
+    ssd[fv] = diff * diff;
 
-	/* Threshold the denominator to stabilize estimation */
-	if (denom < denominator_eps) 
-		return;
+    /* Threshold the denominator to stabilize estimation */
+    if (denom < denominator_eps) 
+	return;
 
-	/* Compute new estimate of displacement */
-	float mult = accel * diff / denom;					/* per intensity^2 */
-	vf_est_img[f3v] += mult * tex1Dfetch(tex_grad, m3v);			/* mm */
-	vf_est_img[f3v + 1] += mult * tex1Dfetch(tex_grad, m3v + 1);
-	vf_est_img[f3v + 2] += mult * tex1Dfetch(tex_grad, m3v + 2);
+    /* Compute new estimate of displacement */
+    float mult = accel * diff / denom;					/* per intensity^2 */
+    vf_est_img[f3v] += mult * tex1Dfetch(tex_grad, m3v);			/* mm */
+    vf_est_img[f3v + 1] += mult * tex1Dfetch(tex_grad, m3v + 1);
+    vf_est_img[f3v + 2] += mult * tex1Dfetch(tex_grad, m3v + 2);
 }
 
 template <class T> __global__ void reduction(T *vectorData, int totalElements)
@@ -346,11 +360,8 @@ __global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, fl
 	out_img[gk] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[2];
 }
 
-
-/*
-Host
-*/
-Volume* demons_cuda (
+Volume* 
+demons_cuda (
     Volume* fixed, 
     Volume* moving, 
     Volume* moving_grad, 
@@ -358,297 +369,306 @@ Volume* demons_cuda (
     DEMONS_Parms* parms
 )
 {
-	int i;
-	int	it;						/* Iterations */
-	float f2mo[3];				/* Offset difference (in cm) from fixed to moving */
-	float f2ms[3];				/* Slope to convert fixed to moving */
-	float invmps[3];			/* 1/pixel spacing of moving image */
-	float *kerx, *kery, *kerz;
-	int fw[3];
-	double diff_run, gpu_time, kernel_time;
-	Volume *vf_est, *vf_smooth;
-	int inliers;
-	float ssd;
-	Timer timer, gpu_timer, kernel_timer;
+    int i;
+    int	it;						/* Iterations */
+    float f2mo[3];				/* Offset difference (in cm) from fixed to moving */
+    float f2ms[3];				/* Slope to convert fixed to moving */
+    float invmps[3];			/* 1/pixel spacing of moving image */
+    float *kerx, *kery, *kerz;
+    int fw[3];
+    double diff_run, gpu_time, kernel_time;
+    Volume *vf_est, *vf_smooth;
+    int inliers;
+    float ssd;
+    Timer timer, gpu_timer, kernel_timer;
 
-	int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
-	int *d_inliers;
-	float total_runtime, pix_spacing_div2[3];
-	float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;
-	dim3 block, grid, reductionGrid;
+    int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
+    int *d_inliers;
+    float total_runtime, pix_spacing_div2[3];
+    float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;
+    dim3 block, grid, reductionGrid;
 
-	/* Allocate memory for vector fields */
-	if (vf_init) {
-		/* If caller has an initial estimate, we copy it */
-		vf_smooth = volume_clone(vf_init);
-		vf_convert_to_interleaved(vf_smooth);
-	} else {
-		/* Otherwise initialize to zero */
-		vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
-	}
-	vf_est = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    /* Allocate memory for vector fields */
+    if (vf_init) {
+	/* If caller has an initial estimate, we copy it */
+	vf_smooth = volume_clone(vf_init);
+	vf_convert_to_interleaved(vf_smooth);
+    } else {
+	/* Otherwise initialize to zero */
+	vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    }
+    vf_est = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
 
-	/* Initialize GPU timers */
-	gpu_time = 0;
-	kernel_time = 0;
+    /* Initialize GPU timers */
+    gpu_time = 0;
+    kernel_time = 0;
 	
-	/* Determine GPU execution environment */
-	threadX = BLOCK_SIZE;
-	threadY = 1;
-	threadZ = 1;
-	blockX = (fixed->dim[0] + threadX - 1) / threadX;
-	blockY = (fixed->dim[1] + threadY - 1) / threadY;
-	blockZ = (fixed->dim[2] + threadZ - 1) / threadZ;
-	block = dim3(threadX, threadY, threadZ);
-	grid = dim3(blockX, blockY * blockZ);
+    /* Determine GPU execution environment */
+    threadX = BLOCK_SIZE;
+    threadY = 1;
+    threadZ = 1;
+    blockX = (fixed->dim[0] + threadX - 1) / threadX;
+    blockY = (fixed->dim[1] + threadY - 1) / threadY;
+    blockZ = (fixed->dim[2] + threadZ - 1) / threadZ;
+    block = dim3(threadX, threadY, threadZ);
+    grid = dim3(blockX, blockY * blockZ);
 
-	/*
-	Calculate Moving Gradient
-	*/
-	for (i = 0; i < 3; i++)
-		pix_spacing_div2[i] = 0.5 / moving->pix_spacing[i];
+    /*
+      Calculate Moving Gradient
+    */
+    for (i = 0; i < 3; i++)
+	pix_spacing_div2[i] = 0.5 / moving->pix_spacing[i];
 
-	/* Determine size of device memory */
-	vol_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(float);
-	interleaved_vol_size = 3 * fixed->dim[0] * fixed->dim[1] * fixed->dim[2] * sizeof(float);
-	inlier_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(int);
+    /* Determine size of device memory */
+    vol_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(float);
+    interleaved_vol_size = 3 * fixed->dim[0] * fixed->dim[1] * fixed->dim[2] * sizeof(float);
+    inlier_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(int);
 
-	/* Allocate device memory */
-	plm_timer_start(&gpu_timer);
-	cudaMalloc((void**)&d_vf_est, interleaved_vol_size);
-	cudaMalloc((void**)&d_vf_smooth, interleaved_vol_size);
-	cudaMalloc((void**)&d_fixed, vol_size);
-	cudaMalloc((void**)&d_moving, vol_size);
-	cudaMalloc((void**)&d_m_grad, interleaved_vol_size);
-	cudaMalloc((void**)&d_m_grad_mag, vol_size);
-	cudaMalloc((void**)&d_ssd, vol_size);
-	cudaMalloc((void**)&d_inliers, inlier_size);
+    /* Allocate device memory */
+    plm_timer_start(&gpu_timer);
+    cudaMalloc((void**)&d_vf_est, interleaved_vol_size);
+    cudaMalloc((void**)&d_vf_smooth, interleaved_vol_size);
+    cudaMalloc((void**)&d_fixed, vol_size);
+    cudaMalloc((void**)&d_moving, vol_size);
+    cudaMalloc((void**)&d_m_grad, interleaved_vol_size);
+    cudaMalloc((void**)&d_m_grad_mag, vol_size);
+    cudaMalloc((void**)&d_ssd, vol_size);
+    cudaMalloc((void**)&d_inliers, inlier_size);
 
-	/* Copy/Initialize device memory */
-	cudaMemcpy(d_vf_est, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_vf_smooth, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_fixed, fixed->img, vol_size, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_moving, moving->img, vol_size, cudaMemcpyHostToDevice);
-	cudaMemset(d_m_grad, 0, interleaved_vol_size);
-	cudaMemset(d_m_grad_mag, 0, vol_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+    /* Copy/Initialize device memory */
+    cudaMemcpy(d_vf_est, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_vf_smooth, vf_est->img, interleaved_vol_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_fixed, fixed->img, vol_size, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_moving, moving->img, vol_size, cudaMemcpyHostToDevice);
+    cudaMemset(d_m_grad, 0, interleaved_vol_size);
+    cudaMemset(d_m_grad_mag, 0, vol_size);
+    gpu_time += plm_timer_report(&gpu_timer);
 
-	/* Set device constant memory */
-	setConstantDimension(fixed->dim);
-	setConstantMovingDimension(moving->dim);
-	setConstantPixelSpacing(pix_spacing_div2);
+    /* Set device constant memory */
+    setConstantDimension(fixed->dim);
+    setConstantMovingDimension(moving->dim);
+    setConstantPixelSpacing(pix_spacing_div2);
 
-	/* Bind device texture memory */
-	cudaBindTexture(0, tex_fixed, d_fixed, vol_size);
-	cudaBindTexture(0, tex_moving, d_moving, vol_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+    /* Bind device texture memory */
+    cudaBindTexture(0, tex_fixed, d_fixed, vol_size);
+    cudaBindTexture(0, tex_moving, d_moving, vol_size);
+    gpu_time += plm_timer_report(&gpu_timer);
+
+    /* Check for any errors prekernel execution */
+    CUDA_check_error("Error before kernel execution");
+
+    /* Call kernel */
+    plm_timer_start(&kernel_timer);
+    volume_calc_grad_kernel<<< grid, block>>>(d_m_grad, blockY, 1.0f / (float)blockY);
+    cudaThreadSynchronize();
+    kernel_time += plm_timer_report(&kernel_timer);
+
+    /* Check for any errors postkernel execution */
+    CUDA_check_error("Kernel execution failed");
+
+    /* Bind device texture memory */
+    plm_timer_start(&gpu_timer);
+    cudaBindTexture(0, tex_grad, d_m_grad, interleaved_vol_size);
+    gpu_time += plm_timer_report(&gpu_timer);
+
+    /* Check for any errors prekernel execution */
+    CUDA_check_error("Error before kernel execution");
+
+    /* Call kernel */
+    plm_timer_start(&kernel_timer);
+    calculate_gradient_magnitude_image_kernel<<< grid, block>>> (
+	d_m_grad_mag, blockY, 1.0f / (float)blockY);
+    cudaThreadSynchronize();
+    kernel_time += plm_timer_report(&kernel_timer);
+
+    /* Check for any errors postkernel execution */
+    CUDA_check_error("Kernel execution failed");
+
+    /* Validate filter widths */
+    validate_filter_widths (fw, parms->filter_width);
+
+    /* Create the seperable smoothing kernels for the x, y, and z directions */
+    kerx = create_ker (parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
+    kery = create_ker (parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
+    kerz = create_ker (parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
+    kernel_stats (kerx, kery, kerz, fw);
+
+    /* Compute some variables for converting pixel sizes / offsets */
+    for (i = 0; i < 3; i++) {
+	invmps[i] = 1 / moving->pix_spacing[i];
+	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->pix_spacing[i];
+	f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
+    }
+
+    /* Allocate device memory */
+    plm_timer_start (&gpu_timer);
+    printf ("Doing cudaMalloc\n");
+    cudaMalloc ((void**)&d_kerx, fw[0] * sizeof(float));
+    cudaMalloc ((void**)&d_kery, fw[1] * sizeof(float));
+    cudaMalloc ((void**)&d_kerz, fw[2] * sizeof(float));
+
+    /* Copy/Initialize device memory */
+    printf ("Doing cudaMemcpy\n");
+    cudaMemcpy (d_kerx, kerx, fw[0] * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy (d_kery, kery, fw[1] * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy (d_kerz, kerz, fw[2] * sizeof(float), cudaMemcpyHostToDevice);
+
+    /* Set device constant memory */
+    setConstantF2ms (f2mo);
+    setConstantF2ms (f2ms);
+    setConstantInvmps (invmps);
+
+    /* Bind device texture memory */
+    printf ("Doing cudaBindTexture\n");
+    cudaBindTexture (0, tex_grad_mag, d_m_grad_mag, vol_size);
+    gpu_time += plm_timer_report (&gpu_timer);
+
+    plm_timer_start (&timer);
+
+    /* Main loop through iterations */
+    for (it = 0; it < parms->max_its; it++) {
+	printf ("Looping...\n");
+	/* Estimate displacement, store into vf_est */
+	inliers = 0; ssd = 0.0;
 
 	/* Check for any errors prekernel execution */
-	CUDA_check_error("Error before kernel execution");
+	CUDA_check_error ("Error before kernel execution");
+
+	plm_timer_start(&gpu_timer);
+	cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
+	cudaMemset(d_ssd, 0, vol_size);
+	cudaMemset(d_inliers, 0, inlier_size);
+	gpu_time += plm_timer_report(&gpu_timer);
 
 	/* Call kernel */
-	plm_timer_start(&kernel_timer);
-	volume_calc_grad_kernel<<< grid, block>>>(d_m_grad, blockY, 1.0f / (float)blockY);
-	cudaThreadSynchronize();
-	kernel_time += plm_timer_report(&kernel_timer);
+	plm_timer_start (&kernel_timer);
+	estimate_kernel<<< grid, block >>> (
+	    d_vf_est, 
+	    d_ssd, 
+	    d_inliers, 
+	    parms->homog, 
+	    parms->denominator_eps, 
+	    parms->accel, 
+	    blockY, 
+	    1.0f / (float)blockY);
+	cudaThreadSynchronize ();
+	kernel_time += plm_timer_report (&kernel_timer);
 
 	/* Check for any errors postkernel execution */
-	CUDA_check_error("Kernel execution failed");
+	CUDA_check_error ("Kernel execution failed");
 
-	/* Bind device texture memory */
-	plm_timer_start(&gpu_timer);
-	cudaBindTexture(0, tex_grad, d_m_grad, interleaved_vol_size);
-	gpu_time += plm_timer_report(&gpu_timer);
+	num_elements = moving->dim[0] * moving->dim[1] * moving->dim[2];
+	while (num_elements > 1) {
+	    half_num_elements = num_elements / 2;
+	    reductionBlocks = (half_num_elements + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-	/*
-	Compute Demons
-	*/
+	    /* Invoke kernels */
+	    dim3 reductionGrid(reductionBlocks, 1);
+	    plm_timer_start(&kernel_timer);
+	    reduction<float><<< reductionGrid, block >>>(d_ssd, num_elements);
+	    cudaThreadSynchronize();
+	    reduction<int><<< reductionGrid, block >>>(d_inliers, num_elements);
+	    cudaThreadSynchronize();
+	    kernel_time += plm_timer_report(&kernel_timer);
 
-	/* Check for any errors prekernel execution */
-	CUDA_check_error("Error before kernel execution");
+	    /* Check for any errors postkernel execution */
+	    CUDA_check_error("Kernel execution failed");
 
-	/* Call kernel */
-	plm_timer_start(&kernel_timer);
-	calculate_gradient_magnitude_image_kernel<<< grid, block>>>(d_m_grad_mag, blockY, 1.0f / (float)blockY);
-	cudaThreadSynchronize();
-	kernel_time += plm_timer_report(&kernel_timer);
-
-	/* Check for any errors postkernel execution */
-	CUDA_check_error("Kernel execution failed");
-
-	/* Validate filter widths */
-	validate_filter_widths (fw, parms->filter_width);
-
-	/* Create the seperable smoothing kernels for the x, y, and z directions */
-	kerx = create_ker(parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
-	kery = create_ker(parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
-	kerz = create_ker(parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
-	kernel_stats(kerx, kery, kerz, fw);
-
-	/* Compute some variables for converting pixel sizes / offsets */
-	for (i = 0; i < 3; i++) {
-		invmps[i] = 1 / moving->pix_spacing[i];
-		f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->pix_spacing[i];
-		f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
+	    num_elements = reductionBlocks;
 	}
 
-	/* Allocate device memory */
+	/* Smooth the estimate into vf_smooth.  The volumes are ping-ponged. */
 	plm_timer_start(&gpu_timer);
-	cudaMalloc((void**)&d_kerx, fw[0] * sizeof(float));
-	cudaMalloc((void**)&d_kery, fw[1] * sizeof(float));
-	cudaMalloc((void**)&d_kerz, fw[2] * sizeof(float));
-
-	/* Copy/Initialize device memory */
-	cudaMemcpy(d_kerx, kerx, fw[0] * sizeof(float), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_kery, kery, fw[1] * sizeof(float), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_kerz, kerz, fw[2] * sizeof(float), cudaMemcpyHostToDevice);
-
-	/* Set device constant memory */
-	setConstantF2ms(f2mo);
-	setConstantF2ms(f2ms);
-	setConstantInvmps(invmps);
-
-	/* Bind device texture memory */
-	cudaBindTexture(0, tex_grad_mag, d_m_grad_mag, vol_size);
+	cudaUnbindTexture(tex_vf_smooth);
+	cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
+	cudaMemcpy(&ssd, d_ssd, sizeof(float), cudaMemcpyDeviceToHost);
+	cudaMemcpy(&inliers, d_inliers, sizeof(int), cudaMemcpyDeviceToHost);
 	gpu_time += plm_timer_report(&gpu_timer);
-
-	plm_timer_start(&timer);
-
-	/* Main loop through iterations */
-	for (it = 0; it < parms->max_its; it++) {
-		/* Estimate displacement, store into vf_est */
-		inliers = 0; ssd = 0.0;
-
-		/* Check for any errors prekernel execution */
-		CUDA_check_error("Error before kernel execution");
-
-		plm_timer_start(&gpu_timer);
-		cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
-		cudaMemset(d_ssd, 0, vol_size);
-		cudaMemset(d_inliers, 0, inlier_size);
-		gpu_time += plm_timer_report(&gpu_timer);
-
-		/* Call kernel */
-		plm_timer_start(&kernel_timer);
-		estimate_kernel<<< grid, block >>>(d_vf_est, d_ssd, d_inliers, parms->homog, parms->denominator_eps, parms->accel, blockY, 1.0f / (float)blockY);
-		cudaThreadSynchronize();
-		kernel_time += plm_timer_report(&kernel_timer);
-
-		/* Check for any errors postkernel execution */
-		CUDA_check_error("Kernel execution failed");
-
-		num_elements = moving->dim[0] * moving->dim[1] * moving->dim[2];
-		while (num_elements > 1) {
-			half_num_elements = num_elements / 2;
-			reductionBlocks = (half_num_elements + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-			/* Invoke kernels */
-			dim3 reductionGrid(reductionBlocks, 1);
-			plm_timer_start(&kernel_timer);
-			reduction<float><<< reductionGrid, block >>>(d_ssd, num_elements);
-			cudaThreadSynchronize();
-			reduction<int><<< reductionGrid, block >>>(d_inliers, num_elements);
-			cudaThreadSynchronize();
-			kernel_time += plm_timer_report(&kernel_timer);
-
-			/* Check for any errors postkernel execution */
-			CUDA_check_error("Kernel execution failed");
-
-			num_elements = reductionBlocks;
-		}
-
-		/* Smooth the estimate into vf_smooth.  The volumes are ping-ponged. */
-		plm_timer_start(&gpu_timer);
-		cudaUnbindTexture(tex_vf_smooth);
-		cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
-		cudaMemcpy(&ssd, d_ssd, sizeof(float), cudaMemcpyDeviceToHost);
-		cudaMemcpy(&inliers, d_inliers, sizeof(int), cudaMemcpyDeviceToHost);
-		gpu_time += plm_timer_report(&gpu_timer);
-
-		/* Print statistics */
-		printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
-
-		/* Check for any errors prekernel execution */
-		CUDA_check_error("Error before kernel execution");
-
-		/* Call kernel */
-		plm_timer_start(&kernel_timer);
-		vf_convolve_x_kernel<<< grid, block >>>(d_vf_smooth, d_kerx, fw[0] / 2, blockY, 1.0f / (float)blockY);
-		cudaThreadSynchronize();
-		kernel_time += plm_timer_report(&kernel_timer);
-
-		/* Check for any errors postkernel execution */
-		CUDA_check_error("Kernel execution failed");
-
-		plm_timer_start(&gpu_timer);
-		cudaUnbindTexture(tex_vf_est);
-		cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
-		gpu_time += plm_timer_report(&gpu_timer);
-
-		/* Call kernel */
-		plm_timer_start(&kernel_timer);
-		vf_convolve_y_kernel<<< grid, block >>>(d_vf_est, d_kery, fw[1] / 2, blockY, 1.0f / (float)blockY);
-		cudaThreadSynchronize();
-		kernel_time += plm_timer_report(&kernel_timer);
-
-		/* Check for any errors postkernel execution */
-		CUDA_check_error("Kernel execution failed");
-
-		plm_timer_start(&gpu_timer);
-		cudaUnbindTexture(tex_vf_smooth);
-		cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
-		gpu_time += plm_timer_report(&gpu_timer);
-
-		/* Call kernel */
-		plm_timer_start(&kernel_timer);
-		vf_convolve_z_kernel<<< grid, block >>>(d_vf_smooth, d_kerz, fw[2] / 2, blockY, 1.0f / (float)blockY);
-		cudaThreadSynchronize();
-		kernel_time += plm_timer_report(&kernel_timer);
-
-		/* Check for any errors postkernel execution */
-		CUDA_check_error("Kernel execution failed");
-
-		/* Ping pong between estimate and smooth in each iteration*/
-		d_swap = d_vf_est;
-		d_vf_est = d_vf_smooth;
-		d_vf_smooth = d_swap;
-	}
-
-	/* Copy final output from device to host */
-	plm_timer_start(&gpu_timer);
-	cudaMemcpy(vf_smooth->img, d_vf_est, interleaved_vol_size, cudaMemcpyDeviceToHost);
-	gpu_time += plm_timer_report(&gpu_timer);
-
-	free(kerx);
-	free(kery);
-	free(kerz);
-	volume_destroy(vf_est);
-
-	diff_run = plm_timer_report(&timer);
-	printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
 
 	/* Print statistics */
-	total_runtime = gpu_time + kernel_time;
-	printf("\nTransfer run time: %f ms\n", gpu_time * 1000);
-	printf("Kernel run time: %f ms\n", kernel_time * 1000);
-	printf("Total CUDA run time: %f s\n\n", total_runtime);
+	printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
 
-	/* Unbind device texture memory */
+	/* Check for any errors prekernel execution */
+	CUDA_check_error("Error before kernel execution");
+
+	/* Call kernel */
+	plm_timer_start(&kernel_timer);
+	vf_convolve_x_kernel<<< grid, block >>>(d_vf_smooth, d_kerx, fw[0] / 2, blockY, 1.0f / (float)blockY);
+	cudaThreadSynchronize();
+	kernel_time += plm_timer_report(&kernel_timer);
+
+	/* Check for any errors postkernel execution */
+	CUDA_check_error("Kernel execution failed");
+
+	plm_timer_start(&gpu_timer);
 	cudaUnbindTexture(tex_vf_est);
-	cudaUnbindTexture(tex_grad_mag);
-	cudaUnbindTexture(tex_grad);
-	cudaUnbindTexture(tex_moving);
-	cudaUnbindTexture(tex_fixed);
+	cudaBindTexture(0, tex_vf_smooth, d_vf_smooth, interleaved_vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
 
-	/* Free device global memory */
-	cudaFree(d_vf_est);
-	cudaFree(d_vf_smooth);
-	cudaFree(d_moving);
-	cudaFree(d_fixed);
-	cudaFree(d_m_grad);
-	cudaFree(d_m_grad_mag);
-	cudaFree(d_ssd);
-	cudaFree(d_inliers);
+	/* Call kernel */
+	plm_timer_start(&kernel_timer);
+	vf_convolve_y_kernel<<< grid, block >>>(d_vf_est, d_kery, fw[1] / 2, blockY, 1.0f / (float)blockY);
+	cudaThreadSynchronize();
+	kernel_time += plm_timer_report(&kernel_timer);
 
-	return vf_smooth;
+	/* Check for any errors postkernel execution */
+	CUDA_check_error("Kernel execution failed");
+
+	plm_timer_start(&gpu_timer);
+	cudaUnbindTexture(tex_vf_smooth);
+	cudaBindTexture(0, tex_vf_est, d_vf_est, interleaved_vol_size);
+	gpu_time += plm_timer_report(&gpu_timer);
+
+	/* Call kernel */
+	plm_timer_start(&kernel_timer);
+	vf_convolve_z_kernel<<< grid, block >>>(d_vf_smooth, d_kerz, fw[2] / 2, blockY, 1.0f / (float)blockY);
+	cudaThreadSynchronize();
+	kernel_time += plm_timer_report(&kernel_timer);
+
+	/* Check for any errors postkernel execution */
+	CUDA_check_error("Kernel execution failed");
+
+	/* Ping pong between estimate and smooth in each iteration*/
+	d_swap = d_vf_est;
+	d_vf_est = d_vf_smooth;
+	d_vf_smooth = d_swap;
+    }
+
+    /* Copy final output from device to host */
+    plm_timer_start(&gpu_timer);
+    cudaMemcpy(vf_smooth->img, d_vf_est, interleaved_vol_size, cudaMemcpyDeviceToHost);
+    gpu_time += plm_timer_report(&gpu_timer);
+
+    free(kerx);
+    free(kery);
+    free(kerz);
+    volume_destroy(vf_est);
+
+    diff_run = plm_timer_report(&timer);
+    printf("Time for %d iterations = %f (%f sec / it)\n", parms->max_its, diff_run, diff_run / parms->max_its);
+
+    /* Print statistics */
+    total_runtime = gpu_time + kernel_time;
+    printf("\nTransfer run time: %f ms\n", gpu_time * 1000);
+    printf("Kernel run time: %f ms\n", kernel_time * 1000);
+    printf("Total CUDA run time: %f s\n\n", total_runtime);
+
+    /* Unbind device texture memory */
+    cudaUnbindTexture(tex_vf_est);
+    cudaUnbindTexture(tex_grad_mag);
+    cudaUnbindTexture(tex_grad);
+    cudaUnbindTexture(tex_moving);
+    cudaUnbindTexture(tex_fixed);
+
+    /* Free device global memory */
+    cudaFree(d_vf_est);
+    cudaFree(d_vf_smooth);
+    cudaFree(d_moving);
+    cudaFree(d_fixed);
+    cudaFree(d_m_grad);
+    cudaFree(d_m_grad_mag);
+    cudaFree(d_ssd);
+    cudaFree(d_inliers);
+
+    return vf_smooth;
 }
