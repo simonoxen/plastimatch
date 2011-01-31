@@ -8,6 +8,7 @@
 #include <time.h>
 #include <math.h>
 #include "demons.h"
+#include "demons_cuda.h"
 #include "threading.h"
 #include "delayload.h"
 #include "volume.h"
@@ -57,7 +58,8 @@ demons (
 #if CUDA_FOUND
     case THREADING_CUDA:
     	if (!delayload_cuda ()) { exit (0); }
-        tmp = (Volume*)demons_cuda (fixed, moving, moving_grad, vf_init, parms);
+        tmp = (Volume*) demons_cuda (
+	    fixed, moving, moving_grad, vf_init, parms);
         UNLOAD_LIBRARY (libplmcuda);
         return tmp;
 #endif

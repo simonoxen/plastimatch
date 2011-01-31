@@ -1,20 +1,13 @@
 /* -----------------------------------------------------------------------
-See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
------------------------------------------------------------------------ */
-/*
-CUDA includes
-*/
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <stdio.h>
 #include <cuda.h>
 #include "cuda_util.h"
-
-
-/*
-Demons includes
-*/
-#include <stdio.h>
-#include "volume.h"
-#include "demons_opts.h"
+#include "demons_cuda.h"
 #include "demons_misc.h"
+#include "demons_opts.h"
 #include "plm_timer.h"
 #include "volume.h"
 
@@ -357,7 +350,13 @@ __global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, fl
 /*
 Host
 */
-Volume* demons_cuda (Volume* fixed, Volume* moving, Volume* moving_grad, Volume* vf_init, DEMONS_Parms* parms)
+Volume* demons_cuda (
+    Volume* fixed, 
+    Volume* moving, 
+    Volume* moving_grad, 
+    Volume* vf_init, 
+    DEMONS_Parms* parms
+)
 {
 	int i;
 	int	it;						/* Iterations */
