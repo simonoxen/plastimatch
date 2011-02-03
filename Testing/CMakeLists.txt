@@ -733,7 +733,7 @@ ADD_TEST (
 
 ## -------------------------------------------------------------------------
 ## landmark_warp a: itk tps, slicer fcsv
-## landmark_warp b: gcs cone rbf, slicer fcsv
+## landmark_warp b: wendland rbf, slicer fcsv
 ## landmark_warp c: nsh gauss rbf, slicer fcsv
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
@@ -777,7 +777,7 @@ PLM_ADD_TEST (
   "landmark-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
-  "-a;cone;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha"
+  "-a;wendland;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha"
   )
 PLM_ADD_TEST (
   "landmark-warp-b-stats-1"

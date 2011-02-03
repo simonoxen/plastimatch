@@ -165,7 +165,7 @@ do_landmark_warp (args_info_landmark_warp *args_info)
     case algorithm_arg_gauss:
 	do_landmark_warp_nsh (lw);
 	break;
-    case algorithm_arg_cone:
+    case algorithm_arg_wendland:
 	do_landmark_warp_gcs (lw);
 	break;
     default:

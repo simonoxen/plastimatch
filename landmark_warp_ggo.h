@@ -33,8 +33,8 @@ extern "C" {
 /** @brief the program version */
 #define CMDLINE_PARSER_LANDMARK_WARP_VERSION "version 1.4-beta"
 #endif
- 
-enum enum_algorithm { algorithm_arg_tps = 0 , algorithm_arg_gauss, algorithm_arg_cone };
+
+enum enum_algorithm { algorithm_arg_tps = 0 , algorithm_arg_gauss, algorithm_arg_wendland };
 
 /** @brief Where the command line options are stored */
 struct args_info_landmark_warp
@@ -72,7 +72,7 @@ struct args_info_landmark_warp
   char * fixed_arg;	/**< @brief Fixed image (match output size to this image).  */
   char * fixed_orig;	/**< @brief Fixed image (match output size to this image) original value given at command line.  */
   const char *fixed_help; /**< @brief Fixed image (match output size to this image) help description.  */
-  enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='cone').  */
+  enum enum_algorithm algorithm_arg;	/**< @brief RBF warping algorithm  (default='gauss').  */
   char * algorithm_orig;	/**< @brief RBF warping algorithm  original value given at command line.  */
   const char *algorithm_help; /**< @brief RBF warping algorithm  help description.  */
   float radius_arg;	/**< @brief Radius of radial basis function (default='50.0').  */
