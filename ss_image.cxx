@@ -23,7 +23,7 @@ compose_prefix_fn (
     const CBString &structure_name
 )
 {
-    fn->format ("%s_%s.%s", 
+    fn->format ("%s/%s.%s", 
 	(const char*) output_prefix, 
 	(const char*) structure_name, 
 	"mha");
