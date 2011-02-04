@@ -43,6 +43,8 @@ OPTION (PLM_SLICER_HARDCODED_FILENAME
 # Compile and link options
 OPTION (BUILD_SHARED_LIBS 
   "Build plastimatch as shared library" OFF)
+OPTION (PLM_BUILD_GENGETOPT
+  "Build gengetopt utility" OFF)
 OPTION (PLM_BUILD_RTK 
   "Build RTK" OFF)
 OPTION (PLM_BUILD_SLICER_LOADABLE 
@@ -407,6 +409,13 @@ IF (PLM_INSTALL_RPATH)
   # add the automatically determined parts of the RPATH
   # which point to directories outside the build tree to the install RPATH
   SET (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+ENDIF ()
+
+##-----------------------------------------------------------------------------
+##  Gengetopt processing
+##-----------------------------------------------------------------------------
+IF (PLM_BUILD_GENGETOPT)
+  ADD_SUBDIRECTORY (libs/gengetopt-2.22.4/src)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
