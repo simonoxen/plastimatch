@@ -416,7 +416,8 @@ ENDIF ()
 ##  Gengetopt processing
 ##-----------------------------------------------------------------------------
 IF (PLM_BUILD_GENGETOPT)
-  ADD_SUBDIRECTORY (libs/gengetopt-2.22.4/src)
+  #ADD_SUBDIRECTORY (libs/gengetopt-2.22.4/src)
+  ADD_SUBDIRECTORY (libs/gengetopt-2.22.4)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
