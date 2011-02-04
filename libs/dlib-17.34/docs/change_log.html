@@ -1,0 +1,1431 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="verify-v1" content="02MiiaFNVzS5/u0eQhsy3/knioFHsia1X3DXRpHkE6I=">
+<meta name="google-site-verification" content="DGSSJMKDomaDaDTIRJ8jDkv0YMx9Cz7OESbXHjjr6Jw">
+<title>dlib C++ Library
+               - Change Log</title>
+<script language="JavaScript">
+
+            // ---------------------------------------------
+            // --- Name:    Easy DHTML Treeview           --
+            // --- Author:  D.D. de Kerf                  --
+            // --- Version: 0.2          Date: 13-6-2001  --
+            // ---------------------------------------------
+            function Toggle(node)
+            {
+               // Unfold the branch if it isn't visible
+               var next_node = node.nextSibling;
+               if (next_node.style.display == 'none')
+               {
+                  // Change the image (if there is an image)
+                  if (node.childNodes.length > 0)
+                  {
+                     if (node.childNodes.length > 0)
+                     { 
+                        if (node.childNodes.item(0).nodeName == "IMG")
+                        {
+                           node.childNodes.item(0).src = "minus.gif";
+                        }
+                     }
+                  }
+
+                  next_node.style.display = 'block';
+               }
+               // Collapse the branch if it IS visible
+               else
+               {
+                  // Change the image (if there is an image)
+                  if (node.childNodes.length > 0)
+                  {
+                     if (node.childNodes.length > 0)
+                     { 
+                        if (node.childNodes.item(0).nodeName == "IMG")
+                        {
+                           node.childNodes.item(0).src = "plus.gif";
+                        }
+                     }
+                  }
+
+                  next_node.style.display = 'none';
+               }
+
+            }
+            function BigToggle(node)
+            {
+               // Unfold the branch if it isn't visible
+               var next_node = node.nextSibling;
+               if (next_node.style.display == 'none')
+               {
+                  // Change the image (if there is an image)
+                  if (node.childNodes.length > 0)
+                  {
+                     if (node.childNodes.length > 0)
+                     { 
+                        if (node.childNodes.item(0).nodeName == "IMG")
+                        {
+                           node.childNodes.item(0).src = "bigminus.gif";
+                        }
+                     }
+                  }
+
+                  next_node.style.display = 'block';
+               }
+               // Collapse the branch if it IS visible
+               else
+               {
+                  // Change the image (if there is an image)
+                  if (node.childNodes.length > 0)
+                  {
+                     if (node.childNodes.length > 0)
+                     { 
+                        if (node.childNodes.item(0).nodeName == "IMG")
+                        {
+                           node.childNodes.item(0).src = "bigplus.gif";
+                        }
+                     }
+                  }
+
+                  next_node.style.display = 'none';
+               }
+
+            }
+            </script><style type="text/css">
+               body {margin:0px;}
+               pre {margin:0px;}
+
+               ul.tree  li { list-style: none;  margin-left:10px;} 
+               ul.tree  { margin:0px; padding:0px; margin-left:5px; font-size:0.95em; }
+               ul.tree  li ul { margin-left:10px; padding:0px; }
+
+               div#component {
+                  background-color:white; 
+                  border: 2px solid rgb(102,102,102); 
+                  text-align:left;
+                  margin-top: 1.5em;
+                  padding: 0.7em;
+               }
+
+               div#function {
+                  background-color:white; 
+                  border: 2px solid rgb(102,102,255); 
+                  text-align:left;
+                  margin-top: 0.3em;
+                  padding: 0.3em;
+               }
+
+               div#class {
+                  background-color:white; 
+                  border: 2px solid rgb(255,102,102); 
+                  text-align:left;
+                  margin-top: 0.3em;
+                  padding: 0.3em;
+               }
+
+               div#extension {
+                  background-color:#FDFDFD; 
+                  border: 1px solid rgb(102,102,102); 
+                  text-align:left;
+                  margin-top: 1.0em;
+                  padding: 0.7em;
+               }
+
+               div#logb {
+                  text-align:left;
+                  padding: 0.0em;
+                  float: left;
+                  background-color:#c0c0c0; 
+                  border: double ; 
+                  margin: 0.5em;
+               }
+
+               .bdotted {border-bottom: 1px dotted}
+               .bdashed {border-bottom: 1px dashed}
+               .bsolid {border-bottom: 1px solid}
+               .bdouble {border-bottom: 1px double}
+               .bgroove {border-bottom: 1px groove}
+               .bridge {border-bottom: 1px ridge}
+               .binset {border-bottom: 1px inset}
+               .boutset {border-bottom: 1px outset}
+
+               div#row1 {
+                  background-color:#dfdfdf; 
+               }
+               div#row2 {
+                  background-color:#f2f2f2; 
+               }
+
+               div#typedefs {
+                  margin-left: 1.5em;
+                  margin-top: 0.2em;
+                  border: 1px dotted;
+                  width: 52em;
+               }
+
+               div#tdn {
+                  width: 10em;
+               }
+
+               .fullhr {
+                  clear: both;
+               }
+
+               body {
+                  text-align: center;
+               }
+
+               div#entire_page {
+                  width:62.5em;  
+                  text-align: left;
+                  margin-top: 0.4em;
+                  margin-left: auto;
+                  margin-right: auto;
+               }
+            </style>
+</head>
+<body bgcolor="#EDF3EE">
+<a name="top"></a><div id="entire_page"><table bgcolor="white" height="100%" bordercolor="#EDF3EE" CELLSPACING="0" CELLPADDING="10"><tr height="100%">
+<td BGCOLOR="#F5F5F5" style="padding:7px; border: 1px solid rgb(102,102,102);" VALIGN="TOP" height="100%">
+<br><table WIDTH="145" height="100%">
+<tr>
+<td VALIGN="TOP">
+      <b>The Library</b><ul class="tree">
+<li><a href="algorithms.html">Algorithms</a></li>
+<li><a href="api.html">API Wrappers</a></li>
+<li><a href="bayes.html">Bayesian Nets</a></li>
+<li><a href="compression.html">Compression</a></li>
+<li><a href="containers.html">Containers</a></li>
+<li><a href="imaging.html">Image Processing</a></li>
+<li><a href="ml.html">Machine Learning</a></li>
+<li><a href="metaprogramming.html">Metaprogramming</a></li>
+<li><a href="other.html">Miscellaneous</a></li>
+<li><a href="network.html">Networking</a></li>
+<li><a href="optimization.html">Optimization</a></li>
+<li><a href="parsing.html">Parsing</a></li>
+</ul>
+<br>
+ 
+
+      <b>Help/Info</b><ul class="tree">
+<li>
+<a onclick="Toggle(this)" style="cursor: pointer;margin-left:-9px"><img src="plus.gif"><font color="green"><u>Examples</u></font></a><ul style="display:none;">
+<li><a href="file_to_code_ex.cpp.html">Base64_Encoder</a></li>
+<li><a href="bayes_net_ex.cpp.html">Bayesian_Network</a></li>
+<li><a href="bayes_net_from_disk_ex.cpp.html">Bayesian_Network_From_Disk</a></li>
+<li><a href="bayes_net_gui_ex.cpp.html">Bayesian_Network_GUI</a></li>
+<li><a href="compress_stream_ex.cpp.html#_top">Cmd_Line_Parser</a></li>
+<li><a href="compress_stream_ex.cpp.html">Compress_Stream</a></li>
+<li><a href="config_reader_ex.cpp.html">Config_File_Reader</a></li>
+<li><a href="custom_trainer_ex.cpp.html">Custom_Trainers</a></li>
+<li><a href="dir_nav_ex.cpp.html">Directory_Navigation</a></li>
+<li><a href="empirical_kernel_map_ex.cpp.html">Empirical_Kernel_Map</a></li>
+<li><a href="gui_api_ex.cpp.html">GUI</a></li>
+<li><a href="server_http_ex.cpp.html">HTTP_Server</a></li>
+<li><a href="image_ex.cpp.html">Image</a></li>
+<li><a href="kcentroid_ex.cpp.html">Kernel_Centroid</a></li>
+<li><a href="kkmeans_ex.cpp.html">Kernel_K-Means_Clustering</a></li>
+<li><a href="krr_regression_ex.cpp.html">Kernel_Ridge_Regression</a></li>
+<li><a href="krls_filter_ex.cpp.html">Kernel_RLS_Filtering</a></li>
+<li><a href="krls_ex.cpp.html">Kernel_RLS_Regression</a></li>
+<li><a href="krr_classification_ex.cpp.html">KRR_Classification</a></li>
+<li><a href="linear_manifold_regularizer_ex.cpp.html">Linear_Manifold_Regularizer</a></li>
+<li><a href="logger_ex.cpp.html">Logger</a></li>
+<li><a href="logger_ex_2.cpp.html">Logger_Advanced</a></li>
+<li><a href="matrix_ex.cpp.html">Matrix</a></li>
+<li><a href="matrix_expressions_ex.cpp.html">Matrix_Expressions</a></li>
+<li><a href="member_function_pointer_ex.cpp.html">Member_Function_Pointer</a></li>
+<li><a href="model_selection_ex.cpp.html">Model_Selection</a></li>
+<li><a href="multiclass_classification_ex.cpp.html">Multiclass_Classification</a></li>
+<li><a href="multithreaded_object_ex.cpp.html">Multithreaded_Object</a></li>
+<li><a href="mlp_ex.cpp.html">Neural_Network</a></li>
+<li><a href="least_squares_ex.cpp.html">Non-Linear Least Squares</a></li>
+<li><a href="svm_pegasos_ex.cpp.html">Online_SVM</a></li>
+<li><a href="optimization_ex.cpp.html">Optimization</a></li>
+<li><a href="pipe_ex.cpp.html">Pipe</a></li>
+<li><a href="pipe_ex_2.cpp.html">Pipe_2</a></li>
+<li><a href="quantum_computing_ex.cpp.html">Quantum_Computing</a></li>
+<li><a href="queue_ex.cpp.html">Queue</a></li>
+<li><a href="rank_features_ex.cpp.html">Rank_Features</a></li>
+<li><a href="rvm_ex.cpp.html">Relevance_Vector_Classification</a></li>
+<li><a href="rvm_regression_ex.cpp.html">Relevance_Vector_Regression</a></li>
+<li><a href="sockets_ex.cpp.html">Sockets</a></li>
+<li><a href="sockets_ex_2.cpp.html">Sockets_2</a></li>
+<li><a href="sockstreambuf_ex.cpp.html">Sockstreambuf</a></li>
+<li><a href="svm_sparse_ex.cpp.html">Sparse_Vectors</a></li>
+<li><a href="std_allocator_ex.cpp.html">Std_C++_Allocator</a></li>
+<li><a href="svm_ex.cpp.html">Support_Vector_Machine</a></li>
+<li><a href="svr_ex.cpp.html">Support_Vector_Regression</a></li>
+<li><a href="surf_ex.cpp.html">SURF</a></li>
+<li><a href="threaded_object_ex.cpp.html">Threaded_Object</a></li>
+<li><a href="threads_ex.cpp.html">Threads</a></li>
+<li><a href="thread_function_ex.cpp.html">Thread_Function</a></li>
+<li><a href="thread_pool_ex.cpp.html">Thread_Pool</a></li>
+<li><a href="timer_ex.cpp.html">Timer</a></li>
+<li><a href="xml_parser_ex.cpp.html">XML_Parser</a></li>
+</ul>
+</li>
+<li><a href="index.html">Home</a></li>
+<li><a href="compile.html">How to compile</a></li>
+<li><a href="howto_contribute.html">How to contribute</a></li>
+<li><a href="term_index.html">Index</a></li>
+<li><a href="intro.html">Introduction</a></li>
+<li><a href="license.html">License</a></li>
+<li><a href="books.html">Suggested Books</a></li>
+</ul>
+<br>
+ 
+      <b>Current Release</b><ul class="tree">
+<li><a href="change_log.html">Change Log</a></li>
+<li><a href="release_notes.html">Release Notes</a></li>
+<li>Version: 17.34</li>
+</ul>
+<br>
+
+
+      
+    </td>
+<td width="1"></td>
+</tr>
+<tr><td valign="bottom">
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      
+      Last Modified:<br>
+      Jan 03, 2011
+      <br>
+      <br>
+   </td></tr>
+</table>
+</td>
+<td VALIGN="TOP" width="100%" style="border: 1px solid rgb(102,102,102);">
+<center><h1>Change Log</h1></center>
+<u>Revision</u>: 4089<br><u>Date</u>: Jan 02, 2011
+      (21:02:58 UTC)
+
+   <br><pre>clarified a comment
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/function_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4087<br><u>Date</u>: Jan 02, 2011
+      (15:43:27 UTC)
+
+   <br><pre>Added wrappers for the new overloads which take std::string.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/config_reader/config_reader_thread_safe_1.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4085<br><u>Date</u>: Jan 01, 2011
+      (23:12:51 UTC)
+
+   <br><pre>Added overloads to the config_reader's methods to allow it to load directly from
+a file name given as a string in addition to taking istream objects.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/config_reader/config_reader_kernel_1.h</div>
+<div id="row1">/trunk/dlib/config_reader/config_reader_kernel_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4084<br><u>Date</u>: Jan 01, 2011
+      (23:05:33 UTC)
+
+   <br><pre>Accidentally removed a needed #include yesterday.  Just putting it back.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/xml_parser.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4083<br><u>Date</u>: Dec 31, 2010
+      (22:12:54 UTC)
+
+   <br><pre>Removed the ASSERT that the B matrix be symmetric since compiler optimizations
+can sometimes cause B to be very slightly non-symmetric.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_trust_region.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4081<br><u>Date</u>: Dec 31, 2010
+      (21:49:54 UTC)
+
+   <br><pre>Added a comment
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4080<br><u>Date</u>: Dec 31, 2010
+      (21:45:37 UTC)
+
+   <br><pre>All I did in this change was rename memory_manager&lt;char&gt;::kernel_1a to default_memory_manager.
+default_memory_manager is way more readable and clear.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/any/any_decision_function.h</div>
+<div id="row1">/trunk/dlib/any/any_decision_function_abstract.h</div>
+<div id="row2">/trunk/dlib/any/any_trainer.h</div>
+<div id="row1">/trunk/dlib/any/any_trainer_abstract.h</div>
+<div id="row2">/trunk/dlib/array.h</div>
+<div id="row1">/trunk/dlib/array/array_kernel_1.h</div>
+<div id="row2">/trunk/dlib/array/array_kernel_2.h</div>
+<div id="row1">/trunk/dlib/array/array_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/array2d.h</div>
+<div id="row1">/trunk/dlib/array2d/array2d_kernel_1.h</div>
+<div id="row2">/trunk/dlib/array2d/array2d_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/binary_search_tree.h</div>
+<div id="row2">/trunk/dlib/binary_search_tree/binary_search_tree_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/directed_graph.h</div>
+<div id="row2">/trunk/dlib/directed_graph/directed_graph_kernel_1.h</div>
+<div id="row1">/trunk/dlib/directed_graph/directed_graph_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/graph.h</div>
+<div id="row1">/trunk/dlib/graph/graph_kernel_1.h</div>
+<div id="row2">/trunk/dlib/graph/graph_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/hash_map.h</div>
+<div id="row2">/trunk/dlib/hash_map/hash_map_kernel_1.h</div>
+<div id="row1">/trunk/dlib/hash_map/hash_map_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/hash_set.h</div>
+<div id="row1">/trunk/dlib/hash_set/hash_set_kernel_1.h</div>
+<div id="row2">/trunk/dlib/hash_set/hash_set_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/hash_table.h</div>
+<div id="row2">/trunk/dlib/hash_table/hash_table_kernel_1.h</div>
+<div id="row1">/trunk/dlib/hash_table/hash_table_kernel_2.h</div>
+<div id="row2">/trunk/dlib/hash_table/hash_table_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/map.h</div>
+<div id="row2">/trunk/dlib/map/map_kernel_1.h</div>
+<div id="row1">/trunk/dlib/map/map_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/matrix/matrix_abstract.h</div>
+<div id="row1">/trunk/dlib/matrix/matrix_expressions.h</div>
+<div id="row2">/trunk/dlib/matrix/matrix_fwd.h</div>
+<div id="row1">/trunk/dlib/matrix/matrix_utilities.h</div>
+<div id="row2">/trunk/dlib/queue.h</div>
+<div id="row1">/trunk/dlib/queue/queue_kernel_1.h</div>
+<div id="row2">/trunk/dlib/queue/queue_kernel_2.h</div>
+<div id="row1">/trunk/dlib/queue/queue_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/sequence.h</div>
+<div id="row1">/trunk/dlib/sequence/sequence_kernel_1.h</div>
+<div id="row2">/trunk/dlib/sequence/sequence_kernel_2.h</div>
+<div id="row1">/trunk/dlib/sequence/sequence_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/set.h</div>
+<div id="row1">/trunk/dlib/set/set_kernel_1.h</div>
+<div id="row2">/trunk/dlib/set/set_kernel_abstract.h</div>
+<div id="row1">/trunk/dlib/stack.h</div>
+<div id="row2">/trunk/dlib/stack/stack_kernel_1.h</div>
+<div id="row1">/trunk/dlib/stack/stack_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/statistics/random_subset_selector.h</div>
+<div id="row1">/trunk/dlib/statistics/random_subset_selector_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/sparse_kernel.h</div>
+<div id="row1">/trunk/dlib/svm/sparse_kernel_abstract.h</div>
+<div id="row2">/trunk/dlib/test/kcentroid.cpp</div>
+<div id="row1">/trunk/dlib/test/matrix2.cpp</div>
+<div id="row2">/trunk/dlib/test/matrix_chol.cpp</div>
+<div id="row1">/trunk/dlib/test/matrix_lu.cpp</div>
+<div id="row2">/trunk/dlib/test/matrix_qr.cpp</div>
+<div id="row1">/trunk/dlib/timer.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4079<br><u>Date</u>: Dec 31, 2010
+      (21:38:32 UTC)
+
+   <br><pre>Added a default_memory_manager typedef at the top of algs.h.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+<div id="row1">/trunk/dlib/memory_manager_stateless/memory_manager_stateless_kernel_1.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4078<br><u>Date</u>: Dec 31, 2010
+      (21:05:15 UTC)
+
+   <br><pre>fixed typo in spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4076<br><u>Date</u>: Dec 31, 2010
+      (20:40:10 UTC)
+
+   <br><pre>Added a test to make sure the probabilistic() trainer adapter works right
+and also that it works with the one_vs_all_trainer without issue.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/one_vs_all_trainer.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4075<br><u>Date</u>: Dec 31, 2010
+      (20:34:02 UTC)
+
+   <br><pre>Added a probabilistic trainer adapter.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+<div id="row1">/trunk/dlib/svm/svm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4073<br><u>Date</u>: Dec 31, 2010
+      (20:19:05 UTC)
+
+   <br><pre>Renamed generic_probabilistic_decision_function to probabilistic_function.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/function.h</div>
+<div id="row1">/trunk/dlib/svm/function_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4072<br><u>Date</u>: Dec 31, 2010
+      (20:13:07 UTC)
+
+   <br><pre> - Made the train_probabilistic_decision_function() more general by making it work 
+   with any kind of trainer object rather than only ones which produce 
+   dlib::decision_function objects.  I also made it work with trainers that only 
+   take std::vectors.    
+ - train_probabilistic_decision_function() no longer accepts column vectors of 
+   samples and labels.  Now it only accepts std::vectors of samples and labels.  
+ - Added a new generic_probabilistic_decision_function object which is returned by
+   the train_probabilistic_decision_function().  The old probabilistic_decision_function
+   still exists and can be constructed from a generic_probabilistic_decision_function.
+   This way backwards compatibility is maintained with older code so long as that
+   code used std::vectors to hold samples and labels.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/function.h</div>
+<div id="row1">/trunk/dlib/svm/function_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+<div id="row1">/trunk/dlib/svm/svm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4070<br><u>Date</u>: Dec 31, 2010
+      (16:20:21 UTC)
+
+   <br><pre>Added a one vs. all multiclass trainer.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+<div id="row1">/trunk/dlib/test/CMakeLists.txt</div>
+<div id="row2">/trunk/dlib/test/makefile</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_all_decision_function.h</div>
+<div id="row1">/trunk/dlib/svm/one_vs_all_decision_function_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/one_vs_all_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/one_vs_all_trainer_abstract.h</div>
+<div id="row2">/trunk/dlib/test/one_vs_all_trainer.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4069<br><u>Date</u>: Dec 31, 2010
+      (16:11:13 UTC)
+
+   <br><pre>clarified spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4068<br><u>Date</u>: Dec 31, 2010
+      (16:08:14 UTC)
+
+   <br><pre>Moved null_df into its own file.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_decision_function.h</div>
+<div id="row1">/trunk/dlib/svm/one_vs_one_decision_function_abstract.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/null_df.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4067<br><u>Date</u>: Dec 31, 2010
+      (15:34:45 UTC)
+
+   <br><pre>minor cleanup
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_decision_function.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4066<br><u>Date</u>: Dec 31, 2010
+      (15:22:54 UTC)
+
+   <br><pre>Added a test for the cross_validate_regression_trainer() function.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/svm.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4063<br><u>Date</u>: Dec 31, 2010
+      (15:00:19 UTC)
+
+   <br><pre>Added cross_validate_regression_trainer() and test_regression_function()
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/cross_validate_regression_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/cross_validate_regression_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4059<br><u>Date</u>: Dec 31, 2010
+      (05:05:36 UTC)
+
+   <br><pre>Removed svn:executable from some files.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/dir_nav/dir_nav_extensions.cpp</div>
+<div id="row1">/trunk/dlib/dir_nav/dir_nav_extensions.h</div>
+<div id="row2">/trunk/dlib/dir_nav/dir_nav_extensions_abstract.h</div>
+<div id="row1">/trunk/dlib/image_keypoint.h</div>
+<div id="row2">/trunk/dlib/string/cassert</div>
+<div id="row1">/trunk/dlib/string/iomanip</div>
+<div id="row2">/trunk/dlib/string/iosfwd</div>
+<div id="row1">/trunk/dlib/string/iostream</div>
+<div id="row2">/trunk/dlib/string/locale</div>
+<div id="row1">/trunk/dlib/test/kcentroid.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4055<br><u>Date</u>: Dec 30, 2010
+      (20:38:09 UTC)
+
+   <br><pre>Minor change to avoid compile time error in gcc.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_trainer.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4054<br><u>Date</u>: Dec 30, 2010
+      (19:51:13 UTC)
+
+   <br><pre>Added some unit tests for the one_vs_one multiclass training code.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/CMakeLists.txt</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/test/one_vs_one_trainer.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4051<br><u>Date</u>: Dec 30, 2010
+      (17:50:13 UTC)
+
+   <br><pre>clarified spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/cross_validate_multiclass_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4050<br><u>Date</u>: Dec 30, 2010
+      (17:38:51 UTC)
+
+   <br><pre>minor change to avoid warning in gcc
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_decision_function.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4049<br><u>Date</u>: Dec 29, 2010
+      (15:59:26 UTC)
+
+   <br><pre>minor cleanup
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4047<br><u>Date</u>: Dec 28, 2010
+      (15:11:57 UTC)
+
+   <br><pre>Added a bunch of new multiclass classification tools.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/cross_validate_multiclass_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/cross_validate_multiclass_trainer_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/multiclass_tools.h</div>
+<div id="row1">/trunk/dlib/svm/multiclass_tools_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_decision_function.h</div>
+<div id="row1">/trunk/dlib/svm/one_vs_one_decision_function_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/one_vs_one_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/one_vs_one_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4046<br><u>Date</u>: Dec 28, 2010
+      (03:57:00 UTC)
+
+   <br><pre>clarified spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4044<br><u>Date</u>: Dec 27, 2010
+      (03:48:12 UTC)
+
+   <br><pre>Removed an unused variable.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4043<br><u>Date</u>: Dec 26, 2010
+      (18:46:44 UTC)
+
+   <br><pre>Fixed a minor bug in unordered_pair
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/unordered_pair.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4041<br><u>Date</u>: Dec 26, 2010
+      (18:23:26 UTC)
+
+   <br><pre>I just retabbed this file
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/pixel.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4039<br><u>Date</u>: Dec 26, 2010
+      (17:55:46 UTC)
+
+   <br><pre>Added two new any object.  One for containing just decision function style objects and
+another for trainers.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/any.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/any/any_decision_function.h</div>
+<div id="row1">/trunk/dlib/any/any_decision_function_abstract.h</div>
+<div id="row2">/trunk/dlib/any/any_trainer.h</div>
+<div id="row1">/trunk/dlib/any/any_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4038<br><u>Date</u>: Dec 26, 2010
+      (17:13:08 UTC)
+
+   <br><pre>Fixed grammar
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4035<br><u>Date</u>: Dec 26, 2010
+      (17:09:07 UTC)
+
+   <br><pre>Moved basic_type out of any and made it a first class object with
+proper documentation.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+<div id="row1">/trunk/dlib/any/any.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4034<br><u>Date</u>: Dec 26, 2010
+      (17:03:08 UTC)
+
+   <br><pre>Removed the kernel_type typedef from the normalized function since this
+meta-object should be capable of working with non-kernel decision functions.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/function.h</div>
+<div id="row1">/trunk/dlib/svm/function_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4032<br><u>Date</u>: Dec 26, 2010
+      (16:50:48 UTC)
+
+   <br><pre>Added the unordered_pair object.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/unordered_pair.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4031<br><u>Date</u>: Dec 26, 2010
+      (04:02:27 UTC)
+
+   <br><pre>Added typedefs for each of the template arguments to the type_safe_union.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/type_safe_union/type_safe_union_kernel.h</div>
+<div id="row1">/trunk/dlib/type_safe_union/type_safe_union_kernel_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4030<br><u>Date</u>: Dec 24, 2010
+      (23:53:06 UTC)
+
+   <br><pre>Fixed a bug in the deserialization code for the sparse kernels.  The bug
+prevented code which used the deserialization routine from compiling.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/sparse_kernel.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4029<br><u>Date</u>: Dec 24, 2010
+      (23:51:44 UTC)
+
+   <br><pre>Added serialization support for std::pair objects.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/serialize.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4028<br><u>Date</u>: Dec 24, 2010
+      (16:17:14 UTC)
+
+   <br><pre>Modified the type_safe_union so that you can call apply_to_contents() on const
+type_safe_unions.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/type_safe_union.cpp</div>
+<div id="row1">/trunk/dlib/type_safe_union/type_safe_union_kernel.h</div>
+<div id="row2">/trunk/dlib/type_safe_union/type_safe_union_kernel_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4027<br><u>Date</u>: Dec 23, 2010
+      (23:43:36 UTC)
+
+   <br><pre>Added unit tests for the svr_trainer and svm_one_class_trainer.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/svm.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4025<br><u>Date</u>: Dec 23, 2010
+      (22:56:15 UTC)
+
+   <br><pre>Added an epsilon-insensitive support vector regression class.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/svr_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/svr_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4024<br><u>Date</u>: Dec 23, 2010
+      (22:55:45 UTC)
+
+   <br><pre>Clarified spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/krr_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4022<br><u>Date</u>: Dec 23, 2010
+      (20:58:22 UTC)
+
+   <br><pre>Simplified requires clause of train() function.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/rvm.h</div>
+<div id="row1">/trunk/dlib/svm/rvm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4021<br><u>Date</u>: Dec 23, 2010
+      (20:57:49 UTC)
+
+   <br><pre>Added the is_learning_problem() predicate and used it to make a few
+requires clauses more straight forward.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/krr_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/krr_trainer_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/rbf_network.h</div>
+<div id="row1">/trunk/dlib/svm/rbf_network_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+<div id="row1">/trunk/dlib/svm/svm_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4020<br><u>Date</u>: Dec 23, 2010
+      (04:27:15 UTC)
+
+   <br><pre>made spec clearer
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4019<br><u>Date</u>: Dec 23, 2010
+      (00:12:28 UTC)
+
+   <br><pre>Added a missing #include
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4017<br><u>Date</u>: Dec 23, 2010
+      (00:02:14 UTC)
+
+   <br><pre>fixed grammar
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp3_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4016<br><u>Date</u>: Dec 23, 2010
+      (00:00:31 UTC)
+
+   <br><pre>Added another citation
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp3_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4015<br><u>Date</u>: Dec 22, 2010
+      (23:12:06 UTC)
+
+   <br><pre>moved calculate_rho_and_b back into the svm_nu_trainer
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_nu_trainer.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="red">Deleted</font></b></div>
+<div id="row2">/trunk/dlib/svm/calculate_rho_and_b.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4014<br><u>Date</u>: Dec 22, 2010
+      (23:06:55 UTC)
+
+   <br><pre>Fixed a minor bug and did some cleanup
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_c_trainer.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4013<br><u>Date</u>: Dec 22, 2010
+      (22:39:42 UTC)
+
+   <br><pre>Added the svm_one_class_trainer object.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_one_class_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/svm_one_class_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4012<br><u>Date</u>: Dec 22, 2010
+      (22:18:54 UTC)
+
+   <br><pre>Made alpha initialization a little more robust.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp3_using_smo.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4009<br><u>Date</u>: Dec 22, 2010
+      (20:31:38 UTC)
+
+   <br><pre>Removed a bit of code that didn't actually do anything.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp2_using_smo.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4008<br><u>Date</u>: Dec 22, 2010
+      (19:42:23 UTC)
+
+   <br><pre>Fixed typo in comment
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/sparse_vector_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4006<br><u>Date</u>: Dec 22, 2010
+      (18:54:16 UTC)
+
+   <br><pre>Added missing #include
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4005<br><u>Date</u>: Dec 22, 2010
+      (18:45:52 UTC)
+
+   <br><pre>Added some tests for the svm_c_trainer
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/svm.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4004<br><u>Date</u>: Dec 22, 2010
+      (18:29:34 UTC)
+
+   <br><pre>Added the svm_c_trainer.  It uses the solve_qp3_using_smo optimizer I just added.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_c_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/svm_c_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4003<br><u>Date</u>: Dec 22, 2010
+      (18:25:50 UTC)
+
+   <br><pre>Moved calculate_rho_and_b() into it's own file since it will be used
+by other tools.  I also clarified the spec slightly.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_nu_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/svm_nu_trainer_abstract.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/svm/calculate_rho_and_b.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4002<br><u>Date</u>: Dec 22, 2010
+      (18:24:41 UTC)
+
+   <br><pre>Added another version of the quadratic solver.  It's basically a copy
+of solve_qp2_using_smo but this one solves the problem associated with
+C-SVMs and a few other things.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp3_using_smo.h</div>
+<div id="row1">/trunk/dlib/optimization/optimization_solve_qp3_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4001<br><u>Date</u>: Dec 22, 2010
+      (18:05:22 UTC)
+
+   <br><pre>Made the solver return the number of iterations performed.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp2_using_smo.h</div>
+<div id="row1">/trunk/dlib/optimization/optimization_solve_qp2_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 4000<br><u>Date</u>: Dec 22, 2010
+      (00:26:50 UTC)
+
+   <br><pre>fixed minor bug in unit tests</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/matrix2.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3998<br><u>Date</u>: Dec 22, 2010
+      (00:25:19 UTC)
+
+   <br><pre>Clarified spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp2_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3997<br><u>Date</u>: Dec 21, 2010
+      (22:59:21 UTC)
+
+   <br><pre>A minor change to avoid a compiler warning from gcc.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm_nu_trainer.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3995<br><u>Date</u>: Dec 21, 2010
+      (22:39:28 UTC)
+
+   <br><pre>Clarified some comments
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache.h</div>
+<div id="row1">/trunk/dlib/optimization/optimization_solve_qp2_using_smo_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3994<br><u>Date</u>: Dec 21, 2010
+      (22:21:57 UTC)
+
+   <br><pre>Refactored the svm_nu_trainer.  Specifically, I pulled the quadratic 
+solver out and made it a separate class.  The kernel_matrix_cache has also
+been removed in favor of the new symmetric_matrix_cache.  Finally, the
+remaining bits of the svm_nu_trainer have been moved into svm_nu_trainer.h
+
+Also note that invalid_svm_nu_error has been renamed to invalid_nu_error.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization.h</div>
+<div id="row1">/trunk/dlib/svm/svm.h</div>
+<div id="row2">/trunk/dlib/svm/svm_abstract.h</div>
+<div id="row1">/trunk/dlib/svm/svm_threaded.h</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_solve_qp2_using_smo.h</div>
+<div id="row1">/trunk/dlib/optimization/optimization_solve_qp2_using_smo_abstract.h</div>
+<div id="row2">/trunk/dlib/svm/svm_nu_trainer.h</div>
+<div id="row1">/trunk/dlib/svm/svm_nu_trainer_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3993<br><u>Date</u>: Dec 21, 2010
+      (20:53:23 UTC)
+
+   <br><pre>updated spec
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3989<br><u>Date</u>: Dec 21, 2010
+      (18:26:56 UTC)
+
+   <br><pre>removed some cruft
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3988<br><u>Date</u>: Dec 21, 2010
+      (18:22:43 UTC)
+
+   <br><pre>More code cleanup and spec refinement.  I also added a unit test for the symmetric_matrix_cache.  
+Finally, I put the new structs for determining the return types from colm/rowm/diag
+into the proper places.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix.h</div>
+<div id="row1">/trunk/dlib/matrix/matrix_subexp.h</div>
+<div id="row2">/trunk/dlib/matrix/matrix_subexp_abstract.h</div>
+<div id="row1">/trunk/dlib/matrix/matrix_utilities.h</div>
+<div id="row2">/trunk/dlib/matrix/matrix_utilities_abstract.h</div>
+<div id="row1">/trunk/dlib/matrix/symmetric_matrix_cache.h</div>
+<div id="row2">/trunk/dlib/test/CMakeLists.txt</div>
+<div id="row1">/trunk/dlib/test/makefile</div>
+</div>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/test/symmetric_matrix_cache.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3987<br><u>Date</u>: Dec 21, 2010
+      (17:55:53 UTC)
+
+   <br><pre>code cleanup
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache.h</div>
+<div id="row1">/trunk/dlib/matrix/symmetric_matrix_cache_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3986<br><u>Date</u>: Dec 21, 2010
+      (16:51:22 UTC)
+
+   <br><pre>Added rough version of the new symmetric_matrix_cache() function.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="blue">Added</font></b></div>
+<div id="row2">/trunk/dlib/matrix/symmetric_matrix_cache.h</div>
+<div id="row1">/trunk/dlib/matrix/symmetric_matrix_cache_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3985<br><u>Date</u>: Dec 21, 2010
+      (00:54:36 UTC)
+
+   <br><pre>Changed the kernel_matrix() function a little so it is easier for compilers to optimize.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/kernel_matrix.h</div>
+<div id="row1">/trunk/dlib/test/kernel_matrix.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3984<br><u>Date</u>: Dec 18, 2010
+      (20:28:40 UTC)
+
+   <br><pre>Removed a pair of unused variables.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/svm/svm.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3983<br><u>Date</u>: Dec 15, 2010
+      (00:52:44 UTC)
+
+   <br><pre>Changed the check for the radius being zero a little more robust against 
+floating point weirdness.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/optimization/optimization_trust_region.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3982<br><u>Date</u>: Dec 15, 2010
+      (00:51:53 UTC)
+
+   <br><pre>Minor change to avoid a compiler warning in gcc
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/pixel.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3981<br><u>Date</u>: Dec 15, 2010
+      (00:50:42 UTC)
+
+   <br><pre>made tests a little more robust
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/test/matrix2.cpp</div>
+<div id="row1">/trunk/dlib/test/matrix4.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3980<br><u>Date</u>: Dec 14, 2010
+      (01:38:04 UTC)
+
+   <br><pre>Made the requirement that the two images be different objects
+a little more clear.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/image_transforms/spatial_filtering.h</div>
+<div id="row1">/trunk/dlib/image_transforms/spatial_filtering_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3978<br><u>Date</u>: Dec 14, 2010
+      (01:18:57 UTC)
+
+   <br><pre>Improved the behavior of assign_image_scaled()
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/image_transforms/assign_image.h</div>
+<div id="row1">/trunk/dlib/image_transforms/assign_image_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3976<br><u>Date</u>: Dec 14, 2010
+      (00:29:26 UTC)
+
+   <br><pre>Fixed typo in comment
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3975<br><u>Date</u>: Dec 13, 2010
+      (03:36:47 UTC)
+
+   <br><pre>Fixed a bug in the signed/unsigned comparison code in the assign_pixel function.</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/pixel.h</div>
+<div id="row1">/trunk/dlib/test/pixel.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3973<br><u>Date</u>: Dec 13, 2010
+      (03:08:27 UTC)
+
+   <br><pre>Added a function called assign_image_scaled() which copies an image but also
+does an intelligent scaling if the source and destination images have differing
+dynamic ranges.  I also modified the image display widgets to use assign_image_scaled()
+instead of assign_image().
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/gui_widgets/base_widgets.h</div>
+<div id="row1">/trunk/dlib/gui_widgets/widgets.h</div>
+<div id="row2">/trunk/dlib/image_transforms/assign_image.h</div>
+<div id="row1">/trunk/dlib/image_transforms/assign_image_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3972<br><u>Date</u>: Dec 13, 2010
+      (01:52:12 UTC)
+
+   <br><pre>I went through the image transforms and updated their specs and a few other
+things so that they still make sense now that I'm letting pixels be signed 
+as well as unsigned.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/image_transforms/edge_detector.h</div>
+<div id="row1">/trunk/dlib/image_transforms/edge_detector_abstract.h</div>
+<div id="row2">/trunk/dlib/image_transforms/equalize_histogram.h</div>
+<div id="row1">/trunk/dlib/image_transforms/equalize_histogram_abstract.h</div>
+<div id="row2">/trunk/dlib/image_transforms/image_pyramid.h</div>
+<div id="row1">/trunk/dlib/image_transforms/image_pyramid_abstract.h</div>
+<div id="row2">/trunk/dlib/image_transforms/integral_image.h</div>
+<div id="row1">/trunk/dlib/image_transforms/integral_image_abstract.h</div>
+<div id="row2">/trunk/dlib/image_transforms/spatial_filtering.h</div>
+<div id="row1">/trunk/dlib/image_transforms/thresholding.h</div>
+<div id="row2">/trunk/dlib/image_transforms/thresholding_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3971<br><u>Date</u>: Dec 13, 2010
+      (01:31:08 UTC)
+
+   <br><pre>Added missing requirement 
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/image_transforms/assign_image_abstract.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3970<br><u>Date</u>: Dec 13, 2010
+      (01:30:08 UTC)
+
+   <br><pre>Changed promote so that 8bit integers promote to 32bit integers.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3969<br><u>Date</u>: Dec 13, 2010
+      (01:26:38 UTC)
+
+   <br><pre>changed to avoid compiler warnings in visual studio</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/pixel.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3968<br><u>Date</u>: Dec 13, 2010
+      (00:15:08 UTC)
+
+   <br><pre>Added the promote template which is a tool for converting from a smaller
+scalar type to a bigger one.  The change in vector.h is just renaming to 
+avoid a naming conflict.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+<div id="row1">/trunk/dlib/geometry/vector.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3967<br><u>Date</u>: Dec 12, 2010
+      (23:15:52 UTC)
+
+   <br><pre>Changed the pixel_traits so that signed grayscale pixel types are allowed.  This
+involved adding a few new fields to pixel_traits.  I also changed the get_pixel_intensity()
+function so that its return value is of the same type as the basic pixel type rather
+than always being unsigned long.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/gui_core/gui_core_kernel_1.h</div>
+<div id="row1">/trunk/dlib/gui_core/gui_core_kernel_2.h</div>
+<div id="row2">/trunk/dlib/pixel.h</div>
+<div id="row1">/trunk/dlib/test/pixel.cpp</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3966<br><u>Date</u>: Dec 12, 2010
+      (21:22:14 UTC)
+
+   <br><pre>Added missing declaration for int64 in the is_built_in_scalar_type template.
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/algs.h</div>
+</div>
+<hr class="fullhr">
+<u>Revision</u>: 3963<br><u>Date</u>: Dec 05, 2010
+      (19:16:39 UTC)
+
+   <br><pre>Fixed typo
+</pre>
+<div id="logb">
+<div class="bsolid"><b><font color="black">Modified</font></b></div>
+<div id="row2">/trunk/dlib/README.txt</div>
+</div>
+<hr class="fullhr">
+      <br>
+      <center><a href="old_change_log.html">Old Change Logs</a></center>
+      <br>
+   </td>
+</tr></table></div>
+</body>
+</html>
