@@ -33,6 +33,7 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
+OPTION (PLM_BUILD_TCLAP_TEST "Build tclap test program" OFF)
 
 # Software options
 OPTION (PLM_USE_4D_SS_IMAGE 
@@ -1192,7 +1193,6 @@ IF (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-
 ENDIF ()
 
 IF (SSE2_FOUND)
@@ -1794,6 +1794,13 @@ ENDIF ()
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
   PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
+ENDIF ()
+
+# Test executable -- tclap
+IF (PLM_BUILD_TCLAP_TEST)
+  INCLUDE_DIRECTORIES (BEFORE "${CMAKE_SOURCE_DIR}/libs/tclap-1.2.0/include")
+  SET (TCLAP_TEST_SRC tclap_test.cxx)
+  PLM_ADD_EXECUTABLE (tclap_test "${TCLAP_TEST_SRC}" "" "" 0)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
