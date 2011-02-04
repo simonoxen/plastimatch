@@ -19,7 +19,7 @@
 #include "pointset.h"
 #include "print_and_exit.h"
 #include "rbf_gauss.h"
-#include "rbf_gcs.h"
+#include "rbf_wendland.h"
 
 /* How do the algorithms load their point data (currently)?
    plastimatch warp pointset   - PointSetType
@@ -39,13 +39,13 @@ do_landmark_warp_itk_tps (Landmark_warp *lw)
 }
 
 static void
-do_landmark_warp_gcs (Landmark_warp *lw)
+do_landmark_warp_wendland (Landmark_warp *lw)
 {
-    rbf_gcs_warp (lw);
+    rbf_wendland_warp (lw);
 }
 
 static void
-do_landmark_warp_nsh (Landmark_warp *lw)
+do_landmark_warp_gauss (Landmark_warp *lw)
 {
     rbf_gauss_warp (lw);
 }
@@ -163,10 +163,10 @@ do_landmark_warp (args_info_landmark_warp *args_info)
 	do_landmark_warp_itk_tps (lw);
 	break;
     case algorithm_arg_gauss:
-	do_landmark_warp_nsh (lw);
+	do_landmark_warp_gauss (lw);
 	break;
     case algorithm_arg_wendland:
-	do_landmark_warp_gcs (lw);
+	do_landmark_warp_wendland (lw);
 	break;
     default:
 	break;

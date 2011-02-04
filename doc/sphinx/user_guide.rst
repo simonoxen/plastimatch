@@ -9,6 +9,7 @@ Welcome to the plastimatch user guide.
    getting_started
    command_reference
    registration
+   landmarks	
    drr
    fdk
    fdk_tutorial_i
