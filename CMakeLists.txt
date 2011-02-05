@@ -279,7 +279,7 @@ ENDIF (PLM_USE_F2C)
 ##-----------------------------------------------------------------------------
 FIND_PACKAGE (Brook)
 FIND_PACKAGE (DCMTK)
-FIND_PACKAGE (Dlib)
+#FIND_PACKAGE (Dlib)
 FIND_PACKAGE (Etags)
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (FFTW)
@@ -313,16 +313,7 @@ ELSE ()
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  Use local sqlite if not found
-##-----------------------------------------------------------------------------
-IF (NOT SQLITE_FOUND)
-  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
-  SET (SQLITE_INCLUDE_DIR libs/sqlite-3.6.21)
-  SET (SQLITE_LIBRARIES sqlite3)
-ENDIF ()
-
-##-----------------------------------------------------------------------------
-##  Use local liblbfgs if not found
+##  Use local libsbfgs if not found
 ##-----------------------------------------------------------------------------
 IF (NOT LIBLBFGS_FOUND)
   ADD_SUBDIRECTORY (libs/liblbfgs-1.9)
@@ -333,11 +324,25 @@ IF (NOT LIBLBFGS_FOUND)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
+##  Use local sqlite if not found
+##-----------------------------------------------------------------------------
+IF (NOT SQLITE_FOUND)
+  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
+  SET (SQLITE_INCLUDE_DIR libs/sqlite-3.6.21)
+  SET (SQLITE_LIBRARIES sqlite3)
+ENDIF ()
+
+##-----------------------------------------------------------------------------
 ##  Only use local bstrlib
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY (libs/bstrlib-05122010)
 SET (BSTRLIB_INCLUDE_DIR libs/bstrlib-05122010)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+
+##-----------------------------------------------------------------------------
+##  Only use local dlib
+##-----------------------------------------------------------------------------
+SET (DLIB_INCLUDE_DIR libs/dlib-17.34)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal
@@ -1085,6 +1090,7 @@ WRAP_GGO (pcmd_segment_body_GGO_C pcmd_segment_body.ggo)
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
+  pcmd_autolabel.cxx pcmd_autolabel.h
   pcmd_compare.cxx pcmd_compare.h
   pcmd_compose.cxx pcmd_compose.h
   pcmd_crop.cxx pcmd_crop.h
@@ -1103,12 +1109,6 @@ SET (PLASTIMATCH_SRC
   pcmd_warp_pointset.cxx 
   plastimatch_main.cxx
   )
-IF (DLIB_FOUND)
-SET (PLASTIMATCH_SRC
-  ${PLASTIMATCH_SRC}
-  pcmd_autolabel.cxx pcmd_autolabel.h
-  )
-ENDIF ()
 SET (PLASTIMATCH_SLICER_SRC
   plastimatch-slicer.cxx
   )
@@ -1252,9 +1252,7 @@ IF (DCMTK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
 ENDIF ()
 
-IF (DLIB_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${DLIB_INCLUDE_DIR})
-ENDIF ()
+INCLUDE_DIRECTORIES (AFTER ${DLIB_INCLUDE_DIR})
 
 IF (FFTW_FOUND)
   INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
@@ -1708,7 +1706,7 @@ ENDIF ()
 # Test executable -- dlib
 IF (DLIB_FOUND AND PLM_BUILD_DLIB_TEST)
   SET (DLIB_TEST_SRC dlib_test.cxx)
-  SET (DLIB_TEST_LIBS ${DLIB_LIBRARIES})
+  SET (DLIB_TEST_LIBS "")
   PLM_ADD_EXECUTABLE (dlib_test 
     "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "" 0)
 ENDIF ()
