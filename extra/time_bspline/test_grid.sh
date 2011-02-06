@@ -11,13 +11,13 @@
 # Configuration & Test Parameters
 ######################################
 # Name of CSV output file
-outfile="./cpu_mi_grid.csv"
+outfile="./avarice_mi_grid.csv"
 
 # Location of bspline executable
-bspline='/home/tshack/src/plastimatch/build/bspline'
+bspline='/home/tshack/src/plastimatch/trunk/build/bspline'
 
 # Location of synthetic_mha executable
-synth_mha='/home/tshack/src/plastimatch/build/synthetic_mha'
+synth_mha='/home/tshack/src/plastimatch/trunk/build/synthetic_mha'
 
 # Test volume size
 vol_size=260
