@@ -1096,8 +1096,8 @@ SET (PLASTIMATCH_SRC
   pcmd_resample.cxx pcmd_resample.h
   pcmd_segment.cxx pcmd_segment.h
   ${pcmd_segment_body_GGO_C}
-  pcmd_slice.cxx pcmd_slice.h 
   pcmd_stats.cxx pcmd_stats.h
+  pcmd_thumbnail.cxx pcmd_thumbnail.h 
   pcmd_warp_dij.cxx 
   pcmd_warp.cxx pcmd_warp.h 
   pcmd_warp_pointset.cxx 

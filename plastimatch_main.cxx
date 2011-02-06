@@ -22,10 +22,10 @@
 #include "pcmd_xio_dvh.h"
 #include "pcmd_mask.h"
 #include "pcmd_header.h"
-#include "pcmd_segment.h"
-#include "pcmd_slice.h"
 #include "pcmd_resample.h"
+#include "pcmd_segment.h"
 #include "pcmd_stats.h"
+#include "pcmd_thumbnail.h"
 #include "pcmd_warp.h"
 #include "plm_parms.h"
 #include "plm_stages.h"
@@ -154,7 +154,10 @@ do_command (int argc, char* argv[])
 	do_command_segment (argc, argv);
     }
     else if (!strcmp (command, "slice")) {
-	do_command_slice (argc, argv);
+	print_and_exit ("Error: slice command is now called thumbnail.\n");
+    }
+    else if (!strcmp (command, "thumbnail")) {
+	do_command_thumbnail (argc, argv);
     }
     else if (!strcmp (command, "stats")) {
 	do_command_stats (argc, argv);

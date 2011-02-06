@@ -5,13 +5,13 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 #include "getopt.h"
-#include "pcmd_slice.h"
+#include "pcmd_thumbnail.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "thumbnail.h"
 
 static void
-slice_main (Slice_parms* parms)
+thumbnail_main (Thumbnail_parms* parms)
 {
     Plm_image *pli;
 
@@ -36,22 +36,22 @@ slice_main (Slice_parms* parms)
 }
 
 static void
-slice_print_usage (void)
+thumbnail_print_usage (void)
 {
     printf (
-	"Usage: plastimatch slice [options] input-file\n"
+	"Usage: plastimatch thumbnail [options] input-file\n"
 	"Options:\n"
 	"  --input file\n"
 	"  --output file\n"
 	"  --thumbnail-dim size\n"
 	"  --thumbnail-spacing size\n"
-	"  --slice-loc location\n"
+	"  --thumbnail-loc location\n"
     );
     exit (-1);
 }
 
 static void
-slice_parse_args (Slice_parms* parms, int argc, char* argv[])
+thumbnail_parse_args (Thumbnail_parms* parms, int argc, char* argv[])
 {
     int rc, ch;
     static struct option longopts[] = {
@@ -75,14 +75,14 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%d", &parms->thumbnail_dim);
 	    if (rc != 1) {
 		printf ("Error: %s requires an argument", argv[optind]);
-		slice_print_usage ();
+		thumbnail_print_usage ();
 	    }
 	    break;
 	case 3:
 	    rc = sscanf (optarg, "%f", &parms->thumbnail_spacing);
 	    if (rc != 1) {
 		printf ("Error: %s requires an argument", argv[optind]);
-		slice_print_usage ();
+		thumbnail_print_usage ();
 	    }
 	    break;
 	case 4:
@@ -92,7 +92,7 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
 	    rc = sscanf (optarg, "%f", &parms->slice_loc);
 	    if (rc != 1) {
 		printf ("Error: %s requires an argument", argv[optind]);
-		slice_print_usage ();
+		thumbnail_print_usage ();
 	    }
 	    parms->have_slice_loc = true;
 	    break;
@@ -106,17 +106,17 @@ slice_parse_args (Slice_parms* parms, int argc, char* argv[])
 	    parms->img_in_fn = argv[optind];
 	} else {
 	    printf ("Error: must specify input file\n");
-	    slice_print_usage ();
+	    thumbnail_print_usage ();
 	}
     }
 }
 
 void
-do_command_slice (int argc, char *argv[])
+do_command_thumbnail (int argc, char *argv[])
 {
-    Slice_parms parms;
+    Thumbnail_parms parms;
     
-    slice_parse_args (&parms, argc, argv);
+    thumbnail_parse_args (&parms, argc, argv);
 
-    slice_main (&parms);
+    thumbnail_main (&parms);
 }
