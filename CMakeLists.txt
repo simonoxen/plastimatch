@@ -1057,9 +1057,6 @@ SET (FINDSCU_SRC
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
   )
-SET (MASK_MHA_SRC
-  mask_mha_main.cxx
-  )
 SET (MEX_DRR_SRC
   mex_drr.c
   )
@@ -1448,8 +1445,6 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (mask_mha "${MASK_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
