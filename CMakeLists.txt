@@ -1057,9 +1057,6 @@ SET (FINDSCU_SRC
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
   )
-SET (ITK_TPS_WARP_SRC
-  itk_tps_warp_main.cxx 
-  )
 SET (MASK_MHA_SRC
   mask_mha_main.cxx
   )
@@ -1450,8 +1447,6 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (itk_tps_warp "${ITK_TPS_WARP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (mask_mha "${MASK_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
