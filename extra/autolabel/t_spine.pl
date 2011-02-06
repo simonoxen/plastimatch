@@ -48,7 +48,8 @@ for (@list){
    for $loc (@locs) {
        ($label,$z) = split (/,/, $loc, 2);
        $out_fn = $out_fn_base . "_${label}.mhd";
-       $cmd = "plastimatch slice --input \"$img_in_fn\" --output \"$out_fn\" "
+       $cmd = "plastimatch thumbnail "
+	 . "--input \"$img_in_fn\" --output \"$out_fn\" "
 	 . "--thumbnail-dim 16 --thumbnail-spacing 25.0 --slice-loc $z";
        print "$cmd\n";
        print `$cmd`;

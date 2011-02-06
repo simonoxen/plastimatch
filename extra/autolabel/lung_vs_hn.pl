@@ -21,7 +21,7 @@ sub make_sample {
     $outfile = catfile ($out_base, 
 			$series . sprintf ("%04d", $index) . ".mhd");
 
-    $cmd = "plastimatch slice --output $outfile $infile";
+    $cmd = "plastimatch thumbnail --output $outfile $infile";
     print "$cmd\n";
     print `$cmd`;
 }
