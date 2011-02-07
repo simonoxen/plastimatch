@@ -7,7 +7,7 @@
 #include <string.h>
 
 #include "bstrlib.h"
-
+#include "bstring_util.h"
 #include "print_and_exit.h"
 #include "xio_plan.h"
 
@@ -16,25 +16,38 @@ xio_plan_get_studyset (const char *filename, char *studyset)
 {
     FILE *fp;
 
-    struct bStream * bs;
-    bstring line1 = bfromcstr ("");
-
     fp = fopen (filename, "r");
     if (!fp) {
 	print_and_exit ("Error opening file %s for read\n", filename);
     }
+    CBStream bs ((bNread) fread, fp);
 
-    bs = bsopen ((bNread) fread, fp);
+    /* Get version string
+       0062101a - xio version 4.33.02
+       006d101a - xio version 4.50 */
+    CBString version = bs.readLine ('\n');
+    printf ("Version = %s\n", (const char*) version);
+    int rc, version_int;
+    rc = sscanf ((const char*) version, "%x", &version_int);
+    if (rc != 1) {
+	/* Couldn't parse version string -- default to older format. */
+	version_int = 0x62101a;
+    }
+    printf ("rc = %d, version_int = 0x%x\n", rc, version_int);
 
-    /* Skip 5 lines */
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
-    bsreadln (line1, bs, '\n');
+    /* Skip 4 lines for xio 4.33.02, skip 5 lines for xio 4.50. */
+    bs.readLine ('\n');
+    bs.readLine ('\n');
+    bs.readLine ('\n');
+    bs.readLine ('\n');
+    if (version_int > 0x62101a) {
+	bs.readLine ('\n');
+    }
 
     /* Read studyset name */
-    bsreadln (line1, bs, '\n');
-    strcpy (studyset, (char *) line1->data);
+    CBString line1 = bs.readLine ('\n');
+    strcpy (studyset, (const char *) line1);
     studyset[strlen (studyset) - 1] = '\0';
+
+    fclose (fp);
 }
