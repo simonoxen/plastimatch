@@ -72,9 +72,11 @@ OPTION (PLM_REDUCED_TESTS
   "Run fewer tests (used when debugging tests)" OFF)
 OPTION (PLM_TEST_BSPLINE_FLAVORS 
   "Regression tests for seldom used b-spline implementations" OFF)
-OPTION (PLM_TEST_DICOMRT_XIO 
+OPTION (PLM_TEST_DICOMRT_AW
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_PINNACLE 
+  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
+OPTION (PLM_TEST_DICOMRT_XIO 
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_FDK_VARIAN 
   "Regression tests for fdk with Varian data (downloads extra test data)" OFF)
@@ -101,6 +103,7 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
+SET (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
 SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 
 ##-----------------------------------------------------------------------------

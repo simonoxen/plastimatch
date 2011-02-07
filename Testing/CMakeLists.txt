@@ -4,10 +4,13 @@ PROJECT(PLM_Testing)
 ## Download data sets
 ## -------------------------------------------------------------------------
 MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
+  IF (NOT IS_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
+    FILE (MAKE_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
+  ENDIF ()
   IF (NOT EXISTS ${DOWNLOAD_FILENAME})
     MESSAGE (STATUS "Downloading test data")
     FILE (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
-  ENDIF (NOT EXISTS ${DOWNLOAD_FILENAME})
+  ENDIF ()
   IF (NOT EXISTS ${DOWNLOAD_DIR})
     MESSAGE (STATUS "Untarring test data")
     EXECUTE_PROCESS (
@@ -18,36 +21,43 @@ MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
       OUTPUT_VARIABLE untar_output
       ERROR_VARIABLE untar_error)
     MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
-  ENDIF (NOT EXISTS ${DOWNLOAD_DIR})
-ENDMACRO (PLM_DOWNLOAD_AND_EXTRACT)
+  ENDIF ()
+ENDMACRO ()
 
-IF (PLM_TEST_DICOMRT_XIO)
+IF (PLM_TEST_DICOMRT_AW)
   PLM_DOWNLOAD_AND_EXTRACT (
-    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-ENDIF (PLM_TEST_DICOMRT_XIO)
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1613/foot-dicomrt-aw-4.4.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/foot-dicomrt-aw-4.4.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
+ENDIF ()
 
 IF (PLM_TEST_DICOMRT_PINNACLE)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
-ENDIF (PLM_TEST_DICOMRT_PINNACLE)
+ENDIF ()
+
+IF (PLM_TEST_DICOMRT_XIO)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+ENDIF ()
 
 IF (PLM_TEST_FDK_VARIAN)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/varian-catphan.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/varian-catphan")
-ENDIF (PLM_TEST_FDK_VARIAN)
+ENDIF ()
 
 IF (PLM_TEST_XIO)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
-    "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
-ENDIF (PLM_TEST_XIO)
+ENDIF ()
 
 ## -------------------------------------------------------------------------
 ## Copy plugin library
