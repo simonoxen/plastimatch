@@ -15,7 +15,6 @@
     #pragma comment(lib, "user32")
 #endif
 
-
 // JAS 2010.11.23
 // ------------------------------------------------------------
 // Because these macros contain declarations, their
@@ -40,8 +39,13 @@
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
 #if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
-    #define LOAD_SYMBOL(sym, lib)                  \
-        void (*sym)() = dlsym (lib, #sym);          
+    #if defined (__cplusplus)
+        #define LOAD_SYMBOL(sym, lib)                  \
+            sym##_##t* sym = (sym##_##t*) dlsym (lib, #sym);          
+    #else
+        #define LOAD_SYMBOL(sym, lib)                  \
+            void (*sym)() = dlsym (lib, #sym);          
+    #endif
 #else
     #define LOAD_SYMBOL(sym, lib)                  \
         ;

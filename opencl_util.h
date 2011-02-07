@@ -48,6 +48,7 @@ opencl_print_devices (void);
 plmopencl_EXPORT
 cl_int
 opencl_open_device (Opencl_device *ocl_dev);
+typedef void opencl_open_device_t(Opencl_device*);
 
 plmopencl_EXPORT
 void
@@ -67,6 +68,7 @@ opencl_load_programs (
     Opencl_device *ocl_dev, 
     const char* filename
 );
+typedef void opencl_load_programs_t(Opencl_device*, const char*);
 
 plmopencl_EXPORT
 void 
@@ -89,6 +91,7 @@ opencl_buf_read (
     size_t buffer_size, 
     void *buffer
 );
+typedef void opencl_buf_read_t (Opencl_device *ocl_dev, Opencl_buf* ocl_buf, size_t buffer_size, void *buffer);
 
 plmopencl_EXPORT
 void
@@ -105,6 +108,7 @@ opencl_kernel_create (
     Opencl_device *ocl_dev, 
     const char *kernel_name
 );
+typedef void opencl_kernel_create_t(Opencl_device*, const char*);
 
 plmopencl_EXPORT
 void
@@ -112,6 +116,7 @@ opencl_set_kernel_args (
     Opencl_device *ocl_dev, 
     ...
 );
+typedef void opencl_set_kernel_args_t(Opencl_device*, ...);
 
 plmopencl_EXPORT
 void
@@ -120,6 +125,7 @@ opencl_kernel_enqueue (
     size_t global_work_size, 
     size_t local_work_size
 );
+typedef void opencl_kernel_enqueue_t ( Opencl_device *ocl_dev, size_t global_work_size, size_t local_work_size);
 
 #if defined __cplusplus
 }
