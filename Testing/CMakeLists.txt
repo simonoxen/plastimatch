@@ -1544,7 +1544,7 @@ PLM_ADD_TEST (
   "plm-warp-e-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-e_Patient.mha"
+  "stats;--input;plm-warp-e/Patient.mha"
   )
 ADD_TEST (
   "plm-warp-e-check-2"
