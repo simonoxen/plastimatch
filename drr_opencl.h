@@ -15,17 +15,17 @@
 extern "C" {
 #endif
 
-gpuit_EXPORT
-void*
-drr_opencl_state_create (
+plmopencl_EXPORT (
+void* drr_opencl_state_create,
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
 
-gpuit_EXPORT
-void
-drr_opencl_state_destroy (void *dev_state);
+plmopencl_EXPORT (
+void drr_opencl_state_destroy,
+    void *dev_state
+);
 
 gpuit_EXPORT
 void

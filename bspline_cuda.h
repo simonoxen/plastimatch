@@ -114,20 +114,19 @@ extern "C" {
     // -------------------------------------------------------------------
     // Prototypes: bspline_cuda.cpp 
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_mi_a (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mi_a,
         Bspline_parms *parms,
         Bspline_state *bst,
         Bspline_xform *bxf,
         Volume *fixed,
         Volume *moving,
         Volume *moving_grad,
-        Dev_Pointers_Bspline *dev_ptrs);
+        Dev_Pointers_Bspline *dev_ptrs
+    );
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_mse_j (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mse_j,
         Bspline_parms* parms,
         Bspline_state *bst,
         Bspline_xform* bxf,
@@ -171,9 +170,8 @@ extern "C" {
         int* num_vox
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_mse_init_j (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mse_init_j,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
@@ -182,18 +180,16 @@ extern "C" {
         Bspline_parms* parms
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_mse_cleanup_j (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mse_cleanup_j,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
         Volume* moving_grad
     );
 
-    plmcuda_EXPORT
-    void 
-    CUDA_bspline_mi_cleanup_a (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mi_cleanup_a,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
@@ -258,9 +254,8 @@ extern "C" {
         int* cdims
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_mi_init_a (
+    plmcuda_EXPORT (
+    void CUDA_bspline_mi_init_a,
         Dev_Pointers_Bspline* dev_ptrs,
         Volume* fixed,
         Volume* moving,
@@ -316,9 +311,8 @@ extern "C" {
         Dev_Pointers_Bspline *dev_ptrs
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_bspline_interpolate_vf (
+    plmcuda_EXPORT (
+    void CUDA_bspline_interpolate_vf,
         Volume* interp,
         Bspline_xform* bxf
     );

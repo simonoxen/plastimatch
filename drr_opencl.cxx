@@ -32,6 +32,7 @@ drr_opencl_state_create (
     LOAD_SYMBOL (opencl_open_device, libplmopencl);
     LOAD_SYMBOL (opencl_load_programs, libplmopencl);
     LOAD_SYMBOL (opencl_kernel_create, libplmopencl);
+    LOAD_SYMBOL (opencl_buf_create, libplmopencl);
 
     Drr_opencl_state *dev_state;
     dev_state = (Drr_opencl_state*) malloc (sizeof (Drr_opencl_state));

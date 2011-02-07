@@ -94,16 +94,6 @@
 # else
 #  define plastimatch1_EXPORT __declspec(dllimport)
 # endif
-# ifdef plmcuda_EXPORTS
-#  define plmcuda_EXPORT __declspec(dllexport)
-# else
-#  define plmcuda_EXPORT __declspec(dllimport)
-# endif
-# ifdef plmopencl_EXPORTS
-#  define plmopencl_EXPORT __declspec(dllexport)
-# else
-#  define plmopencl_EXPORT __declspec(dllimport)
-# endif
 # ifdef plmsys_EXPORTS
 #  define plmsys_EXPORT __declspec(dllexport)
 # else
@@ -113,10 +103,39 @@
 /* unix needs nothing */
 #define gpuit_EXPORT 
 #define plastimatch1_EXPORT 
-#define plmcuda_EXPORT
-#define plmopencl_EXPORT
 #define plmsys_EXPORT
+
 #endif
+
+/* JAS 2011.02.07
+ * GPU Plugins are not considered "shared libs"
+ * otherwise Win32 build will break when not using "shared libs" */
+#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (PLM_USE_GPU_PLUGINS)))
+#ifdef plmcuda_EXPORTS
+#define plmcuda_EXPORT(f, ...)                                     \
+   __declspec(dllexport)                                             \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#else
+#define plmcuda_EXPORT(f, ...)                                     \
+   __declspec(dllimport)                                             \
+   f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#endif
+#ifdef plmopencl_EXPORTS
+#define plmopencl_EXPORT(f, ...)                                   \
+   __declspec(dllexport)                                             \
+   f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#else
+#define plmopencl_EXPORT(f, ...)                                   \
+   __declspec(dllimport)                                             \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#endif
+#else
+#define plmcuda_EXPORT(f, ...)                  \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#define plmopencl_EXPORT(f, ...)                \
+    f (__VA_ARGS__); typedef f##_t(__VA_ARGS__); 
+#endif
+
 
 #undef BUILD_SHARED_LIBS
 

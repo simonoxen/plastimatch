@@ -39,29 +39,12 @@
 //       (see above note), this will return a
 //       null function pointer.  Be careful pls.
 #if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
-    #if defined (__cplusplus)
-        #define LOAD_SYMBOL(sym, lib)                  \
-            sym##_##t* sym = (sym##_##t*) dlsym (lib, #sym);          
-    #else
-        #define LOAD_SYMBOL(sym, lib)                  \
-            void (*sym)() = dlsym (lib, #sym);          
-    #endif
+    #define LOAD_SYMBOL(sym, lib)                  \
+        sym##_##t* sym = (sym##_##t*) dlsym (lib, #sym);          
 #else
     #define LOAD_SYMBOL(sym, lib)                  \
         ;
 #endif
-
-// Note: if lib contains a null pointer here
-//       (see above note), this will return a
-//       null function pointer.  Be careful pls.
-#if !defined(_WIN32) && defined(PLM_USE_GPU_PLUGINS)
-    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
-        type (*sym)() = dlsym (lib, #sym);   
-#else
-    #define LOAD_SYMBOL_SPECIAL(sym, lib, type)    \
-        ;
-#endif
-
 
 // ------------------------------------------------------------
 

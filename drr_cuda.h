@@ -15,16 +15,15 @@
 extern "C" {
 #endif
 
-plmcuda_EXPORT
-void*
-drr_cuda_state_create (
+plmcuda_EXPORT (
+void* drr_cuda_state_create,
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
-plmcuda_EXPORT
-void
-drr_cuda_state_destroy (
+
+plmcuda_EXPORT (
+void drr_cuda_state_destroy,
     void *void_state
 );
 
@@ -39,9 +38,8 @@ drr_cuda_state_destroy_cu (
     void *void_state
 );
 
-plmcuda_EXPORT
-void
-drr_cuda_ray_trace_image (
+plmcuda_EXPORT (
+void drr_cuda_ray_trace_image,
     Proj_image *proj, 
     Volume *vol, 
     Volume_limit *vol_limit, 

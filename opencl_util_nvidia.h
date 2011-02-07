@@ -110,15 +110,31 @@ extern "C" void shrFree(void* ptr);
 //! @param 4... variable args: like printf or fprintf.  Must match format specifer type above.  
 //! @return 0 if OK, negative value on error or if error occurs or was passed in. 
 // *********************************************************************
-extern "C" plmopencl_EXPORT int shrLogEx(int iLogMode, int iErrNum, const char* cFormatString, ...);
+extern "C"
+plmopencl_EXPORT (
+    int shrLogEx,
+        int iLogMode,
+        int iErrNum,
+        const char* cFormatString,
+        ...
+);
 
 // Short version of shrLogEx defaulting to shrLogEx(LOGBOTH, 0, 
 // *********************************************************************
-extern "C" int plmopencl_EXPORT shrLog(const char* cFormatString, ...);
+extern "C"
+plmopencl_EXPORT (
+    int shrLog,
+        const char* cFormatString,
+        ...
+);
 
 // Optional LogFileNameOverride function
 // *********************************************************************
-extern "C" plmopencl_EXPORT void shrSetLogFileName (const char* cOverRideName);
+extern "C"
+plmopencl_EXPORT (
+    void shrSetLogFileName,
+        const char* cOverRideName
+);
 
 ////////////////////////////////////////////////////////////////////////////
 //! Find the path for a filename
@@ -126,9 +142,19 @@ extern "C" plmopencl_EXPORT void shrSetLogFileName (const char* cOverRideName);
 //! @param filename        name of the file
 //! @param executablePath  optional absolute path of the executable
 ////////////////////////////////////////////////////////////////////////////
-extern "C" plmopencl_EXPORT char* shrFindFilePath(const char* filename, const char* executablePath);
+extern "C"
+plmopencl_EXPORT (
+    char* shrFindFilePath,
+        const char* filename,
+        const char* executablePath
+);
 
-extern "C" plmopencl_EXPORT size_t shrRoundUp(int group_size, int global_size);
+extern "C"
+plmopencl_EXPORT (
+    size_t shrRoundUp,
+        int group_size,
+        int global_size
+);
 
 // companion inline function for error checking and exit on error WITH Cleanup Callback (if supplied)
 // *********************************************************************
@@ -165,7 +191,11 @@ inline void __shrCheckErrorEX(int iSample, int iReference, void (*pCleanup)(int)
 //! @return the id 
 //! @param clSelectedPlatformID         OpenCL platform ID
 //////////////////////////////////////////////////////////////////////////////
-extern "C" plmopencl_EXPORT cl_int oclGetPlatformID(cl_platform_id* clSelectedPlatformID);
+extern "C"
+plmopencl_EXPORT (
+    cl_int oclGetPlatformID,
+        cl_platform_id* clSelectedPlatformID
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Gets the id of the first device from the context
@@ -173,7 +203,11 @@ extern "C" plmopencl_EXPORT cl_int oclGetPlatformID(cl_platform_id* clSelectedPl
 //! @return the id 
 //! @param cxGPUContext         OpenCL context
 //////////////////////////////////////////////////////////////////////////////
-extern "C" plmopencl_EXPORT cl_device_id oclGetFirstDev(cl_context cxGPUContext);
+extern "C"
+plmopencl_EXPORT (
+    cl_device_id oclGetFirstDev,
+        cl_context cxGPUContext
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Gets the id of the nth device from the context
@@ -182,7 +216,12 @@ extern "C" plmopencl_EXPORT cl_device_id oclGetFirstDev(cl_context cxGPUContext)
 //! @param cxGPUContext         OpenCL context
 //! @param device_idx            index of the device of interest
 //////////////////////////////////////////////////////////////////////////////
-extern "C" plmopencl_EXPORT cl_device_id oclGetDev(cl_context cxGPUContext, unsigned int device_idx);
+extern "C"
+plmopencl_EXPORT (
+    cl_device_id oclGetDev,
+        cl_context cxGPUContext,
+        unsigned int device_idx
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Gets the id of device with maximal FLOPS from the context
@@ -190,9 +229,11 @@ extern "C" plmopencl_EXPORT cl_device_id oclGetDev(cl_context cxGPUContext, unsi
 //! @return the id 
 //! @param cxGPUContext         OpenCL context
 //////////////////////////////////////////////////////////////////////////////
-extern "C" 
-plmopencl_EXPORT
-cl_device_id oclGetMaxFlopsDev(cl_context cxGPUContext);
+extern "C"
+plmopencl_EXPORT (
+    cl_device_id oclGetMaxFlopsDev,
+        cl_context cxGPUContext
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Loads a Program file and prepends the cPreamble to the code.
@@ -202,7 +243,13 @@ cl_device_id oclGetMaxFlopsDev(cl_context cxGPUContext);
 //! @param cPreamble        code that is prepended to the loaded file, typically a set of #defines or a header
 //! @param szFinalLength    returned length of the code string
 //////////////////////////////////////////////////////////////////////////////
-extern "C" plmopencl_EXPORT char* oclLoadProgSource(const char* cFilename, const char* cPreamble, size_t* szFinalLength);
+extern "C"
+plmopencl_EXPORT (
+    char* oclLoadProgSource,
+        const char* cFilename,
+        const char* cPreamble,
+        size_t* szFinalLength
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Get and log the binary (PTX) from the OpenCL compiler for the requested program & device
@@ -211,7 +258,13 @@ extern "C" plmopencl_EXPORT char* oclLoadProgSource(const char* cFilename, const
 //! @param cdDevice                    device of interest
 //! @param const char*  cPtxFileName   optional PTX file name
 //////////////////////////////////////////////////////////////////////////////
-extern "C" void plmopencl_EXPORT oclLogPtx(cl_program cpProgram, cl_device_id cdDevice, const char* cPtxFileName);
+extern "C"
+plmopencl_EXPORT (
+    void oclLogPtx,
+        cl_program cpProgram,
+        cl_device_id cdDevice,
+        const char* cPtxFileName
+);
 
 //////////////////////////////////////////////////////////////////////////////
 //! Get and log the Build Log from the OpenCL compiler for the requested program & device
@@ -219,7 +272,12 @@ extern "C" void plmopencl_EXPORT oclLogPtx(cl_program cpProgram, cl_device_id cd
 //! @param cpProgram    OpenCL program
 //! @param cdDevice     device of interest
 //////////////////////////////////////////////////////////////////////////////
-extern "C" void plmopencl_EXPORT oclLogBuildInfo(cl_program cpProgram, cl_device_id cdDevice);
+extern "C"
+plmopencl_EXPORT (
+    void oclLogBuildInfo,
+        cl_program cpProgram,
+        cl_device_id cdDevice
+);
 
 // Helper function for De-allocating cl objects
 // *********************************************************************
@@ -227,7 +285,11 @@ extern "C" void oclDeleteMemObjs(cl_mem* cmMemObjs, int iNumObjs);
 
 // Helper function to get error string
 // *********************************************************************
-extern "C" plmopencl_EXPORT const char* oclErrorString(cl_int error);
+extern "C"
+plmopencl_EXPORT (
+    const char* oclErrorString,
+        cl_int error
+);
 
 // companion inline function for error checking and exit on error WITH Cleanup Callback (if supplied)
 // *********************************************************************

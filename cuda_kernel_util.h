@@ -57,34 +57,30 @@ stog_memcpy (
 extern "C" {
 #endif
 
-    plmcuda_EXPORT
-    int
-    CUDA_exec_conf_1tpe (
-        dim3 *dimGrid,          // OUTPUT: Grid  dimensions
-        dim3 *dimBlock,         // OUTPUT: Block dimensions
-        int num_threads,        // INPUT: Total # of threads
-        int threads_per_block,  // INPUT: Threads per block
-        bool negotiate          // INPUT: Is threads per block negotiable?
+    plmcuda_EXPORT (
+    int CUDA_exec_conf_1tpe,
+        dim3 *dimGrid,          /* OUTPUT: Grid  dimensions */
+        dim3 *dimBlock,         /* OUTPUT: Block dimensions */
+        int num_threads,        /* INPUT: Total # of threads */
+        int threads_per_block,  /* INPUT: Threads per block  */
+        bool negotiate          /* INPUT: Is threads per block negotiable? */
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_exec_conf_1bpe (
-        dim3 *dimGrid,           // OUTPUT: Grid  dimensions
-        dim3 *dimBlock,          // OUTPUT: Block dimensions
-        int num_blocks,          //  INPUT: Number of blocks
-        int threads_per_block    //  INPUT: Threads per block
+    plmcuda_EXPORT (
+    void CUDA_exec_conf_1bpe,
+        dim3 *dimGrid,           /* OUTPUT: Grid  dimensions   */
+        dim3 *dimBlock,          /* OUTPUT: Block dimensions   */
+        int num_blocks,          /*  INPUT: Number of blocks   */
+        int threads_per_block    /*  INPUT: Threads per block  */
     );
 
-    plmcuda_EXPORT
-    void
-    CUDA_timer_start (
+    plmcuda_EXPORT (
+    void CUDA_timer_start,
         cuda_timer *timer
     );
 
-    plmcuda_EXPORT
-    float
-    CUDA_timer_report (
+    plmcuda_EXPORT (
+    float CUDA_timer_report,
         cuda_timer *timer
     );
 

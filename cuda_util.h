@@ -24,20 +24,30 @@
 extern "C" {
 #endif
 
-plmcuda_EXPORT void
-CUDA_check_error (const char *msg);
+plmcuda_EXPORT (
+void CUDA_check_error,
+    const char *msg
+);
 
-plmcuda_EXPORT int
-CUDA_detect_error ();
+plmcuda_EXPORT (
+int CUDA_detect_error,
+    void
+);
 
-plmcuda_EXPORT void
-CUDA_listgpu ();
+plmcuda_EXPORT (
+void CUDA_listgpu,
+    void
+);
 
-plmcuda_EXPORT void
-CUDA_selectgpu (int gpuid);
+plmcuda_EXPORT (
+void CUDA_selectgpu,
+    int gpuid
+);
 
-plmcuda_EXPORT int
-CUDA_getarch (int gpuid);
+plmcuda_EXPORT (
+int CUDA_getarch,
+    int gpuid
+);
 
 
 #if defined __cplusplus

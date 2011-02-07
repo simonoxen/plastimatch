@@ -52,7 +52,7 @@ CUDA_reconstruct_conebeam (
 #endif
 
     LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL_SPECIAL (fdk_cuda_state_create, libplmcuda, void*);
+    LOAD_SYMBOL (fdk_cuda_state_create, libplmcuda);
     LOAD_SYMBOL (fdk_cuda_queue_image, libplmcuda);
     LOAD_SYMBOL (fdk_cuda_fetch_volume, libplmcuda);
     LOAD_SYMBOL (fdk_cuda_backproject, libplmcuda);

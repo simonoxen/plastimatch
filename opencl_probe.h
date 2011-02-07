@@ -11,9 +11,10 @@
 extern "C" {
 #endif
 
-plmopencl_EXPORT
-int
-opencl_probe (void);
+plmopencl_EXPORT (
+    int opencl_probe,
+        void
+);
 
 #if defined __cplusplus
 }

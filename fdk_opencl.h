@@ -14,17 +14,15 @@
 extern "C" {
 #endif
 
-gpuit_EXPORT
-void
-OPENCL_reconstruct_conebeam_and_convert_to_hu (
-        Volume *vol,
-        Proj_image_dir *proj_dir,
-        Fdk_options *options
+plmopencl_EXPORT (
+void OPENCL_reconstruct_conebeam_and_convert_to_hu,
+    Volume *vol,
+    Proj_image_dir *proj_dir,
+    Fdk_options *options
 );
 
-gpuit_EXPORT
-void 
-opencl_reconstruct_conebeam (
+plmopencl_EXPORT (
+void opencl_reconstruct_conebeam,
     Volume *vol, 
     Proj_image_dir *proj_dir, 
     Fdk_options *options

@@ -14,8 +14,7 @@ extern "C" {
 #endif
 
 plmopencl_EXPORT
-void 
-divideWork (
+(void divideWork, 
     cl_device_id *devices, 
     cl_uint device_count, 
     int dimensions, 

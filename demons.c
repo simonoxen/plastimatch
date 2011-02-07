@@ -43,10 +43,10 @@ demons (
     Volume* tmp;
 
     LOAD_LIBRARY (libplmcuda);
-    LOAD_SYMBOL_SPECIAL (demons_cuda, libplmcuda, Volume*);
+    LOAD_SYMBOL (demons_cuda, libplmcuda);
 
     LOAD_LIBRARY (libplmopencl);
-    LOAD_SYMBOL_SPECIAL (demons_opencl, libplmopencl, Volume*);
+    LOAD_SYMBOL (demons_opencl, libplmopencl);
 
 
     switch (parms->threading) {

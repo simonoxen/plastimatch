@@ -35,12 +35,12 @@ allocate_gpu_memory (
 
 #if CUDA_FOUND
 	LOAD_LIBRARY (libplmcuda);
-	LOAD_SYMBOL_SPECIAL (drr_cuda_state_create, libplmcuda, void*);
+	LOAD_SYMBOL (drr_cuda_state_create, libplmcuda);
 #endif
 
 #if OPENCL_FOUND
 	LOAD_LIBRARY (libplmopencl);
-	LOAD_SYMBOL_SPECIAL (drr_opencl_state_create, libplmopencl, void*);
+	LOAD_SYMBOL (drr_opencl_state_create, libplmopencl);
 #endif
 
     switch (options->threading) {

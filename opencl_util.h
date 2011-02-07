@@ -37,95 +37,91 @@ struct opencl_device {
 extern "C" {
 #endif
 
-plmopencl_EXPORT
-cl_platform_id
-opencl_select_platform (void);
-
-plmopencl_EXPORT
-void
-opencl_print_devices (void);
-
-plmopencl_EXPORT
-cl_int
-opencl_open_device (Opencl_device *ocl_dev);
-typedef void opencl_open_device_t(Opencl_device*);
-
-plmopencl_EXPORT
-void
-opencl_close_device (Opencl_device *ocl_dev);
-
-plmopencl_EXPORT
-cl_ulong
-opencl_timer (cl_event &event);
-
-plmopencl_EXPORT
-void
-opencl_check_error (cl_int return_code, const char *msg);
-
-plmopencl_EXPORT
-void
-opencl_load_programs (
-    Opencl_device *ocl_dev, 
-    const char* filename
-);
-typedef void opencl_load_programs_t(Opencl_device*, const char*);
-
-plmopencl_EXPORT
-void 
-opencl_dump_build_log (Opencl_device *ocl_dev, cl_program program);
-
-plmopencl_EXPORT
-Opencl_buf* 
-opencl_buf_create (
-    Opencl_device *ocl_dev, 
-    cl_mem_flags flags, 
-    size_t buffer_size, 
-    void *buffer
+plmopencl_EXPORT (
+    cl_platform_id opencl_select_platform,
+        void
 );
 
-plmopencl_EXPORT
-void
-opencl_buf_read (
-    Opencl_device *ocl_dev, 
-    Opencl_buf* ocl_buf, 
-    size_t buffer_size, 
-    void *buffer
-);
-typedef void opencl_buf_read_t (Opencl_device *ocl_dev, Opencl_buf* ocl_buf, size_t buffer_size, void *buffer);
-
-plmopencl_EXPORT
-void
-opencl_buf_write (
-    Opencl_device *ocl_dev, 
-    Opencl_buf* ocl_buf, 
-    size_t buffer_size, 
-    void *buffer
+plmopencl_EXPORT (
+    void opencl_print_devices,
+        void
 );
 
-plmopencl_EXPORT
-void
-opencl_kernel_create (
-    Opencl_device *ocl_dev, 
-    const char *kernel_name
+plmopencl_EXPORT (
+    cl_int opencl_open_device,
+        Opencl_device *ocl_dev
 );
-typedef void opencl_kernel_create_t(Opencl_device*, const char*);
 
-plmopencl_EXPORT
-void
-opencl_set_kernel_args (
-    Opencl_device *ocl_dev, 
-    ...
+plmopencl_EXPORT (
+    void opencl_close_device,
+        Opencl_device *ocl_dev
 );
-typedef void opencl_set_kernel_args_t(Opencl_device*, ...);
 
-plmopencl_EXPORT
-void
-opencl_kernel_enqueue (
-    Opencl_device *ocl_dev, 
-    size_t global_work_size, 
-    size_t local_work_size
+plmopencl_EXPORT (
+    cl_ulong opencl_timer,
+        cl_event &event
 );
-typedef void opencl_kernel_enqueue_t ( Opencl_device *ocl_dev, size_t global_work_size, size_t local_work_size);
+
+plmopencl_EXPORT (
+    void opencl_check_error,
+        cl_int return_code,
+        const char *msg
+);
+
+plmopencl_EXPORT (
+    void opencl_load_programs,
+        Opencl_device *ocl_dev,
+        const char* filename
+);
+
+plmopencl_EXPORT (
+    void opencl_dump_build_log,
+        Opencl_device *ocl_dev,
+        cl_program program
+);
+
+plmopencl_EXPORT (
+    Opencl_buf* opencl_buf_create,
+        Opencl_device *ocl_dev,
+        cl_mem_flags flags,
+        size_t buffer_size,
+        void *buffer
+);
+
+plmopencl_EXPORT (
+    void opencl_buf_read,
+        Opencl_device *ocl_dev,
+        Opencl_buf* ocl_buf,
+        size_t buffer_size,
+        void *buffer
+);
+
+plmopencl_EXPORT (
+    void opencl_buf_write,
+        Opencl_device *ocl_dev,
+        Opencl_buf* ocl_buf,
+        size_t buffer_size,
+        void *buffer
+);
+
+plmopencl_EXPORT (
+    void opencl_kernel_create,
+        Opencl_device *ocl_dev,
+        const char *kernel_name
+);
+
+plmopencl_EXPORT (
+    void opencl_set_kernel_args,
+        Opencl_device *ocl_dev,
+        ...
+);
+
+plmopencl_EXPORT (
+    void opencl_kernel_enqueue,
+        Opencl_device *ocl_dev,
+        size_t global_work_size,
+        size_t local_work_size
+);
 
 #if defined __cplusplus
 }
