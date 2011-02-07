@@ -158,7 +158,12 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 
     /* (1) Make sure first element is 0. */
     if (gfov[0] != 0.) {
-	print_and_exit ("Error RTDOSE gfov[0] is not 0.\n");
+	if (gfov[0] == ipp[2]) {
+	    /* In this case, gfov values are absolute rather than relative 
+	       positions, but we process the same way. */
+	} else {
+	    print_and_exit ("Error, RTDOSE gfov[0] is neither 0 nor ipp[2].\n");
+	}
     }
 
     /* (2) Handle case where gfov_len == 1 (only one slice). */
