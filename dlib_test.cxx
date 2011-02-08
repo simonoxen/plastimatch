@@ -104,8 +104,8 @@ main (int argc, char* argv[])
     const Clp::option_type& option_in = parser.option("in");
 
     // Normalize inputs to N(0,1)
-    if (parser.option ("normalize")) {
-    }
+    printf ("Number of normalize options: %d\n", 
+	parser.option("normalize").count());
 
     if (!option_alg) {
 	// Do KRR if user didn't specify an algorithm
