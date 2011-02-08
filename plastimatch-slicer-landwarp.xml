@@ -68,6 +68,13 @@
      <default>50.0</default>
      <description>Radius of the radial basis function</description>
     </float>
+    <integer>
+      <name>plmslc_landwarp_num_clusters</name>
+      <label>Number of clusters</label>
+      <longflag>numclusters</longflag>
+      <default>0</default>
+      <description>Number of clusters of landmarks</description>
+    </integer>
     <float>
      <name>plmslc_landwarp_stiffness</name>
      <label>Stiffness</label>

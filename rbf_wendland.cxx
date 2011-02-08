@@ -225,8 +225,8 @@ bspline_rbf_find_coeffs_noreg (
     typedef vnl_svd <double> SVDSolverType;
     Vnl_matrix A, b;
 
-    printf("Finding RBF coeffs, radius %.2f, Young modulus %e\n", 
-	lw->rbf_radius, lw->young_modulus);
+    //printf("Finding RBF coeffs, radius %.2f, Young modulus %e\n", 
+	//lw->rbf_radius, lw->young_modulus);
 
     A.set_size (3 * num_landmarks, 3 * num_landmarks);
     A.fill(0.);
@@ -360,7 +360,7 @@ rbf_wendland_warp (Landmark_warp *lw)
     int i;
     Volume *moving, *vf_out, *warped_out;
 
-    printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
+    //printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
 
     lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points * sizeof(float));
     lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points * sizeof(int));

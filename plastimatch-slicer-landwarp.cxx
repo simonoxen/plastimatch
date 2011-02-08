@@ -123,7 +123,7 @@ load_input_files (args_info_landmark_warp *args_info)
 
     lw->rbf_radius = args_info->radius_arg;
     lw->young_modulus = args_info->stiffness_arg;
-
+	lw->num_clusters = args_info->numclusters_arg;
     return lw;
 }
 
@@ -180,6 +180,7 @@ main (int argc, char *argv[])
     lw->default_val=plmslc_landwarp_default_value;
     lw->rbf_radius=plmslc_landwarp_rbf_radius;
     lw->young_modulus=plmslc_landwarp_stiffness;
+	lw->num_clusters=plmslc_landwarp_num_clusters;
 
     delete tmp;
 
