@@ -43,6 +43,16 @@ opencl_reconstruct_conebeam (
     int image_num;
     float scale;
 
+    LOAD_LIBRARY (libplmopencl);
+    LOAD_SYMBOL (opencl_open_device, libplmopencl);
+    LOAD_SYMBOL (opencl_load_programs, libplmopencl);
+    LOAD_SYMBOL (opencl_kernel_create, libplmopencl);
+    LOAD_SYMBOL (opencl_buf_create, libplmopencl);
+    LOAD_SYMBOL (opencl_buf_write, libplmopencl);
+    LOAD_SYMBOL (opencl_set_kernel_args, libplmopencl);
+    LOAD_SYMBOL (opencl_kernel_enqueue, libplmopencl);
+    LOAD_SYMBOL (opencl_buf_read, libplmopencl);
+
     /* Set up devices and kernels */
     opencl_open_device (&ocl_dev);
     opencl_load_programs (&ocl_dev, "fdk_opencl.cl");
@@ -213,4 +223,6 @@ opencl_reconstruct_conebeam (
 	}
     }
 #endif
+
+    UNLOAD_LIBRARY (libplmopencl);
 }
