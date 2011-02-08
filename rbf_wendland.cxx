@@ -50,6 +50,164 @@ rbf_wendland_value (float *rbf_center, float *loc, float radius)
     return val;
 }
 
+//k-means++ clustering algorithm to separate landmarks into user-specified number of clusters
+void
+do_kmeans_plusplus(Landmark_warp *lw)
+{
+	int num_landmarks = lw->m_fixed_landmarks->num_points;
+	int num_clusters = lw->num_clusters;
+	float *mx, *my, *mz;
+	float *D, *DD;
+	int i,j;
+	float xmin, ymin, zmin, xmax, ymax, zmax;
+	float r, d, dmin;
+	int clust_id;
+	int kcurrent, count, reassigned, iter_count =0;
+	
+	mx = (float *)malloc(num_clusters*sizeof(float));
+	my = (float *)malloc(num_clusters*sizeof(float));
+	mz = (float *)malloc(num_clusters*sizeof(float));
+	D  = (float *)malloc(num_landmarks*sizeof(float));
+	DD = (float *)malloc(num_landmarks*sizeof(float));
+		
+	for(i=0;i<num_landmarks;i++) lw->cluster_id[i]=-1;
+
+	xmin = xmax = lw->m_fixed_landmarks->points[0*3+0];
+	ymin = ymax = lw->m_fixed_landmarks->points[0*3+1];
+	zmin = zmax = lw->m_fixed_landmarks->points[0*3+2];
+
+//kmeans++ initialization
+
+	i = (int)((double)rand()/RAND_MAX*(num_landmarks-1.));
+	mx[0]=lw->m_fixed_landmarks->points[i*3+0];
+	my[0]=lw->m_fixed_landmarks->points[i*3+1]; 
+	mz[0]=lw->m_fixed_landmarks->points[i*3+2];
+	kcurrent=1;
+
+do 
+{
+	for(i=0;i<num_landmarks;i++) {
+		for(j=0;j<kcurrent;j++) {
+		d =   (lw->m_fixed_landmarks->points[i*3+0]-mx[j])
+		     *(lw->m_fixed_landmarks->points[i*3+0]-mx[j]) 
+		    + (lw->m_fixed_landmarks->points[i*3+1]-my[j])
+		     *(lw->m_fixed_landmarks->points[i*3+1]-my[j]) 
+		    + (lw->m_fixed_landmarks->points[i*3+2]-mz[j])
+		     *(lw->m_fixed_landmarks->points[i*3+2]-mz[j]);
+		if (j==0) { dmin=d; }
+		if (d<=dmin) { D[i]=dmin; }
+		}
+	}
+
+//DD is a normalized cumulative sum of D
+d=0;
+for(i=0;i<num_landmarks;i++) d+=D[i];
+for(i=0;i<num_landmarks;i++) D[i]/=d;
+d=0;
+for(i=0;i<num_landmarks;i++) { d+=D[i]; DD[i]=d; }
+
+// randomly select j with probability proportional to D
+r = ((double)rand())/RAND_MAX;
+for(i=0;i<num_landmarks;i++) {
+if ( i==0 && r<=DD[i] ) j = 0;
+if ( i>0  && DD[i-1]<r && r<=DD[i] ) j = i;
+}
+
+mx[kcurrent] = lw->m_fixed_landmarks->points[j*3+0]; 
+my[kcurrent] = lw->m_fixed_landmarks->points[j*3+1]; 
+mz[kcurrent] = lw->m_fixed_landmarks->points[j*3+2];
+kcurrent++;
+
+} while(kcurrent < num_clusters);
+
+
+//standard k-means algorithm
+do {
+reassigned = 0;
+
+// assign
+for(i=0;i<num_landmarks;i++) {
+	for(j=0;j<num_clusters;j++) {
+	d =  (lw->m_fixed_landmarks->points[i*3+0]-mx[j])
+	    *(lw->m_fixed_landmarks->points[i*3+0]-mx[j]) + 
+	     (lw->m_fixed_landmarks->points[i*3+1]-my[j])
+	    *(lw->m_fixed_landmarks->points[i*3+1]-my[j]) + 
+	     (lw->m_fixed_landmarks->points[i*3+2]-mz[j])
+	    *(lw->m_fixed_landmarks->points[i*3+2]-mz[j]);
+    if (j==0) { dmin=d; clust_id = 0; }
+    if (d<=dmin) { dmin =d; clust_id = j; }
+    }
+    
+    if ( lw->cluster_id[i] != clust_id) reassigned = 1;
+    lw->cluster_id[i] = clust_id;
+}
+
+// calculate new means
+for(j=0;j<num_clusters;j++) {
+mx[j]=0; my[j]=0; mz[j]=0; count=0;
+	for(i=0;i<num_landmarks;i++) {
+    if (lw->cluster_id[i]==j) { 
+	mx[j]+=lw->m_fixed_landmarks->points[i*3+0]; 
+	my[j]+=lw->m_fixed_landmarks->points[i*3+1]; 
+	mz[j]+=lw->m_fixed_landmarks->points[i*3+2]; 
+	count++; 
+	}
+    }
+    mx[j]/=count; my[j]/=count; mz[j]/=count;
+}
+
+iter_count++;
+
+} while(reassigned && (iter_count<10000));
+
+fprintf(stderr,"iter count %d\n", iter_count);
+
+//for(i=0;i<num_landmarks;i++)
+//printf("%f %f X%d\n", x[i],y[i],z[i],cluster[i]);
+
+free(D);
+free(DD);
+free(mx);
+free(my);
+free(mz);
+}
+
+//calculate adaptive radius of each RBF
+void
+find_adapt_radius(Landmark_warp *lw)
+{
+int i,j,k, count;
+int num_clusters = lw->num_clusters;
+int num_landmarks = lw->m_fixed_landmarks->num_points; 
+float d, D;
+
+// NB what to do if there is just one landmark in a cluster??
+
+for(k=0; k<num_clusters; k++) {
+    D = 0; count = 0;
+    for(i=0; i<num_landmarks; i++) {
+	for(j=i; j<num_landmarks; j++) {
+	    if ( lw->cluster_id[i] == k && lw->cluster_id[j] == k  && j != i ) {
+		d = (lw->m_fixed_landmarks->points[i*3+0]-lw->m_fixed_landmarks->points[j*3+0])
+		   *(lw->m_fixed_landmarks->points[i*3+0]-lw->m_fixed_landmarks->points[j*3+0]) + 
+		    (lw->m_fixed_landmarks->points[i*3+1]-lw->m_fixed_landmarks->points[j*3+1])
+		   *(lw->m_fixed_landmarks->points[i*3+1]-lw->m_fixed_landmarks->points[j*3+1]) + 
+		    (lw->m_fixed_landmarks->points[i*3+2]-lw->m_fixed_landmarks->points[j*3+2])
+		   *(lw->m_fixed_landmarks->points[i*3+2]-lw->m_fixed_landmarks->points[j*3+2]);
+		D  += sqrt(d);
+		count++;
+		}
+	    }
+	}
+    D /= count;	
+//  D = D * 1.23456 ; a magic number
+    for(i=0; i<num_landmarks; i++)
+	if (lw->cluster_id[i] == k) lw->adapt_radius[i] = D;
+}
+
+return;
+}
+
 // find RBF coeff by solving the linear equations using ITK's SVD routine
 // Output:
 // parms->blm->rbf_coeff contains RBF coefficients
@@ -96,7 +254,7 @@ bspline_rbf_find_coeffs_noreg (
 
 	    rbfv = rbf_wendland_value( rbf_center, 
 		    &lw->m_fixed_landmarks->points[3*i], 
-		    lw->rbf_radius );
+		    lw->adapt_radius[j] );
 
 	    for(d=0;d<3;d++) A(3*i+d, 3*j+d) = rbfv ;
 
@@ -173,6 +331,7 @@ rbf_wendland_update_vf (
 	    fxyz[1] = vf->offset[1] + fj * vf->pix_spacing[1];
 	    for (fi = 0; fi < vf->dim[0];  fi++) {
 		fxyz[0] = vf->offset[0] + fi * vf->pix_spacing[0];
+		
 		for (lidx=0; lidx < num_landmarks; lidx++) {
 		    fv = fk * vf->dim[0] * vf->dim[1] 
 			+ fj * vf->dim[0] + fi;
@@ -180,17 +339,11 @@ rbf_wendland_update_vf (
 		    rbf = rbf_wendland_value (
 			&lw->m_fixed_landmarks->points[3*lidx], 
 			fxyz, 
-			lw->rbf_radius);
+			lw->adapt_radius[lidx]);
 
 		    for (d=0; d<3; d++) {
 			vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
-#if defined (commentout)
-			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
-			    lidx, 
-			    fi, fj, fk, 
-			    blm->rbf_coeff[3*lidx+d], rbf, 
-			    blm->rbf_coeff[3*lidx+d] * rbf);
-#endif
+
 		    }
 		}
 	    }
@@ -204,9 +357,21 @@ rbf_wendland_warp (Landmark_warp *lw)
     float *coeff;
     float origin[3], spacing[3];
     int dim[3];
+    int i;
     Volume *moving, *vf_out, *warped_out;
 
     printf ("Wendland Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
+
+    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points * sizeof(float));
+    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points * sizeof(int));
+
+    if (lw->num_clusters > 0) {
+    do_kmeans_plusplus( lw ); // cluster the landmarks; result in lw->cluster_id
+    find_adapt_radius( lw ); // using cluster_id, fill in lw->adapt_radius
+    }
+    else { // use the specified radius
+	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) lw->adapt_radius[i]=lw->rbf_radius;
+    }
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (

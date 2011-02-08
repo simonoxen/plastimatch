@@ -32,6 +32,8 @@ landmark_warp_destroy (Landmark_warp *lw)
     if (lw->m_fixed_landmarks) {
 	pointset_destroy (lw->m_fixed_landmarks);
     }
+    if (lw->cluster_id) free(lw->cluster_id);
+    if (lw->adapt_radius) free(lw->adapt_radius);
     free (lw);
 }
 

@@ -22,6 +22,11 @@ struct landmark_warp
     float default_val;
     float rbf_radius;
     float young_modulus;
+    int num_clusters; // if >0, use adaptive radius of RBF
+
+    /* Internals */
+    int *cluster_id;  // index of cluster the landmark belongs to
+    float *adapt_radius; // adaptively found radius of RBF of each landmark
 
     /* Outputs */
     Plm_image *m_warped_img;
