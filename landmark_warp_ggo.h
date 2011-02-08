@@ -78,15 +78,18 @@ struct args_info_landmark_warp
   float radius_arg;	/**< @brief Radius of radial basis function (default='50.0').  */
   char * radius_orig;	/**< @brief Radius of radial basis function original value given at command line.  */
   const char *radius_help; /**< @brief Radius of radial basis function help description.  */
-  float stiffness_arg;	/**< @brief Young modulus (default='1.0').  */
+  float stiffness_arg;	/**< @brief Young modulus (default='0.0').  */
   char * stiffness_orig;	/**< @brief Young modulus original value given at command line.  */
   const char *stiffness_help; /**< @brief Young modulus help description.  */
-  float default_value_arg;	/**< @brief Value to set for pixels with unknown value (default='0.0').  */
+  float default_value_arg;	/**< @brief Value to set for pixels with unknown value (default='-1000.0').  */
   char * default_value_orig;	/**< @brief Value to set for pixels with unknown value original value given at command line.  */
   const char *default_value_help; /**< @brief Value to set for pixels with unknown value help description.  */
   char * config_arg;	/**< @brief Config file.  */
   char * config_orig;	/**< @brief Config file original value given at command line.  */
   const char *config_help; /**< @brief Config file help description.  */
+  float numclusters_arg;	/**< @brief Number of clusters of landmarks (default='0').  */
+  char * numclusters_orig;	/**< @brief Number of clusters of landmarks original value given at command line.  */
+  const char *numclusters_help; /**< @brief Number of clusters of landmarks help description.  */
   
   unsigned int help_given ;	/**< @brief Whether help was given.  */
   unsigned int full_help_given ;	/**< @brief Whether full-help was given.  */
@@ -106,6 +109,7 @@ struct args_info_landmark_warp
   unsigned int stiffness_given ;	/**< @brief Whether stiffness was given.  */
   unsigned int default_value_given ;	/**< @brief Whether default-value was given.  */
   unsigned int config_given ;	/**< @brief Whether config was given.  */
+  unsigned int numclusters_given ;	/**< @brief Whether numclusters was given.  */
 
   char **inputs ; /**< @brief unamed options (options without names) */
   unsigned inputs_num ; /**< @brief unamed options number */

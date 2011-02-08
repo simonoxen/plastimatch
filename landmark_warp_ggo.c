@@ -46,9 +46,10 @@ const char *args_info_landmark_warp_full_help[] = {
   "  -F, --fixed=filename          Fixed image (match output size to this image)",
   "  -a, --algorithm=ENUM          RBF warping algorithm   (possible \n                                  values=\"tps\", \"gauss\", \"wendland\" \n                                  default=`gauss')",
   "  -r, --radius=FLOAT            Radius of radial basis function  \n                                  (default=`50.0')",
-  "  -Y, --stiffness=FLOAT         Young modulus  (default=`1.0')",
-  "  -d, --default-value=FLOAT     Value to set for pixels with unknown value  \n                                  (default=`0.0')",
+  "  -Y, --stiffness=FLOAT         Young modulus  (default=`0.0')",
+  "  -d, --default-value=FLOAT     Value to set for pixels with unknown value  \n                                  (default=`-1000.0')",
   "      --config=STRING           Config file",
+  "  -N, --numclusters=FLOAT       Number of clusters of landmarks  (default=`0')",
     0
 };
 
@@ -72,11 +73,12 @@ init_help_array(void)
   args_info_landmark_warp_help[14] = args_info_landmark_warp_full_help[14];
   args_info_landmark_warp_help[15] = args_info_landmark_warp_full_help[15];
   args_info_landmark_warp_help[16] = args_info_landmark_warp_full_help[16];
-  args_info_landmark_warp_help[17] = 0; 
+  args_info_landmark_warp_help[17] = args_info_landmark_warp_full_help[18];
+  args_info_landmark_warp_help[18] = 0; 
   
 }
 
-const char *args_info_landmark_warp_help[18];
+const char *args_info_landmark_warp_help[19];
 
 typedef enum {ARG_NO
   , ARG_STRING
@@ -146,6 +148,7 @@ void clear_given (struct args_info_landmark_warp *args_info)
   args_info->stiffness_given = 0 ;
   args_info->default_value_given = 0 ;
   args_info->config_given = 0 ;
+  args_info->numclusters_given = 0 ;
 }
 
 static
@@ -176,12 +179,14 @@ void clear_args (struct args_info_landmark_warp *args_info)
   args_info->algorithm_orig = NULL;
   args_info->radius_arg = 50.0;
   args_info->radius_orig = NULL;
-  args_info->stiffness_arg = 1.0;
+  args_info->stiffness_arg = 0.0;
   args_info->stiffness_orig = NULL;
-  args_info->default_value_arg = 0.0;
+  args_info->default_value_arg = -1000.0;
   args_info->default_value_orig = NULL;
   args_info->config_arg = NULL;
   args_info->config_orig = NULL;
+  args_info->numclusters_arg = 0;
+  args_info->numclusters_orig = NULL;
   
 }
 
@@ -208,6 +213,7 @@ void init_args_info(struct args_info_landmark_warp *args_info)
   args_info->stiffness_help = args_info_landmark_warp_full_help[15] ;
   args_info->default_value_help = args_info_landmark_warp_full_help[16] ;
   args_info->config_help = args_info_landmark_warp_full_help[17] ;
+  args_info->numclusters_help = args_info_landmark_warp_full_help[18] ;
   
 }
 
@@ -326,6 +332,7 @@ cmdline_parser_landmark_warp_release (struct args_info_landmark_warp *args_info)
   free_string_field (&(args_info->default_value_orig));
   free_string_field (&(args_info->config_arg));
   free_string_field (&(args_info->config_orig));
+  free_string_field (&(args_info->numclusters_orig));
   
   
   for (i = 0; i < args_info->inputs_num; ++i)
@@ -438,6 +445,8 @@ cmdline_parser_landmark_warp_dump(FILE *outfile, struct args_info_landmark_warp 
     write_into_file(outfile, "default-value", args_info->default_value_orig, 0);
   if (args_info->config_given)
     write_into_file(outfile, "config", args_info->config_orig, 0);
+  if (args_info->numclusters_given)
+    write_into_file(outfile, "numclusters", args_info->numclusters_orig, 0);
   
 
   i = EXIT_SUCCESS;
@@ -1333,6 +1342,7 @@ cmdline_parser_landmark_warp_internal (
         { "stiffness",	1, NULL, 'Y' },
         { "default-value",	1, NULL, 'd' },
         { "config",	1, NULL, 0 },
+        { "numclusters",	1, NULL, 'N' },
         { 0,  0, 0, 0 }
       };
 
@@ -1341,7 +1351,7 @@ cmdline_parser_landmark_warp_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hf:m:x:I:O:V:F:a:r:Y:d:", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hf:m:x:I:O:V:F:a:r:Y:d:N:", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1470,7 +1480,7 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->stiffness_arg), 
                &(args_info->stiffness_orig), &(args_info->stiffness_given),
-              &(local_args_info.stiffness_given), optarg, 0, "1.0", ARG_FLOAT,
+              &(local_args_info.stiffness_given), optarg, 0, "0.0", ARG_FLOAT,
               check_ambiguity, override, 0, 0,
               "stiffness", 'Y',
               additional_error))
@@ -1482,9 +1492,21 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->default_value_arg), 
                &(args_info->default_value_orig), &(args_info->default_value_given),
-              &(local_args_info.default_value_given), optarg, 0, "0.0", ARG_FLOAT,
+              &(local_args_info.default_value_given), optarg, 0, "-1000.0", ARG_FLOAT,
               check_ambiguity, override, 0, 0,
               "default-value", 'd',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'N':	/* Number of clusters of landmarks.  */
+        
+        
+          if (update_arg( (void *)&(args_info->numclusters_arg), 
+               &(args_info->numclusters_orig), &(args_info->numclusters_given),
+              &(local_args_info.numclusters_given), optarg, 0, "0", ARG_FLOAT,
+              check_ambiguity, override, 0, 0,
+              "numclusters", 'N',
               additional_error))
             goto failure;
         
