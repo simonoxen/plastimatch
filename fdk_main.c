@@ -34,9 +34,9 @@ main (int argc, char* argv[])
     Volume* vol;
     Proj_image_dir *proj_dir;
 
-    LOAD_LIBRARY (libplmopencl);
+//    LOAD_LIBRARY (libplmopencl);
 
-    LOAD_SYMBOL (opencl_reconstruct_conebeam, libplmopencl);
+//    LOAD_SYMBOL (opencl_reconstruct_conebeam, libplmopencl);
     
     /* Parse command line arguments */
     fdk_parse_args (&options, argc, argv);
@@ -98,7 +98,7 @@ main (int argc, char* argv[])
     /* Free memory */
     volume_destroy (vol);
 
-    UNLOAD_LIBRARY (libplmopencl);
+//    UNLOAD_LIBRARY (libplmopencl);
 
     printf(" done.\n\n");
 

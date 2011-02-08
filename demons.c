@@ -45,8 +45,8 @@ demons (
     LOAD_LIBRARY (libplmcuda);
     LOAD_SYMBOL (demons_cuda, libplmcuda);
 
-    LOAD_LIBRARY (libplmopencl);
-    LOAD_SYMBOL (demons_opencl, libplmopencl);
+//    LOAD_LIBRARY (libplmopencl);
+//    LOAD_SYMBOL (demons_opencl, libplmopencl);
 
 
     switch (parms->threading) {
@@ -67,7 +67,7 @@ demons (
 #if OPENCL_FOUND
     case THREADING_OPENCL:
         tmp = demons_opencl (fixed, moving, moving_grad, vf_init, parms);
-        UNLOAD_LIBRARY (libplmopencl);
+//        UNLOAD_LIBRARY (libplmopencl);
         return tmp;
 #endif
     case THREADING_CPU_SINGLE:
