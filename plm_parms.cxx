@@ -153,6 +153,9 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	else if (!strcmp(val,"lbfgsb")) {
 	    stage->optim_type = OPTIMIZATION_LBFGSB;
 	}
+	else if (!strcmp(val,"liblbfgs")) {
+	    stage->optim_type = OPTIMIZATION_LIBLBFGS;
+	}
 	else if (!strcmp(val,"demons")) {
 	    stage->optim_type = OPTIMIZATION_DEMONS;
 	}

@@ -70,9 +70,12 @@ do_gpuit_bspline_stage_internal (
     bspline_parms_set_default (&parms);
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
 	parms.optimization = BOPT_STEEPEST;
+    } else if (stage->optim_type == OPTIMIZATION_LIBLBFGS) {
+	parms.optimization = BOPT_LIBLBFGS;
     } else {
 	parms.optimization = BOPT_LBFGSB;
     }
+
     switch (stage->metric_type) {
     case METRIC_MSE:
 	parms.metric = BMET_MSE;
