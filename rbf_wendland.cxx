@@ -162,8 +162,7 @@ iter_count++;
 
 fprintf(stderr,"iter count %d\n", iter_count);
 
-//for(i=0;i<num_landmarks;i++)
-//printf("%f %f X%d\n", x[i],y[i],z[i],cluster[i]);
+
 
 free(D);
 free(DD);
@@ -204,7 +203,7 @@ for(k=0; k<num_clusters; k++) {
     for(i=0; i<num_landmarks; i++)
 	if (lw->cluster_id[i] == k) lw->adapt_radius[i] = D;
 }
-
+	
 return;
 }
 
@@ -370,10 +369,13 @@ rbf_wendland_warp (Landmark_warp *lw)
     find_adapt_radius( lw ); // using cluster_id, fill in lw->adapt_radius
     }
     else { // use the specified radius
-	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) lw->adapt_radius[i]=lw->rbf_radius;
+	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+		lw->adapt_radius[i]=lw->rbf_radius;
     }
-
-    /* Solve for RBF weights */
+for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+	printf("%f\n", lw->adapt_radius[i]);
+    
+	/* Solve for RBF weights */
     coeff = (float*) malloc (
 	3 * lw->m_fixed_landmarks->num_points * sizeof(float));
     bspline_rbf_find_coeffs (coeff, lw);

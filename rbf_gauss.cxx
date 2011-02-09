@@ -52,8 +52,8 @@ rbf_value (float *rbf_center, float *loc, float radius)
 }
 
 //k-means++ clustering algorithm to separate landmarks into user-specified number of clusters
-void
-do_kmeans_plusplus_g(Landmark_warp *lw)
+static void
+do_kmeans_plusplus(Landmark_warp *lw)
 {
 	int num_landmarks = lw->m_fixed_landmarks->num_points;
 	int num_clusters = lw->num_clusters;
@@ -174,8 +174,8 @@ free(mz);
 }
 
 //calculate adaptive radius of each RBF
-void
-find_adapt_radius_g(Landmark_warp *lw)
+static void
+find_adapt_radius(Landmark_warp *lw)
 {
 int i,j,k, count;
 int num_clusters = lw->num_clusters;
@@ -656,20 +656,20 @@ rbf_gauss_warp (Landmark_warp *lw)
 	int i;
     Volume *moving, *vf_out, *warped_out;
 
-   // printf ("Gauss Radial basis functions requested, radius %.2f\n", lw->rbf_radius);
-
-
 	lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points*sizeof(float));
 	lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points*sizeof(int));
 
 	if (lw->num_clusters > 0) {
-	do_kmeans_plusplus_g( lw );
-	find_adapt_radius_g( lw );
+	do_kmeans_plusplus( lw );
+	find_adapt_radius( lw );
 	}
 	else {
 		for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
         lw->adapt_radius[i]=lw->rbf_radius;
 	}
+
+for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+	printf("%f\n", lw->adapt_radius[i]);
 
     /* Solve for RBF weights */
     coeff = (float*) malloc (
