@@ -54,8 +54,6 @@ OPTION (PLM_PREFER_F2C
   "Prefer using f2c over native fortran compiler" OFF)
 OPTION (PLM_PREFER_SYSTEM_F2C 
   "Prefer the system f2c over the included f2c" ON)
-OPTION (PLM_USE_GPU_PLUGINS 
-  "Build CUDA support as a runtime loaded shared library" ON)
 
 # Installer Options
 OPTION (PLM_INSTALL_RPATH 
@@ -369,7 +367,15 @@ IF (CUDA_FOUND)
   CUDA_INCLUDE_DIRECTORIES (
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
-ENDIF ()
+  # If CUDA is found, use GPU Plugins
+  OPTION (PLM_USE_GPU_PLUGINS 
+    "Build CUDA support as a runtime loaded shared library" ON)
+ELSE (CUDA_FOUND)
+  # If CUDA is not found, don't use GPU Plugins and hide the option
+  OPTION (PLM_USE_GPU_PLUGINS 
+    "CUDA is needed to set this option" OFF)
+  MARK_AS_ADVANCED(PLM_USE_GPU_PLUGINS)
+ENDIF (CUDA_FOUND)
 
 ##-----------------------------------------------------------------------------
 ##  Slicer
