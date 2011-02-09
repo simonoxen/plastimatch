@@ -87,7 +87,7 @@ struct args_info_landmark_warp
   char * config_arg;	/**< @brief Config file.  */
   char * config_orig;	/**< @brief Config file original value given at command line.  */
   const char *config_help; /**< @brief Config file help description.  */
-  float numclusters_arg;	/**< @brief Number of clusters of landmarks (default='0').  */
+  int numclusters_arg;	/**< @brief Number of clusters of landmarks (default='0').  */
   char * numclusters_orig;	/**< @brief Number of clusters of landmarks original value given at command line.  */
   const char *numclusters_help; /**< @brief Number of clusters of landmarks help description.  */
   

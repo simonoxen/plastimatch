@@ -44,4 +44,4 @@ option "default-value" d "Value to set for pixels with unknown value"
 option "config" - "Config file" 
        string no hidden
 option "numclusters" N "Number of clusters of landmarks"
-       float optional default="0"
+       int optional default="0"

@@ -49,7 +49,7 @@ const char *args_info_landmark_warp_full_help[] = {
   "  -Y, --stiffness=FLOAT         Young modulus  (default=`0.0')",
   "  -d, --default-value=FLOAT     Value to set for pixels with unknown value  \n                                  (default=`-1000.0')",
   "      --config=STRING           Config file",
-  "  -N, --numclusters=FLOAT       Number of clusters of landmarks  (default=`0')",
+  "  -N, --numclusters=INT         Number of clusters of landmarks  (default=`0')",
     0
 };
 
@@ -82,6 +82,7 @@ const char *args_info_landmark_warp_help[19];
 
 typedef enum {ARG_NO
   , ARG_STRING
+  , ARG_INT
   , ARG_FLOAT
   , ARG_ENUM
 } cmdline_parser_landmark_warp_arg_type;
@@ -1232,6 +1233,9 @@ int update_arg(void *field, char **orig_field,
     val = possible_values[found];
 
   switch(arg_type) {
+  case ARG_INT:
+    if (val) *((int *)field) = strtol (val, &stop_char, 0);
+    break;
   case ARG_FLOAT:
     if (val) *((float *)field) = (float)strtod (val, &stop_char);
     break;
@@ -1252,6 +1256,7 @@ int update_arg(void *field, char **orig_field,
 
   /* check numeric conversion */
   switch(arg_type) {
+  case ARG_INT:
   case ARG_FLOAT:
     if (val && !(stop_char && *stop_char == '\0')) {
       fprintf(stderr, "%s: invalid numeric value: %s\n", package_name, val);
@@ -1504,7 +1509,7 @@ cmdline_parser_landmark_warp_internal (
         
           if (update_arg( (void *)&(args_info->numclusters_arg), 
                &(args_info->numclusters_orig), &(args_info->numclusters_given),
-              &(local_args_info.numclusters_given), optarg, 0, "0", ARG_FLOAT,
+              &(local_args_info.numclusters_given), optarg, 0, "0", ARG_INT,
               check_ambiguity, override, 0, 0,
               "numclusters", 'N',
               additional_error))
