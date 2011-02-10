@@ -12,6 +12,7 @@
 #include "logfile.h"
 #include "plm_fortran.h"
 #include "volume.h"
+#include "print_and_exit.h"
 
 void
 setulb_ (integer*       n,
@@ -187,6 +188,18 @@ bspline_optimize_lbfgsb (
     u = (doublereal*) malloc (sizeof(doublereal)*NMAX);
     g = (doublereal*) malloc (sizeof(doublereal)*NMAX);
     wa = (doublereal*) malloc (sizeof(doublereal)*(2*MMAX*NMAX+4*NMAX+12*MMAX*MMAX+12*MMAX));
+
+    if ( (nbd == NULL) ||
+         (iwa == NULL) ||
+         (  x == NULL) ||
+         (  l == NULL) ||
+         (  u == NULL) ||
+         (  g == NULL) ||
+         ( wa == NULL) )
+    {
+        error_printf ("System ran out of memory when initializing optimizer.\n\n");
+        exit (1);
+    }
 
     n=NMAX;
     m=MMAX;

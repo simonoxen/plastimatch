@@ -6,6 +6,13 @@
 
 #include "plm_config.h"
 
+
+#define error_printf(fmt, ...) \
+    fprintf (stderr, "\nplastimatch has encountered an issue.\n" \
+             "file: %s (line:%i)\n" fmt, __FILE__, __LINE__,##__VA_ARGS__)
+
+
+
 #if defined __cplusplus
 extern "C" {
 #endif
