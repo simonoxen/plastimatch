@@ -1,1 +1,0 @@
-free_list (@list_name@_list, @IF@ string_list @THEN@ 1 @ELSE@ 0 @ENDIF@);

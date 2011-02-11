@@ -1,5 +1,0 @@
-multi-string    "third"
-
-include "@srcdir@/test_conf_inc_inc.conf"
-
-n

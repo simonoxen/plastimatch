@@ -1,3 +1,0 @@
-# wrong default value: invalid number
-
-option "noarg"       n "multiple option with no arg" int default="hhh"
