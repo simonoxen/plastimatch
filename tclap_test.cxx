@@ -3,6 +3,34 @@
 #include <algorithm>
 #include <tclap/CmdLine.h>
 
+
+namespace TCLAP {
+class MyOutput : public StdOutput
+{
+public:
+    virtual void failure(CmdLineInterface& c, ArgException& e)
+    { 
+	std::cerr << "My special failure message for: " << std::endl
+		  << e.what() << std::endl;
+	exit(1);
+    }
+
+    virtual void usage(CmdLineInterface& c)
+    {
+	std::cout << "my usage message:" << std::endl;
+	std::list<Arg*> args = c.getArgList();
+	for (ArgListIterator it = args.begin(); it != args.end(); it++)
+	    std::cout << (*it)->longID() 
+		 << "  (" << (*it)->getDescription() << ")" << std::endl;
+    }
+
+    virtual void version(CmdLineInterface& c)
+    {
+	std::cout << "my version message: 0.1" << std::endl;
+    }
+};
+}
+
 int main(int argc, char** argv)
 {
 
@@ -18,14 +46,20 @@ int main(int argc, char** argv)
 	// that it contains. 
 	TCLAP::CmdLine cmd("Command description message", ' ', "0.9");
 
+	TCLAP::MyOutput my;
+	cmd.setOutput (&my);
+
 	// Define a value argument and add it to the command line.
 	// A value arg defines a flag and a type of value that it expects,
 	// such as "-n Bishop".
 	TCLAP::ValueArg<std::string> nameArg("n","name","Name to print",true,"homer","string");
 
+	TCLAP::ValueArg<std::string> randomArg("R","random","A random argument",false,"not-set","string");
+
 	// Add the argument nameArg to the CmdLine object. The CmdLine object
 	// uses this Arg to parse the command line.
 	cmd.add( nameArg );
+	cmd.add( randomArg );
 
 	// Define a switch and add it to the command line.
 	// A switch arg is a boolean argument and only defines a flag that
@@ -41,6 +75,11 @@ int main(int argc, char** argv)
 	// Parse the argv array.
 	cmd.parse( argc, argv );
 
+	if (randomArg.isSet()) {
+	    printf ("randomArg was set!\n");
+	}
+	printf ("randomArg = %s\n", randomArg.getValue().c_str());
+
 	// Get the value parsed by each arg. 
 	std::string name = nameArg.getValue();
 	bool reverseName = reverseSwitch.getValue();
@@ -55,9 +94,11 @@ int main(int argc, char** argv)
 	    std::cout << "My name is: " << name << std::endl;
 
 
-    } catch (TCLAP::ArgException &e)  // catch any exceptions
-    { 
+    } catch (TCLAP::ArgException &e) { 
 	std::cerr << "error: " << e.error() 
 		  << " for arg " << e.argId() << std::endl; 
+    }
+    catch (...) {
+	std::cerr << "???\n";
     }
 }
