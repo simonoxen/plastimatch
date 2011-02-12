@@ -40,7 +40,7 @@ class MyOutput : public StdOutput
 {
 public:
     virtual void failure(CmdLineInterface& c, ArgException& e) {
-	std::cerr << "ERROR, " << e.error() << std::endl;
+	std::cerr << "ERROR. " << e.error() << std::endl;
 	brief_usage (c);
 	usage (c);
 	exit (1);
@@ -60,16 +60,17 @@ public:
     {
 	std::string s = "   " + TCLAP::long_id(arg);
 	int len = s.length();
-	if (len > 25) {
+	const int long_option_thresh = 27;
+	if (len > long_option_thresh) {
 	    os << s << std::endl;
 	    s = arg->getDescription();
-	    spacePrint (os, s, 75, 25, 27);
+	    spacePrint (os, s, 75, long_option_thresh+1, long_option_thresh+3);
 	} else {
-	    for (int i = len; i < 25; i++) {
+	    for (int i = len; i < long_option_thresh+1; i++) {
 		s += ' ';
 	    }
 	    s += arg->getDescription();
-	    spacePrint (os, s, 75, 0, 27);
+	    spacePrint (os, s, 75, 0, long_option_thresh+3);
 	}
     }
 

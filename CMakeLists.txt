@@ -1169,7 +1169,7 @@ SET (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx synthetic_mha_main.h
   )
 SET (SYNTHETIC_MHA_TCLAP_SRC
-  synthetic_mha_tclap_main.cxx synthetic_mha_tclap_main.h
+  synthetic_mha_main_tclap.cxx synthetic_mha_main.h
   )
 SET (VF_INVERT_SRC
   vf_invert.cxx
@@ -1484,10 +1484,8 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   IF (PLM_BUILD_TCLAP_TEST)
-  IF (FALSE)
     PLM_ADD_EXECUTABLE (synthetic_mha_tclap "${SYNTHETIC_MHA_TCLAP_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  ENDIF ()
   ENDIF ()
   PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
