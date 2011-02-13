@@ -27,7 +27,7 @@ synthetic_mha (Synthetic_mha_parms* parms)
 	st[d1] = 0;
 	sz[d1] = parms->dim[d1];
 	sp[d1] = parms->spacing[d1];
-	og[d1] = parms->offset[d1];
+	og[d1] = parms->origin[d1];
     }
     rg.SetSize (sz);
     rg.SetIndex (st);

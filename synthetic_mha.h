@@ -18,7 +18,7 @@ public:
     int output_type;
     Pattern_type pattern;
     int dim[3];
-    float offset[3];
+    float origin[3];
     float spacing[3];
 
     float background;
@@ -35,7 +35,7 @@ public:
 	for (int i = 0; i < 3; i++) {
 	    spacing[i] = 5.0f;
 	    dim[i] = 100;
-	    offset[i] = 0.0f;
+	    origin[i] = 0.0f;
 	    gauss_center[i] = 0.0f;
 	    gauss_std[i] = 100.0f;
 	    sphere_center[i] = 0.0f;

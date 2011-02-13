@@ -12,7 +12,6 @@
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_dlib_clp.h"
-//#include "synthetic_mha_main.h"
 #include "synthetic_mha.h"
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
@@ -24,7 +23,7 @@ struct synthetic_mha_main_parms {
 };
 
 void
-do_synthetic_mha (CBString *fn, Synthetic_mha_parms *parms)
+do_synthetic_mha (CBString& fn, Synthetic_mha_parms *parms)
 {
     /* Create image */
     FloatImageType::Pointer img = synthetic_mha (parms);
@@ -81,11 +80,11 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
         parser.add_long_option ("", "origin", 
 	    "Location of first image voxel in mm \"x y z\"", 1);
         parser.add_long_option ("", "dim", 
-	    "Size of output image in voxels \"x [y z]\"", 1);
+	    "Size of output image in voxels \"x [y z]\"", 1, "100");
         parser.add_long_option ("", "spacing", 
-	    "Voxel spacing in mm \"x [y z]\"", 1);
+	    "Voxel spacing in mm \"x [y z]\"", 1, "5");
         parser.add_long_option ("", "volume-size", 
-	    "Size of output image in mm \"x [y z]\"", 1);
+	    "Size of output image in mm \"x [y z]\"", 1, "500");
 
 	/* Image intensities */
         parser.add_long_option ("", "background", 
@@ -95,7 +94,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	
 	/* Gaussian options */
         parser.add_long_option ("", "gauss-center", 
-	    "Location of Gaussian center in mm \"x y z\"", 1);
+	    "Location of Gaussian center in mm \"x [y z]\"", 1);
         parser.add_long_option ("", "gauss-std", 
 	    "Width of Gaussian in mm \"x [y z]\"", 1);
 
@@ -113,6 +112,109 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 
 	/* Parse the command line arguments */
         parser.parse (argc,argv);
+
+	/* Check if the -h option was given */
+	if (parser.option("h") || parser.option("help")) {
+	    print_usage (parser);
+	    exit (0);
+	}
+
+	/* Check that an output file was given */
+	if (!parser.option("output")) {
+	    std::cout << "Error, you must specify the --output option.\n";
+	    print_usage (parser);
+	    exit (1);
+	}
+
+	/* Copy values into output struct */
+	Synthetic_mha_parms *sm_parms = &parms->sm_parms;
+
+	/* Basic options */
+	parms->output_fn = parser.get_cstring ("output");
+	sm_parms->output_type = plm_image_type_parse (
+	    parser.get_cstring ("output-type"));
+
+	/* Main pattern */
+	std::string arg = parser.get_string ("pattern");
+	if (arg == "gauss") {
+	    sm_parms->pattern = PATTERN_GAUSS;
+	}
+	else if (arg == "rect") {
+	    sm_parms->pattern = PATTERN_RECT;
+	}
+	else if (arg == "sphere") {
+	    sm_parms->pattern = PATTERN_SPHERE;
+	}
+	else {
+	    throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
+	}
+
+	/* Image size */
+	parser.assign_int13 (sm_parms->dim, "dim");
+
+	/* If origin not specified, volume is centered about size */
+	float volume_size[3];
+	parser.assign_float13 (volume_size, "volume-size");
+	if (parser.option ("origin")) {
+	    parser.assign_float13 (sm_parms->origin, "origin");
+	} else {
+	    for (int d = 0; d < 3; d++) {
+		sm_parms->origin[d] = - 0.5 * volume_size[d] 
+		    + 0.5 * volume_size[d] / sm_parms->dim[d];
+	    }
+	}
+
+	/* If spacing not specified, set spacing from size and resolution */
+	if (parser.option ("spacing")) {
+	    parser.assign_float13 (sm_parms->spacing, "spacing");
+	} else {
+	    for (int d = 0; d < 3; d++) {
+		sm_parms->spacing[d] 
+		    = volume_size[d] / ((float) sm_parms->dim[d]);
+	    }
+	}
+
+	/* Image intensities */
+	sm_parms->background = parser.get_float ("background");
+	sm_parms->foreground = parser.get_float ("foreground");
+
+	/* Gaussian options */
+	parser.assign_float13 (sm_parms->gauss_center, "gauss-center");
+	parser.assign_float13 (sm_parms->gauss_std, "gauss-std");
+
+	/* Rect options */
+	int rc = sscanf (parser.get_cstring ("rect-size"), 
+	    "%g %g %g %g %g %g", 
+	    &(sm_parms->rect_size[0]), 
+	    &(sm_parms->rect_size[1]), 
+	    &(sm_parms->rect_size[2]), 
+	    &(sm_parms->rect_size[3]), 
+	    &(sm_parms->rect_size[4]), 
+	    &(sm_parms->rect_size[5]));
+	if (rc == 1) {
+	    sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
+	    sm_parms->rect_size[1] = - sm_parms->rect_size[0];
+	    sm_parms->rect_size[2] = + sm_parms->rect_size[0];
+	    sm_parms->rect_size[3] = - sm_parms->rect_size[0];
+	    sm_parms->rect_size[4] = + sm_parms->rect_size[0];
+	    sm_parms->rect_size[5] = - sm_parms->rect_size[0];
+	}
+	else if (rc == 3) {
+	    sm_parms->rect_size[4] = - 0.5 * sm_parms->rect_size[2];
+	    sm_parms->rect_size[2] = - 0.5 * sm_parms->rect_size[1];
+	    sm_parms->rect_size[0] = - 0.5 * sm_parms->rect_size[0];
+	    sm_parms->rect_size[1] = - sm_parms->rect_size[0];
+	    sm_parms->rect_size[3] = - sm_parms->rect_size[2];
+	    sm_parms->rect_size[5] = - sm_parms->rect_size[4];
+	}
+	else if (rc != 6) {
+	    throw (dlib::error ("Error. Option --rect_size must have "
+		    "one, three, or six arguments\n"));
+	}
+
+	/* Sphere options */
+	parser.assign_float13 (sm_parms->sphere_center, "sphere-center");
+	parser.assign_float13 (sm_parms->sphere_radius, "sphere-radius");
     }
     catch (std::exception& e) {
         /* Catch cmd_line_parse_error exceptions and print usage message. */
@@ -121,32 +223,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	exit (1);
     }
     catch (...) {
-	std::cout << "Some error occurred" << std::endl;
-    }
-
-    /* Check if the -h option was given */
-    if (parser.option("h") || parser.option("help")) {
-	print_usage (parser);
-	exit (0);
-    }
-
-    if (parser.option("background")) {
-	printf ("Background is %s\n", 
-	    parser.option("background").argument().c_str());
-    }
-
-    /* Check that an output file was given */
-    if (!parser.option("output")) {
-	std::cout << "Error, you must specify the --output option.\n";
-	print_usage (parser);
+	std::cerr << "An unspecified error occurred.\n";
 	exit (1);
     }
-
-    /* Copy values into output struct */
-    Synthetic_mha_parms *sm_parms = &parms->sm_parms;
-    parms->output_fn = parser.get_value("output").c_str();
-    sm_parms->background = dlib::sa = parser.get_value("background");
-    sm_parms->foreground = dlib::sa = parser.get_value("foreground");
 }
 
 int 
@@ -154,11 +233,9 @@ main (int argc, char* argv[])
 {
     Synthetic_mha_main_parms parms;
 
-    //parse_args_old (&parms, argc, argv);
-
     parse_args (&parms, argc, argv);
 
-    do_synthetic_mha (&parms.output_fn, &parms.sm_parms);
+    do_synthetic_mha (parms.output_fn, &parms.sm_parms);
 
     return 0;
 }

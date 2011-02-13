@@ -82,21 +82,77 @@ public:
 	}
     }
 
+    template <class T>
+    void
+    get_value (
+	T& dest,
+	const string_type& name
+    ) {
+	try {
+	    dest = dlib::sa = this->get_value (name);
+	}
+	catch (std::exception& e) {
+	    string_type error_string = "Error. Option --" 
+		+ name + " had an illegal or missing argument.";
+	    throw dlib::error (error_string);
+	}
+    }
+
     string_type 
     get_value (
 	const string_type& name
     ) {
+	/* Option specified on command line */
 	if (this->option(name)) {
 	    return this->option(name).argument();
 	}
-	
+
+	/* Default value */
 	std::map<string_type,string_type>::iterator it;
 	it = this->default_value_map.find (name);
 	if (it != this->default_value_map.end()) {
 	    return it->second;
 	}
 
+	/* Not specified on command line, and no default value */
 	return "";
+    }
+
+    /* Shorthand functions for specific well-known types */
+    void assign_int13 (int *arr, const string_type& name) {
+	int rc;
+	rc = sscanf (get_cstring (name), "%d %d %d", 
+	    &arr[0], &arr[1], &arr[2]);
+	if (rc == 1) {
+	    arr[1] = arr[2] = arr[0];
+	} else if (rc != 3) {
+	    string_type error_string = "Error. Option --" 
+		+ name + " takes one or three integer arguments.";
+	    throw dlib::error (error_string);
+	}
+    }
+    void assign_float13 (float *arr, const string_type& name) {
+	float rc;
+	rc = sscanf (get_cstring (name), "%g %g %g", 
+	    &arr[0], &arr[1], &arr[2]);
+	if (rc == 1) {
+	    arr[1] = arr[2] = arr[0];
+	} else if (rc != 3) {
+	    string_type error_string = "Error. Option --" 
+		+ name + " takes one or three float arguments.";
+	    throw dlib::error (error_string);
+	}
+    }
+    const char* get_cstring (const string_type& name) {
+	return get_value (name).c_str();
+    }
+    float get_float (const string_type& name) {
+	float out;
+	get_value (out, name);
+	return out;
+    }
+    std::string get_string (const string_type& name) {
+	return get_value (name);
     }
 
     void 
