@@ -1,7 +1,7 @@
 #include "plm_dlib_clp.h"
 
 static void
-print_usage (dlib::MyCLP& parser)
+print_usage (dlib::Plm_clp& parser)
 {
     std::cout << "Usage: dlib_test [options] --in input_file [file ...]\n";
     parser.print_options (std::cout);
@@ -9,7 +9,7 @@ print_usage (dlib::MyCLP& parser)
 }
 
 static void
-parse_args (dlib::MyCLP& parser, int argc, char* argv[])
+parse_args (dlib::Plm_clp& parser, int argc, char* argv[])
 {
     try {
 	// Algorithm-independent options
@@ -74,7 +74,7 @@ parse_args (dlib::MyCLP& parser, int argc, char* argv[])
 int 
 main (int argc, char* argv[])
 {
-    dlib::MyCLP parser;
+    dlib::Plm_clp parser;
 
     parse_args(parser, argc, argv);
 }

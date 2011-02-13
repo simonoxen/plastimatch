@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    This file is derived from dlib source code, http://dlib.net, and 
    is licensed under the "Boost Software License - Version 1.0".
-   Greg Sharp <gregsharp@geocities.com> 
+   Modifications by Greg Sharp <gregsharp@geocities.com>
    ----------------------------------------------------------------------- */
 #ifndef _plm_dlib_clp_h_
 #define _plm_dlib_clp_h_
@@ -17,7 +17,7 @@
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
 namespace dlib {
-class MyCLP
+class Plm_clp
     : public cmd_line_parser<char>::check_1a_c 
 {
 public:
