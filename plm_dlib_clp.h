@@ -1,5 +1,7 @@
 /* -----------------------------------------------------------------------
-   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   This file is derived from dlib source code, http://dlib.net, and 
+   is licensed under the "Boost Software License - Version 1.0".
+   Greg Sharp <gregsharp@geocities.com>
    ----------------------------------------------------------------------- */
 #ifndef _plm_dlib_clp_h_
 #define _plm_dlib_clp_h_
