@@ -1165,14 +1165,14 @@ SET (RTOG_TO_MHA_SRC
 SET (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
-SET (SYNTHETIC_MHA_SRC
-  synthetic_mha_main.cxx synthetic_mha_main.h
+SET (SYNTHETIC_MHA_GETOPT_SRC
+  synthetic_mha_main_getopt.cxx synthetic_mha_main_getopt.h
   )
 SET (SYNTHETIC_MHA_DLIB_SRC
-  synthetic_mha_main_dlib.cxx synthetic_mha_main.h
+  synthetic_mha_main_dlib.cxx 
   )
 SET (SYNTHETIC_MHA_TCLAP_SRC
-  synthetic_mha_main_tclap.cxx synthetic_mha_main.h
+  synthetic_mha_main_tclap.cxx 
   )
 SET (VF_INVERT_SRC
   vf_invert.cxx
@@ -1484,12 +1484,10 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
+  PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_DLIB_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  IF (PLM_BUILD_DLIB_TEST)
-    PLM_ADD_EXECUTABLE (synthetic_mha_dlib "${SYNTHETIC_MHA_DLIB_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  ENDIF ()
+  PLM_ADD_EXECUTABLE (synthetic_mha_getopt "${SYNTHETIC_MHA_GETOPT_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   IF (PLM_BUILD_TCLAP_TEST)
     PLM_ADD_EXECUTABLE (synthetic_mha_tclap "${SYNTHETIC_MHA_TCLAP_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)

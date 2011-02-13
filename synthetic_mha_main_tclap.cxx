@@ -9,7 +9,7 @@
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_tclap.h"
-#include "synthetic_mha_main.h"
+#include "synthetic_mha.h"
 
 void
 do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)

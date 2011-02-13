@@ -78,7 +78,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 
 	/* Image size */
         parser.add_long_option ("", "origin", 
-	    "Location of first image voxel in mm \"x y z\"", 1);
+	    "Location of first image voxel in mm \"x y z\"", 1, "0 0 0");
         parser.add_long_option ("", "dim", 
 	    "Size of output image in voxels \"x [y z]\"", 1, "100");
         parser.add_long_option ("", "spacing", 
@@ -88,27 +88,27 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 
 	/* Image intensities */
         parser.add_long_option ("", "background", 
-	    "Intensity of background region", 1);
+	    "Intensity of background region", 1, "-1000");
         parser.add_long_option ("", "foreground", 
-	    "Intensity of foreground region", 1);
+	    "Intensity of foreground region", 1, "0");
 	
 	/* Gaussian options */
         parser.add_long_option ("", "gauss-center", 
-	    "Location of Gaussian center in mm \"x [y z]\"", 1);
+	    "Location of Gaussian center in mm \"x [y z]\"", 1, "0 0 0");
         parser.add_long_option ("", "gauss-std", 
-	    "Width of Gaussian in mm \"x [y z]\"", 1);
+	    "Width of Gaussian in mm \"x [y z]\"", 1, "100");
 
 	/* Rect options */
         parser.add_long_option ("", "rect-size", 
 	    "Width of rectangle in mm \"x [y z]\","
 	    " or locations of rectangle corners in mm"
-	    " \"x1 x2 y1 y2 z1 z2\"", 1);
+	    " \"x1 x2 y1 y2 z1 z2\"", 1, "-50 50 -50 50 -50 50");
 
 	/* Sphere options */
         parser.add_long_option ("", "sphere-center", 
-	    "Location of sphere center in mm \"x y z\"", 1);
+	    "Location of sphere center in mm \"x y z\"", 1, "0 0 0");
         parser.add_long_option ("", "sphere-radius", 
-	    "Radius of sphere in mm \"x [y z]\"", 1);
+	    "Radius of sphere in mm \"x [y z]\"", 1, "50");
 
 	/* Parse the command line arguments */
         parser.parse (argc,argv);

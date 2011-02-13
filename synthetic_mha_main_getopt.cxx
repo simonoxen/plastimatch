@@ -10,7 +10,7 @@
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "math_util.h"
-#include "synthetic_mha_main.h"
+#include "synthetic_mha_main_getopt.h"
 
 void
 do_synthetic_mha (char* fn, Synthetic_mha_parms* parms)
@@ -126,14 +126,14 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	    break;
 	case 4:
 	    rc = sscanf (optarg, "%g %g %g", 
-		&(sm_parms->offset[0]), 
-		&(sm_parms->offset[1]), 
-		&(sm_parms->offset[2]));
+		&(sm_parms->origin[0]), 
+		&(sm_parms->origin[1]), 
+		&(sm_parms->origin[2]));
 	    if (rc != 3) {
 		printf ("Origin option must have three arguments\n");
 		exit (1);
 	    }
-	    parms->have_offset = 1;
+	    parms->have_origin = 1;
 	    break;
 	case 5:
 	    rc = sscanf (optarg, "%g %g %g", 
@@ -276,10 +276,10 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
     }
 
     /* If origin not specified, volume is centered about size */
-    if (!parms->have_offset) {
+    if (!parms->have_origin) {
 	int d;
 	for (d = 0; d < 3; d++) {
-	    sm_parms->offset[d] = - 0.5 * parms->volume_size[d] 
+	    sm_parms->origin[d] = - 0.5 * parms->volume_size[d] 
 		+ 0.5 * parms->volume_size[d] / sm_parms->dim[d];
 	}
     }

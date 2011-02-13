@@ -176,84 +176,84 @@ PLM_ADD_TEST (
   "gauss-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-3.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-3.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-4.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-4.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-5"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-6"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-ushort-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "gauss-ushort-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
 PLM_ADD_TEST (
   "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
   "rect-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--pattern;rect;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
   "sphere-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--resolution;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
+  "--output;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-type;uchar;--pattern;sphere;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;255;--sphere-center;0 0 0;--sphere-radius;10 10 10"
   )
 
 ## -------------------------------------------------------------------------
