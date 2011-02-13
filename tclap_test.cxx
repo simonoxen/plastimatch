@@ -19,7 +19,7 @@ main (int argc, char* argv[])
 	// delimiter (usually space) and the last one is the version number. 
 	// The CmdLine object parses the argv array based on the Arg objects
 	// that it contains. 
-	TCLAP::CmdLine cmd("Command description message", ' ', "0.9");
+	TCLAP::PlmCmdLine cmd("Command description message", ' ', "0.9");
 
 	TCLAP::MyOutput my;
 	cmd.setOutput (&my);
@@ -52,11 +52,20 @@ main (int argc, char* argv[])
 	    , cmd, false);
 	TCLAP::SwitchArg anotherSwitch ("","qeverse-foobar","This is a not so brief description of the desired functionality", cmd, false);
 
+	cmd.add_arg ("y", "yet-another-option", 
+	    "This is a brief description", 
+	    false, "not-set", "string");
+
 	/* Sort the options */
 	sort_arglist (cmd);
 
 	// Parse the argv array.
 	cmd.parse( argc, argv );
+
+#if defined (commentout)
+	std::string value = cmd.get_arg("yet-another-option")->getValue();
+	printf ("YAO has value %s\n", value.c_str());
+#endif
 
 	if (randomArg.isSet()) {
 	    printf ("randomArg was set!\n");

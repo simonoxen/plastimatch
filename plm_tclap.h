@@ -11,6 +11,51 @@
 
 namespace TCLAP {
 
+/* We need a way for getting arguments out of the CmdLineInterface, 
+   because it is tedious to manually manage the individual option arguments.
+   Therefore we define a specialized CmdLine object */
+class PlmCmdLine : public CmdLine
+{
+public:
+    PlmCmdLine (const std::string& message,
+	const char delimiter = ' ',
+	const std::string& version = "none",
+	bool helpAndVersion = true) 
+	: CmdLine (message, delimiter, version, helpAndVersion) {}
+
+    void
+    add_arg (
+	const std::string& flag, 
+	const std::string& name, 
+	const std::string& desc, 
+	bool req, 
+	std::string default_value, 
+	const std::string& typeDesc)
+    {
+	TCLAP::ValueArg<std::string>* arg = 
+	    new TCLAP::ValueArg<std::string> (
+		flag, name, desc, req, default_value, typeDesc);
+	this->add (arg);
+	deleteOnExit (arg);
+    }
+
+#if defined (commentout)
+    /* Ugh.  Only ValueArg has getValue() function. */
+    Arg*
+    get_arg (const std::string& arg_name) {
+	std::list<Arg*>& arg_list = this->getArgList();
+	std::list<Arg*>::iterator it = arg_list.begin();
+	while (it != arg_list.end()) {
+	    if ((*it)->getName() == arg_name) {
+		printf ("Matched argument!\n");
+	    }
+	    ++it;
+	}
+	return 0;
+    }
+#endif
+};
+
 /* We need a replacement for longID, because it does not format well.  
    However, it is tedious to subclass all of the various subclasses of Arg.  
    Therefore we simply use a helper function. */

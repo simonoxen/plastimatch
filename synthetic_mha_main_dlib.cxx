@@ -382,10 +382,12 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	exit (1);
     }
 
+#if defined (commentout)
     if (parser.option("dim")) {
 	std::vector<float> foo;
 	foo = dlib::sa = parser.option("dim").argument();
     }
+#endif
 }
 
 int 

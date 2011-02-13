@@ -295,8 +295,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 #endif
 
 void
-parse_args (TCLAP::CmdLine& cmd, int argc, char* argv[])
+parse_args (int argc, char* argv[])
 {
+    TCLAP::CmdLine cmd ("", ' ', "0.9");
     TCLAP::MyOutput my;
     cmd.setOutput (&my);
 
@@ -374,20 +375,12 @@ parse_args (TCLAP::CmdLine& cmd, int argc, char* argv[])
 #endif
 }
 
-void
-set_parms (Synthetic_mha_parms *parms, TCLAP::CmdLine& cmd)
-{
-    
-}
-
 int 
 main (int argc, char* argv[])
 {
-    TCLAP::CmdLine cmd ("", ' ', "0.9");
     Synthetic_mha_parms parms;
 
-    parse_args (cmd, argc, argv);
-    set_parms (&parms, cmd);
+    parse_args (argc, argv);
 
     //do_synthetic_mha (cmd.parms.output_fn, &parms);
 

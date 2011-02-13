@@ -10,6 +10,29 @@
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
+namespace dlib {
+class MyCLP
+    : public cmd_line_parser<char>::check_1a_c 
+{
+public:
+    std::map<string_type,string_type> default_value_map;
+public:
+    void my_add_option (
+	const string_type& name,
+	const string_type& description,
+	unsigned long number_of_arguments = 0,
+	const string_type& default_value = ""
+    ) {
+	this->add_option (name, description, number_of_arguments);
+	if (default_value != "") {
+	    //printf ("Hello world\n");
+	    default_value_map.insert (
+		std::pair<string_type,string_type> (name, default_value));
+	}
+    }
+};
+}
+
 /* ---------------------------------------------------------------------
    global functions
    --------------------------------------------------------------------- */
@@ -22,39 +45,27 @@ print_usage (Clp& parser)
 }
 
 static void
-parse_args (Clp& parser, int argc, char* argv[])
+parse_args (dlib::MyCLP& parser, int argc, char* argv[])
 {
     try {
 	// Algorithm-independent options
-        parser.add_option ("a","",1);
-        parser.add_option ("algorithm",
-	    "Choose the learning algorithm: {krls,krr,mlp,svr}.",1);
-        parser.add_option ("h","Display this help message.");
-        parser.add_option ("help","Display this help message.");
-        parser.add_option ("k",
+        parser.my_add_option ("a","",1,"Foob");
+        parser.my_add_option ("algorithm",
+	    "Choose the learning algorithm: {krls,krr,mlp,svr}."
+	    "Choose the learning algorithm: {krls,krr,mlp,svr}."
+	    "Choose the learning algorithm: {krls,krr,mlp,svr}.",
+	    1);
+        parser.my_add_option ("h","Display this help message.");
+        parser.my_add_option ("help","Display this help message.");
+        parser.my_add_option ("k",
 	    "Learning kernel (for krls,krr,svr methods): {lin,rbk}.",1);
-        parser.add_option ("in","A libsvm-formatted file to test.",1);
-        parser.add_option ("normalize",
+        parser.my_add_option ("in","A libsvm-formatted file to test.",1);
+        parser.my_add_option ("normalize",
 	    "Normalize the sample inputs to zero-mean unit variance?");
-        parser.add_option ("train-best",
+        parser.my_add_option ("train-best",
 	    "Train and save a network using best parameters", 1);
 
-	// Algorithm-specific options
-        parser.add_option ("rbk-gamma",
-	    "Width of radial basis kernels: {float}.",1);
-        parser.add_option ("krls-tolerance",
-	    "Numerical tolerance of krls linear dependency test: {float}.",1);
-        parser.add_option ("mlp-hidden-units",
-	    "Number of hidden units in mlp: {integer}.",1);
-        parser.add_option ("mlp-num-iterations",
-	    "Number of epochs to train the mlp: {integer}.",1);
-        parser.add_option ("svr-c",
-	    "SVR regularization parameter \"C\": "
-	    "{float}.",1);
-        parser.add_option ("svr-epsilon-insensitivity",
-	    "SVR fitting tolerance parameter: "
-	    "{float}.",1);
-        parser.add_option ("verbose", "Use verbose trainers");
+        parser.my_add_option ("verbose", "Use verbose trainers");
 
 	// Parse the command line arguments
         parser.parse(argc,argv);
@@ -96,7 +107,7 @@ parse_args (Clp& parser, int argc, char* argv[])
 int 
 main (int argc, char* argv[])
 {
-    Clp parser;
+    dlib::MyCLP parser;
 
     parse_args(parser, argc, argv);
 
