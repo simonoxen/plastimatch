@@ -13,24 +13,24 @@ parse_args (dlib::MyCLP& parser, int argc, char* argv[])
 {
     try {
 	// Algorithm-independent options
-        parser.my_add_option_2 ("a","algorithm",
+        parser.add_long_option ("a","algorithm",
 	    "Choose the learning algorithm: {krls,krr,mlp,svr}. "
 	    "Choose the learning algorithm: {krls,krr,mlp,svr}. "
 	    "Choose the learning algorithm: {krls,krr,mlp,svr}. ",
 	    1,"Foob");
-        parser.my_add_option_2 ("b","","The 'b' option",1);
-        parser.my_add_option_2 ("h","help","Display this help message.");
-        parser.my_add_option_2 ("k","kernel",
+        parser.add_long_option ("b","","The 'b' option",1);
+        parser.add_long_option ("h","help","Display this help message.");
+        parser.add_long_option ("k","kernel",
 	    "Learning kernel (for krls,krr,svr methods): {lin,rbk}.",1);
-        parser.my_add_option_2 ("","in","A libsvm-formatted file to test.",1);
-        parser.my_add_option_2 ("","normalize",
+        parser.add_long_option ("","in","A libsvm-formatted file to test.",1);
+        parser.add_long_option ("","normalize",
 	    "Normalize the sample inputs to zero-mean unit variance?");
-        parser.my_add_option_2 ("","train-best",
+        parser.add_long_option ("","train-best",
 	    "Train and save a network using best parameters", 1);
 
-        parser.my_add_option_2 ("", "verbose", "Use verbose trainers");
+        parser.add_long_option ("", "verbose", "Use verbose trainers");
 
-        parser.my_add_option_2 ("c","cool-option",
+        parser.add_long_option ("c","cool-option",
 	    "The 'c/cool' option",1,"default-c-value");
 
 	// Parse the command line arguments

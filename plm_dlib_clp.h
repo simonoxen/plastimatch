@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    This file is derived from dlib source code, http://dlib.net, and 
    is licensed under the "Boost Software License - Version 1.0".
-   Greg Sharp <gregsharp@geocities.com>
+   Greg Sharp <gregsharp@geocities.com> 
    ----------------------------------------------------------------------- */
 #ifndef _plm_dlib_clp_h_
 #define _plm_dlib_clp_h_
@@ -26,7 +26,7 @@ public:
     std::map<string_type,string_type> description_map;
 public:
     void 
-    my_add_option_2 (
+    add_long_option (
 	const string_type& short_name,
 	const string_type& long_name,
 	const string_type& description,
@@ -42,24 +42,24 @@ public:
 	    /* Only short */
 	    key = short_name;
 	    option_val = "  -" + short_name;
-	    this->my_add_option (short_name, description, number_of_arguments,
-		default_value);
+	    this->add_option_with_default (short_name, description, 
+		number_of_arguments, default_value);
 	} 
 	else if (short_name == "") {
 	    /* Only long */
 	    key = long_name;
 	    option_val = "      --" + long_name;
-	    this->my_add_option (long_name, description, number_of_arguments,
-		default_value);
+	    this->add_option_with_default (long_name, description, 
+		number_of_arguments, default_value);
 	}
 	else {
 	    /* Both long and short */
 	    key = long_name;
 	    option_val = "  -" + short_name + ", --" + long_name;
-	    this->my_add_option (short_name, description, number_of_arguments,
-		default_value);
-	    this->my_add_option (long_name, description, number_of_arguments,
-		default_value);
+	    this->add_option_with_default (short_name, description, 
+		number_of_arguments, default_value);
+	    this->add_option_with_default (long_name, description, 
+		number_of_arguments, default_value);
 	}
 
 	option_map.insert (
@@ -69,7 +69,7 @@ public:
     }
 
     void 
-    my_add_option (
+    add_option_with_default (
 	const string_type& name,
 	const string_type& description,
 	unsigned long number_of_arguments = 0,
