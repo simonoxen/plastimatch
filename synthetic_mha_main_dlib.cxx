@@ -130,9 +130,9 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	Synthetic_mha_parms *sm_parms = &parms->sm_parms;
 
 	/* Basic options */
-	parms->output_fn = parser.get_cstring ("output");
+	parms->output_fn = parser.get_string("output").c_str();
 	sm_parms->output_type = plm_image_type_parse (
-	    parser.get_cstring ("output-type"));
+	    parser.get_string("output-type").c_str());
 
 	/* Main pattern */
 	std::string arg = parser.get_string ("pattern");
@@ -183,7 +183,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	parser.assign_float13 (sm_parms->gauss_std, "gauss-std");
 
 	/* Rect options */
-	int rc = sscanf (parser.get_cstring ("rect-size"), 
+	int rc = sscanf (parser.get_string("rect-size").c_str(), 
 	    "%g %g %g %g %g %g", 
 	    &(sm_parms->rect_size[0]), 
 	    &(sm_parms->rect_size[1]), 

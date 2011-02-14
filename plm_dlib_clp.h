@@ -91,14 +91,15 @@ public:
 	try {
 	    dest = dlib::sa = this->get_value (name);
 	}
-	catch (std::exception& e) {
+	//catch (std::exception& e) {
+	catch (...) {
 	    string_type error_string = "Error. Option --" 
 		+ name + " had an illegal or missing argument.";
 	    throw dlib::error (error_string);
 	}
     }
 
-    string_type 
+    string_type
     get_value (
 	const string_type& name
     ) {
@@ -121,7 +122,7 @@ public:
     /* Shorthand functions for specific well-known types */
     void assign_int13 (int *arr, const string_type& name) {
 	int rc;
-	rc = sscanf (get_cstring (name), "%d %d %d", 
+	rc = sscanf (get_string(name).c_str(), "%d %d %d", 
 	    &arr[0], &arr[1], &arr[2]);
 	if (rc == 1) {
 	    arr[1] = arr[2] = arr[0];
@@ -133,7 +134,7 @@ public:
     }
     void assign_float13 (float *arr, const string_type& name) {
 	float rc;
-	rc = sscanf (get_cstring (name), "%g %g %g", 
+	rc = sscanf (get_string(name).c_str(), "%g %g %g", 
 	    &arr[0], &arr[1], &arr[2]);
 	if (rc == 1) {
 	    arr[1] = arr[2] = arr[0];
@@ -142,9 +143,6 @@ public:
 		+ name + " takes one or three float arguments.";
 	    throw dlib::error (error_string);
 	}
-    }
-    const char* get_cstring (const string_type& name) {
-	return get_value (name).c_str();
     }
     float get_float (const string_type& name) {
 	float out;
