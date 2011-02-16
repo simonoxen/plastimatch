@@ -14,6 +14,7 @@
 
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
+#include "logfile.h"
 #include "itk_image_stats.h"
 #include "plm_image.h"
 #include "plm_image_type.h"
@@ -125,7 +126,7 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 
     /* PixelSpacing */
     tmp = gdcm_file->GetEntryValue (0x0028, 0x0030);
-    rc = sscanf (tmp.c_str(), "%g\\%g", &spacing[0], &spacing[1]);
+    rc = sscanf (tmp.c_str(), "%g\\%g", &spacing[1], &spacing[0]);
 	
     if (rc != 2) {
 	print_and_exit ("Error parsing RTDOSE pixel spacing.\n");
@@ -162,7 +163,11 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 	    /* In this case, gfov values are absolute rather than relative 
 	       positions, but we process the same way. */
 	} else {
-	    print_and_exit ("Error, RTDOSE gfov[0] is neither 0 nor ipp[2].\n");
+	    /* This is wrong.  But Nucletron does it. */
+	    logfile_printf (
+		"Warning: RTDOSE gfov[0] is neither 0 nor ipp[2].\n"
+		"This violates the DICOM standard.  Proceeding anyway...\n");
+	    /* Nucletron seems to work by ignoring absolute offset (???) */
 	}
     }
 
@@ -401,7 +406,7 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     s = gdcm::Util::Format ("%d", plh.Size(0));
     gf->InsertValEntry (s, 0x0028, 0x0011);
     /* PixelSpacing */
-    s = gdcm::Util::Format ("%g\\%g", plh.m_spacing[0], plh.m_spacing[1]);
+    s = gdcm::Util::Format ("%g\\%g", plh.m_spacing[1], plh.m_spacing[0]);
     gf->InsertValEntry (s, 0x0028, 0x0030);
 
     /* BitsAllocated */
