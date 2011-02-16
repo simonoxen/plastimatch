@@ -935,13 +935,13 @@ PLM_ADD_TEST (
   "plm-convert-dicom-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;plm-convert-dicom-d.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;plm-convert-dicom-d-dose-img.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-d-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-convert-dicom-d.mha"
+  "stats;--input;plm-convert-dicom-d-dose-img.mha"
   )
 ADD_TEST (
   "plm-convert-dicom-d-check"
@@ -984,6 +984,16 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (pinnacle)
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom-pinnacle-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------
