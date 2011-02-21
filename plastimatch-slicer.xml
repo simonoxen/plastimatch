@@ -67,7 +67,7 @@ The plastimatch deformable registration extension will register two images using
       <longflag>--hardware</longflag>
       <description>Choose hardware: GPU (CUDA), or CPU (OpenMP)</description>
       <label>Hardware</label>
-      <default>GPU</default>
+      <default>CPU</default>
       <element>GPU</element>
       <element>CPU</element>
     </string-enumeration>
