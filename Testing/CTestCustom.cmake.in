@@ -123,6 +123,13 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 
+IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}//rando-dicomrt-pinnacle3-8.2g")
+  SET (CTEST_CUSTOM_TESTS_IGNORE
+    ${CTEST_CUSTOM_TESTS_IGNORE}
+    "plm-convert-dicom-pinnacle-a" 
+    )
+ENDIF ()
+
 ## If we didn't get varian fdk test data, don't run these tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
   SET (CTEST_CUSTOM_TESTS_IGNORE
