@@ -1395,6 +1395,7 @@ IF (WIN32 AND SLICER_FOUND)
   #"${CMAKE_BINARY_DIR}/lib/Slicer3/Plugins/Release")
   ADD_CUSTOM_TARGET (plastimatch_slicer_copy ALL
     DEPENDS "${OUTDIR}/plastimatch1.dll" "${OUTDIR}/gpuit.dll" 
+    "${OUTDIR}/plmsys.dll" 
     )
   ADD_CUSTOM_COMMAND (
     OUTPUT "${OUTDIR}/plastimatch1.dll"
@@ -1411,6 +1412,14 @@ IF (WIN32 AND SLICER_FOUND)
     "${INDIR}/gpuit.dll"
     "${OUTDIR}/gpuit.dll"
     DEPENDS gpuit
+    )
+  ADD_CUSTOM_COMMAND (
+    OUTPUT "${OUTDIR}/plmsys.dll"
+    COMMAND
+    ${CMAKE_COMMAND} "-E" "copy"
+    "${INDIR}/plmsys.dll"
+    "${OUTDIR}/plmsys.dll"
+    DEPENDS plmsys
     )
 ENDIF ()
 
