@@ -219,6 +219,18 @@ MACRO (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
     DEPENDS "${CMAKE_SOURCE_DIR}/${CL_FILE}")
 ENDMACRO (PLM_ADD_OPENCL_FILE)
 
+MACRO (PLM_SLICER_COPY_DLL TARGET SRC DEST DEPENDENCY)
+  ADD_CUSTOM_TARGET (${TARGET} ALL DEPENDS "${DEST}")
+  ADD_CUSTOM_COMMAND (
+      OUTPUT "${DEST}"
+      COMMAND
+      ${CMAKE_COMMAND} "-E" "copy"
+      "${SRC}"
+      "${DEST}"
+      DEPENDS ${DEPENDENCY}
+      )
+ENDMACRO()
+
 ##-----------------------------------------------------------------------------
 ##  Search for include files
 ##-----------------------------------------------------------------------------
@@ -1389,38 +1401,39 @@ IF (WIN32 AND SLICER_FOUND)
   
   SET (INDIR
     "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-  #"${CMAKE_BINARY_DIR}/Release")
   SET (OUTDIR
     "${CMAKE_BINARY_DIR}/${Slicer3_INSTALL_PLUGINS_BIN_DIR}/${CMAKE_CFG_INTDIR}")
-  #"${CMAKE_BINARY_DIR}/lib/Slicer3/Plugins/Release")
-  ADD_CUSTOM_TARGET (plastimatch_slicer_copy ALL
-    DEPENDS "${OUTDIR}/plastimatch1.dll" "${OUTDIR}/gpuit.dll" 
-    "${OUTDIR}/plmsys.dll" 
-    )
-  ADD_CUSTOM_COMMAND (
-    OUTPUT "${OUTDIR}/plastimatch1.dll"
-    COMMAND
-    ${CMAKE_COMMAND} "-E" "copy"
+
+  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plastimatch1
     "${INDIR}/plastimatch1.dll"
     "${OUTDIR}/plastimatch1.dll"
-    DEPENDS plastimatch1
+    plastimatch1
     )
-  ADD_CUSTOM_COMMAND (
-    OUTPUT "${OUTDIR}/gpuit.dll"
-    COMMAND
-    ${CMAKE_COMMAND} "-E" "copy"
+  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_gpuit
     "${INDIR}/gpuit.dll"
     "${OUTDIR}/gpuit.dll"
-    DEPENDS gpuit
+    gpuit
     )
-  ADD_CUSTOM_COMMAND (
-    OUTPUT "${OUTDIR}/plmsys.dll"
-    COMMAND
-    ${CMAKE_COMMAND} "-E" "copy"
+  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmsys
     "${INDIR}/plmsys.dll"
     "${OUTDIR}/plmsys.dll"
-    DEPENDS plmsys
+    plmsys
     )
+
+  IF (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmcuda
+      "${INDIR}/plmcuda.dll"
+      "${OUTDIR}/plmcuda.dll"
+      plmcuda
+      )
+  ENDIF ()
+  IF (OPENCL_FOUND AND PLM_USE_GPU_PLUGINS)
+    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
+      "${INDIR}/plmopencl.dll"
+      "${OUTDIR}/plmopencl.dll"
+      plmopencl
+      )
+  ENDIF ()
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
