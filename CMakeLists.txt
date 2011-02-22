@@ -963,6 +963,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   rbf_gauss.cxx rbf_gauss.h
   rbf_wendland.cxx rbf_wendland.h
   rbf_gcs.cxx rbf_gcs.h
+  rbf_cluster.cxx rbf_cluster.h
   referenced_dicom_dir.cxx referenced_dicom_dir.h 
   render_polyline.cxx render_polyline.h
   resample_mha.cxx resample_mha.h 
