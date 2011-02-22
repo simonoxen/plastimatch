@@ -149,6 +149,7 @@ int i,j,k, count;
 int num_clusters = lw->num_clusters;
 int num_landmarks = lw->m_fixed_landmarks->num_points; 
 float d, D, dmax=-1;
+float *d_nearest_neighb;
 
 // NB what to do if there is just one landmark in a cluster??
 
@@ -174,7 +175,35 @@ for(k=0; k<num_clusters; k++) {
 
     printf("nclust %d   nland %d   dmax = %f  D = %f\n", num_clusters, num_landmarks, dmax, D);
     // single long cluster needs other treatment
-    if ( (num_clusters == 1) && (dmax/D > 1.5) ) { printf("long cluster, dmax %f D %f\n", dmax, D); D = dmax/2.1; }
+    if ( (num_clusters == 1) && (dmax/D > 1.5) ) { 
+	printf("long cluster, dmax %f D %f\n", dmax, D); D = dmax/2.1; 
+        
+	// radius is the max distance between nearest neighbors
+	
+	d_nearest_neighb = (float *)malloc(num_landmarks*sizeof(float));
+	for(i=0;i<num_landmarks;i++) d_nearest_neighb[i]=1e20;
+    
+	for(i=0;i<num_landmarks;i++) {
+	    for(j=0;j<num_landmarks;j++) {
+		if (i==j) continue;
+		d = (lw->m_fixed_landmarks->points[i*3+0]-lw->m_fixed_landmarks->points[j*3+0])
+		   *(lw->m_fixed_landmarks->points[i*3+0]-lw->m_fixed_landmarks->points[j*3+0]) + 
+		    (lw->m_fixed_landmarks->points[i*3+1]-lw->m_fixed_landmarks->points[j*3+1])
+		   *(lw->m_fixed_landmarks->points[i*3+1]-lw->m_fixed_landmarks->points[j*3+1]) + 
+		    (lw->m_fixed_landmarks->points[i*3+2]-lw->m_fixed_landmarks->points[j*3+2])
+		   *(lw->m_fixed_landmarks->points[i*3+2]-lw->m_fixed_landmarks->points[j*3+2]);
+		d = sqrt(d);	    
+		if (d<d_nearest_neighb[i]) d_nearest_neighb[i]=d;
+	    }
+	}
+	
+	D = d_nearest_neighb[0];
+	for(i=0;i<num_landmarks;i++) {
+	    if (d_nearest_neighb[i]>D) D = d_nearest_neighb[i];
+	    }
+    
+	free(d_nearest_neighb);
+    }
 
     for(i=0; i<num_landmarks; i++)
 	if (lw->cluster_id[i] == k) lw->adapt_radius[i] = D;
