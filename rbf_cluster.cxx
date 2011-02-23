@@ -171,7 +171,7 @@ for(k=0; k<num_clusters; k++) {
 	    }
 	}
     D /= count;	
-//  D = D * 1.23456 ; a magic number
+    D = D * 2 ; //a magic number
 
     printf("nclust %d   nland %d   dmax = %f  D = %f\n", num_clusters, num_landmarks, dmax, D);
     // single long cluster needs other treatment
