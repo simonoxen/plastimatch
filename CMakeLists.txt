@@ -33,6 +33,10 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
+OPTION (PLM_BUILD_SLICER_LOADABLE 
+  "Build slicer loadable module" OFF)
+OPTION (PLM_BUILD_SLICER_SYNTH
+  "Build slicer synthetic CLP" OFF)
 OPTION (PLM_BUILD_TCLAP_TEST "Build tclap test program" OFF)
 
 # Software options
@@ -46,8 +50,6 @@ OPTION (BUILD_SHARED_LIBS
   "Build plastimatch as shared library" OFF)
 OPTION (PLM_BUILD_RTK 
   "Build RTK" OFF)
-OPTION (PLM_BUILD_SLICER_LOADABLE 
-  "Build slicer loadable module" OFF)
 OPTION (PLM_PREFER_F2C 
   "Prefer using f2c over native fortran compiler" OFF)
 OPTION (PLM_PREFER_SYSTEM_F2C 
@@ -1121,22 +1123,17 @@ SET (PLASTIMATCH_SRC
 SET (PLASTIMATCH_SLICER_SRC
   plastimatch-slicer.cxx
   )
-# NSh 1/3/2011
-# Plugin for landmark warping based on standalone warper
-# WRAP_GGO (landmark_warp_GGO_C landmark_warp.ggo)
-SET (PLASTIMATCH_SLICER_LANDWARP_SRC
-  plastimatch-slicer-landwarp.cxx
-#  landmark_warp_args.cxx landmark_warp_args.h
-#  ${landmark_warp_GGO_C}
-  )
-#SET (PLASTIMATCH_SLICER_TPS_SRC
-# plastimatch-slicer-tps.cxx
-#  )
 SET (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
   plastimatch_slicer_dicomrt_import.cxx
   )
 SET (PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC
   plastimatch_slicer_dicomrt_export.cxx
+  )
+SET (PLASTIMATCH_SLICER_LANDWARP_SRC
+  plastimatch-slicer-landwarp.cxx
+  )
+SET (PLASTIMATCH_SLICER_SYNTH_SRC
+  plastimatch_slicer_synth.cxx
   )
 SET (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
@@ -1496,6 +1493,11 @@ IF (ITK_FOUND)
     PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-landwarp 
       "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
+    IF (PLM_BUILD_SLICER_SYNTH)
+      PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_synth
+	"${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
+	"${GPUIT_EXE_LDFLAGS}")
+    ENDIF ()
   ENDIF ()
   IF (QT4_FOUND AND QT_QTSQL_FOUND)
     SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
