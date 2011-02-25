@@ -664,7 +664,7 @@ PLM_ADD_TEST (
   "fdk-cpu-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
-  "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;ramp;-a;0 10 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-c.mha"
+  "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;ramp;-a;0 50 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-c.mha"
   )
 PLM_ADD_TEST (
   "fdk-cpu-c-stats"
