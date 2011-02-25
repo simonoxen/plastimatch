@@ -1016,6 +1016,9 @@ SET (COMPUTE_DISTANCE_SRC
 SET (COMPUTE_MEAN_IMAGE_SRC
   compute_mean_image_main.cxx
   )
+SET (EXTRACT_SLICE_SRC
+  extract_slice.cxx
+  )
 SET (CUDA_PROBE_SRC
   cuda_probe_main.c
   cuda_probe.cu
@@ -1466,7 +1469,8 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-
+  PLM_ADD_EXECUTABLE (extract_slice "${EXTRACT_SLICE_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (dicom_info "${DICOM_INFO_SRC}"

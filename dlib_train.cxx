@@ -474,7 +474,61 @@ mlp_test (
 }
 
 static void
-svr_test (
+svr_lin_test (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<double>& labels
+)
+{
+    option_range svr_c_range;
+    double best_svr_c = DBL_MAX;
+    float best_cv_error = FLT_MAX;
+
+    typedef linear_kernel<dense_sample_type> kernel_type;
+    svr_trainer<kernel_type> trainer;
+
+    double epsilon_insensitivity = get_svr_epsilon_insensitivity (
+        parser, dense_samples);
+    trainer.set_epsilon_insensitivity (epsilon_insensitivity);
+
+    double cv_error;
+    for (float svr_c = svr_c_range.get_min_value();
+	 svr_c <= svr_c_range.get_max_value();
+         svr_c = svr_c_range.get_next_value(svr_c))
+    {
+        trainer.set_c (svr_c);
+        cv_error = cross_validate_regression_trainer (trainer,
+            dense_samples, labels, 10);
+        if (cv_error < best_cv_error) {
+            best_cv_error = cv_error;
+            best_svr_c = svr_c;
+	}
+        printf ("%3.6f %3.9f\n", svr_c, cv_error);
+    }
+
+    printf ("Best result: svr_c=%3.6f, cv_error=%9.6f\n",
+         best_svr_c, best_cv_error);
+
+    if (parser.option("train-best")) {
+        printf ("Training network with best parameters\n");
+        trainer.set_c (best_svr_c);
+        decision_function<kernel_type> best_network =
+            trainer.train (dense_samples, labels);
+
+        std::ofstream fout (parser.option("train-best").argument().c_str(),
+            std::ios::binary);
+        serialize (best_network, fout);
+        fout.close();
+
+        for (unsigned int j = 0; j < dense_samples.size(); j++) {
+            printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
+        }
+    }
+}
+
+
+static void
+svr_rbk_test (
     clp& parser,
     std::vector<dense_sample_type>& dense_samples,
     std::vector<double>& labels
@@ -483,6 +537,9 @@ svr_test (
     typedef radial_basis_kernel<dense_sample_type> kernel_type;
     svr_trainer<kernel_type> trainer;
     option_range gamma_range, svr_c_range;
+    double best_gamma = DBL_MAX;
+    double best_svr_c = DBL_MAX;
+    float best_cv_error = FLT_MAX;
 
     get_rbk_gamma (parser, dense_samples, gamma_range);
     get_svr_c (parser, dense_samples, svr_c_range);
@@ -504,8 +561,51 @@ svr_test (
 	    trainer.set_kernel (kernel_type (gamma));
 	    cv_error = cross_validate_regression_trainer (trainer, 
 		dense_samples, labels, 10);
+            if (cv_error < best_cv_error) {
+                best_cv_error = cv_error;
+                best_gamma = gamma;
+                best_svr_c = svr_c;
+            }
 	    printf ("%3.6f %3.6f %3.9f\n", svr_c, gamma, cv_error);
 	}
+    }
+    printf ("Best result: svr_c=%3.6f gamma=10^%f (%g), cv_error=%9.6f\n",
+         best_svr_c, log10(best_gamma), best_gamma, best_cv_error);
+ 
+    if (parser.option("train-best")) {
+        printf ("Training network with best parameters\n");
+	trainer.set_c (best_svr_c);
+        trainer.set_kernel (kernel_type (best_gamma));
+        decision_function<kernel_type> best_network =
+            trainer.train (dense_samples, labels);
+
+        std::ofstream fout (parser.option("train-best").argument().c_str(),
+            std::ios::binary);
+        serialize (best_network, fout);
+        fout.close();
+
+        for (unsigned int j = 0; j < dense_samples.size(); j++) {
+            printf ("%g %g\n", labels[j], best_network(dense_samples[j]));
+        }
+    }
+
+}
+
+static void svr_test  (
+    clp& parser,
+    std::vector<dense_sample_type>& dense_samples,
+    std::vector<double>& labels
+)
+{
+    const char* kernel = get_kernel (parser);
+
+    if (!strcmp (kernel, "lin")) {
+        svr_lin_test (parser, dense_samples, labels);
+    } else if (!strcmp (kernel, "rbk")) {
+        svr_rbk_test (parser, dense_samples, labels);
+    } else {
+        fprintf (stderr, "Unknown kernel type: %s\n", kernel);
+        exit (-1);
     }
 }
 
