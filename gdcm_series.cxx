@@ -105,8 +105,39 @@ Gdcm_series::load (const char *dicom_dir)
     this->m_gsh2 = new gdcm::SerieHelper2();
 
     this->m_gsh2->Clear ();
-    this->m_gsh2->CreateDefaultUniqueSeriesIdentifier ();
     this->m_gsh2->SetUseSeriesDetails (true);
+
+    // ---------------------------------------------------------------------
+    // The below code is modified from CreateDefaultUniqueSeriesIdentifier.
+    // If there was an API function called RemoveRestriction(), 
+    // we could call CreateDefaultUniqueSeriesIdentifier() and then
+    // call RemoveRestriction(0x0018, 0x0050).
+    // ---------------------------------------------------------------------
+    // 0020 0011 Series Number
+    // A scout scan prior to a CT volume scan can share the same
+    //   SeriesUID, but they will sometimes have a different Series Number
+    this->m_gsh2->AddRestriction( 0x0020, 0x0011);
+    // 0018 0024 Sequence Name
+    // For T1-map and phase-contrast MRA, the different flip angles and
+    //   directions are only distinguished by the Sequence Name
+    this->m_gsh2->AddRestriction(0x0018, 0x0024);
+    // 0018 0050 Slice Thickness
+    // On some CT systems, scout scans and subsequence volume scans will
+    //   have the same SeriesUID and Series Number - YET the slice 
+    //   thickness will differ from the scout slice and the volume slices.
+    // GCS: We don't want GDCM to use slice thickness to distinguish series.  
+    //    CERR sets the slice thickness to different values within 
+    //    a single series based on subtle differences in the Z position.
+    // -- AddRestriction(0x0018, 0x0050); --
+    // 0028 0010 Rows
+    // If the 2D images in a sequence don't have the same number of rows,
+    // then it is difficult to reconstruct them into a 3D volume.
+    this->m_gsh2->AddRestriction(0x0028, 0x0010);
+    // 0028 0011 Columns
+    // If the 2D images in a sequence don't have the same number of columns,
+    // then it is difficult to reconstruct them into a 3D volume.
+    this->m_gsh2->AddRestriction(0x0028, 0x0011);
+
     this->m_gsh2->SetDirectory (dicom_dir, recursive);
 
 #if defined (commentout)
@@ -122,7 +153,7 @@ Gdcm_series::load (const char *dicom_dir)
 	    /* Choose one file, and print the id */
 	    gdcm::File *file = (*file_list)[0];
 	    std::string id = this->m_gsh2->
-		    CreateUniqueSeriesIdentifier(file).c_str();
+		CreateUniqueSeriesIdentifier(file).c_str();
 	    printf ("id = %s\n", id.c_str());
 #endif
 	}
