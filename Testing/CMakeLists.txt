@@ -31,6 +31,13 @@ IF (PLM_TEST_DICOMRT_AW)
     "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
 ENDIF ()
 
+IF (PLM_TEST_DICOMRT_CERR)
+  PLM_DOWNLOAD_AND_EXTRACT (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1632/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
+ENDIF ()
+
 IF (PLM_TEST_DICOMRT_PINNACLE)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
@@ -984,6 +991,16 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (pinnacle)
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom-cerr-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-cerr-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-cerr-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-cerr-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-cerr-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------

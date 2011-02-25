@@ -72,6 +72,8 @@ OPTION (PLM_TEST_BSPLINE_FLAVORS
   "Regression tests for seldom used b-spline implementations" OFF)
 OPTION (PLM_TEST_DICOMRT_AW
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
+OPTION (PLM_TEST_DICOMRT_CERR
+  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_PINNACLE 
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_XIO 
