@@ -4,7 +4,7 @@
 #                algorithm flavors and volumes sizes
 # 
 # James Shackleford (tshack@drexel.edu)
-# Last updated: Oct 25th, 2010
+# Last updated: Feb 28th, 2011
 ##############################################################################
 
 
@@ -15,10 +15,10 @@ outfile="./cpu_mi_size.csv"
 #outfile="./gpu_mi_size_zcpy.csv"
 
 # Location of bspline executable
-bspline='/home/tshack/src/plastimatch/build/bspline'
+bspline='/home/jshack/src/plastimatch/trunk/build/bspline'
 
 # Location of synthetic_mha executable
-synth_mha='/home/tshack/src/plastimatch/build/synthetic_mha'
+synth_mha='/home/jshack/src/plastimatch/trunk/build/synthetic_mha'
 
 # Test Volume sizes
 min_size=100
@@ -114,8 +114,8 @@ generate_volumes ()
 {
     local offset=$(echo "$vol_size * 0.10" | bc);    # Offset for moving volume
 
-    $synth_mha --output=$test_vol_fix --pattern=gauss --gauss-center="0 0 0" --resolution="$vol_size";
-    $synth_mha --output=$test_vol_mov --pattern=gauss --gauss-center="$offset $offset $offset" --resolution="$vol_size";
+    $synth_mha --output=$test_vol_fix --pattern=gauss --gauss-center="0 0 0" --dim="$vol_size";
+    $synth_mha --output=$test_vol_mov --pattern=gauss --gauss-center="$offset $offset $offset" --dim="$vol_size";
 }
 
 

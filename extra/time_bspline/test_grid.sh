@@ -98,8 +98,8 @@ generate_volumes ()
 {
     local offset=$(echo "$vol_size * 0.10" | bc);    # Offset for moving volume
 
-    $synth_mha --output=$test_vol_fix --pattern=gauss --gauss-center="0 0 0" --resolution="$vol_size";
-    $synth_mha --output=$test_vol_mov --pattern=gauss --gauss-center="$offset $offset $offset" --resolution="$vol_size";
+    $synth_mha --output=$test_vol_fix --pattern=gauss --gauss-center="0 0 0" --dim="$vol_size";
+    $synth_mha --output=$test_vol_mov --pattern=gauss --gauss-center="$offset $offset $offset" --dim="$vol_size";
 }
 
 
