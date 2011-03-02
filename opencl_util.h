@@ -12,10 +12,6 @@
 #include <CL/cl.h>
 #endif
 
-//////////////////////////////////////////////////////////////////////////////
-//! Custom Utility Functions
-//////////////////////////////////////////////////////////////////////////////
-
 typedef cl_mem Opencl_buf;
 
 typedef struct opencl_device Opencl_device;
@@ -32,6 +28,13 @@ struct opencl_device {
     cl_program *programs;
     cl_kernel *kernels;
 };
+
+/* This should probably be done with CMake ... */
+#ifdef __APPLE__
+#  define opencl_idx(vec,idx) vec[idx]
+#else
+#  define opencl_idx(vec,idx) vec.s[idx]
+#endif
 
 #if defined __cplusplus
 extern "C" {

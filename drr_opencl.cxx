@@ -95,43 +95,43 @@ drr_opencl_ray_trace_image (
     cl_float ocl_sad;
 
     /* Copy ic to device (convert from double to float) */
-    ocl_ic.s[0] = proj->pmat->ic[0];
-    ocl_ic.s[1] = proj->pmat->ic[1];
+    opencl_idx(ocl_ic,0) = proj->pmat->ic[0];
+    opencl_idx(ocl_ic,1) = proj->pmat->ic[1];
 
     /* Copy p1 to device (convert from double to float) */
-    ocl_p1.s[0] = p1[0];
-    ocl_p1.s[1] = p1[1];
-    ocl_p1.s[2] = p1[2];
+    opencl_idx(ocl_p1,0) = p1[0];
+    opencl_idx(ocl_p1,1) = p1[1];
+    opencl_idx(ocl_p1,2) = p1[2];
 
     /* Copy ul_room to device (convert from double to float) */
-    ocl_ul_room.s[0] = ul_room[0];
-    ocl_ul_room.s[1] = ul_room[1];
-    ocl_ul_room.s[2] = ul_room[2];
+    opencl_idx(ocl_ul_room,0) = ul_room[0];
+    opencl_idx(ocl_ul_room,1) = ul_room[1];
+    opencl_idx(ocl_ul_room,2) = ul_room[2];
 
     /* Copy incr_r to device (convert from double to float) */
-    ocl_incr_r.s[0] = incr_r[0];
-    ocl_incr_r.s[1] = incr_r[1];
-    ocl_incr_r.s[2] = incr_r[2];
+    opencl_idx(ocl_incr_r,0) = incr_r[0];
+    opencl_idx(ocl_incr_r,1) = incr_r[1];
+    opencl_idx(ocl_incr_r,2) = incr_r[2];
 
     /* Copy incr_c to device (convert from double to float) */
-    ocl_incr_c.s[0] = incr_c[0];
-    ocl_incr_c.s[1] = incr_c[1];
-    ocl_incr_c.s[2] = incr_c[2];
+    opencl_idx(ocl_incr_c,0) = incr_c[0];
+    opencl_idx(ocl_incr_c,1) = incr_c[1];
+    opencl_idx(ocl_incr_c,2) = incr_c[2];
 
     /* Copy nrm to device (convert from double to float) */
-    ocl_nrm.s[0] = pmat->nrm[0];
-    ocl_nrm.s[1] = pmat->nrm[1];
-    ocl_nrm.s[2] = pmat->nrm[2];
+    opencl_idx(ocl_nrm,0) = pmat->nrm[0];
+    opencl_idx(ocl_nrm,1) = pmat->nrm[1];
+    opencl_idx(ocl_nrm,2) = pmat->nrm[2];
 
     /* Copy lower_limit to device (convert from double to float) */
-    ocl_lower_limit.s[0] = vol_limit->lower_limit[0];
-    ocl_lower_limit.s[1] = vol_limit->lower_limit[1];
-    ocl_lower_limit.s[2] = vol_limit->lower_limit[2];
+    opencl_idx(ocl_lower_limit,0) = vol_limit->lower_limit[0];
+    opencl_idx(ocl_lower_limit,1) = vol_limit->lower_limit[1];
+    opencl_idx(ocl_lower_limit,2) = vol_limit->lower_limit[2];
     
     /* Copy upper_limit to device (convert from double to float) */
-    ocl_upper_limit.s[0] = vol_limit->upper_limit[0];
-    ocl_upper_limit.s[1] = vol_limit->upper_limit[1];
-    ocl_upper_limit.s[2] = vol_limit->upper_limit[2];
+    opencl_idx(ocl_upper_limit,0) = vol_limit->upper_limit[0];
+    opencl_idx(ocl_upper_limit,1) = vol_limit->upper_limit[1];
+    opencl_idx(ocl_upper_limit,2) = vol_limit->upper_limit[2];
 
     /* Convert sad from double to float */
     ocl_sad = proj->pmat->sad;
