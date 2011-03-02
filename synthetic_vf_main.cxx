@@ -12,21 +12,21 @@
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_dlib_clp.h"
-#include "synthetic_mha.h"
+#include "synthetic_vf.h"
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
-typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
-struct synthetic_mha_main_parms {
+typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
+struct synthetic_vf_main_parms {
     CBString output_fn;
-    Synthetic_mha_parms sm_parms;
+    Synthetic_vf_parms sm_parms;
 };
 
 void
-do_synthetic_mha (CBString& fn, Synthetic_mha_parms *parms)
+do_synthetic_vf (CBString& fn, Synthetic_vf_parms *parms)
 {
     /* Create image */
-    FloatImageType::Pointer img = synthetic_mha (parms);
+    FloatImageType::Pointer img = synthetic_vf (parms);
 
     /* Save to file */
     switch (parms->output_type) {
@@ -51,13 +51,13 @@ do_synthetic_mha (CBString& fn, Synthetic_mha_parms *parms)
 static void
 print_usage (dlib::Plm_clp& parser)
 {
-    std::cout << "Usage: synthetic_mha [options]\n";
+    std::cout << "Usage: synthetic_vf [options]\n";
     parser.print_options (std::cout);
     std::cout << std::endl;
 }
 
 void
-parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
+parse_args (Synthetic_vf_main_parms* parms, int argc, char* argv[])
 {
     dlib::Plm_clp parser;
     try {
@@ -127,7 +127,7 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 	}
 
 	/* Copy values into output struct */
-	Synthetic_mha_parms *sm_parms = &parms->sm_parms;
+	Synthetic_vf_parms *sm_parms = &parms->sm_parms;
 
 	/* Basic options */
 	parms->output_fn = parser.get_string("output").c_str();
@@ -231,11 +231,11 @@ parse_args (Synthetic_mha_main_parms* parms, int argc, char* argv[])
 int 
 main (int argc, char* argv[])
 {
-    Synthetic_mha_main_parms parms;
+    Synthetic_vf_main_parms parms;
 
     parse_args (&parms, argc, argv);
 
-    do_synthetic_mha (parms.output_fn, &parms.sm_parms);
+    do_synthetic_vf (parms.output_fn, &parms.sm_parms);
 
     return 0;
 }

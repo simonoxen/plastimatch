@@ -983,6 +983,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   ss_img_extract.cxx ss_img_extract.h
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
+  synthetic_vf.cxx synthetic_vf.h
   thumbnail.cxx thumbnail.h
   xio_ct.cxx xio_ct.h
   xio_dir.cxx xio_dir.h
