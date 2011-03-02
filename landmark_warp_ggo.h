@@ -60,6 +60,9 @@ struct args_info_landmark_warp
   char * output_vf_arg;	/**< @brief Output vector field.  */
   char * output_vf_orig;	/**< @brief Output vector field original value given at command line.  */
   const char *output_vf_help; /**< @brief Output vector field help description.  */
+  char * output_landmarks_arg;	/**< @brief Output warped landmarks.  */
+  char * output_landmarks_orig;	/**< @brief Output warped landmarks original value given at command line.  */
+  const char *output_landmarks_help; /**< @brief Output warped landmarks help description.  */
   char * origin_arg;	/**< @brief Output image offset.  */
   char * origin_orig;	/**< @brief Output image offset original value given at command line.  */
   const char *origin_help; /**< @brief Output image offset help description.  */
@@ -100,6 +103,7 @@ struct args_info_landmark_warp
   unsigned int input_image_given ;	/**< @brief Whether input-image was given.  */
   unsigned int output_image_given ;	/**< @brief Whether output-image was given.  */
   unsigned int output_vf_given ;	/**< @brief Whether output-vf was given.  */
+  unsigned int output_landmarks_given ;	/**< @brief Whether output-landmarks was given.  */
   unsigned int origin_given ;	/**< @brief Whether origin was given.  */
   unsigned int spacing_given ;	/**< @brief Whether spacing was given.  */
   unsigned int dim_given ;	/**< @brief Whether dim was given.  */

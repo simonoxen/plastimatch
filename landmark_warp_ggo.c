@@ -40,6 +40,7 @@ const char *args_info_landmark_warp_full_help[] = {
   "  -I, --input-image=filename    Input image to warp",
   "  -O, --output-image=filename   Output warped image",
   "  -V, --output-vf=filename      Output vector field",
+  "  -L, --output-landmarks=filename\n                                Output warped landmarks",
   "      --origin=STRING           Output image offset",
   "      --spacing=STRING          Output image spacing",
   "      --dim=STRING              Output image dimension",
@@ -73,12 +74,13 @@ init_help_array(void)
   args_info_landmark_warp_help[14] = args_info_landmark_warp_full_help[14];
   args_info_landmark_warp_help[15] = args_info_landmark_warp_full_help[15];
   args_info_landmark_warp_help[16] = args_info_landmark_warp_full_help[16];
-  args_info_landmark_warp_help[17] = args_info_landmark_warp_full_help[18];
-  args_info_landmark_warp_help[18] = 0; 
+  args_info_landmark_warp_help[17] = args_info_landmark_warp_full_help[17];
+  args_info_landmark_warp_help[18] = args_info_landmark_warp_full_help[19];
+  args_info_landmark_warp_help[19] = 0; 
   
 }
 
-const char *args_info_landmark_warp_help[19];
+const char *args_info_landmark_warp_help[20];
 
 typedef enum {ARG_NO
   , ARG_STRING
@@ -140,6 +142,7 @@ void clear_given (struct args_info_landmark_warp *args_info)
   args_info->input_image_given = 0 ;
   args_info->output_image_given = 0 ;
   args_info->output_vf_given = 0 ;
+  args_info->output_landmarks_given = 0 ;
   args_info->origin_given = 0 ;
   args_info->spacing_given = 0 ;
   args_info->dim_given = 0 ;
@@ -168,6 +171,8 @@ void clear_args (struct args_info_landmark_warp *args_info)
   args_info->output_image_orig = NULL;
   args_info->output_vf_arg = NULL;
   args_info->output_vf_orig = NULL;
+  args_info->output_landmarks_arg = NULL;
+  args_info->output_landmarks_orig = NULL;
   args_info->origin_arg = NULL;
   args_info->origin_orig = NULL;
   args_info->spacing_arg = NULL;
@@ -205,16 +210,17 @@ void init_args_info(struct args_info_landmark_warp *args_info)
   args_info->input_image_help = args_info_landmark_warp_full_help[6] ;
   args_info->output_image_help = args_info_landmark_warp_full_help[7] ;
   args_info->output_vf_help = args_info_landmark_warp_full_help[8] ;
-  args_info->origin_help = args_info_landmark_warp_full_help[9] ;
-  args_info->spacing_help = args_info_landmark_warp_full_help[10] ;
-  args_info->dim_help = args_info_landmark_warp_full_help[11] ;
-  args_info->fixed_help = args_info_landmark_warp_full_help[12] ;
-  args_info->algorithm_help = args_info_landmark_warp_full_help[13] ;
-  args_info->radius_help = args_info_landmark_warp_full_help[14] ;
-  args_info->stiffness_help = args_info_landmark_warp_full_help[15] ;
-  args_info->default_value_help = args_info_landmark_warp_full_help[16] ;
-  args_info->config_help = args_info_landmark_warp_full_help[17] ;
-  args_info->numclusters_help = args_info_landmark_warp_full_help[18] ;
+  args_info->output_landmarks_help = args_info_landmark_warp_full_help[9] ;
+  args_info->origin_help = args_info_landmark_warp_full_help[10] ;
+  args_info->spacing_help = args_info_landmark_warp_full_help[11] ;
+  args_info->dim_help = args_info_landmark_warp_full_help[12] ;
+  args_info->fixed_help = args_info_landmark_warp_full_help[13] ;
+  args_info->algorithm_help = args_info_landmark_warp_full_help[14] ;
+  args_info->radius_help = args_info_landmark_warp_full_help[15] ;
+  args_info->stiffness_help = args_info_landmark_warp_full_help[16] ;
+  args_info->default_value_help = args_info_landmark_warp_full_help[17] ;
+  args_info->config_help = args_info_landmark_warp_full_help[18] ;
+  args_info->numclusters_help = args_info_landmark_warp_full_help[19] ;
   
 }
 
@@ -319,6 +325,8 @@ cmdline_parser_landmark_warp_release (struct args_info_landmark_warp *args_info)
   free_string_field (&(args_info->output_image_orig));
   free_string_field (&(args_info->output_vf_arg));
   free_string_field (&(args_info->output_vf_orig));
+  free_string_field (&(args_info->output_landmarks_arg));
+  free_string_field (&(args_info->output_landmarks_orig));
   free_string_field (&(args_info->origin_arg));
   free_string_field (&(args_info->origin_orig));
   free_string_field (&(args_info->spacing_arg));
@@ -428,6 +436,8 @@ cmdline_parser_landmark_warp_dump(FILE *outfile, struct args_info_landmark_warp 
     write_into_file(outfile, "output-image", args_info->output_image_orig, 0);
   if (args_info->output_vf_given)
     write_into_file(outfile, "output-vf", args_info->output_vf_orig, 0);
+  if (args_info->output_landmarks_given)
+    write_into_file(outfile, "output-landmarks", args_info->output_landmarks_orig, 0);
   if (args_info->origin_given)
     write_into_file(outfile, "origin", args_info->origin_orig, 0);
   if (args_info->spacing_given)
@@ -1338,6 +1348,7 @@ cmdline_parser_landmark_warp_internal (
         { "input-image",	1, NULL, 'I' },
         { "output-image",	1, NULL, 'O' },
         { "output-vf",	1, NULL, 'V' },
+        { "output-landmarks",	1, NULL, 'L' },
         { "origin",	1, NULL, 0 },
         { "spacing",	1, NULL, 0 },
         { "dim",	1, NULL, 0 },
@@ -1356,7 +1367,7 @@ cmdline_parser_landmark_warp_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hf:m:x:I:O:V:F:a:r:Y:d:N:", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hf:m:x:I:O:V:L:F:a:r:Y:d:N:", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1440,6 +1451,18 @@ cmdline_parser_landmark_warp_internal (
               &(local_args_info.output_vf_given), optarg, 0, 0, ARG_STRING,
               check_ambiguity, override, 0, 0,
               "output-vf", 'V',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'L':	/* Output warped landmarks.  */
+        
+        
+          if (update_arg( (void *)&(args_info->output_landmarks_arg), 
+               &(args_info->output_landmarks_orig), &(args_info->output_landmarks_given),
+              &(local_args_info.output_landmarks_given), optarg, 0, 0, ARG_STRING,
+              check_ambiguity, override, 0, 0,
+              "output-landmarks", 'L',
               additional_error))
             goto failure;
         

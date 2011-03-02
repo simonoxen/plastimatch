@@ -21,6 +21,8 @@ option "output-image" O "Output warped image"
        string typestr="filename" optional
 option "output-vf" V "Output vector field" 
        string typestr="filename" optional
+option "output-landmarks" L "Output warped landmarks"
+       string typestr="filename" optional
 
 ## Output geometry
 option "origin" - "Output image offset"
