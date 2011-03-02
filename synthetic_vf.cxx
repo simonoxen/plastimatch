@@ -38,6 +38,7 @@ synthetic_vf (Synthetic_vf_parms* parms)
     im_out->SetSpacing(sp);
     im_out->Allocate();
 
+#if defined (commentout)
     /* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetRequestedRegion());
@@ -90,5 +91,6 @@ synthetic_vf (Synthetic_vf_parms* parms)
 	}
 	it_out.Set (f);
     }
+#endif
     return im_out;
 }
