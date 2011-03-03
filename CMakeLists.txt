@@ -33,7 +33,6 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
-OPTION (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" ON)
 OPTION (PLM_BUILD_SLICER_LOADABLE 
   "Build slicer loadable module" OFF)
 OPTION (PLM_BUILD_SLICER_SYNTH
@@ -369,10 +368,8 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 ##-----------------------------------------------------------------------------
 ##  Only use local ransac
 ##-----------------------------------------------------------------------------
-IF (PLM_BUILD_RANSAC_TEST)
-  ADD_SUBDIRECTORY (libs/ransac)
-  SET (RANSAC_INCLUDE_DIRS libs/ransac libs/ransac/Common)
-ENDIF ()
+ADD_SUBDIRECTORY (libs/ransac)
+SET (RANSAC_INCLUDE_DIRS libs/ransac libs/ransac/Common)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
@@ -1184,6 +1181,9 @@ SET (LANDMARK_WARP_SRC
   landmark_warp_args.cxx landmark_warp_args.h
   ${landmark_warp_GGO_C}
   )
+SET (RANSAC_TEST_SRC 
+  ransac_test.cxx
+  )
 SET (RTOG_TO_MHA_SRC
   exchkeys.cxx exchkeys.h
   rtog_to_mha.cxx
@@ -1311,9 +1311,7 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
 ENDIF ()
 
-IF (PLM_BUILD_RANSAC_TEST)
-  INCLUDE_DIRECTORIES (AFTER ${RANSAC_INCLUDE_DIRS})
-ENDIF ()
+INCLUDE_DIRECTORIES (AFTER ${RANSAC_INCLUDE_DIRS})
 
 IF (SLICER_FOUND)
   #MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Libs_INCLUDE_DIRS}")
@@ -1531,6 +1529,8 @@ IF (ITK_FOUND)
     PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
   ENDIF ()
+  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
@@ -1865,13 +1865,6 @@ ENDIF ()
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
   PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
-ENDIF ()
-
-# Test executable -- ransac
-IF (PLM_BUILD_RANSAC_TEST)
-  SET (RANSAC_TEST_SRC ransac_test.cxx)
-  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
 ENDIF ()
 
 # Test executable -- tclap
