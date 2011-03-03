@@ -54,4 +54,6 @@ private:
 
 } // end namespace itk
 
+#include "autolabel_ransac_est.txx"
+
 #endif
