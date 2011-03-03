@@ -73,8 +73,8 @@ SET(SPHERE_ESTIMATION_SRCS
 #
 # Optional testing of the plane and sphere estimation code
 #
-OPTION(BUILD_TESTING "Build the Testing directory." ON)
-IF (BUILD_TESTING)
-  ENABLE_TESTING()
-  ADD_SUBDIRECTORY(Testing)
-ENDIF (BUILD_TESTING)
+#OPTION(BUILD_TESTING "Build the Testing directory." ON)
+#IF (BUILD_TESTING)
+#  ENABLE_TESTING()
+#  ADD_SUBDIRECTORY(Testing)
+#ENDIF (BUILD_TESTING)

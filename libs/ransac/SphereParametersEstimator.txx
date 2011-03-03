@@ -352,30 +352,30 @@ void SphereParametersEstimator<dimension>::LeastSquaresEstimate( std::vector< Po
 
 template< unsigned int dimension >
 void SphereParametersEstimator<dimension>::GeometricLeastSquaresEstimate( std::vector< Point<double, dimension> *> &data, 
-																		                                      std::vector<double> &initialParameters, std::vector<double> &finalParameters )
+    std::vector<double> &initialParameters, std::vector<double> &finalParameters )
 {
-	vnl_vector<double> parameters(dimension+1);
-	unsigned int i;
-	for(i=0; i<=dimension; i++)
-	  parameters[i] = initialParameters[i];
+    vnl_vector<double> parameters(dimension+1);
+    unsigned int i;
+    for(i=0; i<=dimension; i++)
+	parameters[i] = initialParameters[i];
 
-	SphereParametersEstimator::SumSquaresSpherePointsDistanceFunction 
-    optimizedFunction( &data );		
-  vnl_levenberg_marquardt lmOptimization( optimizedFunction );
+    SphereParametersEstimator::SumSquaresSpherePointsDistanceFunction 
+	optimizedFunction( &data );		
+    vnl_levenberg_marquardt lmOptimization( optimizedFunction );
   
-	double gradTolerance = 10e-16;
-	double parametersChangeTolerance = 10e-16;
-	int maxIterations = 500;
+    double gradTolerance = 10e-16;
+    double parametersChangeTolerance = 10e-16;
+    int maxIterations = 500;
 
-  lmOptimization.set_x_tolerance( parametersChangeTolerance );
-  lmOptimization.set_g_tolerance( gradTolerance );
-  lmOptimization.set_max_function_evals( maxIterations );
+    lmOptimization.set_x_tolerance( parametersChangeTolerance );
+    lmOptimization.set_g_tolerance( gradTolerance );
+    lmOptimization.set_max_function_evals( maxIterations );
 
-	lmOptimization.minimize( parameters );
+    lmOptimization.minimize( parameters );
 
-  finalParameters.clear();
-	for(i=0; i<=dimension; i++)
-	  finalParameters.push_back( parameters[i] );
+    finalParameters.clear();
+    for(i=0; i<=dimension; i++)
+	finalParameters.push_back( parameters[i] );
 }
 
 
