@@ -13,6 +13,43 @@
 #include "plm_image_header.h"
 #include "rtss_polyline_set.h"
 
+
+static void
+assign_random_color (CBString& color)
+{
+    static int idx = 0;
+    static const char* colors[] = {
+	"255 0 0",
+	"255 255 0",
+	"255 0 255",
+	"0 255 255",
+	"0 255 0",
+	"0 0 255",
+	"255 128 128",
+	"255 255 128",
+	"255 128 255",
+	"128 255 255",
+	"128 255 128",
+	"128 128 255",
+	"200 128 128",
+	"200 200 128",
+	"200 128 200",
+	"128 200 200",
+	"128 200 128",
+	"128 128 200",
+	"200 255 255",
+	"200 200 255",
+	"200 255 200",
+	"255 200 200",
+	"255 200 255",
+	"255 255 200",
+    };
+    color = colors[idx];
+    if (++idx > 23) {
+	idx = 0;
+    }
+}
+
 #define SPACING_TOL 0.2    /* How close you need to be to be on the slice */
 
 Rtss_polyline_set::Rtss_polyline_set ()
@@ -81,7 +118,11 @@ Rtss_polyline_set::add_structure (
     new_structure->name.trim();
     new_structure->id = structure_id;
     new_structure->bit = -1;
-    new_structure->color = color;
+    if (bstring_not_empty (color)) {
+	new_structure->color = color;
+    } else {
+	assign_random_color (new_structure->color);
+    }
     new_structure->num_contours = 0;
     new_structure->pslist = 0;
     return new_structure;
