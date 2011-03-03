@@ -31,6 +31,7 @@ struct landmark_warp
     /* Outputs */
     Plm_image *m_warped_img;
     Xform *m_vf;
+    Pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
 };
 
 #if defined __cplusplus

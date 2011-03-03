@@ -44,6 +44,19 @@ pointset_add_point (Pointset *ps, float lm[3])
     ps->points[(ps->num_points-1)*3 + 2] = lm[2];
 }
 
+void
+pointset_add_point_noadjust (Pointset *ps, float lm[3])
+{
+    ps->num_points ++;
+    pointset_resize (ps, ps->num_points);
+
+    /* Note: no RAS to LPS adjustment */
+    ps->points[(ps->num_points-1)*3 + 0] = lm[0];
+    ps->points[(ps->num_points-1)*3 + 1] = lm[1];
+    ps->points[(ps->num_points-1)*3 + 2] = lm[2];
+}
+
+
 static Pointset *
 pointset_load_fcsv (const char *fn)
 {

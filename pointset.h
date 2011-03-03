@@ -37,6 +37,9 @@ void
 pointset_add_point (Pointset *ps, float lm[3]);
 gpuit_EXPORT
 void
+pointset_add_point_noadjust (Pointset *ps, float lm[3]);
+gpuit_EXPORT
+void
 pointset_debug (Pointset* ps);
 
 #if defined __cplusplus
