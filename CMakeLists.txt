@@ -33,6 +33,7 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
+OPTION (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
 OPTION (PLM_BUILD_SLICER_LOADABLE 
   "Build slicer loadable module" OFF)
 OPTION (PLM_BUILD_SLICER_SYNTH
@@ -364,6 +365,14 @@ SET (DLIB_INCLUDE_DIR libs/dlib-17.34)
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY (libs/nocedal)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+
+##-----------------------------------------------------------------------------
+##  Only use local ransac
+##-----------------------------------------------------------------------------
+IF (PLM_BUILD_RANSAC_TEST)
+  ADD_SUBDIRECTORY (libs/ransac)
+  SET (RANSAC_INCLUDE_DIRS libs/ransac libs/ransac/Common)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
@@ -1301,6 +1310,10 @@ IF (QT4_FOUND AND QT_QTSQL_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${QT_QTSQL_INCLUDE_DIR})
 ENDIF ()
 
+IF (PLM_BUILD_RANSAC_TEST)
+  INCLUDE_DIRECTORIES (AFTER ${RANSAC_INCLUDE_DIRS})
+ENDIF ()
+
 IF (SLICER_FOUND)
   #MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Libs_INCLUDE_DIRS}")
   #MESSAGE (STATUS "SLICER INCLUDE DIRS: ${Slicer_Base_INCLUDE_DIRS}")
@@ -1851,6 +1864,12 @@ ENDIF ()
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
   PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
+ENDIF ()
+
+# Test executable -- ransac
+IF (PLM_BUILD_RANSAC_TEST)
+  SET (RANSAC_TEST_SRC ransac_test.cxx)
+  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" "${ITK_LIBRARIES}" "" 0)
 ENDIF ()
 
 # Test executable -- tclap
