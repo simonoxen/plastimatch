@@ -33,7 +33,7 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
-OPTION (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" OFF)
+OPTION (PLM_BUILD_RANSAC_TEST "Build RANSAC test program" ON)
 OPTION (PLM_BUILD_SLICER_LOADABLE 
   "Build slicer loadable module" OFF)
 OPTION (PLM_BUILD_SLICER_SYNTH
@@ -931,6 +931,7 @@ IF (F2C_LIBRARY)
 ENDIF ()
 
 SET (PLASTIMATCH_LIBRARY_SRC
+  autolabel_ransac_est.cxx autolabel_ransac_est.h
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 

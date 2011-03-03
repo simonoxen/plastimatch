@@ -1,8 +1,12 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <fstream>
+#include <stdio.h>
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
+#include "autolabel_ransac_est.h"
 #include "bstring_util.h"
 #include "itk_point.h"
 #include "print_and_exit.h"
@@ -38,19 +42,9 @@ load_data (
     fclose (fp);
 }
 
-double
-get_plane_y (
-    std::vector<double>& plane,
-    double x
-)
-{
-    return - ((x - plane[2]) * plane[0]) / plane[1] + plane[3];
-}
-
 int 
 main (int argc, char *argv[])
 {
-    typedef itk::PlaneParametersEstimator<DIMENSION> PlaneEstimatorType;
     typedef itk::RANSAC< DoublePoint2DType, double> RANSACType;
 
     if (argc != 3) {
@@ -62,22 +56,10 @@ main (int argc, char *argv[])
     load_data (data, argv[1]);
   
     std::vector<double> planeParameters;
-    unsigned int i;  
 
-    //create and initialize the parameter estimator
-    double maximalDistanceFromPlane = 0.5;
-    PlaneEstimatorType::Pointer planeEstimator = PlaneEstimatorType::New();
-    planeEstimator->SetDelta( maximalDistanceFromPlane );
-    planeEstimator->LeastSquaresEstimate( data, planeParameters );
-    if( planeParameters.empty() )
-	std::cout<<"Least squares estimate failed, degenerate configuration?\n";
-    else
-    {
-	std::cout<<"Least squares hyper(plane) parameters: [n,a]\n\t [ ";
-	for( i=0; i<(2*DIMENSION-1); i++ )
-	    std::cout<<planeParameters[i]<<", ";
-	std::cout<<planeParameters[i]<<"]\n\n";
-    }
+    itk::Autolabel_ransac_est::Pointer planeEstimator 
+	= itk::Autolabel_ransac_est::New();
+    planeEstimator->SetDelta (0.5);
 
     //create and initialize the RANSAC algorithm
     double desiredProbabilityForNoOutliers = 0.999;
@@ -85,30 +67,26 @@ main (int argc, char *argv[])
     RANSACType::Pointer ransacEstimator = RANSACType::New();
     ransacEstimator->SetData( data );
     ransacEstimator->SetParametersEstimator( planeEstimator.GetPointer() );
-    percentageOfDataUsed = 
-	ransacEstimator->Compute( planeParameters, desiredProbabilityForNoOutliers );
-    if( planeParameters.empty() )
+    percentageOfDataUsed = ransacEstimator->Compute (
+	planeParameters, desiredProbabilityForNoOutliers);
+    if (planeParameters.empty()) {
 	std::cout<<"RANSAC estimate failed, degenerate configuration?\n";
-    else
-    {
-	std::cout<<"RANSAC hyper(plane) parameters: [n,a]\n\t [ ";
-	for( i=0; i<(2*DIMENSION-1); i++ )
-	    std::cout<<planeParameters[i]<<", ";
-	std::cout<<planeParameters[i]<<"]\n\n";
-	std::cout<<"\tPercentage of points which were used for final estimate: ";
-	std::cout<<percentageOfDataUsed<<"\n\n";
-
+    } else {
+	printf ("RANSAC parameters: [s,i] = [%f,%f]\n", 
+	    planeParameters[0], planeParameters[1]);
+	printf ("Used %f percent of data.\n", percentageOfDataUsed);
     }
 
     // Dump output
     FILE *fp = fopen (argv[2], "w");
 
     Point_vector::iterator it;
+    double slope = planeParameters[0];
+    double intercept = planeParameters[1];
     for (it = data.begin(); it != data.end(); it++) {
 	double x = (*it)[0];
 	double y = (*it)[1];
-
-	double ry = get_plane_y (planeParameters, x);
+	double ry = intercept + slope * x;
 	fprintf (fp, "%f,%f,%f\n", x, y, ry);
     }
     std::cout << std::endl;
@@ -117,4 +95,3 @@ main (int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
-
