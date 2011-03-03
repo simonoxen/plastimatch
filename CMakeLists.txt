@@ -1869,7 +1869,8 @@ ENDIF ()
 # Test executable -- ransac
 IF (PLM_BUILD_RANSAC_TEST)
   SET (RANSAC_TEST_SRC ransac_test.cxx)
-  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" "${ITK_LIBRARIES}" "" 0)
+  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" 
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
 ENDIF ()
 
 # Test executable -- tclap

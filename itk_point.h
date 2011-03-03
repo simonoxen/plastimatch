@@ -9,8 +9,14 @@
 #include "itkVector.h"
 
 /* Points & vectors */
+typedef itk::Point < float, 2 > FloatPoint2DType;
+typedef itk::Point < double, 2 > DoublePoint2DType;
+
 typedef itk::Point < float, 3 > FloatPointType;
 typedef itk::Point < double, 3 > DoublePointType;
+
+typedef itk::Vector < float, 2 > FloatVector2DType;
+typedef itk::Vector < double, 2 > DoubleVector2DType;
 
 typedef itk::Vector < float, 3 > FloatVectorType;
 typedef itk::Vector < double, 3 > DoubleVectorType;
