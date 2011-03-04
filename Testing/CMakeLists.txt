@@ -147,20 +147,21 @@ IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
 ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
 TARGET_LINK_LIBRARIES (bspline_test_1 ${GPUIT_LIBRARIES})
 
-ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx)
-IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES (plm_drr_api_a 
-    PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
-ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-TARGET_LINK_LIBRARIES (plm_drr_api_a ${PLASTIMATCH_LIBS})
+IF (ITK_FOUND)
+  ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx)
+  IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES (plm_drr_api_a 
+      PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
+  ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
+  TARGET_LINK_LIBRARIES (plm_drr_api_a ${PLASTIMATCH_LIBS})
 
-ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx)
-IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES (plm_registration_api_a 
-    PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
-ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-TARGET_LINK_LIBRARIES (plm_registration_api_a ${PLASTIMATCH_LIBS})
-
+  ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx)
+  IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
+    SET_TARGET_PROPERTIES (plm_registration_api_a 
+      PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
+  ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
+  TARGET_LINK_LIBRARIES (plm_registration_api_a ${PLASTIMATCH_LIBS})
+ENDIF ()
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files

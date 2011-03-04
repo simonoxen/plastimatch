@@ -17,9 +17,25 @@ IF (NOT CMAKE_BUILD_TYPE)
       RelWithDebInfo MinSizeRel." FORCE)
 ENDIF ()
 
+##-----------------------------------------------------------------------------
+##  CMake include files
+##-----------------------------------------------------------------------------
 ## My modules override CMake defaults
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+
+INCLUDE (CTest)
+INCLUDE (CheckFunctionExists)
+INCLUDE (CheckIncludeFiles)
+INCLUDE (CheckTypeSize)
+INCLUDE (TestBigEndian)
+
+# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
+INCLUDE (InstallRequiredSystemLibraries)
+
+# http://www.cmake.org/Bug/view.php?id=9220
+INCLUDE (language_support.cmake)
+
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -86,6 +102,8 @@ OPTION (PLM_TEST_XIO
 ##-----------------------------------------------------------------------------
 ##  Detect 32-bit or 64-bit machine
 ##-----------------------------------------------------------------------------
+CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
+CHECK_TYPE_SIZE ("unsigned long"   CMAKE_SIZEOF_ULONG)
 IF (NOT APPLE)
   IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
     SET (HAVE_32_BIT TRUE)
@@ -99,27 +117,46 @@ IF (NOT APPLE)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
+##  Detect endian
+##-----------------------------------------------------------------------------
+TEST_BIG_ENDIAN (CMAKE_WORDS_BIGENDIAN)
+
+##-----------------------------------------------------------------------------
+##  I can't remember why this is necessary.  But at one time I needed 
+##  it for compiling on AMD linux 64-bit.
+##-----------------------------------------------------------------------------
+IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
+  SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
+  SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+  SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+ENDIF ()
+
+##-----------------------------------------------------------------------------
+# JAS 10.28.2010
+# nvcc automatically passed the flag -malign-double to gcc when compiling .cu
+# files.  This can be a problem when structs are shared between .c & .cu files on
+# 32-bit machines.  So, we pass -malign-double to gcc for .c files as well so
+# that everybody is using the same alignment.  -malign-double is automatically
+# passed to gcc for 64-bit architectures.
+# 
+# GCS 2010-10-30
+# -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
+# gives an error if it is used on x86_64.
+##-----------------------------------------------------------------------------
+#MESSAGE (STATUS "CMAKE_SIZEOF_VOID_P is ${CMAKE_SIZEOF_VOID_P}")
+IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
+    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+    SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+ENDIF ()
+
+##-----------------------------------------------------------------------------
 ##  Extra paths
 ##-----------------------------------------------------------------------------
 SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
 SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
 SET (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
 SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
-
-##-----------------------------------------------------------------------------
-##  Include files
-##-----------------------------------------------------------------------------
-INCLUDE (CTest)
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckIncludeFiles)
-INCLUDE (CheckTypeSize)
-INCLUDE (TestBigEndian)
-
-# http://www.cmake.org/pipermail/cmake/2008-December/025886.html
-INCLUDE (InstallRequiredSystemLibraries)
-
-# http://www.cmake.org/Bug/view.php?id=9220
-INCLUDE (language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
@@ -252,11 +289,6 @@ ENDIF (UNIX)
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
-# C/C++ 32/64
-CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
-CHECK_TYPE_SIZE ("unsigned long"   CMAKE_SIZEOF_ULONG)
-TEST_BIG_ENDIAN (CMAKE_WORDS_BIGENDIAN)
-
 # Always check for fortran, whether we use it or not
 IF (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
@@ -366,12 +398,6 @@ ADD_SUBDIRECTORY (libs/nocedal)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 
 ##-----------------------------------------------------------------------------
-##  Only use local ransac
-##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (libs/ransac)
-SET (RANSAC_INCLUDE_DIRS libs/ransac libs/ransac/Common)
-
-##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY (libs/specfun)
@@ -466,35 +492,6 @@ ELSE ()
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  I can't remember why this is necessary.  But at one time I needed 
-##  it for compiling on AMD linux 64-bit.
-##-----------------------------------------------------------------------------
-IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-ENDIF ()
-
-##-----------------------------------------------------------------------------
-# JAS 10.28.2010
-# nvcc automatically passed the flag -malign-double to gcc when compiling .cu
-# files.  This can be a problem when structs are shared between .c & .cu files on
-# 32-bit machines.  So, we pass -malign-double to gcc for .c files as well so
-# that everybody is using the same alignment.  -malign-double is automatically
-# passed to gcc for 64-bit architectures.
-# 
-# GCS 2010-10-30
-# -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
-# gives an error if it is used on x86_64.
-##-----------------------------------------------------------------------------
-#MESSAGE (STATUS "CMAKE_SIZEOF_VOID_P is ${CMAKE_SIZEOF_VOID_P}")
-IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-    SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-ENDIF ()
-
-##-----------------------------------------------------------------------------
 ##  Get plastimatch version from subversion 
 ##-----------------------------------------------------------------------------
 SET (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
@@ -538,6 +535,14 @@ IF (ITK_USE_SYSTEM_GDCM)
     MESSAGE (FATAL_ERROR 
       "\nFatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
   ENDIF ()
+ENDIF ()
+
+##-----------------------------------------------------------------------------
+##  Only use local ransac
+##-----------------------------------------------------------------------------
+IF (ITK_FOUND)
+  ADD_SUBDIRECTORY (libs/ransac)
+  SET (RANSAC_INCLUDE_DIRS libs/ransac libs/ransac/Common)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
