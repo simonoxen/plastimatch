@@ -10,6 +10,7 @@
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "itk_image_save.h"
+#include "logfile.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
 #include "referenced_dicom_dir.h"
@@ -80,12 +81,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (bstring_not_empty (parms->referenced_dicom_dir)) {
-	printf ("Loading RDD\n");
+	logfile_printf ("Loading RDD\n");
 	rtds->load_rdd ((const char*) parms->referenced_dicom_dir);
     } else {
 	/* Look for referenced CT in input directory */
 	if (bstring_not_empty (parms->input_fn)) {
-	    printf ("Loading RDD\n");
+	    logfile_printf ("Loading RDD\n");
 	    char* dirname = file_util_dirname ((const char*) parms->input_fn);
 	    rtds->load_rdd (dirname);
 	    free (dirname);
@@ -160,7 +161,7 @@ save_ss_img (Rtds *rtds, Xform *xf,
 
     /* xio */
     if (bstring_not_empty (parms->output_xio_dirname)) {
-	printf ("Output xio dirname = %s\n", 
+	logfile_printf ("Output xio dirname = %s\n", 
 	    (const char*) parms->output_xio_dirname);
 	rtds->m_ss_image->save_xio (
 	    rtds->m_xio_transform,
@@ -249,7 +250,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Load transform */
     if (bstring_not_empty (parms->xf_in_fn)) {
-	printf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
+	logfile_printf ("Loading xform (%s)\n", (const char*) parms->xf_in_fn);
 	xform_load (&xform, (const char*) parms->xf_in_fn);
     }
 
