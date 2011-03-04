@@ -14,8 +14,10 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
+#include "bstring_util.h"
 #include "gdcm_series.h"
 #include "gdcm_series_helper_2.h"
+#include "img_metadata.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -183,7 +185,7 @@ Gdcm_series::digest_files (void)
 	    /* Get the USI */
 	    gdcm::File *file = (*file_list)[0];
 	    std::string id = this->m_gsh2->
-		    CreateUniqueSeriesIdentifier(file).c_str();
+		CreateUniqueSeriesIdentifier(file).c_str();
 
 #if defined (commentout)
 	    printf ("id = %s\n", id.c_str());
@@ -206,7 +208,7 @@ Gdcm_series::digest_files (void)
 		printf ("DIM = %d %d %d\n", dim[0], dim[1], dim[2]);
 		printf ("OFF = %g %g %g\n", origin[0], origin[1], origin[2]);
 		printf ("SPA = %g %g %g\n", spacing[0], 
-			spacing[1], spacing[2]);
+		    spacing[1], spacing[2]);
 #endif
 		
 		/* Pick the CT with the largest dim[2] */
@@ -292,4 +294,18 @@ Gdcm_series::get_ct_slice (void)
     }
     
     return (*this->m_ct_file_list)[0];
+}
+
+void
+Gdcm_series::get_img_metadata (Img_metadata *img_metadata)
+{
+    if (m_have_ct) {
+	gdcm::File *file = (*this->m_ct_file_list)[0];
+	img_metadata->m_patient_name = 
+	    file->GetEntryValue(0x0010, 0x0010).c_str();
+	img_metadata->m_patient_id = 
+	    file->GetEntryValue(0x0010, 0x0020).c_str();
+	img_metadata->m_patient_sex = 
+	    file->GetEntryValue(0x0010, 0x0040).c_str();
+    }
 }

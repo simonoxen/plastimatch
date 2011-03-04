@@ -134,7 +134,8 @@ void compute_average(char **imageList, int nImages, char *outFile)
 	{
 	    std::cout << "output dicom to " << outFile << std::endl;
 	    // Dicom
-	    itk_image_save_short_dicom (tmp, outFile, PATIENT_POSITION_UNKNOWN);
+	    itk_image_save_short_dicom (tmp, outFile, 
+		0, PATIENT_POSITION_UNKNOWN);
 	}
     else
 	{

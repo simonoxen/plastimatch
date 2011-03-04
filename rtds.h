@@ -7,7 +7,7 @@
 #include "plm_config.h"
 
 #include "cxt_io.h"
-#include "demographics.h"
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "referenced_dicom_dir.h"
 #include "ss_image.h"
@@ -24,11 +24,11 @@ public:
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
     Referenced_dicom_dir *m_rdd;       /* UIDs for SS output */
-    Demographics demographics;         /* Patient name, patient id, etc. */
+    Img_metadata m_img_metadata;       /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
-					    coordinates */
+					  coordinates */
     char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
-					    template for XiO dose saving. */
+					  template for XiO dose saving. */
 public:
     plastimatch1_EXPORT Rtds ();
     plastimatch1_EXPORT ~Rtds ();
@@ -42,21 +42,17 @@ public:
     plastimatch1_EXPORT
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
-    void load_dose_xio (const char *dose_xio, Plm_image_patient_position patient_pos);
-    void load_dose_astroid (const char *dose_astroid, Plm_image_patient_position patient_pos);
-    void load_dose_mc (const char *dose_mc, Plm_image_patient_position patient_pos);
+    void load_dose_xio (const char *dose_xio, 
+	Plm_image_patient_position patient_pos);
+    void load_dose_astroid (const char *dose_astroid, 
+	Plm_image_patient_position patient_pos);
+    void load_dose_mc (const char *dose_mc, 
+	Plm_image_patient_position patient_pos);
     void load_rdd (const char *rdd);
+    plastimatch1_EXPORT
+    void load_dicom (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
 };
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

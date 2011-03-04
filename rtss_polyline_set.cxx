@@ -65,7 +65,7 @@ Rtss_polyline_set::~Rtss_polyline_set ()
 void
 Rtss_polyline_set::init (void)
 {
-    this->m_demographics = new Demographics;
+    this->m_demographics = new Img_metadata;
     this->have_geometry = 0;
     this->num_structures = 0;
     this->slist = 0;

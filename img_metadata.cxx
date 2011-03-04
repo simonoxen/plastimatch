@@ -6,12 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include "bstrlib.h"
-#include "demographics.h"
+#include "img_metadata.h"
 
-Demographics::Demographics ()
+Img_metadata::Img_metadata ()
 {
 }
 
-Demographics::~Demographics ()
+Img_metadata::~Img_metadata ()
 {
 }

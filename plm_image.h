@@ -5,6 +5,7 @@
 #define _plm_image_h_
 
 #include "plm_config.h"
+#include "img_metadata.h"
 #include "itk_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
@@ -118,7 +119,7 @@ public:
 
     /* Saving */
     plastimatch1_EXPORT
-    void save_short_dicom (const char* fname);
+    void save_short_dicom (const char* fname, Img_metadata *img_metadata);
     plastimatch1_EXPORT
     void save_image (const char* fname);
     plastimatch1_EXPORT

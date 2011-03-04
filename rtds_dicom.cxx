@@ -24,35 +24,38 @@
 //#endif
 
 void
-rtds_dicom_load (Rtds *rtds, const char *dicom_dir)
+Rtds::load_dicom (const char *dicom_dir)
 {
     if (!dicom_dir) {
 	return;
     }
 
-    if (rtds->m_gdcm_series) {
-	delete rtds->m_gdcm_series;
+    if (m_gdcm_series) {
+	delete m_gdcm_series;
     }
-    rtds->m_gdcm_series = new Gdcm_series;
-    rtds->m_gdcm_series->load (dicom_dir);
-    rtds->m_gdcm_series->digest_files ();
+    m_gdcm_series = new Gdcm_series;
+    m_gdcm_series->load (dicom_dir);
+    m_gdcm_series->digest_files ();
 
-    if (rtds->m_gdcm_series->m_rtdose_file_list) {
-	gdcm::File *file = (*(rtds->m_gdcm_series->m_rtdose_file_list))[0];
+    if (m_gdcm_series->m_rtdose_file_list) {
+	gdcm::File *file = (*(m_gdcm_series->m_rtdose_file_list))[0];
 	const std::string& filename = file->GetFileName();
-	rtds->m_dose = gdcm_dose_load (0, filename.c_str(), dicom_dir);
+	m_dose = gdcm_dose_load (0, filename.c_str(), dicom_dir);
     }
-    if (rtds->m_gdcm_series->m_rtstruct_file_list) {
-	gdcm::File *file = (*(rtds->m_gdcm_series->m_rtstruct_file_list))[0];
+    if (m_gdcm_series->m_rtstruct_file_list) {
+	gdcm::File *file = (*(m_gdcm_series->m_rtstruct_file_list))[0];
 	const std::string& filename = file->GetFileName();
-	rtds->m_ss_image = new Ss_image;
-	rtds->m_ss_image->load_gdcm_rtss (filename.c_str());
+	m_ss_image = new Ss_image;
+	m_ss_image->load_gdcm_rtss (filename.c_str());
     }
 
     /* Use existing itk reader for the image.
        This is required because the native dicom reader doesn't yet 
        handle things like MR. */
-    rtds->m_img = plm_image_load_native (dicom_dir);
+    m_img = plm_image_load_native (dicom_dir);
+
+    /* Use native reader to set img_metadata */
+    m_gdcm_series->get_img_metadata (&m_img_metadata);
 }
 
 void

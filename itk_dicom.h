@@ -4,7 +4,9 @@
 #ifndef _itk_dicom_h_
 #define _itk_dicom_h_
 
+#include "plm_config.h"
 #include "itk_image.h"
+#include "img_metadata.h"
 #include "plm_image_patient_position.h"
 
 UCharImageType::Pointer load_dicom_uchar (const char *dicom_dir);
@@ -18,6 +20,7 @@ void
 itk_dicom_save (
     ShortImageType::Pointer short_img, 
     const char* dir_name, 
+    Img_metadata *img_metadata, 
     Plm_image_patient_position patient_pos);
 
 #endif

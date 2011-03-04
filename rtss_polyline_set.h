@@ -8,8 +8,7 @@
 #include <list>
 #include <vector>
 #include "bstrwrap.h"
-
-#include "demographics.h"
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "rtss_structure.h"
@@ -22,7 +21,7 @@ public:
     CBString ct_series_uid;
     CBString ct_fref_uid;
     CBString study_id;
-    Demographics *m_demographics;
+    Img_metadata *m_demographics;
     std::vector<CBString> ct_slice_uids;
     int have_geometry;
     /* Output geometry */

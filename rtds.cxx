@@ -82,7 +82,7 @@ Rtds::load_dicom_dir (const char *dicom_dir)
 	dicom_dir_tmp = file_util_dirname (dicom_dir);
     }
 
-    rtds_dicom_load (this, dicom_dir_tmp);
+    this->load_dicom (dicom_dir_tmp);
 
     if (dicom_dir_tmp != dicom_dir) {
 	free ((void*) dicom_dir_tmp);
@@ -307,7 +307,7 @@ void
 Rtds::save_dicom (const char *output_dir)
 {
     if (this->m_img) {
-	this->m_img->save_short_dicom (output_dir);
+	this->m_img->save_short_dicom (output_dir, &m_img_metadata);
     }
     if (this->m_ss_image) {
 	bool reload = this->m_img;

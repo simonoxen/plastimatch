@@ -11,9 +11,9 @@
 #include "gdcmSQItem.h"
 #include "gdcmUtil.h"
 
-#include "demographics.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
+#include "img_metadata.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

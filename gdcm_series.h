@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 #include "bstrwrap.h"
+#include "img_metadata.h"
 
 /* Forward declarations */
 namespace gdcm {
@@ -28,7 +29,7 @@ public:
     void get_slice_info (int *slice_no, CBString *ct_slice_uid, float z);
     gdcm::File *get_ct_slice (void);
     void get_slice_uids (std::vector<CBString> *slice_uids);
-
+    void get_img_metadata (Img_metadata *img_metadata);
     gdcm::SerieHelper2 *m_gsh2;
 
     int m_have_ct;

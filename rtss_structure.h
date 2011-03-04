@@ -6,8 +6,7 @@
 
 #include "plm_config.h"
 #include "bstrwrap.h"
-
-#include "demographics.h"
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 

@@ -938,7 +938,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
   cxt_to_mha.cxx cxt_to_mha.h 
-  demographics.cxx demographics.h 
   gcs_metric.h gcs_metric.hxx 
   gdcm_dose.cxx gdcm_dose.h
   gdcm_rtss.cxx gdcm_rtss.h
@@ -946,6 +945,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   gdcm_series_helper_2.cxx gdcm_series_helper_2.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
+  img_metadata.cxx img_metadata.h 
   itkAndConstantToImageFilter.h
   itk_crop.cxx itk_crop.h 
   itk_demons.cxx itk_demons.h 

@@ -7,14 +7,14 @@
 #include "plm_config.h"
 #include <vector>
 #include "cxt_io.h"
-#include "demographics.h"
+#include "img_metadata.h"
 #include "plm_image_header.h"
 
 class Referenced_dicom_dir {
 public:
     bool m_loaded;
     Plm_image_header m_pih;
-    Demographics m_demographics;
+    Img_metadata m_demographics;
     CBString m_study_id;
     CBString m_ct_study_uid;
     CBString m_ct_series_uid;

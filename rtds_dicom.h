@@ -13,10 +13,6 @@ extern "C" {
 
 plastimatch1_EXPORT
 void
-rtds_dicom_load (Rtds *rtds, const char *dicom_dir);
-
-plastimatch1_EXPORT
-void
 rtds_patient_pos_from_dicom_dir (Rtds *rtds, const char *dicom_dir);
 
 #if defined __cplusplus

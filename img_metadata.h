@@ -1,18 +1,18 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _demographics_h_
-#define _demographics_h_
+#ifndef _img_metadata_h_
+#define _img_metadata_h_
 
 #include "plm_config.h"
 #include "bstrwrap.h"
 
-class Demographics {
+class Img_metadata {
 public:
     plastimatch1_EXPORT
-    Demographics ();
+    Img_metadata ();
     plastimatch1_EXPORT
-    ~Demographics ();
+    ~Img_metadata ();
 
 public:
     CBString m_patient_name;
@@ -22,13 +22,5 @@ public:
 public:
     
 };
-
-#if defined __cplusplus
-extern "C" {
-#endif
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

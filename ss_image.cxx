@@ -218,7 +218,7 @@ Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 
     /* Demographics */
     if (! this->m_cxt->m_demographics) {
-	this->m_cxt->m_demographics = new Demographics;
+	this->m_cxt->m_demographics = new Img_metadata;
     }
     *(this->m_cxt->m_demographics) = rdd->m_demographics;
 
