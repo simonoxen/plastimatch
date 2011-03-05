@@ -596,7 +596,7 @@ Plm_image::convert_to_gpuit_short ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	print_and_exit ("Error: unhandled conversion to gpuit_short()\n");
 	return;
     }
 }
@@ -617,7 +617,7 @@ Plm_image::convert_to_gpuit_uint16 ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	print_and_exit ("Error: unhandled conversion to gpuit_uint16()\n");
 	return;
     }
 }
@@ -638,7 +638,7 @@ Plm_image::convert_to_gpuit_uint32 ()
     case PLM_IMG_TYPE_ITK_ULONG:
     case PLM_IMG_TYPE_ITK_FLOAT:
     default:
-	print_and_exit ("Error: unhandled conversion to gpuit_float()\n");
+	print_and_exit ("Error: unhandled conversion to gpuit_uint32()\n");
 	return;
     }
 }
@@ -661,6 +661,11 @@ Plm_image::convert_to_gpuit_float ()
 	plm_image_convert_itk_to_gpuit_float (this, this->m_itk_uint32);
 	/* Free itk data */
 	this->m_itk_uint32 = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_LONG:
+	plm_image_convert_itk_to_gpuit_float (this, this->m_itk_int32);
+	/* Free itk data */
+	this->m_itk_int32 = 0;
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	plm_image_convert_itk_to_gpuit_float (this, this->m_itk_float);

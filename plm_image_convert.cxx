@@ -265,6 +265,9 @@ void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UInt32ImageType::Pointer img);
 template plastimatch1_EXPORT 
 void
+plm_image_convert_itk_to_gpuit_float (Plm_image* pli, Int32ImageType::Pointer img);
+template plastimatch1_EXPORT 
+void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer img);
 
 template plastimatch1_EXPORT UCharImage4DType::Pointer plm_image_convert_itk_to_itk_uchar_4d (UInt32ImageType::Pointer);
