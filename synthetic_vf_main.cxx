@@ -66,6 +66,8 @@ parse_fn (
 	"An input image used to set the size of the output ", 1, "");
 
     /* Patterns */
+    parser->add_long_option ("", "xf-radial",
+	"Radial expansion (or contraction).", 1);
     parser->add_long_option ("", "xf-trans",
 	"Uniform translation in mm \"x y z\"", 1);
     parser->add_long_option ("", "xf-zero", "Null transform");
@@ -82,7 +84,8 @@ parse_fn (
     parser->check_required ("output");
 
     /* Check that a xf option was given */
-    if (!parser->option("xf-trans") && 
+    if (!parser->option("xf-radial") && 
+	!parser->option("xf-trans") && 
 	!parser->option("xf-zero"))
     {
 	std::cout << 
