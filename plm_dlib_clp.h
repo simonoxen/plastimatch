@@ -24,6 +24,7 @@ public:
     std::map<string_type,string_type> default_value_map;
     std::map<string_type,string_type> option_map;
     std::map<string_type,string_type> description_map;
+    void (*usage_fn) (dlib::Plm_clp*);
 public:
     void 
     add_long_option (
@@ -254,11 +255,44 @@ public:
         }
     }
 
+    void check_help (void) {
+	if (this->option("h") || this->option("help")) {
+	    usage_fn (this);
+	    exit (0);
+	}
+    }
+
+    string_type
+    get_option_string (const string_type& name) {
+	if (name.length() == 1) {
+	    return "-" + name;
+	} else {
+	    return "--" + name;
+	}
+    }
+
+    void check_required (const string_type& name) {
+	if (!this->option(name)) {
+	    string_type error_string = "Error, you must specify the "
+		+ get_option_string(name) + " option.\n";
+	    throw dlib::error (error_string);
+	}
+    }
 }; /* end class */
 }  /* end namespace */
 
 /* This is a helper function designed to remove clutter caused by 
-   exception catching broilerplate. */
+   exception catching broilerplate. 
+   The optional swallow argument deletes the leading arguments, 
+   for ease of use by the plastimatch program.  For example if you 
+   set swallow = 1, then the following command:
+   
+   plastimatch autolabel [options]
+
+   gets parsed as if it were the following:
+
+   autolabel [options]
+*/
 template<class T>
 static void
 plm_clp_parse (
@@ -266,11 +300,13 @@ plm_clp_parse (
     void (*parse_fn) (T,dlib::Plm_clp*,int,char*[]),
     void (*usage_fn) (dlib::Plm_clp*),
     int argc,
-    char* argv[])
+    char* argv[],
+    int swallow = 0)
 {
     dlib::Plm_clp parser;
+    parser.usage_fn = usage_fn;
     try {
-	(*parse_fn) (arg, &parser, argc, argv);
+	(*parse_fn) (arg, &parser, argc - swallow, argv + swallow);
     }
     catch (std::exception& e) {
         /* Catch cmd_line_parse_error exceptions and print usage message. */
