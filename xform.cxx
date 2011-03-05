@@ -1093,11 +1093,11 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
 
     fi.GoToBegin();
 
-    DoublePointType fixed_point;
-    DoublePointType moving_point;
+    DoublePoint3DType fixed_point;
+    DoublePoint3DType moving_point;
     DeformationFieldType::IndexType index;
 
-    FloatVectorType displacement;
+    FloatVector3DType displacement;
 
     while (!fi.IsAtEnd()) {
 	index = fi.GetIndex();
@@ -1190,7 +1190,7 @@ xform_gpuit_vf_to_itk_vf (
     DeformationFieldType::PointType og;
     DeformationFieldType::SpacingType sp;
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
-    FloatVectorType displacement;
+    FloatVector3DType displacement;
 
     /* Copy header & allocate data for itk */
     for (i = 0; i < 3; i++) {
@@ -1373,7 +1373,7 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
     /* GCS FIX: Need direction cosines */
     Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     float* img = (float*) vf_out->img;
-    FloatVectorType displacement;
+    FloatVector3DType displacement;
 
     int i = 0;
     typedef itk::ImageRegionIterator< DeformationFieldType > FieldIterator;

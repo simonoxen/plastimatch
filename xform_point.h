@@ -8,6 +8,6 @@
 
 #include "xform.h"
 
-plastimatch1_EXPORT void xform_point_transform (FloatPointType* point_out, Xform* xf_in, FloatPointType point_in);
+plastimatch1_EXPORT void xform_point_transform (FloatPoint3DType* point_out, Xform* xf_in, FloatPoint3DType point_in);
 
 #endif

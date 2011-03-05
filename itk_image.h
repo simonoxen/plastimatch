@@ -47,7 +47,7 @@ typedef itk::Image < float, 2 > FloatImage2DType;
 typedef itk::Image < double, 2 > DoubleImage2DType;
 
 /* Vector field */
-typedef itk::Image < FloatVectorType, 3 > DeformationFieldType;
+typedef itk::Image < FloatVector3DType, 3 > DeformationFieldType;
 
 /* Other types */
 typedef itk::Size < 3 > SizeType;

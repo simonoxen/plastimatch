@@ -42,7 +42,7 @@ synthetic_mha (Synthetic_mha_parms* parms)
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetRequestedRegion());
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
-	FloatPointType phys;
+	FloatPoint3DType phys;
 	float f = 0.0f;
 
 	FloatImageType::IndexType idx = it_out.GetIndex ();

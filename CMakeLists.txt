@@ -933,6 +933,7 @@ IF (F2C_LIBRARY)
 ENDIF ()
 
 SET (PLASTIMATCH_LIBRARY_SRC
+#  autolabel_ransac_est.cxx 
   autolabel_ransac_est.h autolabel_ransac_est.txx
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h

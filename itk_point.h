@@ -5,6 +5,7 @@
 #define _itk_point_h_
 
 #include "plm_config.h"
+#include <vector>
 #include "itkPoint.h"
 #include "itkVector.h"
 
@@ -12,13 +13,13 @@
 typedef itk::Point < float, 2 > FloatPoint2DType;
 typedef itk::Point < double, 2 > DoublePoint2DType;
 
-typedef itk::Point < float, 3 > FloatPointType;
-typedef itk::Point < double, 3 > DoublePointType;
+typedef itk::Point < float, 3 > FloatPoint3DType;
+typedef itk::Point < double, 3 > DoublePoint3DType;
 
 typedef itk::Vector < float, 2 > FloatVector2DType;
 typedef itk::Vector < double, 2 > DoubleVector2DType;
 
-typedef itk::Vector < float, 3 > FloatVectorType;
-typedef itk::Vector < double, 3 > DoubleVectorType;
+typedef itk::Vector < float, 3 > FloatVector3DType;
+typedef itk::Vector < double, 3 > DoubleVector3DType;
 
 #endif

@@ -574,7 +574,7 @@ deformation_stats (DeformationFieldType::Pointer vf)
 
     for (fi.GoToBegin(); !fi.IsAtEnd(); ++fi) {
 	//index = fi.GetIndex();
-	const FloatVectorType& d = fi.Get();
+	const FloatVector3DType& d = fi.Get();
 	double sq_len = d[0]*d[0] + d[1]*d[1] + d[2]*d[2];
 	if (sq_len > max_sq_len) {
 	    max_sq_len = sq_len;

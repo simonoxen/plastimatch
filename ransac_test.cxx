@@ -6,17 +6,15 @@
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
+
 #include "autolabel_ransac_est.h"
 #include "bstring_util.h"
 #include "itk_point.h"
 #include "print_and_exit.h"
 
-const unsigned int DIMENSION = 2;
-typedef std::vector< DoublePoint2DType > Point_vector;
-
 void
 load_data (
-    Point_vector& data,
+    Autolabel_point_vector& data,
     const char* filename
 )
 {
@@ -28,7 +26,7 @@ load_data (
     CBStream bs ((bNread) fread, fp);
 
     CBString line;
-    itk::Point<double, DIMENSION> datum;
+    Autolabel_point datum;
     while (bstring_not_empty (line = bs.readLine ('\n'))) {
 	float x, y;
 	int rc = sscanf ((const char*) line, "%f %f", &x, &y);
@@ -45,14 +43,14 @@ load_data (
 int 
 main (int argc, char *argv[])
 {
-    typedef itk::RANSAC< DoublePoint2DType, double> RANSACType;
+    typedef itk::RANSAC< Autolabel_point, double> RANSACType;
 
     if (argc != 3) {
 	printf ("Usage: ransac_test infile outfile\n");
 	exit (0);
     }
 
-    Point_vector data;
+    Autolabel_point_vector data;
     load_data (data, argv[1]);
   
     std::vector<double> planeParameters;
@@ -80,7 +78,7 @@ main (int argc, char *argv[])
     // Dump output
     FILE *fp = fopen (argv[2], "w");
 
-    Point_vector::iterator it;
+    Autolabel_point_vector::iterator it;
     double slope = planeParameters[0];
     double intercept = planeParameters[1];
     for (it = data.begin(); it != data.end(); it++) {

@@ -31,7 +31,6 @@ double Autolabel_ransac_est::GetDelta()
     return sqrt( this->deltaSquared );
 }
 
-
 void
 Autolabel_ransac_est::set_slope_constraints (
     double min_slope, 
@@ -45,7 +44,7 @@ Autolabel_ransac_est::set_slope_constraints (
 /* parameters[0] is slope, parameters[1] is offset */
 void
 Autolabel_ransac_est::Estimate (
-    std::vector<DoublePoint2DType *> &data, 
+    std::vector<Autolabel_point *> &data, 
     std::vector<double> &parameters
 )
 {
@@ -58,8 +57,8 @@ Autolabel_ransac_est::Estimate (
     }
 
     /* Check x displacement is sufficient */
-    DoublePoint2DType& p1 = *(data[0]);
-    DoublePoint2DType& p2 = *(data[1]);
+    Autolabel_point& p1 = *(data[0]);
+    Autolabel_point& p2 = *(data[1]);
     double xdiff = p2[0] - p1[0];
     if (fabs(xdiff) < 10 * EPS) {
 	return;
@@ -86,11 +85,11 @@ Autolabel_ransac_est::Estimate (
 /* WTF? */
 void 
 Autolabel_ransac_est::Estimate (
-    std::vector< DoublePoint2DType > &data, 
+    std::vector< Autolabel_point > &data, 
     std::vector<double> &parameters
 )
 {
-    std::vector< DoublePoint2DType *> usedData;
+    std::vector< Autolabel_point *> usedData;
     int dataSize = data.size();
     for( int i=0; i<dataSize; i++ )
 	usedData.push_back( &(data[i]) );
@@ -100,7 +99,7 @@ Autolabel_ransac_est::Estimate (
 
 void 
 Autolabel_ransac_est::LeastSquaresEstimate (
-    std::vector< DoublePoint2DType *> &data, 
+    std::vector< Autolabel_point *> &data, 
     std::vector<double> &parameters
 )
 {
@@ -110,11 +109,11 @@ Autolabel_ransac_est::LeastSquaresEstimate (
 /* WTF? */
 void 
 Autolabel_ransac_est::LeastSquaresEstimate (
-    std::vector< DoublePoint2DType > &data, 
+    std::vector< Autolabel_point > &data, 
     std::vector<double> &parameters
 )
 {
-    std::vector< DoublePoint2DType *> usedData;
+    std::vector< Autolabel_point *> usedData;
     int dataSize = data.size();
     for( int i=0; i<dataSize; i++ )
 	usedData.push_back( &(data[i]) );
@@ -124,7 +123,7 @@ Autolabel_ransac_est::LeastSquaresEstimate (
 bool
 Autolabel_ransac_est::Agree (
     std::vector<double> &parameters, 
-    DoublePoint2DType &data
+    Autolabel_point &data
 )
 {
     double slope = parameters[0];

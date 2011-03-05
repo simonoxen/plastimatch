@@ -65,8 +65,8 @@ do_tps (
     typedef typename PointSetType::PointIdentifier PointIdType;
 
     Plm_image_header pih;
-    DoublePointType p1;
-    DoublePointType p2;
+    DoublePoint3DType p1;
+    DoublePoint3DType p2;
     char line[BUFLEN];
     Xform xform_tmp, xform;
     FILE* reference;

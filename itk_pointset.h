@@ -15,13 +15,13 @@
 typedef itk::DefaultStaticMeshTraits< 
     float, 3, 3, float, float > FloatPointSetTraitsType;
 typedef itk::PointSet< 
-    FloatPointType, 3, FloatPointSetTraitsType > FloatPointSetType;
+    FloatPoint3DType, 3, FloatPointSetTraitsType > FloatPointSetType;
 typedef FloatPointSetType::PointIdentifier FloatPointIdType;
 
 typedef itk::DefaultStaticMeshTraits< 
     double, 3, 3, double, double > DoublePointSetTraitsType;
 typedef itk::PointSet< 
-    DoublePointType, 3, DoublePointSetTraitsType > DoublePointSetType;
+    DoublePoint3DType, 3, DoublePointSetTraitsType > DoublePointSetType;
 typedef DoublePointSetType::PointIdentifier DoublePointIdType;
 typedef itk::PointSet< short, 3 > ShortPointSetType;
 typedef ShortPointSetType::PointsContainer ShortPointsContainer;

@@ -32,7 +32,7 @@ vf_compose (
     FieldIterator vf1_it (vf1, vf1->GetBufferedRegion());
     FieldIterator vf_out_it (vf_out, vf_out->GetBufferedRegion());
     DeformationFieldType::IndexType index;
-    FloatPointType point_1, point_2, point_3;
+    FloatPoint3DType point_1, point_2, point_3;
     typedef itk::Vector< float, 3 > VectorType;
     VectorType displacement_1;
     typedef itk::VectorLinearInterpolateImageFunction < 

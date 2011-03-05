@@ -13,9 +13,9 @@
    ----------------------------------------------------------------------- */
 void
 xform_point_transform_gpuit_bspline (
-    FloatPointType* itk_point_out, 
+    FloatPoint3DType* itk_point_out, 
     Xform* xf_in, 
-    FloatPointType itk_point_in
+    FloatPoint3DType itk_point_in
 )
 {
     int d;
@@ -34,9 +34,9 @@ xform_point_transform_gpuit_bspline (
 
 void
 xform_point_transform_itk_vf (
-    FloatPointType* point_out, 
+    FloatPoint3DType* point_out, 
     Xform* xf_in, 
-    FloatPointType point_in
+    FloatPoint3DType point_in
 )
 {
     DeformationFieldType::Pointer vf = xf_in->get_itk_vf ();
@@ -60,9 +60,9 @@ xform_point_transform_itk_vf (
 
 void
 xform_point_transform (
-    FloatPointType* point_out, 
+    FloatPoint3DType* point_out, 
     Xform* xf_in, 
-    FloatPointType point_in
+    FloatPoint3DType point_in
 )
 {
     switch (xf_in->m_type) {

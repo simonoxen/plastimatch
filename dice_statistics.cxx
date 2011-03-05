@@ -48,8 +48,8 @@ float do_dice_global(typename itk::Image<T,3>::Pointer reference,
     float spacing[3];
     int i=0;
 
-    DoubleVectorType c_ref;
-    DoubleVectorType c_warp;
+    DoubleVector3DType c_ref;
+    DoubleVector3DType c_warp;
     double vol_ref;
     double vol_warp;
 	

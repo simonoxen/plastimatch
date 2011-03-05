@@ -26,7 +26,7 @@ pointset_from_itk_float_pointset (FloatPointSetType::Pointer itk_ps)
     PointsIteratorType end = itk_ps_c->End();
     unsigned int i = 0;
     while (it != end) {
-	FloatPointType p = it.Value();
+	FloatPoint3DType p = it.Value();
 	pointset_resize (ps, i + 1);
 	ps->points[i*3+0] = p[0];
 	ps->points[i*3+1] = p[1];
@@ -46,7 +46,7 @@ itk_float_pointset_from_pointset (Pointset *ps)
 
     FloatPointIdType id = itk::NumericTraits< FloatPointIdType >::Zero;
     for (int i = 0; i < ps->num_points; i++) {
-	FloatPointType p1;
+	FloatPoint3DType p1;
 	p1[0] = ps->points[i*3+0];
 	p1[1] = ps->points[i*3+1];
 	p1[2] = ps->points[i*3+2];
@@ -64,7 +64,7 @@ itk_double_pointset_from_pointset (Pointset *ps)
 
     DoublePointIdType id = itk::NumericTraits< DoublePointIdType >::Zero;
     for (int i = 0; i < ps->num_points; i++) {
-	DoublePointType p1;
+	DoublePoint3DType p1;
 	p1[0] = ps->points[i*3+0];
 	p1[1] = ps->points[i*3+1];
 	p1[2] = ps->points[i*3+2];

@@ -9,32 +9,35 @@
 #include <itkObjectFactory.h>
 #include "itk_point.h"
 
+typedef DoublePoint3DType Autolabel_point;
+typedef std::vector< Autolabel_point > Autolabel_point_vector;
+
 namespace itk {
 
 class Autolabel_ransac_est : 
-	public ParametersEstimator< DoublePoint2DType, double > 
+	public ParametersEstimator< Autolabel_point, double > 
 {
 public:
     typedef Autolabel_ransac_est                              Self;
-    typedef ParametersEstimator< DoublePoint2DType, double >  Superclass;
+    typedef ParametersEstimator< Autolabel_point, double >  Superclass;
     typedef SmartPointer<Self>                                Pointer;
     typedef SmartPointer<const Self>                          ConstPointer;
  
     itkTypeMacro( Autolabel_ransac_est, ParametersEstimator );
     itkNewMacro( Self )
 
-    virtual void Estimate( std::vector< DoublePoint2DType *> &data, 
+    virtual void Estimate( std::vector< Autolabel_point *> &data, 
 	std::vector<double> &parameters );
-    virtual void Estimate( std::vector< DoublePoint2DType > &data, 
+    virtual void Estimate( std::vector< Autolabel_point > &data, 
 	std::vector<double> &parameters );
 
-    virtual void LeastSquaresEstimate( std::vector< DoublePoint2DType *> &data, 
+    virtual void LeastSquaresEstimate( std::vector< Autolabel_point *> &data, 
 	std::vector<double> &parameters );
-    virtual void LeastSquaresEstimate( std::vector< DoublePoint2DType > &data, 
+    virtual void LeastSquaresEstimate( std::vector< Autolabel_point > &data, 
 	std::vector<double> &parameters );
 
     virtual bool Agree( std::vector<double> &parameters, 
-	DoublePoint2DType &data );
+	Autolabel_point &data );
   
     void SetDelta( double delta );
     double GetDelta();
@@ -55,5 +58,9 @@ private:
 } // end namespace itk
 
 #include "autolabel_ransac_est.txx"
+
+plastimatch1_EXPORT
+void
+autolabel_ransac_est (Autolabel_point_vector& apv);
 
 #endif

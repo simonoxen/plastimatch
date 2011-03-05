@@ -36,7 +36,7 @@ vector_resample_image (T& vf_image, Plm_image_header* pih)
     typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
     filter->SetInterpolator (interpolator);
 
-    FloatVectorType v;
+    FloatVector3DType v;
     v[0] = v[1] = v[2] = 0;
     filter->SetDefaultPixelValue (v);
 
@@ -57,8 +57,8 @@ vector_resample_image (T& vf_image, Plm_image_header* pih)
 
 template <class T>
 T
-vector_resample_image (T& vf_image, DoublePointType origin, 
-		       DoubleVectorType spacing, SizeType size)
+vector_resample_image (T& vf_image, DoublePoint3DType origin, 
+		       DoubleVector3DType spacing, SizeType size)
 {
     typedef typename T::ObjectType VFImageType;
     typedef itk::VectorResampleImageFilter < VFImageType, VFImageType > FilterType;
@@ -79,7 +79,7 @@ vector_resample_image (T& vf_image, DoublePointType origin,
     typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
     filter->SetInterpolator (interpolator);
 
-    FloatVectorType v;
+    FloatVector3DType v;
     v[0] = v[1] = v[2] = 0;
     filter->SetDefaultPixelValue (v);
 
@@ -102,8 +102,8 @@ template <class T>
 T
 vector_resample_image (T& vf_image, float* origin, float* spacing, int* size)
 {
-    DoublePointType cpp_origin;
-    DoubleVectorType cpp_spacing;
+    DoublePoint3DType cpp_origin;
+    DoubleVector3DType cpp_spacing;
     SizeType cpp_size;
     for (int i = 0; i < 3; i++) {
 	cpp_origin[i] = origin[i];
@@ -186,7 +186,7 @@ vector_resample_image (T& image, float x_spacing,
 
     typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
     filter->SetInterpolator (interpolator);
-    FloatVectorType v;
+    FloatVector3DType v;
     v[0] = v[1] = v[2] = 0;
     filter->SetDefaultPixelValue (v);
     //filter->SetDefaultPixelValue (VectorType::Zero);
@@ -210,8 +210,8 @@ template <class T>
 T
 resample_image (
     T& image, 
-    DoublePointType origin, 
-    DoubleVectorType spacing, 
+    DoublePoint3DType origin, 
+    DoubleVector3DType spacing, 
     SizeType size, 
     float default_val, 
     int interp_lin)
@@ -271,8 +271,8 @@ resample_image (
     float default_val, 
     int interp_lin)
 {
-    DoublePointType cpp_origin;
-    DoubleVectorType cpp_spacing;
+    DoublePoint3DType cpp_origin;
+    DoubleVector3DType cpp_spacing;
     SizeType cpp_size;
     for (int i = 0; i < 3; i++) {
 	cpp_origin[i] = origin[i];

@@ -7,6 +7,7 @@
 #include "dlib/data_io.h"
 #include "dlib/svm.h"
 
+#include "autolabel_ransac_est.h"
 #include "bstring_util.h"
 #include "itk_image.h"
 #include "plm_clp.h"
@@ -60,6 +61,10 @@ do_autolabel (Autolabel_parms *parms)
 	    (const char*) parms->output_fn);
     }
 
+    /* Create a vector to hold the results */
+    Autolabel_point_vector apv;
+
+    /* Loop through slices, and predict location for each slice */
     Plm_image_header pih (&pli);
     for (int i = 0; i < pih.Size(2); i++) {
 
@@ -77,11 +82,25 @@ do_autolabel (Autolabel_parms *parms)
 	}
 
 	/* Predict the value */
-	fprintf (fp, "%g %g\n", loc, dlib_network (d));
+	Autolabel_point ap;
+	ap[0] = loc;
+	ap[1] = dlib_network (d);
+	ap[2] = 0.;
+	apv.push_back (ap);
     }
 
+    /* Run RANSAC to refine the estimate */
+    //autolabel_ransac_est (apv);
+
+    /* Save the output to a file */
+    Autolabel_point_vector::iterator it;
+    for (it = apv.begin(); it != apv.end(); it++) {
+	fprintf (fp, "%g %g %g\n", (*it)[0], (*it)[1], (*it)[2]);
+    }
+    
     fclose (fp);
 }
+
 
 static void
 usage_fn (dlib::Plm_clp* parser)
@@ -130,58 +149,6 @@ parse_fn (
     parms->input_fn = parser->get_string("input").c_str();
     parms->network_fn = parser->get_string("network").c_str();
 }
-
-#if defined (commentout)
-void
-parse_args (Autolabel_parms *parms, int argc, char *argv[])
-{
-    int i;
-
-    /* Set default values */
-    parms->network_fn = "C:/gcs6/foo.dat";
-
-    for (i = 2; i < argc; i++) {
-	if (argv[i][0] != '-') break;
-	if (!strcmp (argv[i], "--input")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    parms->input_fn = argv[i];
-	}
-	else if (!strcmp (argv[i], "--network")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    parms->network_fn = argv[i];
-	}
-	else if (!strcmp (argv[i], "--output")) {
-	    if (i == (argc-1) || argv[i+1][0] == '-') {
-		fprintf(stderr, "option %s requires an argument\n", argv[i]);
-		exit(1);
-	    }
-	    i++;
-	    parms->output_fn = argv[i];
-	}
-	else {
-	    print_usage ();
-	    break;
-	}
-    }
-
-    if (bstring_empty (parms->input_fn)) {
-	fprintf (stderr, "Error, you must supply an --input option\n");
-	exit (-1);
-    }
-    if (bstring_empty (parms->output_fn)) {
-	fprintf (stderr, "Error, you must supply an --output option\n");
-	exit (-1);
-    }
-}
-#endif
 
 void
 do_command_autolabel (int argc, char *argv[])
