@@ -17,6 +17,7 @@
 #include "itk_image.h"
 #include "plm_int.h"
 #include "rtss_polyline_set.h"
+#include "rtss_structure.h"
 #include "slice_extract.h"
 
 #if defined (commentout)

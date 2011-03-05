@@ -5,7 +5,8 @@
 #define _gdcm_dose_h_
 
 #include "plm_config.h"
-#include "cxt_io.h"
+
+class Plm_image;
 
 #if defined __cplusplus
 extern "C" {

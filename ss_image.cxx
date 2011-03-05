@@ -11,6 +11,7 @@
 #include "plm_warp.h"
 #include "referenced_dicom_dir.h"
 #include "rtss_polyline_set.h"
+#include "rtss_structure.h"
 #include "ss_image.h"
 #include "ss_img_extract.h"
 #include "ss_list_io.h"

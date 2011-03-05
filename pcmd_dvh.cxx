@@ -13,6 +13,7 @@
 #include "plm_image.h"
 #include "plm_int.h"
 #include "rtds.h"
+#include "rtss_structure.h"
 
 static void
 load_input_files (Rtds *rtds, Dvh_parms *parms)

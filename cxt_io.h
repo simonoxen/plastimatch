@@ -5,7 +5,8 @@
 #define _cxt_io_h_
 
 #include "plm_config.h"
-#include "rtss_polyline_set.h"
+
+class Rtss_polyline_set;
 
 #if defined __cplusplus
 extern "C" {

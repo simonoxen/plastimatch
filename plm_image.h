@@ -5,13 +5,13 @@
 #define _plm_image_h_
 
 #include "plm_config.h"
-#include "img_metadata.h"
 #include "itk_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "volume.h"
 
+class Img_metadata;
 class Plm_image_header;
 class Plm_image;
 

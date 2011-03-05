@@ -17,6 +17,7 @@
 #include "logfile.h"
 #include "itk_image_stats.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_image_type.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"

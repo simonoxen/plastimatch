@@ -17,7 +17,6 @@
 #include "bstring_util.h"
 #include "gdcm_series.h"
 #include "gdcm_series_helper_2.h"
-#include "img_metadata.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -296,6 +295,36 @@ Gdcm_series::get_ct_slice (void)
     return (*this->m_ct_file_list)[0];
 }
 
+const std::string&
+Gdcm_series::get_rtdose_filename ()
+{
+    gdcm::File *file = (*(m_rtdose_file_list))[0];
+    return file->GetFileName();
+}
+
+const std::string&
+Gdcm_series::get_rtstruct_filename ()
+{
+    gdcm::File *file = (*(m_rtstruct_file_list))[0];
+    return file->GetFileName();
+}
+
+std::string
+Gdcm_series::get_patient_position ()
+{
+    gdcm::File* file = this->get_ct_slice ();
+    std::string tmp;
+
+    /* Get patient position */
+    tmp = file->GetEntryValue (0x0018, 0x5100);
+    if (tmp == gdcm::GDCM_UNFOUND) {
+	tmp = "";
+    }
+
+    return tmp;
+}
+
+#if defined (commentout)
 void
 Gdcm_series::get_img_metadata (Img_metadata *img_metadata)
 {
@@ -309,3 +338,4 @@ Gdcm_series::get_img_metadata (Img_metadata *img_metadata)
 	    file->GetEntryValue(0x0010, 0x0040).c_str();
     }
 }
+#endif

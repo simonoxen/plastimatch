@@ -14,12 +14,6 @@
 #include "itkDirectory.h"
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
-#include "gdcmFile.h"
-#include "gdcmFileHelper.h"
-#include "gdcmGlobal.h"
-#include "gdcmSeqEntry.h"
-#include "gdcmSQItem.h"
-#include "gdcmUtil.h"
 
 #include "gdcm_series.h"
 #include "plm_image.h"

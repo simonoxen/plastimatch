@@ -8,10 +8,11 @@
 #include <list>
 #include <vector>
 #include "bstrwrap.h"
-#include "img_metadata.h"
-#include "plm_image.h"
-#include "plm_image_header.h"
-#include "rtss_structure.h"
+
+class Img_metadata;
+class Plm_image;
+class Plm_image_header;
+class Rtss_structure;
 
 #define CXT_BUFLEN 2048
 

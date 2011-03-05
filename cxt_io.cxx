@@ -9,8 +9,11 @@
 #include "bstring_util.h"
 #include "cxt_io.h"
 #include "file_util.h"
+#include "img_metadata.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "rtss_polyline_set.h"
+#include "rtss_structure.h"
 
 void
 cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)

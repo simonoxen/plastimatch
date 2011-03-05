@@ -21,6 +21,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "rtss_polyline_set.h"
+#include "rtss_structure.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -82,6 +83,8 @@ gdcm_rtss_load (
 	    rtss_fn);
     }
 
+    /* GCS FIX: IMG_METADATA */
+#if defined (commentout)
     /* PatientName */
     tmp = rtss_file->GetEntryValue (0x0010, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
@@ -105,6 +108,7 @@ gdcm_rtss_load (
     if (tmp != gdcm::GDCM_UNFOUND) {
 	cxt->study_id = tmp.c_str();
     }
+#endif
 
     /* StudyInstanceUID */
     tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
@@ -377,6 +381,9 @@ gdcm_rtss_save (
     gf->InsertValEntry ("Plastimatch structure set", 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
+
+    /* GCS FIX: IMG_METADATA */
+#if defined (commentout)
     /* PatientsName */
     if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
 	gf->InsertValEntry (
@@ -400,6 +407,7 @@ gdcm_rtss_save (
     } else {
 	gf->InsertValEntry ("", 0x0010, 0x0040);
     }
+#endif
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */

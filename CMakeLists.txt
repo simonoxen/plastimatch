@@ -275,6 +275,7 @@ ENDMACRO()
 ##-----------------------------------------------------------------------------
 ##  Search for include files
 ##-----------------------------------------------------------------------------
+CHECK_INCLUDE_FILES ("stdint.h" HAVE_STDINT_H)
 CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
@@ -940,6 +941,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   cxt_to_mha.cxx cxt_to_mha.h 
   gcs_metric.h gcs_metric.hxx 
   gdcm_dose.cxx gdcm_dose.h
+  gdcm_file.cxx gdcm_file.h
   gdcm_rtss.cxx gdcm_rtss.h
   gdcm_series.cxx gdcm_series.h
   gdcm_series_helper_2.cxx gdcm_series_helper_2.h

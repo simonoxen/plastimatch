@@ -18,6 +18,8 @@
 #include "plm_int.h"
 #include "plm_path.h"
 #include "render_polyline.h"
+#include "rtss_polyline_set.h"
+#include "rtss_structure.h"
 #include "volume.h"
 
 void
