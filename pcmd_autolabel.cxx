@@ -9,7 +9,7 @@
 
 #include "bstring_util.h"
 #include "itk_image.h"
-#include "plm_dlib_clp.h"
+#include "plm_clp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_image_patient_position.h"

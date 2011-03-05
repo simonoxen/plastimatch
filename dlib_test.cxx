@@ -1,4 +1,4 @@
-#include "plm_dlib_clp.h"
+#include "plm_clp.h"
 
 static void
 print_usage (dlib::Plm_clp& parser)

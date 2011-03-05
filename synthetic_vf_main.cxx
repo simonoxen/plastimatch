@@ -11,10 +11,8 @@
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "math_util.h"
-#include "plm_dlib_clp.h"
+#include "plm_clp.h"
 #include "synthetic_vf.h"
-
-typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
 typedef struct synthetic_vf_main_parms Synthetic_vf_main_parms;
 struct synthetic_vf_main_parms {
@@ -77,21 +75,11 @@ parse_fn (
        ------------------------------------------------------------ */
     parser->parse (argc,argv);
 
-    /* ------------------------------------------------------------
-       Check options and copy into struct
-       ------------------------------------------------------------ */
     /* Check if the -h option was given */
-    if (parser->option("h") || parser->option("help")) {
-	usage_fn (parser);
-	exit (0);
-    }
+    parser->check_help ();
 
     /* Check that an output file was given */
-    if (!parser->option("output")) {
-	std::cout << "Error, you must specify the --output option.\n";
-	usage_fn (parser);
-	exit (1);
-    }
+    parser->check_required ("output");
 
     /* Check that a xf option was given */
     if (!parser->option("xf-trans") && 
