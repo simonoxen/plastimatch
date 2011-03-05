@@ -257,4 +257,31 @@ public:
 }; /* end class */
 }  /* end namespace */
 
+/* This is a helper function designed to remove clutter caused by 
+   exception catching broilerplate. */
+template<class T>
+static void
+plm_clp_parse (
+    T arg, 
+    void (*parse_fn) (T,dlib::Plm_clp*,int,char*[]),
+    void (*usage_fn) (dlib::Plm_clp*),
+    int argc,
+    char* argv[])
+{
+    dlib::Plm_clp parser;
+    try {
+	(*parse_fn) (arg, &parser, argc, argv);
+    }
+    catch (std::exception& e) {
+        /* Catch cmd_line_parse_error exceptions and print usage message. */
+	std::cout << e.what() << std::endl;
+	(*usage_fn) (&parser);
+	exit (1);
+    }
+    catch (...) {
+	std::cerr << "An unspecified error occurred.\n";
+	exit (1);
+    }
+}
+    
 #endif

@@ -64,7 +64,7 @@ parse_args (dlib::Plm_clp& parser, int argc, char* argv[])
     catch (...) {
 	std::cout << "Some error occurred" << std::endl;
     }
-    for (int i =0; i < parser.number_of_arguments(); ++i) {
+    for (unsigned int i =0; i < parser.number_of_arguments(); ++i) {
 	std::cout << "unlabeled option " << i << " is " 
 		  << parser[i]
 		  << std::endl;
