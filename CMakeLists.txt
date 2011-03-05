@@ -53,7 +53,6 @@ OPTION (PLM_BUILD_SLICER_LOADABLE
   "Build slicer loadable module" OFF)
 OPTION (PLM_BUILD_SLICER_SYNTH
   "Build slicer synthetic CLP" OFF)
-OPTION (PLM_BUILD_TCLAP_TEST "Build tclap test program" OFF)
 
 # Software options
 OPTION (PLM_USE_4D_SS_IMAGE 
@@ -1205,9 +1204,6 @@ SET (SYNTHETIC_MHA_GETOPT_SRC
 SET (SYNTHETIC_MHA_DLIB_SRC
   synthetic_mha_main_dlib.cxx 
   )
-SET (SYNTHETIC_MHA_TCLAP_SRC
-  synthetic_mha_main_tclap.cxx 
-  )
 SET (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
   )
@@ -1549,10 +1545,6 @@ IF (ITK_FOUND)
     PLM_ADD_EXECUTABLE (synthetic_mha_getopt "${SYNTHETIC_MHA_GETOPT_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   ENDIF ()
-  IF (PLM_BUILD_TCLAP_TEST)
-    PLM_ADD_EXECUTABLE (synthetic_mha_tclap "${SYNTHETIC_MHA_TCLAP_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  ENDIF ()
   PLM_ADD_EXECUTABLE (synthetic_vf "${SYNTHETIC_VF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
@@ -1873,13 +1865,6 @@ ENDIF ()
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
   PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
-ENDIF ()
-
-# Test executable -- tclap
-IF (PLM_BUILD_TCLAP_TEST)
-  INCLUDE_DIRECTORIES (BEFORE "${CMAKE_SOURCE_DIR}/libs/tclap-1.2.0/include")
-  SET (TCLAP_TEST_SRC tclap_test.cxx)
-  PLM_ADD_EXECUTABLE (tclap_test "${TCLAP_TEST_SRC}" "" "" 0)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
