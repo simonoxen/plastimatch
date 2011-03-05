@@ -55,8 +55,7 @@ Rtds::load_dicom (const char *dicom_dir)
     m_img = plm_image_load_native (dicom_dir);
 
     /* Use native reader to set img_metadata */
-    /* GCS FIX: IMG_METADATA */
-    //m_gdcm_series->get_img_metadata (&m_img_metadata);
+    m_gdcm_series->get_img_metadata (&m_img_metadata);
 }
 
 void

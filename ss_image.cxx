@@ -62,7 +62,7 @@ void
 Ss_image::load_gdcm_rtss (const char *input_fn)
 {
     this->m_cxt = new Rtss_polyline_set;
-    gdcm_rtss_load (this->m_cxt, input_fn);
+    gdcm_rtss_load (this->m_cxt, this->m_cxt->m_demographics, input_fn);
 }
 
 void

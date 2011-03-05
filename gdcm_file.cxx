@@ -6,13 +6,16 @@
 #include <stdlib.h>
 #include "gdcmFile.h"
 #include "gdcmFileHelper.h"
-#include "gdcmGlobal.h"
-#include "gdcmSeqEntry.h"
-#include "gdcmSQItem.h"
-#include "gdcmUtil.h"
+#include "img_metadata.h"
 
-/* This is a wrapper for gdcm::File, in order to avoid problems with 
-   their buggy implementation of stdint.h typedefs */
+void
+meta_from_gdcm_file (
+    Img_metadata *meta, 
+    gdcm::File gdcm_file, 
+    unsigned short group, 
+    unsigned short elem)
+{
+}
 
 std::string
 gdcm_file_GetEntryValue (gdcm::File *file, unsigned short group, 

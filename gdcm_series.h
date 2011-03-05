@@ -9,7 +9,7 @@
 #include <list>
 #include <vector>
 #include "bstrwrap.h"
-//#include "img_metadata.h"
+#include "img_metadata.h"
 
 /* Forward declarations */
 namespace gdcm {
@@ -32,7 +32,7 @@ public:
     std::string get_patient_position ();
     const std::string& get_rtdose_filename ();
     const std::string& get_rtstruct_filename ();
-    //void get_img_metadata (Img_metadata *img_metadata);
+    void get_img_metadata (Img_metadata *img_metadata);
 
     gdcm::SerieHelper2 *m_gsh2;
 

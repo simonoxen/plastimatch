@@ -78,43 +78,16 @@ Referenced_dicom_dir::load (const char *dicom_dir)
     if (tmp != gdcm::GDCM_UNFOUND) {
 	this->m_demographics.m_patient_sex = tmp.c_str();
     }
-
-    /* StudyID */
-    tmp = file->GetEntryValue (0x0020, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	this->m_study_id = tmp.c_str();
-    }
-
-    /* StudyInstanceUID */
-    tmp = file->GetEntryValue (0x0020, 0x000d);
-    this->m_ct_study_uid = tmp.c_str();
-
-    /* SeriesInstanceUID */
-    tmp = file->GetEntryValue (0x0020, 0x000e);
-    this->m_ct_series_uid = tmp.c_str();
-	
-    /* FrameOfReferenceUID */
-    tmp = file->GetEntryValue (0x0020, 0x0052);
-    this->m_ct_fref_uid = tmp.c_str();
 #endif
 
     /* PatientName */
-    tmp = gdcm_file_GetEntryValue (file, 0x0010, 0x0010);
-    if (tmp != gdcm_file_GDCM_UNFOUND()) {
-	this->m_demographics.m_patient_name = tmp.c_str();
-    }
+    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0010);
 
     /* PatientID */
-    tmp = gdcm_file_GetEntryValue (file, 0x0010, 0x0020);
-    if (tmp != gdcm_file_GDCM_UNFOUND()) {
-	this->m_demographics.m_patient_id = tmp.c_str();
-    }
+    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0020);
 
     /* PatientSex */
-    tmp = gdcm_file_GetEntryValue (file, 0x0010, 0x0040);
-    if (tmp != gdcm_file_GDCM_UNFOUND()) {
-	this->m_demographics.m_patient_sex = tmp.c_str();
-    }
+    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0040);
 
     /* StudyID */
     tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0010);

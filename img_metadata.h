@@ -7,9 +7,12 @@
 #include "plm_config.h"
 #include <map>
 #include "bstrwrap.h"
-#include "plm_int.h"
 
-#define MAKE_KEY(a,b) ((uint32_t) (((uint16_t)a) << 16 | ((uint16_t)b)))
+#define MAKE_KEY(a,b) (#a "," #b)
+
+namespace gdcm {
+    class File;
+};
 
 class Img_metadata {
 public:
@@ -19,27 +22,28 @@ public:
     ~Img_metadata ();
 
 public:
-    enum Keys {
-	TEST_KEY = MAKE_KEY(0x0010, 0x0040)
-    };
+    /* GCS: Note use of unsigned short instead of uint16_t, because of 
+       broken stdint implementation in gdcm. */
+    std::string
+    make_key (unsigned short key1, unsigned short key2);
+    const std::string&
+    get_metadata (std::string& key);
+    const std::string&
+    get_metadata (unsigned short key1, unsigned short key2);
+    void
+    set_metadata (const std::string& key, const std::string& val);
+    void
+    set_metadata (unsigned short key1, unsigned short key2,
+	const std::string& val);
+    void
+    set_from_gdcm_file (gdcm::File *gdcm_file, unsigned short key1, 
+	unsigned short key2);
+    void
+    copy_to_gdcm_file (gdcm::File *gdcm_file, unsigned short group,
+	unsigned short elem);
 
 public:
-    uint32_t
-    make_key (uint16_t key1, uint16_t key2);
-    const char* 
-    get_metadata (uint32_t key);
-    const char* 
-    get_metadata (uint16_t key1, uint16_t key2);
-
-    const char* 
-    get_patient_name ();
-
-public:
-    std::map<uint32_t, const char*> m_data;
-
-    CBString m_patient_name;
-    CBString m_patient_id;
-    CBString m_patient_sex;
+    std::map<std::string, std::string> m_data;
 
 public:
     

@@ -72,13 +72,16 @@ cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 	    /* fall through */
 	}
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    cxt->m_demographics->m_patient_name = (const char*) val->data;
+	    cxt->m_demographics->set_metadata (0x0010, 0x0010, 
+		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    cxt->m_demographics->m_patient_id = (const char*) val->data;
+	    cxt->m_demographics->set_metadata (0x0010, 0x0020, 
+		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    cxt->m_demographics->m_patient_sex = (const char*) val->data;
+	    cxt->m_demographics->set_metadata (0x0010, 0x0040, 
+		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
 	    cxt->study_id = (const char*) val->data;
@@ -295,6 +298,7 @@ cxt_save (
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
+#if defined (commentout)
     if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
 	fprintf (fp, "PATIENT_NAME %s\n", 
 	    (const char*) cxt->m_demographics->m_patient_name);
@@ -313,6 +317,13 @@ cxt_save (
     } else {
 	fprintf (fp, "PATIENT_SEX\n");
     }
+#endif
+    fprintf (fp, "PATIENT_NAME %s\n",
+	cxt->m_demographics->get_metadata (0x0010, 0x0010).c_str());
+    fprintf (fp, "PATIENT_ID %s\n",
+	cxt->m_demographics->get_metadata (0x0010, 0x0020).c_str());
+    fprintf (fp, "PATIENT_SEX %s\n",
+	cxt->m_demographics->get_metadata (0x0010, 0x0040).c_str());
     if (bstring_not_empty (cxt->study_id)) {
 	fprintf (fp, "STUDY_ID %s\n", (const char*) cxt->study_id);
     } else {

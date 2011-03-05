@@ -63,6 +63,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 void
 gdcm_rtss_load (
     Rtss_polyline_set *cxt, 
+    Img_metadata *meta, 
     const char *rtss_fn
 )
 {
@@ -83,32 +84,20 @@ gdcm_rtss_load (
 	    rtss_fn);
     }
 
-    /* GCS FIX: IMG_METADATA */
-#if defined (commentout)
     /* PatientName */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_name = tmp.c_str();
-    }
+    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0010);
 
     /* PatientID */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0020);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_id = tmp.c_str();
-    }
+    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0020);
 
     /* PatientSex */
-    tmp = rtss_file->GetEntryValue (0x0010, 0x0040);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->m_demographics->m_patient_sex = tmp.c_str();
-    }
+    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0040);
 
     /* StudyID */
     tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
     if (tmp != gdcm::GDCM_UNFOUND) {
 	cxt->study_id = tmp.c_str();
     }
-#endif
 
     /* StudyInstanceUID */
     tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
@@ -382,7 +371,6 @@ gdcm_rtss_save (
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
 
-    /* GCS FIX: IMG_METADATA */
 #if defined (commentout)
     /* PatientsName */
     if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
@@ -408,6 +396,15 @@ gdcm_rtss_save (
 	gf->InsertValEntry ("", 0x0010, 0x0040);
     }
 #endif
+
+    /* PatientsName */
+    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0010);
+    /* PatientID */
+    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0020);
+    /* PatientsBirthDate */
+    gf->InsertValEntry ("", 0x0010, 0x0030);
+    /* PatientsSex */
+    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0040);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */
