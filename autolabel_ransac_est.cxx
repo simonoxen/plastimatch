@@ -3,6 +3,7 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <iostream>
+#include <stdio.h>
 #include "autolabel_ransac_est.h"
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
