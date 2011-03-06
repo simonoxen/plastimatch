@@ -14,7 +14,7 @@ typedef std::vector< Autolabel_point > Autolabel_point_vector;
 
 namespace itk {
 
-class Autolabel_ransac_est : 
+class plastimatch1_EXPORT Autolabel_ransac_est : 
 	public ParametersEstimator< Autolabel_point, double > 
 {
 public:
@@ -56,8 +56,6 @@ private:
 };
 
 } // end namespace itk
-
-#include "autolabel_ransac_est.txx"
 
 plastimatch1_EXPORT
 void

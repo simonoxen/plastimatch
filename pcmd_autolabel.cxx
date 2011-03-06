@@ -90,7 +90,7 @@ do_autolabel (Autolabel_parms *parms)
     }
 
     /* Run RANSAC to refine the estimate */
-    //autolabel_ransac_est (apv);
+    autolabel_ransac_est (apv);
 
     /* Save the output to a file */
     Autolabel_point_vector::iterator it;
@@ -159,3 +159,4 @@ do_command_autolabel (int argc, char *argv[])
 
     do_autolabel (&parms);
 }
+
