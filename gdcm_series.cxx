@@ -70,7 +70,7 @@ digest_file_list (
 		//printf (">> %g %g %g\n", z, prev_z, spacing[2]);
 		/* XiO rounds IPP to nearest .1 mm */
 		if (fabs (z - prev_z - spacing[2]) > 0.11) {
-		    print_and_exit ("Error: irregular slice thickness in dicom series\n");
+		    print_and_exit ("Error: irregular slice spacing in dicom series\n");
 		}
 		loop ++;
 	    } else {
