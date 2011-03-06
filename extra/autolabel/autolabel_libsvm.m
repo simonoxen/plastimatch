@@ -1,11 +1,14 @@
-cd ([getenv('HOME'), '/Dropbox/autolabel']);
+#cd ([getenv('HOME'), '/Dropbox/autolabel']);
 #cd ([getenv('HOME'), '/My Dropbox/autolabel']);
+cd ([getenv('HOME'), '/data/autolabel']);
+
+training_dir = 't-spine-2-train';
 
 data = [];
 pid = [];
 sid = [];
 
-d = dir ("t-spine-2/*.raw");
+d = dir ([training_dir, '/*.raw']);
 for i = 1:length(d)
     pid(i) = str2num(d(i).name(1:2));
     j = max(findstr(d(i).name,'_'));
@@ -16,7 +19,7 @@ for i = 1:length(d)
     fclose (fp);
 end
 
-fp = fopen ("t-spine-2/t-spine.libsvm", "w");
+fp = fopen ([training_dir, '/t-spine.libsvm'], "w");
 for i = 1:length(sid)
     fprintf (fp, "%d", sid(i));
     for j = 1:size(data,2)
