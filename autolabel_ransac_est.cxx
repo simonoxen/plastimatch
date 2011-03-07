@@ -1,15 +1,232 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+/* In this code, x is the location (in mm), and y is the thoracic vertebra 
+   number (1 to 12 for T1 to T12).  Slopes are measured in units of 
+   vertebra per millimeter. 
+   ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <iostream>
 #include <stdio.h>
+#include <stdlib.h>
 #include "autolabel_ransac_est.h"
 #include "RANSAC.h"
 #include "PlaneParametersEstimator.h"
 #include "RandomNumberGenerator.h"
 
 typedef itk::RANSAC< Autolabel_point, double> Ransac_type;
+
+//#define DELTA         (0.5)
+#define DELTA         (1.0)
+#define DELTA_SQUARED (DELTA * DELTA)
+
+static double
+est_piecewise_spline_point (
+    Autolabel_point& data, 
+    std::vector<double>& piecewise_parms
+)
+{
+    double slope_a = piecewise_parms[0];
+    double t4_loc = piecewise_parms[1];
+    double t7_loc = piecewise_parms[2];
+    double slope_c = piecewise_parms[3];
+    double x = data[0];
+    double yest;
+
+    if (x > t4_loc) {
+	double intercept = 4. - t4_loc * slope_a;
+	yest = x * slope_a + intercept;
+    } else if (x < t7_loc) {
+	double intercept = 7. - t7_loc * slope_c;
+	yest = x * slope_c + intercept;
+    } else {
+	double xoff = (x - t4_loc) / (t7_loc - t4_loc);
+	yest = 4. * (1. - xoff) + 7. * xoff;
+    }
+    return yest;
+}
+
+static double
+score_piecewise_spline_point (
+    Autolabel_point& data, 
+    std::vector<double>& piecewise_parms
+)
+{
+    double y = data[1];
+    double yest = est_piecewise_spline_point (data, piecewise_parms);
+    double ydiff = y - yest;
+    double yscore = ydiff*ydiff / DELTA_SQUARED;
+    if (yscore > 1.) {
+	yscore = 1.;
+    }
+    return yscore;
+}
+
+static double
+score_piecewise_spline (
+    Autolabel_point_vector& apv, 
+    std::vector<double>& piecewise_parms
+)
+{
+    double score;
+    Autolabel_point_vector::iterator it;
+    for (it = apv.begin(); it != apv.end(); it++) {
+	score += score_piecewise_spline_point ((*it), piecewise_parms);
+    }
+    return score;
+}
+
+static void
+pattern_search (
+    Autolabel_point_vector& apv, 
+    std::vector<double>& piecewise_parms,
+    double& parm,
+    double constraint[2],
+    double adjust,
+    double& curr_score
+)
+{
+    double curr = parm;
+    double test1 = parm - adjust;
+    double test2 = parm + adjust;
+    double score;
+    printf ("[%f %f %f] vs. [%f %f]\n", test1, parm, test2,
+	constraint[0], constraint[1]);
+    if (test1 > constraint[0]) {
+	parm = test1;
+	score = score_piecewise_spline (apv, piecewise_parms);
+	printf ("  <%f,%f,%f,%f> %f %s\n", 
+	    piecewise_parms[0], piecewise_parms[1],
+	    piecewise_parms[2], piecewise_parms[3], 
+	    score, score < curr_score ? "pass" : "fail");
+	if (score < curr_score) {
+	    curr_score = score;
+	    return;
+	} else {
+	    parm = curr;
+	}
+    }
+    if (test2 < constraint[1]) {
+	parm = test2;
+	score = score_piecewise_spline (apv, piecewise_parms);
+	printf ("  <%f,%f,%f,%f> %f %s\n", 
+	    piecewise_parms[0], piecewise_parms[1],
+	    piecewise_parms[2], piecewise_parms[3], 
+	    score, score < curr_score ? "pass" : "fail");
+	if (score < curr_score) {
+	    curr_score = score;
+	} else {
+	    parm = curr;
+	}
+    }
+}
+
+static void
+optimize_piecewise_spline (
+    Autolabel_point_vector& apv, 
+    std::vector<double>& piecewise_parms
+)
+{
+    const int MAX_ITS = 6;
+    int changed = 0;
+    double constraints[3][2] = {
+	{ -0.070, -0.040 },
+	{ -0.056, -0.037 },
+	{ -0.048, -0.029 }
+    };
+
+    /* Double check constraints */
+    /* GCS FIX: ignoring constraints[1][*] for now. :( */
+    if (piecewise_parms[0] < constraints[0][0]) {
+	piecewise_parms[0] = constraints[0][0];
+    } else if (piecewise_parms[0] > constraints[0][1]) {
+	piecewise_parms[0] = constraints[0][1];
+    }
+    if (piecewise_parms[3] < constraints[2][0]) {
+	piecewise_parms[3] = constraints[2][0];
+    } else if (piecewise_parms[3] > constraints[2][1]) {
+	piecewise_parms[3] = constraints[2][1];
+    }
+
+    double curr_score =  score_piecewise_spline (apv, piecewise_parms);
+    printf ("Base score: %f\n", curr_score);
+
+    for (int it = 0; it < MAX_ITS; it++) {
+	double adjust;
+	double loc_constraint[2];
+	double t4_loc, t7_loc, t47_slope;
+
+	/* Search slope_a */
+	adjust = 0.01 * rand() / (float) RAND_MAX;
+	//adjust = 0.002;
+	printf ("-- A --\n");
+	pattern_search (
+	    apv, 
+	    piecewise_parms,
+	    piecewise_parms[0],
+	    constraints[0],
+	    adjust,
+	    curr_score);
+
+	/* Search slope_c */
+	printf ("-- C --\n");
+	adjust = 0.01 * rand() / (float) RAND_MAX;
+	pattern_search (
+	    apv, 
+	    piecewise_parms,
+	    piecewise_parms[3],
+	    constraints[2],
+	    adjust,
+	    curr_score);
+
+	/* Search t4_loc */
+	printf ("-- T4 --\n");
+	adjust = 10. * rand() / (float) RAND_MAX;
+	//adjust = 1.
+	t4_loc = piecewise_parms[1];
+	t7_loc = piecewise_parms[2];
+	t47_slope = 3. / (t7_loc - t4_loc);
+	loc_constraint[0] = t7_loc + 3. / constraints[1][0];
+	loc_constraint[1] = t7_loc + 3. / constraints[1][1];
+	printf ("T4 = %f T7 = %f\n", t4_loc, t7_loc);
+	printf ("t47_slope = %f constraints = [%f,%f]\n", 
+	    t47_slope, constraints[1][0], constraints[1][1]);
+	printf ("loc_constraint = [%f,%f]\n", 
+	    loc_constraint[0], loc_constraint[1]);
+#if defined (commentout)
+#endif
+	pattern_search (
+	    apv, 
+	    piecewise_parms,
+	    piecewise_parms[1],
+	    loc_constraint,
+	    adjust,
+	    curr_score);
+
+	/* Search t7_loc */
+	printf ("-- T7 --\n");
+	adjust = 10. * rand() / (float) RAND_MAX;
+	t4_loc = piecewise_parms[1];
+	t7_loc = piecewise_parms[2];
+	t47_slope = 3. / (t7_loc - t4_loc);
+	loc_constraint[0] = t4_loc - 3. / constraints[1][1];
+	loc_constraint[1] = t4_loc - 3. / constraints[1][0];
+	printf ("T4 = %f T7 = %f\n", t4_loc, t7_loc);
+	printf ("t47_slope = %f constraints = [%f,%f]\n", 
+	    t47_slope, constraints[1][0], constraints[1][1]);
+	printf ("loc_constraint = [%f,%f]\n", 
+	    loc_constraint[0], loc_constraint[1]);
+#if defined (commentout)
+#endif
+	pattern_search (
+	    apv, 
+	    piecewise_parms,
+	    piecewise_parms[2],
+	    loc_constraint,
+	    adjust,
+	    curr_score);
+    }
+}
 
 void
 autolabel_ransac_est (Autolabel_point_vector& apv)
@@ -19,7 +236,7 @@ autolabel_ransac_est (Autolabel_point_vector& apv)
 
     itk::Autolabel_ransac_est::Pointer estimator 
 	= itk::Autolabel_ransac_est::New();
-    estimator->SetDelta (0.5);
+    estimator->SetDelta (DELTA);
 
     /* Run RANSAC */
     double desiredProbabilityForNoOutliers = 0.999;
@@ -38,14 +255,41 @@ autolabel_ransac_est (Autolabel_point_vector& apv)
 	printf ("Used %f percent of data.\n", percentageOfDataUsed);
     }
 
-    /* Fill in 3rd component of apv with RANSAC estimates */
-    Autolabel_point_vector::iterator it;
+    /* Use pattern search to fit piecewise linear spline, using 
+       RANSAC as initial guess.
+       piecewise_parms[0] = slope in T1-T4 region
+       piecewise_parms[1] = location of T4
+       piecewise_parms[2] = location of T7
+       piecewise_parms[3] = slope in T7 region
+    */
+    std::vector <double> piecewise_parms(4);
     double slope = autolabel_parameters[0];
     double intercept = autolabel_parameters[1];
+    printf ("Initializing piecewise parms\n");
+    piecewise_parms[0] = slope;
+    piecewise_parms[1] = (4. - intercept) / slope;
+    piecewise_parms[2] = (7. - intercept) / slope;
+    piecewise_parms[3] = slope;
+
+    printf ("Optimizing piecewise parms\n");
+    optimize_piecewise_spline (apv, piecewise_parms);
+    printf ("Done optimizing.\n");
+
+#if defined (commentout)
+    /* Fill in 3rd component of apv with RANSAC estimates */
+    Autolabel_point_vector::iterator it;
     for (it = apv.begin(); it != apv.end(); it++) {
 	double x = (*it)[0];
 	//double y = (*it)[1];
 	double ry = intercept + slope * x;
+	(*it)[2] = ry;
+    }
+#endif
+
+    /* Fill in 3rd component of apv with piecewise estimates */
+    Autolabel_point_vector::iterator it;
+    for (it = apv.begin(); it != apv.end(); it++) {
+	double ry = est_piecewise_spline_point (*it, piecewise_parms);
 	(*it)[2] = ry;
     }
 }
