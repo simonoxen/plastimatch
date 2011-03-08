@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include <stdlib.h>
+#include <time.h>
 #include <string>
 #include "plm_config.h"
 #include "to_string.h"

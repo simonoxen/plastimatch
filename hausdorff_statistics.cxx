@@ -35,9 +35,9 @@ void do_hausdorff(
 
 template 
 void do_hausdorff<unsigned char> (
-    typename itk::Image<unsigned char,3>::Pointer image_1, 
-    typename itk::Image<unsigned char,3>::Pointer image_2);
+    itk::Image<unsigned char,3>::Pointer image_1, 
+    itk::Image<unsigned char,3>::Pointer image_2);
 template 
 void do_hausdorff<float> (
-    typename itk::Image<float,3>::Pointer image_1, 
-    typename itk::Image<float,3>::Pointer image_2);
+    itk::Image<float,3>::Pointer image_1, 
+    itk::Image<float,3>::Pointer image_2);
