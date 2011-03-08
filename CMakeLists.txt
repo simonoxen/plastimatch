@@ -938,6 +938,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
   cxt_to_mha.cxx cxt_to_mha.h 
+  dicom_util.cxx dicom_util.h
   gcs_metric.h gcs_metric.hxx 
   gdcm_dose.cxx gdcm_dose.h
   gdcm_file.cxx gdcm_file.h

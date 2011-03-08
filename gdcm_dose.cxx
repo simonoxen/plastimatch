@@ -16,6 +16,7 @@
 #include "gdcm_series.h"
 #include "logfile.h"
 #include "itk_image_stats.h"
+#include "img_metadata.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
 #include "plm_image_type.h"
@@ -245,7 +246,12 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
 }
 
 void
-gdcm_dose_save (Plm_image *pli, char *dose_fn)
+gdcm_dose_save (
+    Plm_image *pli,                     /* Input: dose image */
+    const Img_metadata *meta,           /* Input: patient name, etc. */
+    const Referenced_dicom_dir *rdd,    /* Input: CT series info */
+    const char *dose_fn                 /* Input: file to write to */
+)
 {
     int i;
     gdcm::File *gf = new gdcm::File ();
@@ -291,41 +297,16 @@ gdcm_dose_save (Plm_image *pli, char *dose_fn)
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
 
-#if defined (commentout)
     /* PatientsName */
-    if (structures->patient_name) {
-	gf->InsertValEntry ((const char*) structures->patient_name->data, 
-			    0x0010, 0x0010);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0010);
-    }
+    meta->copy_to_gdcm_file (gf, 0x0010, 0x0010);
     /* PatientID */
-    if (structures->patient_id) {
-	gf->InsertValEntry ((const char*) structures->patient_id->data, 
-			    0x0010, 0x0020);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0020);
-    }
-#endif
-    /* PatientsName */
-    gf->InsertValEntry ("", 0x0010, 0x0010);
-    /* PatientID */
-    gf->InsertValEntry ("", 0x0010, 0x0020);
+    meta->copy_to_gdcm_file (gf, 0x0010, 0x0020);
 
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
 
-#if defined (commentout)
     /* PatientsSex */
-    if (structures->patient_sex) {
-	gf->InsertValEntry ((const char*) structures->patient_sex->data, 
-			    0x0010, 0x0040);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0040);
-    }
-#endif
-    /* PatientsSex */
-    gf->InsertValEntry ("", 0x0010, 0x0040);
+    meta->copy_to_gdcm_file (gf, 0x0010, 0x0040);
 
     /* SliceThickness */
     gf->InsertValEntry ("", 0x0018, 0x0050);

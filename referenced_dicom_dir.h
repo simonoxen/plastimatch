@@ -19,7 +19,6 @@ public:
     CBString m_ct_study_uid;
     CBString m_ct_series_uid;
     CBString m_ct_fref_uid;
-    //std::list<CBString> m_ct_slice_uids;
     std::vector<CBString> m_ct_slice_uids;
 public:
     plastimatch1_EXPORT

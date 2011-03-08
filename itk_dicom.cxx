@@ -3,7 +3,6 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <iostream>
-#include <sstream>
 #include <stdlib.h>
 #include <time.h>
 #include "itkGDCMImageIO.h"
@@ -11,10 +10,13 @@
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 #include "itkImageSeriesWriter.h"
+#include "dicom_util.h"
+#include "img_metadata.h"
 #include "itk_dicom.h"
 #include "logfile.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "to_string.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -183,14 +185,6 @@ load_dicom_float (const char *dicom_dir)
     return fixed_input_rdr->GetOutput();
 }
 
-template <typename T>
-static std::string to_string (T t)
-{
-   std::stringstream ss;
-   ss << t;
-   return ss.str();
-}
-
 static void
 encapsulate (itk::MetaDataDictionary& dict, std::string tagkey, std::string value)
 {
@@ -222,31 +216,11 @@ CopyDictionary (itk::MetaDataDictionary &fromDict, itk::MetaDataDictionary &toDi
     }
 }
 
-std::string 
-make_anon_patient_id (void)
-{
-    int i;
-    unsigned char uuid[16];
-    std::string patient_id = "PL";
-
-    /* Ugh.  It is a private function. */
-    //    bool rc = gdcm::Util::GenerateUUID (uuid);
-
-    srand (time (0));
-    for (i = 0; i < 16; i++) {
-       int r = (int) (10.0 * rand() / RAND_MAX);
-       uuid[i] = '0' + r;
-    }
-    uuid [15] = '\0';
-    patient_id = patient_id + to_string (uuid);
-    return patient_id;
-}
-
 void
 itk_dicom_save (
     ShortImageType::Pointer short_img, 
     const char *dir_name, 
-    Img_metadata *img_metadata, 
+    Img_metadata *meta, 
     Plm_image_patient_position patient_pos)
 {
     typedef itk::GDCMImageIO ImageIOType;
@@ -294,8 +268,10 @@ itk_dicom_save (
 
     /* Patient name */
     encapsulate (dict, "0010|0010", "ANONYMOUS");
+    //encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0010));
     /* Patient id */
     encapsulate (dict, "0010|0020", make_anon_patient_id());
+    //encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0020));
     /* Patient sex */
     encapsulate (dict, "0010|0040", "O");
 

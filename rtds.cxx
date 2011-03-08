@@ -316,7 +316,7 @@ Rtds::save_dicom (const char *output_dir)
     if (this->m_dose) {
 	char fn[_MAX_PATH];
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm_dose_save (this->m_dose, fn);
+	gdcm_dose_save (m_dose, &m_img_metadata, m_rdd, fn);
     }
 }
 
