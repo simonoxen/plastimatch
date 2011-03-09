@@ -12,22 +12,18 @@
 #include "itk_image.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkImageSliceConstIteratorWithIndex.h"
-#include "contour_statistics.h"
 #include "itkImageMomentsCalculator.h"
-
-//typedef itk::ImageRegionIteratorWithIndex<ImgType> ItTypeVolPixel;
-//typedef itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
-//typedef itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
-//typedef itk::ImageMomentsCalculator<ImgType> MomentCalculatorType;
+#include "dice_statistics.h"
 
 template<class T>
-float do_dice_global(typename itk::Image<T,3>::Pointer reference, 
-    typename itk::Image<T,3>::Pointer warped, FILE* output, T)
+float do_dice (
+    typename itk::Image<T,3>::Pointer reference, 
+    typename itk::Image<T,3>::Pointer warped, 
+    FILE* output
+)
 {
     typedef typename itk::Image<T,3> ImgType;
-    typedef typename itk::Image<T,2> intImgType;
     typedef typename itk::ImageRegionIteratorWithIndex<ImgType> ItTypeVolPixel;
-    typedef typename itk::ImageRegionIteratorWithIndex<intImgType> ItTypeSlicePixel;
     typedef typename itk::ImageSliceConstIteratorWithIndex<ImgType> ItSliceType;
     typedef typename itk::ImageMomentsCalculator<ImgType> MomentCalculatorType;
 
@@ -162,8 +158,6 @@ float do_dice_global(typename itk::Image<T,3>::Pointer reference,
     return dice;
 }
 
-
-
-
-template float do_dice_global<unsigned char>(UCharImageType::Pointer reference, UCharImageType::Pointer warped, FILE* output, unsigned char);
-template float do_dice_global<short>(ShortImageType::Pointer reference, ShortImageType::Pointer warped, FILE* output, short);
+/* Explicit instantiations */
+template float do_dice<unsigned char>(UCharImageType::Pointer reference, UCharImageType::Pointer warped, FILE* output);
+template float do_dice<short>(ShortImageType::Pointer reference, ShortImageType::Pointer warped, FILE* output);

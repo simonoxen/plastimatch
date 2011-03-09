@@ -1052,8 +1052,8 @@ SET (DEMONS_SRC
   demons_opts.c demons_opts.h
   )
 SET (DICE_STATS_SRC
-  contour_statistics.cxx contour_statistics.h
-  dice_statistics.cxx 
+  contour_statistics.cxx 
+  dice_statistics.cxx dice_statistics.h
   hausdorff_statistics.cxx hausdorff_statistics.h
   )
 SET (DICOM_INFO_SRC
