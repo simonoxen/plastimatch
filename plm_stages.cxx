@@ -205,7 +205,7 @@ save_output (
 	    if (img_out_fmt == IMG_OUT_FMT_AUTO) {
 		im_warped.save_image (img_out_fn);
 	    } else {
-		im_warped.save_short_dicom (img_out_fn, 0);
+		im_warped.save_short_dicom (img_out_fn, 0, 0);
 	    }
 	}
 	if (vf_out_fn[0]) {

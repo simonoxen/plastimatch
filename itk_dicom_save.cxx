@@ -33,6 +33,7 @@
 
 typedef itk::ImageSeriesWriter < 
     ShortImageType, ShortImage2DType > DicomShortWriterType;
+typedef itk::GDCMImageIO ImageIOType;
 
 static void
 encapsulate (
@@ -42,6 +43,17 @@ encapsulate (
 )
 {
     itk::EncapsulateMetaData<std::string> (dict, tagkey, value);
+}
+
+static const std::string
+itk_make_uid (ImageIOType::Pointer& gdcmIO)
+{
+#if GDCM_MAJOR_VERSION < 2
+    return gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix());
+#else
+    static gdcm::UIDGenerator uid;
+    return uid.Generate();
+#endif
 }
 
 static void
@@ -74,15 +86,15 @@ copy_dictionary (
 
 void
 itk_dicom_save (
-    ShortImageType::Pointer short_img, 
-    const char *dir_name, 
-    Img_metadata *meta, 
-    Plm_image_patient_position patient_pos)
+    ShortImageType::Pointer short_img,      /* Input: image to write */
+    const char *dir_name,                   /* Input: name of output dir */
+    Referenced_dicom_dir *rdd,              /* Output: gets filled in */
+    const Img_metadata *meta,               /* Input: output files get these */
+    Plm_image_patient_position patient_pos  /* To be removed */
+)
 {
-    typedef itk::GDCMImageIO ImageIOType;
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
     const int export_as_ct = 1;
-
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
@@ -92,6 +104,12 @@ itk_dicom_save (
 
     ImageIOType::Pointer gdcmIO = ImageIOType::New();
     gdcmIO->SetUIDPrefix ("1.2.826.0.1.3680043.8.274.1.2"); 
+
+    /* There is apparently no way to get the ITK-generated UIDs 
+       out of ITK without re-reading the files.  So we tell ITK not 
+       to make them.  Instead generate them here, and add them to 
+       the dictionary. */
+    gdcmIO->SetKeepOriginalUID (true);
 
     std::string tagkey, value;
     itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
@@ -122,16 +140,28 @@ itk_dicom_save (
     encapsulate (dict, "0008|0032", current_time);
     encapsulate (dict, "0008|0033", current_time);
 
-    /* Patient name */
-    encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0010));
-    /* Patient id */
-    //encapsulate (dict, "0010|0020", make_anon_patient_id());
-    encapsulate (dict, "0010|0020", meta->get_metadata (0x0010, 0x0020));
-    /* Patient sex */
-    encapsulate (dict, "0010|0040", "O");
+    if (meta) {
+	/* Patient name */
+	encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0010));
+	/* Patient id */
+	encapsulate (dict, "0010|0020", meta->get_metadata (0x0010, 0x0020));
+	/* Patient sex */
+	encapsulate (dict, "0010|0040", meta->get_metadata (0x0010, 0x0040));
+    } else {
+	/* Patient name */
+	encapsulate (dict, "0010|0010", "ANONYMOUS");
+	/* Patient id */
+	encapsulate (dict, "0010|0020", make_anon_patient_id());
+	/* Patient sex */
+	encapsulate (dict, "0010|0040", "O");
+    }
+
+    /* Slice thickness */
+    value = to_string ((double) (short_img->GetSpacing()[2]));
+    encapsulate (dict, "0018|0050", value);
 
     /* PatientPosition */
-    if ( (patient_pos == PATIENT_POSITION_UNKNOWN) || (patient_pos == PATIENT_POSITION_HFS) )
+    if ((patient_pos == PATIENT_POSITION_UNKNOWN) || (patient_pos == PATIENT_POSITION_HFS))
 	encapsulate (dict, "0018|5100", "HFS");
     else if (patient_pos == PATIENT_POSITION_HFP)
 	encapsulate (dict, "0018|5100", "HFP");
@@ -140,25 +170,21 @@ itk_dicom_save (
     else if (patient_pos == PATIENT_POSITION_FFP)
 	encapsulate (dict, "0018|5100", "FFP");
 
+    /* StudyInstanceUID */
+    value = itk_make_uid(gdcmIO);
+    encapsulate (dict, "0020|000d", value);
+    /* SeriesInstanceUID */
+    value = itk_make_uid(gdcmIO);
+    encapsulate (dict, "0020|000e", value);
     /* StudyId */
     encapsulate (dict, "0020|0010", "10001");
     /* SeriesNumber */
     encapsulate (dict, "0020|0011", "303");
-
     /* Frame of Reference UID */
-#if GDCM_MAJOR_VERSION < 2
-    encapsulate (dict, "0020|0052", gdcm::Util::CreateUniqueUID (gdcmIO->GetUIDPrefix()));
-#else
-    gdcm::UIDGenerator uid;
-    encapsulate (dict, "0020|0052", uid.Generate());    
-#endif
+    value = itk_make_uid(gdcmIO);
+    encapsulate (dict, "0020|0052", value);
     /* Position Reference Indicator */
     encapsulate (dict, "0020|1040", "");
-
-
-    /* Slice thickness */
-    value = to_string ((double) (short_img->GetSpacing()[2]));
-    encapsulate (dict, "0018|0050", value);
 
     /* 0008,2112 is "Source Image Sequence", defined as "A Sequence that 
        identifies the set of Image SOP Class/Instance pairs of the
@@ -187,6 +213,10 @@ itk_dicom_save (
 	    = new DicomShortWriterType::DictionaryType;
 	copy_dictionary (dict, *slice_dict);
 
+	/* SOPInstanceUID */
+	value = itk_make_uid(gdcmIO);
+	encapsulate (*slice_dict, "0008|0018", value);
+	
 	/* Image Number */
 	value = to_string ((int) f);
 	encapsulate (*slice_dict, "0020|0013", value);

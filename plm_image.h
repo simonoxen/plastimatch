@@ -14,6 +14,7 @@
 class Img_metadata;
 class Plm_image_header;
 class Plm_image;
+class Referenced_dicom_dir;
 
 class Plm_image {
 
@@ -119,7 +120,8 @@ public:
 
     /* Saving */
     plastimatch1_EXPORT
-    void save_short_dicom (const char* fname, Img_metadata *img_metadata);
+    void save_short_dicom (const char* fname, Referenced_dicom_dir *rdd, 
+	Img_metadata *img_metadata);
     plastimatch1_EXPORT
     void save_image (const char* fname);
     plastimatch1_EXPORT

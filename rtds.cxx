@@ -303,7 +303,7 @@ Rtds::save_dicom (const char *output_dir)
 {
     if (this->m_img) {
 	printf ("Rtds::save_dicom: save_short_dicom()\n");
-	this->m_img->save_short_dicom (output_dir, &m_img_metadata);
+	this->m_img->save_short_dicom (output_dir, &m_rdd, &m_img_metadata);
     }
     if (this->m_ss_image) {
 	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");

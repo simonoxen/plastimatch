@@ -9,12 +9,15 @@
 #include "plm_image_patient_position.h"
 
 class Img_metadata;
+class Referenced_dicom_dir;
 
 void
 itk_dicom_save (
-    ShortImageType::Pointer short_img, 
-    const char* dir_name, 
-    Img_metadata *img_metadata, 
-    Plm_image_patient_position patient_pos);
+    ShortImageType::Pointer short_img,      /* Input: image to write */
+    const char *dir_name,                   /* Input: name of output dir */
+    Referenced_dicom_dir *rdd,              /* Output: gets filled in */
+    const Img_metadata *meta,               /* Input: output files get these */
+    Plm_image_patient_position patient_pos  /* To be removed */
+);
 
 #endif

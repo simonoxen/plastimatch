@@ -19,6 +19,8 @@ Img_metadata::Img_metadata ()
     this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
     /* PatientID */
     this->set_metadata (0x0010, 0x0020, make_anon_patient_id());
+    /* PatientSex */
+    this->set_metadata (0x0010, 0x0040, "O");
 }
 
 Img_metadata::~Img_metadata ()
