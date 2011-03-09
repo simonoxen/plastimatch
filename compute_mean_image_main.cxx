@@ -33,7 +33,7 @@
 #include "itkImageFileWriter.h"
 #include "itkImageIOBase.h"
 
-#include "itk_dicom.h"
+#include "itk_dicom_save.h"
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "file_util.h"

@@ -1,6 +1,7 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,16 +11,14 @@
 #else
 #include <dirent.h>
 #endif
-#include "plm_config.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
 #include "itkCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 #include "itk_image.h"
-#include "print_and_exit.h"
-#include "itk_dicom.h"
 #include "logfile.h"
+#include "print_and_exit.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf

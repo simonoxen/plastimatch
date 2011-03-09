@@ -951,7 +951,8 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itkAndConstantToImageFilter.h
   itk_crop.cxx itk_crop.h 
   itk_demons.cxx itk_demons.h 
-  itk_dicom.cxx itk_dicom.h 
+  itk_dicom_load.cxx itk_dicom_load.h 
+  itk_dicom_save.cxx itk_dicom_save.h 
   itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
   itk_image_save.cxx itk_image_save.h 

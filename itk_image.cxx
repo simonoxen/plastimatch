@@ -12,8 +12,8 @@
 #include "itkOrientImageFilter.h"
 
 #include "plm_int.h"
+#include "itk_dicom_load.h"
 #include "itk_image.h"
-#include "itk_dicom.h"
 #include "itk_image_cast.h"
 #include "file_util.h"
 #include "print_and_exit.h"
