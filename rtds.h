@@ -23,7 +23,7 @@ public:
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */
-    Referenced_dicom_dir *m_rdd;       /* UIDs for SS output */
+    Referenced_dicom_dir m_rdd;        /* UIDs, etc */
     Img_metadata m_img_metadata;       /* Patient name, patient id, etc. */
     Xio_ct_transform *m_xio_transform; /* Transformation from XiO to DICOM
 					  coordinates */

@@ -23,6 +23,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "referenced_dicom_dir.h"
 #include "rtss_polyline_set.h"
 #include "volume.h"
 
@@ -296,52 +297,25 @@ gdcm_dose_save (
     gf->InsertValEntry ("", 0x0008, 0x0090);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
-
     /* PatientsName */
     meta->copy_to_gdcm_file (gf, 0x0010, 0x0010);
     /* PatientID */
     meta->copy_to_gdcm_file (gf, 0x0010, 0x0020);
-
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
-
     /* PatientsSex */
     meta->copy_to_gdcm_file (gf, 0x0010, 0x0040);
-
     /* SliceThickness */
     gf->InsertValEntry ("", 0x0018, 0x0050);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
-
-#if defined (commentout)
     /* StudyInstanceUID */
-    if (structures->ct_study_uid) {
-	gf->InsertValEntry ((const char*) structures->ct_study_uid->data, 
-			    0x0020, 0x000d);
-    } else {
-	gf->InsertValEntry ("", 0x0020, 0x000d);
-    }
-#endif
-    /* StudyInstanceUID */
-    gf->InsertValEntry ("", 0x0020, 0x000d);
-
-
+    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
     /* SeriesInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 			0x0020, 0x000e);
-
-#if defined (commentout)
     /* StudyID */
-    if (structures->study_id) {
-	gf->InsertValEntry ((const char*) structures->study_id->data, 
-			    0x0020, 0x0010);
-    } else {
-	gf->InsertValEntry ("", 0x0020, 0x0010);
-    }
-#endif
-    /* StudyID */
-    gf->InsertValEntry ("", 0x0020, 0x0010);
-
+    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
     /* SeriesNumber */
     gf->InsertValEntry ("", 0x0020, 0x0011);
     /* InstanceNumber */
@@ -361,11 +335,8 @@ gdcm_dose_save (
 	plh.m_direction[1][2]);
     gf->InsertValEntry (s, 0x0020, 0x0037);
 
-    /* GCS FIX */
-#if defined (commentout)
     /* FrameOfReferenceUID */
-    gf->InsertValEntry ("XXX.XXX.XXXXXXX", 0x0020, 0x0052);
-#endif
+    gf->InsertValEntry ((const char*) rdd->m_ct_fref_uid, 0x0020, 0x0052);
 
     /* SamplesPerPixel */
     gf->InsertValEntry ("1", 0x0028, 0x0002);

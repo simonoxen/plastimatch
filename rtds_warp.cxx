@@ -58,7 +58,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_ss_image = new Ss_image;
 	    rtds->m_ss_image->load_gdcm_rtss (
-		(const char*) parms->input_fn);
+		(const char*) parms->input_fn, &rtds->m_rdd);
 	    break;
 	case PLM_FILE_FMT_DICOM_DOSE:
 	    rtds->m_dose = gdcm_dose_load (
@@ -68,7 +68,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    break;
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_ss_image = new Ss_image;
-	    rtds->m_ss_image->load_cxt (parms->input_fn);
+	    rtds->m_ss_image->load_cxt (parms->input_fn, &rtds->m_rdd);
 	    break;
 	case PLM_FILE_FMT_SS_IMG_4D:
 	default:
@@ -96,7 +96,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (bstring_not_empty (parms->input_cxt_fn)) {
 	if (rtds->m_ss_image) delete rtds->m_ss_image;
 	rtds->m_ss_image = new Ss_image;
-	rtds->m_ss_image->load_cxt (parms->input_cxt_fn);
+	rtds->m_ss_image->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
     }
 
     if (bstring_not_empty (parms->input_ss_img_fn)) {
@@ -126,8 +126,12 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 }
 
 static void
-save_ss_img (Rtds *rtds, Xform *xf, 
-    Plm_image_header *pih, Warp_parms *parms)
+save_ss_img (
+    Rtds *rtds, 
+    Xform *xf, 
+    Plm_image_header *pih, 
+    Warp_parms *parms
+)
 {
     /* labelmap */
     if (bstring_not_empty (parms->output_labelmap_fn)) {
@@ -156,7 +160,7 @@ save_ss_img (Rtds *rtds, Xform *xf,
 
     /* cxt */
     if (bstring_not_empty (parms->output_cxt_fn)) {
-	rtds->m_ss_image->save_cxt (parms->output_cxt_fn, false);
+	rtds->m_ss_image->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
     }
 
     /* xio */
@@ -268,10 +272,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	/* use the spacing from input bxf file */
 	printf ("Setting PIH from XFORM\n");
 	pih.set_from_gpuit_bspline (xform.get_gpuit_bsp());
-    } else if (rtds->m_rdd && rtds->m_rdd->m_loaded) {
+    } else if (rtds->m_rdd.m_loaded) {
 	/* use spacing from referenced CT */
 	printf ("Setting PIH from RDD\n");
-	Plm_image_header::clone (&pih, &rtds->m_rdd->m_pih);
+	Plm_image_header::clone (&pih, &rtds->m_rdd.m_pih);
     } else if (rtds->m_img) {
 	/* use the spacing of the input image */
 	printf ("Setting PIH from M_IMG\n");
@@ -315,7 +319,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     {
 	Plm_image *im_out;
 	im_out = new Plm_image;
-	printf (" - Warping m_img - \n");
+	printf ("Rtds_warp: Warping m_img\n");
 	plm_warp (im_out, &vf, &xform, &pih, rtds->m_img, parms->default_val, 
 	    parms->use_itk, parms->interp_lin);
 	delete rtds->m_img;
@@ -324,7 +328,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     /* Save output image */
     if (bstring_not_empty (parms->output_img_fn) && rtds->m_img) {
-	printf ("Saving m_img (%s)\n",
+	printf ("Rtds_warp: Saving m_img (%s)\n",
 	    (const char*) parms->output_img_fn);
 	rtds->m_img->convert_and_save (
 	    (const char*) parms->output_img_fn, 
@@ -338,7 +342,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    || bstring_not_empty (parms->output_xio_dirname)
 	    || bstring_not_empty (parms->output_dicom)))
     {
-	printf (" - Warping dose -\n");
+	printf ("Rtds_warp: Warping dose\n");
 	Plm_image *im_out;
 	im_out = new Plm_image;
 	plm_warp (im_out, 0, &xform, &pih, rtds->m_dose, 0, 
@@ -350,7 +354,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* Save output dose image */
     if (bstring_not_empty (parms->output_dose_img_fn) && rtds->m_dose)
     {
-	printf ("Saving dose image (%s)\n", 
+	printf ("Rtds_warp: Saving dose image (%s)\n", 
 	    (const char*) parms->output_dose_img_fn);
 	rtds->m_dose->convert_and_save (
 	    (const char*) parms->output_dose_img_fn, 
@@ -364,7 +368,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     {
 	CBString fn;
 
-	printf ("Saving xio dose...\n");
+	printf ("Rtds_warp: Saving xio dose.\n");
 	fn.format ("%s/%s", (const char*) parms->output_xio_dirname, "dose");
 	xio_dose_save (
 	    rtds->m_dose, 
@@ -377,7 +381,7 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (bstring_not_empty (parms->xf_in_fn) 
 	&& bstring_not_empty (parms->output_vf_fn))
     {
-	printf ("Saving vf...\n");
+	printf ("Rtds_warp: Saving vf.\n");
 	itk_image_save (vf, (const char*) parms->output_vf_fn);
     }
 
@@ -385,24 +389,31 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     if (rtds->m_ss_image) {
 
 	/* Convert ss_img to cxt */
+	printf ("Rtds_warp: Convert ss_img to cxt.\n");
 	rtds->m_ss_image->convert_ss_img_to_cxt ();
 
 	/* Delete empty structures */
 	if (parms->prune_empty) {
+	    printf ("Rtds_warp: Prune empty structures.\n");
 	    rtds->m_ss_image->prune_empty ();
 	}
 
-	/* Set the DICOM reference info */
-	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
+	/* Set the DICOM reference info -- this sets the internal geometry 
+	   of the ss_image so we rasterize on the same slices as the CT? */
+	printf ("Rtds_warp: Apply dicom_dir.\n");
+	rtds->m_ss_image->apply_dicom_dir (&rtds->m_rdd);
 	
 	/* Set the output geometry */
+	printf ("Rtds_warp: Set geometry from PIH.\n");
 	rtds->m_ss_image->set_geometry_from_plm_image_header (&pih);
 
 	/* Set rasterization geometry */
+	printf ("Rtds_warp: Set rasterization geometry.\n");
 	rtds->m_ss_image->m_cxt->set_rasterization_geometry ();
     }
 
     /* Warp and save structure set (except dicom) */
+    printf ("Rtds_warp: warp and save ss.\n");
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
     /* In certain cases, we have to delay setting dicom uids 
@@ -410,12 +421,14 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     /* GCS FIX: Sometimes referenced_dicom_dir is applied multiple times, 
        such as when using dicom and xio input, which is inefficient. */
     /* GCS: Which cases are these?  (It does seem to solve problems...) */
-    if (rtds->m_ss_image && rtds->m_rdd) {
-	rtds->m_ss_image->apply_dicom_dir (rtds->m_rdd);
+    if (rtds->m_ss_image) {
+	printf ("Rtds_warp: Apply dicom_dir (again!).\n");
+	rtds->m_ss_image->apply_dicom_dir (&rtds->m_rdd);
     }
 
     /* Save dicom */
     if (bstring_not_empty (parms->output_dicom)) {
+	printf ("Rtds_warp: Save dicom.\n");
 	rtds->save_dicom ((const char*) parms->output_dicom);
     }
 }

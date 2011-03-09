@@ -52,17 +52,17 @@ Ss_image::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Ss_image::load_cxt (const CBString &input_fn)
+Ss_image::load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
-    cxt_load (this->m_cxt, (const char*) input_fn);
+    cxt_load (this->m_cxt, rdd, (const char*) input_fn);
 }
 
 void
-Ss_image::load_gdcm_rtss (const char *input_fn)
+Ss_image::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
-    gdcm_rtss_load (this->m_cxt, this->m_cxt->m_demographics, input_fn);
+    gdcm_rtss_load (this->m_cxt, rdd, this->m_cxt->m_demographics, input_fn);
 }
 
 void
@@ -80,13 +80,21 @@ Ss_image::save_colormap (const CBString &colormap_fn)
 }
 
 void
-Ss_image::save_cxt (const CBString &cxt_fn, bool prune_empty)
+Ss_image::save_cxt (
+    Referenced_dicom_dir *rdd, 
+    const CBString &cxt_fn, 
+    bool prune_empty
+)
 {
-    cxt_save (this->m_cxt, (const char*) cxt_fn, false);
+    cxt_save (this->m_cxt, rdd, (const char*) cxt_fn, prune_empty);
 }
 
 void
-Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
+Ss_image::save_gdcm_rtss (
+    const char *output_dir, 
+    Referenced_dicom_dir *rdd, 
+    bool reload
+)
 {
     char fn[_MAX_PATH];
 
@@ -95,14 +103,15 @@ Ss_image::save_gdcm_rtss (const char *output_dir, bool reload)
     /* If we have just written the CT files using the ITK writer, 
        then we look in the output dir for a CT to associate UIDs. */
     if (reload) {
-	Referenced_dicom_dir rdd;
-	rdd.load (output_dir);
-	this->apply_dicom_dir (&rdd);
+	printf ("Doing final load...\n");
+	rdd->load (output_dir);
+	printf ("StudyID should be: %s\n", (const char*) rdd->m_study_id);
+	this->apply_dicom_dir (rdd);
     }
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
 
-    gdcm_rtss_save (this->m_cxt, fn);
+    gdcm_rtss_save (this->m_cxt, rdd, fn);
 }
 
 void
@@ -222,21 +231,6 @@ Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 	this->m_cxt->m_demographics = new Img_metadata;
     }
     *(this->m_cxt->m_demographics) = rdd->m_demographics;
-
-    /* StudyID */
-    this->m_cxt->study_id = rdd->m_study_id;
-
-    /* StudyInstanceUID */
-    this->m_cxt->ct_study_uid = rdd->m_ct_study_uid;
-
-    /* SeriesInstanceUID */
-    this->m_cxt->ct_series_uid = rdd->m_ct_series_uid;
-	
-    /* FrameOfReferenceUID */
-    this->m_cxt->ct_fref_uid = rdd->m_ct_fref_uid;
-
-    /* Slice uids */
-    this->m_cxt->ct_slice_uids = rdd->m_ct_slice_uids;
 
     /* Slice numbers and slice uids */
     for (int i = 0; i < this->m_cxt->num_structures; i++) {

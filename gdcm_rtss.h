@@ -21,6 +21,7 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_load (
     Rtss_polyline_set *cxt, 
+    Referenced_dicom_dir *rdd, 
     Img_metadata *meta, 
     const char *rtss_fn
 );
@@ -28,7 +29,9 @@ plastimatch1_EXPORT
 void
 gdcm_rtss_save (
     Rtss_polyline_set *cxt, 
-    char *rtss_fn);
+    Referenced_dicom_dir *rdd, 
+    char *rtss_fn
+);
 
 #if defined __cplusplus
 }

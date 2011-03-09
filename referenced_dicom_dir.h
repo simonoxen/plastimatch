@@ -6,13 +6,12 @@
 
 #include "plm_config.h"
 #include <vector>
-#include "cxt_io.h"
 #include "img_metadata.h"
 #include "plm_image_header.h"
 
 class Referenced_dicom_dir {
 public:
-    bool m_loaded;
+    bool m_loaded;        /* Set this if we have m_pih && ct slice uids */
     Plm_image_header m_pih;
     Img_metadata m_demographics;
     CBString m_study_id;
@@ -32,12 +31,6 @@ public:
 
 #if defined __cplusplus
 extern "C" {
-#endif
-
-#if defined (commentout)
-plastimatch1_EXPORT
-void
-cxt_apply_dicom_dir (Rtss *cxt, const char *dicom_dir);
 #endif
 
 #if defined __cplusplus

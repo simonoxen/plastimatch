@@ -46,7 +46,7 @@ Rtds::load_dicom (const char *dicom_dir)
 #endif
 	const std::string& filename = m_gdcm_series->get_rtstruct_filename();
 	m_ss_image = new Ss_image;
-	m_ss_image->load_gdcm_rtss (filename.c_str());
+	m_ss_image->load_gdcm_rtss (filename.c_str(), &m_rdd);
     }
 
     /* Use existing itk reader for the image.

@@ -64,18 +64,23 @@ public:
     void
     load (const char *ss_img, const char *ss_list);
     void
-    load_cxt (const CBString &input_fn);
+    load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd);
     void
     load_xio (char *input_dir);
     void
-    load_gdcm_rtss (const char *input_fn);
+    load_gdcm_rtss (const char *input_fn,  Referenced_dicom_dir *rdd);
 
     void
     save_colormap (const CBString &colormap_fn);
     void
-    save_cxt (const CBString &cxt_fn, bool prune_empty);
+    save_cxt (
+	Referenced_dicom_dir *rdd, 
+	const CBString &cxt_fn, 
+	bool prune_empty
+    );
     void
-    save_gdcm_rtss (const char *output_dir, bool reload);
+    save_gdcm_rtss (const char *output_dir, 
+	Referenced_dicom_dir *rdd, bool reload);
     void
     save_ss_image (const CBString &ss_img_fn);
     void

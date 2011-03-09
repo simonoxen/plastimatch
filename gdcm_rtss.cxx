@@ -20,6 +20,7 @@
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
+#include "referenced_dicom_dir.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
@@ -63,6 +64,7 @@ gdcm_rtss_probe (const char *rtss_fn)
 void
 gdcm_rtss_load (
     Rtss_polyline_set *cxt, 
+    Referenced_dicom_dir *rdd, 
     Img_metadata *meta, 
     const char *rtss_fn
 )
@@ -94,14 +96,18 @@ gdcm_rtss_load (
     meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0040);
 
     /* StudyID */
-    tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	cxt->study_id = tmp.c_str();
+    if (bstring_empty (rdd->m_study_id)) {
+	tmp = rtss_file->GetEntryValue (0x0020, 0x0010);
+	if (tmp != gdcm::GDCM_UNFOUND) {
+	    rdd->m_study_id = tmp.c_str();
+	}
     }
 
     /* StudyInstanceUID */
-    tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
-    cxt->ct_study_uid = tmp.c_str();
+    if (bstring_empty (rdd->m_ct_study_uid)) {
+	tmp = rtss_file->GetEntryValue (0x0020, 0x000d);
+	rdd->m_ct_study_uid = tmp.c_str();
+    }
 
     /* ReferencedFrameOfReferenceSequence */
     gdcm::SeqEntry *rfor_seq = rtss_file->GetSeqEntry (0x3006,0x0010);
@@ -111,8 +117,10 @@ gdcm_rtss_load (
 	item = rfor_seq->GetFirstSQItem ();
 	if (item) {
 	    tmp = item->GetEntryValue (0x0020,0x0052);
-	    if (tmp != gdcm::GDCM_UNFOUND) {
-		cxt->ct_fref_uid = tmp.c_str();
+	    if (bstring_empty (rdd->m_ct_fref_uid)) {
+		if (tmp != gdcm::GDCM_UNFOUND) {
+		    rdd->m_ct_fref_uid = tmp.c_str();
+		}
 	    }
 	
 	    /* RTReferencedStudySequence */
@@ -131,8 +139,10 @@ gdcm_rtss_load (
 			/* SeriesInstanceUID */
 			if (item) {
 			    tmp = item->GetEntryValue (0x0020, 0x000e);
-			    if (tmp != gdcm::GDCM_UNFOUND) {
-				cxt->ct_series_uid = tmp.c_str();
+			    if (bstring_empty (rdd->m_ct_series_uid)) {
+				if (tmp != gdcm::GDCM_UNFOUND) {
+				    rdd->m_ct_series_uid = tmp.c_str();
+				}
 			    }
 			}
 		    }
@@ -312,6 +322,7 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 void
 gdcm_rtss_save (
     Rtss_polyline_set *cxt, 
+    Referenced_dicom_dir *rdd, 
     char *rtss_fn
 )
 {
@@ -410,22 +421,12 @@ gdcm_rtss_save (
     /* PatientPosition */
     // gf->InsertValEntry (xxx, 0x0018, 0x5100);
     /* StudyInstanceUID */
-    if (bstring_not_empty (cxt->ct_study_uid)) {
-	gf->InsertValEntry ((const char*) cxt->ct_study_uid, 
-	    0x0020, 0x000d);
-    } else {
-	gf->InsertValEntry ("", 0x0020, 0x000d);
-    }
+    gf->InsertValEntry ((const char*) rdd->m_ct_study_uid, 0x0020, 0x000d);
     /* SeriesInstanceUID */
     gf->InsertValEntry (gdcm::Util::CreateUniqueUID (PLM_UID_PREFIX), 
 	0x0020, 0x000e);
     /* StudyID */
-    if (bstring_not_empty (cxt->study_id)) {
-	gf->InsertValEntry ((const char*) cxt->study_id, 
-	    0x0020, 0x0010);
-    } else {
-	gf->InsertValEntry ("", 0x0020, 0x0010);
-    }
+    gf->InsertValEntry ((const char*) rdd->m_study_id, 0x0020, 0x0010);
     /* SeriesNumber */
     gf->InsertValEntry ("103", 0x0020, 0x0011);
     /* InstanceNumber */
@@ -448,12 +449,8 @@ gdcm_rtss_save (
     gdcm::SQItem *rfor_item = new gdcm::SQItem (rfor_seq->GetDepthLevel());
     rfor_seq->AddSQItem (rfor_item, 1);
     /* FrameOfReferenceUID */
-    if (bstring_not_empty (cxt->ct_fref_uid)) {
-	rfor_item->InsertValEntry ((const char*) cxt->ct_fref_uid,
-	    0x0020, 0x0052);
-    } else {
-	rfor_item->InsertValEntry ("", 0x0020, 0x0052);
-    }
+    rfor_item->InsertValEntry ((const char*) rdd->m_ct_fref_uid, 
+	0x0020, 0x0052);
     /* RTReferencedStudySequence */
     gdcm::SeqEntry *rtrstudy_seq = rfor_item->InsertSeqEntry (0x3006, 0x0012);
     gdcm::SQItem *rtrstudy_item 
@@ -462,12 +459,8 @@ gdcm_rtss_save (
     /* ReferencedSOPClassUID = DetachedStudyManagementSOPClass */
     rtrstudy_item->InsertValEntry ("1.2.840.10008.3.1.2.3.1", 0x0008, 0x1150);
     /* ReferencedSOPInstanceUID */
-    if (bstring_not_empty (cxt->ct_study_uid)) {
-	rtrstudy_item->InsertValEntry ((const char*) cxt->ct_study_uid, 
-	    0x0008, 0x1155);
-    } else {
-	rtrstudy_item->InsertValEntry ("", 0x0008, 0x1155);
-    }
+    rtrstudy_item->InsertValEntry ((const char*) rdd->m_ct_study_uid, 
+	0x0008, 0x1155);
     /* RTReferencedSeriesSequence */
     gdcm::SeqEntry *rtrseries_seq 
 	= rtrstudy_item->InsertSeqEntry (0x3006, 0x0014);
@@ -475,21 +468,17 @@ gdcm_rtss_save (
 	= new gdcm::SQItem (rtrseries_seq->GetDepthLevel());
     rtrseries_seq->AddSQItem (rtrseries_item, 1);
     /* SeriesInstanceUID */
-    if (bstring_not_empty (cxt->ct_series_uid)) {
-	rtrseries_item->InsertValEntry ((const char*) cxt->ct_series_uid,
-	    0x0020, 0x000e);
-    } else {
-	rtrseries_item->InsertValEntry ("", 0x0020, 0x000e);
-    }
+    rtrseries_item->InsertValEntry ((const char*) rdd->m_ct_series_uid,
+	0x0020, 0x000e);
     /* ContourImageSequence */
     gdcm::SeqEntry *ci_seq = rtrseries_item->InsertSeqEntry (0x3006, 0x0016);
-    if (cxt->ct_slice_uids.empty()) {
+    if (rdd->m_ct_slice_uids.empty()) {
 	printf ("Warning: CT not found. "
 	    "ContourImageSequence not generated.\n");
     }
     int i = 1;
-    for (std::vector<CBString>::iterator it = cxt->ct_slice_uids.begin();
-	 it != cxt->ct_slice_uids.end();
+    for (std::vector<CBString>::iterator it = rdd->m_ct_slice_uids.begin();
+	 it != rdd->m_ct_slice_uids.end();
 	 it++)
     {
 	/* Get SOPInstanceUID of CT slice */
@@ -503,7 +492,6 @@ gdcm_rtss_save (
 	/* Put ReferencedSOPInstanceUID into item */
 	ci_item->InsertValEntry (tmp, 0x0008, 0x1155);
     }
-	 
 
     /* ----------------------------------------------------------------- */
     /*     Part 3  -- Structure info                                     */
@@ -511,7 +499,7 @@ gdcm_rtss_save (
 
     /* StructureSetROISequence */
     gdcm::SeqEntry *ssroi_seq = gf->InsertSeqEntry (0x3006, 0x0020);
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (int i = 0; i < cxt->num_structures; i++) {
 	gdcm::SQItem *ssroi_item 
 	    = new gdcm::SQItem (ssroi_seq->GetDepthLevel());
 	ssroi_seq->AddSQItem (ssroi_item, i+1);
@@ -520,12 +508,8 @@ gdcm_rtss_save (
 	    ("%d", cxt->slist[i]->id),
 	    0x3006, 0x0022);
 	/* ReferencedFrameOfReferenceUID */
-	if (bstring_not_empty (cxt->ct_fref_uid)) {
-	    ssroi_item->InsertValEntry (
-		(const char*) cxt->ct_fref_uid, 0x3006, 0x0024);
-	} else {
-	    ssroi_item->InsertValEntry ("", 0x3006, 0x0024);
-	}
+	ssroi_item->InsertValEntry (
+		(const char*) rdd->m_ct_fref_uid, 0x3006, 0x0024);
 	/* ROIName */
 	ssroi_item->InsertValEntry (
 	    (const char*) cxt->slist[i]->name, 0x3006, 0x0026);
@@ -539,7 +523,7 @@ gdcm_rtss_save (
 
     /* ROIContourSequence */
     gdcm::SeqEntry *roic_seq = gf->InsertSeqEntry (0x3006, 0x0039);
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (int i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *roic_item 
 	    = new gdcm::SQItem (roic_seq->GetDepthLevel());
@@ -612,7 +596,7 @@ gdcm_rtss_save (
 
     /* RTROIObservationsSequence */
     gdcm::SeqEntry *rtroio_seq = gf->InsertSeqEntry (0x3006, 0x0080);
-    for (i = 0; i < cxt->num_structures; i++) {
+    for (int i = 0; i < cxt->num_structures; i++) {
 	Rtss_structure *curr_structure = cxt->slist[i];
 	gdcm::SQItem *rtroio_item 
 	    = new gdcm::SQItem (rtroio_seq->GetDepthLevel());

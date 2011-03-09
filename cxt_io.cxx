@@ -12,11 +12,16 @@
 #include "img_metadata.h"
 #include "math_util.h"
 #include "plm_image_header.h"
+#include "referenced_dicom_dir.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
 void
-cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
+cxt_load (
+    Rtss_polyline_set *cxt,        /* Output: Structure to load into */
+    Referenced_dicom_dir *rdd,     /* Output: Also set some values here */
+    const char *cxt_fn             /* Input: file to load from */
+)
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
@@ -84,19 +89,28 @@ cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
-	    cxt->study_id = (const char*) val->data;
+	    if (bstring_empty (rdd->m_study_id)) {
+		rdd->m_study_id = (const char*) val->data;
+	    }
 	}
         else if (biseqcstr (tag, "CT_STUDY_UID")) {
-	    cxt->ct_study_uid = (const char*) val->data;
+	    if (bstring_empty (rdd->m_ct_study_uid)) {
+		rdd->m_ct_study_uid = (const char*) val->data;
+	    }
 	}
         else if (biseqcstr (tag, "CT_SERIES_UID")) {
-	    cxt->ct_series_uid = (const char*) val->data;
+	    if (bstring_empty (rdd->m_ct_series_uid)) {
+		rdd->m_ct_series_uid = (const char*) val->data;
+	    }
 	}
         else if (biseqcstr (tag, "CT_FRAME_OF_REFERENCE_UID")) {
-	    cxt->ct_fref_uid = (const char*) val->data;
+	    if (bstring_empty (rdd->m_ct_fref_uid)) {
+		rdd->m_ct_fref_uid = (const char*) val->data;
+	    }
 	}
         else if (biseqcstr (tag, "OFFSET")) {
-	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
+		    &val_x, &val_y, &val_z)) {
 		have_offset = 1;
 		cxt->offset[0] = val_x;
 		cxt->offset[1] = val_y;
@@ -105,7 +119,6 @@ cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 	}
         else if (biseqcstr (tag, "DIMENSION")) {
 	    int int_x, int_y, int_z;
-
 	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
 			     &int_x, &int_y, &int_z)) {
 		have_dim = 1;
@@ -115,7 +128,8 @@ cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 	    }
 	}
         else if (biseqcstr (tag, "SPACING")) {
-	    if (3 == sscanf ((const char*) val->data, "%f %f %f", &val_x, &val_y, &val_z)) {
+	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
+		    &val_x, &val_y, &val_z)) {
 		have_spacing = 1;
 		cxt->spacing[0] = val_x;
 		cxt->spacing[1] = val_y;
@@ -264,9 +278,11 @@ cxt_load (Rtss_polyline_set* cxt, const char* cxt_fn)
 
 void
 cxt_save (
-    Rtss_polyline_set* cxt, 
-    const char* cxt_fn,
-    bool prune_empty)
+    Rtss_polyline_set* cxt,      /* Input: Structure set to save from */
+    Referenced_dicom_dir *rdd,   /* Input: Also save some values from here */
+    const char* cxt_fn,          /* Input: File to save to */
+    bool prune_empty             /* Input: Should we prune empty structures? */
+)
 {
     int i;
     FILE *fp;
@@ -282,50 +298,30 @@ cxt_save (
     }
 
     /* Part 1: Dicom info */
-    if (bstring_not_empty (cxt->ct_series_uid)) {
-	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) cxt->ct_series_uid);
+    if (bstring_not_empty (rdd->m_ct_series_uid)) {
+	fprintf (fp, "CT_SERIES_UID %s\n", (const char*) rdd->m_ct_series_uid);
     } else {
 	fprintf (fp, "CT_SERIES_UID\n");
     }
-    if (bstring_not_empty (cxt->ct_study_uid)) {
-	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) cxt->ct_study_uid);
+    if (bstring_not_empty (rdd->m_ct_study_uid)) {
+	fprintf (fp, "CT_STUDY_UID %s\n", (const char*) rdd->m_ct_study_uid);
     } else {
 	fprintf (fp, "CT_STUDY_UID\n");
     }
-    if (bstring_not_empty (cxt->ct_fref_uid)) {
+    if (bstring_not_empty (rdd->m_ct_fref_uid)) {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID %s\n", 
-	    (const char*) cxt->ct_fref_uid);
+	    (const char*) rdd->m_ct_fref_uid);
     } else {
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
-#if defined (commentout)
-    if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
-	fprintf (fp, "PATIENT_NAME %s\n", 
-	    (const char*) cxt->m_demographics->m_patient_name);
-    } else {
-	fprintf (fp, "PATIENT_NAME\n");
-    }
-    if (bstring_not_empty (cxt->m_demographics->m_patient_id)) {
-	fprintf (fp, "PATIENT_ID %s\n", 
-	    (const char*) cxt->m_demographics->m_patient_id);
-    } else {
-	fprintf (fp, "PATIENT_ID\n");
-    }
-    if (bstring_not_empty (cxt->m_demographics->m_patient_sex)) {
-	fprintf (fp, "PATIENT_SEX %s\n", 
-	    (const char*) cxt->m_demographics->m_patient_sex);
-    } else {
-	fprintf (fp, "PATIENT_SEX\n");
-    }
-#endif
     fprintf (fp, "PATIENT_NAME %s\n",
 	cxt->m_demographics->get_metadata (0x0010, 0x0010).c_str());
     fprintf (fp, "PATIENT_ID %s\n",
 	cxt->m_demographics->get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
 	cxt->m_demographics->get_metadata (0x0010, 0x0040).c_str());
-    if (bstring_not_empty (cxt->study_id)) {
-	fprintf (fp, "STUDY_ID %s\n", (const char*) cxt->study_id);
+    if (bstring_not_empty (rdd->m_study_id)) {
+	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
     } else {
 	fprintf (fp, "STUDY_ID\n");
     }

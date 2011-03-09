@@ -33,7 +33,6 @@ Rtds::Rtds ()
     m_ss_image = 0;
     m_dose = 0;
     m_gdcm_series = 0;
-    m_rdd = 0;
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
     m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
@@ -62,9 +61,6 @@ Rtds::~Rtds ()
     }
     if (m_gdcm_series) {
 	delete m_gdcm_series;
-    }
-    if (m_rdd) {
-	delete m_rdd;
     }
     if (m_xio_transform) {
 	free (m_xio_transform);
@@ -229,8 +225,7 @@ Rtds::load_dose_img (const char *dose_img)
 void
 Rtds::load_rdd (const char *rdd)
 {
-    this->m_rdd = new Referenced_dicom_dir;
-    this->m_rdd->load (rdd);
+    m_rdd.load (rdd);
 }
 
 void
@@ -307,16 +302,19 @@ void
 Rtds::save_dicom (const char *output_dir)
 {
     if (this->m_img) {
+	printf ("Rtds::save_dicom: save_short_dicom()\n");
 	this->m_img->save_short_dicom (output_dir, &m_img_metadata);
     }
     if (this->m_ss_image) {
+	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");
 	bool reload = this->m_img;
-	this->m_ss_image->save_gdcm_rtss (output_dir, reload);
+	printf ("Reload = %s\n", reload ? "true" : "false");
+	this->m_ss_image->save_gdcm_rtss (output_dir, &m_rdd, reload);
     }
     if (this->m_dose) {
 	char fn[_MAX_PATH];
+	printf ("Rtds::save_dicom: gdcm_save_dose()\n");
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
-	gdcm_dose_save (m_dose, &m_img_metadata, m_rdd, fn);
+	gdcm_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
     }
 }
-

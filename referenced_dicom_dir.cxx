@@ -60,26 +60,6 @@ Referenced_dicom_dir::load (const char *dicom_dir)
     }
     this->m_pih.set_from_gpuit (offset, spacing, gs.m_dim, 0);
 
-#if defined (commentout)
-    /* PatientName */
-    tmp = file->GetEntryValue (0x0010, 0x0010);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	this->m_demographics.m_patient_name = tmp.c_str();
-    }
-
-    /* PatientID */
-    tmp = file->GetEntryValue (0x0010, 0x0020);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	this->m_demographics.m_patient_id = tmp.c_str();
-    }
-
-    /* PatientSex */
-    tmp = file->GetEntryValue (0x0010, 0x0040);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	this->m_demographics.m_patient_sex = tmp.c_str();
-    }
-#endif
-
     /* PatientName */
     this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0010);
 
