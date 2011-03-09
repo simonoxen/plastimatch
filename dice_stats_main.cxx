@@ -7,7 +7,7 @@
 
 void print_usage (void)
 {
-    printf ("Usage: contour_statistics file1 file2\n");
+    printf ("Usage: dice_stats file1 file2\n");
 }
 
 int main (int argc, char* argv[])
