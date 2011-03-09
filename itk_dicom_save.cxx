@@ -5,10 +5,10 @@
 #include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include "itksys/SystemTools.hxx"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
-#include "itkImageSeriesReader.h"
 #include "itkImageSeriesWriter.h"
 #include "dicom_util.h"
 #include "img_metadata.h"
@@ -31,45 +31,44 @@
 #include "gdcmUIDGenerator.h"
 #endif
 
-/* -----------------------------------------------------------------------
-    Definitions
-   ----------------------------------------------------------------------- */
-typedef itk::ImageSeriesReader < UCharImageType > DicomUCharReaderType;
-typedef itk::ImageSeriesReader < ShortImageType > DicomShortReaderType;
-typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
-typedef itk::ImageSeriesReader < Int32ImageType > DicomInt32ReaderType;
-typedef itk::ImageSeriesReader < UInt32ImageType > DicomUInt32ReaderType;
-typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
-typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
+typedef itk::ImageSeriesWriter < 
+    ShortImageType, ShortImage2DType > DicomShortWriterType;
 
 static void
-encapsulate (itk::MetaDataDictionary& dict, std::string tagkey, std::string value)
+encapsulate (
+    itk::MetaDataDictionary& dict, 
+    std::string tagkey, 
+    std::string value
+)
 {
     itk::EncapsulateMetaData<std::string> (dict, tagkey, value);
 }
 
-void
-CopyDictionary (itk::MetaDataDictionary &fromDict, itk::MetaDataDictionary &toDict)
+static void
+copy_dictionary (
+    itk::MetaDataDictionary &fromDict, 
+    itk::MetaDataDictionary &toDict
+)
 {
-  typedef itk::MetaDataDictionary DictionaryType;
+    typedef itk::MetaDataDictionary DictionaryType;
 
-  DictionaryType::ConstIterator itr = fromDict.Begin();
-  DictionaryType::ConstIterator end = fromDict.End();
-  typedef itk::MetaDataObject< std::string > MetaDataStringType;
+    DictionaryType::ConstIterator itr = fromDict.Begin();
+    DictionaryType::ConstIterator end = fromDict.End();
+    typedef itk::MetaDataObject< std::string > MetaDataStringType;
 
-  while( itr != end )
+    while( itr != end )
     {
-    itk::MetaDataObjectBase::Pointer  entry = itr->second;
+	itk::MetaDataObjectBase::Pointer  entry = itr->second;
 
-    MetaDataStringType::Pointer entryvalue =
-      dynamic_cast<MetaDataStringType *>( entry.GetPointer() ) ;
-    if( entryvalue )
-      {
-      std::string tagkey   = itr->first;
-      std::string tagvalue = entryvalue->GetMetaDataObjectValue();
-      itk::EncapsulateMetaData<std::string>(toDict, tagkey, tagvalue);
-      }
-    ++itr;
+	MetaDataStringType::Pointer entryvalue =
+	    dynamic_cast<MetaDataStringType *>( entry.GetPointer() ) ;
+	if( entryvalue )
+	{
+	    std::string tagkey   = itr->first;
+	    std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+	    itk::EncapsulateMetaData<std::string>(toDict, tagkey, tagvalue);
+	}
+	++itr;
     }
 }
 
@@ -98,7 +97,6 @@ itk_dicom_save (
     itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
     if (export_as_ct) {
 	/* Image Type */
-	//encapsulate (dict, "0008|0008", "AXIAL");
 	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY\\REFORMATTED");
 	/* SOP Class UID */
 	encapsulate (dict, "0008|0016", "1.2.840.10008.5.1.4.1.1.2");
@@ -107,7 +105,8 @@ itk_dicom_save (
 	/* Conversion Type */
 	/* Note: Proton XiO does not like conversion type of SYN */
 	encapsulate (dict, "0008|0064", "");
-    } else { /* export as secondary capture */
+    } else {
+	/* Export as secondary capture */
 	/* Image Type */
 	encapsulate (dict, "0008|0008", "DERIVED\\SECONDARY");
 	/* Conversion Type */
@@ -124,11 +123,10 @@ itk_dicom_save (
     encapsulate (dict, "0008|0033", current_time);
 
     /* Patient name */
-    //encapsulate (dict, "0010|0010", "ANONYMOUS");
     encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0010));
     /* Patient id */
-    encapsulate (dict, "0010|0020", make_anon_patient_id());
-    //encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0020));
+    //encapsulate (dict, "0010|0020", make_anon_patient_id());
+    encapsulate (dict, "0010|0020", meta->get_metadata (0x0010, 0x0020));
     /* Patient sex */
     encapsulate (dict, "0010|0040", "O");
 
@@ -163,11 +161,11 @@ itk_dicom_save (
     encapsulate (dict, "0018|0050", value);
 
     /* 0008,2112 is "Source Image Sequence", defined as "A Sequence that 
-	identifies the set of Image SOP Class/Instance pairs of the
-	Images that were used to derive this Image. Zero or more Items may be
-	included in this Sequence." 
+       identifies the set of Image SOP Class/Instance pairs of the
+       Images that were used to derive this Image. Zero or more Items may be
+       included in this Sequence." 
        Ideally, this would be used to refer to the original image before 
-        warping.
+       warping.
     */
 
     /* CERR requires slope and offset */
@@ -177,13 +175,17 @@ itk_dicom_save (
     encapsulate (dict, "0028|1053", "1");
 
     /* Can the series writer set Slice Location "0020,1041"? 
-	Yes it can.  The below code is adapted from:
-	http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
+       Yes it can.  The below code is adapted from:
+       http://www.nabble.com/Read-DICOM-Series-Write-DICOM-Series-with-a-different-number-of-slices-td17357270.html
     */
     DicomShortWriterType::DictionaryArrayType dict_array;
-    for (unsigned int f = 0; f < short_img->GetLargestPossibleRegion().GetSize()[2]; f++) {
-	DicomShortWriterType::DictionaryRawPointer slice_dict = new DicomShortWriterType::DictionaryType;
-	CopyDictionary (dict, *slice_dict);
+    for (unsigned int f = 0; 
+	 f < short_img->GetLargestPossibleRegion().GetSize()[2]; 
+	 f++) 
+    {
+	DicomShortWriterType::DictionaryRawPointer slice_dict 
+	    = new DicomShortWriterType::DictionaryType;
+	copy_dictionary (dict, *slice_dict);
 
 	/* Image Number */
 	value = to_string ((int) f);
@@ -196,7 +198,9 @@ itk_dicom_save (
 	index[1] = 0;
 	index[2] = f;
 	short_img->TransformIndexToPhysicalPoint (index, position);
-	value = to_string (position[0]) + "\\" + to_string (position[1]) + "\\" + to_string (position[2]);
+	value = to_string (position[0]) 
+	    + "\\" + to_string (position[1]) 
+	    + "\\" + to_string (position[2]);
 	encapsulate (*slice_dict, "0020|0032", value);
 
 	/* Slice Location */

@@ -7,16 +7,13 @@
 #include <time.h>
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
-#include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
-#include "itkImageSeriesWriter.h"
 #include "dicom_util.h"
 #include "img_metadata.h"
 #include "itk_dicom_load.h"
 #include "logfile.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
-#include "to_string.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -30,7 +27,6 @@
 #include "gdcmUIDGenerator.h"
 #endif
 
-
 /* -----------------------------------------------------------------------
     Definitions
    ----------------------------------------------------------------------- */
@@ -40,7 +36,6 @@ typedef itk::ImageSeriesReader < UShortImageType > DicomUShortReaderType;
 typedef itk::ImageSeriesReader < Int32ImageType > DicomInt32ReaderType;
 typedef itk::ImageSeriesReader < UInt32ImageType > DicomUInt32ReaderType;
 typedef itk::ImageSeriesReader < FloatImageType > DicomFloatReaderType;
-typedef itk::ImageSeriesWriter < ShortImageType, ShortImage2DType > DicomShortWriterType;
 
 /* -----------------------------------------------------------------------
    Reading Dicom
