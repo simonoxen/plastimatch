@@ -416,16 +416,6 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     printf ("Rtds_warp: warp and save ss.\n");
     warp_and_save_ss (rtds, &xform, &pih, parms);
 
-    /* In certain cases, we have to delay setting dicom uids 
-       (e.g. wait until after warping) */
-    /* GCS FIX: Sometimes referenced_dicom_dir is applied multiple times, 
-       such as when using dicom and xio input, which is inefficient. */
-    /* GCS: Which cases are these?  (It does seem to solve problems...) */
-    if (rtds->m_ss_image) {
-	printf ("Rtds_warp: Apply dicom_dir (again!).\n");
-	rtds->m_ss_image->apply_dicom_dir (&rtds->m_rdd);
-    }
-
     /* Save dicom */
     if (bstring_not_empty (parms->output_dicom)) {
 	printf ("Rtds_warp: Save dicom.\n");

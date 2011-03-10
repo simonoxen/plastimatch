@@ -2,9 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include <iostream>
 #include <stdlib.h>
 #include <time.h>
+#include <iostream>
+#include <vector>
 #include "itksys/SystemTools.hxx"
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
@@ -17,6 +18,7 @@
 #include "logfile.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "referenced_dicom_dir.h"
 #include "to_string.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
@@ -111,6 +113,13 @@ itk_dicom_save (
        the dictionary. */
     gdcmIO->SetKeepOriginalUID (true);
 
+    /* Set up a few things in referenced_dicom_dir */
+    if (rdd) {
+	rdd->m_loaded = true;
+	rdd->m_pih.set_from_itk_image (short_img);
+	rdd->m_ct_slice_uids.clear();
+    }
+
     std::string tagkey, value;
     itk::MetaDataDictionary& dict = gdcmIO->GetMetaDataDictionary();
     if (export_as_ct) {
@@ -173,16 +182,29 @@ itk_dicom_save (
     /* StudyInstanceUID */
     value = itk_make_uid(gdcmIO);
     encapsulate (dict, "0020|000d", value);
+    if (rdd) {
+	rdd->m_ct_study_uid = value.c_str();
+    }
     /* SeriesInstanceUID */
     value = itk_make_uid(gdcmIO);
     encapsulate (dict, "0020|000e", value);
+    if (rdd) {
+	rdd->m_ct_series_uid = value.c_str();
+    }
     /* StudyId */
-    encapsulate (dict, "0020|0010", "10001");
+    value = "10001";
+    encapsulate (dict, "0020|0010", value);
+    if (rdd) {
+	rdd->m_study_id = value.c_str();
+    }
     /* SeriesNumber */
     encapsulate (dict, "0020|0011", "303");
     /* Frame of Reference UID */
     value = itk_make_uid(gdcmIO);
     encapsulate (dict, "0020|0052", value);
+    if (rdd) {
+	rdd->m_ct_fref_uid = value.c_str();
+    }
     /* Position Reference Indicator */
     encapsulate (dict, "0020|1040", "");
 
@@ -216,6 +238,9 @@ itk_dicom_save (
 	/* SOPInstanceUID */
 	value = itk_make_uid(gdcmIO);
 	encapsulate (*slice_dict, "0008|0018", value);
+	if (rdd) {
+	    rdd->m_ct_slice_uids.push_back(value.c_str());
+	}
 	
 	/* Image Number */
 	value = to_string ((int) f);

@@ -11,14 +11,19 @@
 
 class Referenced_dicom_dir {
 public:
-    bool m_loaded;        /* Set this if we have m_pih && ct slice uids */
+    /* Set this if we have m_pih && ct slice uids */
+    bool m_loaded;
+
     Plm_image_header m_pih;
     Img_metadata m_demographics;
     CBString m_study_id;
     CBString m_ct_study_uid;
     CBString m_ct_series_uid;
     CBString m_ct_fref_uid;
+
+    /* These must be sorted in order, starting with origin slice */
     std::vector<CBString> m_ct_slice_uids;
+
 public:
     plastimatch1_EXPORT
     Referenced_dicom_dir ();

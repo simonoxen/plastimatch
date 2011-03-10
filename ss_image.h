@@ -80,7 +80,7 @@ public:
     );
     void
     save_gdcm_rtss (const char *output_dir, 
-	Referenced_dicom_dir *rdd, bool reload);
+	Referenced_dicom_dir *rdd);
     void
     save_ss_image (const CBString &ss_img_fn);
     void

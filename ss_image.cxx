@@ -92,20 +92,14 @@ Ss_image::save_cxt (
 void
 Ss_image::save_gdcm_rtss (
     const char *output_dir, 
-    Referenced_dicom_dir *rdd, 
-    bool reload
+    Referenced_dicom_dir *rdd
 )
 {
     char fn[_MAX_PATH];
 
     this->m_cxt->adjust_structure_names ();
 
-    /* If we have just written the CT files using the ITK writer, 
-       then we look in the output dir for a CT to associate UIDs. */
-    if (reload) {
-	printf ("Doing final load...\n");
-	rdd->load (output_dir);
-	printf ("StudyID should be: %s\n", (const char*) rdd->m_study_id);
+    if (rdd) {
 	this->apply_dicom_dir (rdd);
     }
 

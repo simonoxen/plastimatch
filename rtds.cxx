@@ -307,9 +307,7 @@ Rtds::save_dicom (const char *output_dir)
     }
     if (this->m_ss_image) {
 	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");
-	bool reload = this->m_img;
-	printf ("Reload = %s\n", reload ? "true" : "false");
-	this->m_ss_image->save_gdcm_rtss (output_dir, &m_rdd, reload);
+	this->m_ss_image->save_gdcm_rtss (output_dir, &m_rdd);
     }
     if (this->m_dose) {
 	char fn[_MAX_PATH];
