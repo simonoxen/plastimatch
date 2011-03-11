@@ -292,7 +292,7 @@ gdcm_dose_save (
     /* Modality */
     gf->InsertValEntry ("RTDOSE", 0x0008, 0x0060);
     /* Manufacturer */
-    gf->InsertValEntry ("MGH", 0x0008, 0x0070);
+    gf->InsertValEntry ("Plastimatch", 0x0008, 0x0070);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
     /* ManufacturersModelName */

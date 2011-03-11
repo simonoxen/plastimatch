@@ -372,7 +372,9 @@ gdcm_rtss_save (
     /* Modality */
     gf->InsertValEntry ("RTSTRUCT", 0x0008, 0x0060);
     /* Manufacturer */
-    gf->InsertValEntry ("MGH", 0x0008, 0x0070);
+    gf->InsertValEntry ("Plastimatch", 0x0008, 0x0070);
+    /* InstitutionName */
+    gf->InsertValEntry ("", 0x0008, 0x0080);
     /* ReferringPhysiciansName */
     gf->InsertValEntry ("", 0x0008, 0x0090);
     /* StationName */
@@ -381,33 +383,6 @@ gdcm_rtss_save (
     gf->InsertValEntry ("Plastimatch structure set", 0x0008, 0x103e);
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
-
-#if defined (commentout)
-    /* PatientsName */
-    if (bstring_not_empty (cxt->m_demographics->m_patient_name)) {
-	gf->InsertValEntry (
-	    (const char*) cxt->m_demographics->m_patient_name, 0x0010, 0x0010);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0010);
-    }
-    /* PatientID */
-    if (bstring_not_empty (cxt->m_demographics->m_patient_id)) {
-	gf->InsertValEntry (
-	    (const char*) cxt->m_demographics->m_patient_id, 0x0010, 0x0020);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0020);
-    }
-    /* PatientsBirthDate */
-    gf->InsertValEntry ("", 0x0010, 0x0030);
-    /* PatientsSex */
-    if (bstring_not_empty (cxt->m_demographics->m_patient_sex)) {
-	gf->InsertValEntry (
-	    (const char*) cxt->m_demographics->m_patient_sex, 0x0010, 0x0040);
-    } else {
-	gf->InsertValEntry ("", 0x0010, 0x0040);
-    }
-#endif
-
     /* PatientsName */
     cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0010);
     /* PatientID */

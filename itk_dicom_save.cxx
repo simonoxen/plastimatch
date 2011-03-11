@@ -147,6 +147,13 @@ itk_dicom_save (
     encapsulate (dict, "0008|0032", current_time);
     encapsulate (dict, "0008|0033", current_time);
 
+    /* Manufacturer */
+    encapsulate (dict, "0008|0070", "Plastimatch");
+    /* InstitutionName */
+    encapsulate (dict, "0008|0080", "");
+    /* ManufacturersModelName */
+    encapsulate (dict, "0008|1090", "Plastimatch");
+
     if (meta) {
 	/* Patient name */
 	encapsulate (dict, "0010|0010", meta->get_metadata (0x0010, 0x0010));
