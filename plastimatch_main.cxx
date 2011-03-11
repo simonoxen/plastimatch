@@ -31,7 +31,6 @@
 #include "plm_stages.h"
 #include "plm_version.h"
 
-/* GCS FIX: "autolabel", "segment" are hidden options until working */
 static void
 print_version (void)
 {
@@ -47,6 +46,7 @@ print_usage (int return_code)
 	"Commands:\n"
 	"  add         "
 	"  adjust      "
+	"  autolabel   "
 	"  crop        "
 	"  compare     "
 	"\n"
@@ -54,13 +54,14 @@ print_usage (int return_code)
 	"  convert     "
 	"  diff        "
 	"  dvh         "
-	"\n"
 	"  header      "
+	"\n"
 	"  mask        "
 	"  register    "
 	"  resample    "
-	"\n"
+	"  segment     "
 	"  slice       "
+	"\n"
 	"  stats       "
 	"  warp        "
 	"  xio-dvh     "

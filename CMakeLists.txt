@@ -1120,7 +1120,6 @@ SET (OPENCL_PROBE_SRC
 IF (OPENCL_FOUND)
   PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
 ENDIF ()
-WRAP_GGO (pcmd_segment_body_GGO_C pcmd_segment_body.ggo)
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
@@ -1135,7 +1134,6 @@ SET (PLASTIMATCH_SRC
   pcmd_mask.cxx pcmd_mask.h
   pcmd_resample.cxx pcmd_resample.h
   pcmd_segment.cxx pcmd_segment.h
-  ${pcmd_segment_body_GGO_C}
   pcmd_stats.cxx pcmd_stats.h
   pcmd_thumbnail.cxx pcmd_thumbnail.h 
   pcmd_warp_dij.cxx 
