@@ -17,32 +17,42 @@
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
 struct synthetic_mha_main_parms {
     CBString output_fn;
+    CBString output_dicom;
     Synthetic_mha_parms sm_parms;
 };
 
 void
-do_synthetic_mha (CBString& fn, Synthetic_mha_parms *parms)
+do_synthetic_mha (Synthetic_mha_main_parms *parms)
 {
+    Synthetic_mha_parms *sm_parms = &parms->sm_parms;
+
     /* Create image */
-    FloatImageType::Pointer img = synthetic_mha (parms);
+    FloatImageType::Pointer img = synthetic_mha (sm_parms);
 
     /* Save to file */
-    switch (parms->output_type) {
-    case PLM_IMG_TYPE_ITK_UCHAR:
-	itk_image_save_uchar (img, (const char*) fn);
-	break;
-    case PLM_IMG_TYPE_ITK_SHORT:
-	itk_image_save_short (img, (const char*) fn);
-	break;
-    case PLM_IMG_TYPE_ITK_USHORT:
-	itk_image_save_ushort (img, (const char*) fn);
-	break;
-    case PLM_IMG_TYPE_ITK_ULONG:
-	itk_image_save_uint32 (img, (const char*) fn);
-	break;
-    case PLM_IMG_TYPE_ITK_FLOAT:
-	itk_image_save_float (img, (const char*) fn);
-	break;
+    if (!bstring_empty (parms->output_fn)) {
+	switch (sm_parms->output_type) {
+	case PLM_IMG_TYPE_ITK_UCHAR:
+	    itk_image_save_uchar (img, (const char*) parms->output_fn);
+	    break;
+	case PLM_IMG_TYPE_ITK_SHORT:
+	    itk_image_save_short (img, (const char*) parms->output_fn);
+	    break;
+	case PLM_IMG_TYPE_ITK_USHORT:
+	    itk_image_save_ushort (img, (const char*) parms->output_fn);
+	    break;
+	case PLM_IMG_TYPE_ITK_ULONG:
+	    itk_image_save_uint32 (img, (const char*) parms->output_fn);
+	    break;
+	case PLM_IMG_TYPE_ITK_FLOAT:
+	    itk_image_save_float (img, (const char*) parms->output_fn);
+	    break;
+	}
+    }
+
+    if (!bstring_empty (parms->output_dicom)) {
+	itk_image_save_short_dicom (img, (const char*) parms->output_dicom, 
+	    0, 0, PATIENT_POSITION_HFS);
     }
 }
 
@@ -63,8 +73,9 @@ parse_fn (
 )
 {
     /* Basic options */
-    parser->add_long_option ("", "output", "Output filename (required)", 
-	1, "");
+    parser->add_long_option ("", "output", "Output filename", 1, "");
+    parser->add_long_option ("", "output-dicom", 
+	"Output dicom directory", 1, "");
     parser->add_long_option ("", "output-type", 
 	"Data type for output file: {uchar,short,ushort, ulong,float},"
 	" default is float", 
@@ -118,13 +129,18 @@ parse_fn (
     parser->check_help ();
 
     /* Check that an output file was given */
-    parser->check_required ("output");
+    if (!parser->option("output") && !parser->option("output-dicom")) {
+	throw dlib::error (
+	    "Error, you must specify either --output or --output-dicom.\n"
+	);
+    }
 
     /* Copy values into output struct */
     Synthetic_mha_parms *sm_parms = &parms->sm_parms;
 
     /* Basic options */
     parms->output_fn = parser->get_string("output").c_str();
+    parms->output_dicom = parser->get_string("output-dicom").c_str();
     sm_parms->output_type = plm_image_type_parse (
 	parser->get_string("output-type").c_str());
 
@@ -218,7 +234,7 @@ main (int argc, char* argv[])
 
     plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
 
-    do_synthetic_mha (parms.output_fn, &parms.sm_parms);
+    do_synthetic_mha (&parms);
 
     return 0;
 }

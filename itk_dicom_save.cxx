@@ -100,8 +100,6 @@ itk_dicom_save (
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
 
-    printf ("Output dir = %s\n", dir_name);
-
     itksys::SystemTools::MakeDirectory (dir_name);
 
     ImageIOType::Pointer gdcmIO = ImageIOType::New();

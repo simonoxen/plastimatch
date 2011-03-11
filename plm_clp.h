@@ -7,9 +7,10 @@
 #define _plm_dlib_clp_h_
 
 #include "plm_config.h"
-#include <stdio.h>
 #include <iostream>
 #include <map>
+#include <stdarg.h>
+#include <stdio.h>
 #include <vector>
 
 #include "dlib/cmd_line_parser.h"
@@ -275,6 +276,41 @@ public:
 	if (!this->option(name)) {
 	    string_type error_string = "Error, you must specify the "
 		+ get_option_string(name) + " option.\n";
+	    throw dlib::error (error_string);
+	}
+    }
+
+    /* Throws an exception if none of the arguments are specified 
+       on the command line.  The last argument should be zero, 
+       to satisfy variable argument list macros. */
+    void check_required_any (const char* first_opt, ...) {
+	int option_exists = 0;
+	va_list argptr;
+	const char *opt;
+
+	va_start (argptr, first_opt);
+	opt = first_opt;
+	do {	
+	    if (this->option(opt)) {
+		option_exists = 1;
+		break;
+	    }
+	} while ((opt = va_arg(argptr, char*)));
+	va_end (argptr);
+
+	if (!option_exists) {
+	    string_type error_string = 
+		"Error, you must specify one of the following options: ";
+	    va_start (argptr, first_opt);
+	    opt = first_opt;
+	    do {	
+		if (opt != first_opt) {
+		    error_string += ", ";
+		}
+		error_string += get_option_string(opt);
+	    } while ((opt = va_arg(argptr, char*)));
+	    va_end (argptr);
+	    error_string += ".\n";
 	    throw dlib::error (error_string);
 	}
     }
