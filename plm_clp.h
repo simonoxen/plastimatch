@@ -25,6 +25,8 @@ public:
     std::map<string_type,string_type> default_value_map;
     std::map<string_type,string_type> option_map;
     std::map<string_type,string_type> description_map;
+    std::map<string_type,string_type> short_to_long_map;
+    std::map<string_type,string_type> long_to_short_map;
     void (*usage_fn) (dlib::Plm_clp*);
 public:
     void 
@@ -59,15 +61,43 @@ public:
 	    key = long_name;
 	    option_val = "  -" + short_name + ", --" + long_name;
 	    this->add_option_with_default (short_name, description, 
-		number_of_arguments, default_value);
+		number_of_arguments, "");
 	    this->add_option_with_default (long_name, description, 
 		number_of_arguments, default_value);
+	    this->long_to_short_map.insert (
+		std::pair<string_type,string_type> (long_name, short_name));
+	    this->short_to_long_map.insert (
+		std::pair<string_type,string_type> (short_name, long_name));
 	}
 
 	option_map.insert (
 	    std::pair<string_type,string_type> (key, option_val));
 	description_map.insert (
 	    std::pair<string_type,string_type> (key, description));
+    }
+
+    const string_type&
+    long_option_name (const string_type& name)
+    {
+	std::map<string_type,string_type>::iterator it;
+	it = this->short_to_long_map.find (name);
+	if (it != this->short_to_long_map.end()) {
+	    return it->second;
+	} else {
+	    return name;
+	}
+    }
+
+    const string_type&
+    short_option_name (const string_type& name)
+    {
+	std::map<string_type,string_type>::iterator it;
+	it = this->long_to_short_map.find (name);
+	if (it != this->long_to_short_map.end()) {
+	    return it->second;
+	} else {
+	    return name;
+	}
     }
 
     void 
@@ -84,6 +114,63 @@ public:
 	}
     }
 
+    bool
+    have_option (const string_type& name)
+    {
+	if (option (long_option_name (name))) {
+	    return true;
+	}
+	if (option (short_option_name (name))) {
+	    return true;
+	}
+	return false;
+    }
+
+    /* Get command line arg specified with either long or short option */
+    string_type
+    get_value_base (const string_type& name)
+    {
+	/* Option specified as long name */
+	const string_type& long_name = long_option_name (name);
+	if (option (long_name)) {
+	    return this->option(long_name).argument();
+	}
+
+	/* Option specified as short name */
+	const string_type& short_name = short_option_name (name);
+	if (option (short_name)) {
+	    return this->option(short_name).argument();
+	}
+
+	/* Not specified on command line */
+	return "";
+    }
+
+    /* Get string value from either long or short option, filling in 
+       default value if no option specified */
+    string_type
+    get_value (
+	const string_type& name
+    ) {
+	/* Option specified on command line */
+	if (this->have_option(name)) {
+	    return this->get_value_base (name);
+	}
+
+	/* Default value */
+	const string_type& long_name = long_option_name (name);
+	std::map<string_type,string_type>::iterator it;
+	it = this->default_value_map.find (long_name);
+	if (it != this->default_value_map.end()) {
+	    return it->second;
+	}
+
+	/* Not specified on command line, and no default value */
+	return "";
+    }
+
+    /* Get non-string value, either long or short option, filling in 
+       default value if no option specified */
     template <class T>
     void
     get_value (
@@ -93,32 +180,13 @@ public:
 	try {
 	    dest = dlib::sa = this->get_value (name);
 	}
-	//catch (std::exception& e) {
 	catch (...) {
-	    string_type error_string = "Error. Option --" 
-		+ name + " had an illegal or missing argument.";
+	    string_type error_string = 
+		"Error. Option "
+		+ get_option_string (name) 
+		+ " had an illegal or missing argument.";
 	    throw dlib::error (error_string);
 	}
-    }
-
-    string_type
-    get_value (
-	const string_type& name
-    ) {
-	/* Option specified on command line */
-	if (this->option(name)) {
-	    return this->option(name).argument();
-	}
-
-	/* Default value */
-	std::map<string_type,string_type>::iterator it;
-	it = this->default_value_map.find (name);
-	if (it != this->default_value_map.end()) {
-	    return it->second;
-	}
-
-	/* Not specified on command line, and no default value */
-	return "";
     }
 
     /* Shorthand functions for specific well-known types */
@@ -129,8 +197,10 @@ public:
 	if (rc == 1) {
 	    arr[1] = arr[2] = arr[0];
 	} else if (rc != 3) {
-	    string_type error_string = "Error. Option --" 
-		+ name + " takes one or three integer arguments.";
+	    string_type error_string = 
+		"Error. Option "
+		+ get_option_string (name) 
+		+ " takes one or three integer arguments.";
 	    throw dlib::error (error_string);
 	}
     }
@@ -141,8 +211,10 @@ public:
 	if (rc == 1) {
 	    arr[1] = arr[2] = arr[0];
 	} else if (rc != 3) {
-	    string_type error_string = "Error. Option --" 
-		+ name + " takes one or three float arguments.";
+	    string_type error_string = 
+		"Error. Option "
+		+ get_option_string (name) 
+		+ " takes one or three float arguments.";
 	    throw dlib::error (error_string);
 	}
     }
@@ -273,7 +345,7 @@ public:
     }
 
     void check_required (const string_type& name) {
-	if (!this->option(name)) {
+	if (!this->have_option(name)) {
 	    string_type error_string = "Error, you must specify the "
 		+ get_option_string(name) + " option.\n";
 	    throw dlib::error (error_string);

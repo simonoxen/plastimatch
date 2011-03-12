@@ -9,9 +9,9 @@
 #include "plm_image_header.h"
 #include "pointset.h"
 
-typedef struct landmark_warp Landmark_warp;
-struct landmark_warp
+class Landmark_warp
 {
+public:
     /* Inputs */
     Pointset *m_fixed_landmarks;
     Pointset *m_moving_landmarks;
@@ -32,6 +32,15 @@ struct landmark_warp
     Plm_image *m_warped_img;
     Xform *m_vf;
     Pointset *m_warped_landmarks; // if regularized, warped l. may not exactly match fixed
+
+public:
+    Landmark_warp ();
+    ~Landmark_warp ();
+    void
+    load_pointsets (
+	const char *fixed_lm_fn, 
+	const char *moving_lm_fn
+    );
 };
 
 #if defined __cplusplus

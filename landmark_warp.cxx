@@ -14,30 +14,50 @@
 #include "vf.h"
 #include "volume.h"
 
+Landmark_warp::Landmark_warp (void)
+{
+    m_fixed_landmarks = 0;
+    m_moving_landmarks = 0;
+    m_input_img = 0;
+
+    default_val = 0;
+    rbf_radius = 0;
+    young_modulus = 0;
+    num_clusters = 0;
+
+    cluster_id = 0;
+    adapt_radius = 0;
+
+    m_warped_img = 0;
+    m_vf = 0;
+    m_warped_landmarks = 0;
+}
+
+Landmark_warp::~Landmark_warp (void)
+{
+    if (m_moving_landmarks) {
+	pointset_destroy (m_moving_landmarks);
+    }
+    if (m_fixed_landmarks) {
+	pointset_destroy (m_fixed_landmarks);
+    }
+    if (m_warped_landmarks) {
+	pointset_destroy (m_warped_landmarks);
+    }
+    if (cluster_id) free(cluster_id);
+    if (adapt_radius) free(adapt_radius);
+}
+
 Landmark_warp*
 landmark_warp_create (void)
 {
-    Landmark_warp *lw;
-    lw = (Landmark_warp*) malloc (sizeof (Landmark_warp));
-    memset (lw, 0, sizeof (Landmark_warp));
-    return lw;
+    return new Landmark_warp;
 }
 
 void
 landmark_warp_destroy (Landmark_warp *lw)
 {
-    if (lw->m_moving_landmarks) {
-	pointset_destroy (lw->m_moving_landmarks);
-    }
-    if (lw->m_fixed_landmarks) {
-	pointset_destroy (lw->m_fixed_landmarks);
-    }
-    if (lw->m_warped_landmarks) {
-	pointset_destroy (lw->m_warped_landmarks);
-    }
-    if (lw->cluster_id) free(lw->cluster_id);
-    if (lw->adapt_radius) free(lw->adapt_radius);
-    free (lw);
+    delete lw;
 }
 
 /* GCS FIX: Oops.  This doesn't work because tps_xform is c++ code.
@@ -79,14 +99,23 @@ landmark_warp_load_xform (const char *fn)
     return 0;
 }
 
+void
+Landmark_warp::load_pointsets (
+    const char *fixed_lm_fn, 
+    const char *moving_lm_fn
+)
+{
+    m_fixed_landmarks = pointset_load (fixed_lm_fn);
+    m_moving_landmarks = pointset_load (moving_lm_fn);
+}
+
 Landmark_warp*
 landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn)
 {
     Landmark_warp *lw;
 
     lw = landmark_warp_create ();
-    lw->m_fixed_landmarks = pointset_load (fixed_lm_fn);
-    lw->m_moving_landmarks = pointset_load (moving_lm_fn);
+    lw->load_pointsets (fixed_lm_fn, moving_lm_fn);
 
     if (!lw->m_fixed_landmarks || !lw->m_moving_landmarks) {
 	landmark_warp_destroy (lw);
@@ -94,4 +123,3 @@ landmark_warp_load_pointsets (const char *fixed_lm_fn, const char *moving_lm_fn)
     }
     return lw;
 }
-

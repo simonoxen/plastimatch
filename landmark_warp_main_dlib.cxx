@@ -74,9 +74,7 @@ load_input_files (Landmark_warp_main_parms *parms)
     Landmark_warp *lw = &parms->lw;
 
     /* Load the pointsets */
-    lw = landmark_warp_load_pointsets (
-	parms->fixed_lm_fn, 
-	parms->moving_lm_fn);
+    lw->load_pointsets (parms->fixed_lm_fn, parms->moving_lm_fn);
     if (!lw) {
 	print_and_exit ("Error, landmarks were not loaded successfully.\n");
     }
