@@ -48,7 +48,7 @@ volume_create (
     int min_size
 )
 {
-    int i;
+    int i, j;
     Volume* vol = (Volume*) malloc (sizeof(Volume));
     if (!vol) {
 	fprintf (stderr, "Memory allocation failed.\n");
@@ -62,7 +62,8 @@ volume_create (
 	vol->pix_spacing[i] = pix_spacing[i];
     }
     if (direction_cosines) {
-	memcpy (vol->direction_cosines, direction_cosines, sizeof(vol->direction_cosines));
+	memcpy (vol->direction_cosines, direction_cosines, 
+	    sizeof(vol->direction_cosines));
     } else {
 	vol->direction_cosines[0] = 1.0f;
 	vol->direction_cosines[4] = 1.0f;
@@ -70,6 +71,13 @@ volume_create (
     }
     vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
     vol->pix_type = pix_type;
+
+    for (i = 0; i < 3; i++) {
+	for (j = 0; j < 3; j++) {
+	    vol->step[i][j] = vol->pix_spacing[i] 
+		* vol->direction_cosines[3*i+j];
+	}
+    }
 
     switch (pix_type) {
     case PT_UCHAR:
@@ -133,7 +141,8 @@ Volume*
 volume_clone_empty (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
+    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
+	ref->pix_type, ref->direction_cosines, 0);
     return vout;
 }
 
@@ -141,7 +150,8 @@ Volume*
 volume_clone (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
+    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
+	ref->pix_type, ref->direction_cosines, 0);
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
@@ -351,8 +361,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
 	    for (i=0; i < 3; i++) {
 		der[i] = (float*) malloc (alloc_size*sizeof(float));
 		if (!der[i]) {
-		    printf ("Memory allocation failed for stage 2, dimension %d for current velocity..........Exiting\n",i);
-		    exit(1);
+		    print_and_exit ("Memory allocation failed.\n");
 		}
 	    }
 	    for (i = 0; i < ref->npix; i++) {

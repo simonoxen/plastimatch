@@ -497,26 +497,26 @@ rbf_gauss_warp (Landmark_warp *lw)
     float *coeff;
     float origin[3], spacing[3];
     int dim[3];
-	int i;
+    int i;
     Volume *moving, *vf_out, *warped_out;
 
-	lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points*sizeof(float));
-	lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points*sizeof(int));
+    lw->adapt_radius = (float *)malloc(lw->m_fixed_landmarks->num_points*sizeof(float));
+    lw->cluster_id = (int *)malloc(lw->m_fixed_landmarks->num_points*sizeof(int));
 
-	if (lw->num_clusters > 0) {
+    if (lw->num_clusters > 0) {
 	rbf_cluster_kmeans_plusplus( lw );
 	rbf_cluster_find_adapt_radius( lw );
-	}
-	else {
-		for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
-        lw->adapt_radius[i]=lw->rbf_radius;
+    }
+    else {
+	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+	    lw->adapt_radius[i]=lw->rbf_radius;
 
-	}
+    }
 
-for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 	lw->adapt_radius[i]*=0.38;
 
-for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 	printf("%f\n", lw->adapt_radius[i]);
 
     /* Solve for RBF weights */

@@ -15,13 +15,24 @@
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {
-    int d, i, j, k, v;
+    int d, v, ijk[3];
     int mi, mj, mk, mv;
-    float fx, fy, fz;
+    float fxyz[3];
     float mx, my, mz;
     float* vf_img = (float*) vf->img;
     float* vin_img = (float*) vin->img;
     float* vout_img;
+
+    printf ("Direction cosines: "
+	"vin = %f %f %f ...\n"
+	"vf = %f %f %f ...\n",
+	vin->direction_cosines[0],
+	vin->direction_cosines[1],
+	vin->direction_cosines[2],
+	vf->direction_cosines[0],
+	vf->direction_cosines[1],
+	vf->direction_cosines[2]
+    );
 
     if (!vout) {
 	vout = volume_clone_empty (vin);
@@ -44,27 +55,30 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	}
     }
 
+#if defined (commentout)
     for (v = 0, k = 0, fz = vf->offset[2]; k < vf->dim[2]; k++, fz += vf->pix_spacing[2]) {
 	for (j = 0, fy = vf->offset[1]; j < vf->dim[1]; j++, fy += vf->pix_spacing[1]) {
 	    for (i = 0, fx = vf->offset[0]; i < vf->dim[0]; i++, fx += vf->pix_spacing[0], v++) {
+	    }}}
+#endif
+    for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
+	for (LOOP_Y (ijk, fxyz, vf)) {
+	    for (LOOP_Z (ijk, fxyz, vf), v++) {
 		float *dxyz = &vf_img[3*v];
-		mz = fz + dxyz[2];
+		mz = fxyz[2] + dxyz[2];
 		mk = round_int((mz - vin->offset[2]) / vin->pix_spacing[2]);
-		//if (mk < 0 || mk >= vin->dim[2]) continue;
-		my = fy + dxyz[1];
+		my = fxyz[1] + dxyz[1];
 		mj = round_int((my - vin->offset[1]) / vin->pix_spacing[1]);
-		//if (mj < 0 || mj >= vin->dim[1]) continue;
-		mx = fx + dxyz[0];
+		mx = fxyz[0] + dxyz[0];
 		mi = round_int((mx - vin->offset[0]) / vin->pix_spacing[0]);
-		//if (mi < 0 || mi >= vin->dim[0]) continue;
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
+#if defined (commentout)
 		if (i == 128 && j == 128 && (k == 96 || k == 95)) {
 		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
-			    i, j, k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
-			    mx, my, mz, mi, mj, mk);
+			i, j, k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
+			mx, my, mz, mi, mj, mk);
 		}
-#if defined (commentout)
 #endif
 		if (mk < 0 || mk >= vin->dim[2]) continue;
 		if (mj < 0 || mj >= vin->dim[1]) continue;

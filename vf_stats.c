@@ -230,7 +230,7 @@ vf_analyze_second_deriv (Volume* vol)
     int i, j, k;
     float* img = (float*) vol->img;
     
-	float min_sec_der, max_sec_der, total_sec_der=0.;
+    float min_sec_der, max_sec_der, total_sec_der=0.;
     int max_sec_der_loc[3];
 
     float di = vol->pix_spacing[0];
@@ -278,66 +278,66 @@ vf_analyze_second_deriv (Volume* vol)
 		float d2ui_djdj = (1./ dj) * ( djp[0] - 2 * d_o[0] + djn[0] );
 		float d2ui_dkdk = (1./ dk) * ( dkp[0] - 2 * d_o[0] + dkn[0] );
 		float d2ui_didj = (0.5 / (di*dj))*
-			( ( dijp[0] + dijn[0] + 2. * d_o[0] ) - 
-			  ( dip[0] + din[0] + djp[0] + djn[0]) );
+		    ( ( dijp[0] + dijn[0] + 2. * d_o[0] ) - 
+			( dip[0] + din[0] + djp[0] + djn[0]) );
 		float d2ui_didk = (0.5 / (di*dk))*
-			( ( dikp[0] + dikn[0] + 2. * d_o[0] ) - 
-			  ( dip[0] + din[0] + dkp[0] + dkn[0]) );
+		    ( ( dikp[0] + dikn[0] + 2. * d_o[0] ) - 
+			( dip[0] + din[0] + dkp[0] + dkn[0]) );
 		float d2ui_djdk = (0.5 / (dj*dk))*
-			( ( djkp[0] + djkn[0] + 2. * d_o[0] ) - 
-			  ( djp[0] + djn[0] + dkp[0] + dkn[0]) );
+		    ( ( djkp[0] + djkn[0] + 2. * d_o[0] ) - 
+			( djp[0] + djn[0] + dkp[0] + dkn[0]) );
 
 		float d2uj_didi = (1./ di) * ( dip[1] - 2 * d_o[1] + din[1] );
 		float d2uj_djdj = (1./ dj) * ( djp[1] - 2 * d_o[1] + djn[1] );
 		float d2uj_dkdk = (1./ dk) * ( dkp[1] - 2 * d_o[1] + dkn[1] );
 		float d2uj_didj = (0.5 / (di*dj))*
-			( ( dijp[1] + dijn[1] + 2. * d_o[1] ) - 
-			  ( dip[1] + din[1] + djp[1] + djn[1]) );
+		    ( ( dijp[1] + dijn[1] + 2. * d_o[1] ) - 
+			( dip[1] + din[1] + djp[1] + djn[1]) );
 		float d2uj_didk = (0.5 / (di*dk))*
-			( ( dikp[1] + dikn[1] + 2. * d_o[1] ) - 
-			  ( dip[1] + din[1] + dkp[1] + dkn[1]) );
+		    ( ( dikp[1] + dikn[1] + 2. * d_o[1] ) - 
+			( dip[1] + din[1] + dkp[1] + dkn[1]) );
 		float d2uj_djdk = (0.5 / (dj*dk))*
-			( ( djkp[1] + djkn[1] + 2. * d_o[1] ) - 
-			  ( djp[1] + djn[1] + dkp[1] + dkn[1]) );
+		    ( ( djkp[1] + djkn[1] + 2. * d_o[1] ) - 
+			( djp[1] + djn[1] + dkp[1] + dkn[1]) );
 
 		float d2uk_didi = (1./ di) * ( dip[2] - 2 * d_o[2] + din[2] );
 		float d2uk_djdj = (1./ dj) * ( djp[2] - 2 * d_o[2] + djn[2] );
 		float d2uk_dkdk = (1./ dk) * ( dkp[2] - 2 * d_o[2] + dkn[2] );
 		float d2uk_didj = (0.5 / (di*dj))*
-			( ( dijp[2] + dijn[2] + 2. * d_o[2] ) - 
-			  ( dip[2] + din[2] + djp[2] + djn[2]) );
+		    ( ( dijp[2] + dijn[2] + 2. * d_o[2] ) - 
+			( dip[2] + din[2] + djp[2] + djn[2]) );
 		float d2uk_didk = (0.5 / (di*dk))*
-			( ( dikp[2] + dikn[2] + 2. * d_o[2] ) - 
-			  ( dip[2] + din[2] + dkp[2] + dkn[2]) );
+		    ( ( dikp[2] + dikn[2] + 2. * d_o[2] ) - 
+			( dip[2] + din[2] + dkp[2] + dkn[2]) );
 		float d2uk_djdk = (0.5 / (dj*dk))*
-			( ( djkp[2] + djkn[2] + 2. * d_o[2] ) - 
-			  ( djp[2] + djn[2] + dkp[2] + dkn[2]) );
+		    ( ( djkp[2] + djkn[2] + 2. * d_o[2] ) - 
+			( djp[2] + djn[2] + dkp[2] + dkn[2]) );
 
 		float second_deriv_sq =
-			d2ui_didi*d2ui_didi + d2ui_djdj*d2ui_djdj + d2ui_dkdk*d2ui_dkdk +
-			2*(d2ui_didj*d2ui_didj + d2ui_didk*d2ui_didk + d2ui_djdk*d2ui_djdk) +
-			d2uj_didi*d2uj_didi + d2uj_djdj*d2uj_djdj + d2uj_dkdk*d2uj_dkdk +
-			2*(d2uj_didj*d2uj_didj + d2uj_didk*d2uj_didk + d2uj_djdk*d2uj_djdk) +
-			d2uk_didi*d2uk_didi + d2uk_djdj*d2uk_djdj + d2uk_dkdk*d2uk_dkdk +
-			2*(d2uk_didj*d2uk_didj + d2uk_didk*d2uk_didk + d2uk_djdk*d2uk_djdk) ;
+		    d2ui_didi*d2ui_didi + d2ui_djdj*d2ui_djdj + d2ui_dkdk*d2ui_dkdk +
+		    2*(d2ui_didj*d2ui_didj + d2ui_didk*d2ui_didk + d2ui_djdk*d2ui_djdk) +
+		    d2uj_didi*d2uj_didi + d2uj_djdj*d2uj_djdj + d2uj_dkdk*d2uj_dkdk +
+		    2*(d2uj_didj*d2uj_didj + d2uj_didk*d2uj_didk + d2uj_djdk*d2uj_djdk) +
+		    d2uk_didi*d2uk_didi + d2uk_djdj*d2uk_djdj + d2uk_dkdk*d2uk_dkdk +
+		    2*(d2uk_didj*d2uk_didj + d2uk_didk*d2uk_didk + d2uk_djdk*d2uk_djdk) ;
 
 		total_sec_der += second_deriv_sq;
 
 		if (first) {
-			max_sec_der = second_deriv_sq;
-			min_sec_der = second_deriv_sq;
-			max_sec_der_loc[0] = i;
+		    max_sec_der = second_deriv_sq;
+		    min_sec_der = second_deriv_sq;
+		    max_sec_der_loc[0] = i;
 		    max_sec_der_loc[1] = j;
 		    max_sec_der_loc[2] = k;
 		    first = 0;
 		} else {
 		    if (second_deriv_sq > max_sec_der) {
-				max_sec_der = second_deriv_sq;
-				max_sec_der_loc[0] = i;
-				max_sec_der_loc[1] = j;
-				max_sec_der_loc[2] = k;
-				};
-		  	if (second_deriv_sq < min_sec_der) min_sec_der = second_deriv_sq;
+			max_sec_der = second_deriv_sq;
+			max_sec_der_loc[0] = i;
+			max_sec_der_loc[1] = j;
+			max_sec_der_loc[2] = k;
+		    };
+		    if (second_deriv_sq < min_sec_der) min_sec_der = second_deriv_sq;
 		}
 
 	    }
