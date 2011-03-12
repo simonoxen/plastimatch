@@ -217,7 +217,7 @@ bspline_state_create (
 }
 
 void
-write_bxf (char* filename, Bspline_xform* bxf)
+write_bxf (const char* filename, Bspline_xform* bxf)
 {
     FILE* fp;
 	

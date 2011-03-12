@@ -213,7 +213,7 @@ gpuit_EXPORT
 Bspline_xform* read_bxf (char* filename);
 
 gpuit_EXPORT
-void write_bxf (char* filename, Bspline_xform* bxf);
+void write_bxf (const char* filename, Bspline_xform* bxf);
 
 gpuit_EXPORT
 void

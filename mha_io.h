@@ -12,7 +12,7 @@ extern "C" {
 #endif
 
 gpuit_EXPORT Volume* read_mha (const char* filename);
-gpuit_EXPORT void write_mha (char* filename, Volume* vol);
+gpuit_EXPORT void write_mha (const char* filename, Volume* vol);
 
 #if defined __cplusplus
 }

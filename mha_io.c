@@ -23,7 +23,7 @@
    ----------------------------------------------------------------------- */
 static void 
 write_mha_internal (
-    char* filename,          /* Input: filename to write to */
+    const char* filename,    /* Input: filename to write to */
     Volume* vol,             /* Input: volume to write */
     int mh5                  /* Input: force 512 byte header */
 )
@@ -212,7 +212,7 @@ is_mh5 (const char* filename)
    Public functions
    ----------------------------------------------------------------------- */
 void 
-write_mha (char* filename, Volume* vol)
+write_mha (const char* filename, Volume* vol)
 {
     if (is_mh5 (filename)) {
 	write_mha_internal (filename, vol, 1);

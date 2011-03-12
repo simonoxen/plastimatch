@@ -310,7 +310,7 @@ load_gpuit_bsp (Xform *xf, const char* fn)
 
 template< class T >
 static void
-itk_xform_save (T transform, char *filename)
+itk_xform_save (T transform, const char *filename)
 {
     typedef itk::TransformFileWriter TransformWriterType;
     TransformWriterType::Pointer outputTransformWriter;
@@ -401,7 +401,10 @@ itk_xform_load (Xform *xf, const char* fn)
 }
 
 void
-xform_save_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
+xform_save_itk_bsp (
+    BsplineTransformType::Pointer transform, 
+    const char* filename
+)
 {
     FILE* fp = fopen (filename,"w");
     if (!fp) {
@@ -452,7 +455,7 @@ xform_save_itk_bsp (BsplineTransformType::Pointer transform, char* filename)
 }
 
 void
-xform_save (Xform *xf, char* fn)
+xform_save (Xform *xf, const char* fn)
 {
     switch (xf->m_type) {
     case XFORM_ITK_TRANSLATION:
