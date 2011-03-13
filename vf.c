@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "interpolate.h"
 #include "math_util.h"
 #include "plm_config.h"
 #include "plm_int.h"
@@ -17,11 +18,10 @@ Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
 {
     int d, v, ijk[3];
-    int mi, mj, mk, mv;
     float fxyz[3];
     float* vf_img = (float*) vf->img;
-    float* vin_img = (float*) vin->img;
     float* vout_img;
+    float* m_img = (float*) vin->img;
 
     printf ("Direction cosines: "
 	"vin = %f %f %f ...\n"
@@ -64,52 +64,47 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		    fxyz[1] + dxyz[1] - vin->offset[1],
 		    fxyz[2] + dxyz[2] - vin->offset[2]
 		};
-		float mxyz[3];
+		float m_val;
+		float li_1[3];  /* Fraction of interpolant in lower index */
+		float li_2[3];  /* Fraction of interpolant in upper index */
+		float mijk[3];
+		int mijk_r[3], mijk_f[3];
+		int mvf;
 
-		mxyz[2] = PROJECT_Z(mo_xyz,vin->proj);
-		mxyz[1] = PROJECT_Y(mo_xyz,vin->proj);
-		mxyz[0] = PROJECT_X(mo_xyz,vin->proj);
-		mk = ROUND_INT(mxyz[2]);
-		mj = ROUND_INT(mxyz[1]);
-		mi = ROUND_INT(mxyz[0]);
+		mijk[2] = PROJECT_Z(mo_xyz,vin->proj);
+		if (mijk[2] < -0.5 || mijk[2] > vin->dim[2] - 0.5) continue;
+		mijk[1] = PROJECT_Y(mo_xyz,vin->proj);
+		if (mijk[1] < -0.5 || mijk[1] > vin->dim[1] - 0.5) continue;
+		mijk[0] = PROJECT_X(mo_xyz,vin->proj);
+		if (mijk[0] < -0.5 || mijk[0] > vin->dim[0] - 0.5) continue;
+
+#if defined (commentout)
+		/* Nearest neighbor */
+		mijk_r[2] = ROUND_INT(mijk[2]);
+		mijk_r[1] = ROUND_INT(mijk[1]);
+		mijk_r[0] = ROUND_INT(mijk[0]);
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
-
-		if (ijk[0] == 0 && ijk[1] == 0 && ijk[2] == 0) {
-		    printf ("proj[0] = [%f,%f,%f]\n", 
-			vin->proj[0][0],
-			vin->proj[0][1],
-			vin->proj[0][2]);
-		}
-		if (ijk[2] == 0 && ijk[1] < 2 && ijk[0] < 2) {
-		    printf ("[%f,%f,%f] -> [%f,%f,%f] -> [%f,%f,%f]\n",
-			fxyz[0] + dxyz[0], 
-			fxyz[1] + dxyz[1], 
-			fxyz[2] + dxyz[2], 
-			mo_xyz[0], mo_xyz[1], mo_xyz[2],
-			mxyz[0], mxyz[1], mxyz[2]);
-		}
-		if (ijk[0] == 152 && ijk[1] == 180 && ijk[2] == 11) {
-		    printf ("[%f,%f,%f] -> [%f,%f,%f] \n"
-			"    -> [%f,%f,%f] -> [%f,%f,%f]\n"
-			"    -> [%d,%d,%d]\n",
-			fxyz[0], fxyz[1], fxyz[2],
-			fxyz[0] + dxyz[0], 
-			fxyz[1] + dxyz[1], 
-			fxyz[2] + dxyz[2], 
-			mo_xyz[0], mo_xyz[1], mo_xyz[2],
-			mxyz[0], mxyz[1], mxyz[2],
-			mi, mj, mk
-		    );
-		}
-
 		if (mk < 0 || mk >= vin->dim[2]) continue;
 		if (mj < 0 || mj >= vin->dim[1]) continue;
 		if (mi < 0 || mi >= vin->dim[0]) continue;
+		vout_img[v] = vin_img[mv];
+#endif
 
 		/* Get tri-linear interpolation fractions */
-		//li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, vin);
 
-		vout_img[v] = vin_img[mv];
+		/* Find linear index of "corner voxel" in moving image */
+		mvf = INDEX_OF (mijk_f, vin->dim);
+		
+		/* Compute moving image intensity using linear interpolation */
+		LI_VALUE (m_val, 
+		    li_1[0], li_2[0],
+		    li_1[1], li_2[1],
+		    li_1[2], li_2[2],
+		    mvf, m_img, vin);
+
+		/* Assign the value */
+		vout_img[v] = m_val;
 	    }
 	}
     }
