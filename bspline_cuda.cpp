@@ -18,12 +18,13 @@
 #include "bspline_cuda.h"
 #include "cuda_util.h"
 #endif
-#include "bspline_macros.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
+#include "interpolate.h"
 #include "mha_io.h"
 #include "plm_timer.h"
 #include "volume.h"
+#include "volume_macros.h"
 
 
 /***********************************************************************
@@ -511,7 +512,7 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
                 if (!rc) continue;
 
                 // Compute tri-linear interpolation weights
-                CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+                li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 // Find linear index of fixed image voxel
                 fv = INDEX_OF (fijk, fixed->dim);
@@ -613,7 +614,7 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
                 if (!rc) continue;
 
                 /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-                CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+                li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of fixed image voxel */
                 fv = INDEX_OF (fijk, fixed->dim);
