@@ -29,23 +29,28 @@
 #include <time.h>
 #include <string.h>
 #include <math.h>
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
 #if (OPENMP_FOUND)
 #include <omp.h>
 #endif
+#if (SSE2_FOUND)
+#include <xmmintrin.h>
+#endif
+
 #include "bspline.h"
 #include "bspline_mse_cpu_c.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#if (SSE2_FOUND)
-#include <xmmintrin.h>
-#endif
 #include "bspline_regularize.h"
 #include "bspline_landmarks.h"
-#include "bspline_macros.h"
 #include "bspline_optimize.h"
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
+#include "delayload.h"
+#include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
 #include "mha_io.h"
@@ -53,12 +58,8 @@
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "volume.h"
+#include "volume_macros.h"
 #include "xpm.h"
-#include "delayload.h"
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
 
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
@@ -86,15 +87,6 @@ bspline_parms_set_default (Bspline_parms* parms)
     parms->debug = 0;
     parms->lbfgsb_factr = 1.0e+7;
     parms->lbfgsb_pgtol = 1.0e-5;
-
-#if defined (commentout)
-    parms->landmarks = 0;
-    parms->landmark_stiffness = 1.0;
-    parms->landmark_implementation = 'a';
-    parms->young_modulus = 0.0;
-    parms->rbf_radius = 0.0;
-    parms->rbf_young_modulus = 0.0;
-#endif
 
     parms->mi_hist.f_hist = 0;
     parms->mi_hist.m_hist = 0;
@@ -1527,61 +1519,6 @@ bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
     }
 }
 
-
-/* Clipping is done using clamping.  You should have "air" as the outside
-   voxel so pixels can be clamped to air.  */
-inline void
-clamp_linear_interpolate_inline (
-    float ma,           /* (Unrounded) pixel coordinate (in vox) */
-    int dmax,		/* Maximum coordinate in this dimension */
-    int* maf,		/* x, y, or z coord of "floor" pixel in moving img */
-    int* mar,		/* x, y, or z coord of "round" pixel in moving img */
-    float* fa1,		/* Fraction of interpolant for lower index voxel */
-    float* fa2		/* Fraction of interpolant for upper index voxel */
-)
-{
-    float maff = floor(ma);
-    *maf = (int) maff;
-    *mar = ROUND_INT (ma);
-    *fa2 = ma - maff;
-    if (*maf < 0) {
-	*maf = 0;
-	*mar = 0;
-	*fa2 = 0.0f;
-    } else if (*maf >= dmax) {
-	*maf = dmax - 1;
-	*mar = dmax;
-	*fa2 = 1.0f;
-    }
-    *fa1 = 1.0f - *fa2;
-}
-
-void
-clamp_linear_interpolate (
-    float ma,           /*  Input: (Unrounded) pixel coordinate (in vox) */
-    int dmax,		/*  Input: Maximum coordinate in this dimension */
-    int* maf,		/* Output: x, y, or z coord of "floor" pixel in moving img */
-    int* mar,		/* Output: x, y, or z coord of "round" pixel in moving img */
-    float* fa1,		/* Output: Fraction of interpolant for lower index voxel */
-    float* fa2		/* Output: Fraction of interpolant for upper index voxel */
-)
-{
-    float maff = floor(ma);
-    *maf = (int) maff;
-    *mar = ROUND_INT (ma);
-    *fa2 = ma - maff;
-    if (*maf < 0) {
-	*maf = 0;
-	*mar = 0;
-	*fa2 = 0.0f;
-    } else if (*maf >= dmax) {
-	*maf = dmax - 1;
-	*mar = dmax;
-	*fa2 = 1.0f;
-    }
-    *fa1 = 1.0f - *fa2;
-}
-
 inline void
 clamp_quadratic_interpolate_inline (
     float ma,           /* Input: (Unrounded) pixel coordinate (in vox units) */
@@ -1992,42 +1929,6 @@ bspline_find_correspondence
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
     return 1;
-}
-
-static inline void
-clamp_linear_interpolate_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
-			     float li_frac_1[3], float li_frac_2[3],
-			     Volume *moving)
-{
-    clamp_linear_interpolate (mijk[0], moving->dim[0]-1, &mijk_f[0], 
-			      &mijk_r[0], &li_frac_1[0], &li_frac_2[0]);
-    clamp_linear_interpolate (mijk[1], moving->dim[1]-1, &mijk_f[1], 
-			      &mijk_r[1], &li_frac_1[1], &li_frac_2[1]);
-    clamp_linear_interpolate (mijk[2], moving->dim[2]-1, &mijk_f[2], 
-			      &mijk_r[2], &li_frac_1[2], &li_frac_2[2]);
-}
-
-static inline float 
-bspline_li_value (float fx1, float fx2, float fy1, float fy2, 
-		  float fz1, float fz2, int mvf, 
-		  float *m_img, Volume *moving)
-{
-    float m_x1y1z1, m_x2y1z1, m_x1y2z1, m_x2y2z1;
-    float m_x1y1z2, m_x2y1z2, m_x1y2z2, m_x2y2z2;
-    float m_val;
-
-    m_x1y1z1 = fx1 * fy1 * fz1 * m_img[mvf];
-    m_x2y1z1 = fx2 * fy1 * fz1 * m_img[mvf+1];
-    m_x1y2z1 = fx1 * fy2 * fz1 * m_img[mvf+moving->dim[0]];
-    m_x2y2z1 = fx2 * fy2 * fz1 * m_img[mvf+moving->dim[0]+1];
-    m_x1y1z2 = fx1 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]];
-    m_x2y1z2 = fx2 * fy1 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+1];
-    m_x1y2z2 = fx1 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]];
-    m_x2y2z2 = fx2 * fy2 * fz2 * m_img[mvf+moving->dim[1]*moving->dim[0]+moving->dim[0]+1];
-    m_val = m_x1y1z1 + m_x2y1z1 + m_x1y2z1 + m_x2y2z1 
-	    + m_x1y1z2 + m_x2y1z2 + m_x1y2z2 + m_x2y2z2;
-
-    return m_val;
 }
 
 /* JAS 2010.11.30
@@ -2658,9 +2559,7 @@ bspline_score_f_mi (Bspline_parms *parms,
                     if (!rc) continue;
 
                     /* Get tri-linear interpolation fractions */
-                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                                                 li_1, li_2,
-                                                 moving);
+                    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
                     fv = INDEX_OF (fijk, fixed->dim);
@@ -2809,9 +2708,7 @@ bspline_score_f_mi (Bspline_parms *parms,
                     if (!rc) continue;
 
                     /* Get tri-linear interpolation fractions */
-                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                                                 li_1, li_2,
-                                                 moving);
+                    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
                     fv = INDEX_OF (fijk, fixed->dim);
@@ -2995,9 +2892,7 @@ bspline_score_e_mi (Bspline_parms *parms,
                     if (!rc) continue;
 
                     /* Get tri-linear interpolation fractions */
-                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                                                 li_1, li_2,
-                                                 moving);
+                    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
                     fv = INDEX_OF (fijk, fixed->dim);
@@ -3155,9 +3050,7 @@ bspline_score_e_mi (Bspline_parms *parms,
                     if (!rc) continue;
 
                     /* Get tri-linear interpolation fractions */
-                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                                                 li_1, li_2,
-                                                 moving);
+                    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
                     fv = INDEX_OF (fijk, fixed->dim);
@@ -3324,8 +3217,7 @@ bspline_score_d_mi (Bspline_parms *parms,
             /* If voxel is not inside moving image */
             if (!rc) continue;
 
-            CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                li_1, li_2, moving);
+	    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
             /* Find linear index of fixed image voxel */
             fv = INDEX_OF (fijk, fixed->dim);
@@ -3334,9 +3226,8 @@ bspline_score_d_mi (Bspline_parms *parms,
             mvf = INDEX_OF (mijk_f, moving->dim);
 
             /* Compute moving image intensity using linear interpolation */
-            /* Macro is slightly faster than function */
             // NOTE: Not used by MI PVI8
-            BSPLINE_LI_VALUE (m_val, 
+            LI_VALUE (m_val, 
                 li_1[0], li_2[0],
                 li_1[1], li_2[1],
                 li_1[2], li_2[2],
@@ -3456,9 +3347,7 @@ bspline_score_d_mi (Bspline_parms *parms,
                     if (!rc) continue;
 
                     /* Get tri-linear interpolation fractions */
-                    CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                                                 li_1, li_2,
-                                                 moving);
+		    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
                     fv = INDEX_OF (fijk, fixed->dim);
@@ -3590,8 +3479,7 @@ bspline_score_c_mi (Bspline_parms *parms,
             /* If voxel is not inside moving image */
             if (!rc) continue;
 
-            CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                li_1, li_2, moving);
+	    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
             /* Find linear index of fixed image voxel */
             fv = INDEX_OF (fijk, fixed->dim);
@@ -3602,7 +3490,7 @@ bspline_score_c_mi (Bspline_parms *parms,
             /* Compute moving image intensity using linear interpolation */
             /* Macro is slightly faster than function */
             // NOTE: Not used by MI PVI8
-            BSPLINE_LI_VALUE (m_val, 
+            LI_VALUE (m_val, 
                 li_1[0], li_2[0],
                 li_1[1], li_2[1],
                 li_1[2], li_2[2],
@@ -3693,8 +3581,7 @@ bspline_score_c_mi (Bspline_parms *parms,
             /* LINEAR INTERPOLATION - (not implemented) */
 
             /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-            CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-                li_1, li_2, moving);
+	    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
             /* Find linear index of fixed image voxel */
             fv = INDEX_OF (fijk, fixed->dim);
@@ -3913,8 +3800,7 @@ bspline_warp (
 		/* If voxel is not inside moving image */
 		if (!rc) continue;
 
-		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-		    li_1, li_2, moving);
+		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
 		if (linear_interp) {
 		    /* Find linear index of "corner voxel" in moving image */
@@ -3923,7 +3809,7 @@ bspline_warp (
 		    /* Compute moving image intensity using linear 
 		       interpolation */
 		    /* Macro is slightly faster than function */
-		    BSPLINE_LI_VALUE (m_val, 
+		    LI_VALUE (m_val, 
 			li_1[0], li_2[0],
 			li_1[1], li_2[1],
 			li_1[2], li_2[2],
@@ -4078,7 +3964,8 @@ bspline_score_h_mse (
 		    if (!rc) continue;
 
 		    // Compute linear interpolation fractions
-		    CLAMP_LINEAR_INTERPOLATE_3D (crds_moving,
+		    li_clamp_3d (
+			crds_moving,
 			crds_moving_floor,
 			crds_moving_round,
 			li_1,
@@ -4090,7 +3977,7 @@ bspline_score_h_mse (
 		    idx_moving_round = INDEX_OF (crds_moving_round, moving->dim);
 
 		    // Calc. moving voxel intensity via linear interpolation
-		    BSPLINE_LI_VALUE (m_val, 
+		    LI_VALUE (m_val, 
 			li_1[0], li_2[0],
 			li_1[1], li_2[1],
 			li_1[2], li_2[2],
@@ -4280,7 +4167,8 @@ bspline_score_g_mse (
 		    if (!rc) continue;
 
 		    // Compute linear interpolation fractions
-		    CLAMP_LINEAR_INTERPOLATE_3D (crds_moving,
+		    li_clamp_3d (
+			crds_moving,
 			crds_moving_floor,
 			crds_moving_round,
 			li_1,
@@ -4292,7 +4180,7 @@ bspline_score_g_mse (
 		    idx_moving_round = INDEX_OF (crds_moving_round, moving->dim);
 
 		    // Calc. moving voxel intensity via linear interpolation
-		    BSPLINE_LI_VALUE (m_val, 
+		    LI_VALUE (m_val, 
 			li_1[0], li_2[0],
 			li_1[1], li_2[1],
 			li_1[2], li_2[2],

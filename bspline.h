@@ -10,17 +10,6 @@
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
 /* -----------------------------------------------------------------------
-   Macros
-   ----------------------------------------------------------------------- */
-#define INDEX_OF(ijk, dim) \
-    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
-
-#define COORDS_FROM_INDEX(ijk, idx, dim) \
-	ijk[2] = idx / (dim[0] * dim[1]);	\
-	ijk[1] = (idx - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
-	ijk[0] = idx - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
-
-/* -----------------------------------------------------------------------
    Types
    ----------------------------------------------------------------------- */
 struct bspline_landmarks;
@@ -266,10 +255,6 @@ bspline_score (Bspline_parms *parms,
 	       Volume *moving_grad);
 
 void
-clamp_linear_interpolate (float ma, int dmax, int* maf, int* mar, 
-			  float* fa1, float* fa2);
-
-void
 bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
 		       int pidx, int qidx, float dc_dv[3]);
 int* calc_offsets (int* tile_dims, int* cdims);
@@ -301,7 +286,6 @@ bspline_save_debug_state
  );
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
-
 
 #if defined __cplusplus
 }

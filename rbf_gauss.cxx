@@ -496,6 +496,7 @@ rbf_gauss_warp (Landmark_warp *lw)
 {
     float *coeff;
     float origin[3], spacing[3];
+    float direction_cosines[9];
     int dim[3];
     int i;
     Volume *moving, *vf_out, *warped_out;
@@ -510,7 +511,6 @@ rbf_gauss_warp (Landmark_warp *lw)
     else {
 	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 	    lw->adapt_radius[i]=lw->rbf_radius;
-
     }
 
     for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
@@ -529,8 +529,10 @@ rbf_gauss_warp (Landmark_warp *lw)
     lw->m_pih.get_origin (origin);
     lw->m_pih.get_spacing (spacing);
     lw->m_pih.get_dim (dim);
+    lw->m_pih.get_direction_cosines (direction_cosines);
+
     vf_out = volume_create (dim, origin, spacing, 
-	PT_VF_FLOAT_INTERLEAVED, 0, 0);
+	PT_VF_FLOAT_INTERLEAVED, direction_cosines, 0);
 
     printf ("Rendering vector field\n");
     rbf_gauss_update_vf (vf_out, lw, coeff);
@@ -541,7 +543,7 @@ rbf_gauss_warp (Landmark_warp *lw)
 
     printf ("Creating output vol\n");
     warped_out = volume_create (dim, origin, spacing, 
-	PT_FLOAT, 0, 0);
+	PT_FLOAT, direction_cosines, 0);
 
     printf ("Warping image\n");
     vf_warp (warped_out, moving, vf_out);

@@ -11,25 +11,24 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
-#define CONVERT_VOLUME(old_type,new_type,new_type_enum)	  \
-    {                                             \
-    int v;                                        \
-    old_type* old_img;                            \
-    new_type* new_img;                            \
-                                                  \
-    old_img = (old_type*) ref->img;               \
-    new_img = (new_type*) malloc (sizeof(new_type) * ref->npix); \
-    if (!new_img) {                               \
-      fprintf (stderr, "Memory allocation failed.\n"); \
-      exit(1);                                    \
-    }                                             \
-    for (v = 0; v < ref->npix; v++) {             \
-      new_img[v] = (new_type) old_img[v];         \
-    }                                             \
-    ref->pix_size = sizeof(new_type);             \
-    ref->pix_type = new_type_enum;                \
-    ref->img = (void*) new_img;                   \
-    free (old_img);                               \
+#define CONVERT_VOLUME(old_type,new_type,new_type_enum)			\
+    {									\
+	int v;								\
+	old_type* old_img;						\
+	new_type* new_img;						\
+	old_img = (old_type*) ref->img;					\
+	new_img = (new_type*) malloc (sizeof(new_type) * ref->npix);	\
+	if (!new_img) {							\
+	    fprintf (stderr, "Memory allocation failed.\n");		\
+	    exit(1);							\
+	}								\
+	for (v = 0; v < ref->npix; v++) {				\
+	    new_img[v] = (new_type) old_img[v];				\
+	}								\
+	ref->pix_size = sizeof(new_type);				\
+	ref->pix_type = new_type_enum;					\
+	ref->img = (void*) new_img;					\
+	free (old_img);							\
     }
 
 int
@@ -74,8 +73,10 @@ volume_create (
 
     for (i = 0; i < 3; i++) {
 	for (j = 0; j < 3; j++) {
-	    vol->step[i][j] = vol->pix_spacing[i] 
-		* vol->direction_cosines[3*i+j];
+	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
+		* vol->pix_spacing[j];
+	    vol->proj[i][j] = vol->direction_cosines[3*j+i] 
+		/ vol->pix_spacing[i];
 	}
     }
 
@@ -872,58 +873,4 @@ vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
 	    }
 	}
     }
-}
-
-Volume* 
-volume_axial2coronal (Volume* ref)
-{
-    Volume* vout;
-    int j, k;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
-    vout->dim[1]=ref->dim[2];
-    vout->dim[2]=ref->dim[1];
-    vout->offset[1]=ref->offset[2];
-    vout->offset[2]=ref->offset[1];
-    vout->pix_spacing[1]=ref->pix_spacing[2];
-    vout->pix_spacing[2]=ref->pix_spacing[1];
-  
-    for (k=0;k<ref->dim[2];k++) {
-	for (j=0;j<ref->dim[1];j++) {
-	    memcpy ((float*)vout->img 
-		+ volume_index (vout->dim, 0, (vout->dim[1]-1-k), j), 
-		(float*)ref->img 
-		+ volume_index (ref->dim, 0, j, k), ref->dim[0]*ref->pix_size);
-	}
-    }
-
-    return vout;
-}
-
-Volume* 
-volume_axial2sagittal (Volume* ref)
-{
-    Volume* vout;
-    int i, j, k;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, ref->pix_type, ref->direction_cosines, 0);
-    vout->dim[0]=ref->dim[1];
-    vout->dim[1]=ref->dim[2];
-    vout->dim[2]=ref->dim[0];
-    vout->offset[0]=ref->offset[1];
-    vout->offset[1]=ref->offset[2];
-    vout->offset[2]=ref->offset[0];
-    vout->pix_spacing[0]=ref->pix_spacing[1];
-    vout->pix_spacing[1]=ref->pix_spacing[2];
-    vout->pix_spacing[2]=ref->pix_spacing[0];
-  
-    for (k=0;k<ref->dim[2];k++) {
-	for (j=0;j<ref->dim[1];j++) {
-	    for (i=0;i<ref->dim[0];i++) {
-		memcpy ((float*)vout->img
-		    + volume_index (vout->dim, j, (vout->dim[1]-1-k), i), 
-		    (float*)ref->img 
-		    + volume_index (ref->dim, i, j, k), ref->pix_size);
-	    }
-	}
-    }
-    return vout;
 }

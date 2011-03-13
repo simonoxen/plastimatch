@@ -1,16 +1,17 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include "math_util.h"
 #include "plm_config.h"
 #include "plm_int.h"
 #include "vf.h"
 #include "volume.h"
-
-#define round_int(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+#include "volume_macros.h"
 
 Volume*
 vf_warp (Volume *vout, Volume *vin, Volume *vf)
@@ -18,7 +19,6 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
     int d, v, ijk[3];
     int mi, mj, mk, mv;
     float fxyz[3];
-    float mx, my, mz;
     float* vf_img = (float*) vf->img;
     float* vin_img = (float*) vin->img;
     float* vout_img;
@@ -55,34 +55,59 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	}
     }
 
-#if defined (commentout)
-    for (v = 0, k = 0, fz = vf->offset[2]; k < vf->dim[2]; k++, fz += vf->pix_spacing[2]) {
-	for (j = 0, fy = vf->offset[1]; j < vf->dim[1]; j++, fy += vf->pix_spacing[1]) {
-	    for (i = 0, fx = vf->offset[0]; i < vf->dim[0]; i++, fx += vf->pix_spacing[0], v++) {
-	    }}}
-#endif
     for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
 	for (LOOP_Y (ijk, fxyz, vf)) {
-	    for (LOOP_Z (ijk, fxyz, vf), v++) {
+	    for (LOOP_X (ijk, fxyz, vf), v++) {
 		float *dxyz = &vf_img[3*v];
-		mz = fxyz[2] + dxyz[2];
-		mk = round_int((mz - vin->offset[2]) / vin->pix_spacing[2]);
-		my = fxyz[1] + dxyz[1];
-		mj = round_int((my - vin->offset[1]) / vin->pix_spacing[1]);
-		mx = fxyz[0] + dxyz[0];
-		mi = round_int((mx - vin->offset[0]) / vin->pix_spacing[0]);
+		float mo_xyz[3] = {
+		    fxyz[0] + dxyz[0] - vin->offset[0],
+		    fxyz[1] + dxyz[1] - vin->offset[1],
+		    fxyz[2] + dxyz[2] - vin->offset[2]
+		};
+		float mxyz[3];
+
+		mxyz[2] = PROJECT_Z(mo_xyz,vin->proj);
+		mxyz[1] = PROJECT_Y(mo_xyz,vin->proj);
+		mxyz[0] = PROJECT_X(mo_xyz,vin->proj);
+		mk = ROUND_INT(mxyz[2]);
+		mj = ROUND_INT(mxyz[1]);
+		mi = ROUND_INT(mxyz[0]);
 		mv = (mk * vin->dim[1] + mj) * vin->dim[0] + mi;
 
-#if defined (commentout)
-		if (i == 128 && j == 128 && (k == 96 || k == 95)) {
-		    printf ("(%d %d %d) (%g %g %g) + (%g %g %g) = (%g %g %g) (%d %d %d)\n",
-			i, j, k, fx, fy, fz, dxyz[0], dxyz[1], dxyz[2], 
-			mx, my, mz, mi, mj, mk);
+		if (ijk[0] == 0 && ijk[1] == 0 && ijk[2] == 0) {
+		    printf ("proj[0] = [%f,%f,%f]\n", 
+			vin->proj[0][0],
+			vin->proj[0][1],
+			vin->proj[0][2]);
 		}
-#endif
+		if (ijk[2] == 0 && ijk[1] < 2 && ijk[0] < 2) {
+		    printf ("[%f,%f,%f] -> [%f,%f,%f] -> [%f,%f,%f]\n",
+			fxyz[0] + dxyz[0], 
+			fxyz[1] + dxyz[1], 
+			fxyz[2] + dxyz[2], 
+			mo_xyz[0], mo_xyz[1], mo_xyz[2],
+			mxyz[0], mxyz[1], mxyz[2]);
+		}
+		if (ijk[0] == 152 && ijk[1] == 180 && ijk[2] == 11) {
+		    printf ("[%f,%f,%f] -> [%f,%f,%f] \n"
+			"    -> [%f,%f,%f] -> [%f,%f,%f]\n"
+			"    -> [%d,%d,%d]\n",
+			fxyz[0], fxyz[1], fxyz[2],
+			fxyz[0] + dxyz[0], 
+			fxyz[1] + dxyz[1], 
+			fxyz[2] + dxyz[2], 
+			mo_xyz[0], mo_xyz[1], mo_xyz[2],
+			mxyz[0], mxyz[1], mxyz[2],
+			mi, mj, mk
+		    );
+		}
+
 		if (mk < 0 || mk >= vin->dim[2]) continue;
 		if (mj < 0 || mj >= vin->dim[1]) continue;
 		if (mi < 0 || mi >= vin->dim[0]) continue;
+
+		/* Get tri-linear interpolation fractions */
+		//li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
 		vout_img[v] = vin_img[mv];
 	    }

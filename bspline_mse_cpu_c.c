@@ -10,6 +10,8 @@
 #include "bspline.h"
 #include "bspline_mse_cpu_c.h"
 #include "plm_timer.h"
+#include "interpolate.h"
+#include "volume_macros.h"
 
 /* Mean-squared error version of implementation "C" */
 /* Implementation "C" is slower than "B", but yields a smoother cost function 
@@ -98,19 +100,18 @@ bspline_score_c_mse (
 		}
 
 		/* Compute interpolation fractions */
-		CLAMP_LINEAR_INTERPOLATE_3D (mijk, mijk_f, mijk_r, 
-					     li_1, li_2, moving);
+		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
 		/* Find linear index of "corner voxel" in moving image */
 		mvf = INDEX_OF (mijk_f, moving->dim);
 
 		/* Compute moving image intensity using linear interpolation */
 		/* Macro is slightly faster than function */
-		BSPLINE_LI_VALUE (m_val, 
-				  li_1[0], li_2[0],
-				  li_1[1], li_2[1],
-				  li_1[2], li_2[2],
-				  mvf, m_img, moving);
+		LI_VALUE (m_val, 
+		    li_1[0], li_2[0],
+		    li_1[1], li_2[1],
+		    li_1[2], li_2[2],
+		    mvf, m_img, moving);
 
 		/* Compute linear index of fixed image voxel */
 		fv = INDEX_OF (fijk, fixed->dim);

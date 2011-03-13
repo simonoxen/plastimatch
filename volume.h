@@ -6,29 +6,6 @@
 
 #include "plm_config.h"
 
-#define LOOP_Z(ijk,fxyz,vol)			         		\
-    ijk[2] = 0,								\
-	fxyz[2] = vol->offset[2];					\
-    ijk[2] < vol->dim[2];						\
-    ++ijk[2],								\
-	fxyz[2] = vol->offset[2] + ijk[2]*vol->step[2][2]
-#define LOOP_Y(ijk,fxyz,vol)						\
-    ijk[1] = 0,								\
-	fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1][2];		\
-    ijk[1] < vol->dim[1];						\
-    ++ijk[1],								\
-	fxyz[1] = vol->offset[1] + ijk[2]*vol->step[1][2]		\
-	+ ijk[1] * vol->step[1][1]
-#define LOOP_X(ijk,fxyz,vol)						\
-    ijk[0] = 0,								\
-	fxyz[0] = vol->offset[0] + ijk[2]*vol->step[0][2]		\
-	+ ijk[1]*vol->step[0][1]					\
-    ijk[0] < vol->dim[0];						\
-    ++ijk[0],								\
-	fxyz[0] += vol->step[0][0],					\
-	fxyz[1] += vol->step[1][0],					\
-	fxyz[2] += vol->step[2][0]
-
 enum Volume_pixel_type {
     PT_UNDEFINED,
     PT_UCHAR,
@@ -49,7 +26,8 @@ struct volume
     float offset[3];
     float pix_spacing[3];
     float direction_cosines[9];
-    float step[3][3];           // spacing * direction_cosines
+    float step[3][3];           // direction_cosines * spacing
+    float proj[3][3];           // direction_cosines / spacing
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
     int pix_size;		        // # bytes per voxel
@@ -110,12 +88,6 @@ gpuit_EXPORT
 void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
 gpuit_EXPORT
 void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
-gpuit_EXPORT
-Volume* 
-volume_axial2coronal (Volume* ref);
-gpuit_EXPORT
-Volume* 
-volume_axial2sagittal (Volume* ref);
 
 #if defined __cplusplus
 }

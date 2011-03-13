@@ -6,7 +6,6 @@
 
 #include "plm_config.h"
 #include "bspline.h"
-#include "bspline_macros.h"
 
 #if defined __cplusplus
 extern "C" {

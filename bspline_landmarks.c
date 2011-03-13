@@ -15,6 +15,7 @@
 #include "math_util.h"
 #include "pointset.h"
 #include "print_and_exit.h"
+#include "volume_macros.h"
 
 Bspline_landmarks*
 bspline_landmarks_create (void)

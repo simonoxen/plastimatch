@@ -750,7 +750,6 @@ SET (GPUIT_LIBRARY_SRC
   bstring_util.cxx bstring_util.h
   bspline.c bspline.h
   bspline_landmarks.c bspline_landmarks.h
-  bspline_macros.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h
   bspline_optimize.c bspline_optimize.h
   bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
@@ -769,6 +768,7 @@ SET (GPUIT_LIBRARY_SRC
   fdk.c fdk.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
+  interpolate.c interpolate.h
   math_util.h
   mha_io.c mha_io.h
   rpl_volume.c rpl_volume.h
@@ -785,6 +785,7 @@ SET (GPUIT_LIBRARY_SRC
   vf_stats.c vf_stats.h 
   volume.c volume.h
   volume_limit.c volume_limit.h
+  volume_macros.h
   xpm.c xpm.h
   )
 

@@ -15,6 +15,7 @@
 #include "math_util.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
+#include "volume_macros.h"
 
 //#define USE_FAST_CODE 1
 
