@@ -741,6 +741,7 @@ ENDIF ()
 SET (PLMSYS_LIBRARY_SRC
   file_util.cxx file_util.h
   logfile.c logfile.h
+  interpolate.c interpolate.h
   plm_timer.c plm_timer.h
   print_and_exit.c print_and_exit.h 
   )
@@ -768,7 +769,6 @@ SET (GPUIT_LIBRARY_SRC
   fdk.c fdk.h
   fwrite_block.c fwrite_block.h
   hnd_io.c hnd_io.h
-  interpolate.c interpolate.h
   math_util.h
   mha_io.c mha_io.h
   rpl_volume.c rpl_volume.h

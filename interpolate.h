@@ -50,13 +50,16 @@
 extern "C" {
 #endif
 
+plmsys_EXPORT
 void
 li_clamp (float ma, int dmax, int* maf, int* mar, 
     float* fa1, float* fa2);
+plmsys_EXPORT
 void
 li_clamp_3d (float mijk[3], int mijk_f[3], int mijk_r[3],
     float li_frac_1[3], float li_frac_2[3],
     Volume *moving);
+plmsys_EXPORT
 float
 li_value (float fx1, float fx2, float fy1, float fy2, 
     float fz1, float fz2, int mvf, 
