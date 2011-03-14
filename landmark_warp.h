@@ -9,7 +9,7 @@
 #include "plm_image_header.h"
 #include "pointset.h"
 
-class Landmark_warp
+class plastimatch1_EXPORT Landmark_warp
 {
 public:
     /* Inputs */
