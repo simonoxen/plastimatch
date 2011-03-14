@@ -56,6 +56,11 @@ FIND_PATH (
   /usr/local/dicom/include
   )
 
+# Quick hack: dcmtk 3.6.0
+FIND_LIBRARY(DCMTK_oflog_LIBRARY oflog
+  /usr/local/dicom/lib
+)
+
 FIND_LIBRARY(DCMTK_ofstd_LIBRARY ofstd
   ${DCMTK_DIR}/ofstd/libsrc
   ${DCMTK_DIR}/ofstd/libsrc/Release
@@ -127,8 +132,19 @@ IF (DCMTK_INCLUDE_DIR
     ${DCMTK_dcmnet_LIBRARY}
     ${DCMTK_dcmimgle_LIBRARY}
     ${DCMTK_dcmdata_LIBRARY}
+    )
+
+  IF (DCMTK_oflog_LIBRARY)
+    SET (DCMTK_LIBRARIES
+      ${DCMTK_LIBRARIES}
+      ${DCMTK_oflog_LIBRARY}
+      )
+  ENDIF ()
+
+  SET (DCMTK_LIBRARIES 
+    ${DCMTK_LIBRARIES}
     ${DCMTK_ofstd_LIBRARY}
-  )
+    )
 
   IF (SSL_LIBRARY)
     SET (DCMTK_LIBRARIES
