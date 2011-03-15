@@ -5,7 +5,9 @@
 #define _itk_image_save_h_
 
 #include "plm_config.h"
+
 #include "itk_image.h"
+#include "plm_image_patient_position.h"
 
 class Img_metadata;
 class Referenced_dicom_dir;

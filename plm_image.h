@@ -25,7 +25,6 @@ public:
     Plm_image_patient_position m_patient_pos;
 
     /* The actual image is one of the following. */
-    UCharImage4DType::Pointer m_itk_uchar_4d;
     UCharImageType::Pointer m_itk_uchar;
     ShortImageType::Pointer m_itk_short;
     UShortImageType::Pointer m_itk_ushort;
@@ -33,6 +32,7 @@ public:
     UInt32ImageType::Pointer m_itk_uint32;
     FloatImageType::Pointer m_itk_float;
     DoubleImageType::Pointer m_itk_double;
+    UCharVecImageType::Pointer m_itk_uchar_vec;
     void* m_gpuit;
 
 private:
@@ -96,7 +96,6 @@ public:
 	m_type = PLM_IMG_TYPE_UNDEFINED;
 	m_patient_pos = PATIENT_POSITION_UNKNOWN;
 
-	m_itk_uchar_4d = 0;
 	m_itk_uchar = 0;
 	m_itk_short = 0;
 	m_itk_ushort = 0;
@@ -151,7 +150,7 @@ public:
     plastimatch1_EXPORT
     void convert_to_itk (void);
     plastimatch1_EXPORT
-    void convert_to_itk_uchar_4d (void);
+    void convert_to_itk_uchar_vec (void);
 
     /* metadata */
     plastimatch1_EXPORT

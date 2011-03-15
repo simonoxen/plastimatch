@@ -282,9 +282,6 @@ Plm_image::save_image (const char* fname)
 	this->convert_to_itk_float ();
 	itk_image_save (this->m_itk_float, fname);
 	break;
-    case PLM_IMG_TYPE_ITK_UCHAR_4D:
-	itk_image_save (this->m_itk_uchar_4d, fname);
-	break;
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
 	print_and_exit ("Unhandled image type in Plm_image::save_image"
@@ -528,17 +525,17 @@ Plm_image::convert_to_itk_float ()
 }
 
 void
-Plm_image::convert_to_itk_uchar_4d (void)
+Plm_image::convert_to_itk_uchar_vec (void)
 {
     switch (m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->m_itk_uchar_4d 
-	    = plm_image_convert_itk_to_itk_uchar_4d (this->m_itk_uint32);
+	this->m_itk_uchar_vec = plm_image_convert_itk_uint32_to_itk_uchar_vec (
+	    this->m_itk_uint32);
 	this->m_itk_uint32 = 0;
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT32:
-	this->m_itk_uchar_4d = plm_image_convert_gpuit_to_itk_uchar_4d (
-	    this, (uint32_t) 0);
+	this->m_itk_uchar_vec
+	    = plm_image_convert_gpuit_uint32_to_itk_uchar_vec (this);
 	break;
     default:
 	print_and_exit (

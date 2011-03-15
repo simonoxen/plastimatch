@@ -116,8 +116,8 @@ Ss_image::save_ss_image (const CBString &ss_img_fn)
 	    "Error: save_ss_image() tried to write a non-existant file");
     }
 #if (PLM_USE_4D_SS_IMAGE)
-    /* Save as 4D uchar */
-    this->m_ss_img->convert_to_itk_uchar_4d ();
+    /* Save as 3D ucharvec */
+    this->m_ss_img->convert_to_itk_uchar_vec ();
     this->m_ss_img->save_image ((const char*) ss_img_fn);
 #else
     /* Save as 3D uint32 */

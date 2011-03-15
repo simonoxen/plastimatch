@@ -14,44 +14,20 @@
 #include "volume.h"
 
 /* -----------------------------------------------------------------------
-   Image header conversion
+   prototypes
    ----------------------------------------------------------------------- */
-void
-direction_cosines_from_itk (
-    float direction_cosines[9],
-    DirectionType* itk_direction
-)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
-	}
-    }
-}
-
-void
+static void
 itk_direction_from_gpuit (
     DirectionType* itk_direction,
-    float gpuit_direction_cosines[9])
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    (*itk_direction)[d1][d2] = gpuit_direction_cosines[d1*3+d2];
-	}
-    }
-}
+    float gpuit_direction_cosines[9]
+);
 
-void
-itk_direction_identity (
-    DirectionType* itk_direction)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    (*itk_direction)[d1][d2] = (float) (d1 == d2);
-	}
-    }
-}
+static void
+itk_direction_identity (DirectionType* itk_direction);
 
+/* -----------------------------------------------------------------------
+   functions
+   ----------------------------------------------------------------------- */
 void
 Plm_image_header::set_origin (float origin[3])
 {
@@ -191,25 +167,6 @@ Plm_image_header::get_direction_cosines (float direction_cosines[9])
     direction_cosines_from_itk (direction_cosines, &m_direction);
 }
 
-#if defined (commentout)
-void
-Plm_image_header::cvt_to_gpuit (float gpuit_origin[3],
-			    float gpuit_spacing[3],
-			    int gpuit_dim[3],
-			    float gpuit_direction_cosines[9])
-{
-    ImageRegionType::SizeType itk_size;
-    itk_size = m_region.GetSize ();
-
-    for (int d1 = 0; d1 < 3; d1++) {
-	gpuit_origin[d1] = m_origin[d1];
-	gpuit_spacing[d1] = m_spacing[d1];
-	gpuit_dim[d1] = itk_size[d1];
-    }
-    gpuit_direction_from_itk (gpuit_direction_cosines, &m_direction);
-}
-#endif
-
 void
 Plm_image_header::print (void) const
 {
@@ -277,4 +234,71 @@ Plm_image_header::compare (Plm_image_header *pli1, Plm_image_header *pli2)
     /* GCS FIX: check direction cosines */
 
     return 1;
+}
+
+/* -----------------------------------------------------------------------
+   global functions
+   ----------------------------------------------------------------------- */
+void
+direction_cosines_from_itk (
+    float direction_cosines[9],
+    DirectionType* itk_direction
+)
+{
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
+	    direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
+	}
+    }
+}
+
+static void
+itk_direction_from_gpuit (
+    DirectionType* itk_direction,
+    float gpuit_direction_cosines[9]
+)
+{
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
+	    (*itk_direction)[d1][d2] = gpuit_direction_cosines[d1*3+d2];
+	}
+    }
+}
+
+static void
+itk_direction_identity (DirectionType* itk_direction)
+{
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
+	    (*itk_direction)[d1][d2] = (float) (d1 == d2);
+	}
+    }
+}
+
+template<class T, class U>
+void
+itk_image_header_copy (T dest, U src)
+{
+    int d;
+
+    typedef typename U::ObjectType SrcImageType;
+    typedef typename T::ObjectType DestImageType;
+
+    const typename SrcImageType::RegionType src_rgn
+	= src->GetLargestPossibleRegion();
+    const typename SrcImageType::PointType& src_og = src->GetOrigin();
+    const typename SrcImageType::SizeType& src_sz = src->GetSize();
+    const typename SrcImageType::SpacingType& src_sp = src->GetSpacing();
+    const typename SrcImageType::DirectionType& src_dc = src->GetDirection();
+
+    typename DestImageType::RegionType dest_rgn;
+    typename DestImageType::PointType dest_og;
+    typename DestImageType::SpacingType dest_sp;
+    typename DestImageType::RegionType::SizeType dest_sz;
+
+    dest->SetSize (src_sz);
+    dest->SetRegions (src_rgn);
+    dest->SetOrigin (src_og);
+    dest->SetSpacing (src_sp);
+    dest->SetDirection (src_dc);
 }

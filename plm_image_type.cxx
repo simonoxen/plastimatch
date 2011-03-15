@@ -35,7 +35,7 @@ plm_image_type_parse (const char* string)
 	return PLM_IMG_TYPE_ITK_FLOAT_FIELD;
     }
     else if (!strcmp (string,"ssimg")) {
-	return PLM_IMG_TYPE_ITK_UCHAR_4D;
+	return PLM_IMG_TYPE_ITK_UCHAR_VEC;
     }
     else {
 	return PLM_IMG_TYPE_UNDEFINED;
@@ -80,6 +80,8 @@ plm_image_type_string (Plm_image_type type)
 	return "PLM_IMG_TYPE_GPUIT_FLOAT_FIELD";
     case PLM_IMG_TYPE_ITK_UCHAR_4D:
 	return "PLM_IMG_TYPE_ITK_UCHAR_4D";
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	return "PLM_IMG_TYPE_ITK_UCHAR_VEC";
     default:
 	return "(unknown image type)";
     }

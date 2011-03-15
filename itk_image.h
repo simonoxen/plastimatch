@@ -7,13 +7,14 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include "itkImage.h"
+#include "itkImageIOBase.h"
 #if (PLM_ITK_ORIENTED_IMAGES)
 #include "itkOrientedImage.h"
 #endif
-#include "itkImageIOBase.h"
+#include "itkVectorImage.h"
+
 #include "itk_point.h"
 #include "plm_image_type.h"
-#include "plm_image_patient_position.h"
 
 /* 4D images */
 typedef itk::Image < unsigned char, 4 > UCharImage4DType;
@@ -31,6 +32,8 @@ typedef itk::Image < unsigned long, 3 > UInt32ImageType;
 #endif
 typedef itk::Image < float, 3 > FloatImageType;
 typedef itk::Image < double, 3 > DoubleImageType;
+
+typedef itk::VectorImage < unsigned char, 3 > UCharVecImageType;
 
 /* 2D images */
 typedef itk::Image < unsigned char, 2 > UCharImage2DType;
@@ -53,7 +56,7 @@ typedef itk::Image < FloatVector3DType, 3 > DeformationFieldType;
 typedef itk::Size < 3 > SizeType;
 typedef itk::Point < double, 3 >  OriginType;
 typedef itk::Vector < double, 3 > SpacingType;
-typedef itk::Matrix<double, 3, 3> DirectionType;
+typedef itk::Matrix < double, 3, 3 > DirectionType;
 typedef itk::ImageRegion < 3 > ImageRegionType;
 
 /* -----------------------------------------------------------------------

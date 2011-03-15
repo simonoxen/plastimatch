@@ -9,6 +9,9 @@
 #include "plm_image_header.h"
 #include "plm_int.h"
 
+/* -----------------------------------------------------------------------
+   Standard 3D image conversion
+   ----------------------------------------------------------------------- */
 template<class T, class U> 
 T
 plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
@@ -60,70 +63,6 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U)
     return itk_img;
 }
 
-template<class U>
-UCharImage4DType::Pointer
-plm_image_convert_gpuit_to_itk_uchar_4d (Plm_image* pli, U)
-{
-    typedef UCharImage4DType ImageType;
-    int i, d;
-#if defined (commentout)
-    int d1, d2;
-#endif
-    Volume* vol = (Volume*) pli->m_gpuit;
-    U* img = (U*) vol->img;
-
-    UCharImage4DType::Pointer im_out = UCharImage4DType::New();
-    UCharImage4DType::RegionType rgn_out;
-    UCharImage4DType::PointType og_out;
-    UCharImage4DType::SpacingType sp_out;
-    //UCharImage4DType::RegionType::IndexType idx_out;
-    UCharImage4DType::RegionType::SizeType sz_out;
-
-    /* GCS FIX: What to do about directiontype??? The 4D image struct 
-       messes it up. */
-    UCharImage4DType::DirectionType dc;
-
-    /* Copy header & allocate data for itk */
-    sz_out[0] = 1;
-    og_out[0] = 0;
-    sp_out[0] = 1;
-    for (d = 0; d < 3; d++) {
-	sz_out[d+1] = vol->dim[d];
-	og_out[d+1] = vol->offset[d];
-	sp_out[d+1] = vol->pix_spacing[d];
-    }
-#if defined (commentout)
-    for (d1 = 0; d1 < 3; d1++) {
-	for (d2 = 0; d2 < 3; d2++) {
-	    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
-	}
-    }
-#endif
-    rgn_out.SetSize (sz_out);
-    im_out->SetRegions (rgn_out);
-    im_out->SetOrigin (og_out);
-    im_out->SetSpacing (sp_out);
-#if defined (commentout)
-    im_out->SetDirection (dc);
-#endif
-    im_out->Allocate ();
-
-    /* Copy data into itk */
-    typedef itk::ImageRegionIterator< ImageType > IteratorType;
-    IteratorType it (im_out, rgn_out);
-    /* GCS FIX: This needs to e.g. convert 32-bit int into 4 uchar planes */
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	/* Type conversion: U -> itk happens here */
-	it.Set (img[i]);
-    }
-
-    /* Free gpuit data */
-    volume_destroy (vol);
-    pli->m_gpuit = 0;
-
-    return im_out;
-}
-
 template<class T> 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
@@ -163,39 +102,89 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img)
     pli->m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 }
 
-template <class T>
-UCharImage4DType::Pointer
-plm_image_convert_itk_to_itk_uchar_4d (T im_in)
+/* -----------------------------------------------------------------------
+   UCharVec image conversion
+   ----------------------------------------------------------------------- */
+UCharVecImageType::Pointer
+plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
 {
-    int d;
-    UCharImage4DType::Pointer im_out = UCharImage4DType::New();
+    int i, d;
+    Volume* vol = (Volume*) pli->m_gpuit;
+    uint32_t* img = (uint32_t*) vol->img;
 
-    typedef typename T::ObjectType ImageType;
-    typedef typename T::ObjectType::PixelType PixelType;
+    UCharVecImageType::Pointer im_out = UCharVecImageType::New();
+    UCharVecImageType::RegionType rgn_out;
+    UCharVecImageType::PointType og_out;
+    UCharVecImageType::SpacingType sp_out;
+    UCharVecImageType::RegionType::SizeType sz_out;
+    UCharVecImageType::DirectionType dc;
 
-    typename ImageType::RegionType rgn_in = im_in->GetLargestPossibleRegion();
-    const typename ImageType::PointType& og_in = im_in->GetOrigin();
-    const typename ImageType::SpacingType& sp_in = im_in->GetSpacing();
-
-    UCharImage4DType::RegionType rgn_out;
-    UCharImage4DType::PointType og_out;
-    UCharImage4DType::SpacingType sp_out;
-    //UCharImage4DType::RegionType::IndexType idx_out;
-    UCharImage4DType::RegionType::SizeType sz_out;
-
-    sz_out[0] = 1;
-    og_out[0] = 0;
-    sp_out[0] = 1;
+    /* Copy header & allocate data for itk */
     for (d = 0; d < 3; d++) {
-	sz_out[d+1] = rgn_in.GetSize()[d];
-	og_out[d+1] = og_in[d];
-	sp_out[d+1] = sp_in[d];
+	sz_out[d] = vol->dim[d];
+	og_out[d] = vol->offset[d];
+	sp_out[d] = vol->pix_spacing[d];
+    }
+    for (unsigned int d1 = 0; d1 < 3; d1++) {
+	for (unsigned int d2 = 0; d2 < 3; d2++) {
+	    dc[d1][d2] = vol->direction_cosines[d1*3+d2];
+	}
     }
     rgn_out.SetSize (sz_out);
     im_out->SetRegions (rgn_out);
     im_out->SetOrigin (og_out);
     im_out->SetSpacing (sp_out);
+    im_out->SetDirection (dc);
     im_out->Allocate ();
+
+    /* Choose size of vectors for image */
+    im_out->SetVectorLength (4);
+
+    /* Copy data into itk */
+    typedef itk::ImageRegionIterator< UCharVecImageType > IteratorType;
+    IteratorType it (im_out, rgn_out);
+
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+	/* GCS FIX: This is probably inefficient, unless the compiler 
+	   is very, very smart (which I doubt) */
+	/* GCS FIX: This puts the planes in the "wrong" order, 
+	   with uint32_t MSB as first component of vector */
+	it.Set (itk::VariableLengthVector<unsigned char> (
+		(unsigned char*) &img[i], 4));
+    }
+
+    /* Free gpuit data */
+    volume_destroy (vol);
+    pli->m_gpuit = 0;
+
+    return im_out;
+}
+
+UCharVecImageType::Pointer
+plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer img)
+{
+    int i, d;
+
+    UCharVecImageType::Pointer im_out = UCharVecImageType::New();
+#if defined (commentout)
+    im_out->Allocate ();
+
+    /* Choose size of vectors for image */
+    im_out->SetVectorLength (4);
+
+    /* Copy data into itk */
+    typedef itk::ImageRegionIterator< UCharVecImageType > IteratorType;
+    IteratorType it (im_out, rgn_out);
+
+    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
+	/* GCS FIX: This is probably inefficient, unless the compiler 
+	   is very, very smart (which I doubt) */
+	/* GCS FIX: This puts the planes in the "wrong" order, 
+	   with uint32_t MSB as first component of vector */
+	it.Set (itk::VariableLengthVector<unsigned char> (
+		(unsigned char*) &img[i], 4));
+    }
+#endif
 
     return im_out;
 }
@@ -251,10 +240,6 @@ FloatImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, FloatImageType::Pointer itk_img, float);
 
 template plastimatch1_EXPORT 
-UCharImage4DType::Pointer
-plm_image_convert_gpuit_to_itk_uchar_4d (Plm_image* pli, uint32_t);
-
-template plastimatch1_EXPORT 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, UCharImageType::Pointer img);
 template plastimatch1_EXPORT 
@@ -269,5 +254,3 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, Int32ImageType::Pointer im
 template plastimatch1_EXPORT 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer img);
-
-template plastimatch1_EXPORT UCharImage4DType::Pointer plm_image_convert_itk_to_itk_uchar_4d (UInt32ImageType::Pointer);
