@@ -112,6 +112,8 @@ public:
     void
     set_geometry_from_plm_image_header (Plm_image_header *pih);
     void
+    find_rasterization_geometry (Plm_image_header *pih);
+    void
     warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
 };
 

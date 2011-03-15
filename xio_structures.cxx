@@ -356,7 +356,7 @@ xio_structures_save (
     fclose (fp);
 
     /* Write WC files */
-    for (z = 0; z < cxt->dim[2]; z++) {
+    for (z = 0; z < cxt->m_dim[2]; z++) {
 	char fn[_MAX_PATH];
 
 	float z_offset = 0.0f;
@@ -364,13 +364,13 @@ xio_structures_save (
 	if ( (transform->patient_pos == PATIENT_POSITION_HFS) ||
 	     (transform->patient_pos == PATIENT_POSITION_HFP) ||
 	     (transform->patient_pos == PATIENT_POSITION_UNKNOWN) ) {
-	    z_offset = cxt->offset[2];
+	    z_offset = cxt->m_offset[2];
 	} else if ( (transform->patient_pos == PATIENT_POSITION_FFS) ||
 	     (transform->patient_pos == PATIENT_POSITION_FFP) ) {
-	    z_offset = - cxt->offset[2];
+	    z_offset = - cxt->m_offset[2];
 	}
 
-	float z_loc = z_offset + z * cxt->spacing[2];
+	float z_loc = z_offset + z * cxt->m_spacing[2];
 	format_xio_filename (fn, output_dir, z_loc);
 	//sprintf (fn, "%s/T.%.1f.WC", output_dir, (ROUND (z_loc * 10) / 10.f));
 	fp = fopen (fn, "w");
@@ -419,9 +419,9 @@ xio_structures_apply_transform (Rtss_polyline_set *rtss, Xio_ct_transform *trans
     int i, j, k;
 
     /* Set offsets */
-    rtss->offset[0] = (rtss->offset[0] * transform->direction_cosines[0])
+    rtss->m_offset[0] = (rtss->m_offset[0] * transform->direction_cosines[0])
 	+ transform->x_offset;
-    rtss->offset[1] = (rtss->offset[1] * transform->direction_cosines[4])
+    rtss->m_offset[1] = (rtss->m_offset[1] * transform->direction_cosines[4])
 	+ transform->y_offset;
 
     /* Transform structures */

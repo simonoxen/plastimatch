@@ -112,9 +112,9 @@ cxt_load (
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
 		    &val_x, &val_y, &val_z)) {
 		have_offset = 1;
-		cxt->offset[0] = val_x;
-		cxt->offset[1] = val_y;
-		cxt->offset[2] = val_z;
+		cxt->m_offset[0] = val_x;
+		cxt->m_offset[1] = val_y;
+		cxt->m_offset[2] = val_z;
 	    }
 	}
         else if (biseqcstr (tag, "DIMENSION")) {
@@ -122,18 +122,18 @@ cxt_load (
 	    if (3 == sscanf ((const char*) val->data, "%d %d %d", 
 			     &int_x, &int_y, &int_z)) {
 		have_dim = 1;
-		cxt->dim[0] = int_x;
-		cxt->dim[1] = int_y;
-		cxt->dim[2] = int_z;
+		cxt->m_dim[0] = int_x;
+		cxt->m_dim[1] = int_y;
+		cxt->m_dim[2] = int_z;
 	    }
 	}
         else if (biseqcstr (tag, "SPACING")) {
 	    if (3 == sscanf ((const char*) val->data, "%f %f %f", 
 		    &val_x, &val_y, &val_z)) {
 		have_spacing = 1;
-		cxt->spacing[0] = val_x;
-		cxt->spacing[1] = val_y;
-		cxt->spacing[2] = val_z;
+		cxt->m_spacing[0] = val_x;
+		cxt->m_spacing[1] = val_y;
+		cxt->m_spacing[2] = val_z;
 	    }
 	}
 	bdestroy (tag);
@@ -326,12 +326,12 @@ cxt_save (
 	fprintf (fp, "STUDY_ID\n");
     }
     if (cxt->have_geometry) {
-	fprintf (fp, "OFFSET %g %g %g\n", cxt->offset[0],
-	    cxt->offset[1], cxt->offset[2]);
-	fprintf (fp, "DIMENSION %d %d %d\n", cxt->dim[0], 
-	    cxt->dim[1], cxt->dim[2]);
-	fprintf (fp, "SPACING %g %g %g\n", cxt->spacing[0], 
-	    cxt->spacing[1], cxt->spacing[2]);
+	fprintf (fp, "OFFSET %g %g %g\n", cxt->m_offset[0],
+	    cxt->m_offset[1], cxt->m_offset[2]);
+	fprintf (fp, "DIMENSION %d %d %d\n", cxt->m_dim[0], 
+	    cxt->m_dim[1], cxt->m_dim[2]);
+	fprintf (fp, "SPACING %g %g %g\n", cxt->m_spacing[0], 
+	    cxt->m_spacing[1], cxt->m_spacing[2]);
     }
 
     /* Part 2: Structures info */

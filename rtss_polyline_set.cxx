@@ -152,11 +152,11 @@ Rtss_polyline_set::debug (void)
     Rtss_structure* curr_structure;
 
     printf ("dim = %d %d %d\n", 
-	this->dim[0], this->dim[1], this->dim[2]);
+	this->m_dim[0], this->m_dim[1], this->m_dim[2]);
     printf ("offset = %g %g %g\n", 
-	this->offset[0], this->offset[1], this->offset[2]);
+	this->m_offset[0], this->m_offset[1], this->m_offset[2]);
     printf ("spacing = %g %g %g\n", 
-	this->spacing[0], this->spacing[1], this->spacing[2]);
+	this->m_spacing[0], this->m_spacing[1], this->m_spacing[2]);
 
     for (i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
@@ -268,7 +268,11 @@ Rtss_polyline_set::free_all_polylines (void)
 }
 
 void
-Rtss_polyline_set::set_rasterization_geometry (void)
+Rtss_polyline_set::find_rasterization_geometry (
+    float offset[3],
+    float spacing[3],
+    int dims[3]
+)
 {
     int first = 1;
     float min_x = 0.f, max_x = 0.f;
@@ -317,10 +321,10 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 	range = range_y;
     }
     range = range * 1.05;
-    this->rast_spacing[0] = this->rast_spacing[1] = range / 512;
-    this->rast_offset[0] = 0.5 * (max_x + min_x - range);
-    this->rast_offset[1] = 0.5 * (max_y + min_y - range);
-    this->rast_dim[0] = this->rast_dim[1] = 512;
+    spacing[0] = spacing[1] = range / 512;
+    offset[0] = 0.5 * (max_x + min_x - range);
+    offset[1] = 0.5 * (max_y + min_y - range);
+    dims[0] = dims[1] = 512;
 
 #if defined (commentout)
     printf ("----Z VALUES-----\n");
@@ -335,7 +339,7 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 
     /* z value should be based on native slice spacing */
     int have_spacing = 0;
-    float spacing = 0.f;
+    float z_spacing = 0.f;
     float last_z = min_z;
     for (std::set<float>::iterator it = z_values.begin(); 
 	 it != z_values.end(); 
@@ -347,27 +351,49 @@ Rtss_polyline_set::set_rasterization_geometry (void)
 	    continue;
 	}
 	if (!have_spacing) {
-	    spacing = this_z - min_z;
+	    z_spacing = this_z - min_z;
 	    have_spacing = 1;
 	} else {
-	    if (fabs (diff - spacing) > SPACING_TOL) {
+	    if (fabs (diff - z_spacing) > SPACING_TOL) {
 		printf ("Warning, slice spacing of RTSS may be unequal\n");
 		printf ("%g - %g = %g vs. %g\n", 
-		    this_z, last_z, diff, spacing);
+		    this_z, last_z, diff, z_spacing);
 	    }
 	}
 	last_z = this_z;
     }
     
-    this->rast_offset[2] = min_z;
+    offset[2] = min_z;
     if (have_spacing) {
-	this->rast_dim[2] = ROUND_INT ((max_z - min_z) / spacing);
-	this->rast_spacing[2] = spacing;
+	dims[2] = ROUND_INT ((max_z - min_z) / z_spacing);
+	spacing[2] = z_spacing;
     } else {
-	this->rast_dim[2] = 1;
-	this->rast_spacing[2] = 1;
+	dims[2] = 1;
+	spacing[2] = 1;
     }
+}
 
+void
+Rtss_polyline_set::find_rasterization_geometry (Plm_image_header *pih)
+{
+    /* use some generic default parameters */
+    float offset[3];
+    float spacing[3];
+    int dims[3];
+
+    this->find_rasterization_geometry (offset, spacing, dims);
+
+    pih->set_from_gpuit (offset, spacing, dims, 0);
+}
+
+void
+Rtss_polyline_set::set_rasterization_geometry (void)
+{
+    this->find_rasterization_geometry (
+	this->rast_offset,
+	this->rast_spacing,
+	this->rast_dim
+    );
     printf ("rast_dim = %d %d %d\n", 
 	this->rast_dim[0], this->rast_dim[1], this->rast_dim[2]);
     printf ("rast_offset = %g %g %g\n", 
@@ -392,8 +418,9 @@ Rtss_polyline_set::fix_polyline_slice_numbers (void)
 		continue;
 	    }
 	    float z = curr_polyline->z[0];
-	    int slice_idx = ROUND_INT((z - this->offset[2]) / this->spacing[2]);
-	    if (slice_idx < 0 || slice_idx >= this->dim[2]) {
+	    int slice_idx = ROUND_INT (
+		(z - this->m_offset[2]) / this->m_spacing[2]);
+	    if (slice_idx < 0 || slice_idx >= this->m_dim[2]) {
 		curr_polyline->slice_no = -1;
 	    } else {
 		curr_polyline->slice_no = slice_idx;
@@ -407,9 +434,9 @@ Rtss_polyline_set::set_geometry_from_plm_image_header (
     Plm_image_header *pih
 )
 {
-    pih->get_origin (this->offset);
-    pih->get_spacing (this->spacing);
-    pih->get_dim (this->dim);
+    pih->get_origin (this->m_offset);
+    pih->get_spacing (this->m_spacing);
+    pih->get_dim (this->m_dim);
     this->have_geometry = 1;
 
     this->fix_polyline_slice_numbers ();
@@ -424,3 +451,4 @@ Rtss_polyline_set::set_geometry_from_plm_image (
     pih.set_from_plm_image (pli);
     this->set_geometry_from_plm_image_header (&pih);
 }
+

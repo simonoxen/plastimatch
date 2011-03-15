@@ -28,9 +28,9 @@ public:
 
     /* Output geometry */
     int have_geometry;
-    int dim[3];
-    float spacing[3];
-    float offset[3];
+    int m_dim[3];
+    float m_spacing[3];
+    float m_offset[3];
     /* Rasterization geometry */
     int rast_dim[3];
     float rast_spacing[3];
@@ -58,9 +58,13 @@ public:
     plastimatch1_EXPORT
     void free_all_polylines (void);
     void fix_polyline_slice_numbers (void);
+    void find_rasterization_geometry (float offset[3], 
+	float spacing[3], int dims[3]);
+    void find_rasterization_geometry (Plm_image_header *pih);
     void set_rasterization_geometry (void);
     void set_geometry_from_plm_image_header (Plm_image_header *pih);
     void set_geometry_from_plm_image (Plm_image *pli);
+    void find_default_geometry (Plm_image_header *pih);
 };
 
 #if defined __cplusplus

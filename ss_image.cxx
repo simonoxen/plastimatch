@@ -215,9 +215,9 @@ Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 
     /* Geometry */
     for (int d = 0; d < 3; d++) {
-	this->m_cxt->offset[d] = rdd->m_pih.m_origin[d];
-	this->m_cxt->dim[d] = rdd->m_pih.Size(d);
-	this->m_cxt->spacing[d] = rdd->m_pih.m_spacing[d];
+	this->m_cxt->m_offset[d] = rdd->m_pih.m_origin[d];
+	this->m_cxt->m_dim[d] = rdd->m_pih.Size(d);
+	this->m_cxt->m_spacing[d] = rdd->m_pih.m_spacing[d];
     }
 
     /* Demographics */
@@ -331,6 +331,14 @@ Ss_image::set_geometry_from_plm_image_header (Plm_image_header *pih)
 {
     if (this->m_cxt) {
 	this->m_cxt->set_geometry_from_plm_image_header (pih);
+    }
+}
+
+void
+Ss_image::find_rasterization_geometry (Plm_image_header *pih)
+{
+    if (this->m_cxt) {
+	this->m_cxt->find_rasterization_geometry (pih);
     }
 }
 

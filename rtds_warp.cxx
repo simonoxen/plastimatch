@@ -212,7 +212,7 @@ warp_and_save_ss (
 	    pih.set_from_gpuit (cxt->rast_offset, 
 		cxt->rast_spacing, cxt->rast_dim, 0);
 	} else {
-	    pih.set_from_gpuit (cxt->offset, cxt->spacing, cxt->dim, 0);
+	    pih.set_from_gpuit (cxt->m_offset, cxt->m_spacing, cxt->m_dim, 0);
 	}
 
 	rtds->m_ss_image->rasterize (&pih);
@@ -280,32 +280,33 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	/* use the spacing of the input image */
 	printf ("Setting PIH from M_IMG\n");
 	pih.set_from_plm_image (rtds->m_img);
-    } else if (rtds->m_ss_image) {
+    } else if (rtds->m_ss_image && rtds->m_ss_image->m_ss_img) {
 	/* use the spacing of the input image */
-	if (rtds->m_ss_image->m_ss_img) {
-	    printf ("Setting PIH from M_SS_IMG\n");
-	    pih.set_from_plm_image (rtds->m_ss_image->m_ss_img);
-	}
+	printf ("Setting PIH from M_SS_IMG\n");
+	pih.set_from_plm_image (rtds->m_ss_image->m_ss_img);
+    }
+    else if (rtds->m_ss_image &&
+	rtds->m_ss_image->m_cxt && 
+	rtds->m_ss_image->m_cxt->have_geometry) {
 	/* use the spacing of the structure set */
-	else if (rtds->m_ss_image->m_cxt && 
-	    rtds->m_ss_image->m_cxt->have_geometry)
-	{
-	    pih.set_from_gpuit (
-		rtds->m_ss_image->m_cxt->offset, 
-		rtds->m_ss_image->m_cxt->spacing, 
-		rtds->m_ss_image->m_cxt->dim, 0);
-	} else {
-	    /* out of options?  :( */
-	    print_and_exit (
-		"Sorry, I couldn't determine the output geometry\n");
-	}
+	pih.set_from_gpuit (
+	    rtds->m_ss_image->m_cxt->m_offset, 
+	    rtds->m_ss_image->m_cxt->m_spacing, 
+	    rtds->m_ss_image->m_cxt->m_dim, 0);
     } else if (rtds->m_dose) {
 	/* use the spacing of dose */
 	printf ("Setting PIH from DOSE\n");
 	pih.set_from_plm_image (rtds->m_dose);
+    } else if (rtds->m_ss_image && rtds->m_ss_image->m_cxt) {
+	/* we have structure set, but without geometry.  use 
+	   heuristics to find a good geometry for rasterization */
+	rtds->m_ss_image->find_rasterization_geometry (&pih);
     } else {
-	/* out of options?  :( */
-	print_and_exit ("Sorry, I couldn't determine the output geometry\n");
+	/* use some generic default parameters */
+	int dims[3] = { 500, 500, 500 };
+	float offset[3] = { -249.5, -249.5, -249.5 };
+	float spacing[3] = { 1., 1., 1. };
+	pih.set_from_gpuit (offset, spacing, dims, 0);
     }
 
     printf ("PIH is:\n");
