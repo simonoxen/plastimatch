@@ -414,7 +414,10 @@ xio_structures_save (
 }
 
 void
-xio_structures_apply_transform (Rtss_polyline_set *rtss, Xio_ct_transform *transform)
+xio_structures_apply_transform (
+    Rtss_polyline_set *rtss, 
+    Xio_ct_transform *transform
+)
 {
     int i, j, k;
 

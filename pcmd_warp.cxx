@@ -75,9 +75,6 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 {
     int ch;
     int rc;
-    int have_offset = 0;
-    int have_spacing = 0;
-    int have_dims = 0;
     static struct option longopts[] = {
 	{ "input",          required_argument,      NULL,           2 },
 	{ "output",         required_argument,      NULL,           3 },
@@ -188,28 +185,31 @@ warp_parse_args (Warp_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 10:
-	    rc = sscanf (optarg, "%f %f %f", &parms->offset[0], &parms->offset[1], &parms->offset[2]);
+	    rc = sscanf (optarg, "%f %f %f", 
+		&parms->m_origin[0], &parms->m_origin[1], &parms->m_origin[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --offset requires 3 values.");
 		print_usage (argv[1]);
 	    }
-	    have_offset = 1;
+	    parms->m_have_origin = 1;
 	    break;
 	case 11:
-	    rc = sscanf (optarg, "%f %f %f", &parms->spacing[0], &parms->spacing[1], &parms->spacing[2]);
+	    rc = sscanf (optarg, "%f %f %f", &parms->m_spacing[0], 
+		&parms->m_spacing[1], &parms->m_spacing[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --spacing requires 3 values.");
 		print_usage (argv[1]);
 	    }
-	    have_spacing = 1;
+	    parms->m_have_spacing = 1;
 	    break;
 	case 12:
-	    rc = sscanf (optarg, "%d %d %d", &parms->dims[0], &parms->dims[1], &parms->dims[2]);
+	    rc = sscanf (optarg, "%d %d %d", &parms->m_dim[0], 
+		&parms->m_dim[1], &parms->m_dim[2]);
 	    if (rc != 3) {
 		fprintf (stderr, "Error.  --dims requires 3 values.");
 		print_usage (argv[1]);
 	    }
-	    have_dims = 1;
+	    parms->m_have_dim = 1;
 	    break;
 	case 13:
 	    parms->output_dicom = optarg;

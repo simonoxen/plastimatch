@@ -47,9 +47,12 @@ public:
     CBString output_xio_dirname;
 
     /* Geometry options */
-    float offset[3];
-    float spacing[3];
-    int dims[3];
+    bool m_have_dim;
+    bool m_have_origin;
+    bool m_have_spacing;
+    int m_dim[3];
+    float m_origin[3];
+    float m_spacing[3];
 
     /* Misc options */
     float default_val;
@@ -63,12 +66,20 @@ public:
 
 public:
     Warp_parms () {
+
+	/* Geometry options */
+	m_have_dim = 0;
+	m_have_origin = 0;
+	m_have_spacing = 0;
+
+	/* Misc options */
 	default_val = 0.0f;
 	interp_lin = 1;
 	output_type = PLM_IMG_TYPE_UNDEFINED;
 	output_xio_version = XIO_VERSION_4_2_1;
 	prune_empty = 0;
 	use_itk = 0;
+	simplify_perc = 0;
 	patient_pos = PATIENT_POSITION_UNKNOWN;
     }
 };

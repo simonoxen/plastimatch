@@ -309,6 +309,16 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	pih.set_from_gpuit (offset, spacing, dims, 0);
     }
 
+    if (parms->m_have_dim) {
+	pih.set_dim (parms->m_dim);
+    }
+    if (parms->m_have_origin) {
+	pih.set_origin (parms->m_origin);
+    }
+    if (parms->m_have_spacing) {
+	pih.set_spacing (parms->m_spacing);
+    }
+
     printf ("PIH is:\n");
     pih.print ();
 

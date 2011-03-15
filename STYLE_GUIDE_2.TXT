@@ -98,14 +98,16 @@ N.b. Does this even make sense?  Cxt_to_mha can use the same structure
 for both uses.
 
 
-Dim, offset, origin, spacing
+Dim, dims, offset, origin, spacing
 ----------------------------
 To describe the position of an image in mm, use origin, not offset.  
+To describe the resolution of an image in voxels, use dim, not dims.
+
 The order of parameters should be alphabetic:
 
   calling_a_function (dim, origin, spacing);
 
-Offset is used to describe an ROI in voxels.
+N.b.: offset is used to describe an ROI in voxels.
 
 
 Variable naming for indexing  [Proposed, not implemented]
