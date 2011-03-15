@@ -560,14 +560,6 @@ IF (wxWidgets_FOUND)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  DCMTK LIBRARY
-##-----------------------------------------------------------------------------
-SET (DCMTK_HAVE_CONFIG_H FALSE)
-IF (UNIX)
-  SET (DCMTK_HAVE_CONFIG_H TRUE)
-ENDIF ()
-
-##-----------------------------------------------------------------------------
 ##  Figure out library dependencies
 ##-----------------------------------------------------------------------------
 SET (PLMSYS_LIBRARY_DEPENDENCIES 
@@ -1580,8 +1572,10 @@ ENDIF ()
 IF (DCMTK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_uid 
     "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "" 1)
-  PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
-  PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
+  IF (NOT DCMTK_VERSION_NUMBER GREATER 354)
+    PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
+    PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
+  ENDIF ()
 ENDIF ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3

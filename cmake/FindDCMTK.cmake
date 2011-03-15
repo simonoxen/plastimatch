@@ -6,6 +6,9 @@
 #  DCMTK_FOUND         - If false, don't try to use DCMTK
 #  DCMTK_DIR           - (optional) Source directory for DCMTK
 #
+#  DCMTK_VERSION_STRING - Like "3.5.4" or "3.6.0"
+#  DCMTK_VERSION_NUMBER - Like 354 or 360
+#
 # DCMTK_DIR can be used to make it simpler to find the various include
 # directories and compiled libraries if you've just compiled it in the
 # source tree. Just set it to the root of the tree where you extracted
@@ -56,6 +59,62 @@ FIND_PATH (
   /usr/local/dicom/include
   )
 
+IF (UNIX)
+  FIND_FILE (DCMTK_HAVE_CONFIG_H dcmtk/config/cfunix.h
+    ${DCMTK_DIR}/include
+    /usr/local/dicom/include
+    )
+ELSE ()
+  SET (DCMTK_HAVE_CONFIG_H FALSE)
+ENDIF ()
+
+FIND_LIBRARY( DCMTK_dcmimgle_LIBRARY dcmimgle
+  ${DCMTK_DIR}/dcmimgle/libsrc
+  ${DCMTK_DIR}/dcmimgle/libsrc/Release
+  ${DCMTK_DIR}/dcmimgle/libsrc/Debug
+  ${DCMTK_DIR}/dcmimgle/Release
+  ${DCMTK_DIR}/dcmimgle/Debug
+  ${DCMTK_DIR}/lib
+  /usr/local/dicom/lib
+)
+
+# This is gone in 3.6
+FIND_LIBRARY(DCMTK_imagedb_LIBRARY 
+  NAMES imagedb dcmimage
+  PATHS
+  ${DCMTK_DIR}/imagectn/libsrc/Release
+  ${DCMTK_DIR}/imagectn/libsrc/
+  ${DCMTK_DIR}/imagectn/libsrc/Debug
+  ${DCMTK_DIR}/lib/
+  /usr/local/dicom/lib
+)
+
+FIND_LIBRARY (DCMTK_dcmtls_LIBRARY dcmtls 
+  ${DCMTK_DIR}/dcmnet/libsrc/Release
+  ${DCMTK_DIR}/dcmnet/libsrc/Debug
+  ${DCMTK_DIR}/dcmnet/libsrc/
+  ${DCMTK_DIR}/lib/
+  /usr/local/dicom/lib
+)
+
+FIND_LIBRARY (DCMTK_dcmnet_LIBRARY dcmnet 
+  ${DCMTK_DIR}/dcmnet/libsrc/Release
+  ${DCMTK_DIR}/dcmnet/libsrc/Debug
+  ${DCMTK_DIR}/dcmnet/libsrc/
+  ${DCMTK_DIR}/lib/
+  /usr/local/dicom/lib
+)
+
+FIND_LIBRARY( DCMTK_dcmdata_LIBRARY dcmdata
+  ${DCMTK_DIR}/dcmdata/libsrc
+  ${DCMTK_DIR}/dcmdata/libsrc/Release
+  ${DCMTK_DIR}/dcmdata/libsrc/Debug
+  ${DCMTK_DIR}/dcmdata/Release
+  ${DCMTK_DIR}/dcmdata/Debug
+  ${DCMTK_DIR}/lib
+  /usr/local/dicom/lib
+)
+
 # Quick hack: dcmtk 3.6.0
 FIND_LIBRARY(DCMTK_oflog_LIBRARY oflog
   /usr/local/dicom/lib
@@ -71,52 +130,6 @@ FIND_LIBRARY(DCMTK_ofstd_LIBRARY ofstd
   /usr/local/dicom/lib
 )
 
-FIND_LIBRARY( DCMTK_dcmdata_LIBRARY dcmdata
-  ${DCMTK_DIR}/dcmdata/libsrc
-  ${DCMTK_DIR}/dcmdata/libsrc/Release
-  ${DCMTK_DIR}/dcmdata/libsrc/Debug
-  ${DCMTK_DIR}/dcmdata/Release
-  ${DCMTK_DIR}/dcmdata/Debug
-  ${DCMTK_DIR}/lib
-  /usr/local/dicom/lib
-)
-
-FIND_LIBRARY( DCMTK_dcmimgle_LIBRARY dcmimgle
-  ${DCMTK_DIR}/dcmimgle/libsrc
-  ${DCMTK_DIR}/dcmimgle/libsrc/Release
-  ${DCMTK_DIR}/dcmimgle/libsrc/Debug
-  ${DCMTK_DIR}/dcmimgle/Release
-  ${DCMTK_DIR}/dcmimgle/Debug
-  ${DCMTK_DIR}/lib
-  /usr/local/dicom/lib
-)
-
-FIND_LIBRARY(DCMTK_imagedb_LIBRARY 
-  NAMES imagedb dcmimage
-  PATHS
-  ${DCMTK_DIR}/imagectn/libsrc/Release
-  ${DCMTK_DIR}/imagectn/libsrc/
-  ${DCMTK_DIR}/imagectn/libsrc/Debug
-  ${DCMTK_DIR}/lib/
-  /usr/local/dicom/lib
-)
-
-FIND_LIBRARY(DCMTK_dcmnet_LIBRARY dcmnet 
-  ${DCMTK_DIR}/dcmnet/libsrc/Release
-  ${DCMTK_DIR}/dcmnet/libsrc/Debug
-  ${DCMTK_DIR}/dcmnet/libsrc/
-  ${DCMTK_DIR}/lib/
-  /usr/local/dicom/lib
-)
-
-FIND_LIBRARY(DCMTK_dcmtls_LIBRARY dcmtls 
-  ${DCMTK_DIR}/dcmnet/libsrc/Release
-  ${DCMTK_DIR}/dcmnet/libsrc/Debug
-  ${DCMTK_DIR}/dcmnet/libsrc/
-  ${DCMTK_DIR}/lib/
-  /usr/local/dicom/lib
-)
-
 IF (DCMTK_INCLUDE_DIR 
     AND DCMTK_dcmnet_LIBRARY
     AND DCMTK_ofstd_LIBRARY
@@ -129,6 +142,7 @@ IF (DCMTK_INCLUDE_DIR
 
   SET (DCMTK_LIBRARIES 
     ${DCMTK_LIBRARIES}
+    ${DCMTK_dcmtls_LIBRARY}
     ${DCMTK_dcmnet_LIBRARY}
     ${DCMTK_dcmimgle_LIBRARY}
     ${DCMTK_dcmdata_LIBRARY}
@@ -191,7 +205,39 @@ IF (DCMTK_INCLUDE_DIR
 ENDIF ()
 
 IF (NOT DCMTK_FOUND)
-  SET( DCMTK_DIR "" CACHE PATH "Root of DCMTK source tree (optional)." )
+  SET (DCMTK_DIR "" CACHE PATH "Root of DCMTK source tree (optional).")
+ENDIF ()
+
+IF (DCMTK_FOUND)
+    FILE (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/dcmdata/dcuid.h" 
+      DCMTK_VERSION_STRING
+      REGEX "^#define OFFIS_DCMTK_VERSION_STRING *\"([^\"]*)\"")
+    IF (NOT DCMTK_VERSION_STRING)
+      FILE (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
+        DCMTK_VERSION_STRING
+        REGEX "^#define PACKAGE_VERSION *\"([^\"]*)\"")
+    ENDIF ()
+    IF (DCMTK_VERSION_STRING)
+       # GCS: The below doesn't seem to work on Mac CMake 2.6.4.
+       #  SET (DCMTK_VERSION_STRING "${CMAKE_MATCH_1}")
+       STRING (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
+         DCMTK_VERSION_STRING "${DCMTK_VERSION_STRING}")
+    ENDIF ()
+
+    FILE (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/dcmdata/dcuid.h" 
+      DCMTK_VERSION_NUMBER
+      REGEX "^#define OFFIS_DCMTK_VERSION_NUMBER *([0-9]+)")
+    IF (NOT DCMTK_VERSION_NUMBER)
+      FILE (STRINGS "${DCMTK_INCLUDE_DIR}/dcmtk/config/osconfig.h"
+        DCMTK_VERSION_NUMBER
+        REGEX "^#define PACKAGE_VERSION_NUMBER *\"([0-9]+)\"")
+    ENDIF ()
+    IF (DCMTK_VERSION_NUMBER)
+      STRING (REGEX REPLACE "[^0-9]*([0-9]+).*" "\\1"
+        DCMTK_VERSION_NUMBER "${DCMTK_VERSION_NUMBER}")
+    ENDIF ()
+
+    MESSAGE (STATUS "DCMTK version is ${DCMTK_VERSION_STRING}")
 ENDIF ()
 
 IF (DCMTK_FOUND)
