@@ -118,6 +118,7 @@ template plastimatch1_EXPORT void itk_image_save(Int32ImageType::Pointer, const 
 template plastimatch1_EXPORT void itk_image_save(FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UCharImage4DType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(UCharVecImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_uchar (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_short (FloatImageType::Pointer, const char*);

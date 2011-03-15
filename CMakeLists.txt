@@ -55,8 +55,8 @@ OPTION (PLM_BUILD_SLICER_SYNTH
   "Build slicer synthetic CLP" OFF)
 
 # Software options
-OPTION (PLM_USE_4D_SS_IMAGE 
-  "Save structure sets as 4D ITK UCHAR images (in development)" OFF)
+OPTION (PLM_USE_SS_IMAGE_VEC
+  "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 

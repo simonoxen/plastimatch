@@ -132,6 +132,11 @@ Plm_image::load_native (const char* fname)
 
     itk_image_get_props (fname, pixelType, componentType, &num_dimensions);
 
+    std::cout << "FNAME:   " << fname << std::endl;
+    std::cout << "PIXTYPE: " << pixelType << std::endl;
+    std::cout << "CMPTYPE: " << componentType << std::endl;
+    std::cout << "NUMDIM:  " << num_dimensions << std::endl;
+
     switch (componentType) {
     case itk::ImageIOBase::UCHAR:
 	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
@@ -281,6 +286,9 @@ Plm_image::save_image (const char* fname)
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_itk_float ();
 	itk_image_save (this->m_itk_float, fname);
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	itk_image_save (this->m_itk_uchar_vec, fname);
 	break;
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
@@ -543,6 +551,7 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	    m_type);
 	return;
     }
+    this->m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
 }
 
 void

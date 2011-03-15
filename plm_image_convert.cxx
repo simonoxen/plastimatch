@@ -135,10 +135,11 @@ plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
     im_out->SetOrigin (og_out);
     im_out->SetSpacing (sp_out);
     im_out->SetDirection (dc);
-    im_out->Allocate ();
 
     /* Choose size of vectors for image */
     im_out->SetVectorLength (4);
+
+    im_out->Allocate ();
 
     /* Copy data into itk */
     typedef itk::ImageRegionIterator< UCharVecImageType > IteratorType;

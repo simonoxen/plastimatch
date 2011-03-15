@@ -901,13 +901,13 @@ PLM_ADD_TEST (
   "plm-convert-dicom-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;plm-convert-dicom-b.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;plm-convert-dicom-b-ss-img.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-b-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-convert-dicom-b.mha"
+  "stats;--input;plm-convert-dicom-b-ss-img.mha"
   )
 ADD_TEST (
   "plm-convert-dicom-b-check"
