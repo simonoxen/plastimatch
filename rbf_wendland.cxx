@@ -216,9 +216,14 @@ rbf_wendland_warp (Landmark_warp *lw)
 	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 		lw->adapt_radius[i]=lw->rbf_radius;
     }
-for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+
+
+	for(i = 0; i < lw->m_fixed_landmarks->num_points; i++){ 
+	lw->adapt_radius[i]*=2;
 	printf("%f\n", lw->adapt_radius[i]);
-    
+	}
+
+
 	/* Solve for RBF weights */
     coeff = (float*) malloc (
 	3 * lw->m_fixed_landmarks->num_points * sizeof(float));

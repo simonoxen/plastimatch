@@ -51,6 +51,14 @@
       <default>None</default>
       <description>Warped output image</description>
     </image>
+    <image>
+      <name>plmslc_landwarp_vector_field</name>
+      <label>Output Vector Field</label>
+      <channel>output</channel>
+      <index>3</index>
+      <default>None</default>
+      <description>Output vector field</description>
+    </image>
     <string-enumeration>
       <name>plmslc_landwarp_rbf_type</name>
       <label>Basis function</label>

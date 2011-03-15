@@ -513,8 +513,8 @@ rbf_gauss_warp (Landmark_warp *lw)
 	    lw->adapt_radius[i]=lw->rbf_radius;
     }
 
-    for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
-	lw->adapt_radius[i]*=0.38;
+    //for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
+	//lw->adapt_radius[i]*=0.38;
 
     for(i = 0; i < lw->m_fixed_landmarks->num_points; i++) 
 	printf("%f\n", lw->adapt_radius[i]);

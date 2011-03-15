@@ -214,5 +214,8 @@ main (int argc, char *argv[])
     if (lw->m_warped_img && plmslc_landwarp_warped_volume != "None") {
 	lw->m_warped_img->save_image (plmslc_landwarp_warped_volume.c_str());
     }
+    if (lw->m_vf && plmslc_landwarp_vector_field != "None") {
+	xform_save (lw->m_vf, plmslc_landwarp_vector_field.c_str());
+    }
     return EXIT_SUCCESS;
 }
