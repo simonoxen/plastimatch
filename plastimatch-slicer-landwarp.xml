@@ -51,21 +51,20 @@
       <default>None</default>
       <description>Warped output image</description>
     </image>
-    <image>
+    <string>
       <name>plmslc_landwarp_vector_field</name>
-      <label>Output Vector Field</label>
-      <channel>output</channel>
-      <index>3</index>
-      <default>None</default>
-      <description>Output vector field</description>
-    </image>
+      <label>Output file for vector field [full path]</label>
+      <longflag>outputvf</longflag>
+      <default></default>
+      <description>Output file for vector field</description>
+    </string>
     <string-enumeration>
       <name>plmslc_landwarp_rbf_type</name>
       <label>Basis function</label>
       <longflag>rbftype</longflag>
         <element>tps</element>
         <element>gauss</element>
-	<element>wendland</element>
+      	<element>wendland</element>
       <default>gauss</default>
       <description>Radial basis function to use</description>
     </string-enumeration>
