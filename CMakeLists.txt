@@ -49,22 +49,22 @@ OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
 OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
 OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
 OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
-OPTION (PLM_BUILD_SLICER_LOADABLE 
-  "Build slicer loadable module" OFF)
-OPTION (PLM_BUILD_SLICER_SYNTH
-  "Build slicer synthetic CLP" OFF)
 
-# Software options
+# Plastimatch software configuration options
 OPTION (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 
+# Optional components
+OPTION (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
+OPTION (PLM_BUILD_RTK "Build RTK" OFF)
+OPTION (PLM_BUILD_SLICER_SYNTH "Build slicer synthetic CLP" OFF)
+OPTION (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
+
 # Compile and link options
 OPTION (BUILD_SHARED_LIBS 
   "Build plastimatch as shared library" OFF)
-OPTION (PLM_BUILD_RTK 
-  "Build RTK" OFF)
 OPTION (PLM_PREFER_F2C 
   "Prefer using f2c over native fortran compiler" OFF)
 OPTION (PLM_PREFER_SYSTEM_F2C 
