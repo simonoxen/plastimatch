@@ -7,10 +7,14 @@ PROJECT (plastimatch)
 
 CMAKE_MINIMUM_REQUIRED (VERSION 2.6.0)
 
-## Tell CMake to be quiet
+# Tell CMake to be quiet
+# Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
+# policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
+# older CMake versions.
 CMAKE_POLICY (SET CMP0003 NEW)
+CMAKE_POLICY (SET CMP0017 NEW)
 
-## Default to release
+# Default to release
 IF (NOT CMAKE_BUILD_TYPE)
   SET (CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Choose the type of build, options are: Debug Release
@@ -20,7 +24,6 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
-## My modules override CMake defaults
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
 SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
@@ -35,7 +38,6 @@ INCLUDE (InstallRequiredSystemLibraries)
 
 # http://www.cmake.org/Bug/view.php?id=9220
 INCLUDE (language_support.cmake)
-
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -132,18 +134,17 @@ IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-# JAS 10.28.2010
-# nvcc automatically passed the flag -malign-double to gcc when compiling .cu
-# files.  This can be a problem when structs are shared between .c & .cu files on
-# 32-bit machines.  So, we pass -malign-double to gcc for .c files as well so
-# that everybody is using the same alignment.  -malign-double is automatically
-# passed to gcc for 64-bit architectures.
-# 
-# GCS 2010-10-30
-# -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
-# gives an error if it is used on x86_64.
+## JAS 10.28.2010
+## nvcc automatically passed the flag -malign-double to gcc when compiling .cu
+## files.  This can be a problem when structs are shared between 
+## .c & .cu files on 32-bit machines.  So, we pass -malign-double to gcc 
+## for .c files as well so that everybody is using the same alignment.  
+## -malign-double is automatically passed to gcc for 64-bit architectures.
+## 
+## GCS 2010-10-30
+## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
+## gives an error if it is used on x86_64.
 ##-----------------------------------------------------------------------------
-#MESSAGE (STATUS "CMAKE_SIZEOF_VOID_P is ${CMAKE_SIZEOF_VOID_P}")
 IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
     SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
     SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
@@ -160,13 +161,11 @@ SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 ##-----------------------------------------------------------------------------
 ##  Macros for creating targets
 ##-----------------------------------------------------------------------------
-
 ## JAS 2011.01.24
 ## I have commented out the INSTALL for the PLM_ADD_LIBRARY
 ## macro since it was only serving to include static link
 ## libraries in the CPack generated packages.
 ## Namely: libplastimatch1.a, libgpuit.a, & libf2c_helper.a
-##
 MACRO (PLM_ADD_LIBRARY 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
@@ -240,8 +239,8 @@ MACRO (PLM_ADD_SLICER_MODULE
 ENDMACRO (PLM_ADD_SLICER_MODULE)
 
 MACRO (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
-  ## I don't yet know how to bundle the .cl file within the executable.
-  ## Therefore, copy the .cl into binary directory.
+  # I don't yet know how to bundle the .cl file within the executable.
+  # Therefore, copy the .cl into binary directory.
   SET (${SRCS} ${${SRCS}} "${CMAKE_BINARY_DIR}/${CL_FILE}")
   ADD_CUSTOM_COMMAND (
     OUTPUT "${CMAKE_BINARY_DIR}/${CL_FILE}"
@@ -249,7 +248,7 @@ MACRO (PLM_ADD_OPENCL_FILE SRCS CL_FILE)
     "${CMAKE_SOURCE_DIR}/${CL_FILE}" 
     "${CMAKE_BINARY_DIR}/${CL_FILE}" 
     DEPENDS "${CMAKE_SOURCE_DIR}/${CL_FILE}")
-  ## Need in the testing directory too :(
+  # Need in the testing directory too :(
   SET (${SRCS} ${${SRCS}} "${PLM_TESTING_BUILD_DIR}/${CL_FILE}")
   ADD_CUSTOM_COMMAND (
     OUTPUT "${PLM_TESTING_BUILD_DIR}/${CL_FILE}"
@@ -854,7 +853,7 @@ IF (FFTW_FOUND)
 ENDIF ()
 
 IF (OPENCL_FOUND)
-  ## Define OpenCL Plugin (plmopencl)
+  # Define OpenCL Plugin (plmopencl)
   SET (PLMOPENCL_LIBRARY_SRC
     autotune_opencl.cxx autotune_opencl.h
     opencl_probe.cxx opencl_probe.h opencl_probe.cl
@@ -1265,8 +1264,8 @@ INCLUDE_DIRECTORIES (AFTER ${BSTRLIB_INCLUDE_DIR})
 INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
 INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 
-## Don't do the below.  A user-built f2c directory contains ctype.h, which 
-## conflicts with the C/C++ header of the same name.
+# Don't do the below.  A user-built f2c directory contains ctype.h, which 
+# conflicts with the C/C++ header of the same name.
 #IF (PLM_USE_F2C)
 #  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
 #ENDIF (PLM_USE_F2C)
@@ -1277,7 +1276,7 @@ ENDIF ()
 
 IF (CUDA_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS})
-  ##INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
+  #INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
 ENDIF ()
 
 IF (DCMTK_FOUND)
@@ -1403,10 +1402,10 @@ IF (PLM_USE_GPU_PLUGINS)
 ENDIF ()
 
 IF (ITK_FOUND)
-  ## Despite claims to the contrary, you are not allowed to have a library
-  ## with the same name as the executable.  What happens is the executable 
-  ## tries to create a temporary library with the same name.  [MSVC 2005]
-  ## That is why the library is called plastimatch1 instead of plastimatch.
+  # Despite claims to the contrary, you are not allowed to have a library
+  # with the same name as the executable.  What happens is the executable 
+  # tries to create a temporary library with the same name.  [MSVC 2005]
+  # That is why the library is called plastimatch1 instead of plastimatch.
   SET (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
   PLM_ADD_LIBRARY (
     plastimatch1 
@@ -1727,9 +1726,9 @@ IF (FFTW_FOUND)
   ENDIF ()
 ENDIF ()
 
-## JAS 2011.01.24
-## I have moved the documentation DESTINATION from
-## /usr/doc to /usr/share/doc/plastimatch/ for Linux/UNIX
+# JAS 2011.01.24
+# I have moved the documentation DESTINATION from
+# /usr/doc to /usr/share/doc/plastimatch/ for Linux/UNIX
 IF (NOT BUILD_AGAINST_SLICER3)
   IF (UNIX)
     # FHS compliant path for Linux/UNIX
@@ -1845,8 +1844,8 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
     "${OPENCL_TEST_LIBS}" "" 0)
   #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
 
-  ## I don't yet know how to bundle the .cl file within the executable.
-  ## Therefore, copy the .cl into binary directory.
+  # I don't yet know how to bundle the .cl file within the executable.
+  # Therefore, copy the .cl into binary directory.
   ADD_CUSTOM_COMMAND (
     OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
@@ -1956,11 +1955,11 @@ ENDIF ()
 ##    ...from within your build directory
 ##-----------------------------------------------------------------------------
 
-## Default Generators
+# Default Generators
 SET (CPACK_GENERATOR "ZIP")
 SET (CPACK_SOURCE_GENERATOR "TBZ2")
 
-## Deb specific stuff
+# Deb specific stuff
 SET (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
 IF (PLM_PACKAGE_32BIT)
   SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
@@ -1981,7 +1980,7 @@ SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION
     imaging, and positron emission tomography."
 )
 
-## General Stuff
+# General Stuff
 SET (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
 SET (CPACK_PACKAGE_VERSION_MAJOR "1")
 SET (CPACK_PACKAGE_VERSION_MINOR "4-beta")
