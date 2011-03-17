@@ -95,19 +95,23 @@ plm_file_format_deduce (const char* path)
 	return PLM_FILE_FMT_PROJ_IMG;
     }
 
-    /* Maybe vector field? */
     itk::ImageIOBase::IOPixelType pixel_type;
     itk::ImageIOBase::IOComponentType component_type;
-    int num_dimensions;
-    itk_image_get_props (std::string (path), pixel_type, component_type, 
-	&num_dimensions);
+    int num_dimensions, num_components;
+    itk_image_get_props (std::string (path), &num_dimensions, pixel_type, 
+	component_type, &num_components);
     if (pixel_type == itk::ImageIOBase::VECTOR) {
-	return PLM_FILE_FMT_VF;
-    }
-
-    /* Maybe ss_image? */
-    if (num_dimensions == 4 && component_type == itk::ImageIOBase::UCHAR) {
-	return PLM_FILE_FMT_SS_IMG_4D;
+	/* Maybe vector field? */
+	if (component_type == itk::ImageIOBase::FLOAT) {
+	    return PLM_FILE_FMT_VF;
+	}
+	/* Maybe ss_image? */
+	if (num_components >= 2 
+	    && component_type == itk::ImageIOBase::UCHAR)
+	{
+	    return PLM_FILE_FMT_SS_IMG_VEC;
+	}
+	/* else fall through */
     }
 
     /* Maybe dicom rtss? */
@@ -153,7 +157,7 @@ plm_file_format_string (Plm_file_format file_type)
 	return "DICOM-RT SS";
     case PLM_FILE_FMT_DICOM_DOSE:
 	return "DICOM-RT dose";
-    case PLM_FILE_FMT_SS_IMG_4D:
+    case PLM_FILE_FMT_SS_IMG_VEC:
 	return "Structure set image";
     default:
 	return "Unknown/default";
@@ -194,7 +198,7 @@ plm_file_format_parse (const char* string)
 	return PLM_FILE_FMT_DICOM_RTSS;
     }
     else if (!strcmp (string, "ssimg")) {
-	return PLM_FILE_FMT_SS_IMG_4D;
+	return PLM_FILE_FMT_SS_IMG_VEC;
     }
     else {
 	return PLM_FILE_FMT_UNKNOWN;

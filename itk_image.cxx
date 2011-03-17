@@ -35,9 +35,10 @@
 void
 itk_image_get_props (
     std::string fileName,
-    itk::ImageIOBase::IOPixelType &pixel_type,
-    itk::ImageIOBase::IOComponentType &component_type,
-    int *num_dimensions
+    int *num_dimensions, 
+    itk::ImageIOBase::IOPixelType &pixel_type, 
+    itk::ImageIOBase::IOComponentType &component_type, 
+    int *num_components
 )
 {
     pixel_type = itk::ImageIOBase::UNKNOWNPIXELTYPE;
@@ -52,10 +53,8 @@ itk_image_get_props (
 	pixel_type = imageReader->GetImageIO()->GetPixelType();
 	component_type = imageReader->GetImageIO()->GetComponentType();
 	*num_dimensions = imageReader->GetImageIO()->GetNumberOfDimensions();
+	*num_components = imageReader->GetImageIO()->GetNumberOfComponents();
     } catch (itk::ExceptionObject &ex) {
-#if _MSC_VER
-	//ex;    /* Suppress compiler warning on windows */
-#endif
 	printf ("ITK exception.\n");
 	std::cout << ex << std::endl;
     }
@@ -75,6 +74,27 @@ itk_image_load_rdr (RdrT reader, const char *fn)
 	getchar();
 	exit(1);
     }
+}
+
+template<class T>
+typename T::Pointer
+itk_image_load (const char *fn)
+{
+
+    typedef typename itk::ImageFileReader < T > ReaderType;
+    typename ReaderType::Pointer reader = ReaderType::New();
+    reader->SetFileName(fn);
+    try {
+	reader->Update();
+    }
+    catch(itk::ExceptionObject & ex) {
+	printf ("ITK exception reading image file: %s!\n",fn);
+	std::cout << ex << std::endl;
+	getchar();
+	exit(1);
+    }
+    typename T::Pointer img = reader->GetOutput();
+    return img;
 }
 
 /* -----------------------------------------------------------------------
@@ -164,11 +184,13 @@ itk_image_load_any (
 	print_and_exit ("Can't open file \"%s\" for read\n", fname);
     }
 
+    int num_dimensions;
     itk::ImageIOBase::IOPixelType pixelType;
     itk::ImageIOBase::IOComponentType componentType;
-    int num_dimensions;
+    int num_components;
     try {
-	itk_image_get_props (fname, pixelType, componentType, &num_dimensions);
+	itk_image_get_props (fname, &num_dimensions, 
+	    pixelType, componentType, &num_components);
 	switch (componentType) {
 	case itk::ImageIOBase::UCHAR:
 	    set_original_type (original_type, PLM_IMG_TYPE_ITK_UCHAR);
@@ -301,24 +323,31 @@ itk_image_load_float (const char* fname, Plm_image_type* original_type)
     return orient_image (img);
 }
 
-DeformationFieldType::Pointer
-itk_image_load_float_field (const char* fname)
+UCharVecImageType::Pointer
+itk_image_load_uchar_vec (const char* fname)
 {
-    typedef itk::ImageFileReader< DeformationFieldType >  FieldReaderType;
-
-    FieldReaderType::Pointer fieldReader = FieldReaderType::New();
-    fieldReader->SetFileName (fname);
+    typedef itk::ImageFileReader< UCharVecImageType > ReaderType;
+    ReaderType::Pointer reader = ReaderType::New();
+    reader->SetFileName (fname);
 
     try {
-	fieldReader->Update();
+	reader->Update();
     }
     catch (itk::ExceptionObject& excp) {
-	std::cerr << "ITK exception reading vf file." << std::endl;
+	std::cerr << "ITK exception reading file." << std::endl;
 	std::cerr << excp << std::endl;
 	return 0;
     }
-    DeformationFieldType::Pointer deform_field = fieldReader->GetOutput();
-    return deform_field;
+    UCharVecImageType::Pointer img = reader->GetOutput();
+    return orient_image (img);
+}
+
+DeformationFieldType::Pointer
+itk_image_load_float_field (const char* fname)
+{
+    DeformationFieldType::Pointer img 
+	= itk_image_load<DeformationFieldType> (fname);
+    return orient_image (img);
 }
 
 /* Explicit instantiations */

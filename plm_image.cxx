@@ -115,9 +115,9 @@ Plm_image::load (const char* fname, Plm_image_type type)
 void
 Plm_image::load_native (const char* fname)
 {
-    itk::ImageIOBase::IOPixelType pixelType;
-    itk::ImageIOBase::IOComponentType componentType;
-    int num_dimensions;
+    itk::ImageIOBase::IOPixelType pixel_type;
+    itk::ImageIOBase::IOComponentType component_type;
+    int num_dimensions, num_components;
 
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
@@ -130,14 +130,18 @@ Plm_image::load_native (const char* fname)
 	print_and_exit ("Couldn't open %s for read\n", fname);
     }
 
-    itk_image_get_props (fname, pixelType, componentType, &num_dimensions);
+    itk_image_get_props (fname, &num_dimensions, pixel_type, 
+	component_type, &num_components);
 
-    std::cout << "FNAME:   " << fname << std::endl;
-    std::cout << "PIXTYPE: " << pixelType << std::endl;
-    std::cout << "CMPTYPE: " << componentType << std::endl;
-    std::cout << "NUMDIM:  " << num_dimensions << std::endl;
+    /* Handle ss_image as a special case */
+    if (num_components > 1 && component_type == itk::ImageIOBase::UCHAR) {
+	this->m_itk_uchar_vec = itk_image_load_uchar_vec (fname);
+	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
+	this->m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
+	return;
+    }
 
-    switch (componentType) {
+    switch (component_type) {
     case itk::ImageIOBase::UCHAR:
 	this->m_itk_uchar = itk_image_load_uchar (fname, 0);
 	this->m_original_type = PLM_IMG_TYPE_ITK_UCHAR;
@@ -180,7 +184,7 @@ Plm_image::load_native (const char* fname)
 	break;
     default:
 	printf ("Error, unsupported input type in load_native(): %d\n",
-	    componentType);
+	    component_type);
 	exit (-1);
 	break;
     }

@@ -10,6 +10,7 @@
 #include "itk_image_stats.h"
 #include "mha_io.h"
 #include "plm_file_format.h"
+#include "plm_image.h"
 #include "proj_image.h"
 #include "pcmd_stats.h"
 #include "vf_stats.h"
@@ -68,9 +69,43 @@ stats_proj_image_main (Stats_parms* parms)
 }
 
 static void
+stats_ss_image_main (Stats_parms* parms)
+{
+    Plm_image plm ((const char*) parms->img_in_fn);
+
+    if (plm.m_type != PLM_IMG_TYPE_ITK_UCHAR_VEC) {
+	print_and_exit ("Failure loading file %s as ss_image.\n",
+	    (const char*) parms->img_in_fn);
+    }
+
+    UCharVecImageType::Pointer img = plm.m_itk_uchar_vec;
+    UCharVecImageType::RegionType rg = img->GetLargestPossibleRegion ();
+
+    typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
+    UCharVecIteratorType it (img, rg);
+
+    int num_dimensions = img->GetVectorLength();
+
+    printf ("SS_IMAGE: At most %d structures\n", num_dimensions * 8);
+    uint32_t *hist = new uint32_t[num_dimensions];
+    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+#if defined (commentout)
+	float v = it.Get();
+	if (first) {
+	    min_val = max_val = v;
+	    first = 0;
+	}
+	if (min_val > v) min_val = v;
+	if (max_val < v) max_val = v;
+	sum += v;
+	num ++;
+#endif
+    }
+}
+
+static void
 stats_img_main (Stats_parms* parms)
 {
-
     typedef itk::ImageRegionIterator< FloatImageType > FloatIteratorType;
     FloatImageType::Pointer img = itk_image_load_float (
 	(const char*) parms->img_in_fn, 0);
@@ -116,6 +151,9 @@ stats_main (Stats_parms* parms)
 	break;
     case PLM_FILE_FMT_PROJ_IMG:
 	stats_proj_image_main (parms);
+	break;
+    case PLM_FILE_FMT_SS_IMG_VEC:
+	stats_ss_image_main (parms);
 	break;
     case PLM_FILE_FMT_IMG:
     default:

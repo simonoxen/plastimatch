@@ -29,6 +29,7 @@ plm_warp_itk (
     DeformationFieldType::Pointer vf;
 
     /* Create an itk vector field from xf_in */
+    printf ("plm_warp_itk: xform_to_itk_vf\n");
     xform_to_itk_vf (&xform_tmp, xf_in, pih);
     vf = xform_tmp.get_itk_vf ();
 
@@ -43,10 +44,11 @@ plm_warp_itk (
     }
 
     /* Convert GPUIT images to ITK */
+    printf ("plm_warp_itk: convert_to_itk\n");
     im_in->convert_to_itk ();
 
     /* Warp the image */
-    printf ("Warping...\n");
+    printf ("plm_warp_itk: warping...\n");
     switch (im_in->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	im_warped->m_itk_uchar = itk_warp_image (
