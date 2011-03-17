@@ -28,19 +28,24 @@ drr_opencl_state_create (
     Drr_options *options
 )
 {
+    printf ("drr_opencl_state_create: 1\n");
     LOAD_LIBRARY (libplmopencl);
+    printf ("drr_opencl_state_create: 2\n");
     LOAD_SYMBOL (opencl_open_device, libplmopencl);
     LOAD_SYMBOL (opencl_load_programs, libplmopencl);
     LOAD_SYMBOL (opencl_kernel_create, libplmopencl);
     LOAD_SYMBOL (opencl_buf_create, libplmopencl);
+    printf ("drr_opencl_state_create: 3\n");
 
     Drr_opencl_state *dev_state;
     dev_state = (Drr_opencl_state*) malloc (sizeof (Drr_opencl_state));
+    printf ("drr_opencl_state_create: 4\n");
 
     /* Set up devices and kernels */
     opencl_open_device (&dev_state->ocl_dev);
     opencl_load_programs (&dev_state->ocl_dev, "drr_opencl.cl");
     opencl_kernel_create (&dev_state->ocl_dev, "kernel_drr");
+    printf ("drr_opencl_state_create: 5\n");
 
     /* Set up device memory */
     dev_state->ocl_buf_img = opencl_buf_create (
@@ -57,7 +62,9 @@ drr_opencl_state_create (
         vol->img
     );
 
+    printf ("drr_opencl_state_create: 6\n");
     UNLOAD_LIBRARY (libplmopencl);
+    printf ("drr_opencl_state_create: 7\n");
     return (void*) dev_state;
 }
 
