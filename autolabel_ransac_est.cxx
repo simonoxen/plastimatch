@@ -128,7 +128,7 @@ optimize_piecewise_spline (
 )
 {
     const int MAX_ITS = 6;
-    int changed = 0;
+    //int changed = 0;
     double constraints[3][2] = {
 	{ -0.070, -0.040 },
 	{ -0.056, -0.037 },
