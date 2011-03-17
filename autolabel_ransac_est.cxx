@@ -68,7 +68,7 @@ score_piecewise_spline (
     std::vector<double>& piecewise_parms
 )
 {
-    double score;
+    double score = 0.0;
     Autolabel_point_vector::iterator it;
     for (it = apv.begin(); it != apv.end(); it++) {
 	score += score_piecewise_spline_point ((*it), piecewise_parms);
