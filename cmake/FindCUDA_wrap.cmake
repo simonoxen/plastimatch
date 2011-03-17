@@ -6,9 +6,14 @@ IF (MINGW)
 ELSEIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
   # FindCuda is included with CMake 2.8
   SET (CUDA_FOUND FALSE)
-ELSE (MINGW)
+ELSE ()
+  # GCS 2011.03.16
+  # Make nvcc less whiny
+  SET (CUDA_PROPAGATE_HOST_FLAGS OFF)
+  SET (CUDA_NVCC_FLAGS ${CMAKE_C_FLAGS})
+
   FIND_PACKAGE (CUDA QUIET)
-ENDIF (MINGW)
+ENDIF ()
 
 SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
@@ -16,7 +21,7 @@ IF (CUDA_FOUND)
   CUDA_INCLUDE_DIRECTORIES (
     ${CMAKE_CURRENT_SOURCE_DIR}
     )
-ENDIF(CUDA_FOUND)
+ENDIF()
 
 # JAS 08.25.2010
 #   Check to make sure nvcc has gcc-4.3 for compiling.
@@ -28,7 +33,6 @@ INCLUDE (nvcc-check)
 #   When developing, it is sometimes nice to turn this off in order
 #   to speed up the build processes (since you only have 1 GPU in your machine).
 SET (PLM_CUDA_ALL_DEVICES ON CACHE BOOL "Generate GPU code for all compute capabilities?")
-
 IF (PLM_CUDA_ALL_DEVICES)
     MESSAGE (STATUS "CUDA Build Level: ALL Compute Capabilities")
     SET (CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}
@@ -38,6 +42,7 @@ IF (PLM_CUDA_ALL_DEVICES)
         -gencode arch=compute_13,code=sm_13
         -gencode arch=compute_20,code=sm_20
     )
-ELSE (PLM_CUDA_ALL_DEVICES)
+ELSE ()
     MESSAGE (STATUS "CUDA Build Level: Build system Compute Capability ONLY!")
-ENDIF (PLM_CUDA_ALL_DEVICES)
+ENDIF ()
+
