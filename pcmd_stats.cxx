@@ -11,6 +11,7 @@
 #include "mha_io.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
+#include "plm_int.h"
 #include "proj_image.h"
 #include "pcmd_stats.h"
 #include "vf_stats.h"
