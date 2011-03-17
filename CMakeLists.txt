@@ -947,7 +947,14 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_dicom_save.cxx itk_dicom_save.h 
   itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
-  itk_image_load.cxx itk_image_load.h itk_image_load.txx
+  itk_image_load.h itk_image_load.txx
+  itk_image_load_float.cxx
+  itk_image_load_int32.cxx
+  itk_image_load_short.cxx
+  itk_image_load_uchar.cxx
+  itk_image_load_uint32.cxx
+  itk_image_load_ushort.cxx
+  itk_image_load_vec.cxx
   itk_image_save.cxx itk_image_save.h 
   itk_image_stats.cxx itk_image_stats.h 
   itk_pointset.cxx itk_pointset.h
