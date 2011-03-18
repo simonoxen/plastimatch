@@ -28,7 +28,7 @@ struct volume
     float direction_cosines[9];
     float step[3][3];           // direction_cosines * spacing
     float proj[3][3];           // direction_cosines / spacing
-    float inverse[9];
+    float inverse_direction_cosines[9];
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
     int pix_size;		        // # bytes per voxel
@@ -89,6 +89,9 @@ gpuit_EXPORT
 void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
 gpuit_EXPORT
 void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
+
+gpuit_EXPORT
+void volume_matrix3x3inverse(float *out, float *m);
 
 #if defined __cplusplus
 }
