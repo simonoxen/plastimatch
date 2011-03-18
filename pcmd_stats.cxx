@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
+#include "itkVariableLengthVector.h"
 
 #include "getopt.h"
 #include "itk_image.h"
@@ -85,23 +86,35 @@ stats_ss_image_main (Stats_parms* parms)
     typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
     UCharVecIteratorType it (img, rg);
 
-    int num_dimensions = img->GetVectorLength();
+    int vector_length = img->GetVectorLength();
 
-    printf ("SS_IMAGE: At most %d structures\n", num_dimensions * 8);
-    uint32_t *hist = new uint32_t[num_dimensions];
-    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-#if defined (commentout)
-	float v = it.Get();
-	if (first) {
-	    min_val = max_val = v;
-	    first = 0;
+    printf ("SS_IMAGE: At most %d structures\n", vector_length * 8);
+    uint32_t *hist = new uint32_t[vector_length * 8];
+
+    for (int i = 0; i < vector_length; i++) {
+	for (int j = 0; j < 8; j++) {
+	    hist[i*8+j] = 0;
 	}
-	if (min_val > v) min_val = v;
-	if (max_val < v) max_val = v;
-	sum += v;
-	num ++;
-#endif
     }
+
+    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
+	itk::VariableLengthVector< unsigned char > v = it.Get();
+	for (int i = 0; i < vector_length; i++) {
+	    unsigned char c = v[i];
+	    for (int j = 0; j < 8; j++) {
+		if (c & (1 << j)) {
+		    hist[i*8+j] ++;
+		}
+	    }
+	}
+    }
+
+    for (int i = 0; i < vector_length; i++) {
+	for (int j = 0; j < 8; j++) {
+	    printf ("S %4d  NVOX %10d\n", i*8+j, hist[i*8+j]);
+	}
+    }
+    delete hist;
 }
 
 static void
