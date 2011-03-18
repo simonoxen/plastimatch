@@ -28,6 +28,7 @@ struct volume
     float direction_cosines[9];
     float step[3][3];           // direction_cosines * spacing
     float proj[3][3];           // direction_cosines / spacing
+    float inverse[9];
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
     int pix_size;		        // # bytes per voxel
