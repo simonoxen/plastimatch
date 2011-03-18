@@ -474,6 +474,10 @@ Plm_image::convert_to_itk_uint32 (void)
 	this->m_itk_uint32 = cast_uint32 (this->m_itk_uchar);
 	this->m_itk_float = 0;
 	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	this->m_itk_uint32 = cast_uint32 (this->m_itk_short);
+	this->m_itk_short = 0;
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->m_itk_uint32 = cast_uint32 (this->m_itk_float);
 	this->m_itk_float = 0;
