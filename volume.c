@@ -79,8 +79,8 @@ volume_create (
 		/ vol->pix_spacing[i];
 	}
     }
-
-    switch (pix_type) {
+	
+	switch (pix_type) {
     case PT_UCHAR:
 	vol->pix_size = sizeof(unsigned char);
 	break;
@@ -754,6 +754,7 @@ volume_difference (Volume* vol, Volume* warped)
     }
     return temp;
 }
+
 
 void
 vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
