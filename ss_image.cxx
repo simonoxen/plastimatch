@@ -116,9 +116,11 @@ Ss_image::save_ss_image (const CBString &ss_img_fn)
 	    "Error: save_ss_image() tried to write a non-existant file");
     }
 #if (PLM_USE_SS_IMAGE_VEC)
-    printf ("... ->convert_to_itk_uchar_vec ();\n");
     /* Save as 3D ucharvec */
+#if defined (commentout)
+    printf ("... ->convert_to_itk_uchar_vec ();\n");
     this->m_ss_img->convert_to_itk_uchar_vec ();
+#endif
     printf ("... ->save_image ((const char*) ss_img_fn);\n");
     this->m_ss_img->save_image ((const char*) ss_img_fn);
     printf ("... done.\n");

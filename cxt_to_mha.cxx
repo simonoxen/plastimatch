@@ -167,8 +167,6 @@ cxt_to_mha_process_next (
 	    unsigned int uchar_no = ctm_state->curr_bit / 8;
 	    unsigned int bit_no = ctm_state->curr_bit % 8;
 	    unsigned char bit_mask = 1 << bit_no;
-	    printf ("Computed bit mask %d -> bit (%d,%d) 0x%02x\n", 
-		ctm_state->curr_bit, uchar_no, bit_no, bit_mask);
 	    if (uchar_no > ctm_state->m_ss_img->GetVectorLength()) {
 		print_and_exit (
 		    "Error: bit %d was requested from image of %d bits\n", 
@@ -178,17 +176,21 @@ cxt_to_mha_process_next (
 	    /* GCS FIX: This is inefficient, due to undesirable construct 
 	       and destruct of itk::VariableLengthVector of each pixel */
 	    UCharVecImageType::IndexType idx = {{0, 0, slice_no}};
+	    int k = 0;
 	    for (idx.m_Index[1] = 0; 
 		 idx.m_Index[1] < ctm_state->dim[1]; 
 		 idx.m_Index[1]++) {
 		for (idx.m_Index[0] = 0; 
 		     idx.m_Index[0] < ctm_state->dim[0]; 
 		     idx.m_Index[0]++) {
-		    itk::VariableLengthVector<unsigned char> v 
-			= ctm_state->m_ss_img->GetPixel (idx);
-		    v[uchar_no] |= (1 << ctm_state->curr_bit);
-		    ctm_state->m_ss_img->SetPixel (idx, v);
-		}		
+		    if (ctm_state->acc_img[k]) {
+			itk::VariableLengthVector<unsigned char> v 
+			    = ctm_state->m_ss_img->GetPixel (idx);
+			v[uchar_no] |= bit_mask;
+			ctm_state->m_ss_img->SetPixel (idx, v);
+		    }
+		    k++;
+		}
 	    }
 #else
 	    uint32_t* ss_img_img = 0;

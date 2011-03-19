@@ -964,6 +964,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
   itk_warp.cxx itk_warp.h 
+  itk_warp_test.cxx
   landmark_warp.cxx landmark_warp.h 
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h

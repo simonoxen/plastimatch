@@ -8,6 +8,7 @@
 #include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkWarpVectorImageFilter.h"
 #include "itk_image.h"
 
 /* Warp the image.  
@@ -65,22 +66,33 @@ itk_warp_image (
 }
 
 UCharVecImageType::Pointer 
-itk_warp_image (
+test_itk_warp_image (
     UCharVecImageType::Pointer im_in, 
     DeformationFieldType::Pointer vf, 
     int linear_interp,                   /* Ignored */
-    unsigned char default_val
+    UCharVecType& default_val
 )
 {
-    typedef itk::WarpImageFilter < 
-	UCharImageType, UCharImageType, DeformationFieldType > WarpFilterType;
-    typedef itk::NearestNeighborInterpolateImageFunction < 
-	UCharImageType, double > NNInterpType;
-
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
 
-    WarpFilterType::Pointer filter = WarpFilterType::New();
+    typedef itk::NearestNeighborInterpolateImageFunction < 
+	UCharVecImageType, double > NNInterpType;
     NNInterpType::Pointer nn_interpolator = NNInterpType::New();
+
+#if defined (commentout)
+    typedef itk::WarpVectorImageFilter < 
+	itk::VectorImage < unsigned char, 3 >,
+	itk::VectorImage < unsigned char, 3 >,
+	itk::Image < itk::Vector < float, 3 >, 3 >
+	> WarpFilterType;
+    WarpFilterType::Pointer filter = WarpFilterType::New();
+#endif
+
+#if defined (commentout)
+    typedef itk::WarpVectorImageFilter < 
+	UCharVecImageType, UCharVecImageType, DeformationFieldType 
+	> WarpFilterType;
+    WarpFilterType::Pointer filter = WarpFilterType::New();
 
     const UCharVecImageType::PointType& og = vf->GetOrigin();
     const UCharVecImageType::SpacingType& sp = vf->GetSpacing();
@@ -97,7 +109,6 @@ itk_warp_image (
 	
     }
 
-#if defined (commentout)
     filter->SetInput (im_in);
     filter->SetEdgePaddingValue ((PixelType) default_val);
 
@@ -114,10 +125,15 @@ itk_warp_image (
     return im_out;
 }
 
-/* Explicit instantiations */
-template plastimatch1_EXPORT UCharImageType::Pointer itk_warp_image (UCharImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned char default_val);
-template plastimatch1_EXPORT UShortImageType::Pointer itk_warp_image (UShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, unsigned short default_val);
-template plastimatch1_EXPORT ShortImageType::Pointer itk_warp_image (ShortImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, short default_val);
-template plastimatch1_EXPORT UInt32ImageType::Pointer itk_warp_image (UInt32ImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, uint32_t default_val);
-template plastimatch1_EXPORT FloatImageType::Pointer itk_warp_image (FloatImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, float default_val);
-template plastimatch1_EXPORT DoubleImageType::Pointer itk_warp_image (DoubleImageType::Pointer im_in, DeformationFieldType::Pointer vf, int linear_interp, double default_val);
+#if defined (commentout)
+void
+test_itk_warp_nope ()
+{
+    UCharVecImageType::Pointer im = UCharVecImageType::New ();
+    DeformationFieldType::Pointer vf = DeformationFieldType::New ();
+
+    UCharVecType default_val(4);
+
+    itk_warp_image (im, vf, 0, default_val);
+}
+#endif

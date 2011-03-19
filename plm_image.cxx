@@ -565,6 +565,9 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	this->m_itk_uchar_vec
 	    = plm_image_convert_gpuit_uint32_to_itk_uchar_vec (this);
 	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	printf ("Doing nothing (CONVERT_TO_ITK_UCHAR_VEC)\n");
+	break;
     default:
 	print_and_exit (
 	    "Error: unhandled conversion to itk_uchar_4d() type=%d\n",
@@ -588,6 +591,7 @@ Plm_image::convert_to_itk (void)
     case PLM_IMG_TYPE_ITK_FLOAT:
     case PLM_IMG_TYPE_ITK_DOUBLE:
     case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
 	/* Do nothing */
 	break;
 

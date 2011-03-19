@@ -55,6 +55,7 @@ typedef itk::Image < double, 2 > DoubleImage2DType;
 typedef itk::Image < FloatVector3DType, 3 > DeformationFieldType;
 
 /* Other types */
+typedef itk::VariableLengthVector<unsigned char> UCharVecType;
 typedef itk::Size < 3 > SizeType;
 typedef itk::Point < double, 3 >  OriginType;
 typedef itk::Vector < double, 3 > SpacingType;
