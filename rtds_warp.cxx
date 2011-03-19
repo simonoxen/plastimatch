@@ -135,37 +135,43 @@ save_ss_img (
 {
     /* labelmap */
     if (bstring_not_empty (parms->output_labelmap_fn)) {
+	printf ("save_ss_img: save_labelmap\n");
 	rtds->m_ss_image->save_labelmap (parms->output_labelmap_fn);
     }
 
     /* ss_img */
     if (bstring_not_empty (parms->output_ss_img_fn)) {
+	printf ("save_ss_img: save_ss_image\n");
 	rtds->m_ss_image->save_ss_image (parms->output_ss_img_fn);
     }
 
     /* list of structure names */
     if (bstring_not_empty (parms->output_ss_list_fn)) {
+	printf ("save_ss_img: save_ss_list\n");
 	rtds->m_ss_image->save_ss_list (parms->output_ss_list_fn);
     }
 
     /* prefix images */
     if (bstring_not_empty (parms->output_prefix)) {
+	printf ("save_ss_img: save_prefix\n");
 	rtds->m_ss_image->save_prefix (parms->output_prefix);
     }
 
     /* 3D Slicer color table */
     if (bstring_not_empty (parms->output_colormap_fn)) {
+	printf ("save_ss_img: save_colormap\n");
 	rtds->m_ss_image->save_colormap (parms->output_colormap_fn);
     }
 
     /* cxt */
     if (bstring_not_empty (parms->output_cxt_fn)) {
+	printf ("save_ss_img: save_cxtt\n");
 	rtds->m_ss_image->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
     }
 
     /* xio */
     if (bstring_not_empty (parms->output_xio_dirname)) {
-	logfile_printf ("Output xio dirname = %s\n", 
+	logfile_printf ("save_ss_img: save_xio (dirname = %s)\n", 
 	    (const char*) parms->output_xio_dirname);
 	rtds->m_ss_image->save_xio (
 	    rtds->m_xio_transform,
@@ -214,7 +220,7 @@ warp_and_save_ss (
 	} else {
 	    pih.set_from_gpuit (cxt->m_offset, cxt->m_spacing, cxt->m_dim, 0);
 	}
-
+	printf ("Warp_and_save_ss: m_ss_image->rasterize\n");
 	rtds->m_ss_image->rasterize (&pih);
     }
 
@@ -222,6 +228,7 @@ warp_and_save_ss (
     /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
        not included in output. */
     if (bstring_not_empty (parms->xf_in_fn)) {
+	printf ("Warp_and_save_ss: m_ss_image->warp\n");
 	rtds->m_ss_image->warp (xf, pih, parms);
     }
 
@@ -229,16 +236,19 @@ warp_and_save_ss (
     /* GCS FIX: This is only necessary if we are outputting polylines. 
        Otherwise it is wasting users time. */
     if (bstring_not_empty (parms->xf_in_fn)) {
+	printf ("Warp_and_save_ss: m_ss_image->cxt_re_extract\n");
 	rtds->m_ss_image->cxt_re_extract ();
     }
 
     /* If we need to reduce the number of points (aka if simplify-perc 
        was set), purge the excessive points...*/
     if (parms->simplify_perc >0 && parms->simplify_perc<100) {
-	do_simplify(rtds,parms->simplify_perc);
+	printf ("Warp_and_save_ss: do_simplify\n");
+	do_simplify(rtds, parms->simplify_perc);
     }
 
     /* Save non-dicom formats, such as mha, cxt, xio */
+    printf ("Warp_and_save_ss: save_ss_img\n");
     save_ss_img (rtds, xf, pih, parms);
 }
 

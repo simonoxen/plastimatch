@@ -162,30 +162,36 @@ plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
 }
 
 UCharVecImageType::Pointer
-plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer img)
+plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in)
 {
-    int i, d;
-
+    /* Create the output image */
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
-#if defined (commentout)
+    itk_image_header_copy (im_out, im_in);
+    im_out->SetVectorLength (4);
     im_out->Allocate ();
 
-    /* Choose size of vectors for image */
-    im_out->SetVectorLength (4);
-
     /* Copy data into itk */
-    typedef itk::ImageRegionIterator< UCharVecImageType > IteratorType;
-    IteratorType it (im_out, rgn_out);
+    typedef itk::ImageRegionIterator< UInt32ImageType > UInt32IteratorType;
+    const UInt32ImageType::RegionType rgn_in 
+	= im_in->GetLargestPossibleRegion();
+    UInt32IteratorType it_in (im_in, rgn_in);
+    typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
+    const UCharVecImageType::RegionType rgn_out
+	= im_out->GetLargestPossibleRegion();
+    UCharVecIteratorType it_out (im_out, rgn_out);
 
-    for (it.GoToBegin(), i=0; !it.IsAtEnd(); ++it, ++i) {
-	/* GCS FIX: This is probably inefficient, unless the compiler 
-	   is very, very smart (which I doubt) */
-	/* GCS FIX: This puts the planes in the "wrong" order, 
-	   with uint32_t MSB as first component of vector */
-	it.Set (itk::VariableLengthVector<unsigned char> (
-		(unsigned char*) &img[i], 4));
+    itk::VariableLengthVector<unsigned char> v_out(4);
+    for (it_in.GoToBegin(), it_out.GoToBegin();
+	 !it_in.IsAtEnd();
+	 ++it_in, ++it_out)
+    {
+	uint32_t v_in = it_in.Get ();
+	v_out[0] = v_in & 0x000000FF;
+	v_out[1] = (v_in & 0x0000FF00) >> 8;
+	v_out[2] = (v_in & 0x00FF0000) >> 16;
+	v_out[3] = (v_in & 0xFF000000) >> 24;
+	it_out.Set (v_out);
     }
-#endif
 
     return im_out;
 }

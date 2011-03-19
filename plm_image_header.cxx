@@ -291,18 +291,15 @@ itk_image_header_copy (T dest, U src)
     const typename SrcImageType::RegionType src_rgn
 	= src->GetLargestPossibleRegion();
     const typename SrcImageType::PointType& src_og = src->GetOrigin();
-    const typename SrcImageType::SizeType& src_sz = src->GetSize();
+    //const typename SrcImageType::SizeType& src_sz = src_rgn.GetSize();
     const typename SrcImageType::SpacingType& src_sp = src->GetSpacing();
     const typename SrcImageType::DirectionType& src_dc = src->GetDirection();
 
-    typename DestImageType::RegionType dest_rgn;
-    typename DestImageType::PointType dest_og;
-    typename DestImageType::SpacingType dest_sp;
-    typename DestImageType::RegionType::SizeType dest_sz;
-
-    dest->SetSize (src_sz);
     dest->SetRegions (src_rgn);
     dest->SetOrigin (src_og);
     dest->SetSpacing (src_sp);
     dest->SetDirection (src_dc);
 }
+
+/* Explicit instantiations */
+template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer im_in);
