@@ -402,9 +402,10 @@ gdcm_dose_save (
     Plm_image *tmp = pli->clone ();
     /* Find the maximum value in the image */
     double min_val, max_val, avg;
-    int num;
+    int non_zero, num_vox;
     tmp->convert (PLM_IMG_TYPE_ITK_FLOAT);
-    itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, &num);
+    itk_image_stats (tmp->m_itk_float, &min_val, &max_val, &avg, 
+	&non_zero, &num_vox);
 #ifndef UINT16_T_MAX
 #define UINT16_T_MAX (0xffff)
 #endif

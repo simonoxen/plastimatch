@@ -10,5 +10,8 @@
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-template<class T> plastimatch1_EXPORT void itk_image_stats (T img, double *min_val, double *max_val, double *avg, int *num);
+template<class T> plastimatch1_EXPORT 
+void
+itk_image_stats (T img, double *min_val, double *max_val, 
+    double *avg, int *non_zero, int *num_vox);
 #endif

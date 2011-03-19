@@ -149,11 +149,11 @@ stats_img_main (Stats_parms* parms)
 #endif
 
     double min_val, max_val, avg;
-    int num;
-    itk_image_stats (img, &min_val, &max_val, &avg, &num);
+    int non_zero, num_vox;
+    itk_image_stats (img, &min_val, &max_val, &avg, &non_zero, &num_vox);
 
-    printf ("MIN %f AVE %f MAX %f NUM %d\n", 
-	(float) min_val, (float) avg, (float) max_val, num);
+    printf ("MIN %f AVE %f MAX %f NONZERO %d NUMVOX %d\n", 
+	(float) min_val, (float) avg, (float) max_val, non_zero, num_vox);
 }
 
 static void

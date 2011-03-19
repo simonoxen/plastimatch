@@ -76,65 +76,64 @@ ENDIF ()
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
 IF (PLM_USE_GPU_PLUGINS)
-    # Because MSVC places stuff in Release/ or Debug/, etc
-    # CMAKE_CFG_INTDIR is "Release/" or "Debug/" for Windows or "/" for Linux
-    # In the Linux case, the extra "/" doesn't hurt anything.
-    SET (GPU_PLUGIN_BIN_DIR
-        "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
+  # Because MSVC places stuff in Release/ or Debug/, etc
+  # CMAKE_CFG_INTDIR is "Release/" or "Debug/" for Windows or "/" for Linux
+  # In the Linux case, the extra "/" doesn't hurt anything.
+  SET (GPU_PLUGIN_BIN_DIR
+    "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
 
-    IF (CUDA_FOUND)
-        # CMAKE_SHARED_LIBRARY_PREFIX is "" under Windows and "lib" under Linux
-        # CMAKE_SHARE_LIBRARY_SUFFIX is ".dll" under Windows and ".so" under Linux
-        SET (CUDA_PLUGIN_FILE
-            "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  IF (CUDA_FOUND)
+    # CMAKE_SHARED_LIBRARY_PREFIX is "" under Windows and "lib" under Linux
+    # CMAKE_SHARE_LIBRARY_SUFFIX is ".dll" under Windows and ".so" under Linux
+    SET (CUDA_PLUGIN_FILE
+      "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-        # This tells CMake how to handle a target depending on
-        # "Testing/[lib]plmcuda[.dll/.so]"
-        ADD_CUSTOM_COMMAND (
-            OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
-            COMMAND
-            ${CMAKE_COMMAND} "-E" "copy"
-            "${GPU_PLUGIN_BIN_DIR}/${CUDA_PLUGIN_FILE}"
-            "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
-            DEPENDS plmcuda
-        )
+    # This tells CMake how to handle a target depending on
+    # "Testing/[lib]plmcuda[.dll/.so]"
+    ADD_CUSTOM_COMMAND (
+      OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+      COMMAND
+      ${CMAKE_COMMAND} "-E" "copy"
+      "${GPU_PLUGIN_BIN_DIR}/${CUDA_PLUGIN_FILE}"
+      "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+      DEPENDS plmcuda
+      )
 
-        # The Phony target
-        # This is the Makefile equivalent of
-        # Testing/plmcuda.dll : plmcuda.dll      (Under Windows)  *OR*
-        # Testing/libplmcuda.so : libplmcuda.so  (Under Linux)
-        #
-        # The "rule" for handling this is the above custom command 
-        ADD_CUSTOM_TARGET (plmcuda_tcpy
-            DEPENDS "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
-        )
+    # The Phony target
+    # This is the Makefile equivalent of
+    # Testing/plmcuda.dll : plmcuda.dll      (Under Windows)  *OR*
+    # Testing/libplmcuda.so : libplmcuda.so  (Under Linux)
+    #
+    # The "rule" for handling this is the above custom command 
+    ADD_CUSTOM_TARGET (plmcuda_tcpy
+      DEPENDS "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
+      )
 
-        # When using the plmcuda plugin, GPUIT depends on it for GPU acceleration.
-        # So, we add it as a dependency here so that plmcuda plugin will be copied
-        # to Testing whenever the user builds GPUIT (or any target that depends on
-        # GPUIT, which is most targets).
-        ADD_DEPENDENCIES (gpuit plmcuda_tcpy)
-    ENDIF (CUDA_FOUND)
+    # When using the plmcuda plugin, GPUIT depends on it for GPU acceleration.
+    # So, we add it as a dependency here so that plmcuda plugin will be copied
+    # to Testing whenever the user builds GPUIT (or any target that depends on
+    # GPUIT, which is most targets).
+    ADD_DEPENDENCIES (gpuit plmcuda_tcpy)
+  ENDIF (CUDA_FOUND)
 
-    IF (OPENCL_FOUND)
-        SET (OPENCL_PLUGIN_FILE
-            "${CMAKE_SHARED_LIBRARY_PREFIX}plmopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
+  IF (OPENCL_FOUND)
+    SET (OPENCL_PLUGIN_FILE
+      "${CMAKE_SHARED_LIBRARY_PREFIX}plmopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-        ADD_CUSTOM_COMMAND (
-            OUTPUT "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
-            COMMAND
-            ${CMAKE_COMMAND} "-E" "copy"
-            "${GPU_PLUGIN_BIN_DIR}/${OPENCL_PLUGIN_FILE}"
-            "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
-            DEPENDS plmopencl
-        )
+    ADD_CUSTOM_COMMAND (
+      OUTPUT "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
+      COMMAND
+      ${CMAKE_COMMAND} "-E" "copy"
+      "${GPU_PLUGIN_BIN_DIR}/${OPENCL_PLUGIN_FILE}"
+      "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
+      DEPENDS plmopencl
+      )
 
-        ADD_CUSTOM_TARGET (plmopencl_tcpy
-            DEPENDS "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
-        )
-
-        ADD_DEPENDENCIES (gpuit plmopencl_tcpy)
-    ENDIF (OPENCL_FOUND)
+    ADD_CUSTOM_TARGET (plmopencl_tcpy
+      DEPENDS "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
+      )
+    ADD_DEPENDENCIES (gpuit plmopencl_tcpy)
+  ENDIF (OPENCL_FOUND)
 ENDIF (PLM_USE_GPU_PLUGINS)
 
 ## -------------------------------------------------------------------------
@@ -909,6 +908,17 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-ss-img.mha"
   )
+IF (PLM_USE_SS_IMAGE_VEC)
+ADD_TEST (
+  "plm-convert-dicom-b-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
+  "-DREGEX=S *1 *([-0-9.]*)"
+  "-DLOWER_THRESH=62767"
+  "-DUPPER_THRESH=62767"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+ELSE ()
 ADD_TEST (
   "plm-convert-dicom-b-check"
   ${CMAKE_COMMAND} 
@@ -918,6 +928,7 @@ ADD_TEST (
   "-DUPPER_THRESH=1.06"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+ENDIF ()
 PLM_ADD_TEST (
   "plm-convert-dicom-c"
   ""
