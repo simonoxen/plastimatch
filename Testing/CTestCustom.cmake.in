@@ -315,9 +315,9 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-b"
     "plm-convert-dicom-b-stats"
     "plm-convert-dicom-b-check"
-    "plm-convert-dicom-c"
-    "plm-convert-dicom-c-stats"
-    "plm-convert-dicom-c-check"
+#    "plm-convert-dicom-c"
+#    "plm-convert-dicom-c-stats"
+#    "plm-convert-dicom-c-check"
     "plm-convert-dicom-d"
     "plm-convert-dicom-d-stats"
     "plm-convert-dicom-d-check"
@@ -326,6 +326,8 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-f-stats"
     "plm-convert-dicom-f-check"
     "plm-convert-dicom-g"
+    "plm-convert-dicom-cerr-a"
+    "plm-convert-dicom-pinnacle-a"
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
@@ -362,6 +364,8 @@ IF (PLM_REDUCED_TESTS)
     "plm-register-bspline-ushort-stats"
     "plm-register-bspline-ushort-check"
 
+    "plm-register-rect-bspline" 
+
     "plm-register-compose" 
     "plm-compose-a" 
     "plm-compose-a-warp" 
@@ -377,6 +381,9 @@ IF (PLM_REDUCED_TESTS)
     "plm-compose-c-check"
 
     "plm-resample-a"
+
+    "plm-warp-pointset-a" 
+    "plm-warp-pointset-b" 
 
     "plm-warp-a"
     "plm-warp-a-stats"

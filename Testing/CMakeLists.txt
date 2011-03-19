@@ -913,7 +913,7 @@ ADD_TEST (
   "plm-convert-dicom-b-check"
   ${CMAKE_COMMAND} 
   "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
-  "-DREGEX=S *1 *([-0-9.]*)"
+  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
   "-DLOWER_THRESH=62767"
   "-DUPPER_THRESH=62767"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
