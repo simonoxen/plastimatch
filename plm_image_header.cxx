@@ -128,10 +128,14 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 			vol->dim, vol->direction_cosines);
 	break;
     }
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	this->set_from_itk_image (pli->m_itk_uchar_vec);
+	break;
     case PLM_IMG_TYPE_ITK_FLOAT_FIELD:
     case PLM_IMG_TYPE_ITK_CHAR:
     default:
-	print_and_exit ("Unhandled image type in set_from_plm_image\n");
+	print_and_exit ("Unhandled image type (%s) in set_from_plm_image\n",
+	    plm_image_type_string (pli->m_type));
 	break;
     }
 }

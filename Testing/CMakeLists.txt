@@ -933,14 +933,26 @@ PLM_ADD_TEST (
   "plm-convert-dicom-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.mha;--fixed;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.cxt"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-ss-img.mha;--fixed;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.cxt"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.mha"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-ss-img.mha"
   )
+IF (PLM_USE_SS_IMAGE_VEC)
+# To be resolved.  Why do dicom-b and dicom-c give different answers?
+ADD_TEST (
+  "plm-convert-dicom-c-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-stats.stdout.txt"
+  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
+  "-DLOWER_THRESH=62769"
+  "-DUPPER_THRESH=62769"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+ELSE ()
 ADD_TEST (
   "plm-convert-dicom-c-check"
   ${CMAKE_COMMAND} 
@@ -950,6 +962,7 @@ ADD_TEST (
   "-DUPPER_THRESH=1.06"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+ENDIF ()
 PLM_ADD_TEST (
   "plm-convert-dicom-d"
   ""
@@ -1040,6 +1053,17 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-cxt.mha"
   )
+IF (PLM_USE_SS_IMAGE_VEC)
+ADD_TEST (
+  "plm-convert-cxt-check"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
+  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
+  "-DLOWER_THRESH=62769"
+  "-DUPPER_THRESH=62769"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+ELSE ()
 ADD_TEST (
   "plm-convert-cxt-check"
   ${CMAKE_COMMAND} 
@@ -1049,6 +1073,7 @@ ADD_TEST (
   "-DUPPER_THRESH=1.06"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+ENDIF ()
 
 ## -------------------------------------------------------------------------
 ## plastimatch convert xio
