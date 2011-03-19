@@ -6,6 +6,7 @@
 
 #include "plm_config.h"
 #include "cxt_io.h"
+#include "itk_image.h"
 #include "plm_image_header.h"
 #include "volume.h"
 
@@ -22,7 +23,11 @@ public:
     unsigned char* acc_img;
     Volume* uchar_vol;
     Volume* labelmap_vol;
+#if (PLM_USE_SS_IMAGE_VEC)
+    UCharVecImageType::Pointer m_ss_img;
+#else
     Volume* ss_img_vol;
+#endif
 
     int curr_struct_no;
     int curr_bit;

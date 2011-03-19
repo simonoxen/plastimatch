@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _itk_image_h_
-#define _itk_image_h_
+#ifndef _itk_image_load_h_
+#define _itk_image_load_h_
 
 #include "plm_config.h"
 #include <stdio.h>

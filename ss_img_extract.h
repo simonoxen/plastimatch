@@ -8,6 +8,8 @@
 #include "itk_image.h"
 
 UCharImageType::Pointer
-ss_img_extract (UInt32ImageType::Pointer image, int bit);
+ss_img_extract (UInt32ImageType::Pointer image, unsigned int bit);
+UCharImageType::Pointer
+ss_img_extract (UCharVecImageType::Pointer image, unsigned int bit);
 
 #endif

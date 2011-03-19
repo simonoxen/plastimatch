@@ -6,9 +6,10 @@
 #include "itkImage.h"
 #include "itkInverseDeformationFieldImageFilter.h"
 #include "itkIterativeInverseDeformationFieldImageFilter.h"
-
 #include "getopt.h"
+
 #include "itk_image.h"
+#include "itk_image_load.h"
 #include "mha_io.h"
 #include "plm_image_header.h"
 #include "print_and_exit.h"

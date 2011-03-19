@@ -12,6 +12,7 @@
 #include "file_util.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "mha_io.h"
 #include "plm_image.h"
@@ -353,6 +354,15 @@ Plm_image::set_itk (FloatImageType::Pointer img)
     m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
     m_type = PLM_IMG_TYPE_ITK_FLOAT;
     this->m_itk_float = img;
+}
+
+void 
+Plm_image::set_itk (UCharVecImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
+    m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
+    this->m_itk_uchar_vec = img;
 }
 
 /* -----------------------------------------------------------------------

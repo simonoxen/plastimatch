@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include "dice_statistics.h"
 #include "hausdorff_statistics.h"
+#include "itk_image_load.h"
 
 void print_usage (void)
 {

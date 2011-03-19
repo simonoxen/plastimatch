@@ -160,11 +160,14 @@ Ss_image::save_prefix (const CBString &output_prefix)
 	int bit = curr_structure->bit;
 
 	if (bit == -1) continue;
-
+#if (PLM_USE_SS_IMAGE_VEC)
+	UCharImageType::Pointer prefix_img = ss_img_extract (
+	    m_ss_img->m_itk_uchar_vec, bit);
+#else
 	m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 	UCharImageType::Pointer prefix_img = ss_img_extract (
 	    m_ss_img->m_itk_uint32, bit);
-
+#endif
 	compose_prefix_fn (&fn, output_prefix, curr_structure->name);
 	printf ("Trying to save prefix image: [%d,%d], %s\n", 
 	    i, bit, (const char*) fn);
@@ -316,8 +319,13 @@ Ss_image::rasterize (Plm_image_header *pih)
 	delete this->m_ss_img;
     }
     this->m_ss_img = new Plm_image;
+
+#if (PLM_USE_SS_IMAGE_VEC)
+    this->m_ss_img->set_itk (ctm_state->m_ss_img);
+#else
     this->m_ss_img->set_gpuit (ctm_state->ss_img_vol);
     ctm_state->ss_img_vol = 0;
+#endif
 
     /* We're done with cxt_state now */
     cxt_to_mha_destroy (ctm_state);

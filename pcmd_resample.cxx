@@ -2,17 +2,18 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "itkImage.h"
-#include "itkResampleImageFilter.h"
 #include "itkCastImageFilter.h"
+#include "itkImage.h"
 #include "itkImageFileWriter.h"
-
+#include "itkResampleImageFilter.h"
 #include "getopt.h"
+
 #include "itk_image.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
+#include "pcmd_resample.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
-#include "pcmd_resample.h"
 #include "resample_mha.h"
 
 void

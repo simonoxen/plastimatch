@@ -1640,6 +1640,17 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-e-ss-img.nrrd"
   )
+IF (PLM_USE_SS_IMAGE_VEC)
+ADD_TEST (
+  "plm-warp-e-check-4"
+  ${CMAKE_COMMAND} 
+  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
+  "-DLOWER_THRESH=1971"
+  "-DUPPER_THRESH=1971"
+  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+  )
+ELSE ()
 ADD_TEST (
   "plm-warp-e-check-4"
   ${CMAKE_COMMAND} 
@@ -1649,6 +1660,7 @@ ADD_TEST (
   "-DUPPER_THRESH=1.15"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+ENDIF ()
 ADD_TEST (
   "plm-warp-e-check-5"
   ${CMAKE_COMMAND} -E compare_files

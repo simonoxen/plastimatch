@@ -2,17 +2,19 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 /*  Warp one or more dij matrices based on a vector field */
-#include <time.h>
-#include <math.h>
 #include "plm_config.h"
+#include <math.h>
+#include <time.h>
 #include "itkImage.h"
-#include "itkLinearInterpolateImageFunction.h"
 #include "itkInterpolateImagePointsFilter.h"
+#include "itkLinearInterpolateImageFunction.h"
 #include "itkVectorLinearInterpolateImageFunction.h"
 #include "getopt.h"
-#include "plm_path.h"
-#include "pcmd_warp.h"
+
 #include "itk_image.h"
+#include "itk_image_load.h"
+#include "pcmd_warp.h"
+#include "plm_path.h"
 
 typedef unsigned short ushort;
 typedef unsigned long ulong;

@@ -2,21 +2,23 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
-#include "itkContourExtractor2DImageFilter.h"
-#include "itkImage.h"
-#include "itk_image.h"
-#include "itkImageLinearIteratorWithIndex.h"
-#include "slice_extract.h"
-#include "itkImageSliceConstIteratorWithIndex.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "itkContourExtractor2DImageFilter.h"
+#include "itkImage.h"
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+#include "itkImageLinearIteratorWithIndex.h"
+#include "itkImageSliceConstIteratorWithIndex.h"
 
-/* =======================================================================*
+#include "itk_image.h"
+#include "itk_image_load.h"
+#include "slice_extract.h"
+
+/* -----------------------------------------------------------------------
     Definitions
-* =======================================================================*/
+   ----------------------------------------------------------------------- */
 typedef itk::ContourExtractor2DImageFilter<FloatImage2DType> ContourType;
 typedef ContourType::VertexType VertexType;
 typedef itk::ImageSliceConstIteratorWithIndex<FloatImageType> IteratorType;

@@ -10,6 +10,7 @@
 #include "gpuit_bspline.h"
 #include "gpuit_demons.h"
 #include "itk_demons.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "itk_optim.h"
 #include "itk_registration.h"

@@ -89,8 +89,4 @@ direction_cosines_from_itk (
     DirectionType* itk_direction
 );
 
-template<class T, class U> 
-void
-itk_image_header_copy (T dest, U src);
-
 #endif

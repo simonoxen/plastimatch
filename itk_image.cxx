@@ -11,14 +11,15 @@
 #include "itkCastImageFilter.h"
 #include "itkOrientImageFilter.h"
 
-#include "plm_int.h"
 #include "itk_dicom_load.h"
 #include "itk_image.h"
 #include "itk_image_cast.h"
 #include "file_util.h"
-#include "print_and_exit.h"
 #include "logfile.h"
+#include "plm_image_header.h"
+#include "plm_int.h"
 #include "plm_image_patient_position.h"
+#include "print_and_exit.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -79,8 +80,40 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
     }
 }
 
+template<class T>
+void
+itk_image_set_header (T dest, Plm_image_header *pih)
+{
+    dest->SetRegions (pih->m_region);
+    dest->SetOrigin (pih->m_origin);
+    dest->SetSpacing (pih->m_spacing);
+    dest->SetDirection (pih->m_direction);
+}
+
+template<class T, class U>
+void
+itk_image_header_copy (T dest, U src)
+{
+    typedef typename U::ObjectType SrcImageType;
+    typedef typename T::ObjectType DestImageType;
+
+    const typename SrcImageType::RegionType src_rgn
+	= src->GetLargestPossibleRegion();
+    const typename SrcImageType::PointType& src_og = src->GetOrigin();
+    const typename SrcImageType::SpacingType& src_sp = src->GetSpacing();
+    const typename SrcImageType::DirectionType& src_dc = src->GetDirection();
+
+    dest->SetRegions (src_rgn);
+    dest->SetOrigin (src_og);
+    dest->SetSpacing (src_sp);
+    dest->SetDirection (src_dc);
+}
+
 /* Explicit instantiations */
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UCharImageType::Pointer image);
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], ShortImageType::Pointer image);
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
+template plastimatch1_EXPORT void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
+template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer im_in);
+template plastimatch1_EXPORT void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer im_in);

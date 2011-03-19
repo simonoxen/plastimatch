@@ -133,6 +133,8 @@ public:
     void set_itk (UCharImageType::Pointer img);
     plastimatch1_EXPORT
     void set_itk (FloatImageType::Pointer img);
+    plastimatch1_EXPORT
+    void set_itk (UCharVecImageType::Pointer img);
 
     /* conversion */
     FloatImageType::Pointer& itk_float () {

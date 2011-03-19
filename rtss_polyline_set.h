@@ -18,12 +18,6 @@ class Rtss_structure;
 
 class Rtss_polyline_set {
 public:
-    //CBString ct_study_uid;
-    //CBString ct_series_uid;
-    //CBString ct_fref_uid;
-    //CBString study_id;
-    //std::vector<CBString> ct_slice_uids;
-
     Img_metadata *m_demographics;
 
     /* Output geometry */

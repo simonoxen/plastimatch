@@ -50,7 +50,7 @@ cxt_to_mha_init (
     /* Create output volume for mask image.  This is reused for each 
        structure */
     ctm_state->uchar_vol = volume_create (ctm_state->dim, ctm_state->origin, 
-	    ctm_state->spacing, PT_UCHAR, 0, 0);
+	ctm_state->spacing, PT_UCHAR, 0, 0);
     if (ctm_state->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
     }
@@ -66,6 +66,16 @@ cxt_to_mha_init (
     }
 
     /* Create output volume for ss_img */
+#if (PLM_USE_SS_IMAGE_VEC)
+    if (want_ss_img) {
+	ctm_state->m_ss_img = UCharVecImageType::New ();
+	itk_image_set_header (ctm_state->m_ss_img, pih);
+	int num_uchar = 1 + (cxt->num_structures-1) / 8;
+	if (num_uchar < 2) num_uchar = 2;
+	ctm_state->m_ss_img->SetVectorLength (num_uchar);
+	ctm_state->m_ss_img->Allocate ();
+    }
+#else
     ctm_state->ss_img_vol = 0;
     if (want_ss_img) {
 	ctm_state->ss_img_vol = volume_create (ctm_state->dim, 
@@ -74,6 +84,7 @@ cxt_to_mha_init (
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
     }
+#endif
 
     /* Initialize to start with first structure */
     ctm_state->curr_struct_no = 0;
@@ -151,6 +162,35 @@ cxt_to_mha_process_next (
 	    }
 	}
 	if (ctm_state->want_ss_img) {
+#if (PLM_USE_SS_IMAGE_VEC)
+	    /* GCS FIX: This code is replicated in ss_img_extract */
+	    unsigned int uchar_no = ctm_state->curr_bit / 8;
+	    unsigned int bit_no = ctm_state->curr_bit % 8;
+	    unsigned char bit_mask = 1 << bit_no;
+	    printf ("Computed bit mask %d -> bit (%d,%d) 0x%02x\n", 
+		ctm_state->curr_bit, uchar_no, bit_no, bit_mask);
+	    if (uchar_no > ctm_state->m_ss_img->GetVectorLength()) {
+		print_and_exit (
+		    "Error: bit %d was requested from image of %d bits\n", 
+		    ctm_state->curr_bit, 
+		    ctm_state->m_ss_img->GetVectorLength() * 8);
+	    }
+	    /* GCS FIX: This is inefficient, due to undesirable construct 
+	       and destruct of itk::VariableLengthVector of each pixel */
+	    UCharVecImageType::IndexType idx = {{0, 0, slice_no}};
+	    for (idx.m_Index[1] = 0; 
+		 idx.m_Index[1] < ctm_state->dim[1]; 
+		 idx.m_Index[1]++) {
+		for (idx.m_Index[0] = 0; 
+		     idx.m_Index[0] < ctm_state->dim[0]; 
+		     idx.m_Index[0]++) {
+		    itk::VariableLengthVector<unsigned char> v 
+			= ctm_state->m_ss_img->GetPixel (idx);
+		    v[uchar_no] |= (1 << ctm_state->curr_bit);
+		    ctm_state->m_ss_img->SetPixel (idx, v);
+		}		
+	    }
+#else
 	    uint32_t* ss_img_img = 0;
 	    uint32_t* uint32_slice;
 	    ss_img_img = (uint32_t*) ctm_state->ss_img_vol->img;
@@ -160,6 +200,7 @@ cxt_to_mha_process_next (
 		    uint32_slice[k] |= (1 << ctm_state->curr_bit);
 		}
 	    }
+#endif
 	}
     }
 
@@ -196,9 +237,11 @@ cxt_to_mha_free (Cxt_to_mha_state *ctm_state)
     if (ctm_state->labelmap_vol) {
 	volume_destroy (ctm_state->labelmap_vol);
     }
+#if (!PLM_USE_SS_IMAGE_VEC)
     if (ctm_state->ss_img_vol) {
 	volume_destroy (ctm_state->ss_img_vol);
     }
+#endif
     free (ctm_state->acc_img);
 }
 

@@ -7,6 +7,7 @@
 #include "itkDivideByConstantImageFilter.h"
 #include "getopt.h"
 #include "itk_image.h"
+#include "itk_image_load.h"
 #include "plm_image.h"
 #include "plm_image_patient_position.h"
 #include "plm_path.h"

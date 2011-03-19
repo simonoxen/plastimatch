@@ -278,26 +278,3 @@ itk_direction_identity (DirectionType* itk_direction)
 	}
     }
 }
-
-template<class T, class U>
-void
-itk_image_header_copy (T dest, U src)
-{
-    typedef typename U::ObjectType SrcImageType;
-    typedef typename T::ObjectType DestImageType;
-
-    const typename SrcImageType::RegionType src_rgn
-	= src->GetLargestPossibleRegion();
-    const typename SrcImageType::PointType& src_og = src->GetOrigin();
-    //const typename SrcImageType::SizeType& src_sz = src_rgn.GetSize();
-    const typename SrcImageType::SpacingType& src_sp = src->GetSpacing();
-    const typename SrcImageType::DirectionType& src_dc = src->GetDirection();
-
-    dest->SetRegions (src_rgn);
-    dest->SetOrigin (src_og);
-    dest->SetSpacing (src_sp);
-    dest->SetDirection (src_dc);
-}
-
-/* Explicit instantiations */
-template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer im_in);

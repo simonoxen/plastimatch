@@ -9,6 +9,7 @@
 #include "file_util.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "logfile.h"
 #include "plm_image_type.h"

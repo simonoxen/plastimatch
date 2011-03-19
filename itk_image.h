@@ -16,6 +16,8 @@
 #include "itk_point.h"
 #include "plm_image_type.h"
 
+class Plm_image_header;
+
 /* 4D images */
 typedef itk::Image < unsigned char, 4 > UCharImage4DType;
 
@@ -62,16 +64,6 @@ typedef itk::ImageRegion < 3 > ImageRegionType;
 /* -----------------------------------------------------------------------
    Function prototypes
    ----------------------------------------------------------------------- */
-plastimatch1_EXPORT UCharImageType::Pointer itk_image_load_uchar (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT ShortImageType::Pointer itk_image_load_short (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT UShortImageType::Pointer itk_image_load_ushort (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT Int32ImageType::Pointer itk_image_load_int32 (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT UInt32ImageType::Pointer itk_image_load_uint32 (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT FloatImageType::Pointer itk_image_load_float (const char* fname, Plm_image_type* original_type);
-plastimatch1_EXPORT DeformationFieldType::Pointer itk_image_load_float_field (const char* fname);
-UCharVecImageType::Pointer
-itk_image_load_uchar_vec (const char* fname);
-
 plastimatch1_EXPORT 
 void
 itk_image_get_props (
@@ -83,5 +75,6 @@ itk_image_get_props (
 );
 
 template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
-
+template<class T> plastimatch1_EXPORT void itk_image_set_header (T image, Plm_image_header *pih);
+template<class T, class U> plastimatch1_EXPORT void itk_image_header_copy (T dest, U src);
 #endif

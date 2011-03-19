@@ -1,19 +1,20 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "plm_config.h"
 #include "itkImage.h"
-#include "itk_image.h"
-
 #include "itkImageRegionConstIterator.h"
-#include "plm_image.h"
-#include "plm_path.h"
-#include "plm_image_header.h"
 #include "getopt.h"
+
+#include "itk_image.h"
+#include "itk_image_load.h"
+#include "plm_image.h"
+#include "plm_image_header.h"
+#include "plm_path.h"
 #include "xform.h"
 
 #define BUFLEN 1024
