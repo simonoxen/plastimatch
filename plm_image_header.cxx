@@ -283,8 +283,6 @@ template<class T, class U>
 void
 itk_image_header_copy (T dest, U src)
 {
-    int d;
-
     typedef typename U::ObjectType SrcImageType;
     typedef typename T::ObjectType DestImageType;
 
