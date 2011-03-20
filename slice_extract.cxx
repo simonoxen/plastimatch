@@ -23,17 +23,6 @@ slice_extract
 
     typename FilterType::Pointer extraction = FilterType::New();
 	
-    /* ??? */
-    try {
-	in_img->Update(); 
-	//std::cout << "Ho letto!" << std::endl;
-    }
-    catch ( itk::ExceptionObject &err) {
-	std::cout << "ExceptionObject caught a !" << std::endl; 
-	std::cout << err << std::endl; 
-	//return -1;
-    }
-	
     typename InImgType::RegionType inputRegion 
 	= in_img->GetLargestPossibleRegion();
     typename InImgType::SizeType size = inputRegion.GetSize();
