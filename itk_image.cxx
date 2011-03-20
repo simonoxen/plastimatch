@@ -118,3 +118,4 @@ template plastimatch1_EXPORT void itk_image_set_header (UCharVecImageType::Point
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer im_in);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer im_in);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer im_in);
+template plastimatch1_EXPORT void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer im_in);

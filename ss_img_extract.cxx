@@ -73,27 +73,34 @@ ss_img_extract_bit (
     return im_out;
 }
 
-UCharImageType::Pointer
+template<class T>
+typename itk::Image<
+    typename T::ObjectType::IOPixelType, T::ObjectType::ImageDimension
+    >::Pointer
 ss_img_extract_uchar (
-    UCharVecImageType::Pointer im_in, 
+    T im_in, 
     unsigned int uchar_no
 )
 {
-    const UCharVecImageType::RegionType rgn_in_alt
+    typedef typename T::ObjectType InImageType;
+    typedef typename itk::Image<
+	typename T::ObjectType::IOPixelType, T::ObjectType::ImageDimension
+	> OutImageType;
+    const typename InImageType::RegionType rgn_in_alt
 	= im_in->GetLargestPossibleRegion();
 
-    UCharImageType::Pointer im_out = UCharImageType::New ();
+    typename OutImageType::Pointer im_out = OutImageType::New ();
     itk_image_header_copy (im_out, im_in);
     im_out->Allocate ();
 
-    typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
-    const UCharVecImageType::RegionType rgn_in
+    typedef itk::ImageRegionIterator< InImageType > InImageIteratorType;
+    const typename InImageType::RegionType rgn_in 
 	= im_in->GetLargestPossibleRegion();
-    UCharVecIteratorType it_in (im_in, rgn_in);
-    typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
-    const UCharImageType::RegionType rgn_out 
+    InImageIteratorType it_in (im_in, rgn_in);
+    typedef itk::ImageRegionIterator< OutImageType > OutImageIteratorType;
+    const typename OutImageType::RegionType rgn_out 
 	= im_out->GetLargestPossibleRegion();
-    UCharIteratorType it_out (im_out, rgn_out);
+    OutImageIteratorType it_out (im_out, rgn_out);
 
     if (uchar_no > im_in->GetVectorLength()) {
 	print_and_exit (
@@ -142,3 +149,9 @@ ss_img_insert_uchar (
 	vec_it.Set (vec);
     }
 }
+
+/* Explicit instantiation */
+template plastimatch1_EXPORT 
+UCharImageType::Pointer ss_img_extract_uchar (UCharVecImageType::Pointer, unsigned int);
+template plastimatch1_EXPORT 
+UCharImage2DType::Pointer ss_img_extract_uchar (UCharVecImage2DType::Pointer, unsigned int);

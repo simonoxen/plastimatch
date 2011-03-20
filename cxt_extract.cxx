@@ -58,6 +58,64 @@ debug_uint32_slice (UInt32Image2DType::Pointer slice, uint32_t val)
 }
 #endif
 
+static void
+run_marching_squares (
+    Rtss_structure *curr_structure, 
+    const UCharImage2DType::Pointer uchar_slice,
+    unsigned int slice_no,
+    const OriginType& origin,
+    const SpacingType& spacing
+)
+{
+    typedef itk::ContourExtractor2DImageFilter<UCharImage2DType> 
+	    ContourFilterType;
+    typedef ContourFilterType::VertexType VertexType;
+
+    /* Run marching squares on the slice */
+    /* Note: due to an ITK bug, the contour filter cannot be 
+       "re-run" with different inputs.  Instead we should 
+       delete and create a new one for each contour. */
+    ContourFilterType::Pointer contour_filter 
+	= ContourFilterType::New();
+    contour_filter->SetInput (uchar_slice);
+    contour_filter->SetContourValue (0.5);
+    try {
+	contour_filter->Update();
+    }
+    catch (itk::ExceptionObject &err) {
+	std::cout << "Exception during marching squares." 
+		  << std::endl;
+	std::cout << err << std::endl;
+	exit (1);
+    }
+
+    /* Add marching squares output to cxt.  Loop through 
+       contours on this slice... */
+    for (unsigned int i = 0; 
+	 i < contour_filter->GetNumberOfOutputs(); i++)
+    {
+	ContourFilterType::VertexListConstPointer vertices 
+	    = contour_filter->GetOutput(i)->GetVertexList();
+	Rtss_polyline *curr_polyline = curr_structure->add_polyline ();
+
+	curr_polyline->num_vertices = vertices->Size();
+	curr_polyline->x = (float*) 
+	    malloc (vertices->Size() * sizeof(float));
+	curr_polyline->y = (float*) 
+	    malloc (vertices->Size() * sizeof(float));
+	curr_polyline->z = (float*) 
+	    malloc (vertices->Size() * sizeof(float));
+	curr_polyline->slice_no = slice_no;
+	/* Loop through vertices of this output contour */
+	for (unsigned int k = 0; k < vertices->Size(); k++) {
+	    const VertexType& vertex = vertices->ElementAt (k);
+	    curr_polyline->x[k] = origin[0] + vertex[0] * spacing[0];
+	    curr_polyline->y[k] = origin[1] + vertex[1] * spacing[1];
+	    curr_polyline->z[k] = origin[2] + slice_no * spacing[2];
+	}
+    }
+}
+
 /* This function only fills in the polylines.  Structure names, id, etc. 
    will be assigned to default values if they are not already set. 
 
@@ -151,55 +209,9 @@ cxt_extract (
 	    }
 	    uchar_slice = and_filter->GetOutput ();
 
-	    /* Run marching squares on the slice */
-	    /* Note: due to an ITK bug, the contour filter cannot be 
-	       "re-run" with different inputs.  Instead we should 
-	       delete and create a new one for each contour. */
-	    ContourFilterType::Pointer contour_filter 
-		    = ContourFilterType::New();
-	    contour_filter->SetInput (uchar_slice);
-	    contour_filter->SetContourValue (0.5);
-	    try {
-		contour_filter->Update();
-	    }
-	    catch (itk::ExceptionObject &err) {
-		std::cout << "Exception during marching squares." 
-			  << std::endl;
-		std::cout << err << std::endl;
-		exit (1);
-	    }
+	    run_marching_squares (curr_structure, uchar_slice, slice_no,
+		image->GetOrigin(), image->GetSpacing());
 
-	    /* Add marching squares output to cxt.  Loop through 
-	       contours on this slice... */
-	    for (unsigned int i = 0; 
-		 i < contour_filter->GetNumberOfOutputs(); i++)
-	    {
-		ContourFilterType::VertexListConstPointer vertices 
-			= contour_filter->GetOutput(i)->GetVertexList();
-		Rtss_polyline *curr_polyline = curr_structure->add_polyline ();
-
-		curr_polyline->num_vertices = vertices->Size();
-		curr_polyline->x = (float*) 
-			malloc (vertices->Size() * sizeof(float));
-		curr_polyline->y = (float*) 
-			malloc (vertices->Size() * sizeof(float));
-		curr_polyline->z = (float*) 
-			malloc (vertices->Size() * sizeof(float));
-		curr_polyline->slice_no = slice_no;
-		/* Loop through vertices of this output contour */
-		for (unsigned int k = 0; k < vertices->Size(); k++) {
-		    const VertexType& vertex = vertices->ElementAt (k);
-		    curr_polyline->x[k] 
-			    = image->GetOrigin()[0]
-			    + vertex[0] * image->GetSpacing()[0];
-		    curr_polyline->y[k]
-			    = image->GetOrigin()[1]
-			    + vertex[1] * image->GetSpacing()[1];
-		    curr_polyline->z[k] 
-			    = image->GetOrigin()[2]
-			    + idx[2] * image->GetSpacing()[2];
-		}
-	    }
 	}
 	slice_it.NextSlice();
 	slice_no ++;
@@ -221,8 +233,6 @@ cxt_extract (
 	IteratorType;
     typedef itk::AndConstantToImageFilter<UCharImage2DType, 
 	    uint32_t, UCharImage2DType> AndFilterType;
-
-    //IteratorType slice_it (image, image->GetLargestPossibleRegion());
 
     typename AndFilterType::Pointer and_filter 
 	    = AndFilterType::New();
@@ -246,11 +256,11 @@ cxt_extract (
     int num_slices = image->GetLargestPossibleRegion().GetSize(2);
     for (int slice_no = 0; slice_no < num_slices; slice_no++)
     {
-#if defined (commentout)
 	/* Make a copy of the current slice */
 	UCharVecImage2DType::Pointer uchar_slice 
-	    = slice_extract< UCharVecType > (image, slice_no);
-
+	    = slice_extract (image, slice_no);
+	
+#if defined (commentout)
 	and_filter->SetInput (uint32_slice);
 	for (int j = 0; j < num_structs; j++)
 	{

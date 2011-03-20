@@ -10,4 +10,6 @@
 template<class T> plastimatch1_EXPORT
 typename itk::Image<typename T::ObjectType::PixelType,2>::Pointer slice_extract (T in_img, int slice_no);
 
+plastimatch1_EXPORT UCharVecImage2DType::Pointer slice_extract (UCharVecImageType::Pointer, int);
+
 #endif
