@@ -12,13 +12,13 @@ The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments::
 
   $ plastimatch
-  plastimatch version 1.4-beta (1607)
+  plastimatch version 1.4-beta (2161)
   Usage: plastimatch command [options]
   Commands:
-    add           adjust        crop          compare     
-    compose       convert       diff          dvh         
-    header        mask          register      resample    
-    slice         stats         warp        
+    add           adjust        autolabel     crop          compare     
+    compose       convert       diff          dvh           header      
+    mask          register      resample      segment       stats       
+    thumbnail     warp          xio-dvh     
 
   For detailed usage of a specific command, type:
     plastimatch command
@@ -67,6 +67,20 @@ range [-1000,1000], and then map the intensities to the range [0,1]::
   plastimatch adjust --input infile.nrrd --output outfile.nrrd \
     --truncate-above 1000 --truncate-below -1000 \
     --stretch "0 1"
+
+plastimatch autolabel
+---------------------
+The *autolabel* command is an experimental program the uses machine 
+learning to identify the thoracic vertibrae in a CT scan.  
+
+The command line usage is given as follows::
+
+  Usage: plastimatch autolabel [options]
+  Options:
+    -h, --help            Display this help message 
+        --input <arg>     Input image filename (required) 
+        --network <arg>   Input trained network filename (required) 
+        --output <arg>    Output csv filename (required) 
 
 plastimatch crop
 ----------------
@@ -149,8 +163,8 @@ Example
 Suppose we want to compose a rigid transform (rigid.tfm) with a vector field
 (vf.mha), such that the output transform is equivalent to applying 
 the rigid transform first, and the vector field second.
-
-  platimatch rigid.tfm vf.mha composed_vf.mha
+::
+  platimatch compose rigid.tfm vf.mha composed_vf.mha
 
 .. _plastimatch_convert:
 
@@ -266,7 +280,7 @@ have to tell plastimatch where it is located with the --dicom-dir option. ::
 
 plastimatch diff
 ----------------
-The plastimatch diff command subtracts one image from another, and saves 
+The plastimatch *diff* command subtracts one image from another, and saves 
 the output as a new image.
 The two input files must have the 
 same geometry (origin, dimensions, and voxel spacing).
@@ -329,6 +343,29 @@ use the following command::
     --num-bins 250 \
     --bin-width 1
 
+plastimatch header
+------------------
+The *header* command displays brief information about the image geometry.
+The command line usage is given as follows::
+
+  Usage: plastimatch header input-file
+
+
+Example
+^^^^^^^
+We can display the geometry of any supported file type, such as mha, nrrd, 
+or dicom.  We can run the command as follows::
+
+  $ plastimatch header input.mha
+  Origin = -180 -180 -167.75
+  Size = 512 512 120
+  Spacing = 0.7031 0.7031 2.5
+  Direction = 1 0 0 0 1 0 0 0 1
+
+From the header information, we see that the image has 120 slices, 
+and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm, 
+and the in-plane pixel spacing is 0.7031 mm.
+
 plastimatch mask
 ----------------
 The *mask* command is used to fill in a region of the image, as specified
@@ -373,7 +410,7 @@ outside of the patient with value -1000, we use the following command. ::
 
 plastimatch register
 --------------------
-The plastimatch register command is used to peform linear or deformable 
+The plastimatch *register* command is used to peform linear or deformable 
 registration of two images.  
 The command line usage is given as follows::
 
@@ -411,33 +448,42 @@ to a single voxel.  So for example, if we want to bin a cube of size
     --output outfile.nrrd \
     --subsample "3 3 1"
 
-plastimatch slice
------------------
-The *slice* command generates a two-dimensional thumbnail image of an 
-axial slice of the input volume.  The output image 
-is not required to correspond exactly to an integer slice number.  
-The location of the output image within the slice is always centered. 
-
+plastimatch segment
+-------------------
+The *segment* command does simple threshold-based semgentation.  
 The command line usage is given as follows::
 
-  Usage: plastimatch slice [options] input-file
+  Usage: plastimatch segment [options]
   Options:
-    --input file
-    --output file
-    --thumbnail-dim size
-    --thumbnail-spacing size
-    --slice-loc location
+    -h, --help                    Display this help message 
+        --input <arg>             Input image filename (required) 
+        --lower-threshold <arg>   Lower threshold (include voxels above this 
+                                   value) 
+        --output-dicom <arg>      Output dicom directory (for RTSTRUCT) 
+        --output-img <arg>        Output image filename 
+        --upper-threshold <arg>   Upper threshold (include voxels below this 
+                                   value) 
 
 Example
 ^^^^^^^
-We create a two-dimensional image with resolution 10 x 10 pixels,
-at axial location 0, and of size 20 x 20 mm::
+Suppose we have a CT image of a water tank, and we wish to create an image 
+which has ones where there is water, and zeros where there is air.  
+Then we could do this::
 
-  plastimatch slice \
-    --input in.mha --output out.mha \
-    --thumbnail-dim 10 \
-    --thumbnail-spacing 2 \
-    --slice-loc 0
+  plastimatch segment \
+    --input water.mha \
+    --output-img water-label.mha \
+    --lower-threshold -500
+
+If we wanted instead to create a DICOM-RT structure set, we should 
+specify a DICOM image as the input.  This will allow plastimatch to 
+create the DICOM-RT with the correct patient name, patient id, and UIDs.
+The output file will be called "ss.dcm".
+::
+  plastimatch segment \
+    --input water_dicom \
+    --output-dicom water_dicom \
+    --lower-threshold -500
 
 plastimatch stats
 -----------------
@@ -499,6 +545,34 @@ The remaining statistics are described as follows::
   MAXSECDER     Maximum second derivative
   TOTSECDER     Total second derivative
   INTSECDER     Integral second derivative
+
+plastimatch thumbnail
+---------------------
+The *thumbnail* command generates a two-dimensional thumbnail image of an 
+axial slice of the input volume.  The output image 
+is not required to correspond exactly to an integer slice number.  
+The location of the output image within the slice is always centered. 
+
+The command line usage is given as follows::
+
+  Usage: plastimatch thumbnail [options] input-file
+  Options:
+    --input file
+    --output file
+    --thumbnail-dim size
+    --thumbnail-spacing size
+    --slice-loc location
+
+Example
+^^^^^^^
+We create a two-dimensional image with resolution 10 x 10 pixels,
+at axial location 0, and of size 20 x 20 mm::
+
+  plastimatch thumbnail \
+    --input in.mha --output out.mha \
+    --thumbnail-dim 10 \
+    --thumbnail-spacing 2 \
+    --slice-loc 0
 
 plastimatch warp
 ----------------

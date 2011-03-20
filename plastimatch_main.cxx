@@ -60,9 +60,9 @@ print_usage (int return_code)
 	"  register    "
 	"  resample    "
 	"  segment     "
-	"  slice       "
-	"\n"
 	"  stats       "
+	"\n"
+	"  thumbnail   "
 	"  warp        "
 	"  xio-dvh     "
 	"\n"
@@ -120,12 +120,12 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "compare")) {
 	do_command_compare (argc, argv);
     }
+    else if (!strcmp (command, "compose")) {
+	do_command_compose (argc, argv);
+    }
     else if (!strcmp (command, "convert")) {
 	/* warp and convert are the same */
 	do_command_warp (argc, argv);
-    }
-    else if (!strcmp (command, "compose")) {
-	do_command_compose (argc, argv);
     }
     else if (!strcmp (command, "crop")) {
 	do_command_crop (argc, argv);
@@ -135,9 +135,6 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "dvh")) {
 	do_command_dvh (argc, argv);
-    }
-    else if (!strcmp (command, "xio-dvh")) {
-	do_command_xio_dvh (argc, argv);
     }
     else if (!strcmp (command, "header")) {
 	do_command_header (argc, argv);
@@ -165,6 +162,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "warp")) {
 	do_command_warp (argc, argv);
+    }
+    else if (!strcmp (command, "xio-dvh")) {
+	do_command_xio_dvh (argc, argv);
     }
     else if (argc == 2) {
 	if (!file_exists (argv[1])) {
