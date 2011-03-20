@@ -27,9 +27,12 @@ itk_warp_image (
 {
     typedef typename T::ObjectType TBase;
     typedef typename T::ObjectType::PixelType PixelType;
-    typedef itk::WarpImageFilter < TBase, TBase, DeformationFieldType > T_FilterType;
-    typedef itk::LinearInterpolateImageFunction < TBase, double >  T_LinInterpType;
-    typedef itk::NearestNeighborInterpolateImageFunction < TBase, double >  T_NNInterpType;
+    typedef itk::WarpImageFilter < 
+	TBase, TBase, DeformationFieldType > T_FilterType;
+    typedef itk::LinearInterpolateImageFunction < 
+	TBase, double > T_LinInterpType;
+    typedef itk::NearestNeighborInterpolateImageFunction < 
+	TBase, double >  T_NNInterpType;
 
     T im_out = TBase::New();
 

@@ -291,6 +291,8 @@ Ss_image::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
 #if (PLM_USE_SS_IMAGE_VEC)
+    cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
+	this->m_cxt->num_structures, true);
 #else
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, 

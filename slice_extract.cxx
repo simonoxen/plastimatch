@@ -99,6 +99,3 @@ slice_extract
 template plastimatch1_EXPORT UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
 template plastimatch1_EXPORT FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
 template plastimatch1_EXPORT UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);
-
-#if defined (commentout)
-#endif
