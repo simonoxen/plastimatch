@@ -3,12 +3,14 @@
    ----------------------------------------------------------------------- */
 #include <time.h>
 #include "plm_config.h"
-#include "plm_int.h"
 #include "itkImage.h"
 #include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+
 #include "itk_image.h"
+#include "plm_int.h"
+#include "ss_img_extract.h"
 
 /* Warp the image.  
     im_in:	    the image which is warped
@@ -72,45 +74,19 @@ itk_warp_image (
     unsigned char default_val
 )
 {
-    typedef itk::WarpImageFilter < 
-	UCharImageType, UCharImageType, DeformationFieldType > WarpFilterType;
-    typedef itk::NearestNeighborInterpolateImageFunction < 
-	UCharImageType, double > NNInterpType;
-
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
-
-    WarpFilterType::Pointer filter = WarpFilterType::New();
-    NNInterpType::Pointer nn_interpolator = NNInterpType::New();
-
-    const UCharVecImageType::PointType& og = vf->GetOrigin();
-    const UCharVecImageType::SpacingType& sp = vf->GetSpacing();
-    const UCharVecImageType::DirectionType& di = vf->GetDirection();
-
-    filter->SetInterpolator (nn_interpolator);
-    filter->SetOutputSpacing (sp);
-    filter->SetOutputOrigin (og);
-    filter->SetOutputDirection (di);
-    filter->SetDeformationField (vf);
+    itk_image_header_copy (im_out, im_in);
+    im_out->SetVectorLength (im_in->GetVectorLength());
+    im_out->Allocate ();
 
     unsigned int num_uchar = (im_in->GetVectorLength()-1) / 8;
     for (unsigned int uchar_no = 0; uchar_no < num_uchar; uchar_no++) {
-	
+	UCharImageType::Pointer uchar_img 
+	    = ss_img_extract_uchar (im_in, uchar_no);
+	UCharImageType::Pointer uchar_img_warped 
+	    = itk_warp_image (uchar_img, vf, linear_interp, default_val);
+	ss_img_insert_uchar (im_out, uchar_img_warped, uchar_no);
     }
-
-#if defined (commentout)
-    filter->SetInput (im_in);
-    filter->SetEdgePaddingValue ((PixelType) default_val);
-
-    try {
-	filter->Update();
-    } catch( itk::ExceptionObject & excp ) {
-	std::cerr << "Exception thrown " << std::endl;
-	std::cerr << excp << std::endl;
-    }
-
-    im_out = filter->GetOutput();
-    im_out->Update();
-#endif
     return im_out;
 }
 

@@ -3,13 +3,16 @@
    ----------------------------------------------------------------------- */
 #include <time.h>
 #include "plm_config.h"
-#include "plm_int.h"
 #include "itkImage.h"
 #include "itkWarpImageFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkNearestNeighborInterpolateImageFunction.h"
+#include "itkVectorImageToImageAdaptor.h"
 #include "itkWarpVectorImageFilter.h"
+
 #include "itk_image.h"
+#include "plm_int.h"
+#include "ss_img_extract.h"
 
 /* Warp the image.  
     im_in:	    the image which is warped
@@ -70,14 +73,31 @@ test_itk_warp_image (
     UCharVecImageType::Pointer im_in, 
     DeformationFieldType::Pointer vf, 
     int linear_interp,                   /* Ignored */
-    UCharVecType& default_val
+    unsigned char default_val
 )
 {
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
+    itk_image_header_copy (im_out, im_in);
+    im_out->SetVectorLength (im_in->GetVectorLength());
+    im_out->Allocate ();
 
-    typedef itk::NearestNeighborInterpolateImageFunction < 
-	UCharVecImageType, double > NNInterpType;
-    NNInterpType::Pointer nn_interpolator = NNInterpType::New();
+    unsigned int num_uchar = (im_in->GetVectorLength()-1) / 8;
+    for (unsigned int uchar_no = 0; uchar_no < num_uchar; uchar_no++) {
+	UCharImageType::Pointer uchar_img 
+	    = ss_img_extract_uchar (im_in, uchar_no);
+	UCharImageType::Pointer uchar_img_warped 
+	    = itk_warp_image (uchar_img, vf, linear_interp, default_val);
+	ss_img_insert_uchar (im_out, uchar_img_warped, uchar_no);
+    }
+
+#if defined (commentout)
+    unsigned int uchar_num = 1;
+    typedef itk::VectorImageToImageAdaptor< unsigned char, 3 >AdaptorType;
+    AdaptorType::Pointer adaptor = AdaptorType::New();
+    adaptor->SetExtractComponentIndex (uchar_num);
+    adaptor->SetImage (im_in);
+    adaptor->Update ();
+#endif
 
 #if defined (commentout)
     typedef itk::WarpVectorImageFilter < 
@@ -86,6 +106,17 @@ test_itk_warp_image (
 	itk::Image < itk::Vector < float, 3 >, 3 >
 	> WarpFilterType;
     WarpFilterType::Pointer filter = WarpFilterType::New();
+#endif
+
+  /* ITK's 3 types of images... */
+#if defined (commentout)
+  typedef itk::Image< 
+      itk::VariableLengthVector< PixelType >, Dimension > 
+      VariableLengthVectorImageType;
+  typedef itk::Image< 
+      itk::FixedArray< PixelType, VectorLength >, Dimension > 
+      FixedArrayImageType;
+  typedef itk::VectorImage< PixelType, Dimension >   VectorImageType;
 #endif
 
 #if defined (commentout)

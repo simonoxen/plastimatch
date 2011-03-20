@@ -163,11 +163,11 @@ Ss_image::save_prefix (const CBString &output_prefix)
 
 	if (bit == -1) continue;
 #if (PLM_USE_SS_IMAGE_VEC)
-	UCharImageType::Pointer prefix_img = ss_img_extract (
+	UCharImageType::Pointer prefix_img = ss_img_extract_bit (
 	    m_ss_img->m_itk_uchar_vec, bit);
 #else
 	m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
-	UCharImageType::Pointer prefix_img = ss_img_extract (
+	UCharImageType::Pointer prefix_img = ss_img_extract_bit (
 	    m_ss_img->m_itk_uint32, bit);
 #endif
 	compose_prefix_fn (&fn, output_prefix, curr_structure->name);
@@ -290,9 +290,12 @@ void
 Ss_image::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
+#if (PLM_USE_SS_IMAGE_VEC)
+#else
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, 
 	this->m_cxt->num_structures, true);
+#endif
 }
 
 void
@@ -363,17 +366,23 @@ Ss_image::warp (
 {
     Plm_image *tmp;
 
-    tmp = new Plm_image;
-    plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, parms->use_itk, 0);
-    delete this->m_labelmap;
-    this->m_labelmap = tmp;
-    this->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
+    if (this->m_labelmap) {
+	tmp = new Plm_image;
+	plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, parms->use_itk, 0);
+	delete this->m_labelmap;
+	this->m_labelmap = tmp;
+	this->m_labelmap->convert (PLM_IMG_TYPE_ITK_ULONG);
+    }
 
-    tmp = new Plm_image;
-    plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, parms->use_itk, 0);
-    delete this->m_ss_img;
-    this->m_ss_img = tmp;
-    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+    if (this->m_ss_img) {
+	tmp = new Plm_image;
+	plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, parms->use_itk, 0);
+	delete this->m_ss_img;
+	this->m_ss_img = tmp;
+#if (!PLM_USE_SS_IMAGE_VEC)
+	this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
+#endif
+    }
 
     /* The cxt is now obsolete, but we can't delete it because it 
        contains our "bits", used e.g. by prefix extraction.  */
