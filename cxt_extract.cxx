@@ -236,7 +236,7 @@ cxt_extract (
     typedef itk::AndConstantToImageFilter<
 	UCharImage2DType, unsigned char, UCharImage2DType> AndFilterType;
 
-    typename AndFilterType::Pointer and_filter 
+    AndFilterType::Pointer and_filter 
 	= AndFilterType::New();
 
     if (num_structs < 0) {

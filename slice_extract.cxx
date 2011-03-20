@@ -62,26 +62,26 @@ slice_extract
 {
     typedef UCharVecImageType InImgType;
     typedef UCharVecImage2DType OutImgType;
-    typedef typename itk::ExtractImageFilter<InImgType, OutImgType> FilterType;
+    typedef itk::ExtractImageFilter<InImgType, OutImgType> FilterType;
 
-    typename FilterType::Pointer extraction = FilterType::New();
+    FilterType::Pointer extraction = FilterType::New();
 	
-    typename InImgType::RegionType inputRegion 
+    InImgType::RegionType inputRegion 
 	= in_img->GetLargestPossibleRegion();
-    typename InImgType::SizeType size = inputRegion.GetSize();
+    InImgType::SizeType size = inputRegion.GetSize();
     size[2] = 0;
 	
-    typename InImgType::IndexType start = inputRegion.GetIndex(); 
+    InImgType::IndexType start = inputRegion.GetIndex(); 
     start[2]=slice_no;
 
-    typename InImgType::RegionType desiredRegion; 
+    InImgType::RegionType desiredRegion; 
     desiredRegion.SetSize(size);
     desiredRegion.SetIndex(start);
 
     extraction->SetExtractionRegion(desiredRegion);
     extraction->SetInput(in_img);
 
-    typename OutImgType::Pointer out_img = OutImgType::New();
+    OutImgType::Pointer out_img = OutImgType::New();
 	
     try
     {
