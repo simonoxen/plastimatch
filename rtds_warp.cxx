@@ -39,7 +39,8 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN 
 		&& bstring_not_empty (parms->referenced_dicom_dir))
 	    {
-		rtds_patient_pos_from_dicom_dir (rtds, parms->referenced_dicom_dir);
+		rtds_patient_pos_from_dicom_dir (
+		    rtds, parms->referenced_dicom_dir);
 	    } else {
 		rtds->m_img->m_patient_pos = parms->patient_pos;
 	    }

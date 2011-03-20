@@ -238,37 +238,19 @@ cxt_load (
 	    long floc;
 	    floc = ftell (fp);
             if (fscanf (fp, "%f\\%f\\%f\\", &x, &y, &z) != 3) {
-#if defined (commentout)
-		fseek (fp, floc, SEEK_SET);
-                if (fscanf (fp, "\\%f\\%f\\%f", &x, &y, &z) != 3) {
-		    char buf1[2048];
-		    fseek (fp, floc, SEEK_SET);
-		    fread (buf1, 1, 2047, fp);
-		    buf1[2047] = 0;
-		    printf ("\nBUF\n%s\n", buf1);
-		    exit (1);
-                    break;
-                }
-		break;
-#endif
 		goto not_successful;
             }
             curr_contour->x[k] = x;
             curr_contour->y[k] = y;
             curr_contour->z[k] = z;
-	    //printf ("[%g %g %g] ", x, y, z);
             x = 0;
             y = 0;
             z = 0;
         }
-	//printf ("|%d\n", k); fflush (stdout);
         slice_idx = 0;
         num_pt = 0;
     }
-    printf ("Mostly done.\n");
     fclose (fp);
-
-    cxt->debug ();
     return;
  not_successful:
     fclose (fp);

@@ -14,6 +14,7 @@
 #include "rtss_structure.h"
 #include "ss_image.h"
 #include "ss_img_extract.h"
+#include "ss_img_stats.h"
 #include "ss_list_io.h"
 #include "xio_structures.h"
 
@@ -143,15 +144,9 @@ Ss_image::save_prefix (const CBString &output_prefix)
 	printf ("WTF???\n");
     }
 
-    printf ("Trying to save prefix...\n");
-
     for (i = 0; i < m_ss_list->num_structures; i++)
     {
 	CBString fn;
-	printf ("Structure %d\n", i);
-	printf ("m_ss_list = %p\n", m_ss_list);
-	printf ("m_ss_list[%d] = %p\n", i, m_ss_list->slist[i]);
-	
 	Rtss_structure *curr_structure = m_ss_list->slist[i];
 	int bit = curr_structure->bit;
 
@@ -165,11 +160,8 @@ Ss_image::save_prefix (const CBString &output_prefix)
 	    m_ss_img->m_itk_uint32, bit);
 #endif
 	compose_prefix_fn (&fn, output_prefix, curr_structure->name);
-	printf ("Trying to save prefix image: [%d,%d], %s\n", 
-	    i, bit, (const char*) fn);
 	itk_image_save (prefix_img, (const char*) fn);
     }
-    printf ("Done.\n");
 }
 
 void
@@ -277,6 +269,7 @@ Ss_image::convert_ss_img_to_cxt (void)
     } else {
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, -1, false);
     }
+
 #else
     /* Image type must be uint32_t for cxt_extract */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);

@@ -9,6 +9,7 @@
 #include "bstring_util.h"
 #include "file_util.h"
 #include "plm_image_header.h"
+#include "print_and_exit.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 #include "ss_list_io.h"
@@ -17,6 +18,7 @@ Rtss_polyline_set*
 ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
 {
     FILE* fp;
+    int struct_id;
 
     fp = fopen (ss_list_fn, "r");
     if (!fp) {
@@ -28,29 +30,30 @@ ss_list_load (Rtss_polyline_set* cxt, const char* ss_list_fn)
     }
 
     /* Part 2: Structures info */
+    struct_id = 0;
     while (1) {
         char color[CXT_BUFLEN];
         char name[CXT_BUFLEN];
         char buf[CXT_BUFLEN];
-	int struct_id;
         char *p;
+	int bit;
         int rc;
 
         p = fgets (buf, CXT_BUFLEN, fp);
         if (!p) {
 	    break;
         }
-        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &struct_id, color, name);
+        rc = sscanf (buf, "%d|%[^|]|%[^\r\n]", &bit, color, name);
         if (rc != 3) {
-            fprintf (stderr, 
+            print_and_exit (
 		"Error. ss_list file not formatted correctly: %s\n",
 		ss_list_fn);
-            exit (-1);
         }
 
 	Rtss_structure *curr_structure = cxt->add_structure (
 	    CBString (name), CBString (color), struct_id);
-	curr_structure->bit = struct_id;
+	curr_structure->bit = bit;
+	struct_id ++;
     }
 
     fclose (fp);

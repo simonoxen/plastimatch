@@ -256,7 +256,8 @@ cxt_extract (
 
     /* Loop through slices */
     int num_slices = image->GetLargestPossibleRegion().GetSize(2);
-    unsigned int num_uchar = (image->GetVectorLength()-1) / 8;
+    unsigned int num_uchar = image->GetVectorLength();
+
     for (int slice_no = 0; slice_no < num_slices; slice_no++) {
 	/* Make a copy of the current slice */
 	UCharVecImage2DType::Pointer ucharvec_slice 
