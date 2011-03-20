@@ -117,13 +117,7 @@ Ss_image::save_ss_image (const CBString &ss_img_fn)
     }
 #if (PLM_USE_SS_IMAGE_VEC)
     /* Save as 3D ucharvec */
-#if defined (commentout)
-    printf ("... ->convert_to_itk_uchar_vec ();\n");
-    this->m_ss_img->convert_to_itk_uchar_vec ();
-#endif
-    printf ("... ->save_image ((const char*) ss_img_fn);\n");
     this->m_ss_img->save_image ((const char*) ss_img_fn);
-    printf ("... done.\n");
 #else
     /* Save as 3D uint32 */
     this->m_ss_img->save_image ((const char*) ss_img_fn);
@@ -271,12 +265,23 @@ Ss_image::convert_ss_img_to_cxt (void)
 	this->m_ss_img);
 
     /* Extract polylines */
+    printf ("Running marching squares\n");
     num_structs = this->m_ss_list->num_structures;
+
+#if (PLM_USE_SS_IMAGE_VEC)
+    /* Do extraction */
+    if (this->m_ss_list) {
+	this->m_cxt = Rtss_polyline_set::clone_empty (
+	    this->m_cxt, this->m_ss_list);
+	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, -1, true);
+    } else {
+	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, -1, false);
+    }
+#else
     /* Image type must be uint32_t for cxt_extract */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
     /* Do extraction */
-    printf ("Running marching squares\n");
     if (this->m_ss_list) {
 	this->m_cxt = Rtss_polyline_set::clone_empty (
 	    this->m_cxt, this->m_ss_list);
@@ -284,6 +289,7 @@ Ss_image::convert_ss_img_to_cxt (void)
     } else {
 	cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uint32, -1, false);
     }
+#endif
 }
 
 void

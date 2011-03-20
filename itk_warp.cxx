@@ -9,8 +9,10 @@
 #include "itkNearestNeighborInterpolateImageFunction.h"
 
 #include "itk_image.h"
+#include "itk_image_stats.h"
 #include "plm_int.h"
 #include "ss_img_extract.h"
+#include "ss_img_stats.h"
 
 /* Warp the image.  
     im_in:	    the image which is warped
@@ -73,16 +75,17 @@ UCharVecImageType::Pointer
 itk_warp_image (
     UCharVecImageType::Pointer im_in, 
     DeformationFieldType::Pointer vf, 
-    int linear_interp,                   /* Ignored */
+    int linear_interp, 
     unsigned char default_val
 )
 {
     UCharVecImageType::Pointer im_out = UCharVecImageType::New();
-    itk_image_header_copy (im_out, im_in);
+    itk_image_header_copy (im_out, vf);
     im_out->SetVectorLength (im_in->GetVectorLength());
     im_out->Allocate ();
 
-    unsigned int num_uchar = (im_in->GetVectorLength()-1) / 8;
+    unsigned int num_uchar = im_in->GetVectorLength();
+
     for (unsigned int uchar_no = 0; uchar_no < num_uchar; uchar_no++) {
 	UCharImageType::Pointer uchar_img 
 	    = ss_img_extract_uchar (im_in, uchar_no);

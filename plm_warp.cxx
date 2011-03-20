@@ -11,6 +11,7 @@
 #include "plm_int.h"
 #include "plm_warp.h"
 #include "print_and_exit.h"
+#include "ss_img_stats.h"
 #include "volume.h"
 #include "xform.h"
 
@@ -105,7 +106,6 @@ plm_warp_itk (
 	im_warped->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
-	printf ("Trying to call itk_warp_image with UCHAR_VEC!\n");
 	im_warped->m_itk_uchar_vec = itk_warp_image (
 	    im_in->m_itk_uchar_vec, 
 	    vf, 
@@ -113,7 +113,6 @@ plm_warp_itk (
 	    static_cast<unsigned char> (default_val));
 	im_warped->m_original_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
 	im_warped->m_type = PLM_IMG_TYPE_ITK_UCHAR_VEC;
-	printf ("Done ?\?!?!!!\n");
 	break;
     case PLM_IMG_TYPE_ITK_CHAR:
     case PLM_IMG_TYPE_ITK_LONG:
@@ -219,11 +218,6 @@ plm_warp (
 	case PLM_IMG_TYPE_GPUIT_SHORT:
 	case PLM_IMG_TYPE_GPUIT_UINT32:
 	case PLM_IMG_TYPE_GPUIT_FLOAT:
-	    if (im_in->m_type == PLM_IMG_TYPE_GPUIT_SHORT) {
-		printf ("Image type = GPUIT_SHORT\n");
-	    } else if (im_in->m_type == PLM_IMG_TYPE_GPUIT_UINT32) {
-		printf ("Image type = GPUIT_UINT32\n");
-	    }
 	    plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
 		interp_lin);
 	    break;

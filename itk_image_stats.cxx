@@ -43,4 +43,5 @@ itk_image_stats (T img, double *min_val, double *max_val,
 }
 
 /* Explicit instantiations */
+template plastimatch1_EXPORT void itk_image_stats (UCharImageType::Pointer, double*, double*, double*, int*, int*);
 template plastimatch1_EXPORT void itk_image_stats (FloatImageType::Pointer, double*, double*, double*, int*, int*);

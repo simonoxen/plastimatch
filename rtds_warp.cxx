@@ -19,6 +19,7 @@
 #include "rtds_warp.h"
 #include "simplify_points.h"
 #include "ss_img_extract.h"
+#include "ss_img_stats.h"
 #include "ss_list_io.h"
 #include "xio_dose.h"
 #include "xio_structures.h"
