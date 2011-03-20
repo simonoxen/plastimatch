@@ -68,7 +68,7 @@ main (int argc, char *argv[])
         //printf("%2d\n", k[2]);
 
         FloatImage2DType::Pointer slice;
-        slice = slice_extract<float> (volume, k[2]);
+        slice = slice_extract (volume, k[2]);
 
         ContourType::Pointer contour = ContourType::New ();
 

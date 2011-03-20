@@ -118,7 +118,7 @@ cxt_extract (
 
 	/* Make a copy of the current slice */
 	idx = slice_it.GetIndex();
-	uint32_slice = slice_extract<uint32_t> (image, idx[2]);
+	uint32_slice = slice_extract (image, idx[2]);
 
 	and_filter->SetInput (uint32_slice);
 	for (int j = 0; j < num_structs; j++)
@@ -246,8 +246,8 @@ cxt_extract (
     int num_slices = image->GetLargestPossibleRegion().GetSize(2);
     for (int slice_no = 0; slice_no < num_slices; slice_no++)
     {
-	/* Make a copy of the current slice */
 #if defined (commentout)
+	/* Make a copy of the current slice */
 	UCharVecImage2DType::Pointer uchar_slice 
 	    = slice_extract< UCharVecType > (image, slice_no);
 

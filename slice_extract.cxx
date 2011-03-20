@@ -9,20 +9,23 @@
 #include "slice_extract.h"
 
 template<class T>
-typename itk::Image<T,2>::Pointer slice_extract 
+typename itk::Image<typename T::ObjectType::PixelType,2>::Pointer
+slice_extract 
 (
-    typename itk::Image<T,3>::Pointer reader, 
+    T in_img, 
     int slice_no
 )
 {
-    typedef typename itk::Image<T,3> inImgType;
-    typedef typename itk::Image<T,2> outImgType;
-    typedef typename itk::ExtractImageFilter<inImgType,outImgType> FilterType;
+    typedef typename T::ObjectType InImgType;
+    typedef typename T::ObjectType::PixelType PixelType;
+    typedef typename itk::Image<PixelType, 2> OutImgType;
+    typedef typename itk::ExtractImageFilter<InImgType, OutImgType> FilterType;
 
-    typename FilterType::Pointer extraction=FilterType::New();
+    typename FilterType::Pointer extraction = FilterType::New();
 	
+    /* ??? */
     try {
-	reader->Update(); 
+	in_img->Update(); 
 	//std::cout << "Ho letto!" << std::endl;
     }
     catch ( itk::ExceptionObject &err) {
@@ -31,44 +34,40 @@ typename itk::Image<T,2>::Pointer slice_extract
 	//return -1;
     }
 	
-    typename inImgType::RegionType inputRegion=reader->GetLargestPossibleRegion();
-    typename inImgType::SizeType size = inputRegion.GetSize();
+    typename InImgType::RegionType inputRegion 
+	= in_img->GetLargestPossibleRegion();
+    typename InImgType::SizeType size = inputRegion.GetSize();
     size[2] = 0;
 	
-    typename inImgType::IndexType start = inputRegion.GetIndex(); 
+    typename InImgType::IndexType start = inputRegion.GetIndex(); 
     start[2]=slice_no;
 
-    typename inImgType::RegionType desiredRegion; 
+    typename InImgType::RegionType desiredRegion; 
     desiredRegion.SetSize(size);
     desiredRegion.SetIndex(start);
 
     extraction->SetExtractionRegion(desiredRegion);
-    extraction->SetInput(reader);
+    extraction->SetInput(in_img);
 
-    typename outImgType::Pointer outImg = outImgType::New();
+    typename OutImgType::Pointer out_img = OutImgType::New();
 	
     try
     {
 	extraction->Update();
-	outImg = extraction->GetOutput();
+	out_img = extraction->GetOutput();
     }
-    catch ( itk::ExceptionObject &err)
+    catch (itk::ExceptionObject &err)
     {
 	std::cout << "ExceptionObject caught a !" << std::endl; 
 	std::cout << err << std::endl; 
-	//return -1;
     }
-    return outImg;
+    return out_img;
 }
 
-/* Explicit instantiations */
-/* RMK: Visual studio 2005 without service pack requires <float> specifier
-   on the explicit extantiations.  The current hypothesis is that this 
-   is because the template is nested. */
-template plastimatch1_EXPORT itk::Image<unsigned char,2>::Pointer slice_extract<unsigned char> (itk::Image<unsigned char,3>::Pointer reader, int index);
-template plastimatch1_EXPORT itk::Image<unsigned int,2>::Pointer slice_extract<unsigned int> (itk::Image<unsigned int,3>::Pointer reader, int index);
-template plastimatch1_EXPORT itk::Image<unsigned long,2>::Pointer slice_extract<unsigned long> (itk::Image<unsigned long,3>::Pointer reader, int index);
-template plastimatch1_EXPORT itk::Image<float,2>::Pointer slice_extract<float> (itk::Image<float,3>::Pointer reader, int index);
+template plastimatch1_EXPORT UCharImage2DType::Pointer slice_extract (UCharImageType::Pointer, int);
+template plastimatch1_EXPORT FloatImage2DType::Pointer slice_extract (FloatImageType::Pointer, int);
+template plastimatch1_EXPORT UInt32Image2DType::Pointer slice_extract (UInt32ImageType::Pointer, int);
+
 #if defined (commentout)
 template plastimatch1_EXPORT UCharVecImage2DType::Pointer slice_extract<UCharVecType> (UCharVecImageType::Pointer reader, int index);
 #endif
