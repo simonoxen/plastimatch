@@ -964,7 +964,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
   itk_warp.cxx itk_warp.h 
-  itk_warp_test.cxx
   landmark_warp.cxx landmark_warp.h 
   mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
@@ -1000,6 +999,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   slice_extract.cxx slice_extract.h
   ss_image.cxx ss_image.h
   ss_img_extract.cxx ss_img_extract.h
+  ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h
   synthetic_mha.cxx synthetic_mha.h
   synthetic_vf.cxx synthetic_vf.h

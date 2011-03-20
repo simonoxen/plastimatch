@@ -16,6 +16,7 @@
 #include "plm_image.h"
 #include "plm_int.h"
 #include "proj_image.h"
+#include "ss_img_stats.h"
 #include "vf_stats.h"
 
 static void
@@ -82,40 +83,8 @@ stats_ss_image_main (Stats_parms* parms)
     }
 
     UCharVecImageType::Pointer img = plm.m_itk_uchar_vec;
-    UCharVecImageType::RegionType rg = img->GetLargestPossibleRegion ();
 
-    typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
-    UCharVecIteratorType it (img, rg);
-
-    int vector_length = img->GetVectorLength();
-
-    printf ("SS_IMAGE: At most %d structures\n", vector_length * 8);
-    uint32_t *hist = new uint32_t[vector_length * 8];
-
-    for (int i = 0; i < vector_length; i++) {
-	for (int j = 0; j < 8; j++) {
-	    hist[i*8+j] = 0;
-	}
-    }
-
-    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	itk::VariableLengthVector< unsigned char > v = it.Get();
-	for (int i = 0; i < vector_length; i++) {
-	    unsigned char c = v[i];
-	    for (int j = 0; j < 8; j++) {
-		if (c & (1 << j)) {
-		    hist[i*8+j] ++;
-		}
-	    }
-	}
-    }
-
-    for (int i = 0; i < vector_length; i++) {
-	for (int j = 0; j < 8; j++) {
-	    printf ("S %4d  NVOX %10d\n", i*8+j, hist[i*8+j]);
-	}
-    }
-    delete hist;
+    ss_img_stats (img);
 }
 
 static void
@@ -126,28 +95,6 @@ stats_img_main (Stats_parms* parms)
 	(const char*) parms->img_in_fn, 0);
     FloatImageType::RegionType rg = img->GetLargestPossibleRegion ();
     FloatIteratorType it (img, rg);
-
-#if defined (commentout)
-    int first = 1;
-    float min_val, max_val;
-    int num = 0;
-    double sum = 0.0;
-
-    for (it.GoToBegin(); !it.IsAtEnd(); ++it) {
-	float v = it.Get();
-	if (first) {
-	    min_val = max_val = v;
-	    first = 0;
-	}
-	if (min_val > v) min_val = v;
-	if (max_val < v) max_val = v;
-	sum += v;
-	num ++;
-    }
-
-    printf ("MIN %f AVE %f MAX %f NUM %d\n",
-	    min_val, (float) (sum / num), max_val, num);
-#endif
 
     double min_val, max_val, avg;
     int non_zero, num_vox;
