@@ -1693,13 +1693,13 @@ ADD_TEST (
   "-DUPPER_THRESH=-661.4"
   -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
   )
+IF (PLM_USE_SS_IMAGE_VEC)
 PLM_ADD_TEST (
   "plm-warp-f-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-f-ss-img.nrrd"
   )
-IF (PLM_USE_SS_IMAGE_VEC)
 ADD_TEST (
   "plm-warp-f-check-2"
   ${CMAKE_COMMAND} 
