@@ -6,6 +6,7 @@
 #include "itkVariableLengthVector.h"
 
 #include "itk_image.h"
+#include "plm_int.h"
 
 void
 ss_img_stats (
@@ -45,5 +46,5 @@ ss_img_stats (
 	    printf ("S %4d  NVOX %10d\n", i*8+j, hist[i*8+j]);
 	}
     }
-    delete hist;
+    delete[] hist;
 }
