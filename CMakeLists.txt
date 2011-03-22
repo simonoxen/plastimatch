@@ -57,6 +57,7 @@ OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 # Plastimatch software configuration options
 OPTION (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
+OPTION (PLM_CONFIG_DISABLE_GPU "Set to ON to build without GPU" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 
@@ -338,7 +339,9 @@ IF (PLM_BUILD_MEX_TEST)
   FIND_PACKAGE (Matlab)
 ENDIF ()
 FIND_PACKAGE (Octave)
-FIND_PACKAGE (OpenCL)
+IF (NOT PLM_CONFIG_DISABLE_GPU)
+  FIND_PACKAGE (OpenCL)
+ENDIF ()
 FIND_PACKAGE (OpenGL)
 FIND_PACKAGE (OpenMP)
 FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
@@ -407,22 +410,24 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (CUDA_wrap)
-SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
+IF (NOT PLM_CONFIG_DISABLE_GPU)
+  FIND_PACKAGE (CUDA_wrap)
+  SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
-IF (CUDA_FOUND)
-  CUDA_INCLUDE_DIRECTORIES (
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-  # If CUDA is found, use GPU Plugins
-  OPTION (PLM_USE_GPU_PLUGINS 
-    "Build CUDA support as a runtime loaded shared library" ON)
-ELSE (CUDA_FOUND)
-  # If CUDA is not found, don't use GPU Plugins and hide the option
-  OPTION (PLM_USE_GPU_PLUGINS 
-    "CUDA is needed to set this option" OFF)
-  MARK_AS_ADVANCED(PLM_USE_GPU_PLUGINS)
-ENDIF (CUDA_FOUND)
+  IF (CUDA_FOUND)
+    CUDA_INCLUDE_DIRECTORIES (
+      ${CMAKE_CURRENT_SOURCE_DIR}
+      )
+    # If CUDA is found, use GPU Plugins
+    OPTION (PLM_USE_GPU_PLUGINS 
+      "Build CUDA support as a runtime loaded shared library" ON)
+  ELSE ()
+    # If CUDA is not found, don't use GPU Plugins and hide the option
+    OPTION (PLM_USE_GPU_PLUGINS 
+      "CUDA is needed to set this option" OFF)
+    MARK_AS_ADVANCED(PLM_USE_GPU_PLUGINS)
+  ENDIF ()
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Slicer
