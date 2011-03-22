@@ -57,7 +57,8 @@ OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 # Plastimatch software configuration options
 OPTION (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
-OPTION (PLM_CONFIG_DISABLE_GPU "Set to ON to build without GPU" OFF)
+OPTION (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
+OPTION (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 
@@ -339,7 +340,7 @@ IF (PLM_BUILD_MEX_TEST)
   FIND_PACKAGE (Matlab)
 ENDIF ()
 FIND_PACKAGE (Octave)
-IF (NOT PLM_CONFIG_DISABLE_GPU)
+IF (NOT PLM_CONFIG_DISABLE_OPENCL)
   FIND_PACKAGE (OpenCL)
 ENDIF ()
 FIND_PACKAGE (OpenGL)
@@ -410,7 +411,7 @@ LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-IF (NOT PLM_CONFIG_DISABLE_GPU)
+IF (NOT PLM_CONFIG_DISABLE_CUDA)
   FIND_PACKAGE (CUDA_wrap)
   SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 
