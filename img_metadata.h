@@ -51,7 +51,13 @@ public:
     copy_to_gdcm_file (gdcm::File *gdcm_file, unsigned short group,
 	unsigned short elem) const;
 
+    void set_parent (Img_metadata *parent) {
+	m_parent = parent;
+    }
+    void create_anonymous ();
+
 public:
+    Img_metadata *m_parent;
     std::map<std::string, std::string> m_data;
 
 public:

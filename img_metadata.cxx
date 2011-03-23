@@ -15,16 +15,22 @@ std::string Img_metadata::KEY_NOT_FOUND = "";
 
 Img_metadata::Img_metadata ()
 {
+    m_parent = 0;
+}
+
+Img_metadata::~Img_metadata ()
+{
+}
+
+void
+Img_metadata::create_anonymous ()
+{
     /* PatientsName */
     this->set_metadata (0x0010, 0x0010, "ANONYMOUS");
     /* PatientID */
     this->set_metadata (0x0010, 0x0020, make_anon_patient_id());
     /* PatientSex */
     this->set_metadata (0x0010, 0x0040, "O");
-}
-
-Img_metadata::~Img_metadata ()
-{
 }
 
 std::string
@@ -40,7 +46,11 @@ Img_metadata::get_metadata (const std::string& key) const
     std::map<std::string, std::string>::const_iterator it;
     it = m_data.find (key);
     if (it == m_data.end()) {
-	/* key not found in map */
+	/* key not found in map -- check parent */
+	if (m_parent) {
+	    return m_parent->get_metadata (key);
+	}
+	/* key not found */
 	return KEY_NOT_FOUND;
     } else {
 	/* key found in map */

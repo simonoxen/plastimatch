@@ -13,6 +13,7 @@
 #include "plm_image.h"
 #include "plm_int.h"
 #include "rtds.h"
+#include "rtss.h"
 #include "rtss_structure.h"
 
 static void

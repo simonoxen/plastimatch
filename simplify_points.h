@@ -16,7 +16,6 @@
 #include "plm_file_format.h"
 #include "rtds.h"
 #include "rtss_polyline_set.h"
-#include "ss_image.h"
 #include "vnl/vnl_random.h"
 
 plastimatch1_EXPORT 

@@ -10,16 +10,16 @@
 #include "img_metadata.h"
 #include "plm_image.h"
 #include "referenced_dicom_dir.h"
-#include "ss_image.h"
 #include "xio_ct.h"
 
 class Gdcm_series;
+class Rtss;
 
 /* rtds = RT data set */
 class Rtds {
 public:
     Plm_image *m_img;                  /* CT image */
-    Ss_image *m_ss_image;              /* Structure set lossless bitmap form */
+    Rtss *m_ss_image;                  /* RT structure set */
     Plm_image *m_dose;                 /* RT dose */
 
     Gdcm_series *m_gdcm_series;        /* Input dicom parse info */

@@ -21,6 +21,7 @@
 #include "plm_version.h"
 #include "print_and_exit.h"
 #include "referenced_dicom_dir.h"
+#include "rtss.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
@@ -63,16 +64,17 @@ gdcm_rtss_probe (const char *rtss_fn)
 
 void
 gdcm_rtss_load (
-    Rtss_polyline_set *cxt, 
-    Referenced_dicom_dir *rdd, 
-    Img_metadata *meta, 
-    const char *rtss_fn
+    Rtss *rtss,                      /* Output: this gets loaded into */
+    Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
+    Img_metadata *meta,              /* Output: this gets updated too */
+    const char *rtss_fn              /* Input: the file that gets read */
 )
 {
     gdcm::File *rtss_file = new gdcm::File;
     gdcm::SeqEntry *seq;
     gdcm::SQItem *item;
     std::string tmp;
+    Rtss_polyline_set *cxt = rtss->m_cxt;
 
     rtss_file->SetMaxSizeLoadEntry (0xffff);
     rtss_file->SetFileName (rtss_fn);
@@ -321,15 +323,17 @@ plm_ComputeGroup0002Length (gdcm::File *gf)
 
 void
 gdcm_rtss_save (
-    Rtss_polyline_set *cxt, 
-    Referenced_dicom_dir *rdd, 
-    char *rtss_fn
+    Rtss *rtss,                    /* Input: this is what gets saved */
+    Referenced_dicom_dir *rdd,     /* Input: need to look at this too */
+    char *rtss_fn                  /* Input: name of file to write to */
 )
 {
     int j, k;
     gdcm::File *gf = new gdcm::File ();
     const std::string &current_date = gdcm::Util::GetCurrentDate();
     const std::string &current_time = gdcm::Util::GetCurrentTime();
+
+    Rtss_polyline_set *cxt = rtss->m_cxt;
 
     printf ("Hello from gdcm_rtss_save\n");
 
@@ -384,13 +388,13 @@ gdcm_rtss_save (
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0010);
+    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0010);
     /* PatientID */
-    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0020);
+    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0020);
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    cxt->m_demographics->copy_to_gdcm_file (gf, 0x0010, 0x0040);
+    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0040);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */

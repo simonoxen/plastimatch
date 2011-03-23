@@ -17,6 +17,7 @@
 #include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
+#include "rtss.h"
 #include "simplify_points.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
@@ -59,7 +60,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		"Warping dij files requires ctatts_in, dif_in files\n");
 	    break;
 	case PLM_FILE_FMT_DICOM_RTSS:
-	    rtds->m_ss_image = new Ss_image;
+	    rtds->m_ss_image = new Rtss (rtds);
 	    rtds->m_ss_image->load_gdcm_rtss (
 		(const char*) parms->input_fn, &rtds->m_rdd);
 	    break;
@@ -70,7 +71,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->referenced_dicom_dir);
 	    break;
 	case PLM_FILE_FMT_CXT:
-	    rtds->m_ss_image = new Ss_image;
+	    rtds->m_ss_image = new Rtss (rtds);
 	    rtds->m_ss_image->load_cxt (parms->input_fn, &rtds->m_rdd);
 	    break;
 	case PLM_FILE_FMT_SS_IMG_VEC:
@@ -98,7 +99,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 
     if (bstring_not_empty (parms->input_cxt_fn)) {
 	if (rtds->m_ss_image) delete rtds->m_ss_image;
-	rtds->m_ss_image = new Ss_image;
+	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->load_cxt (parms->input_cxt_fn, &rtds->m_rdd);
     }
 

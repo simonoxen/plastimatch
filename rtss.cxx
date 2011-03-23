@@ -10,9 +10,10 @@
 #include "gdcm_rtss.h"
 #include "plm_warp.h"
 #include "referenced_dicom_dir.h"
+#include "rtds.h"
+#include "rtss.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
-#include "ss_image.h"
 #include "ss_img_extract.h"
 #include "ss_img_stats.h"
 #include "ss_list_io.h"
@@ -31,8 +32,40 @@ compose_prefix_fn (
 	"mha");
 }
 
+Rtss::Rtss (Rtds *rtds) {
+    m_ss_list = 0;
+    m_cxt = 0;
+    m_ss_img = 0;
+    m_labelmap = 0;
+    m_img_metadata.set_parent (&rtds->m_img_metadata);
+}
+
+Rtss::~Rtss () {
+    clear ();
+}
+
 void
-Ss_image::load (const char *ss_img, const char *ss_list)
+Rtss::clear () {
+    if (this->m_ss_list) {
+	delete this->m_ss_list;
+	this->m_ss_list = 0;
+    }
+    if (this->m_cxt) {
+	delete this->m_cxt;
+	this->m_cxt = 0;
+    }
+    if (this->m_ss_img) {
+	delete this->m_ss_img;
+	this->m_ss_img = 0;
+    }
+    if (this->m_labelmap) {
+	delete this->m_labelmap;
+	this->m_labelmap = 0;
+    }
+}
+
+void
+Rtss::load (const char *ss_img, const char *ss_list)
 {
     /* Load ss_img */
     if (m_ss_img) {
@@ -53,21 +86,21 @@ Ss_image::load (const char *ss_img, const char *ss_list)
 }
 
 void
-Ss_image::load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd)
+Rtss::load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
-    cxt_load (this->m_cxt, rdd, (const char*) input_fn);
+    cxt_load (this, rdd, (const char*) input_fn);
 }
 
 void
-Ss_image::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
+Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 {
     this->m_cxt = new Rtss_polyline_set;
-    gdcm_rtss_load (this->m_cxt, rdd, this->m_cxt->m_demographics, input_fn);
+    gdcm_rtss_load (this, rdd, &this->m_img_metadata, input_fn);
 }
 
 void
-Ss_image::load_xio (char *input_dir)
+Rtss::load_xio (char *input_dir)
 {
     this->m_cxt = new Rtss_polyline_set;
     printf ("calling xio_structures_load\n");
@@ -75,23 +108,23 @@ Ss_image::load_xio (char *input_dir)
 }
 
 void
-Ss_image::save_colormap (const CBString &colormap_fn)
+Rtss::save_colormap (const CBString &colormap_fn)
 {
     ss_list_save_colormap (this->m_cxt, (const char*) colormap_fn);
 }
 
 void
-Ss_image::save_cxt (
+Rtss::save_cxt (
     Referenced_dicom_dir *rdd, 
     const CBString &cxt_fn, 
     bool prune_empty
 )
 {
-    cxt_save (this->m_cxt, rdd, (const char*) cxt_fn, prune_empty);
+    cxt_save (this, rdd, (const char*) cxt_fn, prune_empty);
 }
 
 void
-Ss_image::save_gdcm_rtss (
+Rtss::save_gdcm_rtss (
     const char *output_dir, 
     Referenced_dicom_dir *rdd
 )
@@ -106,11 +139,11 @@ Ss_image::save_gdcm_rtss (
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
 
-    gdcm_rtss_save (this->m_cxt, rdd, fn);
+    gdcm_rtss_save (this, rdd, fn);
 }
 
 void
-Ss_image::save_ss_image (const CBString &ss_img_fn)
+Rtss::save_ss_image (const CBString &ss_img_fn)
 {
     if (!this->m_ss_img) {
 	print_and_exit (
@@ -126,13 +159,13 @@ Ss_image::save_ss_image (const CBString &ss_img_fn)
 }
 
 void
-Ss_image::save_labelmap (const CBString &labelmap_fn)
+Rtss::save_labelmap (const CBString &labelmap_fn)
 {
     this->m_labelmap->save_image ((const char*) labelmap_fn);
 }
 
 void
-Ss_image::save_prefix (const CBString &output_prefix)
+Rtss::save_prefix (const CBString &output_prefix)
 {
     int i;
 
@@ -165,13 +198,13 @@ Ss_image::save_prefix (const CBString &output_prefix)
 }
 
 void
-Ss_image::save_ss_list (const CBString &ss_list_fn)
+Rtss::save_ss_list (const CBString &ss_list_fn)
 {
     ss_list_save (this->m_cxt, (const char*) ss_list_fn);
 }
 
 void
-Ss_image::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
+Rtss::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
     const CBString &output_dir)
 {
     xio_structures_save (this->m_cxt, xio_transform,
@@ -179,7 +212,7 @@ Ss_image::save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version,
 }
 
 UInt32ImageType::Pointer
-Ss_image::get_ss_img (void)
+Rtss::get_ss_img (void)
 {
     if (!this->m_ss_img) {
 	print_and_exit ("Sorry, can't get_ss_img()\n");
@@ -188,7 +221,7 @@ Ss_image::get_ss_img (void)
 }
 
 Rtss_polyline_set*
-Ss_image::get_ss_list (void)
+Rtss::get_ss_list (void)
 {
     if (!this->m_ss_list) {
 	print_and_exit ("Sorry, can't get_ss_list()\n");
@@ -197,7 +230,7 @@ Ss_image::get_ss_list (void)
 }
 
 void
-Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
+Rtss::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 {
     if (!this->m_cxt) {
 	return;
@@ -213,12 +246,6 @@ Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 	this->m_cxt->m_dim[d] = rdd->m_pih.Size(d);
 	this->m_cxt->m_spacing[d] = rdd->m_pih.m_spacing[d];
     }
-
-    /* Demographics */
-    if (! this->m_cxt->m_demographics) {
-	this->m_cxt->m_demographics = new Img_metadata;
-    }
-    *(this->m_cxt->m_demographics) = rdd->m_demographics;
 
     /* Slice numbers and slice uids */
     for (int i = 0; i < this->m_cxt->num_structures; i++) {
@@ -237,7 +264,7 @@ Ss_image::apply_dicom_dir (const Referenced_dicom_dir *rdd)
 }
 
 void
-Ss_image::convert_ss_img_to_cxt (void)
+Rtss::convert_ss_img_to_cxt (void)
 {
     int num_structs = -1;
 
@@ -286,7 +313,7 @@ Ss_image::convert_ss_img_to_cxt (void)
 }
 
 void
-Ss_image::cxt_re_extract (void)
+Rtss::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
 #if (PLM_USE_SS_IMAGE_VEC)
@@ -300,7 +327,7 @@ Ss_image::cxt_re_extract (void)
 }
 
 void
-Ss_image::prune_empty (void)
+Rtss::prune_empty (void)
 {
     if (this->m_cxt) {
 	this->m_cxt->prune_empty ();
@@ -308,7 +335,7 @@ Ss_image::prune_empty (void)
 }
 
 void
-Ss_image::rasterize (Plm_image_header *pih)
+Rtss::rasterize (Plm_image_header *pih)
 {
     /* Rasterize structure sets */
     Cxt_to_mha_state *ctm_state;
@@ -344,7 +371,7 @@ Ss_image::rasterize (Plm_image_header *pih)
 }
 
 void
-Ss_image::set_geometry_from_plm_image_header (Plm_image_header *pih)
+Rtss::set_geometry_from_plm_image_header (Plm_image_header *pih)
 {
     if (this->m_cxt) {
 	this->m_cxt->set_geometry_from_plm_image_header (pih);
@@ -352,7 +379,7 @@ Ss_image::set_geometry_from_plm_image_header (Plm_image_header *pih)
 }
 
 void
-Ss_image::find_rasterization_geometry (Plm_image_header *pih)
+Rtss::find_rasterization_geometry (Plm_image_header *pih)
 {
     if (this->m_cxt) {
 	this->m_cxt->find_rasterization_geometry (pih);
@@ -360,7 +387,7 @@ Ss_image::find_rasterization_geometry (Plm_image_header *pih)
 }
 
 void
-Ss_image::warp (
+Rtss::warp (
     Xform *xf, 
     Plm_image_header *pih, 
     Warp_parms *parms)
@@ -385,6 +412,6 @@ Ss_image::warp (
 #endif
     }
 
-    /* The cxt is now obsolete, but we can't delete it because it 
-       contains our "bits", used e.g. by prefix extraction.  */
+    /* The cxt polylines are now obsolete, but we can't delete it because 
+       it contains our "bits", used e.g. by prefix extraction.  */
 }

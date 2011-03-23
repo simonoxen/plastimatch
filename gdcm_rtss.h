@@ -20,17 +20,17 @@ gdcm_rtss_probe (const char *rtss_fn);
 plastimatch1_EXPORT
 void
 gdcm_rtss_load (
-    Rtss_polyline_set *cxt, 
-    Referenced_dicom_dir *rdd, 
-    Img_metadata *meta, 
-    const char *rtss_fn
+    Rtss *rtss,                      /* Output: this gets loaded into */
+    Referenced_dicom_dir *rdd,       /* Output: this gets updated too */
+    Img_metadata *meta,              /* Output: this gets updated too */
+    const char *rtss_fn              /* Input: the file that gets read */
 );
 plastimatch1_EXPORT
 void
 gdcm_rtss_save (
-    Rtss_polyline_set *cxt, 
-    Referenced_dicom_dir *rdd, 
-    char *rtss_fn
+    Rtss *rtss,                    /* Input: this is what gets saved */
+    Referenced_dicom_dir *rdd,     /* Input: need to look at this too */
+    char *rtss_fn                  /* Input: name of file to write to */
 );
 
 #if defined __cplusplus

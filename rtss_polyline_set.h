@@ -9,7 +9,6 @@
 #include <vector>
 #include "bstrwrap.h"
 
-class Img_metadata;
 class Plm_image;
 class Plm_image_header;
 class Rtss_structure;
@@ -18,8 +17,6 @@ class Rtss_structure;
 
 class Rtss_polyline_set {
 public:
-    Img_metadata *m_demographics;
-
     /* Output geometry */
     int have_geometry;
     int m_dim[3];

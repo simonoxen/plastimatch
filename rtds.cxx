@@ -18,6 +18,7 @@
 #include "referenced_dicom_dir.h"
 #include "rtds.h"
 #include "rtds_dicom.h"
+#include "rtss.h"
 #include "ss_list_io.h"
 #include "xio_ct.h"
 #include "xio_dir.h"
@@ -33,6 +34,7 @@ Rtds::Rtds ()
     m_ss_image = 0;
     m_dose = 0;
     m_gdcm_series = 0;
+    m_img_metadata.create_anonymous ();
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
     m_xio_transform->patient_pos = PATIENT_POSITION_UNKNOWN;
@@ -154,7 +156,7 @@ Rtds::load_xio (
     xio_ct_load (this->m_img, xsd->path);
 
     /* Load the XiO studyset structure set */
-    this->m_ss_image = new Ss_image;
+    this->m_ss_image = new Rtss (this);
     this->m_ss_image->load_xio (xsd->path);
 
     /* Apply XiO CT geometry to structures */
@@ -207,7 +209,7 @@ Rtds::load_xio (
 void
 Rtds::load_ss_img (const char *ss_img, const char *ss_list)
 {
-    this->m_ss_image = new Ss_image;
+    this->m_ss_image = new Rtss (this);
     this->m_ss_image->load (ss_img, ss_list);
 }
 

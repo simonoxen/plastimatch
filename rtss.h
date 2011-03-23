@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _ss_image_h_
-#define _ss_image_h_
+#ifndef _rtss_h_
+#define _rtss_h_
 
 #include "plm_config.h"
 #include "itk_image.h"
@@ -14,75 +14,31 @@
 #include "xform.h"
 #include "xio_ct.h"
 
-class Ss_image {
+class Rtds;
+
+class Rtss {
 public:
     Rtss_polyline_set *m_ss_list; /* Names of structures */
     Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */
     Plm_image *m_ss_img;          /* Structure set in lossless bitmap form */
     Plm_image *m_labelmap;        /* Structure set lossy bitmap form */
+    Img_metadata m_img_metadata;  /* Metadata specific to this ss_image */
 
 public:
-    Ss_image () {
-	m_ss_list = 0;
-	m_cxt = 0;
-	m_ss_img = 0;
-	m_labelmap = 0;
-    }
-    ~Ss_image () {
-	if (this->m_ss_list) {
-	    delete this->m_ss_list;
-	}
-	if (this->m_cxt) {
-	    delete this->m_cxt;
-	}
-	if (this->m_ss_img) {
-	    delete this->m_ss_img;
-	}
-	if (this->m_labelmap) {
-	    delete this->m_labelmap;
-	}
-    }
-    void
-    clear () {
-	if (this->m_ss_list) {
-	    delete this->m_ss_list;
-	    this->m_ss_list = 0;
-	}
-	if (this->m_cxt) {
-	    delete this->m_cxt;
-	    this->m_cxt = 0;
-	}
-	if (this->m_ss_img) {
-	    delete this->m_ss_img;
-	    this->m_ss_img = 0;
-	}
-	if (this->m_labelmap) {
-	    delete this->m_labelmap;
-	    this->m_labelmap = 0;
-	}
-    }
-    void
-    load (const char *ss_img, const char *ss_list);
-    void
-    load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd);
-    void
-    load_xio (char *input_dir);
-    void
-    load_gdcm_rtss (const char *input_fn,  Referenced_dicom_dir *rdd);
+    Rtss (Rtds *rtds);
+    ~Rtss ();
 
-    void
-    save_colormap (const CBString &colormap_fn);
-    void
-    save_cxt (
-	Referenced_dicom_dir *rdd, 
-	const CBString &cxt_fn, 
-	bool prune_empty
-    );
-    void
-    save_gdcm_rtss (const char *output_dir, 
-	Referenced_dicom_dir *rdd);
-    void
-    save_ss_image (const CBString &ss_img_fn);
+    void clear ();
+    void load (const char *ss_img, const char *ss_list);
+    void load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd);
+    void load_xio (char *input_dir);
+    void load_gdcm_rtss (const char *input_fn,  Referenced_dicom_dir *rdd);
+
+    void save_colormap (const CBString &colormap_fn);
+    void save_cxt (Referenced_dicom_dir *rdd, const CBString &cxt_fn, 
+	bool prune_empty);
+    void save_gdcm_rtss (const char *output_dir, Referenced_dicom_dir *rdd);
+    void save_ss_image (const CBString &ss_img_fn);
     void
     save_labelmap (const CBString &labelmap_fn);
     void

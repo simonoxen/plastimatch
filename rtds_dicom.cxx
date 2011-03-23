@@ -6,16 +6,15 @@
 #include <sstream>
 #include <stdlib.h>
 #include <time.h>
-//#include "gdcmFile.h"
 
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
-//#include "gdcm_series_helper_2.h"
 #include "logfile.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "rtds_dicom.h"
+#include "rtss.h"
 
 void
 Rtds::load_dicom (const char *dicom_dir)
@@ -45,7 +44,7 @@ Rtds::load_dicom (const char *dicom_dir)
 	const std::string& filename = file->GetFileName();
 #endif
 	const std::string& filename = m_gdcm_series->get_rtstruct_filename();
-	m_ss_image = new Ss_image;
+	m_ss_image = new Rtss (this);
 	m_ss_image->load_gdcm_rtss (filename.c_str(), &m_rdd);
     }
 

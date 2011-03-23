@@ -13,18 +13,20 @@
 #include "math_util.h"
 #include "plm_image_header.h"
 #include "referenced_dicom_dir.h"
+#include "rtss.h"
 #include "rtss_polyline_set.h"
 #include "rtss_structure.h"
 
 void
 cxt_load (
-    Rtss_polyline_set *cxt,        /* Output: Structure to load into */
+    Rtss *rtss,                    /* Output: load into this object */
     Referenced_dicom_dir *rdd,     /* Output: Also set some values here */
     const char *cxt_fn             /* Input: file to load from */
 )
 {
     FILE* fp;
     Rtss_polyline* curr_contour;
+    Rtss_polyline_set *cxt = rtss->m_cxt;
 
     float val_x = 0;
     float val_y = 0;
@@ -77,15 +79,15 @@ cxt_load (
 	    /* fall through */
 	}
         else if (biseqcstr (tag, "PATIENT_NAME")) {
-	    cxt->m_demographics->set_metadata (0x0010, 0x0010, 
+	    rtss->m_img_metadata.set_metadata (0x0010, 0x0010, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_ID")) {
-	    cxt->m_demographics->set_metadata (0x0010, 0x0020, 
+	    rtss->m_img_metadata.set_metadata (0x0010, 0x0020, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "PATIENT_SEX")) {
-	    cxt->m_demographics->set_metadata (0x0010, 0x0040, 
+	    rtss->m_img_metadata.set_metadata (0x0010, 0x0040, 
 		(const char*) val->data);
 	}
         else if (biseqcstr (tag, "STUDY_ID")) {
@@ -260,7 +262,7 @@ cxt_load (
 
 void
 cxt_save (
-    Rtss_polyline_set* cxt,      /* Input: Structure set to save from */
+    Rtss *rtss,                  /* Input: Structure set to save from */
     Referenced_dicom_dir *rdd,   /* Input: Also save some values from here */
     const char* cxt_fn,          /* Input: File to save to */
     bool prune_empty             /* Input: Should we prune empty structures? */
@@ -268,6 +270,7 @@ cxt_save (
 {
     int i;
     FILE *fp;
+    Rtss_polyline_set *cxt = rtss->m_cxt;
 
     /* Prepare output directory */
     make_directory_recursive (cxt_fn);
@@ -297,11 +300,11 @@ cxt_save (
 	fprintf (fp, "CT_FRAME_OF_REFERENCE_UID\n");
     }
     fprintf (fp, "PATIENT_NAME %s\n",
-	cxt->m_demographics->get_metadata (0x0010, 0x0010).c_str());
+	rtss->m_img_metadata.get_metadata (0x0010, 0x0010).c_str());
     fprintf (fp, "PATIENT_ID %s\n",
-	cxt->m_demographics->get_metadata (0x0010, 0x0020).c_str());
+	rtss->m_img_metadata.get_metadata (0x0010, 0x0020).c_str());
     fprintf (fp, "PATIENT_SEX %s\n",
-	cxt->m_demographics->get_metadata (0x0010, 0x0040).c_str());
+	rtss->m_img_metadata.get_metadata (0x0010, 0x0040).c_str());
     if (bstring_not_empty (rdd->m_study_id)) {
 	fprintf (fp, "STUDY_ID %s\n", (const char*) rdd->m_study_id);
     } else {

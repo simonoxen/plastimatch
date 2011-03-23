@@ -1006,12 +1006,12 @@ SET (PLASTIMATCH_LIBRARY_SRC
   rtds.cxx rtds.h
   rtds_dicom.cxx rtds_dicom.h
   rtds_warp.cxx rtds_warp.h
+  rtss.cxx rtss.h
   rtss_polyline_set.cxx rtss_polyline_set.h 
   rtss_structure.cxx rtss_structure.h 
   segment_body.cxx segment_body.h
   simplify_points.cxx simplify_points.h
   slice_extract.cxx slice_extract.h
-  ss_image.cxx ss_image.h
   ss_img_extract.cxx ss_img_extract.h
   ss_img_stats.cxx ss_img_stats.h 
   ss_list_io.cxx ss_list_io.h

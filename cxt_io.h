@@ -7,6 +7,7 @@
 #include "plm_config.h"
 
 class Referenced_dicom_dir;
+class Rtss;
 class Rtss_polyline_set;
 
 #if defined __cplusplus
@@ -19,14 +20,14 @@ cxt_load_ss_list (Rtss_polyline_set* cxt, const char* xorlist_fn);
 plastimatch1_EXPORT
 void
 cxt_load (
-    Rtss_polyline_set *cxt,        /* Output: Structure to load into */
+    Rtss *rtss,                    /* Output: load into this object */
     Referenced_dicom_dir *rdd,     /* Output: Also set some values here */
     const char *cxt_fn             /* Input: file to load from */
 );
 plastimatch1_EXPORT
 void
 cxt_save (
-    Rtss_polyline_set* cxt,      /* Input: Structure set to save from */
+    Rtss *rtss,                  /* Input: Structure set to save from */
     Referenced_dicom_dir *rdd,   /* Input: Also save some values from here */
     const char* cxt_fn,          /* Input: File to save to */
     bool prune_empty             /* Input: Should we prune empty structures? */

@@ -67,7 +67,6 @@ Rtss_polyline_set::~Rtss_polyline_set ()
 void
 Rtss_polyline_set::init (void)
 {
-    this->m_demographics = new Img_metadata;
     this->have_geometry = 0;
     this->num_structures = 0;
     this->slist = 0;
@@ -77,13 +76,6 @@ void
 Rtss_polyline_set::clear (void)
 {
     int i;
-
-    //this->ct_study_uid = "";
-    //this->ct_series_uid = "";
-    //this->ct_fref_uid = "";
-    //this->study_id = "";
-    //this->ct_slice_uids.clear();
-    delete this->m_demographics;
 
     for (i = 0; i < this->num_structures; i++) {
 	delete (this->slist[i]);
