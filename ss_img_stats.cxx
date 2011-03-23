@@ -7,6 +7,7 @@
 
 #include "itk_image.h"
 #include "plm_int.h"
+#include "ss_img_stats.h"
 
 void
 ss_img_stats (
