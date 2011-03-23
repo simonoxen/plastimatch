@@ -1,1349 +1,826 @@
-./" ******************************************************************************************************
-./" ******  PLASTIMATCH MAN PAGES
-./" ******  REVISION 1
-./" ******  AUTHOR: PAOLO ZAFFINO   p.zaffino@yahoo.it
-./" ******************************************************************************************************
-
-.TH Plastimatch 1 30-oct-2010
-
+.TH "PLASTIMATCH" "1" "March 23, 2011" "Plastimatch 1.4" "Plastimatch"
 .SH NAME
-Plastimatch - open source software for deformable image registration
-
+plastimatch \- register, convert, warp, or manipulate images
+.
+.nr rst2man-indent-level 0
+.
+.de1 rstReportMargin
+\\$1 \\n[an-margin]
+level \\n[rst2man-indent-level]
+level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
+-
+\\n[rst2man-indent0]
+\\n[rst2man-indent1]
+\\n[rst2man-indent2]
+..
+.de1 INDENT
+.\" .rstReportMargin pre:
+. RS \\$1
+. nr rst2man-indent\\n[rst2man-indent-level] \\n[an-margin]
+. nr rst2man-indent-level +1
+.\" .rstReportMargin post:
+..
+.de UNINDENT
+. RE
+.\" indent \\n[an-margin]
+.\" old: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.nr rst2man-indent-level -1
+.\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
+.in \\n[rst2man-indent\\n[rst2man-indent-level]]u
+..
+.\" Man page generated from reStructeredText.
+.
 .SH SYNOPSIS
-plastimatch command [options]
-
-./" ******************************************************************************************************
-./" ******  DESCRIPTION
-./" ******************************************************************************************************
-
+.sp
+\fCplastimatch command [options]\fP
 .SH DESCRIPTION
-Plastimatch is an open source software for deformable image registration. It is designed for high-performance volumetric registration of medical 
-images, such as X-ray computed tomography (CT), magnetic resonance imaging (MRI), and positron emission tomography (PET).
-Software features include:
-
-    * B-spline method for deformable image registration (GPU and multicore accelerated)
-    * Demons method for deformable image registration (GPU accelerated)
-    * ITK-based algorithms for translation, rigid, affine, demons, and B-spline registration
-    * Pipelined, multi-stage registration framework with seamless conversion between most algorithms and transform types
-    * Landmark-based deformable registration using thin-plate splines for global registration
-    * Landmark-based deformable registration using radial basis functions for local corrections
-    * Broad support for 3D image file formats (using ITK), including DICOM, Nifti, NRRD, MetaImage, and Analyze
-    * DICOM and DICOM-RT import and export
-    * XiO import and export
-    * Plugin to 3D Slicer
-
-Plastimatch also features two handy utilities which are not directly related to image registration:
-
-    * FDK cone-beam CT reconstruction (GPU and multicore accelerated)
-    * Digitally reconstructed radiograph (DRR) generation (GPU and multicore accelerated)
-
-Plastimatch lacks the following:
-
-    * Landmark-based rigid registration
-    * Viscous fluid registration
-    * FEM registration
-    * Surface matching registration
-    * Non-volumetric registration (e.g. 2D-2D or 2D-3D)
-
-
-./" ******************************************************************************************************
-./" ******  COMMAND REFERENCE
-./" ******************************************************************************************************
-
-
-.SH COMMAND REFERENCE
-The plastimatch executable is used for a variety of operations, including image
-registration, image warping, image resampling, and file formatconversion.
-The general format of the command is:
-
-plastimatch command [options]
-
-where the form of the options depends upon the command given.
-The list of possible commands can be seen by simply typing "plastimatch" 
+.sp
+The plastimatch executable is used for
+a variety of operations, including image
+registration, image warping, image resampling, and file format
+conversion.
+The form of the options depends upon the command given.
+The list of possible commands can be seen by simply typing "plastimatch"
 without any additional command line arguments:
-
-plastimatch
-.br
-plastimatch version 1.4-beta (1607)
-.br
+.sp
+.nf
+.ft C
+$ plastimatch
+plastimatch version 1.4\-beta (2161)
 Usage: plastimatch command [options]
-
 Commands:
-  add           adjust        crop          compare     
-  compose       convert       diff          dvh         
-  header        mask          register      resample    
-  slice         stats         warp        
+  add           adjust        autolabel     crop          compare
+  compose       convert       diff          dvh           header
+  mask          register      resample      segment       stats
+  thumbnail     warp          xio\-dvh
 
 For detailed usage of a specific command, type:
-
-plastimatch command
-
-
-./"*************** ADD *******************
-
-.SS add
-The add command is used to add one or more images together and create an output image.
+  plastimatch command
+.ft P
+.fi
+.SH PLASTIMATCH ADD
+.sp
+The \fIadd\fP command is used to add one or more images together and create
+an output image.
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch add input_file [input_file ...] output_file
- 
-.I Example:
-To add together files 01.mha, 02.mha and 03.mha, and save the result in the file output.mha, you can run the following command:
-
-         plastimatch add 01.mha 02.mha 03.mha output.mha
-
-
-./"*************** ADJUST *******************
-.SS adjust
-The adjust command is used to adjust the intensity values within an image. The adjustment operations available are truncation and linear scaling.
+.ft P
+.fi
+.SS Example
+.sp
+To add together files 01.mha, 02.mha and 03.mha, and save the result
+in the file output.mha, you can run the following command:
+.sp
+.nf
+.ft C
+plastimatch add 01.mha 02.mha 03.mha output.mha
+.ft P
+.fi
+.SH PLASTIMATCH ADJUST
+.sp
+The \fIadjust\fP command is used to adjust the intensity values
+within an image.  The adjustment operations available are truncation and
+linear scaling.
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch adjust [options]
-.br
 Required:
-    --input=image_in
-    --output=image_out
-.br
+    \-\-input=image_in
+    \-\-output=image_out
 Optional:
-    --output-type={uchar,short,ushort,ulong,float}
-    --scale="min max"
-    --ab-scale="ab nfx ndf"       (Alpha-beta scaling)
-    --stretch="min max"
-    --truncate-above=value
-    --truncate-below=value
-
-.I Example:
-The following command will truncate the input intensities to the range [-1000,1000], and then map the intensities to the range [0,1]:
-         plastimatch adjust --input infile.nrrd --output outfile.nrrd --truncate-above 1000 --truncate-below -1000 --stretch "0 1"
-
-
-./"*************** CROP *******************
-.SS crop
-The crop command crops out a rectangular portion of the input file, and saves that portion to an output file. The command line usage is given as follows:
-
+    \-\-output\-type={uchar,short,ushort,ulong,float}
+    \-\-scale="min max"
+    \-\-ab\-scale="ab nfx ndf"       (Alpha\-beta scaling)
+    \-\-stretch="min max"
+    \-\-truncate\-above=value
+    \-\-truncate\-below=value
+.ft P
+.fi
+.SS Example
+.sp
+The following command will truncate the input intensities to the
+range [\-1000,1000], and then map the intensities to the range [0,1]:
+.sp
+.nf
+.ft C
+plastimatch adjust \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-truncate\-above 1000 \e
+  \-\-truncate\-below \-1000 \e
+  \-\-stretch "0 1"
+.ft P
+.fi
+.SH PLASTIMATCH AUTOLABEL
+.sp
+The \fIautolabel\fP command is an experimental program the uses machine
+learning to identify the thoracic vertibrae in a CT scan.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch autolabel [options]
+Options:
+  \-h, \-\-help            Display this help message
+      \-\-input <arg>     Input image filename (required)
+      \-\-network <arg>   Input trained network filename (required)
+      \-\-output <arg>    Output csv filename (required)
+.ft P
+.fi
+.SH PLASTIMATCH CROP
+.sp
+The \fIcrop\fP command crops out a rectangular portion of the input file,
+and saves that portion to an output file.
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch crop [options]
-.br
 Required:
-    --input=image_in
-    --output=image_out
-    --voxels="x-min x-max y-min y-max z-min z-max" (integers)
-
-The voxels are indexed starting at zero. In other words, if the size of the image is M x N x P, the x values should range between 0 and M-1.
-
-.I Example:
-The following command selects the region of size 10 x 10 x 10, with the first voxel of the output image being at location (5,8,12) of the input image:
-
-         plastimatch crop --input in.mha --output out.mha --voxels "5 14 8 17 12 21"
-
-
-./"*************** COMPARE *******************
-.SS compare
-The compare command compares two files by subtracting one file from the other, and reporting statistics of the difference image. The two input files must have the same geometry (origin, dimensions, and voxel spacing). The command line usage is given as follows:
-
+    \-\-input=image_in
+    \-\-output=image_out
+    \-\-voxels="x\-min x\-max y\-min y\-max z\-min z\-max" (integers)
+.ft P
+.fi
+.sp
+The voxels are indexed starting at zero.
+In other words, if the size of the image is
+M \times N \times P,
+the x values should range between 0 and M-1.
+.SS Example
+.sp
+The following command selects the region of size
+10 \times 10 \times 10, with the first voxel of the output
+image being at location (5,8,12) of the input image:
+.sp
+.nf
+.ft C
+plastimatch crop \e
+  \-\-input in.mha \e
+  \-\-output out.mha \e
+  \-\-voxels "5 14 8 17 12 21"
+.ft P
+.fi
+.SH PLASTIMATCH COMPARE
+.sp
+The \fIcompare\fP command compares two files by subtracting
+one file from the other, and reporting statistics
+of the difference image.
+The two input files must have the
+same geometry (origin, dimensions, and voxel spacing).
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch compare image_in_1 image_in_2
-
-.I Example:
-The following command subtracts synth_2 from synth_1, and reports the statistics:
-
-        plastimatch compare synth_1.mha synth_2.mha MIN -558.201904 AVE 7.769664 MAX 558.680847 MAE 85.100204 MSE 18945.892578 DIF 54872 NUM 54872
-
+.ft P
+.fi
+.SS Example
+.sp
+The following command subtracts synth_2 from synth_1, and
+reports the statistics:
+.sp
+.nf
+.ft C
+$ plastimatch compare synth_1.mha synth_2.mha
+MIN \-558.201904 AVE 7.769664 MAX 558.680847
+MAE 85.100204 MSE 18945.892578
+DIF 54872 NUM 54872
+.ft P
+.fi
+.sp
 The reported statistics are interpreted as follows:
-
+.sp
+.nf
+.ft C
 MIN      Minimum value of difference image
-.br
 AVE      Average value of difference image
-.br
 MAX      Maximum value of difference image
-.br
 MAE      Mean average value of difference image
-.br
 MSE      Mean squared difference between images
-.br
 DIF      Number of pixels with different intensities
-.br
 NUM      Total number of voxels in the difference image
-
-
-./"*************** COMPOSE *******************
-.SS compose
-The compose command is used to compose two transforms. The command line usage is given as follows:
-
+.ft P
+.fi
+.SH PLASTIMATCH COMPOSE
+.sp
+The \fIcompose\fP command is used to compose two transforms.
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch compose file_1 file_2 outfile
 
 Note:  file_1 is applied first, and then file_2.
           outfile = file_2 o file_1
-          x -> x + file_2(x + file_1(x))
-
-The transforms can be of any type, including translation, rigid, affine, itk B-spline, native B-spline, or vector fields. The output file is always a vector field.
-There is a further restriction that at least one of the input files must be either a native B-spline or vector field. This restriction is required because that is how the resolution and voxel spacing of the output vector field is chosen.
-
-.I Example:
-Suppose we want to compose a rigid transform (rigid.tfm) with a vector field (vf.mha), such that the output transform is equivalent to applying the rigid transform first, and the vector field second.
-
-         platimatch rigid.tfm vf.mha composed_vf.mha
-
-
-./"*************** CONVERT *******************
-.SS convert
-The convert command is used to convert files from one format to another format. As part of the conversion process, it can also apply (linear or deformable) geometric transforms to the input images. In fact, convert is just an alias for the warp command.
+          x \-> x + file_2(x + file_1(x))
+.ft P
+.fi
+.sp
+The transforms can be of any type, including translation, rigid, affine,
+itk B\-spline, native B\-spline, or vector fields.
+The output file is always a vector field.
+.sp
+There is a further restriction that at least one of the input files
+must be either a native B\-spline or vector field.  This restriction
+is required because that is how the resolution and voxel spacing
+of the output vector field is chosen.
+.SS Example
+.sp
+Suppose we want to compose a rigid transform (rigid.tfm) with a vector field
+(vf.mha), such that the output transform is equivalent to applying
+the rigid transform first, and the vector field second.
+.sp
+.nf
+.ft C
+plastimatch compose rigid.tfm vf.mha composed_vf.mha
+.ft P
+.fi
+.SH PLASTIMATCH CONVERT
+.sp
+The \fIconvert\fP command is used to convert files from one
+format to another format.  As part of the conversion process, it can
+also apply (linear or deformable) geometric transforms
+to the input images.  In fact, \fIconvert\fP is just an alias for the
+\fIwarp\fP command.
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch convert [options]
 Options:
-    --input=filename
-    --xf=filename
-    --interpolation=nn
-    --fixed=filename
-    --offset="x y z"
-    --spacing="x y z"
-    --dims="x y z"
-    --default-val=number
-    --output-type={uchar,short,float,...}
-    --algorithm=itk
-    --patient-pos={hfs,hfp,ffs,ffp}
-    --dicom-dir=directory      (for structure association)
-    --ctatts=filename          (for dij)
-    --dif=filename             (for dij)
-    --input-ss-img=filename    (for structures)
-    --input-ss-list=filename   (for structures)
-    --prune-empty              (for structures)
-    --input-dose-img=filename  (for rt dose)
-    --input-dose-xio=filename  (for XiO rt dose)
-    --input-dose-ast=filename  (for Astroid rt dose)
-    --input-dose-mc=filename   (for Monte Carlo 3ddose rt dose)
+    \-\-input=filename
+    \-\-xf=filename
+    \-\-interpolation=nn
+    \-\-fixed=filename
+    \-\-offset="x y z"
+    \-\-spacing="x y z"
+    \-\-dims="x y z"
+    \-\-default\-val=number
+    \-\-output\-type={uchar,short,float,...}
+    \-\-algorithm=itk
+    \-\-patient\-pos={hfs,hfp,ffs,ffp}
+    \-\-dicom\-dir=directory      (for structure association)
+    \-\-ctatts=filename          (for dij)
+    \-\-dif=filename             (for dij)
+    \-\-input\-ss\-img=filename    (for structures)
+    \-\-input\-ss\-list=filename   (for structures)
+    \-\-prune\-empty              (for structures)
+    \-\-input\-dose\-img=filename  (for rt dose)
+    \-\-input\-dose\-xio=filename  (for XiO rt dose)
+    \-\-input\-dose\-ast=filename  (for Astroid rt dose)
+    \-\-input\-dose\-mc=filename   (for Monte Carlo 3ddose rt dose)
 
-    --output-cxt=filename      (for structures)
-    --output-dicom=directory   (for image and structures)
-    --output-dij=filename      (for dij)
-    --output-dose-img          (for rt dose)
-    --output-img=filename      (for image)
-    --output-labelmap=filename (for structures)
-    --output-prefix=string     (for structures)
-    --output-ss-img=filename   (for structures)
-    --output-ss-list=filename  (for structures)
-    --output-vf=filename       (for vector field)
-    --output-xio=directory     (for rt dose and structures)
-
-.I Examples:
-The first example demonstrates how to convert a DICOM volume to NRRD. The DICOM images that comprise the volume must be stored in a single directory, which for this example is called “dicom-in-dir”.
-Because the –output-type option was not specified, the output type will be matched to the type of the input DICOM volume. The format of the output file (NRRD) is determined from the filename extension.
-
-          plastimatch convert --input dicom-in-dir --output outfile.nrrd
-
+    \-\-output\-cxt=filename      (for structures)
+    \-\-output\-dicom=directory   (for image and structures)
+    \-\-output\-dij=filename      (for dij)
+    \-\-output\-dose\-img          (for rt dose)
+    \-\-output\-img=filename      (for image)
+    \-\-output\-labelmap=filename (for structures)
+    \-\-output\-prefix=string     (for structures)
+    \-\-output\-ss\-img=filename   (for structures)
+    \-\-output\-ss\-list=filename  (for structures)
+    \-\-output\-vf=filename       (for vector field)
+    \-\-output\-xio=directory     (for rt dose and structures)
+.ft P
+.fi
+.SS Examples
+.sp
+The first example demonstrates how to convert
+a DICOM volume to NRRD.  The DICOM images
+that comprise the volume must be
+stored in a single directory, which for this example
+is called "dicom\-in\-dir".  Because the \-\-output\-type option was
+not specified,
+the output type will be matched to the type of the input DICOM volume.
+The format of the output file (NRRD) is determined from the filename
+extension.
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input dicom\-in\-dir \e
+  \-\-output\-img outfile.nrrd
+.ft P
+.fi
+.sp
 This example further converts the type of the image intensities to float.
-
-          plastimatch convert --input dicom-in-dir --output outfile.nrrd --output-type float
-
-The next example shows how to resample the output image to a different geometry. The –offset option sets the position of the (center of) the first voxel of the image, the –dim option sets the number of voxels, and the –spacing option sets the distance between voxels. The units for offset and spacing are assumed to be millimeters.
-
-          plastimatch convert --input dicom-in-dir --output outfile.nrrd --offset "-200 -200 -165" --dim "250 250 110" --spacing "2 2 2.5"
-
-Generally speaking, it is tedious to manually specify the geometry of the output file. If you want to match the geometry of the output file with an existing file, you can do this using the –fixed option.
-
-          plastimatch convert --input dicom-in-dir --output outfile.nrrd --fixed reference.nrrd
-
-This next example shows how to convert a DICOM RT structure set file into an image using the –output-ss-img option. Because structures in DICOM RT are polylines, they are rasterized to create the image. The voxels of the output image are 32-bit integers, where the i^th bit of each integer has value one if the voxel lies with in the corresponding structure, and value zero if the voxel lies outside the structure. The structure names are stored in separate file using the –output-ss-list option.
-
-          plastimatch convert --input structures.dcm --output-ss-img outfile.nrrd --output-ss-list outfile.txt
-
-In the previous example, the geometry of the output file wasn’t specified. When the geometry of a DICOM RT structure set isn’t specified, it is assumed to match the geometry of the DICOM CT image associated with the contours. If the associated DICOM CT image is in the same directory as the structure set file, it will be found automatically. Otherwise, we have to tell plastimatch where it is located with the –dicom-dir option.
-
-          plastimatch convert --input structures.dcm --output-ss-img outfile.nrrd --output-ss-list outfile.txt --dicom-dir ../ct-directory
-
-
-./"*************** DIFF *******************
-.SS diff
-
-The plastimatch diff command subtracts one image from another, and saves the output as a new image. The two input files must have the same geometry (origin, dimensions, and voxel spacing).
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input dicom\-in\-dir \e
+  \-\-output\-img outfile.nrrd \e
+  \-\-output\-type float
+.ft P
+.fi
+.sp
+The next example shows how to resample the output image to a different
+geometry.  The \-\-offset option sets the position of the
+(center of) the first voxel of the image, the \-\-dim option sets the
+number of voxels, and the \-\-spacing option sets the
+distance between voxels.  The units for offset and spacing are
+assumed to be millimeters.
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input dicom\-in\-dir \e
+  \-\-output\-img outfile.nrrd \e
+  \-\-offset "\-200 \-200 \-165" \e
+  \-\-dim "250 250 110" \e
+  \-\-spacing "2 2 2.5"
+.ft P
+.fi
+.sp
+Generally speaking, it is tedious to manually specify the geometry of
+the output file.  If you want to match the geometry of the output
+file with an existing file, you can do this using the \-\-fixed option.
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input dicom\-in\-dir \e
+  \-\-output\-img outfile.nrrd \e
+  \-\-fixed reference.nrrd
+.ft P
+.fi
+.sp
+This next example shows how to convert a DICOM RT structure set file
+into an image using the \-\-output\-ss\-img option.
+Because structures in DICOM RT are polylines, they are rasterized to
+create the image.  The voxels of the output image are 32\-bit integers,
+where the i^th bit of each integer has value one if the voxel lies with
+in the corresponding structure, and value zero if the voxel lies outside the
+structure.  The structure names are stored in separate file using
+the \-\-output\-ss\-list option.
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input structures.dcm \e
+  \-\-output\-ss\-img outfile.nrrd \e
+  \-\-output\-ss\-list outfile.txt
+.ft P
+.fi
+.sp
+In the previous example, the geometry of the output file wasn\(aqt specified.
+When the geometry of a DICOM RT structure set isn\(aqt specified, it is
+assumed to match the geometry of the DICOM CT image associated with the
+contours.  If the associated DICOM CT image is in the same directory as
+the structure set file, it will be found automatically.  Otherwise, we
+have to tell plastimatch where it is located with the \-\-dicom\-dir option.
+.sp
+.nf
+.ft C
+plastimatch convert \e
+  \-\-input structures.dcm \e
+  \-\-output\-ss\-img outfile.nrrd \e
+  \-\-output\-ss\-list outfile.txt \e
+  \-\-dicom\-dir ../ct\-directory
+.ft P
+.fi
+.SH PLASTIMATCH DIFF
+.sp
+The plastimatch \fIdiff\fP command subtracts one image from another, and saves
+the output as a new image.
+The two input files must have the
+same geometry (origin, dimensions, and voxel spacing).
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch diff image_in_1 image_in_2 image_out
-
-.I Example:
-The following command computes file1.nrrd minus file2.nrrd, and saves the result in outfile.nrrd:
-
-          plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
-
-
-./"*************** DVH *******************
-.SS dvh
-The dvh command creates a dose value histogram (DVH) from a given dose image and structure set image. The command line usage is given as follows:
-
+.ft P
+.fi
+.SS Example
+.sp
+The following command computes file1.nrrd minus file2.nrrd, and saves
+the result in outfile.nrrd:
+.sp
+.nf
+.ft C
+plastimatch diff file1.nrrd file2.nrrd outfile.nrrd
+.ft P
+.fi
+.SH PLASTIMATCH DVH
+.sp
+The \fIdvh\fP command creates a dose value histogram (DVH)
+from a given dose image and structure set image.
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch dvh [options]
-   --input-ss-img file
-   --input-ss-list file
-   --input-dose file
-   --output-csv file
-   --input-units {gy,cgy}
-   --cumulative
-   --num-bins
-   --bin-width
-
-The required inputs are –input-dose, –input-ss-img, –input-ss-list, and –output-csv. The units of the input dose must be either Gy or cGy. DVH bin values will be generated for all structures found in the structure set files. The output will be generated as an ASCII csv-format spreadsheet file, readable by OpenOffice.org or Microsoft Excel.
-The default is a differential (standard) histogram, rather than the cumulative DVH which is most common in radiotherapy. To create a cumulative DVH, use the –cumulative option.
-The default is to create 256 bins, each with a width of 1 Gy. You can adjust these values using the –num-bins and –bin-width option.
-
-.I Example:
-To generate a DVH for a single 2 Gy fraction, we might choose 250 bins each of width 1 cGy. If the input dose is already specified in cGy, you would use the following command:
-
-          plastimatch dvh --input-ss-img structures.mha --input-ss-list structures.txt --input-dose dose.mha --output-csv dvh.csv \\
-.br
-          --input-units cgy --num-bins 250 --bin-width 1
-
-
-./"*************** MASK *******************
-.SS mask
-The mask command is used to fill in a region of the image, as specified by a mask file, with a constant intensity.
+   \-\-input\-ss\-img file
+   \-\-input\-ss\-list file
+   \-\-input\-dose file
+   \-\-output\-csv file
+   \-\-input\-units {gy,cgy}
+   \-\-cumulative
+   \-\-num\-bins
+   \-\-bin\-width
+.ft P
+.fi
+.sp
+The required inputs are
+\-\-input\-dose,
+\-\-input\-ss\-img, \-\-input\-ss\-list,
+and \-\-output\-csv.
+The units of the input dose must be either Gy or cGy.
+DVH bin values will be generated for all structures found in the
+structure set files.  The output will be generated as an ASCII
+csv\-format spreadsheet file, readable by OpenOffice.org or Microsoft Excel.
+.sp
+The default is a differential (standard) histogram, rather than the
+cumulative DVH which is most common in radiotherapy.  To create a cumulative
+DVH, use the \-\-cumulative option.
+.sp
+The default is to create 256 bins, each with a width of 1 Gy.
+You can adjust these values using the \-\-num\-bins and \-\-bin\-width option.
+.SS Example
+.sp
+To generate a DVH for a single 2 Gy fraction, we might choose 250 bins each of
+width 1 cGy.  If the input dose is already specified in cGy, you would
+use the following command:
+.sp
+.nf
+.ft C
+plastimatch dvh \e
+  \-\-input\-ss\-img structures.mha \e
+  \-\-input\-ss\-list structures.txt \e
+  \-\-input\-dose dose.mha \e
+  \-\-output\-csv dvh.csv \e
+  \-\-input\-units cgy \e
+  \-\-num\-bins 250 \e
+  \-\-bin\-width 1
+.ft P
+.fi
+.SH PLASTIMATCH HEADER
+.sp
+The \fIheader\fP command displays brief information about the image geometry.
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
+Usage: plastimatch header input\-file
+.ft P
+.fi
+.SS Example
+.sp
+We can display the geometry of any supported file type, such as mha, nrrd,
+or dicom.  We can run the command as follows:
+.sp
+.nf
+.ft C
+$ plastimatch header input.mha
+Origin = \-180 \-180 \-167.75
+Size = 512 512 120
+Spacing = 0.7031 0.7031 2.5
+Direction = 1 0 0 0 1 0 0 0 1
+.ft P
+.fi
+.sp
+From the header information, we see that the image has 120 slices,
+and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm,
+and the in\-plane pixel spacing is 0.7031 mm.
+.SH PLASTIMATCH MASK
+.sp
+The \fImask\fP command is used to fill in a region of the image, as specified
+by a mask file, with a constant intensity.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch mask [options]
-.br
 Required:
-    --input=image_in
-    --output=image_out
-    --mask=mask_image_in
-.br
+    \-\-input=image_in
+    \-\-output=image_out
+    \-\-mask=mask_image_in
 Optional:
-    --negate-mask
-    --mask-value=float
-    --output-format=dicom
-    --output-type={uchar,short,ushort,ulong,float}
-
-.I Example:
-If we have a file prostate.nrrd which is non-zero inside of the prostate and zero outside of the prostate, we can set the prostate intensity to 1000 (while leaving non-prostate areas with their original intensity) using the following command.
-
-          plastimatch mask --input infile.nrrd --output outfile.nrrd --mask-value 1000 --mask prostate.nrrd
-
-Suppose we have a file called patient.nrrd, which is non-zero inside of the patient, and zero outside of the patient. If we want to fill in the area outside of the patient with value -1000, we use the following command.
-
-          plastimatch mask --input infile.nrrd --output outfile.nrrd --negate-mask --mask-value 1000 --mask patient.nrrd
-
-
-./"*************** REGISTER *******************
-.SS register
-The plastimatch register command is used to peform linear or deformable registration of two images. The command line usage is given as follows:
-
+    \-\-negate\-mask
+    \-\-mask\-value=float
+    \-\-output\-format=dicom
+    \-\-output\-type={uchar,short,ushort,ulong,float}
+.ft P
+.fi
+.SS Examples
+.sp
+If we have a file prostate.nrrd which is non\-zero inside of the prostate
+and zero outside of the prostate, we can set the prostate intensity to 1000
+(while leaving non\-prostate areas with their original intensity) using
+the following command.
+.sp
+.nf
+.ft C
+plastimatch mask \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-mask\-value 1000 \e
+  \-\-mask prostate.nrrd
+.ft P
+.fi
+.sp
+Suppose we have a file called patient.nrrd, which is non\-zero inside of the
+patient, and zero outside of the patient.  If we want to fill in the area
+outside of the patient with value \-1000, we use the following command.
+.sp
+.nf
+.ft C
+plastimatch mask \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-negate\-mask \e
+  \-\-mask\-value 1000 \e
+  \-\-mask patient.nrrd
+.ft P
+.fi
+.SH PLASTIMATCH REGISTER
+.sp
+The plastimatch \fIregister\fP command is used to peform linear or deformable
+registration of two images.
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
 Usage: plastimatch register command_file
-
-A more complete description, including the format of the required command file is given in the next section.
-
-
-./"*************** RESAMPLE *******************
-.SS resample
-The resample command can be used to change the geometry of an image.
+.ft P
+.fi
+.sp
+A more complete description, including the format of the required
+command file is given in the next section.
+.SH PLASTIMATCH RESAMPLE
+.sp
+The \fIresample\fP command can be used to change the geometry of an image.
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch resample [options]
-.br
-Required:   --input=file
-            --output=file
-.br
-Optional:   --subsample="x y z"
-            --fixed=file
-            --origin="x y z"
-            --spacing="x y z"
-            --size="x y z"
-            --output_type={uchar,short,ushort,float,vf}
-            --interpolation={nn, linear}
-            --default_val=val
-
-.I Example:
-We can use the –subsample option to bin an integer number of voxels to a single voxel. So for example, if we want to bin a cube of size 3x3x1 voxels to a single voxel, we would do the following.
-
-          plastimatch resample --input infile.nrrd --output outfile.nrrd --subsample "3 3 1"
-
-
-./"*************** SLICE *******************
-.SS slice
-The slice command generates a two-dimensional thumbnail image of an axial slice of the input volume. The output image is not required to correspond exactly to an integer slice number. The location of the output image within the slice is always centered.
+Required:   \-\-input=file
+            \-\-output=file
+Optional:   \-\-subsample="x y z"
+            \-\-fixed=file
+            \-\-origin="x y z"
+            \-\-spacing="x y z"
+            \-\-size="x y z"
+            \-\-output_type={uchar,short,ushort,float,vf}
+            \-\-interpolation={nn, linear}
+            \-\-default_val=val
+.ft P
+.fi
+.SS Example
+.sp
+We can use the \-\-subsample option to bin an integer number of voxels
+to a single voxel.  So for example, if we want to bin a cube of size
+3x3x1 voxels to a single voxel, we would do the following.
+.sp
+.nf
+.ft C
+plastimatch resample \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-subsample "3 3 1"
+.ft P
+.fi
+.SH PLASTIMATCH SEGMENT
+.sp
+The \fIsegment\fP command does simple threshold\-based semgentation.
 The command line usage is given as follows:
-
-Usage: plastimatch slice [options] input-file
-.br
+.sp
+.nf
+.ft C
+Usage: plastimatch segment [options]
 Options:
-  --input file
-  --output file
-  --thumbnail-dim size
-  --thumbnail-spacing size
-  --slice-loc location
-
-.I Example:
-We create a two-dimensional image with resolution 10 x 10 pixels, at axial location 0, and of size 20 x 20 mm:
-
-         plastimatch slice --input in.mha --output out.mha --thumbnail-dim 10 --thumbnail-spacing 2 --slice-loc 0
-
-
-./"*************** STATS *******************
-.SS stats
-The plastimatch stats command displays a few basic statistics about the image onto the screen.
+  \-h, \-\-help                    Display this help message
+      \-\-input <arg>             Input image filename (required)
+      \-\-lower\-threshold <arg>   Lower threshold (include voxels
+                                 above this value)
+      \-\-output\-dicom <arg>      Output dicom directory (for RTSTRUCT)
+      \-\-output\-img <arg>        Output image filename
+      \-\-upper\-threshold <arg>   Upper threshold (include voxels
+                                 below this value)
+.ft P
+.fi
+.SS Example
+.sp
+Suppose we have a CT image of a water tank, and we wish to create an image
+which has ones where there is water, and zeros where there is air.
+Then we could do this:
+.sp
+.nf
+.ft C
+plastimatch segment \e
+  \-\-input water.mha \e
+  \-\-output\-img water\-label.mha \e
+  \-\-lower\-threshold \-500
+.ft P
+.fi
+.sp
+If we wanted instead to create a DICOM\-RT structure set, we should
+specify a DICOM image as the input.  This will allow plastimatch to
+create the DICOM\-RT with the correct patient name, patient id, and UIDs.
+The output file will be called "ss.dcm".
+.sp
+.nf
+.ft C
+plastimatch segment \e
+  \-\-input water_dicom \e
+  \-\-output\-dicom water_dicom \e
+  \-\-lower\-threshold \-500
+.ft P
+.fi
+.SH PLASTIMATCH STATS
+.sp
+The plastimatch stats command displays a few basic statistics about the
+image onto the screen.
+.sp
 The command line usage is given as follows:
-
+.sp
+.nf
+.ft C
 Usage: plastimatch stats file [file ...]
-
-The input files can be either 2D projection images, 3D volumes, or 3D vector fields.
-
-.I Examples:
+.ft P
+.fi
+.sp
+The input files can be either 2D projection images, 3D volumes, or
+3D vector fields.
+.SS Example
+.sp
 The following command displays statistics for the 3D volume synth_1.mha.
-
-         $ plastimatch stats synth_1.mha
-         MIN -999.915161 AVE -878.686035 MAX 0.000000 NUM 54872
-
+.sp
+.nf
+.ft C
+$ plastimatch stats synth_1.mha
+MIN \-999.915161 AVE \-878.686035 MAX 0.000000 NUM 54872
+.ft P
+.fi
+.sp
 The reported statistics are interpreted as follows:
-
+.sp
+.nf
+.ft C
 MIN      Minimum intensity in image
-.br
 AVE      Average intensity in image
-.br
 MAX      Maximum intensity in image
-.br
 NUM      Number of voxels in image
-
+.ft P
+.fi
+.SS Example
+.sp
 The following command displays statistics for the 3D vector field vf.mha:
-
-         $ plastimatch stats vf.mha
-         Min:            0.000     -0.119     -0.119
-         Mean:          13.200      0.593      0.593
-         Max:           21.250      1.488      1.488
-         Mean abs:      13.200      0.594      0.594
-         Energy: MINDIL -6.79753 MAXDIL 0.166026 MAXSTRAIN 41.5765 TOTSTRAIN 70849.7
-         Min dilation at: (29 19 19)
-         Jacobian: MINJAC -6.32835 MAXJAC 1.15443 MINABSJAC 0.360538
-         Min abs jacobian at: (28 36 36)
-         Second derivatives: MINSECDER 0 MAXSECDER 388.821 TOTSECDER 669219 INTSECDER 1.5245e+06
-         Max second derivative: (29 36 36)
-
-The rows corresponding to “Min, Mean, Max, and Mean abs” each have three numbers, which correspond to the x, y, and z coordinates. Therefore, they compute these statistics for each vector direction separately.
+.sp
+.nf
+.ft C
+$ plastimatch stats vf.mha
+Min:            0.000     \-0.119     \-0.119
+Mean:          13.200      0.593      0.593
+Max:           21.250      1.488      1.488
+Mean abs:      13.200      0.594      0.594
+Energy: MINDIL \-6.7975 MAXDIL 0.16602 MAXSTRAIN 41.576 TOTSTRAIN 70849.7
+Min dilation at: (29 19 19)
+Jacobian: MINJAC \-6.32835 MAXJAC 1.15443 MINABSJAC 0.360538
+Min abs jacobian at: (28 36 36)
+Second derivatives: MINSECDER 0 MAXSECDER 388.82 TOTSECDER 669219
+  INTSECDER 1.524e+06
+Max second derivative: (29 36 36)
+.ft P
+.fi
+.sp
+The rows corresponding to "Min, Mean, Max, and Mean abs" each
+have three numbers, which correspond to the x, y, and z coordinates.
+Therefore, they compute these statistics for each vector direction
+separately.
+.sp
 The remaining statistics are described as follows:
-
+.sp
+.nf
+.ft C
 MINDIL        Minimum dilation
-.br
 MAXDIL        Maximum dilation
-.br
 MAXSTRAIN     Maximum strain
-.br
 TOTSTRAIN     Total strain
-.br
 MINJAC        Minimum Jacobian
-.br
 MAXJAC        Maximum Jacobian
-.br
 MINABSJAC     Minimum absolute Jacobian
-.br
 MINSECDER     Minimum second derivative
-.br
 MAXSECDER     Maximum second derivative
-.br
 TOTSECDER     Total second derivative
-.br
 INTSECDER     Integral second derivative
-
-
-./"*************** WARP *******************
-.SS warp
-The warp command is an alias for convert. Please refer to plastimatch convert for the list of command line parameters.
-
-.I Examples:
-To warp an image using the B-spline coefficients generated by the plastimatch register command (saved in the file bspline.txt), do the following:
-
-          plastimatch warp --input infile.nrrd --output outfile.nrrd --xf bspline.txt
-
-In the previous example, the output file geometry was determined by the geometry information in the bspline coefficient file. You can resample to a different geometry using –fixed, or –origin, –dim, and –spacing.
-
-          plastimatch warp --input infile.nrrd --output outfile.nrrd --xf bspline.txt --fixed reference.nrrd
-
-When warping a structure set image, where the integer bits correspond to structure membership, you need to use nearest neighbor interpolation rather than linear interpolation.
-
-          plastimatch warp --input structures-in.nrrd --output structures-out.nrrd --xf bspline.txt --interpolation nn
-
-Sometimes, voxels located outside of the geometry of the input image will be warped into the geometry of the output image. By default, these areas are “filled in” with an intensity of zero. You can choose a different value for these areas using the –default-val option.
-
-          plastimatch warp --input infile.nrrd --output outfile.nrrd --xf bspline.txt --default-val -1000
-
-
-
-./" ******************************************************************************************************
-./" ******  IMAGE REGISTRATION
-./" ******************************************************************************************************
-
-
-.SH IMAGE REGISTRATION
-
-
-./"*************** QUICK START GUIDE *******************
-.SS Quick start guide
-
-You must create a command file to do registration. If you want to register image_2.mha to match image_1.mha using B-spline registration, create a command file like this:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=bspline_coefficients.txt
-
-[STAGE]
-.br
-xform=bspline
-.br
-impl=plastimatch
-.br
-threading=openmp
-.br
-max_its=30
-.br
-grid_spac=100 100 100
-.br
-res=4 4 2
-
-Then, run the registration like this:
-
-plastimatch register command_file.txt
-
-The above example only performs a single registration stage. If you want to do multi-stage registration, use multiple [STAGE] sections. Like this:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=bspline_coefficients.txt
-.br
-
-[STAGE]
-.br
-xform=bspline
-.br
-impl=plastimatch
-.br
-threading=openmp
-.br
-max_its=30
-.br
-grid_spac=100 100 100
-.br
-res=4 4 2
-
-[STAGE]
-.br
-max_its=30
-.br
-grid_spac=80 80 80
-.br
-res=2 2 1
-
-[STAGE]
-.br
-max_its=30
-.br
-grid_spac=60 60 60
-.br
-res=1 1 1
-
-That concludes the quick start guide. For more details and examples, read on!
-
-
-./"*************** DOF REGISTRATION (TRANSLATION) *******************
-.SS DOF registration (translation)
-
-Sometimes it is convenient to register only with translations. You can do this with the following example:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-
-[STAGE]
-.br
-xform=translation
-.br
-optim=rsg
-.br
-max_its=30
-.br
-res=4 4 2
-
-
-./"*************** DOF REGISTRATION (RIGID) *******************
-.SS DOF registration (rigid)
-
-The following example performs a rigid registration:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-
-[STAGE]
-.br
-xform=rigid
-.br
-optim=versor
-.br
-max_its=30
-.br
-res=4 4 2
-
-
-./"*************** DOF REGISTRATION (AFFINE) *******************
-.SS DOF registration (affine)
-
-The following example performs an affine registration:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=affine_coefficients.txt
-
-[STAGE]
-.br
-xform=affine
-.br
-optim=rsg
-.br
-max_its=30
-.br
-res=4 4 2
-
-
-./"*************** DEMONS REGISTRATION *******************
-.SS Demons registration
-
-The following example performs a demons registration:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=demons_vf.mha
-
-[STAGE]
-.br
-xform=vf
-.br
-optim=demons
-.br
-max_its=30
-.br
-res=4 4 2
-
-The demons code has several parameters which can be optimized. The following example illustrates their use:
-
-# GPU acceleration requires brook
-.br
-[STAGE]
-.br
-xform=vf
-.br
-optim=demons
-.br
-max_its=200
-.br
-res=4 4 2
-.br
-# Std dev of smoothing kernel (in mm)
-.br
-demons_std=10
-.br
-# "Gain" factor, higher gains are faster but less robust
-.br
-demons_acceleration=5
-.br
-# Homogenezation is the tradeoff between gradient
-.br
-# and image difference.  Values should increase for larger
-.br
-# voxel sizes, going down to about 1 for 1mm voxels.
-.br
-demons_homogenization=30
-.br
-# This is the size of the filter (in voxels)
-.br
-demons_filter_width=5 5 5
-
-If you have brook installed, you can use GPU-accelerated demons:
-
-# GPU acceleration requires brook
-.br
-[STAGE]
-.br
-optim=demons
-.br
-xform=vf
-.br
-impl=plastimatch
-.br
-threading=brook
-.br
-res=4 4 2
-.br
-max_its=200
-
-
-./"*************** B-SPLINE REGISTRATION *******************
-.SS B-spline registration
-
-The following example performs a B-spline registration:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=bspline_coefficients.txt
-
-[STAGE]
-.br
-xform=bspline
-.br
-optim=lbfgsb
-.br
-max_its=30
-.br
-res=4 4 2
-.br
-# B-spline grid spacing (in mm)
-.br
-grid_spac=30 30 30
-
-Just like demons, b-spline has several options. The most important one is the grid spacing, which defines how far apart the control points are spaced. The following example illustrates some additional options:
-
-[STAGE]
-.br
-xform=bspline
-.br
-optim=lbfgsb
-.br
-max_its=50
-.br
-res=4 4 2
-.br
-# B-spline grid spacing (in mm)
-.br
-grid_spac=30 30 30
-.br
-# Quit if change in score differs by less than 3
-.br
-convergence_tol=3
-.br
-# Quit if gradient norm is less than 0.1
-.br
-grad_tol=0.1
-
-
-./"*************** USING ITK ALGORITHMS *******************
-.SS Using ITK algorithms
-
-The default is to use plastimatch native implementations where available. When a native implementation is not available, the ITK implementation is used. Native implementations are available for demons and bspline methods.
-If you want to use an ITK method, you can use the “impl=itk” parameter. For example, the following command file will use the ITK demons implementation:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=bspline_coefficients.txt
-
-[STAGE]
-.br
-xform=vf
-.br
-optim=demons
-.br
-impl=itk
-.br
-max_its=30
-.br
-res=4 4 2
-
-
-./"*************** MUTUAL INFORMATION *******************
-.SS Mutual information
-
-The default metric is mean squared error, which is useful for registration of CT with CT. For other registration problems, mutual information is better. The following example uses the Mattes mutual information metric with the B-spline transform:
-
-# command_file.txt
-.br
-[GLOBAL]
-.br
-fixed=image_1.mha
-.br
-moving=image_2.mha
-.br
-img_out=warped_2.mha
-.br
-xform_out=bspline_coefficients.txt
-
-[STAGE]
-.br
-xform=bspline
-.br
-impl=plastimatch
-.br
-metric=mi
-.br
-max_its=30
-.br
-res=4 4 2
-
-
-./"*************** OUTPUT OPTIONS *******************
-.SS Output options
-
-Outputs can be generated at the end of the registration, by putting the appropriate file names in the “[GLOBAL]” section. The file formats of the output files are selected automatically based on the file extension.
-In addition to generating files at the end of registration, intermediate results can be generated at the end of each stage. The following example shows the range of output files which can be created:
-
-[GLOBAL]
-.br
-# These are the inputs
-.br
-fixed=t0p_221.mha
-.br
-moving=t5p_221.mha
-.br
-xform_in=my_bsp.txt
-
-# These are the final outputs. They will be rendered at full resolution.
-.br
-vf_out=my_output_vf.mha
-.br
-xform_out=my_output_bsp.txt
-.br
-img_out=my_output_img.mha
-
-[STAGE]
-.br
-xform=rigid
-.br
-max_its=20
-.br
-res=4 4 2
-
-# These are the outputs from the first stage
-.br
-xform_out=stage_1_rigid.txt
-.br
-vf_out=stage_1_rigid.mha
-.br
-img_out=stage_1_img.mha
-
-[STAGE]
-.br
-xform=vf
-.br
-optim=demons
-.br
-res=2 2 1
-
-# These are the outputs from the second stage.
-.br
-# They will be similar to the final outputs, but at lower resolution.
-.br
-# The resolution of the stage outputs match the resolution of the stage.
-.br
-vf_out=stage_1_rigid.mha
-.br
-img_out=stage_1_img.mha
-
-
-./"*************** REGISTRATION COMMAND FILE REFERENCE *******************
-.SS Registration command file reference
-
-The parameter file has two sections: a GLOBAL section at the top of the file, and one or more STAGE section. Parameters such as input
-files are put only in the GLOBAL section. Output files can be put in the GLOBAL section or any STAGE section (which will write out
-intermediate output).
-
-+--------------+-------+-------------------------------------------+
-.br
-|option        |stage  |value                                      |
-.br
-+==============+=======+===========================================+
-.br
-|fixed         |GLOBAL |Name of fixed image                        |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|moving        |GLOBAL |Name of fixed image                        |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|xform_in      |GLOBAL,|Initial guess                              |
-.br
-|              |STAGE  |                                           |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|xform_out     |GLOBAL,|Final transform                            |
-.br
-|              |STAGE  |                                           |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|vf_out        |GLOBAL,|Final transform, as vector field           |
-.br
-|              |STAGE  |                                           |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|img_out       |GLOBAL,|Warped image                               |
-.br
-|              |STAGE  |                                           |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|img_out_fmt   |GLOBAL,|“auto” (default) Output format Must be     |
-.br
-|              |STAGE  |either “auto”, which uses filename         |
-.br
-|              |       |extenstion to determine, or “dicom”, which |
-.br
-|              |       |iterprets img_out as a directory name to   |
-.br
-|              |       |output the dicom files                     |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|img_out_type  |GLOBAL,|“auto” (default) Data type of the output   |
-.br
-|              |STAGE  |image, usually either float, short, or     |
-.br
-|              |       |uchar                                      |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-|background_max|GLOBAL |-1200.0 (default) Units: image intensity   |
-.br
-|              |       |This is used to automatically determine a  |
-.br
-|              |       |region of interest                         |
-.br
-+--------------+-------+-------------------------------------------+
-.br
-
-Optimization parameters.  There are three key parameters that decide which algorithm is used for optimization. 
-
-+--------------+---------+-------------------------------------------+
-.br
-|xform         |optim    |impl                                       |
-.br
-+==============+=========+===========================================+
-.br
-|align_center  |N/A      |itk                                        |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-|translation   |rsg,     |itk                                        |
-.br
-|              |amoeba   |                                           |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-|rigid         |versor,  |itk                                        |
-.br
-|              |amoeba   |                                           |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-|affine        |rsg,     |itk                                        |
-.br
-|              |amoeba   |                                           |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-|vf            |demons   |plastimatch, itk                           |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-|bspline       |steepest,|plastimatch, itk                           |
-.br
-|              |lbfgs,   |                                           |
-.br
-|              |lbfgsb   |                                           |
-.br
-+--------------+---------+-------------------------------------------+
-.br
-
-Notes:
-
-   * Default values are: xform=rigid, optim=versor, impl=plastimatch.
-   * Amoeba is reported not to work well.
-   * B-spline with steepest descent optimization is only supported on plastimatch implementation.
-   * B-spline with lbfgs optimization is only supported on itk implementation.
-
-The following specific parameters are used to refine the optimization. Depending on the choice of xform, optim, and impl, a different set of specific parameters are available. 
-
-+----------------------+----------------+------------+---------------------------+
-.br
-|option                |xform+optim+impl|default     |description                |
-.br
-+======================+================+============+===========================+
-.br
-|res                   |any+any+any     |[4 4 1]     |[1 1 1] (minimum) Units:   |
-.br
-|                      |                |            |voxels Must be integers    |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|metric                |any+not         |mse         |Choices are: {mse, mi,     |
-.br
-|                      |demons+any      |            |mattes} when impl=itk,     |
-.br
-|                      |                |            |{mse, mi} when             |
-.br
-|                      |                |            |impl=plastimatch, and {mse}|
-.br
-|                      |                |            |for GPU-accelerated        |
-.br
-|                      |                |            |B-Spline                   |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|background_val        |any+any+any     |-999.0      |Units: image intensity     |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|min_its               |any+any+any     |2           |Units: iterations          |
-.br
-|                      |                |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|max_its               |any+any+any     |25          |Units: iterations          |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|convergence_tol       |any+not         |5.0         |Units: score               |
-.br
-|                      |demons+any      |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|grad_tol              |any+{lbfgsb or  |1.5         |Units: score per unit      |
-.br
-|                      |lbfgs}+any      |            |parameter                  |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|max_step              |any+{versor or  |10.0        |Units: scaled parameters   |
-.br
-|                      |rsg}+itk        |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|min_step              |any+{versor or  |0.5         |Units: scaled parameters   |
-.br
-|                      |rsg}+itk        |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|mi_histogram_bins     |any+any+any     |20          |Number of histogram        |
-.br
-|                      |                |            |bins. Only for used for    |
-.br
-|                      |                |            |plastimatch mi or itk      |
-.br
-|                      |                |            |mattes metrics             |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|mi_num_spatial_samples|any+any+itk     |10000       |Number of spatial          |
-.br
-|                      |                |            |samples.  Only for itk     |
-.br
-|                      |                |            |mattes metric              |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|grid_spac             |bspline+any+any |[20 20 20]  |Units: mm. Minimum size    |
-.br
-|                      |                |            |is 4*(Pixel Size).  If a   |
-.br
-|                      |                |            |smaller size is            |
-.br
-|                      |                |            |specified, it will be      |
-.br
-|                      |                |            |adjusted upward.           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|histoeq               |vf+demons+itk   |0           |Specifies whether or not   |
-.br
-|                      |                |            |to equalize intensity      |
-.br
-|                      |                |            |histograms before          |
-.br
-|                      |                |            |registration.              |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|demons_std            |vf+demons+any   |6.0         |Units: mm                  |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|demons_acceleration   |vf+demons +     |1.0         |Units: percent             |
-.br
-|                      |plastimatch     |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|demons_homogenization |vf+demons +     |1.0         |Untiless                   |
-.br
-|                      |plastimatch     |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-.br
-|demons_filter_width   |vf+demons +     |[3 3 3]     |Units: voxels.             |
-.br
-|                      |plastimatch     |            |                           |
-.br
-+----------------------+----------------+------------+---------------------------+
-
-
-
-./" ******************************************************************************************************
-./" ******  UTILITY PROGRAMS
-./" ******************************************************************************************************
-
-
-.SH UTILITY PROGRAMS
-
-
-./"*************** OTHER TOOLS *******************
-.SS Other tools
-
-+---------------------+--------------------------------------------+
-.br
-|Name                 |Description                                 |
-.br
-+=====================+============================================+
-.br
-|compose_vector_fields|Compose two vector fields                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|compute_distance     |Compute the distance between a point cloud  |
-.br
-|                     |and a mesh                                  |
-.br
-+---------------------+--------------------------------------------+
-.br
-|cxt_to_mha           |Render a CXT file into a binary MHA         |
-.br
-+---------------------+--------------------------------------------+
-.br
-|dice_stats           |Compute Dice coefficient for 2 or more      |
-.br
-|                     |volumes                                     |
-.br
-+---------------------+--------------------------------------------+
-.br
-|dicom_to_mha         |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|dicom_uid            |Make a new, unique dicom UID                |
-.br
-+---------------------+--------------------------------------------+
-.br
-|drr                  |Generate DRR from image volume              |
-.br
-+---------------------+--------------------------------------------+
-.br
-|fdk                  |Perform FDK cone-beam reconstruction        |
-.br
-+---------------------+--------------------------------------------+
-.br
-|mask_mha             |Mask out a portion of an image              |
-.br
-+---------------------+--------------------------------------------+
-.br
-|merge2               |Compose affine and vector field (obsolete?) |
-.br
-+---------------------+--------------------------------------------+
-.br
-|merge_vfs            |Combine two vector fields (e.g. moving and  |
-.br
-|                     |non moving)                                 |
-.br
-+---------------------+--------------------------------------------+
-.br
-|mha_to_raw           |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|mha_to_rtog_dose     |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|mha_to_vox           |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|patient_mask         |Generate binary mask for patient boundary   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|plastimatch          |Main registration program                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|point_path           |Fast point trajectory solver                |
-.br
-+---------------------+--------------------------------------------+
-.br
-|raw_to_mha           |Slap an MHA header onto a RAW file          |
-.br
-+---------------------+--------------------------------------------+
-.br
-|resample_mha         |Crop, resize, or resample 3D image or vector|
-.br
-|                     |field                                       |
-.br
-+---------------------+--------------------------------------------+
-.br
-|rtog_to_mha          |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|shuffle_mha          |Reshuffle (x,y,z) axes in certain ways      |
-.br
-+---------------------+--------------------------------------------+
-.br
-|tps_interp           |Make a VF from a set of landmark            |
-.br
-|                     |correspondences                             |
-.br
-+---------------------+--------------------------------------------+
-.br
-|tps_update           |Modify registration with thin-plate spline  |
-.br
-+---------------------+--------------------------------------------+
-.br
-|union_mask           |Combine masks with union operation          |
-.br
-+---------------------+--------------------------------------------+
-.br
-|vf_compare           |Compare two vector fields                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|vf_stats             |Print statistics of a vector field          |
-.br
-+---------------------+--------------------------------------------+
-.br
-|vf3d_to_mha          |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|vox_to_mha           |Converter                                   |
-.br
-+---------------------+--------------------------------------------+
-.br
-|xf_to_xf             |Converter, can convert XF to VF, or XF to XF|
-.br
-+---------------------+--------------------------------------------+
-
-The following driver programs are available.  They are used for development.
-
-+---------------------+--------------------------------------------+
-.br
-|Name                 |Description                                 |
-.br
-+=====================+============================================+
-.br
-|bspline              |Run native B-spline registration            |
-.br
-+---------------------+--------------------------------------------+
-.br
-|demons               |Run native demons registration              |
-.br
-+---------------------+--------------------------------------------+
-
-
-
-./" ******************************************************************************************************
-./" ******  HOMEPAGE
-./" ******************************************************************************************************
-
-.SH HOMEPAGE
-
-http://www.plastimatch.org
-
-
-./" ******************************************************************************************************
-./" ******  COPYRIGHT
-./" ******************************************************************************************************
-
+.ft P
+.fi
+.SH PLASTIMATCH THUMBNAIL
+.sp
+The \fIthumbnail\fP command generates a two\-dimensional thumbnail image of an
+axial slice of the input volume.  The output image
+is not required to correspond exactly to an integer slice number.
+The location of the output image within the slice is always centered.
+.sp
+The command line usage is given as follows:
+.sp
+.nf
+.ft C
+Usage: plastimatch thumbnail [options] input\-file
+Options:
+  \-\-input file
+  \-\-output file
+  \-\-thumbnail\-dim size
+  \-\-thumbnail\-spacing size
+  \-\-slice\-loc location
+.ft P
+.fi
+.SS Example
+.sp
+We create a two\-dimensional image with resolution 10 x 10 pixels,
+at axial location 0, and of size 20 x 20 mm:
+.sp
+.nf
+.ft C
+plastimatch thumbnail \e
+  \-\-input in.mha \-\-output out.mha \e
+  \-\-thumbnail\-dim 10 \e
+  \-\-thumbnail\-spacing 2 \e
+  \-\-slice\-loc 0
+.ft P
+.fi
+.SH PLASTIMATCH WARP
+.sp
+The \fIwarp\fP command is an alias for \fIconvert\fP.
+Please refer to \fI\%plastimatch convert\fP for the list of command line
+parameters.
+.SS Examples
+.sp
+To warp an image using the B\-spline coefficients generated by the
+plastimatch register command (saved in the file bspline.txt), do the
+following:
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-xf bspline.txt
+.ft P
+.fi
+.sp
+In the previous example, the output file geometry was determined by the
+geometry information in the bspline coefficient file.  You can resample
+to a different geometry using \-\-fixed, or \-\-origin, \-\-dim, and \-\-spacing.
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-xf bspline.txt \e
+  \-\-fixed reference.nrrd
+.ft P
+.fi
+.sp
+When warping a structure set image, where the integer bits correspond to
+structure membership, you need to use nearest neighbor interpolation
+rather than linear interpolation.
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input structures\-in.nrrd \e
+  \-\-output structures\-out.nrrd \e
+  \-\-xf bspline.txt \e
+  \-\-interpolation nn
+.ft P
+.fi
+.sp
+Sometimes, voxels located outside of the geometry of the input image
+will be warped into the geometry of the output image.  By default, these
+areas are "filled in" with an intensity of zero.  You can choose a different
+value for these areas using the \-\-default\-val option.
+.sp
+.nf
+.ft C
+plastimatch warp \e
+  \-\-input infile.nrrd \e
+  \-\-output outfile.nrrd \e
+  \-\-xf bspline.txt \e
+  \-\-default\-val \-1000
+.ft P
+.fi
+.SH AUTHOR
+Plastimatch development team, Copyright 2010-2011
 .SH COPYRIGHT
-
-See COPYRIGHT.TXT
-
-
-./" ******************************************************************************************************
-./" ******  SEE ALSO
-./" ******************************************************************************************************
-
-.SH SEE ALSO
-
-fdk(1), drr(1)
-
-
-./" ******************************************************************************************************
-./" ******  AUTHORS
-./" ******************************************************************************************************
-
-.SH AUTHORS
-Plastimatch is a collaborative effort, see AUTHORS.TXT.
-.br
-The main developer is Greg Sharp.
-.br
-This man page was created by Paolo Zaffino.
-
-
-./" ******************************************************************************************************
-./" ******************************************************************************************************
-./" ******  END OF FILE
-./" ******************************************************************************************************
-./" ******************************************************************************************************
+Plastimatch development team (C) 2010-2011.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.
+.\" Generated by docutils manpage writer.
+.\" 
+.
