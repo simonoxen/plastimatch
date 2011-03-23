@@ -105,6 +105,14 @@ OPTION (PLM_TEST_XIO
   "Regression tests for xio file exchange (downloads extra test data)" OFF)
 
 ##-----------------------------------------------------------------------------
+##  Special hack for slicer extension on apple
+##-----------------------------------------------------------------------------
+IF (APPLE AND BUILD_AGAINST_SLICER3)
+  SET (PLM_CONFIG_DISABLE_CUDA ON)
+  SET (PLM_CONFIG_DISABLE_OPENCL ON)
+ENDIF ()
+
+##-----------------------------------------------------------------------------
 ##  Detect 32-bit or 64-bit machine
 ##-----------------------------------------------------------------------------
 CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
