@@ -195,3 +195,21 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+
+# -- Options for manual page output --------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('drr', 'drr',
+     u'create a digitally reconstructed radiograph',
+     [u'Plastimatch development team'], 1),
+    ('fdk', 'fdk',
+     u'cone-beam reconstruction from projections using the FDK algorithm',
+     [u'Plastimatch development team'], 1),
+    ('landmarks', 'landmark_warp', u'warp an image using point landmarks',
+     [u'Plastimatch development team'], 1),
+    ('command_reference', 'plastimatch',
+     u'register, convert, warp, or manipulate images',
+     [u'Plastimatch development team'], 1)
+]
