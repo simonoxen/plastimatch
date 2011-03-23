@@ -229,7 +229,8 @@ public:
 
     void 
     print_options (
-        std::basic_ostream<char>& out
+        std::basic_ostream<char>& out,
+	const unsigned long wrap_len = 79
     ) {
         typedef char ct;
         typedef std::basic_string<ct> string;
@@ -314,10 +315,12 @@ public:
                 // now print the description but make it wrap around 
 		// nicely if it is to long to fit on one line.
                 if (len <= max_len)
-                    out << wrap_string(this->element().description(),0,ml+1);
+                    out << wrap_string(this->element().description(),
+			0, ml+1, wrap_len);
                 else
                     out << "\n" 
-			<< wrap_string(this->element().description(),ml,ml+1);
+			<< wrap_string(this->element().description(),
+			    ml, ml+1, wrap_len);
             }
             this->reset();
         }

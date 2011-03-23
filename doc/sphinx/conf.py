@@ -38,15 +38,15 @@ source_suffix = '.rst'
 master_doc = 'contents'
 
 # General information about the project.
-project = u'plastimatch'
-copyright = u'2010-2011'
+project = u'Plastimatch'
+copyright = u'Plastimatch development team (C) 2010-2011.  You are free to use, modify, and distribute plastimatch according to a BSD-style license.  Please see LICENSE.TXT for details.'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
 # The short X.Y version.
-version = '1.4'
+version = 'Plastimatch 1.4'
 # The full version, including alpha/beta/rc tags.
 release = '1.4'
 
@@ -200,16 +200,17 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
+author_string = [u'Plastimatch development team.  For full documentation, please visit http://plastimatch.org.  For questions, comments, and bug reports, please visit http://groups.google.com/group/plastimatch.']
 man_pages = [
     ('drr', 'drr',
      u'create a digitally reconstructed radiograph',
-     [u'Plastimatch development team'], 1),
+     author_string, 1), 
     ('fdk', 'fdk',
      u'cone-beam reconstruction from projections using the FDK algorithm',
-     [u'Plastimatch development team'], 1),
+     [u'Plastimatch development team, Copyright 2010-2011'], 1),
     ('landmarks', 'landmark_warp', u'warp an image using point landmarks',
-     [u'Plastimatch development team'], 1),
+     [u'Plastimatch development team, Copyright 2010-2011'], 1),
     ('command_reference', 'plastimatch',
      u'register, convert, warp, or manipulate images',
-     [u'Plastimatch development team'], 1)
+     [u'Plastimatch development team, Copyright 2010-2011'], 1),
 ]

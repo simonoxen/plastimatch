@@ -1,13 +1,18 @@
 Command reference
 =================
+
+Synopsis
+--------
+
+``plastimatch command [options]``
+
+Description
+-----------
 The plastimatch executable is used for 
 a variety of operations, including image
 registration, image warping, image resampling, and file format
-conversion.  The general format of the command is::
-
-  plastimatch command [options]
-
-where the form of the options depends upon the command given.
+conversion. 
+The form of the options depends upon the command given.
 The list of possible commands can be seen by simply typing "plastimatch" 
 without any additional command line arguments::
 
@@ -64,8 +69,11 @@ Example
 The following command will truncate the input intensities to the 
 range [-1000,1000], and then map the intensities to the range [0,1]::
 
-  plastimatch adjust --input infile.nrrd --output outfile.nrrd \
-    --truncate-above 1000 --truncate-below -1000 \
+  plastimatch adjust \
+    --input infile.nrrd \
+    --output outfile.nrrd \
+    --truncate-above 1000 \
+    --truncate-below -1000 \
     --stretch "0 1"
 
 plastimatch autolabel
@@ -105,7 +113,10 @@ The following command selects the region of size
 :math:`10 \times 10 \times 10`, with the first voxel of the output 
 image being at location (5,8,12) of the input image::
 
-  plastimatch crop --input in.mha --output out.mha --voxels "5 14 8 17 12 21"
+  plastimatch crop \
+    --input in.mha \
+    --output out.mha \
+    --voxels "5 14 8 17 12 21"
 
 plastimatch compare
 -------------------
@@ -164,7 +175,8 @@ Suppose we want to compose a rigid transform (rigid.tfm) with a vector field
 (vf.mha), such that the output transform is equivalent to applying 
 the rigid transform first, and the vector field second.
 ::
-  platimatch compose rigid.tfm vf.mha composed_vf.mha
+
+  plastimatch compose rigid.tfm vf.mha composed_vf.mha
 
 .. _plastimatch_convert:
 
@@ -226,11 +238,15 @@ the output type will be matched to the type of the input DICOM volume.
 The format of the output file (NRRD) is determined from the filename 
 extension. ::
 
-  plastimatch convert --input dicom-in-dir --output outfile.nrrd
+  plastimatch convert \
+    --input dicom-in-dir \
+    --output-img outfile.nrrd
 
 This example further converts the type of the image intensities to float. ::
 
-  plastimatch convert --input dicom-in-dir --output outfile.nrrd \
+  plastimatch convert \
+    --input dicom-in-dir \
+    --output-img outfile.nrrd \
     --output-type float
 
 The next example shows how to resample the output image to a different 
@@ -240,7 +256,9 @@ number of voxels, and the --spacing option sets the
 distance between voxels.  The units for offset and spacing are 
 assumed to be millimeters. ::
 
-  plastimatch convert --input dicom-in-dir --output outfile.nrrd \
+  plastimatch convert \
+    --input dicom-in-dir \
+    --output-img outfile.nrrd \
     --offset "-200 -200 -165" \
     --dim "250 250 110" \
     --spacing "2 2 2.5"
@@ -249,7 +267,9 @@ Generally speaking, it is tedious to manually specify the geometry of
 the output file.  If you want to match the geometry of the output 
 file with an existing file, you can do this using the --fixed option. ::
 
-  plastimatch convert --input dicom-in-dir --output outfile.nrrd \
+  plastimatch convert \
+    --input dicom-in-dir \
+    --output-img outfile.nrrd \
     --fixed reference.nrrd
 
 This next example shows how to convert a DICOM RT structure set file 
@@ -261,7 +281,8 @@ in the corresponding structure, and value zero if the voxel lies outside the
 structure.  The structure names are stored in separate file using 
 the --output-ss-list option. ::
 
-  plastimatch convert --input structures.dcm \
+  plastimatch convert \
+    --input structures.dcm \
     --output-ss-img outfile.nrrd \
     --output-ss-list outfile.txt
 
@@ -272,7 +293,8 @@ contours.  If the associated DICOM CT image is in the same directory as
 the structure set file, it will be found automatically.  Otherwise, we 
 have to tell plastimatch where it is located with the --dicom-dir option. ::
 
-  plastimatch convert --input structures.dcm \
+  plastimatch convert \
+    --input structures.dcm \
     --output-ss-img outfile.nrrd \
     --output-ss-list outfile.txt \
     --dicom-dir ../ct-directory
@@ -457,12 +479,12 @@ The command line usage is given as follows::
   Options:
     -h, --help                    Display this help message 
         --input <arg>             Input image filename (required) 
-        --lower-threshold <arg>   Lower threshold (include voxels above this 
-                                   value) 
+        --lower-threshold <arg>   Lower threshold (include voxels 
+                                   above this value) 
         --output-dicom <arg>      Output dicom directory (for RTSTRUCT) 
         --output-img <arg>        Output image filename 
-        --upper-threshold <arg>   Upper threshold (include voxels below this 
-                                   value) 
+        --upper-threshold <arg>   Upper threshold (include voxels 
+                                   below this value) 
 
 Example
 ^^^^^^^
@@ -480,6 +502,7 @@ specify a DICOM image as the input.  This will allow plastimatch to
 create the DICOM-RT with the correct patient name, patient id, and UIDs.
 The output file will be called "ss.dcm".
 ::
+
   plastimatch segment \
     --input water_dicom \
     --output-dicom water_dicom \
@@ -520,11 +543,12 @@ The following command displays statistics for the 3D vector field vf.mha::
   Mean:          13.200      0.593      0.593
   Max:           21.250      1.488      1.488
   Mean abs:      13.200      0.594      0.594
-  Energy: MINDIL -6.79753 MAXDIL 0.166026 MAXSTRAIN 41.5765 TOTSTRAIN 70849.7
+  Energy: MINDIL -6.7975 MAXDIL 0.16602 MAXSTRAIN 41.576 TOTSTRAIN 70849.7
   Min dilation at: (29 19 19)
   Jacobian: MINJAC -6.32835 MAXJAC 1.15443 MINABSJAC 0.360538
   Min abs jacobian at: (28 36 36)
-  Second derivatives: MINSECDER 0 MAXSECDER 388.821 TOTSECDER 669219 INTSECDER 1.5245e+06
+  Second derivatives: MINSECDER 0 MAXSECDER 388.82 TOTSECDER 669219 
+    INTSECDER 1.524e+06
   Max second derivative: (29 36 36)
 
 The rows corresponding to "Min, Mean, Max, and Mean abs" each 

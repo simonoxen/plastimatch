@@ -1,30 +1,47 @@
 Landmark-based image registration
 =================================
 
-The landmark_warp executable performs registration by matching fiducials on reference and test images. The general format of the command line is::
+Synopsis
+--------
 
-  landmark_warp [options]
+``landmark_warp [options]``
 
-The list of possible options can be seen by typing:: 
+Description
+-----------
+The landmark_warp executable performs registration by matching 
+fiducials on reference and test images. 
+The list of possible options can be seen by typing::
 
   landmark_warp --help
 
 The command line usage is given as follows::
 
-  Usage: landmark_warp [options]
-  Required:
-      -f=filename	Fixed fiducials
-      -m=filename	Moving fidicials
-      -I=filename	Input image to warp
-      -O=filename	Output warped image
-  Optional:
-      -x=filename	Input landmark xform
-      -V=filename	Output vector field
-      -F=filename	Fixed image (match output size to this image)
-      -a=ENUM		Algorithm type={tps,gauss,wendland}
-      -r=FLOAT		Radius of radial basis function
-      -Y=FLOAT		Young modulus
-      -d=FLOAT		Value to set for pixels with unknown value
+ Usage: landmark_warp [options]
+ Options:
+  -a, --algorithm <arg>         RBF warping algorithm {tps,gauss, 
+                                 wendland} 
+  -d, --default-value <arg>     Value to set for pixels with unknown 
+                                 value 
+      --dim <arg>               Size of output image in voxels "x [y z]" 
+  -F, --fixed <arg>             Fixed image (match output size to this 
+      	      			 image) 
+  -f, --fixed-landmarks <arg>   Input fixed landmarks 
+  -h, --help                    Display this help message 
+  -I, --input-image <arg>       Input image to warp 
+  -v, --input-vf <arg>          Input vector field (applied prior to 
+                                 landmark warping) 
+  -m, --moving-landmarks <arg>   
+                                Output moving landmarks 
+  -N, --numclusters <arg>       Number of clusters of landmarks 
+      --origin <arg>            Location of first image voxel 
+                                 in mm "x y z" 
+  -O, --output-image <arg>      Output warped image 
+  -L, --output-landmarks <arg>   
+                                Output warped landmarks 
+  -V, --output-vf <arg>         Output vector field 
+  -r, --radius <arg>            Radius of radial basis function (in mm) 
+      --spacing <arg>           Voxel spacing in mm "x [y z]" 
+  -Y, --stiffness <arg>         Young modulus (default = 0.0) 
 
 Options "-a", "-r", "-Y", "-d" are set by default to::
 
@@ -36,7 +53,8 @@ Options "-a", "-r", "-Y", "-d" are set by default to::
 You may want to choose different algorithm::
 
       -a=tps		Thin-plate splines (for global registration)
-      -a=wendland	Wendland RBFs with compact support (for local registartion)
+      -a=wendland	Wendland RBFs with compact support (for 
+                         local registration)
 
 In the case of Wendland RBFs "-r" option sets the radius of support.
 

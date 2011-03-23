@@ -3,6 +3,14 @@
 Digitally reconstructed radiographs (DRRs)
 ==========================================
 
+Synopsis
+--------
+
+``drr [options] [infile]``
+
+Description
+-----------
+
 A digitally reconstructed radiograph (DRR) is a synthetic radiograph 
 which can be generated from a computed tomography (CT) scan.  
 It is used as a reference image for verifying the correct setup 
@@ -61,7 +69,7 @@ The command line options are described in more details as follows.
 
    Generate num equally spaced angles
 
-.. cmdoption:: -r "r1 r2"
+.. cmdoption:: -r """r1 r2"""
 
    Set the resolution of the imaging panel (in pixels).  Here, r1 refers 
    to the number of rows, and r2 refers to the number of columns.
@@ -149,16 +157,11 @@ geometry description:
 +-----------+-----------------+-----------------------------------------+
 |Angle      |degrees          |0                                        |
 +-----------+-----------------+-----------------------------------------+
-|Target     |3d position (mm) |(0,0,0)                                  |
-|           |                 |                                         |
-|           |                 |                                         |
+|Target     |3d position (mm) |0,0,0                                    |
 +-----------+-----------------+-----------------------------------------+
-|Camera     |3d position (mm) |*Computed from Target, Angle and SAD*    |
-|           |                 |                                         |
-|           |                 |                                         |
+|Camera     |3d position (mm) |Computed from Target, Angle and SAD      |
 +-----------+-----------------+-----------------------------------------+
-|CT Zero    |3d position (vox)|*Read from input volume*                 |
-|           |                 |                                         |
+|CT Zero    |3d position (vox)|Same as input volume                     |
 +-----------+-----------------+-----------------------------------------+
 |Panel      |pixels           |1024 x 768                               |
 |resolution |                 |                                         |
@@ -166,18 +169,13 @@ geometry description:
 |Panel size |mm               |400 x 300                                |
 +-----------+-----------------+-----------------------------------------+
 |Window     |pixels           |Same as resolution                       |
-|           |                 |                                         |
 +-----------+-----------------+-----------------------------------------+
-|NRM        |3d direction     |*Computed from Target and Camera*        |
-|           |                 |                                         |
-|           |                 |                                         |
+|NRM        |3d direction     |Computed from Target and Camera          |
 +-----------+-----------------+-----------------------------------------+
-|VUP        |3d direction     |*Hard coded to (0,0,1)*                  |
-|           |                 |                                         |
+|VUP        |3d direction     |Hard coded to (0,0,1)                    |
 +-----------+-----------------+-----------------------------------------+
-|Panel      |3d direction     |*Computed from NRM and VUP*              |
+|Panel      |3d direction     |Computed from NRM and VUP                |
 |Orientation|                 |                                         |
-|           |                 |                                         |
 +-----------+-----------------+-----------------------------------------+
 
 
