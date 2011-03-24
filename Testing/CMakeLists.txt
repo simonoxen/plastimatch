@@ -867,7 +867,7 @@ ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom (and dicom rt)
 ##   plm convert dicom a: ct only
-##   plm convert dicom b: rtss only, with dicom-dir reference
+##   plm convert dicom b: rtss only, with referenced-ct
 ##   plm convert dicom c: rtss only, with fixed image reference
 ##   plm convert dicom d: dose only, native sampling rate
 ##   plm convert dicom e: input xio dicom, output plastimatch dicom
@@ -878,7 +878,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-a-stats"
@@ -900,7 +900,7 @@ PLM_ADD_TEST (
   "plm-convert-dicom-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-ss-img.mha;--dicom-dir;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-ss-img.mha;--referenced-ct;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-b-stats"
@@ -1484,7 +1484,7 @@ PLM_ADD_TEST (
   "plm-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
   )
 PLM_ADD_TEST (
   "plm-warp-a-stats"
@@ -1506,7 +1506,7 @@ PLM_ADD_TEST (
   "plm-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-b-stats-1"
@@ -1543,7 +1543,7 @@ PLM_ADD_TEST (
   "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn"
+  "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-c-stats"
@@ -1565,7 +1565,7 @@ PLM_ADD_TEST (
   "plm-warp-d" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn"
+  "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-d-stats"
@@ -1587,7 +1587,7 @@ PLM_ADD_TEST (
   "plm-warp-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-e-stats-1"
@@ -1676,7 +1676,7 @@ PLM_ADD_TEST (
   "plm-warp-f" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-warp-f-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-f-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-f;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-f.cxt"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-warp-f-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-f-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-f;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-f.cxt;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-f-stats-1"
@@ -1717,7 +1717,7 @@ PLM_ADD_TEST (
   "plm-warp-g" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-g-img.nrrd"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-g-img.nrrd;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-g-stats-1"
@@ -1739,7 +1739,7 @@ PLM_ADD_TEST (
   "plm-warp-h" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-h-img.nrrd"
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-h-img.nrrd;--default-value;0"
   )
 PLM_ADD_TEST (
   "plm-warp-h-stats-1"

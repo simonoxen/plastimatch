@@ -200,17 +200,17 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-author_string = [u'Plastimatch development team.  For full documentation, please visit http://plastimatch.org.  For questions, comments, and bug reports, please visit http://groups.google.com/group/plastimatch.']
+author_string = [u'Plastimatch is a collaborative project.  For more documentation, please visit http://plastimatch.org.  For questions, comments, and bug reports, please visit http://groups.google.com/group/plastimatch.']
 man_pages = [
     ('drr', 'drr',
      u'create a digitally reconstructed radiograph',
      author_string, 1), 
     ('fdk', 'fdk',
      u'cone-beam reconstruction from projections using the FDK algorithm',
-     [u'Plastimatch development team, Copyright 2010-2011'], 1),
+     author_string, 1), 
     ('landmarks', 'landmark_warp', u'warp an image using point landmarks',
-     [u'Plastimatch development team, Copyright 2010-2011'], 1),
+     author_string, 1), 
     ('command_reference', 'plastimatch',
      u'register, convert, warp, or manipulate images',
-     [u'Plastimatch development team, Copyright 2010-2011'], 1),
+     author_string, 1), 
 ]

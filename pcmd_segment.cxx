@@ -44,7 +44,7 @@ do_segment (Segment_parms *parms)
 }
 
 static void
-usage_fn (dlib::Plm_clp* parser)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
     std::cout << "Usage: plastimatch segment [options]\n";
     parser->print_options (std::cout);

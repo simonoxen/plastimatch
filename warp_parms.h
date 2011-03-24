@@ -17,6 +17,9 @@ class Warp_parms {
 public:
     /* Input files */
     CBString input_fn;
+    CBString vf_in_fn;
+    CBString xf_in_fn;
+    CBString referenced_dicom_dir;
     CBString input_cxt_fn;
     CBString input_ss_img_fn;
     CBString input_ss_list_fn;
@@ -24,12 +27,11 @@ public:
     CBString input_dose_xio_fn;
     CBString input_dose_ast_fn;
     CBString input_dose_mc_fn;
-    CBString vf_in_fn;
-    CBString xf_in_fn;
-    CBString fixed_im_fn;
+    CBString fixed_img_fn;
+
+    /* Dij input files */
     CBString ctatts_in_fn;
     CBString dif_in_fn;
-    CBString referenced_dicom_dir;
 
     /* Output files */
     CBString output_colormap_fn;
@@ -46,6 +48,17 @@ public:
     CBString output_vf_fn;
     CBString output_xio_dirname;
 
+    /* Output options */
+    Plm_image_type output_type;
+    Xio_version output_xio_version;
+
+    /* Algorithm options */
+    float default_val;
+    int interp_lin;              /* trilinear (1) or nn (0) */
+    int prune_empty;             /* remove empty structures (1) or not (0) */
+    int use_itk;                 /* force use of itk (1) or not (0) */
+    int simplify_perc;	 /* percentage of points to be purged */
+
     /* Geometry options */
     bool m_have_dim;
     bool m_have_origin;
@@ -54,14 +67,7 @@ public:
     float m_origin[3];
     float m_spacing[3];
 
-    /* Misc options */
-    float default_val;
-    int interp_lin;              /* trilinear (1) or nn (0) */
-    Plm_image_type output_type;
-    Xio_version output_xio_version;
-    int prune_empty;             /* remove empty structures (1) or not (0) */
-    int use_itk;                 /* force use of itk (1) or not (0) */
-    int simplify_perc;	 /* percentage of points to be purged */
+    /* Metadata options */
     Plm_image_patient_position patient_pos;
 
 public:

@@ -12,8 +12,8 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <vector>
-
 #include "dlib/cmd_line_parser.h"
+#include "plm_version.h"
 
 typedef dlib::cmd_line_parser<char>::check_1a_c Clp;
 
@@ -27,8 +27,42 @@ public:
     std::map<string_type,string_type> description_map;
     std::map<string_type,string_type> short_to_long_map;
     std::map<string_type,string_type> long_to_short_map;
-    void (*usage_fn) (dlib::Plm_clp*);
+    void (*usage_fn) (dlib::Plm_clp*,int,char*[]);
+    int argc;
+    char **argv;
+    unsigned long wrap_len;
 public:
+    
+    void 
+    add_default_options (void)
+    {
+	this->add_long_option ("h", "help", "display this help message");
+	this->add_long_option ("", "version", "display the program version");
+    }
+    void
+    check_default_options (void)
+    {
+	/* Check if the -h option was given */
+	if (this->option("h") || this->option("help")) {
+	    if (this->number_of_arguments()) {
+		/* Secret option.  If you use "--help something", then you 
+		   get a help with narrower format, which can be pasted 
+		   into sphinx documentation. */
+		this->wrap_len = 73;
+		usage_fn (this, argc, argv);
+	    } else {
+		usage_fn (this, argc, argv);
+	    }
+	    exit (0);
+	}
+
+	if (this->option("version")) {
+	    std::cout << "Plastimatch version " << PLASTIMATCH_VERSION_STRING
+		      << std::endl;
+	    exit (0);
+	}
+    }
+
     void 
     add_long_option (
 	const string_type& short_name,
@@ -229,8 +263,7 @@ public:
 
     void 
     print_options (
-        std::basic_ostream<char>& out,
-	const unsigned long wrap_len = 79
+        std::basic_ostream<char>& out
     ) {
         typedef char ct;
         typedef std::basic_string<ct> string;
@@ -333,7 +366,7 @@ public:
 
     void check_help (void) {
 	if (this->option("h") || this->option("help")) {
-	    usage_fn (this);
+	    usage_fn (this, argc, argv);
 	    exit (0);
 	}
     }
@@ -409,20 +442,24 @@ static void
 plm_clp_parse (
     T arg, 
     void (*parse_fn) (T,dlib::Plm_clp*,int,char*[]),
-    void (*usage_fn) (dlib::Plm_clp*),
+    void (*usage_fn) (dlib::Plm_clp*,int,char*[]),
     int argc,
     char* argv[],
     int swallow = 0)
 {
     dlib::Plm_clp parser;
     parser.usage_fn = usage_fn;
+    parser.argc = argc;
+    parser.argv = argv;
+    parser.wrap_len = 79;
+
     try {
 	(*parse_fn) (arg, &parser, argc - swallow, argv + swallow);
     }
     catch (std::exception& e) {
         /* Catch cmd_line_parse_error exceptions and print usage message. */
 	std::cout << e.what() << std::endl;
-	(*usage_fn) (&parser);
+	(*usage_fn) (&parser, argc, argv);
 	exit (1);
     }
     catch (...) {

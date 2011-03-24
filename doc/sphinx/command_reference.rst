@@ -190,41 +190,72 @@ to the input images.  In fact, *convert* is just an alias for the
 
 The command line usage is given as follows::
 
-  Usage: plastimatch convert [options]
-  Options:
-      --input=filename
-      --xf=filename
-      --interpolation=nn
-      --fixed=filename
-      --offset="x y z"
-      --spacing="x y z"
-      --dims="x y z"
-      --default-val=number
-      --output-type={uchar,short,float,...}
-      --algorithm=itk
-      --patient-pos={hfs,hfp,ffs,ffp}
-      --dicom-dir=directory      (for structure association)
-      --ctatts=filename          (for dij)
-      --dif=filename             (for dij)
-      --input-ss-img=filename    (for structures)
-      --input-ss-list=filename   (for structures)
-      --prune-empty              (for structures)
-      --input-dose-img=filename  (for rt dose)
-      --input-dose-xio=filename  (for XiO rt dose)
-      --input-dose-ast=filename  (for Astroid rt dose)
-      --input-dose-mc=filename   (for Monte Carlo 3ddose rt dose)
-
-      --output-cxt=filename      (for structures)
-      --output-dicom=directory   (for image and structures)
-      --output-dij=filename      (for dij)
-      --output-dose-img          (for rt dose)
-      --output-img=filename      (for image)
-      --output-labelmap=filename (for structures)
-      --output-prefix=string     (for structures)
-      --output-ss-img=filename   (for structures)
-      --output-ss-list=filename  (for structures)
-      --output-vf=filename       (for vector field)
-      --output-xio=directory     (for rt dose and structures)
+ Usage: plastimatch convert [options]
+ Options:
+      --algorithm <arg>         algorithm to use for warping, either 
+                                 "itk" or "native", default is native 
+      --ctatts <arg>            ct attributes file (used by dij warper) 
+      --default-value <arg>     value to set for pixels with unknown 
+                                 value, default is 0 
+      --dif <arg>               dif file (used by dij warper) 
+      --dim <arg>               size of output image in voxels "x [y z]" 
+  -F, --fixed <arg>             fixed image (match output size to this 
+                                 image) 
+  -h, --help                    display this help message 
+      --input <arg>             input directory or filename (required); 
+                                 can be an image, structure set file (cxt
+                                 or dicom-rt), dose file (dicom-rt, 
+                                 monte-carlo or xio), dicom directory, or
+                                 xio directory 
+      --input-cxt <arg>         input a cxt file 
+      --input-dose-ast <arg>    input an astroid dose volume 
+      --input-dose-img <arg>    input a dose volume 
+      --input-dose-mc <arg>     input an monte carlo volume 
+      --input-dose-xio <arg>    input an xio dose volume 
+      --input-ss-img <arg>      input a structure set image file 
+      --input-ss-list <arg>     input a structure set list file 
+                                 containing names and colors 
+      --interpolation <arg>     interpolation to use when resampling, 
+                                 either "nn" for nearest neighbors or 
+                                 "linear" for tri-linear, default is 
+                                 linear 
+      --origin <arg>            location of first image voxel in mm "x y
+                                 z" 
+      --output-colormap <arg>   create a colormap file that can be used 
+                                 with 3d slicer 
+      --output-cxt <arg>        output a cxt-format structure set file 
+      --output-dicom <arg>      create a directory containing dicom and 
+                                 dicom-rt files 
+      --output-dij <arg>        create a dij matrix file 
+      --output-dose-img <arg>   create a dose image volume 
+      --output-img <arg>        output image; can be mha, mhd, nii, 
+                                 nrrd, or other format supported by ITK 
+      --output-labelmap <arg>   create a structure set image with each 
+                                 voxel labeled as a single structure 
+      --output-pointset <arg>   create a pointset file that can be used 
+                                 with 3d slicer 
+      --output-prefix <arg>     create a directory with a separate image
+                                 for each structure 
+      --output-ss-img <arg>     create a structure set image which 
+                                 allows overlapping structures 
+      --output-ss-list <arg>    create a structure set list file 
+                                 containing names and colors 
+      --output-type <arg>       type of output image, one of {uchar, 
+                                 short, float, ...} 
+      --output-vf <arg>         create a vector field from the input xf 
+      --output-xio <arg>        create a directory containing xio-format
+                                 files 
+      --patient-pos <arg>       patient position in metadata, one of 
+                                 {hfs,hfp,ffs,ffp} 
+      --prune-empty             delete empty structures from output 
+      --referenced-ct <arg>     dicom directory used to set UIDs and 
+                                 metadata 
+      --simplify-perc <arg>     delete <arg> percent of the vertices 
+                                 from output polylines 
+      --spacing <arg>           voxel spacing in mm "x [y z]" 
+      --version                 display the program version 
+      --vf <arg>                input vector field used to warp image(s) 
+      --xf <arg>                input transform used to warp image(s) 
 
 Examples
 ^^^^^^^^
@@ -250,16 +281,16 @@ This example further converts the type of the image intensities to float. ::
     --output-type float
 
 The next example shows how to resample the output image to a different 
-geometry.  The --offset option sets the position of the 
+geometry.  The --origin option sets the position of the 
 (center of) the first voxel of the image, the --dim option sets the 
 number of voxels, and the --spacing option sets the 
-distance between voxels.  The units for offset and spacing are 
+distance between voxels.  The units for origin and spacing are 
 assumed to be millimeters. ::
 
   plastimatch convert \
     --input dicom-in-dir \
     --output-img outfile.nrrd \
-    --offset "-200 -200 -165" \
+    --origin "-200 -200 -165" \
     --dim "250 250 110" \
     --spacing "2 2 2.5"
 

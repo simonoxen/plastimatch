@@ -340,7 +340,7 @@ do_landmark_warp (Landmark_warp_main_parms *parms)
 }
 
 static void
-usage_fn (dlib::Plm_clp* parser)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
     std::cout << "Usage: landmark_warp [options]\n";
     parser->print_options (std::cout);

@@ -101,15 +101,13 @@ do_autolabel (Autolabel_parms *parms)
     fclose (fp);
 }
 
-
 static void
-usage_fn (dlib::Plm_clp* parser)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
     std::cout << "Usage: plastimatch autolabel [options]\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
-
 
 static void
 parse_fn (
@@ -159,4 +157,3 @@ do_command_autolabel (int argc, char *argv[])
 
     do_autolabel (&parms);
 }
-

@@ -246,7 +246,7 @@ warp_and_save_ss (
 
     /* If we need to reduce the number of points (aka if simplify-perc 
        was set), purge the excessive points...*/
-    if (parms->simplify_perc >0 && parms->simplify_perc<100) {
+    if (parms->simplify_perc > 0. && parms->simplify_perc < 100.) {
 	printf ("Warp_and_save_ss: do_simplify\n");
 	do_simplify(rtds, parms->simplify_perc);
     }
@@ -273,11 +273,11 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     /* Try to guess the proper dimensions and spacing for output image */
-    if (bstring_not_empty (parms->fixed_im_fn)) {
+    if (bstring_not_empty (parms->fixed_img_fn)) {
 	/* use the spacing of user-supplied fixed image */
 	printf ("Setting PIH from FIXED\n");
 	FloatImageType::Pointer fixed = itk_image_load_float (
-	    parms->fixed_im_fn, 0);
+	    parms->fixed_img_fn, 0);
 	pih.set_from_itk_image (fixed);
     } else if (xform.m_type == XFORM_ITK_VECTOR_FIELD) {
 	/* use the spacing from input vector field */

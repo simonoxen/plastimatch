@@ -67,7 +67,7 @@ Img_metadata::get_metadata (unsigned short key1, unsigned short key2) const
 void
 Img_metadata::set_metadata (const std::string& key, const std::string& val)
 {
-    std::cout << "Setting metadata: " << key << " to " << val << std::endl;
+    //std::cout << "Setting metadata: " << key << " to " << val << std::endl;
     m_data[key] = val;
 }
 

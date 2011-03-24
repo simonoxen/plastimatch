@@ -31,7 +31,7 @@ do_synthetic_vf (CBString& fn, Synthetic_vf_parms *parms)
 }
 
 static void
-usage_fn (dlib::Plm_clp* parser)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
     std::cout << "Usage: synthetic_vf [options]\n";
     parser->print_options (std::cout);
@@ -75,7 +75,7 @@ parse_fn (
     /* ------------------------------------------------------------
        Parse options
        ------------------------------------------------------------ */
-    parser->parse (argc,argv);
+    parser->parse (argc, argv);
 
     /* Check if the -h option was given */
     parser->check_help ();
@@ -90,7 +90,7 @@ parse_fn (
     {
 	std::cout << 
 	    "Error, you must specify one of the --xf-*** options.\n";
-	usage_fn (parser);
+	usage_fn (parser, argc, argv);
 	exit (1);
     }
 

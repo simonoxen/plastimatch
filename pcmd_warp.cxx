@@ -10,7 +10,7 @@
 #include "cxt_to_mha.h"
 #include "file_util.h"
 #include "gdcm_rtss.h"
-#include "getopt.h"
+#include "plm_clp.h"
 #include "plm_file_format.h"
 #include "plm_image_header.h"
 #include "plm_image_patient_position.h"
@@ -23,301 +23,226 @@
 #include "xio_structures.h"
 
 static void
-print_usage (char* command)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf (
-	"Usage: plastimatch %s [options]\n"
-	"Options:\n"
-	"    --input=filename\n"
-	"    --xf=filename\n"
-	"    --interpolation=nn\n"
-	"    --fixed=filename\n"
-	"    --offset=\"x y z\"\n"
-	"    --spacing=\"x y z\"\n"
-	"    --dims=\"x y z\"\n"
-	"    --default-val=number\n"
-	"    --output-type={uchar,short,float,...}\n"
-	"    --algorithm=itk\n"
-	"    --patient-pos={hfs,hfp,ffs,ffp}\n"
-	"    --referenced-ct=directory  (for structure association)\n"
-	"    --ctatts=filename          (for dij)\n"
-	"    --dif=filename             (for dij)\n"
-	"    --input-cxt=filename       (for structures)\n"
-	"    --input-ss-img=filename    (for structures)\n"
-	"    --input-ss-list=filename   (for structures)\n"
-	"    --prune-empty              (for structures)\n"
-	"    --simplify-perc            (for structures)\n"
-	"    --input-dose-img=filename  (for rt dose)\n"
-	"    --input-dose-xio=filename  (for XiO rt dose)\n"
-	"    --input-dose-ast=filename  (for Astroid rt dose)\n"
-	"    --input-dose-mc=filename   (for Monte Carlo 3ddose rt dose)\n"
-	"\n"
-	"    --output-cxt=filename      (for structures)\n"
-	"    --output-dicom=directory   (for image and structures)\n"
-	"    --output-dij=filename      (for dij)\n"
-	"    --output-dose-img=filename (for rt dose)\n"
-	"    --output-img=filename      (for image)\n"
-	"    --output-labelmap=filename (for structures)\n"
-	"    --output-colormap=filename (for structures)\n"
-	"    --output-pointset=filename (for pointsets, txt or fcsv)\n"
-	"    --output-prefix=string     (for structures)\n"
-	"    --output-ss-img=filename   (for structures)\n"
-	"    --output-ss-list=filename  (for structures)\n"
-	"    --output-vf=filename       (for vector field)\n"
-	"    --output-xio=directory     (for rt dose and structures)\n"
-	,
-	command);
-    exit (-1);
+    printf ("Usage: plastimatch %s [options]\n", argv[1]);
+    parser->print_options (std::cout);
+    std::cout << std::endl;
 }
 
-void
-warp_parse_args (Warp_parms* parms, int argc, char* argv[])
+static void
+parse_fn (
+    Warp_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
 {
-    int ch;
-    int rc;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           2 },
-	{ "output",         required_argument,      NULL,           3 },
-	{ "output_img",     required_argument,      NULL,           3 },
-	{ "output-img",     required_argument,      NULL,           3 },
-	{ "vf",             required_argument,      NULL,           4 },
-	{ "default_val",    required_argument,      NULL,           5 },
-	{ "default-val",    required_argument,      NULL,           5 },
-	{ "xf",             required_argument,      NULL,           6 },
-	{ "fixed",	    required_argument,      NULL,           7 },
-	{ "output_vf",      required_argument,      NULL,           8 },
-	{ "output-vf",      required_argument,      NULL,           8 },
-	{ "interpolation",  required_argument,      NULL,           9 },
-	{ "offset",         required_argument,      NULL,           10 },
-	{ "spacing",        required_argument,      NULL,           11 },
-	{ "dims",           required_argument,      NULL,           12 },
-	{ "output_dicom",   required_argument,      NULL,           13 },
-	{ "output-dicom",   required_argument,      NULL,           13 },
-	{ "ctatts",         required_argument,      NULL,           14 },
-	{ "dif",            required_argument,      NULL,           15 },
-	{ "algorithm",      required_argument,      NULL,           16 },
-	{ "output-type",    required_argument,      NULL,           17 },
-	{ "output_type",    required_argument,      NULL,           17 },
-	{ "dicom-dir",      required_argument,      NULL,           18 },
-	{ "dicom_dir",      required_argument,      NULL,           18 },
-	{ "referenced-ct",  required_argument,      NULL,           18 },
-	{ "referenced_ct",  required_argument,      NULL,           18 },
-	{ "output-prefix",  required_argument,      NULL,           19 },
-	{ "output_prefix",  required_argument,      NULL,           19 },
-	{ "output-labelmap",required_argument,      NULL,           20 },
-	{ "output_labelmap",required_argument,      NULL,           20 },
-	{ "output-ss-img",  required_argument,      NULL,           21 },
-	{ "output_ss_img",  required_argument,      NULL,           21 },
-	{ "output_ss_list", required_argument,      NULL,           22 },
-	{ "output-ss-list", required_argument,      NULL,           22 },
-	{ "output_cxt",     required_argument,      NULL,           23 },
-	{ "output-cxt",     required_argument,      NULL,           23 },
-	{ "prune_empty",    required_argument,      NULL,           24 },
-	{ "prune-empty",    no_argument,            NULL,           24 },
-	{ "output_xio",     required_argument,      NULL,           25 },
-	{ "output-xio",     required_argument,      NULL,           25 },
-	{ "input_ss_list",  required_argument,      NULL,           26 },
-	{ "input-ss-list",  required_argument,      NULL,           26 },
-	{ "output_dij",     required_argument,      NULL,           27 },
-	{ "output-dij",     required_argument,      NULL,           27 },
-	{ "input_ss_img",   required_argument,      NULL,           28 },
-	{ "input-ss-img",   required_argument,      NULL,           28 },
-	{ "input_dose_img", required_argument,      NULL,           29 },
-	{ "input-dose-img", required_argument,      NULL,           29 },
-	{ "input_dose_xio", required_argument,      NULL,           30 },
-	{ "input-dose-xio", required_argument,      NULL,           30 },
-	{ "output_dose_img", required_argument,     NULL,           31 },
-	{ "output-dose-img", required_argument,     NULL,           31 },
-	{ "input_dose_ast", required_argument,      NULL,           32 },
-	{ "input-dose-ast", required_argument,      NULL,           32 },
-	{ "patient_pos",    required_argument,      NULL,           33 },
-	{ "patient-pos",    required_argument,      NULL,           33 },
-	{ "input_dose_mc",  required_argument,      NULL,           34 },
-	{ "input-dose-mc",  required_argument,      NULL,           34 },
-	{ "output_colormap",required_argument,      NULL,           35 },
-	{ "output-colormap",required_argument,      NULL,           35 },
-	{ "simplify_perc", required_argument,	    NULL,           36 },
-	{ "simplify-perc", required_argument,	    NULL,           36 },
-	{ "output_pointset", required_argument,	    NULL,           37 },
-	{ "output-pointset", required_argument,	    NULL,           37 },
-	{ "input_cxt",       required_argument,	    NULL,           38 },
-	{ "input-cxt",       required_argument,	    NULL,           38 },
-	{ NULL,             0,                      NULL,           0 }
-    };
+    /* Add --help, --version */
+    parser->add_default_options ();
 
-    /* Skip command "warp" */
-    optind ++;
+    /* Input files */
+    parser->add_long_option ("", "input", 
+	"input directory or filename (required); "
+	"can be an image, structure set file (cxt or dicom-rt), "
+	"dose file (dicom-rt, monte-carlo or xio), "
+	"dicom directory, or xio directory", 1, "");
+    parser->add_long_option ("", "xf", 
+	"input transform used to warp image(s)", 1, "");
+    parser->add_long_option ("", "vf", 
+	"input vector field used to warp image(s)", 1, "");
+    parser->add_long_option ("", "referenced-ct", 
+	"dicom directory used to set UIDs and metadata", 1, "");
+    parser->add_long_option ("", "input-cxt", 
+	"input a cxt file", 1, "");
+    parser->add_long_option ("", "input-ss-img", 
+	"input a structure set image file", 1, "");
+    parser->add_long_option ("", "input-ss-list", 
+	"input a structure set list file containing names and colors", 1, "");
+    parser->add_long_option ("", "input-dose-img", 
+	"input a dose volume", 1, "");
+    parser->add_long_option ("", "input-dose-xio", 
+	"input an xio dose volume", 1, "");
+    parser->add_long_option ("", "input-dose-ast", 
+	"input an astroid dose volume", 1, "");
+    parser->add_long_option ("", "input-dose-mc", 
+	"input an monte carlo volume", 1, "");
+    
+    /* Dij input files */
+    parser->add_long_option ("", "ctatts", 
+	"ct attributes file (used by dij warper)", 1, "");
+    parser->add_long_option ("", "dif", 
+	"dif file (used by dij warper)", 1, "");
 
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->input_fn = optarg;
-	    break;
-	case 3:
-	    parms->output_img_fn = optarg;
-	    break;
-	case 4:
-	    parms->vf_in_fn = optarg;
-	    break;
-	case 5:
-	    if (sscanf (optarg, "%f", &parms->default_val) != 1) {
-		printf ("Error: default_val takes an argument\n");
-		print_usage (argv[1]);
-	    }
-	    break;
-	case 6:
-	    parms->xf_in_fn = optarg;
-	    break;
-	case 7:
-	    parms->fixed_im_fn = optarg;
-	    break;
-	case 8:
-	    parms->output_vf_fn = optarg;
-	    break;
-	case 9:
-	    if (!strcmp (optarg, "nn")) {
-		parms->interp_lin = 0;
-	    } else if (!strcmp (optarg, "linear")) {
-		parms->interp_lin = 1;
-	    } else {
-		fprintf (stderr, "Error.  --interpolation must be either nn or linear.\n");
-		print_usage (argv[1]);
-	    }
-	    break;
-	case 10:
-	    rc = sscanf (optarg, "%f %f %f", 
-		&parms->m_origin[0], &parms->m_origin[1], &parms->m_origin[2]);
-	    if (rc != 3) {
-		fprintf (stderr, "Error.  --offset requires 3 values.");
-		print_usage (argv[1]);
-	    }
-	    parms->m_have_origin = 1;
-	    break;
-	case 11:
-	    rc = sscanf (optarg, "%f %f %f", &parms->m_spacing[0], 
-		&parms->m_spacing[1], &parms->m_spacing[2]);
-	    if (rc != 3) {
-		fprintf (stderr, "Error.  --spacing requires 3 values.");
-		print_usage (argv[1]);
-	    }
-	    parms->m_have_spacing = 1;
-	    break;
-	case 12:
-	    rc = sscanf (optarg, "%d %d %d", &parms->m_dim[0], 
-		&parms->m_dim[1], &parms->m_dim[2]);
-	    if (rc != 3) {
-		fprintf (stderr, "Error.  --dims requires 3 values.");
-		print_usage (argv[1]);
-	    }
-	    parms->m_have_dim = 1;
-	    break;
-	case 13:
-	    parms->output_dicom = optarg;
-	    break;
-	case 14:
-	    parms->ctatts_in_fn = optarg;
-	    break;
-	case 15:
-	    parms->dif_in_fn = optarg;
-	    break;
-	case 16:
-	    if (!strcmp (optarg, "itk")) {
-		parms->use_itk = 1;
-	    } else {
-		fprintf (stderr, "Error.  --algorithm option only supports itk.\n");
-		print_usage (argv[1]);
-	    }
-	    break;
-	case 17:
-	    parms->output_type = plm_image_type_parse (optarg);
-	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
-		fprintf (stderr, "Error, unknown output type %s\n", optarg);
-		print_usage (argv[1]);
-	    }
-	    break;
-	case 18:
-	    parms->referenced_dicom_dir = optarg;
-	    break;
-	case 19:
-	    parms->output_prefix = optarg;
-	    break;
-	case 20:
-	    parms->output_labelmap_fn = optarg;
-	    break;
-	case 21:
-	    parms->output_ss_img_fn = optarg;
-	    break;
-	case 22:
-	    parms->output_ss_list_fn = optarg;
-	    break;
-	case 23:
-	    parms->output_cxt_fn = optarg;
-	    break;
-	case 24:
-	    parms->prune_empty = 1;
-	    break;
-	case 25:
-	    parms->output_xio_dirname = optarg;
-	    break;
-	case 26:
-	    parms->input_ss_list_fn = optarg;
-	    break;
-	case 27:
-	    parms->output_dij_fn = optarg;
-	    break;
-	case 28:
-	    parms->input_ss_img_fn = optarg;
-	    break;
-	case 29:
-	    parms->input_dose_img_fn = optarg;
-	    break;
-	case 30:
-	    parms->input_dose_xio_fn = optarg;
-	    break;
-	case 31:
-	    parms->output_dose_img_fn = optarg;
-	    break;
-	case 32:
-	    parms->input_dose_ast_fn = optarg;
-	    break;
-	case 33:
-	    parms->patient_pos = plm_image_patient_position_parse (optarg);
-	    if (parms->patient_pos == PATIENT_POSITION_UNKNOWN) {
-		fprintf (stderr, "Error.  Unknown patient position {hfs,hfp,ffs,ffp}.\n");
-		print_usage (argv[1]);
-	    }
-	    break;
-	case 34:
-	    parms->input_dose_mc_fn = optarg;
-	    break;
-	case 35:
-	    parms->output_colormap_fn = optarg;
-	    break;
-	case 36:
-	    parms->simplify_perc = atoi(optarg);
-	    break;
-	case 37:
-	    parms->output_pointset_fn = optarg;
-	    break;
-	case 38:
-	    parms->input_cxt_fn = optarg;
-	    break;
-	default:
-	    fprintf (stderr, "Error.  Unknown option.\n");
-	    print_usage (argv[1]);
-	    break;
+    /* Output files */
+    parser->add_long_option ("", "output-img", 
+	"output image; can be mha, mhd, nii, nrrd, or other format "
+	"supported by ITK", 1, "");
+    parser->add_long_option ("", "output-cxt", 
+	"output a cxt-format structure set file", 1, "");
+    parser->add_long_option ("", "output-dicom", 
+	"create a directory containing dicom and dicom-rt files", 1, "");
+    parser->add_long_option ("", "output-dij", 
+	"create a dij matrix file", 1, "");
+    parser->add_long_option ("", "output-dose-img", 
+	"create a dose image volume", 1, "");
+    parser->add_long_option ("", "output-labelmap", 
+	"create a structure set image with each voxel labeled as "
+	"a single structure", 1, "");
+    parser->add_long_option ("", "output-colormap", 
+	"create a colormap file that can be used with 3d slicer", 1, "");
+    parser->add_long_option ("", "output-pointset", 
+	"create a pointset file that can be used with 3d slicer", 1, "");
+    parser->add_long_option ("", "output-prefix", 
+	"create a directory with a separate image for each structure", 1, "");
+    parser->add_long_option ("", "output-ss-img", 
+	"create a structure set image which allows overlapping structures", 
+	1, "");
+    parser->add_long_option ("", "output-ss-list", 
+	"create a structure set list file containing names and colors", 
+	1, "");
+    parser->add_long_option ("", "output-vf", 
+	"create a vector field from the input xf", 1, "");
+    parser->add_long_option ("", "output-xio", 
+	"create a directory containing xio-format files", 1, "");
+
+    /* Output options */
+    parser->add_long_option ("", "output-type", 
+	"type of output image, one of {uchar, short, float, ...}", 1, "");
+
+    /* Algorithm options */
+    parser->add_long_option ("", "algorithm", 
+	"algorithm to use for warping, either \"itk\" or \"native\", "
+	"default is native", 1, "native");
+    parser->add_long_option ("", "interpolation", 
+	"interpolation to use when resampling, either \"nn\" for "
+	"nearest neighbors or \"linear\" for tri-linear, default is linear", 
+	1, "linear");
+    parser->add_long_option ("", "default-value", 
+	"value to set for pixels with unknown value, default is 0", 1, "");
+    parser->add_long_option ("", "prune-empty", 
+	"delete empty structures from output", 0);
+    parser->add_long_option ("", "simplify-perc", 
+	"delete <arg> percent of the vertices from output polylines", 1, "0");
+
+    /* Geometry options */
+    parser->add_long_option ("F", "fixed", 
+	"fixed image (match output size to this image)", 1, "");
+    parser->add_long_option ("", "origin", 
+	"location of first image voxel in mm \"x y z\"", 1, "");
+    parser->add_long_option ("", "dim", 
+	"size of output image in voxels \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "spacing", 
+	"voxel spacing in mm \"x [y z]\"", 1, "");
+
+    /* Metadata options */
+    parser->add_long_option ("", "patient-pos",
+	"patient position in metadata, one of {hfs,hfp,ffs,ffp}", 1, "hfs");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check that an input file was given */
+    parser->check_required ("input");
+
+    /* Input files */
+    parms->input_fn = parser->get_string("input").c_str();
+    parms->vf_in_fn = parser->get_string("vf").c_str();
+    parms->xf_in_fn = parser->get_string("xf").c_str();
+    parms->referenced_dicom_dir = parser->get_string("referenced-ct").c_str();
+    parms->input_cxt_fn = parser->get_string("input-cxt").c_str();
+    parms->input_ss_img_fn = parser->get_string("input-ss-img").c_str();
+    parms->input_ss_list_fn = parser->get_string("input-ss-list").c_str();
+    parms->input_dose_img_fn = parser->get_string("input-dose-img").c_str();
+    parms->input_dose_xio_fn = parser->get_string("input-dose-xio").c_str();
+    parms->input_dose_ast_fn = parser->get_string("input-dose-ast").c_str();
+    parms->input_dose_mc_fn = parser->get_string("input-dose-mc").c_str();
+
+    /* Dij input files */
+    parms->ctatts_in_fn = parser->get_string("ctatts").c_str();
+    parms->dif_in_fn = parser->get_string("dif").c_str();
+
+    /* Output files */
+    parms->output_img_fn = parser->get_string("output-img").c_str();
+    parms->output_cxt_fn = parser->get_string("output-cxt").c_str();
+    parms->output_dicom = parser->get_string("output-dicom").c_str();
+    parms->output_dij_fn = parser->get_string("output-dij").c_str();
+    parms->output_dose_img_fn = parser->get_string("output-dose-img").c_str();
+    parms->output_labelmap_fn = parser->get_string("output-labelmap").c_str();
+    parms->output_colormap_fn = parser->get_string("output-colormap").c_str();
+    parms->output_pointset_fn = parser->get_string("output-pointset").c_str();
+    parms->output_prefix = parser->get_string("output-prefix").c_str();
+    parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
+    parms->output_ss_list_fn = parser->get_string("output-ss-list").c_str();
+    parms->output_vf_fn = parser->get_string("output-vf").c_str();
+    parms->output_xio_dirname = parser->get_string("output-xio").c_str();
+    
+    /* Output options */
+    if (parser->option("output-type")) {
+	std::string arg = parser->get_string ("output-type");
+	parms->output_type = plm_image_type_parse (arg.c_str());
+	if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+	    throw (dlib::error ("Error. Unknown --output-type argument: " 
+		    + parser->get_string("output-type")));
 	}
     }
-    if (bstring_empty (parms->input_fn)
-	&& bstring_empty (parms->input_ss_img_fn)
-	&& bstring_empty (parms->input_dose_img_fn)
-	&& bstring_empty (parms->input_dose_xio_fn)
-	&& bstring_empty (parms->input_dose_ast_fn)
-	&& bstring_empty (parms->input_dose_mc_fn)
-	&& bstring_empty (parms->input_cxt_fn))
-    {
-	fprintf (stderr, "Error.  No input file specified..\n");
-	print_usage (argv[1]);
+
+    /* Algorithm options */
+    if (parser->option("default-value")) {
+	parms->default_val = parser->get_float("default-value");
+    }
+    std::string arg = parser->get_string ("algorithm");
+    if (arg == "itk") {
+	parms->use_itk = 1;
+    }
+    else if (arg == "native") {
+	parms->use_itk = 0;
+    }
+    else {
+	throw (dlib::error ("Error. Unknown --algorithm argument: " + arg));
+    }
+    arg = parser->get_string ("interpolation");
+    if (arg == "nn") {
+	parms->interp_lin = 0;
+    }
+    else if (arg == "linear") {
+	parms->interp_lin = 1;
+    }
+    else {
+	throw (dlib::error ("Error. Unknown --interpolation argument: " 
+		+ arg));
+    }
+    if (parser->option("prune-empty")) {
+	parms->prune_empty = 1;
+    }
+    parms->simplify_perc = parser->get_float("simplify-perc");
+
+    /* Geometry options */
+    if (parser->option ("origin")) {
+	parms->m_have_origin = 1;
+	parser->assign_float13 (parms->m_origin, "origin");
+    }
+    if (parser->option ("spacing")) {
+	parms->m_have_spacing = 1;
+	parser->assign_float13 (parms->m_spacing, "spacing");
+    }
+    if (parser->option ("dim")) {
+	parms->m_have_dim = 1;
+	parser->assign_int13 (parms->m_dim, "dim");
+    }
+    parms->fixed_img_fn = parser->get_string("fixed").c_str();
+
+    /* Metadata options */
+    if (parser->option ("patient-pos")) {
+	std::string arg = parser->get_string ("patient-pos");
+	parms->patient_pos = plm_image_patient_position_parse (arg.c_str());
+	if (parms->patient_pos == PATIENT_POSITION_UNKNOWN) {
+	    throw (dlib::error ("Error. Unknown --patient-pos argument: " 
+		    + arg));
+	}
     }
 }
 
@@ -329,7 +254,7 @@ do_command_warp (int argc, char* argv[])
     Rtds rtds;
 
     /* Parse command line parameters */
-    warp_parse_args (&parms, argc, argv);
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     /* Dij matrices are a special case */
     if (bstring_not_empty (parms.output_dij_fn)) {

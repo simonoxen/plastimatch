@@ -38,7 +38,7 @@ main (int argc, char * argv [])
 	parms.output_img_fn = output_image.c_str();
     }
     if (reference_vol.compare ("None") != 0) {
-	parms.fixed_im_fn = reference_vol.c_str();
+	parms.fixed_img_fn = reference_vol.c_str();
     }
 
     /* Process warp */

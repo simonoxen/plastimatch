@@ -19,17 +19,16 @@ int compare (const void * a, const void * b)
     Actual function that simplifies the contours
    ----------------------------------------------------------------------- */
 void
-do_simplify(Rtds *rtds, int percentage)
+do_simplify(Rtds *rtds, float percentage)
 {
     int num_structures=0;
     int first_index_to_remove=0;
     Rtss_structure *curr_struct;
     Rtss_polyline *curr_polyline;
-
     
     vnl_random gnr;
 
-    printf("Hello from simplify_points! \n You are going to delete %d percent of points from your dataset\n",percentage);
+    printf("Hello from simplify_points! \n You are going to delete %f percent of points from your dataset\n",percentage);
 
     /* Check file_type */
 //    if (file_type != PLM_FILE_FMT_DICOM_RTSS) {
