@@ -26,21 +26,15 @@ struct xio_patient_dir {
     Xio_plan_dir *plan_dir;
 };
 
-typedef struct xio_dir Xio_dir;
-struct xio_dir {
-    char path[_MAX_PATH];
-
+class plastimatch1_EXPORT Xio_dir {
+public:
+    CBString path;
     int num_patient_dir;
     Xio_patient_dir *patient_dir;
+public:
+    Xio_dir (const char *input_dir);
+    ~Xio_dir ();
 };
-
-plastimatch1_EXPORT
-Xio_dir*
-xio_dir_create (const char *input_dir);
-
-plastimatch1_EXPORT
-void
-xio_dir_destroy (Xio_dir* xd);
 
 plastimatch1_EXPORT
 void

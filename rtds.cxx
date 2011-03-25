@@ -94,19 +94,17 @@ Rtds::load_xio (
     Plm_image_patient_position patient_pos
 )
 {
-    Xio_dir *xd;
+    Xio_dir xd (xio_dir);
     Xio_patient_dir *xpd;
     Xio_studyset_dir *xsd;
     Xio_plan_dir *xtpd;
 
-    xd = xio_dir_create (xio_dir);
-
-    if (xd->num_patient_dir <= 0) {
+    if (xd.num_patient_dir <= 0) {
 	print_and_exit ("Error, xio num_patient_dir = %d\n", 
-	    xd->num_patient_dir);
+	    xd.num_patient_dir);
     }
-    xpd = &xd->patient_dir[0];
-    if (xd->num_patient_dir > 1) {
+    xpd = &xd.patient_dir[0];
+    if (xd.num_patient_dir > 1) {
 	printf ("Warning: multiple patients found in xio directory.\n"
 	    "Defaulting to first directory: %s\n", xpd->path);
     }

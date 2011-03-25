@@ -19,13 +19,11 @@
 static int
 is_xio_directory (const char* path)
 {
-    Xio_dir *xd = xio_dir_create (path);
-    if (xio_dir_num_patients (xd) > 0) {
+    Xio_dir xd (path);
+    if (xio_dir_num_patients (&xd) > 0) {
 	printf ("Found an XiO directory!!!!\n");
-	xio_dir_destroy (xd);
 	return 1;
     } else {
-	xio_dir_destroy (xd);
 	return 0;
     }
 }

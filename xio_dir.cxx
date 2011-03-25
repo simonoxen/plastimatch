@@ -221,35 +221,19 @@ xio_dir_analyze_recursive (Xio_dir *xd, std::string dir)
 /* -----------------------------------------------------------------------
    Public functions
    ----------------------------------------------------------------------- */
+#if defined (commentout)
 Xio_dir*
 xio_dir_create (const char *input_dir)
 {
     Xio_dir *xd;
     xd = (Xio_dir*) malloc (sizeof (Xio_dir));
 
-    strncpy (xd->path, input_dir, _MAX_PATH);
+    xd->path = input_dir;
     xd->num_patient_dir = -1;
     xd->patient_dir = 0;
 
     xio_dir_analyze (xd);
     return xd;
-}
-
-void
-xio_dir_analyze (Xio_dir *xd)
-{
-    xd->num_patient_dir = 0;
-    if (!is_directory (xd->path)) {
-	return;
-    }
-
-    xio_dir_analyze_recursive (xd, std::string (xd->path));
-}
-
-int
-xio_dir_num_patients (Xio_dir* xd)
-{
-    return xd->num_patient_dir;
 }
 
 void
@@ -259,6 +243,40 @@ xio_dir_destroy (Xio_dir* xd)
 	free (xd->patient_dir);
     }
     free (xd);
+}
+#endif
+
+Xio_dir::Xio_dir (const char *input_dir)
+{
+    this->path = input_dir;
+    this->num_patient_dir = -1;
+    this->patient_dir = 0;
+
+    xio_dir_analyze (this);
+}
+
+Xio_dir::~Xio_dir ()
+{
+    if (this->patient_dir) {
+	free (this->patient_dir);
+    }
+}
+
+void
+xio_dir_analyze (Xio_dir *xd)
+{
+    xd->num_patient_dir = 0;
+    if (!is_directory ((const char*) xd->path)) {
+	return;
+    }
+
+    xio_dir_analyze_recursive (xd, std::string ((const char*) xd->path));
+}
+
+int
+xio_dir_num_patients (Xio_dir* xd)
+{
+    return xd->num_patient_dir;
 }
 
 Xio_studyset_dir*
