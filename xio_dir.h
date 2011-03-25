@@ -29,6 +29,7 @@ struct xio_patient_dir {
 class plastimatch1_EXPORT Xio_dir {
 public:
     CBString path;
+    CBString m_demographic_fn;
     int num_patient_dir;
     Xio_patient_dir *patient_dir;
 public:

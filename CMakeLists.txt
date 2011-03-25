@@ -1019,6 +1019,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   synthetic_vf.cxx synthetic_vf.h
   thumbnail.cxx thumbnail.h
   xio_ct.cxx xio_ct.h
+  xio_demographic.cxx xio_demographic.h
   xio_dir.cxx xio_dir.h
   xio_dose.cxx xio_dose.h
   xio_io.cxx xio_io.h

@@ -21,6 +21,7 @@
 #include "rtss.h"
 #include "ss_list_io.h"
 #include "xio_ct.h"
+#include "xio_demographic.h"
 #include "xio_dir.h"
 #include "xio_dose.h"
 #include "xio_io.h"
@@ -144,7 +145,6 @@ Rtds::load_xio (
 		"Warning: multiple studyset found in xio patient directory.\n"
 		"Defaulting to first directory: %s\n", xsd->path);
 	}
-
     }
 
     /* Load the XiO studyset CT images */
@@ -161,6 +161,19 @@ Rtds::load_xio (
     if (this->m_ss_image->m_cxt) {
 	printf ("calling cxt_set_geometry_from_plm_image\n");
 	this->m_ss_image->m_cxt->set_geometry_from_plm_image (this->m_img);
+    }
+
+    /* Load demographics */
+    if (bstring_not_empty (xd.m_demographic_fn)) {
+	Xio_demographic demographic ((const char*) xd.m_demographic_fn);
+	if (bstring_not_empty (demographic.m_patient_name)) {
+	    this->m_img_metadata.set_metadata (0x0010, 0x0010, 
+		(const char*) demographic.m_patient_name);
+	}
+	if (bstring_not_empty (demographic.m_patient_id)) {
+	    this->m_img_metadata.set_metadata (0x0010, 0x0020, 
+		(const char*) demographic.m_patient_id);
+	}
     }
 
     /* Set patient position */
@@ -180,7 +193,6 @@ Rtds::load_xio (
        will be associated to those slices. The coordinates will be
        transformed to DICOM LPS based on the --patient-pos command
        line parameter and the origin will remain the same. */
-
     if (this->m_img) {
 	if (dicom_dir[0]) {
 	    /* Determine transformation based original DICOM */
