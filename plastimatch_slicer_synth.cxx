@@ -40,6 +40,8 @@ main (int argc, char * argv [])
 	sm_parms.spacing[1] = plmslc_spacing[0];
 	sm_parms.spacing[2] = plmslc_spacing[0];
     }
+
+    /* Pattern options */
     if (plmslc_pattern == "Gauss") {
 	sm_parms.pattern = PATTERN_GAUSS;
     } else if (plmslc_pattern == "Rectangle") {
@@ -47,14 +49,102 @@ main (int argc, char * argv [])
     } else if (plmslc_pattern == "Sphere") {
 	sm_parms.pattern = PATTERN_SPHERE;
     }
+    sm_parms.foreground = plmslc_foreground;
+    sm_parms.background = plmslc_background;
 
-    /* Create images */
+    /* Gauss options */
+    if (plmslc_gausscenter.size() >= 3) {
+	sm_parms.gauss_center[0] = plmslc_gausscenter[0];
+	sm_parms.gauss_center[1] = plmslc_gausscenter[1];
+	sm_parms.gauss_center[2] = plmslc_gausscenter[2];
+    } else if (plmslc_gausscenter.size() >= 1) {
+	sm_parms.gauss_center[0] = plmslc_gausscenter[0];
+	sm_parms.gauss_center[1] = plmslc_gausscenter[0];
+	sm_parms.gauss_center[2] = plmslc_gausscenter[0];
+    }
+    if (plmslc_gausswidth.size() >= 3) {
+	sm_parms.gauss_std[0] = plmslc_gausswidth[0];
+	sm_parms.gauss_std[1] = plmslc_gausswidth[1];
+	sm_parms.gauss_std[2] = plmslc_gausswidth[2];
+    } else if (plmslc_gausswidth.size() >= 1) {
+	sm_parms.gauss_std[0] = plmslc_gausswidth[0];
+	sm_parms.gauss_std[1] = plmslc_gausswidth[0];
+	sm_parms.gauss_std[2] = plmslc_gausswidth[0];
+    }
+
+    /* Rect options */
+    if (plmslc_rectsize.size() >= 6) {
+	sm_parms.rect_size[0] = plmslc_rectsize[0];
+	sm_parms.rect_size[1] = plmslc_rectsize[1];
+	sm_parms.rect_size[2] = plmslc_rectsize[2];
+	sm_parms.rect_size[3] = plmslc_rectsize[3];
+	sm_parms.rect_size[4] = plmslc_rectsize[4];
+	sm_parms.rect_size[5] = plmslc_rectsize[5];
+    } else if (plmslc_rectsize.size() >= 3) {
+	sm_parms.rect_size[0] = - 0.5 * plmslc_rectsize[0];
+	sm_parms.rect_size[2] = - 0.5 * plmslc_rectsize[1];
+	sm_parms.rect_size[4] = - 0.5 * plmslc_rectsize[2];
+	sm_parms.rect_size[1] = - sm_parms.rect_size[0];
+	sm_parms.rect_size[3] = - sm_parms.rect_size[2];
+	sm_parms.rect_size[5] = - sm_parms.rect_size[4];
+    }
+    else if (plmslc_rectsize.size() >= 1) {
+	sm_parms.rect_size[0] = - 0.5 * plmslc_rectsize[0];
+	sm_parms.rect_size[1] = - sm_parms.rect_size[0];
+	sm_parms.rect_size[2] = + sm_parms.rect_size[0];
+	sm_parms.rect_size[3] = - sm_parms.rect_size[0];
+	sm_parms.rect_size[4] = + sm_parms.rect_size[0];
+	sm_parms.rect_size[5] = - sm_parms.rect_size[0];
+    }
+
+    /* Sphere options */
+    if (plmslc_spherecenter.size() >= 3) {
+	sm_parms.sphere_center[0] = plmslc_spherecenter[0];
+	sm_parms.sphere_center[1] = plmslc_spherecenter[1];
+	sm_parms.sphere_center[2] = plmslc_spherecenter[2];
+    } else if (plmslc_spherecenter.size() >= 1) {
+	sm_parms.sphere_center[0] = plmslc_spherecenter[0];
+	sm_parms.sphere_center[1] = plmslc_spherecenter[0];
+	sm_parms.sphere_center[2] = plmslc_spherecenter[0];
+    }
+    if (plmslc_spheresize.size() >= 3) {
+	sm_parms.sphere_radius[0] = plmslc_spheresize[0];
+	sm_parms.sphere_radius[1] = plmslc_spheresize[1];
+	sm_parms.sphere_radius[2] = plmslc_spheresize[2];
+    } else if (plmslc_spheresize.size() >= 1) {
+	sm_parms.sphere_radius[0] = plmslc_spheresize[0];
+	sm_parms.sphere_radius[1] = plmslc_spheresize[0];
+	sm_parms.sphere_radius[2] = plmslc_spheresize[0];
+    }
+
+    /* Create Volume 1 */
     FloatImageType::Pointer img;
     if (plmslc_output_one != "" && plmslc_output_one != "None") {
 	img = synthetic_mha (&sm_parms);
 	itk_image_save_float (img, plmslc_output_one.c_str());
     }
+
+    /* Create Volume 2 */
     if (plmslc_output_two != "" && plmslc_output_two != "None") {
+	if (plmslc_vol2xlat.size() < 3) {
+	    plmslc_vol2xlat[1] = 0;
+	    plmslc_vol2xlat[2] = 0;
+	}
+
+	/* Translate volume */
+	sm_parms.rect_size[0] += plmslc_vol2xlat[0];
+	sm_parms.rect_size[1] += plmslc_vol2xlat[0];
+	sm_parms.rect_size[2] += plmslc_vol2xlat[1];
+	sm_parms.rect_size[3] += plmslc_vol2xlat[1];
+	sm_parms.rect_size[4] += plmslc_vol2xlat[2];
+	sm_parms.rect_size[5] += plmslc_vol2xlat[2];
+	sm_parms.sphere_center[0] += plmslc_vol2xlat[0];
+	sm_parms.sphere_center[1] += plmslc_vol2xlat[1];
+	sm_parms.sphere_center[2] += plmslc_vol2xlat[2];
+	sm_parms.gauss_center[0] += plmslc_vol2xlat[0];
+	sm_parms.gauss_center[1] += plmslc_vol2xlat[1];
+	sm_parms.gauss_center[2] += plmslc_vol2xlat[2];
+	
 	img = synthetic_mha (&sm_parms);
 	itk_image_save_float (img, plmslc_output_two.c_str());
     }
