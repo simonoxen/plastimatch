@@ -2,14 +2,12 @@
 <executable>
   <category>Plastimatch</category>
   <title>Synthetic image generation</title>
-  <description>
-The plastimatch deformable registration extension will register two images using a high performance multi-stage B-spline deformable registration algorithm.  The algorithm runs in three stages: an optional initial alignment using a translation, rigid, or affine registration, and then one or two stages of B-spline registration.  The optimizer can use mean-squared error (MSE) for unimodal registration, or mutual information (MI) for multi-modal registration.  The MSE cost function is designed to take advantage of multicore (CPU) or GPU hardware, while the MI cost function is single threaded.
-  </description>
+  <description>This module is used to make synthetic test images for experimentation and debugging.</description>
   <version>0.0</version>
   <documentation-url>http://plastimatch.org</documentation-url>
   <license>BSD-style</license>
-  <contributor>Please direct questions or suggestions to Gregory C. Sharp, gcsharp@partners.org</contributor>
-  <acknowledgements>Funding for this project has been provided by NIH/NCI 6-PO1 CA 21239, the Federal share of program income earned by MGH on C06CA059267 and the Progetto Rocca Foundation, a collaboration between MIT and Politecnico di Milano.</acknowledgements>
+  <contributor>Please direct questions or suggestions to http://groups.google.com/group/plastimatch</contributor>
+  <acknowledgements>Funding for this project has been provided by NIH 2-U54-EB005149 (NA-MIC), NIH/NCI 6-PO1 CA 21239, the Federal share of program income earned by MGH on C06CA059267, and the Progetto Rocca Foundation, a collaboration between MIT and Politecnico di Milano.</acknowledgements>
   <parameters>
     <label>Output</label>
     <description>Output images</description>

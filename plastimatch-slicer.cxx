@@ -35,11 +35,16 @@ main (int argc, char * argv [])
 	"[GLOBAL]\n"
 	"fixed=%s\n"
 	"moving=%s\n"
-	"img_out=%s\n\n",
+	"img_out=%s\n",
 	plmslc_fixed_volume.c_str(),
 	plmslc_moving_volume.c_str(),
 	plmslc_warped_volume.c_str());
 
+    if (plmslc_output_vf != "") {
+	fprintf (fp, "vf_out=%s\n", plmslc_output_vf.c_str());
+    }
+
+    fprintf (fp, "\n");
     if (enable_stage_0) {
 	fprintf (fp,
 	    "[STAGE]\n"
