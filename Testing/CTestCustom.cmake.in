@@ -119,6 +119,8 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     "plm-warp-f"
     "plm-warp-f-stats-1"
     "plm-warp-f-check-1"
+    "plm-warp-f-stats-2"
+    "plm-warp-f-check-2"
     )
 ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 
@@ -126,6 +128,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-aw-a" 
+    "plm-convert-dicom-aw-b" 
     )
 ENDIF ()
 
