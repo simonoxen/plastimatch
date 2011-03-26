@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 #include "file_util.h"
-#include "plastimatch-slicerCLP.h"
+#include "plastimatch_slicer_bsplineCLP.h"
 #include "plm_stages.h"
 
 int 

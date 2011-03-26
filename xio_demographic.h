@@ -6,7 +6,7 @@
 
 #include "plm_config.h"
 
-class plastimatch1_EXPORT Xio_demographic
+class Xio_demographic
 {
 public:
     CBString m_patient_name;
