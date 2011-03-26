@@ -1220,11 +1220,8 @@ SET (RTOG_TO_MHA_SRC
 SET (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
-SET (SYNTHETIC_MHA_GETOPT_SRC
-  synthetic_mha_main_getopt.cxx synthetic_mha_main_getopt.h
-  )
-SET (SYNTHETIC_MHA_DLIB_SRC
-  synthetic_mha_main_dlib.cxx 
+SET (SYNTHETIC_MHA_SRC
+  synthetic_mha_main.cxx 
   )
 SET (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
@@ -1564,12 +1561,8 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_DLIB_SRC}"
+  PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  IF (FALSE)
-    PLM_ADD_EXECUTABLE (synthetic_mha_getopt "${SYNTHETIC_MHA_GETOPT_SRC}"
-      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  ENDIF ()
   PLM_ADD_EXECUTABLE (synthetic_vf "${SYNTHETIC_VF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
