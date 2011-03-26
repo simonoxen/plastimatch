@@ -14,7 +14,7 @@
     <image>
       <name>plmslc_output_one</name>
       <longflag>--output_one</longflag>
-      <label>Output Volume (1)</label>
+      <label>Output volume (1)</label>
       <channel>output</channel>
       <default>None</default>
       <description>First output image</description>
@@ -22,48 +22,48 @@
     <image>
       <name>plmslc_output_two</name>
       <longflag>--output_two</longflag>
-      <label>Output Volume (2)</label>
+      <label>Output volume (2)</label>
       <channel>output</channel>
       <default>None</default>
       <description>Second output image</description>
     </image>
   </parameters>
 
-
   <parameters>
     <label>Options</label>
     <description></description>
-    <boolean>
-      <name>enable_stage_0</name>
-      <label>Enable Stage 0?</label>
-      <default>false</default>
-      <longflag>--enablestage0</longflag>
-      <description>Check this box if you want to run initial translation, rigid, or affine registration</description>
-    </boolean>
-    <integer-vector>
-      <name>stage_0_resolution</name>
-      <label>Image Subsampling rate (vox)</label>
-      <default>5,5,3</default>
-      <longflag>--stage0res</longflag>
-      <description>This defines the image subsampling rate.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
-    </integer-vector>
-    <integer>
-      <name>stage_0_its</name>
-      <label>Max iterations</label>
-      <default>50</default>
-      <longflag>--stage0its</longflag>
-      <description>Maximum number of iterations</description>
-    </integer>
     <string-enumeration>
-      <name>stage_0_xform</name>
-      <longflag>--stage0xform</longflag>
-      <description>Transformation: T = translation, R = rigid, A = affine</description>
-      <label>Transformation</label>
-      <default>T</default>
-      <element>T</element>
-      <element>R</element>
-      <element>A</element>
+      <name>pattern</name>
+      <longflag>--Pattern</longflag>
+      <description>Choose the pattern for the synthetic image</description>
+      <label>Pattern</label>
+      <default>Rectangle</default>
+      <element>Rectangle</element>
+      <element>Sphere</element>
+      <element>Gauss</element>
     </string-enumeration>
+
+    <integer-vector>
+      <name>dim</name>
+      <label>Dimensions</label>
+      <default>30</default>
+      <longflag>--dim</longflag>
+      <description>This is the resolution of the image in voxels.  Use a single number (such as "30") when the x, y, and z dimensions are teh same, or three numbers (such as "512,512,120") when they are different.</description>
+    </integer-vector>
+    <float-vector>
+      <name>origin</name>
+      <label>Origin</label>
+      <default>-29</default>
+      <longflag>--origin</longflag>
+      <description>This is the location of the center of the first voxel in the image.  Use a single number (such as "-250") when the x, y, and z origin values are the same, or three numbers (such as "-250,-250,-100") when they are different.</description>
+    </float-vector>
+    <float-vector>
+      <name>spacing</name>
+      <label>Voxel spacing</label>
+      <default>2</default>
+      <longflag>--spacing</longflag>
+      <description>This is the distance between voxels in mm.  Use a single number (such as "2") when the x, y, and z voxel spacings are the same, or three numbers (such as "1,1,2.5") when they are different.</description>
+    </float-vector>
   </parameters>
 
 </executable>

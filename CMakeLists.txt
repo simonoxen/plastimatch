@@ -1159,8 +1159,8 @@ SET (PLASTIMATCH_SRC
   pcmd_warp_pointset.cxx 
   plastimatch_main.cxx
   )
-SET (PLASTIMATCH_SLICER_SRC
-  plastimatch-slicer.cxx
+SET (PLASTIMATCH_SLICER_BSPLINE_SRC
+  plastimatch_slicer_bspline.cxx
   )
 SET (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
   plastimatch_slicer_dicomrt_import.cxx
@@ -1534,8 +1534,9 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 1)
   IF (SLICER_FOUND)
-    PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer 
-      "${PLASTIMATCH_SLICER_SRC}" "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}")
+    PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_bspline
+      "${PLASTIMATCH_SLICER_BSPLINE_SRC}" "${PLASTIMATCH_LIBS}" 
+      "${GPUIT_EXE_LDFLAGS}")
     PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_import
       "${PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC}" "${PLASTIMATCH_LIBS}" 
       "${GPUIT_EXE_LDFLAGS}")
