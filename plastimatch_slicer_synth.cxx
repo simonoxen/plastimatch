@@ -126,25 +126,30 @@ main (int argc, char * argv [])
 
     /* Create Volume 2 */
     if (plmslc_output_two != "" && plmslc_output_two != "None") {
-	if (plmslc_vol2xlat.size() < 3) {
-	    plmslc_vol2xlat[1] = 0;
-	    plmslc_vol2xlat[2] = 0;
+
+	float xlat[3] = { 0.f, 0.f, 0.f };
+	if (plmslc_vol2xlat.size() >= 1) {
+	    xlat[0] = plmslc_vol2xlat[0];
+	}
+	if (plmslc_vol2xlat.size() >= 3) {
+	    xlat[1] = plmslc_vol2xlat[1];
+	    xlat[2] = plmslc_vol2xlat[2];
 	}
 
 	/* Translate volume */
-	sm_parms.rect_size[0] += plmslc_vol2xlat[0];
-	sm_parms.rect_size[1] += plmslc_vol2xlat[0];
-	sm_parms.rect_size[2] += plmslc_vol2xlat[1];
-	sm_parms.rect_size[3] += plmslc_vol2xlat[1];
-	sm_parms.rect_size[4] += plmslc_vol2xlat[2];
-	sm_parms.rect_size[5] += plmslc_vol2xlat[2];
-	sm_parms.sphere_center[0] += plmslc_vol2xlat[0];
-	sm_parms.sphere_center[1] += plmslc_vol2xlat[1];
-	sm_parms.sphere_center[2] += plmslc_vol2xlat[2];
-	sm_parms.gauss_center[0] += plmslc_vol2xlat[0];
-	sm_parms.gauss_center[1] += plmslc_vol2xlat[1];
-	sm_parms.gauss_center[2] += plmslc_vol2xlat[2];
-	
+	sm_parms.rect_size[0] += xlat[0];
+	sm_parms.rect_size[1] += xlat[0];
+	sm_parms.rect_size[2] += xlat[1];
+	sm_parms.rect_size[3] += xlat[1];
+	sm_parms.rect_size[4] += xlat[2];
+	sm_parms.rect_size[5] += xlat[2];
+	sm_parms.sphere_center[0] += xlat[0];
+	sm_parms.sphere_center[1] += xlat[1];
+	sm_parms.sphere_center[2] += xlat[2];
+	sm_parms.gauss_center[0] += xlat[0];
+	sm_parms.gauss_center[1] += xlat[1];
+	sm_parms.gauss_center[2] += xlat[2];
+
 	img = synthetic_mha (&sm_parms);
 	itk_image_save_float (img, plmslc_output_two.c_str());
     }
