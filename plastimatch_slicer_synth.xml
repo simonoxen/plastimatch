@@ -33,7 +33,7 @@
     <label>Options</label>
     <description></description>
     <string-enumeration>
-      <name>pattern</name>
+      <name>plmslc_pattern</name>
       <longflag>--Pattern</longflag>
       <description>Choose the pattern for the synthetic image</description>
       <label>Pattern</label>
@@ -44,21 +44,21 @@
     </string-enumeration>
 
     <integer-vector>
-      <name>dim</name>
+      <name>plmslc_dim</name>
       <label>Dimensions</label>
       <default>30</default>
       <longflag>--dim</longflag>
       <description>This is the resolution of the image in voxels.  Use a single number (such as "30") when the x, y, and z dimensions are teh same, or three numbers (such as "512,512,120") when they are different.</description>
     </integer-vector>
     <float-vector>
-      <name>origin</name>
+      <name>plmslc_origin</name>
       <label>Origin</label>
       <default>-29</default>
       <longflag>--origin</longflag>
       <description>This is the location of the center of the first voxel in the image.  Use a single number (such as "-250") when the x, y, and z origin values are the same, or three numbers (such as "-250,-250,-100") when they are different.</description>
     </float-vector>
     <float-vector>
-      <name>spacing</name>
+      <name>plmslc_spacing</name>
       <label>Voxel spacing</label>
       <default>2</default>
       <longflag>--spacing</longflag>

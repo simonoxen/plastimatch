@@ -14,6 +14,9 @@ extern "C" {
 gpuit_EXPORT
 void
 string_util_rtrim_whitespace (char *s);
+gpuit_EXPORT
+int
+parse_int13 (int *arr, const char *string);
 
 #if defined __cplusplus
 }

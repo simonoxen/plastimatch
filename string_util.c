@@ -17,3 +17,19 @@ string_util_rtrim_whitespace (char *s)
 	len--;
     }
 }
+
+int
+parse_int13 (int *arr, const char *string)
+{
+    int rc;
+    rc = sscanf (string, "%d %d %d", &arr[0], &arr[1], &arr[2]);
+    if (rc == 3) {
+	return 0;
+    } else if (rc == 1) {
+	arr[1] = arr[2] = arr[0];
+	return 0;
+    } else {
+	/* Failure */
+	return 1;
+    }
+}
