@@ -59,6 +59,11 @@ load_dicom_dir_rdr(T rdr, const char *dicom_dir)
     gdcm::SerieHelper* gsh = nameGenerator->GetSeriesHelper ();
     gsh->AddRestriction (0x0008, 0x0060, "RTDOSE", gdcm::GDCM_DIFFERENT);
 
+    /* Reject GE Scouts */
+    gsh->AddRestriction (0x0018, 0x0022, "SCOUT MODE", gdcm::GDCM_DIFFERENT);
+    /* Reject GE Dose reports */
+    gsh->AddRestriction (0x0008, 0x103e, "Dose Report", gdcm::GDCM_DIFFERENT);
+
     nameGenerator->SetDirectory (dicom_dir);
     try {
 	std::cout << std::endl << "The directory: " << std::endl;

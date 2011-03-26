@@ -1019,7 +1019,23 @@ PLM_ADD_TEST (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch convert dicom-rt (pinnacle)
+## plastimatch convert dicom-rt (aw)
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom-aw-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dose.mha"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-aw-b" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202FFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-b-dose.mha"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (cerr)
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-convert-dicom-cerr-a" 
