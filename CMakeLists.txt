@@ -1219,6 +1219,9 @@ SET (RTOG_TO_MHA_SRC
 SET (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
+SET (SIFTnD_SRC
+  siftnD.cxx
+  )
 SET (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx 
   )
@@ -1558,6 +1561,8 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
+  PLM_ADD_EXECUTABLE (siftnD "${SIFTnD_SRC}"
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (synthetic_vf "${SYNTHETIC_VF_SRC}"
@@ -1609,6 +1614,7 @@ IF (MATLAB_FOUND AND PLM_BUILD_MEX_TEST)
   MEX_TARGET (mex_drr 
     "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
 ENDIF ()
+
 
 ##-----------------------------------------------------------------------------
 ##  Slicer loadable module (in development)
