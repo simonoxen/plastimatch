@@ -793,31 +793,42 @@ namespace itk
     typedef itk::DiscreteGaussianImageFilter<TFixedImageType, TFixedImageType > 
       GaussianFilterType;
 
-    typename GaussianFilterType::Pointer
-      gaussianFilter[m_GaussianImagesNumber];
+    //typename GaussianFilterType::ConstPointer gaussianFilter[m_GaussianImagesNumber];
+    //std::vector<GaussianFilterType::Pointer> gaussianFilter(m_GaussianImagesNumber);
 
-    typename TFixedImageType::Pointer
-      gaussianImage[m_GaussianImagesNumber];
-
+    //typename TFixedImageType::Pointer    gaussianImage[m_GaussianImagesNumber];
+    std::vector<TFixedImageType::Pointer> gaussianImage(m_GaussianImagesNumber);
 
     // Declare DoG 
     typedef itk::SubtractImageFilter<TFixedImageType, TFixedImageType, 
       TFixedImageType> DifferenceFilterType;
-    typename DifferenceFilterType::Pointer dogFilter[m_DifferenceOfGaussianImagesNumber];
-    typename TFixedImageType::Pointer dogImage[m_DifferenceOfGaussianImagesNumber];
+    //typename DifferenceFilterType::Pointer dogFilter[m_DifferenceOfGaussianImagesNumber];
+    //typename TFixedImageType::Pointer dogImage[m_DifferenceOfGaussianImagesNumber];
+    
+    //std::vector<DifferenceFilterType::Pointer> dogFilter(m_DifferenceOfGaussianImagesNumber);
+    std::vector<TFixedImageType::Pointer> dogImage(m_DifferenceOfGaussianImagesNumber);
 
     // Resampled image filters
-    typename ResampleFilterType::Pointer scaler[m_ImageScalesTestedNumber];
-    typename TFixedImageType::Pointer scaleImage[m_ImageScalesTestedNumber];
+    //typename ResampleFilterType::Pointer scaler[m_ImageScalesTestedNumber];
+    //typename TFixedImageType::Pointer scaleImage[m_ImageScalesTestedNumber];
+    std::vector<ResampleFilterType::Pointer> scaler(m_ImageScalesTestedNumber);
+    std::vector<TFixedImageType::Pointer> scaleImage(m_ImageScalesTestedNumber);
 
 #ifdef GENERATE_KEYS
     // Declare Gradient
-    typename GradientFilterType::Pointer gradFilter[m_ImageScalesTestedNumber];
-    typename GradientImageType::Pointer gradImage[m_ImageScalesTestedNumber];
-    typename GradientImageType::Pointer hgradImage[m_ImageScalesTestedNumber];
+    //typename GradientFilterType::Pointer gradFilter[m_ImageScalesTestedNumber];
+    //typename GradientImageType::Pointer gradImage[m_ImageScalesTestedNumber];
+    //typename GradientImageType::Pointer hgradImage[m_ImageScalesTestedNumber];
 
-    typename GradientMagFilterType::Pointer gradMagFilter[m_ImageScalesTestedNumber];
-    FixedImagePointer gradMagImage[m_ImageScalesTestedNumber];
+    //typename GradientMagFilterType::Pointer gradMagFilter[m_ImageScalesTestedNumber];
+    //FixedImagePointer gradMagImage[m_ImageScalesTestedNumber];
+    
+    //std::vector<GradientFilterType::Pointer> gradFilter(m_ImageScalesTestedNumber);
+    std::vector<GradientImageType::Pointer> gradImage(m_ImageScalesTestedNumber);
+    std::vector<GradientImageType::Pointer> hgradImage(m_ImageScalesTestedNumber);
+
+    //std::vector<GradientMagFilterType::Pointer> gradMagFilter(m_ImageScalesTestedNumber);
+    std::vector<FixedImagePointer> gradMagImage(m_ImageScalesTestedNumber);
 #endif
 
 
@@ -858,20 +869,33 @@ namespace itk
 #ifdef GENERATE_KEYS
       // ...Compute Gradient
       std::cout << "...Computing Gradient...";
-      gradFilter[i] = GradientFilterType::New();
-      gradFilter[i]->SetInput(scaleImage[i]);
+      typename GradientFilterType::Pointer tmpGradFilter = GradientFilterType::New();
+      //gradFilter[i] = GradientFilterType::New();
+      //gradFilter[i]->SetInput(scaleImage[i]);
       // Do this in pixel space
-      gradFilter[i]->SetUseImageSpacing(false);
-      gradFilter[i]->Update();
-      gradImage[i] = gradFilter[i]->GetOutput();
+      //gradFilter[i]->SetUseImageSpacing(false);
+      //gradFilter[i]->Update();
+      //gradImage[i] = gradFilter[i]->GetOutput();
+      //hgradImage[i] = this->GetHypersphericalCoordinates(gradImage[i]);
+      tmpGradFilter->SetInput(scaleImage[i]);
+      // Do this in pixel space
+      tmpGradFilter->SetUseImageSpacing(false);
+      tmpGradFilter->Update();
+      gradImage[i] = tmpGradFilter->GetOutput();
       hgradImage[i] = this->GetHypersphericalCoordinates(gradImage[i]);
 
-      gradMagFilter[i] = GradientMagFilterType::New();
-      gradMagFilter[i]->SetInput(scaleImage[i]);
+	  typename GradientMagFilterType::Pointer tmpGradMagFilter = GradientMagFilterType::New();
+      //gradMagFilter[i] = GradientMagFilterType::New();
+      //gradMagFilter[i]->SetInput(scaleImage[i]);
       // Do this in pixel space
-      gradMagFilter[i]->SetUseImageSpacing(false);
-      gradMagFilter[i]->Update();
-      gradMagImage[i] = gradMagFilter[i]->GetOutput();
+      //gradMagFilter[i]->SetUseImageSpacing(false);
+      //gradMagFilter[i]->Update();
+      //gradMagImage[i] = gradMagFilter[i]->GetOutput();
+      tmpGradMagFilter->SetInput(scaleImage[i]);
+      // Do this in pixel space
+      tmpGradMagFilter->SetUseImageSpacing(false);
+      tmpGradMagFilter->Update();
+      gradMagImage[i] = tmpGradMagFilter->GetOutput();
       std::cout << "...Done\n";
 #endif
 
@@ -881,7 +905,7 @@ namespace itk
 	std::cout << "Setting Up Gaussian Filter " << i << "-" << j << "...";
 	std::cout.flush();
 #endif
-	gaussianFilter[j] = GaussianFilterType::New();
+	typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();
 
 	/* Variance is square of the sigma
 	 * sigma = (2^(j/s)*sigma)
@@ -889,19 +913,26 @@ namespace itk
 
 	double variance = this->GetGaussianScale(j);
 	variance *= variance;
-	gaussianFilter[j]->SetVariance(variance);
-	gaussianFilter[j]->SetInput( scaleImage[i] );
+	//gaussianFilter[j]->SetVariance(variance);
+	//gaussianFilter[j]->SetInput( scaleImage[i] );
 	// pixel-wise smoothing
-	gaussianFilter[j]->SetUseImageSpacing(false); 
+	//gaussianFilter[j]->SetUseImageSpacing(false); 
+	//try {
+	//  gaussianFilter[j]->Update();
+	//}
+	tmpGaussianFilter->SetVariance(variance);
+	tmpGaussianFilter->SetInput( scaleImage[i] );
+	// pixel-wise smoothing
+	tmpGaussianFilter->SetUseImageSpacing(false); 
 	try {
-	  gaussianFilter[j]->Update();
+	  tmpGaussianFilter->Update();
 	}
 	catch( itk::ExceptionObject & excep ) {
 	  std::cerr << "Exception caught !" << std::endl;
 	  std::cerr << excep << std::endl;
 	}
 
-	gaussianImage[j] = gaussianFilter[j]->GetOutput();
+	gaussianImage[j] = tmpGaussianFilter->GetOutput();
 
 #ifdef DEBUG
 	char filename[256];
@@ -921,11 +952,17 @@ namespace itk
 	std::cout << "Setting Up DoG Filter " << i << "-" << j << "...";
 	std::cout.flush();
 #endif
-	dogFilter[j] = DifferenceFilterType::New();
-	dogFilter[j]->SetInput1( gaussianImage[j] );
-	dogFilter[j]->SetInput2( gaussianImage[j+1] );
-	dogFilter[j]->Update();
-	dogImage[j] = dogFilter[j]->GetOutput();
+	typename DifferenceFilterType::Pointer tmpDogFilter = DifferenceFilterType::New();
+    tmpDogFilter->SetInput1( gaussianImage[j] );
+	tmpDogFilter->SetInput2( gaussianImage[j+1] );
+	tmpDogFilter->Update();
+	dogImage[j] = tmpDogFilter->GetOutput();
+	
+	//dogFilter[j] = DifferenceFilterType::New();
+	//dogFilter[j]->SetInput1( gaussianImage[j] );
+	//dogFilter[j]->SetInput2( gaussianImage[j+1] );
+	//dogFilter[j]->Update();
+	//dogImage[j] = dogFilter[j]->GetOutput();
 
 #ifdef DEBUG
 	char filename[256];
