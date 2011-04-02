@@ -183,7 +183,7 @@ MACRO (PLM_ADD_LIBRARY
   IF (BUILD_AGAINST_SLICER3)
     ADD_LIBRARY (${TARGET_NAME} STATIC ${TARGET_SRC})
     SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
-  ELSE (BUILD_AGAINST_SLICER3)
+  ELSE ()
     ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
     ##
     IF (PLM_OLD_INSTALL_TARGETS)
@@ -191,14 +191,14 @@ MACRO (PLM_ADD_LIBRARY
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
-    ENDIF (PLM_OLD_INSTALL_TARGETS)
+    ENDIF ()
     ##
-  ENDIF (BUILD_AGAINST_SLICER3)
+  ENDIF ()
   TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
     SET_TARGET_PROPERTIES(${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-  ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+  ENDIF ()
 ENDMACRO (PLM_ADD_LIBRARY)
     
 MACRO (PLM_ADD_EXECUTABLE 
@@ -210,13 +210,13 @@ MACRO (PLM_ADD_EXECUTABLE
     IF (NOT ${TARGET_LDFLAGS} STREQUAL "")
       SET_TARGET_PROPERTIES(${TARGET_NAME} 
 	PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
-    ENDIF (NOT ${TARGET_LDFLAGS} STREQUAL "")
+    ENDIF ()
     # CXX linkage required for nlopt
     SET_TARGET_PROPERTIES (${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
     IF (${TARGET_INSTALL})
       INSTALL(TARGETS ${TARGET_NAME} DESTINATION bin)
-    ENDIF (${TARGET_INSTALL})
-  ENDIF (NOT BUILD_AGAINST_SLICER3)
+    ENDIF ()
+  ENDIF ()
 ENDMACRO (PLM_ADD_EXECUTABLE)
 
 MACRO (PLM_ADD_SLICER_EXECUTABLE 
@@ -292,9 +292,9 @@ CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
 ##-----------------------------------------------------------------------------
 IF (UNIX)
   SET (MATH_LIB -lm)
-ELSE (UNIX)
+ELSE ()
   SET (MATH_LIB)
-ENDIF (UNIX)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
@@ -307,19 +307,19 @@ IF (NOT MINGW)
 
   # The FortranCInterface is not included on CMake 2.6.2
   # INCLUDE (FortranCInterface)
-ENDIF (NOT MINGW)
+ENDIF ()
 
 # Choose between f2c or fortran
 SET (PLM_USE_F2C FALSE)
 IF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
   SET (PLM_USE_F2C TRUE)
-ENDIF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
+ENDIF ()
 
 IF (PLM_USE_F2C)
   # If the user wants the system f2c, check for it
   IF (PLM_PREFER_SYSTEM_F2C)
     FIND_PACKAGE (F2C)
-  ENDIF (PLM_PREFER_SYSTEM_F2C)
+  ENDIF ()
 
   # If the user doesn't want system f2c, or didn't find it, build the 
   # included f2c
@@ -328,8 +328,8 @@ IF (PLM_USE_F2C)
     ADD_SUBDIRECTORY (libs/libf2c)
     SET (F2C_LIBRARY f2c1)
     SET (F2C_INCLUDE_DIR libs/libf2c)
-  ENDIF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
-ENDIF (PLM_USE_F2C)
+  ENDIF ()
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
@@ -462,7 +462,7 @@ IF (SLICER_FOUND)
 
   # Slicer seems to require a shared library build
   #SET (PLM_BUILD_SHARED_LIBS ON)
-ELSE (SLICER_FOUND)
+ELSE ()
   MESSAGE (STATUS "Looking for Slicer3 - not found")
 ENDIF ()
 
@@ -703,7 +703,7 @@ IF (NLOPT_FOUND)
     ${GPUIT_LIBRARY_DEPENDENCIES}
     ${NLOPT_LIBRARIES}
     )
-ENDIF (NLOPT_FOUND)
+ENDIF ()
 
 IF (OPENMP_FOUND)
   SET (GPUIT_LIBRARY_DEPENDENCIES
@@ -1293,7 +1293,7 @@ INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 # conflicts with the C/C++ header of the same name.
 #IF (PLM_USE_F2C)
 #  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
-#ENDIF (PLM_USE_F2C)
+#ENDIF ()
 
 IF (BROOK_FOUND)
   INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
@@ -1669,7 +1669,7 @@ ENDIF ()
 IF (ITK_FOUND)
   IF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
     INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
-  ENDIF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+  ENDIF ()
 ENDIF ()
 
 IF (CUDA_FOUND)
