@@ -303,7 +303,7 @@ ENDIF (UNIX)
 IF (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
-  INCLUDE (PLM_FindFortran.cmake)
+  INCLUDE (cmake/PLM_FindFortran.cmake)
 
   # The FortranCInterface is not included on CMake 2.6.2
   # INCLUDE (FortranCInterface)
@@ -1936,7 +1936,7 @@ MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR}
     -DPLM_TESTING_BUILD_DIR=${PLM_TESTING_BUILD_DIR}
     "-DPARMS=${PARMS}"
-    -P ${CMAKE_SOURCE_DIR}/RUN_CTEST.cmake
+    -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake
     )
 ENDMACRO ()
 
