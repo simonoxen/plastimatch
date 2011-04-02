@@ -337,7 +337,7 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-plm_check_interval (bspline-d-check
+plmtest_check_interval (bspline-d-check
   "${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
   "^MSE\\\\[.*, 10] *([0-9.]*)"
   "1168.25"
@@ -350,7 +350,7 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-plm_check_interval (bspline-e-check
+plmtest_check_interval (bspline-e-check
   "${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
   "^MSE\\\\[.*, 10] *([0-9.]*)"
   "1168.25"
@@ -363,7 +363,7 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-plm_check_interval (bspline-f-check
+plmtest_check_interval (bspline-f-check
   "${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
   "^MSE\\\\[.*, 10] *([0-9.]*)"
   "1168.25"
