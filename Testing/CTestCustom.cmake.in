@@ -69,7 +69,7 @@ IF (NOT CMAKE_Fortran_COMPILER_WORKS)
     "bragg-curve"
     "bragg-curve-check"
     )
-ENDIF (NOT CMAKE_Fortran_COMPILER_WORKS)
+ENDIF ()
 
 ## If we didn't get XiO dicom-rt test data, don't run these tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
@@ -96,7 +96,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
     )
-ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+ENDIF ()
 
 ## If we didn't get xio test data, don't run xio tests
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
@@ -122,7 +122,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     "plm-warp-f-stats-2"
     "plm-warp-f-check-2"
     )
-ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+ENDIF ()
 
 IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
   SET (CTEST_CUSTOM_TESTS_IGNORE
@@ -157,7 +157,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
     "fdk-cpu-c-stats"
     "fdk-cpu-c-check"
     )
-ENDIF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
+ENDIF ()
 
 ## If we don't have fftw, don't run these tests
 IF (NOT FFTW_FOUND)
@@ -167,7 +167,7 @@ IF (NOT FFTW_FOUND)
     "fdk-cpu-c-stats"
     "fdk-cpu-c-check"
     )
-ENDIF (NOT FFTW_FOUND)
+ENDIF ()
 
 ## If we didn't compile with cuda, don't run these tests
 IF (NOT RUN_CUDA_TESTS)
@@ -185,7 +185,7 @@ IF (NOT RUN_CUDA_TESTS)
     "plm-bspline-cuda-stats" 
     "plm-bspline-cuda-check" 
     )
-ENDIF (NOT RUN_CUDA_TESTS)
+ENDIF ()
 
 ## If we didn't compile with opencl, don't run these tests
 IF (NOT RUN_OPENCL_TESTS)
@@ -198,7 +198,7 @@ IF (NOT RUN_OPENCL_TESTS)
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
     ) 
-ENDIF (NOT RUN_OPENCL_TESTS)
+ENDIF ()
 
 ## If we didn't compile with brook, don't run these tests
 IF (NOT BROOK_FOUND)
@@ -208,7 +208,7 @@ IF (NOT BROOK_FOUND)
     "fdk-brook-stats"
     "fdk-brook-check"
     )
-ENDIF (NOT BROOK_FOUND)
+ENDIF ()
 
 ## Don't test unused algorithms
 IF (NOT PLM_TEST_BSPLINE_FLAVORS)
@@ -225,7 +225,7 @@ IF (NOT PLM_TEST_BSPLINE_FLAVORS)
     "bspline-f"
     "bspline-f-check"
     )
-ENDIF (NOT PLM_TEST_BSPLINE_FLAVORS)
+ENDIF ()
 
 ## Don't delete from the list, comment out instead.
 IF (PLM_REDUCED_TESTS)
@@ -250,7 +250,7 @@ IF (PLM_REDUCED_TESTS)
     "bspline-b"
     "bspline-b-check"
     "bspline-c"
-    "bspline-c-check"
+#    "bspline-c-check"
     "bspline-d"
     "bspline-d-check"
     "bspline-e"
@@ -338,6 +338,7 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-g"
 
     "plm-convert-dicom-aw-a"
+    "plm-convert-dicom-aw-b"
     "plm-convert-dicom-cerr-a"
     "plm-convert-dicom-pinnacle-a"
 
@@ -412,20 +413,22 @@ IF (PLM_REDUCED_TESTS)
     "plm-warp-d" 
     "plm-warp-d-stats"
     "plm-warp-d-check"
-#    "plm-warp-e" 
-#    "plm-warp-e-stats-1"
-#    "plm-warp-e-check-1"
-#    "plm-warp-e-stats-2"
-#    "plm-warp-e-check-2"
-#    "plm-warp-e-stats-3"
-#    "plm-warp-e-check-3"
-#    "plm-warp-e-stats-4"
-#    "plm-warp-e-check-4"
-#    "plm-warp-e-check-5"
-#    "plm-warp-e-check-6"
+    "plm-warp-e" 
+    "plm-warp-e-stats-1"
+    "plm-warp-e-check-1"
+    "plm-warp-e-stats-2"
+    "plm-warp-e-check-2"
+    "plm-warp-e-stats-3"
+    "plm-warp-e-check-3"
+    "plm-warp-e-stats-4"
+    "plm-warp-e-check-4"
+    "plm-warp-e-check-5"
+    "plm-warp-e-check-6"
     "plm-warp-f" 
     "plm-warp-f-stats-1"
     "plm-warp-f-check-1"
+    "plm-warp-f-stats-2"
+    "plm-warp-f-check-2"
     "plm-warp-g" 
     "plm-warp-g-stats-1"
     "plm-warp-g-check-1"

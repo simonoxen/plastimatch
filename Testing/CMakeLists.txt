@@ -1,5 +1,18 @@
 PROJECT(PLM_Testing)
 
+macro (plmtest_check_interval 
+    test_name stdout_file regex_string lower_thresh upper_thresh)
+  string (REPLACE "\\" "\\\\" regex_escaped "${regex_string}")
+  add_test (${test_name}
+    ${CMAKE_COMMAND} 
+    "-DINFILE=${stdout_file}"
+    "-DREGEX=${regex_escaped}"
+    "-DLOWER_THRESH=${lower_thresh}"
+    "-DUPPER_THRESH=${upper_thresh}"
+    -P "${PLM_TESTING_SOURCE_DIR}/PlmCheckInterval.cmake"
+    )
+endmacro ()
+
 ## -------------------------------------------------------------------------
 ## Download data sets
 ## -------------------------------------------------------------------------
@@ -285,13 +298,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;a;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-a-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-a.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=18945.5"
-  "-DUPPER_THRESH=18945.7"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-a-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-a.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "18945.5"
+  "18945.7"
   )
 
 PLM_ADD_TEST (
@@ -300,13 +311,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;b;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-b-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-b.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=18945.5"
-  "-DUPPER_THRESH=18945.7"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-b-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-b.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "18945.5"
+  "18945.7"
   )
 
 PLM_ADD_TEST (
@@ -315,13 +324,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;c;-x;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-c-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-c.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-c-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-c.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -330,13 +337,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;d;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-d-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plm_check_interval (bspline-d-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-d.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -345,13 +350,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;e;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-e-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plm_check_interval (bspline-e-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-e.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -360,13 +363,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;f;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-f-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plm_check_interval (bspline-f-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-f.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -375,13 +376,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;g;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-g-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-g.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-g-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-g.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -390,13 +389,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;h;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (bspline-h-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-h.stdout.txt"
-  "-DREGEX=^MSE\\\\[.*, 10] *([0-9.]*)"
-  "-DLOWER_THRESH=1168.25"
-  "-DUPPER_THRESH=1168.35"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-h-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-h.stdout.txt"
+  "^MSE\\\\[.*, 10] *([0-9.]*)"
+  "1168.25"
+  "1168.35"
   )
 
 PLM_ADD_TEST (
@@ -405,13 +402,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/bspline
   "-a;steepest;-m;10;-f;c;-M;mi;-O;${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-3.mha"
   )
-ADD_TEST (bspline-mi-c-1-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
-  "-DREGEX=^MI\\\\[.*, 10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.800"
-  "-DUPPER_THRESH=-0.796"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-mi-c-1-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-mi-c-1.stdout.txt"
+  "^MI\\\\[.*, 10] *([-0-9.]*)"
+  "-0.800"
+  "-0.796"
   )
 
 PLM_ADD_TEST (
@@ -422,13 +417,11 @@ PLM_ADD_TEST (
   )
 ## Without DOUBLE_HIST defined, output is 0.031
 ## With DOUBLE_HIST defined, output is 0.032
-ADD_TEST (bspline-mi-c-2-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
-  "-DREGEX=^MI\\\\[.*, 10] *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.035"
-  "-DUPPER_THRESH=-0.031"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (bspline-mi-c-2-check
+  "${PLM_TESTING_BUILD_DIR}/bspline-mi-c-2.stdout.txt"
+  "^MI\\\\[.*, 10] *([-0-9.]*)"
+  "-0.035"
+  "-0.031"
   )
 
 ## -------------------------------------------------------------------------
@@ -442,13 +435,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/demons
   "-m;50;-s;3;-f;5 5 5;-O;${PLM_TESTING_BUILD_DIR}/demons-a.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (demons-a-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/demons-a.stdout.txt"
-  "-DREGEX=^Mean: *([0-9.]*)"
-  "-DLOWER_THRESH=2.1"
-  "-DUPPER_THRESH=2.2"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (demons-a-check
+  "${PLM_TESTING_BUILD_DIR}/demons-a.stdout.txt"
+  "^Mean: *([0-9.]*)"
+  "2.1"
+  "2.2"
   )
 
 PLM_ADD_TEST (
@@ -457,13 +448,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/demons
   "-A;cuda;-m;50;-s;3;-f;5 5 5;-O;${PLM_TESTING_BUILD_DIR}/demons-cuda-a.mha;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/gauss-2.mha"
   )
-ADD_TEST (demons-cuda-a-check
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/demons-cuda-a.stdout.txt"
-  "-DREGEX=^Mean: *([0-9.]*)"
-  "-DLOWER_THRESH=2.1"
-  "-DUPPER_THRESH=2.2"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval (demons-cuda-a-check
+  "${PLM_TESTING_BUILD_DIR}/demons-cuda-a.stdout.txt"
+  "^Mean: *([0-9.]*)"
+  "2.1"
+  "2.2"
   )
 
 
@@ -488,14 +477,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;drr-a/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-a-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-a-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-a-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 PLM_ADD_TEST (
@@ -510,14 +496,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;drr-b/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-b-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-b-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-b-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-b-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 PLM_ADD_TEST (
@@ -532,14 +515,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;drr-c/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-c-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-c-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-c-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 PLM_ADD_TEST (
@@ -554,14 +534,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;drr-d/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-d-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-d-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-d-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-d-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 PLM_ADD_TEST (
@@ -576,14 +553,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/drr-cuda/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-cuda-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-cuda-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-cuda-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-cuda-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 PLM_ADD_TEST (
@@ -598,14 +572,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_0010.pfm"
   )
-ADD_TEST (
-  "drr-opencl-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/drr-opencl-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=0.045"
-  "-DUPPER_THRESH=0.055"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("drr-opencl-check"
+  "${PLM_TESTING_BUILD_DIR}/drr-opencl-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "0.045"
+  "0.055"
   )
 
 ## -------------------------------------------------------------------------
@@ -630,14 +601,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.mha"
   )
-ADD_TEST (
-  "fdk-cpu-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-a-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-987.5"
-  "-DUPPER_THRESH=-986.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-cpu-a-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-cpu-a-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "-987.5"
+  "-986.5"
   )
 PLM_ADD_TEST (
   "fdk-cpu-b"
@@ -651,14 +619,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-cpu-b.mha"
   )
-ADD_TEST (
-  "fdk-cpu-b-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-b-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-821.5"
-  "-DUPPER_THRESH=-820.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-cpu-b-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-cpu-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-821.5"
+  "-820.5"
   )
 PLM_ADD_TEST (
   "fdk-cpu-c"
@@ -672,14 +637,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-cpu-c.mha"
   )
-ADD_TEST (
-  "fdk-cpu-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cpu-c-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-990.0"
-  "-DUPPER_THRESH=-989.0"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-cpu-c-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-cpu-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-990.0"
+  "-989.0"
   )
 
 PLM_ADD_TEST (
@@ -694,14 +656,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk_brook_output.mha"
   )
-ADD_TEST (
-  "fdk-brook-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-brook-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-987.5"
-  "-DUPPER_THRESH=-986.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-brook-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-brook-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "-987.5"
+  "-986.5"
   )
 
 PLM_ADD_TEST (
@@ -716,14 +675,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-cuda-a.mha"
   )
-ADD_TEST (
-  "fdk-cuda-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-cuda-a-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-987.5"
-  "-DUPPER_THRESH=-986.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-cuda-a-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-cuda-a-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "-987.5"
+  "-986.5"
   )
 
 PLM_ADD_TEST (
@@ -738,14 +694,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-opencl-a.mha"
   )
-ADD_TEST (
-  "fdk-opencl-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/fdk-opencl-a-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=-987.5"
-  "-DUPPER_THRESH=-986.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("fdk-opencl-a-check"
+  "${PLM_TESTING_BUILD_DIR}/fdk-opencl-a-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "-987.5"
+  "-986.5"
   )
 
 ## -------------------------------------------------------------------------
@@ -765,14 +718,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-img.mha"
   )
-ADD_TEST (
-  "landmark-warp-a-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-860.5"
-  "-DUPPER_THRESH=-860.0"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-a-check-1"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-860.5"
+  "-860.0"
   )
 PLM_ADD_TEST (
   "landmark-warp-a-stats-2"
@@ -780,14 +730,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-vf.mha"
   )
-ADD_TEST (
-  "landmark-warp-a-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats-2.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=-23.2"
-  "-DUPPER_THRESH=-22.7"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-a-check-2"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats-2.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "-23.2"
+  "-22.7"
   )
 
 PLM_ADD_TEST (
@@ -802,14 +749,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha"
   )
-ADD_TEST (
-  "landmark-warp-b-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-992.01"
-  "-DUPPER_THRESH=-991.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-b-check-1"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-992.01"
+  "-991.5"
   )
 PLM_ADD_TEST (
   "landmark-warp-b-stats-2"
@@ -817,14 +761,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha"
   )
-ADD_TEST (
-  "landmark-warp-b-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-2.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=-1.55"
-  "-DUPPER_THRESH=-1.4"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-b-check-2"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-2.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "-1.55"
+  "-1.4"
   )
 
 PLM_ADD_TEST (
@@ -839,14 +780,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-img.mha"
   )
-ADD_TEST (
-  "landmark-warp-c-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-992.0"
-  "-DUPPER_THRESH=-991.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-c-check-1"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-992.0"
+  "-991.5"
   )
 PLM_ADD_TEST (
   "landmark-warp-c-stats-2"
@@ -854,14 +792,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha"
   )
-ADD_TEST (
-  "landmark-warp-c-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-2.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=-1.6"
-  "-DUPPER_THRESH=-1.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("landmark-warp-c-check-2"
+  "${PLM_TESTING_BUILD_DIR}/landmark-warp-c-stats-2.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "-1.6"
+  "-1.5"
   )
 
 ## -------------------------------------------------------------------------
@@ -886,14 +821,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha"
   )
-ADD_TEST (
-  "plm-convert-dicom-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-667.5"
-  "-DUPPER_THRESH=-666.6"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-667.5"
+  "-666.6"
   )
 
 PLM_ADD_TEST (
@@ -909,24 +841,18 @@ PLM_ADD_TEST (
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-ss-img.mha"
   )
 IF (PLM_USE_SS_IMAGE_VEC)
-ADD_TEST (
-  "plm-convert-dicom-b-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
-  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
-  "-DLOWER_THRESH=62767"
-  "-DUPPER_THRESH=62767"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-b-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "62767"
+  "62767"
   )
 ELSE ()
-ADD_TEST (
-  "plm-convert-dicom-b-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=1.05"
-  "-DUPPER_THRESH=1.06"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-b-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.06"
   )
 ENDIF ()
 PLM_ADD_TEST (
@@ -943,24 +869,18 @@ PLM_ADD_TEST (
   )
 IF (PLM_USE_SS_IMAGE_VEC)
 # To be resolved.  Why do dicom-b and dicom-c give different answers?
-ADD_TEST (
-  "plm-convert-dicom-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-stats.stdout.txt"
-  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
-  "-DLOWER_THRESH=62769"
-  "-DUPPER_THRESH=62769"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-stats.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "62769"
+  "62769"
   )
 ELSE ()
-ADD_TEST (
-  "plm-convert-dicom-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=1.05"
-  "-DUPPER_THRESH=1.06"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.06"
   )
 ENDIF ()
 PLM_ADD_TEST (
@@ -975,14 +895,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-d-dose-img.mha"
   )
-ADD_TEST (
-  "plm-convert-dicom-d-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-d-stats.stdout.txt"
-  "-DREGEX=MAX *([-0-9.]*)"
-  "-DLOWER_THRESH=42.1"
-  "-DUPPER_THRESH=42.2"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-d-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-d-stats.stdout.txt"
+  "MAX *([-0-9.]*)"
+  "42.1"
+  "42.2"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-e" 
@@ -1002,14 +919,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "compare;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dose-img.mha;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dose-img.mha"
   )
-ADD_TEST (
-  "plm-convert-dicom-f-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-stats.stdout.txt"
-  "-DREGEX=MAE *([-0-9.]*)"
-  "-DLOWER_THRESH=0.000"
-  "-DUPPER_THRESH=0.005"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-dicom-f-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-stats.stdout.txt"
+  "MAE *([-0-9.]*)"
+  "0.000"
+  "0.005"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-g" 
@@ -1070,24 +984,18 @@ PLM_ADD_TEST (
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-cxt.mha"
   )
 IF (PLM_USE_SS_IMAGE_VEC)
-ADD_TEST (
-  "plm-convert-cxt-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
-  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
-  "-DLOWER_THRESH=62769"
-  "-DUPPER_THRESH=62769"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-cxt-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "62769"
+  "62769"
   )
 ELSE ()
-ADD_TEST (
-  "plm-convert-cxt-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=1.05"
-  "-DUPPER_THRESH=1.06"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-cxt-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-cxt-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.06"
   )
 ENDIF ()
 
@@ -1106,14 +1014,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio.mha"
   )
-ADD_TEST (
-  "plm-convert-xio-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-convert-xio-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-667.5"
-  "-DUPPER_THRESH=-666.6"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-convert-xio-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-xio-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-667.5"
+  "-666.6"
   )
 
 ## -------------------------------------------------------------------------
@@ -1154,14 +1059,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "compare;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;${PLM_TESTING_BUILD_DIR}/plm-register-align-center-img.mha"
   )
-ADD_TEST (
-  "plm-register-align-center-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-align-center-stats.stdout.txt"
-  "-DREGEX=MAE *([-0-9.]*)"
-  "-DLOWER_THRESH=-0.005"
-  "-DUPPER_THRESH=0.005"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-register-align-center-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-align-center-stats.stdout.txt"
+  "MAE *([-0-9.]*)"
+  "-0.005"
+  "0.005"
   )
 
 PLM_ADD_TEST (
@@ -1176,14 +1078,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-img.mha"
   )
-ADD_TEST (
-  "plm-register-itk-translation-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-637.0"
-  "-DUPPER_THRESH=-636.9"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-register-itk-translation-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-637.0"
+  "-636.9"
   )
 
 PLM_ADD_TEST (
@@ -1198,14 +1097,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-intermediate-img.mha"
   )
-ADD_TEST (
-  "plm-register-itk-rigid-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-965.7"
-  "-DUPPER_THRESH=-965.4"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-register-itk-rigid-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-965.7"
+  "-965.4"
   )
 PLM_ADD_TEST (
   "plm-register-itk-rigid-stats-2"
@@ -1213,14 +1109,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-img.mha"
   )
-ADD_TEST (
-  "plm-register-itk-rigid-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-2.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-965.7"
-  "-DUPPER_THRESH=-965.4"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-register-itk-rigid-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-rigid-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-965.7"
+  "-965.4"
   )
 
 ## -------------------------------------------------------------------------
@@ -1243,14 +1136,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-img.mha"
   )
-ADD_TEST (
-  "plm-bspline-single-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-bspline-single-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bspline-single-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
 PLM_ADD_TEST (
@@ -1265,14 +1155,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-img.mha"
   )
-ADD_TEST (
-  "plm-bspline-single-h-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-bspline-single-h-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
 PLM_ADD_TEST (
@@ -1287,14 +1174,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-img.mha"
   )
-ADD_TEST (
-  "plm-bspline-openmp-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-bspline-openmp-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bspline-openmp-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
 PLM_ADD_TEST (
@@ -1309,14 +1193,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-img.mha"
   )
-ADD_TEST (
-  "plm-bspline-cuda-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=${PLM_BSPLINE_TEST_LOWER_THRESH}"
-  "-DUPPER_THRESH=${PLM_BSPLINE_TEST_UPPER_THRESH}"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-bspline-cuda-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-bspline-cuda-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "${PLM_BSPLINE_TEST_LOWER_THRESH}"
+  "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
 PLM_ADD_TEST (
@@ -1331,14 +1212,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-img.mha"
   )
-ADD_TEST (
-  "plm-register-bspline-ushort-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=107.6"
-  "-DUPPER_THRESH=108.6"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-register-bspline-ushort-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-bspline-ushort-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "107.6"
+  "108.6"
   )
 
 
@@ -1393,14 +1271,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha"
   )
-ADD_TEST (
-  "plm-compose-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-a-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=13.1"
-  "-DUPPER_THRESH=13.3"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-compose-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-compose-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "13.1"
+  "13.3"
   )
 PLM_ADD_TEST (
   "plm-compose-b" 
@@ -1420,14 +1295,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha"
   )
-ADD_TEST (
-  "plm-compose-b-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-b-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=13.1"
-  "-DUPPER_THRESH=13.3"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-compose-b-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-compose-b-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "13.1"
+  "13.3"
   )
 PLM_ADD_TEST (
   "plm-compose-c" 
@@ -1447,14 +1319,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha"
   )
-ADD_TEST (
-  "plm-compose-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-compose-c-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=12.4"
-  "-DUPPER_THRESH=12.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-compose-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-compose-c-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "12.4"
+  "12.5"
   )
 
 ## -------------------------------------------------------------------------
@@ -1508,14 +1377,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha"
   )
-ADD_TEST (
-  "plm-warp-a-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-a-stats.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=5.77"
-  "-DUPPER_THRESH=5.78"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-a-stats.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "5.77"
+  "5.78"
   )
 
 PLM_ADD_TEST (
@@ -1530,14 +1396,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha"
   )
-ADD_TEST (
-  "plm-warp-b-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-1.stdout.txt"
-  "-DREGEX=Mean: *([-0-9.]*)"
-  "-DLOWER_THRESH=5.77"
-  "-DUPPER_THRESH=5.78"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-b-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-1.stdout.txt"
+  "Mean: *([-0-9.]*)"
+  "5.77"
+  "5.78"
   )
 PLM_ADD_TEST (
   "plm-warp-b-stats-2"
@@ -1545,14 +1408,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha"
   )
-ADD_TEST (
-  "plm-warp-b-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-2.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-775.7"
-  "-DUPPER_THRESH=-775.6"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-b-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-b-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-775.7"
+  "-775.6"
   )
 
 PLM_ADD_TEST (
@@ -1567,14 +1427,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha"
   )
-ADD_TEST (
-  "plm-warp-c-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-c-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=9.2"
-  "-DUPPER_THRESH=9.3"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-c-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-c-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "9.2"
+  "9.3"
   )
 
 PLM_ADD_TEST (
@@ -1589,14 +1446,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha"
   )
-ADD_TEST (
-  "plm-warp-d-check"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-d-stats.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=9.2"
-  "-DUPPER_THRESH=9.3"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-d-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-d-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "9.2"
+  "9.3"
   )
 
 PLM_ADD_TEST (
@@ -1611,14 +1465,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-e-img.nrrd"
   )
-ADD_TEST (
-  "plm-warp-e-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-661.5"
-  "-DUPPER_THRESH=-661.4"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-e-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.5"
+  "-661.4"
   )
 PLM_ADD_TEST (
   "plm-warp-e-stats-2"
@@ -1626,14 +1477,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-warp-e/Patient.mha"
   )
-ADD_TEST (
-  "plm-warp-e-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-2.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=0.385"
-  "-DUPPER_THRESH=0.395"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-e-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.385"
+  "0.395"
   )
 PLM_ADD_TEST (
   "plm-warp-e-stats-3"
@@ -1641,14 +1489,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-e-labelmap.nrrd"
   )
-ADD_TEST (
-  "plm-warp-e-check-3"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-3.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=0.67"
-  "-DUPPER_THRESH=0.68"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-e-check-3"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-3.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "0.67"
+  "0.68"
   )
 PLM_ADD_TEST (
   "plm-warp-e-stats-4"
@@ -1657,34 +1502,24 @@ PLM_ADD_TEST (
   "stats;--input;plm-warp-e-ss-img.nrrd"
   )
 IF (PLM_USE_SS_IMAGE_VEC)
-ADD_TEST (
-  "plm-warp-e-check-4"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
-  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
-  "-DLOWER_THRESH=1971"
-  "-DUPPER_THRESH=1971"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-e-check-4"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "1971"
+  "1971"
   )
 ELSE ()
-ADD_TEST (
-  "plm-warp-e-check-4"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=1.05"
-  "-DUPPER_THRESH=1.15"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-e-check-4"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "1.05"
+  "1.15"
   )
 ENDIF ()
-ADD_TEST (
-  "plm-warp-e-check-5"
-  ${CMAKE_COMMAND} -E compare_files
+ADD_TEST ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss-list.txt"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt")
-ADD_TEST (
-  "plm-warp-e-check-6"
-  ${CMAKE_COMMAND} -E compare_files
+ADD_TEST ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl")
 
@@ -1700,14 +1535,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-f-img.nrrd"
   )
-ADD_TEST (
-  "plm-warp-f-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-661.5"
-  "-DUPPER_THRESH=-661.4"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-f-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-661.5"
+  "-661.4"
   )
 IF (PLM_USE_SS_IMAGE_VEC)
 PLM_ADD_TEST (
@@ -1716,14 +1548,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-f-ss-img.nrrd"
   )
-ADD_TEST (
-  "plm-warp-f-check-2"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-2.stdout.txt"
-  "-DREGEX=S *1 *NVOX *([-0-9.]*)"
-  "-DLOWER_THRESH=1971"
-  "-DUPPER_THRESH=1971"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-f-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-2.stdout.txt"
+  "S *1 *NVOX *([-0-9.]*)"
+  "1971"
+  "1971"
   )
 ELSE ()
   # Don't bother
@@ -1741,14 +1570,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-g-img.nrrd"
   )
-ADD_TEST (
-  "plm-warp-g-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-g-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=-675.5"
-  "-DUPPER_THRESH=-674.5"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-g-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-g-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-675.5"
+  "-674.5"
   )
 
 PLM_ADD_TEST (
@@ -1763,14 +1589,11 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-h-img.nrrd"
   )
-ADD_TEST (
-  "plm-warp-h-check-1"
-  ${CMAKE_COMMAND} 
-  "-DINFILE=${PLM_TESTING_BUILD_DIR}/plm-warp-h-stats-1.stdout.txt"
-  "-DREGEX=AVE *([-0-9.]*)"
-  "-DLOWER_THRESH=113.5"
-  "-DUPPER_THRESH=114.0"
-  -P ${PLM_TESTING_SOURCE_DIR}/PLM_CTest_Check.cmake
+plmtest_check_interval ("plm-warp-h-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-h-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "113.5"
+  "114.0"
   )
 
 ## -------------------------------------------------------------------------
