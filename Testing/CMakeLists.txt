@@ -1,5 +1,8 @@
 PROJECT(PLM_Testing)
 
+## -------------------------------------------------------------------------
+## Testing macros
+## -------------------------------------------------------------------------
 macro (plmtest_check_interval 
     test_name stdout_file regex_string lower_thresh upper_thresh)
   string (REPLACE "\\" "\\\\" regex_escaped "${regex_string}")
@@ -10,6 +13,18 @@ macro (plmtest_check_interval
     "-DLOWER_THRESH=${lower_thresh}"
     "-DUPPER_THRESH=${upper_thresh}"
     -P "${PLM_TESTING_SOURCE_DIR}/PlmCheckInterval.cmake"
+    )
+endmacro ()
+
+macro (plmtest_check_string
+    test_name stdout_file regex_string match_string)
+  string (REPLACE "\\" "\\\\" regex_escaped "${regex_string}")
+  add_test (${test_name}
+    ${CMAKE_COMMAND} 
+    "-DINFILE=${stdout_file}"
+    "-DREGEX=${regex_escaped}"
+    "-DMATCH_STRING=${match_string}"
+    -P "${PLM_TESTING_SOURCE_DIR}/PlmCheckString.cmake"
     )
 endmacro ()
 
@@ -939,7 +954,18 @@ PLM_ADD_TEST (
   "plm-convert-dicom-aw-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dose.mha"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dicom"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-aw-a-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/dicom_info
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dicom/image000.dcm"
+  )
+plmtest_check_string ("plm-convert-dicom-aw-a-check" 
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-stats.stdout.txt"
+  "^Patient's Name = (.*[^ ]) *$"
+  "PHANTOM^HFS"
   )
 PLM_ADD_TEST (
   "plm-convert-dicom-aw-b" 

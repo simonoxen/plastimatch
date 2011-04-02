@@ -128,6 +128,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
   SET (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-aw-a" 
+    "plm-convert-dicom-aw-a-stats" 
     "plm-convert-dicom-aw-b" 
     )
 ENDIF ()
@@ -338,6 +339,8 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-g"
 
     "plm-convert-dicom-aw-a"
+    "plm-convert-dicom-aw-a-stats"
+    "plm-convert-dicom-aw-a-check"
     "plm-convert-dicom-aw-b"
     "plm-convert-dicom-cerr-a"
     "plm-convert-dicom-pinnacle-a"
