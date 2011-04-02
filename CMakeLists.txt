@@ -39,7 +39,7 @@ INCLUDE (TestBigEndian)
 INCLUDE (InstallRequiredSystemLibraries)
 
 # http://www.cmake.org/Bug/view.php?id=9220
-INCLUDE (language_support.cmake)
+INCLUDE (cmake/language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
