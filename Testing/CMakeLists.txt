@@ -475,7 +475,7 @@ PLM_ADD_TEST (
   "drr-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;drr-a/out_0010.pfm"
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/drr-a/out_0010.pfm"
   )
 plmtest_check_interval ("drr-a-check"
   "${PLM_TESTING_BUILD_DIR}/drr-a-stats.stdout.txt"
