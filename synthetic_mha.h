@@ -7,6 +7,8 @@
 #include "plm_config.h"
 #include "itk_image.h"
 
+class Rtds;
+
 enum Pattern_type {
     PATTERN_GAUSS,
     PATTERN_RECT,
@@ -52,5 +54,7 @@ public:
     }
 };
 
-plastimatch1_EXPORT FloatImageType::Pointer synthetic_mha (Synthetic_mha_parms* parms);
+plastimatch1_EXPORT void synthetic_mha (Rtds *rtds, 
+    Synthetic_mha_parms *parms);
+
 #endif

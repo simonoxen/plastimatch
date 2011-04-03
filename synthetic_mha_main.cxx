@@ -12,11 +12,13 @@
 #include "itk_image_save.h"
 #include "math_util.h"
 #include "plm_clp.h"
+#include "rtds.h"
 #include "synthetic_mha.h"
 
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
 struct synthetic_mha_main_parms {
     CBString output_fn;
+    CBString output_ss_img_fn;
     CBString output_dicom;
     Synthetic_mha_parms sm_parms;
 };
@@ -27,9 +29,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     Synthetic_mha_parms *sm_parms = &parms->sm_parms;
 
     /* Create image */
-    FloatImageType::Pointer img = synthetic_mha (sm_parms);
+    Rtds rtds;
+    synthetic_mha (&rtds, sm_parms);
 
     /* Save to file */
+    FloatImageType::Pointer img = rtds.m_img->itk_float();
     if (!bstring_empty (parms->output_fn)) {
 	switch (sm_parms->output_type) {
 	case PLM_IMG_TYPE_ITK_UCHAR:
@@ -76,6 +80,8 @@ parse_fn (
     parser->add_long_option ("", "output", "Output filename", 1, "");
     parser->add_long_option ("", "output-dicom", 
 	"Output dicom directory", 1, "");
+    parser->add_long_option ("", "output-ss-img", 
+	"Filename for output structure set image", 1, "");
     parser->add_long_option ("", "output-type", 
 	"Data type for output file: {uchar,short,ushort, ulong,float},"
 	" default is float", 

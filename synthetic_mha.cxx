@@ -1,21 +1,23 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-/* Correct mha files which have incorrect patient orientations */
+#include "plm_config.h"
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
-#include "plm_config.h"
-#include "math_util.h"
 #include "itkImageRegionIteratorWithIndex.h"
-#include "synthetic_mha.h"
+
 #include "itk_image.h"
-#include "getopt.h"
+#include "math_util.h"
+#include "rtds.h"
+#include "synthetic_mha.h"
 
-FloatImageType::Pointer
-synthetic_mha (Synthetic_mha_parms* parms)
+void
+synthetic_mha (
+    Rtds *rtds,
+    Synthetic_mha_parms *parms
+)
 {
-
     /* Create ITK image */
     FloatImageType::SizeType sz;
     FloatImageType::IndexType st;
@@ -90,5 +92,8 @@ synthetic_mha (Synthetic_mha_parms* parms)
 	}
 	it_out.Set (f);
     }
-    return im_out;
+    //return im_out;
+
+    rtds->m_img = new Plm_image;
+    rtds->m_img->set_itk (im_out);
 }
