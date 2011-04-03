@@ -55,6 +55,20 @@ synthetic_mha (
 	uchar_img_it.GoToBegin();
     }
 
+    FloatImageType::Pointer dose_img = FloatImageType::New();
+    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > 
+	FloatIteratorType;
+    FloatIteratorType dose_img_it;
+    if (parms->m_want_dose_img) {
+	dose_img->SetRegions(rg);
+	dose_img->SetOrigin(og);
+	dose_img->SetSpacing(sp);
+	dose_img->Allocate();
+	dose_img_it = FloatIteratorType (dose_img, 
+	    dose_img->GetLargestPossibleRegion());
+	dose_img_it.GoToBegin();
+    }
+
     /* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
@@ -110,18 +124,27 @@ synthetic_mha (
 	if (parms->m_want_ss_img) {
 	    const float thresh = parms->background + 
 		0.5 * (parms->foreground - parms->background);
-	    //printf ("f = %f, thresh = %f ", f, thresh);
 	    if (parms->foreground > parms->background && f > thresh) {
-		//printf ("val(1)\n");
 		uchar_img_it.Set (1);
 	    } else if (parms->foreground < parms->background && f < thresh) {
-		//printf ("val(2)\n");
 		uchar_img_it.Set (1);
 	    } else {
-		//printf ("val(3)\n");
 		uchar_img_it.Set (0);
 	    }
 	    ++uchar_img_it;
+	}
+
+	if (parms->m_want_dose_img) {
+	    const float thresh = parms->background + 
+		0.5 * (parms->foreground - parms->background);
+	    if (parms->foreground > parms->background && f > thresh) {
+		dose_img_it.Set (15);
+	    } else if (parms->foreground < parms->background && f < thresh) {
+		dose_img_it.Set (15);
+	    } else {
+		dose_img_it.Set (0);
+	    }
+	    ++dose_img_it;
 	}
     }
 
@@ -131,5 +154,9 @@ synthetic_mha (
 	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->m_ss_img = new Plm_image;
 	rtds->m_ss_image->m_ss_img->set_itk (uchar_img);
+    }
+    if (parms->m_want_dose_img) {
+	rtds->m_dose = new Plm_image;
+	rtds->m_dose->set_itk (dose_img);
     }
 }

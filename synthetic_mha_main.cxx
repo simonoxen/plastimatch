@@ -19,6 +19,7 @@
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
 struct synthetic_mha_main_parms {
     CBString output_fn;
+    CBString output_dose_img_fn;
     CBString output_ss_img_fn;
     CBString output_dicom;
     Synthetic_mha_parms sm_parms;
@@ -35,6 +36,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 	|| !bstring_empty (parms->output_ss_img_fn))
     {
 	sm_parms->m_want_ss_img = true;
+    }
+    if (!bstring_empty (parms->output_dicom) 
+	|| !bstring_empty (parms->output_dose_img_fn))
+    {
+	sm_parms->m_want_dose_img = true;
     }
     synthetic_mha (&rtds, sm_parms);
 
@@ -63,6 +69,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     /* ss_img */
     if (bstring_not_empty (parms->output_ss_img_fn)) {
 	rtds.m_ss_image->save_ss_image (parms->output_ss_img_fn);
+    }
+
+    /* dose_img */
+    if (bstring_not_empty (parms->output_dose_img_fn)) {
+	rtds.m_dose->save_image (parms->output_dose_img_fn);
     }
 
 #if defined (commentout)
@@ -105,10 +116,12 @@ parse_fn (
     parser->add_long_option ("", "output", "Output filename", 1, "");
     parser->add_long_option ("", "output-dicom", 
 	"Output dicom directory", 1, "");
+    parser->add_long_option ("", "output-dose-img", 
+	"Filename for output dose image", 1, "");
     parser->add_long_option ("", "output-ss-img", 
 	"Filename for output structure set image", 1, "");
     parser->add_long_option ("", "output-type", 
-	"Data type for output file: {uchar,short,ushort, ulong,float},"
+	"Data type for output image: {uchar,short,ushort, ulong,float},"
 	" default is float", 
 	1, "float");
     parser->add_long_option ("h", "help", "Display this help message");
@@ -172,6 +185,7 @@ parse_fn (
     /* Basic options */
     parms->output_fn = parser->get_string("output").c_str();
     parms->output_dicom = parser->get_string("output-dicom").c_str();
+    parms->output_dose_img_fn = parser->get_string("output-dose-img").c_str();
     parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
     sm_parms->output_type = plm_image_type_parse (
 	parser->get_string("output-type").c_str());

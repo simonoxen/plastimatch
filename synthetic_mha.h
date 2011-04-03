@@ -32,6 +32,7 @@ public:
     float sphere_radius[3];
 
     bool m_want_ss_img;
+    bool m_want_dose_img;
 
 public:
     Synthetic_mha_parms () {
@@ -55,6 +56,7 @@ public:
 	rect_size[4] = -50.0f;
 	rect_size[5] = +50.0f;
 	m_want_ss_img = false;
+	m_want_dose_img = false;
     }
 };
 
