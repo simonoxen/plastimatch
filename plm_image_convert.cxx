@@ -162,6 +162,39 @@ plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli)
 }
 
 UCharVecImageType::Pointer
+plm_image_convert_itk_uchar_to_itk_uchar_vec (UCharImageType::Pointer im_in)
+{
+    /* Create the output image */
+    UCharVecImageType::Pointer im_out = UCharVecImageType::New();
+    itk_image_header_copy (im_out, im_in);
+    im_out->SetVectorLength (2);
+    im_out->Allocate ();
+
+    /* Copy data into itk */
+    typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
+    const UCharImageType::RegionType rgn_in 
+	= im_in->GetLargestPossibleRegion();
+    UCharIteratorType it_in (im_in, rgn_in);
+    typedef itk::ImageRegionIterator< UCharVecImageType > UCharVecIteratorType;
+    const UCharVecImageType::RegionType rgn_out
+	= im_out->GetLargestPossibleRegion();
+    UCharVecIteratorType it_out (im_out, rgn_out);
+
+    itk::VariableLengthVector<unsigned char> v_out(2);
+    for (it_in.GoToBegin(), it_out.GoToBegin();
+	 !it_in.IsAtEnd();
+	 ++it_in, ++it_out)
+    {
+	unsigned char v_in = it_in.Get ();
+	v_out[0] = v_in;
+	v_out[1] = 0;
+	it_out.Set (v_out);
+    }
+
+    return im_out;
+}
+
+UCharVecImageType::Pointer
 plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in)
 {
     /* Create the output image */

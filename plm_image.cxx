@@ -554,6 +554,12 @@ void
 Plm_image::convert_to_itk_uchar_vec (void)
 {
     switch (m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	printf ("Converting from ITK_UCHAR to ITK_UCHAR_VEC\n");
+	this->m_itk_uchar_vec = plm_image_convert_itk_uchar_to_itk_uchar_vec (
+	    this->m_itk_uchar);
+	this->m_itk_uchar = 0;
+	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	printf ("Converting from ITK_ULONG to ITK_UCHAR_VEC\n");
 	this->m_itk_uchar_vec = plm_image_convert_itk_uint32_to_itk_uchar_vec (
@@ -761,6 +767,9 @@ Plm_image::convert (Plm_image_type new_type)
 	break;
     case PLM_IMG_TYPE_GPUIT_FLOAT:
 	this->convert_to_gpuit_float ();
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	this->convert_to_itk_uchar_vec ();
 	break;
     default:
 	print_and_exit (

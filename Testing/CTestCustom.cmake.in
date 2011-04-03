@@ -240,7 +240,7 @@ IF (PLM_REDUCED_TESTS)
     "gauss-6"
     "gauss-ushort-1"
     "gauss-ushort-2"
-    "rect-1"
+#    "rect-1"
     "rect-2"
     "rect-3"
     "sphere-1"

@@ -10,6 +10,7 @@
 #include "itk_image.h"
 #include "math_util.h"
 #include "rtds.h"
+#include "rtss.h"
 #include "synthetic_mha.h"
 
 void
@@ -40,9 +41,23 @@ synthetic_mha (
     im_out->SetSpacing(sp);
     im_out->Allocate();
 
+    UCharImageType::Pointer uchar_img = UCharImageType::New();
+    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > 
+	UCharIteratorType;
+    UCharIteratorType uchar_img_it;
+    if (parms->m_want_ss_img) {
+	uchar_img->SetRegions(rg);
+	uchar_img->SetOrigin(og);
+	uchar_img->SetSpacing(sp);
+	uchar_img->Allocate();
+	uchar_img_it = UCharIteratorType (uchar_img, 
+	    uchar_img->GetLargestPossibleRegion());
+	uchar_img_it.GoToBegin();
+    }
+
     /* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
-    IteratorType it_out (im_out, im_out->GetRequestedRegion());
+    IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
 	FloatPoint3DType phys;
 	float f = 0.0f;
@@ -91,9 +106,30 @@ synthetic_mha (
 	    break;
 	}
 	it_out.Set (f);
+
+	if (parms->m_want_ss_img) {
+	    const float thresh = parms->background + 
+		0.5 * (parms->foreground - parms->background);
+	    //printf ("f = %f, thresh = %f ", f, thresh);
+	    if (parms->foreground > parms->background && f > thresh) {
+		//printf ("val(1)\n");
+		uchar_img_it.Set (1);
+	    } else if (parms->foreground < parms->background && f < thresh) {
+		//printf ("val(2)\n");
+		uchar_img_it.Set (1);
+	    } else {
+		//printf ("val(3)\n");
+		uchar_img_it.Set (0);
+	    }
+	    ++uchar_img_it;
+	}
     }
-    //return im_out;
 
     rtds->m_img = new Plm_image;
     rtds->m_img->set_itk (im_out);
+    if (parms->m_want_ss_img) {
+	rtds->m_ss_image = new Rtss (rtds);
+	rtds->m_ss_image->m_ss_img = new Plm_image;
+	rtds->m_ss_image->m_ss_img->set_itk (uchar_img);
+    }
 }

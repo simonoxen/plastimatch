@@ -30,6 +30,9 @@ public:
     float rect_size[6];
     float sphere_center[3];
     float sphere_radius[3];
+
+    bool m_want_ss_img;
+
 public:
     Synthetic_mha_parms () {
 	output_type = PLM_IMG_TYPE_ITK_FLOAT;
@@ -51,6 +54,7 @@ public:
 	rect_size[3] = +50.0f;
 	rect_size[4] = -50.0f;
 	rect_size[5] = +50.0f;
+	m_want_ss_img = false;
     }
 };
 

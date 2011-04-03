@@ -13,6 +13,7 @@
 #include "math_util.h"
 #include "plm_clp.h"
 #include "rtds.h"
+#include "rtss.h"
 #include "synthetic_mha.h"
 
 typedef struct synthetic_mha_main_parms Synthetic_mha_main_parms;
@@ -30,6 +31,11 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 
     /* Create image */
     Rtds rtds;
+    if (!bstring_empty (parms->output_dicom) 
+	|| !bstring_empty (parms->output_ss_img_fn))
+    {
+	sm_parms->m_want_ss_img = true;
+    }
     synthetic_mha (&rtds, sm_parms);
 
     /* Save to file */
@@ -54,9 +60,28 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 	}
     }
 
+    /* ss_img */
+    if (bstring_not_empty (parms->output_ss_img_fn)) {
+	rtds.m_ss_image->save_ss_image (parms->output_ss_img_fn);
+    }
+
+#if defined (commentout)
+    /* -- list of structure names -- */
+    if (bstring_not_empty (parms->output_ss_list_fn)) {
+	printf ("save_ss_img: save_ss_list\n");
+	rtds->m_ss_image->save_ss_list (parms->output_ss_list_fn);
+    }
+#endif
+
+#if defined (commentout)
     if (!bstring_empty (parms->output_dicom)) {
 	itk_image_save_short_dicom (img, (const char*) parms->output_dicom, 
 	    0, 0, PATIENT_POSITION_HFS);
+    }
+#endif
+    if (!bstring_empty (parms->output_dicom)) {
+	rtds.m_ss_image->convert_ss_img_to_cxt ();
+	rtds.save_dicom ((const char*) parms->output_dicom);
     }
 }
 
@@ -147,6 +172,7 @@ parse_fn (
     /* Basic options */
     parms->output_fn = parser->get_string("output").c_str();
     parms->output_dicom = parser->get_string("output-dicom").c_str();
+    parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
     sm_parms->output_type = plm_image_type_parse (
 	parser->get_string("output-type").c_str());
 

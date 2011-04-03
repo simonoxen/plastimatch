@@ -150,12 +150,13 @@ Rtss::save_ss_image (const CBString &ss_img_fn)
 	    "Error: save_ss_image() tried to write a non-existant file");
     }
 #if (PLM_USE_SS_IMAGE_VEC)
-    /* Save as 3D ucharvec */
-    this->m_ss_img->save_image ((const char*) ss_img_fn);
+    /* Image type must be uchar vector */
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 #else
-    /* Save as 3D uint32 */
-    this->m_ss_img->save_image ((const char*) ss_img_fn);
+    /* Image type must be uint32_t */
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 #endif
+    this->m_ss_img->save_image ((const char*) ss_img_fn);
 }
 
 void

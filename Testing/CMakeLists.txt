@@ -267,7 +267,7 @@ PLM_ADD_TEST (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--output-ss-img;${PLM_TESTING_BUILD_DIR}/rect-1-ss-img.mha;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
 PLM_ADD_TEST (

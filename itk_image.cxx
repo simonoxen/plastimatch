@@ -115,6 +115,7 @@ template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3],
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], UShortImageType::Pointer image);
 template plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], FloatImageType::Pointer image);
 template plastimatch1_EXPORT void itk_image_set_header (UCharVecImageType::Pointer, Plm_image_header *pih);
+template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharImageType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UInt32ImageType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, UCharVecImageType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, DeformationFieldType::Pointer);
