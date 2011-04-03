@@ -186,6 +186,7 @@ Rtss::save_prefix (const CBString &output_prefix)
 
 	if (bit == -1) continue;
 #if (PLM_USE_SS_IMAGE_VEC)
+	m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 	UCharImageType::Pointer prefix_img = ss_img_extract_bit (
 	    m_ss_img->m_itk_uchar_vec, bit);
 #else
@@ -289,7 +290,7 @@ Rtss::convert_ss_img_to_cxt (void)
     num_structs = this->m_ss_list->num_structures;
 
 #if (PLM_USE_SS_IMAGE_VEC)
-    /* Image type must be uint32_t for cxt_extract */
+    /* Image type must be uchar vector */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
 
     /* Do extraction */
@@ -302,7 +303,7 @@ Rtss::convert_ss_img_to_cxt (void)
     }
 
 #else
-    /* Image type must be uint32_t for cxt_extract */
+    /* Image type must be uint32_t */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 
     /* Do extraction */
@@ -321,6 +322,7 @@ Rtss::cxt_re_extract (void)
 {
     this->m_cxt->free_all_polylines ();
 #if (PLM_USE_SS_IMAGE_VEC)
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
     cxt_extract (this->m_cxt, this->m_ss_img->m_itk_uchar_vec, 
 	this->m_cxt->num_structures, true);
 #else
