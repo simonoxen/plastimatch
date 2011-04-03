@@ -136,8 +136,10 @@ parse_fn (
 	"voxel spacing in mm \"x [y z]\"", 1, "");
 
     /* Metadata options */
+    parser->add_long_option ("", "metadata",
+	"patient metadata (you may use this option multiple times)", 1, "");
     parser->add_long_option ("", "patient-pos",
-	"patient position in metadata, one of {hfs,hfp,ffs,ffp}", 1, "hfs");
+	"patient position metadata: one of {hfs,hfp,ffs,ffp}", 1, "hfs");
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -236,13 +238,20 @@ parse_fn (
     parms->fixed_img_fn = parser->get_string("fixed").c_str();
 
     /* Metadata options */
+    for (unsigned int i = 0; i < parser->option("metadata").count(); i++) {
+	parms->m_metadata.push_back (
+	    parser->option("metadata").argument(0,i));
+    }
     if (parser->option ("patient-pos")) {
 	std::string arg = parser->get_string ("patient-pos");
 	parms->patient_pos = plm_image_patient_position_parse (arg.c_str());
 	if (parms->patient_pos == PATIENT_POSITION_UNKNOWN) {
-	    throw (dlib::error ("Error. Unknown --patient-pos argument: " 
-		    + arg));
+	    throw (dlib::error (
+		    "Error. Unknown --patient-pos argument: " + arg));
 	}
+	std::string metadata_string = "0018,5100=" 
+	    + parser->get_string ("patient-pos");
+	parms->m_metadata.push_back (metadata_string);
     }
 }
 

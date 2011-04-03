@@ -68,6 +68,7 @@ public:
     float m_spacing[3];
 
     /* Metadata options */
+    std::vector<std::string> m_metadata;
     Plm_image_patient_position patient_pos;
 
 public:
