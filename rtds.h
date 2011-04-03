@@ -16,7 +16,7 @@ class Gdcm_series;
 class Rtss;
 
 /* rtds = RT data set */
-class Rtds {
+class plastimatch1_EXPORT Rtds {
 public:
     Plm_image *m_img;                  /* CT image */
     Rtss *m_ss_image;                  /* RT structure set */
@@ -30,16 +30,14 @@ public:
     char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
 					  template for XiO dose saving. */
 public:
-    plastimatch1_EXPORT Rtds ();
-    plastimatch1_EXPORT ~Rtds ();
-    plastimatch1_EXPORT
+    Rtds ();
+    ~Rtds ();
     void load_dicom_dir (const char *dicom_dir);
     void load_xio (
 	const char *xio_dir,
 	const char *dicom_dir,
 	Plm_image_patient_position patient_pos
     );
-    plastimatch1_EXPORT
     void load_ss_img (const char *ss_img, const char *ss_list);
     void load_dose_img (const char *dose_img);
     void load_dose_xio (const char *dose_xio, 
@@ -49,7 +47,6 @@ public:
     void load_dose_mc (const char *dose_mc, 
 	Plm_image_patient_position patient_pos);
     void load_rdd (const char *rdd);
-    plastimatch1_EXPORT
     void load_dicom (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);

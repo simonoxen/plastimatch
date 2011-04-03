@@ -289,6 +289,9 @@ Rtss::convert_ss_img_to_cxt (void)
     num_structs = this->m_ss_list->num_structures;
 
 #if (PLM_USE_SS_IMAGE_VEC)
+    /* Image type must be uint32_t for cxt_extract */
+    this->m_ss_img->convert (PLM_IMG_TYPE_ITK_UCHAR_VEC);
+
     /* Do extraction */
     if (this->m_ss_list) {
 	this->m_cxt = Rtss_polyline_set::clone_empty (

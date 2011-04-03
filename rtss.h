@@ -16,7 +16,7 @@
 
 class Rtds;
 
-class Rtss {
+class plastimatch1_EXPORT Rtss {
 public:
     Rtss_polyline_set *m_ss_list; /* Names of structures */
     Rtss_polyline_set *m_cxt;     /* Structure set in polyline form */
@@ -48,10 +48,8 @@ public:
     void
     save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
 	const CBString &output_dir);
-    plastimatch1_EXPORT
     UInt32ImageType::Pointer
     get_ss_img (void);
-    plastimatch1_EXPORT
     Rtss_polyline_set *
     get_ss_list (void);
 

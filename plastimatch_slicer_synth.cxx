@@ -3,8 +3,10 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include "plastimatch_slicer_synthCLP.h"
+
 #include "itk_image.h"
 #include "itk_image_save.h"
+#include "rtds.h"
 #include "synthetic_mha.h"
 
 int 
@@ -118,9 +120,10 @@ main (int argc, char * argv [])
     }
 
     /* Create Volume 1 */
-    FloatImageType::Pointer img;
     if (plmslc_output_one != "" && plmslc_output_one != "None") {
-	img = synthetic_mha (&sm_parms);
+	Rtds rtds;
+	synthetic_mha (&rtds, &sm_parms);
+	FloatImageType::Pointer img = rtds.m_img->itk_float();
 	itk_image_save_float (img, plmslc_output_one.c_str());
     }
 
@@ -150,7 +153,9 @@ main (int argc, char * argv [])
 	sm_parms.gauss_center[1] += xlat[1];
 	sm_parms.gauss_center[2] += xlat[2];
 
-	img = synthetic_mha (&sm_parms);
+	Rtds rtds;
+	synthetic_mha (&rtds, &sm_parms);
+	FloatImageType::Pointer img = rtds.m_img->itk_float();
 	itk_image_save_float (img, plmslc_output_two.c_str());
     }
 

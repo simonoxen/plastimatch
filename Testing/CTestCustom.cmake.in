@@ -131,6 +131,7 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-aw-a" 
     "plm-convert-dicom-aw-a-stats" 
+    "plm-convert-dicom-aw-a-check" 
     "plm-convert-dicom-aw-b" 
     )
 ENDIF ()
