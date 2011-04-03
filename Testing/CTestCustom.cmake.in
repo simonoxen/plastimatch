@@ -251,7 +251,7 @@ IF (PLM_REDUCED_TESTS)
     "bspline-b"
     "bspline-b-check"
     "bspline-c"
-#    "bspline-c-check"
+    "bspline-c-check"
     "bspline-d"
     "bspline-d-check"
     "bspline-e"
