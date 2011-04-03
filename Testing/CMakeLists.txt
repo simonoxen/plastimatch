@@ -274,14 +274,14 @@ PLM_ADD_TEST (
   "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
   "rect-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
-  "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
@@ -992,6 +992,16 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-pinnacle-a-dose.mha"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch convert dicom-rt (xio)
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-convert-dicom-xio-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-xio-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-xio-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-xio-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-xio-a-dose.mha"
   )
 
 ## -------------------------------------------------------------------------

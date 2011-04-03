@@ -92,6 +92,8 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-dicom-f-stats"
     "plm-convert-dicom-f-check"
     "plm-convert-dicom-g"
+    "plm-convert-dicom-xio-a"
+
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
@@ -240,7 +242,7 @@ IF (PLM_REDUCED_TESTS)
     "gauss-6"
     "gauss-ushort-1"
     "gauss-ushort-2"
-#    "rect-1"
+    "rect-1"
     "rect-2"
     "rect-3"
     "sphere-1"
@@ -344,6 +346,7 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-aw-b"
     "plm-convert-dicom-cerr-a"
     "plm-convert-dicom-pinnacle-a"
+    "plm-convert-dicom-xio-a"
 
     "plm-convert-cxt"
     "plm-convert-cxt-stats"
