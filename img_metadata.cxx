@@ -31,6 +31,8 @@ Img_metadata::create_anonymous ()
     this->set_metadata (0x0010, 0x0020, make_anon_patient_id());
     /* PatientSex */
     this->set_metadata (0x0010, 0x0040, "O");
+    /* PatientPosition */
+    this->set_metadata (0x0018, 0x5100, "HFS");
 }
 
 std::string

@@ -823,6 +823,7 @@ plmtest_check_interval ("landmark-warp-c-check-2"
 ##   plm convert dicom e: input xio dicom, output plastimatch dicom
 ##   plm convert dicom f: input plastimatch dicom, output plastimatch dicom
 ##   plm convert dicom g: input rtss, no fixed image, no ct reference
+##   plm convert dicom h: set metadata
 ## -------------------------------------------------------------------------
 PLM_ADD_TEST (
   "plm-convert-dicom-a"
@@ -944,7 +945,24 @@ PLM_ADD_TEST (
   "plm-convert-dicom-g" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-h"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input;${PLM_TESTING_BUILD_DIR}/rect-1-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-dicom;--metadata;0018,5100=FFS"
+  )
+PLM_ADD_TEST (
+  "plm-convert-dicom-h-stats" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/dicom_info
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-dicom/image000.dcm"
+  )
+plmtest_check_string ("plm-convert-dicom-h-check" 
+  "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-stats.stdout.txt"
+  "Patient Position = (.*[^ ]) *$"
+  "FFS"
   )
 
 ## -------------------------------------------------------------------------
