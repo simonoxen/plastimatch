@@ -56,11 +56,13 @@ rbf_value (float *rbf_center, float *loc, float radius)
 Analytic expression for the integral of squared second derivatives
 of the vector field of a single Gaussian RBF of radius c
 */
+#if defined (commentout)
 static float rbf_gauss_secderiv_self (float c)
 {
     float factor = 1.968701243; // pow( M_PI/2, 3./2);
     return 15*factor/c;
 } 
+#endif
   
 /*
   Analytic expression for the integral of squared second derivatives
@@ -68,12 +70,15 @@ static float rbf_gauss_secderiv_self (float c)
   separated by squared distance a2 = (x1-x2)*(x1-x2)+...
   (one-half of the overlap integral only).
 */
+#if defined (commentout)
 static float rbf_gauss_secderiv_cross (float c, float a2)
 {
     float factor = 1.968701243; // pow( M_PI/2, 3./2);
     return factor/c*exp(-a2/(2*c*c))*(-10. + ( a2/(c*c)-5.)*(a2/(c*c)-5.) );
 }
+#endif
 
+#if defined (commentout)
 static float 
 bspline_rbf_analytic_integral (Bspline_parms *parms, float *pix_spacing)
 {
@@ -107,6 +112,7 @@ bspline_rbf_analytic_integral (Bspline_parms *parms, float *pix_spacing)
 
     return s;
 }
+#endif
 
 #if defined (commentout)
 /*
