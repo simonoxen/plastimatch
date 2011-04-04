@@ -1,5 +1,5 @@
-Landmark-based image registration
-=================================
+landmark_warp
+=============
 
 Synopsis
 --------

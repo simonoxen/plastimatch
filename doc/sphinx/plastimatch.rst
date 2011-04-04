@@ -1,5 +1,5 @@
-Command reference
-=================
+plastimatch
+===========
 
 Synopsis
 --------
@@ -469,8 +469,21 @@ The command line usage is given as follows::
 
   Usage: plastimatch register command_file
 
-A more complete description, including the format of the required 
-command file is given in the next section.
+The command file is an ordinary text file, which contains a single 
+global section and one or more stages sections. 
+The global section begins with a line containing only the string "[GLOBAL]", 
+and each stage begins with a line containing the string "[STAGE]".  
+
+The global section is used to set input files, output files, and 
+global parameters, while the each stage section defines a sequential 
+stage of processing.  For a complete description of the command file 
+syntax, please refer to the :ref:`registration_command_file_reference`.
+
+Example
+^^^^^^^
+.. include:: image_registration_quick_start.rst
+
+For more examples, please refer to the :ref:`image_registration_guidebook`.
 
 plastimatch resample
 --------------------

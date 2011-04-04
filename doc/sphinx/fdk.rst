@@ -1,5 +1,5 @@
-FDK - Cone-beam reconstruction
-==============================
+fdk
+===
 The term FDK refers to the authors 
 Feldkamp, Davis, and Kress who wrote the seminal paper 
 "Practical cone-beam algorithm" in 1984.  Their paper 

@@ -1,7 +1,7 @@
 .. _drr:
 
-Digitally reconstructed radiographs (DRRs)
-==========================================
+drr
+===
 
 Synopsis
 --------

@@ -1,5 +1,5 @@
-Plastimatch Technical Reference
-===============================
+Technical reference
+===================
 
 This section includes technical details for application developers.
 
@@ -12,5 +12,6 @@ This section includes technical details for application developers.
    dicom_conformance
    dicom_tutorial
    dicom_comparison
+   registration_command_file_reference
    cxt_file_format
    proj_mat_file_format
