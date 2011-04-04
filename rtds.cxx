@@ -328,3 +328,20 @@ Rtds::save_dicom (const char *output_dir)
 	gdcm_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
     }
 }
+
+void 
+Rtds::set_user_metadata (std::vector<std::string>& metadata)
+{
+    std::vector<std::string>::iterator it = metadata.begin();
+    while (it < metadata.end()) {
+	const std::string& str = (*it);
+	size_t eq_pos = str.find_first_of ('=');
+	if (eq_pos != std::string::npos) {
+	    std::string key = str.substr (0, eq_pos);
+	    std::string val = str.substr (eq_pos+1);
+	    m_img_metadata.set_metadata (key, val);
+	}
+	++it;
+    }
+}
+

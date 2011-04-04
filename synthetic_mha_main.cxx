@@ -84,12 +84,6 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
     }
 #endif
 
-#if defined (commentout)
-    if (!bstring_empty (parms->output_dicom)) {
-	itk_image_save_short_dicom (img, (const char*) parms->output_dicom, 
-	    0, 0, PATIENT_POSITION_HFS);
-    }
-#endif
     if (!bstring_empty (parms->output_dicom)) {
 	rtds.m_ss_image->convert_ss_img_to_cxt ();
 	rtds.save_dicom ((const char*) parms->output_dicom);

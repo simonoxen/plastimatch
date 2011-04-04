@@ -88,11 +88,11 @@ copy_dictionary (
 
 void
 itk_dicom_save (
-    ShortImageType::Pointer short_img,      /* Input: image to write */
-    const char *dir_name,                   /* Input: name of output dir */
-    Referenced_dicom_dir *rdd,              /* Output: gets filled in */
-    const Img_metadata *meta,               /* Input: output files get these */
-    Plm_image_patient_position patient_pos  /* To be removed */
+    ShortImageType::Pointer short_img,    /* Input: image to write */
+    const char *dir_name,                 /* Input: name of output dir */
+    Referenced_dicom_dir *rdd,            /* Output: gets filled in */
+    const Img_metadata *meta,             /* Input: output files get these */
+    Plm_image_patient_position patient_pos  /* Ignored -- to be removed */
 )
 {
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
@@ -174,15 +174,17 @@ itk_dicom_save (
     value = to_string ((double) (short_img->GetSpacing()[2]));
     encapsulate (dict, "0018|0050", value);
 
-    /* PatientPosition */
-    if ((patient_pos == PATIENT_POSITION_UNKNOWN) || (patient_pos == PATIENT_POSITION_HFS))
+    /* Patient position */
+    value = meta->get_metadata (0x0018, 0x5100);
+    if (value == "HFS" || value == "FFS" 
+	|| value == "HFP" || value == "FFP" 
+	|| value == "HFDL" || value == "HFDR" 
+	|| value == "FFDL" || value == "FFDR")
+    {
+	encapsulate (dict, "0018|5100", value);
+    } else {
 	encapsulate (dict, "0018|5100", "HFS");
-    else if (patient_pos == PATIENT_POSITION_HFP)
-	encapsulate (dict, "0018|5100", "HFP");
-    else if (patient_pos == PATIENT_POSITION_FFS)
-	encapsulate (dict, "0018|5100", "FFS");
-    else if (patient_pos == PATIENT_POSITION_FFP)
-	encapsulate (dict, "0018|5100", "FFP");
+    }
 
     /* StudyInstanceUID */
     value = itk_make_uid(gdcmIO);

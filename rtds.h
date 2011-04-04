@@ -5,6 +5,7 @@
 #define _rtds_h_
 
 #include "plm_config.h"
+#include <vector>
 
 #include "cxt_io.h"
 #include "img_metadata.h"
@@ -50,6 +51,7 @@ public:
     void load_dicom (const char *dicom_dir); 
     void save_dicom (const char *output_dir);
     void convert_ss_img_to_cxt (void);
+    void set_user_metadata (std::vector<std::string>& metadata);
 };
 
 #endif

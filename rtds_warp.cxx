@@ -351,6 +351,9 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_img = im_out;
     }
 
+    /* Set user-supplied metadata */
+    rtds->set_user_metadata (parms->m_metadata);
+
     /* Save output image */
     if (bstring_not_empty (parms->output_img_fn) && rtds->m_img) {
 	printf ("Rtds_warp: Saving m_img (%s)\n",

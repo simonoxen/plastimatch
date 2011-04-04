@@ -12,11 +12,10 @@ namespace gdcm {
     class File;
 };
 
-class Img_metadata {
+class plastimatch1_EXPORT Img_metadata
+{
 public:
-    plastimatch1_EXPORT
     Img_metadata ();
-    plastimatch1_EXPORT
     ~Img_metadata ();
 
 public:
