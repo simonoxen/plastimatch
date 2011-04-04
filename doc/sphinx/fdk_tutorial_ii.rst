@@ -1,7 +1,7 @@
 .. _fdk_tutorial_ii:
 
-FDK Tutorial (Part II)
-======================
+FDK tutorial (part 2)
+=====================
 This is Part II of the FDK tutorial.  You will download sample projection 
 data from a real CT scanner, convert the data format to something that 
 the fdk program can use, generate geometry files that match the projection 

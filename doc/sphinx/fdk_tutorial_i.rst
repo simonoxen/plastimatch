@@ -1,6 +1,6 @@
 .. _fdk_tutorial_i:
 
-FDK Tutorial (Part I)
+FDK tutorial (part 1)
 =====================
 The FDK tutorial has two parts.  In Part I, you will learn the basic 
 command line options of the drr and fdk programs.  In Part II, you will 

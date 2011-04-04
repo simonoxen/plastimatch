@@ -1,7 +1,5 @@
-Documentation
-=============
-
-Plastimatch User Guide
+Plastimatch documentation
+=========================
 
 .. toctree::
    :maxdepth: 2

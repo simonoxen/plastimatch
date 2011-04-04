@@ -479,8 +479,8 @@ global parameters, while the each stage section defines a sequential
 stage of processing.  For a complete description of the command file 
 syntax, please refer to the :ref:`registration_command_file_reference`.
 
-Example
-^^^^^^^
+Examples
+^^^^^^^^
 .. include:: image_registration_quick_start.rst
 
 For more examples, please refer to the :ref:`image_registration_guidebook`.

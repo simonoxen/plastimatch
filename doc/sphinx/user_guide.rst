@@ -1,8 +1,6 @@
 User guide
 ==========
 
-Welcome to the plastimatch user guide. 
-
 .. toctree::
    :maxdepth: 1
 

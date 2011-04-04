@@ -1,4 +1,4 @@
-DICOM Anonymizer comparison
+DICOM anonymizer comparison
 ---------------------------
 There are a number of good and not-so-good DICOM libraries and toolkits 
 available.  However, it is not so easy to choose between them.  

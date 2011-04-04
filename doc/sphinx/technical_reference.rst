@@ -1,11 +1,10 @@
 Technical reference
 ===================
 
-This section includes technical details for application developers.
-
 .. toctree::
    :maxdepth: 2
 
+   utility_programs
    packaging
    api
    mutual_information

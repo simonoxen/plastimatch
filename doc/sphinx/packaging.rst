@@ -1,4 +1,4 @@
-Packaging Plastimatch
+Packaging plastimatch
 =====================
 
 This section describes the recommended build configuration for packaging 
