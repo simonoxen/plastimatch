@@ -37,6 +37,8 @@ public:
     float origin[3];
     bool have_spacing;
     float spacing[3];
+	bool have_direction_cosines;
+	float direction_cosines[9];
 
     CBString algorithm;
 
@@ -47,6 +49,7 @@ public:
 	have_dim = 0;
 	have_origin = 0;
 	have_spacing = 0;
+	have_direction_cosines = 0;
     }
 };
 
@@ -90,7 +93,7 @@ load_input_files (Landmark_warp_main_parms *parms)
 
     /* Set the output geometry.  
        Note: --offset, --spacing, and --dim get priority over --fixed. */
-    if (!parms->have_dim || !parms->have_origin || !parms->have_spacing) {
+    if (!parms->have_dim || !parms->have_origin || !parms->have_spacing || !parms->have_direction_cosines) {
 	if (bstring_not_empty (parms->fixed_img_fn)) {
 	    Plm_image *pli = plm_image_load_native (parms->fixed_img_fn);
 	    if (!pli) {
@@ -110,6 +113,9 @@ load_input_files (Landmark_warp_main_parms *parms)
     if (parms->have_spacing) {
 	lw->m_pih.set_spacing (parms->spacing);
     }
+//	if (parms->have_direction_cosines) {
+//	lw->m_pih.set_direction_cosines (parms->direction_cosines);
+//    }
 }
 
 static void
@@ -143,7 +149,8 @@ landmark_convert_mm_to_voxel(
     Pointset *landmarks_mm, 
     float *offset, 
     float *pix_spacing,
-    int *dim )
+    int *dim,
+	float *direction_cosines)
 {
     for (int i = 0; i < landmarks_mm->num_points; i++) {
 	for (int d = 0; d < 3; d++) {
@@ -190,7 +197,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     Volume *vector_field;
     Volume *moving;
     int fixed_dim[3];
-    float fixed_pix_spacing[3], fixed_offset[3];
+    float fixed_pix_spacing[3], fixed_offset[3], fixed_direction_cosines[9];
 
     num_landmarks = lw->m_fixed_landmarks->num_points;
 
@@ -207,6 +214,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     lw->m_pih.get_dim( fixed_dim);
     lw->m_pih.get_spacing( fixed_pix_spacing );
     lw->m_pih.get_origin( fixed_offset );
+	lw->m_pih.get_direction_cosines( fixed_direction_cosines );
 
     if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED)
 	print_and_exit ("Sorry, this type of vector field is not supported in landmarks_warp\n");	
@@ -214,9 +222,9 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
     /* fill in landvox'es */
     landmark_convert_mm_to_voxel( landvox_fix, lw->m_fixed_landmarks, 
-	fixed_offset, fixed_pix_spacing, fixed_dim );
+	fixed_offset, fixed_pix_spacing, fixed_dim, fixed_direction_cosines );
     landmark_convert_mm_to_voxel( landvox_mov, lw->m_moving_landmarks, 
-	moving->offset, moving->pix_spacing, moving->dim );
+	moving->offset, moving->pix_spacing, moving->dim, moving->direction_cosines );
     
     dd_min = (float *)malloc( num_landmarks * sizeof(float));
     for (d=0;d<num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
