@@ -1926,6 +1926,10 @@ ELSE ()
 ENDIF ()
 
 MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
+  # CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute 
+  # with replacement string, which will get substituted back within the 
+  # cmake script itself
+  STRING (REPLACE "=" "&equal&" TMP_PARMS "${PARMS}")
   ADD_TEST (${TESTNAME} ${CMAKE_COMMAND} 
     -DTESTNAME=${TESTNAME}
     -DWORKING_DIR=${WORKING_DIR}
@@ -1935,7 +1939,7 @@ MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     -DPLM_TEST_COMMAND=${PLM_TEST_COMMAND}
     -DPLM_TESTING_SOURCE_DIR=${PLM_TESTING_SOURCE_DIR}
     -DPLM_TESTING_BUILD_DIR=${PLM_TESTING_BUILD_DIR}
-    "-DPARMS=${PARMS}"
+    "-DPARMS=${TMP_PARMS}"
     -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake
     )
 ENDMACRO ()

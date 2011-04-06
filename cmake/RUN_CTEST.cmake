@@ -11,6 +11,11 @@ set(ENV{BRT_RUNTIME} "dx9")
 MESSAGE("PLM_TEST_COMMAND is ${PLM_TEST_COMMAND}")
 MESSAGE("PARMS is ${PARMS}")
 
+# CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute 
+# with replacement string when calling ADD_TEST(), but need to back-substitute
+# here.
+STRING (REPLACE "&equal&" "=" PARMS "${PARMS}")
+
 IF(WORKING_DIR)
   SET(WORKING_DIR WORKING_DIRECTORY ${WORKING_DIR})
 ENDIF(WORKING_DIR)

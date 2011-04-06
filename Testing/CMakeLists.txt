@@ -961,7 +961,7 @@ PLM_ADD_TEST (
   )
 plmtest_check_string ("plm-convert-dicom-h-check" 
   "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-stats.stdout.txt"
-  "Patient Position = (.*[^ ]) *$"
+  "Patient Position . (.*[^ ]) *$"
   "FFS"
   )
 
@@ -982,7 +982,7 @@ PLM_ADD_TEST (
   )
 plmtest_check_string ("plm-convert-dicom-aw-a-check" 
   "${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-stats.stdout.txt"
-  "^Patient's Name = (.*[^ ]) *$"
+  "^Patient's Name . (.*[^ ]) *$"
   "PHANTOM^HFS"
   )
 PLM_ADD_TEST (
