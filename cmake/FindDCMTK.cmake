@@ -92,8 +92,11 @@ FIND_LIBRARY(DCMTK_imagedb_LIBRARY
 FIND_LIBRARY (DCMTK_dcmtls_LIBRARY dcmtls 
   ${DCMTK_DIR}/dcmnet/libsrc/Release
   ${DCMTK_DIR}/dcmnet/libsrc/Debug
-  ${DCMTK_DIR}/dcmnet/libsrc/
-  ${DCMTK_DIR}/lib/
+  ${DCMTK_DIR}/dcmnet/libsrc
+  ${DCMTK_DIR}/dcmtls/libsrc/Release
+  ${DCMTK_DIR}/dcmtls/libsrc/Debug
+  ${DCMTK_DIR}/dcmtls/libsrc
+  ${DCMTK_DIR}/lib
   /usr/local/dicom/lib
 )
 
@@ -117,6 +120,7 @@ FIND_LIBRARY( DCMTK_dcmdata_LIBRARY dcmdata
 
 # Quick hack: dcmtk 3.6.0
 FIND_LIBRARY(DCMTK_oflog_LIBRARY oflog
+  ${DCMTK_DIR}/lib
   /usr/local/dicom/lib
 )
 
