@@ -61,6 +61,7 @@ OPTION (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 OPTION (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
+SET (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Optional components
 OPTION (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
@@ -506,12 +507,12 @@ ELSE ()
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  Get plastimatch version from subversion 
+##  Get build number from subversion 
 ##-----------------------------------------------------------------------------
 SET (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
 IF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
   IF (Subversion_FOUND)
-    SET (PLASTIMATCH_EXPERIMENTAL TRUE)
+    SET (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
     EXECUTE_PROCESS (
       COMMAND 
@@ -530,7 +531,7 @@ IF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
     MESSAGE(STATUS "Looking for version in svn - svn not found")
   ENDIF ()
 ELSE ()
-  SET (PLASTIMATCH_EXPERIMENTAL FALSE)
+  SET (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
 ENDIF ()
 
 ##-----------------------------------------------------------------------------

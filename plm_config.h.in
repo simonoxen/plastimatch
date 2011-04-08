@@ -17,7 +17,8 @@
 
 /* Plastimatch attributes */
 #define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
-#cmakedefine PLASTIMATCH_EXPERIMENTAL 1
+#cmakedefine PLASTIMATCH_HAVE_BUILD_NUMBER 1
+#cmakedefine PLM_CONFIG_VERSION_STRING "@PLM_CONFIG_VERSION_STRING@"
 
 /* External libraries */
 #cmakedefine BROOK_FOUND 1
