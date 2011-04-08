@@ -15,15 +15,15 @@
 extern "C" {
 #endif
 
-plmopencl_EXPORT (
-void* drr_opencl_state_create,
+gpuit_EXPORT
+void* drr_opencl_state_create (
     Proj_image *proj,
     Volume *vol,
     Drr_options *options
 );
 
-plmopencl_EXPORT (
-void drr_opencl_state_destroy,
+gpuit_EXPORT
+void drr_opencl_state_destroy (
     void *dev_state
 );
 
