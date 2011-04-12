@@ -332,6 +332,9 @@ IF (PLM_USE_F2C)
   ENDIF ()
 ENDIF ()
 
+# Some systems such as pcBSD don't have libdl
+FIND_LIBRARY (LIBDL_FOUND dl)
+
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
@@ -1388,9 +1391,11 @@ IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
       "${PLMCUDA_EXE_LDFLAGS} /DELAYLOAD:nvcuda.dll /DELAYLOAD:opencl.dll")
   ENDIF ()
 ELSE ()
-  SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
-  SET (GPUIT_EXE_LDFLAGS "${GPUIT_EXE_LDFLAGS} -ldl")
-  SET (PLMCUDA_EXE_LDFLAGS "${PLMCUDA_EXE_LDFLAGS} -ldl")
+  IF (LIBDL_FOUND)
+    SET (GPUIT_LIB_LDFLAGS "${GPUIT_LIB_LDFLAGS} -ldl")
+    SET (GPUIT_EXE_LDFLAGS "${GPUIT_EXE_LDFLAGS} -ldl")
+    SET (PLMCUDA_EXE_LDFLAGS "${PLMCUDA_EXE_LDFLAGS} -ldl")
+  ENDIF ()
 ENDIF ()
 MESSAGE (STATUS "GPUIT_LIB_LDFLAGS: ${GPUIT_LIB_LDFLAGS}")
 MESSAGE (STATUS "GPUIT_EXE_LDFLAGS: ${GPUIT_EXE_LDFLAGS}")
