@@ -43,7 +43,7 @@ parse_fn (
 
     /* Input files */
     parser->add_long_option ("", "input", 
-	"input directory or filename (required); "
+	"input directory or filename; "
 	"can be an image, structure set file (cxt or dicom-rt), "
 	"dose file (dicom-rt, monte-carlo or xio), "
 	"dicom directory, or xio directory", 1, "");
@@ -148,7 +148,18 @@ parse_fn (
     parser->check_default_options ();
 
     /* Check that an input file was given */
-    parser->check_required ("input");
+    if (!parser->option ("input") 
+	&& parser->option("input-cxt")
+	&& parser->option("input-ss-img")
+	&& parser->option("input-ss-list")
+	&& parser->option("input-dose-img")
+	&& parser->option("input-dose-xio")
+	&& parser->option("input-dose-ast")
+	&& parser->option("input-dose-mc"))
+    {
+	throw (dlib::error ("Error.  Please specify an input file "
+		"using one of the --input options"));
+    }
 
     /* Input files */
     parms->input_fn = parser->get_string("input").c_str();
