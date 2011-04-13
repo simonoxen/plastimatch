@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <algorithm>
 #include <stdio.h>
 #include <time.h>
 
@@ -260,8 +261,8 @@ parse_fn (
 	    throw (dlib::error (
 		    "Error. Unknown --patient-pos argument: " + arg));
 	}
-	std::string metadata_string = "0018,5100=" 
-	    + parser->get_string ("patient-pos");
+	std::transform (arg.begin(), arg.end(), arg.begin(), toupper);
+	std::string metadata_string = "0018,5100=" + arg;
 	parms->m_metadata.push_back (metadata_string);
     }
 }
