@@ -20,27 +20,23 @@ public:
     CBString output_dicom;
     float lower_threshold;
     float upper_threshold;
+
+    Segment_body sb;
 };
 
 static void
 do_segment (Segment_parms *parms)
 {
-#if defined (commentout)
-    Segment_body sb;
+    Segment_body *sb = &parms->sb;
 
     /* Load the input image */
-    sb.img_in.load_native (args_info->input_arg);
-
-    /* Set other parameter(s) */
-    sb.bot_given = args_info->bot_given;
-    sb.bot = args_info->bot_arg;
+    sb->img_in.load_native (parms->input_fn);
 
     /* Do segmentation */
-    sb.do_segmentation ();
+    sb->do_segmentation ();
 
     /* Save output file */
-    sb.img_out.save_image (args_info->output_arg);
-#endif
+    sb->img_out.save_image (parms->output_fn);
 }
 
 static void
@@ -64,14 +60,22 @@ parse_fn (
     /* Basic options */
     parser->add_long_option ("", "output-img", 
 	"Output image filename", 1, "");
+#if defined (commentout)
     parser->add_long_option ("", "output-dicom", 
 	"Output dicom directory (for RTSTRUCT)", 1, "");
+#endif
     parser->add_long_option ("", "input", 
 	"Input image filename (required)", 1, "");
+    parser->add_long_option ("", "bottom", 
+	"Bottom of patient (top of couch)", 1, "");
+#if defined (commentout)
     parser->add_long_option ("", "lower-threshold", 
 	"Lower threshold (include voxels above this value)", 1, "");
     parser->add_long_option ("", "upper-threshold", 
 	"Upper threshold (include voxels below this value)", 1, "");
+#endif
+    parser->add_long_option ("", "debug", "Create debug images", 0);
+    parser->add_long_option ("", "fast", "Use reduced image size", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -81,13 +85,30 @@ parse_fn (
 
     /* Check that an input file was given */
     parser->check_required ("input");
+    parser->check_required ("output-img");
+
+    Segment_body *sb = &parms->sb;
 
     /* Copy values into output struct */
     parms->output_fn = parser->get_string("output-img").c_str();
+#if defined (commentout)
     parms->output_dicom = parser->get_string("output-dicom").c_str();
+#endif
     parms->input_fn = parser->get_string("input").c_str();
+#if defined (commentout)
     parms->lower_threshold = parser->get_float("lower-threshold");
     parms->upper_threshold = parser->get_float("upper-threshold");
+#endif
+    if (parser->option ("bottom")) {
+	sb->m_bot_given = true;
+	sb->m_bot = parser->get_float ("bottom");
+    }
+    if (parser->option ("fast")) {
+	sb->m_fast = true;
+    }
+    if (parser->option ("debug")) {
+	sb->m_debug = true;
+    }
 }
 
 void

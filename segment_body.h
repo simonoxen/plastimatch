@@ -7,17 +7,23 @@
 #include "plm_config.h"
 #include "plm_image.h"
 
-class Segment_body {
- public:
+class plastimatch1_EXPORT Segment_body {
+  public:
     Plm_image img_in;
     Plm_image img_out;
 
-    bool bot_given;
-    float bot;
+    bool m_bot_given;
+    float m_bot;
+    bool m_debug;
+    bool m_fast;
 
- public:
-    plastimatch1_EXPORT 
-	void do_segmentation ();
+  public:
+    Segment_body () {
+	m_bot_given = false;
+	m_debug = false;
+	m_fast = false;
+    }
+    void do_segmentation ();
 };
 
 #endif

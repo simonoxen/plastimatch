@@ -17,6 +17,8 @@
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "plm_path.h"
+#include "plm_image_header.h"
+#include "resample_mha.h"
 #include "segment_body.h"
 
 /* Thresholds for finding patient & couch */
@@ -28,20 +30,10 @@ const short T3 = -1000;
 int
 find_patient_bottom (FloatImageType::Pointer i1)
 {
-#if defined (commentout)
-    typedef itk::ImageRegionIterator< UCharImageType > UCharIteratorType;
-    typedef itk::ImageRegionIterator< DeformationFieldType > DeformationFieldIteratorType;
-    DeformationFieldType::RegionType r_1 = vf->GetLargestPossibleRegion();
-    UCharImageType::RegionType r_2 = mask->GetLargestPossibleRegion();
-
-    const DeformationFieldType::IndexType& st = r_1.GetIndex();
-    const DeformationFieldType::SizeType& sz = r_1.GetSize();
-    const DeformationFieldType::PointType& og = vf->GetOrigin();
-    const DeformationFieldType::SpacingType& sp = vf->GetSpacing();
-#endif
     FloatImageType::RegionType r1 = i1->GetLargestPossibleRegion();
     const FloatImageType::SizeType& sz = r1.GetSize();
-    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex< 
+	FloatImageType > FloatIteratorType;
 
     /* In the future, these two steps can use MeanProjectionImageFilter and
 	MaximumProjectionImageFilter.  But this is not implemented 
@@ -49,8 +41,8 @@ find_patient_bottom (FloatImageType::Pointer i1)
 
     /* i3 = mean image along Z */
     /* This step can't be done with short(), because itk overflows */
-    printf ("Creating slice average filter...\n");
-    typedef itk::GetAverageSliceImageFilter < FloatImageType, FloatImageType > GASFilterType;
+    typedef itk::GetAverageSliceImageFilter < 
+	FloatImageType, FloatImageType > GASFilterType;
     GASFilterType::Pointer gas_filter = GASFilterType::New ();
     gas_filter->SetInput (i1);
     gas_filter->SetAveragedOutDimension (2);
@@ -99,8 +91,8 @@ find_patient_bottom (FloatImageType::Pointer i1)
 UCharImageType::Pointer
 threshold_patient (FloatImageType::Pointer i1)
 {
-    typedef itk::BinaryThresholdImageFilter< FloatImageType,
-                                  UCharImageType > ThresholdFilterType;
+    typedef itk::BinaryThresholdImageFilter< 
+	FloatImageType, UCharImageType > ThresholdFilterType;
     ThresholdFilterType::Pointer thresh_filter = ThresholdFilterType::New ();
     thresh_filter->SetInput (i1);
     thresh_filter->SetLowerThreshold (T3);
@@ -119,7 +111,8 @@ threshold_patient (FloatImageType::Pointer i1)
 void
 remove_couch (UCharImageType::Pointer i2, int patient_bottom)
 {
-    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex< 
+	UCharImageType > UCharIteratorType;
     UCharImageType::RegionType r2 = i2->GetLargestPossibleRegion();
     UCharIteratorType it2 (i2, r2);
     for (it2.GoToBegin(); !it2.IsAtEnd(); ++it2) {
@@ -133,10 +126,12 @@ UCharImageType::Pointer
 erode_and_dilate (UCharImageType::Pointer i2)
 {
     typedef itk::BinaryBallStructuringElement< unsigned char,3 > BallType;
-    typedef itk::BinaryErodeImageFilter< UCharImageType, UCharImageType, itk::BinaryBallStructuringElement<unsigned char,3> >
-	ErodeFilterType;
-    typedef itk::BinaryDilateImageFilter< UCharImageType, UCharImageType, itk::BinaryBallStructuringElement<unsigned char,3> >
-	DilateFilterType;
+    typedef itk::BinaryErodeImageFilter< 
+	UCharImageType, UCharImageType, 
+	itk::BinaryBallStructuringElement<unsigned char,3> > ErodeFilterType;
+    typedef itk::BinaryDilateImageFilter< 
+	UCharImageType, UCharImageType, 
+	itk::BinaryBallStructuringElement<unsigned char,3> > DilateFilterType;
     BallType ball;
     ErodeFilterType::Pointer erode_filter = ErodeFilterType::New ();
     DilateFilterType::Pointer dilate_filter = DilateFilterType::New ();
@@ -167,7 +162,6 @@ erode_and_dilate (UCharImageType::Pointer i2)
     i2 = dilate_filter->GetOutput ();
     
     return i2;
-
 }
 
 UCharImageType::Pointer
@@ -176,8 +170,8 @@ get_largest_connected_component (UCharImageType::Pointer i2)
     ShortImageType::Pointer i4 = ShortImageType::New ();
 
     /* Identify components */
-    typedef itk::ConnectedComponentImageFilter< UCharImageType, ShortImageType, UCharImageType >
-	ConnectedFilterType;
+    typedef itk::ConnectedComponentImageFilter< 
+	UCharImageType, ShortImageType, UCharImageType > ConnectedFilterType;
     ConnectedFilterType::Pointer cc_filter = ConnectedFilterType::New ();
     cc_filter->SetInput (i2);
     try {
@@ -223,91 +217,14 @@ get_largest_connected_component (UCharImageType::Pointer i2)
 void
 invert_image (UCharImageType::Pointer i2)
 {
-    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
+    typedef itk::ImageRegionIteratorWithIndex< 
+	UCharImageType > UCharIteratorType;
     UCharImageType::RegionType r2 = i2->GetLargestPossibleRegion();
     UCharIteratorType it2 (i2, r2);
     for (it2.GoToBegin(); !it2.IsAtEnd(); ++it2) {
-	//UCharImageType::IndexType idx = it2.GetIndex();
-	//printf ("[%d %d %d] %d %d\n", idx[2], idx[1], idx[0], it2.Get(), !it2.Get());
 	it2.Set(!it2.Get());
     }
 }
-
-#if defined (commentout)
-void
-do_patient_mask (Patient_Mask_Parms* opts)
-{
-//    typedef itk::ImageRegionIteratorWithIndex< FloatImageType > FloatIteratorType;
-    typedef itk::ImageRegionIteratorWithIndex< UCharImageType > UCharIteratorType;
-
-    /* Load input image (i1) */
-    printf ("Loading image...\n");
-    FloatImageType::Pointer i1 = itk_image_load_float (opts->mha_in_fn, 0);
-
-    /* Allocate output image (i2) */
-    UCharImageType::Pointer i2 = UCharImageType::New ();
-
-    /* Find patient */
-    int patient_bottom = opts->pt_bot;
-    if (patient_bottom == -1) {
-	patient_bottom = find_patient_bottom (i1);
-    }
-
-    /* Threshold image */
-    i2 = threshold_patient (i1);
-
-    /* Zero out the couch */
-    remove_couch (i2, patient_bottom);
-//    save_image (i2, "tmp0.mha");
-
-    /* Erode and dilate */
-    i2 = erode_and_dilate (i2);
-//    save_image (i2, "tmp1.mha");
-
-    /* Compute connected components */
-    i2 = get_largest_connected_component (i2);
-//    save_image (i2, "tmp2.mha");
-
-    /* Invert the image */
-    invert_image (i2);
-//    save_image (i2, "tmp3.mha");
-
-    /* Fill holes: Redo connected components on the (formerly) black parts */
-    i2 = get_largest_connected_component (i2);
-
-    /* Invert the image */
-    invert_image (i2);
-
-    /* Save the image */
-    itk_image_save (i2, opts->mha_out_fn);
-}
-
-void
-parse_args (Patient_Mask_Parms* opts, int argc, char* argv[])
-{
-    if (argc != 3 && argc != 4) {
-	print_usage();
-    }
-    strncpy (opts->mha_in_fn, argv[1], _MAX_PATH);
-    strncpy (opts->mha_out_fn, argv[2], _MAX_PATH);
-    if (argc == 4) {
-	sscanf (argv[3], "%d", &opts->pt_bot);
-    }
-}
-
-int
-main (int argc, char *argv[])
-{
-    Patient_Mask_Parms opts;
-    parse_args (&opts, argc, argv);
-
-    do_patient_mask (&opts);
-
-    printf ("Finished!\n");
-    return 0;
-}
-
-#endif
 
 void
 Segment_body::do_segmentation ()
@@ -315,42 +232,79 @@ Segment_body::do_segmentation ()
     /* Convert input to float */
     FloatImageType::Pointer i1 = this->img_in.itk_float();
 
+    /* Reduce resolution to at most 5 mm voxels */
+    if (m_fast) {
+	Plm_image_header pih;
+	bool need_resample = false;
+	ImageRegionType::SizeType itk_size;
+	pih.set_from_plm_image (&this->img_in);
+	for (int d = 0; d < 3; d++) {
+	    if (pih.m_spacing[d] < 5.0) {
+		itk_size[d] = (int) floor(pih.Size(d) * pih.m_spacing[d] / 5.0);
+		pih.m_origin[d] += (5.0 - pih.m_spacing[d]) / 2;
+		pih.m_spacing[d] = 5.0;
+		need_resample = true;
+	    } else {
+		itk_size[d] = pih.Size(d);
+	    }
+	}
+	if (need_resample) {
+	    printf ("Resampling image\n");
+	    pih.m_region.SetSize (itk_size);
+	    i1 = resample_image (i1, &pih, -1000, 1);
+	    if (m_debug) {
+		itk_image_save (i1, "0_resample.nrrd");
+	    }
+	}
+    }
+
     /* Allocate output image (i2) */
     UCharImageType::Pointer i2 = UCharImageType::New ();
 
     /* Find patient */
     int patient_bottom;
-    if (this->bot_given) {
-	patient_bottom = this->bot;
+    if (this->m_bot_given) {
+	patient_bottom = this->m_bot;
     } else {
+	printf ("find_patient_bottom\n");
 	patient_bottom = find_patient_bottom (i1);
     }
 
     /* Threshold image */
+    printf ("threshold\n");
     i2 = threshold_patient (i1);
 
     /* Zero out the couch */
+    printf ("remove_couch\n");
     remove_couch (i2, patient_bottom);
-    //    save_image (i2, "tmp0.mha");
+    if (m_debug) {
+	itk_image_save (i2, "1_remove_couch.nrrd");
+    }
 
     /* Erode and dilate */
+    printf ("erode_and_dilate\n");
     i2 = erode_and_dilate (i2);
-    //    save_image (i2, "tmp1.mha");
 
     /* Compute connected components */
+    printf ("get_largest_connected_component\n");
     i2 = get_largest_connected_component (i2);
-    //    save_image (i2, "tmp2.mha");
 
     /* Invert the image */
+    printf ("invert\n");
     invert_image (i2);
-    //    save_image (i2, "tmp3.mha");
+    if (m_debug) {
+	itk_image_save (i2, "2_largest_cc.nrrd");
+    }
 
     /* Fill holes: Redo connected components on the (formerly) black parts */
+    printf ("get_largest_connected_component\n");
     i2 = get_largest_connected_component (i2);
 
     /* Invert the image */
+    printf ("invert\n");
     invert_image (i2);
 
     /* Return image to caller */
+    printf ("return\n");
     this->img_out.set_itk (i2);
 }
