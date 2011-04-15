@@ -150,13 +150,13 @@ parse_fn (
 
     /* Check that an input file was given */
     if (!parser->option ("input") 
-	&& parser->option("input-cxt")
-	&& parser->option("input-ss-img")
-	&& parser->option("input-ss-list")
-	&& parser->option("input-dose-img")
-	&& parser->option("input-dose-xio")
-	&& parser->option("input-dose-ast")
-	&& parser->option("input-dose-mc"))
+	&& !parser->option("input-cxt")
+	&& !parser->option("input-ss-img")
+	&& !parser->option("input-ss-list")
+	&& !parser->option("input-dose-img")
+	&& !parser->option("input-dose-xio")
+	&& !parser->option("input-dose-ast")
+	&& !parser->option("input-dose-mc"))
     {
 	throw (dlib::error ("Error.  Please specify an input file "
 		"using one of the --input options"));
