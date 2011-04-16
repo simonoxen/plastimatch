@@ -60,8 +60,6 @@ main (int argc, char **argv)
 
     rc = app.exec();
 
-    //pqt_database_stop ();
-    
     /* Application emits database warning on program exit.  Apparently 
        this is a bug in Qt.
        Ref: http://lists.trolltech.com/qt-interest/2008-05/msg00553.html */

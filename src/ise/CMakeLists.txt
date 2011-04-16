@@ -154,10 +154,12 @@ SET (ISE_SRC
 SET (ISE_QT_SRC
   iqt_main.cxx
   iqt_main_window.cxx iqt_main_window.h
+  iqt_video_widget.cxx iqt_video_widget.h
   )
 IF (BUILD_ISE_QT)
   QT4_WRAP_CPP (ISE_QT_SRC 
     iqt_main_window.h 
+    iqt_video_widget.h
     )
   QT4_WRAP_UI (ISE_QT_SRC 
     iqt_main_window.ui
@@ -173,6 +175,7 @@ CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/ise_config.h.in
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
+INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
 INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 IF(MIL_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${MIL_INCLUDE_DIR})

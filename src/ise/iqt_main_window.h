@@ -35,9 +35,12 @@ public:
     //Iqt_patient_list_model *m_patient_list_model;
 
     //Iqt_findscu m_findscu;
-    int a;
+
+    QTimer *m_qtimer;
+
 
 public slots:
     void slot_load (void);
+    void slot_timer (void);
 };
 #endif
