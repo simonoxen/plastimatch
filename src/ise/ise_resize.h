@@ -26,17 +26,20 @@ struct Resize_Item_Type {
 typedef struct Resize_Item_Type Resize_Item;
 
 struct Resize_Data_Type {
+#ifdef _WIN32
     HWND hwnd;
-    int num_items;
     RECT initial_parent_rect;
+#endif
+    int num_items;
     Resize_Item* rilist;
 };
 typedef struct Resize_Data_Type Resize_Data;
 
+#ifdef _WIN32
 void ise_resize_init (Resize_Data*rd, HWND hwnd);
 void ise_resize_add (Resize_Data* rd, int control_id, unsigned int bind_type);
 void ise_resize_freeze (Resize_Data* rd);
 void ise_resize_on_event (Resize_Data* rd, HWND hwnd);
-
+#endif
 
 #endif

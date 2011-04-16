@@ -1,10 +1,12 @@
 /* -------------------------------------------------------------------------*
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
+#ifdef _WIN32
 #include <windows.h>
+#include <io.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <io.h>
 #include <string.h>
 #include "debug.h"
 #include "fileload.h"

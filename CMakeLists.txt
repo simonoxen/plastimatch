@@ -1361,6 +1361,9 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ADD_SUBDIRECTORY (src/fatm)
 ADD_SUBDIRECTORY (CUDA_tex_test)
+IF (PLM_BUILD_ISE)
+  ADD_SUBDIRECTORY (src/ise)
+ENDIF ()
 
 ##-----------------------------------------------------------------------------
 ##  Determine linker flags

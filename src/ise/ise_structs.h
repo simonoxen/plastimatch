@@ -5,13 +5,23 @@
 #define __ise_structs_h__
 
 #include "config.h"
+#ifdef _WIN32
 #include <windows.h>
+#endif
 #if (HAVE_MIL)
 #include <mil.h>
 #endif
 #if (HAVE_BITFLOW)
 #include "R2Api.h"
 #include "BFApi.h"
+#endif
+
+#ifndef _MAX_PATH
+#ifdef _MAX_PATH
+#define _MAX_PATH PATH_MAX
+#else
+#define _MAX_PATH 255
+#endif
 #endif
 
 /* -------------------------------------------------------------------------*
@@ -82,9 +92,11 @@ typedef struct __FileWrite FileWrite;
 
 typedef struct __IgpaxInfo IgpaxInfo;
 struct __IgpaxInfo {
+#ifdef _WIN32
     HANDLE hthread;
     HANDLE hevent;
     CRITICAL_SECTION crit_section;
+#endif
     int pipe_to_igpax[2];
     int pipe_from_igpax[2];
     int pid;
@@ -148,7 +160,9 @@ struct __CBuf {
     Frame* write_ptr;
     Frame* display_ptr;
     Frame* internal_grab_ptr;
+#ifdef _WIN32
     CRITICAL_SECTION cs;
+#endif
 };
 typedef struct __CBuf CBuf;
 
@@ -252,12 +266,14 @@ struct __OntrakThreadData {
 };
 
 struct __OntrakData {
-    HANDLE semaphore;
     void* ontrak_device;
     int gate_beam;
     int bright_frame;
 
+#ifdef _WIN32
+    HANDLE semaphore;
     HANDLE thread;
+#endif
     OntrakThreadData thread_data;
 };
 
@@ -299,7 +315,9 @@ struct __IseFramework {
     IgpaxInfo igpax[2];
 
     /* Thread data */
+#ifdef _WIN32
     HANDLE grab_thread[2];
+#endif
     ThreadData grab_thread_data[2];
 };
 
@@ -307,15 +325,17 @@ typedef struct __FWThreadData {
     struct __FileWrite *fw;
 } FWThreadData;
 
-typedef struct __FileWrite {
+struct __FileWrite {
     IseFramework* ig;
     int imgsize;
     int end;
     char output_dir_1[_MAX_PATH];
     char output_dir_2[_MAX_PATH];
 
+#ifdef _WIN32
     HANDLE threads[2];
+#endif
     FWThreadData thread_data[2];
-} FileWrite;
+};
 
 #endif

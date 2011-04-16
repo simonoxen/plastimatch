@@ -1,11 +1,13 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#ifdef _WIN32
 #include <windows.h>
-#include <stdlib.h>
 #include <io.h>
-#include <direct.h>
 #include <process.h>
+#include <direct.h>
+#endif
+#include <stdlib.h>
 #include "ise.h"
 #include "ise_framework.h"
 #include "filewrite.h"

@@ -1,16 +1,22 @@
 /* -------------------------------------------------------------------------*
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
-#include "config.h"
+#include "ise_config.h"
+#ifdef _WIN32
 #include <windows.h>
 #include <tlhelp32.h>
+#endif
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static int debug_on = 1;
 static FILE* gcsfp = 0;
+
+#ifdef _WIN32
 static CRITICAL_SECTION debug_cs;
+#endif
 
 void
 debug_enable (void)

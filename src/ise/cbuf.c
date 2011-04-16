@@ -6,12 +6,14 @@
    within a critical section.
  * -------------------------------------------------------------------------*/
 #include <stdlib.h>
+#ifdef _WIN32
 #include <io.h>
-#include <fcntl.h>
-#include <process.h>
-#include <string.h>
 #include <windows.h>
+#include <process.h>
 #include <direct.h>
+#endif
+#include <fcntl.h>
+#include <string.h>
 #include "ise.h"
 #include "debug.h"
 #include "cbuf.h"

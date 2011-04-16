@@ -1,6 +1,6 @@
-/* -------------------------------------------------------------------------*
-    See COPYRIGHT for copyright information.
- * -------------------------------------------------------------------------*/
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
 #ifndef __ise_globals_h__
 #define __ise_globals_h__
 
@@ -39,6 +39,7 @@ enum Ise_Program_State
 };
 
 struct WinVars_Type {
+#ifdef _WIN32
     HWND hwin;	    /* The parent window */
     HWND hpwin;	    /* The picture subwindow */
     HDC hdc;	    /* HDC for parent window */
@@ -64,6 +65,7 @@ struct WinVars_Type {
     HGLRC hglrc;
     _GLuint texture_name;
     ShaderInfo* si;
+#endif
 };
 typedef struct WinVars_Type WinVars;
 
@@ -75,7 +77,7 @@ struct Globals_Type {
 
     /* Frame grabber */
     int have_matrox_hardware;
-	int have_bitflow_hardware;
+    int have_bitflow_hardware;
 
     /* Communication with indico process */
     Indico_Info indico_info;
@@ -99,10 +101,12 @@ struct Globals_Type {
     int loadfrom_file;
 
     /* Display vars */
+#ifdef _WIN32
     HINSTANCE hinst;
     HACCEL hAccelTable;
     HDC hdc_mem;
     WinVars win[2];
+#endif
     int screen_w;
     int screen_h;
     int fullscreen_client_w;

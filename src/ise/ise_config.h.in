@@ -4,9 +4,9 @@
 #ifndef __config_h__
 #define __config_h__
 
-#cmakedefine HAVE_MIL 1
-
 #cmakedefine HAVE_BITFLOW 1
+#cmakedefine HAVE_MIL 1
+#cmakedefine QT_FOUND 1
 
 /* Requred for QueueUserAPC() */
 #ifndef _WIN32_WINNT

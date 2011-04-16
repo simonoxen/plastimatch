@@ -19,7 +19,9 @@ struct indico_shmem_struct {
 
 typedef struct indico_info_struct Indico_Info;
 struct indico_info_struct {
+#ifdef _WIN32
     HANDLE h_shmem;
+#endif
     Indico_Shmem* shmem;
 };
 
