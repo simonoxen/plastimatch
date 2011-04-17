@@ -1,6 +1,6 @@
 ## These functions read and write mha files (ONLY IMAGES)
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## rev 9
+## rev 10
 ## NOT TESTED ON PYTHON 3
 
 import numpy as np
@@ -84,16 +84,7 @@ def read(fn):
 		raw=np.fromstring(raw_img, dtype=np.uint8)
 		data_type = 'uchar'
 	
-	raw=raw.reshape(siz[2],siz[1],siz[0])
-	raw=np.split(raw,1)
-	raw=raw[0]
-	
-	bidim_matr=[]
-	for i in range(siz[2]):
-	    bidim_matr.append(raw[i].transpose(np.roll(range(raw[i].ndim), -1)))
-	raw=np.dstack(bidim_matr)
-	
-	del bidim_matr
+	raw=raw.reshape(siz[2],siz[1],siz[0]).T
 	
 	return (raw, siz, spacing, offset, data_type)
 	
