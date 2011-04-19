@@ -18,6 +18,7 @@ Third party libraries to be used (Plastimatch 1.5.0)::
 Configuration settings - leave at default unless otherwise specified.
 Pay special attention to the following::
 
+  BUILD_SHARED_LIBS           ??      (ON for windows, OFF for unix)
   PLM_CONFIG_VERSION_STRING   1.5.0   (change this)
   PLM_CUDA_ALL_DEVICES        ON      (this is default)
   PLM_INSTALL_RPATH           OFF     (change this, only relevant for Unix)
