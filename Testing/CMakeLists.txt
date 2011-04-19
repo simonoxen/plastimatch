@@ -736,8 +736,8 @@ PLM_ADD_TEST (
 plmtest_check_interval ("landmark-warp-a-check-1"
   "${PLM_TESTING_BUILD_DIR}/landmark-warp-a-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-860.5"
-  "-860.0"
+  "-992.0"
+  "-991.5"
   )
 PLM_ADD_TEST (
   "landmark-warp-a-stats-2"
@@ -767,8 +767,8 @@ PLM_ADD_TEST (
 plmtest_check_interval ("landmark-warp-b-check-1"
   "${PLM_TESTING_BUILD_DIR}/landmark-warp-b-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "-992.01"
-  "-991.5"
+  "-992.2"
+  "-991.8"
   )
 PLM_ADD_TEST (
   "landmark-warp-b-stats-2"

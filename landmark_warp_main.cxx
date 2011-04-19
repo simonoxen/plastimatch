@@ -37,8 +37,8 @@ public:
     float origin[3];
     bool have_spacing;
     float spacing[3];
-	bool have_direction_cosines;
-	float direction_cosines[9];
+    bool have_direction_cosines;
+    float direction_cosines[9];
 
     CBString algorithm;
 
@@ -89,11 +89,18 @@ load_input_files (Landmark_warp_main_parms *parms)
 	    print_and_exit ("Error reading input image: %s\n", 
 		(const char*) parms->input_img_fn);
 	}
+	/* Default geometry, if unknown, comes from moving image */
+	lw->m_pih.set_from_plm_image (lw->m_input_img);
     }
 
     /* Set the output geometry.  
-       Note: --offset, --spacing, and --dim get priority over --fixed. */
-    if (!parms->have_dim || !parms->have_origin || !parms->have_spacing || !parms->have_direction_cosines) {
+       Note: --offset, --spacing, and --dim get priority over --fixed. 
+       Therefore, if these options are completely specified, we don't need 
+       to load the fixed image.
+    */
+    if (!parms->have_dim || !parms->have_origin 
+	|| !parms->have_spacing || !parms->have_direction_cosines)
+    {
 	if (bstring_not_empty (parms->fixed_img_fn)) {
 	    Plm_image *pli = plm_image_load_native (parms->fixed_img_fn);
 	    if (!pli) {
@@ -150,7 +157,7 @@ landmark_convert_mm_to_voxel(
     float *offset, 
     float *pix_spacing,
     int *dim,
-	float *direction_cosines)
+    float *direction_cosines)
 {
     for (int i = 0; i < landmarks_mm->num_points; i++) {
 	for (int d = 0; d < 3; d++) {
@@ -214,7 +221,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     lw->m_pih.get_dim( fixed_dim);
     lw->m_pih.get_spacing( fixed_pix_spacing );
     lw->m_pih.get_origin( fixed_offset );
-	lw->m_pih.get_direction_cosines( fixed_direction_cosines );
+    lw->m_pih.get_direction_cosines( fixed_direction_cosines );
 
     if (vector_field->pix_type != PT_VF_FLOAT_INTERLEAVED)
 	print_and_exit ("Sorry, this type of vector field is not supported in landmarks_warp\n");	
