@@ -39,6 +39,7 @@ if "%COMPUTERNAME%"=="ROSHAR" (
   SET ITK_PATH=%HOME%\build\vs2008\itk-3.20.0\bin\Release
   SET PLASTIMATCH_BASE=%HOME%\build\vs2008\plastimatch-3.20.0
   SET CTTOOLS_PATH=%HOME%\projects\plastimatch\cttools
+  SET FFTW_PATH=%HOME%\build\fftw-3.2.2
 ) else (
   echo "Sorry, couldn't recognize host"
   exit /b
