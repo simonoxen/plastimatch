@@ -15,11 +15,14 @@ Third party libraries to be used (Plastimatch 1.5.0)::
   ITK             3.20.0
   wxWidgets       2.8.12            (Windows only)
 
-Configuration settings - leave at default unless otherwise specified::
+Configuration settings - leave at default unless otherwise specified.
+Pay special attention to the following::
 
-  PLM_INSTALL_RPATH           OFF   (Unix only)
-  PLM_USE_GPU_PLUGINS         ON
-  PLM_CONFIG_VERSION_STRING   1.5.0
+  PLM_CONFIG_VERSION_STRING   1.5.0   (change this)
+  PLM_CUDA_ALL_DEVICES        ON      (this is default)
+  PLM_INSTALL_RPATH           OFF     (change this, only relevant for Unix)
+  PLM_USE_GPU_PLUGINS         ON      (this is default)
+  PLM_USE_SS_IMAGE_VEC        ON      (change this, but should be OFF for slicer plugin)
 
 Building a windows binary
 -------------------------

@@ -80,8 +80,9 @@ TARGET_LINK_LIBRARIES(fatm_bench ${FATM_LIBS})
 ## I have disabled this INSTALL since it would be inappropriate
 ## for our CPack packages to install libfatm.a
 ##
-INSTALL(TARGETS fatm_bench DESTINATION bin)
-IF (PLM_OLD_INSTALL_TARGETS)
-  INSTALL(TARGETS fatm DESTINATION lib)
-ENDIF (PLM_OLD_INSTALL_TARGETS)
+
+# INSTALL(TARGETS fatm_bench DESTINATION bin)
+#IF (PLM_OLD_INSTALL_TARGETS)
+#  INSTALL(TARGETS fatm DESTINATION lib)
+#ENDIF (PLM_OLD_INSTALL_TARGETS)
 #INSTALL(FILES fatm.h DESTINATION include)
