@@ -79,8 +79,8 @@ OPTION (PLM_PREFER_SYSTEM_F2C
 # Installer Options
 OPTION (PLM_INSTALL_RPATH 
   "Add full RPATH to install" ON)
-OPTION (PLM_OLD_INSTALL_TARGETS 
-  "Include old install targets such as static link libraries" OFF)
+OPTION (PLM_INSTALL_LIBRARIES
+  "Include static libraries in install" OFF)
 OPTION (PLM_PACKAGE_32BIT 
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
 
@@ -178,6 +178,9 @@ SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 ## macro since it was only serving to include static link
 ## libraries in the CPack generated packages.
 ## Namely: libplastimatch1.a, libgpuit.a, & libf2c_helper.a
+## GCS 2011-04-19
+## However, it is also needed to correctly install dlls for windows
+## binary packaging.
 MACRO (PLM_ADD_LIBRARY 
     TARGET_NAME TARGET_SRC TARGET_LIBS TARGET_LDFLAGS)
 
@@ -186,14 +189,12 @@ MACRO (PLM_ADD_LIBRARY
     SLICER3_SET_PLUGINS_OUTPUT_PATH (${TARGET_NAME})
   ELSE ()
     ADD_LIBRARY (${TARGET_NAME} ${TARGET_SRC})
-    ##
-    IF (PLM_OLD_INSTALL_TARGETS)
+    IF (WIN32 OR PLM_INSTALL_LIBRARIES)
       INSTALL (TARGETS ${TARGET_NAME}
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
     ENDIF ()
-    ##
   ENDIF ()
   TARGET_LINK_LIBRARIES (${TARGET_NAME} ${TARGET_LIBS})
   IF (NOT ${TARGET_LDFLAGS} STREQUAL "")

@@ -4,8 +4,8 @@ clear all;
 opts.display_im = 1;             % display image option
 opts.display_vol = 0;            % display volume option
 opts.collect_c_of_m = 0;         % plot center of masses over a range of phases [0:10:90]
-opts.collect_time_offset = 1;    
-opts.display_trace = 0;          % plot rpm trace used
+opts.collect_time_offset = 0;    
+opts.display_trace = 1;          % plot rpm trace used
 opts.mark_on = 0;                % calculate phase based on marks?
 
 %% These match our hardware
@@ -22,7 +22,7 @@ opts.filepath = './sine.vxp';
 opts.scaling = 6;                % mag factor
 
 %% Phase: [0, 10, ..., 90]
-opts.phase_orig = 50;            % phase origin
+opts.phase_orig = 30;            % phase origin
 
 %% Beam_st_idx: [1 .. max]
 opts.beam_st_idx = 100;         % index where the beam begins capturing images

@@ -154,18 +154,18 @@ hint which of these is used using the following CMake options::
 DCMTK (optional)
 ^^^^^^^^^^^^^^^^
 DCMTK is needed for mondoshot and a few other small utilities.  On Unix, 
-it is a breeze, but Windows can be tricky.  Here is a rough guide how 
+it is a breeze, but Windows can be tricky.  My experience is 
+that the pre-built binaries don't seem to work, and you will 
+get the best results if you build it yourself.
+Here is a rough guide how 
 to compile and use on windows:
 
-#. Download 3.5.4
-#. Optionally, edit the CMakeLists.txt file distributed by dcmtk.  
-   Delete (or comment out) the sections beginning with "settings for 
-   Microsoft Visual C", and "settings for Microsoft Visual C++"
-   (I think this is required when building shared library version 
-   on MSVC 2005, but not required for static library on MSVC 2008).
+#. Download and unpack source code for 3.5.4
+#. Run CMake - set WITH_LIBPNG, WITH_LIBTIFF, WITH_ZLIB to OFF
 #. Build
-#. Install
-#. Tell plastimatch to use the install directory
+#. Install - this will create a directory "dcmtk-3.5.4-win32-i386" 
+   with the same parent as the source directory
+#. Run CMake on plastimatch - set DCMTK_DIR to the install directory
 
 I once was able to use the contributed md-libraries (with VC 2005), 
 but can no longer figure out how to do this.

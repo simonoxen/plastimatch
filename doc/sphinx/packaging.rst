@@ -1,36 +1,42 @@
 Packaging plastimatch
 =====================
 
-This section describes the recommended build configuration for packaging 
-the plastimatch binaries.
+This section describes the recommended build configuration for 
+building and packaging the official plastimatch binaries.
 
 Plastimatch binaries should not include the 3D Slicer plugins.  
 Those will be handled by the Slicer extension system.
 
-Third party libraries to be included::
+Third party libraries to be used (Plastimatch 1.5.0)::
 
   CUDA            3.0.14
   DCMTK           3.5.4             (Windows only)
-  FFTW            latest version
+  FFTW            3.2.2             (Windows only)
   ITK             3.20.0
-  wxWidgets       latest version    (Windows only)
+  wxWidgets       2.8.12            (Windows only)
 
 Configuration settings - leave at default unless otherwise specified::
 
   PLM_INSTALL_RPATH           OFF   (Unix only)
   PLM_USE_GPU_PLUGINS         ON
+  PLM_CONFIG_VERSION_STRING   1.5.0
 
 Building a windows binary
 -------------------------
 
-To be written.
+The Windows build uses the MSVC 2008 express compiler.  
+This means 32-bit (only), and no OpenMP.
+
+#. Build/install all required 3rd party libraries.
+#. Build plastimatch (start with a fresh cmake)
 
 Building a plastimatch deb package using cpack
 ----------------------------------------------
 
-This “How to” describes the way for build and sign a deb package of plastimatch using the cpack
-tool.
-The deb files that are on the website are builded into two GNU/Linux Ubuntu 10.04.1 OSs (32 and
+This “How to” describes the way for build and 
+sign a deb package of plastimatch using the cpack tool.
+The deb files that are on the website are builded 
+into two GNU/Linux Ubuntu 10.04.1 OSs (32 and
 64 bits) virtualized by Virtualbox in a GNU/Linux Fedora 14 64 bits.
 This guide is related at the revision number 1930 of plastimatch.
 

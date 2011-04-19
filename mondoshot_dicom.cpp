@@ -13,6 +13,14 @@
 #include "dcmtk/dcmdata/dcdeftag.h"
 #include "dicom_uid.h"
 
+/* DCMTK changed some defines between 3.5.4 and 3.6.0 */
+#ifndef DCM_PatientName
+#define DCM_ReferringPhysicianName               DcmTagKey(0x0008, 0x0090)
+#define DCM_PatientName                          DcmTagKey(0x0010, 0x0010)
+#define DCM_PatientBirthDate                     DcmTagKey(0x0010, 0x0030)
+#define DCM_PatientSex                           DcmTagKey(0x0010, 0x0040)
+#endif
+
 bool 
 mondoshot_dicom_create_file (
     int height,
@@ -60,11 +68,11 @@ mondoshot_dicom_create_file (
 	dataset->putAndInsertString (DCM_Manufacturer, "Varian Medical Systems");
     }
 
-    dataset->putAndInsertString (DCM_ReferringPhysiciansName, "");
-    dataset->putAndInsertString (DCM_PatientsName, patient_name);
+    dataset->putAndInsertString (DCM_ReferringPhysicianName, "");
+    dataset->putAndInsertString (DCM_PatientName, patient_name);
     dataset->putAndInsertString (DCM_PatientID, patient_id);
-    dataset->putAndInsertString (DCM_PatientsBirthDate, "");
-    dataset->putAndInsertString (DCM_PatientsSex, "");
+    dataset->putAndInsertString (DCM_PatientBirthDate, "");
+    dataset->putAndInsertString (DCM_PatientSex, "");
 
     /* These should be global for a session?? */
     dataset->putAndInsertString (DCM_StudyInstanceUID, plm_generate_dicom_uid (uid, uid_root));
