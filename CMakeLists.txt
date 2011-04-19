@@ -345,7 +345,6 @@ FIND_PACKAGE (DCMTK)
 FIND_PACKAGE (Etags)
 FIND_PACKAGE (Fann)
 FIND_PACKAGE (FFTW)
-FIND_PACKAGE (Gengetopt)
 FIND_PACKAGE (Liblbfgs)
 FIND_PACKAGE (NLopt)
 IF (PLM_BUILD_MEX_TEST)
@@ -1205,14 +1204,8 @@ SET (PROTON_DOSE_SRC
   proton_dose_main.c 
   proton_dose_opts.c proton_dose_opts.h
   )
-WRAP_GGO (landmark_warp_GGO_C landmark_warp.ggo)
-SET (LANDMARK_WARP_GGO_SRC
-  landmark_warp_main_ggo.cxx
-  landmark_warp_args.cxx landmark_warp_args.h
-  ${landmark_warp_GGO_C}
-  )
-SET (LANDMARK_WARP_DLIB_SRC
-  landmark_warp_main_dlib.cxx
+SET (LANDMARK_WARP_SRC
+  landmark_warp_main.cxx
   )
 SET (RANSAC_TEST_SRC 
   ransac_test.cxx
@@ -1532,9 +1525,7 @@ IF (ITK_FOUND)
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
   PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (landmark_warp_dlib "${LANDMARK_WARP_DLIB_SRC}" 
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_GGO_SRC}" 
+  PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
