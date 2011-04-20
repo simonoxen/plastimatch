@@ -26,6 +26,7 @@
 #include "rbf_gauss.h"
 #include "vf.h"
 #include "volume.h"
+#include "volume_macros.h"
 #include "rbf_cluster.h"
 
 typedef struct rbf_params Rbf_parms;
@@ -444,9 +445,65 @@ Adds RBF contributions to the vector field
 landmark_dxyz is not updated by this function
 Version without truncation: scan over the entire vf
 and add up all RBFs in each voxel
+NOW SUPPORTS DIRECTION COSINES
 */
 void
 rbf_gauss_update_vf (
+    Volume *vf,                  /* Modified */
+    Landmark_warp *lw,           /* Input */
+    float *coeff                 /* Input */
+)
+{
+    int lidx, d, v;
+    int ijk[3];
+    float fxyz[3];
+    float *vf_img;
+    float rbf;
+    int num_landmarks = lw->m_fixed_landmarks->num_points;
+
+    printf("RBF, updating the vector field\n");
+
+    if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
+	print_and_exit("Sorry, this type of vector field is not supported\n");
+
+    vf_img = (float*) vf->img;
+
+    for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
+	for (LOOP_Y (ijk, fxyz, vf)) {
+	    for (LOOP_X (ijk, fxyz, vf), v++) {
+
+		for (lidx=0; lidx < num_landmarks; lidx++) {
+			
+		    rbf = rbf_value (
+			&lw->m_fixed_landmarks->points[3*lidx], 
+			fxyz, 
+			lw->adapt_radius[lidx]);
+
+		    for (d=0; d<3; d++) {
+			vf_img[3*v+d] += coeff[3*lidx+d] * rbf;
+#if defined (commentout)
+			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
+			    lidx, 
+			    ijk[0], ijk[1], ijk[2],
+			    coeff[3*lidx+d], rbf, 
+			    coeff[3*lidx+d] * rbf);
+#endif
+		    }
+		}
+	    }
+	}
+    }
+}
+
+/*
+Adds RBF contributions to the vector field
+landmark_dxyz is not updated by this function
+Version without truncation: scan over the entire vf
+and add up all RBFs in each voxel
+VERSION WITHOUT DIRECTION COSINES (correct for 100 010 001 only)
+*/
+void
+rbf_gauss_update_vf_no_dircos (
     Volume *vf,                  /* Modified */
     Landmark_warp *lw,           /* Input */
     float *coeff                 /* Input */
@@ -496,6 +553,7 @@ rbf_gauss_update_vf (
 	}
     }
 }
+
 
 void
 rbf_gauss_warp (Landmark_warp *lw)
