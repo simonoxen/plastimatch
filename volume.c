@@ -73,21 +73,21 @@ volume_create (
 
 // NSH version of step and proj
 // works ok for matrix, still needs testing for pix_spacing
-/*
+
     volume_matrix3x3inverse( vol->inverse_direction_cosines, 
 			vol->direction_cosines);
 
     for (i = 0; i < 3; i++) {
 	for (j = 0; j < 3; j++) {
-	    vol->step[i][j] = vol->inverse_direction_cosines[3*j+i] 
+	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
 		* vol->pix_spacing[j];
-	    vol->proj[i][j] = vol->direction_cosines[3*j+i] 
+	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
 		/ vol->pix_spacing[j];
 	}
     }
-*/
 
-// GCS version of step and proj
+
+/* GCS version of step and proj
     for (i = 0; i < 3; i++) {
 	for (j = 0; j < 3; j++) {
 	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
@@ -96,7 +96,7 @@ volume_create (
 		/ vol->pix_spacing[i];
 	}
     }
-
+*/
 	switch (pix_type) {
     case PT_UCHAR:
 	vol->pix_size = sizeof(unsigned char);
