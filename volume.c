@@ -31,6 +31,13 @@
 	free (old_img);							\
     }
 
+void
+directions_cosine_debug (float *m)
+{
+    printf ("%8f %8f %8f\n%8f %8f %8f\n%8f %8f %8f\n",
+	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
+}
+
 int
 volume_index (int* dims, int i, int j, int k)
 {
@@ -893,15 +900,19 @@ vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
     }
 }
 
-void volume_matrix3x3inverse(float *out, float *m)
-    {
+void volume_matrix3x3inverse (float *out, float *m)
+{
     float det;
 
-    det =  m[0]*(m[4]*m[8]-m[5]*m[7])
-          -m[1]*(m[3]*m[8]-m[5]*m[6])
-          +m[2]*(m[3]*m[7]-m[4]*m[6]);
+    det =  
+	m[0]*(m[4]*m[8]-m[5]*m[7])
+	-m[1]*(m[3]*m[8]-m[5]*m[6])
+	+m[2]*(m[3]*m[7]-m[4]*m[6]);
 
-    if (fabs(det)<1e-8) print_and_exit("Error: singular matrix of direction cosines\n");
+    if (fabs(det)<1e-8) {
+	directions_cosine_debug (m);
+	print_and_exit ("Error: singular matrix of direction cosines\n");
+    }
 
     out[0]=  (m[4]*m[8]-m[5]*m[7]) / det;
     out[1]= -(m[1]*m[8]-m[2]*m[7]) / det;
@@ -914,6 +925,4 @@ void volume_matrix3x3inverse(float *out, float *m)
     out[6]=  (m[3]*m[7]-m[4]*m[6]) / det;
     out[7]= -(m[0]*m[7]-m[1]*m[6]) / det;
     out[8]=  (m[0]*m[4]-m[1]*m[3]) / det;
-
-    }
-
+}

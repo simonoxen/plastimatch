@@ -126,22 +126,34 @@ read_mha_internal (
 	    break;
 	}
 	if (sscanf (linebuf, "DimSize = %d %d %d",
-		    &vol->dim[0],
-		    &vol->dim[1],
-		    &vol->dim[2]) == 3) {
+		&vol->dim[0],
+		&vol->dim[1],
+		&vol->dim[2]) == 3) {
 	    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
 	    continue;
 	}
 	if (sscanf (linebuf, "Offset = %g %g %g",
-		    &vol->offset[0],
-		    &vol->offset[1],
-		    &vol->offset[2]) == 3) {
+		&vol->offset[0],
+		&vol->offset[1],
+		&vol->offset[2]) == 3) {
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementSpacing = %g %g %g",
-		    &vol->pix_spacing[0],
-		    &vol->pix_spacing[1],
-		    &vol->pix_spacing[2]) == 3) {
+		&vol->pix_spacing[0],
+		&vol->pix_spacing[1],
+		&vol->pix_spacing[2]) == 3) {
+	    continue;
+	}
+	if (sscanf (linebuf, "TransformMatrix = %g %g %g %g %g %g %g %g %g",
+		&vol->direction_cosines[0],
+		&vol->direction_cosines[1],
+		&vol->direction_cosines[2],
+		&vol->direction_cosines[3],
+		&vol->direction_cosines[4],
+		&vol->direction_cosines[5],
+		&vol->direction_cosines[6],
+		&vol->direction_cosines[7],
+		&vol->direction_cosines[8]) == 9) {
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementNumberOfChannels = %d", &tmp) == 1) {
@@ -193,7 +205,6 @@ read_mha_internal (
     fclose (fp);
 
     return vol;
-    
 }
 
 /* Return 1 if filename ends in ".mh5" */

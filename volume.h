@@ -92,6 +92,9 @@ void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
 
 gpuit_EXPORT
 void volume_matrix3x3inverse(float *out, float *m);
+gpuit_EXPORT
+void
+directions_cosine_debug (float *m);
 
 #if defined __cplusplus
 }
