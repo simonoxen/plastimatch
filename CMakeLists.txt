@@ -316,6 +316,13 @@ ADD_SUBDIRECTORY (libs/specfun)
 LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 
 ##-----------------------------------------------------------------------------
+##  Only use local msinttypes
+##-----------------------------------------------------------------------------
+SET (MSINTTYPES_INCLUDE_DIR 
+  "${CMAKE_SOURCE_DIR}/libs" 
+  )
+
+##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
 IF (NOT PLM_CONFIG_DISABLE_CUDA)
