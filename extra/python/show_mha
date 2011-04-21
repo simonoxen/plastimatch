@@ -1,0 +1,46 @@
+#! /usr/bin/env python
+
+## This script shows a mha image
+## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
+## rev 1
+## NOT TESTED ON PYTHON 3
+##
+## Usage: show_mha file_name slice_number choose_view
+## slice_number can be: a number
+## 			- for the middle slice
+## choose_view can be: a for the axial view
+##		       s for sagittal view
+##		       c or - for coronal view
+##
+## E.g.  show_mha img.mha - -
+
+from sys import argv
+import numpy as np
+from matplotlib.pyplot import imshow, show
+import matplotlib.cm as cm
+from mha import read
+
+(img, img_size, img_spacing, img_offset, img_data_type)=read(argv[1])
+
+if argv[2]== '-' and (argv[3]== '-' or argv[3]== 'c' or argv[3]== 's'):
+	slice_number=np.rint(img_size[1]/2)
+elif argv[2]== '-' and argv[3]== 'a':
+	slice_number=np.rint(img_size[2]/2)
+else:
+	slice_number=argv[2]
+
+
+if argv[3]== '-' or argv[3]== 'c':
+	slice=np.rot90(img[:,slice_number],3)
+	pixel_ratio=img_spacing[2]/img_spacing[1]
+elif argv[3]== 's':
+	slice=np.rot90(img[slice_number,:],3)
+	pixel_ratio=img_spacing[2]/img_spacing[1]
+elif argv[3]== 'a':
+	slice=np.rot90(img[:,:,slice_number],1)
+	pixel_ratio=1
+
+del img
+
+imshow(slice,cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+show()
