@@ -1187,7 +1187,9 @@ ENDIF ()
 ## -------------------------------------------------------------------------
 PLM_ADD_EXECUTABLE (bspline_test_1 bspline_test_1.cxx
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx
-  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx
-  "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+IF (ITK_FOUND)
+  PLM_ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+  PLM_ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx
+    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
+ENDIF ()
