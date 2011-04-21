@@ -89,7 +89,7 @@ volume_create (
 	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
 		* vol->pix_spacing[j];
 	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
-		/ vol->pix_spacing[j];
+		/ vol->pix_spacing[i];
 	}
     }
 
