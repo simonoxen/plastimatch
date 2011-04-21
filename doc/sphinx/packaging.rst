@@ -32,7 +32,12 @@ The Windows build uses the MSVC 2008 express compiler.
 This means 32-bit (only), and no OpenMP.
 
 #. Build/install all required 3rd party libraries.
+#. Double check CPACK version number (at bottom of CMakeLists.txt)
+#. Verify that svn is not modified (i.e. do svn update; svn diff)
 #. Build plastimatch (start with a fresh cmake)
+#. Run test cases, make sure all pass
+#. Build package
+#. Test package for missing dlls by making sure plastimatch runs
 
 Building a plastimatch deb package using cpack
 ----------------------------------------------
@@ -42,18 +47,17 @@ sign a deb package of plastimatch using the cpack tool.
 The deb files that are on the website are builded 
 into two GNU/Linux Ubuntu 10.04.1 OSs (32 and
 64 bits) virtualized by Virtualbox in a GNU/Linux Fedora 14 64 bits.
-This guide is related at the revision number 1930 of plastimatch.
 
 Packages needed::
 
-  gengetopt
-  uuid-dev
-  gfortran
-  sqlite3
-  libsqlite3-dev
-  dpkg-sig
   build-essential
   cmake
+  dpkg-sig
+  fftw
+  gfortran
+  libsqlite3-dev
+  sqlite3
+  uuid-dev
 
 *Dependences*
 
