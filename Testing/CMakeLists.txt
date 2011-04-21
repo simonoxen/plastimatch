@@ -165,32 +165,6 @@ IF (PLM_USE_GPU_PLUGINS)
 ENDIF (PLM_USE_GPU_PLUGINS)
 
 ## -------------------------------------------------------------------------
-## Test code targets
-## -------------------------------------------------------------------------
-ADD_EXECUTABLE (bspline_test_1 bspline_test_1.cxx)
-IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-  SET_TARGET_PROPERTIES(bspline_test_1 
-    PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
-ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-TARGET_LINK_LIBRARIES (bspline_test_1 ${GPUIT_LIBRARIES})
-
-IF (ITK_FOUND)
-  ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx)
-  IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-    SET_TARGET_PROPERTIES (plm_drr_api_a 
-      PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
-  ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-  TARGET_LINK_LIBRARIES (plm_drr_api_a ${PLASTIMATCH_LIBS})
-
-  ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx)
-  IF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-    SET_TARGET_PROPERTIES (plm_registration_api_a 
-      PROPERTIES LINK_FLAGS ${GPUIT_EXE_LDFLAGS})
-  ENDIF (NOT ${GPUIT_EXE_LDFLAGS} STREQUAL "")
-  TARGET_LINK_LIBRARIES (plm_registration_api_a ${PLASTIMATCH_LIBS})
-ENDIF ()
-
-## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
 ##   gauss-1.mha   Centered gauss
 ##   gauss-2.mha   Off-center gauss
@@ -297,7 +271,7 @@ PLM_ADD_TEST (
 PLM_ADD_TEST (
   "bspline-bxf"
   ""
-  ${PLM_PLASTIMATCH_TESTING_PATH}/bspline_test_1
+  ${PLM_PLASTIMATCH_PATH}/bspline_test_1
   "${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;${PLM_TESTING_BUILD_DIR}/xf-bspline-1.txt"
   )
 ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
@@ -1658,13 +1632,13 @@ plmtest_check_interval ("plm-warp-h-check-1"
 PLM_ADD_TEST (
   "plm-drr-api-a"
   ""
-  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_drr_api_a
+  ${PLM_PLASTIMATCH_PATH}/plm_drr_api_a
   ""
   )
 PLM_ADD_TEST (
   "plm-registration-api-a"
   ""
-  ${PLM_PLASTIMATCH_TESTING_PATH}/plm_registration_api_a
+  ${PLM_PLASTIMATCH_PATH}/plm_registration_api_a
   ""
   )
 

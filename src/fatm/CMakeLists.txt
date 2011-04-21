@@ -67,6 +67,12 @@ IF(WIN32 AND NOT UNIX)
   ENDIF (PLM_BUILD_MEXFATM)
 ENDIF(WIN32 AND NOT UNIX)
 
+##-----------------------------------------------------------------------------
+##  Include directories
+##-----------------------------------------------------------------------------
+INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+INCLUDE_DIRECTORIES (BEFORE ${CMAKE_BINARY_DIR})
+
 # Build
 ADD_EXECUTABLE(fatm_bench ${FATM_BENCH_SRC})
 ADD_LIBRARY(fatm STATIC ${LIBFATM_SRC})

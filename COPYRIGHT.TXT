@@ -1,6 +1,6 @@
 Plastimatch is copyrighted software.
 
-  Copyright (c) 2004-2010 Massachusetts General Hospital
+  Copyright (c) 2004-2011 Massachusetts General Hospital
   All rights reserved
 
   You can freely use and distribute plastimatch under a BSD-style license.

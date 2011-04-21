@@ -1,11 +1,9 @@
 Version 1.4.0
-(Coming soon)
-*  First stable release
 *  Native grid-aligned B-spline registration (MSE: CUDA, OpenMP, MI: CPU)
 *  Native demons registration (Brook, CPU)
 *  Wrappers for some ITK registration transforms: translation, rigid, 
    affine, B-spline, demons
-*  Global thin-plate spline warping (ITK), local RBF warping (native)
+*  Global thin-plate spline (ITK), local cone RBF (native)
 *  Multistage registration framework
 *  FDK cone-beam reconstruction (CUDA, OpenMP)
 *  DRR generation (CUDA, OpenMP)
@@ -13,3 +11,9 @@ Version 1.4.0
 *  XiO image import, XiO structure set import/export
 *  3D slicer plugins
 *  Mondoshot screen capture program
+Version 1.5.0
+*  CUDA-accelerated mutual information for B-splines
+*  Regularized gaussian landmark splines
+*  Replace cone RBF with Wendland RBF
+*  Better handling of image metadata
+*  Many imporvements to image converion and warping
