@@ -598,6 +598,7 @@ itk_bsp_set_grid (Xform *xf,
 	    const BsplineTransformType::RegionType bsp_region,
 	    const BsplineTransformType::DirectionType bsp_direction)
 {
+#if defined (commentout)
     printf ("Setting bsp_spacing\n");
     std::cout << bsp_spacing << std::endl;
     printf ("Setting bsp_origin\n");
@@ -611,7 +612,6 @@ itk_bsp_set_grid (Xform *xf,
 	}
     }
     printf ("\n");
-#if defined (commentout)
 #endif
 
     /* Set grid specifications to bsp struct */

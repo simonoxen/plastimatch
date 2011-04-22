@@ -183,13 +183,18 @@ Rtss_polyline_set::adjust_structure_names (void)
 
     for (i = 0; i < this->num_structures; i++) {
         curr_structure = this->slist[i];
+	bool changed = false;
+	CBString tmp = curr_structure->name;
 	for (j = 0; j < curr_structure->name.length(); j++) {
 	    /* GE Adv sim doesn't like names with strange punctuation. */
 	    if (! isalnum (curr_structure->name[j])) {
 		curr_structure->name[j] = '_';
-		printf ("Substituted in name %s\n", 
-		    (const char*) curr_structure->name);
+		changed = true;
 	    }
+	}
+	if (changed) {
+	    printf ("Substituted structure name (%s) to (%s)\n", 
+		(const char*) tmp, (const char*) curr_structure->name);
 	}
     }
 }
