@@ -1165,9 +1165,9 @@ IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
   ADD_CUSTOM_COMMAND (
     OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
-    "${CMAKE_SOURCE_DIR}/opencl_test.cl" 
+    "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl" 
     "${CMAKE_BINARY_DIR}/opencl_test.cl" 
-    DEPENDS "${CMAKE_SOURCE_DIR}/opencl_test.cl")
+    DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl")
 ENDIF ()
 
 # Test executable -- openmp
