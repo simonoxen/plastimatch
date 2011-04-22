@@ -441,22 +441,29 @@ ELSE ()
 ENDIF ()
 
 ##-----------------------------------------------------------------------------
-##  ITK LIBRARY
+##  ITK
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (ITK)
-IF (ITK_FOUND)
-  INCLUDE (${ITK_USE_FILE})
-  SET (ITK_VERSION 
+find_package (ITK)
+if (ITK_FOUND)
+  include (${ITK_USE_FILE})
+  set (ITK_VERSION 
     "${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}")
-  IF (NOT ITK_USE_REVIEW)
+  if (${ITK_VERSION} VERSION_LESS "3.16.0")
+    message (FATAL_ERROR 
+      "Fatal Error. ITK must be version 3.16.0 or higher")
+  endif ()
+  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "4")
+    message (STATUS "ITK is version 4.  You are brave!")
+  endif ()
+  if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3" AND NOT ITK_USE_REVIEW)
     MESSAGE (FATAL_ERROR 
-      "\nFatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
-  ENDIF ()
-IF (ITK_USE_SYSTEM_GDCM)
-    MESSAGE (FATAL_ERROR 
-      "\nFatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
-  ENDIF ()
-ENDIF ()
+      "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
+  endif ()
+if (ITK_USE_SYSTEM_GDCM)
+  message (FATAL_ERROR 
+    "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
+  endif ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local ransac
