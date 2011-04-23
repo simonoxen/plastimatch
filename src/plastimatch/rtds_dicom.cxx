@@ -74,7 +74,6 @@ rtds_patient_pos_from_dicom_dir (Rtds *rtds, const char *dicom_dir)
 	return;
     }
 
-    const std::string& patient_pos_string = gs.get_patient_position ();
     patient_pos = plm_image_patient_position_parse (tmp.c_str());
 
 #if defined (commentout)

@@ -23,8 +23,25 @@
 #include "volume.h"
 #include "xpm.h"
 
-void
-bspline_optimize (
+static void
+log_parms (Bspline_parms* parms)
+{
+    logfile_printf ("BSPLINE PARMS\n");
+    logfile_printf ("max_its = %d\n", parms->max_its);
+    logfile_printf ("max_feval = %d\n", parms->max_feval);
+}
+
+static void
+log_bxf_header (Bspline_xform* bxf)
+{
+    logfile_printf ("BSPLINE XFORM HEADER\n");
+    logfile_printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
+    logfile_printf ("roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
+    logfile_printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
+}
+
+static void
+bspline_optimize_select (
     Bspline_xform* bxf, 
     Bspline_state *bst, 
     Bspline_parms *parms, 
@@ -83,5 +100,42 @@ bspline_optimize (
     default:
 	bspline_optimize_liblbfgs (&bod);
 	break;
+    }
+}
+
+void
+bspline_optimize (
+    Bspline_xform* bxf, 
+    Bspline_state **bst_in, 
+    Bspline_parms *parms, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad)
+{
+    Bspline_state *bst;
+
+    bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
+    log_parms (parms);
+    log_bxf_header (bxf);
+
+    if (parms->metric == BMET_MI) {
+	bspline_initialize_mi (parms, fixed, moving);
+    }
+
+    if (parms->young_modulus !=0) {
+	bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
+    }
+
+    /* Do the optimization */
+    bspline_optimize_select (bxf, bst, parms, fixed, moving, moving_grad);
+
+    if (parms->young_modulus !=0) {
+	bspline_xform_free_qlut_grad (bxf);
+    }
+
+    if (bst_in) {
+	*bst_in = bst;
+    } else {
+	bspline_state_destroy (bst, parms, fixed, moving, moving_grad);
     }
 }

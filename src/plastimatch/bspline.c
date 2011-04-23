@@ -137,7 +137,7 @@ bspline_cuda_state_create (
             break;
         default:
             printf ("Warning: option -f %c unavailble.  Switching to -f j\n",
-                    parms->implementation);
+		parms->implementation);
             CUDA_bspline_mse_init_j (dev_ptrs, fixed, moving, moving_grad, bxf, parms);
             break;
         }
@@ -421,23 +421,6 @@ void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
 /* -----------------------------------------------------------------------
    Debugging routines
    ----------------------------------------------------------------------- */
-static void
-log_parms (Bspline_parms* parms)
-{
-    logfile_printf ("BSPLINE PARMS\n");
-    logfile_printf ("max_its = %d\n", parms->max_its);
-    logfile_printf ("max_feval = %d\n", parms->max_feval);
-}
-
-static void
-log_bxf_header (Bspline_xform* bxf)
-{
-    logfile_printf ("BSPLINE XFORM HEADER\n");
-    logfile_printf ("vox_per_rgn = %d %d %d\n", bxf->vox_per_rgn[0], bxf->vox_per_rgn[1], bxf->vox_per_rgn[2]);
-    logfile_printf ("roi_offset = %d %d %d\n", bxf->roi_offset[0], bxf->roi_offset[1], bxf->roi_offset[2]);
-    logfile_printf ("roi_dim = %d %d %d\n", bxf->roi_dim[0], bxf->roi_dim[1], bxf->roi_dim[2]);
-}
-
 void
 dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, char* fn)
 {
@@ -1001,12 +984,12 @@ bspline_xform_free (Bspline_xform* bxf)
 void
 bspline_xform_free_qlut_grad (Bspline_xform* bxf)
 {
-	free (bxf->q_dxdyz_lut);
-	free (bxf->q_dxydz_lut);
-	free (bxf->q_xdydz_lut);
+    free (bxf->q_dxdyz_lut);
+    free (bxf->q_dxydz_lut);
+    free (bxf->q_xdydz_lut);
     free (bxf->q_d2xyz_lut);
-	free (bxf->q_xd2yz_lut);
-	free (bxf->q_xyd2z_lut);
+    free (bxf->q_xd2yz_lut);
+    free (bxf->q_xyd2z_lut);
 }
 
 void
@@ -1646,41 +1629,4 @@ bspline_score (Bspline_parms *parms,
 	bspline_landmarks_score (parms, bst, bxf, fixed, moving);
     }
 #endif
-}
-
-void
-bspline_run_optimization (
-    Bspline_xform* bxf, 
-    Bspline_state **bst_in, 
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad)
-{
-    Bspline_state *bst;
-
-    bst = bspline_state_create (bxf, parms, fixed, moving, moving_grad);
-    log_parms (parms);
-    log_bxf_header (bxf);
-
-    if (parms->metric == BMET_MI) {
-	bspline_initialize_mi (parms, fixed, moving);
-    }
-
-    if (parms->young_modulus !=0) {
-	bspline_xform_create_qlut_grad (bxf, bxf->img_spacing, bxf->vox_per_rgn);
-    }
-
-    /* Do the optimization */
-    bspline_optimize (bxf, bst, parms, fixed, moving, moving_grad);
-
-    if (parms->young_modulus !=0) {
-	bspline_xform_free_qlut_grad (bxf);
-    }
-
-    if (bst_in) {
-	*bst_in = bst;
-    } else {
-	bspline_state_destroy (bst, parms, fixed, moving, moving_grad);
-    }
 }

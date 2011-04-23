@@ -13,13 +13,7 @@
 #include <string.h>
 #include <math.h>
 #include "bspline.h"
-#if defined (commentout)
-#include "bspline_landmarks.h"
-#include "bspline_rbf.h"
-#endif
-#if defined (HAVE_F2C_LIBRARY)
-#include "bspline_optimize_lbfgsb.h"
-#endif
+#include "bspline_optimize.h"
 #include "bspline_opts.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
@@ -98,7 +92,7 @@ main (int argc, char* argv[])
 
     /* Run the optimization */
     printf ("Running optimization.\n");
-    bspline_run_optimization (bxf, 0, parms, fixed, moving, moving_grad);
+    bspline_optimize (bxf, 0, parms, fixed, moving, moving_grad);
     printf ("Done running optimization.\n");
 
     /* Save output transform */

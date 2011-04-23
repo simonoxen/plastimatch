@@ -191,14 +191,6 @@ bspline_warp (
 );
 
 gpuit_EXPORT
-void bspline_run_optimization (
-    Bspline_xform* bxf, 
-    Bspline_state **bst,
-    Bspline_parms *parms, 
-    Volume *fixed, 
-    Volume *moving, 
-    Volume *moving_grad);
-gpuit_EXPORT
 Bspline_xform* read_bxf (char* filename);
 
 gpuit_EXPORT
