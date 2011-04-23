@@ -270,6 +270,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_optimize_steepest.c bspline_optimize_steepest.h
   bspline_opts.c bspline_opts.h
   bspline_regularize.c bspline_regularize.h
+  bspline_xform.c bspline_xform.h
   delayload.c delayload.h
   demons.c demons.h
   demons_cpu.c
