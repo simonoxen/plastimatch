@@ -301,7 +301,7 @@ load_gpuit_bsp (Xform *xf, const char* fn)
 {
     Bspline_xform* bxf;
 
-    bxf = read_bxf ((char*)fn);
+    bxf = bspline_xform_load ((char*)fn);
     if (!bxf) {
 	print_and_exit ("Error loading bxf format file: %s\n", fn);
     }
@@ -479,7 +479,7 @@ xform_save (Xform *xf, const char* fn)
 	itk_image_save (xf->get_itk_vf(), fn);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	write_bxf (fn, xf->get_gpuit_bsp());
+	bspline_xform_save (xf->get_gpuit_bsp(), fn);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	write_mha (fn, xf->get_gpuit_vf());

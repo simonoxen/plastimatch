@@ -22,12 +22,12 @@ main (int argc, char* argv[])
 	return -1;
     }
 
-    bxf = read_bxf (argv[1]);
+    bxf = bspline_xform_load (argv[1]);
     if (!bxf) {
 	return -1;
     }
 
-    write_bxf (argv[2], bxf);
+    bspline_xform_save (bxf, argv[2]);
 
     bspline_xform_free (bxf);
     free (bxf);

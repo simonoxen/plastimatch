@@ -69,17 +69,23 @@ void
 bspline_xform_free_qlut_grad (Bspline_xform* bxf);
 
 gpuit_EXPORT
-Bspline_xform* read_bxf (char* filename);
+Bspline_xform* bspline_xform_load (const char* filename);
 
 gpuit_EXPORT
-void write_bxf (const char* filename, Bspline_xform* bxf);
+void bspline_xform_save (Bspline_xform* bxf, const char* filename);
+
+gpuit_EXPORT
+void
+bspline_set_coefficients (Bspline_xform* bxf, float val);
 
 /* Debugging routines */
+gpuit_EXPORT
 void
-dump_coeff (Bspline_xform* bxf, char* fn);
+bspline_xform_dump_coeff (Bspline_xform* bxf, char* fn);
 
+gpuit_EXPORT
 void
-dump_luts (Bspline_xform* bxf);
+bspline_xform_dump_luts (Bspline_xform* bxf);
 
 
 #if defined __cplusplus

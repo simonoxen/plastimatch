@@ -35,7 +35,7 @@ check_gradient (
     printf ("Allocating lookup tables\n");
     memset (roi_offset, 0, 3*sizeof(int));
     if (options->input_xf_fn) {
-	bxf = read_bxf (options->input_xf_fn);
+	bxf = bspline_xform_load (options->input_xf_fn);
     } else {
 	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
 	bspline_xform_initialize (

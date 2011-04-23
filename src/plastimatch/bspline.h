@@ -178,9 +178,6 @@ void
 bspline_initialize_mi (Bspline_parms* parms, Volume* fixed, Volume* moving);
 
 void
-bspline_set_coefficients (Bspline_xform* bxf, float val);
-
-void
 bspline_display_coeff_stats (Bspline_xform* bxf);
 
 gpuit_EXPORT

@@ -42,7 +42,7 @@ bspline_xform_set_default (Bspline_xform* bxf)
 }
 
 void
-write_bxf (const char* filename, Bspline_xform* bxf)
+bspline_xform_save (Bspline_xform* bxf, const char* filename)
 {
     FILE* fp;
 	
@@ -88,7 +88,7 @@ write_bxf (const char* filename, Bspline_xform* bxf)
 }
 
 Bspline_xform* 
-read_bxf (char* filename)
+bspline_xform_load (const char* filename)
 {
     Bspline_xform* bxf;
     char buf[1024];
@@ -182,7 +182,7 @@ free_exit:
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-dump_coeff (Bspline_xform* bxf, char* fn)
+bspline_xform_dump_coeff (Bspline_xform* bxf, char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
@@ -193,7 +193,7 @@ dump_coeff (Bspline_xform* bxf, char* fn)
 }
 
 void
-dump_luts (Bspline_xform* bxf)
+bspline_xform_dump_luts (Bspline_xform* bxf)
 {
     int i, j, k, p;
     int tx, ty, tz;
@@ -257,7 +257,7 @@ dump_luts (Bspline_xform* bxf)
 }
 
 void
-bspline_set_coefficients (Bspline_xform* bxf, float val)
+bspline_xform_set_coefficients (Bspline_xform* bxf, float val)
 {
     int i;
 

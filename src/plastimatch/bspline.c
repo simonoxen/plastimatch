@@ -351,7 +351,7 @@ bspline_save_debug_state (
 	dump_gradient (bxf, &bst->ssd, fn);
 
 	sprintf (fn, "coeff_%02d.txt", bst->it);
-	dump_coeff (bxf, fn);
+	bspline_xform_dump_coeff (bxf, fn);
 
 	if (parms->metric == BMET_MI) {
 	    dump_hist (&parms->mi_hist, bst->it);
