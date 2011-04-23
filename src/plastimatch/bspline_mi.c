@@ -19,21 +19,13 @@
 
 #include "bspline.h"
 #include "bspline_mi.h"
-#include "bspline_mse_cpu_c.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
-#include "bspline_regularize.h"
-#include "bspline_landmarks.h"
-#include "bspline_optimize.h"
-#include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
-#include "delayload.h"
 #include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
-#include "mha_io.h"
-#include "plm_path.h"
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "volume.h"

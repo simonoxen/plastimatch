@@ -17,6 +17,16 @@ extern "C" {
 
 gpuit_EXPORT
 void
+bspline_score_c_mse (
+    Bspline_parms *parms, 
+    Bspline_state *bst,
+    Bspline_xform* bxf, 
+    Volume *fixed, 
+    Volume *moving, 
+    Volume *moving_grad
+);
+gpuit_EXPORT
+void
 bspline_score_g_mse (
     Bspline_parms *parms,
     Bspline_state *bst, 

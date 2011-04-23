@@ -36,7 +36,6 @@
 #include "bspline.h"
 #include "bspline_mi.h"
 #include "bspline_mse.h"
-#include "bspline_mse_cpu_c.h"
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif

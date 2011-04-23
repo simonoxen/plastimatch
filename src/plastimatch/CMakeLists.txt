@@ -263,7 +263,6 @@ SET (GPUIT_LIBRARY_SRC
   bspline_mi.c bspline_mi.h
   bspline_mse.c bspline_mse.h
   bspline_landmarks.c bspline_landmarks.h
-  bspline_mse_cpu_c.c bspline_mse_cpu_c.h
   bspline_optimize.c bspline_optimize.h
   bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
   bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
