@@ -229,11 +229,6 @@ bspline_find_correspondence
  const Volume *moving     /* Input:  moving image */
 );
 
-void
-bspline_update_grad (
-    Bspline_state *bst, 
-    Bspline_xform* bxf, 
-    int p[3], int qidx, float dc_dv[3]);
 
 gpuit_EXPORT
 void
@@ -254,6 +249,11 @@ bspline_score (Bspline_parms *parms,
 	       Volume *moving, 
 	       Volume *moving_grad);
 
+void
+bspline_update_grad (
+    Bspline_state *bst, 
+    Bspline_xform* bxf, 
+    int p[3], int qidx, float dc_dv[3]);
 void
 bspline_update_grad_b (Bspline_state* bst, Bspline_xform* bxf, 
 		       int pidx, int qidx, float dc_dv[3]);
@@ -286,6 +286,19 @@ bspline_save_debug_state
  );
 
 void dump_xpm_hist (BSPLINE_MI_Hist* mi_hist, char* file_base, int iter);
+
+void
+bspline_make_grad (float* cond_x, float* cond_y, float* cond_z,
+    Bspline_xform* bxf, BSPLINE_Score* ssd);
+
+void
+bspline_update_sets (float* sets_x, float* sets_y, float* sets_z,
+    int qidx, float* dc_dv, Bspline_xform* bxf);
+
+void
+bspline_sort_sets (float* cond_x, float* cond_y, float* cond_z,
+    float* sets_x, float* sets_y, float* sets_z,
+    int pidx, Bspline_xform* bxf);
 
 #if defined __cplusplus
 }

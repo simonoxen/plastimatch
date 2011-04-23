@@ -260,6 +260,8 @@ SET (GPUIT_LIBRARY_SRC
   bowtie_correction.c bowtie_correction.h
   bstring_util.cxx bstring_util.h
   bspline.c bspline.h
+  bspline_mi.c bspline_mi.h
+  bspline_mse.c bspline_mse.h
   bspline_landmarks.c bspline_landmarks.h
   bspline_mse_cpu_c.c bspline_mse_cpu_c.h
   bspline_optimize.c bspline_optimize.h
@@ -749,6 +751,10 @@ SET (XF_TO_EMPIREFMT_SRC
 ##-----------------------------------------------------------------------------
 IF (OPENMP_FOUND)
   SET_SOURCE_FILES_PROPERTIES (bspline.c
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  SET_SOURCE_FILES_PROPERTIES (bspline_mi.c
+    PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
+  SET_SOURCE_FILES_PROPERTIES (bspline_mse.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (drr.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})

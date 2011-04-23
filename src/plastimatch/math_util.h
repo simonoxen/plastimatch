@@ -34,6 +34,13 @@
 /* Returns +1 or -1, depeding on sign.  Zero yeilds +1. */
 #define SIGN(x) (((x) >= 0) ? (+1) : (-1))
 
+// Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
+// http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
+#if !defined (_M_IA64) && !defined (_M_AMD64) && defined (_WIN32)
+#undef logf
+#define logf(x)     ((float)log((double)(x)))
+#endif
+
 /* Primatives */
 static inline void vec2_add2 (double* v1, const double* v2) {
     v1[0] += v2[0]; v1[1] += v2[1];
