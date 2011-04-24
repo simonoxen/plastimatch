@@ -504,12 +504,14 @@ CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
 ##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (src/fatm)
+add_subdirectory (src)
+#ADD_SUBDIRECTORY (src/fatm)
 ADD_SUBDIRECTORY (CUDA_tex_test)
-IF (PLM_BUILD_ISE)
-  ADD_SUBDIRECTORY (src/ise)
-ENDIF ()
-ADD_SUBDIRECTORY (src/plastimatch)
+#IF (PLM_BUILD_ISE)
+#  ADD_SUBDIRECTORY (src/ise)
+#ENDIF ()
+#ADD_SUBDIRECTORY (src/plastimatch)
+#ADD_SUBDIRECTORY (src/slicer)
 
 ##-----------------------------------------------------------------------------
 ##  Additional install files
