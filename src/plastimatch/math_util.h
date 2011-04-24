@@ -36,9 +36,11 @@
 
 // Fix for logf() under MSVC 2005 32-bit (math.h has an erronous semicolon)
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=98751
+#if _MSC_VER == 1400
 #if !defined (_M_IA64) && !defined (_M_AMD64) && defined (_WIN32)
 #undef logf
 #define logf(x)     ((float)log((double)(x)))
+#endif
 #endif
 
 /* Primatives */

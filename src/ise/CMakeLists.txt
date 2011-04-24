@@ -166,7 +166,7 @@ ENDIF(BITFLOW_FOUND)
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-IF (WIN32)
+IF (COMMENTOUT)
   ADD_EXECUTABLE(ise WIN32 ${ISE_SRC})
   TARGET_LINK_LIBRARIES(ise
     ${MIL_LIBRARIES}
