@@ -10,8 +10,6 @@ IF (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
     tex_stubs.h
     textures.c
     )
-  PLM_ADD_EXECUTABLE (cuda_tex_test 
-    "${CUDA_TEX_TEST_SRC}" 
-    "${CUDA_LIBRARIES}" ""
-    )
+  PLM_ADD_EXECUTABLE (cuda_tex_test "${CUDA_TEX_TEST_SRC}" 
+    "${CUDA_LIBRARIES}" "" 0)
 ENDIF ()
