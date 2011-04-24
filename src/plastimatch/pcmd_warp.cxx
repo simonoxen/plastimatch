@@ -8,7 +8,6 @@
 
 #include "bstring_util.h"
 #include "cxt_io.h"
-#include "cxt_to_mha.h"
 #include "file_util.h"
 #include "gdcm_rtss.h"
 #include "plm_clp.h"

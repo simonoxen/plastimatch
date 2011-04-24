@@ -302,7 +302,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
   cxt_io.cxx cxt_io.h 
-  cxt_to_mha.cxx cxt_to_mha.h 
   dicom_util.cxx dicom_util.h
   gcs_metric.h gcs_metric.hxx 
   gdcm_dose.cxx gdcm_dose.h
@@ -353,6 +352,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_stages.cxx plm_stages.h 
   plm_version.h 
   plm_warp.cxx plm_warp.h 
+  rasterizer.cxx rasterizer.h
   rbf_gauss.cxx rbf_gauss.h
   rbf_wendland.cxx rbf_wendland.h
   rbf_gcs.cxx rbf_gcs.h

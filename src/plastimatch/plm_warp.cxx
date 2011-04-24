@@ -171,6 +171,7 @@ plm_warp_native (
 			   direction_cosines, 0);
 
     /* Warp using gpuit native warper */
+    printf ("Running native warper...\n");
     bspline_warp (v_out, vf_out, xf_tmp.get_gpuit_bsp(), v_in, 
 	interp_lin, default_val);
 
@@ -178,14 +179,18 @@ plm_warp_native (
     im_warped->set_gpuit (v_out);
 
     /* Bspline_warp only operates on float.  We need to back-convert */
+    printf ("Back convert to original type...\n");
     im_warped->convert (im_in->m_original_type);
     im_warped->m_original_type = im_in->m_original_type;
 
     /* Return vf to caller */
     if (vf) {
+	printf ("> Convert vf to itk\n");
 	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
+	printf ("> Conversion complete.\n");
 	volume_destroy (vf_out);
     }
+    printf ("plm_warp_native is complete.\n");
 }
 
 void

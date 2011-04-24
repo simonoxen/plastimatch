@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _cxt_to_mha_h_
-#define _cxt_to_mha_h_
+#ifndef _rasterizer_h_
+#define _rasterizer_h_
 
 #include "plm_config.h"
 #include "cxt_io.h"
@@ -10,8 +10,8 @@
 #include "plm_image_header.h"
 #include "volume.h"
 
-class Cxt_to_mha_state {
-public:
+class plastimatch1_EXPORT Rasterizer {
+  public:
     bool want_prefix_imgs;
     bool want_labelmap;
     bool want_ss_img;
@@ -31,12 +31,38 @@ public:
 
     int curr_struct_no;
     int curr_bit;
+  public:
+    Rasterizer () {}
+    ~Rasterizer ();
+  public:
+    void rasterize (
+	Rtss_polyline_set *cxt,
+	Plm_image_header *pih,
+	bool want_prefix_imgs,
+	bool want_labelmap,
+	bool want_ss_img
+    );
+  private:
+    void init (
+	Rtss_polyline_set *cxt,            /* Input */
+	Plm_image_header *pih,             /* Input */
+	bool want_prefix_imgs,             /* Input */
+	bool want_labelmap,                /* Input */
+	bool want_ss_img                   /* Input */
+    );
+    bool process_next (
+	Rtss_polyline_set *cxt                          /* In/out */
+    );
+    const char* current_name (
+	Rtss_polyline_set *cxt
+    );
 };
 
 #if defined __cplusplus
 extern "C" {
 #endif
 
+#if defined (commentout)
 plastimatch1_EXPORT
 void
 cxt_to_mha_init (
@@ -71,6 +97,7 @@ cxt_to_mha_free (Cxt_to_mha_state *ctm_state);
 plastimatch1_EXPORT
 void
 cxt_to_mha_destroy (Cxt_to_mha_state *ctm_state);
+#endif
 
 #if defined __cplusplus
 }

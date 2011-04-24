@@ -4,11 +4,11 @@
 #include "plm_config.h"
 #include "bstring_util.h"
 #include "cxt_extract.h"
-#include "cxt_to_mha.h"
 #include "itk_image_save.h"
 #include "file_util.h"
 #include "gdcm_rtss.h"
 #include "plm_warp.h"
+#include "rasterizer.h"
 #include "referenced_dicom_dir.h"
 #include "rtds.h"
 #include "rtss.h"
@@ -341,33 +341,35 @@ Rtss::prune_empty (void)
 }
 
 void
-Rtss::rasterize (Plm_image_header *pih)
+Rtss::rasterize (
+    Plm_image_header *pih,
+    bool want_labelmap
+)
 {
     /* Rasterize structure sets */
-    Cxt_to_mha_state *ctm_state;
+    Rasterizer rasterizer;
 
     printf ("Rasterizing...\n");
-    ctm_state = cxt_to_mha_create (this->m_cxt, pih);
+    rasterizer.rasterize (this->m_cxt, pih, false, want_labelmap, true);
 
     /* Convert rasterized structure sets from vol to plm_image */
     printf ("Converting...\n");
-    this->m_labelmap = new Plm_image;
-    this->m_labelmap->set_gpuit (ctm_state->labelmap_vol);
-    ctm_state->labelmap_vol = 0;
+    if (want_labelmap) {
+	this->m_labelmap = new Plm_image;
+	this->m_labelmap->set_gpuit (rasterizer.labelmap_vol);
+	rasterizer.labelmap_vol = 0;
+    }
     if (this->m_ss_img) {
 	delete this->m_ss_img;
     }
     this->m_ss_img = new Plm_image;
 
 #if (PLM_USE_SS_IMAGE_VEC)
-    this->m_ss_img->set_itk (ctm_state->m_ss_img);
+    this->m_ss_img->set_itk (rasterizer.m_ss_img);
 #else
-    this->m_ss_img->set_gpuit (ctm_state->ss_img_vol);
-    ctm_state->ss_img_vol = 0;
+    this->m_ss_img->set_gpuit (rasterizer.ss_img_vol);
+    rasterizer.ss_img_vol = 0;
 #endif
-
-    /* We're done with cxt_state now */
-    cxt_to_mha_destroy (ctm_state);
 
     /* Clone the set of names */
     this->m_ss_list = Rtss_polyline_set::clone_empty (
@@ -401,6 +403,7 @@ Rtss::warp (
     Plm_image *tmp;
 
     if (this->m_labelmap) {
+	printf ("Warping labelmap.\n");
 	tmp = new Plm_image;
 	plm_warp (tmp, 0, xf, pih, this->m_labelmap, 0, parms->use_itk, 0);
 	delete this->m_labelmap;
@@ -409,6 +412,7 @@ Rtss::warp (
     }
 
     if (this->m_ss_img) {
+	printf ("Warping ss_img.\n");
 	tmp = new Plm_image;
 	plm_warp (tmp, 0, xf, pih, this->m_ss_img, 0, parms->use_itk, 0);
 	delete this->m_ss_img;

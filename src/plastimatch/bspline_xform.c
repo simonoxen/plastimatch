@@ -151,7 +151,7 @@ bspline_xform_load (const char* filename)
 
     /* Allocate memory and build LUTs */
     bspline_xform_initialize (bxf, img_origin, img_spacing, img_dim,
-		roi_offset, roi_dim, vox_per_rgn);
+	roi_offset, roi_dim, vox_per_rgn);
 
     /* This loads from itk-like planar format */
     {
@@ -171,7 +171,7 @@ bspline_xform_load (const char* filename)
     fclose (fp);
     return bxf;
 
-free_exit:
+  free_exit:
     fclose (fp);
     free (bxf);
     return 0;

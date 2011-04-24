@@ -61,8 +61,7 @@ public:
     cxt_re_extract (void);
     void
     prune_empty (void);
-    void
-    rasterize (Plm_image_header *pih);
+    void rasterize (Plm_image_header *pih, bool want_labelmap);
     void
     set_geometry_from_plm_image_header (Plm_image_header *pih);
     void

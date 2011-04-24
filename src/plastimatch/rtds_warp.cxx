@@ -5,7 +5,6 @@
 
 #include "bstring_util.h"
 #include "cxt_extract.h"
-#include "cxt_to_mha.h"
 #include "file_util.h"
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
@@ -14,6 +13,7 @@
 #include "logfile.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
+#include "rasterizer.h"
 #include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
@@ -225,7 +225,8 @@ warp_and_save_ss (
 	    pih.set_from_gpuit (cxt->m_offset, cxt->m_spacing, cxt->m_dim, 0);
 	}
 	printf ("Warp_and_save_ss: m_ss_image->rasterize\n");
-	rtds->m_ss_image->rasterize (&pih);
+	rtds->m_ss_image->rasterize (&pih,
+	    bstring_not_empty (parms->output_labelmap_fn));
     }
 
     /* Do the warp */
