@@ -959,6 +959,11 @@ IF (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
     "${OPENMP_LDFLAGS}" 0)
 ENDIF ()
 
+# Test executable -- cuda_tex_test
+if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
+  add_subdirectory (CUDA_tex_test)
+endif ()
+
 # Test executable -- qt
 IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
   SET (QT_TEST_SRC qt_test.cxx)
