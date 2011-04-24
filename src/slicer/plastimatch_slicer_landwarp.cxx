@@ -22,7 +22,7 @@
 #include "rbf_gcs.h"
 
 // this .h is generated from ...landwarp.xml file by GenerateCLP in Slicer3-build
-#include "plastimatch-slicer-landwarpCLP.h"
+#include "plastimatch_slicer_landwarpCLP.h"
 
 static void
 do_landmark_warp_itk_tps (Landmark_warp *lw)

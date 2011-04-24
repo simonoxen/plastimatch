@@ -60,7 +60,7 @@ IF (SLICER_FOUND)
   PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_dicomrt_export
     "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
     "${GPUIT_EXE_LDFLAGS}")
-  PLM_ADD_SLICER_EXECUTABLE (plastimatch-slicer-landwarp 
+  PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_landwarp 
     "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
     "${GPUIT_EXE_LDFLAGS}")
   PLM_ADD_SLICER_EXECUTABLE (plastimatch_slicer_synth
