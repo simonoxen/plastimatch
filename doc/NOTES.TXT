@@ -1,3 +1,17 @@
+***** Proton dose ideas *****
+
+Stage 1(a): Compute pencil beam in standard grid
+(z direction is pdd in water)
+(x-y direction is scatter in water, or just 1-d with distance)
+
+Stage 1(b): Compute RPL in interpolated coordinate system
+(z axis is beam axis)
+(x-y perpendicular to beam, arbitrary v-up vector)
+
+Stage 2: For each voxel
+  a) Look up primary in RPL grid
+  b) Convolve to find scatter within x-y axis of primary grid (ignoring tilt)
+
 ***** File browser design *****
 
 http://www.xvsxp.com/files/file_browsing.php
