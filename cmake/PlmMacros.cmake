@@ -120,3 +120,19 @@ MACRO (PLM_SLICER_COPY_DLL TARGET SRC DEST DEPENDENCY)
       )
 ENDMACRO()
 
+macro (PLM_SET_SSE2_FLAGS)
+  foreach (SRC ${ARGN})
+    # JAS 08.19.2010 - Unfortunately, this doesn't work.
+    #  SET_PROPERTY(
+    #      SOURCE bspline.c
+    #      APPEND PROPERTY COMPILE_DEFINITIONS ${SSE2_FLAGS}
+    #      )
+    # So, we ask CMake more forcefully to add additional compile flags
+    get_source_file_property (OLD_FLAGS ${SRC} COMPILE_FLAGS)
+    if (OLD_FLAGS MATCHES "NONE")
+      set (OLD_FLAGS "")
+    endif ()
+    set_source_files_properties (
+      ${SRC} PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
+  endforeach ()
+endmacro ()

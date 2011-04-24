@@ -608,21 +608,9 @@ IF (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 ENDIF ()
 
-IF (SSE2_FOUND)
-# JAS 08.19.2010 - Unfortunately, this doesn't work.
-#  SET_PROPERTY(
-#      SOURCE bspline.c
-#      APPEND PROPERTY COMPILE_DEFINITIONS ${SSE2_FLAGS}
-#      )
-
-# So, we ask CMake more forcefully to add additional compile flags
-    GET_SOURCE_FILE_PROPERTY(OLD_FLAGS bspline.c COMPILE_FLAGS)
-    IF (OLD_FLAGS MATCHES "NONE")
-        SET(OLD_FLAGS "")
-    ENDIF ()
-    SET_SOURCE_FILES_PROPERTIES (
-      bspline.c PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
-ENDIF ()
+if (SSE2_FOUND)
+  PLM_SET_SSE2_FLAGS (bspline.c bspline_mi.c bspline_mse.c)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Library targets
