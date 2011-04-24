@@ -1,4 +1,11 @@
-Version 1.4.0
+Version 1.5.0
+*  CUDA-accelerated mutual information for B-splines
+*  Regularized gaussian landmark splines
+*  Replace cone RBF with Wendland RBF
+*  Better handling of image metadata
+*  Many imporvements to image converion and warping
+
+Version 1.4.0 (svn only)
 *  Native grid-aligned B-spline registration (MSE: CUDA, OpenMP, MI: CPU)
 *  Native demons registration (Brook, CPU)
 *  Wrappers for some ITK registration transforms: translation, rigid, 
@@ -11,9 +18,3 @@ Version 1.4.0
 *  XiO image import, XiO structure set import/export
 *  3D slicer plugins
 *  Mondoshot screen capture program
-Version 1.5.0
-*  CUDA-accelerated mutual information for B-splines
-*  Regularized gaussian landmark splines
-*  Replace cone RBF with Wendland RBF
-*  Better handling of image metadata
-*  Many imporvements to image converion and warping
