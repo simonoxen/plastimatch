@@ -169,11 +169,11 @@ rbf_wendland_update_vf (
     vf_img = (float*) vf->img;
 
     for (fk = 0; fk < vf->dim[2];  fk++) {
-	fxyz[2] = vf->offset[2] + fk * vf->pix_spacing[2];
+	fxyz[2] = vf->offset[2] + fk * vf->spacing[2];
 	for (fj = 0; fj < vf->dim[1];  fj++) {
-	    fxyz[1] = vf->offset[1] + fj * vf->pix_spacing[1];
+	    fxyz[1] = vf->offset[1] + fj * vf->spacing[1];
 	    for (fi = 0; fi < vf->dim[0];  fi++) {
-		fxyz[0] = vf->offset[0] + fi * vf->pix_spacing[0];
+		fxyz[0] = vf->offset[0] + fi * vf->spacing[0];
 		
 		for (lidx=0; lidx < num_landmarks; lidx++) {
 		    fv = fk * vf->dim[0] * vf->dim[1] 

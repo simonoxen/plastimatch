@@ -119,19 +119,19 @@ ray_trace_exact_init (
 	ip1[0],
 	ray[0], 
 	vol->offset[0], 
-	vol->pix_spacing[0]);
+	vol->spacing[0]);
     ray_trace_exact_init_loopvars (
 	ai_y, aiydir, ao_y, al_y, 
 	ip1[1],
 	ray[1], 
 	vol->offset[1], 
-	vol->pix_spacing[1]);
+	vol->spacing[1]);
     ray_trace_exact_init_loopvars (
 	ai_z, aizdir, ao_z, al_z, 
 	ip1[2], 
 	ray[2], 
 	vol->offset[2], 
-	vol->pix_spacing[2]);
+	vol->spacing[2]);
 
 #if defined (DRR_VERBOSE)
     printf ("aix = %d aixdir = %d aox = %g alx = %g\n", 

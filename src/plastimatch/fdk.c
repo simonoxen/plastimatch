@@ -234,7 +234,7 @@ project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
     /* Precompute partial projections here */
 #pragma omp parallel for
     for (i = 0; i < vol->dim[0]; i++) {
-	double x = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+	double x = (double) (vol->offset[0] + i * vol->spacing[0]);
 	xip[i*3+0] = x * (pmat->matrix[0] + pmat->ic[0] * pmat->matrix[8]);
 	xip[i*3+1] = x * (pmat->matrix[4] + pmat->ic[1] * pmat->matrix[8]);
 	xip[i*3+2] = x * pmat->matrix[8];
@@ -242,7 +242,7 @@ project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
     
 #pragma omp parallel for
     for (j = 0; j < vol->dim[1]; j++) {
-	double y = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	double y = (double) (vol->offset[1] + j * vol->spacing[1]);
 	yip[j*3+0] = y * (pmat->matrix[1] + pmat->ic[0] * pmat->matrix[9]);
 	yip[j*3+1] = y * (pmat->matrix[5] + pmat->ic[1] * pmat->matrix[9]);
 	yip[j*3+2] = y * pmat->matrix[9];
@@ -250,7 +250,7 @@ project_volume_onto_image_d (Volume* vol, Proj_image* cbi, float scale)
 
 #pragma omp parallel for
     for (k = 0; k < vol->dim[2]; k++) {
-	double z = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	double z = (double) (vol->offset[2] + k * vol->spacing[2]);
 	zip[k*3+0] = z * (pmat->matrix[2] + pmat->ic[0] * pmat->matrix[10]) 
 		+ pmat->ic[0] * pmat->matrix[11] + pmat->matrix[3];
 	zip[k*3+1] = z * (pmat->matrix[6] + pmat->ic[1] * pmat->matrix[10]) 
@@ -327,19 +327,19 @@ project_volume_onto_image_c (Volume* vol, Proj_image* cbi, float scale)
 
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
-	double x = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+	double x = (double) (vol->offset[0] + i * vol->spacing[0]);
 	xip[i*3+0] = x * (pmat->matrix[0] + pmat->ic[0] * pmat->matrix[8]);
 	xip[i*3+1] = x * (pmat->matrix[4] + pmat->ic[1] * pmat->matrix[8]);
 	xip[i*3+2] = x * pmat->matrix[8];
     }
     for (j = 0; j < vol->dim[1]; j++) {
-	double y = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	double y = (double) (vol->offset[1] + j * vol->spacing[1]);
 	yip[j*3+0] = y * (pmat->matrix[1] + pmat->ic[0] * pmat->matrix[9]);
 	yip[j*3+1] = y * (pmat->matrix[5] + pmat->ic[1] * pmat->matrix[9]);
 	yip[j*3+2] = y * pmat->matrix[9];
     }
     for (k = 0; k < vol->dim[2]; k++) {
-	double z = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	double z = (double) (vol->offset[2] + k * vol->spacing[2]);
 	zip[k*3+0] = z * (pmat->matrix[2] + pmat->ic[0] * pmat->matrix[10]) 
 		+ pmat->ic[0] * pmat->matrix[11] + pmat->matrix[3];
 	zip[k*3+1] = z * (pmat->matrix[6] + pmat->ic[1] * pmat->matrix[10]) 
@@ -402,21 +402,21 @@ project_volume_onto_image_b (Volume* vol, Proj_image* cbi, float scale)
 
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
-	x[i] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+	x[i] = (double) (vol->offset[0] + i * vol->spacing[0]);
 	xip[i*3+0] = x[i] * pmat->matrix[0];
 	xip[i*3+1] = x[i] * pmat->matrix[4];
 	xip[i*3+2] = x[i] * pmat->matrix[8];
 	x[i] *= pmat->nrm[0];
     }
     for (j = 0; j < vol->dim[1]; j++) {
-	y[j] = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	y[j] = (double) (vol->offset[1] + j * vol->spacing[1]);
 	yip[j*3+0] = y[j] * pmat->matrix[1];
 	yip[j*3+1] = y[j] * pmat->matrix[5];
 	yip[j*3+2] = y[j] * pmat->matrix[9];
 	y[j] *= pmat->nrm[1];
     }
     for (k = 0; k < vol->dim[2]; k++) {
-	z[k] = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	z[k] = (double) (vol->offset[2] + k * vol->spacing[2]);
 	zip[k*3+0] = z[k] * pmat->matrix[2];
 	zip[k*3+1] = z[k] * pmat->matrix[6];
 	zip[k*3+2] = z[k] * pmat->matrix[10];
@@ -476,21 +476,21 @@ project_volume_onto_image_a (Volume* vol, Proj_image* cbi, float scale)
 
     /* Precompute partial projections here */
     for (i = 0; i < vol->dim[0]; i++) {
-	x[i] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+	x[i] = (double) (vol->offset[0] + i * vol->spacing[0]);
 	xip[i*3+0] = x[i] * pmat->matrix[0];
 	xip[i*3+1] = x[i] * pmat->matrix[4];
 	xip[i*3+2] = x[i] * pmat->matrix[8];
 	x[i] *= pmat->nrm[0];
     }
     for (j = 0; j < vol->dim[1]; j++) {
-	y[j] = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	y[j] = (double) (vol->offset[1] + j * vol->spacing[1]);
 	yip[j*3+0] = y[j] * pmat->matrix[1];
 	yip[j*3+1] = y[j] * pmat->matrix[5];
 	yip[j*3+2] = y[j] * pmat->matrix[9];
 	y[j] *= pmat->nrm[1];
     }
     for (k = 0; k < vol->dim[2]; k++) {
-	z[k] = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	z[k] = (double) (vol->offset[2] + k * vol->spacing[2]);
 	zip[k*3+0] = z[k] * pmat->matrix[2];
 	zip[k*3+1] = z[k] * pmat->matrix[6];
 	zip[k*3+2] = z[k] * pmat->matrix[10];
@@ -545,13 +545,13 @@ project_volume_onto_image_reference (
     p = 0;
     vp[3] = 1.0;
     for (k = 0; k < vol->dim[2]; k++) {
-	vp[2] = (double) (vol->offset[2] + k * vol->pix_spacing[2]);
+	vp[2] = (double) (vol->offset[2] + k * vol->spacing[2]);
 	for (j = 0; j < vol->dim[1]; j++) {
-	    vp[1] = (double) (vol->offset[1] + j * vol->pix_spacing[1]);
+	    vp[1] = (double) (vol->offset[1] + j * vol->spacing[1]);
 	    for (i = 0; i < vol->dim[0]; i++) {
 		double ip[3];        /* ip = image position */
 		double s;            /* s = projection of vp onto s axis */
-		vp[0] = (double) (vol->offset[0] + i * vol->pix_spacing[0]);
+		vp[0] = (double) (vol->offset[0] + i * vol->spacing[0]);
 		mat43_mult_vec3 (ip, pmat->matrix, vp);
 		ip[0] = pmat->ic[0] + ip[0] / ip[2];
 		ip[1] = pmat->ic[1] + ip[1] / ip[2];

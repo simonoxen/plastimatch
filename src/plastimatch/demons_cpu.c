@@ -59,12 +59,15 @@ demons_c (
 	vf_convert_to_interleaved (vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+	vf_smooth = volume_create (fixed->dim, fixed->offset, fixed->spacing, 
+	    PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     }
-    vf_est = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    vf_est = volume_create (fixed->dim, fixed->offset, fixed->spacing, 
+	PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     vf_est_img = (float*) vf_est->img;
     vf_smooth_img = (float*) vf_smooth->img;
-    m_grad_mag = volume_create (moving->dim, moving->offset, moving->pix_spacing, PT_FLOAT,  moving->direction_cosines, 0);
+    m_grad_mag = volume_create (moving->dim, moving->offset, moving->spacing, 
+	PT_FLOAT,  moving->direction_cosines, 0);
     m_grad_mag_img = (float*) m_grad_mag->img;
 
     /* Create gradient magnitude image */
@@ -72,7 +75,8 @@ demons_c (
 	for (j = 0; j < moving->dim[1]; j++) {
 	    for (i = 0; i < moving->dim[0]; i++, v++) {
 		vox_grad = &m_grad_img[3*v];
-		m_grad_mag_img[v] = vox_grad[0] * vox_grad[0] + vox_grad[1] * vox_grad[1] + vox_grad[2] * vox_grad[2];
+		m_grad_mag_img[v] = vox_grad[0] * vox_grad[0] 
+		    + vox_grad[1] * vox_grad[1] + vox_grad[2] * vox_grad[2];
 	    }
 	}
     }
@@ -81,16 +85,16 @@ demons_c (
     validate_filter_widths (fw, parms->filter_width);
 
     /* Create the seperable smoothing kernels for the x, y, and z directions */
-    kerx = create_ker (parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
-    kery = create_ker (parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
-    kerz = create_ker (parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
+    kerx = create_ker (parms->filter_std / fixed->spacing[0], fw[0]/2);
+    kery = create_ker (parms->filter_std / fixed->spacing[1], fw[1]/2);
+    kerz = create_ker (parms->filter_std / fixed->spacing[2], fw[2]/2);
     kernel_stats (kerx, kery, kerz, fw);
 
     /* Compute some variables for converting pixel sizes / offsets */
     for (i = 0; i < 3; i++) {
-	invmps[i] = 1 / moving->pix_spacing[i];
-	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->pix_spacing[i];
-	f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
+	invmps[i] = 1 / moving->spacing[i];
+	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->spacing[i];
+	f2ms[i] = fixed->spacing[i] / moving->spacing[i];
     }
 
     plm_timer_start (&timer);
@@ -158,7 +162,7 @@ demons_c (
 
     diff_run = plm_timer_report (&timer);
     printf ("Time for %d iterations = %f (%f sec / it)\n", 
-	    parms->max_its, diff_run, diff_run / parms->max_its);
+	parms->max_its, diff_run, diff_run / parms->max_its);
 
     return vf_smooth;
 }

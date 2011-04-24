@@ -142,7 +142,8 @@ astroid_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+    vflip = volume_create (v->dim, v->offset, v->spacing, v->pix_type, 
+	v->direction_cosines, 0);
 
     for (k=0;k<v->dim[2];k++) {
 	for (j=0;j<v->dim[1];j++) {

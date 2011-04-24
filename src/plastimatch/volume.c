@@ -48,7 +48,7 @@ Volume*
 volume_create (
     int dim[3], 
     float offset[3], 
-    float pix_spacing[3], 
+    float spacing[3], 
     enum Volume_pixel_type pix_type, 
     float direction_cosines[9],
     int min_size
@@ -65,7 +65,7 @@ volume_create (
     for (i = 0; i < 3; i++) {
 	vol->dim[i] = dim[i];
 	vol->offset[i] = offset[i];
-	vol->pix_spacing[i] = pix_spacing[i];
+	vol->spacing[i] = spacing[i];
     }
     if (direction_cosines) {
 	memcpy (vol->direction_cosines, direction_cosines, 
@@ -78,33 +78,21 @@ volume_create (
     vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
     vol->pix_type = pix_type;
 
-// NSH version of step and proj
-// works ok for matrix, still needs testing for pix_spacing
-
-    volume_matrix3x3inverse( vol->inverse_direction_cosines, 
-			vol->direction_cosines);
+    // NSH version of step and proj
+    // works ok for matrix, still needs testing for spacing
+    volume_matrix3x3inverse (vol->inverse_direction_cosines, 
+	vol->direction_cosines);
 
     for (i = 0; i < 3; i++) {
 	for (j = 0; j < 3; j++) {
 	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
-		* vol->pix_spacing[j];
+		* vol->spacing[j];
 	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
-		/ vol->pix_spacing[i];
+		/ vol->spacing[i];
 	}
     }
 
-
-/* GCS version of step and proj
-    for (i = 0; i < 3; i++) {
-	for (j = 0; j < 3; j++) {
-	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
-		* vol->pix_spacing[j];
-	    vol->proj[i][j] = vol->direction_cosines[3*j+i] 
-		/ vol->pix_spacing[i];
-	}
-    }
-*/
-	switch (pix_type) {
+    switch (pix_type) {
     case PT_UCHAR:
 	vol->pix_size = sizeof(unsigned char);
 	break;
@@ -166,7 +154,7 @@ Volume*
 volume_clone_empty (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
+    vout = volume_create (ref->dim, ref->offset, ref->spacing, 
 	ref->pix_type, ref->direction_cosines, 0);
     return vout;
 }
@@ -175,7 +163,7 @@ Volume*
 volume_clone (Volume* ref)
 {
     Volume* vout;
-    vout = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
+    vout = volume_create (ref->dim, ref->offset, ref->spacing, 
 	ref->pix_type, ref->direction_cosines, 0);
     switch (ref->pix_type) {
     case PT_UCHAR:
@@ -435,7 +423,7 @@ vf_pad_planar (Volume* vol, int size)
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_float (Volume* vol_in, int* dim, 
-		      float* offset, float* pix_spacing)
+		      float* offset, float* spacing)
 {
     int i, j, k, v;
     float x, y, z;
@@ -446,18 +434,18 @@ volume_resample_float (Volume* vol_in, int* dim,
     float val;
     float default_val = 0.0f;
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_FLOAT, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, PT_FLOAT, vol_in->direction_cosines, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
-    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
-	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
+    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += spacing[2]) {
+	z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
 	zidx = ROUND_INT (z_in);
-	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
-	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
+	for (j = 0, y = offset[1]; j < dim[1]; j++, y += spacing[1]) {
+	    y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
 	    yidx = ROUND_INT (y_in);
-	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0], v++) {
-		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
+	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += spacing[0], v++) {
+		x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
 		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    val = default_val;
@@ -476,7 +464,7 @@ volume_resample_float (Volume* vol_in, int* dim,
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_interleaved (Volume* vol_in, int* dim, 
-				      float* offset, float* pix_spacing)
+				      float* offset, float* spacing)
 {
     int d, i, j, k, v;
     float x, y, z;
@@ -487,18 +475,18 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, vol_in->direction_cosines, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
-    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
-	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
+    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += spacing[2]) {
+	z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
 	zidx = ROUND_INT (z_in);
-	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
-	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
+	for (j = 0, y = offset[1]; j < dim[1]; j++, y += spacing[1]) {
+	    y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
 	    yidx = ROUND_INT (y_in);
-	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0]) {
-		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
+	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += spacing[0]) {
+		x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
 		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    val = default_val;
@@ -519,7 +507,7 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
 /* Nearest neighbor interpolation */
 static Volume*
 volume_resample_vf_float_planar (Volume* vol_in, int* dim, 
-			      float* offset, float* pix_spacing)
+			      float* offset, float* spacing)
 {
     int d, i, j, k, v;
     float x, y, z;
@@ -528,18 +516,18 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     Volume* vol_out;
     float **in_img, **out_img;
 
-    vol_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_PLANAR, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_PLANAR, vol_in->direction_cosines, 0);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 
-    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += pix_spacing[2]) {
-	z_in = (z - vol_in->offset[2]) / vol_in->pix_spacing[2];
+    for (k = 0, v = 0, z = offset[2]; k < dim[2]; k++, z += spacing[2]) {
+	z_in = (z - vol_in->offset[2]) / vol_in->spacing[2];
 	zidx = ROUND_INT (z_in);
-	for (j = 0, y = offset[1]; j < dim[1]; j++, y += pix_spacing[1]) {
-	    y_in = (y - vol_in->offset[1]) / vol_in->pix_spacing[1];
+	for (j = 0, y = offset[1]; j < dim[1]; j++, y += spacing[1]) {
+	    y_in = (y - vol_in->offset[1]) / vol_in->spacing[1];
 	    yidx = ROUND_INT (y_in);
-	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += pix_spacing[0], v++) {
-		x_in = (x - vol_in->offset[0]) / vol_in->pix_spacing[0];
+	    for (i = 0, x = offset[0]; i < dim[0]; i++, x += spacing[0], v++) {
+		x_in = (x - vol_in->offset[0]) / vol_in->spacing[0];
 		xidx = ROUND_INT (x_in);
 		if (zidx < 0 || zidx >= vol_in->dim[2] || yidx < 0 || yidx >= vol_in->dim[1] || xidx < 0 || xidx >= vol_in->dim[0]) {
 		    for (d = 0; d < 3; d++) {
@@ -559,7 +547,7 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
 }
 
 Volume*
-volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing)
+volume_resample (Volume* vol_in, int* dim, float* offset, float* spacing)
 {
     switch (vol_in->pix_type) {
 	case PT_UCHAR:
@@ -568,11 +556,11 @@ volume_resample (Volume* vol_in, int* dim, float* offset, float* pix_spacing)
 	    fprintf (stderr, "Error, resampling PT_SHORT or PT_UCHAR is unsupported\n");
 	    return 0;
 	case PT_FLOAT:
-	    return volume_resample_float (vol_in, dim, offset, pix_spacing);
+	    return volume_resample_float (vol_in, dim, offset, spacing);
 	case PT_VF_FLOAT_INTERLEAVED:
-	    return volume_resample_vf_float_interleaved (vol_in, dim, offset, pix_spacing);
+	    return volume_resample_vf_float_interleaved (vol_in, dim, offset, spacing);
 	case PT_VF_FLOAT_PLANAR:
-	    return volume_resample_vf_float_planar (vol_in, dim, offset, pix_spacing);
+	    return volume_resample_vf_float_planar (vol_in, dim, offset, spacing);
 	default:
 	    fprintf (stderr, "Error, unknown pix_type: %d\n", vol_in->pix_type);
 	    return 0;
@@ -585,17 +573,17 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
     int d;
     int dim[3];
     float offset[3];
-    float pix_spacing[3];
+    float spacing[3];
 
     for (d = 0; d < 3; d++) {
-	float in_size = vol_in->dim[d] * vol_in->pix_spacing[d];
+	float in_size = vol_in->dim[d] * vol_in->spacing[d];
 
 	dim[d] = vol_in->dim[d] / sampling_rate[d];
 	if (dim[d] < 1) dim[d] = 1;
-	pix_spacing[d] = in_size / dim[d];
-	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->pix_spacing[d] + 0.5 * pix_spacing[d]);
+	spacing[d] = in_size / dim[d];
+	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] + 0.5 * spacing[d]);
     }
-    return volume_resample (vol_in, dim, offset, pix_spacing);
+    return volume_resample (vol_in, dim, offset, spacing);
 }
 
 void
@@ -702,13 +690,13 @@ volume_calc_grad (Volume* vout, Volume* vref)
 		
 		idx_p = volume_index (vref->dim, i_p, j, k);
 		idx_n = volume_index (vref->dim, i_n, j, k);
-		out_img[gi] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[0];
+		out_img[gi] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[0];
 		idx_p = volume_index (vref->dim, i, j_p, k);
 		idx_n = volume_index (vref->dim, i, j_n, k);
-		out_img[gj] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[1];
+		out_img[gj] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[1];
 		idx_p = volume_index (vref->dim, i, j, k_p);
 		idx_n = volume_index (vref->dim, i, j, k_n);
-		out_img[gk] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->pix_spacing[2];
+		out_img[gk] = (float) (ref_img[idx_n] - ref_img[idx_p]) / 2.0 / vref->spacing[2];
 	    }
 	}
     }
@@ -718,7 +706,7 @@ Volume*
 volume_make_gradient (Volume* ref)
 {
     Volume *grad;
-    grad = volume_create (ref->dim, ref->offset, ref->pix_spacing, 
+    grad = volume_create (ref->dim, ref->offset, ref->spacing, 
 			  PT_VF_FLOAT_INTERLEAVED, ref->direction_cosines, 0);
     volume_calc_grad (grad, ref);
 
@@ -750,7 +738,7 @@ volume_difference (Volume* vol, Volume* warped)
     for(i=0;i<3; i++){
 	temp->dim[i] = vol->dim[i];
 	temp->offset[i] = vol->offset[i];
-	temp->pix_spacing[i] = vol->pix_spacing[i];
+	temp->spacing[i] = vol->spacing[i];
     }
 
     temp->npix = vol->npix;

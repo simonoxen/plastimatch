@@ -91,17 +91,17 @@ vf_invert_main (Vf_Invert_Parms* parms)
     img_mask = (unsigned char*) mask->img;
     img_in = (float*) vf_in->img;
     img_inv = (float*) vf_inv->img;
-    for (z = vf_in->offset[2], k = 0, v = 0; k < vf_in->dim[2]; k++, z+=vf_in->pix_spacing[2]) {
-	for (y = vf_in->offset[1], j = 0; j < vf_in->dim[1]; j++, y+=vf_in->pix_spacing[1]) {
-	    for (x = vf_in->offset[0], i = 0; i < vf_in->dim[0]; v++, i++, x+=vf_in->pix_spacing[0]) {
+    for (z = vf_in->offset[2], k = 0, v = 0; k < vf_in->dim[2]; k++, z+=vf_in->spacing[2]) {
+	for (y = vf_in->offset[1], j = 0; j < vf_in->dim[1]; j++, y+=vf_in->spacing[1]) {
+	    for (x = vf_in->offset[0], i = 0; i < vf_in->dim[0]; v++, i++, x+=vf_in->spacing[0]) {
 		int mijk[3], midx;
 		float mxyz[3];
 		mxyz[0] = x + img_in[3*v+0];
-		mijk[0] = round_int ((mxyz[0] - vf_inv->offset[0]) / vf_inv->pix_spacing[0]);
+		mijk[0] = round_int ((mxyz[0] - vf_inv->offset[0]) / vf_inv->spacing[0]);
 		mxyz[1] = y + img_in[3*v+1];
-		mijk[1] = (mxyz[1] - vf_inv->offset[1]) / vf_inv->pix_spacing[1];
+		mijk[1] = (mxyz[1] - vf_inv->offset[1]) / vf_inv->spacing[1];
 		mxyz[2] = z + img_in[3*v+2];
-		mijk[2] = (mxyz[2] - vf_inv->offset[2]) / vf_inv->pix_spacing[2];
+		mijk[2] = (mxyz[2] - vf_inv->offset[2]) / vf_inv->spacing[2];
 
 		if (mijk[0] < 0 || mijk[0] >= vf_inv->dim[0]) continue;
 		if (mijk[1] < 0 || mijk[1] >= vf_inv->dim[1]) continue;

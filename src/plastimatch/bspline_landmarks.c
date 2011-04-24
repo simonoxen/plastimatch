@@ -116,7 +116,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_mov[i*3 + d] = ROUND_INT (
 		(blm->moving_landmarks->points[3*i + d]
-		    - moving->offset[d]) / moving->pix_spacing[d]);
+		    - moving->offset[d]) / moving->spacing[d]);
 	    if (blm->landvox_mov[i*3 + d] < 0 
 		|| blm->landvox_mov[i*3 + d] >= moving->dim[d])
 	    {
@@ -134,7 +134,7 @@ bspline_landmarks_adjust (Bspline_landmarks *blm, Volume *fixed, Volume *moving)
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_fix[i*3 + d] = ROUND_INT (
 		(blm->fixed_landmarks->points[i*3 + d] 
-		    - fixed->offset[d])	/ fixed->pix_spacing[d]);
+		    - fixed->offset[d])	/ fixed->spacing[d]);
 	    if (blm->landvox_fix[i*3 + d] < 0 
 		|| blm->landvox_fix[i*3 + d] >= fixed->dim[d])
 	    {
@@ -279,13 +279,13 @@ bspline_landmarks_score_b (
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
-		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->spacing[0]);
 		if (mi < 0 || mi >= moving->dim[0]) continue;
 		my = fy + dxyz[1];
-		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->spacing[1]);
 		if (mj < 0 || mj >= moving->dim[1]) continue;
 		mz = fz + dxyz[2];
-		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->spacing[2]);
 		if (mk < 0 || mk >= moving->dim[2]) continue;
 
 		// Storing p and q for (mi,mj,mk) nearest to landvox_mov
@@ -504,13 +504,13 @@ void bspline_landmarks_warp (
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
-		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->spacing[0]);
 		if (mi < 0 || mi >= moving->dim[0]) continue;
 		my = fy + dxyz[1];
-		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->spacing[1]);
 		if (mj < 0 || mj >= moving->dim[1]) continue;
 		mz = fz + dxyz[2];
-		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->spacing[2]);
 		if (mk < 0 || mk >= moving->dim[2]) continue;
 
 		//saving vector field in a voxel which is the closest to landvox_mov
@@ -543,7 +543,7 @@ void bspline_landmarks_warp (
 	for (d = 0; d < 3; d++) {
 	    blm->landvox_warp[lidx*3 + d] 
 		= ROUND_INT ((blm->warped_landmarks[lidx*3 + d] 
-			- fixed->offset[d]) / fixed->pix_spacing[d]);
+			- fixed->offset[d]) / fixed->spacing[d]);
 	    if (blm->landvox_warp[lidx*3 + d] < 0 
 		|| blm->landvox_warp[lidx*3 + d] >= fixed->dim[d])
 	    {

@@ -398,18 +398,18 @@ bspline_score_g_mse (
 		    dc_dv[1] = diff * m_grad[3 * idx_moving_round + 1];
 		    dc_dv[2] = diff * m_grad[3 * idx_moving_round + 2];
 
-            /* Generate condensed tile */
-            bspline_update_sets (sets_x, sets_y, sets_z,
-                                 idx_local, dc_dv, bxf);
+		    /* Generate condensed tile */
+		    bspline_update_sets (sets_x, sets_y, sets_z,
+			idx_local, dc_dv, bxf);
 		}
 	    }
 	}
 
 	// The tile is now condensed.  Now we will put it in the
 	// proper slot within the control point bin that it belong to.
-    bspline_sort_sets (cond_x, cond_y, cond_z,
-                       sets_x, sets_y, sets_z,
-                       idx_tile, bxf);
+	bspline_sort_sets (cond_x, cond_y, cond_z,
+	    sets_x, sets_y, sets_z,
+	    idx_tile, bxf);
     }
 
     /* Now we have a ton of bins and each bin's 64 slots are full.

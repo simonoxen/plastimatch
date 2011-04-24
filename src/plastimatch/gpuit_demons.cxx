@@ -56,7 +56,8 @@ do_gpuit_demons_stage_internal (
     if (xf_out->m_type == STAGE_TRANSFORM_NONE) {
 	vf_in = 0;
     } else {
-	xform_to_gpuit_vf (xf_out, xf_in, fixed_ss->dim, fixed_ss->offset, fixed_ss->pix_spacing);
+	xform_to_gpuit_vf (xf_out, xf_in, fixed_ss->dim, fixed_ss->offset, 
+	    fixed_ss->spacing);
 	vf_in = xf_out->get_gpuit_vf();
     }
 

@@ -138,7 +138,7 @@ do_gpuit_bspline_stage_internal (
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->pix_spacing, 
+    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->spacing, 
 	fixed_ss->dim, fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
@@ -153,13 +153,13 @@ do_gpuit_bspline_stage_internal (
 	logfile_printf("Trying to warp landmarks, output file: %s\n",
 	    stage->warped_landmarks_fn);
 	vector_field = volume_create (fixed_ss->dim, fixed_ss->offset, 
-	    fixed_ss->pix_spacing,
+	    fixed_ss->spacing,
 	    PT_VF_FLOAT_INTERLEAVED, 
 	    fixed_ss->direction_cosines, 0);
 	bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
-	if (vector_field){
-	    bspline_landmarks_warp( vector_field, &parms, xf_out->get_gpuit_bsp(), 
-		fixed_ss, moving_ss );
+	if (vector_field) {
+	    bspline_landmarks_warp (vector_field, &parms, 
+		xf_out->get_gpuit_bsp(), fixed_ss, moving_ss );
 	    bspline_landmarks_write_file( stage->warped_landmarks_fn, "warped", 
 		parms.landmarks->warped_landmarks, 
 		parms.landmarks->num_landmarks ); 

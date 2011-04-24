@@ -47,9 +47,9 @@ ray_trace_uniform (
 	return;
     }
 
-    ps[0] = vol->pix_spacing[0];
-    ps[1] = vol->pix_spacing[1];
-    ps[2] = vol->pix_spacing[2];
+    ps[0] = vol->spacing[0];
+    ps[1] = vol->spacing[1];
+    ps[2] = vol->spacing[2];
 
     // Get ray length
     rlen = vec3_dist (ip1, ip2);

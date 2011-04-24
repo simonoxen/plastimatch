@@ -68,9 +68,9 @@ vf_analyze_strain (Volume* vol)
     const float LAME_MU = 1.0f;
     const float LAME_NU = 1.0f;
 
-    float di = vol->pix_spacing[0];
-    float dj = vol->pix_spacing[1];
-    float dk = vol->pix_spacing[2];
+    float di = vol->spacing[0];
+    float dj = vol->spacing[1];
+    float dk = vol->spacing[2];
     int first = 1;
 
     total_energy = 0.0f;
@@ -156,9 +156,9 @@ vf_analyze_jacobian (Volume* vol)
     float min_jacobian, max_jacobian, min_abs_jacobian;
     int min_abs_jacobian_loc[3];
 
-    float di = vol->pix_spacing[0];
-    float dj = vol->pix_spacing[1];
-    float dk = vol->pix_spacing[2];
+    float di = vol->spacing[0];
+    float dj = vol->spacing[1];
+    float dk = vol->spacing[2];
     int first = 1;
 
     for (k = 1; k < vol->dim[2]-1; k++) {
@@ -233,9 +233,9 @@ vf_analyze_second_deriv (Volume* vol)
     float min_sec_der, max_sec_der, total_sec_der=0.;
     int max_sec_der_loc[3];
 
-    float di = vol->pix_spacing[0];
-    float dj = vol->pix_spacing[1];
-    float dk = vol->pix_spacing[2];
+    float di = vol->spacing[0];
+    float dj = vol->spacing[1];
+    float dk = vol->spacing[2];
     int first = 1;
 
     for (k = 1; k < vol->dim[2]-1; k++) {
@@ -346,7 +346,7 @@ vf_analyze_second_deriv (Volume* vol)
 
     printf ("Second derivatives: MINSECDER %g MAXSECDER %g TOTSECDER %g INTSECDER %g\n", 
 	min_sec_der, max_sec_der, total_sec_der,
-	total_sec_der * (vol->pix_spacing[0]*vol->pix_spacing[1]*vol->pix_spacing[2]) );
+	total_sec_der * (vol->spacing[0]*vol->spacing[1]*vol->spacing[2]) );
     printf ("Max second derivative: (%d %d %d)\n", 
 	max_sec_der_loc[0], max_sec_der_loc[1], max_sec_der_loc[2]);
 }
@@ -410,9 +410,9 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
     const float LAME_MU = 1.0f;
     const float LAME_NU = 1.0f;
 
-    float di = vol->pix_spacing[0];
-    float dj = vol->pix_spacing[1];
-    float dk = vol->pix_spacing[2];
+    float di = vol->spacing[0];
+    float dj = vol->spacing[1];
+    float dk = vol->spacing[2];
     int first = 1;
 
     total_energy = 0.0f;

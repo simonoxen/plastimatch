@@ -244,7 +244,7 @@ xio_dose_load_cube (
 
     /* Flip XiO Z axis */
     Volume* vflip;
-    vflip = volume_create (v->dim, v->offset, v->pix_spacing, 
+    vflip = volume_create (v->dim, v->offset, v->spacing, 
 	v->pix_type, v->direction_cosines, 0);
 
     for (k=0;k<v->dim[2];k++) {
@@ -354,9 +354,9 @@ xio_dose_save (
     }
 
     /* Write dose cube definition */
-    rx = v->pix_spacing[0] * (v->dim[0] - 1);
-    ry = v->pix_spacing[2] * (v->dim[2] - 1);
-    rz = v->pix_spacing[1] * (v->dim[1] - 1);
+    rx = v->spacing[0] * (v->dim[0] - 1);
+    ry = v->spacing[2] * (v->dim[2] - 1);
+    rz = v->spacing[1] * (v->dim[1] - 1);
 
     ox = (v->offset[0] + (rx / 2)) - transform->x_offset;
     oy = (v->offset[2] + (ry / 2)) - transform->y_offset;
@@ -400,7 +400,8 @@ xio_dose_save (
 
     /* Create new volume for output */
     Volume* v_write;
-    v_write = volume_create (v->dim, v->offset, v->pix_spacing, v->pix_type, v->direction_cosines, 0);
+    v_write = volume_create (v->dim, v->offset, v->spacing, v->pix_type, 
+	v->direction_cosines, 0);
 
     /* Clone volume and flip XiO Z axis */
     for (k=0;k<v->dim[2];k++) {

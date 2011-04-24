@@ -1201,7 +1201,7 @@ xform_gpuit_vf_to_itk_vf (
     for (i = 0; i < 3; i++) {
 	st[i] = 0;
 	sz[i] = vf->dim[i];
-	sp[i] = vf->pix_spacing[i];
+	sp[i] = vf->spacing[i];
 	og[i] = vf->offset[i];
     }
     rg.SetSize (sz);
@@ -1353,30 +1353,30 @@ xform_gpuit_bsp_to_gpuit_bsp (
    Conversion to gpuit_vf
    ----------------------------------------------------------------------- */
 Volume*
-xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* pix_spacing)
+xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* spacing)
 {
     Volume* vf_out;
-    vf_out = volume_resample (vf_in, dim, offset, pix_spacing);
+    vf_out = volume_resample (vf_in, dim, offset, spacing);
     return vf_out;
 }
 
 Volume*
-xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* pix_spacing)
+xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* spacing)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
 
     /* GCS FIX: Need direction cosines */
-    vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
+    vf_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
 }
 
 Volume*
-xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* pix_spacing)
+xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* spacing)
 {
     /* GCS FIX: Need direction cosines */
-    Volume* vf_out = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
+    Volume* vf_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
 
@@ -1711,7 +1711,7 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 }
 
 void
-xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* pix_spacing)
+xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* spacing)
 {
     Volume* vf = 0;
 
@@ -1738,13 +1738,13 @@ xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* 
 	print_and_exit ("Sorry, itk_tps to gpuit_vf not implemented\n");
 	break;
     case XFORM_ITK_VECTOR_FIELD:
-	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, pix_spacing);
+	vf = xform_itk_vf_to_gpuit_vf (xf_in->get_itk_vf(), dim, offset, spacing);
 	break;
     case XFORM_GPUIT_BSPLINE:
-	vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, pix_spacing);
+	vf = xform_gpuit_bsp_to_gpuit_vf (xf_in, dim, offset, spacing);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
-	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), dim, offset, pix_spacing);
+	vf = xform_gpuit_vf_to_gpuit_vf (xf_in->get_gpuit_vf(), dim, offset, spacing);
 	break;
     default:
 	print_and_exit ("Program error.  Bad xform type.\n");

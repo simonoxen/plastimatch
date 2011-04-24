@@ -208,9 +208,9 @@ volume_limit_set (Volume_limit *vol_limit, Volume *vol)
 
     /* Compute volume boundary box */
     for (d = 0; d < 3; d++) {
-	vol_limit->lower_limit[d] = vol->offset[d] - 0.5 * vol->pix_spacing[d];
+	vol_limit->lower_limit[d] = vol->offset[d] - 0.5 * vol->spacing[d];
 	vol_limit->upper_limit[d] = vol_limit->lower_limit[d]
-	    + vol->dim[d] * vol->pix_spacing[d];
+	    + vol->dim[d] * vol->spacing[d];
 	if (vol_limit->lower_limit[d] <= vol_limit->upper_limit[d]) {
 	    vol_limit->dir[d] = 1;
 	} else {

@@ -82,7 +82,7 @@ main (int argc, char* argv[])
 	bspline_xform_initialize (
 	    bxf,
 	    fixed->offset,
-	    fixed->pix_spacing,
+	    fixed->spacing,
 	    fixed->dim,
 	    roi_offset,
 	    fixed->dim,
@@ -111,7 +111,7 @@ main (int argc, char* argv[])
     {
 	printf ("Creating vector field.\n");
 	vector_field = volume_create (fixed->dim, fixed->offset, 
-	    fixed->pix_spacing,
+	    fixed->spacing,
 	    PT_VF_FLOAT_INTERLEAVED, 
 	    fixed->direction_cosines, 0);
 	if (parms->threading == BTHR_CUDA) {

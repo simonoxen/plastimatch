@@ -45,7 +45,7 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 	    printf("Dimension mismatch between fixed and moving\n");
 	    return 0;
 	}
-	if (vout->pix_spacing[d] != vf->pix_spacing[d]) {
+	if (vout->spacing[d] != vf->spacing[d]) {
 	    printf("Resolutions mismatch between fixed and moving\n");
 	    return 0;
 	}

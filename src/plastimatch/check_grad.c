@@ -41,7 +41,7 @@ check_gradient (
 	bspline_xform_initialize (
 	    bxf,
 	    fixed->offset,
-	    fixed->pix_spacing,
+	    fixed->spacing,
 	    fixed->dim,
 	    roi_offset,
 	    fixed->dim,

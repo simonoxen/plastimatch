@@ -101,7 +101,7 @@ opencl_reconstruct_conebeam (
         &ocl_dev, 
         CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, 
         3 * sizeof(float),
-        vol->pix_spacing
+        vol->spacing
     );
 
     ocl_buf_img_dim = opencl_buf_create (

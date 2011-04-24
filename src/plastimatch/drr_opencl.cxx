@@ -150,7 +150,7 @@ drr_opencl_ray_trace_image (
 	sizeof (cl_mem), &dev_state->ocl_buf_vol[0], 
 	sizeof (cl_int4), vol->dim, 
 	sizeof (cl_float4), vol->offset, 
-	sizeof (cl_float4), vol->pix_spacing, 
+	sizeof (cl_float4), vol->spacing, 
 	sizeof (cl_int2), proj->dim, 
 	sizeof (cl_float2), &ocl_ic, 
 	sizeof (cl_int4), options->image_window, 

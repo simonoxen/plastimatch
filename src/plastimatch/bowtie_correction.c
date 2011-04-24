@@ -90,10 +90,10 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
 
     for (nj = 0; nj < norm_CBCT->dim[1]; nj++) {
         for (ni = 0; ni < norm_CBCT->dim[0]; ni++) {
-            float x = (float) ni * norm_CBCT->pix_spacing[0] + norm_CBCT->offset[0] - norm_CBCT->pix_spacing[0];
-            float y = (float) nj * norm_CBCT->pix_spacing[1] + norm_CBCT->offset[1] - norm_CBCT->pix_spacing[1];
+            float x = (float) ni * norm_CBCT->spacing[0] + norm_CBCT->offset[0] - norm_CBCT->spacing[0];
+            float y = (float) nj * norm_CBCT->spacing[1] + norm_CBCT->offset[1] - norm_CBCT->spacing[1];
             radius = sqrt (x * x + y * y);
-            radius_r = (int)(radius / norm_CBCT->pix_spacing[0] + 0.5);
+            radius_r = (int)(radius / norm_CBCT->spacing[0] + 0.5);
             for (nk = 0; nk < norm_CBCT->dim[2]; nk++) {
                 if (radius > norm_radius - 20 && radius < norm_radius) {
                     int pi = volume_index (norm_CBCT->dim, ni, nj, nk);
@@ -118,10 +118,10 @@ process_norm_CBCT (Volume * norm_CBCT, Fdk_options* options)
 
     for (nj = 0; nj < norm_CBCT->dim[1]; nj++) {
         for (ni = 0; ni < norm_CBCT->dim[0]; ni++) {
-            float x = (float) ni * norm_CBCT->pix_spacing[0] + norm_CBCT->offset[0] - norm_CBCT->pix_spacing[0];
-            float y = (float) nj * norm_CBCT->pix_spacing[1] + norm_CBCT->offset[1] - norm_CBCT->pix_spacing[1];
+            float x = (float) ni * norm_CBCT->spacing[0] + norm_CBCT->offset[0] - norm_CBCT->spacing[0];
+            float y = (float) nj * norm_CBCT->spacing[1] + norm_CBCT->offset[1] - norm_CBCT->spacing[1];
             radius = sqrt (x * x + y * y);
-            radius_r = (int)(radius / norm_CBCT->pix_spacing[0] + 0.5);
+            radius_r = (int)(radius / norm_CBCT->spacing[0] + 0.5);
             for (nk = 0; nk < norm_CBCT->dim[2]; nk++) {
                 if (radius > norm_radius)
                     norm[volume_index (norm_CBCT->dim, ni, nj, nk)] = 0.0f;
@@ -158,15 +158,15 @@ bowtie_correction (Volume *vol, Fdk_options *options)
     norm = (float *) norm_CBCT->img;
 
     for (k = 0; k < vol->dim[2]; k++) {
-        nk = (int) floor ((k * vol->pix_spacing[2] + vol->offset[2] - vol->pix_spacing[2] - (norm_CBCT->offset[2] - norm_CBCT->pix_spacing[2])) / norm_CBCT->pix_spacing[2]);
+        nk = (int) floor ((k * vol->spacing[2] + vol->offset[2] - vol->spacing[2] - (norm_CBCT->offset[2] - norm_CBCT->spacing[2])) / norm_CBCT->spacing[2]);
         if ((nk < 0) || (nk >= norm_CBCT->dim[2]))
             continue;
         for (j = 0; j < vol->dim[1]; j++) {
-            nj = (int) floor ((j * vol->pix_spacing[1] + vol->offset[1] - vol->pix_spacing[1] - (norm_CBCT->offset[1] - norm_CBCT->pix_spacing[1])) / norm_CBCT->pix_spacing[1]);
+            nj = (int) floor ((j * vol->spacing[1] + vol->offset[1] - vol->spacing[1] - (norm_CBCT->offset[1] - norm_CBCT->spacing[1])) / norm_CBCT->spacing[1]);
             if ((nj < 0) || (nj >= norm_CBCT->dim[1]))
                 continue;
             for (i = 0; i < vol->dim[0]; i++) {
-                ni = (int) floor ((i * vol->pix_spacing[0] + vol->offset[0] - vol->pix_spacing[0] - (norm_CBCT->offset[0] - norm_CBCT->pix_spacing[0])) / norm_CBCT->pix_spacing[0]);
+                ni = (int) floor ((i * vol->spacing[0] + vol->offset[0] - vol->spacing[0] - (norm_CBCT->offset[0] - norm_CBCT->spacing[0])) / norm_CBCT->spacing[0]);
                 if ((ni < 0) || (ni >= norm_CBCT->dim[0]))
                     continue;
                 img[volume_index (vol->dim, i, j, k)] += norm[volume_index (norm_CBCT->dim, ni, nj, nk)];

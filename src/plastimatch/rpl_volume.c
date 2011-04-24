@@ -250,9 +250,9 @@ rpl_volume_create (
     memset (rvol->depth_offset, 0, ires[0] * ires[1] * sizeof(double));
 #endif
 
-    ct_dims_mm[0] = ct_vol->dim[0] * ct_vol->pix_spacing[0];
-    ct_dims_mm[1] = ct_vol->dim[1] * ct_vol->pix_spacing[1];
-    ct_dims_mm[2] = ct_vol->dim[2] * ct_vol->pix_spacing[2];
+    ct_dims_mm[0] = ct_vol->dim[0] * ct_vol->spacing[0];
+    ct_dims_mm[1] = ct_vol->dim[1] * ct_vol->spacing[1];
+    ct_dims_mm[2] = ct_vol->dim[2] * ct_vol->spacing[2];
 
     ct_diag =  ct_dims_mm[0]*ct_dims_mm[0];
     ct_diag += ct_dims_mm[1]*ct_dims_mm[1];

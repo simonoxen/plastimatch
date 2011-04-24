@@ -204,7 +204,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
     Volume *vector_field;
     Volume *moving;
     int fixed_dim[3];
-    float fixed_pix_spacing[3], fixed_offset[3], fixed_direction_cosines[9];
+    float fixed_spacing[3], fixed_offset[3], fixed_direction_cosines[9];
 
     num_landmarks = lw->m_fixed_landmarks->num_points;
 
@@ -219,7 +219,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
     /* fixed dimensions set come from lw->m_pih */
     lw->m_pih.get_dim( fixed_dim);
-    lw->m_pih.get_spacing( fixed_pix_spacing );
+    lw->m_pih.get_spacing( fixed_spacing );
     lw->m_pih.get_origin( fixed_offset );
     lw->m_pih.get_direction_cosines( fixed_direction_cosines );
 
@@ -229,9 +229,9 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
     /* fill in landvox'es */
     landmark_convert_mm_to_voxel( landvox_fix, lw->m_fixed_landmarks, 
-	fixed_offset, fixed_pix_spacing, fixed_dim, fixed_direction_cosines );
+	fixed_offset, fixed_spacing, fixed_dim, fixed_direction_cosines );
     landmark_convert_mm_to_voxel( landvox_mov, lw->m_moving_landmarks, 
-	moving->offset, moving->pix_spacing, moving->dim, moving->direction_cosines );
+	moving->offset, moving->spacing, moving->dim, moving->direction_cosines );
     
     dd_min = (float *)malloc( num_landmarks * sizeof(float));
     for (d=0;d<num_landmarks;d++) dd_min[d] = 1e20F; //a very large number
@@ -239,11 +239,11 @@ calculate_warped_landmarks( Landmark_warp *lw )
     /* roi_offset and roi_dim are not used here */
 
     for (rk = 0, fk = 0; rk < fixed_dim[2]; rk++, fk++) {
-	fz = fixed_offset[2] + fixed_pix_spacing[2] * fk;
+	fz = fixed_offset[2] + fixed_spacing[2] * fk;
 	for (rj = 0, fj = 0; rj < fixed_dim[1]; rj++, fj++) {
-	    fy = fixed_offset[1] + fixed_pix_spacing[1] * fj;
+	    fy = fixed_offset[1] + fixed_spacing[1] * fj;
 	    for (ri = 0, fi = 0; ri < fixed_dim[0]; ri++, fi++) {
-		fx = fixed_offset[0] + fixed_pix_spacing[0] * fi;
+		fx = fixed_offset[0] + fixed_spacing[0] * fi;
 
 		fv = fk * vector_field->dim[0] * vector_field->dim[1] 
 		    + fj * vector_field->dim[0] +fi ;
@@ -252,13 +252,13 @@ calculate_warped_landmarks( Landmark_warp *lw )
 
 		/* Find correspondence in moving image */
 		mx = fx + dxyz[0];
-		mi = ROUND_INT ((mx - moving->offset[0]) / moving->pix_spacing[0]);
+		mi = ROUND_INT ((mx - moving->offset[0]) / moving->spacing[0]);
 		if (mi < 0 || mi >= moving->dim[0]) continue;
 		my = fy + dxyz[1];
-		mj = ROUND_INT ((my - moving->offset[1]) / moving->pix_spacing[1]);
+		mj = ROUND_INT ((my - moving->offset[1]) / moving->spacing[1]);
 		if (mj < 0 || mj >= moving->dim[1]) continue;
 		mz = fz + dxyz[2];
-		mk = ROUND_INT ((mz - moving->offset[2]) / moving->pix_spacing[2]);
+		mk = ROUND_INT ((mz - moving->offset[2]) / moving->spacing[2]);
 		if (mk < 0 || mk >= moving->dim[2]) continue;
 
 		//saving vector field in a voxel which is the closest to landvox_mov
@@ -291,7 +291,7 @@ calculate_warped_landmarks( Landmark_warp *lw )
 	for (d = 0; d < 3; d++) {
 	    landvox_warp[lidx*3 + d] 
 		= ROUND_INT ((warped_landmarks[lidx*3 + d] 
-			- fixed_offset[d]) / fixed_pix_spacing[d]);
+			- fixed_offset[d]) / fixed_spacing[d]);
 	    if (landvox_warp[lidx*3 + d] < 0 
 		|| landvox_warp[lidx*3 + d] >= fixed_dim[d])
 	    {

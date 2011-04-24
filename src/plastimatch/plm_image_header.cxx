@@ -124,8 +124,8 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     {
 	Volume* vol = (Volume*) pli->m_gpuit;
-	set_from_gpuit (vol->offset, vol->pix_spacing,
-			vol->dim, vol->direction_cosines);
+	set_from_gpuit (vol->offset, vol->spacing,
+	    vol->dim, vol->direction_cosines);
 	break;
     }
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:

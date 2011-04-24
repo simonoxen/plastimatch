@@ -78,7 +78,7 @@ write_mha_internal (
     }
     bytes_written = fprintf (fp, mha_header, 
 	     vol->offset[0], vol->offset[1], vol->offset[2], 
-	     vol->pix_spacing[0], vol->pix_spacing[1], vol->pix_spacing[2], 
+	     vol->spacing[0], vol->spacing[1], vol->spacing[2], 
 	     vol->dim[0], vol->dim[1], vol->dim[2],
 	     (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) 
 	     ? "ElementNumberOfChannels = 3\n" : "",
@@ -139,9 +139,9 @@ read_mha_internal (
 	    continue;
 	}
 	if (sscanf (linebuf, "ElementSpacing = %g %g %g",
-		&vol->pix_spacing[0],
-		&vol->pix_spacing[1],
-		&vol->pix_spacing[2]) == 3) {
+		&vol->spacing[0],
+		&vol->spacing[1],
+		&vol->spacing[2]) == 3) {
 	    continue;
 	}
 	if (sscanf (linebuf, "TransformMatrix = %g %g %g %g %g %g %g %g %g",

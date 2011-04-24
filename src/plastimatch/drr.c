@@ -127,9 +127,9 @@ drr_ray_trace_uniform (
     memset (&cd, 0, sizeof (Callback_data));
 
     /* Set ray_step proportional to voxel size */
-    ray_step = vol->pix_spacing[0];
-    if (vol->dim[1] < ray_step) ray_step = vol->pix_spacing[1];
-    if (vol->dim[2] < ray_step) ray_step = vol->pix_spacing[2];
+    ray_step = vol->spacing[0];
+    if (vol->dim[1] < ray_step) ray_step = vol->spacing[1];
+    if (vol->dim[2] < ray_step) ray_step = vol->spacing[2];
     ray_step *= 0.75;
 
 #if defined (commentout)

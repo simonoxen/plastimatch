@@ -1000,9 +1000,9 @@ bspline_mi_pvi_8_dc_dv (
         }
     }
 
-    dc_dv[0] = dc_dv[0] / num_vox_f / moving->pix_spacing[0];
-    dc_dv[1] = dc_dv[1] / num_vox_f / moving->pix_spacing[1];
-    dc_dv[2] = dc_dv[2] / num_vox_f / moving->pix_spacing[2];
+    dc_dv[0] = dc_dv[0] / num_vox_f / moving->spacing[0];
+    dc_dv[1] = dc_dv[1] / num_vox_f / moving->spacing[1];
+    dc_dv[2] = dc_dv[2] / num_vox_f / moving->spacing[2];
 
 
 #if defined (commentout)
@@ -1105,9 +1105,9 @@ bspline_mi_pvi_6_dc_dv (
 	num_vox_f, fxs, ssd->score, debug);
     dc_dv[2] += - fzqs[2] * dS_dP;
 
-    dc_dv[0] = dc_dv[0] / moving->pix_spacing[0] / num_vox_f;
-    dc_dv[1] = dc_dv[1] / moving->pix_spacing[1] / num_vox_f;
-    dc_dv[2] = dc_dv[2] / moving->pix_spacing[2] / num_vox_f;
+    dc_dv[0] = dc_dv[0] / moving->spacing[0] / num_vox_f;
+    dc_dv[1] = dc_dv[1] / moving->spacing[1] / num_vox_f;
+    dc_dv[2] = dc_dv[2] / moving->spacing[2] / num_vox_f;
 }
     
 

@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <time.h>
 
+#include "bspline_warp.h"
 #include "itk_image.h"
 #include "itk_warp.h"
 #include "mha_io.h"
