@@ -13,7 +13,6 @@
 #include "logfile.h"
 #include "plm_image_type.h"
 #include "plm_warp.h"
-#include "rasterizer.h"
 #include "referenced_dicom_dir.h"
 #include "rtds_dicom.h"
 #include "rtds_warp.h"
@@ -230,8 +229,6 @@ warp_and_save_ss (
     }
 
     /* Do the warp */
-    /* GCS FIX: This is inefficient.  We don't need to warp labelmap if 
-       not included in output. */
     if (bstring_not_empty (parms->xf_in_fn)) {
 	printf ("Warp_and_save_ss: m_ss_image->warp\n");
 	rtds->m_ss_image->warp (xf, pih, parms);
