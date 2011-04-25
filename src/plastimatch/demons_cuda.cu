@@ -395,9 +395,11 @@ demons_cuda (
 	vf_convert_to_interleaved(vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+	vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->spacing, 
+	    fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
     }
-    vf_est = volume_create(fixed->dim, fixed->offset, fixed->spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    vf_est = volume_create(fixed->dim, fixed->offset, fixed->spacing, 
+	fixed->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
 
     /* Initialize GPU timers */
     gpu_time = 0;
