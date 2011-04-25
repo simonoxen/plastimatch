@@ -15,6 +15,7 @@
 #include "mha_io.h"
 #include "plm_timer.h"
 #include "volume.h"
+#include "vf_stats.h"
 
 /* Function computes the image gradient in the x, y, and z directions for the static image */
 float**

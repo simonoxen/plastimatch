@@ -56,6 +56,60 @@ vf_analyze (Volume* vol)
 	mean_av[0], mean_av[1], mean_av[2]);
 }
 
+/* This is similar to vf_analyze, but works on planar images too */
+void
+vf_print_stats (Volume* vol)
+{
+    int i, d, v;
+    float mins[3], maxs[3], mean[3];
+
+
+    mean[0] = mean[1] = mean[2] = (float) 0.0;
+    if (vol->pix_type == PT_VF_FLOAT_INTERLEAVED) {
+	float *img = (float*) vol->img;
+	mins[0] = maxs[0] = img[0];
+	mins[1] = maxs[1] = img[1];
+	mins[2] = maxs[2] = img[2];
+	for (v = 0, i = 0; i < vol->npix; i++) {
+	    for (d = 0; d < 3; d++, v++) {
+		if (img[v] > maxs[d]) {
+		    maxs[d] = img[v];
+		} else if (img[v] < mins[d]) {
+		    mins[d] = img[v];
+		}
+		mean[d] += img[v];
+	    }
+	}
+    } else if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
+	float **img = (float**) vol->img;
+	mins[0] = maxs[0] = img[0][0];
+	mins[1] = maxs[1] = img[1][0];
+	mins[2] = maxs[2] = img[2][0];
+	for (i = 0; i < vol->npix; i++) {
+	    for (d = 0; d < 3; d++) {
+		if (img[d][i] > maxs[d]) {
+		    maxs[d] = img[d][i];
+		} else if (img[d][i] < mins[d]) {
+		    mins[d] = img[d][i];
+		}
+		mean[d] += img[d][i];
+	    }
+	}
+    } else {
+	printf ("Sorry, vf_print_stats only for vector field volumes\n");
+	return;
+    }
+
+    for (d = 0; d < 3; d++) {
+	mean[d] /= vol->npix;
+    }
+    printf ("min, mean, max\n");
+    for (d = 0; d < 3; d++) {
+	printf ("%g %g %g\n", mins[d], mean[d], maxs[d]);
+    }
+}
+
+
 void
 vf_analyze_strain (Volume* vol)
 {
