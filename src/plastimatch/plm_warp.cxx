@@ -194,6 +194,78 @@ plm_warp_native (
     printf ("plm_warp_native is complete.\n");
 }
 
+/* Native vector warping (only gpuit bspline + uchar_vec) */
+#if PLM_CONFIG_NATIVE_UCHAR_VEC_WARP
+static void
+plm_warp_native_vec (
+    Plm_image *im_warped,                 /* Output */
+    DeformationFieldType::Pointer *vf,    /* Output */
+    Xform *xf_in,                         /* Input */
+    Plm_image_header *pih,                /* Input */
+    Plm_image *im_in,                     /* Input */
+    float default_val,     /* Input:  Value for pixels without match */
+    int interp_lin         /* Input:  Trilinear (1) or nn (0) */
+)
+{
+    Xform xf_tmp;
+    Xform vf_tmp;
+    Bspline_xform* bxf_in = xf_in->get_gpuit_bsp ();
+    Volume *vf_out = 0;     /* Output vector field */
+    Volume *v_out = 0;      /* Output warped image */
+    int dim[3];
+    float origin[3];
+    float spacing[3];
+    float direction_cosines[9];
+
+    /* Convert input image to gpuit format */
+    printf ("Running: plm_warp_native\n");
+    printf ("Converting input image...\n");
+    Volume *v_in = im_in->gpuit_uchar_vec ();
+
+    /* Transform input xform to gpuit bspline with correct voxel spacing */
+    printf ("Converting xform...\n");
+    xform_to_gpuit_bsp (&xf_tmp, xf_in, pih, bxf_in->grid_spac);
+
+    /* Create output vf */
+    pih->get_origin (origin);
+    pih->get_spacing (spacing);
+    pih->get_dim (dim);
+    pih->get_direction_cosines (direction_cosines);
+    if (vf) {
+	printf ("Creating output vf...\n");
+	vf_out = volume_create (dim, origin, spacing, direction_cosines,
+	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
+    }
+
+    /* Create output image */
+    printf ("Creating output volume...\n");
+    v_out = volume_create (dim, origin, spacing, direction_cosines, 
+	PT_FLOAT, 1, 0);
+
+    /* Warp using gpuit native warper */
+    printf ("Running native warper...\n");
+    bspline_warp (v_out, vf_out, xf_tmp.get_gpuit_bsp(), v_in, 
+	interp_lin, default_val);
+
+    /* Return output image to caller */
+    im_warped->set_gpuit (v_out);
+
+    /* Bspline_warp only operates on float.  We need to back-convert */
+    printf ("Back convert to original type...\n");
+    im_warped->convert (im_in->m_original_type);
+    im_warped->m_original_type = im_in->m_original_type;
+
+    /* Return vf to caller */
+    if (vf) {
+	printf ("> Convert vf to itk\n");
+	*vf = xform_gpuit_vf_to_itk_vf (vf_out, 0);
+	printf ("> Conversion complete.\n");
+	volume_destroy (vf_out);
+    }
+    printf ("plm_warp_native is complete.\n");
+}
+#endif
+
 void
 plm_warp (
     Plm_image *im_warped,  /* Output: Output image */
@@ -227,6 +299,13 @@ plm_warp (
 	    plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
 		interp_lin);
 	    break;
+#if PLM_CONFIG_NATIVE_UCHAR_VEC_WARP
+	case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+	    plm_warp_native_vec (im_warped, vf, xf_in, pih, im_in, 
+		default_val, interp_lin);
+	    break;
+#endif
 	default:
 	    plm_warp_itk (im_warped, vf, xf_in, pih, im_in, default_val,
 		interp_lin);

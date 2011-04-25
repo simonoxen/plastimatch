@@ -60,8 +60,8 @@ OPTION (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
 OPTION (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 OPTION (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
-OPTION (PLM_CONFIG_ENABLE_BSPLINE_UNALIGNED 
-  "Enable experimental unaligned B-spline grids" OFF)
+OPTION (PLM_CONFIG_NATIVE_UCHAR_VEC_WARP 
+  "Enable experimental warping code" OFF)
 OPTION (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 SET (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")

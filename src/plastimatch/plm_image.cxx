@@ -726,6 +726,24 @@ Plm_image::convert_to_gpuit_float ()
 }
 
 void
+Plm_image::convert_to_gpuit_uchar_vec ()
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+	return;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (
+	    this, this->m_itk_uchar_vec);
+	/* Free itk data */
+	this->m_itk_uchar_vec = 0;
+	return;
+    default:
+	print_and_exit ("Error: unhandled conversion to gpuit_uchar_vec\n");
+	return;
+    }
+}
+
+void
 Plm_image::convert_to_original_type (void)
 {
     this->convert (this->m_original_type);

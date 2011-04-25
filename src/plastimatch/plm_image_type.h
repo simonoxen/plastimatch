@@ -25,7 +25,8 @@ enum Plm_image_type {
     PLM_IMG_TYPE_GPUIT_FLOAT, 
     PLM_IMG_TYPE_GPUIT_FLOAT_FIELD, 
     PLM_IMG_TYPE_ITK_UCHAR_4D,               /* Not used */
-    PLM_IMG_TYPE_ITK_UCHAR_VEC
+    PLM_IMG_TYPE_ITK_UCHAR_VEC,
+    PLM_IMG_TYPE_GPUIT_UCHAR_VEC
 };
 
 plastimatch1_EXPORT

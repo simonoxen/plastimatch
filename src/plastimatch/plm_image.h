@@ -63,6 +63,8 @@ private:
     void convert_to_gpuit_uint32 ();
     plastimatch1_EXPORT
     void convert_to_gpuit_float ();
+    plastimatch1_EXPORT
+    void convert_to_gpuit_uchar_vec ();
 
 public:
     Plm_image () {
@@ -143,6 +145,10 @@ public:
     }
     Volume* gpuit_float () {
 	convert_to_gpuit_float ();
+	return (Volume*) m_gpuit;
+    }
+    Volume* gpuit_uchar_vec () {
+	convert_to_gpuit_uchar_vec ();
 	return (Volume*) m_gpuit;
     }
     plastimatch1_EXPORT
