@@ -18,7 +18,7 @@ struct kernel_args_fdk
     float scale;
     float3 vol_offset;
     int3 vol_dim;
-    float3 vol_pix_spacing;
+    float3 vol_spacing;
     float matrix[12];
     char padding[4]; //for data alignment
     //padding to 128Bytes

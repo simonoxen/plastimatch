@@ -38,8 +38,8 @@ struct kernel_args_fdk {
     float scale;
     float4 vol_offset;
     int4 vol_dim;
-    float4 vol_pix_spacing;
-	float matrix[12];
+    float4 vol_spacing;
+    float matrix[12];
 };
 
 #endif

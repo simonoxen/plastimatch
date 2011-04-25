@@ -262,7 +262,7 @@ drr_cuda_state_create_cu (
 
     kargs->vol_offset = make_float3 (vol->offset);
     kargs->vol_dim = make_int3 (vol->dim);
-    kargs->vol_spacing = make_float3 (vol->pix_spacing);
+    kargs->vol_spacing = make_float3 (vol->spacing);
 
 #if defined (commentout)
     /* The below code is Junan's.  Presumably this way can be better 

@@ -73,7 +73,7 @@ build_gbd (
         // populate moving volume entries
         memcpy (&gbd->mov_dim, moving->dim, 3*sizeof(int));
         memcpy (&gbd->mov_offset, moving->offset, 3*sizeof(float));
-        memcpy (&gbd->mov_spacing, moving->pix_spacing, 3*sizeof(float));
+        memcpy (&gbd->mov_spacing, moving->spacing, 3*sizeof(float));
     }
     
 }

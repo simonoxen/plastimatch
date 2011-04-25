@@ -34,7 +34,7 @@ Constant Memory
 */
 __constant__ int c_dim[3];
 __constant__ int c_moving_dim[3];
-__constant__ float c_pix_spacing_div2[3];
+__constant__ float c_spacing_div2[3];
 __constant__ float c_f2mo[3];
 __constant__ float c_f2ms[3];
 __constant__ float c_invmps[3];
@@ -53,9 +53,9 @@ void setConstantMovingDimension(int *h_moving_dim)
 	cudaMemcpyToSymbol(c_moving_dim, h_moving_dim, sizeof(int3));
 }
 
-void setConstantPixelSpacing(float *h_pix_spacing_div2)
+void setConstantPixelSpacing(float *h_spacing_div2)
 {
-	cudaMemcpyToSymbol(c_pix_spacing_div2, h_pix_spacing_div2, sizeof(float3));
+	cudaMemcpyToSymbol(c_spacing_div2, h_spacing_div2, sizeof(float3));
 }
 
 void setConstantF2mo(float *h_f2mo)
@@ -349,15 +349,15 @@ __global__ void volume_calc_grad_kernel (float *out_img, unsigned int blockY, fl
 	int idx_p, idx_n;
 	idx_p = volume_index_cuda (c_dim, i_p, j, k);
 	idx_n = volume_index_cuda (c_dim, i_n, j, k);
-	out_img[gi] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[0];
+	out_img[gi] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_spacing_div2[0];
 
 	idx_p = volume_index_cuda (c_dim, i, j_p, k);
 	idx_n = volume_index_cuda (c_dim, i, j_n, k);
-	out_img[gj] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[1];
+	out_img[gj] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_spacing_div2[1];
 
 	idx_p = volume_index_cuda (c_dim, i, j, k_p);
 	idx_n = volume_index_cuda (c_dim, i, j, k_n);
-	out_img[gk] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_pix_spacing_div2[2];
+	out_img[gk] = (float) (tex1Dfetch(tex_moving, idx_n) - tex1Dfetch(tex_moving, idx_p)) * c_spacing_div2[2];
 }
 
 Volume* 
@@ -384,7 +384,7 @@ demons_cuda (
 
     int vol_size, interleaved_vol_size, inlier_size, threadX, threadY, threadZ, blockX, blockY, blockZ, num_elements, half_num_elements, reductionBlocks;
     int *d_inliers;
-    float total_runtime, pix_spacing_div2[3];
+    float total_runtime, spacing_div2[3];
     float *d_vf_est, *d_vf_smooth, *d_moving, *d_fixed, *d_m_grad, *d_m_grad_mag, *d_kerx, *d_kery, *d_kerz, *d_swap, *d_ssd;
     dim3 block, grid, reductionGrid;
 
@@ -395,9 +395,9 @@ demons_cuda (
 	vf_convert_to_interleaved(vf_smooth);
     } else {
 	/* Otherwise initialize to zero */
-	vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+	vf_smooth = volume_create(fixed->dim, fixed->offset, fixed->spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
     }
-    vf_est = volume_create(fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
+    vf_est = volume_create(fixed->dim, fixed->offset, fixed->spacing, PT_VF_FLOAT_INTERLEAVED, fixed->direction_cosines, 0);
 
     /* Initialize GPU timers */
     gpu_time = 0;
@@ -417,7 +417,7 @@ demons_cuda (
       Calculate Moving Gradient
     */
     for (i = 0; i < 3; i++)
-	pix_spacing_div2[i] = 0.5 / moving->pix_spacing[i];
+	spacing_div2[i] = 0.5 / moving->spacing[i];
 
     /* Determine size of device memory */
     vol_size = moving->dim[0] * moving->dim[1] * moving->dim[2] * sizeof(float);
@@ -447,7 +447,7 @@ demons_cuda (
     /* Set device constant memory */
     setConstantDimension(fixed->dim);
     setConstantMovingDimension(moving->dim);
-    setConstantPixelSpacing(pix_spacing_div2);
+    setConstantPixelSpacing(spacing_div2);
 
     /* Bind device texture memory */
     cudaBindTexture(0, tex_fixed, d_fixed, vol_size);
@@ -488,16 +488,16 @@ demons_cuda (
     validate_filter_widths (fw, parms->filter_width);
 
     /* Create the seperable smoothing kernels for the x, y, and z directions */
-    kerx = create_ker (parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
-    kery = create_ker (parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
-    kerz = create_ker (parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
+    kerx = create_ker (parms->filter_std / fixed->spacing[0], fw[0]/2);
+    kery = create_ker (parms->filter_std / fixed->spacing[1], fw[1]/2);
+    kerz = create_ker (parms->filter_std / fixed->spacing[2], fw[2]/2);
     kernel_stats (kerx, kery, kerz, fw);
 
     /* Compute some variables for converting pixel sizes / offsets */
     for (i = 0; i < 3; i++) {
-	invmps[i] = 1 / moving->pix_spacing[i];
-	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->pix_spacing[i];
-	f2ms[i] = fixed->pix_spacing[i] / moving->pix_spacing[i];
+	invmps[i] = 1 / moving->spacing[i];
+	f2mo[i] = (fixed->offset[i] - moving->offset[i]) / moving->spacing[i];
+	f2ms[i] = fixed->spacing[i] / moving->spacing[i];
     }
 
     /* Allocate device memory */

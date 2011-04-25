@@ -45,7 +45,7 @@
 
 
 // P R O T O T Y P E S ////////////////////////////////////////////////////
-__global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_pix_spacing, unsigned int Blocks_Y, float invBlocks_Y);
+__global__ void kernel_fdk (float *dev_vol, int2 img_dim, float2 ic, float3 nrm, float sad, float scale, float3 vol_offset, int3 vol_dim, float3 vol_spacing, unsigned int Blocks_Y, float invBlocks_Y);
 ///////////////////////////////////////////////////////////////////////////
 
 
@@ -74,7 +74,7 @@ void kernel_fdk_gmem (
     float scale,
     float3 vol_offset,
     int3 vol_dim,
-    float3 vol_pix_spacing,
+    float3 vol_spacing,
     unsigned int Blocks_Y,
     float invBlocks_Y)
 {
@@ -102,9 +102,9 @@ void kernel_fdk_gmem (
     float voxel_data;
 
     // offset volume coords
-    vp.x = vol_offset.x + i * vol_pix_spacing.x;
-    vp.y = vol_offset.y + j * vol_pix_spacing.y;
-    vp.z = vol_offset.z + k * vol_pix_spacing.z;
+    vp.x = vol_offset.x + i * vol_spacing.x;
+    vp.y = vol_offset.y + j * vol_spacing.y;
+    vp.z = vol_offset.z + k * vol_spacing.z;
 
     // matrix multiply
     ip.x = pmat[0]*vp.x + pmat[1]*vp.y + pmat[2]*vp.z + pmat[3];
@@ -147,7 +147,7 @@ void kernel_fdk (
     float scale,
     float3 vol_offset,
     int3 vol_dim,
-    float3 vol_pix_spacing,
+    float3 vol_spacing,
     unsigned int Blocks_Y,
     float invBlocks_Y
 )
@@ -175,9 +175,9 @@ void kernel_fdk (
     float voxel_data;
 
     // offset volume coords
-    vp.x = vol_offset.x + i * vol_pix_spacing.x;
-    vp.y = vol_offset.y + j * vol_pix_spacing.y;
-    vp.z = vol_offset.z + k * vol_pix_spacing.z;
+    vp.x = vol_offset.x + i * vol_spacing.x;
+    vp.y = vol_offset.y + j * vol_spacing.y;
+    vp.z = vol_offset.z + k * vol_spacing.z;
 
     // matrix multiply
     ip.x = tex1Dfetch(tex_matrix, 0)*vp.x + tex1Dfetch(tex_matrix, 1)*vp.y + tex1Dfetch(tex_matrix, 2)*vp.z + tex1Dfetch(tex_matrix, 3);
@@ -270,9 +270,9 @@ CUDA_reconstruct_conebeam (
     kargs->vol_dim.x = vol->dim[0];
     kargs->vol_dim.y = vol->dim[1];
     kargs->vol_dim.z = vol->dim[2];
-    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
-    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
-    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+    kargs->vol_spacing.x = vol->spacing[0];
+    kargs->vol_spacing.y = vol->spacing[1];
+    kargs->vol_spacing.z = vol->spacing[2];
 
 
     ////// TIMING CODE //////////////////////
@@ -390,7 +390,7 @@ CUDA_reconstruct_conebeam (
             kargs->scale,
             kargs->vol_offset,
             kargs->vol_dim,
-            kargs->vol_pix_spacing,
+            kargs->vol_spacing,
             blocksInY,
             1.0f/(float)blocksInY
         );
@@ -518,9 +518,9 @@ fdk_cuda_state_create_cu (
     kargs->vol_dim.x = vol->dim[0];
     kargs->vol_dim.y = vol->dim[1];
     kargs->vol_dim.z = vol->dim[2];
-    kargs->vol_pix_spacing.x = vol->pix_spacing[0];
-    kargs->vol_pix_spacing.y = vol->pix_spacing[1];
-    kargs->vol_pix_spacing.z = vol->pix_spacing[2];
+    kargs->vol_spacing.x = vol->spacing[0];
+    kargs->vol_spacing.y = vol->spacing[1];
+    kargs->vol_spacing.z = vol->spacing[2];
 
 #if defined (VERBOSE)
     // State the kernel execution parameters
@@ -627,7 +627,7 @@ fdk_cuda_backproject_cu (void *dev_state)
         kargs->scale,
         kargs->vol_offset,
         kargs->vol_dim,
-        kargs->vol_pix_spacing,
+        kargs->vol_spacing,
         state->blocksInY,
         1.0f / (float) state->blocksInY
     );
