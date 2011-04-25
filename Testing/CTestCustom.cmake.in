@@ -340,6 +340,9 @@ IF (PLM_REDUCED_TESTS)
     "plm-convert-dicom-f-stats"
     "plm-convert-dicom-f-check"
     "plm-convert-dicom-g"
+    "plm-convert-dicom-h"
+    "plm-convert-dicom-h-stats"
+    "plm-convert-dicom-h-check"
 
     "plm-convert-dicom-aw-a"
     "plm-convert-dicom-aw-a-stats"

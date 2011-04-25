@@ -332,6 +332,10 @@ Plm_image::set_gpuit (Volume *v)
 	m_original_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	m_type = PLM_IMG_TYPE_GPUIT_FLOAT;
 	break;
+    case PT_UCHAR_VEC_INTERLEAVED:
+	m_original_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
+	m_type = PLM_IMG_TYPE_GPUIT_UCHAR_VEC;
+	break;
     default:
 	print_and_exit ("Undefined conversion in Plm_image::set_gpuit\n");
 	break;
@@ -572,11 +576,15 @@ Plm_image::convert_to_itk_uchar_vec (void)
 	    = plm_image_convert_gpuit_uint32_to_itk_uchar_vec (this);
 	break;
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
-	printf ("Doing nothing (CONVERT_TO_ITK_UCHAR_VEC)\n");
+	break;
+    case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
+	printf ("Converting from GPUIT_UCHAR_VEC to ITK_UCHAR_VEC\n");
+	this->m_itk_uchar_vec
+	    = plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (this);
 	break;
     default:
 	print_and_exit (
-	    "Error: unhandled conversion to itk_uchar_4d() type=%d\n",
+	    "Error: unhandled conversion to itk_uchar_vec type=%d\n",
 	    m_type);
 	return;
     }

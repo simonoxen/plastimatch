@@ -168,7 +168,7 @@ save_ss_img (
 
     /* cxt */
     if (bstring_not_empty (parms->output_cxt_fn)) {
-	printf ("save_ss_img: save_cxtt\n");
+	printf ("save_ss_img: save_cxt\n");
 	rtds->m_ss_image->save_cxt (&rtds->m_rdd, parms->output_cxt_fn, false);
     }
 

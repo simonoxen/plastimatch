@@ -13,12 +13,15 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, T itk_img, U);
 template<class T> 
 plastimatch1_EXPORT void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, T img);
+
 plastimatch1_EXPORT UCharVecImageType::Pointer
 plm_image_convert_itk_uchar_to_itk_uchar_vec (UCharImageType::Pointer im_in);
-plastimatch1_EXPORT UCharVecImageType::Pointer
-plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli);
 plastimatch1_EXPORT UCharVecImageType::Pointer 
 plm_image_convert_itk_uint32_to_itk_uchar_vec (UInt32ImageType::Pointer im_in);
+plastimatch1_EXPORT UCharVecImageType::Pointer
+plm_image_convert_gpuit_uint32_to_itk_uchar_vec (Plm_image* pli);
+plastimatch1_EXPORT UCharVecImageType::Pointer
+plm_image_convert_gpuit_uchar_vec_to_itk_uchar_vec (Plm_image* pli);
 plastimatch1_EXPORT void
 plm_image_convert_itk_uchar_vec_to_gpuit_uchar_vec (Plm_image* pli, 
     UCharVecImageType::Pointer itk_img);

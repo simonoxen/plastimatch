@@ -240,7 +240,7 @@ plm_warp_native_vec (
     /* Create output image */
     printf ("Creating output volume...\n");
     v_out = volume_create (dim, origin, spacing, direction_cosines, 
-	PT_FLOAT, 1, 0);
+	PT_UCHAR_VEC_INTERLEAVED, v_in->vox_planes, 0);
 
     /* Warp using gpuit native warper */
     printf ("Running native warper...\n");
