@@ -42,9 +42,9 @@ fdk_brook_c (Volume* vol, Proj_image_dir* proj_dir, Fdk_options* options)
     ********************/
 
     /* Set voxel spacing */
-    spacing.x = vol->pix_spacing[0]; 
-    spacing.y = vol->pix_spacing[1]; 
-    spacing.z = vol->pix_spacing[2];
+    spacing.x = vol->spacing[0]; 
+    spacing.y = vol->spacing[1]; 
+    spacing.z = vol->spacing[2];
 
     offset.x = vol->offset[0]; 
     offset.y = vol->offset[1]; 
@@ -217,9 +217,9 @@ fdk_brook_reconstruct (
     float3 xip, yip, zip, spacing, offset, wip;
     float2 img_dim;
     float sq_vol_dim;
-    spacing.x = vol->pix_spacing[0];
-    spacing.y = vol->pix_spacing[1];
-    spacing.z = vol->pix_spacing[2];
+    spacing.x = vol->spacing[0];
+    spacing.y = vol->spacing[1];
+    spacing.z = vol->spacing[2];
     offset.x = vol->offset[0];
     offset.y = vol->offset[1];
     offset.z = vol->offset[2];

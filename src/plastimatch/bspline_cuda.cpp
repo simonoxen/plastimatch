@@ -141,15 +141,15 @@ bspline_find_correspondence
  )
 {
     mxyz[0] = fxyz[0] + dxyz[0];
-    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->pix_spacing[0];
+    mijk[0] = (mxyz[0] - moving->offset[0]) / moving->spacing[0];
     if (mijk[0] < -0.5 || mijk[0] > moving->dim[0] - 0.5) return 0;
 
     mxyz[1] = fxyz[1] + dxyz[1];
-    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->pix_spacing[1];
+    mijk[1] = (mxyz[1] - moving->offset[1]) / moving->spacing[1];
     if (mijk[1] < -0.5 || mijk[1] > moving->dim[1] - 0.5) return 0;
 
     mxyz[2] = fxyz[2] + dxyz[2];
-    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->pix_spacing[2];
+    mijk[2] = (mxyz[2] - moving->offset[2]) / moving->spacing[2];
     if (mijk[2] < -0.5 || mijk[2] > moving->dim[2] - 0.5) return 0;
 
     return 1;
@@ -409,9 +409,9 @@ bspline_mi_pvi_8_dc_dv (
         dc_dv[2] -= dw8[2] * dS_dP;
     }
 
-    dc_dv[0] = dc_dv[0] / num_vox_f / moving->pix_spacing[0];
-    dc_dv[1] = dc_dv[1] / num_vox_f / moving->pix_spacing[1];
-    dc_dv[2] = dc_dv[2] / num_vox_f / moving->pix_spacing[2];
+    dc_dv[0] = dc_dv[0] / num_vox_f / moving->spacing[0];
+    dc_dv[1] = dc_dv[1] / num_vox_f / moving->spacing[1];
+    dc_dv[2] = dc_dv[2] / num_vox_f / moving->spacing[2];
 }
 
 inline void

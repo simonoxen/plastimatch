@@ -70,13 +70,13 @@ estimate_partial_derivatives (Volume* vol1)
 
 	streamRead(vol_st1, img1);
 	
-	k_epdx(vol_st1, (float)size, dim, vol1->pix_spacing[0],der_st);
+	k_epdx(vol_st1, (float)size, dim, vol1->spacing[0],der_st);
 	streamWrite(der_st, der[0]);
 
-	k_epdy(vol_st1, (float)size, dim, vol1->pix_spacing[1], der_st);
+	k_epdy(vol_st1, (float)size, dim, vol1->spacing[1], der_st);
 	streamWrite(der_st, der[1]);
 
-	k_epdz(vol_st1, (float)size, dim, vol1->pix_spacing[2], der_st);
+	k_epdz(vol_st1, (float)size, dim, vol1->spacing[2], der_st);
 	streamWrite(der_st, der[2]);
 
 	printf ("Compute image intensity gradient on the GPU = %f secs\n", 
@@ -93,7 +93,7 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 {
     int it;
     float3 m_offset, f_offset;              /* Copied from input volume */
-    float3 m_pix_spacing, f_pix_spacing;    /* Copied from input volume */
+    float3 m_spacing, f_spacing;    /* Copied from input volume */
     float3 f_dim, m_dim;		    /* Copied from input volume */
     int f_size, m_size;			    /* Textures are size x size pixels */
     float* f_img = (float*) fixed->img;     /* Raw pointer to data */
@@ -150,20 +150,20 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
     m_offset.x = moving->offset[0];
     m_offset.y = moving->offset[1];
     m_offset.z = moving->offset[2];
-    f_pix_spacing.x = fixed->pix_spacing[0];
-    f_pix_spacing.y = fixed->pix_spacing[1];
-    f_pix_spacing.z = fixed->pix_spacing[2];
-    m_pix_spacing.x = moving->pix_spacing[0];
-    m_pix_spacing.y = moving->pix_spacing[1];
-    m_pix_spacing.z = moving->pix_spacing[2];
+    f_spacing.x = fixed->spacing[0];
+    f_spacing.y = fixed->spacing[1];
+    f_spacing.z = fixed->spacing[2];
+    m_spacing.x = moving->spacing[0];
+    m_spacing.y = moving->spacing[1];
+    m_spacing.z = moving->spacing[2];
 
     /* Validate filter widths */
     validate_filter_widths (fw, parms->filter_width);
 
     /* Create the seperable smoothing kernels for the x, y, and z directions */
-    kerx = create_ker (parms->filter_std / fixed->pix_spacing[0], fw[0]/2);
-    kery = create_ker (parms->filter_std / fixed->pix_spacing[1], fw[1]/2);
-    kerz = create_ker (parms->filter_std / fixed->pix_spacing[2], fw[2]/2);
+    kerx = create_ker (parms->filter_std / fixed->spacing[0], fw[0]/2);
+    kery = create_ker (parms->filter_std / fixed->spacing[1], fw[1]/2);
+    kerz = create_ker (parms->filter_std / fixed->spacing[2], fw[2]/2);
     kernel_stats (kerx, kery, kerz, fw);
 
     /* Initial guess for displacement field */
@@ -171,11 +171,11 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	vf = volume_clone (vf_init);
 	vf_convert_to_planar (vf, f_tex_size*4);
     } else {
-	vf = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_VF_FLOAT_PLANAR, fixed->direction_cosines, f_tex_size*4);
+	vf = volume_create (fixed->dim, fixed->offset, fixed->spacing, PT_VF_FLOAT_PLANAR, fixed->direction_cosines, f_tex_size*4);
     }
 
     /* Allocate the debug volume */
-    debug_vol = volume_create (fixed->dim, fixed->offset, fixed->pix_spacing, PT_FLOAT, fixed->direction_cosines, 0);
+    debug_vol = volume_create (fixed->dim, fixed->offset, fixed->spacing, PT_FLOAT, fixed->direction_cosines, 0);
     ::brook::stream s_debug(::brook::getStreamType(( float4  *)0), f_size , f_size, -1);
  
     /* Allocate memory for the various streams.  At the beginning and end 
@@ -252,8 +252,8 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	    m_dim,	    // volume dimensions
 	    f_offset,	    // fixed image origin
 	    m_offset,	    // moving image origin
-	    f_pix_spacing,  // fixed image voxel size
-	    m_pix_spacing,  // moving image voxel size
+	    f_spacing,  // fixed image voxel size
+	    m_spacing,  // moving image voxel size
 	    st_vf_temp_x);  // output stream
 
 	// Update y component of the displacement field 
@@ -277,8 +277,8 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	    m_dim,	    // volume dimensions
 	    f_offset,	    // fixed image origin
 	    m_offset,	    // moving image origin
-	    f_pix_spacing,  // fixed image voxel size
-	    m_pix_spacing,  // moving image voxel size
+	    f_spacing,  // fixed image voxel size
+	    m_spacing,  // moving image voxel size
 	    st_vf_temp_y);  // output stream
 
 	// Update z component of the displacement field 
@@ -302,8 +302,8 @@ demons_brook_internal (Volume* fixed, Volume* moving, Volume* moving_grad,
 	    m_dim,	    // volume dimensions
 	    f_offset,	    // fixed image origin
 	    m_offset,	    // moving image origin
-	    f_pix_spacing,  // fixed image voxel size
-	    m_pix_spacing,  // moving image voxel size
+	    f_spacing,  // fixed image voxel size
+	    m_spacing,  // moving image voxel size
 	    st_vf_temp_z);  // output stream
 
 	/* GCS Wed Dec 26 16:36:41 EST 2007 
@@ -478,12 +478,12 @@ convolution_test (void)
     Volume *vf1, *vf2;
     int dim[] = { 128, 128, 128 };
     float offset[] = { 0.0, 0.0, 0.0 };
-    float pix_spacing[] = { 1.0, 1.0, 1.0 };
+    float spacing[] = { 1.0, 1.0, 1.0 };
     int i, j, k, v;
     float* img;
     float ker[5] = { 0.1f, 0.2f, 0.4f, 0.2f, 0.1f };
 
-    vf1 = volume_create (dim, offset, pix_spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
+    vf1 = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
     img = (float*) vf1->img;
     printf ("Building random numbers...\n");
     for (k = 0, v = 0; k < dim[2]; k++) {
