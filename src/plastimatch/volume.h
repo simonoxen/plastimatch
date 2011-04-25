@@ -84,12 +84,6 @@ gpuit_EXPORT
 Volume* volume_subsample (Volume* vol_in, int* sampling_rate);
 gpuit_EXPORT
 void volume_scale (Volume *vol, float scale);
-gpuit_EXPORT
-void vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width);
-gpuit_EXPORT
-void vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width);
-gpuit_EXPORT
-void vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width);
 
 gpuit_EXPORT
 void volume_matrix3x3inverse(float *out, float *m);

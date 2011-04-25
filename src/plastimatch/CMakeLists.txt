@@ -139,6 +139,7 @@ SET (GPUIT_LIBRARY_SRC
   string_util.c string_util.h
   threading.c threading.h
   vf.c vf.h
+  vf_convolve.c vf_convolve.h 
   vf_stats.c vf_stats.h 
   volume.c volume.h
   volume_limit.c volume_limit.h

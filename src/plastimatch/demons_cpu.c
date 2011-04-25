@@ -10,6 +10,7 @@
 #include "demons_misc.h"
 #include "mha_io.h"
 #include "plm_timer.h"
+#include "vf_convolve.h"
 #include "volume.h"
 
 int

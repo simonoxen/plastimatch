@@ -110,6 +110,7 @@ volume_create (
     }
     vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
     vol->pix_type = vox_type;
+    vol->vox_planes = vox_planes;
 
     // NSH version of step and proj
     // works ok for matrix, still needs testing for spacing
@@ -128,42 +129,34 @@ volume_create (
     switch (vox_type) {
     case PT_UCHAR:
 	vol->pix_size = sizeof(unsigned char);
-	volume_allocate (vol, min_size);
 	break;
     case PT_SHORT:
 	vol->pix_size = sizeof(short);
-	volume_allocate (vol, min_size);
 	break;
     case PT_UINT16:
 	vol->pix_size = sizeof(uint16_t);
-	volume_allocate (vol, min_size);
 	break;
     case PT_UINT32:
 	vol->pix_size = sizeof(uint32_t);
-	volume_allocate (vol, min_size);
 	break;
     case PT_FLOAT:
 	vol->pix_size = sizeof(float);
-	volume_allocate (vol, min_size);
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
 	vol->pix_size = 3 * sizeof(float);
-	volume_allocate (vol, min_size);
 	break;
     case PT_VF_FLOAT_PLANAR:
 	vol->pix_size = sizeof(float);
-	volume_allocate (vol, min_size);
 	break;
     case PT_UCHAR_VEC_INTERLEAVED:
-	vol->pix_size = sizeof(unsigned char);
-	/* Don't allocate */
-	vol->img = 0;
+	vol->pix_size = vol->vox_planes * sizeof(unsigned char);
 	break;
     default:
 	fprintf (stderr, "Unhandled type in volume_create().\n");
 	exit (-1);
     }
 
+    volume_allocate (vol, min_size);
     return vol;
 }
 
@@ -189,6 +182,7 @@ volume_clone (Volume* ref)
     case PT_UINT32:
     case PT_FLOAT:
     case PT_VF_FLOAT_INTERLEAVED:
+    case PT_UCHAR_VEC_INTERLEAVED:
 	memcpy (vout->img, ref->img, ref->npix * ref->pix_size);
 	break;
     case PT_VF_FLOAT_PLANAR:
@@ -235,6 +229,7 @@ volume_convert_to_float (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to FLOAT\n");
@@ -264,6 +259,7 @@ volume_convert_to_short (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to SHORT\n");
@@ -292,6 +288,7 @@ volume_convert_to_uint16 (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to UINT32\n");
@@ -321,6 +318,7 @@ volume_convert_to_uint32 (Volume* ref)
 	break;
     case PT_VF_FLOAT_INTERLEAVED:
     case PT_VF_FLOAT_PLANAR:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to UINT32\n");
@@ -364,6 +362,7 @@ vf_convert_to_interleaved (Volume* vf)
     case PT_UINT16:
     case PT_UINT32:
     case PT_FLOAT:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupported conversion to VF\n");
@@ -412,6 +411,7 @@ vf_convert_to_planar (Volume* ref, int min_size)
     case PT_SHORT:
     case PT_UINT32:
     case PT_FLOAT:
+    case PT_UCHAR_VEC_INTERLEAVED:
     default:
 	/* Can't convert this */
 	fprintf (stderr, "Sorry, unsupportd conversion to VF\n");
@@ -569,20 +569,23 @@ Volume*
 volume_resample (Volume* vol_in, int* dim, float* offset, float* spacing)
 {
     switch (vol_in->pix_type) {
-	case PT_UCHAR:
-	case PT_SHORT:
-	case PT_UINT32:
-	    fprintf (stderr, "Error, resampling PT_SHORT or PT_UCHAR is unsupported\n");
-	    return 0;
-	case PT_FLOAT:
-	    return volume_resample_float (vol_in, dim, offset, spacing);
-	case PT_VF_FLOAT_INTERLEAVED:
-	    return volume_resample_vf_float_interleaved (vol_in, dim, offset, spacing);
-	case PT_VF_FLOAT_PLANAR:
-	    return volume_resample_vf_float_planar (vol_in, dim, offset, spacing);
-	default:
-	    fprintf (stderr, "Error, unknown pix_type: %d\n", vol_in->pix_type);
-	    return 0;
+    case PT_UCHAR:
+    case PT_SHORT:
+    case PT_UINT32:
+	fprintf (stderr, "Error, resampling PT_SHORT or PT_UCHAR is unsupported\n");
+	return 0;
+    case PT_FLOAT:
+	return volume_resample_float (vol_in, dim, offset, spacing);
+    case PT_VF_FLOAT_INTERLEAVED:
+	return volume_resample_vf_float_interleaved (vol_in, dim, offset, spacing);
+    case PT_VF_FLOAT_PLANAR:
+	return volume_resample_vf_float_planar (vol_in, dim, offset, spacing);
+    case PT_UCHAR_VEC_INTERLEAVED:
+	fprintf (stderr, "Error, resampling PT_UCHAR_VEC_INTERLEAVED is unsupported\n");
+	return 0;
+    default:
+	fprintf (stderr, "Error, unknown pix_type: %d\n", vol_in->pix_type);
+	return 0;
     }
 }
 
@@ -600,7 +603,8 @@ volume_subsample (Volume* vol_in, int* sampling_rate)
 	dim[d] = vol_in->dim[d] / sampling_rate[d];
 	if (dim[d] < 1) dim[d] = 1;
 	spacing[d] = in_size / dim[d];
-	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] + 0.5 * spacing[d]);
+	offset[d] = (float) (vol_in->offset[d] - 0.5 * vol_in->spacing[d] 
+	    + 0.5 * spacing[d]);
     }
     return volume_resample (vol_in, dim, offset, spacing);
 }
@@ -732,127 +736,6 @@ volume_difference (Volume* vol, Volume* warped)
 	}
     }
     return temp;
-}
-
-
-void
-vf_convolve_x (Volume* vf_out, Volume* vf_in, float* ker, int width)
-{
-    int v,x,y,z;
-    int half_width;
-    float *in_img = (float*) vf_in->img;
-    float *out_img = (float*) vf_out->img;
-
-    half_width = width / 2;
-
-    for (v = 0, z = 0; z < vf_in->dim[2]; z++) {
-	for (y = 0; y < vf_in->dim[1]; y++) {
-	    for (x = 0; x < vf_in->dim[0]; x++, v++) {
-		int i, i1;	    /* i is the offset in the vf */
-		int j, j1, j2;	    /* j is the index of the kernel */
-		int d;		    /* d is the vector field direction */
-		float *vin = &in_img[3*v];
-		float *vout = &out_img[3*v];
-
-		j1 = x - half_width;
-		j2 = x + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[0]) {
-		    j2 = vf_in->dim[0] - 1;
-		}
-		i1 = j1 - x;
-		j1 = j1 - x + half_width;
-		j2 = j2 - x + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*3)[d];
-		    }
-		}
-	    }
-	}
-    }
-}
-
-void
-vf_convolve_y (Volume* vf_out, Volume* vf_in, float* ker, int width)
-{
-    int v,x,y,z;
-    int half_width;
-    float *in_img = (float*) vf_in->img;
-    float *out_img = (float*) vf_out->img;
-
-    half_width = width / 2;
-
-    for (v = 0, z = 0; z < vf_in->dim[2]; z++) {
-	for (y = 0; y < vf_in->dim[1]; y++) {
-	    for (x = 0; x < vf_in->dim[0]; x++, v++) {
-		int i, i1;	    /* i is the offset in the vf */
-		int j, j1, j2;	    /* j is the index of the kernel */
-		int d;		    /* d is the vector field direction */
-		float *vin = &in_img[3*v];
-		float *vout = &out_img[3*v];
-
-		j1 = y - half_width;
-		j2 = y + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[1]) {
-		    j2 = vf_in->dim[1] - 1;
-		}
-		i1 = j1 - y;
-		j1 = j1 - y + half_width;
-		j2 = j2 - y + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*vf_in->dim[0]*3)[d];
-		    }
-		}
-	    }
-	}
-    }
-}
-
-void
-vf_convolve_z (Volume* vf_out, Volume* vf_in, float* ker, int width)
-{
-    int v,x,y,z;
-    int half_width;
-    float *in_img = (float*) vf_in->img;
-    float *out_img = (float*) vf_out->img;
-
-    half_width = width / 2;
-
-    for (v = 0, z = 0; z < vf_in->dim[2]; z++) {
-	for (y = 0; y < vf_in->dim[1]; y++) {
-	    for (x = 0; x < vf_in->dim[0]; x++, v++) {
-		int i, i1;	    /* i is the offset in the vf */
-		int j, j1, j2;	    /* j is the index of the kernel */
-		int d;		    /* d is the vector field direction */
-		float *vin = &in_img[3*v];
-		float *vout = &out_img[3*v];
-
-		j1 = z - half_width;
-		j2 = z + half_width;
-		if (j1 < 0) j1 = 0;
-		if (j2 >= vf_in->dim[2]) {
-		    j2 = vf_in->dim[2] - 1;
-		}
-		i1 = j1 - z;
-		j1 = j1 - z + half_width;
-		j2 = j2 - z + half_width;
-
-		for (d = 0; d < 3; d++) {
-		    vout[d] = (float) 0.0;
-		    for (i = i1, j = j1; j <= j2; i++, j++) {
-			vout[d] += ker[j] * (vin+i*vf_in->dim[0]*vf_in->dim[1]*3)[d];
-		    }
-		}
-	    }
-	}
-    }
 }
 
 void volume_matrix3x3inverse (float *out, float *m)
