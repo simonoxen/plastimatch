@@ -111,9 +111,8 @@ main (int argc, char* argv[])
     {
 	printf ("Creating vector field.\n");
 	vector_field = volume_create (fixed->dim, fixed->offset, 
-	    fixed->spacing,
-	    PT_VF_FLOAT_INTERLEAVED, 
-	    fixed->direction_cosines, 0);
+	    fixed->spacing, fixed->direction_cosines, 
+	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
 	if (parms->threading == BTHR_CUDA) {
 #if (CUDA_FOUND)
 	    LOAD_LIBRARY (libplmcuda);

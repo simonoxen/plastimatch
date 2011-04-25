@@ -1367,7 +1367,8 @@ xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* spaci
     Volume* vf_out;
 
     /* GCS FIX: Need direction cosines */
-    vf_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
+    vf_out = volume_create (dim, offset, spacing, 0, 
+	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     bspline_interpolate_vf (vf_out, bxf);
     return vf_out;
 }
@@ -1376,7 +1377,8 @@ Volume*
 xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* spacing)
 {
     /* GCS FIX: Need direction cosines */
-    Volume* vf_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, 0, 0);
+    Volume* vf_out = volume_create (dim, offset, spacing, 0, 
+	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     float* img = (float*) vf_out->img;
     FloatVector3DType displacement;
 

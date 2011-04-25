@@ -162,14 +162,14 @@ plm_warp_native (
     pih->get_direction_cosines (direction_cosines);
     if (vf) {
 	printf ("Creating output vf...\n");
-	vf_out = volume_create (dim, origin, spacing, PT_VF_FLOAT_INTERLEAVED,
-				direction_cosines, 0);
+	vf_out = volume_create (dim, origin, spacing, direction_cosines,
+	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
     }
 
     /* Create output image */
     printf ("Creating output volume...\n");
-    v_out = volume_create (dim, origin, spacing, PT_FLOAT, 
-			   direction_cosines, 0);
+    v_out = volume_create (dim, origin, spacing, direction_cosines, 
+	PT_FLOAT, 1, 0);
 
     /* Warp using gpuit native warper */
     printf ("Running native warper...\n");

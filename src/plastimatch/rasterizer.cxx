@@ -49,7 +49,7 @@ Rasterizer::init (
     /* Create output volume for mask image.  This is reused for each 
        structure */
     this->uchar_vol = volume_create (this->dim, this->origin, 
-	this->spacing, PT_UCHAR, 0, 0);
+	this->spacing, 0, PT_UCHAR, 1, 0);
     if (this->uchar_vol == 0) {
 	print_and_exit ("ERROR: failed in allocating the volume");
     }
@@ -58,7 +58,7 @@ Rasterizer::init (
     this->labelmap_vol = 0;
     if (want_labelmap) {
 	this->labelmap_vol = volume_create (this->dim, 
-	    this->origin, this->spacing, PT_UINT32, 0, 0);
+	    this->origin, this->spacing, 0, PT_UINT32, 1, 0);
 	if (this->labelmap_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}

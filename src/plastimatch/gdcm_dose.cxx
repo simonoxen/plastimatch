@@ -203,7 +203,7 @@ gdcm_dose_load (Plm_image *pli, const char *dose_fn, const char *dicom_dir)
     pli->free ();
 
     /* Create Volume */
-    Volume *vol = volume_create (dim, ipp, spacing, PT_FLOAT, 0, 0);
+    Volume *vol = volume_create (dim, ipp, spacing, 0, PT_FLOAT, 1, 0);
     float *img = (float*) vol->img;
 
     /* PixelData */

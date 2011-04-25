@@ -32,7 +32,7 @@ struct volume
     float inverse_direction_cosines[9];
 
     enum Volume_pixel_type pix_type;	// Voxel Data type
-    int pix_planes;                     // # planes per voxel
+    int vox_planes;                     // # planes per voxel
     int pix_size;		        // # bytes per voxel
     void* img;			        // Voxel Data
 };
@@ -48,8 +48,9 @@ volume_create (
     int dim[3], 
     float offset[3], 
     float spacing[3], 
-    enum Volume_pixel_type pix_type, 
-    float direction_cosines[9],
+    float direction_cosines[9], 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes, 
     int min_size
 );
 gpuit_EXPORT

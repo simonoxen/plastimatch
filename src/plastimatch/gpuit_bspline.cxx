@@ -153,9 +153,8 @@ do_gpuit_bspline_stage_internal (
 	logfile_printf("Trying to warp landmarks, output file: %s\n",
 	    stage->warped_landmarks_fn);
 	vector_field = volume_create (fixed_ss->dim, fixed_ss->offset, 
-	    fixed_ss->spacing,
-	    PT_VF_FLOAT_INTERLEAVED, 
-	    fixed_ss->direction_cosines, 0);
+	    fixed_ss->spacing, fixed_ss->direction_cosines, 
+	    PT_VF_FLOAT_INTERLEAVED, 3, 0);
 	bspline_interpolate_vf (vector_field, xf_out->get_gpuit_bsp() );
 	if (vector_field) {
 	    bspline_landmarks_warp (vector_field, &parms, 

@@ -44,82 +44,10 @@ volume_index (int* dims, int i, int j, int k)
     return i + (dims[0] * (j + dims[1] * k));
 }
 
-Volume*
-volume_create (
-    int dim[3], 
-    float offset[3], 
-    float spacing[3], 
-    enum Volume_pixel_type pix_type, 
-    float direction_cosines[9],
-    int min_size
-)
+void
+volume_allocate (Volume *vol, int min_size)
 {
-    int i, j;
-    Volume* vol = (Volume*) malloc (sizeof(Volume));
-    if (!vol) {
-	fprintf (stderr, "Memory allocation failed.\n");
-	exit(1);
-    }
-
-    memset (vol, 0, sizeof(Volume));
-    for (i = 0; i < 3; i++) {
-	vol->dim[i] = dim[i];
-	vol->offset[i] = offset[i];
-	vol->spacing[i] = spacing[i];
-    }
-    if (direction_cosines) {
-	memcpy (vol->direction_cosines, direction_cosines, 
-	    sizeof(vol->direction_cosines));
-    } else {
-	vol->direction_cosines[0] = 1.0f;
-	vol->direction_cosines[4] = 1.0f;
-	vol->direction_cosines[8] = 1.0f;
-    }
-    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
-    vol->pix_type = pix_type;
-
-    // NSH version of step and proj
-    // works ok for matrix, still needs testing for spacing
-    volume_matrix3x3inverse (vol->inverse_direction_cosines, 
-	vol->direction_cosines);
-
-    for (i = 0; i < 3; i++) {
-	for (j = 0; j < 3; j++) {
-	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
-		* vol->spacing[j];
-	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
-		/ vol->spacing[i];
-	}
-    }
-
-    switch (pix_type) {
-    case PT_UCHAR:
-	vol->pix_size = sizeof(unsigned char);
-	break;
-    case PT_SHORT:
-	vol->pix_size = sizeof(short);
-	break;
-    case PT_UINT16:
-	vol->pix_size = sizeof(uint16_t);
-	break;
-    case PT_UINT32:
-	vol->pix_size = sizeof(uint32_t);
-	break;
-    case PT_FLOAT:
-	vol->pix_size = sizeof(float);
-	break;
-    case PT_VF_FLOAT_INTERLEAVED:
-	vol->pix_size = 3 * sizeof(float);
-	break;
-    case PT_VF_FLOAT_PLANAR:
-	vol->pix_size = sizeof(float);
-	break;
-    default:
-	fprintf (stderr, "Unhandled type in volume_create().\n");
-	exit (-1);
-    }
-
-    if (pix_type == PT_VF_FLOAT_PLANAR) {
+    if (vol->pix_type == PT_VF_FLOAT_PLANAR) {
 	int i;
 	int alloc_size = min_size;
 	float** der = (float**) malloc (3*sizeof(float*));
@@ -146,6 +74,95 @@ volume_create (
 	}
 	memset (vol->img, 0, vol->pix_size * vol->npix);
     }
+}
+
+Volume*
+volume_create (
+    int dim[3], 
+    float offset[3], 
+    float spacing[3], 
+    float direction_cosines[9], 
+    enum Volume_pixel_type vox_type, 
+    int vox_planes, 
+    int min_size
+)
+{
+    int i, j;
+    Volume* vol = (Volume*) malloc (sizeof(Volume));
+    if (!vol) {
+	fprintf (stderr, "Memory allocation failed.\n");
+	exit(1);
+    }
+
+    memset (vol, 0, sizeof(Volume));
+    for (i = 0; i < 3; i++) {
+	vol->dim[i] = dim[i];
+	vol->offset[i] = offset[i];
+	vol->spacing[i] = spacing[i];
+    }
+    if (direction_cosines) {
+	memcpy (vol->direction_cosines, direction_cosines, 
+	    sizeof(vol->direction_cosines));
+    } else {
+	vol->direction_cosines[0] = 1.0f;
+	vol->direction_cosines[4] = 1.0f;
+	vol->direction_cosines[8] = 1.0f;
+    }
+    vol->npix = vol->dim[0] * vol->dim[1] * vol->dim[2];
+    vol->pix_type = vox_type;
+
+    // NSH version of step and proj
+    // works ok for matrix, still needs testing for spacing
+    volume_matrix3x3inverse (vol->inverse_direction_cosines, 
+	vol->direction_cosines);
+
+    for (i = 0; i < 3; i++) {
+	for (j = 0; j < 3; j++) {
+	    vol->step[i][j] = vol->direction_cosines[3*i+j] 
+		* vol->spacing[j];
+	    vol->proj[i][j] = vol->inverse_direction_cosines[3*i+j] 
+		/ vol->spacing[i];
+	}
+    }
+
+    switch (vox_type) {
+    case PT_UCHAR:
+	vol->pix_size = sizeof(unsigned char);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_SHORT:
+	vol->pix_size = sizeof(short);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_UINT16:
+	vol->pix_size = sizeof(uint16_t);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_UINT32:
+	vol->pix_size = sizeof(uint32_t);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_FLOAT:
+	vol->pix_size = sizeof(float);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_VF_FLOAT_INTERLEAVED:
+	vol->pix_size = 3 * sizeof(float);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_VF_FLOAT_PLANAR:
+	vol->pix_size = sizeof(float);
+	volume_allocate (vol, min_size);
+	break;
+    case PT_UCHAR_VEC_INTERLEAVED:
+	vol->pix_size = sizeof(unsigned char);
+	/* Don't allocate */
+	vol->img = 0;
+	break;
+    default:
+	fprintf (stderr, "Unhandled type in volume_create().\n");
+	exit (-1);
+    }
 
     return vol;
 }
@@ -155,7 +172,7 @@ volume_clone_empty (Volume* ref)
 {
     Volume* vout;
     vout = volume_create (ref->dim, ref->offset, ref->spacing, 
-	ref->pix_type, ref->direction_cosines, 0);
+	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
     return vout;
 }
 
@@ -164,7 +181,7 @@ volume_clone (Volume* ref)
 {
     Volume* vout;
     vout = volume_create (ref->dim, ref->offset, ref->spacing, 
-	ref->pix_type, ref->direction_cosines, 0);
+	ref->direction_cosines, ref->pix_type, ref->vox_planes, 0);
     switch (ref->pix_type) {
     case PT_UCHAR:
     case PT_SHORT:
@@ -422,8 +439,7 @@ vf_pad_planar (Volume* vol, int size)
 
 /* Nearest neighbor interpolation */
 static Volume*
-volume_resample_float (Volume* vol_in, int* dim, 
-		      float* offset, float* spacing)
+volume_resample_float (Volume* vol_in, int* dim, float* offset, float* spacing)
 {
     int i, j, k, v;
     float x, y, z;
@@ -434,7 +450,8 @@ volume_resample_float (Volume* vol_in, int* dim,
     float val;
     float default_val = 0.0f;
 
-    vol_out = volume_create (dim, offset, spacing, PT_FLOAT, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+	PT_FLOAT, 1, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -475,7 +492,8 @@ volume_resample_vf_float_interleaved (Volume* vol_in, int* dim,
     float* val;
     float default_val[3] = { 0.0f, 0.0f, 0.0f };
 
-    vol_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_INTERLEAVED, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+	PT_VF_FLOAT_INTERLEAVED, 3, 0);
     in_img = (float*) vol_in->img;
     out_img = (float*) vol_out->img;
 
@@ -516,7 +534,8 @@ volume_resample_vf_float_planar (Volume* vol_in, int* dim,
     Volume* vol_out;
     float **in_img, **out_img;
 
-    vol_out = volume_create (dim, offset, spacing, PT_VF_FLOAT_PLANAR, vol_in->direction_cosines, 0);
+    vol_out = volume_create (dim, offset, spacing, vol_in->direction_cosines, 
+	PT_VF_FLOAT_PLANAR, 3, 0);
     in_img = (float**) vol_in->img;
     out_img = (float**) vol_out->img;
 
@@ -707,7 +726,7 @@ volume_make_gradient (Volume* ref)
 {
     Volume *grad;
     grad = volume_create (ref->dim, ref->offset, ref->spacing, 
-			  PT_VF_FLOAT_INTERLEAVED, ref->direction_cosines, 0);
+	ref->direction_cosines, PT_VF_FLOAT_INTERLEAVED, 3, 0);
     volume_calc_grad (grad, ref);
 
     return grad;
