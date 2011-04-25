@@ -78,7 +78,7 @@ Rasterizer::init (
     this->ss_img_vol = 0;
     if (want_ss_img) {
 	this->ss_img_vol = volume_create (this->dim, 
-	    this->origin, this->spacing, PT_UINT32, 0, 0);
+	    this->origin, this->spacing, 0, PT_UINT32, 1, 0);
 	if (this->ss_img_vol == 0) {
 	    print_and_exit ("ERROR: failed in allocating the volume");
 	}
