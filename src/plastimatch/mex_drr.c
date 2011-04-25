@@ -69,7 +69,8 @@ mexFunction (
           1.0, 0.0, 0.0,
           0.0, 1.0, 0.0,
           0.0, 0.0, 1.0 };
-    vol = volume_create (dim, offset, spacing, pix_type, direction_cosines, 0);
+    vol = volume_create (dim, offset, spacing, direction_cosines, 
+	pix_type, 1, 0);
 
     /* Fill in the CT volume with values */
     float *img = (float*) vol->img;
