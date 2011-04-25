@@ -218,7 +218,7 @@ plm_warp_native_vec (
     float direction_cosines[9];
 
     /* Convert input image to gpuit format */
-    printf ("Running: plm_warp_native\n");
+    printf ("Running: plm_warp_native_vec\n");
     printf ("Converting input image...\n");
     Volume *v_in = im_in->gpuit_uchar_vec ();
 
@@ -238,7 +238,7 @@ plm_warp_native_vec (
     }
 
     /* Create output image */
-    printf ("Creating output volume...\n");
+    printf ("Creating output volume (%d planes)...\n", v_in->vox_planes);
     v_out = volume_create (dim, origin, spacing, direction_cosines, 
 	PT_UCHAR_VEC_INTERLEAVED, v_in->vox_planes, 0);
 
