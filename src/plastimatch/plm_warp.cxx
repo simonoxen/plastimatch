@@ -195,7 +195,7 @@ plm_warp_native (
 }
 
 /* Native vector warping (only gpuit bspline + uchar_vec) */
-#if PLM_CONFIG_NATIVE_UCHAR_VEC_WARP
+#if PLM_USE_SS_IMAGE_VEC
 static void
 plm_warp_native_vec (
     Plm_image *im_warped,                 /* Output */
@@ -299,7 +299,7 @@ plm_warp (
 	    plm_warp_native (im_warped, vf, xf_in, pih, im_in, default_val,
 		interp_lin);
 	    break;
-#if PLM_CONFIG_NATIVE_UCHAR_VEC_WARP
+#if PLM_USE_SS_IMAGE_VEC
 	case PLM_IMG_TYPE_ITK_UCHAR_VEC:
 	case PLM_IMG_TYPE_GPUIT_UCHAR_VEC:
 	    plm_warp_native_vec (im_warped, vf, xf_in, pih, im_in, 
