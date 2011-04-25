@@ -15,11 +15,10 @@
 #define CMAKE_SIZEOF_ULONG @CMAKE_SIZEOF_ULONG@
 #define CMAKE_WORDS_BIGENDIAN @CMAKE_WORDS_BIGENDIAN@
 
-/* Plastimatch attributes */
+/* Plastimatch version attributes */
 #define PLASTIMATCH_BUILD_NUMBER "@PLASTIMATCH_SVN_VERSION@"
 #cmakedefine PLASTIMATCH_HAVE_BUILD_NUMBER 1
 #cmakedefine PLM_CONFIG_VERSION_STRING "@PLM_CONFIG_VERSION_STRING@"
-#cmakedefine PLM_CONFIG_NATIVE_UCHAR_VEC_WARP 1
 
 /* External libraries */
 #cmakedefine BROOK_FOUND 1
@@ -38,6 +37,7 @@
 #cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
 #cmakedefine BUILD_SHARED_LIBS 1
 #cmakedefine PLM_BUILD_SHARED_LIBS 1
+#cmakedefine PLM_CONFIG_NATIVE_UCHAR_VEC_WARP 1
 #cmakedefine PLM_USE_SS_IMAGE_VEC 1
 #cmakedefine PLM_USE_GPU_PLUGINS 1
 
