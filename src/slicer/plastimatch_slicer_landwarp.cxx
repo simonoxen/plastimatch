@@ -19,7 +19,6 @@
 #include "print_and_exit.h"
 #include "rbf_gauss.h"
 #include "rbf_wendland.h"
-#include "rbf_gcs.h"
 
 // this .h is generated from ...landwarp.xml file by GenerateCLP in Slicer3-build
 #include "plastimatch_slicer_landwarpCLP.h"
