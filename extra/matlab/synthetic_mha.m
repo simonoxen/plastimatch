@@ -1,4 +1,4 @@
-function synthetic_mha(fn,type,options)
+function A=synthetic_mha(fn,type,options)
 % function synthetic_mha(fn,type,options)
 %
 % Type: either rect, gaussian, or sphere

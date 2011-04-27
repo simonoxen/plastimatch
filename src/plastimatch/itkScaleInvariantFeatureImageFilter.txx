@@ -661,7 +661,6 @@ namespace itk
     fixedImage->TransformPhysicalPointToIndex(point, pixelIndex);
     
 #if 0
-    //Per Chiara: 0 --> opzione di ruotare rispetto al centro del volume dell'immagine (vedi main)
     // Only iterate through the region that is within 3 sigma of the mean
     
     IndexType regionStart;
@@ -820,19 +819,18 @@ template <class TFixedImageType, int VDimension>
    
    scaler->SetOutputOrigin( fixedImage->GetOrigin() );
    
-   //Orientazione
-   
-TFixedImageType::DirectionType direction;
-direction.SetIdentity();
-direction = fixedImage->GetDirection();
+   //Orientation
+   typename TFixedImageType::DirectionType direction;
+   direction.SetIdentity();
+   direction = fixedImage->GetDirection();
 scaler->SetOutputDirection( fixedImage->GetDirection() );
 
   
         
-    //INTERPOLAZIONE
+    //Interpolation
  typedef itk::LinearInterpolateImageFunction< TFixedImageType, double >  InterpolatorType;
  
- InterpolatorType::Pointer interpolator = InterpolatorType::New();
+ typename InterpolatorType::Pointer interpolator = InterpolatorType::New();
  scaler->SetInterpolator( interpolator );
  scaler->SetDefaultPixelValue( 0 );
  scaler->SetTransform( m_IdentityTransform );
@@ -942,11 +940,11 @@ scaler->SetOutputDirection( fixedImage->GetDirection() );
 
     float currScale = 0.5;
 
-    // For each scale / per ogni ottava
+    // For each scale
     for (unsigned int i = 0; i < m_ImageScalesTestedNumber; ++i) {
       std::cout << "Computing Scale Level (ottava) " << i << "... (";
 
-typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //creo un nuovo filtro gaussiano per il filreo antialiasing
+typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //this is a new gaussian filter for aliasing correction
 
 
       if (i == 0 && !m_DoubleOriginalImage) {
@@ -955,7 +953,7 @@ typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New
 	if (i == 0) {
 	  // Input is the fixed Image.  
 	  
-// Filtro antialiasing: sigma=0.5;
+//Antialiasing filter: sigma=0.5;
 //this->writeImage(fixedImage, "pippoIngresso.mha");	  
 
 //double variance = (double)m_sigma_aliasing*m_sigma_aliasing;
@@ -973,13 +971,8 @@ std::cerr << excep << std::endl;
 }
 
 scaleImage[i] = tmpGaussianFilter->GetOutput();
-scaler[i] = getScaleResampleFilter ( scaleImage[i], m_ScalingFactor ); //NBBBBBBB: se toglo // e faccio filtro devo mettere scaleImage[i] al posto di fixedImage
-
-// in questo modo ottengo un'immagine con sigma=1. devo applicare ora un ulteriore filtro con sigma=1 x' sovracampionando metto rumore
-
-typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //creo un nuovo filtro gaussiano
-
-
+scaler[i] = getScaleResampleFilter ( scaleImage[i], m_ScalingFactor ); 
+typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //now we need to filetr with sigma == 1 because we doubled the size of the image
 
 double variance1 = 1*1;
 tmpGaussianFilter->SetVariance(variance1);
@@ -1000,7 +993,6 @@ scaleImage[i] = tmpGaussianFilter->GetOutput();
 	  
 	} else {
 	  // Input is the 2*sigma smoothed image from the previous octave
-	  // prendo l'immagine della 3^ scala perchè è quella con sigma=2, quindi poi sottocampionando mi riporto a un'immagine con sigma=1
 	  scaler[i] = getScaleResampleFilter ( gaussianImage[m_DifferenceOfGaussianTestsNumber] , 1.0 / m_ScalingFactor );
 	}
 	scaleImage[i] = scaler[i]->GetOutput();
@@ -1065,7 +1057,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
       std::cout << "...Done\n";
 #endif
 
-      // ...Compute Gaussians / ciclo sulle scale dell'ottava
+      // ...Compute Gaussians
       for (unsigned int j = 0; j < m_GaussianImagesNumber; ++j) {
 #ifdef VERBOSE
 	std::cout << "Setting Up Gaussian Filter " << i << "-" << j << "...";
@@ -1193,7 +1185,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	ImageIteratorType pixelIt(dogImage[j],
 				  itregion);
       
-      // iterazione sui pixel
+      // this iterates on the pixels
 	for ( pixelIt.GoToBegin(); !pixelIt.IsAtEnd(); ++pixelIt) {
 	  // Make sure to start sufficiently into the image so that all
 	  // neighbours are present
@@ -1248,7 +1240,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	  }
 	  if (!isMax && !isMin) continue;
 	    
-	  // Check if it is sufficiently large (absolute value) //soglia su contrasto
+	  // Check if it is sufficiently large (absolute value) - thresholding on image contrast
 	  if (fabs(pixelValue) < m_MinKeypointValue) {
 	    ++numReject;
 	    continue;
@@ -1276,8 +1268,8 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	  if (isMax) {
 	    // Maxima detected.  
 	    ++numMax;
-	    //std::cout << "massimo: "<< point << std::endl;
-	   //std::cout << "massimo: "<< pixelIndex << std::endl;
+	    //std::cout << "max phys coord: "<< point << std::endl;
+	   //std::cout << "max image coord: "<< pixelIndex << std::endl;
 	   
 	   pFile=fopen("physicalcoord_max.fcsv","a");
 		pFile1=fopen("imagecoord_max.fcsv","a");
@@ -1308,8 +1300,8 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	  if (isMin) {
 	    // Minima detected.  
 	    ++numMin;
-	    //std::cout << "minimo: "<< point << std::endl;
-	    //std::cout << "minimo: "<< pixelIndex << std::endl;
+	    //std::cout << "min phys coord: "<< point << std::endl;
+	    //std::cout << "min image coord: "<< pixelIndex << std::endl;
 	    pFile=fopen("physicalcoord_min.fcsv","a");
 		pFile1=fopen("imagecoord_min.fcsv","a");
 	  
@@ -1336,7 +1328,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	    std::cout << "Found Minima! ";
 #endif
 	  }
-	  //std::cout << "scala corrente: "<< currScale << std::endl;
+	  //std::cout << "current scale: "<< currScale << std::endl;
 	}
 #ifdef VERBOSE
 	std::cout << "Acc. Num Max: " << numMax 

@@ -344,7 +344,7 @@ std::cout<<"crop "<< cropsize[0]<<" " <<cropsize[1]<<std::endl;
 //direction.SetIdentity();
 //direction = fixedImage->GetDirection();
 scaler->SetOutputDirection( fixedImage->GetDirection() );
-//interpolazione
+//interpolate
 typedef itk::LinearInterpolateImageFunction< FixedImageType, double >  InterpolatorType;
 InterpolatorType::Pointer interpolator = InterpolatorType::New();
 scaler->SetInterpolator( interpolator );
