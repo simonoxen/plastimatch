@@ -79,6 +79,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "itkScaleInvariantFeatureImageFilter.h"
 #include <cstdio>
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+#include "itkImage.h"
+#include <itkLinearInterpolateImageFunction.h>
 
 #ifndef SIFTKEY_CLASS
 #define SIFTKEY_CLASS
@@ -100,17 +104,18 @@ namespace itk
     m_ImageScalesTestedNumber = 3;
 #endif
     m_ScalingFactor = 2.0;
-    m_DifferenceOfGaussianTestsNumber = 3;
+    m_DifferenceOfGaussianTestsNumber = 3; //2
 #ifdef DO_DOUBLE
     m_DoubleOriginalImage = true;
 #else
-    m_DoubleOriginalImage = false;
+    m_DoubleOriginalImage = true;
 #endif
     m_HistogramBinsNumber = 36;      
     m_ErrorThreshold = 0.0;
     m_MaxFeatureDistanceRatio = 0.8;
+	//m_SigmaAliasing=0.5;
     m_GaussianSigma = 1.5;  
-    m_MinKeypointValue = 0.0075;
+    m_MinKeypointValue = 0.0075; //0.03
     m_SIFTHalfWidth = 8;  // This MUST be a multiple of m_SIFTSubfeatureWidth
     m_SIFTSubfeatureWidth = 4;
     m_SIFTSubfeatureBins = 8;
@@ -239,9 +244,20 @@ namespace itk
       
       bin += tmp * binpos;
       binpos *= (m_SIFTHalfWidth * 2 / m_SIFTSubfeatureWidth );
+      
+      
+      //std::cout << "... tmp,bin,binpos( ";
+	  //std::cout << tmp << " \n";
+	  //std::cout << bin << " \n";
+	  //std::cout << binpos<< " \n";      
     }
+    
     for (unsigned int i = 1; i < VDimension; ++i)
+    {
       bin *= m_SIFTSubfeatureBins;
+      //std::cout << "bin_end: "<< bin << std::endl;
+      }
+    
     
 #ifdef DEBUG_VERBOSE
     std::cerr << "\n";
@@ -269,6 +285,8 @@ namespace itk
     int delta[VDimension];
     for (int k = 0; k < VDimension; ++k) {
       delta[k] = -m_SIFTHalfWidth;
+      //std::cout << "delta: "<< delta[k] << std::endl;
+      
     }
 
     typename GradientImageType::SizeType regionSize = 
@@ -276,6 +294,7 @@ namespace itk
     
     while(1) {
       unsigned int siftbin = this->DeltaToSiftIndex(delta);
+      //std::cout << "Siftbin: "<< siftbin << std::endl;
       
 #ifdef DEBUG_VERBOSE
       std::cerr << "Siftbin:" << siftbin << std::endl; 
@@ -292,6 +311,7 @@ namespace itk
 	  if (tmpIndex[k] >= regionSize[k])
 	    tmpIndex[k] = regionSize[k]-1;
 	}
+	//std::cout << "tmpIndex: "<< tmpIndex[k] << std::endl;
       }
       
 #ifdef DEBUG_VERBOSE
@@ -319,9 +339,15 @@ namespace itk
 	  std::cout << " " << p;
 #endif
 	  binpos *= m_SIFTSubfeatureBins;
+	  //std::cout << "p: "<< p << std::endl;
+	  //std::cout << "bin: "<< bin << std::endl;
+	  //std::cout << "binpos: "<< binpos << std::endl;
+	  
 	}
       
       bin += siftbin;
+       //std::cout << "bin_aggiornato: "<< bin << std::endl;
+      
       
       // Fill Sift Index bin
       if (bin > this->SiftFeatureSize()) {
@@ -539,12 +565,19 @@ namespace itk
 	
 	typename TFixedImageType::PixelType tmpValue = 
 	  image->GetPixel(tmpIndex);
+	  
+
 	
 #ifdef DEBUG_VERBOSE
 	std::cout << "...Comparing to ( ";
+	
 	for (int k = 0; k < VDimension; ++k)
+	{
 	  std::cout << tmpIndex[k] << " ";
-	std::cout << ") = " << tmpValue << "\n";
+	  std::cout << pixelIndex[k] << " ";
+	  std::cout << delta[k] << "\n";
+	//std::cout << ") = " << tmpValue << "\n";
+	}
 #endif  
 	// Treat as equality if within the error bound
 	if (((tmpValue - pixelValue) <= m_ErrorThreshold) && 
@@ -569,6 +602,8 @@ namespace itk
 	}
 	if (delta[k] < 1) {
 	  ++delta[k];
+	  //std::cout << "...incremento delta ( ";
+	  //std::cout << delta[k] << " \n";
 	  break;
 	}
 	delta[k] = -1; // reset and increment the next pos
@@ -617,7 +652,7 @@ namespace itk
     // Simulate the 16x16 Gaussian window descriptor
     // use sigma equal to half the descriptor window width
     for (int i = 0; i < VDimension; ++i)
-      sigma[i] = 8.0;
+      sigma[i] = 8.00;
     gaussImgSource->SetSigma(sigma);
     
     gaussImgSource->Update();
@@ -665,46 +700,94 @@ namespace itk
   
 #endif
 
-  template <class TFixedImageType, int VDimension> 
+
+template <class TFixedImageType, int VDimension> 
   void
   ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
   ::writeImage(FixedImagePointer fixedImage, const char *filename)
   {
-    
-    if (VDimension != 2) return;
-    
-    typedef itk::Image< unsigned char, VDimension >  OutImageType;
-    typedef typename itk::ImageFileWriter< OutImageType  >  FixedWriterType;
-    typedef  itk::ResampleImageFilter< TFixedImageType,  OutImageType    >    
-      OutResampleFilterType;
+  
+  //typedef short      PixelType;
+ typedef itk::Image< float, VDimension >    myImageType;
+  typedef itk::ImageFileWriter< myImageType >  myWriterType;
+  typedef  itk::ResampleImageFilter< TFixedImageType,  myImageType    >    myResampleFilterType;
     
     
-    typename OutResampleFilterType::Pointer resampler = 
-      OutResampleFilterType::New();
+  typename myResampleFilterType::Pointer resampler = myResampleFilterType::New();
     
-    resampler->SetSize( fixedImage->GetLargestPossibleRegion().GetSize() );
-    resampler->SetOutputSpacing( fixedImage->GetSpacing() );
-    resampler->SetTransform(m_IdentityTransform);
-    resampler->SetInput(fixedImage);
-    
-    typename FixedWriterType::Pointer fixedWriter = FixedWriterType::New();
-    
-    fixedWriter->SetFileName(filename);
-    fixedWriter->SetInput( resampler->GetOutput() );
-    
-    std::cout << "[Writing file << " << filename << "]";
-    
-    try 
-      {
-	fixedWriter->Update();
-      }
-    catch( itk::ExceptionObject & excep )
-      {
-	std::cerr << "Exception caught !" << std::endl;
-	std::cerr << excep << std::endl;
-      }
+  resampler->SetSize( fixedImage->GetLargestPossibleRegion().GetSize() );
+  resampler->SetOutputSpacing( fixedImage->GetSpacing() );
+  resampler->SetOutputOrigin( fixedImage->GetOrigin());
+  resampler->SetTransform(m_IdentityTransform);
+  resampler->SetInput(fixedImage);
+  
+  typename myWriterType::Pointer writer = myWriterType::New();
+  
+ // const char * outputFilename = filename;
+  
+  writer->SetFileName( filename ); //outputFilename
+  //writer->SetInput( fixedImage);
+  writer->SetInput( resampler->GetOutput());
+  
+  std::cout << "[Writing file << " << filename << "]";
 
-  }
+   try 
+    { 
+    writer->Update(); 
+    } 
+  catch( itk::ExceptionObject & err ) 
+    { 
+    std::cerr << "ExceptionObject caught !" << std::endl; 
+    std::cerr << err << std::endl; 
+    //return EXIT_FAILURE;
+    } 
+}
+
+
+
+
+
+
+  //template <class TFixedImageType, int VDimension> 
+  //void
+  //ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
+  //::writeImage(FixedImagePointer fixedImage, const char *filename)
+  //{
+    
+    //if (VDimension != 2) return;
+    
+    //typedef itk::Image< unsigned char, VDimension >  OutImageType;
+    //typedef typename itk::ImageFileWriter< OutImageType  >  FixedWriterType;
+    //typedef  itk::ResampleImageFilter< TFixedImageType,  OutImageType    >    
+      //OutResampleFilterType;
+    
+    
+    //typename OutResampleFilterType::Pointer resampler = 
+      //OutResampleFilterType::New();
+    
+    //resampler->SetSize( fixedImage->GetLargestPossibleRegion().GetSize() );
+    //resampler->SetOutputSpacing( fixedImage->GetSpacing() );
+    //resampler->SetTransform(m_IdentityTransform);
+    //resampler->SetInput(fixedImage);
+    
+  //  typename FixedWriterType::Pointer fixedWriter = FixedWriterType::New();
+    
+    //fixedWriter->SetFileName(filename);
+    //fixedWriter->SetInput( resampler->GetOutput() );
+    
+    //std::cout << "[Writing file << " << filename << "]";
+    
+    //try 
+   //   {
+	//fixedWriter->Update();
+      //}
+    //catch( itk::ExceptionObject & excep )
+      //{
+	//std::cerr << "Exception caught !" << std::endl;
+	//std::cerr << excep << std::endl;
+      //}
+
+  //}
   
   // create a filter that resamples the image (scale up or down) 
   template <class TFixedImageType, int VDimension> 
@@ -715,25 +798,45 @@ namespace itk
     typename ResampleFilterType::Pointer scaler = ResampleFilterType::New();
     
     scaler->SetInput( fixedImage );
-    
-	
+   	
     // Change the size of the image
-    typename TFixedImageType::SizeType size = 
-      fixedImage->GetLargestPossibleRegion().GetSize();
+    typename TFixedImageType::SizeType size = fixedImage->GetLargestPossibleRegion().GetSize();
     for (int k = 0; k < VDimension; ++k)
       size[k] = (unsigned int) floor(size[k] * scale);
     scaler->SetSize( size );
+    //std::cout << " VDIM: " << VDimension << std::endl;
+    //std::cout << " NUOVA SIZE: " << size[0] << " " << size[1] << std::endl;
 
     // Change the spacing
-    typename TFixedImageType::SpacingType spacing = 
-      fixedImage->GetSpacing();
+    typename TFixedImageType::SpacingType spacing = fixedImage->GetSpacing();
     for (int k = 0; k < VDimension; ++k)
       spacing[k] = (spacing[k] / scale);
     scaler->SetOutputSpacing( spacing );
 
-    scaler->SetTransform( m_IdentityTransform );
-    scaler->SetDefaultPixelValue( 100 );
-    scaler->Update();
+    std::cout << " SPACING AFTER RESAMPLE: " << spacing[0] << " " << spacing[1] << std::endl;
+    
+    //Origin
+    typename TFixedImageType::PointType origin = fixedImage->GetOrigin();
+   
+   scaler->SetOutputOrigin( fixedImage->GetOrigin() );
+   
+   //Orientazione
+   
+TFixedImageType::DirectionType direction;
+direction.SetIdentity();
+direction = fixedImage->GetDirection();
+scaler->SetOutputDirection( fixedImage->GetDirection() );
+
+  
+        
+    //INTERPOLAZIONE
+ typedef itk::LinearInterpolateImageFunction< TFixedImageType, double >  InterpolatorType;
+ 
+ InterpolatorType::Pointer interpolator = InterpolatorType::New();
+ scaler->SetInterpolator( interpolator );
+ scaler->SetDefaultPixelValue( 0 );
+ scaler->SetTransform( m_IdentityTransform );
+ scaler->Update();
     
     return scaler;
   }
@@ -839,21 +942,77 @@ namespace itk
 
     float currScale = 0.5;
 
-    // For each scale
+    // For each scale / per ogni ottava
     for (unsigned int i = 0; i < m_ImageScalesTestedNumber; ++i) {
-      std::cout << "Computing Scale Level " << i << "... (";
+      std::cout << "Computing Scale Level (ottava) " << i << "... (";
+
+typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //creo un nuovo filtro gaussiano per il filreo antialiasing
+
 
       if (i == 0 && !m_DoubleOriginalImage) {
 	scaleImage[0] = fixedImage;
       } else {
 	if (i == 0) {
 	  // Input is the fixed Image.  
-	  scaler[i] = getScaleResampleFilter ( fixedImage, m_ScalingFactor );
+	  
+// Filtro antialiasing: sigma=0.5;
+//this->writeImage(fixedImage, "pippoIngresso.mha");	  
+
+//double variance = (double)m_sigma_aliasing*m_sigma_aliasing;
+double variance = 0.5*0.5;
+tmpGaussianFilter->SetVariance(variance);
+tmpGaussianFilter->SetInput( fixedImage );
+//pixel-wise smoothing
+tmpGaussianFilter->SetUseImageSpacing(false); 
+try {
+  tmpGaussianFilter->Update();
+}
+catch( itk::ExceptionObject & excep ) {
+std::cerr << "Exception caught !" << std::endl;
+std::cerr << excep << std::endl;
+}
+
+scaleImage[i] = tmpGaussianFilter->GetOutput();
+scaler[i] = getScaleResampleFilter ( scaleImage[i], m_ScalingFactor ); //NBBBBBBB: se toglo // e faccio filtro devo mettere scaleImage[i] al posto di fixedImage
+
+// in questo modo ottengo un'immagine con sigma=1. devo applicare ora un ulteriore filtro con sigma=1 x' sovracampionando metto rumore
+
+typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //creo un nuovo filtro gaussiano
+
+
+
+double variance1 = 1*1;
+tmpGaussianFilter->SetVariance(variance1);
+tmpGaussianFilter->SetInput( scaleImage[i] );
+ //pixel-wise smoothing
+tmpGaussianFilter->SetUseImageSpacing(false); 
+
+try {
+tmpGaussianFilter->Update();
+}
+catch( itk::ExceptionObject & excep ) {
+  std::cerr << "Exception caught !" << std::endl;
+ std::cerr << excep << std::endl;
+}
+
+scaleImage[i] = tmpGaussianFilter->GetOutput();
+
+	  
 	} else {
 	  // Input is the 2*sigma smoothed image from the previous octave
+	  // prendo l'immagine della 3^ scala perchè è quella con sigma=2, quindi poi sottocampionando mi riporto a un'immagine con sigma=1
 	  scaler[i] = getScaleResampleFilter ( gaussianImage[m_DifferenceOfGaussianTestsNumber] , 1.0 / m_ScalingFactor );
 	}
 	scaleImage[i] = scaler[i]->GetOutput();
+	
+	
+typename TFixedImageType::SpacingType spacing = scaleImage[i]->GetSpacing();
+typename TFixedImageType::PointType origin = scaleImage[i]->GetOrigin();
+typename TFixedImageType::DirectionType direction = scaleImage[i]->GetDirection();
+
+std::cout << " SPACING AFTER ALIAS: " << spacing[0] << " " << spacing[1] <<" "<< spacing[2] <<std::endl;
+std::cout << " ORIGIN AFTER ALIAS: " << origin[0] << " " << origin[1] <<" "<< origin[2] <<std::endl;	
+std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
       }
 
       {
@@ -864,6 +1023,8 @@ namespace itk
       }
     
       std::cout << ") Done\n";
+      
+           
 
 #ifdef DEBUG
       char filename[256];
@@ -904,7 +1065,7 @@ namespace itk
       std::cout << "...Done\n";
 #endif
 
-      // ...Compute Gaussians
+      // ...Compute Gaussians / ciclo sulle scale dell'ottava
       for (unsigned int j = 0; j < m_GaussianImagesNumber; ++j) {
 #ifdef VERBOSE
 	std::cout << "Setting Up Gaussian Filter " << i << "-" << j << "...";
@@ -938,6 +1099,12 @@ namespace itk
 	}
 
 	gaussianImage[j] = tmpGaussianFilter->GetOutput();
+	
+	typename TFixedImageType::SpacingType spacing = gaussianImage[j]->GetSpacing();
+	
+	char filename[256];
+	sprintf(filename, "gauss-%d-%d.mha", i, j);
+	this->writeImage(gaussianImage[j], filename);
 
 #ifdef DEBUG
 	char filename[256];
@@ -962,13 +1129,20 @@ namespace itk
 	tmpDogFilter->SetInput2( gaussianImage[j+1] );
 	tmpDogFilter->Update();
 	dogImage[j] = tmpDogFilter->GetOutput();
+	typename TFixedImageType::SpacingType spacing = dogImage[j]->GetSpacing();
+    std::cout << " SPACING DOG IMAGE: " << spacing[0] << " " << spacing[1] << std::endl;
 	
 	//dogFilter[j] = DifferenceFilterType::New();
 	//dogFilter[j]->SetInput1( gaussianImage[j] );
 	//dogFilter[j]->SetInput2( gaussianImage[j+1] );
 	//dogFilter[j]->Update();
 	//dogImage[j] = dogFilter[j]->GetOutput();
-
+	
+	
+	char filename[256];
+	sprintf(filename, "dog-%d-%d.mha", i, j);
+	this->writeImage(dogImage[j], filename);
+	
 #ifdef DEBUG
 	char filename[256];
 	sprintf(filename, "dog-%d-%d.png", i, j);
@@ -1015,19 +1189,25 @@ namespace itk
 	typename TFixedImageType::RegionType itregion;
 	itregion.SetIndex(regionStart);
 	itregion.SetSize(regionSize);
-      
+	      
 	ImageIteratorType pixelIt(dogImage[j],
 				  itregion);
       
+      // iterazione sui pixel
 	for ( pixelIt.GoToBegin(); !pixelIt.IsAtEnd(); ++pixelIt) {
 	  // Make sure to start sufficiently into the image so that all
 	  // neighbours are present
 	  IndexType pixelIndex = pixelIt.GetIndex();
 	  typename TFixedImageType::PixelType pixelValue = pixelIt.Get();
+	PointType point;
+	//typename TFixedImageType::SpacingType spacing;
+	//typename TFixedImageType::OriginType origin;
+	PointType vertex;
+	FILE* pFile;
+	FILE* pFile1;
+	dogImage[j]->TransformIndexToPhysicalPoint (pixelIndex, point); 
 
-	  PointType point;
-	  dogImage[j]->TransformIndexToPhysicalPoint (pixelIndex, point);
-
+	  
 #ifdef ERROR_CHECK
 	  std::cerr << "Checking ( ";
 	  for (int k = 0; k < VDimension; ++k)
@@ -1068,7 +1248,7 @@ namespace itk
 	  }
 	  if (!isMax && !isMin) continue;
 	    
-	  // Check if it is sufficiently large (absolute value)
+	  // Check if it is sufficiently large (absolute value) //soglia su contrasto
 	  if (fabs(pixelValue) < m_MinKeypointValue) {
 	    ++numReject;
 	    continue;
@@ -1096,6 +1276,31 @@ namespace itk
 	  if (isMax) {
 	    // Maxima detected.  
 	    ++numMax;
+	    //std::cout << "massimo: "<< point << std::endl;
+	   //std::cout << "massimo: "<< pixelIndex << std::endl;
+	   
+	   pFile=fopen("physicalcoord_max.fcsv","a");
+		pFile1=fopen("imagecoord_max.fcsv","a");
+
+		point[1]=-1.0*point[1];
+		fprintf(pFile, "max-%d,", numMax);
+		for(int k=0; k<VDimension; k++)
+	  	  {
+	  		
+	  		fprintf(pFile,"%.3f, ",point[k]);
+	  		} 	  
+	  		fprintf(pFile,"\n");
+	  		fclose(pFile);
+	  	  
+	  	  fprintf(pFile1, "max-%d,", numMax);
+	  	  for(int k=0; k<VDimension; k++)
+	  	  {
+	  		 vertex[k]= (point[k]-fixedImage->GetOrigin()[k])/fixedImage->GetSpacing()[k];
+	  		 fprintf(pFile1,"%.3f, ",vertex[k]);
+		  }
+		fprintf(pFile1,"\n");
+		fclose(pFile1);
+	   
 #ifdef DEBUG
 	    std::cout << "Found Maxima! ";
 #endif
@@ -1103,10 +1308,35 @@ namespace itk
 	  if (isMin) {
 	    // Minima detected.  
 	    ++numMin;
+	    //std::cout << "minimo: "<< point << std::endl;
+	    //std::cout << "minimo: "<< pixelIndex << std::endl;
+	    pFile=fopen("physicalcoord_min.fcsv","a");
+		pFile1=fopen("imagecoord_min.fcsv","a");
+	  
+		point[1]=-1.0*point[1];
+		fprintf(pFile, "min-%d,", numMin);
+		for(int k=0; k<VDimension; k++)
+	  	  {
+	  		fprintf(pFile,"%.3f, ",point[k]);
+	  		} 	  
+	  		fprintf(pFile,"\n");
+	  		fclose(pFile);
+	  		
+	  	  fprintf(pFile1, "min-%d,", numMin);
+	  	  for(int k=0; k<VDimension; k++)
+	  	  {
+	  		 
+	  		 vertex[k]= (point[k]-fixedImage->GetOrigin()[k])/fixedImage->GetSpacing()[k];
+	  		 fprintf(pFile1,"%.3f, ",vertex[k]);
+		  }
+		fprintf(pFile1,"\n");
+		fclose(pFile1);
+
 #ifdef DEBUG
 	    std::cout << "Found Minima! ";
 #endif
 	  }
+	  //std::cout << "scala corrente: "<< currScale << std::endl;
 	}
 #ifdef VERBOSE
 	std::cout << "Acc. Num Max: " << numMax 
@@ -1127,7 +1357,16 @@ namespace itk
     std::cout.flush();
 #endif
     return m_KeypointSet;
+
+
   }
+
+
+	  	  
+	
+
+
+
 
   template <class TFixedImageType, int VDimension> 
   void

@@ -39,7 +39,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define GENERATE_KEYS 
 //#define SUBSAMPLE
-#define CROP
+//#define CROP
 //#define DO_DOUBLE
 
 // Command Line Arguments
@@ -50,6 +50,7 @@ int ARG_IMG2=3;
 #include "itkImageSeriesReader.h"
 #include "itkNumericSeriesFileNames.h"
 #include <getopt.h>
+#include <itkLinearInterpolateImageFunction.h>
 
 #define DIMENSION 3
 
@@ -60,7 +61,7 @@ int main( int argc, char *argv[] )
   // Default scale is 1.0
   double test_scale = 1.0;
   float test_rotate = 0.0;  // 0 degrees
-  double test_crop = 0.5;
+  double test_crop = 0.8;
   //  float test_rotate = 0.0874;  // 5 degrees
   //float test_rotate = 0.1748;  // 10 degrees
   int series_start = 1;
@@ -239,6 +240,7 @@ int main( int argc, char *argv[] )
   cropper->SetInput(fixedImageReader->GetOutput());
   FixedImageType::SizeType cropsize = 
     fixedImageReader->GetOutput()->GetLargestPossibleRegion().GetSize();
+std::cout<<"crop "<< cropsize[0]<<" " <<cropsize[1]<<std::endl;
   for (int k = 0; k < Dimension; ++k) {
     if (k < 4)
       cropsize[k] = (int) (cropsize[k] * test_crop);
@@ -249,7 +251,17 @@ int main( int argc, char *argv[] )
   cropper->Update();
   FixedImageType::Pointer fixedImage = cropper->GetOutput();
 #else
-  FixedImageType::Pointer fixedImage = fixedImageReader->GetOutput();  
+  FixedImageType::Pointer fixedImage= FixedImageType::New();
+  try{
+  fixedImage = fixedImageReader->GetOutput();
+          }
+        catch (itk::ExceptionObject &err)
+        {
+            std::cout << "ExceptionObject caught !" << std::endl;
+            std::cout << err << std::endl;
+            return -1;
+        }
+
 #endif
 
   SiftFilterType::PointSetTypePointer keypoints1, keypoints2;
@@ -261,7 +273,7 @@ int main( int argc, char *argv[] )
   siftFilter1.writeImage(fixedImage, "tmp0.png");
   std::cout << std::endl << "Starting SIFT Feature Extraction...\n";  
 #endif
-
+  //siftFilter1.writeImage(fixedImage, "provaMAIN.mha");
   keypoints1 = siftFilter1.getSiftFeatures(fixedImage);
 
   typedef itk::ScalableAffineTransform< double, Dimension > TestTransformType;
@@ -327,6 +339,16 @@ int main( int argc, char *argv[] )
 	size[k] = (unsigned int) floor(size[k] * test_scale);
       scaler->SetSize( size );
       scaler->SetOutputSpacing(fixedImage->GetSpacing());
+	  scaler->SetOutputOrigin( fixedImage->GetOrigin() );
+//FixedImageType::DirectionType direction;
+//direction.SetIdentity();
+//direction = fixedImage->GetDirection();
+scaler->SetOutputDirection( fixedImage->GetDirection() );
+//interpolazione
+typedef itk::LinearInterpolateImageFunction< FixedImageType, double >  InterpolatorType;
+InterpolatorType::Pointer interpolator = InterpolatorType::New();
+scaler->SetInterpolator( interpolator );
+scaler->SetDefaultPixelValue( 0 );
       scaler->SetTransform(test_transform);
       scaler->Update();
       scaledImage = scaler->GetOutput();
