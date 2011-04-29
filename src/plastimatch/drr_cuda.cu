@@ -235,7 +235,7 @@ kernel_drr (
     }
 
     /* Write output pixel value */
-    if (r < img_dim.x && c < img_dim.y) {
+    if (r < img_dim.y && c < img_dim.x) {
 	/* Translate from mm voxels to cm*gm */
 	outval = 0.1 * outval;
 	/* Add to image */
