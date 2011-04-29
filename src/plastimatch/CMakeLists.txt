@@ -200,7 +200,7 @@ IF (CUDA_FOUND)
       ${GPUIT_LIBRARY_SRC}
       ${PLMCUDA_LIBRARY_SRC}
       )
-    CUDA_COMPILE (CUDA_WRAPPERS 
+    set (PLM_CUDA_FILES
       bspline_cuda.cu 
       cuda_util.cu
       cuda_kernel_util.cu
@@ -209,9 +209,11 @@ IF (CUDA_FOUND)
       drr_cuda.cu
       fdk_cuda.cu
       )
+    CUDA_COMPILE (CUDA_WRAPPERS ${PLM_CUDA_FILES})
     SET (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       ${CUDA_WRAPPERS}
+      ${PLM_CUDA_FILES}
       )
   ENDIF ()
 ENDIF ()
