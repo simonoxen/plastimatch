@@ -1144,6 +1144,25 @@ plmtest_check_interval ("plm-register-itk-rigid-check-2"
   "-965.4"
   )
 
+PLM_ADD_TEST (
+  "plm-register-itk-bspline"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-itk-bspline.txt"
+  )
+PLM_ADD_TEST (
+  "plm-register-itk-bspline-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-bspline-img.mha"
+  )
+plmtest_check_interval ("plm-register-itk-bspline-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-bspline-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-763.85"
+  "-763.75"
+  )
+
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 2)
 ##   bspline-single-c

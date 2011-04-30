@@ -1,0 +1,15 @@
+[GLOBAL]
+fixed=gauss-1.mha
+moving=gauss-2.mha
+vf_out=plm-register-itk-bspline-vf.mha
+xform_out=plm-register-itk-bspline-xf.txt
+img_out=plm-register-itk-bspline-img.mha
+
+[STAGE]
+xform=bspline
+optim=lbfgsb
+impl=itk
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+res=1 1 1
