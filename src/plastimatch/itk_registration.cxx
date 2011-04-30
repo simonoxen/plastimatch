@@ -72,7 +72,7 @@ public:
     Timer timer;
 
     void Set_Stage_Parms (RegistrationType::Pointer registration,
-			  Stage_Parms* stage) {
+	Stage_Parms* stage) {
 	m_registration = registration;
 	m_stage = stage;
     }
@@ -82,13 +82,15 @@ public:
 	plm_timer_start (&timer);
     }
 
-    void Execute (const itk::Object * object,
-		 const itk::EventObject & event) {
+    void
+    Execute (const itk::Object * object, const itk::EventObject & event)
+    {
 	if (typeid(event) == typeid(itk::StartEvent)) {
 	    last_value = -1.0;
 	    std::cout << "StartEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (m_registration, m_stage);
+		std::cout << optimizer_get_current_position (
+		    m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
 	    plm_timer_start (&timer);
@@ -101,15 +103,20 @@ public:
 	else if (typeid(event) == typeid(itk::EndEvent)) {
 	    std::cout << "EndEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (m_registration, m_stage);
+		std::cout << optimizer_get_current_position (
+		    m_registration, m_stage);
 		std::cout << std::endl;
 	    }
 	    std::cout << std::endl;
 	}
-	else if (typeid(event) == typeid(itk::FunctionEvaluationIterationEvent)) {
-	    std::cout << "FunctionEvaluationIterationEvent: ";
+	else if (typeid(event) 
+	    == typeid(itk::FunctionEvaluationIterationEvent))
+	{
+	    std::cout << "FunctionEvaluationIterationEvent\n";
 	}
-	else if (typeid(event) == typeid(itk::FunctionAndGradientEvaluationIterationEvent)) {
+	else if (typeid(event) 
+	    == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
+	{
 	    double duration;
 	    
 	    std::cout << "VAL+GRAD ";
@@ -129,15 +136,16 @@ public:
 	    printf ("%3d %10.2f %5.2f ", it, val, ss);
 
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (m_registration, m_stage);
+		std::cout << optimizer_get_current_position (
+		    m_registration, m_stage);
 	    }
 
 	    if (last_value >= 0.0) {
 		double diff = fabs(last_value - val);
 		if (it >= m_stage->min_its && diff < m_stage->convergence_tol) {
 		    printf (" %10.2f (tol)", diff);
-		    /* this doesn't seem to always stop rsg. 
-		       optimizer_set_max_iterations (m_registration, m_stage, 1); */
+		    /* calling optimizer_set_max_iterations () doesn't 
+		       seem to always stop rsg. */
 
 		    if (m_stage->optim_type == OPTIMIZATION_RSG) {
 			typedef itk::RegularStepGradientDescentOptimizer * OptimizerPointer;
@@ -245,12 +253,15 @@ set_mask_images (RegistrationType::Pointer registration,
 
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
-   of the fixed_mask (if one is used), or by eliminating excess air by thresholding
+   of the fixed_mask (if one is used), or by eliminating 
+   excess air by thresholding
 */
 void
-set_fixed_image_region_new_unfinished (RegistrationType::Pointer registration,
-			 Registration_Data* regd,
-			 Stage_Parms* stage)
+set_fixed_image_region_new_unfinished (
+    RegistrationType::Pointer registration,
+    Registration_Data* regd,
+    Stage_Parms* stage
+)
 {
     FloatImageType::RegionType valid_region;
     FloatImageType::RegionType::IndexType valid_index;
@@ -472,10 +483,12 @@ set_transform_affine (RegistrationType::Pointer registration,
 }
 
 void
-set_transform_bspline (RegistrationType::Pointer registration,
-			Xform *xf_out,
-			Xform *xf_in,
-			Stage_Parms* stage)
+set_transform_bspline (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    Xform *xf_in,
+    Stage_Parms* stage
+)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());		    
@@ -483,13 +496,19 @@ set_transform_bspline (RegistrationType::Pointer registration,
     /* GCS FIX: Need to set ROI from registration->GetFixedImageRegion(), */
     xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
     registration->SetTransform (xf_out->get_itk_bsp());
+
+//    registration->SetInitialTransformParameters (
+//	xf_out->get_itk_bsp()->GetParameters());
+
 }
 
 void
-set_transform (RegistrationType::Pointer registration,
-		Xform *xf_out,
-		Xform *xf_in,
-		Stage_Parms* stage)
+set_transform (
+    RegistrationType::Pointer registration,
+    Xform *xf_out,
+    Xform *xf_in,
+    Stage_Parms* stage
+)
 {
     xf_out->clear();
     switch (stage->xform_type) {
@@ -508,15 +527,16 @@ set_transform (RegistrationType::Pointer registration,
     case STAGE_TRANSFORM_BSPLINE:
 	set_transform_bspline (registration, xf_out, xf_in, stage);
 	break;
-	case STAGE_TRANSFORM_ALIGN_CENTER:
+    case STAGE_TRANSFORM_ALIGN_CENTER:
 	set_transform_versor(registration, xf_out, xf_in, stage);
 	break;
     }
-    registration->SetInitialTransformParameters(registration->GetTransform()->GetParameters());
+    registration->SetInitialTransformParameters (
+	registration->GetTransform()->GetParameters());
 
     if (stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 	std::cout << "Intial Parameters = " 
-		<< registration->GetTransform()->GetParameters() << std::endl;
+		  << registration->GetTransform()->GetParameters() << std::endl;
     }
 }
 
@@ -524,13 +544,6 @@ void
 set_observer (RegistrationType::Pointer registration,
 	      Stage_Parms* stage)
 {
-#if defined (commentout)
-    typedef Registration_Observer<RegistrationType> ROType;
-    ROType::Pointer command = ROType::New();
-    command->Set_Stage_Parms (stage);
-    registration->AddObserver (itk::IterationEvent(), command);
-#endif
-
     typedef Optimization_Observer OOType;
     OOType::Pointer observer = OOType::New();
     observer->Set_Stage_Parms (registration, stage);
@@ -594,23 +607,28 @@ set_xf_out (Xform *xf_out,
 }
 
 void
-do_itk_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
+do_itk_registration_stage (
+    Registration_Data* regd, 
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Stage_Parms* stage
+)
 {
     RegistrationType::Pointer registration = RegistrationType::New();
 
     /* Subsample fixed & moving images */
-    FloatImageType::Pointer fixed_ss
-	    = subsample_image (regd->fixed_image->itk_float(), 
-			       stage->fixed_subsample_rate[0], 
-			       stage->fixed_subsample_rate[1], 
-			       stage->fixed_subsample_rate[2], 
-			       stage->background_val);
-    FloatImageType::Pointer moving_ss
-	    = subsample_image (regd->moving_image->itk_float(), 
-			       stage->moving_subsample_rate[0], 
-			       stage->moving_subsample_rate[1], 
-			       stage->moving_subsample_rate[2], 
-			       stage->background_val);
+    FloatImageType::Pointer fixed_ss = subsample_image (
+	regd->fixed_image->itk_float(), 
+	stage->fixed_subsample_rate[0], 
+	stage->fixed_subsample_rate[1], 
+	stage->fixed_subsample_rate[2], 
+	stage->background_val);
+    FloatImageType::Pointer moving_ss = subsample_image (
+	regd->moving_image->itk_float(), 
+	stage->moving_subsample_rate[0], 
+	stage->moving_subsample_rate[1], 
+	stage->moving_subsample_rate[2], 
+	stage->background_val);
 
     registration->SetFixedImage (fixed_ss);
     registration->SetMovingImage (moving_ss);
@@ -623,65 +641,48 @@ do_itk_registration_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in,
     set_optimization (registration, stage);
 
     InterpolatorType::Pointer interpolator = InterpolatorType::New();
-    registration->SetInterpolator(interpolator);
+    registration->SetInterpolator (interpolator);
     set_observer (registration, stage);
 
     try {
 	if (stage->optim_type != OPTIMIZATION_NO_REGISTRATION) {
 	    std::cout << std::endl << "Starting Registration" << std::endl;
-	    registration->StartRegistration();
+	    registration->Update ();
 	    std::cout << std::endl << "Registration done." << std::endl;
 	}
     }
-    catch(itk::ExceptionObject & err) {
+    catch (itk::ExceptionObject & err) {
 	std::cerr << "Exception caught in itk registration." << std::endl;
 	std::cerr << err << std::endl;
 	exit (-1);
     }
+
     set_xf_out (xf_out, registration, stage);
-	
 }
 
 void
-do_itk_center_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
+do_itk_center_stage (
+    Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
 {
-    typedef itk::CenteredTransformInitializer < VersorTransformType, FloatImageType, FloatImageType > TransformInitializerType;
+    typedef itk::CenteredTransformInitializer < 
+	VersorTransformType, FloatImageType, FloatImageType 
+	> TransformInitializerType;
     RegistrationType::Pointer registration = RegistrationType::New();
-
-    /* Subsample fixed & moving images */
-    //FloatImageType::Pointer fixed_ss
-    // = subsample_image (regd->fixed_image->itk_float(), 
-    //      stage->resolution[0], 
-    //      stage->resolution[1], 
-    //      stage->resolution[2], 
-    //      stage->background_val);
-    //FloatImageType::Pointer moving_ss
-    // = subsample_image (regd->moving_image->itk_float(), 
-    //      stage->resolution[0], 
-    //      stage->resolution[1], 
-    //      stage->resolution[2], 
-    //      stage->background_val);
 
     registration->SetFixedImage (regd->fixed_image->itk_float());
     registration->SetMovingImage (regd->moving_image->itk_float());
 
     VersorTransformType::Pointer trn = VersorTransformType::New();
-    TransformInitializerType::Pointer initializer = TransformInitializerType::New();
-	
+    TransformInitializerType::Pointer initializer 
+	= TransformInitializerType::New();
 	
     initializer->SetTransform(trn);
     initializer->SetFixedImage(registration->GetFixedImage());
     initializer->SetMovingImage(registration->GetMovingImage());
     initializer->GeometryOn();
 
-	
-    std::cout << "Calling Initialize Transform" << std::endl;
+    std::cout << "Centering images" << std::endl;
     initializer->InitializeTransform();
-    std::cout << "Initialization done." << std::endl;
-    // std::cout << "Transform is " << registration->GetTransform()->GetParameters() << std::endl;
     registration->SetTransform(trn);
     set_xf_out (xf_out, registration, stage);
-
-    //initializer->Delete();
-    std::cout << "Centering..." << std::endl;
 }

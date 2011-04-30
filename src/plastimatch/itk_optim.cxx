@@ -464,7 +464,8 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 }
 
 void
-set_optimization (RegistrationType::Pointer registration,
+set_optimization (
+    RegistrationType::Pointer registration,
     Stage_Parms* stage)
 {
     if (stage->xform_type == STAGE_TRANSFORM_QUATERNION)
@@ -476,6 +477,12 @@ set_optimization (RegistrationType::Pointer registration,
 	    || stage->xform_type == STAGE_TRANSFORM_AFFINE))
     {
 	stage->optim_type = OPTIMIZATION_RSG;
+    }
+    else if (stage->xform_type == STAGE_TRANSFORM_BSPLINE 
+	&& (stage->optim_type != OPTIMIZATION_LBFGS
+	    || stage->optim_type != OPTIMIZATION_LBFGSB))
+    {
+	stage->optim_type = OPTIMIZATION_LBFGSB;
     }
 
     switch (stage->optim_type) {

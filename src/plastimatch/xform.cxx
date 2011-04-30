@@ -1529,10 +1529,12 @@ xform_to_aff (Xform *xf_out,
 }
 
 void
-xform_to_itk_bsp (Xform *xf_out, 
-		  Xform *xf_in, 
-		  Plm_image_header* pih,
-		  float* grid_spac)
+xform_to_itk_bsp (
+    Xform *xf_out, 
+    Xform *xf_in, 
+    Plm_image_header* pih,
+    float* grid_spac
+)
 {
     BsplineTransformType::Pointer bsp;
 
