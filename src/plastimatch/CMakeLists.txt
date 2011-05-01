@@ -519,6 +519,7 @@ SET (PLASTIMATCH_SRC
   pcmd_warp_dij.cxx 
   pcmd_warp.cxx pcmd_warp.h 
   pcmd_warp_pointset.cxx 
+  pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )
 SET (PLASTIMATCH_SLICER_BSPLINE_SRC
