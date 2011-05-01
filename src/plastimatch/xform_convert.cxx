@@ -14,7 +14,6 @@ void
 xform_convert (Xform_convert *xfc)
 {
     Plm_image_header pih;
-
     pih.set_from_gpuit (xfc->origin, xfc->spacing, xfc->dim, 0);
 
     switch (xfc->xf_out_type) {

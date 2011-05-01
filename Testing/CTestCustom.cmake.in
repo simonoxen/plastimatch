@@ -375,8 +375,8 @@ IF (PLM_REDUCED_TESTS)
     "plm-register-itk-bspline"
     "plm-register-itk-bspline-stats-1"
     "plm-register-itk-bspline-check-1"
-#    "plm-register-itk-demons"
-#    "plm-register-itk-demons-check-1"
+    "plm-register-itk-demons"
+    "plm-register-itk-demons-check-1"
     "plm-register-itk-demons-stats-2"
     "plm-register-itk-demons-check-2"
     "plm-bspline-single-c"
@@ -453,6 +453,10 @@ IF (PLM_REDUCED_TESTS)
     "plm-warp-h-stats-1"
     "plm-warp-h-check-1"
 
+#    "plm-xf-convert-a" 
+#    "plm-xf-convert-b"
+#    "plm-xf-convert-c"
+
     "plm-drr-api-a"
     "plm-registration-api-a"
 
@@ -460,8 +464,5 @@ IF (PLM_REDUCED_TESTS)
     "bragg-curve-check"
     "proton-dose"
     "tps-warp"
-    "xf-to-xf-1"
-    "xf-to-xf-2"
-    "xf-to-xf-3"
     )
 ENDIF (PLM_REDUCED_TESTS)

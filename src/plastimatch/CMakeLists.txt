@@ -589,9 +589,6 @@ SET (SYNTHETIC_VF_SRC
 SET (VF_INVERT_SRC
   vf_invert.cxx
   )
-SET (XF_TO_XF_SRC
-  xf_to_xf_main.cxx xf_to_xf_main.h
-  )
 SET (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
@@ -774,8 +771,6 @@ IF (ITK_FOUND)
   PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (vf_invert "${VF_INVERT_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  PLM_ADD_EXECUTABLE (xf_to_xf "${XF_TO_XF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
   PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)

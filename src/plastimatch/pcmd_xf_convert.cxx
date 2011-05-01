@@ -20,17 +20,38 @@ public:
     Xform_convert xfc;
 };
 
+void
+set_output_xform_type (Xform_convert *xfc, const CBString& output_type)
+{
+    if (output_type == "vf") {
+	xfc->xf_out_type = XFORM_ITK_VECTOR_FIELD;
+    }
+    else if (output_type == "bspline") {
+	xfc->xf_out_type = XFORM_GPUIT_BSPLINE;
+    }
+    else if (output_type == "itk_bsp") {
+	xfc->xf_out_type = XFORM_ITK_BSPLINE;
+    }
+    else {
+	print_and_exit ("Sorry, can't convert output type\n");
+    }
+}
+
 static void
 do_xf_convert (Xf_convert_parms *parms)
 {
     Xform_convert *xfc = &parms->xfc;
 
-    /* Load input file */
+    /* Set up inputs */
     xfc->xf_in = new Xform;
+    xfc->xf_out = new Xform;
     xform_load (xfc->xf_in, parms->input_fn);
-
+    set_output_xform_type (xfc, parms->output_type);
+    
     /* Do conversion */
+    printf ("about to xform_convert\n");
     xform_convert (xfc);
+    printf ("did xform_convert\n");
 
     /* Save output file */
     xform_save (xfc->xf_out, parms->output_fn);
@@ -60,7 +81,7 @@ parse_fn (
     parser->add_long_option ("", "output", 
 	"Output xform filename (required)", 1, "");
     parser->add_long_option ("", "output-type", 
-	"Type of xform to create, choose from "
+	"Type of xform to create (required), choose from "
 	"{bspline, itk_bspline, vf}", 1, "");
 
     parser->add_long_option ("", "origin", 
@@ -83,6 +104,7 @@ parse_fn (
     /* Check that an input file was given */
     parser->check_required ("input");
     parser->check_required ("output");
+    parser->check_required ("output-type");
 
     Xform_convert *xfc = &parms->xfc;
 

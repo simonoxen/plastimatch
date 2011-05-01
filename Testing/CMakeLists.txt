@@ -1671,6 +1671,32 @@ plmtest_check_interval ("plm-warp-h-check-1"
   )
 
 ## -------------------------------------------------------------------------
+## plm-xf-convert-a    plm bspline to vf
+## plm-xf-convert-b    vf to plm bspline
+## plm-xf-convert-c    plm bspline to vf
+## -------------------------------------------------------------------------
+PLM_ADD_TEST (
+  "plm-xf-convert-a" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-a-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  )
+
+PLM_ADD_TEST (
+  "plm-xf-convert-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-a-vf.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output-type;bspline;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;--grid-spacing;10 10 10"
+  )
+
+PLM_ADD_TEST (
+  "plm-xf-convert-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-c-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  )
+
+## -------------------------------------------------------------------------
 ## plm-api - Tests of plastimatch API
 ##   plm drr api a:
 ##   plm registration api a:
@@ -1708,31 +1734,6 @@ PLM_ADD_TEST (
   ${PLM_PLASTIMATCH_PATH}/proton_dose
   "-src;1 0 0;-iso;0 0 0;-vup;0 0 1;-u;1;-p;${PLM_TESTING_DATA_DIR}/bragg-curve.txt;--debug;${PLM_TESTING_BUILD_DIR}/rect-1.mha;${PLM_TESTING_BUILD_DIR}/proton-dose.mha"
   )
-
-## -------------------------------------------------------------------------
-## xf_to_xf
-## -------------------------------------------------------------------------
-PLM_ADD_TEST (
-  "xf-to-xf-1" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/xf_to_xf
-  "--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-1.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
-  )
-
-PLM_ADD_TEST (
-  "xf-to-xf-2" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/xf_to_xf
-  "--input;${PLM_TESTING_BUILD_DIR}/xf-to-xf-1.mha;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-2.txt;--output-type;bspline;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;--grid-spacing;10 10 10"
-  )
-
-PLM_ADD_TEST (
-  "xf-to-xf-3" 
-  ""
-  ${PLM_PLASTIMATCH_PATH}/xf_to_xf
-  "--input;${PLM_TESTING_BUILD_DIR}/xf-to-xf-2.txt;--output;${PLM_TESTING_BUILD_DIR}/xf-to-xf-3.mha;--output-type;vf;--dims;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
-  )
-
 
 ## -------------------------------------------------------------------------
 ## slicer tests
