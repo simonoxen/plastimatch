@@ -90,11 +90,12 @@ specific parameters are available.
 +----------------------+----------------+------------+---------------------------+
 |option                |xform+optim+impl|default     |description                |
 +======================+================+============+===========================+
-|res                   |any+any+any     |[4 4 1]     |[1 1 1] (minimum) Units:   |
-|                      |                |            |voxels Must be integers    |
-|                      |                |            |                           |
-|                      |                |            |                           |
-|                      |                |            |                           |
+|res                   |any+any+any     |Automatic   |[1 1 1] (minimum) Units:   |
+|                      |                |            |voxels, must be            |
+|                      |                |            |integers. In automatic     |
+|                      |                |            |mode, image is subsampled  |
+|                      |                |            |to less than 100 voxels in |
+|                      |                |            |each dimension.            |
 +----------------------+----------------+------------+---------------------------+
 |metric                |any+not         |mse         |Choices are: {mse, mi,     |
 |                      |demons+any      |            |mattes} when impl=itk,     |
