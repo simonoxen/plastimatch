@@ -1173,7 +1173,7 @@ PLM_ADD_TEST (
   )
 plmtest_check_interval ("plm-register-itk-demons-check-1"
   "${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons.stdout.txt"
-  "VF_AVG = *([-0-9.]*)"
+  "VF_AVG +[^ ] +([-0-9.]*)"
   "8.55"
   "8.65"
   )
