@@ -15,6 +15,7 @@ class Xf_convert_parms {
 public:
     CBString input_fn;
     CBString output_fn;
+    CBString output_type;
 
     Xform_convert xfc;
 };
@@ -24,16 +25,15 @@ do_xf_convert (Xf_convert_parms *parms)
 {
     Xform_convert *xfc = &parms->xfc;
 
-#if defined (commentout)
-    /* Load the input image */
-    sb->img_in.load_native (parms->input_fn);
+    /* Load input file */
+    xfc->xf_in = new Xform;
+    xform_load (xfc->xf_in, parms->input_fn);
 
-    /* Do segmentation */
-    sb->do_segmentation ();
+    /* Do conversion */
+    xform_convert (xfc);
 
     /* Save output file */
-    sb->img_out.save_image (parms->output_fn);
-#endif
+    xform_save (xfc->xf_out, parms->output_fn);
 }
 
 static void
@@ -55,24 +55,24 @@ parse_fn (
     parser->add_long_option ("h", "help", "Display this help message");
 
     /* Basic options */
-    parser->add_long_option ("", "output-img", 
-	"Output image filename", 1, "");
-#if defined (commentout)
-    parser->add_long_option ("", "output-dicom", 
-	"Output dicom directory (for RTSTRUCT)", 1, "");
-#endif
     parser->add_long_option ("", "input", 
-	"Input image filename (required)", 1, "");
-    parser->add_long_option ("", "bottom", 
-	"Bottom of patient (top of couch)", 1, "");
-#if defined (commentout)
-    parser->add_long_option ("", "lower-threshold", 
-	"Lower threshold (include voxels above this value)", 1, "");
-    parser->add_long_option ("", "upper-threshold", 
-	"Upper threshold (include voxels below this value)", 1, "");
-#endif
-    parser->add_long_option ("", "debug", "Create debug images", 0);
-    parser->add_long_option ("", "fast", "Use reduced image size", 0);
+	"Input xform filename (required)", 1, "");
+    parser->add_long_option ("", "output", 
+	"Output xform filename (required)", 1, "");
+    parser->add_long_option ("", "output-type", 
+	"Type of xform to create, choose from "
+	"{bspline, itk_bspline, vf}", 1, "");
+
+    parser->add_long_option ("", "origin", 
+	"Location of first image voxel in mm \"x y z\"", 1, "");
+    parser->add_long_option ("", "dim", 
+	"Size of output image in voxels \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "spacing", 
+	"Voxel spacing in mm \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "grid-spacing", 
+	"B-spline grid spacing in mm \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "nobulk", 
+	"Omit bulk transform for itk_bspline", 0);
 
     /* Parse options */
     parser->parse (argc,argv);
@@ -82,25 +82,34 @@ parse_fn (
 
     /* Check that an input file was given */
     parser->check_required ("input");
-    parser->check_required ("output-img");
+    parser->check_required ("output");
 
     Xform_convert *xfc = &parms->xfc;
 
-#if defined (commentout)
     /* Copy values into output struct */
-    parms->output_fn = parser->get_string("output-img").c_str();
+    parms->output_fn = parser->get_string("output").c_str();
     parms->input_fn = parser->get_string("input").c_str();
-    if (parser->option ("bottom")) {
-	sb->m_bot_given = true;
-	sb->m_bot = parser->get_float ("bottom");
+    if (parser->option ("output-type")) {
+	parms->output_type = parser->get_string("output-type").c_str();
     }
-    if (parser->option ("fast")) {
-	sb->m_fast = true;
+
+    /* Geometry options */
+    if (parser->option ("origin")) {
+	parser->assign_float13 (xfc->origin, "origin");
     }
-    if (parser->option ("debug")) {
-	sb->m_debug = true;
+    if (parser->option ("spacing")) {
+	parser->assign_float13 (xfc->spacing, "spacing");
     }
-#endif
+    if (parser->option ("dim")) {
+	parser->assign_int13 (xfc->dim, "dim");
+    }
+    if (parser->option ("grid-spacing")) {
+	parser->assign_float13 (xfc->grid_spac, "grid-spacing");
+    }
+
+    if (parser->option ("nobulk")) {
+	xfc->nobulk = true;
+    }
 }
 
 void

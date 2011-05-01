@@ -21,6 +21,10 @@ public:
     Xform_convert () {
 	/* Pretty much zeros are good all around */
     }
+    ~Xform_convert () {
+	if (xf_out) delete xf_out;
+	if (xf_in) delete xf_in;
+    }
 };
 
 plastimatch1_EXPORT
