@@ -20,7 +20,7 @@
 int
 set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 {
-    Stage_Parms* stage = 0;
+    Stage_parms* stage = 0;
     if (section != 0) {
 	stage = regp->stages[regp->num_stages-1];
     }
@@ -469,11 +469,11 @@ plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
 	    } else if (!strcmp (p, "STAGE") || !strcmp (p, "stage")) {
 		section = 1;
 		regp->num_stages ++;
-		regp->stages = (Stage_Parms**) realloc (regp->stages, regp->num_stages * sizeof(Stage_Parms*));
+		regp->stages = (Stage_parms**) realloc (regp->stages, regp->num_stages * sizeof(Stage_parms*));
 		if (regp->num_stages == 1) {
-		    regp->stages[regp->num_stages-1] = new Stage_Parms();
+		    regp->stages[regp->num_stages-1] = new Stage_parms();
 		} else {
-		    regp->stages[regp->num_stages-1] = new Stage_Parms(*(regp->stages[regp->num_stages-2]));
+		    regp->stages[regp->num_stages-1] = new Stage_parms(*(regp->stages[regp->num_stages-2]));
 		}
 		continue;
 	    } else if (!strcmp (p, "COMMENT") || !strcmp (p, "comment")) {

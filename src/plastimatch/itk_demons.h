@@ -8,8 +8,8 @@
 
 class Registration_Data;
 class Xform;
-class Stage_Parms;
+class Stage_parms;
 
-void do_demons_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage);
+void do_demons_stage (Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage);
 
 #endif

@@ -53,7 +53,7 @@ enum Subsampling_type {
     SUBSAMPLING_VOXEL_RATE
 };
 
-class Stage_Parms {
+class Stage_parms {
 public:
     /* Generic optimization parms */
     int xform_type;
@@ -110,7 +110,7 @@ public:
     char vf_out_fn[_MAX_PATH];
 
 public:
-    Stage_Parms () {
+    Stage_parms () {
 	/* Generic optimization parms */
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
@@ -177,7 +177,7 @@ public:
 	*moving_landmarks_fn = 0;
 	*warped_landmarks_fn = 0;
     }
-    Stage_Parms (Stage_Parms& s) {
+    Stage_parms (Stage_parms& s) {
 	/* Copy all the parameters except the file names */
 	*this = s;
 	img_out_fmt = IMG_OUT_FMT_AUTO;
@@ -204,7 +204,7 @@ public:
     double init[12];
 
     int num_stages;
-    Stage_Parms** stages;
+    Stage_parms** stages;
 
 public:
     Registration_Parms() {

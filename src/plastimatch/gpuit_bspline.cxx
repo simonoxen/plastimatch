@@ -22,7 +22,7 @@ do_gpuit_bspline_stage_internal (
     Registration_Data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     Bspline_parms parms;
     Plm_image_header pih;
@@ -180,7 +180,7 @@ do_gpuit_bspline_stage (
     Registration_Data* regd, 
     Xform *xf_out, 
     Xform *xf_in,
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     do_gpuit_bspline_stage_internal (regp, regd, xf_out, xf_in, stage);
 //    printf ("Deformation stats (out)\n");

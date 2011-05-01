@@ -7,13 +7,13 @@
 class Registration_Parms;
 class Registration_Data;
 class Xform;
-class Stage_Parms;
+class Stage_parms;
 
 void
 do_gpuit_bspline_stage (Registration_Parms* regp, 
 			Registration_Data* regd,
 			Xform *xf_out,
 			Xform *xf_in,
-			Stage_Parms* stage);
+			Stage_parms* stage);
 
 #endif

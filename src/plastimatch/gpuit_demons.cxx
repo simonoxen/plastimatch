@@ -18,7 +18,7 @@ do_gpuit_demons_stage_internal (
     Registration_Data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     int d;
     DEMONS_Parms parms;
@@ -77,7 +77,7 @@ do_gpuit_demons_stage (
     Registration_Data* regd, 
     Xform *xf_out, 
     Xform *xf_in,
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     do_gpuit_demons_stage_internal (regd, xf_out, xf_in, stage);
     //    printf ("Deformation stats (out)\n");

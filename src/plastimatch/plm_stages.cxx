@@ -227,7 +227,7 @@ do_registration_stage (
     Registration_Parms* regp, 
     Registration_Data* regd, 
     Xform *xf_out, Xform *xf_in, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
 	xf_in->m_type, xf_out->m_type);
@@ -295,6 +295,30 @@ load_input_files (Registration_Data* regd, Registration_Parms* regp)
     }
 }
 
+static void
+set_auto_subsampling (int subsample_rate[], Plm_image *pli)
+{
+    Plm_image_header pih (pli);
+    
+    for (int d = 0; d < 3; d++) {
+	subsample_rate[d] = (pih.Size(d)+99) / 100;
+    }
+}
+
+static void
+set_automatic_parameters (Registration_Data* regd, Registration_Parms* regp)
+{
+    for (int i = 0; i < regp->num_stages; i++) {
+	Stage_parms *stagep = regp->stages[i];
+	if (stagep->subsampling_type == SUBSAMPLING_AUTO) {
+	    set_auto_subsampling (
+		stagep->fixed_subsample_rate, regd->fixed_image);
+	    set_auto_subsampling (
+		stagep->moving_subsample_rate, regd->moving_image);
+	}
+    }
+}
+
 void
 do_registration (Registration_Parms* regp)
 {
@@ -318,8 +342,12 @@ do_registration (Registration_Parms* regp)
     if (regp->xf_in_fn[0]) {
 	xform_load (xf_out, regp->xf_in_fn);
     }
+
     /* Set fixed image region */
     set_fixed_image_region_global (&regd);
+
+    /* Set automatic parameters based on image size */
+    set_automatic_parameters (&regd, regp);
 
     timer1.Stop();
 

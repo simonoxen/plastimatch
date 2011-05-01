@@ -1,0 +1,10 @@
+[GLOBAL]
+fixed=gauss-1.mha
+moving=gauss-2.mha
+vf_out=plm-register-itk-demons-vf.mha
+img_out=plm-register-itk-demons-img.mha
+
+[STAGE]
+optim=demons
+impl=itk
+max_its=15

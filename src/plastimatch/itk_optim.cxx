@@ -32,7 +32,7 @@ typedef itk::LBFGSBOptimizer LBFGSBOptimizerType;
 
 void
 optimizer_set_max_iterations (RegistrationType::Pointer registration, 
-				Stage_Parms* stage, int its)
+				Stage_parms* stage, int its)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -78,7 +78,7 @@ optimizer_set_max_iterations (RegistrationType::Pointer registration,
 
 double
 optimizer_get_value (RegistrationType::Pointer registration, 
-		     Stage_Parms* stage)
+		     Stage_parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -123,7 +123,7 @@ optimizer_get_value (RegistrationType::Pointer registration,
 
 double
 optimizer_get_step_length (RegistrationType::Pointer registration, 
-		           Stage_Parms* stage)
+		           Stage_parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 #if defined (commentout)
@@ -174,7 +174,7 @@ optimizer_get_step_length (RegistrationType::Pointer registration,
 
 int
 optimizer_get_current_iteration (RegistrationType::Pointer registration, 
-				 Stage_Parms* stage)
+				 Stage_parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 #if defined (commentout)
@@ -223,7 +223,7 @@ optimizer_get_current_iteration (RegistrationType::Pointer registration,
 
 const itk::Array<double>&
 optimizer_get_current_position (RegistrationType::Pointer registration, 
-				Stage_Parms* stage)
+				Stage_parms* stage)
 {
     if (stage->optim_type == OPTIMIZATION_AMOEBA) {
 	typedef AmoebaOptimizerType * OptimizerPointer;
@@ -268,7 +268,7 @@ optimizer_get_current_position (RegistrationType::Pointer registration,
 
 void
 set_optimization_amoeba (RegistrationType::Pointer registration, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     AmoebaOptimizerType::Pointer optimizer = AmoebaOptimizerType::New();
     optimizer->SetParametersConvergenceTolerance(stage->amoeba_parameter_tol);
@@ -279,7 +279,7 @@ set_optimization_amoeba (RegistrationType::Pointer registration,
 
 void
 set_optimization_rsg (RegistrationType::Pointer registration, 
-		      Stage_Parms* stage)
+		      Stage_parms* stage)
 {
     RSGOptimizerType::Pointer optimizer = RSGOptimizerType::New();
     optimizer->SetMaximumStepLength(stage->max_step);
@@ -290,7 +290,7 @@ set_optimization_rsg (RegistrationType::Pointer registration,
 
 void
 set_optimization_versor (RegistrationType::Pointer registration, 
-			 Stage_Parms* stage)
+			 Stage_parms* stage)
 {
     VersorOptimizerType::Pointer optimizer = VersorOptimizerType::New();
     optimizer->SetMaximumStepLength(stage->max_step);
@@ -301,7 +301,7 @@ set_optimization_versor (RegistrationType::Pointer registration,
 
 void
 set_optimization_quat (RegistrationType::Pointer registration, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     QuatOptimizerType::Pointer optimizer = QuatOptimizerType::New();
     optimizer->SetLearningRate(stage->learn_rate);
@@ -312,7 +312,7 @@ set_optimization_quat (RegistrationType::Pointer registration,
 
 void
 set_optimization_lbfgs (RegistrationType::Pointer registration, 
-			 Stage_Parms* stage)
+			 Stage_parms* stage)
 {
     LBFGSOptimizerType::Pointer optimizer = LBFGSOptimizerType::New();
     
@@ -333,7 +333,7 @@ set_optimization_lbfgs (RegistrationType::Pointer registration,
 
 void
 set_optimization_lbfgsb (RegistrationType::Pointer registration, 
-			 Stage_Parms* stage)
+			 Stage_parms* stage)
 {
     LBFGSBOptimizerType::Pointer optimizer = LBFGSBOptimizerType::New();
 
@@ -371,7 +371,7 @@ set_optimization_lbfgsb (RegistrationType::Pointer registration,
 
 void
 set_optimization_scales_translation (RegistrationType::Pointer registration, 
-				     Stage_Parms* stage)
+				     Stage_parms* stage)
 {
     itk::Array<double> optimizerScales(3);
 
@@ -384,7 +384,7 @@ set_optimization_scales_translation (RegistrationType::Pointer registration,
 
 void
 set_optimization_scales_versor (RegistrationType::Pointer registration, 
-				Stage_Parms* stage)
+				Stage_parms* stage)
 {
     double rotation_scale, translation_scale;
     itk::Array<double> optimizerScales(6);
@@ -411,7 +411,7 @@ set_optimization_scales_versor (RegistrationType::Pointer registration,
 void
 set_optimization_scales_quaternion (
     RegistrationType::Pointer registration, 
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     double rotation_scale, translation_scale;
     itk::Array<double> optimizerScales(7);
@@ -439,7 +439,7 @@ set_optimization_scales_quaternion (
 
 void
 set_optimization_scales_affine (RegistrationType::Pointer registration, 
-				Stage_Parms* stage)
+				Stage_parms* stage)
 {
     itk::Array<double> optimizerScales(12);
 
@@ -466,7 +466,7 @@ set_optimization_scales_affine (RegistrationType::Pointer registration,
 void
 set_optimization (
     RegistrationType::Pointer registration,
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     if (stage->xform_type == STAGE_TRANSFORM_QUATERNION)
     {

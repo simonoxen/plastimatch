@@ -1064,6 +1064,8 @@ PLM_ADD_TEST (
 ##   align-center
 ##   itk-translation
 ##   itk-rigid
+##   itk-bspline
+##   itk-demons
 ## -------------------------------------------------------------------------
 IF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   # For Nocedal optimizer
@@ -1161,6 +1163,31 @@ plmtest_check_interval ("plm-register-itk-bspline-check-1"
   "AVE *([-0-9.]*)"
   "-763.85"
   "-763.75"
+  )
+
+PLM_ADD_TEST (
+  "plm-register-itk-demons"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-itk-demons.txt"
+  )
+plmtest_check_interval ("plm-register-itk-demons-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons.stdout.txt"
+  "VF_AVG = *([-0-9.]*)"
+  "8.55"
+  "8.65"
+  )
+PLM_ADD_TEST (
+  "plm-register-itk-demons-stats-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons-img.mha"
+  )
+plmtest_check_interval ("plm-register-itk-demons-check-2"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-itk-demons-stats-2.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-853.0"
+  "-852.6"
   )
 
 ## -------------------------------------------------------------------------

@@ -66,13 +66,13 @@ protected:
 	plm_timer_start (&timer);
     };
 public:
-    Stage_Parms* m_stage;
+    Stage_parms* m_stage;
     RegistrationType::Pointer m_registration;
     double last_value;
     Timer timer;
 
-    void Set_Stage_Parms (RegistrationType::Pointer registration,
-	Stage_Parms* stage) {
+    void Set_Stage_parms (RegistrationType::Pointer registration,
+	Stage_parms* stage) {
 	m_registration = registration;
 	m_stage = stage;
     }
@@ -177,7 +177,7 @@ public:
 
 void
 set_metric (RegistrationType::Pointer registration,
-	    Stage_Parms* stage)
+	    Stage_parms* stage)
 {
     switch (stage->metric_type) {
     case METRIC_MSE:
@@ -235,7 +235,7 @@ set_metric (RegistrationType::Pointer registration,
 void
 set_mask_images (RegistrationType::Pointer registration,
 		 Registration_Data* regd,
-		 Stage_Parms* stage)
+		 Stage_parms* stage)
 {
     if (regd->fixed_mask) {
 	Mask_SOType::Pointer mask_so = Mask_SOType::New();
@@ -260,7 +260,7 @@ void
 set_fixed_image_region_new_unfinished (
     RegistrationType::Pointer registration,
     Registration_Data* regd,
-    Stage_Parms* stage
+    Stage_parms* stage
 )
 {
     FloatImageType::RegionType valid_region;
@@ -296,7 +296,7 @@ set_fixed_image_region_new_unfinished (
 void
 set_fixed_image_region (RegistrationType::Pointer registration,
 			Registration_Data* regd,
-			Stage_Parms* stage)
+			Stage_parms* stage)
 {
     int use_magic_value = 0;
     if (regd->fixed_mask) {
@@ -437,7 +437,7 @@ void
 set_transform_translation (RegistrationType::Pointer registration,
 			Xform *xf_out,
 			Xform *xf_in,
-			Stage_Parms* stage)
+			Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -449,7 +449,7 @@ void
 set_transform_versor (RegistrationType::Pointer registration,
 			Xform *xf_out,
 			Xform *xf_in,
-			Stage_Parms* stage)
+			Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -462,7 +462,7 @@ set_transform_quaternion (
     RegistrationType::Pointer registration,
     Xform *xf_out,
     Xform *xf_in,
-    Stage_Parms* stage)
+    Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -474,7 +474,7 @@ void
 set_transform_affine (RegistrationType::Pointer registration,
 			Xform *xf_out,
 			Xform *xf_in,
-			Stage_Parms* stage)
+			Stage_parms* stage)
 {
     Plm_image_header pih;
     pih.set_from_itk_image (registration->GetFixedImage());
@@ -487,7 +487,7 @@ set_transform_bspline (
     RegistrationType::Pointer registration,
     Xform *xf_out,
     Xform *xf_in,
-    Stage_Parms* stage
+    Stage_parms* stage
 )
 {
     Plm_image_header pih;
@@ -507,7 +507,7 @@ set_transform (
     RegistrationType::Pointer registration,
     Xform *xf_out,
     Xform *xf_in,
-    Stage_Parms* stage
+    Stage_parms* stage
 )
 {
     xf_out->clear();
@@ -542,11 +542,11 @@ set_transform (
 
 void
 set_observer (RegistrationType::Pointer registration,
-	      Stage_Parms* stage)
+	      Stage_parms* stage)
 {
     typedef Optimization_Observer OOType;
     OOType::Pointer observer = OOType::New();
-    observer->Set_Stage_Parms (registration, stage);
+    observer->Set_Stage_parms (registration, stage);
     registration->GetOptimizer()->AddObserver(itk::StartEvent(), observer);
     registration->GetOptimizer()->AddObserver(itk::InitializeEvent(), observer);
     registration->GetOptimizer()->AddObserver(itk::IterationEvent(), observer);
@@ -558,7 +558,7 @@ set_observer (RegistrationType::Pointer registration,
 void
 set_xf_out (Xform *xf_out, 
 	    RegistrationType::Pointer registration,
-	    Stage_Parms *stage)
+	    Stage_parms *stage)
 {
     switch (stage->xform_type) {
     case STAGE_TRANSFORM_TRANSLATION:
@@ -611,7 +611,7 @@ do_itk_registration_stage (
     Registration_Data* regd, 
     Xform *xf_out, 
     Xform *xf_in, 
-    Stage_Parms* stage
+    Stage_parms* stage
 )
 {
     RegistrationType::Pointer registration = RegistrationType::New();
@@ -662,7 +662,7 @@ do_itk_registration_stage (
 
 void
 do_itk_center_stage (
-    Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_Parms* stage)
+    Registration_Data* regd, Xform *xf_out, Xform *xf_in, Stage_parms* stage)
 {
     typedef itk::CenteredTransformInitializer < 
 	VersorTransformType, FloatImageType, FloatImageType 
