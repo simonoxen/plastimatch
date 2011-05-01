@@ -24,9 +24,9 @@
 #include "xform.h"
 
 typedef itk::DemonsRegistrationFilter<
-                            FloatImageType,
-                            FloatImageType,
-                            DeformationFieldType> DemonsFilterType;
+    FloatImageType,
+    FloatImageType,
+    DeformationFieldType> DemonsFilterType;
 
 #if defined (GCS_REARRANGING_STUFF)
 

@@ -28,11 +28,10 @@
 
 #define FIXME_BACKGROUND_MAX (-1200)
 
-
 /* This helps speed up the registration, by setting the bounding box to the 
    smallest size needed.  To find the bounding box, either use the extent 
-   of the fixed_mask (if one is used), or by eliminating excess air by thresholding
-*/
+   of the fixed_mask (if one is used), or by eliminating excess air 
+   by thresholding */
 static void
 set_fixed_image_region_global (Registration_Data* regd)
 {
@@ -46,8 +45,10 @@ set_fixed_image_region_global (Registration_Data* regd)
 	FloatImageType::RegionType::SizeType valid_size;
 
 	/* Search for bounding box of fixed mask */
-	typedef itk::ImageRegionConstIteratorWithIndex< UCharImageType > IteratorType;
-	UCharImageType::RegionType region = regd->fixed_mask->GetLargestPossibleRegion();
+	typedef itk::ImageRegionConstIteratorWithIndex< 
+	    UCharImageType > IteratorType;
+	UCharImageType::RegionType region 
+	    = regd->fixed_mask->GetLargestPossibleRegion();
 	IteratorType it (regd->fixed_mask, region);
 
 	int first = 1;
@@ -100,8 +101,10 @@ set_fixed_image_region_global (Registration_Data* regd)
 	FloatImageType::Pointer fixed_image = regd->fixed_image->itk_float();
 
 	/* Search for bounding box of patient */
-	typedef itk::ImageRegionConstIteratorWithIndex<FloatImageType> IteratorType;
-	FloatImageType::RegionType region = fixed_image->GetLargestPossibleRegion();
+	typedef itk::ImageRegionConstIteratorWithIndex <
+	    FloatImageType > IteratorType;
+	FloatImageType::RegionType region 
+	    = fixed_image->GetLargestPossibleRegion();
 	IteratorType it (fixed_image, region);
 
 	int first = 1;
@@ -137,14 +140,17 @@ set_fixed_image_region_global (Registration_Data* regd)
 		valid_index[i]--;
 		valid_size[i]++;
 	    }
-	    if (valid_size[i] + valid_index[i] < fixed_image->GetLargestPossibleRegion().GetSize()[i]) {
+	    if (valid_size[i] + valid_index[i] 
+		< fixed_image->GetLargestPossibleRegion().GetSize()[i])
+	    {
 		valid_size[i]++;
 	    }
 	}
 	regd->fixed_region.SetIndex(valid_index);
 	regd->fixed_region.SetSize(valid_size);
     } else {
-	regd->fixed_region = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
+	regd->fixed_region 
+	    = regd->fixed_image->itk_float()->GetLargestPossibleRegion();
     }
 }
 
@@ -217,16 +223,14 @@ save_output (
 }
 
 static void
-do_registration_stage (Registration_Parms* regp, 
-		       Registration_Data* regd, 
-		       Xform *xf_out, Xform *xf_in, 
-		       Stage_Parms* stage)
+do_registration_stage (
+    Registration_Parms* regp, 
+    Registration_Data* regd, 
+    Xform *xf_out, Xform *xf_in, 
+    Stage_Parms* stage)
 {
-    /* Convert image types */
-    //    Plm_image_type image_type = choose_image_type (stage->xform_type, stage->optim_type, stage->impl_type);
-
     logfile_printf ("[1] xf_in->m_type = %d, xf_out->m_type = %d\n", 
-		    xf_in->m_type, xf_out->m_type);
+	xf_in->m_type, xf_out->m_type);
 
     /* Run registration */
     if (stage->optim_type == OPTIMIZATION_DEMONS) {
@@ -252,7 +256,7 @@ do_registration_stage (Registration_Parms* regp,
     }
 
     logfile_printf ("[2] xf_out->m_type = %d, xf_in->m_type = %d\n", 
-		    xf_out->m_type, xf_in->m_type);
+	xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
     save_output (regd, xf_out, stage->xf_out_fn, 
@@ -314,10 +318,10 @@ do_registration (Registration_Parms* regp)
     if (regp->xf_in_fn[0]) {
 	xform_load (xf_out, regp->xf_in_fn);
     }
-    timer1.Stop();
-
     /* Set fixed image region */
     set_fixed_image_region_global (&regd);
+
+    timer1.Stop();
 
     timer2.Start();
     for (i = 0; i < regp->num_stages; i++) {
@@ -336,16 +340,16 @@ do_registration (Registration_Parms* regp)
     timer3.Stop();
 
     logfile_printf (
-	    "Load:   %g\n"
-	    "Run:    %g\n"
-	    "Save:   %g\n"
-	    "Total:  %g\n",
-	    (double) timer1.GetMeanTime(),
-	    (double) timer2.GetMeanTime(),
-	    (double) timer3.GetMeanTime(),
-	    (double) timer1.GetMeanTime() + 
-	    (double) timer2.GetMeanTime() +
-	    (double) timer3.GetMeanTime());
+	"Load:   %g\n"
+	"Run:    %g\n"
+	"Save:   %g\n"
+	"Total:  %g\n",
+	(double) timer1.GetMeanTime(),
+	(double) timer2.GetMeanTime(),
+	(double) timer3.GetMeanTime(),
+	(double) timer1.GetMeanTime() + 
+	(double) timer2.GetMeanTime() +
+	(double) timer3.GetMeanTime());
 
     /* Done logging */
     logfile_printf ("Finished!\n");
