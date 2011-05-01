@@ -12,6 +12,9 @@ extern "C" {
 #endif
 
 gpuit_EXPORT
+int
+plm_strcmp (const char* s1, const char* s2);
+gpuit_EXPORT
 void
 string_util_rtrim_whitespace (char *s);
 gpuit_EXPORT

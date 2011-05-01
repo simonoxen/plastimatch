@@ -8,6 +8,12 @@
 #include <ctype.h>
 #include "string_util.h"
 
+int
+plm_strcmp (const char* s1, const char* s2)
+{
+    return strncmp (s1, s2, strlen(s2));
+}
+
 void
 string_util_rtrim_whitespace (char *s)
 {
