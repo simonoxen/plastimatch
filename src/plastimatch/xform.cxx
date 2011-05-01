@@ -717,15 +717,17 @@ gpuit_bsp_grid_to_itk_bsp_grid (
 
     for (int d = 0; d < 3; d++) {
 	bsp_size[d] = bxf->cdims[d];
-	bsp_origin[d] = bxf->img_origin[d] + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
+	bsp_origin[d] = bxf->img_origin[d] 
+	    + bxf->roi_offset[d] * bxf->img_spacing[d] - bxf->grid_spac[d];
 	bsp_spacing[d] = bxf->grid_spac[d];
     }
     bsp_region.SetSize (bsp_size);
 }
 
 static void
-gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in, 
-			  const Plm_image_header* pih)
+gpuit_bsp_to_itk_bsp_raw (
+    Xform *xf_out, Xform* xf_in, 
+    const Plm_image_header* pih)
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
@@ -767,14 +769,14 @@ gpuit_bsp_to_itk_bsp_raw (Xform *xf_out, Xform* xf_in,
 
 /* If grid_spac is null, then don't resample */
 void
-xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
-		      const Plm_image_header* pih,
-		      const ImageRegionType* roi, /* Not yet used */
-		      float* grid_spac)
+xform_gpuit_bsp_to_itk_bsp (
+    Xform *xf_out, Xform* xf_in,
+    const Plm_image_header* pih,
+    const ImageRegionType* roi, /* Not yet used */
+    float* grid_spac)
 {
     typedef BsplineTransformType::ImageType ParametersImageType;
     typedef itk::ImageRegionIterator<ParametersImageType> Iterator;
-//    Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Xform xf_tmp;
     OriginType img_origin_old;
     SpacingType img_spacing_old;
@@ -787,7 +789,6 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
     std::cout << pih->m_spacing << std::endl;
     printf ("Region\n");
     std::cout << pih->m_region;
-//    printf ("grid_spac = %g %g %g\n", grid_spac[0], grid_spac[1], grid_spac[2]);
 
     if (grid_spac) {
 	/* Convert to itk data structure */
@@ -810,8 +811,9 @@ xform_gpuit_bsp_to_itk_bsp (Xform *xf_out, Xform* xf_in,
    Conversion to itk_vf
    ----------------------------------------------------------------------- */
 static DeformationFieldType::Pointer
-xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
-		     const Plm_image_header* pih)
+xform_itk_any_to_itk_vf (
+    itk::Transform<double,3,3>* xf,
+    const Plm_image_header* pih)
 {
     DeformationFieldType::Pointer itk_vf = DeformationFieldType::New();
 
@@ -822,7 +824,8 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     itk_vf->SetDirection (pih->m_direction);
     itk_vf->Allocate ();
 
-    typedef itk::ImageRegionIteratorWithIndex< DeformationFieldType > FieldIterator;
+    typedef itk::ImageRegionIteratorWithIndex< 
+	DeformationFieldType > FieldIterator;
     FieldIterator fi (itk_vf, itk_vf->GetLargestPossibleRegion());
 
     fi.GoToBegin();
@@ -846,8 +849,8 @@ xform_itk_any_to_itk_vf (itk::Transform<double,3,3>* xf,
     return itk_vf;
 }
 
-/* ITK bsp is different from itk_any, because additional control points might be 
-    needed */
+/* ITK bsp is different from itk_any, because additional control points 
+   might be needed */
 static DeformationFieldType::Pointer 
 xform_itk_bsp_to_itk_vf (Xform* xf_in, const Plm_image_header* pih)
 {
@@ -883,7 +886,7 @@ xform_itk_vf_to_itk_vf (DeformationFieldType::Pointer vf, Plm_image_header* pih)
     1) Convert to ITK B-Spline
     2) Extend ITK B-Spline to encompass image
     3) Render vf.
-    */
+*/
 static DeformationFieldType::Pointer
 xform_gpuit_bsp_to_itk_vf (Xform* xf_in, Plm_image_header* pih)
 {
@@ -1012,7 +1015,9 @@ create_gpuit_bxf (Plm_image_header* pih, float* grid_spac)
 }
 
 void
-xform_any_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, 
+xform_any_to_gpuit_bsp (
+    Xform* xf_out, Xform* xf_in, 
+    Plm_image_header* pih, 
     float* grid_spac)
 {
     Xform xf_tmp;
@@ -1082,7 +1087,8 @@ xform_gpuit_bsp_to_gpuit_bsp (
    Conversion to gpuit_vf
    ----------------------------------------------------------------------- */
 Volume*
-xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* spacing)
+xform_gpuit_vf_to_gpuit_vf (
+    Volume* vf_in, int* dim, float* offset, float* spacing)
 {
     Volume* vf_out;
     vf_out = volume_resample (vf_in, dim, offset, spacing);
@@ -1090,7 +1096,8 @@ xform_gpuit_vf_to_gpuit_vf (Volume* vf_in, int* dim, float* offset, float* spaci
 }
 
 Volume*
-xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* spacing)
+xform_gpuit_bsp_to_gpuit_vf (
+    Xform* xf_in, int* dim, float* offset, float* spacing)
 {
     Bspline_xform* bxf = xf_in->get_gpuit_bsp();
     Volume* vf_out;
@@ -1103,7 +1110,9 @@ xform_gpuit_bsp_to_gpuit_vf (Xform* xf_in, int* dim, float* offset, float* spaci
 }
 
 Volume*
-xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float* offset, float* spacing)
+xform_itk_vf_to_gpuit_vf (
+    DeformationFieldType::Pointer itk_vf, 
+    int* dim, float* offset, float* spacing)
 {
     /* GCS FIX: Need direction cosines */
     Volume* vf_out = volume_create (dim, offset, spacing, 0, 
@@ -1128,9 +1137,9 @@ xform_itk_vf_to_gpuit_vf (DeformationFieldType::Pointer itk_vf, int* dim, float*
    Selection routines to convert from X to Y
    ----------------------------------------------------------------------- */
 void
-xform_to_trn (Xform *xf_out, 
-	      Xform *xf_in, 
-	      Plm_image_header *pih)
+xform_to_trn (
+    Xform *xf_out, Xform *xf_in, 
+    Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1158,9 +1167,9 @@ xform_to_trn (Xform *xf_out,
 }
 
 void
-xform_to_vrs (Xform *xf_out, 
-	      Xform *xf_in, 
-	      Plm_image_header *pih)
+xform_to_vrs (
+    Xform *xf_out, Xform *xf_in, 
+    Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1190,8 +1199,8 @@ xform_to_vrs (Xform *xf_out,
 }
 
 void
-xform_to_quat (Xform *xf_out, 
-    Xform *xf_in, 
+xform_to_quat (
+    Xform *xf_out, Xform *xf_in, 
     Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
@@ -1222,9 +1231,9 @@ xform_to_quat (Xform *xf_out,
 }
 
 void
-xform_to_aff (Xform *xf_out, 
-	      Xform *xf_in, 
-	      Plm_image_header *pih)
+xform_to_aff (
+    Xform *xf_out, Xform *xf_in, 
+    Plm_image_header *pih)
 {
     switch (xf_in->m_type) {
     case XFORM_NONE:
@@ -1259,8 +1268,7 @@ xform_to_aff (Xform *xf_out,
 
 void
 xform_to_itk_bsp (
-    Xform *xf_out, 
-    Xform *xf_in, 
+    Xform *xf_out, Xform *xf_in, 
     Plm_image_header* pih,
     float* grid_spac
 )
@@ -1307,8 +1315,7 @@ xform_to_itk_bsp (
 
 void
 xform_to_itk_bsp_nobulk (
-    Xform *xf_out, 
-    Xform *xf_in, 
+    Xform *xf_out, Xform *xf_in, 
     Plm_image_header* pih,
     float* grid_spac)
 {
@@ -1444,7 +1451,9 @@ xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih,
 }
 
 void
-xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* spacing)
+xform_to_gpuit_vf (
+    Xform* xf_out, Xform *xf_in, 
+    int* dim, float* offset, float* spacing)
 {
     Volume* vf = 0;
 
