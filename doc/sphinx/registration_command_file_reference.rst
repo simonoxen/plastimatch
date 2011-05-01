@@ -9,46 +9,47 @@ files are put only in the GLOBAL section. Output files can be put in
 the GLOBAL section or any STAGE section (which will write out
 intermediate output).
 
-+--------------+-------+-------------------------------------------+
-|option        |stage  |value                                      |
-+==============+=======+===========================================+
-|fixed         |GLOBAL |Name of fixed image                        |
-|              |       |                                           |
-+--------------+-------+-------------------------------------------+
-|moving        |GLOBAL |Name of fixed image                        |
-|              |       |                                           |
-+--------------+-------+-------------------------------------------+
-|xform_in      |GLOBAL,|Initial guess                              |
-|              |STAGE  |                                           |
-+--------------+-------+-------------------------------------------+
-|xform_out     |GLOBAL,|Final transform                            |
-|              |STAGE  |                                           |
-+--------------+-------+-------------------------------------------+
-|vf_out        |GLOBAL,|Final transform, as vector field           |
-|              |STAGE  |                                           |
-+--------------+-------+-------------------------------------------+
-|img_out       |GLOBAL,|Warped image                               |
-|              |STAGE  |                                           |
-+--------------+-------+-------------------------------------------+
-|img_out_fmt   |GLOBAL,|“auto” (default) Output format Must be     |
-|              |STAGE  |either “auto”, which uses filename         |
-|              |       |extenstion to determine, or “dicom”, which |
-|              |       |iterprets img_out as a directory name to   |
-|              |       |output the dicom files                     |
-|              |       |                                           |
-|              |       |                                           |
-+--------------+-------+-------------------------------------------+
-|img_out_type  |GLOBAL,|“auto” (default) Data type of the output   |
-|              |STAGE  |image, usually either float, short, or     |
-|              |       |uchar                                      |
-|              |       |                                           |
-+--------------+-------+-------------------------------------------+
-|background_max|GLOBAL |-1200.0 (default) Units: image intensity   |
-|              |       |This is used to automatically determine a  |
-|              |       |region of interest                         |
-|              |       |                                           |
-|              |       |                                           |
-+--------------+-------+-------------------------------------------+
+.. list-table::
+   :widths: 20 20 60
+   :header-rows: 1
+
+   * - option
+     - stage
+     - value
+   * - fixed
+     - GLOBAL
+     - Filename of fixed image
+   * - moving
+     - GLOBAL
+     - Filename of moving image
+   * - xform_in
+     - GLOBAL, STAGE
+     - Initial guess for transform
+   * - xform_out
+     - GLOBAL, STAGE
+     - Filename of output transform
+   * - vf_out
+     - GLOBAL, STAGE
+     - Filename of output transform, as vector field
+   * - img_out
+     - GLOBAL, STAGE
+     - Filename of warped image
+   * - img_out_fmt
+     - GLOBAL, STAGE
+     - Output format, which must be either “auto” (default), 
+       which means the filename extenstion is used to determine
+       the file format, or “dicom”, which interprets img_out 
+       as a directory name to output the dicom files
+   * - img_out_type
+     - GLOBAL, STAGE
+     - Data type of the output image.  Either “auto” (default), or 
+       and image type string, such as "float", "short", or "uchar"
+       (without the quotes).
+   * - background_max
+     - GLOBAL
+     - -1200.0 (default) Units: image intensity
+       This is a threshold value that is used to automatically 
+       determine the registration region of interest.
 
 Optimization parameters.  There are three key parameters that decide
 which algorithm is used for optimization. 
@@ -87,8 +88,11 @@ The following specific parameters are used to refine the optimization.
 Depending on the choice of xform, optim, and impl, a different set of
 specific parameters are available. 
 
+
 +----------------------+----------------+------------+---------------------------+
 |option                |xform+optim+impl|default     |description                |
+|                      |                |            |                           |
+|                      |                |            |                           |
 +======================+================+============+===========================+
 |res                   |any+any+any     |Automatic   |[1 1 1] (minimum) Units:   |
 |                      |                |            |voxels, must be            |
