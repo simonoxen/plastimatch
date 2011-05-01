@@ -48,6 +48,11 @@
 #define IMG_OUT_TYPE_SHORT		    2
 #define IMG_OUT_TYPE_FLOAT		    3
 
+enum Subsampling_type {
+    SUBSAMPLING_AUTO,
+    SUBSAMPLING_VOXEL_RATE
+};
+
 class Stage_Parms {
 public:
     /* Generic optimization parms */
@@ -57,6 +62,8 @@ public:
     char alg_flavor;
     Threading threading_type;
     int metric_type;
+    /* Image subsampling */
+    Subsampling_type subsampling_type;
     int fixed_subsample_rate[3];   /* In voxels */
     int moving_subsample_rate[3];  /* In voxels */
     /* Intensity values for air */
@@ -107,11 +114,12 @@ public:
 	/* Generic optimization parms */
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
-	//impl_type = IMPLEMENTATION_ITK;
 	impl_type = IMPLEMENTATION_NONE;
 	alg_flavor = 0;
 	threading_type = THREADING_CPU_OPENMP;
 	metric_type = METRIC_MSE;
+	/* Image subsampling */
+	subsampling_type = SUBSAMPLING_AUTO;
 	fixed_subsample_rate[0] = 4;
 	fixed_subsample_rate[1] = 4;
 	fixed_subsample_rate[2] = 1;

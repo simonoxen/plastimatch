@@ -10,6 +10,7 @@
 #include "cxt_io.h"
 #include "img_metadata.h"
 #include "plm_image.h"
+#include "plm_path.h"
 #include "referenced_dicom_dir.h"
 #include "xio_ct.h"
 

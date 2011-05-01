@@ -17,7 +17,6 @@
 
 #define BUFLEN 2048
 
-
 int
 set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 {
@@ -262,7 +261,7 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    goto error_exit;
 	}
     }
-	else if (!strcmp (key, "learn_rate")) {
+    else if (!strcmp (key, "learn_rate")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%g", &stage->learn_rate) != 1) {
 	    goto error_exit;
@@ -347,27 +346,28 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	if (sscanf (val, "%g", &stage->landmark_stiffness) != 1) {
 	    goto error_exit;
 	}
-	}	
+    }	
     else if (!strcmp (key, "landmark_flavor")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%c", &stage->landmark_flavor) != 1) {
 	    goto error_exit;
 	}
     }	
-	else if (!strcmp (key, "fixed_landmarks")) {
+    else if (!strcmp (key, "fixed_landmarks")) {
 	if (section == 0) goto error_not_global;
 	strncpy (stage->fixed_landmarks_fn, val, _MAX_PATH);
-	}
+    }
     else if (!strcmp (key, "moving_landmarks")) {
 	if (section == 0) goto error_not_global;
 	strncpy (stage->moving_landmarks_fn, val, _MAX_PATH);
-	}
-	else if (!strcmp (key, "warped_landmarks")) {
+    }
+    else if (!strcmp (key, "warped_landmarks")) {
 	if (section == 0) goto error_not_global;
 	strncpy (stage->warped_landmarks_fn, val, _MAX_PATH);
-	}
-	else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
+    }
+    else if (!strcmp (key, "res") || !strcmp (key, "ss")) {
 	if (section == 0) goto error_not_global;
+	stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
 	if (sscanf (val, "%d %d %d", 
 		&(stage->fixed_subsample_rate[0]), 
 		&(stage->fixed_subsample_rate[1]), 
@@ -386,6 +386,12 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 		&(stage->fixed_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
+	if (stage->subsampling_type == SUBSAMPLING_AUTO) {
+	    stage->moving_subsample_rate[0] = stage->fixed_subsample_rate[0];
+	    stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
+	    stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
+	}
+	stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
     else if (!strcmp (key, "moving_ss")) {
 	if (section == 0) goto error_not_global;
@@ -395,6 +401,12 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 		&(stage->moving_subsample_rate[2])) != 3) {
 	    goto error_exit;
 	}
+	if (stage->subsampling_type == SUBSAMPLING_AUTO) {
+	    stage->fixed_subsample_rate[0] = stage->moving_subsample_rate[0];
+	    stage->fixed_subsample_rate[1] = stage->moving_subsample_rate[1];
+	    stage->fixed_subsample_rate[2] = stage->moving_subsample_rate[2];
+	}
+	stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
     else if (!strcmp (key, "num_grid")) {
 	if (section == 0) goto error_not_global;
@@ -421,15 +433,15 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     }
     return 0;
 
- error_not_stages:
+  error_not_stages:
     print_and_exit ("This key (%s) not allowed in a stages section\n", key);
     return -1;
 
- error_not_global:
+  error_not_global:
     print_and_exit ("This key (%s) not is allowed in a global section\n", key);
     return -1;
 
- error_exit:
+  error_exit:
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }

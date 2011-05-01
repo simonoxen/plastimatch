@@ -14,7 +14,6 @@
 
 #include "bspline.h"
 #include "itk_image.h"
-#include "plm_parms.h"
 #include "print_and_exit.h"
 #include "volume.h"
 
