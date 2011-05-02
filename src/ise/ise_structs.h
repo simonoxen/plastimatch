@@ -8,10 +8,10 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 #include <mil.h>
 #endif
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
 #include "R2Api.h"
 #include "BFApi.h"
 #endif
@@ -192,7 +192,7 @@ struct __Panel {
     TrackerInfo tracker_info;
 };
 
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 typedef struct __MatroxInfo MatroxInfo;
 struct __MatroxInfo {
     MIL_ID milapp;
@@ -206,7 +206,7 @@ struct __MatroxInfo {
 };
 #endif
 
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
 typedef struct __BitflowInfo BitflowInfo;
 struct __BitflowInfo {
     //handle to the bitflow board
@@ -286,10 +286,10 @@ struct __IseFramework {
 
     /* Image panels */
     unsigned long image_source;
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     MatroxInfo matrox;
 #endif
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     BitflowInfo bitflow;
 #endif
 

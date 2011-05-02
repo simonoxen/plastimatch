@@ -18,7 +18,7 @@
 #include "ise_error.h"
 #include "ise_structs.h"
 
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
 
 /** @brief Initialize the BitflowInfo struct
  *

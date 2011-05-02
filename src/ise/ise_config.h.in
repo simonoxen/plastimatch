@@ -1,11 +1,11 @@
 /* -------------------------------------------------------------------------*
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
-#ifndef __config_h__
-#define __config_h__
+#ifndef __ise_config_h__
+#define __ise_config_h__
 
-#cmakedefine HAVE_BITFLOW 1
-#cmakedefine HAVE_MIL 1
+#cmakedefine BITFLOW_FOUND 1
+#cmakedefine MIL_FOUND 1
 #cmakedefine QT_FOUND 1
 
 /* Requred for QueueUserAPC() */

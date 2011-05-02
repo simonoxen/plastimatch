@@ -13,8 +13,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 
-#include "config.h"
-#if (HAVE_BITFLOW)
+#include "ise_config.h"
+#if (BITFLOW_FOUND])
 #include <stdio.h>
 #include <conio.h>
 #include "R2Api.h"
@@ -376,4 +376,4 @@ void bitflow_clear_probe(BitflowInfo *bf, int idx)
 	// close board
 	R2BrdClose(bf->hBoard[idx]);
 }
-#endif /* HAVE_BITFLOW */
+#endif /* BITFLOW_FOUND */

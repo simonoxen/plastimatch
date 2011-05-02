@@ -162,12 +162,12 @@ WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
     save_globals ();
 
     /* Find out if we have a matrox board installed in the computer */
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     globals.have_matrox_hardware = matrox_probe ();
 #else
     globals.have_matrox_hardware = 0;
 #endif
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     globals.have_bitflow_hardware = bitflow_probe ();
 #else
     globals.have_bitflow_hardware = 0;

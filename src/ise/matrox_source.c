@@ -2,7 +2,7 @@
     See COPYRIGHT for copyright information.
  * -------------------------------------------------------------------------*/
 #include "config.h"
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 #include <stdlib.h>
 #include <io.h>
 #include <fcntl.h>
@@ -269,4 +269,4 @@ matrox_shutdown (MatroxInfo* matrox, int num_idx)
     MappFree(matrox->milapp);
     debug_printf ("Done with matrox_shutdown()\n");
 }
-#endif /* HAVE_MIL */
+#endif /* MIL_FOUND */

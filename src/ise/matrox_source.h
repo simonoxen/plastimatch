@@ -6,7 +6,7 @@
 
 #include "config.h"
 
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 Ise_Error matrox_init (MatroxInfo* matrox, unsigned int mode);
 Ise_Error matrox_open (MatroxInfo* matrox, unsigned int idx, 
 		 unsigned int board_no, unsigned int mode,

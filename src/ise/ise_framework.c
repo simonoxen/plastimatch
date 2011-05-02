@@ -173,7 +173,7 @@ grabber_init (IseFramework* ig)
         case ISE_IMAGE_SOURCE_MATROX_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
             {
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 	    Ise_Error rc;
 	    rc = matrox_init (&ig->matrox, ig->image_source);
 	    if (rc) {
@@ -186,7 +186,7 @@ grabber_init (IseFramework* ig)
         case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_BITFLOW_HIRES_FLUORO:
 	    {
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
 	// initialize the card
 	Ise_Error rc;
 	rc = bitflow_init (&ig->bitflow, ig->image_source);
@@ -268,7 +268,7 @@ imaging_system_startup (IseFramework* ig,
     switch (ig->image_source) {
         case ISE_IMAGE_SOURCE_MATROX_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 	rc = matrox_open (&ig->matrox, idx, board_no, ig->image_source, 
 	    ig->panel[idx].framerate);
 	if (rc != ISE_SUCCESS) {
@@ -282,7 +282,7 @@ imaging_system_startup (IseFramework* ig,
 	    break;
         case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_BITFLOW_HIRES_FLUORO:
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
 	rc = bitflow_open (&ig->bitflow, idx, board_no, ig->image_source, 
 		ig->panel[idx].framerate);
 	if (rc != ISE_SUCCESS) 
@@ -373,12 +373,12 @@ ise_grab_close (IseFramework* ig)
         || ISE_IMAGE_SOURCE_FILE_HIRES_FLUORO) 
     {
 	cbuf_shutdown (ig);
-#if (HAVE_MIL)
+#if (MIL_FOUND)
         if (ig->image_source == ISE_IMAGE_SOURCE_MATROX_LORES_FLUORO || 
             ig->image_source == ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO )
 	    matrox_shutdown (&ig->matrox, ig->num_idx);
 #endif
-#if (HAVE_BITFLOW) 
+#if (BITFLOW_FOUND) 
         if (ig->image_source == ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO || 
             ig->image_source == ISE_IMAGE_SOURCE_BITFLOW_HIRES_FLUORO )
 	    bitflow_shutdown (&ig->bitflow, ig->num_idx);
@@ -403,13 +403,13 @@ ise_grab_set_source (IseFramework* ig, unsigned long new_source)
     {
         case ISE_IMAGE_SOURCE_MATROX_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
-#if (HAVE_MIL)
+#if (MIL_FOUND)
 	matrox_shutdown (&ig->matrox, globals.ig.num_idx);
 #endif
 	    break;
         case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_BITFLOW_HIRES_FLUORO:
-#if(HAVE_BITFLOW)
+#if(BITFLOW_FOUND)
         bitflow_shutdown(&ig->bitflow, globals.ig.num_idx);
 #endif
 	    break;
@@ -428,13 +428,13 @@ ise_grab_set_source (IseFramework* ig, unsigned long new_source)
     {
         case ISE_IMAGE_SOURCE_MATROX_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     matrox_init (&ig->matrox, new_source);
 #endif
             break;	
         case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
         case ISE_IMAGE_SOURCE_BITFLOW_HIRES_FLUORO:
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     bitflow_init (&ig->bitflow, new_source);
 #endif	
 	    break;
@@ -510,10 +510,10 @@ ise_grab_continuous_thread (void* v)
 {
     ThreadData* data = (ThreadData*) v;
     IseFramework* ig = data->ig;
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     MatroxInfo* matrox = &ig->matrox;
 #endif
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     BitflowInfo* bitflow = &ig->bitflow;
 #endif
 
@@ -538,7 +538,7 @@ ise_grab_continuous_thread (void* v)
     switch (ig->image_source) 
     {
         case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     if (idx == 1) {
         matrox_prepare_grab (&ig->matrox, idx);
         break;
@@ -547,7 +547,7 @@ ise_grab_continuous_thread (void* v)
 #endif
             break;
         case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     if (idx == 1) {
         rc = bitflow_grab_setup (&ig->bitflow, idx);
         break;
@@ -595,12 +595,12 @@ ise_grab_continuous_thread (void* v)
         switch (ig->image_source) 
         {
             case ISE_IMAGE_SOURCE_MATROX_HIRES_FLUORO:
-#if (HAVE_MIL)
+#if (MIL_FOUND)
     matrox_grab_image (curr, &ig->matrox, idx, ig->panel[idx].rotate_flag, data->done);
 #endif
                 break;
 	    case ISE_IMAGE_SOURCE_BITFLOW_LORES_FLUORO:
-#if (HAVE_BITFLOW)
+#if (BITFLOW_FOUND)
     bitflow_grab_image (curr->img, &ig->bitflow, idx);
 #endif
                 break;
