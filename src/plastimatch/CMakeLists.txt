@@ -344,6 +344,8 @@ SET (PLASTIMATCH_LIBRARY_SRC
   plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
   plm_file_format.cxx plm_file_format.h 
+  plm_HausdorffDistanceImageFilter.hxx plm_HausdorffDistanceImageFilter.h
+  plm_DirectedHausdorffDistanceImageFilter.hxx plm_DirectedHausdorffDistanceImageFilter.h
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 
   plm_image_header.cxx plm_image_header.h 

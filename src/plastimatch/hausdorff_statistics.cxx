@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "plm_config.h"
-#include "itkHausdorffDistanceImageFilter.h"
+#include "plm_HausdorffDistanceImageFilter.h"
 #include "itkImage.h"
 
 #include "itk_image.h"
@@ -19,7 +19,7 @@ void do_hausdorff (
     typename itk::Image<T,3>::Pointer image_2
 )
 {
-    typedef itk::HausdorffDistanceImageFilter< 
+    typedef itk::plm_HausdorffDistanceImageFilter< 
 	itk::Image<T,3>, itk::Image<T,3> > Hausdorff_filter;
     typename Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
     h_filter->SetInput1 (image_1);
