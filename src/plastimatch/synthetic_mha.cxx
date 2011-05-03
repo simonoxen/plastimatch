@@ -13,6 +13,30 @@
 #include "rtss.h"
 #include "synthetic_mha.h"
 
+float intens_enclosed(FloatPoint3DType phys)
+		{
+		float f;		
+		float p[48]={ 5,5,5,  95,10,95,
+			      5,90,5, 95,95,95,
+			      5,5,5,  10,95,95,
+			      90,5,5, 95,95,95,
+			      5,5,5,  95,95,10,
+			      5,5,90, 95,95,95,
+			      35,35,35, 70,70, 70,
+			      15,15,15, 85,20,25
+				};
+
+		for(int i=0;i<6*8;i++) { p[i]-=50; /*p[i]*=2;*/ } //center is at 0, size is ~200
+		// must specify dimension 200, origin -100, voxel spacing 1 in Slicer
+		
+		f = 0.;
+		for (int i=0;i<8;i++)
+			if (p[6*i+0]<phys[0] && phys[0]<p[6*i+3] &&
+			    p[6*i+1]<phys[1] && phys[1]<p[6*i+4] &&
+			    p[6*i+2]<phys[2] && phys[2]<p[6*i+5]) { f = 1; } 
+		return f;
+		}
+
 void
 synthetic_mha (
     Rtds *rtds,
@@ -69,7 +93,7 @@ synthetic_mha (
 	dose_img_it.GoToBegin();
     }
 
-    /* Iterate through image, setting values */
+	/* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
@@ -115,6 +139,10 @@ synthetic_mha (
 		f = parms->foreground;
 	    }
 	    break;
+	case PATTERN_ENCLOSED_RECT:
+		f = intens_enclosed(phys); // 0 to 1
+		f = (1 - f) * parms->background + f * parms->foreground;
+		break;
 	default:
 	    f = 0.0f;
 	    break;

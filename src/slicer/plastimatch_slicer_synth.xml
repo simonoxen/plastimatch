@@ -67,6 +67,7 @@
       <element>Rectangle</element>
       <element>Sphere</element>
       <element>Gauss</element>
+      <element>Enclosed rectangle</element>
     </string-enumeration>
     <float>
       <name>plmslc_background</name>

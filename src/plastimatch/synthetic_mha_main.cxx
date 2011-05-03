@@ -122,7 +122,7 @@ parse_fn (
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
-	"Synthetic pattern to create: {gauss,rect, sphere},"
+	"Synthetic pattern to create: {gauss,rect, sphere, enclosed_rect},"
 	" default is gauss", 
 	1, "gauss");
 
@@ -195,7 +195,10 @@ parse_fn (
     else if (arg == "sphere") {
 	sm_parms->pattern = PATTERN_SPHERE;
     }
-    else {
+    else if (arg == "enclosed_rect") {
+	sm_parms->pattern = PATTERN_ENCLOSED_RECT;
+    }
+	else {
 	throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
     }
 

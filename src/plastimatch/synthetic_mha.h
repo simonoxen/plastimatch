@@ -12,7 +12,8 @@ class Rtds;
 enum Pattern_type {
     PATTERN_GAUSS,
     PATTERN_RECT,
-    PATTERN_SPHERE
+    PATTERN_SPHERE,
+    PATTERN_ENCLOSED_RECT
 };
 
 class Synthetic_mha_parms {
