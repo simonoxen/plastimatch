@@ -172,7 +172,7 @@ IF (CUDA_FOUND)
     fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
     )
 
-  IF (PLM_USE_GPU_PLUGINS)      # << Dynamic loading
+  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
     SET (PLMCUDA_LIBRARY_SRC
       ${PLMCUDA_LIBRARY_SRC}
       volume.c            # for demons_cuda.cu
@@ -234,7 +234,7 @@ IF (OPENCL_FOUND)
     opencl_util_nvidia.cxx opencl_util_nvidia.h
     )
 
-  IF (PLM_USE_GPU_PLUGINS)          # << Dynamic linking
+  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
 
     SET (PLMOPENCL_LIBRARY_SRC
       ${PLMOPENCL_LIBRARY_SRC}
@@ -639,7 +639,7 @@ PLM_ADD_LIBRARY (
 # JAS 2010.11.23
 # Because the plugins are loaded at runtime, CMake doesn't know
 # that they are needed by everything linked against gpuit.  So, we tell it.
-IF (PLM_USE_GPU_PLUGINS)
+IF (BUILD_SHARED_LIBS)      # << Dynamic loading
   IF (CUDA_FOUND)
     ADD_DEPENDENCIES (gpuit plmcuda)
   ENDIF ()
@@ -686,19 +686,19 @@ IF (WIN32 AND SLICER_FOUND)
     plmsys
     )
 
-  IF (CUDA_FOUND AND PLM_USE_GPU_PLUGINS)
+  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
     PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmcuda
       "${INDIR}/plmcuda.dll"
       "${OUTDIR}/plmcuda.dll"
       plmcuda
       )
-  ENDIF ()
-  IF (OPENCL_FOUND AND PLM_USE_GPU_PLUGINS)
-    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
-      "${INDIR}/plmopencl.dll"
-      "${OUTDIR}/plmopencl.dll"
-      plmopencl
-      )
+    IF (OPENCL_FOUND)
+      PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
+	"${INDIR}/plmopencl.dll"
+	"${OUTDIR}/plmopencl.dll"
+	plmopencl
+	)
+    ENDIF ()
   ENDIF ()
 ENDIF ()
 

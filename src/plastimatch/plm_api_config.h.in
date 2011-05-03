@@ -7,7 +7,7 @@
 #cmakedefine BUILD_SHARED_LIBS 1
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS) || defined (PLM_BUILD_SHARED_LIBS)))
+#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS)))
 # ifdef plastimatch1_EXPORTS
 #  define plastimatch1_EXPORT __declspec(dllexport)
 # else

@@ -36,8 +36,9 @@
 /* User options */
 #cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
 #cmakedefine BUILD_SHARED_LIBS 1
-#cmakedefine PLM_BUILD_SHARED_LIBS 1
 #cmakedefine PLM_USE_SS_IMAGE_VEC 1
+
+/* Needed for dynamic linking */
 #cmakedefine PLM_USE_GPU_PLUGINS 1
 
 /* Did we find fortran? -- always true now. */
@@ -88,7 +89,7 @@
 #endif
 
 /* This code is for exporting symbols when building DLLs on windows */
-#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS) || defined (PLM_BUILD_SHARED_LIBS)))
+#if (!defined (BUILD_AGAINST_SLICER3) && (defined(_WIN32) || defined(WIN32)) && (defined (BUILD_SHARED_LIBS)))
 # ifdef gpuit_EXPORTS
 #  define gpuit_EXPORT __declspec(dllexport)
 # else

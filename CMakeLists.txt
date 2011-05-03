@@ -328,19 +328,8 @@ SET (MSINTTYPES_INCLUDE_DIR
 IF (NOT PLM_CONFIG_DISABLE_CUDA)
   FIND_PACKAGE (CUDA_wrap)
   SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
-
   IF (CUDA_FOUND)
-    CUDA_INCLUDE_DIRECTORIES (
-      ${CMAKE_CURRENT_SOURCE_DIR}
-      )
-    # If CUDA is found, use GPU Plugins
-    OPTION (PLM_USE_GPU_PLUGINS 
-      "Build CUDA support as a runtime loaded shared library" ON)
-  ELSE ()
-    # If CUDA is not found, don't use GPU Plugins and hide the option
-    OPTION (PLM_USE_GPU_PLUGINS 
-      "CUDA is needed to set this option" OFF)
-    MARK_AS_ADVANCED(PLM_USE_GPU_PLUGINS)
+    CUDA_INCLUDE_DIRECTORIES (${CMAKE_CURRENT_SOURCE_DIR})
   ENDIF ()
 ENDIF ()
 
@@ -366,12 +355,21 @@ IF (SLICER_FOUND)
   slicer3_set_default_install_prefix_for_external_projects ()
   
   #slicer3_enable_plugins_testing()
-
-  # Slicer seems to require a shared library build
-  #SET (PLM_BUILD_SHARED_LIBS ON)
 ELSE ()
   MESSAGE (STATUS "Looking for Slicer3 - not found")
 ENDIF ()
+
+##-----------------------------------------------------------------------------
+##  For shared libraries, we enable dynamic loading of cuda, opencl
+##  Note: we can't use BUILD_SHARED_LIBS directly, because it conflicts 
+##  with the ITK header files
+##  Note: we have to do this after checking for Slicer, because Slicer 
+##  will change BUILD_SHARED_LIBS to ON
+##-----------------------------------------------------------------------------
+set (PLM_USE_GPU_PLUGINS OFF)
+if (BUILD_SHARED_LIBS)
+  set (PLM_USE_GPU_PLUGINS ON)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Special linking instructions on unix
