@@ -24,6 +24,7 @@ void do_hausdorff (
     typename Hausdorff_filter::Pointer h_filter = Hausdorff_filter::New ();
     h_filter->SetInput1 (image_1);
     h_filter->SetInput2 (image_2);
+    h_filter->SetUseImageSpacing(true);
     h_filter->Update ();
 
     printf (

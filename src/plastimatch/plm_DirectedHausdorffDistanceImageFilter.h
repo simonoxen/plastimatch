@@ -115,6 +115,9 @@ public:
   itkGetConstMacro(DirectedHausdorffDistance,RealType);
   itkGetConstMacro(AverageHausdorffDistance,RealType);
 
+  /** Set if image spacing should be used in computing distances. */
+  itkSetMacro( UseImageSpacing, bool );
+
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
   itkConceptMacro(InputHasNumericTraitsCheck,
@@ -160,6 +163,7 @@ private:
   Array<RealType>                     m_Sum;
   RealType                            m_DirectedHausdorffDistance;
   RealType                            m_AverageHausdorffDistance;
+  bool   		              m_UseImageSpacing;
 
 }; // end of class
 

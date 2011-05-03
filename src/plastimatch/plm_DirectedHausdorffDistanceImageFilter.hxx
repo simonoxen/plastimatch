@@ -38,6 +38,7 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
   m_DistanceMap = NULL;
   m_DirectedHausdorffDistance = NumericTraits<RealType>::Zero;
   m_AverageHausdorffDistance = NumericTraits<RealType>::Zero;
+  m_UseImageSpacing = false;
 }
 
 
@@ -134,7 +135,10 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
   typename FilterType::Pointer filter = FilterType::New();
 
   filter->SetInput( this->GetInput2() );
-  filter->SetUseImageSpacing(true);
+  if (m_UseImageSpacing)
+  {
+	filter->SetUseImageSpacing(true);
+  }
   filter->Update();
 
   m_DistanceMap = filter->GetOutput();
