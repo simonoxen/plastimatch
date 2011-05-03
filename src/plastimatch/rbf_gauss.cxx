@@ -461,7 +461,7 @@ rbf_gauss_update_vf (
     float rbf;
     int num_landmarks = lw->m_fixed_landmarks->num_points;
 
-    printf("RBF, updating the vector field\n");
+    printf("Gauss RBF, updating the vector field\n");
 
     if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");
@@ -516,7 +516,7 @@ rbf_gauss_update_vf_no_dircos (
     float rbf;
     int num_landmarks = lw->m_fixed_landmarks->num_points;
 
-    printf("RBF, updating the vector field\n");
+    printf("Gauss RBF, updating the vector field\n");
 
     if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");

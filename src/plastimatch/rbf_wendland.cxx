@@ -26,6 +26,7 @@
 #include "rbf_wendland.h"
 #include "vf.h"
 #include "volume.h"
+#include "volume_macros.h"
 #include "rbf_cluster.h"
 
 typedef struct rbf_params Rbf_parms;
@@ -154,30 +155,25 @@ rbf_wendland_update_vf (
     float *coeff                 /* Input */
 )
 {
-    int lidx, d, fv;
-    int fi, fj, fk;
+    int lidx, d, v;
+    int ijk[3];
     float fxyz[3];
     float *vf_img;
     float rbf;
     int num_landmarks = lw->m_fixed_landmarks->num_points;
 
-    printf("RBF Wendland, updating the vector field\n");
+    printf("Wendland RBF, updating the vector field\n");
 
     if (vf->pix_type != PT_VF_FLOAT_INTERLEAVED )
 	print_and_exit("Sorry, this type of vector field is not supported\n");
 
     vf_img = (float*) vf->img;
 
-    for (fk = 0; fk < vf->dim[2];  fk++) {
-	fxyz[2] = vf->offset[2] + fk * vf->spacing[2];
-	for (fj = 0; fj < vf->dim[1];  fj++) {
-	    fxyz[1] = vf->offset[1] + fj * vf->spacing[1];
-	    for (fi = 0; fi < vf->dim[0];  fi++) {
-		fxyz[0] = vf->offset[0] + fi * vf->spacing[0];
-		
+    for (v = 0, LOOP_Z (ijk, fxyz, vf)) {
+	for (LOOP_Y (ijk, fxyz, vf)) {
+	    for (LOOP_X (ijk, fxyz, vf), v++) {
+
 		for (lidx=0; lidx < num_landmarks; lidx++) {
-		    fv = fk * vf->dim[0] * vf->dim[1] 
-			+ fj * vf->dim[0] + fi;
 			
 		    rbf = rbf_wendland_value (
 			&lw->m_fixed_landmarks->points[3*lidx], 
@@ -185,8 +181,14 @@ rbf_wendland_update_vf (
 			lw->adapt_radius[lidx]);
 
 		    for (d=0; d<3; d++) {
-			vf_img[3*fv+d] += coeff[3*lidx+d] * rbf;
-
+			vf_img[3*v+d] += coeff[3*lidx+d] * rbf;
+#if defined (commentout)
+			printf ("Adding: %d (%d %d %d) (%g * %g) %g\n", 
+			    lidx, 
+			    ijk[0], ijk[1], ijk[2],
+			    coeff[3*lidx+d], rbf, 
+			    coeff[3*lidx+d] * rbf);
+#endif
 		    }
 		}
 	    }
