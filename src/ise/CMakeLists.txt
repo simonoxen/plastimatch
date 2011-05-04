@@ -14,23 +14,23 @@ find_package (Paxscan)
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_BINARY_DIR})
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${CMAKE_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 
 ##-----------------------------------------------------------------------------
 ## QT configuration
 ##-----------------------------------------------------------------------------
-IF (QT4_FOUND AND QT_QTSQL_FOUND)
-  SET (BUILD_ISE_QT TRUE)
-ELSE ()
-  SET (BUILD_ISE_QT FALSE)
-ENDIF ()
+if (QT4_FOUND AND QT_QTSQL_FOUND)
+  set (BUILD_ISE_QT TRUE)
+else ()
+  set (BUILD_ISE_QT FALSE)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Source files
 ##-----------------------------------------------------------------------------
-SET (ISE_COMMON_SRC
+set (ISE_COMMON_SRC
   bitflow.c bitflow.h
   cbuf.c cbuf.h
   debug.c debug.h
@@ -60,93 +60,97 @@ SET (ISE_COMMON_SRC
   tracker.c tracker.h
   )
 
-SET (ISE_SRC
+set (ISE_SRC
   ${ISE_COMMON_SRC}
   ise_resize.c ise_resize.h
   )
 
-SET (ISE_QT_SRC
+set (ISE_QT_SRC
   iqt_main.cxx
   iqt_main_window.cxx iqt_main_window.h
   iqt_video_widget.cxx iqt_video_widget.h
   )
-IF (BUILD_ISE_QT)
-  QT4_WRAP_CPP (ISE_QT_SRC 
+if (BUILD_ISE_QT)
+  qt4_wrap_cpp (ISE_QT_SRC 
     iqt_main_window.h 
     iqt_video_widget.h
     )
-  QT4_WRAP_UI (ISE_QT_SRC 
+  qt4_wrap_ui (ISE_QT_SRC 
     iqt_main_window.ui
     )
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Configuration files
 ##-----------------------------------------------------------------------------
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/ise_config.h.in
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/ise_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/ise_config.h)
 
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
-INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-INCLUDE_DIRECTORIES(BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-IF(MIL_FOUND)
-  INCLUDE_DIRECTORIES(AFTER ${MIL_INCLUDE_DIR})
-ENDIF()
-IF(BITFLOW_FOUND)
-  INCLUDE_DIRECTORIES(AFTER ${BITFLOW_INCLUDE_DIR})
-ENDIF()
-IF (PAXSCAN_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${PAXSCAN_INCLUDE_DIR})
-ENDIF ()
-IF (ADVANTECH_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${ADVANTECH_INCLUDE_DIR})
-ENDIF ()
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+if (MIL_FOUND)
+  include_directories (AFTER ${MIL_INCLUDE_DIR})
+endif ()
+if(BITFLOW_FOUND)
+  include_directories (AFTER ${BITFLOW_INCLUDE_DIR})
+endif ()
+if (PAXSCAN_FOUND)
+  include_directories (AFTER ${PAXSCAN_INCLUDE_DIR})
+endif ()
+if (ADVANTECH_FOUND)
+  include_directories (AFTER ${ADVANTECH_INCLUDE_DIR})
+endif ()
 
 ## INCLUDE_DIRECTORIES(AFTER "C:/Program Files/NVIDIA Corporation/Cg/include")
-## INCLUDE_DIRECTORIES(AFTER "C:/Program Files/fatm/include")
-INCLUDE_DIRECTORIES (AFTER "${CMAKE_SOURCE_DIR}/src/fatm/include")
+include_directories (AFTER "${CMAKE_SOURCE_DIR}/src/fatm/include")
 
 ##-----------------------------------------------------------------------------
 ##  Linking
 ##-----------------------------------------------------------------------------
-IF(MSVC80)
-  LINK_DIRECTORIES("C:/Program Files/Microsoft Visual Studio 8/VC/lib")
-ENDIF(MSVC80)
-LINK_DIRECTORIES ("${CMAKE_BINARY_DIR}/src/fatm")
-IF(MIL_FOUND)
-  LINK_DIRECTORIES(${MIL_ROOT_DIR}/library/winnt/msc/dll)
-ENDIF(MIL_FOUND)
-IF(BITFLOW_FOUND)
-  LINK_DIRECTORIES(${BITFLOW_ROOT_DIR}/lib)
-ENDIF(BITFLOW_FOUND)
+if (MSVC80)
+  link_directories ("C:/Program Files/Microsoft Visual Studio 8/VC/lib")
+endif ()
+if (MIL_FOUND)
+  link_directories (${MIL_ROOT_DIR}/library/winnt/msc/dll)
+endif ()
+if (BITFLOW_FOUND)
+  link_directories (${BITFLOW_ROOT_DIR}/lib)
+endif ()
 
 ## LINK_DIRECTORIES("C:/Program Files/NVIDIA Corporation/Cg/lib")
-## LINK_DIRECTORIES(${ise_SOURCE_DIR})
+link_directories ("${CMAKE_BINARY_DIR}/src/fatm")
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-IF (COMMENTOUT)
-  ADD_EXECUTABLE(ise WIN32 ${ISE_SRC})
-  TARGET_LINK_LIBRARIES(ise
+if (COMMENTOUT)
+  add_executable (ise WIN32 ${ISE_SRC})
+  target_link_libraries (ise
     ${MIL_LIBRARIES}
     ${BITFLOW_LIBRARIES}
     AduHid
     cg cggl
     opengl32 glu32
     )
-  INSTALL(TARGETS ise DESTINATION bin)
-ENDIF ()
+  install (TARGETS ise DESTINATION bin)
+endif ()
 
 if (QT4_FOUND)
-  set (ISE_QT_LIBRARIES 
-    ${ADVANTECH_LIBRARIES} 
-    ${BITFLOW_LIBRARIES} 
-    ${MIL_LIBRARIES} 
-    ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES} 
-    ${PAXSCAN_LIBRARIES}
-    )
+  set (ISE_QT_LIBRARIES ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
+  if (ADVANTECH_FOUND)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${ADVANTECH_LIBRARIES})
+  endif ()
+  if (BITFLOW_FOUND)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${BITFLOW_LIBRARIES})
+  endif ()
+  if (MIL_FOUND)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${MIL_LIBRARIES})
+  endif ()
+  if (PAXSCAN_FOUND)
+    set (ISE_QT_LIBRARIES ${ISE_QT_LIBRARIES} ${PAXSCAN_LIBRARIES})
+  endif ()
   plm_add_executable (ise_qt "${ISE_QT_SRC}" "${ISE_QT_LIBRARIES}" "" 0)
 endif ()
