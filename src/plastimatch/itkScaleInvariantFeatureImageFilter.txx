@@ -115,7 +115,7 @@ namespace itk
     m_MaxFeatureDistanceRatio = 0.8;
 	//m_SigmaAliasing=0.5;
     m_GaussianSigma = 1.5;  
-    m_MinKeypointValue = 0.0075; //0.03
+    m_MinKeypointValue = 0.03;
     m_SIFTHalfWidth = 8;  // This MUST be a multiple of m_SIFTSubfeatureWidth
     m_SIFTSubfeatureWidth = 4;
     m_SIFTSubfeatureBins = 8;
@@ -812,7 +812,7 @@ template <class TFixedImageType, int VDimension>
       spacing[k] = (spacing[k] / scale);
     scaler->SetOutputSpacing( spacing );
 
-    std::cout << " SPACING AFTER RESAMPLE: " << spacing[0] << " " << spacing[1] << std::endl;
+    //std::cout << " SPACING AFTER RESAMPLE: " << spacing[0] << " " << spacing[1] << std::endl;
     
     //Origin
     typename TFixedImageType::PointType origin = fixedImage->GetOrigin();
@@ -1002,9 +1002,9 @@ typename TFixedImageType::SpacingType spacing = scaleImage[i]->GetSpacing();
 typename TFixedImageType::PointType origin = scaleImage[i]->GetOrigin();
 typename TFixedImageType::DirectionType direction = scaleImage[i]->GetDirection();
 
-std::cout << " SPACING AFTER ALIAS: " << spacing[0] << " " << spacing[1] <<" "<< spacing[2] <<std::endl;
-std::cout << " ORIGIN AFTER ALIAS: " << origin[0] << " " << origin[1] <<" "<< origin[2] <<std::endl;	
-std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
+//std::cout << " SPACING AFTER ALIAS: " << spacing[0] << " " << spacing[1] <<" "<< spacing[2] <<std::endl;
+//std::cout << " ORIGIN AFTER ALIAS: " << origin[0] << " " << origin[1] <<" "<< origin[2] <<std::endl;	
+//std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
       }
 
       {
@@ -1122,7 +1122,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	tmpDogFilter->Update();
 	dogImage[j] = tmpDogFilter->GetOutput();
 	typename TFixedImageType::SpacingType spacing = dogImage[j]->GetSpacing();
-    std::cout << " SPACING DOG IMAGE: " << spacing[0] << " " << spacing[1] << std::endl;
+    //std::cout << " SPACING DOG IMAGE: " << spacing[0] << " " << spacing[1] << std::endl;
 	
 	//dogFilter[j] = DifferenceFilterType::New();
 	//dogFilter[j]->SetInput1( gaussianImage[j] );
@@ -1245,7 +1245,7 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	    ++numReject;
 	    continue;
 	  }
-
+	  
 
 	  // Passed all checks:
 
@@ -1273,8 +1273,10 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	   
 	   pFile=fopen("physicalcoord_max.fcsv","a");
 		pFile1=fopen("imagecoord_max.fcsv","a");
-
+		
+		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
+		
 		fprintf(pFile, "max-%d,", numMax);
 		for(int k=0; k<VDimension; k++)
 	  	  {
@@ -1305,7 +1307,9 @@ std::cout << " DIRECTION AFTER ALIAS: " << direction <<std::endl;
 	    pFile=fopen("physicalcoord_min.fcsv","a");
 		pFile1=fopen("imagecoord_min.fcsv","a");
 	  
+		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
+		
 		fprintf(pFile, "min-%d,", numMin);
 		for(int k=0; k<VDimension; k++)
 	  	  {
