@@ -27,7 +27,7 @@ float intens_enclosed(FloatPoint3DType phys)
 				};
 
 		for(int i=0;i<7*8;i++) 
-		{ if (i != 6+7*i)
+		{ if ( (i%7)!=6 )
 		p[i]-=50; /*p[i]*=2;*/ } //center is at 0, size is ~200
 		// must specify dimension 200, origin -100, voxel spacing 1 in Slicer
 		
@@ -36,8 +36,7 @@ float intens_enclosed(FloatPoint3DType phys)
 			if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
 			    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
 			    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
-		//	{ f = p[6+7*i]; } 
-			{ f = 1;}
+			{ f = p[6+7*i]; } 
 			return f;
 		}
 
