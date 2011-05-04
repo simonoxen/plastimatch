@@ -661,10 +661,9 @@ IF (ITK_FOUND)
     "")
 ENDIF ()
 
-IF (WIN32 AND SLICER_FOUND)
+if (WIN32 AND SLICER_FOUND)
   # The slicer plugin on windows can't find its dll easily.  Copy these 
   # over to the lib directory.
-  
   SET (INDIR
     "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
   SET (OUTDIR
@@ -685,22 +684,21 @@ IF (WIN32 AND SLICER_FOUND)
     "${OUTDIR}/plmsys.dll"
     plmsys
     )
-
-  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
+  if (CUDA_FOUND)
     PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmcuda
       "${INDIR}/plmcuda.dll"
       "${OUTDIR}/plmcuda.dll"
       plmcuda
       )
-    IF (OPENCL_FOUND)
-      PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
-	"${INDIR}/plmopencl.dll"
-	"${OUTDIR}/plmopencl.dll"
-	plmopencl
-	)
-    ENDIF ()
-  ENDIF ()
-ENDIF ()
+  endif ()
+  if (OPENCL_FOUND)
+    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
+      "${INDIR}/plmopencl.dll"
+      "${OUTDIR}/plmopencl.dll"
+      plmopencl
+      )
+  endif ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
