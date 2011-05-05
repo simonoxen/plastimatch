@@ -96,6 +96,17 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
 	    strncpy (stage->vf_out_fn, val, _MAX_PATH);
 	}
     }
+    else if (!strcmp (key, "xf_out_itk")) {
+	bool value = true;
+	if (!strcmp (val, "false")) {
+	    value = false;
+	}
+	if (section == 0) {
+	    regp->xf_out_itk = value;
+	} else {
+	    stage->xf_out_itk = value;
+	}
+    }
     else if (!strcmp (key, "xf_out") || !strcmp (key, "xform_out")) {
 	if (section == 0) {
 	    strncpy (regp->xf_out_fn, val, _MAX_PATH);

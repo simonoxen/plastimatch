@@ -54,12 +54,19 @@
       <default>None</default>
       <description>Warped output image</description>
     </image>
-    <transform fileExtensions=".nrrd" type="nonlinear" 
-	       reference="plmslc_moving_volume">
+    <transform fileExtensions=".txt" type="bspline">
+      <name>plmslc_output_bsp</name>
+      <longflag>--plmslc_output_bsp</longflag>
+      <description>B-spline coefficients created by registration</description>
+      <label>Output B-spline transform</label>
+      <default>None</default>
+      <channel>output</channel>
+    </transform>
+    <transform fileExtensions=".nrrd" type="nonlinear">
       <name>plmslc_output_vf</name>
       <longflag>--plmslc_output_vf</longflag>
       <description>Deformation field created by registration</description>
-      <label>Output Vector Field</label>
+      <label>Output vector field</label>
       <default>None</default>
       <channel>output</channel>
     </transform>

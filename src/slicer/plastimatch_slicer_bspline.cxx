@@ -44,6 +44,11 @@ main (int argc, char * argv [])
 	fprintf (fp, "vf_out=%s\n", plmslc_output_vf.c_str());
     }
 
+    if (plmslc_output_bsp != "") {
+	fprintf (fp, "xf_out_itk=true\n");
+	fprintf (fp, "xf_out=%s\n", plmslc_output_bsp.c_str());
+    }
+
     fprintf (fp, "\n");
     if (enable_stage_0) {
 	fprintf (fp,
