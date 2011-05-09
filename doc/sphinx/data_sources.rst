@@ -38,6 +38,9 @@ Mammographic image analysis homepage
 
   A list of mammography databases
 
+CIP Survey of Biomedical Imaging Archives
+  https://wiki.nci.nih.gov/display/CIP/CIP+Survey+of+Biomedical+Imaging+Archives
+
 Cornell list:
   http://www.via.cornell.edu/databases/
 
