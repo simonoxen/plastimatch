@@ -1,37 +1,27 @@
 #! /bin/sh
+
 CNAME=`uname -n`
-# if test "slumber" = $CNAME; then
-#   export PATH=$PATH:/cygdrive/c/gcs6/build/plastimatch-cygwin
-# else
-#   ## fantasy
-#   export PATH=$PATH:/home/gcs6/build/plastimatch-3.12.0
-#   export PATH=$PATH:/home/gcs6/projects/plastimatch/cttools
-# fi
-
-
-
 case $CNAME in
     "slumber")
 	export PATH=$PATH:/cygdrive/c/gcs6/build/plastimatch-cygwin
 	;;
     "physics.mgh.harvard.edu")
 	export PATH=$PATH:$HOME/build/plastimatch-3.18.0
-	export PATH=$PATH:$HOME/projects/plastimatch/cttools
+	export PATH=$PATH:$HOME/projects/plastimatch/extra/perl
 	;;
     "gelato")
 	export PATH=$PATH:$HOME/build/plastimatch-3.20.0
-	export PATH=$PATH:$HOME/work/plastimatch/cttools
+	export PATH=$PATH:$HOME/work/plastimatch/extra/perl
 	;;
     "wormwood")
 	export PATH=$PATH:$HOME/build/plastimatch-3.20.0
-	export PATH=$PATH:$HOME/projects/plastimatch/cttools
+	export PATH=$PATH:$HOME/projects/plastimatch/extra/perl
 	;;
     "redfish")
 	export PATH=$PATH:$HOME/build/plastimatch-3.18.0
-	export PATH=$PATH:$HOME/projects/plastimatch/cttools
+	export PATH=$PATH:$HOME/projects/plastimatch/extra/perl
 	;;
     *)
 	echo "Unknown machine"
 	;;
 esac
-
