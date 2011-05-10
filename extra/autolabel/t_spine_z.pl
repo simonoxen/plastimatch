@@ -36,7 +36,6 @@ for (@list){
    print "$_\n";
 
    $fcsv_fn = catfile ($in_base, $_);
-
    $fcsv_base = $fn_base = $_;
    $fn_base =~ s/\.fcsv$//;
    $img_in_fn = catfile ($in_base, $fn_base);

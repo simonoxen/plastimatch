@@ -3,7 +3,7 @@
 # http://www.perlmonks.org/?node_id=584507
 
 # Not quite finished.  Need to do the following:
-#  -> Convert slicer coords to LPS
+#  -> Choose which fiducials to use
 #  -> Make libsvm format
 #  -> Figure out single or double output learning
 
@@ -14,11 +14,12 @@ use File::Spec;
 use File::Spec::Functions;
 
 $dropbox_dir = "$ENV{HOME}/Dropbox";
-$in_base = "$dropbox_dir/autolabel/gold";
-$out_base = "$ENV{HOME}/scratch/autolabel/t_spine_xy";
+$indir = "$dropbox_dir/autolabel/gold";
+$outdir = "$ENV{HOME}/scratch/autolabel/t_spine_xy";
 
 # Do it!
-process_recursive ($in_base);
+mkpath $outdir;
+process_recursive ($indir);
 
 sub parse_fcsv {
     ($fn) = @_;
@@ -29,6 +30,9 @@ sub parse_fcsv {
 	next if /^#/;
 	chomp;
 	($label,$x,$y,$z,$rest) = split (/,/, $_, 5);
+	# Convert RAS to LPS
+	$x = -$x;
+	$y = -$y;
 	push @locs, "$label,$x,$y,$z";
     }
     close FP;
@@ -40,41 +44,44 @@ sub process_file {
     my $fn = shift;
     return if (not $fn =~ /\.fcsv$/);
 
-    print "Trying to process $fn\n";
+    my $in_base = $fn;
+    $in_base =~ s/\.fcsv$//;
+    my $in_nrrd = "${in_base}.nrrd";
+    return if (! -f $in_nrrd);
 
-    my $base = $fn;
+    ($_, $_, $base) = File::Spec->splitpath ($fn);
     $base =~ s/\.fcsv$//;
-    my $nrrd = "${base}.nrrd";
-    return if (! -f $nrrd);
+
+    my $out_libsvm = catfile ($outdir, "${base}_libsvm.txt");
+    open OF, ">$out_libsvm";
 
     @locs = parse_fcsv ($fn);
     for $loc (@locs) {
 	($label,$x,$y,$z) = split (/,/, $loc, 4);
 
-	$out_mhd = $out_base . "_${label}.mhd";
-	$out_raw = $out_base . "_${label}.raw";
+	$out_mhd = catfile ($outdir, "${base}_${label}.mhd");
+	$out_raw = catfile ($outdir, "${base}_${label}.raw");
 	$cmd = "plastimatch thumbnail "
-	  . "--input \"$nrrd\" --output \"$out_mhd\" "
+	  . "--input \"$in_nrrd\" --output \"$out_mhd\" "
 	    . "--thumbnail-dim 16 --thumbnail-spacing 25.0 --slice-loc $z";
 	print "$cmd\n";
 	print `$cmd`;
 
 	open FH, "<$out_raw";
 	binmode FH;
-	print "$x $y ";
+	print OF "$x $y ";
 	while (read (FH, $buf, 4)) {
-	    print unpack ('f', $buf) . " ";
+	    print OF unpack ('f', $buf) . " ";
 	}
 	close FH;
-	print "\n";
-	exit;
+	print OF "\n";
     }
+    close OF;
+    exit;
 }
 
 sub process_recursive {
     my $path = shift;
-
-    print "Recursive on $path\n";
 
     # Get list of files, not including ".", ".."
     opendir (DIR, $path) or
