@@ -14,22 +14,42 @@
 #include "pcmd_stats.h"
 #include "plm_file_format.h"
 #include "plm_image.h"
+#include "plm_image_header.h"
 #include "plm_int.h"
 #include "proj_image.h"
 #include "ss_img_stats.h"
 #include "vf_stats.h"
+#include "xform.h"
 
 static void
 stats_vf_main (Stats_parms* parms)
 {
-    Volume* vol;
+    Volume *vol;
+    Xform xf1, xf2;
 
-    vol = read_mha ((const char*) parms->img_in_fn);
+    xform_load (&xf1, (const char*) parms->img_in_fn);
 
-    if (!vol) {
-	fprintf (stderr, "Sorry, couldn't open file \"%s\" for read.\n", 
+    if (xf1.m_type == XFORM_GPUIT_VECTOR_FIELD) {
+	vol = xf1.get_gpuit_vf();
+    }
+    else if (xf1.m_type == XFORM_ITK_VECTOR_FIELD) {
+	/* GCS FIX: This logic should be moved inside of xform class */
+	int dim[3];
+	float origin[3], spacing[3];
+	Plm_image_header pih;
+
+	pih.set_from_itk_image (xf1.get_itk_vf ());
+	pih.get_origin (origin);
+	pih.get_spacing (spacing);
+	pih.get_dim (dim);
+
+	xform_to_gpuit_vf (&xf2, &xf1, dim, origin, spacing);
+	vol = xf2.get_gpuit_vf();
+    }
+    else 
+    {
+	print_and_exit ("Error: input file %s is not a vector field\n", 
 	    (const char*) parms->img_in_fn);
-	exit (-1);
     }
 
     if (vol->pix_type != PT_VF_FLOAT_INTERLEAVED) {
@@ -46,9 +66,9 @@ stats_vf_main (Stats_parms* parms)
     	vf_analyze_strain (vol);
 	vf_analyze_jacobian (vol);
 	vf_analyze_second_deriv (vol);
-	volume_destroy (vol);
     }
     else {
+	/* GCS FIX: Mask should be read as xform (to enable use of mhd) */
 	Volume* mask = read_mha ((const char*) parms->mask_fn);
 	vf_analyze (vol); 
 	vf_analyze_strain (vol);
@@ -56,7 +76,6 @@ stats_vf_main (Stats_parms* parms)
 	vf_analyze_second_deriv (vol);
 	vf_analyze_mask (vol, mask);
 	vf_analyze_strain_mask (vol, mask);
-	volume_destroy (vol);
 	volume_destroy (mask);
     }
 }
