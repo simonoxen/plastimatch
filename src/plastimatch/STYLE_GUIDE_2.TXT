@@ -67,12 +67,29 @@ Alternatives:
 
   plc_xxx             ## Native layer
   plm_core_xxx        ## Native layer
+  plw_xxx             ## Wrapper layer
 
-For images, use this following 
+For images, we currently use this following:
 
   itk_image, itk      ## ITK layer
-  vol                 ## Native layer
+  volume              ## Native layer
   plm_image, pli      ## Wrapper layer
+
+For complex images (multiple irregular spacings), consider the following:
+
+  itk_volume, itk      ## ITK layer
+  volume               ## Native layer
+  plm_volume, plv      ## Wrapper layer
+
+  plm_volset, plv      ## Wrapper layer (wrapper layer sufficient?)
+
+The image header would become:
+
+  itk_volume_header    ## ITK layer
+  volume_header        ## Native layer
+  plm_volume_header    ## Wrapper layer
+
+  plm_volset_header    ## Wrapper layer (wrapper layer sufficient?)
 
 
 Command line args, Function options [Proposed, not implemented]
@@ -99,15 +116,19 @@ for both uses.
 
 
 Dim, dims, offset, origin, spacing
-----------------------------
+----------------------------------
 To describe the position of an image in mm, use origin, not offset.  
+The term offset is used to describe an ROI in voxels.
+
 To describe the resolution of an image in voxels, use dim, not dims.
 
 The order of parameters should be alphabetic:
 
   calling_a_function (dim, origin, spacing);
 
-N.b.: offset is used to describe an ROI in voxels.
+Except that direction_cosines is last:
+
+  calling_a_function (dim, origin, spacing, direction_cosines);
 
 
 Variable naming for indexing  [Proposed, not implemented]

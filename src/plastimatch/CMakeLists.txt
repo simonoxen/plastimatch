@@ -380,6 +380,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   synthetic_mha.cxx synthetic_mha.h
   synthetic_vf.cxx synthetic_vf.h
   thumbnail.cxx thumbnail.h
+  volume_header.cxx volume_header.h 
   xio_ct.cxx xio_ct.h
   xio_demographic.cxx xio_demographic.h
   xio_dir.cxx xio_dir.h
