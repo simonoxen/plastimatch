@@ -66,6 +66,13 @@ IF (PLM_TEST_DICOMRT_CERR)
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
 ENDIF ()
 
+if (PLM_TEST_DICOMRT_IRREGULAR)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1827/xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/xio-4.60-irregular-spacing")
+endif ()
+
 IF (PLM_TEST_DICOMRT_PINNACLE)
   PLM_DOWNLOAD_AND_EXTRACT (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
@@ -93,6 +100,7 @@ IF (PLM_TEST_XIO)
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
 ENDIF ()
+
 
 ## -------------------------------------------------------------------------
 ## Copy plugin library

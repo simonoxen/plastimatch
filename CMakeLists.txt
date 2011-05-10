@@ -96,6 +96,8 @@ OPTION (PLM_TEST_DICOMRT_AW
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_CERR
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
+option (PLM_TEST_DICOMRT_IRREGULAR
+  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_PINNACLE 
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 OPTION (PLM_TEST_DICOMRT_XIO 
