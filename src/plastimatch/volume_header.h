@@ -10,9 +10,6 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 
-class Volume_header;
-class Plm_image;
-
 class plastimatch1_EXPORT Volume_header {
 public:
     float m_origin[3];

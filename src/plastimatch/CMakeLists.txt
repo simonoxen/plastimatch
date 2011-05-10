@@ -337,6 +337,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
   itk_tps.cxx itk_tps.h 
+  itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
   mask_mha.cxx mask_mha.h 

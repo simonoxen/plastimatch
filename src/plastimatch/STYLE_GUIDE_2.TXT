@@ -115,8 +115,8 @@ N.b. Does this even make sense?  Cxt_to_mha can use the same structure
 for both uses.
 
 
-Dim, dims, offset, origin, spacing
-----------------------------------
+Dim, dims, offset, origin, spacing [implemented]
+------------------------------------------------
 To describe the position of an image in mm, use origin, not offset.  
 The term offset is used to describe an ROI in voxels.
 
@@ -129,6 +129,11 @@ The order of parameters should be alphabetic:
 Except that direction_cosines is last:
 
   calling_a_function (dim, origin, spacing, direction_cosines);
+
+For itk routines, it should follow the same semantic order, 
+but it becomes non-alphabetic:
+
+  calling_a_function (region, origin, spacing, direction_cosines);
 
 
 Variable naming for indexing  [Proposed, not implemented]

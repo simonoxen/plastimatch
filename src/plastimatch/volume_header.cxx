@@ -5,9 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "itkImageRegionIterator.h"
 
-#include "mha_io.h"
 #include "plm_image.h"
 #include "print_and_exit.h"
 #include "volume.h"
