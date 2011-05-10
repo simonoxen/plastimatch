@@ -234,6 +234,6 @@ plastimatch1_EXPORT void xform_to_itk_bsp_nobulk (Xform *xf_out, Xform *xf_in, P
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, Plm_image_header* pih);
 plastimatch1_EXPORT void xform_to_itk_vf (Xform* xf_out, Xform *xf_in, FloatImageType::Pointer image);
 plastimatch1_EXPORT void xform_to_gpuit_bsp (Xform* xf_out, Xform* xf_in, Plm_image_header* pih, float* grid_spac);
-void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* spacing);
+plastimatch1_EXPORT void xform_to_gpuit_vf (Xform* xf_out, Xform *xf_in, int* dim, float* offset, float* spacing);
 
 #endif

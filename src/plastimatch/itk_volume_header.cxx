@@ -150,22 +150,6 @@ Itk_volume_header::print (void) const
     printf ("\n");
 }
 
-void
-itk_roi_from_gpuit (
-    ImageRegionType* roi,
-    int roi_offset[3], int roi_dim[3])
-{
-    ImageRegionType::SizeType itk_size;
-    ImageRegionType::IndexType itk_index;
-
-    for (unsigned int d = 0; d < 3; d++) {
-	itk_index[d] = roi_offset[d];
-	itk_size[d] = roi_dim[d];
-    }
-    (*roi).SetSize (itk_size);
-    (*roi).SetIndex (itk_index);
-}
-
 void 
 Itk_volume_header::get_image_center (float center[3])
 {
@@ -195,19 +179,6 @@ Itk_volume_header::compare (Itk_volume_header *pli1, Itk_volume_header *pli2)
 /* -----------------------------------------------------------------------
    global functions
    ----------------------------------------------------------------------- */
-void
-direction_cosines_from_itk (
-    float direction_cosines[9],
-    DirectionType* itk_direction
-)
-{
-    for (unsigned int d1 = 0; d1 < 3; d1++) {
-	for (unsigned int d2 = 0; d2 < 3; d2++) {
-	    direction_cosines[d1*3+d2] = (*itk_direction)[d1][d2];
-	}
-    }
-}
-
 static void
 itk_direction_from_gpuit (
     DirectionType* itk_direction,
