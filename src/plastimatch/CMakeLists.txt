@@ -650,18 +650,31 @@ IF (BUILD_SHARED_LIBS)      # << Dynamic loading
   ENDIF ()
 ENDIF ()
 
-IF (ITK_FOUND)
+if (ITK_FOUND)
   # Despite claims to the contrary, you are not allowed to have a library
   # with the same name as the executable.  What happens is the executable 
   # tries to create a temporary library with the same name.  [MSVC 2005]
   # That is why the library is called plastimatch1 instead of plastimatch.
-  SET (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
-  PLM_ADD_LIBRARY (
+  set (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+
+  # Ugh.  ITK is stupid.  They quietly dropped support for cygwin. 
+  # However, you can still get 3.20.0 to work.  You need to run 
+  # "make ITKFEM" after running "make" to workaround ITK's broken CMake 
+  # script:
+  #  http://old.nabble.com/compile-error-using-cygwin-td30879187.html
+  # See also:
+  #  http://public.kitware.com/Bug/view.php?id=11659
+  if (CYGWIN)
+    set (PLASTIMATCH_LIBRARY_DEPENDENCIES 
+      ${PLASTIMATCH_LIBRARY_DEPENDENCIES} gdi32)
+  endif ()
+
+  plm_add_library (
     plastimatch1 
     "${PLASTIMATCH_LIBRARY_SRC}"
     "${PLASTIMATCH_LIBRARY_DEPENDENCIES}"
     "")
-ENDIF ()
+endif ()
 
 if (WIN32 AND SLICER_FOUND)
   # The slicer plugin on windows can't find its dll easily.  Copy these 
