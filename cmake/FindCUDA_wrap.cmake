@@ -1,21 +1,24 @@
 # - Wrapper around FindCUDA
 
-IF (MINGW)
+if (MINGW)
   # Cuda doesn't work with mingw at all
-  SET (CUDA_FOUND FALSE)
-ELSEIF (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
+  set (CUDA_FOUND FALSE)
+elseif (${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} LESS 2.8)
   # FindCuda is included with CMake 2.8
-  SET (CUDA_FOUND FALSE)
-ELSE ()
+  set (CUDA_FOUND FALSE)
+else ()
   # GCS 2011.03.16
   # Make nvcc less whiny
-  IF (CMAKE_COMPILER_IS_GNUCC)
-    SET (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    SET (CUDA_NVCC_FLAGS ${CMAKE_C_FLAGS})
-  ENDIF ()
+  if (CMAKE_COMPILER_IS_GNUCC)
+    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+    #SET (CUDA_NVCC_FLAGS ${CMAKE_C_FLAGS})
+    if (CMAKE_C_FLAGS)
+      #set (CUDA_NVCC_FLAGS --compiler-options ${CMAKE_C_FLAGS})
+    endif ()
+  endif ()
 
-  FIND_PACKAGE (CUDA QUIET)
-ENDIF ()
+  find_package (CUDA QUIET)
+endif ()
 
 SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
 

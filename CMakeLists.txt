@@ -3,44 +3,44 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
-PROJECT (plastimatch)
+project (plastimatch)
 
-CMAKE_MINIMUM_REQUIRED (VERSION 2.6.0)
+cmake_minimum_required (VERSION 2.6.0)
 
 # Tell CMake to be quiet
 # Note: it is ok to use CMake FindZLIB for 2.8.4.  Therefore setting 
 # policy CMP0017 to NEW is safe.  But we do want the OLD policy for 
 # older CMake versions.
-CMAKE_POLICY (SET CMP0003 NEW)
-IF (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.4)
-  CMAKE_POLICY (SET CMP0017 NEW)
-ENDIF ()
+cmake_policy (SET CMP0003 NEW)
+if (NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION} VERSION_LESS 2.8.4)
+  cmake_policy (SET CMP0017 NEW)
+endif ()
 
 # Default to release
-IF (NOT CMAKE_BUILD_TYPE)
-  SET (CMAKE_BUILD_TYPE "Release" CACHE STRING
+if (NOT CMAKE_BUILD_TYPE)
+  set (CMAKE_BUILD_TYPE "Release" CACHE STRING
     "Choose the type of build, options are: Debug Release
       RelWithDebInfo MinSizeRel." FORCE)
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CMake include files
 ##-----------------------------------------------------------------------------
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
-SET (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}" ${CMAKE_MODULE_PATH})
+set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
-INCLUDE (cmake/PlmMacros.cmake)
-INCLUDE (CTest)
-INCLUDE (CheckFunctionExists)
-INCLUDE (CheckIncludeFiles)
-INCLUDE (CheckTypeSize)
-INCLUDE (TestBigEndian)
+include (cmake/PlmMacros.cmake)
+include (CTest)
+include (CheckFunctionExists)
+include (CheckIncludeFiles)
+include (CheckTypeSize)
+include (TestBigEndian)
 
 # http://www.cmake.org/pipermail/cmake/2008-December/025886.html
-INCLUDE (InstallRequiredSystemLibraries)
+include (InstallRequiredSystemLibraries)
 
 # http://www.cmake.org/Bug/view.php?id=9220
-INCLUDE (cmake/language_support.cmake)
+include (cmake/language_support.cmake)
 
 ##-----------------------------------------------------------------------------
 ##  Plastimatch configuration variables
@@ -347,28 +347,37 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ##  Slicer
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (Slicer QUIET)
-IF (SLICER_FOUND)
-  IF (Slicer_USE_FILE)
+find_package (Slicer QUIET)
+if (SLICER_FOUND)
+
+  if (Slicer_USE_FILE)
     # Include USE file.  Strangely, the use file appends the 
     # Slicer directories to our include path.  This causes nvcc.exe 
     # to barf on windows, so we can't do this.
-    GET_DIRECTORY_PROPERTY (OLD_INCLUDE_DIR INCLUDE_DIRECTORIES)
-    SET_DIRECTORY_PROPERTIES (PROPERTIES INCLUDE_DIRECTORIES "")
-    INCLUDE ("${Slicer_USE_FILE}")
-    GET_DIRECTORY_PROPERTY (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
-    SET_DIRECTORY_PROPERTIES (PROPERTIES INCLUDE_DIRECTORIES
+
+    # Equally strangely, the use file sets our C/CXX flags. 
+    # These cause nvcc + gcc-4.3 to barf because the flags are for gcc-4.5
+    set (OLD_CFLAGS ${CMAKE_C_FLAGS})
+    set (OLD_CXXFLAGS ${CMAKE_CXX_FLAGS})
+    get_directory_property (OLD_INCLUDE_DIR INCLUDE_DIRECTORIES)
+    set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES "")
+    include ("${Slicer_USE_FILE}")
+    get_directory_property (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
+    set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES
       "${OLD_INCLUDE_DIR}")
-  ENDIF ()
+    set (CMAKE_C_FLAGS "${OLD_CFLAGS}")
+    set (CMAKE_CXX_FLAGS "${OLD_CXXFLAGS}")
+  endif ()
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-  slicer3_set_default_install_prefix_for_external_projects ()
-  
-  #slicer3_enable_plugins_testing()
-ELSE ()
-  MESSAGE (STATUS "Looking for Slicer3 - not found")
-ENDIF ()
+  if (SLICER_IS_SLICER3)
+    slicer3_set_default_install_prefix_for_external_projects ()
+    #slicer3_enable_plugins_testing()
+  endif ()
+else ()
+  message (STATUS "Looking for Slicer - not found")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  For shared libraries, we enable dynamic loading of cuda, opencl
@@ -625,15 +634,15 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ##  MAKE UNINSTALL
 ##-----------------------------------------------------------------------------
-IF (UNIX)
-CONFIGURE_FILE(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-    IMMEDIATE @ONLY)
+if (UNIX)
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+  IMMEDIATE @ONLY)
 
-ADD_CUSTOM_TARGET(uninstall
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-ENDIF()
+add_custom_target (uninstall COMMAND 
+  ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Regression testing
