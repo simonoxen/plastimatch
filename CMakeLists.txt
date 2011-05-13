@@ -268,10 +268,19 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 ##  Use local getopt if not found
 ##-----------------------------------------------------------------------------
-CHECK_FUNCTION_EXISTS (getopt_long HAVE_GETOPT_LONG)
-IF (NOT HAVE_GETOPT_LONG)
-  ADD_SUBDIRECTORY (libs/getopt)
-ENDIF ()
+check_function_exists (getopt_long HAVE_GETOPT_LONG)
+if (NOT HAVE_GETOPT_LONG)
+  set (GETOPT_LONG_TEST_DIR "${CMAKE_CURRENT_BINARY_DIR}/getopt_test")
+  set (GETOPT_LONG_TEST_C "${GETOPT_LONG_TEST_DIR}/getopt_test.c")
+  file (MAKE_DIRECTORY "${GETOPT_LONG_TEST_DIR}")
+  file (WRITE "${GETOPT_LONG_TEST_C}"
+    "#include <getopt.h>\nmain(){getopt_long(0,0,0,0,0);}\n")
+  try_compile (HAVE_GETOPT_LONG "${GETOPT_LONG_TEST_DIR}"
+    "${GETOPT_LONG_TEST_C}")
+endif ()
+if (NOT HAVE_GETOPT_LONG)
+  add_subdirectory (libs/getopt)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local libsbfgs if not found
