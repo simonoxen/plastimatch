@@ -350,23 +350,27 @@ ENDIF ()
 find_package (Slicer QUIET)
 if (SLICER_FOUND)
 
-  if (Slicer_USE_FILE)
-    # Include USE file.  Strangely, the use file appends the 
-    # Slicer directories to our include path.  This causes nvcc.exe 
-    # to barf on windows, so we can't do this.
+  # Strangely, the Slicer 4 use file appends the Slicer directories to 
+  # our include path.  This causes nvcc.exe to barf on windows, 
+  # so we can't do this.
 
-    # Equally strangely, the use file sets our C/CXX flags. 
-    # These cause nvcc + gcc-4.3 to barf because the flags are for gcc-4.5
-    set (OLD_CFLAGS ${CMAKE_C_FLAGS})
-    set (OLD_CXXFLAGS ${CMAKE_CXX_FLAGS})
+  # Equally strangely, the use file sets our C/CXX flags. 
+  # These cause nvcc + gcc-4.3 to barf because the flags are for gcc-4.5
+  if (Slicer_USE_FILE AND NOT SLICER_IS_SLICER3)
     get_directory_property (OLD_INCLUDE_DIR INCLUDE_DIRECTORIES)
     set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES "")
-    include ("${Slicer_USE_FILE}")
+    set (OLD_CFLAGS ${CMAKE_C_FLAGS})
+    set (OLD_CXXFLAGS ${CMAKE_CXX_FLAGS})
+  endif ()
+
+  include ("${Slicer_USE_FILE}")
+
+  if (Slicer_USE_FILE AND NOT SLICER_IS_SLICER3)
     get_directory_property (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
     set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES
       "${OLD_INCLUDE_DIR}")
-    set (CMAKE_C_FLAGS "${OLD_CFLAGS}")
-    set (CMAKE_CXX_FLAGS "${OLD_CXXFLAGS}")
+    set (CMAKE_C_FLAGS "${OLD_CFLAGS}" CACHE STRING "CMake CXX Flags" FORCE)
+    set (CMAKE_CXX_FLAGS "${OLD_CXXFLAGS}" CACHE STRING "CMake CXX Flags" FORCE)
   endif ()
 
   # Set reasonable default install prefix and output paths

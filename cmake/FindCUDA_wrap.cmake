@@ -11,9 +11,8 @@ else ()
   # Make nvcc less whiny
   if (CMAKE_COMPILER_IS_GNUCC)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    #SET (CUDA_NVCC_FLAGS ${CMAKE_C_FLAGS})
     if (CMAKE_C_FLAGS)
-      #set (CUDA_NVCC_FLAGS --compiler-options ${CMAKE_C_FLAGS})
+      set (CUDA_NVCC_FLAGS --compiler-options ${CMAKE_C_FLAGS})
     endif ()
   endif ()
 
