@@ -46,107 +46,107 @@ include (cmake/language_support.cmake)
 ##  Plastimatch configuration variables
 ##-----------------------------------------------------------------------------
 # Building little test programs
-OPTION (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
-OPTION (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
-OPTION (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
-OPTION (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
-OPTION (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
-OPTION (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
-OPTION (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
-OPTION (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
+option (PLM_BUILD_CUDA_TEST "Build CUDA test program" OFF)
+option (PLM_BUILD_DLIB_TEST "Build dlib test program" OFF)
+option (PLM_BUILD_FANN_TEST "Build fann test program" OFF)
+option (PLM_BUILD_MEX_TEST "Build mex test program" OFF)
+option (PLM_BUILD_NLOPT_TEST "Build NLopt test program" OFF)
+option (PLM_BUILD_OPENCL_TEST "Build OpenCL test program" OFF)
+option (PLM_BUILD_OPENMP_TEST "Build OpenMP test program" OFF)
+option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 
 # Plastimatch software configuration options
-OPTION (PLM_USE_SS_IMAGE_VEC
+option (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
-OPTION (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
-OPTION (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
-OPTION (PLM_SLICER_HARDCODED_FILENAME 
+option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
+option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
+option (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
-SET (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
+set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 
 # Optional components
-OPTION (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
-OPTION (PLM_BUILD_RTK "Build RTK" OFF)
-OPTION (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
+option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
+option (PLM_BUILD_RTK "Build RTK" OFF)
+option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
-OPTION (BUILD_SHARED_LIBS 
+option (BUILD_SHARED_LIBS 
   "Build plastimatch as shared library" OFF)
-OPTION (PLM_PREFER_F2C 
+option (PLM_PREFER_F2C 
   "Prefer using f2c over native fortran compiler" OFF)
-OPTION (PLM_PREFER_SYSTEM_F2C 
+option (PLM_PREFER_SYSTEM_F2C 
   "Prefer the system f2c over the included f2c" ON)
 
 # Installer Options
-OPTION (PLM_INSTALL_RPATH 
+option (PLM_INSTALL_RPATH 
   "Add full RPATH to install" ON)
-OPTION (PLM_INSTALL_LIBRARIES
+option (PLM_INSTALL_LIBRARIES
   "Include static libraries in install" OFF)
-OPTION (PLM_PACKAGE_32BIT 
+option (PLM_PACKAGE_32BIT 
   "Set this when building 32-bit packages on a 64-bit machine" OFF)
 
 # Regression testing
-OPTION (PLM_BUILD_TESTING 
+option (PLM_BUILD_TESTING 
   "Enable regression testing" ON)
-OPTION (PLM_REDUCED_TESTS 
+option (PLM_REDUCED_TESTS 
   "Run fewer tests (used when debugging tests)" OFF)
-OPTION (PLM_TEST_BSPLINE_FLAVORS 
+option (PLM_TEST_BSPLINE_FLAVORS 
   "Regression tests for seldom used b-spline implementations" OFF)
-OPTION (PLM_TEST_DICOMRT_AW
+option (PLM_TEST_DICOMRT_AW
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-OPTION (PLM_TEST_DICOMRT_CERR
+option (PLM_TEST_DICOMRT_CERR
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
 option (PLM_TEST_DICOMRT_IRREGULAR
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-OPTION (PLM_TEST_DICOMRT_PINNACLE 
+option (PLM_TEST_DICOMRT_PINNACLE 
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-OPTION (PLM_TEST_DICOMRT_XIO 
+option (PLM_TEST_DICOMRT_XIO 
   "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-OPTION (PLM_TEST_FDK_VARIAN 
+option (PLM_TEST_FDK_VARIAN 
   "Regression tests for fdk with Varian data (downloads extra test data)" OFF)
-OPTION (PLM_TEST_XIO 
+option (PLM_TEST_XIO 
   "Regression tests for xio file exchange (downloads extra test data)" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Special hack for slicer extension on apple
 ##-----------------------------------------------------------------------------
-IF (APPLE AND BUILD_AGAINST_SLICER3)
-  SET (PLM_CONFIG_DISABLE_CUDA ON)
-  SET (PLM_CONFIG_DISABLE_OPENCL ON)
-ENDIF ()
+if (APPLE AND BUILD_AGAINST_SLICER3)
+  set (PLM_CONFIG_DISABLE_CUDA ON)
+  set (PLM_CONFIG_DISABLE_OPENCL ON)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Detect 32-bit or 64-bit machine
 ##-----------------------------------------------------------------------------
-CHECK_TYPE_SIZE ("unsigned int"    CMAKE_SIZEOF_UINT)
-CHECK_TYPE_SIZE ("unsigned long"   CMAKE_SIZEOF_ULONG)
-IF (NOT APPLE)
-  IF (CMAKE_SIZEOF_VOID_P EQUAL 4)
-    SET (HAVE_32_BIT TRUE)
-    SET (HAVE_64_BIT FALSE)
-    MESSAGE (STATUS "Machine is 32-bit")
-  ELSE ()
-    SET (HAVE_32_BIT FALSE)
-    SET (HAVE_64_BIT TRUE)
-    MESSAGE (STATUS "Machine is 64-bit")
-  ENDIF ()
-ENDIF ()
+check_type_size ("unsigned int"    CMAKE_SIZEOF_UINT)
+check_type_size ("unsigned long"   CMAKE_SIZEOF_ULONG)
+if (NOT APPLE)
+  if (CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set (HAVE_32_BIT TRUE)
+    set (HAVE_64_BIT FALSE)
+    message (STATUS "Machine is 32-bit")
+  else ()
+    set (HAVE_32_BIT FALSE)
+    set (HAVE_64_BIT TRUE)
+    message (STATUS "Machine is 64-bit")
+  endif ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Detect endian
 ##-----------------------------------------------------------------------------
-TEST_BIG_ENDIAN (CMAKE_WORDS_BIGENDIAN)
+test_big_endian (CMAKE_WORDS_BIGENDIAN)
 
 ##-----------------------------------------------------------------------------
 ##  I can't remember why this is necessary.  But at one time I needed 
 ##  it for compiling on AMD linux 64-bit.
 ##-----------------------------------------------------------------------------
-IF ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
-  SET (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
-  SET (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
-  SET (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
-ENDIF ()
+if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+  set (CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -fPIC")
+  set (CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fPIC")
+  set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC")
+  set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ## JAS 10.28.2010
@@ -160,110 +160,110 @@ ENDIF ()
 ## -malign-double should only be enabled for 32-bit machines.  gcc 4.1.2 
 ## gives an error if it is used on x86_64.
 ##-----------------------------------------------------------------------------
-IF (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-    SET (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-ENDIF ()
+if (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+  set (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Extra paths
 ##-----------------------------------------------------------------------------
-SET (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
-SET (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
-SET (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
-SET (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
+set (PLM_TESTING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/Testing")
+set (PLM_TESTING_DATA_DIR "${CMAKE_SOURCE_DIR}/Testing/Data")
+set (PLM_TESTING_DOWNLOAD_DATA_DIR "${CMAKE_BINARY_DIR}/TestData")
+set (PLM_TESTING_BUILD_DIR "${CMAKE_BINARY_DIR}/Testing")
 
 ##-----------------------------------------------------------------------------
 ##  Search for include files
 ##-----------------------------------------------------------------------------
-CHECK_INCLUDE_FILES ("stdint.h" HAVE_STDINT_H)
-CHECK_INCLUDE_FILES ("sys/stat.h" HAVE_SYS_STAT_H)
+check_include_files ("stdint.h" HAVE_STDINT_H)
+check_include_files ("sys/stat.h" HAVE_SYS_STAT_H)
 
 ##-----------------------------------------------------------------------------
 ##  Set the math library -- need this variable to configure libf2c
 ##-----------------------------------------------------------------------------
-IF (UNIX)
-  SET (MATH_LIB -lm)
-ELSE ()
-  SET (MATH_LIB)
-ENDIF ()
+if (UNIX)
+  set (MATH_LIB -lm)
+else ()
+  set (MATH_LIB)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Search for languages and language features
 ##-----------------------------------------------------------------------------
 # Always check for fortran, whether we use it or not
-IF (NOT MINGW)
+if (NOT MINGW)
   # For some reason, CMake tries to invoke devenv instead of gfortran
   # for mingw.
-  INCLUDE (cmake/PLM_FindFortran.cmake)
+  include (cmake/PLM_FindFortran.cmake)
 
   # The FortranCInterface is not included on CMake 2.6.2
   # INCLUDE (FortranCInterface)
-ENDIF ()
+endif ()
 
 # Choose between f2c or fortran
-SET (PLM_USE_F2C FALSE)
-IF (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
-  SET (PLM_USE_F2C TRUE)
-ENDIF ()
+set (PLM_USE_F2C FALSE)
+if (PLM_PREFER_F2C OR NOT CMAKE_Fortran_COMPILER_WORKS)
+  set (PLM_USE_F2C TRUE)
+endif ()
 
-IF (PLM_USE_F2C)
+if (PLM_USE_F2C)
   # If the user wants the system f2c, check for it
-  IF (PLM_PREFER_SYSTEM_F2C)
-    FIND_PACKAGE (F2C)
-  ENDIF ()
+  if (PLM_PREFER_SYSTEM_F2C)
+    find_package (F2C)
+  endif ()
 
   # If the user doesn't want system f2c, or didn't find it, build the 
   # included f2c
-  IF (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
-    SET (PLM_USE_INCLUDED_F2C 1)
-    ADD_SUBDIRECTORY (libs/libf2c)
-    SET (F2C_LIBRARY f2c1)
-    SET (F2C_INCLUDE_DIR libs/libf2c)
-  ENDIF ()
-ENDIF ()
+  if (NOT PLM_PREFER_SYSTEM_F2C OR NOT F2C_LIBRARY)
+    set (PLM_USE_INCLUDED_F2C 1)
+    add_subdirectory (libs/libf2c)
+    set (F2C_LIBRARY f2c1)
+    set (F2C_INCLUDE_DIR libs/libf2c)
+  endif ()
+endif ()
 
 # Some systems such as pcBSD don't have libdl
-FIND_LIBRARY (LIBDL_FOUND dl)
+find_library (LIBDL_FOUND dl)
 
 ##-----------------------------------------------------------------------------
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
-FIND_PACKAGE (Brook)
-FIND_PACKAGE (DCMTK)
+find_package (Brook)
+find_package (DCMTK)
 #FIND_PACKAGE (Dlib)
-FIND_PACKAGE (Etags)
-FIND_PACKAGE (Fann)
-FIND_PACKAGE (FFTW)
-FIND_PACKAGE (Liblbfgs)
-FIND_PACKAGE (NLopt)
-IF (PLM_BUILD_MEX_TEST)
-  FIND_PACKAGE (Matlab)
-ENDIF ()
-FIND_PACKAGE (Octave)
-IF (NOT PLM_CONFIG_DISABLE_OPENCL)
-  FIND_PACKAGE (OpenCL)
-ENDIF ()
-FIND_PACKAGE (OpenGL)
-FIND_PACKAGE (OpenMP)
-FIND_PACKAGE (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
-IF (PLM_BUILD_RTK)
-  FIND_PACKAGE (RTK)
-ENDIF ()
-FIND_PACKAGE (SQLite)
-FIND_PACKAGE (SSE)           # SSE Extensions for CPU
-FIND_PACKAGE (Subversion)
-FIND_PACKAGE (wxWidgets)
+find_package (Etags)
+find_package (Fann)
+find_package (FFTW)
+find_package (Liblbfgs)
+find_package (NLopt)
+if (PLM_BUILD_MEX_TEST)
+  find_package (Matlab)
+endif ()
+find_package (Octave)
+if (NOT PLM_CONFIG_DISABLE_OPENCL)
+  find_package (OpenCL)
+endif ()
+find_package (OpenGL)
+find_package (OpenMP)
+find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+if (PLM_BUILD_RTK)
+  find_package (RTK)
+endif ()
+find_package (SQLite)
+find_package (SSE)           # SSE Extensions for CPU
+find_package (Subversion)
+find_package (wxWidgets)
 
 ##-----------------------------------------------------------------------------
 ##  QT requires including the use file
 ##-----------------------------------------------------------------------------
-IF (QT4_FOUND)
-  MESSAGE (STATUS "Looking for Qt4 - found")
-  INCLUDE (${QT_USE_FILE})
-ELSE ()
-  MESSAGE (STATUS "Looking for Qt4 - not found")
-ENDIF ()
+if (QT4_FOUND)
+  message (STATUS "Looking for Qt4 - found")
+  include (${QT_USE_FILE})
+else ()
+  message (STATUS "Looking for Qt4 - not found")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local getopt if not found
@@ -285,64 +285,64 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Use local libsbfgs if not found
 ##-----------------------------------------------------------------------------
-IF (NOT LIBLBFGS_FOUND)
-  ADD_SUBDIRECTORY (libs/liblbfgs-1.9)
-  SET (LIBLBFGS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/liblbfgs-1.9/include")
-  SET (LIBLBFGS_LIBRARIES lbfgs)
-  LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
-  SET (LIBLBFGS_FOUND TRUE)
-ENDIF ()
+if (NOT LIBLBFGS_FOUND)
+  add_subdirectory (libs/liblbfgs-1.9)
+  set (LIBLBFGS_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/liblbfgs-1.9/include")
+  set (LIBLBFGS_LIBRARIES lbfgs)
+  link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/liblbfgs-1.9)
+  set (LIBLBFGS_FOUND TRUE)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local sqlite if not found
 ##-----------------------------------------------------------------------------
-IF (NOT SQLITE_FOUND)
-  ADD_SUBDIRECTORY (libs/sqlite-3.6.21)
-  SET (SQLITE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/sqlite-3.6.21")
-  SET (SQLITE_LIBRARIES sqlite3)
-ENDIF ()
+if (NOT SQLITE_FOUND)
+  add_subdirectory (libs/sqlite-3.6.21)
+  set (SQLITE_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/sqlite-3.6.21")
+  set (SQLITE_LIBRARIES sqlite3)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Only use local bstrlib
 ##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (libs/bstrlib-05122010)
-SET (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
-LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
+add_subdirectory (libs/bstrlib-05122010)
+set (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
+link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local dlib
 ##-----------------------------------------------------------------------------
-SET (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
+set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
 
 ##-----------------------------------------------------------------------------
 ##  Only use local nocedal
 ##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (libs/nocedal)
-LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
+add_subdirectory (libs/nocedal)
+link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/nocedal)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local specfun
 ##-----------------------------------------------------------------------------
-ADD_SUBDIRECTORY (libs/specfun)
-LINK_DIRECTORIES (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
+add_subdirectory (libs/specfun)
+link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/specfun)
 
 ##-----------------------------------------------------------------------------
 ##  Only use local msinttypes
 ##-----------------------------------------------------------------------------
-SET (MSINTTYPES_INCLUDE_DIR 
+set (MSINTTYPES_INCLUDE_DIR 
   "${CMAKE_SOURCE_DIR}/libs" 
   )
 
 ##-----------------------------------------------------------------------------
 ##  Special CUDA processing
 ##-----------------------------------------------------------------------------
-IF (NOT PLM_CONFIG_DISABLE_CUDA)
-  FIND_PACKAGE (CUDA_wrap)
-  SET (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
-  IF (CUDA_FOUND)
-    CUDA_INCLUDE_DIRECTORIES (${CMAKE_CURRENT_SOURCE_DIR})
-  ENDIF ()
-ENDIF ()
+if (NOT PLM_CONFIG_DISABLE_CUDA)
+  find_package (CUDA_wrap)
+  set (CUDA_FOUND ${CUDA_FOUND} CACHE BOOL "Did we find cuda?")
+  if (CUDA_FOUND)
+    cuda_include_directories (${CMAKE_CURRENT_SOURCE_DIR})
+  endif ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Slicer
@@ -399,68 +399,68 @@ endif ()
 ##  Special linking instructions on unix
 ##  http://www.cmake.org/Wiki/CMake_RPATH_handling
 ##-----------------------------------------------------------------------------
-IF (PLM_INSTALL_RPATH)
+if (PLM_INSTALL_RPATH)
   # use, i.e. don't skip the full RPATH for the build tree
-  SET (CMAKE_SKIP_BUILD_RPATH  FALSE)
+  set (CMAKE_SKIP_BUILD_RPATH  FALSE)
 
   # when building, don't use the install RPATH already
   # (but later on when installing)
-  SET (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+  set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
 
   # the RPATH to be used when installing
-  SET (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set (CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
   # add the automatically determined parts of the RPATH
   # which point to directories outside the build tree to the install RPATH
-  SET (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-ENDIF ()
+  set (CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  User feedback on which languages and libraries were found
 ##-----------------------------------------------------------------------------
-IF (wxWidgets_FOUND)
-  MESSAGE (STATUS "Looking for wxWidgets - found.")
-ELSE ()
-  MESSAGE (STATUS "Looking for wxWidgets - not found.")
-ENDIF ()
-IF (Matlab_FOUND)
-  MESSAGE (STATUS "Looking for Matlab - found.")
-ELSE ()
-  MESSAGE (STATUS "Looking for Matlab - not found.")
-ENDIF ()
-IF (OCTAVE_FOUND)
-  MESSAGE (STATUS "Looking for Octave - found.")
-ELSE ()
-  MESSAGE (STATUS "Looking for Octave - not found.")
-ENDIF ()
+if (wxWidgets_FOUND)
+  message (STATUS "Looking for wxWidgets - found.")
+else ()
+  message (STATUS "Looking for wxWidgets - not found.")
+endif ()
+if (Matlab_FOUND)
+  message (STATUS "Looking for Matlab - found.")
+else ()
+  message (STATUS "Looking for Matlab - not found.")
+endif ()
+if (OCTAVE_FOUND)
+  message (STATUS "Looking for Octave - found.")
+else ()
+  message (STATUS "Looking for Octave - not found.")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Get build number from subversion 
 ##-----------------------------------------------------------------------------
-SET (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
-IF (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
-  IF (Subversion_FOUND)
-    SET (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
+set (PLASTIMATCH_SVN_VERSION "EXPERIMENTAL")
+if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
+  if (Subversion_FOUND)
+    set (PLASTIMATCH_HAVE_BUILD_NUMBER TRUE)
     #Subversion_WC_INFO(${CMAKE_SOURCE_DIR} "svn")
-    EXECUTE_PROCESS (
+    execute_process (
       COMMAND 
       ${Subversion_SVNVERSION_EXECUTABLE} "--no-newline" ${CMAKE_SOURCE_DIR}
       RESULT_VARIABLE svn_result
       OUTPUT_VARIABLE svn_version
       ERROR_VARIABLE svn_error
       )
-    IF (${svn_result} EQUAL 0)
-      MESSAGE(STATUS "Looking for version in svn - found")
-      SET (PLASTIMATCH_SVN_VERSION ${svn_version})
-    ELSE ()
-      MESSAGE(STATUS "Looking for version in svn - can't connect")
-    ENDIF ()
-  ELSE ()
-    MESSAGE(STATUS "Looking for version in svn - svn not found")
-  ENDIF ()
-ELSE ()
-  SET (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
-ENDIF ()
+    if (${svn_result} EQUAL 0)
+      message (STATUS "Looking for version in svn - found")
+      set (PLASTIMATCH_SVN_VERSION ${svn_version})
+    else ()
+      message (STATUS "Looking for version in svn - can't connect")
+    endif ()
+  else ()
+    message (STATUS "Looking for version in svn - svn not found")
+  endif ()
+else ()
+  set (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  ITK
@@ -478,7 +478,7 @@ if (ITK_FOUND)
     message (STATUS "ITK is version 4.  You are brave!")
   endif ()
   if (${ITK_VERSION_MAJOR} VERSION_EQUAL "3" AND NOT ITK_USE_REVIEW)
-    MESSAGE (FATAL_ERROR 
+    message (FATAL_ERROR 
       "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
   endif ()
 if (ITK_USE_SYSTEM_GDCM)
@@ -490,37 +490,37 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Only use local ransac
 ##-----------------------------------------------------------------------------
-IF (ITK_FOUND)
-  ADD_SUBDIRECTORY (libs/ransac)
-  SET (RANSAC_INCLUDE_DIRS 
+if (ITK_FOUND)
+  add_subdirectory (libs/ransac)
+  set (RANSAC_INCLUDE_DIRS 
     "${CMAKE_SOURCE_DIR}/libs/ransac" 
     "${CMAKE_SOURCE_DIR}/libs/ransac/Common")
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  WXWINDOWS LIBRARY
 ##-----------------------------------------------------------------------------
-IF (wxWidgets_FOUND)
-  IF (wxWidgets_CXX_FLAGS)
-    STRING (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
+if (wxWidgets_FOUND)
+  if (wxWidgets_CXX_FLAGS)
+    string (REGEX REPLACE "-D" "" wxWidgets_DEFINITIONS 
       "${wxWidgets_DEFINITIONS}")
-    SET_SOURCE_FILES_PROPERTIES (mondoshot_main.cpp
+    set_source_files_properties (mondoshot_main.cpp
       PROPERTIES COMPILE_FLAGS 
       ${wxWidgets_CXX_FLAGS}
       )
-  ENDIF ()
-ENDIF ()
+  endif ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CONFIGURE INCLUDE FILES
 ##-----------------------------------------------------------------------------
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_config.h)
 
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_api_config.h.in
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_api_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_api_config.h)
 
-CONFIGURE_FILE (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
 
 ##-----------------------------------------------------------------------------
@@ -531,109 +531,99 @@ add_subdirectory (src)
 ##-----------------------------------------------------------------------------
 ##  Additional install files
 ##-----------------------------------------------------------------------------
-IF (ITK_FOUND)
-  IF (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
-    INSTALL(FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
-  ENDIF ()
-ENDIF ()
+if (ITK_FOUND)
+  if (EXISTS "${ITK_DIR}/bin/release/ITKCommon.dll")
+    install (FILES "${ITK_DIR}/bin/release/ITKCommon.dll" DESTINATION bin)
+  endif ()
+endif ()
 
-IF (CUDA_FOUND)
-  IF (UNIX)
-    SET (CUDART_LINUX_VERSION "libcudart.so.3.0.14")
-    SET (CUDART_LINUX32 "${CUDA_TOOLKIT_ROOT_DIR}/lib/${CUDART_LINUX_VERSION}")
-    SET (CUDART_LINUX64 "${CUDA_TOOLKIT_ROOT_DIR}/lib64/${CUDART_LINUX_VERSION}")
+if (CUDA_FOUND)
+  if (UNIX)
+    set (CUDART_LINUX_VERSION "libcudart.so.3.0.14")
+    set (CUDART_LINUX32 
+      "${CUDA_TOOLKIT_ROOT_DIR}/lib/${CUDART_LINUX_VERSION}")
+    set (CUDART_LINUX64 
+      "${CUDA_TOOLKIT_ROOT_DIR}/lib64/${CUDART_LINUX_VERSION}")
 
-    IF (HAVE_32_BIT)
-      IF (EXISTS "${CUDART_LINUX32}")
-        SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
-      ENDIF ()
-    ENDIF ()
+    if (HAVE_32_BIT AND EXISTS "${CUDART_LINUX32}")
+      set (CUDART_FILE_SRC "${CUDART_LINUX32}")
+    endif ()
 
-    IF (HAVE_64_BIT)
-      IF (EXISTS "${CUDART_LINUX64}")
-        SET (CUDART_FILE_SRC "${CUDART_LINUX64}")
-      ENDIF ()
-    ENDIF ()
+    if (HAVE_64_BIT AND EXISTS "${CUDART_LINUX64}")
+      set (CUDART_FILE_SRC "${CUDART_LINUX64}")
+    endif ()
 
     # Override for packagers building 32-bit packages on 64-bit machine
-    IF (PLM_PACKAGE_32BIT)
-      IF (EXISTS "${CUDART_LINUX32}")
-        SET (CUDART_FILE_SRC "${CUDART_LINUX32}")
-      ENDIF ()
-    ENDIF ()
+    if (PLM_PACKAGE_32BIT AND EXISTS "${CUDART_LINUX32}")
+      set (CUDART_FILE_SRC "${CUDART_LINUX32}")
+    endif ()
 
     # Hard code to cuda 3.0 (runtime 3.0.14).  Note, we copy it first, because
     # otherwise CMake 2.6 will install a broken symbolic link
-    SET (CUDART_FILE "${CMAKE_BINARY_DIR}/${CUDART_LINUX_VERSION}")
-    IF (EXISTS "${CUDART_FILE_SRC}")
-      EXECUTE_PROCESS (COMMAND
+    set (CUDART_FILE "${CMAKE_BINARY_DIR}/${CUDART_LINUX_VERSION}")
+    if (EXISTS "${CUDART_FILE_SRC}")
+      execute_process (COMMAND
         ${CMAKE_COMMAND} "-E" "copy" 
 	    "${CUDART_FILE_SRC}" "${CUDART_FILE}"
       )
-    ENDIF ()
-  ELSE ()
-    SET (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
-    SET (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
+    endif ()
+  else ()
+    set (CUDART_WIN32 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart32_30_14.dll")
+    set (CUDART_WIN64 "${CUDA_TOOLKIT_ROOT_DIR}/bin/cudart64_30_14.dll")
 
-    IF (HAVE_32_BIT)
-      IF (EXISTS "${CUDART_WIN32}")
-        SET (CUDART_FILE "${CUDART_WIN32}")
-      ENDIF ()
-    ENDIF ()
+    if (HAVE_32_BIT AND EXISTS "${CUDART_WIN32}")
+      set (CUDART_FILE "${CUDART_WIN32}")
+    endif ()
 
-    IF (HAVE_64_BIT)
-      IF (EXISTS "${CUDART_WIN64}")
-        SET (CUDART_FILE "${CUDART_WIN64}")
-      ENDIF ()
-    ENDIF ()
+    if (HAVE_64_BIT AND EXISTS "${CUDART_WIN64}")
+      set (CUDART_FILE "${CUDART_WIN64}")
+    endif ()
 
     # Override for packagers building 32-bit packages on 64-bit machine
-    IF (PLM_PACKAGE_32BIT)
-      IF (EXISTS "${CUDART_WIN32}")
-        SET (CUDART_FILE_SRC "${CUDART_WIN32}")
-      ENDIF ()
-    ENDIF ()
-  ENDIF ()
+    if (PLM_PACKAGE_32BIT AND EXISTS "${CUDART_WIN32}")
+      set (CUDART_FILE_SRC "${CUDART_WIN32}")
+    endif ()
+  endif ()
 
-  IF (EXISTS "${CUDART_FILE}")
-    IF (UNIX)
-      INSTALL (FILES "${CUDART_FILE}" DESTINATION lib)
-    ELSE ()
-      INSTALL (FILES "${CUDART_FILE}" DESTINATION bin)
-    ENDIF ()
+  if (EXISTS "${CUDART_FILE}")
+    if (UNIX)
+      install (FILES "${CUDART_FILE}" DESTINATION lib)
+    else ()
+      install (FILES "${CUDART_FILE}" DESTINATION bin)
+    endif ()
 
-    IF (BUILD_AGAINST_SLICER3)
-      INSTALL (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
-    ENDIF ()
-  ENDIF ()
-ENDIF ()
+    if (BUILD_AGAINST_SLICER3)
+      install (FILES "${CUDART_FILE}" DESTINATION lib/Slicer3/Plugins)
+    endif ()
+  endif ()
+endif ()
 
-IF (FFTW_FOUND)
-  IF (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
-    INSTALL (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
-  ENDIF ()
-ENDIF ()
+if (FFTW_FOUND)
+  if (EXISTS "${FFTW_DIR}/libfftw3-3.dll")
+    install (FILES "${FFTW_DIR}/libfftw3-3.dll" DESTINATION bin)
+  endif ()
+endif ()
 
 # JAS 2011.01.24
 # I have moved the documentation DESTINATION from
 # /usr/doc to /usr/share/doc/plastimatch/ for Linux/UNIX
-IF (NOT BUILD_AGAINST_SLICER3)
-  IF (UNIX)
+if (NOT BUILD_AGAINST_SLICER3)
+  if (UNIX)
     # FHS compliant path for Linux/UNIX
-    SET(DOC_DESTINATION "share/doc/plastimatch")
-  ELSE ()
+    set (DOC_DESTINATION "share/doc/plastimatch")
+  else ()
     # Just throw TXTs into a doc folder for Windows
-    SET(DOC_DESTINATION "doc")
-  ENDIF ()
+    set (DOC_DESTINATION "doc")
+  endif ()
 
-  INSTALL (FILES 
+  install (FILES 
     COPYRIGHT.TXT
     INSTALL.TXT
     LICENSE.TXT
     README.TXT
     DESTINATION ${DOC_DESTINATION}
   )
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  MAKE UNINSTALL
