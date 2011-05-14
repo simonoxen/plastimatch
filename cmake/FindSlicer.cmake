@@ -5,6 +5,8 @@
 # Slicer3Config.cmake or SlicerConfig.cmake
 #
 #  SLICER_FOUND       - true if found
+#  SLICER_IS_SLICER3  - true if we have Slicer vesion 3.X
+#  SLICER_IS_SLICER4  - true if we have Slicer vesion 4.X
 
 if (SLICER_INCLUDE_DIR)
   # Already in cache, be silent
@@ -51,6 +53,13 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
 
 if (SLICER_FOUND)
+
+  if (SLICER_IS_SLICER3)
+    set (SLICER_IS_SLICER4 FALSE)
+  else ()  
+    set (SLICER_IS_SLICER4 TRUE)
+  endif ()
+
   if (SLICER_IS_SLICER3)
     ## Slicer 3: convert old names to new names
     set (Slicer_Base_INCLUDE_DIRS "${Slicer3_Base_INCLUDE_DIRS}")
@@ -58,11 +67,18 @@ if (SLICER_FOUND)
     set (Slicer_Base_LIBRARIES "${Slicer3_Base_LIBRARIES}")
     set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
     set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
-    set (BUILD_SHARED_LIBS ON)
   else ()
-    ## Slicer 4: include missing cmake scripts
+    ## Slicer 4: include missing cmake scripts (Slicer3 stuff)
+    include (Slicer3Macros)
     include (Slicer3PluginsMacros)
+    ## Slicer 4: include missing cmake scripts (loadable module stuff)
+    include (vtkMacroKitPythonWrap)
+    include (ctkMacroWrapPythonQt)
+    include (ctkMacroCompilePythonScript)
+    include (SlicerMacroPythonWrapModuleLibrary)
   endif ()
+    ## Always set shared libs on
+  set (BUILD_SHARED_LIBS ON)
 endif ()
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 

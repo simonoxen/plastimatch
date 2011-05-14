@@ -373,10 +373,7 @@ if (SLICER_FOUND)
 
   # Set reasonable default install prefix and output paths
   # (after setting Slicer3_DIR, delete CMAKE_INSTALL_PREFIX and re-configure)
-  if (SLICER_IS_SLICER3)
-    slicer3_set_default_install_prefix_for_external_projects ()
-    #slicer3_enable_plugins_testing()
-  endif ()
+  slicer3_set_default_install_prefix_for_external_projects ()
 else ()
   message (STATUS "Looking for Slicer - not found")
 endif ()

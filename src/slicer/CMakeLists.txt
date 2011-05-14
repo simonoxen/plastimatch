@@ -66,4 +66,8 @@ if (SLICER_FOUND)
   plm_add_slicer_executable (plastimatch_slicer_synth
     "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
     "${GPUIT_EXE_LDFLAGS}")
+
+  if (SLICER_IS_SLICER4)
+    #add_subdirectory (MY_MODULE_NAME)
+  endif ()
 endif ()
