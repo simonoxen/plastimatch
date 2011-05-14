@@ -50,24 +50,23 @@ set (PLASTIMATCH_SLICER_SYNTH_SRC
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-if (SLICER_FOUND)
-  plm_add_slicer_executable (plastimatch_slicer_bspline
-    "${PLASTIMATCH_SLICER_BSPLINE_SRC}" "${PLASTIMATCH_LIBS}" 
-    "${GPUIT_EXE_LDFLAGS}")
-  plm_add_slicer_executable (plastimatch_slicer_dicomrt_import
-    "${PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC}" "${PLASTIMATCH_LIBS}" 
-    "${GPUIT_EXE_LDFLAGS}")
-  plm_add_slicer_executable (plastimatch_slicer_dicomrt_export
-    "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
-    "${GPUIT_EXE_LDFLAGS}")
-  plm_add_slicer_executable (plastimatch_slicer_landwarp 
-    "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
-    "${GPUIT_EXE_LDFLAGS}")
-  plm_add_slicer_executable (plastimatch_slicer_synth
-    "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
-    "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_bspline
+  "${PLASTIMATCH_SLICER_BSPLINE_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_dicomrt_import
+  "${PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_dicomrt_export
+  "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_landwarp 
+  "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_synth
+  "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
 
-  if (SLICER_IS_SLICER4)
-    #add_subdirectory (MY_MODULE_NAME)
-  endif ()
-endif ()
+##-----------------------------------------------------------------------------
+##  Loadable modules
+##-----------------------------------------------------------------------------
+#add_subdirectory (MY_MODULE_NAME)
