@@ -68,10 +68,8 @@ macro (PLM_ADD_SLICER_EXECUTABLE
     set_target_properties (${TARGET_NAME} 
       PROPERTIES LINK_FLAGS ${TARGET_LDFLAGS})
   endif ()
-  if (SLICER_IS_SLICER3)
-    slicer3_set_plugins_output_path (${TARGET_NAME})
-    slicer3_install_plugins (${TARGET_NAME})
-  endif ()
+  slicer3_set_plugins_output_path (${TARGET_NAME})
+  slicer3_install_plugins (${TARGET_NAME})
 endmacro ()
 
 macro (PLM_ADD_SLICER_MODULE 

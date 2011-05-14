@@ -50,14 +50,19 @@ endif ()
 include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
 
-## Convert old names to new names
-if (SLICER_FOUND AND SLICER_IS_SLICER3)
-  set (Slicer_Base_INCLUDE_DIRS "${Slicer3_Base_INCLUDE_DIRS}")
-  set (Slicer_Libs_INCLUDE_DIRS "${Slicer3_Libs_INCLUDE_DIRS}")
-  set (Slicer_Base_LIBRARIES "${Slicer3_Base_LIBRARIES}")
-  set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
-  set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
-  set (BUILD_SHARED_LIBS ON)
+if (SLICER_FOUND)
+  if (SLICER_IS_SLICER3)
+    ## Slicer 3: convert old names to new names
+    set (Slicer_Base_INCLUDE_DIRS "${Slicer3_Base_INCLUDE_DIRS}")
+    set (Slicer_Libs_INCLUDE_DIRS "${Slicer3_Libs_INCLUDE_DIRS}")
+    set (Slicer_Base_LIBRARIES "${Slicer3_Base_LIBRARIES}")
+    set (Slicer_Libs_LIBRARIES "${Slicer3_Libs_LIBRARIES}")
+    set (Slicer_USE_FILE "${Slicer3_USE_FILE}")
+    set (BUILD_SHARED_LIBS ON)
+  else ()
+    ## Slicer 4: include missing cmake scripts
+    include (Slicer3PluginsMacros)
+  endif ()
 endif ()
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 
