@@ -179,7 +179,7 @@ bspline_optimize_lbfgsb (
     if (bxf->num_coeff < 20) {
 	MMAX = 20;
     } else {
-	MMAX = 20 + (int) floor (sqrt (bxf->num_coeff - 20));
+	MMAX = 20 + (int) floor (sqrt ((float) (bxf->num_coeff - 20)));
 	// MMAX = (int) floor (bxf->num_coeff / 100);
 	if (MMAX > 1000) {
 	    MMAX = 1000;

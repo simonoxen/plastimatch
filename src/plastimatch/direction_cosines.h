@@ -7,10 +7,9 @@
 #include "plm_config.h"
 #include <string>
 
-class plastimatch1_EXPORT Direction_cosines {
-  public:
-    static const float IDENTITY_THRESH = 1e-9;
+#define DIRECTION_COSINES_IDENTITY_THRESH 1e-9
 
+class plastimatch1_EXPORT Direction_cosines {
   public:
     float m_direction_cosines[9];
 
@@ -87,8 +86,9 @@ class plastimatch1_EXPORT Direction_cosines {
 	for (int i = 0; i < 9; i++) {
 	    frob += fabs (m_direction_cosines[i] - id.m_direction_cosines[i]);
 	}
-	return frob < IDENTITY_THRESH;
+	return frob < DIRECTION_COSINES_IDENTITY_THRESH;
     }
 };
+
 
 #endif

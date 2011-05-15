@@ -167,7 +167,7 @@ IF (CUDA_FOUND)
     cuda_mem.cu cuda_mem.h
     cuda_util.cu cuda_util.h
     demons_cuda.cu demons_cuda.h
-    demons_misc.c demons_misc.h
+    demons_misc.cxx demons_misc.h
     drr_cuda.cpp drr_cuda.cu drr_cuda.h drr_cuda_p.h 
     fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
     )

@@ -582,7 +582,7 @@ reconstruct_conebeam (
     Proj_image* cbi;
     Timer timer;
 
-    scale = (float) (sqrt(3) / (double) num_imgs);
+    scale = (float) (sqrt(3.f) / (double) num_imgs);
     scale = scale * options->scale;
 
     for (i = 0; i < num_imgs; i++) {

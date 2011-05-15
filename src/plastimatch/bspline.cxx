@@ -395,7 +395,7 @@ bspline_state_destroy (
         // fashion.  Remember, free(NULL) is okay!
         LOAD_LIBRARY (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mse_cleanup_j, libplmcuda);
-        CUDA_bspline_mse_cleanup_j (bst->dev_ptrs, fixed, moving, moving_grad);
+        CUDA_bspline_mse_cleanup_j ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmcuda);
     }
     else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
@@ -404,7 +404,7 @@ bspline_state_destroy (
 
         LOAD_LIBRARY (libplmcuda);
         LOAD_SYMBOL (CUDA_bspline_mi_cleanup_a, libplmcuda);
-        CUDA_bspline_mi_cleanup_a (bst->dev_ptrs, fixed, moving, moving_grad);
+        CUDA_bspline_mi_cleanup_a ((Dev_Pointers_Bspline *) bst->dev_ptrs, fixed, moving, moving_grad);
         UNLOAD_LIBRARY (libplmcuda);
     }
 #endif
@@ -777,11 +777,11 @@ bspline_score (Bspline_parms *parms,
 	switch (parms->implementation) {
 	case 'j':
 	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-		moving_grad, bst->dev_ptrs);
+		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
 	    break;
 	default:
 	    CUDA_bspline_mse_j (parms, bst, bxf, fixed, moving, 
-		moving_grad, bst->dev_ptrs);
+		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
 	    break;
 	}
 
@@ -798,11 +798,11 @@ bspline_score (Bspline_parms *parms,
 	switch (parms->implementation) {
 	case 'a':
 	    CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-		moving_grad, bst->dev_ptrs);
+		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
 	    break;
 	default: 
 	    CUDA_bspline_mi_a (parms, bst, bxf, fixed, moving, 
-		moving_grad, bst->dev_ptrs);
+		moving_grad, (Dev_Pointers_Bspline *) bst->dev_ptrs);
 	    break;
 	}
 
