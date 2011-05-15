@@ -240,6 +240,7 @@ parse_fn (
 	parser->assign_float13 (sm_parms->origin, "origin");
     } else {
 	for (int d = 0; d < 3; d++) {
+	    /* GCS FIX: This should include direction cosines */
 	    sm_parms->origin[d] = - 0.5 * volume_size[d] 
 		+ 0.5 * volume_size[d] / sm_parms->dim[d];
 	}

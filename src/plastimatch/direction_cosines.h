@@ -9,6 +9,9 @@
 
 class plastimatch1_EXPORT Direction_cosines {
   public:
+    static const float IDENTITY_THRESH = 1e-9;
+
+  public:
     float m_direction_cosines[9];
 
   public:
@@ -72,16 +75,19 @@ class plastimatch1_EXPORT Direction_cosines {
 	if (rc != 9) {
 	    return false;
 	}
-	m_direction_cosines[0] = dc[0];
-	m_direction_cosines[1] = dc[1];
-	m_direction_cosines[2] = dc[2];
-	m_direction_cosines[3] = dc[3];
-	m_direction_cosines[4] = dc[4];
-	m_direction_cosines[5] = dc[5];
-	m_direction_cosines[6] = dc[6];
-	m_direction_cosines[7] = dc[7];
-	m_direction_cosines[8] = dc[8];
+	for (int i = 0; i < 9; i++) {
+	    m_direction_cosines[i] = dc[i];
+	}
 	return true;
+    }
+    bool is_identity () {
+	Direction_cosines id;
+	float frob = 0.;
+
+	for (int i = 0; i < 9; i++) {
+	    frob += fabs (m_direction_cosines[i] - id.m_direction_cosines[i]);
+	}
+	return frob < IDENTITY_THRESH;
     }
 };
 
