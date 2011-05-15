@@ -175,7 +175,7 @@ IF (CUDA_FOUND)
   IF (BUILD_SHARED_LIBS)      # << Dynamic loading
     SET (PLMCUDA_LIBRARY_SRC
       ${PLMCUDA_LIBRARY_SRC}
-      volume.c            # for demons_cuda.cu
+      volume.cxx          # for demons_cuda.cu
       volume.h            # for demons_cuda.cu
     )
     SET (PLMCUDA_LIBRARY_DEPENDENCIES
@@ -238,8 +238,6 @@ IF (OPENCL_FOUND)
 
     SET (PLMOPENCL_LIBRARY_SRC
       ${PLMOPENCL_LIBRARY_SRC}
-      #volume.c            # for demons_opencl.cu
-      #volume.h            # for demons_opencl.cu
     )
 
     SET (PLMOPENCL_LIBRARY_DEPENDENCIES
