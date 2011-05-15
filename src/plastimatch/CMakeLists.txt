@@ -101,50 +101,50 @@ SET (PLMSYS_LIBRARY_SRC
   )
 
 SET (GPUIT_LIBRARY_SRC
-  bowtie_correction.c bowtie_correction.h
+  bowtie_correction.cxx bowtie_correction.h
   bstring_util.cxx bstring_util.h
-  bspline.c bspline.h
-  bspline_mi.c bspline_mi.h
-  bspline_mse.c bspline_mse.h
-  bspline_landmarks.c bspline_landmarks.h
-  bspline_optimize.c bspline_optimize.h
-  bspline_optimize_liblbfgs.c bspline_optimize_liblbfgs.h
-  bspline_optimize_lbfgsb.c bspline_optimize_lbfgsb.h
-  bspline_optimize_nlopt.c bspline_optimize_nlopt.h
-  bspline_optimize_steepest.c bspline_optimize_steepest.h
-  bspline_opts.c bspline_opts.h
-  bspline_regularize.c bspline_regularize.h
+  bspline.cxx bspline.h
+  bspline_mi.cxx bspline_mi.h
+  bspline_mse.cxx bspline_mse.h
+  bspline_landmarks.cxx bspline_landmarks.h
+  bspline_optimize.cxx bspline_optimize.h
+  bspline_optimize_liblbfgs.cxx bspline_optimize_liblbfgs.h
+  bspline_optimize_lbfgsb.cxx bspline_optimize_lbfgsb.h
+  bspline_optimize_nlopt.cxx bspline_optimize_nlopt.h
+  bspline_optimize_steepest.cxx bspline_optimize_steepest.h
+  bspline_opts.cxx bspline_opts.h
+  bspline_regularize.cxx bspline_regularize.h
   bspline_warp.cxx bspline_warp.h
-  bspline_xform.c bspline_xform.h
+  bspline_xform.cxx bspline_xform.h
   delayload.c delayload.h
-  demons.c demons.h
-  demons_cpu.c
-  demons_misc.c demons_misc.h
-  dir_list.c dir_list.h
-  drr.c drr.h
-  drr_trilin.c drr_trilin.h
-  fdk.c fdk.h
-  fwrite_block.c fwrite_block.h
-  hnd_io.c hnd_io.h
+  demons.cxx demons.h
+  demons_cpu.cxx
+  demons_misc.cxx demons_misc.h
+  dir_list.cxx dir_list.h
+  drr.cxx drr.h
+  drr_trilin.cxx drr_trilin.h
+  fdk.cxx fdk.h
+  fwrite_block.cxx fwrite_block.h
+  hnd_io.cxx hnd_io.h
   math_util.h
-  mha_io.c mha_io.h
-  rpl_volume.c rpl_volume.h
-  pointset.c pointset.h 
-  proj_image.c proj_image.h
-  proj_image_dir.c proj_image_dir.h
-  proj_matrix.c proj_matrix.h 
-  proton_dose.c proton_dose.h 
-  ray_trace_exact.c ray_trace_exact.h 
-  ray_trace_uniform.c ray_trace_uniform.h 
-  string_util.c string_util.h
-  threading.c threading.h
-  vf.c vf.h
-  vf_convolve.c vf_convolve.h 
-  vf_stats.c vf_stats.h 
-  volume.c volume.h
-  volume_limit.c volume_limit.h
+  mha_io.cxx mha_io.h
+  rpl_volume.cxx rpl_volume.h
+  pointset.cxx pointset.h 
+  proj_image.cxx proj_image.h
+  proj_image_dir.cxx proj_image_dir.h
+  proj_matrix.cxx proj_matrix.h 
+  proton_dose.cxx proton_dose.h 
+  ray_trace_exact.cxx ray_trace_exact.h 
+  ray_trace_uniform.cxx ray_trace_uniform.h 
+  string_util.cxx string_util.h
+  threading.cxx threading.h
+  vf.cxx vf.h
+  vf_convolve.cxx vf_convolve.h 
+  vf_stats.cxx vf_stats.h 
+  volume.cxx volume.h
+  volume_limit.cxx volume_limit.h
   volume_macros.h
-  xpm.c xpm.h
+  xpm.cxx xpm.h
   )
 
 IF (BROOK_FOUND)
@@ -602,22 +602,22 @@ SET (XF_TO_EMPIREFMT_SRC
 ##  SOURCE FILE PROPERTIES
 ##-----------------------------------------------------------------------------
 IF (OPENMP_FOUND)
-  SET_SOURCE_FILES_PROPERTIES (bspline.c
+  SET_SOURCE_FILES_PROPERTIES (bspline.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (bspline_mi.c
+  SET_SOURCE_FILES_PROPERTIES (bspline_mi.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (bspline_mse.c
+  SET_SOURCE_FILES_PROPERTIES (bspline_mse.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (drr.c
+  SET_SOURCE_FILES_PROPERTIES (drr.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (fdk.c
+  SET_SOURCE_FILES_PROPERTIES (fdk.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
   SET_SOURCE_FILES_PROPERTIES (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 ENDIF ()
 
 if (SSE2_FOUND)
-  PLM_SET_SSE2_FLAGS (bspline.c bspline_mi.c bspline_mse.c)
+  PLM_SET_SSE2_FLAGS (bspline.cxx bspline_mi.cxx bspline_mse.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------

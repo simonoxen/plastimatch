@@ -18,6 +18,7 @@
 #if (CUDA_FOUND)
 #include "bspline_cuda.h"
 #endif
+#include "bspline_mse.h"
 #include "bspline_opts.h"
 #include "interpolate.h"
 #include "logfile.h"

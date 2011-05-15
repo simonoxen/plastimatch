@@ -619,7 +619,7 @@ volume_scale (Volume* vol, float scale)
 	print_and_exit ("volume_scale required PT_FLOAT type.\n");
     }
 
-    img = vol->img;
+    img = (float*) vol->img;
     for (i = 0; i < vol->npix; i++) {
 	img[i] = img[i] * scale;
     }

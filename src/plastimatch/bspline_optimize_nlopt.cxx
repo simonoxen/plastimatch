@@ -13,8 +13,7 @@
 
 #include "bspline.h"
 #include "bspline_optimize.h"
-#include "bspline_optimize_lbfgsb.h"
-#include "bspline_optimize_steepest.h"
+#include "bspline_optimize_nlopt.h"
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "math_util.h"

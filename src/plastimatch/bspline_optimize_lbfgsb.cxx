@@ -8,12 +8,16 @@
 #include <math.h>
 #include "bspline.h"
 #include "bspline_optimize.h"
+#include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "logfile.h"
 #include "plm_fortran.h"
 #include "volume.h"
 #include "print_and_exit.h"
 
+#if defined __cplusplus
+extern "C" {
+#endif
 void
 setulb_ (integer*       n,
 	 integer*       m,
@@ -36,6 +40,9 @@ setulb_ (integer*       n,
 	 ftnlen         task_len,
 	 ftnlen         csave_len
 	 );
+#if defined __cplusplus
+}
+#endif
 
 #if defined (commentout)
 #define N 25

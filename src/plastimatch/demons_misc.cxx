@@ -1,13 +1,14 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
+#include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include "plm_config.h"
 #include "demons.h"
+#include "demons_misc.h"
 
 /* This function creates the smoothing kernel */
 float*

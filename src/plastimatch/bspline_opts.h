@@ -31,7 +31,14 @@ struct BSPLINE_Options_struct {
     Bspline_parms parms;
 };
 
+#if defined __cplusplus
+extern "C" {
+#endif
+
 gpuit_EXPORT
 void bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[]);
 
+#if defined __cplusplus
+}
+#endif
 #endif

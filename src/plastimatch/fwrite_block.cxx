@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #if (defined(_WIN32) || defined(WIN32))
-#include <io.h>        // windows //
+#include <io.h>
 #endif
+#include "fwrite_block.h"
 #include "plm_int.h"
 #include "volume.h"
 

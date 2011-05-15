@@ -24,5 +24,4 @@ parse_int13 (int *arr, const char *string);
 #if defined __cplusplus
 }
 #endif
-
 #endif

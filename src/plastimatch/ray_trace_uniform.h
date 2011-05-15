@@ -5,6 +5,7 @@
 #define _ray_trace_uniform_h_
 
 #include "plm_config.h"
+#include "ray_trace_exact.h"
 #include "volume.h"
 #include "volume_limit.h"
 
