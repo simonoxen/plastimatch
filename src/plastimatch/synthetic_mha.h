@@ -5,6 +5,7 @@
 #define _synthetic_mha_h_
 
 #include "plm_config.h"
+#include "direction_cosines.h"
 #include "itk_image.h"
 
 class Rtds;
@@ -23,6 +24,7 @@ public:
     int dim[3];
     float origin[3];
     float spacing[3];
+    Direction_cosines dc;
 
     float background;
     float foreground;

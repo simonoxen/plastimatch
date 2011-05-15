@@ -139,8 +139,7 @@ parse_fn (
     parser->add_long_option ("", "direction-cosines", 
 	"oriention of x, y, and z axes; Specify either preset value,"
 	" {identity,rotated,sheared},"
-	" or 9 digit matrix string \"a b c d e f g h i\"", 
-	1, "identity");
+	" or 9 digit matrix string \"a b c d e f g h i\"", 1, "");
     parser->add_long_option ("", "volume-size", 
 	"size of output image in mm \"x [y z]\"", 1, "500");
 
@@ -212,6 +211,27 @@ parse_fn (
 
     /* Image size */
     parser->assign_int13 (sm_parms->dim, "dim");
+
+    /* Direction cosines */
+    if (parser->option ("direction-cosines")) {
+	std::string arg = parser->get_string("rect-size");
+	if (arg == "identity") {
+	    /* do nothing */
+	}
+	else if (arg == "rotated") {
+	    sm_parms->dc.set_rotated ();
+	}
+	else if (arg == "skewed") {
+	    sm_parms->dc.set_skewed ();
+	}
+	else {
+	    /* Must be 9 digit string */
+	    if (!sm_parms->dc.set_from_string (arg)) {
+		throw (dlib::error ("Error. Option --direction-cosines "
+			"should have nine numbers\n"));
+	    }
+	}
+    }
 
     /* If origin not specified, volume is centered about size */
     float volume_size[3];
