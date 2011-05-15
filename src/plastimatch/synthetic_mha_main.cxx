@@ -106,65 +106,73 @@ parse_fn (
     char* argv[]
 )
 {
-    /* Basic options */
-    parser->add_long_option ("", "output", "Output filename", 1, "");
+    /* Add --help, --version */
+    parser->add_default_options ();
+
+    /* Output files */
+    parser->add_long_option ("", "output", 
+	"output filename", 1, "");
     parser->add_long_option ("", "output-dicom", 
-	"Output dicom directory", 1, "");
+	"output dicom directory", 1, "");
     parser->add_long_option ("", "output-dose-img", 
-	"Filename for output dose image", 1, "");
+	"filename for output dose image", 1, "");
     parser->add_long_option ("", "output-ss-img", 
-	"Filename for output structure set image", 1, "");
+	"filename for output structure set image", 1, "");
     parser->add_long_option ("", "output-type", 
-	"Data type for output image: {uchar,short,ushort, ulong,float},"
+	"data type for output image: {uchar,short,ushort, ulong,float},"
 	" default is float", 
 	1, "float");
-    parser->add_long_option ("h", "help", "Display this help message");
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
-	"Synthetic pattern to create: {gauss,rect, sphere, enclosed_rect},"
+	"synthetic pattern to create: {gauss,rect, sphere, enclosed_rect},"
 	" default is gauss", 
 	1, "gauss");
 
     /* Image size */
     parser->add_long_option ("", "origin", 
-	"Location of first image voxel in mm \"x y z\"", 1, "0 0 0");
+	"location of first image voxel in mm \"x y z\"", 1, "0 0 0");
     parser->add_long_option ("", "dim", 
-	"Size of output image in voxels \"x [y z]\"", 1, "100");
+	"size of output image in voxels \"x [y z]\"", 1, "100");
     parser->add_long_option ("", "spacing", 
-	"Voxel spacing in mm \"x [y z]\"", 1, "5");
+	"voxel spacing in mm \"x [y z]\"", 1, "5");
+    parser->add_long_option ("", "direction-cosines", 
+	"oriention of x, y, and z axes; Specify either preset value,"
+	" {identity,rotated,sheared},"
+	" or 9 digit matrix string \"a b c d e f g h i\"", 
+	1, "identity");
     parser->add_long_option ("", "volume-size", 
-	"Size of output image in mm \"x [y z]\"", 1, "500");
+	"size of output image in mm \"x [y z]\"", 1, "500");
 
     /* Image intensities */
     parser->add_long_option ("", "background", 
-	"Intensity of background region", 1, "-1000");
+	"intensity of background region", 1, "-1000");
     parser->add_long_option ("", "foreground", 
-	"Intensity of foreground region", 1, "0");
+	"intensity of foreground region", 1, "0");
 	
     /* Gaussian options */
     parser->add_long_option ("", "gauss-center", 
-	"Location of Gaussian center in mm \"x [y z]\"", 1, "0 0 0");
+	"location of Gaussian center in mm \"x [y z]\"", 1, "0 0 0");
     parser->add_long_option ("", "gauss-std", 
-	"Width of Gaussian in mm \"x [y z]\"", 1, "100");
+	"width of Gaussian in mm \"x [y z]\"", 1, "100");
 
     /* Rect options */
     parser->add_long_option ("", "rect-size", 
-	"Width of rectangle in mm \"x [y z]\","
+	"width of rectangle in mm \"x [y z]\","
 	" or locations of rectangle corners in mm"
 	" \"x1 x2 y1 y2 z1 z2\"", 1, "-50 50 -50 50 -50 50");
 
     /* Sphere options */
     parser->add_long_option ("", "sphere-center", 
-	"Location of sphere center in mm \"x y z\"", 1, "0 0 0");
+	"location of sphere center in mm \"x y z\"", 1, "0 0 0");
     parser->add_long_option ("", "sphere-radius", 
-	"Radius of sphere in mm \"x [y z]\"", 1, "50");
+	"radius of sphere in mm \"x [y z]\"", 1, "50");
 
     /* Parse the command line arguments */
     parser->parse (argc,argv);
 
-    /* Check if the -h option was given */
-    parser->check_help ();
+    /* Handle --help, --version */
+    parser->check_default_options ();
 
     /* Check that an output file was given */
     if (!parser->option("output") && !parser->option("output-dicom")) {
