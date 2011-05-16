@@ -14,31 +14,31 @@
 #include "synthetic_mha.h"
 
 float intens_enclosed(FloatPoint3DType phys)
-		{
-		float f;		
-		float p[56]={ 5,5,5,  95,10,95, 1,
-			      5,90,5, 95,95,95, 1,
-			      5,5,5,  10,95,95, 1,
-			      90,5,5, 95,95,95, 1,
-			      5,5,5,  95,95,10, 1,
-			      5,5,90, 95,95,95, 1, 
-			      35,35,35, 70,70, 70, 0.4,
-			      20,20,20, 80,25,30, 0.4
-				};
+{
+    float f;		
+    float p[56]={ 5,5,5,  95,10,95, 1,
+		  5,90,5, 95,95,95, 1,
+		  5,5,5,  10,95,95, 1,
+		  90,5,5, 95,95,95, 1,
+		  5,5,5,  95,95,10, 1,
+		  5,5,90, 95,95,95, 1, 
+		  35,35,35, 70,70, 70, 0.4,
+		  20,20,20, 80,25,30, 0.4
+    };
 
-		for(int i=0;i<7*8;i++) 
-		{ if ( (i%7)!=6 )
-		p[i]-=50; /*p[i]*=2;*/ } //center is at 0, size is ~200
-		// must specify dimension 200, origin -100, voxel spacing 1 in Slicer
+    for(int i=0;i<7*8;i++) 
+    { if ( (i%7)!=6 )
+	    p[i]-=50; /*p[i]*=2;*/ } //center is at 0, size is ~200
+    // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
 		
-		f = 0.;
-		for (int i=0;i<8;i++)
-			if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
-			    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
-			    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
-			{ f = p[6+7*i]; } 
-			return f;
-		}
+    f = 0.;
+    for (int i=0;i<8;i++)
+	if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
+	    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
+	    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
+	{ f = p[6+7*i]; } 
+    return f;
+}
 
 void
 synthetic_mha (

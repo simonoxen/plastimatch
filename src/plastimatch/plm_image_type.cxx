@@ -31,6 +31,9 @@ plm_image_type_parse (const char* string)
     else if (!strcmp (string,"float")) {
 	return PLM_IMG_TYPE_ITK_FLOAT;
     }
+    else if (!strcmp (string,"double")) {
+	return PLM_IMG_TYPE_ITK_DOUBLE;
+    }
     else if (!strcmp (string,"vf")) {
 	return PLM_IMG_TYPE_ITK_FLOAT_FIELD;
     }

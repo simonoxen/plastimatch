@@ -109,20 +109,33 @@ itk_image_save_float (T image, const char* fname)
     itk_image_save (float_img, fname);
 }
 
+template<class T> 
+void
+itk_image_save_double (T image, const char* fname)
+{
+    DoubleImageType::Pointer double_img = cast_double (image);
+    itk_image_save (double_img, fname);
+}
+
 /* Explicit instantiations */
 template plastimatch1_EXPORT void itk_image_save(UCharImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(ShortImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UShortImageType::Pointer, const char*);
-template plastimatch1_EXPORT void itk_image_save(UInt32ImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(Int32ImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(UInt32ImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(FloatImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save(DoubleImageType::Pointer, const char*);
+
 template plastimatch1_EXPORT void itk_image_save(DeformationFieldType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UCharImage4DType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save(UCharVecImageType::Pointer, const char*);
+
 template plastimatch1_EXPORT void itk_image_save_uchar (FloatImageType::Pointer, const char*);
-template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_short (FloatImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save_ushort (FloatImageType::Pointer, const char*);
 template plastimatch1_EXPORT void itk_image_save_uint32 (FloatImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save_float (FloatImageType::Pointer, const char*);
+template plastimatch1_EXPORT void itk_image_save_double (FloatImageType::Pointer, const char*);
 
 template plastimatch1_EXPORT void itk_image_save_short_dicom (UCharImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
 template plastimatch1_EXPORT void itk_image_save_short_dicom (ShortImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
@@ -130,4 +143,3 @@ template plastimatch1_EXPORT void itk_image_save_short_dicom (UShortImageType::P
 template plastimatch1_EXPORT void itk_image_save_short_dicom (UInt32ImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
 template plastimatch1_EXPORT void itk_image_save_short_dicom (FloatImageType::Pointer, const char*, Referenced_dicom_dir *, const Img_metadata *img_metadata, Plm_image_patient_position);
 
-template plastimatch1_EXPORT void itk_image_save_float (FloatImageType::Pointer, const char*);

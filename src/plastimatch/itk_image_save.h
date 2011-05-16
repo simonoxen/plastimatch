@@ -22,4 +22,5 @@ template<class T> plastimatch1_EXPORT void itk_image_save_short (T img_ptr, cons
 template<class T> plastimatch1_EXPORT void itk_image_save_ushort (T img_ptr, const char* fname);
 template<class T> plastimatch1_EXPORT void itk_image_save_uint32 (T img_ptr, const char* fname);
 template<class T> plastimatch1_EXPORT void itk_image_save_float (T img_ptr, const char* fname);
+template<class T> plastimatch1_EXPORT void itk_image_save_double (T img_ptr, const char* fname);
 #endif

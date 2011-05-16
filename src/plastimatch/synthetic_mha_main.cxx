@@ -63,6 +63,9 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 	case PLM_IMG_TYPE_ITK_FLOAT:
 	    itk_image_save_float (img, (const char*) parms->output_fn);
 	    break;
+	case PLM_IMG_TYPE_ITK_DOUBLE:
+	    itk_image_save_double (img, (const char*) parms->output_fn);
+	    break;
 	}
     }
 

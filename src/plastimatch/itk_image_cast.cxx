@@ -157,6 +157,27 @@ cast_float (T image)
     return caster->GetOutput();
 }
 
+template<class T> 
+DoubleImageType::Pointer
+cast_double (T image)
+{
+    typedef typename T::ObjectType ImageType;
+    typedef itk::CastImageFilter <
+	ImageType, DoubleImageType > CastFilterType;
+
+    typename CastFilterType::Pointer caster = CastFilterType::New();
+    caster->SetInput(image);
+    try {
+	caster->Update();
+    }
+    catch (itk::ExceptionObject & ex) {
+	printf ("ITK exception in CastFilter.\n");
+	std::cout << ex << std::endl;
+	exit(1);
+    }
+    return caster->GetOutput();
+}
+
 /* Explicit instantiations */
 template plastimatch1_EXPORT UCharImageType::Pointer cast_uchar (FloatImageType::Pointer);
 template plastimatch1_EXPORT ShortImageType::Pointer cast_short (UCharImageType::Pointer);
@@ -174,3 +195,4 @@ template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UCharImageType:
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (ShortImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (UInt32ImageType::Pointer);
 template plastimatch1_EXPORT FloatImageType::Pointer cast_float (FloatImageType::Pointer);
+template plastimatch1_EXPORT DoubleImageType::Pointer cast_double (FloatImageType::Pointer);
