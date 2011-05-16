@@ -190,6 +190,9 @@ parse_fn (
     parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
     sm_parms->output_type = plm_image_type_parse (
 	parser->get_string("output-type").c_str());
+    if (sm_parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+	throw dlib::error ("Error, unknown output-type\n");
+    }
 
     /* Main pattern */
     std::string arg = parser->get_string ("pattern");

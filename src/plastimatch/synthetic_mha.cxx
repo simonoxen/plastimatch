@@ -96,7 +96,7 @@ synthetic_mha (
 	dose_img_it.GoToBegin();
     }
 
-	/* Iterate through image, setting values */
+    /* Iterate through image, setting values */
     typedef itk::ImageRegionIteratorWithIndex< FloatImageType > IteratorType;
     IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
@@ -143,9 +143,9 @@ synthetic_mha (
 	    }
 	    break;
 	case PATTERN_ENCLOSED_RECT:
-		f = intens_enclosed(phys); // 0 to 1
-		f = (1 - f) * parms->background + f * parms->foreground;
-		break;
+	    f = intens_enclosed(phys); // 0 to 1
+	    f = (1 - f) * parms->background + f * parms->foreground;
+	    break;
 	default:
 	    f = 0.0f;
 	    break;

@@ -1,4 +1,4 @@
-PROJECT(PLM_Testing)
+project (PLM_Testing)
 
 ## -------------------------------------------------------------------------
 ## Testing macros
@@ -31,40 +31,40 @@ endmacro ()
 ## -------------------------------------------------------------------------
 ## Download data sets
 ## -------------------------------------------------------------------------
-MACRO (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
-  IF (NOT IS_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
-    FILE (MAKE_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
-  ENDIF ()
-  IF (NOT EXISTS ${DOWNLOAD_FILENAME})
-    MESSAGE (STATUS "Downloading test data")
-    FILE (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
-  ENDIF ()
-  IF (NOT EXISTS ${DOWNLOAD_DIR})
-    MESSAGE (STATUS "Untarring test data")
-    EXECUTE_PROCESS (
+macro (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
+  if (NOT IS_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
+    file (MAKE_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
+  endif ()
+  if (NOT EXISTS ${DOWNLOAD_FILENAME})
+    message (STATUS "Downloading test data")
+    file (DOWNLOAD "${DOWNLOAD_URL}" "${DOWNLOAD_FILENAME}")
+  endif ()
+  if (NOT EXISTS ${DOWNLOAD_DIR})
+    message (STATUS "Untarring test data")
+    execute_process (
       COMMAND 
       ${CMAKE_COMMAND} "-E" "tar" "xvzf" "${DOWNLOAD_FILENAME}"
       WORKING_DIRECTORY ${PLM_TESTING_BUILD_DIR}
       RESULT_VARIABLE untar_result
       OUTPUT_VARIABLE untar_output
       ERROR_VARIABLE untar_error)
-    MESSAGE (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
-  ENDIF ()
-ENDMACRO ()
+    message (STATUS "Untar command returned: ${untar_result}\n${untar_output}\n${untar_error}")
+  endif ()
+endmacro ()
 
-IF (PLM_TEST_DICOMRT_AW)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_DICOMRT_AW)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1613/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
-ENDIF ()
+endif ()
 
-IF (PLM_TEST_DICOMRT_CERR)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_DICOMRT_CERR)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1632/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
-ENDIF ()
+endif ()
 
 if (PLM_TEST_DICOMRT_IRREGULAR)
   plm_download_and_extract (
@@ -73,33 +73,33 @@ if (PLM_TEST_DICOMRT_IRREGULAR)
     "${PLM_TESTING_BUILD_DIR}/xio-4.60-irregular-spacing")
 endif ()
 
-IF (PLM_TEST_DICOMRT_PINNACLE)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_DICOMRT_PINNACLE)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
-ENDIF ()
+endif ()
 
-IF (PLM_TEST_DICOMRT_XIO)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_DICOMRT_XIO)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-ENDIF ()
+endif ()
 
-IF (PLM_TEST_FDK_VARIAN)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_FDK_VARIAN)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/varian-catphan")
-ENDIF ()
+endif ()
 
-IF (PLM_TEST_XIO)
-  PLM_DOWNLOAD_AND_EXTRACT (
+if (PLM_TEST_XIO)
+  plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
-ENDIF ()
+endif ()
 
 
 ## -------------------------------------------------------------------------
@@ -111,22 +111,22 @@ ENDIF ()
 # JAS 2010.11.23
 # Tests will fail if the test binaries cannot find the cuda plugin.
 # So, we copy it into the testing directory.  This seems to work well.
-IF (PLM_USE_GPU_PLUGINS)
+if (PLM_USE_GPU_PLUGINS)
   # Because MSVC places stuff in Release/ or Debug/, etc
   # CMAKE_CFG_INTDIR is "Release/" or "Debug/" for Windows or "/" for Linux
   # In the Linux case, the extra "/" doesn't hurt anything.
-  SET (GPU_PLUGIN_BIN_DIR
+  set (GPU_PLUGIN_BIN_DIR
     "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
 
-  IF (CUDA_FOUND)
+  if (CUDA_FOUND)
     # CMAKE_SHARED_LIBRARY_PREFIX is "" under Windows and "lib" under Linux
     # CMAKE_SHARE_LIBRARY_SUFFIX is ".dll" under Windows and ".so" under Linux
-    SET (CUDA_PLUGIN_FILE
+    set (CUDA_PLUGIN_FILE
       "${CMAKE_SHARED_LIBRARY_PREFIX}plmcuda${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
     # This tells CMake how to handle a target depending on
     # "Testing/[lib]plmcuda[.dll/.so]"
-    ADD_CUSTOM_COMMAND (
+    add_custom_command (
       OUTPUT "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
       COMMAND
       ${CMAKE_COMMAND} "-E" "copy"
@@ -141,7 +141,7 @@ IF (PLM_USE_GPU_PLUGINS)
     # Testing/libplmcuda.so : libplmcuda.so  (Under Linux)
     #
     # The "rule" for handling this is the above custom command 
-    ADD_CUSTOM_TARGET (plmcuda_tcpy
+    add_custom_target (plmcuda_tcpy
       DEPENDS "${PLM_TESTING_BUILD_DIR}/${CUDA_PLUGIN_FILE}"
       )
 
@@ -149,14 +149,14 @@ IF (PLM_USE_GPU_PLUGINS)
     # So, we add it as a dependency here so that plmcuda plugin will be copied
     # to Testing whenever the user builds GPUIT (or any target that depends on
     # GPUIT, which is most targets).
-    ADD_DEPENDENCIES (gpuit plmcuda_tcpy)
-  ENDIF (CUDA_FOUND)
+    add_dependencies (gpuit plmcuda_tcpy)
+  endif ()
 
-  IF (OPENCL_FOUND)
-    SET (OPENCL_PLUGIN_FILE
+  if (OPENCL_FOUND)
+    set (OPENCL_PLUGIN_FILE
       "${CMAKE_SHARED_LIBRARY_PREFIX}plmopencl${CMAKE_SHARED_LIBRARY_SUFFIX}")
 
-    ADD_CUSTOM_COMMAND (
+    add_custom_command (
       OUTPUT "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
       COMMAND
       ${CMAKE_COMMAND} "-E" "copy"
@@ -165,12 +165,12 @@ IF (PLM_USE_GPU_PLUGINS)
       DEPENDS plmopencl
       )
 
-    ADD_CUSTOM_TARGET (plmopencl_tcpy
+    add_custom_target (plmopencl_tcpy
       DEPENDS "${PLM_TESTING_BUILD_DIR}/${OPENCL_PLUGIN_FILE}"
       )
-    ADD_DEPENDENCIES (gpuit plmopencl_tcpy)
-  ENDIF (OPENCL_FOUND)
-ENDIF (PLM_USE_GPU_PLUGINS)
+    add_dependencies (gpuit plmopencl_tcpy)
+  endif ()
+endif ()
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
@@ -187,62 +187,76 @@ ENDIF (PLM_USE_GPU_PLUGINS)
 ##   rect-3.mha    Standard rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ## -------------------------------------------------------------------------
-SET (SYNTH_MHA_SIZE 38)
+set (SYNTH_MHA_SIZE 38)
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-3.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;-1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-4.mha;--output-type;float;--pattern;gauss;--origin;+25 +25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--spacing;-1.31579 -1.31579 2;--background;-1000;--foreground;0;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-5"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--output-type;float;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;20 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-6"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-6.mha;--output-type;float;--pattern;gauss;--origin;-15 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;-1000;--foreground;0;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-ushort-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "gauss-ushort-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-ushort-2.mha;--output-type;ushort;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
+  )
+
+plm_add_test (
+  "gauss-double-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-double-1.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;0 0 0;--gauss-std;10 10 10"
+  )
+
+plm_add_test (
+  "gauss-double-2"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/gauss-double-2.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
 PLM_ADD_TEST (
@@ -1206,13 +1220,13 @@ plmtest_check_interval ("plm-register-itk-demons-check-2"
 ##   bspline-single-cuda
 ##   register-bspline-ushort
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-single-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-single-c.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-single-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1225,13 +1239,13 @@ plmtest_check_interval ("plm-bspline-single-c-check"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-single-h" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-single-h.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-single-h-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1244,13 +1258,13 @@ plmtest_check_interval ("plm-bspline-single-h-check"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-openmp" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-openmp.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-openmp-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1263,13 +1277,13 @@ plmtest_check_interval ("plm-bspline-openmp-check"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-cuda" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-bspline-cuda.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-bspline-cuda-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1282,13 +1296,13 @@ plmtest_check_interval ("plm-bspline-cuda-check"
   "${PLM_BSPLINE_TEST_UPPER_THRESH}"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-bspline-ushort"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-bspline-ushort.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-bspline-ushort-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1306,7 +1320,7 @@ plmtest_check_interval ("plm-register-bspline-ushort-check"
 ## plastimatch register (group 3) - rect 2 & rect 3
 ##   register-rect-bspline
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-rect-bspline" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1329,25 +1343,25 @@ PLM_ADD_TEST (
 ##   set to zero in plastimatch, and this causes artifacts in the composed 
 ##   vector field.
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-compose" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-compose.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "compose;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-a-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-a-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-a-warp.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1359,19 +1373,19 @@ plmtest_check_interval ("plm-compose-a-check"
   "13.1"
   "13.3"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "compose;${PLM_TESTING_BUILD_DIR}/plm-register-itk-translation-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-b-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-b-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-b-warp.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-b-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1383,19 +1397,19 @@ plmtest_check_interval ("plm-compose-b-check"
   "13.1"
   "13.3"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "compose;plm-bspline-single-h-xf.txt;${PLM_TESTING_BUILD_DIR}/plm-register-compose-vf.mha;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-c-warp" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-5.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-compose-c-vf.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-compose-c-warp.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-compose-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1411,7 +1425,7 @@ plmtest_check_interval ("plm-compose-c-check"
 ## -------------------------------------------------------------------------
 ## plastimatch resample
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-resample-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1423,13 +1437,13 @@ PLM_ADD_TEST (
 ##   plm warp pointset a:  xf = bspline, output fcsv
 ##   plm warp pointset b:  xf = bspline, output txt
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-pointset-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/plm-register-rect-bspline-xf.txt;--input;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;--output-pointset;${PLM_TESTING_BUILD_DIR}/plm-warp-pointset-a.fcsv"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-pointset-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1447,13 +1461,13 @@ PLM_ADD_TEST (
 ##   plm warp g: xf = translation
 ##   plm warp h: xf = translation, ushort images
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-a-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-a.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1466,13 +1480,13 @@ plmtest_check_interval ("plm-warp-a-check"
   "5.78"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-b-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-b.mha;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-b-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1484,7 +1498,7 @@ plmtest_check_interval ("plm-warp-b-check-1"
   "5.77"
   "5.78"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-b-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1497,13 +1511,13 @@ plmtest_check_interval ("plm-warp-b-check-2"
   "-775.6"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--algorithm;itk;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-c-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-c.mha;--interpolation;nn;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1516,13 +1530,13 @@ plmtest_check_interval ("plm-warp-c-check"
   "9.3"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-d" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_BUILD_DIR}/bspline_c_xf.txt;--output-vf;${PLM_TESTING_BUILD_DIR}/plm-warp-d-vf.mha;--input;${PLM_TESTING_BUILD_DIR}/sphere-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-d.mha;--interpolation;nn;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-d-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1535,13 +1549,13 @@ plmtest_check_interval ("plm-warp-d-check"
   "9.3"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-warp-e-xio;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-e-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-e-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-e;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-e.cxt;--output-colormap;${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-e-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1553,7 +1567,7 @@ plmtest_check_interval ("plm-warp-e-check-1"
   "-661.5"
   "-661.4"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-e-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1565,7 +1579,7 @@ plmtest_check_interval ("plm-warp-e-check-2"
   "0.385"
   "0.395"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-e-stats-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1577,41 +1591,41 @@ plmtest_check_interval ("plm-warp-e-check-3"
   "0.67"
   "0.68"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-e-stats-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "stats;--input;plm-warp-e-ss-img.nrrd"
   )
-IF (PLM_USE_SS_IMAGE_VEC)
-plmtest_check_interval ("plm-warp-e-check-4"
-  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
-  "S *1 *NVOX *([-0-9.]*)"
-  "1971"
-  "1971"
-  )
-ELSE ()
-plmtest_check_interval ("plm-warp-e-check-4"
-  "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
-  "AVE *([-0-9.]*)"
-  "1.05"
-  "1.15"
-  )
-ENDIF ()
-ADD_TEST ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
+if (PLM_USE_SS_IMAGE_VEC)
+  plmtest_check_interval ("plm-warp-e-check-4"
+    "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+    "S *1 *NVOX *([-0-9.]*)"
+    "1971"
+    "1971"
+    )
+else ()
+  plmtest_check_interval ("plm-warp-e-check-4"
+    "${PLM_TESTING_BUILD_DIR}/plm-warp-e-stats-4.stdout.txt"
+    "AVE *([-0-9.]*)"
+    "1.05"
+    "1.15"
+    )
+endif ()
+add_test ("plm-warp-e-check-5" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e-ss-list.txt"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e-ss-list.txt")
-ADD_TEST ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
+add_test ("plm-warp-e-check-6" ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/plm-warp-e.ctbl"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-e.ctbl")
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-f" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-bspline-chest-phantom.txt;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-warp-f-dicom;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-img.nrrd;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-warp-f-ss-list.txt;--output-labelmap;${PLM_TESTING_BUILD_DIR}/plm-warp-f-labelmap.nrrd;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-f-img.nrrd;--output-prefix;${PLM_TESTING_BUILD_DIR}/plm-warp-f;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-warp-f.cxt;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-f-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1623,30 +1637,30 @@ plmtest_check_interval ("plm-warp-f-check-1"
   "-661.5"
   "-661.4"
   )
-IF (PLM_USE_SS_IMAGE_VEC)
-PLM_ADD_TEST (
-  "plm-warp-f-stats-2"
-  ""
-  ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "stats;--input;plm-warp-f-ss-img.nrrd"
-  )
-plmtest_check_interval ("plm-warp-f-check-2"
-  "${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-2.stdout.txt"
-  "S *1 *NVOX *([-0-9.]*)"
-  "1971"
-  "1971"
-  )
-ELSE ()
+if (PLM_USE_SS_IMAGE_VEC)
+  plm_add_test (
+    "plm-warp-f-stats-2"
+    ""
+    ${PLM_PLASTIMATCH_PATH}/plastimatch
+    "stats;--input;plm-warp-f-ss-img.nrrd"
+    )
+  plmtest_check_interval ("plm-warp-f-check-2"
+    "${PLM_TESTING_BUILD_DIR}/plm-warp-f-stats-2.stdout.txt"
+    "S *1 *NVOX *([-0-9.]*)"
+    "1971"
+    "1971"
+    )
+else ()
   # Don't bother
-ENDIF ()
+endif ()
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-g" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-g-img.nrrd;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-g-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1659,13 +1673,13 @@ plmtest_check_interval ("plm-warp-g-check-1"
   "-674.5"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-h" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-ushort-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-h-img.nrrd;--default-value;0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-warp-h-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1683,21 +1697,21 @@ plmtest_check_interval ("plm-warp-h-check-1"
 ## plm-xf-convert-b    vf to plm bspline
 ## plm-xf-convert-c    plm bspline to vf
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-xf-convert-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_DATA_DIR}/xf-bspline-1.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-a-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-xf-convert-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-a-vf.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output-type;bspline;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;--grid-spacing;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-xf-convert-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1709,13 +1723,13 @@ PLM_ADD_TEST (
 ##   plm drr api a:
 ##   plm registration api a:
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-drr-api-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plm_drr_api_a
   ""
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-registration-api-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plm_registration_api_a
@@ -1726,17 +1740,17 @@ PLM_ADD_TEST (
 ## bragg-curve
 ## proton-dose
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "bragg-curve"
   ""
   ${PLM_PLASTIMATCH_PATH}/bragg_curve
   "-O;${PLM_TESTING_BUILD_DIR}/bragg-curve.txt"
   )
-ADD_TEST (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
+add_test (bragg-curve-check ${CMAKE_COMMAND} -E compare_files
   "${PLM_TESTING_DATA_DIR}/bragg-curve.txt"
   "${PLM_TESTING_BUILD_DIR}/bragg-curve.txt")
 
-PLM_ADD_TEST (
+plm_add_test (
   "proton-dose"
   ""
   ${PLM_PLASTIMATCH_PATH}/proton_dose
@@ -1746,6 +1760,6 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## slicer tests
 ## -------------------------------------------------------------------------
-IF (Slicer3_DIR)
+if (Slicer3_DIR)
 #  slicer3_add_plugins_test(${CLP}Test1 ${CLP} --help)
-ENDIF (Slicer3_DIR)
+endif (Slicer3_DIR)
