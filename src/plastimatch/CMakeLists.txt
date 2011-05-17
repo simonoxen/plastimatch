@@ -323,6 +323,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_image.cxx itk_image.h 
   itk_image_cast.cxx itk_image_cast.h 
   itk_image_load.h itk_image_load.txx
+  itk_image_load_double.cxx
   itk_image_load_float.cxx
   itk_image_load_int32.cxx
   itk_image_load_short.cxx

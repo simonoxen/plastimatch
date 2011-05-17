@@ -183,6 +183,11 @@ Plm_image::load_native (const char* fname)
 	this->m_original_type = PLM_IMG_TYPE_ITK_FLOAT;
 	this->m_type = PLM_IMG_TYPE_ITK_FLOAT;
 	break;
+    case itk::ImageIOBase::DOUBLE:
+	this->m_itk_double = itk_image_load_double (fname, 0);
+	this->m_original_type = PLM_IMG_TYPE_ITK_DOUBLE;
+	this->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
+	break;
     default:
 	printf ("Error, unsupported input type in load_native(): %d\n",
 	    component_type);

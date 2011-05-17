@@ -1727,8 +1727,8 @@ plm_add_test (
 plmtest_check_interval ("plm-warp-i-check-1"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-i-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
-  "113.5"
-  "114.0"
+  "114.4"
+  "114.7"
   )
 
 ## -------------------------------------------------------------------------
