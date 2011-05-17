@@ -1,0 +1,17 @@
+[GLOBAL]
+fixed=gauss-double-1.mha
+moving=gauss-double-2.mha
+vf_out=plm-register-bspline-double-vf.mha
+xform_out=plm-register-bspline-double-xf.txt
+img_out=plm-register-bspline-double-img.mha
+
+[STAGE]
+xform=bspline
+optim=lbfgsb
+impl=plastimatch
+threading=single
+max_its=5
+convergence_tol=3
+grad_tol=0.1
+grid_spac=30 30 30
+res=2 2 2

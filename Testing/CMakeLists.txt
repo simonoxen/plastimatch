@@ -1315,6 +1315,25 @@ plmtest_check_interval ("plm-register-bspline-ushort-check"
   "108.6"
   )
 
+plm_add_test (
+  "plm-register-bspline-double"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-double.txt"
+  )
+plm_add_test (
+  "plm-register-bspline-double-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-register-bspline-double-img.mha"
+  )
+plmtest_check_interval ("plm-register-bspline-double-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-register-bspline-double-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "107.6"
+  "108.6"
+  )
+
 
 ## -------------------------------------------------------------------------
 ## plastimatch register (group 3) - rect 2 & rect 3
