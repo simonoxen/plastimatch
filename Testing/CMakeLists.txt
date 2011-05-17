@@ -1330,8 +1330,8 @@ plm_add_test (
 plmtest_check_interval ("plm-register-bspline-double-check"
   "${PLM_TESTING_BUILD_DIR}/plm-register-bspline-double-stats.stdout.txt"
   "AVE *([-0-9.]*)"
-  "107.6"
   "108.6"
+  "109.6"
   )
 
 

@@ -380,6 +380,12 @@ plm_image_convert_gpuit_to_itk (Plm_image* pli, FloatImageType::Pointer itk_img,
 template plastimatch1_EXPORT 
 FloatImageType::Pointer
 plm_image_convert_gpuit_to_itk (Plm_image* pli, FloatImageType::Pointer itk_img, float);
+template plastimatch1_EXPORT 
+DoubleImageType::Pointer
+plm_image_convert_gpuit_to_itk (Plm_image* pli, DoubleImageType::Pointer itk_img, unsigned char);
+template plastimatch1_EXPORT 
+DoubleImageType::Pointer
+plm_image_convert_gpuit_to_itk (Plm_image* pli, DoubleImageType::Pointer itk_img, float);
 
 template plastimatch1_EXPORT 
 void
@@ -396,3 +402,6 @@ plm_image_convert_itk_to_gpuit_float (Plm_image* pli, Int32ImageType::Pointer im
 template plastimatch1_EXPORT 
 void
 plm_image_convert_itk_to_gpuit_float (Plm_image* pli, FloatImageType::Pointer img);
+template plastimatch1_EXPORT 
+void
+plm_image_convert_itk_to_gpuit_float (Plm_image* pli, DoubleImageType::Pointer img);

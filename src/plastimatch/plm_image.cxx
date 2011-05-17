@@ -276,6 +276,9 @@ Plm_image::save_image (const char* fname)
     case PLM_IMG_TYPE_ITK_FLOAT:
 	itk_image_save (this->m_itk_float, fname);
 	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	itk_image_save (this->m_itk_double, fname);
+	break;
     case PLM_IMG_TYPE_GPUIT_UCHAR:
 	this->convert_to_itk_uchar ();
 	itk_image_save (this->m_itk_uchar, fname);
@@ -298,7 +301,7 @@ Plm_image::save_image (const char* fname)
     case PLM_IMG_TYPE_GPUIT_UINT16:
     default:
 	print_and_exit ("Unhandled image type in Plm_image::save_image"
-			" (type = %d)\n", this->m_type);
+	    " (type = %s)\n", plm_image_type_string (this->m_type));
 	break;
     }
 }
@@ -555,6 +558,43 @@ Plm_image::convert_to_itk_float ()
 }
 
 void
+Plm_image::convert_to_itk_double ()
+{
+    switch (this->m_type) {
+    case PLM_IMG_TYPE_ITK_UCHAR:
+	this->m_itk_double = cast_double (this->m_itk_uchar);
+	this->m_itk_uchar = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_SHORT:
+	this->m_itk_double = cast_double (this->m_itk_short);
+	this->m_itk_short = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_ULONG:
+	this->m_itk_double = cast_double (this->m_itk_uint32);
+	this->m_itk_uint32 = 0;
+	break;
+    case PLM_IMG_TYPE_ITK_FLOAT:
+	this->m_itk_double = cast_double (this->m_itk_float);
+	this->m_itk_float = 0;
+	return;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	return;
+    case PLM_IMG_TYPE_GPUIT_UCHAR:
+	this->m_itk_double = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_double, (unsigned char) 0);
+	break;
+    case PLM_IMG_TYPE_GPUIT_FLOAT:
+	this->m_itk_double = plm_image_convert_gpuit_to_itk (
+	    this, this->m_itk_double, (float) 0);
+	break;
+    default:
+	print_and_exit ("Error: unhandled conversion to itk_double\n");
+	return;
+    }
+    this->m_type = PLM_IMG_TYPE_ITK_DOUBLE;
+}
+
+void
 Plm_image::convert_to_itk_uchar_vec (void)
 {
     switch (m_type) {
@@ -781,6 +821,9 @@ Plm_image::convert (Plm_image_type new_type)
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	this->convert_to_itk_float ();
+	break;
+    case PLM_IMG_TYPE_ITK_DOUBLE:
+	this->convert_to_itk_double ();
 	break;
     case PLM_IMG_TYPE_GPUIT_SHORT:
 	this->convert_to_gpuit_short ();

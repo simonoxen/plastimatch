@@ -16,7 +16,7 @@ class Plm_image_header;
 class Plm_image;
 class Referenced_dicom_dir;
 
-class Plm_image {
+class plastimatch1_EXPORT Plm_image {
 
 public:
 
@@ -43,27 +43,18 @@ private:
     Plm_image& operator= (Plm_image& xf) {
 	return *this;
     }
-    plastimatch1_EXPORT
+    
     void convert_to_itk_uchar ();
-    plastimatch1_EXPORT
     void convert_to_itk_short ();
-    plastimatch1_EXPORT
     void convert_to_itk_ushort ();
-    plastimatch1_EXPORT
     void convert_to_itk_int32 (void);
-    plastimatch1_EXPORT
     void convert_to_itk_uint32 ();
-    plastimatch1_EXPORT
     void convert_to_itk_float ();
-    plastimatch1_EXPORT
+    void convert_to_itk_double ();
     void convert_to_gpuit_short ();
-    plastimatch1_EXPORT
     void convert_to_gpuit_uint16 ();
-    plastimatch1_EXPORT
     void convert_to_gpuit_uint32 ();
-    plastimatch1_EXPORT
     void convert_to_gpuit_float ();
-    plastimatch1_EXPORT
     void convert_to_gpuit_uchar_vec ();
 
 public:
@@ -108,34 +99,23 @@ public:
 	m_gpuit = 0;
     }
 
-    plastimatch1_EXPORT
     Plm_image* clone (void);
 
     /* Loading */
-    plastimatch1_EXPORT void
-    load (const char* fname, Plm_image_type type);
-    plastimatch1_EXPORT
+    void load (const char* fname, Plm_image_type type);
     void load_native (const char* fname);
-    plastimatch1_EXPORT
     void load_native_dicom (const char* fname);
 
     /* Saving */
-    plastimatch1_EXPORT
     void save_short_dicom (const char* fname, Referenced_dicom_dir *rdd, 
 	Img_metadata *img_metadata);
-    plastimatch1_EXPORT
     void save_image (const char* fname);
-    plastimatch1_EXPORT
     void convert_and_save (const char* fname, Plm_image_type new_type);
 
     /* assignment */
-    plastimatch1_EXPORT
     void set_gpuit (Volume *v);
-    plastimatch1_EXPORT
     void set_itk (UCharImageType::Pointer img);
-    plastimatch1_EXPORT
     void set_itk (FloatImageType::Pointer img);
-    plastimatch1_EXPORT
     void set_itk (UCharVecImageType::Pointer img);
 
     /* conversion */
@@ -151,21 +131,15 @@ public:
 	convert_to_gpuit_uchar_vec ();
 	return (Volume*) m_gpuit;
     }
-    plastimatch1_EXPORT
     void convert (Plm_image_type new_type);
-    plastimatch1_EXPORT
     void convert_to_original_type (void);
-    plastimatch1_EXPORT
     void convert_to_itk (void);
-    plastimatch1_EXPORT
     void convert_to_itk_uchar_vec (void);
 
     /* metadata */
-    plastimatch1_EXPORT
     void set_metadata (char *tag, char *value);
 
     /* Other */
-    plastimatch1_EXPORT
     static int compare_headers (Plm_image *pli1, Plm_image *pli2);
 };
 
@@ -177,7 +151,6 @@ Plm_image* plm_image_load (const char* fname, Plm_image_type type);
 plastimatch1_EXPORT
 Plm_image* plm_image_load_native (const char* fname);
 plastimatch1_EXPORT
-void
-plm_image_save_vol (const char* fname, Volume *vol);
+void plm_image_save_vol (const char* fname, Volume *vol);
 
 #endif
