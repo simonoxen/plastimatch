@@ -1479,6 +1479,7 @@ plm_add_test (
 ##   plm warp f: input = dicom, multiple outputs
 ##   plm warp g: xf = translation
 ##   plm warp h: xf = translation, ushort images
+##   plm warp i: xf = translation, double images
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-warp-a" 
@@ -1706,6 +1707,25 @@ plm_add_test (
   )
 plmtest_check_interval ("plm-warp-h-check-1"
   "${PLM_TESTING_BUILD_DIR}/plm-warp-h-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "113.5"
+  "114.0"
+  )
+
+plm_add_test (
+  "plm-warp-i" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--xf;${PLM_TESTING_DATA_DIR}/xf-translation-1.txt;--input;${PLM_TESTING_BUILD_DIR}/gauss-double-1.mha;--output-img;${PLM_TESTING_BUILD_DIR}/plm-warp-i-img.nrrd;--default-value;0"
+  )
+plm_add_test (
+  "plm-warp-i-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;plm-warp-i-img.nrrd"
+  )
+plmtest_check_interval ("plm-warp-i-check-1"
+  "${PLM_TESTING_BUILD_DIR}/plm-warp-i-stats-1.stdout.txt"
   "AVE *([-0-9.]*)"
   "113.5"
   "114.0"
