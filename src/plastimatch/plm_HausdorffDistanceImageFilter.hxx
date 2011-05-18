@@ -135,11 +135,8 @@ plm_HausdorffDistanceImageFilter<TInputImage1, TInputImage2>
   // equal weight proportion
   progress->RegisterInternalFilter(filter12,.5f);
   progress->RegisterInternalFilter(filter21,.5f);
-  if (m_UseImageSpacing)
-  {
-	filter12->SetUseImageSpacing(true);
-	filter21->SetUseImageSpacing(true);
-  }
+  filter12->SetUseImageSpacing(m_UseImageSpacing);
+  filter21->SetUseImageSpacing(m_UseImageSpacing);
   filter12->Update();
   distance12 = filter12->GetDirectedHausdorffDistance();
   filter21->Update();

@@ -135,10 +135,7 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
   typename FilterType::Pointer filter = FilterType::New();
 
   filter->SetInput( this->GetInput2() );
-  if (m_UseImageSpacing)
-  {
-	filter->SetUseImageSpacing(true);
-  }
+  filter->SetUseImageSpacing(m_UseImageSpacing);
   filter->Update();
 
   m_DistanceMap = filter->GetOutput();

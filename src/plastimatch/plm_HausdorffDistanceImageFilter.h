@@ -136,7 +136,7 @@ private:
 
   RealType                            m_HausdorffDistance;
   RealType                            m_AverageHausdorffDistance;
-  bool			              m_UseImageSpacing;
+  bool                                m_UseImageSpacing;
 
 }; // end of class
 

@@ -163,7 +163,7 @@ private:
   Array<RealType>                     m_Sum;
   RealType                            m_DirectedHausdorffDistance;
   RealType                            m_AverageHausdorffDistance;
-  bool   		              m_UseImageSpacing;
+  bool                                m_UseImageSpacing;
 
 }; // end of class
 
