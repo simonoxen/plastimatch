@@ -114,6 +114,7 @@ Autolabel_trainer::load_input_file (
 void
 Autolabel_trainer::set_task (const char* task)
 {
+    m_task = task;
 }
 
 void
