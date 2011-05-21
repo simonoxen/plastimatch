@@ -15,6 +15,9 @@ class plastimatch1_EXPORT Autolabel_trainer
     void load_input_dir (const char* input_dir);
     void set_task (const char* task);
     void save_libsvm (const char* output_libsvm_fn);
+  private:
+    void load_input_dir_recursive (std::string input_dir);
+    void load_input_file (const char* img_fn, const char* pointset_fn);
 };
 
 #endif
