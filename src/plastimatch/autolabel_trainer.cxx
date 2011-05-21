@@ -22,7 +22,8 @@ Autolabel_trainer::load_input_dir (const char* input_dir)
 	print_and_exit ("Error: \'%s\' is not a directory\n", input_dir);
     }
 
-    load_input_dir_recursive (input_dir);
+    /* We can't load the data yet, since we don't know the task */
+    m_input_dir = input_dir;
 }
 
 void
@@ -66,11 +67,48 @@ Autolabel_trainer::load_input_dir_recursive (std::string input_dir)
 }
 
 void
+Autolabel_trainer::load_input_file_la (
+    const char* nrrd_fn,
+    const char* fcsv_fn)
+{
+    print_and_exit ("Error: load_input_file_la not yet implemented\n");
+}
+
+void
+Autolabel_trainer::load_input_file_tsv1 (
+    const char* nrrd_fn,
+    const char* fcsv_fn)
+{
+    print_and_exit ("Error: load_input_file_tsv1 not yet implemented\n");
+}
+
+void
+Autolabel_trainer::load_input_file_tsv2 (
+    const char* nrrd_fn,
+    const char* fcsv_fn)
+{
+    print_and_exit ("Error: load_input_file_tsv2 not yet implemented\n");
+}
+
+void
 Autolabel_trainer::load_input_file (
     const char* nrrd_fn,
     const char* fcsv_fn)
 {
     printf ("Loading\n  %s\n  %s\n", nrrd_fn, fcsv_fn);
+    if (m_task == "") {
+	load_input_file_la (nrrd_fn, fcsv_fn);
+    }
+    else if (m_task == "") {
+	load_input_file_tsv1 (nrrd_fn, fcsv_fn);
+    }
+    else if (m_task == "") {
+	load_input_file_tsv2 (nrrd_fn, fcsv_fn);
+    }
+    else {
+	print_and_exit ("Error: unsupported autolabel-train task (%s)\n",
+	    m_task.c_str());
+    }
 }
 
 void
@@ -81,4 +119,10 @@ Autolabel_trainer::set_task (const char* task)
 void
 Autolabel_trainer::save_libsvm (const char* output_libsvm_fn)
 {
+    if (m_task == "" || m_input_dir == "") {
+	print_and_exit ("Error saving libsvm, inputs not fully specified.\n");
+    }
+
+    /* Load the data according to task specification */
+    load_input_dir_recursive (m_input_dir);
 }
