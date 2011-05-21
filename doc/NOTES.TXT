@@ -1,3 +1,64 @@
+***** Organization of learning code *****
+
+Use cases:
+
+image: can be 2d (slice) or 3d (vol)
+pos: can be 1d (slice loc), 2d (in-plane), or 3d (position)
+binary (in/out, male/female)
+tri-state (above, near, below)
+continuous tri-state (above (+1), near (-1 to +1), below (-1))
+conditional position (inside (with position), outside (without position))
+
+- T-spine
+
+slice -> slice loc
+slice -> in-plane
+
+- Lung apex
+
+slice -> continuous tri-state
+
+- T-spine
+
+slice + continuous tri-state -> slice loc
+
+Finding training data:
+
+T-spine: Choose only slice or vol centered at fiducial
+T-spine: Interpolate fiducials, use all slices
+Lung apex: Choose only slice at apex
+Lung apex: Choose all slices, compute distance to apex
+Lung volume: Choose all slices intersecting mask
+
+Transition plan:
+
+Use hard-coded training routines for different use cases
+
+plastimatch autolabel-train \
+    --task t-spine-v1 \
+    --input dir \
+    --output net
+
+
+***** Organization for irregular volume (transition plan) *****
+
+(1) Use native, not ITK
+
+(2) Only support volumes with irregular slice spacing.  No support 
+for things like changing pixel size or direction cosines
+
+(3) Add irregular volume as a member of Volume
+
+class Volume {
+      /* Regular volume stuff */
+      int npix;
+      void *data;
+
+      /* Irregular volume stuff */
+      float *irr_spacing;
+      void **irr_data;
+};
+
 ***** Writing a Slicer4 loadable module *****
 
 (1) Use the wizard to make a template

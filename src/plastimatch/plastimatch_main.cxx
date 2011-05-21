@@ -8,6 +8,7 @@
 #include "pcmd_add.h"
 #include "pcmd_adjust.h"
 #include "pcmd_autolabel.h"
+#include "pcmd_autolabel_train.h"
 #include "pcmd_compare.h"
 #include "pcmd_compose.h"
 #include "pcmd_crop.h"
@@ -112,6 +113,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "autolabel")) {
 	do_command_autolabel (argc, argv);
+    }
+    else if (!strcmp (command, "autolabel-train")) {
+	do_command_autolabel_train (argc, argv);
     }
     else if (!strcmp (command, "compare")) {
 	do_command_compare (argc, argv);

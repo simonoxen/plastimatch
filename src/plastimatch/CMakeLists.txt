@@ -300,6 +300,7 @@ IF (F2C_LIBRARY)
 ENDIF ()
 
 SET (PLASTIMATCH_LIBRARY_SRC
+  autolabel_trainer.cxx autolabel_trainer.h 
   autolabel_ransac_est.cxx autolabel_ransac_est.h 
   astroid_dose.cxx astroid_dose.h
   cxt_extract.cxx cxt_extract.h
@@ -507,6 +508,7 @@ ENDIF ()
 SET (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
+  pcmd_autolabel_train.cxx pcmd_autolabel_train.h
   pcmd_autolabel.cxx pcmd_autolabel.h
   pcmd_compare.cxx pcmd_compare.h
   pcmd_compose.cxx pcmd_compose.h
