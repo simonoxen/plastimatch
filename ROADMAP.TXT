@@ -1,0 +1,21 @@
+1.5.0
+
+*  Debian binary w/ CUDA interface
+
+1.6.0
+
+*  Autolabel (la,tsv1,tsv2)
+*  B-spline auto-parameters
+*  B-spline direction cosines
+*  B-spline regularization
+*  B-spline ROI
+*  CUDA demons
+
+Unspecified future release
+
+*  RTPLAN support
+*  DCMTK support
+*  Native translation, rigid algorithms
+*  Normalized MI
+*  Proton/photon/electron dose calculation
+*  Standalone GUI
