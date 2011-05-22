@@ -16,17 +16,17 @@ The form of the options depends upon the command given.
 The list of possible commands can be seen by simply typing "plastimatch" 
 without any additional command line arguments::
 
-  $ plastimatch
-  plastimatch version 1.4-beta (2161)
-  Usage: plastimatch command [options]
-  Commands:
-    add           adjust        autolabel     crop          compare     
-    compose       convert       diff          dvh           header      
-    mask          register      resample      segment       stats       
-    thumbnail     warp          xio-dvh     
+ $ plastimatch
+ plastimatch version 1.4-beta (2372)
+ Usage: plastimatch command [options]
+ Commands:
+   add           adjust        autolabel     crop          compare     
+   compose       convert       diff          dvh           fill        
+   header        mask          register      resample      segment     
+   stats         thumbnail     warp          xf-convert    xio-dvh     
 
-  For detailed usage of a specific command, type:
-    plastimatch command
+ For detailed usage of a specific command, type:
+   plastimatch command
 
 plastimatch add
 ---------------
@@ -419,46 +419,81 @@ From the header information, we see that the image has 120 slices,
 and each slice is 512 x 512 pixels.  The slice spacing is 2.5 mm, 
 and the in-plane pixel spacing is 0.7031 mm.
 
-plastimatch mask
+plastimatch fill
 ----------------
-The *mask* command is used to fill in a region of the image, as specified
-by a mask file, with a constant intensity.  
+The *fill* command is used to fill an image region with a constant 
+intensity.  The region filled is defined by a mask file, 
+with voxels with non-zero intensity in the mask image being filled.
 
 The command line usage is given as follows::
 
-  Usage: plastimatch mask [options]
-  Required:
-      --input=image_in
-      --output=image_out
-      --mask=mask_image_in
-  Optional:
-      --negate-mask
-      --mask-value=float
-      --output-format=dicom
-      --output-type={uchar,short,ushort,ulong,float}
+ Usage: plastimatch fill [options]
+ Options:
+  -h, --help                  display this help message 
+      --input <arg>           input directory or filename; can be an image or 
+                               dicom directory 
+      --mask <arg>            input filename for mask image 
+      --mask-value <arg>      value to set for pixels within mask (for "fill"),
+                               or outside of mask (for "mask" 
+      --output <arg>          output filename (for image file) or directory 
+                               (for dicom) 
+      --output-format <arg>   arg should be "dicom" for dicom output 
+      --output-type <arg>     type of output image, one of {uchar, short, 
+                               float, ...} 
+      --version               display the program version 
 
 Examples
 ^^^^^^^^
-If we have a file prostate.nrrd which is non-zero inside of the prostate 
-and zero outside of the prostate, we can set the prostate intensity to 1000
-(while leaving non-prostate areas with their original intensity) using 
+Suppose we have a file prostate.nrrd which is zero outside of the 
+prostate, and non-zero inside of the prostate.  
+We can fill the prostate with an intensity of 1000, while 
+leaving non-prostate areas with their original intensity, using 
 the following command. ::
 
-  plastimatch mask \
+  plastimatch fill \
     --input infile.nrrd \
     --output outfile.nrrd \
     --mask-value 1000 \
     --mask prostate.nrrd
 
-Suppose we have a file called patient.nrrd, which is non-zero inside of the 
-patient, and zero outside of the patient.  If we want to fill in the area 
+
+plastimatch mask
+----------------
+The *mask* command is used to fill an image region with a constant 
+intensity.  The region filled is defined by a mask file, 
+with voxels with zero intensity in the mask image being filled.
+Thus, it is the inverse of the *fill* command.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch mask [options]
+ Options:
+  -h, --help                  display this help message 
+      --input <arg>           input directory or filename; can be an image or 
+                               dicom directory 
+      --mask <arg>            input filename for mask image 
+      --mask-value <arg>      value to set for pixels within mask (for "fill"),
+                               or outside of mask (for "mask" 
+      --output <arg>          output filename (for image file) or directory 
+                               (for dicom) 
+      --output-format <arg>   arg should be "dicom" for dicom output 
+      --output-type <arg>     type of output image, one of {uchar, short, 
+                               float, ...} 
+      --version               display the program version 
+
+Examples
+^^^^^^^^
+Suppose we have a file called patient.nrrd, 
+which is zero outside of the patient, and 
+non-zero inside the patient.
+If we want to fill in the area 
 outside of the patient with value -1000, we use the following command. ::
 
   plastimatch mask \
     --input infile.nrrd \
     --output outfile.nrrd \
     --negate-mask \
-    --mask-value 1000 \
+    --mask-value -1000 \
     --mask patient.nrrd
 
 plastimatch register
@@ -689,3 +724,39 @@ value for these areas using the --default-val option. ::
     --output outfile.nrrd \
     --xf bspline.txt \
     --default-val -1000
+
+plastimatch xf-convert
+----------------------
+The *xf-convert* command converts between transform types.  
+A tranform can be either a B-spline transform, or a vector field. 
+There are two different kinds of B-spline transform formats: 
+the plastimatch native format, and the ITK format.
+In addition to converting the transform type, the *xf-convert* command 
+can also change the grid-spacing of B-spline transforms.
+
+The command line usage is given as follows::
+
+ Usage: plastimatch xf-convert [options]
+ Options:
+      --dim <arg>            Size of output image in voxels "x [y z]" 
+      --grid-spacing <arg>   B-spline grid spacing in mm "x [y z]" 
+  -h, --help                 Display this help message 
+      --input <arg>          Input xform filename (required) 
+      --nobulk               Omit bulk transform for itk_bspline 
+      --origin <arg>         Location of first image voxel in mm "x y z" 
+      --output <arg>         Output xform filename (required) 
+      --output-type <arg>    Type of xform to create (required), choose from 
+                              {bspline, itk_bspline, vf} 
+      --spacing <arg>        Voxel spacing in mm "x [y z]" 
+
+Example
+^^^^^^^
+We want to convert a B-spline transform into a vector field.  If the 
+B-spline transform is in native-format, the vector field 
+geometry is defined by the values found in the transform header.::
+
+  plastimatch xf-convert \
+    --input bspline.txt \
+    --output vf.mha \
+    --output-type vf
+
