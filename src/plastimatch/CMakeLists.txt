@@ -334,6 +334,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_image_load_vec.cxx
   itk_image_save.cxx itk_image_save.h 
   itk_image_stats.cxx itk_image_stats.h 
+  itk_mask.cxx itk_mask.h 
   itk_pointset.cxx itk_pointset.h
   itk_optim.cxx itk_optim.h 
   itk_registration.cxx itk_registration.h 
@@ -341,7 +342,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   itk_volume_header.cxx itk_volume_header.h
   itk_warp.cxx itk_warp.h 
   landmark_warp.cxx landmark_warp.h 
-  mask_mha.cxx mask_mha.h 
   mc_dose.cxx mc_dose.h
   plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 

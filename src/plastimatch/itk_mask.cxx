@@ -4,14 +4,14 @@
 #include "plm_config.h"
 #include "itkImageRegionIterator.h"
 #include "itk_image.h"
-#include "mask_mha.h"
+#include "itk_mask.h"
 
 template <class T>
 T
 mask_image (
     T input,
     UCharImageType::Pointer mask,
-    int negate_mask,
+    Mask_operation mask_operation,
     float mask_value
 )
 {
@@ -39,12 +39,12 @@ mask_image (
     ImageIteratorType it_out (im_out, rgn_input);
 
     for (it_in.GoToBegin(); !it_in.IsAtEnd(); ++it_in,++it_mask,++it_out) {
-	short p1 = it_in.Get();
+	PixelType p1 = it_in.Get();
 	unsigned char p2 = it_mask.Get();
-	if (!((p2 > 0) ^ negate_mask)) {
-	    it_out.Set (p1);
-	} else {
+	if ((p2 > 0) ^ (mask_operation == MASK_OPERATION_MASK)) {
 	    it_out.Set (mask_value);
+	} else {
+	    it_out.Set (p1);
 	}
     }
     return im_out;
@@ -122,8 +122,8 @@ mask_vf(DeformationFieldType::Pointer vf_out, DeformationFieldType::Pointer vf,
 #endif
 
 /* Explicit instantiations */
-template plastimatch1_EXPORT UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, int, float);
-template plastimatch1_EXPORT UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, int, float);
-template plastimatch1_EXPORT ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, int, float);
-template plastimatch1_EXPORT UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, int, float);
-template plastimatch1_EXPORT FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, int, float);
+template plastimatch1_EXPORT UCharImageType::Pointer mask_image (UCharImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template plastimatch1_EXPORT UShortImageType::Pointer mask_image (UShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template plastimatch1_EXPORT ShortImageType::Pointer mask_image (ShortImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template plastimatch1_EXPORT UInt32ImageType::Pointer mask_image (UInt32ImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);
+template plastimatch1_EXPORT FloatImageType::Pointer mask_image (FloatImageType::Pointer, UCharImageType::Pointer, Mask_operation, float);

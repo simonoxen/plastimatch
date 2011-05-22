@@ -185,6 +185,7 @@ endif ()
 ##   rect-1.mha    Inverted rect, centered
 ##   rect-2.mha    Standard rect, off-center
 ##   rect-3.mha    Standard rect, centered
+##   rect-4.mha    Uchar rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
@@ -278,6 +279,13 @@ PLM_ADD_TEST (
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
+  )
+
+PLM_ADD_TEST (
+  "rect-4"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/synthetic_mha
+  "--output;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
 
 PLM_ADD_TEST (
@@ -1069,6 +1077,46 @@ plmtest_check_interval ("plm-convert-xio-check"
   "AVE *([-0-9.]*)"
   "-667.5"
   "-666.6"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch fill/mask
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-fill-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "fill;--input;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-fill-a.mha;--mask;${PLM_TESTING_BUILD_DIR}/rect-4.mha"
+  )
+PLM_ADD_TEST (
+  "plm-fill-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-fill-a.mha"
+  )
+plmtest_check_interval ("plm-fill-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-fill-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-0.1"
+  "+0.1"
+  )
+plm_add_test (
+  "plm-mask-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "mask;--input;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-mask-a.mha;--mask;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--mask-value;-1000"
+  )
+PLM_ADD_TEST (
+  "plm-mask-a-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-mask-a.mha"
+  )
+plmtest_check_interval ("plm-mask-a-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-mask-a-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-1000.1"
+  "-999.9"
   )
 
 ## -------------------------------------------------------------------------

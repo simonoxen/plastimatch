@@ -50,14 +50,15 @@ print_usage (int return_code)
 	"  convert     "
 	"  diff        "
 	"  dvh         "
-	"  header      "
+	"  fill        "
 	"\n"
+	"  header      "
 	"  mask        "
 	"  register    "
 	"  resample    "
 	"  segment     "
-	"  stats       "
 	"\n"
+	"  stats       "
 	"  thumbnail   "
 	"  warp        "
 	"  xf-convert  "
@@ -124,7 +125,7 @@ do_command (int argc, char* argv[])
 	do_command_compose (argc, argv);
     }
     else if (!strcmp (command, "convert")) {
-	/* warp and convert are the same */
+	/* convert and warp are the same */
 	do_command_warp (argc, argv);
     }
     else if (!strcmp (command, "crop")) {
@@ -139,7 +140,12 @@ do_command (int argc, char* argv[])
     else if (!strcmp (command, "header")) {
 	do_command_header (argc, argv);
     }
+    else if (!strcmp (command, "fill")) {
+	/* fill and mask are the same */
+	do_command_mask (argc, argv);
+    }
     else if (!strcmp (command, "mask")) {
+	/* fill and mask are the same */
 	do_command_mask (argc, argv);
     }
     else if (!strcmp (command, "register")) {
@@ -161,6 +167,7 @@ do_command (int argc, char* argv[])
 	do_command_stats (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
+	/* convert and warp are the same */
 	do_command_warp (argc, argv);
     }
     else if (!strcmp (command, "xf-convert")) {

@@ -4,15 +4,15 @@
 #include "plm_config.h"
 #include <time.h>
 #include "itkImageRegionIterator.h"
-#include "getopt.h"
 
 #include "itk_image_load.h"
-#include "mask_mha.h"
+#include "itk_mask.h"
 #include "pcmd_mask.h"
+#include "plm_clp.h"
 #include "plm_image.h"
 
 static void
-mask_main (Mask_Parms* parms)
+mask_main (Mask_parms* parms)
 {
     Plm_image *img;
     img = plm_image_load_native ((const char*) parms->input_fn);
@@ -26,23 +26,23 @@ mask_main (Mask_Parms* parms)
     switch (img->m_type) {
     case PLM_IMG_TYPE_ITK_UCHAR:
 	img->m_itk_uchar = mask_image (img->m_itk_uchar, mask, 
-	    parms->negate_mask, parms->mask_value);
+	    parms->mask_operation, parms->mask_value);
 	break;
     case PLM_IMG_TYPE_ITK_SHORT:
 	img->m_itk_short = mask_image (img->m_itk_short, mask, 
-	    parms->negate_mask, parms->mask_value);
+	    parms->mask_operation, parms->mask_value);
 	break;
     case PLM_IMG_TYPE_ITK_USHORT:
 	img->m_itk_ushort = mask_image (img->m_itk_ushort, mask, 
-	    parms->negate_mask, parms->mask_value);
+	    parms->mask_operation, parms->mask_value);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
 	img->m_itk_uint32 = mask_image (img->m_itk_uint32, mask, 
-	    parms->negate_mask, parms->mask_value);
+	    parms->mask_operation, parms->mask_value);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
 	img->m_itk_float = mask_image (img->m_itk_float, mask, 
-	    parms->negate_mask, parms->mask_value);
+	    parms->mask_operation, parms->mask_value);
 	break;
     default:
 	print_and_exit ("Unhandled conversion in mask_main\n");
@@ -62,96 +62,100 @@ mask_main (Mask_Parms* parms)
 }
 
 static void
-mask_print_usage (void)
+usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    printf ("Usage: plastimatch mask [options]\n"
-	    "Required:\n"
-	    "    --input=image_in\n"
-	    "    --output=image_out\n"
-	    "    --mask=mask_image_in\n"
-	    "Optional:\n"
-	    "    --negate-mask\n"
-	    "    --mask-value=float\n"
-	    "    --output-format=dicom\n"
-	    "    --output-type={uchar,short,ushort,ulong,float}\n"
-	    );
-    exit (-1);
+    printf ("Usage: plastimatch %s [options]\n", argv[1]);
+    parser->print_options (std::cout);
+    std::cout << std::endl;
 }
 
 static void
-mask_parse_args (Mask_Parms* parms, int argc, char* argv[])
+parse_fn (
+    Mask_parms* parms, 
+    dlib::Plm_clp* parser, 
+    int argc, 
+    char* argv[]
+)
 {
-    int ch;
-    static struct option longopts[] = {
-	{ "input",          required_argument,      NULL,           2 },
-	{ "output",         required_argument,      NULL,           3 },
-	{ "mask",           required_argument,      NULL,           4 },
-	{ "negate-mask",    no_argument,            NULL,           5 },
-	{ "negate_mask",    no_argument,            NULL,           5 },
-	{ "mask-value",     required_argument,      NULL,           6 },
-	{ "mask_value",     required_argument,      NULL,           6 },
-	{ "output-format",  required_argument,      NULL,           7 },
-	{ "output_format",  required_argument,      NULL,           7 },
-	{ "output-type",    required_argument,      NULL,           8 },
-	{ "output_type",    required_argument,      NULL,           8 },
-	{ NULL,             0,                      NULL,           0 }
-    };
+    /* Add --help, --version */
+    parser->add_default_options ();
 
-    while ((ch = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
-	switch (ch) {
-	case 2:
-	    parms->input_fn = optarg;
-	    break;
-	case 3:
-	    parms->output_fn = optarg;
-	    break;
-	case 4:
-	    parms->mask_fn = optarg;
-	    break;
-	case 5:
-	    parms->negate_mask = true;
-	    break;
-	case 6:
-	    if (sscanf (optarg, "%f", &parms->mask_value) != 1) {
-		printf ("Error: mask_value takes an argument\n");
-		mask_print_usage ();
-	    }
-	    break;
-	case 7:
-	    if (!strcmp (optarg, "dicom")) {
-		parms->output_dicom = true;
-	    } else {
-		fprintf (stderr, 
-		    "Error.  --output-format option only supports dicom.\n");
-		mask_print_usage ();
-	    }
-	    break;
-	case 8:
-	    parms->output_type = plm_image_type_parse (optarg);
-	    if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
-		mask_print_usage();
-	    }
-	    break;
-	default:
-	    break;
+    /* Input files */
+    parser->add_long_option ("", "input", 
+	"input directory or filename; "
+	"can be an image or dicom directory", 1, "");
+    parser->add_long_option ("", "mask", 
+	"input filename for mask image", 1, "");
+    parser->add_long_option ("", "output", 
+	"output filename (for image file) or "
+	"directory (for dicom)", 1, "");
+
+    /* Output options */
+    parser->add_long_option ("", "output-format", 
+	"arg should be \"dicom\" for dicom output", 1, "");
+    parser->add_long_option ("", "output-type", 
+	"type of output image, one of {uchar, short, float, ...}", 1, "");
+
+    /* Algorithm options */
+    parser->add_long_option ("", "mask-value", 
+	"value to set for pixels with mask (for \"fill\"), "
+	"or outside of mask (for \"mask\"", 1, "");
+
+    /* Parse options */
+    parser->parse (argc,argv);
+
+    /* Handle --help, --version */
+    parser->check_default_options ();
+
+    /* Check for required options */
+    parser->check_required ("input");
+    parser->check_required ("mask");
+    parser->check_required ("output");
+
+    /* Input files */
+    parms->input_fn = parser->get_string("input").c_str();
+    parms->output_fn = parser->get_string("output").c_str();
+    parms->mask_fn = parser->get_string("mask").c_str();
+
+    /* Output options */
+    if (parser->option("output-format")) {
+	std::string arg = parser->get_string ("output-format");
+	if (arg != "dicom") {
+	    throw (dlib::error ("Error. Unknown --output-format argument: " 
+		    + arg));
 	}
     }
-    if (parms->input_fn.length() == 0 
-	|| parms->output_fn.length() == 0 
-	|| parms->mask_fn.length() == 0)
-    {
-	printf ("Error: must specify --input, --output, and --mask\n");
-	mask_print_usage ();
+    if (parser->option("output-type")) {
+	std::string arg = parser->get_string ("output-type");
+	parms->output_type = plm_image_type_parse (arg.c_str());
+	if (parms->output_type == PLM_IMG_TYPE_UNDEFINED) {
+	    throw (dlib::error ("Error. Unknown --output-type argument: " 
+		    + arg));
+	}
+    }
+
+    /* Algorithm options */
+    if (parser->option("mask-value")) {
+	parms->mask_value = parser->get_float("mask-value");
     }
 }
 
 void
 do_command_mask (int argc, char *argv[])
 {
-    Mask_Parms parms;
-    
-    mask_parse_args (&parms, argc, argv);
+    Mask_parms parms;
 
+    /* Check if we're doing fill or mask */
+    if (!strcmp (argv[1], "mask")) {
+	parms.mask_operation = MASK_OPERATION_MASK;
+    } else {
+	parms.mask_operation = MASK_OPERATION_FILL;
+    }
+
+    /* Parse command line parameters */
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
+
+    /* Do the masking */
     mask_main (&parms);
 
     printf ("Finished!\n");

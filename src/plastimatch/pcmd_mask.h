@@ -8,20 +8,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include "bstrwrap.h"
-#include "itk_image.h"
+#include "itk_mask.h"
+#include "plm_image_type.h"
 
-class Mask_Parms {
+class Mask_parms {
 public:
     CBString input_fn;
     CBString output_fn;
     CBString mask_fn;
-    bool negate_mask;
+    enum Mask_operation mask_operation;
     float mask_value;
     bool output_dicom;
     Plm_image_type output_type;
 public:
-    Mask_Parms () {
-	negate_mask = false;
+    Mask_parms () {
+	mask_operation = MASK_OPERATION_FILL;
 	mask_value = 0.;
 	output_dicom = false;
 	output_type = PLM_IMG_TYPE_UNDEFINED;

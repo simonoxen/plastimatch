@@ -10,12 +10,14 @@
 *  B-spline regularization
 *  B-spline ROI
 *  CUDA demons
+*  plastimatch threshold
 
 Unspecified future release
 
-*  RTPLAN support
 *  DCMTK support
-*  Native translation, rigid algorithms
+*  Native translation registration
+*  Native rigid registration
 *  Normalized MI
 *  Proton/photon/electron dose calculation
+*  RTPLAN support
 *  Standalone GUI

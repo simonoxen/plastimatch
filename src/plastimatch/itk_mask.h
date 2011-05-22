@@ -1,11 +1,16 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _mask_image_h_
-#define _mask_image_h_
+#ifndef _itk_mask_h_
+#define _itk_mask_h_
 
 #include "plm_config.h"
 #include "plm_image.h"
+
+enum Mask_operation {
+    MASK_OPERATION_FILL,
+    MASK_OPERATION_MASK
+};
 
 #if defined (commentout)
 template <class T, class U>
@@ -28,7 +33,7 @@ T
 mask_image (
     T input,
     UCharImageType::Pointer mask,
-    int negate_mask,
+    Mask_operation mask_operation,
     float mask_value
 );
 
