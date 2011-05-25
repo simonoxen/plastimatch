@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>Plastimatch</category>
-  <title>XFORMWARP</title>
-  <description>Universal warper (pluginized plastimatch convert)</description>
+  <title>XFORMWARP Warping with transform</title>
+  <description>Universal warper</description>
   <version>0.0</version>
   <documentation-url>http://plastimatch.org</documentation-url>
   <license>BSD-style</license>
@@ -19,14 +19,16 @@
       <default>None</default>
       <description>Input image or dose or structure set</description>
     </image>
-    <transform fileExtensions=".txt" type="bspline">
+    <!--<transform fileExtensions=".txt" type="bspline">-->
+      <string>
       <name>plmslc_xformwarp_input_xform</name>
       <longflag>plmslc_xformwarp_input_xform</longflag>
       <description>Input transform</description>
       <label>Input (B-spline?) transform</label>
       <default>None</default>
       <channel>input</channel>
-    </transform>
+      </string>  
+    <!--</transform>-->
     <image>
       <longflag>plmslc_xformwarp_output_img</longflag>
       <name>plmslc_xformwarp_output_img</name>
