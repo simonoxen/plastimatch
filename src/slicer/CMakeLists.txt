@@ -46,6 +46,9 @@ set (PLASTIMATCH_SLICER_LANDWARP_SRC
 set (PLASTIMATCH_SLICER_SYNTH_SRC
   plastimatch_slicer_synth.cxx
   )
+set (PLASTIMATCH_SLICER_XFORMWARP_SRC
+  plastimatch_slicer_xformwarp.cxx
+  )
 
 ##-----------------------------------------------------------------------------
 ##  Executable targets
@@ -64,6 +67,9 @@ plm_add_slicer_executable (plastimatch_slicer_landwarp
   "${GPUIT_EXE_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_synth
   "${PLASTIMATCH_SLICER_SYNTH_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_xformwarp
+  "${PLASTIMATCH_SLICER_XFORMWARP_SRC}" "${PLASTIMATCH_LIBS}" 
   "${GPUIT_EXE_LDFLAGS}")
 
 ##-----------------------------------------------------------------------------
