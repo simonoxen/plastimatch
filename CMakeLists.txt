@@ -161,8 +161,16 @@ endif ()
 ## gives an error if it is used on x86_64.
 ##-----------------------------------------------------------------------------
 if (CMAKE_COMPILER_IS_GNUCC AND HAVE_32_BIT)
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
-  set (CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+  if (CMAKE_C_FLAGS)
+    set (CMAKE_C_FLAGS "-malign-double")
+  else ()
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -malign-double")
+  endif ()
+  if (CMAKE_CXX_FLAGS)
+    set (CMAKE_CXX_FLAGS "-malign-double")
+  else ()
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -malign-double")
+  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
