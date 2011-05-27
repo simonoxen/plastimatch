@@ -1,0 +1,42 @@
+
+# transform test
+INCLUDE_DIRECTORIES(
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_BASICTESTING_SUBDIR}
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_INTERPOLATION_SUBDIR}
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_ALGORITHM_SUBDIR}
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}
+)
+ADD_EXECUTABLE(TestParametrizableIdentityTransform
+  
+  TestParametrizableIdentityTransform.cxx
+  
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraParametrizableIdentityTransform.h
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraParametrizableIdentityTransform.txx 
+  
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_ALGORITHM_SUBDIR}/oraCompositeImageToImageMetric.h
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_ALGORITHM_SUBDIR}/oraCompositeImageToImageMetric.txx
+  
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_INTERPOLATION_SUBDIR}/oraOneToOneInterpolateImageFunction.h
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_INTERPOLATION_SUBDIR}/oraOneToOneInterpolateImageFunction.txx
+)
+TARGET_LINK_LIBRARIES(TestParametrizableIdentityTransform
+  ORAIFNReg2D3DTransform
+)
+ADD_TEST(TestParametrizableIdentityTransform ${EXECUTABLE_OUTPUT_PATH}/TestParametrizableIdentityTransform -v)
+
+# ITK/VTK transform connector test
+INCLUDE_DIRECTORIES(
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_CMAKE_SOURCE_DIR}/${ORAIFUTILS_BASICTESTING_SUBDIR}
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}
+)
+ADD_EXECUTABLE(TestLinearTransformConnector
+  
+  TestLinearTransformConnector.cxx
+  
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.h
+  ${CMAKE_SOURCE_DIR}/${ORAIFUTILS_NREG2D3D_TRANSFORM_SUBDIR}/oraITKVTKLinearTransformConnector.cxx 
+)
+TARGET_LINK_LIBRARIES(TestLinearTransformConnector
+  ORAIFNReg2D3DTransform
+)
+ADD_TEST(TestLinearTransformConnector ${EXECUTABLE_OUTPUT_PATH}/TestLinearTransformConnector -v)

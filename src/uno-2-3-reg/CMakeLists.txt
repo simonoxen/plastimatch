@@ -1,0 +1,224 @@
+
+# Unimodal N-way Open 2D/3D Registration tool (uno23reg)
+# A tool for GPU-powered n-way intensity-based 2D/3D registration based on the
+# NReg2D/3D core enriched with a Qt-based GUI.
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+
+IF(COMMAND cmake_policy)
+  IF("${CMAKE_VERSION}" VERSION_GREATER "2.6" OR "${CMAKE_VERSION}" VERSION_EQUAL "2.6")  
+  	CMAKE_POLICY(SET CMP0003 NEW)
+  ENDIF("${CMAKE_VERSION}" VERSION_GREATER "2.6" OR "${CMAKE_VERSION}" VERSION_EQUAL "2.6")
+  IF("${CMAKE_VERSION}" VERSION_GREATER "2.8") 
+  	CMAKE_POLICY(SET CMP0015 NEW) # NOT AVAILABLE IN 2.8.0 !!!
+  ENDIF("${CMAKE_VERSION}" VERSION_GREATER "2.8")
+ENDIF(COMMAND cmake_policy)
+
+##########################
+PROJECT(UNO23REG CXX)
+##########################
+
+SET(BINNAME uno23reg)
+
+### EXTERNAL LIBRARIES ###
+
+# Require ITK 3.20
+SET(ITK_MIN_VERSION "3.20")
+FIND_PACKAGE(ITK) 
+IF(NOT ITK_FOUND)
+  MESSAGE(SEND_ERROR "ITK ${ITK_MIN_VERSION} not found.  Please set the ITK_DIR variable.")
+ELSE(NOT ITK_FOUND)
+  # The version check fails with cmake 2.8.4+linux(win untested), manually perform check
+  IF("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
+    MESSAGE(SEND_ERROR "ITK ${ITK_MIN_VERSION} not found (version ${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR} provided).  Please set the ITK_DIR variable.")
+  ELSE("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
+    INCLUDE(${ITK_USE_FILE})
+  ENDIF("${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}" VERSION_LESS ${ITK_MIN_VERSION})
+ENDIF(NOT ITK_FOUND)
+
+# Require VTK 5.6
+SET(VTK_MIN_VERSION "5.6.0")
+FIND_PACKAGE(VTK ${VTK_MIN_VERSION})
+IF(NOT VTK_FOUND)
+  MESSAGE(SEND_ERROR "VTK ${VTK_MIN_VERSION} not found.  Please set the VTK_DIR variable.")
+ELSE(NOT VTK_FOUND)
+  INCLUDE(${VTK_USE_FILE})
+ENDIF(NOT VTK_FOUND)
+
+# Require Qt 4.6.0 or later
+SET(QT_MIN_VERSION "4.6.0")
+FIND_PACKAGE(Qt4 ${QT_MIN_VERSION})
+IF(NOT QT4_FOUND)
+  MESSAGE(SEND_ERROR "Qt ${QT_MIN_VERSION} or greater not found.  Please set the QT_QMAKE_EXECUTABLE variable.")
+ELSE(NOT QT4_FOUND)
+  INCLUDE(${QT_USE_FILE})
+ENDIF(NOT QT4_FOUND)
+
+# Require ORAIFUTILS 1.1.0
+SET(ORAIFUTILS_MIN_VERSION "1.1.0")
+FIND_PACKAGE(ORAIFUTILS ${ORAIFUTILS_MIN_VERSION} NO_MODULE REQUIRED)
+IF(NOT ORAIFUTILS_FOUND)
+  MESSAGE(SEND_ERROR "ORAIFUTILS library ${ORAIFUTILS_MIN_VERSION} or greater not found. Please set the ORAIFUTILS_DIR variable.")
+ELSE(NOT ORAIFUTILS_FOUND)
+  INCLUDE_DIRECTORIES(${ORAIFUTILS_INCLUDE_DIRS})
+ENDIF(NOT ORAIFUTILS_FOUND)
+
+### DEFINITIONS ###
+
+# Build unit tests
+OPTION(UNO23REG_BUILD_TESTING "Build UNO23REG unit tests for regression tests and automatic software verification." OFF)
+IF(UNO23REG_BUILD_TESTING)
+  ENABLE_TESTING()
+ENDIF(UNO23REG_BUILD_TESTING)
+
+# Directories
+SET(UNO23REG_CORE_DIR core)
+SET(UNO23REG_CORE_SOURCE_DIR ${CMAKE_SOURCE_DIR}/${UNO23REG_CORE_DIR})
+SET(UNO23REG_CORE_BINARY_DIR ${CMAKE_BINARY_DIR}/${UNO23REG_CORE_DIR})
+SET(UNO23REG_GUI_DIR gui)
+SET(UNO23REG_GUI_SOURCE_DIR ${CMAKE_SOURCE_DIR}/${UNO23REG_GUI_DIR})
+SET(UNO23REG_GUI_BINARY_DIR ${CMAKE_BINARY_DIR}/${UNO23REG_GUI_DIR})
+
+INCLUDE_DIRECTORIES(
+  ${UNO23REG_CORE_SOURCE_DIR}
+  ${UNO23REG_GUI_SOURCE_DIR}
+  ${CMAKE_BINARY_DIR}         # For headers produced by UIC
+  ${UNO23REG_GUI_BINARY_DIR}  # For headers produced by UIC
+)
+
+# CORE library
+ADD_SUBDIRECTORY(${UNO23REG_CORE_SOURCE_DIR})
+# GUI library
+ADD_SUBDIRECTORY(${UNO23REG_GUI_SOURCE_DIR})
+
+### TRANSLATION ###
+
+SET(UNO23REG_FILES_TO_TRANSLATE "") 
+SET(UNO23REG_TRANS_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/translation)
+FILE(MAKE_DIRECTORY ${UNO23REG_TRANS_SRC_DIR})
+
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx) # TRANSLATION
+
+# CORE library
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${UNO23REG_CORE_SOURCE_DIR}/*.h) # TRANSLATION
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${UNO23REG_CORE_SOURCE_DIR}/*.cxx) # TRANSLATION  
+
+# GUI library
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${UNO23REG_GUI_SOURCE_DIR}/*.h) # TRANSLATION
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${UNO23REG_GUI_SOURCE_DIR}/*.cxx) # TRANSLATION
+SET(UNO23REG_FILES_TO_TRANSLATE 
+  ${UNO23REG_FILES_TO_TRANSLATE} 
+  ${UNO23REG_GUI_SOURCE_DIR}/*.ui) # TRANSLATION    
+
+# Set UNO23REG_TRANSL_UPDATE option to OFF WHEN NOT NEEDED (POTENTIAL DANGER of deleting 
+# *.ts files in translation-subfolder when 'make clean' is involved!
+
+# the supported language files:
+# de ... German
+# en ... English
+# sk ... Slovakian
+SET(UNO23REG_TSFILES 
+  ${UNO23REG_TRANS_SRC_DIR}/uno23reg_de.ts
+  ${UNO23REG_TRANS_SRC_DIR}/uno23reg_en.ts
+  ${UNO23REG_TRANS_SRC_DIR}/uno23reg_sk.ts
+  )
+
+OPTION(UNO23REG_TRANSL_UPDATE "UNO-2-3-REG translation update (turn OFF as soon as possible - danger when involving 'make clean'!)." OFF)
+IF(UNO23REG_TRANSL_UPDATE)
+  QT4_CREATE_TRANSLATION(
+    UNO23REG_TS_FILES 
+    ${UNO23REG_FILES_TO_TRANSLATE} # collected above
+    ${UNO23REG_TSFILES}
+  )
+ENDIF(UNO23REG_TRANSL_UPDATE)
+
+QT4_ADD_TRANSLATION(UNO23REG_QM_FILES ${UNO23REG_TSFILES})
+
+### Platform-specific builds ###
+
+SET(WINBUILDSTR "")
+IF(WIN32 AND MINGW)
+  SET(WINBUILDSTR "WIN32") # --> the console window won't pop up at startup
+ELSE(WIN32 AND MINGW)
+  SET(WINBUILDSTR "")
+ENDIF(WIN32 AND MINGW) 
+
+# File icon on win32
+if(WIN32)  
+  if(MINGW)
+    # Compile the short-path-converter-tool
+    # (this is needed because windres.exe cannot handle long paths!!! see below)
+    SET(SPEDIR ${CMAKE_CURRENT_SOURCE_DIR}/shortpathexec)
+    ADD_SUBDIRECTORY(${SPEDIR})
+  
+    # rc-updater tool
+    ADD_EXECUTABLE(uno23reg-rc-updater uno23reg-rc-updater.cxx uno23reginfo.h uno23reginfo.cxx)
+    TARGET_LINK_LIBRARIES(uno23reg-rc-updater ORAIFTools)
+  
+    # resource compilation for mingw   
+    ADD_CUSTOM_COMMAND(
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/uno-2-3-reg_rc.o ${CMAKE_CURRENT_BINARY_DIR}/dummy.o
+      # first be sure that the RC-file is updated:
+      COMMAND ${CMAKE_CURRENT_BINARY_DIR}/uno23reg-rc-updater.exe "${CMAKE_CURRENT_SOURCE_DIR}/uno-2-3-reg.rc"
+      # compile RC-file info into binary (later):
+      COMMAND ${CMAKE_CURRENT_BINARY_DIR}/shortpathexec/shortpathexec.exe
+        --generate-empty-file "${CMAKE_CURRENT_BINARY_DIR}/uno-2-3-reg_rc.o" 
+        windres.exe -I "${CMAKE_CURRENT_SOURCE_DIR}" -i "${CMAKE_CURRENT_SOURCE_DIR}/uno-2-3-reg.rc"
+        -o "${CMAKE_CURRENT_BINARY_DIR}/uno-2-3-reg_rc.o"
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/shortpathexec/shortpathexec.exe uno23reg-rc-updater
+    )
+    SET(RC_SRCS "${CMAKE_CURRENT_BINARY_DIR}/uno-2-3-reg_rc.o") 
+  else(MINGW)
+    SET(RC_SRCS "${CMAKE_CURRENT_SOURCE_DIR}/uno-2-3-reg.rc") 
+  endif(MINGW)
+else(WIN32)
+  SET(RC_SRCS "") 
+endif(WIN32)
+
+### BINARY ###
+
+ADD_EXECUTABLE(${BINNAME} ${WINBUILDSTR} 
+  ${UNO23REG_QM_FILES}
+  ${RC_SRCS}
+  uno23reginfo.h
+  uno23reginfo.cxx
+  uno23reg.cxx
+)
+SET_TARGET_PROPERTIES(${BINNAME} PROPERTIES LINKER_LANGUAGE CXX)
+IF(MSVC)
+  IF(NOT CMAKE_CXX_FLAGS_DEBUG_SET)
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}  /bigobj" CACHE STRING "Debug options." FORCE)
+    SET(CMAKE_CXX_FLAGS_DEBUG_SET "1" CACHE INTERNAL "")
+  ENDIF(NOT CMAKE_CXX_FLAGS_DEBUG_SET)
+ENDIF(MSVC)
+TARGET_LINK_LIBRARIES(${BINNAME} 
+  ${QT_QTCORE_LIBRARY}
+  ${QT_QTGUI_LIBRARY}
+  
+  UNO23RegCore 
+  UNO23RegGUI
+  
+  ORAIFTools
+  ORAIFModel
+)
+
+# RESULTS COLLECTOR TOOL
+ADD_EXECUTABLE(resultscollector
+  resultscollector.cxx
+)
+TARGET_LINK_LIBRARIES(resultscollector  
+  UNO23RegCore
+  ORAIFTools
+)
+
+

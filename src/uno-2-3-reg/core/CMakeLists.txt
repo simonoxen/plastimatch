@@ -1,0 +1,86 @@
+
+SET(LIB_NAME UNO23RegCore)
+
+QT4_WRAP_CPP(MOC_SRCS 
+  oraSimpleTransformUndoRedo.h
+  oraAbstractTransformTask.h
+  oraAutoRegistrationTransformTask.h
+  oraSparseAutoRegistrationTransformTask.h
+  oraInitialTransformTask.h
+  oraManualRegistrationTransformTask.h
+  oraReferenceTransformTask.h
+)
+
+ADD_LIBRARY(${LIB_NAME} 
+  ${MOC_SRCS}
+  itkImageKernelOperator.h
+  itkImageKernelOperator.txx
+  oraUNO23Model.h
+  oraUNO23Model.cxx
+  oraUNO23Model.txx
+  oraUNO23RegistrationInitializationTask.h
+  oraUNO23RegistrationInitializationTask.cxx
+  oraUNO23RegistrationExecutionTask.h
+  oraUNO23RegistrationExecutionTask.cxx
+  oraUNO23SparseRegistrationExecutionTask.h
+  oraUNO23SparseRegistrationExecutionTask.cxx
+  oraSimpleTransformUndoRedo.h
+  oraSimpleTransformUndoRedo.cxx
+  oraAbstractTransformTask.h
+  oraAbstractTransformTask.cxx
+  oraAutoRegistrationTransformTask.h
+  oraAutoRegistrationTransformTask.cxx
+  oraSparseAutoRegistrationTransformTask.h
+  oraSparseAutoRegistrationTransformTask.cxx    
+  oraInitialTransformTask.h
+  oraInitialTransformTask.cxx
+  oraManualRegistrationTransformTask.h
+  oraManualRegistrationTransformTask.cxx
+  oraReferenceTransformTask.h
+  oraReferenceTransformTask.cxx
+) 
+
+# Convince MSVC that txx files are also C++ files!
+IF(MSVC)
+  SET_SOURCE_FILES_PROPERTIES(
+    itkImageKernelOperator.txx
+    oraUNO23Model.txx
+    PROPERTIES 
+    LANGUAGE "CXX" 
+    HEADER_FILE_ONLY FALSE
+    COMPILE_FLAGS ""
+  )
+ENDIF(MSVC)
+
+SET_TARGET_PROPERTIES(${LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+TARGET_LINK_LIBRARIES(${LIB_NAME} 
+  ${QT_QTCORE_LIBRARY}
+
+  ORAIFTools
+  ORAIFMVC
+  ORAIFModel
+  ORAIFImageAccess
+  ORAIFImageTools
+  ORAIFStructureAccess
+  ORAIFRegistration
+  ORAIFTransform
+  ORAIFNReg2D3DDRREngine
+  ORAIFNReg2D3DAlgorithm
+  ORAIFNReg2D3DMetrics
+  ORAIFNReg2D3DTransform
+  
+  ITKIO
+  ITKCommon
+  ITKBasicFilters
+  ITKAlgorithms
+  ITKNumerics
+  ITKStatistics
+  ITKSpatialObject
+  
+  vtkIO
+  vtkCommon
+  vtkRendering
+  vtkGraphics
+  vtkFiltering
+  vtkImaging
+)
