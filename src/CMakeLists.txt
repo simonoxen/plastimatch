@@ -193,9 +193,27 @@ MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
-add_subdirectory (fatm)
-if (PLM_BUILD_ISE)
-  add_subdirectory (ise)
-endif ()
 add_subdirectory (plastimatch)
 add_subdirectory (slicer)
+
+if (NOT BUILD_AGAINST_SLICER3)
+  add_subdirectory (fatm)
+  if (PLM_BUILD_ISE)
+    add_subdirectory (ise)
+  endif ()
+endif ()
+
+if (PLM_BUILD_UNO23REG
+    AND NOT BUILD_AGAINST_SLICER3
+    AND NOT ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION} VERSION_LESS 2.8
+    AND VTK_FOUND 
+    AND VTK_USE_QT
+    AND NOT ${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION} VERSION_LESS 5.6
+    AND ITK_FOUND
+    AND NOT ${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR} VERSION_LESS 3.20
+    AND QT_FOUND
+    AND NOT ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR} VERSION_LESS 4.6
+    )
+  add_subdirectory (oraifutils)
+  add_subdirectory (uno-2-3-reg)
+endif ()

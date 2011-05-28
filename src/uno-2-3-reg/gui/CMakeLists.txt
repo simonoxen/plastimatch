@@ -2,7 +2,7 @@
 SET(LIB_NAME UNO23RegGUI)
 
 INCLUDE_DIRECTORIES(
-  ${CMAKE_SOURCE_DIR}         # For uno23reginfo.h (oraUNO23AboutDialog.h)
+  ${UNO23REG_SOURCE_DIR}      # For uno23reginfo.h (oraUNO23AboutDialog.h)
   ${CMAKE_CURRENT_BINARY_DIR} # For headers produced by UIC
 )
 

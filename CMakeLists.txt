@@ -67,6 +67,7 @@ set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
 option (PLM_BUILD_RTK "Build RTK" OFF)
+option (PLM_BUILD_UNO23REG "Build uno-2-3-reg" OFF)
 option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
@@ -491,6 +492,14 @@ if (ITK_USE_SYSTEM_GDCM)
   message (FATAL_ERROR 
     "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
   endif ()
+endif ()
+
+##-----------------------------------------------------------------------------
+##  VTK
+##-----------------------------------------------------------------------------
+find_package (VTK)
+if (VTK_FOUND)
+  include (${VTK_USE_FILE})
 endif ()
 
 ##-----------------------------------------------------------------------------
