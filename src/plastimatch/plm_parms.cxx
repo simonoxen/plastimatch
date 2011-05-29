@@ -5,20 +5,23 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
-#if defined (HAVE_GETOPT_LONG)
-#include <getopt.h>
-#else
-#include "getopt.h"
-#endif
+#include <iostream>
+#include <sstream>
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "plm_parms.h"
+#include "string_util.h"
 #include "xform.h"
 
 #define BUFLEN 2048
 
 int
-set_key_val (Registration_Parms* regp, char* key, char* val, int section)
+set_key_val (
+    Registration_Parms* regp, 
+    const char* key, 
+    const char* val, 
+    int section
+)
 {
     Stage_parms* stage = 0;
     if (section != 0) {
@@ -456,6 +459,77 @@ set_key_val (Registration_Parms* regp, char* key, char* val, int section)
     print_and_exit ("Unknown (key,val) combination: (%s,%s)\n", key, val);
     return -1;
 }
+
+int
+Registration_Parms::set_command_string (
+    const std::string& command_string
+)
+{
+    std::string buf;
+    std::string buf_ori;    /* An extra copy for diagnostics */
+    int section = 0;
+
+    std::stringstream ss (command_string);
+
+    while (getline (ss, buf)) {
+	buf_ori = buf;
+	buf = trim (buf);
+	buf_ori = trim (buf_ori, "\r\n");
+	if (buf == "") continue;
+	if (buf[0] == '#') continue;
+	if (buf[0] == '[') {
+	    if (buf.find ("[GLOBAL]") != std::string::npos
+		|| buf.find ("[global]") != std::string::npos)
+	    {
+		section = 0;
+		continue;
+	    }
+	    else if (buf.find ("[STAGE]") != std::string::npos
+		|| buf.find ("[stage]") != std::string::npos)
+	    {
+		section = 1;
+		this->num_stages ++;
+		this->stages = (Stage_parms**) realloc (
+		    this->stages, this->num_stages * sizeof(Stage_parms*));
+		if (this->num_stages == 1) {
+		    this->stages[this->num_stages-1] = new Stage_parms();
+		} else {
+		    this->stages[this->num_stages-1] = new Stage_parms(
+			*(this->stages[this->num_stages-2]));
+		}
+		continue;
+	    }
+	    else if (buf.find ("[COMMENT]") != std::string::npos
+		|| buf.find ("[comment]") != std::string::npos)
+	    {
+		section = 2;
+		continue;
+	    }
+	    else {
+		printf ("Parse error: %s\n", buf_ori.c_str());
+		return -1;
+	    }
+	}
+	if (section == 2) continue;
+	size_t key_loc = buf.find ("=");
+	if (key_loc == std::string::npos) {
+	    continue;
+	}
+	std::string key = buf.substr (0, key_loc);
+	std::string val = buf.substr (key_loc+1);
+	key = trim (key);
+	val = trim (val);
+
+	if (key != "" && val != "") {
+	    if (set_key_val (this, key.c_str(), val.c_str(), section) < 0) {
+		printf ("Parse error: %s\n", buf_ori.c_str());
+		return -1;
+	    }
+	}
+    }
+    return 0;
+}
+
 
 int
 plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)

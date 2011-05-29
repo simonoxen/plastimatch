@@ -189,7 +189,7 @@ public:
     }
 };
 
-class Registration_Parms {
+class plastimatch1_EXPORT Registration_Parms {
 public:
     char moving_fn[_MAX_PATH];
     char fixed_fn[_MAX_PATH];
@@ -233,6 +233,8 @@ public:
 	}
 	free (stages);
     }
+public:
+    int set_command_string (const std::string& command_string);
 };
 
 class Registration_Data {

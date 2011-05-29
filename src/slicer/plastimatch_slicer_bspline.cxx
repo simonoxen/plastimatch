@@ -4,6 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include "file_util.h"
 #include "plastimatch_slicer_bsplineCLP.h"
@@ -14,125 +15,89 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-#if defined (PLM_SLICER_HARDCODED_FILENAME)
-# if defined (_WIN32)
-    char* parms_fn = "C:/tmp/plastimatch-slicer-parms.txt";
-# else
-    char* parms_fn = "/tmp/plastimatch-slicer-parms.txt";
-# endif
-    FILE* fp = fopen (parms_fn, "w+");
-#else
-    FILE *fp = make_tempfile ();
-#endif
+    std::ostringstream command_string;
 
-
-    if (!fp) {
-	fprintf (stderr, "Sorry, plastimatch couldn't create tmpfile.\n");
-	exit (-1);
-    }
-
-    fprintf (fp,
+    command_string <<
 	"[GLOBAL]\n"
-	"fixed=%s\n"
-	"moving=%s\n"
-	"img_out=%s\n",
-	plmslc_fixed_volume.c_str(),
-	plmslc_moving_volume.c_str(),
-	plmslc_warped_volume.c_str());
+	"fixed=" << plmslc_fixed_volume << "\n"
+	"moving=" << plmslc_moving_volume << "\n"
+	"img_out=" << plmslc_warped_volume << "\n";
 
-    if (plmslc_output_vf != "") {
-	fprintf (fp, "vf_out=%s\n", plmslc_output_vf.c_str());
+    if (plmslc_output_vf != "" && plmslc_output_vf != "None") {
+	command_string << 
+	    "vf_out=" << plmslc_output_vf << "\n";
     }
 
-    if (plmslc_output_bsp != "") {
-	fprintf (fp, "xf_out_itk=true\n");
-	fprintf (fp, "xf_out=%s\n", plmslc_output_bsp.c_str());
+    if (plmslc_output_bsp != "" && plmslc_output_bsp != "None") {
+	command_string << 
+	    "xf_out_itk=true\n"
+	    "xf_out=" << plmslc_output_bsp << "\n";
     }
 
-    fprintf (fp, "\n");
+    /* Stage 0 */
     if (enable_stage_0) {
-	fprintf (fp,
+	command_string 
+	    << 
 	    "[STAGE]\n"
-	    "metric=%s\n"
-	    "xform=%s\n"
-	    "optim=%s\n"
+	    "metric=" << metric << "\n"
+	    "xform=translation\n"
+	    "optim=rsg\n"
 	    "impl=itk\n"
-	    "max_its=%d\n"
+	    "max_its=" << stage_0_its << "\n"
 	    "convergence_tol=5\n"
 	    "grad_tol=1.5\n"
-	    "res=%d %d %d\n",
-	    metric.c_str(),
-	    "translation",
-	    "rsg",
-	    stage_0_its,
-	    stage_0_resolution[0],
-	    stage_0_resolution[1],
-	    stage_0_resolution[2]
-	);
+	    "res=" 
+	    << stage_0_resolution[0]
+	    << stage_0_resolution[1]
+	    << stage_0_resolution[2]
+	    << "\n";
     }
 
     /* Stage 1 */
-    fprintf (fp,
+    command_string <<
 	"[STAGE]\n"
-	"metric=%s\n"
+	"metric=" << metric << "\n"
 	"xform=bspline\n"	
 	"optim=lbfgsb\n"
 	"impl=plastimatch\n"
-	"threading=%s\n"
-	"max_its=%d\n"
+	"threading=" 
+	<< (strcmp (hardware.c_str(),"CPU") ? "cuda" : "openmp")
+	<< "\n"
+	"max_its=" << stage_1_its << "\n"
 	"convergence_tol=5\n"
 	"grad_tol=1.5\n"
-	"res=%d %d %d\n"
-	"grid_spac=%g %g %g\n",
-	/* Stage 1 */
-	metric.c_str(),
-	strcmp (hardware.c_str(),"CPU") ? "cuda" : "openmp",
-	stage_1_its,
-	stage_1_resolution[0],
-	stage_1_resolution[1],
-	stage_1_resolution[2],
-	stage_1_grid_size,
-	stage_1_grid_size,
-	stage_1_grid_size
-    );
-
+	"res=" 
+	<< stage_1_resolution[0] << " "
+	<< stage_1_resolution[1] << " "
+	<< stage_1_resolution[2] << "\n"
+	"grid_spac="
+	<< stage_1_grid_size << " "
+	<< stage_1_grid_size << " "
+	<< stage_1_grid_size << "\n"
+	;
+    
     if (enable_stage_2) {
-	fprintf (fp, 
+	command_string <<
 	    "[STAGE]\n"
-	    "xform=bspline\n"
-	    "optim=lbfgsb\n"
-	    "impl=plastimatch\n"
-	    "max_its=%d\n"
-	    "convergence_tol=5\n"
-	    "grad_tol=1.5\n"
-	    "res=%d %d %d\n"
-	    "grid_spac=%g %g %g\n",
-	    /* Stage 2 */
-	    stage_2_its,
-	    stage_2_resolution[0],
-	    stage_2_resolution[1],
-	    stage_2_resolution[2],
-	    stage_2_grid_size,
-	    stage_2_grid_size,
-	    stage_2_grid_size
-	);
+	    "max_its=" << stage_2_its << "\n"
+	    "res=" 
+	    << stage_2_resolution[0] << " "
+	    << stage_2_resolution[1] << " "
+	    << stage_2_resolution[2] << "\n"
+	    "grid_spac="
+	    << stage_2_grid_size << " "
+	    << stage_2_grid_size << " "
+	    << stage_2_grid_size << "\n"
+	    ;
     }
 
-    /* Go back to beginning of file */
-    fseek (fp, SEEK_SET, 0);
+    std::cout << command_string.str() << "\n";
 
     /* Go back to beginning of file */
     Registration_Parms regp;
-    if (plm_parms_process_command_file (&regp, fp) < 0) {
-	fclose (fp);
+    if (regp.set_command_string (command_string.str()) < 0) {
 	return EXIT_FAILURE;
     }
-
-    fclose (fp);
-
-#if !defined (PLM_SLICER_HARDCODED_FILENAME) && defined (_WIN32)
-    _rmtmp ();
-#endif
 
     do_registration (&regp);
     return EXIT_SUCCESS;

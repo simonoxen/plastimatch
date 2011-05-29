@@ -5,7 +5,7 @@
 #define _string_util_h_
 
 #include "plm_config.h"
-#include "plm_int.h"
+#include <string>
 
 #if defined __cplusplus
 extern "C" {
@@ -14,12 +14,21 @@ extern "C" {
 gpuit_EXPORT
 int
 plm_strcmp (const char* s1, const char* s2);
+
 gpuit_EXPORT
 void
 string_util_rtrim_whitespace (char *s);
+
 gpuit_EXPORT
 int
 parse_int13 (int *arr, const char *string);
+
+gpuit_EXPORT
+const std::string
+trim (
+    const std::string& str,
+    const std::string& whitespace = " \t\r\n"
+);
 
 #if defined __cplusplus
 }
