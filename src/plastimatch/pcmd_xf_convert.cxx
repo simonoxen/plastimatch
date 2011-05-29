@@ -29,7 +29,7 @@ set_output_xform_type (Xform_convert *xfc, const CBString& output_type)
     else if (output_type == "bspline") {
 	xfc->xf_out_type = XFORM_GPUIT_BSPLINE;
     }
-    else if (output_type == "itk_bsp") {
+    else if (output_type == "itk_bsp" || output_type == "itk_bspline") {
 	xfc->xf_out_type = XFORM_ITK_BSPLINE;
     }
     else {

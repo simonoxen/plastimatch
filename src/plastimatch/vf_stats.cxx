@@ -116,8 +116,8 @@ vf_analyze_strain (Volume* vol)
     int i, j, k;
     float* img = (float*) vol->img;
     float total_energy, max_energy;
-    float min_dilation, max_dilation;
-    int min_dilation_loc[3];
+    float min_dilation = 0.f, max_dilation = 0.f;
+    int min_dilation_loc[3] = {0, 0, 0};
 
     const float LAME_MU = 1.0f;
     const float LAME_NU = 1.0f;
@@ -207,8 +207,8 @@ vf_analyze_jacobian (Volume* vol)
 {
     int i, j, k;
     float* img = (float*) vol->img;
-    float min_jacobian, max_jacobian, min_abs_jacobian;
-    int min_abs_jacobian_loc[3];
+    float min_jacobian = 0.f, max_jacobian = 0.f, min_abs_jacobian = 0.f;
+    int min_abs_jacobian_loc[3] = {0, 0, 0};;
 
     float di = vol->spacing[0];
     float dj = vol->spacing[1];
@@ -284,8 +284,8 @@ vf_analyze_second_deriv (Volume* vol)
     int i, j, k;
     float* img = (float*) vol->img;
     
-    float min_sec_der, max_sec_der, total_sec_der=0.;
-    int max_sec_der_loc[3];
+    float min_sec_der = 0.f, max_sec_der = 0.f, total_sec_der = 0.f;
+    int max_sec_der_loc[3] = {0, 0, 0};
 
     float di = vol->spacing[0];
     float dj = vol->spacing[1];
@@ -458,7 +458,7 @@ vf_analyze_strain_mask (Volume* vol, Volume* mask)
     int i, j, k;
     float* img = (float*) vol->img;
     unsigned char*  maskimg = (unsigned char*) mask->img;
-    float min_dilation, max_dilation;
+    float min_dilation = 0.f, max_dilation = 0.f;
     float total_energy, max_energy;
 
     const float LAME_MU = 1.0f;

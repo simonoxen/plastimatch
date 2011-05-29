@@ -478,7 +478,7 @@ bspline_score_c_mse (
 
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
 
     if (parms->debug) {
 	sprintf (debug_fn, "dc_dv_mse_%02d.txt", it++);

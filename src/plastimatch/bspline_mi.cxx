@@ -1151,7 +1151,7 @@ bspline_score_f_mi (Bspline_parms *parms,
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     int i, j, zz;
 
     int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -1462,7 +1462,7 @@ bspline_score_e_mi (Bspline_parms *parms,
     double mhis = 0.0f;      /* Moving histogram incomplete sum */
     double jhis = 0.0f;      /* Joint  histogram incomplete sum */
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     int i, j, zz;
 	omp_lock_t *f_locks, *m_locks, *j_locks;
 
@@ -1834,7 +1834,7 @@ bspline_score_d_mi (Bspline_parms *parms,
     double* j_hist = mi_hist->j_hist;
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     int zz;
 
     int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
@@ -2108,7 +2108,7 @@ bspline_score_c_mi (Bspline_parms *parms,
     double* j_hist = mi_hist->j_hist;
     static int it = 0;
     char debug_fn[1024];
-    FILE* fp;
+    FILE* fp = 0;
     int zz;
 
     if (parms->debug) {

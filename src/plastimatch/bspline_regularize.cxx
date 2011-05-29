@@ -92,7 +92,7 @@ bspline_regularize_hessian_component (
 {
     int i, j, k, m;
     int cidx;
-    float* q_lut;
+    float* q_lut = 0;
 
     if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
     if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];
@@ -170,7 +170,7 @@ bspline_regularize_hessian_update_grad (
     BSPLINE_Score* ssd = &bst->ssd;
     int i, j, k, m;
     int cidx;
-    float* q_lut;
+    float* q_lut = 0;
 
     if (derive1==0 && derive2==0) q_lut = &bxf->q_d2xyz_lut[qidx*64];
     if (derive1==1 && derive2==1) q_lut = &bxf->q_xd2yz_lut[qidx*64];

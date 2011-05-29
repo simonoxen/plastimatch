@@ -46,7 +46,7 @@ bspline_optimize_steepest_trace(
     float alpha = 1.0f;
     float ssd_grad_norm;
     float old_score;
-    FILE *fp;
+    FILE *fp = 0;
     double htg;
     int success;
     float *grad_backup;
@@ -240,7 +240,7 @@ bspline_optimize_steepest_trust (
     float alpha = 1.0f;
     float ssd_grad_norm;
     float old_score;
-    FILE *fp;
+    FILE *fp = 0;
     float *x;           /* Start of line search */
     float *h;           /* Search direction */
     double htg;
@@ -386,7 +386,7 @@ bspline_optimize_steepest_naive (
     float gain = 1.5;
     float ssd_grad_norm;
     float old_score;
-    FILE* fp;
+    FILE* fp = 0;
 
     if (parms->debug) {
 	fp = fopen("scores.txt", "w");

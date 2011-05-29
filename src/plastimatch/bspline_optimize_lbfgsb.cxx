@@ -164,7 +164,7 @@ bspline_optimize_lbfgsb (
     doublereal f, factr, pgtol, *x, *l, *u, *g, *wa, dsave[29];
     integer i;
     int NMAX, MMAX;
-    FILE *fp;
+    FILE *fp = 0;
     //    double best_score;
 
     /* F2C Builtin function */

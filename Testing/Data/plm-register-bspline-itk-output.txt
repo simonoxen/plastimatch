@@ -2,7 +2,7 @@
 fixed=gauss-1.mha
 moving=gauss-2.mha
 xf_out_itk=true
-xform_out=plm-register-bspline-itk-output.txt
+xform_out=plm-register-bspline-itk-output.tfm
 
 [STAGE]
 xform=bspline
