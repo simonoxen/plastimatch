@@ -1267,6 +1267,7 @@ plmtest_check_interval ("plm-register-itk-demons-check-2"
 ##   bspline-single-openmp
 ##   bspline-single-cuda
 ##   register-bspline-ushort
+##   register-bspline-itk-output"
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-bspline-single-c" 
@@ -1380,6 +1381,13 @@ plmtest_check_interval ("plm-register-bspline-double-check"
   "AVE *([-0-9.]*)"
   "108.6"
   "109.6"
+  )
+
+plm_add_test (
+  "plm-register-bspline-itk-output"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "${PLM_TESTING_DATA_DIR}/plm-register-bspline-itk-output.txt"
   )
 
 
