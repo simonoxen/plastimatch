@@ -94,7 +94,7 @@ hnd_load (Proj_image *proj, const char *fn)
     size_t num_read;
     char dc;
     short ds;
-    long dl, diff;
+    long dl, diff = 0l;
     uint32_t i;
 
 

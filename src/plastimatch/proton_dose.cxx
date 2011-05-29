@@ -807,7 +807,7 @@ proton_dose_compute (
     double incr_c[3];
 
     float* dose_img = (float*) dose_vol->img;
-    int idx;
+    int idx = 0;
 
     Proj_matrix *pmat;
     double cam[3] = { options->src[0], options->src[1], options->src[2] };
@@ -877,7 +877,7 @@ proton_dose_compute (
     for (ct_ijk[2] = 0; ct_ijk[2] < ct_vol->dim[2]; ct_ijk[2]++) {
         for (ct_ijk[1] = 0; ct_ijk[1] < ct_vol->dim[1]; ct_ijk[1]++) {
             for (ct_ijk[0] = 0; ct_ijk[0] < ct_vol->dim[0]; ct_ijk[0]++) {
-                double dose;
+                double dose = 0.0;
                 
                 /* Transform vol index into space coords */
                 ct_xyz[0] = (double) (ct_vol->offset[0] + ct_ijk[0] * ct_vol->spacing[0]);

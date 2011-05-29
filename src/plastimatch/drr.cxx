@@ -174,7 +174,7 @@ drr_ray_trace_image (
 	vec3_add2 (r_tgt, tmp);
 
 	for (c=options->image_window[2]; c<=options->image_window[3]; c++) {
-	    double value;
+	    double value = 0.0;
 	    int idx = c - options->image_window[2] 
 		+ (r - options->image_window[0]) * cols;
 
