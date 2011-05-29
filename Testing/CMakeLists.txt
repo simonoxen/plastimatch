@@ -1791,6 +1791,7 @@ plmtest_check_interval ("plm-warp-i-check-1"
 ## plm-xf-convert-a    plm bspline to vf
 ## plm-xf-convert-b    vf to plm bspline
 ## plm-xf-convert-c    plm bspline to vf
+## plm-xf-convert-d    plm bspline to itk bspline
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-xf-convert-a" 
@@ -1810,7 +1811,14 @@ plm_add_test (
   "plm-xf-convert-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
-  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-c-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125;"
+  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-b.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-c-vf.mha;--output-type;vf;--dim;4 4 4;--origin;-187.5 -187.5 -187.5;--spacing;125 125 125"
+  )
+
+plm_add_test (
+  "plm-xf-convert-d" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-xf.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-xf.tfm;--output-type;itk_bspline"
   )
 
 ## -------------------------------------------------------------------------
