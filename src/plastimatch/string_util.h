@@ -23,6 +23,10 @@ gpuit_EXPORT
 int
 parse_int13 (int *arr, const char *string);
 
+#if defined __cplusplus
+}
+#endif
+
 gpuit_EXPORT
 const std::string
 trim (
@@ -30,7 +34,4 @@ trim (
     const std::string& whitespace = " \t\r\n"
 );
 
-#if defined __cplusplus
-}
-#endif
 #endif
