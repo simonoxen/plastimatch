@@ -20,6 +20,7 @@
 #include "plm_timer.h"
 #include "print_and_exit.h"
 #include "volume.h"
+#include "volume_header.h"
 #include "volume_macros.h"
 #include "xpm.h"
 
@@ -658,4 +659,11 @@ bspline_xform_free_qlut_grad (Bspline_xform* bxf)
     free (bxf->q_xyd2z_lut);
 }
 
-
+void 
+Bspline_xform::get_volume_header (Volume_header *vh)
+{
+    vh->set_dim (this->img_dim);
+    vh->set_origin (this->img_origin);
+    vh->set_spacing (this->img_spacing);
+    /* GCS FIX: No direction cosines */
+}

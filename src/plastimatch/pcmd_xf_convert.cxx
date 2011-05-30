@@ -23,12 +23,16 @@ public:
     bool m_have_spacing;
     Volume_header m_vh;
 
+    bool m_have_grid_spacing;
+    float m_grid_spacing[3];
+
     Xform_convert xfc;
 public:
     Xf_convert_parms () {
 	m_have_dim = false;
 	m_have_origin = false;
 	m_have_spacing = false;
+	m_have_grid_spacing = false;
     }
 };
 
@@ -60,7 +64,33 @@ do_xf_convert (Xf_convert_parms *parms)
     xform_load (xfc->m_xf_in, parms->input_fn);
     set_output_xform_type (xfc, parms->output_type);
 
-    /* Override volume header as needed */
+    /* Set grid spacing as needed */
+    xfc->m_xf_in->get_grid_spacing (xfc->m_grid_spac);
+    if (parms->m_have_grid_spacing) {
+	for (int d = 0; d < 3; d++) {
+	    xfc->m_grid_spac[d] = parms->m_grid_spacing[d];
+	}
+    }
+    if (xfc->m_xf_in->m_type == XFORM_GPUIT_BSPLINE) {
+	Bspline_xform* bxf = xfc->m_xf_in->get_gpuit_bsp();
+	printf ("vox_per_rgn = %d %d %d\n", 
+	    bxf->vox_per_rgn[0],
+	    bxf->vox_per_rgn[1],
+	    bxf->vox_per_rgn[2]
+	);
+	printf ("grid_spac = %g %g %g\n", 
+	    bxf->grid_spac[0],
+	    bxf->grid_spac[1],
+	    bxf->grid_spac[2]
+	);
+	printf ("grid_spac = %g %g %g\n", 
+	    xfc->m_grid_spac[0],
+	    xfc->m_grid_spac[1],
+	    xfc->m_grid_spac[2]
+	);
+    }
+
+    /* Set volume header as needed */
     xfc->m_xf_in->get_volume_header (&xfc->m_volume_header);
     if (parms->m_have_dim) {
 	xfc->m_volume_header.set_dim (parms->m_vh.m_dim);
@@ -153,7 +183,8 @@ parse_fn (
 	parser->assign_float13 (parms->m_vh.m_spacing, "spacing");
     }
     if (parser->option ("grid-spacing")) {
-	parser->assign_float13 (xfc->m_grid_spac, "grid-spacing");
+	parms->m_have_grid_spacing = true;
+	parser->assign_float13 (parms->m_grid_spacing, "grid-spacing");
     }
 
     if (parser->option ("nobulk")) {

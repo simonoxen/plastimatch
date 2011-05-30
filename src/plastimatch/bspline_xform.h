@@ -7,8 +7,10 @@
 #include "plm_config.h"
 #include "volume.h"
 
-typedef struct Bspline_xform_struct Bspline_xform;
-struct Bspline_xform_struct {
+class Volume_header;
+
+class gpuit_EXPORT Bspline_xform {
+  public:
     float img_origin[3];         /* Image origin (in mm) */
     float img_spacing[3];        /* Image spacing (in mm) */
     int img_dim[3];              /* Image size (in vox) */
@@ -42,15 +44,14 @@ struct Bspline_xform_struct {
     float* q_d2xyz_lut;          /* LUT for influence of (d2N1/dx2)*N2*N3 */
     float* q_xd2yz_lut;          /* LUT for influence of N1*(d2N2/dy2)*N3 */
     float* q_xyd2z_lut;          /* LUT for influence of N1*N2*(d2N3/dz2) */
+
+public:
+    void get_volume_header (Volume_header *vh);
 };
 
 /* -----------------------------------------------------------------------
    Function declarations
    ----------------------------------------------------------------------- */
-#if defined __cplusplus
-extern "C" {
-#endif
-
 gpuit_EXPORT
 void bspline_xform_set_default (Bspline_xform* bxf);
 
@@ -96,10 +97,5 @@ bspline_xform_dump_coeff (Bspline_xform* bxf, char* fn);
 gpuit_EXPORT
 void
 bspline_xform_dump_luts (Bspline_xform* bxf);
-
-
-#if defined __cplusplus
-}
-#endif
 
 #endif

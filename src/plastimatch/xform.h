@@ -210,6 +210,7 @@ public:
     }
   public:
     void get_volume_header (Volume_header *vh);
+    void get_grid_spacing (float grid_spacing[3]);
 };
 
 

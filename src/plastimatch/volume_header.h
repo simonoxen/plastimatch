@@ -10,7 +10,7 @@
 #include "itk_image.h"
 #include "print_and_exit.h"
 
-class plastimatch1_EXPORT Volume_header {
+class gpuit_EXPORT Volume_header {
 public:
     int m_dim[3];
     float m_origin[3];

@@ -1267,6 +1267,7 @@ plmtest_check_interval ("plm-register-itk-demons-check-2"
 ##   bspline-single-openmp
 ##   bspline-single-cuda
 ##   register-bspline-ushort
+##   register-bspline-double
 ##   register-bspline-itk-output"
 ## -------------------------------------------------------------------------
 plm_add_test (
@@ -1819,6 +1820,44 @@ plm_add_test (
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "xf-convert;--input;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-xf.txt;--output;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-xf.tfm;--output-type;itk_bspline"
+  )
+plm_add_test (
+  "plm-xf-convert-d-warp-1" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-bspline-single-h-xf.txt;--output-img;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1.nrrd"
+  )
+plm_add_test (
+  "plm-xf-convert-d-warp-1-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1.nrrd"
+  )
+plmtest_check_interval (
+  "plm-xf-convert-d-warp-1-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-1-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-749.2"
+  "-748.8"
+  )
+plm_add_test (
+  "plm-xf-convert-d-warp-2" 
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "warp;--input;${PLM_TESTING_BUILD_DIR}/gauss-2.mha;--xf;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-xf.tfm;--output-img;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-2.nrrd"
+  )
+plm_add_test (
+  "plm-xf-convert-d-warp-2-stats"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-2.nrrd"
+  )
+plmtest_check_interval (
+  "plm-xf-convert-d-warp-2-check"
+  "${PLM_TESTING_BUILD_DIR}/plm-xf-convert-d-warp-2-stats.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-749.4"
+  "-749.0"
   )
 
 ## -------------------------------------------------------------------------

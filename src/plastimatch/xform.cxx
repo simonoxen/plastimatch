@@ -133,6 +133,7 @@ itk_xform_load (Xform *xf, const char* fn)
     /* Deduce transform type, and copy into Xform structure */
     itk::TransformFileReader::TransformListType::const_iterator 
 	itTrasf = transfList->begin();
+    printf ("ITK transform type = %s\n", (*itTrasf)->GetNameOfClass());
     if (!strcmp((*itTrasf)->GetNameOfClass(), "TranslationTransform")) {
 	TranslationTransformType::Pointer itk_xf
 	    = TranslationTransformType::New();
@@ -174,6 +175,16 @@ itk_xform_load (Xform *xf, const char* fn)
 	    (*itTrasf).GetPointer());
 	//affineTransf->Print(std::cout);
 	xf->set_aff (affineTransf);
+    }
+    else if (!strcmp((*itTrasf)->GetNameOfClass(), 
+	    "BSplineDeformableTransform"))
+    {
+	BsplineTransformType::Pointer bsp
+	    = BsplineTransformType::New();
+	bsp = static_cast<BsplineTransformType*>(
+	    (*itTrasf).GetPointer());
+	bsp->Print(std::cout);
+	xf->set_itk_bsp (bsp);
     }
 }
 
@@ -1512,9 +1523,52 @@ Xform::get_volume_header (Volume_header *vh)
     case XFORM_ITK_VECTOR_FIELD:
 	itk_image_get_volume_header (vh, this->get_itk_vf());
 	break;
-    case XFORM_GPUIT_BSPLINE:
+    case XFORM_GPUIT_BSPLINE: {
+	Bspline_xform* bxf = this->get_gpuit_bsp();
+	bxf->get_volume_header (vh);
 	break;
+    }
     case XFORM_GPUIT_VECTOR_FIELD:
+	print_and_exit (
+	    "Sorry, didn't implement get_volume_header (type = %d)\n",
+	    this->m_type);
+	break;
+    default:
+	print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
+	    this->m_type);
+	break;
+    }
+}
+
+void
+Xform::get_grid_spacing (float grid_spacing[3])
+{
+    switch (this->m_type) {
+    case XFORM_NONE:
+    case XFORM_ITK_TRANSLATION:
+    case XFORM_ITK_VERSOR:
+    case XFORM_ITK_QUATERNION:
+    case XFORM_ITK_AFFINE:
+	/* Do nothing */
+	break;
+    case XFORM_ITK_BSPLINE:
+	print_and_exit (
+	    "Sorry, didn't implement get_grid_spacing (type = %d)\n",
+	    this->m_type);
+	break;
+    case XFORM_ITK_TPS:
+    case XFORM_ITK_VECTOR_FIELD:
+	/* Do nothing */
+	break;
+    case XFORM_GPUIT_BSPLINE: {
+	Bspline_xform* bxf = this->get_gpuit_bsp();
+	for (int d = 0; d < 3; d++) {
+	    grid_spacing[d] = bxf->grid_spac[d];
+	}
+	break;
+    }
+    case XFORM_GPUIT_VECTOR_FIELD:
+	/* Do nothing */
 	break;
     default:
 	print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",

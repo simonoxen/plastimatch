@@ -142,6 +142,7 @@ SET (GPUIT_LIBRARY_SRC
   vf_convolve.cxx vf_convolve.h 
   vf_stats.cxx vf_stats.h 
   volume.cxx volume.h
+  volume_header.cxx volume_header.h 
   volume_limit.cxx volume_limit.h
   volume_macros.h
   xpm.cxx xpm.h
@@ -382,7 +383,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   synthetic_mha.cxx synthetic_mha.h
   synthetic_vf.cxx synthetic_vf.h
   thumbnail.cxx thumbnail.h
-  volume_header.cxx volume_header.h 
   xio_ct.cxx xio_ct.h
   xio_demographic.cxx xio_demographic.h
   xio_dir.cxx xio_dir.h
@@ -404,11 +404,11 @@ SET (BRAGG_CURVE_SRC
   bragg_curve_opts.c bragg_curve_opts.h
   )
 SET (BSPLINE_SRC
-  bspline_main.c 
+  bspline_main.cxx 
   )
 SET (CHECK_GRAD_SRC
-  check_grad.c
-  check_grad_opts.c check_grad_opts.h 
+  check_grad.cxx
+  check_grad_opts.cxx check_grad_opts.h 
   )
 SET (COMPUTE_DISTANCE_SRC
   compute_distance.cxx compute_distance.h
