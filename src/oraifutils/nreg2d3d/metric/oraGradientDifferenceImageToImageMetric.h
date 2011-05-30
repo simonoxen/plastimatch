@@ -46,16 +46,22 @@ public:
   typedef typename FixedImageType::PixelType FixedPixelType;
   typedef typename FixedImageType::Pointer FixedImagePointer;
   typedef typename FixedImageType::ConstPointer FixedImageConstPointer;
-  typedef typename Superclass::FixedImageMaskPointer FixedImageMaskPointer;
   typedef TMovingImage MovingImageType;
   typedef typename MovingImageType::PixelType MovingPixelType;
   typedef typename MovingImageType::Pointer MovingImagePointer;
   typedef typename MovingImageType::ConstPointer MovingImageConstPointer;
-#ifdef ITK_LEGACY_REMOVE
+#ifdef ITK_USE_OPTIMIZED_REGISTRATION_METHODS
+  typedef typename Superclass::FixedImageMaskConstPointer FixedImageMaskPointer;
   typedef typename Superclass::MovingImageMaskConstPointer MovingImageMaskPointer;
 #else
+#ifdef ITK_LEGACY_REMOVE
+  typedef typename Superclass::FixedImageMaskConstPointer FixedImageMaskPointer;
+  typedef typename Superclass::MovingImageMaskConstPointer MovingImageMaskPointer;
+#else
+  typedef typename Superclass::FixedImageMaskPointer FixedImageMaskPointer;
   typedef typename Superclass::MovingImageMaskPointer MovingImageMaskPointer;
-#endif
+#endif // ITK_LEGACY_REMOVE
+#endif // ITK_USE_OPTIMIZED_REGISTRATION_METHODS
   typedef TGradientPixelType GradientPixelType;
   itkStaticConstMacro(ImageDimension, unsigned int,
       FixedImageType::ImageDimension);
