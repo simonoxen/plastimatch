@@ -1121,6 +1121,7 @@ protected:
   /**
    * Resample the specified image according to the arguments from config file
    * (trust these parsed arguments!).
+   * NOTE: The size is limited to be greater than zero (>= 1).
    * @return a new ITKVTKImage instance containing the pointer to the result
    * image if successful, NULL otherwise
    * @see PreProcessImage()

@@ -707,6 +707,7 @@ UNO23Model::CastImage(ITKVTKImage *image, std::vector<std::string> &args)
   } \
   catch (itk::ExceptionObject &e) \
   { \
+    delete resultImage; \
     return NULL; \
   }
   // END: helper macro for reducing the lines of code below
@@ -929,6 +930,9 @@ UNO23Model::ResampleImage(ITKVTKImage *image, std::vector<std::string> &args)
     newSize[d] = static_cast<typename OriginalImageType::SizeValueType> (std::floor(
                    icast->GetLargestPossibleRegion().GetSize()[d]
                    * icast->GetSpacing()[d] / spac[d]));
+    // Ensure that size is at least 1
+    if (newSize[d] <= 0)
+      newSize[d] = 1;
   }
   resampler->SetSize(newSize);
 
@@ -2214,7 +2218,7 @@ UNO23Model::ComputeCrossCorrelationInitialTransform(const unsigned int &index,
     unsharpArgs.push_back("UNSHARPMASKING");
     ITKVTKImage *movingIVITemp = UnsharpMaskImage<float> (movingIVI,
         unsharpArgs);
-    delete (movingIVI);
+    delete movingIVI;
     movingIVI = movingIVITemp;
   }
 
@@ -2853,10 +2857,10 @@ UNO23Model::ComputeCrossCorrelationInitialTransform(const unsigned int &index,
 
   // Cleanup
   fixedIVI = NULL;
-  delete (fixedIVIFloat);
+  delete fixedIVIFloat;
   nreg = NULL;
   drr = NULL;
-  delete (movingIVI);
+  delete movingIVI;
   ibase = NULL;
   fixedImage = NULL;
   movingImage = NULL;

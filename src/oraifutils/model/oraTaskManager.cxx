@@ -52,6 +52,8 @@ bool TaskManager::DestroyInstance(QString id)
 void
 TaskManager::ExecuteTask(Task * task)
 {
+  // FIXME: Check if the redostack contains elements. A new action invalidates
+  // the redo stack operations because of possible changed data
   if (!task)
     return;
   {
@@ -105,6 +107,8 @@ TaskManager::Redo()
   {
     Task* task = redoStack.last();
     redoStack.pop_back();
+    // FIXME: Usa a different method to re-execute tasks from the redo stack
+    // to avoid corruption of redo/undo operations
     ExecuteTask(task);
     return true;
   }
