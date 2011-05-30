@@ -312,7 +312,8 @@ set_key_val (
 	    goto error_exit;
 	}
     }
-    else if (!strcmp (key, "mattes_num_spatial_samples")
+    else if (!strcmp (key, "num_samples")
+	|| !strcmp (key, "mattes_num_spatial_samples")
 	|| !strcmp (key, "mi_num_spatial_samples")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d", &stage->mi_num_spatial_samples) != 1) {
@@ -392,7 +393,7 @@ set_key_val (
 	stage->moving_subsample_rate[1] = stage->fixed_subsample_rate[1];
 	stage->moving_subsample_rate[2] = stage->fixed_subsample_rate[2];
     }
-    else if (!strcmp (key, "fixed_ss")) {
+    else if (!strcmp (key, "ss_fixed") || !strcmp (key, "fixed_ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
 		&(stage->fixed_subsample_rate[0]), 
@@ -407,7 +408,7 @@ set_key_val (
 	}
 	stage->subsampling_type = SUBSAMPLING_VOXEL_RATE;
     }
-    else if (!strcmp (key, "moving_ss")) {
+    else if (!strcmp (key, "ss_moving") || !strcmp (key, "moving_ss")) {
 	if (section == 0) goto error_not_global;
 	if (sscanf (val, "%d %d %d", 
 		&(stage->moving_subsample_rate[0]), 

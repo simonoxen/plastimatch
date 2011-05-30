@@ -93,84 +93,130 @@ Depending on the choice of xform, optim, and impl, a different set of
 specific parameters are available. 
 
 .. list-table::
-   :widths: 20 20 20 40
+   :widths: 20 15 10 10 45
    :header-rows: 1
 
    * - option
      - xform+optim+impl
      - default
+     - units
      - description
-   * - res
-     - any+any+any
-     - automatic
-     - [1 1 1] (minimum) Units: voxels, must be integers. 
-       In automatic mode, image is subsampled to less than 100 
-       voxels in each dimension. 
-   * - metric
-     - any+not demons+any
-     - mse
-     - Choices are: {mse, mi, mattes} when impl=itk, and {mse, mi} 
-       when impl=plastimatch.
    * - background_val
      - any+any+any
      - -999.0
-     - Units: image intensity
-   * - min_its
-     - any+any+any
-     - 2
-     - Units: iterations
-   * - max_its
-     - any+any+any
-     - 25
-     - Units: iterations
+     - image intensity
+     - (needs description)
    * - convergence_tol
      - any+not demons+any
      - 5.0
-     - Units: score
-   * - grad_tol
-     - any+{lbfgs, lbfgsb}+any
-     - 1.5
-     - Units: score per unit parameter
-   * - min_step
-     - any+{versor, rsg}+itk
-     - 0.5
-     - Units: scaled parameters
-   * - max_step
-     - any+{versor, rsg}+itk
-     - 10.0
-     - Units: scaled parameters
-   * - mi_histogram_bins
-     - any+any+any
-     - 20
-     - Number of histogram bins.  Only used for plastimatch mi metric, and 
-       itk mattes metric.
-   * - mi_num_spatial_samples
-     - any+any+itk
-     - 10000
-     - Number of spatial samples.  Only used for itk mattes metric.
-   * - grid_spac
-     - bspline+any+any
-     - [20 20 20]
-     - Units: mm. Minimum size is 4*(Pixel Size).  If a smaller size is 
-       specified, it will be adjusted upward.
-   * - histoeq
-     - vf+demons+itk
-     - 0
-     - Specifies whether or not to equalize intensity histograms before 
-       registration.
-   * - demons_std
-     - vf+demons+any
-     - 6.0
-     - Units: mm.  Width of demons smoothing kernel.
+     - score
+     - Stop optimization if score (change?) falls below this value
    * - demons_acceleration
      - vf+demons+plastimatch
      - 1.0
-     - Unitless.
-   * - demons_homogenization
-     - vf+demons+plastimatch
-     - 1.0
-     - Unitless.
+     - unitless
+     - (needs description)
    * - demons_filter_width
      - vf+demons+plastimatch
      - [3 3 3]
-     - Units: voxels.
+     - voxels
+     - (needs description)
+   * - demons_homogenization
+     - vf+demons+plastimatch
+     - 1.0
+     - unitless
+     - (needs description)
+   * - demons_std
+     - vf+demons+any
+     - 6.0
+     - mm
+     - width of demons smoothing kernel
+   * - histoeq
+     - vf+demons+itk
+     - 0
+     - boolean
+     - specify whether or not to equalize intensity histograms before 
+       registration
+   * - grad_tol
+     - any+{lbfgs, lbfgsb}+any
+     - 1.5
+     - score per unit parameter
+     - (needs description)
+   * - grid_spac
+     - bspline+any+any
+     - [20 20 20]
+     - mm
+     - Spacing between control points in B-spline grid. 
+       The minimum spacing is 4*(Pixel Size); if a smaller size is 
+       specified, it will be adjusted upward.
+   * - max_its
+     - any+any+any
+     - 25
+     - iterations
+     - (needs description)
+   * - max_step
+     - any+{versor, rsg}+itk
+     - 10.0
+     - scaled parameters
+     - (needs description)
+   * - metric
+     - any+not demons+any
+     - mse
+     - string
+     - Cost function metric to be optimized.  
+       The choices are {mse, mi, mattes} when impl=itk, and {mse, mi} 
+       when impl=plastimatch.
+   * - mi_histogram_bins
+     - any+any+any
+     - 20
+     - number of histogram bins
+     - Only used for plastimatch mi metric, and itk mattes metric.
+   * - min_its
+     - any+any+any
+     - 2
+     - iterations
+     - (needs description)
+   * - min_step
+     - any+{versor, rsg}+itk
+     - 0.5
+     - scaled parameters
+     - (needs description)
+   * - num_samples
+     - any+any+itk
+     - 10000
+     - voxels
+     - Number of voxels to randomly sample to score the cost function. 
+       Only used for itk mattes metric.
+   * - res
+     -
+     -
+     -
+     - Alias for "ss"
+   * - ss
+     - any+any+any
+     - automatic
+     - voxels
+     - Subsampling rate for fixed and moving images.  
+       This can be either "automatic", 
+       a single integer (for isotropic subsampling), 
+       or three integers (for anisotropic subsampling).
+       In automatic mode, image is subsampled to the maximum rate 
+       which yields less than 100 voxels in each dimension. 
+   * - ss_fixed
+     - any+any+any
+     - automatic
+     - voxels
+     - Subsampling rate for the fixed image.
+   * - ss_moving
+     - any+any+any
+     - automatic
+     - voxels
+     - Subsampling rate for the moving image.
+   * - threading
+     - any+any+plastimatch
+     - openmp
+     - string
+     - Threading method used for parallel cost and gradient computations. 
+       The choices are {brook, cuda, openmp, single}.  
+       If an unsupported threading choice is made (such as brook with 
+       b-spline), the nearest valid choice will be used.
