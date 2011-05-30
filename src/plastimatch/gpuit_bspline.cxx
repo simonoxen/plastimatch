@@ -138,8 +138,9 @@ do_gpuit_bspline_stage_internal (
     }
 
     /* Transform input xform to gpuit vector field */
-    pih.set_from_gpuit (fixed_ss->offset, fixed_ss->spacing, 
-	fixed_ss->dim, fixed_ss->direction_cosines);
+    pih.set_from_gpuit (fixed_ss->dim, 
+	fixed_ss->offset, fixed_ss->spacing, 
+	fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
 
     /* Run bspline optimization */

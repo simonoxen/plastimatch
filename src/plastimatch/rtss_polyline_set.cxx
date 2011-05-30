@@ -374,13 +374,13 @@ void
 Rtss_polyline_set::find_rasterization_geometry (Plm_image_header *pih)
 {
     /* use some generic default parameters */
-    float offset[3];
+    int dim[3];
+    float origin[3];
     float spacing[3];
-    int dims[3];
 
-    this->find_rasterization_geometry (offset, spacing, dims);
+    this->find_rasterization_geometry (origin, spacing, dim);
 
-    pih->set_from_gpuit (offset, spacing, dims, 0);
+    pih->set_from_gpuit (dim, origin, spacing, 0);
 }
 
 void

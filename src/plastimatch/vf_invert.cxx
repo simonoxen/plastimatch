@@ -73,7 +73,7 @@ vf_invert_main (Vf_Invert_Parms* parms)
 	pih.get_spacing (parms->spacing);
 	pih.get_dim (parms->dim);
 
-	pih.set_from_gpuit (parms->origin, parms->spacing, parms->dim, 0);
+	pih.set_from_gpuit (parms->dim, parms->origin, parms->spacing, 0);
     }
 
     /* GCS FIX: Need direction cosines */

@@ -17,20 +17,32 @@ public:
     CBString output_fn;
     CBString output_type;
 
+    /* Geometry options */
+    bool m_have_dim;
+    bool m_have_origin;
+    bool m_have_spacing;
+    Volume_header m_vh;
+
     Xform_convert xfc;
+public:
+    Xf_convert_parms () {
+	m_have_dim = false;
+	m_have_origin = false;
+	m_have_spacing = false;
+    }
 };
 
 void
 set_output_xform_type (Xform_convert *xfc, const CBString& output_type)
 {
     if (output_type == "vf") {
-	xfc->xf_out_type = XFORM_ITK_VECTOR_FIELD;
+	xfc->m_xf_out_type = XFORM_ITK_VECTOR_FIELD;
     }
     else if (output_type == "bspline") {
-	xfc->xf_out_type = XFORM_GPUIT_BSPLINE;
+	xfc->m_xf_out_type = XFORM_GPUIT_BSPLINE;
     }
     else if (output_type == "itk_bsp" || output_type == "itk_bspline") {
-	xfc->xf_out_type = XFORM_ITK_BSPLINE;
+	xfc->m_xf_out_type = XFORM_ITK_BSPLINE;
     }
     else {
 	print_and_exit ("Sorry, can't convert output type\n");
@@ -43,10 +55,22 @@ do_xf_convert (Xf_convert_parms *parms)
     Xform_convert *xfc = &parms->xfc;
 
     /* Set up inputs */
-    xfc->xf_in = new Xform;
-    xfc->xf_out = new Xform;
-    xform_load (xfc->xf_in, parms->input_fn);
+    xfc->m_xf_in = new Xform;
+    xfc->m_xf_out = new Xform;
+    xform_load (xfc->m_xf_in, parms->input_fn);
     set_output_xform_type (xfc, parms->output_type);
+
+    /* Override volume header as needed */
+    xfc->m_xf_in->get_volume_header (&xfc->m_volume_header);
+    if (parms->m_have_dim) {
+	xfc->m_volume_header.set_dim (parms->m_vh.m_dim);
+    }
+    if (parms->m_have_origin) {
+	xfc->m_volume_header.set_origin (parms->m_vh.m_origin);
+    }
+    if (parms->m_have_spacing) {
+	xfc->m_volume_header.set_spacing (parms->m_vh.m_spacing);
+    }
     
     /* Do conversion */
     printf ("about to xform_convert\n");
@@ -54,7 +78,7 @@ do_xf_convert (Xf_convert_parms *parms)
     printf ("did xform_convert\n");
 
     /* Save output file */
-    xform_save (xfc->xf_out, parms->output_fn);
+    xform_save (xfc->m_xf_out, parms->output_fn);
 }
 
 static void
@@ -84,10 +108,10 @@ parse_fn (
 	"Type of xform to create (required), choose from "
 	"{bspline, itk_bspline, vf}", 1, "");
 
-    parser->add_long_option ("", "origin", 
-	"Location of first image voxel in mm \"x y z\"", 1, "");
     parser->add_long_option ("", "dim", 
 	"Size of output image in voxels \"x [y z]\"", 1, "");
+    parser->add_long_option ("", "origin", 
+	"Location of first image voxel in mm \"x y z\"", 1, "");
     parser->add_long_option ("", "spacing", 
 	"Voxel spacing in mm \"x [y z]\"", 1, "");
     parser->add_long_option ("", "grid-spacing", 
@@ -116,21 +140,24 @@ parse_fn (
     }
 
     /* Geometry options */
+    if (parser->option ("dim")) {
+	parms->m_have_dim = true;
+	parser->assign_int13 (parms->m_vh.m_dim, "dim");
+    }
     if (parser->option ("origin")) {
-	parser->assign_float13 (xfc->origin, "origin");
+	parms->m_have_origin = true;
+	parser->assign_float13 (parms->m_vh.m_origin, "origin");
     }
     if (parser->option ("spacing")) {
-	parser->assign_float13 (xfc->spacing, "spacing");
-    }
-    if (parser->option ("dim")) {
-	parser->assign_int13 (xfc->dim, "dim");
+	parms->m_have_spacing = true;
+	parser->assign_float13 (parms->m_vh.m_spacing, "spacing");
     }
     if (parser->option ("grid-spacing")) {
-	parser->assign_float13 (xfc->grid_spac, "grid-spacing");
+	parser->assign_float13 (xfc->m_grid_spac, "grid-spacing");
     }
 
     if (parser->option ("nobulk")) {
-	xfc->nobulk = true;
+	xfc->m_nobulk = true;
     }
 }
 

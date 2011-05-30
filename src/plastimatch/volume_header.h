@@ -12,16 +12,25 @@
 
 class plastimatch1_EXPORT Volume_header {
 public:
+    int m_dim[3];
     float m_origin[3];
     float m_spacing[3];
-    int m_dim[3];
     float m_direction_cosines[9];
 
 public:
-    Volume_header () {}
+    Volume_header ()
+    {
+	for (int d = 0; d < 3; d++) {
+	    m_dim[d] = 0;
+	    m_origin[d] = 0.;
+	    m_spacing[d] = 0.;
+	}
+	this->set_direction_cosines_identity ();
+    }
     Volume_header (int dim[3], float origin[3], float spacing[3])
     {
 	this->set (dim, origin, spacing, 0);
+	this->set_direction_cosines_identity ();
     }
     Volume_header (int dim[3], float origin[3], float spacing[3],
 	float direction_cosines[9])
@@ -38,6 +47,7 @@ public:
     void set_origin (float origin[3]);
     void set_spacing (float spacing[3]);
     void set_direction_cosines (float direction_cosines[9]);
+    void set_direction_cosines_identity ();
 
     void set (int dim[3], float origin[3], float spacing[3],
 	float direction_cosines[9]);

@@ -1495,3 +1495,30 @@ xform_to_gpuit_vf (
 
     xf_out->set_gpuit_vf (vf);
 }
+
+void
+Xform::get_volume_header (Volume_header *vh)
+{
+    switch (this->m_type) {
+    case XFORM_NONE:
+    case XFORM_ITK_TRANSLATION:
+    case XFORM_ITK_VERSOR:
+    case XFORM_ITK_QUATERNION:
+    case XFORM_ITK_AFFINE:
+    case XFORM_ITK_BSPLINE:
+    case XFORM_ITK_TPS:
+	/* Do nothing */
+	break;
+    case XFORM_ITK_VECTOR_FIELD:
+	itk_image_get_volume_header (vh, this->get_itk_vf());
+	break;
+    case XFORM_GPUIT_BSPLINE:
+	break;
+    case XFORM_GPUIT_VECTOR_FIELD:
+	break;
+    default:
+	print_and_exit ("Sorry, couldn't get_volume_header (type = %d)\n",
+	    this->m_type);
+	break;
+    }
+}

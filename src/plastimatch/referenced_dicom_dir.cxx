@@ -58,7 +58,7 @@ Referenced_dicom_dir::load (const char *dicom_dir)
 	offset[d] = gs.m_origin[d];
 	spacing[d] = gs.m_spacing[d];
     }
-    this->m_pih.set_from_gpuit (offset, spacing, gs.m_dim, 0);
+    this->m_pih.set_from_gpuit (gs.m_dim, offset, spacing, 0);
 
     /* PatientName */
     this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0010);

@@ -17,6 +17,7 @@
 #include "plm_image_type.h"
 
 class Plm_image_header;
+class Volume_header;
 
 /* 4D images */
 typedef itk::Image < unsigned char, 4 > UCharImage4DType;
@@ -78,6 +79,7 @@ itk_image_get_props (
 );
 
 template<class T> plastimatch1_EXPORT void get_image_header (int dim[3], float offset[3], float spacing[3], T image);
+template<class T> plastimatch1_EXPORT void itk_image_get_volume_header (Volume_header *vh, T image);
 template<class T> plastimatch1_EXPORT void itk_image_set_header (T image, Plm_image_header *pih);
 template<class T, class U> plastimatch1_EXPORT void itk_image_header_copy (T dest, U src);
 #endif

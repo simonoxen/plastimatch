@@ -5,25 +5,31 @@
 #define _xform_convert_h_
 
 #include "plm_config.h"
+#include "volume_header.h"
 #include "xform.h"
 
 class plastimatch1_EXPORT Xform_convert {
 public:
-    Xform *xf_out;
-    Xform *xf_in;
-    XFormInternalType xf_out_type;
-    float origin[3];
-    float spacing[3];
-    int dim[3];
-    float grid_spac[3];
-    int nobulk;
+    Xform *m_xf_out;
+    Xform *m_xf_in;
+    XFormInternalType m_xf_out_type;
+    Volume_header m_volume_header;
+    float m_grid_spac[3];
+    int m_nobulk;
 public:
     Xform_convert () {
-	/* Pretty much zeros are good all around */
+	m_xf_out = 0;
+	m_xf_in = 0;
+	m_xf_out_type = XFORM_NONE;
+
+	for (int d = 0; d < 3; d++) {
+	    m_grid_spac[d] = 100.f;
+	}
+	m_nobulk = false;
     }
     ~Xform_convert () {
-	if (xf_out) delete xf_out;
-	if (xf_in) delete xf_in;
+	if (m_xf_out) delete m_xf_out;
+	if (m_xf_in) delete m_xf_in;
     }
 };
 

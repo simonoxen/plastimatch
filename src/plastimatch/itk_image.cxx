@@ -20,6 +20,7 @@
 #include "plm_int.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
+#include "volume_header.h"
 
 #if (defined(_WIN32) || defined(WIN32))
 #define snprintf _snprintf
@@ -82,6 +83,32 @@ get_image_header (int dim[3], float offset[3], float spacing[3], T image)
 
 template<class T>
 void
+itk_image_get_image_header (int dim[3], float offset[3], float spacing[3], 
+    float direction_cosines[9], const T image)
+{
+    typename T::ObjectType::RegionType rg = image->GetLargestPossibleRegion ();
+    typename T::ObjectType::PointType og = image->GetOrigin();
+    typename T::ObjectType::SpacingType sp = image->GetSpacing();
+    typename T::ObjectType::SizeType sz = rg.GetSize();
+
+    /* Copy header & allocate data for gpuit float */
+    for (int d = 0; d < 3; d++) {
+	dim[d] = sz[d];
+	offset[d] = og[d];
+	spacing[d] = sp[d];
+    }
+}
+
+template<class T>
+void
+itk_image_get_volume_header (Volume_header *vh, T image)
+{
+    itk_image_get_image_header (vh->m_dim, vh->m_origin, vh->m_spacing, 
+	vh->m_direction_cosines, image);
+}
+
+template<class T>
+void
 itk_image_set_header (T dest, Plm_image_header *pih)
 {
     dest->SetRegions (pih->m_region);
@@ -121,3 +148,4 @@ template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Poin
 template plastimatch1_EXPORT void itk_image_header_copy (UCharVecImageType::Pointer, DeformationFieldType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharImageType::Pointer, UCharVecImageType::Pointer);
 template plastimatch1_EXPORT void itk_image_header_copy (UCharImage2DType::Pointer, UCharVecImage2DType::Pointer);
+template plastimatch1_EXPORT void itk_image_get_volume_header (Volume_header *, DeformationFieldType::Pointer);

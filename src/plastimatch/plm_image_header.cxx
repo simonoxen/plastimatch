@@ -12,6 +12,7 @@
 #include "plm_image_header.h"
 #include "print_and_exit.h"
 #include "volume.h"
+#include "volume_header.h"
 
 /* -----------------------------------------------------------------------
    prototypes
@@ -19,7 +20,7 @@
 static void
 itk_direction_from_gpuit (
     DirectionType* itk_direction,
-    float gpuit_direction_cosines[9]
+    const float gpuit_direction_cosines[9]
 );
 
 static void
@@ -29,7 +30,7 @@ itk_direction_identity (DirectionType* itk_direction);
    functions
    ----------------------------------------------------------------------- */
 void
-Plm_image_header::set_origin (float origin[3])
+Plm_image_header::set_origin (const float origin[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	this->m_origin[d] = origin[d];
@@ -37,7 +38,7 @@ Plm_image_header::set_origin (float origin[3])
 }
 
 void
-Plm_image_header::set_spacing (float spacing[3])
+Plm_image_header::set_spacing (const float spacing[3])
 {
     for (unsigned int d = 0; d < 3; d++) {
 	this->m_spacing[d] = spacing[d];
@@ -45,7 +46,7 @@ Plm_image_header::set_spacing (float spacing[3])
 }
 
 void
-Plm_image_header::set_dim (int dim[3])
+Plm_image_header::set_dim (const int dim[3])
 {
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
@@ -59,10 +60,10 @@ Plm_image_header::set_dim (int dim[3])
 
 void
 Plm_image_header::set_from_gpuit (
-    float gpuit_origin[3],
-    float gpuit_spacing[3],
-    int gpuit_dim[3],
-    float gpuit_direction_cosines[9])
+    const int gpuit_dim[3],
+    const float gpuit_origin[3],
+    const float gpuit_spacing[3],
+    const float gpuit_direction_cosines[9])
 {
     ImageRegionType::SizeType itk_size;
     ImageRegionType::IndexType itk_index;
@@ -86,9 +87,9 @@ void
 Plm_image_header::set_from_gpuit_bspline (Bspline_xform *bxf)
 {
     this->set_from_gpuit (
+	bxf->img_dim,
 	bxf->img_origin,
 	bxf->img_spacing,
-	bxf->img_dim,
 	0);
 }
 
@@ -124,8 +125,8 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
     case PLM_IMG_TYPE_GPUIT_FLOAT_FIELD:
     {
 	Volume* vol = (Volume*) pli->m_gpuit;
-	set_from_gpuit (vol->offset, vol->spacing,
-	    vol->dim, vol->direction_cosines);
+	set_from_gpuit (vol->dim, vol->offset, vol->spacing,
+	    vol->direction_cosines);
 	break;
     }
     case PLM_IMG_TYPE_ITK_UCHAR_VEC:
@@ -138,6 +139,13 @@ Plm_image_header::set_from_plm_image (Plm_image *pli)
 	    plm_image_type_string (pli->m_type));
 	break;
     }
+}
+
+void
+Plm_image_header::set_from_volume_header (const Volume_header& vh)
+{
+    this->set_from_gpuit (vh.m_dim, vh.m_origin, 
+	vh.m_spacing, vh.m_direction_cosines);
 }
 
 void 
@@ -259,7 +267,7 @@ direction_cosines_from_itk (
 static void
 itk_direction_from_gpuit (
     DirectionType* itk_direction,
-    float gpuit_direction_cosines[9]
+    const float gpuit_direction_cosines[9]
 )
 {
     for (unsigned int d1 = 0; d1 < 3; d1++) {

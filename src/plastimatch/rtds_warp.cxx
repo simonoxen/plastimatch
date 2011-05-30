@@ -218,10 +218,10 @@ warp_and_save_ss (
 	Plm_image_header pih;
 	Rtss_polyline_set *cxt = rtds->m_ss_image->m_cxt;
 	if (bstring_not_empty (parms->xf_in_fn)) {
-	    pih.set_from_gpuit (cxt->rast_offset, 
-		cxt->rast_spacing, cxt->rast_dim, 0);
+	    pih.set_from_gpuit (cxt->rast_dim, cxt->rast_offset, 
+		cxt->rast_spacing, 0);
 	} else {
-	    pih.set_from_gpuit (cxt->m_offset, cxt->m_spacing, cxt->m_dim, 0);
+	    pih.set_from_gpuit (cxt->m_dim, cxt->m_offset, cxt->m_spacing, 0);
 	}
 	printf ("Warp_and_save_ss: m_ss_image->rasterize\n");
 	rtds->m_ss_image->rasterize (&pih,
@@ -302,9 +302,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_ss_image->m_cxt->have_geometry) {
 	/* use the spacing of the structure set */
 	pih.set_from_gpuit (
+	    rtds->m_ss_image->m_cxt->m_dim, 
 	    rtds->m_ss_image->m_cxt->m_offset, 
 	    rtds->m_ss_image->m_cxt->m_spacing, 
-	    rtds->m_ss_image->m_cxt->m_dim, 0);
+	    0);
     } else if (rtds->m_dose) {
 	/* use the spacing of dose */
 	printf ("Setting PIH from DOSE\n");
@@ -315,10 +316,10 @@ rtds_warp (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	rtds->m_ss_image->find_rasterization_geometry (&pih);
     } else {
 	/* use some generic default parameters */
-	int dims[3] = { 500, 500, 500 };
-	float offset[3] = { -249.5, -249.5, -249.5 };
+	int dim[3] = { 500, 500, 500 };
+	float origin[3] = { -249.5, -249.5, -249.5 };
 	float spacing[3] = { 1., 1., 1. };
-	pih.set_from_gpuit (offset, spacing, dims, 0);
+	pih.set_from_gpuit (dim, origin, spacing, 0);
     }
 
     if (parms->m_have_dim) {

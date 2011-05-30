@@ -44,6 +44,20 @@ Volume_header::set_direction_cosines (float direction_cosines[9])
 }
 
 void
+Volume_header::set_direction_cosines_identity ()
+{
+    this->m_direction_cosines[0] = 1.f;
+    this->m_direction_cosines[1] = 0.f;
+    this->m_direction_cosines[2] = 0.f;
+    this->m_direction_cosines[3] = 0.f;
+    this->m_direction_cosines[4] = 1.f;
+    this->m_direction_cosines[5] = 0.f;
+    this->m_direction_cosines[6] = 0.f;
+    this->m_direction_cosines[7] = 0.f;
+    this->m_direction_cosines[8] = 1.f;
+}
+
+void
 Volume_header::set (
     int dim[3],
     float origin[3],

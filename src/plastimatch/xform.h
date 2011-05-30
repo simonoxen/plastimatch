@@ -17,6 +17,7 @@
 #include "print_and_exit.h"
 #include "volume.h"
 
+class Volume_header;
 class Xform;
 
 enum XFormInternalType {
@@ -52,7 +53,7 @@ typedef itk::ThinPlateSplineKernelTransform <
     double, 3 > DoubleTpsTransformType;
 typedef DoubleTpsTransformType TpsTransformType;
 
-class Xform {
+class plastimatch1_EXPORT Xform {
 public:
     XFormInternalType m_type;
     
@@ -207,6 +208,8 @@ public:
 	m_type = XFORM_GPUIT_VECTOR_FIELD;
 	m_gpuit = (void*) vf;
     }
+  public:
+    void get_volume_header (Volume_header *vh);
 };
 
 
