@@ -19,16 +19,14 @@
       <default>None</default>
       <description>Input image or dose or structure set</description>
     </image>
-    <!--<transform fileExtensions=".txt" type="bspline">-->
-      <string>
+    <transform fileExtensions=".txt" type="bspline">
       <name>plmslc_xformwarp_input_xform</name>
       <longflag>plmslc_xformwarp_input_xform</longflag>
       <description>Input transform</description>
       <label>Input (B-spline?) transform</label>
       <default>None</default>
       <channel>input</channel>
-      </string>  
-    <!--</transform>-->
+    </transform>
     <image>
       <longflag>plmslc_xformwarp_output_img</longflag>
       <name>plmslc_xformwarp_output_img</name>
