@@ -252,6 +252,7 @@ ImageList
         ini.ReadString("Images", *it, "", false), forColl))
       list->AddEntry(ile);
   }
+  delete indents;
 
   if (list->GetImageListEntries().size() <= 0) // no valid entries found
     list = NULL;

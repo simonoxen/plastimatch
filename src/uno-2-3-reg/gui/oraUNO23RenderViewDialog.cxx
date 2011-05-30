@@ -392,6 +392,7 @@ void UNO23RenderViewDialog::Update(int id)
       // really copy the image!
       m_MaskImage->DeepCopy(maskImage->
           GetAsVTKImage<UNO23Model::MaskPixelType>());
+      delete maskImage;
       if (m_FixedImage) // be sure that moving image has same origin!
         m_MaskImage->SetOrigin(m_FixedImage->GetOrigin());
       m_UpdatedMaskImage = true;

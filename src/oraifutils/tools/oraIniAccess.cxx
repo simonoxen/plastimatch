@@ -27,6 +27,7 @@ IniAccessSectionEntry
 IniAccessSectionEntry
 ::~IniAccessSectionEntry()
 {
+  m_Indents->clear();
   delete m_Indents;
 }
 

@@ -544,7 +544,7 @@ RTIToMHDConverter<TPixelType>
           dir[j] = m_Image->GetDirection()[i][j];
         orient = GetOrientationFromVector(dir, true);
         orientation[i] = std::string(orient);
-        delete orient;
+        delete [] orient;
       }
       volMI->SetAnatomicalOrientation(orientation);
 

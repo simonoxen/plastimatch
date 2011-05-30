@@ -204,7 +204,7 @@ ITKVTKImage
         d[y] = i->GetDirection()[x][y];
       orient = GetOrientationFromVector(d, true);
       orientation[x] = std::string(orient);
-      delete orient;
+      delete [] orient;
     }
     vi->SetAnatomicalOrientation(orientation);
 
@@ -614,7 +614,7 @@ ITKVTKImage
         dir[j] = itkImage->GetDirection()[i][j];
       orient = GetOrientationFromVector(dir, false);
       mi->AnatomicalOrientation(i, orient[0]);
-      delete orient;
+      delete [] orient;
     }
     w->WriteMetaImage();
 #endif

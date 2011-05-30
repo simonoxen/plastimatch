@@ -184,7 +184,7 @@ UNO23Model::~UNO23Model()
     delete m_ITFPool;
   m_ITFPool = NULL;
   if (m_IsoCenter)
-    delete m_IsoCenter;
+    delete [] m_IsoCenter;
   m_IsoCenter = NULL;
   delete m_Volume;
   if (m_PPVolume)
@@ -198,7 +198,7 @@ UNO23Model::~UNO23Model()
   for (std::size_t i = 0; i < m_PPFixedImagesPost.size(); i++)
     delete m_PPFixedImagesPost[i];
   for (std::size_t i = 0; i < m_SourcePositions.size(); i++)
-    delete m_SourcePositions[i];
+    delete [] m_SourcePositions[i];
   for (std::size_t i = 0; i < m_ExplicitInitialWLs.size(); i++)
     if (m_ExplicitInitialWLs[i])
       delete m_ExplicitInitialWLs[i];
@@ -617,7 +617,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
 
   // Geometry
   for (std::size_t k = 0; k < m_SourcePositions.size(); k++)
-    delete m_SourcePositions[k];
+    delete [] m_SourcePositions[k];
   m_SourcePositions.clear();
   errorSection = "Geometry";
   for (std::size_t k = 1; k <= m_FixedImages.size(); k++)
@@ -638,7 +638,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
         else // (n != 3)
         {
           if (p)
-            delete p;
+            delete [] p;
           errorMessage = "The SourcePosition-entry should either contain 'FROM-IMAGE(ROTATIONAL)' or the 3D coordinate in the form x,y,z.";
           return false;
         }
@@ -659,7 +659,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
       errorMessage = "SourcePosition" + StreamConvert(k);
       errorMessage += "-entry not found! Must be defined!";
       for (std::size_t u = 0; u < m_SourcePositions.size(); u++)
-        delete m_SourcePositions[u];
+        delete [] m_SourcePositions[u];
       m_SourcePositions.clear();
       return false;
     }
@@ -669,7 +669,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
   if (s.length() > 0) // if specified, we expect a valid iso-center
   {
     if (m_IsoCenter)
-      delete m_IsoCenter;
+      delete [] m_IsoCenter;
     m_IsoCenter = NULL;
     if (itksys::SystemTools::FileExists(s.c_str())) // BeamInfo/ViewInfo ...
     {
@@ -708,7 +708,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
       if (ParseCommaSeparatedNumericStringVector(s, m_IsoCenter) != 3 &&
           m_IsoCenter)
       {
-        delete m_IsoCenter;
+        delete [] m_IsoCenter;
         m_IsoCenter = NULL;
       }
     }
@@ -815,7 +815,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
     if (n != 6)
     {
       if (pars)
-        delete pars;
+        delete [] pars;
       errorMessage = "The initial transform parameters must be of the form: <rx>,<ry>,<rz>,<tx>,<ty>,<tz>.";
       return false;
     }
@@ -825,7 +825,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
     for (int d = 3; d < 6; d++)
       m_InitialParameters[d] = pars[d];
     if (pars)
-      delete pars;
+      delete [] pars;
   } // else: OK, take over initial parameters
   errorKey = "CenterOfRotation";
   s = TrimF(m_Config->ReadString(errorSection, errorKey, ""));
@@ -836,7 +836,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
     if (n != 3)
     {
       if (cor)
-        delete cor;
+        delete [] cor;
       errorMessage = "The initial transform parameters must be of the form: <rx>,<ry>,<rz>,<tx>,<ty>,<tz>.";
       return false;
     }
@@ -848,7 +848,7 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
       m_CenterOfRotation[k] = cor[k] * 10.; // cm -> mm
     }
     if (cor)
-      delete cor;
+      delete [] cor;
   } // else: OK, take over initial parameters
   else
   {
@@ -1056,11 +1056,12 @@ bool UNO23Model::LoadConfiguration(std::string &errorSection,
       m_MasksColorHSV[0] = c[0];
       m_MasksColorHSV[1] = c[1];
       m_MasksColorHSV[2] = c[2];
+      delete [] c;
     }
     else
     {
       if (c != NULL)
-        delete[] c;
+        delete [] c;
       errorMessage = "Expecting a comma-separated HSV-triplet for this entry!";
       return false;
     }
@@ -1721,12 +1722,12 @@ bool UNO23Model::LoadStructure(unsigned int i)
     if (ParseCommaSeparatedNumericStringVector(s, c) < 3)
       return false;
     prop->SetColor(c[0], c[1], c[2]);
-    delete c;
+    delete [] c;
     s = stInfo->ReadString("WireFrame", "Width", "");
     if (ParseCommaSeparatedNumericStringVector(s, c) < 1)
       return false;
     prop->SetLineWidth(c[0]);
-    delete c;
+    delete [] c;
     st->SetContourProperty(prop);
   }
   return true;
@@ -1802,6 +1803,8 @@ ITKVTKImage *UNO23Model::GeneratePerspectiveProjectionMask(unsigned int i,
   vtkImageData *maskImage = imager->GetOutput();
   resultImage = new ITKVTKImage(itk::ImageIOBase::SCALAR, itk::ImageIOBase::UCHAR);
   resultImage->SetVTKImage(maskImage, false);
+  maskImage->Delete();
+
   ITKVTKImage::ITKImagePointer baseMask = resultImage->
       GetAsITKImage<MaskPixelType>();
   typedef itk::Image<MaskPixelType, ITKVTKImage::Dimensions> ITKMaskImageType;
@@ -3103,13 +3106,13 @@ ITKVTKImage *UNO23Model::GetMaskImageContour(std::size_t index)
     ITKVTKImageMetaInformation::Pointer mi = ITKVTKImageMetaInformation::New();
     contour->SetMetaInfo(mi); // dummy
 
-    delete(src);
+    delete src;
     return contour;
   }
   catch (itk::ExceptionObject &e)
   {
     std::cout<<"Exception at contouring! " << e << std::endl;
-    delete(src);
+    delete src;
     return NULL;
   }
 }
@@ -4007,12 +4010,12 @@ bool UNO23Model::ParseAndProcessStructureEntry(int index, bool simulation,
         if (ParseCommaSeparatedNumericStringVector(s, c) < 3)
           return false;
         prop->SetColor(c[0], c[1], c[2]);
-        delete c;
+        delete [] c;
         s = stInfo->ReadString("WireFrame", "Width", "");
         if (ParseCommaSeparatedNumericStringVector(s, c) < 1)
           return false;
         prop->SetLineWidth(c[0]);
-        delete c;
+        delete [] c;
         vtkSmartPointer<vtkTransform> t = vtkSmartPointer<vtkTransform>::New();
         t->Identity();
         t->Translate(-10 * m_IsoCenter[0], -10 * m_IsoCenter[1], -10 * m_IsoCenter[2]);

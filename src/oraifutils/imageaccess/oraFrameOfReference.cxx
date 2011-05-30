@@ -492,6 +492,7 @@ FrameOfReferenceCollection
     if (loaded)
       forColl->AddFOR(FOR);
   }
+  delete indents;
 
   if (forColl->GetFORUIDs().size() <= 0) // no valid frames found
     forColl = NULL;
