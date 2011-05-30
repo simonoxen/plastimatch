@@ -1279,7 +1279,8 @@ xform_to_aff (
 
 void
 xform_to_itk_bsp (
-    Xform *xf_out, Xform *xf_in, 
+    Xform *xf_out, 
+    Xform *xf_in, 
     Plm_image_header* pih,
     float* grid_spac
 )
@@ -1313,7 +1314,8 @@ xform_to_itk_bsp (
 	print_and_exit ("Sorry, couldn't convert itk_vf to itk_bsp\n");
 	break;
     case XFORM_GPUIT_BSPLINE:
-	xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, &pih->m_region, grid_spac);
+	xform_gpuit_bsp_to_itk_bsp (xf_out, xf_in, pih, 
+	    &pih->m_region, grid_spac);
 	break;
     case XFORM_GPUIT_VECTOR_FIELD:
 	print_and_exit ("Sorry, couldn't convert gpuit_vf to itk_bsp\n");

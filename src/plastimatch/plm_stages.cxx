@@ -172,6 +172,7 @@ save_output (
     Registration_Data* regd, 
     Xform *xf_out, 
     char *xf_out_fn,
+    bool xf_out_itk, 
     int img_out_fmt,
     char *img_out_fn,
     char *vf_out_fn
@@ -179,7 +180,15 @@ save_output (
 {
     if (xf_out_fn[0]) {
 	logfile_printf ("Writing transformation ...\n");
-	xform_save (xf_out, xf_out_fn);
+	if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
+	    Xform xf_tmp;
+	    Plm_image_header pih;
+	    pih.set_from_plm_image (regd->fixed_image);
+	    xform_to_itk_bsp (&xf_tmp, xf_out, &pih, 0);
+	    xform_save (&xf_tmp, xf_out_fn);
+	} else {
+	    xform_save (xf_out, xf_out_fn);
+	}
     }
 
     if (img_out_fn[0] || vf_out_fn[0]) {
@@ -259,7 +268,7 @@ do_registration_stage (
 	xf_out->m_type, xf_in->m_type);
 
     /* Save intermediate output */
-    save_output (regd, xf_out, stage->xf_out_fn, 
+    save_output (regd, xf_out, stage->xf_out_fn, stage->xf_out_itk, 
 	stage->img_out_fmt, stage->img_out_fn, stage->vf_out_fn);
 }
 
@@ -363,7 +372,7 @@ do_registration (Registration_Parms* regp)
     /* RMK: If no stages, we still generate output (same as input) */
 
     timer3.Start();
-    save_output (&regd, xf_out, regp->xf_out_fn, 
+    save_output (&regd, xf_out, regp->xf_out_fn, regp->xf_out_itk, 
 	regp->img_out_fmt, regp->img_out_fn, regp->vf_out_fn);
     timer3.Stop();
 
