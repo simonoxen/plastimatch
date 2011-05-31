@@ -20,13 +20,21 @@
       <description>Input image or dose or structure set</description>
     </image>
     <transform fileExtensions=".txt" type="bspline">
-      <name>plmslc_xformwarp_input_xform</name>
-      <longflag>plmslc_xformwarp_input_xform</longflag>
+      <name>plmslc_xformwarp_input_xform_s</name>
+      <longflag>plmslc_xformwarp_input_xform_s</longflag>
       <description>Input transform</description>
-      <label>Input (B-spline?) transform</label>
+      <label>Input transform from MRML scene</label>
       <default>None</default>
       <channel>input</channel>
     </transform>
+    <string>
+      <name>plmslc_xformwarp_input_xform_f</name>
+      <longflag>plmslc_xformwarp_input_xform_f</longflag>
+      <description>Input transform</description>
+      <label>Input transform from file</label>
+      <default>None</default>
+      <channel>input</channel>
+    </string>
     <image>
       <longflag>plmslc_xformwarp_output_img</longflag>
       <name>plmslc_xformwarp_output_img</name>

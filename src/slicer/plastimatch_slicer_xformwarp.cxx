@@ -29,7 +29,8 @@ main (int argc, char * argv [])
     //plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     parms.input_fn = plmslc_xformwarp_input_img.c_str();
-    parms.xf_in_fn = plmslc_xformwarp_input_xform.c_str();
+    parms.xf_in_fn = plmslc_xformwarp_input_xform_s.c_str();
+    parms.xf_in_fn = plmslc_xformwarp_input_xform_f.c_str();
     parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
 
     /*NSh: removed Dij processing */
