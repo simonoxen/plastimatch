@@ -3,8 +3,8 @@
 In order to install ITK 3.20, you need to use unstable repository.
 Here is what you need:
 
-  sudo apt-get -V install -t unstable libgdcm2-dev
-  sudo apt-get -V install  libinsighttoolkit3-dev
+  sudo apt-get -V install -t unstable \
+    libgdcm2-dev libinsighttoolkit3-dev libvtk5-dev
 
 It seems that Debian ITK was built with GDCM 2.X instead of GDCM 1.X.
 Too bad.

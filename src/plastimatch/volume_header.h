@@ -5,10 +5,10 @@
 #define _volume_header_h_
 
 #include "plm_config.h"
-#include "xform.h"
-#include "volume.h"
-#include "itk_image.h"
 #include "print_and_exit.h"
+#include "volume.h"
+
+class Bspline_xform;
 
 class gpuit_EXPORT Volume_header {
 public:

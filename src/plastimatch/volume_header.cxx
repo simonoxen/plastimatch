@@ -3,10 +3,11 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
-#include "plm_image.h"
+#include "bspline_xform.h"
 #include "print_and_exit.h"
 #include "volume.h"
 #include "volume_header.h"

@@ -309,11 +309,6 @@ SET (PLASTIMATCH_LIBRARY_SRC
   dicom_util.cxx dicom_util.h
   direction_cosines.h
   gcs_metric.h gcs_metric.hxx 
-  gdcm_dose.cxx gdcm_dose.h
-  gdcm_file.cxx gdcm_file.h
-  gdcm_rtss.cxx gdcm_rtss.h
-  gdcm_series.cxx gdcm_series.h
-  gdcm_series_helper_2.cxx gdcm_series_helper_2.h
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
   img_metadata.cxx img_metadata.h 
@@ -395,6 +390,17 @@ SET (PLASTIMATCH_LIBRARY_SRC
   xform_legacy.cxx xform_legacy.h
   xform_point.cxx xform_point.h 
   )
+
+if (ITK_FOUND AND NOT ITK_USE_SYSTEM_GDCM)
+  set (PLASTIMATCH_LIBRARY_SRC
+    ${PLASTIMATCH_LIBRARY_SRC}
+    gdcm_dose.cxx gdcm_dose.h
+    gdcm_file.cxx gdcm_file.h
+    gdcm_rtss.cxx gdcm_rtss.h
+    gdcm_series.cxx gdcm_series.h
+    gdcm_series_helper_2.cxx gdcm_series_helper_2.h
+    )
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
@@ -622,6 +628,16 @@ if (SSE2_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  Do we build a full plastimatch?
+##-----------------------------------------------------------------------------
+if (ITK_FOUND AND (NOT ITK_USE_SYSTEM_GDCM OR DCMTK_VERSION_36))
+  set (FULL_PLASTIMATCH_BUILD 1)
+else ()
+  message (WARNING "Your plastimatch build is incomplete.  Please build ITK with GDCM 1.X.")
+  set (FULL_PLASTIMATCH_BUILD 0)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
 PLM_ADD_LIBRARY (
@@ -652,7 +668,7 @@ IF (BUILD_SHARED_LIBS)      # << Dynamic loading
   ENDIF ()
 ENDIF ()
 
-if (ITK_FOUND)
+if (FULL_PLASTIMATCH_BUILD)
   # Despite claims to the contrary, you are not allowed to have a library
   # with the same name as the executable.  What happens is the executable 
   # tries to create a temporary library with the same name.  [MSVC 2005]
@@ -741,7 +757,7 @@ PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}"
   "${GPUIT_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "" 1)
 
-IF (ITK_FOUND)
+if (FULL_PLASTIMATCH_BUILD)
   MESSAGE (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
   PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)

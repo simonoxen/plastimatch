@@ -488,9 +488,18 @@ if (ITK_FOUND)
     message (FATAL_ERROR 
       "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
   endif ()
-if (ITK_USE_SYSTEM_GDCM)
-  message (FATAL_ERROR 
-    "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
+#  if (ITK_USE_SYSTEM_GDCM)
+#    message (FATAL_ERROR 
+#      "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
+#  endif ()
+endif ()
+
+##-----------------------------------------------------------------------------
+##  DCMTK
+##-----------------------------------------------------------------------------
+if (DCMTK_FOUND)
+  if (NOT DCMTK_VERSION_STRING VERSION_LESS 3.6.0)
+    set (DCMTK_VERSION_36 1)
   endif ()
 endif ()
 
