@@ -626,7 +626,7 @@ IF (OPENMP_FOUND)
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
 ENDIF ()
 
-if (SSE2_FOUND)
+if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
   PLM_SET_SSE2_FLAGS (bspline.cxx bspline_mi.cxx bspline_mse.cxx)
 endif ()
 

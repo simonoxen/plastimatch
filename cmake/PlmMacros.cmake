@@ -130,11 +130,13 @@ macro (PLM_SET_SSE2_FLAGS)
     #      APPEND PROPERTY COMPILE_DEFINITIONS ${SSE2_FLAGS}
     #      )
     # So, we ask CMake more forcefully to add additional compile flags
-    get_source_file_property (OLD_FLAGS ${SRC} COMPILE_FLAGS)
-    if (OLD_FLAGS MATCHES "NONE")
-      set (OLD_FLAGS "")
+    get_source_file_property (FILE_FLAGS ${SRC} COMPILE_FLAGS)
+    if (FILE_FLAGS AND NOT FILE_FLAGS MATCHES "NONE")
+      set (FILE_FLAGS "${FILE_FLAGS} -msse2")
+    else ()
+      set (FILE_FLAGS "-msse2")
     endif ()
     set_source_files_properties (
-      ${SRC} PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} -msse2")
+      ${SRC} PROPERTIES COMPILE_FLAGS "${FILE_FLAGS}")
   endforeach ()
 endmacro ()
