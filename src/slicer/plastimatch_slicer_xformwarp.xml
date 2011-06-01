@@ -14,7 +14,7 @@
     <image>
       <longflag>plmslc_xformwarp_input_img</longflag>
       <name>plmslc_xformwarp_input_img</name>
-      <label>Input_image</label>
+      <label>Input Volume</label>
       <channel>input</channel>
       <default>None</default>
       <description>Input image or dose or structure set</description>
@@ -22,8 +22,8 @@
     <transform fileExtensions=".txt" type="bspline">
       <name>plmslc_xformwarp_input_xform_s</name>
       <longflag>plmslc_xformwarp_input_xform_s</longflag>
-      <description>Input transform</description>
-      <label>Input transform from MRML scene</label>
+      <description>Input transform from MRML tree</description>
+      <label>Input transform (MRML)</label>
       <default>None</default>
       <channel>input</channel>
     </transform>
@@ -31,14 +31,14 @@
       <name>plmslc_xformwarp_input_xform_f</name>
       <longflag>plmslc_xformwarp_input_xform_f</longflag>
       <description>Input transform</description>
-      <label>Input transform from file</label>
+      <label>Input transform (file)</label>
       <default>None</default>
       <channel>input</channel>
     </string>
     <image>
       <longflag>plmslc_xformwarp_output_img</longflag>
       <name>plmslc_xformwarp_output_img</name>
-      <label>Output Image</label>
+      <label>Output Volume</label>
       <channel>output</channel>
       <default>None</default>
       <description>Output (warped) Image etc.</description>
