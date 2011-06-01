@@ -25,24 +25,26 @@ main (int argc, char * argv [])
     Plm_file_format file_type;
     Rtds rtds;
 
-    /* Parse command line parameters */
-    //plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
-
+    /* Input image (required) */
     parms.input_fn = plmslc_xformwarp_input_img.c_str();
-    parms.xf_in_fn = plmslc_xformwarp_input_xform_s.c_str();
-    parms.xf_in_fn = plmslc_xformwarp_input_xform_f.c_str();
-    parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
 
-    /*NSh: removed Dij processing */
+    /* Get xform either from MRML scene or file */
+    if (plmslc_xformwarp_input_xform_s != "" 
+	&& plmslc_xformwarp_input_xform_s != "NONE")
+    {
+	parms.xf_in_fn = plmslc_xformwarp_input_xform_s.c_str();
+    }
+    else if (plmslc_xformwarp_input_xform_f != "" 
+	&& plmslc_xformwarp_input_xform_f != "NONE")
+    {
+	parms.xf_in_fn = plmslc_xformwarp_input_xform_f.c_str();
+    }
+
+    /* Output image (required) */
+    parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
 
     /* What is the input file type? */
     file_type = plm_file_format_deduce ((const char*) parms.input_fn);
-
-    /* Pointsets are a special case 
-    if (file_type == PLM_FILE_FMT_POINTSET) {
-	warp_pointset_main (&parms);
-	return EXIT_SUCCESS;
-    } */
 
     /* Process warp */
     rtds_warp (&rtds, file_type, &parms);

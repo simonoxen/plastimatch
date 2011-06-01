@@ -4,9 +4,11 @@
 #ifndef _plm_parms_h_
 #define _plm_parms_h_
 
+#include "plm_config.h"
 #include <stdlib.h>
 #include <ctype.h>
-#include "plm_config.h"
+#include <list>
+#include <string>
 #include "plm_path.h"
 #include "plm_image.h"
 #include "threading.h"
@@ -107,7 +109,8 @@ public:
     int img_out_type;
     char img_out_fn[_MAX_PATH];
     bool xf_out_itk;
-    char xf_out_fn[_MAX_PATH];
+    //char xf_out_fn[_MAX_PATH];
+    std::list<std::string> xf_out_fn;
     char vf_out_fn[_MAX_PATH];
 
 public:
@@ -169,7 +172,7 @@ public:
 	img_out_type = IMG_OUT_TYPE_AUTO;
 	*img_out_fn = 0;
 	xf_out_itk = false;
-	*xf_out_fn = 0;
+	//*xf_out_fn = 0;
 	*vf_out_fn = 0;
 
 	young_modulus = 0;
@@ -184,7 +187,8 @@ public:
 	*this = s;
 	img_out_fmt = IMG_OUT_FMT_AUTO;
 	*img_out_fn = 0;
-	*xf_out_fn = 0;
+	//*xf_out_fn = 0;
+	xf_out_fn.clear ();
 	*vf_out_fn = 0;
     }
 };
@@ -200,7 +204,8 @@ public:
     char img_out_fn[_MAX_PATH];
     char xf_in_fn[_MAX_PATH];
     bool xf_out_itk;
-    char xf_out_fn[_MAX_PATH];
+    //char xf_out_fn[_MAX_PATH];
+    std::list<std::string> xf_out_fn;
     char vf_out_fn[_MAX_PATH];
     char log_fn[_MAX_PATH];
     int init_type;
@@ -220,7 +225,7 @@ public:
 	*img_out_fn = 0;
 	*xf_in_fn = 0;
 	xf_out_itk = false;
-	*xf_out_fn = 0;
+	//*xf_out_fn = 0;
 	*vf_out_fn = 0;
 	*log_fn = 0;
 	init_type = STAGE_TRANSFORM_NONE;

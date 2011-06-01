@@ -111,10 +111,19 @@ set_key_val (
 	}
     }
     else if (!strcmp (key, "xf_out") || !strcmp (key, "xform_out")) {
+	/* xf_out is special.  You can have more than one of these.  
+	   This capability is used by the slicer plugin. */
+#if defined (commentout)
 	if (section == 0) {
 	    strncpy (regp->xf_out_fn, val, _MAX_PATH);
 	} else {
 	    strncpy (stage->xf_out_fn, val, _MAX_PATH);
+	}
+#endif
+	if (section == 0) {
+	    regp->xf_out_fn.push_back (val);
+	} else {
+	    stage->xf_out_fn.push_back (val);
 	}
     }
 

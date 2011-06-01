@@ -33,6 +33,11 @@ main (int argc, char * argv [])
 	    "xf_out_itk=true\n"
 	    "xf_out=" << plmslc_output_bsp << "\n";
     }
+    if (plmslc_output_bsp_f != "" && plmslc_output_bsp_f != "None") {
+	command_string << 
+	    "xf_out_itk=true\n"
+	    "xf_out=" << plmslc_output_bsp_f << "\n";
+    }
 
     /* Stage 0 */
     if (enable_stage_0) {
@@ -100,5 +105,6 @@ main (int argc, char * argv [])
     }
 
     do_registration (&regp);
+
     return EXIT_SUCCESS;
 }

@@ -171,23 +171,27 @@ static void
 save_output (
     Registration_Data* regd, 
     Xform *xf_out, 
-    char *xf_out_fn,
+    //char *xf_out_fn,
+    //const std::list<std::string>& xf_out_fn, 
+    const std::list<std::string>& xf_out_fn, 
     bool xf_out_itk, 
     int img_out_fmt,
     char *img_out_fn,
     char *vf_out_fn
 )
 {
-    if (xf_out_fn[0]) {
+    /* Save xf to all filenames in list */
+    std::list<std::string>::const_iterator it;
+    for (it = xf_out_fn.begin(); it != xf_out_fn.end(); ++it) {
 	logfile_printf ("Writing transformation ...\n");
 	if (xf_out_itk && xf_out->m_type == XFORM_GPUIT_BSPLINE) {
 	    Xform xf_tmp;
 	    Plm_image_header pih;
 	    pih.set_from_plm_image (regd->fixed_image);
 	    xform_to_itk_bsp (&xf_tmp, xf_out, &pih, 0);
-	    xform_save (&xf_tmp, xf_out_fn);
+	    xform_save (&xf_tmp, (*it).c_str());
 	} else {
-	    xform_save (xf_out, xf_out_fn);
+	    xform_save (xf_out, (*it).c_str());
 	}
     }
 

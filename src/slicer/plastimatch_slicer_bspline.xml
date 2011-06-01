@@ -58,10 +58,18 @@
       <name>plmslc_output_bsp</name>
       <longflag>--plmslc_output_bsp</longflag>
       <description>B-spline coefficients created by registration</description>
-      <label>Output B-spline transform</label>
+      <label>Output B-spline transform (MRML)</label>
       <default>None</default>
       <channel>output</channel>
     </transform>
+    <string>
+      <name>plmslc_output_bsp_f</name>
+      <longflag>plmslc_output_bsp_f</longflag>
+      <description>Output B-spline coefficients as file (absolute path)</description>
+      <label>Output B-spline transform (file)</label>
+      <default>None</default>
+      <channel>input</channel>
+    </string>
     <transform fileExtensions=".nrrd" type="nonlinear">
       <name>plmslc_output_vf</name>
       <longflag>--plmslc_output_vf</longflag>
