@@ -496,6 +496,43 @@ if (ITK_FOUND)
 endif ()
 
 ##-----------------------------------------------------------------------------
+##  GDCM
+##-----------------------------------------------------------------------------
+# If we have ITK, then we will use GDCM
+if (ITK_FOUND)
+
+  # The default case is that ITK_USE_SYSTEM_GDCM was used, 
+  # the gdcm use file was already loaded from UseITK.cmake, and therefore
+  # GDCM_VERSION is already known.  If this is not the case, we look 
+  # in the ITK build dir for the header file which contains the version.
+  if (NOT GDCM_VERSION)
+    find_file (GDCM_CONFIGURE_H gdcmConfigure.h PATHS ${ITK_INCLUDE_DIRS})
+    if (GDCM_CONFIGURE_H)
+      file (STRINGS "${GDCM_CONFIGURE_H}"
+	GDCM_VERSION
+	REGEX "^#define GDCM_VERSION *\"([^\"]*)\"")
+      string (REGEX REPLACE "[^\"]*\"([^\"]*)\".*" "\\1"
+	GDCM_VERSION "${GDCM_VERSION}")
+    endif ()
+    set (GDCM_FOUND 1)
+  endif ()
+
+  if (GDCM_VERSION)
+    message (STATUS "GDCM version ${GDCM_VERSION} found")
+  else ()
+    message (FATAL_ERROR "Found ITK, but didn't find GDCM")
+  endif ()
+
+  if (GDCM_VERSION VERSION_LESS "2.0")
+    set (GDCM_VERSION_1 1)
+  else ()
+    set (GDCM_VERSION_2 1)
+  endif ()
+else ()
+  # No itk?  Use dcmtk instead
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  DCMTK
 ##-----------------------------------------------------------------------------
 if (DCMTK_FOUND)

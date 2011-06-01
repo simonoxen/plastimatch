@@ -22,17 +22,20 @@
 
 /* External libraries */
 #cmakedefine BROOK_FOUND 1
+#cmakedefine BUILD_AGAINST_SLICER3 1
 #cmakedefine CUDA_FOUND 1
+#cmakedefine DCMTK_HAVE_CONFIG_H 1
+#cmakedefine DCMTK_VERSION_36 1
 #cmakedefine DLIB_FOUND 1
 #cmakedefine FFTW_FOUND 1
+#cmakedefine GDCM_FOUND 1
+#cmakedefine GDCM_VERSION_1 1
+#cmakedefine GDCM_VERSION_2 1
 #cmakedefine LIBLBFGS_FOUND 1
 #cmakedefine NLOPT_FOUND 1
 #cmakedefine OPENCL_FOUND 1
 #cmakedefine PANTHEIOS_FOUND 1
 #cmakedefine HAVE_GETOPT_LONG 1
-#cmakedefine DCMTK_HAVE_CONFIG_H 1
-#cmakedefine DCMTK_VERSION_36 1
-#cmakedefine BUILD_AGAINST_SLICER3 1
 
 /* User options */
 #cmakedefine PLM_SLICER_HARDCODED_FILENAME 1
