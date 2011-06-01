@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "gdcmFile.h"
+#include <gdcmFile.h>
 #include "bstrlib.h"
 #include "dicom_util.h"
 #include "img_metadata.h"

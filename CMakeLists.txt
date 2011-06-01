@@ -261,6 +261,9 @@ if (MINGW)
 endif ()
 if (PLM_BUILD_RTK)
   find_package (RTK)
+  # RTK sets ITK variables.  But we might prefer Slicer's, so reset them.
+  set (ITK_FOUND)
+  set (ITK_USE_FILE)
 endif ()
 find_package (SQLite)
 find_package (SSE)           # SSE Extensions for CPU
@@ -361,7 +364,6 @@ endif ()
 ##-----------------------------------------------------------------------------
 find_package (Slicer QUIET)
 if (SLICER_FOUND)
-
   # Strangely, the Slicer use file (both Slicer 3 and Slicer 4) 
   # appends the Slicer directories to our include path.  
   # This causes nvcc.exe to barf on windows, so we can't let it do this.
@@ -375,7 +377,6 @@ if (SLICER_FOUND)
     set (OLD_CXXFLAGS ${CMAKE_CXX_FLAGS})
 
     include ("${Slicer_USE_FILE}")
-
     get_directory_property (SLICER_INCLUDE_DIRS INCLUDE_DIRECTORIES)
     set_directory_properties (PROPERTIES INCLUDE_DIRECTORIES
       "${OLD_INCLUDE_DIR}")
@@ -488,10 +489,10 @@ if (ITK_FOUND)
     message (FATAL_ERROR 
       "Fatal Error. ITK must be compiled with ITK_USE_REVIEW set to ON")
   endif ()
-#  if (ITK_USE_SYSTEM_GDCM)
-#    message (FATAL_ERROR 
-#      "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
-#  endif ()
+  #  if (ITK_USE_SYSTEM_GDCM)
+  #    message (FATAL_ERROR 
+  #      "Fatal Error. ITK must be compiled with ITK_USE_SYSTEM_GDCM set to OFF")
+  #  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
