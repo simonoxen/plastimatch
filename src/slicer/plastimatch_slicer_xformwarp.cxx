@@ -30,15 +30,17 @@ main (int argc, char * argv [])
 
     /* Get xform either from MRML scene or file */
     if (plmslc_xformwarp_input_xform_s != "" 
-	&& plmslc_xformwarp_input_xform_s != "NONE")
+	&& plmslc_xformwarp_input_xform_s != "None")
     {
 	parms.xf_in_fn = plmslc_xformwarp_input_xform_s.c_str();
     }
     else if (plmslc_xformwarp_input_xform_f != "" 
-	&& plmslc_xformwarp_input_xform_f != "NONE")
+	&& plmslc_xformwarp_input_xform_f != "None")
     {
 	parms.xf_in_fn = plmslc_xformwarp_input_xform_f.c_str();
     }
+
+    printf ("xf_in_fn = %s\n", (const char*) parms.xf_in_fn);
 
     /* Output image (required) */
     parms.output_img_fn = plmslc_xformwarp_output_img.c_str();
