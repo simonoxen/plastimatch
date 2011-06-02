@@ -6,7 +6,9 @@
 #include "cxt_extract.h"
 #include "itk_image_save.h"
 #include "file_util.h"
+#if GDCM_VERSION_1
 #include "gdcm_rtss.h"
+#endif
 #include "plm_warp.h"
 #include "rasterizer.h"
 #include "referenced_dicom_dir.h"
@@ -95,8 +97,10 @@ Rtss::load_cxt (const CBString &input_fn, Referenced_dicom_dir *rdd)
 void
 Rtss::load_gdcm_rtss (const char *input_fn, Referenced_dicom_dir *rdd)
 {
+#if GDCM_VERSION_1
     this->m_cxt = new Rtss_polyline_set;
     gdcm_rtss_load (this, rdd, &this->m_img_metadata, input_fn);
+#endif
 }
 
 void
@@ -139,7 +143,9 @@ Rtss::save_gdcm_rtss (
 
     snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "ss.dcm");
 
+#if GDCM_VERSION_1
     gdcm_rtss_save (this, rdd, fn);
+#endif
 }
 
 void

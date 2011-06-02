@@ -10,9 +10,11 @@
 #include "bstring_util.h"
 #include "cxt_extract.h"
 #include "file_util.h"
+#if GDCM_VERSION_1
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
 #include "gdcm_rtss.h"
+#endif
 #include "mc_dose.h"
 #include "plm_image_patient_position.h"
 #include "referenced_dicom_dir.h"
@@ -34,7 +36,9 @@ Rtds::Rtds ()
     m_img = 0;
     m_ss_image = 0;
     m_dose = 0;
+#if GDCM_VERSION_1
     m_gdcm_series = 0;
+#endif
     m_img_metadata.create_anonymous ();
 
     m_xio_transform = (Xio_ct_transform*) malloc (sizeof (Xio_ct_transform));
@@ -62,9 +66,11 @@ Rtds::~Rtds ()
     if (m_dose) {
 	delete m_dose;
     }
+#if GDCM_VERSION_1
     if (m_gdcm_series) {
 	delete m_gdcm_series;
     }
+#endif
     if (m_xio_transform) {
 	free (m_xio_transform);
     }
@@ -317,6 +323,7 @@ Rtds::save_dicom (const char *output_dir)
 	printf ("Rtds::save_dicom: save_short_dicom()\n");
 	this->m_img->save_short_dicom (output_dir, &m_rdd, &m_img_metadata);
     }
+#if GDCM_VERSION_1
     if (this->m_ss_image) {
 	printf ("Rtds::save_dicom: save_gdcm_rtss()\n");
 	this->m_ss_image->save_gdcm_rtss (output_dir, &m_rdd);
@@ -327,6 +334,7 @@ Rtds::save_dicom (const char *output_dir)
 	snprintf (fn, _MAX_PATH, "%s/%s", output_dir, "dose.dcm");
 	gdcm_dose_save (m_dose, &m_img_metadata, &m_rdd, fn);
     }
+#endif
 }
 
 void 

@@ -15,7 +15,9 @@
 #include "itkRegularExpressionSeriesFileNames.h"
 #include "bstrlib.h"
 
+#if GDCM_VERSION_1
 #include "gdcm_series.h"
+#endif
 #include "plm_image.h"
 #include "plm_image_type.h"
 #include "plm_image_patient_position.h"
@@ -297,6 +299,7 @@ xio_ct_get_transform_from_dicom_dir (
     Volume *v;
     v = (Volume*) pli->m_gpuit;
 
+#if GDCM_VERSION_1
     Gdcm_series gs;
     std::string tmp;
     
@@ -362,6 +365,7 @@ xio_ct_get_transform_from_dicom_dir (
 	transform->direction_cosines[4] = -1.0f;
 	transform->direction_cosines[8] = -1.0f;
     }
+#endif
 }
 
 void

@@ -4,12 +4,16 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
+#if GDCM_VERSION_1
 #include "gdcm_series.h"
+#endif
 
 void
 do_dicom_series_test (char *dicom_dir)
 {
+#if GDCM_VERSION_1
     gdcm_series_test (dicom_dir);
+#endif
 }
 
 int

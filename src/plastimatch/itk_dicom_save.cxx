@@ -12,6 +12,8 @@
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesWriter.h"
 #include "dicom_util.h"
+#include "gdcm1_util.h"
+#include "gdcm2_util.h"
 #include "img_metadata.h"
 #include "itk_dicom_save.h"
 #include "itk_image.h"
@@ -97,8 +99,18 @@ itk_dicom_save (
 {
     typedef itk::NumericSeriesFileNames NamesGeneratorType;
     const int export_as_ct = 1;
-    const std::string &current_date = gdcm::Util::GetCurrentDate();
-    const std::string &current_time = gdcm::Util::GetCurrentTime();
+    /* DICOM date string looks like this: 20110601
+       DICOM time string looks like this: 203842 or 203842.805219
+    */
+    std::string current_date, current_time;
+#if GDCM_VERSION_1
+    gdcm1_get_date_time (&current_date, &current_time);
+#elif GDCM_VERSION_2
+    gdcm2_get_date_time (&current_date, &current_time);
+#else
+    current_date = "20000101";
+    current_time = "000000";
+#endif
 
     itksys::SystemTools::MakeDirectory (dir_name);
 

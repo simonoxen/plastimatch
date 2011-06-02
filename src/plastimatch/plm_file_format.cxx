@@ -10,8 +10,10 @@
 #include <itkImageIOBase.h>
 
 #include "file_util.h"
+#if GDCM_VERSION_1
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#endif
 #include "itk_image.h"
 #include "plm_file_format.h"
 #include "xio_dir.h"
@@ -112,6 +114,7 @@ plm_file_format_deduce (const char* path)
 	/* else fall through */
     }
 
+#if GDCM_VERSION_1
     /* Maybe dicom rtss? */
     if (gdcm_rtss_probe (path)) {
 	return PLM_FILE_FMT_DICOM_RTSS;
@@ -121,6 +124,7 @@ plm_file_format_deduce (const char* path)
     if (gdcm_dose_probe (path)) {
 	return PLM_FILE_FMT_DICOM_DOSE;
     }
+#endif
 
     return PLM_FILE_FMT_IMG;
 }

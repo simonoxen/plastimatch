@@ -6,8 +6,10 @@
 #include "bstring_util.h"
 #include "cxt_extract.h"
 #include "file_util.h"
+#if GDCM_VERSION_1
 #include "gdcm_dose.h"
 #include "gdcm_rtss.h"
+#endif
 #include "itk_image_load.h"
 #include "itk_image_save.h"
 #include "logfile.h"
@@ -58,6 +60,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 	    print_and_exit (
 		"Warping dij files requires ctatts_in, dif_in files\n");
 	    break;
+#if GDCM_VERSION_1
 	case PLM_FILE_FMT_DICOM_RTSS:
 	    rtds->m_ss_image = new Rtss (rtds);
 	    rtds->m_ss_image->load_gdcm_rtss (
@@ -69,6 +72,7 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
 		(const char*) parms->input_fn, 
 		(const char*) parms->referenced_dicom_dir);
 	    break;
+#endif
 	case PLM_FILE_FMT_CXT:
 	    rtds->m_ss_image = new Rtss (rtds);
 	    rtds->m_ss_image->load_cxt (parms->input_fn, &rtds->m_rdd);

@@ -4,20 +4,25 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "gdcmBinEntry.h"
-#include "gdcmFile.h"
-#include "gdcmUtil.h"
+#include "gdcmSystem.h"
 
 #include "img_metadata.h"
 
 void
-gdcm1_get_date_time (
+gdcm2_get_date_time (
     std::string *date,
     std::string *time
 )
 {
-    *date = gdcm::Util::GetCurrentDate();
-    *time = gdcm::Util::GetCurrentTime();
+    char datetime[22];
+    gdcm::System::GetCurrentDateTime (datetime);
+    char c_date[9];
+    char c_time[14];
+    memcpy (c_date, datetime, 8); c_date[8] = 0;
+    memcpy (c_time, datetime+8, 13); c_time[13] = 0;
+
+    *date = c_date;
+    *time = c_time;
 }
 
 void
@@ -28,10 +33,6 @@ set_metadata_from_gdcm_file (
     unsigned short elem
 )
 {
-    std::string tmp = gdcm_file->GetEntryValue (group, elem);
-    if (tmp != gdcm::GDCM_UNFOUND) {
-	img_metadata->set_metadata (group, elem, tmp);
-    }
 }
 
 void
@@ -42,6 +43,4 @@ set_gdcm_file_from_metadata (
     unsigned short elem
 )
 {
-    gdcm_file->InsertValEntry (
-	img_metadata->get_metadata (group, elem), group, elem);
 }

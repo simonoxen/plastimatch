@@ -404,6 +404,13 @@ if (ITK_FOUND AND GDCM_VERSION_1)
     )
 endif ()
 
+if (ITK_FOUND AND GDCM_VERSION_2)
+  set (PLASTIMATCH_LIBRARY_SRC
+    ${PLASTIMATCH_LIBRARY_SRC}
+    gdcm2_util.cxx gdcm2_util.h
+    )
+endif ()
+
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
@@ -761,7 +768,8 @@ PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "" 1)
 PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "" 1)
-PLM_ADD_EXECUTABLE (test2 "${TEST2_SRC}" "" "" 0)
+PLM_ADD_EXECUTABLE (test2 "${TEST2_SRC}" 
+  "" "" 0)
 
 if (FULL_PLASTIMATCH_BUILD)
   MESSAGE (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")

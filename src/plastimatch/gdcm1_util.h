@@ -11,6 +11,11 @@ class Img_metadata;
 namespace gdcm { class File; };
 
 void
+gdcm1_get_date_time (
+    std::string *date,
+    std::string *time
+);
+void
 set_metadata_from_gdcm_file (
     Img_metadata *img_metadata, 
     /* const */ gdcm::File *gdcm_file, 
