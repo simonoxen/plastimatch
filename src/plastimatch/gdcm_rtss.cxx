@@ -17,6 +17,7 @@
 #include "bstring_util.h"
 #include "gdcm_rtss.h"
 #include "gdcm_series.h"
+#include "gdcm1_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
 #include "print_and_exit.h"
@@ -89,13 +90,13 @@ gdcm_rtss_load (
     }
 
     /* PatientName */
-    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0010);
+    set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0010);
 
     /* PatientID */
-    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0020);
+    set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0020);
 
     /* PatientSex */
-    meta->set_from_gdcm_file (rtss_file, 0x0010, 0x0040);
+    set_metadata_from_gdcm_file (meta, rtss_file, 0x0010, 0x0040);
 
     /* StudyID */
     if (bstring_empty (rdd->m_study_id)) {
@@ -388,13 +389,13 @@ gdcm_rtss_save (
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0010);
+    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0010);
     /* PatientID */
-    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0020);
+    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0020);
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    rtss->m_img_metadata.copy_to_gdcm_file (gf, 0x0010, 0x0040);
+    set_gdcm_file_from_metadata (gf, &rtss->m_img_metadata, 0x0010, 0x0040);
     /* SoftwareVersions */
     gf->InsertValEntry (PLASTIMATCH_VERSION_STRING, 0x0018, 0x1020);
     /* PatientPosition */

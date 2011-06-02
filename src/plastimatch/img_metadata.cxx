@@ -80,6 +80,7 @@ Img_metadata::set_metadata (unsigned short key1, unsigned short key2,
     set_metadata (make_key (key1, key2), val);
 }
 
+#if defined (commentout)
 void
 Img_metadata::set_from_gdcm_file (
     gdcm::File *gdcm_file, 
@@ -102,3 +103,4 @@ Img_metadata::copy_to_gdcm_file (
 {
     gdcm_file->InsertValEntry (this->get_metadata (group, elem), group, elem);
 }
+#endif

@@ -4,18 +4,7 @@
 #include "plm_config.h"
 #include <stdio.h>
 #include <stdlib.h>
-#if defined (commentout)
-#include "gdcmFile.h"
-#include "gdcmFileHelper.h"
-#include "gdcmGlobal.h"
-#include "gdcmSeqEntry.h"
-#include "gdcmSQItem.h"
-#include "gdcmUtil.h"
-#endif
-
-#include "gdcm_file.h"
-#include "gdcm_rtss.h"
-#include "gdcm_series.h"
+#include "gdcm1_rdd.h"
 #include "math_util.h"
 #include "plm_uid_prefix.h"
 #include "plm_version.h"
@@ -35,60 +24,9 @@ Referenced_dicom_dir::~Referenced_dicom_dir ()
 void
 Referenced_dicom_dir::load (const char *dicom_dir)
 {
-    Gdcm_series gs;
-    std::string tmp;
-
-    if (!dicom_dir) {
-	return;
-    }
-
-    gs.load (dicom_dir);
-    gs.digest_files ();
-    if (!gs.m_have_ct) {
-	return;
-    }
-    gdcm::File* file = gs.get_ct_slice ();
-
-    /* Add geometry */
-    int d;
-    float offset[3], spacing[3];
-    this->m_loaded = 1;
-    /* Convert double to float */
-    for (d = 0; d < 3; d++) {
-	offset[d] = gs.m_origin[d];
-	spacing[d] = gs.m_spacing[d];
-    }
-    this->m_pih.set_from_gpuit (gs.m_dim, offset, spacing, 0);
-
-    /* PatientName */
-    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0010);
-
-    /* PatientID */
-    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0020);
-
-    /* PatientSex */
-    this->m_demographics.set_from_gdcm_file (file, 0x0010, 0x0040);
-
-    /* StudyID */
-    tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0010);
-    if (tmp != gdcm_file_GDCM_UNFOUND()) {
-	this->m_study_id = tmp.c_str();
-    }
-
-    /* StudyInstanceUID */
-    tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x000d);
-    this->m_ct_study_uid = tmp.c_str();
-
-    /* SeriesInstanceUID */
-    tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x000e);
-    this->m_ct_series_uid = tmp.c_str();
-	
-    /* FrameOfReferenceUID */
-    tmp = gdcm_file_GetEntryValue (file, 0x0020, 0x0052);
-    this->m_ct_fref_uid = tmp.c_str();
-
-    /* Slice uids */
-    gs.get_slice_uids (&this->m_ct_slice_uids);
+#if GDCM_VERSION_1
+    gdcm1_load_rdd (this, dicom_dir);
+#endif
 }
 
 void

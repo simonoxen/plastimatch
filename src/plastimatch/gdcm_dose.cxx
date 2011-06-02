@@ -14,6 +14,7 @@
 
 #include "gdcm_dose.h"
 #include "gdcm_series.h"
+#include "gdcm1_util.h"
 #include "logfile.h"
 #include "itk_image_stats.h"
 #include "img_metadata.h"
@@ -298,13 +299,13 @@ gdcm_dose_save (
     /* ManufacturersModelName */
     gf->InsertValEntry ("Plastimatch", 0x0008, 0x1090);
     /* PatientsName */
-    meta->copy_to_gdcm_file (gf, 0x0010, 0x0010);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0010);
     /* PatientID */
-    meta->copy_to_gdcm_file (gf, 0x0010, 0x0020);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0020);
     /* PatientsBirthDate */
     gf->InsertValEntry ("", 0x0010, 0x0030);
     /* PatientsSex */
-    meta->copy_to_gdcm_file (gf, 0x0010, 0x0040);
+    set_gdcm_file_from_metadata (gf, meta, 0x0010, 0x0040);
     /* SliceThickness */
     gf->InsertValEntry ("", 0x0018, 0x0050);
     /* SoftwareVersions */

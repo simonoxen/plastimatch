@@ -391,14 +391,16 @@ SET (PLASTIMATCH_LIBRARY_SRC
   xform_point.cxx xform_point.h 
   )
 
-if (ITK_FOUND AND NOT ITK_USE_SYSTEM_GDCM)
+if (ITK_FOUND AND GDCM_VERSION_1)
   set (PLASTIMATCH_LIBRARY_SRC
     ${PLASTIMATCH_LIBRARY_SRC}
     gdcm_dose.cxx gdcm_dose.h
     gdcm_file.cxx gdcm_file.h
+    gdcm1_rdd.cxx gdcm1_rdd.h 
     gdcm_rtss.cxx gdcm_rtss.h
     gdcm_series.cxx gdcm_series.h
     gdcm_series_helper_2.cxx gdcm_series_helper_2.h
+    gdcm1_util.cxx gdcm1_util.h
     )
 endif ()
 
