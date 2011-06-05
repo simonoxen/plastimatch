@@ -54,8 +54,19 @@ public:
   typedef typename Superclass::ParametersType ParametersType;
   typedef typename Superclass::MeasureType MeasureType;
   typedef typename Superclass::DerivativeType DerivativeType;
+#ifdef ITK_USE_OPTIMIZED_REGISTRATION_METHODS
+  typedef typename Superclass::FixedImageMaskConstPointer FixedImageMaskPointer;
+  typedef typename Superclass::MovingImageMaskConstPointer MovingImageMaskPointer;
+#else
+#ifdef ITK_LEGACY_REMOVE
+  typedef typename Superclass::FixedImageMaskConstPointer FixedImageMaskPointer;
+  typedef typename Superclass::MovingImageMaskConstPointer MovingImageMaskPointer;
+#else
   typedef typename Superclass::FixedImageMaskPointer FixedImageMaskPointer;
   typedef typename Superclass::MovingImageMaskPointer MovingImageMaskPointer;
+#endif // ITK_LEGACY_REMOVE
+#endif // ITK_USE_OPTIMIZED_REGISTRATION_METHODS
+
 
   /** ImageDimension */
   itkStaticConstMacro(ImageDimension, unsigned int,
