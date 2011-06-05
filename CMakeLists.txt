@@ -679,10 +679,10 @@ if (NOT BUILD_AGAINST_SLICER3)
   endif ()
 
   install (FILES 
-    COPYRIGHT.TXT
     INSTALL.TXT
-    LICENSE.TXT
     README.TXT
+    src/plastimatch/COPYRIGHT.TXT
+    src/plastimatch/LICENSE.TXT
     DESTINATION ${DOC_DESTINATION}
   )
 endif ()
