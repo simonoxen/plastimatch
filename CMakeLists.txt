@@ -60,6 +60,7 @@ option (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
+option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_SLICER_HARDCODED_FILENAME 
   "Use hardcoded filename instead of tmpfile()" OFF)
 set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
@@ -266,7 +267,11 @@ if (PLM_BUILD_RTK)
   set (ITK_USE_FILE)
 endif ()
 find_package (SQLite)
-find_package (SSE)           # SSE Extensions for CPU
+if (NOT PLM_CONFIG_DISABLE_SSE2)
+  find_package (SSE)           # SSE Extensions for CPU
+else ()
+  set (SSE2_FOUND false)
+endif ()
 find_package (Subversion)
 find_package (wxWidgets)
 
