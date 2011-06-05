@@ -271,8 +271,8 @@ typename GradientDifferenceImageToImageMetric<TFixedImage, TMovingImage,
     typename Superclass::OutputPointType transformedPoint;
     FixedImageConstPointer fixedImage = this->m_FixedImage;
     TransformType const *transform = this->m_Transform;
-    typename Superclass::FixedImageMaskConstPointer fixedMask = this->m_FixedImageMask;
-    typename Superclass::MovingImageMaskConstPointer movingMask = this->m_MovingImageMask;
+    FixedImageMaskPointer fixedMask = this->m_FixedImageMask;
+    MovingImageMaskPointer movingMask = this->m_MovingImageMask;
     this->m_Interpolator->SetInputImage(this->m_MovingImage);
     while (!fit.IsAtEnd())
     {
