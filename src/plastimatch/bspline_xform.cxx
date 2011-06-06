@@ -80,7 +80,7 @@ bspline_xform_save (Bspline_xform* bxf, const char* filename)
 	for (i = 0; i < 3; i++) {
 	    for (j = 0; j < bxf->num_coeff / 3; j++) {
 		//fprintf (fp, "%6.3f\n", bxf->coeff[j*3 + i]);
-		fprintf (fp, "%f\n", bxf->coeff[j*3 + i]);
+		fprintf (fp, "%.20f\n", bxf->coeff[j*3 + i]);
 	    }
 	}
     }		

@@ -319,18 +319,19 @@ bspline_save_debug_state (
 	char buf[1024];
 
 	if (parms->metric == BMET_MI) {
-	    sprintf (buf, "%02d_grad_mi_%02d.txt", 
-		parms->debug_stage, bst->it);
+	    sprintf (buf, "%02d_grad_mi_%03d_%03d.txt", 
+		parms->debug_stage, bst->it, bst->feval);
 	} else {
-	    sprintf (buf, "%02d_grad_mse_%02d.txt", 
-		parms->debug_stage, bst->it);
+	    sprintf (buf, "%02d_grad_mse_%03d_%03d.txt", 
+		parms->debug_stage, bst->it, bst->feval);
 	}
 	fn = parms->debug_dir + "/" + buf;
 	dump_gradient (bxf, &bst->ssd, fn.c_str());
 
-	sprintf (buf, "%02d_coeff_%02d.txt", parms->debug_stage, bst->it);
+	sprintf (buf, "%02d_coeff_%03d_%03d.txt", 
+	    parms->debug_stage, bst->it, bst->feval);
 	fn = parms->debug_dir + "/" + buf;
-	bspline_xform_dump_coeff (bxf, fn.c_str());
+	bspline_xform_save (bxf, fn.c_str());
 
 	if (parms->metric == BMET_MI) {
 	    sprintf (buf, "%02d_", parms->debug_stage);
