@@ -55,21 +55,15 @@ print_usage (void)
 }
 
 void
-bspline_opts_parse_args (BSPLINE_Options* options, int argc, char* argv[])
+bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 {
-    int d, i, rc;
+    int i, rc;
     Bspline_parms* parms = &options->parms;
 
 #if (CUDA_FOUND)
     LOAD_LIBRARY(libplmcuda);
     LOAD_SYMBOL(CUDA_listgpu, libplmcuda);
 #endif
-
-    memset (options, 0, sizeof (BSPLINE_Options));
-    for (d = 0; d < 3; d++) {
-	options->vox_per_rgn[d] = 15;
-    }
-    bspline_parms_set_default (parms);
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;

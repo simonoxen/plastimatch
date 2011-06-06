@@ -50,7 +50,7 @@ do_gpuit_bspline_stage_internal (
     volume_convert_to_float (fixed);		    /* Maybe not necessary? */
 
     /* Subsample images */
-    printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
+    logfile_printf ("SUBSAMPLE: (%d %d %d), (%d %d %d)\n", 
 	stage->fixed_subsample_rate[0], stage->fixed_subsample_rate[1], 
 	stage->fixed_subsample_rate[2], stage->moving_subsample_rate[0], 
 	stage->moving_subsample_rate[1], stage->moving_subsample_rate[2]
@@ -67,7 +67,6 @@ do_gpuit_bspline_stage_internal (
     moving_grad = volume_make_gradient (moving_ss);
 
     /* Initialize parms */
-    bspline_parms_set_default (&parms);
     if (stage->optim_type == OPTIMIZATION_STEEPEST) {
 	parms.optimization = BOPT_STEEPEST;
     } else if (stage->optim_type == OPTIMIZATION_LIBLBFGS) {
@@ -124,7 +123,7 @@ do_gpuit_bspline_stage_internal (
     parms.young_modulus = stage->young_modulus;
 
     /* Load and adjust landmarks, if needed */
-    if ( stage->fixed_landmarks_fn[0] && stage->moving_landmarks_fn[0] ) {
+    if (stage->fixed_landmarks_fn[0] && stage->moving_landmarks_fn[0]) {
 	parms.landmark_stiffness = stage->landmark_stiffness;
 	parms.landmarks = bspline_landmarks_load (
 	    stage->fixed_landmarks_fn, stage->moving_landmarks_fn);
@@ -142,6 +141,15 @@ do_gpuit_bspline_stage_internal (
 	fixed_ss->offset, fixed_ss->spacing, 
 	fixed_ss->direction_cosines);
     xform_to_gpuit_bsp (xf_out, xf_in, &pih, stage->grid_spac);
+
+    /* Set debugging directory */
+    if (stage->debug_dir != "") {
+	parms.debug = 1;
+	parms.debug_dir = stage->debug_dir;
+	parms.debug_stage = stage->stage_no;
+	logfile_printf ("Set debug directory to %s (%d)\n", 
+	    parms.debug_dir.c_str(), parms.debug_stage);
+    }
 
     /* Run bspline optimization */
     bspline_optimize (xf_out->get_gpuit_bsp(), 0, &parms, fixed_ss, 

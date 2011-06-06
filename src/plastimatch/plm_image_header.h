@@ -5,11 +5,11 @@
 #define _plm_image_header_h_
 
 #include "plm_config.h"
-#include "xform.h"
 #include "volume.h"
 #include "itk_image.h"
 #include "print_and_exit.h"
 
+class Bspline_xform;
 class Plm_image_header;
 class Plm_image;
 class Volume_header;

@@ -36,19 +36,8 @@ void
 check_grad_opts_parse_args (Check_grad_opts* options, 
     int argc, char* argv[])
 {
-    int d, i, rc;
+    int i, rc;
     Bspline_parms* parms = &options->parms;
-
-    /* Set default options */
-    memset (options, 0, sizeof (Check_grad_opts));
-    for (d = 0; d < 3; d++) {
-	options->vox_per_rgn[d] = 15;
-    }
-    bspline_parms_set_default (parms);
-    options->process = CHECK_GRAD_PROCESS_FWD;
-    options->step_size = 1e-4;
-    options->line_range[0] = 0;
-    options->line_range[1] = 30;
 
     for (i = 1; i < argc; i++) {
 	if (argv[i][0] != '-') break;

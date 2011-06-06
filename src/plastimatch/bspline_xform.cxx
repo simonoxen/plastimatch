@@ -183,12 +183,12 @@ bspline_xform_load (const char* filename)
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-bspline_xform_dump_coeff (Bspline_xform* bxf, char* fn)
+bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn)
 {
     int i;
     FILE* fp = fopen (fn,"wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-	fprintf (fp, "%f\n", bxf->coeff[i]);
+	fprintf (fp, "%20.20f\n", bxf->coeff[i]);
     }
     fclose (fp);
 }

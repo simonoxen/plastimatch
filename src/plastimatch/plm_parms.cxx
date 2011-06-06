@@ -5,6 +5,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <string.h>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include "itk_image.h"
@@ -452,6 +453,10 @@ set_key_val (
 	    goto error_exit;
 	}
     }
+    else if (!strcmp (key, "debug_dir")) {
+	if (section == 0) goto error_not_global;
+	stage->debug_dir = val;
+    }
     else {
 	goto error_exit;
     }
@@ -491,6 +496,7 @@ Registration_Parms::set_command_string (
 	    if (buf.find ("[GLOBAL]") != std::string::npos
 		|| buf.find ("[global]") != std::string::npos)
 	    {
+		printf ("Got global\n");
 		section = 0;
 		continue;
 	    }
@@ -507,6 +513,9 @@ Registration_Parms::set_command_string (
 		    this->stages[this->num_stages-1] = new Stage_parms(
 			*(this->stages[this->num_stages-2]));
 		}
+		this->stages[this->num_stages-1]->stage_no = this->num_stages;
+		printf (">> STAGE # %d\n", 
+		    this->stages[this->num_stages-1]->stage_no);
 		continue;
 	    }
 	    else if (buf.find ("[COMMENT]") != std::string::npos
@@ -541,6 +550,7 @@ Registration_Parms::set_command_string (
 }
 
 
+#if defined (commentout)
 int
 plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
 {
@@ -591,29 +601,16 @@ plm_parms_process_command_file (Registration_Parms *regp, FILE *fp)
     }
     return 0;
 }
+#endif
 
 int
 plm_parms_parse_command_file (Registration_Parms* regp, const char* options_fn)
 {
-    FILE* fp;
-    int rc;
+    /* Read file into string */
+    std::ifstream t (options_fn);
+    std::stringstream buffer;
+    buffer << t.rdbuf();
 
-    /* Open file */
-    fp = fopen (options_fn, "r");
-    if (!fp) {
-	printf ("Error: could not open file \"%s\" for read.\n", options_fn);
-	return -1;
-    }
-
-    /* Process it */
-    rc = plm_parms_process_command_file (regp, fp);
-    if (!rc) {
-	fclose (fp);
-	return rc;
-    }
-
-    /* Close file */
-    fclose (fp);
-    return 0;
+    /* Parse the string */
+    return regp->set_command_string (buffer.str());
 }
-

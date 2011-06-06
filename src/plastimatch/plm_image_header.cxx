@@ -7,6 +7,7 @@
 #include <time.h>
 #include "itkImageRegionIterator.h"
 
+#include "bspline_xform.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_header.h"

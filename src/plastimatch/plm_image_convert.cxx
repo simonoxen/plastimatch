@@ -2,7 +2,8 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-#include "itkImage.h"
+#include <itkImage.h>
+#include <itkImageRegionIterator.h>
 
 #include "itk_image.h"
 #include "plm_image.h"

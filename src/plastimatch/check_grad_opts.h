@@ -13,8 +13,8 @@
 #define CHECK_GRAD_PROCESS_LINE       4
 
 
-typedef struct check_grad_opts Check_grad_opts;
-struct check_grad_opts {
+class Check_grad_opts {
+public:
     char* fixed_fn;
     char* moving_fn;
     char* input_xf_fn;
@@ -28,6 +28,25 @@ struct check_grad_opts {
     int random;
     float random_range[2];
     Bspline_parms parms;
+public:
+    Check_grad_opts () {
+	fixed_fn = 0;
+	moving_fn = 0;
+	input_xf_fn = 0;
+	output_fn = 0;
+	factr = 0;
+	pgtol = 0;
+	step_size = 1e-4;
+	line_range[0] = 0;
+	line_range[1] = 30;
+	for (int d = 0; d < 3; d++) {
+	    vox_per_rgn[d] = 15;
+	}
+	process = CHECK_GRAD_PROCESS_FWD;
+	random = 0;
+	random_range[0] = 0;
+	random_range[1] = 0;
+    }
 };
 
 #if defined __cplusplus

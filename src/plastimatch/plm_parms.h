@@ -57,6 +57,8 @@ enum Subsampling_type {
 
 class Stage_parms {
 public:
+    /* Stage # */
+    int stage_no;
     /* Generic optimization parms */
     int xform_type;
     int optim_type;
@@ -109,12 +111,14 @@ public:
     int img_out_type;
     char img_out_fn[_MAX_PATH];
     bool xf_out_itk;
-    //char xf_out_fn[_MAX_PATH];
     std::list<std::string> xf_out_fn;
     char vf_out_fn[_MAX_PATH];
+    std::string debug_dir;
 
 public:
     Stage_parms () {
+	/* Stage # */
+	stage_no = -1;
 	/* Generic optimization parms */
 	xform_type = STAGE_TRANSFORM_VERSOR;
 	optim_type = OPTIMIZATION_VERSOR;
@@ -172,7 +176,6 @@ public:
 	img_out_type = IMG_OUT_TYPE_AUTO;
 	*img_out_fn = 0;
 	xf_out_itk = false;
-	//*xf_out_fn = 0;
 	*vf_out_fn = 0;
 
 	young_modulus = 0;
@@ -187,7 +190,6 @@ public:
 	*this = s;
 	img_out_fmt = IMG_OUT_FMT_AUTO;
 	*img_out_fn = 0;
-	//*xf_out_fn = 0;
 	xf_out_fn.clear ();
 	*vf_out_fn = 0;
     }
@@ -225,7 +227,6 @@ public:
 	*img_out_fn = 0;
 	*xf_in_fn = 0;
 	xf_out_itk = false;
-	//*xf_out_fn = 0;
 	*vf_out_fn = 0;
 	*log_fn = 0;
 	init_type = STAGE_TRANSFORM_NONE;

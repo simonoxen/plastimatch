@@ -11,6 +11,7 @@
 #include "itk_warp.h"
 #include "plm_image.h"
 #include "plm_image_header.h"
+#include "xform.h"
 
 #define BUFLEN 2048
 

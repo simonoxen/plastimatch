@@ -5,6 +5,7 @@
 #define _bspline_h_
 
 #include "plm_config.h"
+#include <string>
 #include "bspline_xform.h"
 #include "volume.h"
 
@@ -67,34 +68,80 @@ struct BSPLINE_MI_Hist_struct {
     double* j_hist;
 };
 
-typedef struct Bspline_parms_struct Bspline_parms;
-struct Bspline_parms_struct {
+class Bspline_parms
+{
+public:
     enum BsplineThreading threading;
     enum BsplineOptimization optimization;
     enum BsplineMetric metric;
+    char implementation;         /* Implementation ('a', 'b', etc.) */
     int max_its;                 /* Max iterations (line searches) */
     int max_feval;               /* Max function evaluations */
     int debug;                   /* Create grad & histogram files */
-    char implementation;         /* Implementation ('a', 'b', etc.) */
+    std::string debug_dir;       /* Directory where to create debug files */
+    int debug_stage;             /* Used to tag debug files by stage */
     int gpuid;                   /* Sets GPU to use for multi-gpu machines */
     int gpu_zcpy;                /* Use zero-copy when possible? */
     double convergence_tol;      /* When to stop iterations based on score */
-    int convergence_tol_its;     /* How many iterations to check for convergence tol */
+    int convergence_tol_its;     /* How many iterations to check for 
+				    convergence tol */
     BSPLINE_MI_Hist mi_hist;     /* Histogram for MI score */
-    void *data_on_gpu;           /* Pointer to structure encapsulating the data stored on the GPU */
-    void *data_from_gpu;         /* Pointer to structure that stores the data returned from the GPU */
+    void *data_on_gpu;           /* Pointer to structure encapsulating the 
+				    data stored on the GPU */
+    void *data_from_gpu;         /* Pointer to structure that stores the 
+				    data returned from the GPU */
     double lbfgsb_factr;         /* Function value tolerance for L-BFGS-B */
     double lbfgsb_pgtol;         /* Projected grad tolerance for L-BFGS-B */
 
     struct bspline_landmarks* landmarks;  /* The landmarks themselves */
-    float landmark_stiffness;    /* Attraction of landmarks (0 == no attraction) */
+    float landmark_stiffness;    /* Attraction of landmarks (0 == no 
+				    attraction) */
     char landmark_implementation; /*Landmark score implementation, 'a' or 'b' */
 
-    float young_modulus;  /* Penalty for having large gradient of the vector field */
-    float rbf_radius;   /* Radius of RBF; if rbf_radius>0, RBF are used */
-	float rbf_young_modulus; /* Penalty for the large 2nd derivative of RBF vector field */
-
+    float young_modulus;         /* Penalty for having large gradient 
+				    of the vector field */
+    float rbf_radius;            /* Radius of RBF; if rbf_radius>0, RBF 
+				    are used */
+    float rbf_young_modulus;     /* Penalty for the large 2nd derivative 
+				    of RBF vector field */
     char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
+public:
+    Bspline_parms () {
+	this->threading = BTHR_CPU;
+	this->optimization = BOPT_LBFGSB;
+	this->metric = BMET_MSE;
+	this->implementation = '\0';
+	this->max_its = 10;
+	this->max_feval = 10;
+	this->debug = 0;
+	this->debug_dir = "";
+	this->debug_stage = 0;
+	this->gpuid = 0;
+	this->gpu_zcpy = 0;
+	this->convergence_tol = 0.1;
+	this->convergence_tol_its = 4;
+	this->mi_hist.f_hist = 0;
+	this->mi_hist.m_hist = 0;
+	this->mi_hist.j_hist = 0;
+	this->mi_hist.fixed.bins = 20;
+	this->mi_hist.moving.bins = 20;
+	this->mi_hist.joint.bins 
+	    = this->mi_hist.fixed.bins * this->mi_hist.moving.bins;
+	this->mi_hist.fixed.big_bin = 0;
+	this->mi_hist.moving.big_bin = 0;
+	this->mi_hist.joint.big_bin = 0;
+	this->data_on_gpu = 0;
+	this->data_from_gpu = 0;
+	this->lbfgsb_factr = 1.0e+7;
+	this->lbfgsb_pgtol = 1.0e-5;
+	this->landmarks = 0;
+	this->landmark_stiffness = 0;
+	this->landmark_implementation = 'a';
+	this->young_modulus = 0;
+	this->rbf_radius = 0;
+	this->rbf_young_modulus = 0;
+	this->xpm_hist_dump = 0;
+    }
 };
 
 /* -----------------------------------------------------------------------
@@ -103,8 +150,6 @@ struct Bspline_parms_struct {
 #if defined __cplusplus
 extern "C" {
 #endif
-gpuit_EXPORT
-void bspline_parms_set_default (Bspline_parms* parms);
 
 gpuit_EXPORT
 Bspline_state *

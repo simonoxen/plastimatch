@@ -92,7 +92,7 @@ bspline_set_coefficients (Bspline_xform* bxf, float val);
 /* Debugging routines */
 gpuit_EXPORT
 void
-bspline_xform_dump_coeff (Bspline_xform* bxf, char* fn);
+bspline_xform_dump_coeff (Bspline_xform* bxf, const char* fn);
 
 gpuit_EXPORT
 void

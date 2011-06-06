@@ -31,7 +31,11 @@
    Initialization and teardown
    ----------------------------------------------------------------------- */
 static void
-bspline_initialize_mi_bigbin (double* hist, BSPLINE_MI_Hist_Parms* hparms, Volume* vol)
+bspline_initialize_mi_bigbin (
+    double* hist, 
+    BSPLINE_MI_Hist_Parms* hparms, 
+    Volume* vol
+)
 {
     int i, idx_bin;
     float* img = (float*) vol->img;
@@ -54,7 +58,6 @@ bspline_initialize_mi_bigbin (double* hist, BSPLINE_MI_Hist_Parms* hparms, Volum
         }
     }
 //    printf ("big_bin: %i\n", hparms->big_bin);
-    
 }
 
 static void
@@ -1440,7 +1443,8 @@ bspline_score_f_mi (Bspline_parms *parms,
  */
 #if (OPENMP_FOUND)
 void
-bspline_score_e_mi (Bspline_parms *parms, 
+bspline_score_e_mi (
+    Bspline_parms *parms, 
     Bspline_state *bst,
     Bspline_xform *bxf, 
     Volume *fixed, 
@@ -1464,7 +1468,7 @@ bspline_score_e_mi (Bspline_parms *parms,
     char debug_fn[1024];
     FILE* fp = 0;
     int i, j, zz;
-	omp_lock_t *f_locks, *m_locks, *j_locks;
+    omp_lock_t *f_locks, *m_locks, *j_locks;
 
     int num_tiles = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
 
@@ -1577,8 +1581,8 @@ bspline_score_e_mi (Bspline_parms *parms,
                     /* Add to histogram */
 
                     bspline_mi_hist_add_pvi_8_omp (mi_hist, fixed, moving, 
-                                                   fv, mvf, li_1, li_2,
-                                                   f_locks, m_locks, j_locks);
+			fv, mvf, li_1, li_2,
+			f_locks, m_locks, j_locks);
 #if defined (commentout)
 #endif
                 }
@@ -1738,7 +1742,7 @@ bspline_score_e_mi (Bspline_parms *parms,
 
                     /* Update condensed tile sets */
                     bspline_update_sets (sets_x, sets_y, sets_z,
-                                         qidx, dc_dv, bxf);
+			qidx, dc_dv, bxf);
                 }
             }
         }   // tile
@@ -1747,14 +1751,14 @@ bspline_score_e_mi (Bspline_parms *parms,
          * Let's put each one in the proper slot within the control
          * point bin its belogs to */
         bspline_sort_sets (cond_x, cond_y, cond_z,
-                           sets_x, sets_y, sets_z,
-                           pidx, bxf);
+	    sets_x, sets_y, sets_z,
+	    pidx, bxf);
     }   // openmp
 
     /* Now we have a ton of bins and each bin's 64 slots are full.
      * Let's sum each bin's 64 slots.  The result with be dc_dp. */
     bspline_make_grad (cond_x, cond_y, cond_z,
-                       bxf, ssd);
+	bxf, ssd);
 
     free (cond_x);
     free (cond_y);
@@ -2126,71 +2130,70 @@ bspline_score_c_mi (Bspline_parms *parms,
 
     /* PASS 1 - Accumulate histogram */
     for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
-    p[2] = rijk[2] / bxf->vox_per_rgn[2];
-    q[2] = rijk[2] % bxf->vox_per_rgn[2];
-    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
-    for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
-        p[1] = rijk[1] / bxf->vox_per_rgn[1];
-        q[1] = rijk[1] % bxf->vox_per_rgn[1];
-        fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
-        for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
-            int rc;
-            p[0] = rijk[0] / bxf->vox_per_rgn[0];
-            q[0] = rijk[0] % bxf->vox_per_rgn[0];
-            fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+	p[2] = rijk[2] / bxf->vox_per_rgn[2];
+	q[2] = rijk[2] % bxf->vox_per_rgn[2];
+	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
+	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
+	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+		int rc;
+		p[0] = rijk[0] / bxf->vox_per_rgn[0];
+		q[0] = rijk[0] % bxf->vox_per_rgn[0];
+		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
-            /* Get B-spline deformation vector */
-            pidx = INDEX_OF (p, bxf->rdims);
-            qidx = INDEX_OF (q, bxf->vox_per_rgn);
-            bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+		/* Get B-spline deformation vector */
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
-            /* Find correspondence in moving image */
-            rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
-                dxyz, moving);
+		/* Find correspondence in moving image */
+		rc = bspline_find_correspondence (mxyz, mijk, fxyz, 
+		    dxyz, moving);
 
-            /* If voxel is not inside moving image */
-            if (!rc) continue;
+		/* If voxel is not inside moving image */
+		if (!rc) continue;
 
-	    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
-            /* Find linear index of fixed image voxel */
-            fv = INDEX_OF (fijk, fixed->dim);
+		/* Find linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, fixed->dim);
 
-            /* Find linear index of "corner voxel" in moving image */
-            mvf = INDEX_OF (mijk_f, moving->dim);
+		/* Find linear index of "corner voxel" in moving image */
+		mvf = INDEX_OF (mijk_f, moving->dim);
 
-            /* Compute moving image intensity using linear interpolation */
-            /* Macro is slightly faster than function */
-            // NOTE: Not used by MI PVI8
-            LI_VALUE (m_val, 
-                li_1[0], li_2[0],
-                li_1[1], li_2[1],
-                li_1[2], li_2[2],
-                mvf, m_img, moving);
-
-#if defined (commentout)
-            /* LINEAR INTERPOLATION */
-            bspline_mi_hist_add (mi_hist, f_img[fv], m_val, 1.0);
-#endif
-
-            /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-            bspline_mi_hist_add_pvi_8 (mi_hist, fixed, moving, 
-                fv, mvf, li_1, li_2);
+		/* Compute moving image intensity using linear interpolation */
+		/* Macro is slightly faster than function */
+		// NOTE: Not used by MI PVI8
+		LI_VALUE (m_val, 
+		    li_1[0], li_2[0],
+		    li_1[1], li_2[1],
+		    li_1[2], li_2[2],
+		    mvf, m_img, moving);
 
 #if defined (commentout)
-            /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
-            bspline_mi_hist_add_pvi_6 (mi_hist, fixed, moving, 
-                fv, mvf, mijk);
+		/* LINEAR INTERPOLATION */
+		bspline_mi_hist_add (mi_hist, f_img[fv], m_val, 1.0);
 #endif
 
-            /* Compute intensity difference */
-            diff = m_val - f_img[fv];
-            mse_score += diff * diff;
-            num_vox ++;
-        }
-    }
-    }
+		/* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+		bspline_mi_hist_add_pvi_8 (mi_hist, fixed, moving, 
+		    fv, mvf, li_1, li_2);
 
+#if defined (commentout)
+		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+		bspline_mi_hist_add_pvi_6 (mi_hist, fixed, moving, 
+		    fv, mvf, mijk);
+#endif
+
+		/* Compute intensity difference */
+		diff = m_val - f_img[fv];
+		mse_score += diff * diff;
+		num_vox ++;
+	    }
+	}
+    }
 
     /* Draw histogram images if user wants them */
     if (parms->xpm_hist_dump) {
@@ -2222,57 +2225,57 @@ bspline_score_c_mi (Bspline_parms *parms,
 
     /* PASS 2 - Compute gradient */
     for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
-    p[2] = rijk[2] / bxf->vox_per_rgn[2];
-    q[2] = rijk[2] % bxf->vox_per_rgn[2];
-    fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
-    for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
-        p[1] = rijk[1] / bxf->vox_per_rgn[1];
-        q[1] = rijk[1] % bxf->vox_per_rgn[1];
-        fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
-        for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
-            int rc;
+	p[2] = rijk[2] / bxf->vox_per_rgn[2];
+	q[2] = rijk[2] % bxf->vox_per_rgn[2];
+	fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
+	for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+	    p[1] = rijk[1] / bxf->vox_per_rgn[1];
+	    q[1] = rijk[1] % bxf->vox_per_rgn[1];
+	    fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
+	    for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+		int rc;
 
-            p[0] = rijk[0] / bxf->vox_per_rgn[0];
-            q[0] = rijk[0] % bxf->vox_per_rgn[0];
-            fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
+		p[0] = rijk[0] / bxf->vox_per_rgn[0];
+		q[0] = rijk[0] % bxf->vox_per_rgn[0];
+		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
-            /* Get B-spline deformation vector */
-            pidx = INDEX_OF (p, bxf->rdims);
-            qidx = INDEX_OF (q, bxf->vox_per_rgn);
-            bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
+		/* Get B-spline deformation vector */
+		pidx = INDEX_OF (p, bxf->rdims);
+		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
-            /* Find linear index of fixed image voxel */
-            fv = INDEX_OF (fijk, fixed->dim);
+		/* Find linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, fixed->dim);
 
-            /* Find correspondence in moving image */
-            rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
+		/* Find correspondence in moving image */
+		rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
 
-            /* If voxel is not inside moving image */
-            if (!rc) continue;
+		/* If voxel is not inside moving image */
+		if (!rc) continue;
 
-            /* LINEAR INTERPOLATION - (not implemented) */
+		/* LINEAR INTERPOLATION - (not implemented) */
 
-            /* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
-	    li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
+		/* PARTIAL VALUE INTERPOLATION - 8 neighborhood */
+		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
-            /* Find linear index of fixed image voxel */
-            fv = INDEX_OF (fijk, fixed->dim);
+		/* Find linear index of fixed image voxel */
+		fv = INDEX_OF (fijk, fixed->dim);
 
-            /* Find linear index of "corner voxel" in moving image */
-            mvf = INDEX_OF (mijk_f, moving->dim);
+		/* Find linear index of "corner voxel" in moving image */
+		mvf = INDEX_OF (mijk_f, moving->dim);
 
-            bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
-                fv, mvf, mijk, num_vox_f, li_1, li_2);
+		bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+		    fv, mvf, mijk, num_vox_f, li_1, li_2);
 
 #if defined (commentout)
-            /* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
-            bspline_mi_pvi_6_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
-                fv, mvf, mijk, num_vox_f);
+		/* PARTIAL VALUE INTERPOLATION - 6 neighborhood */
+		bspline_mi_pvi_6_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
+		    fv, mvf, mijk, num_vox_f);
 #endif
 
-            bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
-        }
-    }
+		bspline_update_grad_b (bst, bxf, pidx, qidx, dc_dv);
+	    }
+	}
     }
 
     if (parms->debug) {

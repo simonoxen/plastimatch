@@ -45,6 +45,7 @@
 #include "bspline_optimize_lbfgsb.h"
 #include "bspline_opts.h"
 #include "delayload.h"
+#include "file_util.h"
 #include "interpolate.h"
 #include "logfile.h"
 #include "math_util.h"
@@ -59,39 +60,6 @@
 /* -----------------------------------------------------------------------
    Initialization and teardown
    ----------------------------------------------------------------------- */
-void
-bspline_parms_set_default (Bspline_parms* parms)
-{
-    memset (parms, 0, sizeof(Bspline_parms));
-    parms->threading = BTHR_CPU;
-    parms->optimization = BOPT_LBFGSB;
-    parms->metric = BMET_MSE;
-    parms->implementation = '\0';
-    parms->max_its = 10;
-    parms->max_feval = 10;
-    parms->convergence_tol = 0.1;
-    parms->convergence_tol_its = 4;
-    parms->debug = 0;
-    parms->lbfgsb_factr = 1.0e+7;
-    parms->lbfgsb_pgtol = 1.0e-5;
-
-    parms->mi_hist.f_hist = 0;
-    parms->mi_hist.m_hist = 0;
-    parms->mi_hist.j_hist = 0;
-
-    parms->mi_hist.fixed.bins = 20;
-    parms->mi_hist.moving.bins = 20;
-    parms->mi_hist.joint.bins = parms->mi_hist.fixed.bins
-	* parms->mi_hist.moving.bins;
-
-    parms->mi_hist.fixed.big_bin = 0;
-    parms->mi_hist.moving.big_bin = 0;
-    parms->mi_hist.joint.big_bin = 0;
-
-    parms->gpuid = 0;
-    parms->gpu_zcpy = 0;
-}
-
 static void
 bspline_cuda_state_create (
     Bspline_state *bst,           /* Modified in routine */
@@ -203,8 +171,6 @@ int* calc_offsets(int* tile_dims, int* cdims)
 
     return output;
 }
-////////////////////////////////////////////////////////////////////////////////
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // FUNCTION: find_knots()
@@ -258,52 +224,60 @@ void find_knots(int* knots, int tile_num, int* rdims, int* cdims)
 	    }
 
 }
-////////////////////////////////////////////////////////////////////////////////
-
-
 
 /* -----------------------------------------------------------------------
    Debugging routines
    ----------------------------------------------------------------------- */
 void
-dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, char* fn)
+dump_gradient (Bspline_xform* bxf, BSPLINE_Score* ssd, const char* fn)
 {
     int i;
-    FILE* fp = fopen (fn,"wb");
+    FILE* fp;
+
+    make_directory_recursive (fn);
+    fp = fopen (fn, "wb");
     for (i = 0; i < bxf->num_coeff; i++) {
-	fprintf (fp, "%f\n", ssd->grad[i]);
+	fprintf (fp, "%20.20f\n", ssd->grad[i]);
     }
     fclose (fp);
 }
 
 void
-dump_hist (BSPLINE_MI_Hist* mi_hist, int it)
+dump_hist (BSPLINE_MI_Hist* mi_hist, int it, const std::string& prefix)
 {
     double* f_hist = mi_hist->f_hist;
     double* m_hist = mi_hist->m_hist;
     double* j_hist = mi_hist->j_hist;
     int i, j, v;
     FILE *fp;
-    char fn[_MAX_PATH];
+    //char fn[_MAX_PATH];
+    std::string fn;
+    char buf[_MAX_PATH];
 
-    sprintf (fn, "hist_fix_%02d.csv", it);
-    fp = fopen (fn, "wb");
+    sprintf (buf, "hist_fix_%02d.csv", it);
+    fn = prefix + buf;
+    make_directory_recursive (fn.c_str());
+    fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->fixed.bins; i++) {
 	fprintf (fp, "%d %f\n", i, f_hist[i]);
     }
     fclose (fp);
 
-    sprintf (fn, "hist_mov_%02d.csv", it);
-    fp = fopen (fn, "wb");
+    sprintf (buf, "hist_mov_%02d.csv", it);
+    fn = prefix + buf;
+    make_directory_recursive (fn.c_str());
+    fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0; i < mi_hist->moving.bins; i++) {
 	fprintf (fp, "%d %f\n", i, m_hist[i]);
     }
     fclose (fp);
 
-    sprintf (fn, "hist_jnt_%02d.csv", it);
-    fp = fopen (fn, "wb");
+    sprintf (buf, "hist_jnt_%02d.csv", it);
+    fn = prefix + buf;
+    make_directory_recursive (fn.c_str());
+    fp = fopen (fn.c_str(), "wb");
     if (!fp) return;
     for (i = 0, v = 0; i < mi_hist->fixed.bins; i++) {
 	for (j = 0; j < mi_hist->moving.bins; j++, v++) {
@@ -337,24 +311,31 @@ void
 bspline_save_debug_state (
     Bspline_parms *parms, 
     Bspline_state *bst, 
-    Bspline_xform* bxf
+    Bspline_xform *bxf
 )
 {
-    char fn[1024];
-
     if (parms->debug) {
+	std::string fn;
+	char buf[1024];
+
 	if (parms->metric == BMET_MI) {
-	    sprintf (fn, "grad_mi_%02d.txt", bst->it);
+	    sprintf (buf, "%02d_grad_mi_%02d.txt", 
+		parms->debug_stage, bst->it);
 	} else {
-	    sprintf (fn, "grad_mse_%02d.txt", bst->it);
+	    sprintf (buf, "%02d_grad_mse_%02d.txt", 
+		parms->debug_stage, bst->it);
 	}
-	dump_gradient (bxf, &bst->ssd, fn);
+	fn = parms->debug_dir + "/" + buf;
+	dump_gradient (bxf, &bst->ssd, fn.c_str());
 
-	sprintf (fn, "coeff_%02d.txt", bst->it);
-	bspline_xform_dump_coeff (bxf, fn);
+	sprintf (buf, "%02d_coeff_%02d.txt", parms->debug_stage, bst->it);
+	fn = parms->debug_dir + "/" + buf;
+	bspline_xform_dump_coeff (bxf, fn.c_str());
 
 	if (parms->metric == BMET_MI) {
-	    dump_hist (&parms->mi_hist, bst->it);
+	    sprintf (buf, "%02d_", parms->debug_stage);
+	    fn = parms->debug_dir + "/" + buf;
+	    dump_hist (&parms->mi_hist, bst->it, fn);
 	}
     }
 }

@@ -26,13 +26,12 @@
 #include "volume.h"
 #include "xpm.h"
 
-
 /*
  * This is a simple gradient plotter based on
  * steepest_trust()
 */
 void
-bspline_optimize_steepest_trace(
+bspline_optimize_steepest_trace (
     Bspline_xform *bxf, 
     Bspline_state *bst, 
     Bspline_parms *parms, 
@@ -81,8 +80,6 @@ bspline_optimize_steepest_trace(
     bst->feval = 0;
     success = 0;
     memcpy (x, bxf->coeff, bxf->num_coeff * sizeof(float));
-
-
 
     /* Get score and gradient */
     bspline_score (parms, bst, bxf, fixed, moving, moving_grad);
@@ -254,8 +251,8 @@ bspline_optimize_steepest_trust (
 #ifdef DOUBLE_HISTS
     if (parms->metric == BMET_MI)
     {
-	    alpha = 1.0f;
-	    printf ("Using alpha_0 (%f)\n", alpha);
+	alpha = 1.0f;
+	printf ("Using alpha_0 (%f)\n", alpha);
     }
 #endif
 
@@ -286,6 +283,7 @@ bspline_optimize_steepest_trust (
 
     /* Give a little feedback to the user */
     bspline_display_coeff_stats (bxf);
+
     /* Save some debugging information */
     bspline_save_debug_state (parms, bst, bxf);
     if (parms->debug) {

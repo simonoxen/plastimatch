@@ -9,6 +9,8 @@
 #include "plm_image_header.h"
 #include "pointset.h"
 
+class Xform;
+
 class plastimatch1_EXPORT Landmark_warp
 {
 public:
