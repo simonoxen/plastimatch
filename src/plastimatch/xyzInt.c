@@ -1,12 +1,15 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+int MMultip(int r1, int c1, float **M1, int r2, int c2, float **M2, float **P);
+float getv(float **S);
+int printM(int r, int c, float **A);
+
 // function to calculate the individual integration of the 4-by-4 matrices of vx, vy, vz
 
 
 int main(void)
 {
-	float	getv();  /* function prototype  */
 	float	B[4][4]={
 					{1.0/6.0,-1.0/2.0,1.0/2.0,-1.0/6.0},
 					{2.0/3.0,0.0,-1.0,1.0/2.0},
