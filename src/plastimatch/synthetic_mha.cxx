@@ -15,16 +15,18 @@
 
 float intens_enclosed(FloatPoint3DType phys)
 {
-    float f;		
+    float f;
+	float f1, f2;
     float p[56]={ 5,5,5,  95,10,95, 1,
 		  5,90,5, 95,95,95, 1,
 		  5,5,5,  10,95,95, 1,
 		  90,5,5, 95,95,95, 1,
 		  5,5,5,  95,95,10, 1,
 		  5,5,90, 95,95,95, 1, 
-		  35,35,35, 70,70, 70, 0.4,
-		  20,20,20, 80,25,30, 0.4
+		  35,35,35, 70,70, 70, f1,
+		  20,20,20, 80,25,30, f2
     };
+	
 
     for(int i=0;i<7*8;i++) 
     { if ( (i%7)!=6 )
@@ -39,6 +41,8 @@ float intens_enclosed(FloatPoint3DType phys)
 	{ f = p[6+7*i]; } 
     return f;
 }
+
+
 
 void
 synthetic_mha (

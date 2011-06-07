@@ -35,29 +35,29 @@
     <integer-vector>
       <name>plmslc_dim</name>
       <label>Dimensions</label>
-      <default>30</default>
+      <default>200</default>
       <longflag>--dim</longflag>
       <description>This is the resolution of the image in voxels.  Use a single number (such as "30") when the x, y, and z dimensions are teh same, or three numbers (such as "512,512,120") when they are different.</description>
     </integer-vector>
     <float-vector>
       <name>plmslc_origin</name>
       <label>Origin</label>
-      <default>-145</default>
+      <default>-100</default>
       <longflag>--origin</longflag>
       <description>This is the location of the center of the first voxel in the image.  Use a single number (such as "-145") when the x, y, and z origin values are the same, or three numbers (such as "-250,-250,-100") when they are different.</description>
     </float-vector>
     <float-vector>
       <name>plmslc_spacing</name>
       <label>Voxel spacing</label>
-      <default>10</default>
+      <default>1</default>
       <longflag>--spacing</longflag>
       <description>This is the distance between voxels in mm.  Use a single number (such as "10") when the x, y, and z voxel spacings are the same, or three numbers (such as "1,1,2.5") when they are different.</description>
     </float-vector>
   </parameters>
 
   <parameters>
-    <label>Image pattern options</label>
-    <description>Options that control what kind of images are generated</description>
+    <label>Simple pattern options</label>
+    <description>Options that control what kind of simple geometric paterns are generated</description>
     <string-enumeration>
       <name>plmslc_pattern</name>
       <longflag>--pattern</longflag>
@@ -67,8 +67,7 @@
       <element>Rectangle</element>
       <element>Sphere</element>
       <element>Gauss</element>
-      <element>Enclosed rectangle</element>
-    </string-enumeration>
+    </string-enumeration>  
     <float>
       <name>plmslc_background</name>
       <longflag>--background</longflag>
@@ -125,5 +124,31 @@
       <label>Translate volume 2</label>
       <default>10</default>
     </float-vector>
+  </parameters>
+  
+  <parameters>
+    <label>Enclosed pattern options</label>
+    <description>Options that control enclosed geometry</description>
+    <boolean>
+      <name>create_enclosed</name>
+      <label>Cteate Enclosed Geometry?</label>
+      <default>false</default>
+      <longflag>--createenclosed</longflag>
+      <description>Check this box if you want to create enclosed geometry</description>
+    </boolean>
+    <float>
+      <name>plmslc_intensity1</name>
+      <longflag>--intensity1</longflag>
+      <description>Choose the intensity for structure 1</description>
+      <label>Intensity Structure 1</label>
+      <default>0.4</default>
+    </float>
+    <float>
+      <name>plmslc_intensity2</name>
+      <longflag>--intensity2</longflag>
+      <description>Choose the intensity for structure 2</description>
+      <label>Intensity Structure 2</label>
+      <default>0.4</default>
+    </float>
   </parameters>
 </executable>

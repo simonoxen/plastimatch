@@ -50,10 +50,17 @@ main (int argc, char * argv [])
 	sm_parms.pattern = PATTERN_RECT;
     } else if (plmslc_pattern == "Sphere") {
 	sm_parms.pattern = PATTERN_SPHERE;
-    } else if (plmslc_pattern == "Enclosed rectangle") {
+    } 
+	//if (plmslc_pattern_en == "Enclosed rectangle") {
+	
+	if (create_enclosed){
 	sm_parms.pattern = PATTERN_ENCLOSED_RECT;
     }
-    sm_parms.foreground = plmslc_foreground;
+    
+	sm_parms.f1 = plmslc_intensity1;
+	sm_parms.f2 = plmslc_intensity2;
+
+	sm_parms.foreground = plmslc_foreground;
     sm_parms.background = plmslc_background;
 
     /* Gauss options */
@@ -120,6 +127,11 @@ main (int argc, char * argv [])
 	sm_parms.sphere_radius[1] = plmslc_spheresize[0];
 	sm_parms.sphere_radius[2] = plmslc_spheresize[0];
     }
+
+	/*Enclosed structures options*/
+	
+
+
 
     /* Create Volume 1 */
     if (plmslc_output_one != "" && plmslc_output_one != "None") {

@@ -33,6 +33,7 @@ public:
     float rect_size[6];
     float sphere_center[3];
     float sphere_radius[3];
+	float f1,f2;
 
     bool m_want_ss_img;
     bool m_want_dose_img;
