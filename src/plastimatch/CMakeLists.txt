@@ -117,6 +117,7 @@ SET (GPUIT_LIBRARY_SRC
   bspline_warp.cxx bspline_warp.h
   bspline_xform.cxx bspline_xform.h
   delayload.c delayload.h
+  reg.cxx reg.h
   demons.cxx demons.h
   demons_cpu.cxx
   demons_misc.cxx demons_misc.h
@@ -424,6 +425,10 @@ SET (BSPLINE_SRC
 SET (CHECK_GRAD_SRC
   check_grad.cxx
   check_grad_opts.cxx check_grad_opts.h 
+  )
+SET (REG_SRC
+  reg_main.cxx
+  reg_opts.cxx reg_opts.h 
   )
 SET (COMPUTE_DISTANCE_SRC
   compute_distance.cxx compute_distance.h
@@ -771,6 +776,8 @@ PLM_ADD_EXECUTABLE (dlib_train "${DLIB_TRAIN_SRC}" "${GPUIT_LIBRARIES}"
   "${PLMCUDA_EXE_LDFLAGS}" 1)
 PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 1)
+PLM_ADD_EXECUTABLE (reg "${REG_SRC}" "${GPUIT_LIBRARIES}" 
+  "${GPUIT_EXE_LDFLAGS}" 0)
 PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 1)
 PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "" 1)
