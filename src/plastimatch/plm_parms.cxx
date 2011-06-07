@@ -496,7 +496,6 @@ Registration_Parms::set_command_string (
 	    if (buf.find ("[GLOBAL]") != std::string::npos
 		|| buf.find ("[global]") != std::string::npos)
 	    {
-		printf ("Got global\n");
 		section = 0;
 		continue;
 	    }
@@ -514,8 +513,6 @@ Registration_Parms::set_command_string (
 			*(this->stages[this->num_stages-2]));
 		}
 		this->stages[this->num_stages-1]->stage_no = this->num_stages;
-		printf (">> STAGE # %d\n", 
-		    this->stages[this->num_stages-1]->stage_no);
 		continue;
 	    }
 	    else if (buf.find ("[COMMENT]") != std::string::npos

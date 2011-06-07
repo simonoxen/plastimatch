@@ -361,7 +361,8 @@ set_optimization_lbfgsb (RegistrationType::Pointer registration,
     /* GCS FIX: I think this is right for # of evaluations.  Not at all sure 
        about # of corrections or cost fn convergence factor. */
     optimizer->SetCostFunctionConvergenceFactor (1e+7);
-    optimizer->SetProjectedGradientTolerance (stage->grad_tol);
+    //optimizer->SetProjectedGradientTolerance (stage->grad_tol);
+    optimizer->SetProjectedGradientTolerance (0.1 * stage->grad_tol);
     optimizer->SetMaximumNumberOfIterations (stage->max_its);
     optimizer->SetMaximumNumberOfEvaluations (2 * stage->max_its);
     optimizer->SetMaximumNumberOfCorrections (5);

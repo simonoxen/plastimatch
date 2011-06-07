@@ -11,15 +11,13 @@
 #include "itkHistogramMatchingImageFilter.h"
 #include "itkIdentityTransform.h"
 #include "itkImage.h"
-#include "itkImageFileWriter.h"
 #include "itkDemonsRegistrationFilter.h"
 #include "itkLinearInterpolateImageFunction.h"
-#include "itkResampleImageFilter.h"
-#include "itkWarpImageFilter.h"
 
-#include "getopt.h"
 #include "itk_image.h"
+#include "logfile.h"
 #include "plm_parms.h"
+#include "plm_timer.h"
 #include "resample_mha.h"
 #include "xform.h"
 
@@ -35,8 +33,17 @@ public:
     typedef itk::Command Superclass;
     typedef itk::SmartPointer<Demons_Observer> Pointer;
     itkNewMacro (Demons_Observer);
+
+public:
+    Timer timer;
+    int m_feval;
+
 protected:
-    Demons_Observer() {};
+    Demons_Observer() {
+	plm_timer_start (&timer);
+	m_feval = 0;
+    };
+
 public:
     void Execute(itk::Object *caller, const itk::EventObject & event)
     {
@@ -47,10 +54,18 @@ public:
     {
 	const DemonsFilterType * filter =
 	    dynamic_cast< const DemonsFilterType* >(object);
-	if (typeid(event) != typeid(itk::IterationEvent)) {
-	    return;
+	double val = filter->GetMetric();
+	double duration = plm_timer_report (&timer);
+	if (typeid(event) == typeid(itk::IterationEvent)) {
+	    logfile_printf ("MSE [%4d] %9.3f [%6.3f secs]\n", 
+		m_feval, val, duration);
+	    plm_timer_start (&timer);
+	    m_feval++;
 	}
-	std::cout << filter->GetMetric() << std::endl;
+	else {
+	    std::cout << "Unknown event type." << std::endl;
+	    event.Print(std::cout);
+	}
     }
 };
 

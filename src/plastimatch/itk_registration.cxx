@@ -29,6 +29,7 @@
 #include "itk_image.h"
 #include "itk_optim.h"
 #include "itk_warp.h"
+#include "logfile.h"
 #include "plm_image_header.h"
 #include "plm_int.h"
 #include "plm_parms.h"
@@ -60,17 +61,21 @@ public:
     typedef itk::Command Superclass;
     typedef itk::SmartPointer < Self > Pointer;
     itkNewMacro(Self);
+
+public:
+    Stage_parms* m_stage;
+    RegistrationType::Pointer m_registration;
+    double last_value;
+    int m_feval;
+    Timer timer;
+
 protected:
     Optimization_Observer() {
 	m_stage = 0;
 	plm_timer_start (&timer);
     };
-public:
-    Stage_parms* m_stage;
-    RegistrationType::Pointer m_registration;
-    double last_value;
-    Timer timer;
 
+public:
     void Set_Stage_parms (RegistrationType::Pointer registration,
 	Stage_parms* stage) {
 	m_registration = registration;
@@ -86,6 +91,7 @@ public:
     Execute (const itk::Object * object, const itk::EventObject & event)
     {
 	if (typeid(event) == typeid(itk::StartEvent)) {
+	    m_feval = 0;
 	    last_value = -1.0;
 	    std::cout << "StartEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
@@ -117,23 +123,21 @@ public:
 	else if (typeid(event) 
 	    == typeid(itk::FunctionAndGradientEvaluationIterationEvent))
 	{
-	    double duration;
-	    
-	    std::cout << "VAL+GRAD ";
+	    int it = optimizer_get_current_iteration(m_registration, m_stage);
 	    double val = optimizer_get_value(m_registration, m_stage);
+	    double duration = plm_timer_report (&timer);
 
-	    duration = plm_timer_report (&timer);
-	    printf ("%6.3f [%6.3f secs]", val, duration);
-	    std::cout << std::endl;
+	    logfile_printf ("MSE [%2d,%3d] %9.3f [%6.3f secs]\n", 
+		it, m_feval, val, duration);
 	    plm_timer_start (&timer);
+	    m_feval++;
 	}
 	else if (typeid(event) == typeid(itk::IterationEvent)) {
-	    std::cout << "IterationEvent: ";
 	    int it = optimizer_get_current_iteration(m_registration, m_stage);
 	    double val = optimizer_get_value(m_registration, m_stage);
 	    double ss = optimizer_get_step_length(m_registration, m_stage);
 	    
-	    printf ("%3d %10.2f %5.2f ", it, val, ss);
+	    printf ("              SS %5.2f ", ss);
 
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
 		std::cout << optimizer_get_current_position (
@@ -148,11 +152,14 @@ public:
 		       seem to always stop rsg. */
 
 		    if (m_stage->optim_type == OPTIMIZATION_RSG) {
-			typedef itk::RegularStepGradientDescentOptimizer * OptimizerPointer;
-			OptimizerPointer optimizer = dynamic_cast< OptimizerPointer >(m_registration->GetOptimizer());
+			typedef itk::RegularStepGradientDescentOptimizer 
+			    * OptimizerPointer;
+			OptimizerPointer optimizer = dynamic_cast< 
+			    OptimizerPointer >(m_registration->GetOptimizer());
 			optimizer->StopOptimization();
 		    } else {
-			optimizer_set_max_iterations (m_registration, m_stage, 1);
+			optimizer_set_max_iterations (m_registration, 
+			    m_stage, 1);
 		    }
 		} else {
 		    printf (" %10.2f", diff);
@@ -164,7 +171,8 @@ public:
 	else if (typeid(event) == typeid(itk::ProgressEvent)) {
 	    std::cout << "ProgressEvent: ";
 	    if (m_stage->xform_type != STAGE_TRANSFORM_BSPLINE) {
-		std::cout << optimizer_get_current_position (m_registration, m_stage);
+		std::cout << optimizer_get_current_position (
+		    m_registration, m_stage);
 	    }
 	    std::cout << std::endl;
 	}
@@ -267,22 +275,24 @@ set_fixed_image_region_new_unfinished (
     FloatImageType::RegionType::IndexType valid_index;
     FloatImageType::RegionType::SizeType valid_size;
 
-    FloatImageType::ConstPointer fi = static_cast < FloatImageType::ConstPointer > (registration->GetFixedImage());
+    FloatImageType::ConstPointer fi = static_cast < 
+	FloatImageType::ConstPointer > (registration->GetFixedImage());
 
     for (int d = 0; d < 3; d++) {
-	float ori = regd->fixed_region_origin[d] + regd->fixed_region.GetIndex()[d] * regd->fixed_region_spacing[d];
+	float ori = regd->fixed_region_origin[d] 
+	    + regd->fixed_region.GetIndex()[d] * regd->fixed_region_spacing[d];
 	int idx = (int) floor (ori - (fi->GetOrigin()[d] 
-				      - 0.5 * fi->GetSpacing()[d]) 
-			       / fi->GetSpacing()[d]);
+		- 0.5 * fi->GetSpacing()[d]) 
+	    / fi->GetSpacing()[d]);
 	if (idx < 0) {
 	    fprintf (stderr, "set_fixed_image_region conversion error.\n");
 	    exit (-1);
 	}
 	float last_pix_center = ori + (regd->fixed_region.GetSize()[d]-1) 
-		* regd->fixed_region_spacing[d];
+	    * regd->fixed_region_spacing[d];
 	int siz = (int) floor (last_pix_center - (fi->GetOrigin()[d] 
-						  - 0.5 * fi->GetSpacing()[d]) 
-			       / fi->GetSpacing()[d]);
+		- 0.5 * fi->GetSpacing()[d]) 
+	    / fi->GetSpacing()[d]);
 	siz = siz - idx + 1;
 	valid_index[d] = idx;
 	valid_size[d] = siz;
@@ -312,10 +322,13 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 
 	/* Search for bounding box of fixed mask */
 	typedef Mask_SOType* Mask_SOPointer;
-	Mask_SOPointer so = (Mask_SOPointer) registration->GetMetric()->GetFixedImageMask();
+	Mask_SOPointer so = (Mask_SOPointer) 
+	    registration->GetMetric()->GetFixedImageMask();
 
-	typedef itk::ImageRegionConstIteratorWithIndex< UCharImageType > IteratorType;
-	UCharImageType::RegionType region = registration->GetFixedImage()->GetLargestPossibleRegion();
+	typedef itk::ImageRegionConstIteratorWithIndex < UCharImageType 
+	    > IteratorType;
+	UCharImageType::RegionType region 
+	    = registration->GetFixedImage()->GetLargestPossibleRegion();
 	IteratorType it (so->GetImage(), region);
 
 	int first = 1;
@@ -354,8 +367,10 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 	FloatImageType::RegionType::SizeType valid_size;
 
 	/* Search for bounding box of patient */
-	typedef itk::ImageRegionConstIteratorWithIndex<FloatImageType> IteratorType;
-	FloatImageType::RegionType region = registration->GetFixedImage()->GetLargestPossibleRegion();
+	typedef itk::ImageRegionConstIteratorWithIndex < FloatImageType
+	    > IteratorType;
+	FloatImageType::RegionType region 
+	    = registration->GetFixedImage()->GetLargestPossibleRegion();
 	IteratorType it (registration->GetFixedImage(), region);
 
 	int first = 1;
@@ -399,7 +414,8 @@ set_fixed_image_region (RegistrationType::Pointer registration,
 	valid_region.SetSize(valid_size);
 	registration->SetFixedImageRegion(valid_region);
     } else {
-	registration->SetFixedImageRegion(registration->GetFixedImage()->GetLargestPossibleRegion());
+	registration->SetFixedImageRegion (
+	    registration->GetFixedImage()->GetLargestPossibleRegion());
     }
 }
 
@@ -496,10 +512,6 @@ set_transform_bspline (
     /* GCS FIX: Need to set ROI from registration->GetFixedImageRegion(), */
     xform_to_itk_bsp (xf_out, xf_in, &pih, stage->grid_spac);
     registration->SetTransform (xf_out->get_itk_bsp());
-
-//    registration->SetInitialTransformParameters (
-//	xf_out->get_itk_bsp()->GetParameters());
-
 }
 
 void

@@ -51,7 +51,7 @@ demons_c (
     float *vf_est_img, *vf_smooth_img;
     int inliers;
     float ssd;
-    Timer timer;
+    Timer timer, it_timer;
 
     /* Allocate memory for vector fields */
     if (vf_init) {
@@ -99,6 +99,7 @@ demons_c (
     }
 
     plm_timer_start (&timer);
+    plm_timer_start (&it_timer);
 
     /* Main loop through iterations */
     for (it = 0; it < parms->max_its; it++) {
@@ -145,7 +146,6 @@ demons_c (
 		}
 	    }
 	}
-	printf ("----- SSD = %.01f (%d/%d)\n", ssd/inliers, inliers, fixed->npix);
 	//vf_print_stats (vf_est);
 
 	/* Smooth the estimate into vf_smooth.  The volumes are ping-ponged. */
@@ -153,6 +153,11 @@ demons_c (
 	vf_convolve_y (vf_est, vf_smooth, kery, fw[1]);
 	vf_convolve_z (vf_smooth, vf_est, kerz, fw[2]);
 	//vf_print_stats (vf_smooth);
+
+	double duration = plm_timer_report (&it_timer);
+	printf ("MSE [%4d] %.01f (%.03f) [%6.3f secs]\n", it, ssd/inliers, 
+	    ((float) inliers / fixed->npix), duration);
+	plm_timer_start (&it_timer);
     }
 
     free (kerx);
@@ -167,4 +172,3 @@ demons_c (
 
     return vf_smooth;
 }
-
