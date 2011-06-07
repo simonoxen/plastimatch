@@ -81,7 +81,7 @@ option (PLM_PREFER_SYSTEM_F2C
 
 # Installer Options
 option (PLM_INSTALL_RPATH 
-  "Add full RPATH to install" ON)
+  "Add full RPATH to install" OFF)
 option (PLM_INSTALL_LIBRARIES
   "Include static libraries in install" OFF)
 option (PLM_PACKAGE_32BIT 
@@ -589,6 +589,15 @@ configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_api_config.h.in
 
 configure_file (${CMAKE_CURRENT_SOURCE_DIR}/src/plastimatch/plm_fortran.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/plm_fortran.h)
+
+##-----------------------------------------------------------------------------
+##  Debian install excludes some items
+##-----------------------------------------------------------------------------
+if (BUILD_DEBIAN)
+  set (INSTALL_IF_NOT_DEBIAN 0)
+else ()
+  set (INSTALL_IF_NOT_DEBIAN 1)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Subdirectories
