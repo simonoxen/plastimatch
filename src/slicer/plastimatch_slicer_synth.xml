@@ -139,14 +139,14 @@
     <float>
       <name>plmslc_intensity1</name>
       <longflag>--intensity1</longflag>
-      <description>Choose the intensity for structure 1</description>
+      <description>Choose the intensity for structure 1 (a number from 0 to 1)</description>
       <label>Intensity Structure 1</label>
       <default>0.4</default>
     </float>
     <float>
       <name>plmslc_intensity2</name>
       <longflag>--intensity2</longflag>
-      <description>Choose the intensity for structure 2</description>
+      <description>Choose the intensity for structure 2 (a number from 0 to 1)</description>
       <label>Intensity Structure 2</label>
       <default>0.4</default>
     </float>

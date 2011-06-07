@@ -13,10 +13,10 @@
 #include "rtss.h"
 #include "synthetic_mha.h"
 
-float intens_enclosed(FloatPoint3DType phys)
+float intens_enclosed(FloatPoint3DType phys, float f1, float f2)
 {
     float f;
-	float f1, f2;
+//	float f1, f2;
     float p[56]={ 5,5,5,  95,10,95, 1,
 		  5,90,5, 95,95,95, 1,
 		  5,5,5,  10,95,95, 1,
@@ -147,7 +147,7 @@ synthetic_mha (
 	    }
 	    break;
 	case PATTERN_ENCLOSED_RECT:
-	    f = intens_enclosed(phys); // 0 to 1
+	    f = intens_enclosed(phys, parms->f1, parms->f2); // 0 to 1
 	    f = (1 - f) * parms->background + f * parms->foreground;
 	    break;
 	default:

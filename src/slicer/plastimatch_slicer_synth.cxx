@@ -51,7 +51,6 @@ main (int argc, char * argv [])
     } else if (plmslc_pattern == "Sphere") {
 	sm_parms.pattern = PATTERN_SPHERE;
     } 
-	//if (plmslc_pattern_en == "Enclosed rectangle") {
 	
 	if (create_enclosed){
 	sm_parms.pattern = PATTERN_ENCLOSED_RECT;
