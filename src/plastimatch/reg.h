@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "volume.h"
 
+gpuit_EXPORT
 float
 vf_regularize_numerical (Volume* vol);
 
