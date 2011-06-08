@@ -6,6 +6,11 @@
 
 #include "plm_config.h"
 #include "volume.h"
+#include "bspline_xform.h"
+
+gpuit_EXPORT
+void
+compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol);
 
 gpuit_EXPORT
 float
@@ -15,10 +20,12 @@ class Reg_parms
 {
 public:
     char implementation;    /* Implementation: a, b, c, etc */
+    bool analytic;          /* Use analytic gradient?       */
 public:
     Reg_parms () {
         /* Init */
         this->implementation = '\0';
+        this->analytic = false;
     }
 };
 

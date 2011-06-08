@@ -7,11 +7,70 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "bspline_xform.h"
 #include "volume.h"
 #include "reg.h"
 
 #define INDEX_OF(dim, i, j, k) \
     ((((k)*dim[1] + (j))*dim[0]) + (i))
+
+void
+compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
+{
+    int i,j,k;
+    int a,b,c,z;
+    int idx_poi, cidx, pidx, qidx;
+    float *vec_poi;
+    float *img = (float*) vol->img;
+
+    int p[3];
+    float q[3];
+    float* q_lut;
+    int* c_lut;
+
+    for (k = 0; k < vol->dim[2]; k++) {
+        p[2] = k / bxf->vox_per_rgn[2];
+        q[2] = k % bxf->vox_per_rgn[2];
+        for (j = 0; j < vol->dim[2]; j++) {
+            p[1] = j / bxf->vox_per_rgn[1];
+            q[1] = j % bxf->vox_per_rgn[1];
+            for (i = 0; i < vol->dim[2]; i++) {
+                p[0] = i / bxf->vox_per_rgn[0];
+                q[0] = i % bxf->vox_per_rgn[0];
+
+                pidx = INDEX_OF (p, bxf->rdims[0],
+                                    bxf->rdims[1],
+                                    bxf->rdims[2]);
+                qidx = INDEX_OF (q, bxf->vox_per_rgn[0],
+                                    bxf->vox_per_rgn[1],
+                                    bxf->vox_per_rgn[2]);
+
+                idx_poi = INDEX_OF (vol->dim, i, j, k);
+                vec_poi = &img[3*idx_poi];
+
+                q_lut = &bxf->q_lut[qidx*64];
+                c_lut = &bxf->c_lut[pidx*64];
+
+                z = 0;
+                for (c = 0; c < 4; c++) {
+                    for (b = 0; b < 4; b++) {
+                        for (a = 0; a < 4; a++) {
+                            cidx = 3 * c_lut[z];
+                            bxf->coeff[cidx+0] += vec_poi[0] * q_lut[z];
+                            bxf->coeff[cidx+1] += vec_poi[1] * q_lut[z];
+                            bxf->coeff[cidx+2] += vec_poi[2] * q_lut[z];
+                            z++;
+                        }
+                    }
+                }
+
+            } /* i < vol-dim[0] */
+        } /* j < vol->dim[1] */
+    } /* k < vol->dim[2] */
+}
+
+
+
 
 float
 vf_regularize_numerical (Volume* vol)

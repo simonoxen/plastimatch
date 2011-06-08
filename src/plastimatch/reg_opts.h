@@ -11,11 +11,17 @@ class Reg_options
 {
 public:
     char* input_vf_fn;
+    char* input_xf_fn;
     Reg_parms parms;
+    int vox_per_rgn[3];
 public:
     Reg_options () {
         /* Init */
         input_vf_fn = 0;
+        input_xf_fn = 0;
+    	for (int d = 0; d < 3; d++) {
+    	    vox_per_rgn[d] = 15;
+    	}
     }
 };
 
