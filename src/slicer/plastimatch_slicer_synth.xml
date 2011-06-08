@@ -153,16 +153,16 @@
     <float-vector>
       <name>plmslc_xlat_struct1</name>
       <longflag>--xlat_struct1</longflag>
-      <description>Translation of structure 1.  Use a single number (such as "20") for 1D translation in the x axis.  Use three numbers (such as "20,-5,10") for translation in x, y, and z axes.</description>
+      <description>Translation of structure 1. Use three numbers (such as "20,-5,10") for translation in x, y, and z axes.</description>
       <label>Translate Structure 1</label>
-      <default>10</default>
+      <default>10, 0, 0</default>
     </float-vector>
     <float-vector>
       <name>plmslc_xlat_struct2</name>
       <longflag>--xlat_struct2</longflag>
-      <description>Translation of structure 2.  Use a single number (such as "20") for 1D translation in the x axis.  Use three numbers (such as "20,-5,10") for translation in x, y, and z axes.</description>
+      <description>Translation of structure 2. Use three numbers (such as "20,-5,10") for translation in x, y, and z axes.</description>
       <label>Translate Structure 2</label>
-      <default>10</default>
+      <default>10, 0, 0 </default>
     </float-vector>  
     </parameters>
 </executable>
