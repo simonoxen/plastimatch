@@ -77,6 +77,10 @@ main (int argc, char* argv[])
     memset (roi_offset, 0, 3*sizeof(int));
     if (options.input_xf_fn) {
 	bxf = bspline_xform_load (options.input_xf_fn);
+    if (!bxf) {
+        fprintf (stderr, "Failed to load %s\n", options.input_xf_fn);
+        exit (-1);
+    }
     } else {
 	bxf = (Bspline_xform*) malloc (sizeof (Bspline_xform));
 	bspline_xform_initialize (
