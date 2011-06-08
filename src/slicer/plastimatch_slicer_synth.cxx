@@ -56,8 +56,8 @@ main (int argc, char * argv [])
 	sm_parms.pattern = PATTERN_ENCLOSED_RECT;
     }
     
-	sm_parms.f1 = plmslc_intensity1;
-	sm_parms.f2 = plmslc_intensity2;
+	sm_parms.enclosed_intens_f1 = plmslc_intensity1;
+	sm_parms.enclosed_intens_f2 = plmslc_intensity2;
 
 	sm_parms.foreground = plmslc_foreground;
     sm_parms.background = plmslc_background;
@@ -127,11 +127,6 @@ main (int argc, char * argv [])
 	sm_parms.sphere_radius[2] = plmslc_spheresize[0];
     }
 
-	/*Enclosed structures options*/
-	
-
-
-
     /* Create Volume 1 */
     if (plmslc_output_one != "" && plmslc_output_one != "None") {
 	Rtds rtds;
@@ -165,6 +160,13 @@ main (int argc, char * argv [])
 	sm_parms.gauss_center[0] += xlat[0];
 	sm_parms.gauss_center[1] += xlat[1];
 	sm_parms.gauss_center[2] += xlat[2];
+
+	sm_parms.enclosed_xlat1[0]=plmslc_xlat_struct1[0];
+	sm_parms.enclosed_xlat1[1]=plmslc_xlat_struct1[1];
+	sm_parms.enclosed_xlat1[2]=plmslc_xlat_struct1[2];
+	sm_parms.enclosed_xlat2[0]=plmslc_xlat_struct2[0];
+	sm_parms.enclosed_xlat2[1]=plmslc_xlat_struct2[1];
+	sm_parms.enclosed_xlat2[2]=plmslc_xlat_struct2[2];
 
 	Rtds rtds;
 	synthetic_mha (&rtds, &sm_parms);
