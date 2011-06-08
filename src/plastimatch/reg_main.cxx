@@ -7,6 +7,7 @@
 #include "mha_io.h"
 #include "volume.h"
 #include "bspline_xform.h"
+#include "bspline.h"
 #include "reg_opts.h"
 #include "reg.h"
 
@@ -50,9 +51,9 @@ main (int argc, char* argv[])
 
         /* Load coeff OR load vf and compute coeff */
         if (options.input_xf_fn == 0) {
-            printf ("Computing coefficients from: %s\n", options.input_vf_fn);
             vf = read_mha (options.input_vf_fn);
             if (!vf) { exit (-1); }
+            printf ("Computing coefficients from: %s\n", options.input_vf_fn);
             bxf = bxf_from_vf (vf, options.vox_per_rgn);
         } else {
             bxf = bspline_xform_load (options.input_xf_fn);
@@ -77,9 +78,13 @@ main (int argc, char* argv[])
 
         /* Load vf OR load coeff and compute vf */
         if (options.input_vf_fn == 0) {
-            printf ("Computing vector field from: %s\n", options.input_xf_fn);
             bxf = bspline_xform_load (options.input_xf_fn);
-            /* compute vf */
+            if (!bxf) { exit (-1); }
+            printf ("Computing vector field from: %s\n", options.input_xf_fn);
+            vf = volume_create (bxf->img_dim, bxf->img_origin, 
+                                bxf->img_spacing, 0, 
+                                PT_VF_FLOAT_INTERLEAVED, 3, 0);
+            bspline_interpolate_vf (vf, bxf);
             bspline_xform_free (bxf);
         } else {
             vf = read_mha (options.input_vf_fn);
