@@ -82,9 +82,9 @@ vf_regularize_numerical (Volume* vol)
     float dy = vol->spacing[1];
     float dz = vol->spacing[2];
 
-    float inv_dx = 1.0f / dx;
-    float inv_dy = 1.0f / dy;
-    float inv_dz = 1.0f / dz;
+    float inv_dxdx = 1.0f / (dx * dx);
+    float inv_dydy = 1.0f / (dy * dy);
+    float inv_dzdz = 1.0f / (dz * dz);
 
     float inv_dxdy = 0.5f / (dx*dy);
     float inv_dxdz = 0.5f / (dx*dz);
@@ -137,7 +137,7 @@ vf_regularize_numerical (Volume* vol)
                 idx_poi = INDEX_OF (vol->dim, i, j, k);
 
                 idx_in = INDEX_OF (vol->dim, i-1  , j,   k);
-                idx_ip = INDEX_OF (vol->dim, i-1,   j,   k);
+                idx_ip = INDEX_OF (vol->dim, i+1,   j,   k);
                 idx_jn = INDEX_OF (vol->dim,   i, j-1,   k);
                 idx_jp = INDEX_OF (vol->dim,   i, j+1,   k);
                 idx_kn = INDEX_OF (vol->dim,   i,   j, k-1);
@@ -164,9 +164,9 @@ vf_regularize_numerical (Volume* vol)
                 /* Compute components */
                 d2_sq = 0.0f;
                 for (c=0; c<3; c++) {
-                    d2_dx2[c] = inv_dx * (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
-                    d2_dy2[c] = inv_dy * (vec_jp[c] - 2.0f*vec_poi[c] + vec_jn[c]);
-                    d2_dz2[c] = inv_dz * (vec_kp[c] - 2.0f*vec_poi[c] + vec_kn[c]);
+                    d2_dx2[c] = inv_dxdx * (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
+                    d2_dy2[c] = inv_dydy * (vec_jp[c] - 2.0f*vec_poi[c] + vec_jn[c]);
+                    d2_dz2[c] = inv_dzdz * (vec_kp[c] - 2.0f*vec_poi[c] + vec_kn[c]);
 
                     d2_dxdy[c] = inv_dxdy * (
                             (vec_ijp[c] + 2.0f*vec_poi[c] + vec_ijn[c]) +
@@ -182,7 +182,7 @@ vf_regularize_numerical (Volume* vol)
                         );
 
                     d2_sq += d2_dx2[c]*d2_dx2[c] + d2_dy2[c]*d2_dy2[c] +
-                             d2_dz2[c]*d2_dx2[c] + 2.0f * (
+                             d2_dz2[c]*d2_dz2[c] + 2.0f * (
                                 d2_dxdy[c]*d2_dxdy[c] +
                                 d2_dxdz[c]*d2_dxdz[c] +
                                 d2_dydz[c]*d2_dydz[c]
