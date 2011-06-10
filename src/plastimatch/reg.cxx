@@ -11,6 +11,8 @@
 #include "volume.h"
 #include "reg.h"
 
+#define DEBUG
+
 #define INDEX_OF(dim, i, j, k) \
     ((((k)*dim[1] + (j))*dim[0]) + (i))
 
@@ -75,6 +77,10 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
 float
 vf_regularize_numerical (Volume* vol)
 {
+#if defined (DEBUG)
+    FILE* fp[3];
+#endif
+
     int i,j,k,c;
     float *img = (float*) vol->img;
 
@@ -128,10 +134,17 @@ vf_regularize_numerical (Volume* vol)
     /* Smoothness */
     float S;
 
+#if defined (DEBUG)
+    printf ("Warning: compiled with DEBUG : writing to to files:\n");
+    printf ("  d2ux_dxy_sq.txt\n"); fp[0] = fopen ("d2ux_dxdy_sq.txt", "w");
+    printf ("  d2uy_dxy_sq.txt\n"); fp[1] = fopen ("d2uy_dxdy_sq.txt", "w");
+    printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
+#endif
+
     S = 0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
-        for (j = 1; j < vol->dim[2]-1; j++) {
-            for (i = 1; i < vol->dim[2]-1; i++) {
+        for (j = 1; j < vol->dim[1]-1; j++) {
+            for (i = 1; i < vol->dim[0]-1; i++) {
 
                 /* Load indicies relevant to current POI */
                 idx_poi = INDEX_OF (vol->dim, i, j, k);
@@ -187,6 +200,10 @@ vf_regularize_numerical (Volume* vol)
                                 d2_dxdz[c]*d2_dxdz[c] +
                                 d2_dydz[c]*d2_dydz[c]
                         );
+
+#if defined (DEBUG)
+                    fprintf (fp[c], "(%i,%i,%i) : %15e\n", i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
+#endif
                 }
 
                 S += d2_sq;
@@ -196,6 +213,12 @@ vf_regularize_numerical (Volume* vol)
 
     /* Integrate */
     S *= dx*dy*dz;
+
+#if defined (DEBUG)
+    for (i=0; i<3; i++) {
+        fclose(fp[i]);
+    }
+#endif
 
     return S;
 }
