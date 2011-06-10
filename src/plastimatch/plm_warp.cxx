@@ -178,12 +178,16 @@ plm_warp_native (
 	interp_lin, default_val);
 
     /* Return output image to caller */
-    im_warped->set_gpuit (v_out);
+    if (im_warped) {
+	im_warped->set_gpuit (v_out);
 
-    /* Bspline_warp only operates on float.  We need to back-convert */
-    printf ("Back convert to original type...\n");
-    im_warped->convert (im_in->m_original_type);
-    im_warped->m_original_type = im_in->m_original_type;
+	/* Bspline_warp only operates on float.  We need to back-convert */
+	printf ("Back convert to original type...\n");
+	im_warped->convert (im_in->m_original_type);
+	im_warped->m_original_type = im_in->m_original_type;
+    } else {
+	volume_destroy (v_out);
+    }
 
     /* Return vf to caller */
     if (vf) {
@@ -249,12 +253,16 @@ plm_warp_native_vec (
 	interp_lin, default_val);
 
     /* Return output image to caller */
-    im_warped->set_gpuit (v_out);
+    if (im_warped) {
+	im_warped->set_gpuit (v_out);
 
-    /* Bspline_warp only operates on float.  We need to back-convert */
-    printf ("Back convert to original type...\n");
-    im_warped->convert (im_in->m_original_type);
-    im_warped->m_original_type = im_in->m_original_type;
+	/* Bspline_warp only operates on float.  We need to back-convert */
+	printf ("Back convert to original type...\n");
+	im_warped->convert (im_in->m_original_type);
+	im_warped->m_original_type = im_in->m_original_type;
+    } else {
+	volume_destroy (v_out);
+    }
 
     /* Return vf to caller */
     if (vf) {
