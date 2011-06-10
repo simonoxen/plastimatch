@@ -656,11 +656,13 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Do we build a full plastimatch?
 ##-----------------------------------------------------------------------------
-if (ITK_FOUND AND (NOT ITK_USE_SYSTEM_GDCM OR DCMTK_VERSION_36))
-  set (FULL_PLASTIMATCH_BUILD 1)
-else ()
-  message (WARNING "Your plastimatch build is incomplete.  Please build ITK with GDCM 1.X.")
-  set (FULL_PLASTIMATCH_BUILD 0)
+if (ITK_FOUND)
+  if (GDCM_VERSION_1)
+    set (FULL_PLASTIMATCH_BUILD 1)
+  else ()
+    message (WARNING "Your plastimatch build is incomplete.  Please build ITK with GDCM 1.X.")
+    set (FULL_PLASTIMATCH_BUILD 0)
+  endif ()
 endif ()
 
 ##-----------------------------------------------------------------------------
