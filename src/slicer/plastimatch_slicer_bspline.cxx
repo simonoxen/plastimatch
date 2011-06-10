@@ -41,10 +41,10 @@ main (int argc, char * argv [])
 
     /* Stage 0 */
     if (enable_stage_0) {
-	command_string 
-	    << 
+	command_string << 
 	    "[STAGE]\n"
-	    "metric=" << metric << "\n"
+	    "metric=" 
+	    << metric << "\n"
 	    "xform=translation\n"
 	    "optim=rsg\n"
 	    "impl=itk\n"
@@ -52,16 +52,16 @@ main (int argc, char * argv [])
 	    "convergence_tol=5\n"
 	    "grad_tol=1.5\n"
 	    "res=" 
-	    << stage_0_resolution[0]
-	    << stage_0_resolution[1]
-	    << stage_0_resolution[2]
-	    << "\n";
+	    << stage_0_resolution[0] << " "
+	    << stage_0_resolution[1] << " "
+	    << stage_0_resolution[2] << "\n";
     }
 
     /* Stage 1 */
-    command_string <<
+    command_string << 
 	"[STAGE]\n"
-	"metric=" << metric << "\n"
+	"metric=" 
+	<< metric << "\n"
 	"xform=bspline\n"	
 	"optim=lbfgsb\n"
 	"impl=plastimatch\n"
@@ -82,7 +82,7 @@ main (int argc, char * argv [])
 	;
     
     if (enable_stage_2) {
-	command_string <<
+	command_string << 
 	    "[STAGE]\n"
 	    "max_its=" << stage_2_its << "\n"
 	    "res=" 
