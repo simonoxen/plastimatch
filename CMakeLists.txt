@@ -695,14 +695,14 @@ if (NOT BUILD_AGAINST_SLICER3)
   install (FILES 
     README.TXT
     src/plastimatch/COPYRIGHT.TXT
-    src/plastimatch/LICENSE.TXT
     DESTINATION ${DOC_DESTINATION}
     )
 
-  # Debian doesn't like INSTALL included in documentation
+  # Debian doesn't like INSTALL, LICENSE included in documentation
   if (NOT BUILD_DEBIAN)
     install (FILES 
       INSTALL.TXT
+      src/plastimatch/LICENSE.TXT
       DESTINATION ${DOC_DESTINATION}
       )
   endif ()
