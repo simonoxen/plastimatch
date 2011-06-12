@@ -12,5 +12,6 @@ Technical reference
    dicom_tutorial
    dicom_comparison
    registration_command_file_reference
+   proj_geometry
    cxt_file_format
    proj_mat_file_format
