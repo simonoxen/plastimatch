@@ -256,3 +256,55 @@ pointset_debug (Pointset* ps)
 	    ps->points[i*3 + 2]);
     }
 }
+
+/* New pointset */
+void
+Pointset_new::load_fcsv (const char *fn)
+{
+    FILE *fp;
+    char s[1024];
+
+    fp = fopen (fn, "r");
+    if (!fp) {
+	return;
+    }
+
+    /* Check if this file is an fcsv file */
+    fgets (s, 1024, fp);
+    if (strncmp (s, "# Fiducial List file", strlen ("# Fiducial List file")))
+    {
+	fclose (fp);
+	return;
+    }
+
+    /* Got an fcsv file.  Parse it. */
+    while (!feof(fp)) {
+	float lm[3];
+	int land_sel, land_vis;
+	int rc;
+
+        fgets (s, 1024, fp);
+	if (feof(fp)) break;
+        if (s[0]=='#') continue;
+
+	char buf[1024];
+        rc = sscanf (s, "%1023[^,],%f,%f,%f,%d,%d\n", buf, 
+	    &lm[0], &lm[1], &lm[2], &land_sel, &land_vis);
+	if (rc != 6) {
+	    print_and_exit ("Error parsing landmark file: %s "
+		"(rc=%d,str=%s,buf=%s)\n", fn, rc, buf);
+	}
+
+	/* GCS FIX: Does this method of using STL containers 
+	   cause a copy of lp? */
+	/* Note: Slicer landmarks are in RAS coordinates. 
+	   Change RAS to LPS (note that LPS == ITK RAI). */
+	Labeled_point lp;
+	lp.label = buf;
+	lp.p[0] = - lm[0];
+	lp.p[1] = - lm[1];
+	lp.p[2] = lm[2];
+	point_list.push_back (lp);
+    }
+    fclose (fp);
+}

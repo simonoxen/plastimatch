@@ -50,6 +50,29 @@ plastimatch autolabel-train \
     --input dir \
     --output net
 
+The data needs a hierarchy, to allow for cross-validation on a 
+patient-by-patient basis.  Call the data for a single patient 
+an Autolabel_data_item
+
+Autolabel_data_item {
+  dlib::matrix inputs;
+  dlib::matrix outputs;
+}
+
+Autolabel_data {
+  std::list<Autolabel_data_item>
+  choose_subset ()
+}
+
+Autolabel_trainer {
+  Autolabel_data ad;
+  train (parameter_range) {
+    for (num_trials) {
+      dlib::matrix training_data = ad.choose_subset();
+    }
+  }
+}
+
 
 ***** Organization for irregular volume (transition plan) *****
 

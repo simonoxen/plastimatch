@@ -5,11 +5,26 @@
 #define _pointset_h_
 
 #include "plm_config.h"
+#include <string>
+#include <vector>
+
+class Labeled_point {
+public:
+    std::string label;
+    float p[3];
+};
 
 typedef struct pointset Pointset;
 struct pointset {
     int num_points;
     float *points;
+};
+
+class gpuit_EXPORT Pointset_new {
+public:
+    std::vector<Labeled_point> point_list;
+public:
+    void load_fcsv (const char *fn);
 };
 
 #if defined __cplusplus
