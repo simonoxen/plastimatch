@@ -68,8 +68,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #pragma warning ( disable : 4786 )
 #endif
 
-#ifndef SIFTKEY_H
-#define SIFTKEY_H
+#ifndef __itkScaleInvariantFeatureImageFilter_h
+#define __itkScaleInvariantFeatureImageFilter_h
+//#ifndef SIFTKEY_H
+//#define SIFTKEY_H
 
 #include "itkImageRegistrationMethod.h"
 
@@ -96,6 +98,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "itkPointSet.h"
 #include "itkVector.h"
+#include "itkDiscreteHessianGaussianImageFunction.h"
+#include <itkHessianRecursiveGaussianImageFilter.h>  //compute Hessian
+#include "itkRescaleIntensityImageFilter.h"
+
+
 
 #include <cstdio>
 
@@ -168,7 +175,7 @@ namespace itk
       void SetMatchRatio ( float tmp);
 
       /** Generate and return the scale invariant keypoints and features */
-      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImage);
+      PointSetTypePointer getSiftFeatures(FixedImagePointer fixedImageInput, const char *filename_phy_max, const char *filename_phy_min, const char *filename_im_max, const char *filename_im_min);
 
       /** Match keypoints purely based on position.  Upper bounds
        *  the performance when matching using features. Supply
@@ -207,7 +214,8 @@ namespace itk
       float  m_ScalingFactor;
 
       /** The range of Gaussian sigma that will be tested */
-      float m_GaussianSigma;  
+      float m_GaussianSigma; 
+	  double m_SigmaAliasing; // sigma aliasing
       /** Number of Gaussian Images that will be used to sample the range of 
         * sigma values ...
         */
@@ -227,6 +235,9 @@ namespace itk
       unsigned int m_HistogramBinsNumber;
       /** Minimum voxel intensity for a feature point */
       float m_MinKeypointValue;
+	  /** Threshold on image curvature */
+	  float m_ThresholdPrincipalCurve;
+
       /** When looking for difference of Gaussian extrema in the images, 
         * consider a voxel to be extremal even if there are voxels 
         * that are this much more extreme.
@@ -270,6 +281,14 @@ namespace itk
         * coordinates
 	*/
       typename GradientImageType::Pointer GetHypersphericalCoordinates(typename GradientImageType::Pointer inputImg);
+
+       /** Returns the value of the principal curvature - thresholding on image curvature */
+	      typedef itk::DiscreteHessianGaussianImageFunction<  TFixedImageType, PixelType > HessianGaussianImageFunctionType;
+		  typedef itk::HessianRecursiveGaussianImageFilter< TFixedImageType >  myFilterType;
+		  typedef typename myFilterType::OutputImageType myHessianImageType;
+		  
+		  unsigned int GetHessian(typename myHessianImageType::Pointer ImgInput, IndexType pixelIndex, bool isMax, bool isMin, int i, int j);
+		  unsigned int GetHessianLocal(typename TFixedImageType::Pointer ImgInput, IndexType pixelIndex);
 
       /** Convert a histogram bin number into an angle in hyperspherical 
         * coordinates 
@@ -319,7 +338,7 @@ namespace itk
 }
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkScaleInvariantFeatureImageFilter.txx"
+#include "itkScaleInvariantFeatureImageFilter.hxx"
 #endif
 
 #endif /* SIFTKEY_H */

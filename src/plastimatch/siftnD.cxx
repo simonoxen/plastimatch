@@ -57,6 +57,7 @@ int ARG_IMG2=3;
 int main( int argc, char *argv[] )
 {
   const int Dimension = DIMENSION;
+  
 
   // Default scale is 1.0
   double test_scale = 1.0;
@@ -274,7 +275,7 @@ std::cout<<"crop "<< cropsize[0]<<" " <<cropsize[1]<<std::endl;
   std::cout << std::endl << "Starting SIFT Feature Extraction...\n";  
 #endif
   //siftFilter1.writeImage(fixedImage, "provaMAIN.mha");
-  keypoints1 = siftFilter1.getSiftFeatures(fixedImage);
+  keypoints1 = siftFilter1.getSiftFeatures(fixedImage, "physicalcoord_max1.fcsv","physicalcoord_min1.fcsv","imagecoord_max1.txt","imagecoord_min1.txt");
 
   typedef itk::ScalableAffineTransform< double, Dimension > TestTransformType;
   TestTransformType::Pointer inv_test_transform;
@@ -357,7 +358,7 @@ scaler->SetDefaultPixelValue( 0 );
       siftFilter2.writeImage(scaledImage, "tmp1.png");
       std::cout << std::endl;
 #endif
-      keypoints2 = siftFilter2.getSiftFeatures(scaledImage);  
+      keypoints2 = siftFilter2.getSiftFeatures(scaledImage,"physicalcoord_max2.fcsv","physicalcoord_min2.fcsv","imagecoord_max2.txt","imagecoord_min2.txt");  
     }
     
     std::cerr << "Test Image Scale: " << test_scale << std::endl;
@@ -410,7 +411,7 @@ scaler->SetDefaultPixelValue( 0 );
     FixedImageType::Pointer fixedImage2 = fixedImageReader2->GetOutput();  
 #endif
 
-    keypoints2 = siftFilter2.getSiftFeatures(fixedImage2);
+    keypoints2 = siftFilter2.getSiftFeatures(fixedImage2,"physicalcoord_max2.fcsv","physicalcoord_min2.fcsv","imagecoord_max2.txt","imagecoord_min2.txt");
   }
   
   std::cerr << std::endl << "Matching Keypoints\n";  
