@@ -6,6 +6,11 @@
 PROJECT (src_plastimatch)
 
 ##-----------------------------------------------------------------------------
+##  Local options
+##-----------------------------------------------------------------------------
+option (PLM_BUILD_SIFTND "Build siftnD program" OFF)
+
+##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
 INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -841,9 +846,11 @@ if (FULL_PLASTIMATCH_BUILD)
   PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (siftnD "${SIFTnD_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
+  if (PLM_BUILD_SIFTND)
+    PLM_ADD_EXECUTABLE (siftnD "${SIFTnD_SRC}"
+      "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
+      ${INSTALL_IF_NOT_DEBIAN})
+  endif ()
   PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
