@@ -59,6 +59,7 @@ option (PLM_BUILD_QT_TEST "Build Qt test program" OFF)
 option (PLM_USE_SS_IMAGE_VEC
   "Save structure sets as ITK UCHAR VECimages (in development)" OFF)
 option (PLM_CONFIG_DISABLE_CUDA "Set to ON to build without CUDA" OFF)
+option (PLM_CONFIG_DISABLE_DCMTK "Set to ON to build without DCMTK" OFF)
 option (PLM_CONFIG_DISABLE_OPENCL "Set to ON to build without OpenCL" OFF)
 option (PLM_CONFIG_DISABLE_SSE2 "Set to ON to build without SSE" OFF)
 option (PLM_SLICER_HARDCODED_FILENAME 
@@ -240,7 +241,11 @@ find_library (LIBDL_FOUND dl)
 ##  Search for libraries
 ##-----------------------------------------------------------------------------
 find_package (Brook)
-find_package (DCMTK)
+if (PLM_CONFIG_DISABLE_DCMTK)
+  set (DCMTK_FOUND FALSE)
+else ()
+  find_package (DCMTK)
+endif ()
 #FIND_PACKAGE (Dlib)
 find_package (Etags)
 find_package (Fann)

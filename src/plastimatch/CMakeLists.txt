@@ -8,7 +8,7 @@ PROJECT (src_plastimatch)
 ##-----------------------------------------------------------------------------
 ##  Local options
 ##-----------------------------------------------------------------------------
-option (PLM_BUILD_SIFTND "Build siftnD program" OFF)
+option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 
 ##-----------------------------------------------------------------------------
 ##  Include directories
