@@ -10,10 +10,10 @@
  *  Date Created: June 26, 2009
  *  Last Modified: July 23, 2009
  */
-#include <string.h>
-
-#include <iostream>
+#include "plm_config.h"
 #include <fstream>
+#include <iostream>
+#include <string.h>
 
 #if (defined(_WIN32) || defined(WIN32))
 #include <direct.h>

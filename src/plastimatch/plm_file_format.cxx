@@ -2,10 +2,10 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <string>
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
-#include <string>
 #include <itksys/SystemTools.hxx>
 #include <itkImageIOBase.h>
 

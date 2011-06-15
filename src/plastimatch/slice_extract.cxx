@@ -1,10 +1,11 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#include "itkImageFileReader.h"
-#include "itkImageFileWriter.h"
+#include "plm_config.h"
 #include "itkExtractImageFilter.h"
 #include "itkImage.h"
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
 #include "itk_image.h"
 #include "slice_extract.h"
 

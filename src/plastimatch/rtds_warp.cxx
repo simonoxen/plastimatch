@@ -2,7 +2,6 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
-
 #include "bstring_util.h"
 #include "cxt_extract.h"
 #include "file_util.h"
