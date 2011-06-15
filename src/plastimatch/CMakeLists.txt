@@ -501,9 +501,6 @@ IF (BROOK_FOUND)
     fdk_brook_kernel.br
     )
 ENDIF ()
-SET (FINDSCU_SRC
-  findscu.cc
-  )
 SET (HND_TO_PFM_SRC
   hnd_to_pfm.c
   )
@@ -520,9 +517,6 @@ SET (MONDOSHOT_SRC
   )
 SET (MONDOSHOT_RELAY_SRC
   mondoshot_relay_main.cpp
-  )
-SET (MOVESCU_SRC
-  movescu.cc
   )
 SET (OPENCL_PROBE_SRC
   opencl_probe_main.c
@@ -886,10 +880,6 @@ IF (DCMTK_FOUND)
   PLM_ADD_EXECUTABLE (dicom_uid 
     "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "" 
     ${INSTALL_IF_NOT_DEBIAN})
-  IF (NOT DCMTK_VERSION_NUMBER GREATER 354)
-    PLM_ADD_EXECUTABLE (findscu "${FINDSCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
-    PLM_ADD_EXECUTABLE (movescu "${MOVESCU_SRC}" "${DCMTK_LIBRARIES}" "" 0)
-  ENDIF ()
 ENDIF ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
