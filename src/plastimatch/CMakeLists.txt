@@ -604,6 +604,7 @@ SET (SHUFFLE_MHA_SRC
   )
 SET (SIFTnD_SRC
   siftnD.cxx
+  itkScaleInvariantFeatureImageFilter.h itkScaleInvariantFeatureImageFilter.hxx
   )
 SET (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx 
