@@ -164,6 +164,8 @@ plm_HausdorffDistanceImageFilter<TInputImage1, TInputImage2>
      << m_HausdorffDistance << std::endl;
   os << indent << "AverageHausdorffDistance: "  
      << m_AverageHausdorffDistance << std::endl;
+  os << indent << "Use Image Spacing : "
+     << m_UseImageSpacing << std::endl;
 }
 
 

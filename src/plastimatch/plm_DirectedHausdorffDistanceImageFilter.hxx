@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __plm_DirectedHausdorffDistanceImageFilter_txx
-#define __plm_DirectedHausdorffDistanceImageFilter_txx
+#ifndef __plm_DirectedHausdorffDistanceImageFilter_hxx
+#define __plm_DirectedHausdorffDistanceImageFilter_hxx
 #include "plm_DirectedHausdorffDistanceImageFilter.h"
 
 #include "itkImageRegionIterator.h"
@@ -23,6 +23,8 @@
 #include "itkNumericTraits.h"
 #include "itkDanielssonDistanceMapImageFilter.h"
 #include "itkProgressReporter.h"
+
+#include "itkImageFileWriter.h"
 
 namespace itk {
 
@@ -168,6 +170,8 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
     }
 
   m_AverageHausdorffDistance = sum / (RealType) pixelcount;
+  std::cout << "SUM " << sum << std::endl;
+  std::cout << "pixelcount " << pixelcount << std::endl;
 
   // clean up
   m_DistanceMap = NULL;
