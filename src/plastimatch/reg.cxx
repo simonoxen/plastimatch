@@ -132,10 +132,10 @@ vf_regularize_numerical (Volume* vol)
     float d2_dz2[3],  d2_dydz[3];
 
     /* Square of 2nd derivative */
-    float d2_sq;
+    float d2_sq, dd2_dxdy;
 
     /* Smoothness */
-    float S;
+    float S, SS;
 
 #if defined (DEBUG)
     printf ("Warning: compiled with DEBUG : writing to to files:\n");
@@ -144,7 +144,7 @@ vf_regularize_numerical (Volume* vol)
     printf ("  d2uz_dxy_sq.txt\n"); fp[2] = fopen ("d2uz_dxdy_sq.txt", "w");
 #endif
 
-    S = 0.0f;
+    S = 0.0f, SS=0.0f;
     for (k = 1; k < vol->dim[2]-1; k++) {
         for (j = 1; j < vol->dim[1]-1; j++) {
             for (i = 1; i < vol->dim[0]-1; i++) {
@@ -187,7 +187,7 @@ vf_regularize_numerical (Volume* vol)
                 vec_jpkn = &img[3*idx_jpkn]; vec_jpkp = &img[3*idx_jpkp];
 
                 /* Compute components */
-                d2_sq = 0.0f;
+                d2_sq = 0.0f, dd2_dxdy=0.0f;
                 for (c=0; c<3; c++) {
                     d2_dx2[c] = inv_dxdx * (vec_ip[c] - 2.0f*vec_poi[c] + vec_in[c]);
                     d2_dy2[c] = inv_dydy * (vec_jp[c] - 2.0f*vec_poi[c] + vec_jn[c]);
@@ -220,6 +220,7 @@ vf_regularize_numerical (Volume* vol)
                                 d2_dxdz[c]*d2_dxdz[c] +
                                 d2_dydz[c]*d2_dydz[c]
                         );
+					
 
 #if defined (DEBUG)
                     fprintf (fp[c], "(%i,%i,%i) : %15e\n", i,j,k, (d2_dxdy[c]*d2_dxdy[c]));
@@ -227,6 +228,7 @@ vf_regularize_numerical (Volume* vol)
                 }
 
                 S += d2_sq;
+				
             }
         }
     }
