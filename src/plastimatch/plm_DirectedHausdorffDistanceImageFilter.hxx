@@ -170,8 +170,6 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
     }
 
   m_AverageHausdorffDistance = sum / (RealType) pixelcount;
-  std::cout << "SUM " << sum << std::endl;
-  std::cout << "pixelcount " << pixelcount << std::endl;
 
   // clean up
   m_DistanceMap = NULL;
@@ -225,6 +223,8 @@ plm_DirectedHausdorffDistanceImageFilter<TInputImage1, TInputImage2>
      << m_DirectedHausdorffDistance << std::endl;
   os << indent << "AverageHausdorffDistance: "  
      << m_AverageHausdorffDistance << std::endl;
+  os << indent << "Use Image Spacing : "
+     << m_UseImageSpacing << std::endl;
 }
 
 
