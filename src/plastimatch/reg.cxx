@@ -92,9 +92,9 @@ vf_regularize_numerical (Volume* vol)
     float inv_dydy = 1.0f / (dy * dy);
     float inv_dzdz = 1.0f / (dz * dz);
 
-    float inv_dxdy = 0.5f / (dx*dy);
-    float inv_dxdz = 0.5f / (dx*dz);
-    float inv_dydz = 0.5f / (dy*dz);
+    float inv_dxdy = 0.25f / (dx*dy);
+    float inv_dxdz = 0.25f / (dx*dz);
+    float inv_dydz = 0.25f / (dy*dz);
 
 
     /* Index of current point-of-interest (POI) */
