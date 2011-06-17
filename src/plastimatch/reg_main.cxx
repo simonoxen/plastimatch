@@ -64,6 +64,7 @@ main (int argc, char* argv[])
 #if 0
         case 'a':
             /* CALLING FUNCTION FOR ANALYTIC METHOD 'a" GOES HERE */
+            S = vf_regularize_analytic (bxf);
             break;
 #endif
         default:

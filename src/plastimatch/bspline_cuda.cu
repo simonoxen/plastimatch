@@ -3563,12 +3563,20 @@ int* CPU_calc_offsets(int* tile_dims, int* cdims)
 // This function takes a tile index as an input and generates
 // the indicies of the 64 control knots that it affects.
 //
-// Returns:
-//    knots[idx] - idx is [0,63] and knots[idx] = the linear knot index
-//                 of affected control knot # idx within the entire control
-//                 knot grid.
+//  Inputs:
+//    rdims[3]   - The number of regions in (x,y,x)
+//                 (i.e. bxf->rdims) [See: bspline_xform.h]
 //
-//    tile_pos[
+//    cdims[3]   - The number of control points in (x,y,x)
+//                 (i.e. bxf->cdims) [See: bspline_xform.h]
+//
+//    tile_num   - The tile index of interest -- is affected by 64 local
+//                 control points (knots).
+//
+// Returns:
+//    knots[idx] - idx is [0,63] and is the index of a local control point
+//                 affecting tile_num.  knots[idx] holds the global index
+//                 of the control point specified by time_num & idx.
 //
 // Author: James Shackleford
 // Data: July 13th, 2009
@@ -3581,7 +3589,7 @@ void CPU_find_knots(int* knots, int tile_num, int* rdims, int* cdims)
     int num_tiles_x = cdims[0] - 3;
     int num_tiles_y = cdims[1] - 3;
     int num_tiles_z = cdims[2] - 3;
-	
+
     // First get the [x,y,z] coordinate of
     // the tile in the control grid.
     tile_loc[0] = tile_num % num_tiles_x;
@@ -3602,11 +3610,12 @@ void CPU_find_knots(int* knots, int tile_num, int* rdims, int* cdims)
     // Find 64 knots' [x,y,z] coordinates
     // and convert into a linear knot index
     for (k = -1; k < 3; k++)
-	for (j = -1; j < 3; j++)
-	    for (i = -1; i < 3; i++)
-	    {
-		knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) + (cdims[0]*(tile_loc[1]+j)) + (tile_loc[0]+i);
-	    }
+    	for (j = -1; j < 3; j++)
+    	    for (i = -1; i < 3; i++) {
+    		knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) +
+                           (cdims[0]*(tile_loc[1]+j)) +
+                           (tile_loc[0]+i);
+        }
 
 }
 ////////////////////////////////////////////////////////////////////////////////
