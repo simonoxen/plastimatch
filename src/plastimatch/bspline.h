@@ -8,6 +8,7 @@
 #include <string>
 #include "bspline_xform.h"
 #include "volume.h"
+#include "reg.h"
 
 #define DOUBLE_HISTS	// Use doubles for histogram accumulation
 
@@ -105,6 +106,7 @@ public:
     float rbf_young_modulus;     /* Penalty for the large 2nd derivative 
 				    of RBF vector field */
     char *xpm_hist_dump;         /* Pointer to base string of hist dumps */
+    Reg_parms reg_parms;         /* Regularization Parameters */
 public:
     Bspline_parms () {
 	this->threading = BTHR_CPU;

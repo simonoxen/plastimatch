@@ -14,10 +14,8 @@ print_usage (void)
     printf (
     "Usage: reg [options] [input]\n"
     "Options:\n"
-    " -N                       Compute numerically (default)\n"
-    " -A                       Compute analytically\n"
     " -f implementation        Choose implementation (single letter: a, b, c, etc)\n"
-    " -s \"i j k\"               Control point spacing (when -V and -A are both set)\n"
+    " -s \"i j k\"               Control point spacing for -V (default: 15 15 15)\n"
     "\n"
     "Input (choose one):\n"
     " -V input_vector_field    Specify input vector field mha\n"
@@ -42,12 +40,6 @@ reg_opts_parse_args (Reg_options* options, int argc, char* argv[])
         }
         i++;
         parms->implementation = argv[i][0];
-    }
-    else if (!strcmp (argv[i], "-N")) {
-        parms->analytic = false;
-    }
-    else if (!strcmp (argv[i], "-A")) {
-        parms->analytic = true;
     }
     else if (!strcmp (argv[i], "-s")) {
         if (i == (argc-1) || argv[i+1][0] == '-') {

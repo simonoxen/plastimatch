@@ -7,6 +7,8 @@
 #include <math.h>
 #include "plm_config.h"
 #include "bspline_opts.h"
+#include "bspline.h"
+#include "reg.h"
 #include "delayload.h"
 #if (CUDA_FOUND)
 #include "cuda_util.h"
@@ -31,6 +33,8 @@ print_usage (void)
     " -M { mse | mi }            Registration metric (default is mse)\n"
     " -f implementation          Choose implementation (a single letter: a, b, etc.)\n"
     " -m iterations              Maximum iterations (default is 10)\n"
+    " -R implementation          Choose regularization implementation (a, b, etc.)\n"
+    " -S smoothness              Weight of regularization (floating point number)\n"
     " --factr value              L-BFGS-B cost converg tol (default is 1e+7)\n"
     " --pgtol value              L-BFGS-B projected grad tol (default is 1e-5)\n"
     " -s \"i j k\"                 Integer knot spacing (voxels)\n"
@@ -59,6 +63,7 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 {
     int i, rc;
     Bspline_parms* parms = &options->parms;
+    Reg_parms* reg_parms = &parms->reg_parms;
 
 #if (CUDA_FOUND)
     LOAD_LIBRARY(libplmcuda);
@@ -148,6 +153,25 @@ bspline_opts_parse_args (Bspline_options* options, int argc, char* argv[])
 		print_usage ();
 	    }
 	    parms->max_feval = parms->max_its;
+	}
+	else if (!strcmp (argv[i], "-R")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    reg_parms->implementation = argv[i][0];
+	}
+	else if (!strcmp (argv[i], "-S")) {
+	    if (i == (argc-1) || argv[i+1][0] == '-') {
+		fprintf(stderr, "option %s requires an argument\n", argv[i]);
+		exit(1);
+	    }
+	    i++;
+	    rc = sscanf (argv[i], "%g", &reg_parms->lambda);
+	    if (rc != 1) {
+		print_usage ();
+	    }
 	}
 	else if (!strcmp (argv[i], "-M")) {
 	    if (i == (argc-1) || argv[i+1][0] == '-') {

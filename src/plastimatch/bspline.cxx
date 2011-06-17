@@ -748,6 +748,9 @@ bspline_score (Bspline_parms *parms,
     Volume *moving, 
     Volume *moving_grad)
 {
+
+    Reg_parms* reg_parms = &parms->reg_parms;
+
 #if (CUDA_FOUND)
     if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MSE)) {
 
@@ -834,6 +837,11 @@ bspline_score (Bspline_parms *parms,
 #endif
 	    break;
 	}
+    }
+
+    /* Regularize */
+    if (reg_parms->lambda != 0.0f) {
+        regularize (reg_parms, bxf, &bst->ssd.score, bst->ssd.grad);
     }
 
     /* Add vector field score/gradient to image score/gradient */

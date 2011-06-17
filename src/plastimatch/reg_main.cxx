@@ -11,6 +11,10 @@
 #include "reg_opts.h"
 #include "reg.h"
 
+#define NUMERICAL 0
+#define ANALYTIC  1
+
+
 Bspline_xform*
 bxf_from_vf (Volume* vf, int* vox_per_rgn)
 {
@@ -33,76 +37,90 @@ bxf_from_vf (Volume* vf, int* vox_per_rgn)
     return bxf;
 }
 
+void*
+load (Reg_options* options, int mode)
+{
+    Bspline_xform* bxf = NULL;
+    Volume* vf = NULL;
+
+    /* Numerical Mode */
+    if (mode == NUMERICAL) {
+        /* vf volume not supplied: load coeff and compute vf */
+        if (options->input_vf_fn == 0) {
+            bxf = bspline_xform_load (options->input_xf_fn);
+            if (!bxf) { exit (-1); }
+            printf ("Computing vector field from: %s\n", options->input_xf_fn);
+            vf = compute_vf_from_coeff (bxf);
+            bspline_xform_free (bxf);
+        /* Simply load vf volume if supplied */
+        } else {
+            vf = read_mha (options->input_vf_fn);
+            if (!vf) { exit (-1); }
+        }
+        return (void*)vf;
+    }
+    /* Analytic Mode */
+    else if (mode == ANALYTIC) {
+        /* bxf not supplied: load vf and compute coeff */
+        if (options->input_xf_fn == 0) {
+            vf = read_mha (options->input_vf_fn);
+            if (!vf) { exit (-1); }
+            printf ("Computing coefficients from: %s\n", options->input_vf_fn);
+            bxf = bxf_from_vf (vf, options->vox_per_rgn);
+        } else {
+            bxf = bspline_xform_load (options->input_xf_fn);
+            if (!bxf) { exit (-1); }
+        }
+        return (void*)bxf;
+    }
+    /* Invalid Mode */
+    else {
+        fprintf (stderr, "Internal Error: invalid load mode\n");
+        return NULL;
+    }
+
+}
 
 int
 main (int argc, char* argv[])
 {
     Reg_options options;
     Reg_parms *parms = &options.parms;
-    Volume *vf = 0;
-    Bspline_xform *bxf = 0;
+    Volume *vf = NULL;
+    Bspline_xform *bxf = NULL;
     float S = 9999.9f;
 
     reg_opts_parse_args (&options, argc, argv);
 
     /* algorithm selection */
-    if (parms->analytic == true) {
-        printf ("Using ANALYTIC method.\n");
-
-        /* Load coeff OR load vf and compute coeff */
-        if (options.input_xf_fn == 0) {
-            vf = read_mha (options.input_vf_fn);
-            if (!vf) { exit (-1); }
-            printf ("Computing coefficients from: %s\n", options.input_vf_fn);
-            bxf = bxf_from_vf (vf, options.vox_per_rgn);
-        } else {
-            bxf = bspline_xform_load (options.input_xf_fn);
-            if (!bxf) { exit (-1); }
-        }
-
-        switch (parms->implementation) {
+    switch (parms->implementation) {
+    case 'a':
+        vf = (Volume*)load (&options, NUMERICAL);
+        S = vf_regularize_numerical (vf);
+        break;
 #if 0
-        case 'a':
-            /* CALLING FUNCTION FOR ANALYTIC METHOD 'a" GOES HERE */
-            S = vf_regularize_analytic (bxf);
-            break;
+    case 'b':
+        /* CALLING FUNCTION FOR ANALYTIC METHOD 'b" GOES HERE */
+        bxf = (Bspline_xform*)load (options, ANALYTIC);
+        S = vf_regularize_analytic (bxf);
+        break;
 #endif
-        default:
-            printf ("Sorry, analytic regularization not yet implemented.\n\n");
-            exit(0);
-            break;
-        } /* switch(implementation) */
-        bspline_xform_free (bxf);
+    default:
+        printf ("Warning: Using implementation 'a'\n");
+        vf = (Volume*)load (&options, NUMERICAL);
+        S = vf_regularize_numerical (vf);
+        break;
+    } /* switch(implementation) */
 
-    } else {
-        printf ("Using NUMERICAL method.\n");
-
-        /* Load vf OR load coeff and compute vf */
-        if (options.input_vf_fn == 0) {
-            bxf = bspline_xform_load (options.input_xf_fn);
-            if (!bxf) { exit (-1); }
-            printf ("Computing vector field from: %s\n", options.input_xf_fn);
-            vf = volume_create (bxf->img_dim, bxf->img_origin, 
-                                bxf->img_spacing, 0, 
-                                PT_VF_FLOAT_INTERLEAVED, 3, 0);
-            bspline_interpolate_vf (vf, bxf);
-            bspline_xform_free (bxf);
-        } else {
-            vf = read_mha (options.input_vf_fn);
-            if (!vf) { exit (-1); }
-        }
-
-        switch (parms->implementation) {
-        case 'a':
-            S = vf_regularize_numerical (vf);
-            break;
-        default:
-            printf ("Warning: Using implementation 'a'\n");
-            S = vf_regularize_numerical (vf);
-            break;
-        } /* switch(implementation) */
+    if (vf) {
         volume_destroy (vf);
     }
 
+    if (bxf) {
+        bspline_xform_free (bxf);
+    }
+
     printf ("S = %f\n", S);
+
+    return 0;
 }

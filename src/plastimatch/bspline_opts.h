@@ -5,6 +5,7 @@
 #define _bspline_opts_h_
 
 #include "bspline.h"
+#include "reg.h"
 
 //#define OPTION_INTEGER_SPACING_STRING "integer-spacing"
 //#define OPTION_INTEGER_SPACING 's'

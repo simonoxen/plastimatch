@@ -7,14 +7,31 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "reg.h"
+#include "bspline.h"
 #include "bspline_xform.h"
 #include "volume.h"
-#include "reg.h"
 
 #define DEBUG
 
 #define INDEX_OF(dim, i, j, k) \
     ((((k)*dim[1] + (j))*dim[0]) + (i))
+
+
+Volume*
+compute_vf_from_coeff (Bspline_xform* bxf)
+{
+    Volume* vf;
+
+    vf = volume_create (
+            bxf->img_dim, bxf->img_origin, 
+            bxf->img_spacing, 0, 
+            PT_VF_FLOAT_INTERLEAVED, 3, 0
+    );
+    bspline_interpolate_vf (vf, bxf);
+
+    return vf;
+}
 
 void
 compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
@@ -194,26 +211,12 @@ vf_regularize_numerical (Volume* vol)
                     d2_dz2[c] = inv_dzdz * (vec_kp[c] - 2.0f*vec_poi[c] + vec_kn[c]);
 
                     d2_dxdy[c] = inv_dxdy * (
-			vec_injn[c] - vec_injp[c] - vec_ipjn[c] + vec_ipjp[c]);
+                        vec_injn[c] - vec_injp[c] - vec_ipjn[c] + vec_ipjp[c]);
                     d2_dxdz[c] = inv_dxdz * (
-			vec_inkn[c] - vec_inkp[c] - vec_ipkn[c] + vec_ipkp[c]);
+                        vec_inkn[c] - vec_inkp[c] - vec_ipkn[c] + vec_ipkp[c]);
                     d2_dydz[c] = inv_dydz * (
-			vec_jnkn[c] - vec_jnkp[c] - vec_jpkn[c] + vec_jpkp[c]);
+                        vec_jnkn[c] - vec_jnkp[c] - vec_jpkn[c] + vec_jpkp[c]);
 
-#if defined (commentout)
-                    d2_dxdy[c] = inv_dxdy * (
-                            (vec_ijp[c] + 2.0f*vec_poi[c] + vec_ijn[c]) +
-                            (vec_ip[c] + vec_in[c] + vec_jp[c] + vec_jn[c])
-                        );
-                    d2_dxdz[c] = inv_dxdz * (
-                            (vec_ikp[c] + 2.0f*vec_poi[c] + vec_ikn[c]) +
-                            (vec_ip[c] + vec_in[c] + vec_kp[c] + vec_kn[c])
-                        );
-                    d2_dydz[c] = inv_dydz * (
-                            (vec_jkp[c] + 2.0f*vec_poi[c] + vec_jkn[c]) +
-                            (vec_jp[c] + vec_jn[c] + vec_kp[c] + vec_kn[c])
-                        );
-#endif
                     d2_sq += d2_dx2[c]*d2_dx2[c] + d2_dy2[c]*d2_dy2[c] +
                              d2_dz2[c]*d2_dz2[c] + 2.0f * (
                                 d2_dxdy[c]*d2_dxdy[c] +
@@ -243,4 +246,34 @@ vf_regularize_numerical (Volume* vol)
 #endif
 
     return S;
+}
+
+
+void
+regularize (
+    Reg_parms* reg_parms,
+    Bspline_xform* bxf,
+    float* score,
+    float* grad
+)
+{
+    int i;
+    float S;            /* smoothness score */
+    float* dSdP;        /* smoothness grad  */
+
+    switch (reg_parms->implementation) {
+    case 'a':
+//        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
+        break;
+    case 'b':
+//        S = vf_regularize_analytic (bxf);
+        break;
+    default:
+        break;
+    }
+
+    /* Grad is probably best updated inside "flavors" */
+    /* Not sure if score should be done here or inside "flavors" */
+    *score += reg_parms->lambda * S;
+
 }
