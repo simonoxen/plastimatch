@@ -3,19 +3,11 @@
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
 #include <time.h>
-#include "itkSubtractImageFilter.h"
-#include "itkImageRegionIterator.h"
 #include "getopt.h"
 
 #include "bstring_util.h"
 #include "dvh.h"
-#include "itk_image.h"
 #include "pcmd_dvh.h"
-#include "plm_image.h"
-#include "plm_int.h"
-#include "rtds.h"
-#include "rtss.h"
-#include "rtss_structure.h"
 
 static void
 print_usage (void)

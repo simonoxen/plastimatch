@@ -34,8 +34,8 @@ public:
 	input_units = DVH_UNITS_GY;
 	normalization = DVH_NORMALIZATION_PCT;
 	cumulative = 0;
-	num_bins=256;
-	bin_width=1;
+	num_bins = 256;
+	bin_width = 1;
     }
     void execute ();
 };
