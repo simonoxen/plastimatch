@@ -306,7 +306,7 @@ IF (F2C_LIBRARY)
     )
 ENDIF ()
 
-SET (PLASTIMATCH_LIBRARY_SRC
+SET (PLASTIMATCH1_LIBRARY_SRC
   autolabel_trainer.cxx autolabel_trainer.h 
   autolabel_ransac_est.cxx autolabel_ransac_est.h 
   astroid_dose.cxx astroid_dose.h
@@ -314,6 +314,7 @@ SET (PLASTIMATCH_LIBRARY_SRC
   cxt_io.cxx cxt_io.h 
   dicom_util.cxx dicom_util.h
   direction_cosines.h
+  dvh.cxx dvh.h
   gcs_metric.h gcs_metric.hxx 
   gpuit_bspline.cxx gpuit_bspline.h 
   gpuit_demons.cxx gpuit_demons.h 
@@ -398,8 +399,8 @@ SET (PLASTIMATCH_LIBRARY_SRC
   )
 
 if (ITK_FOUND AND GDCM_VERSION_1)
-  set (PLASTIMATCH_LIBRARY_SRC
-    ${PLASTIMATCH_LIBRARY_SRC}
+  set (PLASTIMATCH1_LIBRARY_SRC
+    ${PLASTIMATCH1_LIBRARY_SRC}
     gdcm_dose.cxx gdcm_dose.h
     gdcm_file.cxx gdcm_file.h
     gdcm1_rdd.cxx gdcm1_rdd.h 
@@ -411,8 +412,8 @@ if (ITK_FOUND AND GDCM_VERSION_1)
 endif ()
 
 if (ITK_FOUND AND GDCM_VERSION_2)
-  set (PLASTIMATCH_LIBRARY_SRC
-    ${PLASTIMATCH_LIBRARY_SRC}
+  set (PLASTIMATCH1_LIBRARY_SRC
+    ${PLASTIMATCH1_LIBRARY_SRC}
     gdcm2_util.cxx gdcm2_util.h
     )
 endif ()
@@ -699,7 +700,7 @@ if (FULL_PLASTIMATCH_BUILD)
   # with the same name as the executable.  What happens is the executable 
   # tries to create a temporary library with the same name.  [MSVC 2005]
   # That is why the library is called plastimatch1 instead of plastimatch.
-  set (PLASTIMATCH_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
+  set (PLASTIMATCH1_LIBRARY_DEPENDENCIES ${ITK_LIBRARIES} ${GPUIT_LIBRARIES})
 
   # Ugh.  ITK is stupid.  They quietly dropped support for cygwin. 
   # However, you can still get 3.20.0 to work.  You need to run 
@@ -709,14 +710,14 @@ if (FULL_PLASTIMATCH_BUILD)
   # See also:
   #  http://public.kitware.com/Bug/view.php?id=11659
   if (CYGWIN)
-    set (PLASTIMATCH_LIBRARY_DEPENDENCIES 
-      ${PLASTIMATCH_LIBRARY_DEPENDENCIES} gdi32)
+    set (PLASTIMATCH1_LIBRARY_DEPENDENCIES 
+      ${PLASTIMATCH1_LIBRARY_DEPENDENCIES} gdi32)
   endif ()
 
   plm_add_library (
     plastimatch1 
-    "${PLASTIMATCH_LIBRARY_SRC}"
-    "${PLASTIMATCH_LIBRARY_DEPENDENCIES}"
+    "${PLASTIMATCH1_LIBRARY_SRC}"
+    "${PLASTIMATCH1_LIBRARY_DEPENDENCIES}"
     "")
 endif ()
 

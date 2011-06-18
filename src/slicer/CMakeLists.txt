@@ -40,6 +40,9 @@ set (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
 set (PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC
   plastimatch_slicer_dicomrt_export.cxx
   )
+set (PLASTIMATCH_SLICER_DVH_SRC
+  plastimatch_slicer_dvh.cxx
+  )
 set (PLASTIMATCH_SLICER_LANDWARP_SRC
   plastimatch_slicer_landwarp.cxx
   )
@@ -61,6 +64,9 @@ plm_add_slicer_executable (plastimatch_slicer_dicomrt_import
   "${GPUIT_EXE_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_dicomrt_export
   "${PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC}" "${PLASTIMATCH_LIBS}" 
+  "${GPUIT_EXE_LDFLAGS}")
+plm_add_slicer_executable (plastimatch_slicer_dvh
+  "${PLASTIMATCH_SLICER_DVH_SRC}" "${PLASTIMATCH_LIBS}" 
   "${GPUIT_EXE_LDFLAGS}")
 plm_add_slicer_executable (plastimatch_slicer_landwarp 
   "${PLASTIMATCH_SLICER_LANDWARP_SRC}" "${PLASTIMATCH_LIBS}" 
