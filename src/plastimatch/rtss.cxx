@@ -9,6 +9,7 @@
 #if GDCM_VERSION_1
 #include "gdcm_rtss.h"
 #endif
+#include "itk_metadata.h"
 #include "plm_warp.h"
 #include "rasterizer.h"
 #include "referenced_dicom_dir.h"
@@ -162,6 +163,10 @@ Rtss::save_ss_image (const CBString &ss_img_fn)
     /* Image type must be uint32_t */
     this->m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
 #endif
+
+    /* Set metadata */
+    // this->m_ss_img->set_metadata ("I am a", "Structure set");
+
     this->m_ss_img->save_image ((const char*) ss_img_fn);
 }
 

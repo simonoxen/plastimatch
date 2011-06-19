@@ -7,6 +7,7 @@
 #include "plm_config.h"
 #include "itkImage.h"
 #include "itkImageFileReader.h"
+#include "itkMetaDataDictionary.h"
 #include "itkOrientImageFilter.h"
 #include "file_util.h"
 #include "print_and_exit.h"
@@ -33,6 +34,7 @@ itk_image_load (const char *fn)
 	exit(1);
     }
     typename T::Pointer img = reader->GetOutput();
+    img->SetMetaDataDictionary (reader->GetMetaDataDictionary());
     return img;
 }
 
@@ -48,11 +50,6 @@ load_any_2 (const char* fname, T, U)
 		TImageType, UImageType > CastFilterType;
 
     /* Load image as type T */
-#if defined (commentout)
-    typename TReaderType::Pointer rdr = TReaderType::New();
-    itk_image_load_rdr (rdr, fname);
-    typename TImageType::Pointer input_image = rdr->GetOutput();
-#endif
     typename TImageType::Pointer input_image 
 	= itk_image_load<TImageType> (fname);
 
@@ -61,6 +58,9 @@ load_any_2 (const char* fname, T, U)
     caster->SetInput (input_image);
     typename UImageType::Pointer image = caster->GetOutput();
     image->Update();
+
+    /* Copy metadata */
+    image->SetMetaDataDictionary (input_image->GetMetaDataDictionary());
 
     /* Return type U */
     return image;
@@ -153,10 +153,13 @@ orient_image (T img)
     
     typename OrienterType::Pointer orienter = OrienterType::New();
     orienter->UseImageDirectionOn ();
-    orienter->SetDesiredCoordinateOrientation (itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
+    orienter->SetDesiredCoordinateOrientation (
+	itk::SpatialOrientation::ITK_COORDINATE_ORIENTATION_RAI);
     orienter->SetInput (img);
     orienter->Update ();
-    return orienter->GetOutput ();
+    T output_img = orienter->GetOutput ();
+    output_img->SetMetaDataDictionary (img->GetMetaDataDictionary());
+    return output_img;
 }
 
 #endif

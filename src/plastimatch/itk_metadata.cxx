@@ -1,0 +1,101 @@
+/* -----------------------------------------------------------------------
+   See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
+   ----------------------------------------------------------------------- */
+#include "plm_config.h"
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+#include "itkImageRegionIterator.h"
+#include "itkMetaDataDictionary.h"
+#include "itkMetaDataObject.h"
+
+#include "file_util.h"
+#include "itk_image.h"
+#include "itk_image_cast.h"
+#include "itk_image_load.h"
+#include "itk_image_save.h"
+#include "mha_io.h"
+#include "plm_image.h"
+#include "plm_image_convert.h"
+#include "plm_image_header.h"
+#include "print_and_exit.h"
+#include "volume.h"
+
+void 
+itk_metadata_set (
+    itk::MetaDataDictionary *dict, 
+    const char *tag, 
+    const char *value
+)
+{
+    typedef itk::MetaDataObject< std::string > MetaDataStringType;
+    itk::EncapsulateMetaData<std::string> (
+	*dict, std::string (tag), std::string (value));
+
+    itk::MetaDataDictionary::ConstIterator itr = dict->Begin();
+    itk::MetaDataDictionary::ConstIterator end = dict->End();
+
+    while ( itr != end ) {
+	itk::MetaDataObjectBase::Pointer entry = itr->second;
+	MetaDataStringType::Pointer entryvalue =
+	    dynamic_cast<MetaDataStringType *>( entry.GetPointer());
+	if (entryvalue) {
+	    std::string tagkey = itr->first;
+	    std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+	    std::cout << tagkey << " = " << tagvalue << std::endl;
+	}
+	++itr;
+    }
+}
+
+void 
+itk_metadata_print_1 (
+    itk::MetaDataDictionary *dict
+)
+{
+    typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+    itk::MetaDataDictionary::ConstIterator itr = dict->Begin();
+    itk::MetaDataDictionary::ConstIterator end = dict->End();
+
+    printf ("ITK Metadata...\n");
+    while ( itr != end ) {
+	itk::MetaDataObjectBase::Pointer entry = itr->second;
+	MetaDataStringType::Pointer entryvalue =
+	    dynamic_cast<MetaDataStringType *>( entry.GetPointer());
+	if (entryvalue) {
+	    std::string tagkey = itr->first;
+	    std::string tagvalue = entryvalue->GetMetaDataObjectValue();
+	    std::cout << tagkey << " = " << tagvalue << std::endl;
+	}
+	++itr;
+    }
+}
+
+/* This is just another example of how to use the API */
+void 
+itk_metadata_print_2 (
+    itk::MetaDataDictionary *dict
+)
+{
+    typedef itk::MetaDataObject< std::string > MetaDataStringType;
+
+    std::vector<std::string> keys = dict->GetKeys();
+    std::vector<std::string>::const_iterator key = keys.begin();
+
+    std::string meta_string;
+
+    printf ("ITK Metadata (2)...\n");
+    while (key != keys.end()) {
+	std::cout << *key << " " << meta_string << std::endl;
+	++key;
+    }
+}
+
+void 
+itk_metadata_print (
+    itk::MetaDataDictionary *dict
+)
+{
+    itk_metadata_print_1 (dict);
+}

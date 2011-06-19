@@ -14,6 +14,7 @@
 #include "itk_image_cast.h"
 #include "itk_image_load.h"
 #include "itk_image_save.h"
+#include "itk_metadata.h"
 #include "mha_io.h"
 #include "plm_image.h"
 #include "plm_image_convert.h"
@@ -122,7 +123,7 @@ Plm_image::load_native (const char* fname)
 
     if (is_directory (fname)) {
 	/* GCS FIX: The call to is_directory is redundant -- we already 
-	    called plm_file_format_deduce() in warp_main() */
+	   called plm_file_format_deduce() in warp_main() */
 	load_native_dicom (fname);
 	return;
     }
@@ -275,7 +276,6 @@ Plm_image::save_image (const char* fname)
 	itk_image_save (this->m_itk_int32, fname);
 	break;
     case PLM_IMG_TYPE_ITK_ULONG:
-	this->set_metadata ("Hello", "World");
 	itk_image_save (this->m_itk_uint32, fname);
 	break;
     case PLM_IMG_TYPE_ITK_FLOAT:
@@ -874,46 +874,26 @@ Plm_image::compare_headers (Plm_image *pli1, Plm_image *pli2)
     return Plm_image_header::compare (&pih1, &pih2);
 }
 
+/* Note: this works for NRRD (and dicom?), but not MHA/MHD */
 void 
 Plm_image::set_metadata (char *tag, char *value)
 {
-    /* GCS FIX: This works for NRRD (and dicom?), but not MHA/MHD */
-#if defined (commentout)
-    typedef itk::MetaDataObject< std::string > MetaDataStringType;
-
     itk::MetaDataDictionary *dict;
 
     switch (this->m_type) {
     case PLM_IMG_TYPE_ITK_ULONG:
-	{
-	    printf ("SETTING METADATA ????\n");
-	    dict = &this->m_itk_uint32->GetMetaDataDictionary();
-
-	    itk::EncapsulateMetaData<std::string> (
-		*dict, std::string (tag), std::string (value));
-
-	    itk::MetaDataDictionary::ConstIterator itr = dict->Begin();
-	    itk::MetaDataDictionary::ConstIterator end = dict->End();
-
-	    while ( itr != end ) {
-		itk::MetaDataObjectBase::Pointer entry = itr->second;
-		MetaDataStringType::Pointer entryvalue =
-		    dynamic_cast<MetaDataStringType *>( entry.GetPointer());
-		if (entryvalue) {
-		    std::string tagkey = itr->first;
-		    std::string tagvalue = entryvalue->GetMetaDataObjectValue();
-		    std::cout << tagkey << " = " << tagvalue << std::endl;
-		}
-		++itr;
-	    }
-	}
+	dict = &this->m_itk_uint32->GetMetaDataDictionary();
+	itk_metadata_set (dict, tag, value);
+	break;
+    case PLM_IMG_TYPE_ITK_UCHAR_VEC:
+	dict = &this->m_itk_uchar_vec->GetMetaDataDictionary();
+	itk_metadata_set (dict, tag, value);
 	break;
     default:
 	print_and_exit ("Error, can't set metadata for image type %d\n",
 	    this->m_type);
 	break;
     }
-#endif
 }
 
 /* GCS FIX:  This is inefficient.  Because the pli owns the vol, 

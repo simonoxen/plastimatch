@@ -95,7 +95,7 @@ void SerieHelper2::AddFileName(std::string const &filename)
     header->SetLoadMode(LoadMode);
     header->SetFileName( filename ); 
     
-    printf ("------  AddFileName (%s)\n", filename.c_str());
+    //printf ("------  AddFileName (%s)\n", filename.c_str());
 
     header->Load();
 
@@ -112,7 +112,7 @@ void SerieHelper2::AddFileName(std::string const &filename)
     }
     else
     {
-	printf ("Header not readable: %s\n", filename.c_str());
+	//printf ("Header not readable: %s\n", filename.c_str());
 	gdcmWarningMacro("Could not read file: " << filename );
 	delete header;
     }
