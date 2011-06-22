@@ -652,7 +652,7 @@ IF (OPENMP_FOUND)
 ENDIF ()
 
 if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
-  PLM_SET_SSE2_FLAGS (bspline.cxx bspline_mi.cxx bspline_mse.cxx)
+    PLM_SET_SSE2_FLAGS (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------
