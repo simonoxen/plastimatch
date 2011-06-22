@@ -272,7 +272,7 @@ if (PLM_BUILD_RTK)
   set (ITK_USE_FILE)
 endif ()
 find_package (SQLite)
-if (NOT PLM_CONFIG_DISABLE_SSE2)
+if (NOT PLM_CONFIG_DISABLE_SSE2 AND NOT BUILD_AGAINST_SLICER3)
   find_package (SSE)           # SSE Extensions for CPU
 else ()
   set (SSE2_FOUND false)
