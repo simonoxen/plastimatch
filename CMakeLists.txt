@@ -261,9 +261,6 @@ if (NOT PLM_CONFIG_DISABLE_OPENCL)
 endif ()
 find_package (OpenGL)
 find_package (OpenMP)
-if (MINGW)
-  set (QT4_FOUND FALSE)
-endif ()
 if (PLM_BUILD_RTK)
   find_package (RTK)
   # RTK sets ITK variables.  But we might prefer Slicer's, so reset them.
@@ -278,16 +275,6 @@ else ()
 endif ()
 find_package (Subversion)
 find_package (wxWidgets)
-
-##-----------------------------------------------------------------------------
-##  QT requires including the use file
-##-----------------------------------------------------------------------------
-if (QT4_FOUND)
-  message (STATUS "Looking for Qt4 - found")
-  include (${QT_USE_FILE})
-else ()
-  message (STATUS "Looking for Qt4 - not found")
-endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Use local getopt if not found
@@ -482,7 +469,17 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  QT
 ##-----------------------------------------------------------------------------
-find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+if (MINGW)
+  set (QT4_FOUND FALSE)
+else ()
+  find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
+endif ()
+if (QT4_FOUND)
+  message (STATUS "Looking for Qt4 - found")
+  include (${QT_USE_FILE})
+else ()
+  message (STATUS "Looking for Qt4 - not found")
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  ITK
