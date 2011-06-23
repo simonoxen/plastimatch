@@ -27,8 +27,24 @@
       <default>None</default>
       <description>Second output image</description>
     </image>
+    <image type="label">
+      <name>plmslc_output_ssmha</name>
+      <longflag>--output_ssmha</longflag>
+      <label>Output Labelmap </label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Labelmap image for Obj/Str/Dose</description>
+    </image>
+    <image>
+      <name>plmslc_output_dosemha</name>
+      <longflag>--output_dosemha</longflag>
+      <label>Output Dose Image</label>
+      <channel>output</channel>
+      <default>None</default>
+      <description>Dose image for Obj/Str/Dose</description>
+    </image>
+    
   </parameters>
-
   <parameters advanced="true">
     <label>Image geometry options</label>
     <description>Options that control the size and resolution of the synthetic images</description>
@@ -165,4 +181,32 @@
       <default>10, 0, 0 </default>
     </float-vector>  
     </parameters>
-</executable>
+
+  <parameters>
+    <label>Object/structure/dose options</label>
+    <description>Options that control obj/struct/dose geometry</description>
+    <boolean>
+      <name>create_objstructdose</name>
+      <label>Cteate Object/Structure/Dose set?</label>
+      <default>false</default>
+      <longflag>--createobjstructdose</longflag>
+      <description>Check this box if you want to create Dose mha</description>
+    </boolean>
+    <boolean>
+      <name>create_objstrucmha</name>
+      <label>Cteate StructureSet?</label>
+      <default>false</default>
+      <longflag>--createstrsetemha</longflag>
+      <description>Check this box if you want to create Structure Set</description>
+    </boolean>
+    <boolean>
+      <name>create_objdosemha</name>
+      <label>Cteate Dose?</label>
+      <default>false</default>
+      <longflag>--createobjdosemha</longflag>
+      <description>Check this box if you want to create Dose</description>
+    </boolean>
+    
+  </parameters>
+
+  </executable>

@@ -14,7 +14,8 @@ enum Pattern_type {
     PATTERN_GAUSS,
     PATTERN_RECT,
     PATTERN_SPHERE,
-    PATTERN_ENCLOSED_RECT
+    PATTERN_ENCLOSED_RECT,
+    PATTERN_OBJSTRUCTDOSE
 };
 
 class Synthetic_mha_parms {
@@ -40,6 +41,9 @@ public:
     bool m_want_ss_img;
     bool m_want_dose_img;
 
+    bool m_want_objdosemha;
+    bool m_want_objstrucmha; // same as m_want_ss_img??
+
 public:
     Synthetic_mha_parms () {
 	output_type = PLM_IMG_TYPE_ITK_FLOAT;
@@ -63,6 +67,9 @@ public:
 	rect_size[5] = +50.0f;
 	m_want_ss_img = false;
 	m_want_dose_img = false;
+    
+	m_want_objdosemha = false;
+	m_want_objstrucmha = false;
     }
 };
 

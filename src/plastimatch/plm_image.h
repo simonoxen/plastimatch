@@ -123,6 +123,11 @@ public:
 	convert_to_itk_float ();
 	return m_itk_float;
     }
+    /* NSh 6/22/2011 */
+    UCharImageType::Pointer& itk_uchar () {
+	convert_to_itk_uchar ();
+	return m_itk_uchar;
+    }
     Volume* gpuit_float () {
 	convert_to_gpuit_float ();
 	return (Volume*) m_gpuit;

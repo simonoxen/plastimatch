@@ -61,6 +61,104 @@ float intens_enclosed(FloatPoint3DType phys,
     return f;
 }
 
+//box + ellipsoid inside
+float intens_objstructdose(FloatPoint3DType phys, 
+		      float xlat1[3], float xlat2[3],
+		      float f1, float f2)
+{
+    float f;
+
+    float p[36]={ 5,5,5,  195,8,195, 
+		  5,193,5, 195,195,195, 
+		  5,5,5,  8,195,195, 
+		  193,5,5, 195,195,195, 
+		  5,5,5,  195,195,8, 
+		  5,5,193, 195,195,195  };
+
+
+    for(int i=0;i<36;i++) 
+    {  p[i]-=100; /*p[i]*=2;*/ } 
+    // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
+		
+    f = 0.;
+    for (int i=0;i<6;i++)
+    {
+
+	if (p[6*i+0]<phys[0] && phys[0]<p[6*i+3] &&
+	    p[6*i+1]<phys[1] && phys[1]<p[6*i+4] &&
+	    p[6*i+2]<phys[2] && phys[2]<p[6*i+5]) 
+	{ f = 1.; } 
+    }
+
+    // sphere
+    float rs1= 25, rs2= 25, rs3=25;
+    float xs=101, ys=101, zs=101;
+
+    xs-=100; ys-=100; zs-=100; 
+
+    float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	+(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	+(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+    if ( rr < 2 ) { f = 1.;}
+
+    return f;
+}
+
+// ellipsoid inside for labelmap
+unsigned char intens_labelmap(FloatPoint3DType phys, 
+		      float xlat1[3], float xlat2[3],
+		      float f1, float f2)
+{
+    unsigned char f;
+
+    f = 0;
+    // sphere
+    float rs1= 30, rs2= 30, rs3=30;
+    float xs=101, ys=101, zs=101;
+
+    xs-=100; ys-=100; zs-=100; 
+
+    float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	+(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	+(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+    if ( rr < 2 ) { f = 1;}
+
+    return f;
+}
+
+
+float shifttanh(float x)
+{
+return 0.5*( (exp(x)-exp(-x))/(exp(x)+exp(-x)) +1 );
+}
+
+//synthetic dose distribution
+float intens_dosemha(FloatPoint3DType phys, 
+		      float xlat1[3], float xlat2[3],
+		      float f1, float f2)
+{
+    float f=0;
+
+    float r = (phys[0]+0.)*(phys[0]+0.)+
+	      (phys[1]+0.)*(phys[1]+0.)+
+	      (phys[2]+0.)*(phys[2]+0.);
+
+    f  += exp(-r/(30*30));
+
+    /*
+    r = (phys[0]-100.)*(phys[0]-100.)+
+        (phys[1]-100.)*(phys[1]-100.)+
+        (phys[2]-100.)*(phys[2]-100.)/(1.2*1.2);
+
+    f += exp(-r/(30*30));
+
+    */
+    f = 20*shifttanh(2.5*f-0.3);
+
+    return f;
+}
 
 
 void
@@ -171,13 +269,29 @@ synthetic_mha (
 		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 to 1
 	    f = (1 - f) * parms->background + f * parms->foreground;
 	    break;
+	case PATTERN_OBJSTRUCTDOSE:
+	//    if (parms->m_want_objdosemha == false )
+	    {
+	    f = intens_objstructdose(phys,
+		parms->enclosed_xlat1, parms->enclosed_xlat2,
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 to 1
+	    f = (1 - f) * parms->background + f * parms->foreground;
+	    }
+	    /*else {
+	    f = intens_dosemha(phys,
+		parms->enclosed_xlat1, parms->enclosed_xlat2,
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2); 
+	    }*/
+	    break;
 	default:
 	    f = 0.0f;
 	    break;
 	}
 	it_out.Set (f);
 
-	if (parms->m_want_ss_img) {
+	//NSh: 
+	//GCS code not used for PATTERN_OBJSTRUCTDOSE
+	if (parms->m_want_ss_img && parms->pattern != PATTERN_OBJSTRUCTDOSE ) {
 	    const float thresh = parms->background + 
 		0.5 * (parms->foreground - parms->background);
 	    if (parms->foreground > parms->background && f > thresh) {
@@ -190,7 +304,17 @@ synthetic_mha (
 	    ++uchar_img_it;
 	}
 
-	if (parms->m_want_dose_img) {
+	//NSh code
+	if (parms->m_want_objstrucmha && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
+	    unsigned char lab = intens_labelmap(phys,
+		parms->enclosed_xlat1, parms->enclosed_xlat2,
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 or 1
+	    uchar_img_it.Set (lab);
+	    ++uchar_img_it;
+	}
+
+	//GCS code
+	if (parms->m_want_dose_img && parms->pattern != PATTERN_OBJSTRUCTDOSE) {
 	    const float thresh = parms->background + 
 		0.5 * (parms->foreground - parms->background);
 	    if (parms->foreground > parms->background && f > thresh) {
@@ -202,11 +326,26 @@ synthetic_mha (
 	    }
 	    ++dose_img_it;
 	}
+    
+	//NSh code
+	if (parms->m_want_dose_img && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
+		float f = intens_dosemha(phys,
+		parms->enclosed_xlat1, parms->enclosed_xlat2,
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2); 
+	    dose_img_it.Set (f);
+	    ++dose_img_it;
+	}
+
+
     }
 
     rtds->m_img = new Plm_image;
     rtds->m_img->set_itk (im_out);
     if (parms->m_want_ss_img) {
+
+	rtds->m_nsh_ss_img = new Plm_image;
+	rtds->m_nsh_ss_img->set_itk(uchar_img);
+
 	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->m_ss_img = new Plm_image;
 	rtds->m_ss_image->m_ss_img->set_itk (uchar_img);
@@ -216,3 +355,4 @@ synthetic_mha (
 	rtds->m_dose->set_itk (dose_img);
     }
 }
+

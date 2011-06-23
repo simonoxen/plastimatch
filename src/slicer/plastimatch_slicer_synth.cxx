@@ -52,15 +52,31 @@ main (int argc, char * argv [])
 	sm_parms.pattern = PATTERN_SPHERE;
     } 
 	
-	if (create_enclosed){
+    if (create_enclosed){
 	sm_parms.pattern = PATTERN_ENCLOSED_RECT;
     }
-    
-	sm_parms.enclosed_intens_f1 = plmslc_intensity1;
+
+    	sm_parms.enclosed_intens_f1 = plmslc_intensity1;
 	sm_parms.enclosed_intens_f2 = plmslc_intensity2;
 
 	sm_parms.foreground = plmslc_foreground;
-    sm_parms.background = plmslc_background;
+	sm_parms.background = plmslc_background;
+
+
+    if (create_objstructdose){
+	sm_parms.pattern = PATTERN_OBJSTRUCTDOSE;
+    }
+
+    if (create_objstrucmha && create_objstructdose) { 
+	sm_parms.m_want_objstrucmha = true; 
+	sm_parms.m_want_ss_img = true;
+    }
+
+    if (create_objdosemha && create_objdosemha){
+	sm_parms.m_want_objdosemha = true;
+	sm_parms.m_want_dose_img = true;
+    }
+
 
     /* Gauss options */
     if (plmslc_gausscenter.size() >= 3) {
@@ -128,11 +144,33 @@ main (int argc, char * argv [])
     }
 
     /* Create Volume 1 */
+    /* Also write out dose and structure set image if requested */
     if (plmslc_output_one != "" && plmslc_output_one != "None") {
 	Rtds rtds;
 	synthetic_mha (&rtds, &sm_parms);
 	FloatImageType::Pointer img = rtds.m_img->itk_float();
 	itk_image_save_float (img, plmslc_output_one.c_str());
+    
+	if (plmslc_output_dosemha != "" && plmslc_output_dosemha != "None" && sm_parms.m_want_dose_img) {
+	FloatImageType::Pointer img_dose = rtds.m_dose->itk_float();
+	itk_image_save_float (img_dose, plmslc_output_dosemha.c_str());
+	}
+
+	if (create_objstrucmha && create_objstructdose && plmslc_output_ssmha != "" && plmslc_output_ssmha != "None") {
+	
+	// itk_uchar() newly created in plm_image.h
+	// why this does not work???
+	// UCharImageType::Pointer img_ss = rtds.m_ss_image.m_ss_img->itk_uchar();
+	
+	// m_nsh_ss_img newly created by analogy with m_dose and m_img
+	// this compiles ok
+	UCharImageType::Pointer img_ss = rtds.m_nsh_ss_img->itk_uchar();
+
+	itk_image_save( img_ss, plmslc_output_ssmha.c_str());
+	//itk_image_save_uchar (img_ss, plmslc_output_ssmha.c_str());
+	//why does this produce a link error???
+	}
+    
     }
 
     /* Create Volume 2 */

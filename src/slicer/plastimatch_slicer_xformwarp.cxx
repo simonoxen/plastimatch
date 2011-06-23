@@ -25,6 +25,10 @@ main (int argc, char * argv [])
     Plm_file_format file_type;
     Rtds rtds;
 
+    /* Input image (to set the size) */
+    parms.fixed_img_fn = plmslc_xformwarp_reference_vol.c_str();
+
+
     /* Input image (required) */
     parms.input_fn = plmslc_xformwarp_input_img.c_str();
 

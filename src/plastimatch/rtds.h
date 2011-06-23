@@ -31,6 +31,9 @@ public:
 					  coordinates */
     char m_xio_dose_input[_MAX_PATH];  /* Input XiO dose file to use as 
 					  template for XiO dose saving. */
+
+    Plm_image *m_nsh_ss_img; /*NSh temp var for labelmap mha image*/
+
 public:
     Rtds ();
     ~Rtds ();
