@@ -194,7 +194,22 @@ dvh_execute_internal (
 
     FloatImageType::Pointer dose_img = rtds->m_dose->itk_float ();
     UInt32ImageType::Pointer ss_img = rtds->m_ss_image->get_ss_img();
-    Rtss_polyline_set *ss_list = rtds->m_ss_image->get_ss_list();
+
+    /* GCS HACK: This should go into rtss.cxx */
+    Rtss_polyline_set *ss_list;
+    if (rtds->m_ss_image->m_ss_list) {
+	ss_list = rtds->m_ss_image->get_ss_list();
+    } else {
+	if (rtds->m_ss_image->m_cxt) {
+	    ss_list = rtds->m_ss_image->m_cxt;
+	} else {
+	    ss_list = new Rtss_polyline_set;
+	    for (int i = 0; i < 32; i++) {
+		ss_list->add_structure ("Unknown Structure", 
+		    "255 255 0", i);
+	    }
+	}
+    }
 
     /* Create histogram */
     std::cout << "Creating Histogram..." << std::endl;
