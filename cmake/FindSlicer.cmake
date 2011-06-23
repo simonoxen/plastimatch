@@ -13,11 +13,6 @@ if (SLICER_INCLUDE_DIR)
   set (Slicer_FIND_QUIETLY TRUE)
 endif ()
 
-# The Slicer4 config file complains if these are set.
-unset (ITK_DIR CACHE)
-unset (QT_QMAKE_EXECUTABLE CACHE)
-unset (VTK_DIR CACHE)
-
 # Find SlicerConfig.cmake or Slicer3Config.cmake
 unset (SLICER_CONFIG_FILE CACHE)
 if (Slicer_DIR OR Slicer3_DIR)
@@ -25,11 +20,13 @@ if (Slicer_DIR OR Slicer3_DIR)
     "${Slicer_DIR}" "${Slicer3_DIR}")
   if (SLICER_CONFIG_FILE)
     set (SLICER_IS_SLICER3 FALSE)
+    set (SLICER_IS_SLICER4 TRUE)
   else ()
     find_file (SLICER_CONFIG_FILE Slicer3Config.cmake
       "${Slicer_DIR}" "${Slicer3_DIR}")
     if (SLICER_CONFIG_FILE)
       set (SLICER_IS_SLICER3 TRUE)
+      set (SLICER_IS_SLICER4 FALSE)
     endif ()
   endif ()
 endif ()
@@ -49,6 +46,10 @@ endif ()
 
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 if (SLICER_CONFIG_FILE)
+  # The Slicer4 config file complains if these are set.
+  unset (ITK_DIR CACHE)
+  unset (QT_QMAKE_EXECUTABLE CACHE)
+  unset (VTK_DIR CACHE)
   include ("${SLICER_CONFIG_FILE}")
 endif ()
 
@@ -58,12 +59,6 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args (SLICER DEFAULT_MSG Slicer_DIR)
 
 if (SLICER_FOUND)
-
-  if (SLICER_IS_SLICER3)
-    set (SLICER_IS_SLICER4 FALSE)
-  else ()  
-    set (SLICER_IS_SLICER4 TRUE)
-  endif ()
 
   if (SLICER_IS_SLICER3)
     ## Slicer 3: convert old names to new names
@@ -83,6 +78,11 @@ if (SLICER_FOUND)
   endif ()
     ## Always set shared libs on
   set (BUILD_SHARED_LIBS ON)
+else ()
+  ## Restore old values 
+  #set (ITK_DIR ${ITK_DIR_OLD})
+  #set (QT_QMAKE_EXECUTABLE ${QT_QMAKE_EXECUTABLE_OLD})
+  #set (VTK_DIR ${VTK_DIR_OLD})
 endif ()
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 
