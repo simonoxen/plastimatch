@@ -13,6 +13,11 @@ if (SLICER_INCLUDE_DIR)
   set (Slicer_FIND_QUIETLY TRUE)
 endif ()
 
+# The Slicer4 config file complains if these are set.
+unset (ITK_DIR CACHE)
+unset (QT_QMAKE_EXECUTABLE CACHE)
+unset (VTK_DIR CACHE)
+
 # Find SlicerConfig.cmake or Slicer3Config.cmake
 unset (SLICER_CONFIG_FILE CACHE)
 if (Slicer_DIR OR Slicer3_DIR)
