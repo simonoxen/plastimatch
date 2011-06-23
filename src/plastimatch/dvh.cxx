@@ -227,9 +227,13 @@ dvh_execute_internal (
     dose_vox[0]=dose_img->GetSpacing()[0];
     dose_vox[1]=dose_img->GetSpacing()[1];
     dose_vox[2]=dose_img->GetSpacing()[2];
+    std::cout << dose_vox[0] << " " 
+	<< dose_vox[1] << " " << dose_vox[2] << "\n";
     ss_vox[0]=ss_img->GetSpacing()[0];
     ss_vox[1]=ss_img->GetSpacing()[1];
     ss_vox[2]=ss_img->GetSpacing()[2];
+    std::cout << ss_vox[0] << " " 
+	<< ss_vox[1] << " " << ss_vox[2] << "\n";
 
     if (dose_vox[0] != ss_vox[0] 
 	|| dose_vox[1] != ss_vox[1] 
@@ -341,7 +345,7 @@ dvh_execute_internal (
     return output_string;
 }
 
-plastimatch1_EXPORT std::string
+std::string
 dvh_execute (
     Plm_image *input_ss_img,
     Plm_image *input_dose_img,
@@ -363,7 +367,19 @@ dvh_execute (
     return 0;
 }
 
-plastimatch1_EXPORT void
+std::string
+dvh_execute (
+    UShortImageType::Pointer input_ss_img,
+    UShortImageType::Pointer input_dose_img,
+    Dvh_parms *parms)
+{
+    Rtds rtds;
+    std::string output_string;
+
+    return 0;
+}
+
+void
 dvh_execute (
     Dvh_parms_pcmd *parms)
 {
