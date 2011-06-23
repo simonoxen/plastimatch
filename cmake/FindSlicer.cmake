@@ -75,7 +75,6 @@ if (SLICER_FOUND)
     include (vtkMacroKitPythonWrap)
     include (ctkMacroWrapPythonQt)
     include (ctkMacroCompilePythonScript)
-    include (SlicerMacroPythonWrapModuleLibrary)
   endif ()
     ## Always set shared libs on
   set (BUILD_SHARED_LIBS ON)

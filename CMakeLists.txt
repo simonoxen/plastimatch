@@ -261,7 +261,6 @@ if (NOT PLM_CONFIG_DISABLE_OPENCL)
 endif ()
 find_package (OpenGL)
 find_package (OpenMP)
-find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 if (MINGW)
   set (QT4_FOUND FALSE)
 endif ()
@@ -479,6 +478,11 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.svn")
 else ()
   set (PLASTIMATCH_HAVE_BUILD_NUMBER FALSE)
 endif ()
+
+##-----------------------------------------------------------------------------
+##  QT
+##-----------------------------------------------------------------------------
+find_package (Qt4 4.6.2 COMPONENTS QtCore QtGui OPTIONAL)
 
 ##-----------------------------------------------------------------------------
 ##  ITK
