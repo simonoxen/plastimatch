@@ -115,7 +115,6 @@ parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 	}
     }
     if (bstring_empty (parms->input_ss_img_fn)
-	|| bstring_empty (parms->input_ss_list_fn)
 	|| bstring_empty (parms->input_dose_fn)
 	|| bstring_empty (parms->output_csv_fn))
     {

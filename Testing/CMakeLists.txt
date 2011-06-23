@@ -187,6 +187,9 @@ endif ()
 ##   rect-3.mha    Standard rect, centered
 ##   rect-4.mha    Uchar rect, centered
 ##   sphere-1.mha  Uchar sphere, bg=0, fg=255
+##   rtds-ct-1.mha    Synthetic ct
+##   rtds-dose-1.mha  Synthetic dose
+##   rtds-s-1.mha     Synthetic ss
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
 
