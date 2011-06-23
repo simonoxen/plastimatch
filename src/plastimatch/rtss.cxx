@@ -230,6 +230,7 @@ Rtss::get_ss_img (void)
     if (!this->m_ss_img) {
 	print_and_exit ("Sorry, can't get_ss_img()\n");
     }
+    m_ss_img->convert (PLM_IMG_TYPE_ITK_ULONG);
     return this->m_ss_img->m_itk_uint32;
 }
 

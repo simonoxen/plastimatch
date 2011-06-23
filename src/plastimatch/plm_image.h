@@ -115,6 +115,8 @@ public:
     /* assignment */
     void set_gpuit (Volume *v);
     void set_itk (UCharImageType::Pointer img);
+    void set_itk (UShortImageType::Pointer img);
+    void set_itk (UInt32ImageType::Pointer img);
     void set_itk (FloatImageType::Pointer img);
     void set_itk (UCharVecImageType::Pointer img);
 

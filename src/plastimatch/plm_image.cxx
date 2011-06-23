@@ -360,6 +360,24 @@ Plm_image::set_itk (UCharImageType::Pointer img)
 }
 
 void 
+Plm_image::set_itk (UShortImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_USHORT;
+    m_type = PLM_IMG_TYPE_ITK_USHORT;
+    this->m_itk_ushort = img;
+}
+
+void 
+Plm_image::set_itk (UInt32ImageType::Pointer img)
+{
+    this->free ();
+    m_original_type = PLM_IMG_TYPE_ITK_ULONG;
+    m_type = PLM_IMG_TYPE_ITK_ULONG;
+    this->m_itk_uint32 = img;
+}
+
+void 
 Plm_image::set_itk (FloatImageType::Pointer img)
 {
     this->free ();

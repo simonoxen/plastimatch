@@ -364,7 +364,7 @@ dvh_execute (
     rtds.m_dose = 0;
     rtds.m_ss_image->m_ss_img = 0;
 
-    return 0;
+    return output_string;
 }
 
 std::string
@@ -376,7 +376,20 @@ dvh_execute (
     Rtds rtds;
     std::string output_string;
 
-    return 0;
+    rtds.m_dose = new Plm_image;
+    rtds.m_dose->set_itk (input_dose_img);
+
+    Plm_image *plm_ss_img = new Plm_image;
+    plm_ss_img->set_itk (input_ss_img);
+
+    rtds.m_ss_image = new Rtss (&rtds);
+    rtds.m_ss_image->m_ss_img = plm_ss_img;
+
+    output_string = dvh_execute_internal (&rtds, parms);
+
+    /* Ok to let destructor destroy things */
+
+    return output_string;
 }
 
 void
