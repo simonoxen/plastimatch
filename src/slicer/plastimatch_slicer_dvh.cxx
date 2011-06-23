@@ -14,7 +14,7 @@ main (int argc, char * argv [])
 {
     PARSE_ARGS;
 
-    Dvh_parms dvh;
+    Dvh_parms_pcmd dvh;
 
     /* Required input */
     dvh.input_ss_img_fn = input_ss_image.c_str();
