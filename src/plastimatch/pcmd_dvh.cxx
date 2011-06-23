@@ -28,7 +28,7 @@ print_usage (void)
 }
 
 static void
-parse_args (Dvh_parms* parms, int argc, char* argv[])
+parse_args (Dvh_parms_pcmd* parms, int argc, char* argv[])
 {
     int rc;
     int ch;
@@ -72,11 +72,11 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	case 6:
 	    if (!strcmp (optarg, "cgy") || !strcmp (optarg, "cGy"))
 	    {
-		parms->input_units = DVH_UNITS_CGY;
+		parms->dvh_parms.input_units = DVH_UNITS_CGY;
 	    }
 	    else if (!strcmp (optarg, "gy") || !strcmp (optarg, "Gy"))
 	    {
-		parms->input_units = DVH_UNITS_CGY;
+		parms->dvh_parms.input_units = DVH_UNITS_CGY;
 	    }
 	    else {
 		fprintf (stderr, "Error.  Units must be Gy or cGy.\n");
@@ -84,24 +84,24 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 	    }
 	    break;
 	case 7:
-	    parms->cumulative = 1;
+	    parms->dvh_parms.cumulative = 1;
 	    break;
 	case 8:
-	    rc = sscanf (optarg, "%d", &parms->num_bins);
-	    std::cout << "num_bins " << parms->num_bins << std::endl;
+	    rc = sscanf (optarg, "%d", &parms->dvh_parms.num_bins);
+	    std::cout << "num_bins " << parms->dvh_parms.num_bins << "\n";
 	    break;
 	case 9:
-	    rc = sscanf (optarg, "%f", &parms->bin_width);
-	    std::cout << "bin_width " << parms->bin_width << std::endl;
+	    rc = sscanf (optarg, "%f", &parms->dvh_parms.bin_width);
+	    std::cout << "bin_width " << parms->dvh_parms.bin_width << "\n";
 	    break;
 	case 10:
 	    if (!strcmp (optarg, "percent") || !strcmp (optarg, "pct"))
 	    {
-		parms->normalization = DVH_NORMALIZATION_PCT;
+		parms->dvh_parms.normalization = DVH_NORMALIZATION_PCT;
 	    }
 	    else if (!strcmp (optarg, "voxels") || !strcmp (optarg, "vox"))
 	    {
-		parms->normalization = DVH_NORMALIZATION_VOX;
+		parms->dvh_parms.normalization = DVH_NORMALIZATION_VOX;
 	    }
 	    else {
 		fprintf (stderr, "Error.  Normalization must be pct or vox.\n");
@@ -128,7 +128,7 @@ parse_args (Dvh_parms* parms, int argc, char* argv[])
 void
 do_command_dvh (int argc, char *argv[])
 {
-    Dvh_parms parms;
+    Dvh_parms_pcmd parms;
     
     parse_args (&parms, argc, argv);
 

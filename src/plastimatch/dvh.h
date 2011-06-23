@@ -5,8 +5,11 @@
 #define _dvh_h_
 
 #include "plm_config.h"
+#include <string>
 #include "bstrwrap.h"
 #include "resample_mha.h"
+
+class Plm_image;
 
 enum Dvh_units {
     DVH_UNITS_GY,
@@ -18,12 +21,8 @@ enum Dvh_normalization {
     DVH_NORMALIZATION_VOX,
 };
 
-class Dvh_parms {
+class plastimatch1_EXPORT Dvh_parms {
 public:
-    CBString input_ss_img_fn;
-    CBString input_ss_list_fn;
-    CBString input_dose_fn;
-    CBString output_csv_fn;
     enum Dvh_units input_units;
     enum Dvh_normalization normalization;
     int cumulative;
@@ -37,10 +36,25 @@ public:
 	num_bins = 256;
 	bin_width = 1;
     }
-    void execute ();
 };
 
+class plastimatch1_EXPORT Dvh_parms_pcmd {
+public:
+    CBString input_ss_img_fn;
+    CBString input_ss_list_fn;
+    CBString input_dose_fn;
+    CBString output_csv_fn;
+    Dvh_parms dvh_parms;
+};
+
+plastimatch1_EXPORT std::string
+dvh_execute (
+    Plm_image *input_ss_img,
+    Plm_image *input_dose_img,
+    Dvh_parms *parms);
+
 plastimatch1_EXPORT void
-dvh_execute (Dvh_parms* parms);
+dvh_execute (
+    Dvh_parms_pcmd *dvh_parms_pcmd);
 
 #endif
