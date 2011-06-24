@@ -77,6 +77,13 @@ SET(qt_module_resources
   Resources/qSlicerPlastimatchDVHModule.qrc
 )
 
+set (qt_module_target_libraries
+  ${qt_module_target_libraries}
+  plastimatch1
+  gpuit
+  plmsys
+  )
+
 slicerMacroBuildQtModule(
   NAME ${EXTENSION_NAME}
   EXPORT_DIRECTIVE ${qt_module_export_directive}
