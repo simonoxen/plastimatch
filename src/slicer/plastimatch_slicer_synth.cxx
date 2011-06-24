@@ -56,12 +56,17 @@ main (int argc, char * argv [])
 	sm_parms.pattern = PATTERN_ENCLOSED_RECT;
     }
 
-    	sm_parms.enclosed_intens_f1 = plmslc_intensity1;
-	sm_parms.enclosed_intens_f2 = plmslc_intensity2;
+    sm_parms.pattern_ss = PATTERN_SS_ONE;
+    if (plmslc_pattern_ss == 1) sm_parms.pattern_ss = PATTERN_SS_ONE;
+    if (plmslc_pattern_ss == 2) sm_parms.pattern_ss = PATTERN_SS_TWO_APART;
+    if (plmslc_pattern_ss == 3) sm_parms.pattern_ss = PATTERN_SS_TWO_OVERLAP_PLUS_ONE;
+    if (plmslc_pattern_ss == 4) sm_parms.pattern_ss = PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED;
+    
+    sm_parms.enclosed_intens_f1 = plmslc_intensity1;
+    sm_parms.enclosed_intens_f2 = plmslc_intensity2;
 
-	sm_parms.foreground = plmslc_foreground;
-	sm_parms.background = plmslc_background;
-
+    sm_parms.foreground = plmslc_foreground;
+    sm_parms.background = plmslc_background;
 
     if (create_objstructdose){
 	sm_parms.pattern = PATTERN_OBJSTRUCTDOSE;

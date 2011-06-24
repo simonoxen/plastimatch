@@ -64,7 +64,8 @@ float intens_enclosed(FloatPoint3DType phys,
 //box + ellipsoid inside
 float intens_objstructdose(FloatPoint3DType phys, 
 		      float xlat1[3], float xlat2[3],
-		      float f1, float f2)
+		      float f1, float f2, Pattern_structset_type pattern_ss, 
+		      unsigned char *label)
 {
     float f;
 
@@ -80,54 +81,121 @@ float intens_objstructdose(FloatPoint3DType phys,
     {  p[i]-=100; /*p[i]*=2;*/ } 
     // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
 		
-    f = 0.;
+    f = 0.; *label=0;
     for (int i=0;i<6;i++)
     {
 
 	if (p[6*i+0]<phys[0] && phys[0]<p[6*i+3] &&
 	    p[6*i+1]<phys[1] && phys[1]<p[6*i+4] &&
 	    p[6*i+2]<phys[2] && phys[2]<p[6*i+5]) 
-	{ f = 1.; } 
+	{ f = 1.; *label=0; } 
     }
 
     // sphere
-    float rs1= 25, rs2= 25, rs3=25;
-    float xs=101, ys=101, zs=101;
+    if (pattern_ss == PATTERN_SS_ONE) {
+        float rs1= 25, rs2= 25, rs3=25;
+	float xs=101, ys=101, zs=101;
 
-    xs-=100; ys-=100; zs-=100; 
+	xs-=100; ys-=100; zs-=100; 
 
-    float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
-	+(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
-	+(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+	float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
 
-    if ( rr < 2 ) { f = 1.;}
+	if ( rr < 2 ) { f = 1.; *label=1;}
+	}
+
+    // two spheres
+    if (pattern_ss == PATTERN_SS_TWO_APART) {
+        float rs1= 25, rs2= 25, rs3=25;
+	float xs=-40, ys=1, zs=1;
+
+	float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 1.; *label=1;}
+
+	xs=40, ys=1, zs=1;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+	
+	if ( rr < 2 ) { f = 1.; *label=2;}
+	}
+
+    // two spheres partially overlapping and one aside
+    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) {
+        float rs1= 25, rs2= 25, rs3=25;
+	float xs=-20, ys=1, zs=1;
+
+	float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 1.; *label=1;}
+
+	xs=15, ys=25, zs=1;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+	
+	if ( rr < 2 ) { f = 1.; *label=2;}
+
+	xs=30, ys=-55, zs=1;
+	rs1 = rs2 = rs3 = 10;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 1.; *label=3;}
+
+	}
+
+    // two spheres partially overlapping, one within, and one aside
+    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) {
+        float rs1= 25, rs2= 25, rs3=25;
+	float xs=-30, ys=1, zs=1;
+
+	float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 1.; *label=1;}
+
+	xs=5, ys=25, zs=1;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+	
+	if ( rr < 2 ) { f = 1.; *label=2;}
+
+	xs=30, ys=-55, zs=1;
+	rs1 = rs2 = rs3 = 10;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 1.; *label=3;}
+
+	xs=13, ys=33, zs=1;
+	rs1 = rs2 = rs3 = 8;
+
+	rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
+	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
+	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
+
+	if ( rr < 2 ) { f = 0.5; *label=4;}
+
+	}
 
     return f;
 }
-
-// ellipsoid inside for labelmap
-unsigned char intens_labelmap(FloatPoint3DType phys, 
-		      float xlat1[3], float xlat2[3],
-		      float f1, float f2)
-{
-    unsigned char f;
-
-    f = 0;
-    // sphere
-    float rs1= 30, rs2= 30, rs3=30;
-    float xs=101, ys=101, zs=101;
-
-    xs-=100; ys-=100; zs-=100; 
-
-    float rr = (phys[2]-zs)*(phys[2]-zs)/(rs1*rs1)
-	+(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
-	+(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
-
-    if ( rr < 2 ) { f = 1;}
-
-    return f;
-}
-
 
 float shifttanh(float x)
 {
@@ -137,15 +205,24 @@ return 0.5*( (exp(x)-exp(-x))/(exp(x)+exp(-x)) +1 );
 //synthetic dose distribution
 float intens_dosemha(FloatPoint3DType phys, 
 		      float xlat1[3], float xlat2[3],
-		      float f1, float f2)
+		      float f1, float f2, Pattern_structset_type pattern_ss)
 {
     float f=0;
+    float x0=0, y0=0, z0=0;
+    float sigma=30;
 
-    float r = (phys[0]+0.)*(phys[0]+0.)+
-	      (phys[1]+0.)*(phys[1]+0.)+
-	      (phys[2]+0.)*(phys[2]+0.);
+    if (pattern_ss == PATTERN_SS_ONE) { x0=1, y0=1, z0=1; }
+    if (pattern_ss == PATTERN_SS_TWO_APART) { x0=-40, y0=1, z0=1; }
+    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) { x0=-20, y0=1, z0=1; }
+    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) { x0=30, y0=-55, z0=1, sigma=12; }
 
-    f  += exp(-r/(30*30));
+
+
+    float r = (phys[0]-x0)*(phys[0]-x0)+
+	      (phys[1]-y0)*(phys[1]-y0)+
+	      (phys[2]-z0)*(phys[2]-z0);
+
+    f  += exp(-r/(sigma*sigma));
 
     /*
     r = (phys[0]-100.)*(phys[0]-100.)+
@@ -153,7 +230,6 @@ float intens_dosemha(FloatPoint3DType phys,
         (phys[2]-100.)*(phys[2]-100.)/(1.2*1.2);
 
     f += exp(-r/(30*30));
-
     */
     f = 20*shifttanh(2.5*f-0.3);
 
@@ -223,6 +299,7 @@ synthetic_mha (
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
 	FloatPoint3DType phys;
 	float f = 0.0f;
+	unsigned char label_uchar = 0;
 
 	FloatImageType::IndexType idx = it_out.GetIndex ();
 	im_out->TransformIndexToPhysicalPoint (idx, phys);
@@ -274,7 +351,8 @@ synthetic_mha (
 	    {
 	    f = intens_objstructdose(phys,
 		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 to 1
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2, 
+		parms->pattern_ss, &label_uchar); // 0 to 1
 	    f = (1 - f) * parms->background + f * parms->foreground;
 	    }
 	    /*else {
@@ -306,10 +384,7 @@ synthetic_mha (
 
 	//NSh code
 	if (parms->m_want_objstrucmha && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
-	    unsigned char lab = intens_labelmap(phys,
-		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 or 1
-	    uchar_img_it.Set (lab);
+	    uchar_img_it.Set (label_uchar); 
 	    ++uchar_img_it;
 	}
 
@@ -331,7 +406,7 @@ synthetic_mha (
 	if (parms->m_want_dose_img && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
 		float f = intens_dosemha(phys,
 		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2); 
+		parms->enclosed_intens_f1, parms->enclosed_intens_f2, parms->pattern_ss); 
 	    dose_img_it.Set (f);
 	    ++dose_img_it;
 	}

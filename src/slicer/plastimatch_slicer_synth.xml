@@ -206,7 +206,13 @@
       <longflag>--createobjdosemha</longflag>
       <description>Check this box if you want to create Dose</description>
     </boolean>
-    
+    <integer>
+      <name>plmslc_pattern_ss</name>
+      <longflag>--pattern_ss</longflag>
+      <description>Type of structure pattern</description>
+      <label>Type of structure pattern (1-4)</label>
+      <default>1</default>
+    </integer>
   </parameters>
 
   </executable>

@@ -18,6 +18,13 @@ enum Pattern_type {
     PATTERN_OBJSTRUCTDOSE
 };
 
+enum Pattern_structset_type {
+    PATTERN_SS_ONE,
+    PATTERN_SS_TWO_APART,
+    PATTERN_SS_TWO_OVERLAP_PLUS_ONE,
+    PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED
+};
+
 class Synthetic_mha_parms {
 public:
     int output_type;
@@ -43,6 +50,8 @@ public:
 
     bool m_want_objdosemha;
     bool m_want_objstrucmha; // same as m_want_ss_img??
+
+    Pattern_structset_type pattern_ss;
 
 public:
     Synthetic_mha_parms () {
@@ -70,6 +79,8 @@ public:
     
 	m_want_objdosemha = false;
 	m_want_objstrucmha = false;
+
+	pattern_ss = PATTERN_SS_ONE;
     }
 };
 
