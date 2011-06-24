@@ -9,7 +9,7 @@
 #include "bstrlib.h"
 #include "dicom_util.h"
 #include "img_metadata.h"
-#include "to_string.h"
+#include "make_string.h"
 
 std::string Img_metadata::KEY_NOT_FOUND = "";
 
@@ -38,8 +38,8 @@ Img_metadata::create_anonymous ()
 std::string
 Img_metadata::make_key (unsigned short key1, unsigned short key2) const
 {
-    return to_string (key1, 4, '0', std::hex) 
-	+ ',' + to_string (key2, 4, '0', std::hex);
+    return make_string (key1, 4, '0', std::hex) 
+	+ ',' + make_string (key2, 4, '0', std::hex);
 }
 
 const std::string&

@@ -1,8 +1,8 @@
 /* -----------------------------------------------------------------------
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
-#ifndef _to_string_h_
-#define _to_string_h_
+#ifndef _make_string_h_
+#define _make_string_h_
 
 #include "plm_config.h"
 #include <iomanip>
@@ -10,7 +10,7 @@
 
 template <class T>
 static std::string 
-to_string (
+make_string (
     T t, 
     int width = 0, 
     char fill = ' ',

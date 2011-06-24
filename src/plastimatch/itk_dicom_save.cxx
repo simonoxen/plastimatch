@@ -18,10 +18,10 @@
 #include "itk_dicom_save.h"
 #include "itk_image.h"
 #include "logfile.h"
+#include "make_string.h"
 #include "plm_image_patient_position.h"
 #include "print_and_exit.h"
 #include "referenced_dicom_dir.h"
-#include "to_string.h"
 
 /* winbase.h defines GetCurrentTime which conflicts with gdcm function */
 #if defined GetCurrentTime
@@ -183,7 +183,7 @@ itk_dicom_save (
     }
 
     /* Slice thickness */
-    value = to_string ((double) (short_img->GetSpacing()[2]));
+    value = make_string ((double) (short_img->GetSpacing()[2]));
     encapsulate (dict, "0018|0050", value);
 
     /* Patient position */
@@ -262,7 +262,7 @@ itk_dicom_save (
 	}
 	
 	/* Image Number */
-	value = to_string ((int) f);
+	value = make_string ((int) f);
 	encapsulate (*slice_dict, "0020|0013", value);
 
 	/* Image Position Patient */
@@ -272,13 +272,13 @@ itk_dicom_save (
 	index[1] = 0;
 	index[2] = f;
 	short_img->TransformIndexToPhysicalPoint (index, position);
-	value = to_string (position[0]) 
-	    + "\\" + to_string (position[1]) 
-	    + "\\" + to_string (position[2]);
+	value = make_string (position[0]) 
+	    + "\\" + make_string (position[1]) 
+	    + "\\" + make_string (position[2]);
 	encapsulate (*slice_dict, "0020|0032", value);
 
 	/* Slice Location */
-	value = to_string ((float) position[2]);
+	value = make_string ((float) position[2]);
 	encapsulate (*slice_dict, "0020|1041", value);      
 
 	dict_array.push_back (slice_dict);

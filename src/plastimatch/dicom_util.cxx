@@ -5,7 +5,7 @@
 #include <time.h>
 #include <string>
 #include "plm_config.h"
-#include "to_string.h"
+#include "make_string.h"
 
 std::string 
 make_anon_patient_id (void)
@@ -23,6 +23,6 @@ make_anon_patient_id (void)
        uuid[i] = '0' + r;
     }
     uuid [15] = '\0';
-    patient_id = patient_id + to_string (uuid);
+    patient_id = patient_id + make_string (uuid);
     return patient_id;
 }

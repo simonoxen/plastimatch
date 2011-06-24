@@ -33,6 +33,7 @@ public:
 	input_units = DVH_UNITS_GY;
 	normalization = DVH_NORMALIZATION_PCT;
 	cumulative = 0;
+	printf ("Initializing num_bins to 256\n");
 	num_bins = 256;
 	bin_width = 1;
     }
@@ -45,6 +46,10 @@ public:
     CBString input_dose_fn;
     CBString output_csv_fn;
     Dvh_parms dvh_parms;
+public:
+    Dvh_parms_pcmd () {
+	printf ("Dvh_parms_pcmd\n");
+    }
 };
 
 plastimatch1_EXPORT std::string
