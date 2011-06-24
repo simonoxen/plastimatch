@@ -81,4 +81,6 @@ plm_add_slicer_executable (plastimatch_slicer_xformwarp
 ##-----------------------------------------------------------------------------
 ##  Loadable modules
 ##-----------------------------------------------------------------------------
-#add_subdirectory (PlastimatchDVH_Slicer4Plugin)
+if (SLICER_IS_SLICER4)
+  add_subdirectory (PlastimatchDVH_Slicer4Plugin)
+endif ()
