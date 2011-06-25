@@ -193,13 +193,14 @@ MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
-add_subdirectory (plastimatch)
-add_subdirectory (slicer)
-
-if (NOT BUILD_AGAINST_SLICER3)
-  add_subdirectory (fatm)
-  if (PLM_BUILD_ISE)
-    add_subdirectory (ise)
+if (NOT DEBIAN_BUILD)
+  add_subdirectory (plastimatch)
+  add_subdirectory (slicer)
+  if (NOT BUILD_AGAINST_SLICER3)
+    add_subdirectory (fatm)
+    if (PLM_BUILD_ISE)
+      add_subdirectory (ise)
+    endif ()
   endif ()
 endif ()
 
