@@ -19,7 +19,9 @@ include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
 include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
 include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
-include_directories (AFTER ${SQLITE_INCLUDE_DIR})
+if (SQLITE_FOUND)
+  include_directories (AFTER ${SQLITE_INCLUDE_DIR})
+endif ()
 
 # Don't do the below.  A user-built f2c directory contains ctype.h, which 
 # conflicts with the C/C++ header of the same name.
