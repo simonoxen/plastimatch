@@ -193,6 +193,7 @@ MESSAGE (STATUS "PLMCUDA_EXE_LDFLAGS: ${PLMCUDA_EXE_LDFLAGS}")
 ##-----------------------------------------------------------------------------
 ##  Add subdirectories
 ##-----------------------------------------------------------------------------
+message (STATUS "DEBIAN_BUILD=${DEBIAN_BUILD}")
 if (NOT DEBIAN_BUILD)
   add_subdirectory (plastimatch)
   add_subdirectory (slicer)
