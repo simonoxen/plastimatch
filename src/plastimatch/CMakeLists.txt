@@ -3,7 +3,7 @@
 ##-----------------------------------------------------------------------------
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
-PROJECT (src_plastimatch)
+project (src_plastimatch)
 
 ##-----------------------------------------------------------------------------
 ##  Local options
@@ -13,13 +13,13 @@ option (PLM_BUILD_SIFTND "Build siftnD program" ON)
 ##-----------------------------------------------------------------------------
 ##  Include directories
 ##-----------------------------------------------------------------------------
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_BINARY_DIR})
-INCLUDE_DIRECTORIES (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
-INCLUDE_DIRECTORIES (AFTER ${BSTRLIB_INCLUDE_DIR})
-INCLUDE_DIRECTORIES (AFTER ${LIBLBFGS_INCLUDE_DIR})
-INCLUDE_DIRECTORIES (AFTER ${MSINTTYPES_INCLUDE_DIR})
-INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories (BEFORE ${CMAKE_BINARY_DIR})
+include_directories (BEFORE ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (AFTER ${BSTRLIB_INCLUDE_DIR})
+include_directories (AFTER ${LIBLBFGS_INCLUDE_DIR})
+include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
+include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 
 # Don't do the below.  A user-built f2c directory contains ctype.h, which 
 # conflicts with the C/C++ header of the same name.
@@ -27,42 +27,42 @@ INCLUDE_DIRECTORIES (AFTER ${SQLITE_INCLUDE_DIR})
 #  INCLUDE_DIRECTORIES (BEFORE ${F2C_INCLUDE_DIR})
 #ENDIF ()
 
-IF (BROOK_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${BROOK_INCLUDE_DIR})
-ENDIF ()
+if (BROOK_FOUND)
+  include_directories (AFTER ${BROOK_INCLUDE_DIR})
+endif ()
 
-IF (CUDA_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${CUDA_INCLUDE_DIRS})
+if (CUDA_FOUND)
+  include_directories (AFTER ${CUDA_INCLUDE_DIRS})
   #INCLUDE_DIRECTORIES (AFTER ${CUDA_CUT_INCLUDE_DIR})
-ENDIF ()
+endif ()
 
-IF (DCMTK_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${DCMTK_INCLUDE_DIR})
-ENDIF ()
+if (DCMTK_FOUND)
+  include_directories (AFTER ${DCMTK_INCLUDE_DIR})
+endif ()
 
-INCLUDE_DIRECTORIES (AFTER ${DLIB_INCLUDE_DIR})
+include_directories (AFTER ${DLIB_INCLUDE_DIR})
 
-IF (FFTW_FOUND)
-  INCLUDE_DIRECTORIES (BEFORE ${FFTW_INCLUDE_DIR})
-  LINK_DIRECTORIES (${FFTW_DIR})
-ENDIF ()
+if (FFTW_FOUND)
+  include_directories (BEFORE ${FFTW_INCLUDE_DIR})
+  link_directories (${FFTW_DIR})
+endif ()
 
-IF (NOT HAVE_GETOPT_LONG)
-  INCLUDE_DIRECTORIES (AFTER "${CMAKE_SOURCE_DIR}/libs/getopt")
-ENDIF ()
+if (NOT HAVE_GETOPT_LONG)
+  include_directories (AFTER "${CMAKE_SOURCE_DIR}/libs/getopt")
+endif ()
 
-IF (OPENCL_FOUND)
-  INCLUDE_DIRECTORIES (BEFORE ${OPENCL_INCLUDE_DIR})
-ENDIF ()
+if (OPENCL_FOUND)
+  include_directories (BEFORE ${OPENCL_INCLUDE_DIR})
+endif ()
 
-IF (MATLAB_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${MATLAB_INCLUDE_DIRS})
-ENDIF ()
+if (MATLAB_FOUND)
+  include_directories (AFTER ${MATLAB_INCLUDE_DIRS})
+endif ()
 
-IF (PANTHEIOS_FOUND)
-  INCLUDE_DIRECTORIES (AFTER ${STLSOFT_INCLUDE_DIR})
-  INCLUDE_DIRECTORIES (AFTER ${PANTHEIOS_INCLUDE_DIR})
-ENDIF ()
+if (PANTHEIOS_FOUND)
+  include_directories (AFTER ${STLSOFT_INCLUDE_DIR})
+  include_directories (AFTER ${PANTHEIOS_INCLUDE_DIR})
+endif ()
 
 if (QT4_FOUND)
   if (QT_QTGUI_FOUND)
@@ -73,36 +73,36 @@ if (QT4_FOUND)
   endif ()
 endif ()
 
-INCLUDE_DIRECTORIES (AFTER ${RANSAC_INCLUDE_DIRS})
+include_directories (AFTER ${RANSAC_INCLUDE_DIRS})
 
-IF (wxWidgets_FOUND)
-  INCLUDE_DIRECTORIES (BEFORE ${wxWidgets_INCLUDE_DIRS})
-ENDIF ()
+if (wxWidgets_FOUND)
+  include_directories (BEFORE ${wxWidgets_INCLUDE_DIRS})
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  BROOK FILES
 ##-----------------------------------------------------------------------------
-IF (BROOK_FOUND)
-  BRCC_FILE(fdk_brook_kernel.br)
-  SET_SOURCE_FILES_PROPERTIES(fdk_brook.cpp PROPERTIES
+if (BROOK_FOUND)
+  brcc_file(fdk_brook_kernel.br)
+  set_source_files_properties(fdk_brook.cpp PROPERTIES
     OBJECT_DEPENDS "fdk_brook_kernel.cpp")
 
-  BRCC_FILE(convolution_brook_kernel.br)
-  BRCC_FILE(demons_brook_kernel.br)
-  SET_SOURCE_FILES_PROPERTIES(demons_brook_kernel_wrap.cpp PROPERTIES
+  brcc_file(convolution_brook_kernel.br)
+  brcc_file(demons_brook_kernel.br)
+  set_source_files_properties(demons_brook_kernel_wrap.cpp PROPERTIES
     OBJECT_DEPENDS "demons_brook_kernel.cpp")
-  SET_SOURCE_FILES_PROPERTIES(convolution_brook_kernel_wrap.cpp PROPERTIES
+  set_source_files_properties(convolution_brook_kernel_wrap.cpp PROPERTIES
     OBJECT_DEPENDS "convolution_brook_kernel.cpp")
 
-  BRCC_FILE(toy_kernels.br)
-  SET_SOURCE_FILES_PROPERTIES(toy_kernels.cpp PROPERTIES
+  brcc_file(toy_kernels.br)
+  set_source_files_properties(toy_kernels.cpp PROPERTIES
     OBJECT_DEPENDS "toy_kernels.cpp")
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  PLMSYS/GPUIT/PLASTIMATCH LIBRARY SOURCE FILES
 ##-----------------------------------------------------------------------------
-SET (PLMSYS_LIBRARY_SRC
+set (PLMSYS_LIBRARY_SRC
   file_util.cxx file_util.h
   logfile.c logfile.h
   interpolate.c interpolate.h
@@ -110,7 +110,7 @@ SET (PLMSYS_LIBRARY_SRC
   print_and_exit.c print_and_exit.h 
   )
 
-SET (GPUIT_LIBRARY_SRC
+set (GPUIT_LIBRARY_SRC
   bowtie_correction.cxx bowtie_correction.h
   bstring_util.cxx bstring_util.h
   bspline.cxx bspline.h
@@ -159,8 +159,8 @@ SET (GPUIT_LIBRARY_SRC
   xpm.cxx xpm.h
   )
 
-IF (BROOK_FOUND)
-  SET (GPUIT_LIBRARY_SRC
+if (BROOK_FOUND)
+  set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     demons_brook.cpp
     demons_brook_kernel_wrap.cpp
@@ -170,10 +170,10 @@ IF (BROOK_FOUND)
     convolution_brook_kernel_wrap.cpp
     convolution_brook_kernel.h
     )
-ENDIF ()
+endif ()
 
-IF (CUDA_FOUND)
-  SET (PLMCUDA_LIBRARY_SRC
+if (CUDA_FOUND)
+  set (PLMCUDA_LIBRARY_SRC
     bspline_cuda.cpp bspline_cuda.cu bspline_cuda.h
     cuda_kernel_util.cu cuda_kernel_util.h
     cuda_mem.cu cuda_mem.h
@@ -184,31 +184,31 @@ IF (CUDA_FOUND)
     fdk_cuda.cpp fdk_cuda.cu fdk_cuda_p.h fdk_cuda.h
     )
 
-  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
-    SET (PLMCUDA_LIBRARY_SRC
+  if (BUILD_SHARED_LIBS)      # << Dynamic loading
+    set (PLMCUDA_LIBRARY_SRC
       ${PLMCUDA_LIBRARY_SRC}
       volume.cxx          # for demons_cuda.cu
       volume.h            # for demons_cuda.cu
     )
-    SET (PLMCUDA_LIBRARY_DEPENDENCIES
+    set (PLMCUDA_LIBRARY_DEPENDENCIES
       plmsys
     )
-    CUDA_ADD_LIBRARY (plmcuda SHARED
+    cuda_add_library (plmcuda SHARED
       ${PLMCUDA_LIBRARY_SRC}
       )
-    SET_TARGET_PROPERTIES (plmcuda PROPERTIES 
+    set_target_properties (plmcuda PROPERTIES 
       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-    TARGET_LINK_LIBRARIES (plmcuda
+    target_link_libraries (plmcuda
       ${PLMCUDA_LIBRARY_DEPENDENCIES}
       )
-    INSTALL (TARGETS plmcuda
+    install (TARGETS plmcuda
       RUNTIME DESTINATION bin
       LIBRARY DESTINATION lib
       )
-  ELSE ()        # << Static linking
-    SET (GPUIT_LIBRARY_SRC
+  else ()        # << Static linking
+    set (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       ${PLMCUDA_LIBRARY_SRC}
       )
@@ -221,71 +221,71 @@ IF (CUDA_FOUND)
       drr_cuda.cu
       fdk_cuda.cu
       )
-    CUDA_COMPILE (CUDA_WRAPPERS ${PLM_CUDA_FILES})
-    SET (GPUIT_LIBRARY_SRC
+    cuda_compile (CUDA_WRAPPERS ${PLM_CUDA_FILES})
+    set (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       ${CUDA_WRAPPERS}
       ${PLM_CUDA_FILES}
       )
-  ENDIF ()
-ENDIF ()
+  endif ()
+endif ()
 
-IF (FFTW_FOUND)
-  SET (GPUIT_LIBRARY_SRC
+if (FFTW_FOUND)
+  set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     ramp_filter.c ramp_filter.h
    )
-ENDIF ()
+endif ()
 
-IF (OPENCL_FOUND)
+if (OPENCL_FOUND)
   # Define OpenCL Plugin (plmopencl)
-  SET (PLMOPENCL_LIBRARY_SRC
+  set (PLMOPENCL_LIBRARY_SRC
     autotune_opencl.cxx autotune_opencl.h
     opencl_probe.cxx opencl_probe.h opencl_probe.cl
     opencl_util.cxx opencl_util.h
     opencl_util_nvidia.cxx opencl_util_nvidia.h
     )
 
-  IF (BUILD_SHARED_LIBS)      # << Dynamic loading
+  if (BUILD_SHARED_LIBS)      # << Dynamic loading
 
-    SET (PLMOPENCL_LIBRARY_SRC
+    set (PLMOPENCL_LIBRARY_SRC
       ${PLMOPENCL_LIBRARY_SRC}
     )
 
-    SET (PLMOPENCL_LIBRARY_DEPENDENCIES
+    set (PLMOPENCL_LIBRARY_DEPENDENCIES
       plmsys
     )
 
     # OpenCL Plugin is ALWAYS shared!
-    ADD_LIBRARY (plmopencl SHARED
+    add_library (plmopencl SHARED
       ${PLMOPENCL_LIBRARY_SRC}
       )
-    SET_TARGET_PROPERTIES (plmopencl PROPERTIES 
+    set_target_properties (plmopencl PROPERTIES 
       ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
       RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
     # Be sure to link against libOpenCL and other depends
-    TARGET_LINK_LIBRARIES (plmopencl
+    target_link_libraries (plmopencl
       ${OPENCL_LIBRARIES}
       ${PLMOPENCL_LIBRARY_DEPENDENCIES}
       )
 
-    INSTALL (TARGETS plmopencl
+    install (TARGETS plmopencl
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
     )
 
-  ELSE ()        # << Static linking
+  else ()        # << Static linking
 
-    SET (GPUIT_LIBRARY_SRC
+    set (GPUIT_LIBRARY_SRC
       ${GPUIT_LIBRARY_SRC}
       ${PLMOPENCL_LIBRARY_SRC}
     )
 
-  ENDIF ()
+  endif ()
 
-  SET (GPUIT_LIBRARY_SRC
+  set (GPUIT_LIBRARY_SRC
     ${GPUIT_LIBRARY_SRC}
     demons_opencl.cxx
     demons_opencl_p.h
@@ -299,19 +299,19 @@ IF (OPENCL_FOUND)
     fdk_opencl.h
     fdk_opencl.cl
     )
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC demons_opencl.cl)
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC drr_opencl.cl)
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC fdk_opencl.cl)
+  plm_add_opencl_file (GPUIT_LIBRARY_SRC demons_opencl.cl)
+  plm_add_opencl_file (GPUIT_LIBRARY_SRC drr_opencl.cl)
+  plm_add_opencl_file (GPUIT_LIBRARY_SRC fdk_opencl.cl)
 
-ENDIF ()
+endif ()
 
-IF (F2C_LIBRARY)
-  SET (F2C_HELPER_LIBRARY_SRC
+if (F2C_LIBRARY)
+  set (F2C_HELPER_LIBRARY_SRC
     main__.c
     )
-ENDIF ()
+endif ()
 
-SET (PLASTIMATCH1_LIBRARY_SRC
+set (PLASTIMATCH1_LIBRARY_SRC
   autolabel_trainer.cxx autolabel_trainer.h 
   autolabel_ransac_est.cxx autolabel_ransac_est.h 
   astroid_dose.cxx astroid_dose.h
@@ -427,111 +427,111 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILES (EXECUTABLES)
 ##-----------------------------------------------------------------------------
-SET (BRAGG_CURVE_SRC
+set (BRAGG_CURVE_SRC
   bragg_curve_main.c 
   bragg_curve_opts.c bragg_curve_opts.h
   )
-SET (BSPLINE_SRC
+set (BSPLINE_SRC
   bspline_main.cxx 
   )
-SET (CHECK_GRAD_SRC
+set (CHECK_GRAD_SRC
   check_grad.cxx
   check_grad_opts.cxx check_grad_opts.h 
   )
-SET (REG_SRC
+set (REG_SRC
   reg_main.cxx
   reg_opts.cxx reg_opts.h 
   )
-SET (COMPUTE_DISTANCE_SRC
+set (COMPUTE_DISTANCE_SRC
   compute_distance.cxx compute_distance.h
   closest_point.cxx 
   read_obj.cxx
   )
-SET (COMPUTE_MEAN_IMAGE_SRC
+set (COMPUTE_MEAN_IMAGE_SRC
   compute_mean_image_main.cxx
   )
-SET (EXTRACT_SLICE_SRC
+set (EXTRACT_SLICE_SRC
   extract_slice.cxx
   )
-SET (CUDA_PROBE_SRC
+set (CUDA_PROBE_SRC
   cuda_probe_main.c
   cuda_probe.cu
   cuda_probe.h
   )
-IF (CUDA_FOUND)
-  CUDA_COMPILE(CUDA_PROBE_WRAPPERS cuda_probe.cu)
-  SET (CUDA_PROBE_SRC
+if (CUDA_FOUND)
+  cuda_compile(CUDA_PROBE_WRAPPERS cuda_probe.cu)
+  set (CUDA_PROBE_SRC
     ${CUDA_PROBE_SRC}
     ${CUDA_PROBE_WRAPPERS}
     )
-ENDIF ()
-SET (DEMONS_SRC
+endif ()
+set (DEMONS_SRC
   demons_main.c
   demons_opts.c demons_opts.h
   )
-SET (DICE_STATS_SRC
+set (DICE_STATS_SRC
   dice_stats_main.cxx
   dice_statistics.cxx dice_statistics.h
   hausdorff_statistics.cxx hausdorff_statistics.h
   )
-SET (DICOM_INFO_SRC
-    dicom_info.cxx)
-SET (DICOM_SERIES_TEST_SRC
+set (DICOM_INFO_SRC
+  dicom_info.cxx)
+set (DICOM_SERIES_TEST_SRC
   dicom_series_test.cxx)
-SET (DICOM_UID_SRC
+set (DICOM_UID_SRC
   dicom_uid_main.cxx
   dicom_uid.cxx
   dicom_uid.h
   )
-SET (DISTANCE_MAP_SRC
+set (DISTANCE_MAP_SRC
   distance_map.cxx
   )
-SET (DLIB_TRAIN_SRC 
+set (DLIB_TRAIN_SRC 
   dlib_train.cxx
   )
-SET (DRR_SRC
+set (DRR_SRC
   drr_main.c 
   drr_opts.c drr_opts.h
   )
-SET (EXTRACT_CONTOUR_SRC
+set (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
-SET (FDK_SRC
+set (FDK_SRC
   fdk_main.c 
   fdk_opts.c fdk_opts.h
   fdk_util.c fdk_util.h
 )
-IF (BROOK_FOUND)
-  SET (FDK_SRC
+if (BROOK_FOUND)
+  set (FDK_SRC
     ${FDK_SRC}
     fdk_brook.cpp
     fdk_brook_kernel.br
     )
-ENDIF ()
-SET (HND_TO_PFM_SRC
+endif ()
+set (HND_TO_PFM_SRC
   hnd_to_pfm.c
   )
-SET (MEX_DRR_SRC
+set (MEX_DRR_SRC
   mex_drr.c
   )
-SET (MHA_TO_RTOG_DOSE_SRC
+set (MHA_TO_RTOG_DOSE_SRC
   mha_to_rtog_dose.cxx
   )
-SET (MONDOSHOT_SRC
+set (MONDOSHOT_SRC
   dicom_uid.cxx dicom_uid.h
   mondoshot_dicom.cpp mondoshot_dicom.h
   mondoshot_main.cpp mondoshot_main.h
   )
-SET (MONDOSHOT_RELAY_SRC
+set (MONDOSHOT_RELAY_SRC
   mondoshot_relay_main.cpp
   )
-SET (OPENCL_PROBE_SRC
+set (OPENCL_PROBE_SRC
   opencl_probe_main.c
   )
-IF (OPENCL_FOUND)
-  PLM_ADD_OPENCL_FILE (GPUIT_LIBRARY_SRC opencl_probe.cl)
-ENDIF ()
-SET (PLASTIMATCH_SRC
+if (OPENCL_FOUND)
+  plm_add_opencl_file (GPUIT_LIBRARY_SRC opencl_probe.cl)
+endif ()
+set (PLASTIMATCH_SRC
   pcmd_add.cxx pcmd_add.h
   pcmd_adjust.cxx pcmd_adjust.h
   pcmd_autolabel_train.cxx pcmd_autolabel_train.h
@@ -554,22 +554,22 @@ SET (PLASTIMATCH_SRC
   pcmd_xf_convert.cxx pcmd_xf_convert.h 
   plastimatch_main.cxx
   )
-SET (PLASTIMATCH_SLICER_BSPLINE_SRC
+set (PLASTIMATCH_SLICER_BSPLINE_SRC
   plastimatch_slicer_bspline.cxx
   )
-SET (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
+set (PLASTIMATCH_SLICER_DICOMRT_IMPORT_SRC
   plastimatch_slicer_dicomrt_import.cxx
   )
-SET (PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC
+set (PLASTIMATCH_SLICER_DICOMRT_EXPORT_SRC
   plastimatch_slicer_dicomrt_export.cxx
   )
-SET (PLASTIMATCH_SLICER_LANDWARP_SRC
+set (PLASTIMATCH_SLICER_LANDWARP_SRC
   plastimatch-slicer-landwarp.cxx
   )
-SET (PLASTIMATCH_SLICER_SYNTH_SRC
+set (PLASTIMATCH_SLICER_SYNTH_SRC
   plastimatch_slicer_synth.cxx
   )
-SET (PLASTIMATCH_QT_SRC
+set (PLASTIMATCH_QT_SRC
   # pqt_application.cxx pqt_application.h
   pqt_data_source_dialog.cxx pqt_data_source_dialog.h
   pqt_data_source_list_model.cxx pqt_data_source_list_model.h
@@ -579,85 +579,82 @@ SET (PLASTIMATCH_QT_SRC
   pqt_main_window.cxx pqt_main_window.h
   pqt_patient_list_model.cxx pqt_patient_list_model.h
   )
-IF (QT4_FOUND AND QT_QTSQL_FOUND)
-  QT4_WRAP_CPP (PLASTIMATCH_QT_SRC 
+if (QT4_FOUND AND QT_QTSQL_FOUND)
+  qt4_wrap_cpp (PLASTIMATCH_QT_SRC 
     #    pqt_application.h
     pqt_data_source_dialog.h
     pqt_data_source_list_model.h
     pqt_main_window.h 
     pqt_patient_list_model.h
     )
-  QT4_WRAP_UI (PLASTIMATCH_QT_SRC 
+  qt4_wrap_ui (PLASTIMATCH_QT_SRC 
     pqt_data_source_dialog.ui
     pqt_main_window.ui
     )
-ENDIF ()
-SET (PROTON_DOSE_SRC
+endif ()
+set (PROTON_DOSE_SRC
   proton_dose_main.c 
   proton_dose_opts.c proton_dose_opts.h
   )
-SET (LANDMARK_WARP_SRC
+set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
   )
-SET (RANSAC_TEST_SRC 
+set (RANSAC_TEST_SRC 
   ransac_test.cxx
   )
-SET (RTOG_TO_MHA_SRC
+set (RTOG_TO_MHA_SRC
   exchkeys.cxx exchkeys.h
   rtog_to_mha.cxx
   )
-SET (SHUFFLE_MHA_SRC
+set (SHUFFLE_MHA_SRC
   shuffle_mha_main.cxx
   )
-SET (SIFTnD_SRC
+set (SIFTnD_SRC
   siftnD.cxx
   itkScaleInvariantFeatureImageFilter.h itkScaleInvariantFeatureImageFilter.hxx
   )
-SET (SYNTHETIC_MHA_SRC
+set (SYNTHETIC_MHA_SRC
   synthetic_mha_main.cxx 
   )
-SET (SYNTHETIC_VF_SRC
+set (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
   )
-SET (TEST2_SRC
+set (TEST2_SRC
   test2.cxx
   )
-SET (VMATRIX_SRC
+set (VMATRIX_SRC
   Vmatrix.c
   )
-SET (XYZINT_SRC
+set (XYZINT_SRC
   xyzInt.c
   )
-
-
-
-SET (VF_INVERT_SRC
+set (VF_INVERT_SRC
   vf_invert.cxx
   )
-SET (XF_TO_EMPIREFMT_SRC
+set (XF_TO_EMPIREFMT_SRC
   xf_to_empirefmt.cxx
   )
 
 ##-----------------------------------------------------------------------------
 ##  SOURCE FILE PROPERTIES
 ##-----------------------------------------------------------------------------
-IF (OPENMP_FOUND)
-  SET_SOURCE_FILES_PROPERTIES (bspline.cxx
+if (OPENMP_FOUND)
+  set_source_files_properties (bspline.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (bspline_mi.cxx
+  set_source_files_properties (bspline_mi.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (bspline_mse.cxx
+  set_source_files_properties (bspline_mse.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (drr.cxx
+  set_source_files_properties (drr.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (fdk.cxx
+  set_source_files_properties (fdk.cxx
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-  SET_SOURCE_FILES_PROPERTIES (openmp_test.c
+  set_source_files_properties (openmp_test.c
     PROPERTIES COMPILE_FLAGS ${OPENMP_FLAGS})
-ENDIF ()
+endif ()
 
 if (SSE2_FOUND AND NOT BUILD_AGAINST_SLICER3)
-    PLM_SET_SSE2_FLAGS (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
+  plm_set_sse2_flags (bspline.cxx bspline_mi.cxx bspline_mse.cxx bspline_warp.cxx)
 endif ()
 
 ##-----------------------------------------------------------------------------
@@ -673,17 +670,17 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Library targets
 ##-----------------------------------------------------------------------------
-PLM_ADD_LIBRARY (
+plm_add_library (
   plmsys
   "${PLMSYS_LIBRARY_SRC}" 
   "${PLMSYS_LIBRARY_DEPENDENCIES}"
   "")
 
-IF (F2C_LIBRARY AND UNIX)
-  PLM_ADD_LIBRARY (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
-ENDIF ()
+if (F2C_LIBRARY AND UNIX)
+  plm_add_library (f2c_helper "${F2C_HELPER_LIBRARY_SRC}" "" "")
+endif ()
 
-PLM_ADD_LIBRARY (
+plm_add_library (
   gpuit 
   "${GPUIT_LIBRARY_SRC}" 
   "${GPUIT_LIBRARY_DEPENDENCIES}"
@@ -692,14 +689,14 @@ PLM_ADD_LIBRARY (
 # JAS 2010.11.23
 # Because the plugins are loaded at runtime, CMake doesn't know
 # that they are needed by everything linked against gpuit.  So, we tell it.
-IF (BUILD_SHARED_LIBS)      # << Dynamic loading
-  IF (CUDA_FOUND)
-    ADD_DEPENDENCIES (gpuit plmcuda)
-  ENDIF ()
-  IF (OPENCL_FOUND)
-    ADD_DEPENDENCIES (gpuit plmopencl)
-  ENDIF ()
-ENDIF ()
+if (BUILD_SHARED_LIBS)      # << Dynamic loading
+  if (CUDA_FOUND)
+    add_dependencies (gpuit plmcuda)
+  endif ()
+  if (OPENCL_FOUND)
+    add_dependencies (gpuit plmopencl)
+  endif ()
+endif ()
 
 if (FULL_PLASTIMATCH_BUILD)
   # Despite claims to the contrary, you are not allowed to have a library
@@ -730,35 +727,35 @@ endif ()
 if (WIN32 AND SLICER_FOUND)
   # The slicer plugin on windows can't find its dll easily.  Copy these 
   # over to the lib directory.
-  SET (INDIR
+  set (INDIR
     "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-  SET (OUTDIR
+  set (OUTDIR
     "${CMAKE_BINARY_DIR}/${Slicer3_INSTALL_PLUGINS_BIN_DIR}/${CMAKE_CFG_INTDIR}")
 
-  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plastimatch1
+  plm_slicer_copy_dll (plastimatch_slicer_copy_plastimatch1
     "${INDIR}/plastimatch1.dll"
     "${OUTDIR}/plastimatch1.dll"
     plastimatch1
     )
-  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_gpuit
+  plm_slicer_copy_dll (plastimatch_slicer_copy_gpuit
     "${INDIR}/gpuit.dll"
     "${OUTDIR}/gpuit.dll"
     gpuit
     )
-  PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmsys
+  plm_slicer_copy_dll (plastimatch_slicer_copy_plmsys
     "${INDIR}/plmsys.dll"
     "${OUTDIR}/plmsys.dll"
     plmsys
     )
   if (CUDA_FOUND)
-    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmcuda
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmcuda
       "${INDIR}/plmcuda.dll"
       "${OUTDIR}/plmcuda.dll"
       plmcuda
       )
   endif ()
   if (OPENCL_FOUND)
-    PLM_SLICER_COPY_DLL (plastimatch_slicer_copy_plmopencl
+    plm_slicer_copy_dll (plastimatch_slicer_copy_plmopencl
       "${INDIR}/plmopencl.dll"
       "${OUTDIR}/plmopencl.dll"
       plmopencl
@@ -769,288 +766,241 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Executable targets
 ##-----------------------------------------------------------------------------
-PLM_ADD_EXECUTABLE (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (bragg_curve "${BRAGG_CURVE_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (bspline "${BSPLINE_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (check_grad "${CHECK_GRAD_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (demons "${DEMONS_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (drr "${DRR_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 1)
-PLM_ADD_EXECUTABLE (dlib_train "${DLIB_TRAIN_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (dlib_train "${DLIB_TRAIN_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 
   ${INSTALL_IF_NOT_DEBIAN})
-PLM_ADD_EXECUTABLE (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (fdk "${FDK_SRC}" "${GPUIT_LIBRARIES}" 
   "${PLMCUDA_EXE_LDFLAGS}" 1)
-PLM_ADD_EXECUTABLE (reg "${REG_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (reg "${REG_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (hnd_to_pfm "${HND_TO_PFM_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 
   ${INSTALL_IF_NOT_DEBIAN})
-PLM_ADD_EXECUTABLE (mha_to_raw mha_to_raw.c "" "" 
+plm_add_executable (mha_to_raw mha_to_raw.c "" "" 
   ${INSTALL_IF_NOT_DEBIAN})
-PLM_ADD_EXECUTABLE (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
+plm_add_executable (proton_dose "${PROTON_DOSE_SRC}" "${GPUIT_LIBRARIES}" 
   "${GPUIT_EXE_LDFLAGS}" 0)
-PLM_ADD_EXECUTABLE (raw_to_mha raw_to_mha.c "" "" 
+plm_add_executable (raw_to_mha raw_to_mha.c "" "" 
   ${INSTALL_IF_NOT_DEBIAN})
-PLM_ADD_EXECUTABLE (test2 "${TEST2_SRC}" 
+plm_add_executable (test2 "${TEST2_SRC}" 
   "" "" 0)
-PLM_ADD_EXECUTABLE (Vmatrix "${VMATRIX_SRC}" 
+plm_add_executable (Vmatrix "${VMATRIX_SRC}" 
   "" "" 0)
-PLM_ADD_EXECUTABLE (xyzInt "${XYZINT_SRC}" 
+plm_add_executable (xyzInt "${XYZINT_SRC}" 
   "" "" 
   ${INSTALL_IF_NOT_DEBIAN})
 
 
 
 if (FULL_PLASTIMATCH_BUILD)
-  MESSAGE (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
-  PLM_ADD_EXECUTABLE (compute_distance "${COMPUTE_DISTANCE_SRC}" 
+  message (STATUS "PLASTIMATCH_LIBS: ${PLASTIMATCH_LIBS}")
+  plm_add_executable (compute_distance "${COMPUTE_DISTANCE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
+  plm_add_executable (compute_mean_image "${COMPUTE_MEAN_IMAGE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (extract_slice "${EXTRACT_SLICE_SRC}" 
+  plm_add_executable (extract_slice "${EXTRACT_SLICE_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (dice_stats "${DICE_STATS_SRC}"
+  plm_add_executable (dice_stats "${DICE_STATS_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (dicom_info "${DICOM_INFO_SRC}"
+  plm_add_executable (dicom_info "${DICOM_INFO_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
+  plm_add_executable (dicom_series_test "${DICOM_SERIES_TEST_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (distance_map "${DISTANCE_MAP_SRC}"
+  plm_add_executable (distance_map "${DISTANCE_MAP_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (extract_contour "${EXTRACT_CONTOUR_SRC}"
+  plm_add_executable (extract_contour "${EXTRACT_CONTOUR_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (landmark_warp "${LANDMARK_WARP_SRC}" 
+  plm_add_executable (landmark_warp "${LANDMARK_WARP_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 1)
-  PLM_ADD_EXECUTABLE (merge_vfs merge_vector_fields.cxx
+  plm_add_executable (merge_vfs merge_vector_fields.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
+  plm_add_executable (mha_to_rtog_dose "${MHA_TO_RTOG_DOSE_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (plastimatch "${PLASTIMATCH_SRC}"
+  plm_add_executable (plastimatch "${PLASTIMATCH_SRC}"
     "${PLASTIMATCH_LIBS}" "${PLMCUDA_EXE_LDFLAGS}" 1)
-  IF (QT4_FOUND AND QT_QTSQL_FOUND)
-    SET (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
+  if (QT4_FOUND AND QT_QTSQL_FOUND)
+    set (PLASTIMATCH_QT_LIBRARIES ${PLASTIMATCH_LIBS} 
       ${QT_LIBRARIES} ${QT_QTSQL_LIBRARIES})
-    PLM_ADD_EXECUTABLE (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
+    plm_add_executable (plastimatch_qt "${PLASTIMATCH_QT_SRC}"
       "${PLASTIMATCH_QT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
-  ENDIF ()
-  PLM_ADD_EXECUTABLE (ransac_test "${RANSAC_TEST_SRC}" 
+  endif ()
+  plm_add_executable (ransac_test "${RANSAC_TEST_SRC}" 
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (rtog_to_mha "${RTOG_TO_MHA_SRC}"
+  plm_add_executable (rtog_to_mha "${RTOG_TO_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (shuffle_mha "${SHUFFLE_MHA_SRC}"
+  plm_add_executable (shuffle_mha "${SHUFFLE_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
   if (PLM_BUILD_SIFTND)
-    PLM_ADD_EXECUTABLE (siftnD "${SIFTnD_SRC}"
+    plm_add_executable (siftnD "${SIFTnD_SRC}"
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
       ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-  PLM_ADD_EXECUTABLE (synthetic_mha "${SYNTHETIC_MHA_SRC}"
+  plm_add_executable (synthetic_mha "${SYNTHETIC_MHA_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (synthetic_vf "${SYNTHETIC_VF_SRC}"
+  plm_add_executable (synthetic_vf "${SYNTHETIC_VF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (union_mask union_mask.cxx
+  plm_add_executable (union_mask union_mask.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (vf_invert "${VF_INVERT_SRC}"
+  plm_add_executable (vf_invert "${VF_INVERT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-  PLM_ADD_EXECUTABLE (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
+  plm_add_executable (xf_to_EMPIREFMT "${XF_TO_EMPIREFMT_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-ENDIF ()
+endif ()
 
 # executables that require cuda
-IF (CUDA_FOUND)
-  PLM_ADD_EXECUTABLE (cuda_probe 
+if (CUDA_FOUND)
+  plm_add_executable (cuda_probe 
     "${CUDA_PROBE_SRC}" "${CUDA_LIBRARIES}" "" 
     ${INSTALL_IF_NOT_DEBIAN})
-ENDIF ()
+endif ()
 
 # executables that require opencl
-IF (OPENCL_FOUND)
-  PLM_ADD_EXECUTABLE (opencl_probe 
+if (OPENCL_FOUND)
+  plm_add_executable (opencl_probe 
     "${OPENCL_PROBE_SRC}"  "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
-ENDIF ()
+endif ()
 
 # dicom_uid requires dcmtk
-IF (DCMTK_FOUND)
-  PLM_ADD_EXECUTABLE (dicom_uid 
+if (DCMTK_FOUND)
+  plm_add_executable (dicom_uid 
     "${DICOM_UID_SRC}" "${DCMTK_LIBRARIES}" "" 
     ${INSTALL_IF_NOT_DEBIAN})
-ENDIF ()
+endif ()
 
 # mondoshot requires WIN32, wx, dcmtk, sqlite3
-IF (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
-  ADD_EXECUTABLE (mondoshot WIN32 ${MONDOSHOT_SRC})
-  TARGET_LINK_LIBRARIES (mondoshot 
+if (WIN32 AND NOT CYGWIN AND wxWidgets_FOUND AND DCMTK_FOUND)
+  add_executable (mondoshot WIN32 ${MONDOSHOT_SRC})
+  target_link_libraries (mondoshot 
     ${wxWidgets_LIBRARIES} ${DCMTK_LIBRARIES} ${SQLITE_LIBRARIES})
-  IF (NOT BUILD_AGAINST_SLICER3)
-    INSTALL (TARGETS mondoshot DESTINATION bin)
-  ENDIF ()
-ENDIF ()
+  if (NOT BUILD_AGAINST_SLICER3)
+    install (TARGETS mondoshot DESTINATION bin)
+  endif ()
+endif ()
 
 # matlab mex files
-IF (MATLAB_FOUND AND PLM_BUILD_MEX_TEST)
-  MEX_TARGET (mex_drr 
+if (MATLAB_FOUND AND PLM_BUILD_MEX_TEST)
+  mex_target (mex_drr 
     "${MEX_DRR_SRC}" "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}")
-ENDIF ()
-
-##-----------------------------------------------------------------------------
-##  Slicer loadable module (in development)
-##-----------------------------------------------------------------------------
-IF (SLICER_FOUND AND NOT SLICER_IS_SLICER3 AND PLM_BUILD_SLICER_LOADABLE)
-
-  SET (CMAKE_MODULE_PATH "${Slicer_DIR}/CMake" ${CMAKE_MODULE_PATH})
-  #INCLUDE ("${Slicer_CMAKE_DIR}/SlicerQTModuleMacros.cmake")
-  #INCLUDE ("${Slicer_CMAKE_DIR}/SlicerParseArgumentsMacro.cmake")
-  ADD_SUBDIRECTORY (slicer_loadable)
-
-  IF (COMMENTOUT)
-    CONFIGURE_FILE (
-      ${CMAKE_CURRENT_SOURCE_DIR}/vtkPlastimatchLoadableConfigure.h.in 
-      ${CMAKE_CURRENT_BINARY_DIR}/vtkPlastimatchLoadableConfigure.h
-      )
-    set (PlastimatchLoadable_SRCS
-      vtkPlastimatchLoadableLogic.cxx 
-      vtkPlastimatchLoadableGUI.cxx 
-      vtkMRMLPlastimatchLoadableNode.cxx 
-      )
-
-    include("${VTK_CMAKE_DIR}/vtkWrapTcl.cmake")
-    vtk_wrap_tcl3 (PlastimatchLoadable
-      PlastimatchLoadable_TCL_SRCS 
-      "${PlastimatchLoadable_SRCS}" "")
-    MESSAGE (STATUS "TCL SOURCES: ${PlastimatchLoadable_TCL_SRCS}")
-
-    GENERATELM (PlastimatchLoadable_SRCS PlastimatchLoadable.xml)
-
-    PLM_ADD_SLICER_MODULE (PlastimatchLoadable
-      "${PlastimatchLoadable_SRCS};${PlastimatchLoadable_TCL_SRCS}" 
-      "${PLASTIMATCH_LIBS}")
-
-    ADD_LIBRARY (PlastimatchLoadable
-      ${PlastimatchLoadable_SRCS}
-      ${PlastimatchLoadable_TCL_SRCS})
-    SLICER3_SET_MODULES_OUTPUT_PATH (PlastimatchLoadable)
-    TARGET_LINK_LIBRARIES (PlastimatchLoadable
-	${Slicer_Libs_LIBRARIES}
-	${Slicer_Base_LIBRARIES}
-	${KWWidgets_LIBRARIES}
-	${ITK_LIBRARIES})
-      #      ${PLASTIMATCH_LIBS})
-    SLICER3_INSTALL_MODULES (PlastimatchLoadable)
-  ENDIF (COMMENTOUT)
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Simple test files
 ##-----------------------------------------------------------------------------
 # Test executable -- cuda
-IF (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
-  CUDA_COMPILE (CUDA_TEST_WRAPPERS cuda_test.cu)
-  SET (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
-  MESSAGE (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
-  PLM_ADD_EXECUTABLE (cuda_test 
+if (CUDA_FOUND AND PLM_BUILD_CUDA_TEST)
+  cuda_compile (CUDA_TEST_WRAPPERS cuda_test.cu)
+  set (CUDA_TEST_SRC ${CUDA_TEST_WRAPPERS} cuda_test.cu)
+  message (STATUS "CUDA_TEST_SRC: ${CUDA_TEST_SRC}")
+  plm_add_executable (cuda_test 
     "${CUDA_TEST_SRC}" "${CUDA_LIBRARIES}" "" 0)
-  SET_TARGET_PROPERTIES (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
-ENDIF ()
+  set_target_properties (cuda_test PROPERTIES LINKER_LANGUAGE CXX)
+endif ()
 
 # Test executable -- dlib
-IF (PLM_BUILD_DLIB_TEST)
-  SET (DLIB_TEST_SRC dlib_test.cxx)
-  SET (DLIB_TEST_LIBS "")
-  PLM_ADD_EXECUTABLE (dlib_test 
+if (PLM_BUILD_DLIB_TEST)
+  set (DLIB_TEST_SRC dlib_test.cxx)
+  set (DLIB_TEST_LIBS "")
+  plm_add_executable (dlib_test 
     "${DLIB_TEST_SRC}" "${DLIB_TEST_LIBS}" "" 0)
-ENDIF ()
+endif ()
 
 # Test executable -- fann
-IF (FANN_FOUND AND PLM_BUILD_FANN_TEST)
-  SET (FANN_TEST_SRC fann_test.c)
-  SET (FANN_TEST_LIBS 
+if (FANN_FOUND AND PLM_BUILD_FANN_TEST)
+  set (FANN_TEST_SRC fann_test.c)
+  set (FANN_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${FANN_LIBRARIES})
-  PLM_ADD_EXECUTABLE (fann_test 
+  plm_add_executable (fann_test 
     "${FANN_TEST_SRC}" "${FANN_TEST_LIBS}" "${OPENMP_LDFLAGS}" 0)
-ENDIF ()
+endif ()
 
 # Test executable -- mex
-IF (PLM_BUILD_MEX_TEST)
-  IF (OCTAVE_FOUND)
-    ADD_CUSTOM_COMMAND (
+if (PLM_BUILD_MEX_TEST)
+  if (OCTAVE_FOUND)
+    add_custom_command (
       OUTPUT "${CMAKE_BINARY_DIR}/mex_test.mex"
       COMMAND ${OCTAVE_MKOCTFILE} --mex 
       -o "${CMAKE_BINARY_DIR}/mex_test.mex" 
       "${CMAKE_SOURCE_DIR}/mex_test.c"
       DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
-    ADD_CUSTOM_TARGET (oct_mex_test
+    add_custom_target (oct_mex_test
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test.mex")
-  ENDIF ()
-  IF (MATLAB_FOUND)
-    FILE (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
+  endif ()
+  if (MATLAB_FOUND)
+    file (WRITE "${CMAKE_BINARY_DIR}/compile_mex_test.m"
       "mex \"${CMAKE_SOURCE_DIR}/mex_test.c\";exit;\n")
-    FILE (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
+    file (WRITE "${CMAKE_BINARY_DIR}/mex_test.cmake"
       "EXECUTE_PROCESS (COMMAND ${MATLAB_EXE} -nosplash -nodesktop -nojvm
        -r compile_mex_test
        RESULT_VARIABLE RESULT
        OUTPUT_VARIABLE STDOUT
        ERROR_VARIABLE STDERR)\n")
-    ADD_CUSTOM_COMMAND (
+    add_custom_command (
       OUTPUT "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}"
       COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/mex_test.cmake"
       DEPENDS "${CMAKE_SOURCE_DIR}/mex_test.c")
-    ADD_CUSTOM_TARGET (mat_mex_test
+    add_custom_target (mat_mex_test
       DEPENDS "${CMAKE_BINARY_DIR}/mex_test${MATLAB_MEXEXT}")
-    TARGET_LINK_LIBRARIES (mex_test ${MATLAB_LIBRARIES})
-  ENDIF ()
-ENDIF ()
+    target_link_libraries (mex_test ${MATLAB_LIBRARIES})
+  endif ()
+endif ()
 
 # Test executable -- nlopt
-IF (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
-  SET (NLOPT_TEST_SRC nlopt_test.c)
-  SET (NLOPT_TEST_LIBS 
+if (PLM_BUILD_NLOPT_TEST AND NLOPT_FOUND)
+  set (NLOPT_TEST_SRC nlopt_test.c)
+  set (NLOPT_TEST_LIBS 
     ${GPUIT_LIBRARIES} ${NLOPT_LIBRARIES})
-  PLM_ADD_EXECUTABLE (nlopt_test "${NLOPT_TEST_SRC}" "${NLOPT_TEST_LIBS}" 
+  plm_add_executable (nlopt_test "${NLOPT_TEST_SRC}" "${NLOPT_TEST_LIBS}" 
     "${OPENMP_LDFLAGS}" 0)
-  SET_TARGET_PROPERTIES (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
-ENDIF ()
+  set_target_properties (nlopt_test PROPERTIES LINKER_LANGUAGE CXX)
+endif ()
 
 # Test executable -- opencl
-IF (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
-  SET (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl
+if (PLM_BUILD_OPENCL_TEST AND OPENCL_FOUND)
+  set (OPENCL_TEST_SRC opencl_test.cxx opencl_test.h opencl_test.cl
     "${CMAKE_BINARY_DIR}/opencl_test.cl"
     )
-  SET (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
+  set (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${PLASTIMATCH_LIBS})
   #SET (OPENCL_TEST_LIBS ${OPENCL_LIBRARIES} ${GPUIT_LIBRARIES})
-  PLM_ADD_EXECUTABLE (opencl_test "${OPENCL_TEST_SRC}" 
+  plm_add_executable (opencl_test "${OPENCL_TEST_SRC}" 
     "${OPENCL_TEST_LIBS}" "" 0)
   #SET_TARGET_PROPERTIES (opencl_test PROPERTIES LINKER_LANGUAGE CXX)
 
   # I don't yet know how to bundle the .cl file within the executable.
   # Therefore, copy the .cl into binary directory.
-  ADD_CUSTOM_COMMAND (
+  add_custom_command (
     OUTPUT "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     COMMAND ${CMAKE_COMMAND} "-E" "copy" 
     "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl" 
     "${CMAKE_BINARY_DIR}/opencl_test.cl" 
     DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/opencl_test.cl")
-ENDIF ()
+endif ()
 
 # Test executable -- openmp
-IF (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
-  SET (OPENMP_TEST_SRC openmp_test.c)
-  PLM_ADD_EXECUTABLE (openmp_test "${OPENMP_TEST_SRC}" "${GPUIT_LIBRARIES}" 
+if (PLM_BUILD_OPENMP_TEST AND OPENMP_FOUND)
+  set (OPENMP_TEST_SRC openmp_test.c)
+  plm_add_executable (openmp_test "${OPENMP_TEST_SRC}" "${GPUIT_LIBRARIES}" 
     "${OPENMP_LDFLAGS}" 0)
-ENDIF ()
+endif ()
 
 # Test executable -- cuda_tex_test
 if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
@@ -1058,19 +1008,19 @@ if (PLM_BUILD_CUDA_TEST AND CUDA_FOUND)
 endif ()
 
 # Test executable -- qt
-IF (PLM_BUILD_QT_TEST AND QT4_FOUND)
-  SET (QT_TEST_SRC qt_test.cxx)
-  PLM_ADD_EXECUTABLE (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
-ENDIF ()
+if (PLM_BUILD_QT_TEST AND QT4_FOUND)
+  set (QT_TEST_SRC qt_test.cxx)
+  plm_add_executable (qt_test "${QT_TEST_SRC}" "${QT_LIBRARIES}" "" 0)
+endif ()
 
 ## -------------------------------------------------------------------------
 ## Unit test targets
 ## -------------------------------------------------------------------------
-PLM_ADD_EXECUTABLE (bspline_test_1 bspline_test_1.cxx
+plm_add_executable (bspline_test_1 bspline_test_1.cxx
   "${GPUIT_LIBRARIES}" "${GPUIT_EXE_LDFLAGS}" 0)
-IF (ITK_FOUND)
-  PLM_ADD_EXECUTABLE (plm_drr_api_a plm_drr_api_a.cxx
+if (ITK_FOUND)
+  plm_add_executable (plm_drr_api_a plm_drr_api_a.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-  PLM_ADD_EXECUTABLE (plm_registration_api_a plm_registration_api_a.cxx
+  plm_add_executable (plm_registration_api_a plm_registration_api_a.cxx
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 0)
-ENDIF ()
+endif ()
