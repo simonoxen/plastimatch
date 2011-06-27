@@ -13,7 +13,7 @@ svnpassword ""
 homepage    http://plastimatch.org
 
 # Match category in the xml description of the module (where it shows up in Modules menu)
-#category    Quantification
+#category    Plastimatch
 
 # Give people an idea what to expect from this code 
 #  - Is it just a test or something you stand beind?
