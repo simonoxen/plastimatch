@@ -287,6 +287,12 @@ Then build as follows:
 
    make -j 4
 
+   You can probably get even better performance by increasing the 
+   the number of processes (specified by the -j option) 
+   beyond the number of cores.  One rule of thumb is to 
+   use approximately 1.5 times the number of available CPUs (see 
+   `[1] <http://developers.sun.com/solaris/articles/parallel_make.html#3>`_,
+   `[2] <http://stackoverflow.com/questions/414714/compiling-with-g-using-multiple-cores>`_).
 
 Compiling the 3D Slicer extensions
 ----------------------------------
@@ -302,7 +308,7 @@ METHOD ONE:
 
      ./Slicer3/Scripts/getbuildtest.tcl --release -t ""
 
-   The slicer build takes a while.  Let it run over night.
+   The slicer build takes a while.  Let it run overnight.
 
 #. Run slicer, just make sure the build went ok.
 
