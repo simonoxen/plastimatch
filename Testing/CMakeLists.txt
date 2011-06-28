@@ -31,7 +31,7 @@ endmacro ()
 ## -------------------------------------------------------------------------
 ## Download data sets
 ## -------------------------------------------------------------------------
-macro (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
+macro (plm_download_and_extract DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   if (NOT IS_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
     file (MAKE_DIRECTORY "${PLM_TESTING_DOWNLOAD_DATA_DIR}")
   endif ()
@@ -52,49 +52,56 @@ macro (PLM_DOWNLOAD_AND_EXTRACT DOWNLOAD_URL DOWNLOAD_FILENAME DOWNLOAD_DIR)
   endif ()
 endmacro ()
 
-if (PLM_TEST_DICOMRT_AW)
+if (PLM_DOWNLOAD_HEADPHANTOM)
+  plm_download_and_extract (
+    "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1929/headphantom.tar.gz"
+    "${PLM_TESTING_DOWNLOAD_DATA_DIR}/headphantom.tar.gz"
+    "${PLM_TESTING_BUILD_DIR}/headphantom")
+endif ()
+
+if (PLM_DOWNLOAD_DICOMRT_AW)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1613/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/foot-dicomrt-aw-4.4.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
 endif ()
 
-if (PLM_TEST_DICOMRT_CERR)
+if (PLM_DOWNLOAD_DICOMRT_CERR)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1632/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
 endif ()
 
-if (PLM_TEST_DICOMRT_IRREGULAR)
+if (PLM_DOWNLOAD_DICOMRT_IRREGULAR)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1827/xio-4.60-irregular-spacing.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/xio-4.60-irregular-spacing.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/xio-4.60-irregular-spacing")
 endif ()
 
-if (PLM_TEST_DICOMRT_PINNACLE)
+if (PLM_DOWNLOAD_DICOMRT_PINNACLE)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1187/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/rando-dicomrt-pinnacle3-8.2g.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/rando-dicomrt-pinnacle3-8.2g")
 endif ()
 
-if (PLM_TEST_DICOMRT_XIO)
+if (PLM_DOWNLOAD_DICOMRT_XIO)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/934/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-dicomrt-xio-4.33.02.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
 endif ()
 
-if (PLM_TEST_FDK_VARIAN)
+if (PLM_DOWNLOAD_FDK_VARIAN)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/1127/varian-catphan.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/varian-catphan.tar.gz"
     "${PLM_TESTING_BUILD_DIR}/varian-catphan")
 endif ()
 
-if (PLM_TEST_XIO)
+if (PLM_DOWNLOAD_XIO)
   plm_download_and_extract (
     "http://forge.abcd.harvard.edu/gf/download/frsrelease/85/939/chest-phantom-xio-4.33.02.tar.gz"
     "${PLM_TESTING_DOWNLOAD_DATA_DIR}/chest-phantom-xio-4.33.02.tar.gz"

@@ -95,20 +95,22 @@ option (PLM_REDUCED_TESTS
   "Run fewer tests (used when debugging tests)" OFF)
 option (PLM_TEST_BSPLINE_FLAVORS 
   "Regression tests for seldom used b-spline implementations" OFF)
-option (PLM_TEST_DICOMRT_AW
-  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-option (PLM_TEST_DICOMRT_CERR
-  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-option (PLM_TEST_DICOMRT_IRREGULAR
-  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-option (PLM_TEST_DICOMRT_PINNACLE 
-  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-option (PLM_TEST_DICOMRT_XIO 
-  "Regression test for dicom, dicomrt (downloads extra test data)" OFF)
-option (PLM_TEST_FDK_VARIAN 
-  "Regression tests for fdk with Varian data (downloads extra test data)" OFF)
-option (PLM_TEST_XIO 
-  "Regression tests for xio file exchange (downloads extra test data)" OFF)
+option (PLM_DOWNLOAD_HEADPHANTOM
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_AW
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_CERR
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_IRREGULAR
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_PINNACLE 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_DICOMRT_XIO 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_FDK_VARIAN 
+  "Additional testing data (download from internet)" OFF)
+option (PLM_DOWNLOAD_XIO 
+  "Additional testing data (download from internet)" OFF)
 
 ##-----------------------------------------------------------------------------
 ##  Special hack for slicer extension on apple
