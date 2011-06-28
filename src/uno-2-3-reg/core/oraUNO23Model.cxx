@@ -1803,7 +1803,6 @@ ITKVTKImage *UNO23Model::GeneratePerspectiveProjectionMask(unsigned int i,
   vtkImageData *maskImage = imager->GetOutput();
   resultImage = new ITKVTKImage(itk::ImageIOBase::SCALAR, itk::ImageIOBase::UCHAR);
   resultImage->SetVTKImage(maskImage, false);
-  maskImage->Delete();
 
   ITKVTKImage::ITKImagePointer baseMask = resultImage->
       GetAsITKImage<MaskPixelType>();
