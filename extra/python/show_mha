@@ -1,46 +1,89 @@
 #! /usr/bin/env python
 
-## This script shows a mha image
+## This is an easy command line mha file viewer 
 ## Author: Paolo Zaffino  (p.zaffino@yahoo.it)
-## rev 1
+## rev 2
+## If your python version is < 2.7 you must install the argparse library
 ## NOT TESTED ON PYTHON 3
-##
-## Usage: show_mha file_name slice_number choose_view
-## slice_number can be: a number
-## 			- for the middle slice
-## choose_view can be: a for the axial view
-##		       s for sagittal view
-##		       c or - for coronal view
-##
-## E.g.  show_mha img.mha - -
+## "show_mha -h" show the guide
 
-from sys import argv
+import argparse
 import numpy as np
-from matplotlib.pyplot import imshow, show
+from matplotlib.pyplot import imshow, show, hold
 import matplotlib.cm as cm
 from mha import read
 
-(img, img_size, img_spacing, img_offset, img_data_type)=read(argv[1])
+## Parser settings
+parser = argparse.ArgumentParser(description='Command line mha file viewer')
+parser.add_argument('--input', help='Input mha image', type=str, required=True)
+parser.add_argument('--slice', help='Slice number, default slice is the middle one',type=int)
+parser.add_argument('--view', help='View, default is coronal',type=str, default='c', choices=('a','c','s'))
+parser.add_argument('--overlay_image', help='Overlay mha image', type=str)
+parser.add_argument('--gain_overlay_image', help='Gain of overlay image', type=int, default=1)
+parser.add_argument('--diff', help='Shows the difference between the input image and the overlay one', action='store_true')
+parser.add_argument('--colours', help='Sets the colours in the overlay mode', action='store_true')
+args = parser.parse_args()
 
-if argv[2]== '-' and (argv[3]== '-' or argv[3]== 'c' or argv[3]== 's'):
+(img, img_size, img_spacing, img_offset, img_data_type)=read(args.input)
+
+## Slice number settings
+if args.slice == None and (args.view == 'c' or args.view == 's'):
 	slice_number=np.rint(img_size[1]/2)
-elif argv[2]== '-' and argv[3]== 'a':
+elif args.slice == None and args.view == 'a':
 	slice_number=np.rint(img_size[2]/2)
 else:
-	slice_number=argv[2]
+	slice_number=args.slice
 
-
-if argv[3]== '-' or argv[3]== 'c':
+## View settings
+if args.view == 'c':
 	slice=np.rot90(img[:,slice_number],3)
 	pixel_ratio=img_spacing[2]/img_spacing[1]
-elif argv[3]== 's':
+elif args.view == 's':
 	slice=np.rot90(img[slice_number,:],3)
 	pixel_ratio=img_spacing[2]/img_spacing[1]
-elif argv[3]== 'a':
+elif args.view == 'a':
 	slice=np.rot90(img[:,:,slice_number],1)
 	pixel_ratio=1
 
 del img
 
-imshow(slice,cmap=cm.gray, aspect=pixel_ratio, origin='lower')
-show()
+## Overlay settings
+if args.overlay_image != None:
+	(img2, img2_size, img2_spacing, img2_offset, img2_data_type)=read(args.overlay_image)
+	
+	if img_size != img2_size:
+		print "Warning: the two images don't have the same dimensions!"
+	if img_spacing != img2_spacing:
+		print "Warning: the two images don't have the same pixel spacing!"
+	if img_offset != img2_offset:
+		print "Warning: the two images don't have the same offset!"
+	
+	if args.view == 'c':
+		slice2=np.rot90(img2[:,slice_number],3)
+	elif args.view == 's':
+		slice2=np.rot90(img2[slice_number,:],3)
+	elif args.view == 'a':
+		slice2=np.rot90(img2[:,:,slice_number],1)
+	del img2
+
+## Shows diff or normal image
+if args.diff == False:
+	if args.colours == True:
+		imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		if args.overlay_image != None:
+			imshow(slice2, aspect=pixel_ratio, origin='lower', alpha=0.5)
+		show()
+	elif args.colours == False:
+		if args.overlay_image != None:
+			slice_sum=np.add(np.multiply(slice2, args.gain_overlay_image), slice)
+			del slice, slice2
+			imshow(slice_sum, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		else:
+			imshow(slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+		show()
+	
+elif args.diff == True and args.overlay_image != None:
+	diff_slice=np.subtract(slice, np.multiply(slice2, args.gain_overlay_image))
+	del slice, slice2
+	imshow(diff_slice, cmap=cm.gray, aspect=pixel_ratio, origin='lower')
+	show()
