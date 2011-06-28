@@ -48,9 +48,6 @@ public:
     bool m_want_ss_img;
     bool m_want_dose_img;
 
-    bool m_want_objdosemha;
-    bool m_want_objstrucmha; // same as m_want_ss_img??
-
     Pattern_structset_type pattern_ss;
 
 public:
@@ -77,9 +74,6 @@ public:
 	m_want_ss_img = false;
 	m_want_dose_img = false;
     
-	m_want_objdosemha = false;
-	m_want_objstrucmha = false;
-
 	pattern_ss = PATTERN_SS_ONE;
     }
 };

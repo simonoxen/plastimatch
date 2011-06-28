@@ -63,9 +63,9 @@ float intens_enclosed(FloatPoint3DType phys,
 
 //box + ellipsoid inside
 float intens_objstructdose(FloatPoint3DType phys, 
-		      float xlat1[3], float xlat2[3],
-		      float f1, float f2, Pattern_structset_type pattern_ss, 
-		      unsigned char *label)
+    float xlat1[3], float xlat2[3],
+    float f1, float f2, Pattern_structset_type pattern_ss, 
+    unsigned char *label)
 {
     float f;
 
@@ -102,8 +102,8 @@ float intens_objstructdose(FloatPoint3DType phys,
 	    +(phys[1]-ys)*(phys[1]-ys)/(rs2*rs2)
 	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
 
-	if ( rr < 2 ) { f = 1.; *label=1;}
-	}
+	if ( rr < 2 ) { f = 1.; *label=1; }
+    }
 
     // two spheres
     if (pattern_ss == PATTERN_SS_TWO_APART) {
@@ -123,7 +123,7 @@ float intens_objstructdose(FloatPoint3DType phys,
 	    +(phys[0]-xs)*(phys[0]-xs)/(rs3*rs3);
 	
 	if ( rr < 2 ) { f = 1.; *label=2;}
-	}
+    }
 
     // two spheres partially overlapping and one aside
     if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) {
@@ -153,7 +153,7 @@ float intens_objstructdose(FloatPoint3DType phys,
 
 	if ( rr < 2 ) { f = 1.; *label=3;}
 
-	}
+    }
 
     // two spheres partially overlapping, one within, and one aside
     if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) {
@@ -192,7 +192,7 @@ float intens_objstructdose(FloatPoint3DType phys,
 
 	if ( rr < 2 ) { f = 0.5; *label=4;}
 
-	}
+    }
 
     return f;
 }
@@ -353,6 +353,7 @@ synthetic_mha (
 		parms->enclosed_xlat1, parms->enclosed_xlat2,
 		parms->enclosed_intens_f1, parms->enclosed_intens_f2, 
 		parms->pattern_ss, &label_uchar); // 0 to 1
+
 	    f = (1 - f) * parms->background + f * parms->foreground;
 	    }
 	    /*else {
@@ -383,7 +384,7 @@ synthetic_mha (
 	}
 
 	//NSh code
-	if (parms->m_want_objstrucmha && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
+	if (parms->m_want_ss_img && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
 	    uchar_img_it.Set (label_uchar); 
 	    ++uchar_img_it;
 	}
@@ -410,17 +411,11 @@ synthetic_mha (
 	    dose_img_it.Set (f);
 	    ++dose_img_it;
 	}
-
-
     }
 
     rtds->m_img = new Plm_image;
     rtds->m_img->set_itk (im_out);
     if (parms->m_want_ss_img) {
-
-	rtds->m_nsh_ss_img = new Plm_image;
-	rtds->m_nsh_ss_img->set_itk(uchar_img);
-
 	rtds->m_ss_image = new Rtss (rtds);
 	rtds->m_ss_image->m_ss_img = new Plm_image;
 	rtds->m_ss_image->m_ss_img->set_itk (uchar_img);

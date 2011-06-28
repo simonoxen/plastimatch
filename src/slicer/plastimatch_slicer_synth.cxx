@@ -7,6 +7,7 @@
 #include "itk_image.h"
 #include "itk_image_save.h"
 #include "rtds.h"
+#include "rtss.h"
 #include "synthetic_mha.h"
 
 int 
@@ -73,12 +74,10 @@ main (int argc, char * argv [])
     }
 
     if (create_objstrucmha && create_objstructdose) { 
-	sm_parms.m_want_objstrucmha = true; 
 	sm_parms.m_want_ss_img = true;
     }
 
     if (create_objdosemha && create_objdosemha){
-	sm_parms.m_want_objdosemha = true;
 	sm_parms.m_want_dose_img = true;
     }
 
@@ -155,27 +154,14 @@ main (int argc, char * argv [])
 	synthetic_mha (&rtds, &sm_parms);
 	FloatImageType::Pointer img = rtds.m_img->itk_float();
 	itk_image_save_float (img, plmslc_output_one.c_str());
-    
+
 	if (plmslc_output_dosemha != "" && plmslc_output_dosemha != "None" && sm_parms.m_want_dose_img) {
-	FloatImageType::Pointer img_dose = rtds.m_dose->itk_float();
-	itk_image_save_float (img_dose, plmslc_output_dosemha.c_str());
+	    rtds.m_dose->save_image (plmslc_output_dosemha.c_str());
 	}
 
 	if (create_objstrucmha && create_objstructdose && plmslc_output_ssmha != "" && plmslc_output_ssmha != "None") {
-	
-	// itk_uchar() newly created in plm_image.h
-	// why this does not work???
-	// UCharImageType::Pointer img_ss = rtds.m_ss_image.m_ss_img->itk_uchar();
-	
-	// m_nsh_ss_img newly created by analogy with m_dose and m_img
-	// this compiles ok
-	UCharImageType::Pointer img_ss = rtds.m_nsh_ss_img->itk_uchar();
-
-	itk_image_save( img_ss, plmslc_output_ssmha.c_str());
-	//itk_image_save_uchar (img_ss, plmslc_output_ssmha.c_str());
-	//why does this produce a link error???
+	    rtds.m_ss_image->save_ss_image (plmslc_output_ssmha.c_str());
 	}
-    
     }
 
     /* Create Volume 2 */
