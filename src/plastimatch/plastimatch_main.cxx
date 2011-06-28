@@ -20,6 +20,7 @@
 #include "pcmd_resample.h"
 #include "pcmd_segment.h"
 #include "pcmd_stats.h"
+#include "pcmd_synth.h"
 #include "pcmd_thumbnail.h"
 #include "pcmd_warp.h"
 #include "pcmd_xf_convert.h"
@@ -59,9 +60,11 @@ print_usage (int return_code)
 	"  segment     "
 	"\n"
 	"  stats       "
+	"  synth       "
 	"  thumbnail   "
 	"  warp        "
 	"  xf-convert  "
+	"\n"
 	"  xio-dvh     "
 	"\n"
 	"\n"
@@ -165,6 +168,9 @@ do_command (int argc, char* argv[])
     }
     else if (!strcmp (command, "stats")) {
 	do_command_stats (argc, argv);
+    }
+    else if (!strcmp (command, "synth")) {
+	do_command_synth (argc, argv);
     }
     else if (!strcmp (command, "warp")) {
 	/* convert and warp are the same */

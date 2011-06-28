@@ -305,14 +305,12 @@ parse_fn (
     parser->assign_float13 (sm_parms->sphere_radius, "sphere-radius");
 }
 
-int 
-main (int argc, char* argv[])
+void
+do_command_synth (int argc, char* argv[])
 {
     Synthetic_mha_main_parms parms;
 
-    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv);
+    plm_clp_parse (&parms, &parse_fn, &usage_fn, argc, argv, 1);
 
     do_synthetic_mha (&parms);
-
-    return 0;
 }

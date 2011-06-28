@@ -549,6 +549,7 @@ set (PLASTIMATCH_SRC
   pcmd_resample.cxx pcmd_resample.h
   pcmd_segment.cxx pcmd_segment.h
   pcmd_stats.cxx pcmd_stats.h
+  pcmd_synth.cxx pcmd_synth.h
   pcmd_thumbnail.cxx pcmd_thumbnail.h 
   pcmd_warp_dij.cxx 
   pcmd_warp.cxx pcmd_warp.h 
@@ -614,9 +615,6 @@ set (SHUFFLE_MHA_SRC
 set (SIFTnD_SRC
   siftnD.cxx
   itkScaleInvariantFeatureImageFilter.h itkScaleInvariantFeatureImageFilter.hxx
-  )
-set (SYNTHETIC_MHA_SRC
-  synthetic_mha_main.cxx 
   )
 set (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
@@ -852,9 +850,6 @@ if (FULL_PLASTIMATCH_BUILD)
       "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
       ${INSTALL_IF_NOT_DEBIAN})
   endif ()
-  plm_add_executable (synthetic_mha "${SYNTHETIC_MHA_SRC}"
-    "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
-    ${INSTALL_IF_NOT_DEBIAN})
   plm_add_executable (synthetic_vf "${SYNTHETIC_VF_SRC}"
     "${PLASTIMATCH_LIBS}" "${GPUIT_EXE_LDFLAGS}" 
     ${INSTALL_IF_NOT_DEBIAN})
