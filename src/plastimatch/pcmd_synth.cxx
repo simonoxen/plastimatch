@@ -96,7 +96,7 @@ do_synthetic_mha (Synthetic_mha_main_parms *parms)
 static void
 usage_fn (dlib::Plm_clp* parser, int argc, char *argv[])
 {
-    std::cout << "Usage: synthetic_mha [options]\n";
+    std::cout << "Usage: plastimatch synth [options]\n";
     parser->print_options (std::cout);
     std::cout << std::endl;
 }
