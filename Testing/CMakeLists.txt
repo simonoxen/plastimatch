@@ -106,7 +106,7 @@ endif ()
 ## Copy plugin library
 ##   GCS: N.b. I don't think this is necessary.  There is no need to 
 ##   copy gpuit or plastimatch1 libraries.  Instead we set the extra path 
-##   as an argument to PLM_ADD_TEST.
+##   as an argument to plm_add_test.
 ## -------------------------------------------------------------------------
 # JAS 2010.11.23
 # Tests will fail if the test binaries cannot find the cuda plugin.
@@ -263,35 +263,35 @@ plm_add_test (
   "--output;${PLM_TESTING_BUILD_DIR}/gauss-double-2.mha;--output-type;double;--pattern;gauss;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--background;0;--foreground;1000;--gauss-center;10 0 0;--gauss-std;10 10 10"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "rect-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output-type;float;--output-dose-img;${PLM_TESTING_BUILD_DIR}/rect-1-dose-img.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/rect-1-ss-img.mha;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-1-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;-1000"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "rect-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-2.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-2-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-30 70 -50 50 -50 50"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "rect-3"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-3.mha;--output-type;float;--output-dicom;${PLM_TESTING_BUILD_DIR}/rect-3-dicom;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;-1000;--foreground;0;--rect-size;-50 50 -50 50 -50 50"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "rect-4"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
   "--output;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--output-type;uchar;--pattern;rect;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--background;0;--foreground;1;--rect-size;-50 50 -50 50 -50 50"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "sphere-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/synthetic_mha
@@ -301,7 +301,7 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## bspline-bxf - read and write bxf format
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-bxf"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline_test_1
@@ -314,7 +314,7 @@ ADD_TEST (bspline-bxf-check ${CMAKE_COMMAND} -E compare_files
 ## -------------------------------------------------------------------------
 ## bspline - bspline algorithm flavors
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -327,7 +327,7 @@ plmtest_check_interval (bspline-a-check
   "18945.7"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -340,7 +340,7 @@ plmtest_check_interval (bspline-b-check
   "18945.7"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -353,7 +353,7 @@ plmtest_check_interval (bspline-c-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -366,7 +366,7 @@ plmtest_check_interval (bspline-d-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-e"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -379,7 +379,7 @@ plmtest_check_interval (bspline-e-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-f"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -392,7 +392,7 @@ plmtest_check_interval (bspline-f-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-g"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -405,7 +405,7 @@ plmtest_check_interval (bspline-g-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-h"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -418,7 +418,7 @@ plmtest_check_interval (bspline-h-check
   "1168.35"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-mi-c-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -431,7 +431,7 @@ plmtest_check_interval (bspline-mi-c-1-check
   "-0.796"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "bspline-mi-c-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/bspline
@@ -451,7 +451,7 @@ plmtest_check_interval (bspline-mi-c-2-check
 ##   demons-a          gauss-1.mha, gauss-2.mha
 ##   demons-cuda-a     gauss-1.mha, gauss-2.mha
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "demons-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/demons
@@ -464,7 +464,7 @@ plmtest_check_interval (demons-a-check
   "2.2"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "demons-cuda-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/demons
@@ -487,13 +487,13 @@ plmtest_check_interval (demons-cuda-a-check
 ##   drr-cuda    gauss-1.mha, uniform
 ##   drr-opencl  gauss-1.mha, uniform
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "drr-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-a/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -506,13 +506,13 @@ plmtest_check_interval ("drr-a-check"
   "0.055"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "drr-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-b/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-b-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -525,13 +525,13 @@ plmtest_check_interval ("drr-b-check"
   "0.055"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "drr-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-c/out_;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -544,13 +544,13 @@ plmtest_check_interval ("drr-c-check"
   "0.055"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "drr-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-d/out_;-i;uniform;${PLM_TESTING_BUILD_DIR}/gauss-4.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-d-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -563,13 +563,13 @@ plmtest_check_interval ("drr-d-check"
   "0.055"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "drr-cuda"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-A;cuda;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-cuda/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-cuda-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -582,13 +582,13 @@ plmtest_check_interval ("drr-cuda-check"
   "0.055"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "drr-opencl"
   ""
   ${PLM_PLASTIMATCH_PATH}/drr
   "-A;opencl;-a;20;-O;${PLM_TESTING_BUILD_DIR}/drr-opencl/out_;${PLM_TESTING_BUILD_DIR}/gauss-1.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "drr-opencl-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -611,13 +611,13 @@ plmtest_check_interval ("drr-opencl-check"
 ##    [fdk-cuda-b  GPU reconstruction of Varian data using CUDA
 ##   fdk-opencl-a  GPU reconstruction of synthetic data using OpenCL
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-a.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -629,13 +629,13 @@ plmtest_check_interval ("fdk-cpu-a-check"
   "-987.5"
   "-986.5"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;none;-a;0 20 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-b.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-b-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -647,13 +647,13 @@ plmtest_check_interval ("fdk-cpu-b-check"
   "-821.5"
   "-820.5"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/varian-catphan;-f;ramp;-a;0 50 670;-O;${PLM_TESTING_BUILD_DIR}/fdk-cpu-c.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cpu-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -666,13 +666,13 @@ plmtest_check_interval ("fdk-cpu-c-check"
   "-989.0"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-brook"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;brook;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk_brook_output.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-brook-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -685,13 +685,13 @@ plmtest_check_interval ("fdk-brook-check"
   "-986.5"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cuda-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;cuda;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-cuda-a.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-cuda-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -704,13 +704,13 @@ plmtest_check_interval ("fdk-cuda-a-check"
   "-986.5"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-opencl-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/fdk
   "-I;${PLM_TESTING_BUILD_DIR}/drr-a;-f;none;-A;opencl;-a;0 19;-O;${PLM_TESTING_BUILD_DIR}/fdk-opencl-a.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "fdk-opencl-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -728,13 +728,13 @@ plmtest_check_interval ("fdk-opencl-a-check"
 ## landmark_warp b: wendland rbf, slicer fcsv
 ## landmark_warp c: nsh gauss rbf, slicer fcsv
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
   "-a;tps;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-a-vf.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-a-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -746,7 +746,7 @@ plmtest_check_interval ("landmark-warp-a-check-1"
   "-992.0"
   "-991.5"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-a-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -759,13 +759,13 @@ plmtest_check_interval ("landmark-warp-a-check-2"
   "-22.7"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
   "-a;wendland;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-b-vf.mha;-r;90;-d;0;-Y;0.0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-b-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -777,7 +777,7 @@ plmtest_check_interval ("landmark-warp-b-check-1"
   "-992.2"
   "-991.8"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-b-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -790,13 +790,13 @@ plmtest_check_interval ("landmark-warp-b-check-2"
   "-1.4"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-c" 
   ""
   ${PLM_PLASTIMATCH_PATH}/landmark_warp
   "-a;gauss;-f;${PLM_TESTING_DATA_DIR}/fiducials-rect-2.fcsv;-m;${PLM_TESTING_DATA_DIR}/fiducials-rect-3.fcsv;-I;${PLM_TESTING_BUILD_DIR}/rect-3.mha;-O;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-img.mha;-V;${PLM_TESTING_BUILD_DIR}/landmark-warp-c-vf.mha;-r;74;-d;0;-Y;1.0"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-c-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -808,7 +808,7 @@ plmtest_check_interval ("landmark-warp-c-check-1"
   "-992.0"
   "-991.5"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "landmark-warp-c-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -832,13 +832,13 @@ plmtest_check_interval ("landmark-warp-c-check-2"
 ##   plm convert dicom g: input rtss, no fixed image, no ct reference
 ##   plm convert dicom h: set metadata
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -851,13 +851,13 @@ plmtest_check_interval ("plm-convert-dicom-a-check"
   "-666.6"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-b"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-b-ss-img.mha;--referenced-ct;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-b-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -878,13 +878,13 @@ plmtest_check_interval ("plm-convert-dicom-b-check"
   "1.06"
   )
 ENDIF ()
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-c"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/SS.rtp1.12.20080627A.5.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c-ss-img.mha;--fixed;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-a.mha;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.cxt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-c-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -906,13 +906,13 @@ plmtest_check_interval ("plm-convert-dicom-c-check"
   "1.06"
   )
 ENDIF ()
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-d"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02/DOSE.20080627A.TRAINING4FLD.dcm;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-d-dose-img.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-d-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -924,19 +924,19 @@ plmtest_check_interval ("plm-convert-dicom-d-check"
   "42.1"
   "42.2"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-e" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dose-img.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-f" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-e-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dicom;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-f-dose-img.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-f-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -948,19 +948,19 @@ plmtest_check_interval ("plm-convert-dicom-f-check"
   "0.000"
   "0.005"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-g" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/rect-1-dicom/ss.dcm;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.mha;--output-ss-list;plm-convert-dicom-g.txt;--output-cxt;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-g.cxt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-h"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/rect-1-dicom;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-h-dicom;--metadata;0018,5100=FFS"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-h-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/dicom_info
@@ -975,13 +975,13 @@ plmtest_check_string ("plm-convert-dicom-h-check"
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (aw)
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-aw-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4/20101202HFS;--output-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-ss.txt;--output-dose-img;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dose.mha;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-aw-a-dicom"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-aw-a-stats" 
   ""
   ${PLM_PLASTIMATCH_PATH}/dicom_info
@@ -992,7 +992,7 @@ plmtest_check_string ("plm-convert-dicom-aw-a-check"
   "^Patient's Name . (.*[^ ]) *$"
   "PHANTOM^HFS"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-aw-b" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1002,7 +1002,7 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (cerr)
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-cerr-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1012,7 +1012,7 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (pinnacle)
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-pinnacle-a" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1022,7 +1022,7 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch convert dicom-rt (xio)
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-dicom-xio-a"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1032,13 +1032,13 @@ PLM_ADD_TEST (
 ## -------------------------------------------------------------------------
 ## plastimatch convert cxt
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-cxt"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/plm-convert-dicom-c.cxt;--output-ss-img;${PLM_TESTING_BUILD_DIR}/plm-convert-cxt.mha;--output-ss-list;${PLM_TESTING_BUILD_DIR}/plm-convert-cxt.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-cxt-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1063,13 +1063,13 @@ ENDIF ()
 ## -------------------------------------------------------------------------
 ## plastimatch convert xio
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-xio"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "convert;--input;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02;--output-img;${PLM_TESTING_BUILD_DIR}/chest-phantom-xio.mha;--output-xio;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-xio-output;--output-dicom;${PLM_TESTING_BUILD_DIR}/plm-convert-xio-dicom"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-convert-xio-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1091,7 +1091,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "fill;--input;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-fill-a.mha;--mask;${PLM_TESTING_BUILD_DIR}/rect-4.mha"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-fill-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1109,7 +1109,7 @@ plm_add_test (
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "mask;--input;${PLM_TESTING_BUILD_DIR}/rect-1.mha;--output;${PLM_TESTING_BUILD_DIR}/plm-mask-a.mha;--mask;${PLM_TESTING_BUILD_DIR}/rect-4.mha;--mask-value;-1000"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-mask-a-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1125,7 +1125,7 @@ plmtest_check_interval ("plm-mask-a-check"
 ## -------------------------------------------------------------------------
 ## plastimatch usage
 ## -------------------------------------------------------------------------
-PLM_ADD_TEST (
+plm_add_test (
   "plm-usage" 
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1150,13 +1150,13 @@ ELSE (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
   SET (PLM_BSPLINE_TEST_UPPER_THRESH "-704.5")
 ENDIF (CMAKE_Fortran_COMPILER_WORKS OR F2C_LIBRARY)
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-align-center"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-align-center.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-align-center-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1169,13 +1169,13 @@ plmtest_check_interval ("plm-register-align-center-check"
   "0.005"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-translation"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-itk-translation.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-translation-stats"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1188,13 +1188,13 @@ plmtest_check_interval ("plm-register-itk-translation-check"
   "-636.9"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-rigid"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-itk-rigid.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-rigid-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1206,7 +1206,7 @@ plmtest_check_interval ("plm-register-itk-rigid-check-1"
   "-965.7"
   "-965.4"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-rigid-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1219,13 +1219,13 @@ plmtest_check_interval ("plm-register-itk-rigid-check-2"
   "-965.4"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-bspline"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
   "${PLM_TESTING_DATA_DIR}/plm-register-itk-bspline.txt"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-bspline-stats-1"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1238,7 +1238,7 @@ plmtest_check_interval ("plm-register-itk-bspline-check-1"
   "-763.75"
   )
 
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-demons"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
@@ -1250,7 +1250,7 @@ plmtest_check_interval ("plm-register-itk-demons-check-1"
   "8.55"
   "8.65"
   )
-PLM_ADD_TEST (
+plm_add_test (
   "plm-register-itk-demons-stats-2"
   ""
   ${PLM_PLASTIMATCH_PATH}/plastimatch
