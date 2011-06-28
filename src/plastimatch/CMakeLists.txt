@@ -662,7 +662,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 if (ITK_FOUND)
   if (GDCM_VERSION_2)
-    message (WARNING "Plastimatch is built with GDCM 2.X -- some functions disabled.")
+    message (WARNING "Plastimatch is built with GDCM 2.X -- DICOM-RT functions are disabled; if possible, please use GDCM 1.X instead.")
   endif ()
   set (FULL_PLASTIMATCH_BUILD 1)
 endif ()
