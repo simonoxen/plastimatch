@@ -45,6 +45,7 @@ else ()
 endif ()
 
 message (STATUS "BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
+message (STATUS "BUILD_AGAINST_SLICER3: ${BUILD_AGAINST_SLICER3}")
 if (SLICER_CONFIG_FILE)
   # The Slicer4 config file complains if these are set.
   unset (ITK_DIR CACHE)
