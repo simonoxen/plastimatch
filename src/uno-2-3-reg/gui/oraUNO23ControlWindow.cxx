@@ -220,6 +220,9 @@ void UNO23ControlWindow::Initialize()
   ui.SaveDRRsToolButton->setVisible(false);
   this->connect(ui.SaveDRRsToolButton, SIGNAL(clicked()), this,
       SLOT(OnSaveDRRsToolButtonClicked()));
+  ui.SaveBlendingToolButton->setVisible(false);
+  this->connect(ui.SaveBlendingToolButton, SIGNAL(clicked()), this,
+      SLOT(OnSaveBlendingToolButtonClicked()));
 
   OnUndoRedoManagerStackModified();
 
@@ -285,6 +288,7 @@ void UNO23ControlWindow::OnMainTimerTimeout()
     ui.ReferenceToolButton->setVisible(m_CastedModel->IsScientificMode());
     ui.ITFOptimizerToolButton->setVisible(m_CastedModel->IsScientificMode());
     ui.SaveDRRsToolButton->setVisible(m_CastedModel->IsScientificMode());
+    ui.SaveBlendingToolButton->setVisible(m_CastedModel->IsScientificMode());
     ui.CostFunctionWidget->SetCSVExportButtonVisibility(m_CastedModel->IsScientificMode());
     ui.CostFunctionWidget->SetVisibilityComboVisibility(m_CastedModel->IsScientificMode());
     m_StatusWidget->ShowMessage("");
@@ -790,6 +794,7 @@ void UNO23ControlWindow::SetActivationControlsEnabled(bool enable)
 
   ui.ITFOptimizerToolButton->setEnabled(enable);
   ui.SaveDRRsToolButton->setEnabled(enable);
+  ui.SaveBlendingToolButton->setEnabled(enable);
   ui.CostFunctionWidget->SetCSVExportButtonEnabled(enable);
   ui.CostFunctionWidget->SetVisibilityComboEnabled(enable);
 }
@@ -1510,6 +1515,138 @@ void UNO23ControlWindow::OnSaveDRRsToolButtonClicked()
       }
     }
   }
+}
+
+void UNO23ControlWindow::OnSaveBlendingToolButtonClicked()
+{
+  if (!m_CastedModel || !m_CastedModel->IsReadyForManualRegistration())
+    return;
+
+  QString dir = QFileDialog::getExistingDirectory(this,
+  UNO23ControlWindow::tr("Select the image storage directory ..."));
+  if (dir.length() <= 0)
+    return;
+
+  bool ok = false;
+  QString
+    pattern =
+        QInputDialog::getText(
+            this,
+            UNO23ControlWindow::tr("File name pattern"),
+            UNO23ControlWindow::tr(
+                "Image pattern:\n - %1 for view index [0-n]\n - %2 for blending value [0-100]\n - %3 for index"),
+            QLineEdit::Normal, UNO23ControlWindow::tr("image_%1_%3_%2.png"), &ok);
+  if (!ok || pattern.isEmpty())
+    return;
+
+  if (!pattern.contains("%1", Qt::CaseSensitive))
+  {
+    QMessageBox::critical(this, UNO23ControlWindow::tr("No pattern"),
+        UNO23ControlWindow::tr("No '%1' (view index) was detected in pattern!"));
+    return;
+  }
+  if (!pattern.contains("%2", Qt::CaseSensitive))
+  {
+    QMessageBox::critical(
+        this,
+        UNO23ControlWindow::tr("No pattern"),
+        UNO23ControlWindow::tr(
+            "No '%2' (blending value) was detected in pattern!"));
+    return;
+  }
+  if (!pattern.endsWith(".png", Qt::CaseInsensitive))
+  {
+    QMessageBox::critical(this, UNO23ControlWindow::tr("Invalid file extension"),
+        UNO23ControlWindow::tr("Only PNG is supported!"));
+    return;
+  }
+
+  QString settings = QInputDialog::getText(this,
+      UNO23ControlWindow::tr("Settings"),
+      UNO23ControlWindow::tr("Blending values [int]\n 'Min[0-50];Max[50-100];Step[1-50]':"),
+      QLineEdit::Normal, UNO23ControlWindow::tr("20;80;10"), &ok);
+  if (!ok || pattern.isEmpty())
+  {
+    QMessageBox::critical(this, UNO23ControlWindow::tr("Invalid settings"),
+        UNO23ControlWindow::tr("No settings provided!"));
+    return;
+  }
+
+  QStringList settingsList = settings.split(";", QString::SkipEmptyParts,
+      Qt::CaseSensitive);
+  if (settingsList.size() != 3)
+  {
+    QMessageBox::critical(
+        this,
+        UNO23ControlWindow::tr("Invalid settings"),
+        UNO23ControlWindow::tr("Invalid number of settings provided (%1)!").arg(
+            settingsList.size()));
+    return;
+  }
+  int minValue = settingsList[0].toInt(&ok);
+  int maxValue = settingsList[1].toInt(&ok);
+  int stepValue = settingsList[2].toInt(&ok);
+  if (!ok || minValue < 0 || minValue > 100 || maxValue < 0 || maxValue > 100 ||
+      minValue > maxValue || stepValue < 1 || minValue > 50 || maxValue < 50)
+  {
+    QMessageBox::critical(this, UNO23ControlWindow::tr("Invalid settings"),
+        UNO23ControlWindow::tr("Invalid settings provided (%1)!").arg(settings));
+    return;
+  }
+
+  QApplication::setOverrideCursor(Qt::BusyCursor);
+  QMap<QToolButton *, UNO23RenderViewDialog *>::iterator it;
+  for (it = m_ToolButtonWindowMap.begin(); it != m_ToolButtonWindowMap.end(); ++it)
+  {
+    unsigned int index = 1;
+
+    // 50 to minValue
+    for (int value = 50; value >= minValue; value -= stepValue)
+    {
+      ok = it.value()->StoreRenderWindowImage(dir, pattern, index, value, 1);
+      ++index;
+      if (!ok)
+      {
+        QMessageBox::critical(
+            this,
+            UNO23ControlWindow::tr("Image storage error"),
+            UNO23ControlWindow::tr(
+                "One or more errors occured during generating and storing images!"));
+        break;
+      }
+    }
+    // minValue to maxValue
+    for (int value = minValue; value <= maxValue; value += stepValue)
+    {
+      ok = it.value()->StoreRenderWindowImage(dir, pattern, index, value, 1);
+      ++index;
+      if (!ok)
+      {
+        QMessageBox::critical(
+            this,
+            UNO23ControlWindow::tr("Image storage error"),
+            UNO23ControlWindow::tr(
+                "One or more errors occured during generating and storing images!"));
+        break;
+      }
+    }
+    // maxValue to 50
+    for (int value = maxValue; value >= 50; value -= stepValue)
+    {
+      ok = it.value()->StoreRenderWindowImage(dir, pattern, index, value, 1);
+      ++index;
+      if (!ok)
+      {
+        QMessageBox::critical(
+            this,
+            UNO23ControlWindow::tr("Image storage error"),
+            UNO23ControlWindow::tr(
+                "One or more errors occured during generating and storing images!"));
+        break;
+      }
+    }
+  }
+  QApplication::restoreOverrideCursor();
 }
 
 }

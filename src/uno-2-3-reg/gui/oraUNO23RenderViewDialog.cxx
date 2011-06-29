@@ -12,6 +12,8 @@
 #include <QMenu>
 #include <QAction>
 #include <QColorDialog>
+#include <QString>
+#include <QDir>
 
 #include "oraUNO23RenderViewDialog.h"
 
@@ -38,6 +40,8 @@
 #include <vtkTransform2D.h>
 #include <vtkPointData.h>
 #include <vtkImageConvolve.h>
+#include <vtkWindowToImageFilter.h>
+#include <vtkPNGWriter.h>
 
 namespace ora
 {
@@ -1756,6 +1760,45 @@ void UNO23RenderViewDialog::StoreWindowLevel()
     } // else: not written into file, value do not matter ...
     m_CastedModel->StoreWindowLevelToFile(m_FixedImageIndex, fwl, uwl);
   }
+}
+
+bool UNO23RenderViewDialog::StoreRenderWindowImage(const QString &outDir,
+    const QString &outPattern, const unsigned int &index,
+    const int &blendvalue, const int &magnification)
+{
+  if (!itksys::SystemTools::FileExists(outDir.toStdString().c_str())
+      || outPattern.length() <= 0 || !m_CastedModel
+      || !m_CastedModel->IsReadyForManualRegistration())
+    return false;
+
+  if (blendvalue >= 0 && blendvalue <= 100)
+  {
+    ui.FixedMovingSlider->setValue(blendvalue);
+  }
+
+  QString filename = outDir;
+  filename += QDir::separator();
+  filename += outPattern;
+  filename = filename.arg(m_FixedImageIndex + 1, 3, 10, QChar('0'));
+  filename = filename.arg(ui.FixedMovingSlider->value(), 3, 10, QChar('0'));
+  if(index > 0)
+    filename = filename.arg(index, 3, 10, QChar('0'));
+
+  // Screenshot
+  vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<
+      vtkWindowToImageFilter>::New();
+  windowToImageFilter->SetInput(m_Renderer->GetRenderWindow());
+  windowToImageFilter->SetMagnification(magnification);
+  // also record the alpha (transparency) channel
+  // windowToImageFilter->SetInputBufferTypeToRGBA();
+  windowToImageFilter->Update();
+
+  vtkSmartPointer<vtkPNGWriter> writer = vtkSmartPointer<vtkPNGWriter>::New();
+  writer->SetFileName(filename.toStdString().c_str());
+  writer->SetInput(windowToImageFilter->GetOutput());
+  writer->Write();
+
+  return true;
 }
 
 }

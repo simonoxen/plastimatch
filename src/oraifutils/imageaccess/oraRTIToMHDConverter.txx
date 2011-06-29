@@ -477,7 +477,7 @@ RTIToMHDConverter<TPixelType>
 template <typename TPixelType>
 bool
 RTIToMHDConverter<TPixelType>
-::BuildImageFromSlices()
+::BuildImageFromSlices(int expectedMinimumNumberOfSlices)
 {
   bool result = false;
 
@@ -485,6 +485,14 @@ RTIToMHDConverter<TPixelType>
 
   if (ValidateSlices(true))
   {
+    // Check whether the expected minimum number of slices is reached after all
+    // the different validation steps (only if required, >0):
+    if (expectedMinimumNumberOfSlices > 0)
+    {
+      if (m_SliceList.size() < (unsigned int)expectedMinimumNumberOfSlices)
+        return false; // fail!
+    }
+
     typedef itk::ImageSeriesReader<ImageType> ReaderType;
     typedef typename ReaderType::Pointer ReaderPointer;
     typedef itk::RTIImageIO IOType;

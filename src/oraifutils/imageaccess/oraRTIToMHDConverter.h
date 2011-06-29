@@ -169,9 +169,15 @@ public:
    * method is called.<br>
    * NOTE: the internal volume image is set back in this method; therefore,
    * only successful application of this method guarantees a valid image!
+   * @param expectedMinimumNumberOfSlices [default: 0] specifies the expected
+   * minimum number of slices that the volume must have (after validation of
+   * slice position, parallelism etc.); if this minimum number of slices is
+   * not fulfilled, the method does not create a volume and returns immediately
+   * FALSE; if this parameter is euqal or less than 0 (default), the number of
+   * slices is ignored
    * @return TRUE if an image could successfully be created
    */
-  virtual bool BuildImageFromSlices();
+  virtual bool BuildImageFromSlices(int expectedMinimumNumberOfSlices = 0);
 
   /**
    * Get a pointer to the loaded image. <br>

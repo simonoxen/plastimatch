@@ -105,6 +105,19 @@ public:
    * to file in the respective fixed image's source folder. **/
   void StoreWindowLevel();
 
+  /** Saves a screenshot of the renderwindow.
+   *
+   * @param outputDir Output directory where the screenshot is saved.
+   * @param outPattern Pattern with '%1' for fixed image index [0-n] and '%2' for blending value [0-100].
+   * @param index Additional pattern value (replaced if index > 0).
+   * @param blendvalue Sets the blending slider value if in range [0-100]. Default -1.
+   * @param magnification Magnification of screenshot (resolution) [1-2048]. Default 1.
+   * @return True if successful, else false.
+   */
+  bool StoreRenderWindowImage(const QString &outputDir, const QString &outPattern,
+      const unsigned int &index = 0, const int &blendvalue = -1,
+      const int &magnification = 1);
+
 public Q_SLOTS:
   /** Deactivate GUI timer.
    * @see QDialog#done()

@@ -209,6 +209,7 @@ protected slots:
   void OnReferenceToolButtonClicked();
   void OnITFOptimizerToolButtonClicked();
   void OnSaveDRRsToolButtonClicked();
+  void OnSaveBlendingToolButtonClicked();
 
 private:
   Ui::UNO23ControlWindowClass ui;

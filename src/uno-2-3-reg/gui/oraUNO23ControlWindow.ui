@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>298</width>
-    <height>634</height>
+    <width>323</width>
+    <height>663</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -732,6 +732,26 @@ p, li { white-space: pre-wrap; }
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="SaveBlendingToolButton">
+         <property name="toolTip">
+          <string>Save sequence of DRR-Xray-blendings to image files.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="oraUNO23ControlWindow.qrc">
+           <normaloff>:/u23cw/img/icon.png</normaloff>:/u23cw/img/icon.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>18</width>
+           <height>18</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QToolButton" name="SaveDRRsToolButton">
