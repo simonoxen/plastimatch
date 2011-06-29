@@ -12,7 +12,7 @@
 #include <itksys/SystemTools.hxx>
 
 /**
- * Collects the result-output-files of UNO-2-3-REG found in a specified folder
+ * Collects the result-output-files of REG23 found in a specified folder
  * (results-folder) and in its sub-folders. This tool generates a comma-
  * separated-values (CVS) file (output-csv-file) from the found data. It
  * contains:<br>
@@ -24,7 +24,7 @@
  *
  * The <comma-as-decimal-sign-flag> enables EXCEL-compatibility!
  *
- * @author phil <philipp.steininger (at) pmu.ac.at>
+ * @author phil
  * @version 1.0
  */
 int main(int argc, char *argv[])

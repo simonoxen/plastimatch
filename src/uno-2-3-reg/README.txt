@@ -1,7 +1,7 @@
-UNO23REG (Version 1.2.5.1 - May 2011)
+REG23 (Version 1.2.5.2 - June 2011)
 --------------------------------------------------------
 
-The Unimodal N-way Open 2D/3D Registration tool (uno23reg).
+The Unimodal N-way Open 2D/3D Registration tool (reg23).
 A tool for GPU-powered n-way intensity-based 2D/3D registration based on the
 NReg2D/3D core enriched with a Qt-based GUI.
 
@@ -69,9 +69,9 @@ Building:
 6) Download ORAIFUTILS, configure an appropriate out-of-source-build (CMake) and 
    build it with the following changes:
    * ORAIFUTILS_USE_QT=ON 
-7) Download the UNO23REG source code
+7) Download the REG23 source code
 8) Configure an appropriate out-of-source-build (CMake) and link against the 
-   previously built libraries (be careful using the UNO23REG_TRANSL_UPDATE option!)
+   previously built libraries (be careful using the REG23_TRANSL_UPDATE option!)
 
 
 Windows with MSVC9 - Microsoft Visual C++ 2008:
@@ -93,9 +93,9 @@ Building:
 6) Download ORAIFUTILS, configure an appropriate out-of-source-build (CMake) and 
    build it with the following changes:
    * ORAIFUTILS_USE_QT=ON 
-7) Download the UNO23REG source code
+7) Download the REG23 source code
 7) Configure an appropriate out-of-source-build (CMake) and link against the 
-   previously built libraries (be careful using the UNO23REG_TRANSL_UPDATE option!)
+   previously built libraries (be careful using the REG23_TRANSL_UPDATE option!)
 
 
 Linux:
@@ -118,12 +118,12 @@ Building:
 6) Download ORAIFUTILS, configure an appropriate out-of-source-build (CMake) and 
    build it with the following changes:
    * ORAIFUTILS_USE_QT=ON 
-6) Download the UNO23REG source code
+6) Download the REG23 source code
 7) Configure an appropriate out-of-source-build (CMake) and link against the 
-   previously built libraries (be careful using the UNO23REG_TRANSL_UPDATE option!)
+   previously built libraries (be careful using the REG23_TRANSL_UPDATE option!)
 
 All:
 ----
 After the build process copy the copy the help html-files (doc/*.html) and 
-its files subdirectory (doc/UNO23REG_ShortReference_de-Dateien) to the 
-UNO23REG executable location (otherwise no help is displayed).
+its files subdirectory (doc/REG23_ShortReference_de-Dateien) to the 
+REG23 executable location (otherwise no help is displayed).

@@ -1,7 +1,7 @@
 Only edit the Word document.
 
 1. When finished save the doc as "html, filtered" with "docfilename.html". use the extension HTML!
-2. copy the html-file and its files subdirectory to the uno23.exe location.
+2. copy the html-file and its files subdirectory to the reg23.exe location.
 
 NOTE:
 - In the save dialog select "Extras" and "Image compression...": 

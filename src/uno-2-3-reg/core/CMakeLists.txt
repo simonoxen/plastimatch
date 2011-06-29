@@ -1,5 +1,5 @@
 
-SET(LIB_NAME UNO23RegCore)
+SET(LIB_NAME REG23Core)
 
 QT4_WRAP_CPP(MOC_SRCS 
   oraSimpleTransformUndoRedo.h
@@ -15,15 +15,15 @@ ADD_LIBRARY(${LIB_NAME}
   ${MOC_SRCS}
   itkImageKernelOperator.h
   itkImageKernelOperator.txx
-  oraUNO23Model.h
-  oraUNO23Model.cxx
-  oraUNO23Model.txx
-  oraUNO23RegistrationInitializationTask.h
-  oraUNO23RegistrationInitializationTask.cxx
-  oraUNO23RegistrationExecutionTask.h
-  oraUNO23RegistrationExecutionTask.cxx
-  oraUNO23SparseRegistrationExecutionTask.h
-  oraUNO23SparseRegistrationExecutionTask.cxx
+  oraREG23Model.h
+  oraREG23Model.cxx
+  oraREG23Model.txx
+  oraREG23RegistrationInitializationTask.h
+  oraREG23RegistrationInitializationTask.cxx
+  oraREG23RegistrationExecutionTask.h
+  oraREG23RegistrationExecutionTask.cxx
+  oraREG23SparseRegistrationExecutionTask.h
+  oraREG23SparseRegistrationExecutionTask.cxx
   oraSimpleTransformUndoRedo.h
   oraSimpleTransformUndoRedo.cxx
   oraAbstractTransformTask.h
@@ -44,7 +44,7 @@ ADD_LIBRARY(${LIB_NAME}
 IF(MSVC)
   SET_SOURCE_FILES_PROPERTIES(
     itkImageKernelOperator.txx
-    oraUNO23Model.txx
+    oraREG23Model.txx
     PROPERTIES 
     LANGUAGE "CXX" 
     HEADER_FILE_ONLY FALSE

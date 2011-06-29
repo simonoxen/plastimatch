@@ -12,7 +12,7 @@
  * specification and its arguments), converts them into short-path-
  * representation, and finally calls this configured application with its
  * short-path-arguments.
- * @author phil <philipp.steininger (at) pmu.ac.at>
+ * @author phil
  * @version 1.0
  */
 int main(int argc, char *argv[])
