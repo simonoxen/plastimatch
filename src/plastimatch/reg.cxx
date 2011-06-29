@@ -11,6 +11,7 @@
 #include "bspline.h"
 #include "bspline_xform.h"
 #include "volume.h"
+#include "math_util.h"
 
 #define DEBUG
 
@@ -88,6 +89,280 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
     } /* k < vol->dim[2] */
 }
 
+void find_knots(int* knots, int tile_num, int* cdims)
+{
+    int tile_loc[3];
+    int i, j, k;
+    int idx = 0;
+    int num_tiles_x = cdims[0] - 3;
+    int num_tiles_y = cdims[1] - 3;
+    int num_tiles_z = cdims[2] - 3;
+
+    // First get the [x,y,z] coordinate of
+    // the tile in the control grid.
+    tile_loc[0] = tile_num % num_tiles_x;
+    tile_loc[1] = ((tile_num - tile_loc[0]) / num_tiles_x) % num_tiles_y;
+    tile_loc[2] = ((((tile_num - tile_loc[0]) / num_tiles_x) / num_tiles_y) % num_tiles_z);
+
+    // Tiles do not start on the edges of the grid, so we
+    // push them to the center of the control grid.
+    tile_loc[0]++;
+    tile_loc[1]++;
+    tile_loc[2]++;
+
+    // Find 64 knots' [x,y,z] coordinates
+    // and convert into a linear knot index
+    for (k = -1; k < 3; k++)
+    	for (j = -1; j < 3; j++)
+    	    for (i = -1; i < 3; i++) {
+    		knots[idx++] = (cdims[0]*cdims[1]*(tile_loc[2]+k)) +
+                           (cdims[0]*(tile_loc[1]+j)) +
+                           (tile_loc[0]+i);
+        }
+
+}
+
+float
+last_step (double* S)
+{
+    float i[7]={
+        1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0
+    };
+
+    return (i[0] * (S[0]))
+         + (i[1] * (S[1] + S[4]))
+         + (i[2] * (S[2] +  S[5] +  S[8]))
+         + (i[3] * (S[3] +  S[6] +  S[9] + S[12]))
+         + (i[4] * (S[7] + S[10] + S[13]))
+         + (i[5] * (S[11] + S[14]))
+         + (i[6] * (S[15]));
+}
+
+void
+eval_integral (double* V, double* Qn)
+{
+    int i,j;
+    double S[16];
+
+    // Generate a 4 4x4 matrix by taking the outer
+    // product of the each row in the Q matrix with
+    // every other row in the Q matrix. We use these
+    // to generate each element in V.
+    for (j=0; j<4; j++) {
+        for (i=0; i<4; i++) {
+            vec_outer (S, Qn+(4*j), Qn+(4*i), 4);
+            V[4*j + i] = last_step (S);
+        }
+    }
+
+}
+
+void
+init_analytic (double **QX, double **QY, double **QZ, Bspline_xform* bxf
+)
+{
+    double rx, ry, rz;
+
+    double B[16] = {
+        1.0/6.0, -1.0/2.0,  1.0/2.0, -1.0/6.0,
+        2.0/3.0,  0.0    , -1.0    ,  1.0/2.0,
+        1.0/6.0,  1.0/2.0,  1.0/2.0, -1.0/2.0,
+        0.0    ,  0.0    ,  0.0    ,  1.0/6.0
+    };
+
+    /* grid spacing */
+    rx = 1.0/bxf->img_spacing[0];
+    ry = 1.0/bxf->img_spacing[1];
+    rz = 1.0/bxf->img_spacing[2];
+
+    double RX[16] = {
+        1.0, 0.0,   0.0,      0.0,
+        0.0,  rx,   0.0,      0.0,
+        0.0, 0.0, rx*rx,      0.0,
+        0.0, 0.0,   0.0, rx*rx*rx
+    };
+
+    double RY[16] = {
+        1.0, 0.0,   0.0,      0.0,
+        0.0,  ry,   0.0,      0.0,
+        0.0, 0.0, ry*ry,      0.0,
+        0.0, 0.0,   0.0, ry*ry*ry
+    };
+
+    double RZ[16] = {
+        1.0, 0.0,   0.0,      0.0,
+        0.0,  rz,   0.0,      0.0,
+        0.0, 0.0, rz*rz,      0.0,
+        0.0, 0.0,   0.0, rz*rz*rz
+    };
+
+    double delta1[16] = {
+        0.0, 0.0, 0.0, 0.0,
+        1.0, 0.0, 0.0, 0.0,
+        0.0, 2.0, 0.0, 0.0,
+        0.0, 0.0, 3.0, 0.0
+    };
+
+    double delta2[16] = {
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        2.0, 0.0, 0.0, 0.0,
+        0.0, 6.0, 0.0, 0.0
+    };
+
+    // Let's call Q the product of the recripocal grid spacing
+    // matrix (R) and the B-spline coefficient matrix (B).
+    mat_mult_mat (QX[0], B, 4, 4, RX, 4, 4);
+    mat_mult_mat (QY[0], B, 4, 4, RY, 4, 4);
+    mat_mult_mat (QZ[0], B, 4, 4, RZ, 4, 4);
+
+    // Get the product of QX, QY, QZ and delta.
+    //   QX1 is the  first-order derivative of X
+    //   QX2 is the second-order derivative of X
+    //   QY1 is the  first-order derivative of Y
+    //   ... etc
+    mat_mult_mat (QX[1], QX[0], 4, 4, delta1, 4, 4);    
+    mat_mult_mat (QX[2], QX[0], 4, 4, delta2, 4, 4);    
+    mat_mult_mat (QY[1], QY[0], 4, 4, delta1, 4, 4);    
+    mat_mult_mat (QY[2], QY[0], 4, 4, delta2, 4, 4);    
+    mat_mult_mat (QZ[1], QZ[0], 4, 4, delta1, 4, 4);    
+    mat_mult_mat (QZ[2], QZ[0], 4, 4, delta2, 4, 4);    
+}
+
+void
+get_Vmatrix (double* V, double* X, double* Y, double* Z)
+{
+    int i,j;
+    double tmp[256];       /* 16 x 16 matrix */
+
+    /* Calculate the temporary 16*16 matrix */
+    for (j=0; j<4; j++) {
+        for (i=0; i<4; i++) {
+            tmp[16*(j+ 0) + (i+ 0)] = Y[4*0 + 0] * Z[4*j + i];
+            tmp[16*(j+ 0) + (i+ 4)] = Y[4*0 + 1] * Z[4*j + i];
+            tmp[16*(j+ 0) + (i+ 8)] = Y[4*0 + 2] * Z[4*j + i];
+            tmp[16*(j+ 0) + (i+12)] = Y[4*0 + 3] * Z[4*j + i];
+
+            tmp[16*(j+ 4) + (i+ 0)] = Y[4*1 + 0] * Z[4*j + i];
+            tmp[16*(j+ 4) + (i+ 4)] = Y[4*1 + 1] * Z[4*j + i];
+            tmp[16*(j+ 4) + (i+ 8)] = Y[4*1 + 2] * Z[4*j + i];
+            tmp[16*(j+ 4) + (i+12)] = Y[4*1 + 3] * Z[4*j + i];
+
+            tmp[16*(j+ 8) + (i+ 0)] = Y[4*2 + 0] * Z[4*j + i];
+            tmp[16*(j+ 8) + (i+ 4)] = Y[4*2 + 1] * Z[4*j + i];
+            tmp[16*(j+ 8) + (i+ 8)] = Y[4*2 + 2] * Z[4*j + i];
+            tmp[16*(j+ 8) + (i+12)] = Y[4*2 + 3] * Z[4*j + i];
+
+            tmp[16*(j+12) + (i+ 0)] = Y[4*3 + 0] * Z[4*j + i];
+            tmp[16*(j+12) + (i+ 4)] = Y[4*3 + 1] * Z[4*j + i];
+            tmp[16*(j+12) + (i+ 8)] = Y[4*3 + 2] * Z[4*j + i];
+            tmp[16*(j+12) + (i+12)] = Y[4*3 + 3] * Z[4*j + i];
+        }
+    }
+
+    /* Calculate the 64*64 V matrix */
+    for (j=0; j<16; j++) {
+        for (i=0; i<16; i++) {
+            V[64*(j+ 0) + (i+ 0)] = X[4*0 + 0] * tmp[16*j + i];
+            V[64*(j+ 0) + (i+16)] = X[4*0 + 1] * tmp[16*j + i];
+            V[64*(j+ 0) + (i+32)] = X[4*0 + 2] * tmp[16*j + i];
+            V[64*(j+ 0) + (i+48)] = X[4*0 + 3] * tmp[16*j + i];
+
+            V[64*(j+16) + (i+ 0)] = X[4*1 + 0] * tmp[16*j + i];
+            V[64*(j+16) + (i+16)] = X[4*1 + 1] * tmp[16*j + i];
+            V[64*(j+16) + (i+32)] = X[4*1 + 2] * tmp[16*j + i];
+            V[64*(j+16) + (i+48)] = X[4*1 + 3] * tmp[16*j + i];
+
+            V[64*(j+32) + (i+ 0)] = X[4*2 + 0] * tmp[16*j + i];
+            V[64*(j+32) + (i+16)] = X[4*2 + 1] * tmp[16*j + i];
+            V[64*(j+32) + (i+32)] = X[4*2 + 2] * tmp[16*j + i];
+            V[64*(j+32) + (i+48)] = X[4*2 + 3] * tmp[16*j + i];
+
+            V[64*(j+48) + (i+ 0)] = X[4*3 + 0] * tmp[16*j + i];
+            V[64*(j+48) + (i+16)] = X[4*3 + 1] * tmp[16*j + i];
+            V[64*(j+48) + (i+32)] = X[4*3 + 2] * tmp[16*j + i];
+            V[64*(j+48) + (i+48)] = X[4*3 + 3] * tmp[16*j + i];
+        }
+    }
+}
+
+float
+vf_regularize_analytic (Bspline_xform* bxf)
+{
+    int i,n;
+
+    double *QX[3], *QY[3], *QZ[3];      /* Arrays of array addresses */
+    double QX0[16], QY0[16], QZ0[16];   /*  4 x  4 matrix */
+    double QX1[16], QY1[16], QZ1[16];   /*  4 x  4 matrix */
+    double QX2[16], QY2[16], QZ2[16];   /*  4 x  4 matrix */
+    double X[256];                      /* 16 x 16 matrix */
+    double Y[256];                      /* 16 x 16 matrix */
+    double Z[256];                      /* 16 x 16 matrix */
+    double V[4096];                     /* 64 x 64 matrix */
+    int knots[64];                      /* local set for current region */
+
+    // Total number of regions in grid
+    n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+
+    QX[0] = QX0;    QY[0] = QY0;    QZ[0] = QZ0;
+    QX[1] = QX1;    QY[1] = QY1;    QZ[1] = QZ1;
+    QX[2] = QX2;    QY[2] = QY2;    QZ[2] = QZ2;
+
+    for (i=0; i<3; i++) {
+        memset (QX[i], 0, 16*sizeof(double));
+        memset (QY[i], 0, 16*sizeof(double));
+        memset (QZ[i], 0, 16*sizeof(double));
+    }
+
+
+    init_analytic (QX, QY, QZ, bxf);
+
+    for (i=0; i<n; i++) {
+
+        // Get the set of 64 control points for this region
+        find_knots (knots, i, bxf->cdims);
+
+
+        eval_integral (X, QX[2]);
+        eval_integral (Y, QY[0]);
+        eval_integral (Z, QZ[0]);
+        get_Vmatrix (V, X, Y, Z);
+
+        eval_integral (X, QX[0]);
+        eval_integral (Y, QY[2]);
+        eval_integral (Z, QZ[0]);
+        get_Vmatrix (V, X, Y, Z);
+        // pVp & accumulate
+
+        eval_integral (X, QX[0]);
+        eval_integral (Y, QY[0]);
+        eval_integral (Z, QZ[2]);
+        get_Vmatrix (V, X, Y, Z);
+        // pVp & accumulate
+
+        eval_integral (X, QX[1]);
+        eval_integral (Y, QY[1]);
+        eval_integral (Z, QZ[0]);
+        get_Vmatrix (V, X, Y, Z);
+        // pVp & accumulate
+
+        eval_integral (X, QX[1]);
+        eval_integral (Y, QY[0]);
+        eval_integral (Z, QZ[1]);
+        get_Vmatrix (V, X, Y, Z);
+        // pVp & accumulate
+
+        eval_integral (X, QX[0]);
+        eval_integral (Y, QY[1]);
+        eval_integral (Z, QZ[1]);
+        get_Vmatrix (V, X, Y, Z);
+        // pVp & accumulate
+
+    }
+
+
+    return 0;
+}
 
 
 
@@ -257,7 +532,6 @@ regularize (
     float* grad
 )
 {
-    int i;
     float S;            /* smoothness score */
     float* dSdP;        /* smoothness grad  */
 

@@ -124,6 +124,19 @@ static inline void vec3_cross (double* v1, const double* v2, const double* v3)
     v1[2] = v2[0] * v3[1] - v2[1] * v3[0];
 }
 
+/* Outer product */
+static inline void vec_outer (double* v1, const double* v2, const double* v3, const int n)
+{
+    int i,j;
+    for (j=0; j<n; j++) {
+        for (i=0; i<n; i++) {
+            v1[n*j + i] = v2[j] * v3[i];
+            v1[n*j + i] = v2[j] * v3[i];
+            v1[n*j + i] = v2[j] * v3[i];
+            v1[n*j + i] = v2[j] * v3[i];
+        }
+    }
+}
 
 /* Matrix ops */
 
