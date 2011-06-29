@@ -122,36 +122,26 @@ void find_knots(int* knots, int tile_num, int* cdims)
 
 }
 
-float
-last_step (double* S)
-{
-    float i[7]={
-        1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0
-    };
-
-    return (i[0] * (S[0]))
-         + (i[1] * (S[1] + S[4]))
-         + (i[2] * (S[2] +  S[5] +  S[8]))
-         + (i[3] * (S[3] +  S[6] +  S[9] + S[12]))
-         + (i[4] * (S[7] + S[10] + S[13]))
-         + (i[5] * (S[11] + S[14]))
-         + (i[6] * (S[15]));
-}
-
 void
 eval_integral (double* V, double* Qn)
 {
     int i,j;
     double S[16];
 
-    // Generate a 4 4x4 matrix by taking the outer
+    // Generate 4 4x4 matrix by taking the outer
     // product of the each row in the Q matrix with
     // every other row in the Q matrix. We use these
     // to generate each element in V.
     for (j=0; j<4; j++) {
         for (i=0; i<4; i++) {
             vec_outer (S, Qn+(4*j), Qn+(4*i), 4);
-            V[4*j + i] = last_step (S);
+            V[4*j + i] = S[0]
+                       + ((1.0/2.0) * (S[ 1] + S[ 4]))
+                       + ((1.0/3.0) * (S[ 2] + S[ 5] + S[ 8]))
+                       + ((1.0/4.0) * (S[ 3] + S[ 6] + S[ 9] + S[12]))
+                       + ((1.0/5.0) * (S[ 7] + S[10] + S[13]))
+                       + ((1.0/6.0) * (S[11] + S[14]))
+                       + ((1.0/7.0) * (S[15]));
         }
     }
 
