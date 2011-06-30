@@ -69,7 +69,7 @@ set (PLM_CONFIG_VERSION_STRING "" CACHE STRING "Version string")
 # Optional components
 option (PLM_BUILD_ISE "Build ISE fluoro program" OFF)
 option (PLM_BUILD_RTK "Build RTK" OFF)
-option (PLM_BUILD_UNO23REG "Build uno-2-3-reg" OFF)
+option (PLM_BUILD_REG23 "Build REG-2-3" OFF)
 option (PLM_BUILD_SLICER_LOADABLE "Build slicer loadable module" OFF)
 
 # Compile and link options
