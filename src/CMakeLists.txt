@@ -217,5 +217,5 @@ if (PLM_BUILD_REG23
     AND NOT ${QT_VERSION_MAJOR}.${QT_VERSION_MINOR} VERSION_LESS 4.6 ))
     )
   add_subdirectory (oraifutils)
-  add_subdirectory (uno-2-3-reg)
+  add_subdirectory (reg-2-3)
 endif ()
