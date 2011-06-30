@@ -259,7 +259,7 @@ bool LoadWindowGeometryConfiguration(std::string configFile,
 
 
 /**
- * The Universal N-way Open 2D/3D Registration tool (REG23). This simple tool
+ * N-way 2D/3D Registration (REG23). This simple tool
  * enables interactive intensity-based 2D/3D registration of N projective images
  * (X-rays) with a volume image (CT). It is mainly controlled by a configuration
  * file, and enables some additional options in the GUI.
