@@ -176,8 +176,9 @@ for(k=0; k<num_clusters; k++) {
 	
 	// single long cluster needs other treatment
 //    if ( (num_clusters == 1) && (dmax/(D) > 1.5) ) { 
-     if ( (dmax/(D) > 1.5) ) { 
-	printf("long cluster, dmax %f D %f\n", dmax, D); D = dmax/2.1; 
+     if ( (dmax/(D) > 2.5) ) { 
+	printf("long cluster, dmax %f D %f\n", dmax, D); 
+	//D = dmax/2.1; 
         
 	// radius is the max distance between nearest neighbors
 	
@@ -201,14 +202,14 @@ for(k=0; k<num_clusters; k++) {
 	
 	D = d_nearest_neighb[0];
 	for(i=0;i<num_landmarks;i++) { 
-	    if ( d_nearest_neighb[i]>D && lw->cluster_id[i]==k ) D = d_nearest_neighb[i]; 
+	    if ( d_nearest_neighb[i]>D && lw->cluster_id[i]==k ) D = 2*d_nearest_neighb[i]; 
 	    }
     
 	free(d_nearest_neighb);
     } // end if dmax/D>...,  long cluster
 
      for(i=0; i<num_landmarks; i++) { 
-	 if (lw->cluster_id[i] == k) lw->adapt_radius[i] = 2*D;
+	 if (lw->cluster_id[i] == k) lw->adapt_radius[i] = D;
 	}
 
 } // end for k=0..num_clusters

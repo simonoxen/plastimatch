@@ -36,8 +36,10 @@ float intens_enclosed(FloatPoint3DType phys,
     // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
 		
     f = 0.;
-    for (int i=0;i<8;i++)
+    
+	for (int i=0;i<8;i++)
     {
+	
 	if (i==6) { p[7*i+0]+=xlat1[0]; 
 		    p[7*i+1]+=xlat1[1];
 		    p[7*i+2]+=xlat1[2];
@@ -52,12 +54,13 @@ float intens_enclosed(FloatPoint3DType phys,
 		    p[7*i+4]+=xlat2[1];
 		    p[7*i+5]+=xlat2[2];
 		    }
-
 	if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
 	    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
 	    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
 	{ f = p[6+7*i]; } 
     }
+//if (phys[0]*phys[0]+phys[1]*phys[1]+phys[2]*phys[2]<225)
+//	{f = 0.4;}
     return f;
 }
 
