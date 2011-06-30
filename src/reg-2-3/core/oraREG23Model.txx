@@ -52,6 +52,7 @@
 #include <itkTranslationTransform.h>
 #include <itkIdentityTransform.h>
 #include <itkMeanImageFilter.h>
+#include <itkFlipImageFilter.h>
 
 #include <vtkColorTransferFunction.h>
 #include <vtkTable.h>
@@ -1130,6 +1131,57 @@ REG23Model::RescaleImage(ITKVTKImage *image, std::vector<std::string> &args,
   return resultImage;
 }
 
+template<typename TComponentType>
+ITKVTKImage *
+REG23Model::FlipImageData(ITKVTKImage *image, std::vector<std::string> &args)
+{
+  if (!image || args.size() < 2)
+    return NULL;
+  ITKVTKImage::ITKImagePointer ibase = image->GetAsITKImage<TComponentType>();
+  ITKVTKIMAGE_DOWNCAST(TComponentType, ibase, icast)
+  ITKVTKImage *resultImage = NULL;
+
+
+  typedef itk::FlipImageFilter<OriginalImageType> FlipImageFilterType;
+  typename FlipImageFilterType::Pointer flipFilter = FlipImageFilterType::New ();
+  flipFilter->SetInput(icast);
+
+  typename FlipImageFilterType::FlipAxesArrayType flipAxes;
+  flipAxes.Fill(false);
+  if (args[1] == "X")
+    flipAxes[0] = true;
+  if (args[1] == "Y")
+    flipAxes[1] = true;
+
+  flipFilter->SetFlipAxes(flipAxes);
+
+  typedef itk::ChangeInformationImageFilter<OriginalImageType> ChangeFilterType;
+  typename ChangeFilterType::Pointer changeFilter = ChangeFilterType::New();
+  changeFilter->ChangeNone();
+  changeFilter->ChangeDirectionOn();
+  changeFilter->ChangeOriginOn();
+  changeFilter->SetOutputDirection(icast->GetDirection());
+  changeFilter->SetOutputOrigin(icast->GetOrigin());
+  changeFilter->SetInput(flipFilter->GetOutput());
+
+  try
+  {
+    changeFilter->Update();
+    OriginalImagePointer outImage = changeFilter->GetOutput();
+    outImage->DisconnectPipeline();
+    resultImage = new ITKVTKImage(itk::ImageIOBase::SCALAR,
+                                  image->GetComponentType());
+    resultImage->SetITKImage(static_cast<ITKVTKImage::ITKImageType *>(
+                               outImage.GetPointer()), false);
+  }
+  catch (itk::ExceptionObject &e)
+  {
+    return NULL;
+  }
+
+  return resultImage;
+}
+
 
 template<typename TComponentType>
 ITKVTKImage *
@@ -1199,7 +1251,7 @@ REG23Model::PreProcessImage(ITKVTKImage::ITKImagePointer image,
     {
       if (ParseImageProcessingEntry(s, emsg, args, CAST | CROP | RESAMPLE |
           RESCALEMINMAX | RESCALESHIFTSCALE | RESCALEWINDOWING | STORE |
-          UNSHARPMASKING) && args.size() > 0)
+          UNSHARPMASKING | FLIP) && args.size() > 0)
       {
         pimage = NULL;
         if (args[0] == "CAST")
@@ -1242,6 +1294,11 @@ REG23Model::PreProcessImage(ITKVTKImage::ITKImagePointer image,
             pwl[0] = prevMean - fmi * prevSTD;
             pwl[1] = prevMean + fma * prevSTD;
           }
+        }
+        else if (args[0] == "FLIP")
+        {
+          TEMPLATE_CALL_COMP(lastImage->GetComponentType(),
+                             pimage = FlipImageData, lastImage, args)
         }
         else if (args[0] == "RESCALEMINMAX")
         {

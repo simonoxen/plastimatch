@@ -582,7 +582,7 @@ bool REG23Model::LoadConfiguration(std::string &errorSection,
         s2 = TrimF(m_Config->ReadString(errorSection, errorKey, ""));
         if (s2.length() > 0 && !ParseImageProcessingEntry(s2, errorMessage, v,
             CAST | CROP | RESAMPLE | RESCALEMINMAX | RESCALESHIFTSCALE |
-            RESCALEWINDOWING | STORE | UNSHARPMASKING))
+            RESCALEWINDOWING | STORE | UNSHARPMASKING | FLIP))
           return false; // errorMessage filled from parser!
         j++;
       } while (s2.length() > 0);
@@ -1322,6 +1322,25 @@ bool REG23Model::ParseImageProcessingEntry(std::string entry,
         result.push_back(toks[4]);
       }
     }
+    return true;
+  }
+  else if (entry.substr(0, 5) == "FLIP(" && (operationFlags & FLIP) == FLIP)
+  {
+    entry = entry.substr(5, entry.length() - 6);
+    Tokenize(entry, toks, ",");
+    if (toks.size() != 1)
+    {
+      errorMessage = "The Flip()-operator requires exactly one argument (<direction>).";
+      return false;
+    }
+    if (toks[0] != "X" && toks[0] != "Y")
+    {
+      errorMessage = "The Flip()-operator's <direction> argument does not match any of these: ";
+      errorMessage += "X, Y.";
+      return false;
+    }
+    result.push_back("FLIP");
+    result.push_back(toks[0]);
     return true;
   }
   else if (entry.substr(0, 14) == "RESCALEMINMAX("

@@ -109,9 +109,11 @@ public:
     RESCALEMINMAXMASK = 1 << 8,
     /** Apply unsharp masking to the image. **/
     UNSHARPMASKING = 1 << 9,
+    /** Apply flipping to the image data. **/
+    FLIP = 1 << 10,
     /** Represents all operations. */
     ALL = CAST | CROP | RESAMPLE | RESCALEMINMAX | RESCALESHIFTSCALE |
-          RESCALEWINDOWING | STORE | RESCALEMINMAXMASK | UNSHARPMASKING
+          RESCALEWINDOWING | STORE | RESCALEMINMAXMASK | UNSHARPMASKING | FLIP
   } ProcessOperations;
 
   /** Default constructor. **/
@@ -1045,7 +1047,8 @@ protected:
    * - optionally crop it <br>
    * - optionally resample it <br>
    * - optionally rescale it <br>
-   * - optionally cast it to another component type.<br>
+   * - optionally cast it to another component type<br>
+   * - optionally flip its image data.<br>
    * This pre-processing directly relates to the loaded configuration specified
    * by configBaseKey parameter.
    * The dimension is statically presumed being 3.
@@ -1143,6 +1146,18 @@ protected:
   template<typename TComponentType>
   ITKVTKImage *RescaleImage(ITKVTKImage *image, std::vector<std::string> &args,
       int rescaleMode, ITKVTKImage *imageMask = NULL);
+
+  /** Apply a flip to the image data. The image geometry is preserved (origin,
+   * direction).
+   * @param image The input image to flip.
+   * @param args Argument vector with at least 2 elements. The second element
+   * determines the flip direction ("X", "Y").
+   * @return a new ITKVTKImage instance containing the pointer to the result
+   * image if successful, NULL otherwise
+   * @see PreProcessImage()
+   */
+  template<typename TComponentType>
+  ITKVTKImage *FlipImageData(ITKVTKImage *image, std::vector<std::string> &args);
 
   /**
    * Apply unsharp masking to the specified image according to the arguments
