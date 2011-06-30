@@ -1,6 +1,6 @@
 
-# Unimodal N-way Open 2D/3D Registration tool (reg23)
-# A tool for GPU-powered n-way intensity-based 2D/3D registration based on the
+# N-way 2D/3D Registration (reg23)
+# A tool for GPU-powered N-way intensity-based 2D/3D registration based on the
 # NReg2D/3D core enriched with a Qt-based GUI.
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
@@ -55,7 +55,7 @@ ELSE(NOT QT4_FOUND)
 ENDIF(NOT QT4_FOUND)
 
 # Require ORAIFUTILS 1.1.0
-SET(ORAIFUTILS_MIN_VERSION "1.1.0")
+SET(ORAIFUTILS_MIN_VERSION "1.1.2")
 FIND_PACKAGE(ORAIFUTILS ${ORAIFUTILS_MIN_VERSION} NO_MODULE REQUIRED HINTS ${ORAIFUTILS_BINARY_DIR})
 IF(NOT ORAIFUTILS_FOUND)
   MESSAGE(SEND_ERROR "ORAIFUTILS library ${ORAIFUTILS_MIN_VERSION} or greater not found. Please set the ORAIFUTILS_DIR variable.")

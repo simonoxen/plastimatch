@@ -7,13 +7,14 @@
 #include <vtkImageData.h>
 #include <vtkActor2D.h>
 #include <vtkImageMapper.h>
-#include <vtkImageResample.h>
+#include <vtkImageReslice.h>
+#include <vtkMatrix4x4.h>
+#include <vtkImageMapToColors.h>
 
 #include <vector>
 
 // forward declaration:
 class vtkRenderWindow;
-class vtkImageMapToColors;
 
 /**
  * Interactor style dedicated for usage with 2D scenes that are based on
@@ -22,12 +23,12 @@ class vtkImageMapToColors;
  *
  * The following external component setup is assumed:<br>
  * An input image (or a specified image filter output) is connected to a
- * vtkImageResample instance (the magnifier for zooming capability). The output
+ * vtkImageReslice instance (the magnifier for zooming capability). The output
  * of the magnifier is connected to an instance of vtkImageMapper which is
  * connected to a vtkActor2D instance itself. The reference to this actor must
  * be set to this interactor style. Moreover, the magnifier instance must be
  * set. In addition, the pointer to the reference image (e.g. the input of
- * vtkImageResample) must be set; this is important for zooming and image
+ * vtkImageReslice) must be set; this is important for zooming and image
  * fitting. In order to support color windowing, the vtkImageMapper pointer must
  * be set.
  *
@@ -58,10 +59,10 @@ class vtkImageMapToColors;
  * @see vtkInteractorStyleImage
  * @see vtkActor2D
  * @see vtkImageMapper
- * @see vtkImageResample
+ * @see vtkImageReslice
  *
- * @author phil 
- * @version 1.4
+ * @author phil <philipp.steininger (at) pmu.ac.at>
+ * @version 1.6
  */
 class vtk2DSceneImageInteractorStyle :
   public vtkInteractorStyleImage
@@ -80,8 +81,11 @@ public:
   vtkSetObjectMacro(ImageActor, vtkActor2D)
   vtkGetObjectMacro(ImageActor, vtkActor2D)
 
-  vtkSetObjectMacro(Magnifier, vtkImageResample)
-  vtkGetObjectMacro(Magnifier, vtkImageResample)
+  virtual void SetMagnifier(vtkImageReslice *magnifier);
+  vtkGetObjectMacro(Magnifier, vtkImageReslice)
+
+  virtual void SetImageAxesOrientation(vtkMatrix4x4 *orientation);
+  vtkGetObjectMacro(ImageAxesOrientation, vtkMatrix4x4)
 
   vtkSetObjectMacro(ImageMapper, vtkImageMapper)
   vtkGetObjectMacro(ImageMapper, vtkImageMapper)
@@ -93,8 +97,19 @@ public:
   vtkGetMacro(SupportColorWindowing, bool)
   vtkBooleanMacro(SupportColorWindowing, bool)
 
-  /** Restore the last saved relative positioning scheme (center position,
-   * magnification). May be useful when render window size is altered. **/
+  vtkSetMacro(UseMinimumMaximumSpacingForZoom, bool)
+  vtkGetMacro(UseMinimumMaximumSpacingForZoom, bool)
+  vtkBooleanMacro(UseMinimumMaximumSpacingForZoom, bool)
+
+  vtkSetMacro(MinimumSpacingForZoom, double)
+  vtkGetMacro(MinimumSpacingForZoom, double)
+
+  vtkSetMacro(MaximumSpacingForZoom, double)
+  vtkGetMacro(MaximumSpacingForZoom, double)
+
+  /** Restore the last positioning scheme (based on a very simple strategy which
+   * simply adapts the zoom factor to the render window width). May be useful
+   * to involve when render window size is altered. **/
   void RestoreViewSettings();
 
   /** Mouse scroll event binding: zoom in. **/
@@ -141,10 +156,6 @@ public:
    * If the pixel spacing cannot be returned, FALSE is returned - otherwise,
    * if x and y pixel spacing can be returned, TRUE is returned. **/
   bool GetCurrentPixelSpacing(double spacing[2]);
-  /** Return the current offset of the image (actor) in mm.
-   * If the offset cannot be returned, FALSE is returned - otherwise,
-   * if the offset can be returned, TRUE is returned. **/
-  bool GetCurrentImageOffset(double offset[2]);
 
   /** Get the array of optional further LUTs for other window/level "channels" **/
   const std::vector<vtkImageMapToColors *> &GetWindowLevelChannels()
@@ -174,6 +185,12 @@ public:
   /** Remove all window/level channels. **/
   void RemoveAllWindowLevelChannels();
 
+  vtkSetObjectMacro(MainWindowLevelChannel, vtkImageMapToColors)
+  vtkGetObjectMacro(MainWindowLevelChannel, vtkImageMapToColors)
+
+  vtkSetVector2Macro(MainWindowLevelChannelResetWindowLevel, double)
+  vtkGetVector2Macro(MainWindowLevelChannelResetWindowLevel, double)
+
   vtkSetMacro(CurrentWindowLevelChannel, int)
   vtkGetMacro(CurrentWindowLevelChannel, int)
 
@@ -198,15 +215,26 @@ protected:
   vtkImageData *ReferenceImage;
   /** Magnifier that is connected to the image mapper's input and internally
    * realizes zooming **/
-  vtkImageResample *Magnifier;
-  /** Image actor under investigation (2D actor) **/
+  vtkImageReslice *Magnifier;
+  /** Image axes orientation describing the 3D pose of the 2D image in 3D
+   * space (1st matrix row is image row direction, 2nd is image column direction,
+   * 3rd is cross product) - the vectors are expected to be normalized! **/
+  vtkMatrix4x4 *ImageAxesOrientation;
+  /** Image actor used for pixel rendering (2D actor) **/
   vtkActor2D *ImageActor;
-  /** Image mapper under investigation (2D mapper) **/
+  /** Image mapper used for pixel rendering (2D mapper) **/
   vtkImageMapper *ImageMapper;
   /** Holds current magnification factor **/
   double CurrentMagnification;
-  /** Holds current relative actor center position. **/
-  double CurrentCenter[2];
+  /** Holds current reslice origin in world coordinates **/
+  double CurrentResliceOrigin[3];
+  /** Holds current reslice spacing **/
+  double CurrentResliceSpacing[3];
+  /** Holds current reslice extent **/
+  int CurrentResliceExtent[6];
+  /** Holds current reslice center (physical point in the middle of the
+   * render window) **/
+  double CurrentResliceCenter[3];
   /** Stores the zoom center for continuous zooming (right mouse button). **/
   double ContinuousZoomCenter[2];
   /** Flag indicating whether or not to support window/level. Needs a valid
@@ -237,11 +265,28 @@ protected:
    * level values for each channel (NULL if not specified -> reset window/level
    * will then fit to the whole image range!). **/
   std::vector<double *> WindowLevelChannelsResetWindowLevels;
+  /** Optional LUT for main window/level channel. If set, the main windowing is
+   * executed on this channel instead of the image mapper. **/
+  vtkImageMapToColors *MainWindowLevelChannel;
+  /** "Reset" window/level values for the main channel which is required if
+   * MainWindowLevel is set. **/
+  double MainWindowLevelChannelResetWindowLevel[2];
   /** Indicate which window/level "channel" is currently selected. The index
    * starts with 1 and ends with number of window/level "channels". An index
    * of 0 or another invalid index implicitly selects the image mapper
    * window/level "channel"! **/
   int CurrentWindowLevelChannel;
+  /** Flag indicating whether the minimum/maximum spacing values should be used
+   * for limiting the zoom **/
+  bool UseMinimumMaximumSpacingForZoom;
+  /** Optional minimum spacing which limits zoom-in. Only effective if
+   * UseMinimumMaximumSpacingForZoom is ON. If this attribute is smaller or
+   * equal to 0, it will be ignored. **/
+  double MinimumSpacingForZoom;
+  /** Optional maximum spacing which limits zoom-out. Only effective if
+   * UseMinimumMaximumSpacingForZoom is ON. If this attribute is smaller or
+   * equal to 0, it will be ignored. **/
+  double MaximumSpacingForZoom;
 
   /** Callback for color windowing interactions. **/
   static void WindowLevelCallback(vtkObject *caller, unsigned long eid,
@@ -264,9 +309,10 @@ protected:
   /** Pan the image by the specified offset (in pixels). **/
   virtual void Pan(int dx, int dy);
 
-  /** Apply current magnification and specified position (left lower corner).**/
-  void ApplyMagnificationAndPosition(double *position,
-      bool forceUpdateToWholeExtent = false);
+  /** Apply current geometry to the image. It is defined by the image origin,
+   * the spacing and the image extent (all in the world coordinate system). **/
+  void ApplyCurrentGeometry(double *origin, double *spacing,
+      int *extent);
 
   /** Internal implementation of color windowing (ORA style). **/
   virtual void WindowLevelInternal();
@@ -277,6 +323,12 @@ protected:
 
   /** Compute current window/level factors that control w/l-sensitivity. **/
   virtual void ComputeCurrentWindowLevelFactors();
+
+  /** Get adjusted spacing and extent of the reference image. If the spacing
+   * components of the 2D image are different, the spacing is isotropically
+   * adjusted to the small spacing (the extent is "ceilingly" adjusted as well).
+   */
+  void GetAdjustedReferenceImageGeometry(double spacing[3], int extent[6]);
 
 private:
   // purposely not implemented

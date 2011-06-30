@@ -1,8 +1,8 @@
-REG23 (Version 1.2.5.2 - June 2011)
+REG23 (Version 1.2.5.3 - June 2011)
 --------------------------------------------------------
 
-The Unimodal N-way Open 2D/3D Registration tool (reg23).
-A tool for GPU-powered n-way intensity-based 2D/3D registration based on the
+The N-way 2D/3D Registration (reg23).
+A tool for GPU-powered N-way intensity-based 2D/3D registration based on the
 NReg2D/3D core enriched with a Qt-based GUI.
 
 

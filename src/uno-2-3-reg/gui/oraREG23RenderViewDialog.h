@@ -20,7 +20,7 @@
 #include <vtkImageMapToColors.h>
 #include <vtkImageMapper.h>
 #include <vtkActor2D.h>
-#include <vtkImageResample.h>
+#include <vtkImageReslice.h>
 #include <vtkPolyDataMapper2D.h>
 #include <vtkArcSource.h>
 #include <vtkAppendPolyData.h>
@@ -216,7 +216,7 @@ protected:
   /** 2D actor for overlay image presentation **/
   vtkSmartPointer<vtkActor2D> m_OverlayActor2D;
   /** Resampler for zooming capability of overlay image **/
-  vtkSmartPointer<vtkImageResample> m_OverlayMagnifier;
+  vtkSmartPointer<vtkImageReslice> m_OverlayMagnifier;
   /** 2D mapper for rotation "widget" presentation (passive part) **/
   vtkSmartPointer<vtkPolyDataMapper2D> m_RotationWidgetMapper1;
   /** 2D mapper for rotation "widget" presentation (active part) **/

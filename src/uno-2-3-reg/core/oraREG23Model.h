@@ -223,7 +223,7 @@ public:
    * could successfully be generated it is returned, otherwise NULL is returned.
    */
   REG23RegistrationInitializationTask *GenerateInitializationTask();
-  /** Generate the task that executes 2D/3D n-way registration. If the task
+  /** Generate the task that executes N-way 2D/3D registration. If the task
    * could successfully be generated it is returned, otherwise NULL is returned.
    */
   REG23RegistrationExecutionTask *GenerateExecutionTask();
@@ -275,12 +275,12 @@ public:
 
   /**
    * @return TRUE if all data and component initializations which are necessary
-   * for automatic 2D/3D n-way registration are available
+   * for automatic N-way 2D/3D registration are available
    **/
   bool IsReadyForAutoRegistration();
   /**
    * @return TRUE if all data and component initializations which are necessary
-   * for manual 2D/3D n-way registration are available
+   * for manual N-way 2D/3D registration are available
    **/
   bool IsReadyForManualRegistration();
 
@@ -1361,7 +1361,7 @@ protected:
       std::string &errorMessage);
 
   /**
-   * Execute n-way 2D/3D registration. Certainly, the framework
+   * Execute N-way 2D/3D registration. Certainly, the framework
    * must exist and be ready for usage.
    * @return TRUE if successful
    **/

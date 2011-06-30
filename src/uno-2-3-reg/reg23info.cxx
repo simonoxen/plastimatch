@@ -5,13 +5,13 @@ namespace ora
 {
 
 // static member initialization:
-const std::string REG23GlobalInformation::ProductVersion = "1.2.5.2";
+const std::string REG23GlobalInformation::ProductVersion = "1.2.5.3";
 const std::string REG23GlobalInformation::NaturalProductVersion = "3-Fingers";
 const std::string REG23GlobalInformation::Copyright = "Copyright (c) 2010-2011 radART";
 const std::string REG23GlobalInformation::CompanyShortName = "radART";
 const std::string REG23GlobalInformation::CompanyLongName = "Institute for Research and Development on Advanced Radiation Technologies";
 const std::string REG23GlobalInformation::ApplicationShortName = "REG23";
-const std::string REG23GlobalInformation::ApplicationLongName = "Universal Open N-way 2D/3D Registration";
+const std::string REG23GlobalInformation::ApplicationLongName = "N-way 2D/3D Registration";
 const std::string REG23GlobalInformation::Authors = "Philipp Steininger*Registration framework, GUI, scripting, ORA-integration*-|" \
   "Markus Neuner*Mask-optimization, GUI, scripting, deployment and maintenance*-|" \
   "Heinz Deutschmann*ORA-integration*-";

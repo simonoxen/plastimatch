@@ -9,13 +9,14 @@
 #include <vtkCallbackCommand.h>
 #include <vtkSmartPointer.h>
 #include <vtkPointData.h>
-#include <vtkImageMapToColors.h>
 #include <vtkLookupTable.h>
+#include <vtkMetaImageWriter.h>
 
 #include <algorithm>
+#include <math.h>
 
 // default VTK config:
-vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "1.4")
+vtkCxxRevisionMacro(vtk2DSceneImageInteractorStyle, "1.6")
 vtkStandardNewMacro(vtk2DSceneImageInteractorStyle)
 
 vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
@@ -26,11 +27,25 @@ vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   RenderWindow = NULL;
   ReferenceImage = NULL;
   Magnifier = NULL;
+  ImageAxesOrientation = NULL;
   ImageActor = NULL;
   ImageMapper = NULL;
   CurrentMagnification = -10000;
-  CurrentCenter[0] = 0;
-  CurrentCenter[1] = 0;
+  CurrentResliceOrigin[0] = 0;
+  CurrentResliceOrigin[1] = 0;
+  CurrentResliceOrigin[2] = 0;
+  CurrentResliceSpacing[0] = 0;
+  CurrentResliceSpacing[1] = 0;
+  CurrentResliceSpacing[2] = 0;
+  CurrentResliceExtent[0] = 0;
+  CurrentResliceExtent[1] = 0;
+  CurrentResliceExtent[2] = 0;
+  CurrentResliceExtent[3] = 0;
+  CurrentResliceExtent[4] = 0;
+  CurrentResliceExtent[5] = 0;
+  CurrentResliceCenter[0] = 0;
+  CurrentResliceCenter[1] = 0;
+  CurrentResliceCenter[2] = 0;
   ContinuousZoomCenter[0] = 0;
   ContinuousZoomCenter[1] = 0;
   SupportColorWindowing = true;
@@ -40,8 +55,14 @@ vtk2DSceneImageInteractorStyle::vtk2DSceneImageInteractorStyle()
   WLStartPosition[1] = 0;
   CurrentWLFactor = 1.;
   CurrentWindowLevelChannel = 0; // relate window/level to image mapper!
+  MainWindowLevelChannel = NULL;
+  MainWindowLevelChannelResetWindowLevel[0] = 255;
+  MainWindowLevelChannelResetWindowLevel[1] = 127.5;
   WindowLevelMouseSensitivity = 1.0; // default
   RealTimeMouseSensitivityAdaption = true; // default
+  MinimumSpacingForZoom = -1;
+  MaximumSpacingForZoom = -1;
+  UseMinimumMaximumSpacingForZoom = false;
 
   vtkSmartPointer<vtkCallbackCommand> cbc =
       vtkSmartPointer<vtkCallbackCommand>::New();
@@ -80,8 +101,31 @@ vtk2DSceneImageInteractorStyle::~vtk2DSceneImageInteractorStyle()
   Renderer = NULL;
   ReferenceImage = NULL;
   Magnifier = NULL;
+  ImageAxesOrientation = NULL;
   ImageActor = NULL;
   ImageMapper = NULL;
+}
+
+void vtk2DSceneImageInteractorStyle::SetMagnifier(vtkImageReslice *magnifier)
+{
+	if (magnifier != this->Magnifier)
+	{
+		this->Magnifier = magnifier;
+		if (this->ImageAxesOrientation && this->Magnifier)
+			this->Magnifier->SetResliceAxes(this->ImageAxesOrientation);
+		this->Modified();
+	}
+}
+
+void vtk2DSceneImageInteractorStyle::SetImageAxesOrientation(vtkMatrix4x4 *orientation)
+{
+	if (orientation != this->ImageAxesOrientation)
+	{
+		this->ImageAxesOrientation = orientation;
+		if (this->Magnifier)
+			this->Magnifier->SetResliceAxes(this->ImageAxesOrientation);
+		this->Modified();
+	}
 }
 
 void vtk2DSceneImageInteractorStyle::SetRenderer(vtkRenderer *ren)
@@ -113,17 +157,30 @@ bool vtk2DSceneImageInteractorStyle::GetCurrentPixelSpacing(double spacing[2])
   }
 }
 
-bool vtk2DSceneImageInteractorStyle::GetCurrentImageOffset(double offset[2])
+void vtk2DSceneImageInteractorStyle::GetAdjustedReferenceImageGeometry(
+    double spacing[3], int extent[6])
 {
-  if (ImageActor)
+  if (ReferenceImage)
   {
-    offset[0] = ImageActor->GetPosition()[0];
-    offset[1] = ImageActor->GetPosition()[1];
-    return true;
-  }
-  else
-  {
-    return false;
+    ReferenceImage->GetSpacing(spacing);
+    ReferenceImage->GetWholeExtent(extent);
+    if (spacing[0] != spacing[1])
+    {
+      double f, dist;
+      if (spacing[0] < spacing[1]) // adjust vertically
+      {
+        dist = static_cast<double>(extent[3] - extent[2] + 1) * spacing[1];
+        f = spacing[1] / spacing[0]; // magnific.
+        spacing[1] = spacing[0]; // new spacing!
+        extent[3] = static_cast<int>(extent[2] +
+            ceil(dist / spacing[1]) - 1); // new extent!
+      }
+      else // adjust horizontally
+      {
+//        f = spacing[1] / spacing[0]; // magnific.
+//        spacing[1] = spacing[0]; // take over
+      }
+    }
   }
 }
 
@@ -134,7 +191,9 @@ void vtk2DSceneImageInteractorStyle::FitImageToRenderWindow()
     // -> dimensions are derived from the whole extent which is reliable:
     int dims[3];
     int we[6];
-    ReferenceImage->GetWholeExtent(we);
+    double spacing[3];
+    this->GetAdjustedReferenceImageGeometry(spacing, we);
+
     dims[0] = we[1] - we[0] + 1;
     dims[1] = we[3] - we[2] + 1;
     dims[2] = we[5] - we[4] + 1;
@@ -154,20 +213,38 @@ void vtk2DSceneImageInteractorStyle::FitImageToRenderWindow()
     bool fitToHeight = false;
     // we need some logic ...
     if (vpaspect >= 1)
+    {
       if (imgaspect >= 1)
+      {
         if (imgaspect <= vpaspect)
+        {
           fitToHeight = true;
+        }
         else
+        {
           fitToHeight = false;
+        }
+      }
       else
+      {
         fitToHeight = true;
+      }
+    }
     else // vpaspect < 1
-    if (imgaspect >= 1)
-      fitToHeight = false;
-    else if (imgaspect <= vpaspect)
-      fitToHeight = true;
-    else
-      fitToHeight = false;
+    {
+      if (imgaspect >= 1)
+      {
+        fitToHeight = false;
+      }
+      else if (imgaspect <= vpaspect)
+      {
+        fitToHeight = true;
+      }
+      else
+      {
+        fitToHeight = false;
+      }
+    }
     // calculate resulting plane height and width
     double planeHeight, planeWidth;
     CurrentMagnification = 1.; // common magnification - keep aspect ratio!
@@ -183,68 +260,130 @@ void vtk2DSceneImageInteractorStyle::FitImageToRenderWindow()
       planeWidth = w;
       planeHeight = planeWidth / imgaspect;
     }
-    double pos[2];
-    pos[0] = (w - planeWidth) / 2;
-    pos[1] = (h - planeHeight) / 2;
-    CurrentCenter[0] = (pos[0] + planeWidth / 2.) / w;
-    CurrentCenter[1] = (pos[1] + planeHeight / 2.) / h;
-    ApplyMagnificationAndPosition(pos, true);
+    spacing[0] /= CurrentMagnification;
+    spacing[1] /= CurrentMagnification;
+    spacing[2] = 1; // not considered
+    int extent[6];
+    extent[0] = 0;
+    extent[1] = sz[0] - 1;
+    extent[2] = 0;
+    extent[3] = sz[1] - 1;
+    extent[4] = 0; // not considered
+    extent[5] = 0;
+    // -> correct the image origin:
+    double origin[3];
+    ReferenceImage->GetOrigin(origin);
+    double v[3];
+    double offset;
+    if (fitToHeight) // -> apply offset along row-direction if necessary
+    {
+      v[0] = ImageAxesOrientation->Element[0][0]; // image row direction
+      v[1] = ImageAxesOrientation->Element[0][1];
+      v[2] = ImageAxesOrientation->Element[0][2];
+      offset = ((planeWidth - w) / 2) * spacing[0];
+    }
+    else // -> apply offset along column-direction if necessary
+    {
+      v[0] = ImageAxesOrientation->Element[1][0]; // image column direction
+      v[1] = ImageAxesOrientation->Element[1][1];
+      v[2] = ImageAxesOrientation->Element[1][2];
+      offset = ((planeHeight - h) / 2) * spacing[1];
+    }
+    origin[0] += v[0] * offset;
+    origin[1] += v[1] * offset;
+    origin[2] += v[2] * offset;
+
+    ApplyCurrentGeometry(origin, spacing, extent);
   }
 }
 
-void vtk2DSceneImageInteractorStyle::ApplyMagnificationAndPosition(
-    double *position, bool forceUpdateToWholeExtent)
+void vtk2DSceneImageInteractorStyle::ApplyCurrentGeometry(double *origin,
+    double *spacing, int *extent)
 {
   if (Magnifier && ImageActor && RenderWindow)
   {
-    // in order to guarantee a fast zooming, we set the update extent to
-    // the whole extent only if really necessary (if the current update
-    // extent is outside the whole extent); otherwise we simply apply the
-    // current update extent which only costs minimal computation time:
-    Magnifier->SetAxisMagnificationFactor(0, CurrentMagnification);
-    Magnifier->SetAxisMagnificationFactor(1, CurrentMagnification);
-    Magnifier->GetOutput()->UpdateInformation();
+    // image actor is always at postion 0,0; ensure that!
+    double *actorPos = ImageActor->GetPosition();
+    if (actorPos[0] != 0 || actorPos[1] != 0)
+    {
+      double zero[2] = {0, 0};
+      ImageActor->SetPosition(zero);
+    }
+    CurrentResliceOrigin[0] = origin[0];
+    CurrentResliceOrigin[1] = origin[1];
+    CurrentResliceOrigin[2] = origin[2];
+  	CurrentResliceSpacing[0] = spacing[0];
+  	CurrentResliceSpacing[1] = spacing[1];
+  	CurrentResliceSpacing[2] = spacing[2];
+  	CurrentResliceExtent[0] = extent[0];
+    CurrentResliceExtent[1] = extent[1];
+    CurrentResliceExtent[2] = extent[2];
+    CurrentResliceExtent[3] = extent[3];
+    CurrentResliceExtent[4] = extent[4];
+    CurrentResliceExtent[5] = extent[5];
+
+    // compute current center point of resliced image:
+    double v1[3];
+    v1[0] = ImageAxesOrientation->Element[0][0];
+    v1[1] = ImageAxesOrientation->Element[0][1];
+    v1[2] = ImageAxesOrientation->Element[0][2];
+    double v2[3];
+    v2[0] = ImageAxesOrientation->Element[1][0];
+    v2[1] = ImageAxesOrientation->Element[1][1];
+    v2[2] = ImageAxesOrientation->Element[1][2];
+    double currWh = CurrentResliceSpacing[0] * static_cast<double>(
+        CurrentResliceExtent[1] - CurrentResliceExtent[0] + 1) / 2.;
+    double currHh = CurrentResliceSpacing[1] * static_cast<double>(
+        CurrentResliceExtent[3] - CurrentResliceExtent[2] + 1) / 2.;
+    CurrentResliceCenter[0] = CurrentResliceOrigin[0] +
+        v1[0] * currWh + v2[0] * currHh;
+    CurrentResliceCenter[1] = CurrentResliceOrigin[1] +
+        v1[1] * currWh + v2[1] * currHh;
+    CurrentResliceCenter[2] = CurrentResliceOrigin[2] +
+        v1[2] * currWh + v2[2] * currHh;
+
+    Magnifier->SetOutputOrigin(CurrentResliceOrigin);
+    Magnifier->SetOutputSpacing(CurrentResliceSpacing);
+    Magnifier->SetOutputExtent(CurrentResliceExtent);
+
+  	// checks in order to prevent pipeline errors:
+  	Magnifier->GetOutput()->UpdateInformation();
     int we[6];
     Magnifier->GetOutput()->GetWholeExtent(we);
     int ue[6];
     Magnifier->GetOutput()->GetUpdateExtent(ue);
-    bool ueowe = false; // update-extent-outside-whole-extent-flag
     // (forget about 3rd dimension here - is 2D only)
     if (ue[0] < we[0] || ue[0] > we[1] || ue[1] < ue[0] || ue[1] > we[1] ||
         ue[2] < we[2] || ue[2] > we[3] || ue[3] < ue[2] || ue[3] > we[3])
-      ueowe = true;
-    if (forceUpdateToWholeExtent || ueowe) // need whole extent as update ext.
+    {
       Magnifier->GetOutput()->SetUpdateExtentToWholeExtent();
-    Magnifier->Update();
-    ImageActor->SetPosition(position);
+    }
+
+  	Magnifier->Update();
   }
 }
 
 void vtk2DSceneImageInteractorStyle::RestoreViewSettings()
 {
-  if (CurrentMagnification != -10000 && ReferenceImage && RenderWindow)
+  if (Magnifier && CurrentMagnification != -10000 && RenderWindow)
   {
-    // TODO: to be optimized! (currently we do not adapt current magnification!)
     int *sz = RenderWindow->GetSize();
-    double w = (double) sz[0];
-    double h = (double) sz[1];
-    // -> dimensions are derived from the whole extent which is reliable:
-    int dims[3];
-    int we[6];
-    ReferenceImage->GetWholeExtent(we);
-    dims[0] = we[1] - we[0] + 1;
-    dims[1] = we[3] - we[2] + 1;
-    dims[2] = we[5] - we[4] + 1;
-    // NOTE: We do not need to consider the image spacing because this scene
-    // is purely pixel-based!
-    double width = (double) dims[0];
-    double height = (double) dims[1];
-    width *= CurrentMagnification;
-    height *= CurrentMagnification;
-    double pos[2];
-    pos[0] = CurrentCenter[0] * w - width / 2.;
-    pos[1] = CurrentCenter[1] * h - height / 2.;
-    ApplyMagnificationAndPosition(pos);
+    double newWidth = static_cast<double>(sz[0]);
+    double oldWidth = static_cast<double>(CurrentResliceExtent[1] -
+        CurrentResliceExtent[0] + 1);
+    double f = newWidth / oldWidth;
+
+    Zoom(f, 0.5, 0.5);
+    // if min/max constraints for zooming are set, these have to be verified
+    // internally by using the appropriate zooming directions (yes, I know, this
+    // will introduce a minimal error ...)
+    if (UseMinimumMaximumSpacingForZoom)
+    {
+      if (f < 1.)
+        Zoom(1.00001, 0.5, 0.5);
+      else
+        Zoom(0.9999, 0.5, 0.5);
+    }
   }
 }
 
@@ -347,34 +486,109 @@ void vtk2DSceneImageInteractorStyle::Zoom(double factor, double cx, double cy)
 {
   if (CurrentMagnification != -10000 && ReferenceImage && RenderWindow)
   {
-    CurrentMagnification *= factor;
+    double newMagnification = CurrentMagnification * factor;
+    double refSpacing[3];
+    double newSpacing[3];
+    int we[6];
+    this->GetAdjustedReferenceImageGeometry(refSpacing, we);
+    // -> new spacing due to magnification
+    newSpacing[0] = refSpacing[0] / newMagnification;
+    newSpacing[1] = refSpacing[1] / newMagnification;
+    newSpacing[2] = 1; // not considered
+    if (UseMinimumMaximumSpacingForZoom && MinimumSpacingForZoom > 0 &&
+        factor > 1.) // max zoom
+    {
+      if (newSpacing[0] < MinimumSpacingForZoom ||
+          newSpacing[1] < MinimumSpacingForZoom)
+      {
+        if (newSpacing[0] < newSpacing[1])
+          newMagnification = refSpacing[0] / MinimumSpacingForZoom;
+        else
+          newMagnification = refSpacing[1] / MinimumSpacingForZoom;
+        if (fabs(CurrentMagnification - newMagnification) < 1e-6)
+          return; // no change - already at maximum zoom -> exit
+        newSpacing[0] = refSpacing[0] / newMagnification;
+        newSpacing[1] = refSpacing[1] / newMagnification;
+        // update factor as well:
+        factor = newMagnification / CurrentMagnification;
+      }
+    }
+    if (UseMinimumMaximumSpacingForZoom && MaximumSpacingForZoom > 0 &&
+        factor < 1.) // min zoom
+    {
+      if (newSpacing[0] > MaximumSpacingForZoom ||
+          newSpacing[1] > MaximumSpacingForZoom)
+      {
+        if (newSpacing[0] > newSpacing[1])
+          newMagnification = refSpacing[0] / MaximumSpacingForZoom;
+        else
+          newMagnification = refSpacing[1] / MaximumSpacingForZoom;
+        if (fabs(CurrentMagnification - newMagnification) < 1e-6)
+          return; // no change - already at maximum zoom -> exit
+        newSpacing[0] = refSpacing[0] / newMagnification;
+        newSpacing[1] = refSpacing[1] / newMagnification;
+        // update factor as well:
+        factor = newMagnification / CurrentMagnification;
+      }
+    }
+
     int *sz = RenderWindow->GetSize();
     double w = (double) sz[0];
     double h = (double) sz[1];
-    // -> dimensions are derived from the whole extent which is reliable:
-    int dims[3];
-    int we[6];
-    ReferenceImage->GetWholeExtent(we);
-    dims[0] = we[1] - we[0] + 1;
-    dims[1] = we[3] - we[2] + 1;
-    dims[2] = we[5] - we[4] + 1;
-    // NOTE: We do not need to consider the image spacing because this scene
-    // is purely pixel-based!
-    double width = (double) dims[0];
-    double height = (double) dims[1];
-    width *= CurrentMagnification;
-    height *= CurrentMagnification;
-    double pos[2];
-    // correct the position w.r.t. to zoom center:
-    double off[2];
-    off[0] = (cx - CurrentCenter[0]) * w + (width / factor) / 2.;
-    off[1] = (cy - CurrentCenter[1]) * h + (height / factor) / 2.;
-    pos[0] = cx * w - off[0] * factor;
-    pos[1] = cy * h - off[1] * factor;
-    // new center:
-    CurrentCenter[0] = (pos[0] + width / 2.) / w;
-    CurrentCenter[1] = (pos[1] + height / 2.) / h;
-    ApplyMagnificationAndPosition(pos);
+    double v1[3];
+    v1[0] = ImageAxesOrientation->Element[0][0]; // image row direction
+    v1[1] = ImageAxesOrientation->Element[0][1];
+    v1[2] = ImageAxesOrientation->Element[0][2];
+    double v2[3];
+    v2[0] = ImageAxesOrientation->Element[1][0]; // image column direction
+    v2[1] = ImageAxesOrientation->Element[1][1];
+    v2[2] = ImageAxesOrientation->Element[1][2];
+
+    CurrentMagnification = newMagnification; // apply zoom
+    int extent[6];
+    extent[0] = 0;
+    extent[1] = sz[0] - 1;
+    extent[2] = 0;
+    extent[3] = sz[1] - 1;
+    extent[4] = 0; // not considered
+    extent[5] = 0;
+    // -> correct the image origin:
+    double origin[3];
+    origin[0] = CurrentResliceCenter[0] -
+        v1[0] * w * newSpacing[0] / 2. -
+        v2[0] * h * newSpacing[1] / 2.;
+    origin[1] = CurrentResliceCenter[1] -
+        v1[1] * w * newSpacing[0] / 2. -
+        v2[1] * h * newSpacing[1] / 2.;
+    origin[2] = CurrentResliceCenter[2] -
+        v1[2] * w * newSpacing[0] / 2. -
+        v2[2] * h * newSpacing[1] / 2.;
+
+    if (cx != 0.5 || cy != 0.5)
+    {
+      double refPt[3];
+      refPt[0] = CurrentResliceOrigin[0] +
+          v1[0] * w * CurrentResliceSpacing[0] * cx +
+          v2[0] * h * CurrentResliceSpacing[1] * cy;
+      refPt[1] = CurrentResliceOrigin[1] +
+          v1[1] * w * CurrentResliceSpacing[0] * cx +
+          v2[1] * h * CurrentResliceSpacing[1] * cy;
+      refPt[2] = CurrentResliceOrigin[2] +
+          v1[2] * w * CurrentResliceSpacing[0] * cx +
+          v2[2] * h * CurrentResliceSpacing[1] * cy;
+
+      double dx = vtkMath::Dot(refPt, v1) - vtkMath::Dot(CurrentResliceCenter, v1);
+      double dy = vtkMath::Dot(refPt, v2) - vtkMath::Dot(CurrentResliceCenter, v2);
+      double dx2 = dx * factor;
+      double dy2 = dy * factor;
+
+      origin[0] = origin[0] + v1[0] * (dx2 - dx) + v2[0] * (dy2 - dy);
+      origin[1] = origin[1] + v1[1] * (dx2 - dx) + v2[1] * (dy2 - dy);
+      origin[2] = origin[2] + v1[2] * (dx2 - dx) + v2[2] * (dy2 - dy);
+    }
+
+    ApplyCurrentGeometry(origin, newSpacing, extent);
+
     this->Interactor->Render();
   }
 }
@@ -419,33 +633,22 @@ void vtk2DSceneImageInteractorStyle::Pan(int dx, int dy)
 {
   if (CurrentMagnification != -10000 && ReferenceImage && RenderWindow)
   {
-    int *sz = RenderWindow->GetSize();
-    double w = (double) sz[0];
-    double h = (double) sz[1];
-    // -> dimensions are derived from the whole extent which is reliable:
-    int dims[3];
-    int we[6];
-    ReferenceImage->GetWholeExtent(we);
-    dims[0] = we[1] - we[0] + 1;
-    dims[1] = we[3] - we[2] + 1;
-    dims[2] = we[5] - we[4] + 1;
-    // NOTE: We do not need to consider the image spacing because this scene
-    // is purely pixel-based!
-    double width = (double) dims[0];
-    double height = (double) dims[1];
-    width *= CurrentMagnification;
-    height *= CurrentMagnification;
-    double pos[2];
-    // current position:
-    pos[0] = CurrentCenter[0] * w - width / 2.;
-    pos[1] = CurrentCenter[1] * h - height / 2.;
-    // apply panning:
-    pos[0] += dx;
-    pos[1] += dy;
-    // store new center:
-    CurrentCenter[0] = (pos[0] + width / 2.) / w;
-    CurrentCenter[1] = (pos[1] + height / 2.) / h;
-    ApplyMagnificationAndPosition(pos);
+    double v1[3];
+    v1[0] = ImageAxesOrientation->Element[0][0]; // image row direction
+    v1[1] = ImageAxesOrientation->Element[0][1];
+    v1[2] = ImageAxesOrientation->Element[0][2];
+    double v2[3];
+    v2[0] = ImageAxesOrientation->Element[1][0]; // image column direction
+    v2[1] = ImageAxesOrientation->Element[1][1];
+    v2[2] = ImageAxesOrientation->Element[1][2];
+    double origin[3];
+    double ddx = dx * CurrentResliceSpacing[0];
+    double ddy = dy * CurrentResliceSpacing[1];
+    origin[0] = CurrentResliceOrigin[0] - v1[0] * ddx - v2[0] * ddy;
+    origin[1] = CurrentResliceOrigin[1] - v1[1] * ddx - v2[1] * ddy;
+    origin[2] = CurrentResliceOrigin[2] - v1[2] * ddx - v2[2] * ddy;
+    ApplyCurrentGeometry(origin, CurrentResliceSpacing, CurrentResliceExtent);
+
     this->Interactor->Render();
   }
 }
@@ -574,8 +777,22 @@ void vtk2DSceneImageInteractorStyle::WindowLevelInternal()
       CurrentWindowLevelChannel > (int)WindowLevelChannels.size()) // main chan.
   {
     // finally take over and render
-    ImageMapper->SetColorWindow(CurrentWL[0]);
-    ImageMapper->SetColorLevel(CurrentWL[1]);
+    if (!MainWindowLevelChannel)
+    {
+      ImageMapper->SetColorWindow(CurrentWL[0]);
+      ImageMapper->SetColorLevel(CurrentWL[1]);
+    }
+    else // LUT set
+    {
+      // assume vtkLookupTable or subclass:
+      vtkLookupTable *lut = reinterpret_cast<vtkLookupTable *>(
+          MainWindowLevelChannel->GetLookupTable());
+      double r[2];
+      r[0] = CurrentWL[1] - CurrentWL[0] / 2.; // min
+      r[1] = CurrentWL[1] + CurrentWL[0] / 2.; // max
+      lut->SetTableRange(r);
+      lut->Build();
+    }
   }
   else
   {
@@ -617,14 +834,32 @@ void vtk2DSceneImageInteractorStyle::StartWindowLevelInternal()
   if (CurrentWindowLevelChannel <= 0 ||
       CurrentWindowLevelChannel > (int)WindowLevelChannels.size()) // main chan.
   {
-    InitialWL[0] = ImageMapper->GetColorWindow(); // store initial situation
-    InitialWL[1] = ImageMapper->GetColorLevel();
-    // for reliable scalar range during window/level:
-    ImageMapper->GetInput()->UpdateInformation();
-    ImageMapper->GetInput()->SetUpdateExtent
-      (ImageMapper->GetInput()->GetWholeExtent());
-    ImageMapper->GetInput()->Update();
-    input = ImageMapper->GetInput();
+    if (!MainWindowLevelChannel)
+    {
+      InitialWL[0] = ImageMapper->GetColorWindow(); // store initial situation
+      InitialWL[1] = ImageMapper->GetColorLevel();
+      // for reliable scalar range during window/level:
+      ImageMapper->GetInput()->UpdateInformation();
+      ImageMapper->GetInput()->SetUpdateExtent
+        (ImageMapper->GetInput()->GetWholeExtent());
+      ImageMapper->GetInput()->Update();
+      input = ImageMapper->GetInput();
+    }
+    else // LUT set
+    {
+      vtkLookupTable *lut = reinterpret_cast<vtkLookupTable *>(
+          MainWindowLevelChannel->GetLookupTable());
+      double r[2];
+      lut->GetTableRange(r);
+      InitialWL[0] = r[1] - r[0]; // window
+      InitialWL[1] = r[0] + InitialWL[0] / 2.; // level
+      // for reliable scalar range during window/level:
+      MainWindowLevelChannel->GetInput()->UpdateInformation();
+      MainWindowLevelChannel->GetInput()->SetUpdateExtent
+        (MainWindowLevelChannel->GetInput()->GetWholeExtent());
+      MainWindowLevelChannel->GetInput()->Update();
+      input = reinterpret_cast<vtkImageData*>(MainWindowLevelChannel->GetInput());
+    }
   }
   else // further window/level channel
   {
@@ -706,29 +941,44 @@ void vtk2DSceneImageInteractorStyle::ResetWindowLevelInternal()
       CurrentWindowLevelChannel > (int)WindowLevelChannels.size()) // main chan.
   {
     double sr[2];
-    ImageMapper->GetInput()->UpdateInformation();
-    ImageMapper->GetInput()->SetUpdateExtent
-      (ImageMapper->GetInput()->GetWholeExtent());
-    ImageMapper->GetInput()->Update();
-    int components = ImageMapper->GetInput()->GetPointData()->GetScalars()->
-        GetNumberOfComponents();
-    if (components == 3)
+    if (!MainWindowLevelChannel)
     {
-      double sr0[2];
-      double sr1[2];
-      double sr2[2];
-      ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr0, 0);
-      ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr1, 1);
-      ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr2, 2);
-      sr[0] = std::min(sr0[0], std::min(sr1[0], sr2[0]));
-      sr[1] = std::max(sr0[1], std::max(sr1[1], sr2[1]));
+      ImageMapper->GetInput()->UpdateInformation();
+      ImageMapper->GetInput()->SetUpdateExtent
+        (ImageMapper->GetInput()->GetWholeExtent());
+      ImageMapper->GetInput()->Update();
+      int components = ImageMapper->GetInput()->GetPointData()->GetScalars()->
+          GetNumberOfComponents();
+      if (components == 3)
+      {
+        double sr0[2];
+        double sr1[2];
+        double sr2[2];
+        ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr0, 0);
+        ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr1, 1);
+        ImageMapper->GetInput()->GetPointData()->GetScalars()->GetRange(sr2, 2);
+        sr[0] = std::min(sr0[0], std::min(sr1[0], sr2[0]));
+        sr[1] = std::max(sr0[1], std::max(sr1[1], sr2[1]));
+      }
+      else
+      {
+        ImageMapper->GetInput()->GetScalarRange(sr);
+      }
+      ImageMapper->SetColorWindow(sr[1] - sr[0]);
+      ImageMapper->SetColorLevel((sr[1] - sr[0]) / 2.);
     }
-    else
+    else // LUT set
     {
-      ImageMapper->GetInput()->GetScalarRange(sr);
+      vtkLookupTable *lut = reinterpret_cast<vtkLookupTable *>(
+          MainWindowLevelChannel->GetLookupTable());
+      double r[2];
+      r[0] = MainWindowLevelChannelResetWindowLevel[1] -
+          MainWindowLevelChannelResetWindowLevel[0] / 2.; // min
+      r[1] = MainWindowLevelChannelResetWindowLevel[1] +
+          MainWindowLevelChannelResetWindowLevel[0] / 2.; // max
+      lut->SetTableRange(r);
+      lut->Build();
     }
-    ImageMapper->SetColorWindow(sr[1] - sr[0]);
-    ImageMapper->SetColorLevel((sr[1] - sr[0]) / 2.);
   }
   else // further window/level channel
   {

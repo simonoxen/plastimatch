@@ -38,7 +38,7 @@ void PrintUsage(const char *binname, std::ostream &os)
 
   os << "\n";
   os
-  << "   *** R E G 2 3   U S A G E   I N F O R M A T I O N ***\n";
+  << "   *** REG-2-3   U S A G E   I N F O R M A T I O N ***\n";
   os
   << "         " << ora::REG23GlobalInformation::GetCombinedApplicationName() << "\n";
   os << "\n";

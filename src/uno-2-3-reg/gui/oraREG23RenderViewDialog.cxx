@@ -651,6 +651,10 @@ void REG23RenderViewDialog::BuildRenderPipeline()
   m_Style = vtkSmartPointer<vtkPerspectiveOverlayProjectionInteractorStyle>::New();
   m_Style->SetWindowLevelMouseSensitivity(m_CastedModel->GetWindowingSensitivity());
   m_Style->SetRealTimeMouseSensitivityAdaption(m_CastedModel->GetRealTimeAdaptiveWindowing());
+  m_Style->SetMotionFactor(50); // ITKSnap-like acceleration
+  m_Style->UseMinimumMaximumSpacingForZoomOn();
+  m_Style->SetMinimumSpacingForZoom(0.01); // 10 um
+  m_Style->SetMaximumSpacingForZoom(10); // 10 mm
   m_Style->SetRenderer(m_Renderer);
   renWin->GetInteractor()->SetInteractorStyle(m_Style);
   vtkSmartPointer<vtkCallbackCommand> styleCB =
@@ -754,13 +758,16 @@ void REG23RenderViewDialog::BuildRenderPipeline()
   m_OverlayMapper2D = vtkSmartPointer<vtkImageMapper>::New();
   m_OverlayActor2D->SetMapper(m_OverlayMapper2D);
   m_OverlayActor2D->SetVisibility(false);
-  m_OverlayMagnifier = vtkSmartPointer<vtkImageResample>::New();
-  m_OverlayMagnifier->SetDimensionality(2);
+  m_OverlayMagnifier = vtkSmartPointer<vtkImageReslice>::New();
   m_OverlayMagnifier->SetInterpolationModeToLinear(); // enough for 2D-zoom
   m_OverlayMagnifier->SetInputConnection(m_Blender->GetOutputPort());
   m_OverlayMapper2D->SetInputConnection(m_OverlayMagnifier->GetOutputPort());
   m_Renderer->AddActor2D(m_OverlayActor2D);
   m_Style->SetReferenceImage(m_Blender->GetOutput());
+  vtkSmartPointer<vtkMatrix4x4> imageOrientation =
+        vtkSmartPointer<vtkMatrix4x4>::New();
+  imageOrientation->Identity(); // 2D in-plane
+  m_Style->SetImageAxesOrientation(imageOrientation);
   m_Style->SetImageActor(m_OverlayActor2D);
   m_Style->SetMagnifier(m_OverlayMagnifier);
   m_Style->SetImageMapper(m_OverlayMapper2D);
