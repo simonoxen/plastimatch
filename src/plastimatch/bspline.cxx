@@ -771,9 +771,9 @@ bspline_score (Bspline_parms *parms,
 	}
 
 	UNLOAD_LIBRARY (libplmcuda);
-	return;
 
-    } else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
+    }
+    else if ((parms->threading == BTHR_CUDA) && (parms->metric == BMET_MI)) {
 
 	/* Be sure we loaded the CUDA plugin */
 	if (!delayload_cuda ()) { exit (0); }
@@ -795,7 +795,7 @@ bspline_score (Bspline_parms *parms,
     }
 #endif
 
-    if (parms->metric == BMET_MSE) {
+    if ((parms->threading == BTHR_CPU) && (parms->metric == BMET_MSE)) {
 	switch (parms->implementation) {
 	case 'c':
 	    bspline_score_c_mse (parms, bst, bxf, fixed, moving, moving_grad);
@@ -839,8 +839,9 @@ bspline_score (Bspline_parms *parms,
 	}
     }
 
+
     /* Regularize */
-    if (reg_parms->lambda != 0.0f) {
+    if (reg_parms->lambda > 0.0f) {
         regularize (reg_parms, bxf, &bst->ssd.score, bst->ssd.grad);
     }
 

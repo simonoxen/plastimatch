@@ -562,17 +562,24 @@ regularize (
 
     switch (reg_parms->implementation) {
     case 'a':
-//        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
+        S = vf_regularize_numerical (compute_vf_from_coeff (bxf));
         break;
     case 'b':
-//        S = vf_regularize_analytic (bxf);
+        S = vf_regularize_analytic (bxf);
         break;
     default:
         break;
     }
 
+    printf ("            %9.3f S\n", S);
+
     /* Grad is probably best updated inside "flavors" */
     /* Not sure if score should be done here or inside "flavors" */
+
+#if 0
+    Leave this commented out until the gradient is implemented
+    or the optimization will probably get stuck...
     *score += reg_parms->lambda * S;
+#endif
 
 }
