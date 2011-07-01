@@ -14,8 +14,8 @@
 #include "synthetic_mha.h"
 
 float intens_enclosed(FloatPoint3DType phys, 
-		      float xlat1[3], float xlat2[3],
-		      float f1, float f2)
+    float xlat1[3], float xlat2[3],
+    float f1, float f2)
 {
     float f;
 //	float f1, f2;
@@ -41,19 +41,19 @@ float intens_enclosed(FloatPoint3DType phys,
     {
 	
 	if (i==6) { p[7*i+0]+=xlat1[0]; 
-		    p[7*i+1]+=xlat1[1];
-		    p[7*i+2]+=xlat1[2];
-		    p[7*i+3]+=xlat1[0]; 
-		    p[7*i+4]+=xlat1[1];
-		    p[7*i+5]+=xlat1[2];
-		    }
+	    p[7*i+1]+=xlat1[1];
+	    p[7*i+2]+=xlat1[2];
+	    p[7*i+3]+=xlat1[0]; 
+	    p[7*i+4]+=xlat1[1];
+	    p[7*i+5]+=xlat1[2];
+	}
 	if (i==7) { p[7*i+0]+=xlat2[0]; 
-		    p[7*i+1]+=xlat2[1];
-		    p[7*i+2]+=xlat2[2];
-		    p[7*i+3]+=xlat2[0]; 
-		    p[7*i+4]+=xlat2[1];
-		    p[7*i+5]+=xlat2[2];
-		    }
+	    p[7*i+1]+=xlat2[1];
+	    p[7*i+2]+=xlat2[2];
+	    p[7*i+3]+=xlat2[0]; 
+	    p[7*i+4]+=xlat2[1];
+	    p[7*i+5]+=xlat2[2];
+	}
 	if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
 	    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
 	    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
@@ -428,4 +428,3 @@ synthetic_mha (
 	rtds->m_dose->set_itk (dose_img);
     }
 }
-

@@ -106,6 +106,10 @@ load_input_files (Rtds *rtds, Plm_file_format file_type, Warp_parms *parms)
     }
 
     if (bstring_not_empty (parms->input_ss_img_fn)) {
+	if (!file_exists (parms->input_ss_img_fn)) {
+	    print_and_exit ("Error: cannot open file %s for read\n",
+		(const char*) parms->input_ss_img_fn);
+	}
 	rtds->load_ss_img (
 	    (const char*) parms->input_ss_img_fn, 
 	    (const char*) parms->input_ss_list_fn);
