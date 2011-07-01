@@ -231,10 +231,20 @@ init_analytic (double **QX, double **QY, double **QZ, double* gs)
 
 /* IInt() and getv() from xyzInt.c */
 void
-eval_integral (double* V, double* Qn)
+eval_integral (double* V, double* Qn, double is)
 {
     int i,j;
     double S[16];
+
+    double I[7] = {
+        is,
+        (1.0/2.0) * (is * is),
+        (1.0/3.0) * (is * is * is),
+        (1.0/4.0) * (is * is * is * is),
+        (1.0/5.0) * (is * is * is * is * is),
+        (1.0/6.0) * (is * is * is * is * is * is),
+        (1.0/7.0) * (is * is * is * is * is * is * is)
+    };
 
     // Generate 4 4x4 matrix by taking the outer
     // product of the each row in the Q matrix with
@@ -243,16 +253,15 @@ eval_integral (double* V, double* Qn)
     for (j=0; j<4; j++) {
         for (i=0; i<4; i++) {
             vec_outer (S, Qn+(4*j), Qn+(4*i), 4);
-            V[4*j + i] = S[0]
-                       + ((1.0/2.0) * (S[ 1] + S[ 4]))
-                       + ((1.0/3.0) * (S[ 2] + S[ 5] + S[ 8]))
-                       + ((1.0/4.0) * (S[ 3] + S[ 6] + S[ 9] + S[12]))
-                       + ((1.0/5.0) * (S[ 7] + S[10] + S[13]))
-                       + ((1.0/6.0) * (S[11] + S[14]))
-                       + ((1.0/7.0) * (S[15]));
+            V[4*j + i] = (I[0] *  S[ 0])
+                       + (I[1] * (S[ 1] + S[ 4]))
+                       + (I[2] * (S[ 2] + S[ 5] + S[ 8]))
+                       + (I[3] * (S[ 3] + S[ 6] + S[ 9] + S[12]))
+                       + (I[4] * (S[ 7] + S[10] + S[13]))
+                       + (I[5] * (S[11] + S[14]))
+                       + (I[6] * (S[15]));
         }
     }
-
 }
 ////////////////////////////////////////////////////////////////////////
 
@@ -287,6 +296,7 @@ main (void)
         memset (QZ[i], 0, 16*sizeof(double));
     }
 
+    /* (in mm) */
     grid_spacing[0] = 1.0;
     grid_spacing[1] = 1.0;
     grid_spacing[2] = 1.0;
@@ -294,9 +304,9 @@ main (void)
     init_analytic (QX, QY, QZ, grid_spacing);
 
     /* Produce output from xyzInt.c */
-    eval_integral (X, QX[1]);
-    eval_integral (Y, QY[1]);
-    eval_integral (Z, QZ[0]);
+    eval_integral (X, QX[1], grid_spacing[0]);
+    eval_integral (Y, QY[1], grid_spacing[1]);
+    eval_integral (Z, QZ[0], grid_spacing[2]);
 
     printM (X, 4, 4);
     printM (Y, 4, 4);

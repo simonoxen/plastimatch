@@ -51,19 +51,15 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
     for (k = 0; k < vol->dim[2]; k++) {
         p[2] = k / bxf->vox_per_rgn[2];
         q[2] = k % bxf->vox_per_rgn[2];
-        for (j = 0; j < vol->dim[2]; j++) {
+        for (j = 0; j < vol->dim[1]; j++) {
             p[1] = j / bxf->vox_per_rgn[1];
             q[1] = j % bxf->vox_per_rgn[1];
-            for (i = 0; i < vol->dim[2]; i++) {
+            for (i = 0; i < vol->dim[0]; i++) {
                 p[0] = i / bxf->vox_per_rgn[0];
                 q[0] = i % bxf->vox_per_rgn[0];
 
-                pidx = INDEX_OF (p, bxf->rdims[0],
-                                    bxf->rdims[1],
-                                    bxf->rdims[2]);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn[0],
-                                    bxf->vox_per_rgn[1],
-                                    bxf->vox_per_rgn[2]);
+                pidx = INDEX_OF (bxf->rdims, p[0], p[1], p[2]);
+                qidx = INDEX_OF (bxf->vox_per_rgn, q[0], q[1], q[2]);
 
                 idx_poi = INDEX_OF (vol->dim, i, j, k);
                 vec_poi = &img[3*idx_poi];
@@ -123,10 +119,20 @@ void find_knots(int* knots, int tile_num, int* cdims)
 }
 
 void
-eval_integral (double* V, double* Qn)
+eval_integral (double* V, double* Qn, double gs)
 {
     int i,j;
     double S[16];
+
+    double I[7] = {
+        gs,
+        (1.0/2.0) * (gs * gs),
+        (1.0/3.0) * (gs * gs * gs),
+        (1.0/4.0) * (gs * gs * gs * gs),
+        (1.0/5.0) * (gs * gs * gs * gs * gs),
+        (1.0/6.0) * (gs * gs * gs * gs * gs * gs),
+        (1.0/7.0) * (gs * gs * gs * gs * gs * gs * gs)
+    };
 
     // Generate 4 4x4 matrix by taking the outer
     // product of the each row in the Q matrix with
@@ -135,21 +141,19 @@ eval_integral (double* V, double* Qn)
     for (j=0; j<4; j++) {
         for (i=0; i<4; i++) {
             vec_outer (S, Qn+(4*j), Qn+(4*i), 4);
-            V[4*j + i] = S[0]
-                       + ((1.0/2.0) * (S[ 1] + S[ 4]))
-                       + ((1.0/3.0) * (S[ 2] + S[ 5] + S[ 8]))
-                       + ((1.0/4.0) * (S[ 3] + S[ 6] + S[ 9] + S[12]))
-                       + ((1.0/5.0) * (S[ 7] + S[10] + S[13]))
-                       + ((1.0/6.0) * (S[11] + S[14]))
-                       + ((1.0/7.0) * (S[15]));
+            V[4*j + i] = (I[0] *  S[ 0])
+                       + (I[1] * (S[ 1] + S[ 4]))
+                       + (I[2] * (S[ 2] + S[ 5] + S[ 8]))
+                       + (I[3] * (S[ 3] + S[ 6] + S[ 9] + S[12]))
+                       + (I[4] * (S[ 7] + S[10] + S[13]))
+                       + (I[5] * (S[11] + S[14]))
+                       + (I[6] * (S[15]));
         }
     }
-
 }
 
 void
-init_analytic (double **QX, double **QY, double **QZ, Bspline_xform* bxf
-)
+init_analytic (double **QX, double **QY, double **QZ, Bspline_xform* bxf)
 {
     double rx, ry, rz;
 
@@ -161,9 +165,9 @@ init_analytic (double **QX, double **QY, double **QZ, Bspline_xform* bxf
     };
 
     /* grid spacing */
-    rx = 1.0/bxf->img_spacing[0];
-    ry = 1.0/bxf->img_spacing[1];
-    rz = 1.0/bxf->img_spacing[2];
+    rx = 1.0/bxf->grid_spac[0];
+    ry = 1.0/bxf->grid_spac[1];
+    rz = 1.0/bxf->grid_spac[2];
 
     double RX[16] = {
         1.0, 0.0,   0.0,      0.0,
@@ -280,26 +284,22 @@ double
 region_smoothness (double* V, int* knots, Bspline_xform* bxf)
 {
     double S = 0.0;         /* Region smoothness */
-    double X[64] = {0.0};
-    double Y[64] = {0.0};
-    double Z[64] = {0.0};
+    double X[64] = {0};
+    double Y[64] = {0};
+    double Z[64] = {0};
     int i,j;
 
     /* S = pVp operation */
     for (j=0; j<64; j++) {
-        memset (X, 0.0, 64*sizeof(double));
-        memset (Y, 0.0, 64*sizeof(double));
-        memset (Z, 0.0, 64*sizeof(double));
-
         for (i=0; i<64; i++) {
-            X[j] += bxf->coeff[knots[j]+0] * V[64*i + j];
-            Y[j] += bxf->coeff[knots[j]+1] * V[64*i + j];
-            Z[j] += bxf->coeff[knots[j]+2] * V[64*i + j];
+            X[j] += bxf->coeff[3*knots[i]+0] * V[64*j + i];
+            Y[j] += bxf->coeff[3*knots[i]+1] * V[64*j + i];
+            Z[j] += bxf->coeff[3*knots[i]+2] * V[64*j + i];
         }
 
-        S += X[j] * bxf->coeff[knots[j]+0];
-        S += Y[j] * bxf->coeff[knots[j]+1];
-        S += Z[j] * bxf->coeff[knots[j]+2];
+        S += X[j] * bxf->coeff[3*knots[j]+0];
+        S += Y[j] * bxf->coeff[3*knots[j]+1];
+        S += Z[j] * bxf->coeff[3*knots[j]+2];
     }
 
     return S;
@@ -320,9 +320,14 @@ vf_regularize_analytic (Bspline_xform* bxf)
     double Z[256];                      /* 16 x 16 matrix */
     double V[4096];                     /* 64 x 64 matrix */
     int knots[64];                      /* local set for current region */
+    double gs[3];                       /* grid spacing */
 
     // Total number of regions in grid
     n = bxf->rdims[0] * bxf->rdims[1] * bxf->rdims[2];
+
+    gs[0] = (double)bxf->grid_spac[0];
+    gs[1] = (double)bxf->grid_spac[1];
+    gs[2] = (double)bxf->grid_spac[2];
 
     QX[0] = QX0;    QY[0] = QY0;    QZ[0] = QZ0;
     QX[1] = QX1;    QY[1] = QY1;    QZ[1] = QZ1;
@@ -343,43 +348,43 @@ vf_regularize_analytic (Bspline_xform* bxf)
         // Get the set of 64 control points for this region
         find_knots (knots, i, bxf->cdims);
 
-
-        eval_integral (X, QX[2]);
-        eval_integral (Y, QY[0]);
-        eval_integral (Z, QZ[0]);
+        eval_integral (X, QX[2], gs[0]);
+        eval_integral (Y, QY[0], gs[1]);
+        eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
 
-        eval_integral (X, QX[0]);
-        eval_integral (Y, QY[2]);
-        eval_integral (Z, QZ[0]);
+        eval_integral (X, QX[0], gs[0]);
+        eval_integral (Y, QY[2], gs[1]);
+        eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
 
-        eval_integral (X, QX[0]);
-        eval_integral (Y, QY[0]);
-        eval_integral (Z, QZ[2]);
+        eval_integral (X, QX[0], gs[0]);
+        eval_integral (Y, QY[0], gs[1]);
+        eval_integral (Z, QZ[2], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
 
-        eval_integral (X, QX[1]);
-        eval_integral (Y, QY[1]);
-        eval_integral (Z, QZ[0]);
+        eval_integral (X, QX[1], gs[0]);
+        eval_integral (Y, QY[1], gs[1]);
+        eval_integral (Z, QZ[0], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
 
-        eval_integral (X, QX[1]);
-        eval_integral (Y, QY[0]);
-        eval_integral (Z, QZ[1]);
+        eval_integral (X, QX[1], gs[0]);
+        eval_integral (Y, QY[0], gs[1]);
+        eval_integral (Z, QZ[1], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
 
-        eval_integral (X, QX[0]);
-        eval_integral (Y, QY[1]);
-        eval_integral (Z, QZ[1]);
+        eval_integral (X, QX[0], gs[0]);
+        eval_integral (Y, QY[1], gs[1]);
+        eval_integral (Z, QZ[1], gs[2]);
         get_Vmatrix (V, X, Y, Z);
         S += region_smoothness (V, knots, bxf);
     }
+
 
     return (float)S;
 }
