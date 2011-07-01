@@ -98,13 +98,10 @@ main (int argc, char* argv[])
         vf = (Volume*)load (&options, NUMERICAL);
         S = vf_regularize_numerical (vf);
         break;
-#if 0
     case 'b':
-        /* CALLING FUNCTION FOR ANALYTIC METHOD 'b" GOES HERE */
-        bxf = (Bspline_xform*)load (options, ANALYTIC);
+        bxf = (Bspline_xform*)load (&options, ANALYTIC);
         S = vf_regularize_analytic (bxf);
         break;
-#endif
     default:
         printf ("Warning: Using implementation 'a'\n");
         vf = (Volume*)load (&options, NUMERICAL);

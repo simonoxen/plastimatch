@@ -13,7 +13,7 @@
 #include "volume.h"
 #include "math_util.h"
 
-#define DEBUG
+//#define DEBUG
 
 #define INDEX_OF(dim, i, j, k) \
     ((((k)*dim[1] + (j))*dim[0]) + (i))
@@ -276,11 +276,41 @@ get_Vmatrix (double* V, double* X, double* Y, double* Z)
     }
 }
 
+double
+region_smoothness (double* V, int* knots, Bspline_xform* bxf)
+{
+    double S = 0.0;         /* Region smoothness */
+    double X[64] = {0.0};
+    double Y[64] = {0.0};
+    double Z[64] = {0.0};
+    int i,j;
+
+    /* S = pVp operation */
+    for (j=0; j<64; j++) {
+        memset (X, 0.0, 64*sizeof(double));
+        memset (Y, 0.0, 64*sizeof(double));
+        memset (Z, 0.0, 64*sizeof(double));
+
+        for (i=0; i<64; i++) {
+            X[j] += bxf->coeff[knots[j]+0] * V[64*i + j];
+            Y[j] += bxf->coeff[knots[j]+1] * V[64*i + j];
+            Z[j] += bxf->coeff[knots[j]+2] * V[64*i + j];
+        }
+
+        S += X[j] * bxf->coeff[knots[j]+0];
+        S += Y[j] * bxf->coeff[knots[j]+1];
+        S += Z[j] * bxf->coeff[knots[j]+2];
+    }
+
+    return S;
+}
+
 float
 vf_regularize_analytic (Bspline_xform* bxf)
 {
     int i,n;
 
+    double S;                           /* Smoothness */
     double *QX[3], *QY[3], *QZ[3];      /* Arrays of array addresses */
     double QX0[16], QY0[16], QZ0[16];   /*  4 x  4 matrix */
     double QX1[16], QY1[16], QZ1[16];   /*  4 x  4 matrix */
@@ -307,6 +337,7 @@ vf_regularize_analytic (Bspline_xform* bxf)
 
     init_analytic (QX, QY, QZ, bxf);
 
+    S = 0.0;
     for (i=0; i<n; i++) {
 
         // Get the set of 64 control points for this region
@@ -317,41 +348,40 @@ vf_regularize_analytic (Bspline_xform* bxf)
         eval_integral (Y, QY[0]);
         eval_integral (Z, QZ[0]);
         get_Vmatrix (V, X, Y, Z);
+        S += region_smoothness (V, knots, bxf);
 
         eval_integral (X, QX[0]);
         eval_integral (Y, QY[2]);
         eval_integral (Z, QZ[0]);
         get_Vmatrix (V, X, Y, Z);
-        // pVp & accumulate
+        S += region_smoothness (V, knots, bxf);
 
         eval_integral (X, QX[0]);
         eval_integral (Y, QY[0]);
         eval_integral (Z, QZ[2]);
         get_Vmatrix (V, X, Y, Z);
-        // pVp & accumulate
+        S += region_smoothness (V, knots, bxf);
 
         eval_integral (X, QX[1]);
         eval_integral (Y, QY[1]);
         eval_integral (Z, QZ[0]);
         get_Vmatrix (V, X, Y, Z);
-        // pVp & accumulate
+        S += region_smoothness (V, knots, bxf);
 
         eval_integral (X, QX[1]);
         eval_integral (Y, QY[0]);
         eval_integral (Z, QZ[1]);
         get_Vmatrix (V, X, Y, Z);
-        // pVp & accumulate
+        S += region_smoothness (V, knots, bxf);
 
         eval_integral (X, QX[0]);
         eval_integral (Y, QY[1]);
         eval_integral (Z, QZ[1]);
         get_Vmatrix (V, X, Y, Z);
-        // pVp & accumulate
-
+        S += region_smoothness (V, knots, bxf);
     }
 
-
-    return 0;
+    return (float)S;
 }
 
 
@@ -522,7 +552,7 @@ regularize (
     float* grad
 )
 {
-    float S;            /* smoothness score */
+    float S = 0.0;      /* smoothness score */
     float* dSdP;        /* smoothness grad  */
 
     switch (reg_parms->implementation) {

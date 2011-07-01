@@ -39,5 +39,8 @@ gpuit_EXPORT
 float
 vf_regularize_numerical (Volume* vol);
 
+gpuit_EXPORT
+float
+vf_regularize_analytic (Bspline_xform* bxf);
 
 #endif /* _reg_h_ */
