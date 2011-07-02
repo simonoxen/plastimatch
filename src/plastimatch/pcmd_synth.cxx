@@ -215,6 +215,9 @@ parse_fn (
     else if (arg == "enclosed_rect") {
 	sm_parms->pattern = PATTERN_ENCLOSED_RECT;
     }
+    else if (arg == "donut") {
+	sm_parms->pattern = PATTERN_DONUT;
+    }
     else {
 	throw (dlib::error ("Error. Unknown --pattern argument: " + arg));
     }

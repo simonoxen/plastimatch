@@ -15,7 +15,8 @@ enum Pattern_type {
     PATTERN_RECT,
     PATTERN_SPHERE,
     PATTERN_ENCLOSED_RECT,
-    PATTERN_OBJSTRUCTDOSE
+    PATTERN_OBJSTRUCTDOSE,
+    PATTERN_DONUT
 };
 
 enum Pattern_structset_type {
@@ -41,6 +42,9 @@ public:
     float rect_size[6];
     float sphere_center[3];
     float sphere_radius[3];
+    float donut_center[3];
+    float donut_radius[3];
+    int donut_rings;
     
     float enclosed_intens_f1, enclosed_intens_f2;
     float enclosed_xlat1[3], enclosed_xlat2[3];
@@ -62,6 +66,7 @@ public:
 	    gauss_std[i] = 100.0f;
 	    sphere_center[i] = 0.0f;
 	    sphere_radius[i] = 50.0f;
+	    donut_center[i] = 0.0f;
 	}
 	background = -1000.0f;
 	foreground = 0.0f;
@@ -73,7 +78,10 @@ public:
 	rect_size[5] = +50.0f;
 	m_want_ss_img = false;
 	m_want_dose_img = false;
-    
+	donut_radius[0] = 50.0f;
+	donut_radius[1] = 50.0f;
+	donut_radius[2] = 20.0f;
+	donut_rings = 2;
 	pattern_ss = PATTERN_SS_ONE;
     }
 };

@@ -2,6 +2,7 @@
    See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
    ----------------------------------------------------------------------- */
 #include "plm_config.h"
+#include <algorithm>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -277,6 +278,56 @@ synth_osd (
     *intens = (1 - f) * parms->background + f * parms->foreground;
 }
 
+static void 
+synth_donut (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    /* Set default values */
+    *intens = parms->background;
+    *label = 0;
+
+    float p[3];
+    for (int d = 0; d < 3; d++) {
+	p[d] = (phys[d] - parms->donut_center[d]) / parms->donut_radius[d];
+    }
+
+    float dist = sqrt (p[0]*p[0] + p[1]*p[1]);
+
+    /* Compute which ring we are inside */
+    float ring_width = 1 / (float) parms->donut_rings;
+    int ring_no = floor (dist / ring_width);
+
+    /* If outside of all rings, return */
+    if (ring_no >= parms->donut_rings) {
+	return;
+    }
+
+    /* If within "background ring", return */
+    if ((parms->donut_rings - ring_no) % 2 == 0) {
+	return;
+    }
+
+    /* Compute distance from ring center */
+    float ring_offset_1 = dist - ring_no * ring_width;
+    float ring_offset_2 = (ring_no + 1) * ring_width - dist;
+    float ring_offset = 0.5 * ring_width 
+	- std::min (ring_offset_1, ring_offset_2);
+    ring_offset = ring_offset / ring_width;
+
+    /* If distance within donut, set to foreground */
+    float dist_3d_sq = ring_offset * ring_offset + p[2] * p[2];
+
+    if (dist_3d_sq < 1.) {
+	*intens = parms->foreground;
+	*label = 1;
+    }
+}
+
+
 static float 
 shifttanh (float x)
 {
@@ -316,7 +367,7 @@ intens_dosemha (
 
     f += exp(-r/(30*30));
     */
-    f = 20*shifttanh(2.5*f-0.3);
+    f = 20 * shifttanh(2.5*f-0.3);
 
     return f;
 }
@@ -327,7 +378,7 @@ synthetic_mha (
     Synthetic_mha_parms *parms
 )
 {
-    /* Create ITK image */
+    /* Create ITK images for intensity, ss, and dose */
     FloatImageType::SizeType sz;
     FloatImageType::IndexType st;
     FloatImageType::RegionType rg;
@@ -406,6 +457,9 @@ synthetic_mha (
 	case PATTERN_OBJSTRUCTDOSE:
 	    synth_osd (&intens, &label_uchar, phys, parms);
 	    break;
+	case PATTERN_DONUT:
+	    synth_donut (&intens, &label_uchar, phys, parms);
+	    break;
 	default:
 	    intens = 0.0f;
 	    label_uchar = 0;
@@ -449,6 +503,7 @@ synthetic_mha (
 	}
     }
 
+    /* Insert images into rtds */
     rtds->m_img = new Plm_image;
     rtds->m_img->set_itk (im_out);
     if (parms->m_want_ss_img) {
