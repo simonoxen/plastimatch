@@ -13,76 +13,153 @@
 #include "rtss.h"
 #include "synthetic_mha.h"
 
-float intens_enclosed(FloatPoint3DType phys, 
-    float xlat1[3], float xlat2[3],
-    float f1, float f2)
+static void 
+synth_gauss (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
 {
-    float f;
-//	float f1, f2;
-    float p[56]={ 5,5,5,  95,10,95, 1,
-		  5,90,5, 95,95,95, 1,
-		  5,5,5,  10,95,95, 1,
-		  90,5,5, 95,95,95, 1,
-		  5,5,5,  95,95,10, 1,
-		  5,5,90, 95,95,95, 1, 
-		  35,35,35, 70,70, 70, f1,
-		  20,20,20, 80,25,30, f2
-    };
-	
-
-    for(int i=0;i<7*8;i++) 
-    { if ( (i%7)!=6 )
-	    p[i]-=50; /*p[i]*=2;*/ } //center is at 0, size is ~200
-    // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
-		
-    f = 0.;
+    float f = 0;
+    for (int d = 0; d < 3; d++) {
+	float f1 = phys[d] - parms->gauss_center[d];
+	f1 = f1 / parms->gauss_std[d];
+	f += f1 * f1;
+    }
+    f = exp (-0.5 * f);	    /* f \in (0,1] */
     
-	for (int i=0;i<8;i++)
+
+    *intens = (1 - f) * parms->background + f * parms->foreground;
+    *label = (f > 0.2) ? 1 : 0;
+}
+
+static void 
+synth_rect (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    if (phys[0] >= parms->rect_size[0] 
+	&& phys[0] <= parms->rect_size[1] 
+	&& phys[1] >= parms->rect_size[2] 
+	&& phys[1] <= parms->rect_size[3] 
+	&& phys[2] >= parms->rect_size[4] 
+	&& phys[2] <= parms->rect_size[5])
+    {
+	*intens = parms->foreground;
+	*label = 1;
+    } else {
+	*intens = parms->background;
+	*label = 0;
+    }
+}
+
+static void 
+synth_sphere (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    float f = 0;
+    for (int d = 0; d < 3; d++) {
+	float f1 = phys[d] - parms->sphere_center[d];
+	f1 = f1 / parms->sphere_radius[d];
+	f += f1 * f1;
+    }
+    if (f > 1.0) {
+	*intens = parms->background;
+	*label = 0;
+    } else {
+	*intens = parms->foreground;
+	*label = 1;
+    }
+}
+
+static void 
+synth_enclosed_rect (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
+{
+    float f = 0.;
+    float p[56]={ 
+	5,5,5,    95,10,95, 1,
+	5,90,5,   95,95,95, 1,
+	5,5,5,    10,95,95, 1,
+	90,5,5,   95,95,95, 1,
+	5,5,5,    95,95,10, 1,
+	5,5,90,   95,95,95, 1, 
+	35,35,35, 70,70,70, parms->enclosed_intens_f1, 
+	20,20,20, 80,25,30, parms->enclosed_intens_f2
+    };
+
+    // center is at 0, size is ~200
+    // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
+    for (int i=0;i<7*8;i++) {
+	if ((i%7)!=6) {
+	    p[i]-=50;
+	}
+    }
+    
+    for (int i=0;i<8;i++)
     {
 	
-	if (i==6) { p[7*i+0]+=xlat1[0]; 
-	    p[7*i+1]+=xlat1[1];
-	    p[7*i+2]+=xlat1[2];
-	    p[7*i+3]+=xlat1[0]; 
-	    p[7*i+4]+=xlat1[1];
-	    p[7*i+5]+=xlat1[2];
+	if (i==6) { 
+	    p[7*i+0]+=parms->enclosed_xlat1[0]; 
+	    p[7*i+1]+=parms->enclosed_xlat1[1];
+	    p[7*i+2]+=parms->enclosed_xlat1[2];
+	    p[7*i+3]+=parms->enclosed_xlat1[0]; 
+	    p[7*i+4]+=parms->enclosed_xlat1[1];
+	    p[7*i+5]+=parms->enclosed_xlat1[2];
 	}
-	if (i==7) { p[7*i+0]+=xlat2[0]; 
-	    p[7*i+1]+=xlat2[1];
-	    p[7*i+2]+=xlat2[2];
-	    p[7*i+3]+=xlat2[0]; 
-	    p[7*i+4]+=xlat2[1];
-	    p[7*i+5]+=xlat2[2];
+	if (i==7) { 
+	    p[7*i+0]+=parms->enclosed_xlat2[0];
+	    p[7*i+1]+=parms->enclosed_xlat2[1];
+	    p[7*i+2]+=parms->enclosed_xlat2[2];
+	    p[7*i+3]+=parms->enclosed_xlat2[0];
+	    p[7*i+4]+=parms->enclosed_xlat2[1];
+	    p[7*i+5]+=parms->enclosed_xlat2[2];
 	}
 	if (p[7*i+0]<phys[0] && phys[0]<p[7*i+3] &&
 	    p[7*i+1]<phys[1] && phys[1]<p[7*i+4] &&
 	    p[7*i+2]<phys[2] && phys[2]<p[7*i+5]) 
 	{ f = p[6+7*i]; } 
     }
-//if (phys[0]*phys[0]+phys[1]*phys[1]+phys[2]*phys[2]<225)
-//	{f = 0.4;}
-    return f;
+
+    *intens = (1 - f) * parms->background + f * parms->foreground;
+    *label = 0;
 }
 
 //box + ellipsoid inside
-float intens_objstructdose(FloatPoint3DType phys, 
-    float xlat1[3], float xlat2[3],
-    float f1, float f2, Pattern_structset_type pattern_ss, 
-    unsigned char *label)
+static void
+synth_osd (
+    float *intens, 
+    unsigned char *label,
+    const FloatPoint3DType& phys, 
+    const Synthetic_mha_parms *parms
+)
 {
     float f;
+    float p[36]={ 
+	5,5,5,  195,8,195, 
+	5,193,5, 195,195,195, 
+	5,5,5,  8,195,195, 
+	193,5,5, 195,195,195, 
+	5,5,5,  195,195,8, 
+	5,5,193, 195,195,195  
+    };
 
-    float p[36]={ 5,5,5,  195,8,195, 
-		  5,193,5, 195,195,195, 
-		  5,5,5,  8,195,195, 
-		  193,5,5, 195,195,195, 
-		  5,5,5,  195,195,8, 
-		  5,5,193, 195,195,195  };
-
-
-    for(int i=0;i<36;i++) 
-    {  p[i]-=100; /*p[i]*=2;*/ } 
     // must specify dimension 200, origin -100, voxel spacing 1 in Slicer
+    for (int i=0;i<36;i++) {
+	p[i]-=100;
+    } 
 		
     f = 0.; *label=0;
     for (int i=0;i<6;i++)
@@ -95,7 +172,7 @@ float intens_objstructdose(FloatPoint3DType phys,
     }
 
     // sphere
-    if (pattern_ss == PATTERN_SS_ONE) {
+    if (parms->pattern_ss == PATTERN_SS_ONE) {
         float rs1= 25, rs2= 25, rs3=25;
 	float xs=101, ys=101, zs=101;
 
@@ -109,7 +186,7 @@ float intens_objstructdose(FloatPoint3DType phys,
     }
 
     // two spheres
-    if (pattern_ss == PATTERN_SS_TWO_APART) {
+    if (parms->pattern_ss == PATTERN_SS_TWO_APART) {
         float rs1= 25, rs2= 25, rs3=25;
 	float xs=-40, ys=1, zs=1;
 
@@ -129,7 +206,7 @@ float intens_objstructdose(FloatPoint3DType phys,
     }
 
     // two spheres partially overlapping and one aside
-    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) {
+    if (parms->pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) {
         float rs1= 25, rs2= 25, rs3=25;
 	float xs=-20, ys=1, zs=1;
 
@@ -159,7 +236,7 @@ float intens_objstructdose(FloatPoint3DType phys,
     }
 
     // two spheres partially overlapping, one within, and one aside
-    if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) {
+    if (parms->pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) {
         float rs1= 25, rs2= 25, rs3=25;
 	float xs=-30, ys=1, zs=1;
 
@@ -197,18 +274,25 @@ float intens_objstructdose(FloatPoint3DType phys,
 
     }
 
-    return f;
+    *intens = (1 - f) * parms->background + f * parms->foreground;
 }
 
-float shifttanh(float x)
+static float 
+shifttanh (float x)
 {
-return 0.5*( (exp(x)-exp(-x))/(exp(x)+exp(-x)) +1 );
+    return 0.5* ((exp(x)-exp(-x))/(exp(x)+exp(-x)) + 1);
 }
 
 //synthetic dose distribution
-float intens_dosemha(FloatPoint3DType phys, 
-		      float xlat1[3], float xlat2[3],
-		      float f1, float f2, Pattern_structset_type pattern_ss)
+static float 
+intens_dosemha (
+    const FloatPoint3DType& phys, 
+    float xlat1[3], 
+    float xlat2[3],
+    float f1, 
+    float f2, 
+    Pattern_structset_type pattern_ss
+)
 {
     float f=0;
     float x0=0, y0=0, z0=0;
@@ -218,8 +302,6 @@ float intens_dosemha(FloatPoint3DType phys,
     if (pattern_ss == PATTERN_SS_TWO_APART) { x0=-40, y0=1, z0=1; }
     if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE) { x0=-20, y0=1, z0=1; }
     if (pattern_ss == PATTERN_SS_TWO_OVERLAP_PLUS_ONE_PLUS_EMBED) { x0=30, y0=-55, z0=1, sigma=12; }
-
-
 
     float r = (phys[0]-x0)*(phys[0]-x0)+
 	      (phys[1]-y0)*(phys[1]-y0)+
@@ -238,7 +320,6 @@ float intens_dosemha(FloatPoint3DType phys,
 
     return f;
 }
-
 
 void
 synthetic_mha (
@@ -301,117 +382,69 @@ synthetic_mha (
     IteratorType it_out (im_out, im_out->GetLargestPossibleRegion());
     for (it_out.GoToBegin(); !it_out.IsAtEnd(); ++it_out) {
 	FloatPoint3DType phys;
-	float f = 0.0f;
+	float intens = 0.0f;
 	unsigned char label_uchar = 0;
 
+	/* Get 3D coordinates of voxel */
 	FloatImageType::IndexType idx = it_out.GetIndex ();
 	im_out->TransformIndexToPhysicalPoint (idx, phys);
+
+	/* Compute intensity and label */
 	switch (parms->pattern) {
 	case PATTERN_GAUSS:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->gauss_center[d];
-		f1 = f1 / parms->gauss_std[d];
-		f += f1 * f1;
-	    }
-	    f = exp (-0.5 * f);	    /* f \in (0,1] */
-	    f = (1 - f) * parms->background + f * parms->foreground;
+	    synth_gauss (&intens, &label_uchar, phys, parms);
 	    break;
 	case PATTERN_RECT:
-	    if (phys[0] >= parms->rect_size[0] 
-		&& phys[0] <= parms->rect_size[1] 
-		&& phys[1] >= parms->rect_size[2] 
-		&& phys[1] <= parms->rect_size[3] 
-		&& phys[2] >= parms->rect_size[4] 
-		&& phys[2] <= parms->rect_size[5])
-	    {
-		f = parms->foreground;
-	    } else {
-		f = parms->background;
-	    }
+	    synth_rect (&intens, &label_uchar, phys, parms);
 	    break;
 	case PATTERN_SPHERE:
-	    f = 0;
-	    for (int d = 0; d < 3; d++) {
-		float f1 = phys[d] - parms->sphere_center[d];
-		f1 = f1 / parms->sphere_radius[d];
-		f += f1 * f1;
-	    }
-	    if (f > 1.0) {
-		f = parms->background;
-	    } else {
-		f = parms->foreground;
-	    }
+	    synth_sphere (&intens, &label_uchar, phys, parms);
 	    break;
 	case PATTERN_ENCLOSED_RECT:
-	    f = intens_enclosed(phys,
-		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2); // 0 to 1
-	    f = (1 - f) * parms->background + f * parms->foreground;
+	    synth_enclosed_rect (&intens, &label_uchar, phys, parms);
 	    break;
 	case PATTERN_OBJSTRUCTDOSE:
-	//    if (parms->m_want_objdosemha == false )
-	    {
-	    f = intens_objstructdose(phys,
-		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2, 
-		parms->pattern_ss, &label_uchar); // 0 to 1
-
-	    f = (1 - f) * parms->background + f * parms->foreground;
-	    }
-	    /*else {
-	    f = intens_dosemha(phys,
-		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2); 
-	    }*/
+	    synth_osd (&intens, &label_uchar, phys, parms);
 	    break;
 	default:
-	    f = 0.0f;
+	    intens = 0.0f;
+	    label_uchar = 0;
 	    break;
 	}
-	it_out.Set (f);
 
-	//NSh: 
-	//GCS code not used for PATTERN_OBJSTRUCTDOSE
-	if (parms->m_want_ss_img && parms->pattern != PATTERN_OBJSTRUCTDOSE ) {
-	    const float thresh = parms->background + 
-		0.5 * (parms->foreground - parms->background);
-	    if (parms->foreground > parms->background && f > thresh) {
-		uchar_img_it.Set (1);
-	    } else if (parms->foreground < parms->background && f < thresh) {
-		uchar_img_it.Set (1);
-	    } else {
-		uchar_img_it.Set (0);
-	    }
-	    ++uchar_img_it;
-	}
+	/* Set intensity */
+	it_out.Set (intens);
 
-	//NSh code
-	if (parms->m_want_ss_img && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
+	/* Set structure */
+	if (parms->m_want_ss_img) {
 	    uchar_img_it.Set (label_uchar); 
 	    ++uchar_img_it;
 	}
 
-	//GCS code
-	if (parms->m_want_dose_img && parms->pattern != PATTERN_OBJSTRUCTDOSE) {
-	    const float thresh = parms->background + 
-		0.5 * (parms->foreground - parms->background);
-	    if (parms->foreground > parms->background && f > thresh) {
-		dose_img_it.Set (15);
-	    } else if (parms->foreground < parms->background && f < thresh) {
-		dose_img_it.Set (15);
+	/* Set dose */
+	if (parms->m_want_dose_img) {
+	    float dose = 0.;
+	    if (parms->pattern != PATTERN_OBJSTRUCTDOSE) {
+		dose = intens_dosemha (phys,
+		    parms->enclosed_xlat1, parms->enclosed_xlat2,
+		    parms->enclosed_intens_f1, parms->enclosed_intens_f2, 
+		    parms->pattern_ss);
 	    } else {
-		dose_img_it.Set (0);
+		const float thresh = parms->background + 
+		    0.5 * (parms->foreground - parms->background);
+		if (parms->foreground > parms->background 
+		    && intens > thresh)
+		{
+		    dose = 15;
+		} else if (parms->foreground < parms->background 
+		    && intens < thresh)
+		{
+		    dose = 15;
+		} else {
+		    dose = 0;
+		}
 	    }
-	    ++dose_img_it;
-	}
-    
-	//NSh code
-	if (parms->m_want_dose_img && parms->pattern == PATTERN_OBJSTRUCTDOSE) {
-		float f = intens_dosemha(phys,
-		parms->enclosed_xlat1, parms->enclosed_xlat2,
-		parms->enclosed_intens_f1, parms->enclosed_intens_f2, parms->pattern_ss); 
-	    dose_img_it.Set (f);
+	    dose_img_it.Set (dose);
 	    ++dose_img_it;
 	}
     }
