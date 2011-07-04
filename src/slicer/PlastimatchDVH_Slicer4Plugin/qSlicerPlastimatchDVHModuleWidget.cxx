@@ -196,15 +196,8 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadCSV(QString csvString)
   m_ValueMatrix = vtkDenseArray<double>::New();
   m_ValueMatrix->Resize(numberOfRows, numberOfColumns);
 
-  int rowIndex = 0;
-  QStringListIterator valueLinesIterator(lines);
-  while (valueLinesIterator.hasNext()) {
-    if (! valueLinesIterator.hasPrevious()) {
-      valueLinesIterator.next();
-      continue; // skip the first line (it contains the name of the structures)
-    }
-
-    QStringList values(valueLinesIterator.next().split(","));
+  for (int rowIndex = 1; rowIndex <= numberOfRows; ++rowIndex) {
+    QStringList values(lines.at(rowIndex).split(","));
     QStringListIterator valuesIterator(values);
 
     int columnIndex = 0;
@@ -214,15 +207,13 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadCSV(QString csvString)
       bool ok;
       double value = valueString.toDouble(&ok);
       if (ok) {
-        m_ValueMatrix->SetValue(rowIndex, columnIndex, value);
+        m_ValueMatrix->SetValue(rowIndex-1, columnIndex, value);
       } else {
-        m_ValueMatrix->SetValue(rowIndex, columnIndex, -1.0);
+        m_ValueMatrix->SetValue(rowIndex-1, columnIndex, -1.0);
       }
 
       ++columnIndex;
     }
-
-    ++rowIndex;
   }
 
   return true;
@@ -296,7 +287,6 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadSelectedVolumes(vtkMRMLVolumeNode* d
 {
   // Get vtkImageData from nodes
   vtkSmartPointer<vtkImageData> doseImageData = doseNode->GetImageData();
-
   if (doseImageData == NULL) {
     return false;
   }
@@ -306,8 +296,7 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadSelectedVolumes(vtkMRMLVolumeNode* d
     return false;
   }
 
-  typedef unsigned short ImageType;
-  int extent[6];
+  int dimensions[3];
 
   // Convert dose vtkImageData to itk Image
   vtkSmartPointer<vtkImageFlip> doseImageFlipy = vtkSmartPointer<vtkImageFlip>::New(); 
@@ -318,21 +307,19 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadSelectedVolumes(vtkMRMLVolumeNode* d
   vtkSmartPointer<vtkImageExport> doseImageExport = vtkSmartPointer<vtkImageExport>::New(); 
   doseImageExport->ImageLowerLeftOff();
   doseImageExport->SetInput(doseImageFlipy->GetOutput()); 
-  doseImageExport->Update(); 
+  doseImageExport->Update();
+  doseImageExport->GetDataDimensions(dimensions);
 
-  doseImageData->GetExtent(extent);
-  itk::Image<ImageType, 3>::Pointer doseImageDataExported = itk::Image<ImageType, 3>::New();
-  itk::Image<ImageType, 3>::SizeType doseSize = {extent[1] - extent[0] + 1, extent[3] - extent[2] + 1, extent[5] - extent[4] + 1};
-  itk::Image<ImageType, 3>::IndexType doseStart = {0,0,0};
-  itk::Image<ImageType, 3>::RegionType doseRegion;
+  FloatImageType::Pointer doseImageDataExported = FloatImageType::New();
+  FloatImageType::SizeType doseSize = {dimensions[0], dimensions[1], dimensions[2]};
+  FloatImageType::IndexType doseStart = {0,0,0};
+  FloatImageType::RegionType doseRegion;
   doseRegion.SetSize(doseSize);
   doseRegion.SetIndex(doseStart);
   doseImageDataExported->SetRegions(doseRegion);
   doseImageDataExported->Allocate();
 
-  /* GCS: The following call causes Slicer 4 to crash on linux */
-
-  memcpy(doseImageDataExported->GetBufferPointer(), doseImageExport->GetPointerToData(), doseImageExport->GetDataMemorySize());
+  doseImageExport->Export(doseImageDataExported->GetBufferPointer());
 
   // Convert structure set vtkImageData to itk Image
   vtkSmartPointer<vtkImageFlip> structureSetImageFlipy = vtkSmartPointer<vtkImageFlip>::New(); 
@@ -344,18 +331,18 @@ bool qSlicerPlastimatchDVHModuleWidget::LoadSelectedVolumes(vtkMRMLVolumeNode* d
   structureSetImageExport->ImageLowerLeftOff();
   structureSetImageExport->SetInput(structureSetImageFlipy->GetOutput()); 
   structureSetImageExport->Update(); 
+  structureSetImageExport->GetDataDimensions(dimensions);
 
-  structureSetImageData->GetExtent(extent);
-  itk::Image<ImageType, 3>::Pointer structureSetImageDataExported = itk::Image<ImageType, 3>::New();
-  itk::Image<ImageType, 3>::SizeType structureSetSize = {extent[1] - extent[0] + 1, extent[3] - extent[2] + 1, extent[5] - extent[4] + 1};
-  itk::Image<ImageType, 3>::IndexType structureSetStart = {0,0,0};
-  itk::Image<ImageType, 3>::RegionType structureSetRegion;
+  UInt32ImageType::Pointer structureSetImageDataExported = UInt32ImageType::New();
+  UInt32ImageType::SizeType structureSetSize = {dimensions[0], dimensions[1], dimensions[2]};
+  UInt32ImageType::IndexType structureSetStart = {0,0,0};
+  UInt32ImageType::RegionType structureSetRegion;
   structureSetRegion.SetSize(structureSetSize);
   structureSetRegion.SetIndex(structureSetStart);
   structureSetImageDataExported->SetRegions(structureSetRegion);
   structureSetImageDataExported->Allocate();
 
-  memcpy(structureSetImageDataExported->GetBufferPointer(), structureSetImageExport->GetPointerToData(), structureSetImageExport->GetDataMemorySize());
+  structureSetImageExport->Export(structureSetImageDataExported->GetBufferPointer());
 
   // Pass the itk Image to Plastimatch DVH calculator
   Dvh_parms parms;
@@ -395,6 +382,8 @@ bool qSlicerPlastimatchDVHModuleWidget::DisplayDVH()
     table->SetValue(i, 0, m_ValueMatrix->GetValue(i, 0));
   }
 
+  std::vector<bool> isColumnEmpty;
+
   // Calculate the integral of the values
   for (int j=1; j<numberOfColumns; ++j) {
     vtkSmartPointer<vtkFloatArray> sumArray = vtkSmartPointer<vtkFloatArray>::New();
@@ -406,8 +395,17 @@ bool qSlicerPlastimatchDVHModuleWidget::DisplayDVH()
       sumArray->SetValue(i, actualSum);
     }
 
+    double range = sumArray->GetValue(numberOfRows-1) - sumArray->GetValue(0);
+    if (range < 0.000001) {
+      isColumnEmpty.push_back(false);
+      continue;
+    } else {
+      isColumnEmpty.push_back(true);
+    }
+
     for (int i=0; i<numberOfRows; ++i) {
-      table->SetValue(i, j, 100.0 / (sumArray->GetValue(numberOfRows-1) - sumArray->GetValue(0)) * (-sumArray->GetValue(i) + sumArray->GetValue(numberOfRows-1)));
+      double value = ((range < 0.001) ? 0.0 : (100.0 / range * (-sumArray->GetValue(i) + sumArray->GetValue(numberOfRows-1))));
+      table->SetValue(i, j, value);
     }
   }
 
@@ -417,6 +415,10 @@ bool qSlicerPlastimatchDVHModuleWidget::DisplayDVH()
 
   vtkPlot *linePlot = m_ChartView->chart()->AddPlot(vtkChart::LINE);
   for (int i=1; i<numberOfColumns; ++i) {
+    if (isColumnEmpty[i-1] == false) {
+      continue;
+    }
+
     linePlot->SetInput(table, 0, i);
     linePlot->SetWidth(2.0);
     linePlot = m_ChartView->chart()->AddPlot(vtkChart::LINE);

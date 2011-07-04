@@ -364,6 +364,7 @@ endif ()
 ##-----------------------------------------------------------------------------
 ##  Slicer
 ##-----------------------------------------------------------------------------
+set (EXTENSION_NAME Plastimatch)
 find_package (Slicer QUIET)
 if (SLICER_FOUND)
   # Strangely, the Slicer use file (both Slicer 3 and Slicer 4) 

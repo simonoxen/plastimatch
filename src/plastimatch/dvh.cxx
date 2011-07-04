@@ -231,8 +231,8 @@ dvh_execute (
 
 std::string
 dvh_execute (
-    UShortImageType::Pointer input_ss_img,
-    UShortImageType::Pointer input_dose_img,
+    UInt32ImageType::Pointer input_ss_img,
+    FloatImageType::Pointer input_dose_img,
     Dvh_parms *parms)
 {
     Rtds rtds;
