@@ -153,7 +153,11 @@ save_output_files (Landmark_warp_main_parms *parms)
 		strcat(fn_out, clust_name);
 		strcat(fn_out, ".fcsv");		
 		
-		pointset_save_fcsv_by_cluster(lw->m_warped_landmarks, 
+		//pointset_save_fcsv_by_cluster(lw->m_warped_landmarks, 
+		//	lw->cluster_id, ii,  fn_out);
+		
+		//write FIXED landmarks to check for clustering issues
+		pointset_save_fcsv_by_cluster(lw->m_fixed_landmarks, 
 			lw->cluster_id, ii,  fn_out);
 		}
 	    }

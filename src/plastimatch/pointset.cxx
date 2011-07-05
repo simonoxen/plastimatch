@@ -271,8 +271,8 @@ pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, c
 
     for (i = 0; i < ps->num_points; i++) {
 	if (clust_id[i] == which_cluster)
-	    fprintf (fp, "p-%03d,%f,%f,%f,1,1\n", 
-		    i,
+	    fprintf (fp, "p-%03d-c%02d,%f,%f,%f,1,1\n", 
+		    i, clust_id[i],
 		    - ps->points[i*3+0], 
 		    - ps->points[i*3+1], 
 		    ps->points[i*3+2]);
