@@ -38,6 +38,9 @@ gpuit_EXPORT
 void
 pointset_save (Pointset* ps, const char *fn);
 gpuit_EXPORT
+void
+pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, const char *fn);
+gpuit_EXPORT
 Pointset *
 pointset_create (void);
 gpuit_EXPORT

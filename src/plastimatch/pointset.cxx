@@ -227,6 +227,61 @@ pointset_save_fcsv (Pointset* ps, const char *fn)
 }
 
 void
+pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, const char *fn)
+{
+    int i;
+    int symbol;
+    FILE *fp;
+    
+    // symbolType, see
+    //http://www.slicer.org/slicerWiki/index.php/Modules:Fiducials-Documentation-3.4
+    symbol =which_cluster+2; 
+    if (symbol > 13) symbol -=13;
+
+    fp = fopen (fn, "w");
+    if (!fp) return;
+
+    int num_points_in_cluster=0;
+    for (i = 0; i < ps->num_points; i++) {
+	if (clust_id[i] == which_cluster) num_points_in_cluster++;	
+        }
+
+    fprintf (fp, 
+	"# Fiducial List file %s\n"
+	"# version = 2\n"
+	"# name = plastimatch-fiducials\n"
+	"# numPoints = %d\n"
+	"# symbolScale = 5\n"
+	"# symbolType = %d\n"
+	"# visibility = 1\n"
+	"# textScale = 4.5\n"
+	"# color = 0.4,1,1\n"
+	"# selectedColor = 1,0.5,0.5\n"
+	"# opacity = 1\n"
+	"# ambient = 0\n"
+	"# diffuse = 1\n"
+	"# specular = 0\n"
+	"# power = 1\n"
+	"# locked = 0\n"
+	"# numberingScheme = 0\n"
+	"# columns = label,x,y,z,sel,vis\n",
+	fn, 
+	num_points_in_cluster,
+	symbol);
+
+    for (i = 0; i < ps->num_points; i++) {
+	if (clust_id[i] == which_cluster)
+	    fprintf (fp, "p-%03d,%f,%f,%f,1,1\n", 
+		    i,
+		    - ps->points[i*3+0], 
+		    - ps->points[i*3+1], 
+		    ps->points[i*3+2]);
+	}
+    fclose (fp);
+}
+
+
+void
 pointset_save (Pointset* ps, const char *fn)
 {
     if (extension_is (fn, "fcsv")) {

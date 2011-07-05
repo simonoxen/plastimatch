@@ -140,7 +140,24 @@ save_output_files (Landmark_warp_main_parms *parms)
     if (lw->m_vf && lw->m_warped_landmarks 
 	&& bstring_not_empty (parms->output_lm_fn))
     {
-	pointset_save (lw->m_warped_landmarks, parms->output_lm_fn);
+	
+	if ( lw->num_clusters > 0 ) {
+	    // if clustering required, save each cluster to a separate fcsv
+	    for( int ii = 0; ii<lw->num_clusters; ii++) {
+		// remove .fcsv extension, insert cluster id, add back extension
+		char fn_out[1024], clust_name[1024];
+		strcpy(fn_out, parms->output_lm_fn );
+		char *ext_pos = strstr(fn_out, ".fcsv");
+		fn_out[ext_pos-fn_out]=0;
+		sprintf(clust_name, "_cl_%d", ii);	
+		strcat(fn_out, clust_name);
+		strcat(fn_out, ".fcsv");		
+		
+		pointset_save_fcsv_by_cluster(lw->m_warped_landmarks, 
+			lw->cluster_id, ii,  fn_out);
+		}
+	    }
+	    else pointset_save (lw->m_warped_landmarks, parms->output_lm_fn);
     }
 }
 
