@@ -103,7 +103,7 @@
       <longflag>--rectsize</longflag>
       <description>Choose the size of the rectangle in mm.  Use a single number (such as "20") for a square of size 20.  Use three numbers (such as "20,30,10") for a rectangle which has different x, y, and z sizes.  Use six numbers (such as "-10,10,-20,20,-30,10") to control the position (not the size) of the six planes of the rectangle: -x,+x,-y,+y,-z,+z.</description>
       <label>Rectangle size</label>
-      <default>200</default>
+      <default>100</default>
     </float-vector>
     <float-vector>
       <name>plmslc_gausscenter</name>
@@ -147,7 +147,7 @@
     <description>Options that control enclosed geometry</description>
     <boolean>
       <name>create_enclosed</name>
-      <label>Cteate Enclosed Geometry?</label>
+      <label>Create Enclosed Geometry?</label>
       <default>false</default>
       <longflag>--createenclosed</longflag>
       <description>Check this box if you want to create enclosed geometry</description>
