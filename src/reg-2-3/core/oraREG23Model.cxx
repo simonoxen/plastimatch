@@ -3679,7 +3679,7 @@ bool REG23Model::ParseAndProcessStructureEntry(int index, bool simulation,
           return false;
         }
         args.push_back(tmp);
-        tmp = TrimF(v[1]);
+        tmp = TrimF(v[1].substr(0, v[1].length() - 1));
         tmp = ToUpperCaseF(TrimF(tmp));
         if (tmp != "DSW" && tmp != "XML" && tmp != "PLY")
         {
@@ -3688,13 +3688,12 @@ bool REG23Model::ParseAndProcessStructureEntry(int index, bool simulation,
           return false;
         }
         args.push_back(tmp);
-        v[2] = TrimF(v[2]);
-        if (v[2].substr(v[2].length() - 1, 1) != ")")
+        if (TrimF(v[1]).substr(v[1].length() - 1, 1) != ")")
         {
           errorMessage = "Closing '(' missing in File()-command!";
           return false;
         }
-        tmp = TrimF(v[2].substr(0, v[2].length() - 1));
+        tmp = TrimF(v[2]);
         if (tmp.length() == 0)
         {
           errorMessage = "There is no structure UID specified in File()-command!";
