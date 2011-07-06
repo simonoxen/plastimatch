@@ -449,3 +449,8 @@ Rtss_polyline_set::set_geometry_from_plm_image (
     this->set_geometry_from_plm_image_header (&pih);
 }
 
+void
+Rtss_polyline_set::keyholize (void)
+{
+
+}

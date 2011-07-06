@@ -136,6 +136,13 @@ Rtss::save_gdcm_rtss (
 {
     char fn[_MAX_PATH];
 
+    /* Perform destructive keyholization of the cxt.  This is necessary 
+       because DICOM-RT requires that structures with holes be defined 
+       using a single structure */
+    this->m_cxt->keyholize ();
+
+    /* Some systems (GE ADW) do not allow special characters in 
+       structure names.  */
     this->m_cxt->adjust_structure_names ();
 
     if (rdd) {
