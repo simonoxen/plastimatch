@@ -23,5 +23,6 @@ int main (int argc, char* argv[])
 
     do_dice<unsigned char> (image_1, image_2, stdout);
     do_hausdorff<unsigned char> (image_1, image_2);
+	do_contour_mean_dist<unsigned char> (image_1, image_2);
     return 0;
 }

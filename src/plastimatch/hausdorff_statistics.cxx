@@ -12,6 +12,7 @@
 
 #include "itk_image.h"
 #include "hausdorff_statistics.h"
+#include "plm_ContourMeanDistanceImageFilter.h"
 
 template<class T>
 void do_hausdorff (
@@ -34,6 +35,27 @@ void do_hausdorff (
 	h_filter->GetAverageHausdorffDistance ());
 }
 
+template<class T>
+void do_contour_mean_dist(
+    typename itk::Image<T,3>::Pointer image_1, 
+    typename itk::Image<T,3>::Pointer image_2
+)
+{
+
+  typedef itk::plm_ContourMeanDistanceImageFilter< itk::Image<T,3> , itk::Image<T,3>  > ContourMeanDistanceImageFilterType;
+ 
+  typename ContourMeanDistanceImageFilterType::Pointer contourMeanDistanceImageFilter = ContourMeanDistanceImageFilterType::New();
+  contourMeanDistanceImageFilter->SetInput1(image_1);
+  contourMeanDistanceImageFilter->SetInput2(image_2);
+  contourMeanDistanceImageFilter->SetUseImageSpacing(true);
+  contourMeanDistanceImageFilter->Update();
+ 
+  printf (
+	"Contour Mean distance = %f\n",
+	contourMeanDistanceImageFilter->GetMeanDistance());
+
+}
+
 /* Explicit instantiations */
 template 
 void do_hausdorff<unsigned char> (
@@ -41,5 +63,14 @@ void do_hausdorff<unsigned char> (
     itk::Image<unsigned char,3>::Pointer image_2);
 template 
 void do_hausdorff<float> (
+    itk::Image<float,3>::Pointer image_1, 
+    itk::Image<float,3>::Pointer image_2);
+
+template 
+void do_contour_mean_dist<unsigned char> (
+    itk::Image<unsigned char,3>::Pointer image_1, 
+    itk::Image<unsigned char,3>::Pointer image_2);
+template 
+void do_contour_mean_dist<float> (
     itk::Image<float,3>::Pointer image_1, 
     itk::Image<float,3>::Pointer image_2);

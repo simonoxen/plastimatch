@@ -1,39 +1,47 @@
 /*=========================================================================
 
-  Program:   Plastimatch
-  Module:    $RCSfile: plmHausdorffDistanceImageFilter.h,v $
+  Program:   Insight Segmentation & Registration Toolkit
+  Module:    $RCSfile: plm_ContourMeanDistanceImageFilter.h,v $
   Language:  C++
-  Date:      $Date: 2011-05-01  $
-  Version:   $Revision: 1.0 $
+  Date:      $Date: 2009-04-25 12:27:20 $
+  Version:   $Revision: 1.5 $
+
+  Copyright (c) Insight Software Consortium. All rights reserved.
+  See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
+
+     This software is distributed WITHOUT ANY WARRANTY; without even 
+     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+     PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef __plm_HausdorffDistanceImageFilter_h
-#define __plm_HausdorffDistanceImageFilter_h
+#ifndef __plm_ContourMeanDistanceImageFilter_h
+#define __plm_ContourMeanDistanceImageFilter_h
 
 #include "itkImageToImageFilter.h"
 #include "itkNumericTraits.h"
 
 namespace itk {
 
-/** \class plm_HausdorffDistanceImageFilter 
- * \brief Computes the Hausdorff distance between the set of 
- * non-zero pixels of two images.
+/** \class plm_ContourMeanDistanceImageFilter 
+ * \brief Computes the Mean distance between the boundaries of 
+ * non-zero regions of two images.
  *
  *
- * plm_HausdorffDistanceImageFilter computes the distance between the set
- * non-zero pixels of two images using the following formula:
+ * plm_ContourMeanDistanceImageFilter computes the distance between the
+ * set non-zero pixels of two images using the following formula:
  * \f[ H(A,B) = \max(h(A,B),h(B,A)) \f]
  * where
  * \f[ h(A,B) = \max_{a \in A} \min_{b \in B} \| a - b\| \f] is the directed
- * Hausdorff distance
+ * Mean distance
  * and \f$A\f$ and \f$B\f$ are respectively the set of non-zero pixels
  * in the first and second input images.
  *
- * In particular, this filter uses the DirectedHausdorffImageFilter inside to 
- * compute the two directed distances and then select the largest of the two.
+ * In particular, this filter uses the ContourDirectedMeanImageFilter
+ * inside to  compute the two directed distances and then select the
+ * largest of the two.
  *
- * The Hausdorff distance measures the degree of mismatch between two sets and
- * behaves like a metric over the set of all closedm bounded sets - 
+ * The Mean distance measures the degree of mismatch between two sets
+ * and behaves like a metric over the set of all closed bounded sets -
  * with properties of identity, symmetry and triangle inequality.
  *
  * This filter requires the largest possible region of the first image
@@ -45,17 +53,21 @@ namespace itk {
  * This filter is templated over the two input image type. It assume
  * both image have the same number of dimensions.
  *
- * \sa DirectedHausdorffDistanceImageFilter
+ * \sa ContourDirectedMeanDistanceImageFilter
  *
  * \ingroup MultiThreaded
+ * 
+ * \author Teo Popa, ISIS Center, Georgetown University
+ * Modified by Marta Peroni
+ *
  */
 template<class TInputImage1, class TInputImage2>
-class ITK_EXPORT plm_HausdorffDistanceImageFilter : 
+class ITK_EXPORT plm_ContourMeanDistanceImageFilter : 
     public ImageToImageFilter<TInputImage1, TInputImage1>
 {
 public:
   /** Standard Self typedef */
-  typedef plm_HausdorffDistanceImageFilter                   Self;
+  typedef plm_ContourMeanDistanceImageFilter                 Self;
   typedef ImageToImageFilter<TInputImage1,TInputImage1>  Superclass;
   typedef SmartPointer<Self>                             Pointer;
   typedef SmartPointer<const Self>                       ConstPointer;
@@ -64,7 +76,7 @@ public:
   itkNewMacro(Self);  
 
   /** Runtime information support. */
-  itkTypeMacro(plm_HausdorffDistanceImageFilter, ImageToImageFilter);
+  itkTypeMacro(plm_ContourMeanDistanceImageFilter, ImageToImageFilter);
   
   /** Image related typedefs. */
   typedef TInputImage1                        InputImage1Type;
@@ -90,35 +102,37 @@ public:
 
   /** Set the first input. */
   void SetInput1( const InputImage1Type * image )
-    { this->SetInput( image ); }
+    {
+    this->SetInput( image );
+    }
 
   /** Set the second input. */
   void SetInput2( const InputImage2Type * image );
 
   /** Get the first input. */
   const InputImage1Type * GetInput1(void)
-    { return this->GetInput(); }
+    {
+    return this->GetInput();\
+    }
   
   /** Get the second input. */
   const InputImage2Type * GetInput2(void);
   
-  /** Return the computed Hausdorff distance. */
-  itkGetConstMacro(HausdorffDistance,RealType);
-  itkGetConstMacro(AverageHausdorffDistance,RealType);
-
-  /** Set if image spacing should be used in computing distances. */
-  itkSetMacro( UseImageSpacing, bool );
+  /** Return the computed Mean distance. */
+  itkGetConstMacro(MeanDistance,RealType);
 
 #ifdef ITK_USE_CONCEPT_CHECKING
   /** Begin concept checking */
-  itkConceptMacro(Input1HasNumericTraitsCheck,
+  itkConceptMacro(InputHasNumericTraitsCheck,
     (Concept::HasNumericTraits<InputImage1PixelType>));
   /** End concept checking */
 #endif
+  /** Set if image spacing should be used in computing distances. */
+  itkSetMacro( UseImageSpacing, bool );
 
 protected:
-  plm_HausdorffDistanceImageFilter();
-  ~plm_HausdorffDistanceImageFilter(){};
+  plm_ContourMeanDistanceImageFilter();
+  ~plm_ContourMeanDistanceImageFilter(){};
   void PrintSelf(std::ostream& os, Indent indent) const;
   
   /** GenerateData. */
@@ -131,20 +145,18 @@ protected:
   void EnlargeOutputRequestedRegion(DataObject *data);
 
 private:
-  plm_HausdorffDistanceImageFilter(const Self&); //purposely not implemented
+  plm_ContourMeanDistanceImageFilter(const Self&); //purposely not implemented
   void operator=(const Self&); //purposely not implemented
 
-  RealType                            m_HausdorffDistance;
-  RealType                            m_AverageHausdorffDistance;
-  bool                                
-m_UseImageSpacing;
+  RealType                            m_MeanDistance;
+  bool                                m_UseImageSpacing;
 
 }; // end of class
 
 } // end namespace itk
   
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "plm_HausdorffDistanceImageFilter.hxx"
+#include "plm_ContourMeanDistanceImageFilter.hxx"
 #endif
 
 #endif

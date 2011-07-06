@@ -12,4 +12,9 @@ void do_hausdorff(
     typename itk::Image<T,3>::Pointer image_1, 
     typename itk::Image<T,3>::Pointer image_2);
 
+template<class T>
+void do_contour_mean_dist(
+    typename itk::Image<T,3>::Pointer image_1, 
+    typename itk::Image<T,3>::Pointer image_2);
+
 #endif
