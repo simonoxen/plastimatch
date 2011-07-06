@@ -146,13 +146,13 @@ rbf_cluster_find_adapt_radius(Landmark_warp *lw)
 int i,j,k, count;
 int num_clusters = lw->num_clusters;
 int num_landmarks = lw->m_fixed_landmarks->num_points; 
-float d, D, dmax=-1;
+float d, D, dmax;
 float *d_nearest_neighb;
 
 // NB what to do if there is just one landmark in a cluster??
 
 for(k=0; k<num_clusters; k++) {
-    D = 0; count = 0;
+    D = 0; count = 0; dmax=-1;
     for(i=0; i<num_landmarks; i++) {
 	for(j=i; j<num_landmarks; j++) {
 	    if ( lw->cluster_id[i] == k && lw->cluster_id[j] == k  && j != i ) {
@@ -176,14 +176,16 @@ for(k=0; k<num_clusters; k++) {
 	
 	// single long cluster needs other treatment
 //    if ( (num_clusters == 1) && (dmax/(D) > 1.5) ) { 
-     if ( (dmax/(D) > 2.5) ) { 
+     if ( (dmax/(D) > 2) ) { 
 	printf("long cluster, dmax %f D %f\n", dmax, D); 
 	//D = dmax/2.1; 
         
 	// radius is the max distance between nearest neighbors
 	
 	d_nearest_neighb = (float *)malloc(num_landmarks*sizeof(float));
-	for(i=0;i<num_landmarks;i++) d_nearest_neighb[i]=1e20;
+	for(i=0;i<num_landmarks;i++) 
+	if (lw->cluster_id[i]==k)	
+		d_nearest_neighb[i]=1e20;
     
 	for(i=0;i<num_landmarks;i++) {
 	    for(j=0;j<num_landmarks;j++) {
@@ -202,7 +204,7 @@ for(k=0; k<num_clusters; k++) {
 	
 	D = d_nearest_neighb[0];
 	for(i=0;i<num_landmarks;i++) { 
-	    if ( d_nearest_neighb[i]>D && lw->cluster_id[i]==k ) D = 2*d_nearest_neighb[i]; 
+	    if ( d_nearest_neighb[i]>D && lw->cluster_id[i]==k ) D = d_nearest_neighb[i]; 
 	    }
     
 	free(d_nearest_neighb);
