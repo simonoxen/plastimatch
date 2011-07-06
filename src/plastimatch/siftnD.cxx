@@ -29,8 +29,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =========================================================================*/
-/* ITK 3.20 is missing this */
-#include <cstddef>
+
 #define VERBOSE
 //#define DEBUG
 //#define DEBUG_VERBOSE
@@ -359,6 +358,7 @@ scaler->SetDefaultPixelValue( 0 );
       siftFilter2.writeImage(scaledImage, "tmp1.png");
       std::cout << std::endl;
 #endif
+	  siftFilter2.writeImage(scaledImage, "image_rotate.mha");
       keypoints2 = siftFilter2.getSiftFeatures(scaledImage,"physicalcoord_max2.fcsv","physicalcoord_min2.fcsv","imagecoord_max2.txt","imagecoord_min2.txt");  
     }
     

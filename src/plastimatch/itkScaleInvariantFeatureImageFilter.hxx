@@ -112,7 +112,7 @@ namespace itk
 #ifdef DO_DOUBLE
     m_DoubleOriginalImage = true;
 #else
-    m_DoubleOriginalImage = true;
+    m_DoubleOriginalImage = false; //false: no double image ; true: double image
 #endif
     m_HistogramBinsNumber = 36;      
     m_ErrorThreshold = 0.0;
@@ -124,7 +124,7 @@ namespace itk
     m_SIFTSubfeatureWidth = 4;
     m_SIFTSubfeatureBins = 8;
     
-    m_ThresholdPrincipalCurve = 172.3025; //53.24;
+	m_ThresholdPrincipalCurve = 172.3025; //1612.00; //412.1204(50); //172.3025(20); //53.24(5); //92.61(10);
 
     // Derived from above
     m_DifferenceOfGaussianImagesNumber = m_DifferenceOfGaussianTestsNumber+2;
@@ -137,8 +137,32 @@ namespace itk
   double
   ScaleInvariantFeatureImageFilter<TFixedImageType,VDimension>
   ::GetGaussianScale( int j ) 
-  {
-    return (pow(2, (double) j / (double) m_DifferenceOfGaussianTestsNumber) * m_GaussianSigma);
+  {	
+	  /*sigma{i}=k*sigma{i-1};
+	  with k=2^(1/s);
+	  but sigma_{total}^2 = sigma_{i}^2 + sigma_{i-1}^2;
+	  so sigma_{i}^2 = sigma_{total}^2 - sigma_{i-1}^2;*/
+
+	  double k=0;
+	  
+	  k = pow( 2.0, 1.0 / (double) m_DifferenceOfGaussianTestsNumber);
+	  if (j==0){
+			return m_GaussianSigma;}
+	  else{
+			double sig_prev=0;
+			double sig_total=0;
+			double variance_gauss=0;
+	        sig_prev = pow( k, j-1 ) * m_GaussianSigma;
+			sig_total = sig_prev * k;
+			variance_gauss = sqrt( sig_total * sig_total - sig_prev * sig_prev );
+			return variance_gauss;}
+	
+	/*std::cout<<std::endl;
+	  std::cout<<"scala: "<<j<<" s:"<< m_DifferenceOfGaussianTestsNumber<<" sigma: "<<m_GaussianSigma<<std::endl;
+	  std::cout<<"pow: "<<pow(2, (double) j / (double) m_DifferenceOfGaussianTestsNumber)<<std::endl;*/
+
+    //return (pow(2, (double) j / (double) m_DifferenceOfGaussianTestsNumber) * m_GaussianSigma);
+
   }
 
   template <class TFixedImageType, int VDimension> 
@@ -1154,7 +1178,7 @@ template <class TFixedImageType, int VDimension>
 
     float currScale = 0.5;
 
-    // For each scale
+    // For each scale (octave)
     for (unsigned int i = 0; i < m_ImageScalesTestedNumber; ++i) {
       std::cout << "Computing Scale Level (octave) " << i << "... (";
 
@@ -1171,22 +1195,9 @@ template <class TFixedImageType, int VDimension>
 	//this->writeImage(gaussianImage_ref, filename);}
 
       if (i == 0 && !m_DoubleOriginalImage) {
-	scaleImage = fixedImage;
-	//gaussianImage_ref=fixedImage;
-	
-      } else {
-		 if (i == 0) {
-				// Input is the fixed Image.  
-	  
-				//Antialiasing filter: sigma=0.5;
-				//this->writeImage(fixedImage, "pippoIngresso.mha");
-			
-				//gaussianImage_ref=fixedImage;	 
-				
 
-				//double variance = (double)m_SigmaAliasing*m_SigmaAliasing;
-				double variance = 0.5*0.5;
-				tmpGaussianFilter->SetVariance(variance);
+				double variance_anti = 0.5*0.5;
+				tmpGaussianFilter->SetVariance(variance_anti);
 				tmpGaussianFilter->SetInput( fixedImage );
 				//pixel-wise smoothing
 				tmpGaussianFilter->SetUseImageSpacing(true); 
@@ -1200,9 +1211,41 @@ template <class TFixedImageType, int VDimension>
 
 			scaleImage = tmpGaussianFilter->GetOutput();
 			scaleImage->DisconnectPipeline();
-			scaler = getScaleResampleFilter ( scaleImage, m_ScalingFactor );  //double image
-			typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //now we need to filter with sigma == 1 because we doubled the size of the image
 
+		//scaleImage = fixedImage;
+		//gaussianImage_ref=fixedImage;
+	
+      } else {
+		 if (i == 0) {
+				// Input is the fixed Image.  
+	  
+				//Antialiasing filter: sigma=0.5;
+				//this->writeImage(fixedImage, "pippoIngresso.mha");
+			
+				//gaussianImage_ref=fixedImage;	 
+				
+
+				//double variance = (double)m_SigmaAliasing*m_SigmaAliasing;
+				double variance_anti = 0.5*0.5;
+				tmpGaussianFilter->SetVariance(variance_anti);
+				tmpGaussianFilter->SetInput( fixedImage );
+				//pixel-wise smoothing
+				tmpGaussianFilter->SetUseImageSpacing(true); 
+				try {
+				 tmpGaussianFilter->Update();
+					}
+				catch( itk::ExceptionObject & excep ) {
+				std::cerr << "Exception caught !" << std::endl;
+				std::cerr << excep << std::endl;
+					}
+
+			scaleImage = tmpGaussianFilter->GetOutput();
+			scaleImage->DisconnectPipeline();
+
+			scaler = getScaleResampleFilter ( scaleImage, m_ScalingFactor );  //double image
+			
+			typename GaussianFilterType::Pointer tmpGaussianFilter = GaussianFilterType::New();  //now we need to filter with sigma == 1 because we doubled the size of the image
+			
 			double variance1 = 1*1;
 			tmpGaussianFilter->SetVariance(variance1);
 			tmpGaussianFilter->SetInput( scaler->GetOutput() );
@@ -1220,14 +1263,18 @@ template <class TFixedImageType, int VDimension>
 		scaleImage = tmpGaussianFilter->GetOutput();
 		scaleImage->DisconnectPipeline();
 
+		char filename[256];
+		sprintf(filename, "double_image.mha");
+		this->writeImage(scaleImage, filename);
+
 	  
 	} else {
 	  // Input is the 2*sigma smoothed image from the previous octave
-	  //scaler = getScaleResampleFilter ( gaussianImage[m_DifferenceOfGaussianTestsNumber] , 1.0 / m_ScalingFactor );
+//	  scaler = getScaleResampleFilter ( gaussianImage[m_DifferenceOfGaussianTestsNumber] , 1.0 / m_ScalingFactor );
 	  scaler = getScaleResampleFilter ( gaussianImage_ref , 1.0 / m_ScalingFactor );
 	  scaleImage = scaler->GetOutput();
 	  
-	  }
+	 }
 	
 	
 typename TFixedImageType::SpacingType spacing = scaleImage->GetSpacing();
@@ -1309,6 +1356,7 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 		*/
 
 		double variance = this->GetGaussianScale(j);
+		std::cout<<"scala: "<<j<<" sigma: "<<variance<<std::endl;
 		variance *= variance;
 		//gaussianFilter[j]->SetVariance(variance);
 		//gaussianFilter[j]->SetInput( scaleImage );
@@ -1349,6 +1397,8 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 		*/
 
 		double variance = this->GetGaussianScale(j);
+		std::cout<<"scala: "<<j<<" sigma: "<<variance<<std::endl;
+		
 		variance *= variance;
 		//gaussianFilter[j]->SetVariance(variance);
 		//gaussianFilter[j]->SetInput( scaleImage );
@@ -1522,7 +1572,8 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	PointType vertex;
 	FILE* pFile;
 	FILE* pFile1;
-	FILE* pFileReject;
+	FILE* pFileRejectContrast;
+	FILE* pFileRejectCurvature;
 	dogImage[j]->TransformIndexToPhysicalPoint (pixelIndex, point); 
 
 	  
@@ -1577,24 +1628,24 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	  if (fabs(pixelValue) < m_MinKeypointValue) {
 		  //std::cout<< "modulo: "<<fabs(pixelValue)<<std::endl;
 	    ++numReject;
-		pFileReject=fopen("point_rejected.fcsv","a");
+		pFileRejectContrast=fopen("point_rejected_contrast.fcsv","a");
 		
 		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
 
 		if(isMax){
-			fprintf(pFileReject,"M");
+			fprintf(pFileRejectContrast,"M");
 			}
 		if(isMin){
-			fprintf(pFileReject,"m");
+			fprintf(pFileRejectContrast,"m");
 			}
-		fprintf(pFileReject, "-%d-%d-%d,",numReject,i,j);
+		fprintf(pFileRejectContrast, "-%d-%d-%d,",numReject,i,j);
 		for(int k=0; k<VDimension; k++)
 	  	  {
-	  		fprintf(pFileReject,"%.3f, ",point[k]);
+	  		fprintf(pFileRejectContrast,"%.3f, ",point[k]);
 	  		} 	  
-	  		fprintf(pFileReject,"\n");
-	  		fclose(pFileReject);
+	  		fprintf(pFileRejectContrast,"\n");
+	  		fclose(pFileRejectContrast);
 
 	    continue;
 	  }
@@ -1608,24 +1659,24 @@ typename TFixedImageType::Pointer gaussianImage_old = TFixedImageType::New();
 	if ( Curvature==0 ){
 		++numReject;
 
-		pFileReject=fopen("point_rejected.fcsv","a");
+		pFileRejectCurvature=fopen("point_rejected_curvature.fcsv","a");
 		
 		point[0]=-1.0*point[0];
 		point[1]=-1.0*point[1];
 
 		if(isMax){
-			fprintf(pFileReject,"M");
+			fprintf(pFileRejectCurvature,"M");
 			}
 		if(isMin){
-			fprintf(pFileReject,"m");
+			fprintf(pFileRejectCurvature,"m");
 			}	
-		fprintf(pFileReject, "-%d-%d-%d,",numReject,i,j);
+		fprintf(pFileRejectCurvature, "-%d-%d-%d,",numReject,i,j);
 		for(int k=0; k<VDimension; k++)
 	  	  {
-	  		fprintf(pFileReject,"%.3f, ",point[k]);
+	  		fprintf(pFileRejectCurvature,"%.3f, ",point[k]);
 	  		} 	  
-	  		fprintf(pFileReject,"\n");
-	  		fclose(pFileReject);
+	  		fprintf(pFileRejectCurvature,"\n");
+	  		fclose(pFileRejectCurvature);
 
 	   continue;
 	  }
