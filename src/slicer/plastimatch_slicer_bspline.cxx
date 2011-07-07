@@ -108,7 +108,6 @@ main (int argc, char * argv [])
 
     std::cout << command_string.str() << "\n";
 
-    /* Go back to beginning of file */
     Registration_Parms regp;
     if (regp.set_command_string (command_string.str()) < 0) {
 	return EXIT_FAILURE;
