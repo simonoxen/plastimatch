@@ -46,6 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int ARG_IMG1=2;
 int ARG_IMG2=3;
 
+#include <cstddef>
 #include "itkScaleInvariantFeatureImageFilter.h"
 #include "itkImageSeriesReader.h"
 #include "itkNumericSeriesFileNames.h"
