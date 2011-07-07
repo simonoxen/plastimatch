@@ -20,12 +20,22 @@ main (int argc, char * argv [])
     command_string <<
 	"[GLOBAL]\n"
 	"fixed=" << plmslc_fixed_volume << "\n"
-	"moving=" << plmslc_moving_volume << "\n"
-	"img_out=" << plmslc_warped_volume << "\n";
+	"moving=" << plmslc_moving_volume << "\n";
 
+    if (plmslc_output_warped != "" && plmslc_output_warped != "None") {
+	command_string << 
+	    "img_out=" << plmslc_output_warped << "\n";
+    }
+
+    /* GCS FIX: You can specify two output bspline xforms, but not 
+       (yet) two output vector field files */
     if (plmslc_output_vf != "" && plmslc_output_vf != "None") {
 	command_string << 
 	    "vf_out=" << plmslc_output_vf << "\n";
+    }
+    else if (plmslc_output_vf_f != "" && plmslc_output_vf_f != "None") {
+	command_string << 
+	    "vf_out=" << plmslc_output_vf_f << "\n";
     }
 
     if (plmslc_output_bsp != "" && plmslc_output_bsp != "None") {

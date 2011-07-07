@@ -13,7 +13,7 @@
     <description>Input/output parameters</description>
     <image>
       <name>plmslc_fixed_volume</name>
-      <label>Fixed Volume</label>
+      <label>Fixed volume</label>
       <channel>input</channel>
       <index>0</index>
       <default>None</default>
@@ -21,7 +21,7 @@
     </image>
     <image>
       <name>plmslc_moving_volume</name>
-      <label>Moving Volume</label>
+      <label>Moving volume</label>
       <channel>input</channel>
       <index>1</index>
       <default>None</default>
@@ -47,18 +47,26 @@
     
     <!-- Outputs -->
     <image>
-      <name>plmslc_warped_volume</name>
-      <label>Output Volume</label>
-      <channel>output</channel>
-      <index>2</index>
-      <default>None</default>
+      <name>plmslc_output_warped</name>
+      <longflag>--plmslc_output_warped</longflag>
       <description>Warped output image</description>
+      <label>Output volume</label>
+      <default>None</default>
+      <channel>output</channel>
     </image>
     <transform fileExtensions=".txt" type="bspline">
       <name>plmslc_output_bsp</name>
       <longflag>--plmslc_output_bsp</longflag>
       <description>B-spline coefficients created by registration</description>
       <label>Output B-spline transform (MRML)</label>
+      <default>None</default>
+      <channel>output</channel>
+    </transform>
+    <transform fileExtensions=".nrrd" type="nonlinear">
+      <name>plmslc_output_vf</name>
+      <longflag>--plmslc_output_vf</longflag>
+      <description>Deformation field created by registration</description>
+      <label>Output vector field (MRML)</label>
       <default>None</default>
       <channel>output</channel>
     </transform>
@@ -70,14 +78,14 @@
       <default>None</default>
       <channel>input</channel>
     </string>
-    <transform fileExtensions=".nrrd" type="nonlinear">
-      <name>plmslc_output_vf</name>
-      <longflag>--plmslc_output_vf</longflag>
-      <description>Deformation field created by registration</description>
-      <label>Output vector field</label>
+    <string>
+      <name>plmslc_output_vf_f</name>
+      <longflag>plmslc_output_vf_f</longflag>
+      <description>Output vector field as file (absolute path)</description>
+      <label>Output vector field (file)</label>
       <default>None</default>
-      <channel>output</channel>
-    </transform>
+      <channel>input</channel>
+    </string>
 
     <!-- Settings -->
     <string-enumeration>
@@ -114,7 +122,7 @@
     </boolean>
     <integer-vector>
       <name>stage_0_resolution</name>
-      <label>Image Subsampling rate (vox)</label>
+      <label>Image subsampling rate (vox)</label>
       <default>5,5,3</default>
       <longflag>--stage0res</longflag>
       <description>This defines the image subsampling rate.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
@@ -145,21 +153,21 @@
     <description></description>
     <integer-vector>
       <name>stage_1_resolution</name>
-      <label>Image Subsampling rate (vox)</label>
+      <label>Image subsampling rate (vox)</label>
       <default>4,4,2</default>
       <longflag>--stage1res</longflag>
       <description>This defines the image subsampling rate.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
     </integer-vector>
     <double>
       <name>stage_1_grid_size</name>
-      <label>Grid Size (mm)</label>
+      <label>Grid size (mm)</label>
       <default>100</default>
       <longflag>--stage1gridsize</longflag>
       <description>Approximate B-Spline Grid Spacing (isotropic)</description>
     </double>
     <integer>
       <name>stage_1_its</name>
-      <label>Max Iterations</label>
+      <label>Max iterations</label>
       <default>50</default>
       <longflag>--stage1its</longflag>
       <description>Maximum number of iterations</description>
@@ -179,21 +187,21 @@
     </boolean>
     <integer-vector>
       <name>stage_2_resolution</name>
-      <label>Image Subsampling rate (vox)</label>
+      <label>Image subsampling rate (vox)</label>
       <default>2,2,1</default>
       <longflag>--stage2res</longflag>
       <description>This defines the image subsampling rate.  For example, (4,4,2) would subsample a 4x4x2 voxel block down to a single voxel.</description>
     </integer-vector>
     <double>
       <name>stage_2_grid_size</name>
-      <label>Grid Size (mm)</label>
+      <label>Grid size (mm)</label>
       <default>50</default>
       <longflag>--stage2gridsize</longflag>
       <description>Approximate B-Spline Grid Spacing (isotropic)</description>
     </double>
     <integer>
       <name>stage_2_its</name>
-      <label>Max Iterations</label>
+      <label>Max iterations</label>
       <default>50</default>
       <longflag>--stage2its</longflag>
       <description>Maximum number of iterations</description>

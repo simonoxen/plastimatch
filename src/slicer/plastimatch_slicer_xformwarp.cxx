@@ -26,8 +26,11 @@ main (int argc, char * argv [])
     Rtds rtds;
 
     /* Input image (to set the size) */
-    parms.fixed_img_fn = plmslc_xformwarp_reference_vol.c_str();
-
+    if (plmslc_xformwarp_reference_vol != "" 
+	&& plmslc_xformwarp_reference_vol != "None")
+    {
+	parms.fixed_img_fn = plmslc_xformwarp_reference_vol.c_str();
+    }
 
     /* Input image (required) */
     parms.input_fn = plmslc_xformwarp_input_img.c_str();
@@ -37,6 +40,11 @@ main (int argc, char * argv [])
 	&& plmslc_xformwarp_input_xform_s != "None")
     {
 	parms.xf_in_fn = plmslc_xformwarp_input_xform_s.c_str();
+    }
+    else if (plmslc_xformwarp_input_vf_s != "" 
+	&& plmslc_xformwarp_input_vf_s != "None")
+    {
+	parms.xf_in_fn = plmslc_xformwarp_input_vf_s.c_str();
     }
     else if (plmslc_xformwarp_input_xform_f != "" 
 	&& plmslc_xformwarp_input_xform_f != "None")

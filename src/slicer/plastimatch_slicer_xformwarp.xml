@@ -14,7 +14,7 @@
     <image>
       <longflag>reference_vol</longflag>
       <name>plmslc_xformwarp_reference_vol</name>
-      <label>Reference Volume (optional, to set size)</label>
+      <label>Reference volume (optional, to set size)</label>
       <channel>input</channel>
       <default>None</default>
       <description>Reference Volume (optional, to set size)</description>
@@ -22,7 +22,7 @@
     <image>
       <longflag>plmslc_xformwarp_input_img</longflag>
       <name>plmslc_xformwarp_input_img</name>
-      <label>Input Volume</label>
+      <label>Input volume</label>
       <channel>input</channel>
       <default>None</default>
       <description>Input image or dose or structure set</description>
@@ -30,8 +30,16 @@
     <transform fileExtensions=".txt" type="bspline">
       <name>plmslc_xformwarp_input_xform_s</name>
       <longflag>plmslc_xformwarp_input_xform_s</longflag>
-      <description>Input transform from MRML tree</description>
-      <label>Input transform (MRML)</label>
+      <description>Input B-spline transform from MRML tree</description>
+      <label>Input B-spline transform (MRML)</label>
+      <default>None</default>
+      <channel>input</channel>
+    </transform>
+    <transform fileExtensions=".nrrd" type="nonlinear">
+      <name>plmslc_xformwarp_input_vf_s</name>
+      <longflag>plmslc_xformwarp_input_vf_s</longflag>
+      <description>Input GridTransform from MRML tree</description>
+      <label>Input vector field (MRML)</label>
       <default>None</default>
       <channel>input</channel>
     </transform>
@@ -46,7 +54,7 @@
     <image>
       <longflag>plmslc_xformwarp_output_img</longflag>
       <name>plmslc_xformwarp_output_img</name>
-      <label>Output Volume</label>
+      <label>Output volume</label>
       <channel>output</channel>
       <default>None</default>
       <description>Output (warped) Image etc.</description>
