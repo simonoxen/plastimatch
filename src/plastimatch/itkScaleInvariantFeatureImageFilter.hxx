@@ -330,7 +330,7 @@ namespace itk
 #ifdef DEBUG_VERBOSE
       std::cerr << "Siftbin:" << siftbin << std::endl; 
 #endif
-      
+     // std::cerr << "Siftbin:" << siftbin << std::endl; 
       // Get pixel index
       // Clamp to image edges
       IndexType tmpIndex;
