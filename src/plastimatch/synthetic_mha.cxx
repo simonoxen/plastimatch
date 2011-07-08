@@ -478,7 +478,7 @@ synthetic_mha (
 	/* Set dose */
 	if (parms->m_want_dose_img) {
 	    float dose = 0.;
-	    if (parms->pattern != PATTERN_OBJSTRUCTDOSE) {
+	    if (parms->pattern = PATTERN_OBJSTRUCTDOSE) {
 		dose = intens_dosemha (phys,
 		    parms->enclosed_xlat1, parms->enclosed_xlat2,
 		    parms->enclosed_intens_f1, parms->enclosed_intens_f2, 
