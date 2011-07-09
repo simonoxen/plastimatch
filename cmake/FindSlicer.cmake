@@ -76,6 +76,8 @@ if (SLICER_FOUND)
     include (vtkMacroKitPythonWrap)
     include (ctkMacroWrapPythonQt)
     include (ctkMacroCompilePythonScript)
+    ## Slicer 4: this seems to be needed too
+    include(${GenerateCLP_USE_FILE})
   endif ()
     ## Always set shared libs on
   set (BUILD_SHARED_LIBS ON)
