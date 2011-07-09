@@ -77,12 +77,12 @@ Autolabel_trainer::load_input_file_la (
     const char* fcsv_fn)
 {
     Plm_image pi;
-    Pointset_new ps;
+    Labeled_pointset ps;
 
     ps.load_fcsv (fcsv_fn);
 
     bool found = false;
-    for (int i = 0; i < ps.point_list.size(); i++) {
+    for (unsigned int i = 0; i < ps.point_list.size(); i++) {
 	if (ps.point_list[i].label == "LLA") {
 	    printf ("%s, found label LLA\n", fcsv_fn);
 	    found = true;
@@ -97,7 +97,7 @@ Autolabel_trainer::load_input_file_tsv1 (
     const char* nrrd_fn,
     const char* fcsv_fn)
 {
-    Pointset_new ps;
+    Labeled_pointset ps;
     ps.load_fcsv (fcsv_fn);
 
     /* Generate map from t-spine # to z pos */

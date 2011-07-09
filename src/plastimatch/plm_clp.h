@@ -252,6 +252,11 @@ public:
 	    throw dlib::error (error_string);
 	}
     }
+    int get_int (const string_type& name) {
+	int out;
+	get_value (out, name);
+	return out;
+    }
     float get_float (const string_type& name) {
 	float out;
 	get_value (out, name);

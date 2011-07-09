@@ -181,6 +181,7 @@ endif ()
 
 ## -------------------------------------------------------------------------
 ## synth-test - create synthetic mha files
+##   donut-1.mha   Centered donut
 ##   gauss-1.mha   Centered gauss
 ##   gauss-2.mha   Off-center gauss
 ##   gauss-3.mha   Inverted gauss
@@ -199,6 +200,13 @@ endif ()
 ##   rtds-s-1.mha     Synthetic ss
 ## -------------------------------------------------------------------------
 set (SYNTH_MHA_SIZE 38)
+
+plm_add_test (
+  "donut-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "synth;--output;${PLM_TESTING_BUILD_DIR}/donut-1.mha;--output-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-type;float;--pattern;donut;--origin;-25 -25 -25;--dim;${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE} ${SYNTH_MHA_SIZE};--volume-size;50 50 50;--donut-radius;10 10 10;--background;-1000;--foreground;0"
+  )
 
 plm_add_test (
   "gauss-1"
@@ -1037,7 +1045,7 @@ plm_add_test (
   )
 
 ## -------------------------------------------------------------------------
-## plastimatch convert cxt
+## plastimatch-convert-cxt
 ## -------------------------------------------------------------------------
 plm_add_test (
   "plm-convert-cxt"
@@ -1087,6 +1095,16 @@ plmtest_check_interval ("plm-convert-xio-check"
   "AVE *([-0-9.]*)"
   "-667.5"
   "-666.6"
+  )
+
+## -------------------------------------------------------------------------
+## plastimatch-convert-prefix-fcsv
+## -------------------------------------------------------------------------
+plm_add_test (
+  "plm-convert-prefix-fcsv"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "convert;--input-ss-img;${PLM_TESTING_BUILD_DIR}/donut-ss-1.mha;--output-prefix-fcsv;${PLM_TESTING_BUILD_DIR}/plm-convert-prefix-fcsv"
   )
 
 ## -------------------------------------------------------------------------

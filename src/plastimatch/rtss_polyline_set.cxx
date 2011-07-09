@@ -85,6 +85,27 @@ Rtss_polyline_set::clear (void)
     this->init ();
 }
 
+CBString
+Rtss_polyline_set::find_unused_structure_name (void)
+{
+    CBString test_name;
+    for (int n = 1; n < std::numeric_limits<int>::max(); ++n) {
+	test_name.format ("%s (%d)", "Unknown structure", n);
+	bool dup_found = 0;
+	for (int i = 0; i < this->num_structures; ++i) {
+	    Rtss_structure* curr_structure = this->slist[i];
+	    if (test_name == curr_structure->name) {
+		dup_found = true;
+		break;
+	    }
+	}
+	if (!dup_found) {
+	    break;
+	}
+    }
+
+    return test_name;
+}
 
 /* Add structure (if it doesn't already exist) */
 Rtss_structure*
@@ -109,6 +130,9 @@ Rtss_polyline_set::add_structure (
 	= new Rtss_structure;
 
     new_structure->name = structure_name;
+    if (structure_name == "" || structure_name == "Unknown structure") {
+	new_structure->name = find_unused_structure_name ();
+    }
     new_structure->name.trim();
     new_structure->id = structure_id;
     new_structure->bit = -1;
@@ -452,5 +476,4 @@ Rtss_polyline_set::set_geometry_from_plm_image (
 void
 Rtss_polyline_set::keyholize (void)
 {
-
 }

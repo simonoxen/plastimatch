@@ -128,9 +128,9 @@ parse_fn (
 
     /* Main pattern */
     parser->add_long_option ("", "pattern",
-	"synthetic pattern to create: {gauss, rect, sphere, "
-	"osd, enclosed_rect},"
-	" default is gauss", 
+	"synthetic pattern to create: {"
+	"donut, enclosed_rect, gauss, osd, rect, sphere"
+	"}, default is gauss", 
 	1, "gauss");
 
     /* Image size */
@@ -152,6 +152,14 @@ parse_fn (
 	"intensity of background region", 1, "-1000");
     parser->add_long_option ("", "foreground", 
 	"intensity of foreground region", 1, "0");
+
+    /* Donut options */
+    parser->add_long_option ("", "donut-center", 
+	"location of donut center in mm \"x [y z]\"", 1, "0 0 0");
+    parser->add_long_option ("", "donut-radius", 
+	"size of donut in mm \"x [y z]\"", 1, "50 50 20");
+    parser->add_long_option ("", "donut-rings", 
+	"number of donut rings (2 rings for traditional donut)", 1, "2");
 	
     /* Gaussian options */
     parser->add_long_option ("", "gauss-center", 
@@ -272,6 +280,11 @@ parse_fn (
     /* Image intensities */
     sm_parms->background = parser->get_float ("background");
     sm_parms->foreground = parser->get_float ("foreground");
+
+    /* Donut options */
+    parser->assign_float13 (sm_parms->donut_center, "donut-center");
+    parser->assign_float13 (sm_parms->donut_radius, "donut-radius");
+    sm_parms->donut_rings = parser->get_int ("donut-rings");
 
     /* Gaussian options */
     parser->assign_float13 (sm_parms->gauss_center, "gauss-center");

@@ -167,6 +167,14 @@ save_ss_img (
 	rtds->m_ss_image->save_prefix (parms->output_prefix);
     }
 
+    /* prefix fcsv files */
+    if (bstring_not_empty (parms->output_prefix_fcsv)) {
+	printf ("save_ss_img: save_prefix_fcsv\n");
+	printf ("save_ss_img: save_prefix_fcsv (%s)\n",
+	    (const char*) parms->output_prefix_fcsv);
+	rtds->m_ss_image->save_prefix_fcsv (parms->output_prefix_fcsv);
+    }
+
     /* 3D Slicer color table */
     if (bstring_not_empty (parms->output_colormap_fn)) {
 	printf ("save_ss_img: save_colormap\n");

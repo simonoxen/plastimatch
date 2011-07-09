@@ -48,6 +48,7 @@ public:
     void find_rasterization_geometry (float offset[3], 
 	float spacing[3], int dims[3]);
     void find_rasterization_geometry (Plm_image_header *pih);
+    CBString find_unused_structure_name (void);
     void fix_polyline_slice_numbers (void);
     void free_all_polylines (void);
     void keyholize (void);

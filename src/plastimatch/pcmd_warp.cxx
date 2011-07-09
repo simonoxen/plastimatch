@@ -95,6 +95,9 @@ parse_fn (
 	"create a pointset file that can be used with 3d slicer", 1, "");
     parser->add_long_option ("", "output-prefix", 
 	"create a directory with a separate image for each structure", 1, "");
+    parser->add_long_option ("", "output-prefix-fcsv", 
+	"create a directory with a separate fcsv pointset file for "
+	"each structure", 1, "");
     parser->add_long_option ("", "output-ss-img", 
 	"create a structure set image which allows overlapping structures", 
 	1, "");
@@ -192,6 +195,8 @@ parse_fn (
     parms->output_colormap_fn = parser->get_string("output-colormap").c_str();
     parms->output_pointset_fn = parser->get_string("output-pointset").c_str();
     parms->output_prefix = parser->get_string("output-prefix").c_str();
+    parms->output_prefix_fcsv 
+	= parser->get_string("output-prefix-fcsv").c_str();
     parms->output_ss_img_fn = parser->get_string("output-ss-img").c_str();
     parms->output_ss_list_fn = parser->get_string("output-ss-list").c_str();
     parms->output_vf_fn = parser->get_string("output-vf").c_str();

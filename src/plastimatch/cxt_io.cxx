@@ -237,8 +237,8 @@ cxt_load (
             exit (-1);
         }
         for (k = 0; k < num_pt; k++) {
-	    long floc;
-	    floc = ftell (fp);
+	    //long floc;
+	    //floc = ftell (fp);
             if (fscanf (fp, "%f\\%f\\%f\\", &x, &y, &z) != 3) {
 		goto not_successful;
             }

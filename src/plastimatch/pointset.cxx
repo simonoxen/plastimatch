@@ -244,7 +244,7 @@ pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, c
     int num_points_in_cluster=0;
     for (i = 0; i < ps->num_points; i++) {
 	if (clust_id[i] == which_cluster) num_points_in_cluster++;	
-        }
+    }
 
     fprintf (fp, 
 	"# Fiducial List file %s\n"
@@ -272,11 +272,11 @@ pointset_save_fcsv_by_cluster (Pointset* ps, int *clust_id, int which_cluster, c
     for (i = 0; i < ps->num_points; i++) {
 	if (clust_id[i] == which_cluster)
 	    fprintf (fp, "p-%03d-c%02d,%f,%f,%f,1,1\n", 
-		    i, clust_id[i],
-		    - ps->points[i*3+0], 
-		    - ps->points[i*3+1], 
-		    ps->points[i*3+2]);
-	}
+		i, clust_id[i],
+		- ps->points[i*3+0], 
+		- ps->points[i*3+1], 
+		ps->points[i*3+2]);
+    }
     fclose (fp);
 }
 
@@ -312,9 +312,9 @@ pointset_debug (Pointset* ps)
     }
 }
 
-/* New pointset */
+/* Labeled_pointset */
 void
-Pointset_new::load_fcsv (const char *fn)
+Labeled_pointset::load_fcsv (const char *fn)
 {
     FILE *fp;
     char s[1024];
@@ -350,8 +350,6 @@ Pointset_new::load_fcsv (const char *fn)
 		"(rc=%d,str=%s,buf=%s)\n", fn, rc, buf);
 	}
 
-	/* GCS FIX: Does this method of using STL containers 
-	   cause a copy of lp? */
 	/* Note: Slicer landmarks are in RAS coordinates. 
 	   Change RAS to LPS (note that LPS == ITK RAI). */
 	Labeled_point lp;
@@ -360,6 +358,79 @@ Pointset_new::load_fcsv (const char *fn)
 	lp.p[1] = - lm[1];
 	lp.p[2] = lm[2];
 	point_list.push_back (lp);
+    }
+    fclose (fp);
+}
+
+void
+Labeled_pointset::insert_ras (
+    const std::string& label,
+    float x,
+    float y,
+    float z
+)
+{
+    /* RAS to LPS adjustment */
+    this->point_list.push_back (Labeled_point (label, -x, -y, z));
+}
+
+void
+Labeled_pointset::insert_lps (
+    const std::string& label,
+    float x,
+    float y,
+    float z
+)
+{
+    /* Noo RAS to LPS adjustment */
+    this->point_list.push_back (Labeled_point (label, x, y, z));
+}
+
+void
+Labeled_pointset::save_fcsv (const char *fn)
+{
+    FILE *fp;
+
+    printf ("Trying to save: %s\n", (const char*) fn);
+    make_directory_recursive (fn);
+    fp = fopen (fn, "w");
+    if (!fp) return;
+
+    fprintf (fp, 
+	"# Fiducial List file %s\n"
+	"# version = 2\n"
+	"# name = plastimatch-fiducials\n"
+	"# numPoints = %d\n"
+	"# symbolScale = 5\n"
+	"# symbolType = 12\n"
+	"# visibility = 1\n"
+	"# textScale = 4.5\n"
+	"# color = 0.4,1,1\n"
+	"# selectedColor = 1,0.5,0.5\n"
+	"# opacity = 1\n"
+	"# ambient = 0\n"
+	"# diffuse = 1\n"
+	"# specular = 0\n"
+	"# power = 1\n"
+	"# locked = 0\n"
+	"# numberingScheme = 0\n"
+	"# columns = label,x,y,z,sel,vis\n",
+	fn, 
+	(int) this->point_list.size());
+
+    for (unsigned int i = 0; i < this->point_list.size(); i++) {
+	const Labeled_point& lp = this->point_list[i];
+	if (lp.label == "") {
+	    fprintf (fp, "p-%03d", i);
+	} else {
+	    fprintf (fp, "%s", lp.label.c_str());
+	}
+	/* Note: Slicer landmarks are in RAS coordinates. 
+	   Change LPS to RAS (note that LPS == ITK RAI). */
+	fprintf (fp, ",%f,%f,%f,1,1\n", 
+	    - lp.p[0], 
+	    - lp.p[1], 
+	    lp.p[2]);
     }
     fclose (fp);
 }

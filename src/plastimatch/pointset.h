@@ -10,21 +10,32 @@
 
 class Labeled_point {
 public:
+    Labeled_point () {}
+    Labeled_point (const std::string& label, float x, float y, float z) {
+	this->label = label;
+	p[0] = x;
+	p[1] = y;
+	p[2] = z;
+    }
+public:
     std::string label;
     float p[3];
+};
+
+class gpuit_EXPORT Labeled_pointset {
+  public:
+    std::vector<Labeled_point> point_list;
+  public:
+    void load_fcsv (const char *fn);
+    void save_fcsv (const char *fn);
+    void insert_lps (const std::string& label, float x, float y, float z);
+    void insert_ras (const std::string& label, float x, float y, float z);
 };
 
 typedef struct pointset Pointset;
 struct pointset {
     int num_points;
     float *points;
-};
-
-class gpuit_EXPORT Pointset_new {
-public:
-    std::vector<Labeled_point> point_list;
-public:
-    void load_fcsv (const char *fn);
 };
 
 #if defined __cplusplus

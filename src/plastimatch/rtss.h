@@ -38,36 +38,25 @@ public:
     void save_cxt (Referenced_dicom_dir *rdd, const CBString &cxt_fn, 
 	bool prune_empty);
     void save_gdcm_rtss (const char *output_dir, Referenced_dicom_dir *rdd);
+    void save_fcsv (const Rtss_structure *curr_structure, const CBString& fn);
+    void save_prefix_fcsv (const CBString &output_prefix);
     void save_ss_image (const CBString &ss_img_fn);
-    void
-    save_labelmap (const CBString &labelmap_fn);
-    void
-    save_prefix (const CBString &output_prefix);
-    void
-    save_ss_list (const CBString &ss_list_fn);
-    void
-    save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
+    void save_labelmap (const CBString &labelmap_fn);
+    void save_prefix (const CBString &output_prefix);
+    void save_ss_list (const CBString &ss_list_fn);
+    void save_xio (Xio_ct_transform *xio_transform, Xio_version xio_version, 
 	const CBString &output_dir);
-    UInt32ImageType::Pointer
-    get_ss_img (void);
-    Rtss_polyline_set *
-    get_ss_list (void);
+    UInt32ImageType::Pointer get_ss_img (void);
+    Rtss_polyline_set *get_ss_list (void);
 
-    void
-    apply_dicom_dir (const Referenced_dicom_dir *rdd);
-    void
-    convert_ss_img_to_cxt (void);
-    void
-    cxt_re_extract (void);
-    void
-    prune_empty (void);
+    void apply_dicom_dir (const Referenced_dicom_dir *rdd);
+    void convert_ss_img_to_cxt (void);
+    void cxt_re_extract (void);
+    void prune_empty (void);
     void rasterize (Plm_image_header *pih, bool want_labelmap);
-    void
-    set_geometry_from_plm_image_header (Plm_image_header *pih);
-    void
-    find_rasterization_geometry (Plm_image_header *pih);
-    void
-    warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
+    void set_geometry_from_plm_image_header (Plm_image_header *pih);
+    void find_rasterization_geometry (Plm_image_header *pih);
+    void warp (Xform *xf, Plm_image_header *pih, Warp_parms *parms);
 };
 
 #endif

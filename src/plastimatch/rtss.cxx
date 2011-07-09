@@ -11,6 +11,7 @@
 #endif
 #include "itk_metadata.h"
 #include "plm_warp.h"
+#include "pointset.h"
 #include "rasterizer.h"
 #include "referenced_dicom_dir.h"
 #include "rtds.h"
@@ -26,13 +27,14 @@ static void
 compose_prefix_fn (
     CBString *fn, 
     const CBString &output_prefix, 
-    const CBString &structure_name
+    const CBString &structure_name,
+    const char* extension
 )
 {
     fn->format ("%s/%s.%s", 
 	(const char*) output_prefix, 
 	(const char*) structure_name, 
-	"mha");
+	extension);
 }
 
 Rtss::Rtss (Rtds *rtds) {
@@ -157,6 +159,45 @@ Rtss::save_gdcm_rtss (
 }
 
 void
+Rtss::save_fcsv (
+    const Rtss_structure *curr_structure, 
+    const CBString& fn
+)
+{
+    Labeled_pointset pointset;
+
+    for (int j = 0; j < curr_structure->num_contours; j++) {
+	Rtss_polyline *curr_polyline = curr_structure->pslist[j];
+	for (int k = 0; k < curr_polyline->num_vertices; k++) {
+	    pointset.insert_lps ("", curr_polyline->x[k],
+		curr_polyline->y[k], curr_polyline->z[k]);
+	}
+    }
+
+    pointset.save_fcsv ((const char*) fn);
+}
+
+void
+Rtss::save_prefix_fcsv (const CBString &output_prefix)
+{
+    int i;
+
+    if (!this->m_cxt) {
+	print_and_exit (
+	    "Error: save_prefix_fcsv() tried to save a RTSS without a CXT\n");
+    }
+
+    for (i = 0; i < m_cxt->num_structures; i++)
+    {
+	CBString fn;
+	Rtss_structure *curr_structure = m_cxt->slist[i];
+
+	compose_prefix_fn (&fn, output_prefix, curr_structure->name, "fcsv");
+	save_fcsv (curr_structure, fn);
+    }
+}
+
+void
 Rtss::save_ss_image (const CBString &ss_img_fn)
 {
     if (!this->m_ss_img) {
@@ -212,7 +253,7 @@ Rtss::save_prefix (const CBString &output_prefix)
 	UCharImageType::Pointer prefix_img = ss_img_extract_bit (
 	    m_ss_img->m_itk_uint32, bit);
 #endif
-	compose_prefix_fn (&fn, output_prefix, curr_structure->name);
+	compose_prefix_fn (&fn, output_prefix, curr_structure->name, "mha");
 	itk_image_save (prefix_img, (const char*) fn);
     }
 }

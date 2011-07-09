@@ -43,6 +43,7 @@ public:
     CBString output_labelmap_fn;
     CBString output_pointset_fn;
     CBString output_prefix;
+    CBString output_prefix_fcsv;
     CBString output_ss_img_fn;
     CBString output_ss_list_fn;
     CBString output_vf_fn;
