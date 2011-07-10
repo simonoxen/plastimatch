@@ -22,6 +22,8 @@ include_directories (AFTER ${MSINTTYPES_INCLUDE_DIR})
 if (SQLITE_FOUND)
   include_directories (AFTER ${SQLITE_INCLUDE_DIR})
 endif ()
+include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/itk-3.20.0)
+include_directories (AFTER ${CMAKE_SOURCE_DIR}/libs/nSIFT)
 
 # Don't do the below.  A user-built f2c directory contains ctype.h, which 
 # conflicts with the C/C++ header of the same name.
@@ -357,10 +359,6 @@ set (PLASTIMATCH1_LIBRARY_SRC
   plm_clp.h
   plm_drr_api.cxx plm_drr_api.h 
   plm_file_format.cxx plm_file_format.h 
-  plm_HausdorffDistanceImageFilter.hxx plm_HausdorffDistanceImageFilter.h
-  plm_DirectedHausdorffDistanceImageFilter.hxx plm_DirectedHausdorffDistanceImageFilter.h
-  plm_ContourMeanDistanceImageFilter.hxx plm_ContourMeanDistanceImageFilter.h
-  plm_ContourDirectedMeanDistanceImageFilter.hxx plm_ContourDirectedMeanDistanceImageFilter.h
   plm_image.cxx plm_image.h 
   plm_image_convert.cxx plm_image_convert.h 
   plm_image_header.cxx plm_image_header.h 
@@ -616,7 +614,6 @@ set (SHUFFLE_MHA_SRC
   )
 set (SIFTnD_SRC
   siftnD.cxx
-  itkScaleInvariantFeatureImageFilter.h itkScaleInvariantFeatureImageFilter.hxx
   )
 set (SYNTHETIC_VF_SRC
   synthetic_vf_main.cxx 
