@@ -16,20 +16,6 @@ RTOG format routines (exchkeys.h)
   http://itc.wustl.edu/Exchcode.html
 
 ------------------------------------------------------------------------
-Nicolas Wirth's kth_smallest algorithm (fatm/src/wirth.cpp)
-
-  Algorithm from N. Wirth's book, implementation by N. Devillard.
-  This code in public domain.
-
-------------------------------------------------------------------------
-Quickselect (fatm/src/quickselect.cpp)
-
-  This Quickselect routine is based on the algorithm described in
-  "Numerical recipes in C", Second Edition,
-  Cambridge University Press, 1992, Section 8.5, ISBN 0-521-43108-5
-  This code by Nicolas Devillard - 1998. Public domain.
-
-------------------------------------------------------------------------
 GDCM (gdcm_series_helper_2.cxx gdcm_series_helper_2.h)
 
   Starting with gdcm 2.0.11, GDCM, Grassroots DICOM is distributed
@@ -38,63 +24,3 @@ GDCM (gdcm_series_helper_2.cxx gdcm_series_helper_2.h)
   * http://www.opensource.org/licenses/bsd-license.php
 
   Presumably the new BSD license can be used with the 1.x series as well.
-
-------------------------------------------------------------------------
-License Agreement for NVIDIA CUDA Toolkit
-
-IMPORTANT NOTICE -- READ CAREFULLY: This License Agreement ("License")
-for NVIDIA CUDA Toolkit, including computer software and associated
-documentation ("Software"), is the LICENSE which governs use of
-the SOFTWARE of NVIDIA Corporation and its subsidiaries ("NVIDIA")
-downloadable herefrom. By downloading, installing, copying, or otherwise
-using the SOFTWARE, You (as defined below) agree to be bound by the
-terms of this LICENSE. If You do not agree to the terms of this LICENSE,
-do not download the SOFTWARE.
-
-RECITALS
-
-Use of NVIDIA's products requires three elements: the SOFTWARE,
-the NVIDIA GPU, and a computer system. The SOFTWARE is protected by
-copyright laws and international copyright treaties, as well as other
-intellectual property laws and treaties. The SOFTWARE is not sold, and
-instead is only licensed for Your use, strictly in accordance with this
-document. The hardware is protected by various patents, and is sold, but
-this LICENSE does not cover that sale, since it may not necessarily be
-sold as a package with the SOFTWARE. This LICENSE sets forth the terms
-and conditions of the SOFTWARE LICENSE only.
-
-2.1.1 Usage Rights. Licensee may install and use multiple copies of the
-SOFTWARE on a shared computer or concurrently on different computers,
-and make multiple back-up copies of the SOFTWARE, solely for Licensee's
-use within Licensee's Enterprise. "Enterprise" shall mean individual use
-by Licensee or any legal entity (such as a corporation or university)
-and the subsidiaries it owns by more than 50 percent.
-
-ATTACHMENT A
-
-Redistributable Components
-
-The following files may be redistributed with software applications
-developed by Licensee.
-
-* Windows
-- CUDA Runtime: cudart32_*.dll cudart64_*.dll
-- CUDA FFT Library: cufft32_*.dll cufft64_*.dll
-- CUDA BLAS Library: cublas32_*.dll cublas64_*.dll
-
-* MacOS
-- CUDA Runtime: libcudart.dylib 
-- CUDA FFT Library: libcufft.dylib 
-- CUDA BLAS Library: libcublas.dylib 
-
-* Linux
-- CUDA Runtime: libcudart.so 
-- CUDA FFT Library: libcufft.so 
-- CUDA BLAS Library: libcublas.so 
-
-The following terms and conditions apply to Licensee's use of the
-components listed above ("Redistributable Components") of the SOFTWARE:
-
-1. Customer may transfer, redistribute or sublicense, the license
-rights pursuant to Section 2.1.1 of this Agreement in connection with
-the Redistributable Components to end users of Licensee's products.

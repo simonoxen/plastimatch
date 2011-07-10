@@ -247,7 +247,6 @@ if (OPENCL_FOUND)
     autotune_opencl.cxx autotune_opencl.h
     opencl_probe.cxx opencl_probe.h opencl_probe.cl
     opencl_util.cxx opencl_util.h
-    opencl_util_nvidia.cxx opencl_util_nvidia.h
     )
 
   if (BUILD_SHARED_LIBS)      # << Dynamic loading
