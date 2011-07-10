@@ -19,7 +19,6 @@ SET(LIBFATM_SRC
   s_utils.cpp s_utils.h
   scorewin.h
   timer.cpp timer.h
-  wirth.cpp
   )
 
 IF (FFTW_FOUND)
@@ -50,7 +49,7 @@ IF (FFTW_FOUND)
   INCLUDE_DIRECTORIES(AFTER ${FFTW_INCLUDE_DIR})
 ENDIF (FFTW_FOUND)
 
-SET (FATM_LIBS fatm)
+SET (FATM_LIBS fatm devillard)
 IF (FFTW_FOUND)
   SET (FATM_LIBS ${FATM_LIBS} ${FFTW_LIBRARIES})
 ENDIF (FFTW_FOUND)

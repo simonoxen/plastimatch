@@ -327,6 +327,14 @@ set (BSTRLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/bstrlib-05122010")
 link_directories (${CMAKE_CURRENT_BINARY_DIR}/libs/bstrlib-05122010)
 
 ##-----------------------------------------------------------------------------
+##  Only use local devillard
+##-----------------------------------------------------------------------------
+if (NOT BUILD_DEBIAN)
+  set (DEVILLARD_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/devillard")
+  add_subdirectory (libs/devillard)
+endif ()
+
+##-----------------------------------------------------------------------------
 ##  Only use local dlib
 ##-----------------------------------------------------------------------------
 set (DLIB_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/libs/dlib-17.34")
