@@ -14,7 +14,6 @@
 #include "file_util.h"
 #include "math_util.h"
 #include "opencl_util.h"
-#include "opencl_util_nvidia.h"
 #include "plm_timer.h"
 #include "proj_image.h"
 #include "proj_matrix.h"
