@@ -26,13 +26,13 @@
 #include "volume.h"
 #include "volume_macros.h"
 
-
 /***********************************************************************
  * A few of the CPU functions are reproduced here for testing purposes.
  * Once the CPU code is removed from the functions below, these
  * functions can be deleted.
  ***********************************************************************/
 #define ROUND_INT(x) ((x)>=0?(long)((x)+0.5):(long)(-(-(x)+0.5)))
+#define RAND_INC(x) (rand() % x + 1)
 
 // JAS 2010.11.23
 // Sorry about this... these functions are reproductions of stuff that lives in
@@ -484,17 +484,21 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
     float li_1[3];
     float li_2[3];
     int num_vox = 0;
+    int inc_x, inc_y, inc_z;
 
-
-    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; rijk[2]++, fijk[2]++) {
+    /* JAS 2011.07.11
+     * Here I am randomly subsampling, this dramatically increases the speed and seems to generate
+     * great vector fields (for the MR/CT set I am using as test data, at least)
+     */
+    for (rijk[2] = 0, fijk[2] = bxf->roi_offset[2]; rijk[2] < bxf->roi_dim[2]; inc_z=RAND_INC(2), rijk[2]+=inc_z, fijk[2]+=inc_z) {
         p[2] = rijk[2] / bxf->vox_per_rgn[2];
         q[2] = rijk[2] % bxf->vox_per_rgn[2];
         fxyz[2] = bxf->img_origin[2] + bxf->img_spacing[2] * fijk[2];
-        for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; rijk[1]++, fijk[1]++) {
+        for (rijk[1] = 0, fijk[1] = bxf->roi_offset[1]; rijk[1] < bxf->roi_dim[1]; inc_y=RAND_INC(2), rijk[1]+=inc_y, fijk[1]+=inc_y) {
             p[1] = rijk[1] / bxf->vox_per_rgn[1];
             q[1] = rijk[1] % bxf->vox_per_rgn[1];
             fxyz[1] = bxf->img_origin[1] + bxf->img_spacing[1] * fijk[1];
-            for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; rijk[0]++, fijk[0]++) {
+            for (rijk[0] = 0, fijk[0] = bxf->roi_offset[0]; rijk[0] < bxf->roi_dim[0]; inc_x=RAND_INC(3), rijk[0]+= inc_x, fijk[0]+=inc_x) {
                 int rc;
                 p[0] = rijk[0] / bxf->vox_per_rgn[0];
                 q[0] = rijk[0] % bxf->vox_per_rgn[0];
@@ -706,13 +710,15 @@ CUDA_bspline_mi_a (
     
     // --- GENERATE HISTOGRMS -----------------------------------
 //  plm_timer_start (&timer0);
-#if defined (MI_HISTS_CPU)
-    num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
-//  printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
-#else
-    num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
-//  printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
-#endif
+    if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
+        (mi_hist->moving.bins > GPU_MAX_BINS)) {
+
+        num_vox = CPU_MI_Hist (mi_hist, bxf, fixed, moving);
+//        printf (" * hists: %9.3f s\t [CPU]\n", plm_timer_report(&timer0));
+    } else {
+        num_vox = CUDA_bspline_mi_hist (dev_ptrs, mi_hist, fixed, moving, bxf);
+//        printf (" * hists: %9.3f s\t [GPU]\n", plm_timer_report(&timer0));
+    }
     // ----------------------------------------------------------
 
     // dump histogram images?
@@ -723,7 +729,6 @@ CUDA_bspline_mi_a (
     if (parms->debug) {
 //        dump_hist (mi_hist, bst->it);
     }
-
 
 #if defined (commentout)
     display_hist_totals (mi_hist);

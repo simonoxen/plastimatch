@@ -1353,37 +1353,43 @@ CUDA_bspline_mi_grad (
     float* host_grad = ssd->grad;
     float score = ssd->score;
 
-    // Initialize histogram memory on GPU
-    // (only necessary if histograms are CPU generated)
-#if defined (MI_HIST_CPU)
-    float* f_hist_f = (float*)malloc(dev_ptrs->f_hist_size);
-    float* m_hist_f = (float*)malloc(dev_ptrs->m_hist_size);
-    float* j_hist_f = (float*)malloc(dev_ptrs->j_hist_size);
+    if ((mi_hist->fixed.bins > GPU_MAX_BINS) ||
+        (mi_hist->moving.bins > GPU_MAX_BINS)) {
 
-    cudaMemcpy (f_hist_f, dev_ptrs->f_hist, dev_ptrs->f_hist_size, cudaMemcpyDeviceToHost);
-    CUDA_check_error ("Unable to copy fixed histograms from GPU to CPU!\n");
-    cudaMemcpy (m_hist_f, dev_ptrs->m_hist, dev_ptrs->m_hist_size, cudaMemcpyDeviceToHost);
-    CUDA_check_error ("Unable to copy moving histograms from GPU to CPU!\n");
-    cudaMemcpy (j_hist_f, dev_ptrs->j_hist, dev_ptrs->j_hist_size, cudaMemcpyDeviceToHost);
-    CUDA_check_error ("Unable to copy joint histograms from GPU to CPU!\n");
+        // Initialize histogram memory on GPU
+        // (only necessary if histograms are CPU generated)
+        float* f_tmp = (float*)malloc(dev_ptrs->f_hist_size);
+        float* m_tmp = (float*)malloc(dev_ptrs->m_hist_size);
+        float* j_tmp = (float*)malloc(dev_ptrs->j_hist_size);
 
-    /* type cast to CPU friendly double */
-    for (int i=0; i< mi_hist->fixed.bins; i++) {
-        mi_hist->f_hist[i] = (double)f_hist_f[i];
+        for (int i=0; i<mi_hist->fixed.bins; i++) {
+            f_tmp[i] = (float)mi_hist->f_hist[i];
+        }
+
+        for (int i=0; i<mi_hist->moving.bins; i++) {
+            m_tmp[i] = (float)mi_hist->m_hist[i];
+        }
+
+        for (int i=0; i<mi_hist->joint.bins; i++) {
+            j_tmp[i] = (float)mi_hist->j_hist[i];
+        }
+
+        cudaMemcpy (dev_ptrs->f_hist, f_tmp,
+                dev_ptrs->f_hist_size, cudaMemcpyHostToDevice);
+        CUDA_check_error ("Unable to copy fixed histograms from CPU to GPU!\n");
+
+        cudaMemcpy (dev_ptrs->m_hist, m_tmp,
+                dev_ptrs->m_hist_size, cudaMemcpyHostToDevice);
+        CUDA_check_error ("Unable to copy moving histograms from CPU to GPU!\n");
+
+        cudaMemcpy (dev_ptrs->j_hist, j_tmp,
+                dev_ptrs->j_hist_size, cudaMemcpyHostToDevice);
+        CUDA_check_error ("Unable to copy joint histograms from CPU to GPU!\n");
+
+        free (f_tmp);
+        free (m_tmp);
+        free (j_tmp);
     }
-
-    for (int i=0; i< mi_hist->moving.bins; i++) {
-        mi_hist->m_hist[i] = (double)m_hist_f[i];
-    }
-
-    for (int i=0; i< mi_hist->fixed.bin * mi_hist->moving.bins; i++) {
-        mi_hist->j_hist[i] = (double)j_hist_f[i];
-    }
-
-    free (f_hist_f);
-    free (m_hist_f);
-    free (j_hist_f);
-#endif
 
     // Initial dc_dv streams
     cudaMemset(dev_ptrs->dc_dv_x, 0, dev_ptrs->dc_dv_x_size);

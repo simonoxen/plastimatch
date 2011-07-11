@@ -125,8 +125,8 @@ public:
 	this->mi_hist.f_hist = 0;
 	this->mi_hist.m_hist = 0;
 	this->mi_hist.j_hist = 0;
-	this->mi_hist.fixed.bins = 20;
-	this->mi_hist.moving.bins = 20;
+	this->mi_hist.fixed.bins = 500;
+	this->mi_hist.moving.bins = 500;
 	this->mi_hist.joint.bins 
 	    = this->mi_hist.fixed.bins * this->mi_hist.moving.bins;
 	this->mi_hist.fixed.big_bin = 0;
