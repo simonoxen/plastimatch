@@ -4,7 +4,13 @@
 ##  See COPYRIGHT.TXT and LICENSE.TXT for copyright and license information
 ##-----------------------------------------------------------------------------
 project (plastimatch)
+set (PLM_VERSION_MAJOR "1")
+set (PLM_VERSION_MINOR "5")
+set (PLM_VERSION_PATCH "1")
 
+##-----------------------------------------------------------------------------
+##  Set up CMake defaults
+##-----------------------------------------------------------------------------
 cmake_minimum_required (VERSION 2.6.0)
 
 # Tell CMake to be quiet
@@ -111,6 +117,21 @@ option (PLM_DOWNLOAD_FDK_VARIAN
   "Additional testing data (download from internet)" OFF)
 option (PLM_DOWNLOAD_XIO 
   "Additional testing data (download from internet)" OFF)
+
+##-----------------------------------------------------------------------------
+##  Figure out plastimatch version number
+##-----------------------------------------------------------------------------
+# For ordinary versions from svn, use the version number at the 
+# top of the file
+set (PLM_DEFAULT_VERSION_STRING
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+
+# For official releases, a special file gets included, which contains 
+# the version number
+if (EXISTS "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt")
+  file (READ "${CMAKE_SOURCE_DIR}/src/plastimatch/plastimatch_version.txt"
+    PLM_RELEASE_VERSION_STRING)
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  Special hack for slicer extension on apple
@@ -756,33 +777,33 @@ endif ()
 ##    on CMake/CTest email list.
 ##-----------------------------------------------------------------------------
 # Set the "hack" variables to find windows binaries (under Release subdir)
-IF (WIN32 AND NOT CYGWIN AND NOT MINGW)
-  SET (PLM_PLASTIMATCH_PATH 
+if (WIN32 AND NOT CYGWIN AND NOT MINGW)
+  set (PLM_PLASTIMATCH_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Release)
-  SET (PLM_PLASTIMATCH_TESTING_PATH 
+  set (PLM_PLASTIMATCH_TESTING_PATH 
     ${CMAKE_CURRENT_BINARY_DIR}/Testing/Release)
-  SET (PLM_FFTW_PATH ${FFTW_DIR})
-  SET (PLM_ITK_LIBRARY_PATH_HACK 
+  set (PLM_FFTW_PATH ${FFTW_DIR})
+  set (PLM_ITK_LIBRARY_PATH_HACK 
     -DITK_LIBRARY_PATH=${ITK_LIBRARY_DIRS}/Release)
-  SET (PLM_PLASTIMATCH_PATH_HACK 
+  set (PLM_PLASTIMATCH_PATH_HACK 
      -DPLM_PLASTIMATCH_PATH=${PLM_PLASTIMATCH_PATH})
-  SET (PLM_FFTW_PATH_HACK 
+  set (PLM_FFTW_PATH_HACK 
      -DPLM_FFTW_PATH=${PLM_FFTW_PATH})
-ELSE ()
-  SET (PLM_PLASTIMATCH_PATH ${CMAKE_CURRENT_BINARY_DIR})
-  SET (PLM_PLASTIMATCH_TESTING_PATH ${CMAKE_CURRENT_BINARY_DIR}/Testing)
-  SET (PLM_FFTW_PATH "${FFTW_DIR}")
-  SET (PLM_ITK_LIBRARY_PATH_HACK "")
-  SET (PLM_PLASTIMATCH_PATH_HACK "")
-  SET (PLM_FFTW_PATH_HACK "")
-ENDIF ()
+else ()
+  set (PLM_PLASTIMATCH_PATH ${CMAKE_CURRENT_BINARY_DIR})
+  set (PLM_PLASTIMATCH_TESTING_PATH ${CMAKE_CURRENT_BINARY_DIR}/Testing)
+  set (PLM_FFTW_PATH "${FFTW_DIR}")
+  set (PLM_ITK_LIBRARY_PATH_HACK "")
+  set (PLM_PLASTIMATCH_PATH_HACK "")
+  set (PLM_FFTW_PATH_HACK "")
+endif ()
 
-MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
+macro (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
   # CMake doesn't allow "=" to be passed in a -D parameter.  So we substitute 
   # with replacement string, which will get substituted back within the 
   # cmake script itself
-  STRING (REPLACE "=" "&equal&" TMP_PARMS "${PARMS}")
-  ADD_TEST (${TESTNAME} ${CMAKE_COMMAND} 
+  string (REPLACE "=" "&equal&" TMP_PARMS "${PARMS}")
+  add_test (${TESTNAME} ${CMAKE_COMMAND} 
     -DTESTNAME=${TESTNAME}
     -DWORKING_DIR=${WORKING_DIR}
     ${PLM_ITK_LIBRARY_PATH_HACK}
@@ -794,30 +815,30 @@ MACRO (PLM_ADD_TEST TESTNAME WORKING_DIR PLM_TEST_COMMAND PARMS)
     "-DPARMS=${TMP_PARMS}"
     -P ${CMAKE_SOURCE_DIR}/cmake/RUN_CTEST.cmake
     )
-ENDMACRO ()
+endmacro ()
 
 # Figure out which tests to ignore
 # Note: we need two copies, because unix users might run "make test" 
 # in either directory.  MSVC uses the one in ${CMAKE_BINARY_DIR}.
-CONFIGURE_FILE (
+configure_file (
   ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
   ${CMAKE_BINARY_DIR}/CTestCustom.cmake
   @ONLY)
-CONFIGURE_FILE (
+configure_file (
   ${PLM_TESTING_SOURCE_DIR}/CTestCustom.cmake.in
   ${CMAKE_BINARY_DIR}/Testing/CTestCustom.cmake
   @ONLY)
 
-IF (PLM_BUILD_TESTING)
-  ENABLE_TESTING ()
-  ADD_SUBDIRECTORY (Testing)
+if (PLM_BUILD_TESTING)
+  enable_testing ()
+  add_subdirectory (Testing)
 
   # Copy the lconv script
-  CONFIGURE_FILE (
+  configure_file (
     "${CMAKE_SOURCE_DIR}/run_lcov.sh" 
     "${CMAKE_BINARY_DIR}/run_lcov.sh"
     COPYONLY)
-ENDIF ()
+endif ()
 
 ##-----------------------------------------------------------------------------
 ##  CPACK stuff
@@ -835,24 +856,24 @@ ENDIF ()
 ##-----------------------------------------------------------------------------
 
 # Default Generators
-SET (CPACK_GENERATOR "ZIP")
-SET (CPACK_SOURCE_GENERATOR "TBZ2")
+set (CPACK_GENERATOR "ZIP")
+set (CPACK_SOURCE_GENERATOR "TBZ2")
 
 # Deb specific stuff
-SET (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
-IF (PLM_PACKAGE_32BIT)
-  SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-ELSE ()
-  IF (HAVE_32_BIT)
-    SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
-  ELSE ()
-    SET (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  ENDIF ()
-ENDIF ()
-#SET (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
-SET (CPACK_DEBIAN_PACKAGE_SECTION "science")
-SET (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
-SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
+set (CPACK_DEBIAN_PACKAGE_NAME "plastimatch")
+if (PLM_PACKAGE_32BIT)
+  set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+else ()
+  if (HAVE_32_BIT)
+    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386")
+  else ()
+    set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+  endif ()
+endif ()
+#set (CPACK_DEBIAN_PACKAGE_DEPENDS "put depends here")
+set (CPACK_DEBIAN_PACKAGE_SECTION "science")
+set (CPACK_DEBIAN_PACKAGE_HOMEPAGE "www.plastimatch.org")
+set (CPACK_DEBIAN_PACKAGE_DESCRIPTION 
   "plastimatch\n Plastimatch is an open source software for deformable image
     registration. It is designed for high-performance volumetric registration
     of medical images, such as X-ray computed tomography, magnetic resonance
@@ -860,13 +881,19 @@ SET (CPACK_DEBIAN_PACKAGE_DESCRIPTION
 )
 
 # General Stuff
-SET (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
-SET (CPACK_PACKAGE_VERSION_MAJOR "1")
-SET (CPACK_PACKAGE_VERSION_MINOR "5.0-beta")
-SET (CPACK_PACKAGE_VERSION_PATCH ${PLASTIMATCH_SVN_VERSION})
-SET (CPACK_SOURCE_IGNORE_FILES
+set (CPACK_PACKAGE_CONTACT "gcsharp@partners.org")
+set (CPACK_PACKAGE_VERSION_MAJOR "${PLM_VERSION_MAJOR}")
+set (CPACK_PACKAGE_VERSION_MINOR "${PLM_VERSION_MINOR}")
+set (CPACK_PACKAGE_VERSION_PATCH "${PLM_VERSION_PATCH}")
+set (CPACK_PACKAGE_VERSION_TWEAK ${PLASTIMATCH_SVN_VERSION})
+set (CPACK_SOURCE_IGNORE_FILES
   "/.svn"
   "~$"
 )
 
-INCLUDE (CPack)
+file (WRITE "${CMAKE_BINARY_DIR}/extra_stuff/plastimatch_version.txt" 
+  "${PLM_VERSION_MAJOR}.${PLM_VERSION_MINOR}.${PLM_VERSION_PATCH}")
+set (CPACK_SOURCE_INSTALLED_DIRECTORIES
+  "${CMAKE_SOURCE_DIR};/;${CMAKE_BINARY_DIR}/extra_stuff;/src/plastimatch")
+
+include (CPack)
