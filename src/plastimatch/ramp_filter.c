@@ -48,14 +48,16 @@ ramp_filter (
     fftw_plan ifftp;
     double *ramp;
     ramp = (double*) malloc (width * sizeof(double));
-    if (ramp == NULL) {
-        printf ("Malloca error");
-        exit (1);
+    if (!ramp) {
+        print_and_exit ("Error allocating memory for ramp\n");
     }
     N = width * height;
     in = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) * N);
     fft = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) * N);
     ifft = (fftw_complex*) fftw_malloc (sizeof(fftw_complex) * N);
+    if (!in || !fft || !ifft) {
+        print_and_exit ("Error allocating memory for fft\n");
+    }
 
     for (r = 0; r < MARGIN; ++r)
         memcpy (data + r * width, data + MARGIN * width, 
@@ -90,11 +92,18 @@ ramp_filter (
     for (i = 0; i < width; ++i)
         ramp[i] *= (cos (i * DEGTORAD * 360 / width) + 1) / 2;
 
-    for (r = 0; r < height; ++r) {
-        fftp = fftw_plan_dft_1d (width, in + r * width, fft + r * width, 
+    for (r = 0; r < height; ++r)
+    {
+	fftp = fftw_plan_dft_1d (width, in + r * width, fft + r * width, 
 	    FFTW_FORWARD, FFTW_ESTIMATE);
-        ifftp = fftw_plan_dft_1d (width, fft + r * width, ifft + r * width, 
+	if (!fftp) {
+	    print_and_exit ("Error creating fft plan\n");
+	}
+	ifftp = fftw_plan_dft_1d (width, fft + r * width, ifft + r * width, 
 	    FFTW_BACKWARD, FFTW_ESTIMATE);
+	if (!ifftp) {
+	    print_and_exit ("Error creating ifft plan\n");
+	}
 
         fftw_execute (fftp);
 
@@ -106,8 +115,8 @@ ramp_filter (
 
         fftw_execute (ifftp);
 
-        fftw_destroy_plan (fftp);
-        fftw_destroy_plan (ifftp);
+	fftw_destroy_plan (fftp);
+	fftw_destroy_plan (ifftp);
     }
 
     for (i = 0; i < N; ++i)
