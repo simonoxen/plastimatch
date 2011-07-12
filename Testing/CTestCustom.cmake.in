@@ -1,61 +1,61 @@
-SET (BROOK_FOUND @BROOK_FOUND@)
-SET (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
-SET (CUDA_FOUND @CUDA_FOUND@)
-SET (FFTW_FOUND @FFTW_FOUND@)
-SET (PLM_PLASTIMATCH_PATH "@PLM_PLASTIMATCH_PATH@")
-SET (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
-SET (PLM_REDUCED_TESTS @PLM_REDUCED_TESTS@)
-SET (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
-SET (PLM_TEST_DICOM @PLM_TEST_DICOM@)
-SET (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
-SET (OPENCL_FOUND @OPENCL_FOUND@)
+set (BROOK_FOUND @BROOK_FOUND@)
+set (CMAKE_Fortran_COMPILER_WORKS @CMAKE_Fortran_COMPILER_WORKS@)
+set (CUDA_FOUND @CUDA_FOUND@)
+set (FFTW_FOUND @FFTW_FOUND@)
+set (PLM_PLASTIMATCH_PATH "@PLM_PLASTIMATCH_PATH@")
+set (PLM_PLASTIMATCH_PATH_HACK "@PLM_PLASTIMATCH_PATH_HACK@")
+set (PLM_REDUCED_TESTS @PLM_REDUCED_TESTS@)
+set (PLM_TEST_BSPLINE_FLAVORS @PLM_TEST_BSPLINE_FLAVORS@)
+set (PLM_TEST_DICOM @PLM_TEST_DICOM@)
+set (PLM_TESTING_BUILD_DIR "@PLM_TESTING_BUILD_DIR@")
+set (OPENCL_FOUND @OPENCL_FOUND@)
 
 ## If we don't have functioning CUDA, don't run CUDA tests
-SET (RUN_CUDA_TESTS OFF)
-IF (CUDA_FOUND)
-  EXECUTE_PROCESS (COMMAND 
+set (RUN_CUDA_TESTS OFF)
+if (CUDA_FOUND)
+  execute_process (COMMAND 
     "${PLM_PLASTIMATCH_PATH}/cuda_probe"
     RESULT_VARIABLE CUDA_PROBE_RESULT
     OUTPUT_VARIABLE CUDA_PROBE_STDOUT
     ERROR_VARIABLE CUDA_PROBE_STDERR
     )
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_result.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_result.txt"
     "${CUDA_PROBE_RESULT}")
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stdout.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stdout.txt"
     "${CUDA_PROBE_STDOUT}")
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stderr.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/cuda_probe_stderr.txt"
     "${CUDA_PROBE_STDERR}")
-  STRING (REGEX MATCH "NOT cuda capable" CUDA_PROBE_NOT_CAPABLE
+  string (REGEX MATCH "NOT cuda capable" CUDA_PROBE_NOT_CAPABLE
     "${CUDA_PROBE_STDOUT}")
-  IF (NOT CUDA_PROBE_RESULT AND NOT CUDA_PROBE_NOT_CAPABLE)
-    SET (RUN_CUDA_TESTS ON)
-  ENDIF ()
-ENDIF ()
+  if (NOT CUDA_PROBE_RESULT AND NOT CUDA_PROBE_NOT_CAPABLE)
+    set (RUN_CUDA_TESTS ON)
+  endif ()
+endif ()
 
 ## If we don't have functioning OpenCL, don't run OpenCL tests
-SET (RUN_OPENCL_TESTS OFF)
-IF (OPENCL_FOUND)
-  EXECUTE_PROCESS (COMMAND 
+set (RUN_OPENCL_TESTS OFF)
+if (OPENCL_FOUND)
+  execute_process (COMMAND 
     "${PLM_PLASTIMATCH_PATH}/opencl_probe"
     RESULT_VARIABLE OPENCL_PROBE_RESULT
     OUTPUT_VARIABLE OPENCL_PROBE_STDOUT
     ERROR_VARIABLE OPENCL_PROBE_STDERR
     )
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_result.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_result.txt"
     "${OPENCL_PROBE_RESULT}")
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_stdout.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_stdout.txt"
     "${OPENCL_PROBE_STDOUT}")
-  FILE (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_stderr.txt"
+  file (WRITE "${PLM_TESTING_BUILD_DIR}/opencl_probe_stderr.txt"
     "${OPENCL_PROBE_STDERR}")
-  STRING (REGEX MATCH "Opencl does not work" OPENCL_PROBE_NOT_CAPABLE
+  string (REGEX MATCH "Opencl does not work" OPENCL_PROBE_NOT_CAPABLE
     "${OPENCL_PROBE_STDOUT}")
-  IF (NOT OPENCL_PROBE_RESULT AND NOT OPENCL_PROBE_NOT_CAPABLE)
-    SET (RUN_OPENCL_TESTS ON)
-  ENDIF ()
-ENDIF ()
+  if (NOT OPENCL_PROBE_RESULT AND NOT OPENCL_PROBE_NOT_CAPABLE)
+    set (RUN_OPENCL_TESTS ON)
+  endif ()
+endif ()
 
 # drr-d doen't work yet
-SET (CTEST_CUSTOM_TESTS_IGNORE
+set (CTEST_CUSTOM_TESTS_IGNORE
   ${CTEST_CUSTOM_TESTS_IGNORE}
   "drr-d"
   "drr-d-stats"
@@ -63,17 +63,17 @@ SET (CTEST_CUSTOM_TESTS_IGNORE
   )
 
 ## If we don't have a fortran compiler, don't test bragg_curve
-IF (NOT CMAKE_Fortran_COMPILER_WORKS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT CMAKE_Fortran_COMPILER_WORKS)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "bragg-curve"
     "bragg-curve-check"
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get XiO dicom-rt test data, don't run these tests
-IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-a"
     "plm-convert-dicom-a-stats"
@@ -98,11 +98,11 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-xio-4.33.02")
     "plm-convert-cxt-stats"
     "plm-convert-cxt-check"
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get xio test data, don't run xio tests
-IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-xio"
     "plm-convert-xio-stats"
@@ -124,34 +124,34 @@ IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-xio-4.33.02")
     "plm-warp-f-stats-2"
     "plm-warp-f-check-2"
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get aw (foot) test data, don't run these tests
-IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/foot-dicomrt-aw-4.4")
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-aw-a" 
     "plm-convert-dicom-aw-a-stats" 
     "plm-convert-dicom-aw-a-check" 
     "plm-convert-dicom-aw-b" 
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get cerr test data, don't run these tests
-IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/chest-phantom-dicomrt-CERR4pt0beta2_25_Jan_2011")
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-cerr-a" 
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get pinnacle test data, don't run these tests
-IF (NOT EXISTS "${PLM_TESTING_BUILD_DIR}//rando-dicomrt-pinnacle3-8.2g")
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}//rando-dicomrt-pinnacle3-8.2g")
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "plm-convert-dicom-pinnacle-a" 
     )
-ENDIF ()
+endif ()
 
 ## If we didn't get varian fdk test data, don't run these tests
 if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/varian-catphan")
@@ -181,8 +181,8 @@ if (NOT EXISTS "${PLM_TESTING_BUILD_DIR}/headphantom")
 endif ()
 
 ## If we don't have fftw, don't run these tests
-IF (NOT FFTW_FOUND)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT FFTW_FOUND)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "fdk-cpu-c"
     "fdk-cpu-c-stats"
@@ -191,11 +191,11 @@ IF (NOT FFTW_FOUND)
     "fdk-tutorial-c-stats-1"
     "fdk-tutorial-c-check-1"
     )
-ENDIF ()
+endif ()
 
 ## If we didn't compile with cuda, don't run these tests
-IF (NOT RUN_CUDA_TESTS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT RUN_CUDA_TESTS)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "demons-cuda-a"
     "demons-cuda-a-check"
@@ -209,11 +209,11 @@ IF (NOT RUN_CUDA_TESTS)
     "plm-bspline-cuda-stats" 
     "plm-bspline-cuda-check" 
     )
-ENDIF ()
+endif ()
 
 ## If we didn't compile with opencl, don't run these tests
-IF (NOT RUN_OPENCL_TESTS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT RUN_OPENCL_TESTS)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "drr-opencl"
     "drr-opencl-stats"
@@ -222,21 +222,21 @@ IF (NOT RUN_OPENCL_TESTS)
     "fdk-opencl-a-stats"
     "fdk-opencl-a-check"
     ) 
-ENDIF ()
+endif ()
 
 ## If we didn't compile with brook, don't run these tests
-IF (NOT BROOK_FOUND)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT BROOK_FOUND)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "fdk-brook"
     "fdk-brook-stats"
     "fdk-brook-check"
     )
-ENDIF ()
+endif ()
 
 ## Don't test unused algorithms
-IF (NOT PLM_TEST_BSPLINE_FLAVORS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (NOT PLM_TEST_BSPLINE_FLAVORS)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "bspline-a"
     "bspline-a-check"
@@ -249,11 +249,11 @@ IF (NOT PLM_TEST_BSPLINE_FLAVORS)
     "bspline-f"
     "bspline-f-check"
     )
-ENDIF ()
+endif ()
 
 ## Don't delete from the list, comment out instead.
-IF (PLM_REDUCED_TESTS)
-  SET (CTEST_CUSTOM_TESTS_IGNORE
+if (PLM_REDUCED_TESTS)
+  set (CTEST_CUSTOM_TESTS_IGNORE
     ${CTEST_CUSTOM_TESTS_IGNORE}
     "donut-1"
     "gauss-1"
@@ -512,4 +512,4 @@ IF (PLM_REDUCED_TESTS)
     "proton-dose"
     "tps-warp"
     )
-ENDIF (PLM_REDUCED_TESTS)
+endif ()
