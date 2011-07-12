@@ -739,6 +739,52 @@ plmtest_check_interval ("fdk-opencl-a-check"
   )
 
 ## -------------------------------------------------------------------------
+## fdk_tutorial - run the fdk tutorial
+## -------------------------------------------------------------------------
+plm_add_test (
+  "fdk-tutorial-a"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/drr
+  "-t;pfm;-a;60;-N;3;-g;1000 1500;-r;100 100;-z;300 300;-I;${PLM_TESTING_BUILD_DIR}/headphantom/headphantom.mha;-O;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-a/"
+  )
+plm_add_test (
+  "fdk-tutorial-b"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-f;none;-r;100 100 100;-I;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-a;-O;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-b.mha"
+  )
+plm_add_test (
+  "fdk-tutorial-b-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-b.mha"
+  )
+plmtest_check_interval ("fdk-tutorial-b-check-1"
+  "${PLM_TESTING_BUILD_DIR}/fdk-tutorial-b-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-955.8"
+  "-954.8"
+  )
+plm_add_test (
+  "fdk-tutorial-c"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/fdk
+  "-f;ramp;-r;100 100 100;-I;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-a;-O;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-c.mha"
+  )
+plm_add_test (
+  "fdk-tutorial-c-stats-1"
+  ""
+  ${PLM_PLASTIMATCH_PATH}/plastimatch
+  "stats;--input;${PLM_TESTING_BUILD_DIR}/fdk-tutorial-c.mha"
+  )
+plmtest_check_interval ("fdk-tutorial-c-check-1"
+  "${PLM_TESTING_BUILD_DIR}/fdk-tutorial-c-stats-1.stdout.txt"
+  "AVE *([-0-9.]*)"
+  "-999.0"
+  "-998.0"
+  )
+
+## -------------------------------------------------------------------------
 ## landmark_warp a: itk tps, slicer fcsv
 ## landmark_warp b: wendland rbf, slicer fcsv
 ## landmark_warp c: nsh gauss rbf, slicer fcsv
