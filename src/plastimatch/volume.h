@@ -18,9 +18,9 @@ enum Volume_pixel_type {
     PT_UCHAR_VEC_INTERLEAVED
 };
 
-typedef struct volume Volume;
-struct volume
+class Volume
 {
+public:
     int dim[3];		        // x, y, z Dims
     int npix;			// # of voxels in volume
 				// = dim[0] * dim[1] * dim[2] 

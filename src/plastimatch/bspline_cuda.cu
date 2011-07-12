@@ -823,10 +823,10 @@ CUDA_bspline_mse_init_j (
 // DATE  : September 11th, 2009
 void
 CUDA_bspline_mse_cleanup_j (
-    dev_pointers_bspline* dev_ptrs,
-    volume* fixed,
-    volume* moving,
-    volume* moving_grad
+    Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad
 )
 {
     // Textures
@@ -871,10 +871,10 @@ CUDA_bspline_mse_cleanup_j (
 // DATE  : October 29th, 2010
 void
 CUDA_bspline_mi_cleanup_a (
-    dev_pointers_bspline* dev_ptrs,
-    volume* fixed,
-    volume* moving,
-    volume* moving_grad
+    Dev_Pointers_Bspline* dev_ptrs,
+    Volume* fixed,
+    Volume* moving,
+    Volume* moving_grad
 )
 {
     // Textures

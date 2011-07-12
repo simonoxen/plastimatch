@@ -109,7 +109,7 @@ endif ()
 set (PLMSYS_LIBRARY_SRC
   file_util.cxx file_util.h
   logfile.c logfile.h
-  interpolate.c interpolate.h
+  interpolate.cxx interpolate.h
   plm_timer.c plm_timer.h
   print_and_exit.c print_and_exit.h 
   )
@@ -467,8 +467,8 @@ if (CUDA_FOUND)
     )
 endif ()
 set (DEMONS_SRC
-  demons_main.c
-  demons_opts.c demons_opts.h
+  demons_main.cxx 
+  demons_opts.cxx demons_opts.h
   )
 set (DICE_STATS_SRC
   dice_stats_main.cxx
@@ -491,16 +491,16 @@ set (DLIB_TRAIN_SRC
   dlib_train.cxx
   )
 set (DRR_SRC
-  drr_main.c 
-  drr_opts.c drr_opts.h
+  drr_main.cxx 
+  drr_opts.cxx drr_opts.h
   )
 set (EXTRACT_CONTOUR_SRC
   extract_contour.cxx
   )
 set (FDK_SRC
-  fdk_main.c 
-  fdk_opts.c fdk_opts.h
-  fdk_util.c fdk_util.h
+  fdk_main.cxx 
+  fdk_opts.cxx fdk_opts.h
+  fdk_util.cxx fdk_util.h
 )
 if (BROOK_FOUND)
   set (FDK_SRC
@@ -510,7 +510,7 @@ if (BROOK_FOUND)
     )
 endif ()
 set (HND_TO_PFM_SRC
-  hnd_to_pfm.c
+  hnd_to_pfm.cxx 
   )
 set (MEX_DRR_SRC
   mex_drr.c
@@ -595,8 +595,8 @@ if (QT4_FOUND AND QT_QTSQL_FOUND)
     )
 endif ()
 set (PROTON_DOSE_SRC
-  proton_dose_main.c 
-  proton_dose_opts.c proton_dose_opts.h
+  proton_dose_main.cxx 
+  proton_dose_opts.cxx proton_dose_opts.h
   )
 set (LANDMARK_WARP_SRC
   landmark_warp_main.cxx
