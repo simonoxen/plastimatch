@@ -94,7 +94,7 @@ vf_warp (Volume *vout, Volume *vin, Volume *vf)
 		li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, vin);
 
 		/* Find linear index of "corner voxel" in moving image */
-		mvf = INDEX_OF (mijk_f, vin->dim);
+		mvf = volume_index (vin->dim, mijk_f);
 		
 		/* Compute moving image intensity using linear interpolation */
 		LI_VALUE (m_val, 

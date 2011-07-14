@@ -103,12 +103,12 @@ bspline_warp_internal (
 		fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
 		/* Get B-spline deformation vector */
-		pidx = INDEX_OF (p, bxf->rdims);
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		pidx = volume_index (bxf->rdims, p);
+		qidx = volume_index (bxf->vox_per_rgn, q);
 		bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
 		/* Compute linear index of fixed image voxel */
-		fv = INDEX_OF (fijk, vout->dim);
+		fv = volume_index (vout->dim, fijk);
 
 		/* Assign deformation */
 		if (vf_out) {
@@ -129,7 +129,7 @@ bspline_warp_internal (
 
 		if (linear_interp) {
 		    /* Find linear index of "corner voxel" in moving image */
-		    mvf = INDEX_OF (mijk_f, moving->dim);
+		    mvf = volume_index (moving->dim, mijk_f);
 
 		    /* Macro is slightly faster than function */
 		    /* Compute moving image intensity using linear 
@@ -145,7 +145,7 @@ bspline_warp_internal (
 
 		} else {
 		    /* Find linear index of "nearest voxel" in moving image */
-		    mvf = INDEX_OF (mijk_r, moving->dim);
+		    mvf = volume_index (moving->dim, mijk_r);
 
 		    /* Loop through planes */
 		    /* Note: We omit looping through planes when linear 

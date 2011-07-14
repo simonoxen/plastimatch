@@ -141,10 +141,10 @@ bspline_score_h_mse (
                 GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
 
                 // Construct the local index within the tile
-                idx_local = INDEX_OF (ijk_local, bxf->vox_per_rgn);
+                idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
 
                 // Construct the image volume index
-                idx_fixed = INDEX_OF (ijk_fixed, fixed->dim);
+                idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
                 // Calc. deformation vector (dxyz) for voxel
                 bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
@@ -167,8 +167,8 @@ bspline_score_h_mse (
                 );
 
                 // Find linear indices for moving image
-                idx_moving_floor = INDEX_OF (ijk_moving_floor, moving->dim);
-                idx_moving_round = INDEX_OF (ijk_moving_round, moving->dim);
+                idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
+                idx_moving_round = volume_index (moving->dim, ijk_moving_round);
 
                 // Calc. moving voxel intensity via linear interpolation
                 LI_VALUE (
@@ -347,10 +347,10 @@ bspline_score_g_mse (
                 GET_REAL_SPACE_COORDS (xyz_fixed, ijk_fixed, bxf);
                     
                 // Construct the local index within the tile
-                idx_local = INDEX_OF (ijk_local, bxf->vox_per_rgn);
+                idx_local = volume_index (bxf->vox_per_rgn, ijk_local);
 
                 // Construct the image volume index
-                idx_fixed = INDEX_OF (ijk_fixed, fixed->dim);
+                idx_fixed = volume_index (fixed->dim, ijk_fixed);
 
                 // Calc. deformation vector (dxyz) for voxel
                 bspline_interp_pix_b (dxyz, bxf, idx_tile, idx_local);
@@ -374,8 +374,8 @@ bspline_score_g_mse (
                 );
 
                 // Find linear indices for moving image
-                idx_moving_floor = INDEX_OF (ijk_moving_floor, moving->dim);
-                idx_moving_round = INDEX_OF (ijk_moving_round, moving->dim);
+                idx_moving_floor = volume_index (moving->dim, ijk_moving_floor);
+                idx_moving_round = volume_index (moving->dim, ijk_moving_round);
 
                 // Calc. moving voxel intensity via linear interpolation
                 LI_VALUE (
@@ -515,8 +515,8 @@ bspline_score_c_mse (
                 fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Compute moving image coordinate of fixed image voxel */
@@ -532,7 +532,7 @@ bspline_score_c_mse (
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 /* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
@@ -543,13 +543,13 @@ bspline_score_c_mse (
                     mvf, m_img, moving);
 
                 /* Compute linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Compute intensity difference */
                 diff = m_val - f_img[fv];
 
                 /* Compute spatial gradient using nearest neighbors */
-                mvr = INDEX_OF (mijk_r, moving->dim);
+                mvr = volume_index (moving->dim, mijk_r);
                 dc_dv[0] = diff * m_grad[3*mvr+0];  /* x component */
                 dc_dv[1] = diff * m_grad[3*mvr+1];  /* y component */
                 dc_dv[2] = diff * m_grad[3*mvr+2];  /* z component */

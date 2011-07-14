@@ -468,7 +468,7 @@ bspline_interpolate_vf (Volume* interp,
 	    for (i = 0; i < bxf->roi_dim[0]; i++) {
 		p[0] = i / bxf->vox_per_rgn[0];
 		q[0] = i % bxf->vox_per_rgn[0];
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		qidx = volume_index (bxf->vox_per_rgn, q);
 		v = (k+bxf->roi_offset[2]) * interp->dim[0] * interp->dim[1]
 		    + (j+bxf->roi_offset[1]) * interp->dim[0] 
 		    + (i+bxf->roi_offset[0]);

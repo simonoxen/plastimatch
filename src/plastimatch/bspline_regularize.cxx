@@ -287,7 +287,7 @@ bspline_regularize_score_from_prerendered (
 		q[0] = ri % bxf->vox_per_rgn[0];
 			
 		/* Get B-spline deformation vector */
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		qidx = volume_index (bxf->vox_per_rgn, q);
 		bspline_interp_pix (dxyz, bxf, p, qidx);
 			
 		k = fk * fixed->dim[0] * fixed->dim[1] + fj * fixed->dim[0] + fi;
@@ -424,7 +424,7 @@ bspline_regularize_score (
 		p[0] = ri / bxf->vox_per_rgn[0];
 		q[0] = ri % bxf->vox_per_rgn[0];
 			
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		qidx = volume_index (bxf->vox_per_rgn, q);
 #if defined (USE_FAST_CODE)
 		grad_score += update_score_and_grad (
 		    bst, bxf, p, qidx, grad_coeff, 1,

@@ -1215,7 +1215,7 @@ bspline_score_f_mi (Bspline_parms *parms,
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
                     /* Construct the linear index within tile space */
-                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                    qidx = volume_index (bxf->vox_per_rgn, q);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
@@ -1230,12 +1230,12 @@ bspline_score_f_mi (Bspline_parms *parms,
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
-                    fv = INDEX_OF (fijk, fixed->dim);
+                    fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
                      * neighborhood of the moving image voxels corresponding
                      * to the current fixed image voxel */
-                    mvf = INDEX_OF (mijk_f, moving->dim);
+                    mvf = volume_index (moving->dim, mijk_f);
 
                     /* Add to histogram */
 
@@ -1360,7 +1360,7 @@ bspline_score_f_mi (Bspline_parms *parms,
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
                     /* Construct the linear index within tile space */
-                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                    qidx = volume_index (bxf->vox_per_rgn, q);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
@@ -1375,12 +1375,12 @@ bspline_score_f_mi (Bspline_parms *parms,
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
-                    fv = INDEX_OF (fijk, fixed->dim);
+                    fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
                      * neighborhood of the moving image voxels corresponding
                      * to the current fixed image voxel */
-                    mvf = INDEX_OF (mijk_f, moving->dim);
+                    mvf = volume_index (moving->dim, mijk_f);
 
                     /* Compute dc_dv */
                     bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
@@ -1539,7 +1539,7 @@ bspline_score_e_mi (
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
                     /* Construct the linear index within tile space */
-                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                    qidx = volume_index (bxf->vox_per_rgn, q);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
@@ -1554,12 +1554,12 @@ bspline_score_e_mi (
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
-                    fv = INDEX_OF (fijk, fixed->dim);
+                    fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
                      * neighborhood of the moving image voxels corresponding
                      * to the current fixed image voxel */
-                    mvf = INDEX_OF (mijk_f, moving->dim);
+                    mvf = volume_index (moving->dim, mijk_f);
 
                     /* Add to histogram */
 
@@ -1693,7 +1693,7 @@ bspline_score_e_mi (
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
                     /* Construct the linear index within tile space */
-                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                    qidx = volume_index (bxf->vox_per_rgn, q);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
@@ -1708,12 +1708,12 @@ bspline_score_e_mi (
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
-                    fv = INDEX_OF (fijk, fixed->dim);
+                    fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
                      * neighborhood of the moving image voxels corresponding
                      * to the current fixed image voxel */
-                    mvf = INDEX_OF (mijk_f, moving->dim);
+                    mvf = volume_index (moving->dim, mijk_f);
 
                     /* Compute dc_dv */
                     bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 
@@ -1861,8 +1861,8 @@ bspline_score_d_mi (Bspline_parms *parms,
                 fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Find correspondence in moving image */
@@ -1877,10 +1877,10 @@ bspline_score_d_mi (Bspline_parms *parms,
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 /* Compute moving image intensity using linear interpolation */
                 // NOTE: Not used by MI PVI8
@@ -1994,7 +1994,7 @@ bspline_score_d_mi (Bspline_parms *parms,
                     GET_REAL_SPACE_COORDS (fxyz, fijk, bxf);
 
                     /* Construct the linear index within tile space */
-                    qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                    qidx = volume_index (bxf->vox_per_rgn, q);
 
                     /* Compute deformation vector (dxyz) for voxel */
                     bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
@@ -2009,12 +2009,12 @@ bspline_score_d_mi (Bspline_parms *parms,
                     li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
                     
                     /* Constrcut the fixed image linear index within volume space */
-                    fv = INDEX_OF (fijk, fixed->dim);
+                    fv = volume_index (fixed->dim, fijk);
 
                     /* Find linear index the corner voxel used to identifiy the
                      * neighborhood of the moving image voxels corresponding
                      * to the current fixed image voxel */
-                    mvf = INDEX_OF (mijk_f, moving->dim);
+                    mvf = volume_index (moving->dim, mijk_f);
 
                     /* Compute dc_dv */
                     bspline_mi_pvi_8_dc_dv (
@@ -2138,8 +2138,8 @@ bspline_score_c_mi (Bspline_parms *parms,
                 fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Find correspondence in moving image */
@@ -2154,10 +2154,10 @@ bspline_score_c_mi (Bspline_parms *parms,
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 /* Compute moving image intensity using linear interpolation */
                 /* Macro is slightly faster than function */
@@ -2243,12 +2243,12 @@ bspline_score_c_mi (Bspline_parms *parms,
                 fxyz[0] = GET_REAL_SPACE_COORD_X (fijk, bxf);
 
                 /* Get B-spline deformation vector */
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find correspondence in moving image */
                 rc = bspline_find_correspondence (
@@ -2266,10 +2266,10 @@ bspline_score_c_mi (Bspline_parms *parms,
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 bspline_mi_pvi_8_dc_dv (
                     dc_dv, mi_hist, bst,

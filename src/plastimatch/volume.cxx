@@ -38,12 +38,6 @@ directions_cosine_debug (float *m)
 	m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);
 }
 
-int
-volume_index (int* dims, int i, int j, int k)
-{
-    return i + (dims[0] * (j + dims[1] * k));
-}
-
 void
 volume_allocate (Volume *vol, int min_size)
 {

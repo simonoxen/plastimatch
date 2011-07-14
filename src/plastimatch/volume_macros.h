@@ -9,13 +9,22 @@
 /* -----------------------------------------------------------------------
    Macros
    ----------------------------------------------------------------------- */
-#define INDEX_OF(ijk, dim) \
-    (((ijk[2] * dim[1] + ijk[1]) * dim[0]) + ijk[0])
+static inline int 
+volume_index (const int dims[3], int i, int j, int k)
+{
+    return i + (dims[0] * (j + dims[1] * k));
+}
 
-#define COORDS_FROM_INDEX(ijk, idx, dim) \
-	ijk[2] = idx / (dim[0] * dim[1]);	\
-	ijk[1] = (idx - (ijk[2] * dim[0] * dim[1])) / dim[0];	\
-	ijk[0] = idx - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
+static inline int 
+volume_index (const int dims[3], const int ijk[3])
+{
+    return ijk[0] + (dims[0] * (ijk[1] + dims[1] * ijk[2]));
+}
+
+#define COORDS_FROM_INDEX(ijk, idx, dim)				\
+    ijk[2] = idx / (dim[0] * dim[1]);					\
+    ijk[1] = (idx - (ijk[2] * dim[0] * dim[1])) / dim[0];		\
+    ijk[0] = idx - ijk[2] * dim[0] * dim[1] - (ijk[1] * dim[0]);
 
 #define LOOP_Z(ijk,fxyz,vol)			         		\
     ijk[2] = 0,								\

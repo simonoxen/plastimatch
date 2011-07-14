@@ -274,7 +274,7 @@ bspline_landmarks_score_b (
 		fx = bxf->img_origin[0] + bxf->img_spacing[0] * fi;
 
 		/* Get B-spline deformation vector */
-		qidx = INDEX_OF (q, bxf->vox_per_rgn);
+		qidx = volume_index (bxf->vox_per_rgn, q);
 		bspline_interp_pix (dxyz, bxf, p, qidx);
 
 		/* Find correspondence in moving image */
@@ -321,7 +321,7 @@ bspline_landmarks_score_b (
 
 	for (d = 0; d < 3; d++) p[d] = land_p[3*lidx+d];
 	for (d = 0; d < 3; d++) q[d] = land_q[3*lidx+d];
-	qidx = INDEX_OF (q, bxf->vox_per_rgn);
+	qidx = volume_index (bxf->vox_per_rgn, q);
 	bspline_interp_pix (dxyz, bxf, p, qidx);
 
 	//actually move the moving landmark; note the minus sign
@@ -407,7 +407,7 @@ bspline_landmarks_score_a (
 	    q[d] = blm->landvox_fix[lidx*3+d] % bxf->vox_per_rgn[d];
 	}
 
-        qidx = INDEX_OF (q, bxf->vox_per_rgn);
+        qidx = volume_index (bxf->vox_per_rgn, q);
         bspline_interp_pix (dxyz, bxf, p, qidx);
 
 	for (d = 0; d < 3; d++) {

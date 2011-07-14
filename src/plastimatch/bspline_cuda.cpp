@@ -499,8 +499,8 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
                 fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
                 // Get B-spline deformation vector
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 // Find correspondence in moving image
@@ -513,10 +513,10 @@ CPU_MI_Hist (BSPLINE_MI_Hist *mi_hist,  // OUTPUT: Histograms
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 // Find linear index of fixed image voxel
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 // Find linear index of "corner voxel" in moving image
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 // PARTIAL VALUE INTERPOLATION - 8 neighborhood
                 bspline_mi_hist_add_pvi_8 (mi_hist, fixed, moving, fv, mvf, li_1, li_2);
@@ -598,12 +598,12 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
                 fxyz[0] = bxf->img_origin[0] + bxf->img_spacing[0] * fijk[0];
 
                 /* Get B-spline deformation vector */
-                pidx = INDEX_OF (p, bxf->rdims);
-                qidx = INDEX_OF (q, bxf->vox_per_rgn);
+                pidx = volume_index (bxf->rdims, p);
+                qidx = volume_index (bxf->vox_per_rgn, q);
                 bspline_interp_pix_b (dxyz, bxf, pidx, qidx);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find correspondence in moving image */
                 rc = bspline_find_correspondence (mxyz, mijk, fxyz, dxyz, moving);
@@ -615,10 +615,10 @@ CPU_MI_Grad (BSPLINE_MI_Hist *mi_hist, // OUTPUT: Histograms
                 li_clamp_3d (mijk, mijk_f, mijk_r, li_1, li_2, moving);
 
                 /* Find linear index of fixed image voxel */
-                fv = INDEX_OF (fijk, fixed->dim);
+                fv = volume_index (fixed->dim, fijk);
 
                 /* Find linear index of "corner voxel" in moving image */
-                mvf = INDEX_OF (mijk_f, moving->dim);
+                mvf = volume_index (moving->dim, mijk_f);
 
                 // Partial Volume Interpolation 8-neighbor Gradient 
                 bspline_mi_pvi_8_dc_dv (dc_dv, mi_hist, bst, fixed, moving, 

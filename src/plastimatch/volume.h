@@ -5,6 +5,7 @@
 #define _volume_h_
 
 #include "plm_config.h"
+#include "volume_macros.h"
 
 enum Volume_pixel_type {
     PT_UNDEFINED,
@@ -40,8 +41,6 @@ public:
 #if defined __cplusplus
 extern "C" {
 #endif
-gpuit_EXPORT
-int volume_index (int* dims, int i, int j, int k);
 gpuit_EXPORT
 Volume*
 volume_create (

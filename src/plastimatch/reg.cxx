@@ -15,10 +15,6 @@
 
 //#define DEBUG
 
-#define INDEX_OF(dim, i, j, k) \
-    ((((k)*dim[1] + (j))*dim[0]) + (i))
-
-
 Volume*
 compute_vf_from_coeff (Bspline_xform* bxf)
 {
@@ -58,10 +54,10 @@ compute_coeff_from_vf (Bspline_xform* bxf, Volume* vol)
                 p[0] = i / bxf->vox_per_rgn[0];
                 q[0] = i % bxf->vox_per_rgn[0];
 
-                pidx = INDEX_OF (bxf->rdims, p[0], p[1], p[2]);
-                qidx = INDEX_OF (bxf->vox_per_rgn, q[0], q[1], q[2]);
+                pidx = volume_index (bxf->rdims, p[0], p[1], p[2]);
+                qidx = volume_index (bxf->vox_per_rgn, q[0], q[1], q[2]);
 
-                idx_poi = INDEX_OF (vol->dim, i, j, k);
+                idx_poi = volume_index (vol->dim, i, j, k);
                 vec_poi = &img[3*idx_poi];
 
                 q_lut = &bxf->q_lut[qidx*64];
@@ -467,27 +463,27 @@ vf_regularize_numerical (Volume* vol)
             for (i = 1; i < vol->dim[0]-1; i++) {
 
                 /* Load indicies relevant to current POI */
-                idx_poi = INDEX_OF (vol->dim, i, j, k);
+                idx_poi = volume_index (vol->dim, i, j, k);
 
-                idx_in = INDEX_OF (vol->dim, i-1  , j,   k);
-                idx_ip = INDEX_OF (vol->dim, i+1,   j,   k);
-                idx_jn = INDEX_OF (vol->dim,   i, j-1,   k);
-                idx_jp = INDEX_OF (vol->dim,   i, j+1,   k);
-                idx_kn = INDEX_OF (vol->dim,   i,   j, k-1);
-                idx_kp = INDEX_OF (vol->dim,   i,   j, k+1);
+                idx_in = volume_index (vol->dim, i-1  , j,   k);
+                idx_ip = volume_index (vol->dim, i+1,   j,   k);
+                idx_jn = volume_index (vol->dim,   i, j-1,   k);
+                idx_jp = volume_index (vol->dim,   i, j+1,   k);
+                idx_kn = volume_index (vol->dim,   i,   j, k-1);
+                idx_kp = volume_index (vol->dim,   i,   j, k+1);
 
-                idx_injn = INDEX_OF (vol->dim, i-1, j-1,   k);
-                idx_injp = INDEX_OF (vol->dim, i-1, j+1,   k);
-                idx_ipjn = INDEX_OF (vol->dim, i+1, j-1,   k);
-                idx_ipjp = INDEX_OF (vol->dim, i+1, j+1,   k);
-                idx_inkn = INDEX_OF (vol->dim, i-1,   j, k-1);
-                idx_inkp = INDEX_OF (vol->dim, i-1,   j, k+1);
-                idx_ipkn = INDEX_OF (vol->dim, i+1,   j, k-1);
-                idx_ipkp = INDEX_OF (vol->dim, i+1,   j, k+1);
-                idx_jnkn = INDEX_OF (vol->dim,   i, j-1, k-1);
-                idx_jnkp = INDEX_OF (vol->dim,   i, j-1, k+1);
-                idx_jpkn = INDEX_OF (vol->dim,   i, j+1, k-1);
-                idx_jpkp = INDEX_OF (vol->dim,   i, j+1, k+1);
+                idx_injn = volume_index (vol->dim, i-1, j-1,   k);
+                idx_injp = volume_index (vol->dim, i-1, j+1,   k);
+                idx_ipjn = volume_index (vol->dim, i+1, j-1,   k);
+                idx_ipjp = volume_index (vol->dim, i+1, j+1,   k);
+                idx_inkn = volume_index (vol->dim, i-1,   j, k-1);
+                idx_inkp = volume_index (vol->dim, i-1,   j, k+1);
+                idx_ipkn = volume_index (vol->dim, i+1,   j, k-1);
+                idx_ipkp = volume_index (vol->dim, i+1,   j, k+1);
+                idx_jnkn = volume_index (vol->dim,   i, j-1, k-1);
+                idx_jnkp = volume_index (vol->dim,   i, j-1, k+1);
+                idx_jpkn = volume_index (vol->dim,   i, j+1, k-1);
+                idx_jpkp = volume_index (vol->dim,   i, j+1, k+1);
 
                 /* Load vectors relevant to current POI */
                 vec_poi = &img[3*idx_poi];
