@@ -4,6 +4,7 @@
 #ifndef _logfile_h_
 #define _logfile_h_
 
+#include "plm_config.h"
 #include <stdio.h>
 
 #if defined __cplusplus
