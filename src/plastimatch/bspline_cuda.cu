@@ -738,6 +738,9 @@ CUDA_bspline_mi_cleanup_a (
     cudaFree(dev_ptrs->coeff);
     cudaFree(dev_ptrs->score);
     cudaFree(dev_ptrs->grad);
+    cudaFree(dev_ptrs->dc_dv_x);
+    cudaFree(dev_ptrs->dc_dv_y);
+    cudaFree(dev_ptrs->dc_dv_z);
     cudaFree(dev_ptrs->cond_x);
     cudaFree(dev_ptrs->cond_y);
     cudaFree(dev_ptrs->cond_z);
