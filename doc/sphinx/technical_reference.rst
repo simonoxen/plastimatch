@@ -15,3 +15,4 @@ Technical reference
    proj_geometry
    cxt_file_format
    proj_mat_file_format
+   Project dashboard (regression testing) <http://my.cdash.org/index.php?project=Plastimatch>
